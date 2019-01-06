@@ -1,11 +1,11 @@
-﻿using TomPIT.ComponentModel.DataProviders;
-using TomPIT.Runtime;
+﻿using TomPIT.Data.DataProviders;
+using TomPIT.Services;
 
 namespace TomPIT.ComponentModel.Data
 {
 	public class ValidatingArguments : ValidatingEventArguments
 	{
-		public ValidatingArguments(IApplicationContext sender, IDataCommandDescriptor command) : base(sender)
+		public ValidatingArguments(IExecutionContext sender, IDataCommandDescriptor command) : base(sender)
 		{
 			Command = command;
 		}

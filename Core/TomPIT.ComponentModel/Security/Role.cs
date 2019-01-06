@@ -11,7 +11,7 @@ namespace TomPIT.Security
 		[KeyProperty]
 		public Guid Token { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryAppearance)]
-		[InvalidateEnvironment(Ide.EnvironmentSection.Explorer | Ide.EnvironmentSection.Designer)]
+		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[MaxLength(128)]
 		[Required]
 		public string Name { get; set; }

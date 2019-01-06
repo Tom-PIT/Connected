@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT.Models
 {
-	public interface IModel : IApplicationContext
+	public interface IModel : IExecutionContext
 	{
 		IEnumerable<ValidationResult> Validate();
 		void Initialize(Controller controller);

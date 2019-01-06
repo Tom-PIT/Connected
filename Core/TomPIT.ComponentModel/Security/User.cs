@@ -8,12 +8,12 @@ namespace TomPIT.Security
 	internal class User : IUser
 	{
 		[PropertyCategory(PropertyCategoryAttribute.CategoryAppearance)]
-		[InvalidateEnvironment(Ide.EnvironmentSection.Explorer | Ide.EnvironmentSection.Designer)]
+		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[MaxLength(128)]
 		public string FirstName { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryAppearance)]
-		[InvalidateEnvironment(Ide.EnvironmentSection.Explorer | Ide.EnvironmentSection.Designer)]
+		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[MaxLength(128)]
 		public string LastName { get; set; }
 

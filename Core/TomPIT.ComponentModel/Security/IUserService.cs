@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.Net;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Security
 {
-	public delegate void UserChangedHandler(ISysContext sender, UserEventArgs e);
+	public delegate void UserChangedHandler(ISysConnection connection, UserEventArgs e);
 
 	public interface IUserService
 	{

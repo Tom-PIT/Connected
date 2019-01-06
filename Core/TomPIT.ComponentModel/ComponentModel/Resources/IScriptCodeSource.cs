@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel.Resources
 {
-	public interface IScriptCodeSource : IScriptSource, ITemplate
+	public interface IScriptCodeSource : IScriptSource, IText
 	{
 
 	}

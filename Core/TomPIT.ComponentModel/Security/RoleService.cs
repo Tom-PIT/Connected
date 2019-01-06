@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Net;
+using TomPIT.Caching;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Security
 {
 	internal class RoleService : ContextStatefulCacheRepository<IRole, Guid>, IRoleService, IRoleNotification
 	{
-		public RoleService(ISysContext server) : base(server, "role")
+		public RoleService(ISysConnection connection) : base(connection, "role")
 		{
 
 		}
 
 		protected override void OnInitializing()
 		{
-			var u = Server.CreateUrl("Role", "Query");
-			var ds = Server.Connection.Get<List<Role>>(u).ToList<IRole>();
+			var u = Connection.CreateUrl("Role", "Query");
+			var ds = Connection.Get<List<Role>>(u).ToList<IRole>();
 
 			Set(SecurityUtils.FullControlRole, new SystemRole(SecurityUtils.FullControlRole, "Full control", RoleBehavior.Explicit, RoleVisibility.Hidden), TimeSpan.Zero);
 			Set(SecurityUtils.AuthenticatedRole, new SystemRole(SecurityUtils.AuthenticatedRole, "Authenticated", RoleBehavior.Implicit, RoleVisibility.Hidden), TimeSpan.Zero);
@@ -44,10 +45,10 @@ namespace TomPIT.Security
 		{
 			Remove(e.Role);
 
-			var u = Server.CreateUrl("Role", "Select")
+			var u = Connection.CreateUrl("Role", "Select")
 				.AddParameter("token", e.Role);
 
-			var role = Server.Connection.Get<Role>(u);
+			var role = Connection.Get<Role>(u);
 
 			if (role != null)
 				Set(role.Token, role, TimeSpan.Zero);

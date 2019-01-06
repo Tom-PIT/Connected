@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT.ComponentModel.Data
 {
@@ -7,7 +7,7 @@ namespace TomPIT.ComponentModel.Data
 	{
 		private JObject _arguments = null;
 
-		public TransactionPreparingArguments(IApplicationContext sender, JObject arguments) : base(sender)
+		public TransactionPreparingArguments(IExecutionContext sender, JObject arguments) : base(sender)
 		{
 			Arguments = arguments;
 		}

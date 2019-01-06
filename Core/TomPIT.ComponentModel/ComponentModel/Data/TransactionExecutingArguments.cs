@@ -1,11 +1,11 @@
-﻿using TomPIT.ComponentModel.DataProviders;
-using TomPIT.Runtime;
+﻿using TomPIT.Data.DataProviders;
+using TomPIT.Services;
 
 namespace TomPIT.ComponentModel.Data
 {
 	public class TransactionExecutingArguments : CancelEventArguments
 	{
-		internal TransactionExecutingArguments(IApplicationContext sender, IDataCommandDescriptor command) : base(sender)
+		internal TransactionExecutingArguments(IExecutionContext sender, IDataCommandDescriptor command) : base(sender)
 		{
 			Command = command;
 		}

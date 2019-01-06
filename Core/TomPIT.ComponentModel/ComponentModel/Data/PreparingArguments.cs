@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Data;
-using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT.ComponentModel.Data
 {
@@ -21,7 +21,7 @@ namespace TomPIT.ComponentModel.Data
 		/// <param name="sender">Current application context.</param>
 		/// <param name="arguments">Passed arguments from the client.</param>
 		/// <param name="schema">Default database schema as defined in Database configuration.</param>
-		public PreparingArguments(IApplicationContext sender, JObject arguments, DataTable schema) : base(sender)
+		public PreparingArguments(IExecutionContext sender, JObject arguments, DataTable schema) : base(sender)
 		{
 			Arguments = arguments;
 			Schema = schema;

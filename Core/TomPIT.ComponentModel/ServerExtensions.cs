@@ -5,27 +5,16 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Newtonsoft.Json.Linq;
 using System;
 using System.ComponentModel.DataAnnotations;
-using TomPIT.Compilers;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
-using TomPIT.Exceptions;
+using TomPIT.Connectivity;
 using TomPIT.Models;
-using TomPIT.Net;
-using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT
 {
 	public static class ServerExtensions
 	{
-		public static IApplicationBuilder UseApiExceptionMiddleware(this IApplicationBuilder builder)
-		{
-			return builder.UseMiddleware<ApiExceptionMiddleware>();
-		}
-
-		public static IApplicationBuilder UseAjaxExceptionMiddleware(this IApplicationBuilder builder)
-		{
-			return builder.UseMiddleware<AjaxExceptionMiddleware>();
-		}
-
 		public static void Validate(this IModel model, Controller controller, JObject requestBody)
 		{
 			var ctx = new ValidationContext(model);
@@ -54,7 +43,7 @@ namespace TomPIT
 
 				foreach (var j in attributes)
 				{
-					var value = Types.Convert(requestBody.Argument<object>(i.Name, false), i.PropertyType);
+					var value = Types.Convert(requestBody.Optional<object>(i.Name, false), i.PropertyType);
 
 					if (j is ValidationAttribute)
 					{
@@ -66,17 +55,17 @@ namespace TomPIT
 			}
 		}
 
-		public static string RouteUrl(this IApplicationContext context, string routeName, object values)
+		public static string RouteUrl(this IExecutionContext context, string routeName, object values)
 		{
 			var request = context.GetHttpRequest();
 
 			if (request == null)
-				throw new ServerException(SR.ErrCannotResolveHttpRequest);
+				throw new RuntimeException(SR.ErrCannotResolveHttpRequest);
 
 			var svc = request.HttpContext.RequestServices.GetService(typeof(IUrlHelperFactory)) as IUrlHelperFactory;
 
 			if (svc == null)
-				throw new ServerException(SR.ErrNoUrlHelper);
+				throw new RuntimeException(SR.ErrNoUrlHelper);
 
 			/*
 			 * It's IRequestContextProvider for sure otherwise request would be null
@@ -96,7 +85,7 @@ namespace TomPIT
 			return path.Substring(context.Request.PathBase.Value.Length);
 		}
 
-		public static string MapPath(this IApplicationContext context, string relativePath)
+		public static string MapPath(this IExecutionContext context, string relativePath)
 		{
 			if (string.IsNullOrEmpty(relativePath))
 				return null;
@@ -118,7 +107,7 @@ namespace TomPIT
 			return string.Format("{0}://{1}/{2}", request.Scheme, request.Host, request.PathBase).TrimEnd('/');
 		}
 
-		public static string RootUrl(this IApplicationContext context)
+		public static string RootUrl(this IExecutionContext context)
 		{
 			var http = context.GetHttpRequest();
 
@@ -130,9 +119,9 @@ namespace TomPIT
 			return Closest<IConfiguration>(element);
 		}
 
-		public static Guid MicroService(this IConfiguration configuration, ISysContext server)
+		public static Guid MicroService(this IConfiguration configuration, ISysConnection connection)
 		{
-			var component = server.GetService<IComponentService>().SelectComponent(configuration.Component);
+			var component = connection.GetService<IComponentService>().SelectComponent(configuration.Component);
 
 			if (component == null)
 				return Guid.Empty;
@@ -140,7 +129,7 @@ namespace TomPIT
 			return component.MicroService;
 		}
 
-		public static Guid MicroService(this IElement element, ISysContext server)
+		public static Guid MicroService(this IElement element, ISysConnection server)
 		{
 			var config = element.Configuration();
 
@@ -169,9 +158,9 @@ namespace TomPIT
 			return Closest<T>(e.Parent);
 		}
 
-		public static T Execute<T>(this ISysContext server, ISourceCode e, object sender, T args)
+		public static T Execute<T>(this ISysConnection connection, ISourceCode e, object sender, T args)
 		{
-			server.GetService<ICompilerService>().Execute<T>(e.Configuration().MicroService(server), e, sender, args);
+			connection.GetService<ICompilerService>().Execute<T>(e.Configuration().MicroService(connection), e, sender, args);
 
 			return args;
 		}

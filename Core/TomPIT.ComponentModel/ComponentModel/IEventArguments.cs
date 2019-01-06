@@ -1,8 +1,8 @@
-﻿using TomPIT.Runtime;
+﻿using TomPIT.Services;
 
 namespace TomPIT.ComponentModel
 {
-	public interface IEventArguments : IApplicationContext
+	public interface IEventArguments : IExecutionContext
 	{
 	}
 }

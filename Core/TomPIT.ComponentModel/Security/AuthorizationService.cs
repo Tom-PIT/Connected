@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Net;
-using TomPIT.Runtime;
+using TomPIT.Caching;
+using TomPIT.Connectivity;
+using TomPIT.Services;
 
 namespace TomPIT.Security
 {
@@ -13,7 +14,7 @@ namespace TomPIT.Security
 		private Lazy<List<IAuthenticationProvider>> _authProviders = new Lazy<List<IAuthenticationProvider>>();
 		private IAuthenticationProvider _defaultAuthenticationProvider = null;
 
-		public AuthorizationService(ISysContext server) : base(server, "permissions")
+		public AuthorizationService(ISysConnection server) : base(server, "permissions")
 		{
 			Membership = new MembershipCache(server);
 
@@ -25,9 +26,8 @@ namespace TomPIT.Security
 
 		protected override void OnInitializing()
 		{
-			var u = Server.CreateUrl("Security", "QueryPermissions");
-
-			var ds = Server.Connection.Get<List<Permission>>(u).ToList<IPermission>();
+			var u = Connection.CreateUrl("Security", "QueryPermissions");
+			var ds = Connection.Get<List<Permission>>(u).ToList<IPermission>();
 
 			foreach (var i in ds)
 				Set(GenerateRandomKey(), i, TimeSpan.Zero);
@@ -59,7 +59,7 @@ namespace TomPIT.Security
 			return DefaultAuthenticationProvider.Authenticate(bearerKey);
 		}
 
-		public IAuthorizationResult Authorize(IApplicationContext context, AuthorizationArgs e)
+		public IAuthorizationResult Authorize(IExecutionContext context, AuthorizationArgs e)
 		{
 			if (string.IsNullOrWhiteSpace(e.Claim))
 				return AuthorizationResult.Fail(AuthorizationResultReason.NoClaim);
@@ -217,13 +217,13 @@ namespace TomPIT.Security
 
 		private void LoadPermission(PermissionEventArgs e)
 		{
-			var u = Server.CreateUrl("Security", "SelectPermission")
+			var u = Connection.CreateUrl("Security", "SelectPermission")
 				.AddParameter("evidence", e.Evidence)
 				.AddParameter("schema", e.Schema)
 				.AddParameter("claim", e.Claim)
 				.AddParameter("primaryKey", e.PrimaryKey);
 
-			var d = Server.Connection.Get<Permission>(u);
+			var d = Connection.Get<Permission>(u);
 
 			if (d != null)
 				Set(GenerateRandomKey(), d, TimeSpan.Zero);
@@ -236,13 +236,13 @@ namespace TomPIT.Security
 
 		public bool IsInRole(Guid user, string role)
 		{
-			var r = Server.GetService<IRoleService>().Select(role);
+			var r = Connection.GetService<IRoleService>().Select(role);
 
 			if (r == null)
 				return false;
 
 			if (r.Behavior == RoleBehavior.Implicit)
-				return RoleAuthorizationProvider.IsInImplicitRole(Server, user, r);
+				return RoleAuthorizationProvider.IsInImplicitRole(Connection, user, r);
 
 			return Membership.Select(user, r.Token) != null;
 		}
@@ -260,7 +260,7 @@ namespace TomPIT.Security
 			get
 			{
 				if (_defaultAuthenticationProvider == null)
-					_defaultAuthenticationProvider = new DefaultAuthenticationProvider(Server);
+					_defaultAuthenticationProvider = new DefaultAuthenticationProvider(Connection);
 
 				return _defaultAuthenticationProvider;
 			}

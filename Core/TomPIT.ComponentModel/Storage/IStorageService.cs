@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.Net;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Storage
 {
-	public delegate void BlobChangedHandler(ISysContext sender, BlobEventArgs e);
+	public delegate void BlobChangedHandler(ISysConnection sender, BlobEventArgs e);
 
 	public interface IStorageService
 	{

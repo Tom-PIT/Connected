@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT.ComponentModel.Data
 {
@@ -7,7 +7,7 @@ namespace TomPIT.ComponentModel.Data
 	{
 		private JObject _returnValues = null;
 
-		internal ExecutedArguments(IApplicationContext sender, JObject data, JObject returnValues) : base(sender)
+		internal ExecutedArguments(IExecutionContext sender, JObject data, JObject returnValues) : base(sender)
 		{
 			Data = data;
 			ReturnValues = returnValues;

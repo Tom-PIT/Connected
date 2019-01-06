@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel
 {
-	public interface ISourceCode : ITemplate
+	public interface ISourceCode : IText
 	{
 	}
 }

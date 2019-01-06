@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT.Security
 {
 	public interface IAuthorizationService
 	{
-		IAuthorizationResult Authorize(IApplicationContext context, AuthorizationArgs e);
+		IAuthorizationResult Authorize(IExecutionContext context, AuthorizationArgs e);
 		bool Demand(Guid user, Guid role);
 
 		IClientAuthenticationResult Authenticate(string user, string password);

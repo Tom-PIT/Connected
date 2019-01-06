@@ -1,6 +1,6 @@
 ﻿using System;
 using TomPIT.ComponentModel;
-using TomPIT.Net;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Security
 {
@@ -8,9 +8,9 @@ namespace TomPIT.Security
 	{
 		public string Id => "Micro service";
 
-		public IPermissionDescription GetDescription(ISysContext context, Guid evidence)
+		public IPermissionDescription GetDescription(ISysConnection connection, Guid evidence)
 		{
-			var ms = context.GetService<IMicroServiceService>().Select(evidence);
+			var ms = connection.GetService<IMicroServiceService>().Select(evidence);
 
 			if (ms == null)
 				return null;

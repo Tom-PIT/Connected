@@ -1,5 +1,14 @@
 ﻿namespace TomPIT
 {
+	public enum DurationPrecision
+	{
+		Day = 1,
+		Hour = 2,
+		Minute = 3,
+		Second = 4,
+		Millisecond = 5
+	}
+
 	public enum DataType
 	{
 		String = 1,
@@ -12,7 +21,7 @@
 		Long = 8
 	}
 
-	public enum ExecutionContext
+	public enum ExecutionContextBehavior
 	{
 		Distributed = 1,
 		InProcess = 2

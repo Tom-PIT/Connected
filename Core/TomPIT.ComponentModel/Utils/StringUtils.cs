@@ -4,10 +4,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using System.Threading;
-using System.Web;
-using TomPIT.ComponentModel;
-using TomPIT.Globalization;
-using TomPIT.Runtime;
 
 namespace TomPIT
 {
@@ -78,38 +74,6 @@ namespace TomPIT
 			return TextWithNumber(text, items.Count);
 		}
 
-		public static string ResolveLocalizationString(string value, CultureInfo culture)
-		{
-			if (string.IsNullOrWhiteSpace(value))
-				return value;
-
-			var lines = value.Split(System.Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-			var sb = new StringBuilder();
-
-			foreach (var i in lines)
-			{
-				if (sb.Length > 0)
-					sb.AppendLine();
-
-				string[] tokens = i.Split(' ');
-
-				foreach (string s in tokens)
-				{
-					if (s.StartsWith("s:"))
-						sb.AppendFormat("{0} ", SR.ResourceManager.GetString(s.Substring(2), culture));
-					else
-						sb.AppendFormat("{0} ", s);
-				}
-
-			}
-			return HttpUtility.HtmlDecode(sb.ToString().Trim());
-		}
-
-		public static string ResolveLocalizationString(string value)
-		{
-			return ResolveLocalizationString(value, CultureInfo.CurrentCulture);
-		}
-
 		public static string StripHtml(string value)
 		{
 			string result = System.Text.RegularExpressions.Regex.Replace(value, "<[^>]+?>", "");
@@ -154,21 +118,6 @@ namespace TomPIT
 			{
 				return ToCurrentCulture(value);
 			}
-		}
-
-		public static string ResolveLocalizationString(IApplicationContext context, IElement element, string property, string defaultValue)
-		{
-			ILanguage l = Shell.GetService<ILanguageService>().Select(context.Services.Localization.Language);
-
-			if (l == null)
-				return defaultValue;
-
-			string r = Shell.GetService<IMicroServiceService>().SelectString(context.Identity.AuthorityId.AsGuid(), context.Services.Localization.Language, element.Id, property);
-
-			if (string.IsNullOrEmpty(r))
-				return defaultValue;
-
-			return r;
 		}
 
 		public static string InsertSpaces(string value)

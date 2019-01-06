@@ -1,34 +1,34 @@
 ﻿using Newtonsoft.Json.Linq;
-using TomPIT.Net;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Security
 {
 	internal class DefaultAuthenticationProvider : IAuthenticationProvider
 	{
-		public DefaultAuthenticationProvider(ISysContext server)
+		public DefaultAuthenticationProvider(ISysConnection connection)
 		{
-			Server = server;
+			Connection = connection;
 		}
 
-		private ISysContext Server { get; }
+		private ISysConnection Connection { get; }
 
 		public IClientAuthenticationResult Authenticate(string userName, string password)
 		{
-			var u = Server.CreateUrl("Authentication", "Authenticate");
+			var u = Connection.CreateUrl("Authentication", "Authenticate");
 			var args = new JObject
 			{
 				{ "user", userName },
 				{"password", password }
 			};
 
-			var r = Server.Connection.Post<AuthenticationResult>(u, args);
+			var r = Connection.Post<AuthenticationResult>(u, args);
 
 			if (r.Success)
 			{
-				var user = Server.GetService<IUserService>().Select(userName);
+				var user = Connection.GetService<IUserService>().Select(userName);
 
 				if (user != null)
-					r.Identity = new Identity(user, r.Token, Server.Url);
+					r.Identity = new Identity(user, r.Token, Connection.Url);
 			}
 
 			return r;

@@ -3,22 +3,21 @@ using System;
 using System.IO;
 using System.Linq;
 using TomPIT.ComponentModel;
-using TomPIT.Runtime;
-using TomPIT.Server.Storage;
+using TomPIT.Services;
 using TomPIT.Storage;
 
 namespace TomPIT.Annotations
 {
 	internal class HtmlTextSanitizer
 	{
-		public HtmlTextSanitizer(IApplicationContext context, IElement element)
+		public HtmlTextSanitizer(IExecutionContext context, IElement element)
 		{
 			Element = element;
 			Context = context;
 		}
 
 		private IElement Element { get; }
-		private IApplicationContext Context { get; }
+		private IExecutionContext Context { get; }
 
 		public void Drop(string value)
 		{

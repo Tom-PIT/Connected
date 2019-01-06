@@ -1,10 +1,10 @@
-﻿using TomPIT.Runtime;
+﻿using TomPIT.Services;
 
 namespace TomPIT.ComponentModel
 {
-	public class EventArguments : ApplicationContext
+	public class EventArguments : ExecutionContext
 	{
-		public EventArguments(IApplicationContext sender) : base(sender)
+		public EventArguments(IExecutionContext sender) : base(sender)
 		{
 
 		}

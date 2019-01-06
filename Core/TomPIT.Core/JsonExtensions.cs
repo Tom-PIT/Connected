@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Globalization;
-using Newtonsoft.Json.Linq;
-using TomPIT.Exceptions;
 
 namespace TomPIT
 {

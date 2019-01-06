@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT.Security
 {
@@ -8,7 +8,7 @@ namespace TomPIT.Security
 	{
 		public string Id => "Users";
 
-		public AuthorizationProviderResult Authorize(IApplicationContext context, IPermission permission, AuthorizationArgs e, Dictionary<string, object> state)
+		public AuthorizationProviderResult Authorize(IExecutionContext context, IPermission permission, AuthorizationArgs e, Dictionary<string, object> state)
 		{
 			if (e.User != permission.Evidence)
 				return AuthorizationProviderResult.NotHandled;
@@ -26,14 +26,14 @@ namespace TomPIT.Security
 			}
 		}
 
-		public AuthorizationProviderResult PreAuthorize(IApplicationContext context, AuthorizationArgs e, Dictionary<string, object> state)
+		public AuthorizationProviderResult PreAuthorize(IExecutionContext context, AuthorizationArgs e, Dictionary<string, object> state)
 		{
 			return AuthorizationProviderResult.NotHandled;
 		}
 
-		public List<IPermissionSchemaDescriptor> QueryDescriptors(IApplicationContext context)
+		public List<IPermissionSchemaDescriptor> QueryDescriptors(IExecutionContext context)
 		{
-			var ctx = context.GetServerContext();
+			var ctx = context.Connection();
 			var users = ctx.GetService<IUserService>().Query();
 			var r = new List<IPermissionSchemaDescriptor>();
 

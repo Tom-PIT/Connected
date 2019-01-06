@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Net;
-using TomPIT.Runtime;
+using TomPIT.Connectivity;
+using TomPIT.Services;
 
 namespace TomPIT.Security
 {
@@ -10,7 +10,7 @@ namespace TomPIT.Security
 	{
 		public string Id => "Roles";
 
-		public AuthorizationProviderResult Authorize(IApplicationContext context, IPermission permission, AuthorizationArgs e, Dictionary<string, object> state)
+		public AuthorizationProviderResult Authorize(IExecutionContext context, IPermission permission, AuthorizationArgs e, Dictionary<string, object> state)
 		{
 			var roles = state["roles"] as List<Guid>;
 
@@ -32,13 +32,13 @@ namespace TomPIT.Security
 			return AuthorizationProviderResult.NotHandled;
 		}
 
-		public AuthorizationProviderResult PreAuthorize(IApplicationContext context, AuthorizationArgs e, Dictionary<string, object> state)
+		public AuthorizationProviderResult PreAuthorize(IExecutionContext context, AuthorizationArgs e, Dictionary<string, object> state)
 		{
 			var roles = ResolveImplicitRoles(context, e);
 
 			if (e.User != Guid.Empty)
 			{
-				var membership = context.GetServerContext().GetService<IAuthorizationService>() as IMembershipProvider;
+				var membership = context.Connection().GetService<IAuthorizationService>() as IMembershipProvider;
 
 				if (membership != null)
 				{
@@ -57,9 +57,9 @@ namespace TomPIT.Security
 			return AuthorizationProviderResult.NotHandled;
 		}
 
-		public List<IPermissionSchemaDescriptor> QueryDescriptors(IApplicationContext context)
+		public List<IPermissionSchemaDescriptor> QueryDescriptors(IExecutionContext context)
 		{
-			var roles = context.GetServerContext().GetService<IRoleService>().Query();
+			var roles = context.Connection().GetService<IRoleService>().Query();
 			var r = new List<IPermissionSchemaDescriptor>();
 
 			foreach (var i in roles)
@@ -74,7 +74,7 @@ namespace TomPIT.Security
 			return r;
 		}
 
-		private List<Guid> ResolveImplicitRoles(IApplicationContext context, AuthorizationArgs e)
+		private List<Guid> ResolveImplicitRoles(IExecutionContext context, AuthorizationArgs e)
 		{
 			var r = new List<Guid>
 			{
@@ -85,11 +85,11 @@ namespace TomPIT.Security
 				r.Add(SecurityUtils.AnonymousRole);
 			else
 			{
-				var u = context.GetServerContext().GetService<IUserService>().Select(e.User.ToString());
+				var u = context.Connection().GetService<IUserService>().Select(e.User.ToString());
 
 				if (u == null)
 				{
-					context.GetServerContext().LogWarning(null, GetType().ShortName(), "Authenticated user not found. Request will be treated as anonymous.");
+					context.Connection().LogWarning(null, GetType().ShortName(), "Authenticated user not found. Request will be treated as anonymous.");
 					return r;
 				}
 
@@ -104,7 +104,7 @@ namespace TomPIT.Security
 			return r;
 		}
 
-		public static bool IsInImplicitRole(ISysContext context, Guid user, IRole role)
+		public static bool IsInImplicitRole(ISysConnection connection, Guid user, IRole role)
 		{
 			if (role.Token == SecurityUtils.AnonymousRole)
 				return user == Guid.Empty;
@@ -114,7 +114,7 @@ namespace TomPIT.Security
 				return true;
 			else
 			{
-				var u = context.GetService<IUserService>().Select(user.ToString());
+				var u = connection.GetService<IUserService>().Select(user.ToString());
 
 				if (u == null)
 					return false;

@@ -1,12 +1,12 @@
 ﻿using System.Data;
-using TomPIT.ComponentModel.DataProviders;
-using TomPIT.Runtime;
+using TomPIT.Data.DataProviders;
+using TomPIT.Services;
 
 namespace TomPIT.ComponentModel.Data
 {
 	public class ExecutingArguments : CancelEventArguments
 	{
-		internal ExecutingArguments(IApplicationContext sender, IDataCommandDescriptor command, DataTable schema) : base(sender)
+		internal ExecutingArguments(IExecutionContext sender, IDataCommandDescriptor command, DataTable schema) : base(sender)
 		{
 			Command = command;
 			Schema = schema;

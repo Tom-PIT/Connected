@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using TomPIT.ComponentModel;
-using TomPIT.Exceptions;
+using TomPIT.ComponentModel.Events;
 
 namespace TomPIT
 {
@@ -202,16 +202,16 @@ namespace TomPIT
 			return true;
 		}
 
-		public static bool IsTemplate(this PropertyInfo pi)
+		public static bool IsText(this PropertyInfo pi)
 		{
-			return typeof(ITemplate).IsAssignableFrom(pi.PropertyType) ||
-				 ImplementsInterface(typeof(ITemplate), pi.PropertyType);
+			return typeof(IText).IsAssignableFrom(pi.PropertyType) ||
+				 ImplementsInterface(typeof(IText), pi.PropertyType);
 		}
 
-		public static bool IsTemplate(this Type type)
+		public static bool IsText(this Type type)
 		{
-			return typeof(ITemplate).IsAssignableFrom(type) ||
-				 ImplementsInterface(typeof(ITemplate), type);
+			return typeof(IText).IsAssignableFrom(type) ||
+				 ImplementsInterface(typeof(IText), type);
 		}
 
 		public static string Encode(this Type type)
@@ -227,6 +227,14 @@ namespace TomPIT
 				r = r.Substring(r.LastIndexOf(".") + 1);
 
 			return r;
+		}
+
+		public static string TypeName(this Type type)
+		{
+			if (type == null)
+				return null;
+
+			return string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
 		}
 	}
 }

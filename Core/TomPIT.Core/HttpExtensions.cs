@@ -56,8 +56,6 @@ namespace TomPIT
 				NullValueHandling = NullValueHandling.Ignore
 			};
 
-			//body = Regex.Unescape(body).Trim('"');
-
 			return JsonConvert.DeserializeObject(body, settings) as JObject;
 		}
 
@@ -73,10 +71,7 @@ namespace TomPIT
 				NullValueHandling = NullValueHandling.Ignore
 			};
 
-			//body = Regex.Unescape(body).Trim('"');
-
 			return JsonConvert.DeserializeObject<T>(body, settings);
 		}
-
 	}
 }

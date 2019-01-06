@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace TomPIT.Exceptions
+namespace TomPIT
 {
 	public class TomPITException : Exception
 	{

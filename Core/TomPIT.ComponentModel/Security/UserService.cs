@@ -2,13 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Net;
+using TomPIT.Caching;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Security
 {
 	internal class UserService : ContextCacheRepository<IUser, Guid>, IUserService, IUserNotification
 	{
-		public UserService(ISysContext server) : base(server, "user")
+		public UserService(ISysConnection connection) : base(connection, "user")
 		{
 
 		}
@@ -17,9 +18,9 @@ namespace TomPIT.Security
 
 		public List<IUser> Query()
 		{
-			var u = Server.CreateUrl("User", "Query");
+			var u = Connection.CreateUrl("User", "Query");
 
-			return Server.Connection.Get<List<User>>(u).ToList<IUser>();
+			return Connection.Get<List<User>>(u).ToList<IUser>();
 		}
 
 		public IUser Select(string qualifier)
@@ -36,10 +37,10 @@ namespace TomPIT.Security
 			if (r != null)
 				return r;
 
-			var u = Server.CreateUrl("User", "Select")
+			var u = Connection.CreateUrl("User", "Select")
 				.AddParameter("qualifier", qualifier);
 
-			r = Server.Connection.Get<User>(u);
+			r = Connection.Get<User>(u);
 
 			if (r != null)
 				Set(r.Token, r);
@@ -54,10 +55,10 @@ namespace TomPIT.Security
 			if (r != null)
 				return r;
 
-			var u = Server.CreateUrl("User", "SelectByAuthenticationToken")
+			var u = Connection.CreateUrl("User", "SelectByAuthenticationToken")
 				.AddParameter("token", token);
 
-			r = Server.Connection.Get<User>(u);
+			r = Connection.Get<User>(u);
 
 			if (r != null)
 				Set(r.Token, r);
@@ -67,7 +68,7 @@ namespace TomPIT.Security
 
 		public void ChangePassword(Guid user, string existingPassword, string password)
 		{
-			var u = Server.CreateUrl("UserManagement", "ChangePassword");
+			var u = Connection.CreateUrl("UserManagement", "ChangePassword");
 			var e = new JObject
 			{
 				{"user",user },
@@ -75,7 +76,7 @@ namespace TomPIT.Security
 				{"newPassword",password }
 			};
 
-			Server.Connection.Post(u, e);
+			Connection.Post(u, e);
 		}
 
 		public void Logout(int user)
@@ -87,7 +88,7 @@ namespace TomPIT.Security
 		{
 			Remove(e.User);
 
-			UserChanged?.Invoke(Server, e);
+			UserChanged?.Invoke(Connection, e);
 		}
 	}
 }

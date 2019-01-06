@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.Net;
+using TomPIT.Connectivity;
 
 namespace TomPIT.ComponentModel
 {
-	public delegate void ComponentChangedHandler(ISysContext sender, ComponentEventArgs e);
-	public delegate void ConfigurationChangedHandler(ISysContext sender, ConfigurationEventArgs e);
+	public delegate void ComponentChangedHandler(ISysConnection sender, ComponentEventArgs e);
+	public delegate void ConfigurationChangedHandler(ISysConnection sender, ConfigurationEventArgs e);
 
 	public interface IComponentService
 	{
@@ -22,7 +22,7 @@ namespace TomPIT.ComponentModel
 		IConfiguration SelectConfiguration(Guid microService, string category, string name);
 		IConfiguration SelectConfiguration(Guid component);
 
-		string SelectTemplate(Guid microService, ITemplate template);
+		string SelectText(Guid microService, IText text);
 
 		List<IComponent> QueryComponents(Guid microService, string category);
 		List<IComponent> QueryComponents(Guid microService);

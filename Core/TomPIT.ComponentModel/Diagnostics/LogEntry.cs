@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace TomPIT.Diagnostics
 {
-	internal class LogEntry : ILogEntry
+	public class LogEntry : ILogEntry
 	{
 		public string Category { get; set; }
 		public string Message { get; set; }

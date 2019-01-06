@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Security.Claims;
 using System.Security.Principal;
-using TomPIT.Net;
-using TomPIT.Runtime;
+using TomPIT.Connectivity;
 using TomPIT.Security;
+using TomPIT.Services;
 
 namespace TomPIT.Server.Security
 {

@@ -1,4 +1,4 @@
-﻿namespace TomPIT.Server.Storage
+﻿namespace TomPIT.Storage
 {
 	public class BlobTypes
 	{

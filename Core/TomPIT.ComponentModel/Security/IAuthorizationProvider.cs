@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT.Security
 {
@@ -14,8 +14,8 @@ namespace TomPIT.Security
 	{
 		string Id { get; }
 
-		AuthorizationProviderResult PreAuthorize(IApplicationContext context, AuthorizationArgs e, Dictionary<string, object> state);
-		AuthorizationProviderResult Authorize(IApplicationContext context, IPermission permission, AuthorizationArgs e, Dictionary<string, object> state);
-		List<IPermissionSchemaDescriptor> QueryDescriptors(IApplicationContext context);
+		AuthorizationProviderResult PreAuthorize(IExecutionContext context, AuthorizationArgs e, Dictionary<string, object> state);
+		AuthorizationProviderResult Authorize(IExecutionContext context, IPermission permission, AuthorizationArgs e, Dictionary<string, object> state);
+		List<IPermissionSchemaDescriptor> QueryDescriptors(IExecutionContext context);
 	}
 }

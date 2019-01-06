@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using TomPIT.Analysis;
 using TomPIT.ComponentModel;
-using TomPIT.Net;
-using TomPIT.Runtime;
+using TomPIT.Connectivity;
 using TomPIT.Security;
+using TomPIT.Services;
 
 namespace TomPIT
 {
@@ -102,12 +103,12 @@ namespace TomPIT
 			return value.Replace(System.Environment.NewLine, " <br/>").Replace("\r\n", " <br/>").Replace("\n", " <br/>");
 		}
 
-		public static ServerUrl CreateUrl(this ISysContext context, string controller, string action)
+		public static ServerUrl CreateUrl(this ISysConnection connection, string controller, string action)
 		{
-			return ServerUrl.Create(context.Url, controller, action);
+			return ServerUrl.Create(connection.Url, controller, action);
 		}
 
-		public static Guid MicroService(this IApplicationContext context)
+		public static Guid MicroService(this IExecutionContext context)
 		{
 			if (context.Identity == null || string.IsNullOrWhiteSpace(context.Identity.ContextId))
 				return Guid.Empty;
@@ -115,14 +116,14 @@ namespace TomPIT
 			return context.Identity.ContextId.AsGuid();
 		}
 
-		public static Guid Component(this IConfiguration configuration, IApplicationContext context)
+		public static Guid Component(this IConfiguration configuration, IExecutionContext context)
 		{
-			var c = context.GetServerContext().GetService<IComponentService>().SelectComponent(configuration.Component);
+			var c = context.Connection().GetService<IComponentService>().SelectComponent(configuration.Component);
 
 			return c == null ? Guid.Empty : c.Token;
 		}
 
-		public static string ComponentName(this IConfiguration configuration, ISysContext context)
+		public static string ComponentName(this IConfiguration configuration, ISysConnection context)
 		{
 			if (context == null)
 				return null;
@@ -132,23 +133,23 @@ namespace TomPIT
 			return c == null ? string.Empty : c.Name;
 		}
 
-		public static string ComponentName(this IConfiguration configuration, IApplicationContext context)
+		public static string ComponentName(this IConfiguration configuration, IExecutionContext context)
 		{
-			return ComponentName(configuration, context.GetServerContext());
+			return ComponentName(configuration, context.Connection());
 		}
 
-		public static void ValidateMicroServiceReference(this IMicroService service, ISysContext context, string reference)
+		public static void ValidateMicroServiceReference(this IMicroService service, ISysConnection connection, string reference)
 		{
 			if (string.IsNullOrWhiteSpace(reference))
-				throw new ApiException(SR.ErrReferenceMissingSource, string.Format("{0} ({1}->{2})", SR.ErrReferenceMissing, service.Name, "?"));
+				throw new RuntimeException(SR.ErrReferenceMissingSource, string.Format("{0} ({1}->{2})", SR.ErrReferenceMissing, service.Name, "?"));
 
 			if (string.Compare(service.Name, reference, true) == 0)
 				return;
 
-			var refs = context.GetService<IDiscoveryService>().References(service.Name);
+			var refs = connection.GetService<IDiscoveryService>().References(service.Name);
 
 			if (refs == null || refs.MicroServices.FirstOrDefault(f => string.Compare(f.MicroService, reference, true) == 0) == null)
-				throw new ApiException(SR.ErrReferenceMissingSource, string.Format("{0} ({1}->{2})", SR.ErrReferenceMissing, service.Name, reference));
+				throw new RuntimeException(SR.ErrReferenceMissingSource, string.Format("{0} ({1}->{2})", SR.ErrReferenceMissing, service.Name, reference));
 		}
 
 		public static bool MustChangePassword(this IAuthenticationResult result)

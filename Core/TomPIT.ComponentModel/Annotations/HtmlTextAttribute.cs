@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Reflection;
 using TomPIT.ComponentModel;
-using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT.Annotations
 {
 	[AttributeUsage(AttributeTargets.Property)]
 	public class HtmlTextAttribute : Attribute
 	{
-		public object Sanitize(IApplicationContext context, IElement element, PropertyInfo property, object existingValue, object proposedValue)
+		public object Sanitize(IExecutionContext context, IElement element, PropertyInfo property, object existingValue, object proposedValue)
 		{
 			if (proposedValue == null)
 				return proposedValue;
@@ -24,7 +24,7 @@ namespace TomPIT.Annotations
 			return proposedValue;
 		}
 
-		private object SanitizeHtmlValue(IApplicationContext context, IElement element, PropertyInfo property, object existingValue, object proposedValue)
+		private object SanitizeHtmlValue(IExecutionContext context, IElement element, PropertyInfo property, object existingValue, object proposedValue)
 		{
 			if (property.PropertyType != typeof(string))
 				return proposedValue;

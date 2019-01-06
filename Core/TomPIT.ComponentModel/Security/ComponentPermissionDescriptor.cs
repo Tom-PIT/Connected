@@ -1,6 +1,6 @@
 ﻿using System;
 using TomPIT.ComponentModel;
-using TomPIT.Net;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Security
 {
@@ -8,9 +8,9 @@ namespace TomPIT.Security
 	{
 		public abstract string Id { get; }
 
-		public IPermissionDescription GetDescription(ISysContext context, Guid evidence)
+		public IPermissionDescription GetDescription(ISysConnection connection, Guid evidence)
 		{
-			var ms = context.GetService<IComponentService>().SelectComponent(evidence);
+			var ms = connection.GetService<IComponentService>().SelectComponent(evidence);
 
 			if (ms == null)
 				return null;

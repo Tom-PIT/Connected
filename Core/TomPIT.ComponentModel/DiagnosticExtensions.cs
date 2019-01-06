@@ -1,126 +1,126 @@
 ﻿using System.Diagnostics;
+using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
-using TomPIT.Net;
-using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT
 {
 	public static class DiagnosticExtensions
 	{
-		public static void LogInfo(this ISysContext context, string source)
+		public static void LogInfo(this ISysConnection connection, string source)
 		{
-			LogInfo(context, null, string.Empty, source, string.Empty, 0);
+			LogInfo(connection, null, string.Empty, source, string.Empty, 0);
 		}
 
-		public static void LogInfo(this ISysContext context, IApplicationContext appContext, string source)
+		public static void LogInfo(this ISysConnection connection, IExecutionContext context, string source)
 		{
-			LogInfo(context, appContext, string.Empty, source, string.Empty, 0);
+			LogInfo(connection, context, string.Empty, source, string.Empty, 0);
 		}
 
-		public static void LogInfo(this ISysContext context, IApplicationContext appContext, string source, string message)
+		public static void LogInfo(this ISysConnection connection, IExecutionContext context, string source, string message)
 		{
-			LogInfo(context, appContext, string.Empty, source, message, 0);
+			LogInfo(connection, context, string.Empty, source, message, 0);
 		}
 
-		public static void LogInfo(this ISysContext context, IApplicationContext appContext, string category, string source, string message)
+		public static void LogInfo(this ISysConnection connection, IExecutionContext context, string category, string source, string message)
 		{
-			LogInfo(context, appContext, category, source, message, 0);
+			LogInfo(connection, context, category, source, message, 0);
 		}
 
-		public static void LogInfo(this ISysContext context, IApplicationContext appContext, string category, string source, string message, int eventId)
+		public static void LogInfo(this ISysConnection connection, IExecutionContext context, string category, string source, string message, int eventId)
 		{
-			Write(context, TraceLevel.Info, appContext, category, source, message, eventId);
+			Write(connection, TraceLevel.Info, context, category, source, message, eventId);
 		}
 
-		public static void LogError(this ISysContext context, string source)
+		public static void LogError(this ISysConnection connection, string source)
 		{
-			LogError(context, null, string.Empty, source, string.Empty, 0);
+			LogError(connection, null, string.Empty, source, string.Empty, 0);
 		}
 
-		public static void LogError(this ISysContext context, IApplicationContext appContext, string source)
+		public static void LogError(this ISysConnection connection, IExecutionContext context, string source)
 		{
-			LogError(context, appContext, string.Empty, source, string.Empty, 0);
+			LogError(connection, context, string.Empty, source, string.Empty, 0);
 		}
 
-		public static void LogError(this ISysContext context, IApplicationContext appContext, string source, string message)
+		public static void LogError(this ISysConnection connection, IExecutionContext context, string source, string message)
 		{
-			LogError(context, appContext, string.Empty, source, message, 0);
+			LogError(connection, context, string.Empty, source, message, 0);
 		}
 
-		public static void LogError(this ISysContext context, IApplicationContext appContext, string category, string source, string message)
+		public static void LogError(this ISysConnection connection, IExecutionContext context, string category, string source, string message)
 		{
-			LogError(context, appContext, category, source, message, 0);
+			LogError(connection, context, category, source, message, 0);
 		}
 
-		public static void LogError(this ISysContext context, IApplicationContext appContext, string category, string source, string message, int eventId)
+		public static void LogError(this ISysConnection connection, IExecutionContext context, string category, string source, string message, int eventId)
 		{
-			Write(context, TraceLevel.Error, appContext, category, source, message, eventId);
+			Write(connection, TraceLevel.Error, context, category, source, message, eventId);
 		}
 
-		public static void LogWarning(this ISysContext context, string source)
+		public static void LogWarning(this ISysConnection connection, string source)
 		{
-			LogWarning(context, null, string.Empty, source, string.Empty, 0);
+			LogWarning(connection, null, string.Empty, source, string.Empty, 0);
 		}
 
-		public static void LogWarning(this ISysContext context, IApplicationContext appContext, string source)
+		public static void LogWarning(this ISysConnection connection, IExecutionContext context, string source)
 		{
-			LogWarning(context, appContext, string.Empty, source, string.Empty, 0);
+			LogWarning(connection, context, string.Empty, source, string.Empty, 0);
 		}
 
-		public static void LogWarning(this ISysContext context, IApplicationContext appContext, string source, string message)
+		public static void LogWarning(this ISysConnection connection, IExecutionContext context, string source, string message)
 		{
-			LogWarning(context, appContext, string.Empty, source, message, 0);
+			LogWarning(connection, context, string.Empty, source, message, 0);
 		}
 
-		public static void LogWarning(this ISysContext context, IApplicationContext appContext, string category, string source, string message)
+		public static void LogWarning(this ISysConnection connection, IExecutionContext context, string category, string source, string message)
 		{
-			LogWarning(context, appContext, category, source, message, 0);
+			LogWarning(connection, context, category, source, message, 0);
 		}
 
-		public static void LogWarning(this ISysContext context, IApplicationContext appContext, string category, string source, string message, int eventId)
+		public static void LogWarning(this ISysConnection connection, IExecutionContext context, string category, string source, string message, int eventId)
 		{
-			Write(context, TraceLevel.Warning, appContext, category, source, message, eventId);
+			Write(connection, TraceLevel.Warning, context, category, source, message, eventId);
 		}
 
-		public static void LogVerbose(this ISysContext context, string source)
+		public static void LogVerbose(this ISysConnection connection, string source)
 		{
-			LogVerbose(context, null, string.Empty, source, string.Empty, 0);
+			LogVerbose(connection, null, string.Empty, source, string.Empty, 0);
 		}
 
-		public static void LogVerbose(this ISysContext context, IApplicationContext appContext, string source)
+		public static void LogVerbose(this ISysConnection connection, IExecutionContext context, string source)
 		{
-			LogVerbose(context, appContext, string.Empty, source, string.Empty, 0);
+			LogVerbose(connection, context, string.Empty, source, string.Empty, 0);
 		}
 
-		public static void LogVerbose(this ISysContext context, IApplicationContext appContext, string source, string message)
+		public static void LogVerbose(this ISysConnection connection, IExecutionContext context, string source, string message)
 		{
-			LogVerbose(context, appContext, string.Empty, source, message, 0);
+			LogVerbose(connection, context, string.Empty, source, message, 0);
 		}
 
-		public static void LogVerbose(this ISysContext context, IApplicationContext appContext, string category, string source, string message)
+		public static void LogVerbose(this ISysConnection connection, IExecutionContext context, string category, string source, string message)
 		{
-			LogVerbose(context, appContext, category, source, message, 0);
+			LogVerbose(connection, context, category, source, message, 0);
 		}
 
-		public static void LogVerbose(this ISysContext context, IApplicationContext appContext, string category, string source, string message, int eventId)
+		public static void LogVerbose(this ISysConnection connection, IExecutionContext context, string category, string source, string message, int eventId)
 		{
-			Write(context, TraceLevel.Verbose, appContext, category, source, message, eventId);
+			Write(connection, TraceLevel.Verbose, context, category, source, message, eventId);
 		}
 
-		private static void Write(ISysContext context, TraceLevel level, IApplicationContext appContext, string category, string source, string message, int eventId)
+		private static void Write(ISysConnection connection, TraceLevel level, IExecutionContext context, string category, string source, string message, int eventId)
 		{
-			var svc = context.GetService<ILoggingService>();
+			var svc = connection.GetService<ILoggingService>();
 
 			var e = new LogEntry
 			{
-				Authority = appContext == null ? string.Empty : appContext.Identity.Authority,
-				AuthorityId = appContext == null ? string.Empty : appContext.Identity.AuthorityId,
+				Authority = context == null ? string.Empty : context.Identity.Authority,
+				AuthorityId = context == null ? string.Empty : context.Identity.AuthorityId,
 				Category = category,
 				EventId = eventId,
 				Level = TraceLevel.Error,
 				Message = message,
 				Source = source,
-				MicroService = appContext.MicroService(),
+				MicroService = context.MicroService(),
 			};
 
 			svc.Write(e);

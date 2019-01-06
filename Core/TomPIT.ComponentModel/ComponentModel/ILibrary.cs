@@ -2,6 +2,6 @@
 {
 	public interface ILibrary : IConfiguration
 	{
-		ListItems<ITemplate> Scripts { get; }
+		ListItems<IText> Scripts { get; }
 	}
 }

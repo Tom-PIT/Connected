@@ -22,7 +22,7 @@ namespace TomPIT.Security
 
 			var json = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
 
-			var expiration = json.Argument("expiration", 0L);
+			var expiration = json.Optional("expiration", 0L);
 
 			if (expiration == 0)
 				return;
