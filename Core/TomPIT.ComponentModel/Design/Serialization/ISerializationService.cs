@@ -8,5 +8,6 @@ namespace TomPIT.Design.Serialization
 		byte[] Serialize(object component);
 
 		T Clone<T>(object instance);
+		void RegisterReplacement(string obsolete, string replacement);
 	}
 }

@@ -1,5 +1,8 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using TomPIT.Connectivity;
@@ -8,6 +11,7 @@ namespace TomPIT.Design.Serialization
 {
 	internal class SerializationService : ISerializationService
 	{
+		private Lazy<ConcurrentDictionary<string, string>> _replacements = new Lazy<ConcurrentDictionary<string, string>>();
 		public SerializationService(ISysConnection connection)
 		{
 			Connection = connection;
@@ -22,7 +26,9 @@ namespace TomPIT.Design.Serialization
 
 		public object Deserialize(byte[] state, Type type)
 		{
-			return JsonConvert.DeserializeObject(Encoding.UTF8.GetString(state), type, new JsonSerializerSettings
+			var content = ResolveTypes(Encoding.UTF8.GetString(state));
+
+			return JsonConvert.DeserializeObject(content, type, new JsonSerializerSettings
 			{
 				TypeNameHandling = TypeNameHandling.Auto,
 				ContractResolver = SupportInitializeContractResolver.Instance,
@@ -40,6 +46,23 @@ namespace TomPIT.Design.Serialization
 			});
 
 			return Encoding.UTF8.GetBytes(data);
+		}
+
+		private string ResolveTypes(string content)
+		{
+			if (Replacements.Count == 0)
+				return content;
+
+
+			return content;
+		}
+
+		private ConcurrentDictionary<string,string> Replacements { get { return _replacements.Value; } }
+
+		public void RegisterReplacement(string obsolete, string replacement)
+		{
+			if (!Replacements.ContainsKey(obsolete))
+				Replacements.TryAdd(obsolete, replacement);
 		}
 	}
 }
