@@ -1,0 +1,49 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using TomPIT.Data.Sql;
+using TomPIT.SysDb.Events;
+
+namespace TomPIT.SysDb.Sql.Events
+{
+	internal class EventHandler : IEventHandler
+	{
+		public void Delete(IEventDescriptor d)
+		{
+			var w = new Writer("tompit.event_del");
+
+			w.CreateParameter("@id", d.GetId());
+
+			w.Execute();
+		}
+
+		public List<IEventDescriptor> Query()
+		{
+			var r = new Reader<EventDescriptor>("tompit.event_que");
+
+			return r.Execute().ToList<IEventDescriptor>();
+		}
+
+		public IEventDescriptor Select(Guid identifier)
+		{
+			var r = new Reader<EventDescriptor>("tompit.event_sel");
+
+			r.CreateParameter("@identifier", identifier);
+
+			return r.ExecuteSingleRow();
+		}
+
+		public void Insert(string name, Guid identifier, DateTime created, string arguments, string callback)
+		{
+			var w = new Writer("tompit.event_ins");
+
+			w.CreateParameter("@name", name);
+			w.CreateParameter("@identifier", identifier);
+			w.CreateParameter("@created", created);
+			w.CreateParameter("@arguments", arguments, true);
+			w.CreateParameter("@callback", callback, true);
+
+			w.Execute();
+		}
+	}
+}

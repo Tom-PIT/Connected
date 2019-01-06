@@ -1,0 +1,131 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using TomPIT.Services;
+using TomPIT.Storage;
+using TomPIT.Sys.Data;
+
+namespace TomPIT.Sys.Controllers.Management
+{
+	public class WorkerManagementController : SysController
+	{
+		[HttpPost]
+		public List<IClientQueueMessage> Dequeue()
+		{
+			var body = FromBody();
+
+			var count = body.Required<int>("count");
+			var resourceGroup = body.Required<string>("resourceGroup");
+
+			var r = new List<IQueueMessage>();
+
+			var rg = DataModel.ResourceGroups.Select(resourceGroup);
+
+			if (rg == null)
+				throw new SysException(string.Format("{0} ({1})", SR.ErrResourceGroupNotFound, resourceGroup));
+
+			return DataModel.Workers.Dequeue(rg, count);
+		}
+
+		[HttpPost]
+		public void Ping()
+		{
+			var body = FromBody();
+
+			var microService = body.Required<Guid>("microService");
+			var popReceipt = body.Required<Guid>("popReceipt");
+
+			DataModel.Workers.Ping(microService, popReceipt);
+		}
+
+		[HttpPost]
+		public void Complete()
+		{
+			var body = FromBody();
+
+			var microService = body.Required<Guid>("microService");
+			var popReceipt = body.Required<Guid>("popReceipt");
+
+			DataModel.Workers.Complete(microService, popReceipt);
+		}
+
+		[HttpPost]
+		public void Error()
+		{
+			var body = FromBody();
+
+			var microService = body.Required<Guid>("microService");
+			var popReceipt = body.Required<Guid>("popReceipt");
+
+			DataModel.Workers.Error(microService, popReceipt);
+		}
+
+		[HttpPost]
+		public void UpdateConfiguration()
+		{
+			var body = FromBody();
+
+			var microService = body.Required<Guid>("microService");
+			var api = body.Required<Guid>("api");
+			var operation = body.Required<Guid>("operation");
+			var startTime = body.Optional("startTime", DateTime.MinValue);
+			var endTime = body.Optional("endTime", DateTime.MinValue);
+			var interval = body.Required<WorkerInterval>("interval");
+			var intervalValue = body.Optional("intervalValue", 1);
+			var startDate = body.Optional("startDate", DateTime.MinValue);
+			var endDate = body.Optional("endDate", DateTime.MinValue);
+			var limit = body.Optional("limit", 0);
+			var dayOfMonth = body.Optional("dayOfMonth", 1);
+			var dayMode = body.Optional("dayMode", WorkerDayMode.EveryNDay);
+			var monthMode = body.Optional("monthMode", WorkerMonthMode.ExactDay);
+			var yearMode = body.Optional("yearMode", WorkerYearMode.ExactDate);
+			var monthNumber = body.Optional("monthNumber", 1);
+			var endMode = body.Optional("endMode", WorkerEndMode.NoEnd);
+			var intervalCounter = body.Optional("intervalCounter", WorkerCounter.First);
+			var monthPart = body.Optional("monthPart", WorkerMonthPart.Weekday);
+			var weekdays = body.Optional("weekdays", WorkerWeekDays.None);
+			var kind = body.Optional("kind", WorkerKind.Worker);
+
+			DataModel.Workers.Update(microService, api, operation, startTime, endTime, interval, intervalValue, startDate, endDate, limit, dayOfMonth,
+				dayMode, monthMode, yearMode, monthNumber, endMode, intervalCounter, monthPart, weekdays, kind);
+		}
+
+		[HttpPost]
+		public void Update()
+		{
+			var body = FromBody();
+
+			var microService = body.Required<Guid>("microService");
+			var api = body.Required<Guid>("api");
+			var operation = body.Required<Guid>("operation");
+			var status = body.Required<WorkerStatus>("status");
+			var logging = body.Required<bool>("logging");
+
+			DataModel.Workers.Update(microService, api, operation, status, logging);
+		}
+
+		[HttpPost]
+		public void Reset()
+		{
+			var body = FromBody();
+
+			var microService = body.Required<Guid>("microService");
+			var api = body.Required<Guid>("api");
+			var operation = body.Required<Guid>("operation");
+
+			DataModel.Workers.Reset(microService, api, operation);
+		}
+
+		[HttpPost]
+		public void Run()
+		{
+			var body = FromBody();
+
+			var microService = body.Required<Guid>("microService");
+			var api = body.Required<Guid>("api");
+			var operation = body.Required<Guid>("operation");
+
+			DataModel.Workers.Run(microService, api, operation);
+		}
+	}
+}

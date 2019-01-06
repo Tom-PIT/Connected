@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>TomPIT.Sys</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.App"/>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.MsgPack" Version="1.0.0-preview2-final" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TomPIT.StorageProvider.Sql\TomPIT.StorageProvider.Sql.csproj" />
+    <ProjectReference Include="..\TomPIT.Sys.Api\TomPIT.Sys.Api.csproj" />
+    <ProjectReference Include="..\TomPIT.SysDb.Sql\TomPIT.SysDb.Sql.csproj" />
+    <ProjectReference Include="..\TomPIT.SysDb\TomPIT.SysDb.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="TomPIT.Core">
+      <HintPath>c:\bin2\TomPIT.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

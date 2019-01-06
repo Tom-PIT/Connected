@@ -1,0 +1,83 @@
+﻿using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
+using TomPIT.Api.ComponentModel;
+using TomPIT.Api.Storage;
+using TomPIT.Security;
+using TomPIT.StorageProvider.Sql;
+using TomPIT.Sys.Api.Database;
+using TomPIT.Sys.Data;
+using TomPIT.Sys.Security;
+using TomPIT.Sys.Services;
+
+namespace TomPIT.Sys.Configuration
+{
+	internal static class ServerConfiguration
+	{
+		public static void Initialize()
+		{
+			RegisterServices();
+			InitializeAuthentication();
+			InitializeData();
+		}
+
+		private static void RegisterServices()
+		{
+			//var providers = new List<Runtime.IServiceProvider>();
+
+			//foreach (var i in Api.Configuration.Root.GetSection("serviceProviders").GetChildren())
+			//	providers.Add(Types.GetType(i.Value).CreateInstance<Runtime.IServiceProvider>());
+
+			Shell.RegisterService(typeof(IDatabaseService), typeof(DatabaseService));
+			Shell.RegisterService(typeof(IStorageProviderService), typeof(StorageProviderService));
+			Shell.RegisterService(typeof(INamingService), typeof(NamingService));
+			Shell.RegisterService(typeof(ICryptographyService), typeof(CryptographyService));
+		}
+
+		private static void InitializeAuthentication()
+		{
+			var section = Api.Configuration.Root.GetSection("authentication");
+			var jwt = section.GetSection("jwToken");
+
+			TomPITAuthenticationHandler.IssuerSigningKey = jwt.GetSection("issuerSigningKey").Value;
+			TomPITAuthenticationHandler.ValidAudience = jwt.GetSection("validAudience").Value;
+			TomPITAuthenticationHandler.ValidIssuer = jwt.GetSection("validIssuer").Value;
+
+			var keys = section.GetSection("clientKeys");
+			var clientKeys = new Dictionary<string, string>();
+
+			foreach (var i in keys.GetChildren())
+				i.Bind(clientKeys);
+
+			foreach (var i in clientKeys)
+				TomPITAuthenticationOptions.ClientKeys.Add(i.Key, i.Value);
+		}
+
+		private static void InitializeData()
+		{
+			var e = DataModel.EnvironmentVariables.Select(StorageProviderService.DefaultStorageProviderVar);
+			/*
+			 * Sql server storage provider is built in and cannot be removed
+			 * because it's a part of the system database
+			 */
+			if (e == null || string.IsNullOrWhiteSpace(e.Value))
+				DataModel.EnvironmentVariables.Update(StorageProviderService.DefaultStorageProviderVar, typeof(SqlStorageProvider).TypeName());
+
+			Shell.GetService<IStorageProviderService>().Register(new SqlStorageProvider());
+
+			foreach (var i in Api.Configuration.Root.GetSection("storageProviders").GetChildren())
+			{
+				var t = Types.GetType(i.Value);
+
+				if (t == null)
+					throw new SysException(string.Format("{0} ({1})", SR.ErrInvalidStorageProviderType, i.Value));
+
+				var instance = t.CreateInstance<IStorageProvider>();
+
+				if (instance == null)
+					throw new SysException(string.Format("{0} ({1})", SR.ErrInvalidStorageProviderType, i.Value));
+
+				Shell.GetService<IStorageProviderService>().Register(instance);
+			}
+		}
+	}
+}

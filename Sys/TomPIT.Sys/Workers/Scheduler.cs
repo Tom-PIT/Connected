@@ -1,0 +1,37 @@
+﻿using System;
+using System.Threading.Tasks;
+using TomPIT.Services;
+using TomPIT.Sys.Data;
+
+namespace TomPIT.Sys.Workers
+{
+	internal class Scheduler : HostedService
+	{
+		public Scheduler()
+		{
+			IntervalTimeout = TimeSpan.FromSeconds(1);
+		}
+		protected override Task Process()
+		{
+			try
+			{
+				var ds = DataModel.Workers.QueryScheduled();
+
+				foreach (var i in ds)
+					Enqueue(i);
+			}
+			catch(Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+				//TODO: log exception
+			}
+
+			return Task.CompletedTask;
+		}
+
+		private void Enqueue(IScheduledJob job)
+		{
+			DataModel.Workers.Enqueue(job);
+		}
+	}
+}

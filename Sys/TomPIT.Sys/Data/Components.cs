@@ -1,0 +1,249 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using TomPIT.Api.ComponentModel;
+using TomPIT.Caching;
+using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Features;
+using TomPIT.Sys.Api.Database;
+using TomPIT.Sys.Notifications;
+
+namespace TomPIT.Sys.Data
+{
+	internal class Components : SynchronizedRepository<IComponent, Guid>
+	{
+		public Components(IMemoryCache container) : base(container, "component")
+		{
+		}
+
+		protected override void OnInitializing()
+		{
+			var ds = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Query();
+
+			foreach (var i in ds)
+				Set(i.Token, i, TimeSpan.Zero);
+		}
+
+		protected override void OnInvalidate(Guid id)
+		{
+			var r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Select(id);
+
+			if (r == null)
+			{
+				Remove(id);
+				return;
+			}
+
+			Set(id, r, TimeSpan.Zero);
+		}
+
+		public IComponent Select(Guid token)
+		{
+			var r = Get(token);
+
+			if (r != null)
+				return r;
+
+			r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Select(token);
+
+			if (r != null)
+				Set(r.Token, r, TimeSpan.Zero);
+
+			return r;
+		}
+
+		public IComponent Select(string category, string name)
+		{
+			var r = Where(f => string.Compare(f.Name, name, true) == 0
+				&& string.Compare(f.Category, category, true) == 0);
+
+			if (r != null && r.Count > 0)
+			{
+				if (r.Count > 1)
+					throw new SysException(string.Format("{0} ({1}.{2})", SR.ErrDuplicateComponentFound, category, name));
+
+				return r[0];
+			}
+
+			r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Query(category, name);
+
+			if (r != null)
+			{
+				foreach (var i in r)
+					Set(i.Token, i, TimeSpan.Zero);
+
+				if (r.Count > 1)
+					throw new SysException(string.Format("{0} ({1}.{2})", SR.ErrDuplicateComponentFound, category, name));
+
+				if (r.Count > 0)
+					return r[0];
+			}
+
+			return null;
+		}
+
+		public IComponent Select(Guid microService, string category, string name)
+		{
+			var r = Get(f => f.MicroService == microService
+				&& string.Compare(f.Name, name, true) == 0
+				&& string.Compare(f.Category, category, true) == 0);
+
+			if (r != null)
+				return r;
+
+			var s = DataModel.MicroServices.Select(microService);
+
+			if (s == null)
+				throw new SysException(SR.ErrMicroServiceNotFound);
+
+			r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Select(s, category, name);
+
+			if (r != null)
+				Set(r.Token, r, TimeSpan.Zero);
+
+			return r;
+		}
+
+		public List<IComponent> Query(string resourceGroups, string categories)
+		{
+			var tokens = resourceGroups.Split(',');
+			var cats = categories.Split(',');
+
+			var r = new List<IComponent>();
+			var microServices = new List<IMicroService>();
+
+			foreach (var i in tokens)
+			{
+				var rs = DataModel.ResourceGroups.Select(i);
+
+				if (rs == null)
+					throw new SysException(string.Format("{0} ({1})", SR.ErrResourceGroupNotFound, i));
+
+				var sols = DataModel.MicroServices.Query(rs.Token);
+
+				if (sols.Count > 0)
+					microServices.AddRange(sols);
+			}
+
+			foreach (var i in microServices)
+			{
+				foreach (var j in cats)
+				{
+					if (string.IsNullOrWhiteSpace(j))
+						continue;
+
+					var ds = Query(i.Token, j.Trim());
+
+					if (ds.Count > 0)
+						r.AddRange(ds);
+				}
+			}
+
+			return r;
+		}
+
+		public List<IComponent> Query(Guid microService)
+		{
+			return Where(f => f.MicroService == microService);
+		}
+
+		public List<IComponent> Query(Guid microService, string category)
+		{
+			return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0);
+		}
+
+		public void Insert(Guid component, Guid microService, Guid feature, string category, string name, string type, Guid runtimeConfiguration)
+		{
+			var s = DataModel.MicroServices.Select(microService);
+
+			if (s == null)
+				throw new SysException(SR.ErrMicroServiceNotFound);
+
+			IFeature f = feature == Guid.Empty
+				? null
+				: DataModel.Features.Select(microService, feature);
+
+			if (feature != Guid.Empty && f == null)
+				throw new SysException(SR.ErrFeatureNotFound);
+
+			var v = new Validator();
+
+			v.Unique(null, name, nameof(IComponent.Name), Query(microService));
+
+			if (!v.IsValid)
+				throw new SysException(v.ErrorMessage);
+
+			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Insert(s, DateTime.UtcNow, f, category, name, component, type, runtimeConfiguration);
+
+			Refresh(component);
+			NotificationHubs.ComponentAdded(microService, feature, component);
+		}
+
+		public void UpdateModified(Guid microService, string category, string name)
+		{
+			var c = Select(microService, category, name);
+
+			Update(c.Token, c.Name, c.RuntimeConfiguration);
+		}
+
+		public void Update(Guid component, string name)
+		{
+			var c = Select(component);
+
+			if (c == null)
+				throw new SysException(SR.ErrComponentNotFound);
+
+			Update(component, name, c.RuntimeConfiguration);
+		}
+
+		public void Update(Guid component, Guid runtimeConfiguration)
+		{
+			var c = Select(component);
+
+			if (c == null)
+				throw new SysException(SR.ErrComponentNotFound);
+
+			Update(component, c.Name, runtimeConfiguration);
+		}
+
+		public void Update(Guid component, string name, Guid runtimeConfiguration)
+		{
+			var c = Select(component);
+
+			if (c == null)
+				throw new SysException(SR.ErrComponentNotFound);
+
+			var v = new Validator();
+
+			v.Unique(c, name, nameof(IComponent.Name), Query(c.MicroService, c.Category));
+
+			if (!v.IsValid)
+				throw new SysException(v.ErrorMessage);
+
+			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, DateTime.UtcNow, name, runtimeConfiguration);
+
+			Refresh(component);
+			NotificationHubs.ComponentChanged(c.MicroService, c.Feature, component);
+		}
+
+		public void Delete(Guid component)
+		{
+			var c = Select(component);
+
+			if (c == null)
+				throw new SysException(SR.ErrComponentNotFound);
+
+			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Delete(c);
+
+			Remove(component);
+			NotificationHubs.ComponentRemoved(c.MicroService, c.Feature, component);
+		}
+
+		public string CreateComponentName(Guid microService, string prefix, string category)
+		{
+			var existing = Where(f => f.MicroService == microService && string.Compare(category, f.Category, true) == 0);
+
+			return Shell.GetService<INamingService>().Create(prefix, existing.Select(f => f.Name), true);
+		}
+	}
+}
