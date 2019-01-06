@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using TomPIT.Security;
+
+namespace TomPIT.Designers
+{
+	internal class Permission : IPermission
+	{
+		public Guid Evidence {get;set;}
+		public string Schema {get;set;}
+		public string Claim {get;set;}
+		public string Descriptor {get;set;}
+		public string PrimaryKey {get;set;}
+		public PermissionValue Value {get;set;}
+	}
+}

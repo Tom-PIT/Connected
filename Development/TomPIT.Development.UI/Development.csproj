@@ -1,0 +1,85 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>TomPIT</RootNamespace>
+    <AssemblyName>TomPIT.Development.App</AssemblyName>
+  </PropertyGroup>
+	<PropertyGroup>
+		<PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Content Remove="compilerconfig.json" />
+	  <Content Remove="wwwroot\Assets\Styles\development.less" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="lz4net" Version="1.0.15.93" />
+		<PackageReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="BuildBundlerMinifier" Version="2.8.391" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.1.0" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="1.1.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.10.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="2.10.0" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="TomPIT.ComponentModel">
+			<HintPath>c:\bin2\TomPIT.ComponentModel.dll</HintPath>
+		</Reference>
+		<Reference Include="TomPIT.Core">
+			<HintPath>c:\bin2\TomPIT.Core.dll</HintPath>
+		</Reference>
+		<Reference Include="TomPIT.Extensions">
+			<HintPath>c:\bin2\TomPIT.Extensions.dll</HintPath>
+		</Reference>
+		<Reference Include="TomPIT.DataProviders.Sql">
+			<HintPath>c:\bin2\TomPIT.DataProviders.Sql.dll</HintPath>
+		</Reference>
+		<Reference Include="TomPIT.Runtime">
+			<HintPath>c:\bin2\TomPIT.Runtime.dll</HintPath>
+		</Reference>
+		<Reference Include="TomPIT.UI">
+			<HintPath>c:\bin2\TomPIT.UI.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Views\Ide\Designers\Upload.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\ApiTest.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\Shell\" />
+    <Folder Include="wwwroot\Assets\Fonts\OpenSans\" />
+    <Folder Include="wwwroot\Assets\Libraries\DevExtreme\18.2.4\icons\" />
+    <Folder Include="wwwroot\Assets\Libraries\Underscore\1.9.1\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="compilerconfig.json" />
+    <None Include="wwwroot\Assets\Images\Brand\safari-pinned-tab.svg" />
+    <None Include="wwwroot\Assets\Styles\development.less" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TomPIT.Design\TomPIT.Design.csproj" />
+    <ProjectReference Include="..\TomPIT.Development\TomPIT.Development.csproj" />
+    <ProjectReference Include="..\TomPIT.Ide.UI\TomPIT.Ide.UI.csproj" />
+    <ProjectReference Include="..\TomPIT.Ide\TomPIT.Ide.csproj" />
+    <ProjectReference Include="..\TomPIT.Templates.Application.Design\TomPIT.Templates.Application.Design.csproj" />
+    <ProjectReference Include="..\TomPIT.Templates.Application\TomPIT.Templates.Application.csproj" />
+    <ProjectReference Include="..\TomPIT.Templates.IoT.Design\TomPIT.Templates.IoT.Design.csproj" />
+    <ProjectReference Include="..\TomPIT.Templates.IoT\TomPIT.Templates.IoT.csproj" />
+  </ItemGroup>
+</Project>

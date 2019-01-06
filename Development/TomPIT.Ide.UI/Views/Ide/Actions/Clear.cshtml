@@ -1,0 +1,59 @@
+﻿@model TomPIT.Design.IDesignerToolbarAction
+
+@{
+    var action = Model as TomPIT.Actions.Clear;
+
+    var css = !action.Visible ? "collapse" : string.Empty;
+
+    if (!action.Enabled)
+    { css += " disabled"; }
+
+}
+
+<button type="button" class="btn btn-sm btn-light @css" data-tp-tag="toolbar-action" @Html.TP().Attributes.Attribute("data-id", action.Id)>
+    <i class="@action.Glyph"></i>
+    @Html.Raw(action.Text)
+</button>
+
+
+<div class="modal fade bottom info dev-modal" id="modalClear" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-frame modal-bottom" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="row d-flex justify-content-center align-items-center">
+                    Are you sure you want to clear all items?
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="mx-auto">
+                    <button type="button" class="btn btn-inverse btn-info mr-5" id="btnClearItems">Clear</button>
+                    <button type="button" class="btn btn-inverse btn-info" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#ide').on('toolbarClick', function (s, e) {
+
+        if (e.id === 'actionClear') {
+            $('#modalClear').modal('show');
+            e.cancel = true;
+        }
+    });
+
+    $('#btnClearItems').click(function () {
+        var modal = $('#modalClear');
+
+        modal.on('hidden.bs.modal', function () {
+            ide.designerAction({
+                data: {
+                    action: 'clear'
+                }
+            });
+        });
+
+        modal.modal('hide');
+    });
+</script>

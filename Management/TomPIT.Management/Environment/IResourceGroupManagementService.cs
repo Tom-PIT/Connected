@@ -1,0 +1,14 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace TomPIT.Environment
+{
+	public interface IResourceGroupManagementService
+	{
+		Guid Insert(string name, Guid storageProvider, string connectionString);
+		void Update(Guid token, string name, Guid storageProvider, string connectionString);
+		void Delete(Guid token);
+
+		List<ManagementResourceGroup> Query();
+	}
+}

@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>TomPIT</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.10.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Features" Version="2.10.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="TomPIT.ComponentModel">
+      <HintPath>c:\bin2\TomPIT.ComponentModel.dll</HintPath>
+    </Reference>
+    <Reference Include="TomPIT.Core">
+      <HintPath>c:\bin2\TomPIT.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="TomPIT.Runtime">
+      <HintPath>c:\bin2\TomPIT.Runtime.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\bin2&quot;&#xD;&#xA;copy &quot;$(TargetDir)\$(TargetName).pdb&quot; &quot;c:\bin2&quot;" />
+	</Target>
+
+</Project>

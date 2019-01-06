@@ -1,0 +1,20 @@
+﻿@model TomPIT.Ide.IEnvironment
+
+@{
+    string view = string.Empty;
+    object model = null;
+
+    if (Model.Selection.Designer == null || string.IsNullOrWhiteSpace(Model.Selection.Designer.View))
+    {
+        view = "~/Views/Ide/Designers/Empty.cshtml";
+        model = Model;
+    }
+    else
+    {
+        view = Model.Selection.Designer.View;
+        model = Model.Selection.Designer.ViewModel;
+    }
+}
+
+@Html.Partial("~/Views/Ide/Designers/Toolbar.cshtml", Model)
+@Html.Partial(view, model)

@@ -1,0 +1,64 @@
+﻿@model TomPIT.Design.MicroServiceDescriptor
+
+@if (Model.Apis.Count == 0)
+{
+    return;
+}
+
+<div class="microservice-api-card" data-kind="search-scope">
+    <div class="microservice-api-header">
+        <span class="microservice-api-name">APIs</span>
+        <div class="small">
+            <span>@Html.Raw(Model.Apis.Count) api(s)</span>,
+            <span>@Model.OperationCount operation(s)</span>
+        </div>
+    </div>
+    <div class="microservice-api-body collapse">
+        <ul class="list-unstyled">
+            @foreach (var i in Model.Apis)
+            {
+                var apiCss = "modifier-public";
+
+                switch (i.Scope)
+                {
+                    case TomPIT.ComponentModel.ElementScope.Internal:
+                        apiCss = "modifier-internal";
+                        break;
+                    case TomPIT.ComponentModel.ElementScope.Private:
+                        apiCss = "modifier-private";
+                        break;
+                }
+
+                <li class="small">
+                    <i class="fal fa-code-commit"></i>
+
+                    <span class="@apiCss">@Model.ApiName(i)</span>
+
+                    <ul class="list-unstyled api-operation-list">
+                        @foreach (var j in i.Operations)
+                        {
+                            var css = apiCss;
+
+                            switch (j.Scope)
+                            {
+                                case TomPIT.ComponentModel.ElementScope.Internal:
+                                    if (i.Scope != TomPIT.ComponentModel.ElementScope.Private)
+                                    {
+                                        css = "modifier-internal";
+                                    }
+                                    break;
+                                case TomPIT.ComponentModel.ElementScope.Private:
+                                    css = "modifier-private";
+                                    break;
+                            }
+                            <li>
+                                <i class="fal fa-long-arrow-alt-right"></i>
+                                <span class="@css">@j.Name</span>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+        </ul>
+    </div>
+</div>

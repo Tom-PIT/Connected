@@ -1,0 +1,14 @@
+﻿using TomPIT.Ide;
+
+namespace TomPIT.ActionResults
+{
+	public class JsonResult : Result, IDesignerActionResultJson
+	{
+		public JsonResult(object model, object data) : base(model)
+		{
+			Data = data;
+		}
+
+		public object Data { get; private set; }
+	}
+}

@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>TomPIT.Application</RootNamespace>
+    <AssemblyName>TomPIT.Application</AssemblyName>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<Reference Include="TomPIT.ComponentModel">
+			<HintPath>c:\bin2\TomPIT.ComponentModel.dll</HintPath>
+		</Reference>
+		<Reference Include="TomPIT.Core">
+		  <HintPath>c:\bin2\TomPIT.Core.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	
+		<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\bin2&quot;&#xD;&#xA;copy &quot;$(TargetDir)\$(TargetName).pdb&quot; &quot;c:\bin2&quot;" />
+  </Target>
+
+</Project>

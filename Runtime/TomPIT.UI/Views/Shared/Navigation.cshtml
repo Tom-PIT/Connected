@@ -1,0 +1,25 @@
+﻿@model TomPIT.Models.IUIModel
+
+
+@if (Model.Navigation==null|| Model.Navigation.Links.Count == 0)
+{
+    return;
+}
+
+
+@foreach (var i in Model.Navigation.Links.GroupBy(f => f.Category))
+{
+    <div class="nav-category">
+        <h6>@i.Key</h6>
+    </div>
+    <ul class="nav-content">
+        @foreach (var j in i)
+        {
+            <li class="nav-item">
+                <a href="@j.Url"><span class="txt">@j.Text</span></a>
+            </li>
+
+        }
+    </ul>
+}
+

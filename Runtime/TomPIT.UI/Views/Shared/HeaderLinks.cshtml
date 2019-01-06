@@ -1,0 +1,26 @@
+﻿@using TomPIT;
+
+@model TomPIT.Models.IUIModel
+
+@if (Model.Navigation.Links.Count > 0)
+{
+    var sepActive = false;
+
+    <li class="dropdown-divider"></li>
+
+
+    foreach (var i in Model.Navigation.Links)
+    {
+
+        if (i.BeginGroup && sepActive)
+        {
+            <li class="dropdown-divider"></li>
+            sepActive = false;
+        }
+
+        <li class="dropdown-item">
+            <a href="@i.Url">@Html.Raw(i.Text)</a>
+        </li>
+        sepActive = true;
+    }
+}

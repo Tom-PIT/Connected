@@ -1,0 +1,24 @@
+﻿@using TomPIT;
+
+@model TomPIT.Models.IUIModel
+
+@if (Model.Navigation == null) { return; }
+<div class="breadcrumb-container text-truncate">
+    @{
+        bool active = false;
+
+        foreach (var i in Model.Navigation.Breadcrumbs)
+        {
+            if (active)
+            {
+                <span class="breadcrumb-delimiter">/</span>
+            }
+
+            active = true;
+
+            <span>
+                <a href="@i.Url">@Html.Raw(i.Text)</a>
+            </span>
+        }
+    }
+</div>

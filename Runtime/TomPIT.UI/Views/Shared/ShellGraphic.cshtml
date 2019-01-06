@@ -1,0 +1,39 @@
+﻿@model TomPIT.Models.IUIModel
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>@Model.Title</title>
+    <partial name="~/Views/Shared/Header.cshtml" />
+    <partial name="~/Views/Shared/StandardHeaders.cshtml" />
+    <script src="~/Assets/Scripts/jquery.backstretch.js"></script>
+    @RenderSection("head", false)
+</head>
+
+<body class="flex-col">
+    <section class="main flex-row">
+        <div class="container-fluid h-100">
+            <div class="row h-100 d-flex align-items-stretch">
+                <div class="col d-none d-md-block" id="_backstretch">
+                </div>
+                <div class="col">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+    </section>
+    <script>
+        $('#_backstretch').backstretch('@ViewBag.BackstretchImage');
+    </script>
+
+    @RenderSection("Scripts", false)
+
+    <environment names="Staging,Production">
+        <script src="~/Assets/scripts.foot.min.js"></script>
+    </environment>
+    <environment names="Development">
+        <script src="~/Assets/Scripts/foot.js"></script>
+    </environment>
+</body>
+</html>
+

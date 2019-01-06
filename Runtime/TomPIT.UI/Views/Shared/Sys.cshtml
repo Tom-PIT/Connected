@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+
+@model TomPIT.Models.IUIModel
+
+<html>
+<head>
+    <title>@Model.Title</title>
+    <partial name="~/Views/Shared/StandardHeaders.cshtml" />
+    <partial name="~/Views/Shared/Header.cshtml" />
+    @RenderSection("head", false)
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    @RenderSection("Scripts", false)
+    <environment names="Staging,Production">
+        <script src="~/Assets/scripts.foot.min.js"></script>
+    </environment>
+    <environment names="Development">
+        <script src="~/Assets/Scripts/foot.js"></script>
+    </environment>
+</body>
+</html>

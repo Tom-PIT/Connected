@@ -1,0 +1,90 @@
+﻿@model TomPIT.Ide.IEnvironment
+@{
+    Layout = "~/Views/Shared/Shell.cshtml";
+}
+
+@section head{
+    <environment names="Staging,Production">
+        <link rel="stylesheet" type="text/css" href="~/Assets/ide.min.css" />
+        <script src="~/Assets/ide.min.js"></script>
+    </environment>
+    <environment names="Development">
+        <link rel="stylesheet" type="text/css" href="~/Assets/Styles/ide.css" />
+        <script src="~/Assets/Scripts/ide.js"></script>
+        <script src="~/Assets/Scripts/textEditor.js"></script>
+    </environment>
+
+}
+
+@{
+    var path = "Assets/Libraries/monaco/vs";
+    var ctx = Model as TomPIT.Services.IExecutionContext;
+
+    if (ctx != null)
+    { path = ctx.MapPath("~/Assets/Libraries/monaco/vs"); }
+}
+
+<script src="~/Assets/Libraries/monaco/vs/loader.js"></script>
+
+<div id="ide" class="h-100">
+    @Html.Partial("~/Views/Ide/Console.cshtml", Model)
+</div>
+
+@section Scripts{
+    <script>
+        DevExpress.ui.setTemplateEngine("underscore");
+    </script>
+}
+
+<script>
+    tompit.disableNavigation();
+
+        tompit.DEVDEFAULTS = {
+        environmentUrl: '@Model.IdeUrl',
+    }
+
+    tompit.DEVGLOBALIZE = {
+        appUrlNotSet: '@SR.ErrJsEnvironmentUrlNotSet'
+     }
+
+    var ide = $('#ide').tpIde().data('tompit-tpIde');
+
+		$('#ide').tpTextEditor({
+		    path: '@path'
+		});
+
+        var textEditor = $('#ide').data('tompit-tpTextEditor');
+        require.config({ paths: { 'vs': '@path' } });
+
+    $(document).keyup(function (e) {
+        if (e.ctrlKey && e.which == 39) {
+            ide.nextDocument();
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        else if (e.ctrlKey && e.which == 37) {
+            ide.previousDocument();
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    })
+
+    $('#devExplorer').keyup(function (e) {
+        if (e.which === 39) {
+            ide.expandCurrent();
+        }
+        else if (e.which === 37) {
+            ide.collapseCurrent();
+        }
+        else if (e.which === 40) {
+            ide.selectNext();
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        else if (e.which === 38) {
+            ide.selectPrevious();
+        }
+    });
+</script>

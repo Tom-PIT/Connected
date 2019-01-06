@@ -1,0 +1,14 @@
+﻿using TomPIT.Ide;
+
+namespace TomPIT.ActionResults
+{
+	public class ViewResult : Result, IDesignerActionResultView
+	{
+		public ViewResult(object model, string view) : base(model)
+		{
+			View = view;
+		}
+
+		public string View { get; private set; }
+	}
+}

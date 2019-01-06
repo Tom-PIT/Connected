@@ -1,0 +1,50 @@
+﻿@using TomPIT;
+
+@model TomPIT.Ide.IEnvironment
+
+@{
+    var node = ViewBag.CurrentNode as TomPIT.Dom.IDomElement;
+
+    if (node == null)
+    { return; }
+}
+
+<div data-kind="explorer-node" data-id="@node.Id" class="dev-explorer-node">
+    <div class="dev-explorer-node-content">
+        @if (node.HasChildren)
+        {
+            var css = node.Items.Count == 0 || !node.Behavior.AutoExpand ? "fa-chevron-right" : "fa-chevron-down";
+
+            <span data-kind="toggler">
+                <i class="fal @css" data-kind="toggler"></i>
+            </span>
+        }
+        <div class="dev-explorer-node-text">
+            @if (!string.IsNullOrWhiteSpace(node.Glyph))
+            {
+                <i class="fa-fw @node.Glyph"></i>
+            }
+            <span data-kind="documentName">@node.Title</span>
+
+            @if (node.ChildrenCount > 0)
+            {
+                <span class="badge badge-secondary">@node.ChildrenCount.ToString("n0")</span>
+            }
+        </div>
+    </div>
+
+    @if (node.HasChildren)
+    {
+        var loaded = node.Items.Count > 0 ? "true" : "false";
+        var collapse = node.Items.Count == 0 || !node.Behavior.AutoExpand ? "collapse" : string.Empty;
+
+        <div data-kind="explorer-group" @Html.TP().Attributes.Class(collapse) data-group="@node.Id" data-loaded="@loaded">
+            @foreach (var i in node.Items)
+            {
+                ViewBag.CurrentNode = i;
+                @Html.Partial("~/Views/Ide/DomNode.cshtml", Model)
+            }
+
+        </div>
+    }
+</div>

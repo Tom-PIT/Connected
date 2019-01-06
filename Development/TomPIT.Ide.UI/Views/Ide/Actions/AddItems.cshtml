@@ -1,0 +1,41 @@
+﻿@using TomPIT;
+
+@model TomPIT.Design.IDesignerToolbarAction
+
+@{
+    var action = Model as TomPIT.Actions.AddItems;
+
+    if (action.Items.Count == 0) { return; }
+}
+
+
+@{
+    var item = action.Items[0];
+    var css = !item.Visible ? "collapse" : string.Empty;
+
+    if (!item.Enabled)
+    { css += " disabled"; }
+
+
+    <button @Html.TP().Attributes.Attribute("data-id", item.Id) type="button" class="btn btn-light btn-sm" data-tp-tag="toolbar-action">
+        <i class="fal fa-plus"></i> @Html.Raw(item.Text)
+    </button>
+}
+
+@if (action.Items.Count > 1)
+{
+    <button type="button" class="btn btn-sm btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <span class="caret"></span>
+        <span class="sr-only">@SR.ToggleDropdown</span>
+    </button>
+
+}
+
+<ul class="dropdown-menu">
+    @for (var i = 1; i < action.Items.Count; i++)
+    {
+        var ci = action.Items[i];
+
+        <li class="dropdown-item"><a href="#" data-tp-tag="toolbar-action" @Html.TP().Attributes.Attribute("data-id", ci.Id)>@ci.Text</a></li>
+    }
+</ul>

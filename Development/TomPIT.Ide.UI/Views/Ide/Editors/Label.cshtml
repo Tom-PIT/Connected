@@ -1,0 +1,30 @@
+﻿@using TomPIT;
+
+@model TomPIT.Design.IProperty
+
+@{
+
+    string value = string.Empty;
+
+    if (Model.SupportsTimezone)
+    {
+        if (Model.Value is DateTime)
+        {
+            value = StringUtils.ToDisplayFormat(Model.Environment.Context.Services.Timezone.FromUtc((DateTime)Model.Value), Model.Format);
+        }
+        else
+        {
+            value = StringUtils.ToDisplayFormat(Model.Value, Model.Format);
+        }
+    }
+    else
+    {
+        value = StringUtils.ToDisplayFormat(Model.Value, Model.Format);
+    }
+}
+
+<div class="read-only">
+    <label>
+        @Html.Raw(value)
+    </label>
+</div>

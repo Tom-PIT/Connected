@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+
+@model TomPIT.Models.IUIModel
+
+<html>
+<head>
+    <title>@Model.Title</title>
+    <partial name="~/Views/Shared/StandardHeaders.cshtml" />
+    <partial name="~/Views/Shared/Header.cshtml" />
+    @RenderSection("head", false)
+</head>
+
+<body>
+    <nav class="navbar navbar-dark bg-dark fixed-top" id="#_nav">
+        <a href="@Model.RootUrl()" class="navbar-toggler brand-toggler">
+            <img src="~/Assets/Images/Shell/Brand.png" class="img-fluid brand-img" />
+        </a>
+
+        <div class="navbar-title mr-md-auto m-auto ml-md-0">
+            <div class="view-title text-truncate">
+                @Html.Raw(Model.Title)
+
+                <div class="view-breadcrumb text-truncate">
+                    <partial name="~/Views/Shared/Breadcrumbs.cshtml" />
+                </div>
+            </div>
+        </div>
+
+        <partial name="~/Views/Shared/HeaderIdentity.cshtml" />
+    </nav>
+
+    <div class="container-fluid sys-container h-100" id="_sysBody">
+        <div class="row content-area no-gutters h-100">
+            <div class="sidebar collapse" id="_sideBar">
+                <partial name="~/Views/Shared/Navigation.cshtml" />
+            </div>
+            <div class="col" id="_sysContent">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    @RenderSection("Scripts", false)
+    <environment names="Staging,Production">
+        <script src="~/Assets/scripts.foot.min.js"></script>
+    </environment>
+    <environment names="Development">
+        <script src="~/Assets/Scripts/foot.js"></script>
+    </environment>
+</body>
+</html>

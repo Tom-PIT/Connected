@@ -1,0 +1,55 @@
+﻿@using TomPIT;
+
+@model TomPIT.Design.IProperty
+
+@{
+    var value = Types.Convert<string>(Model.Value);
+}
+
+<div name="@Model.Name"></div>
+
+<script>
+    $('[name="@Model.Name"]').dxTextArea({
+        stylingMode: 'underlined',
+        width: '100%',
+        autoResizeEnabled: true,
+        @if (Model.Validation.MaxLength.MaxLength > 0)
+            {
+           <text>
+        maxLength: @Model.Validation.MaxLength.MaxLength,
+                </text>
+           }
+        value:'@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(value))',
+        onValueChanged: function (e) {
+            ide.saveProperty({
+                data: {
+                    path: propertyPath,
+                    property: '@Model.Name',
+                    value: e.value,
+                },
+                onError: function (request, status, error) {
+                    var data = JSON.parse(request.responseText);
+
+                    $('[name="@Model.Name"]').dxTextArea('instance').option({
+                        validationError: {
+                            message: data.message
+                        },
+                        isValid: false
+                    });
+
+                    return true;
+                }
+            })
+
+        }
+    }).dxValidator({
+        validationRules: [
+            @if (Model.Validation.Required.IsRequired)
+            {
+               <text>
+            {'type':'required'}
+            </text>
+            }
+        ]
+    });
+</script>

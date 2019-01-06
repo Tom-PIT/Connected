@@ -1,0 +1,46 @@
+﻿@model TomPIT.Design.ITextSignature
+
+@{
+    if (Model == null) { return; }
+    bool first = true;
+}
+
+<div class="dev-signature d-flex justify-content-between">
+    <div>
+        @if (!string.IsNullOrWhiteSpace(Model.Text))
+        {
+            @Html.Raw(Model.Text)
+        }
+        else if (!string.IsNullOrWhiteSpace(Model.Name))
+        {
+            if (string.Compare(Model.Name, "@model", true) == 0)
+            {
+                @Model.Name <span class="reflector-type">@Html.TP().Ide.TypeSignature(Model.Parameters[0].Type)</span>
+            }
+            else
+            {
+                <span class="reflector-type">@Html.TP().Ide.TypeSignature(Model.ReturnValue)</span> @Model.Name@:(
+foreach (var i in Model.Parameters)
+                {
+                    if (!first)
+                    {
+                        @:,
+
+                        first = false;
+                    }
+
+                    <span class="reflector-type">@Html.TP().Ide.TypeSignature(i.Type)</span><span> @i.Name</span>
+                }
+                @:);
+}
+        }
+    </div>
+    <div>
+        @if (!string.IsNullOrWhiteSpace(Model.Language))
+        {
+            <span class="badge badge-secondary" title="Editor syntax">
+                @Html.Raw(Model.Language)
+            </span>
+        }
+    </div>
+</div>

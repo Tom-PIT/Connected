@@ -1,0 +1,41 @@
+﻿@model TomPIT.Ide.IEnvironment
+
+@{
+    if (Model.Selection.Designer == null) { return; }
+
+    var groups = Model.Selection.Designer.Toolbar.Items.GroupBy(f => f.Group);
+}
+
+@if (groups.Count() == 0) { return; }
+
+<div id="devToolbar">
+    <div class="btn-toolbar dev-toolbar justify-content-between" role="toolbar">
+        @foreach (var i in groups)
+        {
+            <div class="btn-group" role="group">
+                @foreach (var j in i)
+                {
+                    if (!string.IsNullOrWhiteSpace(j.View))
+                    {
+                        @Html.Partial(j.View, j)
+                    }
+                    else
+                    {
+                        var css = !j.Visible ? "collapse" : string.Empty;
+
+                        if (!j.Enabled)
+                        { css += " disabled"; }
+
+                        <button type="button" class="btn btn-sm btn-light @css" data-tp-tag="toolbar-action" @Html.TP().Attributes.Attribute("data-id", j.Id)>
+                            @if (!string.IsNullOrWhiteSpace(j.Glyph))
+                            {
+                                <i class="@j.Glyph"></i>
+                            }
+                            @Html.Raw(j.Text)
+                        </button>
+                    }
+                }
+            </div>
+        }
+    </div>
+</div>

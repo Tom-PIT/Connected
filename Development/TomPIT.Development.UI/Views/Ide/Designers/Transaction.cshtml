@@ -1,0 +1,188 @@
+﻿@model TomPIT.Application.Design.TransactionDesigner
+
+@{
+    var css = string.Empty;
+
+    if (!string.IsNullOrWhiteSpace(Model.Transaction.CommandText))
+    {
+        <div class="mt-5 text-center collapse show" id="dataSourceDesignerInfo">
+            <i class="jumbo-font fal fa-database"></i>
+            <h3 class="text-center mt-5">@Model.Owner.Element.Title</h3>
+            <hr />
+            Command text:
+            <br />
+            <code>
+                @Model.Transaction.CommandText
+            </code>
+
+            <p class="mt-5">
+                <a href="#" data-component="configure">Configure</a>
+            </p>
+        </div>
+        css = "collapse";
+
+        <script>
+            ide.hideToolbar();
+
+            $('a[data-component="configure"]').click(function (e) {
+                e.preventDefault();
+                ide.showToolbar();
+                $('#dataSourceDesignerUI').collapse('show');
+                $('#dataSourceDesignerInfo').collapse();
+            });
+        </script>
+    }
+
+
+}
+<div class="doc-canvas @css" id="dataSourceDesignerUI">
+    <div class="paper">
+        <h4 class="dev-title">Browse</h4>
+        <!form id="dsForm">
+            <div class="form-group" data-component="select">
+                <label for="editConnection">Connection</label>
+                <select id="editConnection">
+                    <!option value="">(Select)</!option>
+                    @foreach (var i in Model.Connections)
+                    {
+                        <!option value="@i.Token.AsString()">@i.Name</!option>
+                    }
+                </select>
+            </div>
+            <div class="form-group" data-component="select">
+                <label for="editObjectTypes">Object groups</label>
+                <select id="editObjectTypes"></select>
+            </div>
+            <div class="form-group" data-component="select">
+                <label for="editObjects">Objects</label>
+                <select id="editObjects"></select>
+            </div>
+
+            <ul class="nav nav-tabs" id="devTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="tabParameters" data-toggle="tab" href="#devTabContentParameters" role="tab" aria-controls="parameters" aria-selected="false">Parameters</a>
+                </li>
+            </ul>
+            <div class="tab-content" id="devTabsContent">
+                <div class="tab-pane fade dev-tab-content show active" id="devTabContentParameters" role="tabpanel" aria-labelledby="parameters">
+                    <ul id="listParameters" class="list-unstyled"></ul>
+                </div>
+            </div>
+        </!form>
+    </div>
+</div>
+<script>
+    $('#dsForm').tpForm();
+
+    var form = $('#dsForm').tpForm('instance');
+
+    $('#editConnection').tpSelect({
+        size: 'select-sm',
+        onChange: function (data) {
+            objectTypes.clear();
+            objects.clear();
+            clearLists();
+
+            ide.designerAction({
+                data: {
+                    action: 'objectTypes',
+                    connection: data.value
+                },
+                onComplete: function (data) {
+                    objectTypes.fill(data);
+                }
+            })
+        }
+    });
+
+    var connections = $('#editConnection').tpSelect('instance');
+
+    $('#editObjectTypes').tpSelect({
+        size: 'select-sm',
+        onChange: function (data) {
+            objects.clear();
+            clearLists();
+
+            ide.designerAction({
+                data: {
+                    action: 'objects',
+                    connection: connections.getValue().id,
+                    objectType: objectTypes.getValue().id
+                },
+                onComplete: function (data) {
+                    objects.fill(data);
+                }
+            })
+        }
+    });
+
+    var objectTypes = $('#editObjectTypes').tpSelect('instance');
+
+    $('#editObjects').tpSelect({
+        size: 'select-sm',
+        onChange: function (data) {
+            clearLists();
+
+            ide.designerAction({
+                data: {
+                    action: 'object',
+                    connection: connections.getValue().id,
+                    objectType: objectTypes.getValue().id,
+                    object: objects.getValue().id
+                },
+                onComplete: function (data) {
+                    if (typeof data === 'undefined')
+                        return;
+
+                    var parameters = data.parameters;
+                    var pl = $('#listParameters');
+
+                    if (typeof parameters !== 'undefined') {
+                        var idx = 0;
+
+                        $.each(parameters, function (i, v) {
+                            var html = '<li><div class="custom-control custom-checkbox mb-3">' +
+                                '<input type="checkbox" class="custom-control-input" id="p' + idx + '" checked>' +
+                                '<label class="custom-control-label" for="p' + idx + '">' + v.Name + '</label>' +
+                                '</div></li>';
+
+                            pl.append(html);
+
+                            idx++;
+                        });
+                    }
+                }
+            })
+        }
+    });
+
+    var objects = $('#editObjects').tpSelect('instance');
+
+    function clearLists() {
+        $('#listParameters').empty();
+    }
+
+    $('#ide').on('toolbarClick', function (s, e) {
+
+        var object = objects.getValue().id;
+
+        if (object === null) {
+            tompit.warning('Please select an object to import.', 'Import');
+            e.cancel = true;
+            return;
+        }
+
+        var parameters = $('input:checked', $('#listParameters'));
+
+        var pa = [];
+
+        $.each(parameters, function (i, v) {
+            pa.push($(v).siblings('label').html());
+        });
+
+        e.parameters.parameters = pa.join();
+        e.parameters.connection = connections.getValue().id;
+        e.parameters.objectType = objectTypes.getValue().id;
+        e.parameters.object = object;
+    });
+</script>

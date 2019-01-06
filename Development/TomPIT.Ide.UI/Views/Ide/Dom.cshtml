@@ -1,0 +1,36 @@
+﻿@model TomPIT.Ide.IEnvironment
+
+@{
+    var path = Model.Selection.Path;
+    int depth = 2;
+    var mode = "children";
+
+    if (!string.IsNullOrWhiteSpace(path))
+    {
+        if (Model.RequestBody != null)
+        {
+            depth = Model.RequestBody.Optional("depth", 0);
+            mode = Model.RequestBody.Optional("mode", "children");
+        }
+    }
+
+    List<TomPIT.Dom.IDomElement> nodes = null;
+
+    if (string.Compare(mode, "children", true) == 0)
+    { nodes = Model.Dom.Query(path, depth); }
+    else
+    {
+        var node = Model.Dom.Select(path, depth);
+
+        if (node != null)
+        { nodes = new List<TomPIT.Dom.IDomElement>() { { node } }; }
+    }
+}
+
+
+@foreach (var i in nodes)
+{
+    ViewBag.CurrentNode = i;
+
+    @Html.Partial("~/Views/Ide/DomNode.cshtml", Model)
+}

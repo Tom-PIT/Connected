@@ -1,0 +1,65 @@
+﻿@using TomPIT;
+
+@model TomPIT.Design.IProperty
+
+@{
+    var value = Types.Convert<decimal>(Model.Value);
+
+    var required = Model.Validation.Required.IsRequired ? "required" : string.Empty;
+}
+
+<div name="@Model.Name"></div>
+
+<script>
+    $('[name="@Model.Name"]').dxNumberBox({
+        stylingMode: 'underlined',
+        width: '100%',
+        step: 1,
+        mode:'text',
+        @if (!double.IsNaN(Model.Validation.MaxValue.Value))
+            {
+           <text>
+        max: @Model.Validation.MaxValue.Value,
+                </text>
+           }
+
+        @if (!double.IsNaN(Model.Validation.MinValue.Value))
+            {
+           <text>
+        min: @Model.Validation.MinValue.Value,
+                </text>
+           }
+        value: @Html.Raw(value),
+        onValueChanged: function (e) {
+            ide.saveProperty({
+                data: {
+                    path: propertyPath,
+                    property: '@Model.Name',
+                    value: e.value,
+                },
+                onError: function (request, status, error) {
+                    var data = JSON.parse(request.responseText);
+
+                    $('[name="@Model.Name"]').dxNumberBox('instance').option({
+                        validationError: {
+                            message: data.message
+                        },
+                        isValid: false
+                    });
+
+                    return true;
+                }
+            })
+
+        }
+    }).dxValidator({
+        validationRules: [
+            @if (Model.Validation.Required.IsRequired)
+            {
+               <text>
+            {'type':'required'}
+            </text>
+            }
+        ]
+    });
+</script>

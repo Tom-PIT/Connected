@@ -1,0 +1,53 @@
+﻿@model TomPIT.Models.MultiTenant.MultiTenantLoginModel
+
+<div class="text-center">
+    <h3 class="mt-5 text-md-left mb-5">
+        @SR.Login
+    </h3>
+</div>
+
+<div class="form-group">
+    <label for="editUser">@SR.AttEmailOrLoginName</label>
+    <input type="text" id="editUser" required class="form-control form-control-lg" value="@Model.UserName" />
+    <div class="invalid-feedback">
+        @SR.ValLoginUser
+    </div>
+</div>
+<div class="form-group">
+    <label for="editPassword">@SR.AttPassword</label>
+    <input type="password" id="editPassword" class="form-control form-control-lg" />
+</div>
+<div class="form-group">
+    <label for="editEndpoint">@SR.AttEndpoint</label>
+    <select id="editEndpoint" required class="form-control form-control-lg" value="@Model.EndpointUrl">
+        @foreach (var i in Model.QueryConnections())
+        {
+            <!option value="@i.Url">@i.Name</!option>
+        }
+    </select>
+    <div class="invalid-feedback">
+        @SR.ValLoginEndpoint
+    </div>
+</div>
+<div class="form-group">
+    @Html.ValidationSummary()
+    <div>
+        <button type="submit" id="buttonSave" class="btn btn-info btn-lg btn-block">@SR.CmdLogIn</button>
+    </div>
+    <div data-tp-tag="progress-container">
+
+    </div>
+</div>
+
+<div class="form-group">
+    <div class="custom-control custom-checkbox">
+        <input type="checkbox" value="" id="editRememberMe" class="custom-control-input no-validate">
+        <label for="editRememberMe" class="custom-control-label">
+            @SR.RememberMe
+        </label>
+    </div>
+</div>
+
+<script>
+    $('#editUser').focus();
+</script>

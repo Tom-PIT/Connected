@@ -1,0 +1,30 @@
+﻿@model TomPIT.Ide.IEnvironment
+
+<div class="dev-events" id="devEvents">
+    <ul class="list-unstyled">
+        @if (Model.Selection.Events.Events != null)
+        {
+            foreach (var i in Model.Selection.Events.Events)
+            {
+                var css = i.Blob != Guid.Empty ? "event-active" : string.Empty;
+
+                <li class="dev-event @css" data-id="@i.Name">
+                    @if (!string.IsNullOrWhiteSpace(i.Glyph))
+                    {<i class="@i.Glyph"></i>}
+                    @i.Name
+                </li>
+            }
+        }
+    </ul>
+</div>
+
+<script>
+    $('#devEvents li').click(function () {
+        ide.loadSection({
+            section: 'designer',
+            data: {
+                property: $(this).attr('data-id')
+            }
+        });
+    });
+</script>

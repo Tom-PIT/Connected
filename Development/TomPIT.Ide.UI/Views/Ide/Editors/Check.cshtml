@@ -1,0 +1,41 @@
+﻿@using TomPIT;
+
+@model TomPIT.Design.IProperty
+
+@{
+    var value = Types.Convert<bool>(Model.Value);
+    var val = "true";
+
+    if (!value)
+    { val = "false"; }
+}
+
+<div name="@Model.Name"></div>
+
+<script>
+        $('[name="@Model.Name"]').dxCheckBox({
+        value: @val,
+        onValueChanged: function (e) {
+            ide.saveProperty({
+                data: {
+                    path: propertyPath,
+                    property: '@Model.Name',
+                    value: e.value,
+                },
+                onError: function (request, status, error) {
+                    var data = JSON.parse(request.responseText);
+
+                    $('[name="@Model.Name"]').dxCheckBox('instance').option({
+                        validationError: {
+                            message: data.message
+                        },
+                        isValid: false
+                    });
+
+                    return true;
+                }
+            })
+
+        }
+    });
+</script>

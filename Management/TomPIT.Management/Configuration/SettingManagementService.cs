@@ -1,0 +1,50 @@
+﻿using System;
+using TomPIT.Runtime;
+
+namespace TomPIT.Configuration
+{
+	internal class SettingManagementService : ISettingManagementService
+	{
+		public void Update(IApplicationContext sender, Guid resourceGroup, string name, string value, bool visible, DataType dataType, string tags)
+		{
+			var server = sender.GetServerContext();
+
+			var d = new Setting
+			{
+				ResourceGroup = resourceGroup,
+				Name = name,
+				Value = value,
+				Visible = visible,
+				DataType = dataType,
+				Tags = tags
+			};
+
+			var u = server.CreateUrl("SettingManagement", "Update");
+
+			server.Connection.Post(u, d);
+			server.Cache.Remove("setting", server.Cache.GenerateKey(resourceGroup, name));
+
+			if (server.GetService<ISettingService>() is ISettingNotification n)
+				n.NotifyChanged(this, new SettingEventArgs(resourceGroup, name));
+		}
+
+		public void Delete(IApplicationContext sender, Guid resourceGroup, string name)
+		{
+			var server = sender.GetServerContext();
+
+			var d = new Setting
+			{
+				ResourceGroup = resourceGroup,
+				Name = name
+			};
+
+			var u = server.CreateUrl("Setting", "Delete");
+
+			server.Connection.Post(u, d);
+			server.Cache.Remove("setting", server.Cache.GenerateKey(resourceGroup, name));
+
+			if (server.GetService<ISettingService>() is ISettingNotification n)
+				n.NotifyChanged(this, new SettingEventArgs(resourceGroup, name));
+		}
+	}
+}

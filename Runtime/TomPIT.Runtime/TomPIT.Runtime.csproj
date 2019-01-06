@@ -14,12 +14,12 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
-    <Product>Tom PIT Corporate Cloud</Product>
+    <Product>Tom PIT Micro service platform</Product>
     <RepositoryUrl></RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.App"/>
+		<PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="lz4net" Version="1.0.15.93" />
     <PackageReference Include="microsoft.aspnetcore.authentication" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
@@ -30,10 +30,13 @@
 
   <ItemGroup>
     <Reference Include="TomPIT.ComponentModel">
-      <HintPath>..\..\..\..\bin2\TomPIT.ComponentModel.dll</HintPath>
+      <HintPath>c:\bin2\TomPIT.ComponentModel.dll</HintPath>
     </Reference>
     <Reference Include="TomPIT.Core">
-      <HintPath>..\..\..\..\bin2\TomPIT.Core.dll</HintPath>
+      <HintPath>c:\bin2\TomPIT.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="TomPIT.DataProviders.Sql">
+      <HintPath>c:\bin2\TomPIT.DataProviders.Sql.dll</HintPath>
     </Reference>
   </ItemGroup>
 

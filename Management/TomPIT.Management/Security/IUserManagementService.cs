@@ -1,0 +1,17 @@
+﻿using System;
+
+namespace TomPIT.Security
+{
+	public interface IUserManagementService
+	{
+		Guid Insert(string loginName, string email, UserStatus status, string firstName, string lastName, string description,
+			string password, string pin, Guid language, string timezone, bool notificationEnabled, string mobile, string phone);
+
+		void Update(Guid user, string loginName, string email, UserStatus status, string firstName, string lastName, string description,
+			string pin, Guid language, string timezone, bool notificationEnabled, string mobile, string phone);
+
+		void ChangeAvatar(Guid user, byte[] contentBytes, string contentType, string fileName);
+		void ResetPassword(Guid user);
+		void Delete(Guid user);
+	}
+}

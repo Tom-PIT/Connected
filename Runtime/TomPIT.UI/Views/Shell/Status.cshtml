@@ -1,0 +1,41 @@
+﻿@model StatusModel
+
+@{
+    Layout = "~/Views/Shared/Sys.cshtml";
+}
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-8 text-center">
+            <a href="@Context.Request.RootUrl()">
+                <img id="logo" src="~/Assets/Images/Shell/AppSys.png" class="img-fluid center-block">
+            </a>
+            <div class="mt-5 text-center">
+                <h4 class="text-center">
+                    @Model.Title
+                </h4>
+                <br />
+                <i class="far fa-meh jumbo-font"></i>
+
+                <div class="mt-5">
+                    <div>
+                        @Model.Message
+                    </div>
+                    <code>
+                        @Model.Description
+                    </code>
+                </div>
+                <hr />
+                <div class="mt-5">
+                    <ul class="list-inline">
+                        @if (Model.TryAgainEnabled)
+                        {
+                            <li class="list-inline-item mt-1"><a href="#" onclick="window.location.reload(true);" class="btn btn-outline-info btn-lg">@SR.ReloadView</a></li>
+                        }
+                        <li class="list-inline-item mt-1"><a href="@Context.Request.RootUrl()" class="btn btn-outline-info btn-lg">@SR.ViewHome</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

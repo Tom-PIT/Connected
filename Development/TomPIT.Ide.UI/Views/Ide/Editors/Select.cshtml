@@ -1,0 +1,51 @@
+﻿@using TomPIT;
+
+@model TomPIT.Design.IProperty
+
+@{
+    var value = Model.Value;
+
+    if (value != null && value.GetType().IsEnum)
+    { value = Convert.ChangeType(value, value.GetType().GetEnumUnderlyingType()); }
+
+    var items = DomQuery.Items(Model);
+    var required = Model.Validation.Required.IsRequired ? "required" : string.Empty;
+}
+
+<div name="@Model.Name">
+
+
+</div>
+
+<script>
+    $('[name="@Model.Name"]').dxSelectBox({
+        stylingMode: 'underlined',
+        dataSource:@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(items)) ,
+        displayExpr: 'Text',
+        valueExpr: 'Value',
+        value:@Html.TP().JavaScript.Value(value),
+        onValueChanged: function (e) {
+            ide.saveProperty({
+                data: {
+                    path: propertyPath,
+                    property: '@Model.Name',
+                    value: e.value,
+                },
+                onError: function (request, status, error) {
+                    var data = JSON.parse(request.responseText);
+
+                    $('[name="@Model.Name"]').dxSelectBox('instance').option({
+                        validationError: {
+                            message:data.message
+                        },
+                        isValid:false
+                    });
+
+                    return true;
+                }
+            })
+
+        }
+    });
+
+</script>

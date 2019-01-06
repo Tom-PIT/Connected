@@ -1,0 +1,231 @@
+﻿@model TomPIT.Application.Design.DataSourceDesigner
+
+@{
+    var css = string.Empty;
+
+    if (!string.IsNullOrWhiteSpace(Model.DataSource.CommandText))
+    {
+        <div class="mt-5 text-center collapse show" id="dataSourceDesignerInfo">
+            <i class="jumbo-font fal fa-database"></i>
+            <h3 class="text-center mt-5">@Model.Owner.Element.Title</h3>
+            <hr />
+            Command text:
+            <br />
+            <code>
+                @Model.DataSource.CommandText
+            </code>
+
+            <p class="mt-5">
+                <a href="#" data-component="configure">Configure</a>
+            </p>
+        </div>
+        css = "collapse";
+
+        <script>
+            ide.hideToolbar();
+
+            $('a[data-component="configure"]').click(function (e) {
+                e.preventDefault();
+                ide.showToolbar();
+                $('#dataSourceDesignerUI').collapse('show');
+                $('#dataSourceDesignerInfo').collapse();
+            });
+        </script>
+    }
+
+
+}
+<div class="doc-canvas @css" id="dataSourceDesignerUI">
+    <div class="paper">
+        <h4 class="dev-title">Browse</h4>
+        <!form id="dsForm">
+            <div class="form-group" data-component="select">
+                <label for="editConnection">Connection</label>
+                <div id="editConnection"></div>
+            </div>
+            <div class="form-group" data-component="select">
+                <label for="editObjectTypes">Object groups</label>
+                <div id="editObjectTypes"></div>
+            </div>
+            <div class="form-group" data-component="select">
+                <label for="editObjects">Objects</label>
+                <div id="editObjects"></div>
+            </div>
+
+            <ul class="nav nav-tabs" id="devTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="tabFields" data-toggle="tab" href="#devTabContentFields" role="tab" aria-controls="fields" aria-selected="true">Fields</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="tabParameters" data-toggle="tab" href="#devTabContentParameters" role="tab" aria-controls="parameters" aria-selected="false">Parameters</a>
+                </li>
+            </ul>
+            <div class="tab-content" id="devTabsContent">
+                <div class="tab-pane fade show active dev-tab-content" id="devTabContentFields" role="tabpanel" aria-labelledby="fields">
+                    <ul id="listFields" class="list-unstyled"></ul>
+                </div>
+                <div class="tab-pane fade dev-tab-content" id="devTabContentParameters" role="tabpanel" aria-labelledby="parameters">
+                    <ul id="listParameters" class="list-unstyled"></ul>
+                </div>
+            </div>
+        </!form>
+    </div>
+</div>
+<script>
+    $('#editConnection').dxSelectBox({
+        dataSource:@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Connections)),
+        displayExpr: 'Name',
+        valueExpr: 'Token',
+        searchEnabled:true,
+        onValueChanged: function (e) {
+            objectTypes.option('dataSource', null);
+            objects.option('dataSource', null);
+
+            objectTypes.option('value', null);
+            objects.option('value', null);
+
+            clearLists();
+
+            ide.designerAction({
+                data: {
+                    action: 'objectTypes',
+                    connection: e.value
+                },
+                onComplete: function (data) {
+                    objectTypes.option('dataSource', data);
+                }
+            })
+        }
+    });
+
+    var connections = $('#editConnection').dxSelectBox('instance');
+
+    $('#editObjectTypes').dxSelectBox({
+        displayExpr: 'text',
+        valueExpr: 'value',
+        searchEnabled: true,
+
+        onValueChanged: function (e) {
+            objects.option('dataSource', null);
+            objects.option('value', null);
+            clearLists();
+
+            ide.designerAction({
+                data: {
+                    action: 'objects',
+                    connection: connections.option('value'),
+                    objectType: objectTypes.option('value')
+                },
+                onComplete: function (data) {
+                    objects.option('dataSource', data);
+                }
+            })
+        }
+    });
+
+    var objectTypes = $('#editObjectTypes').dxSelectBox('instance');
+
+    $('#editObjects').dxSelectBox({
+        displayExpr: 'text',
+        valueExpr: 'value',
+        searchEnabled:true,
+        onValueChanged: function (e) {
+            clearLists();
+
+            ide.designerAction({
+                data: {
+                    action: 'object',
+                    connection: connections.option('value'),
+                    objectType: objectTypes.option('value'),
+                    object: objects.option('value')
+                },
+                onComplete: function (data) {
+                    if (typeof data === 'undefined')
+                        return;
+
+                    var fields = data.fields;
+                    var fl = $('#listFields');
+
+                    if (typeof fields !== 'undefined') {
+                        var idx = 0;
+
+                        $.each(fields, function (i, v) {
+                            var html = '<li><div class="custom-control custom-checkbox mb-3">' +
+                                '<input type="checkbox" class="custom-control-input" id="f' + idx + '" checked>' +
+                                '<label class="custom-control-label" for="f' + idx + '">' + v.Name + '</label>' +
+                                '</div></li>';
+
+                            fl.append(html);
+
+                            idx++;
+                        });
+                    }
+
+                    var parameters = data.parameters;
+                    var pl = $('#listParameters');
+
+                    if (typeof parameters !== 'undefined') {
+                        var idx = 0;
+
+                        $.each(parameters, function (i, v) {
+                            var html = '<li><div class="custom-control custom-checkbox mb-3">' +
+                                '<input type="checkbox" class="custom-control-input" id="p' + idx + '" checked>' +
+                                '<label class="custom-control-label" for="p' + idx + '">' + v.Name + '</label>' +
+                                '</div></li>';
+
+                            pl.append(html);
+
+                            idx++;
+                        });
+                    }
+                }
+            })
+        }
+    });
+
+    var objects = $('#editObjects').dxSelectBox('instance');
+
+    function clearLists() {
+        $('#listFields').empty();
+        $('#listParameters').empty();
+    }
+
+    $('#ide').on('toolbarClick', function (s, e) {
+
+        var object = objects.option('value');
+
+        if (object === null) {
+            tompit.warning('Please select an object to import.', 'Import');
+            e.cancel = true;
+            return;
+        }
+
+        var fields = $('input:checked', $('#listFields'));
+
+        if (fields.length === 0) {
+            tompit.warning('Please select at least one field to import.', 'Import');
+            e.cancel = true;
+            return;
+        }
+
+        var fa = [];
+
+        $.each(fields, function (i, v) {
+            fa.push($(v).siblings('label').html());
+        });
+
+        var parameters = $('input:checked', $('#listParameters'));
+
+        var pa = [];
+
+        $.each(parameters, function (i, v) {
+            pa.push($(v).siblings('label').html());
+        });
+
+        e.parameters.fields = fa.join();
+        e.parameters.parameters = pa.join();
+        e.parameters.connection = connections.option('value');
+        e.parameters.objectType = objectTypes.option('value');
+        e.parameters.object = object;
+    });
+</script>

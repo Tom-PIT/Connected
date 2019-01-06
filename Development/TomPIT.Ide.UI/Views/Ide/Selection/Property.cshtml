@@ -1,0 +1,24 @@
+﻿@model TomPIT.Ide.IEnvironment
+
+@{
+    var property = ViewBag.Property as TomPIT.Design.IProperty;
+
+    var obsolete = property.Obsolete ? "obsolete" : string.Empty;
+}
+
+<div class="dev-property">
+    <label @Html.TP().Attributes.Class(obsolete)>@property.Text</label>
+
+    @if (property.IsLocalizable)
+    {
+        <div class="float-right">
+            <i class="fal fa-globe" title="Localizable"></i>
+        </div>
+    }
+</div>
+
+<div class="dev-property-value" data-property="@property.Name">
+    <div class="property-grid-editor">
+        @Html.Partial(@property.Editor, property)
+    </div>
+</div>

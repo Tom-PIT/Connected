@@ -1,0 +1,32 @@
+﻿using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using TomPIT.Annotations;
+
+namespace TomPIT.Environment
+{
+	public class ManagementResourceGroup : IResourceGroup
+	{
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		[InvalidateEnvironment(Ide.EnvironmentSection.Explorer | Ide.EnvironmentSection.Designer)]
+		[MaxLength(128)]
+		[Required]
+		public string Name { get; set; }
+		[Browsable(false)]
+		[KeyProperty]
+		public Guid Token { get; set; }
+		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
+		[PropertyEditor(PropertyEditorAttribute.Select)]
+		[Items("TomPIT.Items.StorageProviderItems, TomPIT.Management")]
+		public Guid StorageProvider { get; set; }
+		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
+		public string ConnectionString { get; set; }
+
+		public override string ToString()
+		{
+			return string.IsNullOrWhiteSpace(Name)
+				? base.ToString()
+				: Name;
+		}
+	}
+}

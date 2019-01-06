@@ -1,0 +1,19 @@
+﻿@using TomPIT;
+
+@model TomPIT.Design.IProperty
+
+@{
+
+    var user = Shell.GetService<TomPIT.Security.IUserService>().Select(Types.Convert<string>(Model.Value));
+}
+
+<div class="read-only">
+    <label>
+        @if (user != null)
+        {
+            <img class="img-fluid rounded-circle dev-property-avatar" src="" />
+
+            @Html.Raw(user.DisplayName())
+        }
+    </label>
+</div>

@@ -1,0 +1,82 @@
+﻿@model TomPIT.Models.MultiTenant.MultiTenantLoginModel
+
+@{
+    Layout = "~/Views/Shared/ShellGraphic.cshtml";
+
+    ViewBag.BackstretchImage = Model.ImageUrl;
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-lg-8">
+        <div class="text-center">
+            <a href="@Url.RouteUrl("home")">
+                <img src="~/Assets/Images/Shell/AppSys.png" />
+            </a>
+        </div>
+    </div>
+</div>
+
+
+<div class="row justify-content-center align-items-center mt-5">
+    <div class="col-lg-8">
+        <form method="post" role="form" id="form1">
+            <partial name="~/Views/Shell/MultiTenant/MultiTenantLoginForm.cshtml" />
+        </form>
+    </div>
+</div>
+
+
+
+@section Scripts{
+    <script>
+        init();
+
+		function init() {
+            $('#form1').tpForm();
+
+            $('#buttonSave', $('#form1')).click(function (e) {
+                var form = $('#form1').tpForm('instance');
+
+                e.preventDefault();
+
+				if (form.validate()) {
+
+                    form.submit({
+                        dependencies :[
+                            $(this)
+                        ],
+                        url: '@Url.RouteUrl("login.authenticate")',
+                        data: {
+                                'user': form.getValue('#editUser'),
+                            'password': form.getValue('#editPassword'),
+                            'endpoint': form.getValue('#editEndpoint'),
+                            'rememberMe': form.getValue('#editRememberMe'),
+                            'location':window.location.pathname
+                        },
+                        onQueryContinue: function (data, status, request) {
+                                return form.hasRedirectUrl(data);
+                            },
+                        onBeforeSend: function () {
+                                form.progress().setText('@SR.LoginAuthenticating', '');
+                            },
+                        onComplete: function (data, status, request) {
+                                form.resetValidation();
+                            },
+                        onSuccess: function (data, status, request) {
+                                if (data.url) {
+                                    form.progress().setText('<i class="fas fa-check-circle"></i> @SR.LoginSuccess', 'text-success');
+                                    location = data.url;
+                                }
+                                else {
+                                    form.form().html(data);
+                                    init();
+                                    tompit.initContainer($('#form1'));
+                                }
+                            }
+                        });
+				}
+			});
+
+		}
+    </script>
+}

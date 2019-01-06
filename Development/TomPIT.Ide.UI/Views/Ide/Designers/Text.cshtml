@@ -1,0 +1,205 @@
+﻿@using System.Text.Encodings.Web;
+
+@model TomPIT.Designers.TextDesigner
+
+ @Html.Partial("~/Views/Ide/Designers/Signature.cshtml", Model.Signature)
+
+<div class="template-toolbar btn-toolbar justify-content-between">
+
+    <div class="btn-group">
+        @if (Model.CompletionDiagnostic != null)
+        {
+            <button class="btn btn-sm btn-light" id="checkSyntax" title="Check syntax"><i class="fal fa-check-circle"></i></button>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.DebugFileName))
+        {
+            var url = Model.Environment.Context.MapPath(string.Format("~/sys/source-code/{0}/{1}/{2}", Model.Environment.Context.MicroService(), Model.Content.Configuration().Component, Model.Content.Id.ToString()));
+
+            <a href="@url" target="_blank" class="btn btn-sm btn-light" title="Download source code for debugging"><i class="fal fa-bug"></i></a>
+        }
+    </div>
+</div>
+
+<div id="designEditor" class="text-editor text-editor-sa" data-fullscreen="true"></div>
+
+<script>
+        @{
+            var lines = string.IsNullOrWhiteSpace(Model.Text) ? new string[0] : Model.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
+    }
+
+    var src = [@foreach (var i in lines){
+        @:'@Html.Raw(JavaScriptEncoder.Default.Encode(i))',
+    }
+        ];
+
+    textEditor.activateEditor({
+        id: 'design',
+        elementId: 'designEditor',
+        source: src,
+        language: '@Model.Language',
+        onChange: function (value) {
+            saveSourceCode();
+        },
+        @if (Model.CompletionProvider != null)
+            {
+           <text>
+        onCreated: function (instance) {
+            textEditor.registerCompletionItemProvider('@Model.Language', {
+                provideCompletionItems: function (model, position, context) {
+                    return new Promise(function (resolve, reject) {
+                        ide.designerAction({
+                            data: {
+                                action: 'provideItems',
+                                section: 'designer',
+                                position: model.getOffsetAt({
+                                    lineNumber: position.lineNumber,
+                                    column: position.column
+                                }),
+                                triggerCharacter: context.triggerCharacter,
+                                triggerKind:context.triggerKind,
+                                content: model.getValue()
+                            },
+                            onComplete: function (data) {
+                                resolve({
+                                    suggestions:data
+                                })
+                            }
+
+                        });
+                    });
+
+                },
+            });
+
+            textEditor.registerSignatureHelpProvider('@Model.Language', {
+                signatureHelpTriggerCharacters: ['(', '[', ',', '&lt'],
+                provideSignatureHelp: function (model, position) {
+                    return new Promise(function (resolve, reject) {
+                        ide.designerAction({
+                            data: {
+                                action: 'signatureHelp',
+                                section: 'designer',
+                                position: model.getOffsetAt({
+                                    lineNumber: position.lineNumber,
+                                    column: position.column
+                                }),
+                                content: model.getValue()
+                            },
+                            onComplete: function (data) {
+                                resolve(data);
+                            }
+                        });
+
+                    });
+                },
+            });
+
+            textEditor.registerHoverProvider('@Model.Language', {
+                provideHover: function (model, position) {
+                    return new monaco.Promise(function (resolve, reject) {
+                        ide.designerAction({
+                            data: {
+                                action: 'hover',
+                                section: 'designer',
+                                position: model.getOffsetAt({
+                                    lineNumber: position.lineNumber,
+                                    column: position.column
+                                }),
+                                content: model.getValue()
+                            },
+                            onComplete: function (data) {
+                                resolve(data);
+                            }
+                        });
+
+                    });
+                },
+            });
+
+            var internalCommand = textEditor.addCommand(0, function (s, e) {
+                if (e.kind === "1") {
+                    ide.pinDocument(ide.activeDocument().path);
+                    ide.openDocument(e.microService, e.component, e.element);
+                }
+                else
+                    ide.newWindow(e.microService, e.component, e.element);
+            });
+
+            textEditor.registerCodeLensProvider('@Model.Language', {
+                provideCodeLenses: function (model, token) {
+                    saveSourceCode();
+                    return new monaco.Promise(function (resolve, reject) {
+                        ide.designerAction({
+                            data: {
+                                action: 'codeLens',
+                                section: 'designer',
+                                token: token,
+                                content: model.getValue()
+                            },
+                            onComplete: function (data) {
+                                if (typeof data !== 'undefined' && data !== null) {
+                                    $.each(data, function (i, v) {
+                                        v.command.id = internalCommand
+                                    });
+                                }
+                                    resolve(data);
+                            }
+                        }, false);
+
+                    });
+                },
+                resolveCodeLens: function (model, codeLens, token) {
+                    return codeLens;
+                }
+            });
+        }
+
+        </text>
+            }
+    });
+
+    @if (Model.CompletionDiagnostic != null)
+    {
+       <text>
+    $('#checkSyntax').click(function (e) {
+        ide.saveProperty({
+            data: {
+                property: '@Model.PropertyName',
+                attribute: '@Model.AttributeName',
+                value: textEditor.getValue(),
+                path: propertyPath
+            },
+            onComplete: function () {
+                ide.designerAction({
+                    data: {
+                        action: 'checkSyntax',
+                        section: 'designer',
+                    },
+                    onComplete: function (data) {
+
+                        if (data.length === 0) {
+                            tompit.success('No errors found in the source code', "Valid");
+                        }
+
+                        textEditor.setMarkers(data);
+                    }
+                });
+            }
+        });
+    });
+        </text>
+    }
+
+    function saveSourceCode() {
+                    ide.saveProperty({
+                data: {
+                    property: '@Model.PropertyName',
+                    attribute: '@Model.AttributeName',
+                    section: 'designer',
+                    value: textEditor.getValue(),
+                    path: propertyPath
+                }
+            });
+    }
+</script>

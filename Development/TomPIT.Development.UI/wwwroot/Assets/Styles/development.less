@@ -1,0 +1,62 @@
+@import "Variables.less";
+
+.microservice-card {
+	border: 1px solid @Blue100;
+	display: inline-block;
+	margin: 5px 0;
+	min-width: 350px;
+	vertical-align: top;
+}
+
+.microservice-api-card {
+	border: 1px solid @Orange100;
+	display: inline-block;
+	margin: 5px 0;
+	vertical-align: top;
+	min-width: 350px;
+}
+
+
+.microservice-api-card .microservice-api-header {
+	text-align: center;
+	background-color: @Orange50;
+	height: 44px;
+}
+
+.microservice-card .microservice-body {
+	padding: 5px;
+	white-space: nowrap;
+}
+
+.microservice-api-card .microservice-api-body {
+	padding: 0 5px;
+}
+
+.microservice-card .microservice-header {
+	text-align: center;
+	background-color: @Blue50;
+}
+
+.microservice-card .microservice-header.active {
+	border-bottom: 1px solid @Blue100;
+}
+
+.microservice-api-card .microservice-api-header.active {
+	border-bottom: 1px solid @Orange100;
+}
+
+.microservice-card .microservice-name,
+.microservice-api-card .microservice-api-name {
+	font-weight: 500;
+	font-size: 0.8rem;
+}
+
+.technology-tree {
+	border: 1px solid @Grey300;
+	padding: 5px;
+	border-radius: 4px;
+}
+
+.api-operation-list {
+	padding-left: 25px;
+}

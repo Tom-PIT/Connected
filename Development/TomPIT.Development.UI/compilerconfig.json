@@ -1,0 +1,10 @@
+﻿[
+  {
+    "outputFile": "wwwroot/Assets/Styles/ide.css",
+    "inputFile": "wwwroot/Assets/Styles/ide.less"
+  },
+  {
+    "outputFile": "wwwroot/Assets/Styles/development.css",
+    "inputFile": "wwwroot/Assets/Styles/development.less"
+  }
+]

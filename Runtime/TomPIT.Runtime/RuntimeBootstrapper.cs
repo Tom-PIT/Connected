@@ -24,7 +24,7 @@ using TomPIT.Storage;
 
 namespace TomPIT.Runtime
 {
-	public static class RuntimeBootstrapper
+	internal static class RuntimeBootstrapper
 	{
 		public static IApplicationBuilder UseApiExceptionMiddleware(this IApplicationBuilder builder)
 		{

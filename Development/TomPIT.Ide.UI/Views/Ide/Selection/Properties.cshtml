@@ -1,0 +1,71 @@
+﻿@model TomPIT.Ide.IEnvironment
+
+<div class="dev-property-grid">
+    <div class="dev-property-grid-content">
+        @if (Model.Selection.Properties.Categories == null || Model.Selection.Properties.Categories.Count == 0)
+        {
+            <div class="dev-no-data">
+                No properties available for the selected element.
+            </div>
+
+        }
+        else
+        {
+            <form id="formProps">
+                @foreach (var i in Model.Selection.Properties.Categories)
+                {
+                    <div class="dev-category">
+                        @i
+                    </div>
+                    foreach (var j in Model.Selection.Properties.QueryProperties(i).OrderBy(f => f.Ordinal).ThenBy(f => f.Text))
+                    {
+                        ViewBag.Property = j;
+                        @Html.Partial("~/Views/Ide/Selection/Property.cshtml", Model)
+                    }
+                }
+            </form>
+        }
+    </div>
+
+    <div class="dev-language" id="devLanguage">
+        <div style="position:relative">
+            <div class="dropup">
+                <button class="btn btn-block btn-link dropdown-toggle btn-sm btn-language" type="button" id="devLanguageDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fal fa-globe"></i> <span>@Model.Globalization.Language</span>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    @foreach (var i in Model.Globalization.Languages)
+                    {
+                        <a class="dropdown-item" href="#" data-component="language">@i</a>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="dev-property-grid-desc" id="devPropertyDescription">
+
+
+    </div>
+</div>
+<script>
+    $('#formProps').tpForm({
+        appearance: {
+            showValid: false
+        }
+    });
+
+    var propertyForm = $('#formProps').tpForm('instance');
+    var propertyPath = '@Model.Selection.Path';
+
+    $('a[data-component="language"]').click(function () {
+        var value = $(this).html();
+
+        ide.setLanguage(value);
+        $(this).closest('.dropup').children('button span').html(value);
+
+        ide.refreshSections({
+            sections:'designer,properties'
+        });
+    })
+</script>
