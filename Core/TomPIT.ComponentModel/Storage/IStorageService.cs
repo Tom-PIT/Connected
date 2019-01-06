@@ -1,0 +1,27 @@
+﻿using System;
+using System.Collections.Generic;
+using TomPIT.Net;
+
+namespace TomPIT.Storage
+{
+	public delegate void BlobChangedHandler(ISysContext sender, BlobEventArgs e);
+
+	public interface IStorageService
+	{
+		event BlobChangedHandler BlobChanged;
+		event BlobChangedHandler BlobRemoved;
+		event BlobChangedHandler BlobAdded;
+		event BlobChangedHandler BlobCommitted;
+
+		void Commit(Guid draft, string primaryKey);
+		void Delete(Guid blob);
+		IBlob Select(Guid blob);
+		List<IBlob> Query(Guid microService, int kind, Guid resourceGroup, string primaryKey);
+		List<IBlob> QueryDrafts(Guid draft);
+		List<IBlob> Query(Guid microService);
+		Guid Upload(IBlob blob, byte[] content, StoragePolicy policy);
+		Guid Upload(IBlob blob, byte[] content, StoragePolicy policy, Guid token);
+		IBlobContent Download(Guid blob);
+		List<IBlobContent> Download(List<Guid> blobs);
+	}
+}

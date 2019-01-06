@@ -1,0 +1,30 @@
+﻿using Newtonsoft.Json.Linq;
+using TomPIT.Runtime;
+
+namespace TomPIT.ComponentModel.Data
+{
+	public class TransactionExecutedArguments : EventArguments
+	{
+		private JObject _returnValues = null;
+
+		internal TransactionExecutedArguments(IApplicationContext sender, JObject returnValues) : base(sender)
+		{
+			ReturnValues = returnValues;
+		}
+
+		public JObject ReturnValues
+		{
+			get
+			{
+				if (_returnValues == null)
+					_returnValues = new JObject();
+
+				return _returnValues;
+			}
+			private set
+			{
+				_returnValues = value;
+			}
+		}
+	}
+}

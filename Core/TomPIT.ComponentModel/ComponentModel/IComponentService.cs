@@ -1,0 +1,33 @@
+﻿using System;
+using System.Collections.Generic;
+using TomPIT.Net;
+
+namespace TomPIT.ComponentModel
+{
+	public delegate void ComponentChangedHandler(ISysContext sender, ComponentEventArgs e);
+	public delegate void ConfigurationChangedHandler(ISysContext sender, ConfigurationEventArgs e);
+
+	public interface IComponentService
+	{
+		event ComponentChangedHandler ComponentChanged;
+		event ConfigurationChangedHandler ConfigurationChanged;
+		event ConfigurationChangedHandler ConfigurationAdded;
+		event ConfigurationChangedHandler ConfigurationRemoved;
+
+		List<IConfiguration> QueryConfigurations(List<IComponent> components);
+		List<IConfiguration> QueryConfigurations(List<string> resourceGroups, string categories);
+		IComponent SelectComponent(Guid microService, string category, string name);
+		IComponent SelectComponent(string category, string name);
+		IComponent SelectComponent(Guid token);
+		IConfiguration SelectConfiguration(Guid microService, string category, string name);
+		IConfiguration SelectConfiguration(Guid component);
+
+		string SelectTemplate(Guid microService, ITemplate template);
+
+		List<IComponent> QueryComponents(Guid microService, string category);
+		List<IComponent> QueryComponents(Guid microService);
+
+
+		string CreateName(Guid microService, string category, string prefix);
+	}
+}

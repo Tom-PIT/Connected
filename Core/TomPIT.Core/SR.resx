@@ -1,0 +1,762 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ArgumentCannotBeGreaterThanBaseline" xml:space="preserve">
+    <value>The specified argument {0} cannot be greater than its ceiling value of {1}.</value>
+  </data>
+  <data name="ArgumentCannotBeNegative" xml:space="preserve">
+    <value>The specified argument {0} cannot be initialized with a negative value.</value>
+  </data>
+  <data name="AttEmailOrLoginName" xml:space="preserve">
+    <value>Email or login name</value>
+  </data>
+  <data name="AttEndpoint" xml:space="preserve">
+    <value>Endpoint</value>
+  </data>
+  <data name="AttPassword" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="CatMisc" xml:space="preserve">
+    <value>Misc</value>
+  </data>
+  <data name="CmdLogIn" xml:space="preserve">
+    <value>Log in</value>
+  </data>
+  <data name="DefaultRetryStrategyMappingNotFound" xml:space="preserve">
+    <value>Default retry strategy for technology {0}, named '{1}', is not defined.</value>
+  </data>
+  <data name="DefaultRetryStrategyNotFound" xml:space="preserve">
+    <value>Default retry strategy for technology {0} was not not defined, and there is no overall default strategy.</value>
+  </data>
+  <data name="DevelopmentEnvironment" xml:space="preserve">
+    <value>Integrated development environment</value>
+  </data>
+  <data name="DevSelect" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="DurationDays" xml:space="preserve">
+    <value>d</value>
+  </data>
+  <data name="DurationHours" xml:space="preserve">
+    <value>h</value>
+  </data>
+  <data name="DurationMilliseconds" xml:space="preserve">
+    <value>ms</value>
+  </data>
+  <data name="DurationMinutes" xml:space="preserve">
+    <value>m</value>
+  </data>
+  <data name="DurationSeconds" xml:space="preserve">
+    <value>s</value>
+  </data>
+  <data name="ErrActionNotSupported" xml:space="preserve">
+    <value>Designer action not supported.</value>
+  </data>
+  <data name="ErrActivatorCreateInstance" xml:space="preserve">
+    <value>The Activator.CreateInstance method could not create a default instance of the supplied value type</value>
+  </data>
+  <data name="ErrAuthenticationFailed" xml:space="preserve">
+    <value>Invalid password</value>
+  </data>
+  <data name="ErrBlobNotFound" xml:space="preserve">
+    <value>Blob not found</value>
+  </data>
+  <data name="ErrCannotCreateInstance" xml:space="preserve">
+    <value>Cannot create instance of type.</value>
+  </data>
+  <data name="ErrCannotFindConfiguration" xml:space="preserve">
+    <value>Cannot find configuration.</value>
+  </data>
+  <data name="ErrCannotResolveMicroService" xml:space="preserve">
+    <value>Cannot resolve micro service</value>
+  </data>
+  <data name="ErrCannotRetrieveControllerProvider" xml:space="preserve">
+    <value>Cannot retrieve IControllerProvider</value>
+  </data>
+  <data name="ErrClaimNotFound" xml:space="preserve">
+    <value>Claim not found</value>
+  </data>
+  <data name="ErrConnectionDataProviderNotFound" xml:space="preserve">
+    <value>Data provider not found</value>
+  </data>
+  <data name="ErrConnectionDataProviderNotSet" xml:space="preserve">
+    <value>Connection data provider not set</value>
+  </data>
+  <data name="ErrConnectionNotFound" xml:space="preserve">
+    <value>Connection not found</value>
+  </data>
+  <data name="ErrConnectionNotSet" xml:space="preserve">
+    <value>Connection not set</value>
+  </data>
+  <data name="ErrConversion" xml:space="preserve">
+    <value>Cannot convert value to the destination type.</value>
+  </data>
+  <data name="ErrDataParameterExpected" xml:space="preserve">
+    <value>Parameter value expected.</value>
+  </data>
+  <data name="ErrDataProviderNotFound" xml:space="preserve">
+    <value>Data provider not found.</value>
+  </data>
+  <data name="ErrDefaultGeneric" xml:space="preserve">
+    <value>The specified value type contains generic parameters. Default value cannot be retrieved</value>
+  </data>
+  <data name="ErrDefaultStorageProviderNotSet" xml:space="preserve">
+    <value>No default storage provider</value>
+  </data>
+  <data name="ErrEnvironmentUnitNotFound" xml:space="preserve">
+    <value>Environment unit not found</value>
+  </data>
+  <data name="ErrExpectedParameter" xml:space="preserve">
+    <value>Parameter expected.</value>
+  </data>
+  <data name="ErrFeatureNotFound" xml:space="preserve">
+    <value>Feature not found</value>
+  </data>
+  <data name="ErrInstanceEndpointNotFound" xml:space="preserve">
+    <value>Instance endpoint not found</value>
+  </data>
+  <data name="ErrInvalidInterface" xml:space="preserve">
+    <value>Invalid interface specified</value>
+  </data>
+  <data name="ErrInvalidParameterDataType" xml:space="preserve">
+    <value>Invalid parameter value type.</value>
+  </data>
+  <data name="ErrInvalidPath" xml:space="preserve">
+    <value>Invalid path.</value>
+  </data>
+  <data name="ErrInvalidPropertyDesigner" xml:space="preserve">
+    <value>Invalid property designer.</value>
+  </data>
+  <data name="ErrInvalidQualifier" xml:space="preserve">
+    <value>Invalid qualifier.</value>
+  </data>
+  <data name="ErrInvalidQualifierExpected" xml:space="preserve">
+    <value>Expected values</value>
+  </data>
+  <data name="ErrInvalidSection" xml:space="preserve">
+    <value>Invalid section.</value>
+  </data>
+  <data name="ErrInvalidMicroServiceQualifier" xml:space="preserve">
+    <value>Invalid micro service qualifier</value>
+  </data>
+  <data name="ErrJsEnvironmentUrlNotSet" xml:space="preserve">
+    <value>Environment URL not set</value>
+  </data>
+  <data name="ErrLanguageNotFound" xml:space="preserve">
+    <value>Language not found</value>
+  </data>
+  <data name="ErrMissingAddMethod" xml:space="preserve">
+    <value>Missing Add method.</value>
+  </data>
+  <data name="ErrMissingClearMethod" xml:space="preserve">
+    <value>Missing Clear method.</value>
+  </data>
+  <data name="ErrMissingIndexer" xml:space="preserve">
+    <value>Missing indexer.</value>
+  </data>
+  <data name="ErrMissingInsertMethod" xml:space="preserve">
+    <value>Missing Insert method.</value>
+  </data>
+  <data name="ErrMissingRemoveMethod" xml:space="preserve">
+    <value>Missing Remove method.</value>
+  </data>
+  <data name="ErrNoDesigner" xml:space="preserve">
+    <value>No designer.</value>
+  </data>
+  <data name="ErrNoPropertyDesigner" xml:space="preserve">
+    <value>No property designer.</value>
+  </data>
+  <data name="ErrNoTransactionHandler" xml:space="preserve">
+    <value>No transaction handler.</value>
+  </data>
+  <data name="ErrParameterNameNotSet" xml:space="preserve">
+    <value>Parameter name not set</value>
+  </data>
+  <data name="ErrParameterNotDefined" xml:space="preserve">
+    <value>Parameter not defined</value>
+  </data>
+  <data name="ErrParameterValueConversion" xml:space="preserve">
+    <value>Parameter value conversion failed.</value>
+  </data>
+  <data name="ErrParameterValueNotSet" xml:space="preserve">
+    <value>Parameter value not set</value>
+  </data>
+  <data name="ErrPathNotSet" xml:space="preserve">
+    <value>Path parameter not set.</value>
+  </data>
+  <data name="ErrPermissionNotFound" xml:space="preserve">
+    <value>Permission not found</value>
+  </data>
+  <data name="ErrPropertyNotFound" xml:space="preserve">
+    <value>Property not found.</value>
+  </data>
+  <data name="ErrResourceGroupNotFound" xml:space="preserve">
+    <value>Resource group not found</value>
+  </data>
+  <data name="ErrServerExpectedArgument" xml:space="preserve">
+    <value>Argument expected.</value>
+  </data>
+  <data name="ErrServerInvalidArgumentType" xml:space="preserve">
+    <value>Cannot cast argument to the destination type</value>
+  </data>
+  <data name="ErrMicroServiceNotFound" xml:space="preserve">
+    <value>Micro service not found</value>
+  </data>
+  <data name="ErrStorageProviderNotRegistered" xml:space="preserve">
+    <value>Specified storage provider not registered</value>
+  </data>
+  <data name="ErrTimezoneParametersSupportedOnDatesOnly" xml:space="preserve">
+    <value>Timezone setting can be set on parameters with data type Date only.</value>
+  </data>
+  <data name="ErrTransactionNotCommited" xml:space="preserve">
+    <value>Transaction not commited.</value>
+  </data>
+  <data name="ErrTypeInternal" xml:space="preserve">
+    <value>The specified value type is not a publicly-visible type. Default value cannot be retrieved</value>
+  </data>
+  <data name="ErrTypeNull" xml:space="preserve">
+    <value>Cannot resolve type</value>
+  </data>
+  <data name="ErrUserInactive" xml:space="preserve">
+    <value>User is inactive</value>
+  </data>
+  <data name="ErrUserLocked" xml:space="preserve">
+    <value>User is locked</value>
+  </data>
+  <data name="ErrUserNotFound" xml:space="preserve">
+    <value>User not found</value>
+  </data>
+  <data name="ErrValidationFailed" xml:space="preserve">
+    <value>Validation failed.</value>
+  </data>
+  <data name="ExceptionRetryManagerAlreadySet" xml:space="preserve">
+    <value>The RetryManager is already set.</value>
+  </data>
+  <data name="ExceptionRetryManagerNotSet" xml:space="preserve">
+    <value>The default RetryManager has not been set. Set it by invoking the RetryManager.SetDefault static method, or if you are using declarative configuration, you can invoke the RetryPolicyFactory.CreateDefault() method to automatically create the retry manager from the configuration file.</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="LoginAuthenticating" xml:space="preserve">
+    <value>Authenticating. Just a second...</value>
+  </data>
+  <data name="LoginSuccess" xml:space="preserve">
+    <value>Successfully logged in. Getting started...</value>
+  </data>
+  <data name="MenuAboutMe" xml:space="preserve">
+    <value>About me</value>
+  </data>
+  <data name="MenuLogin" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="MenuLogoff" xml:space="preserve">
+    <value>Logoff</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>Remember me</value>
+  </data>
+  <data name="RetryLimitExceeded" xml:space="preserve">
+    <value>The action has exceeded its defined retry limit.</value>
+  </data>
+  <data name="RetryStrategyNotFound" xml:space="preserve">
+    <value>The retry strategy with name '{0}' cannot be found.</value>
+  </data>
+  <data name="ServiceRegistered" xml:space="preserve">
+    <value>Service already registered</value>
+  </data>
+  <data name="ServiceTypeNull" xml:space="preserve">
+    <value>Cannot create service instance</value>
+  </data>
+  <data name="MicroServiceAuthorizationFailed" xml:space="preserve">
+    <value>Invalid micro service password.</value>
+  </data>
+  <data name="MicroServiceMetaCorrupted" xml:space="preserve">
+    <value>Micro service meta structure is corrupted.</value>
+  </data>
+  <data name="MicroServices" xml:space="preserve">
+    <value>Micro services</value>
+  </data>
+  <data name="StringCannotBeEmpty" xml:space="preserve">
+    <value>The specified string argument {0} must not be empty.</value>
+  </data>
+  <data name="TaskCannotBeNull" xml:space="preserve">
+    <value>The specified argument '{0}' cannot return a null task when invoked.</value>
+  </data>
+  <data name="TaskMustBeScheduled" xml:space="preserve">
+    <value>The specified argument '{0}' must return a scheduled task (also known as "hot" task) when invoked.</value>
+  </data>
+  <data name="ValLoginEndpoint" xml:space="preserve">
+    <value>Please select or enter an endpoint.</value>
+  </data>
+  <data name="ValLoginPassword" xml:space="preserve">
+    <value>Please enter a password.</value>
+  </data>
+  <data name="ValLoginUser" xml:space="preserve">
+    <value>Please provide an email or login name.</value>
+  </data>
+  <data name="ValMaxValue" xml:space="preserve">
+    <value>Maximum allowed value is {0}.</value>
+  </data>
+  <data name="ValMinValue" xml:space="preserve">
+    <value>Minimun allowed value is {0}.</value>
+  </data>
+  <data name="ValReservedValue" xml:space="preserve">
+    <value>The following values are reserved by the system:</value>
+  </data>
+  <data name="DevAddFeature" xml:space="preserve">
+    <value>Add feature</value>
+  </data>
+  <data name="DevColCreateSuccessful" xml:space="preserve">
+    <value>{0} created successfully. Click here to edit.</value>
+  </data>
+  <data name="DomFeatures" xml:space="preserve">
+    <value>Features</value>
+  </data>
+  <data name="ErrCannotResolveHttpRequest" xml:space="preserve">
+    <value>Cannot resolve HttpRequest</value>
+  </data>
+  <data name="ErrNoUrlHelper" xml:space="preserve">
+    <value>No IUrlHelperFactory service available</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>search</value>
+  </data>
+  <data name="ToggleDropdown" xml:space="preserve">
+    <value>Toggle dropdown</value>
+  </data>
+  <data name="CatDesign" xml:space="preserve">
+    <value>Design</value>
+  </data>
+  <data name="ValExists" xml:space="preserve">
+    <value>Value already exists</value>
+  </data>
+  <data name="ErrComponentNotFound" xml:space="preserve">
+    <value>Component not found</value>
+  </data>
+  <data name="ErrCannotCreateComponentInstance" xml:space="preserve">
+    <value>Cannot create component instance</value>
+  </data>
+  <data name="ErrComponentCorrupted" xml:space="preserve">
+    <value>Component has no configuration or configuration errors has been found</value>
+  </data>
+  <data name="ErrItemDescriptorNotFound" xml:space="preserve">
+    <value>Item descriptor not found</value>
+  </data>
+  <data name="ErrTopicNotFound" xml:space="preserve">
+    <value>Topic not found</value>
+  </data>
+  <data name="ErrSysContextRegistered" xml:space="preserve">
+    <value>Sys context already registered.</value>
+  </data>
+  <data name="CatRouting" xml:space="preserve">
+    <value>Routing</value>
+  </data>
+  <data name="ErrComponentScopeExpected" xml:space="preserve">
+    <value>Component scope expected</value>
+  </data>
+  <data name="ErrInvalidComponentScope" xml:space="preserve">
+    <value>Invalid component scope '{0}'. Expected '{1}'.</value>
+  </data>
+  <data name="ErrMicroServiceTemplateNotFound" xml:space="preserve">
+    <value>Micro service template not found</value>
+  </data>
+  <data name="CatAppearance" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="CatBehavior" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="ErrMasterViewNotFound" xml:space="preserve">
+    <value>Master view not found</value>
+  </data>
+  <data name="MasterDefault" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="ErrDuplicateComponentFound" xml:space="preserve">
+    <value>More than one component found for the specified name</value>
+  </data>
+  <data name="ErrThemeNotFound" xml:space="preserve">
+    <value>Theme not found</value>
+  </data>
+  <data name="ErrSnippetNotFound" xml:space="preserve">
+    <value>Snippet not found</value>
+  </data>
+  <data name="CatData" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="CatGlobalization" xml:space="preserve">
+    <value>Globalization</value>
+  </data>
+  <data name="DesignerDataSourceImport" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="DesignerDataSourceImportDesc" xml:space="preserve">
+    <value>Schema imported successfully.</value>
+  </data>
+  <data name="ErrConnectionDisabled" xml:space="preserve">
+    <value>Connection disabled</value>
+  </data>
+  <data name="ErrDataSourceNotFound" xml:space="preserve">
+    <value>Data source not found</value>
+  </data>
+  <data name="JsAppUrlNotSet" xml:space="preserve">
+    <value>Application URL not set</value>
+  </data>
+  <data name="JsRestUrlNotSet" xml:space="preserve">
+    <value>REST URL not set</value>
+  </data>
+  <data name="DesignerTransactionImport" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="DesignerTransactionImportDesc" xml:space="preserve">
+    <value>Transaction imported successfully</value>
+  </data>
+  <data name="ErrTransactionNotFound" xml:space="preserve">
+    <value>Transaction not found</value>
+  </data>
+  <data name="DomSecurity" xml:space="preserve">
+    <value>Security</value>
+  </data>
+  <data name="DomUsers" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="CatCollaboration" xml:space="preserve">
+    <value>Collaboration</value>
+  </data>
+  <data name="CatSecurity" xml:space="preserve">
+    <value>Security</value>
+  </data>
+  <data name="DevCreateUser" xml:space="preserve">
+    <value>Create user</value>
+  </data>
+  <data name="DevLiDefault" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="UserCreateSuccess" xml:space="preserve">
+    <value>User {0} created successfully</value>
+  </data>
+  <data name="ErrInvalidServiceQualifier" xml:space="preserve">
+    <value>Invalid service qualifier</value>
+  </data>
+  <data name="ErrServiceOperationNotFound" xml:space="preserve">
+    <value>Api operation not found</value>
+  </data>
+  <data name="ErrInvalidStorageProviderType" xml:space="preserve">
+    <value>Invalid storage provider type</value>
+  </data>
+  <data name="ErrWorkerNotFound" xml:space="preserve">
+    <value>Worker not found</value>
+  </data>
+  <data name="ErrInstanceNull" xml:space="preserve">
+    <value>No instance of the specified type registered</value>
+  </data>
+  <data name="ErrApiProtocolRestDisabled" xml:space="preserve">
+    <value>Api does not allow REST calls.</value>
+  </data>
+  <data name="ErrApiOperationProtocolGetOnly" xml:space="preserve">
+    <value>Api operation accepts GET requests only.</value>
+  </data>
+  <data name="ErrApiOperationProtocolPostOnly" xml:space="preserve">
+    <value>Api operation accepts POST requests only.</value>
+  </data>
+  <data name="ErrApiOperationProtocolRestDisabled" xml:space="preserve">
+    <value>Api operation does not allow REST calls.</value>
+  </data>
+  <data name="DomPermissions" xml:space="preserve">
+    <value>Permissions</value>
+  </data>
+  <data name="DomWorkers" xml:space="preserve">
+    <value>Workers</value>
+  </data>
+  <data name="ErrWorkerQueued" xml:space="preserve">
+    <value>Cannot change worker status while it is in queue state</value>
+  </data>
+  <data name="ErrWorkerStatusNotAllowed" xml:space="preserve">
+    <value>Status value not allowed</value>
+  </data>
+  <data name="LogCategoryWorker" xml:space="preserve">
+    <value>Worker</value>
+  </data>
+  <data name="DevCreateResourceGroup" xml:space="preserve">
+    <value>Create resource group</value>
+  </data>
+  <data name="DomResourceGroups" xml:space="preserve">
+    <value>Resource groups</value>
+  </data>
+  <data name="ResourceGroupCreateSuccess" xml:space="preserve">
+    <value>Resource group {0} created successfully</value>
+  </data>
+  <data name="DevCreateMicroService" xml:space="preserve">
+    <value>Create microservice</value>
+  </data>
+  <data name="DomMicroServices" xml:space="preserve">
+    <value>Microservices</value>
+  </data>
+  <data name="MicroServiceCreateSuccess" xml:space="preserve">
+    <value>Microservice {0} created successfully</value>
+  </data>
+  <data name="DomContent" xml:space="preserve">
+    <value>Content</value>
+  </data>
+  <data name="ErrInvalidCommandType" xml:space="preserve">
+    <value>Invalid command type. Expected '{0}'.</value>
+  </data>
+  <data name="ErrInvalidConnectionType" xml:space="preserve">
+    <value>Invalid connection type. Expected '{0}'.</value>
+  </data>
+  <data name="ErrBundleNotFound" xml:space="preserve">
+    <value>Bundle not found</value>
+  </data>
+  <data name="ErrScopeError" xml:space="preserve">
+    <value>Component is not available in this context due to the restricted scope</value>
+  </data>
+  <data name="SourceValidation" xml:space="preserve">
+    <value>Validation</value>
+  </data>
+  <data name="ValMaxLength" xml:space="preserve">
+    <value>Max length exceeded ({0}). ({1})</value>
+  </data>
+  <data name="ValMinLength" xml:space="preserve">
+    <value>Min length not meet ({0}). ({1})</value>
+  </data>
+  <data name="ValRange" xml:space="preserve">
+    <value>Value must be between {0} and {1}. ({2})</value>
+  </data>
+  <data name="ValRequired" xml:space="preserve">
+    <value>Value expected. ({0})</value>
+  </data>
+  <data name="InvalidServiceReference" xml:space="preserve">
+    <value>(Invalid reference)</value>
+  </data>
+  <data name="ErrCyclicReference" xml:space="preserve">
+    <value>Cyclic reference detected with another Micro service</value>
+  </data>
+  <data name="ErrReferenceMissing" xml:space="preserve">
+    <value>A Micro service reference is required</value>
+  </data>
+  <data name="ErrReferenceMissingSource" xml:space="preserve">
+    <value>References</value>
+  </data>
+  <data name="ServiceReferenceNotSet" xml:space="preserve">
+    <value>(not set)</value>
+  </data>
+  <data name="ErrExpectedProperty" xml:space="preserve">
+    <value>Property expected.</value>
+  </data>
+  <data name="ErrInvalidPropertyType" xml:space="preserve">
+    <value>Cannot cast property to the destination type</value>
+  </data>
+  <data name="ErrPartialViewNotFound" xml:space="preserve">
+    <value>Partial view not found</value>
+  </data>
+  <data name="ValNotExists" xml:space="preserve">
+    <value>Value is not on the list of valid values ({0}). ({1})</value>
+  </data>
+  <data name="ErrDefaultViewNotSet" xml:space="preserve">
+    <value>Default view not set. You can set a default view by entering a 'home' string in the View's Url property.</value>
+  </data>
+  <data name="ErrViewNotFound" xml:space="preserve">
+    <value>View not found</value>
+  </data>
+  <data name="NavigateBack" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="ReloadView" xml:space="preserve">
+    <value>Try again</value>
+  </data>
+  <data name="ViewErrorTitle" xml:space="preserve">
+    <value>Something's not quite right</value>
+  </data>
+  <data name="ViewHome" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="ErrRoleNotFound" xml:space="preserve">
+    <value>Role not found</value>
+  </data>
+  <data name="DevCreateRole" xml:space="preserve">
+    <value>Create role</value>
+  </data>
+  <data name="RoleCreateSuccess" xml:space="preserve">
+    <value>Role {0} created successfully</value>
+  </data>
+  <data name="ErrRemoveFullControl" xml:space="preserve">
+    <value>At least one user must have full control permission.</value>
+  </data>
+  <data name="AttConfirmPassword" xml:space="preserve">
+    <value>Confirm password</value>
+  </data>
+  <data name="ChangePassword" xml:space="preserve">
+    <value>Change password</value>
+  </data>
+  <data name="CmdChangePassword" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="ErrNoPassword" xml:space="preserve">
+    <value>No password set</value>
+  </data>
+  <data name="ErrPasswordExpired" xml:space="preserve">
+    <value>Password expired</value>
+  </data>
+  <data name="ErrUserPasswordChange" xml:space="preserve">
+    <value>Password must be changed</value>
+  </data>
+  <data name="ValChangePasswordConfirm" xml:space="preserve">
+    <value>Please confirm a password.</value>
+  </data>
+  <data name="ValChangePasswordPassword" xml:space="preserve">
+    <value>Please enter a password.</value>
+  </data>
+  <data name="AttExistingPassword" xml:space="preserve">
+    <value>Existing password</value>
+  </data>
+  <data name="ChangePasswordSuccess" xml:space="preserve">
+    <value>Password changed. Getting started...</value>
+  </data>
+  <data name="ChangingPassword" xml:space="preserve">
+    <value>Changing password. Please wait...</value>
+  </data>
+  <data name="ValExistingPassword" xml:space="preserve">
+    <value>Please enter an existing passsword.</value>
+  </data>
+  <data name="ValPasswordMatch" xml:space="preserve">
+    <value>Passwords do not match.</value>
+  </data>
+  <data name="StatusForbidden" xml:space="preserve">
+    <value>Forbidden</value>
+  </data>
+  <data name="StatusForbiddenDescription" xml:space="preserve">
+    <value>You don't have sufficient privileges to access this resource.</value>
+  </data>
+  <data name="StatusForbiddenMessage" xml:space="preserve">
+    <value>Access denied.</value>
+  </data>
+  <data name="ErrSingleTenantOnly" xml:space="preserve">
+    <value>This context is not available in multi tenant environment.</value>
+  </data>
+  <data name="StatusNotFound" xml:space="preserve">
+    <value>Not found</value>
+  </data>
+  <data name="StatusNotFoundMessage" xml:space="preserve">
+    <value>The resource you are looking for could not be found.</value>
+  </data>
+  <data name="ErrEventNotDefined" xml:space="preserve">
+    <value>Event not defined.</value>
+  </data>
+</root>

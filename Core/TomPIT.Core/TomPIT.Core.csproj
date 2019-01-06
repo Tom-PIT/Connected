@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName></SccProjectName>
+    <SccProvider></SccProvider>
+    <SccAuxPath></SccAuxPath>
+    <SccLocalPath></SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Authors>Tom PIT</Authors>
+    <Company>Tom PIT</Company>
+    <Product>Tom PIT Corporate Cloud</Product>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <RootNamespace>TomPIT</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.5" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Claims.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Claims.resx</DependentUpon>
+    </Compile>
+    <Compile Update="SR.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SR.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Claims.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Claims.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>TomPIT</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Update="SR.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SR.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>TomPIT</CustomToolNamespace>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\bin2&quot;&#xD;&#xA;copy &quot;$(TargetDir)\$(TargetName).pdb&quot; &quot;c:\bin2&quot;" />
+  </Target>
+</Project>

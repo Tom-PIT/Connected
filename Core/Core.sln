@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.168
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Core", "TomPIT.Core\TomPIT.Core.csproj", "{B63E255F-BD41-4C37-825B-1001D8FB50CE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.ComponentModel", "TomPIT.ComponentModel\TomPIT.ComponentModel.csproj", "{B5ED5DC5-DFE9-4558-BF42-FA4491B27802}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B63E255F-BD41-4C37-825B-1001D8FB50CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B63E255F-BD41-4C37-825B-1001D8FB50CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B63E255F-BD41-4C37-825B-1001D8FB50CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B63E255F-BD41-4C37-825B-1001D8FB50CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5ED5DC5-DFE9-4558-BF42-FA4491B27802}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5ED5DC5-DFE9-4558-BF42-FA4491B27802}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5ED5DC5-DFE9-4558-BF42-FA4491B27802}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5ED5DC5-DFE9-4558-BF42-FA4491B27802}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E876A9A1-830B-43B3-B847-6E6ACC2CBF20}
+	EndGlobalSection
+EndGlobal

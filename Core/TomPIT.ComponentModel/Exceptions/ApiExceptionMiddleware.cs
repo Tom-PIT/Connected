@@ -1,0 +1,30 @@
+﻿using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Threading.Tasks;
+
+namespace TomPIT.Exceptions
+{
+	public class ApiExceptionMiddleware : ExceptionMiddleware
+	{
+		public ApiExceptionMiddleware(RequestDelegate next) : base(next)
+		{
+		}
+
+		protected override async Task HandleException(HttpContext context, Exception ex)
+		{
+			context.Response.Clear();
+			context.Response.StatusCode = 500;
+			context.Response.ContentType = "application/json";
+
+			var jsonEx = new JObject
+					{
+						{ "source", ex.Source },
+						{ "message", ex.Message }
+					};
+
+			await context.Response.WriteAsync(JsonConvert.SerializeObject(jsonEx));
+		}
+	}
+}
