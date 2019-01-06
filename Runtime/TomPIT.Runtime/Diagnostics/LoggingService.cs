@@ -1,20 +1,20 @@
 ﻿using Newtonsoft.Json.Linq;
-using TomPIT.Net;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Diagnostics
 {
 	internal class LoggingService : ILoggingService
 	{
-		public LoggingService(ISysContext server)
+		public LoggingService(ISysConnection connection)
 		{
-			Server = server;
+			Connection = connection;
 		}
 
-		private ISysContext Server { get; }
+		private ISysConnection Connection { get; }
 
 		public void Write(ILogEntry d)
 		{
-			var u = Server.CreateUrl("Logging", "Insert");
+			var u = Connection.CreateUrl("Logging", "Insert");
 			var args = new JObject
 			{
 				{ "category",d.Category },
@@ -31,7 +31,7 @@ namespace TomPIT.Diagnostics
 				{"contextProperty",d.ContextProperty}
 			};
 
-			Server.Connection.Post(u, args);
+			Connection.Post(u, args);
 		}
 	}
 }

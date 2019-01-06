@@ -1,10 +1,11 @@
 ﻿using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT.ComponentModel
 {
 	public class CancelEventArguments : EventArguments
 	{
-		public CancelEventArguments(IApplicationContext sender) : base(sender)
+		public CancelEventArguments(IExecutionContext sender) : base(sender)
 		{
 		}
 

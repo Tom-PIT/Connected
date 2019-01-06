@@ -1,4 +1,6 @@
-﻿namespace TomPIT.Net
+﻿using TomPIT.Connectivity;
+
+namespace TomPIT.Environment
 {
 	public class InstanceEndpointUrl : ServerUrl
 	{

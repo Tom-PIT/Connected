@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
+using Microsoft.CodeAnalysis.Scripting.Hosting;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -6,20 +10,18 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.CodeAnalysis.Scripting.Hosting;
-using Newtonsoft.Json.Linq;
+using TomPIT.Annotations;
+using TomPIT.Caching;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
-using TomPIT.Exceptions;
-using TomPIT.Net;
-using TomPIT.Runtime;
+using TomPIT.Connectivity;
+using TomPIT.Services;
 
 namespace TomPIT.Compilers
 {
-	internal class CompilerService : ContextCacheRepository<Script, string>, ICompilerService, ICompilerNotification
+	internal class CompilerService : ClientRepository<Script, string>, ICompilerService, ICompilerNotification
 	{
-		private static string[] Usings = new string[]
+		private static readonly string[] Usings = new string[]
 		{
 				"System",
 				"System.Data",
@@ -31,7 +33,7 @@ namespace TomPIT.Compilers
 				"TomPIT"
 		};
 
-		public CompilerService(ISysContext server) : base(server, "script")
+		public CompilerService(ISysConnection connection) : base(connection, "script")
 		{
 
 		}
@@ -85,7 +87,7 @@ namespace TomPIT.Compilers
 
 		public object Execute<T>(Guid microService, ISourceCode sourceCode, object sender, T e)
 		{
-			if (sourceCode.TemplateBlob == Guid.Empty)
+			if (sourceCode.TextBlob == Guid.Empty)
 				return null;
 
 			var script = GetScript<T>(microService, sourceCode);
@@ -117,10 +119,10 @@ namespace TomPIT.Compilers
 		{
 			var sb = new StringBuilder();
 			var src = string.Empty;
-			var severity = ApiSeverity.Critical;
+			var severity = ExceptionSeverity.Critical;
 
-			if (ex.InnerException is ApiException)
-				src = ((ApiException)ex.InnerException).Source;
+			if (ex.InnerException is RuntimeException)
+				src = ((RuntimeException)ex.InnerException).Source;
 
 			if (string.IsNullOrWhiteSpace(src) && e != null)
 			{
@@ -153,12 +155,12 @@ namespace TomPIT.Compilers
 				{
 					src = i.Source;
 
-					if (i is ApiException)
-						severity = ((ApiException)i).Severity;
+					if (i is RuntimeException)
+						severity = ((RuntimeException)i).Severity;
 				}
 			}
 
-			var r = new ApiException(src, sb.ToString())
+			var r = new RuntimeException(src, sb.ToString())
 			{
 				Severity = severity
 			};
@@ -171,7 +173,7 @@ namespace TomPIT.Compilers
 		{
 			var r = new ScriptDescriptor();
 
-			var code = Server.GetService<IComponentService>().SelectTemplate(microService, d);
+			var code = Connection.GetService<IComponentService>().SelectText(microService, d);
 
 			if (string.IsNullOrWhiteSpace(code))
 				return null;
@@ -189,8 +191,8 @@ namespace TomPIT.Compilers
 			var options = ScriptOptions.Default
 				.WithImports(imports)
 				.WithReferences(references)
-				.WithSourceResolver(new ReferenceResolver(Server, microService))
-				.WithMetadataResolver(new MetaDataResolver(Server, microService))
+				.WithSourceResolver(new ReferenceResolver(Connection, microService))
+				.WithMetadataResolver(new MetaDataResolver(Connection, microService))
 				.WithEmitDebugInformation(true)
 				.WithFilePath(string.Format("{0}.csx", d.Id.ToString()))
 				.WithFileEncoding(Encoding.UTF8);
@@ -203,7 +205,7 @@ namespace TomPIT.Compilers
 
 				foreach (var i in refs)
 				{
-					var asm = MetaDataResolver.LoadDependency(Server, microService, i);
+					var asm = MetaDataResolver.LoadDependency(Connection, microService, i);
 
 					if (asm != null)
 						loader.RegisterDependency(asm);
@@ -249,9 +251,9 @@ namespace TomPIT.Compilers
 			return r;
 		}
 
-		public void Invalidate(IApplicationContext context, Guid microService, Guid component, ISourceCode sourceCode)
+		public void Invalidate(IExecutionContext context, Guid microService, Guid component, ISourceCode sourceCode)
 		{
-			var u = context.GetServerContext().CreateUrl("NotificationDevelopment", "ScriptChanged");
+			var u = context.Connection().CreateUrl("NotificationDevelopment", "ScriptChanged");
 
 			var args = new JObject
 			{
@@ -259,7 +261,7 @@ namespace TomPIT.Compilers
 				{ "sourceCode", sourceCode.Id }
 			};
 
-			Server.Connection.Post(u, args);
+			Connection.Post(u, args);
 
 			Remove(GenerateKey(microService, sourceCode.Id));
 		}

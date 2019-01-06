@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 
-namespace TomPIT.Net
+namespace TomPIT.Environment
 {
 	public class InstanceEndpoint : IInstanceEndpoint
 	{
@@ -15,7 +15,7 @@ namespace TomPIT.Net
 		[Required]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[MaxLength(128)]
-		[InvalidateEnvironment(Ide.EnvironmentSection.Designer | Ide.EnvironmentSection.Explorer)]
+		[InvalidateEnvironment(EnvironmentSection.Designer | EnvironmentSection.Explorer)]
 		public string Name { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
 		public InstanceType Type { get; set; }

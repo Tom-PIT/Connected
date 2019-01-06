@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Net;
+using TomPIT.Caching;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Configuration
 {
-	internal class SettingService : ContextCacheRepository<ISetting, string>, ISettingService, ISettingNotification
+	internal class SettingService : ClientRepository<ISetting, string>, ISettingService, ISettingNotification
 	{
 		public event SettingChangedHandler SettingChanged;
 
-		public SettingService(ISysContext server) : base(server, "setting")
+		public SettingService(ISysConnection connection) : base(connection, "setting")
 		{
 
 		}
@@ -26,10 +27,10 @@ namespace TomPIT.Configuration
 
 		public List<ISetting> Query(Guid resourceGroup)
 		{
-			var u = Server.CreateUrl("Setting", "Query")
+			var u = Connection.CreateUrl("Setting", "Query")
 				.AddParameter("resourceGroup", resourceGroup);
 
-			return Server.Connection.Get<List<Setting>>(u).ToList<ISetting>();
+			return Connection.Get<List<Setting>>(u).ToList<ISetting>();
 		}
 
 		public ISetting Select(Guid resourceGroup, string name)
@@ -40,11 +41,11 @@ namespace TomPIT.Configuration
 			if (r != null)
 				return r;
 
-			var u = Server.CreateUrl("Setting", "Select")
+			var u = Connection.CreateUrl("Setting", "Select")
 				.AddParameter("resourceGroup", resourceGroup)
 				.AddParameter("name", name);
 
-			r = Server.Connection.Get<Setting>(u);
+			r = Connection.Get<Setting>(u);
 
 			if (r == null)
 				r = new Setting();

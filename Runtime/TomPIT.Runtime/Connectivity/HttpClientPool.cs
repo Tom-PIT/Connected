@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using TomPIT.Caching;
 
-namespace TomPIT.Net
+namespace TomPIT.Connectivity
 {
 	internal static class HttpClientPool
 	{

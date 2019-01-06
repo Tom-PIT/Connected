@@ -5,40 +5,41 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using TomPIT.Annotations;
+using TomPIT.Caching;
+using TomPIT.Connectivity;
 using TomPIT.Design.Serialization;
-using TomPIT.Net;
-using TomPIT.Runtime;
+using TomPIT.Services;
 using TomPIT.Storage;
 
 namespace TomPIT.ComponentModel
 {
-	internal class ComponentService : ContextCacheRepository<IComponent, Guid>, IComponentService, IComponentNotification
+	internal class ComponentService : ClientRepository<IComponent, Guid>, IComponentService, IComponentNotification
 	{
 		public event ComponentChangedHandler ComponentChanged;
 		public event ConfigurationChangedHandler ConfigurationChanged;
 		public event ConfigurationChangedHandler ConfigurationAdded;
 		public event ConfigurationChangedHandler ConfigurationRemoved;
 
-		public ComponentService(ISysContext server) : base(server, "component")
+		public ComponentService(ISysConnection connection) : base(connection, "component")
 		{
 
 		}
 
 		public List<IComponent> QueryComponents(Guid microService, string category)
 		{
-			var u = Server.CreateUrl("Component", "QueryByCategory")
+			var u = Connection.CreateUrl("Component", "QueryByCategory")
 				.AddParameter("microService", microService)
 				.AddParameter("category", category);
 
-			return Server.Connection.Get<List<Component>>(u).ToList<IComponent>();
+			return Connection.Get<List<Component>>(u).ToList<IComponent>();
 		}
 
 		public List<IComponent> QueryComponents(Guid microService)
 		{
-			var u = Server.CreateUrl("Component", "Query")
+			var u = Connection.CreateUrl("Component", "Query")
 				.AddParameter("microService", microService);
 
-			return Server.Connection.Get<List<Component>>(u).ToList<IComponent>();
+			return Connection.Get<List<Component>>(u).ToList<IComponent>();
 		}
 
 		public IComponent SelectComponent(string category, string name)
@@ -49,11 +50,11 @@ namespace TomPIT.ComponentModel
 			if (r != null)
 				return r;
 
-			var u = Server.CreateUrl("Component", "SelectByName")
+			var u = Connection.CreateUrl("Component", "SelectByName")
 				.AddParameter("category", category)
 				.AddParameter("name", name);
 
-			r = Server.Connection.Get<Component>(u);
+			r = Connection.Get<Component>(u);
 
 			if (r != null)
 				Set(r.Token, r);
@@ -70,12 +71,12 @@ namespace TomPIT.ComponentModel
 			if (r != null)
 				return r;
 
-			var u = Server.CreateUrl("Component", "Select")
+			var u = Connection.CreateUrl("Component", "Select")
 				.AddParameter("microService", microService)
 				.AddParameter("category", category)
 				.AddParameter("name", name);
 
-			r = Server.Connection.Get<Component>(u);
+			r = Connection.Get<Component>(u);
 
 			if (r != null)
 				Set(r.Token, r);
@@ -88,27 +89,27 @@ namespace TomPIT.ComponentModel
 			return Get(component,
 				(f) =>
 				{
-					var u = Server.CreateUrl("Component", "SelectByToken")
+					var u = Connection.CreateUrl("Component", "SelectByToken")
 						.AddParameter("component", component);
 
-					return Server.Connection.Get<Component>(u);
+					return Connection.Get<Component>(u);
 				});
 		}
 
 		public void NotifyChanged(object sender, ComponentEventArgs e)
 		{
 			Remove(e.Component);
-			ComponentChanged?.Invoke(Server, e);
+			ComponentChanged?.Invoke(Connection, e);
 		}
 
 		public string CreateName(Guid microService, string category, string prefix)
 		{
-			var u = Server.CreateUrl("Component", "CreateName")
+			var u = Connection.CreateUrl("Component", "CreateName")
 				.AddParameter("microService", microService)
 				.AddParameter("category", category)
 				.AddParameter("prefix", prefix);
 
-			return Server.Connection.Get<string>(u);
+			return Connection.Get<string>(u);
 		}
 
 		public void NotifyRemoved(object sender, ComponentEventArgs e)
@@ -123,8 +124,8 @@ namespace TomPIT.ComponentModel
 			var rtIds = components.Select(f => f.RuntimeConfiguration).Distinct().Where(f => f != Guid.Empty).ToList();
 
 			var mode = Shell.GetService<IRuntimeService>().Mode;
-			var contents = Server.GetService<IStorageService>().Download(ids);
-			var runtimeContents = mode == EnvironmentMode.Design ? null : Server.GetService<IStorageService>().Download(rtIds);
+			var contents = Connection.GetService<IStorageService>().Download(ids);
+			var runtimeContents = mode == EnvironmentMode.Design ? null : Connection.GetService<IStorageService>().Download(rtIds);
 
 			foreach (var i in contents)
 			{
@@ -154,11 +155,11 @@ namespace TomPIT.ComponentModel
 			foreach (var i in resourceGroups)
 				sb.AppendFormat("{0},", i.ToString());
 
-			var u = Server.CreateUrl("Component", "QueryByResourceGroups")
+			var u = Connection.CreateUrl("Component", "QueryByResourceGroups")
 				.AddParameter("resourceGroups", sb.ToString().TrimEnd(','))
 				.AddParameter("categories", categories);
 
-			return QueryConfigurations(Server.Connection.Get<List<Component>>(u).ToList<IComponent>());
+			return QueryConfigurations(Connection.Get<List<Component>>(u).ToList<IComponent>());
 		}
 
 		public IConfiguration SelectConfiguration(Guid microService, string category, string name)
@@ -176,7 +177,7 @@ namespace TomPIT.ComponentModel
 			if (component == null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
 
-			var content = blob ?? Server.GetService<IStorageService>().Download(component.Token);
+			var content = blob ?? Connection.GetService<IStorageService>().Download(component.Token);
 
 			if (content == null)
 				return null;
@@ -188,15 +189,15 @@ namespace TomPIT.ComponentModel
 
 			var t = Types.GetType(component.Type);
 
-			var r = Server.GetService<ISerializationService>().Deserialize(content.Content, t) as IConfiguration;
+			var r = Connection.GetService<ISerializationService>().Deserialize(content.Content, t) as IConfiguration;
 
 			if (blob == null && Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
 			{
-				var rtContent = Server.GetService<IStorageService>().Download(component.RuntimeConfiguration);
+				var rtContent = Connection.GetService<IStorageService>().Download(component.RuntimeConfiguration);
 
 				if (rtContent != null)
 				{
-					if (Server.GetService<ISerializationService>().Deserialize(rtContent.Content, t) is IConfiguration rtInstance)
+					if (Connection.GetService<ISerializationService>().Deserialize(rtContent.Content, t) is IConfiguration rtInstance)
 						MergeWithRuntime(r, rtInstance);
 				}
 			}
@@ -204,17 +205,17 @@ namespace TomPIT.ComponentModel
 			return r;
 		}
 
-		public string SelectTemplate(Guid microService, ITemplate template)
+		public string SelectText(Guid microService, IText text)
 		{
-			if (template.TemplateBlob == Guid.Empty)
+			if (text.TextBlob == Guid.Empty)
 				return null;
 
-			var s = Server.GetService<IMicroServiceService>().Select(microService);
+			var s = Connection.GetService<IMicroServiceService>().Select(microService);
 
 			if (s == null)
 				throw new RuntimeException(SR.ErrMicroServiceNotFound);
 
-			var r = Server.GetService<IStorageService>().Download(template.TemplateBlob);
+			var r = Connection.GetService<IStorageService>().Download(text.TextBlob);
 
 			if (r == null)
 				return null;
@@ -229,17 +230,17 @@ namespace TomPIT.ComponentModel
 			if (existing != null)
 				Remove(existing.Token);
 
-			ConfigurationChanged?.Invoke(Server, e);
+			ConfigurationChanged?.Invoke(Connection, e);
 		}
 
 		public void NotifyAdded(object sender, ConfigurationEventArgs e)
 		{
-			ConfigurationAdded?.Invoke(Server, e);
+			ConfigurationAdded?.Invoke(Connection, e);
 		}
 
 		public void NotifyRemoved(object sender, ConfigurationEventArgs e)
 		{
-			ConfigurationRemoved?.Invoke(Server, e);
+			ConfigurationRemoved?.Invoke(Connection, e);
 		}
 
 		private void MergeWithRuntime(IConfiguration design, IConfiguration runtime)

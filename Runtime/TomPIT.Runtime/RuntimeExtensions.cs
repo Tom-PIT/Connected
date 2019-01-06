@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using TomPIT.Runtime.ApplicationContextServices;
+﻿using Microsoft.AspNetCore.Routing;
+using TomPIT.Services;
 
 namespace TomPIT.Runtime
 {
@@ -35,21 +34,6 @@ namespace TomPIT.Runtime
 				return q[key];
 
 			return null;
-		}
-
-		public static IServices CreateServices(this IApplicationContext context, HttpRequest request)
-		{
-			return new Services(context, request);
-		}
-
-		public static IContextIdentity CreateIdentity(this IApplicationContext context, string authority, string authorityId, string contextId)
-		{
-			return new ContextIdentity
-			{
-				Authority = authority,
-				AuthorityId = authorityId,
-				ContextId = contextId
-			};
 		}
 	}
 }

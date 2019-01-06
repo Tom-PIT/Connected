@@ -7,7 +7,7 @@ using TomPIT.Services;
 
 namespace TomPIT.Security
 {
-	internal class AuthorizationService : ContextStatefulCacheRepository<IPermission, string>, IAuthorizationService, IAuthorizationNotification, IMembershipProvider
+	internal class AuthorizationService : SynchronizedClientRepository<IPermission, string>, IAuthorizationService, IAuthorizationNotification, IMembershipProvider
 	{
 		private List<IAuthorizationProvider> _providers = null;
 		private Lazy<List<IPermissionDescriptor>> _descriptors = new Lazy<List<IPermissionDescriptor>>();

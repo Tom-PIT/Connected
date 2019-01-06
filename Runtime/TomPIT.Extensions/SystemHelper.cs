@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Text;
-using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT
 {
@@ -17,7 +17,7 @@ namespace TomPIT
 			if (user == Guid.Empty)
 				return DefaultAvatar();
 
-			if (!(Html.ViewData.Model is IApplicationContext m))
+			if (!(Html.ViewData.Model is IExecutionContext m))
 				return DefaultAvatar();
 
 			var url = m.MapPath(m.Services.Routing.Avatar(user));

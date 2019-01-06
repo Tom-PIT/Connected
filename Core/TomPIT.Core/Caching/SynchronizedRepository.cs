@@ -4,11 +4,11 @@ using System.Globalization;
 
 namespace TomPIT.Caching
 {
-	public abstract class StatefulCacheRepository<T, K> : CacheRepository<T, K> where T : class
+	public abstract class SynchronizedRepository<T, K> : CacheRepository<T, K> where T : class
 	{
 		public event CacheInvalidateHandler Invalidate;
 
-		protected StatefulCacheRepository(IMemoryCache container, string key) : base(container, key)
+		protected SynchronizedRepository(IMemoryCache container, string key) : base(container, key)
 		{
 			Container.Invalidate += OnInvalidate;
 		}

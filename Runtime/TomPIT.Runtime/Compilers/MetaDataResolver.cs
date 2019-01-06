@@ -4,28 +4,28 @@ using System.Collections.Immutable;
 using System.Reflection;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
-using TomPIT.Net;
-using TomPIT.Runtime;
+using TomPIT.Connectivity;
+using TomPIT.Services;
 using TomPIT.Storage;
 
 namespace TomPIT.Compilers
 {
 	public class MetaDataResolver : MetadataReferenceResolver
 	{
-		public MetaDataResolver(ISysContext context, Guid microService)
+		public MetaDataResolver(ISysConnection connection, Guid microService)
 		{
-			Context = context;
+			Connection = connection;
 			MicroService = microService;
 		}
 
-		private ISysContext Context { get; }
+		private ISysConnection Connection { get; }
 		private Guid MicroService { get; }
 
 		public override bool ResolveMissingAssemblies => true;
 
 		protected bool Equals(MetaDataResolver other)
 		{
-			return Equals(Context, other.Context);
+			return Equals(Connection, other.Connection);
 		}
 
 		public override bool Equals(object obj)
@@ -54,7 +54,7 @@ namespace TomPIT.Compilers
 			{
 				var hashCode = 37;
 
-				hashCode = (hashCode * 397) ^ (Context?.GetHashCode() ?? 0);
+				hashCode = (hashCode * 397) ^ (Connection?.GetHashCode() ?? 0);
 
 				return hashCode;
 			}
@@ -62,12 +62,12 @@ namespace TomPIT.Compilers
 
 		public override ImmutableArray<PortableExecutableReference> ResolveReference(string reference, string baseFilePath, MetadataReferenceProperties properties)
 		{
-			var component = Context.GetService<IComponentService>().SelectComponent(MicroService, "Assembly", reference);
+			var component = Connection.GetService<IComponentService>().SelectComponent(MicroService, "Assembly", reference);
 
 			if (component == null)
 				return ImmutableArray<PortableExecutableReference>.Empty;
 
-			if (!(Context.GetService<IComponentService>().SelectConfiguration(component.Token) is IAssemblyResource config))
+			if (!(Connection.GetService<IComponentService>().SelectConfiguration(component.Token) is IAssemblyResource config))
 				return ImmutableArray<PortableExecutableReference>.Empty;
 
 			if (config is IAssemblyUploadResource)
@@ -81,7 +81,7 @@ namespace TomPIT.Compilers
 			if (d.Blob == Guid.Empty)
 				return ImmutableArray<PortableExecutableReference>.Empty;
 
-			var content = Context.GetService<IStorageService>().Download(d.Blob);
+			var content = Connection.GetService<IStorageService>().Download(d.Blob);
 
 			if (content == null || content.Content == null || content.Content.Length == 0)
 				return ImmutableArray<PortableExecutableReference>.Empty;
@@ -116,19 +116,19 @@ namespace TomPIT.Compilers
 			}
 		}
 
-		public static Assembly LoadDependency(ISysContext context, Guid microService, string name)
+		public static Assembly LoadDependency(ISysConnection connection, Guid microService, string name)
 		{
-			var component = context.GetService<IComponentService>().SelectComponent(microService, "Assembly", name);
+			var component = connection.GetService<IComponentService>().SelectComponent(microService, "Assembly", name);
 
 			if (component == null)
 				return null;
 
-			if (!(context.GetService<IComponentService>().SelectConfiguration(component.Token) is IAssemblyResource config))
+			if (!(connection.GetService<IComponentService>().SelectConfiguration(component.Token) is IAssemblyResource config))
 				return null;
 
 			if (config is IAssemblyUploadResource d)
 			{
-				var content = context.GetService<IStorageService>().Download(d.Blob);
+				var content = connection.GetService<IStorageService>().Download(d.Blob);
 
 				if (content == null || content.Content == null || content.Content.Length == 0)
 					return null;

@@ -1,7 +1,7 @@
 ﻿using System;
 using TomPIT.Globalization;
 
-namespace TomPIT.Sys.Globalization
+namespace TomPIT.Globalization
 {
 	internal class Language : ILanguage
 	{

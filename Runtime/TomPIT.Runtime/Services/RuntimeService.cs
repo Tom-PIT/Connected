@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
-using TomPIT.Net;
+using TomPIT.Environment;
 
-namespace TomPIT.Runtime
+namespace TomPIT.Services
 {
 	internal class RuntimeService : IRuntimeService
 	{

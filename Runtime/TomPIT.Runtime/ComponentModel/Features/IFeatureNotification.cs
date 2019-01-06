@@ -1,4 +1,4 @@
-﻿namespace TomPIT.ComponentModel
+﻿namespace TomPIT.ComponentModel.Features
 {
 	public interface IFeatureNotification
 	{

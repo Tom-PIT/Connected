@@ -3,12 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using TomPIT.Models;
-using TomPIT.Runtime;
+using TomPIT.Services;
 
-namespace TomPIT.Exceptions
+namespace TomPIT.Models
 {
-	internal class ExceptionModel : ApplicationContext, IUIModel
+	internal class ExceptionModel : ExecutionContext, IUIModel
 	{
 		public IModelNavigation Navigation => null;
 

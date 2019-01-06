@@ -1,7 +1,7 @@
 ﻿using System;
 using TomPIT.Runtime;
 
-namespace TomPIT.ComponentModel
+namespace TomPIT.ComponentModel.Events
 {
 	internal class EventCallback : IEventCallback
 	{

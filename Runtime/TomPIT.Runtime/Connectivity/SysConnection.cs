@@ -1,30 +1,118 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text;
-using TomPIT.Exceptions;
+using TomPIT.Caching;
+using TomPIT.Connectivity;
+using TomPIT.Services;
 
-namespace TomPIT.Net
+namespace TomPIT.Connectivity
 {
-	public class SysConnection : ISysConnection
+	public class SysConnection : ISysConnection, IDependencyInjector
 	{
-		public SysConnection(ISysContext context, string authorizationToken)
+		private TokenValidationParameters _parameters = null;
+		private CachingClient _cachingClient = null;
+		private ServiceContainer _serviceContainer = null;
+		private IMemoryCache _cache = null;
+
+		public SysConnection(string url, string clientKey)
 		{
-			Context = context;
-			AuthorizationToken = authorizationToken;
+			Url = url;
+			ClientKey = clientKey;
+
+			CachingClient.Connect();
 		}
 
-		private ISysContext Context { get; }
-		private string AuthorizationToken { get; }
+		public string Url { get; }
+		private string ClientKey { get; }
+
+		public IMemoryCache Cache
+		{
+			get
+			{
+				if (_cache == null)
+					_cache = new MemoryCache();
+
+				return _cache;
+			}
+		}
+
+		private CachingClient CachingClient
+		{
+			get
+			{
+				if (_cachingClient == null)
+					_cachingClient = new CachingClient(this);
+
+				return _cachingClient;
+			}
+		}
+
+		private ServiceContainer Services
+		{
+			get
+			{
+				if (_serviceContainer == null)
+					_serviceContainer = new ServiceContainer(this);
+
+				return _serviceContainer;
+			}
+		}
+
+		public TokenValidationParameters ValidationParameters
+		{
+			get
+			{
+				if (_parameters == null)
+				{
+					var url = this.CreateUrl("Security", "SelectValidationParameters");
+					var p = Get<ValidationParameters>(url);
+
+					_parameters = new TokenValidationParameters
+					{
+						IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(p.IssuerSigningKey)),
+						ValidAudience = p.ValidAudience,
+						ValidIssuer = p.ValidIssuer
+					};
+				}
+
+				return _parameters;
+			}
+		}
+
+		public T GetService<T>()
+		{
+			return Services.Get<T>();
+		}
+
+		public void RegisterService(Type contract, object instance)
+		{
+			Services.Register(contract, instance);
+		}
+
+		public bool ResolveParameter(Type type, out object instance)
+		{
+			if (type == typeof(ISysConnection))
+			{
+				instance = this;
+				return true;
+			}
+
+			instance = null;
+			return false;
+		}
+
+		private ISysConnection Context { get; }
 
 		public T Get<T>(string url)
 		{
 			try
 			{
-				var client = HttpClientPool.Get(AuthorizationToken);
+				var client = HttpClientPool.Get(ClientKey);
 				var response = client.GetAsync(url).GetAwaiter().GetResult();
 
 				return HandleResponse<T>(response);
@@ -52,21 +140,21 @@ namespace TomPIT.Net
 
 		public void Post(string url, object content)
 		{
-			var client = HttpClientPool.Get(AuthorizationToken);
+			var client = HttpClientPool.Get(ClientKey);
 
 			HandleResponse(client.PostAsync(url, CreateContent(content)).GetAwaiter().GetResult());
 		}
 
 		public void Post(string url, HttpContent httpContent)
 		{
-			var client = HttpClientPool.Get(AuthorizationToken);
+			var client = HttpClientPool.Get(ClientKey);
 
 			HandleResponse(client.PostAsync(url, httpContent).GetAwaiter().GetResult());
 		}
 
 		public T Post<T>(string url, HttpContent httpContent)
 		{
-			var client = HttpClientPool.Get(AuthorizationToken);
+			var client = HttpClientPool.Get(ClientKey);
 
 			return HandleResponse<T>(client.PostAsync(url, httpContent).GetAwaiter().GetResult());
 		}

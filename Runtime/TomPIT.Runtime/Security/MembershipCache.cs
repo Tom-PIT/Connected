@@ -6,7 +6,7 @@ using TomPIT.Connectivity;
 
 namespace TomPIT.Security
 {
-	internal class MembershipCache : ContextStatefulCacheRepository<IMembership, string>
+	internal class MembershipCache : SynchronizedClientRepository<IMembership, string>
 	{
 		public MembershipCache(ISysConnection server) : base(server, "membership")
 		{

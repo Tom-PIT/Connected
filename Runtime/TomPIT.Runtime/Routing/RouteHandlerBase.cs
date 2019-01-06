@@ -1,16 +1,15 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Globalization;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
-using TomPIT.Net;
+using TomPIT.Connectivity;
 using TomPIT.Security;
 
 namespace TomPIT.Routing
 {
 	public abstract class RouteHandlerBase
 	{
-		private ISysContext _sys = null;
-		private IUser _user = null;
+		private ISysConnection _connection = null;
 
 		public void ProcessRequest(HttpContext context)
 		{
@@ -53,21 +52,21 @@ namespace TomPIT.Routing
 			Context.Response.Headers["Last-Modified"] = date.ToUniversalTime().ToString("r");
 		}
 
-		protected ISysContext SysContext
+		protected ISysConnection Connection
 		{
 			get
 			{
-				if (_sys == null)
+				if (_connection == null)
 				{
 					var endpoint = Context.Request.GetAuthenticationEndpoint();
 
 					if (endpoint == null)
 						return null;
 
-					_sys = Shell.GetService<IConnectivityService>().Select(endpoint);
+					_connection = Shell.GetService<IConnectivityService>().Select(endpoint);
 				}
 
-				return _sys;
+				return _connection;
 			}
 		}
 
@@ -86,7 +85,7 @@ namespace TomPIT.Routing
 				if (!Guid.TryParse(claim.Value, out Guid at))
 					return null;
 
-				return SysContext.GetService<IUserService>().SelectByAuthenticationToken(at);
+				return Connection.GetService<IUserService>().SelectByAuthenticationToken(at);
 			}
 		}
 	}

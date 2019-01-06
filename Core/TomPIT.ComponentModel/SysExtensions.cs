@@ -9,6 +9,7 @@ using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Security;
 using TomPIT.Services;
+using TomPIT.Services.Context;
 
 namespace TomPIT
 {
@@ -149,6 +150,21 @@ namespace TomPIT
 		public static IMicroService ResolveMicroService(this ISysConnection context, Guid microService)
 		{
 			return context.GetService<IMicroServiceService>().Select(microService);
+		}
+
+		public static IContextServices CreateServices(this IExecutionContext context, HttpRequest request)
+		{
+			return new ContextServices(context, request);
+		}
+
+		public static IContextIdentity CreateIdentity(this IExecutionContext context, string authority, string authorityId, string contextId)
+		{
+			return new ContextIdentity
+			{
+				Authority = authority,
+				AuthorityId = authorityId,
+				ContextId = contextId
+			};
 		}
 	}
 }

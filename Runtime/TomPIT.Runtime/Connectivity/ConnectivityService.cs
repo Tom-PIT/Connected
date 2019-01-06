@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using TomPIT.Caching;
 using TomPIT.Exceptions;
 
-namespace TomPIT.Net
+namespace TomPIT.Connectivity
 {
-	internal class ConnectivityService : StatefulCacheRepository<ISysContext, string>, IConnectivityService
+	internal class ConnectivityService : SynchronizedRepository<ISysConnection, string>, IConnectivityService
 	{
 		private Lazy<List<ISysConnectionDescriptor>> _connections = new Lazy<List<ISysConnectionDescriptor>>();
-		public event ContextRegisteredHandler ContextRegistered;
-		public event ContextRegisteredHandler ContextInitializing;
+		public event ConnectionRegisteredHandler ConnectionRegistered;
+		public event ConnectionRegisteredHandler ConnectionInitializing;
 
 		public ConnectivityService() : base(MemoryCache.Default, "syscontext")
 		{
@@ -17,12 +17,12 @@ namespace TomPIT.Net
 		}
 
 
-		public ISysContext Select()
+		public ISysConnection Select()
 		{
 			return First();
 		}
 
-		public ISysContext Select(string url)
+		public ISysConnection Select(string url)
 		{
 			return Get(url);
 		}
@@ -30,15 +30,15 @@ namespace TomPIT.Net
 		public void Insert(string name, string url, string clientKey)
 		{
 			if (Get(url) != null)
-				throw new ServerException(SR.ErrSysContextRegistered);
+				throw new ExecutionException(SR.ErrSysContextRegistered);
 
-			var instance = new ServerContext(url, clientKey);
+			var instance = new SysConnection(url, clientKey);
 
 			Connections.Add(new SysConnectionDescriptor(name, url, clientKey));
 
 			Set(url, instance, TimeSpan.Zero);
-			ContextRegistered?.Invoke(this, new SysContextRegisteredArgs(instance));
-			ContextInitializing?.Invoke(this, new SysContextRegisteredArgs(instance));
+			ConnectionRegistered?.Invoke(this, new SysConnectionRegisteredArgs(instance));
+			ConnectionInitializing?.Invoke(this, new SysConnectionRegisteredArgs(instance));
 		}
 
 		public List<ISysConnectionDescriptor> QueryConnections()

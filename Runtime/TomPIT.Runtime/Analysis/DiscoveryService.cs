@@ -2,22 +2,23 @@
 using System;
 using System.Collections;
 using System.Reflection;
-using TomPIT.Net;
+using TomPIT.ComponentModel;
+using TomPIT.Connectivity;
 
-namespace TomPIT.ComponentModel
+namespace TomPIT.Analysis
 {
 	internal class DiscoveryService : IDiscoveryService
 	{
-		public DiscoveryService(ISysContext server)
+		public DiscoveryService(ISysConnection connection)
 		{
-			Server = server;
+			Connection = connection;
 		}
 
-		private ISysContext Server { get; }
+		private ISysConnection Connection { get; }
 
 		public IElement Find(Guid component, Guid id)
 		{
-			var config = Server.GetService<IComponentService>().SelectConfiguration(component);
+			var config = Connection.GetService<IComponentService>().SelectConfiguration(component);
 
 			if (config == null)
 				return null;
@@ -85,22 +86,22 @@ namespace TomPIT.ComponentModel
 
 		public IServiceReferences References(Guid microService)
 		{
-			return References(Server.ResolveMicroServiceName(microService));
+			return References(Connection.ResolveMicroServiceName(microService));
 		}
 
 		public IServiceReferences References(string microService)
 		{
-			var ms = Server.GetService<IMicroServiceService>().Select(microService);
+			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
 
 			if (ms == null)
 				return null;
 
-			var component = Server.GetService<IComponentService>().SelectComponent(ms.Token, "Reference", "References");
+			var component = Connection.GetService<IComponentService>().SelectComponent(ms.Token, "Reference", "References");
 
 			if (component == null)
 				return null;
 
-			return Server.GetService<IComponentService>().SelectConfiguration(component.Token) as IServiceReferences;
+			return Connection.GetService<IComponentService>().SelectConfiguration(component.Token) as IServiceReferences;
 		}
 
 	}

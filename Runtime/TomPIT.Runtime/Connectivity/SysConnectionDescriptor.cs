@@ -1,4 +1,4 @@
-﻿namespace TomPIT.Net
+﻿namespace TomPIT.Connectivity
 {
 	internal class SysConnectionDescriptor : ISysConnectionDescriptor
 	{

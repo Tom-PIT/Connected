@@ -19,9 +19,9 @@ namespace TomPIT.Exceptions
 
 			var severity = ExceptionSeverity.Critical;
 
-			if (ex is ApiException)
+			if (ex is RuntimeException)
 			{
-				severity = ((ApiException)ex).Severity;
+				severity = ((RuntimeException)ex).Severity;
 			}
 
 			var jsonEx = new JObject

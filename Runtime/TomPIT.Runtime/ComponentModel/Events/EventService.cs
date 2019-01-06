@@ -1,35 +1,33 @@
-﻿using System;
-using Newtonsoft.Json.Linq;
-using TomPIT.Exceptions;
-using TomPIT.Net;
-using TomPIT.Runtime;
+﻿using Newtonsoft.Json.Linq;
+using System;
+using TomPIT.Connectivity;
 
-namespace TomPIT.ComponentModel
+namespace TomPIT.ComponentModel.Events
 {
 	internal class EventService : IEventService
 	{
-		public EventService(ISysContext server)
+		public EventService(ISysConnection connection)
 		{
-			Server = server;
+			Connection = connection;
 		}
 
-		private ISysContext Server { get; set; }
+		private ISysConnection Connection { get; set; }
 
 		public Guid Trigger(Guid microService, string name, JObject e, IEventCallback callback)
 		{
-			var ev = Server.GetService<IComponentService>().SelectComponent(microService, "Event", name);
+			var ev = Connection.GetService<IComponentService>().SelectComponent(microService, "Event", name);
 
 			if (ev == null)
 				throw new TomPITException(SR.ErrEventNotDefined);
 
-			var u = Server.CreateUrl("Event", "Trigger")
+			var u = Connection.CreateUrl("Event", "Trigger")
 				.AddParameter("microService", microService)
 				.AddParameter("name", name);
 
 			if (callback != null)
 				u.AddParameter("callback", string.Format("{0}/{1}/{2}", callback.MicroService, callback.Api, callback.Operation));
 
-			return Server.Connection.Post<Guid>(u, e);
+			return Connection.Post<Guid>(u, e);
 		}
 	}
 }

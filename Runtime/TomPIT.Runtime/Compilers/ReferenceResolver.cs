@@ -1,27 +1,26 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using System;
 using System.IO;
 using System.Text;
-using Microsoft.CodeAnalysis;
 using TomPIT.ComponentModel;
-using TomPIT.Net;
-using TomPIT.Runtime;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Compilers
 {
 	public class ReferenceResolver : SourceReferenceResolver
 	{
-		public ReferenceResolver(ISysContext context, Guid microService)
+		public ReferenceResolver(ISysConnection connection, Guid microService)
 		{
-			Context = context;
+			Connection = connection;
 			MicroService = microService;
 		}
 
-		private ISysContext Context { get; }
+		private ISysConnection Connection { get; }
 		private Guid MicroService { get; }
 
 		protected bool Equals(ReferenceResolver other)
 		{
-			return Equals(Context, other.Context);
+			return Equals(Connection, other.Connection);
 		}
 
 		public override bool Equals(object obj)
@@ -50,7 +49,7 @@ namespace TomPIT.Compilers
 			{
 				var hashCode = 37;
 
-				hashCode = (hashCode * 397) ^ (Context?.GetHashCode() ?? 0);
+				hashCode = (hashCode * 397) ^ (Connection?.GetHashCode() ?? 0);
 
 				return hashCode;
 			}
@@ -68,7 +67,7 @@ namespace TomPIT.Compilers
 
 			if (tokens.Length > 1)
 			{
-				ms = Context.GetService<IMicroServiceService>().Select(tokens[0]);
+				ms = Connection.GetService<IMicroServiceService>().Select(tokens[0]);
 
 				if (ms == null)
 				{
@@ -78,7 +77,7 @@ namespace TomPIT.Compilers
 				lib = tokens[1];
 			}
 
-			var c = Context.GetService<IComponentService>().SelectConfiguration(ms == null ? MicroService : ms.Token, "Library", lib) as ILibrary;
+			var c = Connection.GetService<IComponentService>().SelectConfiguration(ms == null ? MicroService : ms.Token, "Library", lib) as ILibrary;
 
 			if (c == null)
 			{
@@ -89,7 +88,7 @@ namespace TomPIT.Compilers
 
 			foreach (var i in c.Scripts)
 			{
-				var content = Context.GetService<IComponentService>().SelectTemplate(c.MicroService(Context), i);
+				var content = Connection.GetService<IComponentService>().SelectText(c.MicroService(Connection), i);
 
 				if (!string.IsNullOrWhiteSpace(content))
 				{

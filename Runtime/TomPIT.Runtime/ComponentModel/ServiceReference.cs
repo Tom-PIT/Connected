@@ -1,26 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using TomPIT.Analysis;
 using TomPIT.Annotations;
-using TomPIT.Net;
+using TomPIT.Connectivity;
 
 namespace TomPIT.ComponentModel
 {
 	public class ServiceReference : Element, IServiceReference
 	{
-		private ISysContext _server = null;
+		private ISysConnection _connection = null;
 		private string _ms = string.Empty;
 		private string _name = string.Empty;
 
-		[Items("TomPIT.Items.MicroServicesItems, TomPIT.Development")]
+		[Items("TomPIT.Items.MicroServicesItems, TomPIT.Design")]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
-		[InvalidateEnvironment(Ide.EnvironmentSection.Explorer | Ide.EnvironmentSection.Designer)]
+		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		public string MicroService
 		{
 			get { return _ms; }
 			set
 			{
-				if (string.IsNullOrWhiteSpace(value) || _server == null)
+				if (string.IsNullOrWhiteSpace(value) || _connection == null)
 				{
 					_ms = value;
 					return;
@@ -44,9 +45,9 @@ namespace TomPIT.ComponentModel
 		[OnDeserialized]
 		internal void OnDeserialized(StreamingContext context)
 		{
-			if (context.Context is ISysContext server)
+			if (context.Context is ISysConnection server)
 			{
-				_server = server;
+				_connection = server;
 
 				if (string.IsNullOrWhiteSpace(MicroService))
 					_name = SR.ServiceReferenceNotSet;
@@ -64,13 +65,13 @@ namespace TomPIT.ComponentModel
 
 		private void CheckCyclicReference(string microService, List<string> leads)
 		{
-			var me = this.Closest<IConfiguration>().MicroService(_server);
-			var ms = _server.GetService<IMicroServiceService>().Select(me);
+			var me = this.Closest<IConfiguration>().MicroService(_connection);
+			var ms = _connection.GetService<IMicroServiceService>().Select(me);
 
 			if (ms == null)
 				return;
 
-			var refs = _server.GetService<IDiscoveryService>().References(microService);
+			var refs = _connection.GetService<IDiscoveryService>().References(microService);
 
 			if (refs == null)
 				return;
@@ -79,8 +80,8 @@ namespace TomPIT.ComponentModel
 			{
 				if (string.Compare(i.MicroService, ms.Name, true) == 0)
 				{
-					var rms = refs.MicroService(_server);
-					var rs = _server.GetService<IMicroServiceService>().Select(i.MicroService);
+					var rms = refs.MicroService(_connection);
+					var rs = _connection.GetService<IMicroServiceService>().Select(i.MicroService);
 					var title = i.MicroService.ToString();
 
 					if (rs != null)

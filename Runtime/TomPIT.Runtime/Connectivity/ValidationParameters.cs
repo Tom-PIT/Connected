@@ -1,6 +1,6 @@
 ﻿using TomPIT.Security;
 
-namespace TomPIT.Net
+namespace TomPIT.Connectivity
 {
 	internal class ValidationParameters : IValidationParameters
 	{

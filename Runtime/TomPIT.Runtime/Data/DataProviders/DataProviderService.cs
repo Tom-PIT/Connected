@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.Net;
+using TomPIT.Caching;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Data.DataProviders
 {
-	internal class DataProviderService : ContextCacheRepository<IDataProvider, Guid>, IDataProviderService
+	internal class DataProviderService : ClientRepository<IDataProvider, Guid>, IDataProviderService
 	{
-		public DataProviderService(ISysConnection server) : base(server, "dataprovider")
+		public DataProviderService(ISysConnection connection) : base(connection, "dataprovider")
 		{
 
 		}

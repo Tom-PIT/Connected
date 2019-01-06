@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Net;
+using TomPIT.Caching;
+using TomPIT.Connectivity;
 
-namespace TomPIT.ComponentModel
+namespace TomPIT.ComponentModel.Features
 {
-	internal class FeatureService : ContextCacheRepository<IFeature, string>, IFeatureService, IFeatureNotification
+	internal class FeatureService : ClientRepository<IFeature, string>, IFeatureService, IFeatureNotification
 	{
 		public event FeatureChangedHandler FeatureChanged;
 
-		public FeatureService(ISysContext server) : base(server, "feature")
+		public FeatureService(ISysConnection connection) : base(connection, "feature")
 		{
 
 		}
@@ -22,10 +23,10 @@ namespace TomPIT.ComponentModel
 
 		public List<IFeature> Query(Guid microService)
 		{
-			var u = Server.CreateUrl("Feature", "Query")
+			var u = Connection.CreateUrl("Feature", "Query")
 				.AddParameter("microService", microService);
 
-			return Server.Connection.Get<List<Feature>>(u).ToList<IFeature>();
+			return Connection.Get<List<Feature>>(u).ToList<IFeature>();
 		}
 
 		public IFeature Select(Guid microService, Guid feature)
@@ -35,11 +36,11 @@ namespace TomPIT.ComponentModel
 			if (r != null)
 				return r;
 
-			var u = Server.CreateUrl("Feature", "SelectByToken")
+			var u = Connection.CreateUrl("Feature", "SelectByToken")
 				.AddParameter("microService", microService)
 				.AddParameter("feature", feature);
 
-			r = Server.Connection.Get<Feature>(u);
+			r = Connection.Get<Feature>(u);
 
 			if (r != null)
 				Set(GenerateRandomKey(), r);
@@ -54,11 +55,11 @@ namespace TomPIT.ComponentModel
 			if (r != null)
 				return r;
 
-			var u = Server.CreateUrl("Feature", "Select")
+			var u = Connection.CreateUrl("Feature", "Select")
 				.AddParameter("microService", microService)
 				.AddParameter("name", name);
 
-			r = Server.Connection.Get<Feature>(u);
+			r = Connection.Get<Feature>(u);
 
 			if (r != null)
 				Set(GenerateRandomKey(), r);

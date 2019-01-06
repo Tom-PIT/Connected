@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using TomPIT.ComponentModel;
-using TomPIT.Runtime;
+using TomPIT.Exceptions;
+using TomPIT.Services;
 
 namespace TomPIT.TagHelpers
 {
@@ -11,7 +12,7 @@ namespace TomPIT.TagHelpers
 		{
 			var microService = string.Empty;
 			var name = Name;
-			var ctx = ViewContext.ViewData.Model as IApplicationContext;
+			var ctx = ViewContext.ViewData.Model as IExecutionContext;
 
 			if (Name.Contains("/"))
 			{
@@ -20,22 +21,22 @@ namespace TomPIT.TagHelpers
 				microService = tokens[0];
 				name = tokens[1];
 
-				var ms = ctx.GetServerContext().GetService<IMicroServiceService>().Select(ctx.MicroService());
-				var reference = ctx.GetServerContext().GetService<IMicroServiceService>().Select(microService);
+				var ms = ctx.Connection().GetService<IMicroServiceService>().Select(ctx.MicroService());
+				var reference = ctx.Connection().GetService<IMicroServiceService>().Select(microService);
 
 				if (reference == null)
-					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
+					throw new ExecutionException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
 
-				ms.ValidateMicroServiceReference(ctx.GetServerContext(), reference.Name);
+				ms.ValidateMicroServiceReference(ctx.Connection(), reference.Name);
 			}
 			else
 			{
-				var bundle = ctx.GetServerContext().GetService<IComponentService>().SelectComponent(ctx.MicroService(), "Bundle", Name);
+				var bundle = ctx.Connection().GetService<IComponentService>().SelectComponent(ctx.MicroService(), "Bundle", Name);
 
 				if (bundle == null)
 					microService = ResolveMicroservice(ViewContext.ExecutingFilePath).Name;
 				else
-					microService = ctx.GetServerContext().GetService<IMicroServiceService>().Select(ctx.MicroService()).Name;
+					microService = ctx.Connection().GetService<IMicroServiceService>().Select(ctx.MicroService()).Name;
 
 			}
 

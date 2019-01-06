@@ -1,23 +1,25 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using TomPIT.Processing;
+using TomPIT.Caching;
+using TomPIT.Connectivity;
+using TomPIT.Services;
 
-namespace TomPIT.Net
+namespace TomPIT.Environment
 {
-	internal class InstanceEndpointService : ContextStatefulCacheRepository<IInstanceEndpoint, Guid>, IInstanceEndpointService, IInstanceEndpointNotification
+	internal class InstanceEndpointService : SynchronizedClientRepository<IInstanceEndpoint, Guid>, IInstanceEndpointService, IInstanceEndpointNotification
 	{
 		private ConcurrentDictionary<string, RoundRobin> _rr = new ConcurrentDictionary<string, RoundRobin>();
 
-		public InstanceEndpointService(ISysContext context) : base(context, "instanceendpoint")
+		public InstanceEndpointService(ISysConnection connection) : base(connection, "instanceendpoint")
 		{
 
 		}
 
 		protected override void OnInitializing()
 		{
-			var u = Server.CreateUrl("InstanceEndpoint", "Query");
-			var ds = Server.Connection.Get<List<InstanceEndpoint>>(u);
+			var u = Connection.CreateUrl("InstanceEndpoint", "Query");
+			var ds = Connection.Get<List<InstanceEndpoint>>(u);
 
 			foreach (var i in ds)
 			{
@@ -76,10 +78,10 @@ namespace TomPIT.Net
 
 		private IInstanceEndpoint Load(Guid endpoint)
 		{
-			var u = Server.CreateUrl("InstanceEndpoint", "Select")
+			var u = Connection.CreateUrl("InstanceEndpoint", "Select")
 				.AddParameter("endpoint", endpoint);
 
-			return Server.Connection.Get<InstanceEndpoint>(u);
+			return Connection.Get<InstanceEndpoint>(u);
 		}
 
 		public string Url(InstanceType type, InstanceVerbs verb)

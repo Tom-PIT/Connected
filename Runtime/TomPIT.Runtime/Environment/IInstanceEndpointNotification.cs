@@ -1,4 +1,4 @@
-﻿namespace TomPIT.Net
+﻿namespace TomPIT.Environment
 {
 	public interface IInstanceEndpointNotification
 	{

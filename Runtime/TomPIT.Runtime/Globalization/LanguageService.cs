@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Net;
-using TomPIT.Sys.Globalization;
+using TomPIT.Caching;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Globalization
 {
-	internal class LanguageService : ContextCacheRepository<ILanguage, Guid>, ILanguageService
+	internal class LanguageService : ClientRepository<ILanguage, Guid>, ILanguageService
 	{
-		public LanguageService(ISysContext server) : base(server, "language")
+		public LanguageService(ISysConnection connection) : base(connection, "language")
 		{
 
 		}
 
 		public List<ILanguage> Query()
 		{
-			var u = Server.CreateUrl("Language", "Query");
+			var u = Connection.CreateUrl("Language", "Query");
 
-			return Server.Connection.Get<List<Language>>(u).ToList<ILanguage>();
+			return Connection.Get<List<Language>>(u).ToList<ILanguage>();
 		}
 
 		public ILanguage Select(Guid language)
@@ -25,10 +25,10 @@ namespace TomPIT.Globalization
 			return Get(language,
 				(f) =>
 				{
-					var u = Server.CreateUrl("Language", "Select")
+					var u = Connection.CreateUrl("Language", "Select")
 					.AddParameter("language", language);
 
-					return Server.Connection.Get<Language>(u);
+					return Connection.Get<Language>(u);
 				});
 		}
 	}

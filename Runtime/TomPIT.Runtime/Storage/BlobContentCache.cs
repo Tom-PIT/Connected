@@ -3,20 +3,21 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Net;
+using TomPIT.Caching;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Storage
 {
-	internal class BlobContentCache : ContextCacheRepository<IBlobContent, Guid>
+	internal class BlobContentCache : ClientRepository<IBlobContent, Guid>
 	{
-		public BlobContentCache(ISysContext server) : base(server, "blobcontent")
+		public BlobContentCache(ISysConnection connection) : base(connection, "blobcontent")
 		{
 
 		}
 
 		public List<IBlobContent> Query(List<Guid> blobs)
 		{
-			var u = Server.CreateUrl("Storage", "DownloadBatch");
+			var u = Connection.CreateUrl("Storage", "DownloadBatch");
 			var args = new JObject();
 			var a = new JArray();
 
@@ -25,7 +26,7 @@ namespace TomPIT.Storage
 
 			args.Add("items", a);
 
-			var ds = Server.Connection.Post<List<BlobContent>>(u, args);
+			var ds = Connection.Post<List<BlobContent>>(u, args);
 
 			foreach (var i in ds)
 			{
@@ -41,12 +42,12 @@ namespace TomPIT.Storage
 			return Get(blob.Token,
 				(f) =>
 				{
-					var u = Server.CreateUrl("Storage", "Download")
+					var u = Connection.CreateUrl("Storage", "Download")
 					.AddParameter("resourceGroup", blob.ResourceGroup)
 					.AddParameter("microService", blob.MicroService)
 					.AddParameter("blob", blob.Token);
 
-					var r = Server.Connection.Get<BlobContent>(u);
+					var r = Connection.Get<BlobContent>(u);
 
 					if (r != null)
 						r.Content = LZ4Codec.Unwrap(r.Content);

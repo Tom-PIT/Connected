@@ -1,6 +1,4 @@
-﻿using TomPIT.Core.Data;
-
-namespace TomPIT.Runtime.Data
+﻿namespace TomPIT.Data
 {
 	internal class PrimaryKeyRecord : IPrimaryKeyRecord
 	{

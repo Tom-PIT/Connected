@@ -1,8 +1,28 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Builder;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using TomPIT.Analysis;
+using TomPIT.Compilation;
+using TomPIT.Compilers;
+using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Events;
+using TomPIT.ComponentModel.Features;
+using TomPIT.Configuration;
+using TomPIT.Connectivity;
+using TomPIT.Data;
+using TomPIT.Data.DataProviders;
+using TomPIT.Design;
+using TomPIT.Design.Serialization;
+using TomPIT.Diagnostics;
+using TomPIT.Environment;
+using TomPIT.Exceptions;
+using TomPIT.Globalization;
+using TomPIT.Security;
+using TomPIT.Services;
+using TomPIT.Storage;
 
-namespace TomPIT
+namespace TomPIT.Runtime
 {
 	public static class RuntimeBootstrapper
 	{
@@ -26,31 +46,31 @@ namespace TomPIT
 			Shell.RegisterService(typeof(IRuntimeService), typeof(RuntimeService));
 			Shell.RegisterService(typeof(IConnectivityService), typeof(ConnectivityService));
 
-			Shell.GetService<IConnectivityService>().ContextRegistered += OnContextRegistered;
+			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
 		}
 
-		private static void OnContextRegistered(object sender, SysContextRegisteredArgs e)
+		private static void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
 		{
-			e.Context.RegisterService(typeof(ISerializationService), typeof(SerializationService));
-			e.Context.RegisterService(typeof(ICompilerService), typeof(CompilerService));
-			e.Context.RegisterService(typeof(IMicroServiceService), typeof(MicroServiceService));
-			e.Context.RegisterService(typeof(IFeatureService), typeof(FeatureService));
-			e.Context.RegisterService(typeof(ISettingService), typeof(SettingService));
-			e.Context.RegisterService(typeof(INamingService), typeof(NamingService));
-			e.Context.RegisterService(typeof(ILoggingService), typeof(LoggingService));
-			e.Context.RegisterService(typeof(IEnvironmentUnitService), typeof(EnvironmentUnitService));
-			e.Context.RegisterService(typeof(IResourceGroupService), typeof(ResourceGroupService));
-			e.Context.RegisterService(typeof(ILanguageService), typeof(LanguageService));
-			e.Context.RegisterService(typeof(IInstanceEndpointService), typeof(InstanceEndpointService));
-			e.Context.RegisterService(typeof(IAuthorizationService), typeof(AuthorizationService));
-			e.Context.RegisterService(typeof(IComponentService), typeof(ComponentService));
-			e.Context.RegisterService(typeof(IUserService), typeof(UserService));
-			e.Context.RegisterService(typeof(IRoleService), typeof(RoleService));
-			e.Context.RegisterService(typeof(IStorageService), typeof(StorageService));
-			e.Context.RegisterService(typeof(IDataProviderService), typeof(DataProviderService));
-			e.Context.RegisterService(typeof(IEventService), typeof(EventService));
-			e.Context.RegisterService(typeof(IAuditService), typeof(AuditService));
-			e.Context.RegisterService(typeof(IDiscoveryService), typeof(DiscoveryService));
+			e.Connection.RegisterService(typeof(ISerializationService), typeof(SerializationService));
+			e.Connection.RegisterService(typeof(ICompilerService), typeof(CompilerService));
+			e.Connection.RegisterService(typeof(IMicroServiceService), typeof(MicroServiceService));
+			e.Connection.RegisterService(typeof(IFeatureService), typeof(FeatureService));
+			e.Connection.RegisterService(typeof(ISettingService), typeof(SettingService));
+			e.Connection.RegisterService(typeof(INamingService), typeof(NamingService));
+			e.Connection.RegisterService(typeof(ILoggingService), typeof(LoggingService));
+			e.Connection.RegisterService(typeof(IEnvironmentUnitService), typeof(EnvironmentUnitService));
+			e.Connection.RegisterService(typeof(IResourceGroupService), typeof(ResourceGroupService));
+			e.Connection.RegisterService(typeof(ILanguageService), typeof(LanguageService));
+			e.Connection.RegisterService(typeof(IInstanceEndpointService), typeof(InstanceEndpointService));
+			e.Connection.RegisterService(typeof(IAuthorizationService), typeof(AuthorizationService));
+			e.Connection.RegisterService(typeof(IComponentService), typeof(ComponentService));
+			e.Connection.RegisterService(typeof(IUserService), typeof(UserService));
+			e.Connection.RegisterService(typeof(IRoleService), typeof(RoleService));
+			e.Connection.RegisterService(typeof(IStorageService), typeof(StorageService));
+			e.Connection.RegisterService(typeof(IDataProviderService), typeof(DataProviderService));
+			e.Connection.RegisterService(typeof(IEventService), typeof(EventService));
+			e.Connection.RegisterService(typeof(IAuditService), typeof(AuditService));
+			e.Connection.RegisterService(typeof(IDiscoveryService), typeof(DiscoveryService));
 		}
 	}
 }

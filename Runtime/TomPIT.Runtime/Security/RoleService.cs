@@ -6,7 +6,7 @@ using TomPIT.Connectivity;
 
 namespace TomPIT.Security
 {
-	internal class RoleService : ContextStatefulCacheRepository<IRole, Guid>, IRoleService, IRoleNotification
+	internal class RoleService : SynchronizedClientRepository<IRole, Guid>, IRoleService, IRoleNotification
 	{
 		public RoleService(ISysConnection connection) : base(connection, "role")
 		{

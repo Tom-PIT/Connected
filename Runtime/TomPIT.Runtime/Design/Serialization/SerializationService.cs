@@ -1,19 +1,19 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Runtime.Serialization;
 using System.Text;
-using Newtonsoft.Json;
-using TomPIT.Net;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Design.Serialization
 {
 	internal class SerializationService : ISerializationService
 	{
-		public SerializationService(ISysContext server)
+		public SerializationService(ISysConnection connection)
 		{
-			Server = server;
+			Connection = connection;
 		}
 
-		private ISysContext Server { get; }
+		private ISysConnection Connection { get; }
 
 		public T Clone<T>(object instance)
 		{
@@ -26,7 +26,7 @@ namespace TomPIT.Design.Serialization
 			{
 				TypeNameHandling = TypeNameHandling.Auto,
 				ContractResolver = SupportInitializeContractResolver.Instance,
-				Context = new StreamingContext(StreamingContextStates.Other, Server)
+				Context = new StreamingContext(StreamingContextStates.Other, Connection)
 			});
 		}
 
@@ -36,7 +36,7 @@ namespace TomPIT.Design.Serialization
 			{
 				TypeNameHandling = TypeNameHandling.All,
 				TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
-				Context = new StreamingContext(StreamingContextStates.Other, Server)
+				Context = new StreamingContext(StreamingContextStates.Other, Connection)
 			});
 
 			return Encoding.UTF8.GetBytes(data);

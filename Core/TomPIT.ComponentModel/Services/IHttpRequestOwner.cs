@@ -2,7 +2,7 @@
 
 namespace TomPIT.Services
 {
-	internal interface IHttpRequestOwner
+	public interface IHttpRequestOwner
 	{
 		HttpRequest HttpRequest { get; }
 	}

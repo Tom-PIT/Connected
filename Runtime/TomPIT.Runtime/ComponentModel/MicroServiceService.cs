@@ -1,23 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Net;
+using TomPIT.Caching;
+using TomPIT.Connectivity;
 
 namespace TomPIT.ComponentModel
 {
-	internal class MicroServiceService : ContextStatefulCacheRepository<IMicroService, Guid>, IMicroServiceService, IMicroServiceNotification
+	internal class MicroServiceService : SynchronizedClientRepository<IMicroService, Guid>, IMicroServiceService, IMicroServiceNotification
 	{
 		public event MicroServiceChangedHandler MicroServiceChanged;
 
-		public MicroServiceService(ISysContext server) : base(server, "microservice")
+		public MicroServiceService(ISysConnection connection) : base(connection, "microservice")
 		{
 
 		}
 
 		protected override void OnInitializing()
 		{
-			var u = Server.CreateUrl("MicroService", "Query");
-			var ds = Server.Connection.Get<List<MicroService>>(u).ToList<IMicroService>();
+			var u = Connection.CreateUrl("MicroService", "Query");
+			var ds = Connection.Get<List<MicroService>>(u).ToList<IMicroService>();
 
 			foreach (var i in ds)
 				Set(i.Token, i, TimeSpan.Zero);
@@ -25,10 +26,10 @@ namespace TomPIT.ComponentModel
 
 		protected override void OnInvalidate(Guid id)
 		{
-			var u = Server.CreateUrl("MicroService", "SelectByToken")
+			var u = Connection.CreateUrl("MicroService", "SelectByToken")
 				.AddParameter("microService", id);
 
-			var r = Server.Connection.Get<MicroService>(u);
+			var r = Connection.Get<MicroService>(u);
 
 			if (r == null)
 			{
@@ -57,10 +58,10 @@ namespace TomPIT.ComponentModel
 			if (r != null)
 				return r;
 
-			var u = Server.CreateUrl("MicroService", "SelectByToken")
+			var u = Connection.CreateUrl("MicroService", "SelectByToken")
 				.AddParameter("microService", microService);
 
-			r = Server.Connection.Get<MicroService>(u);
+			r = Connection.Get<MicroService>(u);
 
 			if (r != null)
 				Set(microService, r);
@@ -76,10 +77,10 @@ namespace TomPIT.ComponentModel
 			if (r != null)
 				return r;
 
-			var u = Server.CreateUrl("MicroService", "Select")
+			var u = Connection.CreateUrl("MicroService", "Select")
 				.AddParameter("name", name);
 
-			r = Server.Connection.Get<MicroService>(u);
+			r = Connection.Get<MicroService>(u);
 
 			if (r != null)
 				Set(r.Token, r);
@@ -94,10 +95,10 @@ namespace TomPIT.ComponentModel
 			if (r != null)
 				return r;
 
-			var u = Server.CreateUrl("MicroService", "SelectByUrl")
+			var u = Connection.CreateUrl("MicroService", "SelectByUrl")
 				.AddParameter("url", url);
 
-			r = Server.Connection.Get<MicroService>(u);
+			r = Connection.Get<MicroService>(u);
 
 			if (r != null)
 				Set(r.Token, r);
@@ -111,11 +112,11 @@ namespace TomPIT.ComponentModel
 
 			if (!Container.Exists(key))
 			{
-				var u = Server.CreateUrl("MicroService", "QueryStrings")
+				var u = Connection.CreateUrl("MicroService", "QueryStrings")
 					.AddParameter("microService", microService)
 					.AddParameter("language", language);
 
-				var r = Server.Connection.Get<List<MicroServiceString>>(u).ToList<IMicroServiceString>();
+				var r = Connection.Get<List<MicroServiceString>>(u).ToList<IMicroServiceString>();
 
 				foreach (var i in r)
 					Container.Set(key, GenerateKey(microService, language, element, property), i, TimeSpan.Zero);

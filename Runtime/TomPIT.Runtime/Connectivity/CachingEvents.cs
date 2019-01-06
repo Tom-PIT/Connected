@@ -1,22 +1,25 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using TomPIT.Compilation;
 using TomPIT.Compilers;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Features;
 using TomPIT.Environment;
+using TomPIT.Notifications;
 using TomPIT.Security;
 using TomPIT.Storage;
 
-namespace TomPIT.Net
+namespace TomPIT.Connectivity
 {
 	internal class CachingEvents
 	{
-		public CachingEvents(ISysContext context, HubConnection connection)
+		public CachingEvents(ISysConnection connection, HubConnection hub)
 		{
+			Hub = hub;
 			Connection = connection;
-			Context = context;
 		}
 
-		private HubConnection Connection { get; }
-		private ISysContext Context { get; }
+		private HubConnection Hub { get; }
+		private ISysConnection Connection { get; }
 
 		public void Hook()
 		{
@@ -33,212 +36,212 @@ namespace TomPIT.Net
 
 		private void HookEnvironmentUnits()
 		{
-			Connection.On<MessageEventArgs<EnvironmentUnitEventArgs>>("EnvironmentUnitChanged", (e) =>
+			Hub.On<MessageEventArgs<EnvironmentUnitEventArgs>>("EnvironmentUnitChanged", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IEnvironmentUnitService>() is IEnvironmentUnitNotification n)
-					n.NotifyChanged(Context, e.Args);
+				if (Connection.GetService<IEnvironmentUnitService>() is IEnvironmentUnitNotification n)
+					n.NotifyChanged(Connection, e.Args);
 			});
 
-			Connection.On<MessageEventArgs<EnvironmentUnitEventArgs>>("EnvironmentUnitRemoved", (e) =>
+			Hub.On<MessageEventArgs<EnvironmentUnitEventArgs>>("EnvironmentUnitRemoved", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IEnvironmentUnitService>() is IEnvironmentUnitNotification n)
-					n.NotifyRemoved(Context, e.Args);
+				if (Connection.GetService<IEnvironmentUnitService>() is IEnvironmentUnitNotification n)
+					n.NotifyRemoved(Connection, e.Args);
 			});
 		}
 
 		private void HookInstances()
 		{
-			Connection.On<MessageEventArgs<InstanceEndpointEventArgs>>("InstanceEndpointChanged", (e) =>
+			Hub.On<MessageEventArgs<InstanceEndpointEventArgs>>("InstanceEndpointChanged", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
-					n.NotifyChanged(Context, e.Args);
+				if (Connection.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
+					n.NotifyChanged(Connection, e.Args);
 			});
 
-			Connection.On<MessageEventArgs<InstanceEndpointEventArgs>>("InstanceEndpointRemoved", (e) =>
+			Hub.On<MessageEventArgs<InstanceEndpointEventArgs>>("InstanceEndpointRemoved", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
-					n.NotifyRemoved(Context, e.Args);
+				if (Connection.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
+					n.NotifyRemoved(Connection, e.Args);
 			});
 		}
 
 		private void HookMicroServices()
 		{
-			Connection.On<MessageEventArgs<MicroServiceEventArgs>>("MicroServiceChanged", (e) =>
+			Hub.On<MessageEventArgs<MicroServiceEventArgs>>("MicroServiceChanged", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IMicroServiceService>() is IMicroServiceNotification n)
-					n.NotifyChanged(Context, e.Args);
+				if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification n)
+					n.NotifyChanged(Connection, e.Args);
 			});
 
-			Connection.On<MessageEventArgs<MicroServiceEventArgs>>("MicroServiceRemoved", (e) =>
+			Hub.On<MessageEventArgs<MicroServiceEventArgs>>("MicroServiceRemoved", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IMicroServiceService>() is IMicroServiceNotification n)
-					n.NotifyRemoved(Context, e.Args);
+				if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification n)
+					n.NotifyRemoved(Connection, e.Args);
 			});
 		}
 
 		private void HookSecurity()
 		{
-			Connection.On<MessageEventArgs<MembershipEventArgs>>("MembershipAdded", (e) =>
+			Hub.On<MessageEventArgs<MembershipEventArgs>>("MembershipAdded", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IAuthorizationService>() is IAuthorizationNotification n)
-					n.NotifyMembershipAdded(Context, e.Args);
+				if (Connection.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+					n.NotifyMembershipAdded(Connection, e.Args);
 			});
 
-			Connection.On<MessageEventArgs<MembershipEventArgs>>("MembershipRemoved", (e) =>
+			Hub.On<MessageEventArgs<MembershipEventArgs>>("MembershipRemoved", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IAuthorizationService>() is IAuthorizationNotification n)
-					n.NotifyMembershipRemoved(Context, e.Args);
+				if (Connection.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+					n.NotifyMembershipRemoved(Connection, e.Args);
 			});
 
-			Connection.On<MessageEventArgs<PermissionEventArgs>>("PermissionAdded", (e) =>
+			Hub.On<MessageEventArgs<PermissionEventArgs>>("PermissionAdded", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IAuthorizationService>() is IAuthorizationNotification n)
-					n.NotifyPermissionAdded(Context, e.Args);
+				if (Connection.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+					n.NotifyPermissionAdded(Connection, e.Args);
 			});
 
-			Connection.On<MessageEventArgs<PermissionEventArgs>>("PermissionRemoved", (e) =>
+			Hub.On<MessageEventArgs<PermissionEventArgs>>("PermissionRemoved", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IAuthorizationService>() is IAuthorizationNotification n)
-					n.NotifyPermissionRemoved(Context, e.Args);
+				if (Connection.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+					n.NotifyPermissionRemoved(Connection, e.Args);
 			});
 
-			Connection.On<MessageEventArgs<PermissionEventArgs>>("PermissionChanged", (e) =>
+			Hub.On<MessageEventArgs<PermissionEventArgs>>("PermissionChanged", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IAuthorizationService>() is IAuthorizationNotification n)
-					n.NotifyPermissionChanged(Context, e.Args);
+				if (Connection.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+					n.NotifyPermissionChanged(Connection, e.Args);
 			});
 		}
 
 		private void HookConfiguration()
 		{
-			Connection.On<MessageEventArgs<ConfigurationEventArgs>>("ConfigurationAdded", (e) =>
+			Hub.On<MessageEventArgs<ConfigurationEventArgs>>("ConfigurationAdded", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IComponentService>() is IComponentNotification n)
-					n.NotifyAdded(Context, e.Args);
+				if (Connection.GetService<IComponentService>() is IComponentNotification n)
+					n.NotifyAdded(Connection, e.Args);
 			});
 
-			Connection.On<MessageEventArgs<ConfigurationEventArgs>>("ConfigurationChanged", (e) =>
+			Hub.On<MessageEventArgs<ConfigurationEventArgs>>("ConfigurationChanged", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IComponentService>() is IComponentNotification n)
-					n.NotifyChanged(Context, e.Args);
+				if (Connection.GetService<IComponentService>() is IComponentNotification n)
+					n.NotifyChanged(Connection, e.Args);
 			});
 
-			Connection.On<MessageEventArgs<ConfigurationEventArgs>>("ConfigurationRemoved", (e) =>
+			Hub.On<MessageEventArgs<ConfigurationEventArgs>>("ConfigurationRemoved", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IComponentService>() is IComponentNotification n)
-					n.NotifyRemoved(Context, e.Args);
+				if (Connection.GetService<IComponentService>() is IComponentNotification n)
+					n.NotifyRemoved(Connection, e.Args);
 			});
 
-			Connection.On<MessageEventArgs<ScriptChangedEventArgs>>("ScriptChanged", (e) =>
+			Hub.On<MessageEventArgs<ScriptChangedEventArgs>>("ScriptChanged", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<ICompilerService>() is ICompilerNotification n)
-					n.NotifyChanged(Context, e.Args);
+				if (Connection.GetService<ICompilerService>() is ICompilerNotification n)
+					n.NotifyChanged(Connection, e.Args);
 			});
 		}
 
 		private void HookUsers()
 		{
-			Connection.On<MessageEventArgs<UserEventArgs>>("UserChanged", (e) =>
+			Hub.On<MessageEventArgs<UserEventArgs>>("UserChanged", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IUserService>() is IUserNotification n)
-					n.NotifyChanged(Context, e.Args);
+				if (Connection.GetService<IUserService>() is IUserNotification n)
+					n.NotifyChanged(Connection, e.Args);
 			});
 		}
 
 		private void HookRoles()
 		{
-			Connection.On<MessageEventArgs<RoleEventArgs>>("RoleChanged", (e) =>
+			Hub.On<MessageEventArgs<RoleEventArgs>>("RoleChanged", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IRoleService>() is IRoleNotification n)
-					n.NotifyChanged(Context, e.Args);
+				if (Connection.GetService<IRoleService>() is IRoleNotification n)
+					n.NotifyChanged(Connection, e.Args);
 			});
 		}
 
 		private void HookFeatures()
 		{
-			Connection.On<MessageEventArgs<FeatureEventArgs>>("FeatureChanged", (e) =>
+			Hub.On<MessageEventArgs<FeatureEventArgs>>("FeatureChanged", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IFeatureService>() is IFeatureNotification n)
-					n.NotifyChanged(Context, e.Args);
+				if (Connection.GetService<IFeatureService>() is IFeatureNotification n)
+					n.NotifyChanged(Connection, e.Args);
 			});
 
-			Connection.On<MessageEventArgs<FeatureEventArgs>>("FeatureRemoved", (e) =>
+			Hub.On<MessageEventArgs<FeatureEventArgs>>("FeatureRemoved", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IFeatureService>() is IFeatureNotification n)
-					n.NotifyChanged(Context, e.Args);
+				if (Connection.GetService<IFeatureService>() is IFeatureNotification n)
+					n.NotifyChanged(Connection, e.Args);
 			});
 		}
 
 		private void HookBlobs()
 		{
-			Connection.On<MessageEventArgs<BlobEventArgs>>("BlobChanged", (e) =>
+			Hub.On<MessageEventArgs<BlobEventArgs>>("BlobChanged", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IStorageService>() is IStorageNotification n)
-					n.NotifyChanged(Context, e.Args);
+				if (Connection.GetService<IStorageService>() is IStorageNotification n)
+					n.NotifyChanged(Connection, e.Args);
 			});
 
-			Connection.On<MessageEventArgs<BlobEventArgs>>("BlobAdded", (e) =>
+			Hub.On<MessageEventArgs<BlobEventArgs>>("BlobAdded", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IStorageService>() is IStorageNotification n)
-					n.NotifyAdded(Context, e.Args);
+				if (Connection.GetService<IStorageService>() is IStorageNotification n)
+					n.NotifyAdded(Connection, e.Args);
 			});
 
-			Connection.On<MessageEventArgs<BlobEventArgs>>("BlobRemoved", (e) =>
+			Hub.On<MessageEventArgs<BlobEventArgs>>("BlobRemoved", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IStorageService>() is IStorageNotification n)
-					n.NotifyRemoved(Context, e.Args);
+				if (Connection.GetService<IStorageService>() is IStorageNotification n)
+					n.NotifyRemoved(Connection, e.Args);
 			});
 
-			Connection.On<MessageEventArgs<BlobEventArgs>>("BlobCommitted", (e) =>
+			Hub.On<MessageEventArgs<BlobEventArgs>>("BlobCommitted", (e) =>
 			{
-				Connection.InvokeAsync("Confirm", e.Message);
+				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Context.GetService<IStorageService>() is IStorageNotification n)
-					n.NotifyCommitted(Context, e.Args);
+				if (Connection.GetService<IStorageService>() is IStorageNotification n)
+					n.NotifyCommitted(Connection, e.Args);
 			});
 		}
 	}

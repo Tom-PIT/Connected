@@ -7,7 +7,7 @@ using TomPIT.Connectivity;
 
 namespace TomPIT.Security
 {
-	internal class UserService : ContextCacheRepository<IUser, Guid>, IUserService, IUserNotification
+	internal class UserService : ClientRepository<IUser, Guid>, IUserService, IUserNotification
 	{
 		public UserService(ISysConnection connection) : base(connection, "user")
 		{

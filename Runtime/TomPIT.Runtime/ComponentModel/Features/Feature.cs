@@ -3,11 +3,11 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 
-namespace TomPIT.ComponentModel
+namespace TomPIT.ComponentModel.Features
 {
 	internal class Feature : IFeature
 	{
-		[InvalidateEnvironment(Ide.EnvironmentSection.Explorer | Ide.EnvironmentSection.Designer)]
+		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[Required]
 		[MaxLength(128)]

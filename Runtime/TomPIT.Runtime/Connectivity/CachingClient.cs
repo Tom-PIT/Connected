@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TomPIT.Net
+namespace TomPIT.Connectivity
 {
 	internal class CachingClient
 	{
@@ -11,12 +11,12 @@ namespace TomPIT.Net
 		private CancellationTokenSource _cancel = new CancellationTokenSource();
 		private CachingEvents _events = null;
 
-		public CachingClient(ISysContext context)
+		public CachingClient(ISysConnection connection)
 		{
-			Context = context;
+			Connection = connection;
 		}
 
-		private ISysContext Context { get; }
+		private ISysConnection Connection { get; }
 
 		public async void Connect()
 		{
@@ -24,7 +24,7 @@ namespace TomPIT.Net
 				Disconnect();
 
 			_cancel = new CancellationTokenSource();
-			_connection = new HubConnectionBuilder().WithUrl(string.Format("{0}/caching", Context.Url)).Build();
+			_connection = new HubConnectionBuilder().WithUrl(string.Format("{0}/caching", Connection.Url)).Build();
 
 			HookEvents();
 
@@ -44,7 +44,7 @@ namespace TomPIT.Net
 
 		private void HookEvents()
 		{
-			_events = new CachingEvents(Context, _connection);
+			_events = new CachingEvents(Connection, _connection);
 
 			_events.Hook();
 		}

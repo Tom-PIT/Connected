@@ -7,7 +7,7 @@ namespace TomPIT.ComponentModel
 {
 	internal class Component : IComponent
 	{
-		[InvalidateEnvironment(Ide.EnvironmentSection.Explorer | Ide.EnvironmentSection.Designer)]
+		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[Required]
 		[MaxLength(128)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]

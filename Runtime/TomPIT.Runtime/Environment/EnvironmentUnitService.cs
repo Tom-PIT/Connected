@@ -1,30 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Net;
+using TomPIT.Caching;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Environment
 {
-	internal class EnvironmentUnitService : ContextCacheRepository<IEnvironmentUnit, Guid>, IEnvironmentUnitService, IEnvironmentUnitNotification
+	internal class EnvironmentUnitService : ClientRepository<IEnvironmentUnit, Guid>, IEnvironmentUnitService, IEnvironmentUnitNotification
 	{
-		public EnvironmentUnitService(ISysContext server) : base(server, "environmentUnit")
+		public EnvironmentUnitService(ISysConnection connection) : base(connection, "environmentUnit")
 		{
 
 		}
 
 		public List<IEnvironmentUnit> Query()
 		{
-			var u = Server.CreateUrl("EnvironmentUnit", "Query");
+			var u = Connection.CreateUrl("EnvironmentUnit", "Query");
 
-			return Server.Connection.Get<List<EnvironmentUnit>>(u).ToList<IEnvironmentUnit>();
+			return Connection.Get<List<EnvironmentUnit>>(u).ToList<IEnvironmentUnit>();
 		}
 
 		public List<IEnvironmentUnit> Query(Guid parent)
 		{
-			var u = Server.CreateUrl("EnvironmentUnit", "QueryChildren")
+			var u = Connection.CreateUrl("EnvironmentUnit", "QueryChildren")
 				.AddParameter("parent", parent);
 
-			return Server.Connection.Get<List<EnvironmentUnit>>(u).ToList<IEnvironmentUnit>();
+			return Connection.Get<List<EnvironmentUnit>>(u).ToList<IEnvironmentUnit>();
 		}
 
 		public IEnvironmentUnit Select(Guid environmentUnit)
@@ -32,10 +33,10 @@ namespace TomPIT.Environment
 			return Get(environmentUnit,
 				(f) =>
 				{
-					var u = Server.CreateUrl("EnvironmentUnit", "Select")
+					var u = Connection.CreateUrl("EnvironmentUnit", "Select")
 						.AddParameter("environmentUnit", environmentUnit);
 
-					return Server.Connection.Get<EnvironmentUnit>(u);
+					return Connection.Get<EnvironmentUnit>(u);
 
 				});
 		}
