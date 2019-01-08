@@ -3,7 +3,7 @@
 namespace TomPIT.Application.UI
 {
 	[Create("Stylesheet", nameof(Name))]
-	[DomDesigner("TomPIT.Design.TemplateDesigner, TomPIT.Ide")]
+	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
 	[Syntax("css")]
 	public class CssFile : ThemeFile
 	{

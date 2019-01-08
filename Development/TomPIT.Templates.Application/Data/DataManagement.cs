@@ -11,7 +11,7 @@ namespace TomPIT.Application.Data
 
 		private ListItems<IDataManagementItem> _items = null;
 
-		[Items("TomPIT.Application.Items.DataManagementCollection, TomPIT.Templates.Application")]
+		[Items("TomPIT.Application.Design.Items.DataManagementCollection, TomPIT.Application.Design")]
 		public ListItems<IDataManagementItem> Items
 		{
 			get

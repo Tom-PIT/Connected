@@ -3,9 +3,9 @@ using TomPIT.Application.Data;
 using TomPIT.Design;
 using TomPIT.Dom;
 
-namespace TomPIT.Application.Items
+namespace TomPIT.Application.Design.Items
 {
-	public class TransactionParameterCollection : ItemsBase
+	internal class TransactionParameterCollection : ItemsBase
 	{
 		protected override void OnQueryDescriptors(IDomElement element, List<IItemDescriptor> items)
 		{

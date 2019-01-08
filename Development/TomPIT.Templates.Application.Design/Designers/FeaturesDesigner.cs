@@ -4,7 +4,7 @@ using System.Linq;
 using TomPIT.ActionResults;
 using TomPIT.Actions;
 using TomPIT.Annotations;
-using TomPIT.Application.Dom;
+using TomPIT.Application.Design.Dom;
 using TomPIT.Application.Items;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Features;
@@ -12,7 +12,7 @@ using TomPIT.Design;
 using TomPIT.Designers;
 using TomPIT.Ide;
 
-namespace TomPIT.Application.Design
+namespace TomPIT.Application.Design.Designers
 {
 	internal class FeaturesDesigner : CollectionDesigner<FeaturesElement>
 	{

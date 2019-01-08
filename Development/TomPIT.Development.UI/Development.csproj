@@ -16,12 +16,18 @@
 		<PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
 	</PropertyGroup>
 	<ItemGroup>
+	  <Compile Remove="Views\Shell\**" />
+	  <Content Remove="Views\Shell\**" />
+	  <EmbeddedResource Remove="Views\Shell\**" />
+	  <None Remove="Views\Shell\**" />
+	</ItemGroup>
+	<ItemGroup>
 	  <Content Remove="compilerconfig.json" />
 	  <Content Remove="wwwroot\Assets\Styles\development.less" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="lz4net" Version="1.0.15.93" />
-		<PackageReference Include="Microsoft.AspNetCore.App"/>
+		<PackageReference Include="Microsoft.AspNetCore.App" />
 		<PackageReference Include="BuildBundlerMinifier" Version="2.8.391" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.1.0" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="1.1.0" />
@@ -39,7 +45,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Shell\" />
     <Folder Include="wwwroot\Assets\Fonts\OpenSans\" />
     <Folder Include="wwwroot\Assets\Libraries\DevExtreme\18.2.4\icons\" />
     <Folder Include="wwwroot\Assets\Libraries\Underscore\1.9.1\" />
@@ -62,8 +67,8 @@
     <ProjectReference Include="..\TomPIT.Development\TomPIT.Development.csproj" />
     <ProjectReference Include="..\TomPIT.Ide.UI\TomPIT.Ide.UI.csproj" />
     <ProjectReference Include="..\TomPIT.Ide\TomPIT.Ide.csproj" />
-    <ProjectReference Include="..\TomPIT.Templates.Application.Design\TomPIT.Templates.Application.Design.csproj" />
-    <ProjectReference Include="..\TomPIT.Templates.Application\TomPIT.Templates.Application.csproj" />
+    <ProjectReference Include="..\TomPIT.Templates.Application.Design\TomPIT.Application.Design.csproj" />
+    <ProjectReference Include="..\TomPIT.Templates.Application\TomPIT.Application.csproj" />
     <ProjectReference Include="..\TomPIT.Templates.IoT.Design\TomPIT.Templates.IoT.Design.csproj" />
     <ProjectReference Include="..\TomPIT.Templates.IoT\TomPIT.Templates.IoT.csproj" />
   </ItemGroup>

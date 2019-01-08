@@ -19,7 +19,7 @@ namespace TomPIT.Application.UI
 		[Browsable(false)]
 		public Guid TextBlob { get; set; }
 
-		[Items("TomPIT.Application.Items.SnippetCollection, TomPIT.Templates.Application")]
+		[Items("TomPIT.Application.Design.Items.SnippetCollection, TomPIT.Application.Design")]
 		public ListItems<IText> Snippets
 		{
 			get
@@ -31,7 +31,7 @@ namespace TomPIT.Application.UI
 			}
 		}
 
-		[Items("TomPIT.Application.Items.ScriptCollection, TomPIT.Templates.Application")]
+		[Items("TomPIT.Application.Design.Items.ScriptCollection, TomPIT.Application.Design")]
 		public ListItems<IText> Scripts
 		{
 			get
@@ -48,7 +48,7 @@ namespace TomPIT.Application.UI
 
 		}
 
-		[Items("TomPIT.Application.Items.ViewHelpersCollection, TomPIT.Templates.Application")]
+		[Items("TomPIT.Application.Design.Items.ViewHelpersCollection, TomPIT.Application.Design")]
 		public ListItems<IViewHelper> Helpers
 		{
 			get

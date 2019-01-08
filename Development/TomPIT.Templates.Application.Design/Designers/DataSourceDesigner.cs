@@ -9,7 +9,7 @@ using TomPIT.Data.DataProviders;
 using TomPIT.Dom;
 using TomPIT.Ide;
 
-namespace TomPIT.Application.Design
+namespace TomPIT.Application.Design.Designers
 {
 	public class DataSourceDesigner : DataElementDesigner
 	{

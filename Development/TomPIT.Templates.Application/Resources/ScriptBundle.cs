@@ -12,7 +12,7 @@ namespace TomPIT.Application.Resources
 
 		private ListItems<IScriptSource> _scripts = null;
 
-		[Items("TomPIT.Application.Items.ScriptSourceCollection, TomPIT.Templates.Application")]
+		[Items("TomPIT.Application.Design.Items.ScriptSourceCollection, TomPIT.Application.Design")]
 		public ListItems<IScriptSource> Scripts
 		{
 			get

@@ -3,7 +3,7 @@ using TomPIT.Application.UI;
 using TomPIT.Design;
 using TomPIT.Dom;
 
-namespace TomPIT.Application.Items
+namespace TomPIT.Application.Design.Items
 {
 	internal class ViewHelpersCollection : ItemsBase
 	{

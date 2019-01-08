@@ -3,14 +3,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations;
-using TomPIT.Application.Design;
+using TomPIT.Application.Design.Designers;
 using TomPIT.Application.Items;
-using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Features;
 using TomPIT.Dom;
 using TomPIT.Ide;
 
-namespace TomPIT.Application.Dom
+namespace TomPIT.Application.Design.Dom
 {
 	internal class FeaturesElement : TomPIT.Dom.Element
 	{

@@ -34,7 +34,7 @@ namespace TomPIT.Security
 		[Browsable(false)]
 		public Guid AuthenticationToken { get; set; }
 
-		[Items("TomPIT.Items.LanguageItems, TomPIT.Management")]
+		[Items("TomPIT.Design.Items.LanguageItems, TomPIT.Design")]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryGlobalization)]
 		public Guid Language { get; set; }
@@ -50,7 +50,7 @@ namespace TomPIT.Security
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		public DateTime LastLogin { get; set; }
 
-		[Items("TomPIT.Items.TimezoneItems, TomPIT.Management")]
+		[Items("TomPIT.Design.Items.TimezoneItems, TomPIT.Design")]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryGlobalization)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		public string TimeZone { get; set; }

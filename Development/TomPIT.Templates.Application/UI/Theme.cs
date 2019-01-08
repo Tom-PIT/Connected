@@ -10,7 +10,7 @@ namespace TomPIT.Application.UI
 
 		public const string ComponentCategory = "Theme";
 
-		[Items("TomPIT.Application.Items.StylesheetCollection, TomPIT.Templates.Application")]
+		[Items("TomPIT.Application.Design.Items.StylesheetCollection, TomPIT.Application.Design")]
 		public ListItems<ThemeFile> Stylesheets
 		{
 			get

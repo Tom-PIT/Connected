@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using TomPIT.Application.Apis;
 using TomPIT.Application.Data;
-using TomPIT.Application.Dom;
+using TomPIT.Application.Design.Dom;
 using TomPIT.Application.Events;
 using TomPIT.Application.Resources;
 using TomPIT.Application.UI;

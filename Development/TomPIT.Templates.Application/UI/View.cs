@@ -6,7 +6,8 @@ using TomPIT.Security;
 namespace TomPIT.Application.UI
 {
 	[Create("View")]
-	[DomDesigner("TomPIT.Design.TemplateDesigner, TomPIT.Ide")]
+	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
+	[Syntax("razor")]
 	public class View : ViewBase, IApplicationView, IAuthorizationChain
 	{
 		public const string ComponentCategory = "View";
@@ -19,7 +20,7 @@ namespace TomPIT.Application.UI
 		public string Url { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryAppearance)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
-		[Items("TomPIT.Application.Items.LayoutItems, TomPIT.Templates.Application")]
+		[Items("TomPIT.Application.Design.Items.LayoutItems, TomPIT.Application.Design")]
 		public string Layout { get; set; }
 
 		[Browsable(false)]

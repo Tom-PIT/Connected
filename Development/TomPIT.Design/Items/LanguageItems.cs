@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.Design;
 using TomPIT.Dom;
 using TomPIT.Globalization;
 
-namespace TomPIT.Items
+namespace TomPIT.Design.Items
 {
 	internal class LanguageItems : ItemsBase
 	{

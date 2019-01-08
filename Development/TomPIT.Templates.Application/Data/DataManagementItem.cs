@@ -11,10 +11,10 @@ namespace TomPIT.Application.Data
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[Required]
-		[InvalidateEnvironment(EnvironmentSection.Explorer| EnvironmentSection.Designer)]
+		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		public string Name { get; set; }
 
-		[Items("TomPIT.Application.Items.DataManagementCollection, TomPIT.Templates.Application")]
+		[Items("TomPIT.Application.Design.Items.DataManagementCollection, TomPIT.Application.Design")]
 		public ListItems<IDataManagementItem> Items
 		{
 			get

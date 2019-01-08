@@ -9,7 +9,7 @@ namespace TomPIT.Application
 
 		private ListItems<IText> _scripts = null;
 
-		[Items("TomPIT.Application.Items.LibraryScriptCollection, TomPIT.Templates.Application")]
+		[Items("TomPIT.Application.Design.Items.LibraryScriptCollection, TomPIT.Application.Design")]
 		public ListItems<IText> Scripts
 		{
 			get

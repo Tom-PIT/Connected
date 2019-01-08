@@ -4,7 +4,7 @@ using TomPIT.ComponentModel.Features;
 using TomPIT.Dom;
 using TomPIT.Ide;
 
-namespace TomPIT.Application.Dom
+namespace TomPIT.Application.Design.Dom
 {
 	internal class FeatureElement : TransactionElement, IFeatureScope
 	{

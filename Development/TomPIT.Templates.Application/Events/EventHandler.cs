@@ -14,7 +14,7 @@ namespace TomPIT.Application.Events
 
 		private ListItems<IText> _scripts = null;
 
-		[Items("TomPIT.Application.Items.LibraryScriptCollection, TomPIT.Templates.Application")]
+		[Items("TomPIT.Application.Design.Items.LibraryScriptCollection, TomPIT.Application.Design")]
 		public ListItems<IText> Scripts
 		{
 			get
@@ -38,7 +38,7 @@ namespace TomPIT.Application.Events
 			}
 		}
 
-		[Items("TomPIT.Application.Items.EventBindingsCollection, TomPIT.Templates.Application")]
+		[Items("TomPIT.Application.Design.Items.EventBindingsCollection, TomPIT.Application.Design")]
 		public ListItems<IEventBinding> Events
 		{
 			get

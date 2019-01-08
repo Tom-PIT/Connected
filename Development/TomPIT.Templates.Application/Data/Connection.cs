@@ -19,7 +19,7 @@ namespace TomPIT.Application.Data
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
 		public bool Enabled { get; set; } = true;
 
-		[Items("TomPIT.Application.Items.DataProviderItems, TomPIT.Application.Design")]
+		[Items("TomPIT.Application.Design.Items.DataProviderItems, TomPIT.Application.Design")]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		public Guid DataProvider { get; set; }

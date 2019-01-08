@@ -3,7 +3,7 @@ using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Dom;
 
-namespace TomPIT.Application.Dom
+namespace TomPIT.Application.Design.Dom
 {
 	internal class SecurityAreasElement : TomPIT.Dom.Element
 	{

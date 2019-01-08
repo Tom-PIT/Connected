@@ -4,9 +4,9 @@ using TomPIT.Data.DataProviders;
 using TomPIT.Design;
 using TomPIT.Dom;
 
-namespace TomPIT.Application.Items
+namespace TomPIT.Application.Design.Items
 {
-	public class DataProviderItems : ItemsBase
+	internal class DataProviderItems : ItemsBase
 	{
 		protected override void OnQueryDescriptors(IDomElement element, List<IItemDescriptor> items)
 		{

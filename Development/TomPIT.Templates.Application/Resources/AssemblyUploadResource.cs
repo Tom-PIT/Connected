@@ -7,7 +7,7 @@ using TomPIT.ComponentModel.Resources;
 namespace TomPIT.Application.Resources
 {
 	[Create("AssemblyUpload")]
-	[DomDesigner("TomPIT.Application.Design.AssemblyUploadDesigner, TomPIT.Templates.Application")]
+	[DomDesigner("TomPIT.Application.Design.Designers.AssemblyUploadDesigner, TomPIT.Application.Design")]
 	public class AssemblyUploadResource : ComponentConfiguration, IAssemblyUploadResource
 	{
 		public const string ComponentCategory = "Assembly";

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.IO;
-using Newtonsoft.Json.Linq;
 using TomPIT.ActionResults;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
@@ -11,7 +11,7 @@ using TomPIT.Dom;
 using TomPIT.Ide;
 using TomPIT.Storage;
 
-namespace TomPIT.Application.Design
+namespace TomPIT.Application.Design.Designers
 {
 	internal class ScriptUploadDesigner : DomDesigner<ReflectionElement>, IUploadDesigner
 	{

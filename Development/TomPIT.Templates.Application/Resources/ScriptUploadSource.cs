@@ -6,7 +6,7 @@ using TomPIT.ComponentModel.Resources;
 namespace TomPIT.Application.Resources
 {
 	[Create("ScriptUpload")]
-	[DomDesigner("TomPIT.Application.Design.ScriptUploadDesigner, TomPIT.Templates.Application")]
+	[DomDesigner("TomPIT.Application.Design.Designers.ScriptUploadDesigner, TomPIT.Application.Design")]
 	public class ScriptUploadSource : ScriptSource, IScriptUploadSource
 	{
 		[Browsable(false)]

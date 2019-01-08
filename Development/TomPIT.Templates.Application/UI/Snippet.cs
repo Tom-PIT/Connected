@@ -4,7 +4,7 @@ using TomPIT.ComponentModel;
 namespace TomPIT.Application.UI
 {
 	[Create("Snippet", nameof(Name))]
-	[DomDesigner("TomPIT.Design.TemplateDesigner, TomPIT.Ide")]
+	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
 	[Syntax("razor")]
 	public class Snippet : Text
 	{

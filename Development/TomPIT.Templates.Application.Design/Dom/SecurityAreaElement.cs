@@ -9,7 +9,7 @@ using TomPIT.Dom;
 using TomPIT.Ide;
 using TomPIT.Security;
 
-namespace TomPIT.Application.Dom
+namespace TomPIT.Application.Design.Dom
 {
 	internal class SecurityAreaElement : TomPIT.Dom.Element, IPermissionElement
 	{

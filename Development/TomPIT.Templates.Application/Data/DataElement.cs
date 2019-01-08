@@ -25,7 +25,7 @@ namespace TomPIT.Application.Data
 		public CommandType CommandType { get; set; } = CommandType.StoredProcedure;
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
-		[Items("TomPIT.Application.Items.ConnectionItems, TomPIT.Application.Design")]
+		[Items("TomPIT.Application.Design.Items.ConnectionItems, TomPIT.Application.Design")]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		public Guid Connection { get; set; }
 

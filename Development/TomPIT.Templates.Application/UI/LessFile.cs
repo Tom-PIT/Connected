@@ -3,7 +3,7 @@
 namespace TomPIT.Application.UI
 {
 	[Create("Less", nameof(Name))]
-	[DomDesigner("TomPIT.Design.TemplateDesigner, TomPIT.Ide")]
+	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
 	[Syntax("less")]
 	public class LessFile : ThemeFile
 	{

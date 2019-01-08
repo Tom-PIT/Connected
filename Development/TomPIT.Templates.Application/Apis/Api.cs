@@ -14,7 +14,7 @@ namespace TomPIT.Application.Apis
 		private ListItems<IApiOperation> _ops = null;
 		private ApiProtocolOptions _protocols = null;
 
-		[Items("TomPIT.Application.Items.OperationCollection, TomPIT.Application.Design")]
+		[Items("TomPIT.Application.Design.Items.OperationCollection, TomPIT.Application.Design")]
 		public ListItems<IApiOperation> Operations
 		{
 			get

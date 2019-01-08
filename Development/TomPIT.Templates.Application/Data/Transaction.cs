@@ -6,12 +6,12 @@ using TomPIT.ComponentModel.Events;
 namespace TomPIT.Application.Data
 {
 	[Create("Transaction")]
-	[DomDesigner("TomPIT.Application.Design.TransactionDesigner, TomPIT.Templates.Application")]
+	[DomDesigner("TomPIT.Application.Design.Designers.TransactionDesigner, TomPIT.Application.Design")]
 	public class Transaction : DataElement, ITransaction
 	{
 		public const string ComponentCategory = "Transaction";
 
-		[Items("TomPIT.Application.Items.TransactionParameterCollection, TomPIT.Templates.Application")]
+		[Items("TomPIT.Application.DesignItems.TransactionParameterCollection, TomPIT.Application.Design")]
 		public override ListItems<IDataParameter> Parameters => base.Parameters;
 
 		[EventArguments(typeof(TransactionExecutedArguments))]

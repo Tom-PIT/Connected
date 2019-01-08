@@ -12,7 +12,7 @@ namespace TomPIT.Application.Events
 		[Required]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
-		[Items("TomPIT.Application.Items.EventItems, TomPIT.Templates.Application")]
+		[Items("TomPIT.Application.Design.Items.EventItems, TomPIT.Application.Design")]
 		public string Event { get; set; }
 
 		public override string ToString()

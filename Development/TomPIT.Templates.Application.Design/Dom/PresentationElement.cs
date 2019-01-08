@@ -1,7 +1,7 @@
 ﻿using TomPIT.Dom;
 using TomPIT.Ide;
 
-namespace TomPIT.Application.Dom
+namespace TomPIT.Application.Design.Dom
 {
 	internal class PresentationElement : Element
 	{

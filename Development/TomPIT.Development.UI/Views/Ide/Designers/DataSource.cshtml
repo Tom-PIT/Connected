@@ -1,27 +1,27 @@
-﻿@model TomPIT.Application.Design.DataSourceDesigner
+﻿@model TomPIT.Application.Design.Designers.DataSourceDesigner
 
 @{
-    var css = string.Empty;
+	var css = string.Empty;
 
-    if (!string.IsNullOrWhiteSpace(Model.DataSource.CommandText))
-    {
-        <div class="mt-5 text-center collapse show" id="dataSourceDesignerInfo">
-            <i class="jumbo-font fal fa-database"></i>
-            <h3 class="text-center mt-5">@Model.Owner.Element.Title</h3>
-            <hr />
-            Command text:
-            <br />
-            <code>
-                @Model.DataSource.CommandText
-            </code>
+	if (!string.IsNullOrWhiteSpace(Model.DataSource.CommandText))
+	{
+		<div class="mt-5 text-center collapse show" id="dataSourceDesignerInfo">
+			<i class="jumbo-font fal fa-database"></i>
+			<h3 class="text-center mt-5">@Model.Owner.Element.Title</h3>
+			<hr />
+			Command text:
+			<br />
+			<code>
+				@Model.DataSource.CommandText
+			</code>
 
-            <p class="mt-5">
-                <a href="#" data-component="configure">Configure</a>
-            </p>
-        </div>
-        css = "collapse";
+			<p class="mt-5">
+				<a href="#" data-component="configure">Configure</a>
+			</p>
+		</div>
+		css = "collapse";
 
-        <script>
+		<script>
             ide.hideToolbar();
 
             $('a[data-component="configure"]').click(function (e) {
@@ -30,46 +30,46 @@
                 $('#dataSourceDesignerUI').collapse('show');
                 $('#dataSourceDesignerInfo').collapse();
             });
-        </script>
-    }
+		</script>
+	}
 
 
 }
 <div class="doc-canvas @css" id="dataSourceDesignerUI">
-    <div class="paper">
-        <h4 class="dev-title">Browse</h4>
-        <!form id="dsForm">
-            <div class="form-group" data-component="select">
-                <label for="editConnection">Connection</label>
-                <div id="editConnection"></div>
-            </div>
-            <div class="form-group" data-component="select">
-                <label for="editObjectTypes">Object groups</label>
-                <div id="editObjectTypes"></div>
-            </div>
-            <div class="form-group" data-component="select">
-                <label for="editObjects">Objects</label>
-                <div id="editObjects"></div>
-            </div>
+	<div class="paper">
+		<h4 class="dev-title">Browse</h4>
+		<!form id="dsForm">
+			<div class="form-group" data-component="select">
+				<label for="editConnection">Connection</label>
+				<div id="editConnection"></div>
+			</div>
+			<div class="form-group" data-component="select">
+				<label for="editObjectTypes">Object groups</label>
+				<div id="editObjectTypes"></div>
+			</div>
+			<div class="form-group" data-component="select">
+				<label for="editObjects">Objects</label>
+				<div id="editObjects"></div>
+			</div>
 
-            <ul class="nav nav-tabs" id="devTabs" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="tabFields" data-toggle="tab" href="#devTabContentFields" role="tab" aria-controls="fields" aria-selected="true">Fields</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="tabParameters" data-toggle="tab" href="#devTabContentParameters" role="tab" aria-controls="parameters" aria-selected="false">Parameters</a>
-                </li>
-            </ul>
-            <div class="tab-content" id="devTabsContent">
-                <div class="tab-pane fade show active dev-tab-content" id="devTabContentFields" role="tabpanel" aria-labelledby="fields">
-                    <ul id="listFields" class="list-unstyled"></ul>
-                </div>
-                <div class="tab-pane fade dev-tab-content" id="devTabContentParameters" role="tabpanel" aria-labelledby="parameters">
-                    <ul id="listParameters" class="list-unstyled"></ul>
-                </div>
-            </div>
-        </!form>
-    </div>
+			<ul class="nav nav-tabs" id="devTabs" role="tablist">
+				<li class="nav-item">
+					<a class="nav-link active" id="tabFields" data-toggle="tab" href="#devTabContentFields" role="tab" aria-controls="fields" aria-selected="true">Fields</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" id="tabParameters" data-toggle="tab" href="#devTabContentParameters" role="tab" aria-controls="parameters" aria-selected="false">Parameters</a>
+				</li>
+			</ul>
+			<div class="tab-content" id="devTabsContent">
+				<div class="tab-pane fade show active dev-tab-content" id="devTabContentFields" role="tabpanel" aria-labelledby="fields">
+					<ul id="listFields" class="list-unstyled"></ul>
+				</div>
+				<div class="tab-pane fade dev-tab-content" id="devTabContentParameters" role="tabpanel" aria-labelledby="parameters">
+					<ul id="listParameters" class="list-unstyled"></ul>
+				</div>
+			</div>
+		</!form>
+	</div>
 </div>
 <script>
     $('#editConnection').dxSelectBox({

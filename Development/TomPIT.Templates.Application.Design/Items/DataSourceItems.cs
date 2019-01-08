@@ -5,7 +5,7 @@ using TomPIT.ComponentModel;
 using TomPIT.Design;
 using TomPIT.Dom;
 
-namespace TomPIT.Application.Items
+namespace TomPIT.Application.Design.Items
 {
 	internal class DataSourceItems : ItemsBase
 	{

@@ -5,7 +5,7 @@ using TomPIT.ComponentModel.UI;
 namespace TomPIT.Application.UI
 {
 	[Create("Helper", nameof(Name))]
-	[DomDesigner("TomPIT.Design.TemplateDesigner, TomPIT.Ide")]
+	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
 	[Syntax("csharp")]
 	[EventArguments(typeof(ViewHelperArguments))]
 	public class ViewHelper : Text, IViewHelper

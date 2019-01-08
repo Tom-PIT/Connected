@@ -11,11 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Development", "TomPI
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{B2F99931-C7AC-428A-A131-3AE9972BC414}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Templates.Application.Design", "TomPIT.Templates.Application.Design\TomPIT.Templates.Application.Design.csproj", "{04B6EB19-DDFC-4BCB-8760-7F50E3AFA736}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Application.Design", "TomPIT.Templates.Application.Design\TomPIT.Application.Design.csproj", "{04B6EB19-DDFC-4BCB-8760-7F50E3AFA736}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Design", "TomPIT.Design\TomPIT.Design.csproj", "{DADCA7DE-BBB9-4465-ABB3-7A74CAC9EF4A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Templates.Application", "TomPIT.Templates.Application\TomPIT.Templates.Application.csproj", "{0CC9BA74-BA0A-49CA-A008-DD8499C313D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Application", "TomPIT.Templates.Application\TomPIT.Application.csproj", "{0CC9BA74-BA0A-49CA-A008-DD8499C313D3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Templates.IoT", "TomPIT.Templates.IoT\TomPIT.Templates.IoT.csproj", "{0DE4C393-11AA-49CA-9297-79344B9CF508}"
 EndProject

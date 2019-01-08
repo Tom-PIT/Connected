@@ -7,7 +7,7 @@ namespace TomPIT.Application.Data
 	public class DataManagementDescriptor : DataManagementItem, IDataManagementDescriptor
 	{
 		[PropertyEditor(PropertyEditorAttribute.Select)]
-		[Items("TomPIT.Application.Items.DataSourceItems, TomPIT.Templates.Application")]
+		[Items("TomPIT.Application.Design.Items.DataSourceItems, TomPIT.Application.Design")]
 		public string DataSource { get; set; }
 	}
 }

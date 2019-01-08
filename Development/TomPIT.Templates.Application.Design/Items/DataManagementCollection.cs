@@ -3,7 +3,7 @@ using TomPIT.Application.Data;
 using TomPIT.Design;
 using TomPIT.Dom;
 
-namespace TomPIT.Application.Items
+namespace TomPIT.Application.Design.Items
 {
 	internal class DataManagementCollection : ItemsBase
 	{
