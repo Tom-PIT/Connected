@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Services;
@@ -120,7 +121,7 @@ namespace TomPIT
 				Level = TraceLevel.Error,
 				Message = message,
 				Source = source,
-				MicroService = context.MicroService(),
+				MicroService = context == null ? Guid.Empty : context.MicroService(),
 			};
 
 			svc.Write(e);

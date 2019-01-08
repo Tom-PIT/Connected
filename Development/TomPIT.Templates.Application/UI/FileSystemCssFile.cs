@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
+using TomPIT.Routing;
 
 namespace TomPIT.Application.UI
 {
 	[Create("Stylesheet", nameof(Name))]
-	public class FileSystemCssFile : ThemeFile
+	public class FileSystemCssFile : ThemeFile, IStaticResource
 	{
 		[Required]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]

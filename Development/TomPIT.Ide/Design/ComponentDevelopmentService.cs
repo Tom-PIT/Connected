@@ -65,13 +65,6 @@ namespace TomPIT.Design
 			};
 
 			Connection.Post(u, args);
-
-			CleanDependencies();
-		}
-
-		private void CleanDependencies()
-		{
-
 		}
 
 		public Guid Insert(IComponent scope, Guid microService, Guid feature, string category, string name, string type)
@@ -265,15 +258,22 @@ namespace TomPIT.Design
 
 		private void RemoveDependencies(Guid component)
 		{
-			var config = Connection.GetService<IComponentService>().SelectConfiguration(component);
+			try
+			{
+				var config = Connection.GetService<IComponentService>().SelectConfiguration(component);
 
-			if (config == null)
-				return;
+				if (config == null)
+					return;
 
-			var txt = config.Children<IText>();
+				var txt = config.Children<IText>();
 
-			foreach (var i in txt)
-				Delete(i);
+				foreach (var i in txt)
+					Delete(i);
+			}
+			catch (Exception ex)
+			{
+				Connection.LogWarning(null, "Remove Dependencies", ex.Message);
+			}
 		}
 	}
 }

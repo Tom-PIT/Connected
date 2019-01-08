@@ -1,0 +1,58 @@
+﻿@using TomPIT.Globalization;
+
+@model TomPIT.Services.IExecutionContext
+
+@{
+	var locale = "en";
+
+	if (Model.Services.Localization.Language != Guid.Empty)
+	{
+		var language = Model.Connection().GetService<TomPIT.Globalization.ILanguageService>().Select(Model.Services.Localization.Language);
+
+		if (language != null)
+		{
+			var tokens = language.Mappings.Split(',');
+
+			if (tokens.Length > 0)
+			{
+				locale = tokens[0].Trim();
+			}
+		}
+	}
+
+	var sgm = ViewBag.ClientGlobalizationSegments;
+	var segments = ClientGlobalizationSegment.None;
+
+	if (sgm != null)
+	{
+		segments = (ClientGlobalizationSegment)sgm;
+	}
+	else
+	{
+		segments = ClientGlobalizationSegment.Numbers
+			 | ClientGlobalizationSegment.NumberingSystems
+			 | ClientGlobalizationSegment.Plurals
+			 | ClientGlobalizationSegment.Ordinals
+			 | ClientGlobalizationSegment.Currencies
+			 | ClientGlobalizationSegment.CurrencyData
+			 | ClientGlobalizationSegment.TimeData
+			 | ClientGlobalizationSegment.WeekData
+			 | ClientGlobalizationSegment.LikelySubtags
+			 | ClientGlobalizationSegment.Units
+			 | ClientGlobalizationSegment.Calendar
+			 | ClientGlobalizationSegment.DateFields
+			 | ClientGlobalizationSegment.TimeZoneNames;
+	}
+
+	var url = string.Format("{0}/sys/globalize/{1}/{2}", Model.RootUrl(), locale, (long)segments);
+}
+
+<script>
+    tompit.get({
+        url: '@url',
+        onSuccess: function (data) {
+            Globalize.load(data);
+            Globalize.locale('@locale');
+        }
+    })
+</script>

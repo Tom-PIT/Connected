@@ -167,7 +167,7 @@ namespace TomPIT.Services
 			return Invoke(api, null, transaction);
 		}
 
-		public JObject Invoke([CodeAnalysisProvider(ApiParameterProvider)]string api)
+		public JObject Invoke([CodeAnalysisProvider(ApiProvider)]string api)
 		{
 			return Invoke(api, null, null);
 		}

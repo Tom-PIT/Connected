@@ -22,14 +22,14 @@
 		css = "collapse";
 
 		<script>
-            ide.hideToolbar();
+			ide.hideToolbar();
 
-            $('a[data-component="configure"]').click(function (e) {
-                e.preventDefault();
-                ide.showToolbar();
-                $('#dataSourceDesignerUI').collapse('show');
-                $('#dataSourceDesignerInfo').collapse();
-            });
+			$('a[data-component="configure"]').click(function (e) {
+				e.preventDefault();
+				ide.showToolbar();
+				$('#dataSourceDesignerUI').collapse('show');
+				$('#dataSourceDesignerInfo').collapse();
+			});
 		</script>
 	}
 
@@ -41,21 +41,15 @@
 		<!form id="dsForm">
 			<div class="form-group" data-component="select">
 				<label for="editConnection">Connection</label>
-				<select id="editConnection">
-					<!option value="">(Select)</!option>
-					@foreach (var i in Model.Connections)
-					{
-						<!option value="@i.Token.AsString()">@i.Name</!option>
-					}
-				</select>
+				<div id="editConnection"></div>
 			</div>
 			<div class="form-group" data-component="select">
 				<label for="editObjectTypes">Object groups</label>
-				<select id="editObjectTypes"></select>
+				<div id="editObjectTypes"></div>
 			</div>
 			<div class="form-group" data-component="select">
 				<label for="editObjects">Objects</label>
-				<select id="editObjects"></select>
+				<div id="editObjects"></div>
 			</div>
 
 			<ul class="nav nav-tabs" id="devTabs" role="tablist">
@@ -72,63 +66,72 @@
 	</div>
 </div>
 <script>
-    $('#dsForm').tpForm();
+    $('#editConnection').dxSelectBox({
+        dataSource:@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Connections)),
+        displayExpr: 'Name',
+        valueExpr: 'Token',
+        searchEnabled:true,
+        onValueChanged: function (e) {
+            objectTypes.option('dataSource', null);
+            objects.option('dataSource', null);
 
-    var form = $('#dsForm').tpForm('instance');
+            objectTypes.option('value', null);
+            objects.option('value', null);
 
-    $('#editConnection').tpSelect({
-        size: 'select-sm',
-        onChange: function (data) {
-            objectTypes.clear();
-            objects.clear();
             clearLists();
 
             ide.designerAction({
                 data: {
                     action: 'objectTypes',
-                    connection: data.value
+                    connection: e.value
                 },
                 onComplete: function (data) {
-                    objectTypes.fill(data);
+                    objectTypes.option('dataSource', data);
                 }
             })
         }
     });
 
-    var connections = $('#editConnection').tpSelect('instance');
+    var connections = $('#editConnection').dxSelectBox('instance');
 
-    $('#editObjectTypes').tpSelect({
-        size: 'select-sm',
-        onChange: function (data) {
-            objects.clear();
+    $('#editObjectTypes').dxSelectBox({
+        displayExpr: 'text',
+        valueExpr: 'value',
+        searchEnabled: true,
+
+        onValueChanged: function (e) {
+            objects.option('dataSource', null);
+            objects.option('value', null);
             clearLists();
 
             ide.designerAction({
                 data: {
                     action: 'objects',
-                    connection: connections.getValue().id,
-                    objectType: objectTypes.getValue().id
+                    connection: connections.option('value'),
+                    objectType: objectTypes.option('value')
                 },
                 onComplete: function (data) {
-                    objects.fill(data);
+                    objects.option('dataSource', data);
                 }
             })
         }
     });
 
-    var objectTypes = $('#editObjectTypes').tpSelect('instance');
+    var objectTypes = $('#editObjectTypes').dxSelectBox('instance');
 
-    $('#editObjects').tpSelect({
-        size: 'select-sm',
-        onChange: function (data) {
+    $('#editObjects').dxSelectBox({
+        displayExpr: 'text',
+        valueExpr: 'value',
+        searchEnabled:true,
+        onValueChanged: function (e) {
             clearLists();
 
             ide.designerAction({
                 data: {
                     action: 'object',
-                    connection: connections.getValue().id,
-                    objectType: objectTypes.getValue().id,
-                    object: objects.getValue().id
+                    connection: connections.option('value'),
+                    objectType: objectTypes.option('value'),
+                    object: objects.option('value')
                 },
                 onComplete: function (data) {
                     if (typeof data === 'undefined')
@@ -156,7 +159,7 @@
         }
     });
 
-    var objects = $('#editObjects').tpSelect('instance');
+    var objects = $('#editObjects').dxSelectBox('instance');
 
     function clearLists() {
         $('#listParameters').empty();
@@ -164,7 +167,7 @@
 
     $('#ide').on('toolbarClick', function (s, e) {
 
-        var object = objects.getValue().id;
+        var object = objects.option('value');
 
         if (object === null) {
             tompit.warning('Please select an object to import.', 'Import');
@@ -181,8 +184,9 @@
         });
 
         e.parameters.parameters = pa.join();
-        e.parameters.connection = connections.getValue().id;
-        e.parameters.objectType = objectTypes.getValue().id;
+        e.parameters.connection = connections.option('value');
+        e.parameters.objectType = objectTypes.option('value');
         e.parameters.object = object;
     });
+
 </script>

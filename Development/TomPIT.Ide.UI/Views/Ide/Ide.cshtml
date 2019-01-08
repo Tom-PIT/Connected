@@ -1,39 +1,39 @@
 ﻿@model TomPIT.Ide.IEnvironment
 @{
-    Layout = "~/Views/Shared/Shell.cshtml";
+	Layout = "~/Views/Shared/Shell.cshtml";
 }
 
 @section head{
-    <environment names="Staging,Production">
-        <link rel="stylesheet" type="text/css" href="~/Assets/ide.min.css" />
-        <script src="~/Assets/ide.min.js"></script>
-    </environment>
-    <environment names="Development">
-        <link rel="stylesheet" type="text/css" href="~/Assets/Styles/ide.css" />
-        <script src="~/Assets/Scripts/ide.js"></script>
-        <script src="~/Assets/Scripts/textEditor.js"></script>
-    </environment>
+	<environment names="Staging,Production">
+		<link rel="stylesheet" type="text/css" href="~/Assets/ide.min.css" />
+		<script src="~/Assets/ide.min.js"></script>
+	</environment>
+	<environment names="Development">
+		<link rel="stylesheet" type="text/css" href="~/Assets/Styles/ide.css" />
+		<script src="~/Assets/Scripts/ide.js"></script>
+		<script src="~/Assets/Scripts/textEditor.js"></script>
+	</environment>
 
 }
 
 @{
-    var path = "Assets/Libraries/monaco/vs";
-    var ctx = Model as TomPIT.Services.IExecutionContext;
+	var path = "Assets/Libraries/monaco/vs";
+	var ctx = Model as TomPIT.Services.IExecutionContext;
 
-    if (ctx != null)
-    { path = ctx.MapPath("~/Assets/Libraries/monaco/vs"); }
+	if (ctx != null)
+	{ path = ctx.MapPath("~/Assets/Libraries/monaco/vs"); }
 }
 
 <script src="~/Assets/Libraries/monaco/vs/loader.js"></script>
 
 <div id="ide" class="h-100">
-    @Html.Partial("~/Views/Ide/Console.cshtml", Model)
+	@Html.Partial("~/Views/Ide/Console.cshtml", Model)
 </div>
 
 @section Scripts{
-    <script>
-        DevExpress.ui.setTemplateEngine("underscore");
-    </script>
+	<script>
+		DevExpress.ui.setTemplateEngine("underscore");
+	</script>
 }
 
 <script>
@@ -57,13 +57,13 @@
         require.config({ paths: { 'vs': '@path' } });
 
     $(document).keyup(function (e) {
-        if (e.ctrlKey && e.which == 39) {
+        if (e.ctrlKey && e.altKey && e.which == 39) {
             ide.nextDocument();
             e.preventDefault();
             e.stopPropagation();
             return false;
         }
-        else if (e.ctrlKey && e.which == 37) {
+		  else if (e.ctrlKey && e.altKey && e.which == 37) {
             ide.previousDocument();
             e.preventDefault();
             e.stopPropagation();

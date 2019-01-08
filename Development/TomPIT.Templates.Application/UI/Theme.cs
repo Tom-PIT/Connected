@@ -1,22 +1,23 @@
 ﻿using TomPIT.Annotations;
 using TomPIT.ComponentModel;
+using TomPIT.UI;
 
 namespace TomPIT.Application.UI
 {
 	[Create("Theme")]
-	public class Theme : ComponentConfiguration
+	public class Theme : ComponentConfiguration, ITheme
 	{
-		private ListItems<ThemeFile> _stylesheets = null;
+		private ListItems<IThemeFile> _stylesheets = null;
 
 		public const string ComponentCategory = "Theme";
 
 		[Items("TomPIT.Application.Design.Items.StylesheetCollection, TomPIT.Application.Design")]
-		public ListItems<ThemeFile> Stylesheets
+		public ListItems<IThemeFile> Stylesheets
 		{
 			get
 			{
 				if (_stylesheets == null)
-					_stylesheets = new ListItems<ThemeFile> { Parent = this };
+					_stylesheets = new ListItems<IThemeFile> { Parent = this };
 
 				return _stylesheets;
 			}

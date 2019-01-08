@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <AssemblyName>TomPIT.App</AssemblyName>
+    <RootNamespace>TomPIT</RootNamespace>
+		<MvcRazorExcludeRefAssembliesFromPublish>false</MvcRazorExcludeRefAssembliesFromPublish>
+	</PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="compilerconfig.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="compilerconfig.json" />
+    <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\event.js" />
+    <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\supplemental.js" />
+    <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\unresolved.js" />
+  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="BuildBundlerMinifier" Version="2.8.391" />
+		<PackageReference Include="dotless.Core" Version="1.6.7" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.10.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\Shell\" />
+    <Folder Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\segments\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
+    <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+    <ProjectReference Include="..\..\DataProviders\TomPIT.DataProviders.Sql\TomPIT.DataProviders.Sql.csproj" />
+    <ProjectReference Include="..\..\Development\TomPIT.Templates.Application\TomPIT.Application.csproj" />
+    <ProjectReference Include="..\..\Development\TomPIT.Templates.IoT\TomPIT.Templates.IoT.csproj" />
+    <ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
+    <ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
+    <ProjectReference Include="..\..\Runtime\TomPIT.UI\TomPIT.UI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Views\_ViewImports.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+  </ItemGroup>
+
+</Project>

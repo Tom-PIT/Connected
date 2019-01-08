@@ -1,11 +1,12 @@
 ﻿using TomPIT.Annotations;
+using TomPIT.UI;
 
 namespace TomPIT.Application.UI
 {
 	[Create("Less", nameof(Name))]
 	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
 	[Syntax("less")]
-	public class LessFile : ThemeFile
+	public class LessFile : ThemeFile, ILessFile
 	{
 		public override string ToString()
 		{

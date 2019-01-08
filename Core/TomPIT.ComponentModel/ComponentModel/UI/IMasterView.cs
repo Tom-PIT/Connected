@@ -2,6 +2,6 @@
 {
 	public interface IMasterView : IConfiguration, IGraphicInterface
 	{
-		ListItems<IViewHelper> Helpers { get; }
+		ListItems<ISnippet> Snippets { get; }
 	}
 }

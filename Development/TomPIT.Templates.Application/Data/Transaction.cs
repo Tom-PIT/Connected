@@ -11,7 +11,7 @@ namespace TomPIT.Application.Data
 	{
 		public const string ComponentCategory = "Transaction";
 
-		[Items("TomPIT.Application.DesignItems.TransactionParameterCollection, TomPIT.Application.Design")]
+		[Items("TomPIT.Application.Design.Items.TransactionParameterCollection, TomPIT.Application.Design")]
 		public override ListItems<IDataParameter> Parameters => base.Parameters;
 
 		[EventArguments(typeof(TransactionExecutedArguments))]

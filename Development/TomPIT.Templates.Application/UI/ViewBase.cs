@@ -8,7 +8,7 @@ namespace TomPIT.Application.UI
 {
 	public abstract class ViewBase : ComponentConfiguration, IGraphicInterface
 	{
-		private ListItems<IText> _snippets = null;
+		private ListItems<ISnippet> _snippets = null;
 		private ListItems<IText> _scripts = null;
 		private ListItems<IViewHelper> _helpers = null;
 
@@ -20,12 +20,12 @@ namespace TomPIT.Application.UI
 		public Guid TextBlob { get; set; }
 
 		[Items("TomPIT.Application.Design.Items.SnippetCollection, TomPIT.Application.Design")]
-		public ListItems<IText> Snippets
+		public ListItems<ISnippet> Snippets
 		{
 			get
 			{
 				if (_snippets == null)
-					_snippets = new ListItems<IText> { Parent = this };
+					_snippets = new ListItems<ISnippet> { Parent = this };
 
 				return _snippets;
 			}
