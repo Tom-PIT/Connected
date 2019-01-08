@@ -13,6 +13,8 @@ namespace TomPIT.Application.Dom
 			Id = ElementId;
 			Glyph = "fal fa-code";
 			Title = "Resources";
+
+			((Behavior)Behavior).AutoExpand = false;
 		}
 
 		public override bool HasChildren => true;

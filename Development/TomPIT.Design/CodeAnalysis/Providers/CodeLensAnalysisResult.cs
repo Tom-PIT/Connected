@@ -1,4 +1,4 @@
-﻿namespace TomPIT.Design
+﻿namespace TomPIT.Design.CodeAnalysis.Providers
 {
 	internal class CodeLensAnalysisResult : CodeAnalysisResult, ICodeLensAnalysisResult
 	{

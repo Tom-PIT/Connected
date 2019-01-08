@@ -7,7 +7,7 @@ using TomPIT.Data.DataProviders;
 using TomPIT.Design.Services;
 using TomPIT.Services;
 
-namespace TomPIT.Design
+namespace TomPIT.Design.CodeAnalysis.Providers
 {
 	internal abstract class ComponentAnalysisProvider : CodeAnalysisProvider
 	{

@@ -13,7 +13,7 @@ using TomPIT.Design.Services;
 using TomPIT.Services;
 using TomPIT.Services.Context;
 
-namespace TomPIT.Design
+namespace TomPIT.Design.CodeAnalysis.Providers
 {
 	internal class ApiProvider : CodeAnalysisProvider
 	{

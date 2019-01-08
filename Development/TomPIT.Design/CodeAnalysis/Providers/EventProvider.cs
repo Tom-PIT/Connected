@@ -6,10 +6,9 @@ using TomPIT.Analysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Events;
 using TomPIT.Design.Services;
-using TomPIT.Runtime;
 using TomPIT.Services;
 
-namespace TomPIT.Design
+namespace TomPIT.Design.CodeAnalysis.Providers
 {
 	internal class EventProvider : CodeAnalysisProvider
 	{

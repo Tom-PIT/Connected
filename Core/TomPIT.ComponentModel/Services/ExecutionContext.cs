@@ -10,6 +10,9 @@ namespace TomPIT.Services
 {
 	public class ExecutionContext : IExecutionContext, IEndpointContext
 	{
+		private const string ApiProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiProvider, TomPIT.Design";
+		private const string ApiParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiParameterProvider, TomPIT.Design";
+
 		private IContextServices _services = null;
 		private IContextIdentity _identity = null;
 		private ISysConnection _connection = null;
@@ -117,8 +120,8 @@ namespace TomPIT.Services
 			return r;
 		}
 
-		public T Invoke<T>([CodeAnalysisProvider("TomPIT.CodeAnalysis.Providers.ApiProvider, TomPIT.Design")]string api,
-			[CodeAnalysisProvider("TomPIT.CodeAnalysis.Providers.ApiParameterProvider, TomPIT.Design")]JObject e, IApiTransaction transaction)
+		public T Invoke<T>([CodeAnalysisProvider(ApiProvider)]string api,
+			[CodeAnalysisProvider(ApiParameterProvider)]JObject e, IApiTransaction transaction)
 		{
 			var q = new ApiQualifier(this, api);
 			var ai = new ApiInvoke(this);
@@ -128,24 +131,24 @@ namespace TomPIT.Services
 			return Types.Convert<T>(r);
 		}
 
-		public T Invoke<T>([CodeAnalysisProvider("TomPIT.CodeAnalysis.Providers.ApiProvider, TomPIT.Design")]string api,
-			[CodeAnalysisProvider("TomPIT.CodeAnalysis.Providers.ApiParameterProvider, TomPIT.Design")]JObject e)
+		public T Invoke<T>([CodeAnalysisProvider(ApiProvider)]string api,
+			[CodeAnalysisProvider(ApiParameterProvider)]JObject e)
 		{
 			return Invoke<T>(api, e, null);
 		}
 
-		public T Invoke<T>([CodeAnalysisProvider("TomPIT.CodeAnalysis.Providers.ApiProvider, TomPIT.Design")]string api, IApiTransaction transaction)
+		public T Invoke<T>([CodeAnalysisProvider(ApiProvider)]string api, IApiTransaction transaction)
 		{
 			return Invoke<T>(api, null, transaction);
 		}
 
-		public T Invoke<T>([CodeAnalysisProvider("TomPIT.CodeAnalysis.Providers.ApiProvider, TomPIT.Design")]string api)
+		public T Invoke<T>([CodeAnalysisProvider(ApiProvider)]string api)
 		{
 			return Invoke<T>(api, null, null);
 		}
 
-		public JObject Invoke([CodeAnalysisProvider("TomPIT.CodeAnalysis.Providers.ApiProvider, TomPIT.Design")]string api,
-			[CodeAnalysisProvider("TomPIT.CodeAnalysis.Providers.ApiParameterProvider, TomPIT.Design")]JObject e, IApiTransaction transaction)
+		public JObject Invoke([CodeAnalysisProvider(ApiProvider)]string api,
+			[CodeAnalysisProvider(ApiParameterProvider)]JObject e, IApiTransaction transaction)
 		{
 			var q = new ApiQualifier(this, api);
 			var ai = new ApiInvoke(this);
@@ -153,18 +156,18 @@ namespace TomPIT.Services
 			return ai.Execute(this as IApiExecutionScope, q.MicroService.Token, q.Api, q.Operation, e, transaction, q.ExplicitIdentifier) as JObject;
 		}
 
-		public JObject Invoke([CodeAnalysisProvider("TomPIT.CodeAnalysis.Providers.ApiProvider, TomPIT.Design")]string api,
-			[CodeAnalysisProvider("TomPIT.CodeAnalysis.Providers.ApiParameterProvider, TomPIT.Design")]JObject e)
+		public JObject Invoke([CodeAnalysisProvider(ApiProvider)]string api,
+			[CodeAnalysisProvider(ApiParameterProvider)]JObject e)
 		{
 			return Invoke(api, e, null);
 		}
 
-		public JObject Invoke([CodeAnalysisProvider("TomPIT.CodeAnalysis.Providers.ApiProvider, TomPIT.Design")]string api, IApiTransaction transaction)
+		public JObject Invoke([CodeAnalysisProvider(ApiProvider)]string api, IApiTransaction transaction)
 		{
 			return Invoke(api, null, transaction);
 		}
 
-		public JObject Invoke([CodeAnalysisProvider("TomPIT.CodeAnalysis.Providers.ApiProvider, TomPIT.Design")]string api)
+		public JObject Invoke([CodeAnalysisProvider(ApiParameterProvider)]string api)
 		{
 			return Invoke(api, null, null);
 		}

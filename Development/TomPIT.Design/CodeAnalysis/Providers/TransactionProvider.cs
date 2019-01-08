@@ -2,10 +2,9 @@
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
-using TomPIT.Runtime;
 using TomPIT.Services;
 
-namespace TomPIT.Design
+namespace TomPIT.Design.CodeAnalysis.Providers
 {
 	internal class TransactionProvider : ComponentAnalysisProvider
 	{

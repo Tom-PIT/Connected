@@ -4,7 +4,7 @@ using TomPIT.ComponentModel.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Services;
 
-namespace TomPIT.Design
+namespace TomPIT.Design.CodeAnalysis.Providers
 {
 	internal class ConnectionProvider : ComponentAnalysisProvider
 	{

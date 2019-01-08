@@ -6,10 +6,9 @@ using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Design.Services;
-using TomPIT.Runtime;
 using TomPIT.Services;
 
-namespace TomPIT.Design
+namespace TomPIT.Design.CodeAnalysis.Providers
 {
 	internal class DataSourceParameterProvider : CodeAnalysisProvider, ICodeAnalysisProvider
 	{
