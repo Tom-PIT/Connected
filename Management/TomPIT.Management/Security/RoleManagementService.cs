@@ -1,43 +1,43 @@
-﻿using System;
-using Newtonsoft.Json.Linq;
-using TomPIT.Net;
+﻿using Newtonsoft.Json.Linq;
+using System;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Security
 {
 	internal class RoleManagementService : IRoleManagementService
 	{
-		public RoleManagementService(ISysContext server)
+		public RoleManagementService(ISysConnection connection)
 		{
-			Server = server;
+			Connection = connection;
 		}
 
-		private ISysContext Server { get; }
+		private ISysConnection Connection { get; }
 
 		public void Delete(Guid token)
 		{
-			var u = Server.CreateUrl("RoleManagement", "Delete");
+			var u = Connection.CreateUrl("RoleManagement", "Delete");
 			var e = new JObject
 			{
 				{"token", token}
 			};
 
-			Server.Connection.Post<Guid>(u, e);
+			Connection.Post<Guid>(u, e);
 
-			if (Server.GetService<IRoleService>() is IRoleNotification n)
+			if (Connection.GetService<IRoleService>() is IRoleNotification n)
 				n.NotifyChanged(this, new RoleEventArgs(token));
 		}
 
 		public Guid Insert(string name)
 		{
-			var u = Server.CreateUrl("RoleManagement", "Insert");
+			var u = Connection.CreateUrl("RoleManagement", "Insert");
 			var e = new JObject
 			{
 				{"name", name}
 			};
 
-			var id = Server.Connection.Post<Guid>(u, e);
+			var id = Connection.Post<Guid>(u, e);
 
-			if (Server.GetService<IRoleService>() is IRoleNotification n)
+			if (Connection.GetService<IRoleService>() is IRoleNotification n)
 				n.NotifyChanged(this, new RoleEventArgs(id));
 
 			return id;
@@ -45,16 +45,16 @@ namespace TomPIT.Security
 
 		public void Update(Guid token, string name)
 		{
-			var u = Server.CreateUrl("RoleManagement", "Update");
+			var u = Connection.CreateUrl("RoleManagement", "Update");
 			var e = new JObject
 			{
 				{"name", name},
 				{"token", token}
 			};
 
-			Server.Connection.Post(u, e);
+			Connection.Post(u, e);
 
-			if (Server.GetService<IRoleService>() is IRoleNotification n)
+			if (Connection.GetService<IRoleService>() is IRoleNotification n)
 				n.NotifyChanged(this, new RoleEventArgs(token));
 		}
 	}

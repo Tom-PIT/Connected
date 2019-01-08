@@ -1,4 +1,5 @@
 ﻿using TomPIT.Design;
+using TomPIT.Designers;
 using TomPIT.Ide;
 using TomPIT.Security;
 
@@ -23,7 +24,7 @@ namespace TomPIT.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			SysContext.GetService<IUserManagementService>().Update(User.Token, User.LoginName, User.Email, User.Status, User.FirstName, User.LastName, User.Description, User.Pin,
+			Connection.GetService<IUserManagementService>().Update(User.Token, User.LoginName, User.Email, User.Status, User.FirstName, User.LastName, User.Description, User.Pin,
 				User.Language, User.TimeZone, User.NotificationEnabled, User.Mobile, User.Phone);
 
 			return true;

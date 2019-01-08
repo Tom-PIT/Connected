@@ -33,7 +33,7 @@ namespace TomPIT.Runtime
 
 		public static IApplicationBuilder UseAjaxExceptionMiddleware(this IApplicationBuilder builder)
 		{
-			return builder.UseMiddleware<RuntimeExceptionMiddleware>();
+			return builder.UseMiddleware<AjaxExceptionMiddleware>();
 		}
 
 		public static void Run()

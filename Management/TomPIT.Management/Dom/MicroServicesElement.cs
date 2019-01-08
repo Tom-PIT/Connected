@@ -5,6 +5,7 @@ using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
+using TomPIT.Designers;
 using TomPIT.Ide;
 using TomPIT.Items;
 
@@ -90,7 +91,7 @@ namespace TomPIT.Dom
 				{
 					_ds = new ExistingMicroServices();
 
-					var items = SysContext.GetService<IMicroServiceManagementService>().Query(DomQuery.Closest<IResourceGroupScope>(this).ResourceGroup.Token);
+					var items = Connection.GetService<IMicroServiceManagementService>().Query(DomQuery.Closest<IResourceGroupScope>(this).ResourceGroup.Token);
 
 					if (items != null)
 						items = items.OrderBy(f => f.Name).ToList();

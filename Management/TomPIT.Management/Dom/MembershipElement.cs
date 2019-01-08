@@ -1,4 +1,5 @@
 ﻿using TomPIT.Design;
+using TomPIT.Designers;
 using TomPIT.Ide;
 
 namespace TomPIT.Dom

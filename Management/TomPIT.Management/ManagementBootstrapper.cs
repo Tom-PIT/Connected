@@ -1,8 +1,8 @@
 ﻿using TomPIT.ComponentModel;
 using TomPIT.Configuration;
+using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
-using TomPIT.Net;
 using TomPIT.Security;
 
 namespace TomPIT
@@ -16,20 +16,20 @@ namespace TomPIT
 
 		private static void RegisterServices()
 		{
-			Shell.GetService<IConnectivityService>().ContextRegistered += OnContextRegistered;
+			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
 		}
 
-		private static void OnContextRegistered(object sender, SysContextRegisteredArgs e)
+		private static void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
 		{
-			e.Context.RegisterService(typeof(ISettingManagementService), typeof(SettingManagementService));
-			e.Context.RegisterService(typeof(IUserManagementService), typeof(UserManagementService));
-			e.Context.RegisterService(typeof(IMembershipManagementService), typeof(MembershipManagementService));
-			e.Context.RegisterService(typeof(IRoleManagementService), typeof(RoleManagementService));
-			e.Context.RegisterService(typeof(ILoggingManagementService), typeof(LoggingManagementService));
-			e.Context.RegisterService(typeof(IResourceGroupManagementService), typeof(ResourceGroupManagementService));
-			e.Context.RegisterService(typeof(IMicroServiceManagementService), typeof(MicroServiceManagementService));
-			e.Context.RegisterService(typeof(IInstanceEndpointManagementService), typeof(InstanceEndpointManagementService));
-			e.Context.RegisterService(typeof(IEnvironmentUnitManagementService), typeof(EnvironmentUnitManagementService));
+			e.Connection.RegisterService(typeof(ISettingManagementService), typeof(SettingManagementService));
+			e.Connection.RegisterService(typeof(IUserManagementService), typeof(UserManagementService));
+			e.Connection.RegisterService(typeof(IMembershipManagementService), typeof(MembershipManagementService));
+			e.Connection.RegisterService(typeof(IRoleManagementService), typeof(RoleManagementService));
+			e.Connection.RegisterService(typeof(ILoggingManagementService), typeof(LoggingManagementService));
+			e.Connection.RegisterService(typeof(IResourceGroupManagementService), typeof(ResourceGroupManagementService));
+			e.Connection.RegisterService(typeof(IMicroServiceManagementService), typeof(MicroServiceManagementService));
+			e.Connection.RegisterService(typeof(IInstanceEndpointManagementService), typeof(InstanceEndpointManagementService));
+			e.Connection.RegisterService(typeof(IEnvironmentUnitManagementService), typeof(EnvironmentUnitManagementService));
 		}
 	}
 }

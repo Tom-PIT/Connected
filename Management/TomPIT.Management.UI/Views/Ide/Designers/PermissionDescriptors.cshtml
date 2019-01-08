@@ -1,0 +1,73 @@
+﻿@model TomPIT.Designers.PermissionsDesigner
+
+@if (Model.Descriptors == null || Model.Descriptors.Count == 0)
+{
+    <div>
+        No descriptors
+    </div>
+    return;
+}
+<table id="tableDescriptors" class="table table-sm">
+    <tbody>
+        @foreach (var i in Model.PermissionSet)
+        {
+            var jo = i as Newtonsoft.Json.Linq.JObject;
+            var value = jo.Required<TomPIT.Security.PermissionValue>("value");
+            var glyph = "fa-square";
+
+            if (value == TomPIT.Security.PermissionValue.Allow)
+            {
+                glyph = "fa-check-square";
+            }
+            else if (value == TomPIT.Security.PermissionValue.Deny)
+            {
+                glyph = "fa-times-square";
+            }
+
+            <tr>
+                <td data-value="@value" data-evidence="@Html.Raw(jo.Required<Guid>("id"))" class="permission-command-cell">
+                    <i class="fal @glyph"></i>
+                </td>
+                <td>
+                    @Html.Raw(jo.Required<string>("title"))
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    $('#tableDescriptors').click(function (e) {
+        var td = $(e.target).closest('td');
+
+        if (typeof td === 'undefined')
+            return;
+
+        var val = td.attr('data-value');
+        var evi = td.attr('data-evidence');
+
+        if (typeof val === 'undefined' || typeof evi === 'undefined')
+            return;
+
+        ide.designerAction({
+            data: {
+                'action': 'setPermission',
+                'evidence': evi,
+                'claim': $('#editClaims').dxSelectBox('instance').option('value'),
+                'schema': $('#editSchemas').dxSelectBox('instance').option('value')
+            },
+            onComplete: function (data) {
+                var glyph = 'fa-square';
+
+                if (data.value === 'Allow')
+                    glyph = 'fa-check-square';
+                else if (data.value === 'Deny')
+                    glyph = 'fa-times-square';
+
+                td.html('<i class="fal ' + glyph + '"></i>');
+
+                syncCounters(data.claimCount, data.schemaCount);
+            }
+        })
+    });
+</script>

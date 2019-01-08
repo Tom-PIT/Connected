@@ -10,7 +10,7 @@ namespace TomPIT.Items
 	{
 		protected override void OnQueryDescriptors(IDomElement element, List<IItemDescriptor> items)
 		{
-			var ds = element.Environment.Context.GetServerContext().GetService<ILanguageService>().Query();
+			var ds = element.Environment.Context.Connection().GetService<ILanguageService>().Query();
 
 			items.Add(new ItemDescriptor(SR.DevLiDefault, Guid.Empty.ToString()));
 

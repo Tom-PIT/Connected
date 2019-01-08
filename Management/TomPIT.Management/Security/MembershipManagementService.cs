@@ -1,56 +1,56 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
-using TomPIT.Net;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Security
 {
 	internal class MembershipManagementService : IMembershipManagementService
 	{
-		public MembershipManagementService(ISysContext server)
+		public MembershipManagementService(ISysConnection connection)
 		{
-			Server = server;
+			Connection = connection;
 		}
 
-		private ISysContext Server { get; }
+		private ISysConnection Connection { get; }
 
 		public void Delete(Guid user, Guid role)
 		{
-			var u = Server.CreateUrl("SecurityManagement", "DeleteMembership");
+			var u = Connection.CreateUrl("SecurityManagement", "DeleteMembership");
 			var e = new JObject
 			{
 				{"user", user},
 				{"role", role}
 			};
 
-			Server.Connection.Post(u, e);
+			Connection.Post(u, e);
 
-			if (Server.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+			if (Connection.GetService<IAuthorizationService>() is IAuthorizationNotification n)
 				n.NotifyMembershipRemoved(this, new MembershipEventArgs(user, role));
 		}
 
 		public void Insert(Guid user, Guid role)
 		{
-			var u = Server.CreateUrl("SecurityManagement", "InsertMembership");
+			var u = Connection.CreateUrl("SecurityManagement", "InsertMembership");
 			var e = new JObject
 			{
 				{"user", user},
 				{"role", role}
 			};
 
-			Server.Connection.Post(u, e);
+			Connection.Post(u, e);
 
-			if (Server.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+			if (Connection.GetService<IAuthorizationService>() is IAuthorizationNotification n)
 				n.NotifyMembershipAdded(this, new MembershipEventArgs(user, role));
 		}
 
 		public List<IMembership> Query(Guid role)
 		{
-			var u = Server.CreateUrl("SecurityManagement", "QueryMembership")
+			var u = Connection.CreateUrl("SecurityManagement", "QueryMembership")
 				.AddParameter("role", role);
 
-			return Server.Connection.Get<List<Membership>>(u).ToList<IMembership>();
+			return Connection.Get<List<Membership>>(u).ToList<IMembership>();
 		}
 	}
 }

@@ -20,14 +20,15 @@ namespace TomPIT.Sys.Services
 			if (string.IsNullOrWhiteSpace(plainText))
 				return null;
 
-			return Encrypt(plainText, new EncryptionEventArgs
+			return Encrypt(sender, new EncryptionEventArgs
 			{
 				PassPhrase = PassPhrase,
 				SaltValue = SaltValue,
 				HashAlgorithm = HashAlgorithm,
 				PasswordIterations = PasswordIterations,
 				InitVector = InitVector,
-				KeySize = KeySize
+				KeySize = KeySize,
+				Value = plainText
 			}
 			);
 		}
@@ -37,14 +38,15 @@ namespace TomPIT.Sys.Services
 			if (string.IsNullOrWhiteSpace(cipherText))
 				return null;
 
-			return Decrypt(cipherText, new EncryptionEventArgs
+			return Decrypt(sender, new EncryptionEventArgs
 			{
 				PassPhrase = PassPhrase,
 				SaltValue = SaltValue,
 				HashAlgorithm = HashAlgorithm,
 				PasswordIterations = PasswordIterations,
 				InitVector = InitVector,
-				KeySize = KeySize
+				KeySize = KeySize,
+				Value = cipherText
 			});
 		}
 

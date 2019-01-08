@@ -16,14 +16,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
 	  <ProjectReference Include="..\TomPIT.Sys.Api\TomPIT.Sys.Api.csproj" />
 	</ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="TomPIT.Core">
-      <HintPath>c:\bin2\TomPIT.Core.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\bin2&quot;&#xD;&#xA;copy &quot;$(TargetDir)\$(TargetName).pdb&quot; &quot;c:\bin2&quot;" />

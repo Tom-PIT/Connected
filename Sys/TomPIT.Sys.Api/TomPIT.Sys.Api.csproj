@@ -13,18 +13,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.App"/>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
+		<PackageReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
     <ProjectReference Include="..\TomPIT.SysDb\TomPIT.SysDb.csproj" />
   </ItemGroup>
-
-	<ItemGroup>
-		<Reference Include="TomPIT.Core">
-			<HintPath>c:\bin2\TomPIT.Core.dll</HintPath>
-		</Reference>
-	</ItemGroup>
 
 </Project>

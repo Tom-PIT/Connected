@@ -46,7 +46,7 @@ namespace TomPIT.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			SysContext.GetService<IMicroServiceManagementService>().Update(MicroService.Token, MicroService.Name,
+			Connection.GetService<IMicroServiceManagementService>().Update(MicroService.Token, MicroService.Name,
 				MicroService.Status, MicroService.ResourceGroup);
 
 			return true;
@@ -84,7 +84,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new PermissionsDesigner(Environment, this);
+					_designer = new Designers.PermissionsDesigner(Environment, this);
 
 				return _designer;
 			}

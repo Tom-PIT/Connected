@@ -2,23 +2,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT.Diagnostics
 {
 	internal class LoggingManagementService : ILoggingManagementService
 	{
-		public void Clear(IApplicationContext sender)
+		public void Clear(IExecutionContext context)
 		{
-			var server = sender.GetServerContext();
+			var server = context.Connection();
 			var u = server.CreateUrl("LoggingManagement", "Clear");
 
-			server.Connection.Post(u, sender.JwToken());
+			server.Post(u, context.JwToken());
 		}
 
-		public void Delete(IApplicationContext sender, long id)
+		public void Delete(IExecutionContext sender, long id)
 		{
-			var server = sender.GetServerContext();
+			var server = sender.Connection();
 			var u = server.CreateUrl("LoggingManagement", "Delete");
 
 			var args = new JObject
@@ -26,16 +26,16 @@ namespace TomPIT.Diagnostics
 				"id", id
 			};
 
-			server.Connection.Post(u, args);
+			server.Post(u, args);
 		}
 
-		public List<ILogEntry> Query(IApplicationContext sender, DateTime date)
+		public List<ILogEntry> Query(IExecutionContext sender, DateTime date)
 		{
-			var server = sender.GetServerContext();
+			var server = sender.Connection();
 			var u = server.CreateUrl("LoggingManagement", "Query")
 				.AddParameter("date", date);
 
-			return server.Connection.Get<List<LogEntry>>(u).ToList<ILogEntry>();
+			return server.Get<List<LogEntry>>(u).ToList<ILogEntry>();
 		}
 	}
 }

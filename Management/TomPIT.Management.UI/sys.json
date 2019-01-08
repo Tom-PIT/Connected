@@ -1,0 +1,9 @@
+﻿{
+   "connections": [
+      {
+         "name": "localhost",
+         "url": "http://localhost:44001",
+         "clientKey": "EE7B5475D36640A59A6BDC3A2FE315E2"
+      }
+   ]
+}

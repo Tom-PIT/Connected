@@ -20,7 +20,7 @@ namespace TomPIT.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			SysContext.GetService<IRoleManagementService>().Update(Role.Token, Role.Name);
+			Connection.GetService<IRoleManagementService>().Update(Role.Token, Role.Name);
 
 			return true;
 		}

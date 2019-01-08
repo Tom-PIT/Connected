@@ -10,19 +10,16 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.IoT</RootNamespace>
+    <AssemblyName>TomPIT.IoT.Design</AssemblyName>
   </PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
+		<ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
 		<ProjectReference Include="..\TomPIT.Design\TomPIT.Design.csproj" />
 		<ProjectReference Include="..\TomPIT.Development\TomPIT.Development.csproj" />
 		<ProjectReference Include="..\TomPIT.Ide\TomPIT.Ide.csproj" />
 		<ProjectReference Include="..\TomPIT.Templates.IoT\TomPIT.Templates.IoT.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Reference Include="TomPIT.Core">
-	    <HintPath>..\..\..\..\bin2\TomPIT.Core.dll</HintPath>
-	  </Reference>
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">

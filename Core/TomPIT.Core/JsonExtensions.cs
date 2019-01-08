@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -13,10 +14,16 @@ namespace TomPIT
 
 			try
 			{
+				if (instance[propertyName] is JValue jv && jv.Value == null)
+					throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
+
 				return instance[propertyName].ToObject<T>();
 			}
-			catch
+			catch(Exception ex)
 			{
+				if (ex is TomPITException)
+					throw ex;
+
 				throw new TomPITException(string.Format("{0} ({1}, {2}).", SR.ErrInvalidPropertyType, propertyName, typeof(T)));
 			}
 		}

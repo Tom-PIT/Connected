@@ -8,19 +8,41 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT</RootNamespace>
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.3" />
+		<PackageReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.1.0" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="1.1.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.10.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="2.10.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-    <ProjectReference Include="..\..\TomPIT.Libraries\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
-    <ProjectReference Include="..\..\TomPIT.Libraries\TomPIT.Core\TomPIT.Core.csproj" />
-    <ProjectReference Include="..\TomPIT.Ide\TomPIT.Ide.csproj" />
-  </ItemGroup>
+	  <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
+	  <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+	  <ProjectReference Include="..\..\Development\TomPIT.Design\TomPIT.Design.csproj" />
+	  <ProjectReference Include="..\..\Development\TomPIT.Ide.UI\TomPIT.Ide.UI.csproj" />
+	  <ProjectReference Include="..\..\Development\TomPIT.Ide\TomPIT.Ide.csproj" />
+	  <ProjectReference Include="..\..\Development\TomPIT.Templates.Application.Design\TomPIT.Templates.Application.Design.csproj" />
+	  <ProjectReference Include="..\..\Development\TomPIT.Templates.Application\TomPIT.Templates.Application.csproj" />
+	  <ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
+	  <ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
+	  <ProjectReference Include="..\..\Runtime\TomPIT.UI\TomPIT.UI.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="TomPIT.IoT">
+	    <HintPath>c:\bin2\TomPIT.IoT.dll</HintPath>
+	  </Reference>
+	  <Reference Include="TomPIT.IoT.Design">
+	    <HintPath>c:\bin2\TomPIT.IoT.Design.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
 
   <ItemGroup>
     <Compile Update="SRM.Designer.cs">

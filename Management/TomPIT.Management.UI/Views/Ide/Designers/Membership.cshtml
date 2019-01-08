@@ -1,0 +1,123 @@
+﻿@using Newtonsoft.Json;
+
+@model TomPIT.Designers.MembershipDesigner
+
+<div class="doc-canvas">
+    <div class="paper">
+        <form>
+            <div class="m-2">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="editRole">Role</label>
+                            <div id="editRole"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <h4>Users</h4>
+                    <div id="divSearchUsers"></div>
+                    <div id="divUsers" class="mt-1">
+                        <partial name="~/Views/Ide/Designers/MembershipUsers.cshtml" />
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <h4>Membership</h4>
+                    <div id="divSearchMembership"></div>
+                    <div id="divMembership" class="mt-1">
+                        <partial name="~/Views/Ide/Designers/MembershipList.cshtml" />
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    var usersSearchCriteria = null;
+    var membershipSearchCriteria = null;
+
+    var roles = @Html.Raw(JsonConvert.SerializeObject(Model.Roles)) ;
+
+    $('#editRole').dxSelectBox({
+        dataSource: roles,
+        displayExpr: 'Name',
+        valueExpr: 'Token',
+        value: '@Model.SelectedRole',
+        onValueChanged: function (e) {
+            ide.designerAction({
+                data: {
+                    'action': 'loadUsers',
+                    'role': e.value
+                },
+                onComplete: function (data) {
+                    $('#divUsers').html(data);
+                    filterUsers();
+                }
+            });
+
+            ide.designerAction({
+                data: {
+                    'action': 'loadMembership',
+                    'role': e.value
+                },
+                onComplete: function (data) {
+                    $('#divMembership').html(data);
+                    filterMembership();
+                }
+            })
+        }
+
+    });
+
+    $('#divSearchUsers').dxTextBox({
+        stylingMode: 'underlined',
+        mode: 'search',
+        width:'100%',
+        onValueChanged: function (e) {
+            usersSearchCriteria = e.value;
+
+            filterUsers();
+        }
+    });
+
+    $('#divSearchMembership').dxTextBox({
+        stylingMode: 'underlined',
+        mode: 'search',
+        width: '100%',
+        onValueChanged: function (e) {
+            membershipSearchCriteria = e.value;
+
+            filterMembership();
+        }
+    });
+
+    function filterUsers() {
+        filterList('tableUsers', usersSearchCriteria == null || usersSearchCriteria.length == 0
+            ? usersSearchCriteria
+            : usersSearchCriteria.toLowerCase());
+    }
+
+    function filterMembership() {
+        filterList('tableMembership', membershipSearchCriteria == null || membershipSearchCriteria.length == 0
+            ? membershipSearchCriteria
+            : membershipSearchCriteria.toLowerCase());
+    }
+
+    function filterList(s, c) {
+        $.each($('#' + s + ' > tbody > tr'), function (i, v) {
+            var text = $(v).children().eq(0).html();
+
+            if (c !== null && c.length > 0) {
+                if (text.toLowerCase().indexOf(c) < 0) {
+                    $(v).hide();
+                    return true;
+                }
+            }
+
+            $(v).show();
+        });
+    }
+</script>

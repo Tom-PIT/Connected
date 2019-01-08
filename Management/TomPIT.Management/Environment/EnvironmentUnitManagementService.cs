@@ -1,35 +1,35 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
-using TomPIT.Net;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Environment
 {
 	internal class EnvironmentUnitManagementService : IEnvironmentUnitManagementService
 	{
-		public EnvironmentUnitManagementService(ISysContext server)
+		public EnvironmentUnitManagementService(ISysConnection connection)
 		{
-			Server = server;
+			Connection = connection;
 		}
 
-		private ISysContext Server { get; }
+		private ISysConnection Connection { get; }
 
 		public void Delete(Guid unit)
 		{
-			var u = Server.CreateUrl("EnvironmentUnitManagement", "Delete");
+			var u = Connection.CreateUrl("EnvironmentUnitManagement", "Delete");
 			var e = new JObject
 			{
 				{"token", unit }
 			};
 
-			Server.Connection.Post(u, e);
+			Connection.Post(u, e);
 
-			if (Server.GetService<IEnvironmentUnitService>() is IEnvironmentUnitNotification n)
+			if (Connection.GetService<IEnvironmentUnitService>() is IEnvironmentUnitNotification n)
 				n.NotifyRemoved(this, new EnvironmentUnitEventArgs(unit));
 		}
 
 		public Guid Insert(string name, Guid parent, int ordinal)
 		{
-			var u = Server.CreateUrl("EnvironmentUnitManagement", "Insert");
+			var u = Connection.CreateUrl("EnvironmentUnitManagement", "Insert");
 			var e = new JObject
 			{
 				{"name", name },
@@ -37,9 +37,9 @@ namespace TomPIT.Environment
 				{"ordinal", ordinal }
 			};
 
-			var id = Server.Connection.Post<Guid>(u, e);
+			var id = Connection.Post<Guid>(u, e);
 
-			if (Server.GetService<IEnvironmentUnitService>() is IEnvironmentUnitNotification n)
+			if (Connection.GetService<IEnvironmentUnitService>() is IEnvironmentUnitNotification n)
 				n.NotifyChanged(this, new EnvironmentUnitEventArgs(id));
 
 			return id;
@@ -47,7 +47,7 @@ namespace TomPIT.Environment
 
 		public void Update(Guid unit, string name, Guid parent, int ordinal)
 		{
-			var u = Server.CreateUrl("EnvironmentUnitManagement", "Update");
+			var u = Connection.CreateUrl("EnvironmentUnitManagement", "Update");
 			var e = new JObject
 			{
 				{"name", name },
@@ -55,9 +55,9 @@ namespace TomPIT.Environment
 				{"ordinal", ordinal }
 			};
 
-			Server.Connection.Post(u, e);
+			Connection.Post(u, e);
 
-			if (Server.GetService<IEnvironmentUnitService>() is IEnvironmentUnitNotification n)
+			if (Connection.GetService<IEnvironmentUnitService>() is IEnvironmentUnitNotification n)
 				n.NotifyChanged(this, new EnvironmentUnitEventArgs(unit));
 		}
 	}
