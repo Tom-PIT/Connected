@@ -32,7 +32,7 @@ namespace TomPIT.Application
 			else if (string.Compare(category, Partial.ComponentCategory, true) == 0)
 				r.Add(new ItemDescriptor("Partial view", "PartialView", typeof(Partial)));
 			else if (string.Compare(category, Connection.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Data repository", "Repository", typeof(Connection)));
+				r.Add(new ItemDescriptor("Connection", "Connection", typeof(Connection)));
 			else if (string.Compare(category, DataSource.ComponentCategory, true) == 0)
 				r.Add(new ItemDescriptor("Data source", "DataSource", typeof(DataSource)));
 			else if (string.Compare(category, Transaction.ComponentCategory, true) == 0)

@@ -762,4 +762,7 @@
   <data name="ErrExpectedPropertyValue" xml:space="preserve">
     <value>Property value expected.</value>
   </data>
+  <data name="DevAddComponent" xml:space="preserve">
+    <value>Add component</value>
+  </data>
 </root>

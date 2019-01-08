@@ -24,7 +24,7 @@ namespace TomPIT.Designers
 		{
 		}
 
-		public override string View => "~/Views/Ide/Designers/Template.cshtml";
+		public override string View => "~/Views/Ide/Designers/Text.cshtml";
 		public override object ViewModel => this;
 
 		public IText Content => Element.Value as IText;

@@ -304,6 +304,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add component.
+        /// </summary>
+        public static string DevAddComponent {
+            get {
+                return ResourceManager.GetString("DevAddComponent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add feature.
         /// </summary>
         public static string DevAddFeature {
