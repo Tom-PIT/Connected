@@ -19,7 +19,7 @@ namespace TomPIT
 
 				return instance[propertyName].ToObject<T>();
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				if (ex is TomPITException)
 					throw ex;
@@ -35,6 +35,9 @@ namespace TomPIT
 
 			try
 			{
+				if (instance[propertyName] is JValue jv && jv.Value == null)
+					return defaultValue;
+
 				return instance[propertyName].ToObject<T>();
 			}
 			catch
