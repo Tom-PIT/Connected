@@ -346,7 +346,8 @@ namespace TomPIT.ComponentModel
 
 			while (de.MoveNext())
 			{
-				re.MoveNext();
+				if (!re.MoveNext())
+					break;
 
 				var dinstance = de.Current;
 
