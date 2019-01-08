@@ -759,4 +759,7 @@
   <data name="ErrEventNotDefined" xml:space="preserve">
     <value>Event not defined.</value>
   </data>
+  <data name="ErrExpectedPropertyValue" xml:space="preserve">
+    <value>Property value expected.</value>
+  </data>
 </root>

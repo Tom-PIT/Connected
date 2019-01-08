@@ -12,9 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="TomPIT.Core">
-      <HintPath>c:\bin2\TomPIT.Core.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
   </ItemGroup>
 
 </Project>

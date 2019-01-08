@@ -3,9 +3,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations;
-using TomPIT.Design;
+using TomPIT.Designers;
+using TomPIT.Environment;
 using TomPIT.Ide;
-using TomPIT.Net;
 
 namespace TomPIT.Dom
 {
@@ -65,7 +65,7 @@ namespace TomPIT.Dom
 
 		public override void LoadChildren(string id)
 		{
-			var endpoint = SysContext.GetService<IInstanceEndpointService>().Select(id.AsGuid());
+			var endpoint = Connection.GetService<IInstanceEndpointService>().Select(id.AsGuid());
 
 			Items.Add(new EndpointElement(Environment, this, endpoint));
 		}
@@ -89,7 +89,7 @@ namespace TomPIT.Dom
 				{
 					_instances = new ExistingEndpoints();
 
-					var ds = SysContext.GetService<IInstanceEndpointService>().Query().OrderBy(f => f.Name);
+					var ds = Connection.GetService<IInstanceEndpointService>().Query().OrderBy(f => f.Name);
 
 					foreach (var i in ds)
 						_instances.Items.Add(i);

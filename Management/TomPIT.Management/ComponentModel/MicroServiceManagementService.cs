@@ -1,30 +1,30 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
-using TomPIT.Net;
+using TomPIT.Connectivity;
 
 namespace TomPIT.ComponentModel
 {
 	internal class MicroServiceManagementService : IMicroServiceManagementService
 	{
-		public MicroServiceManagementService(ISysContext server)
+		public MicroServiceManagementService(ISysConnection connection)
 		{
-			Server = server;
+			Connection = connection;
 		}
 
-		private ISysContext Server { get; }
+		private ISysConnection Connection { get; }
 
 		public void Delete(Guid microService)
 		{
-			var u = Server.CreateUrl("MicroServiceManagement", "Delete");
+			var u = Connection.CreateUrl("MicroServiceManagement", "Delete");
 			var args = new JObject {
 				{"microService", microService }
 			};
 
-			Server.Connection.Post(u, args);
+			Connection.Post(u, args);
 
-			if (Server.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
+			if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
 				svc.NotifyRemoved(this, new MicroServiceEventArgs(microService));
 		}
 
@@ -32,7 +32,7 @@ namespace TomPIT.ComponentModel
 		{
 			var token = Guid.NewGuid();
 
-			var u = Server.CreateUrl("MicroServiceManagement", "Insert");
+			var u = Connection.CreateUrl("MicroServiceManagement", "Insert");
 			var args = new JObject
 			{
 				{ "name",name },
@@ -43,7 +43,7 @@ namespace TomPIT.ComponentModel
 				{"meta", CreateMicroServiceMeta(token) }
 			};
 
-			Server.Connection.Post(u, args);
+			Connection.Post(u, args);
 
 			if (Shell.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
 				svc.NotifyChanged(this, new MicroServiceEventArgs(token));
@@ -53,15 +53,15 @@ namespace TomPIT.ComponentModel
 
 		private string CreateMicroServiceMeta(Guid microService)
 		{
-			var u = Server.CreateUrl("MicroServiceManagement", "CreateMicroServiceMeta")
+			var u = Connection.CreateUrl("MicroServiceManagement", "CreateMicroServiceMeta")
 				.AddParameter("microService", microService);
 
-			return Server.Connection.Get<string>(u);
+			return Connection.Get<string>(u);
 		}
 
 		public void Update(Guid microService, string name, MicroServiceStatus status, Guid resourceGroup)
 		{
-			var u = Server.CreateUrl("MicroServiceManagement", "Update");
+			var u = Connection.CreateUrl("MicroServiceManagement", "Update");
 			var args = new JObject
 			{
 				{ "name",name },
@@ -70,7 +70,7 @@ namespace TomPIT.ComponentModel
 				{"resourceGroup", resourceGroup },
 			};
 
-			Server.Connection.Post(u, args);
+			Connection.Post(u, args);
 
 			if (Shell.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
 				svc.NotifyChanged(this, new MicroServiceEventArgs(microService));
@@ -78,10 +78,10 @@ namespace TomPIT.ComponentModel
 
 		public ListItems<IMicroService> Query(Guid resourceGroup)
 		{
-			var u = Server.CreateUrl("MicroServiceManagement", "Query")
+			var u = Connection.CreateUrl("MicroServiceManagement", "Query")
 				.AddParameter("resourceGroup", resourceGroup);
 
-			return Server.Connection.Get<List<MicroService>>(u).ToList<IMicroService>();
+			return Connection.Get<List<MicroService>>(u).ToList<IMicroService>();
 		}
 	}
 }

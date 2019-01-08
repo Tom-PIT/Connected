@@ -5,8 +5,10 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Design;
+using TomPIT.Designers;
 using TomPIT.Ide;
 using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT.Dom
 {
@@ -77,7 +79,7 @@ namespace TomPIT.Dom
 					_ds = new ExistingItems();
 
 					var i = Item as IDataManagementDescriptor;
-					var ctx = ApplicationContext.NonHttpContext(SysContext.Url, "Management", null, DomQuery.Closest<IMicroServiceScope>(this).MicroService.Token.AsString());
+					var ctx = ExecutionContext.NonHttpContext(Connection.Url, "Management", null, DomQuery.Closest<IMicroServiceScope>(this).MicroService.Token.AsString());
 
 					//var items = ctx.Services.Data.Read<JObject>(i.DataSource).Value<JArray>("data");
 

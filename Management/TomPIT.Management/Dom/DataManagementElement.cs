@@ -42,7 +42,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_dataManagement == null)
-					_dataManagement = SysContext.GetService<IComponentService>().SelectConfiguration(DataManagementComponent.Token) as IDataManagement;
+					_dataManagement = Connection.GetService<IComponentService>().SelectConfiguration(DataManagementComponent.Token) as IDataManagement;
 
 				return _dataManagement;
 			}

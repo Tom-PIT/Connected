@@ -1,0 +1,82 @@
+﻿@using Newtonsoft.Json;
+
+@model TomPIT.Designers.UserDesigner
+
+<div class="doc-canvas">
+    <div class="paper text-center">
+        <div class="btn-toolbar" role="toolbar">
+            @if (Model.User.IsLocal())
+            {
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-link" id="resetPassword">Reset password</button>
+                </div>
+            }
+        </div>
+        <h2>@Model.User.DisplayName()</h2>
+
+        <div class="avatar-management">
+            @if (@Model.User.Avatar == Guid.Empty)
+            {
+                <i class="fa fa-user-circle"></i>
+            }
+            else
+            {
+                <img src="@Model.AvatarUrl" class="img-thumbnail avatar-management-img img-fluid rounded mx-auto d-block" />
+                <div class="remove-avatar">
+                    <a href="#" id="resetAvatar">reset avatar</a>
+                </div>
+            }
+        </div>
+
+        <hr />
+        <div id="changeAvatar"></div>
+
+    </div>
+</div>
+
+<script>
+    var url = new tompit.devUrl();
+    var action = url.environment('Upload') + '?action=upload&path=' + btoa(encodeURIComponent(ide.selectedPath()).replace(/%([0-9A-F]{2})/g,
+        function toSolidBytes(match, p1) {
+            return String.fromCharCode('0x' + p1);
+        }));
+
+    $('#changeAvatar').dxFileUploader({
+        selectButtonText: "Change avatar",
+        showFileList: true,
+        labelText: "",
+        multiple: false,
+        accept: "*",
+        uploadUrl: action,
+        onUploaded: function () {
+            ide.refreshDesigner();
+        }
+
+    });
+
+    $('#resetAvatar').click(function (e) {
+        if (!confirm('Resetting avatar will replace current avatar with default one. Continue?'))
+            return;
+
+        ide.designerAction({
+            data: {
+                'action': 'resetAvatar'
+            }
+        })
+    });
+
+    $('#resetPassword').click(function (e) {
+        if (!confirm('Are you sure you want to reset password for this user?'))
+            return;
+
+        ide.designerAction({
+            data: {
+                'action': 'resetPassword'
+            },
+            onComplete: function (e) {
+                tompit.success('Password has been reset.', 'Reset password');
+            }
+        })
+
+    });
+</script>

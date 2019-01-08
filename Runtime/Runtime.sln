@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28407.52
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Extensions", "TomPIT.Extensions\TomPIT.Extensions.csproj", "{865C290E-4E79-49CD-BD71-C5EB5007F39C}"
 EndProject
@@ -10,6 +10,14 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Store", "TomPIT.Store\TomPIT.Store.csproj", "{ED3BD699-EC15-4FAA-A670-54AF04206A45}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.UI", "TomPIT.UI\TomPIT.UI.csproj", "{3FFC51F4-2084-4B82-816F-1375CAB69CCF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Core", "..\Core\TomPIT.Core\TomPIT.Core.csproj", "{E39D79A6-0A43-4271-A457-4F421230BF97}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.ComponentModel", "..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj", "{93B02474-21BD-4DA8-9FF1-514C13783ED5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.DataProviders.Sql", "..\DataProviders\TomPIT.DataProviders.Sql\TomPIT.DataProviders.Sql.csproj", "{7D33FE48-C4B4-4A65-83D0-503F922A97D7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{66CB5ACA-74DB-4572-BF4F-008F0E15CC9C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,9 +41,26 @@ Global
 		{3FFC51F4-2084-4B82-816F-1375CAB69CCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FFC51F4-2084-4B82-816F-1375CAB69CCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FFC51F4-2084-4B82-816F-1375CAB69CCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E39D79A6-0A43-4271-A457-4F421230BF97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E39D79A6-0A43-4271-A457-4F421230BF97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E39D79A6-0A43-4271-A457-4F421230BF97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E39D79A6-0A43-4271-A457-4F421230BF97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93B02474-21BD-4DA8-9FF1-514C13783ED5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93B02474-21BD-4DA8-9FF1-514C13783ED5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93B02474-21BD-4DA8-9FF1-514C13783ED5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93B02474-21BD-4DA8-9FF1-514C13783ED5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D33FE48-C4B4-4A65-83D0-503F922A97D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D33FE48-C4B4-4A65-83D0-503F922A97D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D33FE48-C4B4-4A65-83D0-503F922A97D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D33FE48-C4B4-4A65-83D0-503F922A97D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E39D79A6-0A43-4271-A457-4F421230BF97} = {66CB5ACA-74DB-4572-BF4F-008F0E15CC9C}
+		{93B02474-21BD-4DA8-9FF1-514C13783ED5} = {66CB5ACA-74DB-4572-BF4F-008F0E15CC9C}
+		{7D33FE48-C4B4-4A65-83D0-503F922A97D7} = {66CB5ACA-74DB-4572-BF4F-008F0E15CC9C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4BC92F33-19B6-440F-A7CC-3CA5CC99E4FA}

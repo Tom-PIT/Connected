@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28407.52
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.DataProviders.Sql", "TomPIT.DataProviders.Sql\TomPIT.DataProviders.Sql.csproj", "{6D351A84-2250-46BA-987F-5CB74B05A909}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{ADC56E3C-61D3-4B37-A190-01AC2BD34EDF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.ComponentModel", "..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj", "{BFAA54DD-9307-4CDE-B672-99D4938D63E4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Core", "..\Core\TomPIT.Core\TomPIT.Core.csproj", "{C0C74EFE-2FF5-4CC3-B8F5-B840CC716A6B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +21,21 @@ Global
 		{6D351A84-2250-46BA-987F-5CB74B05A909}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D351A84-2250-46BA-987F-5CB74B05A909}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D351A84-2250-46BA-987F-5CB74B05A909}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFAA54DD-9307-4CDE-B672-99D4938D63E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFAA54DD-9307-4CDE-B672-99D4938D63E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFAA54DD-9307-4CDE-B672-99D4938D63E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFAA54DD-9307-4CDE-B672-99D4938D63E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0C74EFE-2FF5-4CC3-B8F5-B840CC716A6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0C74EFE-2FF5-4CC3-B8F5-B840CC716A6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0C74EFE-2FF5-4CC3-B8F5-B840CC716A6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0C74EFE-2FF5-4CC3-B8F5-B840CC716A6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BFAA54DD-9307-4CDE-B672-99D4938D63E4} = {ADC56E3C-61D3-4B37-A190-01AC2BD34EDF}
+		{C0C74EFE-2FF5-4CC3-B8F5-B840CC716A6B} = {ADC56E3C-61D3-4B37-A190-01AC2BD34EDF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E574EBE9-6EBE-4FDE-9528-2FB186D73299}

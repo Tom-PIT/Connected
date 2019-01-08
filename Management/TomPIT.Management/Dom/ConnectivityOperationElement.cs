@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Apis;
 using TomPIT.Ide;
 
 namespace TomPIT.Dom

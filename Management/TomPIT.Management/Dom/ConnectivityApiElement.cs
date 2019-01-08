@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Reflection;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Apis;
 using TomPIT.Design;
 using TomPIT.Ide;
 
@@ -46,7 +47,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_api == null)
-					_api = SysContext.GetService<IComponentService>().SelectConfiguration(Api.Token) as IApi;
+					_api = Connection.GetService<IComponentService>().SelectConfiguration(Api.Token) as IApi;
 
 				return _api;
 			}
@@ -64,7 +65,7 @@ namespace TomPIT.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			SysContext.GetService<IComponentDevelopmentService>().Update(Configuration);
+			Connection.GetService<IComponentDevelopmentService>().Update(Configuration);
 
 			return true;
 		}

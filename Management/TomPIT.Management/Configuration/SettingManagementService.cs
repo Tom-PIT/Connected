@@ -1,13 +1,13 @@
 ﻿using System;
-using TomPIT.Runtime;
+using TomPIT.Services;
 
 namespace TomPIT.Configuration
 {
 	internal class SettingManagementService : ISettingManagementService
 	{
-		public void Update(IApplicationContext sender, Guid resourceGroup, string name, string value, bool visible, DataType dataType, string tags)
+		public void Update(IExecutionContext sender, Guid resourceGroup, string name, string value, bool visible, DataType dataType, string tags)
 		{
-			var server = sender.GetServerContext();
+			var server = sender.Connection();
 
 			var d = new Setting
 			{
@@ -21,16 +21,16 @@ namespace TomPIT.Configuration
 
 			var u = server.CreateUrl("SettingManagement", "Update");
 
-			server.Connection.Post(u, d);
+			server.Post(u, d);
 			server.Cache.Remove("setting", server.Cache.GenerateKey(resourceGroup, name));
 
 			if (server.GetService<ISettingService>() is ISettingNotification n)
 				n.NotifyChanged(this, new SettingEventArgs(resourceGroup, name));
 		}
 
-		public void Delete(IApplicationContext sender, Guid resourceGroup, string name)
+		public void Delete(IExecutionContext context, Guid resourceGroup, string name)
 		{
-			var server = sender.GetServerContext();
+			var server = context.Connection();
 
 			var d = new Setting
 			{
@@ -40,7 +40,7 @@ namespace TomPIT.Configuration
 
 			var u = server.CreateUrl("Setting", "Delete");
 
-			server.Connection.Post(u, d);
+			server.Post(u, d);
 			server.Cache.Remove("setting", server.Cache.GenerateKey(resourceGroup, name));
 
 			if (server.GetService<ISettingService>() is ISettingNotification n)

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28407.52
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.SysDb", "TomPIT.SysDb\TomPIT.SysDb.csproj", "{EAF20A01-6FEA-4536-97EB-0D4D2ED2C477}"
 EndProject
@@ -12,6 +12,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Sys.Api", "TomPIT.Sys.Api\TomPIT.Sys.Api.csproj", "{C2F0DADF-9D4C-4E41-8C56-45114A712CE8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sys", "TomPIT.Sys\Sys.csproj", "{BED529F7-5461-4EC0-A03C-0AC565831549}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{E79173C7-C521-42E8-8230-4FBEBA374CE8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Core", "..\Core\TomPIT.Core\TomPIT.Core.csproj", "{0A55F87E-0A0C-4B76-A75F-78A834F988FC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,9 +43,16 @@ Global
 		{BED529F7-5461-4EC0-A03C-0AC565831549}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BED529F7-5461-4EC0-A03C-0AC565831549}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BED529F7-5461-4EC0-A03C-0AC565831549}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A55F87E-0A0C-4B76-A75F-78A834F988FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A55F87E-0A0C-4B76-A75F-78A834F988FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A55F87E-0A0C-4B76-A75F-78A834F988FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A55F87E-0A0C-4B76-A75F-78A834F988FC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0A55F87E-0A0C-4B76-A75F-78A834F988FC} = {E79173C7-C521-42E8-8230-4FBEBA374CE8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C4E4C312-6F7C-4453-A6BF-AA3C797290C8}

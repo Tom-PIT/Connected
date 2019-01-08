@@ -1,0 +1,51 @@
+﻿@using Newtonsoft.Json;
+
+@model TomPIT.Designers.MembershipDesigner
+
+@if (Model.Membership == null || Model.Membership.Count == 0)
+{
+    <div>
+        No membership users
+    </div>
+    return;
+}
+
+<table id="tableMembership" class="table table-sm">
+    <tbody>
+        @foreach (var i in Model.Membership)
+        {
+            <tr>
+                <td data-value="@i.Token" class="membership-cell">
+                    @Html.Raw(@i.DisplayName())
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    $('#tableMembership').click(function (e) {
+        var td = $(e.target).closest('td');
+
+        if (typeof td === 'undefined')
+            return;
+
+        var val = td.attr('data-value');
+
+        if (typeof val === 'undefined')
+            return;
+
+        ide.designerAction({
+            data: {
+                'action': 'remove',
+                'user': val,
+                'role': $('#editRole').dxSelectBox('instance').option('value')
+            },
+            onComplete: function (data) {
+                td.remove();
+                $('#divUsers').html(data);
+                filterUsers();
+            }
+        })
+    });
+</script>

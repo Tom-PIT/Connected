@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="Microsoft.AspNetCore.App"/>
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.MsgPack" Version="1.0.0-preview2-final" />
@@ -28,16 +28,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
     <ProjectReference Include="..\TomPIT.StorageProvider.Sql\TomPIT.StorageProvider.Sql.csproj" />
     <ProjectReference Include="..\TomPIT.Sys.Api\TomPIT.Sys.Api.csproj" />
     <ProjectReference Include="..\TomPIT.SysDb.Sql\TomPIT.SysDb.Sql.csproj" />
     <ProjectReference Include="..\TomPIT.SysDb\TomPIT.SysDb.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="TomPIT.Core">
-      <HintPath>c:\bin2\TomPIT.Core.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

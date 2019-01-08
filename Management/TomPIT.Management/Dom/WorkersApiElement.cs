@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Apis;
 using TomPIT.Ide;
 
 namespace TomPIT.Dom
@@ -27,7 +28,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_api == null)
-					_api = SysContext.GetService<IComponentService>().SelectConfiguration(ComponentApi.Token) as IApi;
+					_api = Connection.GetService<IComponentService>().SelectConfiguration(ComponentApi.Token) as IApi;
 
 				return _api;
 			}

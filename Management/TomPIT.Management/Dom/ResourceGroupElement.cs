@@ -31,7 +31,7 @@ namespace TomPIT.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			SysContext.GetService<IResourceGroupManagementService>().Update(ManagementResourceGroup.Token, ManagementResourceGroup.Name,
+			Connection.GetService<IResourceGroupManagementService>().Update(ManagementResourceGroup.Token, ManagementResourceGroup.Name,
 				ManagementResourceGroup.StorageProvider, ManagementResourceGroup.ConnectionString);
 
 			return true;

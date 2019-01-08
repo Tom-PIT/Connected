@@ -2,6 +2,7 @@
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
+using TomPIT.Designers;
 using TomPIT.Ide;
 
 namespace TomPIT.Dom
@@ -50,7 +51,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_workers == null)
-					_workers = SysContext.GetService<IComponentService>().QueryComponents(MicroService.Token, "Api");
+					_workers = Connection.GetService<IComponentService>().QueryComponents(MicroService.Token, "Api");
 
 				return _workers;
 			}

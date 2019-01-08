@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.Design;
+using TomPIT.Designers;
 using TomPIT.Environment;
 using TomPIT.Ide;
 using TomPIT.Items;
@@ -91,7 +92,7 @@ namespace TomPIT.Dom
 				{
 					_ds = new ExistingResourceGroups();
 
-					var items = SysContext.GetService<IResourceGroupManagementService>().Query();
+					var items = Connection.GetService<IResourceGroupManagementService>().Query();
 
 					if (items != null)
 						items = items.OrderBy(f => f.Name).ToList();

@@ -1,6 +1,5 @@
 ﻿using TomPIT.Environment;
 using TomPIT.Ide;
-using TomPIT.Net;
 
 namespace TomPIT.Dom
 {
@@ -22,7 +21,7 @@ namespace TomPIT.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			SysContext.GetService<IInstanceEndpointManagementService>().Update(Endpoint.Token, Endpoint.Name, Endpoint.Type, Endpoint.Url, Endpoint.ReverseProxyUrl, Endpoint.Status, Endpoint.Verbs);
+			Connection.GetService<IInstanceEndpointManagementService>().Update(Endpoint.Token, Endpoint.Name, Endpoint.Type, Endpoint.Url, Endpoint.ReverseProxyUrl, Endpoint.Status, Endpoint.Verbs);
 
 			return true;
 		}

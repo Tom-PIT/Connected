@@ -13,7 +13,12 @@ namespace TomPIT.Servers.Development
 	{
 		public void ConfigureServices(IServiceCollection services)
 		{
-			Instance.Initialize(services, AuthenticationType.Jwt);
+			var e = new ServicesConfigurationArgs
+			{
+				Authentication = AuthenticationType.Jwt
+			};
+
+			Instance.Initialize(services, e);
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)

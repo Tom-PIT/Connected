@@ -1,0 +1,238 @@
+﻿@model TomPIT.Designers.PermissionsDesigner
+<div class="doc-canvas">
+    <div class="paper">
+        <form>
+            <div class="m-2">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="editClaim">Claim</label>
+                            <div id="editClaims"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="editSchema">Schema</label>
+                            <div id="editSchemas"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <h4>Permissions</h4>
+                    </div>
+                    <div class="col-6">
+                        <div class="float-right collapse" id="divInherit">
+                            <span class="badge badge-info">Inherited</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-toolbar justify-content-between mb-1">
+                    <div class="btn-group">
+                        <div id="divSearchPermissions"></div>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" id="btnResetPermissions" class="btn btn-sm btn-light"><i class="fal fa-minus-circle"></i></button>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="dropDownViewMode" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                All
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropDownViewMode" id="viewModeItems">
+                                <button class="dropdown-item active" type="button" data-kind="viewMode">All</button>
+                                <button class="dropdown-item" type="button" data-kind="viewMode">Allow</button>
+                                <button class="dropdown-item" type="button" data-kind="viewMode">Deny</button>
+                                <button class="dropdown-item" type="button" data-kind="viewMode">NotSet</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="divDescriptors">
+                    <partial name="~/Views/Ide/Designers/PermissionDescriptors.cshtml" />
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script>
+    var searchCriteria = null;
+    var viewMode = 'All';
+    var supportsInherit=@Html.TP().JavaScript.Value(Model.SupportsInherit);
+
+    var claims = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Claims)) ;
+    var schemas = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Schemas)) ;
+    var permissions = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.PermissionSet)) ;
+
+    @if(Model.SupportsInherit && Model.IsEmpty)
+    {
+        @:$('#divInherit').collapse('show');
+    }
+
+    $('#editClaims').dxSelectBox({
+        dataSource: claims,
+        displayExpr: 'Text',
+        valueExpr:'Value',
+        value: '@Model.SelectedClaim',
+        validationGroup:'criteria',
+        onValueChanged: function (e) {
+            loadPermissions();
+        },
+
+    }).dxValidator({
+    validationRules: [{
+        type:'required'
+        }]
+    });
+
+    $('#editSchemas').dxSelectBox({
+        dataSource: schemas,
+        displayExpr: 'Text',
+        valueExpr: 'Value',
+        value: '@Model.SelectedSchema',
+        validationGroup: 'criteria',
+        onValueChanged: function (e) {
+            loadPermissions();
+        }
+    }).dxValidator({
+        validationRules: [{
+            type: 'required'
+        }]
+    });
+
+    function loadPermissions() {
+        var claims = $('#editClaims').dxSelectBox('instance').option('value');
+        var schema = $('#editSchemas').dxSelectBox('instance').option('value');
+
+        ide.designerAction({
+            data: {
+                'action': 'loadPermissions',
+                'claim': claims,
+                'schema': schema
+            },
+            onComplete: function (data) {
+                $('#divDescriptors').html(data);
+                filterPermissions();
+            }
+        })
+    }
+
+    $('#divSearchPermissions').dxTextBox({
+        stylingMode: 'underlined',
+        mode: 'search',
+        onValueChanged: function (e) {
+            searchCriteria = e.value;
+
+            filterPermissions();
+        }
+    });
+
+    $('[data-kind="viewMode"').click(function () {
+        $('#viewModeItems > button').removeClass('active');
+
+        $(this).addClass('active');
+
+        viewMode = $(this).html();
+        $('#dropDownViewMode').html(viewMode);
+
+        filterPermissions();
+    });
+
+    $('#btnResetPermissions').click(function () {
+        var claims = $('#editClaims').dxSelectBox('instance').option('value');
+        var schema = $('#editSchemas').dxSelectBox('instance').option('value');
+
+        if (confirm('Are you sure you want to reset selected permission set?')) {
+            ide.designerAction({
+                data: {
+                    'action': 'reset',
+                    'claim': claims,
+                    'schema': schema
+                },
+                onComplete: function (data) {
+                    $('#divDescriptors').html(data);
+                    resetCounters();
+                    filterPermissions();
+                }
+            });
+        }
+    });
+
+    function filterPermissions() {
+        var c = searchCriteria == null || searchCriteria.length == 0
+            ? searchCriteria
+            : searchCriteria.toLowerCase();
+
+        $.each($('#tableDescriptors > tbody > tr'), function (i, v) {
+            var value = $(v).children().eq(0).attr('data-value');
+            var text = $(v).children().eq(1).html();
+
+            if (viewMode !== 'All' && value !== viewMode) {
+                $(v).hide();
+                return true;
+            }
+
+            if (c !== null && c.length > 0) {
+                if (text.toLowerCase().indexOf(c) < 0) {
+                    $(v).hide();
+                    return true;
+                }
+            }
+
+            $(v).show();
+        });
+    };
+
+    filterPermissions();
+
+    function resetCounters() {
+        for (var i = 0; i < claims.length; i++) {
+                claims[i].Text = claims[i].Value + ' (0)';
+        }
+
+        for (var i = 0; i < schemas.length; i++) {
+            schemas[i].Text = schemas[i].Value + ' (0)';
+        }
+
+        $('#editClaims').dxSelectBox('instance').option('dataSource', claims);
+        $('#editSchemas').dxSelectBox('instance').option('dataSource', schemas);
+
+        if (supportsInherit)
+            $('#divInherit').collapse('show');
+    }
+
+    function syncCounters(c, s) {
+        var sc = $('#editClaims').dxSelectBox('instance').option('value');
+
+        for (var i = 0; i < claims.length; i++) {
+            var val = claims[i].Value;
+
+            if (sc === val) {
+                claims[i].Text = claims[i].Value + ' (' + c + ')';
+                break;
+            }
+        }
+
+        $('#editClaims').dxSelectBox('instance').option('dataSource', claims);
+
+        var ss = $('#editSchemas').dxSelectBox('instance').option('value');
+
+        for (var i = 0; i < schemas.length; i++) {
+            var val = schemas[i].Value;
+
+            if (ss === val) {
+                schemas[i].Text = schemas[i].Value + ' (' + s + ')';
+                break;
+            }
+        }
+
+        $('#editSchemas').dxSelectBox('instance').option('dataSource', schemas);
+
+        if (c == 0 && supportsInherit)
+            $('#divInherit').collapse('show');
+        else
+            $('#divInherit').collapse('hide');
+    }
+</script>

@@ -20,24 +20,19 @@
 
   <ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="lz4net" Version="1.0.15.93" />
-    <PackageReference Include="microsoft.aspnetcore.authentication" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.1.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="2.10.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-  </ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
+		<PackageReference Include="lz4net" Version="1.0.15.93" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.1.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.10.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="2.10.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+
+	</ItemGroup>
 
   <ItemGroup>
-    <Reference Include="TomPIT.ComponentModel">
-      <HintPath>c:\bin2\TomPIT.ComponentModel.dll</HintPath>
-    </Reference>
-    <Reference Include="TomPIT.Core">
-      <HintPath>c:\bin2\TomPIT.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="TomPIT.DataProviders.Sql">
-      <HintPath>c:\bin2\TomPIT.DataProviders.Sql.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
+    <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+    <ProjectReference Include="..\..\DataProviders\TomPIT.DataProviders.Sql\TomPIT.DataProviders.Sql.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

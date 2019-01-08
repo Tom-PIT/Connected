@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.Design;
+using TomPIT.Designers;
 using TomPIT.Ide;
 using TomPIT.Items;
 using TomPIT.Security;
@@ -65,7 +66,7 @@ namespace TomPIT.Dom
 
 		public override void LoadChildren(string id)
 		{
-			var role = SysContext.GetService<IRoleService>().Select(id.AsGuid());
+			var role = Connection.GetService<IRoleService>().Select(id.AsGuid());
 
 			Items.Add(new RoleElement(Environment, this, role));
 		}
@@ -89,7 +90,7 @@ namespace TomPIT.Dom
 				{
 					_roles = new ExistingRoles();
 
-					var ds = SysContext.GetService<IRoleService>().Query().Where(f => f.Behavior == RoleBehavior.Explicit && f.Visibility == RoleVisibility.Visible).OrderBy(f => f.Name);
+					var ds = Connection.GetService<IRoleService>().Query().Where(f => f.Behavior == RoleBehavior.Explicit && f.Visibility == RoleVisibility.Visible).OrderBy(f => f.Name);
 
 					foreach (var i in ds)
 						_roles.Items.Add(i);

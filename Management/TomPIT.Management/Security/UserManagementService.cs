@@ -1,24 +1,22 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
-using TomPIT.Exceptions;
-using TomPIT.Net;
-using TomPIT.Server.Storage;
+using TomPIT.Connectivity;
 using TomPIT.Storage;
 
 namespace TomPIT.Security
 {
 	internal class UserManagementService : IUserManagementService
 	{
-		public UserManagementService(ISysContext server)
+		public UserManagementService(ISysConnection connection)
 		{
-			Server = server;
+			Connection = connection;
 		}
 
-		private ISysContext Server { get; }
+		private ISysConnection Connection { get; }
 
 		public void ChangeAvatar(Guid user, byte[] contentBytes, string contentType, string fileName)
 		{
-			var usr = Server.GetService<IUserService>().Select(user.ToString());
+			var usr = Connection.GetService<IUserService>().Select(user.ToString());
 			Guid avatarId = Guid.Empty;
 
 			if (usr == null)
@@ -29,7 +27,7 @@ namespace TomPIT.Security
 				if (usr.Avatar == Guid.Empty)
 					return;
 
-				Server.GetService<IStorageService>().Delete(usr.Avatar);
+				Connection.GetService<IStorageService>().Delete(usr.Avatar);
 			}
 			else
 			{
@@ -43,26 +41,26 @@ namespace TomPIT.Security
 					Type = BlobTypes.Avatar
 				};
 
-				avatarId = Server.GetService<IStorageService>().Upload(b, contentBytes, StoragePolicy.Singleton);
+				avatarId = Connection.GetService<IStorageService>().Upload(b, contentBytes, StoragePolicy.Singleton);
 
 				if (avatarId == usr.Avatar)
 					return;
 			}
 
-			var u = Server.CreateUrl("UserManagement", "ChangeAvatar");
+			var u = Connection.CreateUrl("UserManagement", "ChangeAvatar");
 			var e = new JObject
 			{
 				{"user", user},
 				{"avatar", avatarId }
 			};
 
-			Server.Connection.Post(u, e);
+			Connection.Post(u, e);
 		}
 
 		public Guid Insert(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string password, string pin, Guid language, string timezone,
 			bool notificationEnabled, string mobile, string phone)
 		{
-			var u = Server.CreateUrl("UserManagement", "Insert");
+			var u = Connection.CreateUrl("UserManagement", "Insert");
 			var e = new JObject
 			{
 				{"email", email},
@@ -79,37 +77,37 @@ namespace TomPIT.Security
 				{"phone", phone}
 			};
 
-			return Server.Connection.Post<Guid>(u, e);
+			return Connection.Post<Guid>(u, e);
 		}
 
 		public void ResetPassword(Guid user)
 		{
-			var u = Server.CreateUrl("UserManagement", "ResetPassword");
+			var u = Connection.CreateUrl("UserManagement", "ResetPassword");
 			var e = new JObject
 			{
 				{"user", user}
 			};
 
-			Server.Connection.Post(u, e);
+			Connection.Post(u, e);
 		}
 
 		public void Delete(Guid user)
 		{
-			var u = Server.CreateUrl("UserManagement", "Delete");
+			var u = Connection.CreateUrl("UserManagement", "Delete");
 			var e = new JObject
 			{
 				{"user", user}
 			};
 
-			Server.Connection.Post<Guid>(u, e);
+			Connection.Post<Guid>(u, e);
 
-			if (Server.GetService<IUserService>() is IUserNotification n)
+			if (Connection.GetService<IUserService>() is IUserNotification n)
 				n.NotifyChanged(this, new UserEventArgs(user));
 		}
 
 		public void Update(Guid user, string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language, string timezone, bool notificationEnabled, string mobile, string phone)
 		{
-			var u = Server.CreateUrl("UserManagement", "Update");
+			var u = Connection.CreateUrl("UserManagement", "Update");
 			var e = new JObject
 			{
 				{"email", email},
@@ -127,9 +125,9 @@ namespace TomPIT.Security
 				{"phone", phone}
 			};
 
-			Server.Connection.Post<Guid>(u, e);
+			Connection.Post<Guid>(u, e);
 
-			if (Server.GetService<IUserService>() is IUserNotification n)
+			if (Connection.GetService<IUserService>() is IUserNotification n)
 				n.NotifyChanged(this, new UserEventArgs(user));
 		}
 	}

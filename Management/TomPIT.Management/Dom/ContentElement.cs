@@ -25,7 +25,7 @@ namespace TomPIT.Dom
 
 		public override void LoadChildren(string id)
 		{
-			var c = SysContext.GetService<IComponentService>().SelectComponent(id.AsGuid());
+			var c = Connection.GetService<IComponentService>().SelectComponent(id.AsGuid());
 
 			if (c != null)
 				Items.Add(new DataManagementElement(Environment, this, c));
@@ -36,7 +36,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_components == null)
-					_components = SysContext.GetService<IComponentService>().QueryComponents(DomQuery.Closest<IMicroServiceScope>(this).MicroService.Token, "DataManagement");
+					_components = Connection.GetService<IComponentService>().QueryComponents(DomQuery.Closest<IMicroServiceScope>(this).MicroService.Token, "DataManagement");
 
 				return _components;
 			}

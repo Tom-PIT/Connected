@@ -9,8 +9,8 @@ namespace TomPIT.Items
 	{
 		protected override void OnQueryDescriptors(IDomElement element, List<IItemDescriptor> items)
 		{
-			var u = element.Environment.Context.GetServerContext().CreateUrl("StorageManagement", "QueryStorageProviders");
-			var ds = element.Environment.Context.GetServerContext().Connection.Get<List<ClientStorageProvider>>(u);
+			var u = element.Environment.Context.Connection().CreateUrl("StorageManagement", "QueryStorageProviders");
+			var ds = element.Environment.Context.Connection().Get<List<ClientStorageProvider>>(u);
 
 			items.Add(new ItemDescriptor(SR.DevLiDefault, Guid.Empty.ToString()));
 

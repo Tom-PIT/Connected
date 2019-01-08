@@ -8,7 +8,7 @@ namespace TomPIT.Environment
 	public class ManagementResourceGroup : IResourceGroup
 	{
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
-		[InvalidateEnvironment(Ide.EnvironmentSection.Explorer | Ide.EnvironmentSection.Designer)]
+		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[MaxLength(128)]
 		[Required]
 		public string Name { get; set; }

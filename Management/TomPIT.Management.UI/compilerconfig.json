@@ -1,0 +1,22 @@
+﻿[
+  {
+    "outputFile": "wwwroot/Assets/Styles/bootstrap.css",
+    "inputFile": "wwwroot/Assets/Styles/bootstrap.less"
+  },
+  {
+    "outputFile": "wwwroot/Assets/Styles/tompit.css",
+    "inputFile": "wwwroot/Assets/Styles/tompit.less"
+  },
+  {
+    "outputFile": "wwwroot/Assets/Styles/development.css",
+    "inputFile": "wwwroot/Assets/Styles/development.less"
+  },
+  {
+    "outputFile": "wwwroot/Assets/Styles/management.css",
+    "inputFile": "wwwroot/Assets/Styles/management.less"
+  },
+  {
+    "outputFile": "wwwroot/Assets/Styles/ide.css",
+    "inputFile": "wwwroot/Assets/Styles/ide.less"
+  }
+]

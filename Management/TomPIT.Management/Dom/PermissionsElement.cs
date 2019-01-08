@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
+using TomPIT.Designers;
 using TomPIT.Ide;
 
 namespace TomPIT.Dom
@@ -49,7 +50,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_template == null)
-					_template = SysContext.GetService<IMicroServiceTemplateService>().Select(MicroService.Template);
+					_template =  Connection.GetService<IMicroServiceTemplateService>().Select(MicroService.Template);
 
 				return _template;
 			}

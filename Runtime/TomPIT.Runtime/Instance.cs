@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,9 +30,9 @@ namespace TomPIT
 	{
 		private static List<string> _resourceGroups = null;
 
-		public static void Initialize(IServiceCollection services, AuthenticationType authentication)
+		public static void Initialize(IServiceCollection services, ServicesConfigurationArgs e)
 		{
-			ConfigureServices(services, authentication);
+			ConfigureServices(services, e);
 		}
 
 		public static void Configure(InstanceType type, IApplicationBuilder app, IHostingEnvironment env, ConfigureRoutingHandler routingHandler)
@@ -58,9 +59,9 @@ namespace TomPIT
 			e.Connection.GetService<IDataProviderService>().Register(new SqlDataProvider());
 		}
 
-		private static void ConfigureServices(IServiceCollection services, AuthenticationType authentication)
+		private static void ConfigureServices(IServiceCollection services, ServicesConfigurationArgs e)
 		{
-			switch (authentication)
+			switch (e.Authentication)
 			{
 				case AuthenticationType.Jwt:
 					services.AddAuthentication(options =>
@@ -86,15 +87,13 @@ namespace TomPIT
 					break;
 			}
 
-			services.AddMvc(o =>
-			{
-				var policy = new AuthorizationPolicyBuilder()
-				.RequireAuthenticatedUser()
-				.Build();
+			var mvcBuilder = services.AddMvc();
+				//.SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_2_2);
 
-				o.Filters.Add(new AuthorizeFilter(policy));
-				o.Filters.Add(new AuthenticationCookieFilter());
-			});
+			//mvcBuilder.AddApplicationPart(typeof(Instance).Assembly);
+
+			foreach (var i in e.ApplicationParts)
+				mvcBuilder.AddApplicationPart(i);
 		}
 
 

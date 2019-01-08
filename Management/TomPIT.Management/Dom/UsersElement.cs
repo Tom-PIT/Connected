@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.Design;
+using TomPIT.Designers;
 using TomPIT.Ide;
 using TomPIT.Items;
 using TomPIT.Security;
@@ -65,7 +66,7 @@ namespace TomPIT.Dom
 
 		public override void LoadChildren(string id)
 		{
-			var user = SysContext.GetService<IUserService>().Select(id);
+			var user = Connection.GetService<IUserService>().Select(id);
 
 			Items.Add(new UserElement(Environment, this, user));
 		}
@@ -89,7 +90,7 @@ namespace TomPIT.Dom
 				{
 					_users = new ExistingUsers();
 
-					var ds = SysContext.GetService<IUserService>().Query().OrderBy(f => f.DisplayName());
+					var ds = Connection.GetService<IUserService>().Query().OrderBy(f => f.DisplayName());
 
 					foreach (var i in ds)
 						_users.Items.Add(i);
