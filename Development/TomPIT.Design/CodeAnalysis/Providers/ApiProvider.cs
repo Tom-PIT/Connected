@@ -91,7 +91,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 				}
 			}
 
-			msApis.Sort();
+			msApis = msApis.OrderBy(f => f.Text).ToList();
 
 			foreach (var i in msApis)
 				r.Add(i);
@@ -111,6 +111,11 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
 			foreach (var i in refs.MicroServices)
 			{
+				var ms = context.Connection().GetService<IMicroServiceService>().Select(i.MicroService);
+
+				if (ms == null)
+					continue;
+
 				var ds = context.Connection().GetService<IComponentService>().QueryComponents(context.Connection().ResolveMicroServiceToken(i.MicroService), "Api");
 
 				foreach (var j in ds)
@@ -128,7 +133,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 						if (k.Scope != ElementScope.Public)
 							continue;
 
-						var key = string.Format("{0}/{1}", j.Name, k.Name);
+						var key = string.Format("{0}/{1}/{2}", ms.Name, j.Name, k.Name);
 
 						if (string.IsNullOrWhiteSpace(existingText) || key.ToLowerInvariant().Contains(existingText.ToLowerInvariant()))
 							items.Add(new CodeAnalysisResult(key, key, null));
