@@ -97,7 +97,7 @@ namespace TomPIT.Ide
 				return;
 
 			var element = instance as IElement;
-			var props = GetProperties(instance, false);
+			var props = DomQuery.Properties(instance, false, true);
 
 			if (props == null)
 				return;
@@ -331,22 +331,6 @@ namespace TomPIT.Ide
 				return FindEditorByName("Color");
 			else
 				return FindEditorByName("Text");
-		}
-
-		private PropertyInfo[] GetProperties(object instance)
-		{
-			return GetProperties(instance, true);
-		}
-
-		private PropertyInfo[] GetProperties(object instance, bool writableOnly)
-		{
-			if (writableOnly)
-				return instance.GetType().GetProperties(BindingFlags.Public
-						  | BindingFlags.SetProperty
-						  | BindingFlags.Instance);
-			else
-				return instance.GetType().GetProperties(BindingFlags.Public
-						  | BindingFlags.Instance);
 		}
 	}
 }

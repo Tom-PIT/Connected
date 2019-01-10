@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using TomPIT.ComponentModel;
 using TomPIT.Security;
 using TomPIT.Sys.Data;
@@ -34,9 +34,10 @@ namespace TomPIT.Sys.Controllers.Management
 			var microService = body.Required<Guid>("microService");
 			var name = body.Required<string>("name");
 			var status = body.Required<MicroServiceStatus>("status");
+			var template = body.Optional<Guid>("template", Guid.Empty);
 			var resourceGroup = body.Required<Guid>("resourceGroup");
 
-			DataModel.MicroServices.Update(microService, name, status, resourceGroup);
+			DataModel.MicroServices.Update(microService, name, status, template, resourceGroup);
 		}
 
 		[HttpPost]

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
+using TomPIT.Services;
 
 namespace TomPIT.ComponentModel
 {
@@ -11,6 +12,7 @@ namespace TomPIT.ComponentModel
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[MaxLength(128)]
 		[Required]
+		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public string Name { get; set; }
 		[Browsable(false)]
 		public string Url { get; set; }
@@ -18,12 +20,14 @@ namespace TomPIT.ComponentModel
 		[KeyProperty]
 		public Guid Token { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
+		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public MicroServiceStatus Status { get; set; }
 		[Browsable(false)]
 		public Guid ResourceGroup { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		[Items("TomPIT.Items.MicroServiceTemplatesItems, TomPIT.Management")]
+		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public Guid Template { get; set; }
 
 		public override string ToString()

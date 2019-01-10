@@ -6,9 +6,7 @@ using System.Text;
 using TomPIT.Annotations;
 using TomPIT.Design;
 using TomPIT.Dom;
-using TomPIT.Exceptions;
 using TomPIT.Ide;
-using TomPIT.Runtime;
 using TomPIT.Services;
 
 namespace TomPIT
@@ -39,7 +37,7 @@ namespace TomPIT
 			if (instance == null)
 				return null;
 
-			var props = Properties(instance, false);
+			var props = Properties(instance, false, false);
 
 			foreach (var i in props)
 			{
@@ -244,31 +242,54 @@ namespace TomPIT
 			return interfaces.FirstOrDefault(f => f == typeof(T)) != null;
 		}
 
-		public static PropertyInfo[] Properties(object instance, bool writableOnly)
+		public static PropertyInfo[] Properties(object instance, bool writableOnly, bool filterByEnvironment)
 		{
 			var mode = Shell.GetService<IRuntimeService>().Mode;
 			PropertyInfo[] properties = null;
 
-			if (writableOnly)
-				properties = instance.GetType().GetProperties(BindingFlags.Public
-						  | BindingFlags.SetProperty
-						  | BindingFlags.Instance);
-			else
-				properties = instance.GetType().GetProperties(BindingFlags.Public
-						  | BindingFlags.Instance);
+			properties = instance.GetType().GetProperties();
 
 			if (properties == null)
 				return null;
 
-			switch (mode)
+			var temp = new List<PropertyInfo>();
+
+			foreach (var i in properties)
 			{
-				case EnvironmentMode.Design:
-					return FilterDesignProperties(properties);
-				case EnvironmentMode.Runtime:
-					return FilterRuntimeProperties(properties);
-				default:
-					throw new NotSupportedException();
+				var getMethod = i.GetGetMethod();
+				var setMethod = i.GetSetMethod();
+
+				if (writableOnly && setMethod == null)
+					continue;
+
+				if (getMethod == null)
+					continue;
+
+				if ((getMethod != null && getMethod.IsStatic) || (setMethod != null && setMethod.IsStatic))
+					continue;
+
+				if (setMethod != null && !setMethod.IsPublic)
+					continue;
+
+				temp.Add(i);
 			}
+
+			properties = temp.ToArray();
+
+			if (filterByEnvironment)
+			{
+				switch (mode)
+				{
+					case EnvironmentMode.Design:
+						return FilterDesignProperties(properties);
+					case EnvironmentMode.Runtime:
+						return FilterRuntimeProperties(properties);
+					default:
+						throw new NotSupportedException();
+				}
+			}
+
+			return properties;
 		}
 
 		private static PropertyInfo[] FilterDesignProperties(PropertyInfo[] properties)

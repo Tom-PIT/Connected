@@ -110,7 +110,7 @@ namespace TomPIT.Sys.Data
 			NotificationHubs.MicroServiceChanged(token);
 		}
 
-		public void Update(Guid token, string name, MicroServiceStatus status, Guid resourceGroup)
+		public void Update(Guid token, string name, MicroServiceStatus status, Guid template, Guid resourceGroup)
 		{
 			var microService = Select(token);
 
@@ -132,7 +132,10 @@ namespace TomPIT.Sys.Data
 			if (string.Compare(name, microService.Name, true) != 0)
 				url = Url(token, name);
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Update(microService, name, url, status, r);
+			if (template == Guid.Empty)
+				template = microService.Template;
+
+			Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Update(microService, name, url, status, template, r);
 
 			Refresh(token);
 

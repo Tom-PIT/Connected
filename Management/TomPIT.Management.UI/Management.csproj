@@ -57,8 +57,8 @@
     <ProjectReference Include="..\..\Development\TomPIT.Design\TomPIT.Design.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Ide.UI\TomPIT.Ide.UI.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Ide\TomPIT.Ide.csproj" />
-    <ProjectReference Include="..\..\Development\TomPIT.Templates.Application.Design\TomPIT.Templates.Application.Design.csproj" />
-    <ProjectReference Include="..\..\Development\TomPIT.Templates.Application\TomPIT.Templates.Application.csproj" />
+    <ProjectReference Include="..\..\Development\TomPIT.Templates.Application.Design\TomPIT.Application.Design.csproj" />
+    <ProjectReference Include="..\..\Development\TomPIT.Templates.Application\TomPIT.Application.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Templates.IoT.Design\TomPIT.Templates.IoT.Design.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Templates.IoT\TomPIT.Templates.IoT.csproj" />
     <ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
