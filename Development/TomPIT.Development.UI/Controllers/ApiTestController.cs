@@ -8,32 +8,19 @@ namespace TomPIT.Controllers
 	{
 		public IActionResult Index()
 		{
-			return View("~/Views/ApiTest.cshtml", CreateModel(true));
-		}
-
-		private ApiTestModel CreateModel(bool initialize)
-		{
-			var r = new ApiTestModel
-			{
-				Body = FromBody()
-			};
-
-			if (initialize)
-				r.Initialize(this);
-
-			return r;
+			return View("~/Views/ApiTest.cshtml", ApiTestModel.Create(this, true));
 		}
 
 		public IActionResult Invoke()
 		{
-			var m = CreateModel(true);
+			var m = ApiTestModel.Create(this, true);
 
 			return Json(m.Invoke());
 		}
 
 		public IActionResult Save()
 		{
-			var m = CreateModel(false);
+			var m = ApiTestModel.Create(this, false);
 
 			var id = m.Save();
 
@@ -45,21 +32,21 @@ namespace TomPIT.Controllers
 
 		public IActionResult QueryTags()
 		{
-			var m = CreateModel(false);
+			var m = ApiTestModel.Create(this, false);
 
 			return Json(m.TestCategories);
 		}
 
 		public IActionResult QueryTests()
 		{
-			var m = CreateModel(false);
+			var m = ApiTestModel.Create(this, false);
 
 			return Json(m.QueryTests());
 		}
 
 		public IActionResult SelectBody()
 		{
-			var m = CreateModel(false);
+			var m = ApiTestModel.Create(this, false);
 
 			return Json(new JObject
 			{
@@ -69,7 +56,7 @@ namespace TomPIT.Controllers
 
 		public IActionResult Delete()
 		{
-			var m = CreateModel(false);
+			var m = ApiTestModel.Create(this, false);
 
 			m.Delete();
 

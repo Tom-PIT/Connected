@@ -1,4 +1,5 @@
-﻿using TomPIT.Annotations;
+﻿using Newtonsoft.Json.Linq;
+using TomPIT.Annotations;
 using TomPIT.Ide;
 
 namespace TomPIT.ActionResults
@@ -6,5 +7,6 @@ namespace TomPIT.ActionResults
 	public interface IDesignerActionResultSection : IDesignerActionResult
 	{
 		EnvironmentSection Sections { get; }
+		JObject Data { get; }
 	}
 }

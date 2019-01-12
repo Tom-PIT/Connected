@@ -1,7 +1,6 @@
 ﻿using TomPIT.ComponentModel;
 using TomPIT.Design;
 using TomPIT.Dom;
-using TomPIT.Runtime;
 
 namespace TomPIT.Models
 {
@@ -31,7 +30,6 @@ namespace TomPIT.Models
 
 			return new Ide.Dom(this, Template, path);
 		}
-
 
 		public override string Id => MicroService.Token.ToString();
 		public override string IdeUrl

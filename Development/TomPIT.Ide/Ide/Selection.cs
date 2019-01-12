@@ -43,7 +43,7 @@ namespace TomPIT.Ide
 		public IDomElement Element { get { return Environment.Selected(); } }
 
 		public string Path { get { return Environment.SelectedPath(); } }
-
+		public string Id { get; set; }
 		public IDomDesigner Designer
 		{
 			get

@@ -1,5 +1,40 @@
 ﻿@model TomPIT.Designers.EnvironmentUnitsDesigner
 
-    Environment units designer
+<script src="~/Assets/Scripts/Designers/environmentUnits.js"></script>
 
-    <strong>TBD</strong>
+@{
+	var ds = Model.QueryUnits(Guid.Empty);
+}
+
+<div class="doc-canvas">
+	<div class="paper">
+		<div id="unitsPanel">
+			@if (ds.Count == 0)
+			{
+				<div class="mt-5 text-center collapse show" id="unitEmpty">
+					<i class="jumbo-font fal fa-file"></i>
+					<h3 class="text-center mt-5">Nothing yet here</h3>
+					<hr />
+					No environment units exist
+					<br />
+					<code>
+						click add button above to add environment unit
+					</code>
+				</div>
+
+			}
+
+			@await Html.PartialAsync("~/Views/Ide/Designers/EnvironmentUnitsNodes.cshtml", new EnvironmentUnitsModel(Model, ds))
+		</div>
+	</div>
+</div>
+
+@await Html.PartialAsync("~/Views/Ide/Designers/Question.cshtml", new TomPIT.Models.QuestionModel
+{
+	Id="removeUnit",
+	Message = "Are you sure you want to delete selected environment unit?"
+});
+
+<script>
+	var euDesigner = $('#unitsPanel').tpEnvironmentUnits().data('tompit-tpEnvironmentUnits');
+</script>

@@ -11,6 +11,7 @@ namespace TomPIT.Dom
 		IDesignerActionResult Action(JObject data);
 
 		string View { get; }
+		string PropertyView { get; }
 		object ViewModel { get; }
 		string Path { get; }
 

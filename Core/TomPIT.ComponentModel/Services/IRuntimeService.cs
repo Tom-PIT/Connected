@@ -18,6 +18,7 @@ namespace TomPIT.Services
 
 	public enum EnvironmentMode
 	{
+		None = 0,
 		Design = 1,
 		Runtime = 2
 	}

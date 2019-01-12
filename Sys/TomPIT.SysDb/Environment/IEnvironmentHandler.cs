@@ -20,6 +20,7 @@ namespace TomPIT.SysDb.Environment
 		 */
 		void InsertEnvironmentUnit(Guid token, string name, IEnvironmentUnit parent, int ordinal);
 		void UpdateEnvironmentUnit(IEnvironmentUnit item, string name, IEnvironmentUnit parent, int ordinal);
+		void UpdateEnvironmentUnits(List<EnvironmentUnitBatchDescriptor> items);
 		void DeleteEnvironmentUnit(IEnvironmentUnit item);
 
 		List<IEnvironmentUnit> QueryEnvironmentUnits();

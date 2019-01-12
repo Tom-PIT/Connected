@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Newtonsoft.Json.Linq;
@@ -100,6 +99,14 @@ namespace TomPIT
 			}
 
 			return relativePath;
+		}
+
+		public static bool CompareUrls(this IExecutionContext context, string path1, string path2)
+		{
+			var p1 = MapPath(context, path1);
+			var p2 = MapPath(context, path2);
+
+			return string.Compare(p1, p2, true) == 0;
 		}
 
 		public static string RootUrl(this HttpRequest request)

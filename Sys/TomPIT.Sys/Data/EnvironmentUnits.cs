@@ -4,6 +4,7 @@ using TomPIT.Caching;
 using TomPIT.Environment;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
+using TomPIT.SysDb.Environment;
 
 namespace TomPIT.Sys.Data
 {
@@ -78,6 +79,18 @@ namespace TomPIT.Sys.Data
 			return token;
 		}
 
+		public void Update(List<EnvironmentUnitBatchDescriptor> items)
+		{
+			Shell.GetService<IDatabaseService>().Proxy.Environment.UpdateEnvironmentUnits(items);
+
+			foreach (var i in items)
+			{
+				Refresh(i.Unit.Token);
+
+				NotificationHubs.EnvironmentUnitChanged(i.Unit.Token);
+			}
+		}
+
 		public void Update(Guid token, string name, Guid parent, int ordinal)
 		{
 			var target = GetByToken(token);
@@ -108,6 +121,9 @@ namespace TomPIT.Sys.Data
 
 			if (target == null)
 				throw new SysException(SR.ErrEnvironmentUnitNotFound);
+
+			if (Where(token).Count > 0)
+				throw new SysException(SR.ErrEnvUnitDeleteChildren);
 
 			Shell.GetService<IDatabaseService>().Proxy.Environment.DeleteEnvironmentUnit(target);
 

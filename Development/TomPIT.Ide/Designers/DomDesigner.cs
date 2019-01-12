@@ -57,7 +57,7 @@ namespace TomPIT.Designers
 		protected JObject Request { get { return Environment.RequestBody; } }
 
 		public virtual string View { get { return null; } }
-
+		public virtual string PropertyView { get { return null; } }
 		public virtual object ViewModel { get { return null; } }
 
 		public virtual string Path { get { return DomQuery.Path(Element); } }

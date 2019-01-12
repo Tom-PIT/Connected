@@ -1,0 +1,43 @@
+﻿@using TomPIT;
+
+@model TomPIT.Design.IDesignerToolbarAction
+
+@{
+	var action = Model as TomPIT.Actions.Dropdown;
+
+	if (action.Items.Count == 0) { return; }
+}
+
+
+@{
+	var css = !action.Visible ? "collapse" : string.Empty;
+
+	if (!action.Enabled)
+	{ css += " disabled"; }
+}
+
+<div class="dropdown">
+	<button type="button" class="btn btn-light btn-sm  dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		@if (!string.IsNullOrWhiteSpace(action.Glyph))
+		{
+			<i class="@action.Glyph"></i>
+		}
+		@Html.Raw(action.Text)
+	</button>
+
+
+
+	<div class="dropdown-menu">
+		@foreach (var i in action.Items)
+		{
+			<a href="#" role="button" class="dropdown-item" data-tp-tag="toolbar-action" @Html.TP().Attributes.Attribute("data-id", i.Id)>
+				@if (!string.IsNullOrWhiteSpace(i.Glyph))
+				{
+					<i class="@i.Glyph"></i>
+				}
+				@i.Text
+			</a>
+
+		}
+	</div>
+</div>

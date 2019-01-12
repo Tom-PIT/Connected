@@ -102,6 +102,9 @@ namespace TomPIT.Controllers
 				Response.Headers.Add("result", "1");
 			}
 
+			if (r.Data != null)
+				return Json(r.Data);
+
 			return Ok();
 		}
 
@@ -185,7 +188,10 @@ namespace TomPIT.Controllers
 				Response.Headers.Add("designerPath", model.Selection.Designer.Path);
 				Response.Headers.Add("path", model.Selection.Path);
 
-				return Ok();
+				if (vr.Data == null)
+					return Ok();
+				else
+					return Json(vr.Data);
 			}
 			else
 				return Ok();

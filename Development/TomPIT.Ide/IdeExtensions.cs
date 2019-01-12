@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,6 @@ using TomPIT.ComponentModel;
 using TomPIT.Design;
 using TomPIT.Designers;
 using TomPIT.Dom;
-using TomPIT.Exceptions;
 using TomPIT.Ide;
 
 namespace TomPIT
@@ -293,6 +293,14 @@ namespace TomPIT
 
 				Children(value, items, refs);
 			}
+		}
+
+		public static ITransactionResult WithData(this ITransactionResult result, JObject data)
+		{
+			if (result is TransactionResult r)
+				r.Data = data;
+
+			return result;
 		}
 	}
 }

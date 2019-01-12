@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace TomPIT
 {
@@ -20,7 +21,7 @@ namespace TomPIT
 
 			return false;
 		}
-		
+
 		public static JObject GetAuthenticationCookie(this HttpRequest request)
 		{
 			if (request == null || !request.Cookies.ContainsKey(SecurityUtils.AuthenticationCookieName))
@@ -39,6 +40,11 @@ namespace TomPIT
 				return null;
 
 			return cookie.Required<string>("endpoint");
+		}
+
+		public static JObject RequestBody(this Controller controller)
+		{
+			return controller.Request.Body.ToJObject();
 		}
 
 		public static JObject ToJObject(this Stream s)

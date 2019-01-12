@@ -765,4 +765,7 @@
   <data name="DevAddComponent" xml:space="preserve">
     <value>Add component</value>
   </data>
+  <data name="ErrEnvUnitDeleteChildren" xml:space="preserve">
+    <value>Cannot delete environment unit with children.</value>
+  </data>
 </root>

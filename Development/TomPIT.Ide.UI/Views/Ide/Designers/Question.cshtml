@@ -1,0 +1,21 @@
+﻿@model TomPIT.Models.QuestionModel
+
+<div class="modal fade bottom info dev-modal" id="@Model.Id" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-frame modal-bottom" role="document">
+		<div class="modal-content">
+			<div class="modal-body">
+				<div class="row d-flex justify-content-center align-items-center">
+					@Model.Message
+				</div>
+			</div>
+			<div class="modal-footer">
+				<div class="mx-auto">
+					<button type="button" class="btn btn-inverse btn-info mr-5" id="@string.Format("{0}Confirm",Model.Id)" data-dismiss="modal">@Model.ConfirmText</button>
+					<button type="button" class="btn btn-inverse btn-info" data-dismiss="modal">
+						@Model.CancelText
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

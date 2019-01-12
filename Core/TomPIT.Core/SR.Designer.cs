@@ -817,6 +817,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot delete environment unit with children..
+        /// </summary>
+        public static string ErrEnvUnitDeleteChildren {
+            get {
+                return ResourceManager.GetString("ErrEnvUnitDeleteChildren", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Event not defined..
         /// </summary>
         public static string ErrEventNotDefined {

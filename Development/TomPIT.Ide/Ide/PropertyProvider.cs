@@ -15,6 +15,7 @@ namespace TomPIT.Ide
 	internal class PropertyProvider : EnvironmentClient, IPropertyProvider
 	{
 		private List<IProperty> _props = null;
+		private string _view = null;
 
 		public PropertyProvider(IEnvironment environment) : base(environment)
 		{
@@ -331,6 +332,29 @@ namespace TomPIT.Ide
 				return FindEditorByName("Color");
 			else
 				return FindEditorByName("Text");
+		}
+
+		public string View
+		{
+			get
+			{
+				if (_view == null)
+				{
+					_view = string.Empty;
+
+					if (Environment.Selected() == null)
+						return null;
+
+					var designer = Environment.Selected().Designer;
+
+					if (designer == null)
+						return null;
+
+					_view = designer.PropertyView;
+				}
+
+				return _view;
+			}
 		}
 	}
 }

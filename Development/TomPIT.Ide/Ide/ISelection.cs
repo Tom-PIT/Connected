@@ -11,7 +11,7 @@ namespace TomPIT.Ide
 		IDomElement Element { get; }
 		string Path { get; }
 		string Property { get; }
-
+		string Id { get; }
 		IDomDesigner Designer { get; }
 		ITransactionHandler Transaction { get; }
 	}

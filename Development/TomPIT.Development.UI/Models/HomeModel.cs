@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TomPIT.Design;
-using TomPIT.Routing;
 
 namespace TomPIT.Models
 {
-	public class HomeModel : ShellModel
+	public class HomeModel : DevelopmentModel
 	{
 		private DiscoveryModel _discovery = null;
 
@@ -18,18 +17,6 @@ namespace TomPIT.Models
 			return helper.RouteUrl("ide", new
 			{
 				microService = microServiceUrl
-			});
-		}
-
-		protected override void OnDatabinding()
-		{
-			base.OnDatabinding();
-
-			Navigation.Links.Add(new Route
-			{
-				Category = "Testing",
-				Text = "API",
-				Url = this.MapPath("~/sys/apitest")
 			});
 		}
 

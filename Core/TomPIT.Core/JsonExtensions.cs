@@ -17,7 +17,12 @@ namespace TomPIT
 				if (instance[propertyName] is JValue jv && jv.Value == null)
 					throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
 
-				return instance[propertyName].ToObject<T>();
+				var r = instance[propertyName].ToObject<T>();
+
+				if (typeof(T) == typeof(string) && string.IsNullOrWhiteSpace(r as string))
+					throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
+
+				return r;
 			}
 			catch (Exception ex)
 			{

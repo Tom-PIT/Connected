@@ -1,5 +1,5 @@
-﻿using TomPIT.Annotations;
-using TomPIT.Ide;
+﻿using Newtonsoft.Json.Linq;
+using TomPIT.Annotations;
 
 namespace TomPIT.ActionResults
 {
@@ -23,6 +23,11 @@ namespace TomPIT.ActionResults
 		public static SectionResult SectionResult(object model, EnvironmentSection sections)
 		{
 			return new SectionResult(model, sections);
+		}
+
+		public static SectionResult SectionResult(object model, EnvironmentSection sections, JObject data)
+		{
+			return new SectionResult(model, sections, data);
 		}
 
 		public static EmptyResult EmptyResult(object model)

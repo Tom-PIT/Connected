@@ -300,7 +300,7 @@ namespace TomPIT
 			{
 				var env = i.FindAttribute<EnvironmentVisibilityAttribute>();
 
-				if (env == null || env.Visibility == EnvironmentMode.Design)
+				if (env == null || env.Visibility == EnvironmentMode.Design || env.Always)
 					r.Add(i);
 			}
 
@@ -315,7 +315,7 @@ namespace TomPIT
 			{
 				var env = i.FindAttribute<EnvironmentVisibilityAttribute>();
 
-				if (env != null && env.Visibility == EnvironmentMode.Runtime)
+				if (env != null && (env.Always || env.Visibility == EnvironmentMode.Runtime))
 					r.Add(i);
 			}
 
@@ -353,6 +353,12 @@ namespace TomPIT
 				throw new TomPITException(string.Format("{0} ({1})", SR.ErrCannotCreateInstance, type.Name));
 
 			return instance;
+		}
+
+		public static void SetId(this ISelection selection, string id)
+		{
+			if (selection is Selection s)
+				s.Id = id;
 		}
 	}
 }

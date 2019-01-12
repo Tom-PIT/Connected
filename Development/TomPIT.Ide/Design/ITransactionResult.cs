@@ -1,5 +1,5 @@
-﻿using TomPIT.Annotations;
-using TomPIT.Ide;
+﻿using Newtonsoft.Json.Linq;
+using TomPIT.Annotations;
 
 namespace TomPIT.Design
 {
@@ -8,5 +8,6 @@ namespace TomPIT.Design
 		bool Success { get; }
 		EnvironmentSection Invalidate { get; }
 		object Component { get; }
+		JObject Data { get; }
 	}
 }

@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using TomPIT.ComponentModel;
 
 namespace TomPIT.Models
 {
-	public class ApiTestModel : ShellModel
+	public class ApiTestModel : DevelopmentModel
 	{
 		private List<IApiTest> _tests = null;
 		private List<string> _categories = null;
@@ -233,6 +234,21 @@ namespace TomPIT.Models
 
 				return identifier;
 			}
+		}
+
+		public static ApiTestModel Create(Controller controller, bool initialize)
+		{
+			var r = new ApiTestModel
+			{
+				Body = controller.RequestBody()
+			};
+
+			if (initialize)
+				r.Initialize(controller);
+
+			r.Databind();
+
+			return r;
 		}
 	}
 }

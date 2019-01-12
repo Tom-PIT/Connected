@@ -10,6 +10,9 @@ $.widget('tompit.tpIde', {
 			open: [
 			]
 		},
+		designer: {
+			active:null
+		},
 		globalization: {
 			language: null
 		}
@@ -107,9 +110,9 @@ $.widget('tompit.tpIde', {
 
 		this.draw();
 
-		this.loadSection({
-			section: 'designer'
-		});
+		//this.loadSection({
+		//	section: 'designer'
+		//});
 
 		this.setSelection();
 
@@ -416,14 +419,16 @@ $.widget('tompit.tpIde', {
 	saveProperty: function (options) {
 		var url = new tompit.devUrl();
 		var instance = this;
+		var data = $.extend({
+			language: this.options.globalization.language,
+			selectionId: this.options.selection.id
+		}, options.data);
 
 		tompit.post({
 			url: url.environment('save'),
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
-			data: $.extend({
-				language: this.options.globalization.language
-			}, options.data),
+			data: data,
 			progress: tompit.findProgress(this.element),
 			onError: function (request, status, error) {
 				if (typeof options.onError !== 'undefined')
@@ -452,6 +457,9 @@ $.widget('tompit.tpIde', {
 						designerPath: designerPath
 					});
 				}
+
+				if (instance.options.designer.active !== null && $.isFunction(instance.options.designer.active.idePropertySaved))
+					instance.options.designer.active.idePropertySaved(data);
 			}
 		});
 	},
@@ -482,7 +490,8 @@ $.widget('tompit.tpIde', {
 		if (all) {
 			this.loadSection({
 				section: 'all',
-				path: e.path
+				path: e.path,
+				data:e.data
 			});
 		}
 		else {
@@ -504,39 +513,45 @@ $.widget('tompit.tpIde', {
 			if (designer)
 				this.loadSection({
 					section: 'designer',
-					path: e.path
+					path: e.path,
+					data: e.data
 				});
 
 			if (selection) {
 				this.loadSection({
 					section: 'selection',
-					path: e.path
+					path: e.path,
+					data: e.data
 				});
 			}
 			else {
 				if (properties)
 					this.loadSection({
 						section: 'properties',
-						path: e.path
+						path: e.path,
+						data: e.data
 					});
 				else {
 					if (property)
 						this.loadSection({
 							section: 'property',
-							path: e.path
+							path: e.path,
+							data: e.data
 						});
 				}
 
 				if (events)
 					this.loadSection({
 						section: 'events',
-						path: e.path
+						path: e.path,
+						data: e.data
 					});
 
 				if (toolbox)
 					this.loadSection({
 						section: 'toolbox',
-						path: e.path
+						path: e.path,
+						data: e.data
 					});
 			}
 		}
@@ -550,6 +565,9 @@ $.widget('tompit.tpIde', {
 
 	setDescription: function (title, description) {
 		$('#devPropertyDescription').html('<strong>' + title + '</strong><br/>' + description);
+	},
+	setSelectionId: function (id) {
+		this.options.selection.id = id;
 	},
 	/*
 	 * status bar
@@ -613,7 +631,7 @@ $.widget('tompit.tpIde', {
 				}
 				else if (s === 'designer') {
 					$('#ide').off('toolbarClick');
-
+					instance.setActiveDesigner(null);
 					$('#devDesigner').html(data);
 					instance.initializeDesigner();
 				}
@@ -665,7 +683,9 @@ $.widget('tompit.tpIde', {
 	elementId: function (target) {
 		return $(target).closest('[data-id]').attr('data-id');
 	},
-
+	setActiveDesigner: function (d) {
+		this.options.designer.active = d;
+	},
 	designerAction: function (d, progress) {
 		var url = new tompit.devUrl();
 		var instance = this;
@@ -712,7 +732,8 @@ $.widget('tompit.tpIde', {
 							sections: sections,
 							path: path,
 							explorerPath: designerPath,
-							designerPath: designerPath
+							designerPath: designerPath,
+							data:data
 						});
 				}
 			}

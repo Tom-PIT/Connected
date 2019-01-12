@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Data.Sql;
@@ -45,6 +47,33 @@ namespace TomPIT.SysDb.Sql.Environment
 		public List<IEnvironmentUnit> QueryEnvironmentUnits()
 		{
 			return new Reader<EnvironmentUnit>("tompit.environment_unit_que").Execute().ToList<IEnvironmentUnit>();
+		}
+
+		public void UpdateEnvironmentUnits(List<EnvironmentUnitBatchDescriptor> items)
+		{
+			var a = new JArray();
+
+			foreach (var i in items)
+			{
+				var element = new JObject
+				{
+					{"name", i.Name },
+					{"ordinal", i.Ordinal },
+					{"id", i.Unit.GetId().ToString() }
+				};
+
+				if (i.Parent != null)
+					element.Add("parent", i.Parent.GetId().ToString());
+
+
+				a.Add(element);
+			}
+
+			var w = new Writer("tompit.environment_unit_upd_batch");
+
+			w.CreateParameter("@items", JsonConvert.SerializeObject(a));
+
+			w.Execute();
 		}
 
 		public void UpdateEnvironmentUnit(IEnvironmentUnit target, string name, IEnvironmentUnit parent, int ordinal)

@@ -7,5 +7,7 @@ namespace TomPIT.Design
 	{
 		List<string> Categories { get; }
 		List<IProperty> QueryProperties(string category);
+
+		string View { get; }
 	}
 }
