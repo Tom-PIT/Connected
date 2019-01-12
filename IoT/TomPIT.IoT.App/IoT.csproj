@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup Label="Globals">
+		<SccProjectName>SAK</SccProjectName>
+		<SccProvider>SAK</SccProvider>
+		<SccAuxPath>SAK</SccAuxPath>
+		<SccLocalPath>SAK</SccLocalPath>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<TargetFramework>netcoreapp2.2</TargetFramework>
+		<AssemblyName>TomPIT.IoT.App</AssemblyName>
+		<RootNamespace>TomPIT.IoT</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Folder Include="wwwroot\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="1.0.4" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.10.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
+	  <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+	  <ProjectReference Include="..\..\DataProviders\TomPIT.DataProviders.Sql\TomPIT.DataProviders.Sql.csproj" />
+	  <ProjectReference Include="..\..\Development\TomPIT.Templates.Application\TomPIT.Application.csproj" />
+	  <ProjectReference Include="..\..\Development\TomPIT.Templates.IoT\TomPIT.Templates.IoT.csproj" />
+	  <ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
+	</ItemGroup>
+
+</Project>
