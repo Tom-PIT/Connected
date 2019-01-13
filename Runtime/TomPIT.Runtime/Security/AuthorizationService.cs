@@ -7,16 +7,18 @@ using TomPIT.Services;
 
 namespace TomPIT.Security
 {
-	internal class AuthorizationService : SynchronizedClientRepository<IPermission, string>, IAuthorizationService, IAuthorizationNotification, IMembershipProvider
+	internal class AuthorizationService : SynchronizedClientRepository<IPermission, string>,
+		IAuthorizationService, IAuthorizationNotification, IMembershipProvider, IAuthenticationTokenNotification
 	{
 		private List<IAuthorizationProvider> _providers = null;
 		private Lazy<List<IPermissionDescriptor>> _descriptors = new Lazy<List<IPermissionDescriptor>>();
 		private Lazy<List<IAuthenticationProvider>> _authProviders = new Lazy<List<IAuthenticationProvider>>();
 		private IAuthenticationProvider _defaultAuthenticationProvider = null;
 
-		public AuthorizationService(ISysConnection server) : base(server, "permissions")
+		public AuthorizationService(ISysConnection connection) : base(connection, "permissions")
 		{
-			Membership = new MembershipCache(server);
+			Membership = new MembershipCache(connection);
+			AuthenticationTokens = new AuthenticationTokensCache(connection);
 
 			Providers.Add(new RoleAuthorizationProvider());
 			Providers.Add(new UserAuthorizationProvider());
@@ -154,6 +156,16 @@ namespace TomPIT.Security
 			LoadPermission(e);
 		}
 
+		public void NotifyAuthenticationTokenChanged(object sender, AuthenticationTokenEventArgs e)
+		{
+			AuthenticationTokens.NotifyChanged(e.Token);
+		}
+
+		public void NotifyAuthenticationTokenRemoved(object sender, AuthenticationTokenEventArgs e)
+		{
+			AuthenticationTokens.NotifyRemoved(e.Token);
+		}
+
 		public void NotifyPermissionRemoved(object sender, PermissionEventArgs e)
 		{
 			Remove(f => f.Evidence == e.Evidence
@@ -253,6 +265,7 @@ namespace TomPIT.Security
 		}
 
 		private MembershipCache Membership { get; }
+		private AuthenticationTokensCache AuthenticationTokens { get; }
 		private List<IPermissionDescriptor> Descriptors => _descriptors.Value;
 		private List<IAuthenticationProvider> AuthenticationProviders { get { return _authProviders.Value; } }
 		private IAuthenticationProvider DefaultAuthenticationProvider

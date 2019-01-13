@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
 using TomPIT.Security;
 using TomPIT.Sys.Data;
 
@@ -92,6 +92,60 @@ namespace TomPIT.Sys.Controllers.Management
 			var role = b.Required<Guid>("role");
 
 			DataModel.Membership.Delete(user, role);
+		}
+
+		[HttpPost]
+		public Guid InsertAuthenticationToken()
+		{
+			var body = FromBody();
+
+			var resourceGroup = body.Required<Guid>("resourceGroup");
+			var user = body.Required<Guid>("user");
+			var key = body.Required<string>("key");
+			var claims = body.Required<AuthenticationTokenClaim>("claims");
+			var status = body.Required<AuthenticationTokenStatus>("status");
+			var validFrom = body.Optional("validFrom", DateTime.MinValue);
+			var validTo = body.Optional("validTo", DateTime.MinValue);
+			var startTime = body.Optional("startTime", TimeSpan.Zero);
+			var endTime = body.Optional("endTime", TimeSpan.Zero);
+			var ipRestrictions = body.Optional("ipRestrictions", string.Empty);
+			var name = body.Required<string>("name");
+			var description = body.Optional("description", string.Empty);
+
+			return DataModel.AuthenticationTokens.Insert(resourceGroup, user, name, description,key, claims, status, validFrom, validTo,
+				startTime, endTime, ipRestrictions);
+		}
+
+		[HttpPost]
+		public void UpdateAuthenticationToken()
+		{
+			var body = FromBody();
+
+			var token = body.Required<Guid>("token");
+			var user = body.Required<Guid>("user");
+			var key = body.Required<string>("key");
+			var claims = body.Required<AuthenticationTokenClaim>("claims");
+			var status = body.Required<AuthenticationTokenStatus>("status");
+			var validFrom = body.Optional("validFrom", DateTime.MinValue);
+			var validTo = body.Optional("validTo", DateTime.MinValue);
+			var startTime = body.Optional("startTime", TimeSpan.Zero);
+			var endTime = body.Optional("endTime", TimeSpan.Zero);
+			var ipRestrictions = body.Optional("ipRestrictions", string.Empty);
+			var name = body.Required<string>("name");
+			var description = body.Optional("description", string.Empty);
+
+			DataModel.AuthenticationTokens.Update(token, user, name, description, key, claims, status, validFrom, validTo,
+				startTime, endTime, ipRestrictions);
+		}
+
+		[HttpPost]
+		public void DeleteAuthenticationToken()
+		{
+			var body = FromBody();
+
+			var token = body.Required<Guid>("token");
+
+			DataModel.AuthenticationTokens.Delete(token);
 		}
 	}
 }

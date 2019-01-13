@@ -2,23 +2,23 @@
 
 @model TomPIT.Designers.TextDesigner
 
- @Html.Partial("~/Views/Ide/Designers/Signature.cshtml", Model.Signature)
+@Html.Partial("~/Views/Ide/Designers/Signature.cshtml", Model.Signature)
 
 <div class="template-toolbar btn-toolbar justify-content-between">
 
-    <div class="btn-group">
-        @if (Model.CompletionDiagnostic != null)
-        {
-            <button class="btn btn-sm btn-light" id="checkSyntax" title="Check syntax"><i class="fal fa-check-circle"></i></button>
-        }
+	<div class="btn-group">
+		@if (Model.CompletionDiagnostic != null)
+		{
+			<button class="btn btn-sm btn-light" id="checkSyntax" title="Check syntax"><i class="fal fa-check-circle"></i></button>
+		}
 
-        @if (!string.IsNullOrWhiteSpace(Model.DebugFileName))
-        {
-            var url = Model.Environment.Context.MapPath(string.Format("~/sys/source-code/{0}/{1}/{2}", Model.Environment.Context.MicroService(), Model.Content.Configuration().Component, Model.Content.Id.ToString()));
+		@if (!string.IsNullOrWhiteSpace(Model.DebugFileName))
+		{
+			var url = Model.Environment.Context.MapPath(string.Format("~/sys/source-code/{0}/{1}/{2}", Model.Environment.Context.MicroService(), Model.Content.Configuration().Component, Model.Content.Id.ToString()));
 
-            <a href="@url" target="_blank" class="btn btn-sm btn-light" title="Download source code for debugging"><i class="fal fa-bug"></i></a>
-        }
-    </div>
+			<a href="@url" target="_blank" class="btn btn-sm btn-light" title="Download source code for debugging"><i class="fal fa-bug"></i></a>
+		}
+	</div>
 </div>
 
 <div id="designEditor" class="text-editor text-editor-sa" data-fullscreen="true"></div>
@@ -51,7 +51,8 @@
                         ide.designerAction({
                             data: {
                                 action: 'provideItems',
-                                section: 'designer',
+										 section: 'designer',
+										  property: '@Model.PropertyName',
                                 position: model.getOffsetAt({
                                     lineNumber: position.lineNumber,
                                     column: position.column
@@ -79,7 +80,8 @@
                         ide.designerAction({
                             data: {
                                 action: 'signatureHelp',
-                                section: 'designer',
+										 section: 'designer',
+										  property: '@Model.PropertyName',
                                 position: model.getOffsetAt({
                                     lineNumber: position.lineNumber,
                                     column: position.column
@@ -101,7 +103,8 @@
                         ide.designerAction({
                             data: {
                                 action: 'hover',
-                                section: 'designer',
+										 section: 'designer',
+										  property: '@Model.PropertyName',
                                 position: model.getOffsetAt({
                                     lineNumber: position.lineNumber,
                                     column: position.column
@@ -133,7 +136,8 @@
                         ide.designerAction({
                             data: {
                                 action: 'codeLens',
-                                section: 'designer',
+										 section: 'designer',
+										  property: '@Model.PropertyName',
                                 token: token,
                                 content: model.getValue()
                             },
@@ -174,7 +178,8 @@
                 ide.designerAction({
                     data: {
                         action: 'checkSyntax',
-                        section: 'designer',
+							  section: 'designer',
+								property: '@Model.PropertyName',
                     },
                     onComplete: function (data) {
 

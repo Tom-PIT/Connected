@@ -30,6 +30,7 @@ namespace TomPIT
 			e.Connection.RegisterService(typeof(IMicroServiceManagementService), typeof(MicroServiceManagementService));
 			e.Connection.RegisterService(typeof(IInstanceEndpointManagementService), typeof(InstanceEndpointManagementService));
 			e.Connection.RegisterService(typeof(IEnvironmentUnitManagementService), typeof(EnvironmentUnitManagementService));
+			e.Connection.RegisterService(typeof(IAuthenticationTokenManagementService), typeof(AuthenticationTokenManagementService));
 		}
 	}
 }

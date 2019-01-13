@@ -33,6 +33,8 @@ namespace TomPIT.Sys.Notifications
 			await Cache.Clients.All.SendAsync(method, args);
 		}
 
+		public static void AuthenticationTokenChanged(Guid token) { Notify(nameof(AuthenticationTokenChanged), new AuthenticationTokenEventArgs(token)); }
+		public static void AuthenticationTokenRemoved(Guid token) { Notify(nameof(AuthenticationTokenRemoved), new AuthenticationTokenEventArgs(token)); }
 		public static void FeatureChanged(Guid microService, Guid feature) { Notify(nameof(FeatureChanged), new FeatureEventArgs(microService, feature)); }
 		public static void FeatureRemoved(Guid microService, Guid feature) { Notify(nameof(FeatureRemoved), new FeatureEventArgs(microService, feature)); }
 		public static void InstanceEndpointChanged(Guid endpoint) { Notify(nameof(InstanceEndpointChanged), new InstanceEndpointEventArgs(endpoint)); }

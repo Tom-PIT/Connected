@@ -574,6 +574,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Authentication token not found..
+        /// </summary>
+        public static string ErrAuthTokenNotFound {
+            get {
+                return ResourceManager.GetString("ErrAuthTokenNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Blob not found.
         /// </summary>
         public static string ErrBlobNotFound {

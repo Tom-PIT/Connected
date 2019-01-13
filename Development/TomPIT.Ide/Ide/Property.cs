@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using TomPIT.Design;
 using TomPIT.Design.Validation;
 using TomPIT.Dom;
@@ -10,9 +11,10 @@ namespace TomPIT.Ide
 	{
 		private PropertyValidation _val = null;
 
-		public Property(IEnvironment environment, IDomElement element) : base(environment)
+		public Property(IEnvironment environment, IDomElement element, PropertyInfo property) : base(environment)
 		{
 			Element = element;
+			PropertyInfo = property;
 		}
 
 		public IDomElement Element { get; private set; }
@@ -29,6 +31,8 @@ namespace TomPIT.Ide
 		public string Description { get; set; }
 		public string Format { get; set; }
 		public bool Obsolete { get; set; }
+
+		public PropertyInfo PropertyInfo { get; set; }
 
 		public IPropertyValidation Validation
 		{

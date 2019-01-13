@@ -165,18 +165,50 @@ namespace TomPIT.Caching
 			Container.Remove(key, id);
 		}
 
+		/// <summary>
+		/// This operation must be synchronous otherwise it can cause
+		/// inconsistent caching image.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="id"></param>
 		public void Refresh(string key, string id)
 		{
+			/*
+			 * we store existing instance but it is not
+			 * removed from the cache yet. This is because other
+			 * threads can access this instance while we are
+			 * retrieving a new version from the server
+			 */
 			var existing = Get<object>(key, id);
 			var args = new CacheEventArgs(id, key);
-
+			/*
+			 * this two events invalidate that cache reference.
+			 * note that if no new version exists the existing one
+			 * is still available to other threads.
+			 */
 			Invalidating?.Invoke(args);
 			Invalidate?.Invoke(args);
-
+			/*
+			 * now find out if a new version has been set for the
+			 * specified key
+			 */
 			var newInstance = Get<object>(key, id);
-
+			/*
+			 * if no existing reference exists there is no need for
+			 * removing anything
+			 */
 			if (existing != null)
 			{
+				/*
+				 * we have an existing instance. we are dealing with two possible scenarios:
+				 * - newInstance is null because entity has been deleted
+				 * - newInstance is actually the same instance as the existing which means a new
+				 * version does not exist. In both cases we must remove existing reference because
+				 * at this point it is not valid anymore.
+				 * note that the third case exists: reference has been replaced. in that case there
+				 * is nothing to do because Invalidating events has already replaced reference with a
+				 * new version.
+				 */
 				if (newInstance == null)
 					Container.Remove(key, id);
 				else if (existing.Equals(newInstance))

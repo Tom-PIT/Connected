@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
-using TomPIT.Api.ComponentModel;
+﻿using TomPIT.Api.ComponentModel;
 using TomPIT.Api.Storage;
 using TomPIT.Security;
 using TomPIT.StorageProvider.Sql;
@@ -41,15 +39,6 @@ namespace TomPIT.Sys.Configuration
 			TomPITAuthenticationHandler.IssuerSigningKey = jwt.GetSection("issuerSigningKey").Value;
 			TomPITAuthenticationHandler.ValidAudience = jwt.GetSection("validAudience").Value;
 			TomPITAuthenticationHandler.ValidIssuer = jwt.GetSection("validIssuer").Value;
-
-			var keys = section.GetSection("clientKeys");
-			var clientKeys = new Dictionary<string, string>();
-
-			foreach (var i in keys.GetChildren())
-				i.Bind(clientKeys);
-
-			foreach (var i in clientKeys)
-				TomPITAuthenticationOptions.ClientKeys.Add(i.Key, i.Value);
 		}
 
 		private static void InitializeData()

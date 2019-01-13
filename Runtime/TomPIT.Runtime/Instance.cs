@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
@@ -87,15 +84,11 @@ namespace TomPIT
 					break;
 			}
 
-			var mvcBuilder = services.AddMvc();
-				//.SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_2_2);
-
-			//mvcBuilder.AddApplicationPart(typeof(Instance).Assembly);
-
-			foreach (var i in e.ApplicationParts)
-				mvcBuilder.AddApplicationPart(i);
+			services.AddMvc((o) =>
+			{
+				e.ConfigureMvc?.Invoke(o);
+			});
 		}
-
 
 		public static T GetService<T>()
 		{

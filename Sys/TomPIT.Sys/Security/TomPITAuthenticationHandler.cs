@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using TomPIT.Security;
 using TomPIT.Sys.Data;
 
@@ -60,19 +60,23 @@ namespace TomPIT.Sys.Security
 
 			var key = tokens[1];
 
-			if (!TomPITAuthenticationOptions.ClientKeys.ContainsKey(key))
+			var token = DataModel.AuthenticationTokens.Select(key);
+
+			if (token == null)
 				return null;
 
-			var identity = TomPITAuthenticationOptions.ClientKeys[key];
 			IUser user = null;
 
 			try
 			{
-				user = DataModel.Users.SelectByLoginName(identity);
+				user = DataModel.Users.Select(token.User);
 			}
 			catch { }
 
 			if (user == null)
+				return null;
+
+			if (!token.IsValid(Request, user, AuthenticationTokenClaim.System))
 				return null;
 
 			var id = new Identity(user);

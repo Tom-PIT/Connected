@@ -32,6 +32,7 @@ namespace TomPIT.Sys.Data
 		private static Lazy<Workers> _workers = new Lazy<Workers>(() => { return new Workers(Container); });
 		private static Lazy<Events> _events = new Lazy<Events>(() => { return new Events(); });
 		private static Lazy<Audit> _audit = new Lazy<Audit>(() => { return new Audit(); });
+		private static Lazy<AuthenticationTokens> _authTokens = new Lazy<AuthenticationTokens>(() => { return new AuthenticationTokens(Container); });
 
 		public static MicroServicesMeta MicroServicesMeta { get { return _meta.Value; } }
 		public static MicroServices MicroServices { get { return _microServices.Value; } }
@@ -58,6 +59,7 @@ namespace TomPIT.Sys.Data
 		public static Workers Workers { get { return _workers.Value; } }
 		public static Events Events { get { return _events.Value; } }
 		public static Audit Audit { get { return _audit.Value; } }
+		public static AuthenticationTokens AuthenticationTokens { get { return _authTokens.Value; } }
 
 		internal static MemoryCache Container
 		{

@@ -10,7 +10,7 @@ namespace TomPIT.Security
 		bool Demand(Guid user, Guid role);
 
 		IClientAuthenticationResult Authenticate(string user, string password);
-		IClientAuthenticationResult Authenticate(string bearerKey);
+		IClientAuthenticationResult Authenticate(string authToken);
 		bool IsInRole(Guid user, string role);
 		void RegisterProvider(IAuthorizationProvider provider);
 		List<IAuthorizationProvider> QueryProviders();

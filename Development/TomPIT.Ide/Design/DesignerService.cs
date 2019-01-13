@@ -23,6 +23,7 @@ namespace TomPIT.Design
 			RegisterPropertyEditor("Number", "~/Views/Ide/Editors/Number.cshtml");
 			RegisterPropertyEditor("Date", "~/Views/Ide/Editors/Date.cshtml");
 			RegisterPropertyEditor("Color", "~/Views/Ide/Editors/Color.cshtml");
+			RegisterPropertyEditor("Tag", "~/Views/Ide/Editors/Tag.cshtml");
 		}
 
 		private ISysConnection Connection { get; }

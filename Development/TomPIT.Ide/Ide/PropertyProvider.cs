@@ -125,7 +125,7 @@ namespace TomPIT.Ide
 					&& !Environment.Selection.Designer.IsPropertyEditable(i.Name))
 					continue;
 
-				var v = new Property(Environment, Environment.Selected());
+				var v = new Property(Environment, Environment.Selected(), i);
 
 				DiscoverProperty(instance, v, i);
 
@@ -325,8 +325,14 @@ namespace TomPIT.Ide
 			if (pi.PropertyType == typeof(bool))
 				return FindEditorByName("Check");
 			else if (pi.PropertyType.IsEnum)
+			{
+				if (pi.PropertyType.FindAttribute<FlagsAttribute>() != null)
+					return FindEditorByName("Tag");
+				else
 				return FindEditorByName("Select");
-			else if (pi.PropertyType == typeof(DateTime))
+			}
+			else if (pi.PropertyType == typeof(DateTime)
+				|| pi.PropertyType == typeof(TimeSpan))
 				return FindEditorByName("Date");
 			else if (pi.PropertyType == typeof(Color))
 				return FindEditorByName("Color");

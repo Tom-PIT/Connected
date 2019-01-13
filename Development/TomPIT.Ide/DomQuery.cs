@@ -163,7 +163,7 @@ namespace TomPIT
 				return null;
 
 			var suppressedAtt = property.FindAttribute<SuppressPropertyValues>();
-			var items = cp.QueryDescriptors(element);
+			var items = cp.QueryDescriptors(new ItemsDescriptorArgs(element, property));
 
 			var r = new List<IItemDescriptor>();
 
@@ -191,6 +191,7 @@ namespace TomPIT
 
 			return r;
 		}
+
 
 		public static bool IsSuppressed(SuppressPropertyValues att, object value)
 		{
@@ -220,7 +221,7 @@ namespace TomPIT
 					if (IsSuppressed(suppressedAtt, Enum.Parse(property.PropertyType, i)))
 						continue;
 
-					r.Add(new ItemDescriptor(i, Enum.Parse(property.PropertyType, i)));
+					r.Add(new ItemDescriptor(i, i));
 				}
 
 				return r.OrderBy(f => f.Text).ToList();

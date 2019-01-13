@@ -66,6 +66,9 @@
     <Content Update="Views\Ide\Editors\Check.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Ide\Editors\Tag.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Ide\Editors\Label.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
@@ -73,6 +76,9 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Ide\Editors\Select.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Ide\Editors\Date.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Ide\Editors\Text.cshtml">

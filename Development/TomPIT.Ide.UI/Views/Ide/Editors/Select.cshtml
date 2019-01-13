@@ -3,13 +3,13 @@
 @model TomPIT.Design.IProperty
 
 @{
-    var value = Model.Value;
+	var value = Model.Value;
 
-    if (value != null && value.GetType().IsEnum)
-    { value = Convert.ChangeType(value, value.GetType().GetEnumUnderlyingType()); }
+	//if (value != null && value.GetType().IsEnum)
+	//{ value = Convert.ChangeType(value, value.GetType().GetEnumUnderlyingType()); }
 
-    var items = DomQuery.Items(Model);
-    var required = Model.Validation.Required.IsRequired ? "required" : string.Empty;
+	var items = DomQuery.Items(Model);
+	var required = Model.Validation.Required.IsRequired ? "required" : string.Empty;
 }
 
 <div name="@Model.Name">
@@ -23,7 +23,7 @@
         dataSource:@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(items)) ,
         displayExpr: 'Text',
         valueExpr: 'Value',
-        value:@Html.TP().JavaScript.Value(value),
+        value:'@value',
         onValueChanged: function (e) {
             ide.saveProperty({
                 data: {

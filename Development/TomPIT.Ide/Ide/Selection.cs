@@ -116,21 +116,21 @@ namespace TomPIT.Ide
 						_transaction = current.Transaction;
 					}
 
-					if (_transaction != null && Section == EnvironmentSection.Designer)
-					{
-						var cd = _transaction.Element;
+					//if (_transaction != null && Section == EnvironmentSection.Designer)
+					//{
+					//	var cd = _transaction.Element;
 
-						while (cd != null)
-						{
-							if (cd.Designer != null && cd.Transaction != null)
-							{
-								_transaction = cd.Transaction;
-								break;
-							}
+					//	while (cd != null)
+					//	{
+					//		if (cd.Designer != null && cd.Transaction != null)
+					//		{
+					//			_transaction = cd.Transaction;
+					//			break;
+					//		}
 
-							cd = cd.Parent;
-						}
-					}
+					//		cd = cd.Parent;
+					//	}
+					//}
 				}
 
 				return _transaction;

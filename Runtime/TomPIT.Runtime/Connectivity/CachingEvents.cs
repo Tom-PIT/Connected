@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using TomPIT.Compilation;
-using TomPIT.Compilers;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Features;
 using TomPIT.Environment;
@@ -32,6 +31,26 @@ namespace TomPIT.Connectivity
 			HookMicroServices();
 			HookInstances();
 			HookEnvironmentUnits();
+			HookAuthenticationTokens();
+		}
+
+		private void HookAuthenticationTokens()
+		{
+			Hub.On<MessageEventArgs<AuthenticationTokenEventArgs>>("AuthenticationTokenChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IAuthorizationService>() is IAuthenticationTokenNotification n)
+					n.NotifyAuthenticationTokenChanged(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<AuthenticationTokenEventArgs>>("AuthenticationTokenRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IAuthorizationService>() is IAuthenticationTokenNotification n)
+					n.NotifyAuthenticationTokenRemoved(Connection, e.Args);
+			});
 		}
 
 		private void HookEnvironmentUnits()

@@ -5,6 +5,6 @@ namespace TomPIT.Design
 {
 	public interface IItemsProvider
 	{
-		List<IItemDescriptor> QueryDescriptors(IDomElement element);
+		List<IItemDescriptor> QueryDescriptors(ItemsDescriptorArgs e);
 	}
 }

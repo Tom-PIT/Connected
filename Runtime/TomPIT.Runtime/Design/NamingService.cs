@@ -68,12 +68,7 @@ namespace TomPIT.Design
 			if (items != null)
 			{
 				foreach (var i in items)
-				{
-					var props = i.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-
-					foreach (var j in props)
-						names.Add(j.ToString());
-				}
+					names.Add(i.ToString());
 			}
 
 			return names;

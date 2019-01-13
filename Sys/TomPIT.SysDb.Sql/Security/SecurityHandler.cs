@@ -7,6 +7,7 @@ namespace TomPIT.SysDb.Sql.Security
 		private IUserHandler _users = null;
 		private IPermissionHandler _permissions = null;
 		private IRoleHandler _roles = null;
+		private IAuthenticationTokenHandler _authTokens = null;
 
 		public IUserHandler Users
 		{
@@ -38,6 +39,17 @@ namespace TomPIT.SysDb.Sql.Security
 					_roles = new RoleHandler();
 
 				return _roles;
+			}
+		}
+
+		public IAuthenticationTokenHandler AuthenticationTokens
+		{
+			get
+			{
+				if (_authTokens == null)
+					_authTokens = new AuthenticationTokenHandler();
+
+				return _authTokens;
 			}
 		}
 	}

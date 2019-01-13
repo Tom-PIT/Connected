@@ -512,6 +512,33 @@ namespace TomPIT.Converters
 			{
 				if (TryConvertToEnum(value, destinationType, ref result))
 					return true;
+				else if (value == null || string.IsNullOrWhiteSpace(value as string))
+				{
+					if (destinationType.IsEnumDefined(0))
+					{
+						result = Enum.Parse(destinationType, destinationType.GetEnumName(0));
+						return true;
+					}
+				}
+			}
+			else if (destinationType == typeof(TimeSpan))
+			{
+				if (value is DateTime d)
+				{
+					result = new TimeSpan(0, d.Hour, d.Minute, d.Second, d.Millisecond);
+
+					return true;
+				}
+				else if (value is string)
+				{
+					if (DateTime.TryParse(value.ToString(), out DateTime dt))
+					{
+						result = new TimeSpan(0, dt.Hour, dt.Minute, dt.Second, dt.Millisecond);
+
+						return true;
+
+					}
+				}
 			}
 
 			if ((options & ConversionOptions.EnhancedTypicalValues) == ConversionOptions.EnhancedTypicalValues)

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Threading.Tasks;
 
@@ -23,5 +24,13 @@ namespace TomPIT.IoT.Hubs
 			return base.OnDisconnectedAsync(exception);
 		}
 
+		public void Data(JObject e)
+		{
+
+		}
+
+		public void Transaction(JObject e)
+		{
+		}
 	}
 }

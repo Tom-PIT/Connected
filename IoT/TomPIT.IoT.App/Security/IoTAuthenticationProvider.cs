@@ -1,4 +1,5 @@
-﻿using TomPIT.Security;
+﻿using TomPIT.IoT.Services;
+using TomPIT.Security;
 
 namespace TomPIT.IoT.Security
 {
@@ -11,13 +12,15 @@ namespace TomPIT.IoT.Security
 
 		public IClientAuthenticationResult Authenticate(string bearerKey)
 		{
-			if (string.Compare(bearerKey, "test", true) == 0)
+			var device = Instance.Connection.GetService<IIoTHubService>().SelectDevice(bearerKey);
+
+			if (device != null)
 			{
 				return new AuthenticationResult
 				{
 					Reason = AuthenticationResultReason.OK,
 					Success = true,
-					Identity = new DeviceIdentity()
+					Identity = new DeviceIdentity(device)
 				};
 			}
 			else

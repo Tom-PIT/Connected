@@ -768,4 +768,7 @@
   <data name="ErrEnvUnitDeleteChildren" xml:space="preserve">
     <value>Cannot delete environment unit with children.</value>
   </data>
+  <data name="ErrAuthTokenNotFound" xml:space="preserve">
+    <value>Authentication token not found.</value>
+  </data>
 </root>

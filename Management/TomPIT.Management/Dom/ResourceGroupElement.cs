@@ -21,12 +21,15 @@ namespace TomPIT.Dom
 		public override void LoadChildren()
 		{
 			Items.Add(new MicroServicesElement(Environment, this));
+			Items.Add(new AuthenticationTokensElement(Environment, this));
 		}
 
 		public override void LoadChildren(string id)
 		{
 			if (id.Equals(MicroServicesElement.ElementId, StringComparison.OrdinalIgnoreCase))
 				Items.Add(new MicroServicesElement(Environment, this));
+			else if (id.Equals(AuthenticationTokensElement.ElementId, StringComparison.OrdinalIgnoreCase))
+				Items.Add(new AuthenticationTokensElement(Environment, this));
 		}
 
 		public override bool Commit(object component, string property, string attribute)

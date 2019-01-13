@@ -5,12 +5,7 @@
          "validIssuer": "tompit.net",
          "validAudience": "tompit.net",
          "issuerSigningKey": "F221ECECDB704EFB9568A8756115EBEC"
-      },
-      "clientKeys": [
-         {
-            "EE7B5475D36640A59A6BDC3A2FE315E2": "admin"
-         }
-      ]
+      }
    },
    "serviceProviders": [
 

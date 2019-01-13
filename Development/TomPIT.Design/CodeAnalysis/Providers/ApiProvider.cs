@@ -59,15 +59,18 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
 			var me = context.Connection().GetService<IComponentService>().SelectConfiguration(e.Component.Token) as IApi;
 
-			foreach (var i in me.Operations.OrderBy(f => f.Name))
+			if (me != null)
 			{
-				if (string.IsNullOrWhiteSpace(i.Name))
-					continue;
+				foreach (var i in me.Operations.OrderBy(f => f.Name))
+				{
+					if (string.IsNullOrWhiteSpace(i.Name))
+						continue;
 
-				var key = i.Name;
+					var key = i.Name;
 
-				if (string.IsNullOrWhiteSpace(existingText) || key.ToLowerInvariant().Contains(existingText.ToLowerInvariant()))
-					r.Add(new CodeAnalysisResult(key, key, string.Empty));
+					if (string.IsNullOrWhiteSpace(existingText) || key.ToLowerInvariant().Contains(existingText.ToLowerInvariant()))
+						r.Add(new CodeAnalysisResult(key, key, string.Empty));
+				}
 			}
 
 			var msApis = new List<ICodeAnalysisResult>();

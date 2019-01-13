@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using TomPIT.Connectivity;
 using TomPIT.Environment;
 using TomPIT.IoT.Hubs;
 using TomPIT.IoT.Security;
+using TomPIT.IoT.Services;
 using TomPIT.Security;
 
 namespace TomPIT.IoT
@@ -24,6 +26,7 @@ namespace TomPIT.IoT
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 		{
 			Instance.Configure(InstanceType.Rest, app, env, null);
+			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
 			Instance.Run(app);
 
 			app.UseSignalR(routes =>
@@ -32,6 +35,11 @@ namespace TomPIT.IoT
 			});
 
 			Instance.Connection.GetService<IAuthorizationService>().RegisterAuthenticationProvider(new IoTAuthenticationProvider());
+		}
+
+		private void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
+		{
+			e.Connection.RegisterService(typeof(IIoTHubService), typeof(IoTHubService));
 		}
 	}
 }

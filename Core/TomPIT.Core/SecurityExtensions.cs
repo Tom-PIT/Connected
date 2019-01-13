@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
+using TomPIT.Connectivity;
 using TomPIT.Security;
 
 namespace TomPIT
@@ -77,6 +79,38 @@ namespace TomPIT
 				default:
 					return null;
 			}
+		}
+
+		public static bool IsValid(this IAuthenticationToken token, HttpRequest request, IUser user, AuthenticationTokenClaim claim)
+		{
+			if (user == null || user.Status != UserStatus.Active)
+				return false;
+
+			if (token.Status == AuthenticationTokenStatus.Disabled)
+				return false;
+
+			if (token.ValidFrom != DateTime.MinValue && DateTime.UtcNow < token.ValidFrom)
+				return false;
+
+			if (token.ValidTo != DateTime.MinValue && token.ValidTo < DateTime.UtcNow)
+				return false;
+
+			if (token.StartTime != TimeSpan.Zero && DateTime.UtcNow.TimeOfDay < token.StartTime)
+				return false;
+
+			if (token.EndTime != TimeSpan.Zero && token.EndTime < DateTime.UtcNow.TimeOfDay)
+				return false;
+
+			if (token.Claims != AuthenticationTokenClaim.All && ((token.Claims & claim) != claim))
+				return false;
+
+			if (!string.IsNullOrWhiteSpace(token.IpRestrictions))
+			{
+				if (!IPAddressRange.Check(request.HttpContext.Connection.RemoteIpAddress, token.IpRestrictions))
+					return false;
+			}
+
+			return true;
 		}
 	}
 }

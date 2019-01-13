@@ -13,6 +13,7 @@ namespace TomPIT.Annotations
 		public const string Number = "Number";
 		public const string Date = "Date";
 		public const string Color = "Color";
+		public const string Tag = "Tag";
 
 		public PropertyEditorAttribute() { }
 

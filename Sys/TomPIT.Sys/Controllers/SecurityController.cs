@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TomPIT.Security;
@@ -42,6 +43,34 @@ namespace TomPIT.Sys.Controllers
 				ValidAudience = TomPITAuthenticationHandler.ValidAudience,
 				ValidIssuer = TomPITAuthenticationHandler.ValidIssuer
 			};
+		}
+
+		[HttpPost]
+		public List<IAuthenticationToken> QueryAllAuthenticationTokens()
+		{
+			return DataModel.AuthenticationTokens.Query();
+		}
+
+		[HttpPost]
+		public List<IAuthenticationToken> QueryAuthenticationTokens()
+		{
+			var body = FromBody().ToResults();
+
+			if (body == null)
+				return null;
+
+			var list = new List<string>();
+
+			foreach (JValue i in body)
+				list.Add(i.Value<string>());
+
+			return DataModel.AuthenticationTokens.Query(list);
+		}
+
+		[HttpGet]
+		public IAuthenticationToken SelectAuthenticationToken(Guid token)
+		{
+			return DataModel.AuthenticationTokens.Select(token);
 		}
 	}
 }

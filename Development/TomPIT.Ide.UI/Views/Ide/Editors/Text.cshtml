@@ -3,9 +3,9 @@
 @model TomPIT.Design.IProperty
 
 @{
-    var value = Types.Convert<string>(Model.Value);
+	var value = Types.Convert<string>(Model.Value);
 
-    var required = Model.Validation.Required.IsRequired ? "required" : string.Empty;
+	var required = Model.Validation.Required.IsRequired ? "required" : string.Empty;
 }
 
 <div name="@Model.Name"></div>
@@ -22,25 +22,25 @@
            }
         value:'@Html.Raw(value)',
         onValueChanged: function (e) {
-            ide.saveProperty({
-                data: {
-                    path: propertyPath,
-                    property: '@Model.Name',
-                    value: e.value,
-                },
-                onError: function (request, status, error) {
-                    var data = JSON.parse(request.responseText);
+			  ide.saveProperty({
+				  data: {
+					  path: propertyPath,
+					  property: '@Model.Name',
+					  value: e.value,
+				  },
+				  onError: function (request, status, error) {
+					  var data = JSON.parse(request.responseText);
 
-                    $('[name="@Model.Name"]').dxTextBox('instance').option({
-                        validationError: {
-                            message: data.message
-                        },
-                        isValid: false
-                    });
+					  $('[name="@Model.Name"]').dxTextBox('instance').option({
+						  validationError: {
+							  message: data.message
+						  },
+						  isValid: false
+					  });
 
-                    return true;
-                }
-            })
+					  return true;
+				  }
+			  });
 
         }
     }).dxValidator({

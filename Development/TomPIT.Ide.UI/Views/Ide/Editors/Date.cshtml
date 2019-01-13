@@ -1,0 +1,91 @@
+﻿@using TomPIT;
+
+@model TomPIT.Design.IProperty
+
+@{
+	object value = null;
+	var isNull = true;
+
+	if (Model.PropertyInfo.PropertyType == typeof(DateTime))
+	{
+		value = Types.Convert<DateTime>(Model.Value);
+
+		isNull = (DateTime)value == DateTime.MinValue;
+	}
+	else if (Model.PropertyInfo.PropertyType == typeof(TimeSpan))
+	{
+		value = Types.Convert<TimeSpan>(Model.Value);
+
+		isNull = (TimeSpan)value == TimeSpan.Zero;
+	}
+
+	var required = Model.Validation.Required.IsRequired ? "required" : string.Empty;
+	var type = "date";
+
+	var att = Model.PropertyInfo.FindAttribute<TomPIT.Annotations.DateEditorFormatAttribute>();
+
+	if (att != null)
+	{
+		switch (att.Format)
+		{
+			case TomPIT.Annotations.DateEditorFormat.DateTime:
+				type = "datetime";
+				break;
+			case TomPIT.Annotations.DateEditorFormat.Time:
+				type = "time";
+				break;
+		}
+	}
+	else if (Model.PropertyInfo.PropertyType == typeof(TimeSpan))
+	{
+		type = "time";
+	}
+}
+
+<div name="@Model.Name"></div>
+
+<script>
+    $('[name="@Model.Name"]').dxDateBox({
+        stylingMode: 'underlined',
+		 width: '100%',
+		  @if (!isNull) {
+			  <text>
+		 value: '@Html.Raw(value)',
+			  </text>
+			  }
+		  type:'@type',
+		  onValueChanged: function (e) {
+				  ide.saveProperty({
+				  data: {
+					  path: propertyPath,
+                    property: '@Model.Name',
+                    value: e.value,
+                },
+                onError: function (request, status, error) {
+						 var data = JSON.parse(request.responseText);
+
+                    $('[name="@Model.Name"]').dxDateBox('instance').option({
+						  validationError: {
+							  message: data.message
+
+								},
+                        isValid: false
+
+						  });
+
+						  return true;
+					  }
+				  })
+
+        }
+		  }).dxValidator({
+        validationRules: [
+            @if (Model.Validation.Required.IsRequired)
+            {
+               <text>
+            {'type':'required'}
+            </text>
+            }
+        ]
+    });
+</script>

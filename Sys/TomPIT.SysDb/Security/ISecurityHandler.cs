@@ -5,5 +5,6 @@
 		IUserHandler Users { get; }
 		IPermissionHandler Permissions { get; }
 		IRoleHandler Roles { get; }
+		IAuthenticationTokenHandler AuthenticationTokens { get; }
 	}
 }
