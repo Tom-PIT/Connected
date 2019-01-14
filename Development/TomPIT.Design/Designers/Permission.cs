@@ -13,5 +13,7 @@ namespace TomPIT.Designers
 		public string Descriptor {get;set;}
 		public string PrimaryKey {get;set;}
 		public PermissionValue Value {get;set;}
+		public Guid ResourceGroup { get; set; }
+		public string Component { get; set; }
 	}
 }

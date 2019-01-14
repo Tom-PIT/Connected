@@ -1,10 +1,10 @@
 ﻿{
    "connections": [
-      {
-         "name": "localhost",
-         "url": "http://localhost:8089/sys",
-         "clientKey": "EE7B5475D36640A59A6BDC3A2FE315E2"
-      }
+		{
+			"name": "localhost",
+			"url": "http://localhost:44001",
+			"clientKey": "8354505c-19f9-4ecb-bc0f-108204c78555"
+		}
    ],
    "resourceGroups": [
       "Default"

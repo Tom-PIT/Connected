@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using TomPIT.Connectivity;
@@ -151,6 +152,22 @@ namespace TomPIT
 			}
 			else
 				ResourceGroups.Add("Default");
+		}
+
+		public static bool ResourceGroupExists(Guid resourceGroup)
+		{
+			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
+				return true;
+
+			foreach (var i in ResourceGroups)
+			{
+				var rg = Connection.GetService<IResourceGroupService>().Select(i);
+
+				if (rg != null)
+					return true;
+			}
+
+			return false;
 		}
 	}
 }

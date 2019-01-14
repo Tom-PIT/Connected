@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Data.Sql;
+using TomPIT.Environment;
 using TomPIT.Security;
 using TomPIT.SysDb.Security;
 
@@ -18,7 +19,7 @@ namespace TomPIT.SysDb.Sql.Security
 			w.Execute();
 		}
 
-		public void Insert(Guid evidence, string schema, string claim, string descriptor, string primaryKey, PermissionValue value)
+		public void Insert(IResourceGroup resourceGroup, Guid evidence, string schema, string claim, string descriptor, string primaryKey, PermissionValue value, string component)
 		{
 			var w = new Writer("tompit.permission_ins");
 
@@ -28,6 +29,8 @@ namespace TomPIT.SysDb.Sql.Security
 			w.CreateParameter("@descriptor", descriptor);
 			w.CreateParameter("@primary_key", primaryKey);
 			w.CreateParameter("@value", value);
+			w.CreateParameter("@resource_group", resourceGroup == null ? 0 : resourceGroup.GetId(), true);
+			w.CreateParameter("@component", component, true);
 
 			w.Execute();
 		}

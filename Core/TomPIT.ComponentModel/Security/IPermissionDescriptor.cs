@@ -6,6 +6,6 @@ namespace TomPIT.Security
 	public interface IPermissionDescriptor
 	{
 		string Id { get; }
-		IPermissionDescription GetDescription(ISysConnection connection, Guid evidence);
+		IPermissionDescription GetDescription(ISysConnection connection, Guid evidence, string component);
 	}
 }

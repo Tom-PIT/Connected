@@ -20,5 +20,11 @@ namespace TomPIT.Sys.Controllers
 		{
 			return DataModel.ResourceGroups.Select(resourceGroup);
 		}
+
+		[HttpGet]
+		public IResourceGroup SelectByName(string resourceGroup)
+		{
+			return DataModel.ResourceGroups.Select(resourceGroup);
+		}
 	}
 }

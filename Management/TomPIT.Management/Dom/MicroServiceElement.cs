@@ -91,5 +91,9 @@ namespace TomPIT.Dom
 		}
 
 		public bool SupportsInherit => false;
+
+		public Guid ResourceGroup => MicroService.ResourceGroup;
+
+		public string PermissionComponent => null;
 	}
 }

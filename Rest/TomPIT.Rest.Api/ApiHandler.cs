@@ -4,10 +4,12 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
+using System.Net;
 using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Runtime;
+using TomPIT.Security;
 using TomPIT.Services;
 
 namespace TomPIT.Rest
@@ -41,9 +43,54 @@ namespace TomPIT.Rest
 
 			var op = GetOperation(config);
 
+			if (!Authorize(config, op))
+				return;
+
 			var r = Invoke<object>(string.Format("{0}/{1}", Api, Operation), ParseArguments());
 
 			RenderResult(JsonConvert.SerializeObject(r));
+		}
+
+		private bool Authorize(IApi api, IApiOperation operation)
+		{
+			var e = new AuthorizationArgs(this.GetAuthenticatedUserToken(), Claims.Invoke, api.Component.ToString());
+
+			e.Schema.Empty = EmptyBehavior.Deny;
+			e.Schema.Level = AuthorizationLevel.Pessimistic;
+
+			var r = Connection.GetService<IAuthorizationService>().Authorize(this, e);
+
+			if (!r.Success)
+			{
+				if (e.User != Guid.Empty)
+					RenderError((int)HttpStatusCode.Forbidden, SR.StatusForbiddenMessage);
+				else
+					RenderError((int)HttpStatusCode.Unauthorized, SR.StatusForbiddenMessage);
+
+				return false;
+			}
+
+			e = new AuthorizationArgs(this.GetAuthenticatedUserToken(), Claims.Invoke, operation.Id.ToString());
+
+			e.Schema.Empty = EmptyBehavior.Deny;
+			e.Schema.Level = AuthorizationLevel.Pessimistic;
+
+			r = Connection.GetService<IAuthorizationService>().Authorize(this, e);
+
+			if (!r.Success)
+			{
+				if (r.Reason == AuthorizationResultReason.Empty)
+					return true;
+
+				if (e.User != Guid.Empty)
+					RenderError((int)HttpStatusCode.Forbidden, SR.StatusForbiddenMessage);
+				else
+					RenderError((int)HttpStatusCode.Unauthorized, SR.StatusForbiddenMessage);
+
+				return false;
+			}
+
+			return true;
 		}
 
 		private JObject ParseArguments()
@@ -120,6 +167,12 @@ namespace TomPIT.Rest
 				return null;
 			}
 
+			if (config.Scope != ElementScope.Public)
+			{
+				RenderError((int)HttpStatusCode.MethodNotAllowed, SR.ErrScopeError);
+				return null;
+			}
+
 			return config;
 		}
 
@@ -165,6 +218,12 @@ namespace TomPIT.Rest
 
 						break;
 				}
+			}
+
+			if (op.Scope != ElementScope.Public)
+			{
+				RenderError((int)HttpStatusCode.MethodNotAllowed, SR.ErrScopeError);
+				return null;
 			}
 
 			return op;

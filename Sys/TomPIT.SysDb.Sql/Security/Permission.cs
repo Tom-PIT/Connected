@@ -12,6 +12,8 @@ namespace TomPIT.SysDb.Sql.Security
 		public string Descriptor { get; set; }
 		public string PrimaryKey { get; set; }
 		public PermissionValue Value { get; set; }
+		public Guid ResourceGroup { get; set; }
+		public string Component { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -23,6 +25,8 @@ namespace TomPIT.SysDb.Sql.Security
 			Descriptor = GetString("descriptor");
 			PrimaryKey = GetString("primary_key");
 			Value = GetValue("value", PermissionValue.NotSet);
+			Component = GetString("component");
+			ResourceGroup = GetGuid("resource_group_token");
 		}
 	}
 }

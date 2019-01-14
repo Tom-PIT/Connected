@@ -8,7 +8,7 @@ namespace TomPIT.Security
 	{
 		public abstract string Id { get; }
 
-		public IPermissionDescription GetDescription(ISysConnection connection, Guid evidence)
+		public IPermissionDescription GetDescription(ISysConnection connection, Guid evidence, string component)
 		{
 			var ms = connection.GetService<IComponentService>().SelectComponent(evidence);
 

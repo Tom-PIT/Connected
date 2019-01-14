@@ -72,7 +72,8 @@ namespace TomPIT.Application
 		{
 			return new List<IDomElement>
 			{
-				new SecurityAreasElement(parent)
+				new SecurityAreasElement(parent),
+				new SecurityApisElement(parent)
 			};
 		}
 	}

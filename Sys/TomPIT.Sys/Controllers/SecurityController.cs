@@ -16,6 +16,22 @@ namespace TomPIT.Sys.Controllers
 			return DataModel.Permissions.Query();
 		}
 
+		[HttpPost]
+		public List<IPermission> QueryPermissionsForResourceGroup()
+		{
+			var body = FromBody().ToResults();
+
+			if (body == null)
+				return null;
+
+			var list = new List<string>();
+
+			foreach (JValue i in body)
+				list.Add(i.Value<string>());
+
+			return DataModel.Permissions.Query(list);
+		}
+
 		[HttpGet]
 		public List<IPermission> SelectPermissions(string primaryKey)
 		{

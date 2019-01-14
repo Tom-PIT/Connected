@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TomPIT.Application.Security;
-using TomPIT.Application.UI;
+using TomPIT.ComponentModel.Apis;
 using TomPIT.Design;
 using TomPIT.Designers;
 using TomPIT.Dom;
@@ -10,22 +10,23 @@ using TomPIT.Security;
 
 namespace TomPIT.Application.Design.Dom
 {
-	internal class SecurityViewElement : TomPIT.Dom.Element, IPermissionElement
+	public class SecurityApiOperationElement : TomPIT.Dom.Element, IPermissionElement
 	{
 		private IDomDesigner _designer = null;
 		private List<string> _claims = null;
 		private IPermissionDescriptor _descriptor = null;
+		private IApiOperation _operation = null;
 
-		public SecurityViewElement(IEnvironment environment, IDomElement parent, View view) : base(environment, parent)
+		public SecurityApiOperationElement(IEnvironment environment, IDomElement parent, IApiOperation operation) : base(environment, parent)
 		{
-			View = view;
+			Operation = operation;
 
-			Id = View.Component.ToString();
-			Title = View.ComponentName(Environment.Context);
+			Id = Operation.Id.ToString();
+			Title = Operation.Name;
 		}
 
 		public override bool HasChildren => false;
-		private View View { get; }
+		private IApiOperation Operation { get; }
 
 		public override IDomDesigner Designer
 		{
@@ -45,21 +46,21 @@ namespace TomPIT.Application.Design.Dom
 				if (_claims == null)
 					_claims = new List<string>
 					{
-						TomPIT.Claims.AccessUserInterface
+						TomPIT.Claims.Invoke
 					};
 
 				return _claims;
 			}
 		}
 
-		public string PrimaryKey => View.Component.ToString();
+		public string PrimaryKey => Operation.Id.ToString();
 
 		public IPermissionDescriptor PermissionDescriptor
 		{
 			get
 			{
 				if (_descriptor == null)
-					_descriptor = new ViewPermissionDescriptor();
+					_descriptor = new ApiOperationPermissionDescriptor();
 
 				return _descriptor;
 			}
@@ -69,6 +70,6 @@ namespace TomPIT.Application.Design.Dom
 
 		public Guid ResourceGroup => DomQuery.Closest<IMicroServiceScope>(this).MicroService.ResourceGroup;
 
-		public string PermissionComponent => null;
+		public string PermissionComponent => Operation.Closest<IApi>().Component.ToString();
 	}
 }

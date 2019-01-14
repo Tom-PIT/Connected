@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using TomPIT.Dom;
 using TomPIT.Security;
 
@@ -10,7 +11,8 @@ namespace TomPIT.Design
 
 		string PrimaryKey { get; }
 		IPermissionDescriptor PermissionDescriptor { get; }
-
+		Guid ResourceGroup { get; }
+		string PermissionComponent { get; }
 		bool SupportsInherit { get; }
 	}
 }

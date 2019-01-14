@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using TomPIT.Environment;
 using TomPIT.Security;
 
 namespace TomPIT.SysDb.Security
 {
 	public interface IPermissionHandler
 	{
-		void Insert(Guid evidence, string schema, string claim, string descriptor, string primaryKey, PermissionValue value);
+		void Insert(IResourceGroup resourceGroup, Guid evidence, string schema, string claim, string descriptor, string primaryKey, PermissionValue value, string component);
 		void Update(IPermission permission, PermissionValue value);
 
 		void Delete(IPermission permission);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Caching;
@@ -28,11 +29,31 @@ namespace TomPIT.Security
 
 		protected override void OnInitializing()
 		{
-			var u = Connection.CreateUrl("Security", "QueryPermissions");
-			var ds = Connection.Get<List<Permission>>(u).ToList<IPermission>();
+			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
+			{
+				var u = Connection.CreateUrl("Security", "QueryPermissions");
+				var ds = Connection.Get<List<Permission>>(u).ToList<IPermission>();
 
-			foreach (var i in ds)
-				Set(GenerateRandomKey(), i, TimeSpan.Zero);
+				foreach (var i in ds)
+					Set(GenerateRandomKey(), i, TimeSpan.Zero);
+			}
+			else
+			{
+				var u = Connection.CreateUrl("Security", "QueryPermissionsForResourceGroup");
+				var a = new JArray();
+				var e = new JObject
+				{
+					{"data", a }
+				};
+
+				foreach (var i in Instance.ResourceGroups)
+					a.Add(i);
+
+				var ds = Connection.Post<List<Permission>>(u, e).ToList<IPermission>();
+
+				foreach (var i in ds)
+					Set(GenerateRandomKey(), i, TimeSpan.Zero);
+			}
 		}
 
 		public IClientAuthenticationResult Authenticate(string user, string password)
@@ -153,6 +174,9 @@ namespace TomPIT.Security
 
 		public void NotifyPermissionAdded(object sender, PermissionEventArgs e)
 		{
+			if (!Instance.ResourceGroupExists(e.ResourceGroup))
+				return;
+
 			LoadPermission(e);
 		}
 
@@ -168,6 +192,9 @@ namespace TomPIT.Security
 
 		public void NotifyPermissionRemoved(object sender, PermissionEventArgs e)
 		{
+			if (!Instance.ResourceGroupExists(e.ResourceGroup))
+				return;
+
 			Remove(f => f.Evidence == e.Evidence
 				&& f.Schema.Equals(e.Schema, StringComparison.OrdinalIgnoreCase)
 				&& f.Claim.Equals(e.Claim, StringComparison.OrdinalIgnoreCase)
@@ -176,6 +203,9 @@ namespace TomPIT.Security
 
 		public void NotifyPermissionChanged(object sender, PermissionEventArgs e)
 		{
+			if (!Instance.ResourceGroupExists(e.ResourceGroup))
+				return;
+
 			Remove(f => f.Evidence == e.Evidence
 				&& f.Schema.Equals(e.Schema, StringComparison.OrdinalIgnoreCase)
 				&& f.Claim.Equals(e.Claim, StringComparison.OrdinalIgnoreCase)

@@ -205,7 +205,9 @@ namespace TomPIT.Designers
 				{ "schema", SelectedSchema },
 				{ "descriptor", Owner.PermissionDescriptor.Id },
 				{ "primaryKey", Owner.PrimaryKey },
-				{ "evidence", evidence }
+				{ "evidence", evidence },
+				{ "resourceGroup", Owner.ResourceGroup },
+				{ "component", Owner.PermissionComponent }
 			};
 
 			var value = Connection.Post<PermissionValue>(u, args).ToString();

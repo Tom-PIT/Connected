@@ -123,4 +123,7 @@
   <data name="ImplementMicroservice" xml:space="preserve">
     <value>Implement Micro Service</value>
   </data>
+  <data name="Invoke" xml:space="preserve">
+    <value>Invoke</value>
+  </data>
 </root>

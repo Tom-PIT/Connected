@@ -17,5 +17,7 @@ namespace TomPIT.Security
 		string Descriptor { get; }
 		string PrimaryKey { get; }
 		PermissionValue Value { get; }
+		Guid ResourceGroup { get; }
+		string Component { get; }
 	}
 }

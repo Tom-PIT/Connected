@@ -18,12 +18,14 @@ namespace TomPIT.Sys.Controllers.Management
 			var schema = body.Required<string>("schema");
 			var descriptor = body.Required<string>("descriptor");
 			var primaryKey = body.Required<string>("primaryKey");
+			var resourceGroup = body.Optional("resourceGroup", Guid.Empty);
+			var component = body.Optional("component", string.Empty);
 
 			var p = DataModel.Permissions.Select(evidence, schema, claim, primaryKey);
 
 			if (p == null)
 			{
-				DataModel.Permissions.Insert(evidence, schema, claim, descriptor, primaryKey, PermissionValue.Allow);
+				DataModel.Permissions.Insert(resourceGroup, evidence, schema, claim, descriptor, primaryKey, PermissionValue.Allow, component);
 
 				return PermissionValue.Allow;
 			}
@@ -112,7 +114,7 @@ namespace TomPIT.Sys.Controllers.Management
 			var name = body.Required<string>("name");
 			var description = body.Optional("description", string.Empty);
 
-			return DataModel.AuthenticationTokens.Insert(resourceGroup, user, name, description,key, claims, status, validFrom, validTo,
+			return DataModel.AuthenticationTokens.Insert(resourceGroup, user, name, description, key, claims, status, validFrom, validTo,
 				startTime, endTime, ipRestrictions);
 		}
 

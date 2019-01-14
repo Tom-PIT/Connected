@@ -63,9 +63,9 @@ namespace TomPIT.Sys.Notifications
 		public static void RoleChanged(Guid role) { Notify(nameof(RoleChanged), new RoleEventArgs(role)); }
 		public static void MembershipAdded(Guid user, Guid role) { Notify(nameof(MembershipAdded), new MembershipEventArgs(user, role)); }
 		public static void MembershipRemoved(Guid user, Guid role) { Notify(nameof(MembershipRemoved), new MembershipEventArgs(user, role)); }
-		public static void PermissionAdded(Guid evidence, string schema, string claim, string primaryKey) { Notify(nameof(PermissionAdded), new PermissionEventArgs(evidence, schema, claim, primaryKey)); }
-		public static void PermissionChanged(Guid evidence, string schema, string claim, string primaryKey) { Notify(nameof(PermissionChanged), new PermissionEventArgs(evidence, schema, claim, primaryKey)); }
-		public static void PermissionRemoved(Guid evidence, string schema, string claim, string primaryKey) { Notify(nameof(PermissionRemoved), new PermissionEventArgs(evidence, schema, claim, primaryKey)); }
+		public static void PermissionAdded(Guid resourceGroup, Guid evidence, string schema, string claim, string primaryKey) { Notify(nameof(PermissionAdded), new PermissionEventArgs(resourceGroup, evidence, schema, claim, primaryKey)); }
+		public static void PermissionChanged(Guid resourceGroup, Guid evidence, string schema, string claim, string primaryKey) { Notify(nameof(PermissionChanged), new PermissionEventArgs(resourceGroup, evidence, schema, claim, primaryKey)); }
+		public static void PermissionRemoved(Guid resourceGroup, Guid evidence, string schema, string claim, string primaryKey) { Notify(nameof(PermissionRemoved), new PermissionEventArgs(resourceGroup, evidence, schema, claim, primaryKey)); }
 		public static void ComponentChanged(Guid microService, Guid feature, Guid component) { Notify(nameof(ComponentChanged), new ComponentEventArgs(microService, feature, component)); }
 		public static void ComponentRemoved(Guid microService, Guid feature, Guid component) { Notify(nameof(ComponentRemoved), new ComponentEventArgs(microService, feature, component)); }
 		public static void ComponentAdded(Guid microService, Guid feature, Guid component) { Notify(nameof(ComponentAdded), new ComponentEventArgs(microService, feature, component)); }

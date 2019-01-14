@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TomPIT.Caching;
+using TomPIT.Environment;
 using TomPIT.Security;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
@@ -45,6 +47,28 @@ namespace TomPIT.Sys.Data
 				});
 		}
 
+		public List<IPermission> Query(List<string> resourceGroups)
+		{
+			var items = new List<Guid>();
+
+			foreach (var i in resourceGroups)
+			{
+				var rg = DataModel.ResourceGroups.Select(i);
+
+				if (rg == null)
+					throw new SysException(string.Format("{0} ({1})", SR.ErrResourceGroupNotFound, i));
+
+				items.Add(rg.Token);
+			}
+
+			return Query(items);
+		}
+
+		public List<IPermission> Query(List<Guid> resourceGroups)
+		{
+			return Where(f => !resourceGroups.Any(t => t == f.ResourceGroup));
+		}
+
 		public List<IPermission> Query(string primaryKey)
 		{
 			return Where(f => string.Compare(f.PrimaryKey, primaryKey, true) == 0);
@@ -52,14 +76,24 @@ namespace TomPIT.Sys.Data
 
 		public List<IPermission> Query() { return All(); }
 
-		public void Insert(Guid evidence, string schema, string claim, string descriptor, string primaryKey, PermissionValue value)
+		public void Insert(Guid resourceGroup, Guid evidence, string schema, string claim, string descriptor, string primaryKey, PermissionValue value, string component)
 		{
-			Shell.GetService<IDatabaseService>().Proxy.Security.Permissions.Insert(evidence, schema, claim, descriptor, primaryKey, value);
+			IResourceGroup rg = null;
+
+			if (resourceGroup != Guid.Empty)
+			{
+				rg = DataModel.ResourceGroups.Select(resourceGroup);
+
+				if (rg == null)
+					throw new SysException(SR.ErrResourceGroupNotFound);
+			}
+
+			Shell.GetService<IDatabaseService>().Proxy.Security.Permissions.Insert(rg, evidence, schema, claim, descriptor, primaryKey, value, component);
 
 			var key = GenerateKey(evidence.AsString(), schema, claim, primaryKey);
 
 			Refresh(key);
-			NotificationHubs.PermissionAdded(evidence, schema, claim, primaryKey);
+			NotificationHubs.PermissionAdded(resourceGroup, evidence, schema, claim, primaryKey);
 		}
 
 		public void Update(Guid evidence, string schema, string claim, string primaryKey, PermissionValue value)
@@ -74,7 +108,7 @@ namespace TomPIT.Sys.Data
 			var key = GenerateKey(evidence.AsString(), schema, claim, primaryKey);
 
 			Refresh(key);
-			NotificationHubs.PermissionChanged(evidence, schema, claim, primaryKey);
+			NotificationHubs.PermissionChanged(p.ResourceGroup, evidence, schema, claim, primaryKey);
 		}
 
 		public void Delete(Guid evidence, string schema, string claim, string primaryKey)
@@ -89,7 +123,7 @@ namespace TomPIT.Sys.Data
 			var key = GenerateKey(evidence.AsString(), schema, claim, primaryKey);
 
 			Remove(key);
-			NotificationHubs.PermissionRemoved(evidence, schema, claim, primaryKey);
+			NotificationHubs.PermissionRemoved(p.ResourceGroup, evidence, schema, claim, primaryKey);
 		}
 
 		public void Reset(string primaryKey)

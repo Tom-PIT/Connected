@@ -7,5 +7,6 @@ namespace TomPIT.Environment
 	{
 		List<IResourceGroup> Query();
 		IResourceGroup Select(Guid resourceGroup);
+		IResourceGroup Select(string name);
 	}
 }

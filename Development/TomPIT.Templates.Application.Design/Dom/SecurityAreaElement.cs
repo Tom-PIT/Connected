@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Application.Security;
 using TomPIT.Application.UI;
@@ -108,5 +109,9 @@ namespace TomPIT.Application.Design.Dom
 		}
 
 		public bool SupportsInherit => false;
+
+		public Guid ResourceGroup => DomQuery.Closest<IMicroServiceScope>(this).MicroService.ResourceGroup;
+
+		public string PermissionComponent => null;
 	}
 }

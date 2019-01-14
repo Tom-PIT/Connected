@@ -8,7 +8,7 @@ namespace TomPIT.Security
 	{
 		public string Id => "Micro service";
 
-		public IPermissionDescription GetDescription(ISysConnection connection, Guid evidence)
+		public IPermissionDescription GetDescription(ISysConnection connection, Guid evidence, string component)
 		{
 			var ms = connection.GetService<IMicroServiceService>().Select(evidence);
 
