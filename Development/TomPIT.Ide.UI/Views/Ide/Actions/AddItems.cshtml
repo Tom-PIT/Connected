@@ -20,7 +20,7 @@
 		? "fal fa-plus"
 		: action.Glyph;
 
-	<button @Html.TP().Attributes.Attribute("data-id", item.Id) type="button" class="btn btn-light btn-sm" data-tp-tag="toolbar-action">
+	<button @Html.TP().Attributes.Attribute("data-id", item.Id) type="button" class="btn btn-light btn-sm" data-tp-tag="toolbar-action" data-toolbar-kind="add">
 		<i class="@glyph"></i> @Html.Raw(item.Text)
 	</button>
 }
@@ -41,7 +41,7 @@
 				var ci = action.Items[i];
 
 				<li class="dropdown-item">
-					<a href="#" role="button" class="btn btn-link btn-sm" data-tp-tag="toolbar-action" @Html.TP().Attributes.Attribute("data-id", ci.Id)>
+					<a href="#" role="button" class="btn btn-link btn-sm" data-tp-tag="toolbar-action" data-toolbar-kind="add" @Html.TP().Attributes.Attribute("data-id", ci.Id)>
 						@if (!string.IsNullOrWhiteSpace(ci.Glyph))
 						{
 							<i class="@ci.Glyph"></i>

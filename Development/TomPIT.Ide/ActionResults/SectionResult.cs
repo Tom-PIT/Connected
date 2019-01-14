@@ -16,6 +16,6 @@ namespace TomPIT.ActionResults
 		}
 
 		public EnvironmentSection Sections { get; set; }
-		public JObject Data { get; }
+		public JObject Data { get; set; }
 	}
 }

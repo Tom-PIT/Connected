@@ -26,10 +26,8 @@ namespace TomPIT.Services
 		public WorkerMonthPart MonthPart { get; set; } = WorkerMonthPart.Weekday;
 		public int Elapsed { get; set; } = 0;
 		public WorkerWeekDays Weekdays { get; set; } = WorkerWeekDays.None;
-		public Guid Api { get; set; } = Guid.Empty;
-		public Guid Operation { get; set; } = Guid.Empty;
+		public Guid Worker { get; set; } = Guid.Empty;
 		public int FailCount { get; set; } = 0;
-		public Guid MicroService { get; set; } = Guid.Empty;
 		public bool Logging { get; set; } = false;
 		public WorkerKind Kind { get; set; } = WorkerKind.Worker;
 		public int Id { get; set; } = 0;

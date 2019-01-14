@@ -9,11 +9,11 @@ using TomPIT.Services;
 
 namespace TomPIT.Designers
 {
-	internal class ScheduleDesigner : DomDesigner<WorkersApiOperationElement>
+	internal class ScheduleDesigner : DomDesigner<WorkerElement>
 	{
 		private ScheduledJobDescriptor _job = null;
 
-		public ScheduleDesigner(IEnvironment environment, WorkersApiOperationElement element) : base(environment, element)
+		public ScheduleDesigner(IEnvironment environment, WorkerElement element) : base(environment, element)
 		{
 		}
 
@@ -38,9 +38,7 @@ namespace TomPIT.Designers
 					{
 						d = new ScheduledJob
 						{
-							MicroService = api.MicroService(Connection),
-							Api = api.Component,
-							Operation = op.Id
+							//Worker = op.wo
 						};
 					}
 
@@ -78,11 +76,11 @@ namespace TomPIT.Designers
 
 			var p = new JObject
 			{
-				{ "microService" , d.MicroService },
-				{ "api" , d.Api },
-				{ "operation" , d.Operation },
-				{ "status" , status.ToString() },
-				{ "logging" , d.Logging }
+				//{ "microService" , d.MicroService },
+				//{ "api" , d.Api },
+				//{ "operation" , d.Operation },
+				//{ "status" , status.ToString() },
+				//{ "logging" , d.Logging }
 			};
 
 			Connection.Post(url, p);
@@ -118,9 +116,7 @@ namespace TomPIT.Designers
 
 			var p = new JObject
 			{
-				{ "microService" , d.MicroService },
-				{ "api" , d.Api },
-				{ "operation" , d.Operation },
+				{ "worker" , d.Worker },
 				{ "startTime" , d.StartTime },
 				{ "endTime" , d.EndTime },
 				{ "interval" , d.Interval.ToString()},

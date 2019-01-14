@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TomPIT.Caching;
 using TomPIT.Configuration;
+using TomPIT.Environment;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
 
@@ -23,12 +24,18 @@ namespace TomPIT.Sys.Data
 		protected override void OnInvalidate(string id)
 		{
 			var tokens = id.Split('.');
-			var rg = DataModel.ResourceGroups.Select(tokens[0].AsGuid());
+			var rgId = tokens[0].AsGuid();
+			IResourceGroup rg = null;
 
-			if (rg == null)
+			if (rgId != Guid.Empty)
 			{
-				Remove(id);
-				return;
+				rg = DataModel.ResourceGroups.Select(tokens[0].AsGuid());
+
+				if (rg == null)
+				{
+					Remove(id);
+					return;
+				}
 			}
 
 			var r = Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Select(rg, tokens[1]);
@@ -49,10 +56,15 @@ namespace TomPIT.Sys.Data
 			return Get(key,
 				(f) =>
 			{
-				var r = DataModel.ResourceGroups.Select(resourceGroup);
+				IResourceGroup r = null;
 
-				if (r == null)
-					throw new SysException(SR.ErrResourceGroupNotFound);
+				if (resourceGroup != Guid.Empty)
+				{
+					r = DataModel.ResourceGroups.Select(resourceGroup);
+
+					if (r == null)
+						throw new SysException(SR.ErrResourceGroupNotFound);
+				}
 
 				var d = Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Select(r, name);
 
@@ -80,10 +92,15 @@ namespace TomPIT.Sys.Data
 
 		public void Update(Guid resourceGroup, string name, string value, bool visible, DataType dataType, string tags)
 		{
-			var r = DataModel.ResourceGroups.Select(resourceGroup);
+			IResourceGroup r = null;
 
-			if (r == null)
-				throw new SysException(SR.ErrResourceGroupNotFound);
+			if (resourceGroup != Guid.Empty)
+			{
+				r = DataModel.ResourceGroups.Select(resourceGroup);
+
+				if (r == null)
+					throw new SysException(SR.ErrResourceGroupNotFound);
+			}
 
 			Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Update(r, name, value, visible, dataType, tags);
 
@@ -94,10 +111,15 @@ namespace TomPIT.Sys.Data
 
 		public void Delete(Guid resourceGroup, string name)
 		{
-			var r = DataModel.ResourceGroups.Select(resourceGroup);
+			IResourceGroup r = null;
 
-			if (r == null)
-				throw new SysException(SR.ErrResourceGroupNotFound);
+			if (resourceGroup != Guid.Empty)
+			{
+				r = DataModel.ResourceGroups.Select(resourceGroup);
+
+				if (r == null)
+					throw new SysException(SR.ErrResourceGroupNotFound);
+			}
 
 			Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Delete(r, name);
 

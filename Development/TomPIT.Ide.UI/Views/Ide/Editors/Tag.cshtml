@@ -8,14 +8,14 @@
 	var required = Model.Validation.Required.IsRequired ? "required" : string.Empty;
 	var items = DomQuery.Items(Model);
 	var att = Model.PropertyInfo.FindAttribute<TomPIT.Annotations.TagEditorAttribute>();
-	var selectionControls = att==null?false:att.SelectionControls;
+	var selectionControls = att == null ? false : att.SelectionControls;
 	var allowCustom = att == null ? false : att.AllowCustomValues;
 	var values = new List<string>();
 
 	if (items == null)
 	{ items = new List<TomPIT.Design.IItemDescriptor>(); }
 
-	if (Model.PropertyInfo.PropertyType.IsEnum && Model.PropertyInfo.PropertyType.FindAttribute<FlagsAttribute>()!=null)
+	if (Model.PropertyInfo.PropertyType.IsEnum && Model.PropertyInfo.PropertyType.FindAttribute<FlagsAttribute>() != null)
 	{
 		selectionControls = true;
 	}
@@ -30,7 +30,7 @@
 
 			values.Add(v);
 
-			if(items.FirstOrDefault(f=>string.Compare(f.Value.ToString(), v, true)==0)==null)
+			if (items.FirstOrDefault(f => string.Compare(f.Value.ToString(), v, true) == 0) == null)
 			{
 				items.Add(new TomPIT.Design.ItemDescriptor(v, v));
 			}
@@ -39,7 +39,7 @@
 	}
 
 	var tagItems = items.Select(f => f.Text).ToList();
-	}
+}
 
 
 <div name="@Model.Name"></div>
@@ -96,7 +96,8 @@
 		 });
 
         }
-		 }).dxValidator({
+	 }).dxValidator({
+		 validationGroup: 'property',
 		 validationRules: [
 			  @if (Model.Validation.Required.IsRequired)
 

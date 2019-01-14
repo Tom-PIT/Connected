@@ -65,9 +65,7 @@ namespace TomPIT.Sys.Controllers.Management
 		{
 			var body = FromBody();
 
-			var microService = body.Required<Guid>("microService");
-			var api = body.Required<Guid>("api");
-			var operation = body.Required<Guid>("operation");
+			var worker = body.Required<Guid>("worker");
 			var startTime = body.Optional("startTime", DateTime.MinValue);
 			var endTime = body.Optional("endTime", DateTime.MinValue);
 			var interval = body.Required<WorkerInterval>("interval");
@@ -86,7 +84,7 @@ namespace TomPIT.Sys.Controllers.Management
 			var weekdays = body.Optional("weekdays", WorkerWeekDays.None);
 			var kind = body.Optional("kind", WorkerKind.Worker);
 
-			DataModel.Workers.Update(microService, api, operation, startTime, endTime, interval, intervalValue, startDate, endDate, limit, dayOfMonth,
+			DataModel.Workers.Update(worker, startTime, endTime, interval, intervalValue, startDate, endDate, limit, dayOfMonth,
 				dayMode, monthMode, yearMode, monthNumber, endMode, intervalCounter, monthPart, weekdays, kind);
 		}
 
@@ -95,13 +93,11 @@ namespace TomPIT.Sys.Controllers.Management
 		{
 			var body = FromBody();
 
-			var microService = body.Required<Guid>("microService");
-			var api = body.Required<Guid>("api");
-			var operation = body.Required<Guid>("operation");
+			var worker = body.Required<Guid>("worker");
 			var status = body.Required<WorkerStatus>("status");
 			var logging = body.Required<bool>("logging");
 
-			DataModel.Workers.Update(microService, api, operation, status, logging);
+			DataModel.Workers.Update(worker, status, logging);
 		}
 
 		[HttpPost]
@@ -109,11 +105,9 @@ namespace TomPIT.Sys.Controllers.Management
 		{
 			var body = FromBody();
 
-			var microService = body.Required<Guid>("microService");
-			var api = body.Required<Guid>("api");
-			var operation = body.Required<Guid>("operation");
+			var worker = body.Required<Guid>("worker");
 
-			DataModel.Workers.Reset(microService, api, operation);
+			DataModel.Workers.Reset(worker);
 		}
 
 		[HttpPost]
@@ -121,11 +115,9 @@ namespace TomPIT.Sys.Controllers.Management
 		{
 			var body = FromBody();
 
-			var microService = body.Required<Guid>("microService");
-			var api = body.Required<Guid>("api");
-			var operation = body.Required<Guid>("operation");
+			var worker = body.Required<Guid>("worker");
 
-			DataModel.Workers.Run(microService, api, operation);
+			DataModel.Workers.Run(worker);
 		}
 	}
 }

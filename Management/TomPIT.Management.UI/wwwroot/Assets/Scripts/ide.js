@@ -15,7 +15,14 @@ $.widget('tompit.tpIde', {
 		},
 		globalization: {
 			language: null
-		}
+		},
+		properties: {
+			saveMode: 'instant',
+			state: [
+			]
+		},
+		state: [
+		]
 	},
 	_create: function () {
 		this.initialize();
@@ -26,6 +33,36 @@ $.widget('tompit.tpIde', {
 	},
 	setLanguage: function (value) {
 		this.options.globalization.language = value;
+	},
+	setState: function (property, value) {
+		var exists = false;
+
+		$.each(this.options.state, function (i, v) {
+			if (v.property === property) {
+				v.value = value;
+				exists = true;
+				return false;
+			}
+		});
+
+		if (!exists)
+			this.options.state.push({
+				'property': property,
+				'value': value
+			});
+	},
+	getState: function (property) {
+		var r = null;
+
+		$.each(this.options.state, function (i, v) {
+			if (v.property === property) {
+				r = v.value;
+
+				return false;
+			}
+		});
+
+		return r;
 	},
 	/*
 	 * explorer
@@ -417,11 +454,34 @@ $.widget('tompit.tpIde', {
 		}
 	},
 	saveProperty: function (options) {
+		if (this.options.properties.saveMode === 'batch') {
+			var exists = false;
+
+			$.each(this.options.properties.state, function (i, v) {
+				if (v.property === options.data.property) {
+					v.value = options.data.value;
+					exists = true;
+
+					return false;
+				}
+			});
+
+			if (!exists) {
+				this.options.properties.state.push({
+					property: options.data.property,
+					value: options.data.value
+				});
+			}
+
+			return;
+		}
+
 		var url = new tompit.devUrl();
 		var instance = this;
 		var data = $.extend({
 			language: this.options.globalization.language,
-			selectionId: this.options.selection.id
+			selectionId: this.options.selection.id,
+			designerSelectionId: this.options.selection.designerId
 		}, options.data);
 
 		tompit.post({
@@ -569,6 +629,9 @@ $.widget('tompit.tpIde', {
 	setSelectionId: function (id) {
 		this.options.selection.id = id;
 	},
+	setDesignerSelectionId: function (id) {
+		this.options.selection.designerId = id;
+	},
 	/*
 	 * status bar
 	 */
@@ -662,6 +725,7 @@ $.widget('tompit.tpIde', {
 			var e = {
 				id: $(this).attr('data-id'),
 				cancel: false,
+				kind: $(this).attr('data-toolbar-kind'),
 				parameters: {
 
 				}
@@ -679,7 +743,13 @@ $.widget('tompit.tpIde', {
 
 		tompit.initContainer('#devDesigner');
 	},
-
+	setPropertySaveMode: function (v) {
+		this.options.properties.saveMode = v;
+		this.options.properties.state = [];
+	},
+	getPropertiesState: function () {
+		return this.options.properties.state;
+	},
 	elementId: function (target) {
 		return $(target).closest('[data-id]').attr('data-id');
 	},

@@ -10,5 +10,6 @@ namespace TomPIT.Designers
 		List<IItemDescriptor> Items { get; }
 		List<IItemDescriptor> Descriptors { get; }
 		bool SupportsReorder { get; }
+		string ItemTemplateView { get; }
 	}
 }

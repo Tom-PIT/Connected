@@ -36,6 +36,9 @@
     <Content Update="Views\Ide\Console.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Ide\Designers\List.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Ide\Designers\Collection.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

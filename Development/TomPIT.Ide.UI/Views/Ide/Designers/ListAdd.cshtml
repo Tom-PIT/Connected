@@ -1,0 +1,78 @@
+﻿@model TomPIT.Designers.ISupportsAddDesigner
+
+<div class="dev-property-grid">
+	<div class="dev-property-grid-content">
+		@if (Model.Properties.Categories == null || Model.Properties.Categories.Count == 0)
+		{
+			<div class="dev-no-data">
+				No properties available for the selected element.
+			</div>
+
+		}
+		else
+		{
+			<form id="formProps">
+				@foreach (var i in Model.Properties.Categories)
+				{
+					<div class="dev-category">
+						@i
+					</div>
+					foreach (var j in Model.Properties.QueryProperties(i).OrderBy(f => f.Ordinal).ThenBy(f => f.Text))
+					{
+						ViewBag.Property = j;
+						@await Html.PartialAsync("~/Views/Ide/Selection/Property.cshtml", Model.Environment)
+					}
+				}
+			</form>
+		}
+	</div>
+</div>
+<div class="text-center">
+	<button type="button" class="btn btn-outline-primary  btn-sm" id="btnSaveListAdd">
+		Save
+	</button>
+	<button type="button" class="btn btn-link btn-sm" id="btnCancelListAdd">
+		Cancel
+	</button>
+</div>
+
+<script>
+	ide.setPropertySaveMode('batch');
+
+	$('#btnSaveListAdd').click(function (e) {
+		if (!DevExpress.validationEngine.validateGroup('property').isValid)
+			return;
+
+		var data = {
+			'action': 'saveCreate',
+			'id':'@Model.DescriptorId',
+			'values': ide.getPropertiesState()
+		};
+
+		ide.designerAction({
+			data: data,
+			onComplete: function (data) {
+				ide.setState('listselection', data.id);
+				tompit.selectListItem(data.id);
+
+				ide.refreshSections({
+					sections: 'properties',
+					path: ide.selectedPath(),
+					data: {
+						'mode': 'editItem',
+						'designerSelectionId': data.id
+					}
+				});
+
+			}
+		});
+	});
+
+	$('#btnCancelListAdd').click(function (e) {
+		ide.refreshSections({
+			sections: 'properties',
+			path: ide.selectedPath()
+		});
+	})
+
+</script>

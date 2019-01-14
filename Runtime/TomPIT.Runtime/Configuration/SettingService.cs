@@ -57,6 +57,7 @@ namespace TomPIT.Configuration
 
 		public void NotifyChanged(object sender, SettingEventArgs e)
 		{
+			Refresh(GenerateKey(e.ResourceGroup, e.Name));
 			SettingChanged?.Invoke(sender, e);
 		}
 	}

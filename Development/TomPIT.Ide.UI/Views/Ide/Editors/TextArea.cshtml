@@ -3,7 +3,7 @@
 @model TomPIT.Design.IProperty
 
 @{
-    var value = Types.Convert<string>(Model.Value);
+	var value = Types.Convert<string>(Model.Value);
 }
 
 <div name="@Model.Name"></div>
@@ -42,7 +42,8 @@
             })
 
         }
-    }).dxValidator({
+	 }).dxValidator({
+		 validationGroup: 'property',
         validationRules: [
             @if (Model.Validation.Required.IsRequired)
             {

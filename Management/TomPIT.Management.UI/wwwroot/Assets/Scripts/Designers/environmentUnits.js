@@ -413,30 +413,6 @@ $.widget('tompit.tpEnvironmentUnits', {
 			instance.showAddDialog();
 		});
 
-		$('[data-id="actionMoveTop"]').click(function (e) {
-
-		});
-
-		$('[data-id="actionMoveBottom"]').click(function (e) {
-
-		});
-
-		$('[data-id="actionMoveUp"]').click(function (e) {
-
-		});
-
-		$('[data-id="actionMoveDown"]').click(function (e) {
-
-		});
-
-		$('[data-id="actionNest"]').click(function (e) {
-
-		});
-
-		$('[data-id="actionUnnest"]').click(function (e) {
-
-		});
-
 		$('[data-id="actionDelete"]').click(function (e) {
 			if (instance.options.selection.children('[data-kind="toggler"]').length > 0) {
 				tompit.warning('Cannot delete environment unit with children.');

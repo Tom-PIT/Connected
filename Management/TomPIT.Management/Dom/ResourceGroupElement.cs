@@ -22,6 +22,7 @@ namespace TomPIT.Dom
 		{
 			Items.Add(new MicroServicesElement(Environment, this));
 			Items.Add(new AuthenticationTokensElement(Environment, this));
+			Items.Add(new SettingsElement(Environment, this));
 		}
 
 		public override void LoadChildren(string id)
@@ -30,6 +31,8 @@ namespace TomPIT.Dom
 				Items.Add(new MicroServicesElement(Environment, this));
 			else if (id.Equals(AuthenticationTokensElement.ElementId, StringComparison.OrdinalIgnoreCase))
 				Items.Add(new AuthenticationTokensElement(Environment, this));
+			else if (id.Equals(SettingsElement.ElementId, StringComparison.OrdinalIgnoreCase))
+				Items.Add(new SettingsElement(Environment, this));
 		}
 
 		public override bool Commit(object component, string property, string attribute)

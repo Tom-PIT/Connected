@@ -8,9 +8,9 @@ namespace TomPIT.Sys.Controllers
 	public class WorkerController : SysController
 	{
 		[HttpGet]
-		public IScheduledJob Select(Guid microService, Guid api, Guid operation)
+		public IScheduledJob Select(Guid worker)
 		{
-			return DataModel.Workers.Select(microService, api, operation);
+			return DataModel.Workers.Select(worker);
 		}
 	}
 }

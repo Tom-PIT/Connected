@@ -56,8 +56,23 @@
 	</div>
 </div>
 <script>
-	if ($('#ide').data('tompit-tpIde') != null)
+	if ($('#ide').data('tompit-tpIde') != null) {
 		ide.setSelectionId('@Model.Selection.Id');
+
+	@if (string.IsNullOrWhiteSpace(Model.Selection.Properties.View))
+	{
+		@:ide.setPropertySaveMode('instant');
+	}
+
+		@if(Model.Selection.Designer is TomPIT.Dom.IDesignerSelectionProvider sp)
+		{
+			@:ide.setDesignerSelectionId('@sp.SelectionId');
+		}
+		else
+		{
+			@:ide.setDesignerSelectionId(null);
+		}
+	}
 
     $('#formProps').tpForm({
         appearance: {
@@ -77,5 +92,5 @@
         ide.refreshSections({
             sections:'designer,properties'
         });
-    })
+	})
 </script>

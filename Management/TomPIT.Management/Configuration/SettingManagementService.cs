@@ -1,49 +1,51 @@
-﻿using System;
-using TomPIT.Services;
+﻿using Newtonsoft.Json.Linq;
+using System;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Configuration
 {
 	internal class SettingManagementService : ISettingManagementService
 	{
-		public void Update(IExecutionContext sender, Guid resourceGroup, string name, string value, bool visible, DataType dataType, string tags)
+		public SettingManagementService(ISysConnection connection)
 		{
-			var server = sender.Connection();
+			Connection = connection;
+		}
 
-			var d = new Setting
+		private ISysConnection Connection { get; }
+
+		public void Update(Guid resourceGroup, string name, string value, bool visible, DataType dataType, string tags)
+		{
+			var d = new JObject
 			{
-				ResourceGroup = resourceGroup,
-				Name = name,
-				Value = value,
-				Visible = visible,
-				DataType = dataType,
-				Tags = tags
+				{"resourceGroup" , resourceGroup},
+				{"name",name },
+				{"value", value },
+				{"visible" , visible },
+				{"dataType" , dataType.ToString() },
+				{"tags", tags }
 			};
 
-			var u = server.CreateUrl("SettingManagement", "Update");
+			var u = Connection.CreateUrl("SettingManagement", "Update");
 
-			server.Post(u, d);
-			server.Cache.Remove("setting", server.Cache.GenerateKey(resourceGroup, name));
+			Connection.Post(u, d);
 
-			if (server.GetService<ISettingService>() is ISettingNotification n)
+			if (Connection.GetService<ISettingService>() is ISettingNotification n)
 				n.NotifyChanged(this, new SettingEventArgs(resourceGroup, name));
 		}
 
-		public void Delete(IExecutionContext context, Guid resourceGroup, string name)
+		public void Delete(Guid resourceGroup, string name)
 		{
-			var server = context.Connection();
-
-			var d = new Setting
+			var d = new JObject
 			{
-				ResourceGroup = resourceGroup,
-				Name = name
+				{"resourceGroup", resourceGroup },
+				{"name", name }
 			};
 
-			var u = server.CreateUrl("Setting", "Delete");
+			var u = Connection.CreateUrl("SettingManagement", "Delete");
 
-			server.Post(u, d);
-			server.Cache.Remove("setting", server.Cache.GenerateKey(resourceGroup, name));
+			Connection.Post(u, d);
 
-			if (server.GetService<ISettingService>() is ISettingNotification n)
+			if (Connection.GetService<ISettingService>() is ISettingNotification n)
 				n.NotifyChanged(this, new SettingEventArgs(resourceGroup, name));
 		}
 	}

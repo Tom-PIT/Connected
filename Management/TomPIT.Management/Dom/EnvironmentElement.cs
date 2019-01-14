@@ -21,6 +21,7 @@ namespace TomPIT.Dom
 		{
 			Items.Add(new EndpointsElement(Environment, this));
 			Items.Add(new EnvironmentUnitsElement(Environment, this));
+			Items.Add(new SettingsElement(Environment, this));
 		}
 
 		public override void LoadChildren(string id)
@@ -29,6 +30,8 @@ namespace TomPIT.Dom
 				Items.Add(new EndpointsElement(Environment, this));
 			else if (string.Compare(id, EnvironmentUnitsElement.DomId, true) == 0)
 				Items.Add(new EnvironmentUnitsElement(Environment, this));
+			else if (string.Compare(id, SettingsElement.ElementId, true) == 0)
+				Items.Add(new SettingsElement(Environment, this));
 		}
 	}
 }

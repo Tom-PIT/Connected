@@ -39,16 +39,14 @@ namespace TomPIT.SysDb.Sql.Workers
 			w.Complete();
 		}
 
-		public void Insert(Guid microService, Guid api, Guid operation, DateTime startTime, DateTime endTime, WorkerInterval interval, int intervalValue, DateTime startDate, DateTime endDate,
+		public void Insert(Guid worker, DateTime startTime, DateTime endTime, WorkerInterval interval, int intervalValue, DateTime startDate, DateTime endDate,
 			int limit, int dayOfMonth, WorkerDayMode dayMode, WorkerMonthMode monthMode, WorkerYearMode yearMode, int monthNumber, WorkerEndMode endMode, WorkerCounter intervalCounter,
 			WorkerMonthPart monthPart, WorkerWeekDays weekdays, WorkerStatus status, DateTime nextRun, int elapsed, int failCount, bool logging, DateTime lastRun, DateTime lastComplete,
 			long runCount, WorkerKind kind)
 		{
 			var w = new Writer("tompit.worker_ins");
 
-			w.CreateParameter("@service", microService, true);
-			w.CreateParameter("@api", api);
-			w.CreateParameter("@operation", operation);
+			w.CreateParameter("@worker", worker);
 			w.CreateParameter("@start_time", startTime, true);
 			w.CreateParameter("@end_time", endTime, true);
 			w.CreateParameter("@interval_type", interval);
@@ -83,13 +81,11 @@ namespace TomPIT.SysDb.Sql.Workers
 			return new Reader<ScheduledJob>("tompit.worker_que").Execute().ToList<IScheduledJob>();
 		}
 
-		public IScheduledJob Select(Guid microService, Guid api, Guid operation)
+		public IScheduledJob Select(Guid worker)
 		{
 			var r = new Reader<ScheduledJob>("tompit.worker_sel");
 
-			r.CreateParameter("@service", microService);
-			r.CreateParameter("@api", api);
-			r.CreateParameter("@operation", operation);
+			r.CreateParameter("@worker", worker);
 
 			return r.ExecuteSingleRow();
 		}

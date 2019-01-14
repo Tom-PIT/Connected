@@ -3,9 +3,9 @@
 @model TomPIT.Design.IProperty
 
 @{
-    var value = Types.Convert<decimal>(Model.Value);
+	var value = Types.Convert<decimal>(Model.Value);
 
-    var required = Model.Validation.Required.IsRequired ? "required" : string.Empty;
+	var required = Model.Validation.Required.IsRequired ? "required" : string.Empty;
 }
 
 <div name="@Model.Name"></div>
@@ -52,7 +52,8 @@
             })
 
         }
-    }).dxValidator({
+	 }).dxValidator({
+		 validationGroup: 'property',
         validationRules: [
             @if (Model.Validation.Required.IsRequired)
             {

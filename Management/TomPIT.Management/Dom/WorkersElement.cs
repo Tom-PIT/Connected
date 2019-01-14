@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
-using TomPIT.Design;
 using TomPIT.Designers;
 using TomPIT.Ide;
 
@@ -30,7 +29,7 @@ namespace TomPIT.Dom
 				return;
 
 			foreach (var i in Workers)
-				Items.Add(new WorkersApiElement(Environment, this, i));
+				Items.Add(new WorkerElement(Environment, this, i));
 		}
 
 		public override void LoadChildren(string id)
@@ -41,7 +40,7 @@ namespace TomPIT.Dom
 			var d = Workers.FirstOrDefault(f => f.Token == id.AsGuid());
 
 			if (d != null)
-				Items.Add(new WorkersApiElement(Environment, this, d));
+				Items.Add(new WorkerElement(Environment, this, d));
 		}
 
 		private IMicroService MicroService { get { return DomQuery.Closest<IMicroServiceScope>(this).MicroService; } }
@@ -51,7 +50,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_workers == null)
-					_workers = Connection.GetService<IComponentService>().QueryComponents(MicroService.Token, "Api");
+					_workers = Connection.GetService<IComponentService>().QueryComponents(MicroService.Token, "Worker");
 
 				return _workers;
 			}

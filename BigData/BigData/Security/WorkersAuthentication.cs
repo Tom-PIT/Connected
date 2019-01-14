@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Hubs;
-using System;
+﻿using System;
 
-namespace Amt.DataHub.Authentication
+namespace TomPT.BigData.Authentication
 {
 	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 	public class WorkersAuthentication : AuthorizeAttribute

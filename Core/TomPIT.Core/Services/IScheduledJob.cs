@@ -113,10 +113,8 @@ namespace TomPIT.Services
 		WorkerMonthPart MonthPart { get; }
 		int Elapsed { get; }
 		WorkerWeekDays Weekdays { get; }
-		Guid Api { get; }
-		Guid Operation { get; }
+		Guid Worker { get; }
 		int FailCount { get; }
-		Guid MicroService { get; }
 		bool Logging { get; }
 		WorkerKind Kind { get; }
 	}

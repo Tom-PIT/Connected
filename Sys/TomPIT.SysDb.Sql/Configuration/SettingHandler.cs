@@ -18,7 +18,7 @@ namespace TomPIT.SysDb.Sql.Configuration
 
 			var p = new Writer("tompit.setting_del");
 
-			p.CreateParameter("@resource_group", resourceGroup.GetId());
+			p.CreateParameter("@resource_group", resourceGroup == null ? 0 : resourceGroup.GetId(), true);
 			p.CreateParameter("@name", name);
 
 			p.Execute();
@@ -26,14 +26,14 @@ namespace TomPIT.SysDb.Sql.Configuration
 
 		public List<ISetting> Query()
 		{
-			return new Reader<Setting>("tompit.setting_sel").Execute().ToList<ISetting>();
+			return new Reader<Setting>("tompit.setting_que").Execute().ToList<ISetting>();
 		}
 
 		public ISetting Select(IResourceGroup resourceGroup, string name)
 		{
 			var p = new Reader<Setting>("tompit.setting_sel");
 
-			p.CreateParameter("@resource_group", resourceGroup.GetId());
+			p.CreateParameter("@resource_group", resourceGroup == null ? 0 : resourceGroup.GetId(), true);
 			p.CreateParameter("@name", name);
 
 			return p.ExecuteSingleRow();
@@ -43,7 +43,7 @@ namespace TomPIT.SysDb.Sql.Configuration
 		{
 			var w = new Writer("tompit.setting_mdf");
 
-			w.CreateParameter("@resource_group", resourceGroup.GetId());
+			w.CreateParameter("@resource_group", resourceGroup == null ? 0 : resourceGroup.GetId(), true);
 			w.CreateParameter("@name", name);
 			w.CreateParameter("@visible", visible);
 			w.CreateParameter("@data_type", dataType);

@@ -12,7 +12,7 @@ using TomPIT.SysDb.Environment;
 
 namespace TomPIT.Sys.Data
 {
-	internal class Workers : SynchronizedRepository<IScheduledJob, string>
+	internal class Workers : SynchronizedRepository<IScheduledJob, Guid>
 	{
 		public const string Queue = "worker";
 
@@ -25,13 +25,12 @@ namespace TomPIT.Sys.Data
 			var ds = Shell.GetService<IDatabaseService>().Proxy.Workers.Query();
 
 			foreach (var i in ds)
-				Set(GenerateKey(i.MicroService, i.Api, i.Operation), i, TimeSpan.Zero);
+				Set(i.Worker, i, TimeSpan.Zero);
 		}
 
-		protected override void OnInvalidate(string id)
+		protected override void OnInvalidate(Guid id)
 		{
-			var tokens = id.Split('.');
-			var d = Shell.GetService<IDatabaseService>().Proxy.Workers.Select(tokens[0].AsGuid(), tokens[1].AsGuid(), tokens[2].AsGuid());
+			var d = Shell.GetService<IDatabaseService>().Proxy.Workers.Select(id);
 
 			if (d == null)
 			{
@@ -47,10 +46,9 @@ namespace TomPIT.Sys.Data
 			return Where(f => f.Status == WorkerStatus.Enabled && f.NextRun != DateTime.MinValue && f.NextRun <= DateTime.UtcNow);
 		}
 
-		public void Reset(Guid microService, Guid api, Guid operation)
+		public void Reset(Guid worker)
 		{
-			var id = GenerateKey(microService, api, operation);
-			var j = Get(id);
+			var j = Get(worker);
 
 			if (j == null)
 				throw new SysException(SR.ErrWorkerNotFound);
@@ -60,13 +58,12 @@ namespace TomPIT.Sys.Data
 				ScheduleCalculator.NextRun(j, DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow), 0, 0, j.Logging, DateTime.MinValue,
 				DateTime.MinValue, 0);
 
-			Refresh(id);
+			Refresh(worker);
 		}
 
-		public void Run(Guid microService, Guid api, Guid operation)
+		public void Run(Guid worker)
 		{
-			var id = GenerateKey(microService, api, operation);
-			var j = Get(id);
+			var j = Get(worker);
 
 			if (j == null)
 				throw new SysException(SR.ErrWorkerNotFound);
@@ -74,13 +71,12 @@ namespace TomPIT.Sys.Data
 			Enqueue(j);
 		}
 
-		public void Update(Guid microService, Guid api, Guid operation, WorkerStatus status, bool logging)
+		public void Update(Guid worker, WorkerStatus status, bool logging)
 		{
 			if (status == WorkerStatus.Queued)
 				throw new SysException(string.Format("{0} ({1})", SR.ErrWorkerStatusNotAllowed, status));
 
-			var id = GenerateKey(microService, api, operation);
-			var j = Get(id);
+			var j = Get(worker);
 
 			if (j == null)
 				throw new SysException(SR.ErrWorkerNotFound);
@@ -96,14 +92,13 @@ namespace TomPIT.Sys.Data
 				j.DayMode, j.MonthMode, j.YearMode, j.MonthNumber, j.EndMode, j.IntervalCounter, j.MonthPart, j.Weekdays, status, nextRun, j.Elapsed, j.FailCount, logging, j.LastRun,
 				j.LastComplete, j.RunCount);
 
-			Refresh(id);
+			Refresh(worker);
 		}
 
-		public void Update(Guid microService, Guid api, Guid operation, WorkerStatus status, DateTime nextRun, int elapsed,
+		public void Update(Guid worker, WorkerStatus status, DateTime nextRun, int elapsed,
 			int failCount, DateTime lastRun, DateTime lastComplete, long runCount)
 		{
-			var id = GenerateKey(microService, api, operation);
-			var j = Get(id);
+			var j = Get(worker);
 
 			if (j == null)
 				throw new SysException(SR.ErrWorkerNotFound);
@@ -112,19 +107,18 @@ namespace TomPIT.Sys.Data
 				j.DayMode, j.MonthMode, j.YearMode, j.MonthNumber, j.EndMode, j.IntervalCounter, j.MonthPart, j.Weekdays, status, nextRun, elapsed, failCount, j.Logging, lastRun,
 				lastComplete, runCount);
 
-			Refresh(id);
+			Refresh(worker);
 		}
 
-		public void Update(Guid microService, Guid api, Guid operation, DateTime startTime, DateTime endTime, WorkerInterval interval, int intervalValue, DateTime startDate, DateTime endDate, int limit,
+		public void Update(Guid worker, DateTime startTime, DateTime endTime, WorkerInterval interval, int intervalValue, DateTime startDate, DateTime endDate, int limit,
 			int dayOfMonth, WorkerDayMode dayMode, WorkerMonthMode monthMode, WorkerYearMode yearMode,
 			int monthNumber, WorkerEndMode endMode, WorkerCounter intervalCounter, WorkerMonthPart monthPart, WorkerWeekDays weekdays, WorkerKind kind)
 		{
-			var id = GenerateKey(microService, api, operation);
-			var j = Get(id);
+			var j = Get(worker);
 
 			if (j == null)
 			{
-				Shell.GetService<IDatabaseService>().Proxy.Workers.Insert(microService, api, operation, startTime, endTime, interval, intervalValue, startDate, endDate, limit, dayOfMonth, dayMode, monthMode, yearMode,
+				Shell.GetService<IDatabaseService>().Proxy.Workers.Insert(worker, startTime, endTime, interval, intervalValue, startDate, endDate, limit, dayOfMonth, dayMode, monthMode, yearMode,
 					monthNumber, endMode, intervalCounter, monthPart, weekdays, WorkerStatus.Disabled, DateTime.MinValue, 0, 0, false, DateTime.MinValue, DateTime.MinValue, 0, kind);
 			}
 			else
@@ -134,9 +128,9 @@ namespace TomPIT.Sys.Data
 
 				if (j.Status != WorkerStatus.Disabled)
 				{
-					Refresh(id);
+					Refresh(worker);
 
-					j = Get(id);
+					j = Get(worker);
 
 					Shell.GetService<IDatabaseService>().Proxy.Workers.Update(j, j.StartTime, j.EndTime, j.Interval, j.IntervalValue, j.StartDate, j.EndDate, j.Limit, j.DayOfMonth, j.DayMode,
 						j.MonthMode, j.YearMode, j.MonthNumber, j.EndMode, j.IntervalCounter, j.MonthPart, j.Weekdays, j.Status, ScheduleCalculator.NextRun(j, DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow),
@@ -144,16 +138,21 @@ namespace TomPIT.Sys.Data
 				}
 			}
 
-			Refresh(id);
+			Refresh(worker);
 		}
 
 		public void Enqueue(IScheduledJob job)
 		{
 			Guid resourceGroup = Guid.Empty;
 
-			if (job.MicroService != Guid.Empty)
+			if (job.Worker != Guid.Empty)
 			{
-				var s = DataModel.MicroServices.Select(job.MicroService);
+				var c = DataModel.Components.Select(job.Worker);
+
+				if (c == null)
+					throw new SysException(SR.ErrComponentCorrupted);
+
+				var s = DataModel.MicroServices.Select(c.MicroService);
 
 				if (s == null)
 					throw new SysException(SR.ErrMicroServiceNotFound);
@@ -169,14 +168,12 @@ namespace TomPIT.Sys.Data
 
 			var message = new JObject
 			{
-				{ "service", job.MicroService },
-				{ "api", job.Api },
-				{ "operation", job.Operation }
+				{ "worker", job.Worker }
 			};
 
 			sp.Queue.Enqueue(res, Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
-			Update(job.MicroService, job.Api, job.Operation, WorkerStatus.Queued, job.NextRun, job.Elapsed,
+			Update(job.Worker, WorkerStatus.Queued, job.NextRun, job.Elapsed,
 				job.FailCount, job.LastRun, job.LastComplete, job.RunCount);
 		}
 
@@ -200,7 +197,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Workers.Dequeued(workers);
 
 			foreach (var i in workers)
-				Refresh(GenerateKey(i.MicroService, i.Api, i.Operation));
+				Refresh(i.Worker);
 
 			return r.ToClientQueueMessage(resourceGroup.Token);
 		}
@@ -242,7 +239,7 @@ namespace TomPIT.Sys.Data
 			if (treshold <= worker.FailCount + 1)
 				status = WorkerStatus.Disabled;
 
-			Update(worker.MicroService, worker.Api, worker.Operation, status, worker.NextRun, worker.Elapsed, worker.FailCount + 1, worker.LastRun,
+			Update(worker.Worker, status, worker.NextRun, worker.Elapsed, worker.FailCount + 1, worker.LastRun,
 				worker.LastComplete, worker.RunCount);
 
 			sp.Queue.Delete(res, popReceipt);
@@ -300,26 +297,22 @@ namespace TomPIT.Sys.Data
 			var status = WorkerStatus.Enabled;
 			var elapsed = DateTime.UtcNow.Subtract(m.DequeueTimestamp).TotalMilliseconds;
 
-			Update(worker.MicroService, worker.Api, worker.Operation, status, ScheduleCalculator.NextRun(worker), Convert.ToInt32(elapsed), 0,
+			Update(worker.Worker, status, ScheduleCalculator.NextRun(worker), Convert.ToInt32(elapsed), 0,
 				worker.LastRun, DateTime.UtcNow, worker.RunCount);
 
 			sp.Queue.Delete(res, popReceipt);
 		}
 
-		public IScheduledJob Select(Guid microService, Guid api, Guid operation)
+		public IScheduledJob Select(Guid worker)
 		{
-			return Get(GenerateKey(microService, api, operation));
+			return Get(worker);
 		}
 
 		private IScheduledJob Resolve(IQueueMessage message)
 		{
 			var d = JsonConvert.DeserializeObject(message.Message) as JObject;
-
-			var service = d.Required<Guid>("service");
-			var api = d.Required<Guid>("api");
-			var operation = d.Required<Guid>("operation");
-
-			var worker = Select(service, api, operation);
+			var p = d.Required<Guid>("worker");
+			var worker = Select(p);
 
 			if (worker == null)
 				throw new SysException(SR.ErrWorkerNotFound);

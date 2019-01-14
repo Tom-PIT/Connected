@@ -27,6 +27,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="BigData\" />
+  </ItemGroup>
+
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\bin2&quot;&#xD;&#xA;copy &quot;$(TargetDir)\$(TargetName).pdb&quot; &quot;c:\bin2&quot;" />
   </Target>

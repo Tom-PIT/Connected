@@ -9,6 +9,7 @@ using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
 using TomPIT.Design.Validation;
+using TomPIT.Dom;
 
 namespace TomPIT.Ide
 {
@@ -16,10 +17,30 @@ namespace TomPIT.Ide
 	{
 		private List<IProperty> _props = null;
 		private string _view = null;
+		private object _component = null;
 
-		public PropertyProvider(IEnvironment environment) : base(environment)
+		public PropertyProvider(IEnvironment environment) : this(environment, null)
 		{
 
+		}
+
+		public PropertyProvider(IEnvironment environment, object component) : base(environment)
+		{
+			_component = component;
+		}
+
+		private object Component
+		{
+			get
+			{
+				if (_component != null)
+					return _component;
+
+				if (Environment.Selection.Designer != null && Environment.Selection.Designer is IDesignerSelectionProvider sp)
+					return sp.Value;
+				else
+					return Environment.Selected();
+			}
 		}
 
 		public List<string> Categories
@@ -55,7 +76,7 @@ namespace TomPIT.Ide
 			{
 				if (_props == null)
 				{
-					if (Environment.Selected() == null)
+					if (Component == null)
 						return null;
 
 					_props = QueryPropertyValues();
@@ -67,24 +88,29 @@ namespace TomPIT.Ide
 
 		private List<IProperty> QueryPropertyValues()
 		{
-			if (Environment.Selected().Property != null
-				&& !Environment.Selected().Property.ChildrenBrowsable())
-				return null;
-
+			var element = Component as IDomElement;
 			var r = new List<IProperty>();
 
-			if (Environment.Selection.Element is IPropertySource source)
+			if (element != null)
 			{
-				var instances = source.PropertySources;
+				if (element.Property != null && !element.Property.ChildrenBrowsable())
+					return null;
 
-				if (instances != null)
+				if (Environment.Selection.Element is IPropertySource source)
 				{
-					foreach (var i in instances)
-						QueryPropertyValues(i, r);
+					var instances = source.PropertySources;
+
+					if (instances != null)
+					{
+						foreach (var i in instances)
+							QueryPropertyValues(i, r);
+					}
 				}
+				else
+					QueryPropertyValues(element.Value, r);
 			}
 			else
-				QueryPropertyValues(Environment.Selection.Element.Value, r);
+				QueryPropertyValues(Component, r);
 
 			if (r.Count > 0)
 				return r.OrderBy(f => f.Ordinal).ThenBy(f => f.Category).ThenBy(f => f.Name).ToList();
@@ -329,7 +355,7 @@ namespace TomPIT.Ide
 				if (pi.PropertyType.FindAttribute<FlagsAttribute>() != null)
 					return FindEditorByName("Tag");
 				else
-				return FindEditorByName("Select");
+					return FindEditorByName("Select");
 			}
 			else if (pi.PropertyType == typeof(DateTime)
 				|| pi.PropertyType == typeof(TimeSpan))

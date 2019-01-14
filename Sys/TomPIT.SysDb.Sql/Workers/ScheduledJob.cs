@@ -28,8 +28,7 @@ namespace TomPIT.SysDb.Sql.Workers
 		public WorkerMonthPart MonthPart { get; set; }
 		public int Elapsed { get; set; }
 		public WorkerWeekDays Weekdays { get; set; }
-		public Guid Api { get; set; }
-		public Guid Operation { get; set; }
+		public Guid Worker { get; set; }
 		public int FailCount { get; set; }
 		public Guid MicroService { get; set; }
 		public bool Logging { get; set; }
@@ -61,8 +60,7 @@ namespace TomPIT.SysDb.Sql.Workers
 			MonthPart = GetValue("month_part", WorkerMonthPart.Day);
 			Elapsed = GetInt("elapsed");
 			Weekdays = GetValue("weekdays", WorkerWeekDays.All);
-			Api = GetGuid("api");
-			Operation = GetGuid("operation");
+			Worker = GetGuid("worker");
 			FailCount = GetInt("fail_count");
 			MicroService = GetGuid("service");
 			Logging = GetBool("logging");

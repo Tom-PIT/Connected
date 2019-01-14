@@ -26,11 +26,6 @@ namespace TomPIT.Designers
 
 		protected override void OnCreateToolbar(IDesignerToolbar toolbar)
 		{
-			//var undo = new Undo(Environment);
-
-			//if (OnCreateToolbarAction(undo))
-			//	Toolbar.Items.Add(undo);
-
 			var addItems = new AddItems(Environment);
 
 			foreach (var i in Descriptors)
@@ -85,7 +80,8 @@ namespace TomPIT.Designers
 							var d = new ItemDescriptor
 							{
 								Text = en.Current.ToString(),
-								Id = DomQuery.Key(en.Current, idx.AsString())
+								Id = DomQuery.Key(en.Current, idx.AsString()),
+								Value = en.Current
 							};
 
 							_items.Add(d);
@@ -289,6 +285,8 @@ namespace TomPIT.Designers
 		}
 
 		public virtual bool SupportsReorder { get { return !Element.SortChildren; } }
+
+		public virtual string ItemTemplateView => null;
 
 		public override bool IsPropertyEditable(string propertyName)
 		{

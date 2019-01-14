@@ -100,6 +100,16 @@ namespace TomPIT
 		{
 			IPropertySource source = null;
 
+			if (element.Designer != null && element.Designer is IDesignerSelectionProvider sp)
+			{
+				component = sp.Value;
+
+				if (sp.Value == null)
+					return null;
+
+				return sp.Value.GetType().GetProperty(propertyName);
+			}
+
 			source = element as IPropertySource;
 
 			if (source != null)
@@ -133,7 +143,9 @@ namespace TomPIT
 
 		public static List<IItemDescriptor> Items(IProperty property)
 		{
-			var pi = Property(property.Element, property.Name, out object instance);
+			var pi = property.PropertyInfo == null
+				? Property(property.Element, property.Name, out object instance)
+				: property.PropertyInfo;
 
 			return Items(property.Element, pi);
 		}

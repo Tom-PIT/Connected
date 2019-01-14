@@ -1,0 +1,176 @@
+﻿@model TomPIT.Designers.ICollectionDesigner
+
+@{
+	var path = TomPIT.DomQuery.Path(Model.Element);
+}
+<div class="dev-canvas">
+	<div class="paper">
+		<h4>Items</h4>
+		<br />
+		@if (Model.Items.Count == 0)
+		{
+			<div class="dev-no-data text-center">
+				No items to display.
+			</div>
+
+		}
+		else
+		{
+			<div class="table-responsive table-hover" id="devItems">
+				<table class="table" id="devTableItems">
+					<tbody>
+						@{ foreach (var i in Model.Items)
+							{
+								<tr data-id="@i.Id">
+									<td class="w-80">
+										@if (!string.IsNullOrWhiteSpace(Model.ItemTemplateView))
+										{
+											ViewBag.CollectionItem = i;
+
+											@await Html.PartialAsync(Model.ItemTemplateView)
+										}
+										else
+										{
+											<a href="#" data-component="list-item">@i.Text</a>
+										}
+									</td>
+									<td class="w-20 text-right">
+										<i class="fal fa-times" data-verb="remove"></i>
+									</td>
+								</tr>}
+						}
+					</tbody>
+				</table>
+			</div>}
+	</div>
+</div>
+
+
+<div class="modal fade bottom info dev-modal" id="modalRemove" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-frame modal-bottom" role="document">
+		<div class="modal-content">
+			<div class="modal-body">
+				<div class="row d-flex justify-content-center align-items-center">
+					Are you sure you want to remove this item?
+				</div>
+			</div>
+			<div class="modal-footer">
+				<div class="mx-auto">
+					<button type="button" class="btn btn-inverse btn-info mr-5" id="btnRemoveItem" data-dismiss="modal">Remove</button>
+					<button type="button" class="btn btn-inverse btn-info" data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+    var collectionRemoveId = null;
+
+    $('#devTableItems').click(function (e) {
+        var row = $(e.target).closest('tr');
+        var path = '@path';
+
+        if (row.length === 0)
+            return;
+
+        var id = row.attr('data-id');
+        var t = $(e.target);
+        var component = t.closest('[data-component="list-item"]').attr('data-component');
+		 ide.setState('listselection', id);
+
+		 if (typeof component !== 'undefined') {
+			  ide.refreshSections({
+				  sections: 'properties',
+				  path: ide.selectedPath(),
+				  data: {
+					  'mode': 'editItem',
+					  'designerSelectionId': id
+				  }
+			  });
+
+        }
+        else {
+            var verb = t.attr('data-verb');
+
+            if (typeof verb !== 'undefined' && verb === 'remove') {
+
+                collectionRemoveId = id;
+                collectionRemoveIndex = row.index();
+
+                $('#modalRemove').modal('show');
+            }
+        }
+    });
+
+    $('#btnRemoveItem').click(function () {
+        var modal = $('#modalRemove');
+
+        modal.on('hidden.bs.modal', function () {
+			  ide.designerAction({
+				  data: {
+					  action: 'remove',
+					  id: collectionRemoveId,
+					  index: collectionRemoveIndex
+				  }
+            });
+        });
+
+        modal.modal('hide');
+    });
+
+    @if (Model.SupportsReorder) {
+       <text>
+    $('#devTableItems tbody').sortable({
+        placeholder: "dev-drag-placeholder",
+        start: function (e, ui) {
+            $(this).attr('data-previndex', ui.item.index());
+        },
+        tolerance: "pointer",
+        update: function(e, ui) {
+                ide.designerAction({
+                    data: {
+                        action: 'move',
+                        section:'designer',
+                    id: $(ui.item).attr('data-id'),
+                        index: ui.item.position,
+                        oldIndex: $(this).attr('data-previndex')
+                     }
+            });
+            $(this).removeAttr('data-previndex');
+            }
+    });
+    </text>
+    }
+
+    $('#devItems').tpTable({
+        search: {
+            selector: '#actionSearch'
+        }
+	});
+
+	$('#ide').on('toolbarClick', function (s, e) {
+		if (typeof e.kind !== 'undefined' && e.kind === 'add') {
+			$('#devTableItems tbody tr').siblings().removeClass('table-active');
+
+			ide.refreshSections({
+				sections: 'properties',
+				path: ide.selectedPath(),
+				data: {
+					'mode': 'add',
+					'id': e.id
+				}
+			});
+
+			e.cancel = true;
+		}
+	});
+
+	tompit.selectListItem = function(id) {
+		$('#devTableItems tbody tr[data-id="' + id + '"]').addClass('table-active');
+	}
+
+	if (ide.getState('listselection') !== null) {
+		$('#devTableItems tbody tr[data-id="' + ide.getState('listselection') + '"]').addClass('table-active');
+	}
+</script>
