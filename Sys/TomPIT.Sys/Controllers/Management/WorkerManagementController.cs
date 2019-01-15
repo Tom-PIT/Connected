@@ -119,5 +119,16 @@ namespace TomPIT.Sys.Controllers.Management
 
 			DataModel.Workers.Run(worker);
 		}
+
+		[HttpPost]
+		public void AttachState()
+		{
+			var body = FromBody();
+
+			var worker = body.Required<Guid>("worker");
+			var state = body.Required<Guid>("state");
+
+			DataModel.Workers.UpdateState(worker, state);
+		}
 	}
 }

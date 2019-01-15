@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using TomPIT.Services;
 using TomPIT.Sys.Data;
+using TomPIT.SysDb.Workers;
 
 namespace TomPIT.Sys.Workers
 {
@@ -20,7 +21,7 @@ namespace TomPIT.Sys.Workers
 				foreach (var i in ds)
 					Enqueue(i);
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				Console.WriteLine(ex.Message);
 				//TODO: log exception
@@ -29,7 +30,7 @@ namespace TomPIT.Sys.Workers
 			return Task.CompletedTask;
 		}
 
-		private void Enqueue(IScheduledJob job)
+		private void Enqueue(ISysScheduledJob job)
 		{
 			DataModel.Workers.Enqueue(job);
 		}

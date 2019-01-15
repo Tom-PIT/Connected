@@ -22,6 +22,7 @@ namespace TomPIT.Dom
 		}
 
 		public override bool HasChildren { get { return Workers != null && Workers.Count > 0; } }
+		public override int ChildrenCount => Workers.Count;
 
 		public override void LoadChildren()
 		{

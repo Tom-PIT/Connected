@@ -1,12 +1,14 @@
 ﻿using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Workers;
+using TomPIT.Designers;
 using TomPIT.Ide;
-using TomPIT.Workers;
 
 namespace TomPIT.Dom
 {
 	internal class WorkerElement : Element
 	{
 		private IWorker _worker = null;
+		private IDomDesigner _designer = null;
 
 		public WorkerElement(IEnvironment environment, IDomElement parent, IComponent worker) : base(environment, parent)
 		{
@@ -21,7 +23,7 @@ namespace TomPIT.Dom
 
 		public override bool HasChildren => false;
 
-		private IWorker Worker
+		public IWorker Worker
 		{
 			get
 			{
@@ -29,6 +31,17 @@ namespace TomPIT.Dom
 					_worker = Connection.GetService<IComponentService>().SelectConfiguration(WorkerComponent.Token) as IWorker;
 
 				return _worker;
+			}
+		}
+
+		public override IDomDesigner Designer
+		{
+			get
+			{
+				if (_designer == null)
+					_designer = new ScheduleDesigner(Environment, this);
+
+				return _designer;
 			}
 		}
 	}

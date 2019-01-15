@@ -72,7 +72,7 @@ namespace TomPIT.Designers
 			r.Message = string.Format(SR.DevColCreateSuccessful, name);
 			r.Title = SR.DevAddComponent;
 			r.ExplorerPath = string.Format("{0}/{1}", DomQuery.Path(Element), component.Token);
-
+			
 			return r;
 		}
 

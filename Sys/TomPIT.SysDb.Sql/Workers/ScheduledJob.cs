@@ -1,10 +1,11 @@
 ﻿using System;
 using TomPIT.Data.Sql;
 using TomPIT.Services;
+using TomPIT.SysDb.Workers;
 
 namespace TomPIT.SysDb.Sql.Workers
 {
-	internal class ScheduledJob : PrimaryKeyRecord, IScheduledJob
+	internal class ScheduledJob : PrimaryKeyRecord, ISysScheduledJob
 	{
 		public DateTime StartTime { get; set; }
 		public DateTime EndTime { get; set; }
@@ -30,9 +31,9 @@ namespace TomPIT.SysDb.Sql.Workers
 		public WorkerWeekDays Weekdays { get; set; }
 		public Guid Worker { get; set; }
 		public int FailCount { get; set; }
-		public Guid MicroService { get; set; }
 		public bool Logging { get; set; }
 		public WorkerKind Kind { get; set; }
+		public Guid State { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -62,9 +63,9 @@ namespace TomPIT.SysDb.Sql.Workers
 			Weekdays = GetValue("weekdays", WorkerWeekDays.All);
 			Worker = GetGuid("worker");
 			FailCount = GetInt("fail_count");
-			MicroService = GetGuid("service");
 			Logging = GetBool("logging");
 			Kind = GetValue("kind", WorkerKind.Worker);
+			State = GetGuid("state");
 		}
 	}
 }

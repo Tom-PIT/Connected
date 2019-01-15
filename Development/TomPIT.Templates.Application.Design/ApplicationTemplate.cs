@@ -6,6 +6,7 @@ using TomPIT.Application.Design.Dom;
 using TomPIT.Application.Events;
 using TomPIT.Application.Resources;
 using TomPIT.Application.UI;
+using TomPIT.Application.Workers;
 using TomPIT.Design;
 using TomPIT.Dom;
 using TomPIT.Ide;
@@ -49,6 +50,8 @@ namespace TomPIT.Application
 				r.Add(new ItemDescriptor("Script bundle", ScriptBundle.ComponentCategory, typeof(ScriptBundle)));
 			else if (string.Compare(category, DistributedEvent.ComponentCategory, true) == 0)
 				r.Add(new ItemDescriptor("Distributed event", DistributedEvent.ComponentCategory, typeof(DistributedEvent)));
+			else if (string.Compare(category, HostedWorker.ComponentCategory, true) == 0)
+				r.Add(new ItemDescriptor("Hosted worker", HostedWorker.ComponentCategory, typeof(HostedWorker)));
 			else if (string.Compare(category, AssemblyFileSystemResource.ComponentCategory, true) == 0)
 			{
 				r.Add(new ItemDescriptor("Upload assembly", "Upload", typeof(AssemblyUploadResource)));

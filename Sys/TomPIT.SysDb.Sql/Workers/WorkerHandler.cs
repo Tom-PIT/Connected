@@ -76,12 +76,12 @@ namespace TomPIT.SysDb.Sql.Workers
 			w.Execute();
 		}
 
-		public List<IScheduledJob> Query()
+		public List<ISysScheduledJob> Query()
 		{
-			return new Reader<ScheduledJob>("tompit.worker_que").Execute().ToList<IScheduledJob>();
+			return new Reader<ScheduledJob>("tompit.worker_que").Execute().ToList<ISysScheduledJob>();
 		}
 
-		public IScheduledJob Select(Guid worker)
+		public ISysScheduledJob Select(Guid worker)
 		{
 			var r = new Reader<ScheduledJob>("tompit.worker_sel");
 
@@ -92,7 +92,8 @@ namespace TomPIT.SysDb.Sql.Workers
 
 		public void Update(IScheduledJob job, DateTime startTime, DateTime endTime, WorkerInterval interval, int intervalValue, DateTime startDate, DateTime endDate,
 			int limit, int dayOfMonth, WorkerDayMode dayMode, WorkerMonthMode monthMode, WorkerYearMode yearMode, int monthNumber, WorkerEndMode endMode, WorkerCounter intervalCounter,
-			WorkerMonthPart monthPart, WorkerWeekDays weekdays, WorkerStatus status, DateTime nextRun, int elapsed, int failCount, bool logging, DateTime lastRun, DateTime lastComplete, long runCount)
+			WorkerMonthPart monthPart, WorkerWeekDays weekdays, WorkerStatus status, DateTime nextRun, int elapsed, int failCount, bool logging, DateTime lastRun, DateTime lastComplete,
+			long runCount, Guid state)
 		{
 			var w = new Writer("tompit.worker_upd");
 
@@ -121,6 +122,7 @@ namespace TomPIT.SysDb.Sql.Workers
 			w.CreateParameter("@last_run", lastRun, true);
 			w.CreateParameter("@last_complete", lastComplete, true);
 			w.CreateParameter("@run_count", runCount);
+			w.CreateParameter("@state", state, true);
 
 			w.Execute();
 		}

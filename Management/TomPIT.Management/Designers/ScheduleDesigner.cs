@@ -2,7 +2,6 @@
 using System;
 using TomPIT.ActionResults;
 using TomPIT.Annotations;
-using TomPIT.ComponentModel.Apis;
 using TomPIT.Dom;
 using TomPIT.Ide;
 using TomPIT.Services;
@@ -24,13 +23,10 @@ namespace TomPIT.Designers
 			{
 				if (_job == null)
 				{
-					var op = Owner.Component as IApiOperation;
-					var api = op.Closest<IApi>();
+					var worker = Owner.Worker;
 
 					var url = Connection.CreateUrl("Worker", "Select")
-						.AddParameter("microService", api.MicroService(Connection))
-						.AddParameter("api", api.Component)
-						.AddParameter("operation", op.Id);
+						.AddParameter("worker", worker.Component);
 
 					var d = Connection.Get<ScheduledJob>(url);
 
@@ -38,14 +34,14 @@ namespace TomPIT.Designers
 					{
 						d = new ScheduledJob
 						{
-							//Worker = op.wo
+							Worker = worker.Component
 						};
 					}
 
 					_job = new ScheduledJobDescriptor
 					{
 						Job = d,
-						Title = string.Format("{0}/{1}", api.ComponentName(Environment.Context), op.Name)
+						Title = worker.ComponentName(Connection)
 					};
 
 					_job.Context = Environment.Context;
@@ -76,11 +72,9 @@ namespace TomPIT.Designers
 
 			var p = new JObject
 			{
-				//{ "microService" , d.MicroService },
-				//{ "api" , d.Api },
-				//{ "operation" , d.Operation },
-				//{ "status" , status.ToString() },
-				//{ "logging" , d.Logging }
+				{ "worker" , d.Worker },
+				{ "status" , status.ToString() },
+				{ "logging" , d.Logging }
 			};
 
 			Connection.Post(url, p);

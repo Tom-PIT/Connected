@@ -19,7 +19,7 @@ namespace TomPIT.Sys.Controllers
 		{
 			return DataModel.Components.Query(microService, category);
 		}
-
+		
 		[HttpGet]
 		public List<IComponent> QueryByResourceGroups(string resourceGroups, string categories)
 		{

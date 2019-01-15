@@ -60,6 +60,9 @@ namespace TomPIT.Dom
 				if (Property != null)
 					return Property.IsCollection();
 
+				if (Component == null)
+					return false;
+
 				return Component.GetType().IsCollection();
 			}
 		}

@@ -9,10 +9,11 @@ using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Workers;
 using TomPIT.SysDb.Environment;
+using TomPIT.SysDb.Workers;
 
 namespace TomPIT.Sys.Data
 {
-	internal class Workers : SynchronizedRepository<IScheduledJob, Guid>
+	internal class Workers : SynchronizedRepository<ISysScheduledJob, Guid>
 	{
 		public const string Queue = "worker";
 
@@ -41,7 +42,7 @@ namespace TomPIT.Sys.Data
 			Set(id, d, TimeSpan.Zero);
 		}
 
-		public List<IScheduledJob> QueryScheduled()
+		public List<ISysScheduledJob> QueryScheduled()
 		{
 			return Where(f => f.Status == WorkerStatus.Enabled && f.NextRun != DateTime.MinValue && f.NextRun <= DateTime.UtcNow);
 		}
@@ -56,7 +57,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Workers.Update(j, j.StartTime, j.EndTime, j.Interval, j.IntervalValue, j.StartDate, j.EndDate, j.Limit, j.DayOfMonth,
 				j.DayMode, j.MonthMode, j.YearMode, j.MonthNumber, j.EndMode, j.IntervalCounter, j.MonthPart, j.Weekdays, WorkerStatus.Enabled,
 				ScheduleCalculator.NextRun(j, DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow), 0, 0, j.Logging, DateTime.MinValue,
-				DateTime.MinValue, 0);
+				DateTime.MinValue, 0, j.State);
 
 			Refresh(worker);
 		}
@@ -69,6 +70,24 @@ namespace TomPIT.Sys.Data
 				throw new SysException(SR.ErrWorkerNotFound);
 
 			Enqueue(j);
+		}
+
+		public void UpdateState(Guid worker, Guid state)
+		{
+			var j = Get(worker);
+
+			if (j == null)
+				throw new SysException(SR.ErrWorkerNotFound);
+
+			var nextRun = j.NextRun == DateTime.MinValue
+				? ScheduleCalculator.NextRun(j, DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow)
+				: j.NextRun;
+
+			Shell.GetService<IDatabaseService>().Proxy.Workers.Update(j, j.StartTime, j.EndTime, j.Interval, j.IntervalValue, j.StartDate, j.EndDate, j.Limit, j.DayOfMonth,
+				j.DayMode, j.MonthMode, j.YearMode, j.MonthNumber, j.EndMode, j.IntervalCounter, j.MonthPart, j.Weekdays, j.Status, nextRun, j.Elapsed, j.FailCount, j.Logging, j.LastRun,
+				j.LastComplete, j.RunCount, state);
+
+			Refresh(worker);
 		}
 
 		public void Update(Guid worker, WorkerStatus status, bool logging)
@@ -90,7 +109,7 @@ namespace TomPIT.Sys.Data
 
 			Shell.GetService<IDatabaseService>().Proxy.Workers.Update(j, j.StartTime, j.EndTime, j.Interval, j.IntervalValue, j.StartDate, j.EndDate, j.Limit, j.DayOfMonth,
 				j.DayMode, j.MonthMode, j.YearMode, j.MonthNumber, j.EndMode, j.IntervalCounter, j.MonthPart, j.Weekdays, status, nextRun, j.Elapsed, j.FailCount, logging, j.LastRun,
-				j.LastComplete, j.RunCount);
+				j.LastComplete, j.RunCount, j.State);
 
 			Refresh(worker);
 		}
@@ -105,7 +124,7 @@ namespace TomPIT.Sys.Data
 
 			Shell.GetService<IDatabaseService>().Proxy.Workers.Update(j, j.StartTime, j.EndTime, j.Interval, j.IntervalValue, j.StartDate, j.EndDate, j.Limit, j.DayOfMonth,
 				j.DayMode, j.MonthMode, j.YearMode, j.MonthNumber, j.EndMode, j.IntervalCounter, j.MonthPart, j.Weekdays, status, nextRun, elapsed, failCount, j.Logging, lastRun,
-				lastComplete, runCount);
+				lastComplete, runCount, j.State);
 
 			Refresh(worker);
 		}
@@ -124,7 +143,7 @@ namespace TomPIT.Sys.Data
 			else
 			{
 				Shell.GetService<IDatabaseService>().Proxy.Workers.Update(j, startTime, endTime, interval, intervalValue, startDate, endDate, limit, dayOfMonth, dayMode, monthMode, yearMode,
-					 monthNumber, endMode, intervalCounter, monthPart, weekdays, j.Status, j.NextRun, j.Elapsed, j.FailCount, j.Logging, j.LastRun, j.LastComplete, j.RunCount);
+					 monthNumber, endMode, intervalCounter, monthPart, weekdays, j.Status, j.NextRun, j.Elapsed, j.FailCount, j.Logging, j.LastRun, j.LastComplete, j.RunCount, j.State);
 
 				if (j.Status != WorkerStatus.Disabled)
 				{
@@ -134,14 +153,14 @@ namespace TomPIT.Sys.Data
 
 					Shell.GetService<IDatabaseService>().Proxy.Workers.Update(j, j.StartTime, j.EndTime, j.Interval, j.IntervalValue, j.StartDate, j.EndDate, j.Limit, j.DayOfMonth, j.DayMode,
 						j.MonthMode, j.YearMode, j.MonthNumber, j.EndMode, j.IntervalCounter, j.MonthPart, j.Weekdays, j.Status, ScheduleCalculator.NextRun(j, DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow),
-						j.Elapsed, j.FailCount, j.Logging, j.LastRun, j.LastComplete, j.RunCount);
+						j.Elapsed, j.FailCount, j.Logging, j.LastRun, j.LastComplete, j.RunCount, j.State);
 				}
 			}
 
 			Refresh(worker);
 		}
 
-		public void Enqueue(IScheduledJob job)
+		public void Enqueue(ISysScheduledJob job)
 		{
 			Guid resourceGroup = Guid.Empty;
 
@@ -168,7 +187,8 @@ namespace TomPIT.Sys.Data
 
 			var message = new JObject
 			{
-				{ "worker", job.Worker }
+				{ "worker", job.Worker },
+				{ "state", job.State }
 			};
 
 			sp.Queue.Enqueue(res, Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
@@ -303,12 +323,12 @@ namespace TomPIT.Sys.Data
 			sp.Queue.Delete(res, popReceipt);
 		}
 
-		public IScheduledJob Select(Guid worker)
+		public ISysScheduledJob Select(Guid worker)
 		{
 			return Get(worker);
 		}
 
-		private IScheduledJob Resolve(IQueueMessage message)
+		private ISysScheduledJob Resolve(IQueueMessage message)
 		{
 			var d = JsonConvert.DeserializeObject(message.Message) as JObject;
 			var p = d.Required<Guid>("worker");

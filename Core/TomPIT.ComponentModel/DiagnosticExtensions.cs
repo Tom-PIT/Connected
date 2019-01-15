@@ -48,6 +48,16 @@ namespace TomPIT
 			LogError(connection, context, string.Empty, source, message, 0);
 		}
 
+		public static void LogError(this ISysConnection connection, string category, string source, string message)
+		{
+			//LogError(connection, context, category, source, message, 0);
+		}
+
+		public static void LogError(this ISysConnection connection, string category, string source, string message, Guid component, Guid element)
+		{
+			//LogError(connection, context, category, source, message, 0);
+		}
+
 		public static void LogError(this ISysConnection connection, IExecutionContext context, string category, string source, string message)
 		{
 			LogError(connection, context, category, source, message, 0);

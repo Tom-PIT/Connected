@@ -3,612 +3,468 @@
 
 @model TomPIT.Services.ScheduledJobDescriptor
 
+<script src="~/Assets/Scripts/Designers/scheduler.js"></script>
+
 @{
-    var statusCss = "btn-success";
-    var statusText = SRM.WorkerEnable;
-    var changeStatus = "Enabled";
+	var statusCss = "btn-success";
+	var statusText = SRM.WorkerEnable;
+	var changeStatus = "Enabled";
 
-    switch (Model.Job.Status)
-    {
-        case WorkerStatus.Enabled:
-            statusText = SRM.WorkerDisable;
-            statusCss = "btn-danger";
-            changeStatus = "Disabled";
-            break;
-        case WorkerStatus.Queued:
-            statusText = SRM.WorkerQueued;
-            statusCss = "btn-light";
-            break;
-    };
+	switch (Model.Job.Status)
+	{
+		case WorkerStatus.Enabled:
+			statusText = SRM.WorkerDisable;
+			statusCss = "btn-danger";
+			changeStatus = "Disabled";
+			break;
+		case WorkerStatus.Queued:
+			statusText = SRM.WorkerQueued;
+			statusCss = "btn-light";
+			break;
+	};
 
-    var lastRun = Model.Job.LastRun == DateTime.MinValue
-          ? "-"
-          : Model.Job.LastRun.ToString("G");
+	var lastRun = Model.Job.LastRun == DateTime.MinValue
+			? "-"
+			: Model.Job.LastRun.ToString("G");
 
-    var elapsed = Model.Job.LastRun == DateTime.MinValue
-     ? string.Empty
-     : string.Format("{0} {1}", Model.Job.Elapsed.ToString("n0"), SRM.WorkerElapsedMs);
+	var elapsed = Model.Job.LastRun == DateTime.MinValue
+	 ? string.Empty
+	 : string.Format("{0} {1}", Model.Job.Elapsed.ToString("n0"), SRM.WorkerElapsedMs);
 
-    var nextRun = Model.Job.NextRun == DateTime.MinValue
-         ? "-"
-         : Model.Job.NextRun.ToString("G");
+	var nextRun = Model.Job.NextRun == DateTime.MinValue
+		  ? "-"
+		  : Model.Job.NextRun.ToString("G");
 
-    var nextRunCount = Model.Job.RunCount == 0
-         ? string.Empty
-         : Model.Job.RunCount.ToString("n0");
+	var nextRunCount = Model.Job.RunCount == 0
+		  ? string.Empty
+		  : Model.Job.RunCount.ToString("n0");
 
-    var faults = Model.Job.FailCount == 0
-          ? string.Empty
-          : Model.Job.FailCount.ToString("n0");
+	var faults = Model.Job.FailCount == 0
+			? string.Empty
+			: Model.Job.FailCount.ToString("n0");
 
-    var startTime = Model.Job.StartTime == DateTime.MinValue
-        ? ""
-        : string.Format("{0}:{1}", Model.Job.StartTime.Hour.ToString("00"), Model.Job.StartTime.Minute.ToString("00"));
+	var startTime = Model.Job.StartTime == DateTime.MinValue
+		 ? ""
+		 : string.Format("{0}:{1}", Model.Job.StartTime.Hour.ToString("00"), Model.Job.StartTime.Minute.ToString("00"));
 
-    var endTime = Model.Job.EndTime == DateTime.MinValue
-         ? ""
-         : string.Format("{0}:{1}", Model.Job.EndTime.Hour.ToString("00"), Model.Job.EndTime.Minute.ToString("00"));
+	var endTime = Model.Job.EndTime == DateTime.MinValue
+		  ? ""
+		  : string.Format("{0}:{1}", Model.Job.EndTime.Hour.ToString("00"), Model.Job.EndTime.Minute.ToString("00"));
 
-    var pattern1Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Once
-        ? "show"
-        : string.Empty;
+	var pattern1Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Once
+		 ? "show"
+		 : string.Empty;
 
-    var pattern2Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Second
-         ? "show"
-         : string.Empty;
+	var pattern2Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Second
+		  ? "show"
+		  : string.Empty;
 
-    var pattern3Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Minute
-         ? "show"
-         : string.Empty;
+	var pattern3Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Minute
+		  ? "show"
+		  : string.Empty;
 
-    var pattern4Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Hour
-         ? "show"
-         : string.Empty;
+	var pattern4Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Hour
+		  ? "show"
+		  : string.Empty;
 
-    var pattern5Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Day
-         ? "show"
-         : string.Empty;
+	var pattern5Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Day
+		  ? "show"
+		  : string.Empty;
 
-    var pattern6Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Week
-         ? "show"
-         : string.Empty;
+	var pattern6Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Week
+		  ? "show"
+		  : string.Empty;
 
-    var pattern7Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Month
-        ? "show"
-        : string.Empty;
+	var pattern7Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Month
+		 ? "show"
+		 : string.Empty;
 
-    var pattern8Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Year
-         ? "show"
-         : string.Empty;
+	var pattern8Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Year
+		  ? "show"
+		  : string.Empty;
 
-    var startDate = Model.Job.StartDate == DateTime.MinValue
-        ? string.Empty
-        : string.Format("{0}-{1}-{2}", Model.Job.StartDate.Year.ToString("0000"), Model.Job.StartDate.Month.ToString("00"), Model.Job.StartDate.Day.ToString("00"));
+	var startDate = Model.Job.StartDate == DateTime.MinValue
+		 ? string.Empty
+		 : string.Format("{0}-{1}-{2}", Model.Job.StartDate.Year.ToString("0000"), Model.Job.StartDate.Month.ToString("00"), Model.Job.StartDate.Day.ToString("00"));
 
-    var endDate = Model.Job.EndDate == DateTime.MinValue
-         ? string.Empty
-         : string.Format("{0}-{1}-{2}", Model.Job.EndDate.Year.ToString("0000"), Model.Job.EndDate.Month.ToString("00"), Model.Job.EndDate.Day.ToString("00"));
+	var endDate = Model.Job.EndDate == DateTime.MinValue
+		  ? string.Empty
+		  : string.Format("{0}-{1}-{2}", Model.Job.EndDate.Year.ToString("0000"), Model.Job.EndDate.Month.ToString("00"), Model.Job.EndDate.Day.ToString("00"));
 }
 <div class="doc-canvas">
-    <form>
-        <div class="paper">
-            <div class="btn-toolbar justify-content-between">
-                <div class="btn-group mr-2">
-                    <button type="button" class="btn btn-secondary">@SRM.WorkerRun</button>
-                    <button type="button" class="btn btn-secondary">@SRM.WorkerReset</button>
-                </div>
-                <div class="btn-group">
-                    <button type="button" class="btn @statusCss" data-toggle="button" id="btnStatus" @Html.TP().Attributes.Disabled(Model.Job.Status == WorkerStatus.Queued)>@statusText</button>
-                </div>
-            </div>
-            <div class="row mt-3">
-                <div class="col">
-                    <h4>@Model.Title</h4>
-                    <hr />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-4">
-                    <div class="text-center">
-                        <strong>@SRM.WorkerLastRun</strong>
-                        <p>
-                            @lastRun
-                            <br />
-                            @elapsed
-                        </p>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="text-center">
-                        <strong>@SRM.WorkerNextRun</strong>
-                        <p>
-                            <span id="nextRun">
-                                @nextRun
-                            </span>
-                            <br />
-                            @nextRunCount
-                        </p>
-                    </div>
+	<form>
+		<div class="paper" id="scheduleDesigner">
+			<div class="btn-toolbar justify-content-between">
+				<div class="btn-group mr-2">
+					<button type="button" class="btn btn-secondary">@SRM.WorkerRun</button>
+					<button type="button" class="btn btn-secondary">@SRM.WorkerReset</button>
+				</div>
+				<div class="btn-group">
+					<button type="button" class="btn @statusCss" data-toggle="button" id="btnStatus" @Html.TP().Attributes.Disabled(Model.Job.Status == WorkerStatus.Queued)>@statusText</button>
+				</div>
+			</div>
+			<div class="row mt-3">
+				<div class="col">
+					<h4>@Model.Title</h4>
+					<hr />
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-4">
+					<div class="text-center">
+						<strong>@SRM.WorkerLastRun</strong>
+						<p>
+							@lastRun
+							<br />
+							@elapsed
+						</p>
+					</div>
+				</div>
+				<div class="col-4">
+					<div class="text-center">
+						<strong>@SRM.WorkerNextRun</strong>
+						<p>
+							<span id="nextRun">
+								@nextRun
+							</span>
+							<br />
+							@nextRunCount
+						</p>
+					</div>
 
-                </div>
-                <div class="col-4">
-                    <div class="text-center">
-                        <strong>@SRM.WorkerFaults</strong>
-                        <p>
-                            @faults
-                        </p>
-                    </div>
+				</div>
+				<div class="col-4">
+					<div class="text-center">
+						<strong>@SRM.WorkerFaults</strong>
+						<p>
+							@faults
+						</p>
+					</div>
 
-                </div>
-            </div>
+				</div>
+			</div>
 
-            <h4>@SRM.WorkerWorkingHours</h4>
-            <hr />
-            <div class="row">
-                <div class="col-6">
-                    <div class="form-group">
-                        <label for="editStartTime">@SRM.WorkerStartTime</label>
-                        <div id="editStartTime" class="form-editor" />
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="form-group">
-                        <label for="editEndTime">@SRM.WorkerEndTime</label>
-                        <div id="editEndTime" class="form-editor" />
-                    </div>
-                </div>
-            </div>
-            <h4>@SRM.WorkerPattern</h4>
-            <hr />
-            <div class="row">
-                <div class="col-3">
-                    <div id="editPattern"></div>
-                </div>
-                <div class="col-9" id="divPatterns">
-                    <div id="patternOnce" class="collapse @pattern1Css">
+			<h4>@SRM.WorkerWorkingHours</h4>
+			<hr />
+			<div class="row">
+				<div class="col-6">
+					<div class="form-group">
+						<label for="editStartTime">@SRM.WorkerStartTime</label>
+						<div id="editStartTime" class="form-editor" />
+					</div>
+				</div>
+				<div class="col-6">
+					<div class="form-group">
+						<label for="editEndTime">@SRM.WorkerEndTime</label>
+						<div id="editEndTime" class="form-editor" />
+					</div>
+				</div>
+			</div>
+			<h4>@SRM.WorkerPattern</h4>
+			<hr />
+			<div class="row">
+				<div class="col-3">
+					<div id="editPattern"></div>
+				</div>
+				<div class="col-9" id="divPatterns">
+					<div id="patternOnce" class="collapse @pattern1Css">
 
-                    </div>
-                    <div id="patternSecond" class="collapse @pattern2Css">
-                        <div class="form-group">
-                            <label for="editSecondCount">@SRM.WorkerSecondCount</label>
-                            <input type="number" id="editSecondCount" class="form-control" value="@Model.Job.IntervalValue" data-kind="editor" />
-                        </div>
-                    </div>
-                    <div id="patternMinute" class="collapse @pattern3Css">
-                        <div class="form-group">
-                            <label for="editMinuteCount">@SRM.WorkerMinuteCount</label>
-                            <input type="number" id="editMinuteCount" class="form-control" value="@Model.Job.IntervalValue" data-kind="editor" />
-                        </div>
-                    </div>
-                    <div id="patternHour" class="collapse @pattern4Css">
-                        <div class="form-group">
-                            <label for="editHourCount">@SRM.WorkerHourCount</label>
-                            <input type="number" id="editHourCount" class="form-control" value="@Model.Job.IntervalValue" data-kind="editor" />
-                        </div>
-                    </div>
-                    <div id="patternDay" class="collapse @pattern5Css">
-                        <div class="form-check mb-1">
-                            <input class="form-check-input" type="radio" name="dayPattern" id="dayPatternEach" value="1"
-                                   @Html.TP().Attributes.Checked(Model.Job.DayMode == TomPIT.Services.WorkerDayMode.EveryNDay)>
-                            <div class="form-inline">
-                                <label for="editDayCount">@SRM.WorkerDayEvery</label>
-                                <input type="number" id="editDayCount" class="form-control ml-1 mr-1" value="@Model.Job.IntervalValue" data-kind="editor" />
-                                <label for="editDayCount">@SRM.WorkerDayDays</label>
-                            </div>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="dayPattern" id="dayPatternWorkday" value="2"
-                                   @Html.TP().Attributes.Checked(Model.Job.DayMode == TomPIT.Services.WorkerDayMode.EveryWeekday)>
-                            <label class="form-check-label" for="dayPatternWorkday">
-                                @SRM.WorkerDayWorkdays
-                            </label>
-                        </div>
-                    </div>
-                    <div id="patternWeek" class="collapse @pattern6Css">
-                        <div class="form-group">
-                            <label for="editWeekInterval">@SRM.WorkerWeekCount</label>
-                            <input type="number" id="editWeekInterval" class="form-control" value="@Model.Job.IntervalValue" data-kind="editor" />
-                        </div>
+					</div>
+					<div id="patternSecond" class="collapse @pattern2Css">
+						<div class="form-group">
+							<label for="editSecondCount">@SRM.WorkerSecondCount</label>
+							<input type="number" id="editSecondCount" class="form-control" value="@Model.Job.IntervalValue" data-kind="editor" />
+						</div>
+					</div>
+					<div id="patternMinute" class="collapse @pattern3Css">
+						<div class="form-group">
+							<label for="editMinuteCount">@SRM.WorkerMinuteCount</label>
+							<input type="number" id="editMinuteCount" class="form-control" value="@Model.Job.IntervalValue" data-kind="editor" />
+						</div>
+					</div>
+					<div id="patternHour" class="collapse @pattern4Css">
+						<div class="form-group">
+							<label for="editHourCount">@SRM.WorkerHourCount</label>
+							<input type="number" id="editHourCount" class="form-control" value="@Model.Job.IntervalValue" data-kind="editor" />
+						</div>
+					</div>
+					<div id="patternDay" class="collapse @pattern5Css">
+						<div class="form-check mb-1">
+							<input class="form-check-input" type="radio" name="dayPattern" id="dayPatternEach" value="1"
+									 @Html.TP().Attributes.Checked(Model.Job.DayMode == TomPIT.Services.WorkerDayMode.EveryNDay)>
+							<div class="form-inline">
+								<label for="editDayCount">@SRM.WorkerDayEvery</label>
+								<input type="number" id="editDayCount" class="form-control ml-1 mr-1" value="@Model.Job.IntervalValue" data-kind="editor" />
+								<label for="editDayCount">@SRM.WorkerDayDays</label>
+							</div>
+						</div>
+						<div class="form-check">
+							<input class="form-check-input" type="radio" name="dayPattern" id="dayPatternWorkday" value="2"
+									 @Html.TP().Attributes.Checked(Model.Job.DayMode == TomPIT.Services.WorkerDayMode.EveryWeekday)>
+							<label class="form-check-label" for="dayPatternWorkday">
+								@SRM.WorkerDayWorkdays
+							</label>
+						</div>
+					</div>
+					<div id="patternWeek" class="collapse @pattern6Css">
+						<div class="form-group">
+							<label for="editWeekInterval">@SRM.WorkerWeekCount</label>
+							<input type="number" id="editWeekInterval" class="form-control" value="@Model.Job.IntervalValue" data-kind="editor" />
+						</div>
 
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="1" id="checkWeekMonday" data-kind="check"
-                                   @Html.TP().Attributes.Checked((Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Monday) == TomPIT.Services.WorkerWeekDays.Monday)>
-                            <label class="form-check-label" for="checkWeekMonday">
-                                @SRM.WorkerDayMonday
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="2" id="checkWeekTuesday" data-kind="check"
-                                   @Html.TP().Attributes.Checked((Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Tuesday) == TomPIT.Services.WorkerWeekDays.Tuesday)>
-                            <label class="form-check-label" for="checkWeekTuesday">
-                                @SRM.WorkerDayTuesday
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="3" id="checkWeekWednesday" data-kind="check"
-                                   @Html.TP().Attributes.Checked((Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Wednesday) == TomPIT.Services.WorkerWeekDays.Wednesday)>
-                            <label class="form-check-label" for="checkWeekWednesday">
-                                @SRM.WorkerDayWednesday
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="4" id="checkWeekThursday" data-kind="check"
-                                   @Html.TP().Attributes.Checked((Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Thursday) == TomPIT.Services.WorkerWeekDays.Thursday)>
-                            <label class="form-check-label" for="checkWeekThursday">
-                                @SRM.WorkerDayThursday
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="5" id="checkWeekFriday" data-kind="check"
-                                   @Html.TP().Attributes.Checked((Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Friday) == TomPIT.Services.WorkerWeekDays.Friday)>
-                            <label class="form-check-label" for="checkWeekFriday">
-                                @SRM.WorkerDayFriday
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="6" id="checkWeekSaturday" data-kind="check"
-                                   @Html.TP().Attributes.Checked((Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Saturday) == TomPIT.Services.WorkerWeekDays.Saturday)>
-                            <label class="form-check-label" for="checkWeekSaturday">
-                                @SRM.WorkerDaySaturday
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="7" id="checkWeekSunday" data-kind="check"
-                                   @Html.TP().Attributes.Checked((Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Sunday) == TomPIT.Services.WorkerWeekDays.Sunday)>
-                            <label class="form-check-label" for="checkWeekSunday">
-                                @SRM.WorkerDaySunday
-                            </label>
-                        </div>
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" value="1" id="checkWeekMonday" data-kind="check"
+									 @Html.TP().Attributes.Checked((Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Monday) == TomPIT.Services.WorkerWeekDays.Monday)>
+							<label class="form-check-label" for="checkWeekMonday">
+								@SRM.WorkerDayMonday
+							</label>
+						</div>
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" value="2" id="checkWeekTuesday" data-kind="check"
+									 @Html.TP().Attributes.Checked((Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Tuesday) == TomPIT.Services.WorkerWeekDays.Tuesday)>
+							<label class="form-check-label" for="checkWeekTuesday">
+								@SRM.WorkerDayTuesday
+							</label>
+						</div>
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" value="3" id="checkWeekWednesday" data-kind="check"
+									 @Html.TP().Attributes.Checked((Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Wednesday) == TomPIT.Services.WorkerWeekDays.Wednesday)>
+							<label class="form-check-label" for="checkWeekWednesday">
+								@SRM.WorkerDayWednesday
+							</label>
+						</div>
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" value="4" id="checkWeekThursday" data-kind="check"
+									 @Html.TP().Attributes.Checked((Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Thursday) == TomPIT.Services.WorkerWeekDays.Thursday)>
+							<label class="form-check-label" for="checkWeekThursday">
+								@SRM.WorkerDayThursday
+							</label>
+						</div>
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" value="5" id="checkWeekFriday" data-kind="check"
+									 @Html.TP().Attributes.Checked((Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Friday) == TomPIT.Services.WorkerWeekDays.Friday)>
+							<label class="form-check-label" for="checkWeekFriday">
+								@SRM.WorkerDayFriday
+							</label>
+						</div>
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" value="6" id="checkWeekSaturday" data-kind="check"
+									 @Html.TP().Attributes.Checked((Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Saturday) == TomPIT.Services.WorkerWeekDays.Saturday)>
+							<label class="form-check-label" for="checkWeekSaturday">
+								@SRM.WorkerDaySaturday
+							</label>
+						</div>
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" value="7" id="checkWeekSunday" data-kind="check"
+									 @Html.TP().Attributes.Checked((Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Sunday) == TomPIT.Services.WorkerWeekDays.Sunday)>
+							<label class="form-check-label" for="checkWeekSunday">
+								@SRM.WorkerDaySunday
+							</label>
+						</div>
 
-                    </div>
-                    <div id="patternMonth" class="collapse @pattern7Css">
-                        <div class="form-check mb-1">
-                            <input class="form-check-input" type="radio" name="monthPattern" id="monthPatternEach" value="1"
-                                   @Html.TP().Attributes.Checked(Model.Job.MonthMode == TomPIT.Services.WorkerMonthMode.ExactDay)>
-                            <div class="form-inline">
-                                <label for="editDayCount">@SRM.WorkerMonthDay</label>
-                                <input type="number" id="editMonthCount" class="form-control ml-1 mr-1" value="@Model.Job.IntervalValue" data-kind="editor" />
-                                <label for="editMonthCount">@SRM.WorkerMonthEvery</label>
-                                <input type="number" id="editMonthCount2" class="form-control ml-1 mr-1" value="@Model.Job.MonthNumber" data-kind="editor" />
-                                <label for="editMonthCount2">@SRM.WorkerMonthMonths</label>
-                            </div>
-                        </div>
-                        <div class="form-check">
+					</div>
+					<div id="patternMonth" class="collapse @pattern7Css">
+						<div class="form-check mb-1">
+							<input class="form-check-input" type="radio" name="monthPattern" id="monthPatternEach" value="1"
+									 @Html.TP().Attributes.Checked(Model.Job.MonthMode == TomPIT.Services.WorkerMonthMode.ExactDay)>
+							<div class="form-inline">
+								<label for="editDayCount">@SRM.WorkerMonthDay</label>
+								<input type="number" id="editMonthCount" class="form-control ml-1 mr-1" value="@Model.Job.IntervalValue" data-kind="editor" />
+								<label for="editMonthCount">@SRM.WorkerMonthEvery</label>
+								<input type="number" id="editMonthCount2" class="form-control ml-1 mr-1" value="@Model.Job.MonthNumber" data-kind="editor" />
+								<label for="editMonthCount2">@SRM.WorkerMonthMonths</label>
+							</div>
+						</div>
+						<div class="form-check">
 
-                            <input class="form-check-input" type="radio" name="monthPattern" id="monthPatternThe" value="2"
-                                   @Html.TP().Attributes.Checked(Model.Job.MonthMode == TomPIT.Services.WorkerMonthMode.RelativeDay)>
-                            <div class="form-inline">
-                                <label class="form-check-label" for="monthPatternThe">
-                                    @SRM.WorkerMonthThe
-                                </label>
-                                <select class="form-control ml-1 mr-1" id="monthPart" data-kind="editor">
-                                    <!option value="1" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.First)>@SRM.WorkerMonthFirst</!option>
-                                    <!option value="2" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Second)>@SRM.WorkerMonthSecond</!option>
-                                    <!option value="3" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Third)>@SRM.WorkerMonthThird</!option>
-                                    <!option value="4" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Fourth)>@SRM.WorkerMonthFourth</!option>
-                                    <!option value="5" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Last)>@SRM.WorkerMonthLast</!option>
-                                </select>
-                                <select class="form-control ml-1 mr-1" id="monthPart2" data-kind="editor">
-                                    <!option value="1" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Monday)>@SRM.WorkerDayMonday</!option>
-                                    <!option value="2" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Tuesday)>@SRM.WorkerDayTuesday</!option>
-                                    <!option value="3" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Wednesday)>@SRM.WorkerDayWednesday</!option>
-                                    <!option value="4" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Thursday)>@SRM.WorkerDayThursday</!option>
-                                    <!option value="5" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Friday)>@SRM.WorkerDayFriday</!option>
-                                    <!option value="6" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Saturday)>@SRM.WorkerDaySaturday</!option>
-                                    <!option value="7" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Sunday)>@SRM.WorkerDaySunday</!option>
-                                    <!option value="8" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Weekday)>@SRM.WorkerDayWeekday</!option>
-                                    <!option value="9" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.WeekendDay)>@SRM.WorkerDayWeekend</!option>
-                                    <!option value="10" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Day)>@SRM.WorkerDayDay</!option>
-                                </select>
-                                <label class="form-check-label">
-                                    @SRM.WorkerMonthEvery
-                                </label>
-                                <input type="number" id="editMonthCount3" class="form-control ml-1 mr-1" value="@Model.Job.MonthNumber" data-kind="editor" />
-                                <label class="form-check-label">
-                                    @SRM.WorkerMonthMonths
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="patternYear" class="collapse @pattern8Css">
-                        <div class="form-group">
-                            <label for="editYearInterval">@SRM.WorkerYearCount</label>
-                            <input type="number" id="editYearInterval" class="form-control" value="@Model.Job.IntervalValue" data-kind="editor" />
-                        </div>
-                        <div class="form-check mb-1">
-                            <input class="form-check-input" type="radio" name="yearPattern" id="yearPatternOn" value="1"
-                                   @Html.TP().Attributes.Checked(Model.Job.YearMode == TomPIT.Services.WorkerYearMode.ExactDate)>
-                            <div class="form-inline">
-                                <label for="editYearPart">@SRM.WorkerYearOn</label>
-                                <select class="form-control ml-1 mr-1" id="editYearPart" data-kind="editor">
-                                    <!option value="1" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 1)>@SRM.WorkerMonthJanuary</!option>
-                                    <!option value="2" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 2)>@SRM.WorkerMonthFebruary</!option>
-                                    <!option value="3" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 3)>@SRM.WorkerMonthMarch</!option>
-                                    <!option value="4" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 4)>@SRM.WorkerMonthApril</!option>
-                                    <!option value="5" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 5)>@SRM.WorkerMonthMay</!option>
-                                    <!option value="6" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 6)>@SRM.WorkerMonthJune</!option>
-                                    <!option value="7" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 7)>@SRM.WorkerMonthJuly</!option>
-                                    <!option value="8" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 8)>@SRM.WorkerMonthAugust</!option>
-                                    <!option value="9" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 9)>@SRM.WorkerMonthSeptember</!option>
-                                    <!option value="10" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 10)>@SRM.WorkerMonthOctober</!option>
-                                    <!option value="11" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 11)>@SRM.WorkerMonthNovember</!option>
-                                    <!option value="12" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 12)>@SRM.WorkerMonthDecember</!option>
-                                </select>
-                                <input type="number" id="editYearCount2" class="form-control" value="@Model.Job.DayOfMonth" data-kind="editor" />
-                            </div>
-                        </div>
-                        <div class="form-check">
+							<input class="form-check-input" type="radio" name="monthPattern" id="monthPatternThe" value="2"
+									 @Html.TP().Attributes.Checked(Model.Job.MonthMode == TomPIT.Services.WorkerMonthMode.RelativeDay)>
+							<div class="form-inline">
+								<label class="form-check-label" for="monthPatternThe">
+									@SRM.WorkerMonthThe
+								</label>
+								<select class="form-control ml-1 mr-1" id="monthPart" data-kind="editor">
+									<!option value="1" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.First)>@SRM.WorkerMonthFirst</!option>
+									<!option value="2" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Second)>@SRM.WorkerMonthSecond</!option>
+									<!option value="3" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Third)>@SRM.WorkerMonthThird</!option>
+									<!option value="4" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Fourth)>@SRM.WorkerMonthFourth</!option>
+									<!option value="5" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Last)>@SRM.WorkerMonthLast</!option>
+								</select>
+								<select class="form-control ml-1 mr-1" id="monthPart2" data-kind="editor">
+									<!option value="1" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Monday)>@SRM.WorkerDayMonday</!option>
+									<!option value="2" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Tuesday)>@SRM.WorkerDayTuesday</!option>
+									<!option value="3" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Wednesday)>@SRM.WorkerDayWednesday</!option>
+									<!option value="4" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Thursday)>@SRM.WorkerDayThursday</!option>
+									<!option value="5" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Friday)>@SRM.WorkerDayFriday</!option>
+									<!option value="6" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Saturday)>@SRM.WorkerDaySaturday</!option>
+									<!option value="7" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Sunday)>@SRM.WorkerDaySunday</!option>
+									<!option value="8" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Weekday)>@SRM.WorkerDayWeekday</!option>
+									<!option value="9" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.WeekendDay)>@SRM.WorkerDayWeekend</!option>
+									<!option value="10" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Day)>@SRM.WorkerDayDay</!option>
+								</select>
+								<label class="form-check-label">
+									@SRM.WorkerMonthEvery
+								</label>
+								<input type="number" id="editMonthCount3" class="form-control ml-1 mr-1" value="@Model.Job.MonthNumber" data-kind="editor" />
+								<label class="form-check-label">
+									@SRM.WorkerMonthMonths
+								</label>
+							</div>
+						</div>
+					</div>
+					<div id="patternYear" class="collapse @pattern8Css">
+						<div class="form-group">
+							<label for="editYearInterval">@SRM.WorkerYearCount</label>
+							<input type="number" id="editYearInterval" class="form-control" value="@Model.Job.IntervalValue" data-kind="editor" />
+						</div>
+						<div class="form-check mb-1">
+							<input class="form-check-input" type="radio" name="yearPattern" id="yearPatternOn" value="1"
+									 @Html.TP().Attributes.Checked(Model.Job.YearMode == TomPIT.Services.WorkerYearMode.ExactDate)>
+							<div class="form-inline">
+								<label for="editYearPart">@SRM.WorkerYearOn</label>
+								<select class="form-control ml-1 mr-1" id="editYearPart" data-kind="editor">
+									<!option value="1" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 1)>@SRM.WorkerMonthJanuary</!option>
+									<!option value="2" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 2)>@SRM.WorkerMonthFebruary</!option>
+									<!option value="3" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 3)>@SRM.WorkerMonthMarch</!option>
+									<!option value="4" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 4)>@SRM.WorkerMonthApril</!option>
+									<!option value="5" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 5)>@SRM.WorkerMonthMay</!option>
+									<!option value="6" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 6)>@SRM.WorkerMonthJune</!option>
+									<!option value="7" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 7)>@SRM.WorkerMonthJuly</!option>
+									<!option value="8" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 8)>@SRM.WorkerMonthAugust</!option>
+									<!option value="9" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 9)>@SRM.WorkerMonthSeptember</!option>
+									<!option value="10" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 10)>@SRM.WorkerMonthOctober</!option>
+									<!option value="11" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 11)>@SRM.WorkerMonthNovember</!option>
+									<!option value="12" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 12)>@SRM.WorkerMonthDecember</!option>
+								</select>
+								<input type="number" id="editYearCount2" class="form-control" value="@Model.Job.DayOfMonth" data-kind="editor" />
+							</div>
+						</div>
+						<div class="form-check">
 
-                            <input class="form-check-input" type="radio" name="yearPattern" id="yearPatternOn" value="2"
-                                   @Html.TP().Attributes.Checked(Model.Job.YearMode == TomPIT.Services.WorkerYearMode.RelativeDate)>
-                            <div class="form-inline">
-                                <label class="form-check-label" for="monthPatternThe">
-                                    @SRM.WorkerYearOnThe
-                                </label>
-                                <select class="form-control ml-1 mr-1" id="yearPart" data-kind="editor">
-                                    <!option value="1" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.First)>@SRM.WorkerMonthFirst</!option>
-                                    <!option value="2" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Second)>@SRM.WorkerMonthSecond</!option>
-                                    <!option value="3" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Third)>@SRM.WorkerMonthThird</!option>
-                                    <!option value="4" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Fourth)>@SRM.WorkerMonthFourth</!option>
-                                    <!option value="5" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Last)>@SRM.WorkerMonthLast</!option>
-                                </select>
-                                <select class="form-control mr-1" id="yearPart2" data-kind="editor">
-                                    <!option value="1" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Monday)>@SRM.WorkerDayMonday</!option>
-                                    <!option value="2" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Tuesday)>@SRM.WorkerDayTuesday</!option>
-                                    <!option value="3" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Wednesday)>@SRM.WorkerDayWednesday</!option>
-                                    <!option value="4" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Thursday)>@SRM.WorkerDayThursday</!option>
-                                    <!option value="5" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Friday)>@SRM.WorkerDayFriday</!option>
-                                    <!option value="6" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Saturday)>@SRM.WorkerDaySaturday</!option>
-                                    <!option value="7" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Sunday)>@SRM.WorkerDaySunday</!option>
-                                    <!option value="8" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Weekday)>@SRM.WorkerDayWeekday</!option>
-                                    <!option value="9" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.WeekendDay)>@SRM.WorkerDayWeekend</!option>
-                                    <!option value="10" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Day)>@SRM.WorkerDayDay</!option>
-                                </select>
-                                <label class="form-check-label">
-                                    @SRM.WorkerYearFrom
-                                </label>
-                                <select class="form-control ml-1" id="editYearMonthPart" data-kind="editor">
-                                    <!option value="1" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 1)>@SRM.WorkerMonthJanuary</!option>
-                                    <!option value="2" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 2)>@SRM.WorkerMonthFebruary</!option>
-                                    <!option value="3" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 3)>@SRM.WorkerMonthMarch</!option>
-                                    <!option value="4" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 4)>@SRM.WorkerMonthApril</!option>
-                                    <!option value="5" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 5)>@SRM.WorkerMonthMay</!option>
-                                    <!option value="6" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 6)>@SRM.WorkerMonthJune</!option>
-                                    <!option value="7" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 7)>@SRM.WorkerMonthJuly</!option>
-                                    <!option value="8" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 8)>@SRM.WorkerMonthAugust</!option>
-                                    <!option value="9" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 9)>@SRM.WorkerMonthSeptember</!option>
-                                    <!option value="10" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 10)>@SRM.WorkerMonthOctober</!option>
-                                    <!option value="11" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 11)>@SRM.WorkerMonthNovember</!option>
-                                    <!option value="12" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 12)>@SRM.WorkerMonthDecember</!option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <br />
-            <h4>@SRM.WorkerExecutionRange</h4>
-            <hr />
-            <div class="row">
-                <div class="col-sm-6">
-                    <div class="form-group">
-                        <label for="editStartDate">@SRM.WorkerStartDate</label>
-                        <input type="date" id="editStartDate" class="form-control" value="@startDate" data-kind="editor" />
-                    </div>
+							<input class="form-check-input" type="radio" name="yearPattern" id="yearPatternOn" value="2"
+									 @Html.TP().Attributes.Checked(Model.Job.YearMode == TomPIT.Services.WorkerYearMode.RelativeDate)>
+							<div class="form-inline">
+								<label class="form-check-label" for="monthPatternThe">
+									@SRM.WorkerYearOnThe
+								</label>
+								<select class="form-control ml-1 mr-1" id="yearPart" data-kind="editor">
+									<!option value="1" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.First)>@SRM.WorkerMonthFirst</!option>
+									<!option value="2" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Second)>@SRM.WorkerMonthSecond</!option>
+									<!option value="3" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Third)>@SRM.WorkerMonthThird</!option>
+									<!option value="4" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Fourth)>@SRM.WorkerMonthFourth</!option>
+									<!option value="5" @Html.TP().Attributes.Selected(Model.Job.IntervalCounter == TomPIT.Services.WorkerCounter.Last)>@SRM.WorkerMonthLast</!option>
+								</select>
+								<select class="form-control mr-1" id="yearPart2" data-kind="editor">
+									<!option value="1" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Monday)>@SRM.WorkerDayMonday</!option>
+									<!option value="2" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Tuesday)>@SRM.WorkerDayTuesday</!option>
+									<!option value="3" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Wednesday)>@SRM.WorkerDayWednesday</!option>
+									<!option value="4" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Thursday)>@SRM.WorkerDayThursday</!option>
+									<!option value="5" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Friday)>@SRM.WorkerDayFriday</!option>
+									<!option value="6" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Saturday)>@SRM.WorkerDaySaturday</!option>
+									<!option value="7" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Sunday)>@SRM.WorkerDaySunday</!option>
+									<!option value="8" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Weekday)>@SRM.WorkerDayWeekday</!option>
+									<!option value="9" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.WeekendDay)>@SRM.WorkerDayWeekend</!option>
+									<!option value="10" @Html.TP().Attributes.Selected(Model.Job.MonthPart == TomPIT.Services.WorkerMonthPart.Day)>@SRM.WorkerDayDay</!option>
+								</select>
+								<label class="form-check-label">
+									@SRM.WorkerYearFrom
+								</label>
+								<select class="form-control ml-1" id="editYearMonthPart" data-kind="editor">
+									<!option value="1" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 1)>@SRM.WorkerMonthJanuary</!option>
+									<!option value="2" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 2)>@SRM.WorkerMonthFebruary</!option>
+									<!option value="3" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 3)>@SRM.WorkerMonthMarch</!option>
+									<!option value="4" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 4)>@SRM.WorkerMonthApril</!option>
+									<!option value="5" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 5)>@SRM.WorkerMonthMay</!option>
+									<!option value="6" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 6)>@SRM.WorkerMonthJune</!option>
+									<!option value="7" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 7)>@SRM.WorkerMonthJuly</!option>
+									<!option value="8" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 8)>@SRM.WorkerMonthAugust</!option>
+									<!option value="9" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 9)>@SRM.WorkerMonthSeptember</!option>
+									<!option value="10" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 10)>@SRM.WorkerMonthOctober</!option>
+									<!option value="11" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 11)>@SRM.WorkerMonthNovember</!option>
+									<!option value="12" @Html.TP().Attributes.Selected(Model.Job.MonthNumber == 12)>@SRM.WorkerMonthDecember</!option>
+								</select>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<br />
+			<h4>@SRM.WorkerExecutionRange</h4>
+			<hr />
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label for="editStartDate">@SRM.WorkerStartDate</label>
+						<div id="editStartDate"></div>
+					</div>
 
-                </div>
-                <div class="col-sm-6">
-                    <div class="form-check mb-1">
-                        <input class="form-check-input" type="radio" name="editEndDate" id="editNoEndDate" value="1"
-                               @Html.TP().Attributes.Checked(Model.Job.EndMode == TomPIT.Services.WorkerEndMode.NoEnd)>
-                        <label class="form-check-label" for="editNoEndDate">
-                            @SRM.WorkerNoEnd
-                        </label>
-                    </div>
-                    <div class="form-check mb-1">
-                        <input class="form-check-input" type="radio" name="editEndDate" id="editEndDateOccurence" value="2"
-                               @Html.TP().Attributes.Checked(Model.Job.EndMode == TomPIT.Services.WorkerEndMode.Occurrence)>
-                        <div class="form-inline">
-                            <label class="form-check-label" for="editNoEndDate">
-                                @SRM.WorkerEndAfter
-                            </label>
-                            <input type="number" id="editEndOccurence" class="form-control ml-1 mr-1" value="@Model.Job.Limit" data-kind="editor" />
-                            <label>
-                                @SRM.WorkerOccurences
-                            </label>
-                        </div>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="editEndDate" id="editEndBy" value="3"
-                               @Html.TP().Attributes.Checked(Model.Job.EndMode == TomPIT.Services.WorkerEndMode.Date)>
-                        <div class="form-inline">
-                            <label class="form-check-label" for="editEndBy">
-                                @SRM.WorkerEndBy
-                            </label>
-                            <input type="date" id="editEndByDate" class="form-control ml-1" value="@endDate" data-kind="editor" />
-                        </div>
-                    </div>
+				</div>
+				<div class="col-sm-6">
+					<div class="form-check mb-1">
+						<input class="form-check-input" type="radio" name="editEndDate" id="editNoEndDate" value="1"
+								 @Html.TP().Attributes.Checked(Model.Job.EndMode == TomPIT.Services.WorkerEndMode.NoEnd)>
+						<label class="form-check-label" for="editNoEndDate">
+							@SRM.WorkerNoEnd
+						</label>
+					</div>
+					<div class="form-check mb-1">
+						<input class="form-check-input" type="radio" name="editEndDate" id="editEndDateOccurence" value="2"
+								 @Html.TP().Attributes.Checked(Model.Job.EndMode == TomPIT.Services.WorkerEndMode.Occurrence)>
+						<div class="form-inline">
+							<label class="form-check-label" for="editNoEndDate">
+								@SRM.WorkerEndAfter
+							</label>
+							<input type="number" id="editEndOccurence" class="form-control ml-1 mr-1" value="@Model.Job.Limit" data-kind="editor" />
+							<label>
+								@SRM.WorkerOccurences
+							</label>
+						</div>
+					</div>
+					<div class="form-check">
+						<input class="form-check-input" type="radio" name="editEndDate" id="editEndBy" value="3"
+								 @Html.TP().Attributes.Checked(Model.Job.EndMode == TomPIT.Services.WorkerEndMode.Date)>
+						<div class="form-inline">
+							<label class="form-check-label" for="editEndBy">
+								@SRM.WorkerEndBy
+							</label>
+							<input type="date" id="editEndByDate" class="form-control ml-1" value="@endDate" data-kind="editor" />
+						</div>
+					</div>
 
-                </div>
-            </div>
-        </div>
-    </form>
+				</div>
+			</div>
+		</div>
+	</form>
 </div>
+
+
 <script>
-    $('#editStartTime').dxDateBox({
-        type: "time",
-        showClearButton: true,
-        value: @Html.TP().JavaScript.Date(Model.Job.StartTime),
-        onValueChanged: saveConfiguration
-    });
-
-        $('#editEndTime').dxDateBox({
-        type: "time",
-        showClearButton: true,
-        value: @Html.TP().JavaScript.Date(Model.Job.EndTime),
-        onValueChanged: saveConfiguration
-    });
-
-    var patternItems = [
-        { text: '@SRM.WorkerOnce', value:'@WorkerInterval.Once' },
-        { text: '@SRM.WorkerSecond', value: '@WorkerInterval.Second' },
-        { text: '@SRM.WorkerMinute', value: '@WorkerInterval.Minute' },
-        { text: '@SRM.WorkerHour', value: '@WorkerInterval.Hour' },
-        { text: '@SRM.WorkerDay', value: '@WorkerInterval.Day' },
-        { text: '@SRM.WorkerWeek', value: '@WorkerInterval.Week' },
-        { text: '@SRM.WorkerMonth', value: '@WorkerInterval.Month' },
-        { text: '@SRM.WorkerYear', value: '@WorkerInterval.Year' }
-    ];
-
-    $('#editPattern').dxRadioGroup({
-        dataSource: patternItems,
-        displayExpr: 'text',
-        valueExpr: 'value',
-        value: '@Model.Job.Interval',
-        onValueChanged: function () {
-            var val = $('#editPattern').dxRadioGroup('instance').option('value');
-
-            $('#divPatterns > div').collapse('hide');
-            $('#pattern' + val).collapse('show');
-
-            saveConfiguration();
-        }
-    });
-
-
-    $('input[name="editPattern"]').change(function () {
-        var value = $(this).val();
-
-        $('#divPatterns > div').collapse('hide');
-        $('#pattern' + value).collapse('show');
-    });
-
-    $('[data-kind="editor"]').change(saveConfiguration);
-    $('input:radio[name=editPattern]').click(saveConfiguration);
-    $('input:radio[name=dayPattern]').click(saveConfiguration);
-    $('input:radio[name=monthPattern]').click(saveConfiguration);
-    $('input:radio[name=yearPattern]').click(saveConfiguration);
-    $('input:radio[name=editEndDate]').click(saveConfiguration);
-    $('[data-kind="check"]').click(saveConfiguration);
-
-    function saveConfiguration() {
-        debugger;
-        var data = {};
-
-        data.startTime = tompit.invariantDate( $('#editStartTime').dxDateBox('instance').option('value'));
-        data.endTime = tompit.invariantDate($('#editEndTime').dxDateBox('instance').option('value'));
-        data.interval = $('#editPattern').dxRadioGroup('instance').option('value');
-        data.startDate = $('#editStartDate').val();
-        data.endMode = $('input:radio[name=editEndDate]:checked').val();
-
-        switch (data.interval) {
-            case "@WorkerInterval.Second.ToString()":
-                data.intervalValue = $('#editSecondCount').val();
-                break;
-            case "@WorkerInterval.Minute.ToString()":
-                data.intervalValue = $('#editMinuteCount').val();
-                break;
-            case "@WorkerInterval.Hour.ToString()":
-                data.intervalValue = $('#editHourCount').val();
-                break;
-            case "@WorkerInterval.Day.ToString()":
-                data.dayMode = $('input:radio[name=dayPattern]:checked').val();
-
-                switch (data.dayMode) {
-                    case "1":
-                        data.intervalValue = $('#editDayCount').val();
-                        break;
-                };
-
-                break;
-            case "@WorkerInterval.Week.ToString()":
-                data.intervalValue = $('#editWeekInterval').val();
-
-                var weekdays = 0;
-
-                if ($('#checkWeekMonday').is(':checked'))
-                    weekdays += 1;
-
-                if ($('#checkWeekTuesday').is(':checked'))
-                    weekdays += 2;
-
-                if ($('#checkWeekWednesday').is(':checked'))
-                    weekdays += 4;
-
-                if ($('#checkWeekThursday').is(':checked'))
-                    weekdays += 8;
-
-                if ($('#checkWeekFriday').is(':checked'))
-                    weekdays += 16;
-
-                if ($('#checkWeekSaturday').is(':checked'))
-                    weekdays += 32;
-
-                if ($('#checkWeekSunday').is(':checked'))
-                    weekdays += 64;
-
-                data.weekdays = weekdays;
-
-                break;
-            case "@WorkerInterval.Month.ToString()":
-                data.monthMode = $('input:radio[name=dayPattern]:checked').val();
-
-                switch (data.monthMode) {
-                    case "1":
-                        data.intervalValue = $('#editMonthCount').val();
-                        data.monthNumber = $('#editMonthCount2').val();
-                        break;
-                    case "2":
-                        data.intervalCounter = $('#monthPart').val();
-                        data.monthPart = $('#monthPart2').val();
-                        data.monthNumber = $('#editMonthCount3').val();
-                        break;
-                };
-                break;
-            case "@WorkerInterval.Year.ToString()":
-                data.intervalValue = $('#editYearInterval').val();
-                data.yearMode = data.monthMode = $('input:radio[name=yearPattern]:checked').val();
-
-                switch (data.yearMode) {
-                    case "1":
-                        data.monthNumber = $('#editYearPart').val();
-                        data.dayOfMonth = $('#editYearCount2').val();
-                        break;
-                    case "2":
-                        data.intervalCounter = $('#yearPart').val();
-                        data.monthPart = $('#yearPart2').val();
-                        data.monthNumber = $('#editYearMonthPart').val();
-                        break;
-                };
-                break;
-        };
-
-        switch (data.endMode) {
-            case "2":
-                data.limit = $('#editEndOccurence').val();
-                break;
-            case "3":
-                data.endDate = $('#editEndByDate').val();
-                break;
-        };
-
-        data.action = "saveConfiguration";
-
-        ide.designerAction({
-            data: data,
-            onComplete: function (d) {
-                if (typeof (d.nextRun !== 'undefined'))
-                    $('#nextRun').html(d.nextRun);
-            }
-        });
-    };
-
-    $('#btnStatus').click(function () {
-        ide.designerAction({
-            data: {
-                action: 'changeStatus',
-                status:'@changeStatus'
-            }
-        });
-    });
+	$('#scheduleDesigner').tpScheduleDesigner({
+		data: {
+			startTime:@Html.TP().JavaScript.Date(Model.Job.StartTime),
+			endTime:@Html.TP().JavaScript.Date(Model.Job.EndTime),
+			startDate:@Html.TP().JavaScript.Date(Model.Job.StartDate),
+			interval: '@Model.Job.Interval',
+			changeStatus:'@changeStatus',
+			patternItems: [
+				{ text: '@SRM.WorkerOnce', value: '@WorkerInterval.Once' },
+				{ text: '@SRM.WorkerSecond', value: '@WorkerInterval.Second' },
+				{ text: '@SRM.WorkerMinute', value: '@WorkerInterval.Minute' },
+				{ text: '@SRM.WorkerHour', value: '@WorkerInterval.Hour' },
+				{ text: '@SRM.WorkerDay', value: '@WorkerInterval.Day' },
+				{ text: '@SRM.WorkerWeek', value: '@WorkerInterval.Week' },
+				{ text: '@SRM.WorkerMonth', value: '@WorkerInterval.Month' },
+				{ text: '@SRM.WorkerYear', value: '@WorkerInterval.Year' }
+			],
+		},
+		text: {
+			second: '@WorkerInterval.Second.ToString()',
+			minute: '@WorkerInterval.Minute.ToString()',
+			hour: '@WorkerInterval.Hour.ToString()',
+			day: '@WorkerInterval.Day.ToString()',
+			week: '@WorkerInterval.Week.ToString()',
+			month: '@WorkerInterval.Month.ToString()',
+			year:'@WorkerInterval.Year.ToString()',
+		}
+	});
 </script>

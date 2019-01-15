@@ -12,7 +12,7 @@
 	};
 
 	tompit.invariantDate = function (v) {
-		if (typeof v === 'undefined' || v == null || !(v instanceof Date))
+		if (typeof v === 'undefined' || v === null || !(v instanceof Date))
 			return null;
 
 		var r = new Date(v.getFullYear(), v.getMonth(), v.getDay());
