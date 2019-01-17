@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;

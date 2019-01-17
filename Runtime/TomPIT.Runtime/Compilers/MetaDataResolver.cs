@@ -60,28 +60,33 @@ namespace TomPIT.Compilers
 			}
 		}
 
-		public override ImmutableArray<PortableExecutableReference> ResolveReference(string reference, string baseFilePath, MetadataReferenceProperties properties)
+		public static ImmutableArray<PortableExecutableReference> Resolve(ISysConnection connection, Guid microService, string reference)
 		{
-			var component = Connection.GetService<IComponentService>().SelectComponent(MicroService, "Assembly", reference);
+			var component = connection.GetService<IComponentService>().SelectComponent(microService, "Assembly", reference);
 
 			if (component == null)
 				return ImmutableArray<PortableExecutableReference>.Empty;
 
-			if (!(Connection.GetService<IComponentService>().SelectConfiguration(component.Token) is IAssemblyResource config))
+			if (!(connection.GetService<IComponentService>().SelectConfiguration(component.Token) is IAssemblyResource config))
 				return ImmutableArray<PortableExecutableReference>.Empty;
 
 			if (config is IAssemblyUploadResource)
-				return ResolveUploadReference(config as IAssemblyUploadResource);
+				return ResolveUploadReference(connection, config as IAssemblyUploadResource);
 			else
 				return ResolveFileReference(config as IAssemblyFileSystemResource);
 		}
 
-		private ImmutableArray<PortableExecutableReference> ResolveUploadReference(IAssemblyUploadResource d)
+		public override ImmutableArray<PortableExecutableReference> ResolveReference(string reference, string baseFilePath, MetadataReferenceProperties properties)
+		{
+			return Resolve(Connection, MicroService, reference);
+		}
+
+		private static ImmutableArray<PortableExecutableReference> ResolveUploadReference(ISysConnection connection, IAssemblyUploadResource d)
 		{
 			if (d.Blob == Guid.Empty)
 				return ImmutableArray<PortableExecutableReference>.Empty;
 
-			var content = Connection.GetService<IStorageService>().Download(d.Blob);
+			var content = connection.GetService<IStorageService>().Download(d.Blob);
 
 			if (content == null || content.Content == null || content.Content.Length == 0)
 				return ImmutableArray<PortableExecutableReference>.Empty;
@@ -91,7 +96,7 @@ namespace TomPIT.Compilers
 			return ImmutableArray.Create(mr);
 		}
 
-		private ImmutableArray<PortableExecutableReference> ResolveFileReference(IAssemblyFileSystemResource d)
+		private static ImmutableArray<PortableExecutableReference> ResolveFileReference(IAssemblyFileSystemResource d)
 		{
 			var rs = Shell.GetService<IRuntimeService>();
 			var mr = MetadataReference.CreateFromFile(string.Format(@"{0}\bin\{1}", rs.ContentRoot, d.FileName));

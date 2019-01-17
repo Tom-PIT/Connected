@@ -161,7 +161,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			var r = new List<ICodeAnalysisResult>();
 			var o = new List<ICodeAnalysisResult>();
 
-			var sm = Task.Run(async () => { return await Document.GetSemanticModelAsync(); }).Result;
+			var sm = Task.Run(async () => { return await CreateDocument(text).GetSemanticModelAsync(); }).Result;
 			var root = sm.SyntaxTree.GetRoot();
 			var descendants = root.DescendantNodes().Where(f => f is InvocationExpressionSyntax);
 

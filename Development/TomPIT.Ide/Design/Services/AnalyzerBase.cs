@@ -11,7 +11,6 @@ using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.Compilers;
-using TomPIT.Runtime;
 using TomPIT.Services;
 
 namespace TomPIT.Design.Services
@@ -167,18 +166,40 @@ namespace TomPIT.Design.Services
 			}
 		}
 
+
+		protected DocumentInfo CreateDocumentInfo(string sourceCode)
+		{
+			return DocumentInfo.Create(
+				 DocumentId.CreateNewId(Project.Id), "Script",
+				 sourceCodeKind: SourceCodeKind.Script,
+				 loader: TextLoader.From(TextAndVersion.Create(SourceText.From(sourceCode), VersionStamp.Create())));
+		}
+
 		public virtual SourceText SourceCode { get { return SourceText.From(string.Empty); } }
 		public virtual ProjectInfo ProjectInfo
 		{
 			get
 			{
 				if (_projectInfo == null)
+				{
+					var refs = new List<MetadataReference>
+					{
+						MetadataReference.CreateFromFile(Assembly.GetAssembly(ArgumentsType).Location)
+					};
+
 					_projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), "Script", "Script", LanguageNames.CSharp, isSubmission: true, hostObjectType: ArgumentsType)
-					.WithMetadataReferences(CombineReferences(new List<MetadataReference> { MetadataReference.CreateFromFile(Assembly.GetAssembly(ArgumentsType).Location) }))
+					.WithMetadataReferences(CombineReferences(refs))
 					.WithCompilationOptions(CompilationOptions);
+				}
 
 				return _projectInfo;
 			}
+		}
+
+
+		protected Document CreateDocument(string sourceCode)
+		{
+			return Workspace.AddDocument(CreateDocumentInfo(sourceCode));
 		}
 
 		public virtual Document Document

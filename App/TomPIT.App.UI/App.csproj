@@ -11,7 +11,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AssemblyName>TomPIT.App</AssemblyName>
     <RootNamespace>TomPIT</RootNamespace>
-		<MvcRazorExcludeRefAssembliesFromPublish>false</MvcRazorExcludeRefAssembliesFromPublish>
+		<CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
 	</PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +26,8 @@
   </ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="2.2.0" />
 		<PackageReference Include="BuildBundlerMinifier" Version="2.8.391" />
 		<PackageReference Include="dotless.Core" Version="1.6.7" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.10.0" />
