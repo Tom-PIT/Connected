@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using TomPIT.Runtime;
 using TomPIT.Services;
 
 namespace TomPIT.Models
@@ -20,16 +19,22 @@ namespace TomPIT.Models
 
 		public ActionContext ActionContext => Controller?.ControllerContext;
 
-		public void Initialize(Controller controller)
+		protected void Initialize(Controller controller, bool initializing)
 		{
 			Controller = controller;
 			Request = Controller?.Request;
 
 			var p = new ModelInitializeParams();
 
-			OnInitializing(p);
+			if (initializing)
+				OnInitializing(p);
 
 			Initialize(controller?.Request, p.Endpoint, p.Authority, p.AuthorityId, p.ContextId);
+		}
+
+		public void Initialize(Controller controller)
+		{
+			Initialize(controller, true);
 		}
 
 		public void Databind()

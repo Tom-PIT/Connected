@@ -9,7 +9,7 @@ to synchronize it with:
 
 You are recommended to back up your database before running this script
 
-Script created by SQL Compare Engine version 12.3.3.4490 from Red Gate Software Ltd at 1/17/2019 11:06:27 PM
+Script created by SQL Compare Engine version 12.3.3.4490 from Red Gate Software Ltd at 1/18/2019 9:40:23 AM
 
 */
 SET NUMERIC_ROUNDABORT OFF
@@ -1182,7 +1182,7 @@ GO
 CREATE TABLE [tompit].[api_test]
 (
 [id] [int] NOT NULL IDENTITY(1, 1),
-[title] [nvarchar] (256) COLLATE Slovenian_CI_AS NOT NULL,
+[title] [nvarchar] (64) COLLATE Slovenian_CI_AS NOT NULL,
 [description] [nvarchar] (1024) COLLATE Slovenian_CI_AS NULL,
 [body] [nvarchar] (max) COLLATE Slovenian_CI_AS NULL,
 [identifier] [uniqueidentifier] NOT NULL CONSTRAINT [DF_api_test_identifier] DEFAULT (newid()),

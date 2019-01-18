@@ -9,7 +9,7 @@ to synchronize it with:
 
 You are recommended to back up your database before running this script
 
-Script created by SQL Compare Engine version 12.3.3.4490 from Red Gate Software Ltd at 1/17/2019 11:06:51 PM
+Script created by SQL Compare Engine version 12.3.3.4490 from Red Gate Software Ltd at 1/18/2019 9:40:51 AM
 
 */
 SET NUMERIC_ROUNDABORT OFF
@@ -28,7 +28,7 @@ PRINT N'Altering [tompit].[api_test]'
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-ALTER TABLE [tompit].[api_test] ALTER COLUMN [title] [nvarchar] (128) COLLATE Slovenian_CI_AS NOT NULL
+ALTER TABLE [tompit].[api_test] ALTER COLUMN [title] [nvarchar] (64) COLLATE Slovenian_CI_AS NOT NULL
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO

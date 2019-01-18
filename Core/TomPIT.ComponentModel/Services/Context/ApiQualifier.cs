@@ -42,15 +42,11 @@ namespace TomPIT.Services.Context
 			{
 				if (Segments.Count == 1)
 				{
-					if (Context is IApiExecutionScope && MicroService == null)
+					if (Context is IApiExecutionScope)
 					{
 						Api = ((IApiExecutionScope)Context).Api.ComponentName(Context);
 
 						Operation = Segments[0];
-					}
-					else
-					{
-
 					}
 				}
 				else

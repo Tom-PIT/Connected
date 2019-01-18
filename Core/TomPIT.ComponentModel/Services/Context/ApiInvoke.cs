@@ -22,7 +22,7 @@ namespace TomPIT.Services.Context
 
 			ctx.Identity.SetContextId(ms.ToString());
 
-			var svc = GetApi(ms, api, explicitIdentifier);
+			var svc = GetApi(microService, api, explicitIdentifier);
 
 			if (svc.MicroService(ctx.Connection()) != ms)
 				CheckReference(ctx, ms, svc.MicroService(ctx.Connection()));

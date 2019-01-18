@@ -44,20 +44,12 @@ namespace TomPIT.Models
 			var tokens = url.Split('/');
 			var ms = string.Empty;
 
-			if (tokens.Length == 1)
-				return;
+			if (tokens.Length < 3)
+				throw new RuntimeException(SR.ErrInvalidQualifier);
 
-			if (tokens.Length == 3)
-			{
-				ms = tokens[0];
-				Api = tokens[1];
-				Operation = tokens[2];
-			}
-			else
-			{
-				Api = tokens[0];
-				Operation = tokens[1];
-			}
+			ms = tokens[0];
+			Api = tokens[1];
+			Operation = tokens[2];
 
 			if (!string.IsNullOrWhiteSpace(ms))
 			{
@@ -236,15 +228,14 @@ namespace TomPIT.Models
 			}
 		}
 
-		public static ApiTestModel Create(Controller controller, bool initialize)
+		public static ApiTestModel Create(Controller controller, bool initializing)
 		{
 			var r = new ApiTestModel
 			{
 				Body = controller.RequestBody()
 			};
 
-			if (initialize)
-				r.Initialize(controller);
+			r.Initialize(controller, initializing);
 
 			r.Databind();
 
