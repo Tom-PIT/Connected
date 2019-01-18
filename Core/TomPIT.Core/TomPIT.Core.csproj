@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup Label="Globals">
-    <SccProjectName></SccProjectName>
-    <SccProvider></SccProvider>
-    <SccAuxPath></SccAuxPath>
-    <SccLocalPath></SccLocalPath>
+    <SccProjectName>
+    </SccProjectName>
+    <SccProvider>
+    </SccProvider>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccLocalPath>
+    </SccLocalPath>
   </PropertyGroup>
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <Authors>Tom PIT</Authors>
@@ -14,14 +16,15 @@
     <Product>Tom PIT Corporate Cloud</Product>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <RootNamespace>TomPIT</RootNamespace>
+    <AssemblyVersion>1.0.117.37</AssemblyVersion>
+    <FileVersion>1.0.117.37</FileVersion>
+		<Version>1.0.117.37</Version>
   </PropertyGroup>
-
   <ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.6.0" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Update="Claims.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -34,7 +37,6 @@
       <DependentUpon>SR.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Update="Claims.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -47,7 +49,6 @@
       <CustomToolNamespace>TomPIT</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
-
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\bin2&quot;&#xD;&#xA;copy &quot;$(TargetDir)\$(TargetName).pdb&quot; &quot;c:\bin2&quot;" />
   </Target>

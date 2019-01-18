@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using TomPIT.BigData.Formatters;
 using TomPIT.Environment;
 
 namespace TomPIT.BigData
@@ -22,7 +21,7 @@ namespace TomPIT.BigData
 				Authentication = AuthenticationType.Bearer,
 				ConfigureMvc = (o) =>
 				 {
-					 o.OutputFormatters.Add(new ProtobufFormatter());
+					 //o.OutputFormatters.Add(new ProtobufFormatter());
 				 }
 			};
 
