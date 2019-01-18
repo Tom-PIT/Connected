@@ -23,5 +23,7 @@ namespace TomPIT.SysDb
 		IWorkerHandler Workers { get; }
 		IEventHandler Events { get; }
 		IDataHandler Data { get; }
+
+		void Initialize(string connectionString);
 	}
 }

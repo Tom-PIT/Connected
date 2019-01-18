@@ -4,12 +4,14 @@
     <SccProvider>SAK</SccProvider>
     <SccAuxPath>SAK</SccAuxPath>
     <SccLocalPath>SAK</SccLocalPath>
+    <Configurations>Debug;Release;Deploy</Configurations>
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.Api</RootNamespace>
-    <AssemblyVersion>1.0.117.37</AssemblyVersion>
-    <FileVersion>1.0.117.37</FileVersion>
+    <AssemblyVersion>1.0.118.53</AssemblyVersion>
+    <FileVersion>1.0.118.53</FileVersion>
+    <Version>1.0.118.53</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />

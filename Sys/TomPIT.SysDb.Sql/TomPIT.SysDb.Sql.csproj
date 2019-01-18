@@ -4,11 +4,13 @@
     <SccProvider>SAK</SccProvider>
     <SccAuxPath>SAK</SccAuxPath>
     <SccLocalPath>SAK</SccLocalPath>
+    <Configurations>Debug;Release;Deploy</Configurations>
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyVersion>1.0.117.37</AssemblyVersion>
-    <FileVersion>1.0.117.37</FileVersion>
+    <AssemblyVersion>1.0.118.53</AssemblyVersion>
+    <FileVersion>1.0.118.53</FileVersion>
+    <Version>1.0.118.53</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Data.SqlClient" Version="4.6.0" />
@@ -17,4 +19,7 @@
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
     <ProjectReference Include="..\TomPIT.SysDb\TomPIT.SysDb.csproj" />
   </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.SysDb.Sql&quot;" />
+  </Target>
 </Project>

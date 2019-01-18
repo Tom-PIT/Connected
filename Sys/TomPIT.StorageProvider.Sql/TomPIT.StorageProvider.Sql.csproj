@@ -4,11 +4,13 @@
     <SccProvider>SAK</SccProvider>
     <SccAuxPath>SAK</SccAuxPath>
     <SccLocalPath>SAK</SccLocalPath>
+    <Configurations>Debug;Release;Deploy</Configurations>
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyVersion>1.0.117.37</AssemblyVersion>
-    <FileVersion>1.0.117.37</FileVersion>
+    <AssemblyVersion>1.0.118.53</AssemblyVersion>
+    <FileVersion>1.0.118.53</FileVersion>
+    <Version>1.0.118.53</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Data.SqlClient" Version="4.6.0" />
@@ -18,6 +20,6 @@
     <ProjectReference Include="..\TomPIT.Sys.Api\TomPIT.Sys.Api.csproj" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\bin2&quot;&#xD;&#xA;copy &quot;$(TargetDir)\$(TargetName).pdb&quot; &quot;c:\bin2&quot;" />
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.StorageProviders.Sql&quot;" />
   </Target>
 </Project>

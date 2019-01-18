@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Globals">
     <SccProjectName>
     </SccProjectName>
@@ -8,6 +8,7 @@
     </SccAuxPath>
     <SccLocalPath>
     </SccLocalPath>
+    <Configurations>Debug;Release;Deploy</Configurations>
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
@@ -16,9 +17,9 @@
     <Product>Tom PIT Corporate Cloud</Product>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>1.0.117.37</AssemblyVersion>
-    <FileVersion>1.0.117.37</FileVersion>
-		<Version>1.0.117.37</Version>
+    <AssemblyVersion>1.0.118.53</AssemblyVersion>
+    <FileVersion>1.0.118.53</FileVersion>
+    <Version>1.0.118.53</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
@@ -49,7 +50,4 @@
       <CustomToolNamespace>TomPIT</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\bin2&quot;&#xD;&#xA;copy &quot;$(TargetDir)\$(TargetName).pdb&quot; &quot;c:\bin2&quot;" />
-  </Target>
 </Project>

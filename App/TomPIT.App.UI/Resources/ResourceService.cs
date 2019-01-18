@@ -2,7 +2,6 @@
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using TomPIT.Application.Resources;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
@@ -38,7 +37,7 @@ namespace TomPIT.Resources
 
 		private void Invalidate(ConfigurationEventArgs e)
 		{
-			if (string.Compare(e.Category, ScriptBundle.ComponentCategory, true) != 0)
+			if (string.Compare(e.Category, "Bundle", true) != 0)
 				return;
 
 			var c = Connection.GetService<IComponentService>().SelectComponent(e.Component);
@@ -63,7 +62,7 @@ namespace TomPIT.Resources
 
 			var svc = Connection.GetService<IComponentService>();
 
-			var c = svc.SelectComponent(ms.Token, ScriptBundle.ComponentCategory, name);
+			var c = svc.SelectComponent(ms.Token, "Bundle", name);
 
 			if (c == null)
 				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrBundleNotFound, name));

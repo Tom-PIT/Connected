@@ -10,8 +10,9 @@
     <AssemblyName>TomPIT.App</AssemblyName>
     <RootNamespace>TomPIT</RootNamespace>
     <CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
-    <AssemblyVersion>1.0.117.37</AssemblyVersion>
-    <FileVersion>1.0.117.37</FileVersion>
+    <AssemblyVersion>1.0.118.53</AssemblyVersion>
+    <FileVersion>1.0.118.53</FileVersion>
+    <Version>1.0.118.53</Version>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="compilerconfig.json" />
@@ -38,9 +39,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
-    <ProjectReference Include="..\..\DataProviders\TomPIT.DataProviders.Sql\TomPIT.DataProviders.Sql.csproj" />
-    <ProjectReference Include="..\..\Development\TomPIT.Templates.Application\TomPIT.Application.csproj" />
-    <ProjectReference Include="..\..\Development\TomPIT.Templates.IoT\TomPIT.Templates.IoT.csproj" />
     <ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
     <ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
     <ProjectReference Include="..\..\Runtime\TomPIT.UI\TomPIT.UI.csproj" />

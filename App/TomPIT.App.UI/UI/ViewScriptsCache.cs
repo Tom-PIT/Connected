@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text;
-using TomPIT.Application.UI;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 
 namespace TomPIT.UI
@@ -22,7 +22,7 @@ namespace TomPIT.UI
 				return r.Content;
 
 			var svc = Instance.GetService<IComponentService>();
-			var c = svc.SelectConfiguration(view) as ViewBase;
+			var c = svc.SelectConfiguration(view) as IView;
 
 			if (c == null)
 				throw new RuntimeException(SR.ErrComponentNotFound);

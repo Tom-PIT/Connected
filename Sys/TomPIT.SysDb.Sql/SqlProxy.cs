@@ -1,4 +1,5 @@
-﻿using TomPIT.SysDb.Data;
+﻿using TomPIT.Data.Sql;
+using TomPIT.SysDb.Data;
 using TomPIT.SysDb.Development;
 using TomPIT.SysDb.Diagnostics;
 using TomPIT.SysDb.Environment;
@@ -142,6 +143,11 @@ namespace TomPIT.SysDb.Sql
 
 				return _diagnostics;
 			}
+		}
+
+		public void Initialize(string connectionString)
+		{
+			ConnectionBase.DefaultConnectionString = connectionString;
 		}
 	}
 }

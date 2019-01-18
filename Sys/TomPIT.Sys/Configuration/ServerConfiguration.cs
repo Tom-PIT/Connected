@@ -1,7 +1,6 @@
 ﻿using TomPIT.Api.ComponentModel;
 using TomPIT.Api.Storage;
 using TomPIT.Security;
-using TomPIT.StorageProvider.Sql;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Data;
 using TomPIT.Sys.Security;
@@ -43,16 +42,6 @@ namespace TomPIT.Sys.Configuration
 
 		private static void InitializeData()
 		{
-			var e = DataModel.EnvironmentVariables.Select(StorageProviderService.DefaultStorageProviderVar);
-			/*
-			 * Sql server storage provider is built in and cannot be removed
-			 * because it's a part of the system database
-			 */
-			if (e == null || string.IsNullOrWhiteSpace(e.Value))
-				DataModel.EnvironmentVariables.Update(StorageProviderService.DefaultStorageProviderVar, typeof(SqlStorageProvider).TypeName());
-
-			Shell.GetService<IStorageProviderService>().Register(new SqlStorageProvider());
-
 			foreach (var i in Api.Configuration.Root.GetSection("storageProviders").GetChildren())
 			{
 				var t = Types.GetType(i.Value);

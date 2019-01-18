@@ -1,18 +1,15 @@
 ﻿{
    "database": "TomPIT.SysDb.Sql.SqlProxy, TomPIT.SysDb.Sql",
-   "authentication": {
-      "jwToken": {
-         "validIssuer": "tompit.net",
-         "validAudience": "tompit.net",
-         "issuerSigningKey": "F221ECECDB704EFB9568A8756115EBEC"
-      }
-   },
-   "serviceProviders": [
-
-   ],
-   "storageProviders": [
-
-   ],
+	"authentication": {
+		"jwToken": {
+			"validIssuer": "tompit.net",
+			"validAudience": "tompit.net",
+			"issuerSigningKey": "F221ECECDB704EFB9568A8756115EBEC"
+		}
+	},
+	"storageProviders": [
+		"TomPIT.StorageProvider.Sql.SqlStorageProvider, TomPIT.StorageProvider.Sql"
+	],
    "connectionStrings": {
       "sys": "data source=sys-db\\sql2017; initial catalog=proconiSys;user id=tompit;password=tompit;"
    }

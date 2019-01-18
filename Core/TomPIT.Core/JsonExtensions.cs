@@ -163,6 +163,52 @@ namespace TomPIT
 			}
 		}
 
+		public static void JoinMany(this JArray masterData, string masterKey, JArray detailsData, string detailsKey, string detailsProperty)
+		{
+			if (masterData.Count == 0 || detailsData.Count == 0)
+				return;
+
+			foreach (var i in masterData)
+			{
+				var jo = i as JObject;
+
+				if (!jo.ContainsKey(masterKey))
+					continue;
+
+				var masterValue = (string)jo[masterKey];
+				var a = new JArray();
+				jo.Add(detailsProperty, a);
+
+				foreach (var j in detailsData)
+				{
+					var jjo = j as JObject;
+
+					if (!jjo.ContainsKey(detailsKey))
+						continue;
+
+					var detailValue = (string)j[detailsKey];
+
+					if (string.Compare(masterValue, detailValue, true) == 0)
+						a.Add(j);
+				}
+			}
+		}
+
+		public static void JoinMany(this JObject masterData, string masterKey, JObject detailsData, string detailsKey, string detailsProperty)
+		{
+			JoinMany(ToResults(masterData), masterKey, ToResults(detailsData), detailsKey, detailsProperty);
+		}
+
+		public static void JoinMany(this JObject masterData, string masterKey, JArray detailsData, string detailsKey, string detailsProperty)
+		{
+			JoinMany(ToResults(masterData), masterKey, detailsData, detailsKey, detailsProperty);
+		}
+
+		public static void JoinMany(this JArray masterData, string masterKey, JObject detailsData, string detailsKey, string detailsProperty)
+		{
+			JoinMany(masterData, masterKey, ToResults(detailsData), detailsKey, detailsProperty);
+		}
+
 		public static void Join(this JObject masterData, string masterKey, JObject detailsData, string detailsKey, string detailsProperty)
 		{
 			Join(ToResults(masterData), masterKey, ToResults(detailsData), detailsKey, detailsProperty);

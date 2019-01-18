@@ -1,8 +1,6 @@
 ﻿using System;
-using TomPIT.Data.Sql;
 using TomPIT.Sys.Api.Database;
 using TomPIT.SysDb;
-using TomPIT.SysDb.Sql;
 
 namespace TomPIT.Sys.Services
 {
@@ -15,7 +13,7 @@ namespace TomPIT.Sys.Services
 
 		private void Configure()
 		{
-			var setting = TomPIT.Sys.Api.Configuration.Root["database"];
+			var setting = Api.Configuration.Root["database"];
 
 			if (!string.IsNullOrWhiteSpace(setting))
 			{
@@ -25,11 +23,7 @@ namespace TomPIT.Sys.Services
 					Proxy = type.Assembly.CreateInstance(type.FullName) as ISysDbProxy;
 			}
 
-			if (Proxy == null)
-				Proxy = new SqlProxy();
-
-			if (Proxy is SqlProxy)
-				ConnectionBase.DefaultConnectionString = TomPIT.Sys.Api.Configuration.Root["connectionStrings:sys"];
+			Proxy.Initialize(Api.Configuration.Root["connectionStrings:sys"]);
 		}
 
 		public ISysDbProxy Proxy
