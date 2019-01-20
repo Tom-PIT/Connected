@@ -8,9 +8,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>1.0.118.53</AssemblyVersion>
-    <FileVersion>1.0.118.53</FileVersion>
-    <Version>1.0.118.53</Version>
+    <AssemblyVersion>1.0.120.7</AssemblyVersion>
+    <FileVersion>1.0.120.7</FileVersion>
+    <Version>1.0.120.7</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Design\Services\**" />

@@ -8,11 +8,10 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Design;
-using TomPIT.Designers;
 using TomPIT.Dom;
 using TomPIT.Ide;
 
-namespace TomPIT.Application.Design.Designers
+namespace TomPIT.Designers
 {
 	public abstract class DataElementDesigner : DomDesigner<ReflectionElement>
 	{
@@ -47,7 +46,7 @@ namespace TomPIT.Application.Design.Designers
 			get
 			{
 				if (_connections == null)
-					_connections = Connection.GetService<IComponentService>().QueryComponents(Environment.Context.MicroService(), Data.Connection.ComponentCategory);
+					_connections = Connection.GetService<IComponentService>().QueryComponents(Environment.Context.MicroService(), "Connection");
 
 				return _connections;
 			}

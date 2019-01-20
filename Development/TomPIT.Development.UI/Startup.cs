@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using TomPIT.Application;
 using TomPIT.Connectivity;
 using TomPIT.Design;
 using TomPIT.Environment;
-using TomPIT.IoT;
+using TomPIT.Services;
 
 namespace TomPIT.Servers.Development
 {
@@ -37,8 +36,18 @@ namespace TomPIT.Servers.Development
 
 		private static void OnConnectionInitializing(object sender, SysConnectionRegisteredArgs e)
 		{
-			e.Connection.GetService<IMicroServiceTemplateService>().Register(new ApplicationTemplate());
-			e.Connection.GetService<IMicroServiceTemplateService>().Register(new IoTTemplate());
+			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+			{
+				var t = Types.GetType(i);
+
+				if (t == null)
+					continue;
+
+				var template = t.CreateInstance<IMicroServiceTemplate>();
+
+				if (template != null)
+					e.Connection.GetService<IMicroServiceTemplateService>().Register(template);
+			}
 		}
 	}
 }

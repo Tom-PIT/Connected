@@ -8,18 +8,17 @@
     </SccAuxPath>
     <SccLocalPath>
     </SccLocalPath>
-    <Configurations>Debug;Release;Deploy</Configurations>
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
-    <Product>Tom PIT Corporate Cloud</Product>
+    <Product>Tom PIT Micro service platform</Product>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>1.0.118.53</AssemblyVersion>
-    <FileVersion>1.0.118.53</FileVersion>
-    <Version>1.0.118.53</Version>
+    <AssemblyVersion>1.0.120.7</AssemblyVersion>
+    <FileVersion>1.0.120.7</FileVersion>
+    <Version>1.0.120.7</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />

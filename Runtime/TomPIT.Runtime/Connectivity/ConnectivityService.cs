@@ -27,14 +27,14 @@ namespace TomPIT.Connectivity
 			return Get(url);
 		}
 
-		public void Insert(string name, string url, string clientKey)
+		public void Insert(string name, string url, string authenticationToken)
 		{
 			if (Get(url) != null)
 				throw new ExecutionException(SR.ErrSysContextRegistered);
 
-			var instance = new SysConnection(url, clientKey);
+			var instance = new SysConnection(url, authenticationToken);
 
-			Connections.Add(new SysConnectionDescriptor(name, url, clientKey));
+			Connections.Add(new SysConnectionDescriptor(name, url, authenticationToken));
 
 			Set(url, instance, TimeSpan.Zero);
 			ConnectionRegistered?.Invoke(this, new SysConnectionRegisteredArgs(instance));

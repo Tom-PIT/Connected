@@ -69,7 +69,12 @@ namespace TomPIT.Sys.Services
 			var ev = DataModel.EnvironmentVariables.Select(DefaultStorageProviderVar);
 
 			if (ev == null || string.IsNullOrWhiteSpace(ev.Value))
-				throw new SysException(SR.ErrDefaultStorageProviderNotSet);
+			{
+				if (Providers.Count == 0)
+					throw new SysException(SR.ErrDefaultStorageProviderNotSet);
+				else
+					return Providers.First().Value;
+			}
 
 			DefaultStorageProvider = Types.GetType(ev.Value).CreateInstance<IStorageProvider>();
 

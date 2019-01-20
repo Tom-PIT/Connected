@@ -1,9 +1,17 @@
 ﻿{
-   "connections": [
+	"connections": [
 		{
 			"name": "localhost",
-			"url": "http://localhost:8089/sys",
+			"url": "http://localhost:44001",
 			"clientKey": "8354505c-19f9-4ecb-bc0f-108204c78555"
 		}
-   ]
+	],
+	"dataProviders": [
+		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
+	],
+	"designers": [
+		"TomPIT.Application.ApplicationTemplate, TomPIT.Application.Design",
+		"TomPIT.IoT.IoTTemplate, TomPIT.IoT.Design"
+	],
+	"plugins": "c:\\Deploy\\Plugins"
 }

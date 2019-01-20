@@ -8,9 +8,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>1.0.118.53</AssemblyVersion>
-    <FileVersion>1.0.118.53</FileVersion>
-    <Version>1.0.118.53</Version>
+    <AssemblyVersion>1.0.120.7</AssemblyVersion>
+    <FileVersion>1.0.120.7</FileVersion>
+    <Version>1.0.120.7</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Views\Shell\**" />
@@ -122,7 +122,4 @@
     <ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
     <ProjectReference Include="..\TomPIT.Ide\TomPIT.Ide.csproj" />
   </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\bin2&quot;&#xD;&#xA;copy &quot;$(TargetDir)\$(TargetName).pdb&quot; &quot;c:\bin2&quot;" />
-  </Target>
 </Project>

@@ -7,7 +7,6 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Text;
 using TomPIT.Caching;
-using TomPIT.Connectivity;
 using TomPIT.Services;
 
 namespace TomPIT.Connectivity
@@ -19,16 +18,16 @@ namespace TomPIT.Connectivity
 		private ServiceContainer _serviceContainer = null;
 		private IMemoryCache _cache = null;
 
-		public SysConnection(string url, string clientKey)
+		public SysConnection(string url, string authenticationToken)
 		{
 			Url = url;
-			ClientKey = clientKey;
+			AuthenticationToken = authenticationToken;
 
 			CachingClient.Connect();
 		}
 
 		public string Url { get; }
-		private string ClientKey { get; }
+		private string AuthenticationToken { get; }
 
 		public IMemoryCache Cache
 		{
@@ -46,7 +45,7 @@ namespace TomPIT.Connectivity
 			get
 			{
 				if (_cachingClient == null)
-					_cachingClient = new CachingClient(this);
+					_cachingClient = new CachingClient(this, AuthenticationToken);
 
 				return _cachingClient;
 			}
@@ -112,7 +111,7 @@ namespace TomPIT.Connectivity
 		{
 			try
 			{
-				var client = HttpClientPool.Get(ClientKey);
+				var client = HttpClientPool.Get(AuthenticationToken);
 				var response = client.GetAsync(url).GetAwaiter().GetResult();
 
 				return HandleResponse<T>(response);
@@ -140,21 +139,21 @@ namespace TomPIT.Connectivity
 
 		public void Post(string url, object content)
 		{
-			var client = HttpClientPool.Get(ClientKey);
+			var client = HttpClientPool.Get(AuthenticationToken);
 
 			HandleResponse(client.PostAsync(url, CreateContent(content)).GetAwaiter().GetResult());
 		}
 
 		public void Post(string url, HttpContent httpContent)
 		{
-			var client = HttpClientPool.Get(ClientKey);
+			var client = HttpClientPool.Get(AuthenticationToken);
 
 			HandleResponse(client.PostAsync(url, httpContent).GetAwaiter().GetResult());
 		}
 
 		public T Post<T>(string url, HttpContent httpContent)
 		{
-			var client = HttpClientPool.Get(ClientKey);
+			var client = HttpClientPool.Get(AuthenticationToken);
 
 			return HandleResponse<T>(client.PostAsync(url, httpContent).GetAwaiter().GetResult());
 		}

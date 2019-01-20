@@ -10,7 +10,8 @@
 	"storageProviders": [
 		"TomPIT.StorageProvider.Sql.SqlStorageProvider, TomPIT.StorageProvider.Sql"
 	],
-   "connectionStrings": {
-      "sys": "data source=sys-db\\sql2017; initial catalog=proconiSys;user id=tompit;password=tompit;"
-   }
+	"connectionStrings": {
+		"sys": "data source=pit-zbook\\sqlexpress; initial catalog=tp1;user id=tompit;password=tompit;"
+	},
+	"plugins": "c:\\Deploy\\Plugins"
 }

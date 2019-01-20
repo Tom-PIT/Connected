@@ -2,7 +2,6 @@
 using TomPIT.Api.Storage;
 using TomPIT.Security;
 using TomPIT.Sys.Api.Database;
-using TomPIT.Sys.Data;
 using TomPIT.Sys.Security;
 using TomPIT.Sys.Services;
 
@@ -19,11 +18,6 @@ namespace TomPIT.Sys.Configuration
 
 		private static void RegisterServices()
 		{
-			//var providers = new List<Runtime.IServiceProvider>();
-
-			//foreach (var i in Api.Configuration.Root.GetSection("serviceProviders").GetChildren())
-			//	providers.Add(Types.GetType(i.Value).CreateInstance<Runtime.IServiceProvider>());
-
 			Shell.RegisterService(typeof(IDatabaseService), typeof(DatabaseService));
 			Shell.RegisterService(typeof(IStorageProviderService), typeof(StorageProviderService));
 			Shell.RegisterService(typeof(INamingService), typeof(NamingService));
@@ -32,27 +26,28 @@ namespace TomPIT.Sys.Configuration
 
 		private static void InitializeAuthentication()
 		{
-			var section = Api.Configuration.Root.GetSection("authentication");
-			var jwt = section.GetSection("jwToken");
+			var sys = Shell.GetConfiguration<IServerSys>();
 
-			TomPITAuthenticationHandler.IssuerSigningKey = jwt.GetSection("issuerSigningKey").Value;
-			TomPITAuthenticationHandler.ValidAudience = jwt.GetSection("validAudience").Value;
-			TomPITAuthenticationHandler.ValidIssuer = jwt.GetSection("validIssuer").Value;
+			TomPITAuthenticationHandler.IssuerSigningKey = sys.Authentication.JwToken.IssuerSigningKey;
+			TomPITAuthenticationHandler.ValidAudience = sys.Authentication.JwToken.ValidAudience;
+			TomPITAuthenticationHandler.ValidIssuer = sys.Authentication.JwToken.ValidIssuer;
 		}
 
 		private static void InitializeData()
 		{
-			foreach (var i in Api.Configuration.Root.GetSection("storageProviders").GetChildren())
+			var sys = Shell.GetConfiguration<IServerSys>();
+
+			foreach (var i in sys.StorageProviders)
 			{
-				var t = Types.GetType(i.Value);
+				var t = Types.GetType(i);
 
 				if (t == null)
-					throw new SysException(string.Format("{0} ({1})", SR.ErrInvalidStorageProviderType, i.Value));
+					throw new SysException(string.Format("{0} ({1})", SR.ErrInvalidStorageProviderType, i));
 
 				var instance = t.CreateInstance<IStorageProvider>();
 
 				if (instance == null)
-					throw new SysException(string.Format("{0} ({1})", SR.ErrInvalidStorageProviderType, i.Value));
+					throw new SysException(string.Format("{0} ({1})", SR.ErrInvalidStorageProviderType, i));
 
 				Shell.GetService<IStorageProviderService>().Register(instance);
 			}

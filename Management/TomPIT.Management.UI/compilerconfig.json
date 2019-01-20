@@ -18,5 +18,9 @@
   {
     "outputFile": "wwwroot/Assets/Styles/ide.css",
     "inputFile": "wwwroot/Assets/Styles/ide.less"
+  },
+  {
+    "outputFile": "wwwroot/Assets/Styles/Variables.css",
+    "inputFile": "wwwroot/Assets/Styles/Variables.less"
   }
 ]

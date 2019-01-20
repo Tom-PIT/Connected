@@ -7,6 +7,7 @@ using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
+using TomPIT.Services;
 using TomPIT.Storage;
 
 namespace TomPIT.UI
@@ -67,7 +68,7 @@ namespace TomPIT.UI
 
 		protected override void OnInitializing()
 		{
-			var views = Connection.GetService<IComponentService>().QueryConfigurations(Instance.ResourceGroups, string.Format("{0}, {1}, {2}", "View", "MasterView", "Partial"));
+			var views = Connection.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, string.Format("{0}, {1}, {2}", "View", "MasterView", "Partial"));
 
 			foreach (var i in views)
 				Set(i.Component, i as IGraphicInterface, TimeSpan.Zero);

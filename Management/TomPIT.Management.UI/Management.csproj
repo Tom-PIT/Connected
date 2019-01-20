@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT</RootNamespace>
     <AssemblyName>TomPIT.Management.App</AssemblyName>
-    <AssemblyVersion>1.0.118.53</AssemblyVersion>
-    <FileVersion>1.0.118.53</FileVersion>
-    <Version>1.0.118.53</Version>
+    <AssemblyVersion>1.0.120.7</AssemblyVersion>
+    <FileVersion>1.0.120.7</FileVersion>
+    <Version>1.0.120.7</Version>
   </PropertyGroup>
   <PropertyGroup>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
@@ -44,20 +44,14 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Configuration\" />
     <Folder Include="Views\Shell\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
-    <ProjectReference Include="..\..\DataProviders\TomPIT.DataProviders.Sql\TomPIT.DataProviders.Sql.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Design\TomPIT.Design.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Ide.UI\TomPIT.Ide.UI.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Ide\TomPIT.Ide.csproj" />
-    <ProjectReference Include="..\..\Development\TomPIT.Templates.Application.Design\TomPIT.Application.Design.csproj" />
-    <ProjectReference Include="..\..\Development\TomPIT.Templates.Application\TomPIT.Application.csproj" />
-    <ProjectReference Include="..\..\Development\TomPIT.Templates.IoT.Design\TomPIT.Templates.IoT.Design.csproj" />
-    <ProjectReference Include="..\..\Development\TomPIT.Templates.IoT\TomPIT.Templates.IoT.csproj" />
     <ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
     <ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
     <ProjectReference Include="..\..\Runtime\TomPIT.UI\TomPIT.UI.csproj" />

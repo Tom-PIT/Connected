@@ -4,17 +4,14 @@
     <SccProvider>SAK</SccProvider>
     <SccAuxPath>SAK</SccAuxPath>
     <SccLocalPath>SAK</SccLocalPath>
-    <Configurations>Debug;Release;Deploy</Configurations>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.Sys</RootNamespace>
-    <AssemblyVersion>1.0.118.53</AssemblyVersion>
-    <FileVersion>1.0.118.53</FileVersion>
-    <Version>1.0.118.53</Version>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Deploy|AnyCPU'">
-    <Optimize>true</Optimize>
+    <AssemblyVersion>1.0.120.7</AssemblyVersion>
+    <FileVersion>1.0.120.7</FileVersion>
+    <Version>1.0.120.7</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
@@ -27,9 +24,5 @@
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
     <ProjectReference Include="..\TomPIT.Sys.Api\TomPIT.Sys.Api.csproj" />
     <ProjectReference Include="..\TomPIT.SysDb\TomPIT.SysDb.csproj" />
-  </ItemGroup>
-  <ItemGroup Label="Plugins">
-    <ProjectReference Include="..\TomPIT.StorageProvider.Sql\TomPIT.StorageProvider.Sql.csproj" Condition="$(Configuration)!=Deploy" />
-    <ProjectReference Include="..\TomPIT.SysDb.Sql\TomPIT.SysDb.Sql.csproj" Condition="$(Configuration)!=Deploy" />
   </ItemGroup>
 </Project>

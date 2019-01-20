@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,12 +12,14 @@ namespace TomPIT.Connectivity
 		private CancellationTokenSource _cancel = new CancellationTokenSource();
 		private CachingEvents _events = null;
 
-		public CachingClient(ISysConnection connection)
+		public CachingClient(ISysConnection connection, string authenticationToken)
 		{
 			Connection = connection;
+			AuthenticationToken = authenticationToken;
 		}
 
 		private ISysConnection Connection { get; }
+		private string AuthenticationToken { get; }
 
 		public async void Connect()
 		{
@@ -24,7 +27,17 @@ namespace TomPIT.Connectivity
 				Disconnect();
 
 			_cancel = new CancellationTokenSource();
-			_connection = new HubConnectionBuilder().WithUrl(string.Format("{0}/caching", Connection.Url)).Build();
+			_connection = new HubConnectionBuilder().WithUrl(string.Format("{0}/caching", Connection.Url), f =>
+			 {
+				 f.AccessTokenProvider = () =>
+				 {
+					 return Task.FromResult(AuthenticationToken);
+				 };
+			 }).ConfigureLogging(l =>
+			 {
+				 l.SetMinimumLevel(LogLevel.Debug);
+				 l.AddConsole();
+			 }).Build();
 
 			HookEvents();
 

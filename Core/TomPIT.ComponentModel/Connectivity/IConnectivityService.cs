@@ -9,7 +9,7 @@ namespace TomPIT.Connectivity
 		event ConnectionRegisteredHandler ConnectionRegistered;
 		event ConnectionRegisteredHandler ConnectionInitializing;
 
-		void Insert(string name, string url, string clientKey);
+		void Insert(string name, string url, string authenticationToken);
 
 		ISysConnection Select(string url);
 		ISysConnection Select();

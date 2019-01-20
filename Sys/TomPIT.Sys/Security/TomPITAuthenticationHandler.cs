@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Net.Http.Headers;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -21,6 +23,14 @@ namespace TomPIT.Sys.Security
 
 		public TomPITAuthenticationHandler(IOptionsMonitor<TomPITAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
 		{
+		}
+
+		protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
+		{
+			Response.StatusCode = 401;
+			Response.Headers.Append(HeaderNames.WWWAuthenticate, "Bearer");
+
+			await Task.CompletedTask;
 		}
 
 		protected override Task<AuthenticateResult> HandleAuthenticateAsync()

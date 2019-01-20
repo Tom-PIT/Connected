@@ -1,13 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
-using TomPIT.DataProviders.Sql;
 using TomPIT.Environment;
 using TomPIT.Runtime;
 using TomPIT.Security;
@@ -26,10 +22,9 @@ namespace TomPIT
 
 	public static class Instance
 	{
-		private static List<string> _resourceGroups = null;
-
 		public static void Initialize(IServiceCollection services, ServicesConfigurationArgs e)
 		{
+			Shell.RegisterConfigurationType(typeof(ClientSys));
 			ConfigureServices(services, e);
 		}
 
@@ -54,7 +49,18 @@ namespace TomPIT
 
 		private static void OnConnectionInitializing(object sender, SysConnectionRegisteredArgs e)
 		{
-			e.Connection.GetService<IDataProviderService>().Register(new SqlDataProvider());
+			foreach (var i in Shell.GetConfiguration<IClientSys>().DataProviders)
+			{
+				var t = Types.GetType(i);
+
+				if (t == null)
+					continue;
+
+				var provider = t.CreateInstance<IDataProvider>();
+
+				if (provider != null)
+					e.Connection.GetService<IDataProviderService>().Register(provider);
+			}
 		}
 
 		private static void ConfigureServices(IServiceCollection services, ServicesConfigurationArgs e)
@@ -110,48 +116,10 @@ namespace TomPIT
 			}
 		}
 
-		public static List<string> ResourceGroups
-		{
-			get
-			{
-				if (_resourceGroups == null)
-					_resourceGroups = new List<string>();
-
-				return _resourceGroups;
-			}
-		}
-
 		public static void Run(IApplicationBuilder app)
 		{
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(Directory.GetCurrentDirectory())
-				.AddJsonFile("sys.json");
-
-			var config = builder.Build();
-
-			var sys = config.GetSection("connections");
-			var items = sys.GetChildren();
-
-			foreach (var i in items)
-			{
-				var name = i.GetSection("name");
-				var url = i.GetSection("url");
-				var clientKey = i.GetSection("clientKey");
-
-				Shell.GetService<IConnectivityService>().Insert(name.Value, url.Value, clientKey.Value);
-			}
-
-			var groups = config.GetSection("resourceGroups");
-
-			if (groups != null)
-			{
-				var c = groups.GetChildren();
-
-				foreach (var i in c)
-					ResourceGroups.Add(i.Value);
-			}
-			else
-				ResourceGroups.Add("Default");
+			foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
+				Shell.GetService<IConnectivityService>().Insert(i.Name, i.Url, i.AuthenticationToken);
 		}
 
 		public static bool ResourceGroupExists(Guid resourceGroup)
@@ -159,7 +127,7 @@ namespace TomPIT
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
 				return true;
 
-			foreach (var i in ResourceGroups)
+			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
 			{
 				var rg = Connection.GetService<IResourceGroupService>().Select(i);
 

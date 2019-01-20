@@ -5,7 +5,7 @@ using TomPIT.ComponentModel.Data;
 namespace TomPIT.Application.Data
 {
 	[Create("DataSource")]
-	[DomDesigner("TomPIT.Application.Design.Designers.DataSourceDesigner, TomPIT.Application.Design")]
+	[DomDesigner("TomPIT.Application.Design.Designers.DataSource, TomPIT.Application.Design")]
 	public class DataSource : DataElement, IDataSource
 	{
 		public const string ComponentCategory = "DataSource";

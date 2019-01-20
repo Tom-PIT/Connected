@@ -1,4 +1,4 @@
-﻿@model TomPIT.Application.Design.Designers.DataSourceDesigner
+﻿@model TomPIT.Designers.DataSourceDesigner
 
 @{
 	var css = string.Empty;
@@ -22,14 +22,14 @@
 		css = "collapse";
 
 		<script>
-            ide.hideToolbar();
+			ide.hideToolbar();
 
-            $('a[data-component="configure"]').click(function (e) {
-                e.preventDefault();
-                ide.showToolbar();
-                $('#dataSourceDesignerUI').collapse('show');
-                $('#dataSourceDesignerInfo').collapse();
-            });
+			$('a[data-component="configure"]').click(function (e) {
+				e.preventDefault();
+				ide.showToolbar();
+				$('#dataSourceDesignerUI').collapse('show');
+				$('#dataSourceDesignerInfo').collapse();
+			});
 		</script>
 	}
 

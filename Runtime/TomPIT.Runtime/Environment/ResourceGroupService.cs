@@ -30,7 +30,7 @@ namespace TomPIT.Environment
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 			{
-				if (Instance.ResourceGroups.FirstOrDefault(f => string.Compare(f, name, true) == 0) == null)
+				if (Shell.GetConfiguration<IClientSys>().ResourceGroups.FirstOrDefault(f => string.Compare(f, name, true) == 0) == null)
 					return null;
 			}
 
@@ -61,7 +61,7 @@ namespace TomPIT.Environment
 					{
 						if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 						{
-							if (Instance.ResourceGroups.FirstOrDefault(g => string.Compare(g, r.Name, true) == 0) == null)
+							if (Shell.GetConfiguration<IClientSys>().ResourceGroups.FirstOrDefault(g => string.Compare(g, r.Name, true) == 0) == null)
 								return null;
 						}
 					}

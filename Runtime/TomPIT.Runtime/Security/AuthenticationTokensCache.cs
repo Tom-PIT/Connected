@@ -33,7 +33,7 @@ namespace TomPIT.Security
 					{"data", a }
 				};
 
-				foreach (var i in Instance.ResourceGroups)
+				foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
 					a.Add(i);
 
 				var ds = Connection.Post<List<AuthenticationToken>>(u, e).ToList<IAuthenticationToken>();

@@ -6,7 +6,7 @@ using TomPIT.ComponentModel.Events;
 namespace TomPIT.Application.Data
 {
 	[Create("Transaction")]
-	[DomDesigner("TomPIT.Application.Design.Designers.TransactionDesigner, TomPIT.Application.Design")]
+	[DomDesigner("TomPIT.Application.Design.Designers.Transaction, TomPIT.Application.Design")]
 	public class Transaction : DataElement, ITransaction
 	{
 		public const string ComponentCategory = "Transaction";

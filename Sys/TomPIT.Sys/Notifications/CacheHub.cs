@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Threading.Tasks;
 using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Notifications
 {
+	[Authorize(AuthenticationSchemes = "TomPIT")]
 	public class CacheHub : Hub
 	{
 		public CacheHub(IHubContext<CacheHub> context)

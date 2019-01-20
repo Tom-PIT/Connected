@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using TomPIT.ActionResults;
 using TomPIT.Annotations;
-using TomPIT.Application.Data;
+using TomPIT.ComponentModel.Data;
 using TomPIT.Dom;
 using TomPIT.Ide;
 
-namespace TomPIT.Application.Design.Designers
+namespace TomPIT.Designers
 {
-	public class TransactionDesigner : DataElementDesigner
+	public abstract class TransactionDesigner : DataElementDesigner
 	{
 		public TransactionDesigner(IEnvironment environment, ComponentElement element) : base(environment, element)
 		{
@@ -35,7 +36,10 @@ namespace TomPIT.Application.Design.Designers
 			return Result.JsonResult(this, vb);
 		}
 
-		public Transaction Transaction { get { return Owner.Component as Transaction; } }
+		public ITransaction Transaction { get { return Owner.Component as ITransaction; } }
+
+		protected abstract void SetAttributes(Guid connection, string commandText, CommandType commandType);
+		protected abstract ComponentModel.Data.IDataParameter CreateParameter(string name, DataType dataType, bool isNullable);
 
 		protected override IDesignerActionResult ActionImport()
 		{
@@ -50,9 +54,7 @@ namespace TomPIT.Application.Design.Designers
 
 			var command = Browser.CreateCommandDescriptor(ObjectType, Object);
 
-			Transaction.Connection = DataConnection.Token;
-			Transaction.CommandText = command.CommandText;
-			Transaction.CommandType = command.CommandType;
+			SetAttributes(DataConnection.Token, command.CommandText, command.CommandType);
 
 			Transaction.Parameters.Clear();
 
@@ -65,14 +67,7 @@ namespace TomPIT.Application.Design.Designers
 				if (par == null)
 					continue;
 
-				var dataParameter = new Parameter
-				{
-					DataType = par.DataType,
-					Name = par.Name,
-					IsNullable = par.IsNullable
-				};
-
-				Transaction.Parameters.Add(dataParameter);
+				Transaction.Parameters.Add(CreateParameter(par.Name, par.DataType, par.IsNullable));
 			}
 
 			Environment.Commit(Transaction, null, null);

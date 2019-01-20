@@ -1,17 +1,18 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using TomPIT.ActionResults;
 using TomPIT.Annotations;
-using TomPIT.Application.Data;
+using TomPIT.ComponentModel.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Dom;
 using TomPIT.Ide;
 
-namespace TomPIT.Application.Design.Designers
+namespace TomPIT.Designers
 {
-	public class DataSourceDesigner : DataElementDesigner
+	public abstract class DataSourceDesigner : DataElementDesigner
 	{
 		private List<ISchemaField> _fields = null;
 		private string _selectedFields = string.Empty;
@@ -41,7 +42,11 @@ namespace TomPIT.Application.Design.Designers
 			return Result.JsonResult(this, vb);
 		}
 
-		public DataSource DataSource { get { return Owner.Component as DataSource; } }
+		public IDataSource DataSource { get { return Owner.Component as IDataSource; } }
+
+		protected abstract void SetAttributes(Guid connection, string commandText, CommandType commandType);
+		protected abstract IBoundField CreateField(string name, DataType dataType);
+		protected abstract ComponentModel.Data.IDataParameter CreateParameter(string name, DataType dataType, bool isNullable);
 
 		protected override IDesignerActionResult ActionImport()
 		{
@@ -59,9 +64,7 @@ namespace TomPIT.Application.Design.Designers
 
 			var command = Browser.CreateCommandDescriptor(ObjectType, Object);
 
-			DataSource.Connection = DataConnection.Token;
-			DataSource.CommandText = command.CommandText;
-			DataSource.CommandType = command.CommandType;
+			SetAttributes(DataConnection.Token, command.CommandText, command.CommandType);
 
 			DataSource.Fields.Clear();
 
@@ -74,13 +77,7 @@ namespace TomPIT.Application.Design.Designers
 				if (field == null)
 					continue;
 
-				var dataField = new BoundField
-				{
-					DataType = field.DataType,
-					Name = field.Name
-				};
-
-				DataSource.Fields.Add(dataField);
+				DataSource.Fields.Add(CreateField(field.Name, field.DataType));
 			}
 
 			DataSource.Parameters.Clear();
@@ -94,14 +91,7 @@ namespace TomPIT.Application.Design.Designers
 				if (par == null)
 					continue;
 
-				var dataParameter = new Parameter
-				{
-					DataType = par.DataType,
-					Name = par.Name,
-					IsNullable = par.IsNullable
-				};
-
-				DataSource.Parameters.Add(dataParameter);
+				DataSource.Parameters.Add(CreateParameter(par.Name, par.DataType, par.IsNullable));
 			}
 
 			Environment.Commit(DataSource, null, null);

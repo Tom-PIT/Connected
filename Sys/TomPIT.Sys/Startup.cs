@@ -21,6 +21,8 @@ namespace TomPIT.Sys
 
 		public void ConfigureServices(IServiceCollection services)
 		{
+			Shell.RegisterConfigurationType(typeof(ServerSys));
+
 			services.AddMvc();
 
 			services.AddAuthentication(options =>
@@ -30,10 +32,13 @@ namespace TomPIT.Sys
 				options.DefaultScheme = "TomPIT";
 			}).AddTomPITAuthentication("TomPIT", "Tom PIT", o =>
 			{
-
+				
 			});
 
-			services.AddSignalR();
+			services.AddSignalR(o =>
+			{
+				o.EnableDetailedErrors = true;
+			});
 
 			RegisterTasks(services);
 		}

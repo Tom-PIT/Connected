@@ -3,6 +3,7 @@ using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using TomPIT.Converters;
 
@@ -77,24 +78,24 @@ namespace TomPIT
 		{
 			switch (dataType)
 			{
-			case DataType.String:
-				return typeof(string);
-			case DataType.Integer:
-				return typeof(int);
-			case DataType.Float:
-				return typeof(double);
-			case DataType.Date:
-				return typeof(DateTime);
-			case DataType.Bool:
-				return typeof(bool);
-			case DataType.Guid:
-				return typeof(Guid);
-			case DataType.Binary:
-				return typeof(byte[]);
-			case DataType.Long:
-				return typeof(long);
-			default:
-				return typeof(string);
+				case DataType.String:
+					return typeof(string);
+				case DataType.Integer:
+					return typeof(int);
+				case DataType.Float:
+					return typeof(double);
+				case DataType.Date:
+					return typeof(DateTime);
+				case DataType.Bool:
+					return typeof(bool);
+				case DataType.Guid:
+					return typeof(Guid);
+				case DataType.Binary:
+					return typeof(byte[]);
+				case DataType.Long:
+					return typeof(long);
+				default:
+					return typeof(string);
 			}
 		}
 
@@ -102,42 +103,42 @@ namespace TomPIT
 		{
 			switch (type)
 			{
-			case DbType.AnsiString:
-			case DbType.AnsiStringFixedLength:
-			case DbType.String:
-			case DbType.StringFixedLength:
-			case DbType.Xml:
-				return DataType.String;
-			case DbType.Binary:
-			case DbType.Object:
-				return DataType.Binary;
-			case DbType.Boolean:
-				return DataType.Bool;
-			case DbType.Byte:
-			case DbType.Int16:
-			case DbType.Int32:
-			case DbType.Int64:
-			case DbType.SByte:
-			case DbType.UInt16:
-			case DbType.UInt32:
-			case DbType.UInt64:
-				return DataType.Integer;
-			case DbType.Currency:
-			case DbType.Decimal:
-			case DbType.Double:
-			case DbType.Single:
-			case DbType.VarNumeric:
-				return DataType.Float;
-			case DbType.Date:
-			case DbType.DateTime:
-			case DbType.DateTime2:
-			case DbType.DateTimeOffset:
-			case DbType.Time:
-				return DataType.Date;
-			case DbType.Guid:
-				return DataType.Guid;
-			default:
-				throw new NotSupportedException();
+				case DbType.AnsiString:
+				case DbType.AnsiStringFixedLength:
+				case DbType.String:
+				case DbType.StringFixedLength:
+				case DbType.Xml:
+					return DataType.String;
+				case DbType.Binary:
+				case DbType.Object:
+					return DataType.Binary;
+				case DbType.Boolean:
+					return DataType.Bool;
+				case DbType.Byte:
+				case DbType.Int16:
+				case DbType.Int32:
+				case DbType.Int64:
+				case DbType.SByte:
+				case DbType.UInt16:
+				case DbType.UInt32:
+				case DbType.UInt64:
+					return DataType.Integer;
+				case DbType.Currency:
+				case DbType.Decimal:
+				case DbType.Double:
+				case DbType.Single:
+				case DbType.VarNumeric:
+					return DataType.Float;
+				case DbType.Date:
+				case DbType.DateTime:
+				case DbType.DateTime2:
+				case DbType.DateTimeOffset:
+				case DbType.Time:
+					return DataType.Date;
+				case DbType.Guid:
+					return DataType.Guid;
+				default:
+					throw new NotSupportedException();
 			}
 		}
 
@@ -316,7 +317,9 @@ namespace TomPIT
 			if (asm == null)
 				return null;
 
-			return GetType(asm.InvariantTypeName(type));
+			var typeName = type.Split(',')[0];
+
+			return asm.GetType(typeName);
 		}
 
 		public static string InvariantTypeName(this Assembly assembly, string fullName)
@@ -340,7 +343,7 @@ namespace TomPIT
 			else if (tokens.Length > 1)
 				libraryName = string.Format("{0}.dll", tokens[1].Trim());
 
-			var asm = Assembly.Load(libraryName);
+			var asm = AssemblyLoadContext.Default.LoadFromAssemblyPath(string.Format("{0}\\{1}", path, libraryName));
 
 			if (asm != null)
 				return asm;
