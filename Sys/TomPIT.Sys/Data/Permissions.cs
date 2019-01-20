@@ -66,7 +66,7 @@ namespace TomPIT.Sys.Data
 
 		public List<IPermission> Query(List<Guid> resourceGroups)
 		{
-			return Where(f => !resourceGroups.Any(t => t == f.ResourceGroup));
+			return Where(f => resourceGroups.Any(t => t == f.ResourceGroup));
 		}
 
 		public List<IPermission> Query(string primaryKey)

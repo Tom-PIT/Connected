@@ -64,7 +64,7 @@ namespace TomPIT.Sys.Data
 
 		public List<IAuthenticationToken> Query(List<Guid> resourceGroups)
 		{
-			return Where(f => !resourceGroups.Any(t => t == f.Token));
+			return Where(f => resourceGroups.Any(t => t == f.Token));
 		}
 
 		public List<IAuthenticationToken> Query()

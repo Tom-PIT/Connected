@@ -3,9 +3,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.Application.Design</RootNamespace>
     <AssemblyName>TomPIT.Application.Design</AssemblyName>
-    <AssemblyVersion>1.0.120.7</AssemblyVersion>
-    <FileVersion>1.0.120.7</FileVersion>
-    <Version>1.0.120.7</Version>
+    <AssemblyVersion>1.0.120.9</AssemblyVersion>
+    <FileVersion>1.0.120.9</FileVersion>
+    <Version>1.0.120.9</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Designers\Security\**" />

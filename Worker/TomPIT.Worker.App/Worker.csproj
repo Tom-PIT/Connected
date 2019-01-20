@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.Worker</RootNamespace>
     <AssemblyName>TomPIT.Worker.App</AssemblyName>
-    <AssemblyVersion>1.0.120.7</AssemblyVersion>
-    <FileVersion>1.0.120.7</FileVersion>
-    <Version>1.0.120.7</Version>
+    <AssemblyVersion>1.0.120.9</AssemblyVersion>
+    <FileVersion>1.0.120.9</FileVersion>
+    <Version>1.0.120.9</Version>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="wwwroot\" />
@@ -25,9 +25,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
-    <ProjectReference Include="..\..\DataProviders\TomPIT.DataProviders.Sql\TomPIT.DataProviders.Sql.csproj" />
-    <ProjectReference Include="..\..\Development\TomPIT.Templates.Application\TomPIT.Application.csproj" />
-    <ProjectReference Include="..\..\Development\TomPIT.Templates.IoT\TomPIT.Templates.IoT.csproj" />
     <ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
   </ItemGroup>
 </Project>

@@ -1,12 +1,16 @@
 ﻿{
-   "connections": [
-      {
-         "name": "localhost",
-         "url": "http://localhost:8089/sys",
-         "clientKey": "EE7B5475D36640A59A6BDC3A2FE315E2"
-      }
-   ],
-   "resourceGroups": [
-      "Default"
-   ]
+	"connections": [
+		{
+			"name": "localhost",
+			"url": "http://localhost:44001",
+			"authenticationToken": "defaultAuthenticationToken"
+		}
+	],
+	"resourceGroups": [
+		"Default"
+	],
+	"dataProviders": [
+		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
+	],
+	"plugins": "c:\\Deploy\\Plugins"
 }

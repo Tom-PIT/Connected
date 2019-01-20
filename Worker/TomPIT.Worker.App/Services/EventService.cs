@@ -16,7 +16,7 @@ namespace TomPIT.Worker.Services
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
 
-			foreach (var i in Instance.ResourceGroups)
+			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
 				Dispatchers.Add(new EventDispatcher(i, _cancel));
 		}
 

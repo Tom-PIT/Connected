@@ -3,6 +3,7 @@ using System.Linq;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Services;
 
 namespace TomPIT.IoT.Services
 {
@@ -12,7 +13,7 @@ namespace TomPIT.IoT.Services
 		{
 			Connection.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
 
-			var configurations = connection.GetService<IComponentService>().QueryConfigurations(Instance.ResourceGroups, "IoTHub");
+			var configurations = connection.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, "IoTHub");
 
 			foreach (var i in configurations)
 			{

@@ -5,6 +5,7 @@ using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Events;
 using TomPIT.Connectivity;
+using TomPIT.Services;
 
 namespace TomPIT.Worker.Services
 {
@@ -22,7 +23,7 @@ namespace TomPIT.Worker.Services
 			s.ConfigurationAdded += OnConfigurationAdded;
 			s.ConfigurationRemoved += OnConfigurationRemoved;
 
-			var configs = Instance.Connection.GetService<IComponentService>().QueryConfigurations(Instance.ResourceGroups, Category);
+			var configs = Instance.Connection.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, Category);
 
 			foreach (var i in configs)
 				AddConfiguration(i);
