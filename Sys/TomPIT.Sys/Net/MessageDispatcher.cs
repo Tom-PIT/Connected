@@ -61,7 +61,8 @@ namespace TomPIT.Sys.Services
 
 			object args = JsonConvert.DeserializeObject(state.Content, argsType);
 
-			NotificationHubs.Cache.Clients.Client(recipient.Connection).SendCoreAsync(state.Method, new object[] { args });
+			if (NotificationHubs.Cache != null)
+				NotificationHubs.Cache.Clients.Client(recipient.Connection).SendCoreAsync(state.Method, new object[] { args });
 
 			return true;
 		}

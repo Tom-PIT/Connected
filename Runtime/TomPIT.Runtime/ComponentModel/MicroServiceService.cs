@@ -9,11 +9,11 @@ namespace TomPIT.ComponentModel
 	internal class MicroServiceService : SynchronizedClientRepository<IMicroService, Guid>, IMicroServiceService, IMicroServiceNotification
 	{
 		public event MicroServiceChangedHandler MicroServiceChanged;
-		private Lazy<MicroServiceMetaCache> _meta = new Lazy<MicroServiceMetaCache>();
+		private MicroServiceMetaCache _meta = null;
 
 		public MicroServiceService(ISysConnection connection) : base(connection, "microservice")
 		{
-
+			_meta = new MicroServiceMetaCache(Connection);
 		}
 
 		protected override void OnInitializing()
@@ -155,7 +155,7 @@ namespace TomPIT.ComponentModel
 
 		public MicroServiceMetaCache Meta
 		{
-			get { return _meta.Value; }
+			get { return _meta; }
 		}
 	}
 }

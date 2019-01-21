@@ -25,6 +25,6 @@ namespace TomPIT.SysDb.Development
 		void UpdateString(IMicroService microService, ILanguage language, Guid element, string property, string value);
 		void DeleteString(IMicroService microService, Guid element, string property);
 
-		byte[] SelectMeta(IMicroService microService);
+		string SelectMeta(IMicroService microService);
 	}
 }

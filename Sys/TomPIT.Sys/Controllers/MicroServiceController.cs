@@ -52,7 +52,7 @@ namespace TomPIT.Sys.Controllers
 			if (r == null)
 				return null;
 
-			return Convert.ToBase64String(r.Content);
+			return r.Content;
 		}
 	}
 }

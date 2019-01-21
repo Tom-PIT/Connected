@@ -4,11 +4,11 @@ namespace TomPIT.SysDb.Sql.Development
 {
 	internal class MicroServiceMeta : DatabaseRecord
 	{
-		public byte[] Content { get; set; }
+		public string Content { get; set; }
 
 		protected override void OnCreate()
 		{
-			Content = GetValue<byte[]>("meta", null);
+			Content = GetString("meta");
 		}
 	}
 }

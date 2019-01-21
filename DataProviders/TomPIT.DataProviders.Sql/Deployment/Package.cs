@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using TomPIT.Data.DataProviders.Deployment;
@@ -40,13 +41,13 @@ namespace TomPIT.DataProviders.Sql.Deployment
 			{
 				var t = new Table();
 
-				var type = rdr.GetString(rdr.GetOrdinal("TABLE_TYPE"));
+				var type = rdr.GetValue("TABLE_TYPE", string.Empty);
 
-				if (string.Compare(type, "BASE_TABLE", true) != 0)
+				if (string.Compare(type, "BASE TABLE", true) != 0)
 					continue;
 
-				t.Schema = rdr.GetString(rdr.GetOrdinal("TABLE_SCHEMA"));
-				t.Name = rdr.GetString(rdr.GetOrdinal("TABLE_NAME"));
+				t.Schema = rdr.GetValue("TABLE_SCHEMA", string.Empty);
+				t.Name = rdr.GetValue("TABLE_NAME", string.Empty);
 
 				db.Tables.Add(t);
 			}
@@ -58,8 +59,8 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 			while (rdr.Read())
 			{
-				var schema = rdr.GetString(rdr.GetOrdinal("TABLE_SCHEMA"));
-				var table = rdr.GetString(rdr.GetOrdinal("TABLE_NAME"));
+				var schema = rdr.GetValue("TABLE_SCHEMA", string.Empty);
+				var table = rdr.GetValue("TABLE_NAME", string.Empty);
 				var t = FindTable(db, schema, table);
 
 				if (t == null)
@@ -67,18 +68,18 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 				var c = new Column
 				{
-					CharacterMaximumLength = rdr.GetInt32(rdr.GetOrdinal("CHARACTER_MAXIMUM_LENGTH")),
-					CharacterOctetLength = rdr.GetInt32(rdr.GetOrdinal("CHARACTER_OCTET_LENGTH")),
-					CharacterSetName = rdr.GetString(rdr.GetOrdinal("CHARACTER_SET_NAME")),
-					DataType = rdr.GetString(rdr.GetOrdinal("DATA_TYPE")),
-					DateTimePrecision = rdr.GetInt16(rdr.GetOrdinal("DATETIME_PRECISION")),
-					DefaultValue = rdr.GetString(rdr.GetOrdinal("COLUMN_DEFAULT")),
-					IsNullable = string.Compare(rdr.GetString(rdr.GetOrdinal("IS_NULLABLE")), "NO", true) == 0 ? false : true,
-					Name = rdr.GetString(rdr.GetOrdinal("COLUMN_NAME")),
-					NumericPrecision = rdr.GetByte(rdr.GetOrdinal("NUMERIC_PRECISION")),
-					NumericPrecisionRadix = rdr.GetInt16(rdr.GetOrdinal("NUMERIC_PRECISION_RADIX")),
-					NumericScale = rdr.GetInt32(rdr.GetOrdinal("NUMERIC_SCALE")),
-					Ordinal = rdr.GetInt32(rdr.GetOrdinal("ORDINAL_POSITION"))
+					CharacterMaximumLength = rdr.GetValue("CHARACTER_MAXIMUM_LENGTH", 0),
+					CharacterOctetLength = rdr.GetValue("CHARACTER_OCTET_LENGTH", 0),
+					CharacterSetName = rdr.GetValue("CHARACTER_SET_NAME", string.Empty),
+					DataType = rdr.GetValue("DATA_TYPE", string.Empty),
+					DateTimePrecision = rdr.GetValue("DATETIME_PRECISION", 0),
+					DefaultValue = rdr.GetValue("COLUMN_DEFAULT", string.Empty),
+					IsNullable = string.Compare(rdr.GetValue("IS_NULLABLE", string.Empty), "NO", true) == 0 ? false : true,
+					Name = rdr.GetValue("COLUMN_NAME", string.Empty),
+					NumericPrecision = rdr.GetValue("NUMERIC_PRECISION", 0),
+					NumericPrecisionRadix = rdr.GetValue("NUMERIC_PRECISION_RADIX", 0),
+					NumericScale = rdr.GetValue("NUMERIC_SCALE", 0),
+					Ordinal = rdr.GetValue("ORDINAL_POSITION", 0)
 				};
 
 				t.Columns.Add(c);
@@ -91,6 +92,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 			{
 				var cmd = new SqlCommand("sp_help", con);
 
+				cmd.CommandType = System.Data.CommandType.StoredProcedure;
 				cmd.Parameters.AddWithValue("@objname", string.Format("{0}.{1}", i.Schema, i.Name));
 				var r = cmd.ExecuteReader();
 
@@ -99,16 +101,18 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 				if (r.Read())
 				{
-					var col = r.GetString(rdr.GetOrdinal("Identity"));
+					var col = r.GetValue("Identity", string.Empty);
 					var c = i.Columns.FirstOrDefault(f => string.Compare(f.Name, col, true) == 0) as Column;
 
-					c.Identity = true;
+					if (c != null)
+						c.Identity = true;
 				}
 
 				r.Close();
 
 				cmd = new SqlCommand("sp_helpindex", con);
 
+				cmd.CommandType = System.Data.CommandType.StoredProcedure;
 				cmd.Parameters.AddWithValue("@objname", string.Format("{0}.{1}", i.Schema, i.Name));
 				r = cmd.ExecuteReader();
 
@@ -116,10 +120,10 @@ namespace TomPIT.DataProviders.Sql.Deployment
 				{
 					var idx = new TableIndex
 					{
-						Name = r.GetString(rdr.GetOrdinal("index_name"))
+						Name = r.GetValue("index_name", string.Empty)
 					};
 
-					var cols = r.GetString(rdr.GetOrdinal("index_keys")).Split(',');
+					var cols = r.GetValue("index_keys", string.Empty).Split(',');
 
 					foreach (var j in cols)
 					{
@@ -180,14 +184,41 @@ namespace TomPIT.DataProviders.Sql.Deployment
 			}
 		}
 
-		private static void CreateViews(SqlConnection con, Database r)
+		private static void CreateViews(SqlConnection con, Database db)
 		{
+			var com = new SqlCommand("SELECT * FROM INFORMATION_SCHEMA.VIEWS", con);
+			var r = com.ExecuteReader();
 
+			while (r.Read())
+			{
+				db.Views.Add(new View
+				{
+					Definition = r.GetValue("VIEW_DEFINITION", string.Empty),
+					Name = r.GetValue("TABLE_NAME", string.Empty),
+					Schema = r.GetValue("TABLE_SCHEMA", string.Empty)
+				});
+			}
+
+			r.Close();
 		}
 
-		private static void CreateRoutines(SqlConnection con, Database r)
+		private static void CreateRoutines(SqlConnection con, Database db)
 		{
+			var com = new SqlCommand("SELECT * FROM INFORMATION_SCHEMA.ROUTINES", con);
+			var r = com.ExecuteReader();
 
+			while (r.Read())
+			{
+				db.Routines.Add(new Routine
+				{
+					Definition = r.GetValue("ROUTINE_DEFINITION", string.Empty),
+					Name = r.GetValue("ROUTINE_NAME", string.Empty),
+					Schema = r.GetValue("ROUTINE_SCHEMA", string.Empty),
+					Type = r.GetValue("ROUTINE_TYPE", string.Empty)
+				});
+			}
+
+			r.Close();
 		}
 
 		private static ITable FindTable(IDatabase db, string schema, string name)
@@ -206,13 +237,15 @@ namespace TomPIT.DataProviders.Sql.Deployment
 			{
 				items.Add(new InformationSchemaColumnUsage
 				{
-					ColumnName = r.GetString(r.GetOrdinal("COLUMN_NAME")),
-					ConstraintName = r.GetString(r.GetOrdinal("CONSTRAINT_NAME")),
-					ConstraintSchema = r.GetString(r.GetOrdinal("CONSTRAINT_SCHEMA")),
-					TableName = r.GetString(r.GetOrdinal("TABLE_NAME")),
-					TableSchema = r.GetString(r.GetOrdinal("TABLE_SCHEMA")),
+					ColumnName = r.GetValue("COLUMN_NAME", string.Empty),
+					ConstraintName = r.GetValue("CONSTRAINT_NAME", string.Empty),
+					ConstraintSchema = r.GetValue("CONSTRAINT_SCHEMA", string.Empty),
+					TableName = r.GetValue("TABLE_NAME", string.Empty),
+					TableSchema = r.GetValue("TABLE_SCHEMA", string.Empty),
 				});
 			}
+
+			r.Close();
 
 			return items;
 		}
@@ -227,22 +260,24 @@ namespace TomPIT.DataProviders.Sql.Deployment
 			{
 				items.Add(new InformationSchemaReferentialConstraint
 				{
-					DeleteRule = r.GetString(r.GetOrdinal("DELETE_RULE")),
-					ConstraintName = r.GetString(r.GetOrdinal("CONSTRAINT_NAME")),
-					ConstraintSchema = r.GetString(r.GetOrdinal("CONSTRAINT_SCHEMA")),
-					MatchOption = r.GetString(r.GetOrdinal("MATCH_OPTION")),
-					UpdateRule = r.GetString(r.GetOrdinal("UPDATE_RULE")),
-					UniqueConstraintName = r.GetString(r.GetOrdinal("UNIQUE_CONSTRAINT_NAME")),
-					UniqueConstraintSchema = r.GetString(r.GetOrdinal("UNIQUE_CONSTRAINT_SCHEMA"))
+					DeleteRule = r.GetValue("DELETE_RULE", string.Empty),
+					ConstraintName = r.GetValue("CONSTRAINT_NAME", string.Empty),
+					ConstraintSchema = r.GetValue("CONSTRAINT_SCHEMA", string.Empty),
+					MatchOption = r.GetValue("MATCH_OPTION", string.Empty),
+					UpdateRule = r.GetValue("UPDATE_RULE", string.Empty),
+					UniqueConstraintName = r.GetValue("UNIQUE_CONSTRAINT_NAME", string.Empty),
+					UniqueConstraintSchema = r.GetValue("UNIQUE_CONSTRAINT_SCHEMA", string.Empty)
 				});
 			}
+
+			r.Close();
 
 			return items;
 		}
 
 		private static List<InformationSchemaTableConstraints> ReadTableConstraints(SqlConnection connection)
 		{
-			var com = new SqlCommand("SELECT * FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS", connection);
+			var com = new SqlCommand("SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS", connection);
 			var r = com.ExecuteReader();
 			var items = new List<InformationSchemaTableConstraints>();
 
@@ -250,15 +285,29 @@ namespace TomPIT.DataProviders.Sql.Deployment
 			{
 				items.Add(new InformationSchemaTableConstraints
 				{
-					ConstraintType = r.GetString(r.GetOrdinal("CONSTRAINT_TYPE")),
-					ConstraintName = r.GetString(r.GetOrdinal("CONSTRAINT_NAME")),
-					ConstraintSchema = r.GetString(r.GetOrdinal("CONSTRAINT_SCHEMA")),
-					TableSchema = r.GetString(r.GetOrdinal("TABLE_SCHEMA")),
-					TableName = r.GetString(r.GetOrdinal("TABLE_NAME"))
+					ConstraintName = r.GetValue("CONSTRAINT_TYPE", string.Empty),
+					ConstraintSchema = r.GetValue("CONSTRAINT_SCHEMA", string.Empty),
+					TableSchema = r.GetValue("TABLE_SCHEMA", string.Empty),
+					TableName = r.GetValue("TABLE_NAME", string.Empty)
 				});
 			}
 
+			r.Close();
+
 			return items;
+		}
+
+		private static T GetValue<T>(this SqlDataReader r, string fieldName, T defaultValue)
+		{
+			var idx = r.GetOrdinal(fieldName);
+
+			if (idx == -1)
+				return defaultValue;
+
+			if (r.IsDBNull(idx))
+				return defaultValue;
+
+			return (T)Convert.ChangeType(r.GetValue(idx), typeof(T));
 		}
 	}
 }

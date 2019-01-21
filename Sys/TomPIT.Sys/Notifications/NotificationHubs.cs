@@ -30,7 +30,8 @@ namespace TomPIT.Sys.Notifications
 
 			DataModel.Messages.Insert("cache", args.Message, JsonConvert.SerializeObject(state), DateTime.UtcNow.AddMinutes(5), TimeSpan.FromSeconds(5));
 
-			await Cache.Clients.All.SendAsync(method, args);
+			if (Cache != null)
+				await Cache.Clients.All.SendAsync(method, args);
 		}
 
 		public static void AuthenticationTokenChanged(Guid token) { Notify(nameof(AuthenticationTokenChanged), new AuthenticationTokenEventArgs(token)); }

@@ -62,6 +62,7 @@ namespace TomPIT.Deployment
 			Args = e;
 
 			MetaData = e.MetaData;
+			Blobs = new List<Blob>();
 
 			CreateMicroService();
 			CreateFeatures();
@@ -95,7 +96,7 @@ namespace TomPIT.Deployment
 
 			foreach (var i in components)
 			{
-				if (Features.FirstOrDefault(f => f.Token == i.Token) == null)
+				if (i.Feature != Guid.Empty && Features.FirstOrDefault(f => f.Token == i.Feature) == null)
 					continue;
 
 				var e = new PackageProcessArgs(PackageEntity.Component, i.Token.ToString());
@@ -116,6 +117,7 @@ namespace TomPIT.Deployment
 				});
 
 				var config = Args.Connection.GetService<IComponentService>().SelectConfiguration(i.Token);
+				Configurations.Add(config);
 
 				var texts = config.Children<IText>();
 
@@ -251,15 +253,17 @@ namespace TomPIT.Deployment
 				Databases.Add(database);
 				var db = dp.CreateSchema(i.Value);
 
-				CreateTables(db);
-				CreateViews(db);
-				CreateRoutines(db);
+				CreateTables(database, db);
+				CreateViews(database, db);
+				CreateRoutines(database, db);
 			}
 		}
 
-		private void CreateRoutines(IDatabase db)
+		private void CreateRoutines(Database database, IDatabase provider)
 		{
-			foreach (var i in db.Routines)
+			database.Routines = new List<IRoutine>();
+
+			foreach (var i in provider.Routines)
 			{
 				var e = new PackageProcessArgs(PackageEntity.DatabaseRoutine, string.Format("{0}.{1}", i.Schema, i.Name));
 
@@ -268,7 +272,7 @@ namespace TomPIT.Deployment
 				if (e.Cancel)
 					continue;
 
-				db.Routines.Add(new Routine
+				database.Routines.Add(new Routine
 				{
 					Definition = i.Definition,
 					Name = i.Name,
@@ -278,9 +282,11 @@ namespace TomPIT.Deployment
 			}
 		}
 
-		private void CreateViews(IDatabase db)
+		private void CreateViews(Database database, IDatabase provider)
 		{
-			foreach (var i in db.Views)
+			database.Views = new List<IView>();
+
+			foreach (var i in provider.Views)
 			{
 				var e = new PackageProcessArgs(PackageEntity.DatabaseView, string.Format("{0}.{1}", i.Schema, i.Name));
 
@@ -289,7 +295,7 @@ namespace TomPIT.Deployment
 				if (e.Cancel)
 					continue;
 
-				db.Views.Add(new View
+				database.Views.Add(new View
 				{
 					Definition = i.Definition,
 					Name = i.Name,
@@ -298,9 +304,11 @@ namespace TomPIT.Deployment
 			}
 		}
 
-		private void CreateTables(IDatabase database)
+		private void CreateTables(Database database, IDatabase provider)
 		{
-			foreach (var i in database.Tables)
+			database.Tables = new List<ITable>();
+
+			foreach (var i in provider.Tables)
 			{
 				var e = new PackageProcessArgs(PackageEntity.DatabaseTable, string.Format("{0}.{1}", i.Schema, i.Name));
 

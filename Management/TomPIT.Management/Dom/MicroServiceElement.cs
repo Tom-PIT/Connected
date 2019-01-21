@@ -30,6 +30,7 @@ namespace TomPIT.Dom
 			Items.Add(new ConnectivityElement(Environment, this));
 			Items.Add(new WorkersElement(Environment, this));
 			Items.Add(new ContentElement(Environment, this));
+			Items.Add(new PackageElement(Environment, this));
 		}
 
 		public override void LoadChildren(string id)
@@ -42,6 +43,8 @@ namespace TomPIT.Dom
 				Items.Add(new WorkersElement(Environment, this));
 			else if (id.Equals(PermissionsElement.FolderId, StringComparison.OrdinalIgnoreCase))
 				Items.Add(new PermissionsElement(Environment, this));
+			else if (id.Equals(PackageElement.DomId, StringComparison.OrdinalIgnoreCase))
+				Items.Add(new PackageElement(Environment, this));
 		}
 
 		public override bool Commit(object component, string property, string attribute)

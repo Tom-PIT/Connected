@@ -1,0 +1,14 @@
+﻿@model TomPIT.Designers.PackageDesigner
+
+
+<button type="button" id="buttonCreate" class="btn btn-primary">Create</button>
+
+<script>
+	$('#buttonCreate').click(function () {
+		ide.designerAction({
+			data: {
+				'action': 'create'
+			}
+		});
+	});
+</script>

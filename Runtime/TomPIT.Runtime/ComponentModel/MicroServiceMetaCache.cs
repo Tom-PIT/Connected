@@ -6,7 +6,7 @@ namespace TomPIT.ComponentModel
 {
 	internal class MicroServiceMetaCache : ClientRepository<string, Guid>
 	{
-		public MicroServiceMetaCache(ISysConnection connection, string key) : base(connection, key)
+		public MicroServiceMetaCache(ISysConnection connection) : base(connection, "microservicemeta")
 		{
 		}
 

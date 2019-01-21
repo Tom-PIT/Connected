@@ -45,7 +45,4 @@
       <CustomToolNamespace>TomPIT</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Designers\Toolbar\" />
-  </ItemGroup>
 </Project>

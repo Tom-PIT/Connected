@@ -25,26 +25,44 @@ namespace TomPIT
 			var appPath = Assembly.GetEntryAssembly().Location;
 			var target = Path.Combine(Path.GetDirectoryName(appPath), string.Format("{0}.dll", asm.Name));
 
-			if (File.Exists(target))
-				return AssemblyLoadContext.Default.LoadFromAssemblyPath(target);
-
-			if (string.IsNullOrWhiteSpace(Sys.Plugins))
-				return null;
-
-			var dirs = Directory.GetDirectories(Sys.Plugins);
-
-			foreach (var i in dirs)
+			if (!string.IsNullOrWhiteSpace(Sys.Plugins))
 			{
-				var files = Directory.GetFiles(i);
 
-				foreach (var j in files)
+				var dirs = Directory.GetDirectories(Sys.Plugins);
+
+				foreach (var i in dirs)
 				{
-					var name = Path.GetFileNameWithoutExtension(j);
+					var files = Directory.GetFiles(i);
+					var hit = false;
 
-					if (string.Compare(name, asm.Name, true) == 0)
-						return AssemblyLoadContext.Default.LoadFromAssemblyPath(j);
+					foreach (var j in files)
+					{
+						var name = Path.GetFileNameWithoutExtension(j);
+
+						if (string.Compare(name, asm.Name, true) == 0)
+						{
+							hit = true;
+							break;
+						}
+					}
+
+					if (hit)
+					{
+						foreach (var j in files)
+						{
+							var dest = Path.Combine(Path.GetDirectoryName(appPath), Path.GetFileName(j));
+
+							if (!File.Exists(dest))
+								File.Copy(j, dest);
+						}
+
+						return AssemblyLoadContext.Default.LoadFromAssemblyPath(target);
+					}
 				}
 			}
+
+			if (File.Exists(target))
+				return AssemblyLoadContext.Default.LoadFromAssemblyPath(target);
 
 			return null;
 		}

@@ -144,7 +144,7 @@ namespace TomPIT.SysDb.Sql.Development
 			w.Execute();
 		}
 
-		public byte[] SelectMeta(IMicroService microService)
+		public string SelectMeta(IMicroService microService)
 		{
 			var r = new Reader<MicroServiceMeta>("tompit.service_meta_sel");
 

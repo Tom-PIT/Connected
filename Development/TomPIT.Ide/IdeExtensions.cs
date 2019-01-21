@@ -236,6 +236,9 @@ namespace TomPIT
 		{
 			var r = new List<T>();
 
+			if (configuration is T)
+				r.Add((T)configuration);
+
 			var props = DomQuery.Properties(configuration, false, false);
 			var refs = new List<object>();
 
@@ -280,8 +283,8 @@ namespace TomPIT
 					if (enm.Current == null)
 						continue;
 
-					if (enm is T)
-						items.Add((T)enm);
+					if (enm.Current is T)
+						items.Add((T)enm.Current);
 
 					Children(enm.Current, items, refs);
 				}
