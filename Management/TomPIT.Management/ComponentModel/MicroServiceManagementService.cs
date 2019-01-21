@@ -77,12 +77,20 @@ namespace TomPIT.ComponentModel
 				svc.NotifyChanged(this, new MicroServiceEventArgs(microService));
 		}
 
-		public ListItems<IMicroService> Query(Guid resourceGroup)
+		public List<IMicroService> Query(Guid resourceGroup)
 		{
 			var u = Connection.CreateUrl("MicroServiceManagement", "Query")
 				.AddParameter("resourceGroup", resourceGroup);
 
 			return Connection.Get<List<MicroService>>(u).ToList<IMicroService>();
+		}
+
+		public List<IMicroServiceString> QueryStrings(Guid microService)
+		{
+			var u = Connection.CreateUrl("MicroServiceManagement", "QueryStrings")
+				.AddParameter("microService", microService);
+
+			return Connection.Get<List<MicroServiceString>>(u).ToList<IMicroServiceString>();
 		}
 	}
 }

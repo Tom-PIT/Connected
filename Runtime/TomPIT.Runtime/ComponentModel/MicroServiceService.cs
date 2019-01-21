@@ -9,6 +9,7 @@ namespace TomPIT.ComponentModel
 	internal class MicroServiceService : SynchronizedClientRepository<IMicroService, Guid>, IMicroServiceService, IMicroServiceNotification
 	{
 		public event MicroServiceChangedHandler MicroServiceChanged;
+		private Lazy<MicroServiceMetaCache> _meta = new Lazy<MicroServiceMetaCache>();
 
 		public MicroServiceService(ISysConnection connection) : base(connection, "microservice")
 		{
@@ -145,6 +146,16 @@ namespace TomPIT.ComponentModel
 
 		public void NotifyMicroServiceStringRemoved(object sender, MicroServiceStringEventArgs e)
 		{
+		}
+
+		public string SelectMeta(Guid microService)
+		{
+			return Meta.Select(microService);
+		}
+
+		public MicroServiceMetaCache Meta
+		{
+			get { return _meta.Value; }
 		}
 	}
 }

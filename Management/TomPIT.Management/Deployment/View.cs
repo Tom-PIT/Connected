@@ -1,13 +1,10 @@
 ﻿using Newtonsoft.Json;
+using TomPIT.Data.DataProviders.Deployment;
 
 namespace TomPIT.Deployment
 {
-	public class View
+	public class View : SchemaBase, IView
 	{
-		[JsonProperty(PropertyName = "schema")]
-		public string Schema { get; set; }
-		[JsonProperty(PropertyName = "name")]
-		public string Name { get; set; }
 		[JsonProperty(PropertyName = "definition")]
 		public string Definition { get; set; }
 	}

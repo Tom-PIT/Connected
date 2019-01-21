@@ -1,9 +1,13 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
+using TomPIT.Data.DataProviders.Deployment;
 
 namespace TomPIT.Deployment
 {
-	public class TableColumn
+	public class TableColumn : ITableColumn
 	{
+		private IReferentialConstraint _reference = null;
+		private List<ITableConstraint> _constraints = null;
 
 		[JsonProperty(PropertyName = "name")]
 		public string Name { get; set; }
@@ -31,5 +35,27 @@ namespace TomPIT.Deployment
 		public int DateTimePrecision { get; set; }
 		[JsonProperty(PropertyName = "characterSetName")]
 		public string CharacterSetName { get; set; }
+
+		public IReferentialConstraint Reference
+		{
+			get
+			{
+				if (_reference == null)
+					_reference = new ReferentialConstraint();
+
+				return _reference;
+			}
+		}
+
+		public List<ITableConstraint> Constraints
+		{
+			get
+			{
+				if (_constraints == null)
+					_constraints = new List<ITableConstraint>();
+
+				return _constraints;
+			}
+		}
 	}
 }

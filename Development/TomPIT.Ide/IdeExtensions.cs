@@ -236,7 +236,7 @@ namespace TomPIT
 		{
 			var r = new List<T>();
 
-			var props = configuration.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+			var props = DomQuery.Properties(configuration, false, false);
 			var refs = new List<object>();
 
 			foreach (var i in props)
@@ -247,7 +247,7 @@ namespace TomPIT
 
 		private static void Children<T>(object instance, List<T> items, List<object> refs) where T : IElement
 		{
-			var props = instance.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+			var props = DomQuery.Properties(instance, false, false);
 
 			foreach (var i in props)
 				Children(instance, i, items, refs);

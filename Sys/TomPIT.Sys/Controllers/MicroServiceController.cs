@@ -43,5 +43,16 @@ namespace TomPIT.Sys.Controllers
 		{
 			return DataModel.MicroServiceStrings.Query(microService, language);
 		}
+
+		[HttpGet]
+		public string SelectMeta(Guid microService)
+		{
+			var r = DataModel.MicroServicesMeta.Select(microService);
+
+			if (r == null)
+				return null;
+
+			return Convert.ToBase64String(r.Content);
+		}
 	}
 }

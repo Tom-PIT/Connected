@@ -1,17 +1,16 @@
 ﻿using Newtonsoft.Json;
+using TomPIT.Data.DataProviders.Deployment;
 
 namespace TomPIT.Deployment
 {
-	public class ReferentialConstraint
+	public class ReferentialConstraint : IReferentialConstraint
 	{
-		[JsonProperty(PropertyName = "schema")]
-		public string Schema { get; set; }
 		[JsonProperty(PropertyName = "name")]
 		public string Name { get; set; }
-		[JsonProperty(PropertyName = "uniqueSchema")]
-		public string UniqueSchema { get; set; }
-		[JsonProperty(PropertyName = "uniqueName")]
-		public string UniqueName { get; set; }
+		[JsonProperty(PropertyName = "referenceSchema")]
+		public string ReferenceSchema { get; set; }
+		[JsonProperty(PropertyName = "referenceName")]
+		public string ReferenceName { get; set; }
 		[JsonProperty(PropertyName = "matchOption")]
 		public string MatchOption { get; set; }
 		[JsonProperty(PropertyName = "updateRule")]

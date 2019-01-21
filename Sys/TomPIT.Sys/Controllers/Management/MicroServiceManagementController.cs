@@ -67,5 +67,11 @@ namespace TomPIT.Sys.Controllers.Management
 
 			return Shell.GetService<ICryptographyService>().Encrypt(this, JsonConvert.SerializeObject(parameters));
 		}
+
+		[HttpGet]
+		public List<IMicroServiceString> QueryStrings(Guid microService)
+		{
+			return DataModel.MicroServiceStrings.Query(microService);
+		}
 	}
 }

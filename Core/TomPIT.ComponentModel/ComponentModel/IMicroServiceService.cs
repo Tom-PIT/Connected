@@ -17,5 +17,6 @@ namespace TomPIT.ComponentModel
 		List<IMicroService> Query(Guid user);
 
 		string SelectString(Guid microService, Guid language, Guid element, string property);
+		string SelectMeta(Guid microService);
 	}
 }

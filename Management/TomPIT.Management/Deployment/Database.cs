@@ -1,21 +1,16 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using TomPIT.Data.DataProviders.Deployment;
 
 namespace TomPIT.Deployment
 {
-	public class Database
+	public class Database : IDatabase
 	{
 		[JsonProperty(PropertyName = "tables")]
-		List<Table> Tables { get; set; }
+		public List<ITable> Tables { get; set; }
 		[JsonProperty(PropertyName = "views")]
-		List<View> Views { get; set; }
-		[JsonProperty(PropertyName = "references")]
-		List<ReferentialConstraint> References { get; set; }
-		[JsonProperty(PropertyName = "constraints")]
-		List<TableConstraint> Constraints { get; set; }
+		public List<IView> Views { get; set; }
 		[JsonProperty(PropertyName = "routine")]
-		List<Routine> Routines { get; set; }
-		[JsonProperty(PropertyName = "columnUsage")]
-		List<ConstraintColumnUsage> ColumnUsage { get; set; }
+		public List<IRoutine> Routines { get; set; }
 	}
 }

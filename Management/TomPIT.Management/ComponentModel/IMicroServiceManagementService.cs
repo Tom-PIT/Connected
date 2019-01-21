@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace TomPIT.ComponentModel
 {
@@ -8,6 +9,7 @@ namespace TomPIT.ComponentModel
 		void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup);
 		void Delete(Guid microService);
 
-		ListItems<IMicroService> Query(Guid resourceGroup);
+		List<IMicroService> Query(Guid resourceGroup);
+		List<IMicroServiceString> QueryStrings(Guid microService);
 	}
 }

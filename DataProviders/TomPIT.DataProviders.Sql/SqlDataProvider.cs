@@ -3,7 +3,9 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using TomPIT.Data.DataProviders;
+using TomPIT.Data.DataProviders.Deployment;
 using TomPIT.Data.Sql;
+using TomPIT.DataProviders.Sql.Deployment;
 
 namespace TomPIT.DataProviders.Sql
 {
@@ -13,6 +15,8 @@ namespace TomPIT.DataProviders.Sql
 		public Guid Id => new Guid("{C5849300-11A4-4FAE-B433-3C89DD05DDF0}");
 
 		public string Name => "Microsoft SQL Server";
+
+		public bool SupportsDeploy => true;
 
 		public void Execute(IDataCommandDescriptor command)
 		{
@@ -205,6 +209,11 @@ namespace TomPIT.DataProviders.Sql
 			}
 
 			return r;
+		}
+
+		public IDatabase CreateSchema(string connectionString)
+		{
+			return Package.Create(connectionString);
 		}
 	}
 }

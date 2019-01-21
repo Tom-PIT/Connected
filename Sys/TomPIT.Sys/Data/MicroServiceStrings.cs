@@ -14,6 +14,11 @@ namespace TomPIT.Sys.Data
 
 		}
 
+		public List<IMicroServiceString> Query(Guid microService)
+		{
+			return Where(f => f.MicroService == microService);
+		}
+
 		public List<IMicroServiceString> Query(Guid microService, Guid language)
 		{
 			return Where(f => f.MicroService == microService && f.Language == language);
