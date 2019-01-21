@@ -22,7 +22,7 @@ namespace TomPIT.UI
 				return r.Content;
 
 			var svc = Instance.GetService<IComponentService>();
-			var c = svc.SelectConfiguration(view) as IView;
+			var c = svc.SelectConfiguration(view) as IGraphicInterface;
 
 			if (c == null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
