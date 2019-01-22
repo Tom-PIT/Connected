@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TomPIT.Analysis;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Design.Services;
@@ -19,6 +20,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 	{
 		private SourceText _sourceCode = null;
 		private Guid _microService = Guid.Empty;
+		private Type _argumentsType = null;
 
 		public ApiProvider(IExecutionContext context) : base(context)
 		{
@@ -150,7 +152,17 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 				existing.Add(i);
 		}
 
-		protected override Type ArgumentsType => typeof(OperationInvokeArguments);
+		protected override Type ArgumentsType
+		{
+			get
+			{
+				if (_argumentsType == null)
+					_argumentsType = typeof(ScriptGlobals<>).MakeGenericType(typeof(OperationInvokeArguments));
+
+				return _argumentsType;
+			}
+		}
+
 		public override SourceText SourceCode { get { return _sourceCode; } }
 
 		private List<ICodeAnalysisResult> ResolveReferencedApi(IExecutionContext context, IApi api, string text)
@@ -161,7 +173,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			var r = new List<ICodeAnalysisResult>();
 			var o = new List<ICodeAnalysisResult>();
 
-			var sm = Task.Run(async () => { return await CreateDocument(text).GetSemanticModelAsync(); }).Result;
+			var sm = Task.Run(async () => { return await Document.GetSemanticModelAsync(); }).Result;
 			var root = sm.SyntaxTree.GetRoot();
 			var descendants = root.DescendantNodes().Where(f => f is InvocationExpressionSyntax);
 

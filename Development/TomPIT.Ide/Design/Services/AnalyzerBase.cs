@@ -166,15 +166,6 @@ namespace TomPIT.Design.Services
 			}
 		}
 
-
-		protected DocumentInfo CreateDocumentInfo(string sourceCode)
-		{
-			return DocumentInfo.Create(
-				 DocumentId.CreateNewId(Project.Id), "Script",
-				 sourceCodeKind: SourceCodeKind.Script,
-				 loader: TextLoader.From(TextAndVersion.Create(SourceText.From(sourceCode), VersionStamp.Create())));
-		}
-
 		public virtual SourceText SourceCode { get { return SourceText.From(string.Empty); } }
 		public virtual ProjectInfo ProjectInfo
 		{
@@ -196,11 +187,6 @@ namespace TomPIT.Design.Services
 			}
 		}
 
-
-		protected Document CreateDocument(string sourceCode)
-		{
-			return Workspace.AddDocument(CreateDocumentInfo(sourceCode));
-		}
 
 		public virtual Document Document
 		{
