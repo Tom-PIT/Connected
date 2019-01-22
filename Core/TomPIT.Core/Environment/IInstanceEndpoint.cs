@@ -19,8 +19,7 @@ namespace TomPIT.Environment
 		IoT = 6,
 		BigData = 7,
 		Search = 8,
-		Rest = 9,
-		Test = 10
+		Rest = 9
 	}
 
 	[Flags]

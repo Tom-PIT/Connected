@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
+using System;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Connectivity;
@@ -12,6 +13,10 @@ namespace TomPIT.Services
 	{
 		private const string ApiProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiProvider, TomPIT.Design";
 		private const string ApiParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiParameterProvider, TomPIT.Design";
+
+		[ThreadStatic]
+		private static HttpRequest _currentRequest = null;
+
 
 		private IContextServices _services = null;
 		private IContextIdentity _identity = null;
@@ -37,6 +42,8 @@ namespace TomPIT.Services
 
 		protected void Initialize(HttpRequest request, string endpoint, string authority, string authorityId, string contextId)
 		{
+			_currentRequest = request;
+
 			Request = request;
 			Endpoint = endpoint;
 
@@ -46,6 +53,8 @@ namespace TomPIT.Services
 			ci.AuthorityId = authorityId;
 			ci.ContextId = contextId;
 		}
+
+		public static HttpRequest HttpRequest { get { return _currentRequest; } }
 
 		public HttpRequest Request { get; protected set; }
 

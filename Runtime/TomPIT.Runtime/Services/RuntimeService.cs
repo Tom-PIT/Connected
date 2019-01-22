@@ -47,8 +47,6 @@ namespace TomPIT.Services
 					break;
 				case InstanceType.Rest:
 					break;
-				case InstanceType.Test:
-					break;
 				default:
 					break;
 			}

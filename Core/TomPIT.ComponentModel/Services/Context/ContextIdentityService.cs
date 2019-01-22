@@ -1,4 +1,6 @@
-﻿using TomPIT.Security;
+﻿using Newtonsoft.Json.Linq;
+using System;
+using TomPIT.Security;
 
 namespace TomPIT.Services.Context
 {
@@ -83,6 +85,50 @@ namespace TomPIT.Services.Context
 				return null;
 
 			return Shell.GetService<IUserService>().Select(qualifier == null ? string.Empty : qualifier.ToString());
+		}
+
+		public IAuthenticationResult Authenticate(string user, string password)
+		{
+			return Context.Connection().GetService<IAuthorizationService>().Authenticate(user, password);
+		}
+
+		public IAuthenticationResult Authenticate(string authenticationToken)
+		{
+			return Context.Connection().GetService<IAuthorizationService>().Authenticate(authenticationToken);
+		}
+
+		public Guid InsertUser(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language,
+			string timezone, bool notificationsEnabled, string mobile, string phone, string password)
+		{
+			var u = Context.Connection().CreateUrl("UserManagement", "Insert");
+			var e = new JObject
+			{
+				{"email", email},
+				{"loginName", loginName},
+				{"firstName", firstName},
+				{"lastName", lastName},
+				{"description", description},
+				{"password", password},
+				{"pin", pin},
+				{"language", language},
+				{"timezone", timezone},
+				{"notificationEnabled", notificationsEnabled},
+				{"mobile", mobile},
+				{"phone", phone}
+			};
+
+			var id = Context.Connection().Post<Guid>(u, e);
+
+			u = Context.Connection().CreateUrl("UserManagement", "ChangePassword");
+			e = new JObject
+			{
+				{"user", id},
+				{"password", password}
+			};
+
+			Context.Connection().Post(u, e);
+
+			return id;
 		}
 	}
 }

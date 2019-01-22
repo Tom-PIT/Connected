@@ -1,6 +1,7 @@
 ﻿using TomPIT.ComponentModel;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
+using TomPIT.Deployment;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Security;
@@ -31,6 +32,7 @@ namespace TomPIT
 			e.Connection.RegisterService(typeof(IInstanceEndpointManagementService), typeof(InstanceEndpointManagementService));
 			e.Connection.RegisterService(typeof(IEnvironmentUnitManagementService), typeof(EnvironmentUnitManagementService));
 			e.Connection.RegisterService(typeof(IAuthenticationTokenManagementService), typeof(AuthenticationTokenManagementService));
+			e.Connection.RegisterService(typeof(IDeploymentService), typeof(DeploymentService));
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
+using TomPIT.Services;
 
 namespace TomPIT.Security
 {
@@ -34,16 +35,57 @@ namespace TomPIT.Security
 			return r;
 		}
 
-		public IClientAuthenticationResult Authenticate(string bearerKey)
+		public IClientAuthenticationResult Authenticate(string authenticationToken)
 		{
-			/*
-			 * TODO: implement bearer keys list
-			 */
-			return new AuthenticationResult
+			var svc = Connection.GetService<IAuthorizationService>() as AuthorizationService;
+
+			var token = svc.AuthenticationTokens.Select(authenticationToken);
+			var u = Connection.GetService<IUserService>().Select(token.User.ToString());
+			var claim = AuthenticationTokenClaim.None;
+
+			switch (Connection.GetService<IRuntimeService>().Type)
 			{
-				Success = false,
-				Reason = AuthenticationResultReason.Other
-			};
+				case Environment.InstanceType.Application:
+					claim = AuthenticationTokenClaim.Application;
+					break;
+				case Environment.InstanceType.Worker:
+					claim = AuthenticationTokenClaim.Worker;
+					break;
+				case Environment.InstanceType.Cdn:
+					claim = AuthenticationTokenClaim.Cdn;
+					break;
+				case Environment.InstanceType.IoT:
+					claim = AuthenticationTokenClaim.IoT;
+					break;
+				case Environment.InstanceType.BigData:
+					claim = AuthenticationTokenClaim.BigData;
+					break;
+				case Environment.InstanceType.Search:
+					claim = AuthenticationTokenClaim.Search;
+					break;
+				case Environment.InstanceType.Rest:
+					claim = AuthenticationTokenClaim.Rest;
+					break;
+			}
+
+			if (token == null || !token.IsValid(ExecutionContext.HttpRequest, u, claim))
+			{
+				return new AuthenticationResult
+				{
+					Success = false,
+					Reason = AuthenticationResultReason.Other
+				};
+			}
+			else
+			{
+				return new AuthenticationResult
+				{
+					Identity = new Identity(u),
+					Reason = AuthenticationResultReason.OK,
+					Success = true,
+					Token = u.AuthenticationToken.ToString()
+				};
+			}
 		}
 	}
 }

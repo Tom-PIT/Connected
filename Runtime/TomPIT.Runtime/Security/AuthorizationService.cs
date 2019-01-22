@@ -69,17 +69,17 @@ namespace TomPIT.Security
 			return DefaultAuthenticationProvider.Authenticate(user, password);
 		}
 
-		public IClientAuthenticationResult Authenticate(string bearerKey)
+		public IClientAuthenticationResult Authenticate(string authenticationToken)
 		{
 			foreach (var i in AuthenticationProviders)
 			{
-				var r = i.Authenticate(bearerKey);
+				var r = i.Authenticate(authenticationToken);
 
 				if (r != null)
 					return r;
 			}
 
-			return DefaultAuthenticationProvider.Authenticate(bearerKey);
+			return DefaultAuthenticationProvider.Authenticate(authenticationToken);
 		}
 
 		public IAuthorizationResult Authorize(IExecutionContext context, AuthorizationArgs e)
@@ -295,7 +295,7 @@ namespace TomPIT.Security
 		}
 
 		private MembershipCache Membership { get; }
-		private AuthenticationTokensCache AuthenticationTokens { get; }
+		internal AuthenticationTokensCache AuthenticationTokens { get; }
 		private List<IPermissionDescriptor> Descriptors => _descriptors.Value;
 		private List<IAuthenticationProvider> AuthenticationProviders { get { return _authProviders.Value; } }
 		private IAuthenticationProvider DefaultAuthenticationProvider

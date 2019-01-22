@@ -10,6 +10,8 @@ namespace TomPIT.Security
 {
 	internal class AuthenticationTokensCache : SynchronizedClientRepository<IAuthenticationToken, Guid>
 	{
+		public object FirstOrDefault { get; internal set; }
+
 		public AuthenticationTokensCache(ISysConnection connection) : base(connection, "authtoken")
 		{
 		}

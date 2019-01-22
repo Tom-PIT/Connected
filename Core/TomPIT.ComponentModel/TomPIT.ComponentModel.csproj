@@ -15,10 +15,10 @@
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Microservice Platform</Product>
-    <AssemblyVersion>1.0.121.3</AssemblyVersion>
+    <AssemblyVersion>1.0.122.3</AssemblyVersion>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FileVersion>1.0.121.3</FileVersion>
-    <Version>1.0.121.3</Version>
+    <FileVersion>1.0.122.3</FileVersion>
+    <Version>1.0.122.3</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\TomPIT.Core\TomPIT.Core.csproj" />

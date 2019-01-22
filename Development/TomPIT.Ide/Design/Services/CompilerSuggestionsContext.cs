@@ -53,9 +53,6 @@ namespace TomPIT.Design.Services
 
 			foreach (var i in results.Items)
 			{
-				if (!IsPublic(i))
-					continue;
-
 				r.Add(new Suggestion
 				{
 					//Description = i.DisplayText,

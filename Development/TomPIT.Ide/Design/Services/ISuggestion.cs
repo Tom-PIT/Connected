@@ -6,5 +6,6 @@
 		int Kind { get; }
 		string Description { get; }
 		string InsertText { get; }
+		string SortText { get; }
 	}
 }

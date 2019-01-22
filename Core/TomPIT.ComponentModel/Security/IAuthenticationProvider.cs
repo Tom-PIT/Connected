@@ -3,6 +3,6 @@
 	public interface IAuthenticationProvider
 	{
 		IClientAuthenticationResult Authenticate(string userName, string password);
-		IClientAuthenticationResult Authenticate(string bearerKey);
+		IClientAuthenticationResult Authenticate(string authenticationToken);
 	}
 }

@@ -39,5 +39,7 @@ namespace TomPIT.Design.Services
 		public string Description { get; set; }
 		[JsonProperty(PropertyName = "insertText")]
 		public string InsertText { get; set; }
+		[JsonProperty(PropertyName = "sortText")]
+		public string SortText { get; set; }
 	}
 }
