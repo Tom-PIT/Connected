@@ -94,6 +94,8 @@ namespace TomPIT
 			services.AddMvc((o) =>
 			{
 				e.ConfigureMvc?.Invoke(o);
+
+				o.Filters.Add(new AuthenticationCookieFilter());
 			});
 		}
 

@@ -1,0 +1,193 @@
+﻿@model TomPIT.Marketplace.IMarketplaceProxy
+
+<div class="info-box info">
+	<div class="info-box-header">Tom PIT Marketplace sign up</div>
+	By signing up to the Tom PIT marketplace you'll be able to publish, sell, distribute and deploy your microservices. Tom PIT marketplace is <strong>free to use</strong>.
+	If you already have a <strong>Tom PIT publisher account</strong> you can sign in <a href="#" id="aLogin">here</a>.
+</div>
+
+<h4 class="mt-5 mb-3">Company</h4>
+<div class="form-group">
+	<label for="editCompany">Company</label>
+	<div id="editCompany"></div>
+</div>
+<div class="form-group">
+	<label for="editCountry">Country</label>
+	<div id="editCountry"></div>
+</div>
+<div class="form-group">
+	<label for="editWebsite">Website URL</label>
+	<div id="editWebsite"></div>
+</div>
+
+<h4 class="mt-5 mb-3">Personal</h4>
+<div class="form-group">
+	<label for="edirFirstName">First name</label>
+	<div id="editFirstName"></div>
+</div>
+<div class="form-group">
+	<label for="editLastName">Last name</label>
+	<div id="editLastName"></div>
+</div>
+<div class="form-group">
+	<label for="editEmail">Email</label>
+	<div id="editEmail"></div>
+</div>
+<div class="form-group">
+	<label for="editPhone">Phone</label>
+	<div id="editPhone"></div>
+</div>
+
+<h4 class="mt-5 mb-3">Authentication</h4>
+<div class="form-group">
+	<label for="editPassword">Passsword</label>
+	<div id="editPassword"></div>
+</div>
+<div class="form-group">
+	<label for="editConfirm">Confirm Password</label>
+	<div id="editConfirm"></div>
+</div>
+
+<div class="form-group">
+	<button type="button" class="btn btn-primary" id="btnSignup">Create publisher account</button>
+</div>
+<script>
+	$('#editCompany').dxTextBox({
+		stylingMode: 'underlined',
+		maxLength: 128
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+
+			}]
+	});
+
+	$('#editWebsite').dxTextBox({
+		stylingMode: 'underlined',
+		maxLength: 1024
+	});
+
+	$('#editCountry').dxSelectBox({
+		items:@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Countries.ToResults())),
+		displayExpr: 'name',
+		valueExpr: 'id',
+		stylingMode: 'underlined',
+		searchEnabled:true
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+
+			}]
+	});
+
+	$('#editEmail').dxTextBox({
+		stylingMode: 'underlined',
+		maxLength: 256
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+			},
+			{
+			type:'email'
+			}]
+	});
+
+	$('#editFirstName').dxTextBox({
+		stylingMode: 'underlined',
+		maxLength: 32
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+
+			}]
+	});
+
+	$('#editLastName').dxTextBox({
+		stylingMode: 'underlined',
+		maxLength: 64
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+
+			}]
+	});
+
+	$('#editPhone').dxTextBox({
+		stylingMode: 'underlined',
+		maxLength: 48
+	});
+
+	$('#editPassword').dxTextBox({
+		stylingMode: 'underlined',
+		maxLength: 32,
+		mode:'password'
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+
+			}]
+	});
+
+	$('#editConfirm').dxTextBox({
+		stylingMode: 'underlined',
+		maxLength: 32,
+		mode:'password'
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+
+			},
+			{
+				type: 'custom',
+				message:'Passwords do not match',
+				validationCallback: function (e) {
+					var pwd = $('#editPassword').dxTextBox('instance').option('value');
+
+					return pwd === e.value;
+				}
+			}]
+	});
+
+	$('#aLogin').click(function () {
+		ide.designerAction({
+			data: {
+				'action': 'login'
+			},
+			onComplete: function (data) {
+				$('#loginForm').html(data);
+			}
+		});
+	});
+
+	$('#btnSignup').click(function () {
+		if (!DevExpress.validationEngine.validateGroup().isValid)
+			return;
+
+		ide.designerAction({
+			data: {
+				'action': 'signupcreate',
+				'company': $('#editCompany').dxTextBox('instance').option('value'),
+				'website': $('#editWebsite').dxTextBox('instance').option('value'),
+				'country': $('#editCountry').dxSelectBox('instance').option('value'),
+				'firstName': $('#editFirstName').dxTextBox('instance').option('value'),
+				'lastName': $('#editLastName').dxTextBox('instance').option('value'),
+				'email': $('#editEmail').dxTextBox('instance').option('value'),
+				'phone': $('#editPhone').dxTextBox('instance').option('value'),
+				'password': $('#editPassword').dxTextBox('instance').option('value'),
+			},
+			onComplete: function (data) {
+				$('#loginForm').html(data);
+				tompit.success('Publisher account successfully created. You can now publish and sell you micro services globally.', 'Congratulations and welcome to the Tom PIT marketplace!');
+			}
+		});
+	});
+
+	$('#editCompany').dxTextBox('instance').focus();
+</script>

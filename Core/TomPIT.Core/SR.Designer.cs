@@ -1024,6 +1024,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid authentication token.
+        /// </summary>
+        public static string ErrInvalidToken {
+            get {
+                return ResourceManager.GetString("ErrInvalidToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Item descriptor not found.
         /// </summary>
         public static string ErrItemDescriptorNotFound {
@@ -1875,6 +1884,15 @@ namespace TomPIT {
         public static string ValChangePasswordPassword {
             get {
                 return ResourceManager.GetString("ValChangePasswordPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email is not in a valid format.
+        /// </summary>
+        public static string ValEmailFormat {
+            get {
+                return ResourceManager.GetString("ValEmailFormat", resourceCulture);
             }
         }
         

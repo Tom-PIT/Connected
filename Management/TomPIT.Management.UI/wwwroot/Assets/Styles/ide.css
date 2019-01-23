@@ -50,8 +50,8 @@
 #devDesigner {
   height: auto;
   position: relative;
-  max-height: calc(100vh - 86px);
-  min-height: calc(100vh - 86px);
+  max-height: calc(100vh - 116px);
+  min-height: calc(100vh - 116px);
   overflow-y: auto;
 }
 #devSelection {
@@ -220,7 +220,12 @@ h4.dev-title {
   bottom: 40px;
 }
 .text-editor-sa {
-  height: calc(100vh - 125px) !important;
+  height: calc(100vh - 183px) !important;
+}
+.text-editor-int {
+  height: calc(100vh - 350px) !important;
+  border: 1px solid #e0e0e0 !important;
+  border-top: none !important;
 }
 .text-editor {
   border: 0;

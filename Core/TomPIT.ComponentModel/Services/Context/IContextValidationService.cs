@@ -28,5 +28,7 @@ namespace TomPIT.Services.Context
 		void Unique(string attribute, object value, string keyProperty, object keyValue, JObject existing);
 		void Exists(string attribute, object value, List<object> values);
 		void Exists(string attribute, object value, List<string> values);
+
+		void Email(string attribute, string value);
 	}
 }

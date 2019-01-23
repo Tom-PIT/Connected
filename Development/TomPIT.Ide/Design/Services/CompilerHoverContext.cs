@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -88,7 +89,16 @@ namespace TomPIT.Design.Services
 				return null;
 
 			var methodName = ms.Name;
-			var methodArgumentTypeNames = ms.Parameters.Select(f => string.Format("{0}.{1}, {2}", f.Type.ContainingNamespace.ToString(), f.Type.Name, f.Type.ContainingAssembly.Name));
+			var methodArgumentTypeNames = new List<string>();
+
+			foreach (var i in ms.Parameters)
+			{
+				if (i.Type.ContainingNamespace == null || i.Type.ContainingAssembly == null)
+					continue;
+
+				methodArgumentTypeNames.Add(string.Format("{0}.{1}, {2}", i.Type.ContainingNamespace.ToString(), i.Type.Name, i.Type.ContainingAssembly.Name));
+			}
+
 			var argumentTypes = methodArgumentTypeNames.Select(typeName => Type.GetType(typeName));
 
 			if (argumentTypes.Count() > 0 && argumentTypes.Contains(null))

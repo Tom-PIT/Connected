@@ -27,11 +27,11 @@ namespace TomPIT
 			catch (Exception ex)
 			{
 				if (ex is TomPITException)
-					throw ex;
+					throw ex; 
 
 				throw new TomPITException(string.Format("{0} ({1}, {2}).", SR.ErrInvalidPropertyType, propertyName, typeof(T)));
 			}
-		}
+		} 
 
 		public static T Optional<T>(this JObject instance, string propertyName, T defaultValue)
 		{
@@ -409,6 +409,25 @@ namespace TomPIT
 			{
 				{"data", new JArray() }
 			};
+		}
+
+		public static void RemoveProperties(this JObject dataSource, params string[] properties)
+		{
+			RemoveProperties(dataSource.ToResults());
+		}
+
+		public static void RemoveProperties(this JArray items, params string[] properties)
+		{
+			foreach (var i in items)
+			{
+				var jo = i as JObject;
+
+				foreach(var j in properties)
+				{
+					if (jo.ContainsKey(j))
+						jo.Remove(j);
+				}
+			}
 		}
 	}
 }

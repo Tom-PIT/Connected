@@ -4,6 +4,7 @@ using System.ComponentModel;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.Storage;
 
 namespace TomPIT.Application.Resources
 {
@@ -21,6 +22,12 @@ namespace TomPIT.Application.Resources
 		public List<Guid> QueryResources()
 		{
 			return new List<Guid> { Blob };
+		}
+
+		public void Delete(ExternalResourceDeleteArgs e)
+		{
+			if (Blob != Guid.Empty)
+				e.Connection.GetService<IStorageService>().Delete(Blob);
 		}
 	}
 }

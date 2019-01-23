@@ -1,6 +1,6 @@
 ﻿using TomPIT.Security;
 
-namespace TomPIT.Deployment
+namespace TomPIT.Marketplace
 {
 	internal class AuthenticationResult : IAuthenticationResult
 	{

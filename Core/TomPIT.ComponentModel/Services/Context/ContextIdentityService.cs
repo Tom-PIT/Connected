@@ -84,7 +84,7 @@ namespace TomPIT.Services.Context
 			if (qualifier == null)
 				return null;
 
-			return Shell.GetService<IUserService>().Select(qualifier == null ? string.Empty : qualifier.ToString());
+			return Context.Connection().GetService<IUserService>().Select(qualifier == null ? string.Empty : qualifier.ToString());
 		}
 
 		public IAuthenticationResult Authenticate(string user, string password)

@@ -40,10 +40,20 @@ namespace TomPIT.Security
 			var svc = Connection.GetService<IAuthorizationService>() as AuthorizationService;
 
 			var token = svc.AuthenticationTokens.Select(authenticationToken);
+
+			if (token == null)
+			{
+				return new AuthenticationResult
+				{
+					Success = false,
+					Reason = AuthenticationResultReason.InvalidToken
+				};
+			}
+
 			var u = Connection.GetService<IUserService>().Select(token.User.ToString());
 			var claim = AuthenticationTokenClaim.None;
 
-			switch (Connection.GetService<IRuntimeService>().Type)
+			switch (Shell.GetService<IRuntimeService>().Type)
 			{
 				case Environment.InstanceType.Application:
 					claim = AuthenticationTokenClaim.Application;

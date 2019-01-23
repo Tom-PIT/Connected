@@ -30,7 +30,27 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			if (invoke.ArgumentList.Arguments.Count < 1)
 				return null;
 
-			var tName = invoke.ArgumentList.Arguments[0].GetText().ToString().Trim().Trim('"');
+			var method = GetMethodInfo(e.Model, e.Node as ArgumentSyntax);
+
+			if (method == null)
+				return null;
+
+			var parameters = method.GetParameters();
+			var parameterIndex = -1;
+
+			for (var i = 0; i < parameters.Length; i++)
+			{
+				if (string.Compare(parameters[i].Name, "transaction", true) == 0)
+				{
+					parameterIndex = i;
+					break;
+				}
+			}
+
+			if (parameterIndex == -1)
+				return null;
+
+			var tName = invoke.ArgumentList.Arguments[parameterIndex].GetText().ToString().Trim().Trim('"');
 
 			if (string.IsNullOrWhiteSpace(tName))
 				return null;

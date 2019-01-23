@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Globalization;
-using System.Security.Claims;
 using TomPIT.Connectivity;
 using TomPIT.Security;
 
@@ -77,15 +76,10 @@ namespace TomPIT.Routing
 				if (Context.User == null)
 					return null;
 
-				var claim = Context.User.FindFirst(f => string.Compare(f.Type, ClaimTypes.NameIdentifier, true) == 0);
-
-				if (claim == null)
+				if (!(Context.User.Identity is Identity id) || id.User == null || id.User.AuthenticationToken == Guid.Empty)
 					return null;
 
-				if (!Guid.TryParse(claim.Value, out Guid at))
-					return null;
-
-				return Connection.GetService<IUserService>().SelectByAuthenticationToken(at);
+				return Connection.GetService<IUserService>().SelectByAuthenticationToken(id.User.AuthenticationToken);
 			}
 		}
 	}

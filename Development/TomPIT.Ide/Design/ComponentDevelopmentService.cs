@@ -269,6 +269,11 @@ namespace TomPIT.Design
 
 				foreach (var i in txt)
 					Delete(i);
+
+				var external = config.Children<IExternalResourceElement>();
+
+				foreach (var i in external)
+					i.Delete(new ExternalResourceDeleteArgs(Connection));
 			}
 			catch (Exception ex)
 			{

@@ -4,6 +4,7 @@ using TomPIT.Connectivity;
 using TomPIT.Deployment;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
+using TomPIT.Marketplace;
 using TomPIT.Security;
 
 namespace TomPIT
@@ -33,6 +34,7 @@ namespace TomPIT
 			e.Connection.RegisterService(typeof(IEnvironmentUnitManagementService), typeof(EnvironmentUnitManagementService));
 			e.Connection.RegisterService(typeof(IAuthenticationTokenManagementService), typeof(AuthenticationTokenManagementService));
 			e.Connection.RegisterService(typeof(IDeploymentService), typeof(DeploymentService));
+			e.Connection.RegisterService(typeof(IMarketplaceService), typeof(MarketplaceService));
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Connectivity;
+using TomPIT.Design;
 
 namespace TomPIT.ComponentModel
 {
@@ -17,6 +18,11 @@ namespace TomPIT.ComponentModel
 
 		public void Delete(Guid microService)
 		{
+			var components = Connection.GetService<IComponentService>().QueryComponents(microService);
+
+			foreach (var i in components)
+				Connection.GetService<IComponentDevelopmentService>().Delete(i.Token);
+
 			var u = Connection.CreateUrl("MicroServiceManagement", "Delete");
 			var args = new JObject {
 				{"microService", microService }

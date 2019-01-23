@@ -9,6 +9,7 @@
 		Locked = 4,
 		NoPassword = 5,
 		PasswordExpired = 6,
+		InvalidToken = 7,
 		Other = 99
 	}
 

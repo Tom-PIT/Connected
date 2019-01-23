@@ -28,7 +28,7 @@ namespace TomPIT
 					return loginName;
 				else
 				{
-					int idx = email.IndexOf('@');
+					int idx = email.IndexOf('@'); 
 
 					if (idx == -1)
 					{
@@ -76,6 +76,8 @@ namespace TomPIT
 					return SR.ErrNoPassword;
 				case AuthenticationResultReason.PasswordExpired:
 					return SR.ErrPasswordExpired;
+				case AuthenticationResultReason.InvalidToken:
+					return SR.ErrInvalidToken;
 				default:
 					return null;
 			}

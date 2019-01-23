@@ -117,12 +117,13 @@ namespace TomPIT
 				case DbType.Byte:
 				case DbType.Int16:
 				case DbType.Int32:
-				case DbType.Int64:
 				case DbType.SByte:
 				case DbType.UInt16:
 				case DbType.UInt32:
-				case DbType.UInt64:
 					return DataType.Integer;
+				case DbType.Int64:
+				case DbType.UInt64:
+					return DataType.Long;
 				case DbType.Currency:
 				case DbType.Decimal:
 				case DbType.Double:

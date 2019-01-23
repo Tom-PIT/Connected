@@ -26,7 +26,8 @@ namespace TomPIT.Application.Design.Designers
 			{
 				DataType = dataType,
 				Name = name,
-				IsNullable = isNullable
+				IsNullable = isNullable,
+				NullMapping = isNullable
 			};
 		}
 

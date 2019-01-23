@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Newtonsoft.Json.Linq;
+using System.Net.Mail;
 
 namespace TomPIT.Services.Context
 {
@@ -13,6 +14,18 @@ namespace TomPIT.Services.Context
 		}
 
 		private IExecutionContext Context { get; }
+
+		public void Email(string attribute, string value)
+		{
+			try
+			{
+				new MailAddress(value);
+			}
+			catch (FormatException )
+			{
+				throw new RuntimeException(SR.SourceValidation, SR.ValEmailFormat);
+			}
+		}
 
 		public void Exists(string attribute, object value, List<object> values)
 		{

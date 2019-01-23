@@ -7,11 +7,14 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyVersion>1.0.122.3</AssemblyVersion>
-    <FileVersion>1.0.122.3</FileVersion>
-    <Version>1.0.122.3</Version>
+    <AssemblyVersion>1.0.123.10</AssemblyVersion>
+    <FileVersion>1.0.123.10</FileVersion>
+    <Version>1.0.123.10</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-18618-05" PrivateAssets="All" />
   </ItemGroup>
 </Project>

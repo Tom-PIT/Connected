@@ -49,3 +49,31 @@
 .unit-group-content {
   border-left: 1px dotted #9e9e9e;
 }
+.info-box {
+  border-left: 3px solid;
+  padding: 5px 15px;
+  margin: 15px 0;
+}
+.info-box .info-box-header {
+  font-weight: 700;
+  padding-bottom: 5px;
+  font-size: 1.25em;
+}
+.info-box.info {
+  border-left-color: #03a9f4;
+}
+.info-box.primary {
+  border-left-color: #2196f3;
+}
+.info-box.warning {
+  border-left-color: #ff9800;
+}
+.info-box.danger {
+  border-left-color: #f44336;
+}
+.info-box.success {
+  border-left-color: #4caf50;
+}
+.info-box.secondary {
+  border-left-color: #e0e0e0;
+}

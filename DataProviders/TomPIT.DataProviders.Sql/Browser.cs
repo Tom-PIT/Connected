@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Data.DataProviders;
 
@@ -130,6 +133,8 @@ namespace TomPIT.DataProviders.Sql
 						results.Add(item);
 					}
 
+					ResolveNullableColumns(con, groupObject, results);
+
 					return results;
 				}
 				finally
@@ -137,6 +142,50 @@ namespace TomPIT.DataProviders.Sql
 					if (con != null && con.State != ConnectionState.Closed)
 						con.Close();
 				}
+			}
+		}
+
+		private void ResolveNullableColumns(SqlConnection con, string procedure, List<ISchemaParameter> results)
+		{
+			var com = new SqlCommand("sp_helptext", con)
+			{
+				CommandType = CommandType.StoredProcedure
+			};
+
+			com.Parameters.AddWithValue("@objname", procedure);
+
+			var r = com.ExecuteReader();
+			var declarations = new List<string>();
+
+			var sb = new StringBuilder();
+
+			while (r.Read())
+				sb.AppendFormat(" {0} ", r.GetString(0).Trim());
+
+			r.Close();
+
+			var definition = Regex.Replace(sb.ToString(), @"\t|\n|\r", "");
+
+			var header = definition.ToString().Substring(0, definition.IndexOf(" AS "));
+
+			if (!header.Contains("@"))
+				return;
+
+			var parametersSection = header.Substring(header.IndexOf("@"));
+			var tokens = parametersSection.Split(',');
+
+			foreach (var i in tokens)
+			{
+				if (!i.Contains('='))
+					continue;
+
+				var parameterTokens = i.Trim().Split(new char[] { ' ' }, 2);
+				var parameter = results.FirstOrDefault(f => string.Compare(f.Name, parameterTokens[0].Trim(), true) == 0);
+
+				if (parameter == null)
+					continue;
+
+				((SchemaParameter)parameter).IsNullable = true;
 			}
 		}
 

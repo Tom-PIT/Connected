@@ -771,4 +771,10 @@
   <data name="ErrAuthTokenNotFound" xml:space="preserve">
     <value>Authentication token not found.</value>
   </data>
+  <data name="ErrInvalidToken" xml:space="preserve">
+    <value>Invalid authentication token</value>
+  </data>
+  <data name="ValEmailFormat" xml:space="preserve">
+    <value>Email is not in a valid format</value>
+  </data>
 </root>
