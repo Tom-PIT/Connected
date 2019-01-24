@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using TomPIT.Services.Context;
+﻿using TomPIT.Services.Context;
 
 namespace TomPIT.Services
 {
-	internal class ContextServices : ContextClient, IContextServices, IHttpRequestOwner
+	internal class ContextServices : ContextClient, IContextServices
 	{
 		private IContextDataService _data = null;
 		private IContextTimezoneService _timezone = null;
@@ -15,9 +14,8 @@ namespace TomPIT.Services
 		private IContextValidationService _validation = null;
 		private IContextEnvironmentService _environment = null;
 
-		public ContextServices(IExecutionContext context, HttpRequest request) : base(context)
+		public ContextServices(IExecutionContext context) : base(context)
 		{
-			HttpRequest = request;
 		}
 
 		public IContextEnvironmentService Environment
@@ -113,12 +111,10 @@ namespace TomPIT.Services
 			get
 			{
 				if (_routing == null)
-					_routing = new ContextRoutingService(Context, this);
+					_routing = new ContextRoutingService(Context);
 
 				return _routing;
 			}
 		}
-
-		public HttpRequest HttpRequest { get; }
 	}
 }

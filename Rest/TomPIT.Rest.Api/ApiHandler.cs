@@ -8,7 +8,6 @@ using System.Net;
 using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.Runtime;
 using TomPIT.Security;
 using TomPIT.Services;
 
@@ -16,18 +15,14 @@ namespace TomPIT.Rest
 {
 	public class ApiHandler : ExecutionContext
 	{
-		public ApiHandler(HttpContext context, string endpoint) : base(context.Request, endpoint)
+		public ApiHandler(HttpContext context, string endpoint) : base(endpoint)
 		{
-			HttpContext = context;
-
-			var routeData = Request.HttpContext.GetRouteData();
+			var routeData = Shell.HttpContext.GetRouteData();
 
 			MicroServiceName = routeData.Values["microService"].ToString();
 			Api = routeData.Values["api"].ToString();
 			Operation = routeData.Values["operation"].ToString();
 		}
-
-		private HttpContext HttpContext { get; }
 
 		private string MicroServiceName { get; set; }
 		private string Api { get; set; }
@@ -48,7 +43,8 @@ namespace TomPIT.Rest
 
 			var r = Invoke<object>(string.Format("{0}/{1}", Api, Operation), ParseArguments());
 
-			RenderResult(JsonConvert.SerializeObject(r));
+			if (Shell.HttpContext.Response.StatusCode == (int)HttpStatusCode.OK)
+				RenderResult(JsonConvert.SerializeObject(r));
 		}
 
 		private bool Authorize(IApi api, IApiOperation operation)
@@ -95,14 +91,14 @@ namespace TomPIT.Rest
 
 		private JObject ParseArguments()
 		{
-			if (Request.Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
-				return Request.Body.ToJObject();
+			if (Shell.HttpContext.Request.Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
+				return Shell.HttpContext.Request.Body.ToJObject();
 			else
 			{
 				var r = new JObject();
 
-				foreach (var i in Request.Query.Keys)
-					r.Add(i, Request.Query[i].ToString());
+				foreach (var i in Shell.HttpContext.Request.Query.Keys)
+					r.Add(i, Shell.HttpContext.Request.Query[i].ToString());
 
 				return r;
 			}
@@ -110,8 +106,8 @@ namespace TomPIT.Rest
 
 		private void RenderError(int statusCode, string content)
 		{
-			HttpContext.Response.ContentType = "application/json";
-			HttpContext.Response.StatusCode = statusCode;
+			Shell.HttpContext.Response.ContentType = "application/json";
+			Shell.HttpContext.Response.StatusCode = statusCode;
 
 			var json = new JObject
 			{
@@ -119,21 +115,21 @@ namespace TomPIT.Rest
 			};
 
 			var buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(json));
-			HttpContext.Response.ContentLength = buffer.Length;
+			Shell.HttpContext.Response.ContentLength = buffer.Length;
 
-			HttpContext.Response.Body.Write(buffer, 0, buffer.Length);
+			Shell.HttpContext.Response.Body.Write(buffer, 0, buffer.Length);
 		}
 
 		private void RenderResult(string content)
 		{
 			var buffer = Encoding.UTF8.GetBytes(content);
 
-			HttpContext.Response.Clear();
-			HttpContext.Response.ContentLength = buffer.Length;
-			HttpContext.Response.ContentType = "application/json";
-			HttpContext.Response.StatusCode = StatusCodes.Status200OK;
+			Shell.HttpContext.Response.Clear();
+			Shell.HttpContext.Response.ContentLength = buffer.Length;
+			Shell.HttpContext.Response.ContentType = "application/json";
+			Shell.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
 
-			HttpContext.Response.Body.Write(buffer, 0, buffer.Length);
+			Shell.HttpContext.Response.Body.Write(buffer, 0, buffer.Length);
 		}
 
 		private IApi GetConfiguration()
@@ -153,7 +149,7 @@ namespace TomPIT.Rest
 
 			Api = component.Name;
 
-			Initialize(Request, Endpoint, "Rest", component.Token.AsString(), MicroService.Token.AsString());
+			Initialize(Endpoint, "Rest", component.Token.AsString(), MicroService.Token.AsString());
 
 			if (!(GetService<IComponentService>().SelectConfiguration(component.Token) is IApi config))
 			{
@@ -178,7 +174,7 @@ namespace TomPIT.Rest
 
 		private IApiOperation GetOperation(IApi config)
 		{
-			var routeData = Request.HttpContext.GetRouteData();
+			var routeData = Shell.HttpContext.GetRouteData();
 			var operation = routeData.Values["operation"].ToString();
 
 			var op = config.Operations.FirstOrDefault(f => string.Equals(f.Name, operation, System.StringComparison.OrdinalIgnoreCase));
@@ -202,7 +198,7 @@ namespace TomPIT.Rest
 				switch (op.Protocols.RestVerbs)
 				{
 					case ApiOperationVerbs.Get:
-						if (!Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
+						if (!Shell.HttpContext.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
 						{
 							RenderError(StatusCodes.Status400BadRequest, string.Format("{0} ({1}/{2})", SR.ErrApiOperationProtocolGetOnly, Api, Operation));
 							return null;
@@ -210,7 +206,7 @@ namespace TomPIT.Rest
 
 						break;
 					case ApiOperationVerbs.Post:
-						if (!Request.Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
+						if (!Shell.HttpContext.Request.Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
 						{
 							RenderError(StatusCodes.Status400BadRequest, string.Format("{0} ({1}/{2})", SR.ErrApiOperationProtocolPostOnly, Api, Operation));
 							return null;

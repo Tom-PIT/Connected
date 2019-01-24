@@ -135,6 +135,8 @@ namespace TomPIT.Environment
 
 		public IInstanceEndpoint Next(InstanceType type, InstanceVerbs verb)
 		{
+			Initialize();
+
 			var key = CreateRobinKey(type, verb);
 
 			if (!_rr.ContainsKey(key))

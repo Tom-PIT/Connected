@@ -12,6 +12,7 @@ namespace TomPIT.DataProviders.Sql
 		private ReliableSqlConnection _connection = null;
 		private SqlTransaction _transaction = null;
 		private Dictionary<string, SqlCommand> _commands = null;
+		private bool _commited = false;
 
 		public DataConnection(string connectionString)
 		{
@@ -50,8 +51,13 @@ namespace TomPIT.DataProviders.Sql
 
 		public void Commit()
 		{
+			if (_commited)
+				return;
+
 			if (_transaction != null)
 				_transaction.Commit();
+
+			_commited = true;
 		}
 
 		public void Dispose()
@@ -70,8 +76,13 @@ namespace TomPIT.DataProviders.Sql
 
 		public void Rollback()
 		{
+			if (_commited)
+				return;
+
 			if (_transaction != null)
 				_transaction.Rollback();
+
+			_commited = true;
 		}
 
 		public void Open()

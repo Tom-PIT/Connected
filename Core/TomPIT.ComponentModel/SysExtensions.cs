@@ -64,19 +64,6 @@ namespace TomPIT
 			return null;
 		}
 
-		public static HttpRequest GetHttpRequest(this IExecutionContext context)
-		{
-			if (!(context is IRequestContextProvider ctx))
-			{
-				if (context is ExecutionContext)
-					return ((ExecutionContext)context).Request;
-
-				return null;
-			}
-
-			return ctx.Request;
-		}
-
 		public static void WithRequestArguments(this JObject instance, NameValueCollection items)
 		{
 			if (items == null)
@@ -109,18 +96,15 @@ namespace TomPIT
 
 		public static string JwToken(this IExecutionContext context)
 		{
-			return JwToken(GetHttpRequest(context));
+			return JwToken(Shell.HttpContext?.Request);
 		}
 
 		public static IIdentity GetIdentity(this IExecutionContext context)
 		{
-			if (!(context is IRequestContextProvider provider))
+			if (Shell.HttpContext == null)
 				return null;
 
-			if (provider.Request == null)
-				return null;
-
-			var u = provider.Request.HttpContext.User;
+			var u = Shell.HttpContext.User;
 
 			if (u == null)
 				return null;
@@ -154,7 +138,7 @@ namespace TomPIT
 
 		public static IContextServices CreateServices(this IExecutionContext context, HttpRequest request)
 		{
-			return new ContextServices(context, request);
+			return new ContextServices(context);
 		}
 
 		public static IContextIdentity CreateIdentity(this IExecutionContext context, string authority, string authorityId, string contextId)

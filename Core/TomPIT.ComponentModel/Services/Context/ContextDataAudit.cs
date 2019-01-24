@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.ComponentModel.Data;
 using TomPIT.Data;
 
 namespace TomPIT.Services.Context
@@ -20,11 +19,10 @@ namespace TomPIT.Services.Context
 				? Context.Services.Identity.User.Token
 				: Guid.Empty;
 
-			var request = Context.GetHttpRequest();
 			var ip = string.Empty;
 
-			if (request != null)
-				ip = request.HttpContext.Connection.RemoteIpAddress.ToString();
+			if (Shell.HttpContext != null)
+				ip = Shell.HttpContext.Connection.RemoteIpAddress.ToString();
 
 			Context.Connection().GetService<IAuditService>().Insert(user, category, @event, primaryKey, ip, new Dictionary<string, string> { { property, value } }, description);
 		}
@@ -35,11 +33,10 @@ namespace TomPIT.Services.Context
 				? Context.Services.Identity.User.Token
 				: Guid.Empty;
 
-			var request = Context.GetHttpRequest();
 			var ip = string.Empty;
 
-			if (request != null)
-				ip = request.HttpContext.Connection.RemoteIpAddress.ToString();
+			if (Shell.HttpContext != null)
+				ip = Shell.HttpContext.Connection.RemoteIpAddress.ToString();
 
 			Context.Connection().GetService<IAuditService>().Insert(user, category, @event, primaryKey, ip, values, description);
 		}

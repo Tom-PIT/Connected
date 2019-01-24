@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Connectivity;
@@ -14,25 +12,20 @@ namespace TomPIT.Services
 		private const string ApiProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiProvider, TomPIT.Design";
 		private const string ApiParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiParameterProvider, TomPIT.Design";
 
-		[ThreadStatic]
-		private static HttpRequest _currentRequest = null;
-
-
 		private IContextServices _services = null;
 		private IContextIdentity _identity = null;
 		private ISysConnection _connection = null;
 
 		public ExecutionContext(IExecutionContext sender)
 		{
-			var request = sender is IRequestContextProvider r ? r.Request : null;
 			var endpoint = sender is IEndpointContext c ? c.Endpoint : null;
 
-			Initialize(request, endpoint, sender.Identity.Authority, sender.Identity.AuthorityId, sender.Identity.ContextId);
+			Initialize(endpoint, sender.Identity.Authority, sender.Identity.AuthorityId, sender.Identity.ContextId);
 		}
 
-		public ExecutionContext(HttpRequest request, string endpoint)
+		public ExecutionContext(string endpoint)
 		{
-			Initialize(request, endpoint, null, null, null);
+			Initialize(endpoint, null, null, null);
 		}
 
 		protected ExecutionContext()
@@ -40,11 +33,8 @@ namespace TomPIT.Services
 
 		}
 
-		protected void Initialize(HttpRequest request, string endpoint, string authority, string authorityId, string contextId)
+		protected void Initialize(string endpoint, string authority, string authorityId, string contextId)
 		{
-			_currentRequest = request;
-
-			Request = request;
 			Endpoint = endpoint;
 
 			var ci = Identity as ContextIdentity;
@@ -54,16 +44,12 @@ namespace TomPIT.Services
 			ci.ContextId = contextId;
 		}
 
-		public static HttpRequest HttpRequest { get { return _currentRequest; } }
-
-		public HttpRequest Request { get; protected set; }
-
 		public virtual IContextServices Services
 		{
 			get
 			{
 				if (_services == null)
-					_services = new ContextServices(this, Request);
+					_services = new ContextServices(this);
 
 				return _services;
 			}
@@ -114,7 +100,7 @@ namespace TomPIT.Services
 
 		public static IExecutionContext NonHttpContext(string endpoint, string authority, string authorityId, string contextId, string user)
 		{
-			var r = new ExecutionContext(null, endpoint);
+			var r = new ExecutionContext(endpoint);
 
 			var i = r.Identity as ContextIdentity;
 
@@ -180,5 +166,33 @@ namespace TomPIT.Services
 		{
 			return Invoke(api, null, null);
 		}
+
+		public RuntimeException Exception(string message)
+		{
+			return Exception(message, 0);
+		}
+
+		public RuntimeException Exception(string format, string message)
+		{
+			return Exception(format, message, 0);
+		}
+
+		public RuntimeException Exception(string message, int eventId)
+		{
+			return new RuntimeException(ExceptionSource, message)
+			{
+				Event = eventId
+			};
+		}
+
+		public RuntimeException Exception(string format, string message, int eventId)
+		{
+			return new RuntimeException(ExceptionSource, string.Format("{0}", message))
+			{
+				Event = eventId
+			};
+		}
+
+		protected virtual string ExceptionSource { get { return GetType().ShortName(); } }
 	}
 }

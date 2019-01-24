@@ -23,17 +23,13 @@ namespace TomPIT.Services.Context
 				if (!string.IsNullOrWhiteSpace(ImpersonatedUser))
 					return true;
 
-				if (Context is IRequestContextProvider cp)
+
+				if (Shell.HttpContext != null)
 				{
-					if (cp.Request == null)
+					if (Shell.HttpContext.User == null || Shell.HttpContext.User.Identity == null)
 						return false;
 
-					var http = cp.Request.HttpContext;
-
-					if (http.User == null || http.User.Identity == null)
-						return false;
-
-					return http.User.Identity.IsAuthenticated;
+					return Shell.HttpContext.User.Identity.IsAuthenticated;
 				}
 
 				return false;
@@ -123,7 +119,7 @@ namespace TomPIT.Services.Context
 			e = new JObject
 			{
 				{"user", id},
-				{"password", password}
+				{"newPassword", password}
 			};
 
 			Context.Connection().Post(u, e);

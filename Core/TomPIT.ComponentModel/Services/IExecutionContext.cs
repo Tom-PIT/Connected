@@ -20,5 +20,10 @@ namespace TomPIT.Services
 
 		T Invoke<T>(string api, IApiTransaction transaction);
 		T Invoke<T>(string api);
+
+		RuntimeException Exception(string message);
+		RuntimeException Exception(string format, string message);
+		RuntimeException Exception(string message, int eventId);
+		RuntimeException Exception(string format, string message, int eventId);
 	}
 }

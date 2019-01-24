@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using TomPIT.Connectivity;
@@ -22,6 +23,7 @@ namespace TomPIT
 
 	public static class Instance
 	{
+
 		public static void Initialize(IServiceCollection services, ServicesConfigurationArgs e)
 		{
 			Shell.RegisterConfigurationType(typeof(ClientSys));
@@ -45,6 +47,8 @@ namespace TomPIT
 				RoutingConfiguration.Register(routes);
 				routingHandler?.Invoke(new ConfigureRoutingArgs(routes));
 			});
+
+			Shell.Configure(app);
 		}
 
 		private static void OnConnectionInitializing(object sender, SysConnectionRegisteredArgs e)
@@ -97,6 +101,8 @@ namespace TomPIT
 
 				o.Filters.Add(new AuthenticationCookieFilter());
 			});
+
+			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 		}
 
 		public static T GetService<T>()

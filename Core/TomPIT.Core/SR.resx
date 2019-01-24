@@ -777,4 +777,10 @@
   <data name="ValEmailFormat" xml:space="preserve">
     <value>Email is not in a valid format</value>
   </data>
+  <data name="ErrHttpRequestNotAvailable" xml:space="preserve">
+    <value>Http request not available.</value>
+  </data>
+  <data name="ErrNoAppServer" xml:space="preserve">
+    <value>No application server is registered. To manage Instances go to the Management console and search for the Environment/Instances node.</value>
+  </data>
 </root>

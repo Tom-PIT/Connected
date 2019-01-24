@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Net;
 using TomPIT.Environment;
 using TomPIT.Security;
 using TomPIT.Storage;
 
 namespace TomPIT.Services.Context
 {
-	internal class ContextRoutingService : HttpRequestClient, IContextRoutingService
+	internal class ContextRoutingService : ContextClient, IContextRoutingService
 	{
-		public ContextRoutingService(IExecutionContext context, IHttpRequestOwner request) : base(context, request)
+		public ContextRoutingService(IExecutionContext context) : base(context)
 		{
 		}
 
@@ -77,6 +78,49 @@ namespace TomPIT.Services.Context
 				return null;
 
 			return string.Format("~/sys/avatar/{0}/{1}", u.Avatar, blob.Version);
+		}
+
+		public void NotFound()
+		{
+			if (Shell.HttpContext == null)
+				throw new RuntimeException(SR.ErrHttpRequestNotAvailable);
+
+			Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+		}
+
+		public void Forbidden()
+		{
+			if (Shell.HttpContext == null)
+				throw new RuntimeException(SR.ErrHttpRequestNotAvailable);
+
+			Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+		}
+
+		public void Redirect(string url)
+		{
+			if (Shell.HttpContext == null)
+				throw new RuntimeException(SR.ErrHttpRequestNotAvailable);
+
+			Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.TemporaryRedirect;
+			Shell.HttpContext.Response.Redirect(url, false);
+		}
+
+		public void BadRequest()
+		{
+			if (Shell.HttpContext == null)
+				throw new RuntimeException(SR.ErrHttpRequestNotAvailable);
+
+			Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+		}
+
+		public string ApplicationUrl(string route)
+		{
+			var appUrl = GetServer(InstanceType.Application, InstanceVerbs.Get);
+
+			if (appUrl == null)
+				throw new RuntimeException(SR.ErrNoAppServer);
+
+			return string.Format("{0}/{1}", appUrl, route);
 		}
 	}
 }

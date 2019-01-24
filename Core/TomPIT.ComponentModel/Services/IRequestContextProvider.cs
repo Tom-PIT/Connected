@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace TomPIT.Services
 {
 	public interface IRequestContextProvider
 	{
-		HttpRequest Request { get; }
+		//HttpRequest Request { get; }
 		ActionContext ActionContext { get; }
 	}
 }

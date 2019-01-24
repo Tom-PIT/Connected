@@ -880,6 +880,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Http request not available..
+        /// </summary>
+        public static string ErrHttpRequestNotAvailable {
+            get {
+                return ResourceManager.GetString("ErrHttpRequestNotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Instance endpoint not found.
         /// </summary>
         public static string ErrInstanceEndpointNotFound {
@@ -1128,6 +1137,15 @@ namespace TomPIT {
         public static string ErrMissingRemoveMethod {
             get {
                 return ResourceManager.GetString("ErrMissingRemoveMethod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No application server is registered. To manage Instances go to the Management console and search for the Environment/Instances node..
+        /// </summary>
+        public static string ErrNoAppServer {
+            get {
+                return ResourceManager.GetString("ErrNoAppServer", resourceCulture);
             }
         }
         

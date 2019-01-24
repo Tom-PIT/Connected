@@ -56,12 +56,10 @@ namespace TomPIT
 
 		public static string RouteUrl(this IExecutionContext context, string routeName, object values)
 		{
-			var request = context.GetHttpRequest();
-
-			if (request == null)
+			if (Shell.HttpContext == null)
 				throw new RuntimeException(SR.ErrCannotResolveHttpRequest);
 
-			var svc = request.HttpContext.RequestServices.GetService(typeof(IUrlHelperFactory)) as IUrlHelperFactory;
+			var svc = Shell.HttpContext.RequestServices.GetService(typeof(IUrlHelperFactory)) as IUrlHelperFactory;
 
 			if (svc == null)
 				throw new RuntimeException(SR.ErrNoUrlHelper);
@@ -90,10 +88,8 @@ namespace TomPIT
 				return null;
 			else if (relativePath[0] == '~')
 			{
-				var request = context.GetHttpRequest();
-
 				var segment = new PathString(relativePath.Substring(1));
-				var applicationPath = request.PathBase;
+				var applicationPath = Shell.HttpContext.Request.PathBase;
 
 				return applicationPath.Add(segment).Value;
 			}
@@ -116,7 +112,7 @@ namespace TomPIT
 
 		public static string RootUrl(this IExecutionContext context)
 		{
-			var http = context.GetHttpRequest();
+			var http = Shell.HttpContext?.Request;
 
 			return string.Format("{0}://{1}/{2}", http.Scheme, http.Host, http.PathBase).TrimEnd('/');
 		}

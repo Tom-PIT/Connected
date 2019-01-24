@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
 using TomPIT.ActionResults;
 using TomPIT.Deployment;
 using TomPIT.Dom;
@@ -7,7 +8,7 @@ using TomPIT.Marketplace;
 
 namespace TomPIT.Designers
 {
-	public class PackageDesigner : DomDesigner<PackageElement>, IMarketplaceProxy
+	public class PackageDesigner : DomDesigner<PackageElement>, IMarketplaceProxy, ISignupDesigner
 	{
 		private JObject _countries = null;
 
@@ -40,8 +41,20 @@ namespace TomPIT.Designers
 				return Result.ViewResult(this, "~/Views/Ide/Designers/PublisherLoginForm.cshtml");
 			else if (string.Compare(action, "signupcreate", true) == 0)
 				return SignUp(data);
+			else if (string.Compare(action, "checkConfirmation", true) == 0)
+				return CheckConfirmation(data);
 
 			return base.OnAction(data, action);
+		}
+
+		private IDesignerActionResult CheckConfirmation(JObject data)
+		{
+			var r = Connection.GetService<IMarketplaceService>().IsConfirmed(data.Required<Guid>("publisherKey"));
+
+			if (!r)
+				return Result.EmptyResult(ViewModel);
+
+			return Result.ViewResult(ViewModel, "~/Views/Ide/Designers/PublisherLoginForm.cshtml");
 		}
 
 		private IDesignerActionResult SignUp(JObject data)
@@ -55,8 +68,7 @@ namespace TomPIT.Designers
 			var phone = data.Optional("phone", string.Empty);
 			var email = data.Required<string>("email");
 
-			Connection.GetService<IMarketplaceService>().SignUp(company, firstName, lastName, password, email, country, phone, website);
-
+			PublisherKey = Connection.GetService<IMarketplaceService>().SignUp(company, firstName, lastName, password, email, country, phone, website);
 
 			return Result.ViewResult(ViewModel, "~/Views/Ide/Designers/PackageInbox.cshtml");
 		}
@@ -84,5 +96,7 @@ namespace TomPIT.Designers
 				return _countries;
 			}
 		}
+
+		public Guid PublisherKey { get; private set; }
 	}
 }

@@ -10,6 +10,8 @@ namespace TomPIT.Marketplace
 		void LogIn(string userName, string password, bool permanent);
 		Guid SignUp(string company, string firstName, string lastName, string password, string email, int country, string phone, string website);
 
+		bool IsConfirmed(Guid publisherKey);
+
 		JObject QueryCountries();
 	}
 }

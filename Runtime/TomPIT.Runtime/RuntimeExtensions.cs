@@ -1,39 +1,38 @@
-﻿using Microsoft.AspNetCore.Routing;
-using TomPIT.Services;
+﻿using Microsoft.AspNetCore.Http;
+using TomPIT.Connectivity;
+using TomPIT.Routing;
 
-namespace TomPIT.Runtime
+namespace TomPIT
 {
 	public static class RuntimeExtensions
 	{
-		internal static RouteData GetRouteData(this IHttpRequestOwner owner)
+		internal static bool ContainsQueryParameter(this HttpContext context, string key)
 		{
-			if (owner == null || owner.HttpRequest == null || owner.HttpRequest.HttpContext == null)
-				return null;
-
-			return owner.HttpRequest.HttpContext.GetRouteData();
-		}
-
-		internal static bool ContainsQueryParameter(this IHttpRequestOwner owner, string key)
-		{
-			if (owner.HttpRequest == null)
+			if (context == null)
 				return false;
 
-			var q = owner.HttpRequest.Query;
+			var q = context.Request.Query;
 
 			return q.ContainsKey(key);
 		}
 
-		internal static string QueryParameter(this IHttpRequestOwner owner, string key)
+		internal static string QueryParameter(this HttpContext context, string key)
 		{
-			if (!ContainsQueryParameter(owner, key))
+			if (!ContainsQueryParameter(context, key))
 				return null;
 
-			var q = owner.HttpRequest.Query;
+			var q = context.Request.Query;
 
 			if (q.ContainsKey(key))
 				return q[key];
 
 			return null;
 		}
+
+		public static ServerUrl CreateUrl(this ISysConnection connection, string baseUrl, string microService, string api, string operation)
+		{
+			return new ApiUrl(baseUrl, microService, api, operation);
+		}
+
 	}
 }

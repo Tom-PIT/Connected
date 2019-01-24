@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -13,12 +16,15 @@ namespace TomPIT
 		private static ServiceContainer _sm = null;
 		private static ISys _sys = null;
 		private static Type _sysType = null;
+		private static IHttpContextAccessor _accessor = null;
 
 		static Shell()
 		{
 			_sm = new ServiceContainer(null);
 			AssemblyLoadContext.Default.Resolving += OnResolvingAssembly;
 		}
+
+		public static HttpContext HttpContext { get { return _accessor?.HttpContext; } }
 
 		private static Assembly OnResolvingAssembly(AssemblyLoadContext ctx, AssemblyName asm)
 		{
@@ -130,6 +136,11 @@ namespace TomPIT
 
 				return _sys;
 			}
+		}
+
+		public static void Configure(IApplicationBuilder app)
+		{
+			_accessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
 		}
 	}
 }

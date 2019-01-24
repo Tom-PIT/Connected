@@ -17,7 +17,7 @@ namespace TomPIT.Marketplace
 
 		public void LogIn(string userName, string password, bool permanent)
 		{
-			var url = string.Format("{0}/Marketplace/IIdentity/Authenticate", MarketplaceUrl);
+			var url = Connection.CreateUrl(MarketplaceUrl, "Marketplace", "IIdentity", "Authenticate");
 			var body = new JObject
 			{
 				{"user", userName },
@@ -37,7 +37,7 @@ namespace TomPIT.Marketplace
 
 		private void LoadPublisherProfile()
 		{
-			var url = string.Format("{0}/Marketplace/IPublishers/SelectByAuthenticationToken", MarketplaceUrl);
+			var url = Connection.CreateUrl(MarketplaceUrl, "Marketplace", "IPublishers", "SelectByAuthenticationToken");
 			var body = new JObject
 			{
 				{"token", AuthenticationToken }
@@ -48,7 +48,7 @@ namespace TomPIT.Marketplace
 
 		private void LoadPublisherProfile(Guid key)
 		{
-			var url = string.Format("{0}/Marketplace/IPublishers/SelectByKey", MarketplaceUrl);
+			var url = Connection.CreateUrl(MarketplaceUrl, "Marketplace", "IPublishers", "SelectByKey");
 			var body = new JObject
 			{
 				{"publisherKey", key }
@@ -59,7 +59,7 @@ namespace TomPIT.Marketplace
 
 		public Guid SignUp(string company, string firstName, string lastName, string password, string email, int country, string phone, string website)
 		{
-			var url = string.Format("{0}/Marketplace/IPublishers/Insert", MarketplaceUrl);
+			var url = Connection.CreateUrl(MarketplaceUrl, "Marketplace", "IPublishers", "Insert");
 			var body = new JObject
 			{
 				{"company", company },
@@ -77,9 +77,18 @@ namespace TomPIT.Marketplace
 
 		public JObject QueryCountries()
 		{
-			var url = string.Format("{0}/Marketplace/ICountries/Query", MarketplaceUrl);
+			var url = Connection.CreateUrl(MarketplaceUrl, "Marketplace", "ICountries", "Query");
 
 			return Connection.Get<JObject>(url);
+		}
+
+		public bool IsConfirmed(Guid publisherKey)
+		{
+			var u = Connection.CreateUrl(MarketplaceUrl, "Marketplace", "IPublishers", "IsConfirmed")
+				.AddParameter("publisherKey", publisherKey);
+
+			return Connection.Get<bool>(u);
+
 		}
 
 		public bool IsLogged { get; private set; }

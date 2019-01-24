@@ -30,16 +30,6 @@ namespace TomPIT.ComponentModel.Apis
 		public JObject Arguments { get; }
 		protected IApiOperation Operation { get; }
 
-		public RuntimeException Exception(string message)
-		{
-			return new RuntimeException(Api.ComponentName(this), message);
-		}
-
-		public RuntimeException Exception(string format, string message)
-		{
-			return new RuntimeException(Api.ComponentName(this), string.Format("{0}", message));
-		}
-
 		public IApi Api
 		{
 			get { return Operation.Closest<IApi>(); }
@@ -153,7 +143,7 @@ namespace TomPIT.ComponentModel.Apis
 			}
 		}
 
-		private string ExceptionSource
+		protected override string ExceptionSource
 		{
 			get
 			{

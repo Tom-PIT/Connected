@@ -78,7 +78,7 @@ namespace TomPIT.Security
 					break;
 			}
 
-			if (token == null || !token.IsValid(ExecutionContext.HttpRequest, u, claim))
+			if (token == null || !token.IsValid(Shell.HttpContext.Request, u, claim))
 			{
 				return new AuthenticationResult
 				{

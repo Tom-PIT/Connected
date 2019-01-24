@@ -22,14 +22,13 @@ namespace TomPIT.Models
 		protected void Initialize(Controller controller, bool initializing)
 		{
 			Controller = controller;
-			Request = Controller?.Request;
 
 			var p = new ModelInitializeParams();
 
 			if (initializing)
 				OnInitializing(p);
 
-			Initialize(controller?.Request, p.Endpoint, p.Authority, p.AuthorityId, p.ContextId);
+			Initialize(p.Endpoint, p.Authority, p.AuthorityId, p.ContextId);
 		}
 
 		public void Initialize(Controller controller)
