@@ -151,6 +151,9 @@ namespace TomPIT.Controllers
 
 		private ActionResult ResolveDesignerResult(IEnvironment model, IDesignerActionResult result)
 		{
+			foreach (var i in result.ResponseHeaders)
+				Response.Headers.Add(i.Key, i.Value);
+
 			if (result.MessageKind != InformationKind.None)
 			{
 				Response.Headers.Add("messageKind", result.MessageKind.ToString());

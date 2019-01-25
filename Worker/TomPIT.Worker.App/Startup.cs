@@ -20,7 +20,7 @@ namespace TomPIT.Worker
 		{
 			var e = new ServicesConfigurationArgs
 			{
-				Authentication = AuthenticationType.Bearer
+				Authentication = AuthenticationType.SingleTenant
 			};
 
 			Instance.Initialize(services, e);

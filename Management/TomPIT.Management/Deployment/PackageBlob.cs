@@ -3,7 +3,7 @@ using System;
 
 namespace TomPIT.Deployment
 {
-	public class Blob
+	internal class PackageBlob : IPackageBlob
 	{
 		[JsonProperty(PropertyName = "content")]
 		public string Content { get; set; }
@@ -17,8 +17,8 @@ namespace TomPIT.Deployment
 		public string ContentType { get; set; }
 		[JsonProperty(PropertyName = "primaryKey")]
 		public string PrimaryKey { get; set; }
-		[JsonProperty(PropertyName = "service")]
-		public Guid Service { get; set; }
+		[JsonProperty(PropertyName = "microService")]
+		public Guid MicroService { get; set; }
 		[JsonProperty(PropertyName = "version")]
 		public int Version { get; set; }
 		[JsonProperty(PropertyName = "topic")]

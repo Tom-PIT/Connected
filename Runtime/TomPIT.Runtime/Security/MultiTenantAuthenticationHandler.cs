@@ -18,9 +18,9 @@ using TomPIT.Server.Security;
 
 namespace TomPIT.Security
 {
-	internal class JwtAuthenticationHandler : AuthenticationHandler<JwtAuthenticationOptions>
+	internal class MultiTenantAuthenticationHandler : AuthenticationHandler<MultiTenantAuthenticationOptions>
 	{
-		public JwtAuthenticationHandler(IOptionsMonitor<JwtAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
+		public MultiTenantAuthenticationHandler(IOptionsMonitor<MultiTenantAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
 		{
 		}
 

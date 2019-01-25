@@ -9,15 +9,17 @@ namespace TomPIT
 	{
 		public static T Required<T>(this JObject instance, string propertyName)
 		{
-			if (!instance.ContainsKey(propertyName))
+			var property = instance.Property(propertyName, StringComparison.OrdinalIgnoreCase);
+
+			if (property == null)
 				throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedProperty, propertyName));
 
 			try
 			{
-				if (instance[propertyName] is JValue jv && jv.Value == null)
+				if (property.Value is JValue jv && jv.Value == null)
 					throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
 
-				var r = instance[propertyName].ToObject<T>();
+				var r = property.Value.ToObject<T>();
 
 				if (typeof(T) == typeof(string) && string.IsNullOrWhiteSpace(r as string))
 					throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
@@ -27,23 +29,25 @@ namespace TomPIT
 			catch (Exception ex)
 			{
 				if (ex is TomPITException)
-					throw ex; 
+					throw ex;
 
 				throw new TomPITException(string.Format("{0} ({1}, {2}).", SR.ErrInvalidPropertyType, propertyName, typeof(T)));
 			}
-		} 
+		}
 
 		public static T Optional<T>(this JObject instance, string propertyName, T defaultValue)
 		{
-			if (!instance.ContainsKey(propertyName))
+			var property = instance.Property(propertyName, StringComparison.OrdinalIgnoreCase);
+
+			if (property == null)
 				return defaultValue;
 
 			try
 			{
-				if (instance[propertyName] is JValue jv && jv.Value == null)
+				if (property.Value is JValue jv && jv.Value == null)
 					return defaultValue;
 
-				return instance[propertyName].ToObject<T>();
+				return property.Value.ToObject<T>();
 			}
 			catch
 			{
@@ -53,12 +57,14 @@ namespace TomPIT
 
 		public static T WithExisting<T>(this JObject instance, string propertyName, JObject existing)
 		{
-			if (!instance.ContainsKey(propertyName))
+			var property = instance.Property(propertyName, StringComparison.OrdinalIgnoreCase);
+
+			if (property == null)
 				return existing.Optional<T>(propertyName, default(T));
 
 			try
 			{
-				return instance[propertyName].ToObject<T>();
+				return property.Value.ToObject<T>();
 			}
 			catch
 			{
@@ -98,29 +104,42 @@ namespace TomPIT
 
 			foreach (var i in masterData)
 			{
-				if (!(i is JObject jo) || !jo.ContainsKey(masterKey))
+				if (!(i is JObject jo))
 					continue;
 
-				var leftCriteria = jo[masterKey];
+				var leftProperty = jo.Property(masterKey, StringComparison.OrdinalIgnoreCase);
+
+				if (leftProperty == null)
+					continue;
+
+				var leftCriteria = leftProperty.Value;
 
 				foreach (var j in detailsData)
 				{
-					if (!(j is JObject jor) || !jo.ContainsKey(detailsKey))
+					if (!(j is JObject jor))
 						continue;
 
-					var rightCriteria = jo[detailsKey];
+					var rightProperty = jo.Property(detailsKey, StringComparison.OrdinalIgnoreCase);
+
+					if (rightProperty == null)
+						continue;
+
+					var rightCriteria = rightProperty.Value;
 
 					if (leftCriteria != rightCriteria)
 						continue;
 
 					foreach (var k in properties)
 					{
-						if (!jor.ContainsKey(k))
+						var prop = jor.Property(k, StringComparison.OrdinalIgnoreCase);
+
+						if (prop == null)
 							continue;
 
-						var val = jor[k];
+						var val = prop.Value;
+						var p = jo.Property(k, StringComparison.OrdinalIgnoreCase);
 
-						if (jo.ContainsKey(k))
+						if (p != null)
 							jo[k] = val;
 						else
 							jo.Add(k, val);
@@ -139,20 +158,22 @@ namespace TomPIT
 			foreach (var i in masterData)
 			{
 				var jo = i as JObject;
+				var prop = jo.Property(masterKey, StringComparison.OrdinalIgnoreCase);
 
-				if (!jo.ContainsKey(masterKey))
+				if (prop == null)
 					continue;
 
-				var masterValue = (string)jo[masterKey];
+				var masterValue = jo.Value<string>();
 
 				foreach (var j in detailsData)
 				{
 					var jjo = j as JObject;
+					var jp = jjo.Property(detailsKey);
 
-					if (!jjo.ContainsKey(detailsKey))
+					if (jp == null)
 						continue;
 
-					var detailValue = (string)j[detailsKey];
+					var detailValue = jo.Value<string>();
 
 					if (string.Compare(masterValue, detailValue, true) == 0)
 					{
@@ -171,22 +192,29 @@ namespace TomPIT
 			foreach (var i in masterData)
 			{
 				var jo = i as JObject;
+				var jop = jo.Property(masterKey, StringComparison.OrdinalIgnoreCase);
 
-				if (!jo.ContainsKey(masterKey))
+				if (jop == null)
 					continue;
 
-				var masterValue = (string)jo[masterKey];
+				var masterProp = jo.Property(masterKey, StringComparison.OrdinalIgnoreCase);
+
+				if (masterProp == null)
+					continue;
+
+				var masterValue = masterProp.Value<string>();
 				var a = new JArray();
 				jo.Add(detailsProperty, a);
 
 				foreach (var j in detailsData)
 				{
 					var jjo = j as JObject;
+					var jjp = jjo.Property(detailsKey, StringComparison.OrdinalIgnoreCase);
 
-					if (!jjo.ContainsKey(detailsKey))
+					if (jjp == null)
 						continue;
 
-					var detailValue = (string)j[detailsKey];
+					var detailValue = jjp.Value<string>();
 
 					if (string.Compare(masterValue, detailValue, true) == 0)
 						a.Add(j);
@@ -242,10 +270,12 @@ namespace TomPIT
 				if (!(i is JObject jo))
 					continue;
 
-				if (!jo.ContainsKey(propertyName))
+				var jop = jo.Property(propertyName, StringComparison.OrdinalIgnoreCase);
+
+				if (jop == null)
 					continue;
 
-				var value = (string)jo[propertyName];
+				var value = jop.Value<string>();
 
 				if (string.IsNullOrWhiteSpace(value))
 					continue;
@@ -300,10 +330,12 @@ namespace TomPIT
 				if (!(i is JObject jo))
 					continue;
 
-				if (!jo.ContainsKey(propertyName))
+				var jop = jo.Property(propertyName, StringComparison.OrdinalIgnoreCase);
+
+				if (jop == null)
 					continue;
 
-				var value = (string)jo[propertyName];
+				var value = jop.Value<string>();
 
 				if (string.IsNullOrWhiteSpace(value))
 					continue;
@@ -345,10 +377,12 @@ namespace TomPIT
 				if (!(i is JObject jo))
 					continue;
 
-				if (!jo.ContainsKey(propertyName))
+				var jop = jo.Property(propertyName, StringComparison.OrdinalIgnoreCase);
+
+				if (jop == null)
 					continue;
 
-				var pv = i.Value<string>(propertyName);
+				var pv = jop.Value<string>();
 
 				foreach (var j in values)
 				{
@@ -422,9 +456,11 @@ namespace TomPIT
 			{
 				var jo = i as JObject;
 
-				foreach(var j in properties)
+				foreach (var j in properties)
 				{
-					if (jo.ContainsKey(j))
+					var p = jo.Property(j);
+
+					if (p != null)
 						jo.Remove(j);
 				}
 			}

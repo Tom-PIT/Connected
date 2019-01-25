@@ -1,4 +1,6 @@
-﻿namespace TomPIT.Design.Services
+﻿using System.Collections.Generic;
+
+namespace TomPIT.Design.Services
 {
 	public interface ISuggestion
 	{
@@ -7,5 +9,8 @@
 		string Description { get; }
 		string InsertText { get; }
 		string SortText { get; }
+		string FilterText { get; }
+
+		List<string> CommitCharacters { get; }
 	}
 }

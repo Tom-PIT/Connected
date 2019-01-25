@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Immutable;
+using System.IO;
 using System.Reflection;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
@@ -65,7 +66,18 @@ namespace TomPIT.Compilers
 			var component = connection.GetService<IComponentService>().SelectComponent(microService, "Assembly", reference);
 
 			if (component == null)
-				return ImmutableArray<PortableExecutableReference>.Empty;
+			{
+				var path = Assembly.GetEntryAssembly().Location;
+
+				try
+				{
+					return ImmutableArray.Create(MetadataReference.CreateFromFile(Path.Combine(Path.GetDirectoryName(path), reference)));
+				}
+				catch (FileNotFoundException)
+				{
+					return ImmutableArray<PortableExecutableReference>.Empty;
+				}
+			}
 
 			if (!(connection.GetService<IComponentService>().SelectConfiguration(component.Token) is IAssemblyResource config))
 				return ImmutableArray<PortableExecutableReference>.Empty;

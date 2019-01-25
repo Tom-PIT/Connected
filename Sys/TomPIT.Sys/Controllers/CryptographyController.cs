@@ -6,54 +6,23 @@ namespace TomPIT.Sys.Controllers
 	public class CryptographyController : SysController
 	{
 		[HttpPost]
-		public string Encrypt(string plainText)
-		{
-			return Shell.GetService<ICryptographyService>().Encrypt(this, plainText);
-		}
-
-		[HttpPost]
-		public string Decrypt(string cipherText)
-		{
-			return Shell.GetService<ICryptographyService>().Decrypt(this, cipherText);
-		}
-
-		[HttpPost]
 		public string Encrypt()
 		{
-			var b = FromBody();
+			var body = FromBody();
 
-			var e = new EncryptionEventArgs
-			{
-				Value = b.Required<string>("value"),
-				PassPhrase = b.Required<string>("passPhrase"),
-				SaltValue = b.Required<string>("saltValue"),
-				HashAlgorithm = b.Required<string>("hashAlgorithm"),
-				PasswordIterations = b.Required<int>("passwordIterations"),
-				InitVector = b.Required<string>("initVector"),
-				KeySize = b.Required<int>("keySize")
-			};
+			var plainText = body.Required<string>("plainText");
 
-			return Shell.GetService<ICryptographyService>().Encrypt(this, e);
+			return Shell.GetService<ICryptographyService>().Encrypt(this, plainText);
 		}
 
 		[HttpPost]
 		public string Decrypt()
 		{
-			var b = FromBody();
+			var body = FromBody();
 
-			var e = new EncryptionEventArgs
-			{
-				Value = b.Required<string>("value"),
-				PassPhrase = b.Required<string>("passPhrase"),
-				SaltValue = b.Required<string>("saltValue"),
-				HashAlgorithm = b.Required<string>("hashAlgorithm"),
-				PasswordIterations = b.Required<int>("passwordIterations"),
-				InitVector = b.Required<string>("initVector"),
-				KeySize = b.Required<int>("keySize")
-			};
+			var cipherText = body.Required<string>("cipherText");
 
-			return Shell.GetService<ICryptographyService>().Decrypt(this, e);
-
+			return Shell.GetService<ICryptographyService>().Decrypt(this, cipherText);
 		}
 
 		[HttpPost]

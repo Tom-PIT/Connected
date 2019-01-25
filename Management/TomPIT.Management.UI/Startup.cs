@@ -14,7 +14,7 @@ namespace TomPIT.Servers.Management
 		{
 			var e = new ServicesConfigurationArgs
 			{
-				Authentication = AuthenticationType.Jwt
+				Authentication = AuthenticationType.MultiTenant
 			};
 
 			//e.ApplicationParts.Add(typeof(IdeRouting).Assembly);

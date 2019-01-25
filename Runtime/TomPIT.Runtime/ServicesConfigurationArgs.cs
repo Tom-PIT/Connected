@@ -7,7 +7,7 @@ namespace TomPIT
 
 	public class ServicesConfigurationArgs : EventArgs
 	{
-		public AuthenticationType Authentication { get; set; } = AuthenticationType.Jwt;
+		public AuthenticationType Authentication { get; set; } = AuthenticationType.MultiTenant;
 		public ConfigureMvcHandler ConfigureMvc { get; set; }
 	}
 }

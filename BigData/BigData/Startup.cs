@@ -18,7 +18,7 @@ namespace TomPIT.BigData
 		{
 			var e = new ServicesConfigurationArgs
 			{
-				Authentication = AuthenticationType.Bearer,
+				Authentication = AuthenticationType.SingleTenant,
 				ConfigureMvc = (o) =>
 				 {
 					 //o.OutputFormatters.Add(new ProtobufFormatter());

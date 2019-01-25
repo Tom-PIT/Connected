@@ -17,8 +17,8 @@ namespace TomPIT
 	public enum AuthenticationType
 	{
 		None = 0,
-		Jwt = 1,
-		Bearer = 2
+		MultiTenant = 1,
+		SingleTenant = 2
 	}
 
 	public static class Instance
@@ -71,24 +71,24 @@ namespace TomPIT
 		{
 			switch (e.Authentication)
 			{
-				case AuthenticationType.Jwt:
+				case AuthenticationType.MultiTenant:
 					services.AddAuthentication(options =>
 					{
 						options.DefaultAuthenticateScheme = "TomPIT";
 						options.DefaultChallengeScheme = "TomPIT";
 						options.DefaultScheme = "TomPIT";
-					}).AddScheme<JwtAuthenticationOptions, JwtAuthenticationHandler>("TomPIT", "Tom PIT", o =>
+					}).AddScheme<MultiTenantAuthenticationOptions, MultiTenantAuthenticationHandler>("TomPIT", "Tom PIT", o =>
 					{
 
 					});
 					break;
-				case AuthenticationType.Bearer:
+				case AuthenticationType.SingleTenant:
 					services.AddAuthentication(options =>
 					{
 						options.DefaultAuthenticateScheme = "TomPIT";
 						options.DefaultChallengeScheme = "TomPIT";
 						options.DefaultScheme = "TomPIT";
-					}).AddScheme<BearerAuthenticationOptions, BearerAuthenticationHandler>("TomPIT", "Tom PIT", o =>
+					}).AddScheme<SingleTenantAuthenticationOptions, SingleTenantAuthenticationHandler>("TomPIT", "Tom PIT", o =>
 					{
 
 					});

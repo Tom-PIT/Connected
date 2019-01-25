@@ -3,7 +3,6 @@ using System.Net;
 using System.Text;
 using TomPIT.Analysis;
 using TomPIT.Routing;
-using TomPIT.Runtime;
 using TomPIT.Security;
 using TomPIT.Services;
 
@@ -26,7 +25,7 @@ namespace TomPIT.ComponentModel.Routing
 			aa.Schema.Empty = EmptyBehavior.Deny;
 			aa.Schema.Level = AuthorizationLevel.Pessimistic;
 
-			if (!Connection.GetService<IAuthorizationService>().Authorize(new ExecutionContext(Context.Request, Connection.Url), aa).Success)
+			if (!Connection.GetService<IAuthorizationService>().Authorize(new ExecutionContext(Connection.Url), aa).Success)
 			{
 				Context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
 				return;

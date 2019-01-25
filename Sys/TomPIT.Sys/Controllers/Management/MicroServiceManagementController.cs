@@ -36,8 +36,9 @@ namespace TomPIT.Sys.Controllers.Management
 			var status = body.Required<MicroServiceStatus>("status");
 			var template = body.Optional<Guid>("template", Guid.Empty);
 			var resourceGroup = body.Required<Guid>("resourceGroup");
+			var package = body.Required<Guid>("package");
 
-			DataModel.MicroServices.Update(microService, name, status, template, resourceGroup);
+			DataModel.MicroServices.Update(microService, name, status, template, resourceGroup, package);
 		}
 
 		[HttpPost]

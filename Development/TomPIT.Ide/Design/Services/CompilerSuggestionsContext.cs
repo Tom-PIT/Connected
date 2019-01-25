@@ -53,13 +53,25 @@ namespace TomPIT.Design.Services
 
 			foreach (var i in results.Items)
 			{
-				r.Add(new Suggestion
+				var description = Task.Run(async () => { return await Completion.GetDescriptionAsync(Document, i); }).Result;
+
+				var s = new Suggestion
 				{
-					//Description = i.DisplayText,
+					Description = description == null ? string.Empty : description.Text,
 					InsertText = i.DisplayText,
 					Kind = ResolveKind(i),
+					FilterText=i.FilterText,
+					SortText=i.SortText,
 					Label = i.DisplayText
-				});
+				};
+
+				foreach (var j in i.Rules.CommitCharacterRules)
+				{
+					foreach (var k in j.Characters)
+						s.CommitCharacters.Add(k.ToString());
+				}
+
+				r.Add(s);
 			}
 
 			return r;

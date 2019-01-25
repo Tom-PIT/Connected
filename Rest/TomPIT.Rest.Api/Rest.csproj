@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AssemblyName>TomPIT.Rest.App</AssemblyName>
     <RootNamespace>TomPIT.Rest</RootNamespace>
-    <AssemblyVersion>1.0.124.2</AssemblyVersion>
-    <FileVersion>1.0.124.2</FileVersion>
-    <Version>1.0.124.2</Version>
+    <AssemblyVersion>1.0.125.9</AssemblyVersion>
+    <FileVersion>1.0.125.9</FileVersion>
+    <Version>1.0.125.9</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>portable</DebugType>

@@ -1,14 +1,402 @@
-﻿@model TomPIT.Designers.PackageDesigner
+﻿@using TomPIT.Deployment;
 
+@model TomPIT.Designers.PackageDesigner
 
-<button type="button" id="buttonCreate" class="btn btn-primary">Create</button>
+@{
+	var p = Model.Package;
+
+	var id = p == null ? Model.MicroService.Token : p.MetaData.Id;
+	var name = p == null ? Model.MicroService.Name : p.MetaData.Name;
+	var title = p == null ? Model.MicroService.Name : p.MetaData.Title;
+	var description = p == null ? string.Empty : p.MetaData.Description;
+	var scope = p == null ? PackageScope.Private : p.MetaData.Scope;
+	var price = p == null ? 0 : p.MetaData.Price;
+	var trial = p == null ? true : p.MetaData.Trial;
+	var trialPeriod = p == null ? 30 : p.MetaData.TrialPeriod;
+	var licenseUrl = p == null ? string.Empty : p.MetaData.LicenseUrl;
+	var projectUrl = p == null ? string.Empty : p.MetaData.ProjectUrl;
+	var imageUrl = p == null ? string.Empty : p.MetaData.ImageUrl;
+	var tags = p == null ? string.Empty : p.MetaData.Tags;
+	var tagList = new List<string>();
+
+	if (!string.IsNullOrWhiteSpace(tags))
+	{
+		var tokens = tags.Split(',');
+
+		foreach (var i in tokens)
+		{
+			if (string.IsNullOrWhiteSpace(i))
+			{ continue; }
+
+			tagList.Add(i.Trim());
+		}
+	}
+
+	var v = p == null ? new Version(0, 0, 0, 0) : Version.Parse(p.MetaData.Version);
+	var versionMajor = v.Major;
+	var versionMinor = v.Minor;
+	var versionBuild = v.Build;
+	var versionRevision = v.Revision;
+	var licenses = p == null ? string.Empty : p.MetaData.Licenses;
+}
+<div class="doc-canvas">
+	<div class="paper">
+		<div class="">
+			@Model.Publisher.Company
+			<div class="small float-right"><a href="#" id="aLogoff">logoff</a></div>
+			<hr />
+		</div>
+
+		<div class="btn-toolbar mb-2">
+			<div class="btn-group btn-group-sm">
+				<button type="button" id="buttonCreate" class="btn btn-success btn-sm">Create Package</button>
+				<button type="button" id="buttonUpload" class="btn btn-light btn-sm">Publish Package</button>
+			</div>
+		</div>
+
+		<div id="packageTabs">
+		</div>
+
+		<div class="collapse show tab-container dev-form" id="tabPackage">
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-8">
+						<div class="form-group">
+							<label>ID</label>
+							<div><strong>@id</strong></div>
+						</div>
+						<div class="form-group">
+							<label for="editName">Package name</label>
+							<div id="editName"></div>
+						</div>
+						<div class="form-group">
+							<label for="editTitle">Package title</label>
+							<div id="editTitle"></div>
+						</div>
+						<div class="form-group">
+							<label for="editDescription">Description</label>
+							<div id="editDescription"></div>
+						</div>
+						<br />
+						<h4>Licensing</h4>
+						<br />
+						<div class="form-group">
+							<label for="editScope">Scope</label>
+							<div id="editScope"></div>
+						</div>
+						<div class="form-group">
+							<label for="editPrice">Price (€)</label>
+							<div id="editPrice"></div>
+						</div>
+						<div class="form-group">
+							<div class="row">
+								<div class="col-3">
+									<label for="editTrial">Trial</label>
+									<div>
+										<div id="editTrial"></div>
+									</div>
+								</div>
+								<div class="col-9">
+									<label for="editTrialPeriod">Period (days)</label>
+									<div id="editTrialPeriod"></div>
+								</div>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="editLicenseUrl">License Url</label>
+							<div id="editLicenseUrl"></div>
+						</div>
+
+					</div>
+					<div class="col-sm-4">
+						<h4>Version</h4>
+						<div class="row">
+							<div class="col-3">
+								<label for="editVersionMajor">Major</label>
+								<div id="editVersionMajor"></div>
+							</div>
+							<div class="col-3">
+								<label for="editVersionMinor">Minor</label>
+								<div id="editVersionMinor"></div>
+							</div>
+							<div class="col-3">
+								<label for="editVersionBuild">Build</label>
+								<div id="editVersionBuild"></div>
+							</div>
+							<div class="col-3">
+								<label for="editVersionRevision">Revision</label>
+								<div id="editVersionRevision"></div>
+							</div>
+						</div>
+						<br />
+						<h4>Project</h4>
+						<div class="form-group">
+							<label for="editProjectUrl">Project Url</label>
+							<div id="editProjectUrl"></div>
+						</div>
+						<div class="form-group">
+							<label for="editTags">Tags</label>
+							<div id="editTags"></div>
+						</div>
+						<div class="form-group">
+							<label for="editImageUrl">Image Url</label>
+							<div id="editImageUrl"></div>
+						</div>
+						<div class="form-group">
+							<label for="editThirdPartyLicenses">Third party licenses</label>
+							<div id="editThirdPartyLicenses"></div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<div id="tabContent" class="collapse">
+			<div class="container">content</div>
+		</div>
+	</div>
+</div>
 
 <script>
+	$('#editName').dxTextBox({
+		stylingMode: 'underlined',
+		value: '@name',
+		maxLength:128
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+
+			}],
+		validationGroup:'package'
+	});;
+
+	$('#editTitle').dxTextBox({
+		stylingMode: 'underlined',
+		value: '@title',
+		maxLength:128
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+
+			}],
+		validationGroup: 'package'
+	});;
+
+	$('#editDescription').dxTextArea({
+		stylingMode: 'underlined',
+		value: '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(description))',
+		maxLength:1024
+	});
+
+	$('#editScope').dxSelectBox({
+		stylingMode: 'underlined',
+		items: [
+			'Public',
+			'Private'
+		],
+		value:'@scope.ToString()'
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+
+			}],
+		validationGroup: 'package'
+	});
+
+	$('#editPrice').dxNumberBox({
+		stylingMode: 'underlined',
+		value:@price,
+		min: 0,
+		max:100000
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+
+			}],
+		validationGroup: 'package'
+	});
+
+	$('#editTrial').dxCheckBox({
+		value:@Html.TP().JavaScript.Value(trial)
+	});
+
+	$('#editTrialPeriod').dxNumberBox({
+		stylingMode: 'underlined',
+		value:@trialPeriod,
+		min: 0,
+		max:180
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+
+			}],
+		validationGroup: 'package'
+	});
+
+	$('#editLicenseUrl').dxTextBox({
+		stylingMode: 'underlined',
+		value: '@licenseUrl',
+		maxLength:1024
+	});
+
+	$('#editVersionMajor').dxNumberBox({
+		stylingMode: 'underlined',
+		value:@versionMajor,
+			min: 0,
+		max: 255
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+
+			}],
+		validationGroup: 'package'
+	});
+
+	$('#editVersionMinor').dxNumberBox({
+		stylingMode: 'underlined',
+		value:@versionMinor,
+		min: 0,
+		max:255
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+
+			}],
+		validationGroup: 'package'
+	});
+
+	$('#editVersionBuild').dxNumberBox({
+		stylingMode: 'underlined',
+		value:@versionBuild,
+		min: 0,
+		max:32767
+	}).dxValidator({
+		validationRules: [
+			{
+				type: 'required'
+
+			}],
+		validationGroup: 'package'
+	});
+
+	$('#editVersionRevision').dxNumberBox({
+		stylingMode: 'underlined',
+		value:@versionRevision,
+		min: 0,
+		max:32767
+	}).dxValidator({
+			validationRules: [
+				{
+					type: 'required'
+
+			}],
+		validationGroup: 'package'
+		});
+
+	$('#editProjectUrl').dxTextBox({
+		stylingMode: 'underlined',
+		value: '@projectUrl',
+		maxlength:1024
+	});
+
+	$('#editTags').dxTagBox({
+		stylingMode: 'underlined',
+		acceptCustomValue: true,
+		value: @Html.TP().JavaScript.Array(tagList),
+		items:@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Tags)),
+		maxLength:256,
+		onCustomItemCreating: function (args) {
+			var newValue = args.text;
+			component = args.component,
+				currentItems = component.option("items");
+			currentItems.unshift(newValue);
+			component.option("items", currentItems);
+			args.customItem = newValue;
+		},
+
+	});
+
+	$('#editImageUrl').dxTextBox({
+		stylingMode: 'underlined',
+		value: '@imageUrl',
+		maxlength:1024
+	});
+
+	$('#editThirdPartyLicenses').dxTextArea({
+		stylingMode: 'underlined',
+		value: '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(licenses))',
+		maxlength:4096
+	});
+
 	$('#buttonCreate').click(function () {
+		if (!DevExpress.validationEngine.validateGroup('package').isValid)
+			return;
+
 		ide.designerAction({
 			data: {
-				'action': 'create'
+				'action': 'create',
+				'name': $('#editName').dxTextBox('instance').option('value'),
+				'title': $('#editTitle').dxTextBox('instance').option('value'),
+				'versionMajor': $('#editVersionMajor').dxNumberBox('instance').option('value'),
+				'versionMinor': $('#editVersionMinor').dxNumberBox('instance').option('value'),
+				'versionBuild': $('#editVersionBuild').dxNumberBox('instance').option('value'),
+				'versionRevision': $('#editVersionRevision').dxNumberBox('instance').option('value'),
+				'scope': $('#editScope').dxSelectBox('instance').option('value'),
+				'trial': $('#editTrial').dxCheckBox('instance').option('value'),
+				'trialPeriod': $('#editTrialPeriod').dxNumberBox('instance').option('value'),
+				'description': $('#editDescription').dxTextArea('instance').option('value'),
+				'price': $('#editPrice').dxNumberBox('instance').option('value'),
+				'tags': $('#editTags').dxTagBox('instance').option('value').toString(),
+				'projectUrl': $('#editProjectUrl').dxTextBox('instance').option('value'),
+				'licenseUrl': $('#editLicenseUrl').dxTextBox('instance').option('value'),
+				'imageUrl': $('#editImageUrl').dxTextBox('instance').option('value'),
+				'licenses': $('#editThirdPartyLicenses').dxTextArea('instance').option('value'),
 			}
 		});
+	});
+
+	$('#buttonUpload').click(function () {
+		ide.designerAction({
+			data: {
+				'action': 'publish'
+			}
+		});
+	})
+
+	$('#packageTabs').dxTabs({
+		items: [
+			'Package',
+			'Content'
+		],
+		selectedIndex: 0,
+		onItemClick: function (e) {
+			if (e.itemIndex == 0) {
+				$('#tabPackage').collapse('show');
+				$('#tabContent').collapse('hide');
+			}
+			else {
+				$('#tabPackage').collapse('hide');
+				$('#tabContent').collapse('show');
+
+			}
+		}
+	});
+
+	$('#aLogoff').click(function () {
+		ide.designerAction({
+			data: {
+				'action': 'logoff'
+			},
+			onComplete: function (data) {
+				$('#devDesigner').html(data);
+			}
+		})
 	});
 </script>

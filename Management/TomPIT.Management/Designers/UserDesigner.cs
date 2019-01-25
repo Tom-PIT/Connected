@@ -49,7 +49,7 @@ namespace TomPIT.Designers
 
 		private IDesignerActionResult Upload()
 		{
-			var files = Environment.Context.GetHttpRequest().Form.Files;
+			var files = Shell.HttpContext.Request.Form.Files;
 
 			if (files == null || files.Count == 0)
 				return Result.EmptyResult(ViewModel);

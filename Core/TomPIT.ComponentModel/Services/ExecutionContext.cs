@@ -69,7 +69,7 @@ namespace TomPIT.Services
 
 		public string Endpoint { get; protected set; }
 
-		protected T GetService<T>()
+		public T GetService<T>()
 		{
 			if (Connection == null)
 				throw new ExecutionException(SR.ErrInstanceEndpointNotFound);

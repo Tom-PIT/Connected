@@ -65,7 +65,7 @@ namespace TomPIT.ComponentModel
 			return Connection.Get<string>(u);
 		}
 
-		public void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup)
+		public void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package)
 		{
 			var u = Connection.CreateUrl("MicroServiceManagement", "Update");
 			var args = new JObject
@@ -75,6 +75,7 @@ namespace TomPIT.ComponentModel
 				{"status", status.ToString() },
 				{"template", template },
 				{"resourceGroup", resourceGroup },
+				{"package", package }
 			};
 
 			Connection.Post(u, args);

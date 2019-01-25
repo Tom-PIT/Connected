@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace TomPIT.Design.Services
 {
@@ -31,6 +32,8 @@ namespace TomPIT.Design.Services
 		public const int Value = 13;
 		public const int Variable = 4;
 
+		private List<string> _commitCharacters = null;
+
 		[JsonProperty(PropertyName = "label")]
 		public string Label { get; set; }
 		[JsonProperty(PropertyName = "kind")]
@@ -41,5 +44,18 @@ namespace TomPIT.Design.Services
 		public string InsertText { get; set; }
 		[JsonProperty(PropertyName = "sortText")]
 		public string SortText { get; set; }
+		[JsonProperty(PropertyName = "filterText")]
+		public string FilterText { get; set; }
+		[JsonProperty(PropertyName = "commitCharacters")]
+		public List<string> CommitCharacters
+		{
+			get
+			{
+				if (_commitCharacters == null)
+					_commitCharacters = new List<string>();
+
+				return _commitCharacters;
+			}
+		}
 	}
 }

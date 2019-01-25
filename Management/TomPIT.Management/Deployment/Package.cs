@@ -13,26 +13,113 @@ using TomPIT.Storage;
 
 namespace TomPIT.Deployment
 {
-	public class Package
+	internal class Package : IPackage
 	{
-		[JsonProperty(PropertyName = "metaData")]
-		public PackageMetaData MetaData { get; set; }
-		[JsonProperty(PropertyName = "microService")]
-		public MicroService MicroService { get; set; }
-		[JsonProperty(PropertyName = "strings")]
-		public List<MicroServiceString> Strings { get; set; }
-		[JsonProperty(PropertyName = "features")]
-		public List<Feature> Features { get; set; }
-		[JsonProperty(PropertyName = "components")]
-		public List<Component> Components { get; set; }
-		[JsonProperty(PropertyName = "blobs")]
-		public List<Blob> Blobs { get; set; }
-		[JsonProperty(PropertyName = "dependencies")]
-		public List<Dependency> Dependencies { get; set; }
-		[JsonProperty(PropertyName = "databases")]
-		public List<Database> Databases { get; set; }
-
+		private IPackageMetaData _metaData = null;
+		private IPackageMicroService _microService = null;
+		private List<IMicroServiceString> _strings = null;
+		private List<IPackageFeature> _features = null;
+		private List<IPackageComponent> _components = null;
+		private List<IPackageBlob> _blobs = null;
+		private List<IPackageDependency> _dependencies = null;
+		private List<IDatabase> _databases = null;
 		private List<IConfiguration> _configurations = null;
+
+		[JsonProperty(PropertyName = "metaData")]
+		public IPackageMetaData MetaData
+		{
+			get
+			{
+				if (_metaData == null)
+					_metaData = new PackageMetaData();
+
+				return _metaData;
+			}
+		}
+
+		[JsonProperty(PropertyName = "microService")]
+		public IPackageMicroService MicroService
+		{
+			get
+			{
+				if (_microService == null)
+					_microService = new PackageMicroService();
+
+				return _microService;
+			}
+		}
+
+		[JsonProperty(PropertyName = "strings")]
+		public List<IMicroServiceString> Strings
+		{
+			get
+			{
+				if (_strings == null)
+					_strings = new List<IMicroServiceString>();
+
+				return _strings;
+			}
+		}
+
+		[JsonProperty(PropertyName = "features")]
+		public List<IPackageFeature> Features
+		{
+			get
+			{
+				if (_features == null)
+					_features = new List<IPackageFeature>();
+
+				return _features;
+			}
+		}
+
+		[JsonProperty(PropertyName = "components")]
+		public List<IPackageComponent> Components
+		{
+			get
+			{
+				if (_components == null)
+					_components = new List<IPackageComponent>();
+
+				return _components;
+			}
+		}
+		[JsonProperty(PropertyName = "blobs")]
+		public List<IPackageBlob> Blobs
+		{
+			get
+			{
+				if (_blobs == null)
+					_blobs = new List<IPackageBlob>();
+
+				return _blobs;
+			}
+		}
+
+		[JsonProperty(PropertyName = "dependencies")]
+		public List<IPackageDependency> Dependencies
+		{
+			get
+			{
+				if (_dependencies == null)
+					_dependencies = new List<IPackageDependency>();
+
+				return _dependencies;
+			}
+		}
+
+		[JsonProperty(PropertyName = "databases")]
+		public List<IDatabase> Databases
+		{
+			get
+			{
+				if (_databases == null)
+					_databases = new List<IDatabase>();
+
+				return _databases;
+			}
+		}
+
 
 		public static Package Create(PackageCreateArgs e)
 		{
@@ -61,8 +148,26 @@ namespace TomPIT.Deployment
 		{
 			Args = e;
 
-			MetaData = e.MetaData;
-			Blobs = new List<Blob>();
+			_metaData = new PackageMetaData
+			{
+				Created = e.MetaData.Created,
+				Description = e.MetaData.Description,
+				Id = e.MetaData.Id,
+				ImageUrl = e.MetaData.ImageUrl,
+				LicenseUrl = e.MetaData.LicenseUrl,
+				Name = e.MetaData.Name,
+				Price = e.MetaData.Price,
+				ProjectUrl = e.MetaData.ProjectUrl,
+				Publisher = e.MetaData.Publisher,
+				Scope = e.MetaData.Scope,
+				ShellVersion = e.MetaData.ShellVersion,
+				Tags = e.MetaData.Tags,
+				Title = e.MetaData.Title,
+				Version = e.MetaData.Version,
+				Licenses = e.MetaData.Licenses,
+				Trial = e.MetaData.Trial,
+				TrialPeriod = e.MetaData.TrialPeriod
+			};
 
 			CreateMicroService();
 			CreateFeatures();
@@ -75,14 +180,13 @@ namespace TomPIT.Deployment
 		private void CreateDependencies()
 		{
 			var references = Args.Connection.GetService<IDiscoveryService>().References(Args.MicroService);
-			Dependencies = new List<Dependency>();
 
 			if (references == null)
 				return;
 
 			foreach (var i in references.MicroServices)
 			{
-				Dependencies.Add(new Dependency
+				Dependencies.Add(new PackageDependency
 				{
 					Name = i.MicroService
 				});
@@ -92,7 +196,6 @@ namespace TomPIT.Deployment
 		private void CreateComponents()
 		{
 			var components = Args.Connection.GetService<IComponentService>().QueryComponents(Args.MicroService);
-			Components = new List<Component>();
 
 			foreach (var i in components)
 			{
@@ -101,12 +204,12 @@ namespace TomPIT.Deployment
 
 				var e = new PackageProcessArgs(PackageEntity.Component, i.Token.ToString());
 
-				Args.Callback(e);
+				Args.Callback?.Invoke(e);
 
 				if (e.Cancel)
 					continue;
 
-				Components.Add(new Component
+				Components.Add(new PackageComponent
 				{
 					Category = i.Category,
 					Feature = i.Feature,
@@ -148,13 +251,13 @@ namespace TomPIT.Deployment
 
 			var content = Args.Connection.GetService<IStorageService>().Download(token);
 
-			Blobs.Add(new Blob
+			Blobs.Add(new PackageBlob
 			{
 				Content = content != null ? Convert.ToBase64String(content.Content) : string.Empty,
 				ContentType = blob.ContentType,
 				FileName = blob.FileName,
 				PrimaryKey = blob.PrimaryKey,
-				Service = blob.MicroService,
+				MicroService = blob.MicroService,
 				Token = blob.Token,
 				Topic = blob.Topic,
 				Type = blob.Type,
@@ -165,18 +268,17 @@ namespace TomPIT.Deployment
 		private void CreateFeatures()
 		{
 			var features = Args.Connection.GetService<IFeatureService>().Query(Args.MicroService);
-			Features = new List<Feature>();
 
 			foreach (var i in features)
 			{
 				var e = new PackageProcessArgs(PackageEntity.Feature, i.Token.ToString());
 
-				Args.Callback(e);
+				Args.Callback?.Invoke(e);
 
 				if (e.Cancel)
 					continue;
 
-				Features.Add(new Feature
+				Features.Add(new PackageFeature
 				{
 					Name = i.Name,
 					Token = i.Token
@@ -188,8 +290,6 @@ namespace TomPIT.Deployment
 		{
 			var strings = Args.Connection.GetService<IMicroServiceManagementService>().QueryStrings(Args.MicroService);
 			var languages = Args.Connection.GetService<ILanguageService>().Query();
-
-			Strings = new List<MicroServiceString>();
 
 			foreach (var i in strings)
 			{
@@ -226,11 +326,10 @@ namespace TomPIT.Deployment
 			if (ms == null)
 				throw new RuntimeException(SR.ErrMicroServiceNotFound);
 
-			MicroService = new MicroService
+			_microService = new PackageMicroService
 			{
-				Meta = Args.Connection.GetService<IMicroServiceService>().SelectMeta(ms.Token),
+				MetaData = Args.Connection.GetService<IMicroServiceService>().SelectMeta(ms.Token),
 				Name = ms.Name,
-				Status = (int)ms.Status,
 				Template = ms.Template,
 				Token = ms.Token
 			};
@@ -239,7 +338,6 @@ namespace TomPIT.Deployment
 		private void CreateDatabases()
 		{
 			var connections = Configurations.Where(f => f is IConnection);
-			Databases = new List<Database>();
 
 			foreach (IConnection i in connections)
 			{
@@ -248,7 +346,7 @@ namespace TomPIT.Deployment
 				if (dp == null || !dp.SupportsDeploy)
 					continue;
 
-				var database = new Database();
+				var database = new PackageDatabase();
 
 				Databases.Add(database);
 				var db = dp.CreateSchema(i.Value);
@@ -259,7 +357,7 @@ namespace TomPIT.Deployment
 			}
 		}
 
-		private void CreateRoutines(Database database, IDatabase provider)
+		private void CreateRoutines(PackageDatabase database, IDatabase provider)
 		{
 			database.Routines = new List<IRoutine>();
 
@@ -267,7 +365,7 @@ namespace TomPIT.Deployment
 			{
 				var e = new PackageProcessArgs(PackageEntity.DatabaseRoutine, string.Format("{0}.{1}", i.Schema, i.Name));
 
-				Args.Callback(e);
+				Args.Callback?.Invoke(e);
 
 				if (e.Cancel)
 					continue;
@@ -282,7 +380,7 @@ namespace TomPIT.Deployment
 			}
 		}
 
-		private void CreateViews(Database database, IDatabase provider)
+		private void CreateViews(PackageDatabase database, IDatabase provider)
 		{
 			database.Views = new List<IView>();
 
@@ -290,7 +388,7 @@ namespace TomPIT.Deployment
 			{
 				var e = new PackageProcessArgs(PackageEntity.DatabaseView, string.Format("{0}.{1}", i.Schema, i.Name));
 
-				Args.Callback(e);
+				Args.Callback?.Invoke(e);
 
 				if (e.Cancel)
 					continue;
@@ -304,7 +402,7 @@ namespace TomPIT.Deployment
 			}
 		}
 
-		private void CreateTables(Database database, IDatabase provider)
+		private void CreateTables(PackageDatabase database, IDatabase provider)
 		{
 			database.Tables = new List<ITable>();
 
@@ -312,7 +410,7 @@ namespace TomPIT.Deployment
 			{
 				var e = new PackageProcessArgs(PackageEntity.DatabaseTable, string.Format("{0}.{1}", i.Schema, i.Name));
 
-				Args.Callback(e);
+				Args.Callback?.Invoke(e);
 
 				if (e.Cancel)
 					continue;

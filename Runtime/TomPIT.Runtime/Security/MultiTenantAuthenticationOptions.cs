@@ -2,7 +2,7 @@
 
 namespace TomPIT.Security
 {
-	internal class JwtAuthenticationOptions : AuthenticationSchemeOptions
+	internal class MultiTenantAuthenticationOptions : AuthenticationSchemeOptions
 	{
 	}
 }

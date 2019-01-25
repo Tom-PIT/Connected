@@ -1,4 +1,6 @@
-﻿namespace TomPIT.ActionResults
+﻿using System.Collections.Generic;
+
+namespace TomPIT.ActionResults
 {
 	public interface IDesignerActionResult
 	{
@@ -9,5 +11,7 @@
 		string Title { get; }
 
 		string ExplorerPath { get; }
+
+		Dictionary<string, string> ResponseHeaders { get; }
 	}
 }

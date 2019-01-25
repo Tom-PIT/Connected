@@ -107,11 +107,14 @@ namespace TomPIT.Connectivity
 
 		private ISysConnection Context { get; }
 
-		public T Get<T>(string url)
+		public T Get<T>(string url, HttpRequestArgs e = null)
 		{
 			try
 			{
-				var client = HttpClientPool.Get(AuthenticationToken);
+				var client = e == null || e.Credentials == null
+					? HttpClientPool.Get(AuthenticationToken)
+					: HttpClientPool.Get(e.Credentials);
+
 				var response = client.GetAsync(url).GetAwaiter().GetResult();
 
 				return HandleResponse<T>(response);
@@ -122,38 +125,44 @@ namespace TomPIT.Connectivity
 			}
 		}
 
-		public T Post<T>(string url)
+		public T Post<T>(string url, HttpRequestArgs e = null)
 		{
-			return Post<T>(url, null);
+			return Post<T>(url, null, e);
 		}
 
-		public T Post<T>(string url, object content)
+		public T Post<T>(string url, object content, HttpRequestArgs e = null)
 		{
-			return Post<T>(url, CreateContent(content));
+			return Post<T>(url, CreateContent(content), e);
 		}
 
-		public void Post(string url)
+		public void Post(string url, HttpRequestArgs e = null)
 		{
-			Post(url, null);
+			Post(url, null, e);
 		}
 
-		public void Post(string url, object content)
+		public void Post(string url, object content, HttpRequestArgs e = null)
 		{
-			var client = HttpClientPool.Get(AuthenticationToken);
+			var client = e == null || e.Credentials == null
+				 ? HttpClientPool.Get(AuthenticationToken)
+				 : HttpClientPool.Get(e.Credentials);
 
 			HandleResponse(client.PostAsync(url, CreateContent(content)).GetAwaiter().GetResult());
 		}
 
-		public void Post(string url, HttpContent httpContent)
+		public void Post(string url, HttpContent httpContent, HttpRequestArgs e = null)
 		{
-			var client = HttpClientPool.Get(AuthenticationToken);
+			var client = e == null || e.Credentials == null
+				? HttpClientPool.Get(AuthenticationToken)
+				: HttpClientPool.Get(e.Credentials);
 
 			HandleResponse(client.PostAsync(url, httpContent).GetAwaiter().GetResult());
 		}
 
-		public T Post<T>(string url, HttpContent httpContent)
+		public T Post<T>(string url, HttpContent httpContent, HttpRequestArgs e)
 		{
-			var client = HttpClientPool.Get(AuthenticationToken);
+			var client = e == null || e.Credentials == null
+				? HttpClientPool.Get(AuthenticationToken)
+				: HttpClientPool.Get(e.Credentials);
 
 			return HandleResponse<T>(client.PostAsync(url, httpContent).GetAwaiter().GetResult());
 		}

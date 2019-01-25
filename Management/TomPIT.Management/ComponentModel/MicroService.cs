@@ -29,7 +29,8 @@ namespace TomPIT.ComponentModel
 		[Items("TomPIT.Items.MicroServiceTemplatesItems, TomPIT.Management")]
 		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public Guid Template { get; set; }
-
+		[Browsable(false)]
+		public Guid Package { get; set; }
 		public override string ToString()
 		{
 			return string.IsNullOrWhiteSpace(Name)

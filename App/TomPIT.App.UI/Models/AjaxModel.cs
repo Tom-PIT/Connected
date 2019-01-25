@@ -74,7 +74,7 @@ namespace TomPIT.Models
 		public void Initialize(Controller controller)
 		{
 			Controller = controller;
-			Initialize(controller?.Request, null, null, null, null);
+			Initialize(null, null, null, null);
 
 			OnInitializing();
 		}

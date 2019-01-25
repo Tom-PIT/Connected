@@ -783,4 +783,10 @@
   <data name="ErrNoAppServer" xml:space="preserve">
     <value>No application server is registered. To manage Instances go to the Management console and search for the Environment/Instances node.</value>
   </data>
+  <data name="ErrLoginFailed" xml:space="preserve">
+    <value>Login failed. Please try again.</value>
+  </data>
+  <data name="ErrPackageNotFound" xml:space="preserve">
+    <value>Package not found.</value>
+  </data>
 </root>

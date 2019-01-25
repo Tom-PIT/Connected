@@ -1,20 +1,22 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using TomPIT.Server.Security;
 
 namespace TomPIT.Security
 {
-	internal class BearerAuthenticationHandler : AuthenticationHandler<BearerAuthenticationOptions>
+	internal class SingleTenantAuthenticationHandler : AuthenticationHandler<SingleTenantAuthenticationOptions>
 	{
 		public static string ValidIssuer { get; set; }
 		public static string ValidAudience { get; set; }
 		public static string IssuerSigningKey { get; set; }
 
-		public BearerAuthenticationHandler(IOptionsMonitor<BearerAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
+		public SingleTenantAuthenticationHandler(IOptionsMonitor<SingleTenantAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
 		{
 		}
 
@@ -28,13 +30,48 @@ namespace TomPIT.Security
 			var principal = ValidateBearer();
 
 			if (principal == null)
-				return AuthenticateResult.NoResult();
+			{
+				principal = ValidateBasic();
+
+				if (principal == null)
+					return AuthenticateResult.NoResult();
+			}
 
 			return AuthenticateResult.Success(
 					new AuthenticationTicket(
 					principal,
 					new AuthenticationProperties(),
 					Scheme.Name));
+		}
+
+		private ClaimsPrincipal ValidateBasic()
+		{
+			var header = Request.Headers["Authorization"];
+
+			if (header.Count == 0)
+				return null;
+
+			var content = header[0];
+			var tokens = content.Split(' ');
+
+			if (tokens.Length != 2)
+				return null;
+
+			if (string.Compare(tokens[0], "basic", true) != 0)
+				return null;
+
+			var credentials = Encoding.UTF8.GetString(Convert.FromBase64String(tokens[1]));
+			var credentialTokens = credentials.Split(new char[] { ':' }, 2);
+
+			var userName = credentialTokens[0];
+			var password = credentialTokens[1];
+
+			var r = Instance.Connection.GetService<IAuthorizationService>().Authenticate(userName, password);
+
+			if (!r.Success)
+				return null;
+
+			return new Principal(r.Identity);
 		}
 
 		private ClaimsPrincipal ValidateBearer()
@@ -70,9 +107,7 @@ namespace TomPIT.Security
 			if (!r.Success)
 				return null;
 
-			var pr = new Principal(r.Identity);
-
-			return pr;
+			return new Principal(r.Identity);
 		}
 	}
 }

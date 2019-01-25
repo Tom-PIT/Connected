@@ -3,7 +3,7 @@ using System;
 
 namespace TomPIT.Deployment
 {
-	public class Component
+	internal class PackageComponent : IPackageComponent
 	{
 		[JsonProperty(PropertyName = "name")]
 		public string Name { get; set; }

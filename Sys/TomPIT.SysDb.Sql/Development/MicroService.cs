@@ -12,6 +12,7 @@ namespace TomPIT.SysDb.Sql.Development
 		public MicroServiceStatus Status { get; set; }
 		public Guid ResourceGroup { get; set; }
 		public Guid Template { get; set; }
+		public Guid Package { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -23,6 +24,7 @@ namespace TomPIT.SysDb.Sql.Development
 			Status = GetValue("status", MicroServiceStatus.Development);
 			ResourceGroup = GetGuid("resource_token");
 			Template = GetGuid("template");
+			Package = GetGuid("package");
 		}
 	}
 }

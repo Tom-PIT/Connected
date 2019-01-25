@@ -1069,6 +1069,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Login failed. Please try again..
+        /// </summary>
+        public static string ErrLoginFailed {
+            get {
+                return ResourceManager.GetString("ErrLoginFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Master view not found.
         /// </summary>
         public static string ErrMasterViewNotFound {
@@ -1191,6 +1200,15 @@ namespace TomPIT {
         public static string ErrNoUrlHelper {
             get {
                 return ResourceManager.GetString("ErrNoUrlHelper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package not found..
+        /// </summary>
+        public static string ErrPackageNotFound {
+            get {
+                return ResourceManager.GetString("ErrPackageNotFound", resourceCulture);
             }
         }
         

@@ -7,7 +7,7 @@ namespace TomPIT.Deployment
 
 	public class PackageCreateArgs : EventArgs
 	{
-		public PackageCreateArgs(ISysConnection connection, Guid microService, PackageMetaData metaData, PackageProcessHandler processCallback)
+		public PackageCreateArgs(ISysConnection connection, Guid microService, IPackageMetaData metaData, PackageProcessHandler processCallback)
 		{
 			Connection = connection;
 			MicroService = microService;
@@ -17,7 +17,7 @@ namespace TomPIT.Deployment
 
 		public ISysConnection Connection { get; }
 		public Guid MicroService { get; }
-		public PackageMetaData MetaData { get; }
+		public IPackageMetaData MetaData { get; }
 		public PackageProcessHandler Callback { get; }
 	}
 }

@@ -10,5 +10,6 @@ namespace TomPIT.ComponentModel
 		public MicroServiceStatus Status { get; set; }
 		public Guid ResourceGroup { get; set; }
 		public Guid Template { get; set; }
+		public Guid Package { get; set; }
 	}
 }

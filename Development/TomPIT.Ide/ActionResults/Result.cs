@@ -1,10 +1,13 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using TomPIT.Annotations;
 
 namespace TomPIT.ActionResults
 {
 	public abstract class Result : IDesignerActionResult
 	{
+		private Dictionary<string, string> _responseHeaders = null;
+
 		protected Result(object model)
 		{
 			Model = model;
@@ -42,6 +45,17 @@ namespace TomPIT.ActionResults
 		public static ViewResult ViewResult(object model, string view)
 		{
 			return new ViewResult(model, view);
+		}
+
+		public Dictionary<string, string> ResponseHeaders
+		{
+			get
+			{
+				if (_responseHeaders == null)
+					_responseHeaders = new Dictionary<string, string>();
+
+				return _responseHeaders;
+			}
 		}
 	}
 }

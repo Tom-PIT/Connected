@@ -1,55 +1,57 @@
 ﻿@model TomPIT.Marketplace.IMarketplaceProxy
 
-<div class="info-box info">
-	<div class="info-box-header">Tom PIT Marketplace sign up</div>
-	By signing up to the Tom PIT marketplace you'll be able to publish, sell, distribute and deploy your microservices. Tom PIT marketplace is <strong>free to use</strong>.
-	If you already have a <strong>Tom PIT publisher account</strong> you can sign in <a href="#" id="aLogin">here</a>.
-</div>
+<div class="mx-auto login-box">
+	<div class="info-box info">
+		<div class="info-box-header">Tom PIT Marketplace sign up</div>
+		By signing up to the Tom PIT marketplace you'll be able to publish, sell, distribute and deploy your microservices. Tom PIT marketplace is <strong>free to use</strong>.
+		If you already have a <strong>Tom PIT publisher account</strong> you can sign in <a href="#" id="aLogin">here</a>.
+	</div>
 
-<h4 class="mt-5 mb-3">Company</h4>
-<div class="form-group">
-	<label for="editCompany">Company</label>
-	<div id="editCompany"></div>
-</div>
-<div class="form-group">
-	<label for="editCountry">Country</label>
-	<div id="editCountry"></div>
-</div>
-<div class="form-group">
-	<label for="editWebsite">Website URL</label>
-	<div id="editWebsite"></div>
-</div>
+	<h4 class="mt-5 mb-3">Company</h4>
+	<div class="form-group">
+		<label for="editCompany">Company</label>
+		<div id="editCompany"></div>
+	</div>
+	<div class="form-group">
+		<label for="editCountry">Country</label>
+		<div id="editCountry"></div>
+	</div>
+	<div class="form-group">
+		<label for="editWebsite">Website URL</label>
+		<div id="editWebsite"></div>
+	</div>
 
-<h4 class="mt-5 mb-3">Personal</h4>
-<div class="form-group">
-	<label for="edirFirstName">First name</label>
-	<div id="editFirstName"></div>
-</div>
-<div class="form-group">
-	<label for="editLastName">Last name</label>
-	<div id="editLastName"></div>
-</div>
-<div class="form-group">
-	<label for="editEmail">Email</label>
-	<div id="editEmail"></div>
-</div>
-<div class="form-group">
-	<label for="editPhone">Phone</label>
-	<div id="editPhone"></div>
-</div>
+	<h4 class="mt-5 mb-3">Personal</h4>
+	<div class="form-group">
+		<label for="edirFirstName">First name</label>
+		<div id="editFirstName"></div>
+	</div>
+	<div class="form-group">
+		<label for="editLastName">Last name</label>
+		<div id="editLastName"></div>
+	</div>
+	<div class="form-group">
+		<label for="editEmail">Email</label>
+		<div id="editEmail"></div>
+	</div>
+	<div class="form-group">
+		<label for="editPhone">Phone</label>
+		<div id="editPhone"></div>
+	</div>
 
-<h4 class="mt-5 mb-3">Authentication</h4>
-<div class="form-group">
-	<label for="editPassword">Passsword</label>
-	<div id="editPassword"></div>
-</div>
-<div class="form-group">
-	<label for="editConfirm">Confirm Password</label>
-	<div id="editConfirm"></div>
-</div>
+	<h4 class="mt-5 mb-3">Authentication</h4>
+	<div class="form-group">
+		<label for="editPassword">Passsword</label>
+		<div id="editPassword"></div>
+	</div>
+	<div class="form-group">
+		<label for="editConfirm">Confirm Password</label>
+		<div id="editConfirm"></div>
+	</div>
 
-<div class="form-group">
-	<button type="button" class="btn btn-primary" id="btnSignup">Create publisher account</button>
+	<div class="form-group">
+		<button type="button" class="btn btn-primary" id="btnSignup">Create publisher account</button>
+	</div>
 </div>
 <script>
 	$('#editCompany').dxTextBox({

@@ -245,7 +245,9 @@ CREATE TABLE [tompit].[service]
 [status] [int] NOT NULL,
 [resource_group] [int] NOT NULL,
 [template] [uniqueidentifier] NOT NULL,
-[meta] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL
+[meta] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[license] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[package] [uniqueidentifier] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -1169,7 +1171,7 @@ GO
 CREATE TABLE [tompit].[api_test]
 (
 [id] [int] NOT NULL IDENTITY(1, 1),
-[title] [nvarchar] (128) COLLATE Slovenian_CI_AS NOT NULL,
+[title] [nvarchar] (256) COLLATE Slovenian_CI_AS NOT NULL,
 [description] [nvarchar] (1024) COLLATE Slovenian_CI_AS NULL,
 [body] [nvarchar] (max) COLLATE Slovenian_CI_AS NULL,
 [identifier] [uniqueidentifier] NOT NULL CONSTRAINT [DF_api_test_identifier] DEFAULT (newid()),
@@ -1680,7 +1682,8 @@ CREATE PROCEDURE [tompit].[service_upd]
 	@url nvarchar(136),
 	@status int,
 	@template uniqueidentifier,
-	@resource_group int
+	@resource_group int,
+	@package uniqueidentifier = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -1690,7 +1693,8 @@ BEGIN
 		url = @url,
 		status = @status,
 		template = @template,
-		resource_group = @resource_group
+		resource_group = @resource_group,
+		package = @package
 	where id = @id;
 
 END

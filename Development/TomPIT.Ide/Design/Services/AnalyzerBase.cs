@@ -187,7 +187,6 @@ namespace TomPIT.Design.Services
 			}
 		}
 
-
 		public virtual Document Document
 		{
 			get

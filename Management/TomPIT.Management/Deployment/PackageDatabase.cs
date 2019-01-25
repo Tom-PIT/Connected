@@ -4,7 +4,7 @@ using TomPIT.Data.DataProviders.Deployment;
 
 namespace TomPIT.Deployment
 {
-	public class Database : IDatabase
+	public class PackageDatabase : IDatabase
 	{
 		[JsonProperty(PropertyName = "tables")]
 		public List<ITable> Tables { get; set; }

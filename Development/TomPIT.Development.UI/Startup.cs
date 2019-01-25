@@ -14,7 +14,7 @@ namespace TomPIT.Servers.Development
 		{
 			var e = new ServicesConfigurationArgs
 			{
-				Authentication = AuthenticationType.Jwt
+				Authentication = AuthenticationType.MultiTenant
 			};
 
 			Instance.Initialize(services, e);

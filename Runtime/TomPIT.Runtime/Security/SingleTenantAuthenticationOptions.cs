@@ -2,7 +2,7 @@
 
 namespace TomPIT.Security
 {
-	internal class BearerAuthenticationOptions : AuthenticationSchemeOptions
+	internal class SingleTenantAuthenticationOptions : AuthenticationSchemeOptions
 	{
 	}
 }

@@ -6,19 +6,13 @@ namespace TomPIT.Marketplace
 	{
 		[JsonProperty(PropertyName = "company")]
 		public string Company { get; set; }
-		[JsonProperty(PropertyName = "firstName")]
-		public string FirstName { get; set; }
-		[JsonProperty(PropertyName = "lastName")]
-		public string LastName { get; set; }
 		[JsonProperty(PropertyName = "country")]
-		public string Country { get; set; }
-		[JsonProperty(PropertyName = "email")]
-		public string Email { get; set; }
-		[JsonProperty(PropertyName = "phone")]
-		public string Phone { get; set; }
+		public int Country { get; set; }
 		[JsonProperty(PropertyName = "website")]
 		public string Website { get; set; }
-		[JsonProperty(PropertyName = "key")]
+		[JsonProperty(PropertyName = "publisherKey")]
 		public string Key { get; set; }
+		[JsonProperty(PropertyName = "status")]
+		public PublisherStatus Status { get; set; }
 	}
 }

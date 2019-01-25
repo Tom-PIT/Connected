@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using TomPIT.ActionResults;
+using TomPIT.ComponentModel;
 using TomPIT.Deployment;
 using TomPIT.Dom;
 using TomPIT.Ide;
@@ -11,6 +12,8 @@ namespace TomPIT.Designers
 	public class PackageDesigner : DomDesigner<PackageElement>, IMarketplaceProxy, ISignupDesigner
 	{
 		private JObject _countries = null;
+		private IPackage _package = null;
+		private IMicroService _microService = null;
 
 		public PackageDesigner(IEnvironment environment, PackageElement element) : base(environment, element)
 		{
@@ -34,7 +37,7 @@ namespace TomPIT.Designers
 		protected override IDesignerActionResult OnAction(JObject data, string action)
 		{
 			if (string.Compare(action, "create", true) == 0)
-				return CreatePackage();
+				return CreatePackage(data);
 			else if (string.Compare(action, "signup", true) == 0)
 				return Result.ViewResult(this, "~/Views/Ide/Designers/PublisherSignup.cshtml");
 			else if (string.Compare(action, "login", true) == 0)
@@ -43,8 +46,56 @@ namespace TomPIT.Designers
 				return SignUp(data);
 			else if (string.Compare(action, "checkConfirmation", true) == 0)
 				return CheckConfirmation(data);
+			else if (string.Compare(action, "authenticate", true) == 0)
+				return Login(data);
+			else if (string.Compare(action, "logoff", true) == 0)
+				return Logoff(data);
+			else if (string.Compare(action, "publish", true) == 0)
+				return Publish();
 
 			return base.OnAction(data, action);
+		}
+
+		private IDesignerActionResult Publish()
+		{
+			Connection.GetService<IMarketplaceService>().PublishPackage(MicroService.Token);
+
+			var r = Result.EmptyResult(ViewModel);
+
+			r.MessageKind = InformationKind.Success;
+			r.Message = "Congratulations! Your package is now online.";
+			r.Title = "Package uploaded successfully";
+
+			return r;
+		}
+
+		private IDesignerActionResult Logoff(JObject data)
+		{
+			Connection.GetService<IMarketplaceService>().LogOut();
+
+			return Result.ViewResult(this, "~/Views/Ide/Designers/PublisherLogin.cshtml");
+		}
+
+		private IDesignerActionResult Login(JObject data)
+		{
+			Connection.GetService<IMarketplaceService>().LogIn(data.Required<string>("user"), data.Required<string>("password"), true);
+
+			if (Connection.GetService<IMarketplaceService>().IsLogged)
+			{
+				var r = Result.ViewResult(ViewModel, "~/Views/Ide/Designers/Package.cshtml");
+
+				r.ResponseHeaders.Add("viewType", "package");
+
+				return r;
+			}
+			else
+			{
+				var r = Result.ViewResult(ViewModel, "~/Views/Ide/Designers/PublisherLoginForm.cshtml");
+
+				r.ResponseHeaders.Add("viewType", "login");
+
+				return r;
+			}
 		}
 
 		private IDesignerActionResult CheckConfirmation(JObject data)
@@ -73,17 +124,32 @@ namespace TomPIT.Designers
 			return Result.ViewResult(ViewModel, "~/Views/Ide/Designers/PackageInbox.cshtml");
 		}
 
-		public IDesignerActionResult CreatePackage()
+		public IDesignerActionResult CreatePackage(JObject data)
 		{
-			var r = Package.Create(new PackageCreateArgs(Environment.Context.Connection(), DomQuery.Closest<IMicroServiceScope>(Element).MicroService.Token, new PackageMetaData
-			{
-				Price = 399
-			}, (f) =>
-			{
+			var name = data.Required<string>("name");
+			var title = data.Required<string>("title");
+			var version = new Version(data.Required<int>("versionMajor"), data.Required<int>("versionMinor"), data.Required<int>("versionBuild"), data.Required<int>("versionRevision"));
+			var scope = data.Required<PackageScope>("scope");
+			var trial = data.Required<bool>("trial");
+			var trialPeriod = data.Required<int>("trialPeriod");
+			var description = data.Optional("description", string.Empty);
+			var price = data.Required<double>("price");
+			var tags = data.Optional("tags", string.Empty);
+			var projectUrl = data.Optional("projectUrl", string.Empty);
+			var licenseUrl = data.Optional("licenseUrl", string.Empty);
+			var imageUrl = data.Optional("imageUrl", string.Empty);
+			var licenses = data.Optional("licenses", string.Empty);
 
-			}));
+			Connection.GetService<IMarketplaceService>().CreatePackage(MicroService.Token, name, title, version.ToString(), scope, trial, trialPeriod, description, price,
+				tags, projectUrl, imageUrl, licenseUrl, licenses, null);
 
-			return Result.EmptyResult(ViewModel);
+			var r = Result.EmptyResult(ViewModel);
+
+			r.MessageKind = InformationKind.Success;
+			r.Message = "You can now upload package to the marketplace.";
+			r.Title = "Package created successfully";
+
+			return r;
 		}
 
 		public IPublisher Publisher { get { return Connection.GetService<IMarketplaceService>().Publisher; } }
@@ -98,5 +164,29 @@ namespace TomPIT.Designers
 		}
 
 		public Guid PublisherKey { get; private set; }
+
+		public IPackage Package
+		{
+			get
+			{
+				if (_package == null)
+					_package = Connection.GetService<IMarketplaceService>().SelectPackage(MicroService.Token);
+
+				return _package;
+			}
+		}
+
+		public IMicroService MicroService
+		{
+			get
+			{
+				if (_microService == null)
+					_microService = DomQuery.Closest<IMicroServiceScope>(Element).MicroService;
+
+				return _microService;
+			}
+		}
+
+		public JArray Tags => new JArray();
 	}
 }

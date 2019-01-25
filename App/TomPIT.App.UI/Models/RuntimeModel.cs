@@ -14,7 +14,6 @@ namespace TomPIT.Models
 
 		public RuntimeModel(RuntimeModel context)
 		{
-			Request = context.Request;
 			ActionContext = context.ActionContext;
 
 			Bind(context.Identity.AuthorityId, context.Identity.Authority, context.Identity.ContextId);
@@ -22,7 +21,6 @@ namespace TomPIT.Models
 
 		public RuntimeModel(HttpRequest request, ActionContext context)
 		{
-			Request = request;
 			ActionContext = context;
 		}
 
@@ -39,7 +37,7 @@ namespace TomPIT.Models
 		public void Initialize(Controller controller)
 		{
 			Controller = controller;
-			Initialize(controller?.Request, null, null, null, null);
+			Initialize(null, null, null, null);
 
 			OnInitializing();
 		}

@@ -3,7 +3,7 @@ using System;
 
 namespace TomPIT.Deployment
 {
-	public class Feature
+	internal class PackageDependency : IPackageDependency
 	{
 		[JsonProperty(PropertyName = "name")]
 		public string Name { get; set; }

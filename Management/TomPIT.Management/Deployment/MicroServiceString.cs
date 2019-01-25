@@ -3,7 +3,7 @@ using System;
 
 namespace TomPIT.Deployment
 {
-	public class MicroServiceString
+	internal class MicroServiceString : IMicroServiceString
 	{
 		[JsonProperty(PropertyName = "element")]
 		public Guid Element { get; set; }

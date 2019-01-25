@@ -17,11 +17,23 @@ namespace TomPIT
 		private static ISys _sys = null;
 		private static Type _sysType = null;
 		private static IHttpContextAccessor _accessor = null;
+		private static Version _version = null;
 
 		static Shell()
 		{
 			_sm = new ServiceContainer(null);
 			AssemblyLoadContext.Default.Resolving += OnResolvingAssembly;
+		}
+
+		public static Version Version
+		{
+			get
+			{
+				if (_version == null)
+					_version = typeof(Shell).Assembly.GetName().Version;
+
+				return _version;
+			}
 		}
 
 		public static HttpContext HttpContext { get { return _accessor?.HttpContext; } }

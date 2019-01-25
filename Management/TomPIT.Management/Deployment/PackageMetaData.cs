@@ -3,13 +3,7 @@ using System;
 
 namespace TomPIT.Deployment
 {
-	public enum PackageScope
-	{
-		Public = 1,
-		Private = 2
-	}
-
-	public class PackageMetaData
+	internal class PackageMetaData : IPackageMetaData
 	{
 		[JsonProperty(PropertyName = "id")]
 		public Guid Id { get; set; }
@@ -22,7 +16,7 @@ namespace TomPIT.Deployment
 		[JsonProperty(PropertyName = "scope")]
 		public PackageScope Scope { get; set; }
 		[JsonProperty(PropertyName = "publisher")]
-		public Guid Publisher { get; set; }
+		public string Publisher { get; set; }
 		[JsonProperty(PropertyName = "created")]
 		public DateTime Created { get; set; }
 		[JsonProperty(PropertyName = "price")]
@@ -31,13 +25,19 @@ namespace TomPIT.Deployment
 		public string ShellVersion { get; set; }
 		[JsonProperty(PropertyName = "description")]
 		public string Description { get; set; }
-		[JsonProperty(PropertyName = "url")]
-		public string Url { get; set; }
+		[JsonProperty(PropertyName = "projectUrl")]
+		public string ProjectUrl { get; set; }
 		[JsonProperty(PropertyName = "licenseUrl")]
 		public string LicenseUrl { get; set; }
 		[JsonProperty(PropertyName = "tags")]
 		public string Tags { get; set; }
 		[JsonProperty(PropertyName = "imageUrl")]
 		public string ImageUrl { get; set; }
+		[JsonProperty(PropertyName = "trial")]
+		public bool Trial { get; set; }
+		[JsonProperty(PropertyName = "trialPeriod")]
+		public int TrialPeriod { get; set; }
+		[JsonProperty(PropertyName = "licenses")]
+		public string Licenses { get; set; }
 	}
 }

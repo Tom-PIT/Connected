@@ -7,15 +7,15 @@ namespace TomPIT.Connectivity
 {
 	public interface ISysConnection
 	{
-		T Post<T>(string url);
-		T Post<T>(string url, object content);
-		T Post<T>(string url, HttpContent httpContent);
+		T Post<T>(string url, HttpRequestArgs e = null);
+		T Post<T>(string url, object content, HttpRequestArgs e = null);
+		T Post<T>(string url, HttpContent httpContent, HttpRequestArgs e = null);
 
-		void Post(string url);
-		void Post(string url, object content);
-		void Post(string url, HttpContent httpContent);
+		void Post(string url, HttpRequestArgs e = null);
+		void Post(string url, object content, HttpRequestArgs e = null);
+		void Post(string url, HttpContent httpContent, HttpRequestArgs e = null);
 
-		T Get<T>(string url);
+		T Get<T>(string url, HttpRequestArgs e = null);
 
 		string Url { get; }
 

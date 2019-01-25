@@ -103,6 +103,7 @@ namespace TomPIT.Services.Context
 				{"loginName", loginName},
 				{"firstName", firstName},
 				{"lastName", lastName},
+				{"status", status.ToString()},
 				{"description", description},
 				{"password", password},
 				{"pin", pin},

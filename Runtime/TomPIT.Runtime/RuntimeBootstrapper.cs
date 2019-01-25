@@ -1,7 +1,4 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using TomPIT.Analysis;
 using TomPIT.Compilation;
 using TomPIT.Compilers;
@@ -71,6 +68,7 @@ namespace TomPIT.Runtime
 			e.Connection.RegisterService(typeof(IEventService), typeof(EventService));
 			e.Connection.RegisterService(typeof(IAuditService), typeof(AuditService));
 			e.Connection.RegisterService(typeof(IDiscoveryService), typeof(DiscoveryService));
+			e.Connection.RegisterService(typeof(ICryptographyService), typeof(CryptographyService));
 		}
 	}
 }
