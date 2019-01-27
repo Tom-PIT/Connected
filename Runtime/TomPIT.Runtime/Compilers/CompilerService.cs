@@ -3,8 +3,10 @@ using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Scripting.Hosting;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -19,8 +21,11 @@ using TomPIT.Services;
 
 namespace TomPIT.Compilers
 {
-	internal class CompilerService : ClientRepository<Script, string>, ICompilerService, ICompilerNotification
+	internal class CompilerService : ClientRepository<Script, Guid>, ICompilerService, ICompilerNotification
 	{
+		private Lazy<ConcurrentDictionary<Guid, List<Guid>>> _forwardReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
+		private Lazy<ConcurrentDictionary<Guid, List<Guid>>> _reverseReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
+
 		private static readonly string[] Usings = new string[]
 		{
 				"System",
@@ -70,16 +75,16 @@ namespace TomPIT.Compilers
 			return string.Compare(sr, constant, true) == 0;
 		}
 
-		private Script GetCachedScript(Guid microService, Guid sourceCodeId)
+		private Script GetCachedScript(Guid sourceCodeId)
 		{
-			return Get(GenerateKey(microService, sourceCodeId));
+			return Get(sourceCodeId);
 		}
 
 		public IScriptDescriptor GetScript<T>(Guid microService, ISourceCode sourceCode)
 		{
 			IScriptDescriptor d = new ScriptDescriptor
 			{
-				Script = GetCachedScript(microService, sourceCode.Id)
+				Script = GetCachedScript(sourceCode.Id)
 			};
 
 			if (d.Script == null)
@@ -98,10 +103,11 @@ namespace TomPIT.Compilers
 			if (script == null)
 				return null;
 
-			ScriptGlobals<T> globals = new ScriptGlobals<T>();
-
-			globals.sender = sender;
-			globals.e = e;
+			var globals = new ScriptGlobals<T>
+			{
+				sender = sender,
+				e = e
+			};
 
 			try
 			{
@@ -211,6 +217,7 @@ namespace TomPIT.Compilers
 			if (string.IsNullOrWhiteSpace(code))
 				return null;
 
+			ResolveReferences(microService, d, code);
 			var imports = CombineUsings(new List<string> { typeof(T).Namespace });
 
 			var references = new List<Assembly>
@@ -227,7 +234,7 @@ namespace TomPIT.Compilers
 				.WithSourceResolver(new ReferenceResolver(Connection, microService))
 				.WithMetadataResolver(new MetaDataResolver(Connection, microService))
 				.WithEmitDebugInformation(true)
-				.WithFilePath(string.Format("{0}.csx", d.Id.ToString()))
+				.WithFilePath(d.ScriptName(Connection))
 				.WithFileEncoding(Encoding.UTF8);
 
 			Script<object> script = null;
@@ -247,21 +254,126 @@ namespace TomPIT.Compilers
 				script = CSharpScript.Create(code, options: options, globalsType: typeof(ScriptGlobals<T>), assemblyLoader: loader);
 			}
 
-			Set(GenerateKey(microService, d.Id), script, TimeSpan.Zero);
+			Set(d.Id, script, TimeSpan.Zero);
 
 			r.Errors = script.Compile();
-
-			//if (r.Errors != null && r.Errors.Length > 0)
-			//{
-			//	var sb = new StringBuilder();
-
-			//	foreach (var i in r.Errors)
-			//		sb.AppendLine(i.ToString());
-
-			//	//Log.Warning(this, sb.ToString(), EventId.CompileError);
-			//}
-
 			r.Script = script;
+
+			return r;
+		}
+
+		private void ResolveReferences(Guid microService, ISourceCode d, string code)
+		{
+			var scriptId = d.ScriptId();
+			var scripts = ParseScripts(code);
+			var ids = new List<Guid>();
+
+			foreach (var i in scripts)
+			{
+				var path = Path.GetFileNameWithoutExtension(i);
+
+				var lib = Connection.GetService<IComponentService>().SelectComponent(microService, "Library", path);
+
+				if (lib == null)
+					continue;
+
+				if (!ids.Contains(lib.Token))
+					ids.Add(lib.Token);
+
+				List<Guid> forward = null;
+
+				if (ForwardReferences.ContainsKey(lib.Token))
+					forward = ForwardReferences[lib.Token];
+				else
+				{
+					forward = new List<Guid>();
+
+					if (!ForwardReferences.TryAdd(lib.Token, forward))
+						ForwardReferences.TryGetValue(lib.Token, out forward);
+				}
+
+				if (!forward.Contains(scriptId))
+				{
+					lock (forward)
+					{
+						forward.Add(scriptId);
+					}
+				}
+
+				List<Guid> reverse = null;
+
+				if (ReverseReferences.ContainsKey(scriptId))
+					reverse = ReverseReferences[scriptId];
+				else
+				{
+					reverse = new List<Guid>();
+
+					if (!ReverseReferences.TryAdd(scriptId, reverse))
+						ReverseReferences.TryGetValue(scriptId, out reverse);
+				}
+
+				if (!reverse.Contains(lib.Token))
+				{
+					lock (reverse)
+					{
+						reverse.Add(lib.Token);
+					}
+				}
+			}
+
+			if (!ReverseReferences.ContainsKey(scriptId))
+				return;
+
+			var cleanup = ReverseReferences[scriptId];
+			var obsolete = new List<Guid>();
+
+			foreach (var i in cleanup)
+			{
+				if (!ids.Contains(i))
+				{
+					obsolete.Add(i);
+
+					if (!ForwardReferences.ContainsKey(i))
+						continue;
+
+					var refs = ForwardReferences[i];
+
+					if (refs.Contains(scriptId))
+					{
+						lock (refs)
+						{
+							refs.Remove(scriptId);
+						}
+					}
+				}
+			}
+
+			if (obsolete.Count > 0)
+			{
+				lock (cleanup)
+				{
+					foreach (var i in obsolete)
+					{
+						cleanup.Remove(i);
+					}
+				}
+			}
+		}
+
+		private List<string> ParseScripts(string code)
+		{
+			var refs = Regex.Matches(code, "#load.*");
+			var r = new List<string>();
+
+			foreach (Match i in refs)
+			{
+				var name = Regex.Match(i.Value, "\"([^\"]*)\"");
+
+				if (name == null)
+					continue;
+
+				r.Add(name.Value.Trim('"'));
+			}
 
 			return r;
 		}
@@ -287,16 +399,17 @@ namespace TomPIT.Compilers
 		public void Invalidate(IExecutionContext context, Guid microService, Guid component, ISourceCode sourceCode)
 		{
 			var u = context.Connection().CreateUrl("NotificationDevelopment", "ScriptChanged");
+			var id = sourceCode.ScriptId();
 
 			var args = new JObject
 			{
 				{ "microService", microService },
-				{ "sourceCode", sourceCode.Id }
+				{ "sourceCode", id }
 			};
 
 			Connection.Post(u, args);
-
-			Remove(GenerateKey(microService, sourceCode.Id));
+			Remove(sourceCode.Id);
+			InvalidateReferences(id);
 		}
 
 		private Assembly LoadSystemAssembly(string fileName)
@@ -321,7 +434,22 @@ namespace TomPIT.Compilers
 
 		public void NotifyChanged(object sender, ScriptChangedEventArgs e)
 		{
-			Remove(GenerateKey(e.MicroService, e.SourceCode));
+			Remove(e.SourceCode);
+			InvalidateReferences(e.SourceCode);
 		}
+
+		private void InvalidateReferences(Guid id)
+		{
+			if (ForwardReferences.ContainsKey(id))
+			{
+				var refs = ForwardReferences[id];
+
+				foreach (var i in refs)
+					Remove(i);
+			}
+		}
+
+		private ConcurrentDictionary<Guid, List<Guid>> ForwardReferences { get { return _forwardReferences.Value; } }
+		private ConcurrentDictionary<Guid, List<Guid>> ReverseReferences { get { return _reverseReferences.Value; } }
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Routing;
+using TomPIT.Compilers;
 using System.Net;
 using System.Text;
 using TomPIT.Analysis;
@@ -58,7 +59,36 @@ namespace TomPIT.ComponentModel.Routing
 				return;
 			}
 
-			var script = Connection.GetService<IComponentService>().SelectText(ms.Token, text);
+			string script = string.Empty;
+			var fileName = string.Empty;
+
+			if (text is IPartialSourceCode)
+			{
+				var container = text.Closest<ISourceCodeContainer>();
+
+				if (container == null)
+				{
+					Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+
+					return;
+				}
+
+				var sources = container.References(null);
+				var sb = new StringBuilder();
+
+				foreach (var i in sources)
+				{
+					var txt = container.GetReference(i);
+					var source = Connection.GetService<IComponentService>().SelectText(ms.Token, txt);
+
+					if (!string.IsNullOrWhiteSpace(source))
+						sb.AppendLine(source);
+				}
+
+				script = sb.ToString();
+			}
+			else
+				script = Connection.GetService<IComponentService>().SelectText(ms.Token, text);
 
 			Context.Response.ContentType = "text/plain";
 
@@ -66,7 +96,7 @@ namespace TomPIT.ComponentModel.Routing
 			{
 				var buffer = Encoding.UTF8.GetBytes(script);
 
-				Context.Response.Headers.Add("Content-Disposition", string.Format("attachment;filename=\"{0}.csx\"", text.Id.ToString()));
+				Context.Response.Headers.Add("Content-Disposition", string.Format("attachment;filename=\"{0}\"", text.ScriptName(Connection)));
 				Context.Response.ContentLength = buffer.Length;
 				Context.Response.Body.Write(buffer, 0, buffer.Length);
 			}

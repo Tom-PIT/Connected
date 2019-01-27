@@ -61,10 +61,11 @@ namespace TomPIT.Compilers
 
 		public override Stream OpenRead(string resolvedPath)
 		{
-			if (resolvedPath.StartsWith("$"))
-				return LoadInternalScript(resolvedPath);
+			//if (resolvedPath.StartsWith("$"))
+			//	return LoadInternalScript(resolvedPath);
 
-			var tokens = resolvedPath.Trim('/').Split('/');
+			var path = Path.GetFileNameWithoutExtension(resolvedPath);
+			var tokens = path.Trim('/').Split('/');
 			var lib = tokens[0];
 			IMicroService ms = null;
 
@@ -94,28 +95,28 @@ namespace TomPIT.Compilers
 			return new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
 		}
 
-		private Stream LoadInternalScript(string qualifier)
-		{
-			var tokens = qualifier.Substring(1).Split('/');
+		//private Stream LoadInternalScript(string qualifier)
+		//{
+		//	var tokens = qualifier.Substring(1).Split('/');
 
-			var component = tokens[0].Trim();
-			var script = tokens[1].Trim();
+		//	var component = tokens[0].Trim();
+		//	var script = tokens[1].Trim();
 
-			if (!(Connection.GetService<IComponentService>().SelectConfiguration(component.AsGuid()) is ISourceCodeContainer container))
-				throw new RuntimeException(SR.ErrSourceCodeContainerExected);
+		//	if (!(Connection.GetService<IComponentService>().SelectConfiguration(component.AsGuid()) is ISourceCodeContainer container))
+		//		throw new RuntimeException(SR.ErrSourceCodeContainerExected);
 
-			var text = container.GetReference(script);
-			var content = Connection.GetService<IComponentService>().SelectText(MicroService, text);
+		//	var text = container.GetReference(script);
+		//	var content = Connection.GetService<IComponentService>().SelectText(MicroService, text);
 
-			return new MemoryStream(Encoding.UTF8.GetBytes(content));
-		}
+		//	return new MemoryStream(Encoding.UTF8.GetBytes(content));
+		//}
 
 		public override string ResolveReference(string path, string baseFilePath)
 		{
-			if (path.EndsWith(".csx"))
-			{
-				return path.Substring(0, path.Length - 4);
-			}
+			var extension = Path.GetExtension(path);
+
+			if (string.IsNullOrWhiteSpace(extension))
+				return string.Format("{0}.csx", path);
 
 			return path;
 		}

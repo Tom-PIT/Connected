@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
@@ -23,10 +24,10 @@ namespace TomPIT.Analysis
 			if (config == null)
 				return null;
 
-			return Find(config, id, new ListItems<object>());
+			return Find(config, id, new List<object>());
 		}
 
-		private IElement Find(object instance, Guid id, ListItems<object> referenceTrail)
+		private IElement Find(object instance, Guid id, List<object> referenceTrail)
 		{
 			if (instance == null)
 				return null;

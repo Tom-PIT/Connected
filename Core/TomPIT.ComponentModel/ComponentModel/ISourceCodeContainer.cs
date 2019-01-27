@@ -2,7 +2,7 @@
 
 namespace TomPIT.ComponentModel
 {
-	public interface ISourceCodeContainer
+	public interface ISourceCodeContainer : IElement
 	{
 		List<string> References(IPartialSourceCode sender);
 
