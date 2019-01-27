@@ -151,6 +151,7 @@ namespace TomPIT.Designers
 			var component = Connection.GetService<IComponentService>().SelectComponent(Content.Configuration().Component);
 
 			return new CodeLensArgs(component,
+				Content,
 				ArgumentType,
 				data.Optional("content", string.Empty));
 		}
@@ -160,6 +161,7 @@ namespace TomPIT.Designers
 			var component = Connection.GetService<IComponentService>().SelectComponent(Content.Configuration().Component);
 
 			return new CodeStateArgs(component,
+				Content,
 				ArgumentType,
 				data.Optional("content", string.Empty),
 				data.Optional("position", 0),

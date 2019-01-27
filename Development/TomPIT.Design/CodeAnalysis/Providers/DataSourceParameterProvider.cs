@@ -1,8 +1,8 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Design.Services;
@@ -12,7 +12,6 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 {
 	internal class DataSourceParameterProvider : CodeAnalysisProvider, ICodeAnalysisProvider
 	{
-		private SourceText _sourceCode = null;
 		private Guid _microService = Guid.Empty;
 
 		public DataSourceParameterProvider(IExecutionContext context) : base(context)
@@ -93,6 +92,105 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 				return null;
 
 			return r;
+		}
+
+		public override List<ICodeAnalysisResult> ProvideSnippets(IExecutionContext context, CodeAnalysisArgs e)
+		{
+			ArgumentListSyntax list = null;
+
+			if (e.Node is ArgumentSyntax a)
+				list = GetArgumentList(a);
+			else if (e.Node is ArgumentListSyntax)
+				list = e.Node as ArgumentListSyntax;
+
+			if (list == null)
+				return null;
+
+			if (!(list.Parent is InvocationExpressionSyntax invoke))
+				return null;
+
+			if (invoke.ArgumentList.Arguments.Count < 1)
+				return null;
+
+			var method = GetMethodInfo(e.Model, list);
+
+			if (method == null)
+				return null;
+
+			var parameters = method.GetParameters();
+			var parameterIndex = -1;
+
+			for (var i = 0; i < parameters.Length; i++)
+			{
+				if (string.Compare(parameters[i].Name, "dataSource", true) == 0)
+				{
+					parameterIndex = i;
+					break;
+				}
+			}
+
+			if (parameterIndex == -1)
+				return null;
+
+			var tName = invoke.ArgumentList.Arguments[parameterIndex].GetText().ToString().Trim().Trim('"');
+
+			if (string.IsNullOrWhiteSpace(tName))
+				return null;
+
+			var tr = context.Connection().GetService<IComponentService>().SelectComponent(context.MicroService(), "DataSource", tName);
+
+			if (tr == null)
+				return null;
+
+			var config = context.Connection().GetService<IComponentService>().SelectConfiguration(tr.Token) as IDataSource;
+
+			if (config == null || config.Parameters.Count == 0)
+				return null;
+
+			var r = new List<ICodeAnalysisResult>
+			{
+				AllParametersSnippet(config),
+				RequiredParametersSnippet(config)
+			};
+
+			return r;
+		}
+
+		private CodeAnalysisResult AllParametersSnippet(IDataSource config)
+		{
+			var sb = new StringBuilder();
+
+			sb.AppendLine("new JObject{");
+
+			foreach (var i in config.Parameters.OrderBy(f => f.Name))
+			{
+				if (i is IReturnValueParameter)
+					continue;
+
+				sb.AppendLine(string.Format("\t{{\"{0}\", /*{1}*/}},", i.Name, Types.ToType(i.DataType).ShortName()));
+			}
+
+			return new CodeAnalysisResult("ap", string.Format("{0}}}", RemoveTrailingComma(sb)), "Insert all data source parameters");
+		}
+
+		private CodeAnalysisResult RequiredParametersSnippet(IDataSource config)
+		{
+			var sb = new StringBuilder();
+
+			sb.AppendLine("new JObject{");
+
+			foreach (var i in config.Parameters.OrderBy(f => f.Name))
+			{
+				if (i is IReturnValueParameter || i.IsNullable)
+					continue;
+
+				sb.AppendLine(string.Format("\t{{\"{0}\", /*{1}*/}},", i.Name, Types.ToType(i.DataType).ShortName()));
+			}
+
+			sb.Append("}");
+
+			return new CodeAnalysisResult("rp", string.Format("{0}}}", RemoveTrailingComma(sb)), "Insert required data source parameters");
+
 		}
 	}
 }

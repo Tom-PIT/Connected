@@ -4,17 +4,14 @@ using TomPIT.Security;
 
 namespace TomPIT.Services.Context
 {
-	internal class ContextIdentityService : IContextIdentityService
+	internal class ContextIdentityService : ContextClient, IContextIdentityService
 	{
 		private IUser _user = null;
 		private string _jwToken = string.Empty;
 
-		public ContextIdentityService(IExecutionContext context)
+		public ContextIdentityService(IExecutionContext context) : base(context)
 		{
-			Context = context;
 		}
-
-		private IExecutionContext Context { get; }
 
 		public bool IsAuthenticated
 		{

@@ -5,7 +5,7 @@ namespace TomPIT.Design.Services
 {
 	public class CodeStateArgs : EventArgs, IAnalysisArgs
 	{
-		public CodeStateArgs(IComponent component, Type argumentsType, string text, int position, string triggerCharacter, string triggerKind)
+		public CodeStateArgs(IComponent component, IText configuration, Type argumentsType, string text, int position, string triggerCharacter, string triggerKind)
 		{
 			Text = text;
 			Position = position;
@@ -13,8 +13,10 @@ namespace TomPIT.Design.Services
 			TriggerKind = triggerKind;
 			ArgumentsType = argumentsType;
 			Component = component;
+			Configuration = configuration;
 		}
 
+		public IText Configuration { get; }
 		public IComponent Component { get; }
 		public int Position { get; }
 		public string Text { get; }

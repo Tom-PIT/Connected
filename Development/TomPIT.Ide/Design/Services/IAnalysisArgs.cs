@@ -8,5 +8,6 @@ namespace TomPIT.Design.Services
 		Type ArgumentsType { get; }
 		string Text { get; }
 		IComponent Component { get; }
+		IText Configuration { get; }
 	}
 }

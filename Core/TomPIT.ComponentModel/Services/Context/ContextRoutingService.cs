@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Net;
+using TomPIT.Data;
 using TomPIT.Environment;
+using TomPIT.Routing;
 using TomPIT.Security;
 using TomPIT.Storage;
 
@@ -121,6 +125,27 @@ namespace TomPIT.Services.Context
 				throw new RuntimeException(SR.ErrNoAppServer);
 
 			return string.Format("{0}/{1}", appUrl, route);
+		}
+
+		public string GenerateUrl(string text, string primaryKey, JArray existing, string displayProperty, string primaryKeyProperty)
+		{
+			var items = new List<IUrlRecord>();
+
+			foreach (JObject i in existing)
+			{
+				var display = i.Property(displayProperty, StringComparison.OrdinalIgnoreCase);
+				var pk = i.Property(primaryKeyProperty, StringComparison.OrdinalIgnoreCase);
+
+				if (display == null || pk == null)
+					continue;
+
+				var txt = display.Value<string>();
+				var id = pk.Value<string>();
+
+				items.Add(new UrlRecord(id, txt));
+			}
+
+			return UrlGenerator.GenerateUrl(primaryKey, text, items);
 		}
 	}
 }

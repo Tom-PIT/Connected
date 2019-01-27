@@ -6,10 +6,11 @@ using Microsoft.CodeAnalysis.Text;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using TomPIT.Annotations;
+using TomPIT.ComponentModel;
 using TomPIT.Services;
 
 namespace TomPIT.Design.Services
@@ -17,9 +18,11 @@ namespace TomPIT.Design.Services
 	internal class CompilerSuggestionsContext : Analyzer<CodeStateArgs>
 	{
 		private List<ISuggestion> _suggestions = null;
+		private SourceText _sourceText = null;
 
 		public CompilerSuggestionsContext(IExecutionContext context, CodeStateArgs e) : base(context, e)
 		{
+
 		}
 
 
@@ -34,6 +37,50 @@ namespace TomPIT.Design.Services
 			}
 		}
 
+		public override SourceText SourceCode
+		{
+			get
+			{
+				if (_sourceText == null)
+				{
+					if (Args.Configuration is IPartialSourceCode ps)
+					{
+						var container = ps.Closest<ISourceCodeContainer>();
+
+						if (container != null)
+						{
+							var refs = container.References(ps);
+
+							if (refs.Count > 0)
+							{
+								var sb = new StringBuilder();
+
+								foreach (var i in refs)
+								{
+									var r1 = container.GetReference(i);
+									var txt = Context.Connection().GetService<IComponentService>().SelectText(MicroService, r1);
+
+									if (string.IsNullOrWhiteSpace(txt))
+										continue;
+
+									sb.AppendLine();
+									sb.Append(txt);
+								}
+
+								if (sb.Length > 0)
+									_sourceText = SourceText.From(string.Format("{0}{1}", Args.Text, sb.ToString()));
+							}
+						}
+					}
+
+					if (_sourceText == null)
+						return SourceText.From(Args.Text);
+				}
+
+				return _sourceText;
+			}
+		}
+
 		private List<ISuggestion> CreateSuggestions()
 		{
 			var results = Task.Run(async () =>
@@ -42,9 +89,10 @@ namespace TomPIT.Design.Services
 			}).Result;
 
 			var sm = Task.Run(async () => { return await Document.GetSemanticModelAsync(); }).Result;
+			var span = Completion.GetDefaultCompletionListSpan(SourceCode, Args.Position);
 
 			if (results == null)
-				return SuggestContent(Document, sm, Completion.GetDefaultCompletionListSpan(SourceCode, Args.Position));
+				return WithSnippets(SuggestContent(Document, sm, span), sm, span);
 
 			var ti = sm.GetTypeInfo(sm.SyntaxTree.GetRoot().FindNode(results.Span));
 
@@ -53,15 +101,19 @@ namespace TomPIT.Design.Services
 
 			foreach (var i in results.Items)
 			{
-				var description = Task.Run(async () => { return await Completion.GetDescriptionAsync(Document, i); }).Result;
+				CompletionDescription description = null;
+				var kind = ResolveKind(i);
+
+				if (results.Items.Length < 50 || Suggestion.SupportsDescription(kind))
+					description = Task.Run(async () => { return await Completion.GetDescriptionAsync(Document, i); }).Result;
 
 				var s = new Suggestion
 				{
 					Description = description == null ? string.Empty : description.Text,
 					InsertText = i.DisplayText,
 					Kind = ResolveKind(i),
-					FilterText=i.FilterText,
-					SortText=i.SortText,
+					FilterText = i.FilterText,
+					SortText = i.SortText,
 					Label = i.DisplayText
 				};
 
@@ -74,61 +126,96 @@ namespace TomPIT.Design.Services
 				r.Add(s);
 			}
 
-			return r;
+			return WithSnippets(r, sm, span);
+		}
+
+		private List<ISuggestion> WithSnippets(List<ISuggestion> items, SemanticModel model, TextSpan span)
+		{
+			var node = model.SyntaxTree.GetRoot().FindNode(span);
+
+			var list = node as ArgumentListSyntax;
+
+			if (list == null)
+			{
+				if (node is ArgumentSyntax arg)
+					list = GetArgumentList(arg);
+			}
+
+			if (list == null)
+				return items;
+
+			var si = GetInvocationSymbolInfo(model, list);
+			var mi = GetMethodInfo(model, list);
+
+			if (mi == null)
+				return items;
+
+			var activeParameter = 0;
+
+			foreach (var i in list.Arguments)
+			{
+				if (i.Span.End < Args.Position)
+					activeParameter++;
+				else
+					break;
+			}
+
+			var pars = mi.GetParameters();
+
+			if (activeParameter >= pars.Length)
+				return items;
+
+			var att = pars[activeParameter].GetCustomAttribute<CodeAnalysisProviderAttribute>();
+
+			if (att == null)
+				return items;
+
+			var provider = att.Type == null
+				? Type.GetType(att.TypeName).CreateInstance<ICodeAnalysisProvider>(new object[] { Context })
+				: att.Type.CreateInstance<ICodeAnalysisProvider>(new object[] { Context });
+
+			if (provider == null)
+				return items;
+
+			var text = string.Empty;// ParseExpressionText(list.Expression);
+			var snippets = provider.ProvideSnippets(Context, new CodeAnalysisArgs(Args.Component, model, node, si, text));
+
+			if (snippets != null && snippets.Count > 0)
+			{
+				if (items == null)
+					items = new List<ISuggestion>();
+
+				foreach (var i in snippets)
+				{
+					items.Add(new Suggestion
+					{
+						Description = i.Description,
+						FilterText = i.Text,
+						InsertText = i.Value,
+						Kind = Suggestion.Snippet,
+						Label = i.Text,
+						SortText = i.Text
+					});
+				}
+			}
+
+			return items;
 		}
 
 		private List<ISuggestion> SuggestContent(Document doc, SemanticModel model, TextSpan span)
 		{
-			var sm = Task.Run(async () => { return await doc.GetSemanticModelAsync(); }).Result;
-			var node = sm.SyntaxTree.GetRoot().FindNode(span);
+			var node = model.SyntaxTree.GetRoot().FindNode(span);
 
 			if (!(node is ArgumentSyntax args))
 				return SuggestComplexInitializer(doc, model, span, node);
 
-			if (!(args.Parent is ArgumentListSyntax list))
-				return null;
-
-			if (!(list.Parent is InvocationExpressionSyntax invoke))
-				return null;
-
-			var si = sm.GetSymbolInfo(invoke);
-
-			if (si.Symbol == null && si.CandidateSymbols.Length == 0)
-				return null;
-
-			IMethodSymbol ms = si.Symbol == null
-				? si.CandidateSymbols[0] as IMethodSymbol
-				: si.Symbol as IMethodSymbol;
-
-			if (ms == null)
-				return null;
-
-
-			var declaringTypeName = string.Format(
-				"{0}.{1}, {2}",
-				ms.ContainingType.ContainingNamespace.ToString(),
-				ms.ContainingType.Name,
-				ms.ContainingAssembly.Name
-			);
-
-			var type = Type.GetType(declaringTypeName);
-
-			if (type == null)
-				return null;
-
-			var methodName = ms.Name;
-			var methodArgumentTypeNames = ms.Parameters.Select(f => string.Format("{0}.{1}, {2}", f.Type.ContainingNamespace.ToString(), f.Type.Name, f.Type.ContainingAssembly.Name));
-			var argumentTypes = methodArgumentTypeNames.Select(typeName => Type.GetType(typeName));
-
-			if (argumentTypes.Count() > 0 && argumentTypes.Contains(null))
-				return null;
-
-			var methodInfo = Type.GetType(declaringTypeName).GetMethod(methodName, ms.TypeParameters == null ? 0 : ms.TypeParameters.Length, argumentTypes.ToArray());
+			var si = GetInvocationSymbolInfo(model, GetArgumentList(args));
+			var methodInfo = GetMethodInfo(model, GetArgumentList(args));
 
 			if (methodInfo == null)
 				return null;
 
-			int index = list.Arguments.IndexOf(args);
+			int index = GetArgumentList(args).Arguments.IndexOf(args);
 
 			var pars = methodInfo.GetParameters();
 
@@ -148,7 +235,7 @@ namespace TomPIT.Design.Services
 				return null;
 
 			var text = ParseExpressionText(args.Expression);
-			var items = provider.ProvideLiterals(Context, new CodeAnalysisArgs(Args.Component, sm, node, si, text));
+			var items = provider.ProvideLiterals(Context, new CodeAnalysisArgs(Args.Component, model, node, si, text));
 
 			if (items == null)
 				return new List<ISuggestion>();
@@ -168,6 +255,7 @@ namespace TomPIT.Design.Services
 
 			return r;
 		}
+
 
 		private List<ISuggestion> SuggestComplexInitializer(Document doc, SemanticModel model, TextSpan span, SyntaxNode node)
 		{

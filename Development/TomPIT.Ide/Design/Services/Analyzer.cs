@@ -1,8 +1,6 @@
 ﻿using Microsoft.CodeAnalysis.Text;
 using System;
 using TomPIT.Compilation;
-using TomPIT.Compilers;
-using TomPIT.Runtime;
 using TomPIT.Services;
 
 namespace TomPIT.Design.Services
@@ -35,7 +33,37 @@ namespace TomPIT.Design.Services
 			get
 			{
 				if (_source == null)
+				{
+					//if (Args.Configuration is IPartialSourceCode)
+					//{
+					//	var container = Args.Configuration.Closest<ISourceCodeContainer>();
+
+					//	if (container != null)
+					//	{
+					//		var refs = container.References(Args.Configuration as IPartialSourceCode);
+
+					//		if (refs != null && refs.Count > 0)
+					//		{
+					//			var sb = new StringBuilder();
+
+					//			//sb.AppendLine();
+
+					//			foreach (var i in refs)
+					//			{
+					//				if (!string.IsNullOrWhiteSpace(i))
+					//					sb.AppendFormat("#load \"${0}/{1}\"", Args.Component.Token, i);
+					//			}
+
+					//			sb.AppendLine();
+
+					//			_source = SourceText.From(string.Format("{0}{1}", sb.ToString(), Args.Text));
+					//		}
+					//	}
+					//}
+
+					//if (_source == null)
 					_source = SourceText.From(Args.Text);
+				}
 
 				return _source;
 			}

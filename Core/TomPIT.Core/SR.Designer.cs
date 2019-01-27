@@ -1393,6 +1393,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Source code container expected.
+        /// </summary>
+        public static string ErrSourceCodeContainerExected {
+            get {
+                return ResourceManager.GetString("ErrSourceCodeContainerExected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specified storage provider not registered.
         /// </summary>
         public static string ErrStorageProviderNotRegistered {

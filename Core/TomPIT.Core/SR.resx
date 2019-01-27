@@ -789,4 +789,7 @@
   <data name="ErrPackageNotFound" xml:space="preserve">
     <value>Package not found.</value>
   </data>
+  <data name="ErrSourceCodeContainerExected" xml:space="preserve">
+    <value>Source code container expected</value>
+  </data>
 </root>

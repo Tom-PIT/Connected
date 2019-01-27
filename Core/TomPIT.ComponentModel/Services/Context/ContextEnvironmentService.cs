@@ -4,14 +4,11 @@ using TomPIT.Environment;
 
 namespace TomPIT.Services.Context
 {
-	internal class ContextEnvironmentService : IContextEnvironmentService
+	internal class ContextEnvironmentService : ContextClient, IContextEnvironmentService
 	{
-		public ContextEnvironmentService(IExecutionContext context)
+		public ContextEnvironmentService(IExecutionContext context) : base(context)
 		{
-			Context = context;
 		}
-
-		private IExecutionContext Context { get; }
 
 		public List<IEnvironmentUnit> Query()
 		{

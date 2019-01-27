@@ -36,7 +36,10 @@ namespace TomPIT.Design.Services
 				"System.Collections.Generic",
 				"Newtonsoft.Json",
 				"Newtonsoft.Json.Linq",
-				"TomPIT"
+				"TomPIT",
+				"TomPIT.Services",
+				"TomPIT.ComponentModel",
+				"TomPIT.ComponentModel.Apis"
 		};
 
 		public AnalyzerBase(IExecutionContext context)
@@ -198,20 +201,23 @@ namespace TomPIT.Design.Services
 			}
 		}
 
-		protected SymbolInfo GetInvocationSymbolInfo(SemanticModel model, ArgumentSyntax syntax)
+		protected SymbolInfo GetInvocationSymbolInfo(SemanticModel model, ArgumentListSyntax syntax)
 		{
-			var list = GetArgumentList(syntax);
-
-			if (list == null)
+			if (syntax == null)
 				return new SymbolInfo();
 
-			if (!(list.Parent is InvocationExpressionSyntax invoke))
+			if (!(syntax.Parent is InvocationExpressionSyntax invoke))
 				return new SymbolInfo();
 
 			return model.GetSymbolInfo(invoke);
 		}
 
-		protected IMethodSymbol GetMethodSymbol(SemanticModel model, ArgumentSyntax syntax)
+		protected SymbolInfo GetInvocationSymbolInfo(SemanticModel model, ArgumentSyntax syntax)
+		{
+			return GetInvocationSymbolInfo(model, syntax.Parent as ArgumentListSyntax);
+		}
+
+		protected IMethodSymbol GetMethodSymbol(SemanticModel model, ArgumentListSyntax syntax)
 		{
 			var si = GetInvocationSymbolInfo(model, syntax);
 
@@ -223,12 +229,17 @@ namespace TomPIT.Design.Services
 				: si.Symbol as IMethodSymbol;
 		}
 
+		protected IMethodSymbol GetMethodSymbol(SemanticModel model, ArgumentSyntax syntax)
+		{
+			return GetMethodSymbol(model, syntax.Parent as ArgumentListSyntax);
+		}
+
 		protected ArgumentListSyntax GetArgumentList(ArgumentSyntax syntax)
 		{
 			return syntax.Parent as ArgumentListSyntax;
 		}
 
-		protected MethodInfo GetMethodInfo(SemanticModel model, ArgumentSyntax syntax)
+		protected MethodInfo GetMethodInfo(SemanticModel model, ArgumentListSyntax syntax)
 		{
 			var ms = GetMethodSymbol(model, syntax);
 
@@ -270,6 +281,11 @@ namespace TomPIT.Design.Services
 			return Type.GetType(declaringTypeName).GetMethod(methodName, ms.TypeParameters == null ? 0 : ms.TypeParameters.Length, argumentTypes.ToArray());
 		}
 
+		protected MethodInfo GetMethodInfo(SemanticModel model, ArgumentSyntax syntax)
+		{
+			return GetMethodInfo(model, GetArgumentList(syntax));
+		}
+
 		protected ICodeAnalysisProvider GetProvider(ParameterInfo parameter)
 		{
 			var att = parameter.GetCustomAttribute<CodeAnalysisProviderAttribute>();
@@ -302,6 +318,27 @@ namespace TomPIT.Design.Services
 		protected string ParseExpressionText(ExpressionSyntax expression)
 		{
 			return expression.ToString().Trim('"');
+		}
+
+		protected IdentifierNameSyntax GetIdentiferName(InvocationExpressionSyntax syntax)
+		{
+			if (syntax == null)
+				return null;
+
+			var current = syntax.Expression;
+
+			while (current != null)
+			{
+				if (current is IdentifierNameSyntax idn)
+					return idn;
+
+				if (current is MemberAccessExpressionSyntax ma)
+					current = ma.Expression;
+				else
+					break;
+			}
+
+			return null;
 		}
 	}
 }

@@ -34,6 +34,19 @@ namespace TomPIT.Design.Services
 
 		private List<string> _commitCharacters = null;
 
+		public static bool SupportsDescription(int kind)
+		{
+			return kind == Constant
+				|| kind == Field
+				|| kind == Keyword
+				|| kind == Property
+				|| kind == Reference
+				|| kind == Snippet
+				|| kind == Text
+				|| kind == Value
+				|| kind == Variable;
+		}
+
 		[JsonProperty(PropertyName = "label")]
 		public string Label { get; set; }
 		[JsonProperty(PropertyName = "kind")]

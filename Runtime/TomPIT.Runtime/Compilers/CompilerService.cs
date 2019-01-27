@@ -30,7 +30,10 @@ namespace TomPIT.Compilers
 				"System.Collections.Generic",
 				"Newtonsoft.Json",
 				"Newtonsoft.Json.Linq",
-				"TomPIT"
+				"TomPIT",
+				"TomPIT.Services",
+				"TomPIT.ComponentModel",
+				"TomPIT.ComponentModel.Apis"
 		};
 
 		public CompilerService(ISysConnection connection) : base(connection, "script")
@@ -174,6 +177,36 @@ namespace TomPIT.Compilers
 			var r = new ScriptDescriptor();
 
 			var code = Connection.GetService<IComponentService>().SelectText(microService, d);
+
+			if (d is IPartialSourceCode ps)
+			{
+				var container = d.Closest<ISourceCodeContainer>();
+
+				if (container != null)
+				{
+					var refs = container.References(ps);
+
+					if (refs != null)
+					{
+						var sb = new StringBuilder();
+
+						foreach (var i in refs)
+						{
+							var txt = container.GetReference(i);
+							var sc = Connection.GetService<IComponentService>().SelectText(microService, txt);
+
+							if (!string.IsNullOrWhiteSpace(sc))
+							{
+								sb.AppendLine();
+								sb.Append(sc);
+							}
+						}
+
+						if (sb.Length > 0)
+							code = string.Format("{0}{1}", code, sb.ToString());
+					}
+				}
+			}
 
 			if (string.IsNullOrWhiteSpace(code))
 				return null;

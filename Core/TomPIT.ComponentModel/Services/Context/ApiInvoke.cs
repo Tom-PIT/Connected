@@ -9,7 +9,7 @@ using TomPIT.Exceptions;
 
 namespace TomPIT.Services.Context
 {
-	public class ApiInvoke : ContextService
+	public class ApiInvoke : ContextClient
 	{
 		public ApiInvoke(IExecutionContext context) : base(context)
 		{
@@ -159,6 +159,25 @@ namespace TomPIT.Services.Context
 
 				Context.Connection().GetService<Diagnostics.ILoggingService>().Write(le);
 			}
+		}
+
+		private IApi GetApi(Guid microService, string api, bool explicitIdentifier)
+		{
+			var component = Context.Connection().GetService<IComponentService>().SelectComponent(microService, "Api", api);
+
+			if (component == null)
+			{
+				if (!explicitIdentifier)
+					component = Context.Connection().GetService<IComponentService>().SelectComponent("Api", api);
+
+				if (component == null)
+					throw ExecutionException.Create(Context, string.Format("{0} ({1})", SR.ErrComponentNotFound, api), CreateDescriptor(ExecutionEvents.DataRead, ExecutionContextState.Api, null, null, microService));
+			}
+
+			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(component.Token) is IApi config))
+				throw ExecutionException.Create(Context, string.Format("{0} ({1})", SR.ErrComponentCorrupted, api), CreateDescriptor(ExecutionEvents.DataRead, ExecutionContextState.Api, null, null, microService));
+
+			return config;
 		}
 	}
 }

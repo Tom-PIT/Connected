@@ -61,6 +61,9 @@ namespace TomPIT.Compilers
 
 		public override Stream OpenRead(string resolvedPath)
 		{
+			if (resolvedPath.StartsWith("$"))
+				return LoadInternalScript(resolvedPath);
+
 			var tokens = resolvedPath.Trim('/').Split('/');
 			var lib = tokens[0];
 			IMicroService ms = null;
@@ -70,19 +73,13 @@ namespace TomPIT.Compilers
 				ms = Connection.GetService<IMicroServiceService>().Select(tokens[0]);
 
 				if (ms == null)
-				{
 					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, tokens[0]));
-				}
 
 				lib = tokens[1];
 			}
 
-			var c = Connection.GetService<IComponentService>().SelectConfiguration(ms == null ? MicroService : ms.Token, "Library", lib) as ILibrary;
-
-			if (c == null)
-			{
+			if (!(Connection.GetService<IComponentService>().SelectConfiguration(ms == null ? MicroService : ms.Token, "Library", lib) is ILibrary c))
 				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrComponentNotFound, lib));
-			}
 
 			var sb = new StringBuilder();
 
@@ -91,12 +88,26 @@ namespace TomPIT.Compilers
 				var content = Connection.GetService<IComponentService>().SelectText(c.MicroService(Connection), i);
 
 				if (!string.IsNullOrWhiteSpace(content))
-				{
 					sb.AppendLine(content);
-				}
 			}
 
 			return new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
+		}
+
+		private Stream LoadInternalScript(string qualifier)
+		{
+			var tokens = qualifier.Substring(1).Split('/');
+
+			var component = tokens[0].Trim();
+			var script = tokens[1].Trim();
+
+			if (!(Connection.GetService<IComponentService>().SelectConfiguration(component.AsGuid()) is ISourceCodeContainer container))
+				throw new RuntimeException(SR.ErrSourceCodeContainerExected);
+
+			var text = container.GetReference(script);
+			var content = Connection.GetService<IComponentService>().SelectText(MicroService, text);
+
+			return new MemoryStream(Encoding.UTF8.GetBytes(content));
 		}
 
 		public override string ResolveReference(string path, string baseFilePath)

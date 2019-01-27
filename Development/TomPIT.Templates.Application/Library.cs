@@ -1,9 +1,11 @@
-﻿using TomPIT.Annotations;
+﻿using System.Collections.Generic;
+using System.Linq;
+using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 
 namespace TomPIT.Application
 {
-	public class Library : ComponentConfiguration, ILibrary
+	public class Library : ComponentConfiguration, ILibrary, ISourceCodeContainer
 	{
 		public const string ComponentCategory = "Library";
 
@@ -19,6 +21,32 @@ namespace TomPIT.Application
 
 				return _scripts;
 			}
+		}
+
+		public IText GetReference(string name)
+		{
+			foreach(CSharpScript i in Scripts)
+			{
+				if (string.Compare(i.Name, name, true) == 0)
+					return i;
+			}
+
+			return null;
+		}
+
+		public List<string> References(IPartialSourceCode sender)
+		{
+			var r = new List<string>();
+
+			foreach (var i in Scripts)
+			{
+				if (i == sender)
+					continue;
+
+				r.Add(((CSharpScript)i).Name);
+			}
+
+			return r;
 		}
 	}
 }

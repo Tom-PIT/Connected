@@ -2,14 +2,11 @@
 
 namespace TomPIT.Services.Context
 {
-	internal class ContextLoggingService : IContextLoggingService
+	internal class ContextLoggingService : ContextClient, IContextLoggingService
 	{
-		public ContextLoggingService(IExecutionContext context)
+		public ContextLoggingService(IExecutionContext context) : base(context)
 		{
-			Context = context;
 		}
-
-		private IExecutionContext Context { get; }
 
 		public void Console(string message)
 		{

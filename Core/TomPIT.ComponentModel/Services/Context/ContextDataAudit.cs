@@ -4,14 +4,11 @@ using TomPIT.Data;
 
 namespace TomPIT.Services.Context
 {
-	internal class ContextDataAudit : IContextDataAudit
+	internal class ContextDataAudit : ContextClient, IContextDataAudit
 	{
-		public ContextDataAudit(IExecutionContext context)
+		public ContextDataAudit(IExecutionContext context) : base(context)
 		{
-			Context = context;
 		}
-
-		private IExecutionContext Context { get; }
 
 		public void Insert(string category, string @event, string primaryKey, string property, string value, string description)
 		{

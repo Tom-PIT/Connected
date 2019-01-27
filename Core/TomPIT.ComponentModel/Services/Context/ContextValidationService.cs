@@ -6,14 +6,11 @@ using System.Net.Mail;
 
 namespace TomPIT.Services.Context
 {
-	internal class ContextValidationService : IContextValidationService
+	internal class ContextValidationService : ContextClient, IContextValidationService
 	{
-		public ContextValidationService(IExecutionContext context)
+		public ContextValidationService(IExecutionContext context) : base(context)
 		{
-			Context = context;
 		}
-
-		private IExecutionContext Context { get; }
 
 		public void Email(string attribute, string value)
 		{
@@ -21,7 +18,7 @@ namespace TomPIT.Services.Context
 			{
 				new MailAddress(value);
 			}
-			catch (FormatException )
+			catch (FormatException)
 			{
 				throw new RuntimeException(SR.SourceValidation, SR.ValEmailFormat);
 			}

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using System;
 using TomPIT.Environment;
 
@@ -16,5 +17,7 @@ namespace TomPIT.Services.Context
 		void Forbidden();
 		void Redirect(string url);
 		void BadRequest();
+
+		string GenerateUrl(string primaryKey, string text, JArray existing, string displayProperty, string primaryKeyProperty);
 	}
 }

@@ -13,9 +13,21 @@ namespace TomPIT.Services
 		private IContextCachingService _cache = null;
 		private IContextValidationService _validation = null;
 		private IContextEnvironmentService _environment = null;
+		private IContextStorageService _storage = null;
 
 		public ContextServices(IExecutionContext context) : base(context)
 		{
+		}
+
+		public IContextStorageService Storage
+		{
+			get
+			{
+				if (_storage == null)
+					_storage = new ContextStorageService(Context);
+
+				return _storage;
+			}
 		}
 
 		public IContextEnvironmentService Environment

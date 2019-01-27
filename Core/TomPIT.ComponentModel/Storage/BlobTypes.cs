@@ -9,5 +9,6 @@
 		public const int Package = 5;
 		public const int Avatar = 11;
 		public const int HtmlImage = 21;
+		public const int UserContent = 1001;
 	}
 }
