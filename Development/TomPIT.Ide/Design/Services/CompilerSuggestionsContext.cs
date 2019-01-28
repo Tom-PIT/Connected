@@ -31,7 +31,23 @@ namespace TomPIT.Design.Services
 			get
 			{
 				if (_suggestions == null)
+				{
 					_suggestions = CreateSuggestions();
+
+					if (_suggestions == null || _suggestions.Count == 0)
+					{
+						_suggestions = new List<ISuggestion>
+						{
+							new Suggestion
+							{
+								InsertText=string.Empty,
+								FilterText=string.Empty,
+								Label="no suggestions",
+								Kind=Suggestion.Text
+							}
+						};
+					}
+				}
 
 				return _suggestions;
 			}

@@ -127,7 +127,7 @@ namespace TomPIT.Services.Context
 			return string.Format("{0}/{1}", appUrl, route);
 		}
 
-		public string GenerateUrl(string text, string primaryKey, JArray existing, string displayProperty, string primaryKeyProperty)
+		public string GenerateUrl(string primaryKey, string text, JArray existing, string displayProperty, string primaryKeyProperty)
 		{
 			var items = new List<IUrlRecord>();
 

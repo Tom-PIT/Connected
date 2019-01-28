@@ -28,7 +28,7 @@ namespace TomPIT.Services.Context
 
 		public Guid Upload(StoragePolicy policy, string fileName, string contentType, string primaryKey, byte[] content, string topic)
 		{
-			return Upload(policy, fileName, contentType, primaryKey, content, topic);
+			return Upload(policy, fileName, contentType, primaryKey, content, topic, Guid.Empty);
 		}
 
 		public Guid Upload(StoragePolicy policy, string fileName, string contentType, string primaryKey, byte[] content, string topic, Guid draft)

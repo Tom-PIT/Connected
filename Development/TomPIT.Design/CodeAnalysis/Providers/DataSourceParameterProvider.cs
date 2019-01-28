@@ -58,6 +58,20 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			if (r.Count > 0)
 				return r;
 
+			if (config.Parameters.Count == 0)
+			{
+				r.Add(new NoSuggestionResult("data source has no parameters"));
+
+				return r;
+			}
+			else if (config.Parameters.Count > 0)
+			{
+				r.Add(new NoSuggestionResult("all parameters set"));
+
+				return r;
+			}
+
+
 			return null;
 		}
 

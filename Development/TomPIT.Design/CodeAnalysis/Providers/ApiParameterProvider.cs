@@ -98,7 +98,23 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 				var p = pars[i];
 
 				if (existing != null && existing.Contains(p.Value.ToLowerInvariant()))
-					parameters.RemoveAt(i);
+					pars.RemoveAt(i);
+			}
+
+			if (pars.Count == 0)
+			{
+				if (parameters.Count == 0)
+				{
+					r.Add(new NoSuggestionResult("api has no parameters"));
+
+					return r;
+				}
+				else if (parameters.Count > 0)
+				{
+					r.Add(new NoSuggestionResult("all parameters set"));
+
+					return r;
+				}
 			}
 
 			return pars;
@@ -311,9 +327,6 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
 			foreach (var i in config.OrderBy(f => f.Name))
 				sb.AppendLine(string.Format("\t{{\"{0}\", /*{1}*/}},", i.Name, i.DataType));
-
-			if (config.Count > 0)
-				sb.Remove(sb.Length - 1, 1);
 
 			return new CodeAnalysisResult("ap", string.Format("{0}}}", RemoveTrailingComma(sb)), "Insert all api parameters");
 		}
