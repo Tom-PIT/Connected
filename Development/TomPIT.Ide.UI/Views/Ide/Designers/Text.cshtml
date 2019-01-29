@@ -2,7 +2,7 @@
 
 @model TomPIT.Designers.TextDesigner
 
-@Html.Partial("~/Views/Ide/Designers/Signature.cshtml", Model.Signature)
+@await Html.PartialAsync("~/Views/Ide/Designers/Signature.cshtml", Model.Signature)
 
 <div class="template-toolbar btn-toolbar justify-content-between">
 
@@ -23,6 +23,35 @@
 
 <div id="designEditor" class="text-editor text-editor-sa" data-fullscreen="true"></div>
 
+@if (Model.CompletionProvider != null)
+{
+	<div class="modal fade" tabindex="-1" role="dialog" id="modalStronglyTyped">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Create Strongly Typed Entity</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div id="listDataSources"></div>
+					<hr />
+					<div class="form-group">
+						<div id="checkDirectBinding"></div>
+					</div>
+					<div class="form-group">
+						<div id="checkReadOnly"></div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" id="btnCreateStronglyTyped">Create</button>
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+}
 <script>
         @{
             var lines = string.IsNullOrWhiteSpace(Model.Text) ? new string[0] : Model.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
@@ -129,6 +158,38 @@
                     ide.newWindow(e.microService, e.component, e.element);
             });
 
+			  textEditor.addAction({
+					id: 'strogly_type',
+					label: 'Create Strongly Typed Entity',
+
+					keybindings: [
+						monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_T)
+					],
+
+					precondition: null,
+					keybindingContext: null,
+					contextMenuGroupId: 'navigation',
+					contextMenuOrder: 1.5,
+
+				  run: function (ed) {
+					  $('#modalStronglyTyped').modal('show');
+
+					  ide.designerAction({
+						  data: {
+							  'action':'dataSources'
+						  },
+						  onComplete: function (data) {
+							  var list = $('#listDataSources').dxList('instance');
+
+							  list.beginUpdate();
+							  list.option('dataSource', data);
+							  list.endUpdate();
+						  }
+					  });
+						return null;
+					}
+			  });
+
             textEditor.registerCodeLensProvider('@Model.Language', {
                 provideCodeLenses: function (model, token) {
                     saveSourceCode();
@@ -157,16 +218,70 @@
                     return codeLens;
                 }
             });
-        }
+
+			  $('#listDataSources').dxList({
+				  displayExpr: 'text',
+				  valueExpr: 'value',
+				  noDataText: 'no data sources found in this microservice',
+				  height: '250px',
+				  searchEnabled: true,
+				  searchExpr: 'text',
+				  selectionMode:'single',
+				  searchEditorOptions: {
+					  'placeholder':'search data sources'
+				  }
+			  });
+
+			  $('#checkDirectBinding').dxCheckBox({
+				  'value': true,
+				  'text': 'use direct binding'
+			  });
+
+			  $('#checkReadOnly').dxCheckBox({
+				  'value': false,
+				  'text': 'read only'
+			  });
+
+			  $('#btnCreateStronglyTyped').click(function () {
+				  var keys = $('#listDataSources').dxList('instance').option('selectedItems');
+
+				  if (keys === null || keys.length === 0) {
+					  tompit.warning('Data source must be selected.');
+
+					  return;
+				  }
+
+				  var value = keys[0].value;
+
+				  ide.designerAction({
+					  data: {
+						  'action': 'createStronglyType',
+						  'dataSource': value,
+						  'readOnly': $('#checkReadOnly').dxCheckBox('instance').option('value'),
+						  'directBinding': $('#checkDirectBinding').dxCheckBox('instance').option('value'),
+						  'currentText': textEditor.getValue()
+					  },
+					  onComplete: function (data) {
+						  $('#modalStronglyTyped').modal('hide');
+
+						  textEditor.insertText(data.text);
+					  }
+				  })
+			  });
+		  }
 
         </text>
             }
     });
 
+
+
+
     @if (Model.CompletionDiagnostic != null)
     {
        <text>
-    $('#checkSyntax').click(function (e) {
+
+	$('#checkSyntax').click(function (e) {
         ide.saveProperty({
             data: {
                 property: '@Model.PropertyName',
@@ -206,5 +321,6 @@
                     path: propertyPath
                 }
             });
-    }
+	}
+
 </script>

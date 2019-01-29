@@ -143,7 +143,7 @@ namespace TomPIT.DataProviders.Sql
 
 						int ord = rdr.GetOrdinal(mapping);
 
-						row.Add(i.ColumnName, Types.Convert<string>(rdr.GetValue(ord)));
+						row.Add(i.ColumnName,new JValue( rdr.GetValue(ord)));
 					}
 
 					a.Add(row);

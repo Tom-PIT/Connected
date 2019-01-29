@@ -90,7 +90,7 @@ namespace TomPIT.UI
 			foreach (var i in views)
 			{
 				var view = i as IView;
-				var targetTokens = view.Url.Split('/');
+				var targetTokens = view.Url == null ? new string[0] : view.Url.Split('/');
 
 				if (tokens.Length != targetTokens.Length)
 					continue;

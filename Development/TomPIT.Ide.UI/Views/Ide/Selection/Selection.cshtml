@@ -16,16 +16,16 @@
 </ul>
 <div class="tab-content" id="devSelectionTabContent">
     <div class="tab-pane fade show active" id="devTabPropertyGrid" role="tabpanel" aria-labelledby="properties-tab">
-        @Html.Partial("~/Views/Ide/Selection/Properties.cshtml", Model)
+        @await Html.PartialAsync("~/Views/Ide/Selection/Properties.cshtml", Model)
     </div>
     <div class="tab-pane fade" id="devTabEvents" role="tabpanel" aria-labelledby="events-tab">
-        @Html.Partial("~/Views/Ide/Selection/Events.cshtml", Model)
+        @await Html.PartialAsync("~/Views/Ide/Selection/Events.cshtml", Model)
     </div>
     <div class="tab-pane fade" id="devTabToolbox" role="tabpanel" aria-labelledby="toolbox-tab">
-        @Html.Partial("~/Views/Ide/Selection/Toolbox.cshtml", Model)
+        @await Html.PartialAsync("~/Views/Ide/Selection/Toolbox.cshtml", Model)
     </div>
     <div class="tab-pane fade" id="devTabReflector" role="tabpanel" aria-labelledby="reflector-tab">
-        @Html.Partial("~/Views/Ide/Selection/Reflector.cshtml", Model)
+        @await Html.PartialAsync("~/Views/Ide/Selection/Reflector.cshtml", Model)
     </div>
 </div>
 

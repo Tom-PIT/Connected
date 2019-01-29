@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Threading.Tasks;
 using TomPIT.UI;
 
 namespace TomPIT
@@ -10,11 +11,11 @@ namespace TomPIT
 		{
 		}
 
-		public IHtmlContent Render(string name)
+		public async Task<IHtmlContent> Render(string name)
 		{
 			var ve = Html.ViewContext.HttpContext.RequestServices.GetService(typeof(IViewEngine)) as IViewEngine;
 
-			return Html.Partial(ve.SnippetPath(Html.ViewContext, name));
+			return await Html.PartialAsync(ve.SnippetPath(Html.ViewContext, name));
 		}
 	}
 }

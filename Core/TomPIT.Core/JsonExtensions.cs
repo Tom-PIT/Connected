@@ -163,7 +163,7 @@ namespace TomPIT
 				if (prop == null)
 					continue;
 
-				var masterValue = jo.Value<string>();
+				var masterValue = Types.Convert<string>(((JValue)prop.Value).Value);
 
 				foreach (var j in detailsData)
 				{
@@ -173,7 +173,7 @@ namespace TomPIT
 					if (jp == null)
 						continue;
 
-					var detailValue = jo.Value<string>();
+					var detailValue = Types.Convert<string>(((JValue)jp.Value).Value);
 
 					if (string.Compare(masterValue, detailValue, true) == 0)
 					{
@@ -202,7 +202,7 @@ namespace TomPIT
 				if (masterProp == null)
 					continue;
 
-				var masterValue = masterProp.Value<string>();
+				var masterValue = Types.Convert<string>(((JValue)masterProp.Value).Value);
 				var a = new JArray();
 				jo.Add(detailsProperty, a);
 
@@ -214,7 +214,7 @@ namespace TomPIT
 					if (jjp == null)
 						continue;
 
-					var detailValue = jjp.Value<string>();
+					var detailValue = Types.Convert<string>(((JValue)jjp.Value).Value);
 
 					if (string.Compare(masterValue, detailValue, true) == 0)
 						a.Add(j);
@@ -275,7 +275,7 @@ namespace TomPIT
 				if (jop == null)
 					continue;
 
-				var value = jop.Value<string>();
+				var value = Types.Convert<string>(((JValue)jop.Value).Value);
 
 				if (string.IsNullOrWhiteSpace(value))
 					continue;
@@ -335,7 +335,7 @@ namespace TomPIT
 				if (jop == null)
 					continue;
 
-				var value = jop.Value<string>();
+				var value = Types.Convert<string>(((JValue)jop.Value).Value);
 
 				if (string.IsNullOrWhiteSpace(value))
 					continue;
@@ -382,7 +382,7 @@ namespace TomPIT
 				if (jop == null)
 					continue;
 
-				var pv = jop.Value<string>();
+				var pv = Types.Convert<string>(((JValue)jop.Value).Value);
 
 				foreach (var j in values)
 				{
@@ -422,9 +422,19 @@ namespace TomPIT
 			var result = new JArray();
 
 			foreach (var i in values)
+			{
+				if (!(i is JObject jo))
+					continue;
+
+				var prop = jo.Property(propertyName);
+
+				if (prop == null)
+					continue;
+
 				result.Add(new JObject{
-					{"id", i.Value<string>()}
-			});
+					{propertyName, Types.Convert<string>(((JValue)prop.Value).Value)}
+				});
+			}
 
 			return result;
 		}

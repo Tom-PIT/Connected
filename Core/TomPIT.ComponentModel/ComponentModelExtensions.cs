@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Linq;
 using System.Text;
 using TomPIT.Analysis;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Data;
 using TomPIT.Security;
 using TomPIT.Services;
 
@@ -156,6 +158,35 @@ namespace TomPIT
 		{
 			return !result.Success
 				&& (result.Reason == AuthenticationResultReason.PasswordExpired || result.Reason == AuthenticationResultReason.NoPassword);
+		}
+
+		public static DataList<T> ToDataList<T>(this JObject dataSource) where T : JsonEntity
+		{
+			if (dataSource.IsEmpty())
+				return new DataList<T>();
+
+			var arr = dataSource.ToResults();
+
+			return arr.ToDataList<T>();
+		}
+
+		public static DataList<T> ToDataList<T>(this JArray items) where T : JsonEntity
+		{
+			var r = new DataList<T>();
+
+			foreach (var i in items)
+			{
+				var jo = i as JObject;
+
+				if (jo == null)
+					continue;
+
+				var instance = typeof(T).CreateInstance<T>(new object[] { jo });
+
+				r.Add(instance);
+			}
+
+			return r;
 		}
 	}
 }

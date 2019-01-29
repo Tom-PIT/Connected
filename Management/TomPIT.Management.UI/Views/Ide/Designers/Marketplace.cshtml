@@ -1,1 +1,8 @@
-﻿marketplace
+﻿@model TomPIT.Designers.MarketplaceDesigner
+
+@foreach (var i in Model.PublicPackages)
+{
+	<div class="package-card">
+		@i.Name
+	</div>
+}

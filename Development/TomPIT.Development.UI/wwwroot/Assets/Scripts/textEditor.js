@@ -120,18 +120,13 @@
 
 			this.options.instance.codeLensProvider = provider;
 		},
-		insertText: function (id, text) {
-			var editor = this._find(id);
-
-			if (editor === null)
-				return;
-
-			var line = editor.instance.getPosition();
+		insertText: function (text) {
+			var line = this.options.instance.getPosition();
 			var range = new monaco.Range(line.lineNumber, 1, line.lineNumber, 1);
 			var identifier = { major: 1, minor: 1 };
 			var op = { identifier: identifier, range: range, text: text, forceMoveMarkers: true };
 
-			editor.instance.executeEdits("insert-snippet", [op]);
+			this.options.instance.executeEdits("insert-snippet", [op]);
 		},
 		getValue: function () {
 			return this.options.instance.getValue();
@@ -149,6 +144,9 @@
 		addCommand: function (k, h) {
 			return this.options.instance.addCommand(k, h);
 		},
+		addAction: function (k) {
+			return this.options.instance.addAction(k);
+		}
 
 	});
 })(jQuery);

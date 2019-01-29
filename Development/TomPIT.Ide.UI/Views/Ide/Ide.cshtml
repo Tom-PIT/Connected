@@ -27,7 +27,7 @@
 <script src="~/Assets/Libraries/monaco/vs/loader.js"></script>
 
 <div id="ide" class="h-100">
-	@Html.Partial("~/Views/Ide/Console.cshtml", Model)
+	@await Html.PartialAsync("~/Views/Ide/Console.cshtml", Model)
 </div>
 
 @section Scripts{

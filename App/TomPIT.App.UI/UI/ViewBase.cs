@@ -29,8 +29,8 @@ namespace TomPIT.UI
 			if (helper == null)
 				return;
 
-			ApplicationContext.Connection().GetService<ICompilerService>().Execute(ApplicationContext.MicroService(),
-				helper, this, new ViewHelperArguments(ApplicationContext, e, this as ViewBase<IExecutionContext>));
+			this.e.Connection().GetService<ICompilerService>().Execute(this.e.MicroService(),
+				helper, this, new ViewHelperArguments(this.e, e, this as ViewBase<IExecutionContext>));
 		}
 
 		public H Helper<H>(string name)
@@ -45,11 +45,11 @@ namespace TomPIT.UI
 			if (helper == null)
 				return default(H);
 
-			return (H)ApplicationContext.Connection().GetService<ICompilerService>().Execute(ApplicationContext.MicroService(),
-				helper, this, new ViewHelperArguments(ApplicationContext, e, this as ViewBase<IExecutionContext>));
+			return (H)this.e.Connection().GetService<ICompilerService>().Execute(this.e.MicroService(),
+				helper, this, new ViewHelperArguments(this.e, e, this as ViewBase<IExecutionContext>));
 		}
 
-		public IExecutionContext ApplicationContext
+		public IExecutionContext e
 		{
 			get
 			{
@@ -64,7 +64,7 @@ namespace TomPIT.UI
 		{
 			get
 			{
-				if (_helpers == null && ApplicationContext != null)
+				if (_helpers == null && e != null)
 				{
 					var config = Instance.GetService<IComponentService>().SelectConfiguration(ComponentId);
 

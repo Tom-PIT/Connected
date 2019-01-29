@@ -2,6 +2,7 @@
 using System.Data;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
@@ -176,6 +177,31 @@ namespace TomPIT
 				return DataType.String;
 		}
 
+		public static string ToFriendlyName(this Type type)
+		{
+			if (type == typeof(int))
+				return "int";
+			else if (type == typeof(short))
+				return "short";
+			else if (type == typeof(byte))
+				return "byte";
+			else if (type == typeof(bool))
+				return "bool";
+			else if (type == typeof(long))
+				return "long";
+			else if (type == typeof(float))
+				return "float";
+			else if (type == typeof(double))
+				return "double";
+			else if (type == typeof(decimal))
+				return "decimal";
+			else if (type == typeof(string))
+				return "string";
+			else if (type.IsGenericType)
+				return type.Name.Split('`')[0] + "<" + string.Join(", ", type.GetGenericArguments().Select(x => ToFriendlyName(x)).ToArray()) + ">";
+			else
+				return type.ShortName();
+		}
 		/// <summary>
 		/// This method verifies if specified value has a valid value. It checks for empty strings,
 		/// dates, guids and DBNull.Value.
@@ -355,6 +381,14 @@ namespace TomPIT
 		public static string ShortName(this Assembly assembly)
 		{
 			return assembly.FullName.Split(',')[0];
+		}
+
+		public static object DefaultValue(this Type type)
+		{
+			if (type.IsValueType)
+				return Activator.CreateInstance(type);
+
+			return null;
 		}
 	}
 }

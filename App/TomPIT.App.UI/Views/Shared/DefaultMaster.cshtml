@@ -5,28 +5,28 @@
 <html>
 <head>
     <title>@Model.Title</title>
-    @Html.Partial("~/Views/Shared/Header.cshtml")
+    @await Html.PartialAsync("~/Views/Shared/Header.cshtml")
     @RenderSection("head", false)
 </head>
 
 <body>
-    @Html.Partial("~/Views/Shared/ContentInit.cshtml", Model)
+    @await Html.PartialAsync("~/Views/Shared/ContentInit.cshtml", Model)
     <nav class="navbar navbar-dark bg-dark fixed-top" id="#_nav">
         <button class="navbar-toggler collapsed brand-toggler" type="button" data-toggle="collapse" data-target="#_sideBar" id="_navtoggler">
             <img src="~/Assets/Images/Shell/Brand.png" class="img-fluid brand-img" />
         </button>
-
+		 
         <div class="navbar-title mr-md-auto m-auto ml-md-0">
             <div class="view-title text-truncate">
                 @Html.Raw(Model.Title)
-
+					
                 <div class="view-breadcrumb text-truncate">
-                    @Html.Partial("~/Views/Shared/Breadcrumbs.cshtml", Model)
+                    @await Html.PartialAsync("~/Views/Shared/Breadcrumbs.cshtml", Model)
                 </div>
             </div>
         </div>
 
-        @Html.Partial("~/Views/Shared/HeaderIdentity.cshtml", Model)
+        @await Html.PartialAsync("~/Views/Shared/HeaderIdentity.cshtml", Model)
     </nav>
 
     <div class="container-fluid sys-container h-100" id="_sysBody">

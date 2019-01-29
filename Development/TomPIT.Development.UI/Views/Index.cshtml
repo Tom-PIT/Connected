@@ -2,154 +2,154 @@
 @model TomPIT.Models.HomeModel
 
 @{
-    Layout = "~/Views/Shared/Shell.cshtml";
+	Layout = "~/Views/Shared/Shell.cshtml";
 }
 
 <div class="doc-canvas">
-    <div class="paper">
+	<div class="paper">
 
 
-        <div class="container-fluid">
-            <div class="m-1">
-                <div class="row">
-                    <div class="col-sm-9">
-                        <h4>Technology tree</h4>
-                    </div>
-                    <div class="col-sm-3">
-                        <div id="search"></div>
-                    </div>
-                </div>
+		<div class="container-fluid">
+			<div class="m-1">
+				<div class="row">
+					<div class="col-sm-9">
+						<h4>Technology tree</h4>
+					</div>
+					<div class="col-sm-3">
+						<div id="search"></div>
+					</div>
+				</div>
 
-                <hr />
+				<hr />
 
 
-                <div class="technology-tree">
-                    @foreach (var i in Model.Discovery.Root)
-                    {
-                        <div data-level="root">
-                            @Html.Partial("~/Views/Partial/MicroserviceCard.cshtml", i)
-                        </div>
-                    }
-                </div>
-            </div>
+				<div class="technology-tree">
+					@foreach (var i in Model.Discovery.Root)
+					{
+						<div data-level="root">
+							@await Html.PartialAsync("~/Views/Partial/MicroserviceCard.cshtml", i)
+						</div>
+					}
+				</div>
+			</div>
 
-        </div>
-    </div>
+		</div>
+	</div>
 </div>
 
 @section Scripts{
-    <script>
-        DevExpress.ui.setTemplateEngine("underscore");
-    </script>
+	<script>
+		DevExpress.ui.setTemplateEngine("underscore");
+	</script>
 }
 <script>
-    $('.microservice-header').click(function (e) {
-        if ($(e.target).hasClass('microservice-name') || $(e.target).parent().hasClass('microservice-name'))
-            return;
+	$('.microservice-header').click(function (e) {
+		if ($(e.target).hasClass('microservice-name') || $(e.target).parent().hasClass('microservice-name'))
+			return;
 
-        var t = $(this).closest('.microservice-card');
+		var t = $(this).closest('.microservice-card');
 
-        var body = t.children('.microservice-body');
-        var header = t.children('.microservice-header');
-        var shown = body.hasClass('show');
+		var body = t.children('.microservice-body');
+		var header = t.children('.microservice-header');
+		var shown = body.hasClass('show');
 
-        if (shown)
-            header.removeClass('active');
-        else
-            header.addClass('active');
+		if (shown)
+			header.removeClass('active');
+		else
+			header.addClass('active');
 
-        body.collapse('toggle');
-    });
+		body.collapse('toggle');
+	});
 
-    $('.microservice-api-header').click(function (e) {
-        var t = $(this).closest('.microservice-api-card');
+	$('.microservice-api-header').click(function (e) {
+		var t = $(this).closest('.microservice-api-card');
 
-        var body = t.children('.microservice-api-body');
-        var header = t.children('.microservice-api-header');
-        var shown = body.hasClass('show');
+		var body = t.children('.microservice-api-body');
+		var header = t.children('.microservice-api-header');
+		var shown = body.hasClass('show');
 
-        if (shown)
-            header.removeClass('active');
-        else
-            header.addClass('active');
+		if (shown)
+			header.removeClass('active');
+		else
+			header.addClass('active');
 
-        body.collapse('toggle');
-    })
+		body.collapse('toggle');
+	})
 
-    $('#search').dxTextBox({
-        mode: 'search',
-        onValueChanged: function (e) {
+	$('#search').dxTextBox({
+		mode: 'search',
+		onValueChanged: function (e) {
 
-            showAll();
-            $('.microservice-header').removeClass('active');
-            $('.microservice-body').removeClass('show');
+			showAll();
+			$('.microservice-header').removeClass('active');
+			$('.microservice-body').removeClass('show');
 
-            $('.microservice-api-header').removeClass('active');
-            $('.microservice-api-body').collapse('hide');
+			$('.microservice-api-header').removeClass('active');
+			$('.microservice-api-body').collapse('hide');
 
-            if (e.value.length === 0)
-                return;
+			if (e.value.length === 0)
+				return;
 
-            var targets = $('[data-search="true"]');
+			var targets = $('[data-search="true"]');
 
-            $.each(targets, function (idx, v) {
-                var result = new RegExp(e.value, 'i').exec($(v).html());
+			$.each(targets, function (idx, v) {
+				var result = new RegExp(e.value, 'i').exec($(v).html());
 
-                if (result) {
-                    var card = $(v).closest('[data-kind="search-scope"]');
+				if (result) {
+					var card = $(v).closest('[data-kind="search-scope"]');
 
-                    showCard(card);
-                }
-            });
+					showCard(card);
+				}
+			});
 
-            hideMissingTargets();
-        }
-    });
+			hideMissingTargets();
+		}
+	});
 
-    function showCard(card) {
-        if (card.length === 0)
-            return;
+	function showCard(card) {
+		if (card.length === 0)
+			return;
 
-        var body;
-        var header;
+		var body;
+		var header;
 
-        if (card.hasClass('microservice-card')) {
-            body = card.children('.microservice-body');
-            header = card.children('.microservice-header');
-        }
-        else {
-            body = card.children('.microservice-api-body');
-            header = card.children('.microservice-api-header');
-        }
+		if (card.hasClass('microservice-card')) {
+			body = card.children('.microservice-body');
+			header = card.children('.microservice-header');
+		}
+		else {
+			body = card.children('.microservice-api-body');
+			header = card.children('.microservice-api-header');
+		}
 
-        body.collapse('show');
-        header.addClass('active');
+		body.collapse('show');
+		header.addClass('active');
 
-        showCard(card.parent().closest('.microservice-card'));
-    }
+		showCard(card.parent().closest('.microservice-card'));
+	}
 
-    function hideMissingTargets(root) {
-        if (typeof root === 'undefined')
-            root = $('[data-level="root"]').children('.microservice-card');
+	function hideMissingTargets(root) {
+		if (typeof root === 'undefined')
+			root = $('[data-level="root"]').children('.microservice-card');
 
-        $.each(root, function (i, v) {
-            var visible = $(v).children('.microservice-header').hasClass('active');
+		$.each(root, function (i, v) {
+			var visible = $(v).children('.microservice-header').hasClass('active');
 
-            if (!visible)
-                $(v).hide();
-            else
-                hideMissingTargets($(v).children('.microservice-body > .microservice-card'));
+			if (!visible)
+				$(v).hide();
+			else
+				hideMissingTargets($(v).children('.microservice-body > .microservice-card'));
 
-        });
-    }
-    $('.technology-tree').dxScrollView({
-        height: 'calc(100vh - 240px)',
-        width: '100%',
-        direction: 'both'
-    });
+		});
+	}
+	$('.technology-tree').dxScrollView({
+		height: 'calc(100vh - 240px)',
+		width: '100%',
+		direction: 'both'
+	});
 
 
-    function showAll() {
-        $('.microservice-card').show();
-    }
+	function showAll() {
+		$('.microservice-card').show();
+	}
 </script>

@@ -1,10 +1,12 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Linq;
 using TomPIT.ActionResults;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
 using TomPIT.Design.Services;
+using TomPIT.Designers.CodeGeneration;
 using TomPIT.Dom;
 using TomPIT.Ide;
 using TomPIT.Services;
@@ -142,8 +144,50 @@ namespace TomPIT.Designers
 				{
 					{"path", Environment.ResolvePath(data.Required<Guid>("component"), data.Required<Guid>("element")) }
 				});
+			else if (string.Compare(action, "dataSources", true) == 0)
+				return Result.JsonResult(this, QueryDataSources());
+			else if (string.Compare(action, "createStronglyType", true) == 0)
+				return Result.JsonResult(this, CreateStronglyType(data));
 
 			return base.OnAction(data, action);
+		}
+
+		private object CreateStronglyType(JObject data)
+		{
+			var ds = data.Required<Guid>("dataSource");
+			var readOnly = data.Optional("readOnly", false);
+			var directBinding = data.Optional("directBinding", true);
+			var currentText = data.Optional("currentText", string.Empty);
+
+			var st = new StronglyType(Connection)
+			{
+				DirectBinding = directBinding,
+				ReadOnly = readOnly,
+				SourceCode = currentText,
+				DataSource = ds
+			};
+
+			return new JObject
+			{
+				{"text", st.Generate() }
+			};
+		}
+
+		private object QueryDataSources()
+		{
+			var ds = Connection.GetService<IComponentService>().QueryComponents(Environment.Context.MicroService(), "DataSource").OrderBy(f => f.Name);
+			var r = new JArray();
+
+			foreach (var i in ds)
+			{
+				r.Add(new JObject
+				{
+					{ "value", i.Token },
+					{ "text",i.Name }
+				});
+			}
+
+			return r;
 		}
 
 		private CodeLensArgs CreateCodeLensArgs(JObject data)

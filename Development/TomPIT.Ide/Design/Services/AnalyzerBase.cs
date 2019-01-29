@@ -37,6 +37,7 @@ namespace TomPIT.Design.Services
 				"Newtonsoft.Json",
 				"Newtonsoft.Json.Linq",
 				"TomPIT",
+				"TomPIT.Data",
 				"TomPIT.Services",
 				"TomPIT.ComponentModel",
 				"TomPIT.ComponentModel.Apis"

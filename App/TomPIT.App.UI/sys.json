@@ -2,7 +2,7 @@
 	"connections": [
 		{
 			"name": "localhost",
-			"url": "http://localhost:44001",
+			"url": "http://localhost/marketplace/sys",
 			"authenticationToken": "defaultAuthenticationToken"
 		}
 	],

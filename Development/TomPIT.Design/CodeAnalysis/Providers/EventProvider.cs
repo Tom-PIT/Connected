@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis.Text;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Analysis;
@@ -12,7 +11,6 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 {
 	internal class EventProvider : CodeAnalysisProvider
 	{
-		private SourceText _sourceCode = null;
 		private Guid _microService = Guid.Empty;
 
 		public EventProvider(IExecutionContext context) : base(context)

@@ -10,7 +10,6 @@ namespace TomPIT.Application.Design.Dom
 	{
 		public const string FolderId = "Api";
 		private List<IComponent> _apis = null;
-		private IDomDesigner _designer = null;
 
 		public SecurityApisElement(IDomElement parent) : base(parent.Environment, parent)
 		{

@@ -32,5 +32,5 @@
 {
     ViewBag.CurrentNode = i;
 
-    @Html.Partial("~/Views/Ide/DomNode.cshtml", Model)
+    @await Html.PartialAsync("~/Views/Ide/DomNode.cshtml", Model)
 }

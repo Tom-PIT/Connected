@@ -269,6 +269,12 @@ namespace TomPIT.Design.Services
 				});
 			}
 
+
+			r.Add(new Suggestion
+			{
+
+			});
+
 			return r;
 		}
 

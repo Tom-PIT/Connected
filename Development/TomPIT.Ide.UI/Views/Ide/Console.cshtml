@@ -4,7 +4,7 @@
     <div class="col-lg-2 col-sm-6">
         <div id="devExplorer" tabindex="0">
             <div id="devExplorerNodes">
-                @Html.Partial("~/Views/Ide/Dom.cshtml", Model)
+                @await Html.PartialAsync("~/Views/Ide/Dom.cshtml", Model)
             </div>
         </div>
     </div>
@@ -16,12 +16,12 @@
             </div>
         </div>
         <div id="devDesigner">
-            @Html.Partial("~/Views/Ide/Designers/Empty.cshtml", Model)
+            @await Html.PartialAsync("~/Views/Ide/Designers/Empty.cshtml", Model)
         </div>
     </div>
     <div class="col-lg-2">
         <div id="devSelection">
-            @Html.Partial("~/Views/Ide/Selection/Selection.cshtml", Model)
+            @await Html.PartialAsync("~/Views/Ide/Selection/Selection.cshtml", Model)
         </div>
     </div>
 </div>

@@ -2,6 +2,8 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
@@ -22,6 +24,10 @@ namespace TomPIT.Marketplace
 
 			TryLogin();
 		}
+
+		public bool IsLogged { get; private set; }
+		public IPublisher Publisher { get; private set; }
+		private Guid AuthenticationToken { get; set; }
 
 		private void TryLogin()
 		{
@@ -216,9 +222,10 @@ namespace TomPIT.Marketplace
 			Connection.Post(u, e, new HttpRequestArgs().WithBasicCredentials(UserName, Password));
 		}
 
-		public bool IsLogged { get; private set; }
-		public IPublisher Publisher { get; private set; }
-
-		private Guid AuthenticationToken { get; set; }
+		public List<IPublishedPackage> QueryPublicPackages()
+		{
+			var u = Connection.CreateUrl(MarketplaceUrl, "Marketplace", "IPackages", "QueryPublic");
+			return Connection.Get<List<PublishedPackage>>(u).ToList<IPublishedPackage>();
+		}
 	}
 }

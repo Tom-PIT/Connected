@@ -15,7 +15,6 @@ namespace TomPIT.Application.Design.Dom
 		private IDomDesigner _designer = null;
 		private List<string> _claims = null;
 		private IPermissionDescriptor _descriptor = null;
-		private IApiOperation _operation = null;
 
 		public SecurityApiOperationElement(IEnvironment environment, IDomElement parent, IApiOperation operation) : base(environment, parent)
 		{

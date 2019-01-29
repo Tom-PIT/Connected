@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using TomPIT.Deployment;
 
 namespace TomPIT.Marketplace
@@ -21,5 +22,7 @@ namespace TomPIT.Marketplace
 
 		IPackage SelectPackage(Guid microService);
 		void PublishPackage(Guid microService);
+
+		List<IPublishedPackage> QueryPublicPackages();
 	}
 }

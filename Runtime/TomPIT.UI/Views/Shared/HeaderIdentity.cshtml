@@ -14,7 +14,7 @@
                 <li class="dropdown-item"><a href="~/Login">@SR.MenuLogin</a></li>
                 @if (Model.Navigation != null && Model.Navigation.Links.Count > 0)
                 {
-                    @Html.Partial("~/Views/Shared/HeaderLinks.cshtml", Model)
+                    @await Html.PartialAsync("~/Views/Shared/HeaderLinks.cshtml", Model)
                 }
             </ul>
         </li>
@@ -49,7 +49,7 @@
                 @if (Model.Navigation != null && Model.Navigation.Links.Count > 0)
                 {
                     <li class="dropdown-divider"></li>
-                    @Html.Partial("~/Views/Shared/HeaderLinks.cshtml", Model)
+                    @await Html.PartialAsync("~/Views/Shared/HeaderLinks.cshtml", Model)
                 }
             </ul>
         </li>

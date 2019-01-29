@@ -25,8 +25,8 @@
     </span>
 </div>
 
-@Html.Partial("~/Views/Ide/Designers/Toolbar.cshtml", Model)
-@Html.Partial(view, model)
+@await Html.PartialAsync("~/Views/Ide/Designers/Toolbar.cshtml", Model)
+@await Html.PartialAsync(view, model)
 
 <script>
     $('#closePropertyEditor').click(function () {

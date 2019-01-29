@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Threading.Tasks;
 
 namespace TomPIT
 {
@@ -9,9 +10,9 @@ namespace TomPIT
 		{
 		}
 
-		public IHtmlContent Globalize()
+		public async Task<IHtmlContent> Globalize()
 		{
-			return Html.Partial("~/Views/Shared/Globalize.cshtml");
+			return await Html.PartialAsync("~/Views/Shared/Globalize.cshtml");
 		}
 	}
 }
