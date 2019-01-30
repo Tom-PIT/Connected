@@ -1,5 +1,4 @@
-﻿using TomPIT.Annotations;
-using TomPIT.ComponentModel;
+﻿using TomPIT.ComponentModel;
 using TomPIT.Design;
 using TomPIT.Ide;
 
@@ -62,12 +61,12 @@ namespace TomPIT.Dom
 			{
 				if (_designer == null)
 				{
-					var att = Configuration.GetType().FindAttribute<DomDesignerAttribute>();
+					var att = Configuration.GetType().ResolveDesigner();
 
 					if (att != null)
 						_designer = DomQuery.CreateDesigner(Environment, this, att);
 
-					if (_designer == null)
+					if (_designer == null && IsDesignTime)
 					{
 						var de = Value.GetType().FindAttribute<System.ComponentModel.DefaultEventAttribute>();
 

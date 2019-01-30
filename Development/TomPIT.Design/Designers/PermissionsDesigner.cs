@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ActionResults;
 using TomPIT.Design;
+using TomPIT.Dom;
 using TomPIT.Ide;
 using TomPIT.Security;
 
@@ -18,7 +19,7 @@ namespace TomPIT.Designers
 		private List<IItemDescriptor> _schema = null;
 		private List<IAuthorizationProvider> _providers = null;
 
-		public PermissionsDesigner(IEnvironment environment, IPermissionElement element) : base(environment, element)
+		public PermissionsDesigner(IEnvironment environment, IDomElement element) : base(environment, element as IPermissionElement)
 		{
 			if (Providers != null && Providers.Count > 0)
 				SelectedSchema = Providers[0].Id;
@@ -223,5 +224,6 @@ namespace TomPIT.Designers
 		}
 
 		public bool SupportsInherit { get { return Owner.SupportsInherit; } }
+		public override bool SupportsChaining => false;
 	}
 }

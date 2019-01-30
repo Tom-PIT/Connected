@@ -13,8 +13,6 @@ namespace TomPIT.Themes
 		{
 			var e = new LogEntry
 			{
-				Authority = "View",
-				//AuthorityId=
 				Category = "Themes",
 				Message = message
 			};

@@ -38,7 +38,7 @@ namespace TomPIT.Designers
 			if (string.Compare(action, "saveCreate", true) == 0)
 			{
 				var values = data.Optional<JArray>("values", null);
-				var writer = new PropertyWriter(Environment);
+				var writer = new PropertyWriter(Element);
 
 				if (values != null)
 				{
@@ -113,7 +113,7 @@ namespace TomPIT.Designers
 			get
 			{
 				if (_properties == null)
-					_properties = new PropertyProvider(Environment, ProposedComponent);
+					_properties = new PropertyProvider(Element, ProposedComponent);
 
 				return _properties;
 			}

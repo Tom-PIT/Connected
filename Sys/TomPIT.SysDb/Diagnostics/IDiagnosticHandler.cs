@@ -3,5 +3,6 @@
 	public interface IDiagnosticHandler
 	{
 		ILoggingHandler Logging { get; }
+		IMetricHandler Metrics { get; }
 	}
 }

@@ -14,7 +14,7 @@
 
 		@if (!string.IsNullOrWhiteSpace(Model.DebugFileName))
 		{
-			var url = Model.Environment.Context.MapPath(string.Format("~/sys/source-code/{0}/{1}/{2}", Model.Environment.Context.MicroService(), Model.Content.Configuration().Component, Model.Content.Id.ToString()));
+			var url = Model.Environment.Context.MapPath(string.Format("~/sys/source-code/{0}/{1}/{2}", Model.Element.MicroService(), Model.Content.Configuration().Component, Model.Content.Id.ToString()));
 
 			<a href="@url" target="_blank" class="btn btn-sm btn-light" title="Download source code for debugging"><i class="fal fa-bug"></i></a>
 		}

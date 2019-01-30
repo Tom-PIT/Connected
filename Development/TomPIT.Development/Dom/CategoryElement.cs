@@ -51,7 +51,7 @@ namespace TomPIT.Dom
 						? Guid.Empty
 						: fs.Feature;
 
-					_components = Connection.GetService<IComponentService>().QueryComponents(Environment.Context.MicroService(), Category).Where(f => f.Feature == fid).ToList();
+					_components = Connection.GetService<IComponentService>().QueryComponents(this.MicroService(), Category).Where(f => f.Feature == fid).ToList();
 				}
 
 				return _components;
@@ -62,7 +62,7 @@ namespace TomPIT.Dom
 		{
 			get
 			{
-				var service = Connection.GetService<IMicroServiceService>().Select(Environment.Context.MicroService());
+				var service = Connection.GetService<IMicroServiceService>().Select(this.MicroService());
 
 				if (service == null)
 					throw new IdeException(SR.ErrMicroServiceNotFound);
@@ -81,7 +81,12 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new ComponentsDesigner(Environment, this);
+				{
+					if (IsDesignTime)
+						_designer = new ComponentsDesigner(Environment, this);
+					else
+						_designer = new EmptyDesigner(Environment, this);
+				}
 
 				return _designer;
 			}

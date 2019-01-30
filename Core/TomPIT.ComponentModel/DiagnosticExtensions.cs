@@ -124,17 +124,19 @@ namespace TomPIT
 
 			var e = new LogEntry
 			{
-				Authority = context == null ? string.Empty : context.Identity.Authority,
-				AuthorityId = context == null ? string.Empty : context.Identity.AuthorityId,
 				Category = category,
 				EventId = eventId,
 				Level = TraceLevel.Error,
 				Message = message,
 				Source = source,
-				MicroService = context == null ? Guid.Empty : context.MicroService(),
 			};
 
 			svc.Write(e);
+		}
+
+		public static RuntimeException WithMetrics(this RuntimeException ex, IExecutionContext context)
+		{
+			return ex;
 		}
 	}
 }

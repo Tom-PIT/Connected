@@ -44,7 +44,7 @@ namespace TomPIT.Application.Design.Designers
 
 			var file = files[0];
 
-			var ms = Connection.GetService<IMicroServiceService>().Select(Environment.Context.MicroService());
+			var ms = Connection.GetService<IMicroServiceService>().Select(Element.MicroService());
 
 			var b = new Blob
 			{

@@ -16,28 +16,22 @@ namespace TomPIT.Design
 			return new List<IItemDescriptor>();
 		}
 
-		public virtual List<IDomElement> QueryDomRoot(IEnvironment environment)
+		public virtual List<IDomElement> QueryDomRoot(IEnvironment environment, IDomElement parent, Guid microService)
 		{
 			return new List<IDomElement>();
 		}
 
-		public virtual List<IDomElement> QuerySecurityRoot(IDomElement parent)
+		protected IComponent CreateReferences(IEnvironment environment, Guid microService)
 		{
-			return new List<IDomElement>();
-		}
-
-		protected IComponent CreateReferences(IEnvironment environment)
-		{
-			var ms = environment.Context.MicroService();
 			var cs = environment.Context.Connection().GetService<IComponentService>();
 			var cds = environment.Context.Connection().GetService<IComponentDevelopmentService>();
 
-			var items = cs.QueryComponents(ms, "Reference");
+			var items = cs.QueryComponents(microService, "Reference");
 
 			if (items != null && items.Count > 0)
 				return items[0];
 
-			var id = cds.Insert(null, ms, Guid.Empty, "Reference", "References", typeof(References).TypeName());
+			var id = cds.Insert(null, microService, Guid.Empty, "Reference", "References", typeof(References).TypeName());
 			var config = new References
 			{
 				Component = id

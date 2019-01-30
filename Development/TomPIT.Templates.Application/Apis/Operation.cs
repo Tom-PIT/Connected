@@ -9,6 +9,8 @@ using TomPIT.Services;
 namespace TomPIT.Application.Apis
 {
 	[DefaultEvent(nameof(Invoke))]
+	[DomElement("TomPIT.Application.Design.Dom.ApiOperationElement, TomPIT.Application.Design")]
+	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = EnvironmentMode.Runtime)]
 	public class Operation : Element, IApiOperation
 	{
 		private IServerEvent _invoke = null;

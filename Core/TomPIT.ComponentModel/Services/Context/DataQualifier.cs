@@ -1,6 +1,4 @@
-﻿using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Apis;
-using TomPIT.Exceptions;
+﻿using TomPIT.ComponentModel.Apis;
 
 namespace TomPIT.Services.Context
 {
@@ -23,7 +21,7 @@ namespace TomPIT.Services.Context
 		protected override void Validate()
 		{
 			if (Segments.Count > 2)
-				throw ExecutionException.InvalidQualifier(Context, CreateDescriptor(ExecutionEvents.Runtime), Value, "[microService]/dataSource|transaction");
+				throw new RuntimeException(string.Format("{0} ({1}). {2}: {3}.", SR.ErrInvalidQualifier, Value, SR.ErrInvalidQualifierExpected, "[microService]/dataSource|transaction")).WithMetrics(Context);
 		}
 
 		public string DataSource { get; private set; }

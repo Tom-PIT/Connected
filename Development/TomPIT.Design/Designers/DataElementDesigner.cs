@@ -46,7 +46,7 @@ namespace TomPIT.Designers
 			get
 			{
 				if (_connections == null)
-					_connections = Connection.GetService<IComponentService>().QueryComponents(Environment.Context.MicroService(), "Connection");
+					_connections = Connection.GetService<IComponentService>().QueryComponents(Element.MicroService(), "Connection");
 
 				return _connections;
 			}

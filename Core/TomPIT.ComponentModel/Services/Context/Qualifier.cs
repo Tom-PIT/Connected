@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
-using TomPIT.Exceptions;
 
 namespace TomPIT.Services.Context
 {
@@ -37,7 +36,7 @@ namespace TomPIT.Services.Context
 			MicroService = Context.Connection().GetService<IMicroServiceService>().Select(token);
 
 			if (MicroService == null)
-				throw ExecutionException.InvalidMicroServiceQualifier(Context, CreateDescriptor(ExecutionEvents.Runtime), token.ToString());
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrInvalidMicroServiceQualifier, token.ToString())).WithMetrics(Context);
 		}
 
 		protected void ParseMicroService(string name)
@@ -45,7 +44,7 @@ namespace TomPIT.Services.Context
 			MicroService = Context.Connection().GetService<IMicroServiceService>().Select(name);
 
 			if (MicroService == null)
-				throw ExecutionException.InvalidMicroServiceQualifier(Context, CreateDescriptor(ExecutionEvents.Runtime), name);
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrInvalidMicroServiceQualifier, name)).WithMetrics(Context);
 		}
 
 		protected void ParseMicroService()
@@ -54,7 +53,7 @@ namespace TomPIT.Services.Context
 				return;
 
 			if (Context.MicroService() == Guid.Empty)
-				throw ExecutionException.CannotResolveMicroService(Context, CreateDescriptor(ExecutionEvents.Runtime));
+				throw new RuntimeException(SR.ErrCannotResolveMicroService).WithMetrics(Context);
 
 			MicroService = Context.Connection().GetService<IMicroServiceService>().Select(Context.MicroService());
 		}

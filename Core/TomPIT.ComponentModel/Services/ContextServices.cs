@@ -9,7 +9,7 @@ namespace TomPIT.Services
 		private IContextIdentityService _identity = null;
 		private IContextLocalizationService _localization = null;
 		private IContextRoutingService _routing = null;
-		private IContextLoggingService _log = null;
+		private IContextDiagnosticService _log = null;
 		private IContextCachingService _cache = null;
 		private IContextValidationService _validation = null;
 		private IContextEnvironmentService _environment = null;
@@ -63,12 +63,12 @@ namespace TomPIT.Services
 			}
 		}
 
-		public IContextLoggingService Log
+		public IContextDiagnosticService Diagnostic
 		{
 			get
 			{
 				if (_log == null)
-					_log = new ContextLoggingService(Context);
+					_log = new ContextDiagnosticService(Context);
 
 				return _log;
 			}

@@ -10,6 +10,7 @@ using TomPIT.Design;
 using TomPIT.Designers;
 using TomPIT.Dom;
 using TomPIT.Ide;
+using TomPIT.Services;
 
 namespace TomPIT
 {
@@ -91,17 +92,6 @@ namespace TomPIT
 			}
 
 			return null;
-		}
-
-		public static Guid MicroService(this IDomElement element)
-		{
-			if (element == null)
-				return Guid.Empty;
-
-			if (element is IMicroServiceScope)
-				return ((IMicroServiceScope)element).MicroService.Token;
-
-			return MicroService(element.Parent);
 		}
 
 		public static string SelectedPath(this IEnvironment environment)
@@ -197,7 +187,7 @@ namespace TomPIT
 			var ms = environment.Context.Connection().GetService<IMicroServiceService>().Select(c.MicroService);
 			var template = environment.Context.Connection().GetService<IMicroServiceTemplateService>().Select(ms.Template);
 
-			var root = template.QueryDomRoot(environment);
+			var root = template.QueryDomRoot(environment, null, ms.Token);
 
 			if (root == null)
 				return null;
@@ -304,6 +294,50 @@ namespace TomPIT
 				r.Data = data;
 
 			return result;
+		}
+
+		public static Guid MicroService(this IDomElement element)
+		{
+			var scope = DomQuery.Closest<IMicroServiceScope>(element);
+
+			if (scope != null)
+				return scope.MicroService.Token;
+
+			return element.Environment.Context.MicroService();
+		}
+
+		public static DomDesignerAttribute ResolveDesigner(this Type type)
+		{
+			var mode = Shell.GetService<IRuntimeService>().Mode;
+			var designers = type.FindAttributes<DomDesignerAttribute>();
+
+			if (designers.Count == 0)
+				return null;
+
+			foreach (var i in designers)
+			{
+				if ((i.Mode & mode) == mode)
+					return i;
+			}
+
+			return null;
+		}
+
+		public static DomDesignerAttribute ResolveDesigner(this PropertyInfo property)
+		{
+			var mode = Shell.GetService<IRuntimeService>().Mode;
+			var designers = property.FindAttributes<DomDesignerAttribute>();
+
+			if (designers.Count == 0)
+				return null;
+
+			foreach (var i in designers)
+			{
+				if ((i.Mode & mode) == mode)
+					return i;
+			}
+
+			return null;
 		}
 	}
 }

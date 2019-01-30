@@ -14,12 +14,12 @@ namespace TomPIT.Dom
 {
 	public class PropertyWriter
 	{
-		public PropertyWriter(IEnvironment environment)
+		public PropertyWriter(IDomElement element)
 		{
-			Environment = environment;
+			Element = element;
 		}
 
-		private IEnvironment Environment { get; }
+		private IDomElement Element { get; }
 
 		public ITransactionResult Write(object instance, string propertyName, string value)
 		{
@@ -53,7 +53,7 @@ namespace TomPIT.Dom
 			{
 				var se = instance as ISourceCode;
 
-				Environment.Context.Connection().GetService<ICompilerService>().Invalidate(Environment.Context, Environment.Context.MicroService(), se.Configuration().Component(Environment.Context), se);
+				Element.Environment.Context.Connection().GetService<ICompilerService>().Invalidate(Element.Environment.Context, Element.MicroService(), se.Configuration().Component(Element.Environment.Context), se);
 
 				r.Invalidate |= EnvironmentSection.Events;
 			}
@@ -68,7 +68,7 @@ namespace TomPIT.Dom
 			var att = property.FindAttribute<HtmlTextAttribute>();
 
 			if (att != null)
-				value = att.Sanitize(Environment.Context, element, property, property.GetValue(instance), value);
+				value = att.Sanitize(Element.Environment.Context, element, property, property.GetValue(instance), value);
 
 			property.SetValue(instance, value);
 		}
@@ -80,7 +80,7 @@ namespace TomPIT.Dom
 			if (element == null)
 				return false;
 
-			if (Environment.Globalization.LanguageToken == Guid.Empty)
+			if (Element.Environment.Globalization.LanguageToken == Guid.Empty)
 				return false;
 
 			var loc = property.FindAttribute<LocalizableAttribute>();
@@ -90,10 +90,10 @@ namespace TomPIT.Dom
 
 			var att = new HtmlTextAttribute();
 
-			var sanitized = att.Sanitize(Environment.Context, element, property, property.GetValue(instance), value);
+			var sanitized = att.Sanitize(Element.Environment.Context, element, property, property.GetValue(instance), value);
 			var text = Types.Convert<string>(sanitized);
 
-			Environment.Context.Connection().GetService<IMicroServiceDevelopmentService>().UpdateString(Environment.Context.MicroService(), Environment.Globalization.LanguageToken, element.Id, property.Name, text);
+			Element.Environment.Context.Connection().GetService<IMicroServiceDevelopmentService>().UpdateString(Element.MicroService(), Element.Environment.Globalization.LanguageToken, element.Id, property.Name, text);
 
 			return true;
 		}

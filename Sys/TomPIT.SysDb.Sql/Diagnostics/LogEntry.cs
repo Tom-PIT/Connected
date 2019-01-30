@@ -13,13 +13,9 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 		public string Source { get; set; }
 		public DateTime Created { get; set; }
 		public int EventId { get; set; }
-		public Guid MicroService { get; set; }
-		public string AuthorityId { get; set; }
-		public string Authority { get; set; }
-		public string ContextAuthority { get; set; }
-		public string ContextAuthorityId { get; set; }
-		public Guid ContextMicroService { get; set; }
-		public string ContextProperty { get; set; }
+		public Guid Component { get; set; }
+		public Guid Element { get; set; }
+		public long Metric { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -27,17 +23,13 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 
 			Category = GetString("category");
 			Message = GetString("message");
-			Level = GetValue("tryce_level", TraceLevel.Info);
+			Level = GetValue("trace_level", TraceLevel.Info);
 			Source = GetString("source");
 			Created = GetDate("created");
 			EventId = GetInt("event_id");
-			MicroService = GetGuid("service");
-			AuthorityId = GetString("authority_id");
-			Authority = GetString("authority");
-			ContextAuthorityId = GetString("context_authority_id");
-			ContextAuthority = GetString("context_authority");
-			ContextMicroService = GetGuid("context_service");
-			ContextProperty = GetString("context_property");
+			Component = GetGuid("component");
+			Element = GetGuid("element");
+			Metric = GetLong("metric");
 		}
 	}
 }

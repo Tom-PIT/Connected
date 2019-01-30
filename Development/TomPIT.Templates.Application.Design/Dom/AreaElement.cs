@@ -1,11 +1,17 @@
-﻿using TomPIT.ComponentModel;
+﻿using System.Collections.Generic;
+using TomPIT.Application.Security;
+using TomPIT.ComponentModel;
 using TomPIT.Dom;
 using TomPIT.Ide;
+using TomPIT.Security;
 
 namespace TomPIT.Application.Design.Dom
 {
-	internal class AreaElement : ComponentElement, IComponentScope
+	internal class AreaElement : ComponentPermissionElement, IComponentScope
 	{
+		private List<string> _claims = null;
+		private IPermissionDescriptor _descriptor = null;
+
 		public AreaElement(IEnvironment environment, IDomElement parent, IComponent component) : base(environment, parent, component)
 		{
 		}
@@ -27,6 +33,31 @@ namespace TomPIT.Application.Design.Dom
 				Items.Add(new CategoryElement(Environment, this, "View", "Views", "Views", "fal fa-browser"));
 			else
 				base.LoadChildren(id);
+		}
+
+		public override List<string> Claims
+		{
+			get
+			{
+				if (_claims == null)
+					_claims = new List<string>
+					{
+						TomPIT.Claims.AccessUserInterface
+					};
+
+				return _claims;
+			}
+		}
+
+		public override IPermissionDescriptor PermissionDescriptor
+		{
+			get
+			{
+				if (_descriptor == null)
+					_descriptor = new AreaPermissionDescriptor();
+
+				return _descriptor;
+			}
 		}
 	}
 }

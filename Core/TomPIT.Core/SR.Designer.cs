@@ -169,6 +169,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Diagnostic.
+        /// </summary>
+        public static string CatDiagnostic {
+            get {
+                return ResourceManager.GetString("CatDiagnostic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Globalization.
         /// </summary>
         public static string CatGlobalization {

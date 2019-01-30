@@ -50,7 +50,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_template == null)
-					_template =  Connection.GetService<IMicroServiceTemplateService>().Select(MicroService.Template);
+					_template = Connection.GetService<IMicroServiceTemplateService>().Select(MicroService.Template);
 
 				return _template;
 			}
@@ -61,7 +61,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_root == null && Template != null)
-					_root = Template.QuerySecurityRoot(this);
+					_root = Template.QueryDomRoot(Environment, this, MicroService.Token);
 
 				return _root;
 			}

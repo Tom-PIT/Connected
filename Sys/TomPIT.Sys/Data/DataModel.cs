@@ -28,11 +28,12 @@ namespace TomPIT.Sys.Data
 		private static Lazy<MessageSubscribers> _messageSubscribers = new Lazy<MessageSubscribers>(() => { return new MessageSubscribers(Container); });
 		private static Lazy<MessageRecipients> _messageRecipients = new Lazy<MessageRecipients>(() => { return new MessageRecipients(Container); });
 		private static Lazy<Messages> _messages = new Lazy<Messages>(() => { return new Messages(Container); });
-		private static Lazy<Logging> _logging = new Lazy<Logging>(() => { return new Logging(Container); });
+		private static Lazy<Logging> _logging = new Lazy<Logging>(() => { return new Logging(); });
 		private static Lazy<Workers> _workers = new Lazy<Workers>(() => { return new Workers(Container); });
 		private static Lazy<Events> _events = new Lazy<Events>(() => { return new Events(); });
 		private static Lazy<Audit> _audit = new Lazy<Audit>(() => { return new Audit(); });
 		private static Lazy<AuthenticationTokens> _authTokens = new Lazy<AuthenticationTokens>(() => { return new AuthenticationTokens(Container); });
+		private static Lazy<Metrics> _metrics = new Lazy<Metrics>(() => { return new Metrics(); });
 
 		public static MicroServicesMeta MicroServicesMeta { get { return _meta.Value; } }
 		public static MicroServices MicroServices { get { return _microServices.Value; } }
@@ -60,6 +61,7 @@ namespace TomPIT.Sys.Data
 		public static Events Events { get { return _events.Value; } }
 		public static Audit Audit { get { return _audit.Value; } }
 		public static AuthenticationTokens AuthenticationTokens { get { return _authTokens.Value; } }
+		public static Metrics Metrics { get { return _metrics.Value; } }
 
 		internal static MemoryCache Container
 		{

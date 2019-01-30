@@ -3,6 +3,7 @@ using System.Reflection;
 using TomPIT.Connectivity;
 using TomPIT.Design;
 using TomPIT.Ide;
+using TomPIT.Services;
 
 namespace TomPIT.Dom
 {
@@ -85,5 +86,6 @@ namespace TomPIT.Dom
 		public virtual bool SortChildren { get { return _sortChildren; } set { _sortChildren = value; } }
 
 		protected ISysConnection Connection { get { return Environment.Context.Connection(); } }
+		protected bool IsDesignTime { get { return (Shell.GetService<IRuntimeService>().Mode & EnvironmentMode.Design) == EnvironmentMode.Design; } }
 	}
 }

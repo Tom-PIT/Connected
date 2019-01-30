@@ -49,7 +49,7 @@ namespace TomPIT.Designers
 			get
 			{
 				if (_text == null)
-					_text = Connection.GetService<IComponentService>().SelectText(Environment.Context.MicroService(), Content);
+					_text = Connection.GetService<IComponentService>().SelectText(Element.MicroService(), Content);
 
 				return _text;
 			}
@@ -175,7 +175,7 @@ namespace TomPIT.Designers
 
 		private object QueryDataSources()
 		{
-			var ds = Connection.GetService<IComponentService>().QueryComponents(Environment.Context.MicroService(), "DataSource").OrderBy(f => f.Name);
+			var ds = Connection.GetService<IComponentService>().QueryComponents(Element.MicroService(), "DataSource").OrderBy(f => f.Name);
 			var r = new JArray();
 
 			foreach (var i in ds)

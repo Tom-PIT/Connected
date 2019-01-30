@@ -1,6 +1,5 @@
 ﻿using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.Exceptions;
 
 namespace TomPIT.Services.Context
 {
@@ -60,7 +59,7 @@ namespace TomPIT.Services.Context
 		protected override void Validate()
 		{
 			if (Segments.Count > 3 || Segments.Count < 1)
-				throw ExecutionException.InvalidQualifier(Context, CreateDescriptor(ExecutionEvents.Runtime), Value, "[microService]/api/operation");
+				throw new RuntimeException(string.Format("{0} ({1}). {2}: {3}.", SR.ErrInvalidQualifier, Value, SR.ErrInvalidQualifierExpected, "[microService]/api/operation"));
 		}
 
 		public string Api { get; private set; }

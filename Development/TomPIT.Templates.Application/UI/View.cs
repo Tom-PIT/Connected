@@ -1,12 +1,16 @@
 ﻿using System;
 using System.ComponentModel;
 using TomPIT.Annotations;
+using TomPIT.ComponentModel;
 using TomPIT.Security;
+using TomPIT.Services;
 
 namespace TomPIT.Application.UI
 {
 	[Create("View")]
 	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
+	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = Services.EnvironmentMode.Runtime)]
+	[DomElement("TomPIT.Application.Design.Dom.ViewElement, TomPIT.Application.Design")]
 	[Syntax("razor")]
 	public class View : ViewBase, IApplicationView, IAuthorizationChain
 	{
@@ -25,6 +29,13 @@ namespace TomPIT.Application.UI
 
 		[Browsable(false)]
 		public Guid AuthorizationParent => Area;
+
+		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDiagnostic)]
+		public bool MetricEnabled { get; set; }
+		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDiagnostic)]
+		public MetricLevel MetricLevel { get; set; } = MetricLevel.General;
 
 		public override void ComponentCreated(ComponentModel.IComponent scope)
 		{

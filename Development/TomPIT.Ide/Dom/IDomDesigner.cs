@@ -14,6 +14,7 @@ namespace TomPIT.Dom
 		string PropertyView { get; }
 		object ViewModel { get; }
 		string Path { get; }
+		bool SupportsChaining { get; }
 
 		bool IsPropertyEditable(string propertyName);
 	}

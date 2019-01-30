@@ -46,7 +46,7 @@ namespace TomPIT.Dom
 
 			while (enm.MoveNext())
 			{
-				var element = CreatePropertyElement(this, enm.Current, null, idx);
+				var element = CreatePropertyElement(enm.Current, null, idx);
 
 				if (element != null)
 					properties.Add(element);
@@ -117,7 +117,7 @@ namespace TomPIT.Dom
 
 			foreach (var i in list)
 			{
-				var element = CreatePropertyElement(this, instance, i, 0);
+				var element = CreatePropertyElement(instance, i, 0);
 
 				if (element != null)
 					properties.Add(element);
@@ -126,42 +126,9 @@ namespace TomPIT.Dom
 			}
 		}
 
-		private IDomElement CreatePropertyElement(IDomElement parent, object instance, PropertyInfo pi, int index)
+		private IDomElement CreatePropertyElement(object instance, PropertyInfo pi, int index)
 		{
-			var args = new ReflectorCreateArgs
-			{
-				Environment = Environment,
-				Instance = instance,
-				Property = pi,
-				Parent = this,
-				Index = index
-			};
-
-			if (pi != null)
-			{
-				var element = pi.AttributeLookup<DomElementAttribute>();
-
-				if (element != null)
-				{
-					return element.Type == null
-						? Type.GetType(element.TypeName).CreateInstance<DomElement>(new object[] { args })
-						: element.Type.CreateInstance<DomElement>(new object[] { args });
-				}
-			}
-
-			if (instance != null)
-			{
-				var element = instance.GetType().FindAttribute<DomElementAttribute>();
-
-				if (element != null)
-				{
-					return element.Type == null
-						? Type.GetType(element.TypeName).CreateInstance<DomElement>(new object[] { args })
-						: element.Type.CreateInstance<DomElement>(new object[] { args });
-				}
-			}
-
-			return null;
+			return new DomElementActivator(Environment, this, instance, pi, index).CreateInstance();
 		}
 
 		private IDomDesigner CreatePropertyDesignerInstance(object component, string propertyName, DomDesignerAttribute designer)
@@ -188,13 +155,13 @@ namespace TomPIT.Dom
 			if (pi == null)
 				return null;
 
-			var att = pi.AttributeLookup<DomDesignerAttribute>();
+			var att = pi.ResolveDesigner();
 
 			if (att != null)
 				return CreatePropertyDesignerInstance(instance, propertyName, att);
 			else
 			{
-				att = pi.PropertyType.FindAttribute<DomDesignerAttribute>();
+				att = pi.PropertyType.ResolveDesigner();
 
 				if (att != null)
 					return CreatePropertyDesignerInstance(instance, propertyName, att);
@@ -204,7 +171,7 @@ namespace TomPIT.Dom
 
 					if (value != null)
 					{
-						att = value.GetType().FindAttribute<DomDesignerAttribute>();
+						att = value.GetType().ResolveDesigner();
 
 						if (att != null)
 							return CreatePropertyDesignerInstance(instance, propertyName, att);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
@@ -20,6 +21,26 @@ namespace TomPIT
 				return null;
 
 			return atts.ElementAt(0);
+		}
+
+		public static List<T> FindAttributes<T>(this PropertyInfo info) where T : Attribute
+		{
+			var atts = info.GetCustomAttributes<T>(true);
+
+			if (atts == null || atts.Count() == 0)
+				return new List<T>();
+
+			return atts.ToList<T>();
+		}
+
+		public static List<T> FindAttributes<T>(this Type type) where T : Attribute
+		{
+			var r = type.GetCustomAttributes<T>(true);
+
+			if (r == null)
+				return new List<T>();
+
+			return r.ToList<T>();
 		}
 
 		public static T FindAttribute<T>(this Type type) where T : Attribute

@@ -19,22 +19,27 @@ namespace TomPIT.Ide
 		private string _view = null;
 		private object _component = null;
 
-		public PropertyProvider(IEnvironment environment) : this(environment, null)
+		public PropertyProvider(IDomElement element) : this(element, null)
 		{
 
 		}
 
-		public PropertyProvider(IEnvironment environment, object component) : base(environment)
+		public PropertyProvider(IDomElement element, object component) : base(element == null ? null : element.Environment)
 		{
 			_component = component;
+			Element = element;
 		}
 
+		private IDomElement Element { get; }
 		private object Component
 		{
 			get
 			{
 				if (_component != null)
 					return _component;
+
+				if (Element == null)
+					return null;
 
 				if (Environment.Selection.Designer != null && Environment.Selection.Designer is IDesignerSelectionProvider sp)
 					return sp.Value;
@@ -167,7 +172,7 @@ namespace TomPIT.Ide
 		{
 			if (value.IsLocalizable && Environment.Globalization.LanguageToken != Guid.Empty)
 			{
-				var ss = Shell.GetService<IMicroServiceService>().SelectString(Environment.Context.MicroService(), Environment.Globalization.LanguageToken, id, propertyName);
+				var ss = Shell.GetService<IMicroServiceService>().SelectString(Element.MicroService(), Environment.Globalization.LanguageToken, id, propertyName);
 
 				if (ss != null)
 					value.Value = ss;
@@ -374,10 +379,10 @@ namespace TomPIT.Ide
 				{
 					_view = string.Empty;
 
-					if (Environment.Selected() == null)
+					if (Element == null)
 						return null;
 
-					var designer = Environment.Selected().Designer;
+					var designer = Element.Designer;
 
 					if (designer == null)
 						return null;

@@ -10,6 +10,7 @@
 		public const string CategoryGlobalization = "CatGlobalization";
 		public const string CategorySecurity = "CatSecurity";
 		public const string CategoryCollaboration = "CatCollaboration";
+		public const string CategoryDiagnostic = "CatDiagnostic";
 
 		public PropertyCategoryAttribute(string category) : base(category)
 		{

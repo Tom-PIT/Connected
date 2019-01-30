@@ -3,7 +3,6 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.ComponentModel;
-using TomPIT.Exceptions;
 using TomPIT.Services;
 
 namespace TomPIT.Models
@@ -51,7 +50,7 @@ namespace TomPIT.Models
 					var s = Body.Optional("__component", string.Empty);
 
 					if (s == string.Empty)
-						throw ExecutionException.ParameterExpected(this, new ExecutionContextState(), "__component");
+						throw new RuntimeException(string.Format("{0} ({1})", SR.ErrDataParameterExpected, "__component")).WithMetrics(this);
 
 					var tokens = s.Split('.');
 

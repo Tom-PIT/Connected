@@ -15,7 +15,7 @@ namespace TomPIT.Ide
 
 		protected override List<IDomElement> Root()
 		{
-			return Template.QueryDomRoot(Environment);
+			return Template.QueryDomRoot(Environment, null, Environment.Context.MicroService());
 		}
 		private IMicroServiceTemplate Template { get; }
 	}

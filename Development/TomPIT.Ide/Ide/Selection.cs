@@ -23,7 +23,7 @@ namespace TomPIT.Ide
 			get
 			{
 				if (_properties == null)
-					_properties = new PropertyProvider(Environment);
+					_properties = new PropertyProvider(Environment.Selected());
 
 				return _properties;
 			}
@@ -56,17 +56,22 @@ namespace TomPIT.Ide
 					_designerResolved = true;
 
 					var current = Element;
+					var origin = true;
 
 					_designer = ResolveDesigner(current);
 
 					while (_designer == null)
 					{
+						origin = false;
 						current = current.Parent;
 
 						if (current == null)
 							break;
 
 						_designer = ResolveDesigner(current);
+
+						if (_designer != null && !origin && !_designer.SupportsChaining)
+							return null;
 					}
 				}
 

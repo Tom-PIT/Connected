@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
+using TomPIT.Diagnostics;
 using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Controllers
@@ -12,21 +15,36 @@ namespace TomPIT.Sys.Controllers
 		{
 			var body = FromBody();
 
-			var category = body.Optional("category", string.Empty);
-			var message = body.Optional("message", string.Empty);
-			var level = body.Optional("level", TraceLevel.Off);
-			var source = body.Optional("source", string.Empty);
-			var eventId = body.Optional("eventId", 0);
-			var microService = body.Optional("microService", Guid.Empty);
-			var authorityId = body.Optional("authorityId", string.Empty);
-			var authority = body.Optional("authority", string.Empty);
-			var contextAuthority = body.Optional("contextAuthority", string.Empty);
-			var contextAuthorityId = body.Optional("contextAuthorityId", string.Empty);
-			var contextMicroService = body.Optional("contextMicroService", Guid.Empty);
-			var contextProperty = body.Optional("contextProperty", string.Empty);
+			var data = body.Optional<JArray>("data", null);
 
-			DataModel.Logging.Insert(category, source, message, level, eventId, microService, contextMicroService,
-				authorityId, authority, contextAuthority, contextAuthorityId, contextProperty);
+			if (data == null)
+				return;
+
+			var items = new List<ILogEntry>();
+
+			foreach (var i in data)
+			{
+				if (!(i is JObject jo))
+					continue;
+
+				items.Add(new LogEntry
+				{
+					Category = jo.Optional("category", string.Empty),
+					Message = jo.Optional("message", string.Empty),
+					Level = jo.Optional("level", TraceLevel.Off),
+					Source = jo.Optional("source", string.Empty),
+					EventId = jo.Optional("eventId", 0),
+					Component = jo.Optional("component", Guid.Empty),
+					Element = jo.Optional("element", Guid.Empty),
+					Metric = jo.Optional("metric", 0L),
+					Created = jo.Optional("created", DateTime.UtcNow)
+				});
+			}
+
+			if (items.Count == 0)
+				return;
+
+			DataModel.Logging.Insert(items);
 		}
 	}
 }

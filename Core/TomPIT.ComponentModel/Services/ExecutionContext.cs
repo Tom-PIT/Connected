@@ -2,7 +2,6 @@
 using TomPIT.Annotations;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Connectivity;
-using TomPIT.Exceptions;
 using TomPIT.Services.Context;
 
 namespace TomPIT.Services
@@ -72,7 +71,7 @@ namespace TomPIT.Services
 		public T GetService<T>()
 		{
 			if (Connection == null)
-				throw new ExecutionException(SR.ErrInstanceEndpointNotFound);
+				throw new RuntimeException(SR.ErrInstanceEndpointNotFound).WithMetrics(this);
 
 			return Connection.GetService<T>();
 		}

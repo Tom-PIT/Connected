@@ -7,6 +7,8 @@ using TomPIT.Services;
 namespace TomPIT.Application.Apis
 {
 	[Create("Api")]
+	[DomElement("TomPIT.Application.Design.Dom.ApiElement, TomPIT.Application.Design")]
+	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = EnvironmentMode.Runtime)]
 	public class Api : ComponentConfiguration, IApi
 	{
 		public const string ComponentCategory = "Api";
@@ -15,6 +17,8 @@ namespace TomPIT.Application.Apis
 		private ApiProtocolOptions _protocols = null;
 
 		[Items("TomPIT.Application.Design.Items.OperationCollection, TomPIT.Application.Design")]
+		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
+		[DomDesigner(DomDesignerAttribute.EmptyDesigner, Mode = EnvironmentMode.Runtime)]
 		public ListItems<IApiOperation> Operations
 		{
 			get

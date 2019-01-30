@@ -10,17 +10,17 @@ namespace TomPIT.Configuration
 		[KeyProperty]
 		[Browsable(false)]
 		public string Name { get; set; }
-		[EnvironmentVisibility(true)]
+		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		[MaxLength(1024)]
 		[InvalidateEnvironment(EnvironmentSection.Designer)]
 		public string Value { get; set; }
 		[Browsable(false)]
 		public bool Visible { get; set; }
-		[EnvironmentVisibility(true)]
+		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
 		[Browsable(false)]
 		public DataType DataType { get; set; }
-		[EnvironmentVisibility(true)]
+		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
 		[MaxLength(256)]
 		[PropertyEditor(PropertyEditorAttribute.Tag)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]

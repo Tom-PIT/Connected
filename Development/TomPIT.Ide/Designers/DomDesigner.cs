@@ -66,5 +66,7 @@ namespace TomPIT.Designers
 		{
 			return true;
 		}
+
+		public virtual bool SupportsChaining { get; } = true;
 	}
 }

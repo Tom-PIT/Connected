@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using TomPIT.Data.Sql;
 using TomPIT.Diagnostics;
@@ -24,23 +25,45 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 			w.Execute();
 		}
 
-		public void Insert(DateTime date, string category, string source, string message, TraceLevel level, int eventId, Guid microService, Guid contextMicroService, string authorityId, string authority, string contextAuthority, string contextAuthorityId, string contextProperty)
+		public void Insert(List<ILogEntry> items)
 		{
 			var w = new Writer("tompit.log_ins");
 
-			w.CreateParameter("@created", date);
-			w.CreateParameter("@trace_level", level);
-			w.CreateParameter("@message", message, true);
-			w.CreateParameter("@source", source, true);
-			w.CreateParameter("@category", category, true);
-			w.CreateParameter("@event_id", eventId, true);
-			w.CreateParameter("@authority_id", authorityId, true);
-			w.CreateParameter("@authority", authority, true);
-			w.CreateParameter("@context_authority_id", contextAuthorityId, true);
-			w.CreateParameter("@context_authority", contextAuthority, true);
-			w.CreateParameter("@context_property", contextProperty, true);
-			w.CreateParameter("@service", microService, true);
-			w.CreateParameter("@context_service", contextMicroService, true);
+			var a = new JArray();
+
+			foreach (var i in items)
+			{
+				var d = new JObject
+				{
+					{"created", i.Created },
+					{"trace_level", (int)i.Level }
+				};
+
+				if (!string.IsNullOrWhiteSpace(i.Message))
+					d.Add("message", i.Message);
+
+				if (!string.IsNullOrWhiteSpace(i.Source))
+					d.Add("source", i.Source);
+
+				if (!string.IsNullOrWhiteSpace(i.Category))
+					d.Add("category", i.Category);
+
+				if (i.EventId > 0)
+					d.Add("event_id", i.EventId);
+
+				if (i.Metric > 0)
+					d.Add("metric", i.Metric);
+
+				if (i.Component != Guid.Empty)
+					d.Add("component", i.Component);
+
+				if (i.Element != Guid.Empty)
+					d.Add("element", i.Element);
+
+				a.Add(d);
+			}
+
+			w.CreateParameter("@items", JsonConvert.SerializeObject(a));
 
 			w.Execute();
 		}
@@ -50,6 +73,27 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 			var r = new Reader<LogEntry>("tompit.log_que");
 
 			r.CreateParameter("@date", date.Date);
+
+			return r.Execute().ToList<ILogEntry>();
+		}
+
+		public List<ILogEntry> Query(DateTime date, long metric)
+		{
+			var r = new Reader<LogEntry>("tompit.log_que");
+
+			r.CreateParameter("@date", date.Date);
+			r.CreateParameter("@metric", metric);
+
+			return r.Execute().ToList<ILogEntry>();
+		}
+
+		public List<ILogEntry> Query(DateTime date, Guid component, Guid element)
+		{
+			var r = new Reader<LogEntry>("tompit.log_que");
+
+			r.CreateParameter("@date", date.Date);
+			r.CreateParameter("@component", component);
+			r.CreateParameter("@element", element, true);
 
 			return r.Execute().ToList<ILogEntry>();
 		}

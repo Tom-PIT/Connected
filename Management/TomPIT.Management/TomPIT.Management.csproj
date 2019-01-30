@@ -25,6 +25,7 @@
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Design\TomPIT.Design.csproj" />
+    <ProjectReference Include="..\..\Development\TomPIT.Development\TomPIT.Development.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Ide.UI\TomPIT.Ide.UI.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Ide\TomPIT.Ide.csproj" />
     <ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using TomPIT.ComponentModel;
-using TomPIT.Exceptions;
 using TomPIT.Services;
 
 namespace TomPIT.TagHelpers
@@ -25,7 +24,7 @@ namespace TomPIT.TagHelpers
 				var reference = ctx.Connection().GetService<IMicroServiceService>().Select(microService);
 
 				if (reference == null)
-					throw new ExecutionException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
+					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService)).WithMetrics(ctx);
 
 				ms.ValidateMicroServiceReference(ctx.Connection(), reference.Name);
 			}
@@ -37,7 +36,6 @@ namespace TomPIT.TagHelpers
 					microService = ResolveMicroservice(ViewContext.ExecutingFilePath).Name;
 				else
 					microService = ctx.Connection().GetService<IMicroServiceService>().Select(ctx.MicroService()).Name;
-
 			}
 
 			output.TagName = "script";

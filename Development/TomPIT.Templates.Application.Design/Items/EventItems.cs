@@ -12,7 +12,7 @@ namespace TomPIT.Application.Design.Items
 	{
 		protected override void OnQueryDescriptors(IDomElement element, List<IItemDescriptor> items)
 		{
-			var s = element.Environment.Context.MicroService();
+			var s = element.MicroService();
 			var server = element.Environment.Context.Connection();
 
 			var ds = server.GetService<IComponentService>().QueryComponents(s, DistributedEvent.ComponentCategory).OrderBy(f => f.Name);
@@ -22,7 +22,7 @@ namespace TomPIT.Application.Design.Items
 			foreach (var i in ds)
 				items.Add(new ItemDescriptor(i.Name, i.Name));
 
-			var refs = server.GetService<IDiscoveryService>().References(element.Environment.Context.MicroService());
+			var refs = server.GetService<IDiscoveryService>().References(element.MicroService());
 
 			var external = new List<ItemDescriptor>();
 

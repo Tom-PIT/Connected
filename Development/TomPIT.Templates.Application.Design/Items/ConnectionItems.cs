@@ -11,7 +11,7 @@ namespace TomPIT.Application.Design.Items
 	{
 		protected override void OnQueryDescriptors(IDomElement element, List<IItemDescriptor> items)
 		{
-			var ds = element.Environment.Context.Connection().GetService<IComponentService>().QueryComponents(element.Environment.Context.MicroService(), Connection.ComponentCategory);
+			var ds = element.Environment.Context.Connection().GetService<IComponentService>().QueryComponents(element.MicroService(), Connection.ComponentCategory);
 
 			items.Add(new ItemDescriptor(SR.DevSelect, Guid.Empty.ToString()));
 

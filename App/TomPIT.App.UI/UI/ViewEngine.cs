@@ -12,7 +12,6 @@ using System.Net;
 using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.Models;
-using TomPIT.Runtime;
 using TomPIT.Security;
 using TomPIT.Services;
 
@@ -54,6 +53,9 @@ namespace TomPIT.UI
 		{
 			name = name.Trim('/');
 
+			var model = CreateModel();
+
+			//model.Services.Log
 			var actionContext = GetActionContext(Context);
 			var viewEngineResult = Engine.FindView(actionContext, name, false);
 
@@ -69,7 +71,6 @@ namespace TomPIT.UI
 			}
 
 			var view = viewEngineResult.View;
-			var model = CreateModel();
 
 			Authorize(model);
 

@@ -25,22 +25,27 @@ namespace TomPIT.Services.Context
 			var component = ctx.Connection().GetService<IComponentService>().SelectComponent(microService, "Transaction", name);
 
 			if (component == null)
-				throw ExecutionException.Create(Context, string.Format("{0} ({1})", SR.ErrTransactionNotFound, name), CreateDescriptor(ExecutionEvents.DataWrite, ExecutionContextState.DatabasePost, null, null, microService));
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrTransactionNotFound, name)).WithMetrics(ctx);
+			}
 
 			if (!(ctx.Connection().GetService<IComponentService>().SelectConfiguration(component.Token) is ITransaction config))
-				throw ExecutionException.Create(Context, string.Format("{0} ({1})", SR.ErrTransactionNotFound, name), CreateDescriptor(ExecutionEvents.DataWrite, ExecutionContextState.DatabasePost, null, null, microService));
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrTransactionNotFound, name))
+				{
+					Component = component.Token
+				}.WithMetrics(ctx);
+			}
 
-			var d = CreateDescriptor(ExecutionEvents.DataWrite, ExecutionContextState.DatabasePost, component.Token.ToString(), null, microService);
-
-			var con = CreateConnection(ctx, d, config.Connection, component.Name);
-			var dataProvider = CreateDataProvider(ctx, d, con);
+			var con = CreateConnection(ctx, config.Connection, config.Configuration());
+			var dataProvider = CreateDataProvider(ctx, con);
 
 			var preparing = ctx.Connection().Execute(config.Preparing, this, new TransactionPreparingArguments(ctx, arguments));
 
 			if (preparing.Cancel)
 				return null;
 
-			var command = CreateCommand(d, config, con, preparing.Arguments);
+			var command = CreateCommand(config, con, preparing.Arguments);
 
 			var validating = ctx.Connection().Execute(config.Validating, this, new ValidatingArguments(ctx, command));
 
@@ -78,7 +83,7 @@ namespace TomPIT.Services.Context
 			return Execute(microService, name, arguments, null);
 		}
 
-		private IDataCommandDescriptor CreateCommand(IExecutionContextState sender, ITransaction ds, IConnection connection, JObject arguments)
+		private IDataCommandDescriptor CreateCommand(ITransaction ds, IConnection connection, JObject arguments)
 		{
 			var r = new DataCommandDescriptor
 			{
@@ -88,8 +93,8 @@ namespace TomPIT.Services.Context
 				ConnectionString = connection.Value.Trim()
 			};
 
-			ValidateArguments(sender, ds.Parameters.ToList(), arguments);
-			SetCommandParameters(sender, r, ds.Parameters.ToList(), arguments);
+			ValidateArguments(ds, ds.Parameters.ToList(), arguments);
+			SetCommandParameters(r, ds.Parameters.ToList(), arguments);
 
 			return r;
 		}

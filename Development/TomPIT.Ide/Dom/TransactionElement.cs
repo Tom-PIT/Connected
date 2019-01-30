@@ -51,7 +51,7 @@ namespace TomPIT.Dom
 
 		private ITransactionResult Execute(object instance, PropertyInfo property, string value)
 		{
-			return new PropertyWriter(Environment).Write(instance, property.Name, value);
+			return new PropertyWriter(this).Write(instance, property.Name, value);
 		}
 
 		private ITransactionResult SaveText(string property, string attribute, string value)
@@ -115,7 +115,7 @@ namespace TomPIT.Dom
 			{
 				var se = text as ISourceCode;
 
-				Connection.GetService<ICompilerService>().Invalidate(Environment.Context, Environment.Context.MicroService(), se.Configuration().Component(Environment.Context), se);
+				Connection.GetService<ICompilerService>().Invalidate(Environment.Context, this.MicroService(), se.Configuration().Component(Environment.Context), se);
 
 				r.Invalidate |= EnvironmentSection.Events;
 			}

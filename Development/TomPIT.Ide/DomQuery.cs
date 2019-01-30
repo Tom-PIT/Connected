@@ -68,6 +68,16 @@ namespace TomPIT
 				return node.Component.GetType().FindAttribute<T>();
 		}
 
+		public static List<T> AttributesLookup<T>(this PropertyInfo property) where T : Attribute
+		{
+			var r = property.FindAttributes<T>();
+
+			if (r != null)
+				return r;
+
+			return property.GetType().FindAttributes<T>();
+		}
+
 		public static T AttributeLookup<T>(this PropertyInfo property) where T : Attribute
 		{
 			var r = property.FindAttribute<T>();
@@ -313,7 +323,7 @@ namespace TomPIT
 			{
 				var env = i.FindAttribute<EnvironmentVisibilityAttribute>();
 
-				if (env == null || env.Visibility == EnvironmentMode.Design || env.Always)
+				if (env == null || ((env.Visibility & EnvironmentMode.Design) == EnvironmentMode.Design))
 					r.Add(i);
 			}
 
@@ -328,7 +338,7 @@ namespace TomPIT
 			{
 				var env = i.FindAttribute<EnvironmentVisibilityAttribute>();
 
-				if (env != null && (env.Always || env.Visibility == EnvironmentMode.Runtime))
+				if (env != null && ((env.Visibility & EnvironmentMode.Runtime) == EnvironmentMode.Runtime))
 					r.Add(i);
 			}
 

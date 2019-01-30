@@ -5,7 +5,6 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Diagnostics;
-using TomPIT.Exceptions;
 
 namespace TomPIT.Services.Context
 {
@@ -32,19 +31,32 @@ namespace TomPIT.Services.Context
 				// must be inside the same microservice
 				case ElementScope.Internal:
 					if (svc.MicroService(Context.Connection()) != Context.MicroService())
-						throw new ExecutionException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, api, operation));
+						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, api, operation))
+						{
+							Component = svc.Component
+						}.WithMetrics(ctx);
+
 					break;
 				case ElementScope.Private:
 					// must be inside the same api
 					if (sender == null || sender.Api.Component != svc.Component)
-						throw new ExecutionException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, api, operation));
+						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, api, operation))
+						{
+							Component = svc.Component
+						}.WithMetrics(ctx);
+
 					break;
 			}
 
 			var op = svc.Operations.FirstOrDefault(f => string.Equals(f.Name, operation, StringComparison.OrdinalIgnoreCase));
 
 			if (op == null)
-				throw ExecutionException.Create(Context, string.Format("{0} ({1})", SR.ErrServiceOperationNotFound, operation), CreateDescriptor(ExecutionEvents.DataRead, ExecutionContextState.Api, null, null, ms));
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrServiceOperationNotFound, operation))
+				{
+					Component = svc.Component
+				}.WithMetrics(ctx);
+			}
 
 			switch (op.Scope)
 			{
@@ -122,12 +134,10 @@ namespace TomPIT.Services.Context
 				var le = new LogEntry
 				{
 					Category = "Api",
-					Authority = "Api",
-					AuthorityId = operation.Closest<IApi>().Component.AsString(),
-					ContextProperty = operation.Id.AsString(),
+					Component = operation.Configuration().Component,
+					Element = operation.Id,
 					Level = System.Diagnostics.TraceLevel.Error,
 					Message = ex.Message,
-					MicroService = operation.MicroService(Context.Connection()),
 					Source = "Commit"
 				};
 
@@ -148,12 +158,10 @@ namespace TomPIT.Services.Context
 				var le = new LogEntry
 				{
 					Category = "Api",
-					Authority = "Api",
-					AuthorityId = operation.Closest<IApi>().Component.AsString(),
-					ContextProperty = operation.Id.AsString(),
+					Component = operation.Configuration().Component,
+					Element = operation.Id,
 					Level = System.Diagnostics.TraceLevel.Error,
 					Message = ex.Message,
-					MicroService = operation.MicroService(Context.Connection()),
 					Source = "Rollback"
 				};
 
@@ -171,11 +179,16 @@ namespace TomPIT.Services.Context
 					component = Context.Connection().GetService<IComponentService>().SelectComponent("Api", api);
 
 				if (component == null)
-					throw ExecutionException.Create(Context, string.Format("{0} ({1})", SR.ErrComponentNotFound, api), CreateDescriptor(ExecutionEvents.DataRead, ExecutionContextState.Api, null, null, microService));
+					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrComponentNotFound, api)).WithMetrics(Context);
 			}
 
 			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(component.Token) is IApi config))
-				throw ExecutionException.Create(Context, string.Format("{0} ({1})", SR.ErrComponentCorrupted, api), CreateDescriptor(ExecutionEvents.DataRead, ExecutionContextState.Api, null, null, microService));
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrComponentCorrupted, api))
+				{
+					Component = component.Token
+				}.WithMetrics(Context);
+			}
 
 			return config;
 		}

@@ -1,32 +1,32 @@
 ﻿@model TomPIT.Ide.IEnvironment
 
 @{
-    string view = string.Empty;
-    object model = null;
-    string title = string.Empty;
+	string view = string.Empty;
+	object model = null;
+	string title = string.Empty;
 
-    if (Model.Selection.Designer == null || string.IsNullOrWhiteSpace(Model.Selection.Designer.View))
-    {
-        view = "~/Views/Ide/Designers/Empty.cshtml";
-        model = Model;
-    }
-    else
-    {
-        view = Model.Selection.Designer.View;
-        model = Model.Selection.Designer.ViewModel;
-        title = Model.Selection.Designer.Element.Title;
-    }
+	if (Model.Selection.Designer == null || string.IsNullOrWhiteSpace(Model.Selection.Designer.View))
+	{
+		view = "~/Views/Ide/Designers/Empty.cshtml";
+		model = Model;
+	}
+	else
+	{
+		view = Model.Selection.Designer.View;
+		model = Model.Selection.Designer.ViewModel;
+		title = Model.Selection.Designer.Element.Title;
+	}
 }
 
 <div class="designer-title">
-    <strong>@title</strong>
-    <span class="float-right close-editor" id="closePropertyEditor">
-        <i class="fal fa-times"></i>
-    </span>
+	<strong>@title</strong>
+	<span class="float-right close-editor" id="closePropertyEditor">
+		<i class="fal fa-times"></i>
+	</span>
 </div>
 
-@Html.Partial("~/Views/Ide/Designers/Toolbar.cshtml", Model)
-@Html.Partial(view, model)
+@await Html.PartialAsync("~/Views/Ide/Designers/Toolbar.cshtml", Model)
+@await Html.PartialAsync(view, model)
 
 <script>
     $('#closePropertyEditor').click(function () {

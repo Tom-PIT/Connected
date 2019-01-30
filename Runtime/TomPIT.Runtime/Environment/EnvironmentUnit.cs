@@ -7,7 +7,7 @@ namespace TomPIT.Environment
 {
 	internal class EnvironmentUnit : IEnvironmentUnit
 	{
-		[EnvironmentVisibility(true)]
+		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[Required]
 		[MaxLength(128)]

@@ -58,12 +58,12 @@ namespace TomPIT.Designers
 		{
 			var shortName = descriptor.Type.ShortName();
 			var att = descriptor.Type.FindAttribute<CreateAttribute>();
-			var name = Connection.GetService<IComponentDevelopmentService>().CreateName(Environment.Context.MicroService(), Owner.Category, att == null ? descriptor.Type.ShortName() : att.Prefix);
+			var name = Connection.GetService<IComponentDevelopmentService>().CreateName(Element.MicroService(), Owner.Category, att == null ? descriptor.Type.ShortName() : att.Prefix);
 
 			var scope = DomQuery.Closest<IFeatureScope>(Owner);
 			var cs = DomQuery.Closest<IComponentScope>(Owner);
 
-			var id = Connection.GetService<IComponentDevelopmentService>().Insert(cs?.Component, Environment.Context.MicroService(), scope == null ? Guid.Empty : scope.Feature, Owner.Category, name, descriptor.Type.TypeName());
+			var id = Connection.GetService<IComponentDevelopmentService>().Insert(cs?.Component, Element.MicroService(), scope == null ? Guid.Empty : scope.Feature, Owner.Category, name, descriptor.Type.TypeName());
 			var component = Connection.GetService<IComponentService>().SelectComponent(id);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
@@ -72,7 +72,7 @@ namespace TomPIT.Designers
 			r.Message = string.Format(SR.DevColCreateSuccessful, name);
 			r.Title = SR.DevAddComponent;
 			r.ExplorerPath = string.Format("{0}/{1}", DomQuery.Path(Element), component.Token);
-			
+
 			return r;
 		}
 

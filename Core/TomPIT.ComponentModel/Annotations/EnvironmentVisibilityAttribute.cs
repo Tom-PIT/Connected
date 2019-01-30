@@ -6,11 +6,6 @@ namespace TomPIT.Annotations
 	[AttributeUsage(AttributeTargets.Property)]
 	public class EnvironmentVisibilityAttribute : Attribute
 	{
-		public EnvironmentVisibilityAttribute(bool alwaysVisible)
-		{
-			Always = alwaysVisible;
-		}
-
 		public EnvironmentVisibilityAttribute()
 		{
 
@@ -22,7 +17,5 @@ namespace TomPIT.Annotations
 		}
 
 		public EnvironmentMode Visibility { get; } = EnvironmentMode.Design;
-
-		public bool Always { get; }
 	}
 }

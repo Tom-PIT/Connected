@@ -32,7 +32,7 @@ namespace TomPIT.Security
 			if (dt < DateTime.UtcNow)
 				return;
 
-			if (dt < DateTime.UtcNow.AddMinutes(-10))
+			if (dt < DateTime.UtcNow.AddMinutes(10))
 			{
 				var expires = DateTimeOffset.UtcNow.AddMinutes(20);
 

@@ -792,4 +792,7 @@
   <data name="ErrSourceCodeContainerExected" xml:space="preserve">
     <value>Source code container expected</value>
   </data>
+  <data name="CatDiagnostic" xml:space="preserve">
+    <value>Diagnostic</value>
+  </data>
 </root>

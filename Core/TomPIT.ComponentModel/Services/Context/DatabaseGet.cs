@@ -26,24 +26,31 @@ namespace TomPIT.Services.Context
 			var component = ctx.Connection().GetService<IComponentService>().SelectComponent(microService, "DataSource", name);
 
 			if (component == null)
-				throw ExecutionException.Create(Context, string.Format("{0} ({1})", SR.ErrDataSourceNotFound, name), CreateDescriptor(ExecutionEvents.DataRead, ExecutionContextState.DatabaseGet, null, null, microService));
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrDataSourceNotFound, name))
+				{
+				}.WithMetrics(ctx);
+			}
 
 			if (!(ctx.Connection().GetService<IComponentService>().SelectConfiguration(component.Token) is IDataSource config))
-				throw ExecutionException.Create(Context, string.Format("{0} ({1})", SR.ErrDataSourceNotFound, name), CreateDescriptor(ExecutionEvents.DataRead, ExecutionContextState.DatabaseGet, null, null, microService));
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrDataSourceNotFound, name))
+				{
+					Component = component.Token
+				}.WithMetrics(ctx);
+			}
 
 			var schema = CreateSchema(component, config);
 
-			var d = CreateDescriptor(ExecutionEvents.DataRead, ExecutionContextState.DatabaseGet, component.Token.ToString(), null, microService);
-
-			var connection = CreateConnection(ctx, d, config.Connection, component.Name);
-			var dataProvider = CreateDataProvider(ctx, d, connection);
+			var connection = CreateConnection(ctx, config.Connection, config);
+			var dataProvider = CreateDataProvider(ctx, connection);
 
 			var preparing = ctx.Connection().Execute(config.Preparing, this, new PreparingArguments(ctx, arguments, schema));
 
 			if (preparing.Cancel)
 				return new JObject();
 
-			var command = CreateCommand(d, config, connection, preparing.Arguments);
+			var command = CreateCommand(config, connection, preparing.Arguments);
 
 			var validating = ctx.Connection().Execute(config.Validating, this, new ValidatingArguments(ctx, command));
 
@@ -99,7 +106,7 @@ namespace TomPIT.Services.Context
 			return r;
 		}
 
-		private IDataCommandDescriptor CreateCommand(IExecutionContextState sender, IDataSource ds, IConnection connection, JObject arguments)
+		private IDataCommandDescriptor CreateCommand(IDataSource ds, IConnection connection, JObject arguments)
 		{
 			var r = new DataCommandDescriptor
 			{
@@ -109,8 +116,8 @@ namespace TomPIT.Services.Context
 				ConnectionString = connection.Value.Trim()
 			};
 
-			ValidateArguments(sender, ds.Parameters.ToList(), arguments);
-			SetCommandParameters(sender, r, ds.Parameters.ToList(), arguments);
+			ValidateArguments(ds, ds.Parameters.ToList(), arguments);
+			SetCommandParameters(r, ds.Parameters.ToList(), arguments);
 
 			return r;
 		}
@@ -120,15 +127,18 @@ namespace TomPIT.Services.Context
 			var component = Context.Connection().GetService<IComponentService>().SelectComponent(microService, "Connection", connection);
 
 			if (component == null)
-				throw ExecutionException.Create(Context, string.Format("{0} ({1})", SR.ErrConnectionNotFound, connection), CreateDescriptor(ExecutionEvents.OpenConnection, ExecutionContextState.Connection, null, null, microService));
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionNotFound, connection)).WithMetrics(Context);
 
 			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(component.Token) is IConnection config))
-				throw ExecutionException.Create(Context, string.Format("{0} ({1})", SR.ErrConnectionNotFound, connection), CreateDescriptor(ExecutionEvents.OpenConnection, ExecutionContextState.Connection, null, null, microService));
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionNotFound, connection))
+				{
+					Component = component.Token
+				}.WithMetrics(Context);
+			}
 
-			var d = CreateDescriptor(ExecutionEvents.OpenConnection, ExecutionContextState.Connection, component.Token.ToString(), null, microService);
-
-			var con = CreateConnection(Context, d, config.Component, component.Name);
-			var dataProvider = CreateDataProvider(Context, d, config);
+			var con = CreateConnection(Context, component.Token, config);
+			var dataProvider = CreateDataProvider(Context, config);
 
 			return dataProvider.OpenConnection(config.Value);
 		}

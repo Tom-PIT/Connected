@@ -38,7 +38,7 @@ namespace TomPIT.Application.Design.Designers
 
 			var feature = Owner.Existing.FirstOrDefault(f => f.Token == id);
 
-			Connection.GetService<IFeatureDevelopmentService>().Delete(Environment.Context.MicroService(), feature.Token);
+			Connection.GetService<IFeatureDevelopmentService>().Delete(Element.MicroService(), feature.Token);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 		}
@@ -46,7 +46,7 @@ namespace TomPIT.Application.Design.Designers
 		protected override IDesignerActionResult Clear(JObject data)
 		{
 			foreach (var i in Owner.Existing)
-				Connection.GetService<IFeatureDevelopmentService>().Delete(Environment.Context.MicroService(), i.Token);
+				Connection.GetService<IFeatureDevelopmentService>().Delete(Element.MicroService(), i.Token);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 		}
@@ -56,8 +56,8 @@ namespace TomPIT.Application.Design.Designers
 			var existing = Owner.Existing;
 			var name = Connection.GetService<INamingService>().Create("Feature", existing.Select(f => f.Name), true);
 
-			var id = Connection.GetService<IFeatureDevelopmentService>().Insert(Environment.Context.MicroService(), name);
-			var feature = Connection.GetService<IFeatureService>().Select(Environment.Context.MicroService(), id);
+			var id = Connection.GetService<IFeatureDevelopmentService>().Insert(Element.MicroService(), name);
+			var feature = Connection.GetService<IFeatureService>().Select(Element.MicroService(), id);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 

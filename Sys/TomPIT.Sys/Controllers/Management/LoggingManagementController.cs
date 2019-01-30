@@ -24,10 +24,22 @@ namespace TomPIT.Sys.Controllers.Management
 			DataModel.Logging.Delete(id);
 		}
 
-		[HttpGet]
-		public List<ILogEntry> Query(DateTime date)
+		[HttpPost]
+		public List<ILogEntry> Query()
 		{
-			return DataModel.Logging.Query(date);
+			var body = FromBody();
+
+			var date = body.Required<DateTime>("date");
+			var metric = body.Optional("metric", 0L);
+			var component = body.Optional("metric", Guid.Empty);
+			var element = body.Optional("metric", Guid.Empty);
+
+			if (metric == 0 && component == Guid.Empty)
+				return DataModel.Logging.Query(date);
+			else if (component == Guid.Empty && metric != 0L)
+				return DataModel.Logging.Query(date, component, element);
+			else
+				return DataModel.Logging.Query(date, metric);
 		}
 	}
 }

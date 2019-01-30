@@ -61,22 +61,13 @@ namespace TomPIT.Application
 			return r;
 		}
 
-		public override List<IDomElement> QueryDomRoot(IEnvironment environment)
+		public override List<IDomElement> QueryDomRoot(IEnvironment environment, IDomElement parent, Guid microService)
 		{
 			return new List<IDomElement>
 			{
-				new FeaturesElement(environment),
-				new ResourcesElement(environment, null),
-				new ComponentElement(environment, null, CreateReferences(environment)),
-			};
-		}
-
-		public override List<IDomElement> QuerySecurityRoot(IDomElement parent)
-		{
-			return new List<IDomElement>
-			{
-				new SecurityAreasElement(parent),
-				new SecurityApisElement(parent)
+				new FeaturesElement(environment, parent),
+				new ResourcesElement(environment, parent),
+				new ComponentElement(environment, parent, CreateReferences(environment, microService)),
 			};
 		}
 	}

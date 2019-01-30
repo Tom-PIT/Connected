@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
@@ -27,10 +27,12 @@ namespace TomPIT
 		public static void Initialize(IServiceCollection services, ServicesConfigurationArgs e)
 		{
 			Shell.RegisterConfigurationType(typeof(ClientSys));
+
+			services.AddSingleton<IHostedService, FlushingService>();
 			ConfigureServices(services, e);
 		}
 
-		public static void Configure(InstanceType type, IApplicationBuilder app, IHostingEnvironment env, ConfigureRoutingHandler routingHandler)
+		public static void Configure(InstanceType type, IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env, ConfigureRoutingHandler routingHandler)
 		{
 			app.UseAjaxExceptionMiddleware();
 			app.UseStaticFiles();

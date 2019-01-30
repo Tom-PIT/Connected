@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Data.DataProviders;
-using TomPIT.Exceptions;
 
 namespace TomPIT.Services.Context
 {
@@ -22,44 +21,68 @@ namespace TomPIT.Services.Context
 		/// <remarks>
 		/// Clients share the same instance thus they should never make any changes on returned instance.
 		/// </remarks>
-		/// <param name="sender">Current execution descriptor.</param>
-		/// <param name="id">The connection id.</param>
-		/// <param name="authorityName">The authority name for which connection is requested. This argument serves for
+		/// <param name="element">Element with connection property.</param>
+		/// <param name="dataSourceName">The data source name for which connection is requested. This argument serves for
 		/// exception handling and diagnostic purposes.</param>
 		/// <returns>IConnection instance if a valid one is found.</returns>
-		protected IConnection CreateConnection(IExecutionContext context, IExecutionContextState sender, Guid id, string authorityName)
+		protected IConnection CreateConnection(IExecutionContext context, Guid connection, IConfiguration configuration)
 		{
 			/*
 			 * The client has not set a connection.
 			 */
-			if (id == Guid.Empty)
-				throw ExecutionException.ConnectionNotSet(context, CreateDescriptor(ExecutionEvents.CreateConnection, sender.Authority, sender.Id, sender.Property, sender.MicroService), authorityName);
+			if (connection == Guid.Empty)
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionNotSet, configuration.ComponentName(context.Connection())))
+				{
+					Component = configuration.Component,
+					EventId = ExecutionEvents.CreateConnection
+				};
+			}
+
 			/*
 			 * The client has invalid connection set. This is probably due to the deleted connection or misbehaved import.
 			 */
-			if (!(context.Connection().GetService<IComponentService>().SelectConfiguration(id) is IConnection connection))
-				throw ExecutionException.ConnectionNotFound(context, CreateDescriptor(ExecutionEvents.CreateConnection, sender.Authority, sender.Id, sender.Property, sender.MicroService), authorityName);
+			if (!(context.Connection().GetService<IComponentService>().SelectConfiguration(connection) is IConnection con))
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionNotFound, configuration.ComponentName(context.Connection())))
+				{
+					Component = configuration.Component,
+					EventId = ExecutionEvents.CreateConnection
+				};
+			}
 			/*
 			 * We don't allow disabled connections to execute
 			 */
-			if (!connection.Enabled)
-				throw ExecutionException.Create(context, string.Format("{0} ({1}, {2}).", SR.ErrConnectionDisabled, authorityName, connection.ComponentName(context)), CreateDescriptor(ExecutionEvents.CreateConnection, sender.Authority, sender.Id, sender.Property, sender.MicroService));
+			if (!con.Enabled)
+			{
+				throw new RuntimeException(string.Format("{0} ({1}).", SR.ErrConnectionDisabled, con.ComponentName(context.Connection())))
+				{
+					Component = con.Component,
+					EventId = ExecutionEvents.CreateConnection
+				};
+			}
 
-			return connection;
+			return con;
 		}
+
 		/// <summary>
 		/// This method creates data provider for the valid connection.
 		/// </summary>
-		/// <param name="sender">Current execution descriptor</param>
 		/// <param name="connection">A connection instance which holds the information about its data provider</param>
 		/// <returns>IDataProvider instance is a valid one is found.</returns>
-		protected IDataProvider CreateDataProvider(IExecutionContext context, IExecutionContextState sender, IConnection connection)
+		protected IDataProvider CreateDataProvider(IExecutionContext context, IConnection connection)
 		{
 			/*
 			 * Connection is not properly configured. We just notify the user about the issue.
 			 */
 			if (connection.DataProvider == Guid.Empty)
-				throw ExecutionException.ConnectionDataProviderNotSet(context, CreateDescriptor(sender.Event, ExecutionContextState.Connection, connection.Component.ToString(), null, sender.MicroService), connection.ComponentName(context));
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionDataProviderNotSet, connection.ComponentName(context.Connection())))
+				{
+					Component = connection.Component,
+					EventId = ExecutionEvents.OpenConnection,
+				};
+			}
 
 			var provider = context.Connection().GetService<IDataProviderService>().Select(connection.DataProvider);
 			/*
@@ -69,7 +92,13 @@ namespace TomPIT.Services.Context
 			 * - package misbehavior
 			 */
 			if (provider == null)
-				throw ExecutionException.ConnectionDataProviderNotFound(Context, CreateDescriptor(sender.Event, ExecutionContextState.Connection, connection.Component.ToString(), null, sender.MicroService), connection.ComponentName(Context));
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionDataProviderNotFound, provider.Name))
+				{
+					Component = connection.Component,
+					EventId = ExecutionEvents.OpenConnection
+				};
+			}
 
 			return provider;
 		}
@@ -111,14 +140,13 @@ namespace TomPIT.Services.Context
 		/// <summary>
 		/// This method verifies if the specified argument is defined on the data source.
 		/// </summary>
-		/// <param name="sender">Current execution descriptor</param>
 		/// <param name="name">The name of the argument.</param>
 		/// <param name="parameters">The data source parameters.</param>
 		/// <returns>true if the parameter is defined on the data source, false otherwise.</returns>
-		protected bool IsDefined(IExecutionContextState sender, string name, List<IDataParameter> parameters)
+		protected bool IsDefined(string name, List<IDataParameter> parameters)
 		{
 			if (string.IsNullOrWhiteSpace(name))
-				throw ExecutionException.ParameterNameNotSet(Context, CreateDescriptor(0));
+				throw new RuntimeException(SR.ErrParameterNameNotSet).WithMetrics(Context);
 			/*
 			 * We'll try with different name combinations as defined in ParameterQualifiers method
 			 */
@@ -147,12 +175,17 @@ namespace TomPIT.Services.Context
 		/// <param name="arguments">List od passed arguments.</param>
 		/// <param name="value">Returns passed value if argument is found.</param>
 		/// <returns>true if the argument's value is found and set, false otherwise.</returns>
-		protected bool MatchArgument(IExecutionContextState sender, string name, JObject arguments, out object value)
+		protected bool MatchArgument(IDataParameter sender, string name, JObject arguments, out object value)
 		{
 			value = null;
 
 			if (string.IsNullOrWhiteSpace(name))
-				throw ExecutionException.ParameterNameNotSet(Context, sender);
+			{
+				throw new RuntimeException(SR.ErrParameterNameNotSet)
+				{
+					Component = sender.Configuration().Component
+				};
+			}
 			/*
 			 * It is not necessary the client is passing parameters at all. In that case
 			 * we simply return false.
@@ -187,13 +220,12 @@ namespace TomPIT.Services.Context
 		/// <summary>
 		/// This method processes parameter value based on its configuration.
 		/// </summary>
-		/// <param name="sender">Current execution descriptor.</param>
 		/// <param name="parameter">Parameter configuration.</param>
 		/// <param name="proposedValue">Proposed value. It can be from the client or by handling the Prepared event.</param>
 		/// <param name="value">The actual value the should be used by a command.</param>
 		/// <param name="direction">The direction of the command parameter</param>
 		/// <returns>true if the parameter value has been successfully processed, false otherwise.</returns>
-		protected bool Value(IExecutionContextState sender, IDataParameter parameter, object proposedValue, out object value, out System.Data.ParameterDirection direction)
+		protected bool Value(IDataParameter parameter, object proposedValue, out object value, out System.Data.ParameterDirection direction)
 		{
 			/*
 			 * Fot the return value parameters the valu should not be set regardless of the proposed value
@@ -223,7 +255,13 @@ namespace TomPIT.Services.Context
 			if (proposedValue == null || value == DBNull.Value)
 			{
 				if (!parameter.IsNullable)
-					throw ExecutionException.ParameterExpected(Context, sender, parameter.Name);
+				{
+					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrDataParameterExpected, parameter.Name))
+					{
+						Component = parameter.Configuration().Component,
+						Element = parameter.Id
+					};
+				}
 				/*
 				 * in any case we'll stop the processing of the parameter on that point
 				 * because it contains no value
@@ -240,11 +278,17 @@ namespace TomPIT.Services.Context
 			 * won't be successfull an exception will be thrown.
 			 */
 			if (!Types.TryConvert(value, out object converted, type))
-				throw ExecutionException.ParameterConversion(Context, sender, parameter.Name, value.ToString(), type.Name);
+			{
+				throw new RuntimeException(string.Format("{0} ({1}, {2}, {3})", SR.ErrParameterValueConversion, parameter.Name, value.ToString(), type.ShortName()))
+				{
+					Component = parameter.Configuration().Component,
+					Element = parameter.Id
+				};
+			}
 			/*
 			 * Now that's the value has been resolved we need to process its behavior.
 			 */
-			value = ProcessTimezone(sender, parameter, proposedValue);
+			value = ProcessTimezone(parameter, proposedValue);
 
 			return true;
 		}
@@ -300,11 +344,10 @@ namespace TomPIT.Services.Context
 		/// This method check the configuration for automatic Timezone conversion. If parameter supports
 		/// conversion the value will be automatically converted to UTC date based on the current identity.
 		/// </summary>
-		/// <param name="sender">Current execution descriptor.</param>
 		/// <param name="parameter">The parameter configuration</param>
 		/// <param name="proposedValue">The original (unconverted) value.</param>
 		/// <returns>rocessed value regardless if it has been converted or not.</returns>
-		private object ProcessTimezone(IExecutionContextState sender, IDataParameter parameter, object proposedValue)
+		private object ProcessTimezone(IDataParameter parameter, object proposedValue)
 		{
 			/*
 			 * Not set. return proposedValue.
@@ -317,7 +360,13 @@ namespace TomPIT.Services.Context
 			 * is incorrent that to try to find out why the value has not been converted.
 			 */
 			if (parameter.DataType != DataType.Date)
-				throw ExecutionException.TimezoneParametersSupportedOnDatesOnly(Context, sender, parameter.Name);
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrTimezoneParametersSupportedOnDatesOnly, parameter.Name))
+				{
+					Component = parameter.Configuration().Component,
+					Element = parameter.Id
+				};
+			}
 			/*
 			 * The date value will be converter to the utc.
 			 */
@@ -326,10 +375,9 @@ namespace TomPIT.Services.Context
 		/// <summary>
 		/// This method checks for a valid parameter values based on the configuration data type.
 		/// </summary>
-		/// <param name="sender">Current execution descriptor.</param>
 		/// <param name="parameter">The parameter configuration</param>
 		/// <param name="value">The parameter value</param>
-		protected void ValidateParameterDatatype(IExecutionContextState sender, IDataParameter parameter, object value)
+		protected void ValidateParameterDatatype(IDataParameter parameter, object value)
 		{
 			/*
 			 * If the value is not defined thats not the case of
@@ -389,7 +437,11 @@ namespace TomPIT.Services.Context
 					throw new NotSupportedException();
 			}
 
-			throw ExecutionException.InvalidParameterDataType(Context, sender, parameter.Name, value.ToString(), parameter.DataType.ToString());
+			throw new RuntimeException(string.Format("{0} ({1}, {2}, {3})", SR.ErrInvalidParameterDataType, parameter.Name, value.ToString(), parameter.DataType.ToString()))
+			{
+				Component = parameter.Configuration().Component,
+				Element = parameter.Id
+			};
 		}
 		/// <summary>
 		/// This method verifies that passed arguments are actually defined on the data source.
@@ -402,19 +454,24 @@ namespace TomPIT.Services.Context
 		/// <param name="sender">The current execution descriptor.</param>
 		/// <param name="parameters">Data source parameters</param>
 		/// <param name="arguments">Passed arguments</param>
-		protected void ValidateArguments(IExecutionContextState sender, List<IDataParameter> parameters, JObject arguments)
+		protected void ValidateArguments(IDataElement sender, List<IDataParameter> parameters, JObject arguments)
 		{
 			if (arguments == null)
 				return;
 
 			foreach (var i in arguments)
 			{
-				if (!IsDefined(sender, i.Key, parameters))
-					throw ExecutionException.ParameterNotDefined(Context, sender, i.Key);
+				if (!IsDefined(i.Key, parameters))
+				{
+					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrParameterNotDefined, i.Key))
+					{
+						Component = sender.Configuration().Component
+					}.WithMetrics(Context);
+				}
 			}
 		}
 
-		protected void SetCommandParameters(IExecutionContextState sender, IDataCommandDescriptor command, List<IDataParameter> configuration, JObject arguments)
+		protected void SetCommandParameters(IDataCommandDescriptor command, List<IDataParameter> configuration, JObject arguments)
 		{
 			var pars = new ListItems<IDataParameter>();
 
@@ -434,8 +491,8 @@ namespace TomPIT.Services.Context
 					continue;
 				}
 
-				if (MatchArgument(sender, i.Name, arguments, out object value)
-					&& Value(sender, i, value, out object actualValue, out System.Data.ParameterDirection direction))
+				if (MatchArgument(i, i.Name, arguments, out object value)
+					&& Value(i, value, out object actualValue, out System.Data.ParameterDirection direction))
 				{
 					var cp = new CommandParameter()
 					{
@@ -450,7 +507,12 @@ namespace TomPIT.Services.Context
 				else
 				{
 					if (!i.IsNullable)
-						throw ExecutionException.ParameterValueNotSet(Context, sender, i.Name);
+					{
+						throw new RuntimeException(string.Format("{0} ({1})", SR.ErrParameterValueNotSet, i.Name))
+						{
+							Component = i.Configuration().Component
+						};
+					}
 				}
 			}
 		}

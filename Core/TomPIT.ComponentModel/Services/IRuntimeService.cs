@@ -20,7 +20,8 @@ namespace TomPIT.Services
 	{
 		None = 0,
 		Design = 1,
-		Runtime = 2
+		Runtime = 2,
+		Any = 3
 	}
 
 	public interface IRuntimeService

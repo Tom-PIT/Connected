@@ -25,7 +25,7 @@ namespace TomPIT.Application.Design.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			Connection.GetService<IFeatureDevelopmentService>().Update(Environment.Context.MicroService(), Feature.Token, Feature.Name);
+			Connection.GetService<IFeatureDevelopmentService>().Update(this.MicroService(), Feature.Token, Feature.Name);
 
 			return true;
 		}

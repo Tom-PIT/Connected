@@ -21,18 +21,13 @@ namespace TomPIT.IoT
 			return r;
 		}
 
-		public override List<IDomElement> QueryDomRoot(IEnvironment environment)
+		public override List<IDomElement> QueryDomRoot(IEnvironment environment, IDomElement element, Guid microService)
 		{
 			return new List<IDomElement>
 			{
-				new CategoryElement(environment, null, "IoTHub", "IoTHubs", "Hubs", "fal fa-folder"),
-				new ComponentElement(environment, null, CreateReferences(environment)),
+				new CategoryElement(environment, element, "IoTHub", "IoTHubs", "Hubs", "fal fa-folder"),
+				new ComponentElement(environment, element, CreateReferences(environment, microService)),
 			};
-		}
-
-		public override List<IDomElement> QuerySecurityRoot(IDomElement parent)
-		{
-			return new List<IDomElement>();
 		}
 	}
 }

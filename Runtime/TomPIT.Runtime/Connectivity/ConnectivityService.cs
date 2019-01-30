@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using TomPIT.Caching;
-using TomPIT.Exceptions;
 
 namespace TomPIT.Connectivity
 {
@@ -30,7 +29,7 @@ namespace TomPIT.Connectivity
 		public void Insert(string name, string url, string authenticationToken)
 		{
 			if (Get(url) != null)
-				throw new ExecutionException(SR.ErrSysContextRegistered);
+				throw new RuntimeException(SR.ErrSysContextRegistered);
 
 			var instance = new SysConnection(url, authenticationToken);
 

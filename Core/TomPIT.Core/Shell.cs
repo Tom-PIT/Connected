@@ -51,7 +51,6 @@ namespace TomPIT
 				foreach (var i in dirs)
 				{
 					var files = Directory.GetFiles(i);
-					var hit = false;
 
 					foreach (var j in files)
 					{
@@ -59,28 +58,22 @@ namespace TomPIT
 
 						if (string.Compare(name, asm.Name, true) == 0)
 						{
-							hit = true;
-							break;
+							using (var s = new MemoryStream(File.ReadAllBytes(j)))
+							{
+								return AssemblyLoadContext.Default.LoadFromStream(s);
+							}
 						}
-					}
-
-					if (hit)
-					{
-						foreach (var j in files)
-						{
-							var dest = Path.Combine(Path.GetDirectoryName(appPath), Path.GetFileName(j));
-
-							if (!File.Exists(dest))
-								File.Copy(j, dest);
-						}
-
-						return AssemblyLoadContext.Default.LoadFromAssemblyPath(target);
 					}
 				}
 			}
 
 			if (File.Exists(target))
-				return AssemblyLoadContext.Default.LoadFromAssemblyPath(target);
+			{
+				using (var s = new MemoryStream(File.ReadAllBytes(target)))
+				{
+					return AssemblyLoadContext.Default.LoadFromStream(s);
+				}
+			}
 
 			return null;
 		}

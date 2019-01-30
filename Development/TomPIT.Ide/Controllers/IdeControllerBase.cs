@@ -97,7 +97,10 @@ namespace TomPIT.Controllers
 					throw IdeException.TransactionNotCommited(this, IdeEvents.SaveProperty);
 
 				Response.Headers.Add("invalidate", r.Invalidate.ToString());
-				Response.Headers.Add("designerPath", m.Selection.Designer.Path);
+
+				if (m.Selection.Designer != null)
+					Response.Headers.Add("designerPath", m.Selection.Designer.Path);
+
 				Response.Headers.Add("path", m.Selection.Path);
 				Response.Headers.Add("result", "1");
 			}

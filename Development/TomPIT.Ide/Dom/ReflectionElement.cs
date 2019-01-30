@@ -122,7 +122,7 @@ namespace TomPIT.Dom
 				{
 					if (Property != null)
 					{
-						var att = Property.FindAttribute<DomDesignerAttribute>();
+						var att = Property.ResolveDesigner();
 
 						if (att != null)
 							_designer = DomQuery.CreateDesigner(Environment, this, att);
@@ -130,13 +130,13 @@ namespace TomPIT.Dom
 
 					if (_designer == null && Value != null)
 					{
-						var att = Value.GetType().FindAttribute<DomDesignerAttribute>();
+						var att = Value.GetType().ResolveDesigner();
 
 						if (att != null)
 							_designer = DomQuery.CreateDesigner(Environment, this, att);
 					}
 
-					if (_designer == null && Value != null)
+					if (_designer == null && Value != null && IsDesignTime)
 					{
 						var de = Value.GetType().FindAttribute<System.ComponentModel.DefaultEventAttribute>();
 

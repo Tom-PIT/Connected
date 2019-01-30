@@ -6,6 +6,7 @@ using TomPIT.Annotations;
 using TomPIT.Application.Design.Designers;
 using TomPIT.Application.Items;
 using TomPIT.ComponentModel.Features;
+using TomPIT.Designers;
 using TomPIT.Dom;
 using TomPIT.Ide;
 
@@ -14,7 +15,7 @@ namespace TomPIT.Application.Design.Dom
 	internal class FeaturesElement : TomPIT.Dom.Element
 	{
 		public const string FolderId = "Features";
-		private FeaturesDesigner _designer = null;
+		private IDomDesigner _designer = null;
 		private ExistingFeatures _features = null;
 		private PropertyInfo _property = null;
 
@@ -35,7 +36,7 @@ namespace TomPIT.Application.Design.Dom
 				}
 			}
 		}
-		public FeaturesElement(IEnvironment environment) : base(environment, null)
+		public FeaturesElement(IEnvironment environment, IDomElement parent) : base(environment, parent)
 		{
 			Id = FolderId;
 			Glyph = "fal fa-cubes";
@@ -66,7 +67,7 @@ namespace TomPIT.Application.Design.Dom
 
 		public override void LoadChildren(string id)
 		{
-			var feature = Connection.GetService<IFeatureService>().Select(Environment.Context.MicroService(), id.AsGuid());
+			var feature = Connection.GetService<IFeatureService>().Select(this.MicroService(), id.AsGuid());
 
 			Items.Add(new FeatureElement(Environment, this, feature));
 		}
@@ -76,7 +77,12 @@ namespace TomPIT.Application.Design.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new FeaturesDesigner(Environment, this);
+				{
+					if (IsDesignTime)
+						_designer = new FeaturesDesigner(Environment, this);
+					else
+						_designer = new EmptyDesigner(Environment, this);
+				}
 
 				return _designer;
 			}
@@ -90,7 +96,7 @@ namespace TomPIT.Application.Design.Dom
 				{
 					_features = new ExistingFeatures();
 
-					var ds = Connection.GetService<IFeatureService>().Query(Environment.Context.MicroService()).OrderBy(f => f.Name);
+					var ds = Connection.GetService<IFeatureService>().Query(this.MicroService()).OrderBy(f => f.Name);
 
 					foreach (var i in ds)
 						_features.Items.Add(i);

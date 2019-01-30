@@ -11,7 +11,7 @@ namespace TomPIT
 
 	public class RuntimeException : TomPITException
 	{
-		public RuntimeException(string message):base(message)
+		public RuntimeException(string message) : base(message)
 		{
 
 		}
@@ -22,6 +22,10 @@ namespace TomPIT
 		}
 
 		public ExceptionSeverity Severity { get; set; } = ExceptionSeverity.Critical;
+		public int EventId { get; set; }
+		public long Metric { get; set; }
+		public Guid Component { get; set; }
+		public Guid Element { get; set; }
 
 		public static RuntimeException Info(string source, string message)
 		{

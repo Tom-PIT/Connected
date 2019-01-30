@@ -1,0 +1,45 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using TomPIT.ComponentModel;
+using TomPIT.Design;
+using TomPIT.Ide;
+using TomPIT.Security;
+
+namespace TomPIT.Dom
+{
+	public abstract class ElementPermissionElement : ReflectionElement, IPermissionElement
+	{
+		public ElementPermissionElement(ReflectorCreateArgs e) : base(e)
+		{
+		}
+
+		public ElementPermissionElement(IEnvironment environment, IDomElement parent, object instance) : base(environment, parent, instance)
+		{
+		}
+
+		public ElementPermissionElement(IEnvironment environment, IDomElement parent, object instance, PropertyInfo property, int index) : base(environment, parent, instance, property, index)
+		{
+		}
+
+		public abstract List<string> Claims { get; }
+		public abstract IPermissionDescriptor PermissionDescriptor { get; }
+
+		public string PrimaryKey
+		{
+			get
+			{
+				if (ConfigurationElement == null)
+					return null;
+
+				return ConfigurationElement.Id.ToString();
+			}
+		}
+
+		public virtual bool SupportsInherit => false;
+		public virtual string PermissionComponent => null;
+		public virtual Guid ResourceGroup => DomQuery.Closest<IMicroServiceScope>(this).MicroService.ResourceGroup;
+
+		protected IElement ConfigurationElement { get { return Component as IElement; } }
+	}
+}

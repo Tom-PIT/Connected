@@ -1,5 +1,4 @@
 ﻿using TomPIT.ComponentModel;
-using TomPIT.Exceptions;
 using TomPIT.Services;
 
 namespace TomPIT.Models
@@ -10,20 +9,20 @@ namespace TomPIT.Models
 		{
 			if (string.IsNullOrWhiteSpace(Body.Optional("__name", string.Empty)))
 			{
-				throw ExecutionException.ParameterExpected(this, new ExecutionContextState
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrDataParameterExpected, "__name"))
 				{
 					Event = ExecutionEvents.DataRead,
-				}, "__name");
+				}.WithMetrics(this);
 			}
 
 			QualifierName = Body.Optional("__name", string.Empty);
 
 			if (string.IsNullOrWhiteSpace(Body.Optional("__component", string.Empty)))
 			{
-				throw ExecutionException.ParameterExpected(this, new ExecutionContextState
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrDataParameterExpected, "__component"))
 				{
 					Event = ExecutionEvents.DataRead,
-				}, "__component");
+				}.WithMetrics(this);
 			}
 
 			var component = Body.Optional("__component", string.Empty);
@@ -31,10 +30,10 @@ namespace TomPIT.Models
 
 			if (tokens.Length != 2)
 			{
-				throw ExecutionException.InvalidQualifier(this, new ExecutionContextState
+				throw new RuntimeException(string.Format("{0} ({1}). {2}: {3}.", SR.ErrInvalidQualifier, component, SR.ErrInvalidQualifierExpected, "microService.component"))
 				{
-					Event = ExecutionEvents.DataRead,
-				}, component, "microService.component");
+					Event = ExecutionEvents.DataRead
+				}.WithMetrics(this);
 			}
 
 			var s = Instance.GetService<IMicroServiceService>().Select(tokens[0].AsGuid());
