@@ -4,7 +4,7 @@ namespace TomPIT.ComponentModel
 {
 	public interface ISourceCodeContainer : IElement
 	{
-		List<string> References(IPartialSourceCode sender);
+		List<string> References();
 
 		IText GetReference(string name);
 	}

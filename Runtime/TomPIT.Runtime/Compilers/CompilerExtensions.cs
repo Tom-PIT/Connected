@@ -22,27 +22,13 @@ namespace TomPIT.Compilers
 						return string.Format("{0}.{1}.csx", parent.ToString(), i.Name);
 				}
 			}
-			else if (sourceCode is IPartialSourceCode ps)
-				return string.Format("{0}.csx", ps.Configuration().ComponentName(connection));
 
 			return sourceCode.ToString();
 		}
 
 		public static Guid ScriptId(this IText sourceCode)
 		{
-			var id = sourceCode.Id;
-
-			if (sourceCode is IPartialSourceCode)
-			{
-				var container = sourceCode.Closest<ISourceCodeContainer>();
-
-				if (container == null)
-					return id;
-
-				id = container.Configuration().Component;
-			}
-
-			return id;
+			return sourceCode.Id;
 		}
 	}
 }

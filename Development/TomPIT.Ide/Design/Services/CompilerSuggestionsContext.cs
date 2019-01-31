@@ -7,10 +7,8 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using TomPIT.Annotations;
-using TomPIT.ComponentModel;
 using TomPIT.Services;
 
 namespace TomPIT.Design.Services
@@ -58,40 +56,7 @@ namespace TomPIT.Design.Services
 			get
 			{
 				if (_sourceText == null)
-				{
-					if (Args.Configuration is IPartialSourceCode ps)
-					{
-						var container = ps.Closest<ISourceCodeContainer>();
-
-						if (container != null)
-						{
-							var refs = container.References(ps);
-
-							if (refs.Count > 0)
-							{
-								var sb = new StringBuilder();
-
-								foreach (var i in refs)
-								{
-									var r1 = container.GetReference(i);
-									var txt = Context.Connection().GetService<IComponentService>().SelectText(MicroService, r1);
-
-									if (string.IsNullOrWhiteSpace(txt))
-										continue;
-
-									sb.AppendLine();
-									sb.Append(txt);
-								}
-
-								if (sb.Length > 0)
-									_sourceText = SourceText.From(string.Format("{0}{1}", Args.Text, sb.ToString()));
-							}
-						}
-					}
-
-					if (_sourceText == null)
-						return SourceText.From(Args.Text);
-				}
+					_sourceText = SourceText.From(Args.Text);
 
 				return _sourceText;
 			}

@@ -7,9 +7,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyVersion>1.0.129.1</AssemblyVersion>
-    <FileVersion>1.0.129.1</FileVersion>
-    <Version>1.0.129.1</Version>
+    <AssemblyVersion>1.0.130.4</AssemblyVersion>
+    <FileVersion>1.0.130.4</FileVersion>
+    <Version>1.0.130.4</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />

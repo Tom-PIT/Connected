@@ -558,13 +558,9 @@ CREATE TABLE [tompit].[log]
 [source] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [category] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [event_id] [int] NULL,
-[authority_id] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[authority] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[context_authority_id] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[context_authority] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[context_property] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[service] [uniqueidentifier] NULL,
-[context_service] [uniqueidentifier] NULL
+[component] [uniqueidentifier] NULL,
+[element] [uniqueidentifier] NULL,
+[metric] [bigint] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -1000,6 +996,51 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[metric]'
+GO
+CREATE TABLE [tompit].[metric]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[session] [uniqueidentifier] NOT NULL,
+[start] [datetime2] NOT NULL,
+[end] [datetime2] NULL,
+[result] [int] NULL,
+[instance] [int] NOT NULL,
+[request_ip] [varchar] (48) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[component] [uniqueidentifier] NOT NULL,
+[element] [uniqueidentifier] NULL,
+[parent] [uniqueidentifier] NULL,
+[request] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[response] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[consumption_in] [bigint] NULL,
+[consumption_out] [bigint] NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_metric] on [tompit].[metric]'
+GO
+ALTER TABLE [tompit].[metric] ADD CONSTRAINT [PK_metric] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[metric_clr]'
+GO
+CREATE PROCEDURE [tompit].[metric_clr]
+	@component uniqueidentifier = NULL,
+	@element uniqueidentifier = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE 
+	FROM tompit.metric
+	WHERE (@component IS NULL OR component = @component)
+	AND (@element IS NULL OR element = @element);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[message_recipient]'
 GO
 CREATE TABLE [tompit].[message_recipient]
@@ -1067,6 +1108,22 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[metric_ins]'
+GO
+CREATE PROCEDURE [tompit].[metric_ins]
+	@items nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.metric (session, start, [end], result, instance, request_ip, component, element, parent, request, response, consumption_in, consumption_out)
+	SELECT session, start, [end], result, instance, request_ip, component, element, parent, request, response, consumption_in, consumption_out 
+	FROM OPENJSON (@items) WITH (session uniqueidentifier, start datetime2(7), [end] datetime2(7), result int, instance int, request_ip varchar(48),
+		component uniqueidentifier, element uniqueidentifier, parent uniqueidentifier, request nvarchar, response nvarchar, consumption_in bigint, consumption_out bigint); 
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[service_ins]'
 GO
 CREATE PROCEDURE [tompit].[service_ins]
@@ -1086,6 +1143,25 @@ BEGIN
 	values (@name, @url, @token, @status, @resource_group, @template, @meta);
 
 	return scope_identity();
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[metric_que]'
+GO
+CREATE PROCEDURE [tompit].[metric_que]
+	@date date,
+	@component uniqueidentifier,
+	@element uniqueidentifier = NULL 
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT * 
+	FROM tompit.metric
+	WHERE CAST([start] AS DATE) = @date
+	AND (component = @component)
+	AND (@element IS NULL OR element = @element); 
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3033,27 +3109,14 @@ GO
 PRINT N'Creating [tompit].[log_ins]'
 GO
 CREATE PROCEDURE [tompit].[log_ins]
-	@created datetime2(7),
-	@message nvarchar(max) = null,
-	@trace_level int = null,
-	@source nvarchar(1024) = null,
-	@category nvarchar(128) = null,
-	@event_id int = null,
-	@authority_id nvarchar(128) = null,
-	@authority nvarchar(128) = null,
-	@context_authority_id nvarchar(128) = null,
-	@context_authority nvarchar(128) = null,
-	@context_property nvarchar(128) = null,
-	@service uniqueidentifier = null,
-	@context_service uniqueidentifier = null
+	@items nvarchar(MAX)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	INSERT tompit.log (created, message, trace_level, source, category, event_id, authority_id, authority,
-		context_authority_id, context_authority, context_property, service, context_service)
-	VALUES (@created, @message, @trace_level, @source, @category, @event_id, @authority_id, @authority,
-		@context_authority_id, @context_authority, @context_property, @service, @context_service);
+	INSERT tompit.log (created, message, trace_level, source, category, event_id, metric, component, element)
+	SELECT created, message, trace_level, source, category, event_id, metric, component, element FROM OPENJSON (@items) WITH (created datetime2(7), message nvarchar(max), trace_level int, source nvarchar(1024), category nvarchar(128),
+		event_id int, metric bigint, component uniqueidentifier, element uniqueidentifier); 
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3107,15 +3170,20 @@ GO
 PRINT N'Creating [tompit].[log_que]'
 GO
 CREATE PROCEDURE [tompit].[log_que]
-	@date date
+	@date date,
+	@component uniqueidentifier = NULL,
+	@element uniqueidentifier = NULL,
+	@metric bigint = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SELECT * 
 	FROM tompit.log
-	WHERE CAST(created AS DATE) = @date;
-
+	WHERE CAST(created AS DATE) = @date
+	AND (@component IS NULL OR component = @component)
+	AND (@element IS NULL OR element = @element)
+	AND (metric IS NULL OR metric = @metric);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3431,6 +3499,33 @@ BEGIN
 	select *
 	from view_environment_unit ;
 END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[metric_agg_day]'
+GO
+CREATE TABLE [tompit].[metric_agg_day]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[component] [uniqueidentifier] NOT NULL,
+[element] [uniqueidentifier] NULL,
+[date] [date] NOT NULL,
+[count] [int] NOT NULL,
+[success] [int] NOT NULL,
+[duration] [bigint] NOT NULL,
+[max] [int] NOT NULL,
+[min] [int] NOT NULL,
+[consumption_in] [bigint] NOT NULL,
+[consumption_out] [bigint] NOT NULL,
+[max_consumption_in] [bigint] NOT NULL,
+[min_consumption_out] [bigint] NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_metric_agg_day] on [tompit].[metric_agg_day]'
+GO
+ALTER TABLE [tompit].[metric_agg_day] ADD CONSTRAINT [PK_metric_agg_day] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO

@@ -402,9 +402,17 @@ namespace TomPIT
 
 		public static JObject Where(this JObject dataSource, string propertyName, object value)
 		{
-			var val = Types.Convert<string>(value, CultureInfo.InvariantCulture);
+			var criteria = "null";
 
-			if (!(dataSource.SelectToken(string.Format("$.data[?(@.{0}=='{1}')]", propertyName, val)) is JObject r))
+			if (value != null)
+			{
+				if (value.GetType().IsNumericType() || value is bool)
+					criteria = "{0}";
+				else
+					criteria = "'{0}'";
+			}
+
+			if (!(dataSource.SelectToken(string.Format("$.data[?(@.{0}=={1})]", propertyName, string.Format(criteria, value))) is JObject r))
 				return EmptyDataSource();
 
 			return new JObject

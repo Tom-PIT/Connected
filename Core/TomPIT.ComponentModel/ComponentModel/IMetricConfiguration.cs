@@ -8,7 +8,7 @@
 
 	public interface IMetricConfiguration
 	{
-		bool MetricEnabled { get; }
-		MetricLevel MetricLevel { get; }
+		bool Enabled { get; }
+		MetricLevel Level { get; }
 	}
 }

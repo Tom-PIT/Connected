@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.IoT</RootNamespace>
     <AssemblyName>TomPIT.IoT</AssemblyName>
-    <AssemblyVersion>1.0.129.1</AssemblyVersion>
-    <FileVersion>1.0.129.1</FileVersion>
-    <Version>1.0.129.1</Version>
+    <AssemblyVersion>1.0.130.4</AssemblyVersion>
+    <FileVersion>1.0.130.4</FileVersion>
+    <Version>1.0.130.4</Version>
   </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.Templates.IoT&quot;" />

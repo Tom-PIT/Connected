@@ -61,58 +61,56 @@ namespace TomPIT.Compilers
 
 		public override Stream OpenRead(string resolvedPath)
 		{
-			//if (resolvedPath.StartsWith("$"))
-			//	return LoadInternalScript(resolvedPath);
+			if (resolvedPath.Contains('/'))
+				return LoadScript(resolvedPath);
+			else
+				return LoadLibrary(resolvedPath);
+		}
 
-			var path = Path.GetFileNameWithoutExtension(resolvedPath);
-			var tokens = path.Trim('/').Split('/');
+		private Stream LoadScript(string qualifier)
+		{
+			var tokens = qualifier.Split('/');
 			var lib = tokens[0];
-			IMicroService ms = null;
 
-			if (tokens.Length > 1)
-			{
-				ms = Connection.GetService<IMicroServiceService>().Select(tokens[0]);
-
-				if (ms == null)
-					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, tokens[0]));
-
-				lib = tokens[1];
-			}
-
-			if (!(Connection.GetService<IComponentService>().SelectConfiguration(ms == null ? MicroService : ms.Token, "Library", lib) is ILibrary c))
+			if (!(Connection.GetService<IComponentService>().SelectConfiguration(MicroService, "Library", lib) is ISourceCodeContainer c))
 				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrComponentNotFound, lib));
 
+			var txt = c.GetReference(tokens[1]);
+
+			if (txt == null)
+				return null;
+
+			var content = Connection.GetService<IComponentService>().SelectText(c.MicroService(Connection), txt);
+
+			if (string.IsNullOrWhiteSpace(content))
+				return null;
+
+			return new MemoryStream(Encoding.UTF8.GetBytes(content));
+		}
+
+		private Stream LoadLibrary(string qualifier)
+		{
+			if (!(Connection.GetService<IComponentService>().SelectConfiguration(MicroService, "Library", Path.GetFileNameWithoutExtension(qualifier)) is ISourceCodeContainer container))
+				throw new RuntimeException(SR.ErrSourceCodeContainerExected);
+
+			var refs = container.References();
 			var sb = new StringBuilder();
 
-			foreach (var i in c.Scripts)
-			{
-				var content = Connection.GetService<IComponentService>().SelectText(c.MicroService(Connection), i);
-
-				if (!string.IsNullOrWhiteSpace(content))
-					sb.AppendLine(content);
-			}
+			foreach (var i in refs)
+				sb.AppendLine(string.Format("#load \"{0}/{1}\"", qualifier, i));
 
 			return new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
 		}
 
-		//private Stream LoadInternalScript(string qualifier)
-		//{
-		//	var tokens = qualifier.Substring(1).Split('/');
-
-		//	var component = tokens[0].Trim();
-		//	var script = tokens[1].Trim();
-
-		//	if (!(Connection.GetService<IComponentService>().SelectConfiguration(component.AsGuid()) is ISourceCodeContainer container))
-		//		throw new RuntimeException(SR.ErrSourceCodeContainerExected);
-
-		//	var text = container.GetReference(script);
-		//	var content = Connection.GetService<IComponentService>().SelectText(MicroService, text);
-
-		//	return new MemoryStream(Encoding.UTF8.GetBytes(content));
-		//}
-
 		public override string ResolveReference(string path, string baseFilePath)
 		{
+			if (path.Contains('/'))
+			{
+				var tokens = path.Split('/');
+
+				path = string.Format("{0}/{1}", Path.GetFileNameWithoutExtension(tokens[0]), tokens[1]);
+			}
+
 			var extension = Path.GetExtension(path);
 
 			if (string.IsNullOrWhiteSpace(extension))

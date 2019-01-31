@@ -3,7 +3,6 @@ using System.ComponentModel;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.Security;
-using TomPIT.Services;
 
 namespace TomPIT.Application.UI
 {
@@ -14,6 +13,7 @@ namespace TomPIT.Application.UI
 	[Syntax("razor")]
 	public class View : ViewBase, IApplicationView, IAuthorizationChain
 	{
+		private IMetricConfiguration _metric = null;
 		public const string ComponentCategory = "View";
 		public const string ComponentAuthority = "View";
 
@@ -30,13 +30,6 @@ namespace TomPIT.Application.UI
 		[Browsable(false)]
 		public Guid AuthorizationParent => Area;
 
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
-		[PropertyCategory(PropertyCategoryAttribute.CategoryDiagnostic)]
-		public bool MetricEnabled { get; set; }
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
-		[PropertyCategory(PropertyCategoryAttribute.CategoryDiagnostic)]
-		public MetricLevel MetricLevel { get; set; } = MetricLevel.General;
-
 		public override void ComponentCreated(ComponentModel.IComponent scope)
 		{
 			if (scope == null)
@@ -46,6 +39,18 @@ namespace TomPIT.Application.UI
 				throw new TomPITException(string.Format(SR.ErrInvalidComponentScope, scope.Category, Application.Area.ComponentCategory));
 
 			Area = scope.Token;
+		}
+
+		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
+		public IMetricConfiguration Metrics
+		{
+			get
+			{
+				if (_metric == null)
+					_metric = new MetricConfiguration { Parent = this };
+
+				return _metric;
+			}
 		}
 	}
 }
