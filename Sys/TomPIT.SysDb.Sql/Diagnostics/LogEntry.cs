@@ -15,7 +15,7 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 		public int EventId { get; set; }
 		public Guid Component { get; set; }
 		public Guid Element { get; set; }
-		public long Metric { get; set; }
+		public Guid Metric { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -29,7 +29,7 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 			EventId = GetInt("event_id");
 			Component = GetGuid("component");
 			Element = GetGuid("element");
-			Metric = GetLong("metric");
+			Metric = GetGuid("metric");
 		}
 	}
 }

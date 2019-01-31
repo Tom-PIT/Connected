@@ -2,11 +2,11 @@
 {
 	public enum MetricLevel
 	{
-		General = 1,
+		Basic = 1,
 		Detail = 2
 	}
 
-	public interface IMetricConfiguration
+	public interface IMetricConfiguration : IElement
 	{
 		bool Enabled { get; }
 		MetricLevel Level { get; }

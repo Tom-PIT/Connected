@@ -17,10 +17,6 @@ namespace TomPIT.Servers.Management
 				Authentication = AuthenticationType.MultiTenant
 			};
 
-			//e.ApplicationParts.Add(typeof(IdeRouting).Assembly);
-			//e.ApplicationParts.Add(typeof(Startup).Assembly);
-			//e.ApplicationParts.Add(typeof(AspNetCore.Pages_Shared_HeaderIdentity).Assembly);
-
 			Instance.Initialize(services, e);
 		}
 

@@ -36,7 +36,7 @@ namespace TomPIT.Sys.Controllers
 					EventId = jo.Optional("eventId", 0),
 					Component = jo.Optional("component", Guid.Empty),
 					Element = jo.Optional("element", Guid.Empty),
-					Metric = jo.Optional("metric", 0L),
+					Metric = jo.Optional("metric", Guid.Empty),
 					Created = jo.Optional("created", DateTime.UtcNow)
 				});
 			}

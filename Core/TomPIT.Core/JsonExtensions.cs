@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
 namespace TomPIT
 {
@@ -64,7 +63,16 @@ namespace TomPIT
 
 			try
 			{
-				return property.Value.ToObject<T>();
+				if (!(property.Value is JValue jv))
+					return default(T);
+
+				if (jv.Value == null)
+					return default(T);
+
+				if (Types.TryConvert<T>(jv.Value, out T r))
+					return r;
+
+				return default(T);
 			}
 			catch
 			{
@@ -163,7 +171,7 @@ namespace TomPIT
 				if (prop == null)
 					continue;
 
-				var masterValue = Types.Convert<string>(((JValue)prop.Value).Value);
+				var masterValue = ((JValue)prop.Value).Value;
 
 				foreach (var j in detailsData)
 				{
@@ -173,9 +181,9 @@ namespace TomPIT
 					if (jp == null)
 						continue;
 
-					var detailValue = Types.Convert<string>(((JValue)jp.Value).Value);
+					var detailValue = ((JValue)jp.Value).Value;
 
-					if (string.Compare(masterValue, detailValue, true) == 0)
+					if (Types.Compare(masterValue, detailValue))
 					{
 						jo.Add(detailsProperty, j);
 						break;
@@ -202,7 +210,7 @@ namespace TomPIT
 				if (masterProp == null)
 					continue;
 
-				var masterValue = Types.Convert<string>(((JValue)masterProp.Value).Value);
+				var masterValue = ((JValue)masterProp.Value).Value;
 				var a = new JArray();
 				jo.Add(detailsProperty, a);
 
@@ -214,9 +222,9 @@ namespace TomPIT
 					if (jjp == null)
 						continue;
 
-					var detailValue = Types.Convert<string>(((JValue)jjp.Value).Value);
+					var detailValue = ((JValue)jjp.Value).Value;
 
-					if (string.Compare(masterValue, detailValue, true) == 0)
+					if (Types.Compare(masterValue, detailValue))
 						a.Add(j);
 				}
 			}
@@ -252,10 +260,10 @@ namespace TomPIT
 			Join(masterData, masterKey, ToResults(detailsData), detailsKey, detailsProperty);
 		}
 
-		public static List<string> ToList(this JObject dataSource, string propertyName)
+		public static List<object> ToList(this JObject dataSource, string propertyName)
 		{
 			if (IsEmpty(dataSource))
-				return new List<string>();
+				return new List<object>();
 
 			return ToList(ToResults(dataSource), propertyName);
 		}
@@ -264,6 +272,7 @@ namespace TomPIT
 		{
 			var r = new JArray();
 			var results = ToResults(dataSource);
+			var list = new List<object>();
 
 			foreach (var i in results)
 			{
@@ -275,28 +284,31 @@ namespace TomPIT
 				if (jop == null)
 					continue;
 
-				var value = Types.Convert<string>(((JValue)jop.Value).Value);
+				var value = ((JValue)jop.Value).Value;
 
-				if (string.IsNullOrWhiteSpace(value))
+				if (Types.TryConvert(value, out string sv) || string.IsNullOrWhiteSpace(sv))
 					continue;
 
-				if (!r.Contains(value))
+				if (!list.Contains(value))
+				{
+					list.Add(value);
 					r.Add(value);
+				}
 			}
 
 			return r;
 		}
 
-		public static List<string> ToList(this JObject dataSource)
+		public static List<object> ToList(this JObject dataSource)
 		{
 			var array = ToResults(dataSource);
 
 			return ToList(array);
 		}
 
-		public static List<string> ToList(this JArray items)
+		public static List<object> ToList(this JArray items)
 		{
-			var r = new List<string>();
+			var r = new List<object>();
 
 			foreach (var i in items)
 			{
@@ -309,9 +321,9 @@ namespace TomPIT
 				if (!(jo.First is JProperty first))
 					continue;
 
-				var value = Types.Convert<string>(((JValue)first.Value).Value);
+				var value = ((JValue)first.Value).Value;
 
-				if (string.IsNullOrWhiteSpace(value))
+				if (Types.TryConvert(value, out string sv) || string.IsNullOrWhiteSpace(sv))
 					continue;
 
 				if (!r.Contains(value))
@@ -321,9 +333,9 @@ namespace TomPIT
 			return r;
 		}
 
-		public static List<string> ToList(this JArray items, string propertyName)
+		public static List<object> ToList(this JArray items, string propertyName)
 		{
-			var r = new List<string>();
+			var r = new List<object>();
 
 			foreach (var i in items)
 			{
@@ -335,9 +347,9 @@ namespace TomPIT
 				if (jop == null)
 					continue;
 
-				var value = Types.Convert<string>(((JValue)jop.Value).Value);
+				var value = ((JValue)jop.Value).Value;
 
-				if (string.IsNullOrWhiteSpace(value))
+				if (Types.TryConvert(value, out string sv) || string.IsNullOrWhiteSpace(sv))
 					continue;
 
 				if (!r.Contains(value))
@@ -359,16 +371,6 @@ namespace TomPIT
 
 		public static JObject Lookup(this JObject dataSource, string propertyName, List<object> values)
 		{
-			var vals = new List<string>();
-
-			foreach (var i in values)
-				vals.Add(Types.Convert<string>(i, CultureInfo.InvariantCulture));
-
-			return Lookup(dataSource, propertyName, vals);
-		}
-
-		public static JObject Lookup(this JObject dataSource, string propertyName, List<string> values)
-		{
 			var arr = new JArray();
 			var data = (JArray)dataSource["data"];
 
@@ -382,11 +384,11 @@ namespace TomPIT
 				if (jop == null)
 					continue;
 
-				var pv = Types.Convert<string>(((JValue)jop.Value).Value);
+				var pv = ((JValue)jop.Value).Value;
 
 				foreach (var j in values)
 				{
-					if (string.Compare(pv, j, true) == 0)
+					if (Types.Compare(pv, j))
 					{
 						arr.Add(jo.DeepClone());
 						break;
@@ -439,8 +441,9 @@ namespace TomPIT
 				if (prop == null)
 					continue;
 
-				result.Add(new JObject{
-					{propertyName, Types.Convert<string>(((JValue)prop.Value).Value)}
+				result.Add(new JObject
+				{
+					{propertyName, prop.Value}
 				});
 			}
 

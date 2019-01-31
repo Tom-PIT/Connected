@@ -1,17 +1,22 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Concurrent;
 using System.Net;
+using TomPIT.ComponentModel;
 using TomPIT.Diagnostics;
 
 namespace TomPIT.Services.Context
 {
 	internal class ContextDiagnosticService : ContextClient, IContextDiagnosticService
 	{
-		private Lazy<ConcurrentStack<MetricSession>> _metric = new Lazy<ConcurrentStack<MetricSession>>();
+		private Lazy<ConcurrentDictionary<Guid, MetricSession>> _metric = new Lazy<ConcurrentDictionary<Guid, MetricSession>>();
 
 		public ContextDiagnosticService(IExecutionContext context) : base(context)
 		{
 		}
+
+		public Guid MetricParent { get; set; }
 
 		public void Console(string message)
 		{
@@ -63,42 +68,58 @@ namespace TomPIT.Services.Context
 			Context.Connection().GetService<ILoggingService>().Write(entry);
 		}
 
-		public Guid EnterMetric(Guid component)
+		public Guid StartMetric(IMetricConfiguration metric, JObject request)
 		{
-			return EnterMetric(component, Guid.Empty);
+			return StartMetric(metric, Guid.Empty, request);
 		}
 
-		public Guid EnterMetric(Guid component, Guid element)
+		public Guid StartMetric(IMetricConfiguration metric, Guid element, JObject request)
 		{
+			if (!metric.Enabled)
+				return Guid.Empty;
+
+			var content = request == null ? string.Empty : JsonConvert.SerializeObject(request);
+			var length = content.Length;
 			var id = Guid.NewGuid();
 
-
-
-			//var e = Context.Connection().GetService<IDiscoveryService>().Find(component, element);
-
-			Metric.Push(new MetricSession
+			Metric.TryAdd(id, new MetricSession
 			{
-				Component = component,
+				Component = metric.Configuration().Component,
 				Element = element,
 				Session = id,
-				Instance = Context.Connection().GetService<IRuntimeService>().Type,
+				Instance = Shell.GetService<IRuntimeService>().Type,
 				IP = Shell.HttpContext == null ? IPAddress.None : Shell.HttpContext.Connection.RemoteIpAddress,
-				Start = DateTime.UtcNow
+				Start = DateTime.UtcNow,
+				Request = content,
+				ConsumptionIn = length,
+				Parent = MetricParent
 			});
+
+			MetricParent = id;
 
 			return id;
 		}
 
-		public void ExitMetric()
+		public void StopMetric(Guid metricId, JObject response)
 		{
-			throw new NotImplementedException();
+			if (metricId == Guid.Empty)
+				return;
+
+			var content = response == null ? string.Empty : JsonConvert.SerializeObject(response);
+			var length = content.Length;
+
+			if (Metric.TryRemove(metricId, out MetricSession m))
+			{
+				m.ConsumptionOut = length;
+				m.Response = content;
+				m.End = DateTime.UtcNow;
+
+				MetricParent = m.Session;
+
+				Context.Connection().GetService<IMetricService>().Write(m);
+			}
 		}
 
-		public void ExitMetric(Guid id)
-		{
-			throw new NotImplementedException();
-		}
-
-		private ConcurrentStack<MetricSession> Metric { get { return _metric.Value; } }
+		private ConcurrentDictionary<Guid, MetricSession> Metric { get { return _metric.Value; } }
 	}
 }

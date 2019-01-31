@@ -1,8 +1,12 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Diagnostics;
+using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Services;
+using TomPIT.Services.Context;
 
 namespace TomPIT
 {
@@ -136,7 +140,93 @@ namespace TomPIT
 
 		public static RuntimeException WithMetrics(this RuntimeException ex, IExecutionContext context)
 		{
+			if (context is ExecutionContext ec)
+				ex.Metric = ((ContextDiagnosticService)ec.Services.Diagnostic).MetricParent;
+
 			return ex;
+		}
+
+		public static JObject ParseRequest(this IMetricConfiguration configuration, HttpRequest request)
+		{
+			return ParseRequest(configuration, request, null);
+		}
+
+		public static JObject ParseRequest(this IMetricConfiguration configuration, HttpRequest request, JObject body)
+		{
+			if (!configuration.Enabled || configuration.Level != MetricLevel.Detail)
+				return null;
+
+			var r = new JObject();
+
+			var metaData = new JObject();
+
+			r.Add("metaData", metaData);
+
+			metaData.Add("contentLength", request.ContentLength);
+			metaData.Add("contentType", request.ContentType);
+			metaData.Add("host", request.Host.ToString());
+			metaData.Add("ajax", request.IsAjaxRequest());
+			metaData.Add("method", request.Method);
+			metaData.Add("path", request.Path.ToString());
+			metaData.Add("pathBase", request.PathBase.ToString());
+			metaData.Add("protocol", request.Protocol);
+			metaData.Add("queryString", request.QueryString.ToString());
+			metaData.Add("scheme", request.Scheme);
+
+			var u = request.HttpContext.User.Identity.IsAuthenticated
+				? request.HttpContext.User.Identity.Name
+				: "anonimous";
+
+			metaData.Add("user", u);
+			metaData.Add("localIpAddress", request.HttpContext.Connection.LocalIpAddress.ToString());
+			metaData.Add("localPort", request.HttpContext.Connection.LocalPort.ToString());
+			metaData.Add("remoteIpAddress", request.HttpContext.Connection.RemoteIpAddress.ToString());
+			metaData.Add("remotePort", request.HttpContext.Connection.RemotePort.ToString());
+
+			var headers = new JObject();
+
+			r.Add("headers", headers);
+
+			foreach (var i in request.Headers)
+				headers.Add(i.Key, i.Value.ToString());
+
+			if (body != null)
+				r.Add("body", body);
+
+			return r;
+		}
+
+		public static JObject ParseResponse(this IMetricConfiguration configuration, HttpResponse response)
+		{
+			return ParseResponse(configuration, response, null);
+		}
+
+		public static JObject ParseResponse(this IMetricConfiguration configuration, HttpResponse response, string body)
+		{
+			if (!configuration.Enabled || configuration.Level != MetricLevel.Detail)
+				return null;
+
+			var r = new JObject();
+
+			var metaData = new JObject();
+
+			r.Add("metaData", metaData);
+
+			metaData.Add("contentLength", response.ContentLength);
+			metaData.Add("contentType", response.ContentType);
+			metaData.Add("statusCode", response.StatusCode);
+
+			var headers = new JObject();
+
+			r.Add("headers", headers);
+
+			foreach (var i in response.Headers)
+				headers.Add(i.Key, i.Value.ToString());
+
+			if (!string.IsNullOrWhiteSpace(body))
+				r.Add("body", body);
+
+			return r;
 		}
 	}
 }

@@ -20,6 +20,9 @@ namespace TomPIT.Services
 			var endpoint = sender is IEndpointContext c ? c.Endpoint : null;
 
 			Initialize(endpoint, sender.Identity.Authority, sender.Identity.AuthorityId, sender.Identity.ContextId);
+
+			if (sender is ExecutionContext ec)
+				((ContextDiagnosticService)Services.Diagnostic).MetricParent = ((ContextDiagnosticService)ec.Services.Diagnostic).MetricParent;
 		}
 
 		public ExecutionContext(string endpoint)

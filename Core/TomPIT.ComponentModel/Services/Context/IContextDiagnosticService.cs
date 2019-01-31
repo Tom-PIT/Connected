@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
+using TomPIT.ComponentModel;
 
 namespace TomPIT.Services.Context
 {
@@ -10,9 +12,8 @@ namespace TomPIT.Services.Context
 
 		void Console(string message);
 
-		Guid EnterMetric(Guid component);
-		Guid EnterMetric(Guid component, Guid element);
-		void ExitMetric();
-		void ExitMetric(Guid id);
+		Guid StartMetric(IMetricConfiguration metric, JObject request);
+		Guid StartMetric(IMetricConfiguration metric, Guid element, JObject request);
+		void StopMetric(Guid metricId, JObject response);
 	}
 }

@@ -51,7 +51,7 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 				if (i.EventId > 0)
 					d.Add("event_id", i.EventId);
 
-				if (i.Metric > 0)
+				if (i.Metric != Guid.Empty)
 					d.Add("metric", i.Metric);
 
 				if (i.Component != Guid.Empty)

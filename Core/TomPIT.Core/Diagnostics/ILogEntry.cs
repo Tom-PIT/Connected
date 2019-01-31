@@ -12,7 +12,7 @@ namespace TomPIT.Diagnostics
 		string Source { get; }
 		DateTime Created { get; }
 		int EventId { get; }
-		long Metric { get; }
+		Guid Metric { get; }
 		Guid Component { get; }
 		Guid Element { get; }
 	}

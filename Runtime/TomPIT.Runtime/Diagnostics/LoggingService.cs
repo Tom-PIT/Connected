@@ -50,7 +50,8 @@ namespace TomPIT.Diagnostics
 					{"eventId", log.EventId},
 					{"component", log.Component},
 					{"element", log.Element},
-					{"metric", log.Metric}
+					{"metric", log.Metric},
+					{"created", log.Created},
 				});
 
 				count++;

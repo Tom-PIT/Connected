@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.UI;
 using TomPIT.Services;
 
 namespace TomPIT.Models
@@ -25,6 +26,8 @@ namespace TomPIT.Models
 		}
 
 		public IComponent Component { get; set; }
+
+		internal IView View { get; set; }
 
 		public virtual IEnumerable<ValidationResult> Validate()
 		{

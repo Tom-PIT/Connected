@@ -54,34 +54,45 @@ namespace TomPIT.UI
 			name = name.Trim('/');
 
 			var model = CreateModel();
+			var metric = Guid.Empty;
+			var content = string.Empty;
 
-			//model.Services.Log
-			var actionContext = GetActionContext(Context);
-			var viewEngineResult = Engine.FindView(actionContext, name, false);
+			if (model.View != null)
+				metric = model.Services.Diagnostic.StartMetric(model.View.Metrics, model.View.Metrics.ParseRequest(Context.Request));
 
-			if (!viewEngineResult.Success)
+			try
 			{
-				if (string.Compare(name, "home", true) == 0)
-					throw new InvalidOperationException(SR.ErrDefaultViewNotSet);
-				else
+				var actionContext = GetActionContext(Context);
+				var viewEngineResult = Engine.FindView(actionContext, name, false);
+
+				if (!viewEngineResult.Success)
 				{
-					Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-					return;
+					if (string.Compare(name, "home", true) == 0)
+						throw new InvalidOperationException(SR.ErrDefaultViewNotSet);
+					else
+					{
+						Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+						return;
+					}
 				}
+
+				var view = viewEngineResult.View;
+
+				Authorize(model);
+
+				if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
+					return;
+
+				content = CreateContent(view, actionContext, model);
+				var buffer = Encoding.UTF8.GetBytes(content);
+
+				if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
+					Context.Response.Body.Write(buffer, 0, buffer.Length);
 			}
-
-			var view = viewEngineResult.View;
-
-			Authorize(model);
-
-			if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
-				return;
-
-			var content = CreateContent(view, actionContext, model);
-			var buffer = Encoding.UTF8.GetBytes(content);
-
-			if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
-				Context.Response.Body.Write(buffer, 0, buffer.Length);
+			finally
+			{
+				model.Services.Diagnostic.StopMetric(metric, model.View.Metrics.ParseResponse(Context.Response, content));
+			}
 		}
 
 		private string CreateContent<TModel>(Microsoft.AspNetCore.Mvc.ViewEngines.IView view, ActionContext actionContext, TModel model)
@@ -114,7 +125,7 @@ namespace TomPIT.UI
 			return new ActionContext(context, context.GetRouteData(), new ActionDescriptor());
 		}
 
-		private IExecutionContext CreateModel()
+		private RuntimeModel CreateModel()
 		{
 			var path = Context.Request.Path.ToString().Trim('/');
 
@@ -125,6 +136,9 @@ namespace TomPIT.UI
 				return null;
 
 			var model = new RuntimeModel(Context.Request, ac);
+
+			model.View = view;
+
 			var vi = new ViewInfo(string.Format("/Views/{0}.cshtml", path), ac);
 
 			if (model is IIdentityBinder ctx && vi.ViewComponent != null)

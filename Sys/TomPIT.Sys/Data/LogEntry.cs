@@ -12,7 +12,7 @@ namespace TomPIT.Sys.Data
 		public string Source { get; set; }
 		public DateTime Created { get; set; }
 		public int EventId { get; set; }
-		public long Metric { get; set; }
+		public Guid Metric { get; set; }
 		public Guid Component { get; set; }
 		public Guid Element { get; set; }
 		public long Id { get; set; }
