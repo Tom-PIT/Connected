@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AssemblyName>TomPIT.IoT.App</AssemblyName>
     <RootNamespace>TomPIT.IoT</RootNamespace>
-    <AssemblyVersion>1.0.130.4</AssemblyVersion>
-    <FileVersion>1.0.130.4</FileVersion>
-    <Version>1.0.130.4</Version>
+    <AssemblyVersion>1.0.131.6</AssemblyVersion>
+    <FileVersion>1.0.131.6</FileVersion>
+    <Version>1.0.131.6</Version>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="wwwroot\" />

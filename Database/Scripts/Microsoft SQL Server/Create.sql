@@ -560,7 +560,7 @@ CREATE TABLE [tompit].[log]
 [event_id] [int] NULL,
 [component] [uniqueidentifier] NULL,
 [element] [uniqueidentifier] NULL,
-[metric] [bigint] NULL
+[metric] [uniqueidentifier] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -1119,7 +1119,7 @@ BEGIN
 	INSERT tompit.metric (session, start, [end], result, instance, request_ip, component, element, parent, request, response, consumption_in, consumption_out)
 	SELECT session, start, [end], result, instance, request_ip, component, element, parent, request, response, consumption_in, consumption_out 
 	FROM OPENJSON (@items) WITH (session uniqueidentifier, start datetime2(7), [end] datetime2(7), result int, instance int, request_ip varchar(48),
-		component uniqueidentifier, element uniqueidentifier, parent uniqueidentifier, request nvarchar, response nvarchar, consumption_in bigint, consumption_out bigint); 
+		component uniqueidentifier, element uniqueidentifier, parent uniqueidentifier, request nvarchar(max), response nvarchar(max), consumption_in bigint, consumption_out bigint); 
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3116,7 +3116,7 @@ BEGIN
 
 	INSERT tompit.log (created, message, trace_level, source, category, event_id, metric, component, element)
 	SELECT created, message, trace_level, source, category, event_id, metric, component, element FROM OPENJSON (@items) WITH (created datetime2(7), message nvarchar(max), trace_level int, source nvarchar(1024), category nvarchar(128),
-		event_id int, metric bigint, component uniqueidentifier, element uniqueidentifier); 
+		event_id int, metric uniqueidentifier, component uniqueidentifier, element uniqueidentifier); 
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3173,7 +3173,7 @@ CREATE PROCEDURE [tompit].[log_que]
 	@date date,
 	@component uniqueidentifier = NULL,
 	@element uniqueidentifier = NULL,
-	@metric bigint = NULL
+	@metric uniqueidentifier = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;

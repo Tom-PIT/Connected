@@ -1,4 +1,5 @@
-﻿using TomPIT.Annotations;
+﻿using System.ComponentModel;
+using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.Services;
 
@@ -11,6 +12,7 @@ namespace TomPIT.Application
 		public bool Enabled { get; set; }
 		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDiagnostic)]
-		public MetricLevel Level { get; set; } = MetricLevel.General;
+		[DefaultValue(MetricLevel.Basic)]
+		public MetricLevel Level { get; set; } = MetricLevel.Basic;
 	}
 }

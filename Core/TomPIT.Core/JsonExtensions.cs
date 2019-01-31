@@ -15,10 +15,18 @@ namespace TomPIT
 
 			try
 			{
-				if (property.Value is JValue jv && jv.Value == null)
-					throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
+				object proposed = property.Value;
 
-				var r = property.Value.ToObject<T>();
+				if (property.Value is JValue val)
+				{
+					if (val.Value == null)
+						throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
+
+					proposed = val.Value;
+				}
+
+				if (!Types.TryConvert(proposed, out T r))
+					throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
 
 				if (typeof(T) == typeof(string) && string.IsNullOrWhiteSpace(r as string))
 					throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
@@ -43,10 +51,20 @@ namespace TomPIT
 
 			try
 			{
-				if (property.Value is JValue jv && jv.Value == null)
-					return defaultValue;
+				object proposed = property.Value;
 
-				return property.Value.ToObject<T>();
+				if (property.Value is JValue val)
+				{
+					if (val.Value == null)
+						return defaultValue;
+
+					proposed = val.Value;
+				};
+
+				if (Types.TryConvert(proposed, out T r))
+					return r;
+
+				return default(T);
 			}
 			catch
 			{
@@ -59,17 +77,21 @@ namespace TomPIT
 			var property = instance.Property(propertyName, StringComparison.OrdinalIgnoreCase);
 
 			if (property == null)
-				return existing.Optional<T>(propertyName, default(T));
+				return existing.Optional(propertyName, default(T));
 
 			try
 			{
-				if (!(property.Value is JValue jv))
-					return default(T);
+				object proposed = property.Value;
 
-				if (jv.Value == null)
-					return default(T);
+				if (property.Value is JValue val)
+				{
+					if (val.Value == null)
+						return default(T);
 
-				if (Types.TryConvert<T>(jv.Value, out T r))
+					proposed = val.Value;
+				};
+
+				if (Types.TryConvert(proposed, out T r))
 					return r;
 
 				return default(T);
@@ -286,7 +308,7 @@ namespace TomPIT
 
 				var value = ((JValue)jop.Value).Value;
 
-				if (Types.TryConvert(value, out string sv) || string.IsNullOrWhiteSpace(sv))
+				if (!Types.TryConvert(value, out string sv) || string.IsNullOrWhiteSpace(sv))
 					continue;
 
 				if (!list.Contains(value))
@@ -323,7 +345,7 @@ namespace TomPIT
 
 				var value = ((JValue)first.Value).Value;
 
-				if (Types.TryConvert(value, out string sv) || string.IsNullOrWhiteSpace(sv))
+				if (!Types.TryConvert(value, out string sv) || string.IsNullOrWhiteSpace(sv))
 					continue;
 
 				if (!r.Contains(value))
@@ -349,7 +371,7 @@ namespace TomPIT
 
 				var value = ((JValue)jop.Value).Value;
 
-				if (Types.TryConvert(value, out string sv) || string.IsNullOrWhiteSpace(sv))
+				if (!Types.TryConvert(value, out string sv) || string.IsNullOrWhiteSpace(sv))
 					continue;
 
 				if (!r.Contains(value))
