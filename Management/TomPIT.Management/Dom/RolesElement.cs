@@ -3,9 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations;
-using TomPIT.Design;
 using TomPIT.Designers;
-using TomPIT.Ide;
 using TomPIT.Items;
 using TomPIT.Security;
 
@@ -35,7 +33,7 @@ namespace TomPIT.Dom
 				}
 			}
 		}
-		public RolesElement(IEnvironment environment, IDomElement parent) : base(environment, parent)
+		public RolesElement(IDomElement parent) : base(parent)
 		{
 			Id = FolderId;
 			Glyph = "fal fa-users";
@@ -61,14 +59,14 @@ namespace TomPIT.Dom
 		public override void LoadChildren()
 		{
 			foreach (var i in Existing)
-				Items.Add(new RoleElement(Environment, this, i));
+				Items.Add(new RoleElement(this, i));
 		}
 
 		public override void LoadChildren(string id)
 		{
 			var role = Connection.GetService<IRoleService>().Select(id.AsGuid());
 
-			Items.Add(new RoleElement(Environment, this, role));
+			Items.Add(new RoleElement(this, role));
 		}
 
 		public override IDomDesigner Designer
@@ -76,7 +74,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new RolesDesigner(Environment, this);
+					_designer = new RolesDesigner(this);
 
 				return _designer;
 			}

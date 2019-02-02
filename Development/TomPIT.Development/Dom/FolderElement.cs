@@ -1,14 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
+using TomPIT.Security;
 
 namespace TomPIT.Dom
 {
-	public class FolderElement : TransactionElement, IFolderScope
+	public class FolderElement : TransactionElement, IFolderScope, IPermissionElement
 	{
 		private List<IFolder> _folders = null;
 		private List<IComponent> _components = null;
+		private List<string> _claims = null;
+		private IPermissionDescriptor _descriptor = null;
 
 		public FolderElement(IDomElement parent, IFolder folder) : base(parent)
 		{
@@ -35,6 +39,37 @@ namespace TomPIT.Dom
 
 		public override int ChildrenCount => Components.Count + Folders.Count;
 		public override bool HasChildren => ChildrenCount > 0;
+
+		public List<string> Claims
+		{
+			get
+			{
+				if (_claims == null)
+					_claims = new List<string>
+					{
+						TomPIT.Claims.FolderAccess
+					};
+
+				return _claims;
+			}
+		}
+
+		public IPermissionDescriptor PermissionDescriptor
+		{
+			get
+			{
+				if (_descriptor == null)
+					_descriptor = new FolderPermissionDescriptor();
+
+				return _descriptor;
+			}
+		}
+
+		public string PrimaryKey => Folder.Token.ToString();
+
+		public virtual bool SupportsInherit => Folder.Parent != Guid.Empty;
+		public virtual string PermissionComponent => null;
+		public virtual Guid ResourceGroup => DomQuery.Closest<IMicroServiceScope>(this).MicroService.ResourceGroup;
 
 		public override void LoadChildren()
 		{

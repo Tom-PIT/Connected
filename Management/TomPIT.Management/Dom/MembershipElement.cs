@@ -1,6 +1,4 @@
-﻿using TomPIT.Design;
-using TomPIT.Designers;
-using TomPIT.Ide;
+﻿using TomPIT.Designers;
 
 namespace TomPIT.Dom
 {
@@ -9,7 +7,7 @@ namespace TomPIT.Dom
 		public const string FolderId = "Membership";
 
 		private IDomDesigner _designer = null;
-		public MembershipElement(IEnvironment environment, IDomElement parent) : base(environment, parent)
+		public MembershipElement(IDomElement parent) : base(parent)
 		{
 			Title = "Membership";
 			Id = FolderId;
@@ -30,7 +28,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new MembershipDesigner(Environment, this);
+					_designer = new MembershipDesigner(this);
 
 				return _designer;
 			}

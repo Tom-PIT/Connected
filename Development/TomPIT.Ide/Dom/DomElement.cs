@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
+using TomPIT.Annotations;
 using TomPIT.Connectivity;
 using TomPIT.Design;
 using TomPIT.Ide;
@@ -12,6 +13,8 @@ namespace TomPIT.Dom
 		private IDomElementBehavior _behavior = null;
 		private bool _sortChildren = true;
 		private List<IVerb> _verbs = null;
+		private IDomDesigner _designer = null;
+		private bool _designerResolved = false;
 
 		protected DomElement(IEnvironment environment, IDomElement parent)
 		{
@@ -71,7 +74,38 @@ namespace TomPIT.Dom
 			}
 		}
 
-		public virtual IDomDesigner Designer { get { return null; } }
+		public virtual IDomDesigner Designer
+		{
+			get
+			{
+				if (_designer == null && !_designerResolved)
+				{
+					_designerResolved = true;
+
+					if (Component == null)
+						return _designer;
+
+					var designers = Component.GetType().FindAttributes<DomDesignerAttribute>();
+
+					if (designers == null || designers.Count == 0)
+						return _designer;
+
+					var mode = Shell.GetService<IRuntimeService>().Mode;
+
+					foreach (var i in designers)
+					{
+						if ((i.Mode & mode) == mode)
+						{
+							_designer = DomQuery.CreateDesigner(this, i);
+
+							break;
+						}
+					}
+				}
+
+				return _designer;
+			}
+		}
 
 		public virtual object Component { get; } = null;
 		public virtual PropertyInfo Property { get; } = null;

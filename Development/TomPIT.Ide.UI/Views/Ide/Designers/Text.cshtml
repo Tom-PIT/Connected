@@ -150,12 +150,7 @@
             });
 
             var internalCommand = textEditor.addCommand(0, function (s, e) {
-                if (e.kind === "1") {
-                    ide.pinDocument(ide.activeDocument().path);
-                    ide.openDocument(e.microService, e.component, e.element);
-                }
-                else
-                    ide.newWindow(e.microService, e.component, e.element);
+					ide.newWindow(e.microService, e.component, e.element);
             });
 
 			  textEditor.addAction({

@@ -14,7 +14,7 @@ namespace TomPIT.Designers
 {
 	internal class RolesDesigner : CollectionDesigner<RolesElement>
 	{
-		public RolesDesigner(IEnvironment environment, RolesElement element) : base(environment, element)
+		public RolesDesigner(RolesElement element) : base(element)
 		{
 
 		}

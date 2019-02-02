@@ -17,7 +17,7 @@ namespace TomPIT.Designers
 		private List<ISchemaField> _fields = null;
 		private string _selectedFields = string.Empty;
 
-		public DataSourceDesigner(IEnvironment environment, ComponentElement element) : base(environment, element)
+		public DataSourceDesigner(ComponentElement element) : base(element)
 		{
 		}
 

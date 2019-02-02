@@ -115,7 +115,7 @@ namespace TomPIT
 			var type = Types.GetType(component.Type);
 
 			if (type == null)
-				throw new RuntimeException(SR.ErrCannotCreateComponentInstance);
+				return new TypeExceptionElement(parent, component);
 
 			var att = type.FindAttribute<DomElementAttribute>();
 
@@ -147,9 +147,9 @@ namespace TomPIT
 				return null;
 
 			if (type.IsCollection())
-				return new CollectionDesigner<IDomElement>(sender.Environment, sender);
+				return new CollectionDesigner<IDomElement>(sender);
 			else if (type.IsText())
-				return new TextDesigner(sender.Environment, sender);
+				return new TextDesigner(sender);
 			else
 			{
 				/*

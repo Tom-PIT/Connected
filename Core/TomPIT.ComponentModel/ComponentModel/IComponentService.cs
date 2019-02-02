@@ -18,6 +18,7 @@ namespace TomPIT.ComponentModel
 
 		IFolder SelectFolder(Guid folder);
 		List<IFolder> QueryFolders(Guid microService, Guid parent);
+		List<IFolder> QueryFolders(Guid microService);
 
 		List<IConfiguration> QueryConfigurations(List<IComponent> components);
 		List<IConfiguration> QueryConfigurations(List<string> resourceGroups, string categories);

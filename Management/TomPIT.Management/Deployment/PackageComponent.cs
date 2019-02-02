@@ -11,8 +11,8 @@ namespace TomPIT.Deployment
 		public Guid Token { get; set; }
 		[JsonProperty(PropertyName = "type")]
 		public string Type { get; set; }
-		[JsonProperty(PropertyName = "feature")]
-		public Guid Feature { get; set; }
+		[JsonProperty(PropertyName = "folder")]
+		public Guid Folder { get; set; }
 		[JsonProperty(PropertyName = "category")]
 		public string Category { get; set; }
 		[JsonProperty(PropertyName = "runtimeConfiguration")]

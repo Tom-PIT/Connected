@@ -379,13 +379,13 @@ namespace TomPIT
 			return sb.ToString().TrimEnd('/');
 		}
 
-		public static IDomDesigner CreateDesigner(IEnvironment environment, IDomElement element, DomDesignerAttribute attribute)
+		public static IDomDesigner CreateDesigner(IDomElement element, DomDesignerAttribute attribute)
 		{
 			if (attribute == null)
 				return null;
 
 			var type = attribute.Type ?? Types.GetType(attribute.TypeName);
-			var instance = type.CreateInstance<IDomDesigner>(new object[] { environment, element });
+			var instance = type.CreateInstance<IDomDesigner>(new object[] { element });
 
 			if (instance == null)
 				throw new TomPITException(string.Format("{0} ({1})", SR.ErrCannotCreateInstance, type.Name));

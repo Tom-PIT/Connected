@@ -12,7 +12,7 @@ namespace TomPIT.Designers
 {
 	public abstract class TransactionDesigner : DataElementDesigner
 	{
-		public TransactionDesigner(IEnvironment environment, ComponentElement element) : base(environment, element)
+		public TransactionDesigner(ComponentElement element) : base(element)
 		{
 		}
 

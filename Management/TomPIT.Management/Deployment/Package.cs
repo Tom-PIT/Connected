@@ -5,7 +5,6 @@ using System.Linq;
 using TomPIT.Analysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
-using TomPIT.ComponentModel.Features;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.DataProviders.Deployment;
 using TomPIT.Globalization;
@@ -18,7 +17,7 @@ namespace TomPIT.Deployment
 		private IPackageMetaData _metaData = null;
 		private IPackageMicroService _microService = null;
 		private List<IMicroServiceString> _strings = null;
-		private List<IPackageFeature> _features = null;
+		private List<IPackageFolder> _folders = null;
 		private List<IPackageComponent> _components = null;
 		private List<IPackageBlob> _blobs = null;
 		private List<IPackageDependency> _dependencies = null;
@@ -62,14 +61,14 @@ namespace TomPIT.Deployment
 		}
 
 		[JsonProperty(PropertyName = "features")]
-		public List<IPackageFeature> Features
+		public List<IPackageFolder> Folders
 		{
 			get
 			{
-				if (_features == null)
-					_features = new List<IPackageFeature>();
+				if (_folders == null)
+					_folders = new List<IPackageFolder>();
 
-				return _features;
+				return _folders;
 			}
 		}
 
@@ -170,7 +169,7 @@ namespace TomPIT.Deployment
 			};
 
 			CreateMicroService();
-			CreateFeatures();
+			CreateFolders();
 			CreateComponents();
 			CreateStrings();
 			CreateDependencies();
@@ -199,7 +198,7 @@ namespace TomPIT.Deployment
 
 			foreach (var i in components)
 			{
-				if (i.Feature != Guid.Empty && Features.FirstOrDefault(f => f.Token == i.Feature) == null)
+				if (i.Folder != Guid.Empty && Folders.FirstOrDefault(f => f.Token == i.Folder) == null)
 					continue;
 
 				var e = new PackageProcessArgs(PackageEntity.Component, i.Token.ToString());
@@ -212,7 +211,7 @@ namespace TomPIT.Deployment
 				Components.Add(new PackageComponent
 				{
 					Category = i.Category,
-					Feature = i.Feature,
+					Folder = i.Folder,
 					Name = i.Name,
 					RuntimeConfiguration = i.RuntimeConfiguration,
 					Token = i.Token,
@@ -265,23 +264,24 @@ namespace TomPIT.Deployment
 			});
 		}
 
-		private void CreateFeatures()
+		private void CreateFolders()
 		{
-			var features = Args.Connection.GetService<IFeatureService>().Query(Args.MicroService);
+			var folders = Args.Connection.GetService<IComponentService>().QueryFolders(Args.MicroService);
 
-			foreach (var i in features)
+			foreach (var i in folders)
 			{
-				var e = new PackageProcessArgs(PackageEntity.Feature, i.Token.ToString());
+				var e = new PackageProcessArgs(PackageEntity.Folder, i.Token.ToString());
 
 				Args.Callback?.Invoke(e);
 
 				if (e.Cancel)
 					continue;
 
-				Features.Add(new PackageFeature
+				Folders.Add(new PackageFolder
 				{
 					Name = i.Name,
-					Token = i.Token
+					Token = i.Token,
+					Parent = i.Parent
 				});
 			}
 		}

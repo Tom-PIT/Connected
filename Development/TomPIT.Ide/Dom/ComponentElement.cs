@@ -72,7 +72,7 @@ namespace TomPIT.Dom
 					var att = Configuration.GetType().ResolveDesigner();
 
 					if (att != null)
-						_designer = DomQuery.CreateDesigner(Environment, this, att);
+						_designer = DomQuery.CreateDesigner(this, att);
 
 					if (_designer == null && IsDesignTime)
 					{

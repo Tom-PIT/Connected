@@ -7,7 +7,7 @@ namespace TomPIT.Deployment
 		string Name { get; }
 		Guid Token { get; }
 		string Type { get; }
-		Guid Feature { get; }
+		Guid Folder { get; }
 		string Category { get; }
 		Guid RuntimeConfiguration { get; }
 	}

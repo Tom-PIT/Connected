@@ -10,7 +10,7 @@ namespace TomPIT.Application.Design.Designers
 {
 	internal class DataSource : DataSourceDesigner
 	{
-		public DataSource(IEnvironment environment, ComponentElement element) : base(environment, element)
+		public DataSource(ComponentElement element) : base(element)
 		{
 		}
 

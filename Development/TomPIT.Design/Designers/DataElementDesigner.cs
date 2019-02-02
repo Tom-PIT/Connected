@@ -23,7 +23,7 @@ namespace TomPIT.Designers
 		private List<ISchemaParameter> _parameters = null;
 		private IConnection _connectionConfiguration = null;
 
-		public DataElementDesigner(IEnvironment environment, ComponentElement element) : base(environment, element)
+		public DataElementDesigner(ComponentElement element) : base(element)
 		{
 		}
 

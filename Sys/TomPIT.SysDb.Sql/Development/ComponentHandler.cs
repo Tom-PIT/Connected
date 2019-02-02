@@ -76,7 +76,7 @@ namespace TomPIT.SysDb.Sql.Development
 			w.CreateParameter("@id", component.GetId());
 			w.CreateParameter("@name", name);
 			w.CreateParameter("@modified", modified);
-			w.CreateParameter("@folder", folder == null ? 0 : folder.GetId());
+			w.CreateParameter("@folder", folder == null ? 0 : folder.GetId(), true);
 			w.CreateParameter("@runtime_configuration", runtimeConfiguration, true);
 
 			w.Execute();

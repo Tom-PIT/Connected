@@ -137,11 +137,11 @@ namespace TomPIT.Dom
 
 		private IDomDesigner CreatePropertyDesignerInstance(object component, string propertyName, DomDesignerAttribute designer)
 		{
-			var e = new PropertyElement(Environment, this, component, propertyName);
+			var e = new PropertyElement(this, component, propertyName);
 
 			var type = designer.Type ?? Type.GetType(designer.TypeName);
 
-			var instance = type.CreateInstance<IDomDesigner>(new object[] { Environment, e });
+			var instance = type.CreateInstance<IDomDesigner>(new object[] { e });
 
 			if (instance == null)
 				throw IdeException.InvalidPropertyDesigner(this, IdeEvents.DesignerSection, propertyName, type.Name);

@@ -8,7 +8,6 @@ using TomPIT.Design;
 using TomPIT.Design.Services;
 using TomPIT.Designers.CodeGeneration;
 using TomPIT.Dom;
-using TomPIT.Ide;
 using TomPIT.Services;
 
 namespace TomPIT.Designers
@@ -22,7 +21,7 @@ namespace TomPIT.Designers
 
 		private string _text = null;
 
-		public TextDesigner(IEnvironment environment, IDomElement element) : base(environment, element)
+		public TextDesigner(IDomElement element) : base(element)
 		{
 		}
 

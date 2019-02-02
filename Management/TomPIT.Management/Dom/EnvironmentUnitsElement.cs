@@ -3,7 +3,6 @@ using System;
 using TomPIT.Design;
 using TomPIT.Designers;
 using TomPIT.Environment;
-using TomPIT.Ide;
 
 namespace TomPIT.Dom
 {
@@ -13,7 +12,7 @@ namespace TomPIT.Dom
 		private EnvironmentUnitsDesigner _designer = null;
 		private IEnvironmentUnit _selection = null;
 
-		public EnvironmentUnitsElement(IEnvironment environment, IDomElement parent) : base(environment, parent)
+		public EnvironmentUnitsElement(IDomElement parent) : base(parent)
 		{
 			Id = DomId;
 			Glyph = "fal fa-folder";
@@ -60,7 +59,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new EnvironmentUnitsDesigner(Environment, this);
+					_designer = new EnvironmentUnitsDesigner(this);
 
 				return _designer;
 			}

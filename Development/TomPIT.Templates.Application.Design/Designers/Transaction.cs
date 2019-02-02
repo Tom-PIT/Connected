@@ -9,7 +9,7 @@ namespace TomPIT.Application.Design.Designers
 {
 	internal class Transaction : TransactionDesigner
 	{
-		public Transaction(IEnvironment environment, ComponentElement element) : base(environment, element)
+		public Transaction(ComponentElement element) : base(element)
 		{
 		}
 

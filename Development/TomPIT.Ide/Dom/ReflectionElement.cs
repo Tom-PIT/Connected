@@ -124,7 +124,7 @@ namespace TomPIT.Dom
 						var att = Property.ResolveDesigner();
 
 						if (att != null)
-							_designer = DomQuery.CreateDesigner(Environment, this, att);
+							_designer = DomQuery.CreateDesigner(this, att);
 					}
 
 					if (_designer == null && Value != null)
@@ -132,7 +132,7 @@ namespace TomPIT.Dom
 						var att = Value.GetType().ResolveDesigner();
 
 						if (att != null)
-							_designer = DomQuery.CreateDesigner(Environment, this, att);
+							_designer = DomQuery.CreateDesigner(this, att);
 					}
 
 					if (_designer == null && Value != null && IsDesignTime)

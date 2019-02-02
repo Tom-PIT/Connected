@@ -39,7 +39,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new ScheduleDesigner(Environment, this);
+					_designer = new ScheduleDesigner(this);
 
 				return _designer;
 			}

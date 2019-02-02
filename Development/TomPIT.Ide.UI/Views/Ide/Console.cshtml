@@ -1,48 +1,43 @@
 ﻿@model TomPIT.Ide.IEnvironment
 
 <div class="row no-gutters">
-    <div class="col-lg-2 col-sm-6">
-        <div id="devExplorer" tabindex="0">
-            <div id="devExplorerNodes">
-                @await Html.PartialAsync("~/Views/Ide/Dom.cshtml", Model)
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-8 col-sm-6 dev-designer">
-        <div data-tp-tag="progress-container"></div>
-        <div class="docs">
-            <div id="divOpenDocs">
-
-            </div>
-        </div>
-        <div id="devDesigner">
-            @await Html.PartialAsync("~/Views/Ide/Designers/Empty.cshtml", Model)
-        </div>
-    </div>
-    <div class="col-lg-2">
-        <div id="devSelection">
-            @await Html.PartialAsync("~/Views/Ide/Selection/Selection.cshtml", Model)
-        </div>
-    </div>
+	<div class="col-lg-2 col-sm-6">
+		<div id="devExplorer" tabindex="0">
+			<div id="devExplorerNodes">
+				@await Html.PartialAsync("~/Views/Ide/Dom.cshtml", Model)
+			</div>
+		</div>
+	</div>
+	<div class="col-lg-8 col-sm-6 dev-designer">
+		<div data-tp-tag="progress-container"></div>
+		<div id="devDesigner">
+			@await Html.PartialAsync("~/Views/Ide/Designers/Empty.cshtml", Model)
+		</div>
+	</div>
+	<div class="col-lg-2">
+		<div id="devSelection">
+			@await Html.PartialAsync("~/Views/Ide/Selection/Selection.cshtml", Model)
+		</div>
+	</div>
 </div>
 <div class="row no-gutters dev-footer bg-dark" id="devStatus">
 
 </div>
 <script type="text/html" id="docTemplate">
-    <div class="doc-title">
-        <%= text %>
+	<div class="doc-title">
+		<%= text %>
 
-        <%
-        var css ='fa-times';
-        var kind = 'close';
+		<%
+		var css ='fa-times';
+		var kind = 'close';
 
-        if(!pinned)
-        {
-        css = 'fa-thumbtack';
-        kind = 'pin';
-        }
-        %>
+		if(!pinned)
+		{
+		css = 'fa-thumbtack';
+		kind = 'pin';
+		}
+		%>
 
-        <span class="float-right small doc-control-box" data-kind="<%= kind %>"><i class="fal <%= css %>"></i></span>
-    </div>
+		<span class="float-right small doc-control-box" data-kind="<%= kind %>"><i class="fal <%= css %>"></i></span>
+	</div>
 </script>

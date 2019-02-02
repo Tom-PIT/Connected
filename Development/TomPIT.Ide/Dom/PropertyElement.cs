@@ -1,11 +1,10 @@
 ﻿using System.Reflection;
-using TomPIT.Ide;
 
 namespace TomPIT.Dom
 {
 	public class PropertyElement : Element
 	{
-		public PropertyElement(IEnvironment environment, IDomElement parent, object component, string propertyName) : base(environment, parent)
+		public PropertyElement(IDomElement parent, object component, string propertyName) : base(parent)
 		{
 			Title = propertyName;
 			Id = propertyName;

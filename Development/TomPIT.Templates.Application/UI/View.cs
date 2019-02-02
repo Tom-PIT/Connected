@@ -11,14 +11,11 @@ namespace TomPIT.Application.UI
 	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = Services.EnvironmentMode.Runtime)]
 	[DomElement("TomPIT.Application.Design.Dom.ViewElement, TomPIT.Application.Design")]
 	[Syntax("razor")]
-	public class View : ViewBase, IApplicationView, IAuthorizationChain
+	public class View : ViewBase, IApplicationView
 	{
 		private IMetricConfiguration _metric = null;
 		public const string ComponentCategory = "View";
 		public const string ComponentAuthority = "View";
-
-		[Browsable(false)]
-		public Guid Area { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryRouting)]
 		public string Url { get; set; }
@@ -26,9 +23,6 @@ namespace TomPIT.Application.UI
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		[Items("TomPIT.Application.Design.Items.LayoutItems, TomPIT.Application.Design")]
 		public string Layout { get; set; }
-
-		[Browsable(false)]
-		public Guid AuthorizationParent => Area;
 
 		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
 		public IMetricConfiguration Metrics

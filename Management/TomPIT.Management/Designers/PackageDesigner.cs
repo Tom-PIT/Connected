@@ -15,7 +15,7 @@ namespace TomPIT.Designers
 		private IPackage _package = null;
 		private IMicroService _microService = null;
 
-		public PackageDesigner(IEnvironment environment, PackageElement element) : base(environment, element)
+		public PackageDesigner(PackageElement element) : base(element)
 		{
 		}
 

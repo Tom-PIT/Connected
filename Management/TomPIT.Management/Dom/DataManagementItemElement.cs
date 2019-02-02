@@ -63,7 +63,7 @@ namespace TomPIT.Dom
 				if (_designer == null)
 				{
 					if (Item is IDataManagementDescriptor)
-						_designer = new DataManagementItemDesigner(Environment, this);
+						_designer = new DataManagementItemDesigner(this);
 				}
 
 				return _designer;

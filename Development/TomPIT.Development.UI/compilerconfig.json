@@ -6,5 +6,9 @@
   {
     "outputFile": "wwwroot/Assets/Styles/development.css",
     "inputFile": "wwwroot/Assets/Styles/development.less"
+  },
+  {
+    "outputFile": "wwwroot/Assets/Styles/tompit.css",
+    "inputFile": "wwwroot/Assets/Styles/tompit.less"
   }
 ]

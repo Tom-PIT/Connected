@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
-using TomPIT.Design;
 using TomPIT.Designers;
 using TomPIT.Ide;
 
@@ -28,7 +27,7 @@ namespace TomPIT.Dom
 				return;
 
 			foreach (var i in Apis)
-				Items.Add(new ConnectivityApiElement(Environment, this, i));
+				Items.Add(new ConnectivityApiElement(this, i));
 		}
 
 		public override void LoadChildren(string id)
@@ -39,7 +38,7 @@ namespace TomPIT.Dom
 			var d = Apis.FirstOrDefault(f => f.Token == id.AsGuid());
 
 			if (d != null)
-				Items.Add(new ConnectivityApiElement(Environment, this, d));
+				Items.Add(new ConnectivityApiElement(this, d));
 		}
 
 		private IMicroService MicroService { get { return DomQuery.Closest<IMicroServiceScope>(this).MicroService; } }
@@ -60,7 +59,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new EmptyDesigner(Environment, this);
+					_designer = new EmptyDesigner(this);
 
 				return _designer;
 			}

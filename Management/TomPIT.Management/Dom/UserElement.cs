@@ -1,6 +1,4 @@
-﻿using TomPIT.Design;
-using TomPIT.Designers;
-using TomPIT.Ide;
+﻿using TomPIT.Designers;
 using TomPIT.Security;
 
 namespace TomPIT.Dom
@@ -9,7 +7,7 @@ namespace TomPIT.Dom
 	{
 		private IDomDesigner _designer = null;
 
-		public UserElement(IEnvironment environment, IDomElement parent, IUser user) : base(environment, parent)
+		public UserElement(IDomElement parent, IUser user) : base(parent)
 		{
 			User = user;
 
@@ -35,7 +33,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new UserDesigner(Environment, this);
+					_designer = new UserDesigner(this);
 
 				return _designer;
 			}

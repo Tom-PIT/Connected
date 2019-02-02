@@ -62,7 +62,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new EmptyDesigner(Environment, this);
+					_designer = new EmptyDesigner(this);
 
 				return _designer;
 			}

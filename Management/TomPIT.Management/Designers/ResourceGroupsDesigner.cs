@@ -1,20 +1,19 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.ActionResults;
 using TomPIT.Actions;
 using TomPIT.Annotations;
 using TomPIT.Design;
 using TomPIT.Dom;
 using TomPIT.Environment;
-using TomPIT.Ide;
 using TomPIT.Items;
 
 namespace TomPIT.Designers
 {
 	internal class ResourceGroupsDesigner : CollectionDesigner<ResourceGroupsElement>
 	{
-		public ResourceGroupsDesigner(IEnvironment environment, ResourceGroupsElement element) : base(environment, element)
+		public ResourceGroupsDesigner(ResourceGroupsElement element) : base(element)
 		{
 
 		}

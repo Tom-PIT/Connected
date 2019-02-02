@@ -6,7 +6,6 @@ using TomPIT.Actions;
 using TomPIT.Annotations;
 using TomPIT.Design;
 using TomPIT.Dom;
-using TomPIT.Ide;
 using TomPIT.Items;
 using TomPIT.Security;
 
@@ -14,7 +13,7 @@ namespace TomPIT.Designers
 {
 	internal class AuthenticationTokensDesigner : CollectionDesigner<AuthenticationTokensElement>
 	{
-		public AuthenticationTokensDesigner(IEnvironment environment, AuthenticationTokensElement element) : base(environment, element)
+		public AuthenticationTokensDesigner(AuthenticationTokensElement element) : base(element)
 		{
 
 		}

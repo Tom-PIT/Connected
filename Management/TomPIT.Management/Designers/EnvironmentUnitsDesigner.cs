@@ -17,7 +17,7 @@ namespace TomPIT.Designers
 		private string _propertyView = string.Empty;
 		private List<IEnvironmentUnit> _all = null;
 
-		public EnvironmentUnitsDesigner(IEnvironment environment, EnvironmentUnitsElement element) : base(environment, element)
+		public EnvironmentUnitsDesigner(EnvironmentUnitsElement element) : base(element)
 		{
 		}
 

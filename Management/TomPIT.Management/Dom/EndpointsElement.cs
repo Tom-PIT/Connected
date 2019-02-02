@@ -5,7 +5,6 @@ using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.Designers;
 using TomPIT.Environment;
-using TomPIT.Ide;
 
 namespace TomPIT.Dom
 {
@@ -33,7 +32,7 @@ namespace TomPIT.Dom
 				}
 			}
 		}
-		public EndpointsElement(IEnvironment environment, IDomElement parent) : base(environment, parent)
+		public EndpointsElement(IDomElement parent) : base(parent)
 		{
 			Id = DomId;
 			Glyph = "fal fa-folder";
@@ -60,14 +59,14 @@ namespace TomPIT.Dom
 		public override void LoadChildren()
 		{
 			foreach (var i in Existing)
-				Items.Add(new EndpointElement(Environment, this, i));
+				Items.Add(new EndpointElement(this, i));
 		}
 
 		public override void LoadChildren(string id)
 		{
 			var endpoint = Connection.GetService<IInstanceEndpointService>().Select(id.AsGuid());
 
-			Items.Add(new EndpointElement(Environment, this, endpoint));
+			Items.Add(new EndpointElement(this, endpoint));
 		}
 
 		public override IDomDesigner Designer
@@ -75,7 +74,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new EndpointsDesigner(Environment, this);
+					_designer = new EndpointsDesigner(this);
 
 				return _designer;
 			}

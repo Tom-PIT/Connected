@@ -13,7 +13,7 @@ namespace TomPIT.Designers
 		private object _proposed = null;
 		private IPropertyProvider _properties = null;
 
-		public ListDesigner(IEnvironment environment, E element) : base(environment, element)
+		public ListDesigner(E element) : base(element)
 		{
 		}
 

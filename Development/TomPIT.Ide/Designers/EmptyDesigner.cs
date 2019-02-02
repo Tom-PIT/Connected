@@ -1,11 +1,10 @@
 ﻿using TomPIT.Dom;
-using TomPIT.Ide;
 
 namespace TomPIT.Designers
 {
 	public class EmptyDesigner : DomDesigner<DomElement>
 	{
-		public EmptyDesigner(IEnvironment environment, DomElement element) : base(environment, element)
+		public EmptyDesigner(DomElement element) : base(element)
 		{
 		}
 

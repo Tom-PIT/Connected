@@ -1,7 +1,5 @@
 ﻿using System.Reflection;
-using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.Ide;
 
 namespace TomPIT.Dom
 {
@@ -9,7 +7,7 @@ namespace TomPIT.Dom
 	{
 		private IApiOperation _operation = null;
 
-		public ConnectivityOperationElement(IEnvironment environment, IDomElement parent, IApiOperation operation) : base(environment, parent)
+		public ConnectivityOperationElement(IDomElement parent, IApiOperation operation) : base(parent)
 		{
 			_operation = operation;
 			Title = operation.Name;

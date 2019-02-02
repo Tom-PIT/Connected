@@ -798,4 +798,7 @@
   <data name="ErrValServiceNotSet" xml:space="preserve">
     <value>Microservice property not set</value>
   </data>
+  <data name="ErrFolderSelf" xml:space="preserve">
+    <value>Folder cannot be nested by itself</value>
+  </data>
 </root>

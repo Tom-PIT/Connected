@@ -12,7 +12,7 @@ namespace TomPIT.Designers
 	{
 		private ScheduledJobDescriptor _job = null;
 
-		public ScheduleDesigner(IEnvironment environment, WorkerElement element) : base(environment, element)
+		public ScheduleDesigner(WorkerElement element) : base(element)
 		{
 		}
 

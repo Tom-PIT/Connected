@@ -20,7 +20,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new MarketplaceDesigner(Environment, this);
+					_designer = new MarketplaceDesigner(this);
 
 				return _designer;
 			}

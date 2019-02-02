@@ -70,6 +70,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Access.
+        /// </summary>
+        public static string FolderAccess {
+            get {
+                return ResourceManager.GetString("FolderAccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Implement Micro Service.
         /// </summary>
         public static string ImplementMicroservice {

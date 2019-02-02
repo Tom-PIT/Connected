@@ -1,12 +1,11 @@
 ﻿using System;
 using TomPIT.Environment;
-using TomPIT.Ide;
 
 namespace TomPIT.Dom
 {
 	internal class ResourceGroupElement : TransactionElement, IResourceGroupScope
 	{
-		public ResourceGroupElement(IEnvironment environment, IDomElement parent, IResourceGroup resourceGroup) : base(environment, parent)
+		public ResourceGroupElement(IDomElement parent, IResourceGroup resourceGroup) : base(parent)
 		{
 			ResourceGroup = resourceGroup;
 			Title = ResourceGroup.Name;
@@ -20,19 +19,19 @@ namespace TomPIT.Dom
 
 		public override void LoadChildren()
 		{
-			Items.Add(new MicroServicesElement(Environment, this));
-			Items.Add(new AuthenticationTokensElement(Environment, this));
-			Items.Add(new SettingsElement(Environment, this));
+			Items.Add(new MicroServicesElement(this));
+			Items.Add(new AuthenticationTokensElement(this));
+			Items.Add(new SettingsElement(this));
 		}
 
 		public override void LoadChildren(string id)
 		{
 			if (id.Equals(MicroServicesElement.ElementId, StringComparison.OrdinalIgnoreCase))
-				Items.Add(new MicroServicesElement(Environment, this));
+				Items.Add(new MicroServicesElement(this));
 			else if (id.Equals(AuthenticationTokensElement.ElementId, StringComparison.OrdinalIgnoreCase))
-				Items.Add(new AuthenticationTokensElement(Environment, this));
+				Items.Add(new AuthenticationTokensElement(this));
 			else if (id.Equals(SettingsElement.ElementId, StringComparison.OrdinalIgnoreCase))
-				Items.Add(new SettingsElement(Environment, this));
+				Items.Add(new SettingsElement(this));
 		}
 
 		public override bool Commit(object component, string property, string attribute)

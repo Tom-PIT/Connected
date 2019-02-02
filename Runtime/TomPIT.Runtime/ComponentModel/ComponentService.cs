@@ -388,6 +388,11 @@ namespace TomPIT.ComponentModel
 			return Folders.Query(microService, parent);
 		}
 
+		public List<IFolder> QueryFolders(Guid microService)
+		{
+			return Folders.Query(microService);
+		}
+
 		public void NotifyFolderChanged(object sender, FolderEventArgs e)
 		{
 			Folders.Reload(e.Folder);

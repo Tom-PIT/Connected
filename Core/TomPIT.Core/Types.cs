@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Loader;
 using System.Text;
 using TomPIT.Converters;
 
@@ -370,12 +369,12 @@ namespace TomPIT
 			else if (tokens.Length > 1)
 				libraryName = string.Format("{0}.dll", tokens[1].Trim());
 
-			var asm = AssemblyLoadContext.Default.LoadFromAssemblyPath(string.Format("{0}\\{1}", path, libraryName));
+			var file = string.Format("{0}\\{1}", path, libraryName);
 
-			if (asm != null)
-				return asm;
+			if (!File.Exists(file))
+				return null;
 
-			return Assembly.LoadFile(string.Format("{0}\\{1}", path, libraryName));
+			return AppDomain.CurrentDomain.Load(AssemblyName.GetAssemblyName(file));
 		}
 
 		public static string ShortName(this Assembly assembly)

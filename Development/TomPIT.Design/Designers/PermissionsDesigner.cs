@@ -19,7 +19,7 @@ namespace TomPIT.Designers
 		private List<IItemDescriptor> _schema = null;
 		private List<IAuthorizationProvider> _providers = null;
 
-		public PermissionsDesigner(IEnvironment environment, IDomElement element) : base(environment, element as IPermissionElement)
+		public PermissionsDesigner(IDomElement element) : base(element as IPermissionElement)
 		{
 			if (Providers != null && Providers.Count > 0)
 				SelectedSchema = Providers[0].Id;

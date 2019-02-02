@@ -1,11 +1,10 @@
-﻿using TomPIT.Ide;
-using TomPIT.Security;
+﻿using TomPIT.Security;
 
 namespace TomPIT.Dom
 {
 	public class RoleElement : TransactionElement
 	{
-		public RoleElement(IEnvironment environment, IDomElement parent, IRole role) : base(environment, parent)
+		public RoleElement(IDomElement parent, IRole role) : base(parent)
 		{
 			Role = role;
 

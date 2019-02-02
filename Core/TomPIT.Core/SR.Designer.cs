@@ -889,6 +889,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Folder cannot be nested by itself.
+        /// </summary>
+        public static string ErrFolderSelf {
+            get {
+                return ResourceManager.GetString("ErrFolderSelf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Http request not available..
         /// </summary>
         public static string ErrHttpRequestNotAvailable {

@@ -56,21 +56,6 @@
         var textEditor = $('#ide').data('tompit-tpTextEditor');
         require.config({ paths: { 'vs': '@path' } });
 
-    $(document).keyup(function (e) {
-        if (e.ctrlKey && e.altKey && e.which == 39) {
-            ide.nextDocument();
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-		  else if (e.ctrlKey && e.altKey && e.which == 37) {
-            ide.previousDocument();
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-    })
-
     $('#devExplorer').keyup(function (e) {
         if (e.which === 39) {
             ide.expandCurrent();

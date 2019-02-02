@@ -12,7 +12,7 @@ namespace TomPIT.Designers
 {
 	public class UserDesigner : DomDesigner<UserElement>
 	{
-		public UserDesigner(IEnvironment environment, UserElement element) : base(environment, element)
+		public UserDesigner(UserElement element) : base(element)
 		{
 		}
 

@@ -166,11 +166,17 @@ namespace TomPIT.Models
 
 		protected override IDesignerActionResult DeleteComponent(JObject data)
 		{
-			if (!(Selection.Element.Component is IConfiguration config))
+			Guid component = Guid.Empty;
+			if (Selection.Element.Component is IConfiguration config)
+				component = config.Component;
+			else if (Selection.Element.Component is IComponent cmp)
+				component = cmp.Token;
+
+			if (component == Guid.Empty)
 				return Result.EmptyResult(this);
 
 			var path = DomQuery.Path(Selection.Element);
-			GetService<IComponentDevelopmentService>().Delete(config.Component);
+			GetService<IComponentDevelopmentService>().Delete(component);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 
@@ -187,28 +193,46 @@ namespace TomPIT.Models
 			var id = data.Required<Guid>("id");
 			var folder = data.Optional("folder", Guid.Empty);
 
-			var element = Selection.Element;
+			if (folder != Guid.Empty)
+			{
+				var f = Connection.GetService<IComponentService>().SelectFolder(folder);
+				/*
+				 * it's a microservice not a folder
+				 */
+				if (f == null)
+					folder = Guid.Empty;
+			}
 
-			if (element.Value.GetType().ImplementsInterface<IFolder>())
-				MoveFolder(folder);
+			var target = GetService<IComponentService>().SelectComponent(id);
+
+			if (target != null)
+				MoveComponent(target, folder);
 			else
-				MoveComponent(folder);
+			{
+				var targetFolder = GetService<IComponentService>().SelectFolder(id);
+
+				if (targetFolder != null)
+					MoveFolder(targetFolder, folder);
+			}
+
+			var selection = Selection.Path;
+
+			if (selection.EndsWith(id.ToString()))
+			{
+				((Ide.Dom)Dom).SetPath(selection.Substring(0, selection.LastIndexOf('/')));
+				Selection.Reset();
+			}
 
 			return Result.EmptyResult(this);
 		}
 
-		private void MoveComponent(Guid folder)
+		private void MoveComponent(IComponent component, Guid folder)
 		{
-			var config = Selection.Element.Value as IConfiguration;
-			var component = GetService<IComponentService>().SelectComponent(config.Component);
-
 			GetService<IComponentDevelopmentService>().Update(component.Token, component.Name, folder);
 		}
 
-		private void MoveFolder(Guid folder)
+		private void MoveFolder(IFolder f, Guid folder)
 		{
-			var f = Selection.Element.Value as IFolder;
-
 			GetService<IComponentDevelopmentService>().UpdateFolder(f.MicroService, f.Token, f.Name, folder);
 		}
 	}

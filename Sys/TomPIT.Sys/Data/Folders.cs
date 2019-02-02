@@ -115,6 +115,9 @@ namespace TomPIT.Sys.Data
 
 		public void Update(Guid microService, Guid folder, string name, Guid parent)
 		{
+			if(folder == parent)
+				throw new SysException(SR.ErrFolderSelf);
+
 			var f = Select(folder);
 
 			if (f == null)

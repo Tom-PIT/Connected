@@ -19,7 +19,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new PackageDesigner(Environment, this);
+					_designer = new PackageDesigner(this);
 
 				return _designer;
 			}

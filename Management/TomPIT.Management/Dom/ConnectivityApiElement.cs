@@ -3,7 +3,6 @@ using System.Reflection;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Design;
-using TomPIT.Ide;
 
 namespace TomPIT.Dom
 {
@@ -11,7 +10,7 @@ namespace TomPIT.Dom
 	{
 		private IApi _api = null;
 
-		public ConnectivityApiElement(IEnvironment environment, IDomElement parent, IComponent api) : base(environment, parent)
+		public ConnectivityApiElement(IDomElement parent, IComponent api) : base(parent)
 		{
 			Api = api;
 			Title = api.Name;
@@ -25,12 +24,12 @@ namespace TomPIT.Dom
 
 		public override void LoadChildren()
 		{
-			foreach(var i in Configuration.Operations)
+			foreach (var i in Configuration.Operations)
 			{
 				if (string.IsNullOrWhiteSpace(i.Name))
 					continue;
 
-				Items.Add(new ConnectivityOperationElement(Environment, this, i));
+				Items.Add(new ConnectivityOperationElement(this, i));
 			}
 		}
 
@@ -39,7 +38,7 @@ namespace TomPIT.Dom
 			var op = Configuration.Operations.FirstOrDefault(f => string.Compare(f.Id.ToString(), id, true) == 0);
 
 			if (op != null)
-				Items.Add(new ConnectivityOperationElement(Environment, this, op));
+				Items.Add(new ConnectivityOperationElement(this, op));
 		}
 
 		public override object Component

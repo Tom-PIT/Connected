@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations;
-using TomPIT.Design;
 using TomPIT.Designers;
 using TomPIT.Environment;
 using TomPIT.Ide;
@@ -62,7 +61,7 @@ namespace TomPIT.Dom
 		public override void LoadChildren()
 		{
 			foreach (var i in Existing)
-				Items.Add(new ResourceGroupElement(Environment, this, i));
+				Items.Add(new ResourceGroupElement(this, i));
 		}
 
 		public override void LoadChildren(string id)
@@ -70,7 +69,7 @@ namespace TomPIT.Dom
 			var d = Existing.FirstOrDefault(f => f.Token == id.AsGuid());
 
 			if (d != null)
-				Items.Add(new ResourceGroupElement(Environment, this, d));
+				Items.Add(new ResourceGroupElement(this, d));
 		}
 
 		public override IDomDesigner Designer
@@ -78,7 +77,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new ResourceGroupsDesigner(Environment, this);
+					_designer = new ResourceGroupsDesigner(this);
 
 				return _designer;
 			}

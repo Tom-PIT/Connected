@@ -6,10 +6,6 @@ $.widget('tompit.tpIde', {
 			explorerNode: null,
 			view: null
 		},
-		documents: {
-			open: [
-			]
-		},
 		designer: {
 			active: null
 		},
@@ -19,7 +15,8 @@ $.widget('tompit.tpIde', {
 		properties: {
 			saveMode: 'instant',
 			state: [
-			]
+			],
+			title : document.title
 		},
 		state: [
 		]
@@ -29,7 +26,6 @@ $.widget('tompit.tpIde', {
 	},
 	initialize: function () {
 		this.initializeExplorer();
-		this.initializeDocuments();
 	},
 	setLanguage: function (value) {
 		this.options.globalization.language = value;
@@ -69,54 +65,11 @@ $.widget('tompit.tpIde', {
 	 */
 	initializeExplorer: function (e) {
 		this._initializeExplorerNodes(e);
-		$(window).keydown(function (e) {
-			if (e.keyCode === 27) {
-				$('#devExplorerNodes').sortable('cancel');
-			}
-		});
-
-		var instance = this;
-
-		$('#devExplorerNodes').sortable({
-			items: '[data-kind="explorer-node"][data-static="false"]',
-			axis: 'y',
-			helper: 'clone',
-			start: function (e, ui) {
-				instance.options.selection.dragPath = instance._resolvePath(ui.item);
-				var container = ui.item.parent().closest('[data-container="true"]');
-
-				if (container.length === 0)
-					ui.item.attr('origin-container', '0');
-				else
-					ui.item.attr('origin-container', container.attr('data-id'));
-			},
-			update: function (e, ui) {
-				var item = ui.item.parent().closest('[data-container="true"]');
-				var folder = null;
-
-				if (item.length > 0)
-					folder = item.attr('data-id');
-
-				var origin = ui.item.attr('origin-container');
-
-				if (origin === folder) {
-					alert('Cannot move the element. The destination folder is the same as the source folder.');
-					$('#devExplorerNodes').sortable('cancel');
-					return;
-				}
-
-				var id = ui.item.attr('data-id');
-
-				ide.ideAction({
-					data: {
-						'action': 'move',
-						'id': id,
-						'folder': folder,
-						'path': instance.options.selection.dragPath
-					}
-				});
-			}
-		});
+		//$(window).keydown(function (e) {
+		//	if (e.keyCode === 27) {
+		//		$('#devExplorerNodes').sortable('cancel');
+		//	}
+		//});
 	},
 
 	_initializeExplorerNodes: function (e) {
@@ -178,6 +131,79 @@ $.widget('tompit.tpIde', {
 				scroll: false
 			});
 		});
+
+		var draggables = $('[data-kind="explorer-node"][data-static="false"]', d.parent());
+
+		$.each(draggables, function (i, v) {
+			if ($(v).data('draggable'))
+				$(v).draggable('destroy');
+		});
+
+		var droppables = $('[data-kind="explorer-node"][data-container="true"]', d.parent());
+
+		$.each(droppables, function (i, v) {
+			if ($(v).data('droppable'))
+				$(v).droppable('destroy');
+		});
+
+		$('[data-kind="explorer-node"][data-static="false"]', d.parent()).draggable({
+			containment: '#devExplorerNodes',
+			scroll: true,
+			scrollSpeed: 100,
+			cursor: 'move',
+			opacity: 0.7,
+			revert: true,
+			revertDuration: 0,
+			create: function (e, ui) {
+				instance.options.selection.dragPath = instance._resolvePath($(this));
+
+				$(this).attr('origin', $(this).closest('[data-container="true"]').attr('data-id'));
+			}
+		});
+
+		$('[data-kind="explorer-node"][data-container="true"]', d.parent()).droppable({
+			greedy:true,
+			accept: function (e) {
+				var att = $(this).attr('data-container');
+
+				if (att === null)
+					return false;
+
+				return att === 'true';
+
+				
+			},
+			drop: function (event, ui) {
+				var folder = $(this).attr('data-id');
+				var id = ui.draggable.attr('data-id');
+				var origin = ui.draggable.attr('origin');
+				var path = instance.options.selection.dragPath;
+
+				ide.ideAction({
+					data: {
+						'action': 'move',
+						'id': id,
+						'folder': folder,
+						'path': path
+					}, onComplete: function (data) {
+						if (origin !== null)
+							var originTarget = $('[data-kind="explorer-node"][data-id="' + origin + '"]');
+
+						var target = $('[data-kind="explorer-node"][data-id="' + folder + '"]');
+
+						var originPath = instance._resolvePath(originTarget);
+						var targetPath = instance._resolvePath(target);
+
+						originPath = originPath.substr(0, originPath.lastIndexOf('/'));
+
+						instance.refreshExplorer({ 'path': originPath, 'mode': 'item' });
+						$(this).remove();
+						instance.refreshExplorer({ 'path': targetPath, 'mode': 'item' });
+
+					}
+				});
+			}
+		});
 	},
 	
 	selectNode: function (e) {
@@ -201,16 +227,16 @@ $.widget('tompit.tpIde', {
 
 		this.draw();
 
-		//this.loadSection({
-		//	section: 'designer'
-		//});
+		this.loadSection({
+			section: 'designer'
+		});
 
 		this.setSelection();
 
+		document.title = e.target.find('span[data-kind="documentName"]').html() + ' (' + this.options.properties.title + ')';
+
 		if (e.scroll)
 			this.scrollToNode(e);
-
-		this.activateDocument(this.options.selection.explorerNode);
 	},
 	_syncNode: function (s, e) {
 		var element = s._findElement(e.target);
@@ -229,8 +255,6 @@ $.widget('tompit.tpIde', {
 				scrollTop: element.offset().top
 			}, 1000);
 		}
-
-		s.activateDocument(s.options.selection.explorerNode);
 	},
 	scrollToNode: function (e) {
 		$('#devExplorer').animate({
@@ -997,227 +1021,9 @@ $.widget('tompit.tpIde', {
 	/*
 	 * documents
 	 */
-	initializeDocuments: function () {
-		var t = $('#divOpenDocs', this.element);
-		var instance = this;
-
-		t.dxTabs({
-			noDataText: '',
-			keyExpr: 'path',
-			dataSource: this.options.documents.open,
-			itemTemplate: $('#docTemplate'),
-			onSelectionChanged: function (e) {
-				instance._syncNode(instance, {
-					target: e.addedItems[0].path,
-					scroll: true
-				});
-			},
-			onItemClick: function (e) {
-				var span = $(e.event.target).closest('span');
-
-				if (span.length === 0 || !span.hasClass('doc-control-box'))
-					return;
-
-				var kind = span.attr('data-kind');
-
-				if (kind === 'close')
-					instance.closeDocument(e.itemData.path);
-				else
-					instance.pinDocument(e.itemData.path);
-			}
-		});
-	},
-	pinDocument: function (path) {
-		var widget = this._documentManager();
-
-		widget.beginUpdate();
-
-		var existing = null;
-
-		$.each(this.options.documents.open, function (i, v) {
-			if (v.path === path) {
-				existing = v;
-				return false;
-			}
-		});
-
-		if (existing === null)
-			return;
-
-		existing.pinned = true;
-
-		widget.option('dataSource', this.options.documents.open);
-		widget.endUpdate();
-	},
-	closeDocument: function (path) {
-		var existing = null;
-		var existingIndex = -1;
-
-		$.each(this.options.documents.open, function (i, v) {
-			if (v.path === path) {
-				existing = v;
-				existingIndex = i;
-				return false;
-			}
-		});
-
-		if (existing !== null)
-			this.options.documents.open.splice(existingIndex, 1);
-
-		if (this.options.documents.open.length === 0)
-			this.activateDocument(null);
-		else {
-			if (this.options.documents.open.length >= existingIndex && existingIndex !== 0)
-				existingIndex--;
-
-			this.activateDocument(this.options.documents.open[existingIndex].path);
-		}
-	},
-	activeDocument: function () {
-		var result = null;
-
-		$.each(this.options.documents.open, function (i, v) {
-			if (v.active) {
-				result = v;
-				return false;
-			}
-		});
-
-		return result;
-	},
-	openDocument: function (microService, component, element) {
-		var instance = this;
-
-		this.designerAction({
-			data: {
-				action: 'resolvePath',
-				section: 'designer',
-				microService: microService,
-				component: component,
-				element: element
-			},
-			onComplete: function (data) {
-				if (typeof data !== 'undefined' && data !== null)
-					instance.expandTo({
-						path: data.path,
-						select: true
-					});
-			}
-		});
-	},
 	newWindow: function (microService, component, element) {
 
 	},
-	nextDocument: function () {
-		if (this.options.documents.open.length === 0)
-			return;
-
-		var idx = -1;
-
-		$.each(this.options.documents.open, function (i, v) {
-			if (v.active) {
-				idx = i;
-				return false;
-			}
-		});
-
-		if (idx === -1)
-			return;
-
-		idx++;
-
-		if (this.options.documents.open.length <= idx)
-			idx = 0;
-
-		var target = this.options.documents.open[idx];
-
-		this.activateDocument(target.path);
-	},
-	previousDocument: function () {
-		if (this.options.documents.open.length === 0)
-			return;
-
-		var idx = -1;
-
-		$.each(this.options.documents.open, function (i, v) {
-			if (v.active) {
-				idx = i;
-				return false;
-			}
-		});
-
-		if (idx === -1)
-			return;
-
-		idx--;
-
-		if (idx < 0)
-			idx = this.options.documents.open.length;
-
-		var target = this.options.documents.open[idx];
-
-		this.activateDocument(target.path);
-	},
-	activateDocument: function (path) {
-		var active = this.activeDocument();
-
-		if (active !== null && active.path === path)
-			return;
-
-		var widget = this._documentManager();
-
-		widget.beginUpdate();
-
-		var existing = null;
-
-		$.each(this.options.documents.open, function (i, v) { v.active = false; });
-
-		$.each(this.options.documents.open, function (i, v) {
-			if (v.path === path) {
-				existing = v;
-				return false;
-			}
-		});
-
-		if (existing === null) {
-			var node = this._findElement(path);
-			var text = node.children('.dev-explorer-node-content')
-				.children('.dev-explorer-node-text')
-				.children('[data-kind="documentName"]');
-
-			existing = {
-				path: path,
-				text: text.html(),
-				pinned: false,
-				active: true
-			};
-
-			this.options.documents.open.push(existing);
-		}
-
-		existing.active = true;
-
-		var unpinned = this.options.documents.open.filter(function (item) {
-			return !item.pinned && !item.active;
-		});
-
-		var instance = this;
-
-		$.each(unpinned, function (i, v) {
-			var idx = instance.options.documents.open.indexOf(v);
-
-			instance.options.documents.open.splice(idx, 1);
-		});
-
-		widget.option('dataSource', this.options.documents.open);
-		widget.option('selectedItem', existing);
-
-		widget.endUpdate();
-
-	},
-	_documentManager: function () {
-		return $('#divOpenDocs', this.element).dxTabs('instance');
-	}
 });
 
 tompit.DEVDEFAULTS = {

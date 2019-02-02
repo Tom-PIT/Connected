@@ -187,7 +187,7 @@ namespace TomPIT.Sys.Data
 		{
 			var c = Select(microService, category, name);
 
-			Update(c.Token, c.Name, c.RuntimeConfiguration);
+			Update(c.Token, c.Name, c.Folder, c.RuntimeConfiguration);
 		}
 
 		public void Update(Guid component, string name, Guid folder)

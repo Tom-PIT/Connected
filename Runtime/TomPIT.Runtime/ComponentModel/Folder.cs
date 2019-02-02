@@ -5,6 +5,7 @@ using TomPIT.Annotations;
 
 namespace TomPIT.ComponentModel
 {
+	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = Services.EnvironmentMode.Runtime)]
 	internal class Folder : IFolder
 	{
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]

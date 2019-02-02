@@ -14,7 +14,7 @@ namespace TomPIT.Designers
 {
 	internal class EndpointsDesigner : CollectionDesigner<EndpointsElement>
 	{
-		public EndpointsDesigner(IEnvironment environment, EndpointsElement element) : base(environment, element)
+		public EndpointsDesigner(EndpointsElement element) : base(element)
 		{
 
 		}

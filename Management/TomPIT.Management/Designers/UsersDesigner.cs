@@ -6,7 +6,6 @@ using TomPIT.Actions;
 using TomPIT.Annotations;
 using TomPIT.Design;
 using TomPIT.Dom;
-using TomPIT.Ide;
 using TomPIT.Items;
 using TomPIT.Security;
 
@@ -14,7 +13,7 @@ namespace TomPIT.Designers
 {
 	internal class UsersDesigner : CollectionDesigner<UsersElement>
 	{
-		public UsersDesigner(IEnvironment environment, UsersElement element) : base(environment, element)
+		public UsersDesigner(UsersElement element) : base(element)
 		{
 
 		}

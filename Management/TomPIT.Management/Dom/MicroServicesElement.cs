@@ -4,9 +4,7 @@ using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
-using TomPIT.Design;
 using TomPIT.Designers;
-using TomPIT.Ide;
 using TomPIT.Items;
 
 namespace TomPIT.Dom
@@ -37,7 +35,7 @@ namespace TomPIT.Dom
 
 		public const string ElementId = "RgMicroServices";
 
-		public MicroServicesElement(IEnvironment environment, IDomElement parent) : base(environment, parent)
+		public MicroServicesElement(IDomElement parent) : base(parent)
 		{
 			Glyph = "fal fa-shield-check";
 			Title = SR.DomMicroServices;
@@ -61,7 +59,7 @@ namespace TomPIT.Dom
 		public override void LoadChildren()
 		{
 			foreach (var i in Existing)
-				Items.Add(new MicroServiceElement(Environment, this, i));
+				Items.Add(new MicroServiceElement(this, i));
 		}
 
 		public override void LoadChildren(string id)
@@ -69,7 +67,7 @@ namespace TomPIT.Dom
 			var d = Existing.FirstOrDefault(f => f.Token == id.AsGuid());
 
 			if (d != null)
-				Items.Add(new MicroServiceElement(Environment, this, d));
+				Items.Add(new MicroServiceElement(this, d));
 		}
 
 		public override IDomDesigner Designer
@@ -77,7 +75,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new MicroServicesDesigner(Environment, this);
+					_designer = new MicroServicesDesigner(this);
 
 				return _designer;
 			}

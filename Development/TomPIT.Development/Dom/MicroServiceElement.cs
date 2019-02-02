@@ -23,14 +23,15 @@ namespace TomPIT.Dom
 			Template = GetService<IMicroServiceTemplateService>().Select(MicroService.Template);
 
 			((Behavior)Behavior).Static = true;
+			((Behavior)Behavior).Container = true;
 		}
 
 		public IMicroService MicroService { get; }
 		private IMicroServiceTemplate Template { get; }
 
 		public override object Component => MicroService;
-		public override int ChildrenCount => Components.Count + Folders.Count;
-		public override bool HasChildren => ChildrenCount > 0;
+		public override int ChildrenCount => 0;
+		public override bool HasChildren => Components.Count + Folders.Count > 0;
 
 		public override void LoadChildren()
 		{

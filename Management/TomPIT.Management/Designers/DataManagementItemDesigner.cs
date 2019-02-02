@@ -7,7 +7,7 @@ namespace TomPIT.Designers
 {
 	internal class DataManagementItemDesigner : CollectionDesigner<DataManagementItemElement>
 	{
-		public DataManagementItemDesigner(IEnvironment environment, DataManagementItemElement element) : base(environment, element)
+		public DataManagementItemDesigner(DataManagementItemElement element) : base(element)
 		{
 		}
 

@@ -10,7 +10,7 @@ namespace TomPIT.Designers
 	{
 		private IDesignerToolbar _toolbar = null;
 
-		protected DomDesigner(IEnvironment environment, E element) : base(environment)
+		protected DomDesigner(E element) : base(element.Environment)
 		{
 			Owner = element;
 		}

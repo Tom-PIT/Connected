@@ -2,9 +2,10 @@
 
 namespace TomPIT.Deployment
 {
-	public interface IPackageFeature
+	public interface IPackageFolder
 	{
 		string Name { get; }
 		Guid Token { get; }
+		Guid Parent { get; }
 	}
 }

@@ -19,19 +19,19 @@ namespace TomPIT.Dom
 
 		public override void LoadChildren()
 		{
-			Items.Add(new UsersElement(Environment, this));
-			Items.Add(new RolesElement(Environment, this));
-			Items.Add(new MembershipElement(Environment, this));
+			Items.Add(new UsersElement(this));
+			Items.Add(new RolesElement(this));
+			Items.Add(new MembershipElement(this));
 		}
 
 		public override void LoadChildren(string id)
 		{
 			if (string.Compare(id, UsersElement.FolderId, true) == 0)
-				Items.Add(new UsersElement(Environment, this));
+				Items.Add(new UsersElement(this));
 			else if (string.Compare(id, RolesElement.FolderId, true) == 0)
-				Items.Add(new RolesElement(Environment, this));
+				Items.Add(new RolesElement(this));
 			else if (string.Compare(id, MembershipElement.FolderId, true) == 0)
-				Items.Add(new MembershipElement(Environment, this));
+				Items.Add(new MembershipElement(this));
 		}
 	}
 }

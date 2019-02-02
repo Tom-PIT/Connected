@@ -4,7 +4,7 @@ namespace TomPIT.Deployment
 {
 	public enum PackageEntity
 	{
-		Feature = 1,
+		Folder = 1,
 		Component = 2,
 		DatabaseTable = 3,
 		DatabaseView = 4,

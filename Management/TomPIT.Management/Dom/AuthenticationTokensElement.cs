@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.Designers;
-using TomPIT.Ide;
 using TomPIT.Items;
 using TomPIT.Security;
 
@@ -36,7 +35,7 @@ namespace TomPIT.Dom
 
 		public const string ElementId = "RgAuthTokens";
 
-		public AuthenticationTokensElement(IEnvironment environment, IDomElement parent) : base(environment, parent)
+		public AuthenticationTokensElement(IDomElement parent) : base(parent)
 		{
 			Glyph = "fal fa-folder";
 			Title = "Authentication tokens";
@@ -60,7 +59,7 @@ namespace TomPIT.Dom
 		public override void LoadChildren()
 		{
 			foreach (var i in Existing)
-				Items.Add(new AuthenticationTokenElement(Environment, this, i));
+				Items.Add(new AuthenticationTokenElement(this, i));
 		}
 
 		public override void LoadChildren(string id)
@@ -68,7 +67,7 @@ namespace TomPIT.Dom
 			var d = Existing.FirstOrDefault(f => f.Token == id.AsGuid());
 
 			if (d != null)
-				Items.Add(new AuthenticationTokenElement(Environment, this, d));
+				Items.Add(new AuthenticationTokenElement(this, d));
 		}
 
 		public override IDomDesigner Designer
@@ -76,7 +75,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new AuthenticationTokensDesigner(Environment, this);
+					_designer = new AuthenticationTokensDesigner(this);
 
 				return _designer;
 			}

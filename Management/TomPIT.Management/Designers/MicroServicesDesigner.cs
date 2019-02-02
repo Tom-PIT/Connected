@@ -1,20 +1,19 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.ActionResults;
 using TomPIT.Actions;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
 using TomPIT.Dom;
-using TomPIT.Ide;
 using TomPIT.Items;
 
 namespace TomPIT.Designers
 {
 	internal class MicroServicesDesigner : CollectionDesigner<MicroServicesElement>
 	{
-		public MicroServicesDesigner(IEnvironment environment, MicroServicesElement element) : base(environment, element)
+		public MicroServicesDesigner(MicroServicesElement element) : base(element)
 		{
 
 		}

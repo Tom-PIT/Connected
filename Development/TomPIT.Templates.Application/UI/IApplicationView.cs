@@ -5,6 +5,6 @@ namespace TomPIT.Application.UI
 {
 	public interface IApplicationView : IView
 	{
-		Guid Area { get; }
+		
 	}
 }

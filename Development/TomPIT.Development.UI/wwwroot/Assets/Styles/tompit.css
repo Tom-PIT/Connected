@@ -525,12 +525,12 @@ a.brand-toggler {
 }
 .sidebar {
   width: 250px;
-  background-color: #40454e;
+  background-color: #f5f5f5;
   /*height: ~"calc(100% - 56px)";*/
   min-height: calc(100% - 56px);
   height: auto;
   position: relative;
-  color: #FFF;
+  color: #616161;
 }
 .sidebar.hidden {
   display: none;
@@ -656,6 +656,10 @@ ul.nav-content {
 }
 .nav-content .nav-item,
 .nav-content .nav-item a {
+  color: #616161;
+}
+.nav-content .nav-item:hover a,
+.nav-content .nav-item.active a {
   color: #FFF;
 }
 .nav-content .nav-item a:hover {

@@ -9,7 +9,6 @@ using TomPIT.Actions;
 using TomPIT.Annotations;
 using TomPIT.Design;
 using TomPIT.Dom;
-using TomPIT.Ide;
 
 namespace TomPIT.Designers
 {
@@ -20,7 +19,7 @@ namespace TomPIT.Designers
 		private List<IItemDescriptor> _items = null;
 		private List<IItemDescriptor> _descriptors = null;
 
-		public CollectionDesigner(IEnvironment environment, E element) : base(environment, element)
+		public CollectionDesigner(E element) : base(element)
 		{
 		}
 

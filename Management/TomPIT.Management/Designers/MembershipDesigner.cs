@@ -17,7 +17,7 @@ namespace TomPIT.Designers
 		private List<IUser> _membershipUsers = null;
 		private List<IMembership> _membership = null;
 
-		public MembershipDesigner(IEnvironment environment, MembershipElement element) : base(environment, element)
+		public MembershipDesigner(MembershipElement element) : base(element)
 		{
 			if (Roles != null && Roles.Count > 0)
 				SelectedRole = Roles[0].Token;

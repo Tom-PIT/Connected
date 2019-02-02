@@ -120,6 +120,9 @@
   <data name="AccessUserInterface" xml:space="preserve">
     <value>Access User Interface</value>
   </data>
+  <data name="FolderAccess" xml:space="preserve">
+    <value>Access</value>
+  </data>
   <data name="ImplementMicroservice" xml:space="preserve">
     <value>Implement Micro Service</value>
   </data>

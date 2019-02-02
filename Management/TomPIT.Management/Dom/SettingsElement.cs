@@ -6,7 +6,6 @@ using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.Configuration;
 using TomPIT.Designers;
-using TomPIT.Ide;
 using TomPIT.Items;
 
 namespace TomPIT.Dom
@@ -37,7 +36,7 @@ namespace TomPIT.Dom
 
 		public const string ElementId = "Settings";
 
-		public SettingsElement(IEnvironment environment, IDomElement parent) : base(environment, parent)
+		public SettingsElement(IDomElement parent) : base(parent)
 		{
 			Glyph = "fal fa-folder";
 			Title = "Settings";
@@ -63,7 +62,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new SettingsDesigner(Environment, this);
+					_designer = new SettingsDesigner(this);
 
 				return _designer;
 			}

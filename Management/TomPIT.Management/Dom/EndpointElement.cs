@@ -1,11 +1,10 @@
 ﻿using TomPIT.Environment;
-using TomPIT.Ide;
 
 namespace TomPIT.Dom
 {
 	internal class EndpointElement : TransactionElement
 	{
-		public EndpointElement(IEnvironment environment, IDomElement parent, IInstanceEndpoint endpoint) : base(environment, parent)
+		public EndpointElement(IDomElement parent, IInstanceEndpoint endpoint) : base(parent)
 		{
 			Endpoint = endpoint;
 

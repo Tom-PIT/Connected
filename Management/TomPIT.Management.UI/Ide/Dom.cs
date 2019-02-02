@@ -10,7 +10,7 @@ namespace TomPIT.Ide
 			Initialize();
 		}
 
-		protected override List<IDomElement> Root()
+		public override List<IDomElement> Root()
 		{
 			return DomRoot.QueryDomRoot(Environment);
 		}

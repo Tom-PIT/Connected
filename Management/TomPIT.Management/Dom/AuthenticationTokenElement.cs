@@ -1,11 +1,10 @@
-﻿using TomPIT.Ide;
-using TomPIT.Security;
+﻿using TomPIT.Security;
 
 namespace TomPIT.Dom
 {
 	internal class AuthenticationTokenElement : TransactionElement
 	{
-		public AuthenticationTokenElement(IEnvironment environment, IDomElement parent, IAuthenticationToken token) : base(environment, parent)
+		public AuthenticationTokenElement(IDomElement parent, IAuthenticationToken token) : base(parent)
 		{
 			Token = token;
 			Title = Token.ToString();

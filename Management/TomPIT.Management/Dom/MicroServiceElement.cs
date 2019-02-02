@@ -3,65 +3,78 @@ using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
-using TomPIT.Ide;
 using TomPIT.Security;
 
 namespace TomPIT.Dom
 {
 	internal class MicroServiceElement : TransactionElement, IMicroServiceScope, IPermissionElement
 	{
+		private List<IFolder> _folders = null;
+		private List<IComponent> _components = null;
 		private IDomDesigner _designer = null;
-		private IMicroServiceTemplate _template = null;
 		private List<string> _claims = null;
 		private IPermissionDescriptor _descriptor = null;
 		private List<IDomElement> _root = null;
 
-		public MicroServiceElement(IEnvironment environment, IDomElement parent, IMicroService microService) : base(environment, parent)
+		public MicroServiceElement(IDomElement parent, IMicroService microService) : base(parent)
 		{
 			MicroService = microService;
 			Title = MicroService.Name;
 			Id = MicroService.Token.AsString();
+			Glyph = "fal fa-share-alt";
+
+			Template = GetService<IMicroServiceTemplateService>().Select(MicroService.Template);
 		}
 
 		public IMicroService MicroService { get; }
+		private IMicroServiceTemplate Template { get; }
 		public override object Component => MicroService;
 		public override bool HasChildren { get { return true; } }
 
 		public override void LoadChildren()
 		{
-			if (Root != null)
+			var refs = Template.References(Environment, MicroService.Token);
+
+			Items.Add(new ReferencesElement(this, refs));
+
+			foreach (var i in Folders.OrderBy(f => f.Name))
+				Items.Add(new FolderElement(this, i));
+
+			foreach (var i in Components.OrderBy(f => f.Name))
 			{
-				foreach (var i in Root)
-					Items.Add(i);
+				if (string.Compare(i.Category, "Reference", true) == 0)
+					continue;
+
+				Items.Add(i.GetDomElement(this));
 			}
-			//Items.Add(new PermissionsElement(Environment, this));
-			//Items.Add(new ConnectivityElement(Environment, this));
-			//Items.Add(new WorkersElement(Environment, this));
+
 			Items.Add(new ContentElement(Environment, this));
 			Items.Add(new PackageElement(Environment, this));
 		}
 
 		public override void LoadChildren(string id)
 		{
-			if (Root == null)
-				return;
+			if (id.Equals(ContentElement.DomId, StringComparison.OrdinalIgnoreCase))
+				Items.Add(new ContentElement(Environment, this));
+			else if (id.Equals(PackageElement.DomId, StringComparison.OrdinalIgnoreCase))
+				Items.Add(new PackageElement(Environment, this));
 
-			var d = Root.FirstOrDefault(f => f.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+			var folder = Folders.FirstOrDefault(f => f.Token == id.AsGuid());
 
-			if (d != null)
-				Items.Add(d);
-			else
+			if (folder != null)
 			{
-				if (id.Equals(ContentElement.DomId, StringComparison.OrdinalIgnoreCase))
-					Items.Add(new ContentElement(Environment, this));
-				//else if (id.Equals(ConnectivityElement.DomId, StringComparison.OrdinalIgnoreCase))
-				//	Items.Add(new ConnectivityElement(Environment, this));
-				//else if (id.Equals(WorkersElement.DomId, StringComparison.OrdinalIgnoreCase))
-				//	Items.Add(new WorkersElement(Environment, this));
-				//else if (id.Equals(PermissionsElement.FolderId, StringComparison.OrdinalIgnoreCase))
-				//	Items.Add(new PermissionsElement(Environment, this));
-				else if (id.Equals(PackageElement.DomId, StringComparison.OrdinalIgnoreCase))
-					Items.Add(new PackageElement(Environment, this));
+				Items.Add(new FolderElement(this, folder));
+				return;
+			}
+
+			var component = Components.FirstOrDefault(f => f.Token == id.AsGuid());
+
+			if (component != null)
+			{
+				if (string.Compare(component.Category, "Reference", true) == 0)
+					Items.Add(new ReferencesElement(this, component));
+				else
+					Items.Add(component.GetDomElement(this));
 			}
 		}
 
@@ -105,7 +118,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new Designers.PermissionsDesigner(Environment, this);
+					_designer = new Designers.PermissionsDesigner(this);
 
 				return _designer;
 			}
@@ -117,25 +130,25 @@ namespace TomPIT.Dom
 
 		public string PermissionComponent => null;
 
-		private List<IDomElement> Root
+		private List<IFolder> Folders
 		{
 			get
 			{
-				if (_root == null && Template != null)
-					_root = Template.QueryDomRoot(Environment, this, MicroService.Token);
+				if (_folders == null)
+					_folders = GetService<IComponentService>().QueryFolders(MicroService.Token, Guid.Empty);
 
-				return _root;
+				return _folders;
 			}
 		}
 
-		private IMicroServiceTemplate Template
+		private List<IComponent> Components
 		{
 			get
 			{
-				if (_template == null)
-					_template = Connection.GetService<IMicroServiceTemplateService>().Select(MicroService.Template);
+				if (_components == null)
+					_components = GetService<IComponentService>().QueryComponents(MicroService.Token, Guid.Empty);
 
-				return _template;
+				return _components;
 			}
 		}
 	}

@@ -9,7 +9,7 @@ namespace TomPIT.Designers
 	{
 		private List<IPublishedPackage> _publicPackages = null;
 
-		public MarketplaceDesigner(IEnvironment environment, MarketplaceElement element) : base(environment, element)
+		public MarketplaceDesigner(MarketplaceElement element) : base(element)
 		{
 		}
 

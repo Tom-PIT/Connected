@@ -15,7 +15,7 @@ namespace TomPIT.Designers
 	{
 		private ISetting _setting = null;
 
-		public SettingsDesigner(IEnvironment environment, SettingsElement element) : base(environment, element)
+		public SettingsDesigner(SettingsElement element) : base(element)
 		{
 
 		}

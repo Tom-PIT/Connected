@@ -15,7 +15,7 @@ namespace TomPIT.Application.Design.Designers
 {
 	internal class ScriptUploadDesigner : DomDesigner<ReflectionElement>, IUploadDesigner
 	{
-		public ScriptUploadDesigner(IEnvironment environment, ReflectionElement element) : base(environment, element)
+		public ScriptUploadDesigner(ReflectionElement element) : base(element)
 		{
 			Resource = element.Component as IUploadResource;
 		}
