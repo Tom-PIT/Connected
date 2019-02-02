@@ -104,7 +104,7 @@ namespace TomPIT.Ide
 			return root;
 		}
 
-		protected abstract List<IDomElement> Root();
+		public abstract List<IDomElement> Root();
 
 		internal IDomElement Find(string path, IDomElement parent)
 		{

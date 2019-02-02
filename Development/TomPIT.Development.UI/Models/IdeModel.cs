@@ -138,12 +138,7 @@ namespace TomPIT.Models
 
 		private IFolder FindFolder(IDomElement element)
 		{
-			var origin = element.Parent;
-
-			if (origin == null)
-				return null;
-
-			var scope = origin.Closest<IFolderScope>();
+			var scope = element.Closest<IFolderScope>();
 
 			if (scope == null)
 				return null;

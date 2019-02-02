@@ -171,10 +171,7 @@ namespace TomPIT
 			if (config == null)
 				throw new TomPITException(string.Format("{0} ({1})", SR.ErrCannotFindConfiguration, c.Name));
 
-			var ms = environment.Context.Connection().GetService<IMicroServiceService>().Select(c.MicroService);
-			var template = environment.Context.Connection().GetService<IMicroServiceTemplateService>().Select(ms.Template);
-
-			var root = template.QueryDomRoot(environment, null, ms.Token);
+			var root = environment.Dom.Root();
 
 			if (root == null)
 				return null;

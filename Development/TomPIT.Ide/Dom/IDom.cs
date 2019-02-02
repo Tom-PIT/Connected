@@ -9,6 +9,7 @@ namespace TomPIT.Dom
 		IDomElement Select(string path, int depth);
 
 		List<IDomElement> CreateDomTree(string path);
+		List<IDomElement> Root();
 		List<IItemDescriptor> ProvideAddItems(IDomElement selection);
 	}
 }

@@ -16,11 +16,6 @@ namespace TomPIT.Design
 			return new List<IItemDescriptor>();
 		}
 
-		public virtual List<IDomElement> QueryDomRoot(IEnvironment environment, IDomElement parent, Guid microService)
-		{
-			return new List<IDomElement>();
-		}
-
 		public IComponent References(IEnvironment environment, Guid microService)
 		{
 			var cs = environment.Context.Connection().GetService<IComponentService>();

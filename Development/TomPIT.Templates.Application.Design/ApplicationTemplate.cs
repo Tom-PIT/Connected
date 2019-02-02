@@ -8,7 +8,6 @@ using TomPIT.Application.UI;
 using TomPIT.Application.Workers;
 using TomPIT.Design;
 using TomPIT.Dom;
-using TomPIT.Ide;
 
 namespace TomPIT.Application
 {
@@ -46,16 +45,6 @@ namespace TomPIT.Application
 			r.Add(new ItemDescriptor("File assembly", "File", typeof(AssemblyFileSystemResource)) { Glyph = "fal fa-file-code", Category = "Resources", Value = "File" });
 
 			return r;
-		}
-
-		public override List<IDomElement> QueryDomRoot(IEnvironment environment, IDomElement parent, Guid microService)
-		{
-			return new List<IDomElement>
-			{
-				//new FeaturesElement(environment, parent),
-				//new ResourcesElement(environment, parent),
-				//new ComponentElement(environment, parent, CreateReferences(environment, microService)),
-			};
 		}
 	}
 }

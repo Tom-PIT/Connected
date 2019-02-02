@@ -44,10 +44,18 @@
 		]
 	});
 
+	$('#editName').keypress(function (e) {
+		if (e.which == 13)
+			createItem();
+	})
 	$('#editName').dxTextBox('instance').focus();
 	$('#editname input').select();
 
 	$('#btnAddItem').click(function () {
+		createItem();
+	});
+
+	function createItem() {
 		if (!DevExpress.validationEngine.validateGroup('addItem').isValid)
 			return;
 
@@ -67,5 +75,5 @@
 
 			}
 		});
-	});
+	}
 </script>

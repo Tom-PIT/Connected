@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using TomPIT.ComponentModel;
 using TomPIT.Design;
 using TomPIT.Dom;
 
@@ -12,7 +11,7 @@ namespace TomPIT.Ide
 			Initialize();
 		}
 
-		protected override List<IDomElement> Root()
+		public override List<IDomElement> Root()
 		{
 			return new List<IDomElement> { new MicroServiceElement(Environment, Environment.Context.MicroService()) };
 		}
