@@ -1,6 +1,5 @@
 ﻿using TomPIT.ComponentModel;
 using TomPIT.Design;
-using TomPIT.Ide;
 
 namespace TomPIT.Dom
 {
@@ -10,13 +9,22 @@ namespace TomPIT.Dom
 		private object[] _propertySources = null;
 		private IDomDesigner _designer = null;
 
-		public ComponentElement(IEnvironment environment, IDomElement parent, IComponent component) : base(environment, parent, component)
+		public ComponentElement(IDomElement parent, IComponent component) : base(parent, component)
 		{
 			Id = Target.Token.ToString();
-			Glyph = "fal fa-cog";
+			Glyph = "fal fa-file";
 			Title = Target.Name;
 
 			((Behavior)Behavior).AutoExpand = false;
+			((Behavior)Behavior).Static = false;
+
+			Verbs.Add(new Verb
+			{
+				Action = VerbAction.Ide,
+				Confirm = string.Format("Are you sure you want to delete component '{0}'?", Title),
+				Id = "deleteComponent",
+				Name = "Delete component"
+			});
 		}
 
 		protected IComponent Target { get { return Instance as IComponent; } }
@@ -48,7 +56,7 @@ namespace TomPIT.Dom
 		public override bool Commit(object component, string property, string attribute)
 		{
 			if (component == Target)
-				Connection.GetService<IComponentDevelopmentService>().Update(Target.Token, Target.Name);
+				Connection.GetService<IComponentDevelopmentService>().Update(Target.Token, Target.Name, Target.Folder);
 			else
 				Connection.GetService<IComponentDevelopmentService>().Update(Configuration);
 

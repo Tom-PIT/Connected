@@ -1,7 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Linq;
+using TomPIT.ActionResults;
 using TomPIT.Dom;
 using TomPIT.Ide;
-using TomPIT.Runtime;
 using TomPIT.Services;
 
 namespace TomPIT.Models
@@ -54,5 +55,57 @@ namespace TomPIT.Models
 		public string Path { get; set; }
 
 		public abstract string IdeUrl { get; }
+
+		public virtual IDesignerActionResult Action(JObject data)
+		{
+			var action = data.Optional("action", string.Empty);
+
+			if (string.IsNullOrWhiteSpace(action))
+				throw IdeException.ExpectedParameter(this, 0, "action");
+
+			if (string.Compare(action, "addItem", true) == 0)
+				return AddItem(data);
+			else if (string.Compare(action, "createItem", true) == 0)
+				return CreateItem(data);
+			else if (string.Compare(action, "deleteFolder", true) == 0)
+				return DeleteFolder(data);
+			else if (string.Compare(action, "deleteComponent", true) == 0)
+				return DeleteComponent(data);
+			else if (string.Compare(action, "move", true) == 0)
+				return Move(data);
+
+			return Result.EmptyResult(this);
+		}
+
+		protected virtual IDesignerActionResult Move(JObject data)
+		{
+			return Result.EmptyResult(this);
+		}
+
+		protected virtual IDesignerActionResult DeleteFolder(JObject data)
+		{
+			return Result.EmptyResult(this);
+		}
+
+		protected virtual IDesignerActionResult DeleteComponent(JObject data)
+		{
+			return Result.EmptyResult(this);
+		}
+
+		protected virtual IDesignerActionResult AddItem(JObject data)
+		{
+			var item = data.Required<string>("item");
+
+			return Result.ViewResult(new AddItemModel
+			{
+				Descriptor = Selection.AddItems.FirstOrDefault(f => string.Compare(f.Id, item, true) == 0),
+				Environment = this
+			}, "~/Views/Ide/Designers/AddItem.cshtml");
+		}
+
+		protected virtual IDesignerActionResult CreateItem(JObject data)
+		{
+			return Result.EmptyResult(this);
+		}
 	}
 }

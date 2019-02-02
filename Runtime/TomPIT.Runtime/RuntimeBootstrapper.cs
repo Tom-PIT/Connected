@@ -4,7 +4,6 @@ using TomPIT.Compilation;
 using TomPIT.Compilers;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Events;
-using TomPIT.ComponentModel.Features;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Data;
@@ -51,7 +50,6 @@ namespace TomPIT.Runtime
 			e.Connection.RegisterService(typeof(ISerializationService), typeof(SerializationService));
 			e.Connection.RegisterService(typeof(ICompilerService), typeof(CompilerService));
 			e.Connection.RegisterService(typeof(IMicroServiceService), typeof(MicroServiceService));
-			e.Connection.RegisterService(typeof(IFeatureService), typeof(FeatureService));
 			e.Connection.RegisterService(typeof(ISettingService), typeof(SettingService));
 			e.Connection.RegisterService(typeof(INamingService), typeof(NamingService));
 			e.Connection.RegisterService(typeof(ILoggingService), typeof(LoggingService));

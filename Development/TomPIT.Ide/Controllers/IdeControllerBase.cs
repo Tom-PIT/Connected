@@ -152,6 +152,19 @@ namespace TomPIT.Controllers
 				return ResolveDesignerResult(m, m.Selection.Designer.Action(m.RequestBody));
 		}
 
+		[HttpPost]
+		public ActionResult IdeAction()
+		{
+			var m = CreateModel();
+
+			if (string.IsNullOrWhiteSpace(m.RequestBody.Optional("path", string.Empty)))
+				throw IdeException.PathNotSet(this, IdeEvents.IdeAction);
+
+			m.Path = m.RequestBody.Optional("path", string.Empty);
+
+			return ResolveDesignerResult(m, m.Action(m.RequestBody));
+		}
+
 		private ActionResult ResolveDesignerResult(IEnvironment model, IDesignerActionResult result)
 		{
 			foreach (var i in result.ResponseHeaders)
@@ -191,8 +204,19 @@ namespace TomPIT.Controllers
 
 				Response.Headers.Add("designerResult", "section");
 				Response.Headers.Add("invalidate", vr.Sections.ToString());
-				Response.Headers.Add("designerPath", model.Selection.Designer.Path);
-				Response.Headers.Add("path", model.Selection.Path);
+
+				if (!string.IsNullOrWhiteSpace(result.ExplorerPath) && !Response.Headers.ContainsKey("explorerPath"))
+					Response.Headers.Add("explorerPath", result.ExplorerPath);
+
+				if (model.Selection != null)
+				{
+					if (model.Selection.Designer != null)
+						Response.Headers.Add("designerPath", model.Selection.Designer.Path);
+					else
+						Response.Headers.Add("designerPath", model.Selection.Path);
+
+					Response.Headers.Add("path", model.Selection.Path);
+				}
 
 				if (vr.Data == null)
 					return Ok();

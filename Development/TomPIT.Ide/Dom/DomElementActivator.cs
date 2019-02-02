@@ -8,15 +8,22 @@ namespace TomPIT.Dom
 {
 	internal class DomElementActivator
 	{
-		public DomElementActivator(IEnvironment environment, IDomElement parent, object instance, PropertyInfo pi, int index)
+		public DomElementActivator(IDomElement parent, object instance, PropertyInfo pi, int index)
 		{
-			Environment = environment;
 			Parent = parent;
 			Instance = instance;
 			Property = pi;
 			Index = index;
 		}
 
+		public DomElementActivator(IDomElement parent, object instance, DomElementAttribute attribute)
+		{
+			Parent = parent;
+			Instance = instance;
+			Attribute = attribute;
+		}
+
+		private DomElementAttribute Attribute { get; }
 		private IEnvironment Environment { get; }
 		private IDomElement Parent { get; }
 		private object Instance { get; }
@@ -41,9 +48,9 @@ namespace TomPIT.Dom
 
 				if (pars.Length == 1 && pars[0].ParameterType == typeof(ReflectorCreateArgs))
 					return CreateReflectorElement(type);
-				else if (pars.Length == 3 && pars[2].ParameterType == typeof(IComponent))
+				else if (pars.Length == 2 && pars[1].ParameterType == typeof(IComponent))
 					return CreateComponentElement(type);
-				else if (pars.Length == 2)
+				else if (pars.Length == 1)
 					return CreateDefaultElement(type);
 			}
 
@@ -52,12 +59,12 @@ namespace TomPIT.Dom
 
 		private IDomElement CreateDefaultElement(Type type)
 		{
-			return type.CreateInstance<DomElement>(new object[] { Parent.Environment, Parent });
+			return type.CreateInstance<DomElement>(new object[] { Parent });
 		}
 
 		private IDomElement CreateComponentElement(Type type)
 		{
-			return type.CreateInstance<DomElement>(new object[] { Parent.Environment, Parent, ResolveComponent() });
+			return type.CreateInstance<DomElement>(new object[] { Parent, ResolveComponent() });
 		}
 
 		private IDomElement CreateReflectorElement(Type type)
@@ -76,6 +83,9 @@ namespace TomPIT.Dom
 
 		private Type ResolveType()
 		{
+			if (Attribute != null)
+				return Attribute.Type ?? Type.GetType(Attribute.TypeName);
+
 			if (Property != null)
 			{
 				var element = Property.AttributeLookup<DomElementAttribute>();

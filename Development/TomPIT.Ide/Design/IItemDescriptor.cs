@@ -8,5 +8,7 @@ namespace TomPIT.Design
 		string Id { get; }
 		Type Type { get; }
 		object Value { get; }
+		string Glyph { get; }
+		string Category { get; }
 	}
 }

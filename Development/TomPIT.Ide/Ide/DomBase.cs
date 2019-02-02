@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TomPIT.Design;
 using TomPIT.Dom;
 
 namespace TomPIT.Ide
@@ -131,6 +132,7 @@ namespace TomPIT.Ide
 		}
 
 		public IDomElement Selected { get; private set; } = null;
-		public string SelectedPath { get; } = null;
+		public string SelectedPath { get; protected set; } = null;
+		public virtual List<IItemDescriptor> ProvideAddItems(IDomElement selection) { return null; }
 	}
 }

@@ -11,7 +11,7 @@ namespace TomPIT.Design
 		public abstract Guid Token { get; }
 		public abstract string Name { get; }
 
-		public virtual List<IItemDescriptor> QueryDescriptors(IDomElement parent, string category)
+		public virtual List<IItemDescriptor> ProvideAddItems(IDomElement parent)
 		{
 			return new List<IItemDescriptor>();
 		}
@@ -21,7 +21,7 @@ namespace TomPIT.Design
 			return new List<IDomElement>();
 		}
 
-		protected IComponent CreateReferences(IEnvironment environment, Guid microService)
+		public IComponent References(IEnvironment environment, Guid microService)
 		{
 			var cs = environment.Context.Connection().GetService<IComponentService>();
 			var cds = environment.Context.Connection().GetService<IComponentDevelopmentService>();
@@ -31,7 +31,7 @@ namespace TomPIT.Design
 			if (items != null && items.Count > 0)
 				return items[0];
 
-			var id = cds.Insert(null, microService, Guid.Empty, "Reference", "References", typeof(References).TypeName());
+			var id = cds.Insert(microService, Guid.Empty, "Reference", "References", typeof(References).TypeName());
 			var config = new References
 			{
 				Component = id

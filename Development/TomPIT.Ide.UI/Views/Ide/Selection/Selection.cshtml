@@ -1,49 +1,49 @@
 ﻿@model TomPIT.Ide.IEnvironment
 
 <ul class="nav nav-tabs" id="devSelectionTabs" role="tablist">
-    <li class="nav-item">
-        <a class="nav-link active" id="devSelectionPropertyTab" data-toggle="tab" href="#devTabPropertyGrid" role="tab" aria-controls="properties" aria-selected="true"><i class="fal fa-tasks"></i></a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" id="devSelectionEventsTab" data-toggle="tab" href="#devTabEvents" role="tab" aria-controls="events" aria-selected="false"><i class="fal fa-bolt"></i></a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" id="devSelectionToolboxTab" data-toggle="tab" href="#devTabToolbox" role="tab" aria-controls="toolbox" aria-selected="false"><i class="fal fa-puzzle-piece"></i></a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" id="devSelectionReflectorTab" data-toggle="tab" href="#devTabReflector" role="tab" aria-controls="reflector" aria-selected="false"><i class="fal fa-info-circle"></i></a>
-    </li>
+	<li class="nav-item">
+		<a class="nav-link active" id="devSelectionPropertyTab" data-toggle="tab" href="#devTabPropertyGrid" role="tab" aria-controls="properties" aria-selected="true"><i class="fal fa-tasks"></i></a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link" id="devSelectionEventsTab" data-toggle="tab" href="#devTabEvents" role="tab" aria-controls="events" aria-selected="false"><i class="fal fa-bolt"></i></a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link" id="devSelectionToolboxTab" data-toggle="tab" href="#devTabToolbox" role="tab" aria-controls="toolbox" aria-selected="false"><i class="fal fa-toolbox"></i></a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link" id="devSelectionReflectorTab" data-toggle="tab" href="#devTabReflector" role="tab" aria-controls="reflector" aria-selected="false"><i class="fal fa-puzzle-piece"></i></a>
+	</li>
 </ul>
 <div class="tab-content" id="devSelectionTabContent">
-    <div class="tab-pane fade show active" id="devTabPropertyGrid" role="tabpanel" aria-labelledby="properties-tab">
-        @await Html.PartialAsync("~/Views/Ide/Selection/Properties.cshtml", Model)
-    </div>
-    <div class="tab-pane fade" id="devTabEvents" role="tabpanel" aria-labelledby="events-tab">
-        @await Html.PartialAsync("~/Views/Ide/Selection/Events.cshtml", Model)
-    </div>
-    <div class="tab-pane fade" id="devTabToolbox" role="tabpanel" aria-labelledby="toolbox-tab">
-        @await Html.PartialAsync("~/Views/Ide/Selection/Toolbox.cshtml", Model)
-    </div>
-    <div class="tab-pane fade" id="devTabReflector" role="tabpanel" aria-labelledby="reflector-tab">
-        @await Html.PartialAsync("~/Views/Ide/Selection/Reflector.cshtml", Model)
-    </div>
+	<div class="tab-pane fade show active" id="devTabPropertyGrid" role="tabpanel" aria-labelledby="properties-tab">
+		@await Html.PartialAsync("~/Views/Ide/Selection/Properties.cshtml", Model)
+	</div>
+	<div class="tab-pane fade" id="devTabEvents" role="tabpanel" aria-labelledby="events-tab">
+		@await Html.PartialAsync("~/Views/Ide/Selection/Events.cshtml", Model)
+	</div>
+	<div class="tab-pane fade" id="devTabToolbox" role="tabpanel" aria-labelledby="toolbox-tab">
+		@await Html.PartialAsync("~/Views/Ide/Selection/Toolbox.cshtml", Model)
+	</div>
+	<div class="tab-pane fade" id="devTabReflector" role="tabpanel" aria-labelledby="reflector-tab">
+		@await Html.PartialAsync("~/Views/Ide/Selection/AddItems.cshtml", Model)
+	</div>
 </div>
 
 <script>
-    (function () {
-        if (typeof ide === 'undefined'
-            || typeof ide.getSelectionView === 'undefined')
-            return;
+	(function () {
+		if (typeof ide === 'undefined'
+			|| typeof ide.getSelectionView === 'undefined')
+			return;
 
-        var activeTab = ide.getSelectionView();
+		var activeTab = ide.getSelectionView();
 
-        if (activeTab === null)
-            return;
+		if (activeTab === null)
+			return;
 
-        $('#devSelectionTabs a[data-toggle="tab"][aria-controls="' + activeTab + '"]').tab('show');
-    })();
+		$('#devSelectionTabs a[data-toggle="tab"][aria-controls="' + activeTab + '"]').tab('show');
+	})();
 
-    $('#devSelectionTabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-        ide.setSelectionView($(e.target).attr("aria-controls"));
-    });
+	$('#devSelectionTabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+		ide.setSelectionView($(e.target).attr("aria-controls"));
+	});
 </script>

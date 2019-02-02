@@ -29,5 +29,7 @@ namespace TomPIT.Dom
 
 		void LoadChildren();
 		void LoadChildren(string id);
+
+		List<IVerb> Verbs { get; }
 	}
 }

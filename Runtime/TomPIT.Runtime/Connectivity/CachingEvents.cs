@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Features;
 using TomPIT.Environment;
 using TomPIT.Notifications;
 using TomPIT.Security;
@@ -24,7 +23,6 @@ namespace TomPIT.Connectivity
 		{
 			HookUsers();
 			HookRoles();
-			HookFeatures();
 			HookBlobs();
 			HookConfiguration();
 			HookSecurity();
@@ -186,6 +184,22 @@ namespace TomPIT.Connectivity
 				if (Connection.GetService<ICompilerService>() is ICompilerNotification n)
 					n.NotifyChanged(Connection, e.Args);
 			});
+
+			Hub.On<MessageEventArgs<FolderEventArgs>>("FolderChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IComponentService>() is IComponentNotification n)
+					n.NotifyFolderChanged(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<FolderEventArgs>>("FolderRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IComponentService>() is IComponentNotification n)
+					n.NotifyFolderRemoved(Connection, e.Args);
+			});
 		}
 
 		private void HookUsers()
@@ -206,25 +220,6 @@ namespace TomPIT.Connectivity
 				Hub.InvokeAsync("Confirm", e.Message);
 
 				if (Connection.GetService<IRoleService>() is IRoleNotification n)
-					n.NotifyChanged(Connection, e.Args);
-			});
-		}
-
-		private void HookFeatures()
-		{
-			Hub.On<MessageEventArgs<FeatureEventArgs>>("FeatureChanged", (e) =>
-			{
-				Hub.InvokeAsync("Confirm", e.Message);
-
-				if (Connection.GetService<IFeatureService>() is IFeatureNotification n)
-					n.NotifyChanged(Connection, e.Args);
-			});
-
-			Hub.On<MessageEventArgs<FeatureEventArgs>>("FeatureRemoved", (e) =>
-			{
-				Hub.InvokeAsync("Confirm", e.Message);
-
-				if (Connection.GetService<IFeatureService>() is IFeatureNotification n)
 					n.NotifyChanged(Connection, e.Args);
 			});
 		}

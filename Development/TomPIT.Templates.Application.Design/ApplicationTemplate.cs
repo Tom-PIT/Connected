@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using TomPIT.Application.Apis;
 using TomPIT.Application.Data;
-using TomPIT.Application.Design.Dom;
 using TomPIT.Application.Events;
 using TomPIT.Application.Resources;
 using TomPIT.Application.UI;
@@ -18,45 +17,33 @@ namespace TomPIT.Application
 		public override Guid Token { get { return new Guid("{0FF75674-12F7-4EBB-8CF0-AD08A27319D4}"); } }
 		public override string Name { get { return "Business Application"; } }
 
-		public override List<IItemDescriptor> QueryDescriptors(IDomElement parent, string category)
+		public override List<IItemDescriptor> ProvideAddItems(IDomElement parent)
 		{
 			var r = new List<IItemDescriptor>();
 
-			if (string.Compare(category, Area.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Area", "Area", typeof(Area)));
-			else if (string.Compare(category, View.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("View", "View", typeof(View)));
-			else if (string.Compare(category, MasterView.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Master view", "MasterView", typeof(MasterView)));
-			else if (string.Compare(category, Theme.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Theme", "Theme", typeof(Theme)));
-			else if (string.Compare(category, Partial.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Partial view", "PartialView", typeof(Partial)));
-			else if (string.Compare(category, Connection.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Connection", "Connection", typeof(Connection)));
-			else if (string.Compare(category, DataSource.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Data source", "DataSource", typeof(DataSource)));
-			else if (string.Compare(category, Transaction.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Transaction", "Transaction", typeof(Transaction)));
-			else if (string.Compare(category, Api.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Api", "Api", typeof(Api)));
-			else if (string.Compare(category, Library.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Library", "Library", typeof(Library)));
-			else if (string.Compare(category, Events.EventHandler.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Event handler", Events.EventHandler.ComponentCategory, typeof(Events.EventHandler)));
-			else if (string.Compare(category, DataManagement.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Data management", DataManagement.ComponentCategory, typeof(DataManagement)));
-			else if (string.Compare(category, ScriptBundle.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Script bundle", ScriptBundle.ComponentCategory, typeof(ScriptBundle)));
-			else if (string.Compare(category, DistributedEvent.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Distributed event", DistributedEvent.ComponentCategory, typeof(DistributedEvent)));
-			else if (string.Compare(category, HostedWorker.ComponentCategory, true) == 0)
-				r.Add(new ItemDescriptor("Hosted worker", HostedWorker.ComponentCategory, typeof(HostedWorker)));
-			else if (string.Compare(category, AssemblyFileSystemResource.ComponentCategory, true) == 0)
-			{
-				r.Add(new ItemDescriptor("Upload assembly", "Upload", typeof(AssemblyUploadResource)));
-				r.Add(new ItemDescriptor("File assembly", "File", typeof(AssemblyFileSystemResource)));
-			}
+
+			//if (string.Compare(category, Area.ComponentCategory, true) == 0)
+			//	r.Add(new ItemDescriptor("Area", "Area", typeof(Area)));
+			//else if (string.Compare(category, View.ComponentCategory, true) == 0)
+			r.Add(new ItemDescriptor("View", "View", typeof(View)) { Glyph = "fal fa-browser", Category = "UI", Value = "View" });
+			r.Add(new ItemDescriptor("Master view", "MasterView", typeof(MasterView)) { Glyph = "fal fa-browser", Category = "UI", Value = "MasterView" });
+			r.Add(new ItemDescriptor("Partial view", "PartialView", typeof(Partial)) { Glyph = "fal fa-browser", Category = "UI", Value = "PartialView" });
+			r.Add(new ItemDescriptor("Theme", "Theme", typeof(Theme)) { Glyph = "fal fa-pencil-paintbrush", Category = "UI", Value = "Theme" });
+			r.Add(new ItemDescriptor("Script bundle", ScriptBundle.ComponentCategory, typeof(ScriptBundle)) { Glyph = "fab fa-js", Category = "UI", Value = "Bundle" });
+
+			r.Add(new ItemDescriptor("Api", "Api", typeof(Api)) { Glyph = "fal fa-broadcast-tower", Category = "Model", Value = "Api" });
+			r.Add(new ItemDescriptor("Library", "Library", typeof(Library)) { Glyph = "fal fa-file-code", Category = "Model", Value = "Library" });
+			r.Add(new ItemDescriptor("Event handler", Events.EventHandler.ComponentCategory, typeof(Events.EventHandler)) { Glyph = "fal fa-bullseye-pointer", Category = "Model", Value = "EventHandler" });
+			r.Add(new ItemDescriptor("Distributed event", DistributedEvent.ComponentCategory, typeof(DistributedEvent)) { Glyph = "fal fa-chart-network", Category = "Model", Value = "Event" });
+			r.Add(new ItemDescriptor("Hosted worker", HostedWorker.ComponentCategory, typeof(HostedWorker)) { Glyph = "fal fa-cog", Category = "Model", Value = "Worker" });
+
+			r.Add(new ItemDescriptor("Data source", "DataSource", typeof(DataSource)) { Glyph = "fal fa-database", Category = "Data", Value = "Data" });
+			r.Add(new ItemDescriptor("Transaction", "Transaction", typeof(Transaction)) { Glyph = "fal fa-exchange-alt", Category = "Data", Value = "Transaction" });
+			//r.Add(new ItemDescriptor("Data management", DataManagement.ComponentCategory, typeof(DataManagement)) { Glyph = "fal fa-exchange-alt", Category = "Data", Value = "DataManagement" });
+			r.Add(new ItemDescriptor("Connection", "Connection", typeof(Connection)) { Glyph = "fal fa-server", Category = "Data", Value = "Connection" });
+
+			r.Add(new ItemDescriptor("Upload assembly", "Upload", typeof(AssemblyUploadResource)) { Glyph = "fal fa-file-code", Category = "Resources", Value = "Upload" });
+			r.Add(new ItemDescriptor("File assembly", "File", typeof(AssemblyFileSystemResource)) { Glyph = "fal fa-file-code", Category = "Resources", Value = "File" });
 
 			return r;
 		}
@@ -65,9 +52,9 @@ namespace TomPIT.Application
 		{
 			return new List<IDomElement>
 			{
-				new FeaturesElement(environment, parent),
-				new ResourcesElement(environment, parent),
-				new ComponentElement(environment, parent, CreateReferences(environment, microService)),
+				//new FeaturesElement(environment, parent),
+				//new ResourcesElement(environment, parent),
+				//new ComponentElement(environment, parent, CreateReferences(environment, microService)),
 			};
 		}
 	}

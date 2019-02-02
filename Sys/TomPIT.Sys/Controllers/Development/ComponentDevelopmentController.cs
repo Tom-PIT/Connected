@@ -12,14 +12,14 @@ namespace TomPIT.Sys.Controllers.Development
 			var body = FromBody();
 
 			var microService = body.Required<Guid>("microService");
-			var feature = body.Required<Guid>("feature");
+			var folder = body.Optional("folder", Guid.Empty);
 			var name = body.Required<string>("name");
 			var type = body.Required<string>("type");
 			var category = body.Required<string>("category");
-			var configuration = body.Optional("runtimeConfiguration",Guid.Empty);
+			var configuration = body.Optional("runtimeConfiguration", Guid.Empty);
 			var component = body.Required<Guid>("component");
 
-			DataModel.Components.Insert(component, microService, feature, category, name, type, configuration);
+			DataModel.Components.Insert(component, microService, folder, category, name, type, configuration);
 		}
 
 		[HttpPost]
@@ -29,8 +29,9 @@ namespace TomPIT.Sys.Controllers.Development
 
 			var component = body.Required<Guid>("component");
 			var name = body.Required<string>("name");
+			var folder = body.Optional("folder", Guid.Empty);
 
-			DataModel.Components.Update(component, name);
+			DataModel.Components.Update(component, name, folder);
 		}
 
 		[HttpPost]

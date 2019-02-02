@@ -51,8 +51,23 @@
 		</div>
 	</div>
 	<div class="dev-property-grid-desc" id="devPropertyDescription">
+		@{
+			if (Model.Selection.Element != null)
+			{
+				var first = true;
+				foreach (var i in Model.Selection.Element.Verbs)
+				{
+					if (!first)
+					{
+						@:,
+					}
 
+					first = false;
 
+					<a href="#" data-confirm="@i.Confirm" data-verb="@i.Id" data-action="@i.Action">@i.Name</a>
+				}
+			}
+		}
 	</div>
 </div>
 <script>
@@ -93,4 +108,26 @@
             sections:'designer,properties'
         });
 	})
+
+	$('a[data-verb]').click(function () {
+		var confirmText = $(this).attr('data-confirm');
+		var verb = $(this).attr('data-verb');
+		var action = $(this).attr('data-action');
+
+		if (confirmText.length > 0) {
+			if (!confirm(confirmText))
+				return;
+		}
+
+		var args = {
+			data: {
+				'action': verb
+			}
+		};
+
+		if (action === 'Ide')
+			ide.ideAction(args);
+		else
+			ide.designerAction(args);
+	});
 </script>

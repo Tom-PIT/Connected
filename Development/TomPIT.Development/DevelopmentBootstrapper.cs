@@ -12,7 +12,6 @@ namespace TomPIT
 
 		private static void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
 		{
-			e.Connection.RegisterService(typeof(IFeatureDevelopmentService), typeof(FeatureDevelopmentService));
 			e.Connection.RegisterService(typeof(IQaService), typeof(QaService));
 		}
 	}

@@ -4,7 +4,7 @@ using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Controllers.Development
 {
-	public class FeatureDevelopmentController : SysController
+	public class FolderDevelopmentController : SysController
 	{
 		[HttpPost]
 		public Guid Insert()
@@ -13,8 +13,9 @@ namespace TomPIT.Sys.Controllers.Development
 
 			var microService = body.Required<Guid>("microService");
 			var name = body.Required<string>("name");
+			var parent = body.Optional("parent", Guid.Empty);
 
-			return DataModel.Features.Insert(microService, name);
+			return DataModel.Folders.Insert(microService, name, parent);
 		}
 
 		[HttpPost]
@@ -24,9 +25,10 @@ namespace TomPIT.Sys.Controllers.Development
 
 			var microService = body.Required<Guid>("microService");
 			var name = body.Required<string>("name");
-			var feature = body.Required<Guid>("feature");
+			var token = body.Required<Guid>("token");
+			var parent = body.Optional("parent", Guid.Empty);
 
-			DataModel.Features.Update(microService, feature, name);
+			DataModel.Folders.Update(microService, token, name, parent);
 		}
 
 		[HttpPost]
@@ -35,9 +37,9 @@ namespace TomPIT.Sys.Controllers.Development
 			var body = FromBody();
 
 			var microService = body.Required<Guid>("microService");
-			var f = body.Required<Guid>("feature");
+			var f = body.Required<Guid>("token");
 
-			DataModel.Features.Delete(microService, f);
+			DataModel.Folders.Delete(microService, f);
 		}
 	}
 }

@@ -12,7 +12,7 @@ namespace TomPIT.Application.Design.Dom
 		private List<string> _claims = null;
 		private IPermissionDescriptor _descriptor = null;
 
-		public ViewElement(IEnvironment environment, IDomElement parent, IComponent component) : base(environment, parent, component)
+		public ViewElement(IDomElement parent, IComponent component) : base(parent, component)
 		{
 		}
 

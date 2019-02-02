@@ -38,6 +38,11 @@ namespace TomPIT
 			return Attribute("class", value);
 		}
 
+		public HtmlString Title(string value)
+		{
+			return Attribute("title", value);
+		}
+
 		public HtmlString Attribute(string attribute, string value)
 		{
 			if (string.IsNullOrWhiteSpace(value))

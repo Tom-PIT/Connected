@@ -22,7 +22,7 @@ namespace TomPIT.Sys.Data
 		private static Lazy<EnvironmentVariables> _environmentVars = new Lazy<EnvironmentVariables>(() => { return new EnvironmentVariables(Container); });
 		private static Lazy<Membership> _membership = new Lazy<Membership>(() => { return new Membership(Container); });
 		private static Lazy<Permissions> _permissions = new Lazy<Permissions>(() => { return new Permissions(Container); });
-		private static Lazy<Features> _features = new Lazy<Features>(() => { return new Features(Container); });
+		private static Lazy<Folders> _folders = new Lazy<Folders>(() => { return new Folders(Container); });
 		private static Lazy<Components> _components = new Lazy<Components>(() => { return new Components(Container); });
 		private static Lazy<MessageTopics> _messageTopics = new Lazy<MessageTopics>(() => { return new MessageTopics(Container); });
 		private static Lazy<MessageSubscribers> _messageSubscribers = new Lazy<MessageSubscribers>(() => { return new MessageSubscribers(Container); });
@@ -50,7 +50,7 @@ namespace TomPIT.Sys.Data
 		public static EnvironmentVariables EnvironmentVariables { get { return _environmentVars.Value; } }
 		public static Membership Membership { get { return _membership.Value; } }
 		public static Permissions Permissions { get { return _permissions.Value; } }
-		public static Features Features { get { return _features.Value; } }
+		public static Folders Folders { get { return _folders.Value; } }
 		public static Components Components { get { return _components.Value; } }
 		public static MessageTopics MessageTopics { get { return _messageTopics.Value; } }
 		public static MessageSubscribers MessageSubscribers { get { return _messageSubscribers.Value; } }

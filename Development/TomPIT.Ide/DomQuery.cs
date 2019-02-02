@@ -13,7 +13,22 @@ namespace TomPIT
 {
 	public static class DomQuery
 	{
-		public static T Closest<T>(IDomElement element)
+		public static IDomElement Root(this IDomElement element)
+		{
+			var current = element;
+
+			while (current != null)
+			{
+				if (current.Parent == null)
+					return current;
+
+				current = current.Parent;
+			}
+
+			return null;
+		}
+
+		public static T Closest<T>(this IDomElement element)
 		{
 			if (element == null)
 				return default(T);

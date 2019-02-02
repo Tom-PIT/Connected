@@ -2,7 +2,6 @@
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.Runtime;
 using TomPIT.Security;
 using TomPIT.Services;
 
@@ -94,7 +93,7 @@ namespace TomPIT.Design
 
 					foreach (var i in References.MicroServices)
 					{
-						if (i.IsValid)
+						if (i.Validation.IsValid(Context))
 						{
 							var ms = Context.Connection().GetService<IMicroServiceService>().Select(i.MicroService);
 

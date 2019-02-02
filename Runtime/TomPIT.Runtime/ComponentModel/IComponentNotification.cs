@@ -8,5 +8,8 @@
 		void NotifyChanged(object sender, ConfigurationEventArgs e);
 		void NotifyAdded(object sender, ConfigurationEventArgs e);
 		void NotifyRemoved(object sender, ConfigurationEventArgs e);
+
+		void NotifyFolderChanged(object sender, FolderEventArgs e);
+		void NotifyFolderRemoved(object sender, FolderEventArgs e);
 	}
 }

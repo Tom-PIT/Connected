@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using TomPIT.ComponentModel;
 using TomPIT.Dom;
 using TomPIT.Ide;
 using TomPIT.Validation;
@@ -22,6 +23,8 @@ namespace TomPIT.Design
 		string Format { get; }
 		bool Obsolete { get; }
 		bool SupportsTimezone { get; }
+
+		IContextElement ContextElement { get; }
 
 		PropertyInfo PropertyInfo { get; }
 	}

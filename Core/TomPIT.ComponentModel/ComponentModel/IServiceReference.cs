@@ -1,9 +1,7 @@
 ﻿namespace TomPIT.ComponentModel
 {
-	public interface IServiceReference
+	public interface IServiceReference : IContextElement
 	{
 		string MicroService { get; }
-
-		bool IsValid { get; }
 	}
 }

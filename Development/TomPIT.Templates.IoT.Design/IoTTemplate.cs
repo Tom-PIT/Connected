@@ -11,12 +11,12 @@ namespace TomPIT.IoT
 		public override Guid Token { get { return new Guid("{CAB78536-8F33-4782-A755-1D439623A1FB}"); } }
 		public override string Name { get { return "IoT"; } }
 
-		public override List<IItemDescriptor> QueryDescriptors(IDomElement parent, string category)
+		public override List<IItemDescriptor> ProvideAddItems(IDomElement parent)
 		{
 			var r = new List<IItemDescriptor>();
 
-			if (string.Compare(category, "IoTHub", true) == 0)
-				r.Add(new ItemDescriptor("IoT Hub", "Hub", typeof(Hub)));
+			//if (string.Compare(category, "IoTHub", true) == 0)
+			//	r.Add(new ItemDescriptor("IoT Hub", "Hub", typeof(Hub)));
 
 			return r;
 		}
@@ -25,8 +25,8 @@ namespace TomPIT.IoT
 		{
 			return new List<IDomElement>
 			{
-				new CategoryElement(environment, element, "IoTHub", "IoTHubs", "Hubs", "fal fa-folder"),
-				new ComponentElement(environment, element, CreateReferences(environment, microService)),
+				//new CategoryElement(environment, element, "IoTHub", "IoTHubs", "Hubs", "fal fa-folder"),
+				//new ComponentElement(environment, element, CreateReferences(environment, microService)),
 			};
 		}
 	}

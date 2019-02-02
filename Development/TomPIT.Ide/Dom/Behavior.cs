@@ -9,5 +9,7 @@ namespace TomPIT.Dom
 		}
 
 		public bool AutoExpand { get; set; } = true;
+		public bool Static { get; set; } = true;
+		public bool Container { get; set; } = false;
 	}
 }

@@ -103,7 +103,7 @@
     <Content Update="Views\Ide\Selection\Property.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\Ide\Selection\Reflector.cshtml">
+    <Content Update="Views\Ide\Selection\AddItems.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Ide\Selection\Selection.cshtml">

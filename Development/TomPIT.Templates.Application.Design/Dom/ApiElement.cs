@@ -2,7 +2,6 @@
 using TomPIT.Application.Security;
 using TomPIT.ComponentModel;
 using TomPIT.Dom;
-using TomPIT.Ide;
 using TomPIT.Security;
 
 namespace TomPIT.Application.Design.Dom
@@ -12,7 +11,7 @@ namespace TomPIT.Application.Design.Dom
 		private List<string> _claims = null;
 		private IPermissionDescriptor _descriptor = null;
 
-		public ApiElement(IEnvironment environment, IDomElement parent, IComponent component) : base(environment, parent, component)
+		public ApiElement(IDomElement parent, IComponent component) : base(parent, component)
 		{
 		}
 

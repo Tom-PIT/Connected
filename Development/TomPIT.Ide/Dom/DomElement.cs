@@ -11,11 +11,18 @@ namespace TomPIT.Dom
 	{
 		private IDomElementBehavior _behavior = null;
 		private bool _sortChildren = true;
+		private List<IVerb> _verbs = null;
 
-		public DomElement(IEnvironment environment, IDomElement parent)
+		protected DomElement(IEnvironment environment, IDomElement parent)
 		{
 			Parent = parent;
 			Environment = environment;
+		}
+
+		protected DomElement(IDomElement parent)
+		{
+			Parent = parent;
+			Environment = parent.Environment;
 		}
 
 		public IDomElement Parent { get; private set; }
@@ -81,11 +88,24 @@ namespace TomPIT.Dom
 		}
 
 		protected T GetComponent<T>() { return (T)Component; }
+		protected T GetService<T>() { return Environment.Context.Connection().GetService<T>(); }
 		protected abstract List<IDomElement> Children(object instance);
 		public abstract IDomDesigner PropertyDesigner(string propertyName);
 		public virtual bool SortChildren { get { return _sortChildren; } set { _sortChildren = value; } }
 
 		protected ISysConnection Connection { get { return Environment.Context.Connection(); } }
 		protected bool IsDesignTime { get { return (Shell.GetService<IRuntimeService>().Mode & EnvironmentMode.Design) == EnvironmentMode.Design; } }
+
+		public virtual List<IVerb> Verbs
+		{
+			get
+			{
+				if (_verbs == null)
+					_verbs = new List<IVerb>();
+
+				return _verbs;
+			}
+		}
+
 	}
 }

@@ -31,7 +31,7 @@ namespace TomPIT.Designers
 
 		protected override IDesignerActionResult Remove(JObject data)
 		{
-			var scope = DomQuery.Closest<IFeatureScope>(Owner);
+			var scope = DomQuery.Closest<IFolderScope>(Owner);
 			var id = data.Optional("id", Guid.Empty);
 
 			if (id == Guid.Empty)
@@ -46,7 +46,7 @@ namespace TomPIT.Designers
 
 		protected override IDesignerActionResult Clear(JObject data)
 		{
-			var scope = DomQuery.Closest<IFeatureScope>(Owner);
+			var scope = DomQuery.Closest<IFolderScope>(Owner);
 
 			foreach (var i in Owner.Existing)
 				Connection.GetService<IComponentDevelopmentService>().Delete(i.Token);
@@ -60,10 +60,9 @@ namespace TomPIT.Designers
 			var att = descriptor.Type.FindAttribute<CreateAttribute>();
 			var name = Connection.GetService<IComponentDevelopmentService>().CreateName(Element.MicroService(), Owner.Category, att == null ? descriptor.Type.ShortName() : att.Prefix);
 
-			var scope = DomQuery.Closest<IFeatureScope>(Owner);
-			var cs = DomQuery.Closest<IComponentScope>(Owner);
+			var scope = DomQuery.Closest<IFolderScope>(Owner);
 
-			var id = Connection.GetService<IComponentDevelopmentService>().Insert(cs?.Component, Element.MicroService(), scope == null ? Guid.Empty : scope.Feature, Owner.Category, name, descriptor.Type.TypeName());
+			var id = Connection.GetService<IComponentDevelopmentService>().Insert(Element.MicroService(), scope == null ? Guid.Empty : scope.Folder.Token, Owner.Category, name, descriptor.Type.TypeName());
 			var component = Connection.GetService<IComponentService>().SelectComponent(id);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);

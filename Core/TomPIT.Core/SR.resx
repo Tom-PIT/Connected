@@ -225,8 +225,8 @@
   <data name="ErrExpectedParameter" xml:space="preserve">
     <value>Parameter expected.</value>
   </data>
-  <data name="ErrFeatureNotFound" xml:space="preserve">
-    <value>Feature not found</value>
+  <data name="ErrFolderNotFound" xml:space="preserve">
+    <value>Folder not found</value>
   </data>
   <data name="ErrInstanceEndpointNotFound" xml:space="preserve">
     <value>Instance endpoint not found</value>
@@ -420,14 +420,14 @@
   <data name="ValReservedValue" xml:space="preserve">
     <value>The following values are reserved by the system:</value>
   </data>
-  <data name="DevAddFeature" xml:space="preserve">
-    <value>Add feature</value>
+  <data name="DevAddFolder" xml:space="preserve">
+    <value>Add folder</value>
   </data>
   <data name="DevColCreateSuccessful" xml:space="preserve">
     <value>{0} created successfully. Click here to edit.</value>
   </data>
-  <data name="DomFeatures" xml:space="preserve">
-    <value>Features</value>
+  <data name="DomFolders" xml:space="preserve">
+    <value>Folders</value>
   </data>
   <data name="ErrCannotResolveHttpRequest" xml:space="preserve">
     <value>Cannot resolve HttpRequest</value>
@@ -467,9 +467,6 @@
   </data>
   <data name="CatRouting" xml:space="preserve">
     <value>Routing</value>
-  </data>
-  <data name="ErrComponentScopeExpected" xml:space="preserve">
-    <value>Component scope expected</value>
   </data>
   <data name="ErrInvalidComponentScope" xml:space="preserve">
     <value>Invalid component scope '{0}'. Expected '{1}'.</value>
@@ -794,5 +791,11 @@
   </data>
   <data name="CatDiagnostic" xml:space="preserve">
     <value>Diagnostic</value>
+  </data>
+  <data name="ErrExpectedSelectedElement" xml:space="preserve">
+    <value>Expected selected element</value>
+  </data>
+  <data name="ErrValServiceNotSet" xml:space="preserve">
+    <value>Microservice property not set</value>
   </data>
 </root>

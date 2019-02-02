@@ -3,48 +3,76 @@
 @model TomPIT.Ide.IEnvironment
 
 @{
-    var node = ViewBag.CurrentNode as TomPIT.Dom.IDomElement;
+	var node = ViewBag.CurrentNode as TomPIT.Dom.IDomElement;
 
-    if (node == null)
-    { return; }
+	if (node == null)
+	{ return; }
+
+	var context = node.Value as TomPIT.ComponentModel.IContextElement;
+
+	var validationCss = string.Empty;
+	var errors = string.Empty;
+	var valid = true;
+
+	if (context != null)
+	{
+		if (!context.Validation.IsValid(Model.Context))
+		{
+			valid = false;
+			validationCss = "dev-explorer-node-invalid";
+
+			var sb = new System.Text.StringBuilder();
+
+			foreach (var i in context.Validation.ValidationErrors())
+			{
+				sb.AppendLine(i);
+			}
+
+			errors = sb.ToString();
+		}
+	}
 }
 
-<div data-kind="explorer-node" data-id="@node.Id" class="dev-explorer-node">
-    <div class="dev-explorer-node-content">
-        @if (node.HasChildren)
-        {
-            var css = node.Items.Count == 0 || !node.Behavior.AutoExpand ? "fa-chevron-right" : "fa-chevron-down";
+<div data-kind="explorer-node" data-id="@node.Id" class="dev-explorer-node" data-static="@Html.TP().JavaScript.Bool(node.Behavior.Static)" data-container="@Html.TP().JavaScript.Bool(node.Behavior.Container)">
+	<div class="dev-explorer-node-content">
+		@if (node.HasChildren)
+		{
+			var css = node.Items.Count == 0 || !node.Behavior.AutoExpand ? "fa-chevron-right" : "fa-chevron-down";
 
-            <span data-kind="toggler">
-                <i class="fal @css" data-kind="toggler"></i>
-            </span>
-        }
-        <div class="dev-explorer-node-text">
-            @if (!string.IsNullOrWhiteSpace(node.Glyph))
-            {
-                <i class="fa-fw @node.Glyph"></i>
-            }
-            <span data-kind="documentName">@node.Title</span>
+			<span data-kind="toggler">
+				<i class="fal @css" data-kind="toggler"></i>
+			</span>
+		}
+		<div class="dev-explorer-node-text">
+			@if (!valid)
+			{
+				<i class="fal fa-fw fa-exclamation-triangle dev-explorer-node-danger"></i>
+			}
+			else if (!string.IsNullOrWhiteSpace(node.Glyph))
+			{
+				<i class="fa-fw @node.Glyph"></i>
+			}
+			<span data-kind="documentName" @Html.TP().Attributes.Class(validationCss) @Html.TP().Attributes.Title(errors)>@node.Title</span>
 
-            @if (node.ChildrenCount > 0)
-            {
-                <span class="badge badge-secondary">@node.ChildrenCount.ToString("n0")</span>
-            }
-        </div>
-    </div>
+			@if (node.ChildrenCount > 0)
+			{
+				<span class="badge badge-secondary">@node.ChildrenCount.ToString("n0")</span>
+			}
+		</div>
+	</div>
 
-    @if (node.HasChildren)
-    {
-        var loaded = node.Items.Count > 0 ? "true" : "false";
-        var collapse = node.Items.Count == 0 || !node.Behavior.AutoExpand ? "collapse" : string.Empty;
+	@if (node.HasChildren)
+	{
+		var loaded = node.Items.Count > 0 ? "true" : "false";
+		var collapse = node.Items.Count == 0 || !node.Behavior.AutoExpand ? "collapse" : string.Empty;
 
-        <div data-kind="explorer-group" @Html.TP().Attributes.Class(collapse) data-group="@node.Id" data-loaded="@loaded">
-            @foreach (var i in node.Items)
-            {
-                ViewBag.CurrentNode = i;
-                @await Html.PartialAsync("~/Views/Ide/DomNode.cshtml", Model)
-            }
+		<div data-kind="explorer-group" @Html.TP().Attributes.Class(collapse) data-group="@node.Id" data-loaded="@loaded">
+			@foreach (var i in node.Items)
+			{
+				ViewBag.CurrentNode = i;
+				@await Html.PartialAsync("~/Views/Ide/DomNode.cshtml", Model)
+			}
 
-        </div>
-    }
+		</div>
+	}
 </div>

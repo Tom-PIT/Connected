@@ -13,6 +13,7 @@ namespace TomPIT
 			builder.MapRoute("ide.save", string.Format("{0}/save", pattern).Trim('/'), new { controller = controllerName, action = "Save" });
 			builder.MapRoute("ide.action", string.Format("{0}/action", pattern).Trim('/'), new { controller = controllerName, action = "Action" });
 			builder.MapRoute("ide.upload", string.Format("{0}/upload", pattern).Trim('/'), new { controller = controllerName, action = "Upload" });
+			builder.MapRoute("ide.ide", string.Format("{0}/ide", pattern).Trim('/'), new { controller = controllerName, action = "IdeAction" });
 		}
 	}
 }

@@ -3,9 +3,9 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 
-namespace TomPIT.ComponentModel.Features
+namespace TomPIT.ComponentModel
 {
-	internal class Feature : IFeature
+	internal class Folder : IFolder
 	{
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
@@ -18,6 +18,8 @@ namespace TomPIT.ComponentModel.Features
 		public Guid Token { get; set; }
 		[Browsable(false)]
 		public Guid MicroService { get; set; }
+		[Browsable(false)]
+		public Guid Parent { get; set; }
 
 		public override string ToString()
 		{

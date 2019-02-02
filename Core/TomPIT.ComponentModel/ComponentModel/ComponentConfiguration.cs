@@ -13,8 +13,8 @@ namespace TomPIT.ComponentModel
 		Guid IElement.Id => Component;
 
 		IElement IElement.Parent => null;
-		
-		public virtual void ComponentCreated(IComponent scope)
+
+		public virtual void ComponentCreated()
 		{
 
 		}

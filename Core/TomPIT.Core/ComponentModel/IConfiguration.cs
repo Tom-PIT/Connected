@@ -6,6 +6,6 @@ namespace TomPIT.ComponentModel
 	{
 		Guid Component { get; set; }
 
-		void ComponentCreated(IComponent scope);
+		void ComponentCreated();
 	}
 }

@@ -184,6 +184,9 @@ namespace TomPIT.Ide
 
 		private void DiscoverProperty(object instance, Property val, PropertyInfo property)
 		{
+			if (instance is IContextElement e)
+				val.ContextElement = e;
+
 			var cat = property.FindAttribute<PropertyCategoryAttribute>();
 
 			if (cat != null)

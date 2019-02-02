@@ -19,17 +19,29 @@ namespace TomPIT.ComponentModel
 		public event ConfigurationChangedHandler ConfigurationChanged;
 		public event ConfigurationChangedHandler ConfigurationAdded;
 		public event ConfigurationChangedHandler ConfigurationRemoved;
+		public event FolderChangedHandler FolderChanged;
 
 		public ComponentService(ISysConnection connection) : base(connection, "component")
 		{
-
+			Folders = new FolderCache(connection);
 		}
+
+		private FolderCache Folders { get; }
 
 		public List<IComponent> QueryComponents(Guid microService, string category)
 		{
 			var u = Connection.CreateUrl("Component", "QueryByCategory")
 				.AddParameter("microService", microService)
 				.AddParameter("category", category);
+
+			return Connection.Get<List<Component>>(u).ToList<IComponent>();
+		}
+
+		public List<IComponent> QueryComponents(Guid microService, Guid folder)
+		{
+			var u = Connection.CreateUrl("Component", "QueryByFolder")
+				.AddParameter("microService", microService)
+				.AddParameter("folder", folder);
 
 			return Connection.Get<List<Component>>(u).ToList<IComponent>();
 		}
@@ -364,6 +376,28 @@ namespace TomPIT.ComponentModel
 				foreach (var i in props)
 					MergeProperty(dinstance, i, rinstance, references, force);
 			}
+		}
+
+		public IFolder SelectFolder(Guid folder)
+		{
+			return Folders.Select(folder);
+		}
+
+		public List<IFolder> QueryFolders(Guid microService, Guid parent)
+		{
+			return Folders.Query(microService, parent);
+		}
+
+		public void NotifyFolderChanged(object sender, FolderEventArgs e)
+		{
+			Folders.Reload(e.Folder);
+			FolderChanged?.Invoke(sender, e);
+		}
+
+		public void NotifyFolderRemoved(object sender, FolderEventArgs e)
+		{
+			Folders.Delete(e.Folder);
+			FolderChanged?.Invoke(sender, e);
 		}
 	}
 }

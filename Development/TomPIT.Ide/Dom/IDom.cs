@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using TomPIT.Design;
 
 namespace TomPIT.Dom
 {
@@ -8,5 +9,6 @@ namespace TomPIT.Dom
 		IDomElement Select(string path, int depth);
 
 		List<IDomElement> CreateDomTree(string path);
+		List<IItemDescriptor> ProvideAddItems(IDomElement selection);
 	}
 }

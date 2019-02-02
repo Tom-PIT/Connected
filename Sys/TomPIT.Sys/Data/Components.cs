@@ -4,7 +4,6 @@ using System.Linq;
 using TomPIT.Api.ComponentModel;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Features;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
 
@@ -147,24 +146,29 @@ namespace TomPIT.Sys.Data
 			return Where(f => f.MicroService == microService);
 		}
 
+		public List<IComponent> Query(Guid microService, Guid folder)
+		{
+			return Where(f => f.MicroService == microService && f.Folder == folder);
+		}
+
 		public List<IComponent> Query(Guid microService, string category)
 		{
 			return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0);
 		}
 
-		public void Insert(Guid component, Guid microService, Guid feature, string category, string name, string type, Guid runtimeConfiguration)
+		public void Insert(Guid component, Guid microService, Guid folder, string category, string name, string type, Guid runtimeConfiguration)
 		{
 			var s = DataModel.MicroServices.Select(microService);
 
 			if (s == null)
 				throw new SysException(SR.ErrMicroServiceNotFound);
 
-			IFeature f = feature == Guid.Empty
+			IFolder f = folder == Guid.Empty
 				? null
-				: DataModel.Features.Select(microService, feature);
+				: DataModel.Folders.Select(folder);
 
-			if (feature != Guid.Empty && f == null)
-				throw new SysException(SR.ErrFeatureNotFound);
+			if (folder != Guid.Empty && f == null)
+				throw new SysException(SR.ErrFolderNotFound);
 
 			var v = new Validator();
 
@@ -176,7 +180,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Insert(s, DateTime.UtcNow, f, category, name, component, type, runtimeConfiguration);
 
 			Refresh(component);
-			NotificationHubs.ComponentAdded(microService, feature, component);
+			NotificationHubs.ComponentAdded(microService, folder, component);
 		}
 
 		public void UpdateModified(Guid microService, string category, string name)
@@ -186,14 +190,14 @@ namespace TomPIT.Sys.Data
 			Update(c.Token, c.Name, c.RuntimeConfiguration);
 		}
 
-		public void Update(Guid component, string name)
+		public void Update(Guid component, string name, Guid folder)
 		{
 			var c = Select(component);
 
 			if (c == null)
 				throw new SysException(SR.ErrComponentNotFound);
 
-			Update(component, name, c.RuntimeConfiguration);
+			Update(component, name, folder, c.RuntimeConfiguration);
 		}
 
 		public void Update(Guid component, Guid runtimeConfiguration)
@@ -203,10 +207,10 @@ namespace TomPIT.Sys.Data
 			if (c == null)
 				throw new SysException(SR.ErrComponentNotFound);
 
-			Update(component, c.Name, runtimeConfiguration);
+			Update(component, c.Name, c.Folder, runtimeConfiguration);
 		}
 
-		public void Update(Guid component, string name, Guid runtimeConfiguration)
+		public void Update(Guid component, string name, Guid folder, Guid runtimeConfiguration)
 		{
 			var c = Select(component);
 
@@ -220,10 +224,20 @@ namespace TomPIT.Sys.Data
 			if (!v.IsValid)
 				throw new SysException(v.ErrorMessage);
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, DateTime.UtcNow, name, runtimeConfiguration);
+			IFolder f = null;
+
+			if (folder != Guid.Empty)
+			{
+				f = DataModel.Folders.Select(folder);
+
+				if (f == null)
+					throw new SysException(SR.ErrFolderNotFound);
+			}
+
+			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, DateTime.UtcNow, name, f, runtimeConfiguration);
 
 			Refresh(component);
-			NotificationHubs.ComponentChanged(c.MicroService, c.Feature, component);
+			NotificationHubs.ComponentChanged(c.MicroService, c.Folder, component);
 		}
 
 		public void Delete(Guid component)
@@ -236,7 +250,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Delete(c);
 
 			Remove(component);
-			NotificationHubs.ComponentRemoved(c.MicroService, c.Feature, component);
+			NotificationHubs.ComponentRemoved(c.MicroService, c.Folder, component);
 		}
 
 		public string CreateComponentName(Guid microService, string prefix, string category)

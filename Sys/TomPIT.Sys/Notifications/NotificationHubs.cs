@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using System;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Features;
 using TomPIT.Configuration;
 using TomPIT.Environment;
 using TomPIT.Globalization;
@@ -36,8 +35,8 @@ namespace TomPIT.Sys.Notifications
 
 		public static void AuthenticationTokenChanged(Guid token) { Notify(nameof(AuthenticationTokenChanged), new AuthenticationTokenEventArgs(token)); }
 		public static void AuthenticationTokenRemoved(Guid token) { Notify(nameof(AuthenticationTokenRemoved), new AuthenticationTokenEventArgs(token)); }
-		public static void FeatureChanged(Guid microService, Guid feature) { Notify(nameof(FeatureChanged), new FeatureEventArgs(microService, feature)); }
-		public static void FeatureRemoved(Guid microService, Guid feature) { Notify(nameof(FeatureRemoved), new FeatureEventArgs(microService, feature)); }
+		public static void FolderChanged(Guid microService, Guid folder) { Notify(nameof(FolderChanged), new FolderEventArgs(microService, folder)); }
+		public static void FolderRemoved(Guid microService, Guid folder) { Notify(nameof(FolderRemoved), new FolderEventArgs(microService, folder)); }
 		public static void InstanceEndpointChanged(Guid endpoint) { Notify(nameof(InstanceEndpointChanged), new InstanceEndpointEventArgs(endpoint)); }
 		public static void InstanceEndpointRemoved(Guid endpoint) { Notify(nameof(InstanceEndpointRemoved), new InstanceEndpointEventArgs(endpoint)); }
 		public static void EnvironmentUnitChanged(Guid environmentUnit) { Notify(nameof(EnvironmentUnitChanged), new EnvironmentUnitEventArgs(environmentUnit)); }
@@ -67,9 +66,9 @@ namespace TomPIT.Sys.Notifications
 		public static void PermissionAdded(Guid resourceGroup, Guid evidence, string schema, string claim, string primaryKey) { Notify(nameof(PermissionAdded), new PermissionEventArgs(resourceGroup, evidence, schema, claim, primaryKey)); }
 		public static void PermissionChanged(Guid resourceGroup, Guid evidence, string schema, string claim, string primaryKey) { Notify(nameof(PermissionChanged), new PermissionEventArgs(resourceGroup, evidence, schema, claim, primaryKey)); }
 		public static void PermissionRemoved(Guid resourceGroup, Guid evidence, string schema, string claim, string primaryKey) { Notify(nameof(PermissionRemoved), new PermissionEventArgs(resourceGroup, evidence, schema, claim, primaryKey)); }
-		public static void ComponentChanged(Guid microService, Guid feature, Guid component) { Notify(nameof(ComponentChanged), new ComponentEventArgs(microService, feature, component)); }
-		public static void ComponentRemoved(Guid microService, Guid feature, Guid component) { Notify(nameof(ComponentRemoved), new ComponentEventArgs(microService, feature, component)); }
-		public static void ComponentAdded(Guid microService, Guid feature, Guid component) { Notify(nameof(ComponentAdded), new ComponentEventArgs(microService, feature, component)); }
+		public static void ComponentChanged(Guid microService, Guid folder, Guid component) { Notify(nameof(ComponentChanged), new ComponentEventArgs(microService, folder, component)); }
+		public static void ComponentRemoved(Guid microService, Guid folder, Guid component) { Notify(nameof(ComponentRemoved), new ComponentEventArgs(microService, folder, component)); }
+		public static void ComponentAdded(Guid microService, Guid folder, Guid component) { Notify(nameof(ComponentAdded), new ComponentEventArgs(microService, folder, component)); }
 		/*
 		 * Configuration
 		 */

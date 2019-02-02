@@ -322,11 +322,11 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add feature.
+        ///   Looks up a localized string similar to Add folder.
         /// </summary>
-        public static string DevAddFeature {
+        public static string DevAddFolder {
             get {
-                return ResourceManager.GetString("DevAddFeature", resourceCulture);
+                return ResourceManager.GetString("DevAddFolder", resourceCulture);
             }
         }
         
@@ -412,11 +412,11 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Features.
+        ///   Looks up a localized string similar to Folders.
         /// </summary>
-        public static string DomFeatures {
+        public static string DomFolders {
             get {
-                return ResourceManager.GetString("DomFeatures", resourceCulture);
+                return ResourceManager.GetString("DomFolders", resourceCulture);
             }
         }
         
@@ -691,15 +691,6 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Component scope expected.
-        /// </summary>
-        public static string ErrComponentScopeExpected {
-            get {
-                return ResourceManager.GetString("ErrComponentScopeExpected", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Data provider not found.
         /// </summary>
         public static string ErrConnectionDataProviderNotFound {
@@ -880,11 +871,20 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Feature not found.
+        ///   Looks up a localized string similar to Expected selected element.
         /// </summary>
-        public static string ErrFeatureNotFound {
+        public static string ErrExpectedSelectedElement {
             get {
-                return ResourceManager.GetString("ErrFeatureNotFound", resourceCulture);
+                return ResourceManager.GetString("ErrExpectedSelectedElement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder not found.
+        /// </summary>
+        public static string ErrFolderNotFound {
+            get {
+                return ResourceManager.GetString("ErrFolderNotFound", resourceCulture);
             }
         }
         
@@ -1533,6 +1533,15 @@ namespace TomPIT {
         public static string ErrValidationFailed {
             get {
                 return ResourceManager.GetString("ErrValidationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Microservice property not set.
+        /// </summary>
+        public static string ErrValServiceNotSet {
+            get {
+                return ResourceManager.GetString("ErrValServiceNotSet", resourceCulture);
             }
         }
         

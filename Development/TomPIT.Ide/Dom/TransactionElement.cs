@@ -3,13 +3,12 @@ using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
-using TomPIT.Ide;
 
 namespace TomPIT.Dom
 {
 	public class TransactionElement : Element, ITransactionHandler
 	{
-		public TransactionElement(IEnvironment environment, IDomElement parent) : base(environment, parent)
+		public TransactionElement(IDomElement parent) : base(parent)
 		{
 		}
 

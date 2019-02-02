@@ -69,6 +69,54 @@ $.widget('tompit.tpIde', {
 	 */
 	initializeExplorer: function (e) {
 		this._initializeExplorerNodes(e);
+		$(window).keydown(function (e) {
+			if (e.keyCode === 27) {
+				$('#devExplorerNodes').sortable('cancel');
+			}
+		});
+
+		var instance = this;
+
+		$('#devExplorerNodes').sortable({
+			items: '[data-kind="explorer-node"][data-static="false"]',
+			axis: 'y',
+			helper: 'clone',
+			start: function (e, ui) {
+				instance.options.selection.dragPath = instance._resolvePath(ui.item);
+				var container = ui.item.parent().closest('[data-container="true"]');
+
+				if (container.length === 0)
+					ui.item.attr('origin-container', '0');
+				else
+					ui.item.attr('origin-container', container.attr('data-id'));
+			},
+			update: function (e, ui) {
+				var item = ui.item.parent().closest('[data-container="true"]');
+				var folder = null;
+
+				if (item.length > 0)
+					folder = item.attr('data-id');
+
+				var origin = ui.item.attr('origin-container');
+
+				if (origin === folder) {
+					alert('Cannot move the element. The destination folder is the same as the source folder.');
+					$('#devExplorerNodes').sortable('cancel');
+					return;
+				}
+
+				var id = ui.item.attr('data-id');
+
+				ide.ideAction({
+					data: {
+						'action': 'move',
+						'id': id,
+						'folder': folder,
+						'path': instance.options.selection.dragPath
+					}
+				});
+			}
+		});
 	},
 
 	_initializeExplorerNodes: function (e) {
@@ -131,17 +179,23 @@ $.widget('tompit.tpIde', {
 			});
 		});
 	},
-
+	
 	selectNode: function (e) {
 		e = $.extend({
 			target: null,
+			path:null,
 			scroll: true
 		}, e);
 
+		if (e.target === null && e.path !== null)
+			e.target = this._findElement(e.path);
+
 		var path = this._resolvePath(e.target);
 
-		if (path === this.options.selection.explorerNode)
-			return;
+		if (path === this.options.selection.explorerNode) {
+			if (typeof e.force === 'undefined' || e.force === false)
+				return;
+		}
 
 		this.options.selection.explorerNode = path;
 
@@ -377,6 +431,22 @@ $.widget('tompit.tpIde', {
 			}
 		});
 	},
+	_checkSelection: function (e) {
+		if (this.options.selection.explorerNode === null)
+			return;
+
+		var target = this._findElement(this.options.selection.explorerNode);
+
+		if (target.length === 0) {
+			this.options.selection.explorerNode = this.options.selection.explorerNode.substr(0, this.options.selection.explorerNode.lastIndexOf('/'));
+			this._checkSelection({ select: true });
+		}
+		else {
+			if (e.select) {
+				this.selectNode({ target: target, force:true });
+			}
+		}
+	},
 	_loadExplorerChildren: function (e) {
 		var url = new tompit.devUrl();
 		var instance = this;
@@ -403,7 +473,7 @@ $.widget('tompit.tpIde', {
 				language: instance.options.globalization.language
 			},
 			progress: tompit.findProgress(this.element),
-			onSuccess: function (data) {
+			onSuccess: function (data, request) {
 				var id = e.path.substr(e.path.lastIndexOf('/') + 1);
 				var s = null;
 
@@ -430,13 +500,16 @@ $.widget('tompit.tpIde', {
 
 				instance.draw();
 
-				if (e.select)
+				if (e.select) {
 					instance.expandTo({
 						path: e.path,
 						select: true
 					});
+				}
 
-				e.onComplete();
+				instance._checkSelection({ select: false });
+
+				e.onComplete(data, request);
 			}
 		});
 	},
@@ -551,7 +624,8 @@ $.widget('tompit.tpIde', {
 			this.loadSection({
 				section: 'all',
 				path: e.path,
-				data: e.data
+				data: e.data,
+				onComplete:e.onComplete
 			});
 		}
 		else {
@@ -567,21 +641,24 @@ $.widget('tompit.tpIde', {
 				this.refreshExplorer({
 					path: path,
 					depth: depth,
-					mode: 'item'
+					mode: 'item',
+					onComplete: e.onComplete
 				});
 			}
 			if (designer)
 				this.loadSection({
 					section: 'designer',
 					path: e.path,
-					data: e.data
+					data: e.data,
+					onComplete: e.onComplete
 				});
 
 			if (selection) {
 				this.loadSection({
 					section: 'selection',
 					path: e.path,
-					data: e.data
+					data: e.data,
+					onComplete: e.onComplete
 				});
 			}
 			else {
@@ -589,14 +666,16 @@ $.widget('tompit.tpIde', {
 					this.loadSection({
 						section: 'properties',
 						path: e.path,
-						data: e.data
+						data: e.data,
+						onComplete: e.onComplete
 					});
 				else {
 					if (property)
 						this.loadSection({
 							section: 'property',
 							path: e.path,
-							data: e.data
+							data: e.data,
+							onComplete: e.onComplete
 						});
 				}
 
@@ -604,14 +683,16 @@ $.widget('tompit.tpIde', {
 					this.loadSection({
 						section: 'events',
 						path: e.path,
-						data: e.data
+						data: e.data,
+						onComplete: e.onComplete
 					});
 
 				if (toolbox)
 					this.loadSection({
 						section: 'toolbox',
 						path: e.path,
-						data: e.data
+						data: e.data,
+						onComplete: e.onComplete
 					});
 			}
 		}
@@ -698,6 +779,9 @@ $.widget('tompit.tpIde', {
 					$('#devDesigner').html(data);
 					instance.initializeDesigner();
 				}
+
+				if ($.isFunction(e.onComplete))
+					e.onComplete(data, request);
 			}
 		});
 	},
@@ -757,15 +841,25 @@ $.widget('tompit.tpIde', {
 		this.options.designer.active = d;
 	},
 	designerAction: function (d, progress) {
+		this._action(d, progress, 'action');
+	},
+	ideAction: function (d, progress) {
+		this._action(d, progress, 'ide');
+	},
+	_action: function (d, progress, action) {
 		var url = new tompit.devUrl();
 		var instance = this;
+		var path = this.selectedPath();
+
+		if (typeof d !== 'undefined' && typeof d.data !== 'undefined' && typeof d.data.path !== 'undefined')
+			path = d.data.path;
 
 		tompit.post({
-			url: url.environment('Action'),
+			url: url.environment(action),
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
 			data: $.extend(d.data, {
-				path: this.selectedPath(),
+				path: path,
 				language: instance.options.globalization.language
 			}),
 			progress: typeof progress === 'undefined' || !progress ? tompit.findProgress(this.element) : null,
@@ -794,16 +888,17 @@ $.widget('tompit.tpIde', {
 					var path = request.getResponseHeader('path');
 					var sections = request.getResponseHeader('invalidate');
 
-					if (typeof d.onComplete !== 'undefined')
-						d.onComplete(data, request);
-
 					if (sections !== null)
 						instance.refreshSections({
 							sections: sections,
 							path: path,
 							explorerPath: designerPath,
 							designerPath: designerPath,
-							data: data
+							data: data,
+							onComplete: function () {
+								if ($.isFunction(d.onComplete))
+									d.onComplete(data, request);
+							}
 						});
 				}
 			}

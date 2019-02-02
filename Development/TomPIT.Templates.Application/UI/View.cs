@@ -30,17 +30,6 @@ namespace TomPIT.Application.UI
 		[Browsable(false)]
 		public Guid AuthorizationParent => Area;
 
-		public override void ComponentCreated(ComponentModel.IComponent scope)
-		{
-			if (scope == null)
-				throw new TomPITException(SR.ErrComponentScopeExpected);
-
-			if (string.Compare(scope.Category, Application.Area.ComponentCategory, true) != 0)
-				throw new TomPITException(string.Format(SR.ErrInvalidComponentScope, scope.Category, Application.Area.ComponentCategory));
-
-			Area = scope.Token;
-		}
-
 		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
 		public IMetricConfiguration Metrics
 		{

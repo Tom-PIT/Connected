@@ -1,4 +1,5 @@
-﻿using TomPIT.Design;
+﻿using System.Collections.Generic;
+using TomPIT.Design;
 using TomPIT.Dom;
 
 namespace TomPIT.Ide
@@ -14,5 +15,9 @@ namespace TomPIT.Ide
 		string Id { get; }
 		IDomDesigner Designer { get; }
 		ITransactionHandler Transaction { get; }
+
+		List<IItemDescriptor> AddItems { get; }
+
+		void Reset();
 	}
 }

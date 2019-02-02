@@ -46,7 +46,7 @@ namespace TomPIT.Design
 			Connection.Post(u, args);
 
 			if (Connection.GetService<IComponentService>() is IComponentNotification svc)
-				svc.NotifyRemoved(this, new ComponentEventArgs(c.MicroService, c.Feature, component));
+				svc.NotifyRemoved(this, new ComponentEventArgs(c.MicroService, c.Folder, component));
 
 			/*
 			 * remove configuration file
@@ -67,7 +67,7 @@ namespace TomPIT.Design
 			Connection.Post(u, args);
 		}
 
-		public Guid Insert(IComponent scope, Guid microService, Guid feature, string category, string name, string type)
+		public Guid Insert(Guid microService, Guid folder, string category, string name, string type)
 		{
 			var s = Connection.GetService<IMicroServiceService>().Select(microService);
 
@@ -85,7 +85,7 @@ namespace TomPIT.Design
 				throw new IdeException(string.Format("{0} ({1})", SR.ErrCannotCreateComponentInstance, type));
 
 			instance.Component = Guid.NewGuid();
-			instance.ComponentCreated(scope);
+			instance.ComponentCreated();
 
 			var content = Connection.GetService<ISerializationService>().Serialize(instance);
 
@@ -107,7 +107,7 @@ namespace TomPIT.Design
 			var args = new JObject
 			{
 				{"microService", microService },
-				{"feature", feature },
+				{"folder", folder },
 				{"name", name },
 				{"type", type },
 				{"category", category },
@@ -128,13 +128,14 @@ namespace TomPIT.Design
 			return instance.Component;
 		}
 
-		public void Update(Guid component, string name)
+		public void Update(Guid component, string name, Guid folder)
 		{
 			var u = Connection.CreateUrl("ComponentDevelopment", "Update");
 			var args = new JObject
 			{
 				{"name", name },
-				{"component", component }
+				{"component", component },
+				{"folder", folder }
 			};
 
 			Connection.Post(u, args);
@@ -279,6 +280,66 @@ namespace TomPIT.Design
 			{
 				Connection.LogWarning(null, "Remove Dependencies", ex.Message);
 			}
+		}
+
+		public void DeleteFolder(Guid microService, Guid folder)
+		{
+			var folders = Connection.GetService<IComponentService>().QueryFolders(microService, folder);
+
+			foreach (var i in folders)
+				DeleteFolder(microService, i.Token);
+
+			var components = Connection.GetService<IComponentService>().QueryComponents(microService, folder);
+
+			foreach (var i in components)
+				Delete(i.Token);
+
+			var u = Connection.CreateUrl("FolderDevelopment", "Delete");
+			var args = new JObject
+			{
+				{"microService", microService },
+				{ "token", folder }
+			};
+
+			Connection.Post(u, args);
+
+			if (Connection.GetService<IComponentService>() is IComponentNotification svc)
+				svc.NotifyFolderRemoved(this, new FolderEventArgs(microService, folder));
+		}
+
+		public Guid InsertFolder(Guid microService, string name, Guid parent)
+		{
+			var u = Connection.CreateUrl("FolderDevelopment", "Insert");
+			var args = new JObject
+			{
+				{"microService", microService },
+				{ "name", name },
+				{ "parent", parent }
+			};
+
+			var r = Connection.Post<Guid>(u, args);
+
+			if (Connection.GetService<IComponentService>() is IComponentNotification svc)
+				svc.NotifyFolderChanged(this, new FolderEventArgs(microService, r));
+
+			return r;
+		}
+
+		public void UpdateFolder(Guid microService, Guid folder, string name, Guid parent)
+		{
+			var u = Connection.CreateUrl("FolderDevelopment", "Update");
+			var args = new JObject
+			{
+				{"microService", microService },
+				{ "token", folder },
+				{ "name", name },
+				{ "parent", parent }
+			};
+
+			Connection.Post(u, args);
+
+			if (Connection.GetService<IComponentService>() is IComponentNotification svc)
+				svc.NotifyFolderChanged(this, new FolderEventArgs(microService, folder));
 		}
 	}
 }

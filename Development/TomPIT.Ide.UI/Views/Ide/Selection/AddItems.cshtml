@@ -1,0 +1,54 @@
+﻿@model TomPIT.Ide.IEnvironment
+
+@if (Model.Selection.AddItems == null)
+{
+	<div class="dev-no-data">
+		No items available for add.
+	</div>
+}
+else
+{
+	var cat = Model.Selection.AddItems.GroupBy(f => f.Category);
+
+	<div class="dev-add-items">
+		<ul class="list-unstyled">
+
+			@foreach (var i in cat)
+			{
+				var c = string.IsNullOrWhiteSpace(i.Key) ? "General" : i.Key;
+
+				<li class="dev-add-item-category">@c</li>
+			@foreach (var j in i)
+			{
+				var glyph = "fal fa-puzzle-piece";
+
+				<li class="dev-add-item" data-id="@j.Id">
+
+					@if (!string.IsNullOrWhiteSpace(j.Glyph))
+					{
+						glyph = j.Glyph;
+					}
+
+
+					<i class="@glyph"></i><span class="pl-1">@j.Text</span>
+
+				</li>
+			}
+			}
+		</ul>
+	</div>
+}
+
+<script>
+	$('.dev-add-item').click(function (e) {
+		ide.ideAction({
+			data: {
+				'action': 'addItem',
+				'item': $(this).attr('data-id')
+			},
+			onComplete: function (data) {
+				$('#devDesigner').html(data);
+			}
+		})
+	});
+</script>

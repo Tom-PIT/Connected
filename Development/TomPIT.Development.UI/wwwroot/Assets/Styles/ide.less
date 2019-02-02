@@ -114,7 +114,7 @@ position:relative;
 	text-align:center;
 }
 
-.dev-property-grid .dev-no-data {
+.dev-no-data {
 	text-align: center;
 	padding:25px 15px;
 }
@@ -386,4 +386,51 @@ h4.dev-title{
 
 .doc-control-box{
 	padding-right:3px;
+}
+
+.dev-add-items{
+
+}
+
+.dev-add-item {
+	padding: 10px;
+	cursor: pointer;
+	border-bottom:1px solid @Grey200;
+}
+
+.dev-add-item:hover {
+	background-color: @Info;
+	color: #FFF;
+}
+
+.dev-add-item-category {
+	padding: 10px;
+	font-variant: small-caps;
+	font-weight: 700;
+	text-align: center;
+}
+.add-item-glyph {
+	font-size: 5rem;
+}
+
+.dev-explorer-node-content:hover [data-fa-i2svg]{
+	color:#FFF!important;
+}
+
+.dev-explorer-node-content.active .dom-element-warning {
+	color: #FFF;
+}
+
+.dom-element-warning{
+	color:@Amber600;
+}
+
+.dev-explorer-node-danger{
+	color:@Red400;
+}
+
+.dev-explorer-node-invalid {
+	text-decoration-line: underline;
+	text-decoration-style: wavy;
+	text-decoration-color: @Red400;
 }

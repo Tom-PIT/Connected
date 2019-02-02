@@ -7,11 +7,13 @@ using TomPIT.Connectivity;
 
 namespace TomPIT.ComponentModel
 {
-	public class ServiceReference : Element, IServiceReference
+	[Glyph("fal fa-tilde")]
+	public class ServiceReference : ContextElement, IServiceReference
 	{
 		private ISysConnection _connection = null;
 		private string _ms = string.Empty;
 		private string _name = string.Empty;
+		private bool _referenceValid = false;
 
 		[Items("TomPIT.Design.Items.MicroServicesItems, TomPIT.Design")]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
@@ -33,7 +35,11 @@ namespace TomPIT.ComponentModel
 			}
 		}
 
-		public bool IsValid { get { return !string.IsNullOrWhiteSpace(_name); } }
+		protected override void OnValidate(object sender, ElementValidationArgs e)
+		{
+			if (!_referenceValid)
+				e.Errors.Add(SR.ErrValServiceNotSet);
+		}
 
 		public override string ToString()
 		{
@@ -56,7 +62,10 @@ namespace TomPIT.ComponentModel
 					var ms = server.GetService<IMicroServiceService>().Select(MicroService);
 
 					if (ms != null)
+					{
 						_name = ms.Name;
+						_referenceValid = true;
+					}
 					else
 						_name = SR.InvalidServiceReference;
 				}

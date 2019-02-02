@@ -10,6 +10,11 @@ namespace TomPIT.Design
 
 		}
 
+		public ItemDescriptor(string text, object value) : this(text, null, null)
+		{
+			Value = value;
+		}
+
 		public ItemDescriptor(string text, string id, Type type)
 		{
 			Text = text;
@@ -17,26 +22,11 @@ namespace TomPIT.Design
 			Type = type;
 		}
 
-		public ItemDescriptor(string text, object value)
-		{
-			Text = text;
-			Value = value;
-		}
-
-		public string Text
-		{
-			get; set;
-		}
-
-		public string Id
-		{
-			get; set;
-		}
-
-		public Type Type
-		{
-			get; set;
-		}
+		public string Text { get; set; }
+		public string Glyph { get; set; }
+		public string Id { get; set; }
+		public string Category { get; set; }
+		public Type Type { get; set; }
 
 		public object Value { get; set; }
 

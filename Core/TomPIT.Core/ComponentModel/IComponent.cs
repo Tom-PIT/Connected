@@ -6,11 +6,11 @@ namespace TomPIT.ComponentModel
 	{
 		string Name { get; }
 		Guid MicroService { get; }
-		Guid Feature { get; }
 		Guid Token { get; }
 		string Type { get; }
 		string Category { get; }
 		Guid RuntimeConfiguration { get; }
 		DateTime Modified { get; }
+		Guid Folder { get; }
 	}
 }

@@ -15,6 +15,10 @@ namespace TomPIT.Dom
 		{
 		}
 
+		public Element(IDomElement parent) : base(parent)
+		{
+		}
+
 		protected override List<IDomElement> Children(object instance)
 		{
 			var r = new List<IDomElement>();
@@ -51,7 +55,7 @@ namespace TomPIT.Dom
 				if (element != null)
 					properties.Add(element);
 				else
-					properties.Add(new ReflectionElement(Environment, this, enm.Current, null, idx)
+					properties.Add(new ReflectionElement(this, enm.Current, null, idx)
 					{
 						SortChildren = false
 					});
@@ -122,13 +126,13 @@ namespace TomPIT.Dom
 				if (element != null)
 					properties.Add(element);
 				else
-					properties.Add(new ReflectionElement(Environment, this, instance, i, 0));
+					properties.Add(new ReflectionElement(this, instance, i, 0));
 			}
 		}
 
 		private IDomElement CreatePropertyElement(object instance, PropertyInfo pi, int index)
 		{
-			return new DomElementActivator(Environment, this, instance, pi, index).CreateInstance();
+			return new DomElementActivator(this, instance, pi, index).CreateInstance();
 		}
 
 		private IDomDesigner CreatePropertyDesignerInstance(object component, string propertyName, DomDesignerAttribute designer)

@@ -4,7 +4,6 @@ using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
-using TomPIT.Ide;
 
 namespace TomPIT.Dom
 {
@@ -14,12 +13,16 @@ namespace TomPIT.Dom
 		private IDomDesigner _designer = null;
 		private List<object> _propertySources = null;
 
-		public ReflectionElement(ReflectorCreateArgs e) : this(e.Environment, e.Parent, e.Instance, e.Property, e.Index)
+		public ReflectionElement(ReflectorCreateArgs e) : this(e.Parent, e.Instance, e.Property, e.Index)
 		{
 
 		}
 
-		public ReflectionElement(IEnvironment environment, IDomElement parent, object instance, PropertyInfo property, int index) : base(environment, parent)
+		public ReflectionElement(IDomElement parent, object instance) : this(parent, instance, null, 0)
+		{
+		}
+
+		public ReflectionElement(IDomElement parent, object instance, PropertyInfo property, int index) : base(parent)
 		{
 			Instance = instance;
 			Component = instance;
@@ -48,10 +51,6 @@ namespace TomPIT.Dom
 		/// to find out what kind of component is attached.
 		/// </summary>
 		protected object Instance { get; }
-
-		public ReflectionElement(IEnvironment environment, IDomElement parent, object instance) : this(environment, parent, instance, null, 0)
-		{
-		}
 
 		private bool IsCollection
 		{

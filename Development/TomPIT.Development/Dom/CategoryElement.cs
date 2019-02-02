@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
@@ -30,14 +29,14 @@ namespace TomPIT.Dom
 		public override void LoadChildren()
 		{
 			foreach (var i in Existing.OrderBy(f => f.Name))
-				Items.Add(i.GetDomElement(Environment, this));
+				Items.Add(i.GetDomElement(this));
 		}
 
 		public override void LoadChildren(string id)
 		{
 			var ds = Existing.FirstOrDefault(f => f.Token == id.AsGuid());
 
-			Items.Add(ds.GetDomElement(Environment, this));
+			Items.Add(ds.GetDomElement(this));
 		}
 
 		public List<IComponent> Existing
@@ -46,12 +45,10 @@ namespace TomPIT.Dom
 			{
 				if (_components == null)
 				{
-					var fs = DomQuery.Closest<IFeatureScope>(this);
-					var fid = fs == null
-						? Guid.Empty
-						: fs.Feature;
+					var fs = DomQuery.Closest<IFolderScope>(this);
+					var fid = fs?.Folder;
 
-					_components = Connection.GetService<IComponentService>().QueryComponents(this.MicroService(), Category).Where(f => f.Feature == fid).ToList();
+					_components = Connection.GetService<IComponentService>().QueryComponents(this.MicroService(), Category).Where(f => f.Folder == fid.Token).ToList();
 				}
 
 				return _components;
@@ -72,7 +69,7 @@ namespace TomPIT.Dom
 				if (template == null)
 					throw new IdeException(SR.ErrMicroServiceTemplateNotFound);
 
-				return template.QueryDescriptors(this, Category);
+				return null;// template.QueryDescriptors(this, Category);
 			}
 		}
 

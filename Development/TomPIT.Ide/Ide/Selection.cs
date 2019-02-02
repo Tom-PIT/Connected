@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TomPIT.Annotations;
 using TomPIT.Design;
 using TomPIT.Dom;
@@ -13,6 +14,7 @@ namespace TomPIT.Ide
 		private bool _designerResolved = false;
 		private bool _transactionResolved = false;
 		private ITransactionHandler _transaction = null;
+		private List<IItemDescriptor> _addItems = null;
 
 		public Selection(IEnvironment environment) : base(environment)
 		{
@@ -158,5 +160,27 @@ namespace TomPIT.Ide
 		}
 
 		public string Property { get { return Environment.RequestBody.Optional("property", string.Empty); } }
+
+		public List<IItemDescriptor> AddItems
+		{
+			get
+			{
+				if (_addItems == null)
+					_addItems = Environment.Dom.ProvideAddItems(Element);
+
+				return _addItems;
+			}
+		}
+
+		public void Reset()
+		{
+			_addItems = null;
+			_designer = null;
+			_designerResolved = false;
+			_events = null;
+			_properties = null;
+			_transaction = null;
+			_transactionResolved = false;
+		}
 	}
 }

@@ -110,7 +110,7 @@ namespace TomPIT
 			return null;
 		}
 
-		public static IDomElement GetDomElement(this IComponent component, IEnvironment environment, IDomElement parent)
+		public static IDomElement GetDomElement(this IComponent component, IDomElement parent)
 		{
 			var type = Types.GetType(component.Type);
 
@@ -120,22 +120,9 @@ namespace TomPIT
 			var att = type.FindAttribute<DomElementAttribute>();
 
 			if (att == null)
-				return new ComponentElement(environment, parent, component);
+				return new ComponentElement(parent, component);
 			else
-			{
-				var t = att.Type ?? Types.GetType(att.TypeName);
-				var constructors = t.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
-
-				foreach (var i in constructors)
-				{
-					var parameters = i.GetParameters();
-
-					if (parameters.Count() == 3)
-						return t.CreateInstance<IDomElement>(new object[] { environment, parent, component });
-				}
-
-				return null;
-			}
+				return new DomElementActivator(parent, component, att).CreateInstance();
 		}
 
 		public static IDomDesigner SystemDesigner(this IDomElement sender, object instance)

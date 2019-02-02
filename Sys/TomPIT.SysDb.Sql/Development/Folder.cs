@@ -1,17 +1,15 @@
 ﻿using System;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Features;
 using TomPIT.Data.Sql;
 
 namespace TomPIT.SysDb.Sql.Development
 {
-	internal class Feature : PrimaryKeyRecord, IFeature
+	internal class Folder : PrimaryKeyRecord, IFolder
 	{
 		public string Name { get; set; }
-
 		public Guid Token { get; set; }
-
 		public Guid MicroService { get; set; }
+		public Guid Parent { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -20,6 +18,7 @@ namespace TomPIT.SysDb.Sql.Development
 			Name = GetString("name");
 			Token = GetGuid("token");
 			MicroService = GetGuid("service_token");
+			Parent = GetGuid("parent_token");
 		}
 	}
 }

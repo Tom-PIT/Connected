@@ -15,7 +15,7 @@ namespace TomPIT.ComponentModel
 		[Browsable(false)]
 		public Guid MicroService { get; set; }
 		[Browsable(false)]
-		public Guid Feature { get; set; }
+		public Guid Folder { get; set; }
 		[Browsable(false)]
 		[KeyProperty]
 		public Guid Token { get; set; }

@@ -4,15 +4,15 @@ namespace TomPIT.ComponentModel
 {
 	public class ComponentEventArgs : EventArgs
 	{
-		public ComponentEventArgs(Guid microService, Guid feature, Guid component)
+		public ComponentEventArgs(Guid microService, Guid folder, Guid component)
 		{
 			MicroService = microService;
-			Feature = feature;
+			Folder = folder;
 			Component = component;
 		}
 
 		public Guid MicroService { get; }
-		public Guid Feature { get; }
+		public Guid Folder { get; }
 		public Guid Component { get; }
 	}
 }

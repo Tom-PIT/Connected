@@ -1,11 +1,12 @@
 ﻿using System;
 
-namespace TomPIT.ComponentModel.Features
+namespace TomPIT.ComponentModel
 {
-	public interface IFeature
+	public interface IFolder
 	{
 		string Name { get; }
 		Guid Token { get; }
 		Guid MicroService { get; }
+		Guid Parent { get; }
 	}
 }

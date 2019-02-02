@@ -4,7 +4,6 @@ using TomPIT.Analysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Environment;
-using TomPIT.Runtime;
 using TomPIT.Services;
 
 namespace TomPIT.Design
@@ -43,7 +42,7 @@ namespace TomPIT.Design
 
 						foreach (var j in refs.MicroServices)
 						{
-							if (!j.IsValid)
+							if (!j.Validation.IsValid(Context))
 								continue;
 
 							var target = _services.FirstOrDefault(f => string.Compare(f.MicroService.Name, j.MicroService, true) == 0);

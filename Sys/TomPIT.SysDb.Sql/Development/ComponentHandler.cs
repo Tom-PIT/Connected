@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Features;
 using TomPIT.Data.Sql;
 using TomPIT.SysDb.Development;
 
@@ -19,11 +18,11 @@ namespace TomPIT.SysDb.Sql.Development
 			w.Execute();
 		}
 
-		public void Insert(IMicroService service, DateTime modified, IFeature feature, string category, string name, Guid token, string type, Guid runtimeConfiguration)
+		public void Insert(IMicroService service, DateTime modified, IFolder folder, string category, string name, Guid token, string type, Guid runtimeConfiguration)
 		{
 			var w = new Writer("tompit.component_ins");
 
-			w.CreateParameter("@feature", feature == null ? 0 : feature.GetId(), true);
+			w.CreateParameter("@folder", folder == null ? 0 : folder.GetId(), true);
 			w.CreateParameter("@name", name);
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@type", type);
@@ -70,13 +69,14 @@ namespace TomPIT.SysDb.Sql.Development
 			return r.ExecuteSingleRow();
 		}
 
-		public void Update(IComponent component, DateTime modified, string name, Guid runtimeConfiguration)
+		public void Update(IComponent component, DateTime modified, string name, IFolder folder, Guid runtimeConfiguration)
 		{
 			var w = new Writer("tompit.component_upd");
 
 			w.CreateParameter("@id", component.GetId());
 			w.CreateParameter("@name", name);
 			w.CreateParameter("@modified", modified);
+			w.CreateParameter("@folder", folder == null ? 0 : folder.GetId());
 			w.CreateParameter("@runtime_configuration", runtimeConfiguration, true);
 
 			w.Execute();

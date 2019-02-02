@@ -6,6 +6,7 @@ namespace TomPIT.ComponentModel
 {
 	public delegate void ComponentChangedHandler(ISysConnection sender, ComponentEventArgs e);
 	public delegate void ConfigurationChangedHandler(ISysConnection sender, ConfigurationEventArgs e);
+	public delegate void FolderChangedHandler(object sender, FolderEventArgs e);
 
 	public interface IComponentService
 	{
@@ -13,6 +14,10 @@ namespace TomPIT.ComponentModel
 		event ConfigurationChangedHandler ConfigurationChanged;
 		event ConfigurationChangedHandler ConfigurationAdded;
 		event ConfigurationChangedHandler ConfigurationRemoved;
+		event FolderChangedHandler FolderChanged;
+
+		IFolder SelectFolder(Guid folder);
+		List<IFolder> QueryFolders(Guid microService, Guid parent);
 
 		List<IConfiguration> QueryConfigurations(List<IComponent> components);
 		List<IConfiguration> QueryConfigurations(List<string> resourceGroups, string categories);
@@ -25,6 +30,7 @@ namespace TomPIT.ComponentModel
 		string SelectText(Guid microService, IText text);
 
 		List<IComponent> QueryComponents(Guid microService, string category);
+		List<IComponent> QueryComponents(Guid microService, Guid folder);
 		List<IComponent> QueryComponents(Guid microService);
 
 

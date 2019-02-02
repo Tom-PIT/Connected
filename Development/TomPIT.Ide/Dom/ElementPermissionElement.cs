@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
-using TomPIT.Ide;
 using TomPIT.Security;
 
 namespace TomPIT.Dom
@@ -14,11 +13,11 @@ namespace TomPIT.Dom
 		{
 		}
 
-		public ElementPermissionElement(IEnvironment environment, IDomElement parent, object instance) : base(environment, parent, instance)
+		public ElementPermissionElement(IDomElement parent, object instance) : base(parent, instance)
 		{
 		}
 
-		public ElementPermissionElement(IEnvironment environment, IDomElement parent, object instance, PropertyInfo property, int index) : base(environment, parent, instance, property, index)
+		public ElementPermissionElement(IDomElement parent, object instance, PropertyInfo property, int index) : base(parent, instance, property, index)
 		{
 		}
 

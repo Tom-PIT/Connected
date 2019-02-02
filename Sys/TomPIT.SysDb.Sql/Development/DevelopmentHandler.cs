@@ -5,7 +5,7 @@ namespace TomPIT.SysDb.Sql.Development
 	internal class DevelopmentHandler : IDevelopmentHandler
 	{
 		private IMicroServiceHandler _microServices = null;
-		private IFeatureHandler _features = null;
+		private IFolderHandler _folders = null;
 		private IComponentHandler _components = null;
 		private IQaHandler _qa = null;
 
@@ -32,14 +32,14 @@ namespace TomPIT.SysDb.Sql.Development
 			}
 		}
 
-		public IFeatureHandler Features
+		public IFolderHandler Folders
 		{
 			get
 			{
-				if (_features == null)
-					_features = new FeatureHandler();
+				if (_folders == null)
+					_folders = new FolderHandler();
 
-				return _features;
+				return _folders;
 			}
 		}
 

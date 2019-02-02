@@ -3,7 +3,6 @@ using System.Reflection;
 using TomPIT.Application.Security;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Dom;
-using TomPIT.Ide;
 using TomPIT.Security;
 
 namespace TomPIT.Application.Design.Dom
@@ -17,11 +16,11 @@ namespace TomPIT.Application.Design.Dom
 		{
 		}
 
-		public ApiOperationElement(IEnvironment environment, IDomElement parent, object instance) : base(environment, parent, instance)
+		public ApiOperationElement(IDomElement parent, object instance) : base(parent, instance)
 		{
 		}
 
-		public ApiOperationElement(IEnvironment environment, IDomElement parent, object instance, PropertyInfo property, int index) : base(environment, parent, instance, property, index)
+		public ApiOperationElement(IDomElement parent, object instance, PropertyInfo property, int index) : base(parent, instance, property, index)
 		{
 		}
 
