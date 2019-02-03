@@ -38,40 +38,6 @@ CREATE TYPE [tompit].[token_list] AS TABLE
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[feature]'
-GO
-CREATE TABLE [tompit].[feature]
-(
-[id] [int] NOT NULL IDENTITY(1, 1),
-[name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
-[token] [uniqueidentifier] NOT NULL,
-[service] [int] NOT NULL
-) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating primary key [PK_feature] on [tompit].[feature]'
-GO
-ALTER TABLE [tompit].[feature] ADD CONSTRAINT [PK_feature] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[feature_upd]'
-GO
-CREATE PROCEDURE [tompit].[feature_upd]
-	@id int,
-	@name nvarchar(128)
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	update feature set
-		name = @name
-	where id = @id;
-END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[instance_endpoint]'
 GO
 CREATE TABLE [tompit].[instance_endpoint]
@@ -258,6 +224,25 @@ ALTER TABLE [tompit].[service] ADD CONSTRAINT [PK_service] PRIMARY KEY CLUSTERED
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[folder]'
+GO
+CREATE TABLE [tompit].[folder]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[parent] [int] NULL,
+[service] [int] NOT NULL,
+[token] [uniqueidentifier] NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_folder] on [tompit].[folder]'
+GO
+ALTER TABLE [tompit].[folder] ADD CONSTRAINT [PK_folder] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[component]'
 GO
 CREATE TABLE [tompit].[component]
@@ -266,7 +251,7 @@ CREATE TABLE [tompit].[component]
 [name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [token] [uniqueidentifier] NOT NULL,
 [type] [nvarchar] (512) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
-[feature] [int] NULL,
+[folder] [int] NULL,
 [category] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [runtime_configuration] [uniqueidentifier] NULL,
 [modified] [datetime] NULL,
@@ -284,19 +269,12 @@ GO
 PRINT N'Creating [tompit].[view_component]'
 GO
 
-
-
-
-
-
-
-
-
 CREATE VIEW [tompit].[view_component]
 AS
-SELECT      c.*, f.token as feature_token, s.token AS [service_token]
+SELECT      c.id, c.name, c.token, c.type, c.category, c.runtime_configuration, c.modified,
+			c.service, c.folder, f.token as folder_token, s.token AS [service_token]
 FROM        tompit.component AS c 
-LEFT JOIN	tompit.feature f on c.feature=f.id
+LEFT JOIN	tompit.folder f on c.folder=f.id
 INNER JOIN	tompit.service s on c.service = s.id
 
 GO
@@ -441,7 +419,7 @@ GO
 PRINT N'Creating [tompit].[component_ins]'
 GO
 CREATE PROCEDURE [tompit].[component_ins]
-	@feature int = NULL,
+	@folder int = NULL,
 	@name nvarchar(128),
 	@token uniqueidentifier,
 	@type nvarchar(512),
@@ -453,8 +431,8 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	insert tompit.component (feature, name, token, type, category, runtime_configuration, modified, service)
-	values (@feature, @name, @token, @type, @category, @runtime_configuration, @modified, @service);
+	insert tompit.component (folder, name, token, type, category, runtime_configuration, modified, service)
+	values (@folder, @name, @token, @type, @category, @runtime_configuration, @modified, @service);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -625,7 +603,8 @@ CREATE PROCEDURE [tompit].[component_upd]
 	@id int,
 	@name nvarchar(128),
 	@modified datetime,
-	@runtime_configuration uniqueidentifier = NULL
+	@runtime_configuration uniqueidentifier = NULL,
+	@folder int = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -633,7 +612,8 @@ BEGIN
 	update tompit.component set
 		name = @name,
 		modified = @modified,
-		runtime_configuration = @runtime_configuration
+		runtime_configuration = @runtime_configuration,
+		folder = @folder
 	where id = @id;
 END
 GO
@@ -1278,6 +1258,53 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[folder_ins]'
+GO
+CREATE PROCEDURE [tompit].[folder_ins]
+	@service int,
+	@name nvarchar(128),
+	@token uniqueidentifier,
+	@parent int = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	insert folder (service, name, token, parent)
+	values (@service, @name, @token, @parent);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[view_folder]'
+GO
+
+
+
+
+
+
+CREATE VIEW [tompit].[view_folder]
+AS
+SELECT        f.id, f.service, f.name, f.parent, f.token, s.token AS [service_token], fp.token as parent_token
+FROM            tompit.folder AS f 
+INNER JOIN tompit.[service] AS s ON f.[service] = s.id
+LEFT JOIN tompit.folder fp on f.parent = fp.id
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[folder_que]'
+GO
+CREATE PROCEDURE [tompit].[folder_que]
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	select *
+	from view_folder;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[message_topic]'
 GO
 CREATE TABLE [tompit].[message_topic]
@@ -1313,6 +1340,25 @@ INNER JOIN	tompit.message_topic t on m.topic = t.id
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[folder_sel]'
+GO
+CREATE PROCEDURE [tompit].[folder_sel]
+	@service int = NULL,
+	@name nvarchar(128) = null,
+	@token uniqueidentifier = null
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	select top 1 *
+	from view_folder
+	where (@service IS NULL OR service = @service)
+	and (@name is null or name = @name)
+	and (@token is null or token = @token);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[service_string_mdf]'
 GO
 CREATE PROCEDURE [tompit].[service_string_mdf]
@@ -1337,6 +1383,24 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[folder_upd]'
+GO
+CREATE PROCEDURE [tompit].[folder_upd]
+	@id int,
+	@name nvarchar(128),
+	@parent int = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	update tompit.folder set
+		name = @name,
+		parent = @parent
+	where id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[message_recipient_que]'
 GO
 CREATE PROCEDURE [tompit].[message_recipient_que]
@@ -1348,6 +1412,20 @@ BEGIN
 	SELECT * 
 	FROM tompit.view_message_recipient
 	WHERE (@message IS NULL OR message = @message);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[folder_del]'
+GO
+CREATE PROCEDURE [tompit].[folder_del]
+	@id int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	delete folder 
+	where id = @id;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -2924,20 +3002,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[view_feature]'
-GO
-
-
-
-
-CREATE VIEW [tompit].[view_feature]
-AS
-SELECT        f.*, s.token AS [service_token]
-FROM            tompit.feature AS f INNER JOIN
-                         tompit.[service] AS s ON f.[service] = s.id
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[role_ins]'
 GO
 CREATE PROCEDURE [tompit].[role_ins]
@@ -3092,20 +3156,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[feature_del]'
-GO
-CREATE PROCEDURE [tompit].[feature_del]
-	@id int
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	delete feature 
-	where id = @id;
-END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[log_ins]'
 GO
 CREATE PROCEDURE [tompit].[log_ins]
@@ -3213,22 +3263,6 @@ BEGIN
 	SELECT TOP 1 *
 	FROM tompit.role
 	WHERE token = @token;
-END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[feature_ins]'
-GO
-CREATE PROCEDURE [tompit].[feature_ins]
-	@service int,
-	@name nvarchar(128),
-	@token uniqueidentifier
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	insert feature (service, name, token)
-	values (@service, @name, @token);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3349,19 +3383,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[feature_que]'
-GO
-CREATE PROCEDURE [tompit].[feature_que]
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	select *
-	from view_feature;
-END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[setting_mdf]'
 GO
 CREATE PROCEDURE [tompit].[setting_mdf]
@@ -3448,25 +3469,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[feature_sel]'
-GO
-CREATE PROCEDURE [tompit].[feature_sel]
-	@service int,
-	@name nvarchar(128) = null,
-	@token uniqueidentifier = null
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	select top 1 *
-	from view_feature
-	where service = @service
-	and (@name is null or name = @name)
-	and (@token is null or token = @token);
-END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[permission_sel]'
 GO
 CREATE PROCEDURE [tompit].[permission_sel]
@@ -3545,7 +3547,7 @@ IF @@ERROR <> 0 SET NOEXEC ON
 GO
 PRINT N'Adding foreign keys to [tompit].[component]'
 GO
-ALTER TABLE [tompit].[component] ADD CONSTRAINT [FK_component_feature] FOREIGN KEY ([feature]) REFERENCES [tompit].[feature] ([id]) ON DELETE CASCADE
+ALTER TABLE [tompit].[component] ADD CONSTRAINT [FK_component_folder] FOREIGN KEY ([folder]) REFERENCES [tompit].[folder] ([id])
 GO
 ALTER TABLE [tompit].[component] ADD CONSTRAINT [FK_component_service] FOREIGN KEY ([service]) REFERENCES [tompit].[service] ([id])
 GO
@@ -3557,9 +3559,11 @@ ALTER TABLE [tompit].[environment_unit] ADD CONSTRAINT [FK_environment_unit_envi
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Adding foreign keys to [tompit].[feature]'
+PRINT N'Adding foreign keys to [tompit].[folder]'
 GO
-ALTER TABLE [tompit].[feature] ADD CONSTRAINT [FK_feature_service] FOREIGN KEY ([service]) REFERENCES [tompit].[service] ([id]) ON DELETE CASCADE
+ALTER TABLE [tompit].[folder] ADD CONSTRAINT [FK_folder_folder1] FOREIGN KEY ([parent]) REFERENCES [tompit].[folder] ([id])
+GO
+ALTER TABLE [tompit].[folder] ADD CONSTRAINT [FK_folder_service] FOREIGN KEY ([service]) REFERENCES [tompit].[service] ([id])
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO

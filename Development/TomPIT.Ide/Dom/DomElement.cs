@@ -15,6 +15,7 @@ namespace TomPIT.Dom
 		private List<IVerb> _verbs = null;
 		private IDomDesigner _designer = null;
 		private bool _designerResolved = false;
+		private IDomElementMetaData _metaData = null;
 
 		protected DomElement(IEnvironment environment, IDomElement parent)
 		{
@@ -141,5 +142,15 @@ namespace TomPIT.Dom
 			}
 		}
 
+		public IDomElementMetaData MetaData
+		{
+			get
+			{
+				if (_metaData == null)
+					_metaData = new ElementMetaData();
+
+				return _metaData;
+			}
+		}
 	}
 }

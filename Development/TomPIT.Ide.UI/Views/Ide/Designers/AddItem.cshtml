@@ -36,7 +36,10 @@
 	$('#editName').dxTextBox({
 		maxLength: 128,
 		value: '@Model.ProposedName',
-		stylingMode: 'underlined'
+		onEnterKey: function (e) {
+			e.component.blur();
+			createItem();
+		}
 	}).dxValidator({
 		validationGroup: 'addItem',
 		validationRules: [
@@ -44,10 +47,6 @@
 		]
 	});
 
-	$('#editName').keypress(function (e) {
-		if (e.which == 13)
-			createItem();
-	})
 	$('#editName').dxTextBox('instance').focus();
 	$('#editname input').select();
 

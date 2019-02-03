@@ -197,7 +197,8 @@ $.widget('tompit.tpIde', {
 						var originPath = instance._resolvePath(originTarget);
 						var targetPath = instance._resolvePath(target);
 
-						originPath = originPath.substr(0, originPath.lastIndexOf('/'));
+						if (originPath.indexOf('/') > -1)
+							originPath = originPath.substr(0, originPath.lastIndexOf('/'));
 
 						instance.refreshExplorer({ 'path': originPath, 'mode': 'item' });
 						$(this).remove();

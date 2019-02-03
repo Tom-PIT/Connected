@@ -11,8 +11,13 @@
 	var context = node.Value as TomPIT.ComponentModel.IConfigurationElement;
 
 	var validationCss = string.Empty;
-	var errors = string.Empty;
+	var tooltip = new System.Text.StringBuilder();
 	var glyph = node.Glyph;
+
+	if (!string.IsNullOrWhiteSpace(node.MetaData.Category))
+	{
+		tooltip.AppendLine(node.MetaData.Category);
+	}
 
 	if (context != null)
 	{
@@ -46,7 +51,7 @@
 				sb.AppendLine(i.Message);
 			}
 
-			errors = sb.ToString();
+			tooltip.Append(sb.ToString());
 		}
 	}
 
@@ -71,7 +76,7 @@
 			{
 				<i class="@glyph"></i>
 			}
-			<span data-kind="documentName" @Html.TP().Attributes.Class(validationCss) @Html.TP().Attributes.Title(errors)>@node.Title</span>
+			<span data-kind="documentName" @Html.TP().Attributes.Class(validationCss) @Html.TP().Attributes.Title(tooltip.ToString())>@node.Title</span>
 
 			@if (node.ChildrenCount > 0)
 			{

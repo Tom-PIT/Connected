@@ -38,7 +38,7 @@ namespace TomPIT.ComponentModel
 		protected override void OnValidating(object sender, ElementValidationArgs e)
 		{
 			if (!_referenceValid)
-				e.Warning(SR.ErrValServiceNotSet);
+				e.Error(SR.ErrValServiceNotSet);
 		}
 
 		public override string ToString()

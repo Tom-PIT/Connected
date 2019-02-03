@@ -18,6 +18,10 @@ namespace TomPIT.Dom
 			((Behavior)Behavior).AutoExpand = false;
 			((Behavior)Behavior).Static = false;
 
+			var md = MetaData as ElementMetaData;
+
+			md.Category = Target.Category;
+
 			Verbs.Add(new Verb
 			{
 				Action = VerbAction.Ide,

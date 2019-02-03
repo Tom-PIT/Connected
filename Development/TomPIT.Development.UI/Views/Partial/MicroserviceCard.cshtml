@@ -1,44 +1,44 @@
 ﻿@model TomPIT.Design.MicroServiceDescriptor
 
 <div class="microservice-card" data-kind="search-scope">
-    <div class="microservice-header">
+	<div class="microservice-header">
 
-        @if (!Model.Authorized)
-        {
-            <span data-search="true">@Model.MicroService.Name</span>
-        }
-        else
-        {
-            <a href="@Url.RouteUrl("ide", new { microService = Model.MicroService.Url })" class="microservice-name">
-                <span data-search="true">@Model.MicroService.Name</span>
-            </a>
-        }
-        <div class="small">
-            @if (Model.Apis.Count > 0)
-            {
-                <span>@Html.Raw(Model.Apis.Count) api(s)</span>
+		@if (!Model.Authorized)
+		{
+			<span data-search="true">@Model.MicroService.Name</span>
+		}
+		else
+		{
+			<a href="@Url.RouteUrl("ide", new { microService = Model.MicroService.Url })" class="microservice-name">
+				<span data-search="true">@Model.MicroService.Name</span>
+			</a>
+		}
+		<div class="small">
+			@if (Model.Apis.Count > 0)
+			{
+				<span>@Html.Raw(Model.Apis.Count) api(s)</span>
 
-                if (Model.ReferenceCount > 0)
-                {
-                    @Html.Raw(", ")
-                }
-            }
+				if (Model.ReferenceCount > 0)
+				{
+					@Html.Raw(", ")
+				}
+			}
 
-            @if (Model.ReferenceCount > 0)
-            {
-                <span>@Model.ReferenceCount reference(s)</span>
-            }
-        </div>
-    </div>
-    <div class="microservice-body collapse">
-        <partial name="~/Views/Partial/MicroserviceApiCard.cshtml" model="@Model" />
+			@if (Model.ReferenceCount > 0)
+			{
+				<span>@Model.ReferenceCount reference(s)</span>
+			}
+		</div>
+	</div>
+	<div class="microservice-body collapse">
+		@await Html.PartialAsync("~/Views/Partial/MicroserviceApiCard.cshtml")
 
-        @if (Model.Items != null)
-        {
-            foreach (var i in Model.Items)
-            {
-                <partial name="~/Views/Partial/MicroserviceCard.cshtml" model="@i" />
-            }
-        }
-    </div>
+		@if (Model.Items != null)
+		{
+			foreach (var i in Model.Items)
+			{
+				@await Html.PartialAsync("~/Views/Partial/MicroserviceCard.cshtml", i)
+			}
+		}
+	</div>
 </div>
