@@ -7,6 +7,7 @@ using TomPIT.ComponentModel.Workers;
 namespace TomPIT.Application.Workers
 {
 	[DefaultEvent(nameof(Invoke))]
+	[DomDesigner("TomPIT.Designers.ScheduleDesigner, TomPIT.Management", Mode = Services.EnvironmentMode.Runtime)]
 	public class HostedWorker : ComponentConfiguration, IHostedWorker
 	{
 		public const string ComponentCategory = "Worker";

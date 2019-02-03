@@ -2,28 +2,31 @@
 using System;
 using TomPIT.ActionResults;
 using TomPIT.Annotations;
+using TomPIT.ComponentModel.Workers;
 using TomPIT.Dom;
-using TomPIT.Ide;
 using TomPIT.Services;
 
 namespace TomPIT.Designers
 {
-	internal class ScheduleDesigner : DomDesigner<WorkerElement>
+	internal class ScheduleDesigner : DomDesigner<DomElement>
 	{
 		private ScheduledJobDescriptor _job = null;
 
-		public ScheduleDesigner(WorkerElement element) : base(element)
+		public ScheduleDesigner(DomElement element) : base(element)
 		{
 		}
 
 		public override string View => "~/Views/Ide/Designers/Scheduler.cshtml";
+
+		private IWorker Worker => Component as IWorker;
+
 		public override object ViewModel
 		{
 			get
 			{
 				if (_job == null)
 				{
-					var worker = Owner.Worker;
+					var worker = Worker;
 
 					var url = Connection.CreateUrl("Worker", "Select")
 						.AddParameter("worker", worker.Component);
