@@ -420,8 +420,28 @@ h4.dev-title{
 	color:@Red400;
 }
 
-.dev-explorer-node-invalid {
+.dev-explorer-node-warning {
+	color: @Amber800;
+}
+
+.dev-explorer-node-suggestion {
+	color: @Green800;
+}
+
+.dev-explorer-node-validation {
 	text-decoration-line: underline;
 	text-decoration-style: wavy;
+	
+}
+
+.dev-explorer-node-validation.validation-error {
 	text-decoration-color: @Red400;
+}
+
+.dev-explorer-node-validation.validation-warning {
+	text-decoration-color: @Amber800;
+}
+
+.dev-explorer-node-validation.validation-suggestion {
+	text-decoration-color: @Green800;
 }

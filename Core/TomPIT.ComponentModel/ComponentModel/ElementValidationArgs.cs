@@ -6,7 +6,7 @@ namespace TomPIT.ComponentModel
 {
 	public class ElementValidationArgs : EventArgs
 	{
-		private List<string> _errors = null;
+		private List<IValidationMessage> _messages = null;
 
 		public ElementValidationArgs(IExecutionContext context)
 		{
@@ -14,15 +14,42 @@ namespace TomPIT.ComponentModel
 		}
 
 		public IExecutionContext Context { get; }
-		public List<string> Errors
+		public List<IValidationMessage> Messages
 		{
 			get
 			{
-				if (_errors == null)
-					_errors = new List<string>();
+				if (_messages == null)
+					_messages = new List<IValidationMessage>();
 
-				return _errors;
+				return _messages;
 			}
+		}
+
+		public void Warning(string message)
+		{
+			Messages.Add(new ValidationMessage
+			{
+				Type = ValidationMessageType.Warning,
+				Message = message
+			});
+		}
+
+		public void Error(string message)
+		{
+			Messages.Add(new ValidationMessage
+			{
+				Type = ValidationMessageType.Error,
+				Message = message
+			});
+		}
+
+		public void Suggestion(string message)
+		{
+			Messages.Add(new ValidationMessage
+			{
+				Type = ValidationMessageType.Suggestion,
+				Message = message
+			});
 		}
 	}
 }

@@ -7,7 +7,7 @@ namespace TomPIT.IoT
 {
 	[Create("IoTDevice", nameof(Name))]
 	[ComponentCreateHandler("TomPIT.IoT.Handlers.IoTDeviceCreateHandler, TomPIT.IoT.Design")]
-	public class IoTDevice : Element, IIoTDevice
+	public class IoTDevice : ConfigurationElement, IIoTDevice
 	{
 		private IServerEvent _data = null;
 		private ListItems<IIoTTransaction> _transactions = null;

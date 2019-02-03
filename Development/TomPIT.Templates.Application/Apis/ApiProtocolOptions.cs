@@ -5,7 +5,7 @@ using TomPIT.Services;
 
 namespace TomPIT.Application.Apis
 {
-	internal class ApiProtocolOptions : Element, IApiProtocolOptions
+	internal class ApiProtocolOptions : ConfigurationElement, IApiProtocolOptions
 	{
 		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public bool Rest { get; set; }

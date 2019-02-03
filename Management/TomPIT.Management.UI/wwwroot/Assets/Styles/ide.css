@@ -339,8 +339,22 @@ h4.dev-title {
 .dev-explorer-node-danger {
   color: #ef5350;
 }
-.dev-explorer-node-invalid {
+.dev-explorer-node-warning {
+  color: #ff8f00;
+}
+.dev-explorer-node-suggestion {
+  color: #2e7d32;
+}
+.dev-explorer-node-validation {
   text-decoration-line: underline;
   text-decoration-style: wavy;
+}
+.dev-explorer-node-validation.validation-error {
   text-decoration-color: #ef5350;
+}
+.dev-explorer-node-validation.validation-warning {
+  text-decoration-color: #ff8f00;
+}
+.dev-explorer-node-validation.validation-suggestion {
+  text-decoration-color: #2e7d32;
 }

@@ -6,7 +6,7 @@ using TomPIT.ComponentModel.Events;
 namespace TomPIT.IoT
 {
 	[Create("Transaction", nameof(Name))]
-	public class IoTTransaction : Element, IIoTTransaction
+	public class IoTTransaction : ConfigurationElement, IIoTTransaction
 	{
 		private IServerEvent _invoke = null;
 

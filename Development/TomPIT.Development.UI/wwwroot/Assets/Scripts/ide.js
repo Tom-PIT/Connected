@@ -179,6 +179,9 @@ $.widget('tompit.tpIde', {
 				var origin = ui.draggable.attr('origin');
 				var path = instance.options.selection.dragPath;
 
+				if (origin === folder)
+					return;
+
 				ide.ideAction({
 					data: {
 						'action': 'move',

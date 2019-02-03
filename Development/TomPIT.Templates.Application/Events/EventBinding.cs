@@ -6,7 +6,7 @@ using TomPIT.ComponentModel.Events;
 namespace TomPIT.Application.Events
 {
 	[Create("EventBinding")]
-	public class EventBinding : Element, IEventBinding
+	public class EventBinding : ConfigurationElement, IEventBinding
 	{
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[Required]

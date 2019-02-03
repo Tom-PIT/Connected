@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
 using TomPIT.Services;
 
 namespace TomPIT.ComponentModel
@@ -7,42 +9,45 @@ namespace TomPIT.ComponentModel
 
 	internal class ElementValidation : IElementValidation
 	{
+		public event ElementValidationHandler Validating;
+
 		private bool _validated = false;
+		private List<IValidationMessage> _validationErrors = null;
 
-		private List<string> _validationErrors = null;
-
-		public event ElementValidationHandler Validate;
-
-		public bool IsValid(IExecutionContext context)
+		public bool Validate(IExecutionContext context)
 		{
 			if (!_validated)
 			{
 				_validated = true;
 
-				Errors.Clear();
+				Messages.Clear();
 
 				var args = new ElementValidationArgs(context);
 
-				Validate?.Invoke(this, args);
+				Validating?.Invoke(this, args);
 
-				if (args.Errors.Count > 0)
-					Errors.AddRange(args.Errors);
+				if (args.Messages.Count > 0)
+					Messages.AddRange(args.Messages);
 			}
 
-			return Errors.Count == 0;
+			return Messages.Count(f => f.Type == ValidationMessageType.Error) == 0;
 		}
 
-		public List<string> ValidationErrors()
+		[JsonIgnore]
+		public bool IsValid { get; }
+
+		public List<IValidationMessage> ValidationMessages()
 		{
-			return Errors;
+			return Messages;
 		}
 
-		private List<string> Errors
+		[JsonIgnore]
+		private List<IValidationMessage> Messages
 		{
 			get
 			{
 				if (_validationErrors == null)
-					_validationErrors = new List<string>();
+					_validationErrors = new List<IValidationMessage>();
 
 				return _validationErrors;
 			}

@@ -42,7 +42,7 @@ namespace TomPIT.Design
 
 						foreach (var j in refs.MicroServices)
 						{
-							if (!j.Validation.IsValid(Context))
+							if (!j.Validation.Validate(Context))
 								continue;
 
 							var target = _services.FirstOrDefault(f => string.Compare(f.MicroService.Name, j.MicroService, true) == 0);

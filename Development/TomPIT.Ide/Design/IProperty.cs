@@ -24,7 +24,7 @@ namespace TomPIT.Design
 		bool Obsolete { get; }
 		bool SupportsTimezone { get; }
 
-		IContextElement ContextElement { get; }
+		IConfigurationElement ContextElement { get; }
 
 		PropertyInfo PropertyInfo { get; }
 	}

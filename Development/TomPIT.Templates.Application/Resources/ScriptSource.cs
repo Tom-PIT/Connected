@@ -5,7 +5,7 @@ using TomPIT.ComponentModel.Resources;
 
 namespace TomPIT.Application.Resources
 {
-	public abstract class ScriptSource : Element, IScriptSource
+	public abstract class ScriptSource : ConfigurationElement, IScriptSource
 	{
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[Required]

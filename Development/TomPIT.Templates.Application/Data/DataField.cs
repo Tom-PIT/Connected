@@ -7,7 +7,7 @@ using TomPIT.ComponentModel.Data;
 namespace TomPIT.Application.Data
 {
 	[Create("Field", nameof(Name))]
-	public abstract class DataField : Element, IDataField
+	public abstract class DataField : ConfigurationElement, IDataField
 	{
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[Required]

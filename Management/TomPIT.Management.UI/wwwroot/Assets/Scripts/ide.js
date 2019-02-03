@@ -15,7 +15,8 @@ $.widget('tompit.tpIde', {
 		properties: {
 			saveMode: 'instant',
 			state: [
-			]
+			],
+			title: document.title
 		},
 		state: [
 		]
@@ -178,6 +179,9 @@ $.widget('tompit.tpIde', {
 				var origin = ui.draggable.attr('origin');
 				var path = instance.options.selection.dragPath;
 
+				if (origin === folder)
+					return;
+
 				ide.ideAction({
 					data: {
 						'action': 'move',
@@ -231,6 +235,8 @@ $.widget('tompit.tpIde', {
 		});
 
 		this.setSelection();
+
+		document.title = e.target.find('span[data-kind="documentName"]').html() + ' (' + this.options.properties.title + ')';
 
 		if (e.scroll)
 			this.scrollToNode(e);

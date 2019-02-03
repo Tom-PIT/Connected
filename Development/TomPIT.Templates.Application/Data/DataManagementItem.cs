@@ -5,7 +5,7 @@ using TomPIT.ComponentModel.Data;
 
 namespace TomPIT.Application.Data
 {
-	public abstract class DataManagementItem : Element, IDataManagementItem
+	public abstract class DataManagementItem : ConfigurationElement, IDataManagementItem
 	{
 		private ListItems<IDataManagementItem> _items = null;
 

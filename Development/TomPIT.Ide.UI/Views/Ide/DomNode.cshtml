@@ -8,28 +8,51 @@
 	if (node == null)
 	{ return; }
 
-	var context = node.Value as TomPIT.ComponentModel.IContextElement;
+	var context = node.Value as TomPIT.ComponentModel.IConfigurationElement;
 
 	var validationCss = string.Empty;
 	var errors = string.Empty;
-	var valid = true;
+	var glyph = node.Glyph;
 
 	if (context != null)
 	{
-		if (!context.Validation.IsValid(Model.Context))
+		context.Validation.Validate(Model.Context);
+		var messages = context.Validation.ValidationMessages();
+
+		if (messages.Count > 0)
 		{
-			valid = false;
-			validationCss = "dev-explorer-node-invalid";
+			validationCss = "dev-explorer-node-validation";
+
+			if (messages.Count(f => f.Type == TomPIT.ComponentModel.ValidationMessageType.Error) > 0)
+			{
+				validationCss += string.Format(" {0}", "validation-error");
+				glyph = "fal fa-fw fa-exclamation-triangle dev-explorer-node-danger";
+			}
+			else if (messages.Count(f => f.Type == TomPIT.ComponentModel.ValidationMessageType.Warning) > 0)
+			{
+				validationCss += string.Format(" {0}", "validation-warning");
+				glyph = "fal fa-fw fa-exclamation-triangle dev-explorer-node-warning";
+			}
+			else
+			{
+				validationCss += string.Format(" {0}", "validation-suggestion");
+				glyph = "fal fa-fw fa-info-circle dev-explorer-node-suggestion";
+			}
 
 			var sb = new System.Text.StringBuilder();
 
-			foreach (var i in context.Validation.ValidationErrors())
+			foreach (var i in context.Validation.ValidationMessages())
 			{
-				sb.AppendLine(i);
+				sb.AppendLine(i.Message);
 			}
 
 			errors = sb.ToString();
 		}
+	}
+
+	if (!string.IsNullOrWhiteSpace(glyph) && !glyph.Contains("fa-fw"))
+	{
+		glyph = string.Format("fa-fw {0}", glyph);
 	}
 }
 
@@ -44,13 +67,9 @@
 			</span>
 		}
 		<div class="dev-explorer-node-text">
-			@if (!valid)
+			@if (!string.IsNullOrWhiteSpace(glyph))
 			{
-				<i class="fal fa-fw fa-exclamation-triangle dev-explorer-node-danger"></i>
-			}
-			else if (!string.IsNullOrWhiteSpace(node.Glyph))
-			{
-				<i class="fa-fw @node.Glyph"></i>
+				<i class="@glyph"></i>
 			}
 			<span data-kind="documentName" @Html.TP().Attributes.Class(validationCss) @Html.TP().Attributes.Title(errors)>@node.Title</span>
 

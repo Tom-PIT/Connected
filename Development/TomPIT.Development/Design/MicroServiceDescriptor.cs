@@ -93,7 +93,7 @@ namespace TomPIT.Design
 
 					foreach (var i in References.MicroServices)
 					{
-						if (i.Validation.IsValid(Context))
+						if (i.Validation.Validate(Context))
 						{
 							var ms = Context.Connection().GetService<IMicroServiceService>().Select(i.MicroService);
 

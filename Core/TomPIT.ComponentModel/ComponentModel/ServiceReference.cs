@@ -8,7 +8,7 @@ using TomPIT.Connectivity;
 namespace TomPIT.ComponentModel
 {
 	[Glyph("fal fa-tilde")]
-	public class ServiceReference : ContextElement, IServiceReference
+	public class ServiceReference : ConfigurationElement, IServiceReference
 	{
 		private ISysConnection _connection = null;
 		private string _ms = string.Empty;
@@ -35,10 +35,10 @@ namespace TomPIT.ComponentModel
 			}
 		}
 
-		protected override void OnValidate(object sender, ElementValidationArgs e)
+		protected override void OnValidating(object sender, ElementValidationArgs e)
 		{
 			if (!_referenceValid)
-				e.Errors.Add(SR.ErrValServiceNotSet);
+				e.Warning(SR.ErrValServiceNotSet);
 		}
 
 		public override string ToString()

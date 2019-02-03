@@ -32,7 +32,7 @@ namespace TomPIT.Ide
 		public string Description { get; set; }
 		public string Format { get; set; }
 		public bool Obsolete { get; set; }
-		public IContextElement ContextElement { get; set; }
+		public IConfigurationElement ContextElement { get; set; }
 
 		public PropertyInfo PropertyInfo { get; set; }
 

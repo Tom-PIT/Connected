@@ -7,7 +7,7 @@ using TomPIT.ComponentModel.Data;
 namespace TomPIT.Application.Data
 {
 	[Create("Parameter", nameof(Name))]
-	public class Parameter : Element, IDataParameter
+	public class Parameter : ConfigurationElement, IDataParameter
 	{
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[Required]

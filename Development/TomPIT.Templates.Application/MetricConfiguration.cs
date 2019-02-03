@@ -5,7 +5,7 @@ using TomPIT.Services;
 
 namespace TomPIT.Application
 {
-	internal class MetricConfiguration : Element, IMetricConfiguration
+	internal class MetricConfiguration : ConfigurationElement, IMetricConfiguration
 	{
 		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDiagnostic)]

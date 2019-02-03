@@ -5,7 +5,7 @@ using TomPIT.ComponentModel;
 namespace TomPIT.IoT
 {
 	[Create("Field", nameof(Name))]
-	public class IoTSchemaField : Element, IIoTSchemaField
+	public class IoTSchemaField : ConfigurationElement, IIoTSchemaField
 	{
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
