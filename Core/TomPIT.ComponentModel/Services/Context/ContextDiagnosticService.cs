@@ -17,6 +17,7 @@ namespace TomPIT.Services.Context
 		}
 
 		public Guid MetricParent { get; set; }
+		private Guid CurrentMetric { get; set; }
 
 		public void Console(string message)
 		{
@@ -25,7 +26,8 @@ namespace TomPIT.Services.Context
 				Category = "Console",
 				Source = "Output",
 				Message = message,
-				Level = System.Diagnostics.TraceLevel.Verbose
+				Level = System.Diagnostics.TraceLevel.Verbose,
+				Metric = MetricParent
 			});
 
 		}
@@ -37,7 +39,8 @@ namespace TomPIT.Services.Context
 				Category = category,
 				Source = source,
 				Message = message,
-				Level = System.Diagnostics.TraceLevel.Error
+				Level = System.Diagnostics.TraceLevel.Error,
+				Metric = MetricParent
 			});
 		}
 
@@ -48,7 +51,8 @@ namespace TomPIT.Services.Context
 				Category = category,
 				Source = source,
 				Message = message,
-				Level = System.Diagnostics.TraceLevel.Info
+				Level = System.Diagnostics.TraceLevel.Info,
+				Metric = MetricParent
 			});
 		}
 
@@ -59,12 +63,16 @@ namespace TomPIT.Services.Context
 				Category = category,
 				Source = source,
 				Message = message,
-				Level = System.Diagnostics.TraceLevel.Warning
+				Level = System.Diagnostics.TraceLevel.Warning,
+				Metric = MetricParent
 			});
 		}
 
 		private void Write(ILogEntry entry)
 		{
+			if (entry is LogEntry e)
+				e.Metric = MetricParent;
+
 			Context.Connection().GetService<ILoggingService>().Write(entry);
 		}
 
@@ -88,7 +96,7 @@ namespace TomPIT.Services.Context
 				Element = element,
 				Session = id,
 				Instance = Shell.GetService<IRuntimeService>().Type,
-				IP = Shell.HttpContext == null ? IPAddress.None : Shell.HttpContext.Connection.RemoteIpAddress,
+				IP = Shell.HttpContext == null ? IPAddress.None.ToString() : Shell.HttpContext.Connection.RemoteIpAddress.ToString(),
 				Start = DateTime.UtcNow,
 				Request = content,
 				ConsumptionIn = length,
@@ -100,7 +108,7 @@ namespace TomPIT.Services.Context
 			return id;
 		}
 
-		public void StopMetric(Guid metricId, JObject response)
+		public void StopMetric(Guid metricId, SessionResult result, JObject response)
 		{
 			if (metricId == Guid.Empty)
 				return;
@@ -113,7 +121,7 @@ namespace TomPIT.Services.Context
 				m.ConsumptionOut = length;
 				m.Response = content;
 				m.End = DateTime.UtcNow;
-
+				m.Result = result;
 				MetricParent = m.Session;
 
 				Context.Connection().GetService<IMetricService>().Write(m);

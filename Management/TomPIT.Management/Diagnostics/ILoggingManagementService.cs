@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.Services;
 
 namespace TomPIT.Diagnostics
 {
 	public interface ILoggingManagementService
 	{
-		void Clear(IExecutionContext sender);
-		void Delete(IExecutionContext sender, long id);
+		void Clear();
+		void Delete(long id);
 
-		List<ILogEntry> Query(IExecutionContext sender, DateTime date);
+		List<ILogEntry> Query(DateTime date);
+		List<ILogEntry> Query(Guid metric);
 	}
 }

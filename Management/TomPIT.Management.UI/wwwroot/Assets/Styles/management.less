@@ -126,3 +126,93 @@
 	padding:15px;
 	width:250px;
 }
+
+li.metric-item{
+	padding:5px;
+	border-bottom:1px solid @Grey300;
+	cursor:pointer;
+}
+
+li.metric-item.fail,
+li.metric-item.fail .slow,
+li.metric-item.fail .fast {
+	background-color: @Red500;
+	color: #FFF;
+}
+
+li.metric-item.fail[data-detail="true"]{
+	background-color:#FFF;
+	padding:5px;
+}
+
+.metric-item .slow {
+	color: @Danger;
+}
+
+.metric-item .fast {
+	color: @Success;
+}
+
+.metric-item .tab-content {
+	border: 1px solid @Grey300;
+	border-top:none;
+	padding:5px;
+}
+
+.kpi{
+	padding:5px;
+	border-radius:4px;
+	text-align:center;
+}
+
+.kpi.info{
+	background-color:@Info;
+	border-color:@InfoDark;
+	color:#FFF;
+}
+
+.kpi-title{
+
+}
+
+.kpi-value{
+	font-size:2rem;
+	white-space:nowrap;
+}
+
+.kpi-measure-unit {
+	font-size: 0.9rem;
+}
+
+.metric-item pre {
+	white-space: pre-wrap;
+	font-family: monospace;
+	font-size: 1rem;
+	word-break: normal;
+}
+
+.log-source{
+	color:@Grey500;
+}
+
+.log-item{
+	padding:5px;
+	border-bottom:1px solid @Grey300;
+}
+
+.log-item .info,
+.log-item .verbose {
+	color: @Info;
+}
+
+.log-item .warning {
+	color: @Warning;
+}
+
+.log-item .danger{
+	color:@Danger;
+}
+
+.log-item .status{
+	font-size:2rem;
+}

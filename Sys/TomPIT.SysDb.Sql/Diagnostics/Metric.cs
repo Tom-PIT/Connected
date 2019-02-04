@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using TomPIT.Data.Sql;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
@@ -13,7 +12,7 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 		public DateTime End { get; set; }
 		public SessionResult Result { get; set; }
 		public InstanceType Instance { get; set; }
-		public IPAddress IP { get; set; }
+		public string IP { get; set; }
 		public Guid Component { get; set; }
 		public Guid Element { get; set; }
 		public Guid Parent { get; set; }
@@ -29,7 +28,7 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 			End = GetDate("end");
 			Result = GetValue("result", SessionResult.Success);
 			Instance = GetValue("instance", InstanceType.Unknown);
-			IP = IPAddress.Parse(GetString("request_ip"));
+			IP = GetString("request_ip");
 			Component = GetGuid("component");
 			Element = GetGuid("element");
 			Parent = GetGuid("parent");

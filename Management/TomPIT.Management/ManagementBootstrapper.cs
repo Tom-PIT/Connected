@@ -35,6 +35,7 @@ namespace TomPIT
 			e.Connection.RegisterService(typeof(IAuthenticationTokenManagementService), typeof(AuthenticationTokenManagementService));
 			e.Connection.RegisterService(typeof(IDeploymentService), typeof(DeploymentService));
 			e.Connection.RegisterService(typeof(IMarketplaceService), typeof(MarketplaceService));
+			e.Connection.RegisterService(typeof(IMetricManagementService), typeof(MetricManagementService));
 		}
 	}
 }

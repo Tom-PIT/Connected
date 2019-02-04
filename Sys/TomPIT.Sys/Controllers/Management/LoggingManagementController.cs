@@ -29,17 +29,19 @@ namespace TomPIT.Sys.Controllers.Management
 		{
 			var body = FromBody();
 
-			var date = body.Required<DateTime>("date");
-			var metric = body.Optional("metric", 0L);
-			var component = body.Optional("metric", Guid.Empty);
-			var element = body.Optional("metric", Guid.Empty);
+			var metric = body.Optional("metric", Guid.Empty);
 
-			if (metric == 0 && component == Guid.Empty)
+			if (metric != Guid.Empty)
+				return DataModel.Logging.Query(metric);
+
+			var date = body.Required<DateTime>("date");
+			var component = body.Optional("component", Guid.Empty);
+			var element = body.Optional("element", Guid.Empty);
+
+			if (component == Guid.Empty)
 				return DataModel.Logging.Query(date);
-			else if (component == Guid.Empty && metric != 0L)
-				return DataModel.Logging.Query(date, component, element);
 			else
-				return DataModel.Logging.Query(date, metric);
+				return DataModel.Logging.Query(date, component, element);
 		}
 	}
 }

@@ -59,7 +59,7 @@ namespace TomPIT.Dom
 		public override void LoadChildren()
 		{
 			foreach (var i in Existing)
-				Items.Add(new MicroServiceElement(this, i));
+				Items.Add(new MicroServiceManagementElement(this, i));
 		}
 
 		public override void LoadChildren(string id)
@@ -67,7 +67,7 @@ namespace TomPIT.Dom
 			var d = Existing.FirstOrDefault(f => f.Token == id.AsGuid());
 
 			if (d != null)
-				Items.Add(new MicroServiceElement(this, d));
+				Items.Add(new MicroServiceManagementElement(this, d));
 		}
 
 		public override IDomDesigner Designer

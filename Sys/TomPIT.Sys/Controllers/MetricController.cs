@@ -34,7 +34,7 @@ namespace TomPIT.Sys.Controllers
 					ConsumptionOut = jo.Optional("consumptionOut", 0L),
 					End = jo.Optional("end", DateTime.UtcNow),
 					Instance = jo.Optional("instance", InstanceType.Unknown),
-					IP = IPAddress.Parse(jo.Optional("ip", string.Empty)),
+					IP = jo.Optional("ip", string.Empty),
 					Parent = jo.Optional("parent", Guid.Empty),
 					Component = jo.Required<Guid>("component"),
 					Element = jo.Optional("element", Guid.Empty),

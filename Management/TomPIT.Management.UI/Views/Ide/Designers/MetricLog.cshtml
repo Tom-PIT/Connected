@@ -1,0 +1,49 @@
+﻿@model TomPIT.Designers.MetricDesigner
+
+@if (Model.Log.Count == 0)
+{
+	<div class="dev-no-data">
+		no log information for this session
+	</div>
+
+	return;
+}
+
+<ul class="list-unstyled">
+
+	@foreach (var i in Model.Log)
+	{
+		var css = "info";
+		var glyph = "fal fa-fw fa-info-circle";
+
+		switch (i.Level)
+		{
+			case System.Diagnostics.TraceLevel.Error:
+				css = "danger";
+				glyph = "fal fa-fw fa-times-circle";
+				break;
+			case System.Diagnostics.TraceLevel.Warning:
+				css = "warning";
+				glyph = "fal fa-fw fa-exclamation-circle";
+				break;
+		}
+		<li class="log-item">
+			<div class="media">
+				<div class="status pr-2 @css">
+					<i class="@glyph"></i>
+				</div>
+				<div class="media-body">
+					<strong>@i.Category</strong>
+					@if (i.EventId > 0)
+					{
+						@: @string.Format(" ({0}) ", i.EventId)
+					}
+					<span class="log-source">@i.Source</span>
+
+					<div>@i.Created.ToLongTimeString()</div>
+					<div>@i.Message</div>
+				</div>
+			</div>
+		</li>
+	}
+</ul>

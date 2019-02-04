@@ -9,7 +9,7 @@ namespace TomPIT.Diagnostics
 		public string Message { get; set; }
 		public TraceLevel Level { get; set; }
 		public string Source { get; set; }
-		public DateTime Created { get; set; }
+		public DateTime Created { get; set; } = DateTime.UtcNow;
 		public int EventId { get; set; }
 		public Guid Component { get; set; }
 		public Guid Element { get; set; }

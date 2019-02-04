@@ -11,7 +11,7 @@ namespace TomPIT.SysDb.Diagnostics
 		void Clear();
 		void Delete(long id);
 		List<ILogEntry> Query(DateTime date);
-		List<ILogEntry> Query(DateTime date, long metric);
+		List<ILogEntry> Query(Guid metric);
 		List<ILogEntry> Query(DateTime date, Guid component, Guid element);
 	}
 }

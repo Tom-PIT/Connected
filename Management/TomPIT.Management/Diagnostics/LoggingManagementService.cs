@@ -2,40 +2,58 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Services;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Diagnostics
 {
 	internal class LoggingManagementService : ILoggingManagementService
 	{
-		public void Clear(IExecutionContext context)
+		public LoggingManagementService(ISysConnection connection)
 		{
-			var server = context.Connection();
-			var u = server.CreateUrl("LoggingManagement", "Clear");
-
-			server.Post(u, context.JwToken());
+			Connection = connection;
 		}
 
-		public void Delete(IExecutionContext sender, long id)
+		private ISysConnection Connection { get; }
+
+		public void Clear()
 		{
-			var server = sender.Connection();
-			var u = server.CreateUrl("LoggingManagement", "Delete");
+			var u = Connection.CreateUrl("LoggingManagement", "Clear");
+
+			Connection.Post(u);
+		}
+
+		public void Delete(long id)
+		{
+			var u = Connection.CreateUrl("LoggingManagement", "Delete");
 
 			var args = new JObject
 			{
 				"id", id
 			};
 
-			server.Post(u, args);
+			Connection.Post(u, args);
 		}
 
-		public List<ILogEntry> Query(IExecutionContext sender, DateTime date)
+		public List<ILogEntry> Query(DateTime date)
 		{
-			var server = sender.Connection();
-			var u = server.CreateUrl("LoggingManagement", "Query")
-				.AddParameter("date", date);
+			var u = Connection.CreateUrl("LoggingManagement", "Query");
+			var e = new JObject
+			{
+				"data", date
+			};
 
-			return server.Get<List<LogEntry>>(u).ToList<ILogEntry>();
+			return Connection.Post<List<LogEntry>>(u, e).ToList<ILogEntry>();
+		}
+
+		public List<ILogEntry> Query(Guid metric)
+		{
+			var u = Connection.CreateUrl("LoggingManagement", "Query");
+			var e = new JObject
+			{
+				{"metric", metric }
+			};
+
+			return Connection.Post<List<LogEntry>>(u, e).ToList<ILogEntry>();
 		}
 	}
 }

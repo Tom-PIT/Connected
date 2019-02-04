@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using TomPIT.Environment;
 
 namespace TomPIT.Diagnostics
@@ -17,7 +16,7 @@ namespace TomPIT.Diagnostics
 		DateTime End { get; }
 		SessionResult Result { get; }
 		InstanceType Instance { get; }
-		IPAddress IP { get; }
+		string IP { get; }
 		Guid Component { get; }
 		Guid Element { get; }
 		Guid Parent { get; }

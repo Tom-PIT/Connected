@@ -101,3 +101,72 @@
   padding: 15px;
   width: 250px;
 }
+li.metric-item {
+  padding: 5px;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+}
+li.metric-item.fail,
+li.metric-item.fail .slow,
+li.metric-item.fail .fast {
+  background-color: #f44336;
+  color: #FFF;
+}
+li.metric-item.fail[data-detail="true"] {
+  background-color: #FFF;
+  padding: 5px;
+}
+.metric-item .slow {
+  color: #f44336;
+}
+.metric-item .fast {
+  color: #4caf50;
+}
+.metric-item .tab-content {
+  border: 1px solid #e0e0e0;
+  border-top: none;
+  padding: 5px;
+}
+.kpi {
+  padding: 5px;
+  border-radius: 4px;
+  text-align: center;
+}
+.kpi.info {
+  background-color: #03a9f4;
+  border-color: #0288d1;
+  color: #FFF;
+}
+.kpi-value {
+  font-size: 2rem;
+  white-space: nowrap;
+}
+.kpi-measure-unit {
+  font-size: 0.9rem;
+}
+.metric-item pre {
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 1rem;
+  word-break: normal;
+}
+.log-source {
+  color: #9e9e9e;
+}
+.log-item {
+  padding: 5px;
+  border-bottom: 1px solid #e0e0e0;
+}
+.log-item .info,
+.log-item .verbose {
+  color: #03a9f4;
+}
+.log-item .warning {
+  color: #ff9800;
+}
+.log-item .danger {
+  color: #f44336;
+}
+.log-item .status {
+  font-size: 2rem;
+}

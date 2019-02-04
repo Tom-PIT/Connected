@@ -410,5 +410,27 @@ namespace TomPIT
 					return false;
 			}
 		}
+
+		public static string ToFileSize(double value, string measureUnitCss)
+		{
+			string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+			var order = 0;
+
+			while (value >= 1024 && order < sizes.Length - 1)
+			{
+				order++;
+				value = value / 1024;
+			}
+
+			if (string.IsNullOrWhiteSpace(measureUnitCss))
+				return string.Format("{0:0.##} {1}", value, sizes[order]);
+			else
+				return string.Format("{0:0.##} <span class=\"{2}\">{1}</span>", value, sizes[order], measureUnitCss);
+		}
+
+		public static string ToFileSize(double value)
+		{
+			return ToFileSize(value, string.Empty);
+		}
 	}
 }

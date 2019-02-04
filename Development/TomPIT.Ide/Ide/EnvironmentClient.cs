@@ -12,5 +12,6 @@ namespace TomPIT.Ide
 		public IEnvironment Environment { get; }
 
 		protected ISysConnection Connection { get { return Environment.Context.Connection(); } }
+		protected T GetService<T>() { return Connection.GetService<T>(); }
 	}
 }

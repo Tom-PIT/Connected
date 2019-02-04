@@ -7,16 +7,15 @@ using TomPIT.Security;
 
 namespace TomPIT.Dom
 {
-	internal class MicroServiceElement : TransactionElement, IMicroServiceScope, IPermissionElement
+	internal class MicroServiceManagementElement : TransactionElement, IMicroServiceScope, IPermissionElement
 	{
 		private List<IFolder> _folders = null;
 		private List<IComponent> _components = null;
 		private IDomDesigner _designer = null;
 		private List<string> _claims = null;
 		private IPermissionDescriptor _descriptor = null;
-		private List<IDomElement> _root = null;
 
-		public MicroServiceElement(IDomElement parent, IMicroService microService) : base(parent)
+		public MicroServiceManagementElement(IDomElement parent, IMicroService microService) : base(parent)
 		{
 			MicroService = microService;
 			Title = MicroService.Name;

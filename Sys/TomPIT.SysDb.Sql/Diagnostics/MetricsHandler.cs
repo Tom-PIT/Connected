@@ -20,7 +20,7 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 		{
 			var w = new Writer("tompit.metric_clr");
 
-			w.CreateParameter("@component", component);
+			w.CreateParameter("@component", component, true);
 
 			w.Execute();
 		}
@@ -29,8 +29,8 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 		{
 			var w = new Writer("tompit.metric_clr");
 
-			w.CreateParameter("@component", component);
-			w.CreateParameter("@element", element);
+			w.CreateParameter("@component", component, true);
+			w.CreateParameter("@element", element, true);
 
 			w.Execute();
 		}
@@ -43,22 +43,36 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 
 			foreach (var i in items)
 			{
-				a.Add(new JObject
+				var d = new JObject
 				{
 					{"component",  i.Component},
 					{"consumption_in",  i.ConsumptionIn},
 					{"consumption_out",  (int)i.ConsumptionOut},
-					{"element",  i.Element},
-					{"end",  i.End},
-					{"instance",  (int)i.Instance},
-					{"request_ip",  i.IP.ToString()},
-					{"parent",  i.Parent},
-					{"request",  i.Request},
-					{"response",  i.Response},
 					{"result",  (int)i.Result},
 					{"session",  i.Session},
-					{"start",  i.Start}
-				});
+					{"start",  i.Start},
+					{"instance",  (int)i.Instance}
+				};
+
+				if (i.Element != Guid.Empty)
+					d.Add("element", i.Element);
+
+				if (i.Parent != Guid.Empty)
+					d.Add("parent", i.Parent);
+
+				if (i.End != DateTime.MinValue)
+					d.Add("end", i.End);
+
+				if (!string.IsNullOrWhiteSpace(i.IP))
+					d.Add("request_ip", i.IP);
+
+				if (!string.IsNullOrWhiteSpace(i.Request))
+					d.Add("request", i.Request);
+
+				if (!string.IsNullOrWhiteSpace(i.Response))
+					d.Add("response", i.Response);
+
+				a.Add(d);
 			}
 
 			w.CreateParameter("@items", JsonConvert.SerializeObject(a));
@@ -83,7 +97,7 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 
 			r.CreateParameter("@date", date);
 			r.CreateParameter("@component", component);
-			r.CreateParameter("@element", element);
+			r.CreateParameter("@element", element, true);
 
 			return r.Execute().ToList<IMetric>();
 		}

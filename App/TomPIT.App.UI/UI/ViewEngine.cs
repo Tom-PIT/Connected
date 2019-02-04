@@ -11,6 +11,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using TomPIT.ComponentModel;
+using TomPIT.Diagnostics;
 using TomPIT.Models;
 using TomPIT.Security;
 using TomPIT.Services;
@@ -91,7 +92,7 @@ namespace TomPIT.UI
 			}
 			finally
 			{
-				model.Services.Diagnostic.StopMetric(metric, model.View.Metrics.ParseResponse(Context.Response, content));
+				model.Services.Diagnostic.StopMetric(metric, Context.Response.StatusCode < 400 ? SessionResult.Success: SessionResult.Fail, model.View.Metrics.ParseResponse(Context.Response, content));
 			}
 		}
 

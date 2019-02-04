@@ -50,5 +50,6 @@ namespace TomPIT.ComponentModel.Apis
 		/// Protocol settings used by the <code>IApiOperation</code>.
 		/// </summary>
 		IOperationProtocolOptions Protocols { get; }
+		IMetricConfiguration Metrics { get; }
 	}
 }

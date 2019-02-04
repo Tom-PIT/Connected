@@ -15,6 +15,7 @@ namespace TomPIT.Application.Data
 		private IServerEvent _executing = null;
 		private IServerEvent _validating = null;
 		private IServerEvent _executed = null;
+		private IMetricConfiguration _metric = null;
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		[PropertyEditor(PropertyEditorAttribute.TextArea)]
@@ -91,6 +92,18 @@ namespace TomPIT.Application.Data
 					_executed = new ServerEvent { Parent = this };
 
 				return _executed;
+			}
+		}
+
+		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
+		public IMetricConfiguration Metrics
+		{
+			get
+			{
+				if (_metric == null)
+					_metric = new MetricConfiguration { Parent = this };
+
+				return _metric;
 			}
 		}
 	}

@@ -5,6 +5,7 @@ using TomPIT.Services;
 
 namespace TomPIT.Application
 {
+	[DomDesigner(DomDesignerAttribute.MetricDesigner, Mode = EnvironmentMode.Runtime)]
 	internal class MetricConfiguration : ConfigurationElement, IMetricConfiguration
 	{
 		[EnvironmentVisibility(EnvironmentMode.Runtime)]

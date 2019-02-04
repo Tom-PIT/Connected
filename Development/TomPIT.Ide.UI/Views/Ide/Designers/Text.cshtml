@@ -74,8 +74,8 @@
             {
            <text>
         onCreated: function (instance) {
-            textEditor.registerCompletionItemProvider('@Model.Language', {
-                provideCompletionItems: function (model, position, context) {
+			  textEditor.registerCompletionItemProvider('@Model.Language', {
+					provideCompletionItems: function (model, position, context) {
                     return new Promise(function (resolve, reject) {
                         ide.designerAction({
                             data: {

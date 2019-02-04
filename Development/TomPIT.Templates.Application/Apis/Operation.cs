@@ -18,6 +18,7 @@ namespace TomPIT.Application.Apis
 		private IServerEvent _commit = null;
 		private IServerEvent _rollback = null;
 		private OperationProtocolOptions _protocols = null;
+		private IMetricConfiguration _metric = null;
 
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[Required]
@@ -92,5 +93,17 @@ namespace TomPIT.Application.Apis
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[DefaultValue(ElementScope.Public)]
 		public ElementScope Scope { get; set; } = ElementScope.Public;
+
+		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
+		public IMetricConfiguration Metrics
+		{
+			get
+			{
+				if (_metric == null)
+					_metric = new MetricConfiguration { Parent = this };
+
+				return _metric;
+			}
+		}
 	}
 }

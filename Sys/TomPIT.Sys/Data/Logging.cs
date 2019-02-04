@@ -31,9 +31,9 @@ namespace TomPIT.Sys.Data
 			return Shell.GetService<IDatabaseService>().Proxy.Diagnostics.Logging.Query(date);
 		}
 
-		public List<ILogEntry> Query(DateTime date, long metric)
+		public List<ILogEntry> Query(Guid metric)
 		{
-			return Shell.GetService<IDatabaseService>().Proxy.Diagnostics.Logging.Query(date, metric);
+			return Shell.GetService<IDatabaseService>().Proxy.Diagnostics.Logging.Query(metric);
 		}
 
 		public List<ILogEntry> Query(DateTime date, Guid component, Guid element)

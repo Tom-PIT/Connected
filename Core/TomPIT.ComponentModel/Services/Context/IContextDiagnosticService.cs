@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using TomPIT.ComponentModel;
+using TomPIT.Diagnostics;
 
 namespace TomPIT.Services.Context
 {
@@ -14,6 +15,6 @@ namespace TomPIT.Services.Context
 
 		Guid StartMetric(IMetricConfiguration metric, JObject request);
 		Guid StartMetric(IMetricConfiguration metric, Guid element, JObject request);
-		void StopMetric(Guid metricId, JObject response);
+		void StopMetric(Guid metricId, SessionResult result, JObject response);
 	}
 }

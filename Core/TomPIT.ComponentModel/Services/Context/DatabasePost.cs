@@ -39,43 +39,61 @@ namespace TomPIT.Services.Context
 
 			var con = CreateConnection(ctx, config.Connection, config.Configuration());
 			var dataProvider = CreateDataProvider(ctx, con);
+			var metric = ctx.Services.Diagnostic.StartMetric(config.Metrics, arguments);
+			JObject dr = null;
 
-			var preparing = ctx.Connection().Execute(config.Preparing, this, new TransactionPreparingArguments(ctx, arguments));
-
-			if (preparing.Cancel)
-				return null;
-
-			var command = CreateCommand(config, con, preparing.Arguments);
-
-			var validating = ctx.Connection().Execute(config.Validating, this, new ValidatingArguments(ctx, command));
-
-			if (validating.ValidationErrors.Count > 0)
-				throw new ValidationException(validating.ValidationErrors);
-
-			var executing = ctx.Connection().Execute(config.Executing, this, new TransactionExecutingArguments(ctx, command));
-
-			if (executing.Cancel)
-				return null;
-
-			dataProvider.Execute(command, connection);
-
-			var returnValues = new JObject();
-
-			foreach (var i in command.Parameters)
+			try
 			{
-				if (i.Direction == ParameterDirection.ReturnValue)
+				var preparing = ctx.Connection().Execute(config.Preparing, this, new TransactionPreparingArguments(ctx, arguments));
+
+				if (preparing.Cancel)
+					return null;
+
+				var command = CreateCommand(config, con, preparing.Arguments);
+
+				var validating = ctx.Connection().Execute(config.Validating, this, new ValidatingArguments(ctx, command));
+
+				if (validating.ValidationErrors.Count > 0)
+					throw new ValidationException(validating.ValidationErrors);
+
+				var executing = ctx.Connection().Execute(config.Executing, this, new TransactionExecutingArguments(ctx, command));
+
+				if (executing.Cancel)
+					return null;
+
+				dataProvider.Execute(command, connection);
+
+				var returnValues = new JObject();
+
+				foreach (var i in command.Parameters)
 				{
-					if (i.Value == null || i.Value == DBNull.Value)
-						returnValues.Add(i.Name, JValue.CreateNull());
-					else
-						returnValues.Add(i.Name, JToken.FromObject(i.Value));
+					if (i.Direction == ParameterDirection.ReturnValue)
+					{
+						if (i.Value == null || i.Value == DBNull.Value)
+							returnValues.Add(i.Name, JValue.CreateNull());
+						else
+							returnValues.Add(i.Name, JToken.FromObject(i.Value));
+					}
 				}
+
+				var executed = ctx.Connection().Execute(config.Executed, this, new TransactionExecutedArguments(ctx, returnValues));
+				dr = executed.ReturnValues;
+
+				return executed.ReturnValues;
 			}
+			catch (Exception ex)
+			{
+				ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Fail, new JObject
+				{
+					{"exception", ex.Message }
+				});
 
-			var executed = ctx.Connection().Execute(config.Executed, this, new TransactionExecutedArguments(ctx, returnValues));
-
-			return executed.ReturnValues;
-
+				throw ex;
+			}
+			finally
+			{
+				ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Success, dr);
+			}
 		}
 
 		public JObject Execute(Guid microService, string name, JObject arguments)

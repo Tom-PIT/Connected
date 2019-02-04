@@ -33,7 +33,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Views\Shell\" />
     <Folder Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\segments\" />
   </ItemGroup>
   <ItemGroup>

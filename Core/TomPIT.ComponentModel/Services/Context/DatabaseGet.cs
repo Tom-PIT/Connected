@@ -44,37 +44,57 @@ namespace TomPIT.Services.Context
 
 			var connection = CreateConnection(ctx, config.Connection, config);
 			var dataProvider = CreateDataProvider(ctx, connection);
+			var metric = ctx.Services.Diagnostic.StartMetric(config.Metrics, arguments);
+			JObject dr = null;
 
-			var preparing = ctx.Connection().Execute(config.Preparing, this, new PreparingArguments(ctx, arguments, schema));
-
-			if (preparing.Cancel)
-				return new JObject();
-
-			var command = CreateCommand(config, connection, preparing.Arguments);
-
-			var validating = ctx.Connection().Execute(config.Validating, this, new ValidatingArguments(ctx, command));
-
-			if (validating.ValidationErrors.Count > 0)
-				throw new ValidationException(validating.ValidationErrors);
-
-			var executing = ctx.Connection().Execute(config.Executing, this, new ExecutingArguments(ctx, command, preparing.Schema));
-
-			if (executing.Cancel)
-				return new JObject();
-
-			var result = dataProvider.Query(command, executing.Schema);
-
-			var returnValues = new JObject();
-
-			foreach (var i in command.Parameters)
+			try
 			{
-				if (i.Direction == ParameterDirection.ReturnValue)
-					returnValues.Add(i.Name, JToken.FromObject(i.Value));
+				var preparing = ctx.Connection().Execute(config.Preparing, this, new PreparingArguments(ctx, arguments, schema));
+
+				if (preparing.Cancel)
+					return new JObject();
+
+				var command = CreateCommand(config, connection, preparing.Arguments);
+
+				var validating = ctx.Connection().Execute(config.Validating, this, new ValidatingArguments(ctx, command));
+
+				if (validating.ValidationErrors.Count > 0)
+					throw new ValidationException(validating.ValidationErrors);
+
+				var executing = ctx.Connection().Execute(config.Executing, this, new ExecutingArguments(ctx, command, preparing.Schema));
+
+				if (executing.Cancel)
+					return new JObject();
+
+				var result = dataProvider.Query(command, executing.Schema);
+
+				var returnValues = new JObject();
+
+				foreach (var i in command.Parameters)
+				{
+					if (i.Direction == ParameterDirection.ReturnValue)
+						returnValues.Add(i.Name, JToken.FromObject(i.Value));
+				}
+
+				var executed = ctx.Connection().Execute(config.Executed, this, new ExecutedArguments(ctx, result, returnValues));
+
+				dr = executed.Data;
+
+				return executed.Data;
 			}
+			catch (Exception ex)
+			{
+				ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Fail, new JObject
+				{
+					{"exception", ex.Message }
+				});
 
-			var executed = ctx.Connection().Execute(config.Executed, this, new ExecutedArguments(ctx, result, returnValues));
-
-			return executed.Data;
+				throw ex;
+			}
+			finally
+			{
+				ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Success, dr);
+			}
 		}
 
 		private DataTable CreateSchema(IComponent component, IDataSource dataSource)

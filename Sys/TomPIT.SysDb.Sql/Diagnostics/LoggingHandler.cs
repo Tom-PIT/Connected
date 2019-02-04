@@ -33,9 +33,15 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 
 			foreach (var i in items)
 			{
+				var created = i.Created;
+
+				if (created == DateTime.MinValue)
+					created = DateTime.UtcNow;
+
 				var d = new JObject
 				{
-					{"created", i.Created },
+					{"created", created },
+					{"date", created.Date },
 					{"trace_level", (int)i.Level }
 				};
 
@@ -77,11 +83,10 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 			return r.Execute().ToList<ILogEntry>();
 		}
 
-		public List<ILogEntry> Query(DateTime date, long metric)
+		public List<ILogEntry> Query(Guid metric)
 		{
 			var r = new Reader<LogEntry>("tompit.log_que");
 
-			r.CreateParameter("@date", date.Date);
 			r.CreateParameter("@metric", metric);
 
 			return r.Execute().ToList<ILogEntry>();

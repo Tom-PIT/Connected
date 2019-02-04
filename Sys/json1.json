@@ -1,0 +1,11 @@
+{
+	"data": [
+		{
+			"timestamp": "2018-02-03 4:50:18AM", 
+			"description": "power failure",
+			"duration": 10
+		},
+		...
+	]
+}
+

@@ -55,5 +55,6 @@ namespace TomPIT.ComponentModel.Data
 		/// this point, for example perform calculations on the fields and filter records.
 		/// </summary>
 		IServerEvent Executed { get; }
+		IMetricConfiguration Metrics { get; }
 	}
 }

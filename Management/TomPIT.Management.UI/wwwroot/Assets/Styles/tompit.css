@@ -666,7 +666,6 @@ table tbody tr[data-filtered="true"] {
 }
 .doc-canvas {
   background-color: #f5f5f5;
-  border-left: 1px solid #e0e0e0;
   padding: 25px;
 }
 .sys-container {

@@ -70,22 +70,50 @@ namespace TomPIT.Services.Context
 					break;
 			}
 
-			var prepare = Prepare(ctx, op, arguments);
+			var metric = ctx.Services.Diagnostic.StartMetric(op.Metrics, op.Id, arguments);
+			JObject result = null;
 
-			if (prepare.Async)
-				return null;
+			try
+			{
+				var prepare = Prepare(ctx, op, arguments);
 
-			var args = new OperationInvokeArguments(ctx, op, arguments, transaction);
+				if (prepare.Async)
+					return null;
 
-			var r = Context.Connection().GetService<ICompilerService>().Execute(ms, op.Invoke, this, args);
+				var args = new OperationInvokeArguments(ctx, op, arguments, transaction);
 
-			if (transaction != null)
-				transaction.Notify(op);
+				var r = Context.Connection().GetService<ICompilerService>().Execute(ms, op.Invoke, this, args);
 
-			if (r is JObject)
-				return ((JObject)r).DeepClone() as JObject;
+				if (transaction != null)
+					transaction.Notify(op);
 
-			return r;
+				if (r is JObject)
+				{
+					result = ((JObject)r).DeepClone() as JObject;
+
+					return result;
+				}
+
+				result = new JObject
+				{
+					{"result", r==null?"null":r.ToString() }
+				};
+
+				return r;
+			}
+			catch (Exception ex)
+			{
+				ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Fail, new JObject
+				{
+					{"exception", ex.Message }
+				});
+
+				throw ex;
+			}
+			finally
+			{
+				ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Success, result);
+			}
 		}
 
 		private void CheckReference(IExecutionContext context, Guid microService, Guid requiredReference)
