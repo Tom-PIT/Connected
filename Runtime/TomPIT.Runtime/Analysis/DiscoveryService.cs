@@ -17,6 +17,11 @@ namespace TomPIT.Analysis
 
 		private ISysConnection Connection { get; }
 
+		public IElement Find(IConfiguration configuration, Guid id)
+		{
+			return Find(configuration, id, new List<object>());
+		}
+
 		public IElement Find(Guid component, Guid id)
 		{
 			var config = Connection.GetService<IComponentService>().SelectConfiguration(component);

@@ -1,5 +1,20 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using TomPIT.IoT.UI;
+@using TomPIT.IoT;
+
+@model TomPIT.Models.IRuntimeModel
+
 @{
+	var view = Model.ViewConfiguration as IoTView;
 }
+
+<link rel="stylesheet" type="text/css" href="~/Assets/Styles/iot.css" />
+
+<svg viewBox="0 0 @view.Width @view.Height" preserveAspectRatio="xMidYMin slice"
+	  style="width: 100%; padding-bottom: 92%; height: 1px; overflow: visible">
+
+	@foreach (var i in view.Elements)
+	{
+		await Html.RenderPartialAsync(i.View(), i.CreateModel(Model));
+	}
+</svg>
+

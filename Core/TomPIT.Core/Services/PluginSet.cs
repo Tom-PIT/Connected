@@ -7,8 +7,8 @@ namespace TomPIT.Services
 	{
 		private List<string> _plugins = null;
 
-		[JsonProperty(PropertyName = "server")]
-		public string Server { get; set; }
+		[JsonProperty(PropertyName = "location")]
+		public string Location { get; set; }
 
 		[JsonProperty(PropertyName = "items")]
 		public List<string> Items

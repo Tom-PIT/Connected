@@ -12,6 +12,11 @@ namespace TomPIT.IoT
 			return stencil.GetType().FindAttribute<IoTElementAttribute>().View;
 		}
 
+		public static string DesignView(this IIoTElement stencil)
+		{
+			return stencil.GetType().FindAttribute<IoTElementAttribute>().DesignView;
+		}
+
 		public static StencilModel CreateModel(this IIoTElement stencil, IExecutionContext context)
 		{
 			var att = stencil.GetType().FindAttribute<IoTElementAttribute>();

@@ -21,7 +21,7 @@
 		<PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.2.0" />
-		<PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
+		<PackageReference Include="Microsoft.NET.Sdk.Razor" Version="2.2.0" PrivateAssets="All" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
@@ -31,11 +31,14 @@
 		<EmbeddedResource Include="wwwroot\**\*" />
 	</ItemGroup>
 	<ItemGroup>
+	  <EmbeddedResource Remove="wwwroot\Assets\Styles\iot.css" />
 	  <EmbeddedResource Remove="wwwroot\Assets\Styles\Variables.css" />
 	  <EmbeddedResource Remove="wwwroot\Assets\Styles\Variables.less" />
 	  <EmbeddedResource Remove="wwwroot\Assets\Styles\Variables.min.css" />
 	</ItemGroup>
 	<ItemGroup>
+	  <None Remove="wwwroot\Assets\Styles\iot.less" />
+	  <None Remove="wwwroot\Assets\Styles\iot.min.css" />
 	  <None Remove="wwwroot\Assets\Styles\Variables.css" />
 	  <None Remove="wwwroot\Assets\Styles\Variables.less" />
 	  <None Remove="wwwroot\Assets\Styles\Variables.min.css" />
@@ -52,6 +55,6 @@
 	  </Content>
 	</ItemGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.Templates.IoT&quot;" />
+		<Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.Templates.IoT&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName).Views.dll&quot; &quot;c:\Deploy\Plugins\TomPIT.Templates.IoT&quot;" />
 	</Target>
 </Project>

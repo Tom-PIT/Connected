@@ -1,5 +1,5 @@
 ﻿{
-   "database": "TomPIT.SysDb.Sql.SqlProxy, TomPIT.SysDb.Sql",
+	"database": "TomPIT.SysDb.Sql.SqlProxy, TomPIT.SysDb.Sql",
 	"authentication": {
 		"jwToken": {
 			"validIssuer": "tompit.net",
@@ -13,5 +13,7 @@
 	"connectionStrings": {
 		"sys": "data source=pit-zbook\\sqlexpress; initial catalog=tp1;user id=tompit;password=tompit;"
 	},
-	"plugins": "c:\\Deploy\\Plugins"
+	"plugins": {
+		"location": "c:\\Deploy\\Plugins"
+	}
 }

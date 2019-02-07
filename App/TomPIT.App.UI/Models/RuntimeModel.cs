@@ -8,7 +8,7 @@ using TomPIT.Services;
 
 namespace TomPIT.Models
 {
-	public class RuntimeModel : ExecutionContext, IUIModel, IRequestContextProvider, IIdentityBinder, IComponentModel
+	public class RuntimeModel : ExecutionContext, IRuntimeModel
 	{
 		private IModelNavigation _navigation = null;
 		private IContextIdentity _identity = null;
@@ -27,7 +27,7 @@ namespace TomPIT.Models
 
 		public IComponent Component { get; set; }
 
-		internal IView View { get; set; }
+		public IView ViewConfiguration { get; set; }
 
 		public virtual IEnumerable<ValidationResult> Validate()
 		{

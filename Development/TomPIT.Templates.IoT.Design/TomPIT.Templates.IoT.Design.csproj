@@ -21,7 +21,7 @@
 		<PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.2.0" />
-		<PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
+		<PackageReference Include="Microsoft.NET.Sdk.Razor" Version="2.2.0" PrivateAssets="All" />
 	</ItemGroup>
 	<ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
@@ -34,10 +34,10 @@
   </ItemGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="wwwroot\**\*" />
+		<EmbeddedResource Remove="wwwroot\Assets\Styles\Designers\iotViewDesign.less" />
 		<EmbeddedResource Remove="wwwroot\Assets\Styles\Designers\Variables.css" />
 		<EmbeddedResource Remove="wwwroot\Assets\Styles\Designers\Variables.less" />
 		<EmbeddedResource Remove="wwwroot\Assets\Styles\Designers\Variables.min.css" />
-		<None Remove="wwwroot\Assets\Styles\Designers\iotViewDesign.less" />
 		<None Remove="wwwroot\Assets\Styles\Designers\iotViewDesign.min.css" />
 		<None Remove="wwwroot\Assets\Styles\Designers\Variables.css" />
 		<None Remove="wwwroot\Assets\Styles\Designers\Variables.less" />

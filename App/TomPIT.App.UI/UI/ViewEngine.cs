@@ -58,8 +58,8 @@ namespace TomPIT.UI
 			var metric = Guid.Empty;
 			var content = string.Empty;
 
-			if (model.View != null)
-				metric = model.Services.Diagnostic.StartMetric(model.View.Metrics, model.View.Metrics.ParseRequest(Context.Request));
+			if (model.ViewConfiguration != null)
+				metric = model.Services.Diagnostic.StartMetric(model.ViewConfiguration.Metrics, model.ViewConfiguration.Metrics.ParseRequest(Context.Request));
 
 			try
 			{
@@ -94,7 +94,7 @@ namespace TomPIT.UI
 			}
 			finally
 			{
-				model.Services.Diagnostic.StopMetric(metric, Context.Response.StatusCode < 400 ? SessionResult.Success : SessionResult.Fail, model.View.Metrics.ParseResponse(Context.Response, content));
+				model.Services.Diagnostic.StopMetric(metric, Context.Response.StatusCode < 400 ? SessionResult.Success : SessionResult.Fail, model.ViewConfiguration.Metrics.ParseResponse(Context.Response, content));
 			}
 		}
 
@@ -140,7 +140,7 @@ namespace TomPIT.UI
 
 			var model = new RuntimeModel(Context.Request, ac);
 
-			model.View = view;
+			model.ViewConfiguration = view;
 
 			var vi = new ViewInfo(string.Format("/Views/{0}.cshtml", path), ac);
 

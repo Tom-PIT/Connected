@@ -150,28 +150,30 @@ namespace TomPIT.UI
 
 			var config = view.Configuration();
 			var rendererAtt = config.GetType().FindAttribute<ViewRendererAttribute>();
-			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(config.Component);
+			var sourceCode = string.Empty;
 
 			if (rendererAtt != null)
 			{
 				var renderer = (rendererAtt.Type ?? Types.GetType(rendererAtt.TypeName)).CreateInstance<IViewRenderer>();
-
-				_viewContent = Encoding.UTF8.GetBytes(renderer.CreateContent(null, view));
-
+				ViewComponent = Instance.GetService<IComponentService>().SelectComponent(config.Component);
 				LastModified = ViewComponent.Modified;
+
+				sourceCode = renderer.CreateContent(null, view);
+
 			}
 			else
 			{
 				Blob = Instance.GetService<IStorageService>().Select(view.TextBlob);
+				LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
 
-				var p = new ViewProcessor(view, Instance.GetService<IViewService>().SelectContent(view));
-
-				p.Compile();
-
-				_viewContent = Encoding.UTF8.GetBytes(p.Result);
+				sourceCode = Instance.GetService<IViewService>().SelectContent(view);
 			}
 
-			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
+			var p = new ViewProcessor(view, sourceCode);
+
+			p.Compile();
+
+			_viewContent = Encoding.UTF8.GetBytes(p.Result);
 		}
 
 		private void LoadMaster()

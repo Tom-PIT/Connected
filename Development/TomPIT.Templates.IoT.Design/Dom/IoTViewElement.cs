@@ -43,5 +43,10 @@ namespace TomPIT.IoT.Dom
 		}
 
 		public override bool SupportsInherit => true;
+
+		public override bool Commit(object component, string property, string attribute)
+		{
+			return base.Commit(component, property, attribute);
+		}
 	}
 }

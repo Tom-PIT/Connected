@@ -46,9 +46,9 @@ namespace TomPIT
 			var appPath = Assembly.GetEntryAssembly().Location;
 			var target = Path.Combine(Path.GetDirectoryName(appPath), string.Format("{0}.dll", assemblyName));
 
-			if (!string.IsNullOrWhiteSpace(Sys.Plugins.Server))
+			if (!string.IsNullOrWhiteSpace(Sys.Plugins.Location))
 			{
-				var dirs = Directory.GetDirectories(Sys.Plugins.Server);
+				var dirs = Directory.GetDirectories(Sys.Plugins.Location);
 
 				foreach (var i in dirs)
 				{

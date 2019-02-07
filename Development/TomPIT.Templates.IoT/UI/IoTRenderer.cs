@@ -8,7 +8,7 @@ namespace TomPIT.IoT.UI
 	{
 		public string CreateContent(IExecutionContext context, IView view)
 		{
-			return "hello";
+			return "@await Html.PartialAsync(\"~/Views/IoT/IoTView.cshtml\")";
 		}
 	}
 }

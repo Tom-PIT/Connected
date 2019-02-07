@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using TomPIT.Services;
 
 namespace TomPIT.Sys.Services
 {
@@ -47,6 +48,6 @@ namespace TomPIT.Sys.Services
 		}
 
 		[JsonProperty(PropertyName = "plugins")]
-		public string Plugins { get; set; }
+		public PluginSet Plugins { get; set; }
 	}
 }

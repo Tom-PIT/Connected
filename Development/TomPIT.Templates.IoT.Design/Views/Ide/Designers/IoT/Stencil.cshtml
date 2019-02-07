@@ -13,6 +13,6 @@
 
 	<div class="stencil" style="@style" data-select="true" data-move="true" data-resize="true" data-id="@Model.Element.Id">
 			<svg width="100%" height="100%">
-				@await Html.PartialAsync(Model.Element.View(), Model)
+				@await Html.PartialAsync(Model.Element.DesignView(), Model)
 			</svg>
 	</div>
