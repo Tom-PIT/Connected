@@ -8,9 +8,6 @@ namespace TomPIT.Design
 	{
 		private Lazy<ConcurrentDictionary<string, IPropertyEditor>> _propertyEditors = new Lazy<ConcurrentDictionary<string, IPropertyEditor>>();
 
-		/// <summary>
-		/// TODO: retrieve editors from config
-		/// </summary>
 		public DesignerService(ISysConnection connection)
 		{
 			Connection = connection;

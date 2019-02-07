@@ -5,6 +5,8 @@ namespace TomPIT.Annotations
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
 	public class ItemsAttribute : Attribute
 	{
+		public const string LayoutItems = "TomPIT.Design.Items.LayoutItems, TomPIT.Design";
+
 		private string _typeName = null;
 		private Type _type = null;
 

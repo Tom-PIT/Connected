@@ -1,8 +1,5 @@
-﻿using System;
-using System.ComponentModel;
-using TomPIT.Annotations;
+﻿using TomPIT.Annotations;
 using TomPIT.ComponentModel;
-using TomPIT.Security;
 
 namespace TomPIT.Application.UI
 {
@@ -10,7 +7,7 @@ namespace TomPIT.Application.UI
 	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
 	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = Services.EnvironmentMode.Runtime)]
 	[DomElement("TomPIT.Application.Design.Dom.ViewElement, TomPIT.Application.Design")]
-	[Syntax("razor")]
+	[Syntax(SyntaxAttribute.Razor)]
 	public class View : ViewBase, IApplicationView
 	{
 		private IMetricConfiguration _metric = null;
@@ -21,7 +18,7 @@ namespace TomPIT.Application.UI
 		public string Url { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryAppearance)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
-		[Items("TomPIT.Application.Design.Items.LayoutItems, TomPIT.Application.Design")]
+		[Items(ItemsAttribute.LayoutItems)]
 		public string Layout { get; set; }
 
 		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]

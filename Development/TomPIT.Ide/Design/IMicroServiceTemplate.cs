@@ -10,5 +10,6 @@ namespace TomPIT.Design
 	{
 		List<IItemDescriptor> ProvideAddItems(IDomElement parent);
 		IComponent References(IEnvironment environment, Guid microService);
+		List<string> GetApplicationParts();
 	}
 }

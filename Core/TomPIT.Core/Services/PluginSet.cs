@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace TomPIT.Services
 {
-	internal class PluginSet
+	public class PluginSet
 	{
 		private List<string> _plugins = null;
 
 		[JsonProperty(PropertyName = "server")]
 		public string Server { get; set; }
 
-		[JsonProperty(PropertyName = "plugins")]
-		public List<string> Plugins
+		[JsonProperty(PropertyName = "items")]
+		public List<string> Items
 		{
 			get
 			{

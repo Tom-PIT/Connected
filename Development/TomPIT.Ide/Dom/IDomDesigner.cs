@@ -9,7 +9,7 @@ namespace TomPIT.Dom
 	{
 		IDesignerToolbar Toolbar { get; }
 		IDesignerActionResult Action(JObject data);
-
+		IDesignerToolbox Toolbox { get; }
 		string View { get; }
 		string PropertyView { get; }
 		object ViewModel { get; }

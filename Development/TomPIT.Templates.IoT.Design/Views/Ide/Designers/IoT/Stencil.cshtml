@@ -1,0 +1,18 @@
+﻿@using TomPIT.IoT;
+
+@model TomPIT.IoT.Models.StencilModel
+
+@{
+	var width = string.Format("{0}px", Model.Element.Width+6);
+	var height = string.Format("{0}px", Model.Element.Height+6);
+	var left = string.Format("{0}px", Model.Element.Left-3);
+	var top = string.Format("{0}px", Model.Element.Top-3);
+
+	var style = string.Format("width:{0};height:{1};left:{2};top:{3};", width, height, left, top);
+}
+
+	<div class="stencil" style="@style" data-select="true" data-move="true" data-resize="true" data-id="@Model.Element.Id">
+			<svg width="100%" height="100%">
+				@await Html.PartialAsync(Model.Element.View(), Model)
+			</svg>
+	</div>

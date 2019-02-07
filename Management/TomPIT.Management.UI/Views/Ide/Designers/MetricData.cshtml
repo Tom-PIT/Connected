@@ -160,7 +160,6 @@
 							{
 								var rs = JsonConvert.DeserializeObject(i.Response);
 								var rss = JsonConvert.SerializeObject(rs, Formatting.Indented);
-
 								<pre>
 								<code class="hljs json">@Html.Raw(rss)</code>
 </pre>

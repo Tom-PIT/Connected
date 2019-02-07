@@ -398,5 +398,17 @@ namespace TomPIT
 			if (selection is Selection s)
 				s.Id = id;
 		}
+
+		public static Tuple<PropertyInfo, object> ResolveProperty(object instance, string propertyPath)
+		{
+			var tokens = propertyPath.Split('.');
+
+			var pi = instance.GetType().GetProperty(tokens[0]);
+
+			if (tokens.Length == 1)
+				return new Tuple<PropertyInfo, object>(pi, instance);
+
+			return ResolveProperty(pi.GetValue(instance), propertyPath.Substring(propertyPath.IndexOf('.')));
+		}
 	}
 }

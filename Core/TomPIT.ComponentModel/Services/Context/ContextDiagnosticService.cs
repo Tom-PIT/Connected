@@ -17,7 +17,6 @@ namespace TomPIT.Services.Context
 		}
 
 		public Guid MetricParent { get; set; }
-		private Guid CurrentMetric { get; set; }
 
 		public void Console(string message)
 		{

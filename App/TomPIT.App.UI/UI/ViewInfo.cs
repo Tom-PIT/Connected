@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Storage;
@@ -148,14 +149,27 @@ namespace TomPIT.UI
 				return;
 
 			var config = view.Configuration();
+			var rendererAtt = config.GetType().FindAttribute<ViewRendererAttribute>();
 			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(config.Component);
-			Blob = Instance.GetService<IStorageService>().Select(view.TextBlob);
 
-			var p = new ViewProcessor(view, Instance.GetService<IViewService>().SelectContent(view));
+			if (rendererAtt != null)
+			{
+				var renderer = (rendererAtt.Type ?? Types.GetType(rendererAtt.TypeName)).CreateInstance<IViewRenderer>();
 
-			p.Compile();
+				_viewContent = Encoding.UTF8.GetBytes(renderer.CreateContent(null, view));
 
-			_viewContent = Encoding.UTF8.GetBytes(p.Result);
+				LastModified = ViewComponent.Modified;
+			}
+			else
+			{
+				Blob = Instance.GetService<IStorageService>().Select(view.TextBlob);
+
+				var p = new ViewProcessor(view, Instance.GetService<IViewService>().SelectContent(view));
+
+				p.Compile();
+
+				_viewContent = Encoding.UTF8.GetBytes(p.Result);
+			}
 
 			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
 		}

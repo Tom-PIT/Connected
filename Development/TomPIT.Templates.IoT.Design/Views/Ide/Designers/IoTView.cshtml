@@ -1,0 +1,13 @@
+﻿@model TomPIT.IoT.Designers.IoTViewDesigner
+
+<script src="~/Assets/Scripts/Designers/iotView.js"></script>
+<link rel="stylesheet" type="text/css" href="~/Assets/Styles/Designers/iotViewDesign.css" />
+
+<div id="iotDesigner">
+	@await Html.PartialAsync("~/Views/Ide/Designers/IoT/Canvas.cshtml")
+</div>
+
+<script>
+	$('#iotDesigner').iotDesigner();
+</script>
+

@@ -11,6 +11,11 @@ namespace TomPIT.Design
 		public abstract Guid Token { get; }
 		public abstract string Name { get; }
 
+		public virtual List<string> GetApplicationParts()
+		{
+			return new List<string>();
+		}
+
 		public virtual List<IItemDescriptor> ProvideAddItems(IDomElement parent)
 		{
 			return new List<IItemDescriptor>();

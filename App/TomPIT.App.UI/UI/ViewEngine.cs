@@ -63,7 +63,10 @@ namespace TomPIT.UI
 
 			try
 			{
+				Authorize(model);
+
 				var actionContext = GetActionContext(Context);
+
 				var viewEngineResult = Engine.FindView(actionContext, name, false);
 
 				if (!viewEngineResult.Success)
@@ -79,12 +82,11 @@ namespace TomPIT.UI
 
 				var view = viewEngineResult.View;
 
-				Authorize(model);
-
 				if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
 					return;
 
 				content = CreateContent(view, actionContext, model);
+
 				var buffer = Encoding.UTF8.GetBytes(content);
 
 				if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
@@ -92,7 +94,7 @@ namespace TomPIT.UI
 			}
 			finally
 			{
-				model.Services.Diagnostic.StopMetric(metric, Context.Response.StatusCode < 400 ? SessionResult.Success: SessionResult.Fail, model.View.Metrics.ParseResponse(Context.Response, content));
+				model.Services.Diagnostic.StopMetric(metric, Context.Response.StatusCode < 400 ? SessionResult.Success : SessionResult.Fail, model.View.Metrics.ParseResponse(Context.Response, content));
 			}
 		}
 

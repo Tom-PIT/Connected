@@ -59,6 +59,6 @@ namespace TomPIT.Services
 		}
 
 		[JsonProperty(PropertyName = "plugins")]
-		public string Plugins { get; set; }
+		public PluginSet Plugins { get; set; }
 	}
 }

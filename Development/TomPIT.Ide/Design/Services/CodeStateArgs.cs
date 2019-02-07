@@ -19,7 +19,7 @@ namespace TomPIT.Design.Services
 		public IText Configuration { get; }
 		public IComponent Component { get; }
 		public int Position { get; }
-		public string Text { get; }
+		public string Text { get; internal set; }
 		public string TriggerCharacter { get; }
 		public string TriggerKind { get; }
 		public Type ArgumentsType { get; }

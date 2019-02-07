@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Reflection;
+using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
 using TomPIT.Environment;
@@ -23,6 +26,7 @@ namespace TomPIT
 
 	public static class Instance
 	{
+		private static IMvcBuilder _mvcBuilder = null;
 
 		public static void Initialize(IServiceCollection services, ServicesConfigurationArgs e)
 		{
@@ -97,7 +101,7 @@ namespace TomPIT
 					break;
 			}
 
-			services.AddMvc((o) =>
+			_mvcBuilder = services.AddMvc((o) =>
 			{
 				e.ConfigureMvc?.Invoke(o);
 
@@ -105,6 +109,15 @@ namespace TomPIT
 			});
 
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+			services.ConfigureOptions(typeof(EmbeddedResourcesConfiguration));
+		}
+
+		public static void AddApplicationPart(Assembly assembly)
+		{
+			var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
+
+			foreach (var i in partFactory.GetApplicationParts(assembly))
+				_mvcBuilder.PartManager.ApplicationParts.Add(i);
 		}
 
 		public static T GetService<T>()

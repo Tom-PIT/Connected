@@ -12,5 +12,11 @@
 	"dataProviders": [
 		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
 	],
-	"plugins": "c:\\Deploy\\Plugins"
+	"plugins": {
+		server: "c:\\Deploy\\Plugins",
+		items: [
+			"TomPIT.Application.Plugin, TomPIT.Application",
+			"TomPIT.IoT.Plugin, TomPIT.IoT"
+		]
+	}
 }

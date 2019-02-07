@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Analysis;
-using TomPIT.Application.UI;
 using TomPIT.ComponentModel;
-using TomPIT.Design;
 using TomPIT.Dom;
 
-namespace TomPIT.Application.Design.Items
+namespace TomPIT.Design.Items
 {
 	internal class LayoutItems : ItemsBase
 	{
@@ -15,7 +13,7 @@ namespace TomPIT.Application.Design.Items
 			var s = element.MicroService();
 			var server = element.Environment.Context.Connection();
 
-			var ds = server.GetService<IComponentService>().QueryComponents(s, MasterView.ComponentCategory).OrderBy(f => f.Name);
+			var ds = server.GetService<IComponentService>().QueryComponents(s, "MasterView").OrderBy(f => f.Name);
 
 			items.Add(Empty(SR.MasterDefault, string.Empty));
 
@@ -33,7 +31,7 @@ namespace TomPIT.Application.Design.Items
 				if (ms == null)
 					continue;
 
-				ds = server.GetService<IComponentService>().QueryComponents(server.ResolveMicroServiceToken(i.MicroService), MasterView.ComponentCategory).OrderBy(f => f.Name);
+				ds = server.GetService<IComponentService>().QueryComponents(server.ResolveMicroServiceToken(i.MicroService), "MasterView").OrderBy(f => f.Name);
 
 				foreach (var j in ds)
 				{

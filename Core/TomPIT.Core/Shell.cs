@@ -38,15 +38,17 @@ namespace TomPIT
 
 		public static HttpContext HttpContext { get { return _accessor?.HttpContext; } }
 
-		private static Assembly OnResolvingAssembly(AssemblyLoadContext ctx, AssemblyName asm)
+		public static string ResolveAssemblyPath(string assemblyName)
 		{
+			if (assemblyName.EndsWith(".dll"))
+				assemblyName = Path.GetFileNameWithoutExtension(assemblyName);
+
 			var appPath = Assembly.GetEntryAssembly().Location;
-			var target = Path.Combine(Path.GetDirectoryName(appPath), string.Format("{0}.dll", asm.Name));
+			var target = Path.Combine(Path.GetDirectoryName(appPath), string.Format("{0}.dll", assemblyName));
 
-			if (!string.IsNullOrWhiteSpace(Sys.Plugins))
+			if (!string.IsNullOrWhiteSpace(Sys.Plugins.Server))
 			{
-
-				var dirs = Directory.GetDirectories(Sys.Plugins);
+				var dirs = Directory.GetDirectories(Sys.Plugins.Server);
 
 				foreach (var i in dirs)
 				{
@@ -56,26 +58,29 @@ namespace TomPIT
 					{
 						var name = Path.GetFileNameWithoutExtension(j);
 
-						if (string.Compare(name, asm.Name, true) == 0)
-						{
-							using (var s = new MemoryStream(File.ReadAllBytes(j)))
-							{
-								return AssemblyLoadContext.Default.LoadFromStream(s);
-							}
-						}
+						if (string.Compare(name, assemblyName, true) == 0)
+							return j;
 					}
 				}
 			}
 
 			if (File.Exists(target))
-			{
-				using (var s = new MemoryStream(File.ReadAllBytes(target)))
-				{
-					return AssemblyLoadContext.Default.LoadFromStream(s);
-				}
-			}
+				return target;
 
 			return null;
+		}
+
+		private static Assembly OnResolvingAssembly(AssemblyLoadContext ctx, AssemblyName asm)
+		{
+			var path = ResolveAssemblyPath(asm.Name);
+
+			if (path == null)
+				return null;
+
+			using (var s = new MemoryStream(File.ReadAllBytes(path)))
+			{
+				return AssemblyLoadContext.Default.LoadFromStream(s);
+			}
 		}
 
 		[DebuggerStepThrough]

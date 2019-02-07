@@ -2,6 +2,6 @@
 {
 	public interface ISys
 	{
-		string Plugins { get; }
+		PluginSet Plugins { get; }
 	}
 }

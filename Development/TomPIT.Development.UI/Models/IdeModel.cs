@@ -97,7 +97,7 @@ namespace TomPIT.Models
 				parent = fs.Token;
 
 			var ms = DomQuery.Closest<IMicroServiceScope>(selection);
-			var id = GetService<IComponentDevelopmentService>().Insert(ms.MicroService.Token, fs == null ? Guid.Empty : fs.Token, descriptor.Value.ToString(), name, descriptor.Type.TypeName());
+			var id = GetService<IComponentDevelopmentService>().Insert(ms.MicroService.Token, fs == null ? Guid.Empty : fs.Token, descriptor.Id.ToString(), name, descriptor.Type.TypeName());
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 			var target = fs == null ? selection.Root() : selection.Closest<IFolderScope>() as IDomElement;
 

@@ -1,19 +1,19 @@
 ﻿@model TomPIT.Ide.IEnvironment
 
 @{
-    string view = string.Empty;
-    object model = null;
+	string view = string.Empty;
+	object model = null;
 
-    if (Model.Selection.Designer == null || string.IsNullOrWhiteSpace(Model.Selection.Designer.View))
-    {
-        view = "~/Views/Ide/Designers/Empty.cshtml";
-        model = Model;
-    }
-    else
-    {
-        view = Model.Selection.Designer.View;
-        model = Model.Selection.Designer.ViewModel;
-    }
+	if (Model.Selection.Designer == null || string.IsNullOrWhiteSpace(Model.Selection.Designer.View))
+	{
+		view = "~/Views/Ide/Designers/Empty.cshtml";
+		model = Model;
+	}
+	else
+	{
+		view = Model.Selection.Designer.View;
+		model = Model.Selection.Designer.ViewModel;
+	}
 }
 
 @await Html.PartialAsync("~/Views/Ide/Designers/Toolbar.cshtml", Model)

@@ -86,17 +86,23 @@ namespace TomPIT.Designers
 				if (_argumentType == null)
 				{
 					if (Owner.Property == null)
-						_argumentType = typeof(IExecutionContext);
+					{
+						if (Owner.Component == null)
+							_argumentType = typeof(IExecutionContext);
+						else
+						{
+							var att = Owner.Component.GetType().FindAttribute<EventArgumentsAttribute>();
+
+							if (att != null)
+								_argumentType = att.Type ?? Types.GetType(att.TypeName);
+						}
+					}
 					else
 					{
 						var att = Owner.Property.FindAttribute<EventArgumentsAttribute>();
 
 						if (att != null)
-						{
-							_argumentType = att.Type == null
-								 ? Types.GetType(att.TypeName)
-								 : att.Type;
-						}
+							_argumentType = att.Type ?? Types.GetType(att.TypeName);
 					}
 				}
 

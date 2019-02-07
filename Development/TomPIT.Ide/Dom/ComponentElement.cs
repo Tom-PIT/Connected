@@ -1,4 +1,5 @@
-﻿using TomPIT.ComponentModel;
+﻿using System.Linq;
+using TomPIT.ComponentModel;
 using TomPIT.Design;
 
 namespace TomPIT.Dom
@@ -12,7 +13,7 @@ namespace TomPIT.Dom
 		public ComponentElement(IDomElement parent, IComponent component) : base(parent, component)
 		{
 			Id = Target.Token.ToString();
-			Glyph = "fal fa-file";
+			Glyph = ResolveGlyph();
 			Title = Target.Name;
 
 			((Behavior)Behavior).AutoExpand = false;
@@ -29,6 +30,21 @@ namespace TomPIT.Dom
 				Id = "deleteComponent",
 				Name = "Delete component"
 			});
+		}
+
+		private string ResolveGlyph()
+		{
+			var r = "fal fa-file";
+			var id = Target.Category;
+			var template = GetService<IMicroServiceTemplateService>().Select(DomQuery.Closest<IMicroServiceScope>(this).MicroService.Template);
+
+			var items = template.ProvideAddItems(null);
+			var item = items.FirstOrDefault(f => string.Compare(Target.Type, f.Type.TypeName(), true) == 0);
+
+			if (item != null && !string.IsNullOrWhiteSpace(item.Glyph))
+				r = item.Glyph;
+
+			return r;
 		}
 
 		protected IComponent Target { get { return Instance as IComponent; } }

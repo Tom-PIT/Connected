@@ -9,6 +9,7 @@ namespace TomPIT.Designers
 	public abstract class DomDesigner<E> : EnvironmentClient, IDomDesigner, IDomClient where E : IDomElement
 	{
 		private IDesignerToolbar _toolbar = null;
+		private IDesignerToolbox _toolbox = null;
 
 		protected DomDesigner(E element) : base(element.Environment)
 		{
@@ -68,5 +69,16 @@ namespace TomPIT.Designers
 		}
 
 		public virtual bool SupportsChaining { get; } = true;
+
+		public IDesignerToolbox Toolbox
+		{
+			get
+			{
+				if (_toolbox == null)
+					_toolbox = new Toolbox(Environment);
+
+				return _toolbox;
+			}
+		}
 	}
 }

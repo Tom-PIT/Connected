@@ -1,0 +1,8 @@
+﻿@using TomPIT.IoT;
+
+@model TomPIT.IoT.Designers.IoTViewDesigner
+
+@foreach (var i in Model.IoTView.Elements)
+{
+	@await Html.PartialAsync("~/Views/Ide/Designers/IoT/Stencil.cshtml", i.CreateModel(Model.Environment.Context))
+}

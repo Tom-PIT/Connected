@@ -1,5 +1,53 @@
 ﻿@model TomPIT.Ide.IEnvironment
 
-<div class="dev-no-data">
-	No toolbox items available.
-</div>
+@{
+	var items = Model?.Selection?.Designer?.Toolbox.Items;
+}
+@if (items == null || items.Count == 0)
+{
+	<div class="dev-no-data">
+		No toolbox items available.
+	</div>
+
+
+}
+else
+{
+	var cat = items.GroupBy(f => f.Category);
+
+	<div class="dev-toolbox">
+		<ul class="list-unstyled">
+			@foreach (var i in cat)
+			{
+				var c = string.IsNullOrWhiteSpace(i.Key) ? "General" : i.Key;
+
+				<li class="dev-toolbox-item-category">@c</li>
+				@foreach (var j in i)
+				{
+					var glyph = "fal fa-puzzle-piece";
+
+					<li class="dev-toolbox-item" data-id="@j.Id">
+
+						@if (!string.IsNullOrWhiteSpace(j.Glyph))
+						{
+							glyph = j.Glyph;
+						}
+
+
+						<i class="@glyph"></i><span class="pl-1">@j.Text</span>
+
+					</li>
+				}
+			}
+		</ul>
+	</div>
+}
+
+<script>
+	$('.dev-toolbox-item').draggable({
+		zIndex: '12000',
+		containment: '#ide',
+		helper:'clone'
+	});
+
+</script>
