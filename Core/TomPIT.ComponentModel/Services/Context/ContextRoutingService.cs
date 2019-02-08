@@ -49,7 +49,12 @@ namespace TomPIT.Services.Context
 
 		public string GetServer(InstanceType type, InstanceVerbs verbs)
 		{
-			return Context.Connection().GetService<IInstanceEndpointService>().Url(type, verbs);
+			var r =  Context.Connection().GetService<IInstanceEndpointService>().Url(type, verbs);
+
+			if (string.IsNullOrWhiteSpace(r))
+				throw new RuntimeException(string.Format("{0} ({1}, {2})", SR.ErrNoServer, type, verbs));
+
+			return r;
 		}
 
 		public string Resource(IUrlHelper helper, Guid blob)

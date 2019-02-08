@@ -2,15 +2,16 @@
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Events;
+using TomPIT.ComponentModel.IoT;
 
 namespace TomPIT.IoT
 {
 	[Create("IoTDevice", nameof(Name))]
-	[ComponentCreateHandler("TomPIT.IoT.Handlers.IoTDeviceCreateHandler, TomPIT.IoT.Design")]
+	[ComponentCreatingHandler("TomPIT.IoT.Handlers.IoTDeviceCreateHandler, TomPIT.IoT.Design")]
 	public class IoTDevice : ConfigurationElement, IIoTDevice
 	{
 		private IServerEvent _data = null;
-		private ListItems<IIoTTransaction> _transactions = null;
+		private ListItems<IIoTDeviceTransaction> _transactions = null;
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[Required]
@@ -33,12 +34,12 @@ namespace TomPIT.IoT
 		}
 
 		[Items("TomPIT.IoT.Items.IoTTransactionsCollection, TomPIT.IoT.Design")]
-		public ListItems<IIoTTransaction> Transactions
+		public ListItems<IIoTDeviceTransaction> Transactions
 		{
 			get
 			{
 				if (_transactions == null)
-					_transactions = new ListItems<IIoTTransaction> { Parent = this };
+					_transactions = new ListItems<IIoTDeviceTransaction> { Parent = this };
 
 				return _transactions;
 			}

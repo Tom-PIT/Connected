@@ -1,5 +1,6 @@
 ﻿using TomPIT.Annotations;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.IoT;
 
 namespace TomPIT.IoT
 {
@@ -8,7 +9,7 @@ namespace TomPIT.IoT
 		private ListItems<IIoTDevice> _devices = null;
 		private ListItems<IIoTSchemaField> _schema = null;
 
-		[Items("TomPIT.IoT.Items.IoTDevicesCollection, TomPIT.IoT.Design")]
+		[Items("TomPIT.IoT.Design.Items.IoTDevicesCollection, TomPIT.IoT.Design")]
 		public ListItems<IIoTDevice> Devices
 		{
 			get
@@ -20,16 +21,9 @@ namespace TomPIT.IoT
 			}
 		}
 
-		[Items("TomPIT.IoT.Items.IoTSchemaFieldsCollection, TomPIT.IoT.Design")]
-		public ListItems<IIoTSchemaField> Schema
-		{
-			get
-			{
-				if (_schema == null)
-					_schema = new ListItems<IIoTSchemaField> { Parent = this };
-
-				return _schema;
-			}
-		}
+		[PropertyEditor(PropertyEditorAttribute.Select)]
+		[Items("TomPIT.IoT.Design.Items.IoTHubsItems, TomPIT.IoT.Design")]
+		public string Schema { get; set; }
+		public ElementScope Scope { get; set; } = ElementScope.Internal;
 	}
 }

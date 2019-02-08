@@ -2,6 +2,7 @@
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Events;
+using TomPIT.ComponentModel.IoT;
 
 namespace TomPIT.IoT
 {
@@ -26,6 +27,8 @@ namespace TomPIT.IoT
 				return _invoke;
 			}
 		}
+
+		public IoTTransactonScope Scope { get; set; } = IoTTransactonScope.Global;
 
 		public override string ToString()
 		{

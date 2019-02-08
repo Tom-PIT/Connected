@@ -1,8 +1,18 @@
 ﻿#iotDesigner {
-  width: 100%;
+  min-width: 100%;
   min-height: 250px;
   height: 100%;
   position: relative;
+  border: 1px solid #e0e0e0;
+  background-color: #FFF;
+  overflow-y: auto;
+}
+#iotDesigner:focus {
+  outline: none;
+}
+#iotToolbar {
+  padding: 0 5px 5px 5px;
+  border-bottom: 1px solid #e0e0e0;
 }
 .stencil {
   cursor: pointer;

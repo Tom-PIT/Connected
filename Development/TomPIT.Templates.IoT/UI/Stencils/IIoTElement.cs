@@ -9,5 +9,9 @@ namespace TomPIT.IoT.UI.Stencils
 		int Top { get; }
 		int Width { get; }
 		int Height { get; }
+
+		string Css { get; }
+
+		ListItems<IIoTBinding> Bindings { get; }
 	}
 }

@@ -1,9 +1,13 @@
-﻿using System.Security.Claims;
+﻿using System.Collections.Generic;
+using System.Security.Claims;
+using TomPIT.ComponentModel.IoT;
 
 namespace TomPIT.IoT.Security
 {
 	public class DeviceIdentity : ClaimsIdentity
 	{
+		private List<Claim> _claims = null;
+
 		public DeviceIdentity()
 		{
 
@@ -12,6 +16,25 @@ namespace TomPIT.IoT.Security
 		public DeviceIdentity(IIoTDevice device)
 		{
 			Device = device;
+			Name = Device.Id.ToString();
+			Token = device.AuthenticationToken;
+		}
+
+		public override IEnumerable<Claim> Claims
+		{
+			get
+			{
+				if (_claims == null)
+				{
+					_claims = new List<Claim>
+					{
+						new Claim(ClaimTypes.NameIdentifier, Device.Id.ToString()),
+						new Claim(ClaimTypes.Name, Device.Name)
+					};
+				}
+
+				return _claims;
+			}
 		}
 
 		public IIoTDevice Device

@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using TomPIT.ActionResults;
 using TomPIT.Analysis;
+using TomPIT.Annotations;
 using TomPIT.Design;
 using TomPIT.Designers;
 using TomPIT.Dom;
@@ -20,9 +21,10 @@ namespace TomPIT.IoT.Designers
 		public IoTViewDesigner(IDomElement element) : base(element)
 		{
 			Toolbox.Items.Add(new ItemDescriptor("Rectangle", "Rectangle", typeof(Rectangle)) { Category = "Shapes", Glyph = "fal fa-rectangle-landscape" });
+			Toolbox.Items.Add(new ItemDescriptor("Text", "Text", typeof(Text)) { Category = "Shapes", Glyph = "fal fa-rectangle-landscape" });
 		}
 
-		public override string View => "~/Views/Ide/Designers/IoTView.cshtml";
+		public override string View => "~/Views/Ide/Designers/IoTDesigner.cshtml";
 		public override object ViewModel => this;
 
 		public IoTView IoTView => Element.Component as IoTView;
@@ -64,21 +66,42 @@ namespace TomPIT.IoT.Designers
 				return Add(data);
 			else if (string.Compare(action, "saveProperties", true) == 0)
 				return SaveProperties(data);
-			//else if (string.Compare(action, "properties", true) == 0)
-			//	return Properties(data);
+			else if (string.Compare(action, "remove", true) == 0)
+				return Remove(data);
+			else if (string.Compare(action, "viewInfo", true) == 0)
+				return ViewInfo(data);
 
 			return base.OnAction(data, action);
 		}
 
-		//private IDesignerActionResult Properties(JObject data)
-		//{
-		//	var id = data.Optional("id", string.Empty);
+		private IDesignerActionResult ViewInfo(JObject data)
+		{
+			return Result.JsonResult(ViewModel, new JObject
+			{
+				{ "width", IoTView.Width },
+				{ "height", IoTView.Height },
+			});
+		}
 
-		//	Environment.SelectedPath
-		//	Environment.Selection.Reset();
+		private IDesignerActionResult Remove(JObject data)
+		{
+			var items = data.Optional<JArray>("items", null);
 
-		//	return Result.SectionResult(ViewModel, TomPIT.Annotations.EnvironmentSection.Properties);
-		//}
+			foreach (JValue i in items)
+			{
+				var id = Types.Convert<Guid>(i.Value);
+
+				var element = IoTView.Elements.FirstOrDefault(f => f.Id == id);
+
+				if (element != null)
+					IoTView.Elements.Remove(element);
+			}
+
+			ResizeView();
+			GetService<IComponentDevelopmentService>().Update(IoTView);
+
+			return Result.SectionResult(ViewModel, TomPIT.Annotations.EnvironmentSection.Properties);
+		}
 
 		private IDesignerActionResult SaveProperties(JObject data)
 		{
@@ -105,6 +128,7 @@ namespace TomPIT.IoT.Designers
 				}
 			}
 
+			ResizeView();
 			GetService<IComponentDevelopmentService>().Update(IoTView);
 
 			return Result.SectionResult(ViewModel, TomPIT.Annotations.EnvironmentSection.Properties);
@@ -131,10 +155,41 @@ namespace TomPIT.IoT.Designers
 			stencil.Name = GetService<INamingService>().Create(ti.Text, IoTView.Elements.Select(f => f.Name));
 
 			IoTView.Elements.Add(stencil);
+			ResizeView();
+
+			var att = stencil.GetType().FindAttribute<ComponentCreatingHandlerAttribute>();
+
+			if (att != null)
+			{
+				var handler = att.Type == null
+					? Types.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
+					: att.Type.CreateInstance<IComponentCreateHandler>();
+
+				if (handler != null)
+					handler.InitializeNewComponent(Environment.Context, stencil);
+			}
 
 			GetService<IComponentDevelopmentService>().Update(IoTView);
 
-			return Result.ViewResult(stencil.CreateModel(Environment.Context), stencil.View());
+			return Result.ViewResult(stencil.CreateModel(Environment.Context), "~/Views/Ide/Designers/IoT/Stencil.cshtml");
+		}
+
+		private void ResizeView()
+		{
+			var width = 0;
+			var height = 0;
+
+			foreach (var i in IoTView.Elements)
+			{
+				if (i.Right() > width)
+					width = i.Right();
+
+				if (i.Bottom() > height)
+					height = i.Bottom();
+			}
+
+			IoTView.Width = width;
+			IoTView.Height = height;
 		}
 	}
 }

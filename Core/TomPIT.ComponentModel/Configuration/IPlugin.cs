@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Routing;
+using System.Collections.Generic;
 
 namespace TomPIT.Configuration
 {
@@ -7,5 +8,6 @@ namespace TomPIT.Configuration
 		void Initialize();
 
 		List<string> GetApplicationParts();
+		void RegisterRoutes(IRouteBuilder builder);
 	}
 }

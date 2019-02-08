@@ -63,17 +63,7 @@ namespace TomPIT.Models
 			if (instance == null)
 				throw IdeException.CannotCreateInstance(this, IdeEvents.IdeAction, descriptor.Type);
 
-			var att = instance.GetType().FindAttribute<ComponentCreateHandlerAttribute>();
-
-			if (att != null)
-			{
-				var handler = att.Type == null
-					? Types.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
-					: att.Type.CreateInstance<IComponentCreateHandler>();
-
-				if (handler != null)
-					handler.InitializeNewComponent(instance);
-			}
+			IdeExtensions.ProcessComponentCreating(this, instance);
 
 			if (instance is IFolder folder)
 				return CreateFolder(folder, name);
@@ -98,6 +88,12 @@ namespace TomPIT.Models
 
 			var ms = DomQuery.Closest<IMicroServiceScope>(selection);
 			var id = GetService<IComponentDevelopmentService>().Insert(ms.MicroService.Token, fs == null ? Guid.Empty : fs.Token, descriptor.Id.ToString(), name, descriptor.Type.TypeName());
+
+			config.Component = id;
+
+			IdeExtensions.ProcessComponentCreated(this, config);
+			GetService<IComponentDevelopmentService>().Update(config);
+
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 			var target = fs == null ? selection.Root() : selection.Closest<IFolderScope>() as IDomElement;
 

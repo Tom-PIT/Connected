@@ -1,6 +1,4 @@
-﻿using TomPIT.ComponentModel;
-
-namespace TomPIT.IoT
+﻿namespace TomPIT.ComponentModel.IoT
 {
 	public interface IIoTSchemaField : IElement
 	{

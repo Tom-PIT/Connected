@@ -4,6 +4,8 @@ namespace TomPIT.IoT.UI.Stencils
 {
 	public abstract class IoTElement : Element, IIoTElement
 	{
+		private ListItems<IIoTBinding> _bindings = null;
+
 		private int _width = 100;
 		private int _height = 100;
 		private int _left = 0;
@@ -55,6 +57,19 @@ namespace TomPIT.IoT.UI.Stencils
 					value = 1;
 
 				_height = value;
+			}
+		}
+
+		public string Css { get; set; }
+
+		public ListItems<IIoTBinding> Bindings
+		{
+			get
+			{
+				if (_bindings == null)
+					_bindings = new ListItems<IIoTBinding> { Parent = this };
+
+				return _bindings;
 			}
 		}
 	}

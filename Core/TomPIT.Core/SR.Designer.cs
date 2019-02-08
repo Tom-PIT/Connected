@@ -1060,6 +1060,42 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to IoT hub device not found.
+        /// </summary>
+        public static string ErrIoTHubDeviceNotFound {
+            get {
+                return ResourceManager.GetString("ErrIoTHubDeviceNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IoT hub not found.
+        /// </summary>
+        public static string ErrIoTHubNotFound {
+            get {
+                return ResourceManager.GetString("ErrIoTHubNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IoT hub schema not set.
+        /// </summary>
+        public static string ErrIoTHubSchemaNotSet {
+            get {
+                return ResourceManager.GetString("ErrIoTHubSchemaNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IoT schema not found.
+        /// </summary>
+        public static string ErrIoTSchemaNotFound {
+            get {
+                return ResourceManager.GetString("ErrIoTSchemaNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Item descriptor not found.
         /// </summary>
         public static string ErrItemDescriptorNotFound {
@@ -1200,6 +1236,15 @@ namespace TomPIT {
         public static string ErrNoPropertyDesigner {
             get {
                 return ResourceManager.GetString("ErrNoPropertyDesigner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No endpoint registered.
+        /// </summary>
+        public static string ErrNoServer {
+            get {
+                return ResourceManager.GetString("ErrNoServer", resourceCulture);
             }
         }
         

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.IoT;
 
 namespace TomPIT.IoT
 {

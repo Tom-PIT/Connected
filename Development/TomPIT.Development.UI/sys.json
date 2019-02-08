@@ -14,6 +14,10 @@
 		"TomPIT.IoT.IoTTemplate, TomPIT.IoT.Design"
 	],
 	"plugins": {
-		"location": "c:\\Deploy\\Plugins"
+		"location": "c:\\Deploy\\Plugins",
+		"items": [
+			"TomPIT.Application.Plugin, TomPIT.Application",
+			"TomPIT.IoT.Plugin, TomPIT.IoT"
+		]
 	}
 }

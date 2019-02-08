@@ -869,10 +869,10 @@ $.widget('tompit.tpIde', {
 		this.options.designer.active = d;
 	},
 	designerAction: function (d, progress) {
-		this._action(d, progress, 'action');
+		return this._action(d, progress, 'action');
 	},
 	ideAction: function (d, progress) {
-		this._action(d, progress, 'ide');
+		return this._action(d, progress, 'ide');
 	},
 	_action: function (d, progress, action) {
 		var url = new tompit.devUrl();
@@ -882,7 +882,7 @@ $.widget('tompit.tpIde', {
 		if (typeof d !== 'undefined' && typeof d.data !== 'undefined' && typeof d.data.path !== 'undefined')
 			path = d.data.path;
 
-		tompit.post({
+		return tompit.post({
 			url: url.environment(action),
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
@@ -961,8 +961,8 @@ $.widget('tompit.tpIde', {
 				instance.expandTo({
 					path: explorerPath
 				});
-			}
-		};
+			};
+		}
 
 		if (kind === 'primary' || kind === 'information' || kind === 'secondary')
 			tompit.info(message, title, options);
@@ -1027,7 +1027,7 @@ $.widget('tompit.tpIde', {
 	 */
 	newWindow: function (microService, component, element) {
 
-	},
+	}
 });
 
 tompit.DEVDEFAULTS = {
@@ -1049,5 +1049,5 @@ tompit.devUrl = function () {
 
 
 		return tompit.DEVDEFAULTS.environmentUrl + '/' + verb;
-	}
+	};
 };

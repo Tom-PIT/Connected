@@ -211,19 +211,11 @@ namespace TomPIT.Designers
 
 			Connection.GetService<INamingService>().Create(df, items);
 
-			var att = df.GetType().FindAttribute<ComponentCreateHandlerAttribute>();
-
-			if (att != null)
-			{
-				var handler = att.Type == null
-					? Types.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
-					: att.Type.CreateInstance<IComponentCreateHandler>();
-
-				if (handler != null)
-					handler.InitializeNewComponent(df);
-			}
+			IdeExtensions.ProcessComponentCreating(Environment.Context, df);
 
 			mi.Invoke(Component, new object[] { df });
+
+			IdeExtensions.ProcessComponentCreated(Environment.Context, df);
 
 			Environment.Commit(Component, Element.Property == null ? string.Empty : Element.Property.Name, null);
 

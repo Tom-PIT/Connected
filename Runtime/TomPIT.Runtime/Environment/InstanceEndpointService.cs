@@ -42,6 +42,9 @@ namespace TomPIT.Environment
 				return;
 			}
 
+			if (d.Status == InstanceStatus.Enabled)
+				Register(CreateRobinKey(d.Type, d.Verbs), d.Token);
+
 			Set(id, d, TimeSpan.Zero);
 		}
 
@@ -140,7 +143,29 @@ namespace TomPIT.Environment
 			var key = CreateRobinKey(type, verb);
 
 			if (!_rr.ContainsKey(key))
+			{
+				if (verb == InstanceVerbs.All)
+				{
+					key = CreateRobinKey(type, InstanceVerbs.Get);
+
+					if (!_rr.ContainsKey(key))
+					{
+						key = CreateRobinKey(type, InstanceVerbs.Post);
+
+						if (!_rr.ContainsKey(key))
+							return null;
+					}
+				}
+				else
+				{
+					key = CreateRobinKey(type, InstanceVerbs.All);
+
+					if (!_rr.ContainsKey(key))
+						return null;
+				}
+
 				return null;
+			}
 
 			var id = _rr[key].Next();
 

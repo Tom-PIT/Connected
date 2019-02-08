@@ -1,7 +1,10 @@
-﻿namespace TomPIT.Design
+﻿using TomPIT.ComponentModel;
+using TomPIT.Services;
+
+namespace TomPIT.Design
 {
 	public interface IComponentCreateHandler
 	{
-		void InitializeNewComponent(object instance);
+		void InitializeNewComponent(IExecutionContext context, object instance);
 	}
 }

@@ -1,7 +1,8 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.IoT;
 using TomPIT.ComponentModel.UI;
 using TomPIT.IoT.UI.Stencils;
 
@@ -11,29 +12,14 @@ namespace TomPIT.IoT.UI
 	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = Services.EnvironmentMode.Runtime)]
 	[DomElement("TomPIT.IoT.Dom.IoTViewElement, TomPIT.IoT.Design")]
 	[ViewRenderer("TomPIT.IoT.UI.IoTRenderer, TomPIT.IoT")]
-	public class IoTView : ComponentConfiguration, IView
+	public class IoTView : ViewBase, IIoTView
 	{
 		private IMetricConfiguration _metric = null;
-		private ListItems<IText> _scripts = null;
 		private ListItems<IIoTElement> _elements = null;
 
 		[Browsable(false)]
-		public ListItems<IViewHelper> Helpers => null;
+		public override ListItems<IViewHelper> Helpers => null;
 
-		[Items("TomPIT.IoT.Items.ScriptCollection, TomPIT.IoT.Design")]
-		public ListItems<IText> Scripts
-		{
-			get
-			{
-				if (_scripts == null)
-					_scripts = new ListItems<IText> { Parent = this };
-
-				return _scripts;
-			}
-		}
-
-		[Browsable(false)]
-		public Guid TextBlob { get; set; }
 		[Browsable(false)]
 		public ListItems<IIoTElement> Elements
 		{
@@ -46,10 +32,16 @@ namespace TomPIT.IoT.UI
 			}
 		}
 
+		[Browsable(false)]
 		public int Width { get; set; } = 500;
+		[Browsable(false)]
 		public int Height { get; set; } = 250;
-
 		public string Url { get; set; }
+		public string Css { get; set; }
+		[PropertyEditor(PropertyEditorAttribute.Select)]
+		[Items("TomPIT.IoT.Design.Items.IoTHubsItems, TomPIT.IoT.Design")]
+		[Required]
+		public string Hub { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryAppearance)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
@@ -57,7 +49,7 @@ namespace TomPIT.IoT.UI
 		public string Layout { get; set; }
 
 		[Browsable(false)]
-		public ListItems<ISnippet> Snippets => null;
+		public override ListItems<ISnippet> Snippets => null;
 
 		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
 		public IMetricConfiguration Metrics

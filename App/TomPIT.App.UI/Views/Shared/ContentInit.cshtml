@@ -2,7 +2,6 @@
 
 @{
 	var rootUrl = Model.RootUrl();
-	var restUrl = Model.Services.Routing.GetServer(TomPIT.Environment.InstanceType.Rest, TomPIT.Environment.InstanceVerbs.All);
 	var component = string.Empty;
 
 	if (Model is IComponentModel cm && cm.Component != null)
@@ -12,12 +11,10 @@
 <script>
     tompit.DEFAULTS = {
         appUrl: '@rootUrl',
-        restUrl: '@restUrl',
         component:'@component'
     };
 
     tompit.GLOBALIZE = {
         appUrlNotSet: '@SR.JsAppUrlNotSet',
-        restUrlNotSet: '@SR.JsRestUrlNotSet'
     };
 </script>

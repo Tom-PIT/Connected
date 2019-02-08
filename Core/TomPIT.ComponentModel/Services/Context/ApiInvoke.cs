@@ -121,7 +121,6 @@ namespace TomPIT.Services.Context
 			var ms = context.Connection().GetService<IMicroServiceService>().Select(microService);
 			var reference = context.Connection().GetService<IMicroServiceService>().Select(microService);
 
-
 			ms.ValidateMicroServiceReference(context.Connection(), reference == null ? requiredReference.ToString() : reference.Name);
 		}
 

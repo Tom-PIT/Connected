@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Linq;
 using TomPIT.ActionResults;
-using TomPIT.Annotations;
 using TomPIT.Design;
 using TomPIT.Dom;
 using TomPIT.Ide;
@@ -93,17 +92,7 @@ namespace TomPIT.Designers
 			if (df == null)
 				throw IdeException.CannotCreateInstance(this, IdeEvents.DesignerAction, d.Type);
 
-			var att = df.GetType().FindAttribute<ComponentCreateHandlerAttribute>();
-
-			if (att != null)
-			{
-				var handler = att.Type == null
-					? Types.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
-					: att.Type.CreateInstance<IComponentCreateHandler>();
-
-				if (handler != null)
-					handler.InitializeNewComponent(df);
-			}
+			IdeExtensions.ProcessComponentCreating(Environment.Context, df);
 
 			return df;
 		}

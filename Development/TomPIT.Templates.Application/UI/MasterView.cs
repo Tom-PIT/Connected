@@ -3,9 +3,9 @@ using TomPIT.ComponentModel.UI;
 
 namespace TomPIT.Application.UI
 {
-	[Create("Master")]
-	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
-	[Syntax("razor")]
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[Syntax(SyntaxAttribute.Razor)]
+	[ComponentCreatedHandler("TomPIT.Handlers.MasterCreateHandler, TomPIT.Development")]
 	public class MasterView : ViewBase, IMasterView
 	{
 		public const string ComponentCategory = "MasterView";

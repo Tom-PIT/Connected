@@ -24,14 +24,10 @@ namespace TomPIT.Configuration
 			var assemblies = new List<Assembly>();
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-			{
-				var t = Types.GetType(i);
+				RegisterAssembly(assemblies, i);
 
-				if (t == null)
-					continue;
-
-				assemblies.Add(t.Assembly);
-			}
+			foreach (var i in Instance.Plugins)
+				RegisterAssembly(assemblies, i.GetType().FullName);
 
 			name = name ?? throw new ArgumentNullException(nameof(name));
 			options = options ?? throw new ArgumentNullException(nameof(options));
@@ -60,6 +56,16 @@ namespace TomPIT.Configuration
 			}
 
 			options.FileProvider = new CompositeFileProvider(fileProviders.ToArray());
+		}
+
+		private void RegisterAssembly(List<Assembly> assemblies, string type)
+		{
+			var t = Types.GetType(type);
+
+			if (t == null)
+				return;
+
+			assemblies.Add(t.Assembly);
 		}
 	}
 }

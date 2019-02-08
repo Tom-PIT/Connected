@@ -25,6 +25,7 @@ else
 				@foreach (var j in i)
 				{
 					var glyph = "fal fa-puzzle-piece";
+					var view = j.ToolboxItemHelper();
 
 					<li class="dev-toolbox-item" data-id="@j.Id">
 
@@ -33,9 +34,16 @@ else
 							glyph = j.Glyph;
 						}
 
-
 						<i class="@glyph"></i><span class="pl-1">@j.Text</span>
 
+						@if (!string.IsNullOrWhiteSpace(view))
+						{
+							<div class="collapse" data-glyph="true">
+								<div>
+									@await Html.PartialAsync(view)
+								</div>
+							</div>
+						}
 					</li>
 				}
 			}
@@ -47,7 +55,14 @@ else
 	$('.dev-toolbox-item').draggable({
 		zIndex: '12000',
 		containment: '#ide',
-		helper:'clone'
+		helper: function () {
+			var glyph = $(this).find('[data-glyph="true"]');
+
+			if (glyph.length === 0)
+				return $(this);
+
+			return $(glyph.html());
+		}
 	});
 
 </script>

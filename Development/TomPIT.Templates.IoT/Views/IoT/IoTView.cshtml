@@ -7,14 +7,15 @@
 	var view = Model.ViewConfiguration as IoTView;
 }
 
-<link rel="stylesheet" type="text/css" href="~/Assets/Styles/iot.css" />
+<link rel="stylesheet" type="text/css" href="~/Assets/Styles/iot.min.css" />
 
-<svg viewBox="0 0 @view.Width @view.Height" preserveAspectRatio="xMidYMin slice"
-	  style="width: 100%; padding-bottom: 92%; height: 1px; overflow: visible">
+<div class="iot-view @view.Css" data-hub="@view.Hub" data-iot="@Model.ViewConfiguration.Component">
+	<svg viewBox="0 0 @view.Width @view.Height">
 
-	@foreach (var i in view.Elements)
-	{
-		await Html.RenderPartialAsync(i.View(), i.CreateModel(Model));
-	}
-</svg>
+		@foreach (var i in view.Elements)
+		{
+			await Html.RenderPartialAsync(i.View(), i.CreateModel(Model));
+		}
+	</svg>
 
+</div>

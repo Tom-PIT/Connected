@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
@@ -27,6 +28,7 @@ namespace TomPIT
 	public static class Instance
 	{
 		private static IMvcBuilder _mvcBuilder = null;
+		private static List<IPlugin> _plugins = null;
 
 		public static void Initialize(IServiceCollection services, ServicesConfigurationArgs e)
 		{
@@ -50,6 +52,9 @@ namespace TomPIT
 
 			app.UseMvc(routes =>
 			{
+				foreach (var i in Plugins)
+					i.RegisterRoutes(routes);
+
 				RoutingConfiguration.Register(routes);
 				routingHandler?.Invoke(new ConfigureRoutingArgs(routes));
 			});
@@ -159,6 +164,32 @@ namespace TomPIT
 			}
 
 			return false;
+		}
+
+		public static List<IPlugin> Plugins
+		{
+			get
+			{
+				if (_plugins == null)
+				{
+					_plugins = new List<IPlugin>();
+
+					foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)
+					{
+						var t = Types.GetType(i);
+
+						if (t == null)
+							continue;
+
+						var plugin = t.CreateInstance<IPlugin>();
+
+						if (plugin != null)
+							_plugins.Add(plugin);
+					}
+				}
+
+				return _plugins;
+			}
 		}
 	}
 }

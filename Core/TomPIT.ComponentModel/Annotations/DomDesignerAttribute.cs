@@ -9,6 +9,7 @@ namespace TomPIT.Annotations
 		public const string PermissionsDesigner = "TomPIT.Designers.PermissionsDesigner, TomPIT.Design";
 		public const string MetricDesigner = "TomPIT.Designers.MetricDesigner, TomPIT.Management";
 		public const string EmptyDesigner = "TomPIT.Designers.EmptyDesigner, TomPIT.Ide";
+		public const string TextDesigner = "TomPIT.Designers.TextDesigner, TomPIT.Ide";
 
 		public DomDesignerAttribute() { }
 

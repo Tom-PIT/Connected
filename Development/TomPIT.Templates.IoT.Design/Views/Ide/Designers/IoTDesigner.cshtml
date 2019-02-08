@@ -1,0 +1,19 @@
+﻿@model TomPIT.IoT.Designers.IoTViewDesigner
+
+<script src="~/Assets/Scripts/Designers/iotDesigner.js"></script>
+<link rel="stylesheet" type="text/css" href="~/Assets/Styles/Designers/iotViewDesign.min.css" />
+@{
+	var css = string.Format("width:{0}px;height:{1}px;", Model.IoTView.Width + 25, Model.IoTView.Height + 25);
+
+}
+<div id="iotToolbar">
+	@await Html.PartialAsync("~/Views/Ide/Designers/IoTDesignerToolbar.cshtml")
+</div>
+<div id="iotDesigner" style="@css" tabindex="0">
+	@await Html.PartialAsync("~/Views/Ide/Designers/IoT/Canvas.cshtml")
+</div>
+
+<script>
+	$('#iotDesigner').iotDesigner();
+</script>
+

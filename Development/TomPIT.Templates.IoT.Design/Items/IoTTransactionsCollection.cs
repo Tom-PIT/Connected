@@ -2,7 +2,7 @@
 using TomPIT.Design;
 using TomPIT.Dom;
 
-namespace TomPIT.IoT.Items
+namespace TomPIT.IoT.Design.Items
 {
 	internal class IoTTransactionsCollection : ItemsBase
 	{

@@ -1,7 +1,6 @@
-﻿using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Events;
+﻿using TomPIT.ComponentModel.Events;
 
-namespace TomPIT.IoT
+namespace TomPIT.ComponentModel.IoT
 {
 	public interface IIoTDevice : IElement
 	{
@@ -9,6 +8,6 @@ namespace TomPIT.IoT
 		string AuthenticationToken { get; }
 		IServerEvent Data { get; }
 
-		ListItems<IIoTTransaction> Transactions { get; }
+		ListItems<IIoTDeviceTransaction> Transactions { get; }
 	}
 }

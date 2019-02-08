@@ -6,7 +6,7 @@
 
 		o.method = 'POST';
 
-		ajaxRequest(o);
+		return ajaxRequest(o);
 	};
 
 	tompit.get=function(options) {
@@ -14,13 +14,13 @@
 
 		o.method = 'GET';
 
-		ajaxRequest(o);
+		return ajaxRequest(o);
 	};
 
 	function ajaxRequest(options) {
 		var data = options.onPrepareData(options.data);
 
-		$.ajax({
+		return $.ajax({
 			url: options.url,
 			type: options.method,
 			cache: options.cache,

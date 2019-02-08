@@ -32,12 +32,12 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <EmbeddedResource Remove="wwwroot\Assets\Styles\iot.css" />
+	  <EmbeddedResource Remove="wwwroot\Assets\Styles\iot.less" />
 	  <EmbeddedResource Remove="wwwroot\Assets\Styles\Variables.css" />
 	  <EmbeddedResource Remove="wwwroot\Assets\Styles\Variables.less" />
 	  <EmbeddedResource Remove="wwwroot\Assets\Styles\Variables.min.css" />
 	</ItemGroup>
 	<ItemGroup>
-	  <None Remove="wwwroot\Assets\Styles\iot.less" />
 	  <None Remove="wwwroot\Assets\Styles\iot.min.css" />
 	  <None Remove="wwwroot\Assets\Styles\Variables.css" />
 	  <None Remove="wwwroot\Assets\Styles\Variables.less" />

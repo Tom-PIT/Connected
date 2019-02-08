@@ -323,5 +323,48 @@ namespace TomPIT
 
 			return null;
 		}
+
+		public static string ToolboxItemHelper(this IItemDescriptor descriptor)
+		{
+			if (descriptor.Type == null)
+				return null;
+
+			var att = descriptor.Type.FindAttribute<ToolboxItemGlyphAttribute>();
+
+			if (att == null)
+				return null;
+
+			return att.View;
+		}
+
+		public static void ProcessComponentCreating(IExecutionContext context, object instance)
+		{
+			var att = instance.GetType().FindAttribute<ComponentCreatingHandlerAttribute>();
+
+			if (att != null)
+			{
+				var handler = att.Type == null
+					? Types.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
+					: att.Type.CreateInstance<IComponentCreateHandler>();
+
+				if (handler != null)
+					handler.InitializeNewComponent(context, instance);
+			}
+		}
+
+		public static void ProcessComponentCreated(IExecutionContext context, object instance)
+		{
+			var att = instance.GetType().FindAttribute<ComponentCreatedHandlerAttribute>();
+
+			if (att != null)
+			{
+				var handler = att.Type == null
+					? Types.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
+					: att.Type.CreateInstance<IComponentCreateHandler>();
+
+				if (handler != null)
+					handler.InitializeNewComponent(context, instance);
+			}
+		}
 	}
 }

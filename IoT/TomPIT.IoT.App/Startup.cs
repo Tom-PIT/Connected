@@ -20,7 +20,20 @@ namespace TomPIT.IoT
 			};
 
 			Instance.Initialize(services, e);
-			services.AddSignalR();
+
+			services.AddCors(options => options.AddPolicy("TomPITPolicy",
+				builder =>
+				{
+					builder.AllowAnyMethod()
+					.AllowAnyHeader()
+					.WithOrigins("http://localhost:44003")
+					.AllowCredentials();
+				}));
+
+			services.AddSignalR((o) =>
+			{
+				o.EnableDetailedErrors = true;
+			});
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -29,6 +42,7 @@ namespace TomPIT.IoT
 			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
 			Instance.Run(app);
 
+			app.UseCors("TomPITPolicy");
 			app.UseSignalR(routes =>
 			{
 				routes.MapHub<IoTHub>("/iot");

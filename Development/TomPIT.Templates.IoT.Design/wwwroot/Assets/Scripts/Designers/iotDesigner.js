@@ -2,7 +2,7 @@
 
 $.widget('tompit.iotDesigner', {
 	options: {
-		selection: [],
+		
 	},
 	_create: function () {
 		var instance = this;
@@ -17,11 +17,23 @@ $.widget('tompit.iotDesigner', {
 					'data': {
 						'action': 'add',
 						'id': ui.draggable.attr('data-id'),
-						'x': ui.position.left,
-						'y': ui.position.top
+						'x': ui.offset.left - $(this).offset().left,
+						'y': ui.offset.top - $(this).offset().top
 					},
 					onComplete: function (data) {
-						$('#iotDesigner').html(data);
+						var id = $(data).attr('data-id');
+
+						$('#iotDesigner').append(data);
+						$('#iotDesigner').focus();
+						instance.resizeCanvas();
+						instance.initStencils();
+						instance.unselectAll({
+							onComplete: function () {
+								instance.select({
+									'id': id
+								});
+							}
+						});
 					}
 				});
 			}
@@ -43,6 +55,8 @@ $.widget('tompit.iotDesigner', {
 				'element': $(e.target)
 			};
 
+			$('#iotDesigner').focus();
+
 			if (e.ctrlKey || e.shiftKey) 
 				instance.toggleSelection(args);
 			else {
@@ -57,9 +71,16 @@ $.widget('tompit.iotDesigner', {
 			}
 		});
 
-		this.initDraggable();
+		this.initStencils();
+		this.setupToolbar();
+		this.syncToolbar();
+
+		$('#iotDesigner').keyup(function (e) {
+			if (e.keyCode === 46)
+				instance.toolbar().delete.trigger();
+		});
 	},
-	initDraggable: function (s) {
+	initStencils: function (s) {
 		var instance = this;
 		var offset = { top: 0, left: 0 };
 
@@ -144,6 +165,9 @@ $.widget('tompit.iotDesigner', {
 							'data': {
 								'action': 'saveProperties',
 								'elements': elements
+							},
+							onComplete: function (e) {
+								instance.resizeCanvas();
 							}
 						});
 					}
@@ -223,6 +247,9 @@ $.widget('tompit.iotDesigner', {
 							'data': {
 								'action': 'saveProperties',
 								'elements': elements
+							},
+							onComplete: function (e) {
+								instance.resizeCanvas();
 							}
 						});
 					}
@@ -240,7 +267,7 @@ $.widget('tompit.iotDesigner', {
 		if (typeof e.id === 'undefined')
 			return e.element.closest('.stencil[data-id]');
 		else
-			return this.element.find('.stencil[data-id="' + e.id + ']"');
+			return this.element.find('.stencil[data-id="' + e.id + '"]');
 	},
 	isSelected: function (e) {
 		return this.getStencil(e).hasClass('ui-selected');
@@ -267,6 +294,7 @@ $.widget('tompit.iotDesigner', {
 		return $('.stencil.ui-selected[data-select="true"]');
 	},
 	selectionChanged: function (e) {
+		var instance = this;
 		var selection = this.selectedStencils();
 		var id = null;
 
@@ -281,9 +309,76 @@ $.widget('tompit.iotDesigner', {
 				'designerSelectionId': id
 			},
 			onComplete: function (data) {
-				if ($.isFunction(e.onComplete))
+				instance.syncToolbar();
+
+				if (typeof e !== 'undefined' && $.isFunction(e.onComplete))
 					e.onComplete(data);
 			}
 		});
+	},
+	syncToolbar: function (e) {
+		var selection = this.selectedStencils();
+
+		if (selection.length === 0) {
+			this.toolbar().delete.button.prop('disabled', true);
+		}
+		else {
+			this.toolbar().delete.button.prop('disabled', false);
+		}
+	},
+	setupToolbar: function (e) {
+		var t = this.toolbar();
+		var instance = this;
+
+		t.delete.button.click(function () {
+			t.delete.trigger();
+		});
+	},
+	resizeCanvas: function () {
+		ide.designerAction({
+			'data': {
+				'action': 'viewInfo'
+			},
+			onComplete: function (data) {
+				$('#iotDesigner').css({
+					'min-width':'100%',
+					'width': data.width + 25,
+					'height': data.height + 25
+				});
+			}
+		});
+	},
+	toolbar: function () {
+		var instance = this;
+		return {
+			'delete': {
+				'button': $('#btnIoTDelete'),
+				'trigger': function () {
+					if ($('#btnIoTDelete').prop('disabled') === true)
+						return;
+
+					if (!confirm('Are you sure you want to delete selected stencils?'))
+						return;
+
+					var items = [];
+
+					$.each(instance.selectedStencils(), function (i, v) {
+						items.push(instance.getId({ 'element': $(v) }));
+					});
+
+					ide.designerAction({
+						'data': {
+							'action': 'remove',
+							'items': items
+						},
+						onComplete: function (e) {
+							instance.selectedStencils().remove();
+							instance.syncToolbar();
+							instance.resizeCanvas();
+						}
+					});
+				}
+			}
+		};
 	}
 });

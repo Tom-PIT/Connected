@@ -7,7 +7,6 @@ using TomPIT.Annotations;
 using TomPIT.Configuration;
 using TomPIT.Design;
 using TomPIT.Dom;
-using TomPIT.Ide;
 
 namespace TomPIT.Designers
 {
@@ -38,8 +37,10 @@ namespace TomPIT.Designers
 		{
 			var s = component as ISetting;
 			var rg = DomQuery.Closest<IResourceGroupScope>(Owner);
+			IdeExtensions.ProcessComponentCreated(Environment.Context, component);
 			Connection.GetService<ISettingManagementService>().Update(rg == null ? Guid.Empty : rg.ResourceGroup.Token, s.Name, s.Value, true, s.DataType, s.Tags);
 			s = Connection.GetService<ISettingService>().Select(rg == null ? Guid.Empty : rg.ResourceGroup.Token, s.Name);
+
 
 			var r = Result.SectionResult(this, EnvironmentSection.Designer);
 
