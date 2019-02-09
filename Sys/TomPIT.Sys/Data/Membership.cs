@@ -86,7 +86,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Security.Users.InsertMembership(u, role);
 
 			Refresh(GenerateKey(user, role));
-			NotificationHubs.MembershipAdded(user, role);
+			CachingNotifications.MembershipAdded(user, role);
 		}
 
 		public void Delete(Guid user, Guid role)
@@ -107,7 +107,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Security.Users.DeleteMembership(u, role);
 
 			Remove(GenerateKey(user, role));
-			NotificationHubs.MembershipRemoved(user, role);
+			CachingNotifications.MembershipRemoved(user, role);
 		}
 	}
 }

@@ -101,7 +101,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.UpdateString(s, l, element, property, value);
 
 			Refresh(microService, language, element, property);
-			NotificationHubs.MicroServiceStringChanged(microService, language, element, property);
+			CachingNotifications.MicroServiceStringChanged(microService, language, element, property);
 		}
 
 		public void Delete(Guid microService, Guid element, string property)
@@ -112,7 +112,7 @@ namespace TomPIT.Sys.Data
 				throw SysException.MicroServiceNotFound();
 
 			Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.DeleteString(s, element, property);
-			NotificationHubs.MicroServiceStringRemoved(microService, element, property);
+			CachingNotifications.MicroServiceStringRemoved(microService, element, property);
 		}
 	}
 }

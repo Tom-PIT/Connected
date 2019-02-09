@@ -93,7 +93,7 @@ namespace TomPIT.Sys.Data
 			var key = GenerateKey(evidence.AsString(), schema, claim, primaryKey);
 
 			Refresh(key);
-			NotificationHubs.PermissionAdded(resourceGroup, evidence, schema, claim, primaryKey);
+			CachingNotifications.PermissionAdded(resourceGroup, evidence, schema, claim, primaryKey);
 		}
 
 		public void Update(Guid evidence, string schema, string claim, string primaryKey, PermissionValue value)
@@ -108,7 +108,7 @@ namespace TomPIT.Sys.Data
 			var key = GenerateKey(evidence.AsString(), schema, claim, primaryKey);
 
 			Refresh(key);
-			NotificationHubs.PermissionChanged(p.ResourceGroup, evidence, schema, claim, primaryKey);
+			CachingNotifications.PermissionChanged(p.ResourceGroup, evidence, schema, claim, primaryKey);
 		}
 
 		public void Delete(Guid evidence, string schema, string claim, string primaryKey)
@@ -123,7 +123,7 @@ namespace TomPIT.Sys.Data
 			var key = GenerateKey(evidence.AsString(), schema, claim, primaryKey);
 
 			Remove(key);
-			NotificationHubs.PermissionRemoved(p.ResourceGroup, evidence, schema, claim, primaryKey);
+			CachingNotifications.PermissionRemoved(p.ResourceGroup, evidence, schema, claim, primaryKey);
 		}
 
 		public void Reset(string primaryKey)

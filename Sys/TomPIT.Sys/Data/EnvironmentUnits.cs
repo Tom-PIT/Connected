@@ -74,7 +74,7 @@ namespace TomPIT.Sys.Data
 
 			Refresh(token);
 
-			NotificationHubs.EnvironmentUnitChanged(token);
+			CachingNotifications.EnvironmentUnitChanged(token);
 
 			return token;
 		}
@@ -87,7 +87,7 @@ namespace TomPIT.Sys.Data
 			{
 				Refresh(i.Unit.Token);
 
-				NotificationHubs.EnvironmentUnitChanged(i.Unit.Token);
+				CachingNotifications.EnvironmentUnitChanged(i.Unit.Token);
 			}
 		}
 
@@ -112,7 +112,7 @@ namespace TomPIT.Sys.Data
 
 			Refresh(token);
 
-			NotificationHubs.EnvironmentUnitChanged(token);
+			CachingNotifications.EnvironmentUnitChanged(token);
 		}
 
 		public void Delete(Guid token)
@@ -129,7 +129,7 @@ namespace TomPIT.Sys.Data
 
 			Refresh(token);
 
-			NotificationHubs.EnvironmentUnitRemoved(token);
+			CachingNotifications.EnvironmentUnitRemoved(token);
 		}
 	}
 }

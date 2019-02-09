@@ -180,7 +180,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Insert(s, DateTime.UtcNow, f, category, name, component, type, runtimeConfiguration);
 
 			Refresh(component);
-			NotificationHubs.ComponentAdded(microService, folder, component);
+			CachingNotifications.ComponentAdded(microService, folder, component);
 		}
 
 		public void UpdateModified(Guid microService, string category, string name)
@@ -237,7 +237,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, DateTime.UtcNow, name, f, runtimeConfiguration);
 
 			Refresh(component);
-			NotificationHubs.ComponentChanged(c.MicroService, c.Folder, component);
+			CachingNotifications.ComponentChanged(c.MicroService, c.Folder, component);
 		}
 
 		public void Delete(Guid component)
@@ -250,7 +250,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Delete(c);
 
 			Remove(component);
-			NotificationHubs.ComponentRemoved(c.MicroService, c.Folder, component);
+			CachingNotifications.ComponentRemoved(c.MicroService, c.Folder, component);
 		}
 
 		public string CreateComponentName(Guid microService, string prefix, string category)

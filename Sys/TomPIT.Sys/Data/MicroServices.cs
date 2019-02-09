@@ -107,7 +107,7 @@ namespace TomPIT.Sys.Data
 
 			Refresh(token);
 
-			NotificationHubs.MicroServiceChanged(token);
+			CachingNotifications.MicroServiceChanged(token);
 		}
 
 		public void Update(Guid token, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package)
@@ -139,7 +139,7 @@ namespace TomPIT.Sys.Data
 
 			Refresh(token);
 
-			NotificationHubs.MicroServiceChanged(token);
+			CachingNotifications.MicroServiceChanged(token);
 		}
 
 		public void Delete(Guid token)
@@ -153,7 +153,7 @@ namespace TomPIT.Sys.Data
 
 			Remove(token);
 
-			NotificationHubs.MicroServiceRemoved(token);
+			CachingNotifications.MicroServiceRemoved(token);
 		}
 
 		private string Url(Guid token, string name)

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TomPIT.Services
+﻿namespace TomPIT.Services
 {
 	public class ExecutionEvents
 	{
@@ -12,5 +8,6 @@ namespace TomPIT.Services
 		public const int DataWrite = 103;
 		public const int OpenConnection = 104;
 		public const int PrepareCommand = 105;
+		public const int Deserialize = 106;
 	}
 }

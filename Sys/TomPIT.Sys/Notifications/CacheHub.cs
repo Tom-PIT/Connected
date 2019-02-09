@@ -11,14 +11,14 @@ namespace TomPIT.Sys.Notifications
 	{
 		public CacheHub(IHubContext<CacheHub> context)
 		{
-			NotificationHubs.Cache = context;
+			CachingNotifications.Cache = context;
 		}
 
 		public override Task OnConnectedAsync()
 		{
-			DataModel.MessageSubscribers.Insert("cache", Context.ConnectionId);
+			DataModel.MessageSubscribers.Insert("cache", Context.ConnectionId, SysExtensions.RequestInstanceId);
 
-			return base.OnConnectedAsync();
+			return Task.CompletedTask;
 		}
 
 		public override Task OnDisconnectedAsync(Exception exception)

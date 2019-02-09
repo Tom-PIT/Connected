@@ -37,7 +37,7 @@ namespace TomPIT.Sys.Data
 				Remove(i.Token);
 
 				if (SupportsNotification(i.Type))
-					NotificationHubs.BlobCommitted(i.MicroService, i.Token, i.Type, i.PrimaryKey);
+					CachingNotifications.BlobCommitted(i.MicroService, i.Token, i.Type, i.PrimaryKey);
 			}
 		}
 
@@ -55,7 +55,7 @@ namespace TomPIT.Sys.Data
 			DataModel.BlobsContents.Delete(b.ResourceGroup, blob);
 
 			if (SupportsNotification(b.Type))
-				NotificationHubs.BlobRemoved(b.MicroService, b.Token, b.Type, b.PrimaryKey);
+				CachingNotifications.BlobRemoved(b.MicroService, b.Token, b.Type, b.PrimaryKey);
 		}
 
 		public List<IBlob> Query(List<Guid> blobs)
@@ -180,7 +180,7 @@ namespace TomPIT.Sys.Data
 			DataModel.BlobsContents.Update(resourceGroup, token, content);
 
 			if (SupportsNotification(type))
-				NotificationHubs.BlobAdded(microService, token, type, primaryKey);
+				CachingNotifications.BlobAdded(microService, token, type, primaryKey);
 
 			return token;
 		}
@@ -198,7 +198,7 @@ namespace TomPIT.Sys.Data
 			Refresh(blob.Token);
 
 			if (SupportsNotification(blob.Type))
-				NotificationHubs.BlobChanged(blob.MicroService, blob.Token, blob.Type, blob.PrimaryKey);
+				CachingNotifications.BlobChanged(blob.MicroService, blob.Token, blob.Type, blob.PrimaryKey);
 		}
 
 		private bool SupportsNotification(int type)

@@ -30,6 +30,8 @@ namespace TomPIT
 		private static IMvcBuilder _mvcBuilder = null;
 		private static List<IPlugin> _plugins = null;
 
+		public static Guid Id { get; } = Guid.NewGuid();
+
 		public static void Initialize(IServiceCollection services, ServicesConfigurationArgs e)
 		{
 			Shell.RegisterConfigurationType(typeof(ClientSys));

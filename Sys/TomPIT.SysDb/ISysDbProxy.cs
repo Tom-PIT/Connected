@@ -4,6 +4,7 @@ using TomPIT.SysDb.Diagnostics;
 using TomPIT.SysDb.Environment;
 using TomPIT.SysDb.Events;
 using TomPIT.SysDb.Globalization;
+using TomPIT.SysDb.IoT;
 using TomPIT.SysDb.Management;
 using TomPIT.SysDb.Security;
 using TomPIT.SysDb.Storage;
@@ -23,6 +24,7 @@ namespace TomPIT.SysDb
 		IWorkerHandler Workers { get; }
 		IEventHandler Events { get; }
 		IDataHandler Data { get; }
+		IIoTHandler IoT { get; }
 
 		void Initialize(string connectionString);
 	}

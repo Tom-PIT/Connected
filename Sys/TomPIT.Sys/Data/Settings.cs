@@ -106,7 +106,7 @@ namespace TomPIT.Sys.Data
 
 			Refresh(resourceGroup, name);
 
-			NotificationHubs.SettingChanged(resourceGroup, name);
+			CachingNotifications.SettingChanged(resourceGroup, name);
 		}
 
 		public void Delete(Guid resourceGroup, string name)
@@ -125,7 +125,7 @@ namespace TomPIT.Sys.Data
 
 			Remove(GenerateKey(resourceGroup, name));
 
-			NotificationHubs.SettingRemoved(resourceGroup, name);
+			CachingNotifications.SettingRemoved(resourceGroup, name);
 		}
 	}
 }

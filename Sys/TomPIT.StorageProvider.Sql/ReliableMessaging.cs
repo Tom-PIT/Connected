@@ -10,7 +10,7 @@ namespace TomPIT.StorageProvider.Sql
 {
 	internal class ReliableMessaging : IReliableMessagingProvider
 	{
-		public void InsertSubscriber(IServerResourceGroup resourceGroup, ITopic topic, string connection)
+		public void InsertSubscriber(IServerResourceGroup resourceGroup, ITopic topic, string connection, Guid instance)
 		{
 			var w = new ResourceGroupWriter(resourceGroup, "tompit.message_subscriber_ins");
 
@@ -18,6 +18,7 @@ namespace TomPIT.StorageProvider.Sql
 			w.CreateParameter("@connection", connection);
 			w.CreateParameter("@created", DateTime.UtcNow);
 			w.CreateParameter("@alive", DateTime.UtcNow);
+			w.CreateParameter("@instance", instance);
 
 			w.Execute();
 		}
@@ -32,7 +33,7 @@ namespace TomPIT.StorageProvider.Sql
 			w.Execute();
 		}
 
-		public void InsertMessage(IServerResourceGroup resourceGroup, ITopic topic, Guid token, string content, DateTime expire, TimeSpan retryInterval)
+		public void InsertMessage(IServerResourceGroup resourceGroup, ITopic topic, Guid token, string content, DateTime expire, TimeSpan retryInterval, Guid senderInstance)
 		{
 			var w = new ResourceGroupWriter(resourceGroup, "tompit.message_ins");
 
@@ -42,6 +43,7 @@ namespace TomPIT.StorageProvider.Sql
 			w.CreateParameter("@expire", expire);
 			w.CreateParameter("@retry_interval", retryInterval.TotalSeconds);
 			w.CreateParameter("@token", token);
+			w.CreateParameter("@sender_instance", senderInstance);
 
 			w.Execute();
 		}

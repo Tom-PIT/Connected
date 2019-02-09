@@ -808,6 +808,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot deserialize type.
+        /// </summary>
+        public static string ErrDeserialize {
+            get {
+                return ResourceManager.GetString("ErrDeserialize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to More than one component found for the specified name.
         /// </summary>
         public static string ErrDuplicateComponentFound {
@@ -1060,6 +1069,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot convert value to the destination type.
+        /// </summary>
+        public static string ErrIoTConversionError {
+            get {
+                return ResourceManager.GetString("ErrIoTConversionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value expected.
+        /// </summary>
+        public static string ErrIoTExpectedValue {
+            get {
+                return ResourceManager.GetString("ErrIoTExpectedValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to IoT hub device not found.
         /// </summary>
         public static string ErrIoTHubDeviceNotFound {
@@ -1087,11 +1114,56 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to IoT transaction parameter expected.
+        /// </summary>
+        public static string ErrIoTParameterExpected {
+            get {
+                return ResourceManager.GetString("ErrIoTParameterExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IoT transaction parameter not allowed.
+        /// </summary>
+        public static string ErrIoTParameterNotAllowed {
+            get {
+                return ResourceManager.GetString("ErrIoTParameterNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IoT transaction parameter value expected.
+        /// </summary>
+        public static string ErrIoTParameterValueExpected {
+            get {
+                return ResourceManager.GetString("ErrIoTParameterValueExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IoT schema field not defined.
+        /// </summary>
+        public static string ErrIoTSchemaFieldNotDefined {
+            get {
+                return ResourceManager.GetString("ErrIoTSchemaFieldNotDefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to IoT schema not found.
         /// </summary>
         public static string ErrIoTSchemaNotFound {
             get {
                 return ResourceManager.GetString("ErrIoTSchemaNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Transaction not allowed.
+        /// </summary>
+        public static string ErrIoTTransactionNotAllowed {
+            get {
+                return ResourceManager.GetString("ErrIoTTransactionNotAllowed", resourceCulture);
             }
         }
         

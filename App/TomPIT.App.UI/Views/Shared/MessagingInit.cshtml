@@ -5,11 +5,4 @@
 }
 <script>
 	var iot = $('#_sysContent').tpMessaging().data('tompit-tpMessaging');
-
-	iot.connect({
-		'url': '@string.Format("{0}/iot",Model.Services.Routing.GetServer(TomPIT.Environment.InstanceType.IoT, TomPIT.Environment.InstanceVerbs.All))',
-		'microService': '@ms.Name',
-		'appBaseUrl': '@Model.MapPath("~/sys/plugins/iot/partial")',
-		'id': 'iot'
-	});
 </script>

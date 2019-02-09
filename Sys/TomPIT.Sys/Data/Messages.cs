@@ -76,7 +76,7 @@ namespace TomPIT.Sys.Data
 			return Where(f => string.Compare(f.Topic, topic, true) == 0);
 		}
 
-		public void Insert(string topic, Guid token, string content, DateTime expire, TimeSpan retryInterval)
+		public void Insert(string topic, Guid token, string content, DateTime expire, TimeSpan retryInterval, Guid senderInstance)
 		{
 			var t = DataModel.MessageTopics.Ensure(topic);
 
@@ -88,7 +88,7 @@ namespace TomPIT.Sys.Data
 			if (rg == null)
 				throw new SysException(SR.ErrResourceGroupNotFound);
 
-			Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.InsertMessage(rg, t, token, content, expire, retryInterval);
+			Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.InsertMessage(rg, t, token, content, expire, retryInterval, senderInstance);
 
 			Refresh(token);
 			DataModel.MessageRecipients.Load(token);

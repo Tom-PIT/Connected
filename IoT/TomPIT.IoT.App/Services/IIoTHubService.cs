@@ -7,5 +7,7 @@ namespace TomPIT.IoT.Services
 	{
 		IIoTDevice SelectDevice(string authenticationToken);
 		JObject SetData(IIoTDevice device, JObject data);
+		IIoTSchema SelectSchema(IIoTHub hub);
+		void FlushChanges();
 	}
 }

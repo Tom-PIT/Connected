@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
 using TomPIT.IoT.Hubs;
@@ -34,9 +35,11 @@ namespace TomPIT.IoT
 			{
 				o.EnableDetailedErrors = true;
 			});
+
+			services.AddSingleton<IHostedService, FlushingService>();
 		}
 
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
 		{
 			Instance.Configure(InstanceType.Rest, app, env, null);
 			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;

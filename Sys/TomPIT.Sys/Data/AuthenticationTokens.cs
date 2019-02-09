@@ -98,7 +98,7 @@ namespace TomPIT.Sys.Data
 
 			Refresh(token);
 
-			NotificationHubs.AuthenticationTokenChanged(token);
+			CachingNotifications.AuthenticationTokenChanged(token);
 
 			return token;
 		}
@@ -126,7 +126,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Security.AuthenticationTokens.Update(t, u, name, description, key, claims, status, validFrom, validTo, startTime, endTime, ipRestrictions);
 
 			Refresh(token);
-			NotificationHubs.AuthenticationTokenChanged(token);
+			CachingNotifications.AuthenticationTokenChanged(token);
 		}
 
 		public void Delete(Guid token)
@@ -139,7 +139,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Security.AuthenticationTokens.Delete(t);
 
 			Remove(token);
-			NotificationHubs.AuthenticationTokenRemoved(token);
+			CachingNotifications.AuthenticationTokenRemoved(token);
 		}
 	}
 }

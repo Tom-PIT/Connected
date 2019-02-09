@@ -10,6 +10,7 @@ namespace TomPIT.IoT
 	public class IoTTransaction : ConfigurationElement, IIoTTransaction
 	{
 		private IServerEvent _invoke = null;
+		private ListItems<IIoTTransactionParameter> _parameters = null;
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
@@ -28,7 +29,17 @@ namespace TomPIT.IoT
 			}
 		}
 
-		public IoTTransactonScope Scope { get; set; } = IoTTransactonScope.Global;
+		[Items("TomPIT.IoT.Design.Items.IoTTransactionParametersCollection, TomPIT.IoT.Design")]
+		public ListItems<IIoTTransactionParameter> Parameters
+		{
+			get
+			{
+				if (_parameters == null)
+					_parameters = new ListItems<IIoTTransactionParameter> { Parent = this };
+
+				return _parameters;
+			}
+		}
 
 		public override string ToString()
 		{

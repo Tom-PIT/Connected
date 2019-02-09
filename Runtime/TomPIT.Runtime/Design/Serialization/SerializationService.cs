@@ -1,11 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using TomPIT.Connectivity;
+using TomPIT.Services;
 
 namespace TomPIT.Design.Serialization
 {
@@ -28,12 +27,22 @@ namespace TomPIT.Design.Serialization
 		{
 			var content = ResolveTypes(Encoding.UTF8.GetString(state));
 
-			return JsonConvert.DeserializeObject(content, type, new JsonSerializerSettings
+			try
 			{
-				TypeNameHandling = TypeNameHandling.Auto,
-				ContractResolver = SupportInitializeContractResolver.Instance,
-				Context = new StreamingContext(StreamingContextStates.Other, Connection)
-			});
+				return JsonConvert.DeserializeObject(content, type, new JsonSerializerSettings
+				{
+					TypeNameHandling = TypeNameHandling.Auto,
+					ContractResolver = SupportInitializeContractResolver.Instance,
+					Context = new StreamingContext(StreamingContextStates.Other, Connection)
+				});
+			}
+			catch (Exception ex)
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrDeserialize, type.TypeName()), ex)
+				{
+					EventId = ExecutionEvents.Deserialize,
+				};
+			}
 		}
 
 		public byte[] Serialize(object component)
@@ -57,7 +66,7 @@ namespace TomPIT.Design.Serialization
 			return content;
 		}
 
-		private ConcurrentDictionary<string,string> Replacements { get { return _replacements.Value; } }
+		private ConcurrentDictionary<string, string> Replacements { get { return _replacements.Value; } }
 
 		public void RegisterReplacement(string obsolete, string replacement)
 		{

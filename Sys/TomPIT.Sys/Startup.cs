@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -32,7 +33,7 @@ namespace TomPIT.Sys
 				options.DefaultScheme = "TomPIT";
 			}).AddTomPITAuthentication("TomPIT", "Tom PIT", o =>
 			{
-				
+
 			});
 
 			services.AddSignalR(o =>
@@ -41,6 +42,8 @@ namespace TomPIT.Sys
 			});
 
 			RegisterTasks(services);
+
+			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 		}
 
 		public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
@@ -59,6 +62,7 @@ namespace TomPIT.Sys
 			app.UseSignalR(routes =>
 			{
 				routes.MapHub<CacheHub>("/caching");
+				routes.MapHub<IoTHub>("/iot");
 			});
 
 			app.UseMvc(routes =>
@@ -69,6 +73,7 @@ namespace TomPIT.Sys
 			app.UseAuthentication();
 
 			ServerConfiguration.Initialize();
+			Shell.Configure(app);
 		}
 
 		private void RegisterTasks(IServiceCollection services)

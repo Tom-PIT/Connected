@@ -12,7 +12,7 @@ using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Notifications
 {
-	internal static class NotificationHubs
+	internal static class CachingNotifications
 	{
 		internal static IHubContext<CacheHub> Cache { get; set; }
 
@@ -27,10 +27,17 @@ namespace TomPIT.Sys.Notifications
 				Content = JsonConvert.SerializeObject(args)
 			};
 
-			DataModel.Messages.Insert("cache", args.Message, JsonConvert.SerializeObject(state), DateTime.UtcNow.AddMinutes(5), TimeSpan.FromSeconds(5));
+			DataModel.Messages.Insert("cache", args.Message, JsonConvert.SerializeObject(state), DateTime.UtcNow.AddMinutes(5), TimeSpan.FromSeconds(5), SysExtensions.RequestInstanceId);
 
 			if (Cache != null)
-				await Cache.Clients.All.SendAsync(method, args);
+			{
+				var sender = SysExtensions.RequestConnectionId("cache");
+
+				if (string.IsNullOrWhiteSpace(sender))
+					await Cache.Clients.All.SendAsync(method, args);
+				else
+					await Cache.Clients.AllExcept(sender).SendAsync(method, args);
+			}
 		}
 
 		public static void AuthenticationTokenChanged(Guid token) { Notify(nameof(AuthenticationTokenChanged), new AuthenticationTokenEventArgs(token)); }

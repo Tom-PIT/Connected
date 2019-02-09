@@ -804,6 +804,12 @@
   <data name="ErrNoServer" xml:space="preserve">
     <value>No endpoint registered</value>
   </data>
+  <data name="ErrIoTConversionError" xml:space="preserve">
+    <value>Cannot convert value to the destination type</value>
+  </data>
+  <data name="ErrIoTExpectedValue" xml:space="preserve">
+    <value>Value expected</value>
+  </data>
   <data name="ErrIoTHubDeviceNotFound" xml:space="preserve">
     <value>IoT hub device not found</value>
   </data>
@@ -813,7 +819,25 @@
   <data name="ErrIoTHubSchemaNotSet" xml:space="preserve">
     <value>IoT hub schema not set</value>
   </data>
+  <data name="ErrIoTSchemaFieldNotDefined" xml:space="preserve">
+    <value>IoT schema field not defined</value>
+  </data>
   <data name="ErrIoTSchemaNotFound" xml:space="preserve">
     <value>IoT schema not found</value>
+  </data>
+  <data name="ErrIoTTransactionNotAllowed" xml:space="preserve">
+    <value>Transaction not allowed</value>
+  </data>
+  <data name="ErrDeserialize" xml:space="preserve">
+    <value>Cannot deserialize type</value>
+  </data>
+  <data name="ErrIoTParameterExpected" xml:space="preserve">
+    <value>IoT transaction parameter expected</value>
+  </data>
+  <data name="ErrIoTParameterNotAllowed" xml:space="preserve">
+    <value>IoT transaction parameter not allowed</value>
+  </data>
+  <data name="ErrIoTParameterValueExpected" xml:space="preserve">
+    <value>IoT transaction parameter value expected</value>
   </data>
 </root>

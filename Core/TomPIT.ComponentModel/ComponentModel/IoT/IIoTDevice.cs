@@ -8,6 +8,6 @@ namespace TomPIT.ComponentModel.IoT
 		string AuthenticationToken { get; }
 		IServerEvent Data { get; }
 
-		ListItems<IIoTDeviceTransaction> Transactions { get; }
+		ListItems<IIoTTransaction> Transactions { get; }
 	}
 }

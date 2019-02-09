@@ -44,6 +44,11 @@ namespace TomPIT.Sys.Data
 			Set(id, r, TimeSpan.Zero);
 		}
 
+		public ISubscriber Select(string topic, Guid instance)
+		{
+			return Get(f => string.Compare(f.Topic, topic, true) == 0 && f.Instance == instance);
+		}
+
 		public ISubscriber Select(string topic, string connection)
 		{
 			return Get(GenerateKey(topic, connection),
@@ -68,7 +73,7 @@ namespace TomPIT.Sys.Data
 			return Where(f => string.Compare(topic, f.Topic, true) == 0);
 		}
 
-		public void Insert(string topic, string connection)
+		public void Insert(string topic, string connection, Guid instance)
 		{
 			var t = DataModel.MessageTopics.Ensure(topic);
 
@@ -77,7 +82,7 @@ namespace TomPIT.Sys.Data
 
 			var rg = t.ResolveResourceGroup();
 
-			Shell.GetService<IStorageProviderService>().Resolve(rg.Token).Messaging.InsertSubscriber(rg, t, connection);
+			Shell.GetService<IStorageProviderService>().Resolve(rg.Token).Messaging.InsertSubscriber(rg, t, connection, instance);
 
 			Refresh(GenerateKey(topic, connection));
 		}

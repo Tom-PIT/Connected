@@ -141,7 +141,7 @@ namespace TomPIT.Sys.Data
 
 			Refresh(token);
 
-			NotificationHubs.InstanceEndpointChanged(token);
+			CachingNotifications.InstanceEndpointChanged(token);
 
 			return token;
 		}
@@ -157,7 +157,7 @@ namespace TomPIT.Sys.Data
 
 			Refresh(token);
 
-			NotificationHubs.InstanceEndpointChanged(token);
+			CachingNotifications.InstanceEndpointChanged(token);
 		}
 
 		public void Delete(Guid token)
@@ -170,7 +170,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Environment.DeleteInstanceEndpoint(target);
 
 			Remove(token);
-			NotificationHubs.InstanceEndpointRemoved(token);
+			CachingNotifications.InstanceEndpointRemoved(token);
 		}
 	}
 }

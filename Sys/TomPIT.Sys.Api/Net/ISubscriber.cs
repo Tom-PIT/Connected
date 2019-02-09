@@ -9,5 +9,6 @@ namespace TomPIT.Api.Net
 		string Connection { get; }
 		DateTime Alive { get; }
 		DateTime Created { get; }
+		Guid Instance { get; }
 	}
 }

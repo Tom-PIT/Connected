@@ -72,7 +72,7 @@ namespace TomPIT.Sys.Data
 
 			Refresh(token);
 
-			NotificationHubs.ResourceGroupChanged(token);
+			CachingNotifications.ResourceGroupChanged(token);
 
 			return token;
 		}
@@ -90,7 +90,7 @@ namespace TomPIT.Sys.Data
 
 			Refresh(token);
 
-			NotificationHubs.ResourceGroupChanged(token);
+			CachingNotifications.ResourceGroupChanged(token);
 
 			return token;
 		}
@@ -113,7 +113,7 @@ namespace TomPIT.Sys.Data
 
 			Refresh(token);
 
-			NotificationHubs.ResourceGroupChanged(token);
+			CachingNotifications.ResourceGroupChanged(token);
 		}
 
 		public void Delete(Guid token)
@@ -127,7 +127,7 @@ namespace TomPIT.Sys.Data
 
 			Refresh(token);
 
-			NotificationHubs.ResourceGroupRemoved(token);
+			CachingNotifications.ResourceGroupRemoved(token);
 		}
 
 		public IServerResourceGroup Default

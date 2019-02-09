@@ -10,6 +10,7 @@ namespace TomPIT.StorageProvider.Sql
 		public string Connection { get; set; }
 		public DateTime Alive { get; set; }
 		public DateTime Created { get; set; }
+		public Guid Instance { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -19,6 +20,7 @@ namespace TomPIT.StorageProvider.Sql
 			Connection = GetString("connection");
 			Alive = GetDate("alive");
 			Created = GetDate("created");
+			Instance = GetGuid("instance");
 		}
 
 	}

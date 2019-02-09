@@ -7,10 +7,10 @@ namespace TomPIT.Api.Storage
 {
 	public interface IReliableMessagingProvider
 	{
-		void InsertSubscriber(IServerResourceGroup resourceGroup, ITopic topic, string connection);
+		void InsertSubscriber(IServerResourceGroup resourceGroup, ITopic topic, string connection, Guid instance);
 		void DeleteSubscriber(IServerResourceGroup resourceGroup, ITopic topic, string connection);
 		void UpdateSubscriber(IServerResourceGroup resourceGroup, ISubscriber subscriber, DateTime heartbeat);
-		void InsertMessage(IServerResourceGroup resourceGroup, ITopic topic, Guid token, string content, DateTime expire, TimeSpan retryInterval);
+		void InsertMessage(IServerResourceGroup resourceGroup, ITopic topic, Guid token, string content, DateTime expire, TimeSpan retryInterval, Guid senderInstance);
 		void RemoveRecipient(IServerResourceGroup resourceGroup, ITopic topic, Guid token, string connection);
 		List<IRecipient> QueryRecipients(IServerResourceGroup resourceGroup);
 		List<ITopic> QueryTopics(IServerResourceGroup resourceGroup);

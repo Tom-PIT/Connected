@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
@@ -51,13 +53,67 @@ namespace TomPIT.IoT.Services
 
 		public JObject SetData(IIoTDevice device, JObject data)
 		{
-			var schema = ResolveSchema(device);
+			var schema = SelectSchema(device.Closest<IIoTHub>());
+			var hub = device.Configuration().Component;
+			ValidateData(data, schema);
+			var state = Data.Select(hub);
+			var changed = new List<IIoTFieldStateModifier>();
+
+			foreach (var i in data)
+			{
+				var value = i.Value as JValue;
+				var field = state.FirstOrDefault(f => string.Compare(f.Field, i.Key, true) == 0);
+				var schemaField = schema.Fields.FirstOrDefault(f => string.Compare(f.Name, i.Key, true) == 0);
+				var type = Types.ToType(schemaField.DataType);
+
+				if (!Types.TryConvertInvariant(value.Value, out object v, type))
+					throw new RuntimeException(string.Format("{0} ({1}, {2})", SR.ErrIoTConversionError, schemaField.Name, type.ToFriendlyName()));
+
+				if (field != null)
+				{
+					object existingValue = null;
+
+					if (string.IsNullOrWhiteSpace(field.Value))
+						existingValue = Types.DefaultValue(type);
+					else
+					{
+						if (!Types.TryConvertInvariant(field.Value, out existingValue, type))
+							existingValue = null;
+					}
+
+					if (Types.Compare(v, existingValue))
+						continue;
+				}
+
+				changed.Add(new IoTFieldStateModifier
+				{
+					Field = schemaField.Name,
+					Value = Types.Convert<string>(v, CultureInfo.InvariantCulture)
+				});
+			}
+
+			if (changed.Count == 0)
+				return null;
+
+			return Data.Update(hub, changed);
 		}
 
-		private IIoTSchema ResolveSchema(IIoTDevice device)
+		private void ValidateData(JObject data, IIoTSchema schema)
 		{
-			var hub = device.Closest<IIoTHub>();
+			foreach (var i in data)
+			{
+				var field = schema.Fields.FirstOrDefault(f => string.Compare(f.Name, i.Key, true) == 0);
 
+				if (field == null)
+					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrIoTSchemaFieldNotDefined, i.Key));
+
+				if (!(i.Value is JValue))
+					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrIoTExpectedValue, i.Key));
+			}
+		}
+
+		public IIoTSchema SelectSchema(IIoTHub hub)
+		{
 			if (string.IsNullOrWhiteSpace(hub.Schema))
 				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrIoTHubSchemaNotSet, hub.ComponentName(Connection)));
 
@@ -90,5 +146,10 @@ namespace TomPIT.IoT.Services
 		}
 
 		private HubDataCache Data { get; }
+
+		public void FlushChanges()
+		{
+			Data.Flush();
+		}
 	}
 }

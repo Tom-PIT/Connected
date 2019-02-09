@@ -16,6 +16,11 @@ namespace TomPIT
 
 		}
 
+		public RuntimeException(string message, Exception inner) : base(message, inner)
+		{
+
+		}
+
 		public RuntimeException(string source, string message) : base(message)
 		{
 			Source = source;

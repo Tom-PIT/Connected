@@ -5,6 +5,7 @@ using TomPIT.SysDb.Diagnostics;
 using TomPIT.SysDb.Environment;
 using TomPIT.SysDb.Events;
 using TomPIT.SysDb.Globalization;
+using TomPIT.SysDb.IoT;
 using TomPIT.SysDb.Management;
 using TomPIT.SysDb.Security;
 using TomPIT.SysDb.Sql.Configuration;
@@ -14,6 +15,7 @@ using TomPIT.SysDb.Sql.Diagnostics;
 using TomPIT.SysDb.Sql.Environment;
 using TomPIT.SysDb.Sql.Events;
 using TomPIT.SysDb.Sql.Globalization;
+using TomPIT.SysDb.Sql.IoT;
 using TomPIT.SysDb.Sql.Security;
 using TomPIT.SysDb.Sql.Storage;
 using TomPIT.SysDb.Sql.Workers;
@@ -34,6 +36,18 @@ namespace TomPIT.SysDb.Sql
 		private IWorkerHandler _workers = null;
 		private IEventHandler _events = null;
 		private IDataHandler _data = null;
+		private IIoTHandler _iot = null;
+
+		public IIoTHandler IoT
+		{
+			get
+			{
+				if (_iot == null)
+					_iot = new IoTHandler();
+
+				return _iot;
+			}
+		}
 
 		public IDataHandler Data
 		{

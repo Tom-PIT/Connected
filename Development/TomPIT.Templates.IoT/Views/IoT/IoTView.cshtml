@@ -1,10 +1,13 @@
-﻿@using TomPIT.IoT.UI;
+﻿@using TomPIT;
+@using TomPIT.IoT.UI;
 @using TomPIT.IoT;
 
 @model TomPIT.Models.IRuntimeModel
 
 @{
 	var view = Model.ViewConfiguration as IoTView;
+	var ms = Model.Connection().ResolveMicroService(Model.MicroService());
+
 }
 
 <link rel="stylesheet" type="text/css" href="~/Assets/Styles/iot.min.css" />
@@ -19,3 +22,14 @@
 	</svg>
 
 </div>
+
+<script>
+		iot.connect({
+		'url': '@string.Format("{0}/iot",Model.Services.Routing.GetServer(TomPIT.Environment.InstanceType.IoT, TomPIT.Environment.InstanceVerbs.All))',
+		'microService': '@ms.Name',
+		'appBaseUrl': '@Model.MapPath("~/sys/plugins/iot/partial")',
+		'hub':'@view.Hub',
+		'id': 'iot'
+	});
+
+</script>

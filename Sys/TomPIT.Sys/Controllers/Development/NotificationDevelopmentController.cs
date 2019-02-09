@@ -19,7 +19,7 @@ namespace TomPIT.Sys.Controllers.Development
 			if (c == null)
 				throw new SysException(SR.ErrComponentNotFound);
 
-			NotificationHubs.ConfigurationAdded(c.MicroService, c.Token, c.Category);
+			CachingNotifications.ConfigurationAdded(c.MicroService, c.Token, c.Category);
 		}
 
 		[HttpPost]
@@ -35,7 +35,7 @@ namespace TomPIT.Sys.Controllers.Development
 				throw new SysException(SR.ErrComponentNotFound);
 
 			DataModel.Components.UpdateModified(c.MicroService, c.Category, c.Name);
-			NotificationHubs.ConfigurationChanged(c.MicroService, c.Token, c.Category);
+			CachingNotifications.ConfigurationChanged(c.MicroService, c.Token, c.Category);
 		}
 
 		[HttpPost]
@@ -47,7 +47,7 @@ namespace TomPIT.Sys.Controllers.Development
 			var microService = body.Required<Guid>("microService");
 			var category = body.Required<string>("category");
 
-			NotificationHubs.ConfigurationRemoved(microService, configuration, category);
+			CachingNotifications.ConfigurationRemoved(microService, configuration, category);
 		}
 
 		[HttpPost]
@@ -58,7 +58,7 @@ namespace TomPIT.Sys.Controllers.Development
 			var microService = body.Required<Guid>("microService");
 			var sourceCode = body.Required<Guid>("sourceCode");
 
-			NotificationHubs.ScriptChanged(microService, sourceCode);
+			CachingNotifications.ScriptChanged(microService, sourceCode);
 		}
 	}
 }

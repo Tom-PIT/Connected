@@ -50,7 +50,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Security.Roles.Insert(token, name);
 
 			Select(token);
-			NotificationHubs.RoleChanged(token);
+			CachingNotifications.RoleChanged(token);
 
 			return token;
 		}
@@ -65,7 +65,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Security.Roles.Update(role, name);
 
 			Refresh(role.Token);
-			NotificationHubs.RoleChanged(role.Token);
+			CachingNotifications.RoleChanged(role.Token);
 		}
 
 		public List<IRole> Query()
@@ -83,7 +83,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Security.Roles.Delete(role);
 
 			Remove(token);
-			NotificationHubs.RoleChanged(token);
+			CachingNotifications.RoleChanged(token);
 		}
 	}
 }

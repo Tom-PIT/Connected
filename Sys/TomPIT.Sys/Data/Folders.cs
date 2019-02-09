@@ -108,14 +108,14 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Insert(s, name, token, p);
 
 			Refresh(token);
-			NotificationHubs.FolderChanged(microService, token);
+			CachingNotifications.FolderChanged(microService, token);
 
 			return token;
 		}
 
 		public void Update(Guid microService, Guid folder, string name, Guid parent)
 		{
-			if(folder == parent)
+			if (folder == parent)
 				throw new SysException(SR.ErrFolderSelf);
 
 			var f = Select(folder);
@@ -143,7 +143,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Update(f, name, p);
 
 			Refresh(folder);
-			NotificationHubs.FolderChanged(microService, folder);
+			CachingNotifications.FolderChanged(microService, folder);
 		}
 
 		public void Delete(Guid microService, Guid folder)
@@ -156,7 +156,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Delete(f);
 
 			Remove(folder);
-			NotificationHubs.FolderRemoved(microService, folder);
+			CachingNotifications.FolderRemoved(microService, folder);
 		}
 	}
 }

@@ -34,6 +34,7 @@ namespace TomPIT.Sys.Data
 		private static Lazy<Audit> _audit = new Lazy<Audit>(() => { return new Audit(); });
 		private static Lazy<AuthenticationTokens> _authTokens = new Lazy<AuthenticationTokens>(() => { return new AuthenticationTokens(Container); });
 		private static Lazy<Metrics> _metrics = new Lazy<Metrics>(() => { return new Metrics(); });
+		private static Lazy<IoTState> _iotState = new Lazy<IoTState>(() => { return new IoTState(Container); });
 
 		public static MicroServicesMeta MicroServicesMeta { get { return _meta.Value; } }
 		public static MicroServices MicroServices { get { return _microServices.Value; } }
@@ -62,6 +63,7 @@ namespace TomPIT.Sys.Data
 		public static Audit Audit { get { return _audit.Value; } }
 		public static AuthenticationTokens AuthenticationTokens { get { return _authTokens.Value; } }
 		public static Metrics Metrics { get { return _metrics.Value; } }
+		public static IoTState IoTState { get { return _iotState.Value; } }
 
 		internal static MemoryCache Container
 		{

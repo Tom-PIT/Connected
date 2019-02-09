@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
+using TomPIT.Services;
 
 namespace TomPIT.Dom
 {
@@ -9,12 +10,17 @@ namespace TomPIT.Dom
 		private IConfiguration _configuration = null;
 		private object[] _propertySources = null;
 		private IDomDesigner _designer = null;
+		private bool _loaded = false;
 
 		public ComponentElement(IDomElement parent, IComponent component) : base(parent, component)
 		{
 			Id = Target.Token.ToString();
 			Glyph = ResolveGlyph();
-			Title = Target.Name;
+
+			if (_loaded && Configuration == null)
+				Title = string.Format("(!){0}", Target.Name);
+			else
+				Title = Target.Name;
 
 			((Behavior)Behavior).AutoExpand = false;
 			((Behavior)Behavior).Static = false;
@@ -53,14 +59,35 @@ namespace TomPIT.Dom
 		{
 			get
 			{
-				if (_configuration == null)
-					_configuration = Connection.GetService<IComponentService>().SelectConfiguration(Target.Token);
+				if (_configuration == null && !_loaded)
+				{
+					_loaded = true;
+
+					try
+					{
+						_configuration = Connection.GetService<IComponentService>().SelectConfiguration(Target.Token);
+					}
+					catch (RuntimeException ex)
+					{
+						if (ex.EventId != ExecutionEvents.Deserialize)
+							throw ex;
+					}
+				}
 
 				return _configuration;
 			}
 		}
 
-		public override object Component => Configuration;
+		public override object Component
+		{
+			get
+			{
+				if (Configuration != null)
+					return Configuration;
+
+				return Target;
+			}
+		}
 
 		public override object[] PropertySources
 		{
@@ -89,6 +116,9 @@ namespace TomPIT.Dom
 			{
 				if (_designer == null)
 				{
+					if (Configuration == null)
+						return null;
+
 					var att = Configuration.GetType().ResolveDesigner();
 
 					if (att != null)

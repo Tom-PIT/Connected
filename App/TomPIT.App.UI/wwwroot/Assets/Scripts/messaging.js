@@ -12,7 +12,8 @@ $.widget('tompit.tpMessaging', {
 		var instance = this;
 
 		$.each(this.options.connections, function (i, v) {
-			if (v.url === e.url) {
+			if (v.url === e.url && v.microService === e.microService
+				&& v.hub === e.hub && v.id === e.id) {
 				exists = true;
 				return false;
 			}
@@ -21,14 +22,17 @@ $.widget('tompit.tpMessaging', {
 		if (exists)
 			return;
 
+		var qs = encodeURI('?microService=' + e.microService + '&hub=' + e.hub);
+
 		var connection = {
 			'url': e.url,
 			'id': e.id,
 			'microService': e.microService,
 			'bindings': [],
 			'appBaseUrl': e.appBaseUrl,
+			'hub': e.hub,
 			'connection': new signalR.HubConnectionBuilder()
-				.withUrl(e.url)
+				.withUrl(e.url + qs)
 				.configureLogging(signalR.LogLevel.Information)
 				.build()
 		};
@@ -68,7 +72,7 @@ $.widget('tompit.tpMessaging', {
 					}
 				});
 
-				instance.element.trigger('valueChanged', null, [v.view, data]);
+				instance.element.trigger('valueChanged', [data, connection.hub, v.view]);
 			});
 		});
 
@@ -134,8 +138,14 @@ $.widget('tompit.tpMessaging', {
 		return r;
 	},
 	_startConnection(c) {
+		var instance = this;
+
 		c.start().catch(function (err) {
 			tompit.error(err.toString());
+
+			setTimeout(function () {
+				instance._startConnection(c);
+			}, 2500);
 		});
 	}
 });

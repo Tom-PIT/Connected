@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using System;
+using System.Collections.Generic;
 using TomPIT.Storage;
+using TomPIT.Sys.Data;
 using TomPIT.Sys.Exceptions;
 using TomPIT.Sys.Net;
 using TomPIT.Sys.Security;
@@ -43,6 +44,32 @@ namespace TomPIT.Sys
 			}
 
 			return r;
+		}
+
+		public static Guid RequestInstanceId
+		{
+			get
+			{
+				if (Shell.HttpContext == null)
+					return Guid.Empty;
+
+				var instance = Shell.HttpContext.Request.Headers["TomPITInstanceId"];
+
+				if (string.IsNullOrWhiteSpace(instance))
+					return Guid.Empty;
+
+				return instance.ToString().AsGuid();
+			}
+		}
+
+		public static string RequestConnectionId(string topic)
+		{
+			if (RequestInstanceId == Guid.Empty)
+				return null;
+
+			var subscriber = DataModel.MessageSubscribers.Select(topic, RequestInstanceId);
+
+			return subscriber?.Connection;
 		}
 	}
 }

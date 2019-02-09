@@ -57,7 +57,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Globalization.Languages.Insert(token, name, lcid, status, mappings);
 
 			Refresh(token);
-			NotificationHubs.LanguageChanged(token);
+			CachingNotifications.LanguageChanged(token);
 
 			return token;
 		}
@@ -72,7 +72,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Globalization.Languages.Update(l, name, lcid, status, mappings);
 
 			Refresh(token);
-			NotificationHubs.LanguageChanged(token);
+			CachingNotifications.LanguageChanged(token);
 		}
 
 		public void Delete(Guid token)
@@ -85,7 +85,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Globalization.Languages.Delete(l);
 
 			Remove(token);
-			NotificationHubs.LanguageRemoved(token);
+			CachingNotifications.LanguageRemoved(token);
 		}
 	}
 }

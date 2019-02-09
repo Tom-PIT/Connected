@@ -33,6 +33,7 @@ namespace TomPIT.Connectivity
 						r.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", token);
 
 					r.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+					r.DefaultRequestHeaders.Add("TomPITInstanceId", Instance.Id.ToString());
 
 					r.Timeout = TimeSpan.FromSeconds(120);
 
@@ -59,6 +60,7 @@ namespace TomPIT.Connectivity
 						r.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwToken);
 
 					r.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+					r.DefaultRequestHeaders.Add("TomPITInstanceId", Instance.Id.ToString());
 
 					r.Timeout = TimeSpan.FromSeconds(120);
 

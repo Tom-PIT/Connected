@@ -141,7 +141,7 @@ namespace TomPIT.Sys.Data
 				pin, l, timezone, notificationEnabled, mobile, phone, Guid.Empty, Guid.NewGuid(), passwordChange);
 
 			Select(token);
-			NotificationHubs.UserChanged(token);
+			CachingNotifications.UserChanged(token);
 
 			return token;
 		}
@@ -182,7 +182,7 @@ namespace TomPIT.Sys.Data
 				pin, l, timezone, notificationEnabled, mobile, phone, avatar, passwordChange);
 
 			Refresh(user.Token);
-			NotificationHubs.UserChanged(user.Token);
+			CachingNotifications.UserChanged(user.Token);
 		}
 
 		public void ChangeAvatar(Guid token, Guid blob)
@@ -222,7 +222,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Security.Users.Delete(u);
 
 			Remove(token);
-			NotificationHubs.UserChanged(token);
+			CachingNotifications.UserChanged(token);
 		}
 
 		public IAuthenticationResult Authenticate(string user, string password)
@@ -259,7 +259,7 @@ namespace TomPIT.Sys.Data
 
 			Shell.GetService<IDatabaseService>().Proxy.Security.Users.UpdateLoginInformation(u, u.AuthenticationToken, DateTime.UtcNow);
 			Refresh(u.Token);
-			NotificationHubs.UserChanged(u.Token);
+			CachingNotifications.UserChanged(u.Token);
 
 			return AuthenticationResult.OK(new JwtSecurityTokenHandler().WriteToken(TomPITAuthenticationHandler.CreateToken(u.AuthenticationToken)));
 

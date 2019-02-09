@@ -1,114 +1,259 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using TomPIT.Compilation;
+using TomPIT.ComponentModel;
+using TomPIT.Environment;
+using TomPIT.Notifications;
+using TomPIT.Security;
+using TomPIT.Storage;
 
 namespace TomPIT.Connectivity
 {
-	internal class CachingClient
+	internal class CachingClient : HubClient
 	{
-		private HubConnection _connection = null;
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
-		private CachingEvents _events = null;
-
-		public CachingClient(ISysConnection connection, string authenticationToken)
+		public CachingClient(ISysConnection connection, string authenticationToken) : base(connection, authenticationToken)
 		{
-			Connection = connection;
-			AuthenticationToken = authenticationToken;
 		}
 
-		private ISysConnection Connection { get; }
-		private string AuthenticationToken { get; }
+		protected override string HubName => "caching";
 
-		public async void Connect()
+		protected override void Initialize()
 		{
-			if (_connection != null)
-				Disconnect();
-
-			_cancel = new CancellationTokenSource();
-			_connection = new HubConnectionBuilder().WithUrl(string.Format("{0}/caching", Connection.Url), f =>
-			 {
-				 f.AccessTokenProvider = () =>
-				 {
-					 return Task.FromResult(AuthenticationToken);
-				 };
-			 }).ConfigureLogging(l =>
-			 {
-				 l.SetMinimumLevel(LogLevel.Debug);
-				 l.AddConsole();
-			 }).Build();
-
-			HookEvents();
-
-			_connection.Closed += OnClosed;
-
-			await ConnectAsync();
+			Users();
+			Roles();
+			Blobs();
+			Configuration();
+			Security();
+			MicroServices();
+			Instances();
+			EnvironmentUnits();
+			AuthenticationTokens();
 		}
 
-		private Task OnClosed(Exception arg)
+		private void AuthenticationTokens()
 		{
-			_cancel.Cancel();
-
-			Connect();
-
-			return Task.CompletedTask;
-		}
-
-		private void HookEvents()
-		{
-			_events = new CachingEvents(Connection, _connection);
-
-			_events.Hook();
-		}
-
-		private void Heartbeat()
-		{
-			while (!_cancel.IsCancellationRequested)
+			Hub.On<MessageEventArgs<AuthenticationTokenEventArgs>>("AuthenticationTokenChanged", (e) =>
 			{
-				try
-				{
-					if (_connection == null)
-						return;
+				Hub.InvokeAsync("Confirm", e.Message);
 
-					_connection.InvokeAsync("Heartbeat");
-				}
-				finally
-				{
-					_cancel.Token.WaitHandle.WaitOne(TimeSpan.FromSeconds(30));
-				}
-			}
-		}
+				if (Connection.GetService<IAuthorizationService>() is IAuthenticationTokenNotification n)
+					n.NotifyAuthenticationTokenChanged(Connection, e.Args);
+			});
 
-		public void Disconnect()
-		{
-			if (_connection == null)
-				return;
-
-			Task.FromResult(_connection.DisposeAsync()).GetAwaiter().GetResult();
-		}
-
-		private async Task<bool> ConnectAsync()
-		{
-			while (true)
+			Hub.On<MessageEventArgs<AuthenticationTokenEventArgs>>("AuthenticationTokenRemoved", (e) =>
 			{
-				try
-				{
-					await _connection.StartAsync();
+				Hub.InvokeAsync("Confirm", e.Message);
 
-					new Task(Heartbeat, _cancel.Token, TaskCreationOptions.LongRunning).Start();
+				if (Connection.GetService<IAuthorizationService>() is IAuthenticationTokenNotification n)
+					n.NotifyAuthenticationTokenRemoved(Connection, e.Args);
+			});
+		}
 
-					return true;
-				}
-				catch (ObjectDisposedException)
-				{
-					return false;
-				}
-				catch
-				{
-					await Task.Delay(1000);
-				}
-			}
+		private void EnvironmentUnits()
+		{
+			Hub.On<MessageEventArgs<EnvironmentUnitEventArgs>>("EnvironmentUnitChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IEnvironmentUnitService>() is IEnvironmentUnitNotification n)
+					n.NotifyChanged(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<EnvironmentUnitEventArgs>>("EnvironmentUnitRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IEnvironmentUnitService>() is IEnvironmentUnitNotification n)
+					n.NotifyRemoved(Connection, e.Args);
+			});
+		}
+
+		private void Instances()
+		{
+			Hub.On<MessageEventArgs<InstanceEndpointEventArgs>>("InstanceEndpointChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
+					n.NotifyChanged(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<InstanceEndpointEventArgs>>("InstanceEndpointRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
+					n.NotifyRemoved(Connection, e.Args);
+			});
+		}
+
+		private void MicroServices()
+		{
+			Hub.On<MessageEventArgs<MicroServiceEventArgs>>("MicroServiceChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification n)
+					n.NotifyChanged(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<MicroServiceEventArgs>>("MicroServiceRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification n)
+					n.NotifyRemoved(Connection, e.Args);
+			});
+		}
+
+		private void Security()
+		{
+			Hub.On<MessageEventArgs<MembershipEventArgs>>("MembershipAdded", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+					n.NotifyMembershipAdded(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<MembershipEventArgs>>("MembershipRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+					n.NotifyMembershipRemoved(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<PermissionEventArgs>>("PermissionAdded", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+					n.NotifyPermissionAdded(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<PermissionEventArgs>>("PermissionRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+					n.NotifyPermissionRemoved(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<PermissionEventArgs>>("PermissionChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+					n.NotifyPermissionChanged(Connection, e.Args);
+			});
+		}
+
+		private void Configuration()
+		{
+			Hub.On<MessageEventArgs<ConfigurationEventArgs>>("ConfigurationAdded", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IComponentService>() is IComponentNotification n)
+					n.NotifyAdded(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<ConfigurationEventArgs>>("ConfigurationChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IComponentService>() is IComponentNotification n)
+					n.NotifyChanged(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<ConfigurationEventArgs>>("ConfigurationRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IComponentService>() is IComponentNotification n)
+					n.NotifyRemoved(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<ScriptChangedEventArgs>>("ScriptChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<ICompilerService>() is ICompilerNotification n)
+					n.NotifyChanged(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<FolderEventArgs>>("FolderChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IComponentService>() is IComponentNotification n)
+					n.NotifyFolderChanged(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<FolderEventArgs>>("FolderRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IComponentService>() is IComponentNotification n)
+					n.NotifyFolderRemoved(Connection, e.Args);
+			});
+		}
+
+		private void Users()
+		{
+			Hub.On<MessageEventArgs<UserEventArgs>>("UserChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IUserService>() is IUserNotification n)
+					n.NotifyChanged(Connection, e.Args);
+			});
+		}
+
+		private void Roles()
+		{
+			Hub.On<MessageEventArgs<RoleEventArgs>>("RoleChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IRoleService>() is IRoleNotification n)
+					n.NotifyChanged(Connection, e.Args);
+			});
+		}
+
+		private void Blobs()
+		{
+			Hub.On<MessageEventArgs<BlobEventArgs>>("BlobChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IStorageService>() is IStorageNotification n)
+					n.NotifyChanged(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<BlobEventArgs>>("BlobAdded", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IStorageService>() is IStorageNotification n)
+					n.NotifyAdded(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<BlobEventArgs>>("BlobRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IStorageService>() is IStorageNotification n)
+					n.NotifyRemoved(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<BlobEventArgs>>("BlobCommitted", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IStorageService>() is IStorageNotification n)
+					n.NotifyCommitted(Connection, e.Args);
+			});
 		}
 	}
 }

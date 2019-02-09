@@ -11,7 +11,7 @@ namespace TomPIT.IoT
 	public class IoTDevice : ConfigurationElement, IIoTDevice
 	{
 		private IServerEvent _data = null;
-		private ListItems<IIoTDeviceTransaction> _transactions = null;
+		private ListItems<IIoTTransaction> _transactions = null;
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[Required]
@@ -33,13 +33,13 @@ namespace TomPIT.IoT
 			}
 		}
 
-		[Items("TomPIT.IoT.Items.IoTTransactionsCollection, TomPIT.IoT.Design")]
-		public ListItems<IIoTDeviceTransaction> Transactions
+		[Items("TomPIT.IoT.Design.Items.IoTTransactionsCollection, TomPIT.IoT.Design")]
+		public ListItems<IIoTTransaction> Transactions
 		{
 			get
 			{
 				if (_transactions == null)
-					_transactions = new ListItems<IIoTDeviceTransaction> { Parent = this };
+					_transactions = new ListItems<IIoTTransaction> { Parent = this };
 
 				return _transactions;
 			}
