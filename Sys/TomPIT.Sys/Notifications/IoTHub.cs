@@ -9,16 +9,16 @@ namespace TomPIT.Sys.Notifications
 	[Authorize(AuthenticationSchemes = "TomPIT")]
 	public class IoTHub : Hub
 	{
-		public IoTHub(IHubContext<CacheHub> context)
+		public IoTHub(IHubContext<IoTHub> context)
 		{
-			CachingNotifications.Cache = context;
+			IoTNotifications.Cache = context;
 		}
 
 		public override Task OnConnectedAsync()
 		{
 			DataModel.MessageSubscribers.Insert("iot", Context.ConnectionId, SysExtensions.RequestInstanceId);
 
-			return base.OnConnectedAsync();
+			return Task.CompletedTask;
 		}
 
 		public override Task OnDisconnectedAsync(Exception exception)

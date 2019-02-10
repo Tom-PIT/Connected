@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using TomPIT.Caching;
 using TomPIT.Services;
 
@@ -23,11 +24,14 @@ namespace TomPIT.Connectivity
 			Url = url;
 			AuthenticationToken = authenticationToken;
 
-			CachingClient.Connect();
+			Task.Run(() =>
+			{
+				CachingClient.Connect();
+			});
 		}
 
 		public string Url { get; }
-		private string AuthenticationToken { get; }
+		public string AuthenticationToken { get; }
 
 		public IMemoryCache Cache
 		{

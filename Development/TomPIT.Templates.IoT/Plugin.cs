@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Routing;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using TomPIT.Configuration;
 
 namespace TomPIT.IoT
@@ -11,7 +11,16 @@ namespace TomPIT.IoT
 		{
 			return new List<string>
 			{
+				"TomPIT.IoT",
 				"TomPIT.IoT.Views"
+			};
+		}
+
+		public List<string> GetEmbeddedResources()
+		{
+			return new List<string>
+			{
+				"TomPIT.IoT"
 			};
 		}
 
@@ -22,12 +31,12 @@ namespace TomPIT.IoT
 
 		public void RegisterRoutes(IRouteBuilder builder)
 		{
-			builder.MapRoute("sys/plugins/iot/partial/{id}", (t) =>
-			{
-				//new GlobalizationHandler().ProcessRequest(t);
+			//builder.MapRoute("sys/plugins/iot/partial/{id}", (t) =>
+			//{
+			//	return Task.CompletedTask;
+			//});
 
-				return Task.CompletedTask;
-			});
+			builder.MapRoute("sys.plugins.iot.partial", "sys/plugins/iot/partial/{id}", new { controller = "IoT", action = "Partial" }, null, new { Namespace = "TomPIT.IoT.Controllers" });
 		}
 	}
 }

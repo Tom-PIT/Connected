@@ -9,7 +9,6 @@ namespace TomPIT.Configuration
 	{
 		public static void Register(IRouteBuilder routes)
 		{
-
 			routes.MapRoute("sys.api", "sys/api/invoke", new { controller = "Api", action = "Invoke" });
 			routes.MapRoute("sys.partial", "sys/api/partial", new { controller = "Api", action = "Partial" });
 
@@ -42,7 +41,7 @@ namespace TomPIT.Configuration
 				var ve = t.RequestServices.GetService(typeof(IViewEngine)) as ViewEngine;
 
 				ve.Context = t;
-
+				 
 				ve.Render(t.Request.Path);
 
 				return Task.CompletedTask;

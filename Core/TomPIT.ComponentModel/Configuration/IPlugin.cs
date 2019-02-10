@@ -8,6 +8,7 @@ namespace TomPIT.Configuration
 		void Initialize();
 
 		List<string> GetApplicationParts();
+		List<string> GetEmbeddedResources();
 		void RegisterRoutes(IRouteBuilder builder);
 	}
 }

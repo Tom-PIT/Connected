@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.Loader;
 using TomPIT.Services;
 
 namespace TomPIT.Configuration
@@ -27,7 +28,10 @@ namespace TomPIT.Configuration
 				RegisterAssembly(assemblies, i);
 
 			foreach (var i in Instance.Plugins)
-				RegisterAssembly(assemblies, i.GetType().FullName);
+			{
+				foreach (var j in i.GetEmbeddedResources())
+					RegisterAssemblyFromName(assemblies, j);
+			}
 
 			name = name ?? throw new ArgumentNullException(nameof(name));
 			options = options ?? throw new ArgumentNullException(nameof(options));
@@ -56,6 +60,20 @@ namespace TomPIT.Configuration
 			}
 
 			options.FileProvider = new CompositeFileProvider(fileProviders.ToArray());
+		}
+
+		private void RegisterAssemblyFromName(List<Assembly> assemblies, string j)
+		{
+			var path = Shell.ResolveAssemblyPath(j);
+
+			if (path == null)
+				return;
+
+			var asmName = AssemblyName.GetAssemblyName(path);
+			var asm = AssemblyLoadContext.Default.LoadFromAssemblyName(asmName);
+
+			if (asm != null)
+				assemblies.Add(asm);
 		}
 
 		private void RegisterAssembly(List<Assembly> assemblies, string type)

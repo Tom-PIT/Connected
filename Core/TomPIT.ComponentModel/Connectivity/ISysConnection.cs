@@ -20,6 +20,7 @@ namespace TomPIT.Connectivity
 		string Url { get; }
 
 		IMemoryCache Cache { get; }
+		string AuthenticationToken { get; }
 		T GetService<T>();
 		void RegisterService(Type contract, object instance);
 

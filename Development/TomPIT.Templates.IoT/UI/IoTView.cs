@@ -26,7 +26,7 @@ namespace TomPIT.IoT.UI
 			get
 			{
 				if (_elements == null)
-					_elements = new ListItems<IIoTElement>();
+					_elements = new ListItems<IIoTElement> { Parent = this };
 
 				return _elements;
 			}

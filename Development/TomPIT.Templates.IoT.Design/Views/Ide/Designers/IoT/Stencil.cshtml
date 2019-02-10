@@ -1,18 +1,37 @@
 ﻿@using TomPIT.IoT;
+@using TomPIT;
+@using TomPIT.IoT.Annotations;
 
 @model TomPIT.IoT.Models.StencilModel
 
 @{
-	var width = string.Format("{0}px", Model.Element.Width+6);
-	var height = string.Format("{0}px", Model.Element.Height+6);
-	var left = string.Format("{0}px", Model.Element.Left-3);
-	var top = string.Format("{0}px", Model.Element.Top-3);
+	var sb = new System.Text.StringBuilder();
 
-	var style = string.Format("width:{0};height:{1};left:{2};top:{3};", width, height, left, top);
+	if (Model.Element.Width > 0)
+	{ sb.AppendFormat("width:{0}px;", Model.Element.Width + 6); }
+
+	if (Model.Element.Height > 0)
+	{ sb.AppendFormat("height:{0}px;", Model.Element.Height + 6); }
+
+	sb.AppendFormat("left:{0}px;", Model.Element.Left - 3);
+	sb.AppendFormat("top:{0}px;", Model.Element.Top - 3);
+
+	var att = Model.Element.GetType().FindAttribute<IoTElementAttribute>();
+	var select = true;
+	var move = true;
+	var resize = true;
+
+	if (att != null)
+	{
+		select = (att.Verbs & IoTDesignerVerbs.Select) == IoTDesignerVerbs.Select;
+		move = (att.Verbs & IoTDesignerVerbs.Move) == IoTDesignerVerbs.Move;
+		resize = (att.Verbs & IoTDesignerVerbs.Resize) == IoTDesignerVerbs.Resize;
+	}
+
 }
 
-	<div class="stencil" style="@style" data-select="true" data-move="true" data-resize="true" data-id="@Model.Element.Id">
-			<svg width="100%" height="100%">
-				@await Html.PartialAsync(Model.Element.DesignView(), Model)
-			</svg>
-	</div>
+<div class="stencil" style="@sb.ToString()" @Html.TP().Attributes.Attribute("data-select", "true", select)
+	  @Html.TP().Attributes.Attribute("data-move", "true", move)
+	  @Html.TP().Attributes.Attribute("data-resize", "true", resize) data-id="@Model.Element.Id">
+	@await Html.PartialAsync(Model.Element.DesignView(), Model)
+</div>

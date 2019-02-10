@@ -1,8 +1,0 @@
-﻿@model TomPIT.Services.IExecutionContext
-
-@{
-	var ms = Model.Connection().ResolveMicroService(Model.MicroService());
-}
-<script>
-	var iot = $('#_sysContent').tpMessaging().data('tompit-tpMessaging');
-</script>

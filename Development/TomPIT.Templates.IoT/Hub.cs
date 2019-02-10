@@ -7,7 +7,6 @@ namespace TomPIT.IoT
 	public class Hub : ComponentConfiguration, IIoTHub
 	{
 		private ListItems<IIoTDevice> _devices = null;
-		private ListItems<IIoTSchemaField> _schema = null;
 
 		[Items("TomPIT.IoT.Design.Items.IoTDevicesCollection, TomPIT.IoT.Design")]
 		public ListItems<IIoTDevice> Devices

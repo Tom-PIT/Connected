@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.Loader;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
@@ -150,6 +151,26 @@ namespace TomPIT
 		{
 			foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
 				Shell.GetService<IConnectivityService>().Insert(i.Name, i.Url, i.AuthenticationToken);
+
+			foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)
+			{
+				var t = Types.GetType(i);
+
+				if (t == null)
+					continue;
+
+				var plugin = t.CreateInstance<IPlugin>();
+
+				var parts = plugin.GetApplicationParts();
+
+				if (parts != null)
+				{
+					foreach (var j in parts)
+						ConfigurePlugins(j);
+				}
+			}
+
+			_mvcBuilder.AddControllersAsServices();
 		}
 
 		public static bool ResourceGroupExists(Guid resourceGroup)
@@ -192,6 +213,24 @@ namespace TomPIT
 
 				return _plugins;
 			}
+		}
+
+		private static void ConfigurePlugins(string assembly)
+		{
+			var path = Shell.ResolveAssemblyPath(assembly);
+
+			if (path == null)
+				return;
+
+			var asmName = AssemblyName.GetAssemblyName(path);
+			var asm = AssemblyLoadContext.Default.LoadFromAssemblyName(asmName);
+
+			AddApplicationPart(asm);
+
+			var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(asm, false);
+
+			foreach (var i in relatedAssemblies)
+				AddApplicationPart(i);
 		}
 	}
 }

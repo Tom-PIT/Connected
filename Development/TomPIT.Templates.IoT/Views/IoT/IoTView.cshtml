@@ -1,4 +1,6 @@
 ﻿@using TomPIT;
+@using Newtonsoft.Json;
+@using Newtonsoft.Json.Linq;
 @using TomPIT.IoT.UI;
 @using TomPIT.IoT;
 
@@ -8,11 +10,27 @@
 	var view = Model.ViewConfiguration as IoTView;
 	var ms = Model.Connection().ResolveMicroService(Model.MicroService());
 
+	var bindings = new JArray();
+
+	foreach (var i in view.Elements)
+	{
+		var ib = i.QueryBindings();
+
+		foreach (var j in ib)
+		{
+			bindings.Add(new JObject
+{
+	{"stencil", i.Name },
+	{"field", j.Field },
+	{"view", Model.Component.Name }
+});
+		}
+	}
 }
 
 <link rel="stylesheet" type="text/css" href="~/Assets/Styles/iot.min.css" />
 
-<div class="iot-view @view.Css" data-hub="@view.Hub" data-iot="@Model.ViewConfiguration.Component">
+<div class="iot-view @view.Css" data-hub="@view.Hub" data-iot="@Model.Component.Name">
 	<svg viewBox="0 0 @view.Width @view.Height">
 
 		@foreach (var i in view.Elements)
@@ -32,4 +50,8 @@
 		'id': 'iot'
 	});
 
+	@if (bindings.Count > 0)
+	{
+		@:iot.registerBindings(@Html.Raw(JsonConvert.SerializeObject(bindings)))
+	}
 </script>

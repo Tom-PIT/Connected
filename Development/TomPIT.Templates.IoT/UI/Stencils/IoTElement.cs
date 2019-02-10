@@ -1,4 +1,5 @@
-﻿using TomPIT.ComponentModel;
+﻿using System.Collections.Generic;
+using TomPIT.ComponentModel;
 
 namespace TomPIT.IoT.UI.Stencils
 {
@@ -35,30 +36,8 @@ namespace TomPIT.IoT.UI.Stencils
 				_top = value;
 			}
 		}
-		public int Width
-		{
-			get { return _width; }
-			set
-			{
-				if (value < 1)
-					value = 1;
-
-				_width = value;
-			}
-		}
-
-		public int Height
-		{
-			get { return _height; }
-			set
-			{
-
-				if (value < 1)
-					value = 1;
-
-				_height = value;
-			}
-		}
+		public int Width { get; set; }
+		public int Height { get; set; }
 
 		public string Css { get; set; }
 
@@ -71,6 +50,23 @@ namespace TomPIT.IoT.UI.Stencils
 
 				return _bindings;
 			}
+		}
+
+		public List<IIoTBinding> QueryBindings()
+		{
+			var r = new List<IIoTBinding>();
+
+			foreach (var i in Bindings)
+				r.Add(i);
+
+			OnQueryBindings(r);
+
+			return r;
+		}
+
+		protected virtual void OnQueryBindings(List<IIoTBinding> items)
+		{
+
 		}
 	}
 }

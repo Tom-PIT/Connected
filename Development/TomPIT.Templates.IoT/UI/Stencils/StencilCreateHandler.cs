@@ -1,5 +1,4 @@
-﻿using System;
-using TomPIT.Design;
+﻿using TomPIT.Design;
 using TomPIT.IoT.UI.Stencils.Shapes;
 using TomPIT.Services;
 
@@ -24,6 +23,8 @@ namespace TomPIT.IoT.UI.Stencils
 		private void InitializeRectangle(Rectangle r)
 		{
 			r.Css = "iot-rect";
+			r.Width = 100;
+			r.Height = 100;
 		}
 	}
 }

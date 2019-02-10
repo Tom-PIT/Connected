@@ -6,7 +6,7 @@ using TomPIT.Dom;
 
 namespace TomPIT.IoT.Design.Items
 {
-	internal class IotSchemasItems : ItemsBase
+	internal class IoTSchemasItems : ItemsBase
 	{
 		protected override void OnQueryDescriptors(IDomElement element, List<IItemDescriptor> items)
 		{

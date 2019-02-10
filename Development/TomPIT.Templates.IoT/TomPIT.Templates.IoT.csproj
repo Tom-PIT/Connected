@@ -26,6 +26,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
 		<ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+		<ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="wwwroot\**\*" />

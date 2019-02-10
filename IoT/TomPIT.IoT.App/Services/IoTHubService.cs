@@ -11,7 +11,7 @@ using TomPIT.Services;
 
 namespace TomPIT.IoT.Services
 {
-	internal class IoTHubService : ClientRepository<IIoTHub, Guid>, IIoTHubService
+	internal class IoTHubService : ClientRepository<IIoTHub, Guid>, IIoTHubService, IIoTHubNotification
 	{
 		public IoTHubService(ISysConnection connection) : base(connection, "iothubs")
 		{
@@ -150,6 +150,11 @@ namespace TomPIT.IoT.Services
 		public void FlushChanges()
 		{
 			Data.Flush();
+		}
+
+		public void NotifyStateChanged(object sender, IoTStateChangedArgs e)
+		{
+			Data.Synchronize(e);
 		}
 	}
 }

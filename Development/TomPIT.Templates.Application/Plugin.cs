@@ -11,6 +11,11 @@ namespace TomPIT.Application
 			return new List<string>();
 		}
 
+		public List<string> GetEmbeddedResources()
+		{
+			return new List<string>();
+		}
+
 		public void Initialize()
 		{
 

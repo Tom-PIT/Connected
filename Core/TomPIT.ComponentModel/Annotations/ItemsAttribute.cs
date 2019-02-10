@@ -7,9 +7,6 @@ namespace TomPIT.Annotations
 	{
 		public const string LayoutItems = "TomPIT.Design.Items.LayoutItems, TomPIT.Design";
 
-		private string _typeName = null;
-		private Type _type = null;
-
 		public ItemsAttribute() { }
 
 		public ItemsAttribute(string typeName)
@@ -22,7 +19,7 @@ namespace TomPIT.Annotations
 			Type = type;
 		}
 
-		public string TypeName { get => _typeName; set => _typeName = value; }
-		public Type Type { get => _type; set => _type = value; }
+		public string TypeName { get; }
+		public Type Type { get; }
 	}
 }

@@ -1,4 +1,5 @@
-﻿using TomPIT.ComponentModel;
+﻿using System.Collections.Generic;
+using TomPIT.ComponentModel;
 
 namespace TomPIT.IoT.UI.Stencils
 {
@@ -13,5 +14,7 @@ namespace TomPIT.IoT.UI.Stencils
 		string Css { get; }
 
 		ListItems<IIoTBinding> Bindings { get; }
+
+		List<IIoTBinding> QueryBindings();
 	}
 }

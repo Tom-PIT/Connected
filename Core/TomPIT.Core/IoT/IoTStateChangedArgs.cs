@@ -1,10 +1,13 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace TomPIT.IoT
 {
 	public class IoTStateChangedArgs : EventArgs
 	{
+		private List<IIoTFieldStateModifier> _state = null;
+
 		public IoTStateChangedArgs(Guid hub, List<IIoTFieldStateModifier> state)
 		{
 			Hub = hub;
@@ -12,6 +15,20 @@ namespace TomPIT.IoT
 		}
 
 		public Guid Hub { get; }
-		public List<IIoTFieldStateModifier> State { get; }
+		[JsonConverter(typeof(IoTStateConverter))]
+		public List<IIoTFieldStateModifier> State
+		{
+			get
+			{
+				if (_state == null)
+					_state = new List<IIoTFieldStateModifier>();
+
+				return _state;
+			}
+			private set
+			{
+				_state = value;
+			}
+		}
 	}
 }

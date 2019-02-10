@@ -54,20 +54,7 @@ namespace TomPIT.IoT.Services
 
 			foreach (var i in fields)
 			{
-				if (!(schema.FirstOrDefault(f => string.Compare(f.Field, i.Field, true) == 0) is IoTFieldState field))
-				{
-					schema.Add(new IoTFieldState
-					{
-						Field = i.Field,
-						Modified = DateTime.UtcNow,
-						Value = i.Value
-					});
-				}
-				else
-				{
-					field.Modified = DateTime.UtcNow;
-					field.Value = i.Value;
-				}
+				SynchronizeField(schema, i);
 
 				a.Add(new JObject
 				{
@@ -97,5 +84,34 @@ namespace TomPIT.IoT.Services
 		}
 
 		private ConcurrentQueue<JObject> Buffer { get { return _buffer.Value; } }
+
+		internal void Synchronize(IoTStateChangedArgs e)
+		{
+			var schema = Get(e.Hub);
+
+			if (schema == null)
+				return;
+
+			foreach (var i in e.State)
+				SynchronizeField(schema, i);
+		}
+
+		private void SynchronizeField(List<IIoTFieldState> schema, IIoTFieldStateModifier modifier)
+		{
+			if (!(schema.FirstOrDefault(f => string.Compare(f.Field, modifier.Field, true) == 0) is IoTFieldState field))
+			{
+				schema.Add(new IoTFieldState
+				{
+					Field = modifier.Field,
+					Modified = DateTime.UtcNow,
+					Value = modifier.Value
+				});
+			}
+			else
+			{
+				field.Modified = DateTime.UtcNow;
+				field.Value = modifier.Value;
+			}
+		}
 	}
 }

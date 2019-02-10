@@ -36,6 +36,33 @@ namespace TomPIT.IoT
 			return element.Top + element.Height;
 		}
 
+		public static IIoTHub ResolveHub(this IIoTView view, IExecutionContext context)
+		{
+			if (string.IsNullOrWhiteSpace(view.Hub))
+				return null;
+
+			var ms = ((IElement)view).MicroService(context.Connection());
+			var hub = view.Hub;
+
+			if (hub.Contains('/'))
+			{
+				var tokens = hub.Split('/');
+				var originMicroService = context.Connection().GetService<IMicroServiceService>().Select(ms);
+				hub = tokens[1];
+
+				originMicroService.ValidateMicroServiceReference(context.Connection(), tokens[0]);
+
+				var microService = context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+
+				if (microService == null)
+					throw new RuntimeException(SR.ErrMicroServiceNotFound).WithMetrics(context);
+
+				ms = microService.Token;
+			}
+
+			return context.Connection().GetService<IComponentService>().SelectConfiguration(ms, "IoTHub", hub) as IIoTHub;
+		}
+
 		public static IIoTSchema ResolveSchema(this IIoTHub hub, IExecutionContext context)
 		{
 			if (string.IsNullOrWhiteSpace(hub.Schema))
