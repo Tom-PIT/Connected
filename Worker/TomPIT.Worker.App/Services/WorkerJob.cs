@@ -57,7 +57,7 @@ namespace TomPIT.Worker.Services
 				workerState = new JObject();
 
 			Invoker i = null;
-			var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, "Worker", worker.ToString(), configuration.MicroService(Instance.Connection).ToString());
+			var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, Instance.Connection.GetService<IMicroServiceService>().Select(configuration.MicroService(Instance.Connection)), null);
 			var args = new WorkerInvokeArgs(ctx, workerState);
 
 			if (configuration is IHostedWorker)

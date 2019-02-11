@@ -81,7 +81,7 @@ namespace TomPIT.Worker.Services
 				? null
 				: JsonConvert.DeserializeObject<JObject>(ed.Arguments);
 
-			var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, "Event", string.Empty, tokens[0], string.Empty);
+			var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, Instance.GetService<IMicroServiceService>().Select(tokens[0]), string.Empty);
 			var opArgs = new OperationInvokeArguments(ctx, op, args, null);
 
 			ctx.Invoke(api.ComponentName(ctx), args);
@@ -91,7 +91,7 @@ namespace TomPIT.Worker.Services
 		{
 			try
 			{
-				var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, "Event", string.Empty, string.Empty, string.Empty);
+				var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, null, string.Empty);
 
 				var args = string.IsNullOrWhiteSpace(ed.Arguments)
 					? null
@@ -101,7 +101,7 @@ namespace TomPIT.Worker.Services
 
 				Instance.GetService<ICompilerService>().Execute(i.MicroService(Instance.Connection), i.Closest<IEventHandler>().Invoke, this, e);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				//Instance.Sys.LogError(ctx, SR.LogCategoryWorker, nameof(Invoke), string.Format("{0} ({1}.{2}.{3})", SR.ErrWorkerNotFound, service, api, operation));
 			}

@@ -101,13 +101,13 @@ namespace TomPIT.Services
 			}
 		}
 
-		public static IExecutionContext NonHttpContext(string endpoint, IMicroService microService, string user)
+		public static IExecutionContext NonHttpContext(string endpoint, IMicroService microService, string impersonatedUser)
 		{
 			var r = new ExecutionContext(endpoint, microService);
 
 			var ids = r.Services.Identity as ContextIdentityService;
 
-			ids.ImpersonatedUser = user;
+			ids.ImpersonatedUser = impersonatedUser;
 
 			return r;
 		}

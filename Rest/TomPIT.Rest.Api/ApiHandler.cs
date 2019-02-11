@@ -149,7 +149,7 @@ namespace TomPIT.Rest
 
 			Api = component.Name;
 
-			Initialize(Endpoint, "Rest", component.Token.AsString(), MicroService.Token.AsString());
+			Initialize(Endpoint, MicroService);
 
 			if (!(GetService<IComponentService>().SelectConfiguration(component.Token) is IApi config))
 			{

@@ -12,7 +12,7 @@ namespace TomPIT.Controllers
 		{
 			var r = new HomeModel();
 
-			r.Initialize(this);
+			r.Initialize(this, null);
 
 			if (string.IsNullOrWhiteSpace(Request.ContentType)
 				|| Request.ContentType.Contains("application/json"))

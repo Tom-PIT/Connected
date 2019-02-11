@@ -79,7 +79,7 @@ namespace TomPIT.Dom
 					_ds = new ExistingItems();
 
 					var i = Item as IDataManagementDescriptor;
-					var ctx = ExecutionContext.NonHttpContext(Connection.Url, "Management", null, DomQuery.Closest<IMicroServiceScope>(this).MicroService.Token.AsString());
+					var ctx = ExecutionContext.NonHttpContext(Connection.Url, DomQuery.Closest<IMicroServiceScope>(this).MicroService, null);
 
 					//var items = ctx.Services.Data.Read<JObject>(i.DataSource).Value<JArray>("data");
 
