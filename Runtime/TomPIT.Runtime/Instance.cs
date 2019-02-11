@@ -114,18 +114,34 @@ namespace TomPIT
 				e.ConfigureMvc?.Invoke(o);
 
 				o.Filters.Add(new AuthenticationCookieFilter());
+			}).ConfigureApplicationPartManager((m) =>
+			{
+				foreach (var i in e.ApplicationParts)
+					ConfigurePlugins(m, i);
+
+				foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)
+				{
+					var t = Types.GetType(i);
+
+					if (t == null)
+						continue;
+
+					var plugin = t.CreateInstance<IPlugin>();
+
+					var parts = plugin.GetApplicationParts();
+
+					if (parts != null)
+					{
+						foreach (var j in parts)
+							ConfigurePlugins(m, j);
+					}
+				}
 			});
+
+			_mvcBuilder.AddControllersAsServices();
 
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 			services.ConfigureOptions(typeof(EmbeddedResourcesConfiguration));
-		}
-
-		public static void AddApplicationPart(Assembly assembly)
-		{
-			var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
-
-			foreach (var i in partFactory.GetApplicationParts(assembly))
-				_mvcBuilder.PartManager.ApplicationParts.Add(i);
 		}
 
 		public static T GetService<T>()
@@ -151,26 +167,6 @@ namespace TomPIT
 		{
 			foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
 				Shell.GetService<IConnectivityService>().Insert(i.Name, i.Url, i.AuthenticationToken);
-
-			foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)
-			{
-				var t = Types.GetType(i);
-
-				if (t == null)
-					continue;
-
-				var plugin = t.CreateInstance<IPlugin>();
-
-				var parts = plugin.GetApplicationParts();
-
-				if (parts != null)
-				{
-					foreach (var j in parts)
-						ConfigurePlugins(j);
-				}
-			}
-
-			_mvcBuilder.AddControllersAsServices();
 		}
 
 		public static bool ResourceGroupExists(Guid resourceGroup)
@@ -215,7 +211,7 @@ namespace TomPIT
 			}
 		}
 
-		private static void ConfigurePlugins(string assembly)
+		private static void ConfigurePlugins(ApplicationPartManager manager, string assembly)
 		{
 			var path = Shell.ResolveAssemblyPath(assembly);
 
@@ -225,12 +221,20 @@ namespace TomPIT
 			var asmName = AssemblyName.GetAssemblyName(path);
 			var asm = AssemblyLoadContext.Default.LoadFromAssemblyName(asmName);
 
-			AddApplicationPart(asm);
+			AddApplicationPart(manager, asm);
 
 			var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(asm, false);
 
 			foreach (var i in relatedAssemblies)
-				AddApplicationPart(i);
+				AddApplicationPart(manager, i);
+		}
+
+		private static void AddApplicationPart(ApplicationPartManager manager, Assembly assembly)
+		{
+			var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
+
+			foreach (var i in partFactory.GetApplicationParts(assembly))
+				manager.ApplicationParts.Add(i);
 		}
 	}
 }

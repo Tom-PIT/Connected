@@ -9,6 +9,8 @@ namespace TomPIT.Services
 
 		[JsonProperty(PropertyName = "location")]
 		public string Location { get; set; }
+		[JsonProperty(PropertyName = "shadowCopy")]
+		public bool ShadowCopy { get; set; }
 
 		[JsonProperty(PropertyName = "items")]
 		public List<string> Items

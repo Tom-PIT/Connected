@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
-using System.Runtime.Loader;
+using System.Collections.Generic;
 using TomPIT.Connectivity;
 using TomPIT.Design;
 using TomPIT.Environment;
@@ -15,10 +13,33 @@ namespace TomPIT.Servers.Development
 	{
 		public void ConfigureServices(IServiceCollection services)
 		{
+			var parts = new List<string>();
+
+			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+			{
+				var t = Types.GetType(i);
+
+				if (t == null)
+					continue;
+
+				var template = t.CreateInstance<IMicroServiceTemplate>();
+
+				var ds = template.GetApplicationParts();
+
+				if (ds != null)
+				{
+					foreach (var j in parts)
+						parts.Add(j);
+				}
+			}
+
 			var e = new ServicesConfigurationArgs
 			{
 				Authentication = AuthenticationType.MultiTenant
 			};
+
+			if (parts.Count > 0)
+				e.ApplicationParts.AddRange(parts);
 
 			Instance.Initialize(services, e);
 		}
@@ -35,24 +56,6 @@ namespace TomPIT.Servers.Development
 			IdeBootstrapper.Run();
 			Shell.GetService<IConnectivityService>().ConnectionInitializing += OnConnectionInitializing;
 			Instance.Run(app);
-
-			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-			{
-				var t = Types.GetType(i);
-
-				if (t == null)
-					continue;
-
-				var template = t.CreateInstance<IMicroServiceTemplate>();
-
-				var parts = template.GetApplicationParts();
-
-				if (parts != null)
-				{
-					foreach (var j in parts)
-						ConfigurePlugins(j);
-				}
-			}
 		}
 
 		private static void OnConnectionInitializing(object sender, SysConnectionRegisteredArgs e)
@@ -69,24 +72,6 @@ namespace TomPIT.Servers.Development
 				if (template != null)
 					e.Connection.GetService<IMicroServiceTemplateService>().Register(template);
 			}
-		}
-
-		private void ConfigurePlugins(string assembly)
-		{
-			var path = Shell.ResolveAssemblyPath(assembly);
-
-			if (path == null)
-				return;
-
-			var asmName = AssemblyName.GetAssemblyName(path);
-			var asm = AssemblyLoadContext.Default.LoadFromAssemblyName(asmName);
-
-			Instance.AddApplicationPart(asm);
-
-			var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(asm, true);
-
-			foreach (var i in relatedAssemblies)
-				Instance.AddApplicationPart(i);
 		}
 	}
 }

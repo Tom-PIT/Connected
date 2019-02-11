@@ -1159,6 +1159,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Stencil not found.
+        /// </summary>
+        public static string ErrIoTStencilNotFound {
+            get {
+                return ResourceManager.GetString("ErrIoTStencilNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Transaction not allowed.
         /// </summary>
         public static string ErrIoTTransactionNotAllowed {

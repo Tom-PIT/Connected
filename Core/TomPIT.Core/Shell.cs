@@ -18,6 +18,7 @@ namespace TomPIT
 		private static Type _sysType = null;
 		private static IHttpContextAccessor _accessor = null;
 		private static Version _version = null;
+		private static bool _cleaned = false;
 
 		static Shell()
 		{
@@ -77,10 +78,36 @@ namespace TomPIT
 			if (path == null)
 				return null;
 
-			using (var s = new MemoryStream(File.ReadAllBytes(path)))
+			if (Sys.Plugins.ShadowCopy)
 			{
-				return AssemblyLoadContext.Default.LoadFromStream(s);
+				var shadowCopyLocation = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "Plugins");
+
+				if (!_cleaned)
+				{
+					_cleaned = true;
+
+					if (Directory.Exists(shadowCopyLocation))
+					{
+						var files = Directory.GetFiles(shadowCopyLocation);
+
+						foreach (var i in files)
+							File.Delete(i);
+					}
+				}
+
+
+				if (!Directory.Exists(shadowCopyLocation))
+					Directory.CreateDirectory(shadowCopyLocation);
+
+				var targetPath = Path.Combine(shadowCopyLocation, Path.GetFileName(path));
+
+				var bytes = File.ReadAllBytes(path);
+				File.Copy(path, targetPath, true);
+
+				path = targetPath;
 			}
+
+			return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
 		}
 
 		[DebuggerStepThrough]

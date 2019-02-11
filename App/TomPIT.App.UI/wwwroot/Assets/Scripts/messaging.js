@@ -63,12 +63,46 @@ $.widget('tompit.tpMessaging', {
 					existingView.stencils.push(v.stencil);
 			});
 
+			
 			$.each(views, function (i, v) {
+				var view = v.view;
+
 				tompit.post({
-					'url': connection.appBaseUrl + '/' + v.view,
+					'url': encodeURI(connection.appBaseUrl + '/' + connection.microService  + '/' + view),
 					'data': v.stencils,
 					onComplete: function (data) {
-						//slice data and replace stencils
+						var result = $('<div></div>').append(data.responseText).children('[data-stencil]');
+
+						$.each(result, function (i, v) {
+							var html = $(v).html();
+							var id = $(v).attr('data-stencil');
+							var targetHtml = $(html);
+							var svg = d3.select('[data-iot="' + view + '"] svg');
+							var stencil = svg.select('#' + id);
+							var attributes = targetHtml[0].attributes;
+
+							if (targetHtml.length > 0) {
+								$.each(attributes, function (i, v) {
+									stencil.attr(v.name, v.value);
+								});
+							}
+
+							$.each(stencil.node().attributes, function (i, v) {
+								var exists = false;
+
+								$.each(attributes, function (ii, vv) {
+									if (vv.name === v.name) {
+										exists = true;
+										return false;
+									}
+								});
+
+								if (!exists)
+									stencil.node.removeAttr(v.name);
+							});
+
+							stencil.html(targetHtml.html());
+						});
 					}
 				});
 

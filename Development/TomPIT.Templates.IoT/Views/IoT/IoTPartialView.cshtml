@@ -1,18 +1,10 @@
-﻿@using TomPIT;
-@using Newtonsoft.Json;
-@using Newtonsoft.Json.Linq;
-@using TomPIT.IoT.UI;
-@using TomPIT.IoT;
+﻿@using TomPIT.IoT;
 
-@model TomPIT.Models.IRuntimeModel
+@model TomPIT.IoT.Models.IoTPartialModel
 
-@{
-	var view = Model.ViewConfiguration as IoTView;
-	var ms = Model.Connection().ResolveMicroService(Model.MicroService());
-
-}
-
-@foreach (var i in view.Elements)
+@foreach (var i in Model.TargetStencils)
 {
-	await Html.RenderPartialAsync(i.View(), i.CreateModel(Model));
+	<div data-stencil="@i.Name">
+		@await Html.PartialAsync(i.View(), i.CreateModel(Model))
+	</div>
 }

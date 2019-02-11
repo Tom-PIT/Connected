@@ -36,7 +36,7 @@ namespace TomPIT.IoT
 			//	return Task.CompletedTask;
 			//});
 
-			builder.MapRoute("sys.plugins.iot.partial", "sys/plugins/iot/partial/{id}", new { controller = "IoT", action = "Partial" }, null, new { Namespace = "TomPIT.IoT.Controllers" });
+			builder.MapRoute("sys.plugins.iot.partial", "sys/plugins/iot/partial/{microService}/{view}", new { controller = "IoT", action = "Partial" }, null, new { Namespace = "TomPIT.IoT.Controllers" });
 		}
 	}
 }

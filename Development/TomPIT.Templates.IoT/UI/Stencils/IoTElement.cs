@@ -7,8 +7,6 @@ namespace TomPIT.IoT.UI.Stencils
 	{
 		private ListItems<IIoTBinding> _bindings = null;
 
-		private int _width = 100;
-		private int _height = 100;
 		private int _left = 0;
 		private int _top = 0;
 
