@@ -61,7 +61,7 @@ namespace TomPIT.UI
 		public bool Exists { get; private set; }
 		public bool IsDirectory => false;
 		public DateTimeOffset LastModified { get; private set; } = DateTimeOffset.MinValue;
-		public IComponent ViewComponent { get; set; }
+		public IComponent ViewComponent { get; private set; }
 		private IBlob Blob { get; set; }
 
 		public long Length
@@ -151,15 +151,15 @@ namespace TomPIT.UI
 			var config = view.Configuration();
 			var rendererAtt = config.GetType().FindAttribute<ViewRendererAttribute>();
 			var sourceCode = string.Empty;
+			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(config.Component);
 
 			if (rendererAtt != null)
 			{
 				var renderer = (rendererAtt.Type ?? Types.GetType(rendererAtt.TypeName)).CreateInstance<IViewRenderer>();
-				ViewComponent = Instance.GetService<IComponentService>().SelectComponent(config.Component);
+				
 				LastModified = ViewComponent.Modified;
 
 				sourceCode = renderer.CreateContent(null, view);
-
 			}
 			else
 			{

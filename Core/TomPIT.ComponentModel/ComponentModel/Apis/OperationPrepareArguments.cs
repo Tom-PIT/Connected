@@ -14,7 +14,7 @@ namespace TomPIT.ComponentModel.Apis
 		{
 			Async = true;
 
-			return new EventCallback(this.MicroService(), Operation.Closest<IApi>().Component, Operation.Id);
+			return new EventCallback(MicroService.Token, Operation.Closest<IApi>().Component, Operation.Id);
 		}
 
 		public bool Async { get; private set; }

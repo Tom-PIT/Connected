@@ -95,7 +95,7 @@ namespace TomPIT.Design.Services
 		}
 
 		protected virtual Type ArgumentsType { get { return typeof(object); } }
-		protected virtual Guid MicroService { get { return Context.MicroService(); } }
+		protected virtual Guid MicroService { get { return Context.MicroService.Token; } }
 
 		public static List<MetadataReference> CombineReferences(List<MetadataReference> additionalReferences)
 		{

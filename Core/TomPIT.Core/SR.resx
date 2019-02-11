@@ -840,6 +840,9 @@
   <data name="ErrIoTParameterValueExpected" xml:space="preserve">
     <value>IoT transaction parameter value expected</value>
   </data>
+  <data name="ErrDataCorrupted" xml:space="preserve">
+    <value>Data corrupted</value>
+  </data>
   <data name="ErrIoTStencilNotFound" xml:space="preserve">
     <value>Stencil not found</value>
   </data>

@@ -54,7 +54,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			if (string.IsNullOrWhiteSpace(tName))
 				return null;
 
-			var tr = context.Connection().GetService<IComponentService>().SelectComponent(context.MicroService(), "Transaction", tName);
+			var tr = context.Connection().GetService<IComponentService>().SelectComponent(context.MicroService.Token, "Transaction", tName);
 
 			if (tr == null)
 				return null;
@@ -173,7 +173,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			if (string.IsNullOrWhiteSpace(tName))
 				return null;
 
-			var tr = context.Connection().GetService<IComponentService>().SelectComponent(context.MicroService(), "Transaction", tName);
+			var tr = context.Connection().GetService<IComponentService>().SelectComponent(context.MicroService.Token, "Transaction", tName);
 
 			if (tr == null)
 				return null;

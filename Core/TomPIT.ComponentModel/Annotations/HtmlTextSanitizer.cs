@@ -96,7 +96,7 @@ namespace TomPIT.Annotations
 					FileName = Element.Id.ToString(),
 					Type = BlobTypes.HtmlImage,
 					PrimaryKey = string.Format("{0}.{1}", Element.ToString(), ResolveConfiguration(Element).Component.ToString()),
-					MicroService = Context.MicroService()
+					MicroService = Context.MicroService.Token
 				};
 
 				Shell.GetService<IStorageService>().Upload(blob, Convert.FromBase64String(imageData), StoragePolicy.Extended);

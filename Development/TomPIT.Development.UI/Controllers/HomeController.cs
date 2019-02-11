@@ -14,7 +14,7 @@ namespace TomPIT.Controllers
 		{
 			var r = new HomeModel();
 
-			r.Initialize(this);
+			r.Initialize(this, null);
 			r.Databind();
 
 			return r;

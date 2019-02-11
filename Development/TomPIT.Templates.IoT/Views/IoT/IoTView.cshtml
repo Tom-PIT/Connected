@@ -8,7 +8,7 @@
 
 @{
 	var view = Model.ViewConfiguration as IoTView;
-	var ms = Model.Connection().ResolveMicroService(Model.MicroService());
+	var ms = Model.Connection().ResolveMicroService(Model.MicroService.Token);
 
 	var bindings = new JArray();
 
@@ -20,9 +20,9 @@
 		{
 			bindings.Add(new JObject
 {
-	{"stencil", i.Name },
-	{"field", j.Field },
-	{"view", Model.Component.Name }
+{"stencil", i.Name },
+{"field", j.Field },
+{"view", Model.Component.Name }
 });
 		}
 	}

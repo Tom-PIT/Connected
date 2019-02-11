@@ -19,10 +19,7 @@ namespace TomPIT.Services.Context
 
 		public JObject Execute(Guid microService, string name, JObject arguments)
 		{
-			var ctx = new ExecutionContext(Context);
-
-			ctx.Identity.SetContextId(microService.ToString());
-
+			var ctx = new ExecutionContext(Context, Context.Connection().GetService<IMicroServiceService>().Select(microService));
 			var component = ctx.Connection().GetService<IComponentService>().SelectComponent(microService, "DataSource", name);
 
 			if (component == null)

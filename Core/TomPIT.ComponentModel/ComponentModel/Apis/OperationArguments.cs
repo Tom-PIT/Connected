@@ -118,7 +118,7 @@ namespace TomPIT.ComponentModel.Apis
 
 		public IDataConnection OpenConnection([CodeAnalysisProvider(ConnectionProvider)]string connection)
 		{
-			return DatabaseRead.OpenConnection(this.MicroService(), connection);
+			return DatabaseRead.OpenConnection(MicroService.Token, connection);
 		}
 
 		private DatabaseGet DatabaseRead
@@ -155,7 +155,7 @@ namespace TomPIT.ComponentModel.Apis
 
 		public Guid Event([CodeAnalysisProvider(EventProvider)]string name, JObject e)
 		{
-			return Connection.GetService<IEventService>().Trigger(this.MicroService(), name, e, null);
+			return Connection.GetService<IEventService>().Trigger(MicroService.Token, name, e, null);
 		}
 
 		public Guid Event([CodeAnalysisProvider(EventProvider)]string name)
@@ -165,7 +165,7 @@ namespace TomPIT.ComponentModel.Apis
 
 		public Guid Event([CodeAnalysisProvider(EventProvider)]string name, JObject e, IEventCallback callback)
 		{
-			return Connection.GetService<IEventService>().Trigger(this.MicroService(), name, e, callback);
+			return Connection.GetService<IEventService>().Trigger(MicroService.Token, name, e, callback);
 		}
 
 		public Guid Event([CodeAnalysisProvider(EventProvider)]string name, IEventCallback callback)

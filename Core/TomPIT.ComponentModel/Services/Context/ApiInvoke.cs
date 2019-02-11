@@ -17,10 +17,7 @@ namespace TomPIT.Services.Context
 		public object Execute(IApiExecutionScope sender, Guid microService, string api, string operation, JObject arguments, IApiTransaction transaction, bool explicitIdentifier)
 		{
 			var ms = ResolveMicroService(sender, microService);
-			var ctx = new ExecutionContext(Context);
-
-			ctx.Identity.SetContextId(ms.ToString());
-
+			var ctx = new ExecutionContext(Context, Context.Connection().GetService<IMicroServiceService>().Select(ms));
 			var svc = GetApi(microService, api, explicitIdentifier);
 
 			if (svc.MicroService(ctx.Connection()) != ms)
@@ -30,7 +27,7 @@ namespace TomPIT.Services.Context
 			{
 				// must be inside the same microservice
 				case ElementScope.Internal:
-					if (svc.MicroService(Context.Connection()) != Context.MicroService())
+					if (svc.MicroService(Context.Connection()) != Context.MicroService.Token)
 						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, api, operation))
 						{
 							Component = svc.Component
@@ -61,7 +58,7 @@ namespace TomPIT.Services.Context
 			switch (op.Scope)
 			{
 				case ElementScope.Internal:
-					if (svc.MicroService(Context.Connection()) != Context.MicroService())
+					if (svc.MicroService(Context.Connection()) != Context.MicroService.Token)
 						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, api, operation));
 					break;
 				case ElementScope.Private:
@@ -143,7 +140,7 @@ namespace TomPIT.Services.Context
 		{
 			var args = new OperationPrepareArguments(context, operation, arguments);
 
-			Context.Connection().GetService<ICompilerService>().Execute(context.Identity.ContextId.AsGuid(), operation.Prepare, this, args);
+			Context.Connection().GetService<ICompilerService>().Execute(context.MicroService.Token, operation.Prepare, this, args);
 
 			return args;
 		}

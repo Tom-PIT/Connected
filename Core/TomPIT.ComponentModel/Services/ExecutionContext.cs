@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
+using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Connectivity;
 using TomPIT.Services.Context;
@@ -12,14 +13,23 @@ namespace TomPIT.Services
 		private const string ApiParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiParameterProvider, TomPIT.Design";
 
 		private IContextServices _services = null;
-		private IContextIdentity _identity = null;
 		private ISysConnection _connection = null;
+
+		public ExecutionContext(IExecutionContext sender, IMicroService microService)
+		{
+			var endpoint = sender is IEndpointContext c ? c.Endpoint : null;
+
+			Initialize(endpoint, microService);
+
+			if (sender is ExecutionContext ec)
+				((ContextDiagnosticService)Services.Diagnostic).MetricParent = ((ContextDiagnosticService)ec.Services.Diagnostic).MetricParent;
+		}
 
 		public ExecutionContext(IExecutionContext sender)
 		{
 			var endpoint = sender is IEndpointContext c ? c.Endpoint : null;
 
-			Initialize(endpoint, sender.Identity.Authority, sender.Identity.AuthorityId, sender.Identity.ContextId);
+			Initialize(endpoint, sender.MicroService);
 
 			if (sender is ExecutionContext ec)
 				((ContextDiagnosticService)Services.Diagnostic).MetricParent = ((ContextDiagnosticService)ec.Services.Diagnostic).MetricParent;
@@ -27,7 +37,17 @@ namespace TomPIT.Services
 
 		public ExecutionContext(string endpoint)
 		{
-			Initialize(endpoint, null, null, null);
+			Initialize(endpoint, null);
+		}
+
+		public ExecutionContext(string endpoint, IMicroService microService)
+		{
+			Initialize(endpoint, microService);
+		}
+
+		public ExecutionContext(IMicroService microService)
+		{
+			Initialize(null, microService);
 		}
 
 		protected ExecutionContext()
@@ -35,15 +55,10 @@ namespace TomPIT.Services
 
 		}
 
-		protected void Initialize(string endpoint, string authority, string authorityId, string contextId)
+		protected void Initialize(string endpoint, IMicroService microService)
 		{
 			Endpoint = endpoint;
-
-			var ci = Identity as ContextIdentity;
-
-			ci.Authority = authority;
-			ci.AuthorityId = authorityId;
-			ci.ContextId = contextId;
+			MicroService = microService;
 		}
 
 		public virtual IContextServices Services
@@ -58,16 +73,7 @@ namespace TomPIT.Services
 		}
 
 
-		public virtual IContextIdentity Identity
-		{
-			get
-			{
-				if (_identity == null)
-					_identity = new ContextIdentity();
-
-				return _identity;
-			}
-		}
+		public virtual IMicroService MicroService { get; protected set; }
 
 		public string Endpoint { get; protected set; }
 
@@ -95,20 +101,9 @@ namespace TomPIT.Services
 			}
 		}
 
-		public static IExecutionContext NonHttpContext(string endpoint, string authority, string authorityId, string contextId)
+		public static IExecutionContext NonHttpContext(string endpoint, IMicroService microService, string user)
 		{
-			return NonHttpContext(endpoint, authority, authorityId, contextId, string.Empty);
-		}
-
-		public static IExecutionContext NonHttpContext(string endpoint, string authority, string authorityId, string contextId, string user)
-		{
-			var r = new ExecutionContext(endpoint);
-
-			var i = r.Identity as ContextIdentity;
-
-			i.Authority = authority;
-			i.AuthorityId = authorityId;
-			i.ContextId = contextId;
+			var r = new ExecutionContext(endpoint, microService);
 
 			var ids = r.Services.Identity as ContextIdentityService;
 

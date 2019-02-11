@@ -13,8 +13,6 @@ using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.Diagnostics;
 using TomPIT.Models;
-using TomPIT.Security;
-using TomPIT.Services;
 
 namespace TomPIT.UI
 {
@@ -63,7 +61,8 @@ namespace TomPIT.UI
 
 			try
 			{
-				Authorize(model);
+				if (!model.Authorize(model.Component))
+					return;
 
 				var actionContext = GetActionContext(Context);
 
@@ -138,66 +137,20 @@ namespace TomPIT.UI
 			if (view == null)
 				return null;
 
-			var model = new RuntimeModel(Context.Request, ac);
-
-			model.ViewConfiguration = view;
-
 			var vi = new ViewInfo(string.Format("/Views/{0}.cshtml", path), ac);
+			var ms = vi.ViewComponent == null ? null : Instance.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
 
-			if (model is IIdentityBinder ctx && vi.ViewComponent != null)
-				ctx.Bind(vi.ViewComponent.Token.ToString(), vi.ViewComponent.Category, vi.ViewComponent.MicroService.ToString());
+			var model = new RuntimeModel(Context.Request, ac)
+			{
+				ViewConfiguration = view
+			};
+
+			model.Initialize(null, ms);
 
 			if (model is IComponentModel cm && vi.ViewComponent != null)
 				cm.Component = vi.ViewComponent;
 
 			return model;
-		}
-
-		private void Authorize(IExecutionContext model)
-		{
-			var rt = model as RuntimeModel;
-
-			if (rt.Component == null)
-				return;
-
-			Authorize(rt, rt.Component);
-		}
-
-		private void Authorize(RuntimeModel model, IComponent component)
-		{
-			var e = new AuthorizationArgs(model.GetAuthenticatedUserToken(), Claims.AccessUserInterface, component.Token.ToString());
-
-			e.Schema.Empty = EmptyBehavior.Deny;
-			e.Schema.Level = AuthorizationLevel.Pessimistic;
-
-			var r = model.Connection().GetService<IAuthorizationService>().Authorize(model, e);
-
-			if (r.Success)
-				return;
-
-			if (r.Reason == AuthorizationResultReason.Empty)
-			{
-				if (model.Connection().GetService<IComponentService>().SelectConfiguration(component.Token) is IAuthorizationChain view
-					&& view.AuthorizationParent != Guid.Empty)
-				{
-					var c = model.Connection().GetService<IComponentService>().SelectComponent(view.AuthorizationParent);
-
-					if (c != null)
-						Authorize(model, c);
-				}
-				else
-					Reject(model);
-			}
-			else
-				Reject(model);
-		}
-
-		private void Reject(IExecutionContext context)
-		{
-			if (context.GetAuthenticatedUserToken() == Guid.Empty)
-				Context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-			else
-				Context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
 		}
 	}
 }

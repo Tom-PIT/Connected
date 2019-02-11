@@ -31,8 +31,8 @@ namespace TomPIT.Controllers
 				Body = FromBody()
 			};
 
-			r.Initialize(this);
 			r.Databind();
+			r.Initialize(this, r.MicroService);
 
 			return r;
 		}
@@ -44,8 +44,8 @@ namespace TomPIT.Controllers
 				Body = FromBody()
 			};
 
-			r.Initialize(this);
 			r.Databind();
+			r.Initialize(this, r.MicroService);
 
 			return r;
 		}

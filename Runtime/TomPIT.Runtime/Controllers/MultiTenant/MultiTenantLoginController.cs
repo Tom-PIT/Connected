@@ -10,7 +10,7 @@ namespace TomPIT.Controllers.MultiTenant
 		{
 			var r = new MultiTenantLoginModel();
 
-			r.Initialize(controller);
+			r.Initialize(controller, null);
 			r.Databind();
 
 			return r;

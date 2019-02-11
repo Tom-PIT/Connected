@@ -10,11 +10,9 @@ namespace TomPIT.Controllers
 		{
 			var r = new IdeModel();
 
-			r.Initialize(this);
-
 			var microService = RouteData.Values["microService"] as string;
 
-			r.MicroService = r.Connection.GetService<IMicroServiceService>().SelectByUrl(microService);
+			r.Initialize(this, r.Connection.GetService<IMicroServiceService>().SelectByUrl(microService));
 
 			if (r.MicroService == null)
 				throw new NullReferenceException();

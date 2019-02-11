@@ -52,10 +52,10 @@ namespace TomPIT.Services.Context
 			if (MicroService != null)
 				return;
 
-			if (Context.MicroService() == Guid.Empty)
+			if (Context.MicroService == null)
 				throw new RuntimeException(SR.ErrCannotResolveMicroService).WithMetrics(Context);
 
-			MicroService = Context.Connection().GetService<IMicroServiceService>().Select(Context.MicroService());
+			MicroService = Context.MicroService;
 		}
 
 		protected virtual void Validate()

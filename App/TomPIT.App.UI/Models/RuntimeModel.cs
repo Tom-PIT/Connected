@@ -11,13 +11,10 @@ namespace TomPIT.Models
 	public class RuntimeModel : ExecutionContext, IRuntimeModel
 	{
 		private IModelNavigation _navigation = null;
-		private IContextIdentity _identity = null;
 
-		public RuntimeModel(RuntimeModel context)
+		public RuntimeModel(RuntimeModel context) : base(context)
 		{
 			ActionContext = context.ActionContext;
-
-			Bind(context.Identity.AuthorityId, context.Identity.Authority, context.Identity.ContextId);
 		}
 
 		public RuntimeModel(HttpRequest request, ActionContext context)
@@ -37,10 +34,11 @@ namespace TomPIT.Models
 		protected Controller Controller { get; private set; }
 		public ActionContext ActionContext { get; }
 
-		public void Initialize(Controller controller)
+		public void Initialize(Controller controller, IMicroService microService)
 		{
 			Controller = controller;
-			Initialize(null, null, null, null);
+
+			base.Initialize(null, microService);
 
 			OnInitializing();
 		}
@@ -59,13 +57,6 @@ namespace TomPIT.Models
 		{
 
 		}
-
-		public void Bind(string authorityId, string authority, string contextId)
-		{
-			_identity = this.CreateIdentity(authority, authorityId, contextId);
-		}
-
-		public override IContextIdentity Identity => _identity;
 
 		public string Title { get; protected set; }
 

@@ -47,7 +47,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
 				var key = i.Name;
 
-				if (i.MicroService != context.MicroService())
+				if (i.MicroService != context.MicroService.Token)
 				{
 					var ms = Context.Connection().GetService<IMicroServiceService>().Select(i.MicroService);
 
@@ -194,7 +194,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 		{
 			var qualifier = e.ExpressionText;
 
-			var ms = context.MicroService();
+			var ms = context.MicroService.Token;
 			var microservice = Context.Connection().GetService<IMicroServiceService>().Select(ms);
 
 			if (qualifier.Contains('/'))
@@ -228,7 +228,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 						MicroService = ev.MicroService.ToString(),
 						Component = ev.Token.ToString(),
 						Element = ev.Token.ToString(),
-						Kind = ev.MicroService == context.MicroService() ? CodeLensArguments.InternalLink : CodeLensArguments.ExternalLink
+						Kind = ev.MicroService == context.MicroService.Token ? CodeLensArguments.InternalLink : CodeLensArguments.ExternalLink
 					}
 				}
 			};

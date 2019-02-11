@@ -110,14 +110,6 @@ namespace TomPIT
 			return ServerUrl.Create(connection.Url, controller, action);
 		}
 
-		public static Guid MicroService(this IExecutionContext context)
-		{
-			if (context.Identity == null || string.IsNullOrWhiteSpace(context.Identity.ContextId))
-				return Guid.Empty;
-
-			return context.Identity.ContextId.AsGuid();
-		}
-
 		public static Guid Component(this IConfiguration configuration, IExecutionContext context)
 		{
 			var c = context.Connection().GetService<IComponentService>().SelectComponent(configuration.Component);

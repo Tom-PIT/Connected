@@ -1,4 +1,4 @@
-﻿;'use strict';
+﻿'use strict';
 
 $.widget('tompit.tpMessaging', {
 	options: {
@@ -34,41 +34,58 @@ $.widget('tompit.tpMessaging', {
 			'connection': new signalR.HubConnectionBuilder()
 				.withUrl(e.url + qs)
 				.configureLogging(signalR.LogLevel.Information)
-				.build()
+				.build(),
+			'getBindings': function (field) {
+				var r = [];
+
+				$.each(this.bindings, function (i, v) {
+					if (v.field === field)
+						r.push(v);
+				});
+
+				return r;
+			}
 		};
 
 		connection.connection.on('data', function (data) {
 			var views = [];
 
-			$.each(connection.bindings, function (i, v) {
-				var existingView = null;
+			$.each(data, function (i, v) {
+				if (i === '$timestamp')
+					return true;
 
-				$.each(views, function (vi, vv) {
-					if (vv.view === v.view) {
-						existingView = vv;
-						return false;
+				var bindings = connection.getBindings(i);
+
+				$.each(bindings, function (i, v) {
+					var existingView = null;
+
+					$.each(views, function (vi, vv) {
+						if (vv.view === v.view) {
+							existingView = vv;
+							return false;
+						}
+					});
+
+					if (existingView === null) {
+						existingView = {
+							view: v.view,
+							stencils: []
+						};
+
+						views.push(existingView);
 					}
+
+					if (!existingView.stencils.includes(v.stencil))
+						existingView.stencils.push(v.stencil);
 				});
-
-				if (existingView === null) {
-					existingView = {
-						view: v.view,
-						stencils: []
-					};
-
-					views.push(existingView);
-				}
-
-				if (!existingView.stencils.includes(v.stencil))
-					existingView.stencils.push(v.stencil);
 			});
 
-			
 			$.each(views, function (i, v) {
 				instance.reloadStencils({
 					'view': v.view,
 					'connection': connection.id,
-					'stencils': v.stencils
+					'stencils': v.stencils,
+					'data': data
 				});
 
 				instance.element.trigger('valueChanged', [data, connection.hub, v.view]);
@@ -110,7 +127,11 @@ $.widget('tompit.tpMessaging', {
 
 		tompit.post({
 			'url': encodeURI(connection.appBaseUrl + '/' + connection.microService + '/' + view),
-			'data': e.stencils,
+			'data': {
+				'data': e.data,
+				'stencils': e.stencils,
+				'fields': e.fields
+			},
 			onComplete: function (data) {
 				var result = $('<div></div>').append(data.responseText).children('[data-stencil]');
 

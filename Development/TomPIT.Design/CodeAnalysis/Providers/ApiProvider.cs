@@ -269,7 +269,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 						MicroService = api.MicroService.ToString(),
 						Component = api.Token.ToString(),
 						Element = op.Id.ToString(),
-						Kind = api.MicroService == context.MicroService() ? CodeLensArguments.InternalLink : CodeLensArguments.ExternalLink
+						Kind = api.MicroService == context.MicroService.Token ? CodeLensArguments.InternalLink : CodeLensArguments.ExternalLink
 					}
 				}
 			};

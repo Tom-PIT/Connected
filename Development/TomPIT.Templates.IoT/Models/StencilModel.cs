@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
 using TomPIT.IoT.UI.Stencils;
@@ -50,7 +51,32 @@ namespace TomPIT.IoT.Models
 			get
 			{
 				if (_ds == null && Hub != null)
-					_ds = Context.Connection().GetService<IIoTService>().SelectState(Hub.Component);
+				{
+					var ds = Context.Connection().GetService<IIoTService>().SelectState(Hub.Component);
+
+					if (Context is IForwardDataProvider fw && fw.ForwardState != null && fw.ForwardState.Count > 0)
+					{
+						_ds = new List<IIoTFieldState>();
+
+						foreach (var i in ds)
+						{
+							var forward = fw.ForwardState.FirstOrDefault(f => string.Compare(f.Field, i.Field, true) == 0);
+							var value = i.Value;
+
+							if (forward != null && forward.Modified > i.Modified)
+								value = forward.Value;
+
+							_ds.Add(new IoTFieldState
+							{
+								Field = i.Field,
+								Modified = i.Modified,
+								Value = value
+							});
+						}
+					}
+					else
+						_ds = ds;
+				}
 
 				return _ds;
 			}

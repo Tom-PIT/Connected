@@ -29,7 +29,7 @@ namespace TomPIT.UI
 			if (helper == null)
 				return;
 
-			this.e.Connection().GetService<ICompilerService>().Execute(this.e.MicroService(),
+			this.e.Connection().GetService<ICompilerService>().Execute(this.e.MicroService.Token,
 				helper, this, new ViewHelperArguments(this.e, e, this as ViewBase<IExecutionContext>));
 		}
 
@@ -45,7 +45,7 @@ namespace TomPIT.UI
 			if (helper == null)
 				return default(H);
 
-			return (H)this.e.Connection().GetService<ICompilerService>().Execute(this.e.MicroService(),
+			return (H)this.e.Connection().GetService<ICompilerService>().Execute(this.e.MicroService.Token,
 				helper, this, new ViewHelperArguments(this.e, e, this as ViewBase<IExecutionContext>));
 		}
 

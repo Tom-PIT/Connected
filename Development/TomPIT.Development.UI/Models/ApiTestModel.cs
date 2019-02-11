@@ -16,8 +16,6 @@ namespace TomPIT.Models
 
 		protected override void OnInitializing(ModelInitializeParams p)
 		{
-			p.Authority = "ApiTest";
-
 			Title = "API Testing console";
 
 			if (Body == null)
@@ -54,11 +52,7 @@ namespace TomPIT.Models
 			if (!string.IsNullOrWhiteSpace(ms))
 			{
 				var svc = Connection.GetService<IMicroServiceService>().Select(ms);
-
-				if (svc == null)
-					throw new RuntimeException("Api Test", SR.ErrMicroServiceNotFound);
-
-				p.ContextId = svc.Token.ToString();
+				MicroService = svc ?? throw new RuntimeException("Api Test", SR.ErrMicroServiceNotFound);
 			}
 			else
 			{
@@ -67,7 +61,7 @@ namespace TomPIT.Models
 				if (component == null)
 					throw new RuntimeException("Api Test", string.Format("{0} ({1})", SR.ErrComponentNotFound, tokens[0]));
 
-				p.ContextId = component.MicroService.ToString();
+				MicroService = Connection.GetService<IMicroServiceService>().Select(component.MicroService);
 			}
 
 			if (!string.IsNullOrWhiteSpace(qs))
@@ -94,9 +88,7 @@ namespace TomPIT.Models
 
 		public object Invoke()
 		{
-			var ms = Connection.GetService<IMicroServiceService>().Select(Identity.ContextId.AsGuid());
-
-			var r = Invoke<object>(string.Format("{0}/{1}/{2}", ms.Name, Api, Operation), Body);
+			var r = Invoke<object>(string.Format("{0}/{1}/{2}", MicroService.Name, Api, Operation), Body);
 
 			if (r == null)
 				return null;
@@ -235,7 +227,7 @@ namespace TomPIT.Models
 				Body = controller.RequestBody()
 			};
 
-			r.Initialize(controller, initializing);
+			r.Initialize(controller, null, initializing);
 
 			r.Databind();
 

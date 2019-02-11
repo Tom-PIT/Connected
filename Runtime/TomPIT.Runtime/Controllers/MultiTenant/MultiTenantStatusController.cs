@@ -10,7 +10,7 @@ namespace TomPIT.Controllers.MultiTenant
 		{
 			var model = new MultiTenantLoginModel();
 
-			model.Initialize(this);
+			model.Initialize(this, null);
 			model.Databind();
 
 			return View("~/Views/Shell/MultiTenant/MultiTenantLogin.cshtml", model);

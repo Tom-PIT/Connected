@@ -30,12 +30,6 @@ namespace TomPIT
 			return Shell.GetService<IConnectivityService>().Select();
 		}
 
-		public static void SetContextId(this IContextIdentity identity, string contextId)
-		{
-			if (identity is ContextIdentity s)
-				s.ContextId = contextId;
-		}
-
 		public static Guid GetAuthenticatedUserToken(this IExecutionContext context)
 		{
 			var u = GetAuthenticatedUser(context);
@@ -139,16 +133,6 @@ namespace TomPIT
 		public static IContextServices CreateServices(this IExecutionContext context, HttpRequest request)
 		{
 			return new ContextServices(context);
-		}
-
-		public static IContextIdentity CreateIdentity(this IExecutionContext context, string authority, string authorityId, string contextId)
-		{
-			return new ContextIdentity
-			{
-				Authority = authority,
-				AuthorityId = authorityId,
-				ContextId = contextId
-			};
 		}
 	}
 }

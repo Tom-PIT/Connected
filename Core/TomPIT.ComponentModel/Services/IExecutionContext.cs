@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Services.Context;
 
@@ -7,7 +8,7 @@ namespace TomPIT.Services
 	public interface IExecutionContext
 	{
 		IContextServices Services { get; }
-		IContextIdentity Identity { get; }
+		IMicroService MicroService { get; }
 
 		JObject Invoke(string api, JObject e, IApiTransaction transaction);
 		JObject Invoke(string api, JObject e);

@@ -7,7 +7,7 @@ namespace TomPIT.Models
 	{
 		public ExceptionModel(HttpContext context, Exception ex)
 		{
-			Initialize(null, null, null, null);
+			Initialize(null, null);
 
 			Title = SR.ViewErrorTitle;
 		}

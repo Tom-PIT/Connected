@@ -287,7 +287,7 @@ namespace TomPIT
 			if (scope != null)
 				return scope.MicroService.Token;
 
-			return element.Environment.Context.MicroService();
+			return element.Environment.Context.MicroService.Token;
 		}
 
 		public static DomDesignerAttribute ResolveDesigner(this Type type)

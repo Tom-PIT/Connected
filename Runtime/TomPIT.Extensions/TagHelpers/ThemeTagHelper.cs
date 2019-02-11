@@ -21,7 +21,7 @@ namespace TomPIT.TagHelpers
 				microService = tokens[0];
 				name = tokens[1];
 
-				var ms = ctx.Connection().GetService<IMicroServiceService>().Select(ctx.MicroService());
+				var ms = ctx.Connection().GetService<IMicroServiceService>().Select(ctx.MicroService.Token);
 				var reference = ctx.Connection().GetService<IMicroServiceService>().Select(microService);
 
 				if (reference == null)
@@ -31,12 +31,12 @@ namespace TomPIT.TagHelpers
 			}
 			else
 			{
-				var theme = ctx.Connection().GetService<IComponentService>().SelectComponent(ctx.MicroService(), "Theme", Name);
+				var theme = ctx.Connection().GetService<IComponentService>().SelectComponent(ctx.MicroService.Token, "Theme", Name);
 
 				if (theme == null)
 					microService = ResolveMicroservice(ViewContext.ExecutingFilePath).Name;
 				else
-					microService = ctx.Connection().GetService<IMicroServiceService>().Select(ctx.MicroService()).Name;
+					microService = ctx.Connection().GetService<IMicroServiceService>().Select(ctx.MicroService.Token).Name;
 			}
 
 			output.TagName = "link";

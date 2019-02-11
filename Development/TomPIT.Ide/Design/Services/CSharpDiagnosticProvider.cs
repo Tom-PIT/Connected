@@ -1,8 +1,7 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis;
-using TomPIT.Compilers;
 using TomPIT.ComponentModel;
 using TomPIT.Ide;
 
@@ -15,7 +14,7 @@ namespace TomPIT.Design.Services
 			var svc = environment.Context.Connection().GetService<ICodeAnalysisService>();
 			var mi = svc.GetType().GetMethod("CheckSyntax");
 			var generic = mi.MakeGenericMethod(argumentType);
-			var errors = (ImmutableArray<Diagnostic>)generic.Invoke(svc, new object[] { environment.Context.MicroService(), sourceCode });
+			var errors = (ImmutableArray<Diagnostic>)generic.Invoke(svc, new object[] { environment.Context.MicroService.Token, sourceCode });
 			var r = new List<IDiagnosticInfo>();
 
 			foreach (var i in errors)

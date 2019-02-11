@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Text;
+using TomPIT.ComponentModel;
 using TomPIT.Models;
 
 namespace TomPIT.Controllers
@@ -144,7 +145,7 @@ namespace TomPIT.Controllers
 		{
 			var r = new LoginModel();
 
-			r.Initialize(controller);
+			r.Initialize(controller, null);
 			r.Databind();
 
 			return r;

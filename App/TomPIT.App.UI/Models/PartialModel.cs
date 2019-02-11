@@ -49,7 +49,7 @@ namespace TomPIT.Models
 			Body.Remove("__name");
 			Body.Remove("__component");
 
-			SetIdentity(this.CreateIdentity(c.Category, c.Token.ToString(), s.Token.ToString()));
+			MicroService = s;
 		}
 	}
 }

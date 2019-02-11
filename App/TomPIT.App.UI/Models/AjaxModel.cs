@@ -9,37 +9,12 @@ namespace TomPIT.Models
 {
 	public class AjaxModel : ExecutionContext, IModel, IRequestContextProvider
 	{
-		private IContextIdentity _identity = null;
 		private IComponent _component = null;
 
 		public string QualifierName { get; protected set; }
 		internal JObject Body { get; set; }
 
 		public JObject Arguments { get { return Body; } }
-
-		public override IContextIdentity Identity
-		{
-			get
-			{
-				if (_identity == null)
-				{
-
-					var microService = Connection.GetService<IMicroServiceService>().Select(Component.MicroService);
-
-					if (microService == null)
-						throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, Component.MicroService.ToString()));
-
-					_identity = this.CreateIdentity(null, null, microService.Token.ToString());
-				}
-
-				return _identity;
-			}
-		}
-
-		protected void SetIdentity(IContextIdentity identity)
-		{
-			_identity = identity;
-		}
 
 		private IComponent Component
 		{
@@ -70,10 +45,10 @@ namespace TomPIT.Models
 
 		public ActionContext ActionContext => Controller?.ControllerContext;
 
-		public void Initialize(Controller controller)
+		public void Initialize(Controller controller, IMicroService microService)
 		{
 			Controller = controller;
-			Initialize(null, null, null, null);
+			Initialize(Controller, microService);
 
 			OnInitializing();
 		}

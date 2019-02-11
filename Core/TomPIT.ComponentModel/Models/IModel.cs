@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using TomPIT.ComponentModel;
 using TomPIT.Services;
 
 namespace TomPIT.Models
@@ -8,6 +9,6 @@ namespace TomPIT.Models
 	public interface IModel : IExecutionContext
 	{
 		IEnumerable<ValidationResult> Validate();
-		void Initialize(Controller controller);
+		void Initialize(Controller controller, IMicroService microService);
 	}
 }

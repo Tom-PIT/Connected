@@ -13,7 +13,7 @@ namespace TomPIT.Ide
 
 		public override List<IDomElement> Root()
 		{
-			return new List<IDomElement> { new MicroServiceElement(Environment, Environment.Context.MicroService()) };
+			return new List<IDomElement> { new MicroServiceElement(Environment, Environment.Context.MicroService.Token) };
 		}
 
 		public override List<IItemDescriptor> ProvideAddItems(IDomElement selection)

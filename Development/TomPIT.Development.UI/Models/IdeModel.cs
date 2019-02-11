@@ -24,8 +24,6 @@ namespace TomPIT.Models
 			}
 		}
 
-		public IMicroService MicroService { get; set; }
-
 		protected override IDom CreateDom()
 		{
 			var path = string.IsNullOrWhiteSpace(Path)
@@ -48,8 +46,6 @@ namespace TomPIT.Models
 		protected override void OnDatabinding()
 		{
 			Title = MicroService.Name;
-
-			Identity.SetContextId(MicroService.Token.ToString());
 		}
 
 		protected override IDesignerActionResult CreateItem(JObject data)

@@ -33,7 +33,7 @@ namespace TomPIT.Services.Context
 
 		public Guid Upload(StoragePolicy policy, string fileName, string contentType, string primaryKey, byte[] content, string topic, Guid draft)
 		{
-			var ms = Context.MicroService();
+			var ms = Context.MicroService.Token;
 			Guid rg = Guid.Empty;
 
 			if (ms != Guid.Empty)

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using TomPIT.ComponentModel;
 using TomPIT.Services;
 
 namespace TomPIT.Models
@@ -19,7 +20,7 @@ namespace TomPIT.Models
 
 		public ActionContext ActionContext => Controller?.ControllerContext;
 
-		protected void Initialize(Controller controller, bool initializing)
+		protected void Initialize(Controller controller, IMicroService microService, bool initializing)
 		{
 			Controller = controller;
 
@@ -28,12 +29,12 @@ namespace TomPIT.Models
 			if (initializing)
 				OnInitializing(p);
 
-			Initialize(p.Endpoint, p.Authority, p.AuthorityId, p.ContextId);
+			Initialize(p.Endpoint, p.MicroService);
 		}
 
-		public void Initialize(Controller controller)
+		public void Initialize(Controller controller, IMicroService microService)
 		{
-			Initialize(controller, true);
+			Initialize(controller, MicroService, true);
 		}
 
 		public void Databind()

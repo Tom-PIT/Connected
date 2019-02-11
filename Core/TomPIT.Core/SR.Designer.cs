@@ -754,6 +754,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Data corrupted.
+        /// </summary>
+        public static string ErrDataCorrupted {
+            get {
+                return ResourceManager.GetString("ErrDataCorrupted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parameter value expected..
         /// </summary>
         public static string ErrDataParameterExpected {

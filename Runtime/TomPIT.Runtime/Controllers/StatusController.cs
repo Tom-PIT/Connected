@@ -64,7 +64,7 @@ namespace TomPIT.Controllers
 				Description = description
 			};
 
-			r.Initialize(this);
+			r.Initialize(this, null);
 			r.Databind();
 
 			return r;
@@ -74,7 +74,7 @@ namespace TomPIT.Controllers
 		{
 			var model = new LoginModel();
 
-			model.Initialize(this);
+			model.Initialize(this, null);
 			model.Databind();
 
 			return View("~/Views/Shell/Login.cshtml", model);

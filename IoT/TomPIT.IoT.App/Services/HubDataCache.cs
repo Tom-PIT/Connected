@@ -1,8 +1,11 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 
@@ -48,6 +51,7 @@ namespace TomPIT.IoT.Services
 			var r = new JObject();
 			var a = new JArray();
 
+			r.Add("$timestamp", DateTime.UtcNow);
 			e.Add("fields", a);
 
 			var schema = Select(hub);
@@ -67,7 +71,33 @@ namespace TomPIT.IoT.Services
 
 			Buffer.Enqueue(e);
 
+			var hash = JsonConvert.SerializeObject(r);
+
+			r.Add("$checkSum", Convert.ToBase64String(LZ4.LZ4Codec.Wrap(Hash(hash))));
+
 			return r;
+		}
+
+		public byte[] Hash(string value)
+		{
+			if (string.IsNullOrEmpty(value))
+				return new byte[0];
+
+			using (var md = MD5.Create())
+			{
+				return Encoding.UTF8.GetBytes(GetHash(md, value));
+			}
+		}
+
+		private string GetHash(MD5 hash, string value)
+		{
+			var data = hash.ComputeHash(Encoding.UTF8.GetBytes(value));
+			var sb = new StringBuilder();
+
+			for (var i = 0; i < data.Length; i++)
+				sb.Append(data[i].ToString("x2"));
+
+			return sb.ToString();
 		}
 
 		public void Flush()
