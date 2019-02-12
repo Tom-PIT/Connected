@@ -153,6 +153,8 @@ namespace TomPIT.Designers
 				return Result.JsonResult(this, QueryDataSources());
 			else if (string.Compare(action, "createStronglyType", true) == 0)
 				return Result.JsonResult(this, CreateStronglyType(data));
+			else if (string.Compare(action, "definition", true) == 0)
+				return Result.JsonResult(this, CompletionProvider.Definition(Environment.Context, CreateSuggestionArgs(data)));
 
 			return base.OnAction(data, action);
 		}

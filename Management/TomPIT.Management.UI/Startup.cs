@@ -14,7 +14,24 @@ namespace TomPIT.Servers.Management
 		{
 			var e = new ServicesConfigurationArgs
 			{
-				Authentication = AuthenticationType.MultiTenant
+				Authentication = AuthenticationType.MultiTenant,
+				ProvideApplicationParts = (args) =>
+				{
+					foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+					{
+						var t = Types.GetType(i);
+
+						if (t == null)
+							continue;
+
+						var template = t.CreateInstance<IMicroServiceTemplate>();
+
+						var ds = template.GetApplicationParts();
+
+						if (ds != null && ds.Count > 0)
+							args.Parts.AddRange(ds);
+					}
+				}
 			};
 
 			Instance.Initialize(services, e);

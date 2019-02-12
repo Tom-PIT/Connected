@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Runtime;
 using TomPIT.Services;
 
 namespace TomPIT.Design.Services
@@ -10,5 +9,6 @@ namespace TomPIT.Design.Services
 		ISignatureInfo Signatures(IExecutionContext sender, CodeStateArgs e);
 		IHoverInfo Hover(IExecutionContext sender, CodeStateArgs e);
 		ICodeLensDescriptor[] CodeLens(IExecutionContext sender, CodeLensArgs e);
+		ILocation Definition(IExecutionContext sender, CodeStateArgs e);
 	}
 }

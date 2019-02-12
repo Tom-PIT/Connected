@@ -538,7 +538,8 @@ CREATE TABLE [tompit].[log]
 [event_id] [int] NULL,
 [component] [uniqueidentifier] NULL,
 [element] [uniqueidentifier] NULL,
-[metric] [uniqueidentifier] NULL
+[metric] [uniqueidentifier] NULL,
+[date] [date] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -546,6 +547,24 @@ GO
 PRINT N'Creating primary key [PK_log] on [tompit].[log]'
 GO
 ALTER TABLE [tompit].[log] ADD CONSTRAINT [PK_log] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating index [IX_log_2] on [tompit].[log]'
+GO
+CREATE NONCLUSTERED INDEX [IX_log_2] ON [tompit].[log] ([component]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating index [IX_log_1] on [tompit].[log]'
+GO
+CREATE NONCLUSTERED INDEX [IX_log_1] ON [tompit].[log] ([date]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating index [IX_log] on [tompit].[log]'
+GO
+CREATE NONCLUSTERED INDEX [IX_log] ON [tompit].[log] ([metric]) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -676,7 +695,8 @@ CREATE TABLE [tompit].[message_subscriber]
 [connection] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [topic] [bigint] NOT NULL,
 [created] [datetime2] NOT NULL,
-[alive] [datetime2] NOT NULL
+[alive] [datetime2] NOT NULL,
+[instance] [uniqueidentifier] NOT NULL
 ) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -693,13 +713,14 @@ CREATE PROCEDURE [tompit].[message_subscriber_ins]
 	@topic bigint,
 	@connection nvarchar(128),
 	@created datetime2(7),
-	@alive datetime2(7)
+	@alive datetime2(7),
+	@instance uniqueidentifier
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	insert tompit.message_subscriber (connection, topic, created, alive)
-	values (@connection, @topic, @created, @alive);
+	insert tompit.message_subscriber (connection, topic, created, alive, instance)
+	values (@connection, @topic, @created, @alive, @instance);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -1004,6 +1025,18 @@ ALTER TABLE [tompit].[metric] ADD CONSTRAINT [PK_metric] PRIMARY KEY CLUSTERED  
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating index [IX_metric_1] on [tompit].[metric]'
+GO
+CREATE NONCLUSTERED INDEX [IX_metric_1] ON [tompit].[metric] ([parent]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating index [IX_metric] on [tompit].[metric]'
+GO
+CREATE NONCLUSTERED INDEX [IX_metric] ON [tompit].[metric] ([session]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[metric_clr]'
 GO
 CREATE PROCEDURE [tompit].[metric_clr]
@@ -1045,13 +1078,13 @@ GO
 CREATE TABLE [tompit].[message]
 (
 [id] [bigint] NOT NULL IDENTITY(1, 1),
-[message] [nvarchar] (2048) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[message] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [topic] [bigint] NOT NULL,
 [created] [datetime2] NOT NULL,
 [expire] [datetime2] NOT NULL,
 [retry_interval] [int] NOT NULL,
 [token] [uniqueidentifier] NOT NULL
-) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -1065,11 +1098,12 @@ PRINT N'Creating [tompit].[message_ins]'
 GO
 CREATE PROCEDURE [tompit].[message_ins]
 	@topic bigint,
-	@message nvarchar(2048) = null,
+	@message nvarchar(MAX) = null,
 	@created datetime2(7),
 	@expire datetime2(7),
 	@retry_interval int,
-	@token uniqueidentifier
+	@token uniqueidentifier,
+	@sender_instance uniqueidentifier
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -1082,7 +1116,7 @@ BEGIN
 	set @id = scope_identity();
 
 	insert tompit.message_recipient (message, subscriber, retry_count, next_visible)
-	select @id,  id, 0, DATEADD(s, @retry_interval, @created) from tompit.message_subscriber where topic = @topic;
+	select @id,  id, 0, DATEADD(s, @retry_interval, @created) from tompit.message_subscriber where topic = @topic AND instance != @sender_instance;
 
 END
 GO
@@ -1329,9 +1363,10 @@ GO
 
 
 
+
 CREATE VIEW [tompit].[view_message_recipient]
 AS
-SELECT      r.*, m.token message_token, m.topic, s.connection, t.name topic_name, m.message content
+SELECT      r.id, r.message, r.subscriber, r.retry_count, r.next_visible, m.token message_token, m.topic, s.connection, t.name topic_name, m.message content
 FROM        tompit.message_recipient AS r 
 INNER JOIN	tompit.[message] AS m ON r.[message] = m.id
 INNER JOIN	tompit.message_subscriber s on r.subscriber = s.id
@@ -1639,6 +1674,53 @@ FROM            tompit.setting AS s LEFT OUTER JOIN
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[iot_state]'
+GO
+CREATE TABLE [tompit].[iot_state]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[hub] [uniqueidentifier] NOT NULL,
+[field] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[value] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[modified] [datetime2] NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_iot_state] on [tompit].[iot_state]'
+GO
+ALTER TABLE [tompit].[iot_state] ADD CONSTRAINT [PK_iot_state] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating index [IX_iot_state] on [tompit].[iot_state]'
+GO
+CREATE NONCLUSTERED INDEX [IX_iot_state] ON [tompit].[iot_state] ([hub]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[iot_state_upd]'
+GO
+CREATE PROCEDURE [tompit].[iot_state_upd]
+	@items nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	MERGE tompit.iot_state AS d
+	USING (SELECT * FROM OPENJSON (@items) WITH (hub uniqueidentifier, field nvarchar(128), value nvarchar(1024))) AS s (hub, field, value)
+	ON (d.hub = s.hub AND d.field = s.field)
+	WHEN NOT MATCHED BY TARGET THEN
+		INSERT (hub, field, modified)
+		VALUES (hub, field, GETUTCDATE())
+	WHEN MATCHED THEN
+		UPDATE SET
+			value = s.value,
+			modified = GETUTCDATE();
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[service_meta_upd]'
 GO
 CREATE PROCEDURE [tompit].[service_meta_upd]
@@ -1665,6 +1747,21 @@ BEGIN
 
 	select * 
 	from view_setting;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[iot_state_sel]'
+GO
+CREATE PROCEDURE [tompit].[iot_state_sel]
+	@hub uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT *
+	FROM tompit.iot_state
+	WHERE hub = @hub;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -2016,9 +2113,10 @@ GO
 
 
 
+
 CREATE VIEW [tompit].[view_message_subscriber]
 AS
-SELECT      s.*, t.name topic_name
+SELECT      s.id, s.connection, s.topic, s.created, s.alive, s.instance, t.name topic_name
 FROM        tompit.message_subscriber AS s
 INNER JOIN	tompit.message_topic t on s.topic = t.id
 
@@ -2397,9 +2495,10 @@ GO
 
 
 
+
 CREATE VIEW [tompit].[view_message]
 AS
-SELECT      m.*, t.name topic_name
+SELECT      m.id, m.message, m.topic, m.created, m.expire, m.retry_interval, m.token, t.name topic_name
 FROM        tompit.message AS m
 INNER JOIN	tompit.message_topic t on m.topic = t.id
 
@@ -3164,9 +3263,9 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	INSERT tompit.log (created, message, trace_level, source, category, event_id, metric, component, element)
-	SELECT created, message, trace_level, source, category, event_id, metric, component, element FROM OPENJSON (@items) WITH (created datetime2(7), message nvarchar(max), trace_level int, source nvarchar(1024), category nvarchar(128),
-		event_id int, metric uniqueidentifier, component uniqueidentifier, element uniqueidentifier); 
+	INSERT tompit.log (created, message, trace_level, source, category, event_id, metric, component, element, date)
+	SELECT created, message, trace_level, source, category, event_id, metric, component, element, date FROM OPENJSON (@items) WITH (created datetime2(7), message nvarchar(max), trace_level int, source nvarchar(1024), category nvarchar(128),
+		event_id int, metric uniqueidentifier, component uniqueidentifier, element uniqueidentifier, date date); 
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3220,7 +3319,7 @@ GO
 PRINT N'Creating [tompit].[log_que]'
 GO
 CREATE PROCEDURE [tompit].[log_que]
-	@date date,
+	@date date = NULL,
 	@component uniqueidentifier = NULL,
 	@element uniqueidentifier = NULL,
 	@metric uniqueidentifier = NULL
@@ -3228,12 +3327,33 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT * 
-	FROM tompit.log
-	WHERE CAST(created AS DATE) = @date
-	AND (@component IS NULL OR component = @component)
-	AND (@element IS NULL OR element = @element)
-	AND (metric IS NULL OR metric = @metric);
+	IF (@metric IS NOT NULL)
+	BEGIN
+		WITH
+		  cteMetric (session, parent, level)
+		  AS
+		  (
+			SELECT session, parent, 1
+			FROM tompit.metric
+			WHERE session = @metric
+			UNION ALL
+			SELECT p.session, p.parent, m.level + 1
+			FROM tompit.metric p
+			  INNER JOIN cteMetric m
+				ON p.parent = m.session
+		  )
+		SELECT * 
+		FROM tompit.log
+		WHERE (metric IN (SELECT session FROM cteMetric))
+	END
+	ELSE
+	BEGIN
+		SELECT * 
+		FROM tompit.log
+		WHERE (@date IS NULL OR [date] = @date)
+		AND (@component IS NULL OR component = @component)
+		AND (@element IS NULL OR element = @element);
+	END
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON

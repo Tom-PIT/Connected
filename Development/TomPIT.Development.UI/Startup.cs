@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
 using TomPIT.Connectivity;
 using TomPIT.Design;
 using TomPIT.Environment;
@@ -13,33 +12,27 @@ namespace TomPIT.Servers.Development
 	{
 		public void ConfigureServices(IServiceCollection services)
 		{
-			var parts = new List<string>();
-
-			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-			{
-				var t = Types.GetType(i);
-
-				if (t == null)
-					continue;
-
-				var template = t.CreateInstance<IMicroServiceTemplate>();
-
-				var ds = template.GetApplicationParts();
-
-				if (ds != null)
-				{
-					foreach (var j in parts)
-						parts.Add(j);
-				}
-			}
-
 			var e = new ServicesConfigurationArgs
 			{
-				Authentication = AuthenticationType.MultiTenant
-			};
+				Authentication = AuthenticationType.MultiTenant,
+				ProvideApplicationParts = (args) =>
+				{
+					foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+					{
+						var t = Types.GetType(i);
 
-			if (parts.Count > 0)
-				e.ApplicationParts.AddRange(parts);
+						if (t == null)
+							continue;
+
+						var template = t.CreateInstance<IMicroServiceTemplate>();
+
+						var ds = template.GetApplicationParts();
+
+						if (ds != null && ds.Count > 0)
+							args.Parts.AddRange(ds);
+					}
+				}
+			};
 
 			Instance.Initialize(services, e);
 		}

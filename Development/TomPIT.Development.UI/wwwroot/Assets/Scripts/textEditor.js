@@ -44,6 +44,9 @@
 						if (typeof target.options.instance.codeLensProvider !== 'undefined')
 							target.options.instance.codeLensProvider.dispose();
 
+						if (typeof target.options.instance.definitionProvider!== 'undefined')
+							target.options.instance.definitionProvider.dispose();
+
 						target.options.instance.dispose();
 						target.options.instance = null;
 					}
@@ -119,6 +122,11 @@
 			var provider = monaco.languages.registerCodeLensProvider(language, options);
 
 			this.options.instance.codeLensProvider = provider;
+		},
+		registerDefinitionProvider: function (language, options) {
+			var provider = monaco.languages.registerDefinitionProvider(language, options);
+
+			this.options.instance.definitionProvider = provider;
 		},
 		insertText: function (text) {
 			var line = this.options.instance.getPosition();

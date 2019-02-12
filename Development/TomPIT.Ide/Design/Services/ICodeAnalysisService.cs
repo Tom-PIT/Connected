@@ -1,8 +1,7 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using System;
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis;
 using TomPIT.ComponentModel;
-using TomPIT.Runtime;
 using TomPIT.Services;
 
 namespace TomPIT.Design.Services
@@ -14,5 +13,6 @@ namespace TomPIT.Design.Services
 		ISignatureInfo Signatures(IExecutionContext sender, CodeStateArgs e);
 		IHoverInfo Hover(IExecutionContext sender, CodeStateArgs e);
 		ICodeLens CodeLens(IExecutionContext sender, CodeLensArgs e);
+		ILocation Range(IExecutionContext sender, CodeStateArgs e);
 	}
 }

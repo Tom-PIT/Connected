@@ -180,5 +180,30 @@ namespace TomPIT
 
 			return r;
 		}
+
+		public static T ToDataItem<T>(this JObject dataSource) where T : JsonEntity
+		{
+			if (dataSource.IsEmpty())
+				return default(T);
+
+			var arr = dataSource.ToResults();
+
+			return arr.ToDataItem<T>();
+		}
+
+		public static T ToDataItem<T>(this JArray items) where T : JsonEntity
+		{
+			if (items.Count == 0)
+				return default(T);
+
+			var jo = items[0] as JObject;
+
+			if (jo == null)
+				return default(T);
+
+			var instance = typeof(T).CreateInstance<T>(new object[] { jo });
+
+			return instance;
+		}
 	}
 }

@@ -23,18 +23,19 @@ namespace TomPIT.Models
 		protected void Initialize(Controller controller, IMicroService microService, bool initializing)
 		{
 			Controller = controller;
+			MicroService = microService;
 
 			var p = new ModelInitializeParams();
 
 			if (initializing)
 				OnInitializing(p);
 
-			Initialize(p.Endpoint, p.MicroService);
+			Initialize(string.IsNullOrWhiteSpace(p.Endpoint) ? Endpoint : p.Endpoint, p.MicroService == null ? MicroService : p.MicroService);
 		}
 
 		public void Initialize(Controller controller, IMicroService microService)
 		{
-			Initialize(controller, MicroService, true);
+			Initialize(controller, microService, true);
 		}
 
 		public void Databind()

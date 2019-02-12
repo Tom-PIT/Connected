@@ -116,7 +116,11 @@ namespace TomPIT
 				o.Filters.Add(new AuthenticationCookieFilter());
 			}).ConfigureApplicationPartManager((m) =>
 			{
-				foreach (var i in e.ApplicationParts)
+				var pa = new ApplicationPartsArgs();
+
+				e.ProvideApplicationParts?.Invoke(pa);
+
+				foreach (var i in pa.Parts)
 					ConfigurePlugins(m, i);
 
 				foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)

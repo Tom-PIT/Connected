@@ -15,6 +15,7 @@
 	],
 	"plugins": {
 		"location": "c:\\Deploy\\Plugins",
+		"shadowCopy": true,
 		"items": [
 			"TomPIT.Application.Plugin, TomPIT.Application",
 			"TomPIT.IoT.Plugin, TomPIT.IoT"

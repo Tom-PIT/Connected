@@ -48,7 +48,7 @@ namespace TomPIT.Models
 		public void Initialize(Controller controller, IMicroService microService)
 		{
 			Controller = controller;
-			Initialize(Controller, microService);
+			MicroService = microService;
 
 			OnInitializing();
 		}

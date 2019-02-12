@@ -47,7 +47,7 @@ namespace TomPIT
 			var appPath = Assembly.GetEntryAssembly().Location;
 			var target = Path.Combine(Path.GetDirectoryName(appPath), string.Format("{0}.dll", assemblyName));
 
-			if (!string.IsNullOrWhiteSpace(Sys.Plugins.Location))
+			if (Sys.Plugins != null && !string.IsNullOrWhiteSpace(Sys.Plugins.Location))
 			{
 				var dirs = Directory.GetDirectories(Sys.Plugins.Location);
 
@@ -68,6 +68,11 @@ namespace TomPIT
 			if (File.Exists(target))
 				return target;
 
+			target = Path.Combine(Path.GetDirectoryName(appPath), "Plugins", string.Format("{0}.dll", assemblyName));
+
+			if (File.Exists(target))
+				return target;
+
 			return null;
 		}
 
@@ -78,7 +83,7 @@ namespace TomPIT
 			if (path == null)
 				return null;
 
-			if (Sys.Plugins.ShadowCopy)
+			if (Sys.Plugins != null && Sys.Plugins.ShadowCopy)
 			{
 				var shadowCopyLocation = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "Plugins");
 

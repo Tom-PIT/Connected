@@ -51,7 +51,7 @@ namespace TomPIT.ComponentModel
 
 			Connection.Post(u, args);
 
-			if (Shell.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
+			if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
 				svc.NotifyChanged(this, new MicroServiceEventArgs(token));
 
 			return token;
@@ -80,7 +80,7 @@ namespace TomPIT.ComponentModel
 
 			Connection.Post(u, args);
 
-			if (Shell.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
+			if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
 				svc.NotifyChanged(this, new MicroServiceEventArgs(microService));
 		}
 

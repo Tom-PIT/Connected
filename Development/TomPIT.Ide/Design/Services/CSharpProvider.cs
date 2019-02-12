@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Runtime;
 using TomPIT.Services;
 
 namespace TomPIT.Design.Services
@@ -28,9 +27,14 @@ namespace TomPIT.Design.Services
 
 		public ICodeLensDescriptor[] CodeLens(IExecutionContext sender, CodeLensArgs e)
 		{
-			var r= sender.Connection().GetService<ICodeAnalysisService>().CodeLens(sender, e);
+			var r = sender.Connection().GetService<ICodeAnalysisService>().CodeLens(sender, e);
 
 			return r?.Items.ToArray();
+		}
+
+		public ILocation Definition(IExecutionContext sender, CodeStateArgs e)
+		{
+			return sender.Connection().GetService<ICodeAnalysisService>().Range(sender, e);
 		}
 	}
 }

@@ -124,7 +124,31 @@
 
                     });
                 },
-            });
+			  });
+
+			  textEditor.registerDefinitionProvider('@Model.Language', {
+				  provideDefinition: function (model, position) {
+                    return new Promise(function (resolve, reject) {
+
+                        ide.designerAction({
+                            data: {
+                                action: 'definition',
+										 section: 'designer',
+										  property: '@Model.PropertyName',
+                                position: model.getOffsetAt({
+                                    lineNumber: position.lineNumber,
+                                    column: position.column
+                                }),
+                                content: model.getValue()
+                            },
+									onComplete: function (data) {
+                                resolve(data);
+                            }
+                        });
+
+                    });
+				  }
+			  });
 
             textEditor.registerHoverProvider('@Model.Language', {
                 provideHover: function (model, position) {

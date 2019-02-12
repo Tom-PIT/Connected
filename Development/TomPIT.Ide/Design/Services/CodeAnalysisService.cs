@@ -83,5 +83,20 @@ namespace TomPIT.Design.Services
 
 			return r;
 		}
+
+		public ILocation Range(IExecutionContext sender, CodeStateArgs e)
+		{
+			ILocation r = null;
+
+			using (var s = new CompilerDefinitionContext(sender, e))
+			{
+				r = s.Location;
+
+			}
+
+			GC.Collect();
+
+			return r;
+		}
 	}
 }

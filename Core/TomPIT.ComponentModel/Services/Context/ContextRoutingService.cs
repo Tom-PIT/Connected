@@ -144,8 +144,11 @@ namespace TomPIT.Services.Context
 				if (display == null || pk == null)
 					continue;
 
-				var txt = display.Value<string>();
-				var id = pk.Value<string>();
+				var displayValue = display.Value as JValue;
+				var idValue = pk.Value as JValue;
+
+				var txt = Types.Convert<string>(displayValue.Value);
+				var id = Types.Convert<string>(idValue.Value);
 
 				items.Add(new UrlRecord(id, txt));
 			}

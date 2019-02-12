@@ -79,7 +79,7 @@ namespace TomPIT.Services.Context
 
 				var args = new OperationInvokeArguments(ctx, op, arguments, transaction);
 
-				var r = Context.Connection().GetService<ICompilerService>().Execute(ms, op.Invoke, this, args);
+				var r = Context.Connection().GetService<ICompilerService>().Execute(microService, op.Invoke, this, args);
 
 				if (transaction != null)
 					transaction.Notify(op);
@@ -140,7 +140,7 @@ namespace TomPIT.Services.Context
 		{
 			var args = new OperationPrepareArguments(context, operation, arguments);
 
-			Context.Connection().GetService<ICompilerService>().Execute(context.MicroService.Token, operation.Prepare, this, args);
+			Context.Connection().GetService<ICompilerService>().Execute(operation.MicroService(Context.Connection()), operation.Prepare, this, args);
 
 			return args;
 		}

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 namespace TomPIT
 {
 	public delegate void ConfigureMvcHandler(MvcOptions e);
+	public delegate void ApplicationPartsHandler(ApplicationPartsArgs e);
 
 	public class ServicesConfigurationArgs : EventArgs
 	{
@@ -12,16 +13,6 @@ namespace TomPIT
 
 		public AuthenticationType Authentication { get; set; } = AuthenticationType.MultiTenant;
 		public ConfigureMvcHandler ConfigureMvc { get; set; }
-
-		public List<string> ApplicationParts
-		{
-			get
-			{
-				if (_parts == null)
-					_parts = new List<string>();
-
-				return _parts;
-			}
-		}
+		public ApplicationPartsHandler ProvideApplicationParts { get; set; }
 	}
 }

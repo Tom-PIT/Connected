@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Services.Context;
@@ -10,17 +11,17 @@ namespace TomPIT.Services
 		IContextServices Services { get; }
 		IMicroService MicroService { get; }
 
-		JObject Invoke(string api, JObject e, IApiTransaction transaction);
-		JObject Invoke(string api, JObject e);
+		JObject Invoke([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, [CodeAnalysisProvider(ExecutionContext.ApiParameterProvider)]JObject e, IApiTransaction transaction);
+		JObject Invoke([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, [CodeAnalysisProvider(ExecutionContext.ApiParameterProvider)]JObject e);
 
-		JObject Invoke(string api, IApiTransaction transaction);
-		JObject Invoke(string api);
+		JObject Invoke([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, IApiTransaction transaction);
+		JObject Invoke([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api);
 
-		T Invoke<T>(string api, JObject e, IApiTransaction transaction);
-		T Invoke<T>(string api, JObject e);
+		T Invoke<T>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, [CodeAnalysisProvider(ExecutionContext.ApiParameterProvider)]JObject e, IApiTransaction transaction);
+		T Invoke<T>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, [CodeAnalysisProvider(ExecutionContext.ApiParameterProvider)]JObject e);
 
-		T Invoke<T>(string api, IApiTransaction transaction);
-		T Invoke<T>(string api);
+		T Invoke<T>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, IApiTransaction transaction);
+		T Invoke<T>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api);
 
 		RuntimeException Exception(string message);
 		RuntimeException Exception(string format, string message);

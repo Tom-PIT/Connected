@@ -9,8 +9,8 @@ namespace TomPIT.Services
 {
 	public class ExecutionContext : IExecutionContext, IEndpointContext
 	{
-		private const string ApiProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiProvider, TomPIT.Design";
-		private const string ApiParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiParameterProvider, TomPIT.Design";
+		internal const string ApiProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiProvider, TomPIT.Design";
+		internal const string ApiParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiParameterProvider, TomPIT.Design";
 
 		private IContextServices _services = null;
 		private ISysConnection _connection = null;

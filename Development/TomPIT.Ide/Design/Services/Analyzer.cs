@@ -22,7 +22,12 @@ namespace TomPIT.Design.Services
 			get
 			{
 				if (_argumentsType == null)
-					_argumentsType = typeof(ScriptGlobals<>).MakeGenericType(Args.ArgumentsType);
+				{
+					if (Args.ArgumentsType == null)
+						_argumentsType = typeof(ScriptGlobals<>).MakeGenericType(typeof(IExecutionContext));
+					else
+						_argumentsType = typeof(ScriptGlobals<>).MakeGenericType(Args.ArgumentsType);
+				}
 
 				return _argumentsType;
 			}

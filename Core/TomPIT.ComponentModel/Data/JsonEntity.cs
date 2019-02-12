@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
 
 namespace TomPIT.Data
 {
@@ -6,6 +7,8 @@ namespace TomPIT.Data
 	{
 		public JsonEntity(JObject data)
 		{
+			Data = data;
+
 			OnDatabind();
 		}
 
@@ -18,7 +21,7 @@ namespace TomPIT.Data
 
 		protected T GetValue<T>(string propertyName, T defaultValue)
 		{
-			var prop = Data.Property(propertyName);
+			var prop = Data.Property(propertyName, StringComparison.OrdinalIgnoreCase);
 
 			if (prop == null)
 				return defaultValue;
@@ -34,7 +37,7 @@ namespace TomPIT.Data
 
 		protected void SetValue<T>(string propertyName, T value)
 		{
-			var property = Data.Property(propertyName);
+			var property = Data.Property(propertyName, StringComparison.OrdinalIgnoreCase);
 
 			if (property == null)
 			{
