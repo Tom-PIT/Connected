@@ -213,7 +213,8 @@ CREATE TABLE [tompit].[service]
 [template] [uniqueidentifier] NOT NULL,
 [meta] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [license] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[package] [uniqueidentifier] NULL
+[package] [uniqueidentifier] NULL,
+[configuration] [uniqueidentifier] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -408,9 +409,11 @@ GO
 
 
 
+
 CREATE VIEW [tompit].[view_service]
 AS
-SELECT        s.*, r.token AS resource_token
+SELECT        s.id, s.name, s.url, s.token, s.status, s.resource_group, s.template, s.meta,
+				s.license, s.package, s.configuration, r.token AS resource_token
 FROM            tompit.service AS s INNER JOIN
                          tompit.resource_group AS r ON s.resource_group = r.id
 GO
@@ -1909,6 +1912,44 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[installer]'
+GO
+CREATE TABLE [tompit].[installer]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[package] [uniqueidentifier] NOT NULL,
+[parent] [uniqueidentifier] NULL,
+[status] [int] NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_installer] on [tompit].[installer]'
+GO
+ALTER TABLE [tompit].[installer] ADD CONSTRAINT [PK_installer] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding constraints to [tompit].[installer]'
+GO
+ALTER TABLE [tompit].[installer] ADD CONSTRAINT [IX_installer] UNIQUE NONCLUSTERED  ([package]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[installer_ins]'
+GO
+CREATE PROCEDURE [tompit].[installer_ins]
+	@items nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.installer (package, parent, status)
+	SELECT package, parent, 1 FROM OPENJSON(@items) WITH (package uniqueidentifier, parent uniqueidentifier);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[message_topic_ins]'
 GO
 CREATE PROCEDURE [tompit].[message_topic_ins]
@@ -1925,6 +1966,24 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[installer_del]'
+GO
+CREATE PROCEDURE [tompit].[installer_del]
+	@package uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	UPDATE tompit.installer SET parent = NULL WHERE parent = @package;
+
+	UPDATE tompit.installer SET
+		parent = NULL
+	DELETE tompit.installer 
+	WHERE package = @package;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[service_upd]'
 GO
 CREATE PROCEDURE [tompit].[service_upd]
@@ -1934,7 +1993,8 @@ CREATE PROCEDURE [tompit].[service_upd]
 	@status int,
 	@template uniqueidentifier,
 	@resource_group int,
-	@package uniqueidentifier = NULL
+	@package uniqueidentifier = NULL,
+	@configuration uniqueidentifier = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -1945,9 +2005,24 @@ BEGIN
 		status = @status,
 		template = @template,
 		resource_group = @resource_group,
-		package = @package
+		package = @package,
+		configuration = @configuration
 	where id = @id;
 
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[installer_que]'
+GO
+CREATE PROCEDURE [tompit].[installer_que]
+	
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT * 
+	FROM tompit.installer;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -1989,6 +2064,22 @@ BEGIN
 	FROM OPENJSON(@items)  WITH ([name] nvarchar(128), parent int, ordinal int, id int)  AS j
 	WHERE tompit.environment_unit.id = j.id;
 
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[installer_upd]'
+GO
+CREATE PROCEDURE [tompit].[installer_upd]
+	@id int,
+	@status int 
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	UPDATE tompit.installer SET
+		status = @status
+	WHERE id = @id;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -2037,6 +2128,21 @@ BEGIN
 	and (@primary_key is null or primary_key = @primary_key)
 	and (@service is null or service = @service)
 	and (@resource_group is null or resource_group = @resource_group);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[installer_sel]'
+GO
+CREATE PROCEDURE [tompit].[installer_sel]
+	@package uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 *
+	FROM tompit.installer 
+	WHERE package = @package;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON

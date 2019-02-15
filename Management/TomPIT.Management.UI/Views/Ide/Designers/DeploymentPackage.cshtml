@@ -1,0 +1,20 @@
+﻿@model TomPIT.Management.Designers.DeploymentDesigner
+
+@{
+	var config = Model.SelectConfiguration(Model.PackageInfo.Token);
+}
+
+<div class="doc-canvas">
+	<div class="paper">
+		<div class="media">
+			<i class="fal fa-share-alt"></i>
+			<div class="media-body">
+				<h5 class="mt-0">@Model.PackageInfo.Name</h5>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+
+@Html.Raw(config.RuntimeConfiguration)

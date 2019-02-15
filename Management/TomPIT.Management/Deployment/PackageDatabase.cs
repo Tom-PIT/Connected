@@ -1,10 +1,12 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using TomPIT.Deployment;
 using TomPIT.Deployment.Database;
 
 namespace TomPIT.Management.Deployment
 {
-	public class PackageDatabase : IDatabase
+	public class PackageDatabase : IPackageDatabase
 	{
 		[JsonProperty(PropertyName = "tables")]
 		public List<ITable> Tables { get; set; }
@@ -12,5 +14,11 @@ namespace TomPIT.Management.Deployment
 		public List<IView> Views { get; set; }
 		[JsonProperty(PropertyName = "routine")]
 		public List<IRoutine> Routines { get; set; }
+		[JsonProperty(PropertyName = "connection")]
+		public Guid Connection { get; set; }
+		[JsonProperty(PropertyName = "dataProviderId")]
+		public Guid DataProviderId { get; set; }
+		[JsonProperty(PropertyName = "dataProvider")]
+		public string DataProvider { get; set; }
 	}
 }

@@ -85,6 +85,15 @@ namespace TomPIT.Sys.Controllers.Management
 		}
 
 		[HttpPost]
+		public IPublishedPackage SelectPublishedPackage()
+		{
+			var body = FromBody();
+			var package = body.Required<Guid>("package");
+
+			return DataModel.Deployment.SelectPublicPackage(package);
+		}
+
+		[HttpPost]
 		public void InsertInstallers()
 		{
 			var body = FromBody();
@@ -135,6 +144,15 @@ namespace TomPIT.Sys.Controllers.Management
 			var package = body.Required<Guid>("package");
 
 			return DataModel.Deployment.DownloadPackage(package);
+		}
+
+		[HttpPost]
+		public byte[] DownloadConfiguration()
+		{
+			var body = FromBody();
+			var package = body.Required<Guid>("package");
+
+			return DataModel.Deployment.DownloadConfiguration(package);
 		}
 	}
 }

@@ -23,8 +23,21 @@ namespace TomPIT.Management.Deployment
 		private List<IPackageComponent> _components = null;
 		private List<IPackageBlob> _blobs = null;
 		private List<IPackageDependency> _dependencies = null;
-		private List<IDatabase> _databases = null;
+		private List<IPackageDatabase> _databases = null;
 		private List<IConfiguration> _configurations = null;
+		private IPackageConfiguration _configuration = null;
+
+		[JsonProperty(PropertyName = "configuration")]
+		public IPackageConfiguration Configuration
+		{
+			get
+			{
+				if (_configuration == null)
+					_configuration = new PackageConfiguration();
+
+				return _configuration;
+			}
+		}
 
 		[JsonProperty(PropertyName = "metaData")]
 		public IPackageMetaData MetaData
@@ -110,12 +123,12 @@ namespace TomPIT.Management.Deployment
 		}
 
 		[JsonProperty(PropertyName = "databases")]
-		public List<IDatabase> Databases
+		public List<IPackageDatabase> Databases
 		{
 			get
 			{
 				if (_databases == null)
-					_databases = new List<IDatabase>();
+					_databases = new List<IPackageDatabase>();
 
 				return _databases;
 			}
@@ -141,6 +154,18 @@ namespace TomPIT.Management.Deployment
 			CreateStrings(connection);
 			CreateDependencies(connection);
 			CreateDatabases(connection);
+			CreateConfiguration(connection);
+		}
+
+		private void CreateConfiguration(ISysConnection connection)
+		{
+			foreach (var i in Databases)
+			{
+				Configuration.Databases.Add(new PackageConfigurationDatabase
+				{
+					Connection = i.Connection
+				});
+			}
 		}
 
 		private void CreateDependencies(ISysConnection connection)
@@ -152,9 +177,12 @@ namespace TomPIT.Management.Deployment
 
 			foreach (var i in references.MicroServices)
 			{
+				var ms = connection.GetService<IMicroServiceService>().Select(i.MicroService);
+
 				Dependencies.Add(new PackageDependency
 				{
-					Name = i.MicroService
+					Name = i.MicroService,
+					Token = ms == null ? Guid.Empty : ms.Token
 				});
 			}
 		}
@@ -294,14 +322,19 @@ namespace TomPIT.Management.Deployment
 				if (i.DataProvider == Guid.Empty)
 					continue;
 
-				var database = new PackageDatabase();
-
-				Databases.Add(database);
-
 				var dp = connection.GetService<IDataProviderService>().Select(i.DataProvider);
 
 				if (dp == null)
 					continue;
+
+				var database = new PackageDatabase
+				{
+					Connection = i.Component,
+					DataProvider = dp.Name,
+					DataProviderId = dp.Id
+				};
+
+				Databases.Add(database);
 
 				var db = dp.CreateSchema(i.Value);
 

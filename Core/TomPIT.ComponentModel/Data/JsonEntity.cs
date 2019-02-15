@@ -7,6 +7,9 @@ namespace TomPIT.Data
 	{
 		public JsonEntity(JObject data)
 		{
+			if (data == null)
+				data = new JObject();
+
 			Data = data;
 
 			OnDatabind();

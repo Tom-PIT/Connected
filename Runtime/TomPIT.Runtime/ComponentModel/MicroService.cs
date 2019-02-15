@@ -19,5 +19,7 @@ namespace TomPIT.ComponentModel
 		public Guid Template { get; set; }
 		[Browsable(false)]
 		public Guid Package { get; set; }
+		[Browsable(false)]
+		public Guid Configuration { get; set; }
 	}
 }

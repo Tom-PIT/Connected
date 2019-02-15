@@ -1,4 +1,4 @@
-﻿@model TomPIT.Designers.DeploymentDesigner
+﻿@model TomPIT.Management.Designers.DeploymentDesigner
 
 @if (Model.Account != null)
 {
@@ -44,7 +44,10 @@ else
 		ide.designerAction({
 			'data': {
 				'action': 'install',
-				'packages': [package]
+				'package': package
+			},
+			onComplete: function (data) {
+				$('#devDesigner').html(data);
 			}
 		});
 	})

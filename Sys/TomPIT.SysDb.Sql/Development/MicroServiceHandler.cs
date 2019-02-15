@@ -120,7 +120,8 @@ namespace TomPIT.SysDb.Sql.Development
 			return p.ExecuteSingleRow();
 		}
 
-		public void Update(IMicroService microService, string name, string url, MicroServiceStatus status, Guid template, IResourceGroup resourceGroup, Guid package)
+		public void Update(IMicroService microService, string name, string url, MicroServiceStatus status, Guid template,
+			IResourceGroup resourceGroup, Guid package, Guid configuration)
 		{
 			var p = new Writer("tompit.service_upd");
 
@@ -131,6 +132,7 @@ namespace TomPIT.SysDb.Sql.Development
 			p.CreateParameter("@template", template);
 			p.CreateParameter("@resource_group", resourceGroup.GetId());
 			p.CreateParameter("@package", package, true);
+			p.CreateParameter("@configuration", configuration, true);
 
 			p.Execute();
 		}

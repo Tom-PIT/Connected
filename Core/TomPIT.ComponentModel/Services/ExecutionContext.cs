@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
@@ -119,6 +120,24 @@ namespace TomPIT.Services
 			var ai = new ApiInvoke(this);
 
 			var r = ai.Execute(this as IApiExecutionScope, q.MicroService.Token, q.Api, q.Operation, e, transaction, q.ExplicitIdentifier);
+
+			if (r == null)
+				return Types.Convert<T>(r);
+
+			var tt = typeof(T);
+
+			if (tt != null && (string.IsNullOrWhiteSpace(tt.Namespace) && string.IsNullOrWhiteSpace(r.GetType().Namespace))
+				&& string.Compare(tt.Assembly.FullName, r.GetType().Assembly.FullName, false) != 0)
+			{
+				var settings = new JsonSerializerSettings
+				{
+					DefaultValueHandling = DefaultValueHandling.Ignore,
+					TypeNameHandling = TypeNameHandling.None,
+					ContractResolver = new SerializationResolver()
+				};
+
+				return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(r, settings), settings);
+			}
 
 			return Types.Convert<T>(r);
 		}

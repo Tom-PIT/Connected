@@ -42,6 +42,10 @@ namespace TomPIT.Services
 
 			var installer = pending.FirstOrDefault(f => f.Parent == Guid.Empty);
 			var package = connection.GetService<IDeploymentService>().DownloadPackage(installer.Package);
+
+			connection.GetService<IDeploymentService>().UpdateInstaller(package.MetaData.Id, InstallStateStatus.Installing);
+			connection.GetService<IDeploymentService>().Deploy(package);
+			connection.GetService<IDeploymentService>().DeleteInstaller(package.MetaData.Id);
 		}
 	}
 }

@@ -15,7 +15,7 @@ namespace TomPIT.SysDb.Sql.Deployment
 		{
 			var w = new Writer("tompit.installer_del");
 
-			w.CreateParameter("@id", state.GetId());
+			w.CreateParameter("@package", state.Package);
 
 			w.Execute();
 		}
@@ -60,7 +60,7 @@ namespace TomPIT.SysDb.Sql.Deployment
 
 		public void Update(IInstallState state, InstallStateStatus status)
 		{
-			var w = new Writer("tompit.installer_del");
+			var w = new Writer("tompit.installer_upd");
 
 			w.CreateParameter("@id", state.GetId());
 			w.CreateParameter("@status", status);

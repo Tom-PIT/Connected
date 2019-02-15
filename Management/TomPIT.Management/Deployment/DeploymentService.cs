@@ -139,6 +139,9 @@ namespace TomPIT.Management.Deployment
 			m.Version = version;
 			m.Licenses = licenses;
 			m.Id = microService;
+			m.Account = Account.Key;
+			m.Created = DateTime.UtcNow;
+			m.ShellVersion = Shell.Version.ToString();
 
 			package.Create(microService, Connection);
 
@@ -154,7 +157,7 @@ namespace TomPIT.Management.Deployment
 			var id = Connection.GetService<IStorageService>().Upload(blob, Connection.GetService<ISerializationService>().Serialize(package), StoragePolicy.Singleton);
 
 			if (ms.Package != id)
-				Connection.GetService<IMicroServiceManagementService>().Update(microService, ms.Name, ms.Status, ms.Template, ms.ResourceGroup, id);
+				Connection.GetService<IMicroServiceManagementService>().Update(microService, ms.Name, ms.Status, ms.Template, ms.ResourceGroup, id, ms.Configuration);
 		}
 
 		public IPackage SelectPackage(Guid microService)
@@ -169,7 +172,15 @@ namespace TomPIT.Management.Deployment
 			if (content == null || content.Content == null || content.Content.Length == 0)
 				return null;
 
-			return (Package)Connection.GetService<ISerializationService>().Deserialize(content.Content, typeof(Package));
+			try
+			{
+				return (Package)Connection.GetService<ISerializationService>().Deserialize(content.Content, typeof(Package));
+			}
+			catch (Exception ex)
+			{
+				Connection.LogError(null, nameof(DeploymentService), ex.Source, ex.Message);
+				return null;
+			}
 		}
 
 		public IPackage DownloadPackage(Guid package)
@@ -258,6 +269,90 @@ namespace TomPIT.Management.Deployment
 			};
 
 			Connection.Post(u, e);
+		}
+
+		public void Deploy(IPackage package)
+		{
+			new PackageDeployment(Connection, package).Deploy();
+		}
+
+		public IPublishedPackage SelectPublishedPackage(Guid package)
+		{
+			var u = Connection.CreateUrl("DeploymentManagement", "SelectPublishedPackage");
+			var e = new JObject
+			{
+				{"package", package }
+			};
+
+			return Connection.Post<PublishedPackage>(u, e);
+		}
+
+		public IPackageConfiguration SelectPackageConfiguration(Guid package)
+		{
+			var u = Connection.CreateUrl("DeploymentManagement", "DownloadConfiguration");
+			var e = new JObject
+			{
+				{"package", package}
+			};
+
+			var raw = Connection.Post<byte[]>(u, e);
+
+			if (raw == null || raw.Length == 0)
+				return null;
+
+			var config = (PackageConfiguration)Connection.GetService<ISerializationService>().Deserialize(raw, typeof(PackageConfiguration));
+
+			var ms = Connection.GetService<IMicroServiceService>().Select(package);
+
+			if (ms == null || ms.Configuration == Guid.Empty)
+				return config;
+
+			var content = Connection.GetService<IStorageService>().Download(ms.Configuration);
+
+			if (content == null || content.Content.Length == 0)
+				return config;
+
+			var existing = (PackageConfiguration)Connection.GetService<ISerializationService>().Deserialize(content.Content, typeof(PackageConfiguration));
+
+			SynchronizeConfiguration(config, existing);
+
+			return config;
+		}
+
+		public void UpdatePackageConfiguration(Guid microService, IPackageConfiguration configuration)
+		{
+			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
+
+			if (ms == null)
+				throw new RuntimeException(SR.ErrMicroServiceNotFound);
+
+			var id = Connection.GetService<IStorageService>().Upload(new Blob
+			{
+				ContentType = "application/json",
+				FileName = string.Format("{0}.json", ms.Name),
+				MicroService = microService,
+				PrimaryKey = ms.Token.ToString(),
+				Type = BlobTypes.PackageConfiguration,
+				ResourceGroup = ms.ResourceGroup
+			}, Connection.GetService<ISerializationService>().Serialize(configuration), StoragePolicy.Singleton);
+		}
+
+		private void SynchronizeConfiguration(PackageConfiguration configuration, PackageConfiguration existing)
+		{
+			configuration.ResourceGroup = existing.ResourceGroup;
+			configuration.RuntimeConfiguration = existing.RuntimeConfiguration;
+
+			foreach (var i in configuration.Databases)
+			{
+				var ed = existing.Databases.FirstOrDefault(f => f.Connection == i.Connection);
+
+				if (ed == null)
+					continue;
+
+				var db = i as PackageConfigurationDatabase;
+
+				db.ConnectionString = ed.ConnectionString;
+			}
 		}
 	}
 }

@@ -11,5 +11,7 @@ namespace TomPIT.Deployment
 		List<IPackageFolder> Folders { get; }
 		List<IPackageString> Strings { get; }
 		List<IPackageDependency> Dependencies { get; }
+		IPackageConfiguration Configuration { get; }
+		List<IPackageDatabase> Databases { get; }
 	}
 }

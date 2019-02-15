@@ -23,6 +23,11 @@ namespace TomPIT.ComponentModel
 			foreach (var i in components)
 				Connection.GetService<IComponentDevelopmentService>().Delete(i.Token);
 
+			var folders = FolderModel.Create(Connection.GetService<IComponentService>().QueryFolders(microService));
+
+			foreach (var i in folders)
+				DeleteFolder(i);
+
 			var u = Connection.CreateUrl("MicroServiceManagement", "Delete");
 			var args = new JObject {
 				{"microService", microService }
@@ -32,6 +37,14 @@ namespace TomPIT.ComponentModel
 
 			if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
 				svc.NotifyRemoved(this, new MicroServiceEventArgs(microService));
+		}
+
+		private void DeleteFolder(FolderModel model)
+		{
+			foreach (var i in model.Items)
+				DeleteFolder(i);
+
+			Connection.GetService<IComponentDevelopmentService>().DeleteFolder(model.Folder.MicroService, model.Folder.Token);
 		}
 
 		public Guid Insert(string name, Guid resourceGroup, Guid template, MicroServiceStatus status)
@@ -65,7 +78,7 @@ namespace TomPIT.ComponentModel
 			return Connection.Get<string>(u);
 		}
 
-		public void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package)
+		public void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package, Guid configuration)
 		{
 			var u = Connection.CreateUrl("MicroServiceManagement", "Update");
 			var args = new JObject
@@ -75,7 +88,8 @@ namespace TomPIT.ComponentModel
 				{"status", status.ToString() },
 				{"template", template },
 				{"resourceGroup", resourceGroup },
-				{"package", package }
+				{"package", package },
+				{"configuration", configuration }
 			};
 
 			Connection.Post(u, args);

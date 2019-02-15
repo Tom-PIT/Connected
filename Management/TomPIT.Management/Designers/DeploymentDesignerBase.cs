@@ -3,10 +3,11 @@ using System;
 using System.Collections.Generic;
 using TomPIT.ActionResults;
 using TomPIT.Deployment;
+using TomPIT.Designers;
 using TomPIT.Dom;
 using TomPIT.Management.Deployment;
 
-namespace TomPIT.Designers
+namespace TomPIT.Management.Designers
 {
 	public abstract class DeploymentDesignerBase<T> : DomDesigner<T>, ISignupDesigner where T : IDomElement
 	{

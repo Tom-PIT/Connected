@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.Application</RootNamespace>
     <AssemblyName>TomPIT.Application</AssemblyName>
-    <AssemblyVersion>1.0.212.6</AssemblyVersion>
-    <FileVersion>1.0.212.6</FileVersion>
-    <Version>1.0.212.6</Version>
+    <AssemblyVersion>1.0.215.1</AssemblyVersion>
+    <FileVersion>1.0.215.1</FileVersion>
+    <Version>1.0.215.1</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>

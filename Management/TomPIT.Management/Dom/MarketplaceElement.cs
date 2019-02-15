@@ -1,9 +1,12 @@
-﻿using TomPIT.Designers;
+﻿using TomPIT.ComponentModel;
+using TomPIT.Designers;
+using TomPIT.Dom;
 using TomPIT.Ide;
+using TomPIT.Management.Designers;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
-	public class MarketplaceElement : Element
+	public class MarketplaceElement : TomPIT.Dom.Element
 	{
 		public const string FolderId = "Marketplace";
 		private DeploymentDesigner _designer = null;

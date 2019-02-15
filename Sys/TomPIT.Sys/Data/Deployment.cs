@@ -170,6 +170,17 @@ namespace TomPIT.Sys.Data
 			return new HttpConnection().Get<List<PublishedPackage>>(u).ToList<IPublishedPackage>();
 		}
 
+		public IPublishedPackage SelectPublicPackage(Guid package)
+		{
+			var u = new MarketplaceUrl("IPackages", "Select");
+			var e = new JObject
+			{
+				{"package", package }
+			};
+
+			return new HttpConnection().Post<PublishedPackage>(u, e, new HttpRequestArgs().WithBasicCredentials(UserName, Password));
+		}
+
 		public List<IInstallState> QueryInstallers()
 		{
 			return Shell.GetService<IDatabaseService>().Proxy.Deployment.QueryInstallers();
@@ -209,6 +220,17 @@ namespace TomPIT.Sys.Data
 			};
 
 			return new HttpConnection().Post<byte[]>(u, e, new HttpRequestArgs().WithBasicCredentials(UserName, Password));
+		}
+
+		public byte[] DownloadConfiguration(Guid id)
+		{
+			var u = new MarketplaceUrl("IPackages", "SelectConfiguration");
+			var e = new JObject
+			{
+				{"package", id }
+			};
+
+			return new HttpConnection().Post<byte[]>(u, e);
 		}
 	}
 }

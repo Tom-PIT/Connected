@@ -1,4 +1,6 @@
-﻿namespace TomPIT.Deployment
+﻿using System;
+
+namespace TomPIT.Deployment
 {
 	public enum AccountStatus
 	{
@@ -9,9 +11,9 @@
 	public interface IAccount
 	{
 		string Company { get; }
-		int Country { get; }
+		string Country { get; }
 		string Website { get; }
-		string Key { get; }
+		Guid Key { get; }
 		AccountStatus Status { get; }
 	}
 }

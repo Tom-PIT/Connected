@@ -5,6 +5,7 @@ using TomPIT.ComponentModel;
 using TomPIT.Deployment;
 using TomPIT.Dom;
 using TomPIT.Management.Deployment;
+using TomPIT.Management.Designers;
 
 namespace TomPIT.Designers
 {

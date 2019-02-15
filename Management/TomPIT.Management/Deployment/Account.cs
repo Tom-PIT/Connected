@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using TomPIT.Deployment;
 
 namespace TomPIT.Management.Deployment
@@ -8,11 +9,11 @@ namespace TomPIT.Management.Deployment
 		[JsonProperty(PropertyName = "company")]
 		public string Company { get; set; }
 		[JsonProperty(PropertyName = "country")]
-		public int Country { get; set; }
+		public string Country { get; set; }
 		[JsonProperty(PropertyName = "website")]
 		public string Website { get; set; }
-		[JsonProperty(PropertyName = "publisherKey")]
-		public string Key { get; set; }
+		[JsonProperty(PropertyName = "key")]
+		public Guid Key { get; set; }
 		[JsonProperty(PropertyName = "status")]
 		public AccountStatus Status { get; set; }
 	}

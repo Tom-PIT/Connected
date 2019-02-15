@@ -24,9 +24,17 @@ namespace TomPIT.Management.Deployment
 		void PublishPackage(Guid microService);
 
 		List<IPublishedPackage> QueryPublicPackages();
+		IPublishedPackage SelectPublishedPackage(Guid package);
+
 		void InsertInstallers(List<IInstallState> installers);
 		List<IInstallState> QueryInstallers();
 		void UpdateInstaller(Guid package, InstallStateStatus status);
 		void DeleteInstaller(Guid package);
+
+
+		void Deploy(IPackage package);
+
+		IPackageConfiguration SelectPackageConfiguration(Guid package);
+		void UpdatePackageConfiguration(Guid microService, IPackageConfiguration configuration);
 	}
 }
