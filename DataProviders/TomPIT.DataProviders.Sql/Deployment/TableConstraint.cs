@@ -1,4 +1,4 @@
-﻿using TomPIT.Data.DataProviders.Deployment;
+﻿using TomPIT.Deployment.Database;
 
 namespace TomPIT.DataProviders.Sql.Deployment
 {

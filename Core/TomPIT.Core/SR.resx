@@ -846,4 +846,10 @@
   <data name="ErrIoTStencilNotFound" xml:space="preserve">
     <value>Stencil not found</value>
   </data>
+  <data name="ErrPackageNotCreated" xml:space="preserve">
+    <value>Package not created for the specified microservice.</value>
+  </data>
+  <data name="ErrInstallerNotFound" xml:space="preserve">
+    <value>Installer not found</value>
+  </data>
 </root>

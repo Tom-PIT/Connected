@@ -1,7 +1,8 @@
 ﻿using Newtonsoft.Json;
 using System;
+using TomPIT.Deployment;
 
-namespace TomPIT.Deployment
+namespace TomPIT.Management.Deployment
 {
 	internal class PackageFolder : IPackageFolder
 	{

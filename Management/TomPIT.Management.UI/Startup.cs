@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using TomPIT.Connectivity;
 using TomPIT.Design;
 using TomPIT.Environment;
@@ -35,9 +36,11 @@ namespace TomPIT.Servers.Management
 			};
 
 			Instance.Initialize(services, e);
+
+			services.AddSingleton<IHostedService, InstallerService>();
 		}
 
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
 		{
 			Instance.Configure(InstanceType.Management, app, env, (f) =>
 		  {

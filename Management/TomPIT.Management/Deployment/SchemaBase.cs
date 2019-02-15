@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
-using TomPIT.Data.DataProviders.Deployment;
+using TomPIT.Deployment.Database;
 
-namespace TomPIT.Deployment
+namespace TomPIT.Management.Deployment
 {
 	public abstract class SchemaBase : ISchema
 	{

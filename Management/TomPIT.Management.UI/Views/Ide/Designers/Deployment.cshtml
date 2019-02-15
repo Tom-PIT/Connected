@@ -1,0 +1,74 @@
+﻿@model TomPIT.Designers.DeploymentDesigner
+
+@if (Model.Account != null)
+{
+	<div class="p-1">
+		@Model.Account.Company
+		<div class="small float-right"><a href="#" id="aLogoff">logoff</a></div>
+		<hr />
+	</div>
+}
+else
+{
+	<div class="p-1">
+		<div class="small float-right"><a href="#" id="aLogin">login</a></div>
+		<hr />
+	</div>
+
+}
+
+@foreach (var i in Model.PublicPackages)
+{
+	<div class="package-card" data-id="@i.Token">
+		<div class="package-header">
+			<div class="title">
+				@i.Name
+			</div>
+			<small>
+				@i.Company
+			</small>
+		</div>
+		<div class="package-body">
+			<i class="fal fa-share-alt"></i>
+		</div>
+		<div class="package-footer">
+			<button type="button" class="btn btn-sm btn-success" data-button="install">Install</button>
+		</div>
+	</div>
+}
+
+<script>
+	$('[data-button="install"]').click(function () {
+		var package = $(this).closest('[data-id]').attr('data-id');
+
+		ide.designerAction({
+			'data': {
+				'action': 'install',
+				'packages': [package]
+			}
+		});
+	})
+
+	$('#aLogoff').click(function () {
+		ide.designerAction({
+			data: {
+				'action': 'logoff'
+			},
+			onComplete: function (data) {
+				$('#devDesigner').html(data);
+			}
+		})
+	});
+
+	$('#aLogin').click(function () {
+		ide.designerAction({
+			data: {
+				'action': 'login'
+			},
+			onComplete: function (data) {
+				$('#devDesigner').html(data);
+			}
+		})
+	});
+
+</script>

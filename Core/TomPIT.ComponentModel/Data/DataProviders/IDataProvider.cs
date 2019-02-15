@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Data;
-using TomPIT.Data.DataProviders.Deployment;
+using TomPIT.Deployment.Database;
 
 namespace TomPIT.Data.DataProviders
 {

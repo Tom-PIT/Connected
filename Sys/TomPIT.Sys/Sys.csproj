@@ -9,11 +9,12 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.Sys</RootNamespace>
-    <AssemblyVersion>1.0.212.4</AssemblyVersion>
-    <FileVersion>1.0.212.4</FileVersion>
-    <Version>1.0.212.4</Version>
+    <AssemblyVersion>1.0.212.6</AssemblyVersion>
+    <FileVersion>1.0.212.6</FileVersion>
+    <Version>1.0.212.6</Version>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="lz4net" Version="1.0.15.93" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />

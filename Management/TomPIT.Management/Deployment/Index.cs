@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using TomPIT.Data.DataProviders.Deployment;
+using TomPIT.Deployment.Database;
 
-namespace TomPIT.Deployment
+namespace TomPIT.Management.Deployment
 {
 	internal class Index : ITableIndex
 	{

@@ -925,6 +925,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Installer not found.
+        /// </summary>
+        public static string ErrInstallerNotFound {
+            get {
+                return ResourceManager.GetString("ErrInstallerNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Instance endpoint not found.
         /// </summary>
         public static string ErrInstanceEndpointNotFound {
@@ -1353,6 +1362,15 @@ namespace TomPIT {
         public static string ErrNoUrlHelper {
             get {
                 return ResourceManager.GetString("ErrNoUrlHelper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package not created for the specified microservice..
+        /// </summary>
+        public static string ErrPackageNotCreated {
+            get {
+                return ResourceManager.GetString("ErrPackageNotCreated", resourceCulture);
             }
         }
         

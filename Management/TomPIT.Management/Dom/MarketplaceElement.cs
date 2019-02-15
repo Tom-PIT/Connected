@@ -6,7 +6,7 @@ namespace TomPIT.Dom
 	public class MarketplaceElement : Element
 	{
 		public const string FolderId = "Marketplace";
-		private MarketplaceDesigner _designer = null;
+		private DeploymentDesigner _designer = null;
 
 		public MarketplaceElement(IEnvironment environment) : base(environment, null)
 		{
@@ -20,7 +20,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_designer == null)
-					_designer = new MarketplaceDesigner(this);
+					_designer = new DeploymentDesigner(this);
 
 				return _designer;
 			}

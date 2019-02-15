@@ -3,9 +3,9 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using TomPIT.Data.DataProviders;
-using TomPIT.Data.DataProviders.Deployment;
 using TomPIT.Data.Sql;
 using TomPIT.DataProviders.Sql.Deployment;
+using TomPIT.Deployment.Database;
 
 namespace TomPIT.DataProviders.Sql
 {

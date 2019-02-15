@@ -98,8 +98,26 @@
   margin: 5px 15px;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
-  padding: 15px;
   width: 250px;
+  text-align: center;
+}
+.package-body {
+  padding: 15px;
+}
+.package-body svg {
+  font-size: 5rem;
+  color: #4fc3f7;
+}
+.package-footer {
+  border-top: 1px solid #e0e0e0;
+  padding: 5px;
+}
+.package-header {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 10px;
+}
+.package-header .title {
+  font-weight: 700;
 }
 li.metric-item {
   padding: 5px;

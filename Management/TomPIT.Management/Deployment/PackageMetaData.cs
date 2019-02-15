@@ -1,7 +1,8 @@
 ﻿using Newtonsoft.Json;
 using System;
+using TomPIT.Deployment;
 
-namespace TomPIT.Deployment
+namespace TomPIT.Management.Deployment
 {
 	internal class PackageMetaData : IPackageMetaData
 	{
@@ -15,8 +16,8 @@ namespace TomPIT.Deployment
 		public string Version { get; set; }
 		[JsonProperty(PropertyName = "scope")]
 		public PackageScope Scope { get; set; }
-		[JsonProperty(PropertyName = "publisher")]
-		public string Publisher { get; set; }
+		[JsonProperty(PropertyName = "account")]
+		public Guid Account { get; set; }
 		[JsonProperty(PropertyName = "created")]
 		public DateTime Created { get; set; }
 		[JsonProperty(PropertyName = "price")]

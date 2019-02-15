@@ -10,7 +10,7 @@
 			onChanged: function (value) {
 				return false;
 			},
-			instance: null
+			instance:null
 		},
 
 		_create: function () {
@@ -44,6 +44,9 @@
 						if (typeof target.options.instance.codeLensProvider !== 'undefined')
 							target.options.instance.codeLensProvider.dispose();
 
+						if (typeof target.options.instance.definitionProvider!== 'undefined')
+							target.options.instance.definitionProvider.dispose();
+
 						target.options.instance.dispose();
 						target.options.instance = null;
 					}
@@ -53,7 +56,7 @@
 				}
 
 				options = $.extend({
-					readOnly: false
+					readOnly:false
 				}, options);
 
 				var src = options.source === null || options.source.length === 0 ? '\n' : options.source.join('\n');
@@ -95,7 +98,7 @@
 					options.onCreated(target.options.instance);
 
 				$('textarea', target.element).on('blur', function () {
-					if (typeof options.onChange !== 'undefined')
+					if(typeof options.onChange !== 'undefined')
 						options.onChange(target.options.instance.getValue());
 				});
 			});
@@ -119,6 +122,11 @@
 			var provider = monaco.languages.registerCodeLensProvider(language, options);
 
 			this.options.instance.codeLensProvider = provider;
+		},
+		registerDefinitionProvider: function (language, options) {
+			var provider = monaco.languages.registerDefinitionProvider(language, options);
+
+			this.options.instance.definitionProvider = provider;
 		},
 		insertText: function (text) {
 			var line = this.options.instance.getPosition();

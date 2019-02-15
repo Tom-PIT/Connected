@@ -79,7 +79,7 @@ namespace TomPIT.Sys.Data
 
 		public List<ISetting> Where(Guid resourceGroup)
 		{
-			return Where(f => f.ResourceGroup == resourceGroup);
+			return Where(f => f != null && f.ResourceGroup == resourceGroup);
 		}
 
 		protected override void OnInitializing()

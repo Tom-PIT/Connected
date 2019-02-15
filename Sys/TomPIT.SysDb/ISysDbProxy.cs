@@ -1,4 +1,5 @@
 ﻿using TomPIT.SysDb.Data;
+using TomPIT.SysDb.Deployment;
 using TomPIT.SysDb.Development;
 using TomPIT.SysDb.Diagnostics;
 using TomPIT.SysDb.Environment;
@@ -25,6 +26,7 @@ namespace TomPIT.SysDb
 		IEventHandler Events { get; }
 		IDataHandler Data { get; }
 		IIoTHandler IoT { get; }
+		IDeploymentHandler Deployment { get; }
 
 		void Initialize(string connectionString);
 	}

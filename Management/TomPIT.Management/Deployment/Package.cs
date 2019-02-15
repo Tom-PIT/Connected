@@ -5,18 +5,20 @@ using System.Linq;
 using TomPIT.Analysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
+using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
-using TomPIT.Data.DataProviders.Deployment;
+using TomPIT.Deployment;
+using TomPIT.Deployment.Database;
 using TomPIT.Globalization;
 using TomPIT.Storage;
 
-namespace TomPIT.Deployment
+namespace TomPIT.Management.Deployment
 {
 	internal class Package : IPackage
 	{
 		private IPackageMetaData _metaData = null;
 		private IPackageMicroService _microService = null;
-		private List<IMicroServiceString> _strings = null;
+		private List<IPackageString> _strings = null;
 		private List<IPackageFolder> _folders = null;
 		private List<IPackageComponent> _components = null;
 		private List<IPackageBlob> _blobs = null;
@@ -49,12 +51,12 @@ namespace TomPIT.Deployment
 		}
 
 		[JsonProperty(PropertyName = "strings")]
-		public List<IMicroServiceString> Strings
+		public List<IPackageString> Strings
 		{
 			get
 			{
 				if (_strings == null)
-					_strings = new List<IMicroServiceString>();
+					_strings = new List<IPackageString>();
 
 				return _strings;
 			}
@@ -119,18 +121,6 @@ namespace TomPIT.Deployment
 			}
 		}
 
-
-		public static Package Create(PackageCreateArgs e)
-		{
-			var r = new Package();
-
-			r.CreatePackage(e);
-
-			return r;
-		}
-
-		[JsonIgnore]
-		private PackageCreateArgs Args { get; set; }
 		[JsonIgnore]
 		private List<IConfiguration> Configurations
 		{
@@ -143,42 +133,19 @@ namespace TomPIT.Deployment
 			}
 		}
 
-		internal void CreatePackage(PackageCreateArgs e)
+		public void Create(Guid microService, ISysConnection connection)
 		{
-			Args = e;
-
-			_metaData = new PackageMetaData
-			{
-				Created = e.MetaData.Created,
-				Description = e.MetaData.Description,
-				Id = e.MetaData.Id,
-				ImageUrl = e.MetaData.ImageUrl,
-				LicenseUrl = e.MetaData.LicenseUrl,
-				Name = e.MetaData.Name,
-				Price = e.MetaData.Price,
-				ProjectUrl = e.MetaData.ProjectUrl,
-				Publisher = e.MetaData.Publisher,
-				Scope = e.MetaData.Scope,
-				ShellVersion = e.MetaData.ShellVersion,
-				Tags = e.MetaData.Tags,
-				Title = e.MetaData.Title,
-				Version = e.MetaData.Version,
-				Licenses = e.MetaData.Licenses,
-				Trial = e.MetaData.Trial,
-				TrialPeriod = e.MetaData.TrialPeriod
-			};
-
-			CreateMicroService();
-			CreateFolders();
-			CreateComponents();
-			CreateStrings();
-			CreateDependencies();
-			CreateDatabases();
+			CreateMicroService(microService, connection);
+			CreateFolders(connection);
+			CreateComponents(connection);
+			CreateStrings(connection);
+			CreateDependencies(connection);
+			CreateDatabases(connection);
 		}
 
-		private void CreateDependencies()
+		private void CreateDependencies(ISysConnection connection)
 		{
-			var references = Args.Connection.GetService<IDiscoveryService>().References(Args.MicroService);
+			var references = connection.GetService<IDiscoveryService>().References(MicroService.Token);
 
 			if (references == null)
 				return;
@@ -192,22 +159,12 @@ namespace TomPIT.Deployment
 			}
 		}
 
-		private void CreateComponents()
+		private void CreateComponents(ISysConnection connection)
 		{
-			var components = Args.Connection.GetService<IComponentService>().QueryComponents(Args.MicroService);
+			var components = connection.GetService<IComponentService>().QueryComponents(MicroService.Token);
 
 			foreach (var i in components)
 			{
-				if (i.Folder != Guid.Empty && Folders.FirstOrDefault(f => f.Token == i.Folder) == null)
-					continue;
-
-				var e = new PackageProcessArgs(PackageEntity.Component, i.Token.ToString());
-
-				Args.Callback?.Invoke(e);
-
-				if (e.Cancel)
-					continue;
-
 				Components.Add(new PackageComponent
 				{
 					Category = i.Category,
@@ -218,13 +175,13 @@ namespace TomPIT.Deployment
 					Type = i.Type,
 				});
 
-				var config = Args.Connection.GetService<IComponentService>().SelectConfiguration(i.Token);
+				var config = connection.GetService<IComponentService>().SelectConfiguration(i.Token);
 				Configurations.Add(config);
 
 				var texts = config.Children<IText>();
 
 				foreach (var j in texts)
-					CreateBlob(j.TextBlob);
+					CreateBlob(connection, j.TextBlob);
 
 				var er = config.Children<IExternalResourceElement>();
 
@@ -236,19 +193,19 @@ namespace TomPIT.Deployment
 						continue;
 
 					foreach (var k in items)
-						CreateBlob(k);
+						CreateBlob(connection, k);
 				}
 			}
 		}
 
-		private void CreateBlob(Guid token)
+		private void CreateBlob(ISysConnection connection, Guid token)
 		{
-			var blob = Args.Connection.GetService<IStorageService>().Select(token);
+			var blob = connection.GetService<IStorageService>().Select(token);
 
 			if (blob == null)
 				return;
 
-			var content = Args.Connection.GetService<IStorageService>().Download(token);
+			var content = connection.GetService<IStorageService>().Download(token);
 
 			Blobs.Add(new PackageBlob
 			{
@@ -264,19 +221,12 @@ namespace TomPIT.Deployment
 			});
 		}
 
-		private void CreateFolders()
+		private void CreateFolders(ISysConnection connection)
 		{
-			var folders = Args.Connection.GetService<IComponentService>().QueryFolders(Args.MicroService);
+			var folders = connection.GetService<IComponentService>().QueryFolders(MicroService.Token);
 
 			foreach (var i in folders)
 			{
-				var e = new PackageProcessArgs(PackageEntity.Folder, i.Token.ToString());
-
-				Args.Callback?.Invoke(e);
-
-				if (e.Cancel)
-					continue;
-
 				Folders.Add(new PackageFolder
 				{
 					Name = i.Name,
@@ -286,17 +236,17 @@ namespace TomPIT.Deployment
 			}
 		}
 
-		private void CreateStrings()
+		private void CreateStrings(ISysConnection connection)
 		{
-			var strings = Args.Connection.GetService<IMicroServiceManagementService>().QueryStrings(Args.MicroService);
-			var languages = Args.Connection.GetService<ILanguageService>().Query();
+			var strings = connection.GetService<IMicroServiceManagementService>().QueryStrings(MicroService.Token);
+			var languages = connection.GetService<ILanguageService>().Query();
 
 			foreach (var i in strings)
 			{
-				if (!ElementIncluded(i.Element))
+				if (!ElementIncluded(connection, i.Element))
 					continue;
 
-				Strings.Add(new MicroServiceString
+				Strings.Add(new PackageString
 				{
 					Element = i.Element,
 					Lcid = languages.FirstOrDefault(f => f.Token == i.Language).Lcid,
@@ -306,9 +256,9 @@ namespace TomPIT.Deployment
 			}
 		}
 
-		private bool ElementIncluded(Guid element)
+		private bool ElementIncluded(ISysConnection connection, Guid element)
 		{
-			var svc = Args.Connection.GetService<IDiscoveryService>();
+			var svc = connection.GetService<IDiscoveryService>();
 
 			foreach (var i in Configurations)
 			{
@@ -319,36 +269,40 @@ namespace TomPIT.Deployment
 			return false;
 		}
 
-		private void CreateMicroService()
+		private void CreateMicroService(Guid microService, ISysConnection connection)
 		{
-			var ms = Args.Connection.GetService<IMicroServiceService>().Select(Args.MicroService);
+			var ms = connection.GetService<IMicroServiceService>().Select(microService);
 
 			if (ms == null)
 				throw new RuntimeException(SR.ErrMicroServiceNotFound);
 
 			_microService = new PackageMicroService
 			{
-				MetaData = Args.Connection.GetService<IMicroServiceService>().SelectMeta(ms.Token),
+				MetaData = connection.GetService<IMicroServiceService>().SelectMeta(ms.Token),
 				Name = ms.Name,
 				Template = ms.Template,
 				Token = ms.Token
 			};
 		}
 
-		private void CreateDatabases()
+		private void CreateDatabases(ISysConnection connection)
 		{
 			var connections = Configurations.Where(f => f is IConnection);
 
 			foreach (IConnection i in connections)
 			{
-				var dp = Args.Connection.GetService<IDataProviderService>().Select(i.DataProvider);
-
-				if (dp == null || !dp.SupportsDeploy)
+				if (i.DataProvider == Guid.Empty)
 					continue;
 
 				var database = new PackageDatabase();
 
 				Databases.Add(database);
+
+				var dp = connection.GetService<IDataProviderService>().Select(i.DataProvider);
+
+				if (dp == null)
+					continue;
+
 				var db = dp.CreateSchema(i.Value);
 
 				CreateTables(database, db);
@@ -363,13 +317,6 @@ namespace TomPIT.Deployment
 
 			foreach (var i in provider.Routines)
 			{
-				var e = new PackageProcessArgs(PackageEntity.DatabaseRoutine, string.Format("{0}.{1}", i.Schema, i.Name));
-
-				Args.Callback?.Invoke(e);
-
-				if (e.Cancel)
-					continue;
-
 				database.Routines.Add(new Routine
 				{
 					Definition = i.Definition,
@@ -386,13 +333,6 @@ namespace TomPIT.Deployment
 
 			foreach (var i in provider.Views)
 			{
-				var e = new PackageProcessArgs(PackageEntity.DatabaseView, string.Format("{0}.{1}", i.Schema, i.Name));
-
-				Args.Callback?.Invoke(e);
-
-				if (e.Cancel)
-					continue;
-
 				database.Views.Add(new View
 				{
 					Definition = i.Definition,
@@ -408,13 +348,6 @@ namespace TomPIT.Deployment
 
 			foreach (var i in provider.Tables)
 			{
-				var e = new PackageProcessArgs(PackageEntity.DatabaseTable, string.Format("{0}.{1}", i.Schema, i.Name));
-
-				Args.Callback?.Invoke(e);
-
-				if (e.Cancel)
-					continue;
-
 				var t = new Table
 				{
 					Schema = i.Schema,
