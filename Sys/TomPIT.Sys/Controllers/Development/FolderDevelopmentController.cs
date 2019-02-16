@@ -7,15 +7,16 @@ namespace TomPIT.Sys.Controllers.Development
 	public class FolderDevelopmentController : SysController
 	{
 		[HttpPost]
-		public Guid Insert()
+		public void Insert()
 		{
 			var body = FromBody();
 
 			var microService = body.Required<Guid>("microService");
 			var name = body.Required<string>("name");
 			var parent = body.Optional("parent", Guid.Empty);
+			var token = body.Required<Guid>("token");
 
-			return DataModel.Folders.Insert(microService, name, parent);
+			DataModel.Folders.Insert(microService, token, name, parent);
 		}
 
 		[HttpPost]

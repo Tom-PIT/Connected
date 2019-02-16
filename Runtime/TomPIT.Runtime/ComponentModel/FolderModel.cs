@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TomPIT.Deployment;
 
 namespace TomPIT.ComponentModel
 {
@@ -24,6 +25,23 @@ namespace TomPIT.ComponentModel
 
 				return _folders;
 			}
+		}
+
+		public static List<FolderModel> Create(Guid microService, List<IPackageFolder> folders)
+		{
+			var r = new List<FolderModel>();
+			var root = folders.Where(f => f.Parent == Guid.Empty);
+
+			foreach (var i in root)
+			{
+				var m = new FolderModel(ComponentModel.Folder.FromPackageFolder(microService, i));
+
+				Create(microService, folders.Except(root).ToList(), m);
+
+				r.Add(m);
+			}
+
+			return r;
 		}
 
 		public static List<FolderModel> Create(List<IFolder> folders)
@@ -55,6 +73,23 @@ namespace TomPIT.ComponentModel
 				var m = new FolderModel(i);
 
 				Create(folders.Except(children).ToList(), m);
+
+				parent.Items.Add(m);
+			}
+		}
+
+		private static void Create(Guid microService, List<IPackageFolder> folders, FolderModel parent)
+		{
+			var children = folders.Where(f => f.Parent == parent.Folder.Token);
+
+			if (children.Count() == 0)
+				return;
+
+			foreach (var i in children)
+			{
+				var m = new FolderModel(ComponentModel.Folder.FromPackageFolder(microService, i));
+
+				Create(microService, folders.Except(children).ToList(), m);
 
 				parent.Items.Add(m);
 			}

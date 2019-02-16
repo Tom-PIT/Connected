@@ -19,6 +19,7 @@ namespace TomPIT.Storage
 		List<IBlob> Query(Guid microService, int kind, Guid resourceGroup, string primaryKey);
 		List<IBlob> QueryDrafts(Guid draft);
 		List<IBlob> Query(Guid microService);
+		void Restore(IBlob blob, byte[] content);
 		Guid Upload(IBlob blob, byte[] content, StoragePolicy policy);
 		Guid Upload(IBlob blob, byte[] content, StoragePolicy policy, Guid token);
 		IBlobContent Download(Guid blob);

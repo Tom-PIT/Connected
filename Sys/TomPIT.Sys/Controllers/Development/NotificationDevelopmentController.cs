@@ -60,5 +60,15 @@ namespace TomPIT.Sys.Controllers.Development
 
 			CachingNotifications.ScriptChanged(microService, sourceCode);
 		}
+
+		[HttpPost]
+		public void MicroServiceInstalled()
+		{
+			var body = FromBody();
+
+			var microService = body.Required<Guid>("microService");
+
+			CachingNotifications.MicroServiceInstalled(microService);
+		}
 	}
 }

@@ -134,6 +134,32 @@ namespace TomPIT.Storage
 
 		}
 
+		public void Restore(IBlob blob, byte[] content)
+		{
+			var compressed = content == null ? null : LZ4Codec.Wrap(content);
+
+			var u = Connection.CreateUrl("Storage", "Restore");
+			var args = new JObject
+			{
+				{"resourceGroup", blob.ResourceGroup },
+				{"type", blob.Type },
+				{"primaryKey", blob.PrimaryKey },
+				{"microService", blob.MicroService },
+				{"topic", blob.Topic },
+				{"fileName", blob.FileName },
+				{"contentType", blob.ContentType },
+				{"draft", blob.Draft },
+				{"content", compressed },
+				{"policy", StoragePolicy.Singleton.ToString() },
+				{"token", blob.Token.ToString() },
+				{"version", blob.Version }
+			};
+
+			var r = Connection.Post<Guid>(u, args);
+
+			BlobContent.Delete(r);
+		}
+
 		public void NotifyChanged(object sender, BlobEventArgs e)
 		{
 			Remove(e.Blob);

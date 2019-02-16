@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
+using TomPIT.Deployment;
 
 namespace TomPIT.ComponentModel
 {
@@ -28,6 +29,17 @@ namespace TomPIT.ComponentModel
 				return GetType().ShortName();
 
 			return Name;
+		}
+
+		public static IFolder FromPackageFolder(Guid microservice, IPackageFolder folder)
+		{
+			return new Folder
+			{
+				Name = folder.Name,
+				Parent = folder.Parent,
+				Token = folder.Token,
+				MicroService = microservice
+			};
 		}
 	}
 }

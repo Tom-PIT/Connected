@@ -1,0 +1,31 @@
+﻿@model TomPIT.Management.Models.DeploymentConfigurationModel
+
+<div class="package-configuration">
+	<div class="title">
+		Configuration
+	</div>
+	<div class="row text-center">
+		<div class="col-lg-4">
+			<label>Resource group</label>
+			<div>
+				@Model.ResourceGroup.Name
+			</div>
+
+		</div>
+		<div class="col-lg-4">
+			<label>Runtime configuration</label>
+			<div>
+				no
+			</div>
+		</div>
+		<div class="col-lg-4">
+
+		</div>
+	</div>
+	@if (Model.Configuration.Databases.Count > 0)
+	{
+		<div class="title">
+			Databases
+		</div>
+	}
+</div>

@@ -1,6 +1,10 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using TomPIT.ComponentModel;
 using TomPIT.Sys.Data;
+using TomPIT.SysDb.Development;
 
 namespace TomPIT.Sys.Controllers.Development
 {
@@ -41,6 +45,40 @@ namespace TomPIT.Sys.Controllers.Development
 			var property = body.Required<string>("property");
 
 			DataModel.MicroServiceStrings.Delete(microService, element, property);
+		}
+
+		[HttpPost]
+		public void RestoreStrings()
+		{
+			var body = FromBody();
+
+			var microService = body.Required<Guid>("microService");
+			var items = body.Required<JArray>("strings");
+			var ds = new List<IMicroServiceRestoreString>();
+			var ms = DataModel.MicroServices.Select(microService);
+
+			if (ms == null)
+				throw new SysException(SR.ErrMicroServiceNotFound);
+
+			foreach (JObject i in items)
+			{
+				var lcid = i.Required<int>("lcid");
+				var language = DataModel.Languages.Select(lcid);
+
+				if (language == null)
+					continue;
+
+				ds.Add(new MicroServiceString
+				{
+					Element = i.Required<Guid>("element"),
+					Language = language,
+					MicroService = ms,
+					Property = i.Required<string>("property"),
+					Value = i.Optional("value", string.Empty)
+				});
+			}
+
+			DataModel.MicroServiceStrings.Restore(ds);
 		}
 	}
 }

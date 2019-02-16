@@ -34,6 +34,11 @@ namespace TomPIT.Sys.Data
 			Set(id, r, TimeSpan.Zero);
 		}
 
+		public ILanguage Select(int lcid)
+		{
+			return Get(f => f.Lcid == lcid);
+		}
+
 		public ILanguage Select(Guid token)
 		{
 			return Get(token,

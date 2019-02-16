@@ -4,6 +4,7 @@ using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
+using TomPIT.SysDb.Development;
 
 namespace TomPIT.Sys.Data
 {
@@ -113,6 +114,14 @@ namespace TomPIT.Sys.Data
 
 			Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.DeleteString(s, element, property);
 			CachingNotifications.MicroServiceStringRemoved(microService, element, property);
+		}
+
+		public void Restore(List<IMicroServiceRestoreString> strings)
+		{
+			Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.RestoreStrings(strings);
+
+			foreach (var i in strings)
+				CachingNotifications.MicroServiceStringChanged(i.MicroService.Token, i.Language.Token, i.Element, i.Property);
 		}
 	}
 }

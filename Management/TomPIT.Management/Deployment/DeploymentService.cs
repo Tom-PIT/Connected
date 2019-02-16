@@ -6,6 +6,7 @@ using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Deployment;
 using TomPIT.Design.Serialization;
+using TomPIT.Environment;
 using TomPIT.Storage;
 
 namespace TomPIT.Management.Deployment
@@ -303,16 +304,17 @@ namespace TomPIT.Management.Deployment
 			var config = (PackageConfiguration)Connection.GetService<ISerializationService>().Deserialize(raw, typeof(PackageConfiguration));
 
 			var ms = Connection.GetService<IMicroServiceService>().Select(package);
+			PackageConfiguration existing = null;
 
-			if (ms == null || ms.Configuration == Guid.Empty)
-				return config;
+			if (ms != null && ms.Configuration != Guid.Empty)
+			{
+				var content = Connection.GetService<IStorageService>().Download(ms.Configuration);
 
-			var content = Connection.GetService<IStorageService>().Download(ms.Configuration);
+				if (content == null || content.Content.Length == 0)
+					return config;
 
-			if (content == null || content.Content.Length == 0)
-				return config;
-
-			var existing = (PackageConfiguration)Connection.GetService<ISerializationService>().Deserialize(content.Content, typeof(PackageConfiguration));
+				existing = (PackageConfiguration)Connection.GetService<ISerializationService>().Deserialize(content.Content, typeof(PackageConfiguration));
+			}
 
 			SynchronizeConfiguration(config, existing);
 
@@ -339,6 +341,14 @@ namespace TomPIT.Management.Deployment
 
 		private void SynchronizeConfiguration(PackageConfiguration configuration, PackageConfiguration existing)
 		{
+			var resourceGroups = Connection.GetService<IResourceGroupService>().Query();
+			var defaultResourceGroup = resourceGroups[0].Token;
+
+			configuration.ResourceGroup = defaultResourceGroup;
+
+			if (existing == null)
+				return;
+
 			configuration.ResourceGroup = existing.ResourceGroup;
 			configuration.RuntimeConfiguration = existing.RuntimeConfiguration;
 

@@ -24,6 +24,7 @@ namespace TomPIT.SysDb.Development
 		List<IMicroServiceString> QueryStrings();
 		void UpdateString(IMicroService microService, ILanguage language, Guid element, string property, string value);
 		void DeleteString(IMicroService microService, Guid element, string property);
+		void RestoreStrings(List<IMicroServiceRestoreString> strings);
 
 		string SelectMeta(IMicroService microService);
 	}

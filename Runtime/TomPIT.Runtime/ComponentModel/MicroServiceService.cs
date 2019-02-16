@@ -9,6 +9,7 @@ namespace TomPIT.ComponentModel
 	internal class MicroServiceService : SynchronizedClientRepository<IMicroService, Guid>, IMicroServiceService, IMicroServiceNotification
 	{
 		public event MicroServiceChangedHandler MicroServiceChanged;
+		public event MicroServiceChangedHandler MicroServiceInstalled;
 		private MicroServiceMetaCache _meta = null;
 
 		public MicroServiceService(ISysConnection connection) : base(connection, "microservice")
@@ -137,6 +138,11 @@ namespace TomPIT.ComponentModel
 			var key = GenerateKey(e.MicroService, e.Language, "microservicestring");
 
 			Container.Clear(key);
+		}
+
+		public void NotifyMicroServiceInstalled(object sender, MicroServiceEventArgs e)
+		{
+			MicroServiceInstalled?.Invoke(sender, e);
 		}
 
 		public void NotifyRemoved(object sender, MicroServiceEventArgs e)

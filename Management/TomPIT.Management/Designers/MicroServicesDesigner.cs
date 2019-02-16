@@ -35,7 +35,7 @@ namespace TomPIT.Designers
 
 			var user = Owner.Existing.FirstOrDefault(f => f.Token == id);
 
-			Connection.GetService<IMicroServiceManagementService>().Delete(user.Token);
+			Connection.GetService<IMicroServiceManagementService>().Delete(user.Token, true);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 		}
@@ -46,7 +46,9 @@ namespace TomPIT.Designers
 			var name = Connection.GetService<INamingService>().Create("MicroService", existing.Select(f => f.Name), true);
 			var ts = Connection.GetService<IMicroServiceTemplateService>().Query();
 			var template = ts.Count == 0 ? Guid.Empty : ts[0].Token;
-			var id = Connection.GetService<IMicroServiceManagementService>().Insert(name, DomQuery.Closest<IResourceGroupScope>(Owner).ResourceGroup.Token, template, MicroServiceStatus.Development);
+			var id = Guid.NewGuid();
+
+			Connection.GetService<IMicroServiceManagementService>().Insert(id, name, DomQuery.Closest<IResourceGroupScope>(Owner).ResourceGroup.Token, template, MicroServiceStatus.Development);
 			var ms = Connection.GetService<IMicroServiceService>().Select(id);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);

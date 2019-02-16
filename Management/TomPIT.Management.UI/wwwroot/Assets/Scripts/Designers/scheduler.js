@@ -11,7 +11,7 @@ $.widget('tompit.tpScheduleDesigner', {
 	},
 	_create: function () {
 		var instance = this;
-		debugger;
+
 		$('#editStartTime').dxDateBox({
 			type: "time",
 			showClearButton: true,

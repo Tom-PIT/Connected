@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Deployment;
 
 namespace TomPIT.Design
 {
@@ -28,6 +30,32 @@ namespace TomPIT.Design
 
 			if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
 				svc.NotifyMicroServiceStringRemoved(this, new MicroServiceStringEventArgs(microService, Guid.Empty, element, property));
+		}
+
+		public void RestoreStrings(Guid microService, List<IPackageString> strings)
+		{
+			var u = Connection.CreateUrl("MicroServiceDevelopment", "RestoreStrings");
+			var args = new JObject
+			{
+				{ "microService", microService }
+			};
+
+			var a = new JArray();
+
+			args.Add("strings", a);
+
+			foreach (var i in strings)
+			{
+				a.Add(new JObject
+				{
+					{"element", i.Element },
+					{"lcid", i.Lcid },
+					{"property", i.Property },
+					{"value", i.Value }
+				});
+			}
+
+			Connection.Post(u, args);
 		}
 
 		public void UpdateString(Guid microService, Guid language, Guid element, string property, string value)

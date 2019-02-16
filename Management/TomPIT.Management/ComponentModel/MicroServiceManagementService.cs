@@ -16,17 +16,17 @@ namespace TomPIT.ComponentModel
 
 		private ISysConnection Connection { get; }
 
-		public void Delete(Guid microService)
+		public void Delete(Guid microService, bool permanent)
 		{
 			var components = Connection.GetService<IComponentService>().QueryComponents(microService);
 
 			foreach (var i in components)
-				Connection.GetService<IComponentDevelopmentService>().Delete(i.Token);
+				Connection.GetService<IComponentDevelopmentService>().Delete(i.Token, permanent);
 
 			var folders = FolderModel.Create(Connection.GetService<IComponentService>().QueryFolders(microService));
 
 			foreach (var i in folders)
-				DeleteFolder(i);
+				DeleteFolder(i, permanent);
 
 			var u = Connection.CreateUrl("MicroServiceManagement", "Delete");
 			var args = new JObject {
@@ -39,18 +39,16 @@ namespace TomPIT.ComponentModel
 				svc.NotifyRemoved(this, new MicroServiceEventArgs(microService));
 		}
 
-		private void DeleteFolder(FolderModel model)
+		private void DeleteFolder(FolderModel model, bool permanent)
 		{
 			foreach (var i in model.Items)
-				DeleteFolder(i);
+				DeleteFolder(i, permanent);
 
-			Connection.GetService<IComponentDevelopmentService>().DeleteFolder(model.Folder.MicroService, model.Folder.Token);
+			Connection.GetService<IComponentDevelopmentService>().DeleteFolder(model.Folder.MicroService, model.Folder.Token, permanent);
 		}
 
-		public Guid Insert(string name, Guid resourceGroup, Guid template, MicroServiceStatus status)
+		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status)
 		{
-			var token = Guid.NewGuid();
-
 			var u = Connection.CreateUrl("MicroServiceManagement", "Insert");
 			var args = new JObject
 			{
@@ -66,8 +64,6 @@ namespace TomPIT.ComponentModel
 
 			if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
 				svc.NotifyChanged(this, new MicroServiceEventArgs(token));
-
-			return token;
 		}
 
 		private string CreateMicroServiceMeta(Guid microService)

@@ -79,7 +79,7 @@ namespace TomPIT.Sys.Data
 			return Where(f => f.MicroService == microService && f.Parent == parent);
 		}
 
-		public Guid Insert(Guid microService, string name, Guid parent)
+		public Guid Insert(Guid microService, Guid token, string name, Guid parent)
 		{
 			var s = DataModel.MicroServices.Select(microService);
 
@@ -102,8 +102,6 @@ namespace TomPIT.Sys.Data
 				if (p == null)
 					throw new SysException(SR.ErrFolderNotFound);
 			}
-
-			var token = Guid.NewGuid();
 
 			Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Insert(s, name, token, p);
 

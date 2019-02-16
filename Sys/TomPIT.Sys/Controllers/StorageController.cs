@@ -80,6 +80,26 @@ namespace TomPIT.Sys.Controllers
 			return DataModel.Blobs.Upload(resourceGroup, type, primaryKey, microService, topic, fileName, contentType, draft, Convert.FromBase64String(content), policy, token);
 		}
 
+		[HttpPost]
+		public void Restore()
+		{
+			var body = FromBody();
+
+			var resourceGroup = body.Required<Guid>("resourceGroup");
+			var type = body.Required<int>("type");
+			var primaryKey = body.Required<string>("primaryKey");
+			var microService = body.Optional("microService", Guid.Empty);
+			var topic = body.Optional("topic", string.Empty);
+			var fileName = body.Required<string>("fileName");
+			var contentType = body.Required<string>("contentType");
+			var content = body.Optional("content", string.Empty);
+			var policy = body.Required<StoragePolicy>("policy");
+			var token = body.Required<Guid>("token");
+			var version = body.Required<int>("version");
+
+			DataModel.Blobs.Restore(resourceGroup, type, primaryKey, microService, topic, fileName, contentType, Convert.FromBase64String(content), policy, token, version);
+		}
+
 		[HttpGet]
 		public IBlobContent Download(Guid blob)
 		{

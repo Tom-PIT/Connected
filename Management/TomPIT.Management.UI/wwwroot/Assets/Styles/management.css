@@ -104,7 +104,7 @@
 .package-body {
   padding: 15px;
 }
-.package-body svg {
+.package-image svg {
   font-size: 5rem;
   color: #4fc3f7;
 }
@@ -187,4 +187,38 @@ li.metric-item.fail[data-detail="true"] {
 }
 .log-item .status {
   font-size: 2rem;
+}
+.package-toolbar {
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+}
+.package-total {
+  font-size: 1.25rem;
+  color: #4caf50;
+}
+.package-info-header {
+  margin-left: 15px;
+  padding-left: 15px;
+  border-left: 1px solid #03a9f4;
+}
+.package-price {
+  font-size: 1.5rem;
+}
+.package-price hr {
+  margin-bottom: 0;
+}
+.package-price small {
+  font-size: 0.9rem;
+}
+.package-configuration {
+  border: 1px dotted #03a9f4;
+  padding: 15px;
+  background: #e1f5fe;
+}
+.package-configuration .title {
+  color: #03a9f4;
+}
+.package-configuration label {
+  font-weight: 700;
 }

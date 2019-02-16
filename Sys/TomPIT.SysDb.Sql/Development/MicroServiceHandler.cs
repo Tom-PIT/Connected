@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
@@ -154,6 +156,33 @@ namespace TomPIT.SysDb.Sql.Development
 			r.CreateParameter("@id", microService.GetId());
 
 			return r.ExecuteSingleRow()?.Content;
+		}
+
+		public void RestoreStrings(List<IMicroServiceRestoreString> strings)
+		{
+			var e = new JArray();
+
+			foreach (var i in strings)
+			{
+				var o = new JObject
+				{
+					{"language", i.Language.GetId().ToString() },
+					{"element", i.Element },
+					{"microService", i.MicroService.GetId().ToString() },
+					{"property", i.Property }
+				};
+
+				if (!string.IsNullOrWhiteSpace(i.Value))
+					o.Add("value", i.Value);
+
+				e.Add(o);
+			}
+
+			var w = new Writer("tompit.service_string_restore");
+
+			w.CreateParameter("@items", JsonConvert.SerializeObject(e));
+
+			w.Execute();
 		}
 	}
 }

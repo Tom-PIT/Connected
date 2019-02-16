@@ -34,8 +34,28 @@ namespace TomPIT.Management.Designers
 		{
 			if (string.Compare(action, "install", true) == 0)
 				return Install(data);
+			else if (string.Compare(action, "installConfirm", true) == 0)
+				return InstallConfirm(data);
 
 			return base.OnAction(data, action);
+		}
+
+		private IDesignerActionResult InstallConfirm(JObject data)
+		{
+			var packages = data.Required<JArray>("packages");
+			var items = new List<IInstallState>();
+
+			foreach (JValue i in packages)
+			{
+				items.Add(new InstallState
+				{
+					Package = Types.Convert<Guid>(i.Value<string>())
+				});
+			}
+
+			Connection.GetService<IDeploymentService>().InsertInstallers(items);
+
+			return Result.EmptyResult(ViewModel);
 		}
 
 		private IDesignerActionResult Install(JObject data)
@@ -43,27 +63,8 @@ namespace TomPIT.Management.Designers
 			PackageInfo = Connection.GetService<IDeploymentService>().SelectPublishedPackage(data.Required<Guid>("package"));
 
 			return Result.ViewResult(ViewModel, "~/Views/Ide/Designers/DeploymentPackage.cshtml");
-			//var packages = data.Required<JArray>("packages");
-			//var items = new List<IInstallState>();
-
-			//foreach (JValue i in packages)
-			//{
-			//	items.Add(new InstallState
-			//	{
-			//		Package = Types.Convert<Guid>(i.Value<string>())
-			//	});
-			//}
-
-			//Connection.GetService<IDeploymentService>().InsertInstallers(items);
-
-			//return Result.EmptyResult(ViewModel);
 		}
 
 		public IPublishedPackage PackageInfo { get; private set; }
-
-		public IPackageConfiguration SelectConfiguration(Guid package)
-		{
-			return Connection.GetService<IDeploymentService>().SelectPackageConfiguration(package);
-		}
 	}
 }

@@ -3,6 +3,7 @@ using System;
 using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Deployment;
 using TomPIT.Design.Serialization;
 using TomPIT.Services;
 using TomPIT.Storage;
@@ -28,7 +29,7 @@ namespace TomPIT.Design
 			return Connection.Get<string>(u);
 		}
 
-		public void Delete(Guid component)
+		public void Delete(Guid component, bool permanent)
 		{
 			var c = Connection.GetService<IComponentService>().SelectComponent(component);
 
@@ -53,13 +54,13 @@ namespace TomPIT.Design
 			 */
 			Connection.GetService<IStorageService>().Delete(c.Token);
 
-			if (c.RuntimeConfiguration != Guid.Empty)
+			if (c.RuntimeConfiguration != Guid.Empty && permanent)
 				Connection.GetService<IStorageService>().Delete(c.RuntimeConfiguration);
 
 			u = Connection.CreateUrl("NotificationDevelopment", "ConfigurationRemoved");
 			args = new JObject
 			{
-				{ "configuration", c.RuntimeConfiguration},
+				{ "configuration", c.Token},
 				{ "microService", c.MicroService},
 				{ "category", c.Category}
 			};
@@ -67,6 +68,10 @@ namespace TomPIT.Design
 			Connection.Post(u, args);
 		}
 
+		public void Restore(Guid microService, IPackageComponent component, IPackageBlob configuration, IPackageBlob runtimeConfiguration)
+		{
+
+		}
 		public Guid Insert(Guid microService, Guid folder, string category, string name, string type)
 		{
 			var s = Connection.GetService<IMicroServiceService>().Select(microService);
@@ -282,17 +287,17 @@ namespace TomPIT.Design
 			}
 		}
 
-		public void DeleteFolder(Guid microService, Guid folder)
+		public void DeleteFolder(Guid microService, Guid folder, bool permanent)
 		{
 			var folders = Connection.GetService<IComponentService>().QueryFolders(microService, folder);
 
 			foreach (var i in folders)
-				DeleteFolder(microService, i.Token);
+				DeleteFolder(microService, i.Token, permanent);
 
 			var components = Connection.GetService<IComponentService>().QueryComponents(microService, folder);
 
 			foreach (var i in components)
-				Delete(i.Token);
+				Delete(i.Token, permanent);
 
 			var u = Connection.CreateUrl("FolderDevelopment", "Delete");
 			var args = new JObject
@@ -307,14 +312,15 @@ namespace TomPIT.Design
 				svc.NotifyFolderRemoved(this, new FolderEventArgs(microService, folder));
 		}
 
-		public Guid InsertFolder(Guid microService, string name, Guid parent)
+		public Guid InsertFolder(Guid microService, Guid token, string name, Guid parent)
 		{
 			var u = Connection.CreateUrl("FolderDevelopment", "Insert");
 			var args = new JObject
 			{
 				{"microService", microService },
 				{ "name", name },
-				{ "parent", parent }
+				{ "parent", parent },
+				{ "token", token }
 			};
 
 			var r = Connection.Post<Guid>(u, args);

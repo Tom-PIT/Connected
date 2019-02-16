@@ -103,7 +103,37 @@ namespace TomPIT.Sys.Data
 			return Shell.GetService<IDatabaseService>().Proxy.Storage.QueryDrafts(draft);
 		}
 
-		public Guid Upload(Guid resourceGroup, int type, string primaryKey, Guid microService, string topic, string fileName, string contentType, Guid draft, byte[] content, StoragePolicy policy, Guid token)
+		public void Restore(Guid resourceGroup, int type, string primaryKey, Guid microService, string topic, string fileName, string contentType, byte[] content,
+			StoragePolicy policy, Guid token, int version)
+		{
+			var r = resourceGroup == Guid.Empty
+				? DataModel.ResourceGroups.Default
+				: DataModel.ResourceGroups.Select(resourceGroup);
+
+			if (r == null)
+				throw new SysException(SR.ErrResourceGroupNotFound);
+
+			IMicroService s = null;
+
+			if (microService != Guid.Empty)
+			{
+				s = DataModel.MicroServices.Select(microService);
+
+				if (s == null)
+					throw new SysException(SR.ErrMicroServiceNotFound);
+			}
+
+			Shell.GetService<IDatabaseService>().Proxy.Storage.Insert(r, token, type, primaryKey, s, topic, fileName,
+				contentType, content == null ? 0 : content.Length, version, DateTime.UtcNow, Guid.Empty);
+
+			DataModel.BlobsContents.Update(resourceGroup, token, content);
+
+			if (SupportsNotification(type))
+				CachingNotifications.BlobAdded(microService, token, type, primaryKey);
+		}
+
+		public Guid Upload(Guid resourceGroup, int type, string primaryKey, Guid microService, string topic, string fileName, string contentType, Guid draft, byte[] content,
+			StoragePolicy policy, Guid token)
 		{
 			if (draft != Guid.Empty || policy == StoragePolicy.Extended)
 				return Insert(token, resourceGroup, type, primaryKey, microService, topic, fileName, contentType, draft, content);
