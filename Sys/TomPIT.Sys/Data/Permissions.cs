@@ -49,19 +49,7 @@ namespace TomPIT.Sys.Data
 
 		public List<IPermission> Query(List<string> resourceGroups)
 		{
-			var items = new List<Guid>();
-
-			foreach (var i in resourceGroups)
-			{
-				var rg = DataModel.ResourceGroups.Select(i);
-
-				if (rg == null)
-					throw new SysException(string.Format("{0} ({1})", SR.ErrResourceGroupNotFound, i));
-
-				items.Add(rg.Token);
-			}
-
-			return Query(items);
+			return Query(resourceGroups.ToResourceGroupList());
 		}
 
 		public List<IPermission> Query(List<Guid> resourceGroups)

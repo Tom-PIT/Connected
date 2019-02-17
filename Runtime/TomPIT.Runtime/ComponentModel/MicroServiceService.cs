@@ -142,6 +142,8 @@ namespace TomPIT.ComponentModel
 
 		public void NotifyMicroServiceInstalled(object sender, MicroServiceEventArgs e)
 		{
+			Refresh(e.MicroService);
+
 			MicroServiceInstalled?.Invoke(sender, e);
 		}
 

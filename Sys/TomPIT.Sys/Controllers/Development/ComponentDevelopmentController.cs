@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Controllers.Development
@@ -59,6 +61,42 @@ namespace TomPIT.Sys.Controllers.Development
 		public string CreateName(Guid microService, string prefix, string category)
 		{
 			return DataModel.Components.CreateComponentName(microService, prefix, category);
+		}
+
+		[HttpPost]
+		public void SaveRuntimeState()
+		{
+			var body = FromBody();
+			var ms = body.Required<Guid>("microService");
+			var state = body.Required<JArray>("runtimeConfigurations");
+			var items = new Dictionary<Guid, Guid>();
+
+			foreach (JObject i in state)
+			{
+				var prop = i.First as JProperty;
+
+				items.Add(prop.Name.AsGuid(), prop.Value.ToString().AsGuid());
+			}
+
+			DataModel.Components.SaveRuntimeState(ms, items);
+		}
+
+		[HttpPost]
+		public JArray SelectRuntimeState()
+		{
+			var body = FromBody();
+			var ms = body.Required<Guid>("microService");
+
+			return DataModel.Components.SelectRuntimeState(ms, out Guid id);
+		}
+
+		[HttpPost]
+		public void DropRuntimeState()
+		{
+			var body = FromBody();
+			var ms = body.Required<Guid>("microService");
+
+			DataModel.Components.DropRuntimeState(ms);
 		}
 	}
 }

@@ -14,9 +14,8 @@ namespace TomPIT.Sys.Controllers.Development
 			var microService = body.Required<Guid>("microService");
 			var name = body.Required<string>("name");
 			var parent = body.Optional("parent", Guid.Empty);
-			var token = body.Required<Guid>("token");
 
-			DataModel.Folders.Insert(microService, token, name, parent);
+			DataModel.Folders.Insert(microService, name, parent);
 		}
 
 		[HttpPost]
@@ -41,6 +40,19 @@ namespace TomPIT.Sys.Controllers.Development
 			var f = body.Required<Guid>("token");
 
 			DataModel.Folders.Delete(microService, f);
+		}
+
+		[HttpPost]
+		public void Restore()
+		{
+			var body = FromBody();
+
+			var microService = body.Required<Guid>("microService");
+			var name = body.Required<string>("name");
+			var parent = body.Optional("parent", Guid.Empty);
+			var token = body.Required<Guid>("token");
+
+			DataModel.Folders.Restore(microService, token, name, parent);
 		}
 	}
 }

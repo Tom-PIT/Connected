@@ -21,7 +21,7 @@ using TomPIT.Services;
 
 namespace TomPIT.Compilers
 {
-	internal class CompilerService : ClientRepository<Script, Guid>, ICompilerService, ICompilerNotification
+	internal class CompilerService : ClientRepository<IScriptDescriptor, Guid>, ICompilerService, ICompilerNotification
 	{
 		private Lazy<ConcurrentDictionary<Guid, List<Guid>>> _forwardReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
 		private Lazy<ConcurrentDictionary<Guid, List<Guid>>> _reverseReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
@@ -44,7 +44,18 @@ namespace TomPIT.Compilers
 
 		public CompilerService(ISysConnection connection) : base(connection, "script")
 		{
+			Connection.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+		}
 
+		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
+		{
+			var scripts = All();
+
+			foreach (var i in scripts)
+			{
+				if (i.MicroService == e.MicroService)
+					Remove(i.Id);
+			}
 		}
 
 		private string[] CombineUsings(List<string> additionalUsings)
@@ -76,17 +87,14 @@ namespace TomPIT.Compilers
 			return string.Compare(sr, constant, true) == 0;
 		}
 
-		private Script GetCachedScript(Guid sourceCodeId)
+		private IScriptDescriptor GetCachedScript(Guid sourceCodeId)
 		{
 			return Get(sourceCodeId);
 		}
 
 		public IScriptDescriptor GetScript<T>(Guid microService, ISourceCode sourceCode)
 		{
-			IScriptDescriptor d = new ScriptDescriptor
-			{
-				Script = GetCachedScript(sourceCode.Id)
-			};
+			var d = GetCachedScript(sourceCode.Id);
 
 			if (d.Script == null)
 				d = CreateScript<T>(microService, sourceCode);
@@ -181,7 +189,11 @@ namespace TomPIT.Compilers
 
 		private IScriptDescriptor CreateScript<T>(Guid microService, ISourceCode d)
 		{
-			var r = new ScriptDescriptor();
+			var r = new ScriptDescriptor
+			{
+				MicroService = microService,
+				Id = d.Id
+			};
 
 			var code = Connection.GetService<IComponentService>().SelectText(microService, d);
 
@@ -225,7 +237,7 @@ namespace TomPIT.Compilers
 				script = CSharpScript.Create(code, options: options, globalsType: typeof(ScriptGlobals<T>), assemblyLoader: loader);
 			}
 
-			Set(d.Id, script, TimeSpan.Zero);
+			Set(d.Id, r, TimeSpan.Zero);
 
 			r.Errors = script.Compile();
 			r.Script = script;

@@ -103,7 +103,7 @@ namespace TomPIT.Sys.Data
 			return Shell.GetService<IDatabaseService>().Proxy.Storage.QueryDrafts(draft);
 		}
 
-		public void Restore(Guid resourceGroup, int type, string primaryKey, Guid microService, string topic, string fileName, string contentType, byte[] content,
+		public void Deploy(Guid resourceGroup, int type, string primaryKey, Guid microService, string topic, string fileName, string contentType, byte[] content,
 			StoragePolicy policy, Guid token, int version)
 		{
 			var r = resourceGroup == Guid.Empty

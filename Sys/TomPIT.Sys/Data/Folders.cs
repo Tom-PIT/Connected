@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.Sys.Api.Database;
@@ -69,6 +70,14 @@ namespace TomPIT.Sys.Data
 			return All();
 		}
 
+		public List<IFolder> Query(List<string> resourceGroups)
+		{
+			var rgs = resourceGroups.ToResourceGroupList();
+			var ms = DataModel.MicroServices.Query(rgs);
+
+			return Where(f => ms.Any(t => t.Token == f.MicroService));
+		}
+
 		public List<IFolder> Query(Guid microService)
 		{
 			return Where(f => f.MicroService == microService);
@@ -79,7 +88,41 @@ namespace TomPIT.Sys.Data
 			return Where(f => f.MicroService == microService && f.Parent == parent);
 		}
 
-		public Guid Insert(Guid microService, Guid token, string name, Guid parent)
+		public Guid Insert(Guid microService, string name, Guid parent)
+		{
+			var s = DataModel.MicroServices.Select(microService);
+
+			if (s == null)
+				throw new SysException(SR.ErrMicroServiceNotFound);
+
+			var v = new Validator();
+
+			v.Unique(null, name, nameof(IFolder.Name), Query(microService, parent));
+
+			if (!v.IsValid)
+				throw new SysException(v.ErrorMessage);
+
+			IFolder p = null;
+
+			if (parent != Guid.Empty)
+			{
+				p = Select(parent);
+
+				if (p == null)
+					throw new SysException(SR.ErrFolderNotFound);
+			}
+
+			var token = Guid.NewGuid();
+
+			Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Insert(s, name, token, p);
+
+			Refresh(token);
+			CachingNotifications.FolderChanged(microService, token);
+
+			return token;
+		}
+
+		public void Restore(Guid microService, Guid token, string name, Guid parent)
 		{
 			var s = DataModel.MicroServices.Select(microService);
 
@@ -106,9 +149,6 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Insert(s, name, token, p);
 
 			Refresh(token);
-			CachingNotifications.FolderChanged(microService, token);
-
-			return token;
 		}
 
 		public void Update(Guid microService, Guid folder, string name, Guid parent)

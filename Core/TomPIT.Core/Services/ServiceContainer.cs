@@ -35,6 +35,12 @@ namespace TomPIT.Services
 		[DebuggerStepThrough]
 		public T Get<T>()
 		{
+			return Get<T>(true);
+		}
+
+		[DebuggerStepThrough]
+		public T Get<T>(bool throwException)
+		{
 			if (!_services.ContainsKey(typeof(T)))
 				return default(T);
 
@@ -63,11 +69,24 @@ namespace TomPIT.Services
 						var t = Type.GetType(value.Value.ToString());
 
 						if (t == null)
-							throw new Exception(string.Format("{0} ({1})", SR.ServiceTypeNull, value.Value.ToString()));
+						{
+							if (throwException)
+								throw new Exception(string.Format("{0} ({1})", SR.ServiceTypeNull, value.Value.ToString()));
+							else
+								return default(T);
+						}
 
 						object instance = CreateInstance(t);
 
-						value.Value = instance ?? throw new Exception(string.Format("{0} ({1})", SR.ServiceTypeNull, value.Value.ToString()));
+						if (instance == null)
+						{
+							if (throwException)
+								throw new Exception(string.Format("{0} ({1})", SR.ServiceTypeNull, value.Value.ToString()));
+							else
+								return default(T);
+						}
+
+						value.Value = instance;
 					}
 				}
 			}
@@ -80,7 +99,15 @@ namespace TomPIT.Services
 						var t = value.Value as Type;
 						object instance = CreateInstance(t);
 
-						value.Value = instance ?? throw new Exception(string.Format("{0} ({1})", SR.ServiceTypeNull, value.Value.ToString()));
+						if (instance == null)
+						{
+							if (throwException)
+								throw new Exception(string.Format("{0} ({1})", SR.ServiceTypeNull, value.Value.ToString()));
+							else
+								return default(T);
+						}
+
+						value.Value = instance;
 					}
 				}
 			}

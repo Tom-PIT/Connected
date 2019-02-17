@@ -115,9 +115,7 @@ namespace TomPIT.Models
 				parent = fs.Token;
 
 			var ms = DomQuery.Closest<IMicroServiceScope>(selection);
-			var id = Guid.NewGuid();
-
-			GetService<IComponentDevelopmentService>().InsertFolder(ms.MicroService.Token, id, name, parent);
+			var id = GetService<IComponentDevelopmentService>().InsertFolder(ms.MicroService.Token, name, parent);
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 
 			var target = fs == null ? selection.Root() : selection.Closest<IFolderScope>() as IDomElement;
@@ -146,7 +144,7 @@ namespace TomPIT.Models
 				return Result.EmptyResult(this);
 
 			var path = DomQuery.Path(Selection.Element);
-			GetService<IComponentDevelopmentService>().DeleteFolder(DomQuery.Closest<IMicroServiceScope>(Selection.Element).MicroService.Token, folder.Token, true);
+			GetService<IComponentDevelopmentService>().DeleteFolder(DomQuery.Closest<IMicroServiceScope>(Selection.Element).MicroService.Token, folder.Token);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 
@@ -170,7 +168,7 @@ namespace TomPIT.Models
 				return Result.EmptyResult(this);
 
 			var path = DomQuery.Path(Selection.Element);
-			GetService<IComponentDevelopmentService>().Delete(component, true);
+			GetService<IComponentDevelopmentService>().Delete(component);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 

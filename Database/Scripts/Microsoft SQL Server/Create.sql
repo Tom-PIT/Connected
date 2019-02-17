@@ -2178,6 +2178,26 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[service_string_restore]'
+GO
+CREATE PROCEDURE [tompit].[service_string_restore]
+	@items nvarchar(max)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	MERGE service_string AS d
+	USING (SELECT * FROM OPENJSON(@items) WITH ([service] int, element uniqueidentifier, property nvarchar(128), value nvarchar(MAX), language int)) AS s (service, element, property, value, language)
+	ON (d.service = s.service AND d.language = s.language AND d.element = s.element AND d.property = s.property)
+	WHEN NOT MATCHED THEN
+		INSERT (service, language, element, value, property)
+		VALUES (s.service, s.language, s.element, s.value, s.property)
+	WHEN MATCHED THEN
+		UPDATE SET value = s.value;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[queue_dequeue_content]'
 GO
 CREATE PROCEDURE [tompit].[queue_dequeue_content]

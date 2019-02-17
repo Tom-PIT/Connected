@@ -1,5 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using TomPIT.Caching;
@@ -59,10 +60,15 @@ namespace TomPIT.Connectivity
 			}
 		}
 
-
+		[DebuggerStepThrough]
 		public T GetService<T>()
 		{
-			return Services.Get<T>();
+			var r = Services.Get<T>(false);
+
+			if (r == null)
+				return Shell.GetService<T>();
+
+			return r;
 		}
 
 		public void RegisterService(Type contract, object instance)

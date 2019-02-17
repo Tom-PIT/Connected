@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Scripting;
+using System;
 using System.Collections.Immutable;
 using TomPIT.Compilation;
 
@@ -9,5 +10,7 @@ namespace TomPIT.Compilers
 	{
 		public Script Script { get; set; }
 		public ImmutableArray<Diagnostic> Errors { get; set; }
+		public Guid MicroService { get; set; }
+		public Guid Id { get; set; }
 	}
 }

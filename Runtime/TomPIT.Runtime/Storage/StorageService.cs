@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Caching;
+using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 
 namespace TomPIT.Storage
@@ -20,6 +21,21 @@ namespace TomPIT.Storage
 		public StorageService(ISysConnection connection) : base(connection, "blob")
 		{
 			_blobContent = new BlobContentCache(Connection);
+			Connection.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+		}
+
+		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
+		{
+			var blobs = All();
+
+			foreach (var i in blobs)
+			{
+				if (i.MicroService == e.MicroService)
+				{
+					Remove(i.Token);
+					BlobContent.Delete(i.Token);
+				}
+			}
 		}
 
 		public void Commit(Guid draft, string primaryKey)
@@ -138,7 +154,7 @@ namespace TomPIT.Storage
 		{
 			var compressed = content == null ? null : LZ4Codec.Wrap(content);
 
-			var u = Connection.CreateUrl("Storage", "Restore");
+			var u = Connection.CreateUrl("Storage", "Deploy");
 			var args = new JObject
 			{
 				{"resourceGroup", blob.ResourceGroup },

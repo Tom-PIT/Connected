@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
@@ -29,7 +30,7 @@ namespace TomPIT.Design
 			return Connection.Get<string>(u);
 		}
 
-		public void Delete(Guid component, bool permanent)
+		public void Delete(Guid component)
 		{
 			var c = Connection.GetService<IComponentService>().SelectComponent(component);
 
@@ -54,7 +55,7 @@ namespace TomPIT.Design
 			 */
 			Connection.GetService<IStorageService>().Delete(c.Token);
 
-			if (c.RuntimeConfiguration != Guid.Empty && permanent)
+			if (c.RuntimeConfiguration != Guid.Empty)
 				Connection.GetService<IStorageService>().Delete(c.RuntimeConfiguration);
 
 			u = Connection.CreateUrl("NotificationDevelopment", "ConfigurationRemoved");
@@ -70,8 +71,36 @@ namespace TomPIT.Design
 
 		public void Restore(Guid microService, IPackageComponent component, IPackageBlob configuration, IPackageBlob runtimeConfiguration)
 		{
+			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
 
+			var blob = new Blob
+			{
+				ContentType = configuration.ContentType,
+				FileName = configuration.FileName,
+				ResourceGroup = ms.ResourceGroup,
+				MicroService = microService,
+				Type = configuration.Type,
+				Token = configuration.Token,
+				PrimaryKey = configuration.PrimaryKey
+			};
+
+			Connection.GetService<IStorageService>().Upload(blob, Convert.FromBase64String(configuration.Content), StoragePolicy.Singleton, component.Token);
+
+			var u = Connection.CreateUrl("ComponentDevelopment", "Insert");
+
+			var args = new JObject
+			{
+				{"microService", microService },
+				{"folder", component.Folder },
+				{"name", component.Name },
+				{"type", component.Type },
+				{"category", component.Category },
+				{"component", component.Token }
+			};
+
+			Connection.Post(u, args);
 		}
+
 		public Guid Insert(Guid microService, Guid folder, string category, string name, string type)
 		{
 			var s = Connection.GetService<IMicroServiceService>().Select(microService);
@@ -96,9 +125,9 @@ namespace TomPIT.Design
 
 			var blob = new Blob
 			{
-				ContentType = "text/xml",
+				ContentType = "application/json",
 				Draft = Guid.NewGuid(),
-				FileName = string.Format("{0}.xml", name),
+				FileName = string.Format("{0}.json", name),
 				ResourceGroup = s.ResourceGroup,
 				Size = content.Length,
 				MicroService = microService,
@@ -163,8 +192,8 @@ namespace TomPIT.Design
 
 			var blob = new Blob
 			{
-				ContentType = "text/xml",
-				FileName = string.Format("{0}.xml", c.Name),
+				ContentType = "application/json",
+				FileName = string.Format("{0}.json", c.Name),
 				ResourceGroup = s.ResourceGroup,
 				Size = content.Length,
 				MicroService = c.MicroService,
@@ -228,8 +257,8 @@ namespace TomPIT.Design
 
 				var b = new Blob
 				{
-					ContentType = "text/xml",
-					FileName = string.Format("{0}.xml", text.Id.ToString()),
+					ContentType = "application/json",
+					FileName = string.Format("{0}.json", text.Id.ToString()),
 					PrimaryKey = text.Id.ToString(),
 					Size = content.Length,
 					MicroService = s.Token,
@@ -287,17 +316,17 @@ namespace TomPIT.Design
 			}
 		}
 
-		public void DeleteFolder(Guid microService, Guid folder, bool permanent)
+		public void DeleteFolder(Guid microService, Guid folder)
 		{
 			var folders = Connection.GetService<IComponentService>().QueryFolders(microService, folder);
 
 			foreach (var i in folders)
-				DeleteFolder(microService, i.Token, permanent);
+				DeleteFolder(microService, i.Token);
 
 			var components = Connection.GetService<IComponentService>().QueryComponents(microService, folder);
 
 			foreach (var i in components)
-				Delete(i.Token, permanent);
+				Delete(i.Token);
 
 			var u = Connection.CreateUrl("FolderDevelopment", "Delete");
 			var args = new JObject
@@ -312,15 +341,28 @@ namespace TomPIT.Design
 				svc.NotifyFolderRemoved(this, new FolderEventArgs(microService, folder));
 		}
 
-		public Guid InsertFolder(Guid microService, Guid token, string name, Guid parent)
+		public void RestoreFolder(Guid microService, Guid token, string name, Guid parent)
 		{
-			var u = Connection.CreateUrl("FolderDevelopment", "Insert");
+			var u = Connection.CreateUrl("FolderDevelopment", "Restore");
 			var args = new JObject
 			{
 				{"microService", microService },
 				{ "name", name },
 				{ "parent", parent },
 				{ "token", token }
+			};
+
+			var r = Connection.Post<Guid>(u, args);
+		}
+
+		public Guid InsertFolder(Guid microService, string name, Guid parent)
+		{
+			var u = Connection.CreateUrl("FolderDevelopment", "Insert");
+			var args = new JObject
+			{
+				{"microService", microService },
+				{ "name", name },
+				{ "parent", parent }
 			};
 
 			var r = Connection.Post<Guid>(u, args);
@@ -346,6 +388,70 @@ namespace TomPIT.Design
 
 			if (Connection.GetService<IComponentService>() is IComponentNotification svc)
 				svc.NotifyFolderChanged(this, new FolderEventArgs(microService, folder));
+		}
+
+		public void SaveRuntimeState(Guid microService)
+		{
+			var state = new JObject();
+			var rt = new JArray();
+
+			state.Add("runtimeConfigurations", rt);
+
+			var components = Connection.GetService<IComponentService>().QueryComponents(microService);
+
+			foreach (var i in components)
+			{
+				if (i.RuntimeConfiguration != Guid.Empty)
+				{
+					rt.Add(new JObject
+						{
+							{i.Token.ToString(), i.RuntimeConfiguration.ToString() }
+						});
+				}
+			}
+
+			if (rt.Count == 0)
+				return;
+
+			var u = Connection.CreateUrl("ComponentDevelopment", "SaveRuntimeState");
+
+			Connection.Post(u, state);
+		}
+
+		public Dictionary<Guid, Guid> SelectRuntimeState(Guid microService)
+		{
+			var u = Connection.CreateUrl("ComponentDevelopment", "SelectRuntimeState");
+			var e = new JObject
+			{
+				{"microService", microService }
+			};
+
+			var a = Connection.Post<JArray>(u, e);
+
+			if (a == null)
+				return null;
+
+			var r = new Dictionary<Guid, Guid>();
+
+			foreach (JObject i in a)
+			{
+				var prop = i.First as JProperty;
+
+				r.Add(prop.Name.AsGuid(), prop.Value.ToString().AsGuid());
+			}
+
+			return r;
+		}
+
+		public void DropRuntimeState(Guid microService)
+		{
+			var u = Connection.CreateUrl("ComponentDevelopment", "DropRuntimeState");
+			var e = new JObject
+			{
+				{"microService", microService }
+			};
+
+			Connection.Post(u, e);
 		}
 	}
 }

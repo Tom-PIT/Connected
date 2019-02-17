@@ -11,5 +11,10 @@ namespace TomPIT.Sys
 		{
 			return Request.Body.ToJObject();
 		}
+
+		protected T FromBody<T>()
+		{
+			return Request.Body.ToType<T>();
+		}
 	}
 }

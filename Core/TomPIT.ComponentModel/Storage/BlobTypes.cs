@@ -3,13 +3,16 @@
 	public class BlobTypes
 	{
 		public const int Configuration = 1;
-		public const int RuntimeConfiguration = 2;
 		public const int Template = 2;
+		public const int RuntimeConfiguration = 3;
 		public const int WorkerState = 4;
 		public const int Package = 5;
 		public const int PackageConfiguration = 6;
 		public const int Avatar = 11;
 		public const int HtmlImage = 21;
-		public const int UserContent = 1001;
+
+		public const int RuntimeConfigurationBackup = 1001;
+		public const int RuntimeConfigurationState = 1002;
+		public const int UserContent = 1003;
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.Routing;
@@ -66,6 +67,11 @@ namespace TomPIT.Sys.Data
 		public List<IMicroService> Query(Guid resourceGroup)
 		{
 			return Where(f => f.ResourceGroup == resourceGroup);
+		}
+
+		public List<IMicroService> Query(List<Guid> resourceGroups)
+		{
+			return Where(f => resourceGroups.Any(t => t == f.ResourceGroup));
 		}
 
 		public List<IMicroService> Query()

@@ -75,7 +75,7 @@ namespace TomPIT.Management.Deployment
 			}
 		}
 
-		[JsonProperty(PropertyName = "features")]
+		[JsonProperty(PropertyName = "folders")]
 		public List<IPackageFolder> Folders
 		{
 			get
@@ -206,6 +206,8 @@ namespace TomPIT.Management.Deployment
 				var config = connection.GetService<IComponentService>().SelectConfiguration(i.Token);
 				Configurations.Add(config);
 
+				CreateBlob(connection, i.Token);
+
 				var texts = config.Children<IText>();
 
 				foreach (var j in texts)
@@ -228,6 +230,9 @@ namespace TomPIT.Management.Deployment
 
 		private void CreateBlob(ISysConnection connection, Guid token)
 		{
+			if (token == Guid.Empty)
+				return;
+
 			var blob = connection.GetService<IStorageService>().Select(token);
 
 			if (blob == null)

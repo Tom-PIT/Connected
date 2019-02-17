@@ -33,7 +33,7 @@ namespace TomPIT.Management.Deployment
 			}
 		}
 
-		private List<IComponent> Components { get; set; }
+		private Dictionary<Guid, Guid> LastKnownState { get; set; }
 
 		public void Deploy()
 		{
@@ -64,7 +64,7 @@ namespace TomPIT.Management.Deployment
 			DeployFolders();
 			DeployComponents();
 			DeployBlobs();
-			DeployStrings();
+			//DeployStrings();
 		}
 
 		private void DeployFolders()
@@ -77,7 +77,7 @@ namespace TomPIT.Management.Deployment
 
 		private void DeployFolders(FolderModel model)
 		{
-			Connection.GetService<IComponentDevelopmentService>().InsertFolder(model.Folder.MicroService, model.Folder.Token, model.Folder.Name, model.Folder.Parent);
+			Connection.GetService<IComponentDevelopmentService>().RestoreFolder(model.Folder.MicroService, model.Folder.Token, model.Folder.Name, model.Folder.Parent);
 
 			foreach (var i in model.Items)
 				DeployFolders(i);
@@ -92,10 +92,10 @@ namespace TomPIT.Management.Deployment
 
 				if (!Configuration.RuntimeConfiguration)
 				{
-					var component = Components.FirstOrDefault(f => f.Token == i.Token);
+					var state = LastKnownState == null ? Guid.Empty : LastKnownState.FirstOrDefault(f => f.Key == configuration.Token).Value;
 
-					if (component != null)
-						((PackageComponent)i).RuntimeConfiguration = component.RuntimeConfiguration;
+					if (state != Guid.Empty)
+						((PackageComponent)i).RuntimeConfiguration = state;
 				}
 
 				Connection.GetService<IComponentDevelopmentService>().Restore(Package.MicroService.Token, i, configuration, runtimeConfiguration);
@@ -137,15 +137,19 @@ namespace TomPIT.Management.Deployment
 
 		private void Drop()
 		{
+			LastKnownState = Connection.GetService<IComponentDevelopmentService>().SelectRuntimeState(Package.MicroService.Token);
+
 			var existing = Connection.GetService<IMicroServiceService>().Select(Package.MicroService.Token);
 
 			if (existing == null)
 				return;
 
-			if (!Configuration.RuntimeConfiguration)
-				Components = Connection.GetService<IComponentService>().QueryComponents(Package.MicroService.Token);
+			Connection.GetService<IComponentDevelopmentService>().SaveRuntimeState(existing.Token);
 
-			Connection.GetService<IMicroServiceManagementService>().Delete(existing.Token, Configuration.RuntimeConfiguration);
+			if (LastKnownState == null)
+				LastKnownState = Connection.GetService<IComponentDevelopmentService>().SelectRuntimeState(Package.MicroService.Token);
+
+			Connection.GetService<IMicroServiceManagementService>().Delete(existing.Token);
 		}
 	}
 }

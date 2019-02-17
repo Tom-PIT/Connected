@@ -81,7 +81,7 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpPost]
-		public void Restore()
+		public void Deploy()
 		{
 			var body = FromBody();
 
@@ -97,7 +97,7 @@ namespace TomPIT.Sys.Controllers
 			var token = body.Required<Guid>("token");
 			var version = body.Required<int>("version");
 
-			DataModel.Blobs.Restore(resourceGroup, type, primaryKey, microService, topic, fileName, contentType, Convert.FromBase64String(content), policy, token, version);
+			DataModel.Blobs.Deploy(resourceGroup, type, primaryKey, microService, topic, fileName, contentType, Convert.FromBase64String(content), policy, token, version);
 		}
 
 		[HttpGet]

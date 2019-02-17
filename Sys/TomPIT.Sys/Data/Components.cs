@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using TomPIT.Api.ComponentModel;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
@@ -101,6 +104,77 @@ namespace TomPIT.Sys.Data
 				Set(r.Token, r, TimeSpan.Zero);
 
 			return r;
+		}
+
+		public void DropRuntimeState(Guid microService)
+		{
+			var state = SelectRuntimeState(microService, out Guid id);
+
+			if (state == null)
+				return;
+
+			foreach (JObject i in state)
+			{
+				var prop = i.First as JProperty;
+
+				DataModel.Blobs.Delete(prop.Value.ToString().AsGuid());
+			}
+
+			DataModel.Blobs.Delete(id);
+		}
+
+		public void SaveRuntimeState(Guid microService, Dictionary<Guid, Guid> items)
+		{
+			if (items.Count == 0)
+				return;
+
+			var state = new JArray();
+
+			foreach (var i in items)
+			{
+				var blob = DataModel.Blobs.Select(i.Value);
+
+				if (blob == null)
+					continue;
+
+				var content = DataModel.BlobsContents.Select(i.Value);
+
+				if (content == null || content.Content.Length == 0)
+					continue;
+
+				var id = Guid.NewGuid();
+
+				DataModel.Blobs.Upload(blob.ResourceGroup, 1001, blob.PrimaryKey, blob.MicroService, blob.Topic,
+					blob.FileName, blob.ContentType, Guid.Empty, content.Content, Storage.StoragePolicy.Singleton, id);
+
+				state.Add(new JObject
+				{
+					{i.Key.ToString(), id.ToString() }
+				});
+			}
+
+			var raw = LZ4.LZ4Codec.Wrap(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(state)));
+
+			DataModel.Blobs.Upload(DataModel.ResourceGroups.Default.Token, 1002, microService.ToString(), microService,
+				null, string.Format("{0}.json", microService), "application/json", Guid.Empty, raw, Storage.StoragePolicy.Singleton, Guid.NewGuid());
+		}
+
+		public JArray SelectRuntimeState(Guid microService, out Guid blobId)
+		{
+			blobId = Guid.Empty;
+
+			var blobs = DataModel.Blobs.Query(DataModel.ResourceGroups.Default.Token, 1002, microService.ToString());
+
+			if (blobs.Count == 0)
+				return null;
+
+			var content = DataModel.BlobsContents.Select(blobs[0].Token);
+
+			if (content == null || content.Content.Length == 0)
+				return null;
+
+			blobId = blobs[0].Token;
+			return JsonConvert.DeserializeObject<JArray>(Encoding.UTF8.GetString(LZ4.LZ4Codec.Unwrap(content.Content)));
 		}
 
 		public List<IComponent> Query(string resourceGroups, string categories)

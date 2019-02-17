@@ -7,9 +7,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyVersion>1.0.215.1</AssemblyVersion>
-    <FileVersion>1.0.215.1</FileVersion>
-    <Version>1.0.215.1</Version>
+    <AssemblyVersion>1.0.217.1</AssemblyVersion>
+    <FileVersion>1.0.217.1</FileVersion>
+    <Version>1.0.217.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Data.SqlClient" Version="4.6.0" />

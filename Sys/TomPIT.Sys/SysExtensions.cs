@@ -71,5 +71,22 @@ namespace TomPIT.Sys
 
 			return subscriber?.Connection;
 		}
+
+		public static List<Guid> ToResourceGroupList(this List<string> items)
+		{
+			var r = new List<Guid>();
+
+			foreach (var i in items)
+			{
+				var rg = DataModel.ResourceGroups.Select(i);
+
+				if (rg == null)
+					throw new SysException(string.Format("{0} ({1})", SR.ErrResourceGroupNotFound, i));
+
+				r.Add(rg.Token);
+			}
+
+			return r;
+		}
 	}
 }

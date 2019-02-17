@@ -35,7 +35,7 @@ namespace TomPIT.Designers
 
 			var user = Owner.Existing.FirstOrDefault(f => f.Token == id);
 
-			Connection.GetService<IMicroServiceManagementService>().Delete(user.Token, true);
+			Connection.GetService<IMicroServiceManagementService>().Delete(user.Token);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 		}

@@ -16,17 +16,17 @@ namespace TomPIT.ComponentModel
 
 		private ISysConnection Connection { get; }
 
-		public void Delete(Guid microService, bool permanent)
+		public void Delete(Guid microService)
 		{
 			var components = Connection.GetService<IComponentService>().QueryComponents(microService);
 
 			foreach (var i in components)
-				Connection.GetService<IComponentDevelopmentService>().Delete(i.Token, permanent);
+				Connection.GetService<IComponentDevelopmentService>().Delete(i.Token);
 
 			var folders = FolderModel.Create(Connection.GetService<IComponentService>().QueryFolders(microService));
 
 			foreach (var i in folders)
-				DeleteFolder(i, permanent);
+				DeleteFolder(i);
 
 			var u = Connection.CreateUrl("MicroServiceManagement", "Delete");
 			var args = new JObject {
@@ -39,12 +39,12 @@ namespace TomPIT.ComponentModel
 				svc.NotifyRemoved(this, new MicroServiceEventArgs(microService));
 		}
 
-		private void DeleteFolder(FolderModel model, bool permanent)
+		private void DeleteFolder(FolderModel model)
 		{
 			foreach (var i in model.Items)
-				DeleteFolder(i, permanent);
+				DeleteFolder(i);
 
-			Connection.GetService<IComponentDevelopmentService>().DeleteFolder(model.Folder.MicroService, model.Folder.Token, permanent);
+			Connection.GetService<IComponentDevelopmentService>().DeleteFolder(model.Folder.MicroService, model.Folder.Token);
 		}
 
 		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status)

@@ -23,7 +23,21 @@ namespace TomPIT.ComponentModel
 
 		public ComponentService(ISysConnection connection) : base(connection, "component")
 		{
+			Connection.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
 			Folders = new FolderCache(connection);
+		}
+
+		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
+		{
+			var components = All();
+
+			foreach (var i in components)
+			{
+				if (i.MicroService == e.MicroService)
+					Remove(i.Token);
+			}
+
+			Folders.RefreshMicroService(e.MicroService);
 		}
 
 		private FolderCache Folders { get; }

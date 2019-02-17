@@ -103,6 +103,14 @@ namespace TomPIT.Connectivity
 				if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification n)
 					n.NotifyRemoved(Connection, e.Args);
 			});
+
+			Hub.On<MessageEventArgs<MicroServiceEventArgs>>("MicroServiceInstalled", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification n)
+					n.NotifyMicroServiceInstalled(Connection, e.Args);
+			});
 		}
 
 		private void Security()

@@ -1,7 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
+using TomPIT.Environment;
+using TomPIT.Services;
 
 namespace TomPIT.ComponentModel
 {
@@ -13,8 +16,23 @@ namespace TomPIT.ComponentModel
 
 		protected override void OnInitializing()
 		{
-			var u = Connection.CreateUrl("Folder", "Query");
-			var ds = Connection.Get<List<Folder>>(u);
+			List<Folder> ds = null;
+
+			if (Connection.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
+			{
+				var u = Connection.CreateUrl("Folder", "Query");
+				ds = Connection.Get<List<Folder>>(u);
+			}
+			else
+			{
+				var u = Connection.CreateUrl("Folder", "QueryForResourceGroups");
+				var e = new JArray();
+
+				foreach (var i in Connection.GetService<IResourceGroupService>().Query())
+					e.Add(i.Token.ToString());
+
+				ds = Connection.Post<List<Folder>>(u, e);
+			}
 
 			foreach (var i in ds)
 				Set(i.Token, i, TimeSpan.Zero);
@@ -56,6 +74,28 @@ namespace TomPIT.ComponentModel
 		public void Delete(Guid id)
 		{
 			Remove(id);
+		}
+
+		public void RefreshMicroService(Guid microService)
+		{
+			var ds = All();
+
+			foreach (var i in ds)
+			{
+				if (i.MicroService == microService)
+					Remove(i.Token);
+			}
+
+			var u = Connection.CreateUrl("Folder", "QueryForMicroService");
+			var e = new JObject
+			{
+				{"microService", microService }
+			};
+
+			var items = Connection.Post<List<Folder>>(u, e);
+
+			foreach (var i in items)
+				Set(i.Token, i, TimeSpan.Zero);
 		}
 	}
 }
