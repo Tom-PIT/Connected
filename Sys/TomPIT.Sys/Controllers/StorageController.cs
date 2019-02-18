@@ -117,5 +117,15 @@ namespace TomPIT.Sys.Controllers
 
 			return DataModel.BlobsContents.Query(blobs);
 		}
+
+		[HttpPost]
+		public void Clean()
+		{
+			var body = FromBody();
+
+			var microService = body.Required<Guid>("microService");
+
+			DataModel.Blobs.Clean(microService);
+		}
 	}
 }

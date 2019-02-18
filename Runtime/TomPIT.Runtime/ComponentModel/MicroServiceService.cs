@@ -140,7 +140,7 @@ namespace TomPIT.ComponentModel
 			Container.Clear(key);
 		}
 
-		public void NotifyMicroServiceInstalled(object sender, MicroServiceEventArgs e)
+		public void NotifyMicroServiceInstalled(object sender, MicroServiceInstallEventArgs e)
 		{
 			Refresh(e.MicroService);
 

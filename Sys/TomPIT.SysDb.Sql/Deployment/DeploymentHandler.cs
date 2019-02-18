@@ -44,6 +44,16 @@ namespace TomPIT.SysDb.Sql.Deployment
 			w.Execute();
 		}
 
+		public void InsertInstallerConfiguration(Guid package, Guid configuration)
+		{
+			var w = new Writer("tompit.installer_configuration_ins");
+
+			w.CreateParameter("@package", package);
+			w.CreateParameter("@configuration", configuration);
+
+			w.Execute();
+		}
+
 		public List<IInstallState> QueryInstallers()
 		{
 			return new Reader<InstallState>("tompit.installer_que").Execute().ToList<IInstallState>();
@@ -56,6 +66,15 @@ namespace TomPIT.SysDb.Sql.Deployment
 			r.CreateParameter("@package", package);
 
 			return r.ExecuteSingleRow();
+		}
+
+		public Guid SelectInstallerConfiguration(Guid package)
+		{
+			var r = new ScalarReader<Guid>("tompit.installer_configuration_sel");
+
+			r.CreateParameter("@package", package);
+
+			return r.ExecuteScalar(Guid.Empty);
 		}
 
 		public void Update(IInstallState state, InstallStateStatus status)

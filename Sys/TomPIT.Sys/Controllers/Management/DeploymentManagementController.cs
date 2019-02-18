@@ -154,5 +154,24 @@ namespace TomPIT.Sys.Controllers.Management
 
 			return DataModel.Deployment.DownloadConfiguration(package);
 		}
+
+		[HttpPost]
+		public Guid SelectInstallerConfiguration()
+		{
+			var body = FromBody();
+			var package = body.Required<Guid>("package");
+
+			return DataModel.Deployment.SelectInstallerConfiguration(package);
+		}
+
+		[HttpPost]
+		public void InsertInstallerConfiguration()
+		{
+			var body = FromBody();
+			var package = body.Required<Guid>("package");
+			var configuration = body.Required<Guid>("configuration");
+
+			DataModel.Deployment.InsertInstallerConfiguration(package, configuration);
+		}
 	}
 }

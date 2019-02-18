@@ -132,6 +132,14 @@ namespace TomPIT.Sys.Data
 				CachingNotifications.BlobAdded(microService, token, type, primaryKey);
 		}
 
+		public void Clean(Guid microService)
+		{
+			var blobs = Shell.GetService<IDatabaseService>().Proxy.Storage.QueryByLevel(microService, 500);
+
+			foreach (var i in blobs)
+				Delete(i.Token);
+		}
+
 		public Guid Upload(Guid resourceGroup, int type, string primaryKey, Guid microService, string topic, string fileName, string contentType, Guid draft, byte[] content,
 			StoragePolicy policy, Guid token)
 		{

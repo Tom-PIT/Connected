@@ -6,6 +6,6 @@
 		void NotifyRemoved(object sender, MicroServiceEventArgs e);
 		void NotifyMicroServiceStringChanged(object sender, MicroServiceStringEventArgs e);
 		void NotifyMicroServiceStringRemoved(object sender, MicroServiceStringEventArgs e);
-		void NotifyMicroServiceInstalled(object sender, MicroServiceEventArgs e);
+		void NotifyMicroServiceInstalled(object sender, MicroServiceInstallEventArgs e);
 	}
 }

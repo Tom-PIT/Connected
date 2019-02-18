@@ -142,5 +142,15 @@ namespace TomPIT.SysDb.Sql.Storage
 
 			return r.Execute().ToList<IBlob>();
 		}
+
+		public List<IBlob> QueryByLevel(Guid microService, int level)
+		{
+			var r = new Reader<Blob>("tompit.blob_level_que");
+
+			r.CreateParameter("@service", microService);
+			r.CreateParameter("@level", level);
+
+			return r.Execute().ToList<IBlob>();
+		}
 	}
 }

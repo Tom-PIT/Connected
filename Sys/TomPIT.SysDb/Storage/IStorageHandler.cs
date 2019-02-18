@@ -13,6 +13,7 @@ namespace TomPIT.SysDb.Storage
 		void Delete(IBlob blob);
 		IBlob Select(Guid token);
 		List<IBlob> Query(List<Guid> blobs);
+		List<IBlob> QueryByLevel(Guid microService, int level);
 		List<IBlob> Query(IResourceGroup resourceGroup, int type, string primaryKey);
 		List<IBlob> Query(IResourceGroup resourceGroup, int type, string primaryKey, IMicroService service, string topic);
 		List<IBlob> Query(IMicroService microService);

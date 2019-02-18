@@ -11,5 +11,8 @@ namespace TomPIT.SysDb.Deployment
 		void Insert(List<IInstallState> installers);
 		void Update(IInstallState state, InstallStateStatus status);
 		void Delete(IInstallState state);
+
+		Guid SelectInstallerConfiguration(Guid package);
+		void InsertInstallerConfiguration(Guid package, Guid configuration);
 	}
 }

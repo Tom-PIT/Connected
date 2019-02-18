@@ -44,8 +44,19 @@ namespace TomPIT.Services
 			var package = connection.GetService<IDeploymentService>().DownloadPackage(installer.Package);
 
 			connection.GetService<IDeploymentService>().UpdateInstaller(package.MetaData.Id, InstallStateStatus.Installing);
-			connection.GetService<IDeploymentService>().Deploy(package);
-			connection.GetService<IDeploymentService>().DeleteInstaller(package.MetaData.Id);
+
+			try
+			{
+				if (!connection.GetService<IDeploymentService>().Deploy(package))
+					connection.GetService<IDeploymentService>().UpdateInstaller(package.MetaData.Id, InstallStateStatus.Error);
+				else
+					connection.GetService<IDeploymentService>().DeleteInstaller(package.MetaData.Id);
+			}
+			catch(Exception ex)
+			{
+				connection.GetService<IDeploymentService>().UpdateInstaller(package.MetaData.Id, InstallStateStatus.Error);
+				connection.LogError(null, "InstallerService", ex.Source, ex.Message);
+			}
 		}
 	}
 }

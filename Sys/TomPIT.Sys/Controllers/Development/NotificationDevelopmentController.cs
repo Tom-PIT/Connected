@@ -67,8 +67,9 @@ namespace TomPIT.Sys.Controllers.Development
 			var body = FromBody();
 
 			var microService = body.Required<Guid>("microService");
+			var success = body.Required<bool>("success");
 
-			CachingNotifications.MicroServiceInstalled(microService);
+			CachingNotifications.MicroServiceInstalled(microService, success);
 		}
 	}
 }

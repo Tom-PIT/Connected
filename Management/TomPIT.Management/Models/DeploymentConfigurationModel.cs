@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TomPIT.Deployment;
 using TomPIT.Environment;
 using TomPIT.Management.Deployment;
@@ -24,7 +25,7 @@ namespace TomPIT.Management.Models
 			get
 			{
 				if (_configuration == null)
-					_configuration = Designer.Environment.Context.Connection().GetService<IDeploymentService>().SelectPackageConfiguration(Package);
+					_configuration = Designer.Environment.Context.Connection().GetService<IDeploymentService>().SelectInstallerConfiguration(Package);
 
 				return _configuration;
 			}

@@ -18,6 +18,5 @@ namespace TomPIT.ComponentModel
 		Guid ResourceGroup { get; }
 		Guid Template { get; }
 		Guid Package { get; }
-		Guid Configuration { get; }
 	}
 }

@@ -38,6 +38,7 @@
 	var versionBuild = v.Build;
 	var versionRevision = v.Revision;
 	var licenses = p == null ? string.Empty : p.MetaData.Licenses;
+	var rt = p.Configuration.RuntimeConfigurationSupported;
 }
 <div class="doc-canvas">
 	<div class="paper">
@@ -131,7 +132,7 @@
 						<br />
 						<h4>Project</h4>
 						<div class="form-group">
-							<label for="editProjectUrl">Project Url</label>
+							<label for="editProjectUrl">Project url</label>
 							<div id="editProjectUrl"></div>
 						</div>
 						<div class="form-group">
@@ -139,15 +140,23 @@
 							<div id="editTags"></div>
 						</div>
 						<div class="form-group">
-							<label for="editImageUrl">Image Url</label>
+							<label for="editImageUrl">Image url</label>
 							<div id="editImageUrl"></div>
 						</div>
 						<div class="form-group">
 							<label for="editThirdPartyLicenses">Third party licenses</label>
 							<div id="editThirdPartyLicenses"></div>
 						</div>
-					</div>
+						<br />
+						<h4>Configuration</h4>
+						<div class="form-group">
+							<label for="editRuntimeConfiguration">Include runtime configuration</label>
+							<div>
+								<div id="editRuntimeConfiguration"></div>
+							</div>
+						</div>
 
+					</div>
 				</div>
 			</div>
 		</div>
@@ -335,6 +344,10 @@
 		maxlength:4096
 	});
 
+		$('#editRuntimeConfiguration').dxCheckBox({
+		value:@Html.TP().JavaScript.Value(rt)
+	});
+
 	$('#buttonCreate').click(function () {
 		if (!DevExpress.validationEngine.validateGroup('package').isValid)
 			return;
@@ -358,6 +371,7 @@
 				'licenseUrl': $('#editLicenseUrl').dxTextBox('instance').option('value'),
 				'imageUrl': $('#editImageUrl').dxTextBox('instance').option('value'),
 				'licenses': $('#editThirdPartyLicenses').dxTextArea('instance').option('value'),
+				'runtimeConfigurationSupported': $('#editRuntimeConfiguration').dxCheckBox('instance').option('value')
 			}
 		});
 	});

@@ -118,7 +118,7 @@ namespace TomPIT.Management.Deployment
 		}
 
 		public void CreatePackage(Guid microService, string name, string title, string version, PackageScope scope, bool trial, int trialPeriod,
-			string description, double price, string tags, string projectUrl, string imageUrl, string licenseUrl, string licenses)
+			string description, double price, string tags, string projectUrl, string imageUrl, string licenseUrl, string licenses, bool runtimeConfigurationSupported)
 		{
 			var u = Connection.CreateUrl("DeploymentManagement", "CreatePackage");
 			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
@@ -144,6 +144,8 @@ namespace TomPIT.Management.Deployment
 			m.Created = DateTime.UtcNow;
 			m.ShellVersion = Shell.Version.ToString();
 
+			((PackageConfiguration)package.Configuration).RuntimeConfigurationSupported = runtimeConfigurationSupported;
+
 			package.Create(microService, Connection);
 
 			var blob = new Blob
@@ -158,7 +160,7 @@ namespace TomPIT.Management.Deployment
 			var id = Connection.GetService<IStorageService>().Upload(blob, Connection.GetService<ISerializationService>().Serialize(package), StoragePolicy.Singleton);
 
 			if (ms.Package != id)
-				Connection.GetService<IMicroServiceManagementService>().Update(microService, ms.Name, ms.Status, ms.Template, ms.ResourceGroup, id, ms.Configuration);
+				Connection.GetService<IMicroServiceManagementService>().Update(microService, ms.Name, ms.Status, ms.Template, ms.ResourceGroup, id);
 		}
 
 		public IPackage SelectPackage(Guid microService)
@@ -272,9 +274,9 @@ namespace TomPIT.Management.Deployment
 			Connection.Post(u, e);
 		}
 
-		public void Deploy(IPackage package)
+		public bool Deploy(IPackage package)
 		{
-			new PackageDeployment(Connection, package).Deploy();
+			return new PackageDeployment(Connection, package).Deploy();
 		}
 
 		public IPublishedPackage SelectPublishedPackage(Guid package)
@@ -288,7 +290,7 @@ namespace TomPIT.Management.Deployment
 			return Connection.Post<PublishedPackage>(u, e);
 		}
 
-		public IPackageConfiguration SelectPackageConfiguration(Guid package)
+		public IPackageConfiguration SelectInstallerConfiguration(Guid package)
 		{
 			var u = Connection.CreateUrl("DeploymentManagement", "DownloadConfiguration");
 			var e = new JObject
@@ -304,39 +306,38 @@ namespace TomPIT.Management.Deployment
 			var config = (PackageConfiguration)Connection.GetService<ISerializationService>().Deserialize(raw, typeof(PackageConfiguration));
 
 			var ms = Connection.GetService<IMicroServiceService>().Select(package);
-			PackageConfiguration existing = null;
-
-			if (ms != null && ms.Configuration != Guid.Empty)
-			{
-				var content = Connection.GetService<IStorageService>().Download(ms.Configuration);
-
-				if (content == null || content.Content.Length == 0)
-					return config;
-
-				existing = (PackageConfiguration)Connection.GetService<ISerializationService>().Deserialize(content.Content, typeof(PackageConfiguration));
-			}
+			PackageConfiguration existing = SelectExistingInstallerConfiguration(package);
 
 			SynchronizeConfiguration(config, existing);
 
 			return config;
 		}
 
-		public void UpdatePackageConfiguration(Guid microService, IPackageConfiguration configuration)
+		public void UpdateInstallerConfiguration(Guid package, IPackageConfiguration configuration)
 		{
-			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
+			var id = SelectInstallerConfigurationId(package);
 
-			if (ms == null)
-				throw new RuntimeException(SR.ErrMicroServiceNotFound);
-
-			var id = Connection.GetService<IStorageService>().Upload(new Blob
+			var blobId = Connection.GetService<IStorageService>().Upload(new Blob
 			{
 				ContentType = "application/json",
-				FileName = string.Format("{0}.json", ms.Name),
-				MicroService = microService,
-				PrimaryKey = ms.Token.ToString(),
-				Type = BlobTypes.PackageConfiguration,
-				ResourceGroup = ms.ResourceGroup
+				FileName = string.Format("{0}.json", package),
+				MicroService = Guid.Empty,
+				PrimaryKey = package.ToString(),
+				Type = BlobTypes.InstallerConfiguration,
+				ResourceGroup = Connection.GetService<IResourceGroupService>().Default.Token,
 			}, Connection.GetService<ISerializationService>().Serialize(configuration), StoragePolicy.Singleton);
+
+			if (id != blobId)
+			{
+				var u = Connection.CreateUrl("DeploymentManagement", "InsertInstallerConfiguration");
+				var e = new JObject
+				{
+					{"package", package },
+					{"configuration", blobId }
+				};
+
+				Connection.Post(u, e);
+			}
 		}
 
 		private void SynchronizeConfiguration(PackageConfiguration configuration, PackageConfiguration existing)
@@ -363,6 +364,32 @@ namespace TomPIT.Management.Deployment
 
 				db.ConnectionString = ed.ConnectionString;
 			}
+		}
+
+		private Guid SelectInstallerConfigurationId(Guid package)
+		{
+			var u = Connection.CreateUrl("DeploymentManagement", "SelectInstallerConfiguration");
+			var e = new JObject
+			{
+				{"package", package }
+			};
+
+			return Connection.Post<Guid>(u, e);
+		}
+
+		private PackageConfiguration SelectExistingInstallerConfiguration(Guid package)
+		{
+			var id = SelectInstallerConfigurationId(package);
+
+			if (id == Guid.Empty)
+				return null;
+
+			var content = Connection.GetService<IStorageService>().Download(id);
+
+			if (content == null || content.Content.Length == 0)
+				return null;
+
+			return (PackageConfiguration)Connection.GetService<ISerializationService>().Deserialize(content.Content, typeof(PackageConfiguration));
 		}
 	}
 }

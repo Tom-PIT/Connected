@@ -14,6 +14,8 @@ namespace TomPIT.Environment
 
 		}
 
+		public IResourceGroup Default => Select(new Guid("E14372D117CD48D6BC29D57C397AF87C"));
+
 		public List<IResourceGroup> Query()
 		{
 			var u = Connection.CreateUrl("ResourceGroup", "Query");

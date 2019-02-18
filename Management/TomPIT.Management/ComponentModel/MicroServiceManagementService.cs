@@ -35,6 +35,13 @@ namespace TomPIT.ComponentModel
 
 			Connection.Post(u, args);
 
+			u = Connection.CreateUrl("Storage", "Clean");
+			args = new JObject {
+				{"microService", microService }
+			};
+
+			Connection.Post(u, args);
+
 			if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
 				svc.NotifyRemoved(this, new MicroServiceEventArgs(microService));
 		}
@@ -74,7 +81,7 @@ namespace TomPIT.ComponentModel
 			return Connection.Get<string>(u);
 		}
 
-		public void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package, Guid configuration)
+		public void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package)
 		{
 			var u = Connection.CreateUrl("MicroServiceManagement", "Update");
 			var args = new JObject
@@ -84,8 +91,7 @@ namespace TomPIT.ComponentModel
 				{"status", status.ToString() },
 				{"template", template },
 				{"resourceGroup", resourceGroup },
-				{"package", package },
-				{"configuration", configuration }
+				{"package", package }
 			};
 
 			Connection.Post(u, args);

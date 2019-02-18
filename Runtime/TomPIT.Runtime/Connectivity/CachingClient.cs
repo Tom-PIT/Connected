@@ -104,7 +104,7 @@ namespace TomPIT.Connectivity
 					n.NotifyRemoved(Connection, e.Args);
 			});
 
-			Hub.On<MessageEventArgs<MicroServiceEventArgs>>("MicroServiceInstalled", (e) =>
+			Hub.On<MessageEventArgs<MicroServiceInstallEventArgs>>("MicroServiceInstalled", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 

@@ -232,5 +232,15 @@ namespace TomPIT.Sys.Data
 
 			return new HttpConnection().Post<byte[]>(u, e);
 		}
+
+		public Guid SelectInstallerConfiguration(Guid package)
+		{
+			return Shell.GetService<IDatabaseService>().Proxy.Deployment.SelectInstallerConfiguration(package);
+		}
+
+		public void InsertInstallerConfiguration(Guid package, Guid configuration)
+		{
+			Shell.GetService<IDatabaseService>().Proxy.Deployment.InsertInstallerConfiguration(package, configuration);
+		}
 	}
 }

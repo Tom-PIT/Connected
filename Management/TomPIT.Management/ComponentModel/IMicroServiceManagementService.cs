@@ -6,7 +6,7 @@ namespace TomPIT.ComponentModel
 	public interface IMicroServiceManagementService
 	{
 		void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status);
-		void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package, Guid configuration);
+		void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package);
 		void Delete(Guid microService);
 
 		List<IMicroService> Query(Guid resourceGroup);

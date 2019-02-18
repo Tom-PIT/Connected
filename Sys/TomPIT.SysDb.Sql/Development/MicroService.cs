@@ -13,7 +13,6 @@ namespace TomPIT.SysDb.Sql.Development
 		public Guid ResourceGroup { get; set; }
 		public Guid Template { get; set; }
 		public Guid Package { get; set; }
-		public Guid Configuration { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -26,7 +25,6 @@ namespace TomPIT.SysDb.Sql.Development
 			ResourceGroup = GetGuid("resource_token");
 			Template = GetGuid("template");
 			Package = GetGuid("package");
-			Configuration = GetGuid("configuration");
 		}
 	}
 }

@@ -43,12 +43,7 @@ namespace TomPIT.Data.Sql
 			{
 				prepareConnection();
 
-				object res = Connection.ExecuteCommand<object>(command);
-
-				if (res == null || res == DBNull.Value)
-					return defaultValue;
-				else
-					return (T)Convert.ChangeType(res, typeof(T));
+				return Connection.ExecuteCommand<T>(command);
 			}
 			finally
 			{

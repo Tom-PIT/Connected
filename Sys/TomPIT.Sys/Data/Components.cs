@@ -144,7 +144,7 @@ namespace TomPIT.Sys.Data
 
 				var id = Guid.NewGuid();
 
-				DataModel.Blobs.Upload(blob.ResourceGroup, 1001, blob.PrimaryKey, blob.MicroService, blob.Topic,
+				DataModel.Blobs.Upload(blob.ResourceGroup, 1001, blob.PrimaryKey, Guid.Empty, blob.Topic,
 					blob.FileName, blob.ContentType, Guid.Empty, content.Content, Storage.StoragePolicy.Singleton, id);
 
 				state.Add(new JObject

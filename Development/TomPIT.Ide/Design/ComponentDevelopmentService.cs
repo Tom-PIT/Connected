@@ -71,6 +71,7 @@ namespace TomPIT.Design
 
 		public void Restore(Guid microService, IPackageComponent component, IPackageBlob configuration, IPackageBlob runtimeConfiguration)
 		{
+			var runtimeConfigurationId = component.RuntimeConfiguration;
 			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
 
 			var blob = new Blob
@@ -86,6 +87,51 @@ namespace TomPIT.Design
 
 			Connection.GetService<IStorageService>().Upload(blob, Convert.FromBase64String(configuration.Content), StoragePolicy.Singleton, component.Token);
 
+			if (runtimeConfigurationId != Guid.Empty)
+			{
+				if (runtimeConfiguration != null)
+				{
+					blob = new Blob
+					{
+						ContentType = runtimeConfiguration.ContentType,
+						FileName = runtimeConfiguration.FileName,
+						ResourceGroup = ms.ResourceGroup,
+						MicroService = microService,
+						Type = runtimeConfiguration.Type,
+						Token = runtimeConfiguration.Token,
+						PrimaryKey = runtimeConfiguration.PrimaryKey
+					};
+
+					Connection.GetService<IStorageService>().Upload(blob, Convert.FromBase64String(runtimeConfiguration.Content), StoragePolicy.Singleton, runtimeConfigurationId);
+				}
+				else
+				{
+					var stateBlob = Connection.GetService<IStorageService>().Select(runtimeConfigurationId);
+
+					if (stateBlob != null)
+					{
+						var state = Connection.GetService<IStorageService>().Download(runtimeConfigurationId);
+						runtimeConfigurationId = Guid.NewGuid();
+
+						if (state != null)
+						{
+							blob = new Blob
+							{
+								ContentType = stateBlob.ContentType,
+								FileName = stateBlob.FileName,
+								ResourceGroup = ms.ResourceGroup,
+								MicroService = microService,
+								Type = BlobTypes.RuntimeConfiguration,
+								PrimaryKey = runtimeConfigurationId.ToString(),
+								Token = runtimeConfigurationId
+							};
+
+							Connection.GetService<IStorageService>().Restore(blob, state.Content);
+						}
+					}
+				}
+			}
+
 			var u = Connection.CreateUrl("ComponentDevelopment", "Insert");
 
 			var args = new JObject
@@ -97,6 +143,9 @@ namespace TomPIT.Design
 				{"category", component.Category },
 				{"component", component.Token }
 			};
+
+			if (runtimeConfigurationId != Guid.Empty)
+				args.Add("runtimeConfiguration", runtimeConfigurationId);
 
 			Connection.Post(u, args);
 		}
@@ -392,7 +441,11 @@ namespace TomPIT.Design
 
 		public void SaveRuntimeState(Guid microService)
 		{
-			var state = new JObject();
+			var state = new JObject
+			{
+				{"microService", microService }
+			};
+
 			var rt = new JArray();
 
 			state.Add("runtimeConfigurations", rt);

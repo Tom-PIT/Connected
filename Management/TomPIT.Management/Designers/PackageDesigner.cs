@@ -59,9 +59,10 @@ namespace TomPIT.Designers
 			var licenseUrl = data.Optional("licenseUrl", string.Empty);
 			var imageUrl = data.Optional("imageUrl", string.Empty);
 			var licenses = data.Optional("licenses", string.Empty);
+			var rt = data.Optional("runtimeConfigurationSupported", false);
 
 			Connection.GetService<IDeploymentService>().CreatePackage(MicroService.Token, name, title, version.ToString(), scope, trial, trialPeriod, description, price,
-				tags, projectUrl, imageUrl, licenseUrl, licenses);
+				tags, projectUrl, imageUrl, licenseUrl, licenses, rt);
 
 			var r = Result.EmptyResult(ViewModel);
 

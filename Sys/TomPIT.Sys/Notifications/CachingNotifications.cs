@@ -53,7 +53,7 @@ namespace TomPIT.Sys.Notifications
 		public static void SettingChanged(Guid resourceGroup, string name) { Notify(nameof(SettingChanged), new SettingEventArgs(resourceGroup, name)); }
 		public static void SettingRemoved(Guid resourceGroup, string name) { Notify(nameof(SettingRemoved), new SettingEventArgs(resourceGroup, name)); }
 		public static void MicroServiceChanged(Guid microService) { Notify(nameof(MicroServiceChanged), new MicroServiceEventArgs(microService)); }
-		public static void MicroServiceInstalled(Guid microService) { Notify(nameof(MicroServiceInstalled), new MicroServiceEventArgs(microService)); }
+		public static void MicroServiceInstalled(Guid microService, bool success) { Notify(nameof(MicroServiceInstalled), new MicroServiceInstallEventArgs(microService, success)); }
 		public static void MicroServiceRemoved(Guid microService) { Notify(nameof(MicroServiceRemoved), new MicroServiceEventArgs(microService)); }
 		public static void LanguageChanged(Guid language) { Notify(nameof(LanguageChanged), new LanguageEventArgs(language)); }
 		public static void LanguageRemoved(Guid language) { Notify(nameof(LanguageRemoved), new LanguageEventArgs(language)); }

@@ -206,6 +206,9 @@ namespace TomPIT.Management.Deployment
 				var config = connection.GetService<IComponentService>().SelectConfiguration(i.Token);
 				Configurations.Add(config);
 
+				if (Configuration.RuntimeConfigurationSupported && i.RuntimeConfiguration != Guid.Empty)
+					CreateBlob(connection, i.RuntimeConfiguration);
+
 				CreateBlob(connection, i.Token);
 
 				var texts = config.Children<IText>();
