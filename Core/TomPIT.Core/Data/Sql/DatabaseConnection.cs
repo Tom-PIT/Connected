@@ -24,7 +24,7 @@
 				else
 				{
 					if (_connection == null)
-						_connection = new ReliableSqlConnection(ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.NoRetry);
+						_connection = new ReliableSqlConnection(ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
 
 					return _connection;
 				}

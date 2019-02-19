@@ -164,7 +164,7 @@ namespace TomPIT.DataProviders.Sql
 
 			r.Close();
 
-			var definition = Regex.Replace(sb.ToString(), @"\t|\n|\r", "");
+			var definition = Regex.Replace(sb.ToString(), @"\t|\n|\r", " ");
 
 			var header = definition.ToString().Substring(0, definition.IndexOf(" AS "));
 

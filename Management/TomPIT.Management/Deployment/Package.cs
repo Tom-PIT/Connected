@@ -163,7 +163,10 @@ namespace TomPIT.Management.Deployment
 			{
 				Configuration.Databases.Add(new PackageConfigurationDatabase
 				{
-					Connection = i.Connection
+					Connection = i.Connection,
+					DataProvider = i.DataProvider,
+					DataProviderId = i.DataProviderId,
+					Name = i.Name
 				});
 			}
 		}
@@ -337,12 +340,16 @@ namespace TomPIT.Management.Deployment
 
 				var database = new PackageDatabase
 				{
+					Name = i.ComponentName(connection),
 					Connection = i.Component,
 					DataProvider = dp.Name,
 					DataProviderId = dp.Id
 				};
 
 				Databases.Add(database);
+
+				if (!dp.SupportsDeploy)
+					continue;
 
 				var db = dp.CreateSchema(i.Value);
 
@@ -433,7 +440,7 @@ namespace TomPIT.Management.Deployment
 					{
 						c.Constraints.Add(new TableConstraint
 						{
-							Name = j.Name,
+							Name = k.Name,
 							Schema = k.Schema,
 							Type = k.Type
 						});

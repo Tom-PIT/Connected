@@ -228,3 +228,11 @@ li.metric-item.fail[data-detail="true"] {
   font-size: 0.8rem;
   color: #616161;
 }
+[data-kind="connection-string"],
+[data-kind="database-enabled"],
+[data-kind="runtime-configuration"] {
+  cursor: pointer;
+}
+.not-enabled {
+  color: #bdbdbd;
+}

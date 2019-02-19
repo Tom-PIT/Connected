@@ -2,9 +2,11 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.Sql;
 using TomPIT.DataProviders.Sql.Deployment;
+using TomPIT.Deployment;
 using TomPIT.Deployment.Database;
 
 namespace TomPIT.DataProviders.Sql
@@ -216,6 +218,42 @@ namespace TomPIT.DataProviders.Sql
 		public IDatabase CreateSchema(string connectionString)
 		{
 			return Package.Create(connectionString);
+		}
+
+		public void TestConnection(string connectionString)
+		{
+			using (var c = new SqlConnection(connectionString))
+			{
+				c.Open();
+				c.Close();
+			}
+		}
+
+		public void CreateDatabase(string connectionString)
+		{
+			var builder = new SqlConnectionStringBuilder(connectionString);
+
+			var ic = builder.InitialCatalog;
+
+			builder.InitialCatalog = string.Empty;
+
+			using (var c = new SqlConnection(builder.ConnectionString))
+			{
+				c.Open();
+
+				var com = new SqlCommand(string.Format("CREATE DATABASE {0}", ic), c);
+
+				com.ExecuteNonQuery();
+
+				c.Close();
+			}
+		}
+
+		public void Deploy(ISysConnection connection, IPackage package, IDatabase database, string connectionString)
+		{
+			var existing = CreateSchema(connectionString);
+
+			new SqlDeploy(connection, package, database, existing, connectionString).Deploy();
 		}
 	}
 }

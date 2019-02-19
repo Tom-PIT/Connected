@@ -852,4 +852,10 @@
   <data name="ErrInstallerNotFound" xml:space="preserve">
     <value>Installer not found</value>
   </data>
+  <data name="ErrDatabaseConfigurationNotFound" xml:space="preserve">
+    <value>Database configuration not found</value>
+  </data>
+  <data name="ErrInstallConnectionStringNotSet" xml:space="preserve">
+    <value>Connection string not set</value>
+  </data>
 </root>

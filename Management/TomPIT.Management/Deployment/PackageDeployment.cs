@@ -3,9 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Data;
 using TomPIT.Connectivity;
+using TomPIT.Data.DataProviders;
 using TomPIT.Deployment;
 using TomPIT.Design;
+using TomPIT.Security;
 using TomPIT.Storage;
 
 namespace TomPIT.Management.Deployment
@@ -43,7 +46,7 @@ namespace TomPIT.Management.Deployment
 			{
 				Drop();
 
-				DeployDatabase();
+				DeployDatabases();
 				DeployMicroService();
 			}
 			catch (Exception ex)
@@ -115,6 +118,26 @@ namespace TomPIT.Management.Deployment
 
 				Connection.GetService<IComponentDevelopmentService>().Restore(Package.MicroService.Token, i, configuration, runtimeConfiguration);
 			}
+
+			var connections = Connection.GetService<IComponentService>().QueryComponents(Package.MicroService.Token, "Connection");
+
+			foreach (var i in connections)
+			{
+				var db = Configuration.Databases.FirstOrDefault(f => f.Connection == i.Token);
+
+				if (db != null)
+				{
+					if (Connection.GetService<IComponentService>().SelectConfiguration(i.Token) is IConnection config)
+					{
+						var pi = config.GetType().GetProperty("Value");
+
+						if (pi != null && pi.CanWrite)
+							pi.SetValue(config, db.ConnectionString);
+
+						Connection.GetService<IComponentDevelopmentService>().Update(config);
+					}
+				}
+			}
 		}
 
 		private void DeployBlobs()
@@ -145,9 +168,32 @@ namespace TomPIT.Management.Deployment
 			Connection.GetService<IMicroServiceDevelopmentService>().RestoreStrings(Package.MicroService.Token, Package.Strings);
 		}
 
-		private void DeployDatabase()
+		private void DeployDatabases()
 		{
+			foreach (var i in Package.Databases)
+			{
+				var config = Configuration.Databases.FirstOrDefault(f => string.Compare(f.Name, i.Name, true) == 0);
 
+				if (config.Enabled)
+				{
+					var dp = Connection.GetService<IDataProviderService>().Select(config.DataProviderId);
+
+					if (dp == null)
+						throw new RuntimeException(string.Format("{0} ({1})", SR.ErrDataProviderNotFound, config.DataProvider));
+
+					if (dp.SupportsDeploy)
+					{
+						var cs = config.ConnectionString;
+
+						if (string.IsNullOrWhiteSpace(cs))
+							throw new RuntimeException(string.Format("{0} ({1})", SR.ErrInstallConnectionStringNotSet, config.Name));
+
+						cs = Connection.GetService<ICryptographyService>().Decrypt(cs);
+
+						dp.Deploy(Connection, Package, i, cs);
+					}
+				}
+			}
 		}
 
 		private void Drop()

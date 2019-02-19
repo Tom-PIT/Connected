@@ -363,6 +363,10 @@ namespace TomPIT.Management.Deployment
 				var db = i as PackageConfigurationDatabase;
 
 				db.ConnectionString = ed.ConnectionString;
+				db.DataProvider = ed.DataProvider;
+				db.DataProviderId = ed.DataProviderId;
+				db.Enabled = ed.Enabled;
+				db.Name = ed.Name;
 			}
 		}
 

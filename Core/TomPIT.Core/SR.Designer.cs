@@ -754,6 +754,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Database configuration not found.
+        /// </summary>
+        public static string ErrDatabaseConfigurationNotFound {
+            get {
+                return ResourceManager.GetString("ErrDatabaseConfigurationNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Data corrupted.
         /// </summary>
         public static string ErrDataCorrupted {
@@ -921,6 +930,15 @@ namespace TomPIT {
         public static string ErrHttpRequestNotAvailable {
             get {
                 return ResourceManager.GetString("ErrHttpRequestNotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connection string not set.
+        /// </summary>
+        public static string ErrInstallConnectionStringNotSet {
+            get {
+                return ResourceManager.GetString("ErrInstallConnectionStringNotSet", resourceCulture);
             }
         }
         

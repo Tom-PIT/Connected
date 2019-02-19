@@ -41,7 +41,14 @@
 		<div class="col-lg-4">
 			<label>Runtime configuration</label>
 			<div data-kind="runtime-configuration" data-value="@Html.Raw(!Model.Configuration.RuntimeConfiguration)">
-				<i class="@css"></i>
+				@if (!Model.Configuration.RuntimeConfigurationSupported)
+				{
+					<span>(not supported)</span>
+				}
+				else
+				{
+					<i class="@css"></i>
+				}
 			</div>
 		</div>
 		<div class="col-lg-4">
@@ -53,5 +60,10 @@
 		<div class="title">
 			Databases
 		</div>
+		<br />
+		@foreach (var i in Model.Configuration.Databases)
+		{
+			@await Html.PartialAsync("~/Views/Ide/Designers/DeploymentDatabaseConfiguration.cshtml", new TomPIT.Management.Models.DeploymentConfigurationDatabaseModel(Model.Package, Model.Designer, i))
+		}
 	}
 </div>

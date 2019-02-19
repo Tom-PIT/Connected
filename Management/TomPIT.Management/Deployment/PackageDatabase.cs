@@ -20,5 +20,7 @@ namespace TomPIT.Management.Deployment
 		public Guid DataProviderId { get; set; }
 		[JsonProperty(PropertyName = "dataProvider")]
 		public string DataProvider { get; set; }
+		[JsonProperty(PropertyName = "name")]
+		public string Name { get; set; }
 	}
 }

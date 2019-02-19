@@ -8,5 +8,6 @@ namespace TomPIT.Deployment
 		Guid Connection { get; }
 		Guid DataProviderId { get; }
 		string DataProvider { get; }
+		string Name { get; }
 	}
 }

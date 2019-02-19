@@ -125,6 +125,11 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 					var cols = r.GetValue("index_keys", string.Empty).Split(',');
 
+					var description = r.GetValue("index_description", string.Empty);
+
+					if (description.Contains("unique") || description.Contains("primary key"))
+						continue;
+
 					foreach (var j in cols)
 					{
 						if (string.IsNullOrWhiteSpace(j))
@@ -176,8 +181,8 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 					col.Constraints.Add(new TableConstraint
 					{
-						Name = usage.ColumnName,
-						Schema = usage.ConstraintSchema,
+						Name = i.ConstraintName,
+						Schema = i.ConstraintSchema,
 						Type = i.ConstraintType
 					});
 				}
@@ -285,10 +290,11 @@ namespace TomPIT.DataProviders.Sql.Deployment
 			{
 				items.Add(new InformationSchemaTableConstraints
 				{
-					ConstraintName = r.GetValue("CONSTRAINT_TYPE", string.Empty),
+					ConstraintName = r.GetValue("CONSTRAINT_NAME", string.Empty),
 					ConstraintSchema = r.GetValue("CONSTRAINT_SCHEMA", string.Empty),
 					TableSchema = r.GetValue("TABLE_SCHEMA", string.Empty),
-					TableName = r.GetValue("TABLE_NAME", string.Empty)
+					TableName = r.GetValue("TABLE_NAME", string.Empty),
+					ConstraintType = r.GetValue("CONSTRAINT_TYPE", string.Empty)
 				});
 			}
 
