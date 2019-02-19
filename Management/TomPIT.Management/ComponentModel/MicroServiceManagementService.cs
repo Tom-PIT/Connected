@@ -1,9 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Connectivity;
+using TomPIT.Deployment;
 using TomPIT.Design;
+using TomPIT.Security;
 
 namespace TomPIT.ComponentModel
 {
@@ -54,7 +57,7 @@ namespace TomPIT.ComponentModel
 			Connection.GetService<IComponentDevelopmentService>().DeleteFolder(model.Folder.MicroService, model.Folder.Token);
 		}
 
-		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status)
+		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status, IPackage package)
 		{
 			var u = Connection.CreateUrl("MicroServiceManagement", "Insert");
 			var args = new JObject
@@ -64,13 +67,31 @@ namespace TomPIT.ComponentModel
 				{"status", status.ToString() },
 				{"resourceGroup", resourceGroup },
 				{"template", template },
-				{"meta", CreateMicroServiceMeta(token) }
+				{"meta", CreateMeta(token, package) }
 			};
 
 			Connection.Post(u, args);
 
 			if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
 				svc.NotifyChanged(this, new MicroServiceEventArgs(token));
+		}
+
+		private string CreateMeta(Guid microService, IPackage package)
+		{
+			var meta = new JObject
+			{
+				{"microService", microService },
+				{"created", DateTime.Today }
+			};
+
+			if (package != null)
+			{
+				meta.Add("trial", package.MetaData.Trial);
+				meta.Add("trialPeriod", package.MetaData.TrialPeriod);
+				meta.Add("author", package.MetaData.Account);
+			};
+
+			return Connection.GetService<ICryptographyService>().Encrypt(JsonConvert.SerializeObject(meta));
 		}
 
 		private string CreateMicroServiceMeta(Guid microService)

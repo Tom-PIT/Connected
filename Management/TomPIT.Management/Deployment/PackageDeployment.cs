@@ -74,8 +74,8 @@ namespace TomPIT.Management.Deployment
 		{
 			var m = Package.MicroService;
 
-			Connection.GetService<IMicroServiceManagementService>().Insert(m.Token, m.Name, Configuration.ResourceGroup, m.Template, MicroServiceStatus.Production);
-			//TODO: save metadata
+			Connection.GetService<IMicroServiceManagementService>().Insert(m.Token, m.Name, Configuration.ResourceGroup, m.Template, MicroServiceStatus.Production, Package);
+
 			DeployFolders();
 			DeployComponents();
 			DeployBlobs();

@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TomPIT.ComponentModel;
-using TomPIT.Security;
 using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Controllers.Management
@@ -57,17 +54,17 @@ namespace TomPIT.Sys.Controllers.Management
 			return DataModel.MicroServices.Query(resourceGroup);
 		}
 
-		[HttpGet]
-		public string CreateMicroServiceMeta(Guid microService)
-		{
-			var parameters = new JObject
-			{
-				{"password",string.Empty },
-				{"microService", microService }
-			};
+		//[HttpGet]
+		//public string CreateMicroServiceMeta(Guid microService)
+		//{
+		//	var parameters = new JObject
+		//	{
+		//		{"password",string.Empty },
+		//		{"microService", microService }
+		//	};
 
-			return Shell.GetService<ICryptographyService>().Encrypt(this, JsonConvert.SerializeObject(parameters));
-		}
+		//	return Shell.GetService<ICryptographyService>().Encrypt(this, JsonConvert.SerializeObject(parameters));
+		//}
 
 		[HttpGet]
 		public List<IMicroServiceString> QueryStrings(Guid microService)
