@@ -85,6 +85,15 @@ namespace TomPIT.Sys.Controllers.Management
 		}
 
 		[HttpPost]
+		public List<IPackageDependency> QueryDependencies()
+		{
+			var body = FromBody();
+			var package = body.Required<Guid>("package");
+
+			return DataModel.Deployment.QueryDependencies(package);
+		}
+
+		[HttpPost]
 		public IPublishedPackage SelectPublishedPackage()
 		{
 			var body = FromBody();
@@ -118,8 +127,9 @@ namespace TomPIT.Sys.Controllers.Management
 			var body = FromBody();
 			var package = body.Required<Guid>("package");
 			var status = body.Required<InstallStateStatus>("status");
+			var error = body.Optional("error", string.Empty);
 
-			DataModel.Deployment.UpdateInstaller(package, status);
+			DataModel.Deployment.UpdateInstaller(package, status, error);
 		}
 
 		[HttpPost]
@@ -172,6 +182,22 @@ namespace TomPIT.Sys.Controllers.Management
 			var configuration = body.Required<Guid>("configuration");
 
 			DataModel.Deployment.InsertInstallerConfiguration(package, configuration);
+		}
+
+		[HttpPost]
+		public List<IInstallAudit> QueryInstallAudit()
+		{
+			var body = FromBody();
+			var package = body.Optional("package", Guid.Empty);
+			var from = body.Optional("from", DateTime.MinValue);
+
+			if (package == Guid.Empty && from == DateTime.MinValue)
+				return null;
+
+			if (from != DateTime.MinValue)
+				return DataModel.Deployment.QueryInstallAudit(from);
+			else
+				return DataModel.Deployment.QueryInstallAudit(package);
 		}
 	}
 }

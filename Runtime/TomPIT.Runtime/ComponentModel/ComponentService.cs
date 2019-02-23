@@ -172,6 +172,19 @@ namespace TomPIT.ComponentModel
 			return r;
 		}
 
+		public List<IConfiguration> QueryConfigurations(Guid microService, string categories)
+		{
+			var r = new List<IConfiguration>();
+
+			var sb = new StringBuilder();
+
+			var u = Connection.CreateUrl("Component", "QueryByMicroService")
+				.AddParameter("microService", microService)
+				.AddParameter("categories", categories);
+
+			return QueryConfigurations(Connection.Get<List<Component>>(u).ToList<IComponent>());
+		}
+
 		public List<IConfiguration> QueryConfigurations(List<string> resourceGroups, string categories)
 		{
 			var r = new List<IConfiguration>();

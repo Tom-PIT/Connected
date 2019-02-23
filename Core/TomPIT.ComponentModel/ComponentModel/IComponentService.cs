@@ -22,6 +22,7 @@ namespace TomPIT.ComponentModel
 
 		List<IConfiguration> QueryConfigurations(List<IComponent> components);
 		List<IConfiguration> QueryConfigurations(List<string> resourceGroups, string categories);
+		List<IConfiguration> QueryConfigurations(Guid microService, string categories);
 		IComponent SelectComponent(Guid microService, string category, string name);
 		IComponent SelectComponent(string category, string name);
 		IComponent SelectComponent(Guid token);

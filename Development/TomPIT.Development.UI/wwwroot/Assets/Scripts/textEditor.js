@@ -78,22 +78,6 @@
 					readOnly: options.readOnly
 				});
 
-				target.options.instance.addAction({
-					id: '5CC30D480C3E4742B30A4FCEC5C4C7D8',
-					label: 'Full Screen',
-					keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F11],
-					contextMenuGroupId: 'navigation',
-					contextMenuOrder: 2.5,
-					run: function (ed) {
-						var container = $(ed.domElement).closest('[data-fullscreen="true"]');
-
-						if (container.length > 0) {
-							container.toggleClass("full-screen");
-							container.toggleClass("code-editor-sa");
-						}
-					}
-				});
-
 				if ($.isFunction(options.onCreated))
 					options.onCreated(target.options.instance);
 

@@ -60,9 +60,10 @@ namespace TomPIT.Designers
 			var imageUrl = data.Optional("imageUrl", string.Empty);
 			var licenses = data.Optional("licenses", string.Empty);
 			var rt = data.Optional("runtimeConfigurationSupported", false);
+			var av = data.Optional("autoVersion", true);
 
 			Connection.GetService<IDeploymentService>().CreatePackage(MicroService.Token, name, title, version.ToString(), scope, trial, trialPeriod, description, price,
-				tags, projectUrl, imageUrl, licenseUrl, licenses, rt);
+				tags, projectUrl, imageUrl, licenseUrl, licenses, rt, av);
 
 			var r = Result.EmptyResult(ViewModel);
 
@@ -97,5 +98,32 @@ namespace TomPIT.Designers
 		}
 
 		public JArray Tags => new JArray();
+
+		public Version Version
+		{
+			get
+			{
+				if (Package == null)
+					return IncrementVersion(new Version(0, 0, 0, 0));
+				else
+				{
+					if (Package.Configuration.AutoVersioning)
+						return IncrementVersion(Version.Parse(Package.MetaData.Version));
+
+					return Version.Parse(Package.MetaData.Version);
+				}
+			}
+		}
+
+		private Version IncrementVersion(Version existing)
+		{
+			var build = Convert.ToInt32(string.Format("{0}{1}", DateTime.Today.Month.ToString(), DateTime.Today.Day.ToString("00")));
+			var revision = 0;
+
+			if (existing.Build == build)
+				revision = existing.Revision + 1;
+
+			return new Version(existing.Major, existing.Minor, build, revision);
+		}
 	}
 }

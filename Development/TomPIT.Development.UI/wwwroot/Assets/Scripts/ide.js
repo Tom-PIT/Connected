@@ -64,12 +64,36 @@ $.widget('tompit.tpIde', {
 	 * explorer
 	 */
 	initializeExplorer: function (e) {
+		var instance = this;
+
 		this._initializeExplorerNodes(e);
-		//$(window).keydown(function (e) {
-		//	if (e.keyCode === 27) {
-		//		$('#devExplorerNodes').sortable('cancel');
-		//	}
-		//});
+
+		$('#exBtnCollapse').unbind('click');
+
+		$('#exBtnCollapse').click(function () {
+			var nodes = $('[data-kind="explorer-node"]');
+
+			$.each(nodes, function (i, v) {
+				var icon = $(v).find('span [data-fa-i2svg]');
+
+				icon.removeClass('fa-chevron-down')
+					.addClass('fa-chevron-right');
+
+				var group = $(v).children('[data-kind="explorer-group"][data-group]');
+
+				group.addClass('collapse');
+			});
+
+			var root = $('#devExplorerNodes');
+			var firstLevel = root.children('[data-kind="explorer-node"]');
+
+			if (firstLevel.length === 0)
+				instance.selectNode(null);
+			else
+				instance.selectNode({
+					path:firstLevel.attr('data-id')
+				});
+		});
 	},
 
 	_initializeExplorerNodes: function (e) {

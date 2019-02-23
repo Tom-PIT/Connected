@@ -15,7 +15,7 @@
 }
 
 <div data-db="@Model.Database.Name" @Html.TP().Attributes.Class(cls)>
-	<div class="form-group" data-kind="database-enabled" data-value="@Html.Raw(!Model.Database.Enabled)">
+	<div class="form-group" data-kind="database-enabled" data-value="@Html.Raw(!Model.Database.Enabled)" data-behavior="toggle">
 		<i class="@css"></i><label class="pl-2">@Model.Database.Name</label>
 		<div>
 			<i>@Model.Database.DataProvider</i>
@@ -31,7 +31,7 @@
 	</div>
 	<div class="form-group">
 		<label>Connection string</label>
-		<div @Html.TP().Attributes.Attribute("data-value", Model.ConnectionString, !string.IsNullOrWhiteSpace(Model.ConnectionString)) data-kind="connection-string" data-activated="false">
+		<div @Html.TP().Attributes.Attribute("data-value", Model.ConnectionString, !string.IsNullOrWhiteSpace(Model.ConnectionString)) data-kind="connection-string" data-activated="false" data-behavior="toggle">
 			<div class="collapse show" data-kind="text">@cs</div>
 			<div data-kind="editor">
 			</div>

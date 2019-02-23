@@ -38,22 +38,16 @@
 				</div>
 			}
 		</div>
-		<div class="col-lg-4">
-			<label>Runtime configuration</label>
-			<div data-kind="runtime-configuration" data-value="@Html.Raw(!Model.Configuration.RuntimeConfiguration)">
-				@if (!Model.Configuration.RuntimeConfigurationSupported)
-				{
-					<span>(not supported)</span>
-				}
-				else
-				{
+		@if (Model.Configuration.RuntimeConfigurationSupported)
+		{
+			<div class="col-lg-4">
+				<label>Runtime configuration</label>
+				<div data-kind="runtime-configuration" data-value="@Html.Raw(!Model.Configuration.RuntimeConfiguration)" data-behavior="toggle">
 					<i class="@css"></i>
-				}
+				</div>
 			</div>
-		</div>
-		<div class="col-lg-4">
+		}
 
-		</div>
 	</div>
 	@if (Model.Configuration.Databases.Count > 0)
 	{

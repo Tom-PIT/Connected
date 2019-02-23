@@ -118,7 +118,8 @@ namespace TomPIT.Management.Deployment
 		}
 
 		public void CreatePackage(Guid microService, string name, string title, string version, PackageScope scope, bool trial, int trialPeriod,
-			string description, double price, string tags, string projectUrl, string imageUrl, string licenseUrl, string licenses, bool runtimeConfigurationSupported)
+			string description, double price, string tags, string projectUrl, string imageUrl, string licenseUrl, string licenses, bool runtimeConfigurationSupported,
+			bool autoVersion)
 		{
 			var u = Connection.CreateUrl("DeploymentManagement", "CreatePackage");
 			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
@@ -145,6 +146,7 @@ namespace TomPIT.Management.Deployment
 			m.ShellVersion = Shell.Version.ToString();
 
 			((PackageConfiguration)package.Configuration).RuntimeConfigurationSupported = runtimeConfigurationSupported;
+			((PackageConfiguration)package.Configuration).AutoVersioning = autoVersion;
 
 			package.Create(microService, Connection);
 
@@ -251,13 +253,14 @@ namespace TomPIT.Management.Deployment
 			return Connection.Get<List<InstallState>>(u).ToList<IInstallState>();
 		}
 
-		public void UpdateInstaller(Guid package, InstallStateStatus status)
+		public void UpdateInstaller(Guid package, InstallStateStatus status, string error)
 		{
 			var u = Connection.CreateUrl("DeploymentManagement", "UpdateInstaller");
 			var e = new JObject
 			{
 				{"package", package },
-				{"status", status.ToString() }
+				{"status", status.ToString() },
+				{"error", error }
 			};
 
 			Connection.Post(u, e);
@@ -274,9 +277,9 @@ namespace TomPIT.Management.Deployment
 			Connection.Post(u, e);
 		}
 
-		public bool Deploy(IPackage package)
+		public void Deploy(IPackage package)
 		{
-			return new PackageDeployment(Connection, package).Deploy();
+			new PackageDeployment(Connection, package).Deploy();
 		}
 
 		public IPublishedPackage SelectPublishedPackage(Guid package)
@@ -368,6 +371,18 @@ namespace TomPIT.Management.Deployment
 				db.Enabled = ed.Enabled;
 				db.Name = ed.Name;
 			}
+
+			if (existing != null)
+			{
+				foreach (var i in existing.Dependencies)
+				{
+					configuration.Dependencies.Add(new PackageConfigurationDependency
+					{
+						Dependency = i.Dependency,
+						Enabled = i.Enabled
+					});
+				}
+			}
 		}
 
 		private Guid SelectInstallerConfigurationId(Guid package)
@@ -394,6 +409,39 @@ namespace TomPIT.Management.Deployment
 				return null;
 
 			return (PackageConfiguration)Connection.GetService<ISerializationService>().Deserialize(content.Content, typeof(PackageConfiguration));
+		}
+
+		public List<IPackageDependency> QueryDependencies(Guid package)
+		{
+			var u = Connection.CreateUrl("DeploymentManagement", "QueryDependencies");
+			var e = new JObject
+			{
+				{"package", package }
+			};
+
+			return Connection.Post<List<PackageDependency>>(u, e).ToList<IPackageDependency>();
+		}
+
+		public List<IInstallAudit> QueryInstallAudit(DateTime from)
+		{
+			var u = Connection.CreateUrl("DeploymentManagement", "QueryInstallAudit");
+			var e = new JObject
+			{
+				{"from", from }
+			};
+
+			return Connection.Post<List<InstallAudit>>(u, e).ToList<IInstallAudit>();
+		}
+
+		public List<IInstallAudit> QueryInstallAudit(Guid package)
+		{
+			var u = Connection.CreateUrl("DeploymentManagement", "QueryInstallAudit");
+			var e = new JObject
+			{
+				{"package", package }
+			};
+
+			return Connection.Post<List<InstallAudit>>(u, e).ToList<IInstallAudit>();
 		}
 	}
 }

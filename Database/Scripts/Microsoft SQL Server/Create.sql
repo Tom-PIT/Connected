@@ -213,8 +213,7 @@ CREATE TABLE [tompit].[service]
 [template] [uniqueidentifier] NOT NULL,
 [meta] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [license] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[package] [uniqueidentifier] NULL,
-[configuration] [uniqueidentifier] NULL
+[package] [uniqueidentifier] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -410,10 +409,11 @@ GO
 
 
 
+
 CREATE VIEW [tompit].[view_service]
 AS
 SELECT        s.id, s.name, s.url, s.token, s.status, s.resource_group, s.template, s.meta,
-				s.license, s.package, s.configuration, r.token AS resource_token
+				s.license, s.package, r.token AS resource_token
 FROM            tompit.service AS s INNER JOIN
                          tompit.resource_group AS r ON s.resource_group = r.id
 GO
@@ -1993,8 +1993,7 @@ CREATE PROCEDURE [tompit].[service_upd]
 	@status int,
 	@template uniqueidentifier,
 	@resource_group int,
-	@package uniqueidentifier = NULL,
-	@configuration uniqueidentifier = NULL
+	@package uniqueidentifier = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -2005,8 +2004,7 @@ BEGIN
 		status = @status,
 		template = @template,
 		resource_group = @resource_group,
-		package = @package,
-		configuration = @configuration
+		package = @package
 	where id = @id;
 
 END
@@ -2424,6 +2422,44 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[installer_configuration]'
+GO
+CREATE TABLE [tompit].[installer_configuration]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[package] [uniqueidentifier] NOT NULL,
+[configuration] [uniqueidentifier] NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_installer_configuration] on [tompit].[installer_configuration]'
+GO
+ALTER TABLE [tompit].[installer_configuration] ADD CONSTRAINT [PK_installer_configuration] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding constraints to [tompit].[installer_configuration]'
+GO
+ALTER TABLE [tompit].[installer_configuration] ADD CONSTRAINT [IX_installer_configuration] UNIQUE NONCLUSTERED  ([package]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[installer_configuration_sel]'
+GO
+CREATE PROCEDURE [tompit].[installer_configuration_sel]
+	@package uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 configuration
+	FROM tompit.installer_configuration
+	WHERE package = @package;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[blob_ins]'
 GO
 CREATE PROCEDURE [tompit].[blob_ins]
@@ -2445,6 +2481,22 @@ BEGIN
 
 	insert blob (file_name, token, size, type, content_type, primary_key, service, draft, version, topic, modified, resource_group)
 	values (@file_name, @token, @size, @type, @content_type, @primary_key, @service, @draft, @version, @topic, @modified, @resource_group);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[installer_configuration_ins]'
+GO
+CREATE PROCEDURE [tompit].[installer_configuration_ins]
+	@package uniqueidentifier,
+	@configuration uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.installer_configuration (package, configuration)
+	VALUES (@package, @configuration);
+	
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -2508,6 +2560,23 @@ BEGIN
 		version = @version, 
 		modified = @modified
 	where id = @id
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[blob_level_que]'
+GO
+CREATE PROCEDURE [tompit].[blob_level_que]
+	@service uniqueidentifier,
+	@level int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	select *
+	from view_blob 
+	WHERE (type < @level)
+	and (service = @service);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON

@@ -1384,6 +1384,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No views exist for this instance..
+        /// </summary>
+        public static string ErrNoViews {
+            get {
+                return ResourceManager.GetString("ErrNoViews", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package not created for the specified microservice..
         /// </summary>
         public static string ErrPackageNotCreated {

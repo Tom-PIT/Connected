@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using TomPIT.ComponentModel;
 using TomPIT.Data.Sql;
 using TomPIT.Environment;
 using TomPIT.Storage;
@@ -60,24 +59,24 @@ namespace TomPIT.SysDb.Sql.Storage
 			return r.Execute().ToList<IBlob>();
 		}
 
-		public List<IBlob> Query(IResourceGroup resourceGroup, int type, string primaryKey, IMicroService microService, string topic)
+		public List<IBlob> Query(IResourceGroup resourceGroup, int type, string primaryKey, Guid microService, string topic)
 		{
 			var r = new Reader<Blob>("tompit.blob_que");
 
 			r.CreateParameter("@resource_group", resourceGroup.GetId());
 			r.CreateParameter("@type", type);
 			r.CreateParameter("@primary_key", primaryKey);
-			r.CreateParameter("@service", microService == null ? Guid.Empty : microService.Token, true);
+			r.CreateParameter("@service", microService, true);
 			r.CreateParameter("@topic", topic);
 
 			return r.Execute().ToList<IBlob>();
 		}
 
-		public List<IBlob> Query(IMicroService microService)
+		public List<IBlob> Query(Guid microService)
 		{
 			var r = new Reader<Blob>("tompit.blob_que");
 
-			r.CreateParameter("@service", microService.Token);
+			r.CreateParameter("@service", microService);
 
 			return r.Execute().ToList<IBlob>();
 		}
@@ -92,7 +91,7 @@ namespace TomPIT.SysDb.Sql.Storage
 		}
 
 		public void Insert(IResourceGroup resourceGroup, Guid token, int type, string primaryKey,
-			IMicroService microService, string topic, string fileName, string contentType, int size, int version, DateTime modified, Guid draft)
+			Guid microService, string topic, string fileName, string contentType, int size, int version, DateTime modified, Guid draft)
 		{
 			var w = new Writer("tompit.blob_ins");
 
@@ -103,7 +102,7 @@ namespace TomPIT.SysDb.Sql.Storage
 			w.CreateParameter("@type", type);
 			w.CreateParameter("@content_type", contentType, true);
 			w.CreateParameter("@primary_key", primaryKey, true);
-			w.CreateParameter("@service", microService == null ? Guid.Empty : microService.Token, true);
+			w.CreateParameter("@service", microService, true);
 			w.CreateParameter("@draft", draft, true);
 			w.CreateParameter("@version", version);
 			w.CreateParameter("@topic", topic, true);

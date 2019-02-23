@@ -28,5 +28,7 @@ namespace TomPIT.Deployment
 		string Company { get; }
 		string Website { get; }
 		Guid Token { get; }
+
+		int DependencyCount { get; }
 	}
 }

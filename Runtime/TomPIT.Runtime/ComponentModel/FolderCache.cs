@@ -29,7 +29,7 @@ namespace TomPIT.ComponentModel
 				var e = new JArray();
 
 				foreach (var i in Connection.GetService<IResourceGroupService>().Query())
-					e.Add(i.Token.ToString());
+					e.Add(i.Name.ToString());
 
 				ds = Connection.Post<List<Folder>>(u, e);
 			}

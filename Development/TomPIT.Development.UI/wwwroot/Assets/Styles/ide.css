@@ -63,6 +63,9 @@
   overflow-y: auto;
   background-color: #f5f5f5;
 }
+#devExplorerToolbar {
+  border-bottom: 1px solid #e0e0e0;
+}
 #ide {
   min-height: 100%;
   height: auto;

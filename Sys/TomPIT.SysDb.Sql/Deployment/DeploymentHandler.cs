@@ -44,6 +44,19 @@ namespace TomPIT.SysDb.Sql.Deployment
 			w.Execute();
 		}
 
+		public void InsertInstallAudit(InstallAuditType type, Guid package, DateTime created, string message, string version)
+		{
+			var w = new Writer("tompit.install_audit_ins");
+
+			w.CreateParameter("@type", type);
+			w.CreateParameter("@package", package);
+			w.CreateParameter("@created", created);
+			w.CreateParameter("@message", message, true);
+			w.CreateParameter("@version", version, true);
+
+			w.Execute();
+		}
+
 		public void InsertInstallerConfiguration(Guid package, Guid configuration)
 		{
 			var w = new Writer("tompit.installer_configuration_ins");
@@ -52,6 +65,24 @@ namespace TomPIT.SysDb.Sql.Deployment
 			w.CreateParameter("@configuration", configuration);
 
 			w.Execute();
+		}
+
+		public List<IInstallAudit> QueryInstallAudit(Guid package)
+		{
+			var r = new Reader<InstallAudit>("tompit.install_audit_que");
+
+			r.CreateParameter("@package", package);
+
+			return r.Execute().ToList<IInstallAudit>();
+		}
+
+		public List<IInstallAudit> QueryInstallAudit(DateTime from)
+		{
+			var r = new Reader<InstallAudit>("tompit.install_audit_que");
+
+			r.CreateParameter("@created", from);
+
+			return r.Execute().ToList<IInstallAudit>();
 		}
 
 		public List<IInstallState> QueryInstallers()
@@ -77,12 +108,13 @@ namespace TomPIT.SysDb.Sql.Deployment
 			return r.ExecuteScalar(Guid.Empty);
 		}
 
-		public void Update(IInstallState state, InstallStateStatus status)
+		public void Update(IInstallState state, InstallStateStatus status, string error)
 		{
 			var w = new Writer("tompit.installer_upd");
 
 			w.CreateParameter("@id", state.GetId());
 			w.CreateParameter("@status", status);
+			w.CreateParameter("@error", error, true);
 
 			w.Execute();
 		}

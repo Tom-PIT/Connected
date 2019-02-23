@@ -177,6 +177,25 @@ namespace TomPIT.Sys.Data
 			return JsonConvert.DeserializeObject<JArray>(Encoding.UTF8.GetString(LZ4.LZ4Codec.Unwrap(content.Content)));
 		}
 
+		public List<IComponent> QueryCategories(Guid microService, string categories)
+		{
+			var cats = categories.Split(',');
+			var r = new List<IComponent>();
+
+			foreach (var j in cats)
+			{
+				if (string.IsNullOrWhiteSpace(j))
+					continue;
+
+				var ds = Query(microService, j.Trim());
+
+				if (ds.Count > 0)
+					r.AddRange(ds);
+			}
+
+			return r;
+		}
+
 		public List<IComponent> Query(string resourceGroups, string categories)
 		{
 			var tokens = resourceGroups.Split(',');

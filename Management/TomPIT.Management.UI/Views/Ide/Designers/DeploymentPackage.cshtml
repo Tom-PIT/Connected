@@ -53,13 +53,13 @@
 				}
 			</div>
 			<div class="col-lg-2">
-				<div class="text-center package-price">
-					@Html.Raw(StringUtils.Currency(Model.PackageInfo.Price, CurrencyType.Euro, 0))
-					<hr />
-					<small>
-						Price
-					</small>
-				</div>
+				@*<div class="text-center package-price">
+						@Html.Raw(StringUtils.Currency(Model.PackageInfo.Price, CurrencyType.Euro, 0))
+						<hr />
+						<small>
+							Price
+						</small>
+					</div>*@
 			</div>
 		</div>
 	</div>
@@ -69,6 +69,17 @@
 <hr />
 
 @await Html.PartialAsync("~/Views/Ide/Designers/DeploymentConfiguration.cshtml", new TomPIT.Management.Models.DeploymentConfigurationModel(Model.PackageInfo.Token, Model))
+
+@if (Model.PackageInfo.DependencyCount > 0)
+{
+	<h4 class="pt-1 pb-1">Dependencies</h4>
+	var deps = Model.QueryDependencies(Model.PackageInfo.Token);
+
+	foreach (var i in deps)
+	{
+		@await Html.PartialAsync("~/Views/Ide/Designers/DeploymentDependency.cshtml", new TomPIT.Management.Models.DeploymentDependencyModel(Model, i))
+	}
+}
 
 <script>
 	deploymentDesigner.setMainPackage('@Model.PackageInfo.Token');

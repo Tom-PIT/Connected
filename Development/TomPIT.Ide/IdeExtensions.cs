@@ -214,7 +214,10 @@ namespace TomPIT
 				r.Add((T)configuration);
 
 			var props = DomQuery.Properties(configuration, false, false);
-			var refs = new List<object>();
+			var refs = new List<object>
+			{
+				configuration
+			};
 
 			foreach (var i in props)
 				Children(configuration, i, r, refs);

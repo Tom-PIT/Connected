@@ -2,29 +2,12 @@
 
 $.widget('tompit.tpDeployment', {
 	options: {
-
+		checkTimestamp:0
 	},
 	_create: function () {
 		var instance = this;
-		
-		$('[data-button="install"]').click(function () {
-			var pck = $(this).closest('[data-id]').attr('data-id');
 
-			ide.designerAction({
-				'data': {
-					'action': 'install',
-					'package': pck
-				},
-				onComplete: function (data) {
-					$('#packageContent').html(data);
-					$('#mainPackage').collapse('show');
-					$('#packageList').collapse('hide');
-					$('#packagePeek').collapse('hide');
-					
-					instance.initPackage();
-				}
-			});
-		});
+		this.initCards();
 
 		$('#aLogoff').click(function () {
 			ide.designerAction({
@@ -58,14 +41,84 @@ $.widget('tompit.tpDeployment', {
 			ide.designerAction({
 				'data': {
 					'action': 'installConfirm',
-					'packages': [instance.options.mainPackage]
+					'package': instance.options.mainPackage
 				},
 				onComplete: function (data) {
+					instance.checkStates();
+
 					$('#mainPackage').collapse('hide');
 					$('#packageList').collapse('show');
 					$('#packagePeek').collapse('hide');
 				}
 			});
+		});
+
+		this.options.timer = window.setInterval(function () {
+			instance.checkStates();
+		}, 2500);
+	},
+	_destroy: function () {
+		window.clearInterval(this.options.timer);
+	},
+	initCards: function (s) {
+		var items = typeof s === 'undefined'
+			? $('[data-button="install"]')
+			: $('[data-button="install"]', s);
+
+		items.click(function () {
+			var pck = $(this).closest('[data-id]').attr('data-id');
+
+			ide.designerAction({
+				'data': {
+					'action': 'install',
+					'package': pck
+				},
+				onComplete: function (data) {
+					$('#packageContent').html(data);
+					$('#mainPackage').collapse('show');
+					$('#packageList').collapse('hide');
+					$('#packagePeek').collapse('hide');
+
+					instance.initPackage();
+				}
+			});
+		});
+	},
+	checkStates: function () {
+		var instance = this;
+
+		ide.designerAction({
+			'data': {
+				'action': 'getChanges',
+				'date': this.options.checkTimestamp
+			},
+			onComplete: function (data) {
+				instance.options.checkTimestamp = data.timestamp;
+
+				$.each(data.packages, function (i, v) {
+					var s = $('.package-card[data-id="' + v + '"]');
+
+					if (s.length === 0)
+						return true;
+
+					ide.designerAction({
+						'data': {
+							'action': 'getCard',
+							'package': v
+						},
+						onComplete: function (data) {
+							s.fadeOut('slow', function () {
+								$(this).replaceWith(data);
+								s = $('.package-card[data-id="' + v + '"]');
+
+								s.fadeIn('slow');
+								instance.initCards(s);
+							});
+
+						}
+					});
+				});
+			}
 		});
 	},
 	setMainPackage: function (v) {
@@ -206,6 +259,36 @@ $.widget('tompit.tpDeployment', {
 				glyph = 'fal fa-times-square';
 
 				$(this).closest('[data-db]').addClass('not-enabled');
+			}
+
+			$(this).attr('data-value', value);
+			$(this).children('svg').replaceWith('<i class="fal ' + glyph + '"></i>');
+		});
+
+		$('[data-kind="dependency-enabled"]').click(function () {
+			var value = $(this).attr('data-value');
+			var dependency = $(this).attr('data-dependency');
+
+			ide.designerAction({
+				'data': {
+					'action': 'setOption',
+					'package': instance.options.mainPackage,
+					'dependency': dependency,
+					'option': 'setDependency',
+					'value': value
+				}
+			});
+
+			var glyph = 'fal fa-check-square';
+
+			if (value === 'True') {
+				$(this).closest('[data-kind="dependency"]').children('.dependency-content').collapse('show');
+				value = 'False';
+			}
+			else {
+				value = 'True';
+				glyph = 'fal fa-times-square';
+				$(this).closest('[data-kind="dependency"]').children('.dependency-content').collapse('hide');
 			}
 
 			$(this).attr('data-value', value);

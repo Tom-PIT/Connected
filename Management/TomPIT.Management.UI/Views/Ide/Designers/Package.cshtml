@@ -32,13 +32,14 @@
 		}
 	}
 
-	var v = p == null ? new Version(0, 0, 0, 0) : Version.Parse(p.MetaData.Version);
+	var v = Model.Version;
 	var versionMajor = v.Major;
 	var versionMinor = v.Minor;
 	var versionBuild = v.Build;
 	var versionRevision = v.Revision;
 	var licenses = p == null ? string.Empty : p.MetaData.Licenses;
-	var rt = p.Configuration.RuntimeConfigurationSupported;
+	var rt = p == null ? false : p.Configuration.RuntimeConfigurationSupported;
+	var av = p == null ? true : p.Configuration.AutoVersioning;
 }
 <div class="doc-canvas">
 	<div class="paper">
@@ -110,7 +111,10 @@
 
 					</div>
 					<div class="col-sm-4">
-						<h4>Version</h4>
+						<div class="float-left">
+							<h4>Version</h4>
+						</div><div class="float-right"><span class="small pr-1">auto</span><div id="divAutoVersion"></div></div>
+						<div class="clearfix"></div>
 						<div class="row">
 							<div class="col-3">
 								<label for="editVersionMajor">Major</label>
@@ -231,6 +235,10 @@
 
 	$('#editTrial').dxCheckBox({
 		value:@Html.TP().JavaScript.Value(trial)
+	});
+
+	$('#divAutoVersion').dxCheckBox({
+		value:@Html.TP().JavaScript.Value(av)
 	});
 
 	$('#editTrialPeriod').dxNumberBox({
@@ -371,7 +379,8 @@
 				'licenseUrl': $('#editLicenseUrl').dxTextBox('instance').option('value'),
 				'imageUrl': $('#editImageUrl').dxTextBox('instance').option('value'),
 				'licenses': $('#editThirdPartyLicenses').dxTextArea('instance').option('value'),
-				'runtimeConfigurationSupported': $('#editRuntimeConfiguration').dxCheckBox('instance').option('value')
+				'runtimeConfigurationSupported': $('#editRuntimeConfiguration').dxCheckBox('instance').option('value'),
+				'autoVersion': $('#divAutoVersion').dxCheckBox('instance').option('value')
 			}
 		});
 	});

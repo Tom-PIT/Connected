@@ -76,7 +76,7 @@
         onCreated: function (instance) {
 			  textEditor.registerCompletionItemProvider('@Model.Language', {
 					provideCompletionItems: function (model, position, context) {
-                    return new Promise(function (resolve, reject) {
+                    return new monaco.Promise(function (resolve, reject) {
                         ide.designerAction({
                             data: {
                                 action: 'provideItems',
@@ -105,7 +105,7 @@
             textEditor.registerSignatureHelpProvider('@Model.Language', {
                 signatureHelpTriggerCharacters: ['(', '[', ',', '&lt'],
                 provideSignatureHelp: function (model, position) {
-                    return new Promise(function (resolve, reject) {
+                    return new monaco.Promise(function (resolve, reject) {
                         ide.designerAction({
                             data: {
                                 action: 'signatureHelp',
@@ -128,8 +128,7 @@
 
 			  textEditor.registerDefinitionProvider('@Model.Language', {
 				  provideDefinition: function (model, position) {
-                    return new Promise(function (resolve, reject) {
-
+                    return new monaco.Promise(function (resolve, reject) {
                         ide.designerAction({
                             data: {
                                 action: 'definition',
@@ -142,7 +141,10 @@
                                 content: model.getValue()
                             },
 									onComplete: function (data) {
-                                resolve(data);
+										resolve({
+											uri: monaco.Uri.parse(data.url),
+											range: new monaco.Range(data.range.startLineNumber, data.range.startColumn, data.range.endLineNumber, data.range.endColumn)
+										});
                             }
                         });
 

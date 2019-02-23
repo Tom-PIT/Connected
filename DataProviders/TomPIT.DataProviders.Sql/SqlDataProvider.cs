@@ -2,7 +2,6 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
-using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.Sql;
 using TomPIT.DataProviders.Sql.Deployment;
@@ -249,11 +248,11 @@ namespace TomPIT.DataProviders.Sql
 			}
 		}
 
-		public void Deploy(ISysConnection connection, IPackage package, IDatabase database, string connectionString)
+		public void Deploy(IDatabaseDeploymentContext context)
 		{
-			var existing = CreateSchema(connectionString);
+			var existing = CreateSchema(context.ConnectionString);
 
-			new SqlDeploy(connection, package, database, existing, connectionString).Deploy();
+			new SqlDeploy(context, existing).Deploy();
 		}
 	}
 }

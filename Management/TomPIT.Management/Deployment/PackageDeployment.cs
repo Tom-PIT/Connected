@@ -38,9 +38,9 @@ namespace TomPIT.Management.Deployment
 
 		private Dictionary<Guid, Guid> LastKnownState { get; set; }
 
-		public bool Deploy()
+		public void Deploy()
 		{
-			var success = true;
+			var success = false;
 
 			try
 			{
@@ -48,26 +48,23 @@ namespace TomPIT.Management.Deployment
 
 				DeployDatabases();
 				DeployMicroService();
+
+				success = true;
 			}
-			catch (Exception ex)
+			finally
 			{
-				success = false;
-				Connection.LogError(null, "Installer", ex.Source, ex.Message);
+				var u = Connection.CreateUrl("NotificationDevelopment", "MicroServiceInstalled");
+				var e = new JObject
+				{
+					{"microService", Package.MicroService.Token },
+					{"success", success }
+				};
+
+				Connection.Post(u, e);
+
+				if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification n)
+					n.NotifyMicroServiceInstalled(this, new MicroServiceInstallEventArgs(Package.MicroService.Token, success));
 			}
-
-			var u = Connection.CreateUrl("NotificationDevelopment", "MicroServiceInstalled");
-			var e = new JObject
-			{
-				{"microService", Package.MicroService.Token },
-				{"success", success }
-			};
-
-			Connection.Post(u, e);
-
-			if (Connection.GetService<IMicroServiceService>() is IMicroServiceNotification n)
-				n.NotifyMicroServiceInstalled(this, new MicroServiceInstallEventArgs(Package.MicroService.Token, success));
-
-			return success;
 		}
 
 		private void DeployMicroService()
@@ -111,9 +108,14 @@ namespace TomPIT.Management.Deployment
 				if (!Configuration.RuntimeConfiguration)
 				{
 					var state = LastKnownState == null ? Guid.Empty : LastKnownState.FirstOrDefault(f => f.Key == configuration.Token).Value;
-
+					/*
+					 * if existing runtime configuration found override component's runtime configuration
+					 * set to no runtime configuration otherwise
+					 */
 					if (state != Guid.Empty)
 						((PackageComponent)i).RuntimeConfiguration = state;
+					else
+						((PackageComponent)i).RuntimeConfiguration = Guid.Empty;
 				}
 
 				Connection.GetService<IComponentDevelopmentService>().Restore(Package.MicroService.Token, i, configuration, runtimeConfiguration);
@@ -190,7 +192,7 @@ namespace TomPIT.Management.Deployment
 
 						cs = Connection.GetService<ICryptographyService>().Decrypt(cs);
 
-						dp.Deploy(Connection, Package, i, cs);
+						dp.Deploy(new DatabaseDeploymentContext(Connection, Package, cs, i));
 					}
 				}
 			}

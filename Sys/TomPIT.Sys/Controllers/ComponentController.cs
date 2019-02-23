@@ -33,6 +33,12 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpGet]
+		public List<IComponent> QueryByMicroService(Guid microService, string categories)
+		{
+			return DataModel.Components.QueryCategories(microService, categories);
+		}
+
+		[HttpGet]
 		public IComponent SelectByToken(Guid component)
 		{
 			return DataModel.Components.Select(component);

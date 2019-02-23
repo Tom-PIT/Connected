@@ -96,7 +96,7 @@ namespace TomPIT.Compilers
 		{
 			var d = GetCachedScript(sourceCode.Id);
 
-			if (d.Script == null)
+			if (d == null)
 				d = CreateScript<T>(microService, sourceCode);
 
 			return d;

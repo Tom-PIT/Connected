@@ -17,7 +17,7 @@ namespace TomPIT.Management.Deployment
 		List<ICountry> QueryCountries();
 
 		void CreatePackage(Guid microService, string name, string title, string version, PackageScope scope, bool trial, int trialPeriod,
-			string description, double price, string tags, string projectUrl, string imageUrl, string licenseUrl, string licenses, bool runtimeConfigurationSupported);
+			string description, double price, string tags, string projectUrl, string imageUrl, string licenseUrl, string licenses, bool runtimeConfigurationSupported, bool autoVersion);
 
 		IPackage SelectPackage(Guid microService);
 		IPackage DownloadPackage(Guid package);
@@ -28,13 +28,18 @@ namespace TomPIT.Management.Deployment
 
 		void InsertInstallers(List<IInstallState> installers);
 		List<IInstallState> QueryInstallers();
-		void UpdateInstaller(Guid package, InstallStateStatus status);
+		void UpdateInstaller(Guid package, InstallStateStatus status, string error);
 		void DeleteInstaller(Guid package);
 
 
-		bool Deploy(IPackage package);
+		void Deploy(IPackage package);
+
+		List<IPackageDependency> QueryDependencies(Guid package);
 
 		IPackageConfiguration SelectInstallerConfiguration(Guid package);
 		void UpdateInstallerConfiguration(Guid package, IPackageConfiguration configuration);
+
+		List<IInstallAudit> QueryInstallAudit(DateTime from);
+		List<IInstallAudit> QueryInstallAudit(Guid package);
 	}
 }

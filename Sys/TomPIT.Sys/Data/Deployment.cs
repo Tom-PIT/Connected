@@ -188,21 +188,62 @@ namespace TomPIT.Sys.Data
 
 		public void InsertInstallers(List<IInstallState> installers)
 		{
+			foreach (var i in installers)
+			{
+				var package = SelectPublicPackage(i.Package);
+				var ms = DataModel.MicroServices.Select(i.Package);
+				var type = InstallAuditType.Error;
+
+				if (ms == null)
+					type = InstallAuditType.PendingInstall;
+				else
+					type = InstallAuditType.PendingUpgrade;
+
+				InsertInstallAudit(type, package.Token, null, new Version(package.Major, package.Minor, package.Build, package.Revision).ToString());
+			}
+
 			Shell.GetService<IDatabaseService>().Proxy.Deployment.Insert(installers);
 		}
 
-		public void UpdateInstaller(Guid package, InstallStateStatus status)
+		private void InsertInstallAudit(InstallAuditType type, Guid package, string message, string version)
 		{
+			Shell.GetService<IDatabaseService>().Proxy.Deployment.InsertInstallAudit(type, package, DateTime.UtcNow, message, version);
+		}
+
+		public void UpdateInstaller(Guid package, InstallStateStatus status, string error)
+		{
+			if (!string.IsNullOrWhiteSpace(error))
+				InsertInstallAudit(InstallAuditType.Error, package, error, ResolveLastPackageVersion(package));
+			else
+			{
+				var ms = DataModel.MicroServices.Select(package);
+				var type = ms == null ? InstallAuditType.Installing : InstallAuditType.Upgrading;
+
+				InsertInstallAudit(type, package, null, ResolveLastPackageVersion(package));
+			}
+
 			var item = Shell.GetService<IDatabaseService>().Proxy.Deployment.SelectInstaller(package);
 
 			if (item == null)
 				throw new SysException(SR.ErrInstallerNotFound);
 
-			Shell.GetService<IDatabaseService>().Proxy.Deployment.Update(item, status);
+			Shell.GetService<IDatabaseService>().Proxy.Deployment.Update(item, status, error);
+		}
+
+		private string ResolveLastPackageVersion(Guid package)
+		{
+			var r = QueryInstallAudit(package).OrderByDescending(f => f.Created).Where(f => !string.IsNullOrWhiteSpace(f.Version));
+
+			if (r.Count() == 0)
+				return null;
+
+			return r.First().Version;
 		}
 
 		public void DeleteInstaller(Guid package)
 		{
+			InsertInstallAudit(InstallAuditType.Complete, package, null, ResolveLastPackageVersion(package));
+
 			var item = Shell.GetService<IDatabaseService>().Proxy.Deployment.SelectInstaller(package);
 
 			if (item == null)
@@ -241,6 +282,27 @@ namespace TomPIT.Sys.Data
 		public void InsertInstallerConfiguration(Guid package, Guid configuration)
 		{
 			Shell.GetService<IDatabaseService>().Proxy.Deployment.InsertInstallerConfiguration(package, configuration);
+		}
+
+		public List<IInstallAudit> QueryInstallAudit(Guid package)
+		{
+			return Shell.GetService<IDatabaseService>().Proxy.Deployment.QueryInstallAudit(package);
+		}
+
+		public List<IInstallAudit> QueryInstallAudit(DateTime from)
+		{
+			return Shell.GetService<IDatabaseService>().Proxy.Deployment.QueryInstallAudit(from);
+		}
+
+		public List<IPackageDependency> QueryDependencies(Guid package)
+		{
+			var u = new MarketplaceUrl("IPackages", "QueryDependencies");
+			var e = new JObject
+			{
+				{"package", package }
+			};
+
+			return new HttpConnection().Post<List<PackageDependency>>(u, e, new HttpRequestArgs().WithBasicCredentials(UserName, Password)).ToList<IPackageDependency>();
 		}
 	}
 }

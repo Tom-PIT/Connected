@@ -69,7 +69,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 		public bool SchemaExists(string schema)
 		{
-			Command.CommandText = string.Format("SELECT * FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME '{0}'", schema);
+			Command.CommandText = string.Format("SELECT * FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '{0}'", schema);
 			var rdr = Command.ExecuteReader();
 
 			var r = rdr.HasRows;
@@ -145,7 +145,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 		public void DropDefault(ITable table, ITableColumn column)
 		{
-			Command.CommandText = string.Format("ALTER TABLE [{0}].[{1}] DROP CONSTRAINT [DF_{1}_{2}]", table.Schema, table.Name, ToValidName(table.Name), ToValidName(column.Name));
+			Command.CommandText = string.Format("ALTER TABLE [{0}].[{1}] DROP CONSTRAINT [DF_{2}_{3}]", table.Schema, table.Name, ToValidName(table.Name), ToValidName(column.Name));
 			Command.ExecuteNonQuery();
 		}
 
@@ -175,7 +175,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 		public void AddDefault(ITable table, ITableColumn column)
 		{
-			Command.CommandText = string.Format("ALTER TABLE [{0}].[{1}] ADD CONSTRAINT [DF_{1}_{2}] DEFAULT ('{3}') FOR [{2}]", table.Schema, ToValidName(table.Name), ToValidName(column.Name), column.DefaultValue);
+			Command.CommandText = string.Format("ALTER TABLE [{0}].[{1}] ADD CONSTRAINT [DF_{1}_{2}] DEFAULT {3} FOR [{2}]", table.Schema, ToValidName(table.Name), ToValidName(column.Name), column.DefaultValue);
 			Command.ExecuteNonQuery();
 		}
 
@@ -224,10 +224,10 @@ namespace TomPIT.DataProviders.Sql.Deployment
 			var builder = new StringBuilder();
 
 			builder.AppendLine(string.Format("ALTER TABLE [{0}].[{1}]", table.Schema, table.Name));
-			builder.AppendFormat("ADD COLUMN ", CreateColumnCommandText(column));
+			builder.AppendFormat("ADD {0}", CreateColumnCommandText(column));
 
 			if (!string.IsNullOrEmpty(column.DefaultValue))
-				builder.AppendLine(string.Format("CONSTRAINT [DF_{0}_{1}] DEFAULT ('{2}')", ToValidName(table.Name), ToValidName(column.Name), column.DefaultValue));
+				builder.AppendLine(string.Format("CONSTRAINT [DF_{0}_{1}] DEFAULT {2}", ToValidName(table.Name), ToValidName(column.Name), column.DefaultValue));
 
 			builder.AppendLine(";");
 

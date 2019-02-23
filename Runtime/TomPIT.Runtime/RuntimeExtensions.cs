@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System;
+using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Routing;
 
@@ -34,5 +36,14 @@ namespace TomPIT
 			return new ApiUrl(baseUrl, microService, api, operation);
 		}
 
+		public static bool IsMicroServiceSupported(this ISysConnection connection, Guid microService)
+		{
+			var ms = connection.GetService<IMicroServiceService>().Select(microService);
+
+			if (ms == null)
+				return false;
+
+			return Instance.ResourceGroupExists(ms.ResourceGroup);
+		}
 	}
 }

@@ -14,5 +14,7 @@ namespace TomPIT.Deployment
 		Guid Package { get; }
 		Guid Parent { get; }
 		InstallStateStatus Status { get; }
+		DateTime Modified { get; }
+		string Error { get; }
 	}
 }

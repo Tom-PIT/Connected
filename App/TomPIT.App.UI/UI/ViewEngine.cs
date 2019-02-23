@@ -53,6 +53,10 @@ namespace TomPIT.UI
 			name = name.Trim('/');
 
 			var model = CreateModel();
+
+			if (model == null)
+				throw new RuntimeException(SR.ErrNoViews);
+
 			var metric = Guid.Empty;
 			var content = string.Empty;
 

@@ -22,15 +22,19 @@ namespace TomPIT.Services
 			Parallel.ForEach(connections,
 				(i) =>
 				{
-					var connection = Shell.GetService<IConnectivityService>().Select(i.Url);
-					var installers = connection.GetService<IDeploymentService>().QueryInstallers();
-
-					if (installers.Count > 0)
-						InstallPackage(connection, installers);
+					ExecuteInstallers(Shell.GetService<IConnectivityService>().Select(i.Url));
 				});
 
 
 			return Task.CompletedTask;
+		}
+
+		private void ExecuteInstallers(ISysConnection connection)
+		{
+			var installers = connection.GetService<IDeploymentService>().QueryInstallers();
+
+			if (installers.Count > 0)
+				InstallPackage(connection, installers);
 		}
 
 		private void InstallPackage(ISysConnection connection, List<IInstallState> installers)
@@ -40,23 +44,30 @@ namespace TomPIT.Services
 			if (pending.Count() == 0)
 				return;
 
-			var installer = pending.FirstOrDefault(f => f.Parent == Guid.Empty);
-			var package = connection.GetService<IDeploymentService>().DownloadPackage(installer.Package);
+			var roots = pending.Where(f => f.Parent == Guid.Empty);
 
-			connection.GetService<IDeploymentService>().UpdateInstaller(package.MetaData.Id, InstallStateStatus.Installing);
+			if (roots.Count() == 0)
+				return;
 
-			try
+			foreach (var installer in roots)
 			{
-				if (!connection.GetService<IDeploymentService>().Deploy(package))
-					connection.GetService<IDeploymentService>().UpdateInstaller(package.MetaData.Id, InstallStateStatus.Error);
-				else
+				var package = connection.GetService<IDeploymentService>().DownloadPackage(installer.Package);
+
+				connection.GetService<IDeploymentService>().UpdateInstaller(package.MetaData.Id, InstallStateStatus.Installing, null);
+
+				try
+				{
+					connection.GetService<IDeploymentService>().Deploy(package);
 					connection.GetService<IDeploymentService>().DeleteInstaller(package.MetaData.Id);
+				}
+				catch (Exception ex)
+				{
+					connection.GetService<IDeploymentService>().UpdateInstaller(package.MetaData.Id, InstallStateStatus.Error, ex.Message);
+					connection.LogError(null, "InstallerService", ex.Source, ex.Message);
+				}
 			}
-			catch(Exception ex)
-			{
-				connection.GetService<IDeploymentService>().UpdateInstaller(package.MetaData.Id, InstallStateStatus.Error);
-				connection.LogError(null, "InstallerService", ex.Source, ex.Message);
-			}
+
+			ExecuteInstallers(connection);
 		}
 	}
 }

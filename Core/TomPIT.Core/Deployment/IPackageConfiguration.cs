@@ -8,6 +8,8 @@ namespace TomPIT.Deployment
 		Guid ResourceGroup { get; }
 		bool RuntimeConfigurationSupported { get; }
 		bool RuntimeConfiguration { get; }
+		bool AutoVersioning { get; }
 		List<IPackageConfigurationDatabase> Databases { get; }
+		List<IPackageConfigurationDependency> Dependencies { get; }
 	}
 }

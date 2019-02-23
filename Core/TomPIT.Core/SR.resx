@@ -858,4 +858,7 @@
   <data name="ErrInstallConnectionStringNotSet" xml:space="preserve">
     <value>Connection string not set</value>
   </data>
+  <data name="ErrNoViews" xml:space="preserve">
+    <value>No views exist for this instance.</value>
+  </data>
 </root>

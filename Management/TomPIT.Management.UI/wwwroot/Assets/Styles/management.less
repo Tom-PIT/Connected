@@ -120,11 +120,12 @@
 
 .package-card{
 	background-color:#FFF;
-	margin:5px 15px;
+	margin:5px;
 	border:1px solid @Grey300;
 	border-radius:4px;
 	width:250px;
 	text-align:center;
+	display:inline-block;
 }
 
 
@@ -139,6 +140,7 @@
 .package-footer {
 	border-top: 1px solid @Grey300;
 	padding: 5px;
+	height:45px;
 }
 
 .package-header {
@@ -290,12 +292,20 @@ li.metric-item.fail[data-detail="true"]{
 	color:@BodyColor;
 }
 
-[data-kind="connection-string"],
-[data-kind="database-enabled"],
-[data-kind="runtime-configuration"] {
+[data-behavior="toggle"]
+{
 	cursor: pointer;
 }
 
 .not-enabled{
 	color:@Grey400;
+}
+
+.dependency-children{
+	margin-left:15px;
+}
+
+.dependency-title {
+	padding: 10px 0;
+	margin-top:5px;
 }

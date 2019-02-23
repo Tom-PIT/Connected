@@ -1,62 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using TomPIT.Connectivity;
 using TomPIT.Deployment;
 using TomPIT.Deployment.Database;
-using TomPIT.Design.Serialization;
-using TomPIT.Environment;
-using TomPIT.Storage;
 
 namespace TomPIT.DataProviders.Sql.Deployment
 {
 	internal class SqlDeploy
 	{
-		public SqlDeploy(ISysConnection connection, IPackage package, IDatabase database, IDatabase existing, string connectionString)
+		public SqlDeploy(IDatabaseDeploymentContext context, IDatabase existing)
 		{
-			Package = package;
-			Connection = connection;
-			Database = database;
+			Context = context;
 			Existing = existing;
-			Command = new DeployCommand(connectionString);
+			Command = new DeployCommand(context.ConnectionString);
 		}
 
-		private ISysConnection Connection { get; }
-		private IDatabase Database { get; }
+		private IDatabaseDeploymentContext Context { get; }
 		private IDatabase Existing { get; }
-		public DeployCommand Command { get; }
+		private DeployCommand Command { get; }
 		private IDatabase LastState { get; set; }
-		private IPackage Package { get; }
-		private string StateKey => ((IPackageDatabase)Database).Connection.ToString();
-		private Guid ResourceGroup => Connection.GetService<IResourceGroupService>().Default.Token;
-
-		private void LoadState()
-		{
-			var blobs = Connection.GetService<IStorageService>().Query(Package.MicroService.Token, BlobTypes.DatabaseState, ResourceGroup, StateKey);
-
-			if (blobs.Count != 0)
-			{
-				var content = Connection.GetService<IStorageService>().Download(blobs[0].Token);
-
-				if (content != null)
-					LastState = Connection.GetService<ISerializationService>().Deserialize(content.Content, typeof(Database)) as IDatabase;
-			}
-		}
-
-		private void SaveState()
-		{
-			Connection.GetService<IStorageService>().Upload(new Blob
-			{
-				MicroService = Package.MicroService.Token,
-				ContentType = "application/json",
-				FileName = "databaseState.json",
-				PrimaryKey = StateKey,
-				ResourceGroup = ResourceGroup,
-				Type = BlobTypes.DatabaseState
-			}, Connection.GetService<ISerializationService>().Serialize(Database), StoragePolicy.Singleton);
-		}
 
 		public void Deploy()
 		{
@@ -64,13 +27,14 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 			try
 			{
-				LoadState();
+				LastState = Context.LoadState();
+
 				DropObsolete();
 				DeploySchemas();
 				DeployTables();
 				DeployViews();
 				DeployRoutines();
-				SaveState();
+				Context.SaveState();
 
 				Command.Commit();
 			}
@@ -93,19 +57,19 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 			foreach (var routine in LastState.Routines)
 			{
-				if (Database.Routines.Find(routine.Schema, routine.Name) == null)
+				if (Context.Database.Routines.Find(routine.Schema, routine.Name) == null)
 					Command.DropProcedure(routine);
 			}
 
 			foreach (var view in LastState.Views)
 			{
-				if (Database.Views.Find(view.Schema, view.Name) == null)
+				if (Context.Database.Views.Find(view.Schema, view.Name) == null)
 					Command.DropView(view);
 			}
 
 			foreach (var table in LastState.Tables)
 			{
-				var target = Database.Tables.Find(table.Schema, table.Name);
+				var target = Context.Database.Tables.Find(table.Schema, table.Name);
 
 				if (target == null)
 				{
@@ -158,19 +122,19 @@ namespace TomPIT.DataProviders.Sql.Deployment
 		{
 			var schemaList = new List<string>();
 
-			foreach (var table in Database.Tables)
+			foreach (var table in Context.Database.Tables)
 			{
 				if (!schemaList.Contains(table.Schema))
 					schemaList.Add(table.Schema);
 			}
 
-			foreach (var view in Database.Views)
+			foreach (var view in Context.Database.Views)
 			{
 				if (!schemaList.Contains(view.Schema))
 					schemaList.Add(view.Schema);
 			}
 
-			foreach (var routine in Database.Routines)
+			foreach (var routine in Context.Database.Routines)
 			{
 				if (!schemaList.Contains(routine.Schema))
 					schemaList.Add(routine.Schema);
@@ -192,7 +156,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 		private void DeployRoutines()
 		{
-			foreach (var routine in Database.Routines)
+			foreach (var routine in Context.Database.Routines)
 			{
 				var existing = Existing.Routines.Find(routine.Schema, routine.Name);
 				var code = routine.Definition;
@@ -230,7 +194,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 		private void DeployViews()
 		{
-			foreach (var view in Database.Views)
+			foreach (var view in Context.Database.Views)
 			{
 				var existing = Existing.Views.FirstOrDefault(f => string.Compare(view.Schema, f.Schema, true) == 0 && string.Compare(view.Name, f.Name, true) == 0);
 				var code = view.Definition;
@@ -244,7 +208,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 		private void DeployTables()
 		{
-			foreach (var table in Database.Tables)
+			foreach (var table in Context.Database.Tables)
 				DeployTable(table);
 
 			CreateIndexes();
@@ -348,7 +312,8 @@ namespace TomPIT.DataProviders.Sql.Deployment
 				|| column.NumericPrecision != existing.NumericPrecision
 				|| column.NumericPrecisionRadix != existing.NumericPrecisionRadix
 				|| column.NumericScale != existing.NumericScale
-				|| column.Ordinal != existing.Ordinal)
+				|| column.Ordinal != existing.Ordinal
+				|| string.Compare(column.DefaultValue, existing.DefaultValue, false) != 0)
 				return false;
 
 			return true;
@@ -392,7 +357,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 				for (int i = 0; i < uniqueConstraints.Count; i++)
 				{
 					var constraint = uniqueConstraints[i];
-					var column = Database.FindUniqueConstraintColumn(constraint.Name);
+					var column = Context.Database.FindUniqueConstraintColumn(constraint.Name);
 
 					builder.AppendLine(string.Format("CONSTRAINT [{0}] UNIQUE NONCLUSTERED", constraint.Name));
 					builder.AppendLine("(");
@@ -414,7 +379,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 		private void CreateReferences()
 		{
-			foreach (var table in Database.Tables)
+			foreach (var table in Context.Database.Tables)
 			{
 				var existingTable = Existing.Tables.FirstOrDefault(f => string.Compare(f.Schema, table.Schema, true) == 0 && string.Compare(f.Name, table.Name, true) == 0);
 
@@ -428,8 +393,8 @@ namespace TomPIT.DataProviders.Sql.Deployment
 					if (existingColumn != null && string.Compare(j.Reference.Name, j.Reference.Name, true) == 0)
 						continue;
 
-					var primaryKeyColumn = Database.FindPrimaryKeyColumn(j.Reference.ReferenceName);
-					var primaryKeyTable = Database.FindPrimaryKeyTable(j.Reference.ReferenceName);
+					var primaryKeyColumn = Context.Database.FindPrimaryKeyColumn(j.Reference.ReferenceName);
+					var primaryKeyTable = Context.Database.FindPrimaryKeyTable(j.Reference.ReferenceName);
 
 					Command.CreateForeignKey(primaryKeyTable, primaryKeyColumn, table, j);
 				}
@@ -438,7 +403,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 		private void CreateIndexes()
 		{
-			foreach (var table in Database.Tables)
+			foreach (var table in Context.Database.Tables)
 			{
 				var existingTable = Existing.Tables.FirstOrDefault(f => string.Compare(f.Schema, table.Schema, true) == 0 && string.Compare(f.Name, table.Name, true) == 0);
 

@@ -19,6 +19,20 @@ namespace TomPIT.Themes
 			connection.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
 			connection.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
 			connection.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
+
+			connection.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+		}
+
+		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
+		{
+			if (!Connection.IsMicroServiceSupported(e.MicroService))
+				return;
+
+			foreach (var i in All())
+			{
+				if (i.MicroService == e.MicroService)
+					Remove(GenerateKey(i.MicroService, i.Name.ToLowerInvariant()));
+			}
 		}
 
 		private void OnConfigurationRemoved(ISysConnection sender, ConfigurationEventArgs e)
@@ -92,7 +106,9 @@ namespace TomPIT.Themes
 
 			r = new CompiledTheme
 			{
-				Content = Minify(sb.ToString())
+				Content = Minify(sb.ToString()),
+				MicroService = ms.Token,
+				Name = name
 			};
 
 			Set(GenerateKey(ms.Token, name.ToLowerInvariant()), r);

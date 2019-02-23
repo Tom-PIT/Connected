@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Caching;
-using TomPIT.ComponentModel;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
@@ -80,22 +79,20 @@ namespace TomPIT.Sys.Data
 			if (r == null)
 				throw new SysException(SR.ErrResourceGroupNotFound);
 
-			var s = DataModel.MicroServices.Select(microService);
+			if (microService != Guid.Empty && SupportsNotification(type))
+			{
+				var s = DataModel.MicroServices.Select(microService);
 
-			if (s == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
+				if (s == null)
+					throw new SysException(SR.ErrMicroServiceNotFound);
+			}
 
-			return Shell.GetService<IDatabaseService>().Proxy.Storage.Query(r, type, primaryKey, s, topic);
+			return Shell.GetService<IDatabaseService>().Proxy.Storage.Query(r, type, primaryKey, microService, topic);
 		}
 
 		public List<IBlob> Query(Guid microService)
 		{
-			var s = DataModel.MicroServices.Select(microService);
-
-			if (s == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
-
-			return Shell.GetService<IDatabaseService>().Proxy.Storage.Query(s);
+			return Shell.GetService<IDatabaseService>().Proxy.Storage.Query(microService);
 		}
 
 		public List<IBlob> QueryDrafts(Guid draft)
@@ -113,17 +110,15 @@ namespace TomPIT.Sys.Data
 			if (r == null)
 				throw new SysException(SR.ErrResourceGroupNotFound);
 
-			IMicroService s = null;
-
-			if (microService != Guid.Empty)
+			if (microService != Guid.Empty && SupportsNotification(type))
 			{
-				s = DataModel.MicroServices.Select(microService);
+				var s = DataModel.MicroServices.Select(microService);
 
 				if (s == null)
 					throw new SysException(SR.ErrMicroServiceNotFound);
 			}
 
-			Shell.GetService<IDatabaseService>().Proxy.Storage.Insert(r, token, type, primaryKey, s, topic, fileName,
+			Shell.GetService<IDatabaseService>().Proxy.Storage.Insert(r, token, type, primaryKey, microService, topic, fileName,
 				contentType, content == null ? 0 : content.Length, version, DateTime.UtcNow, Guid.Empty);
 
 			DataModel.BlobsContents.Update(resourceGroup, token, content);
@@ -152,18 +147,20 @@ namespace TomPIT.Sys.Data
 
 			if (r == null)
 				throw new SysException(SR.ErrResourceGroupNotFound);
-
-			IMicroService s = null;
-
-			if (microService != Guid.Empty)
+			/*
+			 * we only check for the microservice existence in the case of tighly bound blobs
+			 * to the microservices. installer configuration, database state and similar does
+			 * not require a microservice to be actually installed
+			 */
+			if (microService != Guid.Empty && SupportsNotification(type))
 			{
-				s = DataModel.MicroServices.Select(microService);
+				var s = DataModel.MicroServices.Select(microService);
 
 				if (s == null)
 					throw new SysException(SR.ErrMicroServiceNotFound);
 			}
 
-			var ds = Shell.GetService<IDatabaseService>().Proxy.Storage.Query(r, type, primaryKey, s, topic);
+			var ds = Shell.GetService<IDatabaseService>().Proxy.Storage.Query(r, type, primaryKey, microService, topic);
 
 			if (policy == StoragePolicy.Singleton)
 			{
@@ -201,11 +198,9 @@ namespace TomPIT.Sys.Data
 			if (r == null)
 				throw new SysException(SR.ErrResourceGroupNotFound);
 
-			IMicroService s = null;
-
-			if (microService != Guid.Empty)
+			if (microService != Guid.Empty && SupportsNotification(type))
 			{
-				s = DataModel.MicroServices.Select(microService);
+				var s = DataModel.MicroServices.Select(microService);
 
 				if (s == null)
 					throw new SysException(SR.ErrMicroServiceNotFound);
@@ -214,7 +209,7 @@ namespace TomPIT.Sys.Data
 			if (token == Guid.Empty)
 				token = Guid.NewGuid();
 
-			Shell.GetService<IDatabaseService>().Proxy.Storage.Insert(r, token, type, primaryKey, s, topic, fileName, contentType, content == null ? 0 : content.Length, 1, DateTime.UtcNow, draft);
+			Shell.GetService<IDatabaseService>().Proxy.Storage.Insert(r, token, type, primaryKey, microService, topic, fileName, contentType, content == null ? 0 : content.Length, 1, DateTime.UtcNow, draft);
 			DataModel.BlobsContents.Update(resourceGroup, token, content);
 
 			if (SupportsNotification(type))

@@ -18,6 +18,20 @@ namespace TomPIT.Resources
 			connection.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
 			connection.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
 			connection.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
+
+			connection.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+		}
+
+		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
+		{
+			if (!Connection.IsMicroServiceSupported(e.MicroService))
+				return;
+
+			foreach (var i in All())
+			{
+				if (i.MicroService == e.MicroService)
+					Remove(GenerateKey(i.MicroService, i.Name.ToLowerInvariant()));
+			}
 		}
 
 		private void OnConfigurationRemoved(ISysConnection sender, ConfigurationEventArgs e)
@@ -79,7 +93,10 @@ namespace TomPIT.Resources
 			{
 				Content = config.Minify
 				? Minify(sb.ToString())
-				: sb.ToString()
+				: sb.ToString(),
+
+				Name = name,
+				MicroService = ms.Token
 			};
 
 			Set(GenerateKey(ms.Token, name.ToLowerInvariant()), r);

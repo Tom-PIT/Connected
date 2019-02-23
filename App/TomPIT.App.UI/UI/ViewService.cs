@@ -24,6 +24,19 @@ namespace TomPIT.UI
 			connection.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
 			connection.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
 			connection.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
+
+			connection.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+		}
+
+		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
+		{
+			if (!Connection.IsMicroServiceSupported(e.MicroService))
+				return;
+
+			var views = Connection.GetService<IComponentService>().QueryConfigurations(e.MicroService, string.Format("{0}, {1}, {2}", "View", "MasterView", "Partial"));
+
+			foreach (var i in views)
+				Set(i.Component, i as IGraphicInterface, TimeSpan.Zero);
 		}
 
 		private void OnConfigurationRemoved(ISysConnection sender, ConfigurationEventArgs e)

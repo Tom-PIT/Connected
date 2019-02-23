@@ -3,19 +3,36 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ActionResults;
+using TomPIT.ComponentModel;
 using TomPIT.Data.DataProviders;
 using TomPIT.Deployment;
 using TomPIT.Environment;
 using TomPIT.Management.Deployment;
 using TomPIT.Management.Dom;
+using TomPIT.Management.Models;
 using TomPIT.Security;
 
 namespace TomPIT.Management.Designers
 {
+	public enum PackageState
+	{
+		NotInstalled = 1,
+		Pending = 2,
+		Installing = 3,
+		Error = 4,
+		Installed = 5,
+		PendingUpgrade = 6,
+		Upgrading = 7,
+		//TODO: implement automatic update checking
+		UpgradeAvailable = 8
+	}
+
 	public class DeploymentDesigner : DeploymentDesignerBase<MarketplaceElement>
 	{
 		private List<IPublishedPackage> _publicPackages = null;
 		private List<IResourceGroup> _resourceGroups = null;
+		private List<IMicroService> _microServices = null;
+		private List<IInstallState> _installers = null;
 
 		public DeploymentDesigner(MarketplaceElement element) : base(element)
 		{
@@ -47,8 +64,39 @@ namespace TomPIT.Management.Designers
 				return TestConnection(data);
 			else if (string.Compare(action, "createDatabase", true) == 0)
 				return CreateDatabase(data);
+			else if (string.Compare(action, "getChanges", true) == 0)
+				return GetChanges(data);
+			else if (string.Compare(action, "getCard", true) == 0)
+				return GetCard(data);
 
 			return base.OnAction(data, action);
+		}
+
+		private IDesignerActionResult GetCard(JObject data)
+		{
+			var package = data.Required<Guid>("package");
+			var pp = Connection.GetService<IDeploymentService>().SelectPublishedPackage(package);
+
+			return Result.ViewResult(new DeploymentPackageCardModel(this, pp), "~/Views/Ide/Designers/DeploymentPackageCard.cshtml");
+		}
+
+		private IDesignerActionResult GetChanges(JObject data)
+		{
+			var timestamp = data.Required<long>("date");
+
+			var r = new JObject
+			{
+				{"timestamp",DateTime.UtcNow.Ticks }
+			};
+
+			var changes = Connection.GetService<IDeploymentService>().QueryInstallAudit(new DateTime(timestamp)).GroupBy(f => f.Package).Select(f => f.First().Package);
+			var a = new JArray();
+			r.Add("packages", a);
+
+			foreach (var i in changes)
+				a.Add(i);
+
+			return Result.JsonResult(ViewModel, r);
 		}
 
 		private IDesignerActionResult CreateDatabase(JObject data)
@@ -105,6 +153,7 @@ namespace TomPIT.Management.Designers
 			var package = data.Required<Guid>("package");
 			var option = data.Required<string>("option");
 			var database = data.Optional("database", string.Empty);
+			var dependency = data.Optional("dependency", Guid.Empty);
 
 			var config = Connection.GetService<IDeploymentService>().SelectInstallerConfiguration(package);
 
@@ -124,6 +173,22 @@ namespace TomPIT.Management.Designers
 				else if (string.Compare(option, "enabled", true) == 0)
 					((PackageConfigurationDatabase)db).Enabled = data.Required<bool>("value");
 			}
+			else if (dependency != Guid.Empty)
+			{
+				var d = config.Dependencies.FirstOrDefault(f => f.Dependency == dependency);
+				var value = data.Optional("value", false);
+
+				if (d == null)
+				{
+					config.Dependencies.Add(new PackageConfigurationDependency
+					{
+						Dependency = dependency,
+						Enabled = value
+					});
+				}
+				else
+					((PackageConfigurationDependency)d).Enabled = value;
+			}
 			else
 			{
 
@@ -140,20 +205,57 @@ namespace TomPIT.Management.Designers
 
 		private IDesignerActionResult InstallConfirm(JObject data)
 		{
-			var packages = data.Required<JArray>("packages");
-			var items = new List<IInstallState>();
+			var package = data.Required<Guid>("package");
 
-			foreach (JValue i in packages)
-			{
-				items.Add(new InstallState
-				{
-					Package = Types.Convert<Guid>(i.Value<string>())
-				});
-			}
+			var r = new List<IInstallState>();
 
-			Connection.GetService<IDeploymentService>().InsertInstallers(items);
+			CreateInstallStack(package, r, Connection.GetService<IDeploymentService>().SelectInstallerConfiguration(package), true);
+			Connection.GetService<IDeploymentService>().InsertInstallers(r);
 
 			return Result.EmptyResult(ViewModel);
+		}
+
+		private void CreateInstallStack(Guid package, List<IInstallState> items, IPackageConfiguration config, bool isRoot)
+		{
+			var dependencies = Connection.GetService<IDeploymentService>().QueryDependencies(package);
+			IPackageDependency dependency = null;
+
+			foreach (var i in dependencies)
+			{
+				var d = config.Dependencies.FirstOrDefault(f => f.Dependency == i.Token);
+
+				if (d == null || d.Enabled)
+				{
+					CreateInstallStack(i.Token, items, config, false);
+
+					if (dependency == null)
+						dependency = i;
+				}
+			}
+
+			if (!isRoot)
+			{
+				var d = config.Dependencies.FirstOrDefault(f => f.Dependency == package);
+
+				if (d != null && !d.Enabled)
+					return;
+			}
+
+			var existing = items.FirstOrDefault(f => f.Package == package);
+
+			if (existing != null)
+			{
+				if (existing.Parent == Guid.Empty && dependency != null)
+					((InstallState)existing).Parent = dependency.Token;
+
+				return;
+			}
+
+			items.Add(new InstallState
+			{
+				Package = package,
+				Parent = dependency == null ? Guid.Empty : dependency.Token
+			});
 		}
 
 		private IDesignerActionResult Install(JObject data)
@@ -164,6 +266,27 @@ namespace TomPIT.Management.Designers
 		}
 
 		public IPublishedPackage PackageInfo { get; private set; }
+		private List<IMicroService> MicroServices
+		{
+			get
+			{
+				if (_microServices == null)
+					_microServices = Connection.GetService<IMicroServiceService>().Query();
+
+				return _microServices;
+			}
+		}
+
+		private List<IInstallState> Installers
+		{
+			get
+			{
+				if (_installers == null)
+					_installers = Connection.GetService<IDeploymentService>().QueryInstallers();
+
+				return _installers;
+			}
+		}
 
 		public List<IResourceGroup> ResourceGroups
 		{
@@ -174,6 +297,53 @@ namespace TomPIT.Management.Designers
 
 				return _resourceGroups;
 			}
+		}
+
+		public string ErrorMessage(Guid package)
+		{
+			var d = Installers.FirstOrDefault(f => f.Package == package);
+
+			if (d == null)
+				return string.Empty;
+
+			return d.Error;
+		}
+
+		public PackageState ResolveState(Guid package)
+		{
+			var state = Installers.FirstOrDefault(f => f.Package == package);
+			var ms = MicroServices.FirstOrDefault(f => f.Token == package);
+
+			if (state == null && ms == null)
+				return PackageState.NotInstalled;
+
+			if (state != null)
+			{
+				switch (state.Status)
+				{
+					case InstallStateStatus.Pending:
+						if (ms == null)
+							return PackageState.Pending;
+						else
+							return PackageState.PendingUpgrade;
+					case InstallStateStatus.Installing:
+						if (ms == null)
+							return PackageState.Installing;
+						else
+							return PackageState.Upgrading;
+					case InstallStateStatus.Error:
+						return PackageState.Error;
+					default:
+						throw new NotSupportedException();
+				}
+			}
+
+			return PackageState.Installed;
+		}
+
+		public List<IPackageDependency> QueryDependencies(Guid package)
+		{
+			return Connection.GetService<IDeploymentService>().QueryDependencies(package);
 		}
 	}
 }
