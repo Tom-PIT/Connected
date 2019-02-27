@@ -151,6 +151,8 @@ namespace TomPIT.Ide.Design.VersionControl
 		{
 			foreach (var i in components)
 			{
+				var component = Connection.GetService<IComponentService>().SelectComponent(i);
+
 				var history = QueryHistory(i);
 
 				if (history.Count == 0)
@@ -161,7 +163,9 @@ namespace TomPIT.Ide.Design.VersionControl
 				if (activeLock == null)
 					continue;
 
-				Connection.GetService<IComponentDevelopmentService>().RestoreComponent(activeLock.Blob);
+				if (component.LockVerb == LockVerb.Edit || component.LockVerb == LockVerb.Delete)
+					Connection.GetService<IComponentDevelopmentService>().RestoreComponent(activeLock.Blob);
+
 				Connection.GetService<IStorageService>().Delete(activeLock.Blob);
 
 				var u = Connection.CreateUrl("VersionControl", "Undo");
@@ -171,10 +175,13 @@ namespace TomPIT.Ide.Design.VersionControl
 				};
 
 				Connection.Post(u, e);
+
+				if (component.LockVerb == LockVerb.Add)
+					Connection.GetService<IComponentDevelopmentService>().Delete(i, true);
 			}
 		}
 
-		public void Lock(Guid component)
+		public void Lock(Guid component, LockVerb verb)
 		{
 			var lockInfo = SelectLockInfo(component);
 
@@ -213,7 +220,8 @@ namespace TomPIT.Ide.Design.VersionControl
 				{ "token", token },
 				{ "component", component },
 				{ "user", Shell.HttpContext.CurrentUserToken() },
-				{ "blob", blob }
+				{ "blob", blob },
+				{ "verb", verb.ToString() }
 			};
 
 			Connection.Post(u, e);

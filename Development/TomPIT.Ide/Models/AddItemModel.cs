@@ -27,14 +27,14 @@ namespace TomPIT.Models
 						_proposedName = ProposedFolderName();
 					else
 					{
-						var category = Descriptor.Value == null ? string.Empty : Descriptor.Value.ToString();
+						var category = Descriptor.Id;
 
 						if (string.IsNullOrWhiteSpace(category))
 							_proposedName = string.Format("{0}1", Descriptor.Text.Replace(" ", string.Empty));
 						else
 						{
 							var existing = Environment.Context.Connection().GetService<IComponentService>().QueryComponents(Environment.Selection.Element.MicroService(), category).Select(f => f.Name);
-							_proposedName = Environment.Context.Connection().GetService<INamingService>().Create(Descriptor.Value.ToString(), existing);
+							_proposedName = Environment.Context.Connection().GetService<INamingService>().Create(Descriptor.Id, existing);
 						}
 					}
 				}

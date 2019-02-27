@@ -105,8 +105,9 @@ namespace TomPIT.Sys.Controllers.Development
 			var component = body.Required<Guid>("component");
 			var user = body.Required<Guid>("user");
 			var blob = body.Required<Guid>("blob");
+			var verb = body.Required<LockVerb>("verb");
 
-			DataModel.VersionControl.Lock(component, user, blob);
+			DataModel.VersionControl.Lock(component, user, verb, blob);
 		}
 
 		[HttpPost]

@@ -7,7 +7,7 @@ namespace TomPIT.Ide.Design.VersionControl
 {
 	public interface IVersionControlService
 	{
-		void Lock(Guid component);
+		void Lock(Guid component, LockVerb verb);
 		void Commit(List<Guid> components, string comment);
 		void Undo(List<Guid> components);
 

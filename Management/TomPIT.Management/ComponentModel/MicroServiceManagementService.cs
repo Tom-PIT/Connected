@@ -24,7 +24,7 @@ namespace TomPIT.ComponentModel
 			var components = Connection.GetService<IComponentService>().QueryComponents(microService);
 
 			foreach (var i in components)
-				Connection.GetService<IComponentDevelopmentService>().Delete(i.Token);
+				Connection.GetService<IComponentDevelopmentService>().Delete(i.Token, true);
 
 			var folders = FolderModel.Create(Connection.GetService<IComponentService>().QueryFolders(microService));
 

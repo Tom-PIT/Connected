@@ -14,6 +14,7 @@ namespace TomPIT.Design
 		void Update(IConfiguration configuration);
 		void Update(IText text, string content);
 		void Delete(Guid component);
+		void Delete(Guid component, bool permanent);
 
 		string CreateName(Guid microService, string category, string prefix);
 

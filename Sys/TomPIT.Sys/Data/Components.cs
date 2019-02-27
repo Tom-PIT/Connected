@@ -71,8 +71,13 @@ namespace TomPIT.Sys.Data
 
 			foreach (var component in changes)
 			{
-				Refresh(component.Token);
-				CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token);
+				if (component.LockVerb == LockVerb.Delete)
+					Delete(component.Token, user, true);
+				else
+				{
+					Refresh(component.Token);
+					CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token);
+				}
 			}
 		}
 
@@ -274,22 +279,22 @@ namespace TomPIT.Sys.Data
 				}
 			}
 
-			return r;
+			return r.Where(f => f.LockVerb != LockVerb.Delete).ToList();
 		}
 
 		public List<IComponent> Query(Guid microService)
 		{
-			return Where(f => f.MicroService == microService);
+			return Where(f => f.MicroService == microService && f.LockVerb != LockVerb.Delete);
 		}
 
 		public List<IComponent> Query(Guid microService, Guid folder)
 		{
-			return Where(f => f.MicroService == microService && f.Folder == folder);
+			return Where(f => f.MicroService == microService && f.Folder == folder && f.LockVerb != LockVerb.Delete);
 		}
 
 		public List<IComponent> Query(Guid microService, string category)
 		{
-			return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0);
+			return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0 && f.LockVerb != LockVerb.Delete);
 		}
 
 		public void Insert(Guid component, Guid microService, Guid folder, string category, string name, string type, Guid runtimeConfiguration)
@@ -376,16 +381,31 @@ namespace TomPIT.Sys.Data
 			CachingNotifications.ComponentChanged(c.MicroService, c.Folder, component);
 		}
 
-		public void Delete(Guid component)
+		public void Delete(Guid component, Guid user, bool permanent)
 		{
 			var c = Select(component);
 
 			if (c == null)
 				throw new SysException(SR.ErrComponentNotFound);
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Delete(c);
+			if (permanent)
+			{
+				Shell.GetService<IDatabaseService>().Proxy.Development.Components.Delete(c);
 
-			Remove(component);
+				Remove(component);
+			}
+			else
+			{
+				var u = DataModel.Users.Select(user);
+
+				if (u == null)
+					throw new SysException(SR.ErrUserNotFound);
+
+				Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, u, LockStatus.Lock, LockVerb.Delete, DateTime.UtcNow);
+
+				Refresh(component);
+			}
+
 			CachingNotifications.ComponentRemoved(c.MicroService, c.Folder, component);
 		}
 

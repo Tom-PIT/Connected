@@ -127,7 +127,7 @@ namespace TomPIT.Sys.Data
 			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommits(ms, u);
 		}
 
-		public void Lock(Guid component, Guid user, Guid blob)
+		public void Lock(Guid component, Guid user, LockVerb verb, Guid blob)
 		{
 			var c = DataModel.Components.Select(component);
 
@@ -141,9 +141,6 @@ namespace TomPIT.Sys.Data
 
 			if (c.LockStatus != LockStatus.Commit)
 				throw new SysException(SR.ErrComponentLocked);
-
-			var history = QueryHistory(component);
-			var verb = history.Count == 0 ? LockVerb.Add : LockVerb.Edit;
 
 			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, u, LockStatus.Lock, verb, DateTime.UtcNow);
 			Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.InsertComponentHistory(u, c, c.Name, verb, DateTime.UtcNow, blob);

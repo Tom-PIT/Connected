@@ -53,8 +53,10 @@ namespace TomPIT.Sys.Controllers.Development
 			var body = FromBody();
 
 			var component = body.Required<Guid>("component");
+			var permanent = body.Required<bool>("permanent");
+			var user = body.Required<Guid>("user");
 
-			DataModel.Components.Delete(component);
+			DataModel.Components.Delete(component, user, permanent);
 		}
 
 		[HttpGet]

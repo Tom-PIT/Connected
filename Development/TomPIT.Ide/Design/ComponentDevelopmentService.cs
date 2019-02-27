@@ -35,19 +35,28 @@ namespace TomPIT.Design
 
 		public void Delete(Guid component)
 		{
+			Delete(component, false);
+		}
+
+		public void Delete(Guid component, bool permanent)
+		{
 			var c = Connection.GetService<IComponentService>().SelectComponent(component);
 
 			if (c == null)
 				throw new IdeException(SR.ErrComponentNotFound);
 
-			Connection.GetService<IVersionControlService>().Lock(component);
+			if (!permanent)
+				Connection.GetService<IVersionControlService>().Lock(component, Development.LockVerb.Delete);
 
-			RemoveDependencies(c.Token);
+			if (permanent)
+				RemoveDependencies(c.Token);
 
 			var u = Connection.CreateUrl("ComponentDevelopment", "Delete");
 			var args = new JObject
 			{
-				{"component", component }
+				{"component", component },
+				{"permanent", permanent },
+				{"user", Shell.HttpContext.CurrentUserToken() }
 			};
 
 			Connection.Post(u, args);
@@ -58,10 +67,13 @@ namespace TomPIT.Design
 			/*
 			 * remove configuration file
 			 */
-			Connection.GetService<IStorageService>().Delete(c.Token);
+			if (permanent)
+			{
+				Connection.GetService<IStorageService>().Delete(c.Token);
 
-			if (c.RuntimeConfiguration != Guid.Empty)
-				Connection.GetService<IStorageService>().Delete(c.RuntimeConfiguration);
+				if (c.RuntimeConfiguration != Guid.Empty)
+					Connection.GetService<IStorageService>().Delete(c.RuntimeConfiguration);
+			}
 
 			u = Connection.CreateUrl("NotificationDevelopment", "ConfigurationRemoved");
 			args = new JObject
@@ -212,7 +224,7 @@ namespace TomPIT.Design
 			};
 
 			Connection.Post(u, args);
-			Connection.GetService<IVersionControlService>().Lock(instance.Component);
+			Connection.GetService<IVersionControlService>().Lock(instance.Component, Development.LockVerb.Add);
 
 			return instance.Component;
 		}
@@ -220,7 +232,7 @@ namespace TomPIT.Design
 		public void Update(Guid component, string name, Guid folder, bool performLock)
 		{
 			if (performLock)
-				Connection.GetService<IVersionControlService>().Lock(component);
+				Connection.GetService<IVersionControlService>().Lock(component, Development.LockVerb.Edit);
 
 			var u = Connection.CreateUrl("ComponentDevelopment", "Update");
 			var args = new JObject
@@ -260,7 +272,7 @@ namespace TomPIT.Design
 			 * version control lock needs to be obtained only for design time
 			 */
 			if (mode == EnvironmentMode.Design && performLock)
-				Connection.GetService<IVersionControlService>().Lock(c.Token);
+				Connection.GetService<IVersionControlService>().Lock(c.Token, Development.LockVerb.Edit);
 
 			var content = Connection.GetService<ISerializationService>().Serialize(configuration);
 
@@ -322,7 +334,7 @@ namespace TomPIT.Design
 
 		public void Update(IText text, string content)
 		{
-			Connection.GetService<IVersionControlService>().Lock(text.Configuration().Component);
+			Connection.GetService<IVersionControlService>().Lock(text.Configuration().Component, Development.LockVerb.Edit);
 
 			if (string.IsNullOrWhiteSpace(content))
 				Delete(text);
@@ -682,7 +694,7 @@ namespace TomPIT.Design
 
 			//foreach (var i in elements)
 			//{
-				
+
 			//		i.Reset();
 			//}
 		}
