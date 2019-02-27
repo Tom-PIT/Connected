@@ -8,6 +8,7 @@ namespace TomPIT.SysDb.Sql.Development
 		private IFolderHandler _folders = null;
 		private IComponentHandler _components = null;
 		private IQaHandler _qa = null;
+		private IVersionControlHandler _versionControl = null;
 
 		public IQaHandler QA
 		{
@@ -20,6 +21,16 @@ namespace TomPIT.SysDb.Sql.Development
 			}
 		}
 
+		public IVersionControlHandler VersionControl
+		{
+			get
+			{
+				if (_versionControl == null)
+					_versionControl = new VersionControlHandler();
+
+				return _versionControl;
+			}
+		}
 
 		public IMicroServiceHandler MicroServices
 		{

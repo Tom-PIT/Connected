@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Data.Sql;
+using TomPIT.Development;
+using TomPIT.Security;
 using TomPIT.SysDb.Development;
 
 namespace TomPIT.SysDb.Sql.Development
@@ -78,6 +80,19 @@ namespace TomPIT.SysDb.Sql.Development
 			w.CreateParameter("@modified", modified);
 			w.CreateParameter("@folder", folder == null ? 0 : folder.GetId(), true);
 			w.CreateParameter("@runtime_configuration", runtimeConfiguration, true);
+
+			w.Execute();
+		}
+
+		public void Update(IComponent component, IUser user, LockStatus status, LockVerb verb, DateTime date)
+		{
+			var w = new Writer("tompit.component_lock_upd");
+
+			w.CreateParameter("@id", component.GetId());
+			w.CreateParameter("@lock_status", status);
+			w.CreateParameter("@lock_user", user == null ? 0 : user.GetId(), true);
+			w.CreateParameter("@lock_date", date, true);
+			w.CreateParameter("@lock_verb", verb);
 
 			w.Execute();
 		}

@@ -673,6 +673,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot commit components from different microservices..
+        /// </summary>
+        public static string ErrCommitMultipleMicroservice {
+            get {
+                return ResourceManager.GetString("ErrCommitMultipleMicroservice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Commit not found.
+        /// </summary>
+        public static string ErrCommitNotFound {
+            get {
+                return ResourceManager.GetString("ErrCommitNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Component has no configuration or configuration errors has been found.
         /// </summary>
         public static string ErrComponentCorrupted {
@@ -682,11 +700,38 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Component has already an exclusive lock.
+        /// </summary>
+        public static string ErrComponentLocked {
+            get {
+                return ResourceManager.GetString("ErrComponentLocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component is not locked by specified user..
+        /// </summary>
+        public static string ErrComponentLockMismatch {
+            get {
+                return ResourceManager.GetString("ErrComponentLockMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Component not found.
         /// </summary>
         public static string ErrComponentNotFound {
             get {
                 return ResourceManager.GetString("ErrComponentNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component cannot be commited because it has not locks..
+        /// </summary>
+        public static string ErrComponentNotLocked {
+            get {
+                return ResourceManager.GetString("ErrComponentNotLocked", resourceCulture);
             }
         }
         
@@ -1731,6 +1776,15 @@ namespace TomPIT {
         public static string ErrValServiceNotSet {
             get {
                 return ResourceManager.GetString("ErrValServiceNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This component is locked by another user.
+        /// </summary>
+        public static string ErrVcLocked {
+            get {
+                return ResourceManager.GetString("ErrVcLocked", resourceCulture);
             }
         }
         

@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
+using System;
 using TomPIT.ComponentModel;
 using TomPIT.Models;
 
 namespace TomPIT.Controllers
 {
+	[Authorize(Policy = "Implement Micro Service")]
 	public class IdeController : IdeControllerBase
 	{
 		protected override IdeModelBase CreateModel()

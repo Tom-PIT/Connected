@@ -36,6 +36,7 @@ namespace TomPIT.Sys.Data
 		private static Lazy<Metrics> _metrics = new Lazy<Metrics>(() => { return new Metrics(); });
 		private static Lazy<IoTState> _iotState = new Lazy<IoTState>(() => { return new IoTState(Container); });
 		private static Lazy<Deployment> _deployment = new Lazy<Deployment>(() => { return new Deployment(); });
+		private static Lazy<VersionControl> _versionControl = new Lazy<VersionControl>(() => { return new VersionControl(); });
 
 		public static MicroServicesMeta MicroServicesMeta { get { return _meta.Value; } }
 		public static MicroServices MicroServices { get { return _microServices.Value; } }
@@ -66,6 +67,7 @@ namespace TomPIT.Sys.Data
 		public static Metrics Metrics { get { return _metrics.Value; } }
 		public static IoTState IoTState { get { return _iotState.Value; } }
 		public static Deployment Deployment { get { return _deployment.Value; } }
+		public static VersionControl VersionControl { get { return _versionControl.Value; } }
 
 		internal static MemoryCache Container
 		{

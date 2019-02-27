@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -128,6 +130,11 @@ namespace TomPIT.Data.Sql
 			{
 				p.SqlDbType = SqlDbType.DateTime2;
 				p.Value = value;
+			}
+			else if (value is JObject || value is JArray)
+			{
+				p.SqlDbType = SqlDbType.NVarChar;
+				p.Value = JsonConvert.SerializeObject(value);
 			}
 			else
 				p.Value = value;

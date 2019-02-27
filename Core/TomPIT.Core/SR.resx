@@ -861,4 +861,22 @@
   <data name="ErrNoViews" xml:space="preserve">
     <value>No views exist for this instance.</value>
   </data>
+  <data name="ErrComponentLocked" xml:space="preserve">
+    <value>Component has already an exclusive lock</value>
+  </data>
+  <data name="ErrCommitNotFound" xml:space="preserve">
+    <value>Commit not found</value>
+  </data>
+  <data name="ErrVcLocked" xml:space="preserve">
+    <value>This component is locked by another user</value>
+  </data>
+  <data name="ErrCommitMultipleMicroservice" xml:space="preserve">
+    <value>Cannot commit components from different microservices.</value>
+  </data>
+  <data name="ErrComponentLockMismatch" xml:space="preserve">
+    <value>Component is not locked by specified user.</value>
+  </data>
+  <data name="ErrComponentNotLocked" xml:space="preserve">
+    <value>Component cannot be commited because it has not locks.</value>
+  </data>
 </root>

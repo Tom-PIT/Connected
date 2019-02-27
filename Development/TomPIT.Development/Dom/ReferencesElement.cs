@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using TomPIT.ComponentModel;
-using TomPIT.Design;
+﻿using TomPIT.ComponentModel;
 
 namespace TomPIT.Dom
 {

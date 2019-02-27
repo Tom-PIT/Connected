@@ -213,7 +213,6 @@
 
             textEditor.registerCodeLensProvider('@Model.Language', {
                 provideCodeLenses: function (model, token) {
-                    saveSourceCode();
                     return new monaco.Promise(function (resolve, reject) {
                         ide.designerAction({
                             data: {

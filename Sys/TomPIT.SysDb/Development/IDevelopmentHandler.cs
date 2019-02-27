@@ -6,5 +6,6 @@
 		IFolderHandler Folders { get; }
 		IComponentHandler Components { get; }
 		IQaHandler QA { get; }
+		IVersionControlHandler VersionControl { get; }
 	}
 }

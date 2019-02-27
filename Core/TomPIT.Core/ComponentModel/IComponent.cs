@@ -1,4 +1,5 @@
 ﻿using System;
+using TomPIT.Development;
 
 namespace TomPIT.ComponentModel
 {
@@ -12,5 +13,9 @@ namespace TomPIT.ComponentModel
 		Guid RuntimeConfiguration { get; }
 		DateTime Modified { get; }
 		Guid Folder { get; }
+		LockStatus LockStatus { get; }
+		Guid LockUser { get; }
+		DateTime LockDate { get; }
+		LockVerb LockVerb { get; }
 	}
 }

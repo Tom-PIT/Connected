@@ -47,3 +47,13 @@
 .api-operation-list {
   padding-left: 25px;
 }
+.vc-item {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 5px 0;
+}
+.vc-item-disabled {
+  color: #9e9e9e;
+}
+[data-kind="include"] {
+  width: 40px;
+}

@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -12,6 +14,7 @@ using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
 using TomPIT.Environment;
 using TomPIT.Runtime;
+using TomPIT.Runtime.Security;
 using TomPIT.Security;
 using TomPIT.Services;
 
@@ -37,7 +40,6 @@ namespace TomPIT
 		{
 			Shell.RegisterConfigurationType(typeof(ClientSys));
 
-			services.AddSingleton<IHostedService, FlushingService>();
 			ConfigureServices(services, e);
 		}
 
@@ -144,8 +146,18 @@ namespace TomPIT
 
 			_mvcBuilder.AddControllersAsServices();
 
+			services.AddAuthorization(options =>
+			{
+				options.AddPolicy(Claims.ImplementMicroservice, policy =>
+				policy.Requirements.Add(new ClaimRequirement(Claims.ImplementMicroservice)));
+			});
+
+			services.AddSingleton<IAuthorizationHandler, ClaimHandler>();
+			services.AddTransient<IActionContextAccessor, ActionContextAccessor>();
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 			services.ConfigureOptions(typeof(EmbeddedResourcesConfiguration));
+
+			services.AddSingleton<IHostedService, FlushingService>();
 		}
 
 		public static T GetService<T>()

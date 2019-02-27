@@ -8,6 +8,7 @@
 		public const int Configuration = 1;
 		public const int Template = 2;
 		public const int RuntimeConfiguration = 3;
+		public const int ComponentHistory = 4;
 
 		public const int WorkerState = 504;
 		public const int Package = 505;

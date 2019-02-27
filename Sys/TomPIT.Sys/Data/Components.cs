@@ -7,6 +7,7 @@ using System.Text;
 using TomPIT.Api.ComponentModel;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
+using TomPIT.Development;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
 
@@ -37,6 +38,48 @@ namespace TomPIT.Sys.Data
 			}
 
 			Set(id, r, TimeSpan.Zero);
+		}
+
+		public void Commit(List<Guid> components, Guid user, string comment)
+		{
+			var changes = new List<IComponent>();
+			var ms = Guid.Empty;
+
+			foreach (var i in components)
+			{
+				var component = Select(i);
+
+				if (component == null)
+					throw new SysException(SR.ErrComponentNotFound);
+
+				if (component.LockStatus != LockStatus.Lock)
+					throw new SysException(SR.ErrComponentNotLocked);
+
+				if (component.LockUser != user)
+					throw new SysException(SR.ErrComponentLockMismatch);
+
+				if (ms == Guid.Empty)
+					ms = component.MicroService;
+
+				if (component.MicroService != ms)
+					throw new SysException(SR.ErrCommitMultipleMicroservice);
+
+				changes.Add(component);
+			}
+
+			DataModel.VersionControl.InsertCommit(ms, user, comment, changes);
+
+			foreach (var component in changes)
+			{
+				Refresh(component.Token);
+				CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token);
+			}
+		}
+
+		public void NotifyChanged(IComponent component)
+		{
+			Refresh(component.Token);
+			CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token);
 		}
 
 		public IComponent Select(Guid token)
@@ -351,6 +394,16 @@ namespace TomPIT.Sys.Data
 			var existing = Where(f => f.MicroService == microService && string.Compare(category, f.Category, true) == 0);
 
 			return Shell.GetService<INamingService>().Create(prefix, existing.Select(f => f.Name), true);
+		}
+
+		public List<IComponent> QueryLocks(Guid microService)
+		{
+			return Where(f => f.LockStatus == LockStatus.Lock && f.MicroService == microService);
+		}
+
+		public List<IComponent> QueryLocks(Guid microService, Guid user)
+		{
+			return Where(f => f.LockStatus == LockStatus.Lock && f.MicroService == microService && f.LockUser == user);
 		}
 	}
 }

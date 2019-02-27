@@ -58,6 +58,29 @@ namespace TomPIT
 			return null;
 		}
 
+		public static Guid CurrentUserToken(this HttpContext context)
+		{
+			var u = CurrentUser(context);
+
+			return u == null
+				? Guid.Empty
+				: u.Token;
+		}
+
+		public static IUser CurrentUser(this HttpContext context)
+		{
+			if (context == null || context.User == null || context.User.Identity == null)
+				return null;
+
+			if (!context.User.Identity.IsAuthenticated)
+				return null;
+
+			if (!(context.User.Identity is Identity identity))
+				return null;
+
+			return identity.User;
+		}
+
 		public static void WithRequestArguments(this JObject instance, NameValueCollection items)
 		{
 			if (items == null)

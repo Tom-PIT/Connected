@@ -23,6 +23,9 @@ namespace TomPIT.Connectivity
 
 		public ISysConnection Select(string url)
 		{
+			if (string.IsNullOrWhiteSpace(url))
+				return Select(url);
+
 			return Get(url);
 		}
 

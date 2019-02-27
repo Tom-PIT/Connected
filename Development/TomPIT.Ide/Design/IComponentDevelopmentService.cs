@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TomPIT.ComponentModel;
 using TomPIT.Deployment;
+using TomPIT.Ide.Design;
 
 namespace TomPIT.Design
 {
@@ -24,5 +25,10 @@ namespace TomPIT.Design
 		void SaveRuntimeState(Guid microService);
 		void DropRuntimeState(Guid microService);
 		Dictionary<Guid, Guid> SelectRuntimeState(Guid microService);
+
+		IComponentImage CreateComponentImage(Guid component);
+		void RestoreComponent(IComponentImage image);
+		void RestoreComponent(Guid blob);
+		void Import(Guid microService, Guid blob);
 	}
 }

@@ -8,6 +8,7 @@ namespace TomPIT.ComponentModel
 	public interface IMicroServiceService
 	{
 		event MicroServiceChangedHandler MicroServiceChanged;
+		event MicroServiceChangedHandler MicroServiceRemoved;
 		event MicroServiceChangedHandler MicroServiceInstalled;
 
 		IMicroService SelectByUrl(string url);

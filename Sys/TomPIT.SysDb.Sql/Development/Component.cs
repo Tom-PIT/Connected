@@ -1,6 +1,7 @@
 ﻿using System;
 using TomPIT.ComponentModel;
 using TomPIT.Data.Sql;
+using TomPIT.Development;
 
 namespace TomPIT.SysDb.Sql.Development
 {
@@ -14,6 +15,10 @@ namespace TomPIT.SysDb.Sql.Development
 		public Guid RuntimeConfiguration { get; set; }
 		public DateTime Modified { get; set; }
 		public Guid Folder { get; set; }
+		public LockStatus LockStatus { get; set; }
+		public Guid LockUser { get; set; }
+		public DateTime LockDate { get; set; }
+		public LockVerb LockVerb { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -27,6 +32,10 @@ namespace TomPIT.SysDb.Sql.Development
 			RuntimeConfiguration = GetGuid("runtime_configuration");
 			Modified = GetDate("modified");
 			Folder = GetGuid("folder_token");
+			LockStatus = GetValue("lock_status", LockStatus.Commit);
+			LockUser = GetGuid("lock_user_token");
+			LockDate = GetDate("lock_date");
+			LockVerb = GetValue("lock_verb", LockVerb.None);
 		}
 	}
 }

@@ -21,6 +21,55 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="compilerconfig.json" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_alert.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_background-variant.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_badge.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_border-radius.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_box-shadow.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_breakpoints.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_buttons.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_caret.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_clearfix.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_deprecate.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_float.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_forms.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_gradients.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_grid-framework.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_grid.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_hover.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_image.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_list-group.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_lists.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_nav-divider.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_pagination.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_reset-text.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_resize.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_screen-reader.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_size.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_table-row.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_text-emphasis.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_text-hide.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_text-truncate.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_transition.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_visibility.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_align.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_background.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_borders.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_clearfix.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_display.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_embed.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_flex.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_float.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_overflow.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_position.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_screenreaders.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_shadows.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_sizing.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_spacing.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_stretched-link.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_text.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_visibility.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\vendor\_rfs.scss" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />

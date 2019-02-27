@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
+using TomPIT.Connectivity;
 using TomPIT.Design;
 using TomPIT.Designers;
 using TomPIT.Dom;
@@ -206,6 +207,35 @@ namespace TomPIT
 			return null;
 		}
 
+		public static List<Guid> Dependencies(this IConfiguration configuration)
+		{
+			var r = new List<Guid>();
+			var texts = configuration.Children<IText>();
+
+			foreach (var j in texts)
+			{
+				if (j.TextBlob == Guid.Empty)
+					continue;
+
+				r.Add(j.TextBlob);
+			}
+
+			var er = configuration.Children<IExternalResourceElement>();
+
+			foreach (var j in er)
+			{
+				var items = j.QueryResources();
+
+				if (items == null || items.Count == 0)
+					continue;
+
+				foreach (var k in items)
+					r.Add(k);
+			}
+
+			return r;
+		}
+
 		public static List<T> Children<T>(this IConfiguration configuration) where T : IElement
 		{
 			var r = new List<T>();
@@ -368,6 +398,21 @@ namespace TomPIT
 				if (handler != null)
 					handler.InitializeNewComponent(context, instance);
 			}
+		}
+
+		public static string Glyph(this IComponent component, ISysConnection connection)
+		{
+			var r = "fal fa-file";
+			var ms = connection.GetService<IMicroServiceService>().Select(component.MicroService);
+			var template = connection.GetService<IMicroServiceTemplateService>().Select(ms.Template);
+
+			var items = template.ProvideAddItems(null);
+			var item = items.FirstOrDefault(f => string.Compare(component.Type, f.Type.TypeName(), true) == 0);
+
+			if (item != null && !string.IsNullOrWhiteSpace(item.Glyph))
+				r = item.Glyph;
+
+			return r;
 		}
 	}
 }

@@ -10,6 +10,8 @@ namespace TomPIT.ComponentModel
 	{
 		public event MicroServiceChangedHandler MicroServiceChanged;
 		public event MicroServiceChangedHandler MicroServiceInstalled;
+		public event MicroServiceChangedHandler MicroServiceRemoved;
+
 		private MicroServiceMetaCache _meta = null;
 
 		public MicroServiceService(ISysConnection connection) : base(connection, "microservice")
@@ -150,6 +152,8 @@ namespace TomPIT.ComponentModel
 		public void NotifyRemoved(object sender, MicroServiceEventArgs e)
 		{
 			Remove(e.MicroService);
+
+			MicroServiceRemoved?.Invoke(sender, e);
 		}
 
 		public void NotifyMicroServiceStringRemoved(object sender, MicroServiceStringEventArgs e)

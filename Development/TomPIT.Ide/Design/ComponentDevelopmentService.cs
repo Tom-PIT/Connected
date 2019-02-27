@@ -1,11 +1,14 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Deployment;
 using TomPIT.Design.Serialization;
+using TomPIT.Ide.Design;
+using TomPIT.Ide.Design.VersionControl;
 using TomPIT.Services;
 using TomPIT.Storage;
 
@@ -36,6 +39,8 @@ namespace TomPIT.Design
 
 			if (c == null)
 				throw new IdeException(SR.ErrComponentNotFound);
+
+			Connection.GetService<IVersionControlService>().Lock(component);
 
 			RemoveDependencies(c.Token);
 
@@ -207,12 +212,16 @@ namespace TomPIT.Design
 			};
 
 			Connection.Post(u, args);
+			Connection.GetService<IVersionControlService>().Lock(instance.Component);
 
 			return instance.Component;
 		}
 
-		public void Update(Guid component, string name, Guid folder)
+		public void Update(Guid component, string name, Guid folder, bool performLock)
 		{
+			if (performLock)
+				Connection.GetService<IVersionControlService>().Lock(component);
+
 			var u = Connection.CreateUrl("ComponentDevelopment", "Update");
 			var args = new JObject
 			{
@@ -222,10 +231,22 @@ namespace TomPIT.Design
 			};
 
 			Connection.Post(u, args);
+
+		}
+
+		public void Update(Guid component, string name, Guid folder)
+		{
+			Update(component, name, folder, true);
 		}
 
 		public void Update(IConfiguration configuration)
 		{
+			Update(configuration, true);
+		}
+
+		private void Update(IConfiguration configuration, bool performLock)
+		{
+			var mode = Shell.GetService<IRuntimeService>().Mode;
 			var c = Connection.GetService<IComponentService>().SelectComponent(configuration.Component);
 
 			if (c == null)
@@ -235,9 +256,13 @@ namespace TomPIT.Design
 
 			if (s == null)
 				throw new IdeException(SR.ErrMicroServiceNotFound);
+			/*
+			 * version control lock needs to be obtained only for design time
+			 */
+			if (mode == EnvironmentMode.Design && performLock)
+				Connection.GetService<IVersionControlService>().Lock(c.Token);
 
 			var content = Connection.GetService<ISerializationService>().Serialize(configuration);
-			var mode = Shell.GetService<IRuntimeService>().Mode;
 
 			var blob = new Blob
 			{
@@ -297,6 +322,8 @@ namespace TomPIT.Design
 
 		public void Update(IText text, string content)
 		{
+			Connection.GetService<IVersionControlService>().Lock(text.Configuration().Component);
+
 			if (string.IsNullOrWhiteSpace(content))
 				Delete(text);
 			else
@@ -505,6 +532,159 @@ namespace TomPIT.Design
 			};
 
 			Connection.Post(u, e);
+		}
+
+		public IComponentImage CreateComponentImage(Guid component)
+		{
+			var c = Connection.GetService<IComponentService>().SelectComponent(component);
+			var r = new ComponentImage
+			{
+				Category = c.Category,
+				Folder = c.Folder,
+				MicroService = c.MicroService,
+				Name = c.Name,
+				RuntimeConfiguration = c.RuntimeConfiguration,
+				Token = c.Token,
+				Type = c.Type,
+				Configuration = CreateImageBlob(component)
+			};
+
+			var config = Connection.GetService<IComponentService>().SelectConfiguration(c.Token);
+			var deps = config.Dependencies();
+
+			foreach (var j in deps)
+				r.Dependencies.Add(CreateImageBlob(j));
+
+			return r;
+		}
+
+		private IComponentImageBlob CreateImageBlob(Guid blob)
+		{
+			var b = Connection.GetService<IStorageService>().Select(blob);
+
+			if (b == null)
+				return null;
+
+			return new ComponentImageBlob
+			{
+				Content = Connection.GetService<IStorageService>().Download(b.Token)?.Content,
+				Token = b.Token,
+				ContentType = b.ContentType,
+				FileName = b.FileName,
+				PrimaryKey = b.PrimaryKey,
+				Topic = b.Topic,
+				Type = b.Type,
+				Version = b.Version
+			};
+		}
+
+		private ComponentImage DownloadImage(Guid blob)
+		{
+			var content = Connection.GetService<IStorageService>().Download(blob);
+
+			if (content == null)
+				return null;
+
+			return Connection.GetService<ISerializationService>().Deserialize(content.Content, typeof(ComponentImage)) as ComponentImage;
+		}
+
+		public void RestoreComponent(IComponentImage image)
+		{
+			var component = Connection.GetService<IComponentService>().SelectComponent(image.Token);
+			var folder = image.Folder;
+			/*
+			 * if previous folder doesn't exist anymore we'll put component at root
+			 */
+			if (folder != Guid.Empty)
+			{
+				var f = Connection.GetService<IComponentService>().SelectFolder(image.Folder);
+
+				if (f == null)
+					folder = Guid.Empty;
+			}
+			/*
+			 * if component doesn't exist it has probably been deleted so we must create
+			 * a new component with the same identifiers
+			 */
+			if (component == null)
+			{
+				/*
+				 * runtime configuration has been lost when deleting. it currently cannot be restored.
+				 */
+				var u = Connection.CreateUrl("ComponentDevelopment", "Insert");
+
+				var args = new JObject
+				{
+					{"microService", image.MicroService },
+					{"folder", folder },
+					{"name", image.Name },
+					{"type", image.Type },
+					{"category", image.Category },
+					{"component", image.Token }
+				};
+
+				Connection.Post(u, args);
+
+				component = Connection.GetService<IComponentService>().SelectComponent(image.Token);
+			}
+			else
+				Update(image.Token, image.Name, folder);
+
+			var ms = Connection.GetService<IMicroServiceService>().Select(component.MicroService);
+			/*
+			 * we need to find out if and blobs has been created. if so, delete it because we
+			 * are performing undo or rollback.
+			 */
+			var config = Connection.GetService<IComponentService>().SelectConfiguration(image.Token);
+			var deps = config.Dependencies();
+
+			foreach (var i in deps)
+			{
+				if (image.Dependencies.FirstOrDefault(f => f.Token == i) == null)
+					Connection.GetService<IStorageService>().Delete(i);
+			}
+			/*
+			 * now restore configuration and all blobs
+			 */
+			var imageConfig = Connection.GetService<ISerializationService>().Deserialize(image.Configuration.Content, Type.GetType(image.Type)) as IConfiguration;
+
+			Update(imageConfig, false);
+
+			foreach (var i in image.Dependencies)
+			{
+				Connection.GetService<IStorageService>().Upload(new Blob
+				{
+					ContentType = i.ContentType,
+					FileName = i.FileName,
+					MicroService = component.MicroService,
+					PrimaryKey = i.PrimaryKey,
+					ResourceGroup = ms.ResourceGroup,
+					Token = i.Token,
+					Topic = i.Topic,
+					Type = i.Type,
+					Version = i.Version
+				}, i.Content, StoragePolicy.Singleton);
+			}
+		}
+
+		public void RestoreComponent(Guid blob)
+		{
+			RestoreComponent(DownloadImage(blob));
+		}
+
+		public void Import(Guid microService, Guid blob)
+		{
+			var image = DownloadImage(blob);
+			var imageConfig = Connection.GetService<ISerializationService>().Deserialize(image.Configuration.Content, Type.GetType(image.Type)) as IConfiguration;
+			var blobs = new Dictionary<Guid, Guid>();
+
+			//var elements = imageConfig.Children<IElement>();
+
+			//foreach (var i in elements)
+			//{
+				
+			//		i.Reset();
+			//}
 		}
 	}
 }

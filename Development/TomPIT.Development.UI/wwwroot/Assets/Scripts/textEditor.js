@@ -61,6 +61,7 @@
 
 				var src = options.source === null || options.source.length === 0 ? '\n' : options.source.join('\n');
 
+				target.options.hasChanged = false;
 				target.options.instance = monaco.editor.create(document.getElementById(options.elementId), {
 					value: src,
 					language: options.language,
@@ -81,8 +82,12 @@
 				if ($.isFunction(options.onCreated))
 					options.onCreated(target.options.instance);
 
+				target.options.instance.onDidChangeModelContent((e) => {
+					target.options.hasChanged = true;
+				});
+
 				$('textarea', target.element).on('blur', function () {
-					if(typeof options.onChange !== 'undefined')
+					if(target.options.hasChanged && typeof options.onChange !== 'undefined')
 						options.onChange(target.options.instance.getValue());
 				});
 			});

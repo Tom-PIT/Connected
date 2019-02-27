@@ -1,7 +1,7 @@
-﻿using System;
-using TomPIT.Connectivity;
+﻿using TomPIT.Connectivity;
 using TomPIT.Design;
 using TomPIT.Design.Services;
+using TomPIT.Ide.Design.VersionControl;
 
 namespace TomPIT
 {
@@ -21,6 +21,7 @@ namespace TomPIT
 			e.Connection.RegisterService(typeof(ICodeCompletionService), typeof(CodeCompletionService));
 			e.Connection.RegisterService(typeof(ICodeDiagnosticService), typeof(CodeDiagnosticService));
 			e.Connection.RegisterService(typeof(ICodeAnalysisService), typeof(CodeAnalysisService));
+			e.Connection.RegisterService(typeof(IVersionControlService), typeof(VersionControlService));
 		}
 	}
 }

@@ -22,5 +22,9 @@
   {
     "outputFile": "wwwroot/Assets/Styles/Variables.css",
     "inputFile": "wwwroot/Assets/Styles/Variables.less"
+  },
+  {
+    "outputFile": "wwwroot/Assets/Styles/bootstrap/bootstrap.css",
+    "inputFile": "wwwroot/Assets/Styles/bootstrap/bootstrap.scss"
   }
 ]
