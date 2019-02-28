@@ -3,7 +3,7 @@
 		"outputFileName": "wwwroot/assets/styles.min.css",
 		"inputFiles": [
 			"wwwroot/assets/fonts/opensans/opensans.css",
-			"wwwroot/assets/styles/bootstrap.css",
+			"wwwroot/assets/styles/bootstrap/bootstrap.css",
 			"wwwroot/assets/styles/tompit.css"
 		],
 		"minify": {

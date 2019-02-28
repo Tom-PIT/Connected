@@ -3,5 +3,6 @@
 	public interface IDataHandler
 	{
 		IAuditHandler Audit { get; }
+		IUserDataHandler UserData { get; }
 	}
 }

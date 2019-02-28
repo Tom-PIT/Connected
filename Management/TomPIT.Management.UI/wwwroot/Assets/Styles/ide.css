@@ -55,12 +55,16 @@
   position: relative;
   max-height: calc(100vh - 75px);
   min-height: calc(100vh - 75px);
+  max-width: 100%;
   overflow-y: auto;
 }
 #devSelection {
   max-height: 100%;
   overflow-y: auto;
   background-color: #f5f5f5;
+}
+#devExplorerToolbar {
+  border-bottom: 1px solid #e0e0e0;
 }
 #ide {
   min-height: 100%;
@@ -309,16 +313,19 @@ h4.dev-title {
 .template-toolbar .btn:hover {
   border-color: #e0e0e0;
 }
-.dev-add-item {
+.dev-add-item,
+.dev-toolbox-item {
   padding: 10px;
   cursor: pointer;
   border-bottom: 1px solid #eeeeee;
 }
-.dev-add-item:hover {
+.dev-add-item:hover,
+.dev-toolbox-item:hover {
   background-color: #03a9f4;
   color: #FFF;
 }
-.dev-add-item-category {
+.dev-add-item-category,
+.dev-toolbox-item-category {
   padding: 10px;
   font-variant: small-caps;
   font-weight: 700;

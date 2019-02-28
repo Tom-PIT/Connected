@@ -66,7 +66,13 @@ namespace TomPIT.Sys.Notifications
 		public static void BlobRemoved(Guid microService, Guid blob, int type, string primaryKey) { Notify(nameof(BlobRemoved), new BlobEventArgs(microService, blob, type, primaryKey)); }
 		public static void BlobChanged(Guid microService, Guid blob, int type, string primaryKey) { Notify(nameof(BlobChanged), new BlobEventArgs(microService, blob, type, primaryKey)); }
 		public static void BlobAdded(Guid microService, Guid blob, int type, string primaryKey) { Notify(nameof(BlobChanged), new BlobEventArgs(microService, blob, type, primaryKey)); }
-
+		/*
+		 * Data
+		 */
+		public static void UserDataChanged(Guid user) { Notify(nameof(UserDataChanged), new UserEventArgs(user)); }
+		/*
+		 * Security
+		 */
 		public static void UserChanged(Guid user) { Notify(nameof(UserChanged), new UserEventArgs(user)); }
 		public static void RoleChanged(Guid role) { Notify(nameof(RoleChanged), new RoleEventArgs(role)); }
 		public static void MembershipAdded(Guid user, Guid role) { Notify(nameof(MembershipAdded), new MembershipEventArgs(user, role)); }

@@ -69,6 +69,7 @@ namespace TomPIT.Runtime
 			e.Connection.RegisterService(typeof(ICryptographyService), typeof(CryptographyService));
 			e.Connection.RegisterService(typeof(IMetricService), typeof(MetricService));
 			e.Connection.RegisterService(typeof(IValidationService), typeof(ValidationService));
+			e.Connection.RegisterService(typeof(IUserDataService), typeof(UserDataService));
 		}
 	}
 }

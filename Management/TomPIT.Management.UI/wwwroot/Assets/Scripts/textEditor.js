@@ -10,7 +10,7 @@
 			onChanged: function (value) {
 				return false;
 			},
-			instance:null
+			instance: null
 		},
 
 		_create: function () {
@@ -44,7 +44,7 @@
 						if (typeof target.options.instance.codeLensProvider !== 'undefined')
 							target.options.instance.codeLensProvider.dispose();
 
-						if (typeof target.options.instance.definitionProvider!== 'undefined')
+						if (typeof target.options.instance.definitionProvider !== 'undefined')
 							target.options.instance.definitionProvider.dispose();
 
 						target.options.instance.dispose();
@@ -56,11 +56,12 @@
 				}
 
 				options = $.extend({
-					readOnly:false
+					readOnly: false
 				}, options);
 
 				var src = options.source === null || options.source.length === 0 ? '\n' : options.source.join('\n');
 
+				target.options.hasChanged = false;
 				target.options.instance = monaco.editor.create(document.getElementById(options.elementId), {
 					value: src,
 					language: options.language,
@@ -78,28 +79,18 @@
 					readOnly: options.readOnly
 				});
 
-				target.options.instance.addAction({
-					id: '5CC30D480C3E4742B30A4FCEC5C4C7D8',
-					label: 'Full Screen',
-					keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F11],
-					contextMenuGroupId: 'navigation',
-					contextMenuOrder: 2.5,
-					run: function (ed) {
-						var container = $(ed.domElement).closest('[data-fullscreen="true"]');
-
-						if (container.length > 0) {
-							container.toggleClass("full-screen");
-							container.toggleClass("code-editor-sa");
-						}
-					}
-				});
-
 				if ($.isFunction(options.onCreated))
 					options.onCreated(target.options.instance);
 
+				target.options.instance.onDidChangeModelContent((e) => {
+					target.options.hasChanged = true;
+				});
+
 				$('textarea', target.element).on('blur', function () {
-					if(typeof options.onChange !== 'undefined')
+					if (target.options.hasChanged && typeof options.onChange !== 'undefined') {
 						options.onChange(target.options.instance.getValue());
+						target.options.hasChanged = false;
+					}
 				});
 			});
 		},

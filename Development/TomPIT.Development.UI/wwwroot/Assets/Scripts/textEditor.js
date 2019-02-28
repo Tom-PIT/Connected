@@ -87,8 +87,10 @@
 				});
 
 				$('textarea', target.element).on('blur', function () {
-					if(target.options.hasChanged && typeof options.onChange !== 'undefined')
+					if (target.options.hasChanged && typeof options.onChange !== 'undefined') {
 						options.onChange(target.options.instance.getValue());
+						target.options.hasChanged = false;
+					}
 				});
 			});
 		},

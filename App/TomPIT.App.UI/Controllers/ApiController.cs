@@ -24,6 +24,45 @@ namespace TomPIT.Controllers
 			return PartialView(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", model.QualifierName), model);
 		}
 
+		[HttpPost]
+		public IActionResult SetUserData()
+		{
+			var model = CreateUserDataModel();
+
+			model.SetData();
+
+			return new EmptyResult();
+		}
+
+		[HttpPost]
+		public IActionResult GetUserData()
+		{
+			var model = CreateUserDataModel();
+
+			return Json(model.GetData());
+		}
+
+		[HttpPost]
+		public IActionResult QueryUserData()
+		{
+			var model = CreateUserDataModel();
+
+			return Json(model.QueryData());
+		}
+
+		private UserDataModel CreateUserDataModel()
+		{
+			var r = new UserDataModel
+			{
+				Body = FromBody()
+			};
+
+			r.Databind();
+			r.Initialize(this, null);
+
+			return r;
+		}
+
 		private ApiModel CreateModel()
 		{
 			var r = new ApiModel
