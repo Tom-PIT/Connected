@@ -229,6 +229,14 @@ namespace TomPIT.Connectivity
 				if (Connection.GetService<IUserService>() is IUserNotification n)
 					n.NotifyChanged(Connection, e.Args);
 			});
+
+			Hub.On<MessageEventArgs<AlienEventArgs>>("AlienChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IAlienService>() is IAlienNotification n)
+					n.NotifyChanged(Connection, e.Args);
+			});
 		}
 
 		private void Roles()

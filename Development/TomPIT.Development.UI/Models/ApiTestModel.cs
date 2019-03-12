@@ -6,6 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Apis;
+using TomPIT.Design;
+using TomPIT.Design.Services;
+using TomPIT.Services.Context;
 
 namespace TomPIT.Models
 {
@@ -13,6 +17,7 @@ namespace TomPIT.Models
 	{
 		private List<IApiTest> _tests = null;
 		private List<string> _categories = null;
+		private List<string> _operations = null;
 
 		protected override void OnInitializing(ModelInitializeParams p)
 		{
@@ -232,6 +237,58 @@ namespace TomPIT.Models
 			r.Databind();
 
 			return r;
+		}
+
+		public List<string> Operations
+		{
+			get
+			{
+				if (_operations == null)
+				{
+					_operations = new List<string>();
+					var ms = GetService<IMicroServiceService>().Query();
+
+					foreach (var microService in ms)
+					{
+						var apis = GetService<IComponentService>().QueryComponents(microService.Token, "Api");
+
+						foreach (var api in apis)
+						{
+							var config = GetService<IComponentService>().SelectConfiguration(api.Token) as IApi;
+
+							foreach (var operation in config.Operations)
+							{
+								if (string.IsNullOrWhiteSpace(operation.Name))
+									continue;
+
+								_operations.Add(string.Format("{0}/{1}/{2}", microService.Name, api.Name, operation.Name));
+							}
+						}
+					}
+
+					_operations.Sort();
+				}
+
+				return _operations;
+			}
+		}
+
+		public List<ISuggestion> ProvideItems()
+		{
+			var api = Body.Optional("api", string.Empty);
+
+			if (string.IsNullOrWhiteSpace(api))
+				return null;
+
+			var qualifier = new ApiQualifier(this, api);
+
+			if (string.IsNullOrWhiteSpace(qualifier.Operation))
+				return null;
+
+			if (!(GetService<IComponentService>().SelectConfiguration(qualifier.MicroService.Token, "Api", qualifier.Api) is IApi configuration))
+				return null;
+
+			return configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, qualifier.Operation, true) == 0)?.DiscoverParameters(this);
 		}
 	}
 }

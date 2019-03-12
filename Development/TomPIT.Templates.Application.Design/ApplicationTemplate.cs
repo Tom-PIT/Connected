@@ -3,8 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Application.Apis;
+using TomPIT.Application.Cdn;
 using TomPIT.Application.Data;
 using TomPIT.Application.Events;
+using TomPIT.Application.QA;
 using TomPIT.Application.Resources;
 using TomPIT.Application.UI;
 using TomPIT.Application.Workers;
@@ -37,7 +39,9 @@ namespace TomPIT.Application
 				//r.Add(new ItemDescriptor("Data management", DataManagement.ComponentCategory, typeof(DataManagement)) { Glyph = "fal fa-exchange-alt", Category = "Data", Value = "DataManagement" });
 				{Connection.ComponentCategory, new ItemDescriptor("Connection", "Connection", typeof(Connection)) { Glyph = "fal fa-server", Category = "Data" } },
 				{"Upload", new ItemDescriptor("Upload assembly", "Upload", typeof(AssemblyUploadResource)) { Glyph = "fal fa-file-code", Category = "Resources" } } ,
-				{"File", new ItemDescriptor("File assembly", "File", typeof(AssemblyFileSystemResource)) { Glyph = "fal fa-file-code", Category = "Resources" } }
+				{"File", new ItemDescriptor("File assembly", "File", typeof(AssemblyFileSystemResource)) { Glyph = "fal fa-file-code", Category = "Resources" } },
+				{"TestSuite", new ItemDescriptor("Test suite", "TestSuite", typeof(TestSuite)) { Glyph = "fal fa-stethoscope", Category = "QA" } },
+				{"Subscription", new ItemDescriptor("Subscription", "Subscription", typeof(Subscription)) { Glyph = "fal fa-bell", Category = "Cdn" } }
 			});
 		}
 

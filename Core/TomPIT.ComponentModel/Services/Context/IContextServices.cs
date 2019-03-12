@@ -12,5 +12,6 @@
 		IContextValidationService Validation { get; }
 		IContextEnvironmentService Environment { get; }
 		IContextStorageService Storage { get; }
+		IContextCdnService Cdn { get; }
 	}
 }

@@ -9,5 +9,9 @@
 		public const int OpenConnection = 104;
 		public const int PrepareCommand = 105;
 		public const int Deserialize = 106;
+		/*
+		 * CDN
+		 */
+		public const int SendMail = 601;
 	}
 }

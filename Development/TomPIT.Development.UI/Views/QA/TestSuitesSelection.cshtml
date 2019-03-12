@@ -1,0 +1,53 @@
+﻿@model TomPIT.Models.TestSuitesModel
+
+@if (Model.Selection == null)
+{
+	<div class="info-panel warning">
+		Please select a test suite from the list
+	</div>
+
+	return;
+}
+
+<div class="btn-toolbar">
+	<div class="btn-group btn-group-sm">
+		<button type="button" class="btn btn-sm btn-success" id="btnRun">Run suite</button>
+	</div>
+</div>
+
+<hr />
+<h5>@Model.SelectionComponent.Name</h5>
+
+
+@if (Model.Selection.Scenarios.Count == 0)
+{
+	<div class="info-panel warning">
+		Test suite contains no scenarios.
+	</div>
+}
+else
+{
+	@foreach (var scenario in Model.Selection.Scenarios)
+	{
+		var testCases = scenario.TestCases.Count(f => f.Enabled);
+
+		<small>scenario</small>
+		<div class="text-scenario">
+			@StringUtils.TextWithNumber(scenario.Name, testCases)
+		</div>
+
+		@foreach (var testCase in scenario.TestCases)
+		{
+			<div class="test-case">
+				@testCase.Name
+			</div>
+		}
+	}
+}
+
+<script>
+	var scenarioCount = @Model.Selection.Scenarios.Count;
+
+	if (scenarioCount == 0)
+		$('#btnRun').prop('disabled', true);
+</script>

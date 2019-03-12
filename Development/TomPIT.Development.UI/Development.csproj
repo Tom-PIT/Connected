@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT</RootNamespace>
     <AssemblyName>TomPIT.Development.App</AssemblyName>
-    <AssemblyVersion>1.0.220.1</AssemblyVersion>
-    <FileVersion>1.0.220.1</FileVersion>
-    <Version>1.0.220.1</Version>
+    <AssemblyVersion>1.0.228.4</AssemblyVersion>
+    <FileVersion>1.0.228.4</FileVersion>
+    <Version>1.0.228.4</Version>
   </PropertyGroup>
   <PropertyGroup>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
@@ -46,7 +46,7 @@
     <Content Update="Views\Ide\Designers\Upload.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\ApiTest.cshtml">
+    <Content Update="Views\QA\ApiTest.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
   </ItemGroup>

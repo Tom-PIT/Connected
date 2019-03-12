@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using TomPIT.Routing;
+﻿using TomPIT.Routing;
 
 namespace TomPIT.Models
 {
-	public abstract class DevelopmentModel:ShellModel
+	public abstract class DevelopmentModel : ShellModel
 	{
 		protected override void OnDatabinding()
 		{
@@ -15,7 +11,15 @@ namespace TomPIT.Models
 			Navigation.Links.Add(new Route
 			{
 				Category = "Quality Assurance",
-				Text = "API Test",
+				Text = "Test suites",
+
+				Url = this.RouteUrl("sys.testsuites", null)
+			});
+
+			Navigation.Links.Add(new Route
+			{
+				Category = "Quality Assurance",
+				Text = "APIs",
 
 				Url = this.RouteUrl("sys.apitest", null)
 			});

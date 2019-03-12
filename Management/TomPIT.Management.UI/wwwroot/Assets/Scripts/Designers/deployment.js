@@ -61,6 +61,7 @@ $.widget('tompit.tpDeployment', {
 		window.clearInterval(this.options.timer);
 	},
 	initCards: function (s) {
+		var instance = this;
 		var items = typeof s === 'undefined'
 			? $('[data-button="install"]')
 			: $('[data-button="install"]', s);

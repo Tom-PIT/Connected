@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using TomPIT.Analysis;
+using TomPIT.Cdn;
 using TomPIT.Compilation;
 using TomPIT.Compilers;
 using TomPIT.ComponentModel;
@@ -70,6 +71,8 @@ namespace TomPIT.Runtime
 			e.Connection.RegisterService(typeof(IMetricService), typeof(MetricService));
 			e.Connection.RegisterService(typeof(IValidationService), typeof(ValidationService));
 			e.Connection.RegisterService(typeof(IUserDataService), typeof(UserDataService));
+			e.Connection.RegisterService(typeof(IMailService), typeof(MailService));
+			e.Connection.RegisterService(typeof(ISubscriptionService), typeof(SubscriptionService));
 		}
 	}
 }

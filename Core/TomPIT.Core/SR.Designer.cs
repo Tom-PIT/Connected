@@ -538,6 +538,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Alien not found.
+        /// </summary>
+        public static string ErrAlienNotFound {
+            get {
+                return ResourceManager.GetString("ErrAlienNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Api operation accepts GET requests only..
         /// </summary>
         public static string ErrApiOperationProtocolGetOnly {
@@ -1114,6 +1123,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid receiver address.
+        /// </summary>
+        public static string ErrInvalidReceiverAddress {
+            get {
+                return ResourceManager.GetString("ErrInvalidReceiverAddress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid section..
         /// </summary>
         public static string ErrInvalidSection {
@@ -1290,6 +1308,15 @@ namespace TomPIT {
         public static string ErrLoginFailed {
             get {
                 return ResourceManager.GetString("ErrLoginFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mail message not found.
+        /// </summary>
+        public static string ErrMailMessageNotFound {
+            get {
+                return ResourceManager.GetString("ErrMailMessageNotFound", resourceCulture);
             }
         }
         
@@ -1591,6 +1618,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Send mail operation cancelled.
+        /// </summary>
+        public static string ErrSendMailCancelled {
+            get {
+                return ResourceManager.GetString("ErrSendMailCancelled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Argument expected..
         /// </summary>
         public static string ErrServerExpectedArgument {
@@ -1650,6 +1686,33 @@ namespace TomPIT {
         public static string ErrStorageProviderNotRegistered {
             get {
                 return ResourceManager.GetString("ErrStorageProviderNotRegistered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subscriber not found.
+        /// </summary>
+        public static string ErrSubscriberNotFound {
+            get {
+                return ResourceManager.GetString("ErrSubscriberNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subscription event not found.
+        /// </summary>
+        public static string ErrSubscriptionEventNotFound {
+            get {
+                return ResourceManager.GetString("ErrSubscriptionEventNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subscription not found.
+        /// </summary>
+        public static string ErrSubscriptionNotFound {
+            get {
+                return ResourceManager.GetString("ErrSubscriptionNotFound", resourceCulture);
             }
         }
         

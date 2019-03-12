@@ -8,6 +8,18 @@ namespace TomPIT.SysDb.Sql.Security
 		private IPermissionHandler _permissions = null;
 		private IRoleHandler _roles = null;
 		private IAuthenticationTokenHandler _authTokens = null;
+		private IAlienHandler _aliens = null;
+
+		public IAlienHandler Aliens
+		{
+			get
+			{
+				if (_aliens == null)
+					_aliens = new AlienHandler();
+
+				return _aliens;
+			}
+		}
 
 		public IUserHandler Users
 		{

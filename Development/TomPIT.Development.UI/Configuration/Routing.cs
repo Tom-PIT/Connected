@@ -17,6 +17,9 @@ namespace TomPIT.Configuration
 			routes.MapRoute("sys.apitest.querytests", "sys/apitest/querytests", new { controller = "ApiTest", action = "QueryTests" });
 			routes.MapRoute("sys.apitest.body", "sys/apitest/selectbody", new { controller = "ApiTest", action = "SelectBody" });
 			routes.MapRoute("sys.apitest.delete", "sys/apitest/delete", new { controller = "ApiTest", action = "Delete" });
+			routes.MapRoute("sys.apitest.provideitems", "sys/apitest/provideitems", new { controller = "ApiTest", action = "ProvideItems" });
+			routes.MapRoute("sys.testsuites", "sys/test-suites", new { controller = "TestSuites", action = "Index" });
+			routes.MapRoute("sys.testsuites.select", "sys/test-suites/select", new { controller = "TestSuites", action = "Select" });
 
 			routes.MapRoute("sys/source-code/{microService}/{component}/{template}", (t) =>
 			{

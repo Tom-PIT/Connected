@@ -57,3 +57,6 @@
 [data-kind="include"] {
   width: 40px;
 }
+.test-case {
+  padding-left: 15px;
+}

@@ -74,6 +74,7 @@ namespace TomPIT.Sys.Notifications
 		 * Security
 		 */
 		public static void UserChanged(Guid user) { Notify(nameof(UserChanged), new UserEventArgs(user)); }
+		public static void AlienChanged(Guid alien) { Notify(nameof(AlienChanged), new AlienEventArgs(alien)); }
 		public static void RoleChanged(Guid role) { Notify(nameof(RoleChanged), new RoleEventArgs(role)); }
 		public static void MembershipAdded(Guid user, Guid role) { Notify(nameof(MembershipAdded), new MembershipEventArgs(user, role)); }
 		public static void MembershipRemoved(Guid user, Guid role) { Notify(nameof(MembershipRemoved), new MembershipEventArgs(user, role)); }

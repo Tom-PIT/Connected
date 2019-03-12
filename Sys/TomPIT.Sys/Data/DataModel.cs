@@ -38,6 +38,10 @@ namespace TomPIT.Sys.Data
 		private static Lazy<Deployment> _deployment = new Lazy<Deployment>(() => { return new Deployment(); });
 		private static Lazy<VersionControl> _versionControl = new Lazy<VersionControl>(() => { return new VersionControl(); });
 		private static Lazy<UserData> _userData = new Lazy<UserData>(() => { return new UserData(Container); });
+		private static Lazy<TestSuite> _testSuite = new Lazy<TestSuite>(() => { return new TestSuite(); });
+		private static Lazy<Mail> _mail = new Lazy<Mail>(() => { return new Mail(); });
+		private static Lazy<Subscriptions> _subscribers = new Lazy<Subscriptions>(() => { return new Subscriptions(); });
+		private static Lazy<Aliens> _aliens = new Lazy<Aliens>(() => { return new Aliens(Container); });
 
 		public static MicroServicesMeta MicroServicesMeta { get { return _meta.Value; } }
 		public static MicroServices MicroServices { get { return _microServices.Value; } }
@@ -70,6 +74,10 @@ namespace TomPIT.Sys.Data
 		public static Deployment Deployment { get { return _deployment.Value; } }
 		public static VersionControl VersionControl { get { return _versionControl.Value; } }
 		public static UserData UserData { get { return _userData.Value; } }
+		public static TestSuite TestSuite { get { return _testSuite.Value; } }
+		public static Mail Mail { get { return _mail.Value; } }
+		public static Subscriptions Subscriptions { get { return _subscribers.Value; } }
+		public static Aliens Aliens { get { return _aliens.Value; } }
 
 		internal static MemoryCache Container
 		{

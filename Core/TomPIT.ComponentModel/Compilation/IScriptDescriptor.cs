@@ -7,7 +7,7 @@ namespace TomPIT.Compilation
 {
 	public interface IScriptDescriptor
 	{
-		Script Script { get; }
+		ScriptRunner<object> Script { get; }
 		ImmutableArray<Diagnostic> Errors { get; }
 		Guid MicroService { get; }
 		Guid Id { get; }

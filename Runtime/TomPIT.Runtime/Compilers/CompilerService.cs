@@ -120,12 +120,10 @@ namespace TomPIT.Compilers
 
 			try
 			{
-				var state = Task.Run(async () =>
+				return Task.Run(async () =>
 				{
-					return await script.Script.RunAsync(globals).ConfigureAwait(false);
+					return await script.Script(globals).ConfigureAwait(false);
 				}).Result;
-
-				return state.ReturnValue;
 			}
 			catch (AggregateException ex)
 			{
@@ -240,7 +238,9 @@ namespace TomPIT.Compilers
 			Set(d.Id, r, TimeSpan.Zero);
 
 			r.Errors = script.Compile();
-			r.Script = script;
+			r.Script = script.CreateDelegate();
+
+			script = null;
 
 			return r;
 		}

@@ -165,6 +165,30 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 		}
 
 		public override SourceText SourceCode => _sourceCode;
+		protected override Guid MicroService => _microService;
+
+		public List<ISuggestion> QueryParameters(IApiOperation operation)
+		{
+			var txt = Context.Connection().GetService<IComponentService>().SelectText(operation.MicroService(Context.Connection()), operation.Invoke);
+			var parameters = QueryParameters(Context, operation.Closest<IApi>(), txt);
+			var r = new List<ISuggestion>();
+
+			if (parameters == null)
+				return r;
+
+			foreach (var parameter in parameters)
+			{
+				r.Add(new Suggestion
+				{
+					InsertText = parameter.Name,
+					Label = string.Format("{0} ({1})", parameter.Name, parameter.DataType),
+					Kind= Suggestion.Property,
+					Description = parameter.Required ? "Required" : "Optional"
+				});
+			}
+
+			return r;
+		}
 
 		private List<ApiParameter> QueryParameters(IExecutionContext context, IApi api, string text)
 		{

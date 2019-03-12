@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TomPIT.Design.Services
 {
-	internal class Suggestion : ISuggestion
+	public class Suggestion : ISuggestion
 	{
 		public const int Class = 5;
 		public const int Color = 19;

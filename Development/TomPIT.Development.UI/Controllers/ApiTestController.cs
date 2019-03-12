@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
-using TomPIT.ComponentModel;
 using TomPIT.Models;
 
 namespace TomPIT.Controllers
@@ -9,7 +8,7 @@ namespace TomPIT.Controllers
 	{
 		public IActionResult Index()
 		{
-			return View("~/Views/ApiTest.cshtml", ApiTestModel.Create(this, true));
+			return View("~/Views/QA/ApiTest.cshtml", ApiTestModel.Create(this, true));
 		}
 
 		public IActionResult Invoke()
@@ -62,6 +61,13 @@ namespace TomPIT.Controllers
 			m.Delete();
 
 			return new EmptyResult();
+		}
+
+		public IActionResult ProvideItems()
+		{
+			var m = ApiTestModel.Create(this, false);
+
+			return Json(m.ProvideItems());
 		}
 	}
 }

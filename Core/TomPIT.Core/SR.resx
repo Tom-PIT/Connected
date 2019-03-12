@@ -879,4 +879,25 @@
   <data name="ErrComponentNotLocked" xml:space="preserve">
     <value>Component cannot be commited because it has not locks.</value>
   </data>
+  <data name="ErrMailMessageNotFound" xml:space="preserve">
+    <value>Mail message not found</value>
+  </data>
+  <data name="ErrInvalidReceiverAddress" xml:space="preserve">
+    <value>Invalid receiver address</value>
+  </data>
+  <data name="ErrSendMailCancelled" xml:space="preserve">
+    <value>Send mail operation cancelled</value>
+  </data>
+  <data name="ErrSubscriberNotFound" xml:space="preserve">
+    <value>Subscriber not found</value>
+  </data>
+  <data name="ErrSubscriptionNotFound" xml:space="preserve">
+    <value>Subscription not found</value>
+  </data>
+  <data name="ErrSubscriptionEventNotFound" xml:space="preserve">
+    <value>Subscription event not found</value>
+  </data>
+  <data name="ErrAlienNotFound" xml:space="preserve">
+    <value>Alien not found</value>
+  </data>
 </root>

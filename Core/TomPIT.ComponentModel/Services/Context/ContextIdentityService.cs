@@ -124,5 +124,25 @@ namespace TomPIT.Services.Context
 
 			return id;
 		}
+
+		public Guid InsertAlien(string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone)
+		{
+			return Context.Connection().GetService<IAlienService>().Insert(firstName, lastName, email, mobile, phone, language, timezone);
+		}
+
+		public IAlien GetAlien(string email)
+		{
+			return Context.Connection().GetService<IAlienService>().Select(email);
+		}
+
+		public IAlien GetAlienByMobile(string mobile)
+		{
+			return Context.Connection().GetService<IAlienService>().SelectByMobile(mobile);
+		}
+
+		public IAlien GetAlienByPhone(string phone)
+		{
+			return Context.Connection().GetService<IAlienService>().SelectByPhone(phone);
+		}
 	}
 }

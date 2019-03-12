@@ -1,4 +1,5 @@
 ﻿using TomPIT.Data.Sql;
+using TomPIT.SysDb.Cdn;
 using TomPIT.SysDb.Data;
 using TomPIT.SysDb.Deployment;
 using TomPIT.SysDb.Development;
@@ -9,6 +10,7 @@ using TomPIT.SysDb.Globalization;
 using TomPIT.SysDb.IoT;
 using TomPIT.SysDb.Management;
 using TomPIT.SysDb.Security;
+using TomPIT.SysDb.Sql.Cdn;
 using TomPIT.SysDb.Sql.Configuration;
 using TomPIT.SysDb.Sql.Data;
 using TomPIT.SysDb.Sql.Deployment;
@@ -40,6 +42,18 @@ namespace TomPIT.SysDb.Sql
 		private IDataHandler _data = null;
 		private IIoTHandler _iot = null;
 		private IDeploymentHandler _deployment = null;
+		private ICdnHandler _cdn = null;
+
+		public ICdnHandler Cdn
+		{
+			get
+			{
+				if (_cdn == null)
+					_cdn = new CdnHandler();
+
+				return _cdn;
+			}
+		}
 
 		public IDeploymentHandler Deployment
 		{

@@ -200,6 +200,40 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[user]'
+GO
+CREATE TABLE [tompit].[user]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[token] [uniqueidentifier] NOT NULL,
+[auth_token] [uniqueidentifier] NULL,
+[url] [nvarchar] (136) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[email] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[status] [int] NOT NULL,
+[first_name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[last_name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[description] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[password] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[language] [int] NULL,
+[last_login] [smalldatetime] NULL,
+[timezone] [nvarchar] (256) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[notification_enabled] [bit] NOT NULL,
+[login_name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[pin] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[mobile] [varchar] (48) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[phone] [varchar] (48) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[avatar] [uniqueidentifier] NULL,
+[password_change] [smalldatetime] NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_user] on [tompit].[user]'
+GO
+ALTER TABLE [tompit].[user] ADD CONSTRAINT [PK_user] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[service]'
 GO
 CREATE TABLE [tompit].[service]
@@ -255,7 +289,11 @@ CREATE TABLE [tompit].[component]
 [category] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [runtime_configuration] [uniqueidentifier] NULL,
 [modified] [datetime] NULL,
-[service] [int] NULL
+[service] [int] NULL,
+[lock_status] [int] NOT NULL CONSTRAINT [DF_component_status] DEFAULT ((0)),
+[lock_user] [int] NULL,
+[lock_date] [datetime] NULL,
+[lock_verb] [int] NOT NULL CONSTRAINT [DF_component_lock_verb] DEFAULT ((0))
 ) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -269,12 +307,18 @@ GO
 PRINT N'Creating [tompit].[view_component]'
 GO
 
+
+
+
 CREATE VIEW [tompit].[view_component]
 AS
 SELECT      c.id, c.name, c.token, c.type, c.category, c.runtime_configuration, c.modified,
-			c.service, c.folder, f.token as folder_token, s.token AS [service_token]
+			c.service, c.folder, c.lock_status, c.lock_date, c.lock_user, c.lock_verb,
+			u.token lock_user_token,
+			f.token as folder_token, s.token AS [service_token]
 FROM        tompit.component AS c 
 LEFT JOIN	tompit.folder f on c.folder=f.id
+LEFT JOIN	tompit.[user] u ON c.lock_user = u.id
 INNER JOIN	tompit.service s on c.service = s.id
 
 GO
@@ -823,40 +867,6 @@ BEGIN
 	from language
 	
 END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[user]'
-GO
-CREATE TABLE [tompit].[user]
-(
-[id] [int] NOT NULL IDENTITY(1, 1),
-[token] [uniqueidentifier] NOT NULL,
-[auth_token] [uniqueidentifier] NULL,
-[url] [nvarchar] (136) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[email] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[status] [int] NOT NULL,
-[first_name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[last_name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[description] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[password] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[language] [int] NULL,
-[last_login] [smalldatetime] NULL,
-[timezone] [nvarchar] (256) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[notification_enabled] [bit] NOT NULL,
-[login_name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[pin] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[mobile] [varchar] (48) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[phone] [varchar] (48) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[avatar] [uniqueidentifier] NULL,
-[password_change] [smalldatetime] NULL
-) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating primary key [PK_user] on [tompit].[user]'
-GO
-ALTER TABLE [tompit].[user] ADD CONSTRAINT [PK_user] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -1919,8 +1929,10 @@ CREATE TABLE [tompit].[installer]
 [id] [int] NOT NULL IDENTITY(1, 1),
 [package] [uniqueidentifier] NOT NULL,
 [parent] [uniqueidentifier] NULL,
-[status] [int] NOT NULL
-) ON [PRIMARY]
+[status] [int] NOT NULL,
+[error] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[modified] [datetime] NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -1944,8 +1956,19 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	INSERT tompit.installer (package, parent, status)
-	SELECT package, parent, 1 FROM OPENJSON(@items) WITH (package uniqueidentifier, parent uniqueidentifier);
+	MERGE tompit.installer AS d
+	USING (SELECT * FROM OPENJSON (@items) WITH (package uniqueidentifier, parent uniqueidentifier)) AS s (package, parent)
+	ON (d.package = s.package)
+	WHEN NOT MATCHED THEN
+		INSERT (package, parent, status, modified)
+		VALUES (s.package, s.parent, 1, GETUTCDATE())
+	WHEN MATCHED THEN
+		UPDATE SET
+			status = 1,
+			modified = GETUTCDATE(),
+			parent = s.parent,
+			error = NULL;
+
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -1976,8 +1999,6 @@ BEGIN
 
 	UPDATE tompit.installer SET parent = NULL WHERE parent = @package;
 
-	UPDATE tompit.installer SET
-		parent = NULL
 	DELETE tompit.installer 
 	WHERE package = @package;
 END
@@ -2070,13 +2091,16 @@ PRINT N'Creating [tompit].[installer_upd]'
 GO
 CREATE PROCEDURE [tompit].[installer_upd]
 	@id int,
-	@status int 
+	@status int,
+	@error nvarchar(MAX) = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	UPDATE tompit.installer SET
-		status = @status
+		status = @status,
+		error = @error,
+		modified = GETUTCDATE()
 	WHERE id = @id;
 END
 GO
@@ -2681,6 +2705,44 @@ FROM            tompit.auth_token INNER JOIN
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[install_audit]'
+GO
+CREATE TABLE [tompit].[install_audit]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[package] [uniqueidentifier] NOT NULL,
+[created] [datetime] NOT NULL,
+[message] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[type] [int] NOT NULL,
+[version] [varchar] (48) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_install_audit] on [tompit].[install_audit]'
+GO
+ALTER TABLE [tompit].[install_audit] ADD CONSTRAINT [PK_install_audit] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[install_audit_ins]'
+GO
+CREATE PROCEDURE [tompit].[install_audit_ins]
+	@package uniqueidentifier,
+	@created datetime,
+	@message nvarchar(MAX) = NULL,
+	@type int,
+	@version varchar(48) = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.install_audit (package, created, message, type, version)
+	VALUES (@package, @created, @message, @type, @version);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[view_message]'
 GO
 
@@ -2711,6 +2773,23 @@ BEGIN
 	delete environment_unit
 	where id = @id;
 
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[install_audit_que]'
+GO
+CREATE PROCEDURE [tompit].[install_audit_que]
+	@package uniqueidentifier = NULL,
+	@created datetime = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT *
+	FROM tompit.install_audit
+	WHERE (@package IS NULL OR package = @package)
+	AND (@created IS NULL OR created >= @created);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -2824,6 +2903,28 @@ BEGIN
 
 	DELETE tompit.auth_token
 	WHERE id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[component_lock_upd]'
+GO
+CREATE PROCEDURE [tompit].[component_lock_upd]
+	@id int,
+	@lock_status int,
+	@lock_user int = NULL,
+	@lock_date datetime = NULL,
+	@lock_verb int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	UPDATE tompit.component SET
+		lock_status = @lock_status,
+		lock_user = @lock_user,
+		lock_date = @lock_date,
+		lock_verb = @lock_verb
+	WHERE id = @id; 
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -2956,6 +3057,40 @@ BEGIN
 		VALUES (@name, @value)
 	WHEN MATCHED THEN
 		UPDATE SET value = @value;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[version_control_commit]'
+GO
+CREATE TABLE [tompit].[version_control_commit]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[created] [datetime] NOT NULL,
+[user] [int] NOT NULL,
+[comment] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[token] [uniqueidentifier] NOT NULL,
+[service] [uniqueidentifier] NOT NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_version_control_commit] on [tompit].[version_control_commit]'
+GO
+ALTER TABLE [tompit].[version_control_commit] ADD CONSTRAINT [PK_version_control_commit] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[version_control_commit_del]'
+GO
+CREATE PROCEDURE [tompit].[version_control_commit_del]
+	@id int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.version_control_commit
+	WHERE id = @id;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3123,6 +3258,69 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[component_history]'
+GO
+CREATE TABLE [tompit].[component_history]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[created] [datetime] NOT NULL,
+[configuration] [uniqueidentifier] NOT NULL,
+[name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[user] [int] NOT NULL,
+[commit] [int] NULL,
+[component] [uniqueidentifier] NOT NULL,
+[verb] [int] NOT NULL CONSTRAINT [DF_component_history_verb] DEFAULT ((0))
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_component_history] on [tompit].[component_history]'
+GO
+ALTER TABLE [tompit].[component_history] ADD CONSTRAINT [PK_component_history] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding constraints to [tompit].[component_history]'
+GO
+ALTER TABLE [tompit].[component_history] ADD CONSTRAINT [IX_component_history] UNIQUE NONCLUSTERED  ([configuration]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[version_control_commit_ins]'
+GO
+CREATE PROCEDURE [tompit].[version_control_commit_ins]
+	@token uniqueidentifier,
+	@service uniqueidentifier,
+	@user int,
+	@created datetime,
+	@comment nvarchar(MAX),
+	@components nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	declare @id int;
+
+	INSERT tompit.version_control_commit (created, [user], service, comment, token)
+	VALUES (@created, @user, @service, @comment, @token);
+
+	set @id = scope_identity();
+
+	UPDATE tompit.component SET
+		lock_status = 0,
+		lock_date = NULL,
+		lock_user = NULL,
+		lock_verb = 0
+	WHERE token IN (SELECT  token FROM OPENJSON(@components) WITH (token uniqueidentifier));
+
+	UPDATE tompit.component_history SET
+		[commit] = @id
+	WHERE component IN (SELECT token FROM OPENJSON(@components) WITH (token uniqueidentifier));
+		
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[worker_sel]'
 GO
 CREATE PROCEDURE [tompit].[worker_sel]
@@ -3149,6 +3347,24 @@ BEGIN
 	delete resource_group
 	where id = @id;
 
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[component_commit_que]'
+GO
+CREATE PROCEDURE [tompit].[component_commit_que]
+	@commit int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT c.*
+	FROM tompit.view_component c
+	INNER JOIN tompit.component_history h
+	ON c.token = h.component
+	WHERE h.[commit] = @commit;
+		
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3189,6 +3405,32 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[version_control_commit_que]'
+GO
+CREATE PROCEDURE [tompit].[version_control_commit_que]
+	@service uniqueidentifier,
+	@component uniqueidentifier = NULL,
+	@user int = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	IF (@component IS NULL)
+		SELECT *
+		FROM tompit.version_control_commit
+		WHERE service = @service
+		AND (@user IS NULL OR user = @user);
+	ELSE
+		SELECT c.*
+		FROM  tompit.component_history h
+		INNER JOIN tompit.version_control_commit c ON h.[commit] = c.id
+		INNER JOIN tompit.component cmp ON h.component = cmp.token
+		WHERE (cmp.token = @component)
+		AND (@user IS NULL OR c.[user] = @user);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[view_permission]'
 GO
 CREATE VIEW [tompit].[view_permission]
@@ -3196,6 +3438,41 @@ AS
 SELECT        tompit.permission.*, tompit.resource_group.token AS resource_group_token
 FROM            tompit.permission INNER JOIN
                          tompit.resource_group ON tompit.permission.resource_group = tompit.resource_group.id
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[version_control_commit_sel]'
+GO
+CREATE PROCEDURE [tompit].[version_control_commit_sel]
+	@token uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 *
+	FROM tompit.version_control_commit
+	WHERE token = @token;
+
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[component_history_ins]'
+GO
+CREATE PROCEDURE [tompit].[component_history_ins]
+	@created datetime,
+	@configuration uniqueidentifier,
+	@name nvarchar(128),
+	@user int,
+	@component uniqueidentifier,
+	@verb int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.component_history (created, configuration, name, [user], [commit], component, verb)
+	VALUES (@created, @configuration, @name, @user, NULL, @component, @verb);
+END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -3226,6 +3503,55 @@ BEGIN
 
 	DELETE tompit.role
 	WHERE id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[component_history_undo]'
+GO
+CREATE PROCEDURE [tompit].[component_history_undo]
+	@component uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.component_history 
+	WHERE component = @component
+	AND [commit] IS NULL;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[component_history_view]'
+GO
+
+
+
+CREATE VIEW [tompit].[component_history_view]
+AS
+
+SELECT h.id, h.created, h.configuration, h.name, h.[user], h.[commit], h.component, h.verb, 
+		c.token commit_token,
+		u.token user_token
+FROM tompit.component_history h
+INNER JOIN tompit.[user] u ON h.[user] = u.id
+LEFT JOIN tompit.version_control_commit c ON h.[commit] = c.id;
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[component_history_que]'
+GO
+CREATE PROCEDURE [tompit].[component_history_que]
+	@component uniqueidentifier = NULL,
+	@commit int = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT *
+	FROM tompit.component_history_view 
+	WHERE (@component IS NULL OR component = @component)
+	AND (@commit IS NULL OR [commit] = @commit);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3350,6 +3676,54 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[user_data]'
+GO
+CREATE TABLE [tompit].[user_data]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[topic] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[user] [int] NOT NULL,
+[primary_key] [nvarchar] (256) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[value] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_user_data] on [tompit].[user_data]'
+GO
+ALTER TABLE [tompit].[user_data] ADD CONSTRAINT [PK_user_data] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding constraints to [tompit].[user_data]'
+GO
+ALTER TABLE [tompit].[user_data] ADD CONSTRAINT [IX_user_data] UNIQUE NONCLUSTERED  ([user], [primary_key]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[user_data_mdf]'
+GO
+CREATE PROCEDURE [tompit].[user_data_mdf]
+	@items nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	MERGE tompit.user_data AS d
+	USING (SELECT topic, [user], primary_key, value FROM OPENJSON(@items) WITH (topic nvarchar(128), [user] int, primary_key nvarchar(256), value nvarchar(MAX))) 
+	AS s (topic, [user], primary_key, value)
+	ON ((s.topic IS NULL OR d.topic = s.topic) AND d.[user] = s.[user] AND d.primary_key = s.primary_key)
+	WHEN NOT MATCHED THEN
+		INSERT (topic, [user], primary_key, value)
+		VALUES (s.topic, s.[user], s.primary_key, s.value)
+	WHEN MATCHED THEN
+		UPDATE SET
+			value = s.value;
+
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[message_recipient_upd]'
 GO
 
@@ -3377,6 +3751,21 @@ AS
 SELECT        m.id, m.[user], m.role, u.token AS user_token
 FROM            tompit.membership AS m INNER JOIN
                          tompit.[user] AS u ON m.[user] = u.id
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[user_data_que]'
+GO
+CREATE PROCEDURE [tompit].[user_data_que]
+	@user int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT *
+	FROM tompit.user_data
+	WHERE [user] = @user
+END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -3866,6 +4255,16 @@ ALTER TABLE [tompit].[component] ADD CONSTRAINT [FK_component_folder] FOREIGN KE
 GO
 ALTER TABLE [tompit].[component] ADD CONSTRAINT [FK_component_service] FOREIGN KEY ([service]) REFERENCES [tompit].[service] ([id])
 GO
+ALTER TABLE [tompit].[component] ADD CONSTRAINT [FK_component_user] FOREIGN KEY ([lock_user]) REFERENCES [tompit].[user] ([id])
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding foreign keys to [tompit].[component_history]'
+GO
+ALTER TABLE [tompit].[component_history] ADD CONSTRAINT [FK_component_history_user] FOREIGN KEY ([user]) REFERENCES [tompit].[user] ([id])
+GO
+ALTER TABLE [tompit].[component_history] ADD CONSTRAINT [FK_component_history_version_control_commit] FOREIGN KEY ([commit]) REFERENCES [tompit].[version_control_commit] ([id]) ON DELETE CASCADE
+GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
 PRINT N'Adding foreign keys to [tompit].[environment_unit]'
@@ -3943,6 +4342,12 @@ GO
 PRINT N'Adding foreign keys to [tompit].[service]'
 GO
 ALTER TABLE [tompit].[service] ADD CONSTRAINT [FK_solution_resource_group] FOREIGN KEY ([resource_group]) REFERENCES [tompit].[resource_group] ([id]) ON DELETE CASCADE
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding foreign keys to [tompit].[user_data]'
+GO
+ALTER TABLE [tompit].[user_data] ADD CONSTRAINT [FK_user_data_user] FOREIGN KEY ([user]) REFERENCES [tompit].[user] ([id]) ON DELETE CASCADE
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO

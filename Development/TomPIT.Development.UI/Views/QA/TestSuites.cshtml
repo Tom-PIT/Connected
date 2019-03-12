@@ -1,0 +1,62 @@
+﻿@using Newtonsoft.Json;
+
+@model TomPIT.Models.TestSuitesModel
+
+@{
+	Layout = "~/Views/Shared/Shell.cshtml";
+}
+
+<div class="doc-canvas">
+	<div class="paper">
+		<div class="row">
+			<div class="col-lg-4">
+				<div class="form-group">
+					<h6>Test suites</h6>
+					<hr />
+					<div id="listSuites"></div>
+				</div>
+			</div>
+			<div class="col-lg-8">
+				<div id="divSelection">
+					@await Html.PartialAsync("~/Views/QA/TestSuitesSelection.cshtml")
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	$("#listSuites").dxList({
+		searchEnabled: true,
+		searchExpr: ['key', 'items'],
+		keyExpr: 'value',
+		valueExpr: 'value',
+		displayExpr:'text',
+		dataSource: @Html.Raw(JsonConvert.SerializeObject(Model.Suites)),
+		selectionMode: 'single',
+		grouped: true,
+		collapsibleGroups:true,
+		height: 'calc(100vh - 230px)',
+		onSelectionChanged: function (e) {
+			refreshSelection();
+		}
+	});
+
+	function refreshSelection() {
+		var items = $('#listSuites').dxList('instance').option('selectedItems');
+		var suite = null;
+
+		if (items.length > 0)
+			suite = items[0].items[0].value;
+
+		tompit.post({
+			'url': '@Url.RouteUrl("sys.testsuites.select")',
+			'data': {
+				'suite': suite
+			},
+			onSuccess: function (data) {
+				$('#divSelection').html(data);
+			}
+		});
+	}
+</script>

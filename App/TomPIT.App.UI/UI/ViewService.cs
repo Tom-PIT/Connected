@@ -160,7 +160,7 @@ namespace TomPIT.UI
 			var v = Select(url, null);
 
 			if (v == null)
-				return true;
+				return false;
 
 			if (ChangeState.TryGetValue(v.Component, out bool r))
 			{

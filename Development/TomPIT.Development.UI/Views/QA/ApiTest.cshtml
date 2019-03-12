@@ -208,13 +208,43 @@
     }
         ];
 
-    textEditor.activateEditor({
-        id: 'design',
-        elementId: 'designEditor',
-        source: src,
-        language: 'json',
+	textEditor.activateEditor({
+		id: 'design',
+		elementId: 'designEditor',
+		source: src,
+		language: 'json',
+		onCreated: function () {
+			textEditor.registerCompletionItemProvider('json', {
+				provideCompletionItems: function (model, position, context) {
+					return new monaco.Promise(function (resolve, reject) {
+
+						var api = $('#editApi').dxSelectBox('instance').option('value');
+						var body = textEditor.getValue();
+
+						tompit.post({
+							url: '@Url.RouteUrl("sys.apitest.provideitems")',
+							data: {
+								'api': api,
+								'body': body,
+								'position': model.getOffsetAt({
+									lineNumber: position.lineNumber,
+									column: position.column
+								}),
+								'triggerCharacter': context.triggerCharacter,
+								'triggerKind': context.triggerKind,
+							},
+							progress: tompit.findProgress('#ide'),
+							onSuccess: function (data) {
+								resolve({
+									suggestions: data
+								})
+							}
+						});
+					});
             }
-    );
+			})
+		}
+	});
 
     textEditor2.activateEditor({
         id: 'designResponse',
@@ -229,7 +259,7 @@
         if (!DevExpress.validationEngine.validateGroup('form').isValid)
             return;
 
-        var api = $('#editApi').dxTextBox('instance').option('value');
+        var api = $('#editApi').dxSelectBox('instance').option('value');
         var body = textEditor.getValue();
 
         tompit.post({
@@ -253,7 +283,7 @@
             return;
 
         if (selectedTest == null) {
-            $('#editTitle').dxTextBox('instance').option('value', $('#editApi').dxTextBox('instance').option('value'));
+            $('#editTitle').dxTextBox('instance').option('value', $('#editApi').dxSelectBox('instance').option('value'));
             $('#editTags').dxTagBox('instance').option('value', $('#editTag').dxTagBox('instance').option('value'));
         }
 
@@ -266,7 +296,7 @@
             return;
 
         saveAs = true;
-        $('#editTitle').dxTextBox('instance').option('value', $('#editApi').dxTextBox('instance').option('value'));
+		 $('#editTitle').dxTextBox('instance').option('value', $('#editApi').dxSelectBox('instance').option('value'));
         $('#saveModal').modal('show');
     });
 
@@ -277,8 +307,9 @@
         }
     });
 
-    $('#editApi').dxTextBox({
-
+	$('#editApi').dxSelectBox({
+		items:@Html.Raw(Html.TP().JavaScript.Array(Model.Operations)),
+		searchEnabled:true
     }).dxValidator({
         validationRules: [{
             type: 'required'
@@ -318,7 +349,7 @@
         var data = {
             'title': $('#editTitle').dxTextBox('instance').option('value'),
             'description': $('#editDescription').dxTextArea('instance').option('value'),
-            'api': $('#editApi').dxTextBox('instance').option('value'),
+			  'api': $('#editApi').dxSelectBox('instance').option('value'),
             'body': textEditor.getValue(),
             'identifier': saveAs ? null: selectedTest,
             'tags': $('#editTags').dxTagBox('instance').option('value').toString()
@@ -360,14 +391,14 @@
         if (items.length == 0) {
             selectedTest = null;
 
-            $('#editApi').dxTextBox('instance').option('value', null);
+			  $('#editApi').dxSelectBox('instance').option('value', null);
         }
         else {
             var item = items[0];
 
             selectedTest = item.identifier;
 
-            $('#editApi').dxTextBox('instance').option('value', item.api);
+			  $('#editApi').dxSelectBox('instance').option('value', item.api);
             $('#editTitle').dxTextBox('instance').option('value', item.title);
             $('#editDescription').dxTextArea('instance').option('value', item.description);
             $('#editTags').dxTagBox('instance').option('value', item.tags.split(','));
