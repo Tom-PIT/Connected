@@ -6,9 +6,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 {
 	internal class Subscriber : LongPrimaryKeyRecord, ISubscriber
 	{
-		public Guid Handler { get; set; }
-		public string Topic { get; set; }
-		public string PrimaryKey { get; set; }
+		public Guid Subscription { get; set; }
 		public SubscriptionResourceType Type { get; set; }
 		public string ResourcePrimaryKey { get; set; }
 
@@ -16,9 +14,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 		{
 			base.OnCreate();
 
-			Handler = GetGuid("handler");
-			Topic = GetString("topic");
-			PrimaryKey = GetString("primary_key");
+			Subscription = GetGuid("subscription_token");
 			Type = GetValue("resource_type", SubscriptionResourceType.User);
 			ResourcePrimaryKey = GetString("resource_primary_key");
 		}

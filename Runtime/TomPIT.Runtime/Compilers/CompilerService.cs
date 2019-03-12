@@ -112,6 +112,16 @@ namespace TomPIT.Compilers
 			if (script == null)
 				return null;
 
+			if (script.Errors.Length > 0)
+			{
+				var sb = new StringBuilder();
+
+				foreach (var i in script.Errors)
+					sb.AppendLine(i.GetMessage());
+
+				throw new RuntimeException(sb.ToString());
+			}
+
 			var globals = new ScriptGlobals<T>
 			{
 				sender = sender,
@@ -238,7 +248,9 @@ namespace TomPIT.Compilers
 			Set(d.Id, r, TimeSpan.Zero);
 
 			r.Errors = script.Compile();
-			r.Script = script.CreateDelegate();
+
+			if (r.Errors.Length == 0)
+				r.Script = script.CreateDelegate();
 
 			script = null;
 

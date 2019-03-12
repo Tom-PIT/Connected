@@ -22,5 +22,6 @@ namespace TomPIT.SysDb.Cdn
 		List<ISubscriptionEvent> QueryEvents();
 		ISubscriptionEvent SelectEvent(Guid token);
 		void DeleteEvent(ISubscriptionEvent d);
+		void InsertSubscribers(ISubscription subscription, List<IRecipient> subscribers);
 	}
 }

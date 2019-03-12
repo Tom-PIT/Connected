@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Cdn;
@@ -69,6 +70,27 @@ namespace TomPIT.SysDb.Sql.Cdn
 			w.Execute();
 		}
 
+		public void InsertSubscribers(ISubscription subscription, List<IRecipient> subscribers)
+		{
+			var w = new Writer("tompit.subscriber_ins_batch");
+			var a = new JArray();
+
+			foreach (var i in subscribers)
+			{
+				a.Add(new JObject
+				{
+					{"resource_type", Convert.ToInt32(i.Type) },
+					{"resource_primary_key", i.ResourcePrimaryKey }
+				});
+			};
+
+
+			w.CreateParameter("@subscription", subscription.GetId());
+			w.CreateParameter("@items", a);
+
+			w.Execute();
+		}
+
 		public List<ISubscriptionEvent> QueryEvents()
 		{
 			return new Reader<SubscriptionEvent>("tompit.subscription_event_que").Execute().ToList<ISubscriptionEvent>();
@@ -117,7 +139,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public ISubscription Select(Guid token)
 		{
-			var r = new Reader<Subscription>("tompit.subsciption_sel");
+			var r = new Reader<Subscription>("tompit.subscription_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -126,7 +148,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public ISubscription Select(Guid handler, string topic, string primaryKey)
 		{
-			var r = new Reader<Subscription>("tompit.subsciption_sel");
+			var r = new Reader<Subscription>("tompit.subscription_sel");
 
 			r.CreateParameter("@handler", handler);
 			r.CreateParameter("@topic", topic, true);

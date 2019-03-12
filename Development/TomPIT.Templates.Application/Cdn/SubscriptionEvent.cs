@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
@@ -7,6 +8,7 @@ using TomPIT.ComponentModel.Events;
 namespace TomPIT.Application.Cdn
 {
 	[Create("Event", nameof(Name))]
+	[DefaultEvent(nameof(Invoke))]
 	public class SubscriptionEvent : ConfigurationElement, ISubscriptionEvent
 	{
 		private IServerEvent _invoke = null;

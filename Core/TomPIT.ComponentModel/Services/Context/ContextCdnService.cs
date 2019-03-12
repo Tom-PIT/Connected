@@ -35,22 +35,34 @@ namespace TomPIT.Services.Context
 			Context.Connection().GetService<ISubscriptionService>().CreateSubscription(sub, primaryKey, topic);
 		}
 
-		public void TriggerEvent(string subscription, string eventName, string primaryKey, JObject arguments)
+		public void TriggerEvent(string eventName, string primaryKey)
 		{
-			TriggerEvent(subscription, primaryKey, null, eventName, arguments);
+			TriggerEvent(eventName, primaryKey, null, null);
 		}
 
-		public void TriggerEvent(string subscription, string eventName, string primaryKey, string topic, JObject arguments)
+		public void TriggerEvent(string eventName, string primaryKey, JObject arguments)
 		{
-			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Subscription", subscription) is TomPIT.ComponentModel.Cdn.ISubscription sub))
-				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrSubscriptionNotFound, subscription));
+			TriggerEvent(eventName, primaryKey, null, arguments);
+		}
 
-			var ev = sub.Events.FirstOrDefault(f => string.Compare(f.Name, eventName, true) == 0);
+		public void TriggerEvent(string eventName, string primaryKey, string topic)
+		{
+			TriggerEvent(eventName, primaryKey, topic, null);
+		}
+
+		public void TriggerEvent(string eventName, string primaryKey, string topic, JObject arguments)
+		{
+			var tokens = eventName.Split('/');
+
+			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Subscription", tokens[0]) is TomPIT.ComponentModel.Cdn.ISubscription sub))
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrSubscriptionNotFound, tokens[0]));
+
+			var ev = sub.Events.FirstOrDefault(f => string.Compare(f.Name, tokens[1], true) == 0);
 
 			if (ev == null)
-				throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrSubscriptionEventNotFound, subscription, eventName)).WithMetrics(Context);
+				throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrSubscriptionEventNotFound, tokens[0], tokens[1])).WithMetrics(Context);
 
-			Context.Connection().GetService<ISubscriptionService>().TriggerEvent(sub, eventName, primaryKey, topic, arguments);
+			Context.Connection().GetService<ISubscriptionService>().TriggerEvent(sub, tokens[1], primaryKey, topic, arguments);
 		}
 	}
 }

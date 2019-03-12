@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using TomPIT.Annotations;
 
 namespace TomPIT.Services.Context
 {
@@ -8,10 +9,12 @@ namespace TomPIT.Services.Context
 		Guid SendMail(string from, string to, string subject, string body);
 		Guid SendMail(string from, string to, string subject, string body, JArray headers, int attachmentCount);
 
-		void CreateSubscription(string subscription, string primaryKey);
-		void TriggerEvent(string subscription, string primaryKey, string eventName, JObject arguments);
+		void CreateSubscription([CodeAnalysisProvider(ExecutionContext.SubscriptionProvider)]string subscription, string primaryKey);
+		void TriggerEvent([CodeAnalysisProvider(ExecutionContext.SubscriptionEventProvider)]string eventName, string primaryKey);
+		void TriggerEvent([CodeAnalysisProvider(ExecutionContext.SubscriptionEventProvider)]string eventName, string primaryKey, JObject arguments);
 
-		void CreateSubscription(string subscription, string primaryKey, string topic);
-		void TriggerEvent(string subscription, string primaryKey, string topic, string eventName, JObject arguments);
+		void CreateSubscription([CodeAnalysisProvider(ExecutionContext.SubscriptionProvider)]string subscription, string primaryKey, string topic);
+		void TriggerEvent([CodeAnalysisProvider(ExecutionContext.SubscriptionEventProvider)]string eventName, string primaryKey, string topic);
+		void TriggerEvent([CodeAnalysisProvider(ExecutionContext.SubscriptionEventProvider)]string eventName, string primaryKey, string topic, JObject arguments);
 	}
 }

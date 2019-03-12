@@ -78,6 +78,16 @@ namespace TomPIT.Sys.Data
 			return Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.SelectSubscriber(subscription, type, resourcePrimaryKey);
 		}
 
+		public void InsertSubscribers(Guid subscription, List<IRecipient> subscribers)
+		{
+			var sub = Select(subscription);
+
+			if (sub == null)
+				throw new SysException(SR.ErrSubscriptionNotFound);
+
+			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.InsertSubscribers(sub, subscribers);
+		}
+
 		public Guid InsertSubscriber(Guid subscription, SubscriptionResourceType type, string resourcePrimaryKey)
 		{
 			var sub = Select(subscription);
@@ -147,6 +157,16 @@ namespace TomPIT.Sys.Data
 			return Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.SelectEvent(token);
 		}
 
+		public List<IClientQueueMessage> Dequeue(IServerResourceGroup resourceGroup, int count)
+		{
+			var provider = Shell.GetService<IStorageProviderService>().Select(resourceGroup.StorageProvider);
+
+			if (provider == null)
+				throw new SysException(string.Format("{0} ({1})", SR.ErrStorageProviderNotRegistered, resourceGroup.StorageProvider.ToString()));
+
+			return provider.Queue.DequeueSystem(resourceGroup, Queue, count).ToClientQueueMessage(resourceGroup.Token);
+		}
+
 		public List<IClientQueueMessage> DequeueEvents(IServerResourceGroup resourceGroup, int count)
 		{
 			var provider = Shell.GetService<IStorageProviderService>().Select(resourceGroup.StorageProvider);
@@ -185,11 +205,6 @@ namespace TomPIT.Sys.Data
 
 			if (m == null)
 				return;
-
-			var e = ResolveEvent(m);
-
-			if (e != null)
-				Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.DeleteEvent(e);
 
 			sp.Queue.Delete(res, popReceipt);
 		}

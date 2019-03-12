@@ -9,6 +9,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 		public Guid Handler { get; set; }
 		public string Topic { get; set; }
 		public string PrimaryKey { get; set; }
+		public Guid Token { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -17,6 +18,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 			Handler = GetGuid("handler");
 			Topic = GetString("topic");
 			PrimaryKey = GetString("primary_key");
+			Token = GetGuid("token");
 		}
 	}
 }

@@ -38,6 +38,7 @@ namespace TomPIT.Worker
 			services.AddSingleton<IHostedService, WorkerService>();
 			services.AddSingleton<IHostedService, EventService>();
 			services.AddSingleton<IHostedService, SubscriptionService>();
+			services.AddSingleton<IHostedService, SubscriptionEventService>();
 		}
 	}
 }

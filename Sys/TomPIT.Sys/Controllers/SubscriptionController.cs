@@ -57,20 +57,25 @@ namespace TomPIT.Sys.Controllers
 			return DataModel.Subscriptions.InsertSubscriber(subscription, type, resourcePrimaryKey);
 		}
 
-		//[HttpPost]
-		//public Guid InsertSubscribers()
-		//{
-		//	var body = FromBody();
-		//	var subscription = body.Required<Guid>("subscription");
-		//	var items = body.Required<JArray>("items");
-		//	var subscribers = new List<IRecipient>();
+		[HttpPost]
+		public void InsertSubscribers()
+		{
+			var body = FromBody();
+			var subscription = body.Required<Guid>("subscription");
+			var items = body.Required<JArray>("items");
+			var subscribers = new List<IRecipient>();
 
-		//	foreach(JObjcet )
-		//	var type = body.Required<SubscriptionResourceType>("type");
-		//	var resourcePrimaryKey = body.Required<string>("resourcePrimaryKey");
+			foreach (JObject recipient in items)
+			{
+				subscribers.Add(new Recipient
+				{
+					Type = recipient.Required<SubscriptionResourceType>("type"),
+					ResourcePrimaryKey = recipient.Required<string>("resourcePrimaryKey")
+				});
+			}
 
-		//	return DataModel.Subscriptions.InsertSubscriber(subscription, type, resourcePrimaryKey);
-		//}
+			DataModel.Subscriptions.InsertSubscribers(subscription, subscribers);
+		}
 
 		[HttpPost]
 		public void DeleteSubscriber()

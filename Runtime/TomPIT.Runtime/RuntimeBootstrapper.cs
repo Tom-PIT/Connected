@@ -73,6 +73,7 @@ namespace TomPIT.Runtime
 			e.Connection.RegisterService(typeof(IUserDataService), typeof(UserDataService));
 			e.Connection.RegisterService(typeof(IMailService), typeof(MailService));
 			e.Connection.RegisterService(typeof(ISubscriptionService), typeof(SubscriptionService));
+			e.Connection.RegisterService(typeof(IAlienService), typeof(AlienService));
 		}
 	}
 }

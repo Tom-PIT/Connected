@@ -49,10 +49,35 @@ namespace TomPIT.Worker.Services
 			var config = Instance.Connection.GetService<IComponentService>().SelectConfiguration(sub.Handler) as ISubscription;
 			var ms = config.MicroService(Instance.Connection);
 			var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, Instance.GetService<IMicroServiceService>().Select(ms), string.Empty);
-			var subscribeArgs = new SubscriptionSubscribeArguments(ctx);
-			var subscribedArgs = new SubscriptionSubscribedArguments(ctx);
+			var subscribeArgs = new SubscriptionSubscribeArguments(ctx, sub);
+			var subscribedArgs = new SubscriptionSubscribedArguments(ctx, sub);
 
 			Instance.GetService<ICompilerService>().Execute(ms, config.Subscribe, this, subscribeArgs);
+
+			if (subscribeArgs.Subscribers.Count > 0)
+			{
+				u = Instance.Connection.CreateUrl("Subscription", "InsertSubscribers");
+				e = new JObject
+				{
+					{"subscription", sub.Token }
+				};
+
+				var a = new JArray();
+
+				e.Add("items", a);
+
+				foreach (var recipient in subscribeArgs.Subscribers)
+				{
+					a.Add(new JObject
+					{
+						{"type", recipient.Type.ToString() },
+						{"resourcePrimaryKey", recipient.ResourcePrimaryKey }
+					});
+				}
+
+				Instance.Connection.Post(u, e);
+			}
+
 			Instance.GetService<ICompilerService>().Execute(ms, config.Subscribed, this, subscribedArgs);
 		}
 	}

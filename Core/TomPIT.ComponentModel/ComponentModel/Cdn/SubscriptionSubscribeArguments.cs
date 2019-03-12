@@ -8,7 +8,7 @@ namespace TomPIT.ComponentModel.Cdn
 {
 	public class SubscriptionSubscribeArguments : EventArguments
 	{
-		private List<IRecipient> _recipients = null;
+		private List<IRecipient> _subscribers = null;
 
 		public SubscriptionSubscribeArguments(IExecutionContext sender, TomPIT.Cdn.ISubscription subscription) : base(sender)
 		{
@@ -24,7 +24,7 @@ namespace TomPIT.ComponentModel.Cdn
 			if (user == null)
 				throw new RuntimeException($"{SR.ErrUserNotFound} ({identifier})");
 
-			Recipients.Add(new Recipient
+			Subscribers.Add(new Recipient
 			{
 				Type = SubscriptionResourceType.User,
 				ResourcePrimaryKey = user.Token.ToString()
@@ -38,7 +38,7 @@ namespace TomPIT.ComponentModel.Cdn
 			if (role == null)
 				throw new RuntimeException($"{SR.ErrRoleNotFound} ({roleName})");
 
-			Recipients.Add(new Recipient
+			Subscribers.Add(new Recipient
 			{
 				Type = SubscriptionResourceType.Role,
 				ResourcePrimaryKey = role.Token.ToString()
@@ -53,21 +53,21 @@ namespace TomPIT.ComponentModel.Cdn
 			if (alien == null)
 				alien = service.Select(service.Insert(null, null, email, null, null, Guid.Empty, null));
 
-			Recipients.Add(new Recipient
+			Subscribers.Add(new Recipient
 			{
 				Type = SubscriptionResourceType.Alien,
 				ResourcePrimaryKey = alien.Token.ToString()
 			});
 		}
 
-		public List<IRecipient> Recipients
+		public List<IRecipient> Subscribers
 		{
 			get
 			{
-				if (_recipients == null)
-					_recipients = new List<IRecipient>();
+				if (_subscribers == null)
+					_subscribers = new List<IRecipient>();
 
-				return _recipients;
+				return _subscribers;
 			}
 		}
 	}

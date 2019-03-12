@@ -11,8 +11,6 @@ namespace TomPIT.Cdn
 
 	public interface ISubscriber : IRecipient
 	{
-		Guid Handler { get; }
-		string Topic { get; }
-		string PrimaryKey { get; }
+		Guid Subscription { get; }
 	}
 }

@@ -45,12 +45,15 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			var items = new List<ICodeAnalysisResult>();
 
 			foreach (var i in components)
-			{
-				if (string.IsNullOrWhiteSpace(e.ExpressionText) || i.Name.ToLowerInvariant().Contains(e.ExpressionText.ToLowerInvariant()))
-					items.Add(new CodeAnalysisResult(i.Name, i.Name, null));
-			}
+				ProvideComponentLiterals(e, items, i);
 
 			return items.OrderBy(f => f.Text).ToList();
+		}
+
+		protected virtual void ProvideComponentLiterals(CodeAnalysisArgs e, List<ICodeAnalysisResult> items, IComponent component)
+		{
+			if (string.IsNullOrWhiteSpace(e.ExpressionText) || component.Name.ToLowerInvariant().Contains(e.ExpressionText.ToLowerInvariant()))
+				items.Add(new CodeAnalysisResult(component.Name, component.Name, null));
 		}
 
 		protected abstract string ComponentCategory { get; }
