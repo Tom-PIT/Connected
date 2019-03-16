@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
-using System;
 using System.Diagnostics;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
@@ -54,12 +53,7 @@ namespace TomPIT
 
 		public static void LogError(this ISysConnection connection, string category, string source, string message)
 		{
-			//LogError(connection, context, category, source, message, 0);
-		}
-
-		public static void LogError(this ISysConnection connection, string category, string source, string message, Guid component, Guid element)
-		{
-			//LogError(connection, context, category, source, message, 0);
+			Write(connection, TraceLevel.Error, null, category, source, message, 0);
 		}
 
 		public static void LogError(this ISysConnection connection, IExecutionContext context, string category, string source, string message)

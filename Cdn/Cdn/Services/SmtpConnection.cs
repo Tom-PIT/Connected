@@ -18,6 +18,7 @@ namespace TomPIT.Cdn.Services
 	internal class SmtpConnection : IDisposable
 	{
 		private SmtpClient _client = null;
+		private ConnectionState _state = ConnectionState.Idle;
 
 		public SmtpConnection(string domainName)
 		{
@@ -25,7 +26,20 @@ namespace TomPIT.Cdn.Services
 		}
 
 		private string Domain { get; }
-		public ConnectionState State { get; set; } = ConnectionState.Idle;
+		public ConnectionState State
+		{
+			get { return _state; }
+			set
+			{
+				if (value == ConnectionState.Active)
+					TimeStamp = DateTime.UtcNow;
+
+				_state = value;
+			}
+		}
+
+		public DateTime TimeStamp { get; private set; } = DateTime.UtcNow;
+
 		public void Disconnect()
 		{
 			try
@@ -65,10 +79,10 @@ namespace TomPIT.Cdn.Services
 				if (string.IsNullOrWhiteSpace(server))
 					throw new SmtpException(SmtpExceptionType.CannotResolveDomain, Domain);
 
-				_client.LocalDomain = "tompit.net";
+				//_client.LocalDomain = "tompit.net";
 				_client.Connect(new Uri(string.Format("smtp://{0}", server)), token);
+				//_client.Connect(server, 587, MailKit.Security.SecureSocketOptions.StartTls, token);
 			}
-
 			catch (SocketException ex)
 			{
 				State = ConnectionState.Idle;

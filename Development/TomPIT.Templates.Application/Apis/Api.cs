@@ -48,5 +48,6 @@ namespace TomPIT.Application.Apis
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[DefaultValue(ElementScope.Public)]
 		public ElementScope Scope { get; set; } = ElementScope.Public;
+
 	}
 }

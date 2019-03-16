@@ -80,5 +80,19 @@ namespace TomPIT.Worker.Services
 
 			Instance.GetService<ICompilerService>().Execute(ms, config.Subscribed, this, subscribedArgs);
 		}
+
+		protected override void OnError(IClientQueueMessage item, Exception ex)
+		{
+			Instance.Connection.LogError(nameof(SubscriptionEventJob), ex.Source, ex.Message);
+
+			var url = Instance.Connection.CreateUrl("SubscriptionManagement", "Ping");
+			var d = new JObject
+			{
+				{"popReceipt", item.PopReceipt },
+				{"resourceGroup", item.ResourceGroup }
+			};
+
+			Instance.Connection.Post(url, d);
+		}
 	}
 }

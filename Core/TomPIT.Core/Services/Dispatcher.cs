@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Threading;
 
 namespace TomPIT.Services
@@ -8,6 +9,8 @@ namespace TomPIT.Services
 		private ConcurrentQueue<T> _items = null;
 		private ConcurrentBag<DispatcherJob<T>> _workers = null;
 		private CancellationTokenSource _cancel = null;
+
+		public event EventHandler Enqueued;
 
 		public Dispatcher(CancellationTokenSource cancel, int workerSize)
 		{
@@ -30,9 +33,9 @@ namespace TomPIT.Services
 		{
 			Queue.Enqueue(item);
 
-			foreach (var i in Jobs)
-				i.Start();
+			Enqueued?.Invoke(this, EventArgs.Empty);
 		}
+
 		private ConcurrentQueue<T> Queue
 		{
 			get

@@ -13,9 +13,13 @@ namespace TomPIT.Services
 		{
 			Owner = owner;
 			Cancel = cancel;
+
+			owner.Enqueued += OnEnqueued;
+
+			OnEnqueued(this, EventArgs.Empty);
 		}
 
-		public void Start()
+		private void OnEnqueued(object sender, EventArgs e)
 		{
 			if (_isRunning)
 				return;
@@ -34,9 +38,11 @@ namespace TomPIT.Services
 
 			while (!token.IsCancellationRequested)
 			{
+				T item = default(T);
+
 				try
 				{
-					if (!Owner.Dequeue(out T item))
+					if (!Owner.Dequeue(out item))
 						break;
 
 					if (item is IPopReceiptRecord)
@@ -51,7 +57,7 @@ namespace TomPIT.Services
 				}
 				catch (Exception ex)
 				{
-					Console.WriteLine(ex.Message);
+					OnError(item, ex);
 				}
 
 				token.WaitHandle.WaitOne(TimeSpan.FromMilliseconds(1));
@@ -61,5 +67,6 @@ namespace TomPIT.Services
 		}
 
 		protected abstract void DoWork(T item);
+		protected abstract void OnError(T item, Exception ex);
 	}
 }

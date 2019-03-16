@@ -41,7 +41,8 @@ namespace TomPIT.Application
 				{"Upload", new ItemDescriptor("Upload assembly", "Upload", typeof(AssemblyUploadResource)) { Glyph = "fal fa-file-code", Category = "Resources" } } ,
 				{"File", new ItemDescriptor("File assembly", "File", typeof(AssemblyFileSystemResource)) { Glyph = "fal fa-file-code", Category = "Resources" } },
 				{"TestSuite", new ItemDescriptor("Test suite", "TestSuite", typeof(TestSuite)) { Glyph = "fal fa-stethoscope", Category = "QA" } },
-				{"Subscription", new ItemDescriptor("Subscription", "Subscription", typeof(Subscription)) { Glyph = "fal fa-bell", Category = "Cdn" } }
+				{"Subscription", new ItemDescriptor("Subscription", "Subscription", typeof(Subscription)) { Glyph = "fal fa-bell", Category = "Cdn" } },
+				{"MailTemplate", new ItemDescriptor("Mail template", "MailTemplate", typeof(MailTemplate)) { Glyph = "fal fa-envelope", Category = "Cdn" } }
 			});
 		}
 

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
 using TomPIT.Storage;
 using TomPIT.Sys.Data;
 using TomPIT.SysDb.Events;
@@ -42,6 +42,17 @@ namespace TomPIT.Sys.Controllers.Management
 			var resourceGroup = body.Required<Guid>("resourceGroup");
 
 			DataModel.Events.Complete(resourceGroup, popReceipt);
+		}
+
+		[HttpPost]
+		public void Ping()
+		{
+			var body = FromBody();
+
+			var popReceipt = body.Required<Guid>("popReceipt");
+			var resourceGroup = body.Required<Guid>("resourceGroup");
+
+			DataModel.Events.Ping(resourceGroup, popReceipt);
 		}
 	}
 }

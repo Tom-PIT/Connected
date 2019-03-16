@@ -89,22 +89,29 @@ namespace TomPIT.Worker.Services
 
 		private void Invoke(EventDescriptor ed, IEventBinding i)
 		{
-			try
+			var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, null, string.Empty);
+
+			var args = string.IsNullOrWhiteSpace(ed.Arguments)
+				? null
+				: JsonConvert.DeserializeObject<JObject>(ed.Arguments);
+
+			var e = new EventInvokeArguments(ctx, ed.Name, args);
+
+			Instance.GetService<ICompilerService>().Execute(i.MicroService(Instance.Connection), i.Closest<IEventHandler>().Invoke, this, e);
+		}
+
+		protected override void OnError(IClientQueueMessage item, Exception ex)
+		{
+			Instance.Connection.LogError(nameof(EventJob), ex.Source, ex.Message);
+
+			var url = Instance.Connection.CreateUrl("EventManagement", "Ping");
+			var d = new JObject
 			{
-				var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, null, string.Empty);
+				{"popReceipt", item.PopReceipt },
+				{"resourceGroup", item.ResourceGroup }
+			};
 
-				var args = string.IsNullOrWhiteSpace(ed.Arguments)
-					? null
-					: JsonConvert.DeserializeObject<JObject>(ed.Arguments);
-
-				var e = new EventInvokeArguments(ctx, ed.Name, args);
-
-				Instance.GetService<ICompilerService>().Execute(i.MicroService(Instance.Connection), i.Closest<IEventHandler>().Invoke, this, e);
-			}
-			catch (Exception)
-			{
-				//Instance.Sys.LogError(ctx, SR.LogCategoryWorker, nameof(Invoke), string.Format("{0} ({1}.{2}.{3})", SR.ErrWorkerNotFound, service, api, operation));
-			}
+			Instance.Connection.Post(url, d);
 		}
 	}
 }

@@ -40,9 +40,14 @@ namespace TomPIT.UI
 			builder.AppendLine("}");
 		}
 
+		protected void AppendBaseType(StringBuilder builder, string baseType)
+		{
+			builder.AppendLine($"@inherits {baseType}<TModel>");
+		}
+
 		protected void AppendBaseType(StringBuilder builder)
 		{
-			builder.AppendLine("@inherits TomPIT.UI.ViewBase<TModel>");
+			AppendBaseType(builder, "TomPIT.UI.ViewBase");
 		}
 
 		protected void AddTagHelpers(StringBuilder builder)

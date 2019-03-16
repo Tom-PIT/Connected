@@ -163,8 +163,6 @@ namespace TomPIT.Environment
 					if (!_rr.ContainsKey(key))
 						return null;
 				}
-
-				return null;
 			}
 
 			var id = _rr[key].Next();

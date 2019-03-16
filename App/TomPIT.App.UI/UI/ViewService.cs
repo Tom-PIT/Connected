@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 using TomPIT.Services;
@@ -33,7 +34,7 @@ namespace TomPIT.UI
 			if (!Connection.IsMicroServiceSupported(e.MicroService))
 				return;
 
-			var views = Connection.GetService<IComponentService>().QueryConfigurations(e.MicroService, string.Format("{0}, {1}, {2}", "View", "MasterView", "Partial"));
+			var views = Connection.GetService<IComponentService>().QueryConfigurations(e.MicroService, "View, MasterView, Partial, MailTemplate");
 
 			foreach (var i in views)
 				Set(i.Component, i as IGraphicInterface, TimeSpan.Zero);
@@ -76,12 +77,13 @@ namespace TomPIT.UI
 		{
 			return string.Compare(category, "View", true) == 0
 				|| string.Compare(category, "MasterView", true) == 0
-				|| string.Compare(category, "Partial", true) == 0;
+				|| string.Compare(category, "Partial", true) == 0
+				|| string.Compare(category, "MailTemplate", true) == 0;
 		}
 
 		protected override void OnInitializing()
 		{
-			var views = Connection.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, string.Format("{0}, {1}, {2}", "View", "MasterView", "Partial"));
+			var views = Connection.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, "View, MasterView, Partial, MailTemplate");
 
 			foreach (var i in views)
 				Set(i.Component, i as IGraphicInterface, TimeSpan.Zero);
@@ -155,16 +157,67 @@ namespace TomPIT.UI
 			return Encoding.UTF8.GetString(r.Content);
 		}
 
-		public bool HasChanged(string url)
+		public bool HasChanged(ViewKind kind, string url)
 		{
-			var v = Select(url, null);
-
-			if (v == null)
+			if (string.Compare(url, "_ViewImports", true) == 0)
 				return false;
 
-			if (ChangeState.TryGetValue(v.Component, out bool r))
+			Guid component = Guid.Empty;
+
+			switch (kind)
 			{
-				ChangeState[v.Component] = false;
+				case ViewKind.Master:
+					var master = SelectMaster(url);
+
+					if (master == null)
+						return false;
+
+					component = master.Component;
+					break;
+				case ViewKind.View:
+					var view = Select(url, null);
+
+					if (view == null)
+						return false;
+
+					component = view.Component;
+					break;
+				case ViewKind.Partial:
+					var partial = SelectPartial(url);
+
+					if (partial == null)
+						return false;
+
+					component = partial.Component;
+					break;
+				case ViewKind.Snippet:
+					var viewUrl = url.Split('.');
+
+					view = Select(url, null);
+
+					if (view == null)
+						return false;
+
+					component = view.Component;
+					break;
+				case ViewKind.MailTemplate:
+					var template = SelectMailTemplate(url.AsGuid());
+
+					if (template == null)
+						return false;
+
+					component = template.Component;
+					break;
+				default:
+					break;
+			}
+
+			if (component == Guid.Empty)
+				return false;
+
+			if (ChangeState.TryGetValue(component, out bool r))
+			{
+				ChangeState[component] = false;
 
 				return r;
 			}
@@ -187,7 +240,7 @@ namespace TomPIT.UI
 				var s = Connection.GetService<IMicroServiceService>().Select(tokens[0].Trim());
 
 				if (s == null)
-					throw new RuntimeException(SR.ErrMicroServiceNotFound);
+					return null;
 
 				c = Connection.GetService<IComponentService>().SelectComponent(s.Token, "MasterView", tokens[1].Trim());
 			}
@@ -200,6 +253,11 @@ namespace TomPIT.UI
 			return Get(c.Token) as IMasterView;
 		}
 
+		public IMailTemplate SelectMailTemplate(Guid token)
+		{
+			return Get(token) as IMailTemplate;
+		}
+
 		public IPartialView SelectPartial(string name)
 		{
 			var tokens = name.Split('.');
@@ -210,7 +268,7 @@ namespace TomPIT.UI
 				var s = Connection.GetService<IMicroServiceService>().Select(tokens[0].Trim());
 
 				if (s == null)
-					throw new RuntimeException(SR.ErrMicroServiceNotFound);
+					return null;
 
 				c = Connection.GetService<IComponentService>().SelectComponent(s.Token, "Partial", tokens[1].Trim());
 			}

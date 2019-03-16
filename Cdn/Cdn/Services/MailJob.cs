@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using TomPIT.Diagnostics;
 using TomPIT.Services;
 
@@ -33,6 +34,7 @@ namespace TomPIT.Cdn.Services
 
 			if (connection == null)
 			{
+				Thread.Sleep(2500);
 				Owner.Enqueue(item);
 				return;
 			}
@@ -101,6 +103,11 @@ namespace TomPIT.Cdn.Services
 			};
 
 			Instance.Connection.Post(u, e);
+		}
+
+		protected override void OnError(IMailMessage item, Exception ex)
+		{
+			Instance.Connection.LogError(nameof(MailJob), ex.Source, ex.Message);
 		}
 	}
 }

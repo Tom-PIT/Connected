@@ -64,8 +64,11 @@ namespace TomPIT.Cdn.Dns
 				{
 					CreateDnsQuery(recType);
 
-					_reqSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-					_reqSocket.ReceiveTimeout = timeout;
+					_reqSocket = new Socket(_dnsServer.AddressFamily, SocketType.Dgram, ProtocolType.Udp)
+					{
+						ReceiveTimeout = timeout
+					};
+
 					_reqSocket.SendTo(_query, _query.Length, SocketFlags.None, _dnsServer);
 					_reqSocket.Receive(dnsResponse);
 

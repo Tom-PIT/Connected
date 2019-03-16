@@ -36,6 +36,17 @@ namespace TomPIT.Configuration
 				return Task.CompletedTask;
 			});
 
+			routes.MapRoute("sys/mail-template/{token}", (t) =>
+			{
+				var ve = t.RequestServices.GetService(typeof(IMailTemplateViewEngine)) as MailTemplateViewEngine;
+
+				ve.Context = t;
+
+				ve.Render(t.GetRouteValue("token").ToString().AsGuid());
+
+				return Task.CompletedTask;
+			});
+
 			routes.MapRoute("{*.}", (t) =>
 			{
 				if (string.IsNullOrWhiteSpace(t.Request.Path.ToString().Trim('/')))

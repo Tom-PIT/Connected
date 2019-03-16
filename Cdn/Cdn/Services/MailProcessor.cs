@@ -28,6 +28,7 @@ namespace TomPIT.Cdn.Services
 			Message.From.Add(new MailboxAddress(Configuration.From));
 			Message.To.Add(new MailboxAddress(Configuration.To));
 			Message.Subject = Configuration.Subject;
+			Message.Sender = new MailboxAddress(Configuration.From);
 		}
 
 		private void CreateHeaders()

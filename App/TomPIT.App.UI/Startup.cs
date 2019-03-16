@@ -28,7 +28,8 @@ namespace TomPIT
 			Instance.Initialize(services, e);
 
 			services.AddScoped<IViewEngine, ViewEngine>();
-			
+			services.AddScoped<IMailTemplateViewEngine, MailTemplateViewEngine>();
+
 			services.Configure<RazorViewEngineOptions>(opts =>
 			{
 				opts.FileProviders.Add(

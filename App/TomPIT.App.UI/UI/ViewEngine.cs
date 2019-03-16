@@ -1,13 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Razor;
+﻿using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Routing;
 using System;
-using System.IO;
 using System.Net;
 using System.Text;
 using TomPIT.ComponentModel;
@@ -16,20 +10,11 @@ using TomPIT.Models;
 
 namespace TomPIT.UI
 {
-	internal class ViewEngine : IViewEngine
+	internal class ViewEngine : ViewEngineBase, IViewEngine
 	{
-		public ViewEngine(IRazorViewEngine viewEngine, ITempDataProvider tempDataProvider, System.IServiceProvider serviceProvider)
+		public ViewEngine(IRazorViewEngine viewEngine, ITempDataProvider tempDataProvider, System.IServiceProvider serviceProvider) : base(viewEngine, tempDataProvider, serviceProvider)
 		{
-			Engine = viewEngine;
-			Temp = tempDataProvider;
-			ServiceProvider = serviceProvider;
 		}
-
-		private IRazorViewEngine Engine { get; }
-		private ITempDataProvider Temp { get; }
-		private System.IServiceProvider ServiceProvider { get; }
-
-		public HttpContext Context { get; set; }
 
 		public string SnippetPath(ViewContext context, string snippetName)
 		{
@@ -68,7 +53,7 @@ namespace TomPIT.UI
 				if (!model.Authorize(model.Component))
 					return;
 
-				var actionContext = GetActionContext(Context);
+				var actionContext = CreateActionContext(Context);
 
 				var viewEngineResult = Engine.FindView(actionContext, name, false);
 
@@ -101,41 +86,11 @@ namespace TomPIT.UI
 			}
 		}
 
-		private string CreateContent<TModel>(Microsoft.AspNetCore.Mvc.ViewEngines.IView view, ActionContext actionContext, TModel model)
-		{
-			using (var output = new StringWriter())
-			{
-				var viewData = new ViewDataDictionary<TModel>(
-						  metadataProvider: new EmptyModelMetadataProvider(),
-						  modelState: new ModelStateDictionary())
-				{
-					Model = model
-				};
-
-				var httpContextAccessor = new HttpContextAccessor
-				{
-					HttpContext = actionContext.HttpContext
-				};
-
-				var tempData = new TempDataDictionary(httpContextAccessor.HttpContext, Temp);
-				var viewContext = new ViewContext(actionContext, view, viewData, tempData, output, new HtmlHelperOptions());
-
-				view.RenderAsync(viewContext).GetAwaiter().GetResult();
-
-				return output.ToString();
-			}
-		}
-
-		internal static ActionContext GetActionContext(HttpContext context)
-		{
-			return new ActionContext(context, context.GetRouteData(), new ActionDescriptor());
-		}
-
 		private RuntimeModel CreateModel()
 		{
 			var path = Context.Request.Path.ToString().Trim('/');
 
-			var ac = GetActionContext(Context);
+			var ac = CreateActionContext(Context);
 			var view = Instance.GetService<IViewService>().Select(path, ac);
 
 			if (view == null)

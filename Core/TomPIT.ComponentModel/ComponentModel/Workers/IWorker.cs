@@ -2,5 +2,6 @@
 {
 	public interface IWorker : IConfiguration
 	{
+		IMetricConfiguration Metrics { get; }
 	}
 }

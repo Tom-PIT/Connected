@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Storage;
 
@@ -16,7 +17,8 @@ namespace TomPIT.UI
 		Master = 1,
 		View = 2,
 		Partial = 3,
-		Snippet = 4
+		Snippet = 4,
+		MailTemplate = 5
 	}
 
 	internal class ViewInfo : IFileInfo
@@ -34,17 +36,9 @@ namespace TomPIT.UI
 
 		private void ResolvePath(string viewPath)
 		{
-			var path = viewPath.Trim('/');
-			FullPath = path;
+			FullPath = viewPath.Trim('/');
 
-			if (path.StartsWith("Views/Dynamic/Master"))
-				Kind = ViewKind.Master;
-			else if (path.StartsWith("Views/Dynamic/Partial"))
-				Kind = ViewKind.Partial;
-			else if (path.StartsWith("Views/Dynamic/Snippet"))
-				Kind = ViewKind.Snippet;
-			else
-				Kind = ViewKind.View;
+			Kind = ResolveViewKind(viewPath);
 
 			if (Kind == ViewKind.View)
 			{
@@ -53,6 +47,22 @@ namespace TomPIT.UI
 			}
 			else
 				Path = System.IO.Path.GetFileNameWithoutExtension(viewPath);
+		}
+
+		public static ViewKind ResolveViewKind(string viewPath)
+		{
+			var path = viewPath.Trim('/');
+
+			if (path.StartsWith("Views/Dynamic/Master"))
+				return ViewKind.Master;
+			else if (path.StartsWith("Views/Dynamic/Partial"))
+				return ViewKind.Partial;
+			else if (path.StartsWith("Views/Dynamic/Snippet"))
+				return ViewKind.Snippet;
+			else if (path.StartsWith("Views/Dynamic/MailTemplate"))
+				return ViewKind.MailTemplate;
+			else
+				return ViewKind.View;
 		}
 
 		private string FullPath { get; set; }
@@ -113,9 +123,33 @@ namespace TomPIT.UI
 				case ViewKind.Partial:
 					LoadPartial();
 					break;
+				case ViewKind.MailTemplate:
+					LoadMailTemplate();
+					break;
 				default:
 					throw new NotSupportedException();
 			}
+		}
+
+		private void LoadMailTemplate()
+		{
+			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(Path.AsGuid());
+
+			Exists = ViewComponent != null && string.Compare(ViewComponent.Category, "MailTemplate", true) == 0;
+
+			if (!Exists)
+				return;
+
+			if (!(Instance.GetService<IComponentService>().SelectConfiguration(ViewComponent.Token) is IMailTemplate config))
+				return;
+
+			var pp = new MailTemplateProcessor(config, Instance.GetService<IViewService>().SelectContent(config));
+
+			pp.Compile();
+
+			_viewContent = Encoding.UTF8.GetBytes(pp.Result);
+
+			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
 		}
 
 		private void LoadPartial()
@@ -156,7 +190,7 @@ namespace TomPIT.UI
 			if (rendererAtt != null)
 			{
 				var renderer = (rendererAtt.Type ?? Types.GetType(rendererAtt.TypeName)).CreateInstance<IViewRenderer>();
-				
+
 				LastModified = ViewComponent.Modified;
 
 				sourceCode = renderer.CreateContent(null, view);

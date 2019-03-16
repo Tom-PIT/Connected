@@ -9,6 +9,9 @@ namespace TomPIT.Services.Context
 		Guid SendMail(string from, string to, string subject, string body);
 		Guid SendMail(string from, string to, string subject, string body, JArray headers, int attachmentCount);
 
+		string CreateMailMessage([CodeAnalysisProvider(ExecutionContext.MailTemplateProvider)]string template, string user);
+		string CreateMailMessage([CodeAnalysisProvider(ExecutionContext.MailTemplateProvider)]string template, string user, JObject arguments);
+
 		void CreateSubscription([CodeAnalysisProvider(ExecutionContext.SubscriptionProvider)]string subscription, string primaryKey);
 		void TriggerEvent([CodeAnalysisProvider(ExecutionContext.SubscriptionEventProvider)]string eventName, string primaryKey);
 		void TriggerEvent([CodeAnalysisProvider(ExecutionContext.SubscriptionEventProvider)]string eventName, string primaryKey, JObject arguments);

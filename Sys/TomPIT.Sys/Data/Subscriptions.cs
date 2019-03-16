@@ -177,6 +177,17 @@ namespace TomPIT.Sys.Data
 			return provider.Queue.DequeueSystem(resourceGroup, EventQueue, count).ToClientQueueMessage(resourceGroup.Token);
 		}
 
+		public void Ping(Guid resourceGroup, Guid popReceipt)
+		{
+			var sp = Shell.GetService<IStorageProviderService>().Resolve(resourceGroup);
+			var res = DataModel.ResourceGroups.Select(resourceGroup);
+
+			if (res == null)
+				throw new SysException(SR.ErrResourceGroupNotFound);
+
+			sp.Queue.Ping(res, popReceipt, TimeSpan.FromSeconds(5));
+		}
+
 		public void Complete(Guid resourceGroup, Guid popReceipt)
 		{
 			var sp = Shell.GetService<IStorageProviderService>().Resolve(resourceGroup);

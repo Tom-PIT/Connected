@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Services;
 
@@ -76,6 +77,8 @@ namespace TomPIT.UI
 							_helpers = ((IView)config).Helpers;
 						else if (string.Compare(ViewType, "master", true) == 0)
 							_helpers = ((IMasterView)config).Helpers;
+						else if (string.Compare(ViewType, "mailtemplate", true) == 0)
+							_helpers = ((IMailTemplate)config).Helpers;
 					}
 				}
 

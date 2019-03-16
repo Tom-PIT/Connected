@@ -60,7 +60,7 @@ namespace TomPIT.Sys.Data
 
 		public List<IMailMessage> Dequeue(int count)
 		{
-			return Shell.GetService<IDatabaseService>().Proxy.Cdn.Mail.Dequeue(DateTime.Now, DateTime.UtcNow.AddMinutes(2), count);
+			return Shell.GetService<IDatabaseService>().Proxy.Cdn.Mail.Dequeue(DateTime.UtcNow, DateTime.UtcNow.AddMinutes(2), count);
 		}
 
 		public List<IMailMessage> Query()

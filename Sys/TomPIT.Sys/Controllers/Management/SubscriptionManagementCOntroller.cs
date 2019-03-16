@@ -75,6 +75,17 @@ namespace TomPIT.Sys.Controllers.Management
 		}
 
 		[HttpPost]
+		public void Ping()
+		{
+			var body = FromBody();
+
+			var popReceipt = body.Required<Guid>("popReceipt");
+			var resourceGroup = body.Required<Guid>("resourceGroup");
+
+			DataModel.Subscriptions.Ping(resourceGroup, popReceipt);
+		}
+
+		[HttpPost]
 		public void CompleteEvent()
 		{
 			var body = FromBody();

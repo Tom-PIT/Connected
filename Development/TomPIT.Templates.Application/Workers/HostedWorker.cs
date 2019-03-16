@@ -13,6 +13,7 @@ namespace TomPIT.Application.Workers
 		public const string ComponentCategory = "Worker";
 
 		private IServerEvent _invoke = null;
+		private IMetricConfiguration _metric = null;
 
 		[EventArguments(typeof(WorkerInvokeArgs))]
 		public IServerEvent Invoke
@@ -23,6 +24,18 @@ namespace TomPIT.Application.Workers
 					_invoke = new ServerEvent { Parent = this };
 
 				return _invoke;
+			}
+		}
+
+		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
+		public IMetricConfiguration Metrics
+		{
+			get
+			{
+				if (_metric == null)
+					_metric = new MetricConfiguration { Parent = this };
+
+				return _metric;
 			}
 		}
 	}

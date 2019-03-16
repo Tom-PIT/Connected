@@ -14,7 +14,8 @@ namespace TomPIT.UI
 		}
 
 		public bool ActiveChangeCallbacks => true;
-		public bool HasChanged => Instance.GetService<IViewService>().HasChanged(Path.GetFileNameWithoutExtension(_viewPath));
+		public bool HasChanged => Instance.GetService<IViewService>().HasChanged(ViewInfo.ResolveViewKind(_viewPath), Path.GetFileNameWithoutExtension(_viewPath));
+
 		public IDisposable RegisterChangeCallback(Action<object> callback, object state) => EmptyDisposable.Instance;
 	}
 

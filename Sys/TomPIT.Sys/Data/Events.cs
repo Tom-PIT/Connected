@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using TomPIT.Api.Storage;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
@@ -53,6 +53,22 @@ namespace TomPIT.Sys.Data
 		public IEventDescriptor Select(Guid id)
 		{
 			return Shell.GetService<IDatabaseService>().Proxy.Events.Select(id);
+		}
+
+		public void Ping(Guid resourceGroup, Guid popReceipt)
+		{
+			var sp = Shell.GetService<IStorageProviderService>().Resolve(resourceGroup);
+			var res = DataModel.ResourceGroups.Select(resourceGroup);
+
+			if (res == null)
+				throw new SysException(SR.ErrResourceGroupNotFound);
+
+			var m = sp.Queue.Select(res, popReceipt);
+
+			if (m == null)
+				return;
+
+			sp.Queue.Ping(res, popReceipt, TimeSpan.FromSeconds(5));
 		}
 
 		public void Complete(Guid resourceGroup, Guid popReceipt)

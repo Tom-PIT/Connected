@@ -54,9 +54,7 @@ namespace TomPIT.Cdn.Dns
 
 			if (cache.ContainsKey(key))
 			{
-				string r;
-
-				if (cache.TryGetValue(key, out r))
+				if (cache.TryGetValue(key, out string r))
 					return r;
 			}
 
@@ -155,21 +153,34 @@ namespace TomPIT.Cdn.Dns
 				{
 					_dnsServers = new DnsServers();
 
-					IPGlobalProperties cp = IPGlobalProperties.GetIPGlobalProperties();
-					NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
-
-					if (nics == null)
-						return _dnsServers;
-					else
+					lock (_dnsServers)
 					{
-						foreach (NetworkInterface adapter in nics)
-						{
-							IPInterfaceProperties properties = adapter.GetIPProperties();
+						if (_dnsServers.Count > 0)
+							return _dnsServers;
 
-							if (properties.DnsAddresses.Count > 0)
+						var cp = IPGlobalProperties.GetIPGlobalProperties();
+						var nics = NetworkInterface.GetAllNetworkInterfaces();
+
+						if (nics == null)
+							return _dnsServers;
+						else
+						{
+							foreach (var adapter in nics)
 							{
-								foreach (IPAddress ipAddress in properties.DnsAddresses)
-									_dnsServers.Add(ipAddress.ToString(), 53);
+								var properties = adapter.GetIPProperties();
+
+								if (properties.DnsAddresses.Count > 0)
+								{
+									foreach (var ipAddress in properties.DnsAddresses)
+									{
+										var ip = ipAddress.ToString();
+
+										if (string.IsNullOrWhiteSpace(ip) || _dnsServers.Exists(ip))
+											continue;
+
+										_dnsServers.Add(ip, 53);
+									}
+								}
 							}
 						}
 					}

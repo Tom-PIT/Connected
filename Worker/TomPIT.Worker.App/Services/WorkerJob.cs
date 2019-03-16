@@ -57,23 +57,50 @@ namespace TomPIT.Worker.Services
 				workerState = new JObject();
 
 			Invoker i = null;
-			var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, Instance.Connection.GetService<IMicroServiceService>().Select(configuration.MicroService(Instance.Connection)), null);
-			var args = new WorkerInvokeArgs(ctx, workerState);
+			var ms = Instance.Connection.GetService<IMicroServiceService>().Select(configuration.MicroService(Instance.Connection));
+			var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, ms, null);
+			var metricId = ctx.Services.Diagnostic.StartMetric(configuration.Metrics, null);
 
-			if (configuration is IHostedWorker)
-				i = new Hosted(args, configuration as IHostedWorker);
-			else if (configuration is ICollector)
-				i = new Collector(args, configuration as ICollector);
-			else
-				throw new NotSupportedException();
-
-			i.Invoke();
-
-			if (state == Guid.Empty)
+			try
 			{
-				if (workerState.Count > 0)
+				var args = new WorkerInvokeArgs(ctx, workerState);
+
+				if (configuration is IHostedWorker)
+					i = new Hosted(args, configuration as IHostedWorker);
+				else if (configuration is ICollector)
+					i = new Collector(args, configuration as ICollector);
+				else
+					throw new NotSupportedException();
+
+				i.Invoke();
+
+				if (state == Guid.Empty)
 				{
-					var id = Instance.GetService<IStorageService>().Upload(new Blob
+					if (workerState.Count > 0)
+					{
+						var id = Instance.GetService<IStorageService>().Upload(new Blob
+						{
+							ContentType = "application/json",
+							FileName = worker.ToString(),
+							MicroService = configuration.MicroService(Instance.Connection),
+							PrimaryKey = worker.ToString(),
+							Type = BlobTypes.WorkerState
+						}, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(workerState)), StoragePolicy.Singleton);
+
+
+						var url = Instance.Connection.CreateUrl("WorkerManagement", "AttachState");
+						var d = new JObject
+						{
+							{"worker", worker },
+							{"state", id }
+						};
+
+						Instance.Connection.Post(url, d);
+					}
+				}
+				else
+				{
+					Instance.GetService<IStorageService>().Upload(new Blob
 					{
 						ContentType = "application/json",
 						FileName = worker.ToString(),
@@ -81,31 +108,38 @@ namespace TomPIT.Worker.Services
 						PrimaryKey = worker.ToString(),
 						Type = BlobTypes.WorkerState
 					}, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(workerState)), StoragePolicy.Singleton);
-
-
-					var url = Instance.Connection.CreateUrl("WorkerManagement", "AttachState");
-					var d = new JObject
-						{
-							{"worker", worker },
-							{"state", id }
-						};
-
-					Instance.Connection.Post(url, d);
 				}
+
+				ctx.Services.Diagnostic.StopMetric(metricId, Diagnostics.SessionResult.Success, null);
 			}
-			else
+			catch
 			{
-				Instance.GetService<IStorageService>().Upload(new Blob
-				{
-					ContentType = "application/json",
-					FileName = worker.ToString(),
-					MicroService = configuration.MicroService(Instance.Connection),
-					PrimaryKey = worker.ToString(),
-					Type = BlobTypes.WorkerState
-				}, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(workerState)), StoragePolicy.Singleton);
+				ctx.Services.Diagnostic.StopMetric(metricId, Diagnostics.SessionResult.Fail, null);
+
+				throw;
 			}
 
 			return configuration.MicroService(Instance.Connection);
+		}
+
+		protected override void OnError(IQueueMessage item, Exception ex)
+		{
+			Instance.Connection.LogError(nameof(WorkerJob), ex.Source, ex.Message);
+
+			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
+			var worker = m.Required<Guid>("worker");
+
+			if (!(Instance.GetService<IComponentService>().SelectConfiguration(worker) is IWorker configuration))
+				return;
+
+			var url = Instance.Connection.CreateUrl("WorkerManagement", "Error");
+			var d = new JObject
+			{
+				{"popReceipt", item.PopReceipt },
+				{"microService", configuration.MicroService(Instance.Connection) }
+			};
+
+			Instance.Connection.Post(url, d);
 		}
 	}
 }

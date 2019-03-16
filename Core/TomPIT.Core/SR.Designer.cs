@@ -1321,6 +1321,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Email template not found.
+        /// </summary>
+        public static string ErrMailTemplateNotFound {
+            get {
+                return ResourceManager.GetString("ErrMailTemplateNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Master view not found.
         /// </summary>
         public static string ErrMasterViewNotFound {

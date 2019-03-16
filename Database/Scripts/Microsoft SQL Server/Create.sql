@@ -470,17 +470,54 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[subscription]'
+GO
+CREATE TABLE [tompit].[subscription]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[token] [uniqueidentifier] NOT NULL,
+[handler] [uniqueidentifier] NOT NULL,
+[topic] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_subscription] on [tompit].[subscription]'
+GO
+ALTER TABLE [tompit].[subscription] ADD CONSTRAINT [PK_subscription] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding constraints to [tompit].[subscription]'
+GO
+ALTER TABLE [tompit].[subscription] ADD CONSTRAINT [IX_subscription] UNIQUE NONCLUSTERED  ([handler], [primary_key], [topic]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[view_subscriber]'
+GO
+CREATE VIEW [tompit].[view_subscriber]
+AS
+
+SELECT s.id, s.subscription, s.resource_type, s.resource_primary_key,
+	su.token subscription_token
+FROM tompit.subscriber s
+INNER JOIN tompit.subscription su ON s.subscription = su.id
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[subscriber_que]'
 GO
 CREATE PROCEDURE [tompit].[subscriber_que]
-	@id bigint
+	@subscription bigint
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SELECT *
-	FROM tompit.subscriber 
-	WHERE (id = @id)
+	FROM tompit.view_subscriber
+	WHERE (subscription = @subscription)
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -510,7 +547,7 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT TOP 1 *
-	FROM tompit.subscriber 
+	FROM tompit.view_subscriber 
 	WHERE (subscription = @subscription)
 	AND (resource_type = @resource_type)
 	AND (resource_primary_key = @resource_primary_key);
@@ -610,31 +647,6 @@ BEGIN
 		reverse_proxy_url = @referse_proxy_url
 	where id = @id;
 END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[subscription]'
-GO
-CREATE TABLE [tompit].[subscription]
-(
-[id] [bigint] NOT NULL IDENTITY(1, 1),
-[token] [uniqueidentifier] NOT NULL,
-[handler] [uniqueidentifier] NOT NULL,
-[topic] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL
-) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating primary key [PK_subscription] on [tompit].[subscription]'
-GO
-ALTER TABLE [tompit].[subscription] ADD CONSTRAINT [PK_subscription] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Adding constraints to [tompit].[subscription]'
-GO
-ALTER TABLE [tompit].[subscription] ADD CONSTRAINT [IX_subscription] UNIQUE NONCLUSTERED  ([handler], [primary_key], [topic]) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -2373,6 +2385,25 @@ BEGIN
 	and (@url is null or url = @url)
 	and (@login_name is null or login_name = @login_name)
 	and (@auth_token is null or auth_token = @auth_token)
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[subscriber_ins_batch]'
+GO
+CREATE PROCEDURE [tompit].[subscriber_ins_batch]
+	@subscription bigint,
+	@items nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	MERGE tompit.subscriber d
+	USING (SELECT resource_type, resource_primary_key FROM OPENJSON(@items) WITH (resource_type int, resource_primary_key nvarchar(128))) AS s (resource_type, resource_primary_key)
+	ON (d.subscription = @subscription AND d.resource_type = s.resource_type AND d.resource_primary_key = s.resource_primary_key)
+	WHEN NOT MATCHED THEN
+	INSERT (subscription, resource_type, resource_primary_key)
+	VALUES (@subscription, s.resource_type, s.resource_primary_key);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -5163,24 +5194,6 @@ GO
 PRINT N'Creating primary key [PK_metric_agg_day] on [tompit].[metric_agg_day]'
 GO
 ALTER TABLE [tompit].[metric_agg_day] ADD CONSTRAINT [PK_metric_agg_day] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[subscriber_claim]'
-GO
-CREATE TABLE [tompit].[subscriber_claim]
-(
-[id] [bigint] NOT NULL IDENTITY(1, 1),
-[claim] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
-[handler] [uniqueidentifier] NOT NULL,
-[topic] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
-) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating primary key [PK_subscriber_claim] on [tompit].[subscriber_claim]'
-GO
-ALTER TABLE [tompit].[subscriber_claim] ADD CONSTRAINT [PK_subscriber_claim] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO

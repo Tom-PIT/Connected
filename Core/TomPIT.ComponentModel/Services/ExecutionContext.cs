@@ -16,6 +16,8 @@ namespace TomPIT.Services
 		internal const string SubscriptionProvider = "TomPIT.Design.CodeAnalysis.Providers.SubscriptionProvider, TomPIT.Design";
 		internal const string SubscriptionEventProvider = "TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, TomPIT.Design";
 
+		internal const string MailTemplateProvider = "TomPIT.Design.CodeAnalysis.Providers.MailTemplateProvider, TomPIT.Design";
+
 		private IContextServices _services = null;
 		private ISysConnection _connection = null;
 

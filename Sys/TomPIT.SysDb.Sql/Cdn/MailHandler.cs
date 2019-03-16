@@ -46,13 +46,14 @@ namespace TomPIT.SysDb.Sql.Cdn
 		public void Insert(Guid token, DateTime created, string from, string to, DateTime nextVisible, DateTime expire, string subject, string body, string headers,
 			int attachmentCount, MailFormat format)
 		{
-			var w = new Writer("tompit.mail_queue_ins");
+			var w = new Writer("tompit.mail_ins");
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@created", created);
 			w.CreateParameter("@from", from);
 			w.CreateParameter("@to", to);
 			w.CreateParameter("@next_visible", nextVisible);
+			w.CreateParameter("@expire", expire);
 			w.CreateParameter("@subject", subject);
 			w.CreateParameter("@body", body, true);
 			w.CreateParameter("@headers", headers, true);

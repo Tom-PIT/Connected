@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using TomPIT.Cdn;
 using TomPIT.ComponentModel;
+using TomPIT.Environment;
 
 namespace TomPIT.Services.Context
 {
@@ -20,6 +21,41 @@ namespace TomPIT.Services.Context
 		public Guid SendMail(string from, string to, string subject, string body, JArray headers, int attachmentCount)
 		{
 			return Context.Connection().GetService<IMailService>().Enqueue(from, to, subject, body, headers, attachmentCount, MailFormat.Html, DateTime.UtcNow, DateTime.UtcNow.AddHours(24));
+		}
+
+		public string CreateMailMessage(string template, string user)
+		{
+			return CreateMailMessage(template, user, null);
+		}
+
+		public string CreateMailMessage(string template, string user, JObject arguments)
+		{
+			var component = Context.Connection().GetService<IComponentService>().SelectComponent(Context.MicroService.Token, "MailTemplate", template);
+
+			if (component == null || string.Compare(component.Category, "MailTemplate", true) != 0)
+				throw new RuntimeException($"{SR.ErrMailTemplateNotFound} ({template})").WithMetrics(Context);
+
+			var url = Context.Connection().GetService<IRuntimeService>().Type == InstanceType.Application
+				? Context.RootUrl()
+				: Context.Connection().GetService<IInstanceEndpointService>().Url(InstanceType.Application, InstanceVerbs.Post);
+
+			if (string.IsNullOrWhiteSpace(url))
+				throw new RuntimeException(SR.ErrNoAppServer).WithMetrics(Context);
+
+			url = $"{url}/sys/mail-template/{component.Token}";
+
+			var e = new JObject();
+
+			if (!string.IsNullOrWhiteSpace(user))
+				e.Add("user", user);
+
+			if (arguments != null)
+				e.Add("arguments", arguments);
+
+			return Context.Connection().Post<string>(url, e, new Connectivity.HttpRequestArgs
+			{
+				ReadRawResponse = true
+			});
 		}
 
 		public void CreateSubscription(string subscription, string primaryKey)

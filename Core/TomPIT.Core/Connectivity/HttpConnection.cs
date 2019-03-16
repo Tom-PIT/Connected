@@ -31,7 +31,7 @@ namespace TomPIT.Connectivity
 
 				var response = client.GetAsync(url).GetAwaiter().GetResult();
 
-				return HandleResponse<T>(response);
+				return HandleResponse<T>(response, e);
 			}
 			catch (Exception ex)
 			{
@@ -60,7 +60,7 @@ namespace TomPIT.Connectivity
 				 ? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
 				 : HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
 
-			HandleResponse(client.PostAsync(url, CreateContent(content)).GetAwaiter().GetResult());
+			HandleResponse(client.PostAsync(url, CreateContent(content)).GetAwaiter().GetResult(), e);
 		}
 
 		public void Post(string url, HttpContent httpContent, HttpRequestArgs e = null)
@@ -69,7 +69,7 @@ namespace TomPIT.Connectivity
 				? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
 				: HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
 
-			HandleResponse(client.PostAsync(url, httpContent).GetAwaiter().GetResult());
+			HandleResponse(client.PostAsync(url, httpContent).GetAwaiter().GetResult(), e);
 		}
 
 		public T Post<T>(string url, HttpContent httpContent, HttpRequestArgs e)
@@ -78,16 +78,16 @@ namespace TomPIT.Connectivity
 				? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
 				: HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
 
-			return HandleResponse<T>(client.PostAsync(url, httpContent).GetAwaiter().GetResult());
+			return HandleResponse<T>(client.PostAsync(url, httpContent).GetAwaiter().GetResult(), e);
 		}
 
-		private void HandleResponse(HttpResponseMessage response)
+		private void HandleResponse(HttpResponseMessage response, HttpRequestArgs e)
 		{
 			if (!response.IsSuccessStatusCode)
 				HandleResponseException(response);
 		}
 
-		private T HandleResponse<T>(HttpResponseMessage response)
+		private T HandleResponse<T>(HttpResponseMessage response, HttpRequestArgs e)
 		{
 			if (!response.IsSuccessStatusCode)
 				HandleResponseException(response);
@@ -96,6 +96,14 @@ namespace TomPIT.Connectivity
 
 			if (IsNull(content))
 				return default(T);
+
+			if (e != null && e.ReadRawResponse)
+			{
+				if (Types.TryConvert<T>(content, out T result))
+					return result;
+
+				return default(T);
+			}
 
 			var settings = new JsonSerializerSettings
 			{

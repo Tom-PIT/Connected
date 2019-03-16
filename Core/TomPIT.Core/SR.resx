@@ -900,4 +900,7 @@
   <data name="ErrAlienNotFound" xml:space="preserve">
     <value>Alien not found</value>
   </data>
+  <data name="ErrMailTemplateNotFound" xml:space="preserve">
+    <value>Email template not found</value>
+  </data>
 </root>
