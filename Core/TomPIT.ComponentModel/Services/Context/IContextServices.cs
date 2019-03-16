@@ -13,5 +13,6 @@
 		IContextEnvironmentService Environment { get; }
 		IContextStorageService Storage { get; }
 		IContextCdnService Cdn { get; }
+		IContextIoTService IoT { get; }
 	}
 }

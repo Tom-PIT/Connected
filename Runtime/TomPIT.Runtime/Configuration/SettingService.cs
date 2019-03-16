@@ -60,5 +60,11 @@ namespace TomPIT.Configuration
 			Refresh(GenerateKey(e.ResourceGroup, e.Name));
 			SettingChanged?.Invoke(sender, e);
 		}
+
+		public void NotifyRemoved(object sender, SettingEventArgs e)
+		{
+			Remove(GenerateKey(e.ResourceGroup, e.Name));
+			SettingChanged?.Invoke(sender, e);
+		}
 	}
 }

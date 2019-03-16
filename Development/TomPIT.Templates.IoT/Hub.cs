@@ -21,7 +21,7 @@ namespace TomPIT.IoT
 		}
 
 		[PropertyEditor(PropertyEditorAttribute.Select)]
-		[Items("TomPIT.IoT.Design.Items.IotSchemasItems, TomPIT.IoT.Design")]
+		[Items("TomPIT.IoT.Design.Items.IoTSchemasItems, TomPIT.IoT.Design")]
 		public string Schema { get; set; }
 		public ElementScope Scope { get; set; } = ElementScope.Internal;
 	}

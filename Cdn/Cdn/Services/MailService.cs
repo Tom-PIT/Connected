@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using TomPIT.Configuration;
 using TomPIT.Services;
 
 namespace TomPIT.Cdn.Services
@@ -14,10 +15,28 @@ namespace TomPIT.Cdn.Services
 
 		public MailService()
 		{
-			IntervalTimeout = TimeSpan.FromMilliseconds(490);
+			Instance.GetService<ISettingService>().SettingChanged += OnSettingChanged;
+
+			SetInterval();
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
 				Dispatchers.Add(new MailDispatcher(i, _cancel));
+		}
+
+		private void OnSettingChanged(object sender, SettingEventArgs e)
+		{
+			if (e.ResourceGroup == Guid.Empty && string.Compare(e.Name, "MailServiceTimer", true) == 0)
+				SetInterval();
+		}
+
+		private void SetInterval()
+		{
+			var interval = Instance.GetService<ISettingService>().GetValue<int>(Guid.Empty, "MailServiceTimer");
+
+			if (interval == 0)
+				interval = 5000;
+
+			IntervalTimeout = TimeSpan.FromMilliseconds(interval);
 		}
 
 		protected override Task Process()

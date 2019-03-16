@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.Configuration;
 using TomPIT.Data;
 using TomPIT.Environment;
 using TomPIT.Notifications;
@@ -29,6 +30,26 @@ namespace TomPIT.Connectivity
 			EnvironmentUnits();
 			AuthenticationTokens();
 			Data();
+			Settings();
+		}
+
+		private void Settings()
+		{
+			Hub.On<MessageEventArgs<SettingEventArgs>>("SettingChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<ISettingService>() is ISettingNotification n)
+					n.NotifyChanged(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<SettingEventArgs>>("SettingRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<ISettingService>() is ISettingNotification n)
+					n.NotifyRemoved(Connection, e.Args);
+			});
 		}
 
 		private void Data()

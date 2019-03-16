@@ -903,4 +903,7 @@
   <data name="ErrMailTemplateNotFound" xml:space="preserve">
     <value>Email template not found</value>
   </data>
+  <data name="ErrNoIoTServer" xml:space="preserve">
+    <value>No IoT server is registered. To manage Instances go to the Management console and search for the Environment/Instances node.</value>
+  </data>
 </root>

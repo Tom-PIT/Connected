@@ -15,9 +15,21 @@ namespace TomPIT.Services
 		private IContextEnvironmentService _environment = null;
 		private IContextStorageService _storage = null;
 		private IContextCdnService _cdn = null;
+		private IContextIoTService _iot = null;
 
 		public ContextServices(IExecutionContext context) : base(context)
 		{
+		}
+
+		public IContextIoTService IoT
+		{
+			get
+			{
+				if (_iot == null)
+					_iot = new ContextIoTService(Context);
+
+				return _iot;
+			}
 		}
 
 		public IContextCdnService Cdn

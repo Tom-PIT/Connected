@@ -1420,6 +1420,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No IoT server is registered. To manage Instances go to the Management console and search for the Environment/Instances node..
+        /// </summary>
+        public static string ErrNoIoTServer {
+            get {
+                return ResourceManager.GetString("ErrNoIoTServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No password set.
         /// </summary>
         public static string ErrNoPassword {

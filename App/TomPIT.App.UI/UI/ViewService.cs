@@ -17,6 +17,7 @@ namespace TomPIT.UI
 	{
 		private ViewScriptsCache _scripts = null;
 		private Lazy<ConcurrentDictionary<Guid, bool>> _changeState = new Lazy<ConcurrentDictionary<Guid, bool>>();
+		private Lazy<ConcurrentDictionary<string, bool>> _snippetState = new Lazy<ConcurrentDictionary<string, bool>>();
 
 		public ViewService(ISysConnection connection) : base(connection, "view")
 		{
@@ -48,6 +49,7 @@ namespace TomPIT.UI
 			ChangeState[e.Component] = true;
 
 			Remove(e.Component);
+			SynchronizeSnippetsState(e.Component);
 		}
 
 		private void OnConfigurationAdded(ISysConnection sender, ConfigurationEventArgs e)
@@ -56,6 +58,7 @@ namespace TomPIT.UI
 				return;
 
 			Refresh(e.Component);
+			SynchronizeSnippetsState(e.Component);
 		}
 
 		private void OnConfigurationChanged(ISysConnection sender, ConfigurationEventArgs e)
@@ -71,6 +74,22 @@ namespace TomPIT.UI
 				ViewScripts.Remove(e.MicroService, c.Token);
 
 			Refresh(e.Component);
+			SynchronizeSnippetsState(e.Component);
+		}
+
+		private void SynchronizeSnippetsState(Guid component)
+		{
+			try
+			{
+				var config = Connection.GetService<IComponentService>().SelectConfiguration(component) as IView;
+
+				if (config == null)
+					return;
+
+				foreach (var i in config.Snippets)
+					SnippetState[$"{component}/{i.Name}"] = true;
+			}
+			catch { }
 		}
 
 		private bool IsTargetCategory(string category)
@@ -162,7 +181,8 @@ namespace TomPIT.UI
 			if (string.Compare(url, "_ViewImports", true) == 0)
 				return false;
 
-			Guid component = Guid.Empty;
+			var component = Guid.Empty;
+			var snippet = string.Empty;
 
 			switch (kind)
 			{
@@ -193,7 +213,8 @@ namespace TomPIT.UI
 				case ViewKind.Snippet:
 					var viewUrl = url.Split('.');
 
-					view = Select(url, null);
+					view = Select(viewUrl[0], null);
+					snippet = viewUrl[1];
 
 					if (view == null)
 						return false;
@@ -215,13 +236,24 @@ namespace TomPIT.UI
 			if (component == Guid.Empty)
 				return false;
 
-			if (ChangeState.TryGetValue(component, out bool r))
+			if (kind == ViewKind.Snippet)
 			{
-				ChangeState[component] = false;
+				if (SnippetState.TryGetValue($"{component}/{snippet}", out bool r))
+				{
+					SnippetState[$"{component}/{snippet}"] = false;
 
-				return r;
+					return r;
+				}
 			}
+			else
+			{
+				if (ChangeState.TryGetValue(component, out bool r))
+				{
+					ChangeState[component] = false;
 
+					return r;
+				}
+			}
 			return false;
 		}
 
@@ -287,6 +319,7 @@ namespace TomPIT.UI
 		}
 
 		private ConcurrentDictionary<Guid, bool> ChangeState => _changeState.Value;
+		private ConcurrentDictionary<string, bool> SnippetState => _snippetState.Value;
 		private ViewScriptsCache ViewScripts => _scripts;
 	}
 }
