@@ -601,6 +601,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Node not found.
+        /// </summary>
+        public static string ErrBigDataNodeNotFound {
+            get {
+                return ResourceManager.GetString("ErrBigDataNodeNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Partition not found.
+        /// </summary>
+        public static string ErrBigDataPartitionNotFound {
+            get {
+                return ResourceManager.GetString("ErrBigDataPartitionNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Blob not found.
         /// </summary>
         public static string ErrBlobNotFound {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Concurrent;
 using TomPIT.Caching;
 
 namespace TomPIT.Connectivity
@@ -12,5 +13,7 @@ namespace TomPIT.Connectivity
 		T GetService<T>();
 		void RegisterService(Type contract, object instance);
 		TokenValidationParameters ValidationParameters { get; }
+
+		ConcurrentDictionary<string, object> Items { get; }
 	}
 }

@@ -915,4 +915,10 @@
   <data name="ErrMediaFolderNotFound" xml:space="preserve">
     <value>Media folder not found</value>
   </data>
+  <data name="ErrBigDataNodeNotFound" xml:space="preserve">
+    <value>Node not found</value>
+  </data>
+  <data name="ErrBigDataPartitionNotFound" xml:space="preserve">
+    <value>Partition not found</value>
+  </data>
 </root>

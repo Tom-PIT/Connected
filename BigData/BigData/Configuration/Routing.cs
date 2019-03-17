@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Routing;
+using System.Threading.Tasks;
+using TomPIT.BigData.Controllers;
 
 namespace TomPIT.BigData.Configuration
 {
@@ -6,12 +8,14 @@ namespace TomPIT.BigData.Configuration
 	{
 		public static void Register(IRouteBuilder builder)
 		{
-			//builder.MapRoute("sys/avatar/{token}/{version}", (t) =>
-			//{
-			//	new AvatarRouteHandler().ProcessRequest(t);
+			builder.MapRoute("{microService}/{api}", (t) =>
+			{
+				var handler = new ApiHandler(t);
 
-			//	return Task.CompletedTask;
-			//});
+				handler.ProcessRequest();
+
+				return Task.CompletedTask;
+			});
 		}
 	}
 }

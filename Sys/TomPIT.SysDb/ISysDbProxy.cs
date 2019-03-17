@@ -1,4 +1,5 @@
-﻿using TomPIT.SysDb.Cdn;
+﻿using TomPIT.SysDb.BigData;
+using TomPIT.SysDb.Cdn;
 using TomPIT.SysDb.Data;
 using TomPIT.SysDb.Deployment;
 using TomPIT.SysDb.Development;
@@ -29,6 +30,7 @@ namespace TomPIT.SysDb
 		IIoTHandler IoT { get; }
 		IDeploymentHandler Deployment { get; }
 		ICdnHandler Cdn { get; }
+		IBigDataHandler BigData { get; }
 
 		void Initialize(string connectionString);
 	}

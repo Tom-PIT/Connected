@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TomPIT.BigData.Connectivity;
+using TomPIT.BigData.Services;
+using TomPIT.Connectivity;
 using TomPIT.Environment;
 
 namespace TomPIT.BigData
@@ -18,20 +21,39 @@ namespace TomPIT.BigData
 		{
 			var e = new ServicesConfigurationArgs
 			{
-				Authentication = AuthenticationType.SingleTenant,
-				ConfigureMvc = (o) =>
-				 {
-					 //o.OutputFormatters.Add(new ProtobufFormatter());
-				 }
+				Authentication = AuthenticationType.SingleTenant
 			};
 
 			Instance.Initialize(services, e);
+			RegisterTasks(services);
 		}
 
 		public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
 		{
-			Instance.Configure(InstanceType.BigData, app, env, null);
+			Instance.Configure(InstanceType.BigData, app, env, (f) =>
+			{
+				BigData.Configuration.Routing.Register(f.Builder);
+			});
+			InitializeConfiguration();
 			Instance.Run(app);
+		}
+
+		private void RegisterTasks(IServiceCollection services)
+		{
+			//services.AddSingleton<IHostedService, MailService>();
+			//services.AddSingleton<IHostedService, ConnectionCleanupService>();
+		}
+
+		private void InitializeConfiguration()
+		{
+			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
+		}
+
+		private void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
+		{
+			e.Connection.RegisterService(typeof(INodeService), typeof(NodeService));
+
+			e.Connection.Items.TryAdd("bigdataClient", new BigDataClient(e.Connection, e.Connection.AuthenticationToken));
 		}
 	}
 }

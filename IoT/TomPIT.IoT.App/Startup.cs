@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TomPIT.Connectivity;
@@ -21,7 +20,9 @@ namespace TomPIT.IoT
 			};
 
 			Instance.Initialize(services, e);
-
+			/*
+			 * TODO add origins management configuration
+			 */
 			services.AddCors(options => options.AddPolicy("TomPITPolicy",
 				builder =>
 				{

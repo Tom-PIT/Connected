@@ -1,5 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ namespace TomPIT.Connectivity
 		private CachingClient _cachingClient = null;
 		private ServiceContainer _serviceContainer = null;
 		private IMemoryCache _cache = null;
+		private Lazy<ConcurrentDictionary<string, object>> _items = new Lazy<ConcurrentDictionary<string, object>>();
 
 		public SysConnection(string url, string authenticationToken) : base(authenticationToken)
 		{
@@ -112,5 +114,6 @@ namespace TomPIT.Connectivity
 		}
 
 		public Guid InstanceId => Instance.Id;
+		public ConcurrentDictionary<string, object> Items { get { return _items.Value; } }
 	}
 }
