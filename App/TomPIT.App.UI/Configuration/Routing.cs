@@ -36,6 +36,13 @@ namespace TomPIT.Configuration
 				return Task.CompletedTask;
 			});
 
+			routes.MapRoute("sys/media/{id}/{version}", (t) =>
+			{
+				new MediaHandler().ProcessRequest(t);
+
+				return Task.CompletedTask;
+			});
+
 			routes.MapRoute("sys/mail-template/{token}", (t) =>
 			{
 				var ve = t.RequestServices.GetService(typeof(IMailTemplateViewEngine)) as MailTemplateViewEngine;

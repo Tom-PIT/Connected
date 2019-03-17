@@ -24,26 +24,27 @@ namespace TomPIT.Application
 		static ApplicationTemplate()
 		{
 			_items = new ConcurrentDictionary<string, IItemDescriptor>(new Dictionary<string, IItemDescriptor>{
-				{View.ComponentCategory,  new ItemDescriptor("View", View.ComponentCategory, typeof(View)) { Glyph = "fal fa-browser", Category = "UI" } },
-				{MasterView.ComponentCategory, new ItemDescriptor("Master view", MasterView.ComponentCategory, typeof(MasterView)) { Glyph = "fal fa-browser", Category = "UI" } },
-				{Partial.ComponentCategory, new ItemDescriptor("Partial view", Partial.ComponentCategory, typeof(Partial)) { Glyph = "fal fa-browser", Category = "UI" } },
-				{Theme.ComponentCategory, new ItemDescriptor("Theme", Theme.ComponentCategory, typeof(Theme)) { Glyph = "fal fa-pencil-paintbrush", Category = "UI" } },
-				{ScriptBundle.ComponentCategory,new ItemDescriptor("Script bundle", ScriptBundle.ComponentCategory, typeof(ScriptBundle)) { Glyph = "fab fa-js", Category = "UI" } },
-				{Api.ComponentCategory, new ItemDescriptor("Api", Api.ComponentCategory, typeof(Api)) { Glyph = "fal fa-broadcast-tower", Category = "Model" } },
-				{Library.ComponentCategory, new ItemDescriptor("Library", Library.ComponentCategory, typeof(Library)) { Glyph = "fal fa-file-code", Category = "Model" } },
-				{Events.EventHandler.ComponentCategory, new ItemDescriptor("Event handler", Events.EventHandler.ComponentCategory, typeof(Events.EventHandler)) { Glyph = "fal fa-bullseye-pointer", Category = "Model" } },
-				{DistributedEvent.ComponentCategory, new ItemDescriptor("Distributed event", DistributedEvent.ComponentCategory, typeof(DistributedEvent)) { Glyph = "fal fa-chart-network", Category = "Model" } },
-				{HostedWorker.ComponentCategory, new ItemDescriptor("Hosted worker", HostedWorker.ComponentCategory, typeof(HostedWorker)) { Glyph = "fal fa-cog", Category = "Model" } },
-				{DataSource.ComponentCategory, new ItemDescriptor("Data source", "DataSource", typeof(DataSource)) { Glyph = "fal fa-database", Category = "Data" } },
-				{Transaction.ComponentCategory, new ItemDescriptor("Transaction", "Transaction", typeof(Transaction)) { Glyph = "fal fa-exchange-alt", Category = "Data" } },
+				{View.ComponentCategory,  new ItemDescriptor("View", View.ComponentCategory, typeof(View)) { Glyph = "fal fa-browser", Category = "UI", Ordinal=0 } },
+				{MasterView.ComponentCategory, new ItemDescriptor("Master view", MasterView.ComponentCategory, typeof(MasterView)) { Glyph = "fal fa-browser", Category = "UI", Ordinal=1 } },
+				{Partial.ComponentCategory, new ItemDescriptor("Partial view", Partial.ComponentCategory, typeof(Partial)) { Glyph = "fal fa-browser", Category = "UI" , Ordinal=2} },
+				{Theme.ComponentCategory, new ItemDescriptor("Theme", Theme.ComponentCategory, typeof(Theme)) { Glyph = "fal fa-pencil-paintbrush", Category = "UI" , Ordinal=3} },
+				{ScriptBundle.ComponentCategory,new ItemDescriptor("Script bundle", ScriptBundle.ComponentCategory, typeof(ScriptBundle)) { Glyph = "fab fa-js", Category = "UI", Ordinal=4 } },
+				{Api.ComponentCategory, new ItemDescriptor("Api", Api.ComponentCategory, typeof(Api)) { Glyph = "fal fa-broadcast-tower", Category = "Model" , Ordinal=100} },
+				{Library.ComponentCategory, new ItemDescriptor("Library", Library.ComponentCategory, typeof(Library)) { Glyph = "fal fa-file-code", Category = "Model" , Ordinal=101} },
+				{Events.EventHandler.ComponentCategory, new ItemDescriptor("Event handler", Events.EventHandler.ComponentCategory, typeof(Events.EventHandler)) { Glyph = "fal fa-bullseye-pointer", Category = "Model" , Ordinal=102} },
+				{DistributedEvent.ComponentCategory, new ItemDescriptor("Distributed event", DistributedEvent.ComponentCategory, typeof(DistributedEvent)) { Glyph = "fal fa-chart-network", Category = "Model" , Ordinal=103} },
+				{HostedWorker.ComponentCategory, new ItemDescriptor("Hosted worker", HostedWorker.ComponentCategory, typeof(HostedWorker)) { Glyph = "fal fa-cog", Category = "Model" , Ordinal=104} },
+				{DataSource.ComponentCategory, new ItemDescriptor("Data source", "DataSource", typeof(DataSource)) { Glyph = "fal fa-database", Category = "Data" , Ordinal=200} },
+				{Transaction.ComponentCategory, new ItemDescriptor("Transaction", "Transaction", typeof(Transaction)) { Glyph = "fal fa-exchange-alt", Category = "Data" , Ordinal=201} },
 				//r.Add(new ItemDescriptor("Data management", DataManagement.ComponentCategory, typeof(DataManagement)) { Glyph = "fal fa-exchange-alt", Category = "Data", Value = "DataManagement" });
-				{Connection.ComponentCategory, new ItemDescriptor("Connection", "Connection", typeof(Connection)) { Glyph = "fal fa-server", Category = "Data" } },
-				{"Strings", new ItemDescriptor("String table", "StringTable", typeof(StringTable)) { Glyph = "fal fa-font", Category = "Resources" } } ,
-				{ "Upload", new ItemDescriptor("Upload assembly", "Upload", typeof(AssemblyUploadResource)) { Glyph = "fal fa-file-code", Category = "Resources" } } ,
-				{"File", new ItemDescriptor("File assembly", "File", typeof(AssemblyFileSystemResource)) { Glyph = "fal fa-file-code", Category = "Resources" } },
-				{"TestSuite", new ItemDescriptor("Test suite", "TestSuite", typeof(TestSuite)) { Glyph = "fal fa-stethoscope", Category = "QA" } },
-				{"Subscription", new ItemDescriptor("Subscription", "Subscription", typeof(Subscription)) { Glyph = "fal fa-bell", Category = "Cdn" } },
-				{"MailTemplate", new ItemDescriptor("Mail template", "MailTemplate", typeof(MailTemplate)) { Glyph = "fal fa-envelope", Category = "Cdn" } }
+				{Connection.ComponentCategory, new ItemDescriptor("Connection", "Connection", typeof(Connection)) { Glyph = "fal fa-server", Category = "Data" , Ordinal=202} },
+				{"Strings", new ItemDescriptor("String table", "StringTable", typeof(StringTable)) { Glyph = "fal fa-font", Category = "Resources" , Ordinal=300} } ,
+				{"Media", new ItemDescriptor("Media", "Media", typeof(MediaResources)) { Glyph = "fal fa-images", Category = "Resources" , Ordinal=301} } ,
+				{ "Upload", new ItemDescriptor("Upload assembly", "Upload", typeof(AssemblyUploadResource)) { Glyph = "fal fa-file-code", Category = "Resources" , Ordinal=302} } ,
+				{"File", new ItemDescriptor("File assembly", "File", typeof(AssemblyFileSystemResource)) { Glyph = "fal fa-file-code", Category = "Resources" , Ordinal=303} },
+				{"Subscription", new ItemDescriptor("Subscription", "Subscription", typeof(Subscription)) { Glyph = "fal fa-bell", Category = "Cdn" , Ordinal=400} },
+				{"MailTemplate", new ItemDescriptor("Mail template", "MailTemplate", typeof(MailTemplate)) { Glyph = "fal fa-envelope", Category = "Cdn" , Ordinal=401} },
+				{"TestSuite", new ItemDescriptor("Test suite", "TestSuite", typeof(TestSuite)) { Glyph = "fal fa-stethoscope", Category = "QA" , Ordinal=500} }
 			});
 		}
 

@@ -13,7 +13,7 @@
 }
 else
 {
-	var cat = items.GroupBy(f => f.Category);
+	var cat = items.OrderBy(f => f.Ordinal).GroupBy(f => f.Category);
 
 	<div class="dev-toolbox">
 		<ul class="list-unstyled">
@@ -22,7 +22,7 @@ else
 				var c = string.IsNullOrWhiteSpace(i.Key) ? "General" : i.Key;
 
 				<li class="dev-toolbox-item-category">@c</li>
-				@foreach (var j in i)
+				@foreach (var j in i.OrderBy(f => f.Ordinal))
 				{
 					var glyph = "fal fa-puzzle-piece";
 					var view = j.ToolboxItemHelper();

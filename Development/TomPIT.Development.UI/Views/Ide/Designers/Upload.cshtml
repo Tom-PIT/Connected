@@ -1,43 +1,46 @@
 ﻿@model TomPIT.Designers.IUploadDesigner
 
 @{
-    var path = TomPIT.DomQuery.Path(Model.Element);
+	var path = TomPIT.DomQuery.Path(Model.Element);
 }
 <div class="dev-canvas">
-    <div class="paper">
-        <h4>Upload resource</h4>
-        <br />
-        @if (Model.Resource.Blob != Guid.Empty)
-        {
-            <a href="@Model.Environment.Context.Services.Routing.Resource(Url, Model.Resource.Blob)" target="_blank">
-                @Model.Resource.FileName
-            </a>
-            <hr />
-        }
-        <div class="upload-canvas">
-            <div id="uploadCanvas">
+	<div class="paper">
+		<h4>Upload resource</h4>
+		<br />
+		@if (Model.Resource.Blob != Guid.Empty)
+		{
+			<a href="@Model.Environment.Context.Services.Routing.Resource(Url, Model.Resource.Blob)" target="_blank">
+				@Model.Resource.FileName
+			</a>
+			<hr />
+		}
+		<div class="upload-canvas">
+			<div id="uploadCanvas">
 
-            </div>
-        </div>
-    </div>
+			</div>
+		</div>
+	</div>
 </div>
 
 <script>
-    var url = new tompit.devUrl();
-    var action = url.environment('Upload') + '?action=upload&path=' + btoa(encodeURIComponent(ide.selectedPath()).replace(/%([0-9A-F]{2})/g,
-        function toSolidBytes(match, p1) {
-            return String.fromCharCode('0x' + p1);
-        }));
+	 var url = new tompit.devUrl();
+	 var action = url.environment('Upload') + '?action=upload&path=' + btoa(encodeURIComponent(ide.selectedPath()).replace(/%([0-9A-F]{2})/g,
+		  function toSolidBytes(match, p1) {
+				return String.fromCharCode('0x' + p1);
+		  }));
 
-    var fileUploader = $("#uploadCanvas").dxFileUploader({
-        multiple: false,
-        accept: "*",
-        allowedFileExtensions: ["@Model.FileExtension"],
-        value: [],
-        uploadMode: "instantly",
-        uploadUrl: action,
-        onUploaded: function () {
-            ide.refreshDesigner();
-        }
-    }).dxFileUploader("instance");
+	 var fileUploader = $("#uploadCanvas").dxFileUploader({
+		  multiple: false,
+		 accept: "*",
+		  @if (!string.IsNullOrWhiteSpace(Model.FileExtension)) {
+			  @:allowedFileExtensions: ["@Model.FileExtension"],
+			  }
+		  value: [],
+		  uploadMode: "instantly",
+		  uploadUrl: action,
+		  onUploaded: function () {
+			  ide.refreshDesigner();
+			  ide.refreshExplorer();
+			  }
+		  }).dxFileUploader("instance");
 </script>

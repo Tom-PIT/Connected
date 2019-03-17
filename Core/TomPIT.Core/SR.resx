@@ -909,4 +909,10 @@
   <data name="ErrStringResourceNotFound" xml:space="preserve">
     <value>String resource not found</value>
   </data>
+  <data name="ErrMediaFileNotFound" xml:space="preserve">
+    <value>Media file not found</value>
+  </data>
+  <data name="ErrMediaFolderNotFound" xml:space="preserve">
+    <value>Media folder not found</value>
+  </data>
 </root>

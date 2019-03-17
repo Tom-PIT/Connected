@@ -8,7 +8,7 @@
 }
 else
 {
-	var cat = Model.Selection.AddItems.GroupBy(f => f.Category);
+	var cat = Model.Selection.AddItems.OrderBy(f => f.Ordinal).GroupBy(f => f.Category);
 
 	<div class="dev-add-items">
 		<ul class="list-unstyled">
@@ -18,22 +18,22 @@ else
 				var c = string.IsNullOrWhiteSpace(i.Key) ? "General" : i.Key;
 
 				<li class="dev-add-item-category">@c</li>
-			@foreach (var j in i)
-			{
-				var glyph = "fal fa-puzzle-piece";
+				@foreach (var j in i.OrderBy(f=>f.Ordinal))
+				{
+					var glyph = "fal fa-puzzle-piece";
 
-				<li class="dev-add-item" data-id="@j.Id">
+					<li class="dev-add-item" data-id="@j.Id">
 
-					@if (!string.IsNullOrWhiteSpace(j.Glyph))
-					{
-						glyph = j.Glyph;
-					}
+						@if (!string.IsNullOrWhiteSpace(j.Glyph))
+						{
+							glyph = j.Glyph;
+						}
 
 
-					<i class="@glyph"></i><span class="pl-1">@j.Text</span>
+						<i class="@glyph"></i><span class="pl-1">@j.Text</span>
 
-				</li>
-			}
+					</li>
+				}
 			}
 		</ul>
 	</div>

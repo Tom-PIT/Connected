@@ -1339,6 +1339,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Media file not found.
+        /// </summary>
+        public static string ErrMediaFileNotFound {
+            get {
+                return ResourceManager.GetString("ErrMediaFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Media folder not found.
+        /// </summary>
+        public static string ErrMediaFolderNotFound {
+            get {
+                return ResourceManager.GetString("ErrMediaFolderNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Micro service not found.
         /// </summary>
         public static string ErrMicroServiceNotFound {

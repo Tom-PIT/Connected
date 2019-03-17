@@ -27,7 +27,7 @@ namespace TomPIT.Design
 		public string Id { get; set; }
 		public string Category { get; set; }
 		public Type Type { get; set; }
-
+		public int Ordinal { get; set; }
 		public object Value { get; set; }
 
 		public static IItemDescriptor From(IComponent d)

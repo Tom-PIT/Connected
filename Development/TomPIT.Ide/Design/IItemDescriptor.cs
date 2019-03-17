@@ -10,5 +10,6 @@ namespace TomPIT.Design
 		object Value { get; }
 		string Glyph { get; }
 		string Category { get; }
+		int Ordinal { get; }
 	}
 }

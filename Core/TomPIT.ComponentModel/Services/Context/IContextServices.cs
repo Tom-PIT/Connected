@@ -14,5 +14,6 @@
 		IContextStorageService Storage { get; }
 		IContextCdnService Cdn { get; }
 		IContextIoTService IoT { get; }
+		IContextMediaService Media { get; }
 	}
 }
