@@ -38,7 +38,8 @@ namespace TomPIT.Application
 				{Transaction.ComponentCategory, new ItemDescriptor("Transaction", "Transaction", typeof(Transaction)) { Glyph = "fal fa-exchange-alt", Category = "Data" } },
 				//r.Add(new ItemDescriptor("Data management", DataManagement.ComponentCategory, typeof(DataManagement)) { Glyph = "fal fa-exchange-alt", Category = "Data", Value = "DataManagement" });
 				{Connection.ComponentCategory, new ItemDescriptor("Connection", "Connection", typeof(Connection)) { Glyph = "fal fa-server", Category = "Data" } },
-				{"Upload", new ItemDescriptor("Upload assembly", "Upload", typeof(AssemblyUploadResource)) { Glyph = "fal fa-file-code", Category = "Resources" } } ,
+				{"Strings", new ItemDescriptor("String table", "StringTable", typeof(StringTable)) { Glyph = "fal fa-font", Category = "Resources" } } ,
+				{ "Upload", new ItemDescriptor("Upload assembly", "Upload", typeof(AssemblyUploadResource)) { Glyph = "fal fa-file-code", Category = "Resources" } } ,
 				{"File", new ItemDescriptor("File assembly", "File", typeof(AssemblyFileSystemResource)) { Glyph = "fal fa-file-code", Category = "Resources" } },
 				{"TestSuite", new ItemDescriptor("Test suite", "TestSuite", typeof(TestSuite)) { Glyph = "fal fa-stethoscope", Category = "QA" } },
 				{"Subscription", new ItemDescriptor("Subscription", "Subscription", typeof(Subscription)) { Glyph = "fal fa-bell", Category = "Cdn" } },

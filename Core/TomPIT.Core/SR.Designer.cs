@@ -1708,6 +1708,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to String resource not found.
+        /// </summary>
+        public static string ErrStringResourceNotFound {
+            get {
+                return ResourceManager.GetString("ErrStringResourceNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Subscriber not found.
         /// </summary>
         public static string ErrSubscriberNotFound {

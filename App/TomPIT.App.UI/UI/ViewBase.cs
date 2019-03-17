@@ -85,5 +85,10 @@ namespace TomPIT.UI
 				return _helpers;
 			}
 		}
+
+		protected string GetString(string stringTable, string key)
+		{
+			return e.Services.Localization.GetString(stringTable, key);
+		}
 	}
 }

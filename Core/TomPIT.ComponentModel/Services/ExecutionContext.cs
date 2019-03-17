@@ -12,11 +12,11 @@ namespace TomPIT.Services
 	{
 		internal const string ApiProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiProvider, TomPIT.Design";
 		internal const string ApiParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiParameterProvider, TomPIT.Design";
-
 		internal const string SubscriptionProvider = "TomPIT.Design.CodeAnalysis.Providers.SubscriptionProvider, TomPIT.Design";
 		internal const string SubscriptionEventProvider = "TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, TomPIT.Design";
-
 		internal const string MailTemplateProvider = "TomPIT.Design.CodeAnalysis.Providers.MailTemplateProvider, TomPIT.Design";
+		internal const string StringTableProvider = "TomPIT.Design.CodeAnalysis.Providers.StringTableProvider, TomPIT.Design";
+		internal const string StringTableStringProvider = "TomPIT.Design.CodeAnalysis.Providers.StringTableStringProvider, TomPIT.Design";
 
 		private IContextServices _services = null;
 		private ISysConnection _connection = null;
