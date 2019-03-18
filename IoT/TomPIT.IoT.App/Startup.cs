@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
+using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
 using TomPIT.IoT.Hubs;
@@ -20,15 +23,19 @@ namespace TomPIT.IoT
 			};
 
 			Instance.Initialize(services, e);
-			/*
-			 * TODO add origins management configuration
-			 */
+
 			services.AddCors(options => options.AddPolicy("TomPITPolicy",
 				builder =>
 				{
+					var setting = Instance.GetService<ISettingService>().Select(Guid.Empty, "Cors Origins");
+					var origin = "http://localhost";
+
+					if (setting != null && !string.IsNullOrWhiteSpace(setting.Value))
+						origin = setting.Value;
+
 					builder.AllowAnyMethod()
 					.AllowAnyHeader()
-					.WithOrigins("http://localhost:44003")
+					.WithOrigins(origin)
 					.AllowCredentials();
 				}));
 

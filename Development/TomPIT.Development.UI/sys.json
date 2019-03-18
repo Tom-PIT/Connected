@@ -11,14 +11,16 @@
 	],
 	"designers": [
 		"TomPIT.Application.ApplicationTemplate, TomPIT.Application.Design",
-		"TomPIT.IoT.IoTTemplate, TomPIT.IoT.Design"
+		"TomPIT.IoT.IoTTemplate, TomPIT.IoT.Design",
+		"TomPIT.BigData.Design.BigDataTemplate, TomPIT.BigData.Design"
 	],
 	"plugins": {
 		"location": "c:\\Deploy\\Plugins",
 		"shadowCopy": true,
 		"items": [
 			"TomPIT.Application.Plugin, TomPIT.Application",
-			"TomPIT.IoT.Plugin, TomPIT.IoT"
+			"TomPIT.IoT.Plugin, TomPIT.IoT",
+			"TomPIT.BigData.Plugin, TomPIT.BigData"
 		]
 	}
 }
