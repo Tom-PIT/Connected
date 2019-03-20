@@ -15,6 +15,7 @@ using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Globalization;
+using TomPIT.IoT;
 using TomPIT.Security;
 using TomPIT.Services;
 using TomPIT.Storage;
@@ -74,6 +75,13 @@ namespace TomPIT.Runtime
 			e.Connection.RegisterService(typeof(IMailService), typeof(MailService));
 			e.Connection.RegisterService(typeof(ISubscriptionService), typeof(SubscriptionService));
 			e.Connection.RegisterService(typeof(IAlienService), typeof(AlienService));
+			e.Connection.RegisterService(typeof(IIoTService), typeof(IoTService));
+
+			var iotClient = new IoTClient(e.Connection, e.Connection.AuthenticationToken);
+
+			e.Connection.Items.TryAdd("iotClient", iotClient);
+
+			iotClient.Connect();
 		}
 	}
 }

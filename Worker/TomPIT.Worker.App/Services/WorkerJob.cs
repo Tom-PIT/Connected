@@ -58,7 +58,7 @@ namespace TomPIT.Worker.Services
 
 			Invoker i = null;
 			var ms = Instance.Connection.GetService<IMicroServiceService>().Select(configuration.MicroService(Instance.Connection));
-			var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, ms, null);
+			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, ms);
 			var metricId = ctx.Services.Diagnostic.StartMetric(configuration.Metrics, null);
 
 			try

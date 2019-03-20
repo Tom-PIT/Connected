@@ -5,7 +5,9 @@ namespace TomPIT.BigData
 	public interface ITransactionBlock
 	{
 		Guid Transaction { get; }
-		int WorkerRemaining { get; }
+		Guid Partition { get; }
 		Guid Token { get; }
+		DateTime NextVisible { get; }
+		Guid PopReceipt { get; }
 	}
 }

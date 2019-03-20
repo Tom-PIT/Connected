@@ -52,6 +52,7 @@ namespace TomPIT.BigData
 		private void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
 		{
 			e.Connection.RegisterService(typeof(INodeService), typeof(NodeService));
+			e.Connection.RegisterService(typeof(ITransactionService), typeof(TransactionService));
 
 			e.Connection.Items.TryAdd("bigdataClient", new BigDataClient(e.Connection, e.Connection.AuthenticationToken));
 		}

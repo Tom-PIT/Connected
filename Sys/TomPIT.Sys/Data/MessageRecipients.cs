@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TomPIT.Api.Net;
-using TomPIT.Api.Storage;
 using TomPIT.Caching;
+using TomPIT.Sys.Api.Database;
+using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Data
 {
@@ -20,7 +20,7 @@ namespace TomPIT.Sys.Data
 			Parallel.ForEach(rgs,
 				(i) =>
 				{
-					var ds = Shell.GetService<IStorageProviderService>().Resolve(i.Token).Messaging.QueryRecipients(i);
+					var ds = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.QueryRecipients(i);
 
 					foreach (var j in ds)
 						Set(GenerateKey(j.Message, j.Connection), j, TimeSpan.Zero);
@@ -65,7 +65,7 @@ namespace TomPIT.Sys.Data
 				return;
 			}
 
-			var r = Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.SelectRecipient(rg, m, s);
+			var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.SelectRecipient(rg, m, s);
 
 			if (r == null)
 			{
@@ -103,7 +103,7 @@ namespace TomPIT.Sys.Data
 					if (rg == null)
 						return null;
 
-					return Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.SelectRecipient(rg, m, s);
+					return Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.SelectRecipient(rg, m, s);
 				});
 		}
 
@@ -120,7 +120,7 @@ namespace TomPIT.Sys.Data
 			if (rg == null)
 				return;
 
-			var ds = Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.QueryRecipients(rg, m);
+			var ds = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.QueryRecipients(rg, m);
 
 			foreach (var i in ds)
 				Set(GenerateKey(message, i.Connection), i, TimeSpan.Zero);
@@ -148,7 +148,7 @@ namespace TomPIT.Sys.Data
 			if (rg == null)
 				return;
 
-			Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.DeleteRecipient(rg, m);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.DeleteRecipient(rg, m);
 		}
 
 		public void Delete(string topic, string connection)
@@ -167,7 +167,7 @@ namespace TomPIT.Sys.Data
 			var ds = Where(f => string.Compare(f.Topic, topic, true) == 0
 				 && string.Compare(f.Connection, connection, true) == 0);
 
-			Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.DeleteRecipient(rg, t, s);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.DeleteRecipient(rg, t, s);
 
 			foreach (var i in ds)
 				Remove(GenerateKey(i.Message, i.Connection));
@@ -217,7 +217,7 @@ namespace TomPIT.Sys.Data
 					if (rg == null)
 						return;
 
-					Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.UpdateRecipients(rg, i.Value);
+					Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.UpdateRecipients(rg, i.Value);
 				});
 
 			return ds;
@@ -235,7 +235,7 @@ namespace TomPIT.Sys.Data
 			if (s == null)
 				return;
 
-			Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.DeleteRecipient(m.ResolveResourceGroup(), m, s);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.DeleteRecipient(m.ResolveResourceGroup(), m, s);
 
 			Remove(GenerateKey(message, connection));
 		}

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TomPIT.Api.Net;
-using TomPIT.Api.Storage;
 using TomPIT.Caching;
+using TomPIT.Sys.Api.Database;
+using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Data
 {
@@ -20,7 +20,7 @@ namespace TomPIT.Sys.Data
 			Parallel.ForEach(rgs,
 				(i) =>
 				{
-					var ds = Shell.GetService<IStorageProviderService>().Resolve(i.Token).Messaging.QuerySubscribers(i);
+					var ds = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.QuerySubscribers(i);
 
 					foreach (var j in ds)
 						Set(GenerateKey(j.Topic, j.Connection), j, TimeSpan.Zero);
@@ -33,7 +33,7 @@ namespace TomPIT.Sys.Data
 
 			var t = DataModel.MessageTopics.Ensure(tokens[0]);
 			var rg = t.ResolveResourceGroup();
-			var r = Shell.GetService<IStorageProviderService>().Resolve(rg.Token).Messaging.SelectSubscriber(rg, t, tokens[1]);
+			var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.SelectSubscriber(rg, t, tokens[1]);
 
 			if (r == null)
 			{
@@ -59,7 +59,7 @@ namespace TomPIT.Sys.Data
 					var t = DataModel.MessageTopics.Ensure(topic);
 					var rg = t.ResolveResourceGroup();
 
-					return Shell.GetService<IStorageProviderService>().Resolve(rg.Token).Messaging.SelectSubscriber(rg, t, connection);
+					return Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.SelectSubscriber(rg, t, connection);
 				});
 		}
 
@@ -82,7 +82,7 @@ namespace TomPIT.Sys.Data
 
 			var rg = t.ResolveResourceGroup();
 
-			Shell.GetService<IStorageProviderService>().Resolve(rg.Token).Messaging.InsertSubscriber(rg, t, connection, instance);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.InsertSubscriber(rg, t, connection, instance);
 
 			Refresh(GenerateKey(topic, connection));
 		}
@@ -102,7 +102,7 @@ namespace TomPIT.Sys.Data
 			var rg = t.ResolveResourceGroup();
 
 			DataModel.MessageRecipients.Delete(topic, connection);
-			Shell.GetService<IStorageProviderService>().Resolve(rg.Token).Messaging.DeleteSubscriber(rg, t, connection);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.DeleteSubscriber(rg, t, connection);
 
 			Remove(GenerateKey(topic, connection));
 		}
@@ -116,7 +116,7 @@ namespace TomPIT.Sys.Data
 
 			var rg = s.ResolveResourceGroup();
 
-			Shell.GetService<IStorageProviderService>().Resolve(rg.Token).Messaging.UpdateSubscriber(rg, s, DateTime.UtcNow);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.UpdateSubscriber(rg, s, DateTime.UtcNow);
 
 			Refresh(GenerateKey(topic, connection));
 		}

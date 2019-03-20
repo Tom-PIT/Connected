@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
+    <AssemblyVersion>1.0.318.1</AssemblyVersion>
+    <FileVersion>1.0.318.1</FileVersion>
+    <Version>1.0.318.1</Version>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
@@ -12,9 +13,7 @@
     <ProjectReference Include="..\TomPIT.Development\TomPIT.Development.csproj" />
     <ProjectReference Include="..\TomPIT.Ide\TomPIT.Ide.csproj" />
   </ItemGroup>
-
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.Templates.BigData.Design&quot;" />
   </Target>
-
 </Project>

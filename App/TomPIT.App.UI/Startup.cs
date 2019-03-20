@@ -16,8 +16,6 @@ namespace TomPIT
 {
 	public class Startup
 	{
-		private IoTClient _iot = null;
-
 		public void ConfigureServices(IServiceCollection services)
 		{
 			var e = new ServicesConfigurationArgs
@@ -51,13 +49,6 @@ namespace TomPIT
 
 			InitializeConfiguration();
 			Instance.Run(app);
-
-			_iot = new IoTClient(Instance.Connection, Instance.Connection.AuthenticationToken);
-
-			Task.Run(() =>
-			{
-				_iot.Connect();
-			});
 		}
 
 		private void InitializeConfiguration()
@@ -71,7 +62,6 @@ namespace TomPIT
 			e.Connection.RegisterService(typeof(IThemeService), typeof(ThemeService));
 			e.Connection.RegisterService(typeof(IResourceService), typeof(ResourceService));
 			e.Connection.RegisterService(typeof(IClientGlobalizationService), typeof(ClientGlobalizationService));
-			e.Connection.RegisterService(typeof(IIoTService), typeof(IoTService));
 		}
 	}
 }

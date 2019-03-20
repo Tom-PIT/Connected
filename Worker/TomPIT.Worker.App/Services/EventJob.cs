@@ -81,7 +81,7 @@ namespace TomPIT.Worker.Services
 				? null
 				: JsonConvert.DeserializeObject<JObject>(ed.Arguments);
 
-			var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, Instance.GetService<IMicroServiceService>().Select(tokens[0]), string.Empty);
+			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, Instance.GetService<IMicroServiceService>().Select(tokens[0]));
 			var opArgs = new OperationInvokeArguments(ctx, op, args, null);
 
 			ctx.Invoke(api.ComponentName(ctx), args);
@@ -89,7 +89,7 @@ namespace TomPIT.Worker.Services
 
 		private void Invoke(EventDescriptor ed, IEventBinding i)
 		{
-			var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, null, string.Empty);
+			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, null);
 
 			var args = string.IsNullOrWhiteSpace(ed.Arguments)
 				? null

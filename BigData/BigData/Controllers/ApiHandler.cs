@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json.Linq;
 using System.Net;
+using TomPIT.BigData.Services;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.Services;
@@ -44,7 +45,7 @@ namespace TomPIT.BigData.Controllers
 
 		public void ProcessRequest()
 		{
-
+			Instance.GetService<ITransactionService>().Prepare(Api, Body);
 		}
 	}
 }

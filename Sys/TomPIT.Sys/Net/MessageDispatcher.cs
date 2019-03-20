@@ -1,10 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
-using TomPIT.Api.Net;
 using TomPIT.Services;
 using TomPIT.Sys.Data;
 using TomPIT.Sys.Notifications;
+using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Services
 {

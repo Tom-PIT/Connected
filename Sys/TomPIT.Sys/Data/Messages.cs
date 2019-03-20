@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TomPIT.Api.Net;
-using TomPIT.Api.Storage;
 using TomPIT.Caching;
+using TomPIT.Sys.Api.Database;
+using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Data
 {
@@ -20,7 +20,7 @@ namespace TomPIT.Sys.Data
 			Parallel.ForEach(rgs,
 				(i) =>
 				{
-					var ds = Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.QueryMessages(i);
+					var ds = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.QueryMessages(i);
 
 					foreach (var j in ds)
 						Set(j.Token, j, TimeSpan.Zero);
@@ -33,7 +33,7 @@ namespace TomPIT.Sys.Data
 
 			foreach (var i in rgs)
 			{
-				var r = Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.SelectMessage(i, id);
+				var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.SelectMessage(i, id);
 
 				if (r != null)
 				{
@@ -56,7 +56,7 @@ namespace TomPIT.Sys.Data
 
 					foreach (var i in rgs)
 					{
-						var r = Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.SelectMessage(i, id);
+						var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.SelectMessage(i, id);
 
 						if (r != null)
 							return r;
@@ -88,7 +88,7 @@ namespace TomPIT.Sys.Data
 			if (rg == null)
 				throw new SysException(SR.ErrResourceGroupNotFound);
 
-			Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.InsertMessage(rg, t, token, content, expire, retryInterval, senderInstance);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.InsertMessage(rg, t, token, content, expire, retryInterval, senderInstance);
 
 			Refresh(token);
 			DataModel.MessageRecipients.Load(token);
@@ -102,7 +102,7 @@ namespace TomPIT.Sys.Data
 				return;
 
 			DataModel.MessageRecipients.Delete(message);
-			Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.DeleteMessage(m.ResolveResourceGroup(), m);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.DeleteMessage(m.ResolveResourceGroup(), m);
 
 			Remove(message);
 		}

@@ -176,7 +176,7 @@ namespace TomPIT.UI
 			return Encoding.UTF8.GetString(r.Content);
 		}
 
-		public bool HasChanged(ViewKind kind, string url)
+		public bool HasChanged(ViewKind kind, string url, ActionContext context)
 		{
 			if (string.Compare(url, "_ViewImports", true) == 0)
 				return false;

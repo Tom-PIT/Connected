@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT</RootNamespace>
     <AssemblyName>TomPIT.Development.App</AssemblyName>
-    <AssemblyVersion>1.0.312.2</AssemblyVersion>
-    <FileVersion>1.0.312.2</FileVersion>
-    <Version>1.0.312.2</Version>
+    <AssemblyVersion>1.0.318.1</AssemblyVersion>
+    <FileVersion>1.0.318.1</FileVersion>
+    <Version>1.0.318.1</Version>
   </PropertyGroup>
   <PropertyGroup>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>

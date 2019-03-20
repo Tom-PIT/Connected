@@ -14,6 +14,7 @@ namespace TomPIT.UI
 	{
 		private IExecutionContext _context = null;
 		private ListItems<IViewHelper> _helpers = null;
+		private IConfiguration _configuration = null;
 
 		public void Helper(string name)
 		{
@@ -30,7 +31,7 @@ namespace TomPIT.UI
 			if (helper == null)
 				return;
 
-			this.e.Connection().GetService<ICompilerService>().Execute(this.e.MicroService.Token,
+			this.e.Connection().GetService<ICompilerService>().Execute(Configuration.MicroService(this.e.Connection()),
 				helper, this, new ViewHelperArguments(this.e, e, this as ViewBase<IExecutionContext>));
 		}
 
@@ -46,7 +47,7 @@ namespace TomPIT.UI
 			if (helper == null)
 				return default(H);
 
-			return (H)this.e.Connection().GetService<ICompilerService>().Execute(this.e.MicroService.Token,
+			return (H)this.e.Connection().GetService<ICompilerService>().Execute(Configuration.MicroService(this.e.Connection()),
 				helper, this, new ViewHelperArguments(this.e, e, this as ViewBase<IExecutionContext>));
 		}
 
@@ -61,24 +62,33 @@ namespace TomPIT.UI
 			}
 		}
 
+		private IConfiguration Configuration
+		{
+			get
+			{
+				if (_configuration == null)
+					_configuration = Instance.GetService<IComponentService>().SelectConfiguration(ComponentId);
+
+				return _configuration;
+			}
+		}
+
 		private ListItems<IViewHelper> Helpers
 		{
 			get
 			{
 				if (_helpers == null && e != null)
 				{
-					var config = Instance.GetService<IComponentService>().SelectConfiguration(ComponentId);
-
-					if (config != null)
+					if (Configuration != null)
 					{
 						if (string.Compare(ViewType, "partial", true) == 0)
-							_helpers = ((IPartialView)config).Helpers;
+							_helpers = ((IPartialView)Configuration).Helpers;
 						else if (string.Compare(ViewType, "view", true) == 0)
-							_helpers = ((IView)config).Helpers;
+							_helpers = ((IView)Configuration).Helpers;
 						else if (string.Compare(ViewType, "master", true) == 0)
-							_helpers = ((IMasterView)config).Helpers;
+							_helpers = ((IMasterView)Configuration).Helpers;
 						else if (string.Compare(ViewType, "mailtemplate", true) == 0)
-							_helpers = ((IMailTemplate)config).Helpers;
+							_helpers = ((IMailTemplate)Configuration).Helpers;
 					}
 				}
 

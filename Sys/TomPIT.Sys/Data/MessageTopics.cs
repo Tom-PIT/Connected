@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TomPIT.Api.Net;
-using TomPIT.Api.Storage;
 using TomPIT.Caching;
+using TomPIT.Sys.Api.Database;
+using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Data
 {
@@ -20,7 +20,7 @@ namespace TomPIT.Sys.Data
 			Parallel.ForEach(rgs,
 				(i) =>
 				{
-					var ds = Shell.GetService<IStorageProviderService>().Resolve(i.Token).Messaging.QueryTopics(i);
+					var ds = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.QueryTopics(i);
 
 					foreach (var j in ds)
 						Set(j.Name, j, TimeSpan.Zero);
@@ -34,7 +34,7 @@ namespace TomPIT.Sys.Data
 
 			foreach (var i in rgs)
 			{
-				var r = Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.SelectTopic(i, id);
+				var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.SelectTopic(i, id);
 
 				if (r != null)
 				{
@@ -69,7 +69,7 @@ namespace TomPIT.Sys.Data
 
 					foreach (var i in rgs)
 					{
-						var r = Shell.GetService<IStorageProviderService>().Resolve(Guid.Empty).Messaging.SelectTopic(i, id);
+						var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.SelectTopic(i, id);
 
 						if (r != null)
 							return r;
@@ -91,7 +91,7 @@ namespace TomPIT.Sys.Data
 			if (rg == null)
 				throw new SysException(SR.ErrResourceGroupNotFound);
 
-			Shell.GetService<IStorageProviderService>().Resolve(rg.Token).Messaging.InsertTopic(rg, name);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.InsertTopic(rg, name);
 
 			Refresh(name);
 		}
@@ -105,7 +105,7 @@ namespace TomPIT.Sys.Data
 
 			var rg = t.ResolveResourceGroup();
 
-			Shell.GetService<IStorageProviderService>().Resolve(rg.Token).Messaging.DeleteTopic(rg, t);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.DeleteTopic(rg, t);
 
 			Remove(name);
 		}

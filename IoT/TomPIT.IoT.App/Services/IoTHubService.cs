@@ -11,11 +11,14 @@ using TomPIT.Services;
 
 namespace TomPIT.IoT.Services
 {
-	internal class IoTHubService : ClientRepository<IIoTHub, Guid>, IIoTHubService, IIoTHubNotification
+	internal class IoTHubService : ClientRepository<IIoTHub, Guid>, IIoTHubService
 	{
 		public IoTHubService(ISysConnection connection) : base(connection, "iothubs")
 		{
 			Connection.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
+			Connection.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
+			Connection.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
+			Connection.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
 
 			var configurations = connection.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, "IoTHub");
 
@@ -26,6 +29,24 @@ namespace TomPIT.IoT.Services
 			}
 
 			Data = new HubDataCache(Connection);
+		}
+
+		private void OnConfigurationAdded(ISysConnection sender, ConfigurationEventArgs e)
+		{
+			if (string.Compare(e.Category, "IoTHub", true) == 0)
+				Refresh(e.Component);
+		}
+
+		private void OnConfigurationRemoved(ISysConnection sender, ConfigurationEventArgs e)
+		{
+			if (string.Compare(e.Category, "IoTHub", true) == 0)
+				Remove(e.Component);
+		}
+
+		private void OnConfigurationChanged(ISysConnection sender, ConfigurationEventArgs e)
+		{
+			if (string.Compare(e.Category, "IoTHub", true) == 0)
+				Refresh(e.Component);
 		}
 
 		private void OnComponentChanged(ISysConnection sender, ComponentEventArgs e)
@@ -56,7 +77,7 @@ namespace TomPIT.IoT.Services
 			var schema = SelectSchema(device.Closest<IIoTHub>());
 			var hub = device.Configuration().Component;
 			ValidateData(data, schema);
-			var state = Data.Select(hub);
+			var state = Connection.GetService<IIoTService>().SelectState(hub);
 			var changed = new List<IIoTFieldStateModifier>();
 
 			foreach (var i in data)
@@ -150,11 +171,6 @@ namespace TomPIT.IoT.Services
 		public void FlushChanges()
 		{
 			Data.Flush();
-		}
-
-		public void NotifyStateChanged(object sender, IoTStateChangedArgs e)
-		{
-			Data.Synchronize(e);
 		}
 	}
 }

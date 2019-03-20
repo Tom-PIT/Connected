@@ -109,5 +109,9 @@ namespace TomPIT.Sys.Controllers.Management
 
 			DataModel.BigDataPartitions.Delete(configuration);
 		}
+		/*
+		 * Transactions
+		 */
+
 	}
 }

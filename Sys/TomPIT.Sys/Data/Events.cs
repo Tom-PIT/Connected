@@ -2,11 +2,11 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using TomPIT.Api.Storage;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
 using TomPIT.SysDb.Environment;
 using TomPIT.SysDb.Events;
+using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Data
 {
@@ -27,7 +27,6 @@ namespace TomPIT.Sys.Data
 				throw new SysException(SR.ErrMicroServiceNotFound);
 
 			var rg = DataModel.ResourceGroups.Select(ms == null ? Guid.Empty : ms.ResourceGroup);
-			var sp = Shell.GetService<IStorageProviderService>().Select(rg.StorageProvider);
 
 			var message = new JObject
 			{
@@ -35,19 +34,14 @@ namespace TomPIT.Sys.Data
 			};
 
 			Shell.GetService<IDatabaseService>().Proxy.Events.Insert(name, id, DateTime.UtcNow, a, callback);
-			sp.Queue.Enqueue(rg, Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(rg, Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
 			return id;
 		}
 
 		public List<IClientQueueMessage> Dequeue(IServerResourceGroup resourceGroup, int count)
 		{
-			var provider = Shell.GetService<IStorageProviderService>().Select(resourceGroup.StorageProvider);
-
-			if (provider == null)
-				throw new SysException(string.Format("{0} ({1})", SR.ErrStorageProviderNotRegistered, resourceGroup.StorageProvider.ToString()));
-
-			return provider.Queue.DequeueSystem(resourceGroup, Queue, count).ToClientQueueMessage(resourceGroup.Token);
+			return Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(resourceGroup, Queue, count).ToClientQueueMessage(resourceGroup.Token);
 		}
 
 		public IEventDescriptor Select(Guid id)
@@ -57,29 +51,27 @@ namespace TomPIT.Sys.Data
 
 		public void Ping(Guid resourceGroup, Guid popReceipt)
 		{
-			var sp = Shell.GetService<IStorageProviderService>().Resolve(resourceGroup);
 			var res = DataModel.ResourceGroups.Select(resourceGroup);
 
 			if (res == null)
 				throw new SysException(SR.ErrResourceGroupNotFound);
 
-			var m = sp.Queue.Select(res, popReceipt);
+			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(res, popReceipt);
 
 			if (m == null)
 				return;
 
-			sp.Queue.Ping(res, popReceipt, TimeSpan.FromSeconds(5));
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(res, popReceipt, TimeSpan.FromSeconds(5));
 		}
 
 		public void Complete(Guid resourceGroup, Guid popReceipt)
 		{
-			var sp = Shell.GetService<IStorageProviderService>().Resolve(resourceGroup);
 			var res = DataModel.ResourceGroups.Select(resourceGroup);
 
 			if (res == null)
 				throw new SysException(SR.ErrResourceGroupNotFound);
 
-			var m = sp.Queue.Select(res, popReceipt);
+			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(res, popReceipt);
 
 			if (m == null)
 				return;
@@ -89,7 +81,7 @@ namespace TomPIT.Sys.Data
 			if (e != null)
 				Shell.GetService<IDatabaseService>().Proxy.Events.Delete(e);
 
-			sp.Queue.Delete(res, popReceipt);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(res, popReceipt);
 		}
 
 		private IEventDescriptor Resolve(IQueueMessage message)

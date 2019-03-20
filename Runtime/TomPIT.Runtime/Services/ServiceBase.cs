@@ -2,7 +2,7 @@
 
 namespace TomPIT.Services
 {
-	internal abstract class ServiceBase
+	public abstract class ServiceBase
 	{
 		public ServiceBase(ISysConnection connection)
 		{

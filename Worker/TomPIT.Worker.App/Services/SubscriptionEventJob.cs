@@ -52,7 +52,7 @@ namespace TomPIT.Worker.Services
 				return;
 
 			var ms = config.MicroService(Instance.Connection);
-			var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, Instance.GetService<IMicroServiceService>().Select(ms), string.Empty);
+			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, Instance.GetService<IMicroServiceService>().Select(ms));
 			var subscribers = QuerySubscribers(subscriptionEvent);
 			var invokeArgs = new SubscriptionEventInvokeArguments(ctx, subscriptionEvent, subscribers.ToList<IRecipient>());
 

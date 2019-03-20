@@ -193,6 +193,12 @@ $.widget('tompit.tpMessaging', {
 				connection.bindings.push(v);
 		});
 	},
+	getValue: function (e) {
+		tompit.post({
+			'url': 'iot',
+			'data': e
+		});
+	},
 	_getConnection: function (id) {
 		var r = null;
 

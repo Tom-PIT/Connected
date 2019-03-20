@@ -11,7 +11,8 @@ namespace TomPIT.BigData
 	public interface ITransaction
 	{
 		int BlockCount { get; }
-		int BlobkRemaining { get; }
+		int BlockRemaining { get; }
+		Guid Partition { get; }
 		DateTime Created { get; }
 		Guid Token { get; }
 		TransactionStatus Status { get; }

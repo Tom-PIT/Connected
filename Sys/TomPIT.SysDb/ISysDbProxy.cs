@@ -9,6 +9,7 @@ using TomPIT.SysDb.Events;
 using TomPIT.SysDb.Globalization;
 using TomPIT.SysDb.IoT;
 using TomPIT.SysDb.Management;
+using TomPIT.SysDb.Messaging;
 using TomPIT.SysDb.Security;
 using TomPIT.SysDb.Storage;
 using TomPIT.SysDb.Workers;
@@ -31,6 +32,7 @@ namespace TomPIT.SysDb
 		IDeploymentHandler Deployment { get; }
 		ICdnHandler Cdn { get; }
 		IBigDataHandler BigData { get; }
+		IMessagingHandler Messaging { get; }
 
 		void Initialize(string connectionString);
 	}

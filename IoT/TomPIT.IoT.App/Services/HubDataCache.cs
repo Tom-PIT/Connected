@@ -20,28 +20,6 @@ namespace TomPIT.IoT.Services
 
 		}
 
-		public List<IIoTFieldState> Select(Guid hub)
-		{
-			return Get(hub,
-				(f) =>
-				{
-					f.Duration = TimeSpan.Zero;
-
-					var u = Connection.CreateUrl("IoT", "SelectState");
-					var e = new JObject
-					{
-						{ "hub", hub }
-					};
-
-					var r = Connection.Post<List<IoTFieldState>>(u, e).ToList<IIoTFieldState>();
-
-					if (r == null)
-						r = new List<IIoTFieldState>();
-
-					return r;
-				});
-		}
-
 		public JObject Update(Guid hub, List<IIoTFieldStateModifier> fields)
 		{
 			var e = new JObject
@@ -54,7 +32,7 @@ namespace TomPIT.IoT.Services
 			r.Add("$timestamp", DateTime.UtcNow);
 			e.Add("fields", a);
 
-			var schema = Select(hub);
+			var schema = Connection.GetService<IIoTService>().SelectState(hub);
 
 			foreach (var i in fields)
 			{
@@ -114,17 +92,6 @@ namespace TomPIT.IoT.Services
 		}
 
 		private ConcurrentQueue<JObject> Buffer { get { return _buffer.Value; } }
-
-		internal void Synchronize(IoTStateChangedArgs e)
-		{
-			var schema = Get(e.Hub);
-
-			if (schema == null)
-				return;
-
-			foreach (var i in e.State)
-				SynchronizeField(schema, i);
-		}
 
 		private void SynchronizeField(List<IIoTFieldState> schema, IIoTFieldStateModifier modifier)
 		{

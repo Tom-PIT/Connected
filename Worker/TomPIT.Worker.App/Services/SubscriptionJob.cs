@@ -48,7 +48,7 @@ namespace TomPIT.Worker.Services
 
 			var config = Instance.Connection.GetService<IComponentService>().SelectConfiguration(sub.Handler) as ISubscription;
 			var ms = config.MicroService(Instance.Connection);
-			var ctx = TomPIT.Services.ExecutionContext.NonHttpContext(Instance.Connection.Url, Instance.GetService<IMicroServiceService>().Select(ms), string.Empty);
+			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, Instance.GetService<IMicroServiceService>().Select(ms));
 			var subscribeArgs = new SubscriptionSubscribeArguments(ctx, sub);
 			var subscribedArgs = new SubscriptionSubscribedArguments(ctx, sub);
 

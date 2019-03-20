@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -28,10 +27,10 @@ namespace TomPIT.IoT
 				builder =>
 				{
 					var setting = Instance.GetService<ISettingService>().Select(Guid.Empty, "Cors Origins");
-					var origin = "http://localhost";
+					var origin = new string[] { "http://localhost" };
 
 					if (setting != null && !string.IsNullOrWhiteSpace(setting.Value))
-						origin = setting.Value;
+						origin = setting.Value.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 
 					builder.AllowAnyMethod()
 					.AllowAnyHeader()

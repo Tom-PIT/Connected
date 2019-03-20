@@ -14,6 +14,6 @@ namespace TomPIT.UI
 
 		string SelectContent(IGraphicInterface ui);
 
-		bool HasChanged(ViewKind kind, string url);
+		bool HasChanged(ViewKind kind, string url, ActionContext context);
 	}
 }

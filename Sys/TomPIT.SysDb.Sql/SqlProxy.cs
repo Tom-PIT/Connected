@@ -10,6 +10,7 @@ using TomPIT.SysDb.Events;
 using TomPIT.SysDb.Globalization;
 using TomPIT.SysDb.IoT;
 using TomPIT.SysDb.Management;
+using TomPIT.SysDb.Messaging;
 using TomPIT.SysDb.Security;
 using TomPIT.SysDb.Sql.BigData;
 using TomPIT.SysDb.Sql.Cdn;
@@ -22,6 +23,7 @@ using TomPIT.SysDb.Sql.Environment;
 using TomPIT.SysDb.Sql.Events;
 using TomPIT.SysDb.Sql.Globalization;
 using TomPIT.SysDb.Sql.IoT;
+using TomPIT.SysDb.Sql.Messaging;
 using TomPIT.SysDb.Sql.Security;
 using TomPIT.SysDb.Sql.Storage;
 using TomPIT.SysDb.Sql.Workers;
@@ -46,6 +48,18 @@ namespace TomPIT.SysDb.Sql
 		private IDeploymentHandler _deployment = null;
 		private ICdnHandler _cdn = null;
 		private IBigDataHandler _bigData = null;
+		private IMessagingHandler _messaging = null;
+
+		public IMessagingHandler Messaging
+		{
+			get
+			{
+				if (_messaging == null)
+					_messaging = new MessagingHandler();
+
+				return _messaging;
+			}
+		}
 
 		public IBigDataHandler BigData
 		{
