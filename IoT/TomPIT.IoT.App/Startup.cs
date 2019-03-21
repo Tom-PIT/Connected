@@ -48,7 +48,11 @@ namespace TomPIT.IoT
 
 		public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
 		{
-			Instance.Configure(InstanceType.Rest, app, env, null);
+			Instance.Configure(InstanceType.Rest, app, env, (f) =>
+			{
+				Configuration.Routing.Register(f.Builder);
+			});
+
 			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
 			Instance.Run(app);
 

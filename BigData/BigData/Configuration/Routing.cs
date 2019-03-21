@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Routing;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using System.Threading.Tasks;
 using TomPIT.BigData.Controllers;
 
@@ -8,6 +9,8 @@ namespace TomPIT.BigData.Configuration
 	{
 		public static void Register(IRouteBuilder builder)
 		{
+			builder.MapRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+
 			builder.MapRoute("{microService}/{api}", (t) =>
 			{
 				var handler = new ApiHandler(t);

@@ -15,10 +15,10 @@ namespace TomPIT.BigData.Services
 		public void Activate(Guid token)
 		{
 			var u = Connection.CreateUrl("BigDataManagement", "ActivateTransaction");
-			var e=new JObject
-			{
-				{"" }
-			}
+			//var e=new JObject
+			//{
+			//	{"" }
+			//}
 		}
 
 		public void Delete(Guid token)

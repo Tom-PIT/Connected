@@ -22,7 +22,7 @@ namespace TomPIT.UI
 
 				if (kind == ViewKind.View)
 				{
-					var path = _viewPath.Substring(7, _viewPath.Length - 7);
+					var path = _viewPath.Substring(7).Substring(0, _viewPath.Length - 14);
 
 					return Instance.GetService<IViewService>().HasChanged(kind, path, ViewEngineBase.CreateActionContext(Shell.HttpContext));
 				}

@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using System.Threading.Tasks;
 using TomPIT.Environment;
 
 namespace TomPIT.Rest
@@ -23,12 +21,7 @@ namespace TomPIT.Rest
 		{
 			Instance.Configure(InstanceType.Rest, app, env, (f) =>
 		  {
-			  f.Builder.MapRoute("{microservice}/{api}/{operation}", (t) =>
-			  {
-				  new ApiHandler(t, Instance.Connection.Url).Invoke();
-
-				  return Task.CompletedTask;
-			  });
+			  Configuration.Routing.Register(f.Builder);
 		  });
 
 			Instance.Run(app);

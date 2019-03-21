@@ -2,7 +2,7 @@
 	"connections": [
 		{
 			"name": "localhost",
-			"url": "http://localhost/marketplace/sys",
+			"url": "http://localhost:44001",
 			"authenticationToken": "defaultAuthenticationToken"
 		}
 	],
@@ -12,5 +12,12 @@
 	"dataProviders": [
 		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
 	],
-	"plugins": "c:\\Deploy\\Plugins"
+	"plugins": {
+		"location": "c:\\Deploy\\Plugins",
+		"shadowCopy": true,
+		"items": [
+			"TomPIT.Application.Plugin, TomPIT.Application",
+			"TomPIT.IoT.Plugin, TomPIT.IoT"
+		]
+	}
 }

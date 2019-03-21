@@ -29,7 +29,10 @@ namespace TomPIT.Worker
 
 		public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
 		{
-			Instance.Configure(InstanceType.Worker, app, env, null);
+			Instance.Configure(InstanceType.Worker, app, env, (f) =>
+			{
+				Worker.Configuration.Routing.Register(f.Builder);
+			});
 			Instance.Run(app);
 		}
 

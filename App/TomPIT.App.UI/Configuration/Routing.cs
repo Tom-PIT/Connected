@@ -9,6 +9,7 @@ namespace TomPIT.Configuration
 	{
 		public static void Register(IRouteBuilder routes)
 		{
+			routes.MapRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
 			routes.MapRoute("sys.api", "sys/api/invoke", new { controller = "Api", action = "Invoke" });
 			routes.MapRoute("sys.partial", "sys/api/partial", new { controller = "Api", action = "Partial" });
 			routes.MapRoute("sys.setuserdata", "sys/api/setuserdata", new { controller = "Api", action = "SetUserData" });

@@ -29,7 +29,10 @@ namespace TomPIT.Cdn
 
 		public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
 		{
-			Instance.Configure(InstanceType.Cdn, app, env, null);
+			Instance.Configure(InstanceType.Cdn, app, env, (f) =>
+			{
+				Cdn.Configuration.Routing.Register(f.Builder);
+			});
 			Instance.Run(app);
 		}
 
