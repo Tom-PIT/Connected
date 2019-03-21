@@ -7,7 +7,6 @@ using TomPIT.Services;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Workers;
-using TomPIT.SysDb.Environment;
 using TomPIT.SysDb.Workers;
 
 namespace TomPIT.Sys.Data
@@ -161,46 +160,24 @@ namespace TomPIT.Sys.Data
 
 		public void Enqueue(ISysScheduledJob job)
 		{
-			Guid resourceGroup = Guid.Empty;
-
-			if (job.Worker != Guid.Empty)
-			{
-				var c = DataModel.Components.Select(job.Worker);
-
-				if (c == null)
-					throw new SysException(SR.ErrComponentCorrupted);
-
-				var s = DataModel.MicroServices.Select(c.MicroService);
-
-				if (s == null)
-					throw new SysException(SR.ErrMicroServiceNotFound);
-
-				resourceGroup = s.ResourceGroup;
-			}
-
-			var res = DataModel.ResourceGroups.Select(resourceGroup);
-
-			if (res == null)
-				throw new SysException(SR.ErrResourceGroupNotFound);
-
 			var message = new JObject
 			{
 				{ "worker", job.Worker },
 				{ "state", job.State }
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(res, Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, SysDb.Messaging.QueueScope.System);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, SysDb.Messaging.QueueScope.System);
 
 			Update(job.Worker, WorkerStatus.Queued, job.NextRun, job.Elapsed,
 				job.FailCount, job.LastRun, job.LastComplete, job.RunCount);
 		}
 
-		public List<IClientQueueMessage> Dequeue(IServerResourceGroup resourceGroup, int count)
+		public List<IQueueMessage> Dequeue(int count)
 		{
-			var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(resourceGroup, Queue, count);
+			var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(Queue, count);
 
 			if (r == null)
-				return r.ToClientQueueMessage(resourceGroup.Token);
+				return null;
 
 			var workers = new List<IScheduledJob>();
 
@@ -212,29 +189,12 @@ namespace TomPIT.Sys.Data
 			foreach (var i in workers)
 				Refresh(i.Worker);
 
-			return r.ToClientQueueMessage(resourceGroup.Token);
+			return r;
 		}
 
 		public void Error(Guid microService, Guid popReceipt)
 		{
-			var resourceGroup = Guid.Empty;
-
-			if (microService != Guid.Empty)
-			{
-				var s = DataModel.MicroServices.Select(microService);
-
-				if (s == null)
-					throw new SysException(SR.ErrMicroServiceNotFound);
-
-				resourceGroup = s.ResourceGroup;
-			}
-
-			var res = DataModel.ResourceGroups.Select(resourceGroup);
-
-			if (res == null)
-				throw new SysException(SR.ErrResourceGroupNotFound);
-
-			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(res, popReceipt);
+			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
@@ -254,51 +214,17 @@ namespace TomPIT.Sys.Data
 			Update(worker.Worker, status, worker.NextRun, worker.Elapsed, worker.FailCount + 1, worker.LastRun,
 				worker.LastComplete, worker.RunCount);
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(res, popReceipt);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(popReceipt);
 		}
 
 		public void Ping(Guid microService, Guid popReceipt)
 		{
-			var resourceGroup = Guid.Empty;
-
-			if (microService != Guid.Empty)
-			{
-				var s = DataModel.MicroServices.Select(microService);
-
-				if (s == null)
-					throw new SysException(SR.ErrMicroServiceNotFound);
-
-				resourceGroup = s.ResourceGroup;
-			}
-
-			var res = DataModel.ResourceGroups.Select(resourceGroup);
-
-			if (res == null)
-				throw new SysException(SR.ErrResourceGroupNotFound);
-
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(res, popReceipt, TimeSpan.FromMinutes(5));
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(popReceipt, TimeSpan.FromMinutes(5));
 		}
 
 		public void Complete(Guid microService, Guid popReceipt)
 		{
-			var resourceGroup = Guid.Empty;
-
-			if (microService != Guid.Empty)
-			{
-				var s = DataModel.MicroServices.Select(microService);
-
-				if (s == null)
-					throw new SysException(SR.ErrMicroServiceNotFound);
-
-				resourceGroup = s.ResourceGroup;
-			}
-
-			var res = DataModel.ResourceGroups.Select(resourceGroup);
-
-			if (res == null)
-				throw new SysException(SR.ErrResourceGroupNotFound);
-
-			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(res, popReceipt);
+			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
@@ -310,7 +236,7 @@ namespace TomPIT.Sys.Data
 			Update(worker.Worker, status, ScheduleCalculator.NextRun(worker), Convert.ToInt32(elapsed), 0,
 				worker.LastRun, DateTime.UtcNow, worker.RunCount);
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(res, popReceipt);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(popReceipt);
 		}
 
 		public ISysScheduledJob Select(Guid worker)

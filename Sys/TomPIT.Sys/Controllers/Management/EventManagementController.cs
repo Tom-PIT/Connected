@@ -10,21 +10,15 @@ namespace TomPIT.Sys.Controllers.Management
 	public class EventManagementController : SysController
 	{
 		[HttpPost]
-		public List<IClientQueueMessage> Dequeue()
+		public List<IQueueMessage> Dequeue()
 		{
 			var body = FromBody();
 
 			var count = body.Required<int>("count");
-			var resourceGroup = body.Required<string>("resourceGroup");
 
 			var r = new List<IQueueMessage>();
 
-			var rg = DataModel.ResourceGroups.Select(resourceGroup);
-
-			if (rg == null)
-				throw new SysException(string.Format("{0} ({1})", SR.ErrResourceGroupNotFound, resourceGroup));
-
-			return DataModel.Events.Dequeue(rg, count);
+			return DataModel.Events.Dequeue(count);
 		}
 
 		[HttpGet]
@@ -39,9 +33,8 @@ namespace TomPIT.Sys.Controllers.Management
 			var body = FromBody();
 
 			var popReceipt = body.Required<Guid>("popReceipt");
-			var resourceGroup = body.Required<Guid>("resourceGroup");
 
-			DataModel.Events.Complete(resourceGroup, popReceipt);
+			DataModel.Events.Complete(popReceipt);
 		}
 
 		[HttpPost]
@@ -50,9 +43,8 @@ namespace TomPIT.Sys.Controllers.Management
 			var body = FromBody();
 
 			var popReceipt = body.Required<Guid>("popReceipt");
-			var resourceGroup = body.Required<Guid>("resourceGroup");
 
-			DataModel.Events.Ping(resourceGroup, popReceipt);
+			DataModel.Events.Ping(popReceipt);
 		}
 	}
 }

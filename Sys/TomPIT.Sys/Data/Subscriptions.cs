@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using TomPIT.Cdn;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
-using TomPIT.SysDb.Environment;
 
 namespace TomPIT.Sys.Data
 {
@@ -55,15 +54,13 @@ namespace TomPIT.Sys.Data
 			if (microService != Guid.Empty && ms == null)
 				throw new SysException(SR.ErrMicroServiceNotFound);
 
-			var rg = DataModel.ResourceGroups.Select(ms == null ? Guid.Empty : ms.ResourceGroup);
-
 			var message = new JObject
 			{
 				{ "id",id}
 			};
 
 			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.Insert(id, handler, topic, primaryKey);
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(rg, Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, SysDb.Messaging.QueueScope.System);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, SysDb.Messaging.QueueScope.System);
 		}
 
 		public ISubscriber SelectSubscriber(Guid handler, string topic, string primaryKey, SubscriptionResourceType type, string resourcePrimaryKey)
@@ -127,8 +124,6 @@ namespace TomPIT.Sys.Data
 				? null
 				: DataModel.MicroServices.Select(microService);
 
-			var rg = DataModel.ResourceGroups.Select(ms == null ? Guid.Empty : ms.ResourceGroup);
-
 			var message = new JObject
 			{
 				{ "id",id}
@@ -139,7 +134,7 @@ namespace TomPIT.Sys.Data
 				throw new SysException(SR.ErrMicroServiceNotFound);
 
 			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.InsertEvent(sub, id, name, DateTime.UtcNow, arguments);
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(rg, EventQueue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, SysDb.Messaging.QueueScope.System);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(EventQueue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, SysDb.Messaging.QueueScope.System);
 
 			return id;
 		}
@@ -154,54 +149,39 @@ namespace TomPIT.Sys.Data
 			return Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.SelectEvent(token);
 		}
 
-		public List<IClientQueueMessage> Dequeue(IServerResourceGroup resourceGroup, int count)
+		public List<IQueueMessage> Dequeue(int count)
 		{
-			return Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(resourceGroup, Queue, count).ToClientQueueMessage(resourceGroup.Token);
+			return Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(Queue, count);
 		}
 
-		public List<IClientQueueMessage> DequeueEvents(IServerResourceGroup resourceGroup, int count)
+		public List<IQueueMessage> DequeueEvents(int count)
 		{
-			return Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(resourceGroup, EventQueue, count).ToClientQueueMessage(resourceGroup.Token);
+			return Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(EventQueue, count);
 		}
 
-		public void Ping(Guid resourceGroup, Guid popReceipt)
+		public void Ping(Guid popReceipt)
 		{
-			var res = DataModel.ResourceGroups.Select(resourceGroup);
-
-			if (res == null)
-				throw new SysException(SR.ErrResourceGroupNotFound);
-
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(res, popReceipt, TimeSpan.FromSeconds(5));
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(popReceipt, TimeSpan.FromSeconds(5));
 		}
 
-		public void Complete(Guid resourceGroup, Guid popReceipt)
+		public void Complete(Guid popReceipt)
 		{
-			var res = DataModel.ResourceGroups.Select(resourceGroup);
-
-			if (res == null)
-				throw new SysException(SR.ErrResourceGroupNotFound);
-
-			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(res, popReceipt);
+			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(res, popReceipt);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(popReceipt);
 		}
 
-		public void CompleteEvent(Guid resourceGroup, Guid popReceipt)
+		public void CompleteEvent(Guid popReceipt)
 		{
-			var res = DataModel.ResourceGroups.Select(resourceGroup);
-
-			if (res == null)
-				throw new SysException(SR.ErrResourceGroupNotFound);
-
-			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(res, popReceipt);
+			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(res, popReceipt);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(popReceipt);
 		}
 
 		private ISubscriptionEvent ResolveEvent(IQueueMessage message)

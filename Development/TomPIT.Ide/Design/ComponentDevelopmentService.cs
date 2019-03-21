@@ -562,10 +562,14 @@ namespace TomPIT.Design
 			};
 
 			var config = Connection.GetService<IComponentService>().SelectConfiguration(c.Token);
-			var deps = config.Dependencies();
 
-			foreach (var j in deps)
-				r.Dependencies.Add(CreateImageBlob(j));
+			if (config != null)
+			{
+				var deps = config.Dependencies();
+
+				foreach (var j in deps)
+					r.Dependencies.Add(CreateImageBlob(j));
+			}
 
 			return r;
 		}

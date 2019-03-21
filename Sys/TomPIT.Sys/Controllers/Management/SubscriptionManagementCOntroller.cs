@@ -10,39 +10,23 @@ namespace TomPIT.Sys.Controllers.Management
 	public class SubscriptionManagementController : SysController
 	{
 		[HttpPost]
-		public List<IClientQueueMessage> Dequeue()
+		public List<IQueueMessage> Dequeue()
 		{
 			var body = FromBody();
-
 			var count = body.Required<int>("count");
-			var resourceGroup = body.Required<string>("resourceGroup");
-
 			var r = new List<IQueueMessage>();
 
-			var rg = DataModel.ResourceGroups.Select(resourceGroup);
-
-			if (rg == null)
-				throw new SysException(string.Format("{0} ({1})", SR.ErrResourceGroupNotFound, resourceGroup));
-
-			return DataModel.Subscriptions.Dequeue(rg, count);
+			return DataModel.Subscriptions.Dequeue(count);
 		}
 
 		[HttpPost]
-		public List<IClientQueueMessage> DequeueEvents()
+		public List<IQueueMessage> DequeueEvents()
 		{
 			var body = FromBody();
-
 			var count = body.Required<int>("count");
-			var resourceGroup = body.Required<string>("resourceGroup");
-
 			var r = new List<IQueueMessage>();
 
-			var rg = DataModel.ResourceGroups.Select(resourceGroup);
-
-			if (rg == null)
-				throw new SysException(string.Format("{0} ({1})", SR.ErrResourceGroupNotFound, resourceGroup));
-
-			return DataModel.Subscriptions.DequeueEvents(rg, count);
+			return DataModel.Subscriptions.DequeueEvents(count);
 		}
 
 		[HttpPost]
@@ -69,31 +53,26 @@ namespace TomPIT.Sys.Controllers.Management
 			var body = FromBody();
 
 			var popReceipt = body.Required<Guid>("popReceipt");
-			var resourceGroup = body.Required<Guid>("resourceGroup");
 
-			DataModel.Subscriptions.Complete(resourceGroup, popReceipt);
+			DataModel.Subscriptions.Complete(popReceipt);
 		}
 
 		[HttpPost]
 		public void Ping()
 		{
 			var body = FromBody();
-
 			var popReceipt = body.Required<Guid>("popReceipt");
-			var resourceGroup = body.Required<Guid>("resourceGroup");
 
-			DataModel.Subscriptions.Ping(resourceGroup, popReceipt);
+			DataModel.Subscriptions.Ping(popReceipt);
 		}
 
 		[HttpPost]
 		public void CompleteEvent()
 		{
 			var body = FromBody();
-
 			var popReceipt = body.Required<Guid>("popReceipt");
-			var resourceGroup = body.Required<Guid>("resourceGroup");
 
-			DataModel.Subscriptions.CompleteEvent(resourceGroup, popReceipt);
+			DataModel.Subscriptions.CompleteEvent(popReceipt);
 		}
 	}
 }

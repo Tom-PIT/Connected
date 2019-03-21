@@ -1,7 +1,7 @@
-﻿using Microsoft.Azure;
-using Microsoft.WindowsAzure.Storage;
+﻿using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.Threading.Tasks;
+using TomPIT.SysDb.Environment;
 
 namespace TomPIT.StorageProvider.Azure
 {
@@ -9,9 +9,9 @@ namespace TomPIT.StorageProvider.Azure
 	{
 		public const string StorageContainer = "tompitstorage";
 
-		public static CloudBlockBlob GetBlobReference(string container, string name)
+		public static CloudBlockBlob GetBlobReference(IServerResourceGroup resourceGroup, string container, string name)
 		{
-			var blobClient = CreateStorageAccount().CreateCloudBlobClient();
+			var blobClient = CreateStorageAccount(resourceGroup).CreateCloudBlobClient();
 			var c = blobClient.GetContainerReference(container);
 
 			Task.Run(() =>
@@ -24,9 +24,9 @@ namespace TomPIT.StorageProvider.Azure
 			return c.GetBlockBlobReference(name);
 		}
 
-		public static CloudStorageAccount CreateStorageAccount()
+		public static CloudStorageAccount CreateStorageAccount(IServerResourceGroup resourceGroup)
 		{
-			return CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("storage"));
+			return CloudStorageAccount.Parse(resourceGroup.ConnectionString);
 		}
 	}
 }

@@ -12,7 +12,7 @@ namespace TomPIT.StorageProvider.Azure
 	{
 		public void Delete(IServerResourceGroup resourceGroup, Guid blob)
 		{
-			var ablob = AzureUtils.GetBlobReference(AzureUtils.StorageContainer, blob.AsString());
+			var ablob = AzureUtils.GetBlobReference(resourceGroup, AzureUtils.StorageContainer, blob.AsString());
 
 			Task.Run(async () =>
 			{
@@ -20,16 +20,18 @@ namespace TomPIT.StorageProvider.Azure
 					return;
 
 				await ablob.DeleteAsync();
-			});
+			}).Wait();
 		}
 
 		public IBlobContent Download(IServerResourceGroup resourceGroup, Guid blob)
 		{
-			var ablob = AzureUtils.GetBlobReference(AzureUtils.StorageContainer, blob.AsString());
+			var ablob = AzureUtils.GetBlobReference(resourceGroup, AzureUtils.StorageContainer, blob.AsString());
 
-			var result = Task.Run<IBlobContent>(async () =>
+			return Task.Run<IBlobContent>(async () =>
 			 {
-				 if (!ablob.ExistsAsync().Result)
+				 var exists = await ablob.ExistsAsync();
+
+				 if (!exists)
 					 return null;
 
 				 var r = new BlobContent
@@ -48,19 +50,38 @@ namespace TomPIT.StorageProvider.Azure
 				 }
 
 				 return r;
-			 });
-
-			return result.Result;
+			 }).Result;
 		}
 
 		public List<IBlobContent> Download(IServerResourceGroup resourceGroup, List<Guid> blobs)
 		{
-			throw new NotImplementedException();
+			var result = new List<IBlobContent>();
+
+			foreach (var blob in blobs)
+			{
+				var content = Download(resourceGroup, blob);
+
+				if (content != null)
+					result.Add(content);
+			}
+
+			return result;
 		}
 
 		public void Upload(IServerResourceGroup resourceGroup, Guid blob, byte[] content)
 		{
-			throw new NotImplementedException();
+			var b = AzureUtils.GetBlobReference(resourceGroup, AzureUtils.StorageContainer, blob.AsString());
+
+			//if (b != null)
+			//	b.DeleteIfExistsAsync();
+
+			using (var stream = new MemoryStream(content, false))
+			{
+				Task.Run(async () =>
+				{
+					await b.UploadFromStreamAsync(stream).ConfigureAwait(false);
+				}).Wait();
+			}
 		}
 	}
 }

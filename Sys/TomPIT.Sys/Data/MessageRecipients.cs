@@ -15,16 +15,10 @@ namespace TomPIT.Sys.Data
 
 		protected override void OnInitializing()
 		{
-			var rgs = DataModel.ResourceGroups.Query();
+			var ds = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.QueryRecipients();
 
-			Parallel.ForEach(rgs,
-				(i) =>
-				{
-					var ds = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.QueryRecipients(i);
-
-					foreach (var j in ds)
-						Set(GenerateKey(j.Message, j.Connection), j, TimeSpan.Zero);
-				});
+			foreach (var j in ds)
+				Set(GenerateKey(j.Message, j.Connection), j, TimeSpan.Zero);
 		}
 
 		protected override void OnInvalidate(string id)
@@ -49,23 +43,7 @@ namespace TomPIT.Sys.Data
 				return;
 			}
 
-			var t = DataModel.MessageTopics.Select(m.Topic);
-
-			if (t == null)
-			{
-				Remove(id);
-				return;
-			}
-
-			var rg = DataModel.ResourceGroups.Select(t.ResourceGroup);
-
-			if (rg == null)
-			{
-				Remove(id);
-				return;
-			}
-
-			var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.SelectRecipient(rg, m, s);
+			var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.SelectRecipient(m, s);
 
 			if (r == null)
 			{
@@ -93,34 +71,14 @@ namespace TomPIT.Sys.Data
 					if (s == null)
 						return null;
 
-					var t = DataModel.MessageTopics.Select(m.Topic);
-
-					if (t == null)
-						return null;
-
-					var rg = DataModel.ResourceGroups.Select(t.ResourceGroup);
-
-					if (rg == null)
-						return null;
-
-					return Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.SelectRecipient(rg, m, s);
+					return Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.SelectRecipient(m, s);
 				});
 		}
 
 		public void Load(Guid message)
 		{
 			var m = DataModel.Messages.Select(message);
-			var t = DataModel.MessageTopics.Select(m.Topic);
-
-			if (t == null)
-				return;
-
-			var rg = DataModel.ResourceGroups.Select(t.ResourceGroup);
-
-			if (rg == null)
-				return;
-
-			var ds = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.QueryRecipients(rg, m);
+			var ds = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.QueryRecipients(m);
 
 			foreach (var i in ds)
 				Set(GenerateKey(message, i.Connection), i, TimeSpan.Zero);
@@ -138,17 +96,7 @@ namespace TomPIT.Sys.Data
 			if (m == null)
 				return;
 
-			var t = DataModel.MessageTopics.Select(m.Topic);
-
-			if (t == null)
-				return;
-
-			var rg = DataModel.ResourceGroups.Select(t.ResourceGroup);
-
-			if (rg == null)
-				return;
-
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.DeleteRecipient(rg, m);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.DeleteRecipient(m);
 		}
 
 		public void Delete(string topic, string connection)
@@ -159,15 +107,10 @@ namespace TomPIT.Sys.Data
 			if (s == null)
 				return;
 
-			var rg = DataModel.ResourceGroups.Select(t.ResourceGroup);
-
-			if (rg == null)
-				return;
-
 			var ds = Where(f => string.Compare(f.Topic, topic, true) == 0
 				 && string.Compare(f.Connection, connection, true) == 0);
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.DeleteRecipient(rg, t, s);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.DeleteRecipient(t, s);
 
 			foreach (var i in ds)
 				Remove(GenerateKey(i.Message, i.Connection));
@@ -212,12 +155,7 @@ namespace TomPIT.Sys.Data
 			Parallel.ForEach(batches,
 				(i) =>
 				{
-					var rg = DataModel.ResourceGroups.Select(i.Key);
-
-					if (rg == null)
-						return;
-
-					Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.UpdateRecipients(rg, i.Value);
+					Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.UpdateRecipients(i.Value);
 				});
 
 			return ds;
@@ -235,7 +173,7 @@ namespace TomPIT.Sys.Data
 			if (s == null)
 				return;
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.DeleteRecipient(m.ResolveResourceGroup(), m, s);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.DeleteRecipient(m, s);
 
 			Remove(GenerateKey(message, connection));
 		}

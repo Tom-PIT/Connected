@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using TomPIT.Storage;
-using TomPIT.SysDb.Environment;
 
 namespace TomPIT.SysDb.Messaging
 {
@@ -13,23 +12,23 @@ namespace TomPIT.SysDb.Messaging
 
 	public interface IQueueHandler
 	{
-		void Enqueue(IServerResourceGroup resourceGroup, string queue, string message, TimeSpan expire, TimeSpan nextVisible, QueueScope scope);
-		void Enqueue(IServerResourceGroup resourceGroup, string queue, IQueueContent content, TimeSpan expire, TimeSpan nextVisible, QueueScope scope);
+		void Enqueue(string queue, string message, TimeSpan expire, TimeSpan nextVisible, QueueScope scope);
+		void Enqueue(string queue, IQueueContent content, TimeSpan expire, TimeSpan nextVisible, QueueScope scope);
 
-		IQueueMessage DequeueSystem(IServerResourceGroup resourceGroup, string queue);
-		IQueueMessage DequeueSystem(IServerResourceGroup resourceGroup, string queue, TimeSpan nextVisible);
-		List<IQueueMessage> DequeueSystem(IServerResourceGroup resourceGroup, string queue, int count);
-		List<IQueueMessage> DequeueSystem(IServerResourceGroup resourceGroup, string queue, int count, TimeSpan nextVisible);
+		IQueueMessage DequeueSystem(string queue);
+		IQueueMessage DequeueSystem(string queue, TimeSpan nextVisible);
+		List<IQueueMessage> DequeueSystem(string queue, int count);
+		List<IQueueMessage> DequeueSystem(string queue, int count, TimeSpan nextVisible);
 
-		IQueueMessage DequeueContent(IServerResourceGroup resourceGroup);
-		IQueueMessage DequeueContent(IServerResourceGroup resourceGroup, TimeSpan nextVisible);
-		List<IQueueMessage> DequeueContent(IServerResourceGroup resourceGroup, int count);
-		List<IQueueMessage> DequeueContent(IServerResourceGroup resourceGroup, int count, TimeSpan nextVisible);
+		IQueueMessage DequeueContent();
+		IQueueMessage DequeueContent(TimeSpan nextVisible);
+		List<IQueueMessage> DequeueContent(int count);
+		List<IQueueMessage> DequeueContent(int count, TimeSpan nextVisible);
 
-		IQueueMessage Select(IServerResourceGroup resourceGroup, Guid popReceipt);
+		IQueueMessage Select(Guid popReceipt);
 
-		void Delete(IServerResourceGroup resourceGroup, IQueueMessage message);
-		void Delete(IServerResourceGroup resourceGroup, Guid popReceipt);
-		void Ping(IServerResourceGroup resourceGroup, Guid popReceipt, TimeSpan nextVisible);
+		void Delete(IQueueMessage message);
+		void Delete(Guid popReceipt);
+		void Ping(Guid popReceipt, TimeSpan nextVisible);
 	}
 }

@@ -1,50 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TomPIT.Data.Sql;
 using TomPIT.Storage;
-using TomPIT.SysDb.Environment;
 using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.SysDb.Sql.Messaging
 {
 	internal class QueueHandler : IQueueHandler
 	{
-		public void Delete(IServerResourceGroup resourceGroup, IQueueMessage message)
+		public void Delete(IQueueMessage message)
 		{
-			Delete(resourceGroup, message.PopReceipt);
+			Delete(message.PopReceipt);
 		}
 
-		public void Delete(IServerResourceGroup resourceGroup, Guid popReceipt)
+		public void Delete(Guid popReceipt)
 		{
-			var w = new ResourceGroupWriter(resourceGroup, "tompit.queue_del");
+			var w = new Writer("tompit.queue_del");
 
 			w.CreateParameter("@pop_receipt", popReceipt);
 
 			w.Execute();
 		}
 
-		public IQueueMessage Select(IServerResourceGroup resourceGroup, Guid popReceipt)
+		public IQueueMessage Select(Guid popReceipt)
 		{
-			var r = new ResourceGroupReader<QueueMessage>(resourceGroup, "tompit.queue_sel");
+			var r = new Reader<QueueMessage>("tompit.queue_sel");
 
 			r.CreateParameter("@pop_receipt", popReceipt);
 
 			return r.ExecuteSingleRow();
 		}
 
-		public IQueueMessage DequeueSystem(IServerResourceGroup resourceGroup, string queue)
+		public IQueueMessage DequeueSystem(string queue)
 		{
-			return DequeueSystem(resourceGroup, queue, TimeSpan.FromMinutes(5));
+			return DequeueSystem(queue, TimeSpan.FromMinutes(5));
 		}
 
-		public List<IQueueMessage> DequeueSystem(IServerResourceGroup resourceGroup, string queue, int count)
+		public List<IQueueMessage> DequeueSystem(string queue, int count)
 		{
-			return DequeueSystem(resourceGroup, queue, count, TimeSpan.FromMinutes(5));
+			return DequeueSystem(queue, count, TimeSpan.FromMinutes(5));
 		}
 
-		public IQueueMessage DequeueSystem(IServerResourceGroup resourceGroup, string queue, TimeSpan nextVisible)
+		public IQueueMessage DequeueSystem(string queue, TimeSpan nextVisible)
 		{
-			var r = DequeueSystem(resourceGroup, queue, 1, nextVisible);
+			var r = DequeueSystem(queue, 1, nextVisible);
 
 			if (r == null || r.Count == 0)
 				return null;
@@ -52,9 +52,9 @@ namespace TomPIT.SysDb.Sql.Messaging
 			return r[0];
 		}
 
-		public List<IQueueMessage> DequeueSystem(IServerResourceGroup resourceGroup, string queue, int count, TimeSpan nextVisible)
+		public List<IQueueMessage> DequeueSystem(string queue, int count, TimeSpan nextVisible)
 		{
-			var r = new ResourceGroupReader<QueueMessage>(resourceGroup, "tompit.queue_dequeue");
+			var r = new Reader<QueueMessage>("tompit.queue_dequeue");
 
 			r.CreateParameter("@queue", queue);
 			r.CreateParameter("@next_visible", DateTime.UtcNow.Add(nextVisible));
@@ -64,19 +64,19 @@ namespace TomPIT.SysDb.Sql.Messaging
 			return r.Execute().ToList<IQueueMessage>();
 		}
 
-		public IQueueMessage DequeueContent(IServerResourceGroup resourceGroup)
+		public IQueueMessage DequeueContent()
 		{
-			return DequeueContent(resourceGroup, TimeSpan.FromMinutes(5));
+			return DequeueContent(TimeSpan.FromMinutes(5));
 		}
 
-		public List<IQueueMessage> DequeueContent(IServerResourceGroup resourceGroup, int count)
+		public List<IQueueMessage> DequeueContent(int count)
 		{
-			return DequeueContent(resourceGroup, count, TimeSpan.FromMinutes(5));
+			return DequeueContent(count, TimeSpan.FromMinutes(5));
 		}
 
-		public IQueueMessage DequeueContent(IServerResourceGroup resourceGroup, TimeSpan nextVisible)
+		public IQueueMessage DequeueContent(TimeSpan nextVisible)
 		{
-			var r = DequeueContent(resourceGroup, 1, nextVisible);
+			var r = DequeueContent(1, nextVisible);
 
 			if (r == null || r.Count == 0)
 				return null;
@@ -84,9 +84,9 @@ namespace TomPIT.SysDb.Sql.Messaging
 			return r[0];
 		}
 
-		public List<IQueueMessage> DequeueContent(IServerResourceGroup resourceGroup, int count, TimeSpan nextVisible)
+		public List<IQueueMessage> DequeueContent(int count, TimeSpan nextVisible)
 		{
-			var r = new ResourceGroupReader<QueueMessage>(resourceGroup, "tompit.queue_dequeue_content");
+			var r = new Reader<QueueMessage>("tompit.queue_dequeue_content");
 
 			r.CreateParameter("@next_visible", DateTime.UtcNow.Add(nextVisible));
 			r.CreateParameter("@count", @count);
@@ -95,9 +95,9 @@ namespace TomPIT.SysDb.Sql.Messaging
 			return r.Execute().ToList<IQueueMessage>();
 		}
 
-		public void Enqueue(IServerResourceGroup resourceGroup, string queue, string message, TimeSpan expire, TimeSpan nextVisible, QueueScope scope)
+		public void Enqueue(string queue, string message, TimeSpan expire, TimeSpan nextVisible, QueueScope scope)
 		{
-			var w = new ResourceGroupWriter(resourceGroup, "tompit.queue_enqueue");
+			var w = new Writer("tompit.queue_enqueue");
 
 			w.CreateParameter("@message", message);
 			w.CreateParameter("@queue", queue);
@@ -109,14 +109,14 @@ namespace TomPIT.SysDb.Sql.Messaging
 			w.Execute();
 		}
 
-		public void Enqueue(IServerResourceGroup resourceGroup, string queue, IQueueContent content, TimeSpan expire, TimeSpan nextVisible, QueueScope scope)
+		public void Enqueue(string queue, IQueueContent content, TimeSpan expire, TimeSpan nextVisible, QueueScope scope)
 		{
-			Enqueue(resourceGroup, queue, content.Serialize(), expire, nextVisible, scope);
+			Enqueue(queue, content.Serialize(), expire, nextVisible, scope);
 		}
 
-		public void Ping(IServerResourceGroup resourceGroup, Guid popReceipt, TimeSpan nextVisible)
+		public void Ping(Guid popReceipt, TimeSpan nextVisible)
 		{
-			var w = new ResourceGroupWriter(resourceGroup, "tompit.queue_upd");
+			var w = new Writer("tompit.queue_upd");
 
 			w.CreateParameter("@pop_receipt", popReceipt);
 			w.CreateParameter("@next_visible", DateTime.UtcNow.Add(nextVisible));
