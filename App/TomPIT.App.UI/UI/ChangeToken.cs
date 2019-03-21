@@ -26,6 +26,11 @@ namespace TomPIT.UI
 
 					return Instance.GetService<IViewService>().HasChanged(kind, path, ViewEngineBase.CreateActionContext(Shell.HttpContext));
 				}
+				else if (kind == ViewKind.Snippet)
+				{
+					var snippetKind = ViewInfo.ResolveSnippetKind(_viewPath);
+					return Instance.GetService<IViewService>().HasSnippetChanged(snippetKind, Path.GetFileNameWithoutExtension(_viewPath), ViewEngineBase.CreateActionContext(Shell.HttpContext));
+				}
 				else
 					return Instance.GetService<IViewService>().HasChanged(kind, Path.GetFileNameWithoutExtension(_viewPath), null);
 			}

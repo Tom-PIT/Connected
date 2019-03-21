@@ -1,11 +1,10 @@
 ﻿namespace TomPIT.ComponentModel.UI
 {
-	public interface IView : IConfiguration, IGraphicInterface
+	public interface IView : IConfiguration, IGraphicInterface, ISnippetView
 	{
 		string Url { get; }
 		string Layout { get; }
 
-		ListItems<ISnippet> Snippets { get; }
 		IMetricConfiguration Metrics { get; }
 	}
 }

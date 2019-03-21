@@ -49,6 +49,16 @@ namespace TomPIT.UI
 				Path = System.IO.Path.GetFileNameWithoutExtension(viewPath);
 		}
 
+		public static ViewKind ResolveSnippetKind(string url)
+		{
+			var tokens = url.Trim('/').Split('/');
+
+			if (Enum.TryParse(tokens[3], true, out ViewKind r))
+				return r;
+
+			return ViewKind.View;
+		}
+
 		public static ViewKind ResolveViewKind(string viewPath)
 		{
 			var path = viewPath.Trim('/');
@@ -236,9 +246,7 @@ namespace TomPIT.UI
 		{
 			var tokens = FullPath.Split('/');
 
-			Enum.TryParse(tokens[3], true, out ViewKind r);
-
-			switch (r)
+			switch (ResolveSnippetKind(FullPath))
 			{
 				case ViewKind.Master:
 					LoadMasterSnippet(tokens[4]);

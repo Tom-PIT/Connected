@@ -81,7 +81,7 @@ namespace TomPIT.UI
 		{
 			try
 			{
-				var config = Connection.GetService<IComponentService>().SelectConfiguration(component) as IView;
+				var config = Connection.GetService<IComponentService>().SelectConfiguration(component) as ISnippetView;
 
 				if (config == null)
 					return;
@@ -176,6 +176,67 @@ namespace TomPIT.UI
 			return Encoding.UTF8.GetString(r.Content);
 		}
 
+		public bool HasSnippetChanged(ViewKind kind, string url, ActionContext context)
+		{
+			if (string.Compare(url, "_ViewImports", true) == 0)
+				return false;
+
+			var tokens = url.Split('.');
+
+			var component = Guid.Empty;
+			var snippet = string.Empty;
+
+			switch (kind)
+			{
+				case ViewKind.Master:
+					var masterUrl = url.Split('.');
+
+					var master = SelectMaster(url);
+
+					if (master == null)
+						return false;
+
+					component = master.Component;
+					snippet = masterUrl[masterUrl.Length - 1];
+					break;
+				case ViewKind.Partial:
+					var partialUrl = url.Split('.');
+					var partial = SelectPartial(partialUrl[0]);
+
+					if (partial == null)
+						return false;
+
+					component = partial.Component;
+					snippet = partialUrl[1];
+					break;
+				case ViewKind.View:
+					var viewUrl = url.Split('.');
+
+					var view = Select(viewUrl[0], null);
+					snippet = viewUrl[1];
+
+					if (view == null)
+						return false;
+
+					component = view.Component;
+					break;
+				default:
+					break;
+			}
+
+			if (component == null)
+				return false;
+
+			if (SnippetState.TryGetValue($"{component}/{snippet}", out bool r))
+			{
+				SnippetState[$"{component}/{snippet}"] = false;
+
+				return r;
+			}
+
+			return false;
+		}
+
 		public bool HasChanged(ViewKind kind, string url, ActionContext context)
 		{
 			if (string.Compare(url, "_ViewImports", true) == 0)
@@ -210,17 +271,6 @@ namespace TomPIT.UI
 
 					component = partial.Component;
 					break;
-				case ViewKind.Snippet:
-					var viewUrl = url.Split('.');
-
-					view = Select(viewUrl[0], null);
-					snippet = viewUrl[1];
-
-					if (view == null)
-						return false;
-
-					component = view.Component;
-					break;
 				case ViewKind.MailTemplate:
 					var template = SelectMailTemplate(url.AsGuid());
 
@@ -236,23 +286,11 @@ namespace TomPIT.UI
 			if (component == Guid.Empty)
 				return false;
 
-			if (kind == ViewKind.Snippet)
+			if (ChangeState.TryGetValue(component, out bool r))
 			{
-				if (SnippetState.TryGetValue($"{component}/{snippet}", out bool r))
-				{
-					SnippetState[$"{component}/{snippet}"] = false;
+				ChangeState[component] = false;
 
-					return r;
-				}
-			}
-			else
-			{
-				if (ChangeState.TryGetValue(component, out bool r))
-				{
-					ChangeState[component] = false;
-
-					return r;
-				}
+				return r;
 			}
 			return false;
 		}
@@ -267,7 +305,7 @@ namespace TomPIT.UI
 			var tokens = name.Split('.');
 			IComponent c = null;
 
-			if (tokens.Length == 2)
+			if (tokens.Length > 1)
 			{
 				var s = Connection.GetService<IMicroServiceService>().Select(tokens[0].Trim());
 
