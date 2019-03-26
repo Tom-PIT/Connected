@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TomPIT.Ide.Design.Services;
 
 namespace TomPIT.Design.Services
 {
@@ -10,6 +11,7 @@ namespace TomPIT.Design.Services
 		public CodeCompletionService()
 		{
 			Providers.Add("csharp", typeof(CSharpProvider));
+			Providers.Add("razor", typeof(RazorProvider));
 		}
 
 		public ICodeCompletionProvider GetProvider(string language)
