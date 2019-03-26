@@ -921,4 +921,16 @@
   <data name="ErrBigDataPartitionNotFound" xml:space="preserve">
     <value>Partition not found</value>
   </data>
+  <data name="ErrNoBigDataServer" xml:space="preserve">
+    <value>No Big data server is registered. To manage Instances go to the Management console and search for the Environment/Instances node.</value>
+  </data>
+  <data name="ErrNoCdnServer" xml:space="preserve">
+    <value>No CDN server is registered. To manage Instances go to the Management console and search for the Environment/Instances node.</value>
+  </data>
+  <data name="ErrNoRestServer" xml:space="preserve">
+    <value>No REST server is registered. To manage Instances go to the Management console and search for the Environment/Instances node.</value>
+  </data>
+  <data name="ErrNoSearchServer" xml:space="preserve">
+    <value>No Search server is registered. To manage Instances go to the Management console and search for the Environment/Instances node.</value>
+  </data>
 </root>

@@ -10,7 +10,7 @@ namespace TomPIT.Management.Deployment
 		IAccount Account { get; }
 		void LogIn(string userName, string password);
 		void LogOut();
-		Guid SignUp(string company, string firstName, string lastName, string password, string email, int country, string phone, string website);
+		Guid SignUp(string company, string firstName, string lastName, string password, string email, string country, string phone, string website);
 
 		bool IsConfirmed(Guid publisherKey);
 

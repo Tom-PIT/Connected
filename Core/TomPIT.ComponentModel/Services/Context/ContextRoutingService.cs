@@ -49,7 +49,7 @@ namespace TomPIT.Services.Context
 
 		public string GetServer(InstanceType type, InstanceVerbs verbs)
 		{
-			var r =  Context.Connection().GetService<IInstanceEndpointService>().Url(type, verbs);
+			var r = Context.Connection().GetService<IInstanceEndpointService>().Url(type, verbs);
 
 			if (string.IsNullOrWhiteSpace(r))
 				throw new RuntimeException(string.Format("{0} ({1}, {2})", SR.ErrNoServer, type, verbs));
@@ -122,12 +122,62 @@ namespace TomPIT.Services.Context
 			Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
 		}
 
+		public string RestUrl(string route)
+		{
+			var appUrl = GetServer(InstanceType.Rest, InstanceVerbs.All);
+
+			if (appUrl == null)
+				throw new RuntimeException(SR.ErrNoRestServer);
+
+			return string.Format("{0}/{1}", appUrl, route);
+		}
+
+		public string IoTUrl(string route)
+		{
+			var appUrl = GetServer(InstanceType.IoT, InstanceVerbs.All);
+
+			if (appUrl == null)
+				throw new RuntimeException(SR.ErrNoIoTServer);
+
+			return string.Format("{0}/{1}", appUrl, route);
+		}
+
 		public string ApplicationUrl(string route)
 		{
-			var appUrl = GetServer(InstanceType.Application, InstanceVerbs.Get);
+			var appUrl = GetServer(InstanceType.Application, InstanceVerbs.All);
 
 			if (appUrl == null)
 				throw new RuntimeException(SR.ErrNoAppServer);
+
+			return string.Format("{0}/{1}", appUrl, route);
+		}
+
+		public string CdnUrl(string route)
+		{
+			var appUrl = GetServer(InstanceType.Cdn, InstanceVerbs.All);
+
+			if (appUrl == null)
+				throw new RuntimeException(SR.ErrNoAppServer);
+
+			return string.Format("{0}/{1}", appUrl, route);
+		}
+
+		public string SearchUrl(string route)
+		{
+			var appUrl = GetServer(InstanceType.Search, InstanceVerbs.All);
+
+			if (appUrl == null)
+				throw new RuntimeException(SR.ErrNoSearchServer);
+
+			return string.Format("{0}/{1}", appUrl, route);
+		}
+
+		public string BigDataUrl(string route)
+		{
+			var appUrl = GetServer(InstanceType.BigData, InstanceVerbs.All);
+
+			if (appUrl == null)
+				throw new RuntimeException(SR.ErrNoBigDataServer);
 
 			return string.Format("{0}/{1}", appUrl, route);
 		}

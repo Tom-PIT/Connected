@@ -9,6 +9,11 @@ namespace TomPIT.Services.Context
 	{
 		string GetServer(InstanceType type, InstanceVerbs verbs);
 		string ApplicationUrl(string route);
+		string RestUrl(string route);
+		string IoTUrl(string route);
+		string CdnUrl(string route);
+		string SearchUrl(string route);
+		string BigDataUrl(string route);
 		string Absolute(string url);
 		string Resource(IUrlHelper helper, Guid blob);
 		string Avatar(Guid user);

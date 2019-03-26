@@ -15,10 +15,10 @@
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Microservice Platform</Product>
-    <AssemblyVersion>1.0.321.2</AssemblyVersion>
+    <AssemblyVersion>1.0.325.4</AssemblyVersion>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FileVersion>1.0.321.2</FileVersion>
-    <Version>1.0.321.2</Version>
+    <FileVersion>1.0.325.4</FileVersion>
+    <Version>1.0.325.4</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>

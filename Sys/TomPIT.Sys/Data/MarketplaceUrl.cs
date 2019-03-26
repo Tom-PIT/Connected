@@ -6,7 +6,7 @@ namespace TomPIT.Sys.Data
 	{
 		public MarketplaceUrl(string api, string operation)
 		{
-			BaseUrl = "http://localhost/marketplace/rest/marketplace";
+			BaseUrl = "https://tompitmarketplacerest.azurewebsites.net/marketplace";
 			Controller = api;
 			Action = operation;
 		}

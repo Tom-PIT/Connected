@@ -81,7 +81,7 @@ namespace TomPIT.Management.Deployment
 				throw new Exception(SR.ErrLoginFailed);
 		}
 
-		public Guid SignUp(string company, string firstName, string lastName, string password, string email, int country, string phone, string website)
+		public Guid SignUp(string company, string firstName, string lastName, string password, string email, string country, string phone, string website)
 		{
 			var u = Connection.CreateUrl("DeploymentManagement", "Signup");
 			var e = new JObject

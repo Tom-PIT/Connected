@@ -1,8 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyVersion>1.0.321.2</AssemblyVersion>
-    <FileVersion>1.0.321.2</FileVersion>
-    <Version>1.0.321.2</Version>
-  </PropertyGroup>
-</Project>

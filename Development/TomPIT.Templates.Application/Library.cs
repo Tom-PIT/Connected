@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 
@@ -42,5 +43,9 @@ namespace TomPIT.Application
 
 			return r;
 		}
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		[DefaultValue(ElementScope.Internal)]
+		public ElementScope Scope { get; set; } = ElementScope.Internal;
 	}
 }

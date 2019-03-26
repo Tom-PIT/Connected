@@ -26,7 +26,7 @@ namespace TomPIT.UI
 
 		internal static ActionContext CreateActionContext(HttpContext context)
 		{
-			return new ActionContext(context, context.GetRouteData(), new ActionDescriptor());
+			return new ActionContext(context, context?.GetRouteData(), new ActionDescriptor());
 		}
 
 		protected string CreateContent<TModel>(Microsoft.AspNetCore.Mvc.ViewEngines.IView view, ActionContext actionContext, TModel model)

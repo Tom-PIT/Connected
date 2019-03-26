@@ -13,13 +13,13 @@ using TomPIT.Storage;
 
 namespace TomPIT.Worker.Services
 {
-	internal class SubscriptionEventJob : DispatcherJob<IClientQueueMessage>
+	internal class SubscriptionEventJob : DispatcherJob<IQueueMessage>
 	{
-		public SubscriptionEventJob(Dispatcher<IClientQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public SubscriptionEventJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
 		{
 		}
 
-		protected override void DoWork(IClientQueueMessage item)
+		protected override void DoWork(IQueueMessage item)
 		{
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
 
@@ -28,14 +28,13 @@ namespace TomPIT.Worker.Services
 			var url = Instance.Connection.CreateUrl("SubscriptionManagement", "CompleteEvent");
 			var d = new JObject
 			{
-				{"popReceipt", item.PopReceipt },
-				{"resourceGroup", item.ResourceGroup }
+				{"popReceipt", item.PopReceipt }
 			};
 
 			Instance.Connection.Post(url, d);
 		}
 
-		private void Invoke(IClientQueueMessage item, JObject message)
+		private void Invoke(IQueueMessage item, JObject message)
 		{
 			var id = message.Required<Guid>("id");
 			var subscriptionEvent = SelectEvent(id);
@@ -85,15 +84,14 @@ namespace TomPIT.Worker.Services
 			return Instance.Connection.Post<List<Subscriber>>(u, e).ToList<ISubscriber>();
 		}
 
-		protected override void OnError(IClientQueueMessage item, Exception ex)
+		protected override void OnError(IQueueMessage item, Exception ex)
 		{
 			Instance.Connection.LogError(nameof(SubscriptionEventJob), ex.Source, ex.Message);
 
 			var url = Instance.Connection.CreateUrl("SubscriptionManagement", "Ping");
 			var d = new JObject
 			{
-				{"popReceipt", item.PopReceipt },
-				{"resourceGroup", item.ResourceGroup }
+				{"popReceipt", item.PopReceipt }
 			};
 
 			Instance.Connection.Post(url, d);

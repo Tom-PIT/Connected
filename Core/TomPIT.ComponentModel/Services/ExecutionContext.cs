@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
@@ -142,8 +143,7 @@ namespace TomPIT.Services
 
 			var tt = typeof(T);
 
-			if (tt != null && (string.IsNullOrWhiteSpace(tt.Namespace) && string.IsNullOrWhiteSpace(r.GetType().Namespace))
-				&& string.Compare(tt.Assembly.FullName, r.GetType().Assembly.FullName, false) != 0)
+			if (NeedsMarshalling(r, tt))
 			{
 				var settings = new JsonSerializerSettings
 				{
@@ -156,6 +156,41 @@ namespace TomPIT.Services
 			}
 
 			return Types.Convert<T>(r);
+		}
+
+		private bool NeedsMarshalling(object instance, Type type)
+		{
+			if (type == null)
+				return false;
+
+			if (IsSubmission(instance, type))
+				return true;
+
+			if (type.IsGenericType && instance.GetType().IsGenericType)
+			{
+				var types = type.GetGenericArguments();
+				var instanceTypes = instance.GetType().GetGenericArguments();
+
+				for (var i = 0; i < types.Length; i++)
+				{
+					if (IsSubmission(instanceTypes[i], types[i]))
+						return true;
+				}
+			}
+
+			return false;
+		}
+
+		private bool IsSubmission(object instance, Type type)
+		{
+			return (string.IsNullOrWhiteSpace(type.Namespace) && string.IsNullOrWhiteSpace(instance.GetType().Namespace))
+				&& string.Compare(type.Assembly.FullName, instance.GetType().Assembly.FullName, false) != 0;
+		}
+
+		private bool IsSubmission(Type instanceType, Type type)
+		{
+			return (string.IsNullOrWhiteSpace(type.Namespace) && string.IsNullOrWhiteSpace(instanceType.Namespace))
+				&& string.Compare(type.Assembly.FullName, instanceType.Assembly.FullName, false) != 0;
 		}
 
 		public T Invoke<T>([CodeAnalysisProvider(ApiProvider)]string api,

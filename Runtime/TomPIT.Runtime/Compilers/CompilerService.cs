@@ -265,9 +265,44 @@ namespace TomPIT.Compilers
 
 			foreach (var i in scripts)
 			{
-				var path = Path.GetFileNameWithoutExtension(i);
+				var tokens = i.Split('/');
+				var ms = Connection.GetService<IMicroServiceService>().Select(microService);
+				var library = string.Empty;
+				var script = string.Empty;
 
-				var lib = Connection.GetService<IComponentService>().SelectComponent(microService, "Library", path);
+				if (tokens.Length == 1)
+					library = Path.GetFileNameWithoutExtension(tokens[0]);
+				else if (tokens.Length == 2)
+				{
+					var component = Connection.GetService<IComponentService>().SelectComponent(microService, "Library", tokens[0]);
+
+					if (component != null)
+					{
+						library = tokens[0];
+						script = tokens[1];
+					}
+					else
+					{
+						ms = Connection.GetService<IMicroServiceService>().Select(tokens[0]);
+
+						if (ms == null)
+							continue;
+
+						library = tokens[1];
+					}
+				}
+				else if (tokens.Length == 3)
+				{
+					ms = Connection.GetService<IMicroServiceService>().Select(tokens[0]);
+
+					if (ms == null)
+						continue;
+
+					library = tokens[1];
+					script = tokens[2];
+				}
+
+				var lib = Connection.GetService<IComponentService>().SelectComponent(ms.Token, "Library", library);
 
 				if (lib == null)
 					continue;
@@ -399,12 +434,13 @@ namespace TomPIT.Compilers
 			var args = new JObject
 			{
 				{ "microService", microService },
+				{ "container", component },
 				{ "sourceCode", id }
 			};
 
 			Connection.Post(u, args);
 			Remove(sourceCode.Id);
-			InvalidateReferences(id);
+			InvalidateReferences(component, id);
 		}
 
 		private Assembly LoadSystemAssembly(string fileName)
@@ -430,14 +466,22 @@ namespace TomPIT.Compilers
 		public void NotifyChanged(object sender, ScriptChangedEventArgs e)
 		{
 			Remove(e.SourceCode);
-			InvalidateReferences(e.SourceCode);
+			InvalidateReferences(e.Container, e.SourceCode);
 		}
 
-		private void InvalidateReferences(Guid id)
+		private void InvalidateReferences(Guid container, Guid script)
 		{
-			if (ForwardReferences.ContainsKey(id))
+			if (ForwardReferences.ContainsKey(container))
 			{
-				var refs = ForwardReferences[id];
+				var refs = ForwardReferences[container];
+
+				foreach (var i in refs)
+					Remove(i);
+			}
+
+			if (ForwardReferences.ContainsKey(script))
+			{
+				var refs = ForwardReferences[script];
 
 				foreach (var i in refs)
 					Remove(i);

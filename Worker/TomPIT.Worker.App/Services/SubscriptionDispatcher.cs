@@ -4,14 +4,14 @@ using TomPIT.Storage;
 
 namespace TomPIT.Worker.Services
 {
-	internal class SubscriptionDispatcher : Dispatcher<IClientQueueMessage>
+	internal class SubscriptionDispatcher : Dispatcher<IQueueMessage>
 	{
 		public SubscriptionDispatcher(string resourceGroup, CancellationTokenSource cancel) : base(cancel, 128)
 		{
 			ResourceGroup = resourceGroup;
 		}
 
-		protected override DispatcherJob<IClientQueueMessage> CreateWorker(CancellationTokenSource cancel)
+		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationTokenSource cancel)
 		{
 			return new SubscriptionJob(this, cancel);
 		}

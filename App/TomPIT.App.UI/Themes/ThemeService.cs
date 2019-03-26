@@ -145,7 +145,8 @@ namespace TomPIT.Themes
 			{
 				ImportAllFilesAsLess = true,
 				MinifyOutput = true,
-				Logger = typeof(LessCompileLogger)
+				Logger = typeof(LessCompileLogger),
+				LogLevel= dotless.Core.Loggers.LogLevel.Warn
 			};
 
 			return Less.Parse(string.Format("{0}{1}{2}", variables, System.Environment.NewLine, source), config);

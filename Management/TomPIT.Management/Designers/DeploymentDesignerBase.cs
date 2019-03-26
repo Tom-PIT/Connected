@@ -25,7 +25,7 @@ namespace TomPIT.Management.Designers
 			if (string.Compare(action, "signup", true) == 0)
 				return Result.ViewResult(this, "~/Views/Ide/Designers/DeploymentSignup.cshtml");
 			else if (string.Compare(action, "login", true) == 0)
-				return Result.ViewResult(this, "~/Views/Ide/Designers/DeploymentLoginForm.cshtml");
+				return Result.ViewResult(this, "~/Views/Ide/Designers/DeploymentLogin.cshtml");
 			else if (string.Compare(action, "signupcreate", true) == 0)
 				return SignUp(data);
 			else if (string.Compare(action, "checkConfirmation", true) == 0)
@@ -84,7 +84,7 @@ namespace TomPIT.Management.Designers
 		private IDesignerActionResult SignUp(JObject data)
 		{
 			var company = data.Required<string>("company");
-			var country = data.Required<int>("country");
+			var country = data.Required<string>("country");
 			var website = data.Optional("website", string.Empty);
 			var firstName = data.Required<string>("firstName");
 			var lastName = data.Required<string>("lastName");

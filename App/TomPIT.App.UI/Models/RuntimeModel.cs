@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.ComponentModel;
@@ -8,9 +9,10 @@ using TomPIT.Services;
 
 namespace TomPIT.Models
 {
-	public class RuntimeModel : ExecutionContext, IRuntimeModel
+	public class RuntimeModel : ExecutionContext, IRuntimeViewModel, IComponentModel, IUIModel
 	{
 		private IModelNavigation _navigation = null;
+		private JObject _arguments = null;
 
 		public RuntimeModel(RuntimeModel context) : base(context)
 		{
@@ -68,6 +70,22 @@ namespace TomPIT.Models
 					_navigation = new ModelNavigation();
 
 				return _navigation;
+			}
+		}
+
+		public JObject Arguments
+		{
+			get
+			{
+				if (_arguments == null)
+				{
+					_arguments = new JObject();
+
+					foreach (var i in Controller.HttpContext.Request.Query)
+						_arguments.Add(i.Key, i.Value.ToString());
+				}
+
+				return _arguments;
 			}
 		}
 	}

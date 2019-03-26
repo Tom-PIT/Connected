@@ -13,13 +13,13 @@ using TomPIT.Storage;
 
 namespace TomPIT.Worker.Services
 {
-	internal class EventJob : DispatcherJob<IClientQueueMessage>
+	internal class EventJob : DispatcherJob<IQueueMessage>
 	{
-		public EventJob(Dispatcher<IClientQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public EventJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
 		{
 		}
 
-		protected override void DoWork(IClientQueueMessage item)
+		protected override void DoWork(IQueueMessage item)
 		{
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
 
@@ -28,14 +28,13 @@ namespace TomPIT.Worker.Services
 			var url = Instance.Connection.CreateUrl("EventManagement", "Complete");
 			var d = new JObject
 			{
-				{"popReceipt", item.PopReceipt },
-				{"resourceGroup", item.ResourceGroup }
+				{"popReceipt", item.PopReceipt }
 			};
 
 			Instance.Connection.Post(url, d);
 		}
 
-		private void Invoke(IClientQueueMessage queue, JObject data)
+		private void Invoke(IQueueMessage queue, JObject data)
 		{
 			var id = data.Required<Guid>("id");
 			var url = Instance.Connection.CreateUrl("EventManagement", "Select")
@@ -100,15 +99,14 @@ namespace TomPIT.Worker.Services
 			Instance.GetService<ICompilerService>().Execute(i.MicroService(Instance.Connection), i.Closest<IEventHandler>().Invoke, this, e);
 		}
 
-		protected override void OnError(IClientQueueMessage item, Exception ex)
+		protected override void OnError(IQueueMessage item, Exception ex)
 		{
 			Instance.Connection.LogError(nameof(EventJob), ex.Source, ex.Message);
 
 			var url = Instance.Connection.CreateUrl("EventManagement", "Ping");
 			var d = new JObject
 			{
-				{"popReceipt", item.PopReceipt },
-				{"resourceGroup", item.ResourceGroup }
+				{"popReceipt", item.PopReceipt }
 			};
 
 			Instance.Connection.Post(url, d);

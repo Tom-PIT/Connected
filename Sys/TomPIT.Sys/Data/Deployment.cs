@@ -99,9 +99,9 @@ namespace TomPIT.Sys.Data
 			catch { }
 		}
 
-		public Guid SignUp(string company, string firstName, string lastName, string password, string email, int country, string phone, string website)
+		public Guid SignUp(string company, string firstName, string lastName, string password, string email, string country, string phone, string website)
 		{
-			var url = new MarketplaceUrl("IPublishers", "Insert");
+			var url = new MarketplaceUrl("IAccounts", "Insert");
 			var body = new JObject
 			{
 				{"company", company },

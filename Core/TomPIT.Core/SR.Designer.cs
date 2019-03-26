@@ -1447,6 +1447,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No Big data server is registered. To manage Instances go to the Management console and search for the Environment/Instances node..
+        /// </summary>
+        public static string ErrNoBigDataServer {
+            get {
+                return ResourceManager.GetString("ErrNoBigDataServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No CDN server is registered. To manage Instances go to the Management console and search for the Environment/Instances node..
+        /// </summary>
+        public static string ErrNoCdnServer {
+            get {
+                return ResourceManager.GetString("ErrNoCdnServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No designer..
         /// </summary>
         public static string ErrNoDesigner {
@@ -1479,6 +1497,24 @@ namespace TomPIT {
         public static string ErrNoPropertyDesigner {
             get {
                 return ResourceManager.GetString("ErrNoPropertyDesigner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No REST server is registered. To manage Instances go to the Management console and search for the Environment/Instances node..
+        /// </summary>
+        public static string ErrNoRestServer {
+            get {
+                return ResourceManager.GetString("ErrNoRestServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No Search server is registered. To manage Instances go to the Management console and search for the Environment/Instances node..
+        /// </summary>
+        public static string ErrNoSearchServer {
+            get {
+                return ResourceManager.GetString("ErrNoSearchServer", resourceCulture);
             }
         }
         

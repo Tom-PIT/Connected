@@ -29,8 +29,14 @@ namespace TomPIT.UI
 		public override void Compile()
 		{
 			AddUsings(Builder);
+			Builder.AppendLine(string.Format("@model {0}", ResolveModel()));
 
 			Builder.Append(Source);
+		}
+
+		private string ResolveModel()
+		{
+			return "TomPIT.Models.IRuntimeViewModel";
 		}
 
 		public override string Result { get { return Builder.ToString(); } }

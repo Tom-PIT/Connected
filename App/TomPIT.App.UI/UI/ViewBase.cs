@@ -6,13 +6,13 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.UI;
+using TomPIT.Models;
 using TomPIT.Services;
 
 namespace TomPIT.UI
 {
 	public abstract class ViewBase<T> : RazorPage<T>
 	{
-		private IExecutionContext _context = null;
 		private ListItems<IViewHelper> _helpers = null;
 		private IConfiguration _configuration = null;
 
@@ -24,15 +24,15 @@ namespace TomPIT.UI
 		protected Guid ComponentId { get; set; }
 		protected string ViewType { get; set; }
 
-		public void Helper(string name, JObject e)
+		public void Helper(string name, JObject args)
 		{
 			var helper = Helpers.FirstOrDefault(f => string.Compare(name, f.Name) == 0);
 
 			if (helper == null)
 				return;
 
-			this.e.Connection().GetService<ICompilerService>().Execute(Configuration.MicroService(this.e.Connection()),
-				helper, this, new ViewHelperArguments(this.e, e, this as ViewBase<IExecutionContext>));
+			e.Connection().GetService<ICompilerService>().Execute(Configuration.MicroService(e.Connection()),
+				helper, this, new ViewHelperArguments(e, args, this as RazorPage<IExecutionContext>));
 		}
 
 		public H Helper<H>(string name)
@@ -40,27 +40,18 @@ namespace TomPIT.UI
 			return Helper<H>(name, null);
 		}
 
-		public H Helper<H>(string name, JObject e)
+		public H Helper<H>(string name, JObject args)
 		{
 			var helper = Helpers.FirstOrDefault(f => string.Compare(name, f.Name) == 0);
 
 			if (helper == null)
 				return default(H);
 
-			return (H)this.e.Connection().GetService<ICompilerService>().Execute(Configuration.MicroService(this.e.Connection()),
-				helper, this, new ViewHelperArguments(this.e, e, this as ViewBase<IExecutionContext>));
+			return (H)e.Connection().GetService<ICompilerService>().Execute(Configuration.MicroService(e.Connection()),
+				helper, this, new ViewHelperArguments(e, args, this as RazorPage<IExecutionContext>));
 		}
 
-		public IExecutionContext e
-		{
-			get
-			{
-				if (_context == null)
-					_context = Model as IExecutionContext;
-
-				return _context;
-			}
-		}
+		public IRuntimeViewModel e => Model as IRuntimeViewModel;
 
 		private IConfiguration Configuration
 		{

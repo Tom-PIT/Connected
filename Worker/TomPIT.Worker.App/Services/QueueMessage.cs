@@ -3,7 +3,7 @@ using TomPIT.Storage;
 
 namespace TomPIT.Worker.Services
 {
-	internal class QueueMessage : IClientQueueMessage
+	internal class QueueMessage : IQueueMessage
 	{
 		public string Id { get; set; }
 		public string Message { get; set; }
@@ -14,6 +14,5 @@ namespace TomPIT.Worker.Services
 		public int DequeueCount { get; set; }
 		public string Queue { get; set; }
 		public DateTime DequeueTimestamp { get; set; }
-		public Guid ResourceGroup { get; set; }
 	}
 }

@@ -47,14 +47,14 @@ namespace TomPIT.Sys.Controllers.Management
 			var lastName = body.Required<string>("lastName");
 			var password = body.Required<string>("password");
 			var email = body.Required<string>("email");
-			var country = body.Required<int>("country");
+			var country = body.Required<string>("country");
 			var phone = body.Optional("phone", string.Empty);
 			var website = body.Optional("webSite", string.Empty);
 
 			return DataModel.Deployment.SignUp(company, firstName, lastName, password, email, country, phone, website);
 		}
 
-		[HttpPost]
+		[HttpGet]
 		public List<ICountry> QueryCountries()
 		{
 			return DataModel.Deployment.QueryCountries();

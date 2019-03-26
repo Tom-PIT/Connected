@@ -6,7 +6,7 @@ using TomPIT.Services;
 
 namespace TomPIT.Models
 {
-	public class MailTemplateModel : ExecutionContext
+	public class MailTemplateModel : ExecutionContext, IRuntimeViewModel
 	{
 		public MailTemplateModel(HttpRequest request, ActionContext context, JObject arguments)
 		{

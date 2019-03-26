@@ -71,7 +71,7 @@
 	});
 
 	$('#editCountry').dxSelectBox({
-		items:@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Countries))),
+		items:@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Countries)),
 		displayExpr: 'Name',
 		valueExpr: 'Name',
 		stylingMode: 'underlined',

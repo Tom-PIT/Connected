@@ -61,21 +61,60 @@ namespace TomPIT.Compilers
 
 		public override Stream OpenRead(string resolvedPath)
 		{
-			if (resolvedPath.Contains('/'))
-				return LoadScript(resolvedPath);
+			var tokens = resolvedPath.Split("/");
+
+			if (tokens.Length == 1)
+				return LoadLibrary(null, resolvedPath);
+			else if (tokens.Length == 2)
+			{
+				/*
+				 * first try with internal library. if not found then we'll try to load
+				 * public library from references microservice
+				 */
+				var component = Connection.GetService<IComponentService>().SelectComponent(MicroService, "Library", tokens[0]);
+
+				if (component != null)
+					return LoadScript(null, tokens[0], tokens[1]);
+				else
+					return LoadLibrary(tokens[0], tokens[1]);
+			}
+			else if (tokens.Length == 3)
+				return LoadScript(tokens[0], tokens[1], tokens[2]);
 			else
-				return LoadLibrary(resolvedPath);
+				return null;
 		}
 
-		private Stream LoadScript(string qualifier)
+		private Stream LoadScript(string microService, string library, string script)
 		{
-			var tokens = qualifier.Split('/');
-			var lib = tokens[0];
+			IMicroService ms = null;
 
-			if (!(Connection.GetService<IComponentService>().SelectConfiguration(MicroService, "Library", lib) is ISourceCodeContainer c))
-				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrComponentNotFound, lib));
+			if (!string.IsNullOrWhiteSpace(microService))
+			{
+				ms = Connection.GetService<IMicroServiceService>().Select(microService);
 
-			var txt = c.GetReference(tokens[1]);
+				if (ms == null)
+					throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})");
+
+				if (ms.Token != MicroService)
+				{
+					var originMicroService = Connection.GetService<IMicroServiceService>().Select(MicroService);
+
+					originMicroService.ValidateMicroServiceReference(Connection, ms.Name);
+				}
+			}
+			else
+				ms = Connection.GetService<IMicroServiceService>().Select(MicroService);
+
+			if (!(Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "Library", library) is ISourceCodeContainer c))
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrComponentNotFound, library));
+
+			if (c.MicroService(Connection) != MicroService)
+			{
+				if (c.Closest<ILibrary>().Scope != ElementScope.Public)
+					throw new RuntimeException(SR.ErrScopeError);
+			}
+
+			var txt = c.GetReference(script);
 
 			if (txt == null)
 				return null;
@@ -88,29 +127,47 @@ namespace TomPIT.Compilers
 			return new MemoryStream(Encoding.UTF8.GetBytes(content));
 		}
 
-		private Stream LoadLibrary(string qualifier)
+		private Stream LoadLibrary(string microService, string library)
 		{
-			if (!(Connection.GetService<IComponentService>().SelectConfiguration(MicroService, "Library", Path.GetFileNameWithoutExtension(qualifier)) is ISourceCodeContainer container))
+			IMicroService ms = null;
+
+			if (!string.IsNullOrWhiteSpace(microService))
+			{
+				ms = Connection.GetService<IMicroServiceService>().Select(microService);
+
+				if (ms == null)
+					throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})");
+
+				if (ms.Token != MicroService)
+				{
+					var originMicroService = Connection.GetService<IMicroServiceService>().Select(MicroService);
+
+					originMicroService.ValidateMicroServiceReference(Connection, ms.Name);
+				}
+			}
+			else
+				ms = Connection.GetService<IMicroServiceService>().Select(MicroService);
+
+			if (!(Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "Library", Path.GetFileNameWithoutExtension(library)) is ISourceCodeContainer container))
 				throw new RuntimeException(SR.ErrSourceCodeContainerExected);
+
+			if (container.MicroService(Connection) != MicroService)
+			{
+				if (container.Closest<ILibrary>().Scope != ElementScope.Public)
+					throw new RuntimeException(SR.ErrScopeError);
+			}
 
 			var refs = container.References();
 			var sb = new StringBuilder();
 
 			foreach (var i in refs)
-				sb.AppendLine(string.Format("#load \"{0}/{1}\"", qualifier, i));
+				sb.AppendLine($"#load \"{ms.Name}/{Path.GetFileNameWithoutExtension(library)}/{i}\"");
 
 			return new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
 		}
 
 		public override string ResolveReference(string path, string baseFilePath)
 		{
-			if (path.Contains('/'))
-			{
-				var tokens = path.Split('/');
-
-				path = string.Format("{0}/{1}", Path.GetFileNameWithoutExtension(tokens[0]), tokens[1]);
-			}
-
 			var extension = Path.GetExtension(path);
 
 			if (string.IsNullOrWhiteSpace(extension))
