@@ -14,6 +14,7 @@ namespace TomPIT.Security
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[MaxLength(128)]
 		[Required]
+		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
 		public string Name { get; set; }
 		[Browsable(false)]
 		public RoleBehavior Behavior { get; set; }

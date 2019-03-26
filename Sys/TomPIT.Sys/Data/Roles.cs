@@ -36,11 +36,7 @@ namespace TomPIT.Sys.Data
 
 		public IRole Select(Guid token)
 		{
-			return Get(token,
-				(f) =>
-				{
-					return Shell.GetService<IDatabaseService>().Proxy.Security.Roles.Select(token);
-				});
+			return Get(token);
 		}
 
 		public Guid Insert(string name)
@@ -49,7 +45,7 @@ namespace TomPIT.Sys.Data
 
 			Shell.GetService<IDatabaseService>().Proxy.Security.Roles.Insert(token, name);
 
-			Select(token);
+			Refresh(token);
 			CachingNotifications.RoleChanged(token);
 
 			return token;
