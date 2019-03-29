@@ -81,9 +81,9 @@ namespace TomPIT.Sys.Notifications
 		public static void PermissionAdded(Guid resourceGroup, Guid evidence, string schema, string claim, string primaryKey) { Notify(nameof(PermissionAdded), new PermissionEventArgs(resourceGroup, evidence, schema, claim, primaryKey)); }
 		public static void PermissionChanged(Guid resourceGroup, Guid evidence, string schema, string claim, string primaryKey) { Notify(nameof(PermissionChanged), new PermissionEventArgs(resourceGroup, evidence, schema, claim, primaryKey)); }
 		public static void PermissionRemoved(Guid resourceGroup, Guid evidence, string schema, string claim, string primaryKey) { Notify(nameof(PermissionRemoved), new PermissionEventArgs(resourceGroup, evidence, schema, claim, primaryKey)); }
-		public static void ComponentChanged(Guid microService, Guid folder, Guid component) { Notify(nameof(ComponentChanged), new ComponentEventArgs(microService, folder, component)); }
-		public static void ComponentRemoved(Guid microService, Guid folder, Guid component) { Notify(nameof(ComponentRemoved), new ComponentEventArgs(microService, folder, component)); }
-		public static void ComponentAdded(Guid microService, Guid folder, Guid component) { Notify(nameof(ComponentAdded), new ComponentEventArgs(microService, folder, component)); }
+		public static void ComponentChanged(Guid microService, Guid folder, Guid component, string category) { Notify(nameof(ComponentChanged), new ComponentEventArgs(microService, folder, component, category)); }
+		public static void ComponentRemoved(Guid microService, Guid folder, Guid component, string category) { Notify(nameof(ComponentRemoved), new ComponentEventArgs(microService, folder, component, category)); }
+		public static void ComponentAdded(Guid microService, Guid folder, Guid component, string category) { Notify(nameof(ComponentAdded), new ComponentEventArgs(microService, folder, component, category)); }
 		/*
 		 * Configuration
 		 */

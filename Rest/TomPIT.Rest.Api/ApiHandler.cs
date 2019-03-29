@@ -27,7 +27,6 @@ namespace TomPIT.Rest
 		private string MicroServiceName { get; set; }
 		private string Api { get; set; }
 		private string Operation { get; set; }
-		private IMicroService MicroService { get; set; }
 
 		public void Invoke()
 		{
@@ -49,7 +48,8 @@ namespace TomPIT.Rest
 
 		private bool Authorize(IApi api, IApiOperation operation)
 		{
-			var e = new AuthorizationArgs(this.GetAuthenticatedUserToken(), Claims.Invoke, api.Component.ToString());
+			var component = Connection.GetService<IComponentService>().SelectComponent(api.Component);
+			var e = new AuthorizationArgs(this.GetAuthenticatedUserToken(), Claims.Invoke, api.Component.ToString(), component.Folder);
 
 			e.Schema.Empty = EmptyBehavior.Deny;
 			e.Schema.Level = AuthorizationLevel.Pessimistic;

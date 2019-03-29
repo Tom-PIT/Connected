@@ -62,7 +62,7 @@ namespace TomPIT.Design
 			Connection.Post(u, args);
 
 			if (Connection.GetService<IComponentService>() is IComponentNotification svc)
-				svc.NotifyRemoved(this, new ComponentEventArgs(c.MicroService, c.Folder, component));
+				svc.NotifyRemoved(this, new ComponentEventArgs(c.MicroService, c.Folder, component, c.Category));
 
 			/*
 			 * remove configuration file

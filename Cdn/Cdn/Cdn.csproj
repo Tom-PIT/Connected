@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <AssemblyVersion>1.0.325.4</AssemblyVersion>
-    <FileVersion>1.0.325.4</FileVersion>
-    <Version>1.0.325.4</Version>
+    <AssemblyVersion>1.0.328.1</AssemblyVersion>
+    <FileVersion>1.0.328.1</FileVersion>
+    <Version>1.0.328.1</Version>
     <RootNamespace>TomPIT.Cdn</RootNamespace>
     <AssemblyName>TomPIT.Cdn</AssemblyName>
   </PropertyGroup>

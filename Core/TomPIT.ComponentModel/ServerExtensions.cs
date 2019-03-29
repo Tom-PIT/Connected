@@ -107,14 +107,14 @@ namespace TomPIT
 
 		public static string RootUrl(this HttpRequest request)
 		{
-			return string.Format("{0}://{1}/{2}", request.Scheme, request.Host, request.PathBase).TrimEnd('/');
+			return string.Format("{0}://{1}/{2}", request.Scheme, request.Host, request.PathBase.ToString().Trim('/')).TrimEnd('/');
 		}
 
 		public static string RootUrl(this IExecutionContext context)
 		{
 			var http = Shell.HttpContext?.Request;
 
-			return string.Format("{0}://{1}/{2}", http.Scheme, http.Host, http.PathBase).TrimEnd('/');
+			return string.Format("{0}://{1}/{2}", http.Scheme, http.Host, http.PathBase.ToString().Trim('/')).TrimEnd('/');
 		}
 
 		public static IConfiguration Configuration(this IElement element)

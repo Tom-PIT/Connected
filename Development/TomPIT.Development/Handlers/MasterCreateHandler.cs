@@ -18,6 +18,7 @@ namespace TomPIT.Handlers
 				sb.AppendLine("<html>");
 				sb.AppendLine("<head>");
 				sb.AppendLine("<title>@ViewBag.Title</title>");
+				sb.AppendLine("@await Html.PartialAsync(\"~/Views/Shared/StandardHeaders.cshtml\")");
 				sb.AppendLine("@await Html.PartialAsync(\"~/Views/Shared/Header.cshtml\")");
 				sb.AppendLine("@RenderSection(\"head\", false)");
 				sb.AppendLine("</head>");

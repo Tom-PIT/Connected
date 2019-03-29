@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Caching;
+using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Services;
 
@@ -85,10 +86,15 @@ namespace TomPIT.Security
 		public IAuthorizationResult Authorize(IExecutionContext context, AuthorizationArgs e)
 		{
 			if (string.IsNullOrWhiteSpace(e.Claim))
-				return AuthorizationResult.Fail(AuthorizationResultReason.NoClaim);
+				return AuthorizationResult.Fail(AuthorizationResultReason.NoClaim, 0);
 
 			if (string.IsNullOrWhiteSpace(e.PrimaryKey))
-				return AuthorizationResult.Fail(AuthorizationResultReason.NoPrimaryKey);
+				return AuthorizationResult.Fail(AuthorizationResultReason.NoPrimaryKey, 0);
+
+			var folderResult = AuthorizeFolder(context, e, 0);
+
+			if (!folderResult.Success)
+				return folderResult;
 
 			var permissions = Where(f => string.Compare(f.Claim, e.Claim, true) == 0
 				&& string.Compare(f.PrimaryKey, e.PrimaryKey, true) == 0);
@@ -98,20 +104,25 @@ namespace TomPIT.Security
 			foreach (var i in Providers)
 			{
 				if (i.PreAuthorize(context, e, state) == AuthorizationProviderResult.Success)
-					return AuthorizationResult.OK();
+					return AuthorizationResult.OK(permissions.Count);
 			}
 
 			if (permissions.Count == 0)
 			{
-				switch (e.Schema.Empty)
+				if (folderResult.PermissionCount == 0)
 				{
-					case EmptyBehavior.Deny:
-						return AuthorizationResult.Fail(AuthorizationResultReason.Empty);
-					case EmptyBehavior.Alow:
-						return AuthorizationResult.OK();
-					default:
-						throw new NotSupportedException();
+					switch (e.Schema.Empty)
+					{
+						case EmptyBehavior.Deny:
+							return AuthorizationResult.Fail(AuthorizationResultReason.Empty, permissions.Count);
+						case EmptyBehavior.Alow:
+							return AuthorizationResult.OK(permissions.Count);
+						default:
+							throw new NotSupportedException();
+					}
 				}
+				else
+					return folderResult;
 			}
 
 			bool denyFound = false;
@@ -134,9 +145,9 @@ namespace TomPIT.Security
 					}
 
 					if (r == AuthorizationProviderResult.Success && e.Schema.Level == AuthorizationLevel.Optimistic)
-						return AuthorizationResult.OK();
+						return AuthorizationResult.OK(permissions.Count);
 					else if (r == AuthorizationProviderResult.Fail && e.Schema.Level == AuthorizationLevel.Pessimistic)
-						return AuthorizationResult.Fail(AuthorizationResultReason.Other);
+						return AuthorizationResult.Fail(AuthorizationResultReason.Other, permissions.Count);
 				}
 			}
 
@@ -144,14 +155,14 @@ namespace TomPIT.Security
 			{
 				case AuthorizationLevel.Pessimistic:
 					if (allowFound)
-						return AuthorizationResult.OK();
+						return AuthorizationResult.OK(permissions.Count);
 					else
-						return AuthorizationResult.Fail(AuthorizationResultReason.NoAllowFound);
+						return AuthorizationResult.Fail(AuthorizationResultReason.NoAllowFound, permissions.Count);
 				case AuthorizationLevel.Optimistic:
 					if (denyFound)
-						return AuthorizationResult.Fail(AuthorizationResultReason.DenyFound);
+						return AuthorizationResult.Fail(AuthorizationResultReason.DenyFound, permissions.Count);
 					else
-						return AuthorizationResult.OK();
+						return AuthorizationResult.OK(permissions.Count);
 				default:
 					throw new NotSupportedException();
 			}
@@ -307,6 +318,41 @@ namespace TomPIT.Security
 
 				return _defaultAuthenticationProvider;
 			}
+		}
+
+		private IAuthorizationResult AuthorizeFolder(IExecutionContext context, AuthorizationArgs e, int permissionCounter)
+		{
+			if (e.Folder == Guid.Empty)
+				return AuthorizationResult.OK(permissionCounter);
+
+			var folder = Connection.GetService<IComponentService>().SelectFolder(e.Folder);
+
+			if (folder.Parent != Guid.Empty)
+			{
+				var args = new AuthorizationArgs(e.User, Claims.FolderAccess, folder.Token.ToString(), folder.Parent);
+
+				args.Schema.Empty = EmptyBehavior.Alow;
+				args.Schema.Level = AuthorizationLevel.Pessimistic;
+
+				var parentResult = AuthorizeFolder(context, args, permissionCounter);
+
+				if (!parentResult.Success)
+					return parentResult;
+
+				permissionCounter += parentResult.PermissionCount;
+			}
+
+			var folderArgs = new AuthorizationArgs(e.User, Claims.FolderAccess, e.Folder.ToString());
+
+			folderArgs.Schema.Empty = EmptyBehavior.Alow;
+			folderArgs.Schema.Level = AuthorizationLevel.Pessimistic;
+
+			var r = Authorize(context, folderArgs);
+
+			if (r is AuthorizationResult ar)
+				ar.PermissionCount += permissionCounter;
+
+			return r;
 		}
 	}
 }

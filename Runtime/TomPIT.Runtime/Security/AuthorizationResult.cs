@@ -14,22 +14,25 @@
 
 		public bool Success { get; set; }
 		public AuthorizationResultReason Reason { get; set; }
+		public int PermissionCount { get; set; }
 
-		public static AuthorizationResult OK()
+		public static AuthorizationResult OK(int permissionCount)
 		{
 			return new AuthorizationResult
 			{
 				Success = true,
-				Reason = AuthorizationResultReason.OK
+				Reason = AuthorizationResultReason.OK,
+				PermissionCount = permissionCount
 			};
 		}
 
-		public static AuthorizationResult Fail(AuthorizationResultReason reason)
+		public static AuthorizationResult Fail(AuthorizationResultReason reason, int permissionCount)
 		{
 			return new AuthorizationResult
 			{
 				Success = false,
-				Reason = reason
+				Reason = reason,
+				PermissionCount = permissionCount
 			};
 		}
 	}

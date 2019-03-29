@@ -23,11 +23,29 @@ namespace TomPIT.UI
 		{
 			_scripts = new ViewScriptsCache(connection);
 
+			connection.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
+
 			connection.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
 			connection.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
 			connection.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
 
 			connection.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+		}
+
+		private void OnComponentChanged(ISysConnection sender, ComponentEventArgs e)
+		{
+			if (!IsTargetCategory(e.Category))
+				return;
+
+			ChangeState[e.Component] = true;
+
+			var c = Connection.GetService<IComponentService>().SelectComponent(e.Component);
+
+			if (c != null)
+				ViewScripts.Remove(e.MicroService, c.Token);
+
+			Refresh(e.Component);
+			SynchronizeSnippetsState(e.Component);
 		}
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
@@ -129,7 +147,7 @@ namespace TomPIT.UI
 				if (tokens.Length != targetTokens.Length)
 					continue;
 
-				bool match = false;
+				bool match = true;
 				var routeData = new Dictionary<string, object>();
 
 				for (int j = 0; j < tokens.Length; j++)
@@ -146,9 +164,10 @@ namespace TomPIT.UI
 					}
 
 					if (string.Compare(t1, t2, true) != 0)
+					{
+						match = false;
 						break;
-
-					match = true;
+					}
 				}
 
 				if (match)

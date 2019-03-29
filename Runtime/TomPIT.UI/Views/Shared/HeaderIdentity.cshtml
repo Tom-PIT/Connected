@@ -4,55 +4,55 @@
 
 
 <ul class="header-menu list-inline">
-    @if (!Model.Services.Identity.IsAuthenticated)
-    {
-        <li class="nav-item dropdown header-avatar anonimous list-inline-item">
-            <a href="#" data-toggle="dropdown">
-                <i class="fas fa-user"></i>
-            </a>
-            <ul class="dropdown-menu header-dropdown-right">
-                <li class="dropdown-item"><a href="~/Login">@SR.MenuLogin</a></li>
-                @if (Model.Navigation != null && Model.Navigation.Links.Count > 0)
-                {
-                    @await Html.PartialAsync("~/Views/Shared/HeaderLinks.cshtml", Model)
-                }
-            </ul>
-        </li>
-    }
-    else
-    {
-        var displayName = Model.Services.Identity.User.DisplayName();
+	@if (!Model.Services.Identity.IsAuthenticated)
+	{
+		<li class="nav-item dropdown header-avatar anonimous list-inline-item">
+			<a href="#" data-toggle="dropdown">
+				<i class="fas fa-user"></i>
+			</a>
+			<ul class="dropdown-menu header-dropdown-right">
+				<li class="dropdown-item"><a href="~/Login">@SR.MenuLogin</a></li>
+				@if (Model.Navigation != null && Model.Navigation.Links.Count > 0)
+				{
+					@await Html.PartialAsync("~/Views/Shared/HeaderLinks.cshtml", Model)
+				}
+			</ul>
+		</li>
+	}
+	else
+	{
+		var displayName = Model.Services.Identity.User.DisplayName();
 
-        <li class="nav-item header-avatar list-inline-item">
-            <a href="#" data-toggle="dropdown">
-                @if (Model.Services.Identity.User.Avatar == Guid.Empty)
-                {
-                    <i class="fas fa-user-circle"></i>
-                }
-                else
-                {
-                    @Html.TP().Sys.Avatar(Model.Services.Identity.User.Token, Model.Services.Identity.User.DisplayName(), "rounded-circle img-fluid")
-                }
+		<li class="nav-item header-avatar list-inline-item">
+			<a href="#" data-toggle="dropdown">
+				@if (Model.Services.Identity.User.Avatar == Guid.Empty)
+				{
+					<i class="fas fa-user-circle"></i>
+				}
+				else
+				{
+					@Html.TP().Sys.Avatar(Model.Services.Identity.User.Token, Model.Services.Identity.User.DisplayName(), "rounded-circle img-fluid")
+				}
 
-            </a>
-            <ul class="dropdown-menu header-dropdown-right">
-                <li class="dropdown-item">
-                    @displayName
-                    <div class="small">
-                        @Model.Services.Identity.User.Email
-                    </div>
-                </li>
-                <li class="dropdown-divider"></li>
-                <li class="dropdown-item"><a href="~/AboutMe">@SR.MenuAboutMe</a></li>
-                <li class="dropdown-item"><a href="~/Logoff">@SR.MenuLogoff</a></li>
+			</a>
+			<ul class="dropdown-menu header-dropdown-right">
+				<li class="dropdown-item">
+					@displayName
+					<div class="small">
+						@Model.Services.Identity.User.Email
+					</div>
+				</li>
+				<li class="dropdown-divider"></li>
+				<li class="dropdown-item"><a href="~/sys/aboutme">@SR.MenuAboutMe</a></li>
+				<li class="dropdown-item"><a href="~/sys/logoff">@SR.MenuLogoff</a></li>
 
-                @if (Model.Navigation != null && Model.Navigation.Links.Count > 0)
-                {
-                    <li class="dropdown-divider"></li>
-                    @await Html.PartialAsync("~/Views/Shared/HeaderLinks.cshtml", Model)
-                }
-            </ul>
-        </li>
-    }
+				@if (Model.Navigation != null && Model.Navigation.Links.Count > 0)
+				{
+					<li class="dropdown-divider"></li>
+					@await Html.PartialAsync("~/Views/Shared/HeaderLinks.cshtml", Model)
+				}
+			</ul>
+		</li>
+	}
 
 </ul>

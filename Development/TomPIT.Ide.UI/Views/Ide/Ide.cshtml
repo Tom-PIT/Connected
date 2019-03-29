@@ -1,6 +1,8 @@
 ﻿@model TomPIT.Ide.IEnvironment
 @{
 	Layout = "~/Views/Shared/Shell.cshtml";
+
+	var qspath = Context.Request.Query["path"].ToString();
 }
 
 @section head{
@@ -71,5 +73,10 @@
         else if (e.which === 38) {
             ide.selectPrevious();
         }
-    });
+	});
+
+	@if (!string.IsNullOrWhiteSpace(qspath))
+	{
+		@:ide.expandTo({ 'path': '@qspath' });
+	}
 </script>

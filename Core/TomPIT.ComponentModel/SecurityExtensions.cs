@@ -13,7 +13,7 @@ namespace TomPIT
 			if (component == null)
 				return false;
 
-			var e = new AuthorizationArgs(context.GetAuthenticatedUserToken(), Claims.AccessUserInterface, component.Token.ToString());
+			var e = new AuthorizationArgs(context.GetAuthenticatedUserToken(), Claims.AccessUserInterface, component.Token.ToString(), component.Folder);
 
 			e.Schema.Empty = EmptyBehavior.Deny;
 			e.Schema.Level = AuthorizationLevel.Pessimistic;

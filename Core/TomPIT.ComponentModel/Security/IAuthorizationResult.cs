@@ -15,5 +15,6 @@
 	{
 		bool Success { get; }
 		AuthorizationResultReason Reason { get; }
+		int PermissionCount { get; }
 	}
 }

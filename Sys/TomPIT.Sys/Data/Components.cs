@@ -76,7 +76,7 @@ namespace TomPIT.Sys.Data
 				else
 				{
 					Refresh(component.Token);
-					CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token);
+					CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.Category);
 				}
 			}
 		}
@@ -84,7 +84,7 @@ namespace TomPIT.Sys.Data
 		public void NotifyChanged(IComponent component)
 		{
 			Refresh(component.Token);
-			CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token);
+			CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.Category);
 		}
 
 		public IComponent Select(Guid token)
@@ -321,7 +321,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Insert(s, DateTime.UtcNow, f, category, name, component, type, runtimeConfiguration);
 
 			Refresh(component);
-			CachingNotifications.ComponentAdded(microService, folder, component);
+			CachingNotifications.ComponentAdded(microService, folder, component, category);
 		}
 
 		public void UpdateModified(Guid microService, string category, string name)
@@ -378,7 +378,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, DateTime.UtcNow, name, f, runtimeConfiguration);
 
 			Refresh(component);
-			CachingNotifications.ComponentChanged(c.MicroService, c.Folder, component);
+			CachingNotifications.ComponentChanged(c.MicroService, c.Folder, component, c.Category);
 		}
 
 		public void Delete(Guid component, Guid user, bool permanent)
@@ -406,7 +406,7 @@ namespace TomPIT.Sys.Data
 				Refresh(component);
 			}
 
-			CachingNotifications.ComponentRemoved(c.MicroService, c.Folder, component);
+			CachingNotifications.ComponentRemoved(c.MicroService, c.Folder, component, c.Category);
 		}
 
 		public string CreateComponentName(Guid microService, string prefix, string category)
