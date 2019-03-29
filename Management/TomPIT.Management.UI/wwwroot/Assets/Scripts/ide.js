@@ -149,7 +149,16 @@ $.widget('tompit.tpIde', {
 				group.addClass('collapse');
 		});
 
-		$('.dev-explorer-node-text', d).click(function () {
+		$('.dev-explorer-node-text', d).click(function (e) {
+			if (e.ctrlKey) {
+				var url = new tompit.devUrl();
+				var path = instance._resolvePath($(this));
+
+				window.open(url.environment() + '?path=' + path, '_blank');
+
+				return;
+			}
+
 			instance.selectNode({
 				target: $(this),
 				scroll: false
@@ -1064,9 +1073,11 @@ tompit.DEVGLOBALIZE = {
 
 tompit.devUrl = function () {
 	this.environment = function (verb) {
-
 		if (tompit.DEVDEFAULTS.environmentUrl === null)
 			tompit.clientError(tompit.DEVGLOBALIZE.environmentUrlNotSet);
+
+		if (typeof verb === 'undefined')
+			return tompit.DEVDEFAULTS.environmentUrl;
 
 		if (tompit.DEVDEFAULTS.environmentUrl === '/')
 			return tompit.DEVDEFAULTS.environmentUrl + verb;
