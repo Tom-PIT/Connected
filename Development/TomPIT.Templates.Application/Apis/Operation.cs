@@ -17,6 +17,7 @@ namespace TomPIT.Application.Apis
 		private IServerEvent _prepare = null;
 		private IServerEvent _commit = null;
 		private IServerEvent _rollback = null;
+		private IServerEvent _schema = null;
 		private OperationProtocolOptions _protocols = null;
 		private IMetricConfiguration _metric = null;
 
@@ -75,6 +76,18 @@ namespace TomPIT.Application.Apis
 					_rollback = new ServerEvent { Parent = this };
 
 				return _rollback;
+			}
+		}
+
+		[EventArguments(typeof(OperationSchemaArguments))]
+		public IServerEvent Schema
+		{
+			get
+			{
+				if (_schema == null)
+					_schema = new ServerEvent { Parent = this };
+
+				return _schema;
 			}
 		}
 

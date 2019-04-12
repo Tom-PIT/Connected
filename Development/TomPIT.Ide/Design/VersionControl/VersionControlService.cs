@@ -12,241 +12,248 @@ using TomPIT.Storage;
 
 namespace TomPIT.Ide.Design.VersionControl
 {
-	internal class VersionControlService : IVersionControlService
-	{
-		public VersionControlService(ISysConnection connection)
-		{
-			Connection = connection;
-		}
+    internal class VersionControlService : IVersionControlService
+    {
+        public VersionControlService(ISysConnection connection)
+        {
+            Connection = connection;
+        }
 
-		private ISysConnection Connection { get; }
+        private ISysConnection Connection { get; }
 
-		public List<IComponent> Changes(Guid microService)
-		{
-			var u = Connection.CreateUrl("VersionControl", "QueryChanges");
-			var e = new JObject
-			{
-				{"microService", microService }
-			};
+        public List<IComponent> Changes()
+        {
+            var u = Connection.CreateUrl("VersionControl", "QueryChanges");
 
-			return Connection.Post<List<Component>>(u, e).ToList<IComponent>();
-		}
+            return Connection.Post<List<Component>>(u).ToList<IComponent>();
+        }
 
-		public List<IComponent> Changes(Guid microService, Guid user)
-		{
-			var u = Connection.CreateUrl("VersionControl", "QueryChanges");
-			var e = new JObject
-			{
-				{"microService", microService },
-				{"user", user }
-			};
+        public List<IComponent> Changes(Guid microService)
+        {
+            var u = Connection.CreateUrl("VersionControl", "QueryChanges");
+            var e = new JObject
+            {
+                {"microService", microService }
+            };
 
-			return Connection.Post<List<Component>>(u, e).ToList<IComponent>();
-		}
+            return Connection.Post<List<Component>>(u, e).ToList<IComponent>();
+        }
 
-		public void Commit(List<Guid> components, string comment)
-		{
-			var u = Connection.CreateUrl("VersionControl", "Commit");
-			var e = new JObject
-			{
-				{"user", Shell.HttpContext.CurrentUserToken() },
-				{"comment", comment }
-			};
+        public List<IComponent> Changes(Guid microService, Guid user)
+        {
+            var u = Connection.CreateUrl("VersionControl", "QueryChanges");
+            var e = new JObject
+            {
+                {"microService", microService },
+                {"user", user }
+            };
 
-			var a = new JArray();
+            return Connection.Post<List<Component>>(u, e).ToList<IComponent>();
+        }
 
-			e.Add("components", a);
+        public void Commit(List<Guid> components, string comment)
+        {
+            var u = Connection.CreateUrl("VersionControl", "Commit");
+            var e = new JObject
+            {
+                {"user", Shell.HttpContext.CurrentUserToken() },
+                {"comment", comment }
+            };
 
-			foreach (var i in components)
-				a.Add(i);
+            var a = new JArray();
 
-			Connection.Post(u, e);
-		}
+            e.Add("components", a);
 
-		public ILockInfo SelectLockInfo(Guid component)
-		{
-			var u = Connection.CreateUrl("VersionControl", "SelectLockInfo");
-			var e = new JObject
-			{
-				{"component", component },
-				{"user", Shell.HttpContext.CurrentUserToken() }
-			};
+            foreach (var i in components)
+                a.Add(i);
 
-			return Connection.Post<LockInfo>(u, e);
-		}
+            Connection.Post(u, e);
+        }
 
-		public List<IComponent> QueryCommitComponents(Guid commit)
-		{
-			var u = Connection.CreateUrl("VersionControl", "QueryCommitComponents");
-			var e = new JObject
-			{
-				{"commit", commit }
-			};
+        public ILockInfo SelectLockInfo(Guid component)
+        {
+            var u = Connection.CreateUrl("VersionControl", "SelectLockInfo");
+            var e = new JObject
+            {
+                {"component", component },
+                {"user", Shell.HttpContext.CurrentUserToken() }
+            };
 
-			return Connection.Post<List<Component>>(u, e).ToList<IComponent>();
-		}
+            return Connection.Post<LockInfo>(u, e);
+        }
 
-		public List<ICommit> QueryCommits(Guid microService)
-		{
-			var u = Connection.CreateUrl("VersionControl", "QueryCommits");
-			var e = new JObject
-			{
-				{"microService", microService }
-			};
+        public List<IComponent> QueryCommitComponents(Guid commit)
+        {
+            var u = Connection.CreateUrl("VersionControl", "QueryCommitComponents");
+            var e = new JObject
+            {
+                {"commit", commit }
+            };
 
-			return Connection.Post<List<Commit>>(u, e).ToList<ICommit>();
-		}
+            return Connection.Post<List<Component>>(u, e).ToList<IComponent>();
+        }
 
-		public List<ICommit> QueryCommits(Guid microService, Guid user)
-		{
-			var u = Connection.CreateUrl("VersionControl", "QueryCommits");
-			var e = new JObject
-			{
-				{"microService", microService },
-				{"user", user }
-			};
+        public List<ICommit> QueryCommits(Guid microService)
+        {
+            var u = Connection.CreateUrl("VersionControl", "QueryCommits");
+            var e = new JObject
+            {
+                {"microService", microService }
+            };
 
-			return Connection.Post<List<Commit>>(u, e).ToList<ICommit>();
-		}
+            return Connection.Post<List<Commit>>(u, e).ToList<ICommit>();
+        }
 
-		public List<ICommit> QueryCommitsForComponent(Guid microService, Guid component)
-		{
-			var u = Connection.CreateUrl("VersionControl", "QueryCommitsForComponent");
-			var e = new JObject
-			{
-				{"microService", microService },
-				{"component", component }
-			};
+        public List<ICommit> QueryCommits(Guid microService, Guid user)
+        {
+            var u = Connection.CreateUrl("VersionControl", "QueryCommits");
+            var e = new JObject
+            {
+                {"microService", microService },
+                {"user", user }
+            };
 
-			return Connection.Post<List<Commit>>(u, e).ToList<ICommit>();
-		}
+            return Connection.Post<List<Commit>>(u, e).ToList<ICommit>();
+        }
 
-		public void Rollback(Guid commit, Guid component)
-		{
-			var comps = QueryCommitDetails(commit);
+        public List<ICommit> QueryCommitsForComponent(Guid microService, Guid component)
+        {
+            var u = Connection.CreateUrl("VersionControl", "QueryCommitsForComponent");
+            var e = new JObject
+            {
+                {"microService", microService },
+                {"component", component }
+            };
 
-			if (component != Guid.Empty)
-				comps = comps.Where(f => f.Component == component).ToList();
+            return Connection.Post<List<Commit>>(u, e).ToList<ICommit>();
+        }
 
-			foreach (var i in comps)
-			{
-				Connection.GetService<IComponentDevelopmentService>().RestoreComponent(i.Blob);
+        public void Rollback(Guid commit, Guid component)
+        {
+            var comps = QueryCommitDetails(commit);
 
-				var u = Connection.CreateUrl("VersionControl", "Undo");
-				var e = new JObject
-				{
-					{"component", i.Component }
-				};
+            if (component != Guid.Empty)
+                comps = comps.Where(f => f.Component == component).ToList();
 
-				Connection.Post(u, e);
-			}
-		}
+            foreach (var i in comps)
+            {
+                Connection.GetService<IComponentDevelopmentService>().RestoreComponent(i.Blob);
 
-		public void Rollback(Guid commit)
-		{
-			Rollback(commit, Guid.Empty);
-		}
+                var u = Connection.CreateUrl("VersionControl", "Undo");
+                var e = new JObject
+                {
+                    {"component", i.Component }
+                };
 
-		public void Undo(List<Guid> components)
-		{
-			foreach (var i in components)
-			{
-				var component = Connection.GetService<IComponentService>().SelectComponent(i);
+                Connection.Post(u, e);
+            }
+        }
 
-				var history = QueryHistory(i);
+        public void Rollback(Guid commit)
+        {
+            Rollback(commit, Guid.Empty);
+        }
 
-				if (history.Count == 0)
-					continue;
+        public void Undo(List<Guid> components)
+        {
+            foreach (var i in components)
+            {
+                var component = Connection.GetService<IComponentService>().SelectComponent(i);
 
-				var activeLock = history.FirstOrDefault(f => f.Commit == Guid.Empty);
+                var history = QueryHistory(i);
 
-				if (activeLock == null)
-					continue;
+                if (history.Count == 0)
+                    continue;
 
-				if (component.LockVerb == LockVerb.Edit || component.LockVerb == LockVerb.Delete)
-					Connection.GetService<IComponentDevelopmentService>().RestoreComponent(activeLock.Blob);
+                var activeLock = history.FirstOrDefault(f => f.Commit == Guid.Empty);
 
-				Connection.GetService<IStorageService>().Delete(activeLock.Blob);
+                if (activeLock == null)
+                    continue;
 
-				var u = Connection.CreateUrl("VersionControl", "Undo");
-				var e = new JObject
-				{
-					{"component", i }
-				};
+                if (component.LockVerb == LockVerb.Edit || component.LockVerb == LockVerb.Delete)
+                    Connection.GetService<IComponentDevelopmentService>().RestoreComponent(activeLock.Blob);
 
-				Connection.Post(u, e);
+                Connection.GetService<IStorageService>().Delete(activeLock.Blob);
 
-				if (component.LockVerb == LockVerb.Add)
-					Connection.GetService<IComponentDevelopmentService>().Delete(i, true);
-			}
-		}
+                var u = Connection.CreateUrl("VersionControl", "Undo");
+                var e = new JObject
+                {
+                    {"component", i }
+                };
 
-		public void Lock(Guid component, LockVerb verb)
-		{
-			var lockInfo = SelectLockInfo(component);
+                Connection.Post(u, e);
 
-			switch (lockInfo.Result)
-			{
-				case LockInfoResult.NoAction:
-					return;
-				case LockInfoResult.Locked:
-					var user = Connection.GetService<IUserService>().Select(lockInfo.Owner.ToString());
+                if (component.LockVerb == LockVerb.Add)
+                    Connection.GetService<IComponentDevelopmentService>().Delete(i, true);
+            }
+        }
 
-					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrVcLocked, user.DisplayName()));
-			}
+        public void Lock(Guid component, LockVerb verb)
+        {
+            var lockInfo = SelectLockInfo(component);
 
-			var c = Connection.GetService<IComponentService>().SelectComponent(component);
+            switch (lockInfo.Result)
+            {
+                case LockInfoResult.NoAction:
+                    return;
+                case LockInfoResult.Locked:
+                    var user = Connection.GetService<IUserService>().Select(lockInfo.Owner.ToString());
 
-			if (c == null)
-				throw new RuntimeException(SR.ErrComponentNotFound);
+                    throw new RuntimeException(string.Format("{0} ({1})", SR.ErrVcLocked, user.DisplayName()));
+            }
 
-			var token = Guid.NewGuid();
-			var ms = Connection.GetService<IMicroServiceService>().Select(c.MicroService);
-			var image = Connection.GetService<IComponentDevelopmentService>().CreateComponentImage(component);
+            var c = Connection.GetService<IComponentService>().SelectComponent(component);
 
-			var blob = Connection.GetService<IStorageService>().Upload(new Blob
-			{
-				ContentType = "application/json",
-				FileName = string.Format("{0}.json", c.Name),
-				MicroService = c.MicroService,
-				PrimaryKey = token.ToString(),
-				ResourceGroup = ms.ResourceGroup,
-				Type = BlobTypes.ComponentHistory
-			}, Connection.GetService<ISerializationService>().Serialize(image), StoragePolicy.Singleton);
+            if (c == null)
+                throw new RuntimeException(SR.ErrComponentNotFound);
 
-			var u = Connection.CreateUrl("VersionControl", "Lock");
-			var e = new JObject
-			{
-				{ "token", token },
-				{ "component", component },
-				{ "user", Shell.HttpContext.CurrentUserToken() },
-				{ "blob", blob },
-				{ "verb", verb.ToString() }
-			};
+            var token = Guid.NewGuid();
+            var ms = Connection.GetService<IMicroServiceService>().Select(c.MicroService);
+            var image = Connection.GetService<IComponentDevelopmentService>().CreateComponentImage(component);
 
-			Connection.Post(u, e);
-		}
+            var blob = Connection.GetService<IStorageService>().Upload(new Blob
+            {
+                ContentType = "application/json",
+                FileName = string.Format("{0}.json", c.Name),
+                MicroService = c.MicroService,
+                PrimaryKey = token.ToString(),
+                ResourceGroup = ms.ResourceGroup,
+                Type = BlobTypes.ComponentHistory
+            }, Connection.GetService<ISerializationService>().Serialize(image), StoragePolicy.Singleton);
 
-		public List<IComponentHistory> QueryHistory(Guid component)
-		{
-			var u = Connection.CreateUrl("VersionControl", "QueryHistory");
-			var e = new JObject
-			{
-				{"component", component }
-			};
+            var u = Connection.CreateUrl("VersionControl", "Lock");
+            var e = new JObject
+            {
+                { "token", token },
+                { "component", component },
+                { "user", Shell.HttpContext.CurrentUserToken() },
+                { "blob", blob },
+                { "verb", verb.ToString() }
+            };
 
-			return Connection.Post<List<ComponentHistory>>(u, e).ToList<IComponentHistory>();
-		}
+            Connection.Post(u, e);
+        }
 
-		public List<IComponentHistory> QueryCommitDetails(Guid commit)
-		{
-			var u = Connection.CreateUrl("VersionControl", "QueryCommitDetails");
-			var e = new JObject
-			{
-				{"commit", commit }
-			};
+        public List<IComponentHistory> QueryHistory(Guid component)
+        {
+            var u = Connection.CreateUrl("VersionControl", "QueryHistory");
+            var e = new JObject
+            {
+                {"component", component }
+            };
 
-			return Connection.Post<List<ComponentHistory>>(u, e).ToList<IComponentHistory>();
-		}
-	}
+            return Connection.Post<List<ComponentHistory>>(u, e).ToList<IComponentHistory>();
+        }
+
+        public List<IComponentHistory> QueryCommitDetails(Guid commit)
+        {
+            var u = Connection.CreateUrl("VersionControl", "QueryCommitDetails");
+            var e = new JObject
+            {
+                {"commit", commit }
+            };
+
+            return Connection.Post<List<ComponentHistory>>(u, e).ToList<IComponentHistory>();
+        }
+    }
 }

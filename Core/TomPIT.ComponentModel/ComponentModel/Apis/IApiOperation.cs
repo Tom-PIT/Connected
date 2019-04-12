@@ -37,6 +37,10 @@ namespace TomPIT.ComponentModel.Apis
 		/// </summary>
 		IServerEvent Rollback { get; }
 		/// <summary>
+		/// This event is called when client is querying schema.
+		/// </summary>
+		IServerEvent Schema { get; }
+		/// <summary>
 		/// The name of the operation. This is used as part of the identifier
 		/// in the form of <code>MicroService/Api/Operation</code>.
 		/// </summary>

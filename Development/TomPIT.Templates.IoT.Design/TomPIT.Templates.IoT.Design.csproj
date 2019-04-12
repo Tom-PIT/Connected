@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.IoT.Design</RootNamespace>
     <AssemblyName>TomPIT.IoT.Design</AssemblyName>
-    <AssemblyVersion>1.0.328.1</AssemblyVersion>
-    <FileVersion>1.0.328.1</FileVersion>
-    <Version>1.0.328.1</Version>
+    <AssemblyVersion>1.0.329.1</AssemblyVersion>
+    <FileVersion>1.0.329.1</FileVersion>
+    <Version>1.0.329.1</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>

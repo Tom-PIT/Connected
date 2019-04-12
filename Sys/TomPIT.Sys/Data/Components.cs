@@ -13,417 +13,426 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Data
 {
-	internal class Components : SynchronizedRepository<IComponent, Guid>
-	{
-		public Components(IMemoryCache container) : base(container, "component")
-		{
-		}
-
-		protected override void OnInitializing()
-		{
-			var ds = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Query();
-
-			foreach (var i in ds)
-				Set(i.Token, i, TimeSpan.Zero);
-		}
-
-		protected override void OnInvalidate(Guid id)
-		{
-			var r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Select(id);
-
-			if (r == null)
-			{
-				Remove(id);
-				return;
-			}
-
-			Set(id, r, TimeSpan.Zero);
-		}
-
-		public void Commit(List<Guid> components, Guid user, string comment)
-		{
-			var changes = new List<IComponent>();
-			var ms = Guid.Empty;
+    internal class Components : SynchronizedRepository<IComponent, Guid>
+    {
+        public Components(IMemoryCache container) : base(container, "component")
+        {
+        }
+
+        protected override void OnInitializing()
+        {
+            var ds = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Query();
+
+            foreach (var i in ds)
+                Set(i.Token, i, TimeSpan.Zero);
+        }
+
+        protected override void OnInvalidate(Guid id)
+        {
+            var r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Select(id);
+
+            if (r == null)
+            {
+                Remove(id);
+                return;
+            }
+
+            Set(id, r, TimeSpan.Zero);
+        }
+
+        public void Commit(List<Guid> components, Guid user, string comment)
+        {
+            var changes = new Dictionary<Guid, List<IComponent>>();
+
+            foreach (var i in components)
+            {
+                var component = Select(i);
+
+                if (component == null)
+                    throw new SysException(SR.ErrComponentNotFound);
+
+                if (component.LockStatus != LockStatus.Lock)
+                    throw new SysException(SR.ErrComponentNotLocked);
 
-			foreach (var i in components)
-			{
-				var component = Select(i);
+                if (component.LockUser != user)
+                    throw new SysException(SR.ErrComponentLockMismatch);
+
+                if (changes.ContainsKey(component.MicroService))
+                    changes[component.MicroService].Add(component);
+                else
+                    changes.Add(component.MicroService, new List<IComponent> { component });
+            }
+
+            foreach (var i in changes)
+            {
+                DataModel.VersionControl.InsertCommit(i.Key, user, comment, i.Value);
+
+                foreach (var component in i.Value)
+                {
+                    if (component.LockVerb == LockVerb.Delete)
+                        Delete(component.Token, user, true);
+                    else
+                    {
+                        Refresh(component.Token);
+                        CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.Category);
+                    }
+                }
+            }
+        }
 
-				if (component == null)
-					throw new SysException(SR.ErrComponentNotFound);
+        public void NotifyChanged(IComponent component)
+        {
+            Refresh(component.Token);
+            CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.Category);
+        }
 
-				if (component.LockStatus != LockStatus.Lock)
-					throw new SysException(SR.ErrComponentNotLocked);
+        public IComponent Select(Guid token)
+        {
+            var r = Get(token);
 
-				if (component.LockUser != user)
-					throw new SysException(SR.ErrComponentLockMismatch);
+            if (r != null)
+                return r;
 
-				if (ms == Guid.Empty)
-					ms = component.MicroService;
+            r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Select(token);
 
-				if (component.MicroService != ms)
-					throw new SysException(SR.ErrCommitMultipleMicroservice);
+            if (r != null)
+                Set(r.Token, r, TimeSpan.Zero);
 
-				changes.Add(component);
-			}
+            return r;
+        }
 
-			DataModel.VersionControl.InsertCommit(ms, user, comment, changes);
+        public IComponent Select(string category, string name)
+        {
+            var r = Where(f => string.Compare(f.Name, name, true) == 0
+                && string.Compare(f.Category, category, true) == 0);
 
-			foreach (var component in changes)
-			{
-				if (component.LockVerb == LockVerb.Delete)
-					Delete(component.Token, user, true);
-				else
-				{
-					Refresh(component.Token);
-					CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.Category);
-				}
-			}
-		}
+            if (r != null && r.Count > 0)
+            {
+                if (r.Count > 1)
+                    throw new SysException(string.Format("{0} ({1}.{2})", SR.ErrDuplicateComponentFound, category, name));
 
-		public void NotifyChanged(IComponent component)
-		{
-			Refresh(component.Token);
-			CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.Category);
-		}
+                return r[0];
+            }
 
-		public IComponent Select(Guid token)
-		{
-			var r = Get(token);
+            r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Query(category, name);
 
-			if (r != null)
-				return r;
+            if (r != null)
+            {
+                foreach (var i in r)
+                    Set(i.Token, i, TimeSpan.Zero);
 
-			r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Select(token);
+                if (r.Count > 1)
+                    throw new SysException(string.Format("{0} ({1}.{2})", SR.ErrDuplicateComponentFound, category, name));
 
-			if (r != null)
-				Set(r.Token, r, TimeSpan.Zero);
+                if (r.Count > 0)
+                    return r[0];
+            }
 
-			return r;
-		}
+            return null;
+        }
 
-		public IComponent Select(string category, string name)
-		{
-			var r = Where(f => string.Compare(f.Name, name, true) == 0
-				&& string.Compare(f.Category, category, true) == 0);
+        public IComponent Select(Guid microService, string category, string name)
+        {
+            var r = Get(f => f.MicroService == microService
+                && string.Compare(f.Name, name, true) == 0
+                && string.Compare(f.Category, category, true) == 0);
 
-			if (r != null && r.Count > 0)
-			{
-				if (r.Count > 1)
-					throw new SysException(string.Format("{0} ({1}.{2})", SR.ErrDuplicateComponentFound, category, name));
+            if (r != null)
+                return r;
 
-				return r[0];
-			}
+            var s = DataModel.MicroServices.Select(microService);
 
-			r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Query(category, name);
+            if (s == null)
+                throw new SysException(SR.ErrMicroServiceNotFound);
 
-			if (r != null)
-			{
-				foreach (var i in r)
-					Set(i.Token, i, TimeSpan.Zero);
+            r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Select(s, category, name);
 
-				if (r.Count > 1)
-					throw new SysException(string.Format("{0} ({1}.{2})", SR.ErrDuplicateComponentFound, category, name));
+            if (r != null)
+                Set(r.Token, r, TimeSpan.Zero);
 
-				if (r.Count > 0)
-					return r[0];
-			}
+            return r;
+        }
 
-			return null;
-		}
+        public void DropRuntimeState(Guid microService)
+        {
+            var state = SelectRuntimeState(microService, out Guid id);
 
-		public IComponent Select(Guid microService, string category, string name)
-		{
-			var r = Get(f => f.MicroService == microService
-				&& string.Compare(f.Name, name, true) == 0
-				&& string.Compare(f.Category, category, true) == 0);
+            if (state == null)
+                return;
 
-			if (r != null)
-				return r;
+            foreach (JObject i in state)
+            {
+                var prop = i.First as JProperty;
 
-			var s = DataModel.MicroServices.Select(microService);
+                DataModel.Blobs.Delete(prop.Value.ToString().AsGuid());
+            }
 
-			if (s == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
+            DataModel.Blobs.Delete(id);
+        }
 
-			r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Select(s, category, name);
+        public void SaveRuntimeState(Guid microService, Dictionary<Guid, Guid> items)
+        {
+            if (items.Count == 0)
+                return;
 
-			if (r != null)
-				Set(r.Token, r, TimeSpan.Zero);
+            var state = new JArray();
 
-			return r;
-		}
+            foreach (var i in items)
+            {
+                var blob = DataModel.Blobs.Select(i.Value);
 
-		public void DropRuntimeState(Guid microService)
-		{
-			var state = SelectRuntimeState(microService, out Guid id);
+                if (blob == null)
+                    continue;
 
-			if (state == null)
-				return;
+                var content = DataModel.BlobsContents.Select(i.Value);
 
-			foreach (JObject i in state)
-			{
-				var prop = i.First as JProperty;
+                if (content == null || content.Content.Length == 0)
+                    continue;
 
-				DataModel.Blobs.Delete(prop.Value.ToString().AsGuid());
-			}
+                var id = Guid.NewGuid();
 
-			DataModel.Blobs.Delete(id);
-		}
+                DataModel.Blobs.Upload(blob.ResourceGroup, 1001, blob.PrimaryKey, Guid.Empty, blob.Topic,
+                    blob.FileName, blob.ContentType, Guid.Empty, content.Content, Storage.StoragePolicy.Singleton, id);
 
-		public void SaveRuntimeState(Guid microService, Dictionary<Guid, Guid> items)
-		{
-			if (items.Count == 0)
-				return;
+                state.Add(new JObject
+                {
+                    {i.Key.ToString(), id.ToString() }
+                });
+            }
 
-			var state = new JArray();
+            var raw = LZ4.LZ4Codec.Wrap(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(state)));
 
-			foreach (var i in items)
-			{
-				var blob = DataModel.Blobs.Select(i.Value);
+            DataModel.Blobs.Upload(DataModel.ResourceGroups.Default.Token, 1002, microService.ToString(), microService,
+                null, string.Format("{0}.json", microService), "application/json", Guid.Empty, raw, Storage.StoragePolicy.Singleton, Guid.NewGuid());
+        }
 
-				if (blob == null)
-					continue;
+        public JArray SelectRuntimeState(Guid microService, out Guid blobId)
+        {
+            blobId = Guid.Empty;
 
-				var content = DataModel.BlobsContents.Select(i.Value);
+            var blobs = DataModel.Blobs.Query(DataModel.ResourceGroups.Default.Token, 1002, microService.ToString());
 
-				if (content == null || content.Content.Length == 0)
-					continue;
+            if (blobs.Count == 0)
+                return null;
 
-				var id = Guid.NewGuid();
+            var content = DataModel.BlobsContents.Select(blobs[0].Token);
 
-				DataModel.Blobs.Upload(blob.ResourceGroup, 1001, blob.PrimaryKey, Guid.Empty, blob.Topic,
-					blob.FileName, blob.ContentType, Guid.Empty, content.Content, Storage.StoragePolicy.Singleton, id);
+            if (content == null || content.Content.Length == 0)
+                return null;
 
-				state.Add(new JObject
-				{
-					{i.Key.ToString(), id.ToString() }
-				});
-			}
+            blobId = blobs[0].Token;
+            return JsonConvert.DeserializeObject<JArray>(Encoding.UTF8.GetString(LZ4.LZ4Codec.Unwrap(content.Content)));
+        }
 
-			var raw = LZ4.LZ4Codec.Wrap(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(state)));
+        public List<IComponent> QueryCategories(Guid microService, string categories)
+        {
+            var cats = categories.Split(',');
+            var r = new List<IComponent>();
 
-			DataModel.Blobs.Upload(DataModel.ResourceGroups.Default.Token, 1002, microService.ToString(), microService,
-				null, string.Format("{0}.json", microService), "application/json", Guid.Empty, raw, Storage.StoragePolicy.Singleton, Guid.NewGuid());
-		}
+            foreach (var j in cats)
+            {
+                if (string.IsNullOrWhiteSpace(j))
+                    continue;
 
-		public JArray SelectRuntimeState(Guid microService, out Guid blobId)
-		{
-			blobId = Guid.Empty;
+                var ds = Query(microService, j.Trim());
 
-			var blobs = DataModel.Blobs.Query(DataModel.ResourceGroups.Default.Token, 1002, microService.ToString());
+                if (ds.Count > 0)
+                    r.AddRange(ds);
+            }
 
-			if (blobs.Count == 0)
-				return null;
+            return r;
+        }
 
-			var content = DataModel.BlobsContents.Select(blobs[0].Token);
+        public List<IComponent> Query(string resourceGroups, string categories)
+        {
+            var tokens = resourceGroups.Split(',');
+            var cats = categories.Split(',');
 
-			if (content == null || content.Content.Length == 0)
-				return null;
+            var r = new List<IComponent>();
+            var microServices = new List<IMicroService>();
 
-			blobId = blobs[0].Token;
-			return JsonConvert.DeserializeObject<JArray>(Encoding.UTF8.GetString(LZ4.LZ4Codec.Unwrap(content.Content)));
-		}
+            foreach (var i in tokens)
+            {
+                var rs = DataModel.ResourceGroups.Select(i);
 
-		public List<IComponent> QueryCategories(Guid microService, string categories)
-		{
-			var cats = categories.Split(',');
-			var r = new List<IComponent>();
+                if (rs == null)
+                    throw new SysException(string.Format("{0} ({1})", SR.ErrResourceGroupNotFound, i));
 
-			foreach (var j in cats)
-			{
-				if (string.IsNullOrWhiteSpace(j))
-					continue;
+                var sols = DataModel.MicroServices.Query(rs.Token);
 
-				var ds = Query(microService, j.Trim());
+                if (sols.Count > 0)
+                    microServices.AddRange(sols);
+            }
 
-				if (ds.Count > 0)
-					r.AddRange(ds);
-			}
+            foreach (var i in microServices)
+            {
+                foreach (var j in cats)
+                {
+                    if (string.IsNullOrWhiteSpace(j))
+                        continue;
 
-			return r;
-		}
+                    var ds = Query(i.Token, j.Trim());
 
-		public List<IComponent> Query(string resourceGroups, string categories)
-		{
-			var tokens = resourceGroups.Split(',');
-			var cats = categories.Split(',');
+                    if (ds.Count > 0)
+                        r.AddRange(ds);
+                }
+            }
 
-			var r = new List<IComponent>();
-			var microServices = new List<IMicroService>();
+            return r.Where(f => f.LockVerb != LockVerb.Delete).ToList();
+        }
 
-			foreach (var i in tokens)
-			{
-				var rs = DataModel.ResourceGroups.Select(i);
+        public List<IComponent> Query(Guid microService, bool includeDeleted)
+        {
+            if (includeDeleted)
+                return Where(f => f.MicroService == microService);
+            else
+                return Where(f => f.MicroService == microService && f.LockVerb != LockVerb.Delete);
+        }
 
-				if (rs == null)
-					throw new SysException(string.Format("{0} ({1})", SR.ErrResourceGroupNotFound, i));
+        public List<IComponent> Query(Guid microService, Guid folder)
+        {
+            return Where(f => f.MicroService == microService && f.Folder == folder && f.LockVerb != LockVerb.Delete);
+        }
 
-				var sols = DataModel.MicroServices.Query(rs.Token);
+        public List<IComponent> Query(Guid microService, string category)
+        {
+            return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0 && f.LockVerb != LockVerb.Delete);
+        }
 
-				if (sols.Count > 0)
-					microServices.AddRange(sols);
-			}
+        public void Insert(Guid component, Guid microService, Guid folder, string category, string name, string type, Guid runtimeConfiguration)
+        {
+            var s = DataModel.MicroServices.Select(microService);
 
-			foreach (var i in microServices)
-			{
-				foreach (var j in cats)
-				{
-					if (string.IsNullOrWhiteSpace(j))
-						continue;
+            if (s == null)
+                throw new SysException(SR.ErrMicroServiceNotFound);
 
-					var ds = Query(i.Token, j.Trim());
+            IFolder f = folder == Guid.Empty
+                ? null
+                : DataModel.Folders.Select(folder);
 
-					if (ds.Count > 0)
-						r.AddRange(ds);
-				}
-			}
+            if (folder != Guid.Empty && f == null)
+                throw new SysException(SR.ErrFolderNotFound);
 
-			return r.Where(f => f.LockVerb != LockVerb.Delete).ToList();
-		}
+            var v = new Validator();
 
-		public List<IComponent> Query(Guid microService)
-		{
-			return Where(f => f.MicroService == microService && f.LockVerb != LockVerb.Delete);
-		}
+            v.Unique(null, name, nameof(IComponent.Name), Query(microService, true));
 
-		public List<IComponent> Query(Guid microService, Guid folder)
-		{
-			return Where(f => f.MicroService == microService && f.Folder == folder && f.LockVerb != LockVerb.Delete);
-		}
+            if (!v.IsValid)
+                throw new SysException(v.ErrorMessage);
 
-		public List<IComponent> Query(Guid microService, string category)
-		{
-			return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0 && f.LockVerb != LockVerb.Delete);
-		}
+            Shell.GetService<IDatabaseService>().Proxy.Development.Components.Insert(s, DateTime.UtcNow, f, category, name, component, type, runtimeConfiguration);
 
-		public void Insert(Guid component, Guid microService, Guid folder, string category, string name, string type, Guid runtimeConfiguration)
-		{
-			var s = DataModel.MicroServices.Select(microService);
+            Refresh(component);
+            CachingNotifications.ComponentAdded(microService, folder, component, category);
+        }
 
-			if (s == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
+        public void UpdateModified(Guid microService, string category, string name)
+        {
+            var c = Select(microService, category, name);
 
-			IFolder f = folder == Guid.Empty
-				? null
-				: DataModel.Folders.Select(folder);
+            Update(c.Token, c.Name, c.Folder, c.RuntimeConfiguration);
+        }
 
-			if (folder != Guid.Empty && f == null)
-				throw new SysException(SR.ErrFolderNotFound);
+        public void Update(Guid component, string name, Guid folder)
+        {
+            var c = Select(component);
 
-			var v = new Validator();
+            if (c == null)
+                throw new SysException(SR.ErrComponentNotFound);
 
-			v.Unique(null, name, nameof(IComponent.Name), Query(microService));
+            Update(component, name, folder, c.RuntimeConfiguration);
+        }
 
-			if (!v.IsValid)
-				throw new SysException(v.ErrorMessage);
+        public void Update(Guid component, Guid runtimeConfiguration)
+        {
+            var c = Select(component);
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Insert(s, DateTime.UtcNow, f, category, name, component, type, runtimeConfiguration);
+            if (c == null)
+                throw new SysException(SR.ErrComponentNotFound);
 
-			Refresh(component);
-			CachingNotifications.ComponentAdded(microService, folder, component, category);
-		}
+            Update(component, c.Name, c.Folder, runtimeConfiguration);
+        }
 
-		public void UpdateModified(Guid microService, string category, string name)
-		{
-			var c = Select(microService, category, name);
+        public void Update(Guid component, string name, Guid folder, Guid runtimeConfiguration)
+        {
+            var c = Select(component);
 
-			Update(c.Token, c.Name, c.Folder, c.RuntimeConfiguration);
-		}
+            if (c == null)
+                throw new SysException(SR.ErrComponentNotFound);
 
-		public void Update(Guid component, string name, Guid folder)
-		{
-			var c = Select(component);
+            var v = new Validator();
 
-			if (c == null)
-				throw new SysException(SR.ErrComponentNotFound);
+            v.Unique(c, name, nameof(IComponent.Name), Query(c.MicroService, c.Category));
 
-			Update(component, name, folder, c.RuntimeConfiguration);
-		}
+            if (!v.IsValid)
+                throw new SysException(v.ErrorMessage);
 
-		public void Update(Guid component, Guid runtimeConfiguration)
-		{
-			var c = Select(component);
+            IFolder f = null;
 
-			if (c == null)
-				throw new SysException(SR.ErrComponentNotFound);
+            if (folder != Guid.Empty)
+            {
+                f = DataModel.Folders.Select(folder);
 
-			Update(component, c.Name, c.Folder, runtimeConfiguration);
-		}
+                if (f == null)
+                    throw new SysException(SR.ErrFolderNotFound);
+            }
 
-		public void Update(Guid component, string name, Guid folder, Guid runtimeConfiguration)
-		{
-			var c = Select(component);
+            Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, DateTime.UtcNow, name, f, runtimeConfiguration);
 
-			if (c == null)
-				throw new SysException(SR.ErrComponentNotFound);
+            Refresh(component);
+            CachingNotifications.ComponentChanged(c.MicroService, c.Folder, component, c.Category);
+        }
 
-			var v = new Validator();
+        public void Delete(Guid component, Guid user, bool permanent)
+        {
+            var c = Select(component);
 
-			v.Unique(c, name, nameof(IComponent.Name), Query(c.MicroService, c.Category));
+            if (c == null)
+                throw new SysException(SR.ErrComponentNotFound);
 
-			if (!v.IsValid)
-				throw new SysException(v.ErrorMessage);
+            if (permanent)
+            {
+                Shell.GetService<IDatabaseService>().Proxy.Development.Components.Delete(c);
+                DataModel.VersionControl.DeleteHistory(component);
 
-			IFolder f = null;
+                Remove(component);
+            }
+            else
+            {
+                var u = DataModel.Users.Select(user);
 
-			if (folder != Guid.Empty)
-			{
-				f = DataModel.Folders.Select(folder);
+                if (u == null)
+                    throw new SysException(SR.ErrUserNotFound);
 
-				if (f == null)
-					throw new SysException(SR.ErrFolderNotFound);
-			}
+                Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, u, LockStatus.Lock, LockVerb.Delete, DateTime.UtcNow);
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, DateTime.UtcNow, name, f, runtimeConfiguration);
+                Refresh(component);
+            }
 
-			Refresh(component);
-			CachingNotifications.ComponentChanged(c.MicroService, c.Folder, component, c.Category);
-		}
+            CachingNotifications.ComponentRemoved(c.MicroService, c.Folder, component, c.Category);
+        }
 
-		public void Delete(Guid component, Guid user, bool permanent)
-		{
-			var c = Select(component);
+        public string CreateComponentName(Guid microService, string prefix, string category)
+        {
+            var existing = Where(f => f.MicroService == microService && string.Compare(category, f.Category, true) == 0);
 
-			if (c == null)
-				throw new SysException(SR.ErrComponentNotFound);
+            return Shell.GetService<INamingService>().Create(prefix, existing.Select(f => f.Name), true);
+        }
 
-			if (permanent)
-			{
-				Shell.GetService<IDatabaseService>().Proxy.Development.Components.Delete(c);
+        public List<IComponent> QueryLocks(Guid microService)
+        {
+            if (microService == Guid.Empty)
+                return Where(f => f.LockStatus == LockStatus.Lock);
+            else
+                return Where(f => f.LockStatus == LockStatus.Lock && f.MicroService == microService);
+        }
 
-				Remove(component);
-			}
-			else
-			{
-				var u = DataModel.Users.Select(user);
-
-				if (u == null)
-					throw new SysException(SR.ErrUserNotFound);
-
-				Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, u, LockStatus.Lock, LockVerb.Delete, DateTime.UtcNow);
-
-				Refresh(component);
-			}
-
-			CachingNotifications.ComponentRemoved(c.MicroService, c.Folder, component, c.Category);
-		}
-
-		public string CreateComponentName(Guid microService, string prefix, string category)
-		{
-			var existing = Where(f => f.MicroService == microService && string.Compare(category, f.Category, true) == 0);
-
-			return Shell.GetService<INamingService>().Create(prefix, existing.Select(f => f.Name), true);
-		}
-
-		public List<IComponent> QueryLocks(Guid microService)
-		{
-			return Where(f => f.LockStatus == LockStatus.Lock && f.MicroService == microService);
-		}
-
-		public List<IComponent> QueryLocks(Guid microService, Guid user)
-		{
-			return Where(f => f.LockStatus == LockStatus.Lock && f.MicroService == microService && f.LockUser == user);
-		}
-	}
+        public List<IComponent> QueryLocks(Guid microService, Guid user)
+        {
+            if (microService == Guid.Empty)
+                return Where(f => f.LockStatus == LockStatus.Lock && f.LockUser == user);
+            else
+                return Where(f => f.LockStatus == LockStatus.Lock && f.MicroService == microService && f.LockUser == user);
+        }
+    }
 }

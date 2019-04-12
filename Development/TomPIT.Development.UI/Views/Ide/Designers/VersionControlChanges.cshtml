@@ -1,141 +1,193 @@
 ﻿@model TomPIT.Development.Designers.VersionControlChangesDesigner
 
 <div class="btn-toolbar">
-	<div class="btn-group btn-group-sm">
-		<button type="button" class="btn btn-sm btn-light disabled" id="btnCommit"><i class="fal fa-code-commit"></i>Commit</button>
-		<button type="button" class="btn btn-sm btn-light disabled" id="btnUndo"><i class="fal fa-undo-alt"></i>Undo</button>
-	</div>
+    <div class="btn-group btn-group-sm">
+        <button type="button" class="btn btn-sm btn-light disabled" id="btnCommit"><i class="fal fa-code-commit"></i>Commit</button>
+        <button type="button" class="btn btn-sm btn-light disabled" id="btnUndo"><i class="fal fa-undo-alt"></i>Undo</button>
+    </div>
 </div>
 
 <div class="doc-canvas">
-	<div class="paper">
-		<div class="form-group">
-			<label>Comment</label>
-			<div id="vcCommit">
+    <div class="paper">
+        <div class="form-group">
+            <label>Comment</label>
+            <div id="vcCommit">
 
-			</div>
-		</div>
-		<div class="form-group">
-			<label>Changes</label>
-			<ul class="list-unstyled">
-				@foreach (var component in Model.Changes)
-				{
-					var user = Model.GetUser(component.LockUser);
-					var badgeCss = "badge-success";
-					var enabled = user.Token == Shell.HttpContext.CurrentUserToken();
-					var rowCss = enabled ? string.Empty : "vc-item-disabled";
-					if (component.LockVerb == TomPIT.Development.LockVerb.Edit)
-					{ badgeCss = "badge-warning"; }
-					else if (component.LockVerb == TomPIT.Development.LockVerb.Delete)
-					{ badgeCss = "badge-danger"; }
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Changes</label>
+            <span><small>(show</small></span>
+            <div id="divAllMicroServices"></div><span><small> all microservices</small></span>
+            <div id="divMyChanges"></div><span><small> my changes only</small></span>
+            <span><small>)</small></span>
+        </div>
+        <ul class="list-unstyled">
+            @foreach (var component in Model.Changes)
+            {
+                var user = Model.GetUser(component.LockUser);
+                var badgeCss = "badge-success";
+                var enabled = user.Token == Shell.HttpContext.CurrentUserToken();
+                var rowCss = enabled ? string.Empty : "vc-item-disabled";
+                if (component.LockVerb == TomPIT.Development.LockVerb.Edit)
+                { badgeCss = "badge-warning"; }
+                else if (component.LockVerb == TomPIT.Development.LockVerb.Delete)
+                { badgeCss = "badge-danger"; }
 
-					<li data-id="@component.Token">
-						<div class="row vc-item @rowCss">
-							<div class="col-lg-8">
-								<div class="media">
-									<div data-kind="include" data-enabled="@Html.TP().JavaScript.Bool(enabled)">
-									</div>
-									<div class="media-body pl-2">
-										<div>
-											<i class="@Model.Glyph(component)"></i>
-											@component.Name
-										</div>
-										<i>@component.Category</i>
-										<div>
-											<span class="badge @badgeCss">@component.LockVerb</span>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="col-lg-4 text-center">
-								<div>@component.LockDate.ToLongDateString()</div>
-								<div>@component.LockDate.ToLongTimeString()</div>
-								@Html.Raw(user.DisplayName())
-							</div>
-						</div>
-					</li>
-				}
-			</ul>
-		</div>
-	</div>
+
+                var all = component.MicroService != Model.MicroService.Token ? "true" : "false";
+                var my = enabled ? "true" : "false";
+                var css = enabled && component.MicroService == Model.MicroService.Token ? "show" : string.Empty;
+
+                <li data-id="@component.Token" class="collapse @css" data-my="@my" data-all="@all" data-type="vc-item">
+                    <div class="row vc-item @rowCss">
+                        <div class="col-lg-8">
+                            <div class="media">
+                                <div data-kind="include" data-enabled="@Html.TP().JavaScript.Bool(enabled)" data-id="@component.Token">
+                                </div>
+                                <div class="media-body pl-2">
+                                    <div>
+                                        <i class="@Model.Glyph(component)"></i>
+                                        @component.Name
+                                    </div>
+                                    <i>@Model.MicroServiceName(component.MicroService), @component.Category</i>
+                                    <div>
+                                        <span class="badge @badgeCss">@component.LockVerb</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 text-center">
+                            <div>@component.LockDate.ToLongDateString()</div>
+                            <div>@component.LockDate.ToLongTimeString()</div>
+                            @Html.Raw(user.DisplayName())
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
 </div>
 <script>
-	$('#vcCommit').dxTextArea({
-		valueChangeEvent: "keyup",
-		placeholder: 'Enter a commit message <Required>',
-		onValueChanged: function (e) {
-			syncButtons();
-		}
-	});
+    $('#vcCommit').dxTextArea({
+        valueChangeEvent: "keyup",
+        placeholder: 'Enter a commit message <Required>',
+        onValueChanged: function (e) {
+            syncButtons();
+        }
+    });
 
-	$('[data-kind="include"][data-enabled="true"]').dxCheckBox({
-		value: true,
-		onValueChanged: function (e) {
-			syncButtons();
-		}
-	});
+    $('[data-kind="include"][data-enabled="true"]').dxCheckBox({
+        value: true,
+        onValueChanged: function (e) {
+            syncButtons();
+        }
+    });
 
-	$('#btnCommit').click(function () {
-		ide.designerAction({
-			'data': {
-				'action': 'commit',
-				'comment': commitText(),
-				'items': getSelection()
-			}
-		});
+    $('#btnCommit').click(function () {
+        ide.designerAction({
+            'data': {
+                'action': 'commit',
+                'comment': commitText(),
+                'items': getSelection()
+            }
+        });
 
-	});
+    });
 
-	$('#btnUndo').click(function () {
-		if (!confirm('Are you sure you want to undo selected changes?'))
-			return;
+    $('#btnUndo').click(function () {
+        if (!confirm('Are you sure you want to undo selected changes?'))
+            return;
 
-		ide.designerAction({
-			'data': {
-				'action': 'undo',
-				'items': getSelection()
-			}
-		});
-	});
+        ide.designerAction({
+            'data': {
+                'action': 'undo',
+                'items': getSelection()
+            }
+        });
+    });
 
-	function syncButtons() {
-		var selection = getSelection();
+    function syncButtons() {
+        var selection = getSelection();
 
-		if (selection.length === 0) {
-			$('#btnCommit').addClass('disabled');
-			$('#btnUndo').addClass('disabled');
-		}
-		else {
-			var txt = commitText();
+        if (selection.length === 0) {
+            $('#btnCommit').addClass('disabled');
+            $('#btnUndo').addClass('disabled');
+        }
+        else {
+            var txt = commitText();
 
-			if (txt === null || txt.length === 0)
-				$('#btnCommit').addClass('disabled');
-			else
-				$('#btnCommit').removeClass('disabled');
+            if (txt === null || txt.length === 0)
+                $('#btnCommit').addClass('disabled');
+            else
+                $('#btnCommit').removeClass('disabled');
 
-			$('#btnUndo').removeClass('disabled');
-		}
-	}
+            $('#btnUndo').removeClass('disabled');
+        }
+    }
 
-	function commitText() {
-		return $('#vcCommit').dxTextArea('instance').option('value');
-	}
+    function commitText() {
+        return $('#vcCommit').dxTextArea('instance').option('value');
+    }
 
-	function getSelection() {
-		var checkBoxes = $('[data-kind="include"][data-enabled="true"]');
+    function getSelection() {
+        var checkBoxes = $('[data-kind="include"][data-enabled="true"]');
 
-		var r = [];
+        var r = [];
 
-		$.each(checkBoxes, function (i, v) {
-			var cb = DevExpress.ui.dxCheckBox.getInstance(v);
+        $.each(checkBoxes, function (i, v) {
+            var cb = DevExpress.ui.dxCheckBox.getInstance(v);
 
-			if (cb.option('value') === true) {
-				r.push($(v).closest('[data-id]').attr('data-id'));
-			}
-		});
+            if (cb.option('value') === true) {
+                r.push($(v).closest('[data-id]').attr('data-id'));
+            }
+        });
 
-		return r;
-	}
+        return r;
+    }
 
-	syncButtons();
+    $('#divMyChanges').dxCheckBox({
+        value: true,
+        onValueChanged: function () {
+            syncItems();
+        }
+    });
+
+    $('#divAllMicroServices').dxCheckBox({
+        value: false,
+        onValueChanged: function () {
+            syncItems();
+        }
+    });
+
+    syncButtons();
+
+    function syncItems() {
+        var my = $('#divMyChanges').dxCheckBox('instance').option('value');
+        var all = $('#divAllMicroServices').dxCheckBox('instance').option('value');
+
+        var items = $('li[data-type="vc-item"]');
+
+        $.each(items, function (i, v) {
+            var checkBox = $('[data-kind="include"][data-enabled="true"][data-id="' + $(v).attr('data-id') + '"]').dxCheckBox('instance');
+
+            var m = $(v).attr('data-my');
+            var a = $(v).attr('data-all');
+
+            if (((my && m === 'true') || (!my))
+                && (all || a === 'false')) {
+                $(v).collapse('show');
+
+                if (checkBox)
+                    checkBox.option('value', true);
+            }
+            else {
+                $(v).collapse('hide');
+
+                if (checkBox)
+                    checkBox.option('value', false);
+            }
+
+        });
+    }
 </script>

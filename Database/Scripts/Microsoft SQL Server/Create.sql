@@ -125,8 +125,8 @@ GO
 PRINT N'Creating [tompit].[mail_sel]'
 GO
 CREATE PROCEDURE [tompit].[mail_sel]
-	@token uniqueidentifier,
-	@pop_receipt uniqueidentifier
+	@token uniqueidentifier = NULL,
+	@pop_receipt uniqueidentifier = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -2652,7 +2652,8 @@ CREATE TABLE [tompit].[big_data_partition]
 [file_count] [int] NOT NULL,
 [status] [int] NOT NULL,
 [name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
-[created] [smalldatetime] NOT NULL
+[created] [smalldatetime] NOT NULL,
+[resource_group] [int] NOT NULL
 ) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -4412,6 +4413,41 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[big_data_transaction]'
+GO
+CREATE TABLE [tompit].[big_data_transaction]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[block_count] [int] NOT NULL,
+[block_remaining] [int] NOT NULL,
+[created] [datetime] NOT NULL,
+[token] [uniqueidentifier] NOT NULL,
+[status] [int] NOT NULL,
+[partition] [int] NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_big_data_transaction] on [tompit].[big_data_transaction]'
+GO
+ALTER TABLE [tompit].[big_data_transaction] ADD CONSTRAINT [PK_big_data_transaction] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[big_data_transaction_del]'
+GO
+CREATE PROCEDURE [tompit].[big_data_transaction_del]
+	@id bigint
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.big_data_transaction
+	WHERE id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[component_commit_que]'
 GO
 CREATE PROCEDURE [tompit].[component_commit_que]
@@ -4518,6 +4554,39 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[big_data_transaction_block]'
+GO
+CREATE TABLE [tompit].[big_data_transaction_block]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[transaction] [bigint] NOT NULL,
+[token] [uniqueidentifier] NOT NULL,
+[next_visible] [datetime2] NOT NULL,
+[pop_receipt] [uniqueidentifier] NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_big_data_transaction_block] on [tompit].[big_data_transaction_block]'
+GO
+ALTER TABLE [tompit].[big_data_transaction_block] ADD CONSTRAINT [PK_big_data_transaction_block] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[big_data_transaction_block_del]'
+GO
+CREATE PROCEDURE [tompit].[big_data_transaction_block_del]
+	@id bigint
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.big_data_transaction_block
+	WHERE id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[component_history_ins]'
 GO
 CREATE PROCEDURE [tompit].[component_history_ins]
@@ -4568,6 +4637,19 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[big_data_transaction_block_view]'
+GO
+CREATE VIEW [tompit].[big_data_transaction_block_view]
+AS
+SELECT b.id, b.[transaction], b.token, b.next_visible, b.pop_receipt,
+		t.token transaction_token, t.status transaction_status,
+		p.configuration partition_configuration, p.status partition_status, p.resource_group
+FROM tompit.big_data_transaction_block b
+INNER JOIN tompit.big_data_transaction t ON b.[transaction] = t.id
+INNER JOIN tompit.big_data_partition p ON t.partition = p.id;
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[component_history_undo]'
 GO
 CREATE PROCEDURE [tompit].[component_history_undo]
@@ -4579,6 +4661,39 @@ BEGIN
 	DELETE tompit.component_history 
 	WHERE component = @component
 	AND [commit] IS NULL;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[big_data_transaction_block_dequeue]'
+GO
+CREATE PROCEDURE [tompit].[big_data_transaction_block_dequeue]
+	@resource_groups nvarchar(MAX),
+	@next_visible datetime,
+	@count int = 32,
+	@date datetime
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DECLARE @ct table(num bigint);
+
+	WITH q AS
+		(
+			SELECT TOP (@count) *
+			FROM tompit.big_data_transaction_block_view WITH (READPAST)
+			WHERE next_visible < @date
+			AND partition_status =  1 
+			AND transaction_status = 2 
+			AND resource_group IN (SELECT resource_group FROM OPENJSON(@resource_groups) WITH (resource_group int))
+			ORDER BY next_visible, id
+		)
+	 UPDATE q with (UPDLOCK, READPAST) set
+		next_visible = @next_visible,
+		pop_receipt = newid()
+	output inserted.id into @ct;
+
+	select * from tompit.big_data_transaction_block_view where id IN (select num from @ct);	
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -4597,6 +4712,23 @@ SELECT h.id, h.created, h.configuration, h.name, h.[user], h.[commit], h.compone
 FROM tompit.component_history h
 INNER JOIN tompit.[user] u ON h.[user] = u.id
 LEFT JOIN tompit.version_control_commit c ON h.[commit] = c.id;
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[big_data_transaction_ins]'
+GO
+CREATE PROCEDURE [tompit].[big_data_transaction_ins]
+	@partition int,
+	@token uniqueidentifier,
+	@block_count int,
+	@created datetime
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.big_data_transaction (block_count, block_remaining, created, token, status, partition)
+	VALUES (@block_count, @block_count, @created, @token, 1, @partition);
+END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -4683,6 +4815,21 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[big_data_transaction_block_ins]'
+GO
+CREATE PROCEDURE [tompit].[big_data_transaction_block_ins]
+	@transaction bigint,
+	@token uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.big_data_transaction_block ([transaction], token, next_visible, pop_receipt)
+	VALUES (@transaction, @token, getutcdate(), null);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[role_ins]'
 GO
 CREATE PROCEDURE [tompit].[role_ins]
@@ -4696,6 +4843,23 @@ BEGIN
 	VALUES (@token, @name);
 
 	RETURN scope_identity();
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[big_data_transaction_block_upd]'
+GO
+CREATE PROCEDURE [tompit].[big_data_transaction_block_upd]
+	@id bigint,
+	@next_visible datetime
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	UPDATE tompit.big_data_transaction_block SET
+		next_visible = @next_visible,
+		pop_receipt = NULL
+	WHERE id = @id;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -4718,6 +4882,24 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[big_data_transaction_upd]'
+GO
+CREATE PROCEDURE [tompit].[big_data_transaction_upd]
+	@id bigint,
+	@block_remaining int,
+	@status int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	UPDATE tompit.big_data_transaction SET
+		block_remaining = @block_remaining,
+		status = @status
+	WHERE id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[audit_que]'
 GO
 CREATE PROCEDURE [tompit].[audit_que]
@@ -4734,6 +4916,18 @@ BEGIN
 	AND (@event IS NULL OR [event] = @event)
 	AND (@primary_key IS NULL OR primary_key = @primary_key);
 END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[big_data_transaction_view]'
+GO
+CREATE VIEW [tompit].[big_data_transaction_view]
+AS
+
+SELECT t.id, t.block_count, t.block_remaining, t.created, t.token, t.status, t.partition,
+		p.configuration partition_token
+FROM tompit.big_data_transaction t
+INNER JOIN tompit.big_data_partition p ON t.partition = p.id;
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -4815,6 +5009,19 @@ FROM            tompit.membership AS m INNER JOIN
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[big_data_transaction_que]'
+GO
+CREATE PROCEDURE [tompit].[big_data_transaction_que]
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT * 
+	FROM tompit.big_data_transaction_view;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[user_data_que]'
 GO
 CREATE PROCEDURE [tompit].[user_data_que]
@@ -4855,6 +5062,21 @@ SELECT        u.*, p.token AS parent_token
 FROM            tompit.environment_unit AS u LEFT OUTER JOIN
                          tompit.environment_unit AS p ON u.parent = p.id
 
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[big_data_transaction_sel]'
+GO
+CREATE PROCEDURE [tompit].[big_data_transaction_sel]
+	@token uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 * 
+	FROM tompit.big_data_transaction_view
+	WHERE token = @token;
+END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -5425,44 +5647,6 @@ ALTER TABLE [tompit].[big_data_index_field] ADD CONSTRAINT [PK_big_data_index_fi
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[big_data_transaction]'
-GO
-CREATE TABLE [tompit].[big_data_transaction]
-(
-[id] [bigint] NOT NULL IDENTITY(1, 1),
-[block_count] [int] NOT NULL,
-[block_remaining] [int] NOT NULL,
-[created] [datetime] NOT NULL,
-[token] [uniqueidentifier] NOT NULL,
-[status] [int] NOT NULL
-) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating primary key [PK_big_data_transaction] on [tompit].[big_data_transaction]'
-GO
-ALTER TABLE [tompit].[big_data_transaction] ADD CONSTRAINT [PK_big_data_transaction] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[big_data_transaction_block]'
-GO
-CREATE TABLE [tompit].[big_data_transaction_block]
-(
-[id] [bigint] NOT NULL IDENTITY(1, 1),
-[transaction] [bigint] NOT NULL,
-[worker_remaining] [int] NOT NULL,
-[token] [uniqueidentifier] NOT NULL
-) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating primary key [PK_big_data_transaction_block] on [tompit].[big_data_transaction_block]'
-GO
-ALTER TABLE [tompit].[big_data_transaction_block] ADD CONSTRAINT [PK_big_data_transaction_block] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[big_data_transaction_defer]'
 GO
 CREATE TABLE [tompit].[big_data_transaction_defer]
@@ -5560,11 +5744,21 @@ ALTER TABLE [tompit].[big_data_index] ADD CONSTRAINT [FK_big_data_index_big_data
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Adding foreign keys to [tompit].[big_data_transaction]'
+GO
+ALTER TABLE [tompit].[big_data_transaction] ADD CONSTRAINT [FK_big_data_transaction_big_data_partition] FOREIGN KEY ([partition]) REFERENCES [tompit].[big_data_partition] ([id])
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Adding foreign keys to [tompit].[big_data_transaction_defer]'
 GO
 ALTER TABLE [tompit].[big_data_transaction_defer] ADD CONSTRAINT [FK_big_data_transaction_defer_big_data_partition] FOREIGN KEY ([partition]) REFERENCES [tompit].[big_data_partition] ([id]) ON DELETE CASCADE
 GO
-ALTER TABLE [tompit].[big_data_transaction_defer] ADD CONSTRAINT [FK_big_data_transaction_defer_big_data_transaction_worker] FOREIGN KEY ([worker]) REFERENCES [tompit].[big_data_transaction_worker] ([id]) ON DELETE CASCADE
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding foreign keys to [tompit].[big_data_partition]'
+GO
+ALTER TABLE [tompit].[big_data_partition] ADD CONSTRAINT [FK_big_data_partition_resource_group] FOREIGN KEY ([resource_group]) REFERENCES [tompit].[resource_group] ([id])
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
