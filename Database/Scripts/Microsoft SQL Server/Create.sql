@@ -4952,7 +4952,7 @@ IF @@ERROR <> 0 SET NOEXEC ON
 GO
 PRINT N'Adding constraints to [tompit].[user_data]'
 GO
-ALTER TABLE [tompit].[user_data] ADD CONSTRAINT [IX_user_data] UNIQUE NONCLUSTERED  ([user], [primary_key]) ON [PRIMARY]
+ALTER TABLE [tompit].[user_data] ADD CONSTRAINT [IX_user_data] UNIQUE NONCLUSTERED  ([user], [primary_key], [topic]) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -5541,6 +5541,20 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[component_history_del]'
+GO
+CREATE PROCEDURE [tompit].[component_history_del]
+	@id int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.component_history
+	WHERE id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[mail_del]'
 GO
 CREATE PROCEDURE [tompit].[mail_del]
@@ -5667,28 +5681,6 @@ ALTER TABLE [tompit].[big_data_transaction_defer] ADD CONSTRAINT [PK_big_data_tr
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[big_data_transaction_worker]'
-GO
-CREATE TABLE [tompit].[big_data_transaction_worker]
-(
-[id] [bigint] NOT NULL,
-[block] [bigint] NOT NULL,
-[status] [int] NOT NULL,
-[token] [uniqueidentifier] NOT NULL,
-[configuration] [uniqueidentifier] NOT NULL,
-[next_visible] [datetime2] NOT NULL,
-[has_dependencies] [bit] NOT NULL,
-[pop_receipt] [uniqueidentifier] NULL
-) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating primary key [PK_big_data_transaction_worker] on [tompit].[big_data_transaction_worker]'
-GO
-ALTER TABLE [tompit].[big_data_transaction_worker] ADD CONSTRAINT [PK_big_data_transaction_worker] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[metric_agg_day]'
 GO
 CREATE TABLE [tompit].[metric_agg_day]
@@ -5765,12 +5757,6 @@ GO
 PRINT N'Adding foreign keys to [tompit].[big_data_transaction_block]'
 GO
 ALTER TABLE [tompit].[big_data_transaction_block] ADD CONSTRAINT [FK_big_data_transaction_block_big_data_transaction] FOREIGN KEY ([transaction]) REFERENCES [tompit].[big_data_transaction] ([id]) ON DELETE CASCADE
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Adding foreign keys to [tompit].[big_data_transaction_worker]'
-GO
-ALTER TABLE [tompit].[big_data_transaction_worker] ADD CONSTRAINT [FK_big_data_transaction_worker_big_data_transaction_block] FOREIGN KEY ([block]) REFERENCES [tompit].[big_data_transaction_block] ([id]) ON DELETE CASCADE
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
