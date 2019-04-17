@@ -54,7 +54,9 @@ namespace TomPIT.Management.Deployment
 		public string Website { get; set; }
 		[JsonProperty("token")]
 		public Guid Token { get; set; }
-		[JsonProperty("dependencyCount")]
+        [JsonProperty("author")]
+        public bool Author { get; set; }
+        [JsonProperty("dependencyCount")]
 		public int DependencyCount { get; set; }
 	}
 }

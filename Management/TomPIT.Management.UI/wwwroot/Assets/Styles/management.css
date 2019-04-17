@@ -243,3 +243,22 @@ li.metric-item.fail[data-detail="true"] {
   padding: 10px 0;
   margin-top: 5px;
 }
+li.marketplace-nav-item {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 5px 0;
+}
+li.marketplace-nav-item:hover {
+  background-color: #2196f3;
+  color: #FFF;
+}
+li.marketplace-nav-item .glyph {
+  padding: 0 15px;
+  display: inline;
+  font-size: 1.5rem;
+}
+li.marketplace-nav-item .text {
+  font-size: 1.25rem;
+}
+.pointer {
+  cursor: pointer;
+}

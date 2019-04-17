@@ -57,7 +57,7 @@ namespace TomPIT.ComponentModel
             Connection.GetService<IComponentDevelopmentService>().DeleteFolder(model.Folder.MicroService, model.Folder.Token);
         }
 
-        public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status, IPackage package)
+        public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status, IPackage package, string version)
         {
             var u = Connection.CreateUrl("MicroServiceManagement", "Insert");
             var args = new JObject
@@ -67,7 +67,8 @@ namespace TomPIT.ComponentModel
                 {"status", status.ToString() },
                 {"resourceGroup", resourceGroup },
                 {"template", template },
-                {"meta", CreateMeta(token, package) }
+                {"meta", CreateMeta(token, package) },
+                {"version", version }
             };
 
             Connection.Post(u, args);
@@ -102,7 +103,7 @@ namespace TomPIT.ComponentModel
             return Connection.Get<string>(u);
         }
 
-        public void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package)
+        public void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package, UpdateStatus updateStatus, CommitStatus commitStatus)
         {
             var u = Connection.CreateUrl("MicroServiceManagement", "Update");
             var args = new JObject
@@ -112,7 +113,9 @@ namespace TomPIT.ComponentModel
                 {"status", status.ToString() },
                 {"template", template },
                 {"resourceGroup", resourceGroup },
-                {"package", package }
+                {"package", package },
+                {"updateStatus", updateStatus.ToString() },
+                {"commitStatus", commitStatus.ToString() }
             };
 
             Connection.Post(u, args);

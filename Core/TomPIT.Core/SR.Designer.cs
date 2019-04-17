@@ -2131,6 +2131,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No template set.
+        /// </summary>
+        public static string MicroserviceNoTemplate {
+            get {
+                return ResourceManager.GetString("MicroserviceNoTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Micro services.
         /// </summary>
         public static string MicroServices {
@@ -2505,6 +2514,15 @@ namespace TomPIT {
         public static string ViewHome {
             get {
                 return ResourceManager.GetString("ViewHome", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Existing package not found. Reverting to Invalidated state..
+        /// </summary>
+        public static string WrnPackageNotFound {
+            get {
+                return ResourceManager.GetString("WrnPackageNotFound", resourceCulture);
             }
         }
     }

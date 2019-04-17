@@ -12,6 +12,8 @@ namespace TomPIT.Services.Context
 		void CommitDrafts(Guid draft, string primaryKey);
 		List<IBlob> QueryDrafts(Guid draft);
 
+        void Delete(Guid blob);
+
 		byte[] Download(Guid blob);
 	}
 }

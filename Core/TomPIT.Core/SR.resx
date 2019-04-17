@@ -933,4 +933,10 @@
   <data name="ErrNoSearchServer" xml:space="preserve">
     <value>No Search server is registered. To manage Instances go to the Management console and search for the Environment/Instances node.</value>
   </data>
+  <data name="WrnPackageNotFound" xml:space="preserve">
+    <value>Existing package not found. Reverting to Invalidated state.</value>
+  </data>
+  <data name="MicroserviceNoTemplate" xml:space="preserve">
+    <value>No template set</value>
+  </data>
 </root>

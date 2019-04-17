@@ -11,64 +11,64 @@ using TomPIT.Items;
 
 namespace TomPIT.Designers
 {
-	internal class MicroServicesDesigner : CollectionDesigner<MicroServicesElement>
-	{
-		public MicroServicesDesigner(MicroServicesElement element) : base(element)
-		{
+    internal class MicroServicesDesigner : CollectionDesigner<MicroServicesElement>
+    {
+        public MicroServicesDesigner(MicroServicesElement element) : base(element)
+        {
 
-		}
+        }
 
-		protected override IDesignerActionResult Add(IItemDescriptor d)
-		{
-			if (string.Compare(d.Id, MicroServicesCollection.MicroService, true) == 0)
-				return CreateMicroService();
+        protected override IDesignerActionResult Add(IItemDescriptor d)
+        {
+            if (string.Compare(d.Id, MicroServicesCollection.MicroService, true) == 0)
+                return CreateMicroService();
 
-			return Result.EmptyResult(this);
-		}
+            return Result.EmptyResult(this);
+        }
 
-		protected override IDesignerActionResult Remove(JObject data)
-		{
-			var id = data.Optional("id", Guid.Empty);
+        protected override IDesignerActionResult Remove(JObject data)
+        {
+            var id = data.Optional("id", Guid.Empty);
 
-			if (id == Guid.Empty)
-				throw IdeException.ExpectedParameter(this, IdeEvents.DesignerAction, "id");
+            if (id == Guid.Empty)
+                throw IdeException.ExpectedParameter(this, IdeEvents.DesignerAction, "id");
 
-			var user = Owner.Existing.FirstOrDefault(f => f.Token == id);
+            var user = Owner.Existing.FirstOrDefault(f => f.Token == id);
 
-			Connection.GetService<IMicroServiceManagementService>().Delete(user.Token);
+            Connection.GetService<IMicroServiceManagementService>().Delete(user.Token);
 
-			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
-		}
+            return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
+        }
 
-		private IDesignerActionResult CreateMicroService()
-		{
-			var existing = Owner.Existing;
-			var name = Connection.GetService<INamingService>().Create("MicroService", existing.Select(f => f.Name), true);
-			var ts = Connection.GetService<IMicroServiceTemplateService>().Query();
-			var template = ts.Count == 0 ? Guid.Empty : ts[0].Token;
-			var id = Guid.NewGuid();
+        private IDesignerActionResult CreateMicroService()
+        {
+            var existing = Owner.Existing;
+            var name = Connection.GetService<INamingService>().Create("MicroService", existing.Select(f => f.Name), true);
+            var ts = Connection.GetService<IMicroServiceTemplateService>().Query();
+            var template = ts.Count == 0 ? Guid.Empty : ts[0].Token;
+            var id = Guid.NewGuid();
 
-			Connection.GetService<IMicroServiceManagementService>().Insert(id, name, DomQuery.Closest<IResourceGroupScope>(Owner).ResourceGroup.Token, template, MicroServiceStatus.Development, null);
-			var ms = Connection.GetService<IMicroServiceService>().Select(id);
+            Connection.GetService<IMicroServiceManagementService>().Insert(id, name, DomQuery.Closest<IResourceGroupScope>(Owner).ResourceGroup.Token, template, MicroServiceStatus.Development, null, null);
+            var ms = Connection.GetService<IMicroServiceService>().Select(id);
 
-			var r = Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
+            var r = Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 
-			r.MessageKind = InformationKind.Success;
-			r.Message = string.Format(SR.MicroServiceCreateSuccess, name);
-			r.Title = SR.DevCreateMicroService;
-			r.ExplorerPath = string.Format("{0}/{1}", DomQuery.Path(Element), ms.Token);
+            r.MessageKind = InformationKind.Success;
+            r.Message = string.Format(SR.MicroServiceCreateSuccess, name);
+            r.Title = SR.DevCreateMicroService;
+            r.ExplorerPath = string.Format("{0}/{1}", DomQuery.Path(Element), ms.Token);
 
-			return r;
-		}
+            return r;
+        }
 
-		protected override bool OnCreateToolbarAction(IDesignerToolbarAction action)
-		{
-			return action.Id != Undo.ActionId && action.Id != Actions.Clear.ActionId;
-		}
+        protected override bool OnCreateToolbarAction(IDesignerToolbarAction action)
+        {
+            return action.Id != Undo.ActionId && action.Id != Actions.Clear.ActionId;
+        }
 
-		public override bool SupportsReorder
-		{
-			get { return false; }
-		}
-	}
+        public override bool SupportsReorder
+        {
+            get { return false; }
+        }
+    }
 }

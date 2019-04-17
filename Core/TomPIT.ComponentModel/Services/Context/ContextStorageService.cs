@@ -21,6 +21,18 @@ namespace TomPIT.Services.Context
 			return Context.Connection().GetService<IStorageService>().Download(blob)?.Content;
 		}
 
+        public void Delete(Guid blob)
+        {
+            try
+            {
+                Context.Connection().GetService<IStorageService>().Delete(blob);
+            }
+            catch(Exception ex)
+            {
+                Context.Connection().LogWarning(Context, nameof(ContextStorageService), ex.Message);
+            }
+        }
+
 		public List<IBlob> QueryDrafts(Guid draft)
 		{
 			return Context.Connection().GetService<IStorageService>().QueryDrafts(draft);

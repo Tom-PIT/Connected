@@ -53,6 +53,24 @@ $.widget('tompit.tpDeployment', {
 			});
 		});
 
+        $('[data-kind="removePackage"]').click(function () {
+            if (!confirm('Are you sure you want to remove this package from the marketplace?'))
+                return;
+            
+            var id = $(this).closest('.package-card[data-id]').attr('data-id');
+
+            ide.designerAction({
+				'data': {
+					'action': 'delete',
+					'package': id
+				},
+                onComplete: function (data) {
+                    $('.package-card[data-id="' + id + '"]').remove();
+				}
+			});
+
+        });
+
 		this.options.timer = window.setInterval(function () {
 			instance.checkStates();
 		}, 2500);

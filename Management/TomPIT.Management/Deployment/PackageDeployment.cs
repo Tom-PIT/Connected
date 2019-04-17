@@ -10,6 +10,7 @@ using TomPIT.Deployment;
 using TomPIT.Design;
 using TomPIT.Ide.Design;
 using TomPIT.Security;
+using TomPIT.Services;
 using TomPIT.Storage;
 
 namespace TomPIT.Management.Deployment
@@ -72,7 +73,8 @@ namespace TomPIT.Management.Deployment
         {
             var m = Package.MicroService;
 
-            Connection.GetService<IMicroServiceManagementService>().Insert(m.Token, m.Name, Configuration.ResourceGroup, m.Template, MicroServiceStatus.Production, Package);
+            Connection.GetService<IMicroServiceManagementService>().Insert(m.Token, m.Name, Configuration.ResourceGroup, m.Template, MicroServiceStatus.Production, Package,
+                Package.MetaData.Version);
 
             DeployFolders();
             DeployComponents();
@@ -133,12 +135,12 @@ namespace TomPIT.Management.Deployment
                     if (Connection.GetService<IComponentService>().SelectConfiguration(i.Token) is IConnection config)
                     {
                         var pi = config.GetType().GetProperty("Value");
-                        var cs = string.IsNullOrWhiteSpace(db.ConnectionString)?string.Empty: Connection.GetService<ICryptographyService>().Decrypt(db.ConnectionString);
+                        var cs = string.IsNullOrWhiteSpace(db.ConnectionString) ? string.Empty : Connection.GetService<ICryptographyService>().Decrypt(db.ConnectionString);
 
                         if (pi != null && pi.CanWrite)
                             pi.SetValue(config, cs);
 
-                        Connection.GetService<IComponentDevelopmentService>().Update(config, new ComponentUpdateArgs(Services.EnvironmentMode.Design, false));
+                        Connection.GetService<IComponentDevelopmentService>().Update(config, new ComponentUpdateArgs(EnvironmentMode.Design, false));
                     }
                 }
             }

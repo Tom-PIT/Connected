@@ -77,6 +77,14 @@ namespace TomPIT.Sys.Data
                         CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.Category);
                     }
                 }
+
+                var microService = DataModel.MicroServices.Select(i.Key);
+
+                if (microService.Package == Guid.Empty)
+                    continue;
+
+                DataModel.MicroServices.Update(microService.Token, microService.Name, microService.Status, microService.Template, microService.ResourceGroup,
+                    microService.Package, microService.UpdateStatus, CommitStatus.Invalidated);
             }
         }
 
@@ -299,6 +307,14 @@ namespace TomPIT.Sys.Data
             return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0 && f.LockVerb != LockVerb.Delete);
         }
 
+        public List<IComponent> Query(Guid microService, string category, bool includeDeleted)
+        {
+            if (includeDeleted)
+                return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0 && f.LockVerb != LockVerb.Delete);
+            else
+                return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0);
+        }
+
         public void Insert(Guid component, Guid microService, Guid folder, string category, string name, string type, Guid runtimeConfiguration)
         {
             var s = DataModel.MicroServices.Select(microService);
@@ -315,7 +331,7 @@ namespace TomPIT.Sys.Data
 
             var v = new Validator();
 
-            v.Unique(null, name, nameof(IComponent.Name), Query(microService, true));
+            v.Unique(null, name, nameof(IComponent.Name), Query(microService, category, true));
 
             if (!v.IsValid)
                 throw new SysException(v.ErrorMessage);

@@ -363,7 +363,10 @@ CREATE TABLE [tompit].[service]
 [template] [uniqueidentifier] NOT NULL,
 [meta] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [license] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[package] [uniqueidentifier] NULL
+[package] [uniqueidentifier] NULL,
+[update_status] [int] NOT NULL CONSTRAINT [DF_service_update_status] DEFAULT ((0)),
+[commit_status] [int] NOT NULL CONSTRAINT [DF_service_commit_status] DEFAULT ((0)),
+[version] [varchar] (32) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -671,10 +674,13 @@ GO
 
 
 
+
+
 CREATE VIEW [tompit].[view_service]
 AS
 SELECT        s.id, s.name, s.url, s.token, s.status, s.resource_group, s.template, s.meta,
-				s.license, s.package, r.token AS resource_token
+				s.license, s.package, s.update_status, s.commit_status, s.version,
+				r.token AS resource_token
 FROM            tompit.service AS s INNER JOIN
                          tompit.resource_group AS r ON s.resource_group = r.id
 GO
@@ -1893,14 +1899,15 @@ CREATE PROCEDURE [tompit].[service_ins]
 	@status int,
 	@resource_group int,
 	@template uniqueidentifier,
-	@meta nvarchar(max)
+	@meta nvarchar(max),
+	@version varchar(32) = NULL
 	
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	insert [service] (name, url, token, status, resource_group, template, meta)
-	values (@name, @url, @token, @status, @resource_group, @template, @meta);
+	insert [service] (name, url, token, status, resource_group, template, meta, version)
+	values (@name, @url, @token, @status, @resource_group, @template, @meta, @version);
 
 	return scope_identity();
 END
@@ -2991,7 +2998,9 @@ CREATE PROCEDURE [tompit].[service_upd]
 	@status int,
 	@template uniqueidentifier,
 	@resource_group int,
-	@package uniqueidentifier = NULL
+	@package uniqueidentifier = NULL,
+	@update_status int,
+	@commit_status int
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -3002,7 +3011,9 @@ BEGIN
 		status = @status,
 		template = @template,
 		resource_group = @resource_group,
-		package = @package
+		package = @package,
+		update_status = @update_status,
+		commit_status = @commit_status
 	where id = @id;
 
 END

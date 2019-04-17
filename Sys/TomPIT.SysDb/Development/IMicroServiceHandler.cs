@@ -14,8 +14,9 @@ namespace TomPIT.SysDb.Development
 		IMicroService Select(Guid token);
 		IMicroService Select(string name);
 
-		void Insert(Guid token, string name, string url, MicroServiceStatus status, IResourceGroup resourceGroup, Guid template, string meta);
-		void Update(IMicroService microService, string name, string url, MicroServiceStatus status, Guid template, IResourceGroup resourceGroup, Guid package);
+		void Insert(Guid token, string name, string url, MicroServiceStatus status, IResourceGroup resourceGroup, Guid template, string meta, string version);
+		void Update(IMicroService microService, string name, string url, MicroServiceStatus status, Guid template, IResourceGroup resourceGroup, Guid package,
+            UpdateStatus updateStatus, CommitStatus commitStatus);
 
 		void Delete(IMicroService microService);
 		void UpdateMeta(IMicroService microService, byte[] meta);

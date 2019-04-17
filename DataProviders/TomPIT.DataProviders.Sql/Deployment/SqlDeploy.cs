@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -185,10 +186,15 @@ namespace TomPIT.DataProviders.Sql.Deployment
                         sb.AppendLine(line);
                     else
                     {
-                        if (line.Trim().StartsWith("CREATE PROCEDURE"))
+                        if (line.Trim().StartsWith("CREATE PROCEDURE", StringComparison.OrdinalIgnoreCase))
                         {
                             statementStarted = true;
                             sb.AppendLine($"{keyword} PROCEDURE [{routine.Schema}].[{routine.Name}]");
+                        }
+                        else if (line.Trim().StartsWith("CREATE FUNCTION", StringComparison.OrdinalIgnoreCase))
+                        {
+                            statementStarted = true;
+                            sb.AppendLine($"{keyword} FUNCTION [{routine.Schema}].[{routine.Name}]()");
                         }
                     }
                 }
