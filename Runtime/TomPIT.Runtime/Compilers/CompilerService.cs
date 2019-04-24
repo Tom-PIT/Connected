@@ -23,8 +23,8 @@ namespace TomPIT.Compilers
 {
 	internal class CompilerService : ClientRepository<IScriptDescriptor, Guid>, ICompilerService, ICompilerNotification
 	{
-		private Lazy<ConcurrentDictionary<Guid, List<Guid>>> _forwardReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
-		private Lazy<ConcurrentDictionary<Guid, List<Guid>>> _reverseReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
+		private readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _forwardReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
+		private readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _reverseReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
 
 		private static readonly string[] Usings = new string[]
 		{
@@ -283,9 +283,12 @@ namespace TomPIT.Compilers
 					library = Path.GetFileNameWithoutExtension(tokens[0]);
 				else if (tokens.Length == 2)
 				{
-					var component = Connection.GetService<IComponentService>().SelectComponent(microService, "Library", tokens[0]);
+					var internalComponent = Connection.GetService<IComponentService>().SelectComponent(microService, "Script", tokens[0]);
 
-					if (component != null)
+                    if (internalComponent == null)
+                        internalComponent = Connection.GetService<IComponentService>().SelectComponent(microService, "Library", tokens[0]);
+
+					if (internalComponent != null)
 					{
 						library = tokens[0];
 						script = tokens[1];
@@ -311,24 +314,27 @@ namespace TomPIT.Compilers
 					script = tokens[2];
 				}
 
-				var lib = Connection.GetService<IComponentService>().SelectComponent(ms.Token, "Library", library);
+				var component = Connection.GetService<IComponentService>().SelectComponent(ms.Token, "Script", library);
 
-				if (lib == null)
+                if (component == null)
+                    component = Connection.GetService<IComponentService>().SelectComponent(ms.Token, "Library", library);
+
+				if (component == null)
 					continue;
 
-				if (!ids.Contains(lib.Token))
-					ids.Add(lib.Token);
+				if (!ids.Contains(component.Token))
+					ids.Add(component.Token);
 
 				List<Guid> forward = null;
 
-				if (ForwardReferences.ContainsKey(lib.Token))
-					forward = ForwardReferences[lib.Token];
+				if (ForwardReferences.ContainsKey(component.Token))
+					forward = ForwardReferences[component.Token];
 				else
 				{
 					forward = new List<Guid>();
 
-					if (!ForwardReferences.TryAdd(lib.Token, forward))
-						ForwardReferences.TryGetValue(lib.Token, out forward);
+					if (!ForwardReferences.TryAdd(component.Token, forward))
+						ForwardReferences.TryGetValue(component.Token, out forward);
 				}
 
 				if (!forward.Contains(scriptId))
@@ -351,11 +357,11 @@ namespace TomPIT.Compilers
 						ReverseReferences.TryGetValue(scriptId, out reverse);
 				}
 
-				if (!reverse.Contains(lib.Token))
+				if (!reverse.Contains(component.Token))
 				{
 					lock (reverse)
 					{
-						reverse.Add(lib.Token);
+						reverse.Add(component.Token);
 					}
 				}
 			}

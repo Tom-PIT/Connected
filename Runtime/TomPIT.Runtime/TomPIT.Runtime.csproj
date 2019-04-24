@@ -15,9 +15,9 @@
     <Product>Tom PIT Micro service platform</Product>
     <RepositoryUrl>
     </RepositoryUrl>
-    <AssemblyVersion>1.0.417.2</AssemblyVersion>
-    <FileVersion>1.0.417.2</FileVersion>
-    <Version>1.0.417.2</Version>
+    <AssemblyVersion>1.0.424.9</AssemblyVersion>
+    <FileVersion>1.0.424.9</FileVersion>
+    <Version>1.0.424.9</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>

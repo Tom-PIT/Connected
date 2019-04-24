@@ -148,22 +148,40 @@ namespace TomPIT.Compilers
 			else
 				ms = Connection.GetService<IMicroServiceService>().Select(MicroService);
 
-			if (!(Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "Library", Path.GetFileNameWithoutExtension(library)) is ISourceCodeContainer container))
-				throw new RuntimeException(SR.ErrSourceCodeContainerExected);
+            if ((Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "Script", Path.GetFileNameWithoutExtension(library)) is IScript script))
+            {
+                if (((IConfiguration)script).MicroService(Connection) != MicroService)
+                {
+                    if (script.Scope != ElementScope.Public)
+                        throw new RuntimeException(SR.ErrScopeError);
+                }
 
-			if (container.MicroService(Connection) != MicroService)
-			{
-				if (container.Closest<ILibrary>().Scope != ElementScope.Public)
-					throw new RuntimeException(SR.ErrScopeError);
-			}
+                var content = Connection.GetService<IComponentService>().SelectText(((IConfiguration)script).MicroService(Connection), script);
 
-			var refs = container.References();
-			var sb = new StringBuilder();
+                if (string.IsNullOrWhiteSpace(content))
+                    return null;
 
-			foreach (var i in refs)
-				sb.AppendLine($"#load \"{ms.Name}/{Path.GetFileNameWithoutExtension(library)}/{i}\"");
+                return new MemoryStream(Encoding.UTF8.GetBytes(content));
+            }
+            else
+            {
+                if (!(Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "Library", Path.GetFileNameWithoutExtension(library)) is ISourceCodeContainer container))
+                    throw new RuntimeException(SR.ErrSourceCodeContainerExected);
 
-			return new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
+                if (container.MicroService(Connection) != MicroService)
+                {
+                    if (container.Closest<ILibrary>().Scope != ElementScope.Public)
+                        throw new RuntimeException(SR.ErrScopeError);
+                }
+
+                var refs = container.References();
+                var sb = new StringBuilder();
+
+                foreach (var i in refs)
+                    sb.AppendLine($"#load \"{ms.Name}/{Path.GetFileNameWithoutExtension(library)}/{i}\"");
+
+                return new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
+            }
 		}
 
 		public override string ResolveReference(string path, string baseFilePath)

@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.Worker</RootNamespace>
     <AssemblyName>TomPIT.Worker.App</AssemblyName>
-    <AssemblyVersion>1.0.417.2</AssemblyVersion>
-    <FileVersion>1.0.417.2</FileVersion>
-    <Version>1.0.417.2</Version>
+    <AssemblyVersion>1.0.424.9</AssemblyVersion>
+    <FileVersion>1.0.424.9</FileVersion>
+    <Version>1.0.424.9</Version>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="wwwroot\" />
