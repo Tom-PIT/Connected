@@ -6,7 +6,6 @@ namespace TomPIT.ComponentModel.Apis
 	public class OperationSchema
 	{
 		private List<SchemaParameter> _parameters = null;
-		private JObject _returnValue = null;
 
 		public List<SchemaParameter> Parameters
 		{
@@ -19,15 +18,6 @@ namespace TomPIT.ComponentModel.Apis
 			}
 		}
 
-		public JObject ReturnValue
-		{
-			get
-			{
-				if (_returnValue == null)
-					_returnValue = new JObject();
-
-				return _returnValue;
-			}
-		}
+		public JObject ReturnValue { get; set; }
 	}
 }

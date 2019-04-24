@@ -80,7 +80,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
 			var txt = context.Connection().GetService<IComponentService>().SelectText(apiRef.MicroService, op.Invoke);
 
-			var parameters = QueryParameters(context, config, txt);
+			var parameters = QueryParameters(context, op, txt);
 
 			if (parameters == null || parameters.Count == 0)
 				return null;
@@ -170,7 +170,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 		public List<ISuggestion> QueryParameters(IApiOperation operation)
 		{
 			var txt = Context.Connection().GetService<IComponentService>().SelectText(operation.MicroService(Context.Connection()), operation.Invoke);
-			var parameters = QueryParameters(Context, operation.Closest<IApi>(), txt);
+			var parameters = QueryParameters(Context, operation, txt);
 			var r = new List<ISuggestion>();
 
 			if (parameters == null)
@@ -190,10 +190,18 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			return r;
 		}
 
-		private List<ApiParameter> QueryParameters(IExecutionContext context, IApi api, string text)
+		private List<ApiParameter> QueryParameters(IExecutionContext context, IApiOperation operation, string text)
 		{
+            var schemaParameters = QuerySchemaParameters(context, operation);
+
+            if (schemaParameters != null)
+                return schemaParameters;
+
+            if (string.IsNullOrWhiteSpace(text))
+                return null;
+
 			_sourceCode = SourceText.From(text);
-			_microService = api.MicroService(Context.Connection());
+			_microService = operation.MicroService(Context.Connection());
 
 			var r = new List<ApiParameter>();
 			var o = new List<ICodeAnalysisResult>();
@@ -329,7 +337,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 				return null;
 
 			var txt = context.Connection().GetService<IComponentService>().SelectText(apiRef.MicroService, op.Invoke);
-			var pars = QueryParameters(context, config, txt);
+			var pars = QueryParameters(context, op, txt);
 
 			if (pars == null || pars.Count == 0)
 				return null;
@@ -392,5 +400,31 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
 			return true;
 		}
+
+        private List<ApiParameter> QuerySchemaParameters(IExecutionContext context, IApiOperation operation)
+        {
+            var args = new OperationSchemaArguments(context, operation);
+
+            context.Connection().GetService<ICompilerService>().Execute(operation.MicroService(context.Connection()), operation.Schema, this, args, out bool handled);
+
+            if (handled)
+            {
+                var r = new List<ApiParameter>();
+
+                foreach(var i in args.Schema.Parameters)
+                {
+                    r.Add(new ApiParameter
+                    {
+                        DataType=i.Type.ToFriendlyName(),
+                        Name=i.Name,
+                        Required=i.IsRequired
+                    });
+                }
+
+                return r;
+            }
+
+            return null;
+        }
 	}
 }

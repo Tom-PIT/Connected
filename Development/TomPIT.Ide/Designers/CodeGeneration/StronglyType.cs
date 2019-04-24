@@ -56,15 +56,29 @@ namespace TomPIT.Designers.CodeGeneration
 			Text.AppendLine();
 			Text.AppendLine(string.Format("public class {0} : JsonEntity", className));
 			Text.AppendLine("{");
-			Text.AppendFormat("\tpublic {0}(JObject data) : base (data)", className);
+
+            Text.AppendLine("\t#region .ctors");
+
+            Text.AppendFormat("\tpublic {0}()", className);
+            Text.AppendLine();
+            Text.AppendLine("\t{");
+            Text.AppendLine();
+            Text.AppendLine("\t}");
+            Text.AppendLine();
+
+            Text.AppendFormat("\tpublic {0}(JObject data) : base (data)", className);
 			Text.AppendLine();
 			Text.AppendLine("\t{");
 			Text.AppendLine();
 			Text.AppendLine("\t}");
 			Text.AppendLine();
-			CreateContent();
+            Text.AppendLine("\t#endregion");
+            Text.AppendLine();
+            Text.AppendLine("\t#region properties");
+            CreateContent();
+            Text.AppendLine("\t#endregion");
 
-			if (!DirectBinding)
+            if (!DirectBinding)
 				CreateDataBind();
 
 			Text.AppendLine("}");
@@ -80,6 +94,7 @@ namespace TomPIT.Designers.CodeGeneration
 
 		private void CreateProperty(IDataField field)
 		{
+            Text.AppendLine($"\t[JsonProperty(\"{field.Name[0].ToString().ToLowerInvariant()}{field.Name.Substring(1)}\")]");
 			var type = Types.ToType(field.DataType);
 			var identifier = CodeGeneratonUtils.CreateIdentifierName(field.Name);
 
@@ -102,7 +117,8 @@ namespace TomPIT.Designers.CodeGeneration
 
 			Text.Append("}");
 			Text.AppendLine();
-		}
+            Text.AppendLine();
+        }
 
 		private void CreateSetter(IDataField field, string identifier)
 		{

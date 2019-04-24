@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyVersion>1.0.417.1</AssemblyVersion>
-    <FileVersion>1.0.417.1</FileVersion>
-    <Version>1.0.417.1</Version>
+    <AssemblyVersion>1.0.417.2</AssemblyVersion>
+    <FileVersion>1.0.417.2</FileVersion>
+    <Version>1.0.417.2</Version>
     <RootNamespace>TomPIT.Cdn</RootNamespace>
     <AssemblyName>TomPIT.Cdn</AssemblyName>
   </PropertyGroup>

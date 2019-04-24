@@ -102,8 +102,15 @@ namespace TomPIT.Compilers
 			return d;
 		}
 
-		public object Execute<T>(Guid microService, ISourceCode sourceCode, object sender, T e)
+        public object Execute<T>(Guid microService, ISourceCode sourceCode, object sender, T e)
+        {
+            return Execute(microService, sourceCode, sender, e, out bool handled);
+        }
+
+        public object Execute<T>(Guid microService, ISourceCode sourceCode, object sender, T e, out bool handled)
 		{
+            handled = false;
+
 			if (sourceCode.TextBlob == Guid.Empty)
 				return null;
 
@@ -111,6 +118,8 @@ namespace TomPIT.Compilers
 
 			if (script == null)
 				return null;
+
+            handled = true;
 
 			if (script.Errors.Length > 0)
 			{

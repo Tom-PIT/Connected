@@ -3,9 +3,10 @@ using System;
 
 namespace TomPIT.Data
 {
-	public abstract class JsonEntity
+	public abstract class JsonEntity:DataEntity
 	{
-		public JsonEntity(JObject data)
+        protected JsonEntity() { Data = new JObject(); }
+		protected JsonEntity(JObject data)
 		{
 			if (data == null)
 				data = new JObject();
@@ -17,12 +18,12 @@ namespace TomPIT.Data
 
 		protected JObject Data { get; }
 
-		protected T GetValue<T>(string propertyName)
+		protected override T GetValue<T>(string propertyName)
 		{
 			return GetValue(propertyName, default(T));
 		}
 
-		protected T GetValue<T>(string propertyName, T defaultValue)
+		protected override T GetValue<T>(string propertyName, T defaultValue)
 		{
 			var prop = Data.Property(propertyName, StringComparison.OrdinalIgnoreCase);
 
@@ -38,7 +39,7 @@ namespace TomPIT.Data
 			return defaultValue;
 		}
 
-		protected void SetValue<T>(string propertyName, T value)
+		protected override void SetValue<T>(string propertyName, T value)
 		{
 			var property = Data.Property(propertyName, StringComparison.OrdinalIgnoreCase);
 
@@ -50,11 +51,6 @@ namespace TomPIT.Data
 			}
 			else
 				property.Value = new JValue(value);
-		}
-
-		protected virtual void OnDatabind()
-		{
-
 		}
 	}
 }
