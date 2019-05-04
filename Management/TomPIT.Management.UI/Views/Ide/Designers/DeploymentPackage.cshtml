@@ -73,7 +73,7 @@
 @if (Model.PackageInfo.DependencyCount > 0)
 {
     <h4 class="pt-1 pb-1">Dependencies</h4>
-    var deps = Model.QueryDependencies(Model.PackageInfo.Token);
+    var deps = Model.Dependencies;
 
     foreach (var i in deps)
     {

@@ -23,8 +23,8 @@ namespace TomPIT.Compilers
 {
 	internal class CompilerService : ClientRepository<IScriptDescriptor, Guid>, ICompilerService, ICompilerNotification
 	{
-		private readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _forwardReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
-		private readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _reverseReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
+		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _forwardReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
+		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _reverseReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
 
 		private static readonly string[] Usings = new string[]
 		{
@@ -58,7 +58,7 @@ namespace TomPIT.Compilers
 			}
 		}
 
-		private string[] CombineUsings(List<string> additionalUsings)
+		internal static string[] CombineUsings(List<string> additionalUsings)
 		{
 			if (additionalUsings == null || additionalUsings.Count == 0)
 				return Usings.ToArray();
@@ -101,6 +101,16 @@ namespace TomPIT.Compilers
 
 			return d;
 		}
+
+        public IScriptDescriptor GetScript(Guid microService, ISourceCode sourceCode)
+        {
+            var d = GetCachedScript(sourceCode.Id);
+
+            if (d == null)
+                d = CreateScript(microService, sourceCode);
+
+            return d;
+        }
 
         public object Execute<T>(Guid microService, ISourceCode sourceCode, object sender, T e)
         {
@@ -204,69 +214,49 @@ namespace TomPIT.Compilers
 			return r;
 		}
 
-		private IScriptDescriptor CreateScript<T>(Guid microService, ISourceCode d)
+        private IScriptDescriptor CreateScript(Guid microService, ISourceCode d)
+        {
+            var script = new CompilerScript(Connection, microService, d);
+
+            script.Create();
+
+            if (script.Result == null)
+                return null;
+
+            Compile(script);
+
+            script.Dispose();
+
+            return script.Result;
+        }
+
+        private void Compile(CompilerScript script)
+        {
+            Set(script.SourceCode.Id, script.Result, TimeSpan.Zero);
+
+            ((ScriptDescriptor)script.Result).Errors = script.Script.Compile();
+
+            if (script.Result.Errors.Length == 0)
+                ((ScriptDescriptor)script.Result).Script = script.Script.CreateDelegate();
+        }
+
+        private IScriptDescriptor CreateScript<T>(Guid microService, ISourceCode d)
 		{
-			var r = new ScriptDescriptor
-			{
-				MicroService = microService,
-				Id = d.Id
-			};
+            var script = new CompilerGenericScript<T>(Connection, microService, d);
 
-			var code = Connection.GetService<IComponentService>().SelectText(microService, d);
+            script.Create();
 
-			if (string.IsNullOrWhiteSpace(code))
-				return null;
+            if (script.Result == null)
+                return null;
 
-			ResolveReferences(microService, d, code);
-			var imports = CombineUsings(new List<string> { typeof(T).Namespace });
+            Compile(script);
 
-			var references = new List<Assembly>
-			{
-				typeof(T).Assembly,
-				LoadSystemAssembly("TomPIT.Core"),
-				LoadSystemAssembly("TomPIT.ComponentModel"),
-				LoadSystemAssembly("Newtonsoft.Json")
-			};
+            script.Dispose();
 
-			var options = ScriptOptions.Default
-				.WithImports(imports)
-				.WithReferences(references)
-				.WithSourceResolver(new ReferenceResolver(Connection, microService))
-				.WithMetadataResolver(new MetaDataResolver(Connection, microService))
-				.WithEmitDebugInformation(true)
-				.WithFilePath(d.ScriptName(Connection))
-				.WithFileEncoding(Encoding.UTF8);
-
-			Script<object> script = null;
-
-			using (var loader = new InteractiveAssemblyLoader())
-			{
-				var refs = ParseReferences(code);
-
-				foreach (var i in refs)
-				{
-					var asm = MetaDataResolver.LoadDependency(Connection, microService, i);
-
-					if (asm != null)
-						loader.RegisterDependency(asm);
-				}
-
-				script = CSharpScript.Create(code, options: options, globalsType: typeof(ScriptGlobals<T>), assemblyLoader: loader);
-			}
-
-			Set(d.Id, r, TimeSpan.Zero);
-
-			r.Errors = script.Compile();
-
-			if (r.Errors.Length == 0)
-				r.Script = script.CreateDelegate();
-
-			script = null;
-
-			return r;
+            return script.Result;
 		}
 
-		private void ResolveReferences(Guid microService, ISourceCode d, string code)
+		internal static void ResolveReferences(ISysConnection connection, Guid microService, ISourceCode d, string code)
 		{
 			var scriptId = d.ScriptId();
 			var scripts = ParseScripts(code);
@@ -275,7 +265,7 @@ namespace TomPIT.Compilers
 			foreach (var i in scripts)
 			{
 				var tokens = i.Split('/');
-				var ms = Connection.GetService<IMicroServiceService>().Select(microService);
+				var ms = connection.GetService<IMicroServiceService>().Select(microService);
 				var library = string.Empty;
 				var script = string.Empty;
 
@@ -283,10 +273,10 @@ namespace TomPIT.Compilers
 					library = Path.GetFileNameWithoutExtension(tokens[0]);
 				else if (tokens.Length == 2)
 				{
-					var internalComponent = Connection.GetService<IComponentService>().SelectComponent(microService, "Script", tokens[0]);
+					var internalComponent = connection.GetService<IComponentService>().SelectComponent(microService, "Script", tokens[0]);
 
                     if (internalComponent == null)
-                        internalComponent = Connection.GetService<IComponentService>().SelectComponent(microService, "Library", tokens[0]);
+                        internalComponent = connection.GetService<IComponentService>().SelectComponent(microService, "Library", tokens[0]);
 
 					if (internalComponent != null)
 					{
@@ -295,7 +285,7 @@ namespace TomPIT.Compilers
 					}
 					else
 					{
-						ms = Connection.GetService<IMicroServiceService>().Select(tokens[0]);
+						ms = connection.GetService<IMicroServiceService>().Select(tokens[0]);
 
 						if (ms == null)
 							continue;
@@ -305,7 +295,7 @@ namespace TomPIT.Compilers
 				}
 				else if (tokens.Length == 3)
 				{
-					ms = Connection.GetService<IMicroServiceService>().Select(tokens[0]);
+					ms = connection.GetService<IMicroServiceService>().Select(tokens[0]);
 
 					if (ms == null)
 						continue;
@@ -314,10 +304,10 @@ namespace TomPIT.Compilers
 					script = tokens[2];
 				}
 
-				var component = Connection.GetService<IComponentService>().SelectComponent(ms.Token, "Script", library);
+				var component = connection.GetService<IComponentService>().SelectComponent(ms.Token, "Script", library);
 
                 if (component == null)
-                    component = Connection.GetService<IComponentService>().SelectComponent(ms.Token, "Library", library);
+                    component = connection.GetService<IComponentService>().SelectComponent(ms.Token, "Library", library);
 
 				if (component == null)
 					continue;
@@ -405,7 +395,7 @@ namespace TomPIT.Compilers
 			}
 		}
 
-		private List<string> ParseScripts(string code)
+		private static List<string> ParseScripts(string code)
 		{
 			var refs = Regex.Matches(code, "#load.*");
 			var r = new List<string>();
@@ -423,7 +413,7 @@ namespace TomPIT.Compilers
 			return r;
 		}
 
-		private List<string> ParseReferences(string code)
+		internal static List<string> ParseReferences(string code)
 		{
 			var refs = Regex.Matches(code, "^#r.*");
 			var r = new List<string>();
@@ -458,7 +448,7 @@ namespace TomPIT.Compilers
 			InvalidateReferences(component, id);
 		}
 
-		private Assembly LoadSystemAssembly(string fileName)
+		internal static Assembly LoadSystemAssembly(string fileName)
 		{
 			var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Equals(f.ShortName(), fileName, StringComparison.OrdinalIgnoreCase));
 
@@ -503,7 +493,7 @@ namespace TomPIT.Compilers
 			}
 		}
 
-		private ConcurrentDictionary<Guid, List<Guid>> ForwardReferences { get { return _forwardReferences.Value; } }
-		private ConcurrentDictionary<Guid, List<Guid>> ReverseReferences { get { return _reverseReferences.Value; } }
+		private static ConcurrentDictionary<Guid, List<Guid>> ForwardReferences { get { return _forwardReferences.Value; } }
+		private static ConcurrentDictionary<Guid, List<Guid>> ReverseReferences { get { return _reverseReferences.Value; } }
 	}
 }

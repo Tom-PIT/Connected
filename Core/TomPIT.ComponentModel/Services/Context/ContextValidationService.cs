@@ -171,5 +171,24 @@ namespace TomPIT.Services.Context
 				throw new RuntimeException(SR.SourceValidation, string.Format("{0}. ({1})", SR.ValExists, attribute));
 			}
 		}
+
+		public void Unique(string attribute, object value, string keyProperty, object keyValue, string propertyName, List<object> existing)
+		{
+			if (existing == null)
+				return;
+
+			foreach (var i in existing)
+			{
+				var id = i.GetType().GetProperty(keyProperty).GetValue(i);
+
+				if (Types.Compare(id, keyValue))
+					continue;
+
+				var val = i.GetType().GetProperty(propertyName).GetValue(i);
+
+				if (Types.Compare(value, val))
+					throw new RuntimeException(SR.SourceValidation, string.Format("{0}. ({1})", SR.ValExists, attribute));
+			}
+		}
 	}
 }

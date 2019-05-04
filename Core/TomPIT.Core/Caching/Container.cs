@@ -165,14 +165,14 @@ namespace TomPIT.Caching
 			return d.Where<T>(predicate);
 		}
 
-		public void Remove<T>(string key, Func<T, bool> predicate) where T : class
+		public List<string> Remove<T>(string key, Func<T, bool> predicate) where T : class
 		{
 			if (!Items.ContainsKey(key))
-				return;
+				return null;
 
 			var d = Items[key];
 
-			d.Remove<T>(predicate);
+			return d.Remove(predicate);
 		}
 
 		public ICollection<string> Keys(string key)

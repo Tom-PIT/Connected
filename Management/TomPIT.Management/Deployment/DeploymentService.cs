@@ -164,7 +164,7 @@ namespace TomPIT.Management.Deployment
             if (ms.Package != id)
                 Connection.GetService<IMicroServiceManagementService>().Update(microService, ms.Name, ms.Status, ms.Template, ms.ResourceGroup, id, ms.UpdateStatus, ms.CommitStatus);
         }
-
+		
         public void DeletePackage(Guid package)
         {
             var u = Connection.CreateUrl("DeploymentManagement", "DeletePackage");
@@ -296,6 +296,20 @@ namespace TomPIT.Management.Deployment
         public void Deploy(IPackage package)
         {
             new PackageDeployment(Connection, package).Deploy();
+        }
+
+        public List<IPublishedPackage> QueryPublishedPackage(List<Guid> packages)
+        {
+            var u = Connection.CreateUrl("DeploymentManagement", "QueryPublishedPackages");
+            var e = new JObject();
+            var a = new JArray();
+
+            e.Add("packages", a);
+
+            foreach (var package in packages)
+                a.Add(package);
+
+            return Connection.Post<List<PublishedPackage>>(u, e).ToList<IPublishedPackage>();
         }
 
         public IPublishedPackage SelectPublishedPackage(Guid package)

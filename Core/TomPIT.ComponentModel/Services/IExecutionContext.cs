@@ -2,6 +2,7 @@
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.Connectivity;
 using TomPIT.Services.Context;
 
 namespace TomPIT.Services

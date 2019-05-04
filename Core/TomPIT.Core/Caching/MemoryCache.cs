@@ -239,9 +239,9 @@ namespace TomPIT.Caching
 			return sb.ToString().TrimEnd('.');
 		}
 
-		public void Remove<T>(string key, Func<T, bool> predicate) where T : class
+		public List<string> Remove<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			Container.Remove(key, predicate);
+			return Container.Remove(key, predicate);
 		}
 
 		public string GenerateRandomKey(string key)

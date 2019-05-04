@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using TomPIT.Analysis;
+using TomPIT.Caching;
 using TomPIT.Cdn;
 using TomPIT.Compilation;
 using TomPIT.Compilers;
@@ -76,12 +77,22 @@ namespace TomPIT.Runtime
 			e.Connection.RegisterService(typeof(ISubscriptionService), typeof(SubscriptionService));
 			e.Connection.RegisterService(typeof(IAlienService), typeof(AlienService));
 			e.Connection.RegisterService(typeof(IIoTService), typeof(IoTService));
+			e.Connection.RegisterService(typeof(IDataCachingService), typeof(DataCachingService));
 
-			var iotClient = new IoTClient(e.Connection, e.Connection.AuthenticationToken);
+			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
+			{
+				var iotClient = new IoTClient(e.Connection, e.Connection.AuthenticationToken);
 
-			e.Connection.Items.TryAdd("iotClient", iotClient);
+				e.Connection.Items.TryAdd("iotClient", iotClient);
 
-			iotClient.Connect();
+				iotClient.Connect();
+
+				var dataCache = new DataCachingClient(e.Connection, e.Connection.AuthenticationToken);
+
+				e.Connection.Items.TryAdd("dataCache", dataCache);
+
+				dataCache.Connect();
+			}
 		}
 	}
 }

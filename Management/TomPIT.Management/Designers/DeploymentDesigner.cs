@@ -33,6 +33,8 @@ namespace TomPIT.Management.Designers
         private List<IMicroService> _microServices = null;
         private List<IInstallState> _installers = null;
         private Dictionary<Guid, IPackageConfiguration> _configurations = null;
+        private List<IPackageDependency> _dependencies = null;
+        private List<IPublishedPackage> _dependencyPackages = null;
 
         public DeploymentDesigner(MarketplaceElement element) : base(element)
         {
@@ -357,11 +359,6 @@ namespace TomPIT.Management.Designers
             return PackageState.Installed;
         }
 
-        public List<IPackageDependency> QueryDependencies(Guid package)
-        {
-            return Connection.GetService<IDeploymentService>().QueryDependencies(package);
-        }
-
         public Dictionary<Guid, IPackageConfiguration> Configurations
         {
             get
@@ -370,6 +367,28 @@ namespace TomPIT.Management.Designers
                     _configurations = new Dictionary<Guid, IPackageConfiguration>();
 
                 return _configurations;
+            }
+        }
+
+        public List<IPackageDependency> Dependencies
+        {
+            get
+            {
+                if (_dependencies == null)
+                    _dependencies = Connection.GetService<IDeploymentService>().QueryDependencies(PackageInfo.Token);
+
+                return _dependencies;
+            }
+        }
+
+        public List<IPublishedPackage> DependencyPackages
+        {
+            get
+            {
+                if (_dependencyPackages == null)
+                    _dependencyPackages = Connection.GetService<IDeploymentService>().QueryPublishedPackage(Dependencies.Select(f=>f.Token).ToList());
+
+                return _dependencyPackages;
             }
         }
     }

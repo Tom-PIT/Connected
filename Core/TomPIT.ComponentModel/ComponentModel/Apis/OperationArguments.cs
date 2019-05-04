@@ -2,6 +2,7 @@
 using System;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel.Events;
+using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Services;
 using TomPIT.Services.Context;
@@ -9,13 +10,13 @@ using TomPIT.Services.Context;
 namespace TomPIT.ComponentModel.Apis
 {
 	[ExceptionSourceProperty(nameof(ExceptionSource))]
-	public abstract class OperationArguments : EventArguments, IApiExecutionScope
+	public abstract class OperationArguments : EventArguments, IApiExecutionScope, IDataModelContext
 	{
-		private const string DataSourceProvider = "TomPIT.Design.CodeAnalysis.Providers.DataSourceProvider, TomPIT.Design";
-		private const string DataSourceParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.DataSourceParameterProvider, TomPIT.Design";
-		private const string TransactionProvider = "TomPIT.Design.CodeAnalysis.Providers.TransactionProvider, TomPIT.Design";
-		private const string TransactionParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.TransactionParameterProvider, TomPIT.Design";
-		private const string ConnectionProvider = "TomPIT.Design.CodeAnalysis.Providers.ConnectionProvider, TomPIT.Design";
+		internal const string DataSourceProvider = "TomPIT.Design.CodeAnalysis.Providers.DataSourceProvider, TomPIT.Design";
+		internal const string DataSourceParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.DataSourceParameterProvider, TomPIT.Design";
+		internal const string TransactionProvider = "TomPIT.Design.CodeAnalysis.Providers.TransactionProvider, TomPIT.Design";
+		internal const string TransactionParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.TransactionParameterProvider, TomPIT.Design";
+		internal const string ConnectionProvider = "TomPIT.Design.CodeAnalysis.Providers.ConnectionProvider, TomPIT.Design";
 		private const string EventProvider = "TomPIT.Design.CodeAnalysis.Providers.EventProvider, TomPIT.Design";
 
 		private DatabaseGet _database = null;

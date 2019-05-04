@@ -52,5 +52,10 @@ namespace TomPIT.Data
 			else
 				property.Value = new JValue(value);
 		}
+
+		public static implicit operator JObject (JsonEntity entity)
+		{
+			return entity.Data;
+		}
 	}
 }

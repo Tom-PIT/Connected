@@ -13,5 +13,6 @@ namespace TomPIT.Compilation
         bool Equals(string constant, object value);
 
 		IScriptDescriptor GetScript<T>(Guid microService, ISourceCode sourceCode);
-	}
+        IScriptDescriptor GetScript(Guid microService, ISourceCode sourceCode);
+    }
 }

@@ -103,6 +103,19 @@ namespace TomPIT.Sys.Controllers.Management
         }
 
         [HttpPost]
+        public List<IPublishedPackage> QueryPublishedPackages()
+        {
+            var body = FromBody();
+            var packages = body.Required<JArray>("packages");
+            var items = new List<Guid>();
+
+            foreach (JToken package in packages)
+                items.Add(Types.Convert<Guid>(package.Value<string>()));
+
+            return DataModel.Deployment.QueryPublishedPackages(items);
+        }
+
+        [HttpPost]
         public void InsertInstallers()
         {
             var body = FromBody();

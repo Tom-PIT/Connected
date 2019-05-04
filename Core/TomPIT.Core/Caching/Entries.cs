@@ -79,15 +79,25 @@ namespace TomPIT.Caching
 			return Find<T>(predicate);
 		}
 
-		public void Remove<T>(Func<T, bool> predicate) where T : class
+		public List<string> Remove<T>(Func<T, bool> predicate) where T : class
 		{
 			var ds = Where(predicate);
 
 			if (ds == null)
-				return;
+				return null;
+
+			var result = new List<string>();
 
 			foreach (var i in ds)
-				RemoveInternal(Items.FirstOrDefault(f => f.Value != null && f.Value.Instance == i).Key);
+			{
+				var key = Items.FirstOrDefault(f => f.Value != null && f.Value.Instance == i).Key;
+
+				RemoveInternal(key);
+
+				result.Add(key);
+			}
+
+			return result;
 		}
 
 		public List<T> Where<T>(Func<T, bool> predicate) where T : class

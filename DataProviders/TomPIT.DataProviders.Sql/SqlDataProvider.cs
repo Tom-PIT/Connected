@@ -2,6 +2,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.Sql;
 using TomPIT.DataProviders.Sql.Deployment;

@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
+using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Exceptions;
 

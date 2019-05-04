@@ -17,7 +17,18 @@ namespace TomPIT.Design.Services
 
 		private ISysConnection Connection { get; }
 
-		public ImmutableArray<Diagnostic> CheckSyntax<T>(Guid microService, ISourceCode sourceCode)
+        public ImmutableArray<Diagnostic> CheckSyntax(Guid microService, ISourceCode sourceCode)
+        {
+            if (sourceCode.TextBlob == Guid.Empty)
+                return ImmutableArray<Diagnostic>.Empty;
+
+            var svc = Connection.GetService<ICompilerService>();
+            var script = svc.GetScript(microService, sourceCode);
+
+            return script == null ? ImmutableArray<Diagnostic>.Empty : script.Errors;
+        }
+
+        public ImmutableArray<Diagnostic> CheckSyntax<T>(Guid microService, ISourceCode sourceCode)
 		{
 			if (sourceCode.TextBlob == Guid.Empty)
 				return ImmutableArray<Diagnostic>.Empty;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
 
-namespace TomPIT.Data.DataProviders
+namespace TomPIT.Data
 {
 	public interface IDataConnection : IDisposable
 	{

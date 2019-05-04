@@ -26,6 +26,7 @@ namespace TomPIT.Management.Deployment
 
         List<IPublishedPackage> QueryPublicPackages();
         IPublishedPackage SelectPublishedPackage(Guid package);
+        List<IPublishedPackage> QueryPublishedPackage(List<Guid> packages);
 
         void InsertInstallers(List<IInstallState> installers);
         List<IInstallState> QueryInstallers();

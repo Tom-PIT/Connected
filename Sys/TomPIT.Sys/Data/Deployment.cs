@@ -191,6 +191,20 @@ namespace TomPIT.Sys.Data
             return new HttpConnection().Post<PublishedPackage>(u, e, new HttpRequestArgs().WithBasicCredentials(UserName, Password));
         }
 
+        public List<IPublishedPackage> QueryPublishedPackages(List<Guid> packages)
+        {
+            var u = new MarketplaceUrl("IPackages", "Query");
+            var e = new JObject();
+            var a = new JArray();
+
+            e.Add("packages", a);
+
+            foreach (var package in packages)
+                a.Add(package);
+
+            return new HttpConnection().Post<List<PublishedPackage>>(u, e, new HttpRequestArgs().WithBasicCredentials(UserName, Password)).ToList<IPublishedPackage>();
+        }
+
         public List<IInstallState> QueryInstallers()
         {
             return Shell.GetService<IDatabaseService>().Proxy.Deployment.QueryInstallers();

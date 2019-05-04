@@ -24,7 +24,7 @@ namespace TomPIT.Management.Models
 			get
 			{
 				if (_packageInfo == null)
-					_packageInfo = Designer.Environment.Context.Connection().GetService<IDeploymentService>().SelectPublishedPackage(Dependency.Token);
+					_packageInfo = Designer.DependencyPackages.FirstOrDefault(f=>f.Token == Dependency.Token);
 
 				return _packageInfo;
 			}

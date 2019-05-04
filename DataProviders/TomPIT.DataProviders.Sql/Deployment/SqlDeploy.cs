@@ -56,19 +56,19 @@ namespace TomPIT.DataProviders.Sql.Deployment
             if (LastState == null)
                 return;
 
-            foreach (var routine in LastState.Routines)
-            {
-                if (Context.Database.Routines.Find(routine.Schema, routine.Name) == null)
-                    Command.DropProcedure(routine);
-            }
+			foreach (var routine in LastState.Routines)
+			{
+				if (Context.Database.Routines.Find(routine.Schema, routine.Name) == null)
+					Command.DropProcedure(routine);
+			}
 
-            foreach (var view in LastState.Views)
-            {
-                if (Context.Database.Views.Find(view.Schema, view.Name) == null)
-                    Command.DropView(view);
-            }
+			foreach (var view in LastState.Views)
+			{
+				if (Context.Database.Views.Find(view.Schema, view.Name) == null)
+					Command.DropView(view);
+			}
 
-            foreach (var table in LastState.Tables)
+			foreach (var table in LastState.Tables)
             {
                 var target = Context.Database.Tables.Find(table.Schema, table.Name);
 

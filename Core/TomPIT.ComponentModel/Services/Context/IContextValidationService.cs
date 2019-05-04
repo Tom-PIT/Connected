@@ -26,6 +26,7 @@ namespace TomPIT.Services.Context
 		void Required(string attribute, Guid value);
 
 		void Unique(string attribute, object value, string keyProperty, object keyValue, JObject existing);
+		void Unique(string attribute, object value, string keyProperty, object keyValue, string propertyName, List<object> existing);
 		void Exists(string attribute, object value, List<object> values);
 		void Exists(string attribute, object value, List<string> values);
 

@@ -24,7 +24,7 @@ namespace TomPIT.Compilers
 			}
 
             if (sourceCode is IConfiguration)
-                return sourceCode.Configuration().ComponentName(connection);
+                return $"{sourceCode.Configuration().ComponentName(connection)}.csx";
 
 			return sourceCode.ToString();
 		}

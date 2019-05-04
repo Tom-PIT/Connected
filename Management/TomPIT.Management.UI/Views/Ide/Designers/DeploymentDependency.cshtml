@@ -1,11 +1,11 @@
 ﻿@model TomPIT.Management.Models.DeploymentDependencyModel
 
 @{
-	var css = Model.IsDependencyEnabled
-		? "fal fa-check-square"
-		: "fal fa-times-square";
+    var css = Model.IsDependencyEnabled
+        ? "fal fa-check-square"
+        : "fal fa-times-square";
 
-	var showCss = Model.IsDependencyEnabled ? "show" : string.Empty;
+    var showCss = Model.IsDependencyEnabled ? "show" : string.Empty;
 }
 
 <div data-kind="dependency">
@@ -17,17 +17,5 @@
 	</div>
 	<div class="dependency-content collapse @showCss">
 		@await Html.PartialAsync("~/Views/Ide/Designers/DeploymentConfiguration.cshtml", new TomPIT.Management.Models.DeploymentConfigurationModel(Model.Package.Token, Model.Designer))
-
-		@if (Model.Package.DependencyCount > 0)
-		{
-			<div class="dependency-children">
-				@{ var deps = Model.Designer.QueryDependencies(Model.Package.Token);
-
-					foreach (var i in deps)
-					{
-						@await Html.PartialAsync("~/Views/Ide/Designers/DeploymentDependency.cshtml", new TomPIT.Management.Models.DeploymentDependencyModel(Model.Designer, i))
-					} }
-			</div>
-		}
 	</div>
 </div>

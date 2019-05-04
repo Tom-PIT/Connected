@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.Services;
 
 namespace TomPIT.Data
 {
-    public abstract class DataAccess
+    public abstract class DataModel
     {
-        protected DataAccess(OperationArguments e)
+        protected DataModel(IDataModelContext e)
         {
             this.e = e;
         }
-        protected OperationArguments e { get; }
+        protected IDataModelContext e { get; }
     }
 }

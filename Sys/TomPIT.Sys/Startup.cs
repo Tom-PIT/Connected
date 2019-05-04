@@ -64,6 +64,7 @@ namespace TomPIT.Sys
 				routes.MapHub<CacheHub>("/caching");
 				routes.MapHub<IoTHub>("/iot");
 				routes.MapHub<BigDataHub>("/bigdata");
+				routes.MapHub<DataCacheHub>("/datacaching");
 			});
 
 			app.UseMvc(routes =>

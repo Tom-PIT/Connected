@@ -27,7 +27,7 @@ namespace TomPIT.Caching
 		T Set<T>(string key, string id, T instance, TimeSpan duration);
 		T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration);
 		void Remove(string key, string id);
-		void Remove<T>(string key, Func<T, bool> predicate) where T : class;
+		List<string> Remove<T>(string key, Func<T, bool> predicate) where T : class;
 		void Refresh(string key, string id);
 
 		string GenerateKey(params object[] parameters);

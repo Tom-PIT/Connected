@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Globals">
     <SccProjectName>
     </SccProjectName>
@@ -15,10 +15,10 @@
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Microservice Platform</Product>
-    <AssemblyVersion>1.0.424.9</AssemblyVersion>
+    <AssemblyVersion>1.0.503.1</AssemblyVersion>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FileVersion>1.0.424.9</FileVersion>
-    <Version>1.0.424.9</Version>
+    <FileVersion>1.0.503.1</FileVersion>
+    <Version>1.0.503.1</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>
@@ -39,10 +39,5 @@
   <ItemGroup>
     <Folder Include="BigData\" />
     <Folder Include="Data\DataProviders\Deployment\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System">
-      <HintPath>System</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>
