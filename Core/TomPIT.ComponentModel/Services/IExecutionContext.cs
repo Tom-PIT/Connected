@@ -18,11 +18,16 @@ namespace TomPIT.Services
 		JObject Invoke([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, IApiTransaction transaction);
 		JObject Invoke([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api);
 
-		T Invoke<T>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, [CodeAnalysisProvider(ExecutionContext.ApiParameterProvider)]JObject e, IApiTransaction transaction);
-		T Invoke<T>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, [CodeAnalysisProvider(ExecutionContext.ApiParameterProvider)]JObject e);
+		R Invoke<R>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, [CodeAnalysisProvider(ExecutionContext.ApiParameterProvider)]JObject e, IApiTransaction transaction);
+		R Invoke<R>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, [CodeAnalysisProvider(ExecutionContext.ApiParameterProvider)]JObject e);
 
-		T Invoke<T>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, IApiTransaction transaction);
-		T Invoke<T>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api);
+		R Invoke<R>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, IApiTransaction transaction);
+		R Invoke<R>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api);
+
+		R Invoke<R, A>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, A e, IApiTransaction transaction);
+		R Invoke<R, A>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, A e);
+
+		void Invoke<A>([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, A e);
 
 		RuntimeException Exception(string message);
 		RuntimeException Exception(string format, string message);

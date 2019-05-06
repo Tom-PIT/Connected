@@ -4,16 +4,18 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text;
+using TomPIT.Annotations;
+using TomPIT.Services;
 
 namespace TomPIT.Data
 {
 	public abstract class RequestArguments:RequestEntity
 	{
-		public void Validate()
+		public void Validate(IDataModelContext context)
 		{
 			var results = new List<ValidationResult>();
 
-			ValidateProperties(results, this);
+			ValidateProperties(context, results, this);
 
 			var sb = new StringBuilder();
 
@@ -27,19 +29,21 @@ namespace TomPIT.Data
 				throw new RuntimeException(sb.ToString());
 		}
 
-		private void ValidateProperties(List<ValidationResult> results, object instance)
+		private void ValidateProperties(IDataModelContext context, List<ValidationResult> results, object instance)
 		{
 			if (instance == null)
 				return;
 
 			if (instance is RequestEntity re)
-				re.OnValidating(results);
+				re.Validate(context, results);
 
 			var properties = instance.GetType().GetProperties();
 
 			foreach (var property in properties)
 			{
-				if (property.GetType().IsCollection())
+				if (property.PropertyType.IsTypePrimitive())
+					ValidateProperty(context, results, instance, property);
+				else if (property.PropertyType.IsCollection())
 				{
 					var ien = property.GetValue(instance) as IEnumerable;
 					var en = ien.GetEnumerator();
@@ -49,11 +53,9 @@ namespace TomPIT.Data
 						if (en.Current == null)
 							continue;
 
-						ValidateProperties(results, en.Current);
+						ValidateProperties(context, results, en.Current);
 					}
 				}
-				else if (property.GetType().IsTypePrimitive())
-					ValidateProperty(results, instance, property);
 				else
 				{
 					var value = property.GetValue(instance);
@@ -61,12 +63,12 @@ namespace TomPIT.Data
 					if (value == null)
 						continue;
 
-					ValidateProperties(results, value);
+					ValidateProperties(context, results, value);
 				}
 			}
 		}
 
-		private void ValidateProperty(List<ValidationResult> results, object instance, PropertyInfo property)
+		private void ValidateProperty(IDataModelContext context, List<ValidationResult> results, object instance, PropertyInfo property)
 		{
 			var attributes = property.GetCustomAttributes(false);
 
@@ -76,7 +78,21 @@ namespace TomPIT.Data
 				{
 					try
 					{
-						val.Validate(property.GetValue(instance), property.Name);
+						var serviceProvider = new ValidationServiceProvider();
+
+						serviceProvider.AddService(typeof(IDataModelContext), context);
+						serviceProvider.AddService(typeof(IUniqueValueProvider), this);
+
+						var ctx = new ValidationContext(instance, serviceProvider, new Dictionary<object, object>
+						{
+							{ "entity", this }
+						})
+						{
+							DisplayName = property.Name,
+							MemberName = property.Name
+						};
+
+						val.Validate(property.GetValue(instance), ctx);
 					}
 					catch (ValidationException ex)
 					{

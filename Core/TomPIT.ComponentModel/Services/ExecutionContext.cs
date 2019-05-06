@@ -130,7 +130,7 @@ namespace TomPIT.Services
 			return r;
 		}
 
-		public T Invoke<T>([CodeAnalysisProvider(ApiProvider)]string api,
+		public R Invoke<R>([CodeAnalysisProvider(ApiProvider)]string api,
 			[CodeAnalysisProvider(ApiParameterProvider)]JObject e, IApiTransaction transaction)
 		{
 			var q = new ApiQualifier(this, api);
@@ -139,9 +139,9 @@ namespace TomPIT.Services
 			var r = ai.Execute(this as IApiExecutionScope, q.MicroService.Token, q.Api, q.Operation, e, transaction, q.ExplicitIdentifier);
 
 			if (r == null)
-				return Types.Convert<T>(r);
+				return Types.Convert<R>(r);
 
-			var tt = typeof(T);
+			var tt = typeof(R);
 
 			if (NeedsMarshalling(r, tt))
 			{
@@ -152,10 +152,10 @@ namespace TomPIT.Services
 					ContractResolver = new SerializationResolver()
 				};
 
-				return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(r, settings), settings);
+				return JsonConvert.DeserializeObject<R>(JsonConvert.SerializeObject(r, settings), settings);
 			}
 
-			return Types.Convert<T>(r);
+			return Types.Convert<R>(r);
 		}
 
 		private bool NeedsMarshalling(object instance, Type type)
@@ -193,20 +193,35 @@ namespace TomPIT.Services
 				&& string.Compare(type.Assembly.FullName, instanceType.Assembly.FullName, false) != 0;
 		}
 
-		public T Invoke<T>([CodeAnalysisProvider(ApiProvider)]string api,
+		public R Invoke<R>([CodeAnalysisProvider(ApiProvider)]string api,
 			[CodeAnalysisProvider(ApiParameterProvider)]JObject e)
 		{
-			return Invoke<T>(api, e, null);
+			return Invoke<R>(api, e, null);
 		}
 
-		public T Invoke<T>([CodeAnalysisProvider(ApiProvider)]string api, IApiTransaction transaction)
+		public R Invoke<R>([CodeAnalysisProvider(ApiProvider)]string api, IApiTransaction transaction)
 		{
-			return Invoke<T>(api, null, transaction);
+			return Invoke<R>(api, null, transaction);
 		}
 
-		public T Invoke<T>([CodeAnalysisProvider(ApiProvider)]string api)
+		public R Invoke<R>([CodeAnalysisProvider(ApiProvider)]string api)
 		{
-			return Invoke<T>(api, null, null);
+			return Invoke<R>(api, null, null);
+		}
+
+		public R Invoke<R, A>([CodeAnalysisProvider(ApiProvider)] string api, A e, IApiTransaction transaction)
+		{
+			return Invoke<R>(api, JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(e)), transaction);
+		}
+
+		public R Invoke<R, A>([CodeAnalysisProvider(ApiProvider)] string api, A e)
+		{
+			return Invoke<R>(api, JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(e)));
+		}
+
+		public void Invoke<A>([CodeAnalysisProvider(ApiProvider)] string api, A e)
+		{
+			Invoke<JObject>(api, JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(e)));
 		}
 
 		public JObject Invoke([CodeAnalysisProvider(ApiProvider)]string api,

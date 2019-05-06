@@ -10,6 +10,18 @@ namespace TomPIT.SysDb.Sql.Development
 		private IQaHandler _qa = null;
 		private IVersionControlHandler _versionControl = null;
 		private ITestSuiteHandler _testSuite = null;
+		private IDevelopmentErrorHandler _errors = null;
+
+		public IDevelopmentErrorHandler Errors
+		{
+			get
+			{
+				if (_errors == null)
+					_errors = new DevelopmentErrorHandler();
+
+				return _errors;
+			}
+		}
 
 		public IQaHandler QA
 		{

@@ -58,5 +58,31 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
 			return null;
 		}
+
+		public override List<ICodeAnalysisResult> ProvideHover(IExecutionContext context, CodeAnalysisArgs e)
+		{
+			if (!(e.Node is ArgumentSyntax arg))
+				return null;
+
+			var list = e.Node.Parent as ArgumentListSyntax;
+
+			var table = list.Arguments[0].GetText().ToString();
+			var str = e.Node.GetText().ToString();
+
+			if (string.IsNullOrWhiteSpace(table) || string.IsNullOrWhiteSpace(str))
+				return null;
+
+			var value = context.Services.Localization.GetString(table.Substring(1, table.Length-2), str.Substring(1, str.Length-2));
+
+			if (string.IsNullOrWhiteSpace(value))
+				return null;
+
+			var r = new List<ICodeAnalysisResult>
+			{
+				new CodeAnalysisResult( value)
+			};
+
+			return r;
+		}
 	}
 }

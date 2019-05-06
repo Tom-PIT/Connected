@@ -1,8 +1,23 @@
 ﻿@model TomPIT.Ide.IEnvironment
 @{
-	Layout = "~/Views/Shared/Shell.cshtml";
+   Layout = "~/Views/Shared/Shell.cshtml";
 
-	var qspath = Context.Request.Query["path"].ToString();
+   var qspath = Context.Request.Query["path"].ToString();
+   var element = string.Empty;
+   var eventName = string.Empty;
+
+   if (string.IsNullOrWhiteSpace(qspath))
+   {
+       var component = Context.Request.Query["component"].ToString();
+
+       if (!string.IsNullOrWhiteSpace(component))
+       {
+           element = Context.Request.Query["element"].ToString();
+           var elementId = string.IsNullOrWhiteSpace(element) ? Guid.Empty : element.AsGuid();
+
+           qspath = Model.ResolvePath(component.AsGuid(), elementId, out eventName);
+       }
+   }
 }
 
 @section head{
@@ -77,6 +92,35 @@
 
 	@if (!string.IsNullOrWhiteSpace(qspath))
 	{
-		@:ide.expandTo({ 'path': '@qspath' });
+       <text>
+		ide.expandTo({
+            'path': '@qspath',
+            @if (!string.IsNullOrWhiteSpace(eventName)) {
+               <text>
+            onComplete: function () {
+                    ide.loadSection({
+                        section: 'designer',
+                        data: {
+                            property: '@eventName'
+                        }
+                    });
+            }
+                </text>
+                }
+            });
+    </text>
 	}
+    
+   setInterval(function () {
+        ide.refreshSections({
+            sections: 'errorList',
+            path: ide.selectedPath(),
+            data: {
+                'error': ide.options.designer.errorListState.error,
+                'warning': ide.options.designer.errorListState.warning,
+                'info': ide.options.designer.errorListState.info
+            }
+        });
+    }, 5000);
+
 </script>

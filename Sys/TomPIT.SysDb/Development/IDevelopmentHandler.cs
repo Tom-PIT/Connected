@@ -8,5 +8,6 @@
 		IQaHandler QA { get; }
 		IVersionControlHandler VersionControl { get; }
 		ITestSuiteHandler TestSuite { get; }
+		IDevelopmentErrorHandler Errors { get; }
 	}
 }

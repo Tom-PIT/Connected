@@ -147,7 +147,7 @@ namespace TomPIT.Designers
 			else if (string.Compare(action, "resolvePath", true) == 0)
 				return Result.JsonResult(this, new JObject
 				{
-					{"path", Environment.ResolvePath(data.Required<Guid>("component"), data.Required<Guid>("element")) }
+					{"path", Environment.ResolvePath(data.Required<Guid>("component"), data.Required<Guid>("element"), out _) }
 				});
 			else if (string.Compare(action, "dataSources", true) == 0)
 				return Result.JsonResult(this, QueryDataSources());

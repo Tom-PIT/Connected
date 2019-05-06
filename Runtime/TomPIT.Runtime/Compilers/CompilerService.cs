@@ -117,9 +117,9 @@ namespace TomPIT.Compilers
             return Execute(microService, sourceCode, sender, e, out bool handled);
         }
 
-        public object Execute<T>(Guid microService, ISourceCode sourceCode, object sender, T e, out bool handled)
+		public object Execute<T>(Guid microService, ISourceCode sourceCode, object sender, T e, out bool handled)
 		{
-            handled = false;
+			handled = false;
 
 			if (sourceCode.TextBlob == Guid.Empty)
 				return null;
@@ -129,9 +129,9 @@ namespace TomPIT.Compilers
 			if (script == null)
 				return null;
 
-            handled = true;
+			handled = true;
 
-			if (script.Errors.Length > 0)
+			if (!script.Errors.IsDefaultOrEmpty && script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() > 0)
 			{
 				var sb = new StringBuilder();
 
@@ -236,7 +236,7 @@ namespace TomPIT.Compilers
 
             ((ScriptDescriptor)script.Result).Errors = script.Script.Compile();
 
-            if (script.Result.Errors.Length == 0)
+            if (script.Result.Errors.Where(f=>f.Severity== Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() == 0)
                 ((ScriptDescriptor)script.Result).Script = script.Script.CreateDelegate();
         }
 

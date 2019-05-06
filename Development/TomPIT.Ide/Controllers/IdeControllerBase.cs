@@ -58,6 +58,8 @@ namespace TomPIT.Controllers
 					return View("~/Views/Ide/Selection/Toolbox.cshtml", m);
 				case EnvironmentSection.Property:
 					return View("~/Views/Ide/Selection/Property.cshtml", m);
+				case EnvironmentSection.ErrorList:
+					return View("~/Views/Ide/Selection/ErrorList.cshtml", m);
 				case EnvironmentSection.All:
 					return View("~/Views/Ide/Console.cshtml", m);
 				default:

@@ -86,7 +86,7 @@ namespace TomPIT.Data
 		{
 			return Connection.GetService<IDataCachingService>().Set(CacheKey, id.ToString(), instance, duration, slidingExpiration);
 		}
-		public void Remove(K id)
+		protected void Remove(K id)
 		{
 			Connection.GetService<IDataCachingService>().Remove(CacheKey, new List<string> { id.ToString() });
 		}
@@ -111,7 +111,7 @@ namespace TomPIT.Data
 			return Connection.GetService<IDataCachingService>().GenerateRandomKey(CacheKey);
 		}
 
-		public void Refresh(K id)
+		protected void Refresh(K id)
 		{
 			Connection.GetService<IDataCachingService>().Invalidate(CacheKey, new List<string> { id.ToString() });
 		}
@@ -124,6 +124,19 @@ namespace TomPIT.Data
 				items.Add(i.ToString());
 
 			Connection.GetService<IDataCachingService>().Invalidate(CacheKey, items);
+		}
+
+		public virtual void Notify(K id, bool remove = false)
+		{
+			OnNotify(id, remove);
+		}
+
+		protected virtual void OnNotify(K id, bool remove)
+		{
+			if (remove)
+				Remove(id);
+			else
+				Refresh(id);
 		}
 
 		void IDataCachingHandler.Invalidate(string id)

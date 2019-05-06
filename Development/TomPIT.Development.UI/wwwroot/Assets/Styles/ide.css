@@ -365,3 +365,31 @@ h4.dev-title {
 .dev-explorer-node-validation.validation-suggestion {
   text-decoration-color: #2e7d32;
 }
+.errorlist-badge {
+  font-weight: 300;
+}
+li[data-kind="error-item"] {
+  padding: 5px;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+}
+li[data-kind="error-item"]:hover {
+  color: #FFF;
+  background-color: #2196f3;
+}
+.error-list-buttons {
+  padding: 2px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+.error-list-button {
+  padding: 0 5px;
+  cursor: pointer;
+  border: 1px solid #f5f5f5;
+}
+.error-list-button.active {
+  border: 1px solid #e0e0e0;
+}
+.error-list-button:hover {
+  color: #FFF;
+  background-color: #2196f3;
+}

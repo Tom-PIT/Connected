@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TomPIT.Analysis;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Apis;
 using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Security;
@@ -205,5 +207,35 @@ namespace TomPIT
 
 			return instance;
 		}
+
+		//public static void FromRequestArguments<T>(this List<SchemaParameter> parameters)
+		//{
+		//	var t = typeof(T);
+
+		//	var properties = t.GetProperties();
+
+		//	foreach(var i in properties)
+		//	{
+		//		if (i.IsPrimitive())
+		//		{
+
+		//		}
+		//		else if(i.IsCollection())
+		//		{
+
+		//		}
+		//		else
+		//		{
+
+		//		}
+
+		//		if (!i.CanWrite)
+		//			continue;
+
+		//		var accessors = i.GetAccessors();
+		//	}
+		//}
+
+		
 	}
 }

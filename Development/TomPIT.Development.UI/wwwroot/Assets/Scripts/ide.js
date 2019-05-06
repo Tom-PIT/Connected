@@ -7,7 +7,12 @@ $.widget('tompit.tpIde', {
 			view: null
 		},
 		designer: {
-			active: null
+            active: null,
+            errorListState: {
+                error: true,
+                warning: true,
+                info: true
+            }
 		},
 		globalization: {
 			language: null
@@ -471,6 +476,9 @@ $.widget('tompit.tpIde', {
 						target: target
 					});
 				}
+                
+                if (typeof e.onComplete !== 'undefined')
+                    e.onComplete();
 
 				return;
 			}
@@ -487,7 +495,8 @@ $.widget('tompit.tpIde', {
 					path: e.path,
 					select: e.select,
 					selectedId: e.selectedId,
-					current: current
+                    current: current,
+                    onComplete:e.onComplete
 				});
 			}
 		});
@@ -678,7 +687,8 @@ $.widget('tompit.tpIde', {
 		var properties = sec.indexOf('properties') > -1;
 		var events = sec.indexOf('events') > -1;
 		var toolbox = sec.indexOf('toolbox') > -1;
-		var property = sec.indexOf('property') > -1;
+        var property = sec.indexOf('property') > -1;
+        var errorList = sec.indexOf('errorlist') > -1;
 		var all = sec.indexOf('all') > -1;
 
 		if (all) {
@@ -755,7 +765,15 @@ $.widget('tompit.tpIde', {
 						data: e.data,
 						onComplete: e.onComplete
 					});
-			}
+
+                if (errorList)
+                    this.loadSection({
+                        section: 'errorList',
+                        path: e.path,
+                        data: e.data,
+                        onComplete: e.onComplete
+                    });
+            }
 		}
 	},
 	/*
@@ -834,6 +852,9 @@ $.widget('tompit.tpIde', {
 				else if (s === 'property') {
 					//
 				}
+                else if (s === 'errorlist') {
+                    $('#devTabErrorList').html(data);
+                }
 				else if (s === 'designer') {
 					$('#ide').off('toolbarClick');
 					instance.setActiveDesigner(null);
@@ -923,7 +944,7 @@ $.widget('tompit.tpIde', {
 				path: path,
 				language: instance.options.globalization.language
 			}),
-			progress: typeof progress === 'undefined' || !progress ? tompit.findProgress(this.element) : null,
+			progress: typeof progress === 'undefined' || progress ? tompit.findProgress(this.element) : null,
 			onSuccess: function (data, status, request) {
 				var type = request.getResponseHeader('designerResult');
 

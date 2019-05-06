@@ -13,6 +13,7 @@ namespace TomPIT.Annotations
 		Events = 16,
 		Toolbox = 32,
 		Property = 64,
+		ErrorList = 128,
 		All = 1024
 	}
 

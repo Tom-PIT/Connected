@@ -16,6 +16,9 @@ namespace TomPIT.Services.Context
 		Guid InsertUser(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language, string timezone, bool notificationsEnabled,
 			string mobile, string phone, string password);
 
+		void UpdateUser(Guid token, string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language, string timezone, bool notificationsEnabled,
+			string mobile, string phone);
+
 		Guid InsertAlien(string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone);
 
 		IAlien GetAlien(string email);

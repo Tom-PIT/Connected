@@ -125,6 +125,33 @@ namespace TomPIT.Services.Context
 			return id;
 		}
 
+		public void UpdateUser(Guid token, string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language,
+			string timezone, bool notificationsEnabled, string mobile, string phone)
+		{
+			var u = Context.Connection().CreateUrl("UserManagement", "Update");
+			var e = new JObject
+			{
+				{"token", token},
+				{ "email", email},
+				{"loginName", loginName},
+				{"firstName", firstName},
+				{"lastName", lastName},
+				{"status", status.ToString()},
+				{"description", description},
+				{"pin", pin},
+				{"language", language},
+				{"timezone", timezone},
+				{"notificationEnabled", notificationsEnabled},
+				{"mobile", mobile},
+				{"phone", phone}
+			};
+
+			Context.Connection().Post(u, e);
+
+			if (Context.Connection().GetService<IUserService>() is IUserNotification n)
+				n.NotifyChanged(this, new UserEventArgs(token));
+		}
+
 		public Guid InsertAlien(string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone)
 		{
 			return Context.Connection().GetService<IAlienService>().Insert(firstName, lastName, email, mobile, phone, language, timezone);

@@ -160,8 +160,10 @@ namespace TomPIT
 			}
 		}
 
-		public static string ResolvePath(this IEnvironment environment, Guid component, Guid element)
+		public static string ResolvePath(this IEnvironment environment, Guid component, Guid element, out string eventName)
 		{
+			eventName = string.Empty;
+
 			var c = environment.Context.Connection().GetService<IComponentService>().SelectComponent(component);
 
 			if (c == null)
@@ -177,11 +179,15 @@ namespace TomPIT
 			if (root == null)
 				return null;
 
-			var target = Traverse(element, root);
+			var target = Traverse(element == Guid.Empty ? component : element, root);
 
-			return target != null
-				? DomQuery.Path(target)
-				: null;
+			if (target == null)
+				return null;
+
+			if (target.IsEvent(element))
+				eventName = target.EventName(element);
+
+			return DomQuery.Path(target);
 		}
 
 		private static IDomElement Traverse(Guid element, ListItems<IDomElement> elements)
@@ -196,6 +202,9 @@ namespace TomPIT
 
 			foreach (var i in elements)
 			{
+				if (i.IsEvent(element))
+					return i;
+
 				i.LoadChildren();
 
 				r = Traverse(element, i.Items);
@@ -205,6 +214,49 @@ namespace TomPIT
 			}
 
 			return null;
+		}
+
+		public static string EventName(this IDomElement dom, Guid element)
+		{
+			if (dom.Value == null)
+				return null;
+
+			var properties = dom.Value.GetType().GetProperties();
+
+			foreach (var property in properties)
+			{
+				if (property.IsText())
+				{
+					var propertyValue = property.GetValue(dom.Value);
+
+					if (propertyValue is IElement el && el.Id == element)
+						return property.Name;
+				}
+			}
+
+			return null;
+		}
+
+
+		public static bool IsEvent(this IDomElement dom, Guid element)
+		{
+			if (dom.Value == null)
+				return false;
+
+			var properties = dom.Value.GetType().GetProperties();
+
+			foreach (var property in properties)
+			{
+				if (property.IsText())
+				{
+					var propertyValue = property.GetValue(dom.Value);
+
+					if (propertyValue is IElement el && el.Id == element)
+						return true;
+				}
+			}
+
+			return false;
 		}
 
 		public static List<Guid> Dependencies(this IConfiguration configuration)

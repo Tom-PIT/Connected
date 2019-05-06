@@ -1,0 +1,151 @@
+﻿@model TomPIT.Ide.IEnvironment
+
+@{
+    var items = Model.Context.Connection().GetService<TomPIT.Design.IDesignerService>().QueryErrors(Model.Context.MicroService.Token);
+}
+
+@if (items == null || items.Count == 0)
+{
+    <script>
+        $('#devErrorCount').empty();
+    </script>
+
+    <div class="dev-no-data">
+        No errors.
+    </div>
+}
+else
+{
+    var itemsString = items.Count > 99 ? "99+" : items.Count.ToString();
+    var errors = items.Count(f => f.Severity == TomPIT.Development.DevelopmentSeverity.Error);
+    var warnings = items.Count(f => f.Severity == TomPIT.Development.DevelopmentSeverity.Warning);
+    var info = items.Count(f => f.Severity == TomPIT.Development.DevelopmentSeverity.Info);
+
+    var errorCss = Model.RequestBody.Optional<bool>("error", true) ? "show" : "";
+   var warningCss = Model.RequestBody.Optional<bool>("warning", true) ? "show" : "";
+   var infoCss = Model.RequestBody.Optional<bool>("info", true) ? "show" : "";
+
+    <script>
+        $('#devErrorCount').html('&nbsp;<span class="badge badge-danger errorlist-badge">@itemsString</span>');
+    </script>
+
+    <div class="error-list-buttons">
+        <span class="error-list-button text-danger active" data-kind="error"><i class="fal fa-exclamation-circle"></i> @errors</span>
+        <span class="error-list-button text-warning active" data-kind="warning"><i class="fal fa-exclamation-triangle"></i> @warnings</span>
+        <span class="error-list-button active" data-kind="info"><i class="fal fa-info-circle"></i> @info</span>
+    </div>
+
+    <ul class="list-unstyled">
+        @foreach(var error in items)
+        {
+            var kind = "info";
+            var css = infoCss;
+
+            if(error.Severity == TomPIT.Development.DevelopmentSeverity.Error)
+            {
+                kind = "error";
+                css = errorCss;
+            }
+            else if(error.Severity == TomPIT.Development.DevelopmentSeverity.Warning)
+            {
+                kind = "warning";
+                css = warningCss;
+            }
+
+           <li data-component="@error.Component" data-element="@error.Element" data-kind="error-item" data-type="@kind" class="collapse @css">
+               @{ 
+                  var glyph = "fal fa-info-circle";
+
+                  switch (error.Severity)
+                  {
+                      case TomPIT.Development.DevelopmentSeverity.Warning:
+                        glyph = "fal fa-exclamation-triangle text-warning";
+                          break;
+                      case TomPIT.Development.DevelopmentSeverity.Error:
+                        glyph = "fal fa-exclamation-circle text-danger";
+                          break;
+                  }
+               }
+               <div><i class="@glyph"></i> <strong>@error.ComponentName</strong> @error.ComponentCategory</div>
+               <span title="@error.Message">@StringUtils.EllipseString(error.Message, 128)</span>
+           </li>
+        }
+    </ul>
+
+    <script>
+        $('[data-kind="error-item"]').click(function () {
+            var url = new tompit.devUrl();
+            var component = $(this).attr('data-component');
+            var element = $(this).attr('data-element');
+
+			window.open(url.environment() + '?component=' + component + '&element=' + element, '_blank');
+        });
+
+        $('.error-list-button').click(function () {
+            $(this).toggleClass('active');
+
+            var kind = $(this).attr('data-kind');
+            var stateValue = $(this).hasClass('active');
+
+            if (kind === 'error') {
+                ide.options.designer.errorListState.error = stateValue;
+
+                if (stateValue)
+                    showErrors();
+                else
+                    hideErrors();
+            }
+            else if (kind === 'warning') {
+                ide.options.designer.errorListState.warning = stateValue;
+
+                if (stateValue)
+                    showWarnings();
+                else
+                    hideWarnings();
+            }
+            else {
+                ide.options.designer.errorListState.info = stateValue;
+
+                if (stateValue)
+                    showInfo();
+                else
+                    hideInfo();
+            }
+        });
+
+        if (typeof ide.options !== 'undefined') {
+            if (!ide.options.designer.errorListState.error)
+                $('.error-list-button[data-kind="error"]').removeClass('active');
+
+            if (!ide.options.designer.errorListState.warning)
+                $('.error-list-button[data-kind="warning"]').removeClass('active');
+
+            if (!ide.options.designer.errorListState.info)
+                $('.error-list-button[data-kind="info"]').removeClass('active');
+        }
+
+        function hideErrors() {
+            $('li[data-type="error"]').collapse('hide');
+        }
+
+        function hideWarnings() {
+            $('li[data-type="warning"]').collapse('hide');
+        }
+
+        function hideInfo() {
+            $('li[data-type="info"]').collapse('hide');
+        }
+
+        function showErrors() {
+            $('li[data-type="error"]').collapse('show');
+        }
+
+        function showWarnings() {
+            $('li[data-type="warning"]').collapse('show');
+        }
+
+        function showInfo() {
+            $('li[data-type="info"]').collapse('show');
+        }
+    </script>
+}

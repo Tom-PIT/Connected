@@ -74,6 +74,12 @@
             {
            <text>
         onCreated: function (instance) {
+
+            @if (Model.CompletionDiagnostic != null)
+            {
+               @:setErrorMarkers(false);
+        }
+
 			  textEditor.registerCompletionItemProvider('@Model.Language', {
 					provideCompletionItems: function (model, position, context) {
                     return new monaco.Promise(function (resolve, reject) {
@@ -96,7 +102,7 @@
                                 })
                             }
 
-                        });
+                        }, false);
                     });
 
                 },
@@ -120,7 +126,7 @@
                             onComplete: function (data) {
                                 resolve(data);
                             }
-                        });
+                        }, false);
 
                     });
                 },
@@ -146,7 +152,7 @@
 											range: new monaco.Range(data.range.startLineNumber, data.range.startColumn, data.range.endLineNumber, data.range.endColumn)
 										});
                             }
-                        });
+                        }, false);
 
                     });
 				  }
@@ -169,7 +175,7 @@
                             onComplete: function (data) {
                                 resolve(data);
                             }
-                        });
+                        }, false);
 
                     });
                 },
@@ -195,7 +201,7 @@
 				  run: function (ed) {
 					  $('#modalStronglyTyped').modal('show');
 
-					  ide.designerAction({
+                      ide.designerAction({
 						  data: {
 							  'action':'dataSources'
 						  },
@@ -206,7 +212,7 @@
 							  list.option('dataSource', data);
 							  list.endUpdate();
 						  }
-					  });
+					  }, false);
 						return null;
 					}
 			  });
@@ -273,20 +279,20 @@
 
 				  var value = keys[0].value;
 
-				  ide.designerAction({
-					  data: {
-						  'action': 'createStronglyType',
-						  'dataSource': value,
-						  'readOnly': $('#checkReadOnly').dxCheckBox('instance').option('value'),
-						  'directBinding': $('#checkDirectBinding').dxCheckBox('instance').option('value'),
-						  'currentText': textEditor.getValue()
-					  },
-					  onComplete: function (data) {
-						  $('#modalStronglyTyped').modal('hide');
+                  ide.designerAction({
+                      data: {
+                          'action': 'createStronglyType',
+                          'dataSource': value,
+                          'readOnly': $('#checkReadOnly').dxCheckBox('instance').option('value'),
+                          'directBinding': $('#checkDirectBinding').dxCheckBox('instance').option('value'),
+                          'currentText': textEditor.getValue()
+                      },
+                      onComplete: function (data) {
+                          $('#modalStronglyTyped').modal('hide');
 
-						  textEditor.insertText(data.text);
-					  }
-				  })
+                          textEditor.insertText(data.text);
+                      }
+                  }, false);
 			  });
 		  }
 
@@ -301,33 +307,48 @@
     {
        <text>
 
-	$('#checkSyntax').click(function (e) {
-        ide.saveProperty({
+    $('#checkSyntax').click(function (e) {
+        checkSyntax(true);
+    });
+
+    function checkSyntax(successMessage) {
+                ide.saveProperty({
             data: {
                 property: '@Model.PropertyName',
                 attribute: '@Model.AttributeName',
                 value: textEditor.getValue(),
                 path: propertyPath
             },
-            onComplete: function () {
-                ide.designerAction({
-                    data: {
-                        action: 'checkSyntax',
-							  section: 'designer',
-								property: '@Model.PropertyName',
-                    },
-                    onComplete: function (data) {
-
-                        if (data.length === 0) {
-                            tompit.success('No errors found in the source code', "Valid");
-                        }
-
-                        textEditor.setMarkers(data);
-                    }
-                });
+                    onComplete: function () {
+                        setErrorMarkers(successMessage);
             }
-        });
-    });
+        }, false);
+    }
+
+    setInterval(function () {
+        try {
+            if (textEditor.observeDirty())
+                checkSyntax(false);
+        } catch (e) {}
+    }, 2500);
+
+    function setErrorMarkers(successMessage) {
+        ide.designerAction({
+            data: {
+                action: 'checkSyntax',
+                section: 'designer',
+                property: '@Model.PropertyName',
+            },
+            onComplete: function (data) {
+
+                if (data.length === 0 && successMessage) {
+                    tompit.success('No errors found in the source code', "Valid");
+                }
+
+                textEditor.setMarkers(data);
+            }
+        }, false);
+    }
         </text>
     }
 

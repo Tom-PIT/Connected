@@ -452,3 +452,38 @@ h4.dev-title{
 .dev-explorer-node-validation.validation-suggestion {
 	text-decoration-color: @Green800;
 }
+
+.errorlist-badge {
+    font-weight:300;
+}
+
+li[data-kind="error-item"]{
+    padding:5px;
+    border-bottom:1px solid @Grey300;
+    cursor:pointer;
+}
+
+li[data-kind="error-item"]:hover{
+    color:#FFF;
+    background-color:@Blue500;
+}
+
+.error-list-buttons{
+    padding:2px 0;
+    border-bottom:1px solid @Grey300;
+}
+
+.error-list-button {
+    padding: 0 5px;
+    cursor: pointer;
+    border: 1px solid @Grey100;
+}
+
+.error-list-button.active {
+    border:1px solid @Grey300;
+}
+
+.error-list-button:hover {
+    color:#FFF;
+    background-color:@Blue500;
+}

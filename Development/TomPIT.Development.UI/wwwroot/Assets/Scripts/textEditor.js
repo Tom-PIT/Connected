@@ -61,29 +61,34 @@
 
 				var src = options.source === null || options.source.length === 0 ? '\n' : options.source.join('\n');
 
-				target.options.hasChanged = false;
-				target.options.instance = monaco.editor.create(document.getElementById(options.elementId), {
-					value: src,
-					language: options.language,
-					lineNumbers: true,
-					scrollBeyondLastLine: true,
-					automaticLayout: true,
-					folding: true,
-					formatOnPaste: true,
-					formatOnType: true,
-					glyphMargin: true,
-					lineNumbersMinChars: 4,
-					parameterHints: true,
+                target.options.hasChanged = false;
+                target.options.changeState = false;
+                target.options.instance = monaco.editor.create(document.getElementById(options.elementId), {
+                    value: src,
+                    language: options.language,
+                    lineNumbers: true,
+                    scrollBeyondLastLine: true,
+                    automaticLayout: true,
+                    folding: true,
+                    formatOnPaste: true,
+                    formatOnType: true,
+                    glyphMargin: true,
+                    lineNumbersMinChars: 4,
+                    parameterHints: {
+                        enabled: true
+                    },
 					wrappingColumn: 0,
 					wrappingIndent: 'indent',
-					readOnly: options.readOnly
+                    readOnly: options.readOnly,
+                    showUnused:true
 				});
 
 				if ($.isFunction(options.onCreated))
 					options.onCreated(target.options.instance);
 
 				target.options.instance.onDidChangeModelContent((e) => {
-					target.options.hasChanged = true;
+                    target.options.hasChanged = true;
+                    target.options.changeState = true;
 				});
 
 				$('textarea', target.element).on('blur', function () {
@@ -145,7 +150,14 @@
 		},
 		addAction: function (k) {
 			return this.options.instance.addAction(k);
-		}
+        },
+        observeDirty: function () {
+            var r = this.options.changeState;
+
+            this.options.changeState = false;
+
+            return r;
+        }
 
 	});
 })(jQuery);
