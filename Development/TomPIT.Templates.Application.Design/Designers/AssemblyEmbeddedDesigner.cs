@@ -13,9 +13,9 @@ using TomPIT.Storage;
 
 namespace TomPIT.Application.Design.Designers
 {
-	internal class AssemblyUploadDesigner : DomDesigner<ReflectionElement>, IUploadDesigner
+	internal class AssemblyEmbeddedDesigner : DomDesigner<ReflectionElement>, IUploadDesigner
 	{
-		public AssemblyUploadDesigner(ReflectionElement element) : base(element)
+		public AssemblyEmbeddedDesigner(ReflectionElement element) : base(element)
 		{
 			Resource = element.Component as IUploadResource;
 		}

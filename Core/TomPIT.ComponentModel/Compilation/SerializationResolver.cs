@@ -3,7 +3,7 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 
-namespace TomPIT.Services
+namespace TomPIT.Compilation
 {
 	internal class SerializationResolver : DefaultContractResolver
 	{

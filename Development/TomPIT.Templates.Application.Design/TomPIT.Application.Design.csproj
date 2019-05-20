@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.Application.Design</RootNamespace>
     <AssemblyName>TomPIT.Application.Design</AssemblyName>
-    <AssemblyVersion>1.0.503.1</AssemblyVersion>
-    <FileVersion>1.0.503.1</FileVersion>
-    <Version>1.0.503.1</Version>
+    <AssemblyVersion>1.0.506.4</AssemblyVersion>
+    <FileVersion>1.0.506.4</FileVersion>
+    <Version>1.0.506.4</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Designers\Security\**" />

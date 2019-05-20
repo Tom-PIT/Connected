@@ -222,6 +222,9 @@ namespace TomPIT.Designers
 
 		private IDesignerActionResult CheckSyntax()
 		{
+			if (CompletionDiagnostic == null)
+				return Result.EmptyResult(ViewModel);
+
 			var result = CompletionDiagnostic.CheckSyntax(Environment, Content as ISourceCode, ArgumentType);
 
 			return Result.JsonResult(this, result);

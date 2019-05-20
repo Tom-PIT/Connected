@@ -14,7 +14,7 @@ namespace TomPIT.Services.Context
 		{
 		}
 
-		public object Execute(IApiExecutionScope sender, Guid microService, string api, string operation, JObject arguments, IApiTransaction transaction, bool explicitIdentifier)
+		public object Execute(IApiExecutionScope sender, Guid microService, string api, string operation, JObject arguments, IApiTransaction transaction, bool explicitIdentifier, bool skipPrepare = false)
 		{
 			var ms = ResolveMicroService(sender, microService);
 			var ctx = new ExecutionContext(Context, Context.Connection().GetService<IMicroServiceService>().Select(ms));
@@ -72,10 +72,13 @@ namespace TomPIT.Services.Context
 
 			try
 			{
-				var prepare = Prepare(ctx, op, arguments);
+				if (!skipPrepare)
+				{
+					var prepare = Prepare(ctx, op, arguments);
 
-				if (prepare.Async)
-					return null;
+					if (prepare.Async)
+						return null;
+				}
 
 				var args = new OperationInvokeArguments(ctx, op, arguments, transaction);
 
@@ -91,10 +94,10 @@ namespace TomPIT.Services.Context
 					return result;
 				}
 
-				result = new JObject
-				{
-					{"result", r==null?"null":r.ToString() }
-				};
+				//result = new JObject
+				//{
+				//	{"result", r==null?"null":r.ToString() }
+				//};
 
 				return r;
 			}

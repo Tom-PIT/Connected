@@ -11,6 +11,7 @@ namespace TomPIT.SysDb.Sql.Events
 		public string Name { get; set; }
 		public DateTime Created { get; set; }
 		public string Callback { get; set; }
+		public Guid MicroService { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -24,6 +25,7 @@ namespace TomPIT.SysDb.Sql.Events
 			Name = GetString("name");
 			Created = GetDate("created");
 			Callback = GetString("callback");
+			MicroService = GetGuid("service");
 		}
 	}
 }

@@ -4,7 +4,7 @@ namespace TomPIT.IoT.Hubs
 {
 	internal static class IoTHubs
 	{
-		internal static IHubContext<IoTHub> IoT { get; set; }
+		internal static IHubContext<IoTServerHub> IoT { get; set; }
 
 	}
 }

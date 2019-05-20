@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TomPIT.ComponentModel;
 using TomPIT.Data.Sql;
 using TomPIT.SysDb.Events;
 
@@ -33,7 +34,7 @@ namespace TomPIT.SysDb.Sql.Events
 			return r.ExecuteSingleRow();
 		}
 
-		public void Insert(string name, Guid identifier, DateTime created, string arguments, string callback)
+		public void Insert(IMicroService microService, string name, Guid identifier, DateTime created, string arguments, string callback)
 		{
 			var w = new Writer("tompit.event_ins");
 
@@ -42,6 +43,7 @@ namespace TomPIT.SysDb.Sql.Events
 			w.CreateParameter("@created", created);
 			w.CreateParameter("@arguments", arguments, true);
 			w.CreateParameter("@callback", callback, true);
+			w.CreateParameter("@service", microService.Token);
 
 			w.Execute();
 		}

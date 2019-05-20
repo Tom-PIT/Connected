@@ -887,6 +887,40 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[dev_error]'
+GO
+CREATE TABLE [tompit].[dev_error]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[service] [int] NOT NULL,
+[component] [int] NOT NULL,
+[element] [uniqueidentifier] NULL,
+[severity] [int] NOT NULL,
+[message] [nvarchar] (1024) COLLATE Slovenian_CI_AS NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_dev_error] on [tompit].[dev_error]'
+GO
+ALTER TABLE [tompit].[dev_error] ADD CONSTRAINT [PK_dev_error] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[dev_error_view]'
+GO
+
+CREATE VIEW [tompit].[dev_error_view]
+AS
+SELECT	e.id, e.service, e.component, e.element, e.severity, e.message,
+		s.token service_token,
+		c.token component_token, c.name component_name, c.category component_category
+FROM tompit.dev_error e
+INNER JOIN tompit.service s ON e.service = s.id
+INNER JOIN tompit.component c ON e.component = c.id
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[subscription_ins]'
 GO
 CREATE PROCEDURE [tompit].[subscription_ins]
@@ -960,6 +994,21 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[dev_error_que]'
+GO
+CREATE PROCEDURE [tompit].[dev_error_que]
+	@service int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT *
+	FROM tompit.dev_error_view
+	WHERE service = @service;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[subscription_sel]'
 GO
 CREATE PROCEDURE [tompit].[subscription_sel]
@@ -1002,6 +1051,22 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[dev_error_clr]'
+GO
+CREATE PROCEDURE [tompit].[dev_error_clr]
+	@component int,
+	@element uniqueidentifier = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.dev_error
+	WHERE component = @component
+	AND (@element IS NULL OR element = @element);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[subscription_clr]'
 GO
 CREATE PROCEDURE [tompit].[subscription_clr]
@@ -1026,6 +1091,23 @@ BEGIN
 
 	DELETE tompit.log
 	WHERE id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[dev_error_ins]'
+GO
+CREATE PROCEDURE [tompit].[dev_error_ins]
+	@service int,
+	@component int,
+	@items nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.dev_error ([service], component, element, severity, message)
+	SELECT @service, @component, element, severity, message FROM OPENJSON(@items) WITH (element uniqueidentifier, severity int, message nvarchar(1024));
+
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -5774,6 +5856,14 @@ GO
 PRINT N'Adding foreign keys to [tompit].[blob]'
 GO
 ALTER TABLE [tompit].[blob] ADD CONSTRAINT [FK_blob_resource_group] FOREIGN KEY ([resource_group]) REFERENCES [tompit].[resource_group] ([id])
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding foreign keys to [tompit].[dev_error]'
+GO
+ALTER TABLE [tompit].[dev_error] ADD CONSTRAINT [FK_dev_error_component] FOREIGN KEY ([component]) REFERENCES [tompit].[component] ([id]) ON DELETE CASCADE
+GO
+ALTER TABLE [tompit].[dev_error] ADD CONSTRAINT [FK_dev_error_service] FOREIGN KEY ([service]) REFERENCES [tompit].[service] ([id]) ON DELETE CASCADE
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO

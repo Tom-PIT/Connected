@@ -95,7 +95,7 @@ namespace TomPIT.IoT.Services
 
 		private void SynchronizeField(List<IIoTFieldState> schema, IIoTFieldStateModifier modifier)
 		{
-			if (!(schema.FirstOrDefault(f => string.Compare(f.Field, modifier.Field, true) == 0) is IoTFieldState field))
+			if (!(schema.FirstOrDefault(f => string.Compare(f.Field, modifier.Field, true) == 0) is TomPIT.IoT.IoTFieldState field))
 			{
 				schema.Add(new IoTFieldState
 				{

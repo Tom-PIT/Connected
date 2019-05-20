@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -154,7 +155,7 @@ namespace TomPIT
 				&& (result.Reason == AuthenticationResultReason.PasswordExpired || result.Reason == AuthenticationResultReason.NoPassword);
 		}
 
-		public static DataList<T> ToDataList<T>(this JObject dataSource) where T : JsonEntity
+		public static DataList<T> ToDataList<T>(this JObject dataSource) where T : DataEntity
 		{
 			if (dataSource.IsEmpty())
 				return new DataList<T>();
@@ -164,7 +165,7 @@ namespace TomPIT
 			return arr.ToDataList<T>();
 		}
 
-		public static DataList<T> ToDataList<T>(this JArray items) where T : JsonEntity
+		public static DataList<T> ToDataList<T>(this JArray items) where T : DataEntity
 		{
 			var r = new DataList<T>();
 
@@ -175,7 +176,9 @@ namespace TomPIT
 				if (jo == null)
 					continue;
 
-				var instance = typeof(T).CreateInstance<T>(new object[] { jo });
+				var instance = typeof(T).CreateInstance<T>();
+
+				instance.Deserialize(jo);
 
 				r.Add(instance);
 			}
@@ -183,27 +186,29 @@ namespace TomPIT
 			return r;
 		}
 
-		public static T ToDataItem<T>(this JObject dataSource) where T : JsonEntity
+		public static T ToDataItem<T>(this JObject dataSource) where T : DataEntity
 		{
 			if (dataSource.IsEmpty())
-				return default(T);
+				return default;
 
 			var arr = dataSource.ToResults();
 
 			return arr.ToDataItem<T>();
 		}
 
-		public static T ToDataItem<T>(this JArray items) where T : JsonEntity
+		public static T ToDataItem<T>(this JArray items) where T : DataEntity
 		{
 			if (items.Count == 0)
-				return default(T);
+				return default;
 
 			var jo = items[0] as JObject;
 
 			if (jo == null)
 				return default(T);
 
-			var instance = typeof(T).CreateInstance<T>(new object[] { jo });
+			var instance = typeof(T).CreateInstance<T>();
+
+			instance.Deserialize(jo);
 
 			return instance;
 		}

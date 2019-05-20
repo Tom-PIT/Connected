@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using TomPIT.Compilation;
 using TomPIT.Connectivity;
 using TomPIT.Services;
 
@@ -41,7 +43,7 @@ namespace TomPIT.Caching
 		{
 			Cache.Clear(cacheKey);
 
-			var u = ServerUrl.Create("DataCache", "Clear");
+			var u = Connection.CreateUrl("DataCache", "Clear");
 			var e = new JObject
 			{
 				{"key", cacheKey }
@@ -55,7 +57,7 @@ namespace TomPIT.Caching
 			foreach(var i in ids)
 				Cache.Refresh(cacheKey, i);
 
-			var u = ServerUrl.Create("DataCache", "Invalidate");
+			var u = Connection.CreateUrl("DataCache", "Invalidate");
 			var e = new JObject
 			{
 				{"key", cacheKey }
@@ -93,7 +95,7 @@ namespace TomPIT.Caching
 
 		private void PublishRemove(string cacheKey, List<string> ids)
 		{
-			var u = ServerUrl.Create("DataCache", "Remove");
+			var u = Connection.CreateUrl("DataCache", "Remove");
 			var e = new JObject
 			{
 				{"key", cacheKey }
@@ -127,42 +129,75 @@ namespace TomPIT.Caching
 		{
 			Initialize(key);
 
-			return Cache.All<T>(key);
+			var items = Cache.All<object>(key);
+			var result = new List<T>();
+
+			foreach (var item in items)
+				result.Add(MarshallingConverter.Convert<T>(item));
+
+			return result;
 		}
 
 		public T Get<T>(string key, string id, CacheRetrieveHandler<T> retrieve) where T : class
 		{
 			Initialize(key);
 
-			return Cache.Get(key, id, retrieve);
+			var item = Cache.Get<object>(key, id);
+
+			if (item == null)
+			{
+				var options = new EntryOptions
+				{
+					AllowNull = false,
+					Duration = TimeSpan.Zero,
+					SlidingExpiration = true
+				};
+
+				item = retrieve(options);
+
+				if (item != null && options.AllowNull)
+					Set(key, id, item, options.Duration, options.SlidingExpiration);
+			}
+
+			return MarshallingConverter.Convert<T>(item);
 		}
 
 		public T Get<T>(string key, string id) where T : class
 		{
 			Initialize(key);
 
-			return Cache.Get<T>(key, id);
+			return MarshallingConverter.Convert<T>(Cache.Get<object>(key, id));
 		}
 
 		public T Get<T>(string key, Func<T, bool> predicate) where T : class
 		{
 			Initialize(key);
 
-			return Cache.Get(key, predicate);
+			var items = Where(key, predicate);
+
+			if (items == null || items.Count == 0)
+				return default;
+
+			return items.FirstOrDefault(predicate);
 		}
 
 		public T First<T>(string key) where T : class
 		{
 			Initialize(key);
 
-			return Cache.First<T>(key);
+			return MarshallingConverter.Convert<T>(Cache.First<object>(key));
 		}
 
 		public List<T> Where<T>(string key, Func<T, bool> predicate) where T : class
 		{
 			Initialize(key);
 
-			return Cache.Where(key, predicate);
+			var items = All<T>(key);
+
+			if (items == null || items.Count == 0)
+				return new List<T>();
+
+			return items.Where(predicate).ToList();
 		}
 
 		public T Set<T>(string key, string id, T instance) where T : class
@@ -184,18 +219,6 @@ namespace TomPIT.Caching
 			Initialize(key);
 
 			return Cache.Set(key, id, instance, duration, slidingExpiration);
-		}
-
-		public void Remove<T>(string key, Func<T, bool> predicate) where T : class
-		{
-			Initialize(key);
-
-			var items = Cache.Remove(key, predicate);
-
-			if (items == null || items.Count == 0)
-				return;
-
-			PublishRemove(key, items);
 		}
 
 		public int Count(string key)

@@ -79,6 +79,11 @@ namespace TomPIT.Caching
 			return Find<T>(predicate);
 		}
 
+		public Entry Get<T>(Func<dynamic, bool> predicate) where T : class
+		{
+			return Find<T>(predicate);
+		}
+
 		public List<string> Remove<T>(Func<T, bool> predicate) where T : class
 		{
 			var ds = Where(predicate);
@@ -143,6 +148,34 @@ namespace TomPIT.Caching
 		private Entry Find<T>(Func<T, bool> predicate) where T : class
 		{
 			var instances = Items.Values.Select(f => f.Instance).Cast<T>();
+
+			if (instances == null || instances.Count() == 0)
+				return null;
+
+			T instance = instances.FirstOrDefault(predicate);
+
+			if (instance == null)
+				return null;
+
+			var ce = Items.Values.FirstOrDefault(f => f.Instance == instance);
+
+			if (ce == null)
+				return null;
+
+			if (ce.Expired)
+			{
+				RemoveInternal(ce.Id);
+				return null;
+			}
+
+			ce.Hit();
+
+			return ce;
+		}
+
+		private Entry Find<T>(Func<dynamic, bool> predicate) where T : class
+		{
+			var instances = Items.Values.Select(f => f.Instance).Cast<dynamic>();
 
 			if (instances == null || instances.Count() == 0)
 				return null;

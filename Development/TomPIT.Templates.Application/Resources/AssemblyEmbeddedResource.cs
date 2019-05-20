@@ -8,9 +8,9 @@ using TomPIT.Storage;
 
 namespace TomPIT.Application.Resources
 {
-	[Create("AssemblyUpload")]
-	[DomDesigner("TomPIT.Application.Design.Designers.AssemblyUploadDesigner, TomPIT.Application.Design")]
-	public class AssemblyUploadResource : ComponentConfiguration, IAssemblyUploadResource, IExternalResourceElement
+	[Create("EmbeddedAssembly")]
+	[DomDesigner("TomPIT.Application.Design.Designers.AssemblyEmbeddedDesigner, TomPIT.Application.Design")]
+	public class AssemblyEmbeddedResource : ComponentConfiguration, IAssemblyEmbeddedResource, IExternalResourceElement
 	{
 		public const string ComponentCategory = "Assembly";
 

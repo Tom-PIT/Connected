@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -7,9 +7,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyVersion>1.0.503.1</AssemblyVersion>
-    <FileVersion>1.0.503.1</FileVersion>
-    <Version>1.0.503.1</Version>
+    <AssemblyVersion>1.0.506.4</AssemblyVersion>
+    <FileVersion>1.0.506.4</FileVersion>
+    <Version>1.0.506.4</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />

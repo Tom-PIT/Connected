@@ -17,12 +17,9 @@ namespace TomPIT.Sys.Data
 		{
 			var id = Guid.NewGuid();
 			var a = e == null ? string.Empty : JsonConvert.SerializeObject(e);
+			var ms = DataModel.MicroServices.Select(microService);
 
-			var ms = microService == Guid.Empty
-				? null
-				: DataModel.MicroServices.Select(microService);
-
-			if (microService != Guid.Empty && ms == null)
+			if (ms == null)
 				throw new SysException(SR.ErrMicroServiceNotFound);
 
 			var message = new JObject
@@ -30,7 +27,7 @@ namespace TomPIT.Sys.Data
 				{ "id",id}
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Events.Insert(name, id, DateTime.UtcNow, a, callback);
+			Shell.GetService<IDatabaseService>().Proxy.Events.Insert(ms, name, id, DateTime.UtcNow, a, callback);
 			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
 			return id;

@@ -59,7 +59,7 @@ namespace TomPIT.IoT
 			app.UseCors("TomPITPolicy");
 			app.UseSignalR(routes =>
 			{
-				routes.MapHub<IoTHub>("/iot");
+				routes.MapHub<IoTServerHub>("/iot");
 			});
 
 			Instance.Connection.GetService<IAuthorizationService>().RegisterAuthenticationProvider(new IoTAuthenticationProvider());

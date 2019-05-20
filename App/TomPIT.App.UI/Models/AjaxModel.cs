@@ -7,7 +7,7 @@ using TomPIT.Services;
 
 namespace TomPIT.Models
 {
-	public class AjaxModel : ExecutionContext, IModel, IRequestContextProvider, IRuntimeViewModel
+	public class AjaxModel : ExecutionContext, IModel, IRequestContextProvider, IRuntimeModel
 	{
 		private IComponent _component = null;
 

@@ -9,5 +9,6 @@ namespace TomPIT.SysDb.Events
 		DateTime Created { get; }
 		string Arguments { get; }
 		string Callback { get; }
+		Guid MicroService { get; }
 	}
 }

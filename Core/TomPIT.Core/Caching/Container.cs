@@ -155,6 +155,16 @@ namespace TomPIT.Caching
 			return d.Get<T>(predicate);
 		}
 
+		public Entry Get<T>(string key, Func<dynamic, bool> predicate) where T : class
+		{
+			if (!Items.ContainsKey(key))
+				return null;
+
+			var d = Items[key];
+
+			return d.Get<T>(predicate);
+		}
+
 		public List<T> Where<T>(string key, Func<T, bool> predicate) where T : class
 		{
 			if (!Items.ContainsKey(key))

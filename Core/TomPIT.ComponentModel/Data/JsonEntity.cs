@@ -3,9 +3,10 @@ using System;
 
 namespace TomPIT.Data
 {
-	public abstract class JsonEntity:DataEntity
+	public abstract class JsonEntity : DataEntity
 	{
-        protected JsonEntity() { Data = new JObject(); }
+		protected JsonEntity() { Data = new JObject(); }
+
 		protected JsonEntity(JObject data)
 		{
 			if (data == null)
@@ -51,11 +52,6 @@ namespace TomPIT.Data
 			}
 			else
 				property.Value = new JValue(value);
-		}
-
-		public static implicit operator JObject (JsonEntity entity)
-		{
-			return entity.Data;
 		}
 	}
 }

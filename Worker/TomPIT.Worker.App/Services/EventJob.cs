@@ -9,6 +9,7 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.Events;
 using TomPIT.Services;
+using TomPIT.Services.Context;
 using TomPIT.Storage;
 
 namespace TomPIT.Worker.Services
@@ -47,18 +48,21 @@ namespace TomPIT.Worker.Services
 
 			var targets = EventHandlers.Query(ed.Name);
 
-			Parallel.ForEach(targets,
-				(f) =>
-				{
-					if (!(Instance.GetService<IComponentService>().SelectConfiguration(f.Item2) is IEventHandler configuration))
-						return;
-
-					foreach (var i in configuration.Events)
+			if (targets != null)
+			{
+				Parallel.ForEach(targets,
+					(f) =>
 					{
-						if (ed.Name.Equals(i.Event, StringComparison.OrdinalIgnoreCase))
-							Invoke(ed, i);
-					}
-				});
+						if (!(Instance.GetService<IComponentService>().SelectConfiguration(f.Item2) is IEventHandler configuration))
+							return;
+
+						foreach (var i in configuration.Events)
+						{
+							if (ed.Name.Equals(i.Event, StringComparison.OrdinalIgnoreCase))
+								Invoke(ed, i);
+						}
+					});
+			}
 
 			if (ed.Callback != null)
 				Callback(ed);
@@ -80,10 +84,11 @@ namespace TomPIT.Worker.Services
 				? null
 				: JsonConvert.DeserializeObject<JObject>(ed.Arguments);
 
-			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, Instance.GetService<IMicroServiceService>().Select(tokens[0]));
-			var opArgs = new OperationInvokeArguments(ctx, op, args, null);
+			var microService = Instance.GetService<IMicroServiceService>().Select(tokens[0].AsGuid());
+			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, microService);
+			var ai = new ApiInvoke(ctx);
 
-			ctx.Invoke(api.ComponentName(ctx), args);
+			ai.Execute(null, microService.Token, api.ComponentName(Instance.Connection), op.Name, args, null, true, true);
 		}
 
 		private void Invoke(EventDescriptor ed, IEventBinding i)

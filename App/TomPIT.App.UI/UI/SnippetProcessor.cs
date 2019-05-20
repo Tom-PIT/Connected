@@ -36,7 +36,7 @@ namespace TomPIT.UI
 
 		private string ResolveModel()
 		{
-			return "TomPIT.Models.IRuntimeViewModel";
+			return "TomPIT.Models.IViewModel";
 		}
 
 		public override string Result { get { return Builder.ToString(); } }

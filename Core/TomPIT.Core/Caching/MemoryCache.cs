@@ -123,6 +123,16 @@ namespace TomPIT.Caching
 			return (T)ce.Instance;
 		}
 
+		public T Get<T>(string key, Func<dynamic, bool> predicate) where T : class
+		{
+			Entry ce = Container.Get<T>(key, predicate);
+
+			if (ce == null || ce.Instance == null)
+				return default(T);
+
+			return (T)ce.Instance;
+		}
+
 		public T First<T>(string key) where T : class
 		{
 			Entry ce = Container.First(key);

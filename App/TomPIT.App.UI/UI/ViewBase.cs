@@ -32,7 +32,7 @@ namespace TomPIT.UI
 				return;
 
 			e.Connection().GetService<ICompilerService>().Execute(Configuration.MicroService(e.Connection()),
-				helper, this, new ViewHelperArguments(e, args, this as RazorPage<IExecutionContext>));
+				helper, this, new ViewHelperArguments(e, args, this as RazorPage<IViewModel>));
 		}
 
 		public H Helper<H>(string name)
@@ -48,11 +48,10 @@ namespace TomPIT.UI
 				return default(H);
 
 			return (H)e.Connection().GetService<ICompilerService>().Execute(Configuration.MicroService(e.Connection()),
-				helper, this, new ViewHelperArguments(e, args, this as RazorPage<IExecutionContext>));
+				helper, this, new ViewHelperArguments(e, args, this as RazorPage<IViewModel>));
 		}
 
-		public IRuntimeViewModel e => Model as IRuntimeViewModel;
-
+		public IViewModel e => Model as IViewModel;
 		private IConfiguration Configuration
 		{
 			get

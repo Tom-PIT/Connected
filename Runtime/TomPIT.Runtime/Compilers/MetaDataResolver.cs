@@ -32,19 +32,13 @@ namespace TomPIT.Compilers
 		public override bool Equals(object obj)
 		{
 			if (ReferenceEquals(null, obj))
-			{
 				return false;
-			}
 
 			if (ReferenceEquals(this, obj))
-			{
 				return true;
-			}
 
 			if (obj.GetType() != GetType())
-			{
 				return false;
-			}
 
 			return Equals((MetaDataResolver)obj);
 		}
@@ -82,8 +76,8 @@ namespace TomPIT.Compilers
 			if (!(connection.GetService<IComponentService>().SelectConfiguration(component.Token) is IAssemblyResource config))
 				return ImmutableArray<PortableExecutableReference>.Empty;
 
-			if (config is IAssemblyUploadResource)
-				return ResolveUploadReference(connection, config as IAssemblyUploadResource);
+			if (config is IAssemblyEmbeddedResource)
+				return ResolveUploadReference(connection, config as IAssemblyEmbeddedResource);
 			else
 				return ResolveFileReference(config as IAssemblyFileSystemResource);
 		}
@@ -93,7 +87,7 @@ namespace TomPIT.Compilers
 			return Resolve(Connection, MicroService, reference);
 		}
 
-		private static ImmutableArray<PortableExecutableReference> ResolveUploadReference(ISysConnection connection, IAssemblyUploadResource d)
+		private static ImmutableArray<PortableExecutableReference> ResolveUploadReference(ISysConnection connection, IAssemblyEmbeddedResource d)
 		{
 			if (d.Blob == Guid.Empty)
 				return ImmutableArray<PortableExecutableReference>.Empty;
@@ -143,7 +137,7 @@ namespace TomPIT.Compilers
 			if (!(connection.GetService<IComponentService>().SelectConfiguration(component.Token) is IAssemblyResource config))
 				return null;
 
-			if (config is IAssemblyUploadResource d)
+			if (config is IAssemblyEmbeddedResource d)
 			{
 				var content = connection.GetService<IStorageService>().Download(d.Blob);
 

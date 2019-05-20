@@ -85,10 +85,17 @@ namespace TomPIT.Design.Services
 			get
 			{
 				if (_options == null)
+				{
+					var usings = new List<string>();
+
+					if (ArgumentsType != null)
+						usings.Add(ArgumentsType.Namespace);
+
 					_options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
-				usings: CombineUsings(new List<string> { ArgumentsType.Namespace }),
-				metadataReferenceResolver: new MetaDataResolver(Context.Connection(), MicroService),
-				sourceReferenceResolver: new ReferenceResolver(Context.Connection(), MicroService));
+						usings: CombineUsings(usings),
+						metadataReferenceResolver: new MetaDataResolver(Context.Connection(), MicroService),
+						sourceReferenceResolver: new ReferenceResolver(Context.Connection(), MicroService));
+				}
 
 				return _options;
 			}
@@ -163,28 +170,37 @@ namespace TomPIT.Design.Services
 				if (_docInfo == null)
 					_docInfo = DocumentInfo.Create(
 				 DocumentId.CreateNewId(Project.Id), "Script",
-				 sourceCodeKind: SourceCodeKind.Script,
+				 sourceCodeKind: SourceCodeKind,
 				 loader: TextLoader.From(TextAndVersion.Create(SourceCode, VersionStamp.Create())));
 
 				return _docInfo;
 			}
 		}
 
+		protected virtual SourceCodeKind SourceCodeKind { get { return SourceCodeKind.Script; } }
+		protected virtual bool IsSubmission { get { return true; } }
+
 		public virtual SourceText SourceCode { get { return SourceText.From(string.Empty); } }
+		protected virtual string AssemblyName => "Script";
 		public virtual ProjectInfo ProjectInfo
 		{
 			get
 			{
 				if (_projectInfo == null)
 				{
-					var refs = new List<MetadataReference>
-					{
-						MetadataReference.CreateFromFile(Assembly.GetAssembly(ArgumentsType).Location)
-					};
+					var refs = new List<MetadataReference>();
 
-					_projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), "Script", "Script", LanguageNames.CSharp, isSubmission: true, hostObjectType: ArgumentsType)
-					.WithMetadataReferences(CombineReferences(refs))
-					.WithCompilationOptions(CompilationOptions);
+					if (ArgumentsType != null)
+					{
+						refs.Add(MetadataReference.CreateFromFile(Assembly.GetAssembly(ArgumentsType).Location));
+
+						_projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), AssemblyName, AssemblyName, LanguageNames.CSharp, isSubmission: IsSubmission, hostObjectType: ArgumentsType);
+					}
+					else
+						_projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), AssemblyName, AssemblyName, LanguageNames.CSharp, isSubmission: IsSubmission);
+
+					_projectInfo = _projectInfo.WithMetadataReferences(CombineReferences(refs))
+						.WithCompilationOptions(CompilationOptions);
 				}
 
 				return _projectInfo;

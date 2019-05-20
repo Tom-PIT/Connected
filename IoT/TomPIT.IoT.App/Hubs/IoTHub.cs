@@ -5,19 +5,21 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
 using TomPIT.IoT.Security;
 using TomPIT.IoT.Services;
+using TomPIT.Services;
 
 namespace TomPIT.IoT.Hubs
 {
-	[Authorize]
-	public class IoTHub : Microsoft.AspNetCore.SignalR.Hub
+	[Authorize(AuthenticationSchemes = "TomPIT")]
+	public class IoTServerHub : Microsoft.AspNetCore.SignalR.Hub
 	{
 		private static readonly string[] SpecialTransactionParameters = { "microService", "hub", "device", "transaction" };
 
-		public IoTHub(IHubContext<IoTHub> context)
+		public IoTServerHub(IHubContext<IoTServerHub> context)
 		{
 			IoTHubs.IoT = context;
 		}
@@ -44,17 +46,30 @@ namespace TomPIT.IoT.Hubs
 		public async void Data(JObject e)
 		{
 			var device = Context.User.Identity as DeviceIdentity;
+
 			try
 			{
-				var changes = Instance.Connection.GetService<IIoTHubService>().SetData(device.Device, e);
-
-				if (changes == null || changes.Count == 0)
-					return;
-
 				var hub = device.Device.Configuration();
 				var component = Instance.Connection.GetService<IComponentService>().SelectComponent(hub.Component);
 				var ms = Instance.Connection.GetService<IMicroServiceService>().Select(component.MicroService);
 				var groupName = string.Format("{0}/{1}", ms.Name.ToLowerInvariant(), component.Name.ToLowerInvariant());
+
+				try
+				{
+					var ctx = ExecutionContext.Create(Instance.Connection.Url, ms);
+					var args = new IoTDataArguments(ctx, e);
+
+					Instance.Connection.GetService<ICompilerService>().Execute(ms.Token, device.Device.Data, this, args);
+				}
+				catch (Exception ex)
+				{
+					Instance.Connection.LogError("IoT", ex.Source, ex.Message);
+				}
+
+				var changes = Instance.Connection.GetService<IIoTHubService>().SetData(device.Device, e);
+
+				if (changes == null || changes.Count == 0)
+					return;
 
 				await Clients.Group(groupName).SendAsync("data", changes);
 			}
@@ -64,7 +79,7 @@ namespace TomPIT.IoT.Hubs
 			}
 		}
 
-		public void Transaction(JObject e)
+		public async void Transaction(JObject e)
 		{
 			try
 			{
@@ -146,7 +161,7 @@ namespace TomPIT.IoT.Hubs
 					parameters.Add(i.Name, Types.Convert<string>(v, CultureInfo.InvariantCulture));
 				}
 
-				Clients.User(hubDevice.Id.ToString()).SendAsync("transaction", parameters);
+				await Clients.User(hubDevice.Id.ToString()).SendAsync("transaction", parameters);
 			}
 			catch (Exception ex)
 			{

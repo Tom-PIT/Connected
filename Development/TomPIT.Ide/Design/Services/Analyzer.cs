@@ -1,6 +1,9 @@
-﻿using Microsoft.CodeAnalysis.Text;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using System;
 using TomPIT.Compilation;
+using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Resources;
 using TomPIT.Services;
 
 namespace TomPIT.Design.Services

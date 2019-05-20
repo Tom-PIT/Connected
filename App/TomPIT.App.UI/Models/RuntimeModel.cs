@@ -9,7 +9,7 @@ using TomPIT.Services;
 
 namespace TomPIT.Models
 {
-	public class RuntimeModel : ExecutionContext, IRuntimeViewModel, IComponentModel, IUIModel
+	public class RuntimeModel : ExecutionContext, IViewModel, IComponentModel
 	{
 		private IModelNavigation _navigation = null;
 		private JObject _arguments = null;

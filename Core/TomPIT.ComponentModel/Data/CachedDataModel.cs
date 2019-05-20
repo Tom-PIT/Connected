@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using TomPIT.Caching;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Connectivity;
 using TomPIT.Services;
@@ -89,11 +90,6 @@ namespace TomPIT.Data
 		protected void Remove(K id)
 		{
 			Connection.GetService<IDataCachingService>().Remove(CacheKey, new List<string> { id.ToString() });
-		}
-
-		protected void Remove(Func<T, bool> predicate)
-		{
-			Connection.GetService<IDataCachingService>().Remove(CacheKey, predicate);
 		}
 
 		protected int Count()

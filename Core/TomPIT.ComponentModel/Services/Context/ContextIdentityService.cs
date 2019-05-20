@@ -131,7 +131,7 @@ namespace TomPIT.Services.Context
 			var u = Context.Connection().CreateUrl("UserManagement", "Update");
 			var e = new JObject
 			{
-				{"token", token},
+				{"user", token},
 				{ "email", email},
 				{"loginName", loginName},
 				{"firstName", firstName},

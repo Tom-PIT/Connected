@@ -1,10 +1,17 @@
 ﻿using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.UI;
 using TomPIT.Services;
 
 namespace TomPIT.Models
 {
-	public class PartialModel : AjaxModel
+	public class PartialModel : AjaxModel, IViewModel
 	{
+		public IView ViewConfiguration => null;
+
+		public IModelNavigation Navigation => null;
+		public string Title => null;
+		public IComponent Component { get; set; }
+
 		protected override void OnDatabinding()
 		{
 			if (string.IsNullOrWhiteSpace(Body.Optional("__name", string.Empty)))

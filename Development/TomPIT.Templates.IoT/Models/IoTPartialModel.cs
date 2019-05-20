@@ -17,7 +17,7 @@ using TomPIT.Services;
 
 namespace TomPIT.IoT.Models
 {
-	public class IoTPartialModel : ExecutionContext, IRuntimeModel, IForwardDataProvider
+	public class IoTPartialModel : ExecutionContext, IViewModel, IForwardDataProvider
 	{
 		private List<string> _stencils = null;
 		private List<IIoTElement> _targetStencils = null;
@@ -28,7 +28,7 @@ namespace TomPIT.IoT.Models
 		protected Controller Controller { get; private set; }
 		public ActionContext ActionContext { get; }
 		public IIoTView View { get; private set; }
-
+		public JObject Arguments { get; set; }
 		public List<string> Stencils
 		{
 			get

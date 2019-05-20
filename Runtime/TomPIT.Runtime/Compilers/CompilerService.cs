@@ -1,6 +1,9 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Scripting.Hosting;
+using Microsoft.CodeAnalysis.Text;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
@@ -9,6 +12,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -16,6 +20,7 @@ using TomPIT.Annotations;
 using TomPIT.Caching;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
 using TomPIT.Services;
 
@@ -66,25 +71,6 @@ namespace TomPIT.Compilers
 			additionalUsings.AddRange(Usings);
 
 			return additionalUsings.ToArray();
-		}
-
-		public bool Equals(string constant, object value)
-		{
-			if (string.IsNullOrWhiteSpace(constant))
-			{
-				return false;
-			}
-
-			if (value == null || value == DBNull.Value)
-			{
-				return false;
-			}
-
-			var converter = TypeDescriptor.GetConverter(value);
-
-			string sr = converter.ConvertToInvariantString(value);
-
-			return string.Compare(sr, constant, true) == 0;
 		}
 
 		private IScriptDescriptor GetCachedScript(Guid sourceCodeId)

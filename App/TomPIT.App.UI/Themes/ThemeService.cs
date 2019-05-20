@@ -1,6 +1,7 @@
 ﻿using dotless.Core;
 using dotless.Core.configuration;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using TomPIT.Caching;
@@ -89,6 +90,20 @@ namespace TomPIT.Themes
 
 			var sb = new StringBuilder();
 
+			var includeFiles = config.Stylesheets.Where(f => f is ILessIncludeFile);
+			var includeFilesContent = new StringBuilder();
+
+			foreach(var i in includeFiles)
+			{
+				var includeContent = svc.SelectText(c.MicroService, i as IText);
+
+				if (!string.IsNullOrWhiteSpace(includeContent))
+				{
+					includeFilesContent.Append(includeContent);
+					includeFilesContent.AppendLine();
+				}
+			}
+
 			foreach (var i in config.Stylesheets)
 			{
 				string source = string.Empty;
@@ -101,7 +116,7 @@ namespace TomPIT.Themes
 				if (i is ICssFile || i is IStaticResource)
 					sb.Append(source);
 				else if (i is ILessFile)
-					sb.Append(CompileLess(source));
+					sb.Append(CompileLess(source, includeFilesContent.ToString()));
 			}
 
 			r = new CompiledTheme
@@ -137,7 +152,7 @@ namespace TomPIT.Themes
 
 		}
 
-		private string CompileLess(string source)
+		private string CompileLess(string source, string includeContent)
 		{
 			var variables = LoadVariablesLess();
 
@@ -149,7 +164,7 @@ namespace TomPIT.Themes
 				LogLevel= dotless.Core.Loggers.LogLevel.Warn
 			};
 
-			return Less.Parse(string.Format("{0}{1}{2}", variables, System.Environment.NewLine, source), config);
+			return Less.Parse(string.Format("{0}{1}{2}{1}{3}", variables, System.Environment.NewLine, includeContent, source), config);
 		}
 
 		private object LoadVariablesLess()

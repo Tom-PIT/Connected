@@ -1,7 +1,7 @@
 ﻿@model TomPIT.Ide.IEnvironment
 
 @{
-    var items = Model.Context.Connection().GetService<TomPIT.Design.IDesignerService>().QueryErrors(Model.Context.MicroService.Token);
+   var items = Model.Context.MicroService == null ? null : Model.Context.Connection().GetService<TomPIT.Design.IDesignerService>().QueryErrors(Model.Context.MicroService.Token);
 }
 
 @if (items == null || items.Count == 0)

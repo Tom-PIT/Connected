@@ -24,7 +24,6 @@ namespace TomPIT.Caching
 		T Set<T>(string key, string id, T instance) where T : class;
 		T Set<T>(string key, string id, T instance, TimeSpan duration) where T : class;
 		T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration) where T : class;
-		void Remove<T>(string key, Func<T, bool> predicate) where T : class;
 		int Count(string key);
 		string GenerateKey(params object[] parameters);
 		string GenerateRandomKey(string key);

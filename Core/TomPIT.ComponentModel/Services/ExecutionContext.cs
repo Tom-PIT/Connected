@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using TomPIT.Annotations;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Connectivity;
@@ -138,59 +139,7 @@ namespace TomPIT.Services
 
 			var r = ai.Execute(this as IApiExecutionScope, q.MicroService.Token, q.Api, q.Operation, e, transaction, q.ExplicitIdentifier);
 
-			if (r == null)
-				return Types.Convert<R>(r);
-
-			var tt = typeof(R);
-
-			if (NeedsMarshalling(r, tt))
-			{
-				var settings = new JsonSerializerSettings
-				{
-					DefaultValueHandling = DefaultValueHandling.Ignore,
-					TypeNameHandling = TypeNameHandling.None,
-					ContractResolver = new SerializationResolver()
-				};
-
-				return JsonConvert.DeserializeObject<R>(JsonConvert.SerializeObject(r, settings), settings);
-			}
-
-			return Types.Convert<R>(r);
-		}
-
-		private bool NeedsMarshalling(object instance, Type type)
-		{
-			if (type == null)
-				return false;
-
-			if (IsSubmission(instance, type))
-				return true;
-
-			if (type.IsGenericType && instance.GetType().IsGenericType)
-			{
-				var types = type.GetGenericArguments();
-				var instanceTypes = instance.GetType().GetGenericArguments();
-
-				for (var i = 0; i < types.Length; i++)
-				{
-					if (IsSubmission(instanceTypes[i], types[i]))
-						return true;
-				}
-			}
-
-			return false;
-		}
-
-		private bool IsSubmission(object instance, Type type)
-		{
-			return (string.IsNullOrWhiteSpace(type.Namespace) && string.IsNullOrWhiteSpace(instance.GetType().Namespace))
-				&& string.Compare(type.Assembly.FullName, instance.GetType().Assembly.FullName, false) != 0;
-		}
-
-		private bool IsSubmission(Type instanceType, Type type)
-		{
-			return (string.IsNullOrWhiteSpace(type.Namespace) && string.IsNullOrWhiteSpace(instanceType.Namespace))
-				&& string.Compare(type.Assembly.FullName, instanceType.Assembly.FullName, false) != 0;
+			return MarshallingConverter.Convert<R>(r);
 		}
 
 		public R Invoke<R>([CodeAnalysisProvider(ApiProvider)]string api,
@@ -230,7 +179,12 @@ namespace TomPIT.Services
 			var q = new ApiQualifier(this, api);
 			var ai = new ApiInvoke(this);
 
-			return ai.Execute(this as IApiExecutionScope, q.MicroService.Token, q.Api, q.Operation, e, transaction, q.ExplicitIdentifier) as JObject;
+			var result = ai.Execute(this as IApiExecutionScope, q.MicroService.Token, q.Api, q.Operation, e, transaction, q.ExplicitIdentifier);
+
+			if (result is JObject)
+				return result as JObject;
+
+			return JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(result));
 		}
 
 		public JObject Invoke([CodeAnalysisProvider(ApiProvider)]string api,
