@@ -11,6 +11,8 @@ namespace TomPIT.ComponentModel
 	public interface IComponentService
 	{
 		event ComponentChangedHandler ComponentChanged;
+		event ComponentChangedHandler ComponentAdded;
+		event ComponentChangedHandler ComponentRemoved;
 		event ConfigurationChangedHandler ConfigurationChanged;
 		event ConfigurationChangedHandler ConfigurationAdded;
 		event ConfigurationChangedHandler ConfigurationRemoved;

@@ -6,7 +6,7 @@ namespace TomPIT.IoT.UI
 {
 	internal class IoTRenderer : IViewRenderer
 	{
-		public string CreateContent(IExecutionContext context, IView view)
+		public string CreateContent()
 		{
 			return "@await Html.PartialAsync(\"~/Views/IoT/IoTView.cshtml\")";
 		}

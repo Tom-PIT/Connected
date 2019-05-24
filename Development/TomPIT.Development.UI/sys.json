@@ -9,18 +9,20 @@
 	"dataProviders": [
 		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
 	],
-	"designers": [
-		"TomPIT.Application.ApplicationTemplate, TomPIT.Application.Design",
-		"TomPIT.IoT.IoTTemplate, TomPIT.IoT.Design",
-		"TomPIT.BigData.Design.BigDataTemplate, TomPIT.BigData.Design"
-	],
+  "designers": [
+    "TomPIT.Application.ApplicationTemplate, TomPIT.Application.Design",
+    "TomPIT.IoT.IoTTemplate, TomPIT.IoT.Design",
+    "TomPIT.BigData.Design.BigDataTemplate, TomPIT.BigData.Design",
+    "TomPIT.Reporting.Design.ReportTemplate, TomPIT.Reporting.Design"
+  ],
 	"plugins": {
 		"location": "c:\\Deploy\\Plugins",
 		"shadowCopy": true,
-		"items": [
-			"TomPIT.Application.Plugin, TomPIT.Application",
-			"TomPIT.IoT.Plugin, TomPIT.IoT",
-			"TomPIT.BigData.Plugin, TomPIT.BigData"
-		]
+    "items": [
+      "TomPIT.Application.Plugin, TomPIT.Application",
+      "TomPIT.IoT.Plugin, TomPIT.IoT",
+      "TomPIT.BigData.Plugin, TomPIT.BigData",
+      "TomPIT.Reporting.Plugin, TomPIT.Reporting"
+    ]
 	}
 }

@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT</RootNamespace>
     <AssemblyName>TomPIT.Development.App</AssemblyName>
-    <AssemblyVersion>1.0.506.4</AssemblyVersion>
-    <FileVersion>1.0.506.4</FileVersion>
-    <Version>1.0.506.4</Version>
+    <AssemblyVersion>1.0.522.3</AssemblyVersion>
+    <FileVersion>1.0.522.3</FileVersion>
+    <Version>1.0.522.3</Version>
   </PropertyGroup>
   <PropertyGroup>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
@@ -41,6 +41,8 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="2.10.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" Version="2.10.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
+    <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Views\Ide\Designers\Upload.cshtml">

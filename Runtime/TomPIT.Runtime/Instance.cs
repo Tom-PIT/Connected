@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
 using TomPIT.Configuration;
@@ -47,6 +49,12 @@ namespace TomPIT
 		{
 			app.UseAjaxExceptionMiddleware();
 			app.UseStaticFiles();
+			//app.UseStaticFiles(new StaticFileOptions
+			//{
+			//	FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "node_modules")),
+			//	RequestPath = "/node_modules"
+			//});
+
 			app.UseAuthentication();
 			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
 
@@ -65,6 +73,9 @@ namespace TomPIT
 			});
 
 			Shell.Configure(app);
+
+			foreach (var plugin in Plugins)
+				plugin.Initialize(app, env);
 		}
 
 		private static void OnConnectionInitializing(object sender, SysConnectionRegisteredArgs e)
@@ -158,6 +169,9 @@ namespace TomPIT
 			services.ConfigureOptions(typeof(EmbeddedResourcesConfiguration));
 
 			services.AddSingleton<IHostedService, FlushingService>();
+
+			foreach (var plugin in Plugins)
+				plugin.ConfigureServices(services);
 		}
 
 		public static T GetService<T>()

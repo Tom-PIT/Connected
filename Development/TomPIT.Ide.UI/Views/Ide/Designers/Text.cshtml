@@ -38,7 +38,8 @@
 					<div id="listDataSources"></div>
 					<hr />
 					<div class="form-group">
-						<div id="checkDirectBinding"></div>
+                        <label>Class name</label>
+						<div id="textTypeName"></div>
 					</div>
 					<div class="form-group">
 						<div id="checkReadOnly"></div>
@@ -255,12 +256,16 @@
 				  selectionMode:'single',
 				  searchEditorOptions: {
 					  'placeholder':'search data sources'
-				  }
+                  },
+                  onSelectionChanged: function (e) {
+                      var selectedItems = e.component.option('selectedItems');
+
+                      if (selectedItems != null && selectedItems.length > 0)
+                          $('#textTypeName').dxTextBox('instance').option('value', selectedItems[0].text);
+                  }
 			  });
 
-			  $('#checkDirectBinding').dxCheckBox({
-				  'value': false,
-				  'text': 'use direct binding'
+			  $('#textTypeName').dxTextBox({
 			  });
 
 			  $('#checkReadOnly').dxCheckBox({
@@ -284,7 +289,7 @@
                           'action': 'createStronglyType',
                           'dataSource': value,
                           'readOnly': $('#checkReadOnly').dxCheckBox('instance').option('value'),
-                          'directBinding': $('#checkDirectBinding').dxCheckBox('instance').option('value'),
+                          'name': $('#textTypeName').dxTextBox('instance').option('value'),
                           'currentText': textEditor.getValue()
                       },
                       onComplete: function (data) {

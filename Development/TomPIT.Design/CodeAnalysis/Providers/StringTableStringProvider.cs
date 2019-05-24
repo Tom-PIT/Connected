@@ -28,12 +28,28 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			if (invoke.ArgumentList.Arguments.Count < 1)
 				return null;
 
-			var dsName = invoke.ArgumentList.Arguments[0].GetText().ToString().Trim().Trim('"');
+			var stringTable = invoke.ArgumentList.Arguments[0].GetText().ToString().Trim().Trim('"');
 
-			if (string.IsNullOrWhiteSpace(dsName))
+			if (string.IsNullOrWhiteSpace(stringTable))
 				return null;
 
-			var ds = context.Connection().GetService<IComponentService>().SelectComponent(context.MicroService.Token, "StringTable", dsName);
+			var microService = context.MicroService;
+
+			if(stringTable.Contains('/'))
+			{
+				var tokens = stringTable.Split('/');
+
+				context.MicroService.ValidateMicroServiceReference(context.Connection(), tokens[0]);
+
+				microService = context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+
+				if (microService == null)
+					throw new Exception($"{SR.ErrMicroServiceNotFound} ({microService})");
+
+				stringTable = tokens[1];
+			}
+
+			var ds = context.Connection().GetService<IComponentService>().SelectComponent(microService.Token, "StringTable", stringTable);
 
 			if (ds == null)
 				return null;

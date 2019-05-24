@@ -1,14 +1,16 @@
-﻿using TomPIT.Annotations;
+﻿using System.ComponentModel;
+using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 
 namespace TomPIT.Application.Resources
 {
+	[DomDesigner("TomPIT.Application.Design.Designers.StringTable, TomPIT.Application.Design")]
 	public class StringTable : ComponentConfiguration, IStringTable
 	{
 		private ListItems<IStringResource> _strings = null;
 
-		[Items("TomPIT.Application.Design.Items.StringResourceCollection, TomPIT.Application.Design")]
+		[Browsable(false)]
 		public ListItems<IStringResource> Strings
 		{
 			get

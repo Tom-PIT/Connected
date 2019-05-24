@@ -1,0 +1,11 @@
+﻿@using DevExpress.AspNetCore
+
+@{ 
+   var r = new DevExpress.XtraReports.UI.XtraReport();
+
+   r.Name = "Report1";
+   r.Bands.Add(new DevExpress.XtraReports.UI.DetailBand());
+
+   r.CreateDocument();
+}
+@Html.DevExpress().WebDocumentViewer("DocumentViewer").Height("1000px").Bind(r)

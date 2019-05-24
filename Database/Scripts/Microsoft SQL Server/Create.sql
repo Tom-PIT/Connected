@@ -3689,7 +3689,8 @@ CREATE TABLE [tompit].[event]
 [created] [datetime2] NOT NULL,
 [identifier] [uniqueidentifier] NOT NULL,
 [arguments] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[callback] [varchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+[callback] [varchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[service] [uniqueidentifier] NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -4301,13 +4302,14 @@ CREATE PROCEDURE [tompit].[event_ins]
 	@arguments nvarchar(MAX) = NULL,
 	@identifier uniqueidentifier,
 	@created datetime2(7),
-	@callback varchar(128) = NULL
+	@callback varchar(128) = NULL,
+	@service uniqueidentifier
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	INSERT tompit.event (name, created, identifier, arguments, callback)
-	VALUES (@name, @created, @identifier, @arguments, @callback);
+	INSERT tompit.event (name, created, identifier, arguments, callback, service)
+	VALUES (@name, @created, @identifier, @arguments, @callback, @service);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON

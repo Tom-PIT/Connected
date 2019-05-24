@@ -34,7 +34,7 @@ namespace TomPIT.IoT.Services
 		private void OnConfigurationAdded(ISysConnection sender, ConfigurationEventArgs e)
 		{
 			if (string.Compare(e.Category, "IoTHub", true) == 0)
-				Refresh(e.Component);
+				Reload(e.Component);
 		}
 
 		private void OnConfigurationRemoved(ISysConnection sender, ConfigurationEventArgs e)
@@ -46,16 +46,20 @@ namespace TomPIT.IoT.Services
 		private void OnConfigurationChanged(ISysConnection sender, ConfigurationEventArgs e)
 		{
 			if (string.Compare(e.Category, "IoTHub", true) == 0)
-				Refresh(e.Component);
+				Reload(e.Component);
 		}
 
 		private void OnComponentChanged(ISysConnection sender, ComponentEventArgs e)
 		{
-			var hub = Connection.GetService<IComponentService>().SelectConfiguration(e.Component) as IIoTHub;
+			if (string.Compare(e.Category, "IoTHub", true) == 0)
+				Reload(e.Component);
+		}
 
-			Remove(e.Component);
+		private void Reload(Guid component)
+		{
+			Remove(component);
 
-			if (hub != null)
+			if (Connection.GetService<IComponentService>().SelectConfiguration(component) is IIoTHub hub)
 				Set(hub.Component, hub, TimeSpan.Zero);
 		}
 

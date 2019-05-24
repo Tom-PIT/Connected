@@ -1,0 +1,85 @@
+﻿@model TomPIT.Development.Designers.StringTableDesigner
+
+
+
+    <div class="doc-canvas">
+        <div class="paper">
+            <div id="gridStrings">
+
+            </div>
+        </div>
+    </div>
+<script>
+    $('#gridStrings').dxDataGrid({
+        dataSource: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Items)),
+        keyExpr: 'id',
+        editing: {
+            mode: "cell",
+            allowUpdating: true,
+            allowAdding: true,
+            allowDeleting:true,
+            selectTextOnEditStart: true,
+            startEditAction: "click"
+        },
+        paging: {
+            pageSize: 10
+        },
+        pager: {
+            showInfo: true
+        },
+        searchPanel: {
+            visible: true,
+            placeholder: "search..."
+        },
+        onRowInserting: function (e) {
+            ide.designerAction({
+                data: {
+                    'action': 'add',
+                    'key': e.data.key,
+                    'defaultValue': e.data.defaultValue,
+                    'isLocalizable': e.data.isLocalizable
+                },
+                onComplete: function (data) {
+                    e.data.id = data;
+                }
+            });
+        },
+        onRowUpdating: function (e) {
+            ide.designerAction({
+                data: {
+                    'action': 'update',
+                    'id': e.key,
+                    'key': e.newData.key,
+                    'defaultValue': e.newData.defaultValue,
+                    'isLocalizable': e.newData.isLocalizable
+                }
+            });
+        },
+        onRowRemoving: function (e) {
+            ide.designerAction({
+                data: {
+                    'action': 'delete',
+                    'id': e.key
+                }
+            });
+        },
+        columns: [
+              {
+                dataField: "key",
+                caption: "Key",
+                sort:'asc',
+                 validationRules: [{ type: "required" }]
+            },
+              {
+                dataField: "defaultValue",
+                caption: "Default value"
+            },
+            {
+                dataField: "isLocalizable",
+                caption: "Localizable",
+                dataType:'boolean'
+            },
+
+        ]
+    });
+</script>

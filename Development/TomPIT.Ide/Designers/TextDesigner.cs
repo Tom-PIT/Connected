@@ -163,12 +163,12 @@ namespace TomPIT.Designers
 		{
 			var ds = data.Required<Guid>("dataSource");
 			var readOnly = data.Optional("readOnly", false);
-			var directBinding = data.Optional("directBinding", true);
+			var name = data.Optional("name", string.Empty);
 			var currentText = data.Optional("currentText", string.Empty);
 
 			var st = new StronglyType(Connection)
 			{
-				DirectBinding = directBinding,
+				Name = name,
 				ReadOnly = readOnly,
 				SourceCode = currentText,
 				DataSource = ds

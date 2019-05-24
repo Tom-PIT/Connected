@@ -1,15 +1,15 @@
 ﻿[
 	{
 		"outputFileName": "wwwroot/assets/styles.min.css",
-		"inputFiles": [
-			"wwwroot/assets/fonts/opensans/opensans.css",
-			"wwwroot/assets/styles/bootstrap/bootstrap.css",
-			"wwwroot/assets/libraries/devextreme/18.2.4/dx.common.css",
-			"wwwroot/assets/libraries/devextreme/18.2.4/dx.light.css",
-			"wwwroot/assets/styles/devextreme.css",
-			"wwwroot/assets/styles/development.css",
-			"wwwroot/assets/styles/tompit.css"
-		],
+    "inputFiles": [
+      "wwwroot/assets/fonts/opensans/opensans.css",
+      "wwwroot/assets/styles/bootstrap/bootstrap.css",
+      "wwwroot/assets/libraries/devextreme/18.2.4/dx.common.css",
+      "wwwroot/assets/libraries/devextreme/18.2.4/dx.material.blue.light.css",
+      "wwwroot/assets/styles/devextreme.css",
+      "wwwroot/assets/styles/development.css",
+      "wwwroot/assets/styles/tompit.css"
+    ],
 		"minify": {
 			"enabled": true,
 			"renameLocals": true

@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "name": "Reporting",
+  "private": true,
+  "devDependencies": {
+  },
+  "dependencies": {
+    "@devexpress/analytics-core": "19.1-next",
+    "devexpress-reporting": "19.1-next"
+  }
+}

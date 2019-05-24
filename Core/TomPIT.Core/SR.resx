@@ -942,4 +942,7 @@
   <data name="ValUnique" xml:space="preserve">
     <value>Value for the field {0} already exists</value>
   </data>
+  <data name="ErrExecutionContextExpected" xml:space="preserve">
+    <value>IExecutionContext expected</value>
+  </data>
 </root>

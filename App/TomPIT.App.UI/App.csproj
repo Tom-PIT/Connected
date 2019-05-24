@@ -10,9 +10,9 @@
     <AssemblyName>TomPIT.App</AssemblyName>
     <RootNamespace>TomPIT</RootNamespace>
     <CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
-    <AssemblyVersion>1.0.506.4</AssemblyVersion>
-    <FileVersion>1.0.506.4</FileVersion>
-    <Version>1.0.506.4</Version>
+    <AssemblyVersion>1.0.522.3</AssemblyVersion>
+    <FileVersion>1.0.522.3</FileVersion>
+    <Version>1.0.522.3</Version>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="compilerconfig.json" />
@@ -22,6 +22,10 @@
     <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\event.js" />
     <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\supplemental.js" />
     <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\unresolved.js" />
+    <None Include="wwwroot\Assets\Libraries\DevExtreme\19.1.3\fonts\Roboto-300.woff2" />
+    <None Include="wwwroot\Assets\Libraries\DevExtreme\19.1.3\fonts\Roboto-400.woff2" />
+    <None Include="wwwroot\Assets\Libraries\DevExtreme\19.1.3\fonts\Roboto-500.woff2" />
+    <None Include="wwwroot\Assets\Libraries\DevExtreme\19.1.3\fonts\Roboto-700.woff2" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
@@ -31,6 +35,8 @@
     <PackageReference Include="dotless.Core" Version="1.6.7" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.10.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
+    <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\segments\" />

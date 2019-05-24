@@ -7,7 +7,9 @@ using System.Text;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
+using TomPIT.ComponentModel.Reports;
 using TomPIT.ComponentModel.UI;
+using TomPIT.Services;
 using TomPIT.Storage;
 
 namespace TomPIT.UI
@@ -18,20 +20,21 @@ namespace TomPIT.UI
 		View = 2,
 		Partial = 3,
 		Snippet = 4,
-		MailTemplate = 5
+		MailTemplate = 5,
+		Report = 6
 	}
 
 	internal class ViewInfo : IFileInfo
 	{
 		private byte[] _viewContent = null;
 
-		public ViewInfo(string viewPath, ActionContext context)
+		public ViewInfo(string viewPath, ActionContext action)
 		{
 			if (string.Compare(System.IO.Path.GetFileNameWithoutExtension(viewPath), "_viewimports", true) == 0)
 				return;
 
 			ResolvePath(viewPath);
-			Load(context);
+			Load(action);
 		}
 
 		private void ResolvePath(string viewPath)
@@ -44,6 +47,12 @@ namespace TomPIT.UI
 			{
 				Path = viewPath.Substring(7);
 				Path = Path.Substring(0, Path.Length - 7);
+			}
+			else if(Kind == ViewKind.Report)
+			{
+				var tokens = viewPath.Split('/');
+
+				Path = $"{tokens[tokens.Length - 2]}/{tokens[tokens.Length - 1].Split('.')[0]}";
 			}
 			else
 				Path = System.IO.Path.GetFileNameWithoutExtension(viewPath);
@@ -71,6 +80,8 @@ namespace TomPIT.UI
 				return ViewKind.Snippet;
 			else if (path.StartsWith("Views/Dynamic/MailTemplate"))
 				return ViewKind.MailTemplate;
+			else if (path.StartsWith("Views/Dynamic/Report"))
+				return ViewKind.Report;
 			else
 				return ViewKind.View;
 		}
@@ -136,6 +147,9 @@ namespace TomPIT.UI
 				case ViewKind.MailTemplate:
 					LoadMailTemplate();
 					break;
+				case ViewKind.Report:
+					LoadReport();
+					break;
 				default:
 					throw new NotSupportedException();
 			}
@@ -183,6 +197,32 @@ namespace TomPIT.UI
 			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
 		}
 
+		private void LoadReport()
+		{
+			var tokens = Path.Split('/');
+			var ms = Instance.GetService<IMicroServiceService>().Select(tokens[0]);
+
+			if (ms == null)
+				return;
+
+			var report = Instance.GetService<IComponentService>().SelectComponent(ms.Token, "Report", tokens[1]);
+
+			Exists = report != null;
+
+			if (!Exists)
+				return;
+
+			ViewComponent = report;
+
+			var pp = new ReportProcessor(Instance.GetService<IComponentService>().SelectConfiguration(report.Token) as IReport);
+
+			pp.Compile();
+
+			_viewContent = Encoding.UTF8.GetBytes(pp.Result);
+
+			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
+		}
+
 		private void LoadView(ActionContext context)
 		{
 			var view = Instance.GetService<IViewService>().Select(Path, context);
@@ -203,7 +243,7 @@ namespace TomPIT.UI
 
 				LastModified = ViewComponent.Modified;
 
-				sourceCode = renderer.CreateContent(null, view);
+				sourceCode = renderer.CreateContent();
 			}
 			else
 			{

@@ -16,6 +16,8 @@ namespace TomPIT.ComponentModel
 	internal class ComponentService : ClientRepository<IComponent, Guid>, IComponentService, IComponentNotification
 	{
 		public event ComponentChangedHandler ComponentChanged;
+		public event ComponentChangedHandler ComponentAdded;
+		public event ComponentChangedHandler ComponentRemoved;
 		public event ConfigurationChangedHandler ConfigurationChanged;
 		public event ConfigurationChangedHandler ConfigurationAdded;
 		public event ConfigurationChangedHandler ConfigurationRemoved;
@@ -122,6 +124,11 @@ namespace TomPIT.ComponentModel
 				});
 		}
 
+		public void NotifyAdded(object sender, ComponentEventArgs e)
+		{
+			ComponentAdded?.Invoke(Connection, e);
+		}
+
 		public void NotifyChanged(object sender, ComponentEventArgs e)
 		{
 			Remove(e.Component);
@@ -141,6 +148,7 @@ namespace TomPIT.ComponentModel
 		public void NotifyRemoved(object sender, ComponentEventArgs e)
 		{
 			Remove(e.Component);
+			ComponentRemoved?.Invoke(Connection, e);
 		}
 
 		public List<IConfiguration> QueryConfigurations(List<IComponent> components)

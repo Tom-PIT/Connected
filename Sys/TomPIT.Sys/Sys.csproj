@@ -9,9 +9,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.Sys</RootNamespace>
-    <AssemblyVersion>1.0.506.4</AssemblyVersion>
-    <FileVersion>1.0.506.4</FileVersion>
-    <Version>1.0.506.4</Version>
+    <AssemblyVersion>1.0.522.3</AssemblyVersion>
+    <FileVersion>1.0.522.3</FileVersion>
+    <Version>1.0.522.3</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="lz4net" Version="1.0.15.93" />

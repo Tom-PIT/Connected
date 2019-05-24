@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -19,7 +21,7 @@ namespace TomPIT
 		private static IHttpContextAccessor _accessor = null;
 		private static Version _version = null;
 		private static bool _cleaned = false;
-
+		private static Lazy<List<string>> _loadedAssemblies = new Lazy<List<string>>();
 		static Shell()
 		{
 			_sm = new ServiceContainer(null);
@@ -106,8 +108,13 @@ namespace TomPIT
 
 				var targetPath = Path.Combine(shadowCopyLocation, Path.GetFileName(path));
 
-				var bytes = File.ReadAllBytes(path);
-				File.Copy(path, targetPath, true);
+				if (!LoadedAssemblies.Contains(targetPath))
+				{
+					LoadedAssemblies.Add(targetPath);
+
+					var bytes = File.ReadAllBytes(path);
+					File.Copy(path, targetPath, true);
+				}
 
 				path = targetPath;
 			}
@@ -184,5 +191,7 @@ namespace TomPIT
 		{
 			_accessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
 		}
+
+		private static List<string> LoadedAssemblies => _loadedAssemblies.Value;
 	}
 }

@@ -943,6 +943,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to IExecutionContext expected.
+        /// </summary>
+        public static string ErrExecutionContextExpected {
+            get {
+                return ResourceManager.GetString("ErrExecutionContextExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parameter expected..
         /// </summary>
         public static string ErrExpectedParameter {

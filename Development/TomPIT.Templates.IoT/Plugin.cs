@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using TomPIT.Configuration;
 
@@ -7,6 +9,10 @@ namespace TomPIT.IoT
 {
 	internal class Plugin : IPlugin
 	{
+		public void ConfigureServices(IServiceCollection services)
+		{
+		}
+
 		public List<string> GetApplicationParts()
 		{
 			return new List<string>
@@ -24,7 +30,7 @@ namespace TomPIT.IoT
 			};
 		}
 
-		public void Initialize()
+		public void Initialize(IApplicationBuilder app, IHostingEnvironment env)
 		{
 
 		}

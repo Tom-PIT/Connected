@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
+using TomPIT.Services;
 
 namespace TomPIT.UI
 {
@@ -31,7 +32,7 @@ namespace TomPIT.UI
 			AppendBaseType(Builder);
 			AddUsings(Builder);
 			AddTagHelpers(Builder);
-
+			
 			AppendViewMetaData(Builder, "Partial", Component.Token);
 
 			Builder.Append(Source);

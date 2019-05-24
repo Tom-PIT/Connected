@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Reports;
 using TomPIT.ComponentModel.UI;
 
 namespace TomPIT.UI
@@ -8,7 +10,7 @@ namespace TomPIT.UI
 	{
 		IView Select(string url, ActionContext context);
 		string SelectScripts(Guid microService, Guid view);
-		IGraphicInterface Select(Guid view);
+		IConfiguration Select(Guid view);
 		IMasterView SelectMaster(string name);
 		IPartialView SelectPartial(string name);
 

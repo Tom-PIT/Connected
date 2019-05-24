@@ -14,8 +14,8 @@
   "connectionStrings": {
     //"sys": "data source=sys-db\\sql2017; initial catalog=proconiSysCustomer;user id=tompit;password=tompit;"
     //"sys": "data source=sys-db; initial catalog=suntechSys;user id=dev;password=tompit;"
-    //"sys": "data source=pit-zbook\\sqlexpress; initial catalog=tp1;user id=tompit;password=tompit;"
-    "sys": "data source=sys-db\\sql2017; initial catalog=commonSys;user id=tompit;password=tompit;"
+    "sys": "data source=pit-zbook\\sqlexpress; initial catalog=tp1;user id=tompit;password=tompit;"
+    //"sys": "data source=sys-db\\sql2017; initial catalog=commonSys;user id=tompit;password=tompit;"
   },
 	"plugins": {
 		"location": "c:\\Deploy\\Plugins",

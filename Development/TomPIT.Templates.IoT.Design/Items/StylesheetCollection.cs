@@ -12,6 +12,7 @@ namespace TomPIT.IoT.Design.Items
 			items.Add(new ItemDescriptor("Less", "Less", typeof(LessFile)));
 			items.Add(new ItemDescriptor("Css", "Css", typeof(CssFile)));
 			items.Add(new ItemDescriptor("File system Css", "FileCss", typeof(FileSystemCssFile)));
+			items.Add(new ItemDescriptor("Include", "Include", typeof(LessIncludeFile)));
 		}
 	}
 }

@@ -1,11 +1,15 @@
-﻿using Microsoft.AspNetCore.Routing;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 
 namespace TomPIT.Configuration
 {
 	public interface IPlugin
 	{
-		void Initialize();
+		void Initialize(IApplicationBuilder app, IHostingEnvironment env);
+		void ConfigureServices(IServiceCollection services);
 
 		List<string> GetApplicationParts();
 		List<string> GetEmbeddedResources();

@@ -5,6 +5,6 @@ namespace TomPIT.UI
 {
 	public interface IViewRenderer
 	{
-		string CreateContent(IExecutionContext context, IView view);
+		string CreateContent();
 	}
 }

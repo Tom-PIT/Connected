@@ -12,6 +12,7 @@ namespace TomPIT
 		private JavascriptHelper _js = null;
 		private SharedHelper _shared = null;
 		private SystemHelper _sys = null;
+		private ReportHelper _reports = null;
 
 		internal Renderer(IHtmlHelper helper)
 		{
@@ -83,6 +84,17 @@ namespace TomPIT
 					_partial = new PartialHelper(Html);
 
 				return _partial;
+			}
+		}
+
+		public ReportHelper Reporting
+		{
+			get
+			{
+				if (_reports == null)
+					_reports = new ReportHelper(Html);
+
+				return _reports;
 			}
 		}
 

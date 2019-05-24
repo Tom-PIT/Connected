@@ -9,27 +9,6 @@ namespace TomPIT.Data
 {
 	public abstract class DataEntity : IDataEntity
 	{
-		[Obsolete]
-		protected virtual T GetValue<T>(string propertyName)
-		{
-			return default;
-		}
-		[Obsolete]
-		protected virtual T GetValue<T>(string propertyName, T defaultValue)
-		{
-			return defaultValue;
-		}
-		[Obsolete]
-		protected virtual void SetValue<T>(string propertyName, T value)
-		{
-
-		}
-
-		protected virtual void OnDatabind()
-		{
-
-		}
-
 		public string Serialize()
 		{
 			return OnSerialize();
@@ -46,7 +25,12 @@ namespace TomPIT.Data
 
 		protected virtual void OnDeserialize(JObject state)
 		{
-			JsonConvert.PopulateObject(JsonConvert.SerializeObject(state), this);
+			var settings = new JsonSerializerSettings
+			{
+				NullValueHandling = NullValueHandling.Ignore
+			};
+
+			JsonConvert.PopulateObject(JsonConvert.SerializeObject(state), this, settings);
 		}
 
 		public static implicit operator JObject(DataEntity entity)

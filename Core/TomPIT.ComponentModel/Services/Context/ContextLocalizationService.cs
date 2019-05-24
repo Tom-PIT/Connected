@@ -21,11 +21,34 @@ namespace TomPIT.Services.Context
 
 		public string GetString(string stringTable, string key, int lcid)
 		{
-			var config = Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "StringTable", stringTable) as IStringTable;
+			var microService = Context.MicroService;
+			var st = stringTable;
+
+			if (st.Contains('/'))
+			{
+				var tokens = st.Split('/');
+
+				Context.MicroService.ValidateMicroServiceReference(Context.Connection(), tokens[0]);
+
+				microService = Context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+
+				if (microService == null)
+					throw new Exception($"{SR.ErrMicroServiceNotFound} ({microService})");
+
+				st = tokens[1];
+			}
+
+			var cacheKey = $"stringTable{microService.Token}{st}";
+
+			if (!(Shell.HttpContext.Items[cacheKey] is IStringTable config))
+				config = Context.Connection().GetService<IComponentService>().SelectConfiguration(microService.Token, "StringTable", st) as IStringTable;
+
+			Shell.HttpContext.Items[cacheKey] = config;
+
 			var str = config.Strings.FirstOrDefault(f => string.Compare(f.Key, key, true) == 0);
 
 			if (str == null)
-				throw new RuntimeException($"{SR.ErrStringResourceNotFound} ({stringTable}/{key})").WithMetrics(Context);
+				throw new RuntimeException($"{SR.ErrStringResourceNotFound} ({st}/{key})").WithMetrics(Context);
 
 			if (!str.IsLocalizable)
 				return str.DefaultValue;

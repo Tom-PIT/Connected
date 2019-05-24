@@ -1,0 +1,29 @@
+﻿[
+  {
+    "outputFileName": "wwwroot/assets/reporting.min.css",
+    "inputFiles": [
+      "node_modules/@devexpress/analytics-core/dist/css/dx-analytics.common.css",
+      "node_modules/@devexpress/analytics-core/dist/css/dx-analytics.light.css",
+      "node_modules/devexpress-reporting/dist/css/dx-webdocumentviewer.css"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/assets/reporting.min.js",
+    "inputFiles": [
+      "node_modules/knockout/build/output/knockout-latest.js",
+      "node_modules/@devexpress/analytics-core/dist/js/dx-analytics-core.min.js",
+      "node_modules/devexpress-reporting/dist/js/dx-webdocumentviewer.min.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    "sourceMap": false
+  }
+
+]

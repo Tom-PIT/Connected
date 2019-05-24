@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Routing;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using TomPIT.Configuration;
 
@@ -6,6 +9,10 @@ namespace TomPIT.Application
 {
 	public class Plugin : IPlugin
 	{
+		public void ConfigureServices(IServiceCollection services)
+		{
+		}
+
 		public List<string> GetApplicationParts()
 		{
 			return new List<string>();
@@ -16,7 +23,7 @@ namespace TomPIT.Application
 			return new List<string>();
 		}
 
-		public void Initialize()
+		public void Initialize(IApplicationBuilder app, IHostingEnvironment env)
 		{
 
 		}

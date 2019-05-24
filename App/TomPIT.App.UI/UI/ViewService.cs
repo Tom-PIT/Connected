@@ -2,10 +2,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
+using TomPIT.ComponentModel.Reports;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 using TomPIT.Services;
@@ -13,7 +15,7 @@ using TomPIT.Storage;
 
 namespace TomPIT.UI
 {
-	internal class ViewService : SynchronizedClientRepository<IGraphicInterface, Guid>, IViewService
+	internal class ViewService : SynchronizedClientRepository<IConfiguration, Guid>, IViewService
 	{
 		private ViewScriptsCache _scripts = null;
 		private Lazy<ConcurrentDictionary<Guid, bool>> _changeState = new Lazy<ConcurrentDictionary<Guid, bool>>();
@@ -53,10 +55,10 @@ namespace TomPIT.UI
 			if (!Connection.IsMicroServiceSupported(e.MicroService))
 				return;
 
-			var views = Connection.GetService<IComponentService>().QueryConfigurations(e.MicroService, "View, MasterView, Partial, MailTemplate");
+			var views = Connection.GetService<IComponentService>().QueryConfigurations(e.MicroService, "View, MasterView, Partial, MailTemplate, Report");
 
 			foreach (var i in views)
-				Set(i.Component, i as IGraphicInterface, TimeSpan.Zero);
+				Set(i.Component, i, TimeSpan.Zero);
 		}
 
 		private void OnConfigurationRemoved(ISysConnection sender, ConfigurationEventArgs e)
@@ -115,21 +117,22 @@ namespace TomPIT.UI
 			return string.Compare(category, "View", true) == 0
 				|| string.Compare(category, "MasterView", true) == 0
 				|| string.Compare(category, "Partial", true) == 0
-				|| string.Compare(category, "MailTemplate", true) == 0;
+				|| string.Compare(category, "MailTemplate", true) == 0
+				|| string.Compare(category, "Report", true) == 0;
 		}
 
 		protected override void OnInitializing()
 		{
-			var views = Connection.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, "View, MasterView, Partial, MailTemplate");
+			var views = Connection.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, "View, MasterView, Partial, MailTemplate, Report");
 
 			foreach (var i in views)
-				Set(i.Component, i as IGraphicInterface, TimeSpan.Zero);
+				Set(i.Component, i, TimeSpan.Zero);
 		}
 
 		protected override void OnInvalidate(Guid id)
 		{
-			if (Connection.GetService<IComponentService>().SelectConfiguration(id) is IGraphicInterface ui)
-				Set(((IConfiguration)ui).Component, ui, TimeSpan.Zero);
+			if (Connection.GetService<IComponentService>().SelectConfiguration(id) is IConfiguration ui)
+				Set(ui.Component, ui, TimeSpan.Zero);
 			else
 				Remove(id);
 		}
@@ -298,6 +301,14 @@ namespace TomPIT.UI
 
 					component = template.Component;
 					break;
+				case ViewKind.Report:
+					var report = SelectReport(url);
+
+					if (report == null)
+						return false;
+
+					component = report.Component;
+					break;
 				default:
 					break;
 			}
@@ -314,7 +325,7 @@ namespace TomPIT.UI
 			return false;
 		}
 
-		public IGraphicInterface Select(Guid view)
+		public IConfiguration Select(Guid view)
 		{
 			return Get(view);
 		}
@@ -368,6 +379,29 @@ namespace TomPIT.UI
 				return null;
 
 			return Get(c.Token) as IPartialView;
+		}
+
+		public IReport SelectReport(string name)
+		{
+			var tokens = name.Split('/');
+			IComponent c = null;
+
+			var s = Connection.GetService<IMicroServiceService>().Select(tokens[tokens.Length-2].Trim());
+
+			if (s == null)
+				return null;
+
+			var reportName = tokens[tokens.Length - 1];
+
+			if (reportName.Contains('.'))
+				reportName = Path.GetFileNameWithoutExtension(reportName);
+
+			c = Connection.GetService<IComponentService>().SelectComponent(s.Token, "Report", reportName.Trim());
+
+			if (c == null)
+				return null;
+
+			return Get(c.Token) as IReport;
 		}
 
 		public string SelectScripts(Guid microService, Guid view)

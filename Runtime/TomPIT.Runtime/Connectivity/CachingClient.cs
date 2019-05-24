@@ -216,6 +216,30 @@ namespace TomPIT.Connectivity
 					n.NotifyRemoved(Connection, e.Args);
 			});
 
+			Hub.On<MessageEventArgs<ComponentEventArgs>>("ComponentAdded", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IComponentService>() is IComponentNotification n)
+					n.NotifyAdded(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<ComponentEventArgs>>("ComponentChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IComponentService>() is IComponentNotification n)
+					n.NotifyChanged(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<ComponentEventArgs>>("ComponentRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<IComponentService>() is IComponentNotification n)
+					n.NotifyRemoved(Connection, e.Args);
+			});
+
 			Hub.On<MessageEventArgs<ScriptChangedEventArgs>>("ScriptChanged", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);

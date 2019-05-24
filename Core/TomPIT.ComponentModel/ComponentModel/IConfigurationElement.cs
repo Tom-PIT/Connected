@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel
 {
-	public interface IConfigurationElement
+	public interface IConfigurationElement : IElement
 	{
 		IElementValidation Validation { get; }
 	}

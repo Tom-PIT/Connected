@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Routing;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,6 +11,10 @@ namespace TomPIT.BigData
 {
 	internal class Plugin : IPlugin
 	{
+		public void ConfigureServices(IServiceCollection services)
+		{
+		}
+
 		public List<string> GetApplicationParts()
 		{
 			return new List<string>
@@ -24,7 +31,7 @@ namespace TomPIT.BigData
 			};
 		}
 
-		public void Initialize()
+		public void Initialize(IApplicationBuilder app, IHostingEnvironment env)
 		{
 
 		}
