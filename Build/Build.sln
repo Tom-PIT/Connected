@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.489
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{BA4B5CE4-951B-4D6F-A95C-B673861C3DDF}"
 EndProject
@@ -92,6 +92,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Worker", "Worker", "{D2A130A8-AAF9-4F06-A0E9-41F35B199754}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker", "..\Worker\TomPIT.Worker.App\Worker.csproj", "{3DE1707E-F071-4311-B96B-2A7CD6BBC030}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Reporting", "..\Reporting\TomPIT.Reporting\TomPIT.Reporting.csproj", "{B8FDADFF-BCDD-4AF8-8CAB-B3624CF17CEB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Reporting.Design", "..\Reporting\TomPIT.Reporting.Design\TomPIT.Reporting.Design.csproj", "{0AB2A2FC-AD91-49E1-BAD5-54D2C320F1C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -223,6 +227,14 @@ Global
 		{3DE1707E-F071-4311-B96B-2A7CD6BBC030}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DE1707E-F071-4311-B96B-2A7CD6BBC030}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DE1707E-F071-4311-B96B-2A7CD6BBC030}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8FDADFF-BCDD-4AF8-8CAB-B3624CF17CEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8FDADFF-BCDD-4AF8-8CAB-B3624CF17CEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8FDADFF-BCDD-4AF8-8CAB-B3624CF17CEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8FDADFF-BCDD-4AF8-8CAB-B3624CF17CEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AB2A2FC-AD91-49E1-BAD5-54D2C320F1C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AB2A2FC-AD91-49E1-BAD5-54D2C320F1C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AB2A2FC-AD91-49E1-BAD5-54D2C320F1C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AB2A2FC-AD91-49E1-BAD5-54D2C320F1C9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -259,6 +271,8 @@ Global
 		{311EAD20-25D7-4DEF-80E7-15A74652371D} = {424E3D1A-AC37-4B1E-B2F5-C194AE09F702}
 		{23EA0E71-299A-43F7-89A9-C9E98863B3A7} = {694FD0E0-2574-4960-96DA-87AEBCDFD861}
 		{3DE1707E-F071-4311-B96B-2A7CD6BBC030} = {D2A130A8-AAF9-4F06-A0E9-41F35B199754}
+		{B8FDADFF-BCDD-4AF8-8CAB-B3624CF17CEB} = {50BB26AC-CE2B-4CCD-A08F-BA694E2F9588}
+		{0AB2A2FC-AD91-49E1-BAD5-54D2C320F1C9} = {50BB26AC-CE2B-4CCD-A08F-BA694E2F9588}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {56CEBC0B-257E-403D-8CF9-1F6B50358F86}
