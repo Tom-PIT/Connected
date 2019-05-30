@@ -1,1 +1,35 @@
-report designer
+@model TomPIT.Reporting.Design.Designers.ReportDesigner
+
+@using DevExpress.AspNetCore
+
+    <script>
+        if (ide.getState('reportingLoaded') !== true) {
+            ide.setState('reportingLoaded', true);
+
+            $("head").append($("<link rel='stylesheet' href='/Assets/reporting.design.min.css' type='text/css' media='screen' />"));
+        }
+
+        function customizeActions(s, e) {
+            e.GetById(DevExpress.Reporting.Designer.Actions.ActionId.NewReport).visible = false;
+            e.GetById(DevExpress.Reporting.Designer.Actions.ActionId.NewReportViaWizard).visible = false;
+            e.GetById(DevExpress.Reporting.Designer.Actions.ActionId.OpenReport).visible = false;
+            e.GetById(DevExpress.Reporting.Designer.Actions.ActionId.ReportWizard).visible = false;
+            e.GetById(DevExpress.Reporting.Designer.Actions.ActionId.AddSqlDataSource).visible = false;
+            e.GetById(DevExpress.Reporting.Designer.Actions.ActionId.AddMultiQuerySqlDataSource).visible = false;
+            e.GetById(DevExpress.Reporting.Designer.Actions.ActionId.SaveAs).visible = false;
+            e.GetById(DevExpress.Reporting.Designer.Actions.ActionId.Exit).visible = false;
+        }
+    </script>
+
+
+@(Html.DevExpress().ReportDesigner("reportDesigner").Height("1000px").DataSources(dataSources =>
+{
+    foreach (var ds in Model.DataSources)
+    {
+        dataSources.Add(ds.Key, ds.Value);
+    }
+}).Bind(Model.ReportUrl).ClientSideEvents(events=>
+{
+    events.CustomizeMenuActions("customizeActions");
+}))
+

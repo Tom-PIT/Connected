@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using TomPIT.ComponentModel;
 using TomPIT.Dom;
 using TomPIT.Ide;
@@ -14,6 +16,10 @@ namespace TomPIT.Design
 		public virtual List<string> GetApplicationParts()
 		{
 			return new List<string>();
+		}
+
+		public virtual void Initialize(IApplicationBuilder app, IHostingEnvironment env)
+		{
 		}
 
 		public virtual List<IItemDescriptor> ProvideAddItems(IDomElement parent)

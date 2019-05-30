@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TomPIT.ComponentModel.Reports
 {
-	public interface IReport : IConfiguration
+	public interface IReport : IConfiguration, IText
 	{
 	}
 }

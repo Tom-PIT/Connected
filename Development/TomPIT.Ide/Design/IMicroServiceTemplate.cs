@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using TomPIT.ComponentModel;
 using TomPIT.Dom;
 using TomPIT.Ide;
@@ -11,5 +13,6 @@ namespace TomPIT.Design
 		List<IItemDescriptor> ProvideAddItems(IDomElement parent);
 		IComponent References(IEnvironment environment, Guid microService);
 		List<string> GetApplicationParts();
+		void Initialize(IApplicationBuilder app, IHostingEnvironment env);
 	}
 }

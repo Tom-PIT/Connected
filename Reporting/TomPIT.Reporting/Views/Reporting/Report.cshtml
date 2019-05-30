@@ -1,11 +1,14 @@
 ﻿@using DevExpress.AspNetCore
 
+@model TomPIT.Reporting.Models.ReportRuntimeModel
+
 @{ 
-   var r = new DevExpress.XtraReports.UI.XtraReport();
+    var queryString = ViewData[$"parameters{Model.MicroServiceName}/{Model.ReportName}"];
+    var fullUrl = Model.ReportUrl;
 
-   r.Name = "Report1";
-   r.Bands.Add(new DevExpress.XtraReports.UI.DetailBand());
-
-   r.CreateDocument();
+    if (queryString != null)
+    {
+        fullUrl = $"{Model.ReportUrl}?{queryString}";
+    }
 }
-@Html.DevExpress().WebDocumentViewer("DocumentViewer").Height("1000px").Bind(r)
+@Html.DevExpress().WebDocumentViewer("DocumentViewer").Height("1000px").Bind(fullUrl)

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Reports;
+using TomPIT.Connectivity;
 using TomPIT.Services;
 
 namespace TomPIT.UI
@@ -32,7 +33,7 @@ namespace TomPIT.UI
 			}
 		}
 
-		public override void Compile()
+		public override void Compile(ISysConnection connection, IComponent component)
 		{
 			var renderer = View.GetType().FindAttribute<ViewRendererAttribute>();
 
@@ -46,7 +47,7 @@ namespace TomPIT.UI
 			if (irenderer == null)
 				return;
 
-			Builder.Append(irenderer.CreateContent());
+			Builder.Append(irenderer.CreateContent(connection, component));
 		}
 
 		public override string Result { get { return Builder.ToString(); } }

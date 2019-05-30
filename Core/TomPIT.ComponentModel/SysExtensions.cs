@@ -129,6 +129,14 @@ namespace TomPIT
 				return u.Identity;
 		}
 
+		public static ISysConnection CurrentConnection(this HttpContext context)
+		{
+			if (!(Shell.HttpContext.User.Identity is Identity identity) || string.IsNullOrWhiteSpace(identity.Endpoint))
+				return null;
+
+			return Shell.GetService<IConnectivityService>().Select(identity.Endpoint);
+		}
+
 		public static Guid ResolveMicroServiceToken(this ISysConnection context, string microService)
 		{
 			var r = ResolveMicroService(context, microService);

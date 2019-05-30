@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TomPIT.Analysis;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Connectivity;
@@ -213,6 +214,14 @@ namespace TomPIT
 			return instance;
 		}
 
+		public static IManifest Discover(this IApiOperation operation, IExecutionContext context)
+		{
+			var args = new OperationManifestArguments(context, operation);
+
+			context.Connection().GetService<ICompilerService>().Execute(operation.MicroService(context.Connection()), operation.Manifest, context, args);
+
+			return args.Manifest;
+		}
 		//public static void FromRequestArguments<T>(this List<SchemaParameter> parameters)
 		//{
 		//	var t = typeof(T);

@@ -8,6 +8,8 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="bundleconfig.json" />
+    <None Remove="wwwroot\assets\reporting.design.min.css" />
+    <None Remove="wwwroot\assets\reporting.design.min.js" />
     <None Remove="wwwroot\assets\reporting.min.css" />
     <None Remove="wwwroot\assets\reporting.min.js" />
   </ItemGroup>
@@ -15,6 +17,8 @@
     <Content Include="bundleconfig.json" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="wwwroot\assets\reporting.design.min.css" />
+    <EmbeddedResource Include="wwwroot\assets\reporting.design.min.js" />
     <EmbeddedResource Include="wwwroot\assets\reporting.min.css" />
     <EmbeddedResource Include="wwwroot\assets\reporting.min.js" />
   </ItemGroup>

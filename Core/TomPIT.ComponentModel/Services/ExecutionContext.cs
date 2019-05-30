@@ -173,6 +173,7 @@ namespace TomPIT.Services
 			Invoke<JObject>(api, JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(e)));
 		}
 
+		[Obsolete("Please use strongly typed overloads of the Invoke.")]
 		public JObject Invoke([CodeAnalysisProvider(ApiProvider)]string api,
 			[CodeAnalysisProvider(ApiParameterProvider)]JObject e, IApiTransaction transaction)
 		{
@@ -186,18 +187,18 @@ namespace TomPIT.Services
 
 			return JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(result));
 		}
-
+		[Obsolete("Please use strongly typed overloads of the Invoke.")]
 		public JObject Invoke([CodeAnalysisProvider(ApiProvider)]string api,
 			[CodeAnalysisProvider(ApiParameterProvider)]JObject e)
 		{
 			return Invoke(api, e, null);
 		}
-
+		[Obsolete("Please use strongly typed overloads of the Invoke.")]
 		public JObject Invoke([CodeAnalysisProvider(ApiProvider)]string api, IApiTransaction transaction)
 		{
 			return Invoke(api, null, transaction);
 		}
-
+		[Obsolete("Please use strongly typed overloads of the Invoke.")]
 		public JObject Invoke([CodeAnalysisProvider(ApiProvider)]string api)
 		{
 			return Invoke(api, null, null);

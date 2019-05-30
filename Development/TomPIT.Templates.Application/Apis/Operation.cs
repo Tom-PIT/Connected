@@ -79,8 +79,8 @@ namespace TomPIT.Application.Apis
 			}
 		}
 
-		[EventArguments(typeof(OperationSchemaArguments))]
-		public IServerEvent Schema
+		[EventArguments(typeof(OperationManifestArguments))]
+		public IServerEvent Manifest
 		{
 			get
 			{

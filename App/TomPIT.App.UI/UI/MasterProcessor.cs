@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
+using TomPIT.Connectivity;
 
 namespace TomPIT.UI
 {
@@ -26,7 +27,7 @@ namespace TomPIT.UI
 			}
 		}
 
-		public override void Compile()
+		public override void Compile(ISysConnection connection, IComponent component)
 		{
 			AppendBaseType(Builder);
 			AddUsings(Builder);

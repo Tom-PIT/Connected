@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Reports;
@@ -11,5 +12,7 @@ namespace TomPIT.Reporting
 	[ViewRenderer("TomPIT.Reporting.UI.ReportRenderer, TomPIT.Reporting")]
 	public class Report : ComponentConfiguration, IReport
 	{
+		[Browsable(false)]
+		public Guid TextBlob { get; set; }
 	}
 }

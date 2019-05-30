@@ -145,7 +145,7 @@ namespace TomPIT
 
 					var plugin = t.CreateInstance<IPlugin>();
 
-					var parts = plugin.GetApplicationParts();
+					var parts = plugin.GetApplicationParts(m);
 
 					if (parts != null)
 					{

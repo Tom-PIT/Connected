@@ -50,17 +50,17 @@ namespace TomPIT.Design.CodeAnalysis.Providers
             if (op == null)
                 return null;
 
-            var args = new OperationSchemaArguments(context, op);
+            var args = new OperationManifestArguments(context, op);
 
-            context.Connection().GetService<ICompilerService>().Execute(op.MicroService(context.Connection()), op.Schema, this, args, out bool handled);
+            context.Connection().GetService<ICompilerService>().Execute(op.MicroService(context.Connection()), op.Manifest, this, args, out bool handled);
 
             if (handled)
             {
-                if (args.Schema.Parameters.Count > 0)
+                if (args.Manifest.Parameters.Count > 0)
                 {
                     r.Add(new CodeAnalysisResult(ProviderUtils.Header("Parameters"), null, null));
 
-                    foreach (var parameter in args.Schema.Parameters)
+                    foreach (var parameter in args.Manifest.Parameters)
                     {
                         if (!parameter.IsRequired)
                             r.Add(new CodeAnalysisResult(ProviderUtils.ListItem($"{parameter.Name} ({parameter.Type.ToFriendlyName()})"), null, null));
@@ -69,10 +69,10 @@ namespace TomPIT.Design.CodeAnalysis.Providers
                     }
                 }
 
-                if (args.Schema.ReturnValue != null)
+                if (args.Manifest.Schema != null)
                 {
-                    r.Add(new CodeAnalysisResult(ProviderUtils.Header(nameof(args.Schema.ReturnValue)), null, null));
-                    r.Add(new CodeAnalysisResult($"```json\n{JsonConvert.SerializeObject(args.Schema.ReturnValue, Formatting.Indented)}\n```", null, null));
+                    r.Add(new CodeAnalysisResult(ProviderUtils.Header(nameof(args.Manifest.Schema)), null, null));
+                    r.Add(new CodeAnalysisResult($"```json\n{JsonConvert.SerializeObject(args.Manifest.Schema, Formatting.Indented)}\n```", null, null));
                 }
 
                 return r;

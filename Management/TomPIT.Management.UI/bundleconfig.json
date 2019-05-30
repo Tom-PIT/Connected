@@ -4,8 +4,8 @@
     "inputFiles": [
       "wwwroot/assets/fonts/opensans/opensans.css",
       "wwwroot/assets/styles/bootstrap/bootstrap.css",
-      "wwwroot/assets/libraries/devextreme/18.2.4/dx.common.css",
-      "wwwroot/assets/libraries/devextreme/18.2.4/dx.material.blue.light.css",
+      "wwwroot/assets/libraries/devextreme/Latest/dx.common.css",
+      "wwwroot/assets/libraries/devextreme/Latest/dx.material.blue.light.css",
       "wwwroot/assets/styles/management.css",
       "wwwroot/assets/styles/tompit.css"
     ],

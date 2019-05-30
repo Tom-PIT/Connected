@@ -49,6 +49,18 @@ namespace TomPIT.Servers.Development
 			IdeBootstrapper.Run();
 			Shell.GetService<IConnectivityService>().ConnectionInitializing += OnConnectionInitializing;
 			Instance.Run(app);
+
+			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+			{
+				var t = Types.GetType(i);
+
+				if (t == null)
+					continue;
+
+				var template = t.CreateInstance<IMicroServiceTemplate>();
+
+				template.Initialize(app, env);
+			}
 		}
 
 		private static void OnConnectionInitializing(object sender, SysConnectionRegisteredArgs e)

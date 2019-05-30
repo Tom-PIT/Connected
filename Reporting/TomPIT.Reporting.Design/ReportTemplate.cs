@@ -2,8 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using TomPIT.Design;
 using TomPIT.Dom;
+using TomPIT.Reporting.Design.Storage;
 using TomPIT.Reporting.UI;
 
 namespace TomPIT.Reporting.Design
@@ -36,6 +39,11 @@ namespace TomPIT.Reporting.Design
 			{
 				"TomPIT.Reporting.Design.Views.dll"
 			};
+		}
+
+		public override void Initialize(IApplicationBuilder app, IHostingEnvironment env)
+		{
+			DevExpress.XtraReports.Web.Extensions.ReportStorageWebExtension.RegisterExtensionGlobal(new ReportDesignerStorage());
 		}
 	}
 }

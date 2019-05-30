@@ -94,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Views\Shell\" />
+    <Folder Include="wwwroot\Assets\Libraries\DevExtreme\Latest\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />

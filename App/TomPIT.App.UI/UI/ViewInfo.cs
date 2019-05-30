@@ -169,7 +169,7 @@ namespace TomPIT.UI
 
 			var pp = new MailTemplateProcessor(config, Instance.GetService<IViewService>().SelectContent(config));
 
-			pp.Compile();
+			pp.Compile(Instance.Connection, ViewComponent);
 
 			_viewContent = Encoding.UTF8.GetBytes(pp.Result);
 
@@ -190,7 +190,7 @@ namespace TomPIT.UI
 
 			var pp = new PartialProcessor(partial, Instance.GetService<IViewService>().SelectContent(partial));
 
-			pp.Compile();
+			pp.Compile(Instance.Connection, ViewComponent);
 
 			_viewContent = Encoding.UTF8.GetBytes(pp.Result);
 
@@ -216,7 +216,7 @@ namespace TomPIT.UI
 
 			var pp = new ReportProcessor(Instance.GetService<IComponentService>().SelectConfiguration(report.Token) as IReport);
 
-			pp.Compile();
+			pp.Compile(Instance.Connection, ViewComponent);
 
 			_viewContent = Encoding.UTF8.GetBytes(pp.Result);
 
@@ -243,7 +243,7 @@ namespace TomPIT.UI
 
 				LastModified = ViewComponent.Modified;
 
-				sourceCode = renderer.CreateContent();
+				sourceCode = renderer.CreateContent(Instance.Connection, ViewComponent);
 			}
 			else
 			{
@@ -255,7 +255,7 @@ namespace TomPIT.UI
 
 			var p = new ViewProcessor(view, sourceCode);
 
-			p.Compile();
+			p.Compile(Instance.Connection, ViewComponent);
 
 			_viewContent = Encoding.UTF8.GetBytes(p.Result);
 		}
@@ -275,7 +275,7 @@ namespace TomPIT.UI
 
 			var mp = new MasterProcessor(master, Instance.GetService<IViewService>().SelectContent(master));
 
-			mp.Compile();
+			mp.Compile(Instance.Connection, ViewComponent);
 
 			_viewContent = Encoding.UTF8.GetBytes(mp.Result);
 
@@ -371,7 +371,7 @@ namespace TomPIT.UI
 
 			var sp = new SnippetProcessor(s, Instance.GetService<IComponentService>().SelectText(ViewComponent.MicroService, s));
 
-			sp.Compile();
+			sp.Compile(Instance.Connection, ViewComponent);
 
 			_viewContent = Encoding.UTF8.GetBytes(sp.Result);
 

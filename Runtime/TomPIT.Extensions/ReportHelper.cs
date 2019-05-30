@@ -14,7 +14,7 @@ namespace TomPIT
 		{
 		}
 
-		public async Task<IHtmlContent> Render(string name)
+		public async Task<IHtmlContent> Render(string name, string queryString = null)
 		{
 			var context = Html.ViewData.Model as IExecutionContext;
 
@@ -33,6 +33,9 @@ namespace TomPIT
 				microService = tokens[0];
 				report = tokens[1];
 			}
+
+			if (!string.IsNullOrWhiteSpace(queryString))
+				Html.ViewData[$"parameters{microService}/{report}"] = queryString;
 
 			return await Html.PartialAsync($"~/Views/Dynamic/Report/{microService}/{report}.cshtml", Html.ViewData.Model);
 		}

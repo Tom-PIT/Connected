@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Text;
+using TomPIT.ComponentModel;
+using TomPIT.Connectivity;
 using TomPIT.Services;
 
 namespace TomPIT.UI
@@ -13,7 +15,7 @@ namespace TomPIT.UI
 
 		protected string Source { get; }
 
-		public virtual void Compile()
+		public virtual void Compile(ISysConnection connection, IComponent component)
 		{
 
 		}

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -15,7 +16,7 @@ namespace TomPIT.BigData
 		{
 		}
 
-		public List<string> GetApplicationParts()
+		public List<string> GetApplicationParts(ApplicationPartManager manager)
 		{
 			return new List<string>
 			{
