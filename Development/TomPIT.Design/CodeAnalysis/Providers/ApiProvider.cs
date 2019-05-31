@@ -255,12 +255,12 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
 				result.Add(new CodeAnalysisResult(ProviderUtils.Header("Parameters"), null, null));
 
-				r.Sort();
+				//r.Sort();
 
 				foreach (var i in r)
 					result.Add(i);
 
-				o.Sort();
+				//o.Sort();
 
 				foreach (var i in o)
 					result.Add(i);

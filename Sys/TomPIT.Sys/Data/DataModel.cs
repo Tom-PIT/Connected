@@ -46,6 +46,7 @@ namespace TomPIT.Sys.Data
 		private static Lazy<BigDataPartitions> _bigDataPartitions = new Lazy<BigDataPartitions>(() => { return new BigDataPartitions(Container); });
 		private static Lazy<BigDataTransactions> _bigDataTransactions = new Lazy<BigDataTransactions>(() => { return new BigDataTransactions(Container); });
 		private static Lazy<DevelopmentErrors> _devErrors = new Lazy<DevelopmentErrors>(() => { return new DevelopmentErrors(); });
+		private static Lazy<Queueing> _queue = new Lazy<Queueing>(() => { return new Queueing(); });
 
 		public static MicroServicesMeta MicroServicesMeta { get { return _meta.Value; } }
 		public static MicroServices MicroServices { get { return _microServices.Value; } }
@@ -86,6 +87,7 @@ namespace TomPIT.Sys.Data
 		public static BigDataPartitions BigDataPartitions { get { return _bigDataPartitions.Value; } }
 		public static BigDataTransactions BigDataTransactions { get { return _bigDataTransactions.Value; } }
 		public static DevelopmentErrors DevelopmentErrors { get { return _devErrors.Value; } }
+		public static Queueing Queue { get { return _queue.Value; } }
 		internal static MemoryCache Container
 		{
 			get { return _cache.Value; }

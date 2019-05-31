@@ -22,6 +22,7 @@ namespace TomPIT.Services
 		internal const string MediaProvider = "TomPIT.Design.CodeAnalysis.Providers.MediaProvider, TomPIT.Design";
 		internal const string IoTHubProvider = "TomPIT.Design.CodeAnalysis.Providers.IoTHubProvider, TomPIT.Design";
 		internal const string IoTHubFieldProvider = "TomPIT.Design.CodeAnalysis.Providers.IoTHubFieldProvider, TomPIT.Design";
+		internal const string QueueWorkerProvider = "TomPIT.Design.CodeAnalysis.Providers.QueueWorkerProvider, TomPIT.Design";
 
 		private IContextServices _services = null;
 		private ISysConnection _connection = null;

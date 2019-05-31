@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using TomPIT.Cdn;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Workers;
 using TomPIT.Environment;
 
 namespace TomPIT.Services.Context
@@ -99,6 +100,22 @@ namespace TomPIT.Services.Context
 				throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrSubscriptionEventNotFound, tokens[0], tokens[1])).WithMetrics(Context);
 
 			Context.Connection().GetService<ISubscriptionService>().TriggerEvent(sub, tokens[1], primaryKey, topic, arguments);
+		}
+
+		public void Enqueue(string queue, JObject arguments)
+		{
+			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Queue", queue) is IQueueWorker worker))
+				throw new RuntimeException(SR.ErrQueueWorkerNotFound);
+
+			Context.Connection().GetService<IQueueService>().Enqueue(worker, arguments);
+		}
+
+		public void Enqueue(string queue, JObject arguments, TimeSpan expire, TimeSpan nextVisible)
+		{
+			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Queue", queue) is IQueueWorker worker))
+				throw new RuntimeException(SR.ErrQueueWorkerNotFound);
+
+			Context.Connection().GetService<IQueueService>().Enqueue(worker, arguments, expire, nextVisible);
 		}
 	}
 }

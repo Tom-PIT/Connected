@@ -78,6 +78,7 @@ namespace TomPIT.Runtime
 			e.Connection.RegisterService(typeof(IAlienService), typeof(AlienService));
 			e.Connection.RegisterService(typeof(IIoTService), typeof(IoTService));
 			e.Connection.RegisterService(typeof(IDataCachingService), typeof(DataCachingService));
+			e.Connection.RegisterService(typeof(IQueueService), typeof(QueueService));
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 			{

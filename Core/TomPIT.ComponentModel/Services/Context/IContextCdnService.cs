@@ -19,5 +19,8 @@ namespace TomPIT.Services.Context
 		void CreateSubscription([CodeAnalysisProvider(ExecutionContext.SubscriptionProvider)]string subscription, string primaryKey, string topic);
 		void TriggerEvent([CodeAnalysisProvider(ExecutionContext.SubscriptionEventProvider)]string eventName, string primaryKey, string topic);
 		void TriggerEvent([CodeAnalysisProvider(ExecutionContext.SubscriptionEventProvider)]string eventName, string primaryKey, string topic, JObject arguments);
+
+		void Enqueue([CodeAnalysisProvider(ExecutionContext.QueueWorkerProvider)]string queue, JObject arguments);
+		void Enqueue([CodeAnalysisProvider(ExecutionContext.QueueWorkerProvider)]string queue, JObject arguments, TimeSpan expire, TimeSpan nextVisible);
 	}
 }

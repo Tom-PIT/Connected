@@ -1663,6 +1663,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Queue worker not found.
+        /// </summary>
+        public static string ErrQueueWorkerNotFound {
+            get {
+                return ResourceManager.GetString("ErrQueueWorkerNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A Micro service reference is required.
         /// </summary>
         public static string ErrReferenceMissing {

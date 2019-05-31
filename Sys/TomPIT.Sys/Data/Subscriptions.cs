@@ -182,6 +182,10 @@ namespace TomPIT.Sys.Data
 				return;
 
 			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(popReceipt);
+			var ev = ResolveEvent(m);
+
+			if (ev != null)
+				Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.DeleteEvent(ev);
 		}
 
 		private ISubscriptionEvent ResolveEvent(IQueueMessage message)

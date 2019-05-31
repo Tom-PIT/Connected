@@ -35,6 +35,7 @@ namespace TomPIT.Application
 				{Events.EventHandler.ComponentCategory, new ItemDescriptor("Event handler", Events.EventHandler.ComponentCategory, typeof(Events.EventHandler)) { Glyph = "fal fa-bullseye-pointer", Category = "Model" , Ordinal=104} },
 				{DistributedEvent.ComponentCategory, new ItemDescriptor("Distributed event", DistributedEvent.ComponentCategory, typeof(DistributedEvent)) { Glyph = "fal fa-chart-network", Category = "Model" , Ordinal=105} },
 				{HostedWorker.ComponentCategory, new ItemDescriptor("Hosted worker", HostedWorker.ComponentCategory, typeof(HostedWorker)) { Glyph = "fal fa-cog", Category = "Model" , Ordinal=106} },
+				{QueueWorker.ComponentCategory, new ItemDescriptor("Queue worker", QueueWorker.ComponentCategory, typeof(QueueWorker)) { Glyph = "fal fa-cog", Category = "Model" , Ordinal=107} },
 				{DataSource.ComponentCategory, new ItemDescriptor("Data source", "DataSource", typeof(DataSource)) { Glyph = "fal fa-database", Category = "Data" , Ordinal=200} },
 				{Transaction.ComponentCategory, new ItemDescriptor("Transaction", "Transaction", typeof(Transaction)) { Glyph = "fal fa-exchange-alt", Category = "Data" , Ordinal=201} },
 				//r.Add(new ItemDescriptor("Data management", DataManagement.ComponentCategory, typeof(DataManagement)) { Glyph = "fal fa-exchange-alt", Category = "Data", Value = "DataManagement" });

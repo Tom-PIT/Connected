@@ -945,4 +945,7 @@
   <data name="ErrExecutionContextExpected" xml:space="preserve">
     <value>IExecutionContext expected</value>
   </data>
+  <data name="ErrQueueWorkerNotFound" xml:space="preserve">
+    <value>Queue worker not found</value>
+  </data>
 </root>

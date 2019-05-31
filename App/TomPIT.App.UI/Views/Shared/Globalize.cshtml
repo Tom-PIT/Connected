@@ -48,15 +48,11 @@
 }
 
 <script>
-    var localization = null;
-
-    $().ready(function () {
-        tompit.get({
-            url: '@url',
-            onSuccess: function (data) {
-                localization = new Globalize('@locale');
-                localization.load(data);
-            }
-        });
+    tompit.get({
+        url: '@url',
+        onSuccess: function (data) {
+            Globalize.load(data);
+            Globalize.locale('@locale');
+        }
     });
 </script>
