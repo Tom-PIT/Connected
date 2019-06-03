@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -117,12 +118,12 @@ namespace TomPIT.Compilers
 
 			handled = true;
 
-			if (!script.Errors.IsDefaultOrEmpty && script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() > 0)
+			if (script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() > 0)
 			{
 				var sb = new StringBuilder();
 
 				foreach (var i in script.Errors)
-					sb.AppendLine(i.GetMessage());
+					sb.AppendLine(i.Message);
 
 				throw new RuntimeException(sb.ToString());
 			}
@@ -200,46 +201,62 @@ namespace TomPIT.Compilers
 			return r;
 		}
 
-        private IScriptDescriptor CreateScript(Guid microService, ISourceCode d)
-        {
-            var script = new CompilerScript(Connection, microService, d);
-
-            script.Create();
-
-            if (script.Result == null)
-                return null;
-
-            Compile(script);
-
-            script.Dispose();
-
-            return script.Result;
-        }
-
-        private void Compile(CompilerScript script)
-        {
-            Set(script.SourceCode.Id, script.Result, TimeSpan.Zero);
-
-            ((ScriptDescriptor)script.Result).Errors = script.Script.Compile();
-
-            if (script.Result.Errors.Where(f=>f.Severity== Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() == 0)
-                ((ScriptDescriptor)script.Result).Script = script.Script.CreateDelegate();
-        }
-
-        private IScriptDescriptor CreateScript<T>(Guid microService, ISourceCode d)
+		private IScriptDescriptor CreateScript(Guid microService, ISourceCode d)
 		{
-            var script = new CompilerGenericScript<T>(Connection, microService, d);
+			using (var script = new CompilerScript(Connection, microService, d))
+			{
+				var result = new ScriptDescriptor
+				{
+					Id = d.Id,
+					MicroService = microService
+				};
 
-            script.Create();
+				script.Create();
 
-            if (script.Result == null)
-                return null;
+				Compile(result, script);
 
-            Compile(script);
+				return result;
+			}
+		}
 
-            script.Dispose();
+		private IScriptDescriptor CreateScript<T>(Guid microService, ISourceCode d)
+		{
+			using (var script = new CompilerGenericScript<T>(Connection, microService, d))
+			{
+				var result = new ScriptDescriptor
+				{
+					Id = d.Id,
+					MicroService = microService
+				};
 
-            return script.Result;
+				script.Create();
+
+				Compile(result, script);
+
+				return result;
+			}
+		}
+
+		private void Compile(IScriptDescriptor script, CompilerScript compiler)
+		{
+			Set(script.Id, script, TimeSpan.Zero);
+
+			var errors = compiler.Script.Compile();
+			var diagnostic = new List<IDiagnostic>();
+
+			foreach(var error in errors)
+			{
+				diagnostic.Add(new Diagnostic
+				{
+					Message = error.GetMessage(),
+					Severity = error.Severity
+				});
+			}
+
+			((ScriptDescriptor)script).Errors = diagnostic;
+
+			if (script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() == 0)
+				((ScriptDescriptor)script).Script = compiler.Script.CreateDelegate();
 		}
 
 		internal static void ResolveReferences(ISysConnection connection, Guid microService, ISourceCode d, string code)

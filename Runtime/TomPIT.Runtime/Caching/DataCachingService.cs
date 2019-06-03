@@ -270,5 +270,15 @@ namespace TomPIT.Caching
 				handler.Handler.Initialize();
 			}
 		}
+
+		public void Reset(string cacheKey)
+		{
+			if (!States.ContainsKey(cacheKey))
+				return;
+
+			States[cacheKey].Initialized = false;
+
+			Cache.Clear(cacheKey);
+		}
 	}
 }

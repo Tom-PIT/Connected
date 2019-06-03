@@ -33,11 +33,11 @@ namespace TomPIT.Compilers
 
             CompilerService.ResolveReferences(Connection, MicroService, SourceCode, code);
 
-            Result = new ScriptDescriptor
-            {
-                MicroService = MicroService,
-                Id = SourceCode.Id
-            };
+            //Result = new ScriptDescriptor
+            //{
+            //    MicroService = MicroService,
+            //    Id = SourceCode.Id
+            //};
 
             var options = ScriptOptions.Default
                 .WithImports(Usings)
@@ -84,7 +84,7 @@ namespace TomPIT.Compilers
             Script = null;
         }
 
-        public IScriptDescriptor Result { get; private set; }
+        //public IScriptDescriptor Result { get; private set; }
         public Script<object> Script { get; private set; }
     }
 

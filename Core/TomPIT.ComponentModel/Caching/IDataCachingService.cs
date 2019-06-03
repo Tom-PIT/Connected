@@ -27,5 +27,7 @@ namespace TomPIT.Caching
 		int Count(string key);
 		string GenerateKey(params object[] parameters);
 		string GenerateRandomKey(string key);
+
+		void Reset(string cacheKey);
 	}
 }

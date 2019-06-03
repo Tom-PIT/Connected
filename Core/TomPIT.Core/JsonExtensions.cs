@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 
@@ -25,8 +26,15 @@ namespace TomPIT
 					proposed = val.Value;
 				}
 
-				if (!Types.TryConvert(proposed, out T r))
-					throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
+				T r;
+
+				if (typeof(T).IsSubclassOf(typeof(JToken)))
+				{
+					if (!Types.TryConvert(proposed, out r))
+						throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
+				}
+				else
+					return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(proposed));
 
 				if (typeof(T) == typeof(string) && string.IsNullOrWhiteSpace(r as string))
 					throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
@@ -61,10 +69,17 @@ namespace TomPIT
 					proposed = val.Value;
 				};
 
-				if (Types.TryConvert(proposed, out T r))
-					return r;
+				T r;
 
-				return default(T);
+				if (typeof(T).IsSubclassOf(typeof(JToken)))
+				{
+					if (Types.TryConvert(proposed, out r))
+						return r;
+				}
+				else
+					return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(proposed));
+
+				return default;
 			}
 			catch
 			{

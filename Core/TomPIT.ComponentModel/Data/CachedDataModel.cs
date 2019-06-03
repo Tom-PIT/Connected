@@ -161,5 +161,10 @@ namespace TomPIT.Data
 		}
 
 		private ISysConnection Connection => ((ExecutionContext)e).Connection;
+
+		protected void Reset()
+		{
+			Connection.GetService<IDataCachingService>().Reset(CacheKey);
+		}
 	}
 }

@@ -37,6 +37,20 @@ namespace TomPIT.Compilation
 					return JsonConvert.DeserializeObject<R>(JsonConvert.SerializeObject(value, settings), settings);
 				}
 			}
+			else if (typeof(R) == typeof(JArray))
+			{
+				if (value is JArray)
+					return (R)value;
+
+				return Types.Convert<R>(JsonConvert.DeserializeObject<JArray>(JsonConvert.SerializeObject(value)));
+			}
+			else if (typeof(R) == typeof(JObject))
+			{
+				if (value is JObject)
+					return (R)value;
+
+				return Types.Convert<R>(JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(value)));
+			}
 
 			return Types.Convert<R>(value);
 		}
