@@ -60,6 +60,12 @@ namespace TomPIT.Models
 
 		}
 
+		public void MergeArguments(JObject arguments)
+		{
+			if (arguments != null)
+				Arguments.Merge(arguments);
+		}
+
 		public string Title { get; protected set; }
 
 		public IModelNavigation Navigation

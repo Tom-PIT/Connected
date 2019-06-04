@@ -7,5 +7,7 @@ namespace TomPIT.Models
 	public interface IRuntimeModel : IExecutionContext, IRequestContextProvider
 	{
 		JObject Arguments { get; }
+
+		void MergeArguments(JObject arguments);
 	}
 }

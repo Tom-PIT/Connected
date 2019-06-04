@@ -38,6 +38,12 @@ namespace TomPIT.Models
 			Initialize(Instance.Connection.Url, microService);
 		}
 
+		public void MergeArguments(JObject arguments)
+		{
+			if (arguments != null)
+				Arguments.Merge(arguments);
+		}
+
 		public IEnumerable<ValidationResult> Validate()
 		{
 			return null;

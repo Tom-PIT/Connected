@@ -66,5 +66,11 @@ namespace TomPIT.Models
 		protected virtual void OnDatabinding()
 		{
 		}
+
+		public void MergeArguments(JObject arguments)
+		{
+			if (arguments != null)
+				Arguments.Merge(arguments);
+		}
 	}
 }
