@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Template;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text;
 using TomPIT.Data;
 using TomPIT.Environment;
 using TomPIT.Routing;
@@ -205,6 +208,38 @@ namespace TomPIT.Services.Context
 			}
 
 			return UrlGenerator.GenerateUrl(primaryKey, text, items);
+		}
+
+		public string ParseUrl(string template, IDictionary<string,object> parameters)
+		{
+			var tokens = template.Split('/');
+			var compiledTokens = new StringBuilder();
+
+			foreach(var token in tokens)
+			{
+				if (token.StartsWith('{') && token.EndsWith('}') && parameters !=null)
+				{
+					var key = token.Substring(1, token.Length - 2);
+					var match = false;
+
+					foreach(var parameter in parameters.Keys)
+					{
+						if(string.Compare(parameter, key, true) == 0)
+						{
+							compiledTokens.Append($"{Types.Convert<string>(parameters[parameter])}/");
+							match = true;
+							break;
+						}
+					}
+
+					if (!match)
+						compiledTokens.Append($"{token}/");
+				}
+				else
+					compiledTokens.Append($"{token}/");
+			}
+
+			return $"{Shell.HttpContext.Request.RootUrl()}/{compiledTokens.ToString().TrimEnd('/')}";
 		}
 	}
 }

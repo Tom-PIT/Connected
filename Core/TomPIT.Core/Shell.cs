@@ -167,7 +167,7 @@ namespace TomPIT
 					{
 						if (File.Exists(sys))
 						{
-							_sys = JsonConvert.DeserializeObject(File.ReadAllText(sys), _sysType) as ISys;
+							_sys = Types.Deserialize(File.ReadAllText(sys), _sysType) as ISys;
 							break;
 						}
 

@@ -3,7 +3,7 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 
-namespace TomPIT.UI
+namespace TomPIT.Runtime.Compilers.Views
 {
 	internal class SnippetProcessor : ProcessorBase
 	{
@@ -16,18 +16,8 @@ namespace TomPIT.UI
 		}
 
 		private ISnippet Snippet { get; }
-		private IComponent Component
-		{
-			get
-			{
-				if (_component == null)
-					_component = Instance.GetService<IComponentService>().SelectComponent(Snippet.Configuration().Component);
 
-				return _component;
-			}
-		}
-
-		public override void Compile(ISysConnection connection, IComponent component)
+		public override void Compile(ISysConnection connection, IComponent component, IConfiguration configuration)
 		{
 			AddUsings(Builder);
 			Builder.AppendLine(string.Format("@model {0}", ResolveModel()));

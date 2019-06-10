@@ -161,17 +161,17 @@ namespace TomPIT.Services
 
 		public R Invoke<R, A>([CodeAnalysisProvider(ApiProvider)] string api, A e, IApiTransaction transaction)
 		{
-			return Invoke<R>(api, JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(e)), transaction);
+			return Invoke<R>(api, Types.Deserialize<JObject>(Types.Serialize(e)), transaction);
 		}
 
 		public R Invoke<R, A>([CodeAnalysisProvider(ApiProvider)] string api, A e)
 		{
-			return Invoke<R>(api, JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(e)));
+			return Invoke<R>(api, Types.Deserialize<JObject>(Types.Serialize(e)));
 		}
 
 		public void Invoke<A>([CodeAnalysisProvider(ApiProvider)] string api, A e)
 		{
-			Invoke<JObject>(api, JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(e)));
+			Invoke<JObject>(api, Types.Deserialize<JObject>(Types.Serialize(e)));
 		}
 
 		[Obsolete("Please use strongly typed overloads of the Invoke.")]
@@ -186,7 +186,7 @@ namespace TomPIT.Services
 			if (result is JObject)
 				return result as JObject;
 
-			return JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(result));
+			return Types.Deserialize<JObject>(Types.Serialize(result));
 		}
 		[Obsolete("Please use strongly typed overloads of the Invoke.")]
 		public JObject Invoke([CodeAnalysisProvider(ApiProvider)]string api,

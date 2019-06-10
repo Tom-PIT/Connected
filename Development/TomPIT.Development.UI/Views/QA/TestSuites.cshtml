@@ -32,7 +32,7 @@
 		keyExpr: 'value',
 		valueExpr: 'value',
 		displayExpr:'text',
-		dataSource: @Html.Raw(JsonConvert.SerializeObject(Model.Suites)),
+		dataSource: @Html.Raw(Types.Serialize(Model.Suites)),
 		selectionMode: 'single',
 		grouped: true,
 		collapsibleGroups:true,

@@ -3,10 +3,14 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 
-namespace TomPIT.Compilation
+namespace TomPIT
 {
 	internal class SerializationResolver : DefaultContractResolver
 	{
+		public SerializationResolver()
+		{
+			NamingStrategy = new CamelCaseNamingStrategy();
+		}
 		protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
 		{
 			var props = base.CreateProperties(type, memberSerialization);

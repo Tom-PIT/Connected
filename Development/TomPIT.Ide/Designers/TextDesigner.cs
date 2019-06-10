@@ -236,6 +236,8 @@ namespace TomPIT.Designers
 			{
 				if (string.Compare(Language, "csharp", true) == 0)
 					return string.Format("{0}.csx", Content.Id.ToString());
+				else if (string.Compare(Language, "razor", true)==0)
+					return string.Format("{0}.cshtml", Content.Id.ToString());
 
 				return null;
 			}

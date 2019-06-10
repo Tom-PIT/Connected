@@ -3,7 +3,7 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.Connectivity;
 
-namespace TomPIT.UI
+namespace TomPIT.Runtime.Compilers.Views
 {
 	internal class MailTemplateProcessor : ProcessorBase
 	{
@@ -16,24 +16,13 @@ namespace TomPIT.UI
 		}
 
 		private IMailTemplate Template { get; }
-		private IComponent Component
-		{
-			get
-			{
-				if (_component == null)
-					_component = Instance.GetService<IComponentService>().SelectComponent(Template.Component);
-
-				return _component;
-			}
-		}
-
-		public override void Compile(ISysConnection connection, IComponent component)
+		public override void Compile(ISysConnection connection, IComponent component, IConfiguration configuration)
 		{
 			AppendBaseType(Builder, "TomPIT.UI.MailViewBase");
 			AddUsings(Builder);
 			AddTagHelpers(Builder);
 
-			AppendViewMetaData(Builder, "MailTemplate", Component.Token);
+			AppendViewMetaData(Builder, "MailTemplate", component.Token);
 
 			Builder.Append(Source);
 		}

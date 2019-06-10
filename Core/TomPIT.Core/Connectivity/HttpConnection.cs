@@ -105,12 +105,7 @@ namespace TomPIT.Connectivity
 				return default(T);
 			}
 
-			var settings = new JsonSerializerSettings
-			{
-				ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
-			};
-
-			return JsonConvert.DeserializeObject<T>(content, settings);
+			return Types.Deserialize<T>(content);
 		}
 
 		private void HandleResponseException(HttpResponseMessage response)
@@ -124,7 +119,7 @@ namespace TomPIT.Connectivity
 
 			try
 			{
-				ex = JsonConvert.DeserializeObject(rt) as JObject;
+				ex = Types.Deserialize<JObject>(rt);
 			}
 			catch
 			{
@@ -176,7 +171,7 @@ namespace TomPIT.Connectivity
 			if (content == null || Convert.IsDBNull(content))
 				return new StringContent(string.Empty);
 
-			var c = JsonConvert.SerializeObject(content);
+			var c = Types.Serialize(content);
 
 			content = CompressString(c);
 

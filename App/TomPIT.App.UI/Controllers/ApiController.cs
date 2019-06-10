@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using TomPIT.Compilation;
 using TomPIT.Models;
 
 namespace TomPIT.Controllers
@@ -13,7 +14,7 @@ namespace TomPIT.Controllers
 		{
 			var m = CreateModel();
 
-			return Json(JsonConvert.SerializeObject(m.Invoke<object>(m.QualifierName, m.Body)));
+			return Json(Types.Serialize(m.Invoke<object>(m.QualifierName, m.Body)));
 		}
 
 		[HttpPost]

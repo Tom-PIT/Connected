@@ -222,34 +222,14 @@ namespace TomPIT
 
 			return args.Manifest;
 		}
-		//public static void FromRequestArguments<T>(this List<SchemaParameter> parameters)
-		//{
-		//	var t = typeof(T);
 
-		//	var properties = t.GetProperties();
+		public static T ToRequestArguments<T>(this JObject value, IDataModelContext context) where T : RequestArguments
+		{
+			var r = typeof(T).CreateInstance<T>(new object[] { context });
 
-		//	foreach(var i in properties)
-		//	{
-		//		if (i.IsPrimitive())
-		//		{
+			Types.Populate(Types.Serialize(value), r);
 
-		//		}
-		//		else if(i.IsCollection())
-		//		{
-
-		//		}
-		//		else
-		//		{
-
-		//		}
-
-		//		if (!i.CanWrite)
-		//			continue;
-
-		//		var accessors = i.GetAccessors();
-		//	}
-		//}
-
-		
+			return r;
+		}
 	}
 }

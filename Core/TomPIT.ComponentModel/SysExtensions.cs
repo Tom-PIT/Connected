@@ -5,6 +5,7 @@ using System;
 using System.Collections.Specialized;
 using System.Security.Principal;
 using System.Text;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Security;
@@ -106,7 +107,7 @@ namespace TomPIT
 				return null;
 
 			var cookie = request.Cookies[SecurityUtils.AuthenticationCookieName];
-			var json = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
+			var json = Types.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
 
 			return json.Required<string>("jwt");
 		}

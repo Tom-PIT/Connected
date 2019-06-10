@@ -6,6 +6,7 @@ using TomPIT.Application.Apis;
 using TomPIT.Application.Cdn;
 using TomPIT.Application.Data;
 using TomPIT.Application.Events;
+using TomPIT.Application.Features;
 using TomPIT.Application.QA;
 using TomPIT.Application.Resources;
 using TomPIT.Application.UI;
@@ -40,6 +41,7 @@ namespace TomPIT.Application
 				{Transaction.ComponentCategory, new ItemDescriptor("Transaction", "Transaction", typeof(Transaction)) { Glyph = "fal fa-exchange-alt", Category = "Data" , Ordinal=201} },
 				//r.Add(new ItemDescriptor("Data management", DataManagement.ComponentCategory, typeof(DataManagement)) { Glyph = "fal fa-exchange-alt", Category = "Data", Value = "DataManagement" });
 				{Connection.ComponentCategory, new ItemDescriptor("Connection", "Connection", typeof(Connection)) { Glyph = "fal fa-server", Category = "Data" , Ordinal=202} },
+				{"FeatureSet", new ItemDescriptor("Feature set", "FeatureSet", typeof(FeatureSet)) { Glyph = "fal fa-function", Category = "Configuration" , Ordinal=250} },
 				{"Strings", new ItemDescriptor("String table", "StringTable", typeof(StringTable)) { Glyph = "fal fa-font", Category = "Resources" , Ordinal=300} } ,
 				{"Media", new ItemDescriptor("Media", "Media", typeof(MediaResources)) { Glyph = "fal fa-images", Category = "Resources" , Ordinal=301} } ,
 				{ "Embedded", new ItemDescriptor("Embedded assembly", "Embedded Assembly", typeof(AssemblyEmbeddedResource)) { Glyph = "fal fa-file-code", Category = "Resources" , Ordinal=303, Value="Assembly"} } ,

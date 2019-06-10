@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
@@ -32,5 +33,11 @@ namespace TomPIT.Services
 		JObject Transaction(IDataConnection connection, [CodeAnalysisProvider(OperationArguments.TransactionProvider)]string transaction);
 
 		IDataConnection OpenConnection([CodeAnalysisProvider(OperationArguments.ConnectionProvider)]string connection);
+
+		IDataReader<T> OpenReader<T>(IDataConnection connection, string commandText);
+		IDataWriter OpenWriter(IDataConnection connection, string commandText);
+
+		IDataReader<T> OpenReader<T>([CodeAnalysisProvider(OperationArguments.ConnectionProvider)]string connection, string commandText);
+		IDataWriter OpenWriter([CodeAnalysisProvider(OperationArguments.ConnectionProvider)]string connection, string commandText);
 	}
 }

@@ -10,22 +10,32 @@ namespace TomPIT.Data
 	{
 		public void Validate(IDataModelContext context, List<ValidationResult> results)
 		{
-			OnValidating(context, results);
+			OnValidating(results);
 		}
 
-		protected virtual void OnValidating(IDataModelContext context, List<ValidationResult> results)
+		protected virtual void OnValidating(List<ValidationResult> results)
 		{
 
 		}
 
-		protected virtual List<object> OnProvideUniqueValues(IDataModelContext context, string propertyName)
+		protected virtual List<object> OnProvideUniqueValues(string propertyName)
 		{
 			return null;
 		}
 
 		List<object> IUniqueValueProvider.ProvideUniqueValues(IDataModelContext context, string propertyName)
 		{
-			return OnProvideUniqueValues(context, propertyName);
+			return OnProvideUniqueValues(propertyName);
+		}
+
+		bool IUniqueValueProvider.IsUnique(IDataModelContext context, string propertyName)
+		{
+			return IsValueUnique(propertyName);
+		}
+
+		protected virtual bool IsValueUnique(string propertyName)
+		{
+			return true;
 		}
 	}
 }

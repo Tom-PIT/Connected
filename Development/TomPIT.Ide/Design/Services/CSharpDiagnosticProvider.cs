@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Development;
 using TomPIT.Ide;
@@ -21,12 +22,12 @@ namespace TomPIT.Design.Services
 			if (argumentType != null)
 				mi = mi.MakeGenericMethod(argumentType);
 
-			var errors = (ImmutableArray<Diagnostic>)mi.Invoke(svc, new object[] { environment.Context.MicroService.Token, sourceCode });
+			var errors = (List<IDiagnostic>)mi.Invoke(svc, new object[] { environment.Context.MicroService.Token, sourceCode });
 
 			var r = new List<IDiagnosticInfo>();
 			environment.Context.Connection().GetService<IDesignerService>().ClearErrors(sourceCode.Configuration().Component, sourceCode.Id);
 
-			if (errors.IsDefaultOrEmpty)
+			if (errors == null || errors.Count == 0)
 				return r;
 
 			var errorList = new List<IDevelopmentComponentError>();
@@ -41,7 +42,7 @@ namespace TomPIT.Design.Services
 				errorList.Add(new DevelopmentComponentError
 				{
 					Element = sourceCode.Id,
-					Message = i.GetMessage(),
+					Message = i.Message,
 					Severity = (DevelopmentSeverity)(int)i.Severity
 				});
 			}
@@ -52,7 +53,7 @@ namespace TomPIT.Design.Services
 			return r;
 		}
 
-		private bool IsSuppressed(Diagnostic item)
+		private bool IsSuppressed(IDiagnostic item)
 		{
 			if (item.Severity == DiagnosticSeverity.Warning && string.Compare(item.Id, "CS1702", true) == 0)
 				return true;

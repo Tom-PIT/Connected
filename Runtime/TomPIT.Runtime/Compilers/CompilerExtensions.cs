@@ -1,4 +1,5 @@
 ﻿using System;
+using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Events;
 using TomPIT.Connectivity;
@@ -23,10 +24,20 @@ namespace TomPIT.Compilers
 				}
 			}
 
-            if (sourceCode is IConfiguration)
-                return $"{sourceCode.Configuration().ComponentName(connection)}.csx";
+			var att = sourceCode.GetType().FindAttribute<SyntaxAttribute>();
 
-			return sourceCode.ToString();
+			if(att==null)
+				return $"{sourceCode.Configuration().ComponentName(connection)}.csx";
+
+			var fileName = sourceCode.ToString();
+
+			if (sourceCode is IConfiguration)
+				fileName = $"{sourceCode.Configuration().ComponentName(connection)}";
+
+			if (string.Compare(att.Syntax, SyntaxAttribute.Razor, true) == 0)
+				return $"{fileName}.cshtml";
+			else
+				return $"{fileName}.csx";
 		}
 
 		public static Guid ScriptId(this IText sourceCode)

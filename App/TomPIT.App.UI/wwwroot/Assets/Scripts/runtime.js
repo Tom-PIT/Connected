@@ -103,5 +103,35 @@
 		};
 
 		return this;
-	};
+    };
+
+    tompit.parseUrl = function (template, parameters) {
+        var tokens = template.split('/');
+        var compiled = '/';
+
+        $.each(tokens, function (i, v) {
+            var token = v;
+
+            if (token.startsWith('{') && token.endsWith('}') && typeof parameters !== 'undefined') {
+                var key = token.substr(1, token.length - 2);
+                var match = false;
+
+                $.each(parameters, function (ii, vv) {
+                    if (vv.key === key) {
+                        compiled += vv.value + '/';
+                        match = true;
+
+                        return false;
+                    }
+                });
+
+                if (!match)
+                    compiled += token + '/';
+            }
+            else
+                compiled += token + '/';
+        });
+
+        return compiled.length > 0 ? compiled.substr(0, compiled.length -1) : compiled;
+    }
 })(window.tompit = window.tompit || {}, jQuery);

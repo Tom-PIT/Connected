@@ -15,5 +15,6 @@
 		IContextCdnService Cdn { get; }
 		IContextIoTService IoT { get; }
 		IContextMediaService Media { get; }
+		IContextFeatureService Features { get; }
 	}
 }

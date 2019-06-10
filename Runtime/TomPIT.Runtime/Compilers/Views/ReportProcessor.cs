@@ -8,8 +8,9 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Reports;
 using TomPIT.Connectivity;
 using TomPIT.Services;
+using TomPIT.UI;
 
-namespace TomPIT.UI
+namespace TomPIT.Runtime.Compilers.Views
 {
 	internal class ReportProcessor : ProcessorBase
 	{
@@ -22,18 +23,8 @@ namespace TomPIT.UI
 		}
 
 		private IReport View { get; }
-		private IComponent Component
-		{
-			get
-			{
-				if (_component == null)
-					_component = Instance.GetService<IComponentService>().SelectComponent(View.Component);
 
-				return _component;
-			}
-		}
-
-		public override void Compile(ISysConnection connection, IComponent component)
+		public override void Compile(ISysConnection connection, IComponent component, IConfiguration configuration)
 		{
 			var renderer = View.GetType().FindAttribute<ViewRendererAttribute>();
 

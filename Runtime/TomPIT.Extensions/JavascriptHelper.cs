@@ -12,7 +12,7 @@ namespace TomPIT
 		{
 		}
 
-		public IHtmlContent Value(object value)
+		public IHtmlContent Value(object value, bool mapNull)
 		{
 			if (value == null)
 				return Html.Raw("null") as HtmlString;
@@ -25,8 +25,40 @@ namespace TomPIT
 				return String(value);
 			else if (value is bool)
 				return Bool((bool)value);
+			else if (Types.IsNumericType(value.GetType()))
+				return Number(value, mapNull);
 
 			return Html.Raw(value);
+		}
+		public IHtmlContent Value(object value)
+		{
+			return Value(value, false);
+		}
+
+		public IHtmlContent Number(object value, bool mapNull, int decimalPlaces)
+		{
+			if (value == null)
+				return Html.Raw("null") as HtmlString;
+
+			var number = Convert.ToDecimal(value);
+
+			if(mapNull && number == decimal.Zero)
+				return Html.Raw("null") as HtmlString;
+
+			if (decimalPlaces == -1)
+				return Html.Raw(string.Format("{0}", number.ToString())) as HtmlString;
+			else
+				return Html.Raw(string.Format("{0}", number.ToString($"n{decimalPlaces}"))) as HtmlString;
+		}
+
+		public IHtmlContent Number(object value, bool mapNull)
+		{
+			return Number(value, mapNull, -1);
+		}
+
+		public IHtmlContent Number(object value)
+		{
+			return Number(value, false, -1);
 		}
 
 		public IHtmlContent String(object value)

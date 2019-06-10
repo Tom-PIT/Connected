@@ -91,17 +91,17 @@ namespace TomPIT.DataProviders.Sql
 
 		public IDataConnection OpenConnection(string connectionString)
 		{
-			return new DataConnection(connectionString);
+			return new DataConnection(this, connectionString);
 		}
 
 		public JObject Query(IDataCommandDescriptor command, DataTable schema)
 		{
-			var con = new SqlConnection(command.ConnectionString);
-			var com = new SqlCommand(command.CommandText, con)
-			{
-				CommandType = command.CommandType,
-				CommandTimeout = command.CommandTimeout
-			};
+			return Query(command, schema, null);
+		}
+		public JObject Query(IDataCommandDescriptor command, DataTable schema, IDataConnection connection)
+		{
+			var con = ResolveConnection(command, connection);
+			var com = ResolveCommand(command, con, connection);
 
 			con.Open();
 			SqlDataReader rdr = null;
@@ -127,28 +127,9 @@ namespace TomPIT.DataProviders.Sql
 
 				while (rdr.Read())
 				{
-					var row = new JObject();
-
-					foreach (DataColumn i in schema.Columns)
-					{
-						if (i.ExtendedProperties.Contains("unbound"))
-						{
-							row.Add(i.ColumnName, string.Empty);
-
-							continue;
-						}
-
-						var mapping = i.ColumnName;
-
-						if (i.ExtendedProperties.Contains("mapping"))
-							mapping = (string)i.ExtendedProperties["mapping"];
-
-						int ord = rdr.GetOrdinal(mapping);
-
-						var value = rdr.GetValue(ord);
-
-						row.Add(i.ColumnName, new JValue(value == DBNull.Value ? null : value));
-					}
+					var row = schema == null
+						? CreateDataRow(rdr)
+						: CreateDataRow(rdr, schema);
 
 					a.Add(row);
 				}
@@ -163,6 +144,44 @@ namespace TomPIT.DataProviders.Sql
 				if (con.State == ConnectionState.Open)
 					con.Close();
 			}
+		}
+
+		private JObject CreateDataRow(SqlDataReader rdr)
+		{
+			var row = new JObject();
+
+			for(var i = 0; i < rdr.FieldCount; i++)
+				row.Add(rdr.GetName(i), new JValue( rdr.GetValue(i)));
+
+			return row;
+		}
+
+		private JObject CreateDataRow(SqlDataReader rdr, DataTable schema)
+		{
+			var row = new JObject();
+
+			foreach (DataColumn i in schema.Columns)
+			{
+				if (i.ExtendedProperties.Contains("unbound"))
+				{
+					row.Add(i.ColumnName, string.Empty);
+
+					continue;
+				}
+
+				var mapping = i.ColumnName;
+
+				if (i.ExtendedProperties.Contains("mapping"))
+					mapping = (string)i.ExtendedProperties["mapping"];
+
+				int ord = rdr.GetOrdinal(mapping);
+
+				var value = rdr.GetValue(ord);
+
+				row.Add(i.ColumnName, new JValue(value == DBNull.Value ? null : value));
+			}
+
+			return row;
 		}
 
 		private ReliableSqlConnection ResolveConnection(IDataCommandDescriptor command, IDataConnection connection)

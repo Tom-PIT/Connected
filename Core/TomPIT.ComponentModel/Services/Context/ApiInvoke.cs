@@ -17,7 +17,7 @@ namespace TomPIT.Services.Context
 		public object Execute(IApiExecutionScope sender, Guid microService, string api, string operation, JObject arguments, IApiTransaction transaction, bool explicitIdentifier, bool skipPrepare = false)
 		{
 			var ms = ResolveMicroService(sender, microService);
-			var ctx = new ExecutionContext(Context, Context.Connection().GetService<IMicroServiceService>().Select(ms));
+			var ctx = new ExecutionContext(Context, Context.Connection().GetService<IMicroServiceService>().Select(microService));
 			var svc = GetApi(microService, api, explicitIdentifier);
 
 			if (svc.MicroService(ctx.Connection()) != ms)

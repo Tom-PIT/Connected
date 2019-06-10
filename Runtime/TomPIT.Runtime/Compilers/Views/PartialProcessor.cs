@@ -4,7 +4,7 @@ using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 using TomPIT.Services;
 
-namespace TomPIT.UI
+namespace TomPIT.Runtime.Compilers.Views
 {
 	internal class PartialProcessor : ProcessorBase
 	{
@@ -17,28 +17,18 @@ namespace TomPIT.UI
 		}
 
 		private IPartialView View { get; }
-		private IComponent Component
-		{
-			get
-			{
-				if (_component == null)
-					_component = Instance.GetService<IComponentService>().SelectComponent(View.Component);
 
-				return _component;
-			}
-		}
-
-		public override void Compile(ISysConnection connection, IComponent component)
+		public override void Compile(ISysConnection connection, IComponent component, IConfiguration configuration)
 		{
 			AppendBaseType(Builder);
 			AddUsings(Builder);
 			AddTagHelpers(Builder);
 			
-			AppendViewMetaData(Builder, "Partial", Component.Token);
+			AppendViewMetaData(Builder, "Partial", component.Token);
 
 			Builder.Append(Source);
 
-			var scripts = Instance.GetService<IViewService>().SelectScripts(Component.MicroService, Component.Token);
+			var scripts = SelectScripts(connection, component.MicroService, configuration as IGraphicInterface);
 
 			if (!string.IsNullOrWhiteSpace(scripts))
 				Builder.AppendFormat("<script>{0}</script>", scripts);

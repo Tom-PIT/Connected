@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using TomPIT.Data;
 
 namespace TomPIT.Compilation
@@ -26,30 +28,21 @@ namespace TomPIT.Compilation
 					return (R)instance;
 				}
 				else
-				{
-					var settings = new JsonSerializerSettings
-					{
-						DefaultValueHandling = DefaultValueHandling.Ignore,
-						TypeNameHandling = TypeNameHandling.None,
-						ContractResolver = new SerializationResolver()
-					};
-
-					return JsonConvert.DeserializeObject<R>(JsonConvert.SerializeObject(value, settings), settings);
-				}
+					return Types.Deserialize<R>(Types.Serialize(value));
 			}
 			else if (typeof(R) == typeof(JArray))
 			{
 				if (value is JArray)
 					return (R)value;
 
-				return Types.Convert<R>(JsonConvert.DeserializeObject<JArray>(JsonConvert.SerializeObject(value)));
+				return Types.Convert<R>(Types.Deserialize<JArray>(Types.Serialize(value)));
 			}
 			else if (typeof(R) == typeof(JObject))
 			{
 				if (value is JObject)
 					return (R)value;
 
-				return Types.Convert<R>(JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(value)));
+				return Types.Convert<R>(Types.Deserialize<JObject>(Types.Serialize(value)));
 			}
 
 			return Types.Convert<R>(value);
@@ -89,5 +82,6 @@ namespace TomPIT.Compilation
 			return (string.IsNullOrWhiteSpace(type.Namespace) && string.IsNullOrWhiteSpace(instanceType.Namespace))
 				&& string.Compare(type.Assembly.FullName, instanceType.Assembly.FullName, false) != 0;
 		}
+
 	}
 }

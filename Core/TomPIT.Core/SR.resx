@@ -948,4 +948,10 @@
   <data name="ErrQueueWorkerNotFound" xml:space="preserve">
     <value>Queue worker not found</value>
   </data>
+  <data name="StatusBadRequest" xml:space="preserve">
+    <value>Bad request</value>
+  </data>
+  <data name="StatusBadRequestMessage" xml:space="preserve">
+    <value>Request has malformed or missing data.</value>
+  </data>
 </root>

@@ -42,7 +42,7 @@ namespace TomPIT.Cdn
 				e.Add("topic", topic);
 
 			if (arguments != null)
-				e.Add("arguments", JsonConvert.SerializeObject(arguments));
+				e.Add("arguments", Types.Serialize(arguments));
 
 			Connection.Post(u, e);
 		}

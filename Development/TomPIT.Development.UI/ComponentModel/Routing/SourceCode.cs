@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Routing;
+using System;
 using System.Net;
 using System.Text;
 using TomPIT.Analysis;
+using TomPIT.Annotations;
+using TomPIT.Compilation;
 using TomPIT.Compilers;
 using TomPIT.Routing;
 using TomPIT.Security;
@@ -59,8 +62,8 @@ namespace TomPIT.ComponentModel.Routing
 				return;
 			}
 
-			var fileName = string.Empty;
-			var source = Connection.GetService<IComponentService>().SelectText(ms.Token, text);
+			var fileName = text.ScriptName(Connection);
+			var source = LoadSource(ms.Token, text);
 
 			Context.Response.ContentType = "text/plain";
 
@@ -68,10 +71,32 @@ namespace TomPIT.ComponentModel.Routing
 			{
 				var buffer = Encoding.UTF8.GetBytes(source);
 
-				Context.Response.Headers.Add("Content-Disposition", string.Format("attachment;filename=\"{0}\"", text.ScriptName(Connection)));
+				Context.Response.Headers.Add("Content-Disposition", string.Format("attachment;filename=\"{0}\"", fileName));
 				Context.Response.ContentLength = buffer.Length;
 				Context.Response.Body.Write(buffer, 0, buffer.Length);
 			}
+		}
+
+		private string LoadSource(Guid microService, IText text)
+		{
+			var att = text.GetType().FindAttribute<SyntaxAttribute>();
+
+			if (att == null)
+				return LoadScriptSource(microService, text);
+			else if (string.Compare(att.Syntax, SyntaxAttribute.Razor, true) == 0)
+				return LoadRazorSource(microService, text);
+
+			return LoadScriptSource(microService, text);
+		}
+
+		private string LoadScriptSource(Guid microService, IText text)
+		{
+			return Connection.GetService<IComponentService>().SelectText(microService, text);
+		}
+
+		private string LoadRazorSource(Guid microService, IText text)
+		{
+			return Connection.GetService<ICompilerService>().CompileView(Connection, text as ISourceCode);
 		}
 	}
 }

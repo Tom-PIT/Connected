@@ -186,12 +186,20 @@ namespace TomPIT.Compilers
 
 		public override string ResolveReference(string path, string baseFilePath)
 		{
-			var extension = Path.GetExtension(path);
+			var resolvedPath = path;
+
+			if(!string.IsNullOrWhiteSpace(baseFilePath))
+			{
+				if(baseFilePath.Contains('/') && !path.Contains('/'))
+					resolvedPath = $"{baseFilePath.Split('/')[0]}/{path}";
+			}
+
+			var extension = Path.GetExtension(resolvedPath);
 
 			if (string.IsNullOrWhiteSpace(extension))
-				return string.Format("{0}.csx", path);
+				return string.Format("{0}.csx", resolvedPath);
 
-			return path;
+			return resolvedPath;
 		}
 	}
 }

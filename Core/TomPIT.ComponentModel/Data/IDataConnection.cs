@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Data;
+using Newtonsoft.Json.Linq;
+using TomPIT.Data.DataProviders;
 
 namespace TomPIT.Data
 {
@@ -12,5 +14,8 @@ namespace TomPIT.Data
 
 		void Open();
 		void Close();
+
+		void Execute(IDataCommandDescriptor command);
+		JObject Query(IDataCommandDescriptor command);
 	}
 }

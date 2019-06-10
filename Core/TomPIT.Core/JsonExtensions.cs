@@ -34,7 +34,7 @@ namespace TomPIT
 						throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
 				}
 				else
-					return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(proposed));
+					return Types.Deserialize<T>(Types.Serialize(proposed));
 
 				if (typeof(T) == typeof(string) && string.IsNullOrWhiteSpace(r as string))
 					throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
@@ -77,7 +77,7 @@ namespace TomPIT
 						return r;
 				}
 				else
-					return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(proposed));
+					return Types.Deserialize<T>(Types.Serialize(proposed));
 
 				return default;
 			}

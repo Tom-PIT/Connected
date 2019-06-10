@@ -2275,6 +2275,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bad request.
+        /// </summary>
+        public static string StatusBadRequest {
+            get {
+                return ResourceManager.GetString("StatusBadRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Request has malformed or missing data..
+        /// </summary>
+        public static string StatusBadRequestMessage {
+            get {
+                return ResourceManager.GetString("StatusBadRequestMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Forbidden.
         /// </summary>
         public static string StatusForbidden {

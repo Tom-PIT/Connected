@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Razor;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Linq;
 using TomPIT.Compilation;
@@ -89,6 +91,14 @@ namespace TomPIT.UI
 		protected string GetString(string stringTable, string key)
 		{
 			return e.Services.Localization.GetString(stringTable, key);
+		}
+
+		protected string ToJsonString(object content)
+		{
+			if (content == null)
+				return null;
+
+			return Types.Serialize(content);
 		}
 	}
 }

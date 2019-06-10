@@ -67,9 +67,9 @@
 </div>
 <script>
     $('#editConnection').dxSelectBox({
-        dataSource:@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Connections)),
-        displayExpr: 'Name',
-        valueExpr: 'Token',
+        dataSource:@Html.Raw(Types.Serialize(Model.Connections)),
+        displayExpr: 'name',
+        valueExpr: 'token',
         searchEnabled:true,
         onValueChanged: function (e) {
             objectTypes.option('dataSource', null);

@@ -72,7 +72,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
                 if (args.Manifest.Schema != null)
                 {
                     r.Add(new CodeAnalysisResult(ProviderUtils.Header(nameof(args.Manifest.Schema)), null, null));
-                    r.Add(new CodeAnalysisResult($"```json\n{JsonConvert.SerializeObject(args.Manifest.Schema, Formatting.Indented)}\n```", null, null));
+                    r.Add(new CodeAnalysisResult($"```json\n{Types.Serialize(args.Manifest.Schema)}\n```", null, null));
                 }
 
                 return r;

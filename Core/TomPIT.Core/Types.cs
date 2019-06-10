@@ -5,12 +5,15 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Newtonsoft.Json;
 using TomPIT.Converters;
 
 namespace TomPIT
 {
 	public static class Types
 	{
+		private static JsonSerializerSettings _jsonSettings = null;
+
 		public static bool Compare(object left, object right)
 		{
 			if (left == null && right == null)
@@ -431,6 +434,60 @@ namespace TomPIT
 		public static string ToFileSize(double value)
 		{
 			return ToFileSize(value, string.Empty);
+		}
+
+		private static JsonSerializerSettings SerializerSettings
+		{
+			get
+			{
+				if (_jsonSettings == null)
+				{
+					_jsonSettings = new JsonSerializerSettings
+					{
+						Culture = CultureInfo.InvariantCulture,
+						DateFormatHandling = DateFormatHandling.IsoDateFormat,
+						DateParseHandling = DateParseHandling.DateTime,
+						DateTimeZoneHandling = DateTimeZoneHandling.Local,
+						FloatFormatHandling = FloatFormatHandling.DefaultValue,
+						FloatParseHandling = FloatParseHandling.Double,
+						MissingMemberHandling = MissingMemberHandling.Ignore,
+						Formatting = Formatting.Indented,
+						DefaultValueHandling = DefaultValueHandling.Include,
+						TypeNameHandling = TypeNameHandling.None,
+						ContractResolver = new SerializationResolver(),
+						NullValueHandling = NullValueHandling.Ignore,
+						ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
+					};
+				}
+
+				return _jsonSettings;
+			}
+		}
+
+		public static string Serialize(object instance)
+		{
+			return JsonConvert.SerializeObject(instance, SerializerSettings);
+		}
+
+		public static void Populate(string value, object instance)
+		{
+			JsonConvert.PopulateObject(value, instance, SerializerSettings);
+		}
+
+		public static object Deserialize(string json, Type type)
+		{
+			if (string.IsNullOrWhiteSpace(json))
+				return default;
+
+			return JsonConvert.DeserializeObject(json, type, SerializerSettings);
+		}
+
+		public static T Deserialize<T>(string json)
+		{
+			if (string.IsNullOrWhiteSpace(json))
+				return default;
+
+			return JsonConvert.DeserializeObject<T>(json, SerializerSettings);
 		}
 	}
 }

@@ -7,11 +7,6 @@
 <div class="template-toolbar btn-toolbar justify-content-between">
 
 	<div class="btn-group">
-		@if (Model.CompletionDiagnostic != null)
-		{
-			<button class="btn btn-sm btn-light" id="checkSyntax" title="Check syntax"><i class="fal fa-check-circle"></i></button>
-		}
-
 		@if (!string.IsNullOrWhiteSpace(Model.DebugFileName))
 		{
 			var url = Model.Environment.Context.MapPath(string.Format("~/sys/source-code/{0}/{1}/{2}", Model.Element.MicroService(), Model.Content.Configuration().Component, Model.Content.Id.ToString()));
@@ -71,6 +66,14 @@
         onChange: function (value) {
             saveSourceCode();
         },
+        @if (Model.CompletionDiagnostic != null)
+        {
+           <text>
+        onCheckSyntax: function () {
+            checkSyntax(false);
+        },
+            </text>
+        }
         @if (Model.CompletionProvider != null)
             {
            <text>
@@ -312,10 +315,6 @@
     {
        <text>
 
-    $('#checkSyntax').click(function (e) {
-        checkSyntax(true);
-    });
-
     function checkSyntax(successMessage) {
                 ide.saveProperty({
             data: {
@@ -329,13 +328,6 @@
             }
         }, false);
     }
-
-    setInterval(function () {
-        try {
-            if (textEditor.observeDirty())
-                checkSyntax(false);
-        } catch (e) {}
-    }, 2500);
 
     function setErrorMarkers(successMessage) {
         ide.designerAction({

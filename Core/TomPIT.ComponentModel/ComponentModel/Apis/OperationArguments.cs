@@ -154,24 +154,62 @@ namespace TomPIT.ComponentModel.Apis
 			}
 		}
 
-		public Guid Event([CodeAnalysisProvider(EventProvider)]string name, JObject e)
+		public Guid Event<T>([CodeAnalysisProvider(EventProvider)]string name, T e)
 		{
-			return Connection.GetService<IEventService>().Trigger(MicroService.Token, name, e, null);
+			return Connection.GetService<IEventService>().Trigger(MicroService.Token, name, null, e);
 		}
 
 		public Guid Event([CodeAnalysisProvider(EventProvider)]string name)
 		{
-			return Event(name, null, null);
+			return Event(name, null);
 		}
 
-		public Guid Event([CodeAnalysisProvider(EventProvider)]string name, JObject e, IEventCallback callback)
+		public Guid Event<T>([CodeAnalysisProvider(EventProvider)]string name, T e, IEventCallback callback)
 		{
-			return Connection.GetService<IEventService>().Trigger(MicroService.Token, name, e, callback);
+			return Connection.GetService<IEventService>().Trigger(MicroService.Token, name, callback, e);
 		}
 
 		public Guid Event([CodeAnalysisProvider(EventProvider)]string name, IEventCallback callback)
 		{
-			return Event(name, null, callback);
+			return Connection.GetService<IEventService>().Trigger(MicroService.Token, name, callback);
+		}
+
+		public IDataReader<T> OpenReader<T>(IDataConnection connection, string commandText)
+		{
+			return new DataReader<T>(this)
+			{
+				Connection = connection,
+				CommandText = commandText
+			};
+		}
+
+		public IDataWriter OpenWriter(IDataConnection connection, string commandText)
+		{
+			return new DataWriter(this)
+			{
+				Connection = connection,
+				CommandText = commandText
+			};
+		}
+
+		public IDataReader<T> OpenReader<T>([CodeAnalysisProvider(ConnectionProvider)]string connection, string commandText)
+		{
+			return new DataReader<T>(this)
+			{
+				Connection = OpenConnection(connection),
+				CommandText = commandText,
+				CloseConnection = true
+			};
+		}
+
+		public IDataWriter OpenWriter([CodeAnalysisProvider(ConnectionProvider)]string connection, string commandText)
+		{
+			return new DataWriter(this)
+			{
+				Connection = OpenConnection(connection),
+				CommandText = commandText,
+				CloseConnection = true
+			};
 		}
 	}
 }

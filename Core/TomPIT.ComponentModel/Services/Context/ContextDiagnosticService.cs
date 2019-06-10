@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Net;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Diagnostics;
 
@@ -85,7 +86,7 @@ namespace TomPIT.Services.Context
 			if (!metric.Enabled)
 				return Guid.Empty;
 
-			var content = request == null ? string.Empty : JsonConvert.SerializeObject(request);
+			var content = request == null ? string.Empty : Types.Serialize(request);
 			var length = content.Length;
 			var id = Guid.NewGuid();
 
@@ -112,7 +113,7 @@ namespace TomPIT.Services.Context
 			if (metricId == Guid.Empty)
 				return;
 
-			var content = response == null ? string.Empty : JsonConvert.SerializeObject(response);
+			var content = response == null ? string.Empty : Types.Serialize(response);
 			var length = content.Length;
 
 			if (Metric.TryRemove(metricId, out MetricSession m))

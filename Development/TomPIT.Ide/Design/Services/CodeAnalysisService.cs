@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -17,26 +18,26 @@ namespace TomPIT.Design.Services
 
 		private ISysConnection Connection { get; }
 
-        public ImmutableArray<Diagnostic> CheckSyntax(Guid microService, ISourceCode sourceCode)
-        {
-            if (sourceCode.TextBlob == Guid.Empty)
-                return ImmutableArray<Diagnostic>.Empty;
-
-            var svc = Connection.GetService<ICompilerService>();
-            var script = svc.GetScript(microService, sourceCode);
-
-            return script == null ? ImmutableArray<Diagnostic>.Empty : script.Errors;
-        }
-
-        public ImmutableArray<Diagnostic> CheckSyntax<T>(Guid microService, ISourceCode sourceCode)
+		public List<IDiagnostic> CheckSyntax(Guid microService, ISourceCode sourceCode)
 		{
 			if (sourceCode.TextBlob == Guid.Empty)
-				return ImmutableArray<Diagnostic>.Empty;
+				return new List<IDiagnostic>();
+
+			var svc = Connection.GetService<ICompilerService>();
+			var script = svc.GetScript(microService, sourceCode);
+
+			return script == null ? new List<IDiagnostic>() : script.Errors;
+		}
+
+		public List<IDiagnostic> CheckSyntax<T>(Guid microService, ISourceCode sourceCode)
+		{
+			if (sourceCode.TextBlob == Guid.Empty)
+				return new List<IDiagnostic>();
 
 			var svc = Connection.GetService<ICompilerService>();
 			var script = svc.GetScript<T>(microService, sourceCode);
 
-			return script == null ? ImmutableArray<Diagnostic>.Empty : script.Errors;
+			return script == null ? new List<IDiagnostic>() : script.Errors;
 		}
 
 		public ListItems<ISuggestion> Suggestions(IExecutionContext sender, CodeStateArgs e)

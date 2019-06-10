@@ -15,5 +15,7 @@ namespace TomPIT.Compilation
 
 		IScriptDescriptor GetScript<T>(Guid microService, ISourceCode sourceCode);
 		IScriptDescriptor GetScript(Guid microService, ISourceCode sourceCode);
+
+		string CompileView(ISysConnection connection, ISourceCode sourceCode);
 	}
 }

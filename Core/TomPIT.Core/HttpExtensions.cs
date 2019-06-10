@@ -29,7 +29,7 @@ namespace TomPIT
 
 			var cookie = request.Cookies[SecurityUtils.AuthenticationCookieName];
 
-			return JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
+			return Types.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
 		}
 
 		public static string GetAuthenticationEndpoint(this HttpRequest request)
@@ -54,30 +54,14 @@ namespace TomPIT
 			if (string.IsNullOrWhiteSpace(body))
 				return new JObject();
 
-			var settings = new JsonSerializerSettings
-			{
-				Culture = CultureInfo.InvariantCulture,
-				DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
-				Formatting = Formatting.None,
-				NullValueHandling = NullValueHandling.Ignore
-			};
-
-			return JsonConvert.DeserializeObject(body, settings) as JObject;
+			return Types.Deserialize<JObject>(body);
 		}
 
 		public static T ToType<T>(this Stream s)
 		{
 			var body = new StreamReader(s, Encoding.UTF8).ReadToEnd();
 
-			var settings = new JsonSerializerSettings
-			{
-				Culture = CultureInfo.InvariantCulture,
-				DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
-				Formatting = Formatting.None,
-				NullValueHandling = NullValueHandling.Ignore
-			};
-
-			return JsonConvert.DeserializeObject<T>(body, settings);
+			return Types.Deserialize<T>(body);
 		}
 	}
 }

@@ -21,9 +21,15 @@ using TomPIT.Annotations;
 using TomPIT.Caching;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Cdn;
+using TomPIT.ComponentModel.Reports;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
+using TomPIT.Runtime.Compilers.Views;
 using TomPIT.Services;
+using TomPIT.Storage;
+using TomPIT.UI;
 
 namespace TomPIT.Compilers
 {
@@ -118,7 +124,7 @@ namespace TomPIT.Compilers
 
 			handled = true;
 
-			if (script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() > 0)
+			if (script.Errors != null && script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() > 0)
 			{
 				var sb = new StringBuilder();
 
@@ -152,6 +158,7 @@ namespace TomPIT.Compilers
 			var sb = new StringBuilder();
 			var src = string.Empty;
 			var severity = ExceptionSeverity.Critical;
+			var stackTrace = new StringBuilder();
 
 			if (ex.InnerException is RuntimeException)
 				src = ((RuntimeException)ex.InnerException).Source;
@@ -190,11 +197,13 @@ namespace TomPIT.Compilers
 					if (i is RuntimeException)
 						severity = ((RuntimeException)i).Severity;
 				}
+
+				stackTrace.Append($"{i.StackTrace}{System.Environment.NewLine}");
 			}
 
-			var r = new RuntimeException(src, sb.ToString())
+			var r = new RuntimeException(src, sb.ToString(), stackTrace.ToString())
 			{
-				Severity = severity
+				Severity = severity,
 			};
 			//Log.Error(this, r, EventId.CompileError);
 
@@ -242,18 +251,28 @@ namespace TomPIT.Compilers
 			Set(script.Id, script, TimeSpan.Zero);
 
 			var errors = compiler.Script.Compile();
-			var diagnostic = new List<IDiagnostic>();
+			var diagnostics = new List<IDiagnostic>();
 
 			foreach(var error in errors)
 			{
-				diagnostic.Add(new Diagnostic
+				var diagnostic = new Diagnostic
 				{
 					Message = error.GetMessage(),
-					Severity = error.Severity
-				});
+					Severity = error.Severity,
+				};
+
+				var position = error.Location.GetMappedLineSpan();
+
+				diagnostic.StartLine = position.StartLinePosition.Line;
+				diagnostic.StartColumn = position.StartLinePosition.Character;
+
+				diagnostic.EndLine = position.EndLinePosition.Line;
+				diagnostic.EndColumn = position.EndLinePosition.Character;
+				diagnostic.Id = error.Id;
+				diagnostics.Add(diagnostic);
 			}
 
-			((ScriptDescriptor)script).Errors = diagnostic;
+			((ScriptDescriptor)script).Errors = diagnostics;
 
 			if (script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() == 0)
 				((ScriptDescriptor)script).Script = compiler.Script.CreateDelegate();
@@ -494,6 +513,62 @@ namespace TomPIT.Compilers
 				foreach (var i in refs)
 					Remove(i);
 			}
+		}
+
+		public string CompileView(ISysConnection connection, ISourceCode sourceCode)
+		{
+			if (sourceCode.TextBlob == Guid.Empty)
+				return null;
+
+			var config = sourceCode.Configuration() as IConfiguration;
+			var cmp = connection.GetService<IComponentService>().SelectComponent(config.Component);
+
+			if (cmp == null)
+				return null;
+
+			var rendererAtt = config.GetType().FindAttribute<ViewRendererAttribute>();
+			var content = string.Empty;
+
+			if(rendererAtt != null)
+			{
+				var renderer = (rendererAtt.Type ?? Types.GetType(rendererAtt.TypeName)).CreateInstance<IViewRenderer>();
+
+				content = renderer.CreateContent(connection, cmp);
+			}
+			else
+			{
+				var r = Connection.GetService<IStorageService>().Download(sourceCode.TextBlob);
+				
+				if (r == null)
+					return null;
+
+				content = Encoding.UTF8.GetString(r.Content);
+			}
+
+			if (string.IsNullOrWhiteSpace(content))
+				return null;
+
+			ProcessorBase processor = null;
+
+			if (config is IMasterView master)
+				processor = new MasterProcessor(master, content);
+			else if (config is IView view)
+				processor = new ViewProcessor(view, content);
+			else if (config is ISnippet snippet)
+				processor = new SnippetProcessor(snippet, content);
+			if (config is IPartialView partial)
+				processor = new PartialProcessor(partial, content);
+			else if (config is IMailTemplate mail)
+				processor = new MailTemplateProcessor(mail, content);
+			else if (config is IReport report)
+				processor = new ReportProcessor(report);
+
+			if (processor == null)
+				return null;
+
+			processor.Compile(connection, cmp, config as IConfiguration);
+
+			return processor.Result;
 		}
 
 		private static ConcurrentDictionary<Guid, List<Guid>> ForwardReferences { get { return _forwardReferences.Value; } }

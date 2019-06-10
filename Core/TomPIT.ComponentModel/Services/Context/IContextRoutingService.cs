@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using TomPIT.Environment;
 
 namespace TomPIT.Services.Context
@@ -24,5 +26,6 @@ namespace TomPIT.Services.Context
 		void BadRequest();
 
 		string GenerateUrl(string primaryKey, string text, JArray existing, string displayProperty, string primaryKeyProperty);
+		string ParseUrl(string template, IDictionary<string, object> parameters);
 	}
 }

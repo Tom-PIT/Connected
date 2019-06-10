@@ -6,7 +6,9 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Threading;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.UI;
 using TomPIT.Globalization;
 using TomPIT.Models;
 using TomPIT.Security;
@@ -42,7 +44,14 @@ namespace TomPIT.UI
 			if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
 				return;
 
-			var content = CreateContent(view, actionContext, model);
+			var invokeArgs = new ViewInvokeArguments(model, Temp);
+
+			model.GetService<ICompilerService>().Execute(((IConfiguration)model.ViewConfiguration).MicroService(model.Connection), model.ViewConfiguration.Invoke, this, invokeArgs);
+
+			if (Shell.HttpContext.Response.StatusCode != (int)HttpStatusCode.OK)
+				return;
+
+			var content = CreateContent(view, invokeArgs);
 
 			var buffer = Encoding.UTF8.GetBytes(content);
 

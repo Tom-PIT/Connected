@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
+using TomPIT.Compilation;
 
 namespace TomPIT.Design.Services
 {
@@ -10,7 +11,7 @@ namespace TomPIT.Design.Services
 		public const int SeverityHint = 1;
 		public const int SeverityWarning = 4;
 
-		public DiagnosticInfo(Diagnostic diagnostic)
+		public DiagnosticInfo(IDiagnostic diagnostic)
 		{
 			Parse(diagnostic);
 		}
@@ -28,15 +29,13 @@ namespace TomPIT.Design.Services
 		[JsonProperty("severity")]
 		public int Severity { get; set; }
 
-		private void Parse(Diagnostic diagnostic)
+		private void Parse(IDiagnostic diagnostic)
 		{
-			var span = diagnostic.Location.GetMappedLineSpan();
-
-			StartLineNumber = span.StartLinePosition.Line+1;
-			StartColumn = span.StartLinePosition.Character + 1;
-			EndLineNumber = span.EndLinePosition.Line+1;
-			EndColumn = span.EndLinePosition.Character + 1;
-			Message = diagnostic.GetMessage();
+			StartLineNumber = diagnostic.StartLine+1;
+			StartColumn = diagnostic.StartColumn + 1;
+			EndLineNumber = diagnostic.EndLine+1;
+			EndColumn = diagnostic.EndColumn + 1;
+			Message = diagnostic.Message;
 
 			switch (diagnostic.Severity)
 			{

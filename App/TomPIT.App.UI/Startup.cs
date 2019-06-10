@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
 using TomPIT.Configuration;
@@ -27,7 +28,7 @@ namespace TomPIT
 
 			services.AddScoped<IViewEngine, ViewEngine>();
 			services.AddScoped<IMailTemplateViewEngine, MailTemplateViewEngine>();
-
+			
 			services.Configure<RazorViewEngineOptions>(opts =>
 			{
 				opts.FileProviders.Add(

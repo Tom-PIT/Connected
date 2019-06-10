@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Text;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 using TomPIT.Services;
 
-namespace TomPIT.UI
+namespace TomPIT.Runtime.Compilers.Views
 {
 	internal abstract class ProcessorBase
 	{
@@ -15,7 +16,7 @@ namespace TomPIT.UI
 
 		protected string Source { get; }
 
-		public virtual void Compile(ISysConnection connection, IComponent component)
+		public virtual void Compile(ISysConnection connection, IComponent component, IConfiguration configuration)
 		{
 
 		}
@@ -57,6 +58,24 @@ namespace TomPIT.UI
 		{
 			builder.AppendLine("@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers");
 			builder.AppendLine("@addTagHelper *, TomPIT.Extensions");
+		}
+
+		protected string SelectScripts(ISysConnection connection, Guid microService, IGraphicInterface config)
+		{
+			var r = new StringBuilder();
+
+			foreach (var script in config.Scripts)
+			{
+				var scr = connection.GetService<IComponentService>().SelectText(microService, script);
+
+				if (!string.IsNullOrWhiteSpace(scr))
+				{
+					r.Append(script);
+					r.AppendLine();
+				}
+			}
+
+			return r.ToString();
 		}
 	}
 }

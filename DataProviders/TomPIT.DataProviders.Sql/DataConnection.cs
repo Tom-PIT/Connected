@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using Newtonsoft.Json.Linq;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.Sql;
@@ -15,11 +16,13 @@ namespace TomPIT.DataProviders.Sql
 		private Dictionary<string, SqlCommand> _commands = null;
 		private bool _commited = false;
 
-		public DataConnection(string connectionString)
+		public DataConnection(IDataProvider provider, string connectionString)
 		{
+			Provider = provider;
 			ConnectionString = connectionString;
 		}
 
+		private IDataProvider Provider { get; }
 		private string ConnectionString { get; }
 
 		public ReliableSqlConnection Connection
@@ -96,6 +99,16 @@ namespace TomPIT.DataProviders.Sql
 		{
 			if (Connection.State == ConnectionState.Open)
 				Connection.Close();
+		}
+
+		public void Execute(IDataCommandDescriptor command)
+		{
+			Provider.Execute(command, this);
+		}
+
+		public JObject Query(IDataCommandDescriptor command)
+		{
+			return Provider.Query(command, null, this);
 		}
 
 		public Dictionary<string, SqlCommand> Commands

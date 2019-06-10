@@ -190,7 +190,7 @@ namespace TomPIT.Controllers
 			{
 				Response.Headers.Add("designerResult", "json");
 
-				return new Microsoft.AspNetCore.Mvc.JsonResult(JsonConvert.SerializeObject(((IDesignerActionResultJson)result).Data));
+				return new Microsoft.AspNetCore.Mvc.JsonResult(Types.Serialize(((IDesignerActionResultJson)result).Data));
 			}
 			else if (result is IDesignerActionResultView)
 			{

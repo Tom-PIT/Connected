@@ -21,7 +21,7 @@ namespace TomPIT.Annotations
 
 			var values = provider.ProvideUniqueValues(model, validationContext.MemberName);
 
-			if (values == null || values.Count == 0)
+			if (values == null || values.Count == 0 && provider.IsUnique(model, validationContext.MemberName))
 				return ValidationResult.Success;
 
 			foreach(var val in values)

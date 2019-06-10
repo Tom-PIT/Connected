@@ -11,6 +11,7 @@ namespace TomPIT
 
 	public class RuntimeException : TomPITException
 	{
+		private string _stackTrace = null;
 		public RuntimeException(string message) : base(message)
 		{
 
@@ -20,10 +21,16 @@ namespace TomPIT
 		{
 
 		}
-
+		
 		public RuntimeException(string source, string message) : base(message)
 		{
 			Source = source;
+		}
+
+		public RuntimeException(string source, string message, string stackTrace) : base(message)
+		{
+			Source = source;
+			_stackTrace = stackTrace;
 		}
 
 		public ExceptionSeverity Severity { get; set; } = ExceptionSeverity.Critical;
@@ -55,5 +62,11 @@ namespace TomPIT
 				Severity = ExceptionSeverity.Critical
 			};
 		}
+
+		public override string StackTrace
+		{
+			get { return _stackTrace == null ? base.StackTrace : _stackTrace; }
+		}
+
 	}
 }

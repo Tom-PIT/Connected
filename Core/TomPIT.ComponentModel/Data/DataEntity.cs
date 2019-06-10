@@ -16,7 +16,7 @@ namespace TomPIT.Data
 
 		protected virtual string OnSerialize()
 		{
-			return JsonConvert.SerializeObject(this);
+			return Types.Serialize(this);
 		}
 		public void Deserialize(JObject state)
 		{
@@ -30,12 +30,12 @@ namespace TomPIT.Data
 				NullValueHandling = NullValueHandling.Ignore
 			};
 
-			JsonConvert.PopulateObject(JsonConvert.SerializeObject(state), this, settings);
+			JsonConvert.PopulateObject(Types.Serialize(state), this, settings);
 		}
 
 		public static implicit operator JObject(DataEntity entity)
 		{
-			return JsonConvert.DeserializeObject<JObject>(entity.Serialize());
+			return Types.Deserialize<JObject>(entity.Serialize());
 		}
 	}
 }

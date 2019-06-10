@@ -17,6 +17,7 @@ namespace TomPIT.Services
 		private IContextCdnService _cdn = null;
 		private IContextIoTService _iot = null;
 		private IContextMediaService _media = null;
+		private IContextFeatureService _features = null;
 
 		public ContextServices(IExecutionContext context) : base(context)
 		{
@@ -162,6 +163,17 @@ namespace TomPIT.Services
 					_routing = new ContextRoutingService(Context);
 
 				return _routing;
+			}
+		}
+
+		public IContextFeatureService Features
+		{
+			get
+			{
+				if (_features == null)
+					_features = new ContextFeatureService(Context);
+
+				return _features;
 			}
 		}
 	}

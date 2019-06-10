@@ -51,6 +51,19 @@ namespace TomPIT.Controllers
 					return View("~/Views/Shell/Status.cshtml", m);
 				}
 			}
+			else if (string.Compare(code, "400", true) == 0)
+			{
+				if (!supportsUI)
+					return BadRequest();
+				else
+				{
+					var m = CreateModel(SR.StatusBadRequest, SR.StatusBadRequestMessage, string.Empty);
+
+					m.TryAgainEnabled = false;
+
+					return View("~/Views/Shell/Status.cshtml", m);
+				}
+			}
 
 			return Ok();
 		}

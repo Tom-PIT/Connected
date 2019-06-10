@@ -104,7 +104,7 @@ namespace TomPIT.IoT.Models
 			data.Remove("$checkSum");
 
 			var checkSum = Encoding.UTF8.GetString(LZ4.LZ4Codec.Unwrap(Convert.FromBase64String(cs)));
-			var content = JsonConvert.SerializeObject(data);
+			var content = Types.Serialize(data);
 
 			using (var md = MD5.Create())
 			{
@@ -125,6 +125,14 @@ namespace TomPIT.IoT.Models
 				sb.Append(data[i].ToString("x2"));
 
 			return sb.ToString();
+		}
+
+		public void MergeArguments(JObject arguments)
+		{
+			if (Arguments == null)
+				Arguments = new JObject();
+
+			Arguments.Merge(arguments);
 		}
 
 		public List<IIoTFieldState> ForwardState

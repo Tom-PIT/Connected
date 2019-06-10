@@ -20,9 +20,9 @@
 <script>
     $('[name="@Model.Name"]').dxSelectBox({
         stylingMode: 'underlined',
-        dataSource:@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(items)) ,
-        displayExpr: 'Text',
-        valueExpr: 'Value',
+        dataSource:@Html.Raw(Types.Serialize(items)) ,
+        displayExpr: 'text',
+        valueExpr: 'value',
         value:'@value',
         onValueChanged: function (e) {
             ide.saveProperty({

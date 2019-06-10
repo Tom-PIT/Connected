@@ -11,7 +11,7 @@
     </div>
 <script>
     $('#gridStrings').dxDataGrid({
-        dataSource: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Items)),
+        dataSource: @Html.Raw(Types.Serialize(Model.Items)),
         keyExpr: 'id',
         editing: {
             mode: "cell",

@@ -87,8 +87,16 @@ namespace TomPIT.Models
 				{
 					_arguments = new JObject();
 
-					foreach (var i in Controller.HttpContext.Request.Query)
+					foreach (var i in ActionContext.RouteData.Values)
+						_arguments.Add(i.Key, Types.Convert<string>(i.Value));
+
+					foreach (var i in ActionContext.HttpContext.Request.Query)
+					{
+						if (_arguments.ContainsKey(i.Key))
+							continue;
+
 						_arguments.Add(i.Key, i.Value.ToString());
+					}
 				}
 
 				return _arguments;

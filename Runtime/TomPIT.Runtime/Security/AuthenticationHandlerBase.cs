@@ -29,7 +29,7 @@ namespace TomPIT.Security
 				return null;
 
 			var cookie = Request.Cookies[SecurityUtils.AuthenticationCookieName];
-			var json = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
+			var json = Types.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
 
 			var jwt = json.Required<string>("jwt");
 			var endpoint = json.Required<string>("endpoint");

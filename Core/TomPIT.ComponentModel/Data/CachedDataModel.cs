@@ -12,7 +12,7 @@ namespace TomPIT.Data
 {
 	public abstract class CachedDataModel<T, K> : DataModel, IDataCachingHandler where T : class
 	{
-		protected CachedDataModel(IDataModelContext e, string cacheKey) : base(e)
+		protected CachedDataModel(IDataModelContext context, string cacheKey) : base(context)
 		{
 			CacheKey = cacheKey;
 
@@ -160,7 +160,7 @@ namespace TomPIT.Data
 
 		}
 
-		private ISysConnection Connection => ((ExecutionContext)e).Connection;
+		private ISysConnection Connection => ((ExecutionContext)Context).Connection;
 
 		protected void Reset()
 		{

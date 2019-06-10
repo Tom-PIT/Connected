@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using TomPIT.Annotations;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.Reports;
@@ -99,6 +100,9 @@ namespace TomPIT.UI
 		{
 			get
 			{
+				if (_viewContent == null)
+					return 0;
+
 				using (var stream = new MemoryStream(_viewContent))
 				{
 					return stream.Length;
@@ -111,7 +115,7 @@ namespace TomPIT.UI
 
 		public Stream CreateReadStream()
 		{
-			return new MemoryStream(_viewContent);
+			return new MemoryStream(_viewContent == null ? new byte[0] : _viewContent);
 		}
 
 		public IConfiguration GetConfiguration()
@@ -167,11 +171,10 @@ namespace TomPIT.UI
 			if (!(Instance.GetService<IComponentService>().SelectConfiguration(ViewComponent.Token) is IMailTemplate config))
 				return;
 
-			var pp = new MailTemplateProcessor(config, Instance.GetService<IViewService>().SelectContent(config));
+			var content = Instance.GetService<ICompilerService>().CompileView(Instance.Connection, config);
 
-			pp.Compile(Instance.Connection, ViewComponent);
-
-			_viewContent = Encoding.UTF8.GetBytes(pp.Result);
+			if (!string.IsNullOrWhiteSpace(content))
+				_viewContent = Encoding.UTF8.GetBytes(content);
 
 			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
 		}
@@ -188,11 +191,10 @@ namespace TomPIT.UI
 			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(partial.TextBlob);
 			Blob = Instance.GetService<IStorageService>().Select(partial.TextBlob);
 
-			var pp = new PartialProcessor(partial, Instance.GetService<IViewService>().SelectContent(partial));
+			var content = Instance.GetService<ICompilerService>().CompileView(Instance.Connection, partial);
 
-			pp.Compile(Instance.Connection, ViewComponent);
-
-			_viewContent = Encoding.UTF8.GetBytes(pp.Result);
+			if (!string.IsNullOrWhiteSpace(content))
+				_viewContent = Encoding.UTF8.GetBytes(content);
 
 			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
 		}
@@ -213,12 +215,12 @@ namespace TomPIT.UI
 				return;
 
 			ViewComponent = report;
+			var reportConfig = Instance.GetService<IComponentService>().SelectConfiguration(report.Token) as IReport;
 
-			var pp = new ReportProcessor(Instance.GetService<IComponentService>().SelectConfiguration(report.Token) as IReport);
+			var content = Instance.GetService<ICompilerService>().CompileView(Instance.Connection, reportConfig);
 
-			pp.Compile(Instance.Connection, ViewComponent);
-
-			_viewContent = Encoding.UTF8.GetBytes(pp.Result);
+			if (!string.IsNullOrWhiteSpace(content))
+				_viewContent = Encoding.UTF8.GetBytes(content);
 
 			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
 		}
@@ -234,30 +236,20 @@ namespace TomPIT.UI
 
 			var config = view.Configuration();
 			var rendererAtt = config.GetType().FindAttribute<ViewRendererAttribute>();
-			var sourceCode = string.Empty;
 			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(config.Component);
 
 			if (rendererAtt != null)
-			{
-				var renderer = (rendererAtt.Type ?? Types.GetType(rendererAtt.TypeName)).CreateInstance<IViewRenderer>();
-
 				LastModified = ViewComponent.Modified;
-
-				sourceCode = renderer.CreateContent(Instance.Connection, ViewComponent);
-			}
 			else
 			{
 				Blob = Instance.GetService<IStorageService>().Select(view.TextBlob);
 				LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
-
-				sourceCode = Instance.GetService<IViewService>().SelectContent(view);
 			}
 
-			var p = new ViewProcessor(view, sourceCode);
+			var content = Instance.GetService<ICompilerService>().CompileView(Instance.Connection, view);
 
-			p.Compile(Instance.Connection, ViewComponent);
-
-			_viewContent = Encoding.UTF8.GetBytes(p.Result);
+			if (!string.IsNullOrWhiteSpace(content))
+				_viewContent = Encoding.UTF8.GetBytes(content);
 		}
 
 		private void LoadMaster()
@@ -273,11 +265,10 @@ namespace TomPIT.UI
 			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(config.Component);
 			Blob = Instance.GetService<IStorageService>().Select(master.TextBlob);
 
-			var mp = new MasterProcessor(master, Instance.GetService<IViewService>().SelectContent(master));
+			var content = Instance.GetService<ICompilerService>().CompileView(Instance.Connection, master);
 
-			mp.Compile(Instance.Connection, ViewComponent);
-
-			_viewContent = Encoding.UTF8.GetBytes(mp.Result);
+			if (!string.IsNullOrWhiteSpace(content))
+				_viewContent = Encoding.UTF8.GetBytes(content);
 
 			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
 		}
@@ -369,11 +360,10 @@ namespace TomPIT.UI
 			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(configuration);
 			Blob = Instance.GetService<IStorageService>().Select(s.TextBlob);
 
-			var sp = new SnippetProcessor(s, Instance.GetService<IComponentService>().SelectText(ViewComponent.MicroService, s));
+			var content = Instance.GetService<ICompilerService>().CompileView(Instance.Connection, s);
 
-			sp.Compile(Instance.Connection, ViewComponent);
-
-			_viewContent = Encoding.UTF8.GetBytes(sp.Result);
+			if (!string.IsNullOrWhiteSpace(content))
+				_viewContent = Encoding.UTF8.GetBytes(content);
 
 			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
 

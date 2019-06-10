@@ -83,7 +83,7 @@ namespace TomPIT.Models
 				if (!(Body["body"] is JValue body))
 					Body = new JObject();
 				else
-					Body = JsonConvert.DeserializeObject<JObject>(body.Value<string>());
+					Body = Types.Deserialize<JObject>(body.Value<string>());
 			}
 		}
 
@@ -101,9 +101,9 @@ namespace TomPIT.Models
 			if (r is JObject)
 				return r as JObject;
 
-			var s = JsonConvert.SerializeObject(r);
+			var s = Types.Serialize(r);
 
-			return JsonConvert.DeserializeObject(s);
+			return Types.Deserialize<JObject>(s);
 
 		}
 

@@ -22,6 +22,7 @@ namespace TomPIT.Data.DataProviders
 		/// which data fields they should return as part of the result set.</param>
 		/// <returns></returns>
 		JObject Query(IDataCommandDescriptor command, DataTable schema);
+		JObject Query(IDataCommandDescriptor command, DataTable schema, IDataConnection connection);
 		/// <summary>
 		/// Executes transaction command on the physical data storage.
 		/// </summary>

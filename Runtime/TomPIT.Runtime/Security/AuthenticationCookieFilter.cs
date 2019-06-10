@@ -20,7 +20,7 @@ namespace TomPIT.Security
 			if (string.IsNullOrWhiteSpace(cookie))
 				return;
 
-			var json = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
+			var json = Types.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
 
 			var expiration = json.Optional("expiration", 0L);
 
@@ -40,7 +40,7 @@ namespace TomPIT.Security
 
 				context.HttpContext.Response.Cookies.Delete(SecurityUtils.AuthenticationCookieName);
 
-				context.HttpContext.Response.Cookies.Append(SecurityUtils.AuthenticationCookieName, Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(json))), new CookieOptions
+				context.HttpContext.Response.Cookies.Append(SecurityUtils.AuthenticationCookieName, Convert.ToBase64String(Encoding.UTF8.GetBytes(Types.Serialize(json))), new CookieOptions
 				{
 					HttpOnly = true,
 					Expires = expires

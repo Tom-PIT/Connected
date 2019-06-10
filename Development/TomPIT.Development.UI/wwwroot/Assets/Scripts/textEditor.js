@@ -31,7 +31,10 @@
 				monaco.editor.setTheme('TomPIT');
 
 				if (target.options.instance !== null) {
-					try {
+                    try {
+                        if (typeof target.options.timer !== 'undefined')
+                            clearInterval(target.options.timer);
+
 						if (typeof target.options.instance.completionItemProvider !== 'undefined')
 							target.options.instance.completionItemProvider.dispose();
 
@@ -47,6 +50,7 @@
 						if (typeof target.options.instance.definitionProvider!== 'undefined')
 							target.options.instance.definitionProvider.dispose();
 
+
 						target.options.instance.dispose();
 						target.options.instance = null;
 					}
@@ -55,7 +59,7 @@
 					}
 				}
 
-				options = $.extend({
+				target.options = $.extend({
 					readOnly:false
 				}, options);
 
@@ -82,6 +86,15 @@
                     readOnly: options.readOnly,
                     showUnused:true
 				});
+
+                target.options.timer = setInterval(function () {
+                    try {
+                        if ($.isFunction(target.options.onCheckSyntax) && target.observeDirty())
+                            target.options.onCheckSyntax();
+                    } catch (e) {
+                        console.log(e);
+                    }
+                }, 2500);
 
 				if ($.isFunction(options.onCreated))
 					options.onCreated(target.options.instance);

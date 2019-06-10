@@ -9,5 +9,11 @@ namespace TomPIT.Compilation
 	{
 		string Message { get; }
 		DiagnosticSeverity Severity { get; }
+
+		int StartLine { get; }
+		int EndLine { get; }
+		int StartColumn { get; }
+		int EndColumn { get; }
+		string Id { get; }
 	}
 }

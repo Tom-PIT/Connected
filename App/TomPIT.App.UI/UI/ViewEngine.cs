@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using System;
 using System.Net;
 using System.Text;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.UI;
 using TomPIT.Diagnostics;
 using TomPIT.Models;
 
@@ -53,8 +55,18 @@ namespace TomPIT.UI
 				if (!model.Authorize(model.Component))
 					return;
 
-				var actionContext = CreateActionContext(Context);
+				var invokeArgs = new ViewInvokeArguments(model, Temp);
 
+				if (model.ViewConfiguration != null)
+				{
+					model.GetService<ICompilerService>().Execute(((IConfiguration)model.ViewConfiguration).MicroService(model.Connection), model.ViewConfiguration.Invoke, this, invokeArgs);
+
+					if (Shell.HttpContext.Response.StatusCode != (int)HttpStatusCode.OK)
+						return;
+				}
+
+				var actionContext = CreateActionContext(Context);
+				
 				var viewEngineResult = Engine.FindView(actionContext, name, false);
 
 				if (!viewEngineResult.Success)
@@ -73,7 +85,7 @@ namespace TomPIT.UI
 				if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
 					return;
 
-				content = CreateContent(view, actionContext, model);
+				content = CreateContent(view, invokeArgs);
 
 				var buffer = Encoding.UTF8.GetBytes(content);
 

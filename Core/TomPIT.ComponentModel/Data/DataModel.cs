@@ -8,10 +8,10 @@ namespace TomPIT.Data
 {
     public abstract class DataModel
     {
-        protected DataModel(IDataModelContext e)
+        protected DataModel(IDataModelContext context)
         {
-            this.e = e;
+            Context = context;
         }
-        protected IDataModelContext e { get; }
+        protected IDataModelContext Context { get; }
     }
 }

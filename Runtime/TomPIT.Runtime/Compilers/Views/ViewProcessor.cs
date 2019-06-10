@@ -1,9 +1,10 @@
 ﻿using System.Text;
+using Newtonsoft.Json;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 
-namespace TomPIT.UI
+namespace TomPIT.Runtime.Compilers.Views
 {
 	internal class ViewProcessor : ProcessorBase
 	{
@@ -14,32 +15,22 @@ namespace TomPIT.UI
 		{
 			View = view;
 		}
-
+		
 		private IView View { get; }
-		private IComponent Component
-		{
-			get
-			{
-				if (_component == null)
-					_component = Instance.GetService<IComponentService>().SelectComponent(View.Component);
 
-				return _component;
-			}
-		}
-
-		public override void Compile(ISysConnection connection, IComponent component)
+		public override void Compile(ISysConnection connection, IComponent component, IConfiguration configuration)
 		{
 			AppendBaseType(Builder);
 			AddUsings(Builder);
 			AddTagHelpers(Builder);
 
 			Builder.AppendLine(string.Format("@model {0}", ResolveModel()));
-			AppendViewMetaData(Builder, "View", Component.Token);
-			Builder.AppendFormat("@{{Layout=\"{0}\";}}", ResolveMaster(View));
+			AppendViewMetaData(Builder, "View", component.Token);
+			Builder.AppendFormat("@{{Layout=\"{0}\";}}", ResolveMaster(connection, View));
 			Builder.AppendLine();
 			Builder.Append(Source);
 
-			var scripts = Instance.GetService<IViewService>().SelectScripts(Component.MicroService, Component.Token);
+			var scripts = SelectScripts(connection, component.MicroService, configuration as IGraphicInterface);
 
 			if (!string.IsNullOrWhiteSpace(scripts))
 				Builder.AppendFormat("<script>{0}</script>", scripts);
@@ -63,43 +54,43 @@ namespace TomPIT.UI
 			}
 		}
 
-		private string ResolveMaster(IView view)
+		private string ResolveMaster(ISysConnection connection, IView view)
 		{
 			if (string.IsNullOrWhiteSpace(view.Layout))
 				return "~/Views/Shared/DefaultMaster.cshtml";
 
 			var tokens = view.Layout.Split(new char[] { '/' }, 2);
 
-			var ms = ((IConfiguration)view).MicroService(Instance.Connection);
+			var ms = ((IConfiguration)view).MicroService(connection);
 			var viewToken = tokens[0];
 
 			if (tokens.Length > 1)
 			{
-				ms = Instance.Connection.ResolveMicroServiceToken(tokens[0]);
+				ms = connection.ResolveMicroServiceToken(tokens[0]);
 				viewToken = tokens[1];
 			}
 
-			var m = Instance.GetService<IComponentService>().SelectComponent(ms, "MasterView", viewToken);
+			var m = connection.GetService<IComponentService>().SelectComponent(ms, "MasterView", viewToken);
 
 			if (m == null)
 				throw new RuntimeException(SR.ErrMasterViewNotFound);
 
-			if (!(Instance.GetService<IViewService>().Select(m.Token) is IMasterView master))
+			if (!(connection.GetService<IComponentService>().SelectConfiguration(m.Token) is IMasterView master))
 				throw new RuntimeException(SR.ErrMasterViewNotFound);
 
-			var c = Instance.GetService<IComponentService>().SelectComponent(master.Component);
+			var c = connection.GetService<IComponentService>().SelectComponent(master.Component);
 
 			if (c == null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
 
-			var s = Instance.GetService<IMicroServiceService>().Select(c.MicroService);
+			var s = connection.GetService<IMicroServiceService>().Select(c.MicroService);
 
 			if (s == null)
 				throw new RuntimeException(SR.ErrMicroServiceNotFound);
 
-			var microService = Instance.GetService<IMicroServiceService>().Select(((IConfiguration)view).MicroService(Instance.Connection));
+			var microService = connection.GetService<IMicroServiceService>().Select(((IConfiguration)view).MicroService(connection));
 
-			microService.ValidateMicroServiceReference(Instance.Connection, Instance.Connection.ResolveMicroServiceName(s.Token));
+			microService.ValidateMicroServiceReference(connection, connection.ResolveMicroServiceName(s.Token));
 
 			return string.Format("~/Views/Dynamic/Master/{0}.{1}.cshtml", s.Name, c.Name);
 		}

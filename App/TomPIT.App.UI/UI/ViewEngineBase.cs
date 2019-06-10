@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using System.IO;
+using TomPIT.ComponentModel.UI;
 
 namespace TomPIT.UI
 {
@@ -29,24 +30,11 @@ namespace TomPIT.UI
 			return new ActionContext(context, context?.GetRouteData(), new ActionDescriptor());
 		}
 
-		protected string CreateContent<TModel>(Microsoft.AspNetCore.Mvc.ViewEngines.IView view, ActionContext actionContext, TModel model)
+		protected string CreateContent(Microsoft.AspNetCore.Mvc.ViewEngines.IView view, ViewInvokeArguments e)
 		{
 			using (var output = new StringWriter())
 			{
-				var viewData = new ViewDataDictionary<TModel>(
-						  metadataProvider: new EmptyModelMetadataProvider(),
-						  modelState: new ModelStateDictionary())
-				{
-					Model = model
-				};
-
-				var httpContextAccessor = new HttpContextAccessor
-				{
-					HttpContext = actionContext.HttpContext
-				};
-
-				var tempData = new TempDataDictionary(httpContextAccessor.HttpContext, Temp);
-				var viewContext = new ViewContext(actionContext, view, viewData, tempData, output, new HtmlHelperOptions());
+				var viewContext = new ViewContext(e.Model.ActionContext, view, e.ViewData, e.TempData, output, new HtmlHelperOptions());
 
 				view.RenderAsync(viewContext).GetAwaiter().GetResult();
 
