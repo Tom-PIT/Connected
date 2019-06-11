@@ -14,49 +14,6 @@ namespace TomPIT.Security
 
 		private ISysConnection Connection { get; }
 
-		public void ChangeAvatar(Guid user, byte[] contentBytes, string contentType, string fileName)
-		{
-			var usr = Connection.GetService<IUserService>().Select(user.ToString());
-			Guid avatarId = Guid.Empty;
-
-			if (usr == null)
-				throw new TomPITException(SR.ErrUserNotFound);
-
-			if (contentBytes == null)
-			{
-				if (usr.Avatar == Guid.Empty)
-					return;
-
-				Connection.GetService<IStorageService>().Delete(usr.Avatar);
-			}
-			else
-			{
-				var b = new Blob
-				{
-					ContentType = contentType,
-					FileName = fileName,
-					PrimaryKey = user.ToString(),
-					ResourceGroup = Guid.Empty,
-					Size = contentBytes == null ? 0 : contentBytes.Length,
-					Type = BlobTypes.Avatar
-				};
-
-				avatarId = Connection.GetService<IStorageService>().Upload(b, contentBytes, StoragePolicy.Singleton);
-
-				if (avatarId == usr.Avatar)
-					return;
-			}
-
-			var u = Connection.CreateUrl("UserManagement", "ChangeAvatar");
-			var e = new JObject
-			{
-				{"user", user},
-				{"avatar", avatarId }
-			};
-
-			Connection.Post(u, e);
-		}
-
 		public Guid Insert(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string password, string pin, Guid language, string timezone,
 			bool notificationEnabled, string mobile, string phone)
 		{

@@ -20,6 +20,7 @@ using TomPIT.IoT;
 using TomPIT.Security;
 using TomPIT.Services;
 using TomPIT.Storage;
+using TomPIT.UI;
 
 namespace TomPIT.Runtime
 {
@@ -79,6 +80,7 @@ namespace TomPIT.Runtime
 			e.Connection.RegisterService(typeof(IIoTService), typeof(IoTService));
 			e.Connection.RegisterService(typeof(IDataCachingService), typeof(DataCachingService));
 			e.Connection.RegisterService(typeof(IQueueService), typeof(QueueService));
+			e.Connection.RegisterService(typeof(IGraphicsService), typeof(GraphicsService));
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 			{

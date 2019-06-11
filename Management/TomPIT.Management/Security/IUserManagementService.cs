@@ -10,7 +10,6 @@ namespace TomPIT.Security
 		void Update(Guid user, string loginName, string email, UserStatus status, string firstName, string lastName, string description,
 			string pin, Guid language, string timezone, bool notificationEnabled, string mobile, string phone);
 
-		void ChangeAvatar(Guid user, byte[] contentBytes, string contentType, string fileName);
 		void ResetPassword(Guid user);
 		void Delete(Guid user);
 	}

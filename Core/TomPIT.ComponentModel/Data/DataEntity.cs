@@ -33,6 +33,16 @@ namespace TomPIT.Data
 			JsonConvert.PopulateObject(Types.Serialize(state), this, settings);
 		}
 
+		public void DataSource(JObject state)
+		{
+			OnDataSource(state);
+		}
+
+		protected virtual void OnDataSource(JObject state)
+		{
+
+		}
+
 		public static implicit operator JObject(DataEntity entity)
 		{
 			return Types.Deserialize<JObject>(entity.Serialize());

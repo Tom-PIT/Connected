@@ -42,7 +42,7 @@ namespace TomPIT.Designers
 
 		private IDesignerActionResult ResetAvatar(JObject data)
 		{
-			Connection.GetService<IUserManagementService>().ChangeAvatar(User.Token, null, null, null);
+			Connection.GetService<IUserService>().ChangeAvatar(User.Token, null, null, null);
 
 			return Result.SectionResult(ViewModel, EnvironmentSection.Designer);
 		}
@@ -65,7 +65,7 @@ namespace TomPIT.Designers
 				s.Seek(0, SeekOrigin.Begin);
 				s.Read(buffer, 0, buffer.Length);
 
-				Connection.GetService<IUserManagementService>().ChangeAvatar(User.Token, buffer, file.ContentType, System.IO.Path.GetFileName(file.FileName));
+				Connection.GetService<IUserService>().ChangeAvatar(User.Token, buffer, file.ContentType, System.IO.Path.GetFileName(file.FileName));
 			};
 
 			return Result.SectionResult(ViewModel, EnvironmentSection.Designer);

@@ -87,7 +87,7 @@ namespace TomPIT.Design.Services
 
 				if (results.Items.Length < 50 || Suggestion.SupportsDescription(kind))
 					description = Task.Run(async () => { return await Completion.GetDescriptionAsync(Document, i); }).Result;
-
+				
 				var s = new Suggestion
 				{
 					Description = description == null ? string.Empty : description.Text,

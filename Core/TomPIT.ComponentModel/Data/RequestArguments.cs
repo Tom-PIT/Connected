@@ -41,9 +41,6 @@ namespace TomPIT.Data
 			if (instance == null)
 				return;
 
-			if (instance is RequestEntity re)
-				re.Validate(Context, results);
-
 			var properties = instance.GetType().GetProperties();
 
 			foreach (var property in properties)
@@ -72,6 +69,12 @@ namespace TomPIT.Data
 
 					ValidateProperties(results, value);
 				}
+			}
+
+			if (results.Count == 0)
+			{
+				if (instance is RequestEntity re)
+					re.Validate(Context, results);
 			}
 		}
 

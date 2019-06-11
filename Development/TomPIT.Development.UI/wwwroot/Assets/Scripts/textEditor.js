@@ -84,7 +84,9 @@
 					wrappingColumn: 0,
 					wrappingIndent: 'indent',
                     readOnly: options.readOnly,
-                    showUnused:true
+                    showUnused: true,
+                    autoIndent: true,
+                    wordWrap:'on'
 				});
 
                 target.options.timer = setInterval(function () {

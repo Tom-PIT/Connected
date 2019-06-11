@@ -57,8 +57,6 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 				msApis.Add(new CodeAnalysisResult(key, key, null));
 			}
 
-			msApis.Sort();
-
 			foreach (var i in msApis)
 				r.Add(i);
 

@@ -11,6 +11,7 @@ using TomPIT.Environment;
 using TomPIT.Routing;
 using TomPIT.Security;
 using TomPIT.Storage;
+using TomPIT.UI;
 
 namespace TomPIT.Services.Context
 {
@@ -27,7 +28,7 @@ namespace TomPIT.Services.Context
 
 			try
 			{
-				return new UriBuilder(url).Uri.ToString();
+				return Context.MapPath(url);
 			}
 			catch
 			{
@@ -81,15 +82,24 @@ namespace TomPIT.Services.Context
 
 			var u = Context.Connection().GetService<IUserService>().Select(user.ToString());
 
-			if (u == null || u.Avatar == Guid.Empty)
+			if (u == null)
 				return null;
+
+			if(u.Avatar == Guid.Empty)
+			{
+				var image = Context.Connection().GetService<IGraphicsService>().CreateImage(u.DisplayName(), 512, 512);
+
+				Context.Connection().GetService<IUserService>().ChangeAvatar(u.Token, image, "Image/png", $"{u.DisplayName()}.png");
+
+				u = Context.Connection().GetService<IUserService>().Select(user.ToString());
+			}
 
 			var blob = Context.Connection().GetService<IStorageService>().Select(u.Avatar);
 
 			if (blob == null)
 				return null;
 
-			return string.Format("~/sys/avatar/{0}/{1}", u.Avatar, blob.Version);
+			return Absolute($"~/sys/avatar/{u.Avatar}/{blob.Version}");
 		}
 
 		public void NotFound()

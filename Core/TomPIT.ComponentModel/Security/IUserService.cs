@@ -17,5 +17,6 @@ namespace TomPIT.Security
 
 		void Logout(int user);
 		void ChangePassword(Guid user, string existingPassword, string password);
+		void ChangeAvatar(Guid user, byte[] contentBytes, string contentType, string fileName);
 	}
 }

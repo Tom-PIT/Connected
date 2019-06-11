@@ -9,5 +9,6 @@ namespace TomPIT.Data
 	{
 		string Serialize();
 		void Deserialize(JObject state);
+		void DataSource(JObject state);
 	}
 }

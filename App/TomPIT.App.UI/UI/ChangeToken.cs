@@ -18,6 +18,9 @@ namespace TomPIT.UI
 		{
 			get
 			{
+				if (Shell.HttpContext == null)
+					return false;
+
 				var kind = ViewInfo.ResolveViewKind(_viewPath);
 
 				if (kind == ViewKind.View)

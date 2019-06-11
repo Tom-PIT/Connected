@@ -132,6 +132,24 @@
                 compiled += token + '/';
         });
 
-        return compiled.length > 0 ? compiled.substr(0, compiled.length -1) : compiled;
-    }
+        return compiled.length > 0 ? compiled.substr(0, compiled.length - 1) : compiled;
+    };
+
+    tompit.isValidDate = function (value) {
+        //0001-01-01T00:00:00+01:00
+
+        if (typeof value === 'undefined' || value.length === 0)
+            return false;
+
+        var tokens = value.split('-');
+
+        if (tokens.length < 3)
+            return false;
+
+        if (tokens[0] === '0001' && tokens[1] === '01' && tokens[2].startsWith('01'))
+            return false;
+
+        return true;
+    };
+
 })(window.tompit = window.tompit || {}, jQuery);

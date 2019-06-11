@@ -223,11 +223,14 @@ namespace TomPIT
 			return args.Manifest;
 		}
 
-		public static T ToRequestArguments<T>(this JObject value, IDataModelContext context) where T : RequestArguments
+		public static T ToRequestArguments<T>(this JObject value, IDataModelContext context, bool validate = true) where T : RequestArguments
 		{
 			var r = typeof(T).CreateInstance<T>(new object[] { context });
 
 			Types.Populate(Types.Serialize(value), r);
+
+			if (validate)
+				r.Validate();
 
 			return r;
 		}

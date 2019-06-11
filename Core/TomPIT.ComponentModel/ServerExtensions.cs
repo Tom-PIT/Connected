@@ -102,7 +102,23 @@ namespace TomPIT
 			var p1 = MapPath(context, path1);
 			var p2 = MapPath(context, path2);
 
-			return string.Compare(p1, p2, true) == 0;
+			try
+			{
+				var left = new Uri(p1, UriKind.RelativeOrAbsolute);
+				var right = new Uri(p2, UriKind.RelativeOrAbsolute);
+
+				if (!left.IsAbsoluteUri)
+					left = new Uri($"{Shell.HttpContext.Request.RootUrl()}{left}");
+
+				if (!right.IsAbsoluteUri)
+					right = new Uri($"{Shell.HttpContext.Request.RootUrl()}{right}");
+
+				return Uri.Compare(left, right, UriComponents.HostAndPort | UriComponents.Path, UriFormat.SafeUnescaped, StringComparison.OrdinalIgnoreCase) == 0;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 
 		public static string RootUrl(this HttpRequest request)

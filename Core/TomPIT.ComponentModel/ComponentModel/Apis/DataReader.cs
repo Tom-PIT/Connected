@@ -37,6 +37,9 @@ namespace TomPIT.ComponentModel.Apis
 
 					var instance = Types.Deserialize<T>(Types.Serialize(record));
 
+					if (instance is IDataEntity entity)
+						entity.DataSource(row);
+
 					r.Add(instance);
 				}
 
