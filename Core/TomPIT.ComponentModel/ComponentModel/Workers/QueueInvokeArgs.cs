@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using TomPIT.Data;
 using TomPIT.Services;
 
 namespace TomPIT.ComponentModel.Workers
 {
-	public class QueueInvokeArgs : EventArguments
+	public class QueueInvokeArgs : DataModelContext
 	{
 		public QueueInvokeArgs(IExecutionContext sender, JObject arguments) : base(sender)
 		{

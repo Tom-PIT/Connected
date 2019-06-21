@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
+using TomPIT.Annotations;
 using TomPIT.Cdn;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Events;
 using TomPIT.ComponentModel.Workers;
 using TomPIT.Environment;
 
@@ -26,10 +28,10 @@ namespace TomPIT.Services.Context
 
 		public string CreateMailMessage(string template, string user)
 		{
-			return CreateMailMessage(template, user, null);
+			return CreateMailMessage<object>(template, user, null);
 		}
 
-		public string CreateMailMessage(string template, string user, JObject arguments)
+		public string CreateMailMessage<T>(string template, string user, T arguments)
 		{
 			var component = Context.Connection().GetService<IComponentService>().SelectComponent(Context.MicroService.Token, "MailTemplate", template);
 
@@ -51,7 +53,7 @@ namespace TomPIT.Services.Context
 				e.Add("user", user);
 
 			if (arguments != null)
-				e.Add("arguments", arguments);
+				e.Add("arguments", Types.Serialize(arguments));
 
 			return Context.Connection().Post<string>(url, e, new Connectivity.HttpRequestArgs
 			{
@@ -74,20 +76,56 @@ namespace TomPIT.Services.Context
 
 		public void TriggerEvent(string eventName, string primaryKey)
 		{
-			TriggerEvent(eventName, primaryKey, null, null);
+			TriggerEvent<object>(eventName, primaryKey, null, null);
 		}
 
-		public void TriggerEvent(string eventName, string primaryKey, JObject arguments)
+		public void TriggerEvent<T>(string eventName, string primaryKey, T arguments)
 		{
 			TriggerEvent(eventName, primaryKey, null, arguments);
 		}
 
 		public void TriggerEvent(string eventName, string primaryKey, string topic)
 		{
-			TriggerEvent(eventName, primaryKey, topic, null);
+			TriggerEvent<object>(eventName, primaryKey, topic, null);
 		}
 
-		public void TriggerEvent(string eventName, string primaryKey, string topic, JObject arguments)
+		public void TriggerEvent<T>(string eventName, string primaryKey, string topic, T arguments)
+		{
+			SubscriptionEvent(eventName, primaryKey, topic, arguments);
+		}
+
+		public void Enqueue<T>(string queue, T arguments)
+		{
+			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Queue", queue) is IQueueWorker worker))
+				throw new RuntimeException(SR.ErrQueueWorkerNotFound);
+
+			Context.Connection().GetService<IQueueService>().Enqueue(worker, arguments);
+		}
+
+		public void Enqueue<T>(string queue, T arguments, TimeSpan expire, TimeSpan nextVisible)
+		{
+			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Queue", queue) is IQueueWorker worker))
+				throw new RuntimeException(SR.ErrQueueWorkerNotFound);
+
+			Context.Connection().GetService<IQueueService>().Enqueue(worker, arguments, expire, nextVisible);
+		}
+
+		public void SubscriptionEvent([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, TomPIT.Design")] string eventName, string primaryKey)
+		{
+			TriggerEvent(eventName, primaryKey, null);
+		}
+
+		public void SubscriptionEvent<T>([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, TomPIT.Design")] string eventName, string primaryKey, T arguments)
+		{
+			TriggerEvent(eventName, primaryKey, null, arguments);
+		}
+
+		public void SubscriptionEvent([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, TomPIT.Design")] string eventName, string primaryKey, string topic)
+		{
+			TriggerEvent<object>(eventName, primaryKey, topic, null);
+		}
+
+		public void SubscriptionEvent<T>([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, TomPIT.Design")] string eventName, string primaryKey, string topic, T arguments)
 		{
 			var tokens = eventName.Split('/');
 
@@ -102,20 +140,27 @@ namespace TomPIT.Services.Context
 			Context.Connection().GetService<ISubscriptionService>().TriggerEvent(sub, tokens[1], primaryKey, topic, arguments);
 		}
 
-		public void Enqueue(string queue, JObject arguments)
+		public Guid Event<T>([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.EventProvider, TomPIT.Design")] string name, T e)
 		{
-			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Queue", queue) is IQueueWorker worker))
-				throw new RuntimeException(SR.ErrQueueWorkerNotFound);
-
-			Context.Connection().GetService<IQueueService>().Enqueue(worker, arguments);
+			return Event(name, e, null);
 		}
 
-		public void Enqueue(string queue, JObject arguments, TimeSpan expire, TimeSpan nextVisible)
+		public Guid Event([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.EventProvider, TomPIT.Design")] string name)
 		{
-			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Queue", queue) is IQueueWorker worker))
-				throw new RuntimeException(SR.ErrQueueWorkerNotFound);
+			return Event<object>(name, null);
+		}
 
-			Context.Connection().GetService<IQueueService>().Enqueue(worker, arguments, expire, nextVisible);
+		public Guid Event<T>([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.EventProvider, TomPIT.Design")] string name, T e, IEventCallback callback)
+		{
+			if (callback is EventCallback ec)
+				ec.Attached = true;
+
+			return Context.Connection().GetService<IEventService>().Trigger(Context.MicroService.Token, name, callback, e);
+		}
+
+		public Guid Event([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.EventProvider, TomPIT.Design")] string name, IEventCallback callback)
+		{
+			return Event<object>(name, null, callback);
 		}
 	}
 }

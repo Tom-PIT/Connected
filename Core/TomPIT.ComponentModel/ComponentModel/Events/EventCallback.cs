@@ -15,5 +15,7 @@ namespace TomPIT.ComponentModel
 		public Guid MicroService { get; }
 		public Guid Api { get; }
 		public Guid Operation { get; }
+
+		internal bool Attached { get; set; }
 	}
 }

@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using TomPIT.Data;
 using TomPIT.Services;
 
 namespace TomPIT.ComponentModel
 {
-	public class ValidatingEventArguments : EventArguments
+	public class ValidatingEventArguments : DataModelContext
 	{
 		private List<string> _errors = null;
 

@@ -1,9 +1,10 @@
 ﻿using Newtonsoft.Json.Linq;
+using TomPIT.Data;
 using TomPIT.Services;
 
 namespace TomPIT.ComponentModel.Workers
 {
-	public class WorkerInvokeArgs : EventArguments
+	public class WorkerInvokeArgs : DataModelContext
 	{
 		public WorkerInvokeArgs(IExecutionContext sender, JObject state) : base(sender)
 		{

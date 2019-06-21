@@ -19,16 +19,8 @@ namespace TomPIT.Annotations
 			if (!(validationContext.GetService(typeof(IDataModelContext)) is IDataModelContext model))
 				return ValidationResult.Success;
 
-			var values = provider.ProvideUniqueValues(model, validationContext.MemberName);
-
-			if (values == null || values.Count == 0 && provider.IsUnique(model, validationContext.MemberName))
-				return ValidationResult.Success;
-
-			foreach(var val in values)
-			{
-				if (Types.Compare(val, value))
+			if (!provider.IsUnique(model, validationContext.MemberName))
 					return new ValidationResult(FormatErrorMessage(validationContext.DisplayName));
-			}
 
 			return ValidationResult.Success;
 		}

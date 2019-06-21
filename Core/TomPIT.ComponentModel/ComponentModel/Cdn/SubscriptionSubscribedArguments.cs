@@ -1,8 +1,9 @@
-﻿using TomPIT.Services;
+﻿using TomPIT.Data;
+using TomPIT.Services;
 
 namespace TomPIT.ComponentModel.Cdn
 {
-	public class SubscriptionSubscribedArguments : EventArguments
+	public class SubscriptionSubscribedArguments : DataModelContext
 	{
 		public SubscriptionSubscribedArguments(IExecutionContext sender, TomPIT.Cdn.ISubscription subscription) : base(sender)
 		{

@@ -73,6 +73,14 @@ namespace TomPIT.Design.Services
 			var span = Completion.GetDefaultCompletionListSpan(SourceCode, Args.Position);
 
 			if (results == null)
+			{
+				var scripts = SuggestScripts(Document, sm, span);
+
+				if (scripts != null)
+					return scripts;
+			}
+
+			if (results == null)
 				return WithSnippets(SuggestContent(Document, sm, span), sm, span);
 
 			var ti = sm.GetTypeInfo(sm.SyntaxTree.GetRoot().FindNode(results.Span));
@@ -338,6 +346,26 @@ namespace TomPIT.Design.Services
 				return Suggestion.Variable;
 
 			return -1;
+		}
+
+		private List<ISuggestion> SuggestScripts(Document document, SemanticModel model, TextSpan span)
+		{
+			var r = new List<ISuggestion>();
+
+			var loads = model.SyntaxTree.GetRoot().DescendantNodes(f => f is LoadDirectiveTriviaSyntax);
+
+			foreach(var load in loads)
+			{
+				if (load.Span.IntersectsWith(span))
+				{
+					//var scripts = Context.Connection().GetService<>
+				}
+			}
+
+			if (r.Count == 0)
+				return null;
+
+			return r;
 		}
 	}
 }

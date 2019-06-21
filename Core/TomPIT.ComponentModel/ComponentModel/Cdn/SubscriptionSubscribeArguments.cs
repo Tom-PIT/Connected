@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using TomPIT.Cdn;
+using TomPIT.Data;
 using TomPIT.Security;
 using TomPIT.Services;
 
 namespace TomPIT.ComponentModel.Cdn
 {
-	public class SubscriptionSubscribeArguments : EventArguments
+	public class SubscriptionSubscribeArguments : DataModelContext
 	{
 		private List<IRecipient> _subscribers = null;
 

@@ -16,6 +16,7 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Annotations;
 using TomPIT.Caching;
@@ -37,6 +38,7 @@ namespace TomPIT.Compilers
 	{
 		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _forwardReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
 		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _reverseReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
+		private static Lazy<ConcurrentDictionary<Guid, ManualResetEvent>> _scriptCreateState = new Lazy<ConcurrentDictionary<Guid, ManualResetEvent>>();
 
 		private static readonly string[] Usings = new string[]
 		{
@@ -90,7 +92,26 @@ namespace TomPIT.Compilers
 			var d = GetCachedScript(sourceCode.Id);
 
 			if (d == null)
-				d = CreateScript<T>(microService, sourceCode);
+			{
+				var re = new ManualResetEvent(false);
+
+				if (!ScriptCreateState.TryAdd(sourceCode.Id, re))
+				{
+					re = ScriptCreateState[sourceCode.Id];
+
+					re.WaitOne();
+
+					d = GetCachedScript(sourceCode.Id);
+				}
+				else
+				{
+					d = CreateScript<T>(microService, sourceCode);
+
+					re.Set();
+
+					ScriptCreateState.TryRemove(sourceCode.Id, out _);
+				}
+			}
 
 			return d;
 		}
@@ -142,9 +163,9 @@ namespace TomPIT.Compilers
 
 			try
 			{
-				return Task.Run(async () =>
+				return Task.Run(()=>
 				{
-					return await script.Script(globals).ConfigureAwait(false);
+					return script.Script(globals);
 				}).Result;
 			}
 			catch (AggregateException ex)
@@ -248,8 +269,6 @@ namespace TomPIT.Compilers
 
 		private void Compile(IScriptDescriptor script, CompilerScript compiler)
 		{
-			Set(script.Id, script, TimeSpan.Zero);
-
 			var errors = compiler.Script.Compile();
 			var diagnostics = new List<IDiagnostic>();
 
@@ -275,7 +294,12 @@ namespace TomPIT.Compilers
 			((ScriptDescriptor)script).Errors = diagnostics;
 
 			if (script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() == 0)
+			{
 				((ScriptDescriptor)script).Script = compiler.Script.CreateDelegate();
+				((ScriptDescriptor)script).Assembly = compiler.Script.GetCompilation().AssemblyName;
+			}
+
+			Set(script.Id, script, TimeSpan.Zero);
 		}
 
 		internal static void ResolveReferences(ISysConnection connection, Guid microService, ISourceCode d, string code)
@@ -503,7 +527,10 @@ namespace TomPIT.Compilers
 				var refs = ForwardReferences[container];
 
 				foreach (var i in refs)
+				{
 					Remove(i);
+					InvalidateReferences(i, i);
+				}
 			}
 
 			if (ForwardReferences.ContainsKey(script))
@@ -511,7 +538,10 @@ namespace TomPIT.Compilers
 				var refs = ForwardReferences[script];
 
 				foreach (var i in refs)
+				{
 					Remove(i);
+					InvalidateReferences(i, i);
+				}
 			}
 		}
 
@@ -573,5 +603,6 @@ namespace TomPIT.Compilers
 
 		private static ConcurrentDictionary<Guid, List<Guid>> ForwardReferences { get { return _forwardReferences.Value; } }
 		private static ConcurrentDictionary<Guid, List<Guid>> ReverseReferences { get { return _reverseReferences.Value; } }
+		private static ConcurrentDictionary<Guid, ManualResetEvent> ScriptCreateState { get { return _scriptCreateState.Value; } }
 	}
 }

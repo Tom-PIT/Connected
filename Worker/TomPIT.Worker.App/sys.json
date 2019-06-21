@@ -1,10 +1,10 @@
 ﻿{
 	"connections": [
-		{
-			"name": "localhost",
-			"url": "http://localhost:44001",
-			"authenticationToken": "defaultAuthenticationToken"
-		}
+    {
+      "name": "localhost",
+      "url": "http://sys-app/cm/sys",
+      "authenticationToken": "8354505c-19f9-4ecb-bc0f-108204c78555"
+    }
 	],
 	"resourceGroups": [
 		"Default"

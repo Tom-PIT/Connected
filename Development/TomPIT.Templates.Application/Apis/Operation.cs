@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
@@ -8,9 +9,11 @@ using TomPIT.Services;
 
 namespace TomPIT.Application.Apis
 {
-	[DefaultEvent(nameof(Invoke))]
 	[DomElement("TomPIT.Application.Design.Dom.ApiOperationElement, TomPIT.Application.Design")]
 	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = EnvironmentMode.Runtime)]
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[Syntax(SyntaxAttribute.CSharp)]
+	[ComponentCreatedHandler("TomPIT.Development.Handlers.ApiOperationCreateHandler, TomPIT.Development")]
 	public class Operation : ConfigurationElement, IApiOperation
 	{
 		private IServerEvent _invoke = null;
@@ -118,5 +121,8 @@ namespace TomPIT.Application.Apis
 				return _metric;
 			}
 		}
+
+		[Browsable(false)]
+		public Guid TextBlob { get; set; }
 	}
 }

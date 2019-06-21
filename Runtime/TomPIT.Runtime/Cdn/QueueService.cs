@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel.Workers;
 using TomPIT.Connectivity;
@@ -14,12 +15,12 @@ namespace TomPIT.Cdn
 		{
 		}
 
-		public void Enqueue(IQueueWorker worker, JObject arguments)
+		public void Enqueue<T>(IQueueWorker worker, T arguments)
 		{
 			Enqueue(worker, arguments, TimeSpan.FromDays(2), TimeSpan.Zero);
 		}
 
-		public void Enqueue(IQueueWorker worker, JObject arguments, TimeSpan expire, TimeSpan nextVisible)
+		public void Enqueue<T>(IQueueWorker worker, T arguments, TimeSpan expire, TimeSpan nextVisible)
 		{
 			var url = Connection.CreateUrl("Queue", "Enqueue");
 			var e = new JObject
@@ -30,7 +31,7 @@ namespace TomPIT.Cdn
 			};
 
 			if (arguments != null)
-				e.Add("arguments", arguments);
+				e.Add("arguments", Types.Serialize(arguments));
 
 			Connection.Post(url, e);
 		}

@@ -1,8 +1,9 @@
-﻿using TomPIT.Services;
+﻿using TomPIT.Data;
+using TomPIT.Services;
 
 namespace TomPIT.ComponentModel.QA
 {
-	public class TestEventArguments : EventArguments
+	public class TestEventArguments : DataModelContext
 	{
 		private Generator _generator = null;
 

@@ -101,7 +101,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 			w.CreateParameter("@message", message);
 			w.CreateParameter("@queue", queue);
-			w.CreateParameter("@expire", Convert.ToInt32(expire.TotalSeconds));
+			w.CreateParameter("@expire", DateTime.UtcNow.Add(expire));
 			w.CreateParameter("@next_visible", DateTime.UtcNow.Add(nextVisible));
 			w.CreateParameter("@scope", scope);
 			w.CreateParameter("@created", DateTime.UtcNow);

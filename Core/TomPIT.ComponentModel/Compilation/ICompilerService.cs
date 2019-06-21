@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Microsoft.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;

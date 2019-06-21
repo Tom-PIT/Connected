@@ -1,8 +1,9 @@
-﻿using TomPIT.Services;
+﻿using TomPIT.Data;
+using TomPIT.Services;
 
 namespace TomPIT.ComponentModel
 {
-	public class CancelEventArguments : EventArguments
+	public class CancelEventArguments : DataModelContext
 	{
 		public CancelEventArguments(IExecutionContext sender) : base(sender)
 		{

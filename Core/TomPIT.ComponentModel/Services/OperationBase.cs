@@ -5,19 +5,52 @@ using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text;
 using TomPIT.Annotations;
-using TomPIT.Services;
+using TomPIT.ComponentModel.Apis;
+using TomPIT.Data;
+using TomPIT.Services.Context;
 
-namespace TomPIT.Data
+namespace TomPIT.Services
 {
-	public abstract class RequestArguments : RequestEntity
+	public abstract class OperationBase: IOperationBase, IUniqueValueProvider
 	{
-
-		protected RequestArguments(IDataModelContext context)
+		protected OperationBase(IDataModelContext context)
 		{
 			Context = context;
 		}
 
+		protected OperationBase(IDataModelContext context, IApiTransaction transaction)
+		{
+			Context = context;
+			Transaction = transaction;
+		}
+
 		protected IDataModelContext Context { get; }
+		protected IApiTransaction Transaction { get; }
+		public void Validate(IDataModelContext context, List<ValidationResult> results)
+		{
+			OnValidating(results);
+		}
+
+		protected virtual void OnValidating(List<ValidationResult> results)
+		{
+
+		}
+
+		protected virtual List<object> OnProvideUniqueValues(string propertyName)
+		{
+			return null;
+		}
+
+		bool IUniqueValueProvider.IsUnique(IDataModelContext context, string propertyName)
+		{
+			return IsValueUnique(propertyName);
+		}
+
+		protected virtual bool IsValueUnique(string propertyName)
+		{
+			return true;
+		}
+
 		public void Validate()
 		{
 			var results = new List<ValidationResult>();
@@ -48,6 +81,9 @@ namespace TomPIT.Data
 
 			foreach (var property in properties)
 			{
+				if (property.GetMethod == null || !property.GetMethod.IsPublic)
+					continue;
+
 				var skipAtt = property.FindAttribute<SkipValidationAttribute>();
 
 				if (skipAtt != null)
@@ -132,6 +168,43 @@ namespace TomPIT.Data
 			{
 				return null;
 			}
+		}
+
+		public IApiTransaction BeginTransaction()
+		{
+			return new ApiTransaction(Context)
+			{
+				Id = Guid.NewGuid()
+			};
+		}
+
+		public IApiTransaction BeginTransaction(string name)
+		{
+			return new ApiTransaction(Context)
+			{
+				Id = Guid.NewGuid(),
+				Name = name
+			};
+		}
+
+		public void Commit()
+		{
+			OnCommit();
+		}
+
+		protected virtual void OnCommit()
+		{
+
+		}
+
+		public void Rollback()
+		{
+			OnRollback();
+		}
+
+		protected virtual void OnRollback()
+		{
+
 		}
 	}
 }

@@ -10,5 +10,7 @@ namespace TomPIT.Data
 		string Serialize();
 		void Deserialize(JObject state);
 		void DataSource(JObject state);
+
+		T Evolve<T>() where T : class, IDataEntity;
 	}
 }

@@ -27,7 +27,7 @@ namespace TomPIT.Cdn
 			Connection.Post(u, e);
 		}
 
-		public void TriggerEvent(ComponentModel.Cdn.ISubscription handler, string eventName, string primaryKey, string topic, JObject arguments)
+		public void TriggerEvent<T>(ComponentModel.Cdn.ISubscription handler, string eventName, string primaryKey, string topic, T arguments)
 		{
 			var u = Connection.CreateUrl("Subscription", "EnqueueEvent");
 			var e = new JObject

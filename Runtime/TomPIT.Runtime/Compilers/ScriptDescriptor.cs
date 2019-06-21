@@ -13,5 +13,6 @@ namespace TomPIT.Compilers
 		public List<IDiagnostic> Errors { get; set; }
 		public Guid MicroService { get; set; }
 		public Guid Id { get; set; }
+		public string Assembly { get; set; }
 	}
 }

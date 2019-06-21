@@ -7,19 +7,20 @@ using TomPIT.ComponentModel;
 
 namespace TomPIT.Application
 {
-    [Create("Class")]
-    [DomDesigner(DomDesignerAttribute.TextDesigner)]
-    [DomElement("TomPIT.Application.Design.Dom.ViewElement, TomPIT.Application.Design")]
-    [Syntax(SyntaxAttribute.CSharp)]
-    public class Script : ComponentConfiguration, IScript
-    {
-        public const string ComponentCategory = "Script";
+	[Create("Class")]
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[DomElement("TomPIT.Application.Design.Dom.ViewElement, TomPIT.Application.Design")]
+	[Syntax(SyntaxAttribute.CSharp)]
+	[ComponentCreatedHandler("TomPIT.Development.Handlers.ScriptCreateHandler, TomPIT.Development")]
+	public class Script : ComponentConfiguration, IScript
+	{
+		public const string ComponentCategory = "Script";
 
-        [PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
-        [DefaultValue(ElementScope.Internal)]
-        public ElementScope Scope { get; set; } = ElementScope.Internal;
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		[DefaultValue(ElementScope.Internal)]
+		public ElementScope Scope { get; set; } = ElementScope.Internal;
 
-        [Browsable(false)]
-        public Guid TextBlob { get; set; }
-    }
+		[Browsable(false)]
+		public Guid TextBlob { get; set; }
+	}
 }

@@ -1,8 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Apis;
 using TomPIT.Connectivity;
 
 namespace TomPIT.Compilers
@@ -79,9 +81,61 @@ namespace TomPIT.Compilers
 					return LoadLibrary(tokens[0], tokens[1]);
 			}
 			else if (tokens.Length == 3)
-				return LoadScript(tokens[0], tokens[1], tokens[2]);
+				return LoadApi(tokens[0], tokens[1], tokens[2]);
 			else
 				return null;
+		}
+
+		private Stream LoadApi(string microService, string api, string operation)
+		{
+			IMicroService ms = null;
+
+			if (!string.IsNullOrWhiteSpace(microService))
+			{
+				ms = Connection.GetService<IMicroServiceService>().Select(microService);
+
+				if (ms == null)
+					throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})");
+
+				if (ms.Token != MicroService)
+				{
+					var originMicroService = Connection.GetService<IMicroServiceService>().Select(MicroService);
+
+					originMicroService.ValidateMicroServiceReference(Connection, ms.Name);
+				}
+			}
+			else
+				ms = Connection.GetService<IMicroServiceService>().Select(MicroService);
+
+			if (!(Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "Api", api) is IApi config))
+				return LoadScript(microService, api, operation);
+
+			if (config.MicroService(Connection) != MicroService)
+			{
+				if (config.Scope != ElementScope.Public)
+					throw new RuntimeException(SR.ErrScopeError);
+			}
+
+			var opName = operation.EndsWith(".csx") ? operation.Substring(0, operation.Length - 4) : operation;
+
+			var op = config.Operations.FirstOrDefault(f => string.Compare(f.Name, opName, true) == 0);
+
+			if (op == null)
+				throw new RuntimeException($"{SR.ErrComponentNotFound} ({api}/{operation})");
+
+			if (config.MicroService(Connection) != MicroService)
+			{
+				if (op.Scope != ElementScope.Public)
+					throw new RuntimeException(SR.ErrScopeError);
+			}
+
+			var content = Connection.GetService<IComponentService>().SelectText(op.MicroService(Connection), op.Invoke);
+
+			if (string.IsNullOrWhiteSpace(content))
+				return null;
+
+			return new MemoryStream(Encoding.UTF8.GetBytes(content));
+
 		}
 
 		private Stream LoadScript(string microService, string library, string script)

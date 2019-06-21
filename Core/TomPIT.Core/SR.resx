@@ -954,4 +954,7 @@
   <data name="StatusBadRequestMessage" xml:space="preserve">
     <value>Request has malformed or missing data.</value>
   </data>
+  <data name="ErrAsyncPathExpected" xml:space="preserve">
+    <value>No AsyncPathAttribute set. Please add AsyncPathAttribute with a valid Path property set on this class.</value>
+  </data>
 </root>

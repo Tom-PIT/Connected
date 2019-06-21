@@ -1,6 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
+using System.Reflection;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
@@ -81,6 +83,31 @@ namespace TomPIT.Services.Context
 				}
 
 				var args = new OperationInvokeArguments(ctx, op, arguments, transaction);
+				var operationType = FindOperationType(microService, op);
+
+				if (operationType != null)
+				{
+					if(HasReturnValue(operationType))
+					{
+						var opInstance = operationType.CreateInstance<IOperationBase>(new object[] { args });
+
+						if (arguments != null)
+							Types.Populate(JsonConvert.SerializeObject(arguments), opInstance);
+
+						var method = opInstance.GetType().GetMethod("Invoke");
+
+						return method.Invoke(opInstance, null);
+					}
+					else
+					{
+						var opInstance = operationType.CreateInstance<IOperation>(new object[] { args });
+
+						if (arguments != null)
+							Types.Populate(JsonConvert.SerializeObject(arguments), opInstance);
+
+						opInstance.Invoke();
+					}
+				}
 
 				var r = Context.Connection().GetService<ICompilerService>().Execute(microService, op.Invoke, this, args);
 
@@ -218,6 +245,36 @@ namespace TomPIT.Services.Context
 			}
 
 			return config;
+		}
+
+		private Type FindOperationType(Guid microService, IApiOperation operation )
+		{
+			var script = Context.Connection().GetService<ICompilerService>().GetScript(microService, operation);
+			var assembly = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
+			var target = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), script.Assembly, true) == 0);
+
+			return target.GetTypes().FirstOrDefault(f => string.Compare(f.Name, operation.Name, true) == 0);
+		}
+
+		private bool IsOperation(Type type)
+		{
+			if (type == null)
+				return false;
+
+			if (type.ImplementsInterface<IOperation>())
+				return true;
+
+			return HasReturnValue(type);
+		}
+
+		private bool HasReturnValue(Type type)
+		{
+			if (type == null)
+				return false;
+
+			return type.GetInterfaces().Any(f =>
+				f.IsGenericType &&
+				f.GetGenericTypeDefinition() == typeof(IOperation<>));
 		}
 	}
 }

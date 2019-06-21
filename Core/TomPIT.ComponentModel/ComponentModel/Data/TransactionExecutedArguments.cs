@@ -1,9 +1,10 @@
 ﻿using Newtonsoft.Json.Linq;
+using TomPIT.Data;
 using TomPIT.Services;
 
 namespace TomPIT.ComponentModel.Data
 {
-	public class TransactionExecutedArguments : EventArguments
+	public class TransactionExecutedArguments : DataModelContext
 	{
 		private JObject _returnValues = null;
 

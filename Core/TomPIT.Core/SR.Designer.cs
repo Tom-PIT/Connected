@@ -583,6 +583,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No AsyncPathAttribute set. Please add AsyncPathAttribute with a valid Path property set on this class..
+        /// </summary>
+        public static string ErrAsyncPathExpected {
+            get {
+                return ResourceManager.GetString("ErrAsyncPathExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid password.
         /// </summary>
         public static string ErrAuthenticationFailed {

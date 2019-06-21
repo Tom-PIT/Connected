@@ -8,12 +8,13 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Newtonsoft.Json.Linq;
+using TomPIT.Data;
 using TomPIT.Models;
 using TomPIT.Services;
 
 namespace TomPIT.ComponentModel.UI
 {
-	public class ViewInvokeArguments : EventArguments
+	public class ViewInvokeArguments : DataModelContext
 	{
 		private ViewDataDictionary<IRuntimeModel> _viewData = null;
 		private TempDataDictionary _tempData = null;

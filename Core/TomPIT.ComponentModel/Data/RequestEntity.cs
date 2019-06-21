@@ -23,11 +23,6 @@ namespace TomPIT.Data
 			return null;
 		}
 
-		List<object> IUniqueValueProvider.ProvideUniqueValues(IDataModelContext context, string propertyName)
-		{
-			return OnProvideUniqueValues(propertyName);
-		}
-
 		bool IUniqueValueProvider.IsUnique(IDataModelContext context, string propertyName)
 		{
 			return IsValueUnique(propertyName);

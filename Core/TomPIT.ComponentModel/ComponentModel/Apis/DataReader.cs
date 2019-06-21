@@ -69,6 +69,16 @@ namespace TomPIT.ComponentModel.Apis
 				if (!(array[0] is JObject row))
 					return default;
 
+				if (typeof(T).IsTypePrimitive())
+				{
+					if (row.Count == 0)
+						return default;
+
+					var property = row.First.Value<JProperty>();
+
+					return Types.Convert<T>(property.Value);
+				}
+
 				return Types.Deserialize<T>(Types.Serialize(row));
 			}
 			finally

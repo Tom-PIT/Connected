@@ -43,6 +43,15 @@ namespace TomPIT.Data
 
 		}
 
+		public T Evolve<T>() where T : class, IDataEntity
+		{
+			var instance = typeof(T).CreateInstance<T>();
+
+			instance.Deserialize(this);
+
+			return instance;
+		}
+
 		public static implicit operator JObject(DataEntity entity)
 		{
 			return Types.Deserialize<JObject>(entity.Serialize());

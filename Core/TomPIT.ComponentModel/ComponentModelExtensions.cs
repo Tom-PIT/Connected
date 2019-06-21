@@ -219,7 +219,7 @@ namespace TomPIT
 			var args = new OperationManifestArguments(context, operation);
 
 			context.Connection().GetService<ICompilerService>().Execute(operation.MicroService(context.Connection()), operation.Manifest, context, args);
-
+			
 			return args.Manifest;
 		}
 

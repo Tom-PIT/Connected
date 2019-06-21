@@ -19,18 +19,21 @@ namespace TomPIT.Services
 			OnEnqueued(this, EventArgs.Empty);
 		}
 
-		private void OnEnqueued(object sender, EventArgs e)
+		private async void OnEnqueued(object sender, EventArgs e)
 		{
 			if (_isRunning)
+			{
+				await Task.CompletedTask;
 				return;
+			}
 
-			new Task(() => Dequeue(), Cancel.Token, TaskCreationOptions.LongRunning).Start();
-		}
+			await Task.Run(async ()=> await Dequeue(), Cancel.Token);
+		} 
 
 		protected Dispatcher<T> Owner { get; }
 		protected CancellationTokenSource Cancel { get; }
 
-		private void Dequeue()
+		private Task Dequeue()
 		{
 			_isRunning = true;
 
@@ -64,6 +67,8 @@ namespace TomPIT.Services
 			}
 
 			_isRunning = false;
+
+			return Task.CompletedTask;
 		}
 
 		protected abstract void DoWork(T item);

@@ -1,4 +1,5 @@
-﻿using TomPIT.ComponentModel.Events;
+﻿using System;
+using TomPIT.ComponentModel.Events;
 
 namespace TomPIT.ComponentModel.Apis
 {
@@ -6,7 +7,7 @@ namespace TomPIT.ComponentModel.Apis
 	/// Each <code>IApiOperation</code> implements business logic which is based on the
 	/// input parameters and can return data in any data structure.
 	/// </summary>
-	public interface IApiOperation : IElement
+	public interface IApiOperation : ISourceCode
 	{
 		/// <summary>
 		/// This event serves as a pre invoke stage. If the <code>IApiOperation</code>
@@ -17,10 +18,12 @@ namespace TomPIT.ComponentModel.Apis
 		/// when deleting data. If <code>ICallback</code> is not activated inside this
 		/// <code>IEvent</code>, <code>IApiOperation</code> is called synchronously.
 		/// </summary>
+		[Obsolete]
 		IServerEvent Prepare { get; }
 		/// <summary>
 		/// This is the actual implementation of the <code>IApiOperation</code>.
 		/// </summary>
+		[Obsolete]
 		IServerEvent Invoke { get; }
 		/// <summary>
 		/// If <code>Saga</code> transaction is activated inside <code>Invoke</code> operation,
@@ -28,6 +31,7 @@ namespace TomPIT.ComponentModel.Apis
 		/// and any dependency <code>IApi</code>s calls. The <code>IEvent</code> is called in the
 		/// reversed order of the execution path.
 		/// </summary>
+		[Obsolete]
 		IServerEvent Commit { get; }
 		/// <summary>
 		/// If <code>Saga</code> transaction is activated inside <code>Invoke</code> operation,
@@ -35,10 +39,12 @@ namespace TomPIT.ComponentModel.Apis
 		/// on primary <code>IApoOperation</code> or any dependent <code>IApi</code>.The <code>IEvent</code> 
 		/// is called in the reversed order of the execution path.
 		/// </summary>
+		[Obsolete]
 		IServerEvent Rollback { get; }
 		/// <summary>
 		/// This event is called when client is querying documentation.
 		/// </summary>
+		[Obsolete]
 		IServerEvent Manifest { get; }
 		/// <summary>
 		/// The name of the operation. This is used as part of the identifier
