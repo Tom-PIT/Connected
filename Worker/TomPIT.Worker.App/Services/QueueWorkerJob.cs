@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Handlers;
 using TomPIT.ComponentModel.Workers;
 using TomPIT.Services;
 using TomPIT.Storage;
@@ -37,20 +38,19 @@ namespace TomPIT.Worker.Services
 		private void Invoke(IQueueMessage queue, JObject data)
 		{
 			var component = data.Required<Guid>("component");
-			var arguments = data.Optional<JObject>("arguments", null);
-			var configuration = Instance.GetService<IComponentService>().SelectConfiguration(component) as IQueueWorker;
+			var arguments = data.Optional<string>("arguments", null);
+			var configuration = Instance.GetService<IComponentService>().SelectConfiguration(component) as IQueueHandlerConfiguration;
 
 			if (configuration == null)
 				Instance.Connection.LogError(nameof(QueueWorkerJob), nameof(Invoke), $"{SR.ErrQueueWorkerNotFound} ({component})");
 
-			var ms = Instance.Connection.GetService<IMicroServiceService>().Select(configuration.MicroService(Instance.Connection));
+			var ms = Instance.Connection.GetService<IMicroServiceService>().Select(((IConfiguration)configuration).MicroService(Instance.Connection));
 			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, ms);
 			var metricId = ctx.Services.Diagnostic.StartMetric(configuration.Metrics, null);
 
 			try
 			{
-				var args = new QueueInvokeArgs(ctx, arguments);
-				var q = new Queue(args, configuration);
+				var q = new Queue(arguments, configuration);
 
 				q.Invoke();
 

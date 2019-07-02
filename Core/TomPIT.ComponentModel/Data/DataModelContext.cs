@@ -10,7 +10,7 @@ using TomPIT.Services.Context;
 
 namespace TomPIT.Data
 {
-	public abstract class DataModelContext : EventArguments, IDataModelContext
+	public class DataModelContext : EventArguments, IDataModelContext
 	{
 		internal const string DataSourceProvider = "TomPIT.Design.CodeAnalysis.Providers.DataSourceProvider, TomPIT.Design";
 		internal const string DataSourceParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.DataSourceParameterProvider, TomPIT.Design";

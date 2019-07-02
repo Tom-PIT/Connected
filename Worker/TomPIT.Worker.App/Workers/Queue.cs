@@ -2,25 +2,40 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TomPIT.Cdn;
 using TomPIT.Compilation;
+using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Handlers;
 using TomPIT.ComponentModel.Workers;
+using TomPIT.Data;
+using TomPIT.Services;
 
 namespace TomPIT.Worker.Workers
 {
 	public class Queue
 	{
-		public Queue(QueueInvokeArgs e, IQueueWorker worker)
+		public Queue(string args, IQueueHandlerConfiguration handler)
 		{
-			Args = e;
-			Worker = worker;
+			Args = args;
+			Handler = handler;
 		}
 
-		private QueueInvokeArgs Args { get; }
-		private IQueueWorker Worker { get; }
+		private string Args { get; }
+		private IQueueHandlerConfiguration Handler { get; }
 
 		public void Invoke()
 		{
-			Instance.GetService<ICompilerService>().Execute(Worker.MicroService(Instance.Connection), Worker.Invoke, this, Args);
+			var ms = ((IConfiguration)Handler).MicroService(Instance.Connection);
+
+			var queueType = Instance.GetService<ICompilerService>().ResolveType(ms, Handler, Handler.ComponentName(Instance.Connection));
+			var ctx = ExecutionContext.Create(Instance.Connection.Url, Instance.GetService<IMicroServiceService>().Select(ms));
+			var dataCtx = new DataModelContext(ctx);
+			var instance = queueType.CreateInstance<IQueueHandler>(new object[] {dataCtx });
+
+			if (!string.IsNullOrWhiteSpace(Args))
+				Types.Populate(Args, instance);
+
+			instance.Invoke();
 		}
 	}
 }

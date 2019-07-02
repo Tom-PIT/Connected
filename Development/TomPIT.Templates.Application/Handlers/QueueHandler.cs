@@ -5,29 +5,19 @@ using System.Text;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Events;
+using TomPIT.ComponentModel.Handlers;
 using TomPIT.ComponentModel.Workers;
 
 namespace TomPIT.Application.Workers
 {
-	[DefaultEvent(nameof(Invoke))]
-	public class QueueWorker : ComponentConfiguration, IQueueWorker
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[Syntax(SyntaxAttribute.CSharp)]
+	public class QueueHandlerConfiguration : ComponentConfiguration, IQueueHandlerConfiguration
 	{
 		public const string ComponentCategory = "Queue";
 
 		private IServerEvent _invoke = null;
 		private IMetricConfiguration _metric = null;
-
-		[EventArguments(typeof(QueueInvokeArgs))]
-		public IServerEvent Invoke
-		{
-			get
-			{
-				if (_invoke == null)
-					_invoke = new ServerEvent { Parent = this };
-
-				return _invoke;
-			}
-		}
 
 		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
 		public IMetricConfiguration Metrics
@@ -40,5 +30,8 @@ namespace TomPIT.Application.Workers
 				return _metric;
 			}
 		}
+
+		[Browsable(false)]
+		public Guid TextBlob { get; set; }
 	}
 }

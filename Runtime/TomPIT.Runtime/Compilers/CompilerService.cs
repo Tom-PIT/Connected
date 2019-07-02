@@ -601,6 +601,26 @@ namespace TomPIT.Compilers
 			return processor.Result;
 		}
 
+		public Type ResolveType(Guid microService, ISourceCode sourceCode, string typeName)
+		{
+			var script = Connection.GetService<ICompilerService>().GetScript(microService, sourceCode);
+
+			if (script != null && script.Assembly == null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
+			{
+				var sb = new StringBuilder();
+
+				foreach (var error in script.Errors)
+					sb.AppendLine(error.Message);
+
+				throw new RuntimeException(typeName, sb.ToString());
+			}
+
+			var assembly = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
+			var target = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), script.Assembly, true) == 0);
+
+			return target?.GetTypes().FirstOrDefault(f => string.Compare(f.Name, typeName, true) == 0);
+		}
+
 		private static ConcurrentDictionary<Guid, List<Guid>> ForwardReferences { get { return _forwardReferences.Value; } }
 		private static ConcurrentDictionary<Guid, List<Guid>> ReverseReferences { get { return _reverseReferences.Value; } }
 		private static ConcurrentDictionary<Guid, ManualResetEvent> ScriptCreateState { get { return _scriptCreateState.Value; } }

@@ -76,7 +76,7 @@ namespace TomPIT.Services.Context
 			try
 			{
 				var args = new OperationInvokeArguments(ctx, op, arguments, transaction);
-				var operationType = FindOperationType(microService, op);
+				var operationType = Context.Connection().GetService<ICompilerService>().ResolveType(microService, op, op.Name);
 
 				if (operationType != null)
 				{
@@ -196,37 +196,6 @@ namespace TomPIT.Services.Context
 			}
 
 			return config;
-		}
-
-		private Type FindOperationType(Guid microService, IApiOperation operation)
-		{
-			var script = Context.Connection().GetService<ICompilerService>().GetScript(microService, operation);
-
-			if (script != null && script.Assembly == null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
-			{
-				var sb = new StringBuilder();
-
-				foreach (var error in script.Errors)
-					sb.AppendLine(error.Message);
-
-				throw new RuntimeException(operation.Name, sb.ToString());
-			}
-
-			var assembly = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
-			var target = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), script.Assembly, true) == 0);
-
-			return target?.GetTypes().FirstOrDefault(f => string.Compare(f.Name, operation.Name, true) == 0);
-		}
-
-		private bool IsOperation(Type type)
-		{
-			if (type == null)
-				return false;
-
-			if (type.ImplementsInterface<IOperation>())
-				return true;
-
-			return HasReturnValue(type);
 		}
 
 		private bool HasReturnValue(Type type)

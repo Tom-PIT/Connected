@@ -5,6 +5,7 @@ using TomPIT.Annotations;
 using TomPIT.Cdn;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Events;
+using TomPIT.ComponentModel.Handlers;
 using TomPIT.ComponentModel.Workers;
 using TomPIT.Environment;
 
@@ -96,18 +97,18 @@ namespace TomPIT.Services.Context
 
 		public void Enqueue<T>(string queue, T arguments)
 		{
-			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Queue", queue) is IQueueWorker worker))
+			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Queue", queue) is IQueueHandlerConfiguration handler))
 				throw new RuntimeException(SR.ErrQueueWorkerNotFound);
 
-			Context.Connection().GetService<IQueueService>().Enqueue(worker, arguments);
+			Context.Connection().GetService<IQueueService>().Enqueue(handler, arguments);
 		}
 
 		public void Enqueue<T>(string queue, T arguments, TimeSpan expire, TimeSpan nextVisible)
 		{
-			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Queue", queue) is IQueueWorker worker))
+			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Queue", queue) is IQueueHandlerConfiguration handler))
 				throw new RuntimeException(SR.ErrQueueWorkerNotFound);
 
-			Context.Connection().GetService<IQueueService>().Enqueue(worker, arguments, expire, nextVisible);
+			Context.Connection().GetService<IQueueService>().Enqueue(handler, arguments, expire, nextVisible);
 		}
 
 		public void SubscriptionEvent([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, TomPIT.Design")] string eventName, string primaryKey)

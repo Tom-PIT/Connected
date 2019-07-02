@@ -6,7 +6,7 @@ using TomPIT.ComponentModel.Events;
 
 namespace TomPIT.Services
 {
-	public interface IOperationBase
+	public interface IOperationBase : IProcessHandler
 	{
 		IApiTransaction BeginTransaction();
 		IApiTransaction BeginTransaction(string name);

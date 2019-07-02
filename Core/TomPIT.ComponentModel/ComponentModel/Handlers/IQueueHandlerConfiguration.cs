@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using TomPIT.ComponentModel.Events;
 
-namespace TomPIT.ComponentModel.Workers
+namespace TomPIT.ComponentModel.Handlers
 {
-	public interface IQueueWorker : IConfiguration
+	public interface IQueueHandlerConfiguration : IConfiguration, ISourceCode
 	{
 		IMetricConfiguration Metrics { get; }
-		IServerEvent Invoke { get; }
 	}
 }
