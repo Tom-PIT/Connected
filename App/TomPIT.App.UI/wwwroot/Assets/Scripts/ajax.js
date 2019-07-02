@@ -47,9 +47,9 @@
 
 				if (!options.onQueryContinueProgress(request, status, options.progress)) {
 					if (options.dependencies) {
-						$.each(options.dependencies, function (index, value) {
-							$(value).prop('disabled', false);
-						})
+                        $.each(options.dependencies, function (index, value) {
+                            $(value).prop('disabled', false);
+                        });
 					}
 
 					if (options.progress)

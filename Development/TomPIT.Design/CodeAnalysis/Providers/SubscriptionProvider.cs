@@ -10,5 +10,6 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 		}
 
 		protected override string ComponentCategory => "Subscription";
+		protected override bool FullyQualified => true;
 	}
 }

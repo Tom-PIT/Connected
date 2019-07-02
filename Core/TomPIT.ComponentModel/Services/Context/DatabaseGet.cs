@@ -140,9 +140,11 @@ namespace TomPIT.Services.Context
 			return r;
 		}
 
-		public IDataConnection OpenConnection(Guid microService, string connection)
+		public IDataConnection OpenConnection(string connection)
 		{
-			var component = Context.Connection().GetService<IComponentService>().SelectComponent(microService, "Connection", connection);
+			var tokens = connection.Split('/');
+			var ms = Context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+			var component = Context.Connection().GetService<IComponentService>().SelectComponent(ms.Token, "Connection", tokens[1]);
 
 			if (component == null)
 				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionNotFound, connection)).WithMetrics(Context);

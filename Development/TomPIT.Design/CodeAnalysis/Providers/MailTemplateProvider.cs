@@ -13,5 +13,6 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 		}
 
 		protected override string ComponentCategory => "MailTemplate";
+		protected override bool FullyQualified => true;
 	}
 }

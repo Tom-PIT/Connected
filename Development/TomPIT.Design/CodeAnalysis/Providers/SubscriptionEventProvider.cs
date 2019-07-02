@@ -13,7 +13,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 		}
 
 		protected override string ComponentCategory => "Subscription";
-
+		protected override bool FullyQualified => true;
 		protected override void ProvideComponentLiterals(CodeAnalysisArgs e, List<ICodeAnalysisResult> items, IComponent component)
 		{
 			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(component.Token) is ISubscription config))
@@ -24,7 +24,8 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 				if (string.IsNullOrWhiteSpace(ev.Name))
 					continue;
 
-				var text = string.Format("{0}/{1}", component.Name, ev.Name);
+				var ms = Context.Connection().GetService<IMicroServiceService>().Select(ev.MicroService(Context.Connection()));
+				var text = $"{ms.Name}/{component.Name}/{ev.Name}";
 
 				items.Add(new CodeAnalysisResult(text, text, null));
 			}

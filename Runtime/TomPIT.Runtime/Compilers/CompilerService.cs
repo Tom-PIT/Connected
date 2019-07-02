@@ -269,7 +269,7 @@ namespace TomPIT.Compilers
 
 		private void Compile(IScriptDescriptor script, CompilerScript compiler)
 		{
-			var errors = compiler.Script.Compile();
+			var errors = compiler.Script == null ? ImmutableArray<Microsoft.CodeAnalysis.Diagnostic>.Empty : compiler.Script.Compile();
 			var diagnostics = new List<IDiagnostic>();
 
 			foreach(var error in errors)

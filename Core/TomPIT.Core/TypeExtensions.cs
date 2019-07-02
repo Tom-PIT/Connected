@@ -95,6 +95,17 @@ namespace TomPIT
 			return pi.GetIndexParameters().Length > 0;
 		}
 
+		public static object CreateInstance(this Type type, object[] ctorArgs)
+		{
+			if (type == null)
+				return null;
+
+			if (ctorArgs == null)
+				return CreateInstanceInternal(type);
+			else
+				return CreateInstanceInternal(type, BindingFlags.CreateInstance, ctorArgs);
+		}
+
 		public static T CreateInstance<T>(this Type type, object[] ctorArgs) where T : class
 		{
 			if (type == null)

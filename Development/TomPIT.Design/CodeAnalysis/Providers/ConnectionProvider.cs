@@ -13,7 +13,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 		}
 
 		protected override string ComponentCategory => "Connection";
-
+		protected override bool FullyQualified => true;
 		public override List<ICodeAnalysisResult> ProvideHover(IExecutionContext context, CodeAnalysisArgs e)
 		{
 			var connection = context.Connection().GetService<IComponentService>().SelectComponent(e.Component.MicroService, ComponentCategory, e.ExpressionText);

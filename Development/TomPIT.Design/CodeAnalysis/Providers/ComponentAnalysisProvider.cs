@@ -18,7 +18,17 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
 		public override ICodeLensAnalysisResult CodeLens(IExecutionContext context, CodeAnalysisArgs e)
 		{
-			var c = context.Connection().GetService<IComponentService>().SelectComponent(e.Component.MicroService, ComponentCategory, e.ExpressionText);
+			var component = e.ExpressionText;
+
+			if (FullyQualified)
+			{
+				var tokens = component.Split(new char[] { '/' }, 2);
+
+				if (tokens.Length == 2)
+					component = tokens[1];
+			}
+
+			var c = context.Connection().GetService<IComponentService>().SelectComponent(e.Component.MicroService, ComponentCategory, component);
 
 			if (c == null)
 				return null;
@@ -27,7 +37,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			{
 				Command = new CodeLensCommand
 				{
-					Title = string.Format("{0} definition", c.Name),
+					Title = $"{c.Name} {ComponentCategory}",
 					Arguments = new CodeLensArguments
 					{
 						MicroService = c.MicroService.ToString(),
@@ -52,11 +62,18 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
 		protected virtual void ProvideComponentLiterals(CodeAnalysisArgs e, List<ICodeAnalysisResult> items, IComponent component)
 		{
-			if (string.IsNullOrWhiteSpace(e.ExpressionText) || component.Name.ToLowerInvariant().Contains(e.ExpressionText.ToLowerInvariant()))
+			if (FullyQualified)
+			{
+				var ms = Context.Connection().GetService<IMicroServiceService>().Select(component.MicroService);
+
+				items.Add(new CodeAnalysisResult($"{ms.Name}/{component.Name}", $"{ms.Name}/{component.Name}", null));
+			}
+			else
 				items.Add(new CodeAnalysisResult(component.Name, component.Name, null));
 		}
 
 		protected abstract string ComponentCategory { get; }
+		protected abstract bool FullyQualified { get; }
 
 		protected string GetConnection(IExecutionContext context, IComponent component, Guid connection)
 		{

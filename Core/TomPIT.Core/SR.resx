@@ -955,6 +955,12 @@
     <value>Request has malformed or missing data.</value>
   </data>
   <data name="ErrAsyncPathExpected" xml:space="preserve">
-    <value>No AsyncPathAttribute set. Please add AsyncPathAttribute with a valid Path property set on this class.</value>
+    <value>No AsyncPath set. Please set asyncPath argument in the constructor.</value>
+  </data>
+  <data name="ErrExtenderNotFound" xml:space="preserve">
+    <value>Extender not found. Are you missing a #load directive to the extender?</value>
+  </data>
+  <data name="ErrExtenderNotSupported" xml:space="preserve">
+    <value>Extender not supported</value>
   </data>
 </root>

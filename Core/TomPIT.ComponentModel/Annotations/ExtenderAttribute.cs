@@ -5,13 +5,13 @@ using System.Text;
 namespace TomPIT.Annotations
 {
 	[AttributeUsage(AttributeTargets.Class)]
-	public class AsyncPathAttribute : Attribute
+	public class ExtenderAttribute : Attribute
 	{
-		public AsyncPathAttribute(string path)
+		public ExtenderAttribute(Type extender)
 		{
-			Path = path;
+			Extender = extender;
 		}
 
-		public string Path { get; }
+		public Type Extender { get; }
 	}
 }

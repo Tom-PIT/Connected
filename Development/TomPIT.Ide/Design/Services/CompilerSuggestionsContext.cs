@@ -8,7 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using TomPIT.Analysis;
 using TomPIT.Annotations;
+using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Apis;
 using TomPIT.Services;
 
 namespace TomPIT.Design.Services
@@ -352,13 +355,48 @@ namespace TomPIT.Design.Services
 		{
 			var r = new List<ISuggestion>();
 
-			var loads = model.SyntaxTree.GetRoot().DescendantNodes(f => f is LoadDirectiveTriviaSyntax);
+			var loads = model.SyntaxTree.GetRoot().FindTrivia(span.Start);
 
-			foreach(var load in loads)
+			if(loads !=null && loads.IsKind(SyntaxKind.LoadDirectiveTrivia))
 			{
-				if (load.Span.IntersectsWith(span))
+				var scripts = Context.Connection().GetService<IComponentService>().QueryComponents(MicroService, "Script");
+
+				foreach (var script in scripts)
+					AddReference(r, script.Name);
+
+				var apis = Context.Connection().GetService<IComponentService>().QueryConfigurations(MicroService, "Api");
+
+				foreach(IApi api in apis)
 				{
-					//var scripts = Context.Connection().GetService<>
+					var apiName = api.ComponentName(Context);
+
+					foreach (var operation in api.Operations)
+						AddReference(r, $"{apiName}/{operation.Name}");
+				}
+
+				var refs = Context.Connection().GetService<IDiscoveryService>().References(MicroService);
+
+				foreach(var reference in refs.MicroServices)
+				{
+					var ms = Context.Connection().GetService<IMicroServiceService>().Select(reference.MicroService);
+
+					if (ms == null)
+						continue;
+
+					scripts = Context.Connection().GetService<IComponentService>().QueryComponents(ms.Token, "Script");
+
+					foreach (var script in scripts)
+						AddReference(r, $"{ms.Name}/{script.Name}");
+
+					apis = Context.Connection().GetService<IComponentService>().QueryConfigurations(ms.Token, "Api");
+
+					foreach (IApi api in apis)
+					{
+						var apiName = api.ComponentName(Context);
+
+						foreach (var operation in api.Operations)
+							AddReference(r, $"{ms.Name}/{apiName}/{operation.Name}");
+					}
 				}
 			}
 
@@ -366,6 +404,22 @@ namespace TomPIT.Design.Services
 				return null;
 
 			return r;
+		}
+
+		private void AddReference(List<ISuggestion> items, string identifier)
+		{
+			var s = new Suggestion
+			{
+				FilterText = identifier,
+				InsertText = $"\"{identifier}\"",
+				Kind = Suggestion.Reference,
+				Label = identifier,
+				SortText = identifier
+			};
+
+			s.CommitCharacters.AddRange(new List<string> { "\t", "\"", "\r" });
+
+			items.Add(s);
 		}
 	}
 }

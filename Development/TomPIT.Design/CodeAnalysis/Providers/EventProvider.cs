@@ -46,13 +46,9 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 					continue;
 
 				var key = i.Name;
+				var ms = Context.Connection().GetService<IMicroServiceService>().Select(i.MicroService);
 
-				if (i.MicroService != context.MicroService.Token)
-				{
-					var ms = Context.Connection().GetService<IMicroServiceService>().Select(i.MicroService);
-
-					key = string.Format("{0}/{1}", ms.Name, i.Name);
-				}
+				key = string.Format("{0}/{1}", ms.Name, i.Name);
 
 				msApis.Add(new CodeAnalysisResult(key, key, null));
 			}

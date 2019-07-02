@@ -583,7 +583,7 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No AsyncPathAttribute set. Please add AsyncPathAttribute with a valid Path property set on this class..
+        ///   Looks up a localized string similar to No AsyncPath set. Please set asyncPath argument in the constructor..
         /// </summary>
         public static string ErrAsyncPathExpected {
             get {
@@ -993,6 +993,24 @@ namespace TomPIT {
         public static string ErrExpectedSelectedElement {
             get {
                 return ResourceManager.GetString("ErrExpectedSelectedElement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Extender not found. Are you missing a #load directive to the extender?.
+        /// </summary>
+        public static string ErrExtenderNotFound {
+            get {
+                return ResourceManager.GetString("ErrExtenderNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Extender not supported.
+        /// </summary>
+        public static string ErrExtenderNotSupported {
+            get {
+                return ResourceManager.GetString("ErrExtenderNotSupported", resourceCulture);
             }
         }
         

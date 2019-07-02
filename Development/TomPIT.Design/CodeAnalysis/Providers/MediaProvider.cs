@@ -13,7 +13,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 		}
 
 		protected override string ComponentCategory => "Media";
-
+		protected override bool FullyQualified => true;
 		protected override void ProvideComponentLiterals(CodeAnalysisArgs e, List<ICodeAnalysisResult> items, IComponent component)
 		{
 			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(component.Token) is IMediaResources config))
@@ -31,7 +31,8 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			if (string.IsNullOrWhiteSpace(file.FileName))
 				return;
 
-			var text = $"{path}/{file.FileName}";
+			var ms = Context.Connection().GetService<IMicroServiceService>().Select(file.MicroService(Context.Connection()));
+			var text = $"{ms.Name}/{path}/{file.FileName}";
 
 			items.Add(new CodeAnalysisResult(text, text, null));
 		}

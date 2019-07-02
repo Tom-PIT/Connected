@@ -60,5 +60,6 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 		}
 
 		protected override string ComponentCategory => "DataSource";
+		protected override bool FullyQualified => true;
 	}
 }

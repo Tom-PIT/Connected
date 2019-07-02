@@ -46,22 +46,25 @@ namespace TomPIT.Worker.Services
 			if (ed == null)
 				return;
 
-			var targets = EventHandlers.Query(ed.Name);
-
-			if (targets != null)
+			if (string.Compare(ed.Name, "$", true) != 0)
 			{
-				Parallel.ForEach(targets,
-					(f) =>
-					{
-						if (!(Instance.GetService<IComponentService>().SelectConfiguration(f.Item2) is IEventHandler configuration))
-							return;
+				var targets = EventHandlers.Query(ed.Name);
 
-						foreach (var i in configuration.Events)
+				if (targets != null)
+				{
+					Parallel.ForEach(targets,
+						(f) =>
 						{
-							if (ed.Name.Equals(i.Event, StringComparison.OrdinalIgnoreCase))
-								Invoke(ed, i);
-						}
-					});
+							if (!(Instance.GetService<IComponentService>().SelectConfiguration(f.Item2) is IEventHandler configuration))
+								return;
+
+							foreach (var i in configuration.Events)
+							{
+								if (ed.Name.Equals(i.Event, StringComparison.OrdinalIgnoreCase))
+									Invoke(ed, i);
+							}
+						});
+				}
 			}
 
 			if (ed.Callback != null)

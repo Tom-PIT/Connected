@@ -32,8 +32,22 @@ namespace TomPIT.Caching
 
 			if (!handler.Initialized)
 			{
-				handler.Initialized = true;
-				handler.Handler.Initialize();
+				lock (handler.Handler)
+				{
+					if (handler.Initialized)
+						return;
+
+					try
+					{
+						handler.Initialized = true;
+						handler.Handler.Initialize();
+					}
+					catch
+					{
+						handler.Initialized = false;
+						throw;
+					}
+				}
 			}
 			else
 				handler.Handler.Invalidate(e.Id);
@@ -266,8 +280,24 @@ namespace TomPIT.Caching
 
 			if (!handler.Initialized)
 			{
-				handler.Initialized = true;
-				handler.Handler.Initialize();
+				lock (handler.Handler)
+				{
+					if (handler.Initialized)
+						return;
+
+					try
+					{
+						handler.Initialized = true;
+						handler.Handler.Initialize();
+					}
+					catch
+					{
+						handler.Initialized = false;
+
+						throw;
+					}
+				}
+
 			}
 		}
 

@@ -108,7 +108,7 @@ namespace TomPIT.Data
 
 		public IDataConnection OpenConnection([CodeAnalysisProvider(ConnectionProvider)]string connection)
 		{
-			return DatabaseRead.OpenConnection(MicroService.Token, connection);
+			return DatabaseRead.OpenConnection(connection);
 		}
 
 		private DatabaseGet DatabaseRead

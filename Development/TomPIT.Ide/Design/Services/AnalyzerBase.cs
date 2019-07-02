@@ -291,11 +291,51 @@ namespace TomPIT.Design.Services
 			}
 
 			var argumentTypes = methodArgumentTypeNames.Select(typeName => Type.GetType(typeName));
+			var methods = Type.GetType(declaringTypeName).GetMethods();
 
-			if (argumentTypes.Count() > 0 && argumentTypes.Contains(null))
-				return null;
+			foreach (var method in methods)
+			{
+				if (string.Compare(method.Name, ms.Name, false) != 0)
+					continue;
 
-			return Type.GetType(declaringTypeName).GetMethod(methodName, ms.TypeParameters == null ? 0 : ms.TypeParameters.Length, argumentTypes.ToArray());
+				if (ms.TypeParameters != null && method.GetGenericArguments().Count() != ms.TypeParameters.Length)
+					continue;
+
+				if (method.GetParameters().Count() != ms.Parameters.Length)
+					continue;
+
+				bool match = true;
+				var parameters = method.GetParameters();
+
+				for(var i = 0;i<methodArgumentTypeNames.Count;i++)
+				{
+					var at = Types.GetType(methodArgumentTypeNames[i]);
+
+					if (at == null)
+						continue;
+
+					var pt = parameters[i].ParameterType;
+
+					if (pt.IsInterface)
+					{
+						if (at != pt && !at.ImplementsInterface(pt))
+						{
+							match = false;
+							break;
+						}
+					}
+					else if (at != pt && !at.IsSubclassOf(pt))
+					{
+						match = false;
+						break;
+					}
+				}
+
+				if (match)
+					return method;
+			}
+
+			return null;
 		}
 
 		protected MethodInfo GetMethodInfo(SemanticModel model, ArgumentSyntax syntax)

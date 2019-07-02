@@ -7,7 +7,7 @@ namespace TomPIT.Services.Context
 {
 	internal class ApiTransaction : IApiTransaction
 	{
-		private Stack<IApiOperation> _operations = null;
+		private Stack<IOperationBase> _operations = null;
 
 		public Guid Id { get; set; }
 		public string Name { get; set; }
@@ -19,12 +19,12 @@ namespace TomPIT.Services.Context
 
 		private IExecutionContext Context { get; }
 
-		private Stack<IApiOperation> Operations
+		private Stack<IOperationBase> Operations
 		{
 			get
 			{
 				if (_operations == null)
-					_operations = new Stack<IApiOperation>();
+					_operations = new Stack<IOperationBase>();
 
 				return _operations;
 			}
@@ -32,23 +32,37 @@ namespace TomPIT.Services.Context
 
 		public void Commit()
 		{
-			var apiInvoke = new ApiInvoke(Context);
-
 			while (Operations.Count > 0)
-				apiInvoke.Commit(Operations.Pop(), this);
+			{
+				try
+				{
+					Operations.Pop().Commit();
+				}
+				catch(Exception ex)
+				{
+					Context.Services.Diagnostic.Error("Api", nameof(ApiTransaction), ex.Message);
+				}
+			}
 		}
 
-		public void Notify(IApiOperation operation)
+		public void Notify(IOperationBase operation)
 		{
 			Operations.Push(operation);
 		}
 
 		public void Rollback()
 		{
-			var apiInvoke = new ApiInvoke(Context);
-
 			while (Operations.Count > 0)
-				apiInvoke.Rollback(Operations.Pop(), this);
+			{
+				try
+				{
+					Operations.Pop().Rollback();
+				}
+				catch(Exception ex)
+				{
+					Context.Services.Diagnostic.Error("Api", nameof(ApiTransaction), ex.Message);
+				}
+			}
 		}
 	}
 }

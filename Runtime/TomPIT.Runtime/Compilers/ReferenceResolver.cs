@@ -64,22 +64,17 @@ namespace TomPIT.Compilers
 		public override Stream OpenRead(string resolvedPath)
 		{
 			var tokens = resolvedPath.Split("/");
+			/*
+			 * possible references:
+			 * --------------------
+			 * - Microservice/Script (2)
+			 * - Microservice/Api/Operation (3)
+			 */
 
-			if (tokens.Length == 1)
-				return LoadLibrary(null, resolvedPath);
-			else if (tokens.Length == 2)
-			{
-				/*
-				 * first try with internal library. if not found then we'll try to load
-				 * public library from references microservice
-				 */
-				var component = Connection.GetService<IComponentService>().SelectComponent(MicroService, "Library", tokens[0]);
+			var ms = Connection.GetService<IMicroServiceService>().Select(tokens[0]);
 
-				if (component != null)
-					return LoadScript(null, tokens[0], tokens[1]);
-				else
-					return LoadLibrary(tokens[0], tokens[1]);
-			}
+			if (tokens.Length == 2)
+				return LoadScript(tokens[0], tokens[1]);
 			else if (tokens.Length == 3)
 				return LoadApi(tokens[0], tokens[1], tokens[2]);
 			else
@@ -108,7 +103,7 @@ namespace TomPIT.Compilers
 				ms = Connection.GetService<IMicroServiceService>().Select(MicroService);
 
 			if (!(Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "Api", api) is IApi config))
-				return LoadScript(microService, api, operation);
+				throw new RuntimeException($"{SR.ErrServiceOperationNotFound} ({microService}/{api}/{operation})");
 
 			if (config.MicroService(Connection) != MicroService)
 			{
@@ -116,9 +111,7 @@ namespace TomPIT.Compilers
 					throw new RuntimeException(SR.ErrScopeError);
 			}
 
-			var opName = operation.EndsWith(".csx") ? operation.Substring(0, operation.Length - 4) : operation;
-
-			var op = config.Operations.FirstOrDefault(f => string.Compare(f.Name, opName, true) == 0);
+			var op = config.Operations.FirstOrDefault(f => string.Compare(f.Name, TrimExtension(operation), true) == 0);
 
 			if (op == null)
 				throw new RuntimeException($"{SR.ErrComponentNotFound} ({api}/{operation})");
@@ -129,7 +122,7 @@ namespace TomPIT.Compilers
 					throw new RuntimeException(SR.ErrScopeError);
 			}
 
-			var content = Connection.GetService<IComponentService>().SelectText(op.MicroService(Connection), op.Invoke);
+			var content = Connection.GetService<IComponentService>().SelectText(op.MicroService(Connection), op);
 
 			if (string.IsNullOrWhiteSpace(content))
 				return null;
@@ -138,122 +131,117 @@ namespace TomPIT.Compilers
 
 		}
 
-		private Stream LoadScript(string microService, string library, string script)
+		private Stream LoadScript(string microService, string script)
 		{
 			IMicroService ms = null;
 
-			if (!string.IsNullOrWhiteSpace(microService))
+			ms = Connection.GetService<IMicroServiceService>().Select(microService);
+
+			if (ms == null)
+				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})");
+
+			if (ms.Token != MicroService)
 			{
-				ms = Connection.GetService<IMicroServiceService>().Select(microService);
+				var originMicroService = Connection.GetService<IMicroServiceService>().Select(MicroService);
 
-				if (ms == null)
-					throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})");
-
-				if (ms.Token != MicroService)
-				{
-					var originMicroService = Connection.GetService<IMicroServiceService>().Select(MicroService);
-
-					originMicroService.ValidateMicroServiceReference(Connection, ms.Name);
-				}
+				originMicroService.ValidateMicroServiceReference(Connection, ms.Name);
 			}
-			else
-				ms = Connection.GetService<IMicroServiceService>().Select(MicroService);
 
-			if (!(Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "Library", library) is ISourceCodeContainer c))
-				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrComponentNotFound, library));
+			if (!(Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "Script", TrimExtension(script)) is IScript s))
+				throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrComponentNotFound, microService, TrimExtension(script)));
 
-			if (c.MicroService(Connection) != MicroService)
+			if (((IConfiguration)s).MicroService(Connection) != MicroService)
 			{
-				if (c.Closest<ILibrary>().Scope != ElementScope.Public)
+				if (s.Scope != ElementScope.Public)
 					throw new RuntimeException(SR.ErrScopeError);
 			}
 
-			var txt = c.GetReference(script);
-
-			if (txt == null)
-				return null;
-
-			var content = Connection.GetService<IComponentService>().SelectText(c.MicroService(Connection), txt);
+			var content = Connection.GetService<IComponentService>().SelectText(((IConfiguration)s).MicroService(Connection), s);
 
 			if (string.IsNullOrWhiteSpace(content))
 				return null;
 
 			return new MemoryStream(Encoding.UTF8.GetBytes(content));
-		}
-
-		private Stream LoadLibrary(string microService, string library)
-		{
-			IMicroService ms = null;
-
-			if (!string.IsNullOrWhiteSpace(microService))
-			{
-				ms = Connection.GetService<IMicroServiceService>().Select(microService);
-
-				if (ms == null)
-					throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})");
-
-				if (ms.Token != MicroService)
-				{
-					var originMicroService = Connection.GetService<IMicroServiceService>().Select(MicroService);
-
-					originMicroService.ValidateMicroServiceReference(Connection, ms.Name);
-				}
-			}
-			else
-				ms = Connection.GetService<IMicroServiceService>().Select(MicroService);
-
-            if ((Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "Script", Path.GetFileNameWithoutExtension(library)) is IScript script))
-            {
-                if (((IConfiguration)script).MicroService(Connection) != MicroService)
-                {
-                    if (script.Scope != ElementScope.Public)
-                        throw new RuntimeException(SR.ErrScopeError);
-                }
-
-                var content = Connection.GetService<IComponentService>().SelectText(((IConfiguration)script).MicroService(Connection), script);
-
-                if (string.IsNullOrWhiteSpace(content))
-                    return null;
-
-                return new MemoryStream(Encoding.UTF8.GetBytes(content));
-            }
-            else
-            {
-                if (!(Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "Library", Path.GetFileNameWithoutExtension(library)) is ISourceCodeContainer container))
-                    throw new RuntimeException(SR.ErrSourceCodeContainerExected);
-
-                if (container.MicroService(Connection) != MicroService)
-                {
-                    if (container.Closest<ILibrary>().Scope != ElementScope.Public)
-                        throw new RuntimeException(SR.ErrScopeError);
-                }
-
-                var refs = container.References();
-                var sb = new StringBuilder();
-
-                foreach (var i in refs)
-                    sb.AppendLine($"#load \"{ms.Name}/{Path.GetFileNameWithoutExtension(library)}/{i}\"");
-
-                return new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
-            }
 		}
 
 		public override string ResolveReference(string path, string baseFilePath)
 		{
 			var resolvedPath = path;
 
-			if(!string.IsNullOrWhiteSpace(baseFilePath))
-			{
-				if(baseFilePath.Contains('/') && !path.Contains('/'))
-					resolvedPath = $"{baseFilePath.Split('/')[0]}/{path}";
+			/*
+			 * possible references:
+			 * --------------------
+			 * - Script (1)
+			 * - Microservice/Script (2)
+			 * - Api/Operation (2)
+			 * - Microservice/Api/Operation (3)
+			 */
+
+			var tokens = resolvedPath.Split(new char[] { '/' }, 3);
+			var fileName = tokens[tokens.Length - 1];
+			var extension = Path.GetExtension(fileName);
+			var ms = Connection.GetService<IMicroServiceService>().Select(MicroService);
+			IMicroService baseMs = null;
+
+			if (baseFilePath != null)
+			{ 
+				var baseMsToken = baseFilePath.Split('/')[0];
+
+				if (baseMsToken.EndsWith(".csx"))
+					baseMs = ms;
+				else
+				{
+					baseMs = Connection.GetService<IMicroServiceService>().Select(baseMsToken);
+
+					if (baseMs == null)
+						baseMs = ms;
+				}
 			}
 
-			var extension = Path.GetExtension(resolvedPath);
-
 			if (string.IsNullOrWhiteSpace(extension))
-				return string.Format("{0}.csx", resolvedPath);
+				tokens[tokens.Length - 1] = $"{fileName}.csx";
 
-			return resolvedPath;
+			/*
+			 * fully qualified
+			 */
+			if(tokens.Length == 3)
+				return $"{tokens[0]}/{tokens[1]}/{tokens[2]}";
+			else if (tokens.Length == 2)
+			{
+				if(string.IsNullOrWhiteSpace(baseFilePath))
+				{
+					var api = Connection.GetService<IComponentService>().SelectComponent(MicroService, "Api", tokens[0]);
+
+					if (api != null)
+						return $"{ms.Name}/{tokens[0]}/{tokens[1]}"; //api with ms
+					else
+						return $"{tokens[0]}/{tokens[1]}";//script
+				}
+				else
+				{
+					var api = Connection.GetService<IComponentService>().SelectComponent(baseMs.Token, "Api", tokens[0]);
+					
+					if (api != null)
+						return $"{baseMs.Name}/{tokens[0]}/{tokens[1]}"; //api with basems
+					else
+						return $"{tokens[0]}/{tokens[1]}";//script
+				}
+			}
+			else
+			{
+				/*
+				 * script
+				 */
+				if (string.IsNullOrWhiteSpace(baseFilePath))
+					return $"{ms.Name}/{tokens[0]}";
+				else
+					return $"{baseMs.Name}/{tokens[0]}";
+			}
+		}
+
+		private string TrimExtension(string fileName)
+		{
+			return fileName.EndsWith(".csx") ? fileName.Substring(0, fileName.Length - 4) : fileName;
 		}
 	}
 }

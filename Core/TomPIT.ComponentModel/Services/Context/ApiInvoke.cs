@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
@@ -16,7 +17,7 @@ namespace TomPIT.Services.Context
 		{
 		}
 
-		public object Execute(IApiExecutionScope sender, Guid microService, string api, string operation, JObject arguments, IApiTransaction transaction, bool explicitIdentifier, bool skipPrepare = false)
+		public object Execute(IApiExecutionScope sender, Guid microService, string api, string operation, JObject arguments, IApiTransaction transaction, bool explicitIdentifier, bool synchronous = false)
 		{
 			var ms = ResolveMicroService(sender, microService);
 			var ctx = new ExecutionContext(Context, Context.Connection().GetService<IMicroServiceService>().Select(microService));
@@ -74,20 +75,31 @@ namespace TomPIT.Services.Context
 
 			try
 			{
-				if (!skipPrepare)
-				{
-					var prepare = Prepare(ctx, op, arguments);
-
-					if (prepare.Async)
-						return null;
-				}
-
 				var args = new OperationInvokeArguments(ctx, op, arguments, transaction);
 				var operationType = FindOperationType(microService, op);
 
 				if (operationType != null)
 				{
-					if(HasReturnValue(operationType))
+					if (synchronous)
+					{
+						if (operationType.IsSubclassOf(typeof(AsyncOperation)))
+						{
+							var opInstance = operationType.CreateInstance<AsyncOperation>(new object[] { args });
+
+							opInstance.Async = false;
+
+							if (arguments != null)
+								Types.Populate(JsonConvert.SerializeObject(arguments), opInstance);
+
+							var method = opInstance.GetType().GetMethod("Invoke");
+
+							method.Invoke(opInstance, null);
+
+							return null;
+						}
+					}
+
+					if (HasReturnValue(operationType))
 					{
 						var opInstance = operationType.CreateInstance<IOperationBase>(new object[] { args });
 
@@ -106,27 +118,23 @@ namespace TomPIT.Services.Context
 							Types.Populate(JsonConvert.SerializeObject(arguments), opInstance);
 
 						opInstance.Invoke();
+
+						return null;
 					}
 				}
-
-				var r = Context.Connection().GetService<ICompilerService>().Execute(microService, op.Invoke, this, args);
-
-				if (transaction != null)
-					transaction.Notify(op);
-
-				if (r is JObject)
+				else
 				{
-					result = ((JObject)r).DeepClone() as JObject;
+					var r = Context.Connection().GetService<ICompilerService>().Execute(microService, op.Invoke, this, args);
 
-					return result;
+					if (r is JObject)
+					{
+						result = ((JObject)r).DeepClone() as JObject;
+
+						return result;
+					}
+
+					return r;
 				}
-
-				//result = new JObject
-				//{
-				//	{"result", r==null?"null":r.ToString() }
-				//};
-
-				return r;
 			}
 			catch (Exception ex)
 			{
@@ -166,63 +174,6 @@ namespace TomPIT.Services.Context
 			return microService;
 		}
 
-		private OperationPrepareArguments Prepare(IExecutionContext context, IApiOperation operation, JObject arguments)
-		{
-			var args = new OperationPrepareArguments(context, operation, arguments);
-
-			Context.Connection().GetService<ICompilerService>().Execute(operation.MicroService(Context.Connection()), operation.Prepare, this, args);
-
-			return args;
-		}
-
-		public void Commit(IApiOperation operation, IApiTransaction transaction)
-		{
-			var args = new OperationTransactionArguments(Context, operation, transaction);
-
-			try
-			{
-				Context.Connection().GetService<ICompilerService>().Execute(operation.MicroService(Context.Connection()), operation.Commit, this, args);
-			}
-			catch (Exception ex)
-			{
-				var le = new LogEntry
-				{
-					Category = "Api",
-					Component = operation.Configuration().Component,
-					Element = operation.Id,
-					Level = System.Diagnostics.TraceLevel.Error,
-					Message = ex.Message,
-					Source = "Commit"
-				};
-
-				Context.Connection().GetService<Diagnostics.ILoggingService>().Write(le);
-			}
-		}
-
-		public void Rollback(IApiOperation operation, IApiTransaction transaction)
-		{
-			var args = new OperationTransactionArguments(Context, operation, transaction);
-
-			try
-			{
-				Context.Connection().GetService<ICompilerService>().Execute(operation.MicroService(Context.Connection()), operation.Commit, this, args);
-			}
-			catch (Exception ex)
-			{
-				var le = new LogEntry
-				{
-					Category = "Api",
-					Component = operation.Configuration().Component,
-					Element = operation.Id,
-					Level = System.Diagnostics.TraceLevel.Error,
-					Message = ex.Message,
-					Source = "Rollback"
-				};
-
-				Context.Connection().GetService<Diagnostics.ILoggingService>().Write(le);
-			}
-		}
-
 		private IApi GetApi(Guid microService, string api, bool explicitIdentifier)
 		{
 			var component = Context.Connection().GetService<IComponentService>().SelectComponent(microService, "Api", api);
@@ -247,13 +198,24 @@ namespace TomPIT.Services.Context
 			return config;
 		}
 
-		private Type FindOperationType(Guid microService, IApiOperation operation )
+		private Type FindOperationType(Guid microService, IApiOperation operation)
 		{
 			var script = Context.Connection().GetService<ICompilerService>().GetScript(microService, operation);
+
+			if (script != null && script.Assembly == null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
+			{
+				var sb = new StringBuilder();
+
+				foreach (var error in script.Errors)
+					sb.AppendLine(error.Message);
+
+				throw new RuntimeException(operation.Name, sb.ToString());
+			}
+
 			var assembly = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
 			var target = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), script.Assembly, true) == 0);
 
-			return target.GetTypes().FirstOrDefault(f => string.Compare(f.Name, operation.Name, true) == 0);
+			return target?.GetTypes().FirstOrDefault(f => string.Compare(f.Name, operation.Name, true) == 0);
 		}
 
 		private bool IsOperation(Type type)

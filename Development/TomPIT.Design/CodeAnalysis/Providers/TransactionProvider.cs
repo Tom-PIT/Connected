@@ -54,5 +54,6 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 		}
 
 		protected override string ComponentCategory => "Transaction";
+		protected override bool FullyQualified => true;
 	}
 }

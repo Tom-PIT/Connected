@@ -22,6 +22,8 @@ namespace TomPIT.Services
 		{
 			Context = context;
 			Transaction = transaction;
+
+			Transaction.Notify(this);
 		}
 
 		protected IDataModelContext Context { get; }

@@ -18,6 +18,8 @@ namespace TomPIT.Services
 	public interface IOperation<TReturnValue> : IOperationBase
 	{
 		TReturnValue Invoke();
+
+		string Extender { get; set; }
 	}
 
 	public interface IOperation : IOperationBase

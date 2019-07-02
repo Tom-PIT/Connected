@@ -18,7 +18,6 @@ namespace TomPIT.ComponentModel.Apis
 		/// when deleting data. If <code>ICallback</code> is not activated inside this
 		/// <code>IEvent</code>, <code>IApiOperation</code> is called synchronously.
 		/// </summary>
-		[Obsolete]
 		IServerEvent Prepare { get; }
 		/// <summary>
 		/// This is the actual implementation of the <code>IApiOperation</code>.

@@ -10,17 +10,15 @@ using TomPIT.Services.Context;
 
 namespace TomPIT.Data
 {
-	public abstract class Cache<T, K> : IDataCachingHandler where T : class
+	public abstract class Cache<T, K> : DataModel, IDataCachingHandler where T : class
 	{
-		protected Cache(IDataModelContext context, string cacheKey)
+		protected Cache(IDataModelContext context, string cacheKey) : base(context)
 		{
-			Context = context;
 			CacheKey = cacheKey;
 
 			Connection.GetService<IDataCachingService>().RegisterHandler(CacheKey, this);
 		}
 
-		protected IDataModelContext Context { get; }
 		private string CacheKey { get; }
 		protected virtual TimeSpan Expiration => TimeSpan.Zero;
 		protected virtual bool SlidingExpiration => true;

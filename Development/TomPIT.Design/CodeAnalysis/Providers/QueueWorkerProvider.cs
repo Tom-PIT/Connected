@@ -13,5 +13,6 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 		}
 
 		protected override string ComponentCategory => "Queue";
+		protected override bool FullyQualified => true;
 	}
 }

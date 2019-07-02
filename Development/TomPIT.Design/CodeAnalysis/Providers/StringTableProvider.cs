@@ -14,14 +14,19 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 		}
 
 		protected override string ComponentCategory => "StringTable";
-
+		protected override bool FullyQualified => false;
 		public override List<ICodeAnalysisResult> ProvideLiterals(IExecutionContext context, CodeAnalysisArgs e)
 		{
 			var components = context.Connection().GetService<IComponentService>().QueryComponents(e.Component.MicroService, ComponentCategory);
 			var items = new List<ICodeAnalysisResult>();
 
 			foreach (var component in components)
-				items.Add(new CodeAnalysisResult(component.Name, component.Name, null));
+			{
+				var ms = Context.Connection().GetService<IMicroServiceService>().Select(component.MicroService);
+				var value = $"{ms.Name}/{component.Name}";
+
+				items.Add(new CodeAnalysisResult(value, value, null));
+			}
 
 			items = items.OrderBy(f => f.Text).ToList();
 

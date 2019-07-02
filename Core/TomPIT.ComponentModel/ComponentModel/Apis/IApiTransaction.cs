@@ -1,4 +1,5 @@
 ﻿using System;
+using TomPIT.Services;
 
 namespace TomPIT.ComponentModel.Apis
 {
@@ -10,6 +11,6 @@ namespace TomPIT.ComponentModel.Apis
 		void Commit();
 		void Rollback();
 
-		void Notify(IApiOperation operation);
+		void Notify(IOperationBase operation);
 	}
 }

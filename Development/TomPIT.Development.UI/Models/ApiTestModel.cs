@@ -93,18 +93,7 @@ namespace TomPIT.Models
 
 		public object Invoke()
 		{
-			var r = Invoke<object>(string.Format("{0}/{1}/{2}", MicroService.Name, Api, Operation), Body);
-
-			if (r == null)
-				return null;
-
-			if (r is JObject)
-				return r as JObject;
-
-			var s = Types.Serialize(r);
-
-			return Types.Deserialize<JObject>(s);
-
+			return Invoke<object>(string.Format("{0}/{1}/{2}", MicroService.Name, Api, Operation), Body);
 		}
 
 		private List<IApiTest> Tests
