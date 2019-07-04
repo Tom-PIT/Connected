@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.DirectoryServices.AccountManagement;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Globalization;
 using TomPIT.Routing;
@@ -80,6 +82,13 @@ namespace TomPIT.Sys.Data
 		public IUser SelectByLoginName(string loginName)
 		{
 			var r = Get(f => string.Compare(loginName, f.LoginName, true) == 0);
+
+			if (r != null)
+				return r;
+
+			var domainUsers = Where(f => !f.IsLocal());
+
+			r = domainUsers.FirstOrDefault(f => string.Compare(loginName, f.DomainLoginName(), true) == 0);
 
 			if (r != null)
 				return r;
@@ -253,8 +262,10 @@ namespace TomPIT.Sys.Data
 			}
 			else
 			{
-				//TODO: implement LDAP authentication
-				throw new NotSupportedException();
+				var ldap = AuthenticateLdap(u.LoginName, password);
+
+				if (!ldap.Success)
+					return ldap;
 			}
 
 			Shell.GetService<IDatabaseService>().Proxy.Security.Users.UpdateLoginInformation(u, u.AuthenticationToken, DateTime.UtcNow);
@@ -264,6 +275,33 @@ namespace TomPIT.Sys.Data
 			return AuthenticationResult.OK(new JwtSecurityTokenHandler().WriteToken(TomPITAuthenticationHandler.CreateToken(u.AuthenticationToken)));
 
 		}
+
+		private IAuthenticationResult AuthenticateLdap(string loginName, string password)
+		{
+			var tokens = loginName.Split('\\');
+
+			if (tokens.Length != 2)
+				return AuthenticationResult.Fail(AuthenticationResultReason.NotFound);
+
+			string domain = tokens[0];
+			string userName = tokens[1];
+
+			try
+			{
+				using (var adContext = new PrincipalContext(ContextType.Domain, domain))
+				{
+					if (adContext.ValidateCredentials(userName, password))
+						return AuthenticationResult.OK(null);
+					else
+						return AuthenticationResult.Fail(AuthenticationResultReason.InvalidCredentials);
+				}
+			}
+			catch
+			{
+				return AuthenticationResult.Fail(AuthenticationResultReason.NotFound);
+			}
+		}
+	
 
 		public void ResetPassword(string user, string newPassword)
 		{

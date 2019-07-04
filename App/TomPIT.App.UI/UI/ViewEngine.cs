@@ -52,7 +52,7 @@ namespace TomPIT.UI
 
 			try
 			{
-				if (!model.Authorize(model.Component))
+				if (!SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url))
 					return;
 
 				var invokeArgs = new ViewInvokeArguments(model, Temp);

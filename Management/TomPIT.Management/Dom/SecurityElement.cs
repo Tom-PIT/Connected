@@ -1,4 +1,5 @@
 ﻿using TomPIT.Ide;
+using TomPIT.Management.Dom;
 
 namespace TomPIT.Dom
 {
@@ -22,6 +23,7 @@ namespace TomPIT.Dom
 			Items.Add(new UsersElement(this));
 			Items.Add(new RolesElement(this));
 			Items.Add(new MembershipElement(this));
+			Items.Add(new UrlSecurityElement(this));
 		}
 
 		public override void LoadChildren(string id)
@@ -32,6 +34,8 @@ namespace TomPIT.Dom
 				Items.Add(new RolesElement(this));
 			else if (string.Compare(id, MembershipElement.FolderId, true) == 0)
 				Items.Add(new MembershipElement(this));
+			else if (string.Compare(id, UrlSecurityElement.FolderId, true) == 0)
+				Items.Add(new UrlSecurityElement(this));
 		}
 	}
 }

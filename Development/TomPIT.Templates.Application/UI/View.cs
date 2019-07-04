@@ -8,7 +8,7 @@ namespace TomPIT.Application.UI
 {
 	[Create("View")]
 	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
-	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = Services.EnvironmentMode.Runtime)]
+	//[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = Services.EnvironmentMode.Runtime)]
 	[DomElement("TomPIT.Application.Design.Dom.ViewElement, TomPIT.Application.Design")]
 	[Syntax(SyntaxAttribute.Razor)]
 	public class View : ViewBase, IApplicationView

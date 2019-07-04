@@ -70,20 +70,20 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Access User Interface.
+        ///   Looks up a localized string similar to Access URL.
         /// </summary>
-        public static string AccessUserInterface {
+        public static string AccessUrl {
             get {
-                return ResourceManager.GetString("AccessUserInterface", resourceCulture);
+                return ResourceManager.GetString("AccessUrl", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Access.
+        ///   Looks up a localized string similar to Default Access URL.
         /// </summary>
-        public static string FolderAccess {
+        public static string DefaultAccessUrl {
             get {
-                return ResourceManager.GetString("FolderAccess", resourceCulture);
+                return ResourceManager.GetString("DefaultAccessUrl", resourceCulture);
             }
         }
         

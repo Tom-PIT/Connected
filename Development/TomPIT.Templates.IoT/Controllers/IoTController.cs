@@ -47,7 +47,7 @@ namespace TomPIT.IoT.Controllers
 
 			model.Initialize(this, ms, view);
 
-			if (!model.Authorize(model.Component))
+			if (!SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url))
 				return Unauthorized();
 
 			return PartialView("~/Views/IoT/IoTPartialView.cshtml", model);

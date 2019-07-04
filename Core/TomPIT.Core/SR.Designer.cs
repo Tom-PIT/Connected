@@ -1105,6 +1105,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid credentials.
+        /// </summary>
+        public static string ErrInvalidCredentials {
+            get {
+                return ResourceManager.GetString("ErrInvalidCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid interface specified.
         /// </summary>
         public static string ErrInvalidInterface {

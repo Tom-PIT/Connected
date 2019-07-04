@@ -8,38 +8,70 @@ namespace TomPIT
 {
 	public static class SecurityExtensions
 	{
-		public static bool Authorize(this IExecutionContext context, IComponent component)
+		public static bool AuthorizeUrl(IExecutionContext context, string url)
 		{
-			if (component == null)
+			if (string.IsNullOrWhiteSpace(url))
 				return false;
 
-			var e = new AuthorizationArgs(context.GetAuthenticatedUserToken(), Claims.AccessUserInterface, component.Token.ToString(), component.Folder);
+			var tokens = url.Split('/');
+			var path = string.Empty;
+			var permissionCounter = 0;
 
-			e.Schema.Empty = EmptyBehavior.Deny;
-			e.Schema.Level = AuthorizationLevel.Pessimistic;
+			var defaultAr = AuthorizeDefaultUrl(context);
 
-			var r = context.Connection().GetService<IAuthorizationService>().Authorize(context, e);
-
-			if (r.Success)
-				return true;
-
-			if (r.Reason == AuthorizationResultReason.Empty)
+			if (defaultAr.Success)
 			{
-				if (context.Connection().GetService<IComponentService>().SelectConfiguration(component.Token) is IAuthorizationChain v
-					&& v.AuthorizationParent != Guid.Empty)
-				{
-					var c = context.Connection().GetService<IComponentService>().SelectComponent(v.AuthorizationParent);
-
-					if (c != null)
-						return Authorize(context, c);
-				}
-				else
-					Reject(context);
-			}
-			else
 				Reject(context);
+				return false;
+			}
 
-			return false;
+			permissionCounter += defaultAr.PermissionCount;
+
+			for (var i = 0; i < tokens.Length; i++)
+			{
+				if (i > 0)
+					path += "/";
+
+				path += tokens[i];
+
+				var empty = i == tokens.Length - 1 ? EmptyBehavior.Deny : EmptyBehavior.Alow;
+				var ar = AuthorizeUrl(context, new AuthorizationArgs(context.GetAuthenticatedUserToken(), Claims.AccessUrl, path), empty);
+
+				if (ar.Success)
+					permissionCounter += ar.PermissionCount;
+				else
+				{
+					if (empty == EmptyBehavior.Deny && ar.Reason == AuthorizationResultReason.Empty && permissionCounter > 0)
+						return true;
+					else
+					{
+						Reject(context);
+						return false;
+					}
+				}
+			}
+
+			return true;
+		}
+
+		private static IAuthorizationResult AuthorizeDefaultUrl(IExecutionContext context)
+		{
+			var args = new AuthorizationArgs(context.GetAuthenticatedUserToken(), Claims.DefaultAccessUrl, 0.ToString(), Guid.Empty);
+
+			args.Schema.Empty = EmptyBehavior.Alow;
+			args.Schema.Level = AuthorizationLevel.Pessimistic;
+
+			return context.Connection().GetService<IAuthorizationService>().Authorize(context, args);
+		}
+
+		private static IAuthorizationResult AuthorizeUrl(IExecutionContext context, AuthorizationArgs e, EmptyBehavior empty)
+		{
+			var args = new AuthorizationArgs(e.User, Claims.AccessUrl, e.PrimaryKey, Guid.Empty);
+
+			args.Schema.Empty = empty;
+			args.Schema.Level = AuthorizationLevel.Pessimistic;
+
+			return context.Connection().GetService<IAuthorizationService>().Authorize(context, args);
 		}
 
 		private static void Reject(IExecutionContext context)

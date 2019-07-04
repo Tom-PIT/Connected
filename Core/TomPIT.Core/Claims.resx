@@ -120,11 +120,11 @@
   <data name="AccessReport" xml:space="preserve">
     <value>Access Report</value>
   </data>
-  <data name="AccessUserInterface" xml:space="preserve">
-    <value>Access User Interface</value>
+  <data name="AccessUrl" xml:space="preserve">
+    <value>Access URL</value>
   </data>
-  <data name="FolderAccess" xml:space="preserve">
-    <value>Access</value>
+  <data name="DefaultAccessUrl" xml:space="preserve">
+    <value>Default Access URL</value>
   </data>
   <data name="ImplementMicroservice" xml:space="preserve">
     <value>Implement Micro Service</value>

@@ -55,6 +55,14 @@ namespace TomPIT
 			return DisplayName(user.FirstName, user.LastName, user.LoginName, user.Email, user.Token);
 		}
 
+		public static string DomainLoginName(this IUser user)
+		{
+			if (user.IsLocal())
+				return user.LoginName;
+
+			return user.LoginName.Split(new char[] { '\\' }, 2)[1];
+		}
+
 		public static bool IsLocal(this IUser user)
 		{
 			return !user.LoginName.Contains('\\');
@@ -78,6 +86,8 @@ namespace TomPIT
 					return SR.ErrPasswordExpired;
 				case AuthenticationResultReason.InvalidToken:
 					return SR.ErrInvalidToken;
+				case AuthenticationResultReason.InvalidCredentials:
+					return SR.ErrInvalidCredentials;
 				default:
 					return null;
 			}

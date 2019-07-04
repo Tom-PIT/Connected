@@ -966,4 +966,7 @@
   <data name="ErrTypeNotFound" xml:space="preserve">
     <value>Type not found</value>
   </data>
+  <data name="ErrInvalidCredentials" xml:space="preserve">
+    <value>Invalid credentials</value>
+  </data>
 </root>

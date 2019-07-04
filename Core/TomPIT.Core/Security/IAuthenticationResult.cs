@@ -10,6 +10,7 @@
 		NoPassword = 5,
 		PasswordExpired = 6,
 		InvalidToken = 7,
+		InvalidCredentials = 8,
 		Other = 99
 	}
 
