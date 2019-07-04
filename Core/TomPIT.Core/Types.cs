@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TomPIT.Converters;
 
 namespace TomPIT
@@ -13,6 +14,7 @@ namespace TomPIT
 	public static class Types
 	{
 		private static JsonSerializerSettings _jsonSettings = null;
+		private static JsonMergeSettings _mergeSettings = null;
 
 		public static bool Compare(object left, object right)
 		{
@@ -462,6 +464,32 @@ namespace TomPIT
 
 				return _jsonSettings;
 			}
+		}
+
+		private static JsonMergeSettings MergeSettings
+		{
+			get
+			{
+				if (_mergeSettings == null)
+				{
+					_mergeSettings = new JsonMergeSettings
+					{
+						MergeArrayHandling = MergeArrayHandling.Merge,
+						MergeNullValueHandling = MergeNullValueHandling.Ignore,
+						PropertyNameComparison = StringComparison.OrdinalIgnoreCase
+					};
+				}
+
+				return _mergeSettings;
+			}
+		}
+
+		public static void Merge(JObject left, object right)
+		{
+			if (left == null || right == null)
+				return;
+
+			left.Merge(right, MergeSettings);
 		}
 
 		public static string Serialize(object instance)

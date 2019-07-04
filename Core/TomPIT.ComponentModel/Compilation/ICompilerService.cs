@@ -20,5 +20,6 @@ namespace TomPIT.Compilation
 		string CompileView(ISysConnection connection, ISourceCode sourceCode);
 
 		Type ResolveType(Guid microService, ISourceCode sourceCode, string typeName);
+		Type ResolveType(Guid microService, ISourceCode sourceCode, string typeName, bool throwException);
 	}
 }

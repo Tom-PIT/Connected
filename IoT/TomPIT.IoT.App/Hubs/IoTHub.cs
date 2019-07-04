@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Globalization;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
+using TomPIT.Data;
 using TomPIT.IoT.Security;
 using TomPIT.IoT.Services;
 using TomPIT.Services;
@@ -57,9 +59,23 @@ namespace TomPIT.IoT.Hubs
 				try
 				{
 					var ctx = ExecutionContext.Create(Instance.Connection.Url, ms);
-					var args = new IoTDataArguments(ctx, e);
+					var modelContext = new DataModelContext(ctx);
+					var type = Instance.GetService<ICompilerService>().ResolveType(ms.Token, device.Device, device.Device.Name, false);
 
-					Instance.Connection.GetService<ICompilerService>().Execute(ms.Token, device.Device.Data, this, args);
+					if (type != null)
+					{
+						var handler = type.CreateInstance<IIoTDeviceHandler>(new object[] { modelContext, e });
+
+						if (e != null)
+							Types.Populate(JsonConvert.SerializeObject(e), handler);
+
+						handler.Invoke();
+
+						if (e == null)
+							e = new JObject();
+
+						Merge(hub as IIoTHub, handler, e);
+					}
 				}
 				catch (Exception ex)
 				{
@@ -76,6 +92,30 @@ namespace TomPIT.IoT.Hubs
 			catch (Exception ex)
 			{
 				throw new HubException(ex.Message);
+			}
+		}
+
+		private void Merge(IIoTHub hub, IIoTDeviceHandler handler, JObject arguments)
+		{
+			var schema = Instance.GetService<IIoTHubService>().SelectSchema(hub);
+			var serializedHandler = Types.Deserialize<JObject>(Types.Serialize(handler));
+
+			foreach (var property in serializedHandler.Children())
+			{
+				if (!(property is JProperty p))
+					continue;
+
+				var field = schema.Fields.FirstOrDefault(f => string.Compare(f.Name, p.Name, true) == 0);
+
+				if (field == null)
+					continue;
+
+				var existingProperty = arguments.Property(field.Name, StringComparison.OrdinalIgnoreCase);
+
+				if (existingProperty == null)
+					arguments.Add(new JObject { field.Name, p.Value });
+				else
+					existingProperty.Value = p.Value;
 			}
 		}
 
@@ -127,38 +167,33 @@ namespace TomPIT.IoT.Hubs
 					{"transaction",transaction }
 				};
 
-				foreach (var i in e)
+				var type = Instance.GetService<ICompilerService>().ResolveType(ms.Token, t, t.Name, false);
+
+				if (type != null)
 				{
-					if (IsSpecialName(i.Key))
-						continue;
+					var ctx = ExecutionContext.Create(Instance.Connection.Url, ms);
+					var dataContext = new DataModelContext(ctx);
 
-					var def = t.Parameters.FirstOrDefault(f => string.Compare(f.Name, i.Key, true) == 0);
+					var handler = type.CreateInstance<IIoTTransactionHandler>(new object[] {dataContext });
 
-					if (def == null)
-						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrIoTParameterNotAllowed, transaction, i.Key));
+					Types.Populate(JsonConvert.SerializeObject(e), handler);
+
+					handler.Invoke();
+
+					Types.Merge(e, handler);
 				}
-
-				foreach (var i in t.Parameters)
+				else
 				{
-					var prop = e.Property(i.Name, StringComparison.OrdinalIgnoreCase);
-
-					if (prop == null)
+					foreach (var i in e.Children())
 					{
-						if (!i.IsNullable)
-							throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrIoTParameterExpected, transaction, i.Name));
+						if (!(i is JProperty property))
+							continue;
 
-						continue;
+						if (IsSpecialName(property.Name))
+							continue;
+
+						parameters.Add(property);
 					}
-
-					if (!(prop.Value is JValue value))
-						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrIoTParameterValueExpected, transaction, i.Name));
-
-					var dt = Types.ToType(i.DataType);
-
-					if (!Types.TryConvertInvariant(value.Value, out object v, dt))
-						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrIoTConversionError, i.Name, dt.ToFriendlyName()));
-
-					parameters.Add(i.Name, Types.Convert<string>(v, CultureInfo.InvariantCulture));
 				}
 
 				await Clients.User(hubDevice.Id.ToString()).SendAsync("transaction", parameters);

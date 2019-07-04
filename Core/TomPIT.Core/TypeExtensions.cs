@@ -109,7 +109,7 @@ namespace TomPIT
 		public static T CreateInstance<T>(this Type type, object[] ctorArgs) where T : class
 		{
 			if (type == null)
-				return default(T);
+				return default;
 
 			T instance = null;
 
@@ -139,7 +139,7 @@ namespace TomPIT
 			if (type.IsTypePrimitive())
 				return type.GetDefaultValue();
 
-			return type.Assembly.CreateInstance(type.FullName, false, bindingFlags, null, ctorArgs, CultureInfo.InvariantCulture, null);
+			return Activator.CreateInstance(type, bindingFlags, null, ctorArgs, CultureInfo.InvariantCulture);
 		}
 
 		private static object CreateInstanceInternal(this Type type)
@@ -147,7 +147,7 @@ namespace TomPIT
 			if (type.IsTypePrimitive())
 				return type.GetDefaultValue();
 
-			return type.Assembly.CreateInstance(type.FullName);
+			return Activator.CreateInstance(type);
 		}
 
 		public static object GetDefaultValue(this Type type)

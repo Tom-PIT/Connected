@@ -95,20 +95,31 @@ namespace TomPIT.Services.Context
 			SubscriptionEvent(eventName, primaryKey, topic, arguments);
 		}
 
-		public void Enqueue<T>(string queue, T arguments)
+		public void Enqueue<T>([CodeAnalysisProvider(ExecutionContext.QueueWorkerProvider)]string queue, T arguments)
 		{
-			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Queue", queue) is IQueueHandlerConfiguration handler))
-				throw new RuntimeException(SR.ErrQueueWorkerNotFound);
-
-			Context.Connection().GetService<IQueueService>().Enqueue(handler, arguments);
+			Context.Connection().GetService<IQueueService>().Enqueue(ResolveQueue(queue), arguments);
 		}
 
-		public void Enqueue<T>(string queue, T arguments, TimeSpan expire, TimeSpan nextVisible)
+		public void Enqueue<T>([CodeAnalysisProvider(ExecutionContext.QueueWorkerProvider)]string queue, T arguments, TimeSpan expire, TimeSpan nextVisible)
 		{
-			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Queue", queue) is IQueueHandlerConfiguration handler))
+			Context.Connection().GetService<IQueueService>().Enqueue(ResolveQueue(queue), arguments, expire, nextVisible);
+		}
+
+		private IQueueHandlerConfiguration ResolveQueue(string qualifier)
+		{
+			var tokens = qualifier.Split(new char[] { '/' }, 2);
+			var ms = Context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+
+			if (ms == null)
+				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({tokens[0]}").WithMetrics(Context);
+
+			if (ms.Token != Context.MicroService.Token)
+				Context.MicroService.ValidateMicroServiceReference(Context.Connection(), ms.Name);
+
+			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(ms.Token, "Queue",tokens[1]) is IQueueHandlerConfiguration handler))
 				throw new RuntimeException(SR.ErrQueueWorkerNotFound);
 
-			Context.Connection().GetService<IQueueService>().Enqueue(handler, arguments, expire, nextVisible);
+			return handler;
 		}
 
 		public void SubscriptionEvent([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, TomPIT.Design")] string eventName, string primaryKey)
@@ -156,7 +167,14 @@ namespace TomPIT.Services.Context
 			if (callback is EventCallback ec)
 				ec.Attached = true;
 
-			return Context.Connection().GetService<IEventService>().Trigger(Context.MicroService.Token, name, callback, e);
+			var tokens = name.Split(new char[] { '/' }, 2);
+			Context.MicroService.ValidateMicroServiceReference(Context.Connection(), tokens[0]);
+			var ms = Context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+
+			if (ms == null)
+				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({tokens[0]})").WithMetrics(Context);
+
+			return Context.Connection().GetService<IEventService>().Trigger(ms.Token, tokens[1], callback, e);
 		}
 
 		public Guid Event([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.EventProvider, TomPIT.Design")] string name, IEventCallback callback)

@@ -16,7 +16,7 @@ namespace TomPIT.Sys.Controllers
 		{
 			var body = FromBody();
 			var component = body.Required<Guid>("component");
-			var args = body.Optional<JObject>("arguments", null);
+			var args = body.Optional("arguments", string.Empty);
 			var expire = body.Optional("expire", TimeSpan.FromDays(2));
 			var nextVisible = body.Optional("nextVisible", TimeSpan.Zero);
 

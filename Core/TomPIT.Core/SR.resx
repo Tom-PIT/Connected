@@ -963,4 +963,7 @@
   <data name="ErrExtenderNotSupported" xml:space="preserve">
     <value>Extender not supported</value>
   </data>
+  <data name="ErrTypeNotFound" xml:space="preserve">
+    <value>Type not found</value>
+  </data>
 </root>

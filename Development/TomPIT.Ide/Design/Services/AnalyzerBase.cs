@@ -316,6 +316,9 @@ namespace TomPIT.Design.Services
 
 					var pt = parameters[i].ParameterType;
 
+					if (pt.IsGenericMethodParameter)
+						continue;
+
 					if (pt.IsInterface)
 					{
 						if (at != pt && !at.ImplementsInterface(pt))

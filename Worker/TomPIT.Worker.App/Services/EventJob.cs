@@ -8,6 +8,7 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.Events;
+using TomPIT.Data;
 using TomPIT.Services;
 using TomPIT.Services.Context;
 using TomPIT.Storage;
@@ -52,18 +53,28 @@ namespace TomPIT.Worker.Services
 
 				if (targets != null)
 				{
-					Parallel.ForEach(targets,
-						(f) =>
-						{
-							if (!(Instance.GetService<IComponentService>().SelectConfiguration(f.Item2) is IEventHandler configuration))
-								return;
+					foreach (var target in targets)
+					{
+						if (!(Instance.GetService<IComponentService>().SelectConfiguration(target.Item2) is IEventHandler configuration))
+							return;
 
-							foreach (var i in configuration.Events)
+						var pass = true;
+
+						foreach (var i in configuration.Events)
+						{
+							if (ed.Name.Equals(i.Event, StringComparison.OrdinalIgnoreCase))
 							{
-								if (ed.Name.Equals(i.Event, StringComparison.OrdinalIgnoreCase))
-									Invoke(ed, i);
+								if (!Invoke(ed, i))
+								{
+									pass = false;
+									break;
+								}
 							}
-						});
+						}
+
+						if (!pass)
+							break;
+					};
 				}
 			}
 
@@ -94,17 +105,44 @@ namespace TomPIT.Worker.Services
 			ai.Execute(null, microService.Token, api.ComponentName(Instance.Connection), op.Name, args, null, true, true);
 		}
 
-		private void Invoke(EventDescriptor ed, IEventBinding i)
+		private bool Invoke(EventDescriptor ed, IEventBinding i)
 		{
 			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, null);
+			var ms = i.MicroService(Instance.Connection);
+			var configuration = i.Closest<IEventHandler>();
+			var componentName = configuration.ComponentName(Instance.Connection);
+			var type = Instance.GetService<ICompilerService>().ResolveType(ms, configuration, componentName, false);
+			var dataContext = new DataModelContext(ctx);
 
-			var args = string.IsNullOrWhiteSpace(ed.Arguments)
-				? null
-				: JsonConvert.DeserializeObject<JObject>(ed.Arguments);
+			if (type != null)
+			{
+				var handler = type.CreateInstance<Notifications.IEventHandler>(new object[] {dataContext,  ed.Name});
 
-			var e = new EventInvokeArguments(ctx, ed.Name, args);
+				if (!string.IsNullOrWhiteSpace(ed.Arguments))
+					Types.Populate(ed.Arguments, handler);
 
-			Instance.GetService<ICompilerService>().Execute(i.MicroService(Instance.Connection), i.Closest<IEventHandler>().Invoke, this, e);
+				handler.Invoke();
+
+				if (handler.Cancel)
+				{
+					var args = string.IsNullOrWhiteSpace(ed.Arguments)
+						? new JObject()
+						: Types.Deserialize<JObject>(ed.Arguments);
+
+					var property = args.Property("cancel", StringComparison.OrdinalIgnoreCase);
+
+					if (property == null)
+						args.Add("cancel", true);
+					else
+						property.Value = true;
+
+					ed.Arguments = Types.Serialize(args);
+
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		protected override void OnError(IQueueMessage item, Exception ex)

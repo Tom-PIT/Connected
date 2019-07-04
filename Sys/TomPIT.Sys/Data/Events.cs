@@ -13,10 +13,9 @@ namespace TomPIT.Sys.Data
 	{
 		private const string Queue = "event";
 
-		public Guid Insert(Guid microService, string name, JObject e, string callback)
+		public Guid Insert(Guid microService, string name, string e, string callback)
 		{
 			var id = Guid.NewGuid();
-			var a = e == null ? string.Empty : JsonConvert.SerializeObject(e);
 			var ms = DataModel.MicroServices.Select(microService);
 
 			if (ms == null)
@@ -27,7 +26,7 @@ namespace TomPIT.Sys.Data
 				{ "id",id}
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Events.Insert(ms, name, id, DateTime.UtcNow, a, callback);
+			Shell.GetService<IDatabaseService>().Proxy.Events.Insert(ms, name, id, DateTime.UtcNow, e, callback);
 			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
 			return id;

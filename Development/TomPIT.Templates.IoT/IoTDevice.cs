@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Events;
@@ -8,9 +10,10 @@ namespace TomPIT.IoT
 {
 	[Create("IoTDevice", nameof(Name))]
 	[ComponentCreatingHandler("TomPIT.IoT.Handlers.IoTDeviceCreateHandler, TomPIT.IoT.Design")]
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[Syntax(SyntaxAttribute.CSharp)]
 	public class IoTDevice : ConfigurationElement, IIoTDevice
 	{
-		private IServerEvent _data = null;
 		private ListItems<IIoTTransaction> _transactions = null;
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
@@ -20,18 +23,6 @@ namespace TomPIT.IoT
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
 		[Required]
 		public string AuthenticationToken { get; set; }
-
-		[EventArguments(typeof(IoTDataArguments))]
-		public IServerEvent Data
-		{
-			get
-			{
-				if (_data == null)
-					_data = new ServerEvent { Parent = this };
-
-				return _data;
-			}
-		}
 
 		[Items("TomPIT.IoT.Design.Items.IoTTransactionsCollection, TomPIT.IoT.Design")]
 		public ListItems<IIoTTransaction> Transactions
@@ -44,6 +35,9 @@ namespace TomPIT.IoT
 				return _transactions;
 			}
 		}
+
+		[Browsable(false)]
+		public Guid TextBlob { get; set; }
 
 		public override string ToString()
 		{

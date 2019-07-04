@@ -3389,7 +3389,7 @@ BEGIN
 		pop_receipt = newid()
 	output inserted.id into @ct;
 
-	select * from tompit.queue where id = (select num from @ct);	
+	select * from tompit.queue where id IN (select num from @ct);	
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3431,13 +3431,16 @@ GO
 CREATE PROCEDURE [tompit].[queue_enqueue]
 	@queue varchar(32),
 	@message nvarchar(256),
-	@expire int = 172800,
+	@expire datetime = NULL,
 	@next_visible datetime,
 	@scope int,
 	@created datetime
 AS
 BEGIN
 	SET NOCOUNT ON;
+
+	IF (@expire IS NULL)
+		SET @expire = DATEADD(day, 2, GETUTCDATE());
 
 	INSERT tompit.queue (message, created, expire, next_visible, queue, pop_receipt, dequeue_count, scope)
 	VALUES (@message, @created, @expire, @next_visible, @queue, NULL, 0, @scope);

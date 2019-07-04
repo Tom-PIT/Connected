@@ -1,10 +1,7 @@
 ﻿namespace TomPIT.ComponentModel.Events
 {
-	public interface IEventHandler : IConfiguration
+	public interface IEventHandler : IConfiguration, ISourceCode
 	{
-		IServerEvent Invoke { get; }
-
-		ListItems<IText> Scripts { get; }
 		ListItems<IEventBinding> Events { get; }
 	}
 }

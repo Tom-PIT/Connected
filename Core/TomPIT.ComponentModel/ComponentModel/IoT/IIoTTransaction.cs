@@ -2,10 +2,8 @@
 
 namespace TomPIT.ComponentModel.IoT
 {
-	public interface IIoTTransaction : IConfigurationElement
+	public interface IIoTTransaction : IConfigurationElement, ISourceCode
 	{
 		string Name { get; }
-		IServerEvent Invoke { get; }
-		ListItems<IIoTTransactionParameter> Parameters { get; }
 	}
 }

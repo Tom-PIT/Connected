@@ -16,6 +16,28 @@ namespace TomPIT.Services
 
 		public string Extender { get; set; }
 
+		public T Invoke<T>()
+		{
+			var r = Invoke();
+
+			if (r == default)
+				return default;
+
+			if (r.GetType().IsCollection())
+			{
+				var listResult = (IList)r;
+				var genericArguments = typeof(T).GenericTypeArguments;
+				var result = (IList)typeof(List<>).MakeGenericType(genericArguments).CreateInstance();
+
+				foreach (var item in listResult)
+					result.Add(item);
+
+				return (T)result;
+			}
+			else
+				return (T)Convert.ChangeType(r, typeof(T));
+		}
+
 		public TReturnValue Invoke()
 		{
 			ValidateExtender();

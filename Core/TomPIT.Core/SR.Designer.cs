@@ -1924,6 +1924,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Type not found.
+        /// </summary>
+        public static string ErrTypeNotFound {
+            get {
+                return ResourceManager.GetString("ErrTypeNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot resolve type.
         /// </summary>
         public static string ErrTypeNull {

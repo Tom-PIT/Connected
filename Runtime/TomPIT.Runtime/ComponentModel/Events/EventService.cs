@@ -15,19 +15,7 @@ namespace TomPIT.ComponentModel.Events
 
 		public Guid Trigger(Guid microService, string name, IEventCallback callback)
 		{
-			var ev = Connection.GetService<IComponentService>().SelectComponent(microService, "Event", name);
-
-			if (ev == null)
-				throw new TomPITException(SR.ErrEventNotDefined);
-
-			var u = Connection.CreateUrl("Event", "Trigger")
-				.AddParameter("microService", microService)
-				.AddParameter("name", name);
-
-			if (callback != null)
-				u.AddParameter("callback", string.Format("{0}/{1}/{2}", callback.MicroService, callback.Api, callback.Operation));
-
-			return Connection.Post<Guid>(u);
+			return Trigger<object>(microService, name, callback, null);
 		}
 
 		public Guid Trigger<T>(Guid microService, string name, IEventCallback callback, T e)
@@ -37,14 +25,18 @@ namespace TomPIT.ComponentModel.Events
 			if (ev == null)
 				throw new TomPITException(SR.ErrEventNotDefined);
 
-			var u = Connection.CreateUrl("Event", "Trigger")
-				.AddParameter("microService", microService)
-				.AddParameter("name", name);
+			var u = Connection.CreateUrl("Event", "Trigger");
+			var args = new JObject
+			{
+				{"microService", microService },
+				{"name", name },
+				{"callback", $"{callback.MicroService}/{callback.Api}/{callback.Operation}" }
+			};
 
-			if (callback != null)
-				u.AddParameter("callback", string.Format("{0}/{1}/{2}", callback.MicroService, callback.Api, callback.Operation));
+			if (e != null)
+				args.Add("arguments", Types.Serialize(e));
 
-			return Connection.Post<Guid>(u, e);
+			return Connection.Post<Guid>(u, args);
 		}
 	}
 }

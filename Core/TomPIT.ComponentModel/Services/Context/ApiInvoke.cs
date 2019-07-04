@@ -71,6 +71,7 @@ namespace TomPIT.Services.Context
 			}
 
 			var metric = ctx.Services.Diagnostic.StartMetric(op.Metrics, op.Id, arguments);
+			var success = true;
 			JObject result = null;
 
 			try
@@ -91,7 +92,7 @@ namespace TomPIT.Services.Context
 							if (arguments != null)
 								Types.Populate(JsonConvert.SerializeObject(arguments), opInstance);
 
-							var method = opInstance.GetType().GetMethod("Invoke");
+							var method = GetInvoke(opInstance.GetType());
 
 							method.Invoke(opInstance, null);
 
@@ -106,7 +107,7 @@ namespace TomPIT.Services.Context
 						if (arguments != null)
 							Types.Populate(JsonConvert.SerializeObject(arguments), opInstance);
 
-						var method = opInstance.GetType().GetMethod("Invoke");
+						var method = GetInvoke(opInstance.GetType());
 
 						return method.Invoke(opInstance, null);
 					}
@@ -138,19 +139,35 @@ namespace TomPIT.Services.Context
 			}
 			catch (Exception ex)
 			{
+				var resolvedException = ex.InnerException == null ? ex : ex.InnerException;
+				success = false;
+
 				ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Fail, new JObject
 				{
-					{"exception", ex.Message }
+					{"exception", resolvedException.Message }
 				});
 
-				throw ex;
+				throw resolvedException;
 			}
 			finally
 			{
-				ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Success, result);
+				if (success)
+					ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Success, result);
 			}
 		}
 
+		private MethodInfo GetInvoke(Type type)
+		{
+			var methods = type.GetMethods().Where(f => string.Compare(f.Name, "Invoke", false) == 0);
+
+			foreach (var method in methods)
+			{
+				if (!method.ContainsGenericParameters)
+					return method;
+			}
+
+			return null;
+		}
 		private void CheckReference(IExecutionContext context, Guid microService, Guid requiredReference)
 		{
 			var ms = context.Connection().GetService<IMicroServiceService>().Select(microService);

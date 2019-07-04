@@ -64,7 +64,7 @@ namespace TomPIT.Data
 			var url = Connection.CreateUrl("Audit", "Query")
 				.AddParameter("category", category)
 				.AddParameter("@event", @event)
-				.AddParameter("primary_key", primaryKey);
+				.AddParameter("primaryKey", primaryKey);
 
 			return Connection.Get<List<AuditDescriptor>>(url).ToList<IAuditDescriptor>();
 		}

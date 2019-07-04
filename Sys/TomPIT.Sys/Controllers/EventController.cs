@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Controllers
@@ -7,11 +8,15 @@ namespace TomPIT.Sys.Controllers
 	public class EventController : SysController
 	{
 		[HttpPost]
-		public Guid Trigger(Guid microService, string name, string callback = null)
+		public Guid Trigger()
 		{
 			var body = FromBody();
+			var ms = body.Required<Guid>("microService");
+			var name = body.Required<string>("name");
+			var callback = body.Required<string>("callback");
+			var args = body.Optional<string>("arguments", null);
 
-			return DataModel.Events.Insert(microService, name, body, callback);
+			return DataModel.Events.Insert(ms, name, args, callback);
 		}
 	}
 }

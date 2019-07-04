@@ -293,7 +293,7 @@ namespace TomPIT.Compilers
 
 			((ScriptDescriptor)script).Errors = diagnostics;
 
-			if (script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() == 0)
+			if (compiler.Script != null && script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() == 0)
 			{
 				((ScriptDescriptor)script).Script = compiler.Script.CreateDelegate();
 				((ScriptDescriptor)script).Assembly = compiler.Script.GetCompilation().AssemblyName;
@@ -603,7 +603,19 @@ namespace TomPIT.Compilers
 
 		public Type ResolveType(Guid microService, ISourceCode sourceCode, string typeName)
 		{
-			var script = Connection.GetService<ICompilerService>().GetScript(microService, sourceCode);
+			return ResolveType(microService, sourceCode, typeName, true);
+		}
+		public Type ResolveType(Guid microService, ISourceCode sourceCode, string typeName, bool throwException)
+		{
+			var script = GetScript(microService, sourceCode);
+
+			if (script == null)
+			{
+				if (throwException)
+					throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
+				else
+					return null;
+			}
 
 			if (script != null && script.Assembly == null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
 			{
@@ -618,7 +630,17 @@ namespace TomPIT.Compilers
 			var assembly = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
 			var target = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), script.Assembly, true) == 0);
 
-			return target?.GetTypes().FirstOrDefault(f => string.Compare(f.Name, typeName, true) == 0);
+			var result = target?.GetTypes().FirstOrDefault(f => string.Compare(f.Name, typeName, true) == 0);
+
+			if (result == null)
+			{
+				if (throwException)
+					throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
+				else
+					return null;
+			}
+
+			return result;
 		}
 
 		private static ConcurrentDictionary<Guid, List<Guid>> ForwardReferences { get { return _forwardReferences.Value; } }
