@@ -23,7 +23,8 @@
         dataSource:@Html.Raw(Types.Serialize(items)) ,
         displayExpr: 'text',
         valueExpr: 'value',
-        value:'@value',
+        value: '@value',
+        searchEnabled:true,
         onValueChanged: function (e) {
             ide.saveProperty({
                 data: {

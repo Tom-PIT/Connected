@@ -83,7 +83,7 @@ namespace TomPIT.Designers
 				if (b == null)
 					return null;
 
-				return string.Format("_sys/avatar/{0}/{1}", b.Token, b.Version);
+				return Environment.Context.Services.Routing.ParseUrl($"sys/avatar/{b.Token}/{b.Version}");
 			}
 		}
 	}

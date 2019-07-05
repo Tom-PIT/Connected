@@ -3553,7 +3553,7 @@ CREATE TABLE [tompit].[permission]
 [schema] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [claim] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [descriptor] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
-[primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[primary_key] [nvarchar] (4000) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [value] [int] NOT NULL,
 [resource_group] [int] NULL,
 [component] [nvarchar] (128) COLLATE Slovenian_CI_AS NULL
@@ -5425,7 +5425,7 @@ CREATE PROCEDURE [tompit].[permission_ins]
 	@schema nvarchar(128),
 	@claim nvarchar(128),
 	@descriptor nvarchar(128),
-	@primary_key nvarchar(128),
+	@primary_key nvarchar(4000),
 	@value int,
 	@resource_group int = NULL,
 	@component nvarchar(128) = NULL

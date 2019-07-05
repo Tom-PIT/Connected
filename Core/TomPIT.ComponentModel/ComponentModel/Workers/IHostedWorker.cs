@@ -2,8 +2,8 @@
 
 namespace TomPIT.ComponentModel.Workers
 {
-	public interface IHostedWorker : IWorker
+	public interface IHostedWorker : IWorker, ISourceCode
 	{
-		IServerEvent Invoke { get; }
+		
 	}
 }

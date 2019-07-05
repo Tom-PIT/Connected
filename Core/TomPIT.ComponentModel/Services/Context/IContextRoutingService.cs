@@ -26,6 +26,7 @@ namespace TomPIT.Services.Context
 		void BadRequest();
 
 		string GenerateUrl(string primaryKey, string text, JArray existing, string displayProperty, string primaryKeyProperty);
+		string ParseUrl(string template);
 		string ParseUrl(string template, IDictionary<string, object> parameters);
 	}
 }

@@ -10,9 +10,9 @@
     <AssemblyName>TomPIT.App</AssemblyName>
     <RootNamespace>TomPIT</RootNamespace>
     <CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
-    <AssemblyVersion>1.1.704.2</AssemblyVersion>
-    <FileVersion>1.1.704.2</FileVersion>
-    <Version>1.1.704.2</Version>
+    <AssemblyVersion>1.1.704.4</AssemblyVersion>
+    <FileVersion>1.1.704.4</FileVersion>
+    <Version>1.1.704.4</Version>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="compilerconfig.json" />

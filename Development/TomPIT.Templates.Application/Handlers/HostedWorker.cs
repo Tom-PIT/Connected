@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Events;
@@ -6,26 +7,14 @@ using TomPIT.ComponentModel.Workers;
 
 namespace TomPIT.Application.Workers
 {
-	[DefaultEvent(nameof(Invoke))]
 	[DomDesigner("TomPIT.Designers.ScheduleDesigner, TomPIT.Management", Mode = Services.EnvironmentMode.Runtime)]
+	[DomDesigner(DomDesignerAttribute.TextDesigner, Mode = Services.EnvironmentMode.Design)]
+	[Syntax(SyntaxAttribute.CSharp)]
 	public class HostedWorker : ComponentConfiguration, IHostedWorker
 	{
 		public const string ComponentCategory = "Worker";
 
-		private IServerEvent _invoke = null;
 		private IMetricConfiguration _metric = null;
-
-		[EventArguments(typeof(WorkerInvokeArgs))]
-		public IServerEvent Invoke
-		{
-			get
-			{
-				if (_invoke == null)
-					_invoke = new ServerEvent { Parent = this };
-
-				return _invoke;
-			}
-		}
 
 		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
 		public IMetricConfiguration Metrics
@@ -38,5 +27,8 @@ namespace TomPIT.Application.Workers
 				return _metric;
 			}
 		}
+
+		[Browsable(false)]
+		public Guid TextBlob { get; set; }
 	}
 }

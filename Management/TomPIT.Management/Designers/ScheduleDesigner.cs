@@ -99,14 +99,14 @@ namespace TomPIT.Designers
 			d.EndDate = data.Optional("endDate", DateTime.MinValue);
 			d.Limit = data.Optional("limit", 0);
 			d.DayOfMonth = data.Optional("dayOfMonth", 1);
-			d.DayMode = (WorkerDayMode)data.Optional("dayMode", 1);
-			d.MonthMode = (WorkerMonthMode)data.Optional("monthMode", 1);
-			d.YearMode = (WorkerYearMode)data.Optional("yearMode", 1);
+			d.DayMode = data.Optional("dayMode", WorkerDayMode.EveryNDay);
+			d.MonthMode = data.Optional("monthMode", WorkerMonthMode.ExactDay);
+			d.YearMode = data.Optional("yearMode", WorkerYearMode.ExactDate);
 			d.MonthNumber = data.Optional("monthNumber", 1);
-			d.EndMode = (WorkerEndMode)data.Optional("endMode", 1);
-			d.IntervalCounter = (WorkerCounter)data.Optional("intervalCounter", 1);
-			d.MonthPart = (WorkerMonthPart)data.Optional("monthPart", 1);
-			d.Weekdays = (WorkerWeekDays)data.Optional("weekdays", 0);
+			d.EndMode = data.Optional("endMode", WorkerEndMode.NoEnd);
+			d.IntervalCounter = data.Optional("intervalCounter", WorkerCounter.First);
+			d.MonthPart = data.Optional("monthPart", WorkerMonthPart.Day);
+			d.Weekdays = data.Optional("weekdays", WorkerWeekDays.All);
 			d.Kind = WorkerKind.Worker;
 
 			var url = Connection.CreateUrl("WorkerManagement", "UpdateConfiguration");
@@ -138,10 +138,10 @@ namespace TomPIT.Designers
 			_job = null;
 			d = (ViewModel as ScheduledJobDescriptor).Job as ScheduledJob;
 
-			var r = new JObject
-			{
-				{"nextRun",d.NextRun.ToString("G") }
-			};
+			var r = new JObject();
+
+			if (d.NextRun != DateTime.MinValue)
+				r.Add("nextRun", d.NextRun.ToString("G"));
 
 			return Result.JsonResult(this, r);
 		}

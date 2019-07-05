@@ -70,7 +70,7 @@ namespace TomPIT.Runtime.Compilers.Views
 
 				if (!string.IsNullOrWhiteSpace(scr))
 				{
-					r.Append(script);
+					r.Append(scr);
 					r.AppendLine();
 				}
 			}

@@ -19,7 +19,7 @@ namespace TomPIT
 
 			var defaultAr = AuthorizeDefaultUrl(context);
 
-			if (defaultAr.Success)
+			if (!defaultAr.Success)
 			{
 				Reject(context);
 				return false;

@@ -247,6 +247,9 @@ namespace TomPIT
 
 			foreach (var property in properties)
 			{
+				if (!property.IsBrowsable() || property.IsIndexer())
+					continue;
+
 				if (property.IsText())
 				{
 					var propertyValue = property.GetValue(dom.Value);

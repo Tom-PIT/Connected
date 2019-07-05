@@ -220,6 +220,11 @@ namespace TomPIT.Services.Context
 			return UrlGenerator.GenerateUrl(primaryKey, text, items);
 		}
 
+		public string ParseUrl(string template)
+		{
+			return ParseUrl(template, null);
+		}
+
 		public string ParseUrl(string template, IDictionary<string,object> parameters)
 		{
 			var tokens = template.Split('/');

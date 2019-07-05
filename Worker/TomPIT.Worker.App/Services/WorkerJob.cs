@@ -21,7 +21,6 @@ namespace TomPIT.Worker.Services
 		protected override void DoWork(IQueueMessage item)
 		{
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
-
 			var ms = Invoke(item, m);
 
 			var url = Instance.Connection.CreateUrl("WorkerManagement", "Complete");
@@ -43,18 +42,15 @@ namespace TomPIT.Worker.Services
 			if (configuration == null)
 				Instance.Connection.LogError(SR.LogCategoryWorker, nameof(Invoke), string.Format("{0} ({1})", SR.ErrWorkerNotFound, worker));
 
-			JObject workerState = null;
+			var workerState = string.Empty;
 
 			if (state != Guid.Empty)
 			{
 				var blob = Instance.GetService<IStorageService>().Download(state);
 
 				if (blob != null)
-					workerState = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(blob.Content)) as JObject;
+					workerState = Encoding.UTF8.GetString(blob.Content);
 			}
-
-			if (workerState == null)
-				workerState = new JObject();
 
 			Invoker i = null;
 			var ms = Instance.Connection.GetService<IMicroServiceService>().Select(configuration.MicroService(Instance.Connection));
@@ -63,12 +59,8 @@ namespace TomPIT.Worker.Services
 
 			try
 			{
-				var args = new WorkerInvokeArgs(ctx, workerState);
-
 				if (configuration is IHostedWorker)
-					i = new Hosted(args, configuration as IHostedWorker);
-				else if (configuration is ICollector)
-					i = new Collector(args, configuration as ICollector);
+					i = new Hosted(configuration as IHostedWorker, workerState);
 				else
 					throw new NotSupportedException();
 
@@ -76,7 +68,7 @@ namespace TomPIT.Worker.Services
 
 				if (state == Guid.Empty)
 				{
-					if (workerState.Count > 0)
+					if (!string.IsNullOrWhiteSpace(i.State))
 					{
 						var id = Instance.GetService<IStorageService>().Upload(new Blob
 						{
@@ -85,7 +77,7 @@ namespace TomPIT.Worker.Services
 							MicroService = configuration.MicroService(Instance.Connection),
 							PrimaryKey = worker.ToString(),
 							Type = BlobTypes.WorkerState
-						}, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(workerState)), StoragePolicy.Singleton);
+						}, Encoding.UTF8.GetBytes(i.State), StoragePolicy.Singleton);
 
 
 						var url = Instance.Connection.CreateUrl("WorkerManagement", "AttachState");
@@ -107,7 +99,7 @@ namespace TomPIT.Worker.Services
 						MicroService = configuration.MicroService(Instance.Connection),
 						PrimaryKey = worker.ToString(),
 						Type = BlobTypes.WorkerState
-					}, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(workerState)), StoragePolicy.Singleton);
+					}, Encoding.UTF8.GetBytes(i.State), StoragePolicy.Singleton);
 				}
 
 				ctx.Services.Diagnostic.StopMetric(metricId, Diagnostics.SessionResult.Success, null);

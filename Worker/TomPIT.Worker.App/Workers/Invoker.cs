@@ -4,13 +4,13 @@ namespace TomPIT.Worker.Workers
 {
 	public abstract class Invoker
 	{
-		public Invoker(WorkerInvokeArgs e)
+		public Invoker(string state)
 		{
-			Args = e;
+			State = state;
 		}
 
 		public abstract void Invoke();
 
-		protected WorkerInvokeArgs Args { get; }
+		public string State { get; protected set; }
 	}
 }
