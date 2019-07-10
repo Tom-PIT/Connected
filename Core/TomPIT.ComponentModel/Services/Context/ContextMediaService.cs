@@ -16,14 +16,23 @@ namespace TomPIT.Services.Context
 		public string ResourceUrl(string path)
 		{
 			var tokens = path.Split('/');
-			var media = Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Media", tokens[0]) as IMediaResources;
 
-			return FindFile(media, tokens.Skip(1));
+			Context.MicroService.ValidateMicroServiceReference(Context.Connection(), tokens[0]);
+
+			var ms = Context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+
+			if (ms == null)
+				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({tokens[0]})");
+
+			var component = tokens[1];
+			var media = Context.Connection().GetService<IComponentService>().SelectConfiguration(ms.Token, "Media", component) as IMediaResources;
+
+			return FindFile(media, tokens.Skip(2));
 		}
 
 		private string FindFile(IMediaResources media, IEnumerable<string> path)
 		{
-			if (path.Count() == 0)
+			if (path.Count() == 1)
 			{
 				var file = media.Files.FirstOrDefault(f => string.Compare(f.FileName, path.ElementAt(0), true) == 0);
 
