@@ -75,11 +75,11 @@ namespace TomPIT.Services
 			}
 			else
 			{
-				var listInstance = (IList)list.CreateInstance();
+				var listInstance = (IList)genericList.CreateInstance();
 
 				listInstance.Add(result);
 
-				var listResult = (IList)(TReturnValue)method.Invoke(extenderInstance, new object[] { listInstance });
+				var listResult = (IList)method.Invoke(extenderInstance, new object[] { listInstance });
 
 				return (TReturnValue)listResult[0];
 			}

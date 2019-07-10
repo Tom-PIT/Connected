@@ -925,6 +925,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Expected type not found in the element chain.
+        /// </summary>
+        public static string ErrElementClosestNull {
+            get {
+                return ResourceManager.GetString("ErrElementClosestNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Environment unit not found.
         /// </summary>
         public static string ErrEnvironmentUnitNotFound {
@@ -1920,6 +1929,15 @@ namespace TomPIT {
         public static string ErrTransactionNotFound {
             get {
                 return ResourceManager.GetString("ErrTransactionNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Expected type in the script not found.
+        /// </summary>
+        public static string ErrTypeExpected {
+            get {
+                return ResourceManager.GetString("ErrTypeExpected", resourceCulture);
             }
         }
         

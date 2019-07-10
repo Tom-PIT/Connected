@@ -969,4 +969,10 @@
   <data name="ErrInvalidCredentials" xml:space="preserve">
     <value>Invalid credentials</value>
   </data>
+  <data name="ErrElementClosestNull" xml:space="preserve">
+    <value>Expected type not found in the element chain</value>
+  </data>
+  <data name="ErrTypeExpected" xml:space="preserve">
+    <value>Expected type in the script not found</value>
+  </data>
 </root>

@@ -47,6 +47,8 @@ namespace TomPIT.Worker.Services
 			if (ed == null)
 				return;
 
+			var cancel = false;
+
 			if (string.Compare(ed.Name, "$", true) != 0)
 			{
 				var targets = EventHandlers.Query(ed.Name);
@@ -58,31 +60,24 @@ namespace TomPIT.Worker.Services
 						if (!(Instance.GetService<IComponentService>().SelectConfiguration(target.Item2) is IEventHandler configuration))
 							return;
 
-						var pass = true;
-
-						foreach (var i in configuration.Events)
-						{
-							if (ed.Name.Equals(i.Event, StringComparison.OrdinalIgnoreCase))
+						Parallel.ForEach(configuration.Events,
+							(i) =>
 							{
-								if (!Invoke(ed, i))
+								if (ed.Name.Equals(i.Event, StringComparison.OrdinalIgnoreCase))
 								{
-									pass = false;
-									break;
+									if (Invoke(ed, i) & !cancel)
+										cancel = true;
 								}
-							}
-						}
-
-						if (!pass)
-							break;
+							});
 					};
 				}
 			}
 
 			if (ed.Callback != null)
-				Callback(ed);
+				Callback(ed, cancel);
 		}
 
-		private void Callback(EventDescriptor ed)
+		private void Callback(EventDescriptor ed, bool cancel)
 		{
 			var tokens = ed.Callback.Split('/');
 
@@ -95,8 +90,13 @@ namespace TomPIT.Worker.Services
 				return;
 
 			var args = string.IsNullOrWhiteSpace(ed.Arguments)
-				? null
+				? new JObject()
 				: JsonConvert.DeserializeObject<JObject>(ed.Arguments);
+
+			if (args.Property("cancel", StringComparison.OrdinalIgnoreCase) == null)
+				args.Add("cancel", cancel);
+			else
+				args["cancel"] = cancel;
 
 			var microService = Instance.GetService<IMicroServiceService>().Select(tokens[0].AsGuid());
 			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, microService);
@@ -110,18 +110,32 @@ namespace TomPIT.Worker.Services
 			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, null);
 			var ms = i.MicroService(Instance.Connection);
 			var configuration = i.Closest<IEventHandler>();
+
+			if (configuration == null)
+			{
+				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrElementClosestNull} ({nameof(IEventBinding)}->{nameof(IEventHandler)}");
+				return false;
+			}
+
 			var componentName = configuration.ComponentName(Instance.Connection);
 			var type = Instance.GetService<ICompilerService>().ResolveType(ms, configuration, componentName, false);
+
+			if (type == null)
+			{
+				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrTypeExpected} ({componentName})");
+				return false;
+			}
+
 			var dataContext = new DataModelContext(ctx);
 
-			if (type != null)
+			try
 			{
-				var handler = type.CreateInstance<Notifications.IEventHandler>(new object[] {dataContext,  ed.Name});
+				var handler = type.CreateInstance<Notifications.IEventHandler>(new object[] { dataContext, ed.Name });
 
 				if (!string.IsNullOrWhiteSpace(ed.Arguments))
 					Types.Populate(ed.Arguments, handler);
-
-				handler.Invoke();
+				
+				Invoke(handler);
 
 				if (handler.Cancel)
 				{
@@ -138,11 +152,37 @@ namespace TomPIT.Worker.Services
 
 					ed.Arguments = Types.Serialize(args);
 
-					return false;
+					return handler.Cancel;
+				}
+			}
+			catch(Exception ex)
+			{
+				ctx.Services.Diagnostic.Error(nameof(EventJob), nameof(Invoke), $"{ex.Message}");
+			}
+
+			return false;
+		}
+
+		private void Invoke(Notifications.IEventHandler handler)
+		{
+			Exception lastError = null;
+
+			for(var i = 0; i < 10; i++)
+			{
+				try
+				{
+					handler.Invoke();
+
+					return;
+				}
+				catch(Exception ex)
+				{
+					lastError = ex;
+					Thread.Sleep((i + 1) * 250);
 				}
 			}
 
-			return true;
+			throw lastError;
 		}
 
 		protected override void OnError(IQueueMessage item, Exception ex)
