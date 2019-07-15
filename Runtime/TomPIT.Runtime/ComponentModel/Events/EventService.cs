@@ -29,9 +29,11 @@ namespace TomPIT.ComponentModel.Events
 			var args = new JObject
 			{
 				{"microService", microService },
-				{"name", name },
-				{"callback", $"{callback.MicroService}/{callback.Api}/{callback.Operation}" }
+				{"name", name }
 			};
+
+			if (callback != null)
+				args.Add(new JObject { "callback", $"{callback.MicroService}/{callback.Api}/{callback.Operation}" });
 
 			if (e != null)
 				args.Add("arguments", Types.Serialize(e));

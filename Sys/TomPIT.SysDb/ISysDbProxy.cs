@@ -10,6 +10,7 @@ using TomPIT.SysDb.Globalization;
 using TomPIT.SysDb.IoT;
 using TomPIT.SysDb.Management;
 using TomPIT.SysDb.Messaging;
+using TomPIT.SysDb.Search;
 using TomPIT.SysDb.Security;
 using TomPIT.SysDb.Storage;
 using TomPIT.SysDb.Workers;
@@ -33,6 +34,7 @@ namespace TomPIT.SysDb
 		ICdnHandler Cdn { get; }
 		IBigDataHandler BigData { get; }
 		IMessagingHandler Messaging { get; }
+		ISearchHandler Search { get; }
 
 		void Initialize(string connectionString);
 	}

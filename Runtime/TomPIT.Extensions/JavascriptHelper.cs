@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace TomPIT
@@ -46,9 +47,9 @@ namespace TomPIT
 				return Html.Raw("null") as HtmlString;
 
 			if (decimalPlaces == -1)
-				return Html.Raw(string.Format("{0}", number.ToString())) as HtmlString;
+				return Html.Raw(string.Format("{0}", number.ToString(), CultureInfo.InvariantCulture)) as HtmlString;
 			else
-				return Html.Raw(string.Format("{0}", number.ToString($"n{decimalPlaces}"))) as HtmlString;
+				return Html.Raw(string.Format("{0}", number.ToString($"n{decimalPlaces}", CultureInfo.InvariantCulture))) as HtmlString;
 		}
 
 		public IHtmlContent Number(object value, bool mapNull)
@@ -82,7 +83,7 @@ namespace TomPIT
 			if (date == DateTime.MinValue)
 				return Html.Raw("null") as HtmlString;
 
-			return Html.Raw(string.Format("new Date({0}, {1}, {2}, {3}, {4}, {5})", date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second));
+			return Html.Raw(string.Format("new Date({0}, {1}, {2}, {3}, {4}, {5})", date.Year, date.Month - 1, date.Day, date.Hour, date.Minute, date.Second));
 		}
 
 		public IHtmlContent Array(IEnumerable<string> items)

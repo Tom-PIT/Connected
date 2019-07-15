@@ -73,7 +73,7 @@ namespace TomPIT.Worker.Services
 				}
 			}
 
-			if (ed.Callback != null)
+			if (!string.IsNullOrWhiteSpace(ed.Callback))
 				Callback(ed, cancel);
 		}
 
@@ -107,8 +107,8 @@ namespace TomPIT.Worker.Services
 
 		private bool Invoke(EventDescriptor ed, IEventBinding i)
 		{
-			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, null);
-			var ms = i.MicroService(Instance.Connection);
+			var ms = Instance.Connection.GetService<IMicroServiceService>().Select(i.MicroService(Instance.Connection));
+			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, ms);
 			var configuration = i.Closest<IEventHandler>();
 
 			if (configuration == null)
@@ -118,7 +118,7 @@ namespace TomPIT.Worker.Services
 			}
 
 			var componentName = configuration.ComponentName(Instance.Connection);
-			var type = Instance.GetService<ICompilerService>().ResolveType(ms, configuration, componentName, false);
+			var type = Instance.GetService<ICompilerService>().ResolveType(ms.Token, configuration, componentName, false);
 
 			if (type == null)
 			{

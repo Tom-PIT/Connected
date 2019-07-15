@@ -2,12 +2,18 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <AssemblyVersion>1.1.705.1</AssemblyVersion>
-    <FileVersion>1.1.705.1</FileVersion>
-    <Version>1.1.705.1</Version>
+    <AssemblyVersion>1.1.715.2</AssemblyVersion>
+    <FileVersion>1.1.715.2</FileVersion>
+    <Version>1.1.715.2</Version>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Lucene.Net" Version="3.0.3" />
+    <PackageReference Include="Lucene.Net.Contrib" Version="3.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
+    <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+    <ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
   </ItemGroup>
 </Project>

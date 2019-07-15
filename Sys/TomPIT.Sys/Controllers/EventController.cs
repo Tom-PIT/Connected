@@ -13,7 +13,7 @@ namespace TomPIT.Sys.Controllers
 			var body = FromBody();
 			var ms = body.Required<Guid>("microService");
 			var name = body.Required<string>("name");
-			var callback = body.Required<string>("callback");
+			var callback = body.Optional("callback", string.Empty);
 			var args = body.Optional<string>("arguments", null);
 
 			return DataModel.Events.Insert(ms, name, args, callback);
