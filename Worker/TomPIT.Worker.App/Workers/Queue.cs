@@ -23,6 +23,7 @@ namespace TomPIT.Worker.Workers
 		private string Args { get; }
 		private IQueueHandlerConfiguration Handler { get; }
 
+		public IQueueHandler HandlerInstance { get; private set; }
 		public void Invoke()
 		{
 			var ms = ((IConfiguration)Handler).MicroService(Instance.Connection);
@@ -30,12 +31,12 @@ namespace TomPIT.Worker.Workers
 			var queueType = Instance.GetService<ICompilerService>().ResolveType(ms, Handler, Handler.ComponentName(Instance.Connection));
 			var ctx = ExecutionContext.Create(Instance.Connection.Url, Instance.GetService<IMicroServiceService>().Select(ms));
 			var dataCtx = new DataModelContext(ctx);
-			var instance = queueType.CreateInstance<IQueueHandler>(new object[] {dataCtx });
+			HandlerInstance = queueType.CreateInstance<IQueueHandler>(new object[] {dataCtx });
 
 			if (!string.IsNullOrWhiteSpace(Args))
-				Types.Populate(Args, instance);
+				Types.Populate(Args, HandlerInstance);
 
-			instance.Invoke();
+			HandlerInstance.Invoke();
 		}
 	}
 }

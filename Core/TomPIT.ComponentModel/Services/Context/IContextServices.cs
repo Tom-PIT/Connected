@@ -16,5 +16,6 @@
 		IContextIoTService IoT { get; }
 		IContextMediaService Media { get; }
 		IContextFeatureService Features { get; }
+		IContextSearchService Search { get; }
 	}
 }

@@ -18,6 +18,7 @@ namespace TomPIT.Services
 		private IContextIoTService _iot = null;
 		private IContextMediaService _media = null;
 		private IContextFeatureService _features = null;
+		private IContextSearchService _search = null;
 
 		public ContextServices(IExecutionContext context) : base(context)
 		{
@@ -174,6 +175,17 @@ namespace TomPIT.Services
 					_features = new ContextFeatureService(Context);
 
 				return _features;
+			}
+		}
+
+		public IContextSearchService Search
+		{
+			get
+			{
+				if (_search == null)
+					_search = new ContextSearchService(Context);
+
+				return _search;
 			}
 		}
 	}

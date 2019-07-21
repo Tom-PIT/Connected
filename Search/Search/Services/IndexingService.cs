@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 using TomPIT;
 using TomPIT.Services;
 
-namespace Search.Services
+namespace TomPIT.Search.Services
 {
 	internal class IndexingService : HostedService
 	{

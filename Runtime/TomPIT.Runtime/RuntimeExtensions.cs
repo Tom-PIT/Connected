@@ -48,5 +48,15 @@ namespace TomPIT
 
 			return Instance.ResourceGroupExists(ms.ResourceGroup);
 		}
+
+		public static IDataModelContext CreateContext(this IComponent component)
+		{
+			return new DataModelContext(ExecutionContext.Create(Instance.Connection.Url, Instance.Connection.GetService<IMicroServiceService>().Select(component.MicroService)));
+		}
+
+		public static IDataModelContext CreateContext(this IConfiguration configuration)
+		{
+			return CreateContext(Instance.GetService<IComponentService>().SelectComponent(configuration.Component));
+		}
 	}
 }

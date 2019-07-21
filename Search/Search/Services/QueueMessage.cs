@@ -1,7 +1,7 @@
 ﻿using System;
 using TomPIT.Storage;
 
-namespace Search.Services
+namespace TomPIT.Search.Services
 {
 	internal class QueueMessage : IQueueMessage
 	{

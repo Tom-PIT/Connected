@@ -8,9 +8,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>1.1.715.2</AssemblyVersion>
-    <FileVersion>1.1.715.2</FileVersion>
-    <Version>1.1.715.2</Version>
+    <AssemblyVersion>1.1.718.2</AssemblyVersion>
+    <FileVersion>1.1.718.2</FileVersion>
+    <Version>1.1.718.2</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Views\Shell\**" />

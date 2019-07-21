@@ -103,21 +103,17 @@ namespace TomPIT.DataProviders.Sql
 			var con = ResolveConnection(command, connection);
 			var com = ResolveCommand(command, con, connection);
 
-			con.Open();
+			if (con.State == ConnectionState.Closed)
+				con.Open();
+
 			SqlDataReader rdr = null;
 
 			try
 			{
-				foreach (var i in command.Parameters)
-				{
-					var p = new SqlParameter
-					{
-						ParameterName = i.Name,
-						Value = i.Value == null || i.Value == DBNull.Value ? DBNull.Value : i.Value
-					};
+				SetupParameters(command, com);
 
-					com.Parameters.Add(p);
-				}
+				foreach (var i in command.Parameters)
+					com.Parameters[i.Name].Value = i.Value;
 
 				rdr = com.ExecuteReader();
 				var r = new JObject();
@@ -141,7 +137,7 @@ namespace TomPIT.DataProviders.Sql
 				if (rdr != null && !rdr.IsClosed)
 					rdr.Close();
 
-				if (con.State == ConnectionState.Open)
+				if (connection == null && con.State == ConnectionState.Open)
 					con.Close();
 			}
 		}

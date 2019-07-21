@@ -41,7 +41,7 @@ namespace TomPIT.Services
 
 			while (!token.IsCancellationRequested)
 			{
-				T item = default(T);
+				T item = default;
 
 				try
 				{

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Globalization;
@@ -21,6 +22,10 @@ namespace TomPIT.Services.Context
 
 		public string GetString(string stringTable, string key, int lcid)
 		{
+			return GetString(stringTable, key, lcid, true);
+		}
+		private string GetString(string stringTable, string key, int lcid, bool throwException)
+		{
 			var microService = Context.MicroService;
 			var st = stringTable;
 
@@ -38,21 +43,6 @@ namespace TomPIT.Services.Context
 				st = tokens[1];
 			}
 
-			var cacheKey = $"stringTable{microService.Token}{st}";
-
-			if (!(Shell.HttpContext.Items[cacheKey] is IStringTable config))
-				config = Context.Connection().GetService<IComponentService>().SelectConfiguration(microService.Token, "StringTable", st) as IStringTable;
-
-			Shell.HttpContext.Items[cacheKey] = config;
-
-			var str = config.Strings.FirstOrDefault(f => string.Compare(f.Key, key, true) == 0);
-
-			if (str == null)
-				throw new RuntimeException($"{SR.ErrStringResourceNotFound} ({st}/{key})").WithMetrics(Context);
-
-			if (!str.IsLocalizable)
-				return str.DefaultValue;
-
 			if (lcid == 0)
 			{
 				if (Language == Guid.Empty)
@@ -67,36 +57,22 @@ namespace TomPIT.Services.Context
 				}
 			}
 
-			if (lcid == CultureInfo.InvariantCulture.LCID)
-				return str.DefaultValue;
-
-			var translation = str.Translations.FirstOrDefault(f => f.Lcid == lcid);
-
-			return translation == null
-				? GetFallbackString(str, lcid)
-				: translation.Value;
-		}
-
-		private string GetFallbackString(IStringResource str, int lcid)
-		{
-			var culture = CultureInfo.GetCultureInfo(lcid);
-
-			if (culture.LCID == CultureInfo.InvariantCulture.LCID || culture.Parent == null)
-				return str.DefaultValue;
-
-			var parent = culture.Parent;
-
-			var translation = str.Translations.FirstOrDefault(f => f.Lcid == parent.LCID);
-
-			if (translation != null)
-				return translation.Value;
-
-			return GetFallbackString(str, parent.LCID);
+			return Context.Connection().GetService<ILocalizationService>().GetString(microService.Name, st, key, lcid, throwException);
 		}
 
 		public string GetString(string stringTable, string key)
 		{
 			return GetString(stringTable, key, 0);
+		}
+
+		public string TryGetString(string stringTable, string key)
+		{
+			return GetString(stringTable, key, 0, false);
+		}
+
+		public string TryGetString(string stringTable, string key, int lcid)
+		{
+			return GetString(stringTable, key, lcid, false);
 		}
 	}
 }

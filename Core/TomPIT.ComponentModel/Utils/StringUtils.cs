@@ -40,10 +40,10 @@ namespace TomPIT
 		{
 			switch (type)
 			{
-			case CurrencyType.Euro:
-				return string.Format("{0} €", value.ToString(string.Concat("n", decimalPlaces)));
-			default:
-				return string.Format(value.ToString(string.Concat("n", decimalPlaces)));
+				case CurrencyType.Euro:
+					return string.Format("{0} €", value.ToString(string.Concat("n", decimalPlaces)));
+				default:
+					return string.Format(value.ToString(string.Concat("n", decimalPlaces)));
 			}
 		}
 
@@ -138,6 +138,41 @@ namespace TomPIT
 			}
 
 			return r.ToString();
+		}
+
+
+		public static string ToBase16(this string value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+				return value;
+
+			var sb = new StringBuilder();
+
+			foreach (char i in value)
+			{
+				var v = Convert.ToInt32(i);
+
+				sb.Append(v.ToString("X"));
+			}
+
+			return sb.ToString();
+		}
+
+		public static string FromBase16(this string value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+				return value;
+
+			var sb = new StringBuilder();
+
+			for (var i = 0; i < value.Length; i += 2)
+			{
+				var v = Convert.ToInt32(string.Concat(value[i], value[i + 1]), 16);
+
+				sb.Append(char.ConvertFromUtf32(v));
+			}
+
+			return sb.ToString();
 		}
 	}
 }

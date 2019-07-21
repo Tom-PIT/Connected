@@ -41,7 +41,7 @@ namespace TomPIT.Designers
 			if (OnCreateToolbarAction(addItems))
 				Toolbar.Items.Add(addItems);
 
-			var search = new Search(Environment);
+			var search = new Actions.Search(Environment);
 
 			if (OnCreateToolbarAction(search))
 				Toolbar.Items.Add(search);

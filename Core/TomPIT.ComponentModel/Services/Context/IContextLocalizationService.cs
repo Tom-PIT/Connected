@@ -8,5 +8,7 @@ namespace TomPIT.Services.Context
 		Guid Language { get; }
 		string GetString([CodeAnalysisProvider(ExecutionContext.StringTableProvider)]string stringTable, [CodeAnalysisProvider(ExecutionContext.StringTableStringProvider)]string key);
 		string GetString([CodeAnalysisProvider(ExecutionContext.StringTableProvider)]string stringTable, [CodeAnalysisProvider(ExecutionContext.StringTableStringProvider)]string key, int lcid);
+		string TryGetString([CodeAnalysisProvider(ExecutionContext.StringTableProvider)]string stringTable, [CodeAnalysisProvider(ExecutionContext.StringTableStringProvider)]string key);
+		string TryGetString([CodeAnalysisProvider(ExecutionContext.StringTableProvider)]string stringTable, [CodeAnalysisProvider(ExecutionContext.StringTableStringProvider)]string key, int lcid);
 	}
 }

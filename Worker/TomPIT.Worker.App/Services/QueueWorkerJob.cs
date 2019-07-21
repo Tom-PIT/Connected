@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,14 +48,25 @@ namespace TomPIT.Worker.Services
 			var ms = Instance.Connection.GetService<IMicroServiceService>().Select(((IConfiguration)configuration).MicroService(Instance.Connection));
 			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, ms);
 			var metricId = ctx.Services.Diagnostic.StartMetric(configuration.Metrics, null);
-
+			Queue q = null;
+			
 			try
 			{
-				var q = new Queue(arguments, configuration);
-
+				q = new Queue(arguments, configuration);
+				
 				q.Invoke();
 
 				ctx.Services.Diagnostic.StopMetric(metricId, Diagnostics.SessionResult.Success, null);
+			}
+			catch(ValidationException ex)
+			{
+				if (q.HandlerInstance.ValidationFailedBehavior == Cdn.QueueValidationBehavior.Complete)
+				{
+					Instance.Connection.LogWarning(ctx, "Queue", nameof(Invoke), ex.Message);
+					return;
+				}
+				else
+					throw ex;
 			}
 			catch
 			{

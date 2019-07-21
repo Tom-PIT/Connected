@@ -2,7 +2,7 @@
 using TomPIT.Services;
 using TomPIT.Storage;
 
-namespace Search.Services
+namespace TomPIT.Search.Services
 {
 	internal class IndexingDispatcher : Dispatcher<IQueueMessage>
 	{

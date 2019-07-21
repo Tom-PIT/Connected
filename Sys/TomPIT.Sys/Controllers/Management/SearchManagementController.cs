@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using TomPIT.Search;
+using TomPIT.Storage;
+using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Controllers.Management
 {
@@ -12,38 +15,71 @@ namespace TomPIT.Sys.Controllers.Management
 		public List<IQueueMessage> Dequeue()
 		{
 			var body = FromBody();
-
 			var count = body.Required<int>("count");
 
-			var r = new List<IQueueMessage>();
-
-			return DataModel.Events.Dequeue(count);
+			return DataModel.Search.Dequeue(count);
 		}
 
 		[HttpGet]
-		public IEventDescriptor Select(Guid id)
+		public IIndexRequest Select(Guid id)
 		{
-			return DataModel.Events.Select(id);
+			return DataModel.Search.Select(id);
 		}
 
 		[HttpPost]
 		public void Complete()
 		{
 			var body = FromBody();
-
 			var popReceipt = body.Required<Guid>("popReceipt");
 
-			DataModel.Events.Complete(popReceipt);
+			DataModel.Search.Complete(popReceipt);
 		}
 
 		[HttpPost]
 		public void Ping()
 		{
 			var body = FromBody();
-
 			var popReceipt = body.Required<Guid>("popReceipt");
+			var nextVisible = TimeSpan.FromSeconds(body.Required<int>("nextVisible"));
 
-			DataModel.Events.Ping(popReceipt);
+			DataModel.Search.Ping(popReceipt, nextVisible);
+		}
+
+		[HttpPost]
+		public ICatalogState SelectState()
+		{
+			var body = FromBody();
+			var catalog = body.Required<Guid>("catalog");
+
+			return DataModel.Search.SelectState(catalog);
+		}
+
+		[HttpPost]
+		public void UpdateState()
+		{
+			var body = FromBody();
+			var catalog = body.Required<Guid>("catalog");
+			var status = body.Required<CatalogStateStatus>("status");
+
+			DataModel.Search.UpdateState(catalog, status);
+		}
+
+		[HttpPost]
+		public void DeleteState()
+		{
+			var body = FromBody();
+			var catalog = body.Required<Guid>("catalog");
+
+			DataModel.Search.DeleteState(catalog);
+		}
+
+		[HttpPost]
+		public void InvalidateState()
+		{
+			var body = FromBody();
+			var catalog = body.Required<Guid>("catalog");
+
+			DataModel.Search.InvalidateState(catalog);
 		}
 	}
 }

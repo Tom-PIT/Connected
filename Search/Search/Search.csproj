@@ -2,18 +2,21 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <AssemblyVersion>1.1.715.2</AssemblyVersion>
-    <FileVersion>1.1.715.2</FileVersion>
-    <Version>1.1.715.2</Version>
+    <AssemblyVersion>1.1.718.2</AssemblyVersion>
+    <FileVersion>1.1.718.2</FileVersion>
+    <Version>1.1.718.2</Version>
+    <AssemblyName>TomPIT.Search</AssemblyName>
+    <RootNamespace>TomPIT.Search</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Lucene.Net" Version="3.0.3" />
-    <PackageReference Include="Lucene.Net.Contrib" Version="3.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
     <ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
+    <ProjectReference Include="..\Lucene.Core\Lucene.Net.csproj" />
+    <ProjectReference Include="..\Lucene.Highlighter\Contrib.Highlighter.csproj" />
+    <ProjectReference Include="..\Lucene.Memory\Contrib.Memory.csproj" />
   </ItemGroup>
 </Project>

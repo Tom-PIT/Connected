@@ -975,4 +975,7 @@
   <data name="ErrTypeExpected" xml:space="preserve">
     <value>Expected type in the script not found</value>
   </data>
+  <data name="ErrSearchCatalogStateNotFound" xml:space="preserve">
+    <value>Search catalog state not found</value>
+  </data>
 </root>

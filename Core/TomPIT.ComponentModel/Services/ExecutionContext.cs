@@ -18,6 +18,7 @@ namespace TomPIT.Services
 		internal const string SubscriptionEventProvider = "TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, TomPIT.Design";
 		internal const string MailTemplateProvider = "TomPIT.Design.CodeAnalysis.Providers.MailTemplateProvider, TomPIT.Design";
 		internal const string StringTableProvider = "TomPIT.Design.CodeAnalysis.Providers.StringTableProvider, TomPIT.Design";
+		internal const string SearchCatalogProvider = "TomPIT.Design.CodeAnalysis.Providers.SearchCatalogProvider, TomPIT.Design";
 		internal const string StringTableStringProvider = "TomPIT.Design.CodeAnalysis.Providers.StringTableStringProvider, TomPIT.Design";
 		internal const string MediaProvider = "TomPIT.Design.CodeAnalysis.Providers.MediaProvider, TomPIT.Design";
 		internal const string IoTHubProvider = "TomPIT.Design.CodeAnalysis.Providers.IoTHubProvider, TomPIT.Design";

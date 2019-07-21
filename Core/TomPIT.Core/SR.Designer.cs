@@ -1771,6 +1771,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Search catalog state not found.
+        /// </summary>
+        public static string ErrSearchCatalogStateNotFound {
+            get {
+                return ResourceManager.GetString("ErrSearchCatalogStateNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Send mail operation cancelled.
         /// </summary>
         public static string ErrSendMailCancelled {

@@ -9,6 +9,7 @@ using TomPIT.Application.Events;
 using TomPIT.Application.Features;
 using TomPIT.Application.QA;
 using TomPIT.Application.Resources;
+using TomPIT.Application.Search;
 using TomPIT.Application.UI;
 using TomPIT.Application.Workers;
 using TomPIT.Design;
@@ -49,6 +50,7 @@ namespace TomPIT.Application
 				{"Subscription", new ItemDescriptor("Subscription", "Subscription", typeof(Subscription)) { Glyph = "fal fa-bell", Category = "Cdn" , Ordinal=400} },
 				{"MailTemplate", new ItemDescriptor("Mail template", "MailTemplate", typeof(MailTemplate)) { Glyph = "fal fa-envelope", Category = "Cdn" , Ordinal=401} },
 				//{"TestSuite", new ItemDescriptor("Test suite", "TestSuite", typeof(TestSuite)) { Glyph = "fal fa-stethoscope", Category = "QA" , Ordinal=500} }
+				{"SearchCatalog", new ItemDescriptor("Search catalog", "SearchCatalog", typeof(SearchCatalog)) { Glyph = "fal fa-search", Category = "Search" , Ordinal=500} }
 			});
 		}
 

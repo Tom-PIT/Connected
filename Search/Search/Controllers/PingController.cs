@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Controllers;
 
-namespace Search.Controllers
+namespace TomPIT.Search.Controllers
 {
 	[AllowAnonymous]
 	public class PingController : ServerController

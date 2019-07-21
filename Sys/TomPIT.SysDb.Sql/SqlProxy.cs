@@ -11,6 +11,7 @@ using TomPIT.SysDb.Globalization;
 using TomPIT.SysDb.IoT;
 using TomPIT.SysDb.Management;
 using TomPIT.SysDb.Messaging;
+using TomPIT.SysDb.Search;
 using TomPIT.SysDb.Security;
 using TomPIT.SysDb.Sql.BigData;
 using TomPIT.SysDb.Sql.Cdn;
@@ -24,6 +25,7 @@ using TomPIT.SysDb.Sql.Events;
 using TomPIT.SysDb.Sql.Globalization;
 using TomPIT.SysDb.Sql.IoT;
 using TomPIT.SysDb.Sql.Messaging;
+using TomPIT.SysDb.Sql.Search;
 using TomPIT.SysDb.Sql.Security;
 using TomPIT.SysDb.Sql.Storage;
 using TomPIT.SysDb.Sql.Workers;
@@ -49,6 +51,7 @@ namespace TomPIT.SysDb.Sql
 		private ICdnHandler _cdn = null;
 		private IBigDataHandler _bigData = null;
 		private IMessagingHandler _messaging = null;
+		private ISearchHandler _search = null;
 
 		public IMessagingHandler Messaging
 		{
@@ -212,6 +215,17 @@ namespace TomPIT.SysDb.Sql
 					_diagnostics = new DiagnosticHandler();
 
 				return _diagnostics;
+			}
+		}
+
+		public ISearchHandler Search
+		{
+			get
+			{
+				if (_search == null)
+					_search = new SearchHandler();
+
+				return _search;
 			}
 		}
 

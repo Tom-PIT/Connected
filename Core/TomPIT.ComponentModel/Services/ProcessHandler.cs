@@ -62,7 +62,7 @@ namespace TomPIT.Services
 			}
 
 			if (sb.Length > 0)
-				throw new RuntimeException(sb.ToString());
+				throw new ValidationException(sb.ToString());
 		}
 
 		private void ValidateProperties(List<ValidationResult> results, object instance, List<object> references)

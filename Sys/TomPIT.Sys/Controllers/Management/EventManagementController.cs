@@ -13,10 +13,7 @@ namespace TomPIT.Sys.Controllers.Management
 		public List<IQueueMessage> Dequeue()
 		{
 			var body = FromBody();
-
 			var count = body.Required<int>("count");
-
-			var r = new List<IQueueMessage>();
 
 			return DataModel.Events.Dequeue(count);
 		}
@@ -31,7 +28,6 @@ namespace TomPIT.Sys.Controllers.Management
 		public void Complete()
 		{
 			var body = FromBody();
-
 			var popReceipt = body.Required<Guid>("popReceipt");
 
 			DataModel.Events.Complete(popReceipt);
@@ -41,7 +37,6 @@ namespace TomPIT.Sys.Controllers.Management
 		public void Ping()
 		{
 			var body = FromBody();
-
 			var popReceipt = body.Required<Guid>("popReceipt");
 
 			DataModel.Events.Ping(popReceipt);

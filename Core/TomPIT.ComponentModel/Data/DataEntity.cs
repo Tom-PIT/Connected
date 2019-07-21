@@ -21,6 +21,7 @@ namespace TomPIT.Data
 		public void Deserialize(JObject state)
 		{
 			OnDeserialize(state);
+			OnDeserialized();
 		}
 
 		protected virtual void OnDeserialize(JObject state)
@@ -31,6 +32,11 @@ namespace TomPIT.Data
 			};
 
 			JsonConvert.PopulateObject(Types.Serialize(state), this, settings);
+		}
+
+		protected virtual void OnDeserialized()
+		{
+
 		}
 
 		public void DataSource(JObject state)

@@ -17,6 +17,7 @@ using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Globalization;
 using TomPIT.IoT;
+using TomPIT.Search;
 using TomPIT.Security;
 using TomPIT.Services;
 using TomPIT.Storage;
@@ -81,6 +82,8 @@ namespace TomPIT.Runtime
 			e.Connection.RegisterService(typeof(IDataCachingService), typeof(DataCachingService));
 			e.Connection.RegisterService(typeof(IQueueService), typeof(QueueService));
 			e.Connection.RegisterService(typeof(IGraphicsService), typeof(GraphicsService));
+			e.Connection.RegisterService(typeof(ISearchService), typeof(SearchService));
+			e.Connection.RegisterService(typeof(ILocalizationService), typeof(LocalizationService));
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 			{

@@ -13,6 +13,8 @@ namespace TomPIT.Cdn
 		{
 		}
 
+		public virtual QueueValidationBehavior ValidationFailed => QueueValidationBehavior.Retry;
+
 		public void Invoke()
 		{
 			Validate();

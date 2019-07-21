@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Workers;
+using TomPIT.Exceptions;
 using TomPIT.Services;
 using TomPIT.Storage;
 using TomPIT.Worker.Storage;

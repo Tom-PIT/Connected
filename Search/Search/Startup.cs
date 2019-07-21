@@ -2,11 +2,12 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Search.Services;
 using TomPIT;
+using TomPIT.Connectivity;
 using TomPIT.Environment;
+using TomPIT.Search.Services;
 
-namespace Search
+namespace TomPIT.Search
 {
 	public class Startup
 	{
@@ -34,12 +35,26 @@ namespace Search
 			{
 				Search.Configuration.Routing.Register(f.Builder);
 			});
+
+			InitializeConfiguration();
 			Instance.Run(app);
 		}
 
 		private void RegisterTasks(IServiceCollection services)
 		{
-			services.AddSingleton<IHostedService, IndexingService>();
+			services.AddSingleton<IHostedService, Services.IndexingService>();
+			services.AddSingleton<IHostedService, ScaveningService>();
+			services.AddSingleton<IHostedService, FlushingService>();
+		}
+
+		private void InitializeConfiguration()
+		{
+			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
+		}
+
+		private void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
+		{
+			e.Connection.RegisterService(typeof(IIndexingService), typeof(IndexingService));
 		}
 	}
 }
