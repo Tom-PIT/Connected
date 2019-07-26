@@ -62,7 +62,12 @@ namespace TomPIT.Services
 			}
 
 			if (sb.Length > 0)
-				throw new ValidationException(sb.ToString());
+			{
+				throw new ValidationException(sb.ToString())
+				{
+					Source = GetType().ScriptTypeName()
+				};
+			}
 		}
 
 		private void ValidateProperties(List<ValidationResult> results, object instance, List<object> references)

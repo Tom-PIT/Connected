@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.Design</RootNamespace>
-    <AssemblyVersion>1.1.718.2</AssemblyVersion>
-    <FileVersion>1.1.718.2</FileVersion>
-    <Version>1.1.718.2</Version>
+    <AssemblyVersion>1.1.723.4</AssemblyVersion>
+    <FileVersion>1.1.723.4</FileVersion>
+    <Version>1.1.723.4</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />

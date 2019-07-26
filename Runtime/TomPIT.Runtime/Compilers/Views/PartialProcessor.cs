@@ -9,7 +9,6 @@ namespace TomPIT.Runtime.Compilers.Views
 	internal class PartialProcessor : ProcessorBase
 	{
 		private StringBuilder _sb = null;
-		private IComponent _component = null;
 
 		public PartialProcessor(IPartialView partial, string source) : base(source)
 		{

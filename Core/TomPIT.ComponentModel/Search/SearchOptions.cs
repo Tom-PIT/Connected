@@ -11,9 +11,22 @@ namespace TomPIT.Search
 		private HighlightOptions _highlight = null;
 		private GlobalizationOptions _globalization = null;
 		private PagingOptions _paging = null;
+		private ResultsOptions _results = null;
+		private ParserOptions _parser = null;
 		private List<string> _catalogs = null;
 		public string CommandText {get;set;}
 		public QueryKind Kind { get; set; } = QueryKind.Term;
+
+		public ISearchResultsOptions Results
+		{
+			get
+			{
+				if (_results == null)
+					_results = new ResultsOptions();
+
+				return _results;
+			}
+		}
 
 		public ISearchHighlightOptions Highlight
 		{
@@ -45,6 +58,17 @@ namespace TomPIT.Search
 					_paging = new PagingOptions();
 
 				return _paging;
+			}
+		}
+
+		public ISearchParserOptions Parser
+		{
+			get
+			{
+				if (_parser == null)
+					_parser = new ParserOptions();
+
+				return _parser;
 			}
 		}
 

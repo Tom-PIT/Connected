@@ -36,6 +36,13 @@ namespace TomPIT.UI
 				}
 				else if (kind == ViewKind.Report)
 					return Instance.GetService<IViewService>().HasChanged(kind, _viewPath, null);
+				else if (kind == ViewKind.MailTemplate)
+				{
+					var tokens = _viewPath.Split('/');
+					var path = $"{tokens[tokens.Length - 2]}/{tokens[tokens.Length - 1]}";
+
+					return Instance.GetService<IViewService>().HasChanged(kind, path, null);
+				}
 				else
 					return Instance.GetService<IViewService>().HasChanged(kind, Path.GetFileNameWithoutExtension(_viewPath), null);
 			}

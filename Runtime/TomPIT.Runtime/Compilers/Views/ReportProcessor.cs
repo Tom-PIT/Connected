@@ -15,7 +15,6 @@ namespace TomPIT.Runtime.Compilers.Views
 	internal class ReportProcessor : ProcessorBase
 	{
 		private StringBuilder _sb = null;
-		private IComponent _component = null;
 
 		public ReportProcessor(IReport report) : base(null)
 		{

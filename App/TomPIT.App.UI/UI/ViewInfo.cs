@@ -55,6 +55,12 @@ namespace TomPIT.UI
 
 				Path = $"{tokens[tokens.Length - 2]}/{tokens[tokens.Length - 1].Split('.')[0]}";
 			}
+			else if (Kind == ViewKind.MailTemplate)
+			{
+				var tokens = FullPath.Split('/');
+
+				Path = $"{tokens[tokens.Length-2]}/{tokens[tokens.Length-1]}";
+			}
 			else
 				Path = System.IO.Path.GetFileNameWithoutExtension(viewPath);
 		}
@@ -161,7 +167,9 @@ namespace TomPIT.UI
 
 		private void LoadMailTemplate()
 		{
-			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(Path.AsGuid());
+			var tokens = Path.Split('/');
+
+			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(tokens[0].AsGuid(), "MailTemplate", System.IO.Path.GetFileNameWithoutExtension( tokens[1]));
 
 			Exists = ViewComponent != null && string.Compare(ViewComponent.Category, "MailTemplate", true) == 0;
 

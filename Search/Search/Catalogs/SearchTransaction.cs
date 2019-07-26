@@ -69,13 +69,13 @@ namespace TomPIT.Search.Catalogs
 
 			if (r.Count > 0)
 			{
-				var results = r.OrderByDescending(f => f.Score).ThenBy(f => f.Title).Take(Options.Paging.Size);
+				var results = r.OrderByDescending(f => f.Score).Take(Options.Paging.Size);
 
-				foreach (SearchResultDescriptor result in results)
+				foreach (SearchResult result in results)
 					Results.Items.Add(result);
 			}
 
-			foreach (SearchResultDescriptor i in Results.Items)
+			foreach (SearchResult i in Results.Items)
 				new SearchTextParser(r, i, Options).Parse();
 		}
 

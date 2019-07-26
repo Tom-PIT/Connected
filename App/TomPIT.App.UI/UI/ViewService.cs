@@ -298,7 +298,7 @@ namespace TomPIT.UI
 					component = partial.Component;
 					break;
 				case ViewKind.MailTemplate:
-					var template = SelectMailTemplate(url.AsGuid());
+					var template = SelectMailTemplate(url);
 
 					if (template == null)
 						return false;
@@ -357,9 +357,19 @@ namespace TomPIT.UI
 			return Get(c.Token) as IMasterView;
 		}
 
-		public IMailTemplate SelectMailTemplate(Guid token)
+		public IMailTemplate SelectMailTemplate(string url)
 		{
-			return Get(token) as IMailTemplate;
+			var tokens = url.Split('/');
+
+			if (!Guid.TryParse(tokens[0], out Guid _))
+				return null;
+
+			var component = Connection.GetService<IComponentService>().SelectComponent(tokens[0].AsGuid(), "MailTemplate", System.IO.Path.GetFileNameWithoutExtension(tokens[1]));
+
+			if (component == null)
+				return null;
+
+			return Get(component.Token) as IMailTemplate;
 		}
 
 		public IPartialView SelectPartial(string name)

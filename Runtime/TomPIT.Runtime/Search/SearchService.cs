@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
 using TomPIT.Connectivity;
@@ -32,14 +33,14 @@ namespace TomPIT.Search
 			};
 
 			if (args != null)
-				a.Add("arguments", Types.Serialize(a));
+				a.Add("arguments", Types.Serialize(args));
 
 			e.Add("arguments", Types.Serialize(a));
 
 			Connection.Post(u, e);
 		}
 
-		public ISearchResults Search(ISearchOptions options)
+		public IClientSearchResults Search(ISearchOptions options)
 		{
 			var url = Connection.GetService<IInstanceEndpointService>().Url(InstanceType.Search, InstanceVerbs.Get);
 
@@ -47,8 +48,45 @@ namespace TomPIT.Search
 				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceType.Search}, {InstanceVerbs.Post})");
 
 			var u = ServerUrl.Create(url, "Search", "Search");
+			var results = Connection.Post<SearchResults>(u, options);
+			var clientResults = new ClientSearchResults();
+			var handlers = new Dictionary<Guid, dynamic>();
 
-			return Connection.Post<SearchResults>(u, options);
+			if (results.Messages.Count > 0)
+				clientResults.Messages.AddRange(results.Messages);
+
+			clientResults.SearchTime = results.SearchTime;
+			clientResults.Total = results.Total;
+
+			foreach(var result in results.Items)
+			{
+				if (result.Catalog == Guid.Empty)
+					continue;
+
+				if (!handlers.ContainsKey(result.Catalog))
+				{
+					var catalog = Connection.GetService<IComponentService>().SelectConfiguration(result.Catalog) as ISearchCatalog;
+					var type = Connection.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(Connection), catalog, catalog.ComponentName(Connection));
+					dynamic instance = type.CreateInstance<ISearchProcessHandler>(new object[] { catalog.CreateContext() });
+
+					handlers.Add(result.Catalog, instance);
+				}
+
+				var handler = handlers[result.Catalog];
+				var entity = handler.Deserialize(result.Content);
+
+				clientResults.Items.Add(new ClientSearchResult
+				{
+					Catalog = result.Catalog,
+					Content = result.Content,
+					Entity = entity,
+					Score = result.Score,
+					Text = result.Text,
+					Title = result.Title
+				});
+			}
+
+			return clientResults;
 		}
 	}
 }

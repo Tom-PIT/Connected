@@ -7,15 +7,15 @@ namespace TomPIT.Search.Catalogs
 {
 	internal class SearchResults : ISearchResults
 	{
-		private List<ISearchResultDescriptor> _items = null;
+		private List<ISearchResult> _items = null;
 		private List<ISearchResultMessage> _messages = null;
 
-		public List<ISearchResultDescriptor> Items
+		public List<ISearchResult> Items
 		{
 			get
 			{
 				if (_items == null)
-					_items = new List<ISearchResultDescriptor>();
+					_items = new List<ISearchResult>();
 
 				return _items;
 			}

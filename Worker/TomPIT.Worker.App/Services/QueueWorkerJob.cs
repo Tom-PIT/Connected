@@ -60,7 +60,7 @@ namespace TomPIT.Worker.Services
 			}
 			catch(ValidationException ex)
 			{
-				if (q.HandlerInstance.ValidationFailedBehavior == Cdn.QueueValidationBehavior.Complete)
+				if (q.HandlerInstance.ValidationFailed == Cdn.QueueValidationBehavior.Complete)
 				{
 					Instance.Connection.LogWarning(ctx, "Queue", nameof(Invoke), ex.Message);
 					return;

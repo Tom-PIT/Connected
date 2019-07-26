@@ -1,6 +1,7 @@
 ﻿using Lucene.Net.Documents;
 using Lucene.Net.QueryParsers;
 using Lucene.Net.Search;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -26,33 +27,6 @@ namespace TomPIT.Search.Catalogs
 		public int Total { get; private set; }
 		public string CommandText { get; private set; }
 		protected ISearchOptions Options { get; }
-		public List<string> Duplicates
-		{
-			get
-			{
-				if (_duplicates == null)
-					_duplicates = new List<string>();
-
-				return _duplicates;
-			}
-		}
-
-		private void AddToResults(SearchResult r)
-		{
-			var existing = Results.FirstOrDefault(f => string.Compare(f.Id, r.Id, false) == 0);
-
-			if (existing != null)
-			{
-				Total--;
-
-				if (!Duplicates.Contains(r.Id))
-					Duplicates.Add(r.Id);
-
-				return;
-			}
-
-			Results.Add(r);
-		}
 
 		protected abstract string ParseCommandText();
 
@@ -80,6 +54,9 @@ namespace TomPIT.Search.Catalogs
 
 				var collector = TopScoreDocCollector.Create(calculatedMax, true);
 				var parser = CreateParser();
+
+				parser.AllowLeadingWildcard = Options.Parser.AllowLeadingWildcard;
+
 				var query = parser.Parse(ParseCommandText());
 
 				searcher.Searcher.Search(query, collector);
@@ -103,121 +80,34 @@ namespace TomPIT.Search.Catalogs
 
 					var sd = hits[hit];
 					var doc = searcher.Searcher.Doc(sd.Doc);
-					var sr = new SearchResult
+					var searchResult = new SearchResult
 					{
 						Score = sd.Score
 					};
 
-					var f = doc.GetField(SearchUtils.FieldKey);
+					var content = new JObject();
+					var fields = doc.GetFields();
 
-					if (f != null)
-						sr.Id = f.StringValue;
-
-					f = doc.GetField(SearchUtils.FieldLcid);
-
-					if (f != null)
+					foreach (var field in fields)
 					{
-						if (int.TryParse(f.StringValue, NumberStyles.Any, CultureInfo.InvariantCulture, out int lang))
-							sr.Lcid = lang;
+						if (string.Compare(field.Name, SearchUtils.FieldTitle, true) == 0)
+							searchResult.Title = field.StringValue;
+						else if (string.Compare(field.Name, SearchUtils.FieldText, true) == 0)
+							searchResult.Text = field.StringValue;
+
+						content.Add(field.Name, field.StringValue);
 					}
 
-					f = doc.GetField(SearchUtils.FieldTitle);
+					searchResult.Content = Types.Serialize(content);
+					searchResult.Catalog = Catalog.Component;
 
-					if (f != null)
-						sr.Title = f.StringValue;
-
-					f = doc.GetField(SearchUtils.FieldTags);
-
-					if (f != null)
-						sr.Tags = f.StringValue;
-
-					f = doc.GetField(SearchUtils.FieldAuthor);
-
-					if (f != null)
-						sr.User = Convert.ToString(f.StringValue, CultureInfo.InvariantCulture).AsGuid();
-
-					f = doc.GetField(SearchUtils.FieldDate);
-
-					if (f != null)
-						sr.Date = new DateTime(Convert.ToInt64(f.StringValue, CultureInfo.InvariantCulture));
-
-					var properties = Catalog.CatalogProperties();
-
-					if (properties != null)
-					{
-						foreach (var property in properties)
-						{
-							var srf = ResolveResult(doc, property);
-
-							if (srf != null)
-								sr.Fields.Add(srf);
-						}
-					}
-
-					AddToResults(sr);
+					Results.Add(searchResult);
 				}
 			}
 			finally
 			{
 				searcher.Reader.DecRef();
 			}
-		}
-
-		private SearchResultField ResolveResult(Document doc, PropertyInfo property)
-		{
-			var store = property.FindAttribute<SearchStoreAttribute>();
-
-			if (store == null || !store.Enabled)
-				return null;
-
-			var f = doc.GetField(property.Name.ToLowerInvariant());
-
-			if (f == null)
-				return null;
-
-			var r = new SearchResultField
-			{
-				Name = property.Name.ToLowerInvariant()
-			};
-
-			var dt = Types.ToDataType(property.PropertyType);
-
-			switch (dt)
-			{
-				case DataType.String:
-					r.Value = f.StringValue;
-					break;
-				case DataType.Float:
-				case DataType.Integer:
-				case DataType.Long:
-					var num = f.StringValue;
-
-					if (!string.IsNullOrWhiteSpace(num) && double.TryParse(num, NumberStyles.Any, CultureInfo.InvariantCulture, out double dn))
-							r.Value = dn.ToString(CultureInfo.InvariantCulture);
-
-					break;
-				case DataType.Bool:
-					var byt = f.StringValue;
-
-					if (!string.IsNullOrWhiteSpace(byt) && byte.TryParse(byt, NumberStyles.Any, CultureInfo.InvariantCulture, out byte bt))
-							r.Value = bt == 0 ? false.ToString() : true.ToString();
-
-					break;
-				case DataType.Date:
-					var dv = f.StringValue;
-
-					if (!string.IsNullOrWhiteSpace(dv) && long.TryParse(dv, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
-							r.Value = new DateTime(Convert.ToInt64(f.StringValue, CultureInfo.InvariantCulture)).ToString();
-
-					break;
-				default:
-					break;
-			}
-
-			if (string.IsNullOrWhiteSpace(r.Value))
-				return null;
-
-			return r;
 		}
 
 		protected ISearchCatalog Catalog { get; }

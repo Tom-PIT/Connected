@@ -4,12 +4,8 @@ using System.Text;
 
 namespace TomPIT.Search
 {
-	public interface ISearchResults
+	public interface ISearchResults: ISearchResultsContainer
 	{
-		List<ISearchResultDescriptor> Items { get; }
-		List<ISearchResultMessage> Messages { get; }
-
-		int Total { get; }
-		int SearchTime { get; }
+		List<ISearchResult> Items { get; }
 	}
 }

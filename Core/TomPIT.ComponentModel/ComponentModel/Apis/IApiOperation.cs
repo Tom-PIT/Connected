@@ -10,42 +10,6 @@ namespace TomPIT.ComponentModel.Apis
 	public interface IApiOperation : ISourceCode
 	{
 		/// <summary>
-		/// This event serves as a pre invoke stage. If the <code>IApiOperation</code>
-		/// implementation triggers <code>IEvent</code> inside this call with a 
-		/// <code>ICallback</code> defined, this operation will be called asynchronously
-		/// on the <code>Worker</code> server. Its primary purpose is for dependency
-		/// <code>IMicroService</code>s to have a chance to cancel the operation, for example
-		/// when deleting data. If <code>ICallback</code> is not activated inside this
-		/// <code>IEvent</code>, <code>IApiOperation</code> is called synchronously.
-		/// </summary>
-		IServerEvent Prepare { get; }
-		/// <summary>
-		/// This is the actual implementation of the <code>IApiOperation</code>.
-		/// </summary>
-		[Obsolete]
-		IServerEvent Invoke { get; }
-		/// <summary>
-		/// If <code>Saga</code> transaction is activated inside <code>Invoke</code> operation,
-		/// this <code>IEvent</code> is triggered in case of successfull <code>Invoke</code> call
-		/// and any dependency <code>IApi</code>s calls. The <code>IEvent</code> is called in the
-		/// reversed order of the execution path.
-		/// </summary>
-		[Obsolete]
-		IServerEvent Commit { get; }
-		/// <summary>
-		/// If <code>Saga</code> transaction is activated inside <code>Invoke</code> operation,
-		/// this <code>IEvent</code> is triggered is case of failed <code>Invoke</code> call
-		/// on primary <code>IApoOperation</code> or any dependent <code>IApi</code>.The <code>IEvent</code> 
-		/// is called in the reversed order of the execution path.
-		/// </summary>
-		[Obsolete]
-		IServerEvent Rollback { get; }
-		/// <summary>
-		/// This event is called when client is querying documentation.
-		/// </summary>
-		[Obsolete]
-		IServerEvent Manifest { get; }
-		/// <summary>
 		/// The name of the operation. This is used as part of the identifier
 		/// in the form of <code>MicroService/Api/Operation</code>.
 		/// </summary>

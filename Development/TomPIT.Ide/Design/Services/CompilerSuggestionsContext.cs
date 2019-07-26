@@ -197,19 +197,35 @@ namespace TomPIT.Design.Services
 		private List<ISuggestion> SuggestContent(Document doc, SemanticModel model, TextSpan span)
 		{
 			var node = model.SyntaxTree.GetRoot().FindNode(span);
+			MethodInfo methodInfo = null;
+			ConstructorInfo ctorInfo = null;
+			var index = 0;
+			SymbolInfo si = new SymbolInfo();
+			var text = string.Empty;
 
-			if (!(node is ArgumentSyntax args))
-				return SuggestComplexInitializer(doc, model, span, node);
+			if (node is AttributeArgumentSyntax aargs)
+			{
+				si= GetInvocationSymbolInfo(model, GetArgumentList(aargs));
+				ctorInfo = GetConstructorInfo(model, GetMethodSymbol(model, GetArgumentList(aargs)));
+				index = GetArgumentList(aargs).Arguments.IndexOf(aargs);
+				text = ParseExpressionText(aargs.Expression);
+			}
+			else
+			{
+				if (!(node is ArgumentSyntax args))
+					return SuggestComplexInitializer(doc, model, span, node);
 
-			var si = GetInvocationSymbolInfo(model, GetArgumentList(args));
-			var methodInfo = GetMethodInfo(model, GetArgumentList(args));
+				si = GetInvocationSymbolInfo(model, GetArgumentList(args));
+				methodInfo = GetMethodInfo(model, GetArgumentList(args));
 
-			if (methodInfo == null)
-				return null;
+				if (methodInfo == null)
+					return null;
 
-			int index = GetArgumentList(args).Arguments.IndexOf(args);
+				index = GetArgumentList(args).Arguments.IndexOf(args);
+				text = ParseExpressionText(args.Expression);
+			}
 
-			var pars = methodInfo.GetParameters();
+			var pars = methodInfo == null ? ctorInfo.GetParameters() : methodInfo.GetParameters();
 
 			if (index >= pars.Length)
 				return null;
@@ -226,7 +242,6 @@ namespace TomPIT.Design.Services
 			if (provider == null)
 				return null;
 
-			var text = ParseExpressionText(args.Expression);
 			var items = provider.ProvideLiterals(Context, new CodeAnalysisArgs(Args.Component, model, node, si, text));
 
 			if (items == null)

@@ -13,9 +13,8 @@ namespace TomPIT.Search
 	{
 		public const string FieldKey = "key";
 		public const string FieldLcid = "lcid";
-		public const string FieldTranslationId = "tid";
 		public const string FieldTitle = "title";
-		public const string FieldContent = "content";
+		public const string FieldText = "text";
 		public const string FieldTags = "tags";
 		public const string FieldAuthor = "author";
 		public const string FieldDate = "date";
@@ -33,7 +32,6 @@ namespace TomPIT.Search
 		{
 			return string.Compare(fieldName, FieldKey, true) == 0
 				 || string.Compare(fieldName, FieldLcid, true) == 0
-				 || string.Compare(fieldName, FieldTranslationId, true) == 0
 				 || string.Compare(fieldName, FieldAuthor, true) == 0
 				 || string.Compare(fieldName, FieldDate, true) == 0;
 		}

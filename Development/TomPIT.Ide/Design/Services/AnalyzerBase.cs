@@ -218,20 +218,46 @@ namespace TomPIT.Design.Services
 			}
 		}
 
-		protected SymbolInfo GetInvocationSymbolInfo(SemanticModel model, ArgumentListSyntax syntax)
+		protected SymbolInfo GetInvocationSymbolInfo(SemanticModel model, AttributeArgumentListSyntax syntax)
 		{
 			if (syntax == null)
 				return new SymbolInfo();
 
-			if (!(syntax.Parent is InvocationExpressionSyntax invoke))
+			if (!(syntax.Parent is AttributeSyntax invoke))
 				return new SymbolInfo();
 
 			return model.GetSymbolInfo(invoke);
 		}
 
+		protected SymbolInfo GetInvocationSymbolInfo(SemanticModel model, ArgumentListSyntax syntax)
+		{
+			if (syntax == null)
+				return new SymbolInfo();
+
+			if (syntax.Parent is InvocationExpressionSyntax invoke)
+				return model.GetSymbolInfo(invoke);
+
+			if((syntax.Parent is ConstructorInitializerSyntax cinvoke))
+				return model.GetSymbolInfo(cinvoke);
+
+			return new SymbolInfo();
+		}
+
 		protected SymbolInfo GetInvocationSymbolInfo(SemanticModel model, ArgumentSyntax syntax)
 		{
 			return GetInvocationSymbolInfo(model, syntax.Parent as ArgumentListSyntax);
+		}
+
+		protected IMethodSymbol GetMethodSymbol(SemanticModel model, AttributeArgumentListSyntax syntax)
+		{
+			var si = GetInvocationSymbolInfo(model, syntax);
+
+			if (si.Symbol == null && si.CandidateSymbols.Length == 0)
+				return null;
+
+			return si.Symbol == null
+				? si.CandidateSymbols[0] as IMethodSymbol
+				: si.Symbol as IMethodSymbol;
 		}
 
 		protected IMethodSymbol GetMethodSymbol(SemanticModel model, ArgumentListSyntax syntax)
@@ -256,10 +282,99 @@ namespace TomPIT.Design.Services
 			return syntax.Parent as ArgumentListSyntax;
 		}
 
+		protected AttributeArgumentListSyntax GetArgumentList(AttributeArgumentSyntax syntax)
+		{
+			return syntax.Parent as AttributeArgumentListSyntax;
+		}
+
+		protected MethodInfo GetMethodInfo(SemanticModel model, AttributeArgumentListSyntax syntax)
+		{
+			return GetMethodInfo(model, GetMethodSymbol(model, syntax));
+		}
+
 		protected MethodInfo GetMethodInfo(SemanticModel model, ArgumentListSyntax syntax)
 		{
-			var ms = GetMethodSymbol(model, syntax);
+			return GetMethodInfo(model, GetMethodSymbol(model, syntax));
+		}
 
+		protected ConstructorInfo GetConstructorInfo(SemanticModel model, IMethodSymbol ms)
+		{
+			if (ms == null)
+				return null;
+
+			if (ms.IsExtensionMethod)
+				ms = ms.GetConstructedReducedFrom();
+
+			var declaringTypeName = string.Format(
+				"{0}.{1}, {2}",
+				ms.ContainingType.ContainingNamespace.ToString(),
+				ms.ContainingType.Name,
+				ms.ContainingAssembly.Name
+			);
+
+			var type = Type.GetType(declaringTypeName);
+
+			if (type == null)
+				return null;
+
+			var methodName = ms.Name;
+			var methodArgumentTypeNames = new List<string>();
+
+			foreach (var i in ms.Parameters)
+			{
+				if (i.Type.ContainingNamespace == null || i.Type.ContainingAssembly == null)
+					continue;
+
+				methodArgumentTypeNames.Add(string.Format("{0}.{1}, {2}", i.Type.ContainingNamespace.ToString(), i.Type.Name, i.Type.ContainingAssembly.Name));
+			}
+
+			var argumentTypes = methodArgumentTypeNames.Select(typeName => Type.GetType(typeName));
+
+			var constructors = Type.GetType(declaringTypeName).GetConstructors();
+
+			foreach (var ctor in constructors)
+			{
+				if (ctor.GetParameters().Count() != ms.Parameters.Length)
+					continue;
+
+				bool match = true;
+				var parameters = ctor.GetParameters();
+
+				for (var i = 0; i < methodArgumentTypeNames.Count; i++)
+				{
+					var at = Types.GetType(methodArgumentTypeNames[i]);
+
+					if (at == null)
+						continue;
+
+					var pt = parameters[i].ParameterType;
+
+					if (pt.IsGenericMethodParameter)
+						continue;
+
+					if (pt.IsInterface)
+					{
+						if (at != pt && !at.ImplementsInterface(pt))
+						{
+							match = false;
+							break;
+						}
+					}
+					else if (at != pt && !at.IsSubclassOf(pt))
+					{
+						match = false;
+						break;
+					}
+				}
+
+				if (match)
+					return ctor;
+			}
+
+			return null;
+		}
+		protected MethodInfo GetMethodInfo(SemanticModel model, IMethodSymbol ms)
+		{
 			if (ms == null)
 				return null;
 
@@ -307,7 +422,7 @@ namespace TomPIT.Design.Services
 				bool match = true;
 				var parameters = method.GetParameters();
 
-				for(var i = 0;i<methodArgumentTypeNames.Count;i++)
+				for (var i = 0; i < methodArgumentTypeNames.Count; i++)
 				{
 					var at = Types.GetType(methodArgumentTypeNames[i]);
 

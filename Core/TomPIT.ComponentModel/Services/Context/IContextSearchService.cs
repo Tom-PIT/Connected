@@ -11,7 +11,7 @@ namespace TomPIT.Services.Context
 		void Add<T>([CodeAnalysisProvider(ExecutionContext.SearchCatalogProvider)]string catalog, T args);
 		void Update<T>([CodeAnalysisProvider(ExecutionContext.SearchCatalogProvider)]string catalog, T args);
 		void Remove<T>([CodeAnalysisProvider(ExecutionContext.SearchCatalogProvider)]string catalog, T args);
-		ISearchResults Search([CodeAnalysisProvider(ExecutionContext.SearchCatalogProvider)]string catalog, string term);
-		ISearchResults Search(ISearchOptions options);
+		IClientSearchResults Search([CodeAnalysisProvider(ExecutionContext.SearchCatalogProvider)]string catalog, string term);
+		IClientSearchResults Search(ISearchOptions options);
 	}
 }

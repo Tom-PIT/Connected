@@ -8,7 +8,6 @@ namespace TomPIT.Runtime.Compilers.Views
 	internal class MasterProcessor : ProcessorBase
 	{
 		private StringBuilder _sb = null;
-		private IComponent _component = null;
 
 		public MasterProcessor(IMasterView master, string source) : base(source)
 		{

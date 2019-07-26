@@ -9,8 +9,6 @@ namespace TomPIT.Runtime.Compilers.Views
 	internal class ViewProcessor : ProcessorBase
 	{
 		private StringBuilder _sb = null;
-		private IComponent _component = null;
-
 		public ViewProcessor(IView view, string source) : base(source)
 		{
 			View = view;

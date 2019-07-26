@@ -35,6 +35,6 @@ namespace TomPIT.Search
 	public interface ISearchService
 	{
 		void Index<T>(ISearchCatalog catalog, SearchVerb verb, T args);
-		ISearchResults Search(ISearchOptions options);
+		IClientSearchResults Search(ISearchOptions options);
 	}
 }

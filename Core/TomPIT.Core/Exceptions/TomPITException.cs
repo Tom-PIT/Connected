@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Text;
 
 namespace TomPIT
@@ -76,5 +77,13 @@ namespace TomPIT
 		}
 
 		public int Event { get; set; }
+
+		public static Exception Unwrap(Exception ex)
+		{
+			if (ex is TargetInvocationException)
+				return ex.InnerException;
+
+			return ex;
+		}
 	}
 }

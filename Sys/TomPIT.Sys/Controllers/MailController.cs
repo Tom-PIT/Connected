@@ -16,7 +16,7 @@ namespace TomPIT.Sys.Controllers
 			var from = body.Required<string>("from");
 			var to = body.Required<string>("to");
 			var nextVisible = body.Optional("nextVisible", DateTime.UtcNow);
-			var expire = body.Optional("expire", DateTime.UtcNow.AddHours(24));
+			var expire = body.Optional("expire", nextVisible.AddHours(24));
 			var subject = body.Required<string>("subject");
 			var mailBody = body.Optional("body", string.Empty);
 			var headers = string.Empty;

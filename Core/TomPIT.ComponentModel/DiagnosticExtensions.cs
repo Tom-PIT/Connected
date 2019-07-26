@@ -124,7 +124,7 @@ namespace TomPIT
 			{
 				Category = category,
 				EventId = eventId,
-				Level = TraceLevel.Error,
+				Level = level,
 				Message = message,
 				Source = source,
 			};

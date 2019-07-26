@@ -5,7 +5,7 @@ using System.IO;
 
 namespace TomPIT.Search.Catalogs
 {
-	public class SearchResultDocuments : List<SearchResult>
+	internal class SearchResultDocuments : List<SearchResult>
 	{
 		private IFormatter _formatter = null;
 		private SimpleFragmenter _fragmenter = null;

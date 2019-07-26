@@ -16,7 +16,6 @@ namespace TomPIT.Application.Workers
 	{
 		public const string ComponentCategory = "Queue";
 
-		private IServerEvent _invoke = null;
 		private IMetricConfiguration _metric = null;
 
 		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]

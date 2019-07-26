@@ -13,6 +13,7 @@ namespace TomPIT
 		private SharedHelper _shared = null;
 		private SystemHelper _sys = null;
 		private ReportHelper _reports = null;
+		private SearchResultsHelper _searchResults = null;
 
 		internal Renderer(IHtmlHelper helper)
 		{
@@ -20,6 +21,17 @@ namespace TomPIT
 		}
 
 		private IHtmlHelper Html { get; }
+
+		public SearchResultsHelper Search
+		{
+			get
+			{
+				if (_searchResults == null)
+					_searchResults = new SearchResultsHelper(Html);
+
+				return _searchResults;
+			}
+		}
 
 		public JavascriptHelper JavaScript
 		{

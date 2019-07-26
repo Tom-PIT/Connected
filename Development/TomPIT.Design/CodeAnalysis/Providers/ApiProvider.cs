@@ -30,60 +30,31 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
 		public override List<ICodeAnalysisResult> ProvideHover(IExecutionContext context, CodeAnalysisArgs e)
 		{
-            var r = new List<ICodeAnalysisResult>();
-            string existingText = e.ExpressionText ?? string.Empty;
+			var r = new List<ICodeAnalysisResult>();
+			string existingText = e.ExpressionText ?? string.Empty;
 
-            if (!existingText.Contains('/'))
-                existingText = string.Format("{0}/{1}", e.Component.Name, existingText);
+			if (!existingText.Contains('/'))
+				existingText = string.Format("{0}/{1}", e.Component.Name, existingText);
 
-            var q = new ApiQualifier(context, existingText);
-            var api = ResolveComponent(context, q.MicroService.Token, q.Api);
+			var q = new ApiQualifier(context, existingText);
+			var api = ResolveComponent(context, q.MicroService.Token, q.Api);
 
-            if (api == null)
-                return null;
+			if (api == null)
+				return null;
 
-            if (!(context.Connection().GetService<IComponentService>().SelectConfiguration(api.Token) is IApi config))
-                return null;
+			if (!(context.Connection().GetService<IComponentService>().SelectConfiguration(api.Token) is IApi config))
+				return null;
 
-            var op = config.Operations.FirstOrDefault(f => string.Compare(f.Name, q.Operation, true) == 0);
+			var op = config.Operations.FirstOrDefault(f => string.Compare(f.Name, q.Operation, true) == 0);
 
-            if (op == null)
-                return null;
+			if (op == null)
+				return null;
 
-            var args = new OperationManifestArguments(context, op);
+			var args = new OperationManifestArguments(context, op);
+			var txt = context.Connection().GetService<IComponentService>().SelectText(api.MicroService, op);
 
-            context.Connection().GetService<ICompilerService>().Execute(op.MicroService(context.Connection()), op.Manifest, this, args, out bool handled);
-
-            if (handled)
-            {
-                if (args.Manifest.Parameters.Count > 0)
-                {
-                    r.Add(new CodeAnalysisResult(ProviderUtils.Header("Parameters"), null, null));
-
-                    foreach (var parameter in args.Manifest.Parameters)
-                    {
-                        if (!parameter.IsRequired)
-                            r.Add(new CodeAnalysisResult(ProviderUtils.ListItem($"{parameter.Name} ({parameter.Type.ToFriendlyName()})"), null, null));
-                        else
-                            r.Add(new CodeAnalysisResult(ProviderUtils.ListItem($"{parameter.Name} ({parameter.Type.ToFriendlyName()}, optional)"), null, null));
-                    }
-                }
-
-                if (args.Manifest.Schema != null)
-                {
-                    r.Add(new CodeAnalysisResult(ProviderUtils.Header(nameof(args.Manifest.Schema)), null, null));
-                    r.Add(new CodeAnalysisResult($"```json\n{Types.Serialize(args.Manifest.Schema)}\n```", null, null));
-                }
-
-                return r;
-            }
-            else
-            {
-                var txt = context.Connection().GetService<IComponentService>().SelectText(api.MicroService, op.Invoke);
-
-                return ResolveReferencedApi(context, config, txt);
-            }
-        }
+			return ResolveReferencedApi(context, config, txt);
+		}
 
         public override List<ICodeAnalysisResult> ProvideLiterals(IExecutionContext context, CodeAnalysisArgs e)
 		{

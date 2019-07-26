@@ -16,11 +16,6 @@ namespace TomPIT.Application.Apis
 	[ComponentCreatedHandler("TomPIT.Development.Handlers.ApiOperationCreateHandler, TomPIT.Development")]
 	public class Operation : ConfigurationElement, IApiOperation
 	{
-		private IServerEvent _invoke = null;
-		private IServerEvent _prepare = null;
-		private IServerEvent _commit = null;
-		private IServerEvent _rollback = null;
-		private IServerEvent _schema = null;
 		private OperationProtocolOptions _protocols = null;
 		private IMetricConfiguration _metric = null;
 
@@ -32,66 +27,6 @@ namespace TomPIT.Application.Apis
 		public override string ToString()
 		{
 			return string.IsNullOrWhiteSpace(Name) ? GetType().ShortName() : Name;
-		}
-
-		[EventArguments(typeof(OperationPrepareArguments))]
-		public IServerEvent Prepare
-		{
-			get
-			{
-				if (_prepare == null)
-					_prepare = new ServerEvent { Parent = this };
-
-				return _prepare;
-			}
-		}
-
-		[EventArguments(typeof(OperationInvokeArguments))]
-		public IServerEvent Invoke
-		{
-			get
-			{
-				if (_invoke == null)
-					_invoke = new ServerEvent { Parent = this };
-
-				return _invoke;
-			}
-		}
-
-		[EventArguments(typeof(OperationTransactionArguments))]
-		public IServerEvent Commit
-		{
-			get
-			{
-				if (_commit == null)
-					_commit = new ServerEvent { Parent = this };
-
-				return _commit;
-			}
-		}
-
-		[EventArguments(typeof(OperationTransactionArguments))]
-		public IServerEvent Rollback
-		{
-			get
-			{
-				if (_rollback == null)
-					_rollback = new ServerEvent { Parent = this };
-
-				return _rollback;
-			}
-		}
-
-		[EventArguments(typeof(OperationManifestArguments))]
-		public IServerEvent Manifest
-		{
-			get
-			{
-				if (_schema == null)
-					_schema = new ServerEvent { Parent = this };
-
-				return _schema;
-			}
 		}
 
 		[EnvironmentVisibility(EnvironmentMode.Runtime)]

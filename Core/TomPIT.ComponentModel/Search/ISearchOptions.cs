@@ -18,6 +18,8 @@ namespace TomPIT.Search
 		ISearchHighlightOptions Highlight { get; }
 		ISearchGlobalizationOptions Globalization { get; }
 		ISearchPagingOptions Paging { get; }
+		ISearchResultsOptions Results { get; }
+		ISearchParserOptions Parser { get; }
 
 		List<string> Catalogs { get; }
 	}

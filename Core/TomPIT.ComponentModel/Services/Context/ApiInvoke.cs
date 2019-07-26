@@ -79,62 +79,46 @@ namespace TomPIT.Services.Context
 				var args = new OperationInvokeArguments(ctx, op, arguments, transaction);
 				var operationType = Context.Connection().GetService<ICompilerService>().ResolveType(microService, op, op.Name);
 
-				if (operationType != null)
+				if (synchronous)
 				{
-					if (synchronous)
+					if (operationType.IsSubclassOf(typeof(AsyncOperation)))
 					{
-						if (operationType.IsSubclassOf(typeof(AsyncOperation)))
-						{
-							var opInstance = operationType.CreateInstance<AsyncOperation>(new object[] { args });
+						var opInstance = operationType.CreateInstance<AsyncOperation>(new object[] { args });
 
-							opInstance.Async = false;
-
-							if (arguments != null)
-								Types.Populate(JsonConvert.SerializeObject(arguments), opInstance);
-
-							var method = GetInvoke(opInstance.GetType());
-
-							method.Invoke(opInstance, null);
-
-							return null;
-						}
-					}
-
-					if (HasReturnValue(operationType))
-					{
-						var opInstance = operationType.CreateInstance<IOperationBase>(new object[] { args });
+						opInstance.Async = false;
 
 						if (arguments != null)
 							Types.Populate(JsonConvert.SerializeObject(arguments), opInstance);
 
 						var method = GetInvoke(opInstance.GetType());
 
-						return method.Invoke(opInstance, null);
-					}
-					else
-					{
-						var opInstance = operationType.CreateInstance<IOperation>(new object[] { args });
-
-						if (arguments != null)
-							Types.Populate(JsonConvert.SerializeObject(arguments), opInstance);
-
-						opInstance.Invoke();
+						method.Invoke(opInstance, null);
 
 						return null;
 					}
 				}
+
+				if (HasReturnValue(operationType))
+				{
+					var opInstance = operationType.CreateInstance<IOperationBase>(new object[] { args });
+
+					if (arguments != null)
+						Types.Populate(JsonConvert.SerializeObject(arguments), opInstance);
+
+					var method = GetInvoke(opInstance.GetType());
+
+					return method.Invoke(opInstance, null);
+				}
 				else
 				{
-					var r = Context.Connection().GetService<ICompilerService>().Execute(microService, op.Invoke, this, args);
+					var opInstance = operationType.CreateInstance<IOperation>(new object[] { args });
 
-					if (r is JObject)
-					{
-						result = ((JObject)r).DeepClone() as JObject;
+					if (arguments != null)
+						Types.Populate(JsonConvert.SerializeObject(arguments), opInstance);
 
-						return result;
-					}
+					opInstance.Invoke();
 
-					return r;
+					return null;
 				}
 			}
 			catch (Exception ex)

@@ -9,5 +9,6 @@ namespace TomPIT.ComponentModel.Search
 	public interface ISearchHandler<T> : ISearchProcessHandler
 	{
 		List<T> Query();
+		T Deserialize(string searchResult);
 	}
 }

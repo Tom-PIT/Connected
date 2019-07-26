@@ -1,0 +1,13 @@
+﻿@using TomPIT;
+
+@model TomPIT.Models.IUIModel
+
+@{
+   var searchResult = ViewBag.SearchResult as TomPIT.Search.IClientSearchResult;
+
+   if(searchResult == null) { return; }
+
+}
+<li>
+    @searchResult.Title
+</li>

@@ -18,7 +18,6 @@ namespace TomPIT.ComponentModel.UI
 	{
 		private ViewDataDictionary<IRuntimeModel> _viewData = null;
 		private TempDataDictionary _tempData = null;
-		private ViewContext _viewContext = null;
 		private ViewBagDictionary _dynamicViewDataDictionary = null;
 		public ViewInvokeArguments(IRuntimeModel context, ITempDataProvider tempDataProvider) : base(context)
 		{

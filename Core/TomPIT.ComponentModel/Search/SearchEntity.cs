@@ -21,21 +21,19 @@ namespace TomPIT.Search
 		[SearchStore(true)]
 		[SearchMode(SearchMode.Analyzed)]
 		[SearchTermVector(SearchTermVector.No)]
-		public int TranslationId { get; set; }
-
-		[SearchStore(true)]
-		[SearchMode(SearchMode.Analyzed)]
-		[SearchTermVector(SearchTermVector.No)]
+		[SearchBoost(4)]
 		public string Title { get; set; }
 
 		[SearchStore(true)]
 		[SearchMode(SearchMode.Analyzed)]
 		[SearchTermVector(SearchTermVector.No)]
-		public string Content { get; set; }
+		[SearchBoost(2)]
+		public string Text { get; set; }
 
 		[SearchStore(true)]
 		[SearchMode(SearchMode.Analyzed)]
 		[SearchTermVector(SearchTermVector.No)]
+		[SearchBoost(3)]
 		public string Tags { get; set; }
 
 		[SearchStore(true)]

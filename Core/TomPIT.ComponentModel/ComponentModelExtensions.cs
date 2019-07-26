@@ -8,8 +8,10 @@ using TomPIT.Analysis;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.ComponentModel.Search;
 using TomPIT.Connectivity;
 using TomPIT.Data;
+using TomPIT.Search;
 using TomPIT.Security;
 using TomPIT.Services;
 
@@ -216,11 +218,7 @@ namespace TomPIT
 
 		public static IManifest Discover(this IApiOperation operation, IExecutionContext context)
 		{
-			var args = new OperationManifestArguments(context, operation);
-
-			context.Connection().GetService<ICompilerService>().Execute(operation.MicroService(context.Connection()), operation.Manifest, context, args);
-			
-			return args.Manifest;
+			return null;
 		}
 
 		public static T ToRequestArguments<T>(this JObject value, IDataModelContext context, bool validate = true) where T : RequestArguments

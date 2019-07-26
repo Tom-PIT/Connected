@@ -78,7 +78,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			if (op == null)
 				return null;
 
-			var txt = context.Connection().GetService<IComponentService>().SelectText(apiRef.MicroService, op.Invoke);
+			var txt = context.Connection().GetService<IComponentService>().SelectText(apiRef.MicroService, op);
 
 			var parameters = QueryParameters(context, op, txt);
 
@@ -169,7 +169,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
 		public List<ISuggestion> QueryParameters(IApiOperation operation)
 		{
-			var txt = Context.Connection().GetService<IComponentService>().SelectText(operation.MicroService(Context.Connection()), operation.Invoke);
+			var txt = Context.Connection().GetService<IComponentService>().SelectText(operation.MicroService(Context.Connection()), operation);
 			var parameters = QueryParameters(Context, operation, txt);
 			var r = new List<ISuggestion>();
 
@@ -336,7 +336,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			if (op == null)
 				return null;
 
-			var txt = context.Connection().GetService<IComponentService>().SelectText(apiRef.MicroService, op.Invoke);
+			var txt = context.Connection().GetService<IComponentService>().SelectText(apiRef.MicroService, op);
 			var pars = QueryParameters(context, op, txt);
 
 			if (pars == null || pars.Count == 0)
@@ -405,7 +405,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
         {
             var args = new OperationManifestArguments(context, operation);
 
-            context.Connection().GetService<ICompilerService>().Execute(operation.MicroService(context.Connection()), operation.Manifest, this, args, out bool handled);
+            context.Connection().GetService<ICompilerService>().Execute(operation.MicroService(context.Connection()), operation, this, args, out bool handled);
 
             if (handled)
             {

@@ -24,7 +24,7 @@ namespace TomPIT.Search.Catalogs
 			Regex = new Regex(@"\[(.*?)\]: \[(.*?)\]");
 		}
 
-		public SearchTextParser(SearchResultDocuments container, SearchResultDescriptor descriptor, ISearchOptions options)
+		public SearchTextParser(SearchResultDocuments container, SearchResult descriptor, ISearchOptions options)
 		{
 			Container = container;
 			Options = options;
@@ -36,19 +36,24 @@ namespace TomPIT.Search.Catalogs
 		public void Parse()
 		{
 			if (Options.Highlight.Enabled)
-				Descriptor.Text = HighlightedText(Container, Descriptor.Content);
+				Descriptor.Text = HighlightedText(Container, Descriptor.Text);
 			else
 			{
-				Descriptor.Text = Parse(Descriptor.Content);
+				Descriptor.Text = Parse(Descriptor.Text);
 
-				if (Descriptor.Text.Length > 255)
-					Descriptor.Text = Descriptor.Text.Substring(0, 255);
+				if (Options.Results.TextMaxLength > 0)
+				{
+					if (Descriptor.Text.Length > Options.Results.TextMaxLength)
+						Descriptor.Text = Descriptor.Text.Substring(0, Descriptor.Text.Length);
+				}
 			}
+
+			Descriptor.Title = Parse(Descriptor.Title);
 		}
 
 		private SearchResultDocuments Container { get; set; }
 		private ISearchOptions Options { get; set; }
-		private SearchResultDescriptor Descriptor { get; }
+		private SearchResult Descriptor { get; }
 		private string HighlightedText(SearchResultDocuments container, string value)
 		{
 			if (string.IsNullOrWhiteSpace(value))

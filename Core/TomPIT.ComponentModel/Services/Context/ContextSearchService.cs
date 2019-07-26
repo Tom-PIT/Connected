@@ -23,7 +23,7 @@ namespace TomPIT.Services.Context
 			Context.Connection().GetService<ISearchService>().Index(ResolveCatalog(catalog), SearchVerb.Remove, args);
 		}
 
-		public ISearchResults Search(string catalog, string term)
+		public IClientSearchResults Search(string catalog, string term)
 		{
 			ResolveCatalog(catalog);
 
@@ -38,7 +38,7 @@ namespace TomPIT.Services.Context
 			return Search(options);
 		}
 
-		public ISearchResults Search(ISearchOptions options)
+		public IClientSearchResults Search(ISearchOptions options)
 		{
 			return Context.Connection().GetService<ISearchService>().Search(options);
 		}

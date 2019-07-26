@@ -47,9 +47,9 @@ namespace TomPIT
 				return Html.Raw("null") as HtmlString;
 
 			if (decimalPlaces == -1)
-				return Html.Raw(string.Format("{0}", number.ToString(), CultureInfo.InvariantCulture)) as HtmlString;
+				return Html.Raw(number.ToString(CultureInfo.InvariantCulture)) as HtmlString;
 			else
-				return Html.Raw(string.Format("{0}", number.ToString($"n{decimalPlaces}", CultureInfo.InvariantCulture))) as HtmlString;
+				return Html.Raw($"{number.ToString($"n{decimalPlaces}", CultureInfo.InvariantCulture)}") as HtmlString;
 		}
 
 		public IHtmlContent Number(object value, bool mapNull)

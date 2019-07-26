@@ -15,6 +15,25 @@ namespace TomPIT.Search
 		public SearchVerb Verb { get; set; } = SearchVerb.Update;
 		public virtual SearchValidationBehavior ValidationFailed => SearchValidationBehavior.Complete;
 
+		public T Deserialize(string searchResult)
+		{
+			return OnDeserializeResult(searchResult);
+		}
+
+		protected virtual T OnDeserializeResult(string searchResult)
+		{
+			var instance = Types.Deserialize<T>(searchResult);
+
+			OnDeserializingResult(instance);
+
+			return instance;
+		}
+
+		protected virtual void OnDeserializingResult(T instance)
+		{
+
+		}
+
 		public List<T> Query()
 		{
 			if (Verb != SearchVerb.Rebuild)

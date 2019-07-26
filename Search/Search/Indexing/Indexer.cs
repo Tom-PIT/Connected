@@ -109,7 +109,14 @@ namespace TomPIT.Search.Indexing
 				if (QueryMethod == null)
 					return new ArrayList();
 
-				return (IList)QueryMethod.Invoke(Handler, null);
+				try
+				{
+					return (IList)QueryMethod.Invoke(Handler, null);
+				}
+				catch (Exception ex)
+				{
+					throw TomPITException.Unwrap(ex);
+				}
 			}
 		}
 
@@ -173,7 +180,7 @@ namespace TomPIT.Search.Indexing
 			{
 				if (Handler.ValidationFailed == SearchValidationBehavior.Complete)
 				{
-					Instance.Connection.LogWarning(null, "Search", nameof(Indexer), valEx.Message);
+					Instance.Connection.LogWarning(null, "Search", valEx.Source, valEx.Message);
 					Success = true;
 				}
 				else
@@ -181,7 +188,7 @@ namespace TomPIT.Search.Indexing
 					if (Verb == SearchVerb.Rebuild)
 						Instance.GetService<IIndexingService>().Ping(Queue.PopReceipt, 60);
 
-					Instance.Connection.LogError("Search", nameof(Indexer), valEx.Message);
+					Instance.Connection.LogError("Search", valEx.Source, valEx.Message);
 				}
 			}
 			catch (Exception ex)
@@ -189,7 +196,7 @@ namespace TomPIT.Search.Indexing
 				if (Verb == SearchVerb.Rebuild)
 					Instance.GetService<IIndexingService>().Ping(Queue.PopReceipt, 60);
 
-				Instance.Connection.LogError("Search", nameof(Indexer), ex.Message);
+				Instance.Connection.LogError("Search", ex.Source, ex.Message);
 			}
 		}
 
@@ -223,7 +230,7 @@ namespace TomPIT.Search.Indexing
 				case DataType.Bool:
 					return Convert.ToBoolean(value).ToString(CultureInfo.InvariantCulture);
 				case DataType.Date:
-					return Convert.ToDateTime(value).Ticks.ToString(CultureInfo.InvariantCulture);
+					return Convert.ToDateTime(value).ToString("s");
 				default:
 					throw new NotSupportedException();
 			}
@@ -284,7 +291,14 @@ namespace TomPIT.Search.Indexing
 				}
 			}
 
-			doc.Add(new Field(property.Name, ConvertValue(Types.ToDataType(property.PropertyType) , value), store, index, vector));
+			var field = new Field(property.Name.ToLowerInvariant(), ConvertValue(Types.ToDataType(property.PropertyType), value), store, index, vector);
+
+			var boost = property.FindAttribute<SearchBoostAttribute>();
+
+			if (boost != null)
+				field.Boost = boost.Boost;
+
+			doc.Add(field);
 		}
 
 		protected bool Rebuild()
@@ -307,29 +321,6 @@ namespace TomPIT.Search.Indexing
 			return false;
 		}
 
-		private bool ProcessSystemField(Document doc, string name, object value)
-		{
-			if (!SearchUtils.IsSystemField(name))
-				return false;
-
-			if (string.Compare(name, SearchUtils.FieldKey, true) == 0)
-				doc.Add(new Field(SearchUtils.FieldKey, ValueConverter.Convert<string>(value), Field.Store.YES, Field.Index.NOT_ANALYZED, Field.TermVector.NO));
-			else if (string.Compare(name, SearchUtils.FieldTitle, true) == 0)
-				doc.Add(new Field(SearchUtils.FieldTitle, ValueConverter.Convert<string>(value), Field.Store.YES, Field.Index.ANALYZED, Field.TermVector.NO));
-			else if (string.Compare(name, SearchUtils.FieldLcid, true) == 0)
-				doc.Add(new Field(SearchUtils.FieldLcid, ValueConverter.Convert<string>(value), Field.Store.YES, Field.Index.ANALYZED, Field.TermVector.NO));
-			else if (string.Compare(name, SearchUtils.FieldTags, true) == 0)
-				doc.Add(new Field(SearchUtils.FieldTags, ValueConverter.Convert<string>(value), Field.Store.YES, Field.Index.ANALYZED, Field.TermVector.NO));
-			else if (string.Compare(name, SearchUtils.FieldAuthor, true) == 0)
-				doc.Add(new Field(SearchUtils.FieldAuthor, ValueConverter.Convert<string>(value), Field.Store.YES, Field.Index.ANALYZED, Field.TermVector.NO));
-			else if (string.Compare(name, SearchUtils.FieldDate, true) == 0)
-				doc.Add(new Field(SearchUtils.FieldDate, ValueConverter.Convert<DateTime>(value), Field.Store.YES, Field.Index.NOT_ANALYZED, Field.TermVector.NO));
-			else
-				return false;
-
-			return true;
-		}
-
 		private void ProcessField(Document doc, CatalogHost catalog, object instance, PropertyInfo property)
 		{
 			var value = property.GetValue(instance);
@@ -337,8 +328,7 @@ namespace TomPIT.Search.Indexing
 			if (string.IsNullOrWhiteSpace(Types.Convert<string>(value)))
 				return;
 
-			if (!ProcessSystemField(doc, property.Name, value))
-				AddValue(doc, property, value);
+			AddValue(doc, property, value);
 		}
 
 		protected bool Insert()
@@ -423,10 +413,7 @@ namespace TomPIT.Search.Indexing
 
 					EnsureLocale(doc);
 
-					if (locale == 0)
-						catalog.Update(new Term(SearchUtils.FieldKey, pk), doc);
-					else
-						catalog.Update(new Term(SearchUtils.FieldTranslationId, ParseTranslationId(pk, locale)), doc);
+					catalog.Update(new Term(SearchUtils.FieldKey, pk), doc);
 				}
 
 				catalog.SaveMessage(Queue);
@@ -520,11 +507,6 @@ namespace TomPIT.Search.Indexing
 
 				return false;
 			}
-		}
-
-		private string ParseTranslationId(string id, int lcid)
-		{
-			return string.Format("{0}_{1}", id, lcid.ToString(CultureInfo.InvariantCulture));
 		}
 
 		private void EnsureLocale(Document doc)

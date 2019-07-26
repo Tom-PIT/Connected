@@ -1623,6 +1623,40 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[search]'
+GO
+CREATE TABLE [tompit].[search]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[catalog] [nvarchar] (256) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[created] [datetime2] NOT NULL,
+[identifier] [uniqueidentifier] NOT NULL,
+[arguments] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[service] [uniqueidentifier] NOT NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_search] on [tompit].[search]'
+GO
+ALTER TABLE [tompit].[search] ADD CONSTRAINT [PK_search] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[search_del]'
+GO
+CREATE PROCEDURE [tompit].[search_del]
+	@id bigint
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.search
+	WHERE id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[test_session_scenario_view]'
 GO
 CREATE VIEW [tompit].[test_session_scenario_view]
@@ -1750,6 +1784,82 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[search_catalog_state]'
+GO
+CREATE TABLE [tompit].[search_catalog_state]
+(
+[id] [int] NOT NULL,
+[catalog] [uniqueidentifier] NOT NULL,
+[status] [int] NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_search_catalog_state] on [tompit].[search_catalog_state]'
+GO
+ALTER TABLE [tompit].[search_catalog_state] ADD CONSTRAINT [PK_search_catalog_state] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding constraints to [tompit].[search_catalog_state]'
+GO
+ALTER TABLE [tompit].[search_catalog_state] ADD CONSTRAINT [IX_search_catalog_state] UNIQUE NONCLUSTERED  ([catalog]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[search_catalog_state_del]'
+GO
+CREATE PROCEDURE [tompit].[search_catalog_state_del]
+	@catalog uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.search_catalog_state
+	WHERE catalog = @catalog;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[search_ins]'
+GO
+CREATE PROCEDURE [tompit].[search_ins]
+	@catalog nvarchar(256),
+	@created datetime2(7),
+	@identifier uniqueidentifier,
+	@arguments nvarchar(max) = NULL,
+	@service uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.search (catalog, created, identifier, arguments, service)
+	VALUES (@catalog, @created, @identifier, @arguments, @service);
+
+	RETURN scope_identity();
+	
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[search_catalog_state_ins]'
+GO
+CREATE PROCEDURE [tompit].[search_catalog_state_ins]
+	@catalog uniqueidentifier,
+	@status int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.search_catalog_state(catalog, status)
+	VALUES (@catalog, @status);
+
+	RETURN scope_identity();
+	
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[test_session_case]'
 GO
 CREATE TABLE [tompit].[test_session_case]
@@ -1784,6 +1894,19 @@ INNER JOIN tompit.test_session_scenario sc ON s.scenario = sc.id;
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[search_que]'
+GO
+CREATE PROCEDURE [tompit].[search_que]
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT * 
+	FROM tompit.search;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[test_session_case_que]'
 GO
 CREATE PROCEDURE [tompit].[test_session_case_que]
@@ -1795,6 +1918,21 @@ BEGIN
 	SELECT * 
 	FROM tompit.test_session_case_view
 	WHERE scenario = @scenario;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[search_sel]'
+GO
+CREATE PROCEDURE [tompit].[search_sel]
+	@identifier uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 * 
+	FROM tompit.search
+	WHERE identifier = @identifier;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -1941,6 +2079,21 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[search_catalog_state_sel]'
+GO
+CREATE PROCEDURE [tompit].[search_catalog_state_sel]
+	@catalog uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 * 
+	FROM tompit.search_catalog_state
+	WHERE catalog = @catalog;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[test_session_sel]'
 GO
 CREATE PROCEDURE [tompit].[test_session_sel]
@@ -1992,6 +2145,22 @@ BEGIN
 	values (@name, @url, @token, @status, @resource_group, @template, @meta, @version);
 
 	return scope_identity();
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[search_catalog_state_upd]'
+GO
+CREATE PROCEDURE [tompit].[search_catalog_state_upd]
+	@catalog uniqueidentifier,
+	@status int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	UPDATE tompit.search_catalog_state SET
+		status = @status
+	WHERE catalog = @catalog;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON

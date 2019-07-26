@@ -9,16 +9,16 @@ namespace TomPIT.Search
 	{
 		public override bool CanConvert(Type objectType)
 		{
-			return objectType == typeof(List<ISearchResultDescriptor>);
+			return objectType == typeof(List<ISearchResult>);
 		}
 
 		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
-			var r = serializer.Deserialize<List<SearchResultDescriptor>>(reader);
-			var list = existingValue as List<ISearchResultDescriptor>;
+			var r = serializer.Deserialize<List<SearchResult>>(reader);
+			var list = existingValue as List<ISearchResult>;
 
 			if (list == null)
-				list = new List<ISearchResultDescriptor>();
+				list = new List<ISearchResult>();
 
 			foreach (var i in r)
 				list.Add(i);

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Dynamic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -449,7 +451,7 @@ namespace TomPIT
 						Culture = CultureInfo.InvariantCulture,
 						DateFormatHandling = DateFormatHandling.IsoDateFormat,
 						DateParseHandling = DateParseHandling.DateTime,
-						DateTimeZoneHandling = DateTimeZoneHandling.Local,
+						DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
 						FloatFormatHandling = FloatFormatHandling.DefaultValue,
 						FloatParseHandling = FloatParseHandling.Double,
 						MissingMemberHandling = MissingMemberHandling.Ignore,
@@ -516,6 +518,26 @@ namespace TomPIT
 				return default;
 
 			return JsonConvert.DeserializeObject<T>(json, SerializerSettings);
+		}
+
+		public static dynamic ToDynamic(this object value)
+		{
+			IDictionary<string, object> expando = new ExpandoObject();
+
+			foreach (System.ComponentModel.PropertyDescriptor property in System.ComponentModel.TypeDescriptor.GetProperties(value.GetType()))
+				expando.Add(property.Name, property.GetValue(value));
+
+			return expando as ExpandoObject;
+		}
+
+		public static string ScriptTypeName(this Type type)
+		{
+			if (!type.FullName.Contains("+"))
+				return type.ShortName();
+
+			var tokens = type.FullName.Split('+');
+
+			return tokens[tokens.Length - 1];
 		}
 	}
 }

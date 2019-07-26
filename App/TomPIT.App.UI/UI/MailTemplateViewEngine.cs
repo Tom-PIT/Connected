@@ -31,7 +31,15 @@ namespace TomPIT.UI
 
 			var model = CreateModel(token);
 			var actionContext = CreateActionContext(Context);
-			var viewEngineResult = Engine.FindView(actionContext, $"Dynamic/MailTemplate/{token}", false);
+			var component = Instance.GetService<IComponentService>().SelectComponent(token);
+
+			if(component == null)
+			{
+				Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+				return;
+			}
+
+			var viewEngineResult = Engine.FindView(actionContext, $"Dynamic/MailTemplate/{component.MicroService}/{component.Name}", false);
 
 			if (!viewEngineResult.Success)
 			{
@@ -45,8 +53,6 @@ namespace TomPIT.UI
 				return;
 
 			var invokeArgs = new ViewInvokeArguments(model, Temp);
-
-			model.GetService<ICompilerService>().Execute(((IConfiguration)model.ViewConfiguration).MicroService(model.Connection), model.ViewConfiguration.Invoke, this, invokeArgs);
 
 			if (Shell.HttpContext.Response.StatusCode != (int)HttpStatusCode.OK)
 				return;
@@ -109,7 +115,9 @@ namespace TomPIT.UI
 			if (component == null)
 				return null;
 
-			var model = new MailTemplateModel(Context.Request, ac, Body.Optional<JObject>("arguments", null));
+			var arguments = Body.Optional("arguments", string.Empty);
+			var ja = string.IsNullOrWhiteSpace(arguments) ? new JObject() : Types.Deserialize<JObject>(arguments);
+			var model = new MailTemplateModel(Context.Request, ac, ja);
 
 			model.Initialize(Instance.GetService<IMicroServiceService>().Select(component.MicroService));
 

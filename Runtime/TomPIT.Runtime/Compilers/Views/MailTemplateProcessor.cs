@@ -8,7 +8,6 @@ namespace TomPIT.Runtime.Compilers.Views
 	internal class MailTemplateProcessor : ProcessorBase
 	{
 		private StringBuilder _sb = null;
-		private IComponent _component = null;
 
 		public MailTemplateProcessor(IMailTemplate template, string source) : base(source)
 		{

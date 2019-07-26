@@ -6,37 +6,20 @@ using Newtonsoft.Json;
 
 namespace TomPIT.Search
 {
-	internal class SearchResults : ISearchResults
+	internal class SearchResults : SearchResultsContainer, ISearchResults
 	{
-		private List<ISearchResultDescriptor> _items = null;
-		private List<ISearchResultMessage> _messages = null;
+		private List<ISearchResult> _items = null;
 
 		[JsonConverter(typeof(SearchResultDescriptorConverter))]
-		public List<ISearchResultDescriptor> Items
+		public List<ISearchResult> Items
 		{
 			get
 			{
 				if (_items == null)
-					_items = new List<ISearchResultDescriptor>();
+					_items = new List<ISearchResult>();
 
 				return _items;
 			}
 		}
-
-		[JsonConverter(typeof(SearchResultMessageConverter))]
-		public List<ISearchResultMessage> Messages
-		{
-			get
-			{
-				if (_messages == null)
-					_messages = new List<ISearchResultMessage>();
-
-				return _messages;
-			}
-		}
-
-		public int Total { get; set; }
-
-		public int SearchTime { get; set; }
 	}
 }
