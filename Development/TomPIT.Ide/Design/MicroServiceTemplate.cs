@@ -13,6 +13,8 @@ namespace TomPIT.Design
 		public abstract Guid Token { get; }
 		public abstract string Name { get; }
 
+		public virtual TemplateKind Kind => TemplateKind.Standalone;
+
 		public virtual List<string> GetApplicationParts()
 		{
 			return new List<string>();
@@ -20,6 +22,11 @@ namespace TomPIT.Design
 
 		public virtual void Initialize(IApplicationBuilder app, IHostingEnvironment env)
 		{
+		}
+
+		public virtual List<IItemDescriptor> ProvideGlobalAddItems(IDomElement parent)
+		{
+			return new List<IItemDescriptor>();
 		}
 
 		public virtual List<IItemDescriptor> ProvideAddItems(IDomElement parent)

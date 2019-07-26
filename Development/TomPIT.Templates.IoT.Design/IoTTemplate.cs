@@ -17,12 +17,15 @@ namespace TomPIT.IoT
 		static IoTTemplate()
 		{
 			_items = new ConcurrentDictionary<string, IItemDescriptor>(new Dictionary<string, IItemDescriptor>{
-				{"View", new ItemDescriptor("IoT View", "View", typeof(IoTView)) { Category ="UI", Glyph="fal fa-browser"} },
-				{MasterView.ComponentCategory, new ItemDescriptor("Master view", MasterView.ComponentCategory, typeof(MasterView)) { Glyph = "fal fa-browser", Category = "UI" } },
-				{"Theme", new ItemDescriptor("Theme", "Theme", typeof(Theme)) { Category ="UI", Glyph="fal fa-pencil-paintbrush"} },
+				{"IoTView", new ItemDescriptor("IoT View", "View", typeof(IoTView)) { Category ="UI", Glyph="fal fa-browser"} },
 				{ "Hub", new ItemDescriptor("IoT Hub", "IoTHub", typeof(Hub)) { Category ="IoT", Glyph="fal fa-wifi"} },
 				{ "Schema", new ItemDescriptor("IoT Schema", "IoTSchema", typeof(Schema)) { Category ="IoT", Glyph="fal fa-list-ol"} }
 		});
+		}
+
+		public override List<IItemDescriptor> ProvideGlobalAddItems(IDomElement parent)
+		{
+			return _items.Values.ToList();
 		}
 
 		public override List<IItemDescriptor> ProvideAddItems(IDomElement parent)
@@ -37,5 +40,7 @@ namespace TomPIT.IoT
 				"TomPIT.IoT.Design.Views.dll"
 			};
 		}
+
+		public override TemplateKind Kind => TemplateKind.Plugin;
 	}
 }

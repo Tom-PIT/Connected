@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using TomPIT.Design;
 using TomPIT.Dom;
 
@@ -31,10 +32,21 @@ namespace TomPIT.Ide
 			if (template == null)
 				return null;
 
-			var r = template.ProvideAddItems(selection);
+			var addItems = template.ProvideAddItems(selection);
+			var r = new List<IItemDescriptor>();
 
-			if (r == null)
-				r = new List<IItemDescriptor>();
+			if (addItems != null && addItems.Count > 0)
+				r.AddRange(addItems);
+
+			var templates = Environment.Context.Connection().GetService<IMicroServiceTemplateService>().Query().Where(f => f.Kind == TemplateKind.Plugin && f.Token != ms.MicroService.Template);
+
+			foreach(var t in templates)
+			{
+				addItems = t.ProvideGlobalAddItems(selection);
+
+				if (addItems != null && addItems.Count > 0)
+					r.AddRange(addItems);
+			}
 
 			AddStaticItems(r);
 
