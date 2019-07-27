@@ -6,5 +6,6 @@ namespace TomPIT.Services
 {
 	public interface IProcessHandler
 	{
+		void Initialize(IDataModelContext context);
 	}
 }

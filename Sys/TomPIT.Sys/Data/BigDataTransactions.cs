@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Sys.Api.Database;
+using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Data
 {
@@ -31,6 +32,24 @@ namespace TomPIT.Sys.Data
 			}
 
 			Set(id, r, TimeSpan.Zero);
+		}
+
+		public void Activate(Guid token)
+		{
+			var transaction = Select(token);
+
+			if (transaction == null)
+				throw new SysException(SR.ErrBigDataTransactionNotFound);
+
+			if (transaction.Status == TransactionStatus.Running)
+				throw new SysException(SR.ErrBigDataTransactionRunning);
+
+			var blocks = DataModel.BigDataTransactionBlocks.Query(transaction.Token);
+
+			foreach(var block in blocks)
+				Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(BigDataTransactionBlocks.Queue, block.Token.ToString(), TimeSpan.FromDays(14), TimeSpan.Zero, QueueScope.System);
+
+			Update(transaction.Token, transaction.BlockRemaining, TransactionStatus.Running);
 		}
 
 		public ITransaction Select(Guid token)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TomPIT.Analysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Data.DataProviders;
@@ -57,6 +58,23 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			foreach (var i in components)
 				ProvideComponentLiterals(e, items, i);
 
+			if (IncludeReferences)
+			{
+				var refs = Context.Connection().GetService<IDiscoveryService>().References(e.Component.MicroService);
+
+				if (refs != null && refs.MicroServices.Count > 0)
+				{
+					foreach (var reference in refs.MicroServices)
+					{
+						var ms = Context.Connection().GetService<IMicroServiceService>().Select(reference.MicroService);
+						components = context.Connection().GetService<IComponentService>().QueryComponents(ms.Token, ComponentCategory);
+
+						foreach (var component in components)
+							ProvideComponentLiterals(e, items, component);
+					}
+				}
+			}
+
 			return items.OrderBy(f => f.Text).ToList();
 		}
 
@@ -74,6 +92,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
 		protected abstract string ComponentCategory { get; }
 		protected abstract bool FullyQualified { get; }
+		protected virtual bool IncludeReferences => false;
 
 		protected string GetConnection(IExecutionContext context, IComponent component, Guid connection)
 		{

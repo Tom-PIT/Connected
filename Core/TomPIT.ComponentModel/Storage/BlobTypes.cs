@@ -22,5 +22,6 @@
 		public const int RuntimeConfigurationState = 1002;
 		public const int DatabaseState = 1003;
 		public const int UserContent = 1103;
+		public const int BigDataTransactionBlock = 1201;
 	}
 }

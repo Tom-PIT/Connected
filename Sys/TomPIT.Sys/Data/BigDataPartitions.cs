@@ -44,9 +44,14 @@ namespace TomPIT.Sys.Data
 			return All();
 		}
 
-		public void Insert(Guid configuration, string name, PartitionStatus status)
+		public void Insert(Guid configuration, string name, PartitionStatus status, Guid resourceGroup)
 		{
-			Shell.GetService<IDatabaseService>().Proxy.BigData.Partitions.Insert(configuration, name, status, DateTime.UtcNow);
+			var rg = DataModel.ResourceGroups.Select(resourceGroup);
+
+			if (rg == null)
+				throw new SysException(SR.ErrResourceGroupNotFound);
+
+			Shell.GetService<IDatabaseService>().Proxy.BigData.Partitions.Insert(rg, configuration, name, status, DateTime.UtcNow);
 
 			Refresh(configuration);
 			BigDataNotifications.PartitionAdded(configuration);

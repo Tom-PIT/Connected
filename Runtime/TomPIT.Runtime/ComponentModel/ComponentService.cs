@@ -164,14 +164,14 @@ namespace TomPIT.ComponentModel
 			foreach (var i in contents)
 			{
 				var component = SelectComponent(i.Blob);
-				var config = SelectConfiguration(component, i);
+				var config = SelectConfiguration(component, i, false);
 
 				if (mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
 				{
 					var rt = runtimeContents.FirstOrDefault(f => f.Blob == component.RuntimeConfiguration);
 
 					if (rt != null)
-						MergeWithRuntime(config, SelectConfiguration(component, rt));
+						MergeWithRuntime(config, SelectConfiguration(component, rt, false));
 				}
 
 				r.Add(config);
@@ -211,15 +211,15 @@ namespace TomPIT.ComponentModel
 
 		public IConfiguration SelectConfiguration(Guid microService, string category, string name)
 		{
-			return SelectConfiguration(SelectComponent(microService, category, name), null);
+			return SelectConfiguration(SelectComponent(microService, category, name), null, true);
 		}
 
 		public IConfiguration SelectConfiguration(Guid component)
 		{
-			return SelectConfiguration(SelectComponent(component), null);
+			return SelectConfiguration(SelectComponent(component), null, true);
 		}
 
-		private IConfiguration SelectConfiguration(IComponent component, IBlobContent blob)
+		private IConfiguration SelectConfiguration(IComponent component, IBlobContent blob, bool throwException)
 		{
 			if (component == null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
@@ -232,11 +232,27 @@ namespace TomPIT.ComponentModel
 			var type = Types.GetType(component.Type);
 
 			if (type == null)
-				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrCannotCreateComponentInstance, component.Type));
+			{
+				if (throwException)
+					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrCannotCreateComponentInstance, component.Type));
+				else
+					return null;
+			}
 
 			var t = Types.GetType(component.Type);
+			IConfiguration r = null;
 
-			var r = Connection.GetService<ISerializationService>().Deserialize(content.Content, t) as IConfiguration;
+			try
+			{
+				r = Connection.GetService<ISerializationService>().Deserialize(content.Content, t) as IConfiguration;
+			}
+			catch(Exception ex)
+			{
+				if (throwException)
+					throw ex;
+				else
+					Connection.LogError(null, "Components", GetType().ShortName(), ex.Message);
+			}
 
 			if (blob == null && Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
 			{

@@ -1,65 +1,98 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using TomPIT.BigData;
+using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
 
 namespace TomPIT.Sys.Data
 {
 	internal class BigDataTransactionBlocks
 	{
+		public const string Queue = "bigdata";
+
 		public BigDataTransactionBlocks()
 		{
 		}
 
-		public ITransaction Select(Guid token)
+		public ITransactionBlock Select(Guid token)
 		{
-			return null;// return Get(token);
+			return Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.SelectBlock(token);
 		}
 
-		public List<ITransactionBlock> Dequeue()
+		public List<IQueueMessage> Dequeue(int count, TimeSpan nextVisible)
 		{
-			//var ds = Shell.GetService<IDatabaseService>().Proxy.BigData.Transactionb.Query();
-			return null;
-
+			return Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(Queue, count, nextVisible);
 		}
 
-		public Guid Insert(Guid partition, int blockCount)
+		public List<ITransactionBlock> Query(Guid transaction)
 		{
-			var part = DataModel.BigDataPartitions.Select(partition);
+			var t = DataModel.BigDataTransactions.Select(transaction);
 
-			if (part == null)
-				throw new SysException(SR.ErrBigDataPartitionNotFound);
+			if (t == null)
+				throw new SysException(SR.ErrBigDataTransactionNotFound);
+
+			return Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.QueryBlocks(t);
+		}
+
+		public void Ping(Guid popReceipt)
+		{
+			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
+
+			if (m == null)
+				return;
+
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(popReceipt, TimeSpan.FromSeconds(5));
+		}
+
+		public void Complete(Guid popReceipt)
+		{
+			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
+
+			if (m == null)
+				return;
+
+			var e = Resolve(m);
+
+			if (e != null)
+			{
+				Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.DeleteBlock(e);
+
+				var transaction = DataModel.BigDataTransactions.Select(e.Transaction);
+
+				lock (transaction)
+				{
+					if (transaction.BlockRemaining < 2)
+						DataModel.BigDataTransactions.Delete(e.Transaction);
+					else
+						DataModel.BigDataTransactions.Update(transaction.Token, transaction.BlockRemaining - 1, TransactionStatus.Running);
+				}
+			}
+
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(popReceipt);
+		}
+
+		private ITransactionBlock Resolve(IQueueMessage message)
+		{
+			var d = Types.Deserialize<JObject>(message.Message);
+
+			var id = d.Required<Guid>("id");
+
+			return Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.SelectBlock(id);
+		}
+
+		public Guid Insert(Guid transaction)
+		{
+			var t = DataModel.BigDataTransactions.Select(transaction);
+
+			if (t == null)
+				throw new SysException(SR.ErrBigDataTransactionNotFound);
 
 			var token = Guid.NewGuid();
-			Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.Insert(part, token, blockCount, DateTime.UtcNow);
 
-			//Refresh(token);
+			Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.InsertBlock(t, token);
 
 			return token;
-		}
-
-		public void Update(Guid transaction, int blockRemaining, TransactionStatus status)
-		{
-			var tran = Select(transaction);
-
-			if (tran == null)
-				return;
-
-			Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.Update(tran, blockRemaining, status);
-
-			//Refresh(tran.Token);
-		}
-
-		public void Delete(Guid transaction)
-		{
-			var tran = Select(transaction);
-
-			if (tran == null)
-				return;
-
-			Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.Delete(tran);
-
-			//Remove(tran.Token);
 		}
 	}
 }

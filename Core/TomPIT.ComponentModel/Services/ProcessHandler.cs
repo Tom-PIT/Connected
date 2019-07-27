@@ -11,12 +11,16 @@ namespace TomPIT.Services
 {
 	public abstract class ProcessHandler : IProcessHandler, IUniqueValueProvider
 	{
+		protected ProcessHandler()
+		{
+		}
+
 		protected ProcessHandler(IDataModelContext context)
 		{
 			Context = context;
 		}
 
-		protected IDataModelContext Context { get; }
+		protected IDataModelContext Context { get; private set; }
 
 		public void Validate(IDataModelContext context, List<ValidationResult> results)
 		{
@@ -45,10 +49,15 @@ namespace TomPIT.Services
 
 		public void Validate()
 		{
+			Validate(this);
+		}
+
+		protected void Validate(object instance)
+		{
 			var results = new List<ValidationResult>();
 			var refs = new List<object>();
 
-			ValidateProperties(results, this, refs);
+			ValidateProperties(results, instance, refs);
 
 			if (results.Count == 0)
 				OnValidating(results);
@@ -168,6 +177,11 @@ namespace TomPIT.Services
 			{
 				return null;
 			}
+		}
+
+		void IProcessHandler.Initialize(IDataModelContext context)
+		{
+			Context = context;
 		}
 	}
 }

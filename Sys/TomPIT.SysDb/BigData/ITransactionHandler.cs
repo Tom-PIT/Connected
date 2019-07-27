@@ -11,11 +11,12 @@ namespace TomPIT.SysDb.BigData
 		void Update(ITransaction transaction, int blockRemaining, TransactionStatus status);
 		void Delete(ITransaction transaction);
 
-		void InsertBlock(ITransaction transaction, Guid token);
 		List<ITransaction> Query();
-		List<ITransactionBlock> Dequeue(List<IResourceGroup> resourceGroups, int count, DateTime nextVisible, DateTime date);
-		void DeleteBlock(ITransactionBlock block);
-		void UpdateBlock(ITransactionBlock block, DateTime nextVisible);
 		ITransaction Select(Guid token);
+
+		void InsertBlock(ITransaction transaction, Guid token);
+		void DeleteBlock(ITransactionBlock block);
+		ITransactionBlock SelectBlock(Guid token);
+		List<ITransactionBlock> QueryBlocks(ITransaction transaction);
 	}
 }

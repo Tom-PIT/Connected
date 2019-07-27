@@ -11,9 +11,9 @@ namespace TomPIT.BigData.Configuration
 		{
 			builder.MapRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
 
-			builder.MapRoute("{microService}/{api}", (t) =>
+			builder.MapRoute("data/{microService}/{partition}", (t) =>
 			{
-				var handler = new ApiHandler(t);
+				var handler = new DataHandler(t);
 
 				handler.ProcessRequest();
 

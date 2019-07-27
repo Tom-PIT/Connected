@@ -17,5 +17,6 @@
 		IContextMediaService Media { get; }
 		IContextFeatureService Features { get; }
 		IContextSearchService Search { get; }
+		IContextBigDataService BigData { get; }
 	}
 }

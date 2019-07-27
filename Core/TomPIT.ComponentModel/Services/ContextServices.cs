@@ -19,6 +19,7 @@ namespace TomPIT.Services
 		private IContextMediaService _media = null;
 		private IContextFeatureService _features = null;
 		private IContextSearchService _search = null;
+		private IContextBigDataService _bigData = null;
 
 		public ContextServices(IExecutionContext context) : base(context)
 		{
@@ -186,6 +187,17 @@ namespace TomPIT.Services
 					_search = new ContextSearchService(Context);
 
 				return _search;
+			}
+		}
+
+		public IContextBigDataService BigData
+		{
+			get
+			{
+				if (_bigData == null)
+					_bigData = new ContextBigDataService(Context);
+
+				return _bigData;
 			}
 		}
 	}

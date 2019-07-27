@@ -9,14 +9,14 @@ using TomPIT.Services;
 
 namespace TomPIT.BigData.Controllers
 {
-	internal class ApiHandler : ExecutionContext
+	internal class DataHandler : ExecutionContext
 	{
-		public ApiHandler(HttpContext context)
+		public DataHandler(HttpContext context)
 		{
 			Context = context;
 
 			var ms = context.GetRouteValue("microService");
-			var api = context.GetRouteValue("api");
+			var partition = context.GetRouteValue("partition");
 
 			var microService = Instance.Connection.GetService<IMicroServiceService>().Select(ms.ToString());
 
@@ -26,9 +26,9 @@ namespace TomPIT.BigData.Controllers
 				return;
 			}
 
-			Api = Instance.GetService<IComponentService>().SelectConfiguration(microService.Token, "BigDataApi", api.ToString()) as IBigDataApi;
+			Configuration = Instance.GetService<IComponentService>().SelectConfiguration(microService.Token, "BigDataPartition", partition.ToString()) as IPartitionConfiguration;
 
-			if (Api == null)
+			if (Configuration == null)
 			{
 				context.Response.StatusCode = (int)HttpStatusCode.NotFound;
 				return;
@@ -39,13 +39,13 @@ namespace TomPIT.BigData.Controllers
 			Body = Context.Request.Body.ToType<JArray>();
 		}
 
-		private IBigDataApi Api { get; }
+		private IPartitionConfiguration Configuration { get; }
 		private HttpContext Context { get; }
 		private JArray Body { get; set; }
 
 		public void ProcessRequest()
 		{
-			Instance.GetService<ITransactionService>().Prepare(Api, Body);
+			Instance.GetService<ITransactionService>().Prepare(Configuration, Body);
 		}
 	}
 }

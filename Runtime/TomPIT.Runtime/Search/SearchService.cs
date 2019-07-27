@@ -42,7 +42,7 @@ namespace TomPIT.Search
 
 		public IClientSearchResults Search(ISearchOptions options)
 		{
-			var url = Connection.GetService<IInstanceEndpointService>().Url(InstanceType.Search, InstanceVerbs.Get);
+			var url = Connection.GetService<IInstanceEndpointService>().Url(InstanceType.Search, InstanceVerbs.Post);
 
 			if (string.IsNullOrWhiteSpace(url))
 				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceType.Search}, {InstanceVerbs.Post})");

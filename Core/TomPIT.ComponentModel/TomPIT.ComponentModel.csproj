@@ -38,7 +38,6 @@
     <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="BigData\" />
     <Folder Include="Data\DataProviders\Deployment\" />
   </ItemGroup>
 </Project>

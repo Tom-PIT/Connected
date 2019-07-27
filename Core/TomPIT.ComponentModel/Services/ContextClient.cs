@@ -1,4 +1,6 @@
-﻿namespace TomPIT.Services
+﻿using TomPIT.Connectivity;
+
+namespace TomPIT.Services
 {
 	public abstract class ContextClient
 	{
@@ -8,5 +10,7 @@
 		}
 
 		public IExecutionContext Context { get; }
+
+		protected ISysConnection Connection => Context.Connection();
 	}
 }

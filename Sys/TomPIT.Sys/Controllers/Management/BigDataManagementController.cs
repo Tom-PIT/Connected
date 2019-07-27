@@ -85,8 +85,9 @@ namespace TomPIT.Sys.Controllers.Management
 			var name = body.Required<string>("name");
 			var configuration = body.Required<Guid>("configuration");
 			var status = body.Required<PartitionStatus>("status");
+			var resourceGroup = body.Required<Guid>("resourceGroup");
 
-			DataModel.BigDataPartitions.Insert(configuration, name, status);
+			DataModel.BigDataPartitions.Insert(configuration, name, status, resourceGroup);
 		}
 
 		[HttpPost]
@@ -112,6 +113,42 @@ namespace TomPIT.Sys.Controllers.Management
 		/*
 		 * Transactions
 		 */
+		[HttpPost]
+		public void ActivateTransaction()
+		{
+			var body = FromBody();
+			var transaction = body.Required<Guid>("transaction");
 
+			DataModel.BigDataTransactions.Activate(transaction);
+		}
+
+		[HttpPost]
+		public Guid InsertTransaction()
+		{
+			var body = FromBody();
+			var partition = body.Required<Guid>("partition");
+			var blockCount = body.Required<int>("blockCount");
+
+			return DataModel.BigDataTransactions.Insert(partition, blockCount);
+		}
+		[HttpPost]
+		public void DeleteTransaction()
+		{
+			var body = FromBody();
+			var transaction = body.Required<Guid>("transaction");
+
+			DataModel.BigDataTransactions.Delete(transaction);
+		}
+		/*
+		 * Transaction blocks
+		 */
+		[HttpPost]
+		public Guid InsertTransactionBlock()
+		{
+			var body = FromBody();
+			var transaction = body.Required<Guid>("transaction");
+
+			return DataModel.BigDataTransactionBlocks.Insert(transaction);
+		}
 	}
 }

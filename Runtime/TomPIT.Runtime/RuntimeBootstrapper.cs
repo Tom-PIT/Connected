@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using TomPIT.Analysis;
+using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Cdn;
 using TomPIT.Compilation;
@@ -84,6 +85,7 @@ namespace TomPIT.Runtime
 			e.Connection.RegisterService(typeof(IGraphicsService), typeof(GraphicsService));
 			e.Connection.RegisterService(typeof(ISearchService), typeof(SearchService));
 			e.Connection.RegisterService(typeof(ILocalizationService), typeof(LocalizationService));
+			e.Connection.RegisterService(typeof(IBigDataService), typeof(BigDataService));
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 			{

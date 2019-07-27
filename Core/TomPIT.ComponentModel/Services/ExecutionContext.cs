@@ -25,6 +25,7 @@ namespace TomPIT.Services
 		internal const string IoTHubFieldProvider = "TomPIT.Design.CodeAnalysis.Providers.IoTHubFieldProvider, TomPIT.Design";
 		internal const string QueueWorkerProvider = "TomPIT.Design.CodeAnalysis.Providers.QueueWorkerProvider, TomPIT.Design";
 		internal const string PartialProvider = "TomPIT.Design.CodeAnalysis.Providers.PartialProvider, TomPIT.Design";
+		internal const string BigDataPartitionProvider = "TomPIT.Design.CodeAnalysis.Providers.BigDataPartitionProvider, TomPIT.Design";
 
 		private IContextServices _services = null;
 		private ISysConnection _connection = null;

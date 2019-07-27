@@ -21,6 +21,7 @@ namespace TomPIT.BigData.Connectivity
 		protected override void Initialize()
 		{
 			Nodes();
+			Partitions();
 		}
 
 		private void Nodes()
@@ -44,6 +45,30 @@ namespace TomPIT.BigData.Connectivity
 				Hub.InvokeAsync("Confirm", e.Message);
 
 				Connection.GetService<INodeService>().NotifyRemoved(e.Args.Node);
+			});
+		}
+
+		private void Partitions()
+		{
+			Hub.On<MessageEventArgs<PartitionArgs>>("PartitionAdded", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				Connection.GetService<IPartitionService>().NotifyChanged(e.Args.Configuration);
+			});
+
+			Hub.On<MessageEventArgs<PartitionArgs>>("PartitionChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				Connection.GetService<IPartitionService>().NotifyChanged(e.Args.Configuration);
+			});
+
+			Hub.On<MessageEventArgs<PartitionArgs>>("PartitionRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				Connection.GetService<IPartitionService>().NotifyRemoved(e.Args.Configuration);
 			});
 		}
 	}

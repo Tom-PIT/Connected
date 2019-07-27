@@ -11,6 +11,7 @@ namespace TomPIT.SysDb.Sql.BigData
 		public PartitionStatus Status { get; set; }
 		public string Name { get; set; }
 		public DateTime Created { get; set; }
+		public Guid ResourceGroup { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -21,6 +22,7 @@ namespace TomPIT.SysDb.Sql.BigData
 			Status = GetValue("status", PartitionStatus.Maintenance);
 			Name = GetString("name");
 			Created = GetDate("created");
+			ResourceGroup = GetGuid("resource_group_token");
 		}
 	}
 }

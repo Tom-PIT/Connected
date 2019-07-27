@@ -978,4 +978,16 @@
   <data name="ErrSearchCatalogStateNotFound" xml:space="preserve">
     <value>Search catalog state not found</value>
   </data>
+  <data name="ValBigDataMultipleKey" xml:space="preserve">
+    <value>Only one property can have BigDataKeyAttribute set</value>
+  </data>
+  <data name="ValBigDataMultiplePartitionKey" xml:space="preserve">
+    <value>Only one property can have BigDataPartitionKeyAttribute set</value>
+  </data>
+  <data name="ErrBigDataTransactionNotFound" xml:space="preserve">
+    <value>Big data transaction not found</value>
+  </data>
+  <data name="ErrBigDataTransactionRunning" xml:space="preserve">
+    <value>Big data transaction is already activated</value>
+  </data>
 </root>

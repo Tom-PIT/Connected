@@ -45,6 +45,7 @@ namespace TomPIT.Sys.Data
 		private static Lazy<BigDataNodes> _bigDataNodes = new Lazy<BigDataNodes>(() => { return new BigDataNodes(Container); });
 		private static Lazy<BigDataPartitions> _bigDataPartitions = new Lazy<BigDataPartitions>(() => { return new BigDataPartitions(Container); });
 		private static Lazy<BigDataTransactions> _bigDataTransactions = new Lazy<BigDataTransactions>(() => { return new BigDataTransactions(Container); });
+		private static Lazy<BigDataTransactionBlocks> _bigDataTransactionBlocks = new Lazy<BigDataTransactionBlocks>(() => { return new BigDataTransactionBlocks(); });
 		private static Lazy<DevelopmentErrors> _devErrors = new Lazy<DevelopmentErrors>(() => { return new DevelopmentErrors(); });
 		private static Lazy<Queueing> _queue = new Lazy<Queueing>(() => { return new Queueing(); });
 		private static Lazy<Search> _search = new Lazy<Search>(() => { return new Search(); });
@@ -87,6 +88,7 @@ namespace TomPIT.Sys.Data
 		public static BigDataNodes BigDataNodes { get { return _bigDataNodes.Value; } }
 		public static BigDataPartitions BigDataPartitions { get { return _bigDataPartitions.Value; } }
 		public static BigDataTransactions BigDataTransactions { get { return _bigDataTransactions.Value; } }
+		public static BigDataTransactionBlocks BigDataTransactionBlocks { get { return _bigDataTransactionBlocks.Value; } }
 		public static DevelopmentErrors DevelopmentErrors { get { return _devErrors.Value; } }
 		public static Queueing Queue { get { return _queue.Value; } }
 		public static Search Search { get { return _search.Value; } }

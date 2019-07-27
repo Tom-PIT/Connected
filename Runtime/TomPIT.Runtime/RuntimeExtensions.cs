@@ -58,5 +58,20 @@ namespace TomPIT
 		{
 			return CreateContext(Instance.GetService<IComponentService>().SelectComponent(configuration.Component));
 		}
+
+		public static dynamic CreateInstance(this Type type, IDataModelContext context, object[] ctorArgs)
+		{
+			dynamic instance = type.CreateInstance(ctorArgs);
+
+			if (instance is IProcessHandler ph)
+				ph.Initialize(context);
+
+			return instance;
+		}
+
+		public static dynamic CreateInstance(this Type type, IDataModelContext context)
+		{
+			return type.CreateInstance(context, null);
+		}
 	}
 }

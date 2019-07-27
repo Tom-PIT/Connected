@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TomPIT.BigData;
 using TomPIT.Data.Sql;
+using TomPIT.Environment;
 using TomPIT.SysDb.BigData;
 
 namespace TomPIT.SysDb.Sql.BigData
@@ -18,7 +19,7 @@ namespace TomPIT.SysDb.Sql.BigData
 			w.Execute();
 		}
 
-		public void Insert(Guid configuration, string name, PartitionStatus status, DateTime created)
+		public void Insert(IResourceGroup resourceGroup, Guid configuration, string name, PartitionStatus status, DateTime created)
 		{
 			var w = new Writer("tompit.big_data_partition_ins");
 
@@ -26,6 +27,7 @@ namespace TomPIT.SysDb.Sql.BigData
 			w.CreateParameter("@name", name);
 			w.CreateParameter("@status", status);
 			w.CreateParameter("@created", created);
+			w.CreateParameter("@resource_group", resourceGroup.GetId());
 
 			w.Execute();
 		}
@@ -37,7 +39,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public IPartition Select(Guid configuration)
 		{
-			var r = new Reader<Partition>("tompit.big_data_node_sel");
+			var r = new Reader<Partition>("tompit.big_data_partition_sel");
 
 			r.CreateParameter("@configuration", configuration);
 

@@ -16,13 +16,15 @@ namespace TomPIT.BigData.Design
 		static BigDataTemplate()
 		{
 			_items = new ConcurrentDictionary<string, IItemDescriptor>(new Dictionary<string, IItemDescriptor>{
-				{"Api", new ItemDescriptor("Api", "BigDataApi", typeof(Api)) { Category ="Model", Glyph="fal fa-broadcast-tower", Ordinal=100} }
+				{"BigDataPartition", new ItemDescriptor("Partition", "BigDataPartition", typeof(Partition)) { Category ="Big Data", Glyph="fal fa-broadcast-tower", Ordinal=100} }
 			});
 		}
 
-		public override List<IItemDescriptor> ProvideAddItems(IDomElement parent)
+		public override List<IItemDescriptor> ProvideGlobalAddItems(IDomElement parent)
 		{
 			return _items.Values.ToList();
 		}
+
+		public override TemplateKind Kind => TemplateKind.Plugin;
 	}
 }

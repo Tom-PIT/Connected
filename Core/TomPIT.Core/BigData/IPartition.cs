@@ -15,5 +15,6 @@ namespace TomPIT.BigData
 		PartitionStatus Status { get; }
 		string Name { get; }
 		DateTime Created { get; }
+		Guid ResourceGroup { get; }
 	}
 }

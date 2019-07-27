@@ -126,7 +126,12 @@ namespace TomPIT.UI
 			var views = Connection.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, "View, MasterView, Partial, MailTemplate, Report");
 
 			foreach (var i in views)
+			{
+				if (i == null)
+					continue;
+
 				Set(i.Component, i, TimeSpan.Zero);
+			}
 		}
 
 		protected override void OnInvalidate(Guid id)

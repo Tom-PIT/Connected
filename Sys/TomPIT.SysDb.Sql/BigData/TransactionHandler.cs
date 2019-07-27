@@ -29,28 +29,6 @@ namespace TomPIT.SysDb.Sql.BigData
 			w.Execute();
 		}
 
-		public List<ITransactionBlock> Dequeue(List<IResourceGroup> resourceGroups, int count, DateTime nextVisible, DateTime date)
-		{
-			var a = new JArray();
-
-			foreach (var i in resourceGroups)
-			{
-				a.Add(new JObject
-				{
-					{ "resource_group", Convert.ToInt32(i.GetId()) }
-				});
-			}
-
-			var r = new Reader<TransactionBlock>("tompit.big_data_transaction_block_dequeue");
-
-			r.CreateParameter("@resource_groups", a);
-			r.CreateParameter("@next_visible", nextVisible);
-			r.CreateParameter("@count", count);
-			r.CreateParameter("@date", date);
-
-			return r.Execute().ToList<ITransactionBlock>();
-		}
-
 		public void Insert(IPartition partition, Guid token, int blockCount, DateTime created)
 		{
 			var w = new Writer("tompit.big_data_transaction_ins");
@@ -80,7 +58,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public ITransaction Select(Guid token)
 		{
-			var r = new Reader<Transaction>("tompit.big_data_transaction_que");
+			var r = new Reader<Transaction>("tompit.big_data_transaction_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -98,14 +76,22 @@ namespace TomPIT.SysDb.Sql.BigData
 			w.Execute();
 		}
 
-		public void UpdateBlock(ITransactionBlock block, DateTime nextVisible)
+		public ITransactionBlock SelectBlock(Guid token)
 		{
-			var w = new Writer("tompit.big_data_transaction_block_upd");
+			var r = new Reader<TransactionBlock>("tompit.big_data_transaction_block_sel");
 
-			w.CreateParameter("@id", block.GetId());
-			w.CreateParameter("@next_visible", nextVisible);
+			r.CreateParameter("@token", token);
 
-			w.Execute();
+			return r.ExecuteSingleRow();
+		}
+
+		public List<ITransactionBlock> QueryBlocks(ITransaction transaction)
+		{
+			var r = new Reader<TransactionBlock>("tompit.big_data_transaction_block_que");
+
+			r.CreateParameter("@transaction", transaction.GetId());
+
+			return r.Execute().ToList<ITransactionBlock>();
 		}
 	}
 }

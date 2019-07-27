@@ -628,6 +628,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Big data transaction not found.
+        /// </summary>
+        public static string ErrBigDataTransactionNotFound {
+            get {
+                return ResourceManager.GetString("ErrBigDataTransactionNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Big data transaction is already activated.
+        /// </summary>
+        public static string ErrBigDataTransactionRunning {
+            get {
+                return ResourceManager.GetString("ErrBigDataTransactionRunning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Blob not found.
         /// </summary>
         public static string ErrBlobNotFound {
@@ -2451,6 +2469,24 @@ namespace TomPIT {
         public static string UserCreateSuccess {
             get {
                 return ResourceManager.GetString("UserCreateSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only one property can have BigDataKeyAttribute set.
+        /// </summary>
+        public static string ValBigDataMultipleKey {
+            get {
+                return ResourceManager.GetString("ValBigDataMultipleKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only one property can have BigDataPartitionKeyAttribute set.
+        /// </summary>
+        public static string ValBigDataMultiplePartitionKey {
+            get {
+                return ResourceManager.GetString("ValBigDataMultiplePartitionKey", resourceCulture);
             }
         }
         
