@@ -42,7 +42,10 @@ namespace TomPIT.UI
 			var model = CreateModel();
 
 			if (model == null)
-				throw new RuntimeException(SR.ErrNoViews);
+			{
+				Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+				return;
+			}
 
 			var metric = Guid.Empty;
 			var content = string.Empty;

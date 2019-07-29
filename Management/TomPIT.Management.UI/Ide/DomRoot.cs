@@ -11,10 +11,11 @@ namespace TomPIT.Ide
 			var r = new List<IDomElement>
 			{
 				new MarketplaceElement(environment),
-                new IntegrationElement(environment),
-                new ResourceGroupsElement(environment),
+					 new IntegrationElement(environment),
+					 new ResourceGroupsElement(environment),
 				new SecurityElement(environment),
 				new EnvironmentElement(environment),
+				new BigDataElement(environment)
 			};
 
 

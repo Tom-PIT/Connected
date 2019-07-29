@@ -35,14 +35,14 @@ namespace TomPIT.Sys.Data
 			return Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.QueryBlocks(t);
 		}
 
-		public void Ping(Guid popReceipt)
+		public void Ping(Guid popReceipt, TimeSpan nextVisible)
 		{
 			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(popReceipt, TimeSpan.FromSeconds(5));
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(popReceipt, nextVisible);
 		}
 
 		public void Complete(Guid popReceipt)
@@ -74,9 +74,7 @@ namespace TomPIT.Sys.Data
 
 		private ITransactionBlock Resolve(IQueueMessage message)
 		{
-			var d = Types.Deserialize<JObject>(message.Message);
-
-			var id = d.Required<Guid>("id");
+			var id = message.Message.AsGuid();
 
 			return Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.SelectBlock(id);
 		}

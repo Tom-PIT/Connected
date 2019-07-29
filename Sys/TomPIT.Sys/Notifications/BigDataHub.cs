@@ -9,9 +9,9 @@ namespace TomPIT.Sys.Notifications
 	[Authorize(AuthenticationSchemes = "TomPIT")]
 	public class BigDataHub : Hub
 	{
-		public BigDataHub(IHubContext<IoTHub> context)
+		public BigDataHub(IHubContext<BigDataHub> context)
 		{
-			IoTNotifications.Cache = context;
+			BigDataNotifications.Cache = context;
 		}
 
 		public override Task OnConnectedAsync()

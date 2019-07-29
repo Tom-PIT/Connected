@@ -9,7 +9,7 @@ namespace TomPIT.BigData.Services
 {
 	internal class NodeService : SynchronizedClientRepository<INode, Guid>, INodeService
 	{
-		protected NodeService(ISysConnection connection) : base(connection, "bigdatanode")
+		public NodeService(ISysConnection connection) : base(connection, "bigdatanode")
 		{
 		}
 
@@ -20,6 +20,8 @@ namespace TomPIT.BigData.Services
 
 		public INode SelectSmallest()
 		{
+			Initialize();
+
 			if (Count == 0)
 				return null;
 

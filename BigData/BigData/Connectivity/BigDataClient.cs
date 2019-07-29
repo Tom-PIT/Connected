@@ -70,6 +70,34 @@ namespace TomPIT.BigData.Connectivity
 
 				Connection.GetService<IPartitionService>().NotifyRemoved(e.Args.Configuration);
 			});
+
+			Hub.On<MessageEventArgs<PartitionFileArgs>>("PartitionFileAdded", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				Connection.GetService<IPartitionService>().NotifyFileChanged(e.Args.FileName);
+			});
+
+			Hub.On<MessageEventArgs<PartitionFileArgs>>("PartitionFileChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				Connection.GetService<IPartitionService>().NotifyFileChanged(e.Args.FileName);
+			});
+
+			Hub.On<MessageEventArgs<PartitionFileArgs>>("PartitionFileRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				Connection.GetService<IPartitionService>().NotifyFileRemoved(e.Args.FileName);
+			});
+
+			Hub.On<MessageEventArgs<PartitionFieldStatisticArgs>>("PartitionFieldStatisticsChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				Connection.GetService<IPartitionService>().NotifyFieldStatisticChanged(e.Args.File, e.Args.FieldName);
+			});
 		}
 	}
 }

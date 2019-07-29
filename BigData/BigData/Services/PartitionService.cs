@@ -14,6 +14,8 @@ namespace TomPIT.BigData.Services
 	{
 		public PartitionService(ISysConnection connection) : base(connection, "partitions")
 		{
+			Files = new PartitionFilesCache(Connection);
+			Fields = new PartitionFieldStatisticsCache(Connection);
 		}
 
 		protected override void OnInitializing()
@@ -67,9 +69,9 @@ namespace TomPIT.BigData.Services
 			return Get(f => f.Configuration == configuration.Component);
 		}
 
-		public IPartitionFile SelectFile(long id)
+		public IPartitionFile SelectFile(Guid fileName)
 		{
-			throw new NotImplementedException();
+			return Files.Select(fileName);
 		}
 
 		public void NotifyChanged(Guid token)
@@ -81,5 +83,118 @@ namespace TomPIT.BigData.Services
 		{
 			Remove(token);
 		}
+
+		public Guid InsertFile(Guid partition, Guid node, string key, DateTime timeStamp)
+		{
+			var u = Connection.CreateUrl("BigDataManagement", "InsertFile");
+			var e = new JObject
+			{
+				{"partition", partition },
+				{"node", node },
+				{"key", key },
+				{"timeStamp", timeStamp }
+			};
+
+			var id = Connection.Post<Guid>(u, e);
+
+			Files.Notify(id);
+
+			return id;
+		}
+
+		public void NotifyFileChanged(Guid token)
+		{
+			Files.Notify(token);
+		}
+
+		public void NotifyFileRemoved(Guid token)
+		{
+			Files.Notify(token, true);
+		}
+
+		public void NotifyFieldStatisticChanged(Guid file, string fieldName)
+		{
+			Fields.Notify(file, fieldName);
+		}
+
+		public List<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp)
+		{
+			return Files.Query(partition, key, startTimestamp, endTimestamp);
+		}
+
+		public void UpdateFile(Guid file, DateTime startTimeStamp, DateTime endTimeStamp, int count, PartitionFileStatus status)
+		{
+			var u = Connection.CreateUrl("BigDataManagement", "UpdateFile");
+			var e = new JObject
+			{
+				{"token", file },
+				{"startTimestamp", startTimeStamp },
+				{"endTimestamp", endTimeStamp },
+				{"count", count },
+				{"status", status.ToString() }
+			};
+
+			Connection.Post(u, e);
+
+			Files.Notify(file);
+		}
+
+		public void DeleteFile(Guid file)
+		{
+			var u = Connection.CreateUrl("BigDataManagement", "DeleteFile");
+			var e = new JObject
+			{
+				{"token", file }
+			};
+
+			Connection.Post(u, e);
+
+			Files.Notify(file, true);
+		}
+
+		public Guid LockFile(Guid file)
+		{
+			var u = Connection.CreateUrl("BigDataManagement", "LockFile");
+			var e = new JObject
+			{
+				{"token", file }
+			};
+
+			return Connection.Post<Guid>(u, e);
+		}
+
+		public void ReleaseFile(Guid unlockKey)
+		{
+			var u = Connection.CreateUrl("BigDataManagement", "UnlockFile");
+			var e = new JObject
+			{
+				{"unlockKey", unlockKey }
+			};
+
+			Connection.Post(u, e);
+		}
+
+		public void UpdateFileStatistics(Guid file, string fieldName, string startString, string endString, double startNumber, double endNumber, DateTime startDate, DateTime endDate)
+		{
+			var u = Connection.CreateUrl("BigDataManagement", "UpdateFieldStatistics");
+			var e = new JObject
+			{
+				{"file", file },
+				{"fieldName", fieldName },
+				{"startString", startString },
+				{"endString", endString },
+				{"startNumber", startNumber },
+				{"endNumber", endNumber },
+				{"startDate", startDate },
+				{"endDate", endDate }
+			};
+
+			Connection.Post(u, e);
+
+			Fields.Notify(file, fieldName);
+		}
+
+		private PartitionFilesCache Files { get; }
+		private PartitionFieldStatisticsCache Fields { get; }
 	}
 }

@@ -4,11 +4,13 @@ using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
+using TomPIT.Threading;
 
 namespace TomPIT.Sys.Data
 {
 	internal class BigDataPartitions : SynchronizedRepository<IPartition, Guid>
 	{
+		private Lazy<LockerContainer<Guid>> _locker = new Lazy<Threading.LockerContainer<Guid>>();
 		public BigDataPartitions(IMemoryCache container) : base(container, "bigdatapartitions")
 		{
 		}
@@ -81,6 +83,13 @@ namespace TomPIT.Sys.Data
 
 			Refresh(partition.Configuration);
 			BigDataNotifications.PartitionRemoved(partition.Configuration);
+		}
+
+		private LockerContainer<Guid> Locker => _locker.Value;
+
+		public Locker RequestLock(IPartition partition)
+		{
+			return Locker.Request(partition.Configuration);
 		}
 	}
 }

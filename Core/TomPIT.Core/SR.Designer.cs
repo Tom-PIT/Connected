@@ -124,6 +124,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Big data node successfully created.
+        /// </summary>
+        public static string BigDataNodeCreateSuccess {
+            get {
+                return ResourceManager.GetString("BigDataNodeCreateSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Appearance.
         /// </summary>
         public static string CatAppearance {
@@ -336,6 +345,15 @@ namespace TomPIT {
         public static string DevColCreateSuccessful {
             get {
                 return ResourceManager.GetString("DevColCreateSuccessful", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create big data node.
+        /// </summary>
+        public static string DevCreateBigDataNode {
+            get {
+                return ResourceManager.GetString("DevCreateBigDataNode", resourceCulture);
             }
         }
         
@@ -610,6 +628,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Partition file not found.
+        /// </summary>
+        public static string ErrBigDataFileNotFound {
+            get {
+                return ResourceManager.GetString("ErrBigDataFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Node not found.
         /// </summary>
         public static string ErrBigDataNodeNotFound {
@@ -619,11 +646,29 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No nodes available.
+        /// </summary>
+        public static string ErrBigDataNoNodes {
+            get {
+                return ResourceManager.GetString("ErrBigDataNoNodes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Partition not found.
         /// </summary>
         public static string ErrBigDataPartitionNotFound {
             get {
                 return ResourceManager.GetString("ErrBigDataPartitionNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Partition is in read only state.
+        /// </summary>
+        public static string ErrBigDataPartitionReadOnly {
+            get {
+                return ResourceManager.GetString("ErrBigDataPartitionReadOnly", resourceCulture);
             }
         }
         

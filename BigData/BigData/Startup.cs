@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using TomPIT.BigData.Connectivity;
+using TomPIT.BigData.Providers.Sql;
 using TomPIT.BigData.Services;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
@@ -40,8 +42,7 @@ namespace TomPIT.BigData
 
 		private void RegisterTasks(IServiceCollection services)
 		{
-			//services.AddSingleton<IHostedService, MailService>();
-			//services.AddSingleton<IHostedService, ConnectionCleanupService>();
+			services.AddSingleton<IHostedService, StorageService>();
 		}
 
 		private void InitializeConfiguration()
@@ -54,6 +55,7 @@ namespace TomPIT.BigData
 			e.Connection.RegisterService(typeof(INodeService), typeof(NodeService));
 			e.Connection.RegisterService(typeof(ITransactionService), typeof(TransactionService));
 			e.Connection.RegisterService(typeof(IPartitionService), typeof(PartitionService));
+			e.Connection.RegisterService(typeof(IPersistenceService), typeof(SqlPersistenceService));
 
 			e.Connection.Items.TryAdd("bigdataClient", new BigDataClient(e.Connection, e.Connection.AuthenticationToken));
 		}

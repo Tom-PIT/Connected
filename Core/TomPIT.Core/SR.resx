@@ -990,4 +990,19 @@
   <data name="ErrBigDataTransactionRunning" xml:space="preserve">
     <value>Big data transaction is already activated</value>
   </data>
+  <data name="ErrBigDataNoNodes" xml:space="preserve">
+    <value>No nodes available</value>
+  </data>
+  <data name="ErrBigDataPartitionReadOnly" xml:space="preserve">
+    <value>Partition is in read only state</value>
+  </data>
+  <data name="ErrBigDataFileNotFound" xml:space="preserve">
+    <value>Partition file not found</value>
+  </data>
+  <data name="BigDataNodeCreateSuccess" xml:space="preserve">
+    <value>Big data node successfully created</value>
+  </data>
+  <data name="DevCreateBigDataNode" xml:space="preserve">
+    <value>Create big data node</value>
+  </data>
 </root>

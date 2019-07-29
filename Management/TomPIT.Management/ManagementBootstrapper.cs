@@ -3,6 +3,7 @@ using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
+using TomPIT.Management.BigData;
 using TomPIT.Management.Deployment;
 using TomPIT.Security;
 
@@ -34,6 +35,7 @@ namespace TomPIT
 			e.Connection.RegisterService(typeof(IAuthenticationTokenManagementService), typeof(AuthenticationTokenManagementService));
 			e.Connection.RegisterService(typeof(IDeploymentService), typeof(DeploymentService));
 			e.Connection.RegisterService(typeof(IMetricManagementService), typeof(MetricManagementService));
+			e.Connection.RegisterService(typeof(IBigDataManagementService), typeof(BigDataManagementService));
 		}
 	}
 }

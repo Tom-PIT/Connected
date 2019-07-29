@@ -43,7 +43,7 @@ namespace TomPIT.Environment
 			}
 
 			if (d.Status == InstanceStatus.Enabled)
-				Register(CreateRobinKey(d.Type, d.Verbs), d.Token);
+				Register(d.Type, d.Verbs, d.Token);
 
 			Set(id, d, TimeSpan.Zero);
 		}

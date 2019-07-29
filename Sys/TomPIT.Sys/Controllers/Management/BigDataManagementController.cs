@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using TomPIT.BigData;
+using TomPIT.Storage;
 using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Controllers.Management
@@ -149,6 +150,145 @@ namespace TomPIT.Sys.Controllers.Management
 			var transaction = body.Required<Guid>("transaction");
 
 			return DataModel.BigDataTransactionBlocks.Insert(transaction);
+		}
+
+		[HttpPost]
+		public void CompleteTransactionBlock()
+		{
+			var body = FromBody();
+			var popReceipt = body.Required<Guid>("popReceipt");
+
+			DataModel.BigDataTransactionBlocks.Complete(popReceipt);
+		}
+
+		[HttpPost]
+		public List<IQueueMessage> DequeueTransactionBlocks()
+		{
+			var body = FromBody();
+			var count = body.Required<int>("count");
+			var nextVisible = body.Required<int>("nextVisible");
+
+			return DataModel.BigDataTransactionBlocks.Dequeue(count, TimeSpan.FromSeconds(nextVisible));
+		}
+
+		[HttpPost]
+		public void PingTransactionBlock()
+		{
+			var body = FromBody();
+			var popReceipt = body.Required<Guid>("popReceipt");
+			var nextVisible = body.Required<int>("nextVisible");
+
+			DataModel.BigDataTransactionBlocks.Ping(popReceipt, TimeSpan.FromSeconds(nextVisible));
+		}
+
+		[HttpPost]
+		public ITransactionBlock SelectTransactionBlock()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			return DataModel.BigDataTransactionBlocks.Select(token);
+		}
+		/*
+		 * Partition files
+		 */
+		[HttpPost]
+		public Guid InsertFile()
+		{
+			var body = FromBody();
+			var partition = body.Required<Guid>("partition");
+			var node = body.Required<Guid>("node");
+			var key = body.Optional("key", string.Empty);
+			var timestamp = body.Optional("timeStamp", DateTime.MinValue);
+
+			return DataModel.BigDataPartitionFiles.Insert(partition, node, key, timestamp);
+		}
+
+		[HttpPost]
+		public void UpdateFile()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+			var startTimestamp = body.Optional("startTimeStamp", DateTime.MinValue);
+			var endTimestamp = body.Optional("endTimeStamp", DateTime.MinValue);
+			var count = body.Required<int>("count");
+			var status = body.Required<PartitionFileStatus>("status");
+
+			DataModel.BigDataPartitionFiles.Update(token, startTimestamp, endTimestamp, count, status);
+		}
+
+		[HttpGet]
+		public List<IPartitionFile> QueryFiles()
+		{
+			return DataModel.BigDataPartitionFiles.Query();
+		}
+
+		[HttpPost]
+		public IPartitionFile SelectFile()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			return DataModel.BigDataPartitionFiles.Select(token);
+		}
+
+		[HttpPost]
+		public Guid LockFile()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			return DataModel.BigDataPartitionFiles.Lock(token);
+		}
+
+		[HttpPost]
+		public void UnlockFile()
+		{
+			var body = FromBody();
+			var key = body.Required<Guid>("unlockKey");
+
+			DataModel.BigDataPartitionFiles.Unlock(key);
+		}
+
+		[HttpPost]
+		public void DeleteFile()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			DataModel.BigDataPartitionFiles.Delete(token);
+		}
+		/*
+  		 * Field statistics
+		 */
+		[HttpGet]
+		public List<IPartitionFieldStatistics> QueryFieldStatistics()
+		{
+			return DataModel.BigDataPartitionFieldStatistics.Query();
+		}
+		[HttpPost]
+		public IPartitionFieldStatistics SelectFieldStatistic()
+		{
+			var body = FromBody();
+			var file = body.Required<Guid>("file");
+			var fieldName = body.Required<string>("fieldName");
+
+			return DataModel.BigDataPartitionFieldStatistics.Select(file, fieldName);
+		}
+		[HttpPost]
+		public void UpdateFieldStatistics()
+		{
+			var body = FromBody();
+			var file = body.Required<Guid>("file");
+			var fieldName = body.Required<string>("fieldName");
+			var startString = body.Optional("startString", string.Empty);
+			var endString = body.Optional("endString", string.Empty);
+			var startNumber = body.Optional("startNumber", 0d);
+			var endNumber = body.Optional("endNumber", 0d);
+			var startDate = body.Optional("startDate", DateTime.MinValue);
+			var endDate = body.Optional("endDate", DateTime.MinValue);
+
+			DataModel.BigDataPartitionFieldStatistics.Update(file, fieldName, startString, endString, startNumber, endNumber, startDate, endDate);
 		}
 	}
 }

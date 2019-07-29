@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
@@ -16,19 +18,63 @@ namespace TomPIT.BigData.Services
 		{
 		}
 
-		public void Complete(Guid popReceipt)
+		public void Complete(Guid popReceipt, Guid block)
 		{
-			throw new NotImplementedException();
+			var transactionBlock = Select(block);
+				
+			var u = Connection.CreateUrl("BigDataManagement", "CompleteTransactionBlock");
+			var e = new JObject
+			{
+				{"popReceipt", popReceipt }
+			};
+
+			Connection.Post(u, e);
+
+			if (transactionBlock == null)
+				return;
+
+			var configuration = Connection.GetService<IComponentService>().SelectConfiguration(transactionBlock.Partition) as IPartitionConfiguration;
+			var partition = Connection.GetService<IPartitionService>().Select(configuration);
+			var microService = Connection.GetService<IMicroServiceService>().Select(((IConfiguration)configuration).MicroService(Connection));
+			var blobs = Connection.GetService<IStorageService>().Query(microService.Token, BlobTypes.BigDataTransactionBlock, microService.ResourceGroup, block.ToString());
+
+			foreach (var blob in blobs)
+				Connection.GetService<IStorageService>().Delete(blob.Token);
 		}
 
 		public List<IQueueMessage> Dequeue(int count)
 		{
-			throw new NotImplementedException();
+			var u = Connection.CreateUrl("BigDataManagement", "DequeueTransactionBlocks");
+			var e = new JObject
+			{
+				{"count", count },
+				{"nextVisible", 60 }
+			};
+
+			return Connection.Post<List<QueueMessage>>(u, e).ToList<IQueueMessage>();
 		}
 
 		public void Ping(Guid popReceipt)
 		{
-			throw new NotImplementedException();
+			var u = Connection.CreateUrl("BigDataManagement", "PingTransactionBlock");
+			var e = new JObject
+			{
+				{"popReceipt", popReceipt },
+				{"nextVisible", 60 }
+			};
+
+			Connection.Post(u, e);
+		}
+
+		public ITransactionBlock Select(Guid token)
+		{
+			var u = Connection.CreateUrl("BigDataManagement", "SelectTransactionBlock");
+			var e = new JObject
+			{
+				{"token", token }
+			};
+
+			return Connection.Post<TransactionBlock>(u, e);
 		}
 
 		public void Prepare(IPartitionConfiguration partition, JArray items)

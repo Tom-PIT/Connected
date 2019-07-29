@@ -44,5 +44,9 @@ namespace TomPIT.Sys.Notifications
 		public static void PartitionChanged(Guid configuration) { Notify(nameof(PartitionChanged), new PartitionArgs(configuration)); }
 		public static void PartitionRemoved(Guid configuration) { Notify(nameof(PartitionRemoved), new PartitionArgs(configuration)); }
 		public static void PartitionAdded(Guid configuration) { Notify(nameof(PartitionAdded), new PartitionArgs(configuration)); }
+		public static void PartitionFileChanged(Guid configuration) { Notify(nameof(PartitionFileChanged), new PartitionFileArgs(configuration)); }
+		public static void PartitionFileRemoved(Guid configuration) { Notify(nameof(PartitionFileRemoved), new PartitionFileArgs(configuration)); }
+		public static void PartitionFileAdded(Guid configuration) { Notify(nameof(PartitionFileAdded), new PartitionFileArgs(configuration)); }
+		public static void PartitionFieldStatisticsChanged(Guid file, string fieldName) { Notify(nameof(PartitionFieldStatisticsChanged), new PartitionFieldStatisticArgs(file, fieldName)); }
 	}
 }
