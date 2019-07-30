@@ -11,7 +11,7 @@ using TomPIT.ComponentModel.BigData;
 
 namespace TomPIT.BigData.Data
 {
-	internal class PartitionSchema
+	internal class PartitionSchema: IComparable<PartitionSchema>
 	{
 		private List<PartitionSchemaField> _fields = null;
 
@@ -31,6 +31,10 @@ namespace TomPIT.BigData.Data
 			typeof(Guid)
 		};
 
+		public PartitionSchema()
+		{
+		}
+
 		public PartitionSchema(IPartitionConfiguration configuration)
 		{
 			Configuration = configuration;
@@ -40,8 +44,8 @@ namespace TomPIT.BigData.Data
 
 		private IPartitionConfiguration Configuration { get; }
 
-		public string PartitionKeyField { get; private set; }
-		public string KeyField { get; private set; }
+		public string PartitionKeyField { get; set; }
+		public string KeyField { get; set; }
 		public List<PartitionSchemaField> Fields
 		{
 			get
@@ -178,6 +182,41 @@ namespace TomPIT.BigData.Data
 			var att = property.FindAttribute<BigDataLengthAttribute>();
 
 			return att == null ? 50 : att.Length;
+		}
+
+		public int CompareTo(PartitionSchema other)
+		{
+			if (other == null)
+				return 1;
+
+			var result = string.Compare(KeyField, other.KeyField, true);
+
+			if (result != 0)
+				return result;
+
+			result = string.Compare(PartitionKeyField, other.PartitionKeyField, true);
+
+			if (result != 0)
+				return result;
+
+			if (Fields.Count != other.Fields.Count)
+				return -1;
+
+			foreach(var field in Fields)
+			{
+				var otherField = other.Fields.FirstOrDefault(f => string.Compare(field.Name, f.Name, true) == 0);
+
+				if (otherField == null)
+					return -1;
+
+				if (otherField.GetType() != field.GetType())
+					return -1;
+
+				if (field.CompareTo(otherField) != 0)
+					return -1;
+			}
+
+			return 0;
 		}
 	}
 }

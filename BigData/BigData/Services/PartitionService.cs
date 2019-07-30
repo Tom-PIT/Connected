@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using TomPIT.BigData.Data;
 using TomPIT.Caching;
+using TomPIT.Cdn;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.Connectivity;
+using TomPIT.Storage;
 
 namespace TomPIT.BigData.Services
 {
@@ -192,6 +196,83 @@ namespace TomPIT.BigData.Services
 			Connection.Post(u, e);
 
 			Fields.Notify(file, fieldName);
+		}
+
+		public void ValidateSchema(Guid partition)
+		{
+			var configuration = Connection.GetService<IComponentService>().SelectConfiguration(partition) as IPartitionConfiguration;
+			var schema = Connection.GetService<IPersistenceService>().SelectSchema(configuration);
+			var microService = Connection.GetService<IMicroServiceService>().Select(((IConfiguration)configuration).MicroService(Connection));
+			var existingConfiguration = Connection.GetService<IStorageService>().Query(microService.Token, BlobTypes.BigDataPartitionSchema, microService.ResourceGroup, partition.ToString());
+
+			if (existingConfiguration == null || existingConfiguration.Count == 0)
+			{
+				CreateValidationSchema(microService, partition, schema);
+				return;
+			}
+			else
+			{
+				var content = Instance.GetService<IStorageService>().Download(existingConfiguration[0].Token);
+
+				if (content == null || content.Content == null)
+				{
+					CreateValidationSchema(microService, partition, schema);
+					return;
+				}
+
+				var existingSchema = Types.Deserialize<PartitionSchema>(Encoding.UTF8.GetString(content.Content));
+
+				if (existingSchema.CompareTo(schema) != 0)
+				{
+					if (configuration.SchemaSynchronization == SchemaSynchronizationMode.Auto)
+						UpdatePartition(partition, configuration.ComponentName(Connection), PartitionStatus.Maintenance);
+					else
+						UpdatePartition(partition, configuration.ComponentName(Connection), PartitionStatus.Invalid);
+
+					throw new RuntimeException(SR.ErrBigDataPartitionSchemaChanged);
+				}
+			}
+		}
+
+		public void SaveSchemaImage(Guid partition)
+		{
+			var configuration = Connection.GetService<IComponentService>().SelectConfiguration(partition) as IPartitionConfiguration;
+			var schema = Connection.GetService<IPersistenceService>().SelectSchema(configuration);
+			var microService = Connection.GetService<IMicroServiceService>().Select(((IConfiguration)configuration).MicroService(Connection));
+
+			CreateValidationSchema(microService, partition, schema);
+		}
+
+		private void CreateValidationSchema(IMicroService microService, Guid partition, PartitionSchema schema)
+		{
+			Instance.GetService<IStorageService>().Upload(new Blob
+			{
+				ContentType = "application/json",
+				FileName = partition.ToString(),
+				MicroService = microService.Token,
+				PrimaryKey = partition.ToString(),
+				ResourceGroup = microService.ResourceGroup,
+				Type = BlobTypes.BigDataPartitionSchema
+			}, Encoding.UTF8.GetBytes(Types.Serialize(schema)), StoragePolicy.Singleton);
+		}
+
+		public void UpdatePartition(Guid token, string name, PartitionStatus status)
+		{
+			var u = Connection.CreateUrl("BigDataManagement", "UpdatePartition");
+			var e = new JObject
+			{
+				{"configuration", token },
+				{"name", name },
+				{"status", status.ToString() }
+			};
+
+			Instance.Connection.Post(u, e);
+			Refresh(token);
+		}
+
+		public List<IPartitionFile> QueryFiles(Guid partition)
+		{
+			return Files.Query(partition);
 		}
 
 		private PartitionFilesCache Files { get; }

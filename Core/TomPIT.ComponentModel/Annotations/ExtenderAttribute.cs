@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TomPIT.Annotations
 {
-	[AttributeUsage(AttributeTargets.Class)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public class ExtenderAttribute : Attribute
 	{
 		public ExtenderAttribute(Type extender)

@@ -98,9 +98,8 @@ namespace TomPIT.Sys.Controllers.Management
 			var configuration = body.Required<Guid>("configuration");
 			var name = body.Required<string>("name");
 			var status = body.Required<PartitionStatus>("status");
-			var fileCount = body.Required<int>("fileCount");
 
-			DataModel.BigDataPartitions.Update(configuration, name, status, fileCount);
+			DataModel.BigDataPartitions.Update(configuration, name, status);
 		}
 
 		[HttpPost]
@@ -224,6 +223,15 @@ namespace TomPIT.Sys.Controllers.Management
 		}
 
 		[HttpPost]
+		public List<IPartitionFile> QueryFilesForPartition()
+		{
+			var body = FromBody();
+			var partition = body.Required<Guid>("partition");
+
+			return DataModel.BigDataPartitionFiles.Query(partition);
+		}
+
+		[HttpPost]
 		public IPartitionFile SelectFile()
 		{
 			var body = FromBody();
@@ -289,6 +297,37 @@ namespace TomPIT.Sys.Controllers.Management
 			var endDate = body.Optional("endDate", DateTime.MinValue);
 
 			DataModel.BigDataPartitionFieldStatistics.Update(file, fieldName, startString, endString, startNumber, endNumber, startDate, endDate);
+		}
+		/*
+		 * Maintenance
+		 */
+		[HttpPost]
+		public List<IQueueMessage> DequeueMaintenance()
+		{
+			var body = FromBody();
+			var count = body.Required<int>("count");
+			var nextVisible = body.Required<int>("nextVisible");
+
+			return DataModel.BigDataPartitions.DequeueMaintenance(count, TimeSpan.FromSeconds(nextVisible));
+		}
+
+		[HttpPost]
+		public void PingMaintenance()
+		{
+			var body = FromBody();
+			var popReceipt = body.Required<Guid>("popReceipt");
+			var nextVisible = body.Required<int>("nextVisible");
+
+			DataModel.BigDataPartitions.Ping(popReceipt, TimeSpan.FromSeconds(nextVisible));
+		}
+
+		[HttpPost]
+		public void CompleteMaintenance()
+		{
+			var body = FromBody();
+			var popReceipt = body.Required<Guid>("popReceipt");
+
+			DataModel.BigDataPartitions.Complete(popReceipt);
 		}
 	}
 }

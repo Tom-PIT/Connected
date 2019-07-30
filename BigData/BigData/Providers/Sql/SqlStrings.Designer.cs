@@ -82,7 +82,7 @@ namespace TomPIT.BigData.Providers.Sql {
         ///   Looks up a localized string similar to SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH 
         ///	FROM  INFORMATION_SCHEMA.COLUMNS 
         ///	WHERE TABLE_NAME = &apos;{0}&apos;
-        ///	and COLUMN_NAME not in(&apos;id&apos;, &apos;timestamp&apos;);.
+        ///	and COLUMN_NAME not in(&apos;_id&apos;, &apos;timestamp&apos;);.
         /// </summary>
         internal static string ColumnQuery {
             get {
@@ -213,11 +213,11 @@ namespace TomPIT.BigData.Providers.Sql {
         ///SET QUOTED_IDENTIFIER ON 
         ///
         ///CREATE TABLE [dbo].[{0}](
-        ///	[id] [int] IDENTITY(1,1) NOT NULL,
+        ///	[_id] [int] IDENTITY(1,1) NOT NULL,
         ///	[timestamp] [datetime2] NOT NULL,
         /// CONSTRAINT [PK_{0}] PRIMARY KEY CLUSTERED 
         ///(
-        ///	[id] ASC
+        ///	[_id] ASC
         ///)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
         ///) ON [PRIMARY].
         /// </summary>

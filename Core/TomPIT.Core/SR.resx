@@ -1005,4 +1005,10 @@
   <data name="DevCreateBigDataNode" xml:space="preserve">
     <value>Create big data node</value>
   </data>
+  <data name="ErrBigDataPartitionNotActive" xml:space="preserve">
+    <value>Partition is in readonly state</value>
+  </data>
+  <data name="ErrBigDataPartitionSchemaChanged" xml:space="preserve">
+    <value>Partition schema has changed</value>
+  </data>
 </root>

@@ -190,14 +190,40 @@ li.metric-item.fail[data-detail="true"]{
 	text-align:center;
 }
 
+.kpi.boxed{
+    min-height:130px;
+}
 .kpi.info{
 	background-color:@Info;
 	border-color:@InfoDark;
 	color:#FFF;
 }
 
-.kpi-title{
+.kpi.success {
+    background-color: @Success;
+    border-color: @SuccessDark;
+    color: #FFF;
+}
 
+.kpi.warning {
+    background-color: @Warning;
+    border-color: @WarningDark;
+    color: #FFF;
+}
+
+.kpi.danger {
+    background-color: @Danger;
+    border-color: @DangerDark;
+    color: #FFF;
+}
+
+.kpi.info button,
+.kpi.warning button,
+.kpi.success button,
+.kpi.danger button {
+    color: #FFF
+}
+.kpi-title {
 }
 
 .kpi-value{

@@ -152,9 +152,33 @@ li.metric-item.fail[data-detail="true"] {
   border-radius: 4px;
   text-align: center;
 }
+.kpi.boxed {
+  min-height: 130px;
+}
 .kpi.info {
   background-color: #03a9f4;
   border-color: #0288d1;
+  color: #FFF;
+}
+.kpi.success {
+  background-color: #4caf50;
+  border-color: #388e3c;
+  color: #FFF;
+}
+.kpi.warning {
+  background-color: #ff9800;
+  border-color: #f57c00;
+  color: #FFF;
+}
+.kpi.danger {
+  background-color: #f44336;
+  border-color: #d32f2f;
+  color: #FFF;
+}
+.kpi.info button,
+.kpi.warning button,
+.kpi.success button,
+.kpi.danger button {
   color: #FFF;
 }
 .kpi-value {

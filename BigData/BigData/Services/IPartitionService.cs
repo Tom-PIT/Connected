@@ -12,8 +12,10 @@ namespace TomPIT.BigData.Services
 		IPartition Select(IPartitionConfiguration configuration);
 		IPartitionFile SelectFile(Guid fileName);
 		List<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp);
+		List<IPartitionFile> QueryFiles(Guid partition);
 		Guid InsertFile(Guid partition, Guid node, string key, DateTime timeStamp);
 		void UpdateFile(Guid file, DateTime startTimeStamp, DateTime endTimeStamp, int count, PartitionFileStatus status);
+		void UpdatePartition(Guid token, string name, PartitionStatus status);
 		void UpdateFileStatistics(Guid file, string fieldName, string startString, string endString, double startNumber, double endNumber, DateTime startDate, DateTime endDate);
 		void DeleteFile(Guid file);
 		Guid LockFile(Guid file);
@@ -24,5 +26,8 @@ namespace TomPIT.BigData.Services
 		void NotifyFileChanged(Guid token);
 		void NotifyFileRemoved(Guid token);
 		void NotifyFieldStatisticChanged(Guid file, string fieldName);
+
+		void ValidateSchema(Guid partition);
+		void SaveSchemaImage(Guid partition);
 	}
 }

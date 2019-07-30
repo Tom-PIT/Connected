@@ -26,6 +26,19 @@ namespace TomPIT.Management.BigData
 			Connection.Post(u, e);
 		}
 
+		public void FixPartition(Guid partition, string name)
+		{
+			var u = Connection.CreateUrl("BigDataManagement", "UpdatePartition");
+			var e = new JObject
+			{
+				{"configuration", partition },
+				{"name", name },
+				{"status", PartitionStatus.Maintenance.ToString() }
+			};
+
+			Connection.Post(u, e);
+		}
+
 		public Guid InsertNode(string name, string connectionString, string adminConnectionString)
 		{
 			var u = Connection.CreateUrl("BigDataManagement", "InsertNode");
@@ -40,11 +53,29 @@ namespace TomPIT.Management.BigData
 			return Connection.Post<Guid>(u, e);
 		}
 
+		public List<IPartitionFile> QueryFiles(Guid partition)
+		{
+			var u = Connection.CreateUrl("BigDataManagement", "QueryFilesForPartition");
+			var e = new JObject
+			{
+				{"partition", partition }
+			};
+
+			return Connection.Post<List<PartitionFile>>(u, e).ToList<IPartitionFile>();
+		}
+
 		public List<INode> QueryNodes()
 		{
 			var u = Connection.CreateUrl("BigDataManagement", "QueryNodes");
 
 			return Connection.Get<List<Node>>(u).ToList<INode>();
+		}
+
+		public List<IPartition> QueryPartitions()
+		{
+			var u = Connection.CreateUrl("BigDataManagement", "QueryPartitions");
+
+			return Connection.Get<List<Partition>>(u).ToList<IPartition>();
 		}
 
 		public INode SelectNode(Guid token)
@@ -56,6 +87,17 @@ namespace TomPIT.Management.BigData
 			};
 
 			return Connection.Post<Node>(u, e);
+		}
+
+		public IPartition SelectPartition(Guid configuration)
+		{
+			var u = Connection.CreateUrl("BigDataManagement", "SelectPartition");
+			var e = new JObject
+			{
+				{"configuration", configuration }
+			};
+
+			return Connection.Post<Partition>(u, e);
 		}
 
 		public void UpdateNode(Guid token, string name, string connectionString, string adminConnectionString, NodeStatus status, long size)

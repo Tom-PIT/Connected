@@ -384,10 +384,10 @@ namespace TomPIT.ComponentModel
 			if (att == null && !force)
 				return;
 
-			if (force && att != null && att.Visibility == EnvironmentMode.Design)
+			if (force && att != null && ((att.Visibility & EnvironmentMode.Design) == EnvironmentMode.Design))
 				return;
 
-			if (att == null || force || att.Visibility == EnvironmentMode.Runtime)
+			if (att == null || force || ((att.Visibility & EnvironmentMode.Runtime) == EnvironmentMode.Runtime))
 			{
 				var rtValue = runtime.GetType().GetProperty(property.Name).GetValue(runtime);
 

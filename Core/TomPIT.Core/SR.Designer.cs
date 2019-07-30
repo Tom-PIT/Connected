@@ -655,6 +655,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Partition is in readonly state.
+        /// </summary>
+        public static string ErrBigDataPartitionNotActive {
+            get {
+                return ResourceManager.GetString("ErrBigDataPartitionNotActive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Partition not found.
         /// </summary>
         public static string ErrBigDataPartitionNotFound {
@@ -669,6 +678,15 @@ namespace TomPIT {
         public static string ErrBigDataPartitionReadOnly {
             get {
                 return ResourceManager.GetString("ErrBigDataPartitionReadOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Partition schema has changed.
+        /// </summary>
+        public static string ErrBigDataPartitionSchemaChanged {
+            get {
+                return ResourceManager.GetString("ErrBigDataPartitionSchemaChanged", resourceCulture);
             }
         }
         

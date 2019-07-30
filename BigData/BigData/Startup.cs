@@ -43,6 +43,7 @@ namespace TomPIT.BigData
 		private void RegisterTasks(IServiceCollection services)
 		{
 			services.AddSingleton<IHostedService, StorageService>();
+			services.AddSingleton<IHostedService, MaintenanceService>();
 		}
 
 		private void InitializeConfiguration()
@@ -56,6 +57,7 @@ namespace TomPIT.BigData
 			e.Connection.RegisterService(typeof(ITransactionService), typeof(TransactionService));
 			e.Connection.RegisterService(typeof(IPartitionService), typeof(PartitionService));
 			e.Connection.RegisterService(typeof(IPersistenceService), typeof(SqlPersistenceService));
+			e.Connection.RegisterService(typeof(IPartitionMaintenanceService), typeof(PartitionMaintenanceService));
 
 			e.Connection.Items.TryAdd("bigdataClient", new BigDataClient(e.Connection, e.Connection.AuthenticationToken));
 		}

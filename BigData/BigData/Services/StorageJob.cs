@@ -51,6 +51,8 @@ namespace TomPIT.BigData.Services
 			if (block == null)
 				return;
 
+			ValidateSchema(block);
+
 			var updater = new Updater(block);
 
 			updater.Execute();
@@ -71,6 +73,11 @@ namespace TomPIT.BigData.Services
 			}
 
 			Instance.GetService<ITransactionService>().Complete(queue.PopReceipt, blockId);
+		}
+
+		private void ValidateSchema(ITransactionBlock block)
+		{
+			Instance.GetService<IPartitionService>().ValidateSchema(block.Partition);
 		}
 
 		protected override void OnError(IQueueMessage item, Exception ex)

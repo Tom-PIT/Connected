@@ -19,12 +19,17 @@ namespace TomPIT.BigData.Services
 			return Get(fileName);
 		}
 
+		public List<IPartitionFile> Query(Guid partition)
+		{
+			return Where(f => f.Partition == partition);
+		}
+
 		public List<IPartitionFile> Query(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp)
 		{
 			return Where(f => f.Partition == partition
 				&& (string.IsNullOrWhiteSpace(key) || string.Compare(f.Key, key, true) == 0)
-				&& (startTimestamp == DateTime.MinValue || f.StartTimestamp >= startTimestamp)
-				&& (endTimestamp == DateTime.MinValue || f.EndTimestamp <= endTimestamp));
+				&& (startTimestamp == DateTime.MinValue || f.StartTimestamp <= startTimestamp)
+				&& (endTimestamp == DateTime.MinValue || f.Status == PartitionFileStatus.Open || endTimestamp <= f.EndTimestamp));
 		}
 		protected override void OnInitializing()
 		{

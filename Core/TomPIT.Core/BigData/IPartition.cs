@@ -5,7 +5,8 @@ namespace TomPIT.BigData
 	public enum PartitionStatus
 	{
 		Active = 1,
-		Maintenance = 2
+		Invalid = 2,
+		Maintenance = 3
 	}
 
 	public interface IPartition

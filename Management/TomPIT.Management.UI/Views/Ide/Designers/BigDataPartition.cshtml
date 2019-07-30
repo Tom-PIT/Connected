@@ -1,0 +1,108 @@
+﻿@model TomPIT.Management.Designers.BigDataPartitionDesigner
+
+@{
+    var statusCss = "success";
+
+    switch (Model.Partition.Status)
+    {
+        case TomPIT.BigData.PartitionStatus.Invalid:
+            statusCss = "danger";
+            break;
+        case TomPIT.BigData.PartitionStatus.Maintenance:
+            statusCss = "warning";
+            break;
+    }
+}
+
+<div class="doc-canvas">
+    <div class="paper">
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="kpi @statusCss boxed">
+                    <div class="kpi-title">
+                        Status
+                    </div>
+                    <hr />
+                    <div>
+                        @Model.Partition.Status
+                    </div>
+                    @if (Model.Partition.Status == TomPIT.BigData.PartitionStatus.Invalid)
+                    {
+                        <text>
+                            <div>
+                                <button type="button" class="btn btn-small btn-link" id="btnFixSchema"><i class="fal fa-wrench"></i> Fix Schema</button>
+                            </div>
+                        </text>
+                    }
+                </div>
+
+            </div>
+            <div class="col-lg-3">
+                <div class="kpi info boxed">
+                    <div class="kpi-title">
+                        Records
+                    </div>
+                    <hr />
+                    &nbsp;
+                    <div class="kpi-value">
+                        @Model.Count.ToString("n0")
+                            </div>
+                    </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="kpi info boxed">
+                    <div class="kpi-title">
+                        Files
+                    </div>
+                    <hr />
+                    <div class="row">
+                        <div class="col-6">
+                            Total
+                            <div class="kpi-value">
+                                @Model.Files.Count.ToString("n0")
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            Open
+                            <div class="kpi-value">
+                                @Model.OpenFiles.ToString("n0")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-lg-3">
+                <div class="kpi info boxed">
+                    <div class="kpi-title">
+                        Created
+                    </div>
+                    <hr />
+                    @Model.Partition.Created.ToString("G")
+                </div>
+            </div>
+        </div>
+        <h4 class="my-3">Files</h4>
+        <div id="gridFiles"></div>
+    </div>
+</div>
+<script>
+    $('#gridFiles').dxDataGrid({
+        dataSource:@Html.Raw(Types.Serialize(Model.Files))
+    });
+</script>
+
+@if (Model.Partition.Status == TomPIT.BigData.PartitionStatus.Invalid)
+{
+    <text>
+        <script>
+            $('#btnFixSchema').click(function () {
+                ide.designerAction({
+                    'data': {
+                        'action': 'fix'
+                    }
+                });
+            });
+        </script>
+    </text>
+}

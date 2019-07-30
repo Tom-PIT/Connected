@@ -16,6 +16,7 @@ namespace TomPIT.BigData.Services
 	{
 		private IPartitionConfiguration _configuration = null;
 		private IMicroService _microService = null;
+		private IPartition _partition = null;
 		private object _sync = new object();
 
 		public Updater(ITransactionBlock block)
@@ -28,6 +29,16 @@ namespace TomPIT.BigData.Services
 		private JArray Items { get; set; }
 		public PartitionSchema Schema { get; set; }
 		private Dictionary<string, DataTable> Data { get; set; }
+		private IPartition Partition
+		{
+			get
+			{
+				if (_partition == null)
+					_partition = Instance.GetService<IPartitionService>().Select(Configuration);
+
+				return _partition;
+			}
+		}
 
 		public int UpdateRowCount
 		{
@@ -67,6 +78,9 @@ namespace TomPIT.BigData.Services
 
 		public void Execute()
 		{
+			if (Partition.Status != PartitionStatus.Active)
+				throw new RuntimeException(SR.ErrBigDataPartitionNotActive);
+
 			LoadData();
 
 			if (Data == null)
@@ -154,10 +168,17 @@ namespace TomPIT.BigData.Services
 
 				foreach(var field in Schema.Fields)
 				{
-					var property = item.Property(field.Name);
+					var property = item.Property(field.Name, StringComparison.OrdinalIgnoreCase);
 
 					if (property != null)
-						row[field.Name] = Types.Convert(((JValue)property.Value).Value, field.Type);
+					{
+						var value = ((JValue)property.Value).Value;
+
+						if (value == null || value == DBNull.Value)
+							continue;
+
+						row[field.Name] = Types.Convert(value, field.Type);
+					}
 				}
 
 				table.Rows.Add(row);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TomPIT.BigData;
 using TomPIT.Caching;
+using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
 using TomPIT.Threading;
@@ -10,6 +11,8 @@ namespace TomPIT.Sys.Data
 {
 	internal class BigDataPartitions : SynchronizedRepository<IPartition, Guid>
 	{
+		private const string MaintenanceQueue = "bigdatapartition";
+
 		private Lazy<LockerContainer<Guid>> _locker = new Lazy<Threading.LockerContainer<Guid>>();
 		public BigDataPartitions(IMemoryCache container) : base(container, "bigdatapartitions")
 		{
@@ -59,6 +62,27 @@ namespace TomPIT.Sys.Data
 			BigDataNotifications.PartitionAdded(configuration);
 		}
 
+		public void Update(Guid configuration, string name, PartitionStatus status)
+		{
+			var partition = Select(configuration);
+
+			if (partition == null)
+				throw new SysException(SR.ErrBigDataPartitionNotFound);
+
+			var locker = RequestLock(partition);
+
+			lock (locker.Sync)
+			{
+				partition = Select(configuration);
+				var maintenance = status == PartitionStatus.Maintenance && partition.Status != PartitionStatus.Maintenance;
+
+				Update(configuration, name, status, partition.FileCount);
+
+				if (maintenance)
+					Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(MaintenanceQueue, partition.Configuration.ToString(), TimeSpan.FromDays(7), TimeSpan.Zero, SysDb.Messaging.QueueScope.System);
+			}
+		}
+
 		public void Update(Guid configuration, string name, PartitionStatus status, int fileCount)
 		{
 			var partition = Select(configuration);
@@ -90,6 +114,45 @@ namespace TomPIT.Sys.Data
 		public Locker RequestLock(IPartition partition)
 		{
 			return Locker.Request(partition.Configuration);
+		}
+
+		public List<IQueueMessage> DequeueMaintenance(int count, TimeSpan nextVisible)
+		{
+			return Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(MaintenanceQueue, count, nextVisible);
+		}
+
+		public void Ping(Guid popReceipt, TimeSpan nextVisible)
+		{
+			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
+
+			if (m == null)
+				return;
+
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(popReceipt, nextVisible);
+		}
+
+		public void Complete(Guid popReceipt)
+		{
+			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
+
+			if (m == null)
+				return;
+
+			var partition = m.Message.AsGuid();
+
+			var p = Select(partition);
+
+			if (p != null)
+			{
+				var locker = RequestLock(p);
+				lock (locker)
+				{
+					p = Select(partition);
+					Update(p.Configuration, p.Name, PartitionStatus.Active);
+				}
+			}
+
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(popReceipt);
 		}
 	}
 }

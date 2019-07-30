@@ -127,7 +127,7 @@
     <value>SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH 
 	FROM  INFORMATION_SCHEMA.COLUMNS 
 	WHERE TABLE_NAME = '{0}'
-	and COLUMN_NAME not in('id', 'timestamp');</value>
+	and COLUMN_NAME not in('_id', 'timestamp');</value>
   </data>
   <data name="CreateIndex" xml:space="preserve">
     <value>IF NOT EXISTS(SELECT * FROM sys.indexes WHERE object_id = object_id('{0}') AND NAME ='IX_{0}_{1}')
@@ -192,11 +192,11 @@ DROP PROCEDURE merge_{0}</value>
 SET QUOTED_IDENTIFIER ON 
 
 CREATE TABLE [dbo].[{0}](
-	[id] [int] IDENTITY(1,1) NOT NULL,
+	[_id] [int] IDENTITY(1,1) NOT NULL,
 	[timestamp] [datetime2] NOT NULL,
  CONSTRAINT [PK_{0}] PRIMARY KEY CLUSTERED 
 (
-	[id] ASC
+	[_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]</value>
   </data>

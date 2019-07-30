@@ -26,7 +26,7 @@ namespace TomPIT.BigData.Providers.Sql
 
 		private DataTable PartialMerge(IUpdateProvider provider, INode node, DataFileContext context)
 		{
-			var w = new NodeReader<MergeResultRecord>(node, string.Format("merge_p_{0}", context.File.FileName.ToString("N")), CommandType.StoredProcedure);
+			var w = new NodeReader<MergeResultRecord>(node, $"merge_p_{context.TableName()}", CommandType.StoredProcedure);
 
 			w.CreateParameter("@rows", context.Data);
 
@@ -44,7 +44,7 @@ namespace TomPIT.BigData.Providers.Sql
 
 		private DataTable FullMerge(IUpdateProvider provider, INode node, DataFileContext context)
 		{
-			var w = new NodeReader<MergeResultRecord>(node, string.Format("merge_t_{0}", context.File.FileName.ToString("N")), CommandType.StoredProcedure);
+			var w = new NodeReader<MergeResultRecord>(node, $"merge_t_{context.TableName()}", CommandType.StoredProcedure);
 
 			w.CreateParameter("@rows", context.Data);
 
@@ -81,7 +81,7 @@ namespace TomPIT.BigData.Providers.Sql
 		{
 			if (!fieldsOnly)
 			{
-				var stats = GetFileStatistics(node, context.File.FileName);
+				var stats = GetFileStatistics(node, context);
 
 				var max = stats.Count >= TransactionParser.FileSize ? stats.MaxTimestamp : DateTime.MinValue;
 				var status = stats.Count >= TransactionParser.FileSize ? PartitionFileStatus.Closed : PartitionFileStatus.Open;
@@ -96,16 +96,16 @@ namespace TomPIT.BigData.Providers.Sql
 			}
 		}
 
-		private FileStatistics GetFileStatistics(INode node, Guid fileId)
+		private FileStatistics GetFileStatistics(INode node, DataFileContext context)
 		{
-			var commandText = string.Format("SELECT MIN(timestamp) AS min_timestamp, MAX(timestamp) AS max_timestamp, COUNT(*) AS count FROM [t_{0}]", fileId.ToString("N"));
+			var commandText = $"SELECT MIN({Merger.TimestampColumn}) AS min_timestamp, MAX({Merger.TimestampColumn}) AS max_timestamp, COUNT(*) AS count FROM [t_{context.TableName()}]";
 
 			return new NodeReader<FileStatistics>(node, commandText, CommandType.Text).ExecuteSingleRow();
 		}
 
 		private static void UpdateFieldStatistics(INode node, IPartitionFile file, PartitionSchemaField field)
 		{
-			var commandText = string.Format("SELECT MIN([{0}]) AS minv, MAX([{0}]) AS maxv FROM [t_{1}]", field.Name, file.FileName.ToString("N"));
+			var commandText = string.Format("SELECT MIN([{0}]) AS minv, MAX([{0}]) AS maxv FROM [t_{1}]", field.Name, file.TableName());
 
 			var startString = string.Empty;
 			var endString = string.Empty;

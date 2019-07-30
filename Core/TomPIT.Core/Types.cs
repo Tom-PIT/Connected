@@ -457,7 +457,7 @@ namespace TomPIT
 						MissingMemberHandling = MissingMemberHandling.Ignore,
 						Formatting = Formatting.Indented,
 						DefaultValueHandling = DefaultValueHandling.Include,
-						TypeNameHandling = TypeNameHandling.None,
+						TypeNameHandling = TypeNameHandling.Auto,
 						ContractResolver = new SerializationResolver(),
 						NullValueHandling = NullValueHandling.Ignore,
 						ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor

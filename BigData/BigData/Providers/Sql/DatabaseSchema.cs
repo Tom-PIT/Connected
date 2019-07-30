@@ -34,8 +34,8 @@ namespace TomPIT.BigData.Providers.Sql
 			RecreateHelpers();
 		}
 
-		public string TableName { get { return string.Format("t_{0}", File.FileName.ToString("N")); } }
-		public string PartialTableName { get { return string.Format("p_{0}", File.FileName.ToString("N")); } }
+		public string TableName { get { return string.Format("t_{0}", File.TableName()); } }
+		public string PartialTableName { get { return string.Format("p_{0}", File.TableName()); } }
 
 		private bool TableExists
 		{
@@ -120,7 +120,7 @@ namespace TomPIT.BigData.Providers.Sql
 			new NodeAdminWriter(Node, string.Format(SqlStrings.TableAddTimestampDefault, TableName), CommandType.Text).Execute();
 
 			//create index on timestamp field
-			new NodeAdminWriter(Node, string.Format(SqlStrings.CreateIndex, TableName, "timestamp"), CommandType.Text).Execute();
+			new NodeAdminWriter(Node, string.Format(SqlStrings.CreateIndex, TableName, Merger.TimestampColumn), CommandType.Text).Execute();
 		}
 
 		private List<ExistingColumn> LoadExistingColumns()
@@ -217,7 +217,7 @@ namespace TomPIT.BigData.Providers.Sql
 		{
 			var sb = new StringBuilder();
 
-			sb.Append("timestamp,");
+			sb.Append($"{Merger.TimestampColumn},");
 
 			foreach (var i in Schema.Fields)
 			{
@@ -234,7 +234,7 @@ namespace TomPIT.BigData.Providers.Sql
 		{
 			var sb = new StringBuilder();
 
-			sb.Append("timestamp datetime2 NOT NULL,");
+			sb.Append($"{Merger.TimestampColumn} datetime2 NOT NULL,");
 
 			foreach (var i in Schema.Fields)
 			{
@@ -251,7 +251,7 @@ namespace TomPIT.BigData.Providers.Sql
 		{
 			var sb = new StringBuilder();
 
-			sb.Append("t.timestamp = s.timestamp");
+			sb.Append($"t.{Merger.TimestampColumn} = s.{Merger.TimestampColumn}");
 
 			foreach (var i in Schema.Fields)
 			{
@@ -292,7 +292,7 @@ namespace TomPIT.BigData.Providers.Sql
 		{
 			var sb = new StringBuilder();
 
-			sb.AppendFormat("s.timestamp,");
+			sb.AppendFormat($"s.{Merger.TimestampColumn},");
 
 			foreach (var i in Schema.Fields)
 			{

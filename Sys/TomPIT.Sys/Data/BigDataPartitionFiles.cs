@@ -56,6 +56,11 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.BigData.Partitions.UnlockFile(unlockKey);
 		}
 
+		public List<IPartitionFile> Query(Guid partition)
+		{
+			return Where(f=>f.Partition==partition);
+		}
+
 		public List<IPartitionFile> Query()
 		{
 			return All();
@@ -85,10 +90,11 @@ namespace TomPIT.Sys.Data
 				p = DataModel.BigDataPartitions.Select(partition);
 
 				Shell.GetService<IDatabaseService>().Proxy.BigData.Partitions.InsertFile(p, n, key, timestamp, file, PartitionFileStatus.Creating);
-				DataModel.BigDataPartitions.Update(p.Configuration, p.Name, p.Status, p.FileCount + 1);
+				Refresh(file);
+
+				DataModel.BigDataPartitions.Update(p.Configuration, p.Name, p.Status, Count);
 			}
 
-			Refresh(file);
 			BigDataNotifications.PartitionFileAdded(file);
 
 			return file;
@@ -136,10 +142,10 @@ namespace TomPIT.Sys.Data
 					throw new SysException(SR.ErrBigDataPartitionReadOnly);
 
 				Shell.GetService<IDatabaseService>().Proxy.BigData.Partitions.DeleteFile(file);
-				Shell.GetService<IDatabaseService>().Proxy.BigData.Partitions.Update(partition, partition.Name, partition.Status, partition.FileCount - 1);
+				Remove(file.FileName);
+				Shell.GetService<IDatabaseService>().Proxy.BigData.Partitions.Update(partition, partition.Name, partition.Status, Count);
 			}
 
-			Remove(file.FileName);
 			BigDataNotifications.PartitionFileRemoved(file.FileName);
 		}
 	}

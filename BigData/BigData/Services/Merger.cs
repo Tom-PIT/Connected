@@ -10,7 +10,7 @@ namespace TomPIT.BigData.Services
 	internal class Merger
 	{
 		public const string TimestampColumn = "timestamp";
-		public const string IdColumn = "id";
+		public const string IdColumn = "_id";
 
 		private static readonly Lazy<PartitionFileManager> _fileManager = new Lazy<PartitionFileManager>();
 
@@ -64,7 +64,7 @@ namespace TomPIT.BigData.Services
 			 * we'll select all rows at once which targets our data and then
 			 * operate on that set
 			 */
-			var files = Instance.GetService<IPartitionService>().QueryFiles(Provider.Block.Partition, Provider.Schema.PartitionKeyField, min, max);
+			var files = Instance.GetService<IPartitionService>().QueryFiles(Provider.Block.Partition, PartitionKey, min, max);
 
 			foreach (var i in files)
 			{
