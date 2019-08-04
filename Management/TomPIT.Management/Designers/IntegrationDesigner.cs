@@ -53,7 +53,7 @@ namespace TomPIT.Management.Designers
 
                 if (microService != null)
                     Connection.GetService<IMicroServiceManagementService>().Update(microService.Token, microService.Name, microService.Status, microService.Template,
-                        microService.ResourceGroup, microService.Package, microService.UpdateStatus, CommitStatus.Publishing);
+                        microService.ResourceGroup, microService.Package, microService.Plan, microService.UpdateStatus, CommitStatus.Publishing);
             }
 
             return Result.SectionResult(ViewModel, Annotations.EnvironmentSection.Designer);

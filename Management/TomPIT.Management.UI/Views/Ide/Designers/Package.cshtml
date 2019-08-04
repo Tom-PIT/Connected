@@ -3,171 +3,166 @@
 @model TomPIT.Designers.PackageDesigner
 
 @{
-	var p = Model.Package;
+    var p = Model.Package;
 
-	var id = p == null ? Model.MicroService.Token : p.MetaData.Id;
-	var name = p == null ? Model.MicroService.Name : p.MetaData.Name;
-	var title = p == null ? Model.MicroService.Name : p.MetaData.Title;
-	var description = p == null ? string.Empty : p.MetaData.Description;
-	var scope = p == null ? PackageScope.Private : p.MetaData.Scope;
-	var price = p == null ? 0 : p.MetaData.Price;
-	var trial = p == null ? true : p.MetaData.Trial;
-	var trialPeriod = p == null ? 30 : p.MetaData.TrialPeriod;
-	var licenseUrl = p == null ? string.Empty : p.MetaData.LicenseUrl;
-	var projectUrl = p == null ? string.Empty : p.MetaData.ProjectUrl;
-	var imageUrl = p == null ? string.Empty : p.MetaData.ImageUrl;
-	var tags = p == null ? string.Empty : p.MetaData.Tags;
-	var tagList = new List<string>();
+    var name = p == null ? Model.MicroService.Name : p.MetaData.Name;
+    var title = p == null ? Model.MicroService.Name : p.MetaData.Title;
+    var description = p == null ? string.Empty : p.MetaData.Description;
+    var licenseUrl = p == null ? string.Empty : p.MetaData.LicenseUrl;
+    var projectUrl = p == null ? string.Empty : p.MetaData.ProjectUrl;
+    var imageUrl = p == null ? string.Empty : p.MetaData.ImageUrl;
+    var tags = p == null ? string.Empty : p.MetaData.Tags;
+    var tagList = new List<string>();
 
-	if (!string.IsNullOrWhiteSpace(tags))
-	{
-		var tokens = tags.Split(',');
+    if (!string.IsNullOrWhiteSpace(tags))
+    {
+        var tokens = tags.Split(',');
 
-		foreach (var i in tokens)
-		{
-			if (string.IsNullOrWhiteSpace(i))
-			{ continue; }
+        foreach (var i in tokens)
+        {
+            if (string.IsNullOrWhiteSpace(i))
+            { continue; }
 
-			tagList.Add(i.Trim());
-		}
-	}
+            tagList.Add(i.Trim());
+        }
+    }
 
-	var v = Model.Version;
-	var versionMajor = v.Major;
-	var versionMinor = v.Minor;
-	var versionBuild = v.Build;
-	var versionRevision = v.Revision;
-	var licenses = p == null ? string.Empty : p.MetaData.Licenses;
-	var rt = p == null ? false : p.Configuration.RuntimeConfigurationSupported;
-	var av = p == null ? true : p.Configuration.AutoVersioning;
+    var v = Model.Version;
+    var versionMajor = v.Major;
+    var versionMinor = v.Minor;
+    var versionBuild = v.Build;
+    var versionRevision = v.Revision;
+    var licenses = p == null ? string.Empty : p.MetaData.Licenses;
+    var rt = p == null ? false : p.Configuration.RuntimeConfigurationSupported;
+    var av = p == null ? true : p.Configuration.AutoVersioning;
 }
+
 <div class="doc-canvas">
-	<div class="paper">
-		<div class="">
-			@Model.Account.Company
-			<div class="small float-right"><a href="#" id="aLogoff">logoff</a></div>
-			<hr />
-		</div>
+    <div class="paper">
+        <div class="">
+            @Model.Account.Company
+            <div class="small float-right"><a href="#" id="aLogoff">logoff</a></div>
+            <hr />
+        </div>
 
-		<div class="btn-toolbar mb-2">
-			<div class="btn-group btn-group-sm">
-				<button type="button" id="buttonCreate" class="btn btn-success btn-sm">Create Package</button>
-				<button type="button" id="buttonUpload" class="btn btn-light btn-sm">Publish Package</button>
-			</div>
-		</div>
+        <div class="btn-toolbar mb-2">
+            <div class="btn-group btn-group-sm">
+                <button type="button" id="buttonCreate" class="btn btn-success btn-sm">Create Package</button>
+                <button type="button" id="buttonUpload" class="btn btn-light btn-sm">Publish Package</button>
+            </div>
+        </div>
 
-		<div id="packageTabs">
-		</div>
+        <div id="packageTabs">
+        </div>
 
-		<div class="collapse show tab-container dev-form" id="tabPackage">
-			<div class="container">
-				<div class="row">
-					<div class="col-sm-8">
-						<div class="form-group">
-							<label>ID</label>
-							<div><strong>@id</strong></div>
-						</div>
-						<div class="form-group">
-							<label for="editName">Package name</label>
-							<div id="editName"></div>
-						</div>
-						<div class="form-group">
-							<label for="editTitle">Package title</label>
-							<div id="editTitle"></div>
-						</div>
-						<div class="form-group">
-							<label for="editDescription">Description</label>
-							<div id="editDescription"></div>
-						</div>
-						<br />
-						<h4>Licensing</h4>
-						<br />
-						<div class="form-group">
-							<label for="editScope">Scope</label>
-							<div id="editScope"></div>
-						</div>
-						<div class="form-group">
-							<label for="editPrice">Price (€)</label>
-							<div id="editPrice"></div>
-						</div>
-						<div class="form-group">
-							<div class="row">
-								<div class="col-3">
-									<label for="editTrial">Trial</label>
-									<div>
-										<div id="editTrial"></div>
-									</div>
-								</div>
-								<div class="col-9">
-									<label for="editTrialPeriod">Period (days)</label>
-									<div id="editTrialPeriod"></div>
-								</div>
-							</div>
-						</div>
-						<div class="form-group">
-							<label for="editLicenseUrl">License Url</label>
-							<div id="editLicenseUrl"></div>
-						</div>
+        <div class="collapse show tab-container dev-form" id="tabPackage">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-8">
+                        <div class="form-group">
+                            <label>ID</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="editName">Package name</label>
+                            <div id="editName"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editTitle">Package title</label>
+                            <div id="editTitle"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDescription">Description</label>
+                            <div id="editDescription"></div>
+                        </div>
+                        <br />
+                        <h4>Licensing</h4>
+                        <br />
+                        <div class="form-group">
+                            <label for="editScope">Scope</label>
+                            <div id="editScope"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPrice">Price (€)</label>
+                            <div id="editPrice"></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-3">
+                                    <label for="editTrial">Trial</label>
+                                    <div>
+                                        <div id="editTrial"></div>
+                                    </div>
+                                </div>
+                                <div class="col-9">
+                                    <label for="editTrialPeriod">Period (days)</label>
+                                    <div id="editTrialPeriod"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editLicenseUrl">License Url</label>
+                            <div id="editLicenseUrl"></div>
+                        </div>
 
-					</div>
-					<div class="col-sm-4">
-						<div class="float-left">
-							<h4>Version</h4>
-						</div><div class="float-right"><span class="small pr-1">auto</span><div id="divAutoVersion"></div></div>
-						<div class="clearfix"></div>
-						<div class="row">
-							<div class="col-3">
-								<label for="editVersionMajor">Major</label>
-								<div id="editVersionMajor"></div>
-							</div>
-							<div class="col-3">
-								<label for="editVersionMinor">Minor</label>
-								<div id="editVersionMinor"></div>
-							</div>
-							<div class="col-3">
-								<label for="editVersionBuild">Build</label>
-								<div id="editVersionBuild"></div>
-							</div>
-							<div class="col-3">
-								<label for="editVersionRevision">Revision</label>
-								<div id="editVersionRevision"></div>
-							</div>
-						</div>
-						<br />
-						<h4>Project</h4>
-						<div class="form-group">
-							<label for="editProjectUrl">Project url</label>
-							<div id="editProjectUrl"></div>
-						</div>
-						<div class="form-group">
-							<label for="editTags">Tags</label>
-							<div id="editTags"></div>
-						</div>
-						<div class="form-group">
-							<label for="editImageUrl">Image url</label>
-							<div id="editImageUrl"></div>
-						</div>
-						<div class="form-group">
-							<label for="editThirdPartyLicenses">Third party licenses</label>
-							<div id="editThirdPartyLicenses"></div>
-						</div>
-						<br />
-						<h4>Configuration</h4>
-						<div class="form-group">
-							<label for="editRuntimeConfiguration">Include runtime configuration</label>
-							<div>
-								<div id="editRuntimeConfiguration"></div>
-							</div>
-						</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="float-left">
+                            <h4>Version</h4>
+                        </div><div class="float-right"><span class="small pr-1">auto</span><div id="divAutoVersion"></div></div>
+                        <div class="clearfix"></div>
+                        <div class="row">
+                            <div class="col-3">
+                                <label for="editVersionMajor">Major</label>
+                                <div id="editVersionMajor"></div>
+                            </div>
+                            <div class="col-3">
+                                <label for="editVersionMinor">Minor</label>
+                                <div id="editVersionMinor"></div>
+                            </div>
+                            <div class="col-3">
+                                <label for="editVersionBuild">Build</label>
+                                <div id="editVersionBuild"></div>
+                            </div>
+                            <div class="col-3">
+                                <label for="editVersionRevision">Revision</label>
+                                <div id="editVersionRevision"></div>
+                            </div>
+                        </div>
+                        <br />
+                        <h4>Project</h4>
+                        <div class="form-group">
+                            <label for="editProjectUrl">Project url</label>
+                            <div id="editProjectUrl"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editTags">Tags</label>
+                            <div id="editTags"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editImageUrl">Image url</label>
+                            <div id="editImageUrl"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editThirdPartyLicenses">Third party licenses</label>
+                            <div id="editThirdPartyLicenses"></div>
+                        </div>
+                        <br />
+                        <h4>Configuration</h4>
+                        <div class="form-group">
+                            <label for="editRuntimeConfiguration">Include runtime configuration</label>
+                            <div>
+                                <div id="editRuntimeConfiguration"></div>
+                            </div>
+                        </div>
 
-					</div>
-				</div>
-			</div>
-		</div>
-		<div id="tabContent" class="collapse">
-			<div class="container">content</div>
-		</div>
-	</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tabContent" class="collapse">
+            <div class="container">content</div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -203,56 +198,8 @@
 		maxLength:1024
 	});
 
-	$('#editScope').dxSelectBox({
-		stylingMode: 'underlined',
-		items: [
-			'Public',
-			'Private'
-		],
-		value:'@scope.ToString()'
-	}).dxValidator({
-		validationRules: [
-			{
-				type: 'required'
-
-			}],
-		validationGroup: 'package'
-	});
-
-	$('#editPrice').dxNumberBox({
-		stylingMode: 'underlined',
-		value:@price,
-		min: 0,
-		max:100000
-	}).dxValidator({
-		validationRules: [
-			{
-				type: 'required'
-
-			}],
-		validationGroup: 'package'
-	});
-
-	$('#editTrial').dxCheckBox({
-		value:@Html.TP().JavaScript.Value(trial)
-	});
-
 	$('#divAutoVersion').dxCheckBox({
 		value:@Html.TP().JavaScript.Value(av)
-	});
-
-	$('#editTrialPeriod').dxNumberBox({
-		stylingMode: 'underlined',
-		value:@trialPeriod,
-		min: 0,
-		max:180
-	}).dxValidator({
-		validationRules: [
-			{
-				type: 'required'
-
-			}],
-		validationGroup: 'package'
 	});
 
 	$('#editLicenseUrl').dxTextBox({

@@ -77,23 +77,23 @@ namespace TomPIT.ComponentModel
                 svc.NotifyChanged(this, new MicroServiceEventArgs(token));
         }
 
-        private string CreateMeta(Guid microService, IPackage package)
-        {
-            var meta = new JObject
-            {
-                {"microService", microService },
-                {"created", DateTime.Today }
-            };
+		private string CreateMeta(Guid microService, IPackage package)
+		{
+			var meta = new JObject
+				{
+					 {"microService", microService },
+					 {"created", DateTime.Today }
+				};
 
-            if (package != null)
-            {
-                meta.Add("trial", package.MetaData.Trial);
-                meta.Add("trialPeriod", package.MetaData.TrialPeriod);
-                meta.Add("author", package.MetaData.Account);
-            };
+			if (package != null)
+			{
+				meta.Add("author", package.MetaData.Account);
+				meta.Add("plan", package.MetaData.Plan);
+				meta.Add("service", package.MetaData.Service);
+			};
 
-            return Connection.GetService<ICryptographyService>().Encrypt(JsonConvert.SerializeObject(meta));
-        }
+			return Connection.GetService<ICryptographyService>().Encrypt(JsonConvert.SerializeObject(meta));
+		}
 
         private string CreateMicroServiceMeta(Guid microService)
         {
@@ -103,7 +103,7 @@ namespace TomPIT.ComponentModel
             return Connection.Get<string>(u);
         }
 
-        public void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package, UpdateStatus updateStatus, CommitStatus commitStatus)
+        public void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package, Guid plan, UpdateStatus updateStatus, CommitStatus commitStatus)
         {
             var u = Connection.CreateUrl("MicroServiceManagement", "Update");
             var args = new JObject
@@ -114,7 +114,8 @@ namespace TomPIT.ComponentModel
                 {"template", template },
                 {"resourceGroup", resourceGroup },
                 {"package", package },
-                {"updateStatus", updateStatus.ToString() },
+					 {"plan", plan },
+					 {"updateStatus", updateStatus.ToString() },
                 {"commitStatus", commitStatus.ToString() }
             };
 

@@ -24,12 +24,7 @@
             <div class="col-lg-10">
                 <div>@Model.PackageInfo.Name</div>
                 <h5 class="mt-0">
-                    @Model.PackageInfo.Title @if (Model.PackageInfo.Scope == TomPIT.Deployment.PackageScope.Private)
-                    {
-                        <small>
-                            <span class="badge badge-info">private</span>
-                        </small>
-                    }
+                    @Model.PackageInfo.Title 
                 </h5>
                 <div>
                     @Html.Raw(string.Format("{0}.{1}.{2}.{3}, {4}", Model.PackageInfo.Major, Model.PackageInfo.Minor, Model.PackageInfo.Build, Model.PackageInfo.Revision, Model.PackageInfo.Created.ToLongDateString()))

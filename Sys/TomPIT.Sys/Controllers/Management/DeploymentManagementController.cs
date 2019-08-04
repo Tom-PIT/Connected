@@ -7,237 +7,263 @@ using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Controllers.Management
 {
-    public class DeploymentManagementController : SysController
-    {
+	public class DeploymentManagementController : SysController
+	{
 
-        [HttpGet]
-        public bool IsLogged()
-        {
-            return DataModel.Deployment.IsLogged;
-        }
+		[HttpGet]
+		public bool IsLogged()
+		{
+			return DataModel.Deployment.IsLogged;
+		}
 
-        [HttpGet]
-        public IAccount SelectAccount()
-        {
-            return DataModel.Deployment.Account;
-        }
+		[HttpGet]
+		public IAccount SelectAccount()
+		{
+			return DataModel.Deployment.Account;
+		}
 
-        [HttpPost]
-        public void Login()
-        {
-            var body = FromBody();
-            var user = body.Required<string>("user");
-            var password = body.Required<string>("password");
+		[HttpPost]
+		public void Login()
+		{
+			var body = FromBody();
+			var user = body.Required<string>("user");
+			var password = body.Required<string>("password");
 
-            DataModel.Deployment.Login(user, password);
-        }
+			DataModel.Deployment.Login(user, password);
+		}
 
-        [HttpPost]
-        public void Logout()
-        {
-            DataModel.Deployment.Logout();
-        }
+		[HttpPost]
+		public void Logout()
+		{
+			DataModel.Deployment.Logout();
+		}
 
-        [HttpPost]
-        public Guid Signup()
-        {
-            var body = FromBody();
-            var company = body.Required<string>("company");
-            var firstName = body.Required<string>("firstName");
-            var lastName = body.Required<string>("lastName");
-            var password = body.Required<string>("password");
-            var email = body.Required<string>("email");
-            var country = body.Required<string>("country");
-            var phone = body.Optional("phone", string.Empty);
-            var website = body.Optional("webSite", string.Empty);
+		[HttpPost]
+		public Guid Signup()
+		{
+			var body = FromBody();
+			var company = body.Required<string>("company");
+			var firstName = body.Required<string>("firstName");
+			var lastName = body.Required<string>("lastName");
+			var password = body.Required<string>("password");
+			var email = body.Required<string>("email");
+			var country = body.Required<string>("country");
+			var phone = body.Optional("phone", string.Empty);
+			var website = body.Optional("webSite", string.Empty);
 
-            return DataModel.Deployment.SignUp(company, firstName, lastName, password, email, country, phone, website);
-        }
+			return DataModel.Deployment.SignUp(company, firstName, lastName, password, email, country, phone, website);
+		}
 
-        [HttpGet]
-        public List<ICountry> QueryCountries()
-        {
-            return DataModel.Deployment.QueryCountries();
-        }
+		[HttpGet]
+		public List<ICountry> QueryCountries()
+		{
+			return DataModel.Deployment.QueryCountries();
+		}
 
-        [HttpPost]
-        public bool IsConfirmed()
-        {
-            var body = FromBody();
-            var key = body.Required<Guid>("accountKey");
+		[HttpPost]
+		public bool IsConfirmed()
+		{
+			var body = FromBody();
+			var key = body.Required<Guid>("accountKey");
 
-            return DataModel.Deployment.IsConfirmed(key);
-        }
+			return DataModel.Deployment.IsConfirmed(key);
+		}
 
-        [HttpPost]
-        public void PublishPackage()
-        {
-            var body = FromBody();
-            var microService = body.Required<Guid>("microService");
+		[HttpPost]
+		public void PublishPackage()
+		{
+			var body = FromBody();
+			var microService = body.Required<Guid>("microService");
 
-            DataModel.Deployment.PublishPackage(microService);
-        }
+			DataModel.Deployment.PublishPackage(microService);
+		}
 
-        [HttpGet]
-        public List<IPublishedPackage> QueryPublicPackages()
-        {
-            return DataModel.Deployment.QueryPublicPackages();
-        }
+		[HttpPost]
+		public List<IPublishedPackage> QueryPackages()
+		{
+			var body = FromBody();
+			var plan = body.Required<Guid>("plan");
 
-        [HttpPost]
-        public List<IPackageDependency> QueryDependencies()
-        {
-            var body = FromBody();
-            var package = body.Required<Guid>("package");
+			return DataModel.Deployment.QueryPackages(plan);
+		}
 
-            return DataModel.Deployment.QueryDependencies(package);
-        }
+		[HttpPost]
+		public List<IPackageDependency> QueryDependencies()
+		{
+			var body = FromBody();
+			var microService = body.Required<Guid>("microService");
+			var plan = body.Required<Guid>("plan");
 
-        [HttpPost]
-        public IPublishedPackage SelectPublishedPackage()
-        {
-            var body = FromBody();
-            var package = body.Required<Guid>("package");
+			return DataModel.Deployment.QueryDependencies(microService, plan);
+		}
 
-            return DataModel.Deployment.SelectPublicPackage(package);
-        }
+		[HttpPost]
+		public IPublishedPackage SelectPublishedPackage()
+		{
+			var body = FromBody();
+			var microService = body.Required<Guid>("microService");
+			var plan = body.Required<Guid>("plan");
 
-        [HttpPost]
-        public List<IPublishedPackage> QueryPublishedPackages()
-        {
-            var body = FromBody();
-            var packages = body.Required<JArray>("packages");
-            var items = new List<Guid>();
+			return DataModel.Deployment.SelectPublishedPackage(microService, plan);
+		}
 
-            foreach (JToken package in packages)
-                items.Add(Types.Convert<Guid>(package.Value<string>()));
+		[HttpPost]
+		public IPublishedPackage SelectPublishedPackageByToken()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
 
-            return DataModel.Deployment.QueryPublishedPackages(items);
-        }
+			return DataModel.Deployment.SelectPublishedPackage(token);
+		}
 
-        [HttpPost]
-        public void InsertInstallers()
-        {
-            var body = FromBody();
-            var packages = new List<IInstallState>();
-            var items = body.Required<JArray>("installers");
+		[HttpPost]
+		public List<IPublishedPackage> QueryPublishedPackages()
+		{
+			var body = FromBody();
+			var packages = body.Required<JArray>("packages");
+			var items = new List<Tuple<Guid, Guid>>();
 
-            foreach (JObject i in items)
-            {
-                packages.Add(new InstallState
-                {
-                    Package = i.Required<Guid>("package"),
-                    Parent = i.Optional("parent", Guid.Empty)
-                });
-            }
+			foreach (JObject package in packages)
+				items.Add(new Tuple<Guid, Guid>(package.Required<Guid>("microService"), package.Required<Guid>("plan")));
 
-            DataModel.Deployment.InsertInstallers(packages);
-        }
+			return DataModel.Deployment.QueryPublishedPackages(items);
+		}
 
-        [HttpPost]
-        public void UpdateInstaller()
-        {
-            var body = FromBody();
-            var package = body.Required<Guid>("package");
-            var status = body.Required<InstallStateStatus>("status");
-            var error = body.Optional("error", string.Empty);
+		[HttpPost]
+		public void InsertInstallers()
+		{
+			var body = FromBody();
+			var packages = new List<IInstallState>();
+			var items = body.Required<JArray>("installers");
 
-            DataModel.Deployment.UpdateInstaller(package, status, error);
-        }
+			foreach (JObject i in items)
+			{
+				packages.Add(new InstallState
+				{
+					Package = i.Required<Guid>("package"),
+					Parent = i.Optional("parent", Guid.Empty)
+				});
+			}
 
-        [HttpPost]
-        public void DeleteInstaller()
-        {
-            var body = FromBody();
-            var package = body.Required<Guid>("package");
+			DataModel.Deployment.InsertInstallers(packages);
+		}
 
-            DataModel.Deployment.DeleteInstaller(package);
-        }
+		[HttpPost]
+		public void UpdateInstaller()
+		{
+			var body = FromBody();
+			var package = body.Required<Guid>("package");
+			var status = body.Required<InstallStateStatus>("status");
+			var error = body.Optional("error", string.Empty);
 
-        [HttpGet]
-        public List<IInstallState> QueryInstallers()
-        {
-            return DataModel.Deployment.QueryInstallers();
-        }
+			DataModel.Deployment.UpdateInstaller(package, status, error);
+		}
 
-        [HttpPost]
-        public byte[] DownloadPackage()
-        {
-            var body = FromBody();
-            var package = body.Required<Guid>("package");
+		[HttpPost]
+		public void DeleteInstaller()
+		{
+			var body = FromBody();
+			var package = body.Required<Guid>("package");
 
-            return DataModel.Deployment.DownloadPackage(package);
-        }
+			DataModel.Deployment.DeleteInstaller(package);
+		}
 
-        [HttpPost]
-        public byte[] DownloadConfiguration()
-        {
-            var body = FromBody();
-            var package = body.Required<Guid>("package");
+		[HttpGet]
+		public List<IInstallState> QueryInstallers()
+		{
+			return DataModel.Deployment.QueryInstallers();
+		}
 
-            return DataModel.Deployment.DownloadConfiguration(package);
-        }
+		[HttpPost]
+		public byte[] DownloadPackage()
+		{
+			var body = FromBody();
+			var package = body.Required<Guid>("package");
 
-        [HttpPost]
-        public Guid SelectInstallerConfiguration()
-        {
-            var body = FromBody();
-            var package = body.Required<Guid>("package");
+			return DataModel.Deployment.DownloadPackage(package);
+		}
 
-            return DataModel.Deployment.SelectInstallerConfiguration(package);
-        }
+		[HttpPost]
+		public byte[] DownloadConfiguration()
+		{
+			var body = FromBody();
+			var package = body.Required<Guid>("package");
 
-        [HttpPost]
-        public void InsertInstallerConfiguration()
-        {
-            var body = FromBody();
-            var package = body.Required<Guid>("package");
-            var configuration = body.Required<Guid>("configuration");
+			return DataModel.Deployment.DownloadConfiguration(package);
+		}
 
-            DataModel.Deployment.InsertInstallerConfiguration(package, configuration);
-        }
+		[HttpPost]
+		public Guid SelectInstallerConfiguration()
+		{
+			var body = FromBody();
+			var package = body.Required<Guid>("package");
 
-        [HttpPost]
-        public List<IInstallAudit> QueryInstallAudit()
-        {
-            var body = FromBody();
-            var package = body.Optional("package", Guid.Empty);
-            var from = body.Optional("from", DateTime.MinValue);
+			return DataModel.Deployment.SelectInstallerConfiguration(package);
+		}
 
-            if (package == Guid.Empty && from == DateTime.MinValue)
-                return null;
+		[HttpPost]
+		public void InsertInstallerConfiguration()
+		{
+			var body = FromBody();
+			var package = body.Required<Guid>("package");
+			var configuration = body.Required<Guid>("configuration");
 
-            if (from != DateTime.MinValue)
-                return DataModel.Deployment.QueryInstallAudit(from);
-            else
-                return DataModel.Deployment.QueryInstallAudit(package);
-        }
+			DataModel.Deployment.InsertInstallerConfiguration(package, configuration);
+		}
 
-        [HttpPost]
-        public List<Guid> CheckForUpdates()
-        {
-            var body = FromBody();
-            var p = new List<PackageVersion>();
-            var a = body.Required<JArray>("packages");
+		[HttpPost]
+		public List<IInstallAudit> QueryInstallAudit()
+		{
+			var body = FromBody();
+			var package = body.Optional("package", Guid.Empty);
+			var from = body.Optional("from", DateTime.MinValue);
 
-            foreach (JObject package in a)
-            {
-                p.Add(new PackageVersion
-                {
-                    Package = package.Required<Guid>("package"),
-                    Version = package.Required<string>("version")
-                });
-            }
+			if (package == Guid.Empty && from == DateTime.MinValue)
+				return null;
 
-            return DataModel.Deployment.CheckForUpdates(p);
-        }
+			if (from != DateTime.MinValue)
+				return DataModel.Deployment.QueryInstallAudit(from);
+			else
+				return DataModel.Deployment.QueryInstallAudit(package);
+		}
 
-        [HttpPost]
-        public void DeletePackage()
-        {
-            var body = FromBody();
+		[HttpPost]
+		public List<IPackageVersion> CheckForUpdates()
+		{
+			var body = FromBody();
+			var p = new List<PackageVersion>();
+			var a = body.Required<JArray>("packages");
 
-            DataModel.Deployment.Delete(body.Required<Guid>("package"));
-        }
-    }
+			foreach (JObject package in a)
+			{
+				p.Add(new PackageVersion
+				{
+					Build = package.Required<int>("build"),
+					Major = package.Required<int>("major"),
+					MicroService = package.Required<Guid>("microService"),
+					Minor = package.Required<int>("minor"),
+					Plan = package.Required<Guid>("plan"),
+					Revision = package.Required<int>("revision"),
+				});
+			}
+
+			return DataModel.Deployment.CheckForUpdates(p);
+		}
+
+		[HttpPost]
+		public void DeletePackage()
+		{
+			var body = FromBody();
+			var microService = body.Required<Guid>("microService");
+			var plan = body.Required<Guid>("plan");
+
+			DataModel.Deployment.Delete(microService, plan);
+		}
+
+		[HttpGet]
+		public List<ISubscriptionPlan> QueryPlans()
+		{
+			return DataModel.Deployment.QueryPlans();
+		}
+	}
 }

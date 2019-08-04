@@ -6,9 +6,10 @@ namespace TomPIT.Sys.Data
 {
 	internal class PackageDependency : IPackageDependency
 	{
-		[JsonProperty("name")]
-		public string Name { get; set; }
-		[JsonProperty("token")]
-		public Guid Token { get; set; }
+		public string Title {get;set;}
+
+		public Guid MicroService {get;set;}
+
+		public Guid Plan {get;set;}
 	}
 }

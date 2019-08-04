@@ -184,8 +184,9 @@ namespace TomPIT.Management.Deployment
 
 				Dependencies.Add(new PackageDependency
 				{
-					Name = i.MicroService,
-					Token = ms == null ? Guid.Empty : ms.Token
+					Title = ms.Name,
+					MicroService = ms.Token,
+					Plan = ms.Plan
 				});
 			}
 		}

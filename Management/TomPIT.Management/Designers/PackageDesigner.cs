@@ -44,35 +44,32 @@ namespace TomPIT.Designers
             return r;
         }
 
-        public IDesignerActionResult CreatePackage(JObject data)
-        {
-            var name = data.Required<string>("name");
-            var title = data.Required<string>("title");
-            var version = new Version(data.Required<int>("versionMajor"), data.Required<int>("versionMinor"), data.Required<int>("versionBuild"), data.Required<int>("versionRevision"));
-            var scope = data.Required<PackageScope>("scope");
-            var trial = data.Required<bool>("trial");
-            var trialPeriod = data.Required<int>("trialPeriod");
-            var description = data.Optional("description", string.Empty);
-            var price = data.Required<double>("price");
-            var tags = data.Optional("tags", string.Empty);
-            var projectUrl = data.Optional("projectUrl", string.Empty);
-            var licenseUrl = data.Optional("licenseUrl", string.Empty);
-            var imageUrl = data.Optional("imageUrl", string.Empty);
-            var licenses = data.Optional("licenses", string.Empty);
-            var rt = data.Optional("runtimeConfigurationSupported", false);
-            var av = data.Optional("autoVersion", true);
+		public IDesignerActionResult CreatePackage(JObject data)
+		{
+			var name = data.Required<string>("name");
+			var title = data.Required<string>("title");
+			var plan = data.Required<Guid>("plan");
+			var version = new Version(data.Required<int>("versionMajor"), data.Required<int>("versionMinor"), data.Required<int>("versionBuild"), data.Required<int>("versionRevision"));
+			var description = data.Optional("description", string.Empty);
+			var tags = data.Optional("tags", string.Empty);
+			var projectUrl = data.Optional("projectUrl", string.Empty);
+			var licenseUrl = data.Optional("licenseUrl", string.Empty);
+			var imageUrl = data.Optional("imageUrl", string.Empty);
+			var licenses = data.Optional("licenses", string.Empty);
+			var rt = data.Optional("runtimeConfigurationSupported", false);
+			var av = data.Optional("autoVersion", true);
 
-            Connection.GetService<IDeploymentService>().CreatePackage(MicroService.Token, name, title, version.ToString(), scope, trial, trialPeriod, description, price,
-                tags, projectUrl, imageUrl, licenseUrl, licenses, rt, av);
+			Connection.GetService<IDeploymentService>().CreatePackage(MicroService.Token, plan, name, title, version.ToString(), description,
+				 tags, projectUrl, imageUrl, licenseUrl, licenses, rt, av);
 
-            var r = Result.EmptyResult(ViewModel);
+			var r = Result.EmptyResult(ViewModel);
 
-            r.MessageKind = InformationKind.Success;
-            r.Message = "You can now upload package to the marketplace.";
-            r.Title = "Package created successfully";
+			r.MessageKind = InformationKind.Success;
+			r.Message = "You can now upload package to the marketplace.";
+			r.Title = "Package created successfully";
 
-            return r;
-        }
+			return r;
+		}
 
 
         public IPackage Package

@@ -7,7 +7,9 @@
       "wwwroot/assets/libraries/devextreme/Latest/dx.common.css",
       "wwwroot/assets/libraries/devextreme/Latest/dx.material.blue.light.css",
       "wwwroot/assets/styles/management.css",
-      "wwwroot/assets/styles/tompit.css"
+      "wwwroot/assets/styles/tompit.css",
+      "wwwroot/assets/styles/designers.css"
+
     ],
 		"minify": {
 			"enabled": true,
@@ -36,7 +38,7 @@
 			"wwwroot/assets/scripts/bootstrap.js",
 			"wwwroot/assets/scripts/fontawesome-all.js",
 			"wwwroot/assets/scripts/jquery-ui-1.12.1.js",
-			"wwwroot/assets/libraries/devextreme/18.2.4/dx.web.js",
+			"wwwroot/assets/libraries/devextreme/Latest/dx.all.js",
 			"wwwroot/assets/libraries/underscore/1.9.1/underscore.js",
 			"wwwroot/assets/scripts/ajax.js",
 			"wwwroot/assets/scripts/progress.js",

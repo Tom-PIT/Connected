@@ -1,6 +1,15 @@
 ﻿@model TomPIT.Management.Deployment.ISignupDesigner
 
-
 <div id="loginForm">
-	@await Html.PartialAsync("~/Views/Ide/Designers/DeploymentLoginForm.cshtml")
+    <div class="document-body">
+        <div class="document-container">
+            <div class="canvas">
+                <div class="paper">
+                    <div class="document-content">
+                        @await Html.PartialAsync("~/Views/Ide/Designers/DeploymentLoginForm.cshtml")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

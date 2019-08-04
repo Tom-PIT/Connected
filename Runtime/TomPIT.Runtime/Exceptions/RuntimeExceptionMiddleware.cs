@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace TomPIT.Exceptions
@@ -15,7 +16,16 @@ namespace TomPIT.Exceptions
 		protected override async Task HandleException(HttpContext context, Exception ex)
 		{
 			context.Response.Clear();
-			context.Response.StatusCode = 500;
+
+			if (ex is UnauthorizedException ua)
+				context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+			else if (ex is NotFoundException nf)
+				context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+			else if (ex is ForbiddenException fb)
+				context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+			else
+				context.Response.StatusCode = 500;
+
 			context.Response.ContentType = "application/json";
 
 			var jsonEx = new JObject

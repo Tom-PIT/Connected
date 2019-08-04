@@ -26,5 +26,9 @@
   {
     "outputFile": "wwwroot/Assets/Styles/bootstrap/bootstrap.css",
     "inputFile": "wwwroot/Assets/Styles/bootstrap/bootstrap.scss"
+  },
+  {
+    "outputFile": "wwwroot/Assets/Styles/designers.css",
+    "inputFile": "wwwroot/Assets/Styles/designers.less"
   }
 ]

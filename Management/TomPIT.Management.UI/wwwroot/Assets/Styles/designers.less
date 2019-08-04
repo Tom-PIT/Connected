@@ -1,0 +1,337 @@
+﻿@import "Variables.less";
+
+.btn-primary {
+    background-color: @LightBlue500;
+    border-color: @LightBlue600;
+}
+
+.btn-primary:hover {
+    background-color: @LightBlue600;
+    border-color: @LightBlue700;
+}
+
+.btn-link {
+    color: @LightBlue500;
+}
+
+.btn-link:hover {
+    color: @LightBlue600;
+}
+
+.tp-toolbar .btn {
+    border-radius: 2px;
+}
+
+.dx-texteditor.dx-editor-underlined:after {
+    border-bottom-color: @Grey300 !important;
+}
+
+.dx-widget input {
+    font-weight: 700;
+    color: @Grey800;
+}
+
+.badge-primary {
+    background-color: @LightBlue500;
+}
+
+.document-body {
+    background-color: @Grey100;
+    min-height: 250px;
+    color: @Grey700;
+}
+
+.document-body .canvas {
+    margin: 10px 15px 15px 15px;
+}
+
+.document-body .paper {
+    border: 1px solid @Grey300;
+    background-color: #fff;
+}
+
+.document-body .paper .document-content {
+    padding: 75px 75px;
+    font-size: 0.9rem;
+}
+
+.document-body h1,
+.document-body h2,
+.document-body h3 {
+    font-weight: 100;
+}
+
+.document-body .paper .document-content h3 {
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    text-transform: none;
+}
+
+.document-body .paper .document-content h3.underlined {
+    border-bottom: 1px solid @Grey200;
+}
+
+.document-toolbar {
+    padding: 15px;
+}
+
+.document-toolbar:empty {
+    display: none;
+}
+
+@media (max-width:1199px) {
+    .document-body .paper .document-content {
+        padding: 35px;
+    }
+}
+
+@media (max-width:991px) {
+    .document-body .paper .document-content {
+        padding: 15px;
+    }
+}
+
+@media (max-width:767px) {
+    .container.document-container {
+        padding: 0;
+    }
+
+    .document-body .canvas {
+        margin: 0;
+        border: 0;
+    }
+
+    .document-body .paper .document-content {
+        padding: 5px;
+    }
+
+    .document-body .paper {
+        border: 0;
+    }
+}
+
+@media (max-width:575px) {
+    .document-body .canvas {
+        margin: 0;
+        border: 0;
+    }
+
+    .document-body .paper {
+        border: 0;
+    }
+}
+
+.document-toolbar .btn-link.dropdown-toggle {
+    color: @Grey700;
+}
+
+.document-toolbar .btn-link.dropdown-toggle:hover {
+    color: @LightBlue500;
+}
+
+.document-toolbar .dropdown-menu {
+    padding: 0;
+    border: 1px solid @Grey300;
+}
+
+.document-toolbar .dropdown-menu .dropdown-item {
+    padding: 15px;
+}
+
+.document-toolbar .dropdown-menu .dropdown-item a {
+    color: @Grey700;
+}
+
+.document-toolbar .dropdown-menu .dropdown-item a:hover {
+    color: @LightBlue500;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    color: @Grey600;
+}
+
+.form-group .form-data {
+    font-weight: 700;
+    color: @Grey800;
+    border-bottom: 1px solid @Grey300;
+}
+
+.form-group .form-data.normal {
+    font-weight: normal;
+}
+
+.tp-form .btn {
+    border-radius: 2px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.tp-form .header {
+    padding: 15px;
+    border-bottom: 0;
+}
+
+.tp-form .body {
+    padding: 15px;
+}
+
+.tp-form .form-group label,
+.tp-criteria .form-group label {
+    font-size: 0.8rem;
+    color: @Grey600;
+    padding-top: 5px;
+}
+
+.tp-form .toolbar {
+    background-color: @Grey100;
+    padding: 15px 40px;
+    border-bottom: 1px solid @Grey300;
+}
+
+.tp-form .header h4,
+.tp-form h4 {
+    font-weight: 100 !important;
+    font-size: 1.15rem !important;
+    padding: 15px 0 !important;
+}
+
+.tp-form h4.section,
+.tp-form a.section {
+    color: @Blue700;
+}
+
+.tp-form a.section {
+    display: block;
+}
+
+.tp-form a.section[aria-expanded="false"] {
+    color: @Grey600;
+}
+
+.tp-form .footer {
+    background-color: #FFF;
+    border-top: 0;
+    padding: 15px;
+}
+
+.tp-form .tp-data {
+    font-weight: 700;
+}
+
+.tp-form-dismiss {
+    cursor: pointer;
+}
+
+[data-button="cancel"] {
+    margin-left: 2px;
+}
+
+.tp-criteria {
+    padding-bottom: 25px;
+}
+
+.tp-form .input-panel {
+    background-color: @Grey100;
+    padding: 15px;
+    border-radius: 2px;
+}
+
+.tp-form .input-panel.primary {
+    background-color: @Blue600;
+}
+
+.tp-form .input-panel.primary .dx-placeholder,
+.tp-form .input-panel.primary input {
+    color: #FFF;
+}
+
+.tp-form .input-panel.primary .dx-texteditor.dx-state-focused:before,
+.tp-form .input-panel.primary .dx-texteditor.dx-state-active:before {
+    border-bottom-color: #FFF;
+}
+
+.tp-form .input-panel.primary .dx-icon {
+    background-color: #FFF;
+    color: @Blue600;
+}
+
+.tp-form .input-panel.info {
+    background-color: @LightBlue100;
+    border-left-color: @LightBlue300;
+}
+
+.tp-form .input-panel.info .dx-placeholder,
+.tp-form .input-panel.info input {
+    color: @LightBlue500;
+}
+
+.tp-form .input-panel.info .dx-texteditor.dx-state-focused:before,
+.tp-form .input-panel.info .dx-texteditor.dx-state-active:before {
+    border-bottom-color: @LightBlue500;
+}
+
+.tp-form .input-panel.warning {
+    background-color: @Orange100;
+    border-left-color: @Orange300;
+}
+
+.tp-form .input-panel.warning .dx-placeholder,
+.tp-form .input-panel.warning input {
+    color: @Orange500;
+}
+
+.tp-form .input-panel.warning .dx-texteditor.dx-state-focused:before,
+.tp-form .input-panel.warning .dx-texteditor.dx-state-active:before {
+    border-bottom-color: @Orange500;
+}
+
+.tp-form .input-panel.danger {
+    background-color: @Red100;
+    border-left-color: @Red300;
+}
+
+.tp-form .input-panel.danger .dx-placeholder,
+.tp-form .input-panel.danger input {
+    color: @Red500;
+}
+
+.tp-form .input-panel.danger .dx-texteditor.dx-state-focused:before,
+.tp-form .input-panel.danger .dx-texteditor.dx-state-active:before {
+    border-bottom-color: @Red500;
+}
+
+.tp-form .input-panel.success {
+    background-color: @Green100;
+    border-left-color: @Green300;
+}
+
+.tp-form .input-panel.success .dx-placeholder,
+.tp-form .input-panel.success input {
+    color: @Green500;
+}
+
+.tp-form .input-panel.success .dx-texteditor.dx-state-focused:before,
+.tp-form .input-panel.success .dx-texteditor.dx-state-active:before {
+    border-bottom-color: @Green500;
+}
+
+.tp-form .input-panel .dx-texteditor.dx-editor-underlined:after {
+    border: 0;
+}
+
+@media (min-width:576px) {
+    .tp-form .tp-section-block {
+        padding: 15px;
+    }
+}
+
+@media (max-width:575px) {
+    .tp-form .tp-section-block {
+        padding: 15px 0;
+    }
+}
+
+.tp-form .header h4 {
+    font-weight: 100;
+}

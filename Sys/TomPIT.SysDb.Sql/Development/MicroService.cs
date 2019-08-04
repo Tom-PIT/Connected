@@ -13,11 +13,12 @@ namespace TomPIT.SysDb.Sql.Development
 		public Guid ResourceGroup { get; set; }
 		public Guid Template { get; set; }
 		public Guid Package { get; set; }
-        public UpdateStatus UpdateStatus { get; set; }
-        public CommitStatus CommitStatus { get; set; }
-        public string Version { get; set; }
+		public UpdateStatus UpdateStatus { get; set; }
+		public CommitStatus CommitStatus { get; set; }
+		public string Version { get; set; }
+		public Guid Plan { get; set; }
 
-        protected override void OnCreate()
+		protected override void OnCreate()
 		{
 			base.OnCreate();
 
@@ -28,9 +29,10 @@ namespace TomPIT.SysDb.Sql.Development
 			ResourceGroup = GetGuid("resource_token");
 			Template = GetGuid("template");
 			Package = GetGuid("package");
-            UpdateStatus = GetValue("update_status", UpdateStatus.UpToDate);
-            CommitStatus = GetValue("commit_status", CommitStatus.Synchronized);
-            Version = GetString("version");
-        }
+			UpdateStatus = GetValue("update_status", UpdateStatus.UpToDate);
+			CommitStatus = GetValue("commit_status", CommitStatus.Synchronized);
+			Version = GetString("version");
+			Plan = GetGuid("plan");
+		}
 	}
 }

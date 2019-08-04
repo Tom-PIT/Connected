@@ -11,180 +11,181 @@ using TomPIT.SysDb.Development;
 
 namespace TomPIT.SysDb.Sql.Development
 {
-    public class MicroServiceHandler : IMicroServiceHandler
-    {
-        private const string SelectProcedure = "tompit.service_sel";
+	public class MicroServiceHandler : IMicroServiceHandler
+	{
+		private const string SelectProcedure = "tompit.service_sel";
 
-        public void Delete(IMicroService service)
-        {
-            var w = new Writer("tompit.service_del");
+		public void Delete(IMicroService service)
+		{
+			var w = new Writer("tompit.service_del");
 
-            w.CreateParameter("@id", service.GetId());
+			w.CreateParameter("@id", service.GetId());
 
-            w.Execute();
-        }
+			w.Execute();
+		}
 
-        public void DeleteString(IMicroService microService, Guid element, string property)
-        {
-            var p = new Writer("tomit.service_string_del");
+		public void DeleteString(IMicroService microService, Guid element, string property)
+		{
+			var p = new Writer("tomit.service_string_del");
 
-            p.CreateParameter("@service", microService.GetId());
-            p.CreateParameter("@element", element);
-            p.CreateParameter("@property", property);
+			p.CreateParameter("@service", microService.GetId());
+			p.CreateParameter("@element", element);
+			p.CreateParameter("@property", property);
 
-            p.Execute();
-        }
+			p.Execute();
+		}
 
-        public List<IMicroServiceString> QueryStrings()
-        {
-            return new Reader<MicroServiceString>("tompit.service_string_que").Execute().ToList<IMicroServiceString>();
-        }
+		public List<IMicroServiceString> QueryStrings()
+		{
+			return new Reader<MicroServiceString>("tompit.service_string_que").Execute().ToList<IMicroServiceString>();
+		}
 
-        public IMicroServiceString SelectString(IMicroService microService, ILanguage language, Guid element, string property)
-        {
-            var p = new Reader<MicroServiceString>("tompit.service_string_sel");
+		public IMicroServiceString SelectString(IMicroService microService, ILanguage language, Guid element, string property)
+		{
+			var p = new Reader<MicroServiceString>("tompit.service_string_sel");
 
-            p.CreateParameter("@service", microService.GetId());
-            p.CreateParameter("@language", language.GetId());
-            p.CreateParameter("@element", element);
-            p.CreateParameter("@property", property);
+			p.CreateParameter("@service", microService.GetId());
+			p.CreateParameter("@language", language.GetId());
+			p.CreateParameter("@element", element);
+			p.CreateParameter("@property", property);
 
-            return p.ExecuteSingleRow();
-        }
+			return p.ExecuteSingleRow();
+		}
 
-        public void Insert(Guid token, string name, string url, MicroServiceStatus status, IResourceGroup resourceGroup, Guid template, string meta, string version)
-        {
-            var p = new Writer("tompit.service_ins");
+		public void Insert(Guid token, string name, string url, MicroServiceStatus status, IResourceGroup resourceGroup, Guid template, string meta, string version)
+		{
+			var p = new Writer("tompit.service_ins");
 
-            p.CreateParameter("@name", name);
-            p.CreateParameter("@url", url);
-            p.CreateParameter("@status", status);
-            p.CreateParameter("@resource_group", resourceGroup.GetId());
-            p.CreateParameter("@template", template);
-            p.CreateParameter("@token", token);
-            p.CreateParameter("@meta", meta);
-            p.CreateParameter("@version", version, true);
+			p.CreateParameter("@name", name);
+			p.CreateParameter("@url", url);
+			p.CreateParameter("@status", status);
+			p.CreateParameter("@resource_group", resourceGroup.GetId());
+			p.CreateParameter("@template", template);
+			p.CreateParameter("@token", token);
+			p.CreateParameter("@meta", meta);
+			p.CreateParameter("@version", version, true);
 
-            p.Execute();
-        }
+			p.Execute();
+		}
 
-        public List<IMicroService> Query()
-        {
-            return new Reader<MicroService>("tompit.service_que").Execute().ToList<IMicroService>();
-        }
+		public List<IMicroService> Query()
+		{
+			return new Reader<MicroService>("tompit.service_que").Execute().ToList<IMicroService>();
+		}
 
-        public void UpdateString(IMicroService microService, ILanguage language, Guid element, string property, string value)
-        {
-            var p = new Writer("tomit.service_string_mdf");
+		public void UpdateString(IMicroService microService, ILanguage language, Guid element, string property, string value)
+		{
+			var p = new Writer("tomit.service_string_mdf");
 
-            p.CreateParameter("@service", microService.GetId());
-            p.CreateParameter("@language", language.GetId());
-            p.CreateParameter("@element", element);
-            p.CreateParameter("@property", property);
-            p.CreateParameter("@value", value);
+			p.CreateParameter("@service", microService.GetId());
+			p.CreateParameter("@language", language.GetId());
+			p.CreateParameter("@element", element);
+			p.CreateParameter("@property", property);
+			p.CreateParameter("@value", value);
 
-            p.Execute();
-        }
+			p.Execute();
+		}
 
-        public IMicroService Select(int id)
-        {
-            var p = new Reader<MicroService>(SelectProcedure);
+		public IMicroService Select(int id)
+		{
+			var p = new Reader<MicroService>(SelectProcedure);
 
-            p.CreateParameter("@id", id);
+			p.CreateParameter("@id", id);
 
-            return p.ExecuteSingleRow();
-        }
+			return p.ExecuteSingleRow();
+		}
 
-        public IMicroService SelectByUrl(string url)
-        {
-            var p = new Reader<MicroService>(SelectProcedure);
+		public IMicroService SelectByUrl(string url)
+		{
+			var p = new Reader<MicroService>(SelectProcedure);
 
-            p.CreateParameter("@url", url);
+			p.CreateParameter("@url", url);
 
-            return p.ExecuteSingleRow();
+			return p.ExecuteSingleRow();
 
-        }
+		}
 
-        public IMicroService Select(Guid token)
-        {
-            var p = new Reader<MicroService>(SelectProcedure);
+		public IMicroService Select(Guid token)
+		{
+			var p = new Reader<MicroService>(SelectProcedure);
 
-            p.CreateParameter("@token", token);
+			p.CreateParameter("@token", token);
 
-            return p.ExecuteSingleRow();
-        }
+			return p.ExecuteSingleRow();
+		}
 
-        public IMicroService Select(string name)
-        {
-            var p = new Reader<MicroService>(SelectProcedure);
+		public IMicroService Select(string name)
+		{
+			var p = new Reader<MicroService>(SelectProcedure);
 
-            p.CreateParameter("@name", name);
+			p.CreateParameter("@name", name);
 
-            return p.ExecuteSingleRow();
-        }
+			return p.ExecuteSingleRow();
+		}
 
-        public void Update(IMicroService microService, string name, string url, MicroServiceStatus status, Guid template,
-            IResourceGroup resourceGroup, Guid package, UpdateStatus updateStatus, CommitStatus commitStatus)
-        {
-            var p = new Writer("tompit.service_upd");
+		public void Update(IMicroService microService, string name, string url, MicroServiceStatus status, Guid template,
+			 IResourceGroup resourceGroup, Guid package, Guid plan, UpdateStatus updateStatus, CommitStatus commitStatus)
+		{
+			var p = new Writer("tompit.service_upd");
 
-            p.CreateParameter("@name", name);
-            p.CreateParameter("@url", url);
-            p.CreateParameter("@id", microService.GetId());
-            p.CreateParameter("@status", status);
-            p.CreateParameter("@template", template);
-            p.CreateParameter("@resource_group", resourceGroup.GetId());
-            p.CreateParameter("@package", package, true);
-            p.CreateParameter("@update_status", updateStatus);
-            p.CreateParameter("@commit_status", commitStatus);
+			p.CreateParameter("@name", name);
+			p.CreateParameter("@url", url);
+			p.CreateParameter("@id", microService.GetId());
+			p.CreateParameter("@status", status);
+			p.CreateParameter("@template", template);
+			p.CreateParameter("@resource_group", resourceGroup.GetId());
+			p.CreateParameter("@package", package, true);
+			p.CreateParameter("@plan", plan, true);
+			p.CreateParameter("@update_status", updateStatus);
+			p.CreateParameter("@commit_status", commitStatus);
 
-            p.Execute();
-        }
+			p.Execute();
+		}
 
-        public void UpdateMeta(IMicroService microService, byte[] meta)
-        {
-            var w = new Writer("tompit.service_meta_upd");
+		public void UpdateMeta(IMicroService microService, byte[] meta)
+		{
+			var w = new Writer("tompit.service_meta_upd");
 
-            w.CreateParameter("@id", microService.GetId());
-            w.CreateParameter("@meta", meta);
+			w.CreateParameter("@id", microService.GetId());
+			w.CreateParameter("@meta", meta);
 
-            w.Execute();
-        }
+			w.Execute();
+		}
 
-        public string SelectMeta(IMicroService microService)
-        {
-            var r = new Reader<MicroServiceMeta>("tompit.service_meta_sel");
+		public string SelectMeta(IMicroService microService)
+		{
+			var r = new Reader<MicroServiceMeta>("tompit.service_meta_sel");
 
-            r.CreateParameter("@id", microService.GetId());
+			r.CreateParameter("@id", microService.GetId());
 
-            return r.ExecuteSingleRow()?.Content;
-        }
+			return r.ExecuteSingleRow()?.Content;
+		}
 
-        public void RestoreStrings(List<IMicroServiceRestoreString> strings)
-        {
-            var e = new JArray();
+		public void RestoreStrings(List<IMicroServiceRestoreString> strings)
+		{
+			var e = new JArray();
 
-            foreach (var i in strings)
-            {
-                var o = new JObject
-                {
-                    {"language", i.Language.GetId().ToString() },
-                    {"element", i.Element },
-                    {"microService", i.MicroService.GetId().ToString() },
-                    {"property", i.Property }
-                };
+			foreach (var i in strings)
+			{
+				var o = new JObject
+					 {
+						  {"language", i.Language.GetId().ToString() },
+						  {"element", i.Element },
+						  {"microService", i.MicroService.GetId().ToString() },
+						  {"property", i.Property }
+					 };
 
-                if (!string.IsNullOrWhiteSpace(i.Value))
-                    o.Add("value", i.Value);
+				if (!string.IsNullOrWhiteSpace(i.Value))
+					o.Add("value", i.Value);
 
-                e.Add(o);
-            }
+				e.Add(o);
+			}
 
-            var w = new Writer("tompit.service_string_restore");
+			var w = new Writer("tompit.service_string_restore");
 
-            w.CreateParameter("@items", JsonConvert.SerializeObject(e));
+			w.CreateParameter("@items", JsonConvert.SerializeObject(e));
 
-            w.Execute();
-        }
-    }
+			w.Execute();
+		}
+	}
 }

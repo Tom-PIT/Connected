@@ -45,7 +45,7 @@ namespace TomPIT.Management.Services
                     connection.LogWarning(null, nameof(PublishService), $"{SR.WrnPackageNotFound} ({microService.Name})");
 
                     connection.GetService<IMicroServiceManagementService>().Update(microService.Token, microService.Name, microService.Status, microService.Template, microService.ResourceGroup,
-                        microService.Package, microService.UpdateStatus, CommitStatus.Invalidated);
+                        microService.Package, microService.Plan, microService.UpdateStatus, CommitStatus.Invalidated);
 
                     continue;
                 }
@@ -54,22 +54,22 @@ namespace TomPIT.Management.Services
                 {
                     var version = Version.Parse(package.MetaData.Version);
 
-                    connection.GetService<IDeploymentService>().CreatePackage(microService.Token, package.MetaData.Name, package.MetaData.Title, PackageDesigner.IncrementVersion(version).ToString(),
-                        package.MetaData.Scope, package.MetaData.Trial, package.MetaData.TrialPeriod, package.MetaData.Description, package.MetaData.Price, package.MetaData.Tags,
+                    connection.GetService<IDeploymentService>().CreatePackage(microService.Token, package.MetaData.Plan, package.MetaData.Name, package.MetaData.Title, PackageDesigner.IncrementVersion(version).ToString(),
+                        package.MetaData.Description, package.MetaData.Tags,
                         package.MetaData.ProjectUrl, package.MetaData.ImageUrl, package.MetaData.LicenseUrl, package.MetaData.Licenses, package.Configuration.RuntimeConfigurationSupported,
                         package.Configuration.AutoVersioning);
 
                     connection.GetService<IDeploymentService>().PublishPackage(microService.Token);
 
                     connection.GetService<IMicroServiceManagementService>().Update(microService.Token, microService.Name, microService.Status, microService.Template, microService.ResourceGroup,
-                        microService.Package, microService.UpdateStatus, CommitStatus.Synchronized);
+                        microService.Package, microService.Plan, microService.UpdateStatus, CommitStatus.Synchronized);
                 }
                 catch (Exception ex)
                 {
                     connection.LogError(null, microService.Name, nameof(PublishService), ex.Message);
 
                     connection.GetService<IMicroServiceManagementService>().Update(microService.Token, microService.Name, microService.Status, microService.Template, microService.ResourceGroup,
-                        microService.Package, microService.UpdateStatus, CommitStatus.PublishError);
+                        microService.Package, microService.Plan, microService.UpdateStatus, CommitStatus.PublishError);
                 }
             }
         }

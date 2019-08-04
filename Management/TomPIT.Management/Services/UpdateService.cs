@@ -46,13 +46,13 @@ namespace TomPIT.Management.Services
 
             foreach (var update in updates)
             {
-                var microService = microServices.FirstOrDefault(f => f.Token == update);
+                var microService = microServices.FirstOrDefault(f => f.Token == update.MicroService);
 
                 if (microService == null)
                     continue;
 
-                connection.GetService<IMicroServiceManagementService>().Update(update, microService.Name, microService.Status, microService.Template, microService.ResourceGroup,
-                    microService.Package, UpdateStatus.UpdateAvailable, microService.CommitStatus);
+                connection.GetService<IMicroServiceManagementService>().Update(update.MicroService, microService.Name, microService.Status, microService.Template, microService.ResourceGroup,
+                    microService.Package, microService.Plan, UpdateStatus.UpdateAvailable, microService.CommitStatus);
             }
         }
     }

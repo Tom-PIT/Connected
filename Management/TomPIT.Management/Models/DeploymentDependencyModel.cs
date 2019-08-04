@@ -24,7 +24,7 @@ namespace TomPIT.Management.Models
 			get
 			{
 				if (_packageInfo == null)
-					_packageInfo = Designer.DependencyPackages.FirstOrDefault(f=>f.Token == Dependency.Token);
+					_packageInfo = Designer.DependencyPackages.FirstOrDefault(f=>f.Service == Dependency.MicroService);
 
 				return _packageInfo;
 			}

@@ -80,7 +80,7 @@ namespace TomPIT.Dom
         public override bool Commit(object component, string property, string attribute)
         {
             Connection.GetService<IMicroServiceManagementService>().Update(MicroService.Token, MicroService.Name,
-                MicroService.Status, MicroService.Template, MicroService.ResourceGroup, MicroService.Package, MicroService.UpdateStatus, MicroService.CommitStatus);
+                MicroService.Status, MicroService.Template, MicroService.ResourceGroup, MicroService.Package, MicroService.Plan, MicroService.UpdateStatus, MicroService.CommitStatus);
 
             return true;
         }

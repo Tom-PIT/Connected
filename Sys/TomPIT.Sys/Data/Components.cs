@@ -84,7 +84,7 @@ namespace TomPIT.Sys.Data
                     continue;
 
                 DataModel.MicroServices.Update(microService.Token, microService.Name, microService.Status, microService.Template, microService.ResourceGroup,
-                    microService.Package, microService.UpdateStatus, CommitStatus.Invalidated);
+                    microService.Package, microService.Plan, microService.UpdateStatus, CommitStatus.Invalidated);
             }
         }
 

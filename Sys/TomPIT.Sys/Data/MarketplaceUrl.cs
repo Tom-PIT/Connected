@@ -6,7 +6,7 @@ namespace TomPIT.Sys.Data
     {
         public MarketplaceUrl(string api, string operation)
         {
-            BaseUrl = "http://marketplace.tompit.net/rest/marketplace";
+            BaseUrl = "http://rest.tompit.net/marketplace";
             Controller = api;
             Action = operation;
         }
