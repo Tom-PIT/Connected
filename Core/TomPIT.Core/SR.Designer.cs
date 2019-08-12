@@ -538,6 +538,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Credentials.
+        /// </summary>
+        public static string EnterCredentials {
+            get {
+                return ResourceManager.GetString("EnterCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Designer action not supported..
         /// </summary>
         public static string ErrActionNotSupported {

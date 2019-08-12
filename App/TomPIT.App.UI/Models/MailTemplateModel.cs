@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
@@ -11,10 +12,11 @@ namespace TomPIT.Models
 {
 	public class MailTemplateModel : ExecutionContext, IViewModel
 	{
-		public MailTemplateModel(HttpRequest request, ActionContext context, JObject arguments)
+		public MailTemplateModel(HttpRequest request, ActionContext context,  ITempDataProvider tempData, JObject arguments)
 		{
 			ActionContext = context;
 			Arguments = arguments;
+			TempData = tempData;
 		}
 
 		public ActionContext ActionContext { get; }
@@ -27,6 +29,8 @@ namespace TomPIT.Models
 		public string Title => null;
 
 		public IComponent Component { get; set; }
+
+		public ITempDataProvider TempData { get; }
 
 		public void Initialize(IMicroService microService)
 		{

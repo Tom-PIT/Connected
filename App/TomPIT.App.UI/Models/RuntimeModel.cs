@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -17,11 +18,13 @@ namespace TomPIT.Models
 		public RuntimeModel(RuntimeModel context) : base(context)
 		{
 			ActionContext = context.ActionContext;
+			TempData = context.TempData;
 		}
 
-		public RuntimeModel(HttpRequest request, ActionContext context)
+		public RuntimeModel(HttpRequest request, ActionContext context, ITempDataProvider tempData)
 		{
 			ActionContext = context;
+			TempData = tempData;
 		}
 
 		public IComponent Component { get; set; }
@@ -102,5 +105,7 @@ namespace TomPIT.Models
 				return _arguments;
 			}
 		}
+
+		public ITempDataProvider TempData { get; }
 	}
 }

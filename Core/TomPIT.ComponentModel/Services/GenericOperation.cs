@@ -43,45 +43,52 @@ namespace TomPIT.Services
 			ValidateExtender();
 			Validate();
 
-			var result = OnInvoke();
-
-			if (result == null)
-				return result;
-
-			if (string.IsNullOrWhiteSpace(Extender))
-				return result;
-
-			var ext = ResolveExtenderType();
-			var extenderInstance = ext.CreateInstance(new object[] { Context });
-			var arguments = extenderInstance.GetType().BaseType.GetGenericArguments();
-
-
-			Type inputType = arguments[0];
-			var list = typeof(List<>);
-			var genericList = list.MakeGenericType(new Type[] { inputType });
-			var method = extenderInstance.GetType().GetMethod("Extend", new Type[] { genericList });
-
-			if (result.GetType().IsCollection())
+			try
 			{
-				var listResult = (IList)result;
-				var extenderResult = method.Invoke(extenderInstance, new object[] { result }) as IList;
+				var result = OnInvoke();
 
-				listResult.Clear();
+				if (result == null)
+					return result;
 
-				foreach (var i in extenderResult)
-					listResult.Add(i);
+				if (string.IsNullOrWhiteSpace(Extender))
+					return result;
 
-				return result;
+				var ext = ResolveExtenderType();
+				var extenderInstance = ext.CreateInstance(new object[] { Context });
+				var arguments = extenderInstance.GetType().BaseType.GetGenericArguments();
+
+
+				Type inputType = arguments[0];
+				var list = typeof(List<>);
+				var genericList = list.MakeGenericType(new Type[] { inputType });
+				var method = extenderInstance.GetType().GetMethod("Extend", new Type[] { genericList });
+
+				if (result.GetType().IsCollection())
+				{
+					var listResult = (IList)result;
+					var extenderResult = method.Invoke(extenderInstance, new object[] { result }) as IList;
+
+					listResult.Clear();
+
+					foreach (var i in extenderResult)
+						listResult.Add(i);
+
+					return result;
+				}
+				else
+				{
+					var listInstance = (IList)genericList.CreateInstance();
+
+					listInstance.Add(result);
+
+					var listResult = (IList)method.Invoke(extenderInstance, new object[] { listInstance });
+
+					return (TReturnValue)listResult[0];
+				}
 			}
-			else
+			catch(Exception ex)
 			{
-				var listInstance = (IList)genericList.CreateInstance();
-
-				listInstance.Add(result);
-
-				var listResult = (IList)method.Invoke(extenderInstance, new object[] { listInstance });
-
-				return (TReturnValue)listResult[0];
+				throw TomPITException.Unwrap(this, ex);
 			}
 		}
 

@@ -34,7 +34,15 @@ namespace TomPIT.Services.Context
 
 		public string CreateMailMessage<T>(string template, string user, T arguments)
 		{
-			var component = Context.Connection().GetService<IComponentService>().SelectComponent(Context.MicroService.Token, "MailTemplate", template);
+			var tokens = template.Split("/");
+			var ms = Context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+
+			if (ms == null)
+				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({tokens[0]})").WithMetrics(Context);
+
+			Context.MicroService.ValidateMicroServiceReference(Context.Connection(), ms.Name);
+
+			var component = Context.Connection().GetService<IComponentService>().SelectComponent(ms.Token, "MailTemplate", tokens[1]);
 
 			if (component == null || string.Compare(component.Category, "MailTemplate", true) != 0)
 				throw new RuntimeException($"{SR.ErrMailTemplateNotFound} ({template})").WithMetrics(Context);
@@ -69,7 +77,15 @@ namespace TomPIT.Services.Context
 
 		public void CreateSubscription(string subscription, string primaryKey, string topic)
 		{
-			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Subscription", subscription) is TomPIT.ComponentModel.Cdn.ISubscription sub))
+			var tokens = subscription.Split("/");
+			var ms = Context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+
+			if (ms == null)
+				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({tokens[0]})").WithMetrics(Context);
+
+			Context.MicroService.ValidateMicroServiceReference(Context.Connection(), ms.Name);
+
+			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(ms.Token, "Subscription", tokens[1]) is TomPIT.ComponentModel.Cdn.ISubscription sub))
 				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrSubscriptionNotFound, subscription)).WithMetrics(Context);
 
 			Context.Connection().GetService<ISubscriptionService>().CreateSubscription(sub, primaryKey, topic);
@@ -139,17 +155,24 @@ namespace TomPIT.Services.Context
 
 		public void SubscriptionEvent<T>([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, TomPIT.Design")] string eventName, string primaryKey, string topic, T arguments)
 		{
-			var tokens = eventName.Split('/');
+			var tokens = eventName.Split(new char[] { '/' }, 3);
+			var ms = Context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
 
-			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(Context.MicroService.Token, "Subscription", tokens[0]) is TomPIT.ComponentModel.Cdn.ISubscription sub))
-				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrSubscriptionNotFound, tokens[0]));
+			if (ms == null)
+				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({tokens[0]}").WithMetrics(Context);
 
-			var ev = sub.Events.FirstOrDefault(f => string.Compare(f.Name, tokens[1], true) == 0);
+			if (ms.Token != Context.MicroService.Token)
+				Context.MicroService.ValidateMicroServiceReference(Context.Connection(), ms.Name);
+
+			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(ms.Token, "Subscription", tokens[1]) is TomPIT.ComponentModel.Cdn.ISubscription sub))
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrSubscriptionNotFound, tokens[1]));
+
+			var ev = sub.Events.FirstOrDefault(f => string.Compare(f.Name, tokens[2], true) == 0);
 
 			if (ev == null)
-				throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrSubscriptionEventNotFound, tokens[0], tokens[1])).WithMetrics(Context);
+				throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrSubscriptionEventNotFound, tokens[1], tokens[2])).WithMetrics(Context);
 
-			Context.Connection().GetService<ISubscriptionService>().TriggerEvent(sub, tokens[1], primaryKey, topic, arguments);
+			Context.Connection().GetService<ISubscriptionService>().TriggerEvent(sub, tokens[2], primaryKey, topic, arguments);
 		}
 
 		public Guid Event<T>([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.EventProvider, TomPIT.Design")] string name, T e)

@@ -131,21 +131,27 @@ namespace TomPIT.Sys.Data
 			return new HttpConnection().Get<bool>(u);
 		}
 
-		public void Delete(Guid microService, Guid plan)
+		public ISubscriptionPlan SelectPlan(Guid token)
 		{
-			var u = new MarketplaceUrl("IPackages", "DeletePackage");
+			var u = new MarketplaceUrl("IPlans", "SelectPlan");
 			var e = new JObject
-				{
-					{"service", microService },
-					{"plan", plan }
-				};
+			{
+				{"token", token }
+			};
 
-			new HttpConnection().Post(u, e, new HttpRequestArgs().WithBasicCredentials(UserName, Password));
+			return new HttpConnection().Post<SubscriptionPlan>(u, e, new HttpRequestArgs().WithBasicCredentials(UserName, Password));
 		}
 
-		public List<ISubscriptionPlan> QueryPlans()
+		public List<ISubscriptionPlan> QuerySubscribedPlans()
 		{
 			var u = new MarketplaceUrl("IPlans", "QueryPlans");
+
+			return new HttpConnection().Post<List<SubscriptionPlan>>(u, new HttpRequestArgs().WithBasicCredentials(UserName, Password)).ToList<ISubscriptionPlan>();
+		}
+
+		public List<ISubscriptionPlan> QueryMyPlans()
+		{
+			var u = new MarketplaceUrl("IPlans", "QueryMyPlans");
 
 			return new HttpConnection().Post<List<SubscriptionPlan>>(u, new HttpRequestArgs().WithBasicCredentials(UserName, Password)).ToList<ISubscriptionPlan>();
 		}
@@ -314,7 +320,7 @@ namespace TomPIT.Sys.Data
 					 {"token", token }
 				};
 
-			return new HttpConnection().Post<byte[]>(u, e);
+			return new HttpConnection().Post<byte[]>(u, e, new HttpRequestArgs().WithBasicCredentials(UserName, Password));
 		}
 
 		internal List<IPackageVersion> CheckForUpdates(List<PackageVersion> packages)
@@ -338,7 +344,7 @@ namespace TomPIT.Sys.Data
 					 });
 			}
 
-			return new HttpConnection().Post<List<PackageVersion>>(u, e).ToList<IPackageVersion>();
+			return new HttpConnection().Post<List<PackageVersion>>(u, e, new HttpRequestArgs().WithBasicCredentials(UserName, Password)).ToList<IPackageVersion>();
 		}
 
 		public Guid SelectInstallerConfiguration(Guid package)
@@ -371,6 +377,20 @@ namespace TomPIT.Sys.Data
 				};
 
 			return new HttpConnection().Post<List<PackageDependency>>(u, e, new HttpRequestArgs().WithBasicCredentials(UserName, Password)).ToList<IPackageDependency>();
+		}
+
+		public List<string> QueryTags()
+		{
+			var u = new MarketplaceUrl("ITags", "QueryTagList");
+
+			return new HttpConnection().Get<List<string>>(u, new HttpRequestArgs().WithBasicCredentials(UserName, Password));
+		}
+
+		public List<ISubscription> QuerySubscriptions()
+		{
+			var u = new MarketplaceUrl("ISubscriptions", "QuerySubscriptions");
+
+			return new HttpConnection().Get<List<Subscription>>(u, new HttpRequestArgs().WithBasicCredentials(UserName, Password)).ToList<ISubscription>();
 		}
 	}
 }

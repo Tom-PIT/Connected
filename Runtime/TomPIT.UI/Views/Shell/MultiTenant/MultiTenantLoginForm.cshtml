@@ -1,53 +1,74 @@
 ﻿@model TomPIT.Models.MultiTenant.MultiTenantLoginModel
 
-<div class="text-center">
-    <h3 class="mt-5 text-md-left mb-5">
-        @SR.Login
-    </h3>
-</div>
+@{
+   var connections = Model.QueryConnections();
+   var defaultEndpoint = string.Empty;
 
-<div class="form-group">
-    <label for="editUser">@SR.AttEmailOrLoginName</label>
-    <input type="text" id="editUser" required class="form-control form-control-lg" value="@Model.UserName" />
-    <div class="invalid-feedback">
-        @SR.ValLoginUser
+   if(connections.Count == 1)
+   {
+       defaultEndpoint = connections[0].Url;
+   }
+}
+<div class="tp-form sys-form mx-auto">
+    <div class="header">
+        <h3>@SR.EnterCredentials</h3>
     </div>
-</div>
-<div class="form-group">
-    <label for="editPassword">@SR.AttPassword</label>
-    <input type="password" id="editPassword" class="form-control form-control-lg" />
-</div>
-<div class="form-group">
-    <label for="editEndpoint">@SR.AttEndpoint</label>
-    <select id="editEndpoint" required class="form-control form-control-lg" value="@Model.EndpointUrl">
-        @foreach (var i in Model.QueryConnections())
+    <div class="body">
+        <div class="form-group">
+            <label for="editUser">@SR.AttEmailOrLoginName</label>
+            <input type="text" id="editUser" required class="form-control form-control-lg" value="@Model.UserName" />
+            <div class="invalid-feedback">
+                @SR.ValLoginUser
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="editPassword">@SR.AttPassword</label>
+            <input type="password" id="editPassword" class="form-control form-control-lg" />
+        </div>
+        @if (connections.Count > 1)
         {
-            <!option value="@i.Url">@i.Name</!option>
+        <div class="form-group">
+            <label for="editEndpoint">@SR.AttEndpoint</label>
+            <select id="editEndpoint" required class="form-control form-control-lg" value="@Model.EndpointUrl">
+                @foreach (var i in Model.QueryConnections())
+                {
+                    <!option value="@i.Url">@i.Name</!option>
+                }
+            </select>
+            <div class="invalid-feedback">
+                @SR.ValLoginEndpoint
+            </div>
+        </div>
         }
-    </select>
-    <div class="invalid-feedback">
-        @SR.ValLoginEndpoint
+    </div>
+    <div class="footer">
+        <div class="form-group">
+            @Html.ValidationSummary()
+            <div>
+                <button type="submit" id="buttonSave" class="btn btn-info btn-lg">@SR.CmdLogIn</button>
+            </div>
+            <div data-tp-tag="progress-container">
+
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="custom-control custom-checkbox">
+                <input type="checkbox" value="" id="editRememberMe" class="custom-control-input no-validate">
+                <label for="editRememberMe" class="custom-control-label">
+                    @SR.RememberMe
+                </label>
+            </div>
+        </div>
     </div>
 </div>
-<div class="form-group">
-    @Html.ValidationSummary()
-    <div>
-        <button type="submit" id="buttonSave" class="btn btn-info btn-lg btn-block">@SR.CmdLogIn</button>
-    </div>
-    <div data-tp-tag="progress-container">
-
-    </div>
-</div>
-
-<div class="form-group">
-    <div class="custom-control custom-checkbox">
-        <input type="checkbox" value="" id="editRememberMe" class="custom-control-input no-validate">
-        <label for="editRememberMe" class="custom-control-label">
-            @SR.RememberMe
-        </label>
-    </div>
-</div>
-
 <script>
-    $('#editUser').focus();
+    @if(!string.IsNullOrWhiteSpace(defaultEndpoint))
+    {
+        <text>
+        var defaultEndpoint = '@defaultEndpoint';
+        </text>    
+        }
+    
+        $('#editUser').focus();
 </script>

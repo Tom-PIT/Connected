@@ -1,10 +1,20 @@
 ﻿@model TomPIT.Management.Deployment.ISignupDesigner
 
-<div class="mt-5 text-center">
-	<i class="jumbo-font fal fa-envelope"></i>
-	<h3 class="text-center mt-5">Great!</h3>
-	<hr />
-	One last step needs to be done. Please check your inbox and confirm your email address.
+<div class="document-body">
+    <div class="document-container">
+        <div class="canvas">
+            <div class="paper">
+                <div class="document-content">
+                    <div class="text-center">
+                        <i class="jumbo-font fal fa-envelope"></i>
+                        <h3 class="text-center mt-5">Great!</h3>
+                        <hr />
+                        Please check your inbox and confirm your email address.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -16,7 +26,7 @@
 			},
 			onComplete: function (data) {
 				if (typeof data !== 'undefined' && data.length > 0) {
-					$('#loginForm').html(data);
+					$('#loginContent').html(data);
 
 					clearInterval(iid);
 				}

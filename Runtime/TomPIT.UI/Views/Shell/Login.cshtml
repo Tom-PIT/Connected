@@ -1,35 +1,14 @@
 ﻿@model TomPIT.Models.LoginModel
 
 @{
-    Layout = "~/Views/Shared/ShellGraphic.cshtml";
-
-    ViewBag.BackstretchImage = Model.ImageUrl;
-
+    Layout = "~/Views/Shared/ShellDocument.cshtml";
+   ViewBag.Title = SR.Login;
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-lg-8">
-        <div class="text-center">
-            <a href="@Url.RouteUrl("home")">
-                <img src="~/Assets/Images/Shell/AppSys.png" />
-            </a>
-        </div>
-    </div>
-</div>
-
-<div class="row justify-content-center align-items-center mt-5">
-    <div class="col-lg-8">
-        <div class="text-center">
-            <h3 class="mt-5 text-md-left mb-5">
-                @SR.Login
-            </h3>
-        </div>
-        <form method="post" role="form" id="form1">
-            <partial name="~/Views/Shell/LoginForm.cshtml" />
-        </form>
-    </div>
-</div>
-
+<form method="post" role="form" id="form1">
+    <partial name="~/Views/Shell/LoginForm.cshtml" />
+</form>
+ 
 
 
 @section Scripts{

@@ -115,7 +115,7 @@ namespace TomPIT.Search.Indexing
 				}
 				catch (Exception ex)
 				{
-					throw TomPITException.Unwrap(ex);
+					throw TomPITException.Unwrap(this, ex);
 				}
 			}
 		}

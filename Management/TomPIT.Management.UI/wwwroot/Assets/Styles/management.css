@@ -1,4 +1,7 @@
-﻿.form-editor {
+﻿a {
+  color: #03a9f4;
+}
+.form-editor {
   width: 100% !important;
 }
 .permission-command-cell {
@@ -104,10 +107,6 @@
 }
 .package-body {
   padding: 15px;
-}
-.package-image svg {
-  font-size: 5rem;
-  color: #4fc3f7;
 }
 .package-footer {
   border-top: 1px solid #e0e0e0;

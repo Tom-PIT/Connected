@@ -26,9 +26,14 @@ namespace TomPIT.Management.Designers
 		UpgradeAvailable = 8
 	}
 
+	public enum MicroserviceListView
+	{
+		Subscriptions = 1,
+		My = 2
+	}
 	public class DeploymentDesigner : DeploymentDesignerBase<MarketplaceElement>
 	{
-		private List<IPublishedPackage> _publicPackages = null;
+		private List<IPackageStateDescriptor> _packages = null;
 		private List<IResourceGroup> _resourceGroups = null;
 		private List<IMicroService> _microServices = null;
 		private List<IInstallState> _installers = null;
@@ -36,34 +41,45 @@ namespace TomPIT.Management.Designers
 		private List<IPackageDependency> _dependencies = null;
 		private List<IPublishedPackage> _dependencyPackages = null;
 		private List<ISubscriptionPlan> _plans = null;
+		private List<ISubscription> _subscriptions = null;
+		private List<ISubscriptionPlan> _myPlans = null;
 
 		public DeploymentDesigner(MarketplaceElement element) : base(element)
 		{
 		}
 
 		protected override string MainView => "~/Views/Ide/Designers/Deployment.cshtml";
-		public override string View => MainView;
+		public override string View => Account == null ? LoginView : MainView;
 
+		public MicroserviceListView ListView { get; private set; }
 		public List<ISubscriptionPlan> Plans
 		{
 			get
 			{
 				if (_plans == null)
-					_plans = Connection.GetService<IDeploymentService>().QueryPlans();
+					_plans = Connection.GetService<IDeploymentService>().QuerySubscribedPlans();
 
 				return _plans;
 			}
 		}
-		private ISubscriptionPlan Plan { get; }
+		private ISubscriptionPlan Plan { get; set; }
 
-		public List<IPublishedPackage> PublicPackages
+		public List<IPackageStateDescriptor> Packages
 		{
 			get
 			{
-				if (_publicPackages == null)
-					_publicPackages = Connection.GetService<IDeploymentService>().QueryPackages(Plan.Token);
+				if (_packages == null && Plan != null)
+				{
+					_packages = Connection.GetService<IDeploymentService>().QueryPackages(Plan.Token);
 
-				return _publicPackages;
+					if(_packages !=null)
+					{
+						foreach (var package in _packages)
+							package.State = ResolveState(package.Token, package.Service);
+					}
+				}
+
+				return _packages;
 			}
 		}
 
@@ -83,19 +99,20 @@ namespace TomPIT.Management.Designers
 				return GetChanges(data);
 			else if (string.Compare(action, "getCard", true) == 0)
 				return GetCard(data);
-			else if (string.Compare(action, "delete", true) == 0)
-				return Delete(data);
+			else if (string.Compare(action, "microserviceList", true) == 0)
+				return MicroServiceList(data);
 
 			return base.OnAction(data, action);
 		}
 
-		private IDesignerActionResult Delete(JObject data)
+		private IDesignerActionResult MicroServiceList(JObject data)
 		{
-			var package = data.Required<Guid>("package");
+			var plan = data.Required<Guid>("plan");
+			ListView = data.Required<MicroserviceListView>("view");
 
-			Connection.GetService<IDeploymentService>().DeletePackage(package);
+			Plan = GetService<IDeploymentService>().SelectPlan(plan);
 
-			return Result.EmptyResult(ViewModel);
+			return Result.ViewResult(ViewModel, "~/Views/Ide/Designers/MicroServiceList.cshtml");
 		}
 
 		private IDesignerActionResult GetCard(JObject data)
@@ -297,10 +314,15 @@ namespace TomPIT.Management.Designers
 				return;
 			}
 
+			IPackageConfigurationDependency dependencyConfig = null;
+
+			if (dependencyPackage != null)
+				dependencyConfig = config.Dependencies.FirstOrDefault(f => f.Dependency == dependencyPackage.Token);
+
 			items.Add(new InstallState
 			{
 				Package = package,
-				Parent = dependency == null || dependencyPackage == null ? Guid.Empty : dependencyPackage.Token
+				Parent = dependency == null || dependencyPackage == null || dependencyConfig == null || !dependencyConfig.Enabled ? Guid.Empty : dependencyPackage.Token
 			});
 		}
 
@@ -355,10 +377,10 @@ namespace TomPIT.Management.Designers
 			return d.Error;
 		}
 
-		public PackageState ResolveState(Guid package)
+		public PackageState ResolveState(Guid package, Guid microService)
 		{
 			var state = Installers.FirstOrDefault(f => f.Package == package);
-			var ms = MicroServices.FirstOrDefault(f => f.Token == package);
+			var ms = MicroServices.FirstOrDefault(f => f.Token == microService);
 
 			if (state == null && ms == null)
 				return PackageState.NotInstalled;
@@ -429,6 +451,27 @@ namespace TomPIT.Management.Designers
 				}
 
 				return _dependencyPackages;
+			}
+		}
+
+		public List<ISubscriptionPlan> MyPlans
+		{
+			get
+			{
+				if (_myPlans == null)
+					_myPlans = Connection.GetService<IDeploymentService>().QueryMyPlans();
+
+				return _myPlans;
+			}
+		}
+		public List<ISubscription> Subscriptions
+		{
+			get
+			{
+				if (_subscriptions == null)
+					_subscriptions = Connection.GetService<IDeploymentService>().QuerySubscriptions();
+
+				return _subscriptions;
 			}
 		}
 	}

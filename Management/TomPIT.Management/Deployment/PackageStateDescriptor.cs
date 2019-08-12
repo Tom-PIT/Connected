@@ -1,10 +1,11 @@
 ﻿using Newtonsoft.Json;
 using System;
 using TomPIT.Deployment;
+using TomPIT.Management.Designers;
 
 namespace TomPIT.Management.Deployment
 {
-	internal class PublishedPackage : IPublishedPackage
+	internal class PublishedPackage : IPackageStateDescriptor
 	{
 		public string Name { get; set; }
 		public string Title { get; set; }
@@ -30,5 +31,6 @@ namespace TomPIT.Management.Deployment
 		public Guid Plan { get; set; }
 		public bool Author { get; set; }
 		public int DependencyCount { get; set; }
+		public PackageState State {get;set;}
 	}
 }

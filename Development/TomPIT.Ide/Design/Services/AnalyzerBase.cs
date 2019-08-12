@@ -264,12 +264,53 @@ namespace TomPIT.Design.Services
 		{
 			var si = GetInvocationSymbolInfo(model, syntax);
 
-			if (si.Symbol == null && si.CandidateSymbols.Length == 0)
+			if (si.Symbol != null)
+				return si.Symbol as IMethodSymbol;
+
+			if (si.CandidateSymbols.Length == 0)
 				return null;
 
-			return si.Symbol == null
-				? si.CandidateSymbols[0] as IMethodSymbol
-				: si.Symbol as IMethodSymbol;
+			if (syntax.Arguments != null && syntax.Arguments.Count > 0)
+			{
+				foreach (var candidate in si.CandidateSymbols)
+				{
+					if (!(candidate is IMethodSymbol methodSymbol))
+						continue;
+
+					var match = true;
+
+					if (methodSymbol.Parameters.Length < syntax.Arguments.Count)
+						continue;
+
+					for (var i = 0; i < syntax.Arguments.Count;i++)
+					{
+						var argument = syntax.Arguments[i];
+
+						if (!Compare(argument.Expression, methodSymbol.Parameters[i]))
+						{
+							match = false;
+							break;
+						}
+					}
+
+					if (match)
+						return methodSymbol;
+				}
+			}
+
+			return si.CandidateSymbols[0] as IMethodSymbol;
+		}
+
+		private bool Compare(ExpressionSyntax syntax, IParameterSymbol parameter)
+		{
+			if (parameter.Type == null)
+				return false;
+
+			if (string.Compare(parameter.ToDisplayString(), "string", true) == 0 && syntax.IsKind(SyntaxKind.StringLiteralExpression))
+				return true;
+
+			return false;
+			//if(syntax.IsKind(SyntaxKind.StringLiteralExpression) && parameter.tod)
 		}
 
 		protected IMethodSymbol GetMethodSymbol(SemanticModel model, ArgumentSyntax syntax)

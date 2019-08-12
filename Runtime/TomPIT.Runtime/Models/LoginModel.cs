@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Connectivity;
+using TomPIT.Routing;
 using TomPIT.Security;
 using TomPIT.Services;
 
@@ -44,6 +45,11 @@ namespace TomPIT.Models
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 				Endpoint = Instance.Connection.Url;
+
+			Navigation.Breadcrumbs.Add(new Route
+			{
+				Text = SR.Login
+			});
 		}
 
 		public List<ISysConnectionDescriptor> QueryConnections()

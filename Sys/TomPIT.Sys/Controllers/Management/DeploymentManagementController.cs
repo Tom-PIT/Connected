@@ -250,20 +250,37 @@ namespace TomPIT.Sys.Controllers.Management
 			return DataModel.Deployment.CheckForUpdates(p);
 		}
 
-		[HttpPost]
-		public void DeletePackage()
+		[HttpGet]
+		public List<ISubscriptionPlan> QuerySubscribedPlans()
 		{
-			var body = FromBody();
-			var microService = body.Required<Guid>("microService");
-			var plan = body.Required<Guid>("plan");
-
-			DataModel.Deployment.Delete(microService, plan);
+			return DataModel.Deployment.QuerySubscribedPlans();
 		}
 
 		[HttpGet]
-		public List<ISubscriptionPlan> QueryPlans()
+		public List<ISubscriptionPlan> QueryMyPlans()
 		{
-			return DataModel.Deployment.QueryPlans();
+			return DataModel.Deployment.QueryMyPlans();
+		}
+
+		[HttpPost]
+		public ISubscriptionPlan SelectPlan()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			return DataModel.Deployment.SelectPlan(token);
+		}
+
+		[HttpGet]
+		public List<string> QueryTags ()
+		{
+			return DataModel.Deployment.QueryTags();
+		}
+
+		[HttpGet]
+		public List<ISubscription> QuerySubscriptions()
+		{
+			return DataModel.Deployment.QuerySubscriptions();
 		}
 	}
 }

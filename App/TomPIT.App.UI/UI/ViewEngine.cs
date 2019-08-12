@@ -58,7 +58,7 @@ namespace TomPIT.UI
 				if (!SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url))
 					return;
 
-				var invokeArgs = new ViewInvokeArguments(model, Temp);
+				var invokeArgs = new ViewInvokeArguments(model);
 
 				if (model.ViewConfiguration != null)
 				{
@@ -114,7 +114,7 @@ namespace TomPIT.UI
 			var vi = new ViewInfo(string.Format("/Views/{0}.cshtml", path), ac);
 			var ms = vi.ViewComponent == null ? null : Instance.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
 
-			var model = new RuntimeModel(Context.Request, ac)
+			var model = new RuntimeModel(Context.Request, ac, Temp)
 			{
 				ViewConfiguration = view
 			};

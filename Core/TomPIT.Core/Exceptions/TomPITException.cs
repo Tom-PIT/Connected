@@ -7,6 +7,7 @@ namespace TomPIT
 	public class TomPITException : Exception
 	{
 		private string _message = string.Empty;
+		private static readonly string[] ReplaceSources = new string[] { "tompit.", "system." };
 		public TomPITException() { }
 
 		public TomPITException(string source, string message)
@@ -78,12 +79,41 @@ namespace TomPIT
 
 		public int Event { get; set; }
 
-		public static Exception Unwrap(Exception ex)
+		public static Exception Unwrap(object sender, Exception ex)
 		{
 			if (ex is TargetInvocationException)
-				return ex.InnerException;
+			{
+				var re = ex.InnerException;
+
+				if (sender != null)
+					re.Source = ResolveSource(sender, re.Source);
+
+				return re;
+			}
+
+			if (sender != null)
+				ex.Source = ResolveSource(sender, ex.Source);
 
 			return ex;
+		}
+
+		private static string ResolveSource(object sender, string source)
+		{
+			if (sender == null)
+				return source;
+
+			if (string.IsNullOrEmpty(source))
+				return sender.GetType().ShortName();
+			else
+			{
+				foreach(var replace in ReplaceSources)
+				{
+					if (source.StartsWith(replace))
+						return sender.GetType().ShortName();
+				}
+			}
+
+			return source;
 		}
 	}
 }

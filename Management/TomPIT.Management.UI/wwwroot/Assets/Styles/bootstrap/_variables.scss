@@ -36,15 +36,15 @@ $grays: map-merge(
   $grays
 );
 
-$blue:    #007bff !default;
-$indigo:  #6610f2 !default;
-$purple:  #6f42c1 !default;
-$pink:    #e83e8c !default;
-$red:     #dc3545 !default;
-$orange:  #fd7e14 !default;
-$yellow:  #ffc107 !default;
-$green:   #28a745 !default;
-$teal:    #20c997 !default;
+$blue:    $Blue500 !default;
+$indigo:  $Indigo500 !default;
+$purple:  $Purple400 !default;
+$pink:    $Pink500 !default;
+$red:     $Red500 !default;
+$orange:  $Orange400 !default;
+$yellow:  $Amber400 !default;
+$green:   $Green500 !default;
+$teal:    $Teal500 !default;
 $cyan:    $LightBlue500 !default;
 
 $colors: () !default;
@@ -705,7 +705,7 @@ $nav-pills-link-active-color:       $component-active-color !default;
 $nav-pills-link-active-bg:          $component-active-bg !default;
 
 $nav-divider-color:                 $gray-200 !default;
-$nav-divider-margin-y:              $spacer / 2 !default;
+$nav-divider-margin-y:              0 !default;
 
 
 // Navbar
@@ -773,7 +773,7 @@ $dropdown-link-active-bg:           $component-active-bg !default;
 
 $dropdown-link-disabled-color:      $gray-600 !default;
 
-$dropdown-item-padding-y:           .25rem !default;
+$dropdown-item-padding-y:           1rem !default;
 $dropdown-item-padding-x:           1.5rem !default;
 
 $dropdown-header-color:             $gray-600 !default;

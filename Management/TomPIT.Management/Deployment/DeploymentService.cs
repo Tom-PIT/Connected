@@ -121,7 +121,7 @@ namespace TomPIT.Management.Deployment
 			 bool autoVersion)
 		{
 			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
-
+			
 			var package = new Package();
 			var m = package.MetaData as PackageMetaData;
 
@@ -156,19 +156,8 @@ namespace TomPIT.Management.Deployment
 
 			var id = Connection.GetService<IStorageService>().Upload(blob, Connection.GetService<ISerializationService>().Serialize(package), StoragePolicy.Singleton);
 
-			if (ms.Package != id)
+			if (ms.Package != id || ms.Plan != plan)
 				Connection.GetService<IMicroServiceManagementService>().Update(microService, ms.Name, ms.Status, ms.Template, ms.ResourceGroup, id, plan, ms.UpdateStatus, ms.CommitStatus);
-		}
-
-		public void DeletePackage(Guid package)
-		{
-			var u = Connection.CreateUrl("DeploymentManagement", "DeletePackage");
-			var e = new JObject
-				{
-					 {"package", package}
-				};
-
-			Connection.Post(u, e);
 		}
 
 		public IPackage SelectPackage(Guid microService)
@@ -226,7 +215,7 @@ namespace TomPIT.Management.Deployment
 				Connection.GetService<IMicroServiceManagementService>().Update(ms.Token, ms.Name, ms.Status, ms.Template, ms.ResourceGroup, ms.Package, ms.Plan, ms.UpdateStatus, CommitStatus.Synchronized);
 		}
 
-		public List<IPublishedPackage> QueryPackages(Guid plan)
+		public List<IPackageStateDescriptor> QueryPackages(Guid plan)
 		{
 			var u = Connection.CreateUrl("DeploymentManagement", "QueryPackages");
 			var e = new JObject
@@ -234,7 +223,7 @@ namespace TomPIT.Management.Deployment
 				{"plan", plan }
 			};
 
-			return Connection.Post<List<PublishedPackage>>(u, e).ToList<IPublishedPackage>();
+			return Connection.Post<List<PublishedPackage>>(u, e).ToList<IPackageStateDescriptor>();
 		}
 
 		public void InsertInstallers(List<IInstallState> installers)
@@ -292,9 +281,9 @@ namespace TomPIT.Management.Deployment
 			Connection.Post(u, e);
 		}
 
-		public void Deploy(IPackage package)
+		public void Deploy(Guid id, IPackage package)
 		{
-			new PackageDeployment(Connection, package).Deploy();
+			new PackageDeployment(Connection, id, package).Deploy();
 		}
 
 		public List<IPublishedPackage> QueryPublishedPackages(List<Tuple<Guid, Guid>> packages)
@@ -507,23 +496,29 @@ namespace TomPIT.Management.Deployment
 			return Connection.Post<List<PackageVersion>>(u, e).ToList<IPackageVersion>();
 		}
 
-		public List<ISubscriptionPlan> QueryPlans()
+		public ISubscriptionPlan SelectPlan(Guid token)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "QueryPlans");
+			var u = Connection.CreateUrl("DeploymentManagement", "SelectPlan");
+			var e = new JObject
+			{
+				{"token", token }
+			};
 
-			return Connection.Post<List<SubscriptionPlan>>(u).ToList<ISubscriptionPlan>();
+			return Connection.Post<SubscriptionPlan>(u, e);
 		}
 
-		public List<ISubscriptionPlan> QueryPaidPlans()
+		public List<ISubscriptionPlan> QuerySubscribedPlans()
 		{
-			throw new NotImplementedException();
-			//TODO
+			var u = Connection.CreateUrl("DeploymentManagement", "QuerySubscribedPlans");
+
+			return Connection.Get<List<SubscriptionPlan>>(u).ToList<ISubscriptionPlan>();
 		}
 
-		public List<ISubscriptionPlan> QueryFreePlans()
+		public List<ISubscriptionPlan> QueryMyPlans()
 		{
-			throw new NotImplementedException();
-			//TODO
+			var u = Connection.CreateUrl("DeploymentManagement", "QueryMyPlans");
+
+			return Connection.Get<List<SubscriptionPlan>>(u).ToList<ISubscriptionPlan>();
 		}
 
 		public IPublishedPackage SelectPublishedPackage(Guid token)
@@ -535,6 +530,20 @@ namespace TomPIT.Management.Deployment
 			};
 
 			return Connection.Post<PublishedPackage>(u, e);
+		}
+
+		public List<string> QueryTags()
+		{
+			var u = Connection.CreateUrl("DeploymentManagement", "QueryTags");
+
+			return Connection.Get<List<string>>(u);
+		}
+
+		public List<ISubscription> QuerySubscriptions()
+		{
+			var u = Connection.CreateUrl("DeploymentManagement", "QuerySubscriptions");
+
+			return Connection.Get<List<Subscription>>(u).ToList<ISubscription>();
 		}
 	}
 }

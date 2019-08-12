@@ -1011,4 +1011,7 @@
   <data name="ErrBigDataPartitionSchemaChanged" xml:space="preserve">
     <value>Partition schema has changed</value>
   </data>
+  <data name="EnterCredentials" xml:space="preserve">
+    <value>Credentials</value>
+  </data>
 </root>

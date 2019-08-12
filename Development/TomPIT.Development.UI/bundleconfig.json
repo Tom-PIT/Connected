@@ -7,7 +7,8 @@
       "wwwroot/assets/libraries/devextreme/Latest/dx.common.css",
       "wwwroot/assets/libraries/devextreme/Latest/dx.material.blue.light.css",
       "wwwroot/assets/styles/development.css",
-      "wwwroot/assets/styles/tompit.css"
+      "wwwroot/assets/styles/tompit.css",
+      "wwwroot/assets/styles/designers.css"
     ],
 		"minify": {
 			"enabled": true,

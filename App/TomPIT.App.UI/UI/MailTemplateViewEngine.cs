@@ -52,7 +52,7 @@ namespace TomPIT.UI
 			if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
 				return;
 
-			var invokeArgs = new ViewInvokeArguments(model, Temp);
+			var invokeArgs = new ViewInvokeArguments(model);
 
 			if (Shell.HttpContext.Response.StatusCode != (int)HttpStatusCode.OK)
 				return;
@@ -117,7 +117,7 @@ namespace TomPIT.UI
 
 			var arguments = Body.Optional("arguments", string.Empty);
 			var ja = string.IsNullOrWhiteSpace(arguments) ? new JObject() : Types.Deserialize<JObject>(arguments);
-			var model = new MailTemplateModel(Context.Request, ac, ja);
+			var model = new MailTemplateModel(Context.Request, ac, Temp, ja);
 
 			model.Initialize(Instance.GetService<IMicroServiceService>().Select(component.MicroService));
 

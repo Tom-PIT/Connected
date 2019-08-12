@@ -12,7 +12,7 @@ namespace TomPIT.Sys.Data
 		public string Country { get; set; }
 		[JsonProperty(PropertyName = "website")]
 		public string Website { get; set; }
-		[JsonProperty(PropertyName = "key")]
+		[JsonProperty(PropertyName = "accountKey")]
 		public Guid Key { get; set; }
 		[JsonProperty(PropertyName = "status")]
 		public AccountStatus Status { get; set; }

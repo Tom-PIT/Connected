@@ -1,4 +1,5 @@
-﻿using TomPIT.ComponentModel;
+﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Services;
 
@@ -11,6 +12,8 @@ namespace TomPIT.Models
 		public IModelNavigation Navigation => null;
 		public string Title => null;
 		public IComponent Component { get; set; }
+
+		public ITempDataProvider TempData { get; }
 
 		protected override void OnDatabinding()
 		{

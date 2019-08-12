@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -145,5 +146,7 @@ namespace TomPIT.IoT.Models
 				return _state;
 			}
 		}
+
+		public ITempDataProvider TempData { get; }
 	}
 }

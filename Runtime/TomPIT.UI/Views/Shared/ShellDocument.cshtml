@@ -1,0 +1,70 @@
+﻿@model TomPIT.Models.IUIModel
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>@Model.Title</title>
+    <partial name="~/Views/Shared/Header.cshtml" />
+    <partial name="~/Views/Shared/StandardHeaders.cshtml" />
+    @RenderSection("head", false)
+</head>
+
+<body class="body-secondary">
+    <div class="document-header">
+        <div class="container">
+            <div class="row no-gutters">
+                <div class="col-12">
+                    <div class="document-header-content">
+                        <h2 class="text-truncate">@ViewBag.Title</h2>
+                        <div class="breadcrumbs">
+                            <ul class="list-inline">
+                                <li class="list-inline-item"><a href="@Url.RouteUrl("home")"><i class="fal fa-home"></i></a></li>
+                                @foreach (var item in Model.Navigation.Breadcrumbs)
+                                {
+                                    <li class="list-inline-item"><i class="fal fa-angle-right"></i></li>
+                                    <li class="list-inline-item">
+                                        @if (string.IsNullOrEmpty(item.Url))
+                                        {
+                                            @Html.Raw(item.Text)
+                                        }
+                                        else
+                                        {
+                                            <a href="@item.Url">@item.Text</a>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="document-body">
+        <div class="container h-100 document-container">
+            <div class="row h-100 justify-content-center align-items-center no-gutters">
+                <div class="col-12">
+                    <div class="canvas">
+                        <div class="paper">
+                            <div class="document-toolbar">@RenderSection("documentToolbar", false)</div>
+                            <div class="document-content">
+                                @RenderBody()
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @RenderSection("Scripts", false)
+
+    <environment names="Staging,Production">
+        <script src="~/Assets/scripts.foot.min.js"></script>
+    </environment>
+    <environment names="Development">
+        <script src="~/Assets/Scripts/foot.js"></script>
+    </environment>
+</body>
+</html>
+

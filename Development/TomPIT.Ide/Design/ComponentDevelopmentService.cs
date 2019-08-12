@@ -360,7 +360,7 @@ namespace TomPIT.Design
 
                 var blob = Connection.GetService<IStorageService>().Upload(b, raw, StoragePolicy.Singleton);
 
-                if (text.TextBlob == Guid.Empty)
+                if (text.TextBlob != blob)
                 {
                     text.TextBlob = blob;
                     Update(text.Configuration());

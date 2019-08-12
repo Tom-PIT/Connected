@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using TomPIT.ActionResults;
 using TomPIT.ComponentModel;
 using TomPIT.Deployment;
@@ -9,40 +11,42 @@ using TomPIT.Management.Designers;
 
 namespace TomPIT.Designers
 {
-    public class PackageDesigner : DeploymentDesignerBase<PackageElement>, ISignupDesigner
-    {
-        private IPackage _package = null;
-        private IMicroService _microService = null;
+	public class PackageDesigner : DeploymentDesignerBase<PackageElement>, ISignupDesigner
+	{
+		private IPackage _package = null;
+		private IMicroService _microService = null;
+		private List<ISubscriptionPlan> _plans = null;
+		private List<string> _tags = null;
 
-        public PackageDesigner(PackageElement element) : base(element)
-        {
-        }
+		public PackageDesigner(PackageElement element) : base(element)
+		{
+		}
 
-        protected override string MainView => "~/Views/Ide/Designers/Package.cshtml";
-        public override string View => Account == null ? LoginView : MainView;
+		protected override string MainView => "~/Views/Ide/Designers/Package.cshtml";
+		public override string View => Account == null ? LoginView : MainView;
 
-        protected override IDesignerActionResult OnAction(JObject data, string action)
-        {
-            if (string.Compare(action, "create", true) == 0)
-                return CreatePackage(data);
-            else if (string.Compare(action, "publish", true) == 0)
-                return Publish();
+		protected override IDesignerActionResult OnAction(JObject data, string action)
+		{
+			if (string.Compare(action, "create", true) == 0)
+				return CreatePackage(data);
+			else if (string.Compare(action, "publish", true) == 0)
+				return Publish();
 
-            return base.OnAction(data, action);
-        }
+			return base.OnAction(data, action);
+		}
 
-        private IDesignerActionResult Publish()
-        {
-            Connection.GetService<IDeploymentService>().PublishPackage(MicroService.Token);
+		private IDesignerActionResult Publish()
+		{
+			Connection.GetService<IDeploymentService>().PublishPackage(MicroService.Token);
 
-            var r = Result.EmptyResult(ViewModel);
+			var r = Result.EmptyResult(ViewModel);
 
-            r.MessageKind = InformationKind.Success;
-            r.Message = "Congratulations! Your package is now online.";
-            r.Title = "Package uploaded successfully";
+			r.MessageKind = InformationKind.Success;
+			r.Message = "Congratulations! Your package is now online.";
+			r.Title = "Package uploaded successfully";
 
-            return r;
-        }
+			return r;
+		}
 
 		public IDesignerActionResult CreatePackage(JObject data)
 		{
@@ -72,55 +76,75 @@ namespace TomPIT.Designers
 		}
 
 
-        public IPackage Package
-        {
-            get
-            {
-                if (_package == null)
-                    _package = Connection.GetService<IDeploymentService>().SelectPackage(MicroService.Token);
+		public IPackage Package
+		{
+			get
+			{
+				if (_package == null)
+					_package = Connection.GetService<IDeploymentService>().SelectPackage(MicroService.Token);
 
-                return _package;
-            }
-        }
+				return _package;
+			}
+		}
 
-        public IMicroService MicroService
-        {
-            get
-            {
-                if (_microService == null)
-                    _microService = DomQuery.Closest<IMicroServiceScope>(Element).MicroService;
+		public IMicroService MicroService
+		{
+			get
+			{
+				if (_microService == null)
+					_microService = DomQuery.Closest<IMicroServiceScope>(Element).MicroService;
 
-                return _microService;
-            }
-        }
+				return _microService;
+			}
+		}
 
-        public JArray Tags => new JArray();
+		public Version Version
+		{
+			get
+			{
+				if (Package == null)
+					return IncrementVersion(new Version(0, 0, 0, 0));
+				else
+				{
+					if (Package.Configuration.AutoVersioning)
+						return IncrementVersion(Version.Parse(Package.MetaData.Version));
 
-        public Version Version
-        {
-            get
-            {
-                if (Package == null)
-                    return IncrementVersion(new Version(0, 0, 0, 0));
-                else
-                {
-                    if (Package.Configuration.AutoVersioning)
-                        return IncrementVersion(Version.Parse(Package.MetaData.Version));
+					return Version.Parse(Package.MetaData.Version);
+				}
+			}
+		}
 
-                    return Version.Parse(Package.MetaData.Version);
-                }
-            }
-        }
+		internal static Version IncrementVersion(Version existing)
+		{
+			var build = Convert.ToInt32(string.Format("{0}{1}", DateTime.Today.Month.ToString(), DateTime.Today.Day.ToString("00")));
+			var revision = 0;
 
-        internal static Version IncrementVersion(Version existing)
-        {
-            var build = Convert.ToInt32(string.Format("{0}{1}", DateTime.Today.Month.ToString(), DateTime.Today.Day.ToString("00")));
-            var revision = 0;
+			if (existing.Build == build)
+				revision = existing.Revision + 1;
 
-            if (existing.Build == build)
-                revision = existing.Revision + 1;
+			return new Version(existing.Major, existing.Minor, build, revision);
+		}
 
-            return new Version(existing.Major, existing.Minor, build, revision);
-        }
-    }
+		public List<ISubscriptionPlan> Plans
+		{
+			get
+			{
+				if (_plans == null)
+					_plans = GetService<IDeploymentService>().QuerySubscribedPlans().OrderBy(f=>f.Name).ToList();
+
+				return _plans;
+			}
+		}
+
+		public List<string> Tags
+		{
+			get
+			{
+				if (_tags == null)
+					_tags = GetService<IDeploymentService>().QueryTags();
+
+				return _tags;
+			}
+		}
+	}
 }

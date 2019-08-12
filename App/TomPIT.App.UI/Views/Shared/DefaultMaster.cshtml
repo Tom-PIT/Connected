@@ -12,7 +12,7 @@
 
 <body>
 	@await Html.PartialAsync("~/Views/Shared/ContentInit.cshtml", Model)
-	<nav class="navbar navbar-dark bg-dark fixed-top" id="#_nav">
+	<nav class="navbar navbar-default fixed-top" id="#_nav">
 		<button class="navbar-toggler collapsed brand-toggler" type="button" data-toggle="collapse" data-target="#_sideBar" id="_navtoggler">
 			<img src="~/Assets/Images/Shell/Brand.png" class="img-fluid brand-img" />
 		</button>
@@ -32,9 +32,6 @@
 
 	<div class="container-fluid sys-container h-100" id="_sysBody">
 		<div class="row content-area no-gutters h-100">
-			<div class="sidebar collapse" id="_sideBar">
-				@* @Html.Partial("~/Views/Layouts/Partial/SysNavigation.cshtml", Model)*@
-			</div>
 			<div class="col" id="_sysContent">
 				@RenderBody()
 			</div>

@@ -19,14 +19,12 @@ namespace TomPIT.ComponentModel.UI
 		private ViewDataDictionary<IRuntimeModel> _viewData = null;
 		private TempDataDictionary _tempData = null;
 		private ViewBagDictionary _dynamicViewDataDictionary = null;
-		public ViewInvokeArguments(IRuntimeModel context, ITempDataProvider tempDataProvider) : base(context)
+		public ViewInvokeArguments(IViewModel context) : base(context)
 		{
 			Model = context;
-			TempDataProvider = tempDataProvider;
 		}
 
-		public IRuntimeModel Model { get; }
-		private ITempDataProvider TempDataProvider { get; }
+		public IViewModel Model { get; }
 
 		public void Forbidden()
 		{
@@ -67,7 +65,7 @@ namespace TomPIT.ComponentModel.UI
 			get
 			{
 				if (_tempData == null)
-					_tempData = new TempDataDictionary(Model.ActionContext.HttpContext, TempDataProvider);
+					_tempData = new TempDataDictionary(Model.ActionContext.HttpContext, Model.TempData);
 
 				return _tempData;
 			}

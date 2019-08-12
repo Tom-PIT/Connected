@@ -353,7 +353,7 @@ namespace TomPIT
 			}
 			else if (!property.IsPrimitive())
 			{
-				if (value is T)
+				if (value is T && !items.Contains((T)value))
 					items.Add((T)value);
 
 				Children(value, items, refs);

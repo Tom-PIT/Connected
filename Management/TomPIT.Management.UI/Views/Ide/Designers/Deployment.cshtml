@@ -1,140 +1,85 @@
 ﻿@model TomPIT.Management.Designers.DeploymentDesigner
 
-
 <script src="~/Assets/Scripts/Designers/deployment.js"></script>
 
-<div id="deploymentDesigner">
-    @if (Model.Account != null)
-    {
-        <div class="p-1">
-            @Model.Account.Company
-            <div class="small float-right"><a href="#" id="aLogoff">logoff</a></div>
-            <hr />
-        </div>
-    }
-    else
-    {
-        <div class="p-1">
-            <div class="small float-right"><a href="#" id="aLogin">login</a></div>
-            <hr />
-        </div>
-
-    }
-
-    <div id="mainPackage" class="collapse">
-        <div class="doc-canvas">
+<div class="document-body" id="deploymentDesigner">
+    <div class="document-container">
+        <div class="canvas">
             <div class="paper">
-                <div class="btn-toolbar package-toolbar justify-content-between">
-                    <div class="btn-group-sm">
-                        <button type="button" id="btnShowList" title="return to packages" class="btn btn-sm btn-light"><i class="fal fa-arrow-left"></i></button>
-                        <button type="button" id="btnInstallPackages" title="install package(s)" class="btn btn-sm btn-success"><i class="fal fa-download"></i></button>
+                <div class="document-toolbar">
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="document-title">@Model.Account.Company</div>
+                        </div>
+                        <div class="col">
+                            <div class="text-right">
+                                <div class="btn-group btn-gtoup-sm">
+                                    <div class="dropdown">
+                                        <button class="btn btn-link dropdown-toggle" type="button" id="docOptions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                                        <div class="dropdown-menu" aria-labelledby="docOptions">
+                                            <a href="#" id="aLogoff" class="dropdown-item">Sign out</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="btn-group-sm pt-2">
-                        @*						<small class="pr-1">total</small><span class="package-total">0€</span>*@
+                    <div class="row">
+                        <div class="col">
+                            <ul class="nav nav-tabs right" role="tablist" id="deploymentTabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="tabSubscriptions" data-toggle="tab" href="#tabContentSubscriptions" role="tab" aria-controls="home" aria-selected="true">Subscriptions</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="tabMy" data-toggle="tab" href="#tabContentMy" role="tab" aria-controls="profile" aria-selected="false">My Plans</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="tabFree" data-toggle="tab" href="#tabContentFree" role="tab" aria-controls="contact" aria-selected="false">Installed</a>
+                                </li>
+                            </ul>
+
+                        </div>
                     </div>
                 </div>
-                <div id="packageContent">
 
+                <div class="document-content">
+                    <div id="mainPackage" class="collapse">
+                        <div class="doc-canvas">
+                            <div class="paper">
+                                <div class="btn-toolbar package-toolbar justify-content-between">
+                                    <div class="btn-group-sm">
+                                        <button type="button" id="btnShowList" title="return to packages" class="btn btn-sm btn-light"><i class="fal fa-arrow-left"></i></button>
+                                        <button type="button" id="btnInstallPackages" title="install package(s)" class="btn btn-sm btn-success"><i class="fal fa-download"></i></button>
+                                    </div>
+                                </div>
+                                <div id="packageContent">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="packagePeek" class="collapse">
+                    </div>
+                    <div id="packageList" class="collapse show">
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="tabContentSubscriptions" role="tabpanel" aria-labelledby="home-tab">
+                            @await Html.PartialAsync("~/Views/Ide/Designers/DeploymentSubscriptionTab.cshtml")
+                        </div>
+                        <div class="tab-pane fade" id="tabContentMy" role="tabpanel" aria-labelledby="profile-tab" data-kind="my">
+                            @await Html.PartialAsync("~/Views/Ide/Designers/DeploymentMyTab.cshtml")
+                        </div>
+                        <div class="tab-pane fade" id="tabContentFree" role="tabpanel" aria-labelledby="contact-tab" data-kind="installed">
+                            
+                        </div>
+                    </div>
+                        </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    <div id="packagePeek" class="collapse">
-    </div>
-    <div id="packageList" class="collapse show">
-        <div class="row">
-            <div class="col-lg-3">
-                <ul class="list-unstyled">
-                    <li class="marketplace-nav-item">
-                        <div class="media">
-                            <div class="align-self-center">
-                                <div class="glyph"><i class="fal fa-layer-plus"></i></div>
-                            </div>
-                            <div class="media-body">
-                                <div class="text">New</div>
-                                Recently published public Microservices
-                            </div>
-                        </div>
-                    </li>
-
-                    <li class="marketplace-nav-item">
-                        <div class="media">
-                            <div class="align-self-center">
-                                <div class="glyph"><i class="fal fa-layer-group"></i></div>
-                            </div>
-                            <div class="media-body">
-                                <div class="text">Updates</div>
-                                Updates to your installed Microservices
-                            </div>
-                        </div>
-                    </li>
-                    <li class="marketplace-nav-item">
-                        <div class="media">
-                            <div class="align-self-center">
-                                <div class="glyph"><i class="fal fa-fire"></i></div>
-                            </div>
-                            <div class="media-body">
-                                <div class="text">Popular</div>
-                                Microservices with most downloads
-                            </div>
-                        </div>
-                    </li>
-                    <li class="marketplace-nav-item">
-                        <div class="media">
-                            <div class="align-self-center">
-                                <div class="glyph"><i class="fal fa-comment-smile"></i></div>
-                            </div>
-                            <div class="media-body">
-                                <div class="text">Recommended</div>
-                                Best rated Microservices
-                            </div>
-                        </div>
-                    </li>
-                    <li class="marketplace-nav-item">
-                        <div class="media">
-                            <div class="align-self-center">
-                                <div class="glyph"><i class="fal fa-download"></i></div>
-                            </div>
-                            <div class="media-body">
-                                <div class="text">Installed</div>
-                                Microservices installed in this instance
-                            </div>
-                        </div>
-                    </li>
-                    <li class="marketplace-nav-item">
-                        <div class="media">
-                            <div class="align-self-center">
-                                <div class="glyph"><i class="fal fa-user"></i></div>
-                            </div>
-                            <div class="media-body">
-                                <div class="text">My</div>
-                                Microservices published by you
-                            </div>
-                        </div>
-                    </li>
-                    <li class="marketplace-nav-item">
-                        <div class="media">
-                            <div class="align-self-center">
-                                <div class="glyph"><i class="fal fa-gift"></i></div>
-                            </div>
-                            <div class="media-body">
-                                <div class="text">Free</div>
-                                Free of charge Microservices
-                            </div>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-            <div class="col-lg-9">
-                @foreach (var i in Model.PublicPackages)
-                {
-                    @await Html.PartialAsync("~/Views/Ide/Designers/DeploymentPackageCard.cshtml", new TomPIT.Management.Models.DeploymentPackageCardModel(Model, i))
-                }
-
             </div>
         </div>
     </div>
 </div>
+
 
 <script>
 	var deploymentDesigner = $('#deploymentDesigner').tpDeployment({

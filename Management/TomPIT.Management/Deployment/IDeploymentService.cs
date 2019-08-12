@@ -23,11 +23,11 @@ namespace TomPIT.Management.Deployment
 		IPackage DownloadPackage(Guid package);
 		void PublishPackage(Guid microService);
 
-		List<ISubscriptionPlan> QueryPlans();
-		List<ISubscriptionPlan> QueryPaidPlans();
-		List<ISubscriptionPlan> QueryFreePlans();
+		List<ISubscriptionPlan> QuerySubscribedPlans();
+		ISubscriptionPlan SelectPlan(Guid token);
+		List<ISubscriptionPlan> QueryMyPlans();
 
-		List<IPublishedPackage> QueryPackages(Guid plan);
+		List<IPackageStateDescriptor> QueryPackages(Guid plan);
 		IPublishedPackage SelectPublishedPackage(Guid microService, Guid plan);
 		IPublishedPackage SelectPublishedPackage(Guid token);
 		List<IPublishedPackage> QueryPublishedPackages(List<Tuple<Guid, Guid>> packages);
@@ -36,9 +36,8 @@ namespace TomPIT.Management.Deployment
 		List<IInstallState> QueryInstallers();
 		void UpdateInstaller(Guid package, InstallStateStatus status, string error);
 		void DeleteInstaller(Guid package);
-		void DeletePackage(Guid package);
 
-		void Deploy(IPackage package);
+		void Deploy(Guid id, IPackage package);
 
 		List<IPackageDependency> QueryDependencies(Guid microService, Guid plan);
 
@@ -48,5 +47,8 @@ namespace TomPIT.Management.Deployment
 		List<IInstallAudit> QueryInstallAudit(DateTime from);
 		List<IInstallAudit> QueryInstallAudit(Guid package);
 		List<IPackageVersion> CheckForUpdates(List<IMicroService> microServices);
+
+		List<string> QueryTags();
+		List<ISubscription> QuerySubscriptions();
 	}
 }

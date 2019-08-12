@@ -2,9 +2,8 @@
 	"connections": [
     {
       "name": "localhost",
-      "url": "http://sys.tompit.net",
-      //"authenticationToken": "defaultAuthenticationToken"
-      "authenticationToken": "17337AF1-49D7-49BB-AF62-70A71C2E453E"
+      "url": "http://localhost:44001",
+      "authenticationToken": "defaultAuthenticationToken"
     }
 	],
 	"resourceGroups": [

@@ -1,0 +1,49 @@
+﻿@model TomPIT.Management.Designers.DeploymentDesigner
+
+@if (Model.MyPlans.Count == 0)
+{
+    <div class="info-box info">
+        <div class="info-box-header">No plans</div>
+        It looks like you don't have any published subscription plans yet. Create subscription plans to enable delivery automation of Microservices to your users.
+    </div>
+
+    <p class="pt-3">
+        Next steps:
+    </p>
+    <ul>
+        <li><a href="https://tompit.net/marketplace/management/plans" target="_blank">Manage subscription plans</a></li>
+    </ul>
+
+    return;
+}
+
+<div class="tp-form">
+    <div class="form-group">
+        <label>Plans</label>
+        <div id="editPlans"></div>
+    </div>
+    <h4>Microservices</h4>
+    <div id="gridMyPlans"></div>
+</div>
+
+<script>
+    $('#editPlans').dxSelectBox({
+        dataSource:@Html.Raw(Types.Serialize(Model.MyPlans)),
+        displayExpr: 'name',
+        valueExpr: 'token',
+        searchEnabled: true,
+        onValueChanged: function (e) {
+            ide.designerAction({
+                data: {
+                    'action': 'microserviceList',
+                    'plan': e.value,
+                    'view': 'my'
+                },
+                onComplete: function (data) {
+                    $('#gridMyPlans').html(data);
+                }
+            });
+
+        }
+    });
+</script>

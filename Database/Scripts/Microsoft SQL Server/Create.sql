@@ -366,7 +366,8 @@ CREATE TABLE [tompit].[service]
 [package] [uniqueidentifier] NULL,
 [update_status] [int] NOT NULL CONSTRAINT [DF_service_update_status] DEFAULT ((0)),
 [commit_status] [int] NOT NULL CONSTRAINT [DF_service_commit_status] DEFAULT ((0)),
-[version] [varchar] (32) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+[version] [varchar] (32) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[plan] [uniqueidentifier] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -676,10 +677,11 @@ GO
 
 
 
+
 CREATE VIEW [tompit].[view_service]
 AS
 SELECT        s.id, s.name, s.url, s.token, s.status, s.resource_group, s.template, s.meta,
-				s.license, s.package, s.update_status, s.commit_status, s.version,
+				s.license, s.package, s.update_status, s.commit_status, s.version, s.[plan],
 				r.token AS resource_token
 FROM            tompit.service AS s INNER JOIN
                          tompit.resource_group AS r ON s.resource_group = r.id
@@ -3607,6 +3609,7 @@ CREATE PROCEDURE [tompit].[service_upd]
 	@template uniqueidentifier,
 	@resource_group int,
 	@package uniqueidentifier = NULL,
+	@plan uniqueidentifier = NULL,
 	@update_status int,
 	@commit_status int
 AS
@@ -3620,6 +3623,7 @@ BEGIN
 		template = @template,
 		resource_group = @resource_group,
 		package = @package,
+		[plan] = @plan,
 		update_status = @update_status,
 		commit_status = @commit_status
 	where id = @id;

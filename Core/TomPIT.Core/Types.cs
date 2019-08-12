@@ -16,6 +16,7 @@ namespace TomPIT
 	public static class Types
 	{
 		private static JsonSerializerSettings _jsonSettings = null;
+		//private static JsonSerializerSettings _ignoreMetaDataJsonSettings = null;
 		private static JsonMergeSettings _mergeSettings = null;
 
 		public static bool Compare(object left, object right)
@@ -457,16 +458,46 @@ namespace TomPIT
 						MissingMemberHandling = MissingMemberHandling.Ignore,
 						Formatting = Formatting.Indented,
 						DefaultValueHandling = DefaultValueHandling.Include,
-						TypeNameHandling = TypeNameHandling.Auto,
+						TypeNameHandling = TypeNameHandling.None,
 						ContractResolver = new SerializationResolver(),
 						NullValueHandling = NullValueHandling.Ignore,
-						ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
+						ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
+						MetadataPropertyHandling = MetadataPropertyHandling.Default
 					};
 				}
 
 				return _jsonSettings;
 			}
 		}
+
+		//private static JsonSerializerSettings IgnoreMetaDataSerializerSettings
+		//{
+		//	get
+		//	{
+		//		if (_ignoreMetaDataJsonSettings == null)
+		//		{
+		//			_ignoreMetaDataJsonSettings = new JsonSerializerSettings
+		//			{
+		//				Culture = CultureInfo.InvariantCulture,
+		//				DateFormatHandling = DateFormatHandling.IsoDateFormat,
+		//				DateParseHandling = DateParseHandling.DateTime,
+		//				DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
+		//				FloatFormatHandling = FloatFormatHandling.DefaultValue,
+		//				FloatParseHandling = FloatParseHandling.Double,
+		//				MissingMemberHandling = MissingMemberHandling.Ignore,
+		//				Formatting = Formatting.Indented,
+		//				DefaultValueHandling = DefaultValueHandling.Include,
+		//				TypeNameHandling = TypeNameHandling.Auto,
+		//				ContractResolver = new SerializationResolver(),
+		//				NullValueHandling = NullValueHandling.Ignore,
+		//				ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
+		//				MetadataPropertyHandling = MetadataPropertyHandling.Ignore
+		//			};
+		//		}
+
+		//		return _ignoreMetaDataJsonSettings;
+		//	}
+		//}
 
 		private static JsonMergeSettings MergeSettings
 		{
@@ -528,6 +559,20 @@ namespace TomPIT
 				expando.Add(property.Name, property.GetValue(value));
 
 			return expando as ExpandoObject;
+		}
+
+		public static dynamic ToDynamic(this JObject value)
+		{
+			var converter = new Newtonsoft.Json.Converters.ExpandoObjectConverter();
+
+			return JsonConvert.DeserializeObject<ExpandoObject>(Serialize(value), converter);
+		}
+
+		public static dynamic ToDynamic(this JArray value)
+		{
+			var converter = new Newtonsoft.Json.Converters.ExpandoObjectConverter();
+
+			return JsonConvert.DeserializeObject<ExpandoObject>(Serialize(value), converter);
 		}
 
 		public static string ScriptTypeName(this Type type)

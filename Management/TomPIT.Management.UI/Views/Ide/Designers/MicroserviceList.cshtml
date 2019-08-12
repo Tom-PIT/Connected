@@ -1,0 +1,121 @@
+﻿@model TomPIT.Management.Designers.DeploymentDesigner
+
+@{ 
+   /*
+	public enum PackageState
+	{
+		NotInstalled = 1,
+		Pending = 2,
+		Installing = 3,
+		Error = 4,
+		Installed = 5,
+		PendingUpgrade = 6,
+		Upgrading = 7,
+		UpgradeAvailable = 8
+	}
+    */
+}
+<div id="gridMicroservices">
+
+
+</div>
+
+<script>
+    $('#gridMicroservices').dxDataGrid({
+        dataSource:@Html.Raw(Types.Serialize(Model.Packages)),
+        noDataText: 'no microservices',
+        wordWrapEnabled: true,
+        searchPanel: {
+            visible: true
+        },
+        paging: {
+            pageSize: 10
+        },
+        columnHidingEnabled: true,
+        columns: [
+            {
+                dataField: 'title',
+                caption: 'Microservice',
+                sortOrder: 'asc',
+                calculateCellValue: function (data) {
+                    return [data.name, data.title, data.description, data.company].join();
+                },
+                cellTemplate: function (element, info) {
+                    var state = '';
+
+                    if (info.data.state === 1) {
+                        state = '<a href="#" class="badge badge-info" data-microservice="' + info.data.token + '">Install</a>';
+                    }
+                    else if (info.data.state === 2) {
+                        state = '<span class="badge badge-info">Pending</span>';
+                    }
+                    else if (info.data.state === 3) {
+                        state = '<span class="badge badge-info">Installing</span>';
+                    }
+                    else if (info.data.state === 4) {
+                        state = '<span class="badge badge-danger">Error</span>';
+                    }
+                    else if (info.data.state === 5) {
+                        state = '<span class="badge badge-success">Installed</span>';
+                    }
+                    else if (info.data.state === 6) {
+                        state = '<span class="badge badge-info">Pending upgrade</span>';
+                    }
+                    else if (info.data.state === 7) {
+                        state = '<span class="badge badge-info">Upgrading</span>';
+                    }
+                    else if (info.data.state === 8) {
+                        state = '<a href="#" class="badge badge-warning" data-microservice="' + info.data.token + '">Upgrade available</a>';
+                    }
+
+                    var desc = typeof info.data.description === 'undefined' ? '' : info.data.description;
+
+                    $('<div>')
+                        .append('<div class="media grid-item"><div class="package-image mr-3"><i class="fal fa-cloud"></i></div><div class="media-body"><a href="#" data-microservice="' + info.data.token + '">' + info.data.name + '</a><div>' + info.data.company + '</div><div class="small secondary">'
+                            + desc + '</div>' + state + '</div></div>')
+                        .appendTo(element);
+                }
+
+            },
+            {
+                dataField: 'created',
+                caption: 'Version',
+                width: '20%',
+                calculateCellValue: function (data) {
+                    var version = data.major + '.' + data.minor + '.' + data.build + '.' + data.revision;
+
+                    return [version, moment(data.created).format('ll')].join();
+                },
+                cellTemplate: function (element, info) {
+                    $('<div class="grid-item">')
+                        .append('<div>' + info.data.major + '.' + info.data.minor + '.' + info.data.build + '.' + info.data.revision + '</div><div class="small secondary">' + moment(info.data.created).format('ll') + '</div>')
+                        .appendTo(element);
+                }
+
+            }
+
+        ],
+        onContentReady: function () {
+            $('[data-microservice]').click(function (e) {
+                e.preventDefault();
+
+                var token = $(this).attr('data-microservice');
+
+                ide.designerAction({
+                    'data': {
+                        'action': 'install',
+                        'package': token
+                    },
+                    onComplete: function (data) {
+                        $('#packageContent').html(data);
+                        $('#mainPackage').collapse('show');
+                        $('#packageList').collapse('hide');
+                        $('#packagePeek').collapse('hide');
+
+                        deploymentDesigner.initPackage();
+                    }
+                });
+            });
+        }
+    });
+</script>

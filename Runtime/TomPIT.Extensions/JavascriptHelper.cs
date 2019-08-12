@@ -23,7 +23,7 @@ namespace TomPIT
 			else if (value is DateTime)
 				return Date((DateTime)value);
 			else if (value is Guid)
-				return String(value);
+				return Guid(value);
 			else if (value is bool)
 				return Bool((bool)value);
 			else if (Types.IsNumericType(value.GetType()))
@@ -34,6 +34,22 @@ namespace TomPIT
 		public IHtmlContent Value(object value)
 		{
 			return Value(value, false);
+		}
+
+		public IHtmlContent Guid(object value)
+		{
+			if (value == null)
+				return Html.Raw("null") as HtmlString;
+
+			if (Types.TryConvert(value, out Guid converted))
+			{
+				if (converted == System.Guid.Empty)
+					return Html.Raw("null") as HtmlString;
+				else
+					return Html.Raw($"'{converted}'") as HtmlString;
+			}
+			else
+				return Html.Raw("null") as HtmlString;
 		}
 
 		public IHtmlContent Number(object value, bool mapNull, int decimalPlaces)

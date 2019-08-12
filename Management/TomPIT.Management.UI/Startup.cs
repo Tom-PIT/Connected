@@ -37,9 +37,9 @@ namespace TomPIT.Servers.Management
 
             Instance.Initialize(services, e);
 
-            services.AddSingleton<IHostedService, InstallerService>();
-            services.AddSingleton<IHostedService, UpdateService>();
-            services.AddSingleton<IHostedService, PublishService>();
+            services.AddHostedService<InstallerService>();
+            services.AddHostedService<UpdateService>();
+            services.AddHostedService<PublishService>();
         }
 
         public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)

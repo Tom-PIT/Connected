@@ -49,17 +49,22 @@ namespace TomPIT.Services
 
 		public void Validate()
 		{
-			Validate(this);
+			Validate(this, true);
 		}
 
 		protected void Validate(object instance)
+		{
+			Validate(instance, false);
+		}
+
+		private void Validate(object instance, bool triggerValidating)
 		{
 			var results = new List<ValidationResult>();
 			var refs = new List<object>();
 
 			ValidateProperties(results, instance, refs);
 
-			if (results.Count == 0)
+			if (results.Count == 0 && triggerValidating)
 				OnValidating(results);
 
 			var sb = new StringBuilder();
@@ -77,8 +82,8 @@ namespace TomPIT.Services
 					Source = GetType().ScriptTypeName()
 				};
 			}
-		}
 
+		}
 		private void ValidateProperties(List<ValidationResult> results, object instance, List<object> references)
 		{
 			if (instance == null || references.Contains(instance))
