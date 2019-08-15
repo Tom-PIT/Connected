@@ -11,6 +11,14 @@ namespace TomPIT.Annotations
 			Value = Value;
 		}
 
+		public override bool IsValid(object value)
+		{
+			if (!Types.TryConvert(value, out double converted))
+				return false;
+
+			return converted >= Value;
+		}
+
 		public override string FormatErrorMessage(string name)
 		{
 			return FormatMessage(Value.ToString());

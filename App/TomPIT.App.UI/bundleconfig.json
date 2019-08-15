@@ -32,11 +32,9 @@
       "wwwroot/assets/scripts/popper.js",
       "wwwroot/assets/scripts/tooltip.js",
       "wwwroot/assets/scripts/bootstrap.js",
-      "wwwroot/assets/scripts/fontawesome-all.js",
       "wwwroot/assets/scripts/jquery-ui-1.12.1.js",
       "wwwroot/assets/scripts/ajax.js",
       "wwwroot/assets/scripts/progress.js",
-      "wwwroot/assets/scripts/form.js",
       "wwwroot/assets/scripts/toastr.js",
       "wwwroot/assets/scripts/tompit.js",
       "wwwroot/assets/scripts/runtime.js",
@@ -45,7 +43,18 @@
       "wwwroot/assets/scripts/jscroll.js",
       "wwwroot/assets/scripts/moment.js",
       "wwwroot/assets/scripts/jquery.number.js",
-      "wwwroot/assets/scripts/table.js"
+      "wwwroot/assets/scripts/form.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/assets/fonts.min.js",
+    "inputFiles": [
+      "wwwroot/assets/scripts/fontawesome-all.js"
     ],
     "minify": {
       "enabled": true,

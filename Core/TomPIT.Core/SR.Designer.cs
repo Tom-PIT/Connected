@@ -2545,6 +2545,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid Antiforgery token.
+        /// </summary>
+        public static string ValAntiForgery {
+            get {
+                return ResourceManager.GetString("ValAntiForgery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Only one property can have BigDataKeyAttribute set.
         /// </summary>
         public static string ValBigDataMultipleKey {

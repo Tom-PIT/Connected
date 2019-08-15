@@ -21,7 +21,7 @@ namespace TomPIT.TagHelpers
 				microService = tokens[0];
 				name = tokens[1];
 
-				var ms = ctx.Connection().GetService<IMicroServiceService>().Select(ctx.MicroService.Token);
+				var ms = ctx.Connection().GetService<IMicroServiceService>().Select(ResolveMicroservice(ViewContext.ExecutingFilePath).Token);
 				var reference = ctx.Connection().GetService<IMicroServiceService>().Select(microService);
 
 				if (reference == null)
@@ -39,6 +39,7 @@ namespace TomPIT.TagHelpers
 					microService = ctx.Connection().GetService<IMicroServiceService>().Select(ctx.MicroService.Token).Name;
 			}
 
+			output.TagMode = TagMode.StartTagOnly;
 			output.TagName = "link";
 
 			output.Attributes.SetAttribute("rel", "stylesheet");

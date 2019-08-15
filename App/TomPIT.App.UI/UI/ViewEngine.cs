@@ -55,7 +55,7 @@ namespace TomPIT.UI
 
 			try
 			{
-				if (!SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url))
+				if (string.Compare(model.ViewConfiguration.Url, "login", true) != 0 && !SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url))
 					return;
 
 				var invokeArgs = new ViewInvokeArguments(model);

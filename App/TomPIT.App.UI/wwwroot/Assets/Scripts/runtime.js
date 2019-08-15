@@ -20,6 +20,13 @@
 			progress: progress
 		});
 
+        if (typeof options.headers['X-TP-AF'] === 'undefined') {
+            var antiforgery = tompit.antiForgeryValue();
+
+            if (antiforgery !== null)
+                options.headers['X-TP-AF'] = antiforgery;
+        }
+
 		var api = options.api;
 
 		delete options.api;
@@ -152,4 +159,12 @@
         return true;
     };
 
+    tompit.antiForgeryValue = function() {
+        var target = $('input[name="TomPITAntiForgery"]');
+
+        if (target.length === 0)
+            return null;
+
+        return target.val();
+    }
 })(window.tompit = window.tompit || {}, jQuery);

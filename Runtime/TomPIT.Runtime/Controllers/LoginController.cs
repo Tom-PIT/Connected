@@ -6,171 +6,175 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Text;
 using TomPIT.Models;
+using TomPIT.Services;
 
 namespace TomPIT.Controllers
 {
-    [AllowAnonymous]
-    public class LoginController : ServerController
-    {
-        [HttpGet]
-        public IActionResult Index()
-        {
-            return View(LoginView, CreateModel(this));
-        }
+	[AllowAnonymous]
+	public class LoginController : ServerController
+	{
+		[HttpGet]
+		public IActionResult Index()
+		{
+			return View(LoginView, CreateModel(this));
+		}
 
-        [HttpGet]
-        public IActionResult Logoff()
-        {
-            var key = SecurityUtils.AuthenticationCookieName;
+		[HttpGet]
+		public IActionResult Logoff()
+		{
+			var key = SecurityUtils.AuthenticationCookieName;
 
-            if (Request.Cookies.ContainsKey(key))
-                Response.Cookies.Delete(key);
+			if (Request.Cookies.ContainsKey(key))
+				Response.Cookies.Delete(key);
 
-            return View(LoginView, CreateModel(this));
-        }
+			if (Shell.GetService<IRuntimeService>().Type == Environment.InstanceType.Application)
+				return new RedirectResult("~/login");
 
-        protected virtual string LoginView { get { return "~/Views/Shell/Login.cshtml"; } }
-        protected virtual string LoginFormView { get { return "~/Views/Shell/LoginForm.cshtml"; } }
-        protected virtual string ChangePasswordView { get { return "~/Views/Shell/ChangePassword.cshtml"; } }
+			return View(LoginView, CreateModel(this));
+		}
 
-        [HttpPost]
-        public IActionResult Authenticate()
-        {
-            var m = CreateModel(this);
+		protected virtual string LoginView { get { return "~/Views/Shell/Login.cshtml"; } }
+		protected virtual string LoginFormView { get { return "~/Views/Shell/LoginForm.cshtml"; } }
+		protected virtual string ChangePasswordView { get { return "~/Views/Shell/ChangePassword.cshtml"; } }
 
-            var body = FromBody();
+		[HttpPost]
+		public IActionResult Authenticate()
+		{
+			var m = CreateModel(this);
 
-            m.MapAuthenticate(body);
-            m.Validate(this, body);
+			var body = FromBody();
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    var ar = m.Authenticate();
+			m.MapAuthenticate(body);
+			m.Validate(this, body);
 
-                    if (ar.Success)
-                        CreateCookie(m, ar.Token);
-                    else
-                    {
-                        if (ar.MustChangePassword())
-                            return View(ChangePasswordView, m);
-                        else
-                            ModelState.AddModelError("val", ar.GetDescription());
-                    }
+			if (ModelState.IsValid)
+			{
+				try
+				{
+					var ar = m.Authenticate();
 
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("val", ex.Message);
-                }
+					if (ar.Success)
+						CreateCookie(m, ar.Token);
+					else
+					{
+						if (ar.MustChangePassword())
+							return View(ChangePasswordView, m);
+						else
+							ModelState.AddModelError("val", ar.GetDescription());
+					}
 
-                if (ModelState.IsValid)
-                {
-                    var returnUrl = Request.Query["returnUrl"];
+				}
+				catch (Exception ex)
+				{
+					ModelState.AddModelError("val", ex.Message);
+				}
 
-                    if (string.IsNullOrWhiteSpace(returnUrl))
-                    {
-                        var loc = body.Optional("location", string.Empty);
+				if (ModelState.IsValid)
+				{
+					var returnUrl = Request.Query["returnUrl"];
 
-                        if (string.IsNullOrWhiteSpace(loc))
-                            returnUrl = m.RootUrl();
-                        else
-                        {
-                            var relative = Request.HttpContext.RelativePath(loc);
+					if (string.IsNullOrWhiteSpace(returnUrl))
+					{
+						var loc = body.Optional("location", string.Empty);
 
-                            if (relative.Trim('/').StartsWith("sys/"))
-                                returnUrl = m.RootUrl();
-                            else
-                                returnUrl = m.Services.Routing.Absolute(loc);
-                        }
-                    }
+						if (string.IsNullOrWhiteSpace(loc))
+							returnUrl = m.RootUrl();
+						else
+						{
+							var relative = Request.HttpContext.RelativePath(loc);
 
-                    return AjaxRedirect(returnUrl);
-                }
-            }
+							if (relative.Trim('/').StartsWith("sys/", StringComparison.OrdinalIgnoreCase) ||relative.Trim('/').StartsWith("login", StringComparison.OrdinalIgnoreCase))
+								returnUrl = m.RootUrl();
+							else
+								returnUrl = m.Services.Routing.Absolute(loc);
+						}
+					}
 
-            return View(LoginFormView, m);
-        }
+					return AjaxRedirect(returnUrl);
+				}
+			}
 
-        [HttpPost]
-        public IActionResult ChangePassword()
-        {
-            var m = CreateModel(this);
+			return View(LoginFormView, m);
+		}
 
-            var body = FromBody();
+		[HttpPost]
+		public IActionResult ChangePassword()
+		{
+			var m = CreateModel(this);
 
-            m.MapChangePassword(body);
-            m.Validate(this, body);
+			var body = FromBody();
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    m.ChangePassword();
-                    var ar = m.Authenticate();
+			m.MapChangePassword(body);
+			m.Validate(this, body);
 
-                    if (ar.Success)
-                        CreateCookie(m, ar.Token);
-                    else
-                    {
-                        if (ar.MustChangePassword())
-                            return View(ChangePasswordView, m);
-                        else
-                            ModelState.AddModelError("val", ar.GetDescription());
-                    }
+			if (ModelState.IsValid)
+			{
+				try
+				{
+					m.ChangePassword();
+					var ar = m.Authenticate();
 
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("val", ex.Message);
-                }
+					if (ar.Success)
+						CreateCookie(m, ar.Token);
+					else
+					{
+						if (ar.MustChangePassword())
+							return View(ChangePasswordView, m);
+						else
+							ModelState.AddModelError("val", ar.GetDescription());
+					}
 
-                if (ModelState.IsValid)
-                {
-                    var returnUrl = Request.Query["returnUrl"];
+				}
+				catch (Exception ex)
+				{
+					ModelState.AddModelError("val", ex.Message);
+				}
 
-                    if (string.IsNullOrWhiteSpace(returnUrl))
-                        returnUrl = m.RootUrl();
+				if (ModelState.IsValid)
+				{
+					var returnUrl = Request.Query["returnUrl"];
 
-                    return AjaxRedirect(returnUrl);
-                }
-            }
+					if (string.IsNullOrWhiteSpace(returnUrl))
+						returnUrl = m.RootUrl();
 
-            return View(ChangePasswordView, m);
-        }
+					return AjaxRedirect(returnUrl);
+				}
+			}
 
-        protected virtual LoginModel CreateModel(Controller controller)
-        {
-            var r = new LoginModel();
+			return View(ChangePasswordView, m);
+		}
 
-            r.Initialize(controller, null);
-            r.Databind();
+		protected virtual LoginModel CreateModel(Controller controller)
+		{
+			var r = new LoginModel();
 
-            return r;
-        }
+			r.Initialize(controller, null);
+			r.Databind();
 
-        private void CreateCookie(LoginModel model, string token)
-        {
-            var key = SecurityUtils.AuthenticationCookieName;
+			return r;
+		}
 
-            Response.Cookies.Delete(key);
+		private void CreateCookie(LoginModel model, string token)
+		{
+			var key = SecurityUtils.AuthenticationCookieName;
 
-            var expiration = model.RememberMe ? DateTimeOffset.UtcNow.AddDays(30) : DateTimeOffset.UtcNow.AddMinutes(20);
+			Response.Cookies.Delete(key);
 
-            var content = new JObject
-            {
-                { "jwt",token },
-                { "endpoint",model.Endpoint   },
-                { "expiration",expiration.Ticks.AsString()   }
-            };
+			var expiration = model.RememberMe ? DateTimeOffset.UtcNow.AddDays(30) : DateTimeOffset.UtcNow.AddMinutes(20);
 
-            Response.Cookies.Append(key, Convert.ToBase64String(Encoding.UTF8.GetBytes(Types.Serialize(content))), new CookieOptions
-            {
-                HttpOnly = true,
-                Expires = expiration
-            }
-                        );
-        }
-    }
+			var content = new JObject
+				{
+					 { "jwt",token },
+					 { "endpoint",model.Endpoint   },
+					 { "expiration",expiration.Ticks.AsString()   }
+				};
+
+			Response.Cookies.Append(key, Convert.ToBase64String(Encoding.UTF8.GetBytes(Types.Serialize(content))), new CookieOptions
+			{
+				HttpOnly = true,
+				Expires = expiration
+			}
+							);
+		}
+	}
 }

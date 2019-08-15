@@ -26,9 +26,13 @@
 			cache: options.cache,
 			data: JSON.stringify(data),
 			contentType: options.contentType,
-			headers: options.headers,
 			beforeSend: function (request, settings) {
 				options.onBeforeSend(request, settings, options.progress);
+
+                if (typeof options.headers !== 'undefined') {
+                    for (var key in options.headers) 
+                        request.setRequestHeader(key, options.headers[key]);
+                }
 
 				if (options.dependencies.length > 0) {
 					$.each(options.dependencies, function (index, value) {
@@ -74,7 +78,8 @@
 			url: null,
 			method: 'POST',
 			cache: false,
-			data: null,
+            data: null,
+            headers: {},
 			//callbacks
 			onPrepareData: function (data) {
 				return data;

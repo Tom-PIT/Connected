@@ -10,12 +10,16 @@
     <AssemblyName>TomPIT.App</AssemblyName>
     <RootNamespace>TomPIT</RootNamespace>
     <CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
-    <AssemblyVersion>1.1.812.1</AssemblyVersion>
-    <FileVersion>1.1.812.1</FileVersion>
-    <Version>1.1.812.1</Version>
+    <AssemblyVersion>1.1.815.2</AssemblyVersion>
+    <FileVersion>1.1.815.2</FileVersion>
+    <Version>1.1.815.2</Version>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="compilerconfig.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\Development\TomPIT.Development.UI\wwwroot\Assets\Styles\tompit.css" Link="wwwroot\Assets\Styles\tompit.css" />
+    <Content Include="..\..\Development\TomPIT.Development.UI\wwwroot\Assets\Styles\tompit.min.css" Link="wwwroot\Assets\Styles\tompit.min.css" />
   </ItemGroup>
   <ItemGroup>
     <None Include="compilerconfig.json" />

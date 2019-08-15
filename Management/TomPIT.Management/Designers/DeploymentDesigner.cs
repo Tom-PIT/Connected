@@ -252,78 +252,48 @@ namespace TomPIT.Management.Designers
 			var package = data.Required<Guid>("package");
 
 			var r = new List<IInstallState>();
+			var pcg = Connection.GetService<IDeploymentService>().SelectPublishedPackage(package);
+			var dependencyConfiguration = Connection.GetService<IDeploymentService>().QueryDependencies(pcg.Service, pcg.Plan);
+			var config = Connection.GetService<IDeploymentService>().SelectInstallerConfiguration(package);
 
-			CreateInstallStack(package, r, Connection.GetService<IDeploymentService>().SelectInstallerConfiguration(package), true);
+			var criteria = new List<Tuple<Guid, Guid>>();
+
+			foreach (var dependency in dependencyConfiguration)
+				criteria.Add(new Tuple<Guid, Guid>(dependency.MicroService, dependency.Plan));
+
+			var dependencyPackages = criteria.Count > 0 ? Connection.GetService<IDeploymentService>().QueryPublishedPackages(criteria) : new List<IPublishedPackage>();
+
+			r.Add(CreateInstallState(pcg.Token, Guid.Empty));
+
+			foreach(var dependency in dependencyConfiguration)
+			{
+				var targetPackage = dependencyPackages.FirstOrDefault(f => f.Service == dependency.MicroService && f.Plan == dependency.Plan);
+
+				if (targetPackage == null)
+					continue;
+
+				var d = config.Dependencies.FirstOrDefault(f => f.Dependency == targetPackage.Token);
+
+				if (d != null && !d.Enabled)
+					continue;
+
+				var dependencyPackageConfiguration = Connection.GetService<IDeploymentService>().SelectInstallerConfiguration(targetPackage.Token);
+
+				r.Add(CreateInstallState(targetPackage.Token, pcg.Token));
+			}
+
 			Connection.GetService<IDeploymentService>().InsertInstallers(r);
 
 			return Result.EmptyResult(ViewModel);
 		}
 
-		private void CreateInstallStack(Guid microService, Guid plan, List<IInstallState> items, IPackageConfiguration config, bool isRoot)
+		private IInstallState CreateInstallState(Guid package, Guid parent)
 		{
-			var package = Connection.GetService<IDeploymentService>().SelectPublishedPackage(microService, plan);
-
-			if (package == null)
-				return;
-
-			CreateInstallStack(package.Token, items, config, isRoot);
-		}
-
-		private void CreateInstallStack(Guid package, List<IInstallState> items, IPackageConfiguration config, bool isRoot)
-		{
-			var configuration = Connection.GetService<IDeploymentService>().SelectPublishedPackage(package);
-
-			if (configuration == null)
-				return;
-
-			var dependencies = Connection.GetService<IDeploymentService>().QueryDependencies(configuration.Service, configuration.Plan);
-			IPackageDependency dependency = null;
-			
-			foreach (var i in dependencies)
-			{
-				var d = config.Dependencies.FirstOrDefault(f => f.Dependency == configuration.Service);
-
-				if (d == null || d.Enabled)
-				{
-					CreateInstallStack(i.MicroService, i.Plan, items, config, false);
-
-					if (dependency == null)
-						dependency = i;
-				}
-			}
-
-			if (!isRoot)
-			{
-				var d = config.Dependencies.FirstOrDefault(f => f.Dependency == package);
-
-				if (d != null && !d.Enabled)
-					return;
-			}
-
-			var existing = items.FirstOrDefault(f => f.Package == package);
-			IPublishedPackage dependencyPackage = null;
-
-			if (dependency != null)
-				dependencyPackage = Connection.GetService<IDeploymentService>().SelectPublishedPackage(dependency.MicroService, dependency.Plan);
-
-			if (existing != null)
-			{
-				if (existing.Parent == Guid.Empty && dependency != null && dependencyPackage != null)
-					((InstallState)existing).Parent = dependencyPackage.Token;
-
-				return;
-			}
-
-			IPackageConfigurationDependency dependencyConfig = null;
-
-			if (dependencyPackage != null)
-				dependencyConfig = config.Dependencies.FirstOrDefault(f => f.Dependency == dependencyPackage.Token);
-
-			items.Add(new InstallState
+			return new InstallState
 			{
 				Package = package,
-				Parent = dependency == null || dependencyPackage == null || dependencyConfig == null || !dependencyConfig.Enabled ? Guid.Empty : dependencyPackage.Token
-			});
+				Parent = parent
+			};
 		}
 
 		private IDesignerActionResult Install(JObject data)

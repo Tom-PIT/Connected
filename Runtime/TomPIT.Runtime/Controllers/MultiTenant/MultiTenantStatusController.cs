@@ -6,7 +6,7 @@ namespace TomPIT.Controllers.MultiTenant
 	public class MultiTenantStatusController : StatusController
 	{
 
-		protected override ViewResult CreateLoginResult()
+		protected override IActionResult CreateLoginResult()
 		{
 			var model = new MultiTenantLoginModel();
 

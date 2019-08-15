@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.Annotations;
 using TomPIT.Data;
 
@@ -21,11 +24,6 @@ namespace TomPIT.Services
 		}
 
 		protected IDataModelContext Context { get; private set; }
-
-		public void Validate(IDataModelContext context, List<ValidationResult> results)
-		{
-			OnValidating(results);
-		}
 
 		protected virtual void OnValidating(List<ValidationResult> results)
 		{
@@ -49,7 +47,33 @@ namespace TomPIT.Services
 
 		public void Validate()
 		{
+			ValidateRoot();
 			Validate(this, true);
+		}
+
+		private void ValidateRoot()
+		{
+			var af = GetType().FindAttribute<ValidateAntiforgeryAttribute>();
+
+			if (af == null)
+				return;
+
+			if (Shell.HttpContext == null)
+				return;
+
+			if (!(Shell.HttpContext.RequestServices.GetService(typeof(IAntiforgery)) is IAntiforgery service))
+				return;
+
+			if (Task.Run(async () =>
+			 {
+				 return await service.IsRequestValidAsync(Shell.HttpContext);
+			 }).Result)
+				return;
+
+			throw new ValidationException(SR.ValAntiForgery)
+			{
+				Source = GetType().ScriptTypeName()
+			};
 		}
 
 		protected void Validate(object instance)

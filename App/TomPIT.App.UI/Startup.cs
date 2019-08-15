@@ -2,7 +2,10 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 using System.Threading.Tasks;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
@@ -17,12 +20,28 @@ namespace TomPIT
 {
 	public class Startup
 	{
+		internal static IRouteBuilder RouteBuilder = null;
 		public void ConfigureServices(IServiceCollection services)
 		{
 			var e = new ServicesConfigurationArgs
 			{
 				Authentication = AuthenticationType.MultiTenant
 			};
+
+			services.AddAntiforgery(o =>
+			{
+				o.Cookie.Name = "TomPITAntiForgery";
+				o.FormFieldName = "TomPITAntiForgery";
+				o.HeaderName = "X-TP-AF";
+				o.SuppressXFrameOptionsHeader = false;
+			});
+
+			services.AddResponseCompression(o =>
+			{
+				o.EnableForHttps = true;
+				o.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+					 new[] { "image/svg+xml", "image/png", "image/jpg", "image/jpeg" });
+			});
 
 			Instance.Initialize(services, e);
 
@@ -41,10 +60,12 @@ namespace TomPIT
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 		{
+			app.UseResponseCompression();
 			Instance.Configure(InstanceType.Application, app, env, (f) =>
 			{
 				app.UseMiddleware<IgnoreRouteMiddleware>();
 
+				RouteBuilder = f.Builder;
 				Configuration.Routing.Register(f.Builder);
 			});
 

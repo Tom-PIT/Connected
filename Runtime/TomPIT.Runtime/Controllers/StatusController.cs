@@ -83,8 +83,11 @@ namespace TomPIT.Controllers
 			return r;
 		}
 
-		protected virtual ViewResult CreateLoginResult()
+		protected virtual IActionResult CreateLoginResult()
 		{
+			if (Shell.GetService<IRuntimeService>().Type == Environment.InstanceType.Application)
+				return new RedirectResult("~/login");
+
 			var model = new LoginModel();
 
 			model.Initialize(this, null);

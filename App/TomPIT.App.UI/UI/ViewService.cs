@@ -12,6 +12,8 @@ using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 using TomPIT.Services;
 using TomPIT.Storage;
+using System.Linq;
+using Microsoft.AspNetCore.Routing;
 
 namespace TomPIT.UI
 {
@@ -32,6 +34,8 @@ namespace TomPIT.UI
 			connection.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
 
 			connection.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+
+			ReplaceLogin();
 		}
 
 		private void OnComponentChanged(ISysConnection sender, ComponentEventArgs e)
@@ -48,6 +52,8 @@ namespace TomPIT.UI
 
 			Refresh(e.Component);
 			SynchronizeSnippetsState(e.Component);
+
+			ReplaceLogin();
 		}
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
@@ -59,6 +65,8 @@ namespace TomPIT.UI
 
 			foreach (var i in views)
 				Set(i.Component, i, TimeSpan.Zero);
+
+			ReplaceLogin();
 		}
 
 		private void OnConfigurationRemoved(ISysConnection sender, ConfigurationEventArgs e)
@@ -70,6 +78,7 @@ namespace TomPIT.UI
 
 			Remove(e.Component);
 			SynchronizeSnippetsState(e.Component);
+			ReplaceLogin();
 		}
 
 		private void OnConfigurationAdded(ISysConnection sender, ConfigurationEventArgs e)
@@ -79,6 +88,7 @@ namespace TomPIT.UI
 
 			Refresh(e.Component);
 			SynchronizeSnippetsState(e.Component);
+			ReplaceLogin();
 		}
 
 		private void OnConfigurationChanged(ISysConnection sender, ConfigurationEventArgs e)
@@ -95,6 +105,7 @@ namespace TomPIT.UI
 
 			Refresh(e.Component);
 			SynchronizeSnippetsState(e.Component);
+			ReplaceLogin();
 		}
 
 		private void SynchronizeSnippetsState(Guid component)
@@ -431,5 +442,15 @@ namespace TomPIT.UI
 		private ConcurrentDictionary<Guid, bool> ChangeState => _changeState.Value;
 		private ConcurrentDictionary<string, bool> SnippetState => _snippetState.Value;
 		private ViewScriptsCache ViewScripts => _scripts;
+
+		private void ReplaceLogin()
+		{
+			var exists = Select("login", null);
+
+			if (exists == null)
+				Startup.RouteBuilder.AddSystemLogin();
+			else
+				Startup.RouteBuilder.RemoveSystemLogin();
+		}
 	}
 }

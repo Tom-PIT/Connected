@@ -1014,4 +1014,7 @@
   <data name="EnterCredentials" xml:space="preserve">
     <value>Credentials</value>
   </data>
+  <data name="ValAntiForgery" xml:space="preserve">
+    <value>Invalid Antiforgery token</value>
+  </data>
 </root>
