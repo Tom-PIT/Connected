@@ -7,5 +7,7 @@
 		bool IsLocalizable { get; }
 
 		ListItems<IStringTranslation> Translations { get; }
+
+		void UpdateTranslation(int lcid, string value);
 	}
 }

@@ -38,8 +38,6 @@ namespace TomPIT.Security
 				}
 			}
 
-			SetCulture(principal);
-
 			return AuthenticateResult.Success(
 					new AuthenticationTicket(
 					principal,

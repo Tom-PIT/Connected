@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
@@ -15,7 +16,10 @@ namespace TomPIT.Services.Context
 			if (!context.Services.Identity.IsAuthenticated)
 				return;
 
-			Language = context.Services.Identity.User.Language;
+			var language = Context.Connection().GetService<ILanguageService>().Select(Thread.CurrentThread.CurrentUICulture.LCID);
+
+			if (language != null && language.Status == LanguageStatus.Visible)
+				Language = language.Token;
 		}
 
 		public Guid Language { get; }
@@ -44,18 +48,7 @@ namespace TomPIT.Services.Context
 			}
 
 			if (lcid == 0)
-			{
-				if (Language == Guid.Empty)
-					lcid = CultureInfo.InvariantCulture.LCID;
-				else
-				{
-					var language = Context.Connection().GetService<ILanguageService>().Select(Language);
-
-					lcid = language == null
-						? CultureInfo.InvariantCulture.LCID
-						: language.Lcid;
-				}
-			}
+				lcid = Thread.CurrentThread.CurrentUICulture.LCID;
 
 			return Context.Connection().GetService<ILocalizationService>().GetString(microService.Name, st, key, lcid, throwException);
 		}

@@ -24,8 +24,6 @@ namespace TomPIT.Security
 			if (principal == null)
 				return AuthenticateResult.NoResult();
 
-			SetCulture(principal);
-
 			return AuthenticateResult.Success(
 					new AuthenticationTicket(
 					principal,

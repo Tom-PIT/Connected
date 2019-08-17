@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
@@ -15,6 +17,7 @@ using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
 using TomPIT.Environment;
+using TomPIT.Globalization;
 using TomPIT.Runtime;
 using TomPIT.Runtime.Security;
 using TomPIT.Security;
@@ -35,6 +38,7 @@ namespace TomPIT
 	{
 		private static IMvcBuilder _mvcBuilder = null;
 		private static List<IPlugin> _plugins = null;
+		internal static RequestLocalizationOptions RequestLocalizationOptions { get; private set; } 
 
 		public static Guid Id { get; } = Guid.NewGuid();
 
@@ -47,6 +51,19 @@ namespace TomPIT
 
 		public static void Configure(InstanceType type, IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env, ConfigureRoutingHandler routingHandler)
 		{
+			app.UseAuthentication();
+			app.UseRequestLocalization(o =>
+			{
+				RequestLocalizationOptions = o;
+				o.DefaultRequestCulture = new RequestCulture(CultureInfo.InvariantCulture);
+				o.FallBackToParentCultures = true;
+				o.FallBackToParentUICultures = true;
+				/*
+				 * https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-2.2
+				 */
+				o.RequestCultureProviders.Insert(0, new IdentityCultureProvider());
+			});
+
 			app.UseAjaxExceptionMiddleware();
 			app.UseStaticFiles();
 			//app.UseStaticFiles(new StaticFileOptions
@@ -55,7 +72,6 @@ namespace TomPIT
 			//	RequestPath = "/node_modules"
 			//});
 
-			app.UseAuthentication();
 			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
 
 			RuntimeBootstrapper.Run();

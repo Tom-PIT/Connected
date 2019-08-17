@@ -1,0 +1,146 @@
+﻿@model TomPIT.Management.Designers.TranslationsDesigner
+
+<div class="doc-canvas">
+    <div class="paper">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label>Leading language</label>
+                    <div id="editLeadingLanguage"></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label>Translation language</label>
+                    <div id="editTranslationLanguage"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <div>
+                        <label>Show non localized only</label>
+                    </div>
+                    <div id="editNonLocalized"></div>
+                </div>
+            </div>
+        </div>
+        <div id="gridStrings">
+
+        </div>
+    </div>
+</div>
+<script>
+    $('#editLeadingLanguage').dxSelectBox({
+        dataSource:@Html.Raw(Types.Serialize(Model.Languages)),
+        displayExpr: 'name',
+        valueExpr: 'token',
+        placeholder: 'Default',
+        searchEnabled:true,
+        showClearButton: true,
+        onValueChanged: function () {
+            refreshData();
+        }
+    });
+
+    $('#editTranslationLanguage').dxSelectBox({
+        dataSource:@Html.Raw(Types.Serialize(Model.Languages)),
+        displayExpr: 'name',
+        valueExpr: 'token',
+        searchEnabled: true,
+        onValueChanged: function () {
+            refreshData();
+        }
+    });
+
+    $('#editNonLocalized').dxSwitch({
+        onValueChanged: function () {
+            refreshData();
+        }
+    });
+
+    $('#gridStrings').dxDataGrid({
+        dataSource: @Html.Raw(Types.Serialize(Model.Items)),
+        keyExpr: 'id',
+        editing: {
+            mode: "cell",
+            allowUpdating: false,
+            allowAdding: false,
+            allowDeleting:false,
+            selectTextOnEditStart: true,
+            startEditAction: "click"
+        },
+        paging: {
+            pageSize: 10
+        },
+        pager: {
+            showInfo: true
+        },
+        searchPanel: {
+            visible: true,
+            placeholder: "search..."
+        },
+        wordWrapEnabled: true,
+        onRowUpdating: function (e) {
+            ide.designerAction({
+                data: {
+                    'action': 'update',
+                    'id': e.key,
+                    'key': e.oldData.key,
+                    'microService': e.oldData.microService,
+                    'component': e.oldData.component,
+                    'translatedValue': e.newData.translatedValue,
+                    'translation': $('#editTranslationLanguage').dxSelectBox('instance').option('value')
+                }
+            });
+        },
+        columns: [
+              {
+                dataField: "key",
+                caption: "String",
+                sortOrder: 'asc',
+                allowEditing: false,
+                calculateCellValue: function (e) {
+                    return [e.key, e.defaultValue, e.microService +'/'+ e.component].join();
+                },
+                cellTemplate: function (element, info) {
+                    var key = info.data.key;
+                    var defaultValue = info.data.defaultValue;
+                    var ms = info.data.microService;
+                    var component = info.data.component;
+
+                    $('<div>')
+                        .append('<div class="small text-secondary">' + ms + '/' + component + '</div><div><strong>' + key + '</strong></div><div class="small">' + defaultValue + '</div>')
+                        .appendTo(element);
+                    }
+            },
+              {
+                dataField: "translatedValue",
+                caption: "Translation"
+            }
+        ]
+    });
+
+    function refreshData() {
+        var leading = $('#editLeadingLanguage').dxSelectBox('instance').option('value');
+        var translation = $('#editTranslationLanguage').dxSelectBox('instance').option('value');
+        var nonLocalized = $('#editNonLocalized').dxSwitch('instance').option('value');
+        var grid = $('#gridStrings').dxDataGrid('instance');
+
+        var updatable = translation != null;
+
+        ide.designerAction({
+            data: {
+                'action': 'data',
+                'leading': leading,
+                'translation': translation,
+                'nonLocalized': nonLocalized
+            },
+            onComplete: function (data) {
+                grid.option('dataSource', data);
+                grid.option('editing.allowUpdating', updatable);
+            }
+        });
+    }
+</script>

@@ -1017,4 +1017,10 @@
   <data name="ValAntiForgery" xml:space="preserve">
     <value>Invalid Antiforgery token</value>
   </data>
+  <data name="DevCreateLanguage" xml:space="preserve">
+    <value>Create language</value>
+  </data>
+  <data name="LanguageCreateSuccess" xml:space="preserve">
+    <value>Language sucessfully created</value>
+  </data>
 </root>

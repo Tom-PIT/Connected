@@ -358,6 +358,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Create language.
+        /// </summary>
+        public static string DevCreateLanguage {
+            get {
+                return ResourceManager.GetString("DevCreateLanguage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Create microservice.
         /// </summary>
         public static string DevCreateMicroService {
@@ -2208,6 +2217,15 @@ namespace TomPIT {
         public static string JsRestUrlNotSet {
             get {
                 return ResourceManager.GetString("JsRestUrlNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Language sucessfully created.
+        /// </summary>
+        public static string LanguageCreateSuccess {
+            get {
+                return ResourceManager.GetString("LanguageCreateSuccess", resourceCulture);
             }
         }
         

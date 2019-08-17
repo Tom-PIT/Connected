@@ -31,7 +31,12 @@
             visible: true,
             placeholder: "search..."
         },
+        onInitNewRow: function (e) {
+            e.data.isLocalizable = true;
+        },
         onRowInserting: function (e) {
+            var d = $.Deferred();
+
             ide.designerAction({
                 data: {
                     'action': 'add',
@@ -41,8 +46,16 @@
                 },
                 onComplete: function (data) {
                     e.data.id = data;
+
+                    d.resolve();
+                },
+                onError: function () {
+                    d.reject();
+                    return false;
                 }
             });
+
+            e.cancel = d.promise();
         },
         onRowUpdating: function (e) {
             ide.designerAction({
@@ -58,7 +71,7 @@
         onRowRemoving: function (e) {
             ide.designerAction({
                 data: {
-                    'action': 'delete',
+                    'action': 'delete', 
                     'id': e.key
                 }
             });

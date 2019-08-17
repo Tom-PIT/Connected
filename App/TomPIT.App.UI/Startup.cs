@@ -25,7 +25,7 @@ namespace TomPIT
 		{
 			var e = new ServicesConfigurationArgs
 			{
-				Authentication = AuthenticationType.MultiTenant
+				Authentication = AuthenticationType.SingleTenant
 			};
 
 			services.AddAntiforgery(o =>

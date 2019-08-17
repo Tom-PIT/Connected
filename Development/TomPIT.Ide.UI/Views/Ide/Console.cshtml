@@ -1,7 +1,7 @@
 ﻿@model TomPIT.Ide.IEnvironment
 
 <div class="row no-gutters">
-	<div class="col-lg-2 col-sm-6">
+	<div class="col-lg-2 col-md-3">
 		<div id="devExplorer" tabindex="0">
 			<div id="devExplorerToolbar" class="btn-toolbar">
 				<div class="btn-group btn-group-sm">
@@ -13,7 +13,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="col-lg-8 col-sm-6 dev-designer">
+	<div class="col-lg-8  col-md-9 dev-designer">
 		<div data-tp-tag="progress-container"></div>
 		<div id="devDesigner">
 			@await Html.PartialAsync("~/Views/Ide/Designers/Empty.cshtml", Model)

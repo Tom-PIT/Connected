@@ -58,6 +58,9 @@ namespace TomPIT.Management.Dom
 
 					foreach (var view in views)
 					{
+						if (string.IsNullOrEmpty(view.Url))
+							continue;
+
 						if (!view.Url.StartsWith(Path, StringComparison.OrdinalIgnoreCase))
 							continue;
 

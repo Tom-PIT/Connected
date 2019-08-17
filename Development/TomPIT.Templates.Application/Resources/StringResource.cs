@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
@@ -21,6 +22,7 @@ namespace TomPIT.Application.Resources
 		public bool IsLocalizable { get; set; } = true;
 
 		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
+		[CollectionRuntimeMerge(CollectionRuntimeMerge.Override)]
 		public ListItems<IStringTranslation> Translations
 		{
 			get
@@ -37,6 +39,20 @@ namespace TomPIT.Application.Resources
 			return string.IsNullOrWhiteSpace(Key)
 				? base.ToString()
 				: Key;
+		}
+
+		public void UpdateTranslation(int lcid, string value)
+		{
+			if (Translations.FirstOrDefault(f => f.Lcid == lcid) is StringTranslation existing)
+				existing.Value = value;
+			else
+			{
+				Translations.Add(new StringTranslation
+				{
+					Lcid = lcid,
+					Value = value
+				});
+			}
 		}
 	}
 }

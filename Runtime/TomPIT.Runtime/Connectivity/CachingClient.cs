@@ -31,6 +31,26 @@ namespace TomPIT.Connectivity
 			AuthenticationTokens();
 			Data();
 			Settings();
+			Globalization();
+		}
+
+		private void Globalization()
+		{
+			Hub.On<MessageEventArgs<SettingEventArgs>>("SettingChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<ISettingService>() is ISettingNotification n)
+					n.NotifyChanged(Connection, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<SettingEventArgs>>("SettingRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Connection.GetService<ISettingService>() is ISettingNotification n)
+					n.NotifyRemoved(Connection, e.Args);
+			});
 		}
 
 		private void Settings()

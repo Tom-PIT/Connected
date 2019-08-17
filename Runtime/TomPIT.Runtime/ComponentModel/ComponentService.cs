@@ -397,6 +397,31 @@ namespace TomPIT.ComponentModel
 
 		private void MergeCollection(object design, PropertyInfo property, object runtime, List<object> references, bool force)
 		{
+			CollectionRuntimeMerge mode = CollectionRuntimeMerge.Synchronize;
+
+			var att = property.FindAttribute<CollectionRuntimeMergeAttribute>();
+
+			if (att != null)
+				mode = att.Mode;
+
+			switch (mode)
+			{
+				case CollectionRuntimeMerge.Synchronize:
+					MergeCollectionSynchronize(design, property, runtime, references, force);
+					break;
+				case CollectionRuntimeMerge.Override:
+					MergeCollectionOverride(design, property, runtime, references, force);
+					break;
+				case CollectionRuntimeMerge.Append:
+					MergeCollectionAppend(design, property, runtime, references, force);
+					break;
+				default:
+					throw new NotSupportedException();
+			}
+		}
+
+		private void MergeCollectionSynchronize(object design, PropertyInfo property, object runtime, List<object> references, bool force)
+		{
 			var rtProperty = runtime.GetType().GetProperty(property.Name);
 			var val = property.GetValue(design);
 			var rtVal = rtProperty.GetValue(runtime);
@@ -427,6 +452,49 @@ namespace TomPIT.ComponentModel
 				foreach (var i in props)
 					MergeProperty(dinstance, i, rinstance, references, force);
 			}
+		}
+
+		private void MergeCollectionAppend(object design, PropertyInfo property, object runtime, List<object> references, bool force)
+		{
+			var rtProperty = runtime.GetType().GetProperty(property.Name);
+			var val = property.GetValue(design);
+			var rtVal = rtProperty.GetValue(runtime);
+
+			if (!(val is IEnumerable denum) || !(rtVal is IEnumerable renum))
+				return;
+
+			var de = denum.GetEnumerator();
+			var re = renum.GetEnumerator();
+
+			while (re.MoveNext())
+			{
+				var rinstance = re.Current;
+
+				if (rinstance == null)
+					return;
+
+				var method = val.GetType().GetRuntimeMethod("Add", new Type[] { rinstance.GetType() });
+
+				if (method == null)
+					return;
+
+				method.Invoke(val, new object[] { rinstance });
+			}
+		}
+
+		private void MergeCollectionOverride(object design, PropertyInfo property, object runtime, List<object> references, bool force)
+		{
+			var val = property.GetValue(design);
+
+			if (val == null)
+				return;
+
+			var clear = val.GetType().GetRuntimeMethod("Clear", new Type[0]);
+
+			if (clear != null)
+				clear.Invoke(val, null);
+
+			MergeCollectionAppend(design, property, runtime, references, force);
 		}
 
 		public IFolder SelectFolder(Guid folder)

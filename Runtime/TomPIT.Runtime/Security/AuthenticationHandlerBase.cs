@@ -151,30 +151,5 @@ namespace TomPIT.Security
 
 			return new Principal(r.Identity);
 		}
-
-		protected void SetCulture(ClaimsPrincipal principal)
-		{
-			if (principal == null)
-				return;
-
-			if (!principal.Identity.IsAuthenticated)
-				return;
-
-			if (!(principal.Identity is Identity id))
-				return;
-
-			if (id.User.Language == Guid.Empty)
-				return;
-
-			var language = Shell.GetService<IConnectivityService>().Select(id.Endpoint).GetService<ILanguageService>().Select(id.User.Language);
-
-			var ci = CultureInfo.GetCultureInfo(language.Lcid);
-
-			if (ci == null)
-				return;
-
-			Thread.CurrentThread.CurrentCulture = ci;
-			Thread.CurrentThread.CurrentUICulture = ci;
-		}
 	}
 }
