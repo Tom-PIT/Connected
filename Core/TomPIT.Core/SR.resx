@@ -1023,4 +1023,10 @@
   <data name="LanguageCreateSuccess" xml:space="preserve">
     <value>Language sucessfully created</value>
   </data>
+  <data name="ErrMediaFileExists" xml:space="preserve">
+    <value>File already exists</value>
+  </data>
+  <data name="ErrMediaFolderExists" xml:space="preserve">
+    <value>Folder already exists</value>
+  </data>
 </root>

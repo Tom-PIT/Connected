@@ -1510,11 +1510,29 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to File already exists.
+        /// </summary>
+        public static string ErrMediaFileExists {
+            get {
+                return ResourceManager.GetString("ErrMediaFileExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Media file not found.
         /// </summary>
         public static string ErrMediaFileNotFound {
             get {
                 return ResourceManager.GetString("ErrMediaFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder already exists.
+        /// </summary>
+        public static string ErrMediaFolderExists {
+            get {
+                return ResourceManager.GetString("ErrMediaFolderExists", resourceCulture);
             }
         }
         

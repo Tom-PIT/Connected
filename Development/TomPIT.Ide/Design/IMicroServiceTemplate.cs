@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using TomPIT.ComponentModel;
 using TomPIT.Dom;
 using TomPIT.Ide;
@@ -23,5 +24,7 @@ namespace TomPIT.Design
 		void Initialize(IApplicationBuilder app, IHostingEnvironment env);
 
 		TemplateKind Kind { get; }
+
+		void RegisterRoutes(IRouteBuilder builder);
 	}
 }

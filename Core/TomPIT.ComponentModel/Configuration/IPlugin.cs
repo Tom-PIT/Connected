@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
+using TomPIT.Environment;
+using TomPIT.Services;
 
 namespace TomPIT.Configuration
 {

@@ -28,6 +28,13 @@ namespace TomPIT.Configuration
 				return Task.CompletedTask;
 			});
 
+			routes.MapRoute("sys/media/{id}/{version}", (t) =>
+			{
+				new MediaHandler().ProcessRequest(t);
+
+				return Task.CompletedTask;
+			});
+
 		}
 	}
 }

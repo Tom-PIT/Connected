@@ -1,0 +1,38 @@
+﻿@model TomPIT.Designers.FileManagerDesigner
+
+@{
+    var url = $"/sys/designers/application/media/{Model.Environment.Context.MicroService.Name}/{Model.MediaName}";
+}
+<div class="document-body" id="deploymentDesigner">
+    <div class="document-container">
+        <div class="canvas">
+            <div class="paper">
+                <div class="document-content">
+                    <div id="editFileManager">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $('#editFileManager').dxFileManager({
+         fileProvider: new DevExpress.FileProviders.WebApi({
+             endpointUrl: "@url",
+             thumbnailExpr:'icon'
+         }),
+        height: '450',
+        itemView: {
+            mode: "thumbnails"
+        },
+        permissions: {
+            copy: true,
+            create: true,
+            move: true,
+            remove: true,
+            rename: true,
+            upload: true
+            },
+    });
+</script>

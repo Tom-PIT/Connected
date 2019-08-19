@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
@@ -39,6 +41,9 @@ namespace TomPIT.Application.Resources
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[Required]
 		public string Name { get; set; }
+
+		[Browsable(false)]
+		public DateTime Modified { get; set; }
 
 		public override string ToString()
 		{

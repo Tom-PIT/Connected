@@ -2,9 +2,13 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using TomPIT.Application.Apis;
 using TomPIT.Application.Cdn;
 using TomPIT.Application.Data;
+using TomPIT.Application.Design.Media;
 using TomPIT.Application.Events;
 using TomPIT.Application.Features;
 using TomPIT.Application.QA;
@@ -57,6 +61,16 @@ namespace TomPIT.Application
 		public override List<IItemDescriptor> ProvideAddItems(IDomElement parent)
 		{
 			return _items.Values.ToList();
+		}
+
+		public override void RegisterRoutes(IRouteBuilder builder)
+		{
+			builder.MapRoute("sys/designers/application/media/{microService}/{component}", (t) =>
+			{
+				new MediaHandler().ProcessRequest(t);
+
+				return Task.CompletedTask;
+			});
 		}
 	}
 }

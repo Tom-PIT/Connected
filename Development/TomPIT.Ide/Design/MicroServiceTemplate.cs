@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using TomPIT.ComponentModel;
 using TomPIT.Dom;
 using TomPIT.Ide;
@@ -53,6 +54,11 @@ namespace TomPIT.Design
 			cds.Update(config);
 
 			return cs.SelectComponent(id);
+		}
+
+		public virtual void RegisterRoutes(IRouteBuilder builder)
+		{
+			
 		}
 	}
 }

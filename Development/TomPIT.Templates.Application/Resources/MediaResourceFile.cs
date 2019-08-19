@@ -15,11 +15,19 @@ namespace TomPIT.Application.Resources
 		[Browsable(false)]
 		public Guid Blob { get; set; }
 		[Browsable(false)]
+		public Guid Thumb { get; set; }
+		[Browsable(false)]
 		public string FileName { get; set; }
+
+		[Browsable(false)]
+		public long Size {get; set;}
+
+		[Browsable(false)]
+		public DateTime Modified { get; set; }
 
 		public List<Guid> QueryResources()
 		{
-			return new List<Guid> { Blob };
+			return new List<Guid> { Blob, Thumb };
 		}
 
 		public void Delete(ExternalResourceDeleteArgs e)

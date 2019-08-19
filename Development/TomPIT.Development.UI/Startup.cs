@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using TomPIT.Connectivity;
 using TomPIT.Design;
@@ -41,6 +43,8 @@ namespace TomPIT.Servers.Development
 		{
 			Instance.Configure(InstanceType.Development, app, env, (f) =>
 		  {
+			  RegisterDesignersRouting(f.Builder);
+
 			  Configuration.Routing.Register(f.Builder);
 			  IdeRouting.Register(f.Builder, "Ide", "ide/{microservice}");
 		  });
@@ -60,6 +64,21 @@ namespace TomPIT.Servers.Development
 				var template = t.CreateInstance<IMicroServiceTemplate>();
 
 				template.Initialize(app, env);
+			}
+		}
+
+		private void RegisterDesignersRouting(IRouteBuilder builder)
+		{
+			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+			{
+				var t = Types.GetType(i);
+
+				if (t == null)
+					continue;
+
+				var template = t.CreateInstance<IMicroServiceTemplate>();
+
+				template.RegisterRoutes(builder);
 			}
 		}
 

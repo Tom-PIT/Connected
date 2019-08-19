@@ -144,6 +144,7 @@ namespace TomPIT.Storage
 
 			var r = Connection.Post<Guid>(u, args);
 
+			Remove(r);
 			BlobContent.Delete(r);
 
 			return r;

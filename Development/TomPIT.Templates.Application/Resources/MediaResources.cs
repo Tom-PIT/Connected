@@ -4,6 +4,7 @@ using TomPIT.ComponentModel.Resources;
 
 namespace TomPIT.Application.Resources
 {
+	[DomDesigner("TomPIT.Application.Design.Designers.MediaDesigner, TomPIT.Application.Design", Mode = Services.EnvironmentMode.Design)]
 	public class MediaResources : ComponentConfiguration, IMediaResources
 	{
 		private ListItems<IMediaResourceFolder> _folders = null;
