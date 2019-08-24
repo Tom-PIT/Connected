@@ -50,7 +50,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			if (op == null)
 				return null;
 
-			var args = new OperationManifestArguments(context, op);
+			//var args = new OperationManifestArguments(context, op);
 			var txt = context.Connection().GetService<IComponentService>().SelectText(api.MicroService, op);
 
 			return ResolveReferencedApi(context, config, txt);

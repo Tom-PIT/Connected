@@ -93,8 +93,8 @@ namespace TomPIT.Design.Services
 
 					_options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
 						usings: CombineUsings(usings),
-						metadataReferenceResolver: new MetaDataResolver(Context.Connection(), MicroService),
-						sourceReferenceResolver: new ReferenceResolver(Context.Connection(), MicroService));
+						metadataReferenceResolver: new AssemblyResolver(Context.Connection(), MicroService),
+						sourceReferenceResolver: new ScriptResolver(Context.Connection(), MicroService));
 				}
 
 				return _options;

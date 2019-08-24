@@ -7,8 +7,9 @@ namespace TomPIT.Connectivity
 	internal class ConnectivityService : SynchronizedRepository<ISysConnection, string>, IConnectivityService
 	{
 		private Lazy<List<ISysConnectionDescriptor>> _connections = new Lazy<List<ISysConnectionDescriptor>>();
-		public event ConnectionRegisteredHandler ConnectionRegistered;
-		public event ConnectionRegisteredHandler ConnectionInitializing;
+		public event ConnectionHandler ConnectionInitialized;
+		public event ConnectionHandler ConnectionInitialize;
+		public event ConnectionHandler ConnectionInitializing;
 
 		public ConnectivityService() : base(MemoryCache.Default, "syscontext")
 		{
@@ -39,8 +40,9 @@ namespace TomPIT.Connectivity
 			Connections.Add(new SysConnectionDescriptor(name, url, authenticationToken));
 
 			Set(url, instance, TimeSpan.Zero);
-			ConnectionRegistered?.Invoke(this, new SysConnectionRegisteredArgs(instance));
-			ConnectionInitializing?.Invoke(this, new SysConnectionRegisteredArgs(instance));
+			ConnectionInitializing?.Invoke(this, new SysConnectionArgs(instance));
+			ConnectionInitialize?.Invoke(this, new SysConnectionArgs(instance));
+			ConnectionInitialized?.Invoke(this, new SysConnectionArgs(instance));
 		}
 
 		public List<ISysConnectionDescriptor> QueryConnections()

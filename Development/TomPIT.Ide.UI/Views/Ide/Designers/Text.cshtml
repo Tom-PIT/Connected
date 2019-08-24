@@ -24,22 +24,26 @@
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title">Create Strongly Typed Entity</h5>
+					<h5 class="modal-title">Create Data Entity</h5>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
-				<div class="modal-body">
-					<div id="listDataSources"></div>
-					<hr />
-					<div class="form-group">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Connections</label>
+                        <div id="editConnections"></div>
+                    </div>
+                    <div id="listDataSources"></div>
+                    <hr />
+                    <div class="form-group">
                         <label>Class name</label>
-						<div id="textTypeName"></div>
-					</div>
-					<div class="form-group">
-						<div id="checkReadOnly"></div>
-					</div>
-				</div>
+                        <div id="textTypeName"></div>
+                    </div>
+                    <div class="form-group">
+                        <div id="checkReadOnly"></div>
+                    </div>
+                </div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-primary" id="btnCreateStronglyTyped">Create</button>
 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -191,7 +195,7 @@
 
 			  textEditor.addAction({
 					id: 'strogly_type',
-					label: 'Create Strongly Typed Entity',
+					label: 'Create Data Entity',
 
 					keybindings: [
 						monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_T)
@@ -247,6 +251,10 @@
                 resolveCodeLens: function (model, codeLens, token) {
                     return codeLens;
                 }
+            });
+
+            $('#editConnections').dxSelectBox({
+
             });
 
 			  $('#listDataSources').dxList({

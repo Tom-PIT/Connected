@@ -1,15 +1,9 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.CodeAnalysis.Scripting.Hosting;
-using Microsoft.CodeAnalysis.Text;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -23,10 +17,12 @@ using TomPIT.Caching;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
+using TomPIT.ComponentModel.Compilation;
 using TomPIT.ComponentModel.Reports;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
+using TomPIT.Runtime.Compilers;
 using TomPIT.Runtime.Compilers.Views;
 using TomPIT.Services;
 using TomPIT.Storage;
@@ -36,8 +32,7 @@ namespace TomPIT.Compilers
 {
 	internal class CompilerService : ClientRepository<IScriptDescriptor, Guid>, ICompilerService, ICompilerNotification
 	{
-		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _forwardReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
-		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _reverseReferences = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
+		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _references = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
 		private static Lazy<ConcurrentDictionary<Guid, ManualResetEvent>> _scriptCreateState = new Lazy<ConcurrentDictionary<Guid, ManualResetEvent>>();
 
 		private static readonly string[] Usings = new string[]
@@ -299,182 +294,10 @@ namespace TomPIT.Compilers
 				((ScriptDescriptor)script).Assembly = compiler.Script.GetCompilation().AssemblyName;
 			}
 
+			if (compiler.ScriptReferences != null && compiler.ScriptReferences.Count > 0)
+				References.AddOrUpdate(compiler.SourceCode.Id, compiler.ScriptReferences, (key, oldValue) => oldValue = compiler.ScriptReferences);
+
 			Set(script.Id, script, TimeSpan.Zero);
-		}
-
-		internal static void ResolveReferences(ISysConnection connection, Guid microService, ISourceCode d, string code)
-		{
-			var scriptId = d.ScriptId();
-			var scripts = ParseScripts(code);
-			var ids = new List<Guid>();
-
-			foreach (var i in scripts)
-			{
-				var tokens = i.Split('/');
-				var ms = connection.GetService<IMicroServiceService>().Select(microService);
-				var library = string.Empty;
-				var script = string.Empty;
-
-				if (tokens.Length == 1)
-					library = Path.GetFileNameWithoutExtension(tokens[0]);
-				else if (tokens.Length == 2)
-				{
-					var internalComponent = connection.GetService<IComponentService>().SelectComponent(microService, "Script", tokens[0]);
-
-                    if (internalComponent == null)
-                        internalComponent = connection.GetService<IComponentService>().SelectComponent(microService, "Library", tokens[0]);
-
-					if (internalComponent != null)
-					{
-						library = tokens[0];
-						script = tokens[1];
-					}
-					else
-					{
-						ms = connection.GetService<IMicroServiceService>().Select(tokens[0]);
-
-						if (ms == null)
-							continue;
-
-						library = tokens[1];
-					}
-				}
-				else if (tokens.Length == 3)
-				{
-					ms = connection.GetService<IMicroServiceService>().Select(tokens[0]);
-
-					if (ms == null)
-						continue;
-
-					library = tokens[1];
-					script = tokens[2];
-				}
-
-				var component = connection.GetService<IComponentService>().SelectComponent(ms.Token, "Script", library);
-
-                if (component == null)
-                    component = connection.GetService<IComponentService>().SelectComponent(ms.Token, "Library", library);
-
-				if (component == null)
-					continue;
-
-				if (!ids.Contains(component.Token))
-					ids.Add(component.Token);
-
-				List<Guid> forward = null;
-
-				if (ForwardReferences.ContainsKey(component.Token))
-					forward = ForwardReferences[component.Token];
-				else
-				{
-					forward = new List<Guid>();
-
-					if (!ForwardReferences.TryAdd(component.Token, forward))
-						ForwardReferences.TryGetValue(component.Token, out forward);
-				}
-
-				if (!forward.Contains(scriptId))
-				{
-					lock (forward)
-					{
-						forward.Add(scriptId);
-					}
-				}
-
-				List<Guid> reverse = null;
-
-				if (ReverseReferences.ContainsKey(scriptId))
-					reverse = ReverseReferences[scriptId];
-				else
-				{
-					reverse = new List<Guid>();
-
-					if (!ReverseReferences.TryAdd(scriptId, reverse))
-						ReverseReferences.TryGetValue(scriptId, out reverse);
-				}
-
-				if (!reverse.Contains(component.Token))
-				{
-					lock (reverse)
-					{
-						reverse.Add(component.Token);
-					}
-				}
-			}
-
-			if (!ReverseReferences.ContainsKey(scriptId))
-				return;
-
-			var cleanup = ReverseReferences[scriptId];
-			var obsolete = new List<Guid>();
-
-			foreach (var i in cleanup)
-			{
-				if (!ids.Contains(i))
-				{
-					obsolete.Add(i);
-
-					if (!ForwardReferences.ContainsKey(i))
-						continue;
-
-					var refs = ForwardReferences[i];
-
-					if (refs.Contains(scriptId))
-					{
-						lock (refs)
-						{
-							refs.Remove(scriptId);
-						}
-					}
-				}
-			}
-
-			if (obsolete.Count > 0)
-			{
-				lock (cleanup)
-				{
-					foreach (var i in obsolete)
-					{
-						cleanup.Remove(i);
-					}
-				}
-			}
-		}
-
-		private static List<string> ParseScripts(string code)
-		{
-			var refs = Regex.Matches(code, "#load.*");
-			var r = new List<string>();
-
-			foreach (Match i in refs)
-			{
-				var name = Regex.Match(i.Value, "\"([^\"]*)\"");
-
-				if (name == null)
-					continue;
-
-				r.Add(name.Value.Trim('"'));
-			}
-
-			return r;
-		}
-
-		internal static List<string> ParseReferences(string code)
-		{
-			var refs = Regex.Matches(code, "^#r.*");
-			var r = new List<string>();
-
-			foreach (Match i in refs)
-			{
-				var name = Regex.Match(i.Value, "\"([^\"]*)\"");
-
-				if (name == null)
-					continue;
-
-				r.Add(name.Value.Trim('"'));
-			}
-
-			return r;
 		}
 
 		public void Invalidate(IExecutionContext context, Guid microService, Guid component, ISourceCode sourceCode)
@@ -522,25 +345,12 @@ namespace TomPIT.Compilers
 
 		private void InvalidateReferences(Guid container, Guid script)
 		{
-			if (ForwardReferences.ContainsKey(container))
+			foreach (var reference in References)
 			{
-				var refs = ForwardReferences[container];
-
-				foreach (var i in refs)
+				if (reference.Value.Contains(container) || reference.Value.Contains(script))
 				{
-					Remove(i);
-					InvalidateReferences(i, i);
-				}
-			}
-
-			if (ForwardReferences.ContainsKey(script))
-			{
-				var refs = ForwardReferences[script];
-
-				foreach (var i in refs)
-				{
-					Remove(i);
-					InvalidateReferences(i, i);
+					Remove(reference.Key);
+					References.Remove(reference.Key, out _);
 				}
 			}
 		}
@@ -646,8 +456,12 @@ namespace TomPIT.Compilers
 			return result;
 		}
 
-		private static ConcurrentDictionary<Guid, List<Guid>> ForwardReferences { get { return _forwardReferences.Value; } }
-		private static ConcurrentDictionary<Guid, List<Guid>> ReverseReferences { get { return _reverseReferences.Value; } }
+		public IScriptContext CreateScriptContext(ISourceCode sourceCode)
+		{
+			return new ScriptContext(Connection, sourceCode);
+		}
+
+		private static ConcurrentDictionary<Guid, List<Guid>> References { get { return _references.Value; } }
 		private static ConcurrentDictionary<Guid, ManualResetEvent> ScriptCreateState { get { return _scriptCreateState.Value; } }
 	}
 }

@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TomPIT.Analysis;
+using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Analysis.Manifest;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.Search;
 using TomPIT.Connectivity;
@@ -216,9 +218,23 @@ namespace TomPIT
 			return instance;
 		}
 
-		public static IManifest Discover(this IApiOperation operation, IExecutionContext context)
+		public static IComponentManifest Manifest(this IComponent component, ISysConnection connection)
 		{
-			return null;
+			var config = connection.GetService<IComponentService>().SelectConfiguration(component.Token);
+
+			if (config == null)
+				return null;
+
+			var att = config.GetType().FindAttribute<ManifestAttribute>();
+
+			if (att == null)
+				return null;
+
+			var provider = att.Type == null ?
+				Type.GetType(att.TypeName).CreateInstance<IComponentManifestProvider>()
+				: att.Type.CreateInstance<IComponentManifestProvider>();
+
+			return provider.CreateManifest(connection, component.Token);
 		}
 
 		public static T ToRequestArguments<T>(this JObject value, IDataModelContext context, bool validate = true) where T : RequestArguments

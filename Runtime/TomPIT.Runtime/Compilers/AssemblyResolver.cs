@@ -11,9 +11,9 @@ using TomPIT.Storage;
 
 namespace TomPIT.Compilers
 {
-	public class MetaDataResolver : MetadataReferenceResolver
+	public class AssemblyResolver : MetadataReferenceResolver
 	{
-		public MetaDataResolver(ISysConnection connection, Guid microService)
+		public AssemblyResolver(ISysConnection connection, Guid microService)
 		{
 			Connection = connection;
 			MicroService = microService;
@@ -24,7 +24,7 @@ namespace TomPIT.Compilers
 
 		public override bool ResolveMissingAssemblies => true;
 
-		protected bool Equals(MetaDataResolver other)
+		protected bool Equals(AssemblyResolver other)
 		{
 			return Equals(Connection, other.Connection);
 		}
@@ -40,7 +40,7 @@ namespace TomPIT.Compilers
 			if (obj.GetType() != GetType())
 				return false;
 
-			return Equals((MetaDataResolver)obj);
+			return Equals((AssemblyResolver)obj);
 		}
 
 		public override int GetHashCode()
@@ -82,9 +82,30 @@ namespace TomPIT.Compilers
 				return ResolveFileReference(config as IAssemblyFileSystemResource);
 		}
 
+		public static string ResolvePath(string reference, string baseFilePath)
+		{
+			if (string.IsNullOrWhiteSpace(baseFilePath))
+				return reference;
+
+			var tokens = baseFilePath.Split('/');
+
+			if (tokens.Length < 2)
+				return reference;
+
+			return $"{tokens[0]}/{reference}";
+		}
+
 		public override ImmutableArray<PortableExecutableReference> ResolveReference(string reference, string baseFilePath, MetadataReferenceProperties properties)
 		{
-			return Resolve(Connection, MicroService, reference);
+			var path = ResolvePath(reference, baseFilePath);
+			var tokens = path.Split('/');
+
+			if (tokens.Length < 2)
+				return Resolve(Connection, MicroService, reference);
+
+			var ms = Connection.GetService<IMicroServiceService>().Select(tokens[0]);
+
+			return Resolve(Connection, ms.Token, reference);
 		}
 
 		private static ImmutableArray<PortableExecutableReference> ResolveUploadReference(ISysConnection connection, IAssemblyEmbeddedResource d)

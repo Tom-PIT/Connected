@@ -48,10 +48,10 @@ namespace TomPIT.Runtime
 			Shell.RegisterService(typeof(IRuntimeService), typeof(RuntimeService));
 			Shell.RegisterService(typeof(IConnectivityService), typeof(ConnectivityService));
 
-			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
+			Shell.GetService<IConnectivityService>().ConnectionInitialize += OnConnectionRegistered;
 		}
 
-		private static void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
+		private static void OnConnectionRegistered(object sender, SysConnectionArgs e)
 		{
 			e.Connection.RegisterService(typeof(ISerializationService), typeof(SerializationService));
 			e.Connection.RegisterService(typeof(ICompilerService), typeof(CompilerService));

@@ -33,12 +33,12 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				var r = new JArray();
-				var resourceGroups = GetService<IResourceGroupService>().Query().Select(f=>f.Name);
+				var resourceGroups = GetService<IResourceGroupService>().Query().Select(f => f.Name);
 				var translationlanguage = Translation == Guid.Empty ? null : GetService<ILanguageService>().Select(Translation);
 				var lcid = translationlanguage == null ? 0 : translationlanguage.Lcid;
 				var leadingLcid = 0;
 
-				if(Leading != Guid.Empty)
+				if (Leading != Guid.Empty)
 				{
 					var leadinglanguage = GetService<ILanguageService>().Select(Leading);
 
@@ -46,47 +46,45 @@ namespace TomPIT.Management.Designers
 						leadingLcid = leadinglanguage.Lcid;
 				}
 
-				foreach(var resourceGroup in resourceGroups)
+				var stringTables = GetService<IComponentService>().QueryConfigurations(resourceGroups.ToList(), "StringTable");
+
+				foreach (var stringTable in stringTables)
 				{
-					var stringTables = GetService<IComponentService>().QueryConfigurations(resourceGroups.ToList(), "StringTable");
+					var microService = stringTable.MicroService(Connection);
+					var ms = GetService<IMicroServiceService>().Select(microService);
+					var componentName = stringTable.ComponentName(Connection);
 
-					foreach (var stringTable in stringTables)
+					if (!(stringTable is IStringTable table))
+						continue;
+
+					foreach (var str in table.Strings)
 					{
-						var microService = stringTable.MicroService(Connection);
-						var ms = GetService<IMicroServiceService>().Select(microService);
-						var componentName = stringTable.ComponentName(Connection);
-
-						if (!(stringTable is IStringTable table))
+						if (!str.IsLocalizable)
 							continue;
 
-						foreach (var str in table.Strings)
+						var defaultValue = str.DefaultValue;
+						var translatedValue = string.Empty;
+
+						if (leadingLcid > 0)
 						{
-							if (!str.IsLocalizable)
+							var leadingTranslation = str.Translations.FirstOrDefault(f => f.Lcid == leadingLcid);
+
+							if (leadingTranslation != null)
+								defaultValue = leadingTranslation.Value;
+						}
+
+						if (lcid > 0)
+						{
+							var translation = str.Translations.FirstOrDefault(f => f.Lcid == lcid);
+
+							if (NonLocalized && translation != null && !string.IsNullOrEmpty(translation.Value))
 								continue;
 
-							var defaultValue = str.DefaultValue;
-							var translatedValue = string.Empty;
+							if (translation != null)
+								translatedValue = translation.Value;
+						}
 
-							if (leadingLcid > 0)
-							{
-								var leadingTranslation = str.Translations.FirstOrDefault(f => f.Lcid == leadingLcid);
-
-								if (leadingTranslation != null)
-									defaultValue = leadingTranslation.Value;
-							}
-
-							if(lcid > 0)
-							{
-								var translation = str.Translations.FirstOrDefault(f => f.Lcid == lcid);
-
-								if (NonLocalized && translation != null && !string.IsNullOrEmpty(translation.Value))
-									continue;
-
-								if (translation != null)
-									translatedValue = translation.Value;
-							}
-
-							r.Add(new JObject
+						r.Add(new JObject
 							{
 								{"microService", ms.Name },
 								{"component", componentName },
@@ -95,7 +93,6 @@ namespace TomPIT.Management.Designers
 								{"defaultValue", defaultValue },
 								{"translatedValue", translatedValue }
 							});
-						}
 					}
 				}
 

@@ -75,10 +75,10 @@ namespace TomPIT
 
 		private void InitializeConfiguration()
 		{
-			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
+			Shell.GetService<IConnectivityService>().ConnectionInitializing += OnConnectionInitializing;
 		}
 
-		private void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
+		private void OnConnectionInitializing(object sender, SysConnectionArgs e)
 		{
 			e.Connection.RegisterService(typeof(IViewService), typeof(ViewService));
 			e.Connection.RegisterService(typeof(IThemeService), typeof(ThemeService));

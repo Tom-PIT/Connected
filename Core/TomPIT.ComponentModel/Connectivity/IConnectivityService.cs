@@ -2,12 +2,13 @@
 
 namespace TomPIT.Connectivity
 {
-	public delegate void ConnectionRegisteredHandler(object sender, SysConnectionRegisteredArgs e);
+	public delegate void ConnectionHandler(object sender, SysConnectionArgs e);
 
 	public interface IConnectivityService
 	{
-		event ConnectionRegisteredHandler ConnectionRegistered;
-		event ConnectionRegisteredHandler ConnectionInitializing;
+		event ConnectionHandler ConnectionInitialized;
+		event ConnectionHandler ConnectionInitialize;
+		event ConnectionHandler ConnectionInitializing;
 
 		void Insert(string name, string url, string authenticationToken);
 

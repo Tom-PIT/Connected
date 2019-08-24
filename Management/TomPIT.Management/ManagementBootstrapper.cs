@@ -19,10 +19,10 @@ namespace TomPIT
 
 		private static void RegisterServices()
 		{
-			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
+			Shell.GetService<IConnectivityService>().ConnectionInitialize += OnConnectionInitialize;
 		}
 
-		private static void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
+		private static void OnConnectionInitialize(object sender, SysConnectionArgs e)
 		{
 			e.Connection.RegisterService(typeof(ISettingManagementService), typeof(SettingManagementService));
 			e.Connection.RegisterService(typeof(IUserManagementService), typeof(UserManagementService));

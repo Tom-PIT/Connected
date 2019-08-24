@@ -12,6 +12,7 @@ using TomPIT.Analysis;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.Ide.CodeAnalysis;
 using TomPIT.Services;
 
 namespace TomPIT.Design.Services
@@ -84,7 +85,7 @@ namespace TomPIT.Design.Services
 			}
 
 			if (results == null)
-				return WithSnippets(SuggestContent(Document, sm, span), sm, span);
+				return WithSnippets(SuggestContent(Document, sm, span), new SnippetArgs(Context, sm, span, Args.Position));
 
 			var ti = sm.GetTypeInfo(sm.SyntaxTree.GetRoot().FindNode(results.Span));
 
@@ -118,12 +119,20 @@ namespace TomPIT.Design.Services
 				r.Add(s);
 			}
 
-			return WithSnippets(r, sm, span);
+			return WithSnippets(r, new SnippetArgs(Context, sm, span, Args.Position));
 		}
 
-		private List<ISuggestion> WithSnippets(List<ISuggestion> items, SemanticModel model, TextSpan span)
+		private List<ISuggestion> WithSnippets(List<ISuggestion> items, SnippetArgs e)
 		{
-			var node = model.SyntaxTree.GetRoot().FindNode(span);
+			if (items == null)
+				items = new List<ISuggestion>();
+
+			var systemSnippets = Context.Connection().GetService<ICodeAnalysisService>().ProvideSnippets(e);
+
+			if (systemSnippets != null && systemSnippets.Count > 0)
+				items.AddRange(systemSnippets);
+
+			var node = e.Model.SyntaxTree.GetRoot().FindNode(e.Span);
 
 			var list = node as ArgumentListSyntax;
 
@@ -136,8 +145,8 @@ namespace TomPIT.Design.Services
 			if (list == null)
 				return items;
 
-			var si = GetInvocationSymbolInfo(model, list);
-			var mi = GetMethodInfo(model, list);
+			var si = GetInvocationSymbolInfo(e.Model, list);
+			var mi = GetMethodInfo(e.Model, list);
 
 			if (mi == null)
 				return items;
@@ -170,7 +179,7 @@ namespace TomPIT.Design.Services
 				return items;
 
 			var text = string.Empty;// ParseExpressionText(list.Expression);
-			var snippets = provider.ProvideSnippets(Context, new CodeAnalysisArgs(Args.Component, model, node, si, text));
+			var snippets = provider.ProvideSnippets(Context, new CodeAnalysisArgs(Args.Component, e.Model, node, si, text));
 
 			if (snippets != null && snippets.Count > 0)
 			{
@@ -255,6 +264,8 @@ namespace TomPIT.Design.Services
 				{
 					Description = i.Description,
 					InsertText = i.Value,
+					FilterText = CleanupValue(i.Value),
+					SortText = CleanupValue(i.Text),
 					Kind = Suggestion.Text,
 					Label = i.Text
 				});
@@ -263,6 +274,13 @@ namespace TomPIT.Design.Services
 			return r;
 		}
 
+		private string CleanupValue(string value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+				return value;
+
+			return value.Replace(".", string.Empty).Replace("[", string.Empty).Replace("]", string.Empty);
+		}
 
 		private List<ISuggestion> SuggestComplexInitializer(Document doc, SemanticModel model, TextSpan span, SyntaxNode node)
 		{

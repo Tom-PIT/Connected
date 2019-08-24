@@ -51,11 +51,11 @@ namespace TomPIT.Servers.Management
 
             IdeBootstrapper.Run();
             ManagementBootstrapper.Run();
-            Shell.GetService<IConnectivityService>().ConnectionInitializing += OnConnectionInitializing;
+            Shell.GetService<IConnectivityService>().ConnectionInitialized += OnConnectionInitialized;
             Instance.Run(app);
         }
 
-        private static void OnConnectionInitializing(object sender, SysConnectionRegisteredArgs e)
+        private static void OnConnectionInitialized(object sender, SysConnectionArgs e)
         {
             foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
             {

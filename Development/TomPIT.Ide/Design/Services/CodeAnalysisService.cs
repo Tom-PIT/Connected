@@ -1,16 +1,19 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Ide.CodeAnalysis;
 using TomPIT.Services;
 
 namespace TomPIT.Design.Services
 {
 	internal class CodeAnalysisService : ICodeAnalysisService
 	{
+		private List<ISnippetProvider> _snippetProviders = null;
 		public CodeAnalysisService(ISysConnection connection)
 		{
 			Connection = connection;
@@ -109,6 +112,37 @@ namespace TomPIT.Design.Services
 			GC.Collect();
 
 			return r;
+		}
+
+		public void RegisterSnippetProvider(ISnippetProvider provider)
+		{
+			SnippetProviders.Add(provider);
+		}
+
+		public List<ISuggestion> ProvideSnippets(SnippetArgs e)
+		{
+			var result = new List<ISuggestion>();
+
+			foreach(var provider in SnippetProviders)
+			{
+				var suggestions = provider.ProvideSnippets(e);
+
+				if (suggestions != null && suggestions.Count > 0)
+					result.AddRange(suggestions);
+			}
+
+			return result;
+		}
+
+		private List<ISnippetProvider> SnippetProviders
+		{
+			get
+			{
+				if (_snippetProviders == null)
+					_snippetProviders = new List<ISnippetProvider>();
+
+				return _snippetProviders;
+			}
 		}
 	}
 }

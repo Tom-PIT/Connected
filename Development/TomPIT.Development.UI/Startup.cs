@@ -51,7 +51,7 @@ namespace TomPIT.Servers.Development
 
 			DevelopmentBootstrapper.Run();
 			IdeBootstrapper.Run();
-			Shell.GetService<IConnectivityService>().ConnectionInitializing += OnConnectionInitializing;
+			Shell.GetService<IConnectivityService>().ConnectionInitialized += OnConnectionInitialized;
 			Instance.Run(app);
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
@@ -82,7 +82,7 @@ namespace TomPIT.Servers.Development
 			}
 		}
 
-		private static void OnConnectionInitializing(object sender, SysConnectionRegisteredArgs e)
+		private static void OnConnectionInitialized(object sender, SysConnectionArgs e)
 		{
 			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
 			{

@@ -77,7 +77,7 @@ namespace TomPIT
 			RuntimeBootstrapper.Run();
 
 			Shell.GetService<IRuntimeService>().Initialize(type, env);
-			Shell.GetService<IConnectivityService>().ConnectionInitializing += OnConnectionInitializing;
+			Shell.GetService<IConnectivityService>().ConnectionInitialized += OnConnectionInitialized;
 
 			app.UseMvc(routes =>
 			{
@@ -94,7 +94,7 @@ namespace TomPIT
 				plugin.Initialize(app, env);
 		}
 
-		private static void OnConnectionInitializing(object sender, SysConnectionRegisteredArgs e)
+		private static void OnConnectionInitialized(object sender, SysConnectionArgs e)
 		{
 			foreach (var i in Shell.GetConfiguration<IClientSys>().DataProviders)
 			{

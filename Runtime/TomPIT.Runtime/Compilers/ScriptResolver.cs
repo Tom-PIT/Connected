@@ -9,9 +9,9 @@ using TomPIT.Connectivity;
 
 namespace TomPIT.Compilers
 {
-	public class ReferenceResolver : SourceReferenceResolver
+	public class ScriptResolver : SourceReferenceResolver
 	{
-		public ReferenceResolver(ISysConnection connection, Guid microService)
+		public ScriptResolver(ISysConnection connection, Guid microService)
 		{
 			Connection = connection;
 			MicroService = microService;
@@ -20,7 +20,7 @@ namespace TomPIT.Compilers
 		private ISysConnection Connection { get; }
 		private Guid MicroService { get; }
 
-		protected bool Equals(ReferenceResolver other)
+		protected bool Equals(ScriptResolver other)
 		{
 			return Equals(Connection, other.Connection);
 		}
@@ -28,21 +28,15 @@ namespace TomPIT.Compilers
 		public override bool Equals(object obj)
 		{
 			if (ReferenceEquals(null, obj))
-			{
 				return false;
-			}
 
 			if (ReferenceEquals(this, obj))
-			{
 				return true;
-			}
 
 			if (obj.GetType() != GetType())
-			{
 				return false;
-			}
 
-			return Equals((ReferenceResolver)obj);
+			return Equals((ScriptResolver)obj);
 		}
 
 		public override int GetHashCode()
@@ -63,6 +57,21 @@ namespace TomPIT.Compilers
 
 		public override Stream OpenRead(string resolvedPath)
 		{
+			var sourceCode = LoadScript(resolvedPath);
+
+			if (sourceCode == null)
+				return null;
+
+			var content = Connection.GetService<IComponentService>().SelectText(sourceCode.MicroService(Connection), sourceCode);
+
+			if (string.IsNullOrWhiteSpace(content))
+				return null;
+
+			return new MemoryStream(Encoding.UTF8.GetBytes(content));
+		}
+
+		public ISourceCode LoadScript(string resolvedPath)
+		{
 			var tokens = resolvedPath.Split("/");
 			/*
 			 * possible references:
@@ -81,7 +90,7 @@ namespace TomPIT.Compilers
 				return null;
 		}
 
-		private Stream LoadApi(string microService, string api, string operation)
+		private ISourceCode LoadApi(string microService, string api, string operation)
 		{
 			IMicroService ms = null;
 
@@ -122,16 +131,11 @@ namespace TomPIT.Compilers
 					throw new RuntimeException(SR.ErrScopeError);
 			}
 
-			var content = Connection.GetService<IComponentService>().SelectText(op.MicroService(Connection), op);
-
-			if (string.IsNullOrWhiteSpace(content))
-				return null;
-
-			return new MemoryStream(Encoding.UTF8.GetBytes(content));
+			return op;
 
 		}
 
-		private Stream LoadScript(string microService, string script)
+		private ISourceCode LoadScript(string microService, string script)
 		{
 			IMicroService ms = null;
 
@@ -156,12 +160,7 @@ namespace TomPIT.Compilers
 					throw new RuntimeException(SR.ErrScopeError);
 			}
 
-			var content = Connection.GetService<IComponentService>().SelectText(((IConfiguration)s).MicroService(Connection), s);
-
-			if (string.IsNullOrWhiteSpace(content))
-				return null;
-
-			return new MemoryStream(Encoding.UTF8.GetBytes(content));
+			return s;
 		}
 
 		public override string ResolveReference(string path, string baseFilePath)

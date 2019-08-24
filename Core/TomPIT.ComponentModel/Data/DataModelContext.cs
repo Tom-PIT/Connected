@@ -17,6 +17,7 @@ namespace TomPIT.Data
 		internal const string TransactionProvider = "TomPIT.Design.CodeAnalysis.Providers.TransactionProvider, TomPIT.Design";
 		internal const string TransactionParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.TransactionParameterProvider, TomPIT.Design";
 		internal const string ConnectionProvider = "TomPIT.Design.CodeAnalysis.Providers.ConnectionProvider, TomPIT.Design";
+		internal const string CommandTextProvider = "TomPIT.Design.CodeAnalysis.Providers.CommandTextProvider, TomPIT.Design";
 
 		private DatabaseGet _database = null;
 		private DatabasePost _databasePost = null;

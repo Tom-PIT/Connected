@@ -403,26 +403,26 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
         private List<ApiParameter> QuerySchemaParameters(IExecutionContext context, IApiOperation operation)
         {
-            var args = new OperationManifestArguments(context, operation);
+            //var args = new OperationManifestArguments(context, operation);
 
-            context.Connection().GetService<ICompilerService>().Execute(operation.MicroService(context.Connection()), operation, this, args, out bool handled);
+            //context.Connection().GetService<ICompilerService>().Execute(operation.MicroService(context.Connection()), operation, this, args, out bool handled);
 
-            if (handled)
-            {
-                var r = new List<ApiParameter>();
+            //if (handled)
+            //{
+            //    var r = new List<ApiParameter>();
 
-                foreach(var i in args.Manifest.Parameters)
-                {
-                    r.Add(new ApiParameter
-                    {
-                        DataType=i.Type.ToFriendlyName(),
-                        Name=i.Name,
-                        Required=i.IsRequired
-                    });
-                }
+            //    foreach(var i in args.Manifest.Parameters)
+            //    {
+            //        r.Add(new ApiParameter
+            //        {
+            //            DataType=i.Type.ToFriendlyName(),
+            //            Name=i.Name,
+            //            Required=i.IsRequired
+            //        });
+            //    }
 
-                return r;
-            }
+            //    return r;
+            //}
 
             return null;
         }

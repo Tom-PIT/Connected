@@ -2,9 +2,9 @@
 
 namespace TomPIT.Connectivity
 {
-	public class SysConnectionRegisteredArgs : EventArgs
+	public class SysConnectionArgs : EventArgs
 	{
-		public SysConnectionRegisteredArgs(ISysConnection connection)
+		public SysConnectionArgs(ISysConnection connection)
 		{
 			Connection = connection;
 		}

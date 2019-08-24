@@ -2,6 +2,7 @@
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Compilation;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
 using TomPIT.Services;
@@ -21,5 +22,7 @@ namespace TomPIT.Compilation
 
 		Type ResolveType(Guid microService, ISourceCode sourceCode, string typeName);
 		Type ResolveType(Guid microService, ISourceCode sourceCode, string typeName, bool throwException);
+
+		IScriptContext CreateScriptContext(ISourceCode sourceCode);
 	}
 }

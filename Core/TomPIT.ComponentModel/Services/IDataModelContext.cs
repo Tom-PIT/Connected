@@ -34,10 +34,10 @@ namespace TomPIT.Services
 
 		IDataConnection OpenConnection([CodeAnalysisProvider(OperationArguments.ConnectionProvider)]string connection);
 
-		IDataReader<T> OpenReader<T>(IDataConnection connection, string commandText);
-		IDataWriter OpenWriter(IDataConnection connection, string commandText);
+		IDataReader<T> OpenReader<T>(IDataConnection connection, [CodeAnalysisProvider(OperationArguments.CommandTextProvider)]string commandText);
+		IDataWriter OpenWriter(IDataConnection connection, [CodeAnalysisProvider(OperationArguments.CommandTextProvider)]string commandText);
 
-		IDataReader<T> OpenReader<T>([CodeAnalysisProvider(OperationArguments.ConnectionProvider)]string connection, string commandText);
-		IDataWriter OpenWriter([CodeAnalysisProvider(OperationArguments.ConnectionProvider)]string connection, string commandText);
+		IDataReader<T> OpenReader<T>([CodeAnalysisProvider(OperationArguments.ConnectionProvider)]string connection, [CodeAnalysisProvider(OperationArguments.CommandTextProvider)]string commandText);
+		IDataWriter OpenWriter([CodeAnalysisProvider(OperationArguments.ConnectionProvider)]string connection, [CodeAnalysisProvider(OperationArguments.CommandTextProvider)]string commandText);
 	}
 }

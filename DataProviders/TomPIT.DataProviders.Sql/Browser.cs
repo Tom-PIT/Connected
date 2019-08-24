@@ -28,6 +28,10 @@ namespace TomPIT.DataProviders.Sql
 				throw new NotSupportedException();
 		}
 
+		public List<string> QueryGroupObjects(IConnection connection)
+		{
+			return QueryGroupObjects(connection, "Stored procedures");
+		}
 		public List<string> QueryGroupObjects(IConnection connection, string schemaGroup)
 		{
 			using (var c = new SqlConnection(connection.Value))
@@ -285,6 +289,11 @@ namespace TomPIT.DataProviders.Sql
 				throw new NotSupportedException();
 
 			return r;
+		}
+
+		public List<ISchemaParameter> QueryParameters(IConnection repository, string groupObject)
+		{
+			return QueryParameters(repository, "Stored procedures", groupObject);
 		}
 	}
 }

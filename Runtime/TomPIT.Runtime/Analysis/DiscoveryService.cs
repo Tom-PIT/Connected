@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Analysis.Manifest;
 using TomPIT.Connectivity;
 
 namespace TomPIT.Analysis
@@ -110,5 +111,45 @@ namespace TomPIT.Analysis
 			return Connection.GetService<IComponentService>().SelectConfiguration(component.Token) as IServiceReferences;
 		}
 
+		public IComponentManifest Manifest(Guid component)
+		{
+			var c = Connection.GetService<IComponentService>().SelectComponent(component);
+
+			if (c == null)
+				return null;
+
+			return c.Manifest(Connection);
+		}
+
+		public IComponentManifest Manifest(string microService, string category, string componentName)
+		{
+			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
+
+			if (ms == null)
+				return null;
+
+			var c = Connection.GetService<IComponentService>().SelectComponent(ms.Token, category, componentName);
+
+			if (c == null)
+				return null;
+
+			return c.Manifest(Connection);
+		}
+
+		public List<IComponentManifest> Manifests(Guid microService)
+		{
+			var components = Connection.GetService<IComponentService>().QueryComponents(microService);
+			var result = new List<IComponentManifest>();
+
+			foreach (var component in components)
+			{
+				var manifest = component.Manifest(Connection);
+
+				if (manifest != null)
+					result.Add(manifest);
+			}
+
+			return result;
+		}
 	}
 }

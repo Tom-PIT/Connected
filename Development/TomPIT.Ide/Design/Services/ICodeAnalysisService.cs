@@ -1,9 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.Ide.CodeAnalysis;
 using TomPIT.Services;
 
 namespace TomPIT.Design.Services
@@ -17,5 +19,8 @@ namespace TomPIT.Design.Services
 		IHoverInfo Hover(IExecutionContext sender, CodeStateArgs e);
 		ICodeLens CodeLens(IExecutionContext sender, CodeLensArgs e);
 		ILocation Range(IExecutionContext sender, CodeStateArgs e);
+
+		void RegisterSnippetProvider(ISnippetProvider provider);
+		List<ISuggestion> ProvideSnippets(SnippetArgs e);
 	}
 }

@@ -1,91 +1,116 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Scripting.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Reflection;
 using System.Text;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Compilation;
 using TomPIT.Connectivity;
 
 namespace TomPIT.Compilers
 {
-    internal class CompilerScript:IDisposable
-    {
-        public CompilerScript(ISysConnection connection, Guid microService, ISourceCode sourceCode)
-        {
-            MicroService = microService;
-            SourceCode = sourceCode;
-            Connection = connection;
-        }
+	internal class CompilerScript : IDisposable
+	{
+		public CompilerScript(ISysConnection connection, Guid microService, ISourceCode sourceCode)
+		{
+			MicroService = microService;
+			SourceCode = sourceCode;
+			Connection = connection;
+		}
 
-        public Guid MicroService { get; }
-        public ISourceCode SourceCode { get; }
-        protected ISysConnection Connection { get; }
+		public Guid MicroService { get; }
+		public ISourceCode SourceCode { get; }
+		protected ISysConnection Connection { get; }
 
-        public void Create()
-        {
-            var code = Connection.GetService<IComponentService>().SelectText(MicroService, SourceCode);
+		public List<Guid> ScriptReferences { get; private set; }
+		public void Create()
+		{
+			var code = Connection.GetService<IComponentService>().SelectText(MicroService, SourceCode);
 
-            if (string.IsNullOrWhiteSpace(code))
-                return;
+			if (string.IsNullOrWhiteSpace(code))
+				return;
 
-            CompilerService.ResolveReferences(Connection, MicroService, SourceCode, code);
+			var options = ScriptOptions.Default
+				 .WithImports(Usings)
+				 .WithReferences(References)
+				 .WithSourceResolver(new ScriptResolver(Connection, MicroService))
+				 .WithMetadataResolver(new AssemblyResolver(Connection, MicroService))
+				 .WithEmitDebugInformation(true)
+				 .WithFilePath(SourceCode.ScriptName(Connection))
+				 .WithFileEncoding(Encoding.UTF8);
 
-            //Result = new ScriptDescriptor
-            //{
-            //    MicroService = MicroService,
-            //    Id = SourceCode.Id
-            //};
+			using (var loader = new InteractiveAssemblyLoader())
+			{
+				var scriptContext = Connection.GetService<ICompilerService>().CreateScriptContext(SourceCode);
 
-            var options = ScriptOptions.Default
-                .WithImports(Usings)
-                .WithReferences(References)
-                .WithSourceResolver(new ReferenceResolver(Connection, MicroService))
-                .WithMetadataResolver(new MetaDataResolver(Connection, MicroService))
-                .WithEmitDebugInformation(true)
-                .WithFilePath(SourceCode.ScriptName(Connection))
-                .WithFileEncoding(Encoding.UTF8);
+				var refs = new List<Guid>();
 
-            using (var loader = new InteractiveAssemblyLoader())
-            {
-                var refs = CompilerService.ParseReferences(code);
+				foreach (var reference in scriptContext.SourceFiles)
+					refs.Add(reference.Value.Id);
 
-                foreach (var i in refs)
-                {
-                    var asm = MetaDataResolver.LoadDependency(Connection, MicroService, i);
+				if (refs.Count > 0)
+					ScriptReferences = refs;
 
-                    if (asm != null)
-                        loader.RegisterDependency(asm);
-                }
+				foreach (var reference in scriptContext.References)
+				{
+					if (reference.Value == ImmutableArray<PortableExecutableReference>.Empty)
+						continue;
 
-                Script = CreateScript(code, options, loader);
-            }
-        }
+					foreach(var executable in reference.Value)
+					{
+						/*
+						 * in memory assembly
+						 */
+						if (string.IsNullOrEmpty(executable.FilePath))
+						{
+							var tokens = reference.Key.Split('/');
+							var ms = MicroService;
+							var name = reference.Key;
 
-        protected virtual Script<object> CreateScript(string sourceCode, ScriptOptions options,  InteractiveAssemblyLoader loader)
-        {
-            return CSharpScript.Create(sourceCode, options: options, assemblyLoader: loader);
-        }
-        protected virtual List<Assembly> References=> new List<Assembly>
-            {
-                CompilerService.LoadSystemAssembly("TomPIT.Core"),
-                CompilerService.LoadSystemAssembly("TomPIT.ComponentModel"),
-                CompilerService.LoadSystemAssembly("Newtonsoft.Json")
-            };
-        protected virtual string[] Usings
-        {
-            get {return CompilerService.CombineUsings(null); }
-        }
+							if (tokens.Length > 1)
+							{
+								ms = Connection.GetService<IMicroServiceService>().Select(tokens[0]).Token;
+								name = tokens[1];
+							}
 
-        public void Dispose()
-        {
-            Script = null;
-        }
+							var asm = AssemblyResolver.LoadDependency(Connection, ms, name);
 
-        //public IScriptDescriptor Result { get; private set; }
-        public Script<object> Script { get; private set; }
-    }
+							if (asm != null)
+								loader.RegisterDependency(asm);
+						}
+					}
+				}
 
+				Script = CreateScript(code, options, loader);
+			}
+		}
+
+		protected virtual Script<object> CreateScript(string sourceCode, ScriptOptions options, InteractiveAssemblyLoader loader)
+		{
+			return CSharpScript.Create(sourceCode, options: options, assemblyLoader: loader);
+		}
+		protected virtual List<Assembly> References => new List<Assembly>
+				{
+					 CompilerService.LoadSystemAssembly("TomPIT.Core"),
+					 CompilerService.LoadSystemAssembly("TomPIT.ComponentModel"),
+					 CompilerService.LoadSystemAssembly("Newtonsoft.Json")
+				};
+		protected virtual string[] Usings
+		{
+			get { return CompilerService.CombineUsings(null); }
+		}
+
+		public void Dispose()
+		{
+			Script = null;
+		}
+
+		//public IScriptDescriptor Result { get; private set; }
+		public Script<object> Script { get; private set; }
+	}
 }
