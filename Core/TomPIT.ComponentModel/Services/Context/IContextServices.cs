@@ -1,7 +1,11 @@
-﻿namespace TomPIT.Services.Context
+﻿using TomPIT.ComponentModel.Services.Context;
+
+namespace TomPIT.Services.Context
 {
 	public interface IContextServices
 	{
+		IContextAuthorizationService Authorization { get; }
+
 		IContextDataService Data { get; }
 		IContextTimezoneService Timezone { get; }
 		IContextIdentityService Identity { get; }

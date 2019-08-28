@@ -18,33 +18,30 @@ namespace TomPIT.UI
 		{
 			get
 			{
-				if (Shell.HttpContext == null)
-					return false;
-
 				var kind = ViewInfo.ResolveViewKind(_viewPath);
 
 				if (kind == ViewKind.View)
 				{
 					var path = _viewPath.Substring(7).Substring(0, _viewPath.Length - 14);
 
-					return Instance.GetService<IViewService>().HasChanged(kind, path, ViewEngineBase.CreateActionContext(Shell.HttpContext));
+					return Instance.GetService<IViewService>().HasChanged(kind, path);
 				}
 				else if (kind == ViewKind.Snippet)
 				{
 					var snippetKind = ViewInfo.ResolveSnippetKind(_viewPath);
-					return Instance.GetService<IViewService>().HasSnippetChanged(snippetKind, Path.GetFileNameWithoutExtension(_viewPath), ViewEngineBase.CreateActionContext(Shell.HttpContext));
+					return Instance.GetService<IViewService>().HasSnippetChanged(snippetKind, Path.GetFileNameWithoutExtension(_viewPath));
 				}
 				else if (kind == ViewKind.Report)
-					return Instance.GetService<IViewService>().HasChanged(kind, _viewPath, null);
+					return Instance.GetService<IViewService>().HasChanged(kind, _viewPath);
 				else if (kind == ViewKind.MailTemplate)
 				{
 					var tokens = _viewPath.Split('/');
 					var path = $"{tokens[tokens.Length - 2]}/{tokens[tokens.Length - 1]}";
 
-					return Instance.GetService<IViewService>().HasChanged(kind, path, null);
+					return Instance.GetService<IViewService>().HasChanged(kind, path);
 				}
 				else
-					return Instance.GetService<IViewService>().HasChanged(kind, Path.GetFileNameWithoutExtension(_viewPath), null);
+					return Instance.GetService<IViewService>().HasChanged(kind, Path.GetFileNameWithoutExtension(_viewPath));
 			}
 		}
 

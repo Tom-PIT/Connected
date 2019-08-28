@@ -12,6 +12,10 @@
 		restUrlNotSet: 'REST URL not set'
 	};
 
+    tompit.isView = function (request) {
+        return request.getResponseHeader('X-TP-VIEW') !== null;
+    };
+
 	tompit.invoke = function (e) {
 		var progress = tompit.findProgress(e.container);
 

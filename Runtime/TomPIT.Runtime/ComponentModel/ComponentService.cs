@@ -164,6 +164,10 @@ namespace TomPIT.ComponentModel
 			foreach (var i in contents)
 			{
 				var component = SelectComponent(i.Blob);
+
+				if (component == null)
+					continue;
+
 				var config = SelectConfiguration(component, i, false);
 
 				if (mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
@@ -211,12 +215,22 @@ namespace TomPIT.ComponentModel
 
 		public IConfiguration SelectConfiguration(Guid microService, string category, string name)
 		{
-			return SelectConfiguration(SelectComponent(microService, category, name), null, true);
+			var cmp = SelectComponent(microService, category, name);
+
+			if (cmp == null)
+				return null;
+
+			return SelectConfiguration(cmp, null, true);
 		}
 
 		public IConfiguration SelectConfiguration(Guid component)
 		{
-			return SelectConfiguration(SelectComponent(component), null, true);
+			var cmp = SelectComponent(component);
+
+			if (cmp == null)
+				return null;
+
+			return SelectConfiguration(cmp, null, true);
 		}
 
 		private IConfiguration SelectConfiguration(IComponent component, IBlobContent blob, bool throwException)

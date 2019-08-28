@@ -5,9 +5,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text;
 using TomPIT.Annotations;
+using TomPIT.Compilation;
+using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.ComponentModel.UI;
 using TomPIT.Data;
 using TomPIT.Services.Context;
+using TomPIT.UI;
 
 namespace TomPIT.Services
 {
@@ -61,6 +65,17 @@ namespace TomPIT.Services
 		protected virtual void OnRollback()
 		{
 
+		}
+
+		protected void RenderPartial(string partialName)
+		{
+			if (Shell.HttpContext == null)
+				throw new RuntimeException(SR.ErrHttpContextNull);
+
+			var engine = Shell.HttpContext.RequestServices.GetService(typeof(IViewEngine))as IViewEngine;
+
+			engine.Context = Shell.HttpContext;
+			engine.RenderPartial(Context, partialName);
 		}
 	}
 }

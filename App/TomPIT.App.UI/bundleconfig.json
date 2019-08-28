@@ -25,6 +25,28 @@
     "sourceMap": false
   },
   {
+    "outputFileName": "wwwroot/assets/quill.snow.min.css",
+    "inputFiles": [
+      "wwwroot/assets/Libraries/Quill/quill.core.css",
+      "wwwroot/assets/Libraries/Quill/quill.snow.css"
+    ],
+    "minify": {
+      "enabled": true
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/assets/quill.bubble.min.css",
+    "inputFiles": [
+      "wwwroot/assets/Libraries/Quill/quill.core.css",
+      "wwwroot/assets/Libraries/Quill/quill.bubble.css"
+    ],
+    "minify": {
+      "enabled": true
+    },
+    "sourceMap": false
+  },
+  {
     "outputFileName": "wwwroot/assets/scripts.min.js",
     "inputFiles": [
       "wwwroot/assets/scripts/jquery.js",
@@ -103,6 +125,18 @@
       "wwwroot/assets/libraries/globalize/1.4.2/globalize/unit.js",
       "wwwroot/assets/libraries/moment/2.23.0/moment.js",
       "wwwroot/assets/libraries/Numeral/2.0.6/numeral.js"
+    ],
+    "minify": {
+      "enabled": false,
+      "renameLocals": false
+    },
+    "sourceMap": false
+  },
+
+  {
+    "outputFileName": "wwwroot/assets/quill.min.js",
+    "inputFiles": [
+      "wwwroot/assets/libraries/Quill/quill.min.js"
     ],
     "minify": {
       "enabled": false,

@@ -1,4 +1,5 @@
-﻿using TomPIT.Services.Context;
+﻿using TomPIT.ComponentModel.Services.Context;
+using TomPIT.Services.Context;
 
 namespace TomPIT.Services
 {
@@ -20,6 +21,7 @@ namespace TomPIT.Services
 		private IContextFeatureService _features = null;
 		private IContextSearchService _search = null;
 		private IContextBigDataService _bigData = null;
+		private IContextAuthorizationService _authorization = null;
 
 		public ContextServices(IExecutionContext context) : base(context)
 		{
@@ -198,6 +200,17 @@ namespace TomPIT.Services
 					_bigData = new ContextBigDataService(Context);
 
 				return _bigData;
+			}
+		}
+
+		public IContextAuthorizationService Authorization
+		{
+			get
+			{
+				if (_authorization == null)
+					_authorization = new ContextAuthorizationService(Context);
+
+				return _authorization;
 			}
 		}
 	}

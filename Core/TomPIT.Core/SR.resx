@@ -1029,4 +1029,7 @@
   <data name="ErrMediaFolderExists" xml:space="preserve">
     <value>Folder already exists</value>
   </data>
+  <data name="ErrHttpContextNull" xml:space="preserve">
+    <value>No Http context available</value>
+  </data>
 </root>

@@ -24,7 +24,12 @@ $.widget('tompit.tpIde', {
 			title : document.title
 		},
 		state: [
-		]
+        ],
+        navigation: {
+            index: 0,
+            views: [
+            ]
+        }
 	},
 	_create: function () {
 		this.initialize();
@@ -73,7 +78,9 @@ $.widget('tompit.tpIde', {
 
 		this._initializeExplorerNodes(e);
 
-		$('#exBtnCollapse').unbind('click');
+        $('#exBtnCollapse').unbind('click');
+        $('#exBtnPreviousView').unbind('click');
+        $('#exBtnNextView').unbind('click');
 
 		$('#exBtnCollapse').click(function () {
 			var nodes = $('[data-kind="explorer-node"]');
@@ -99,7 +106,37 @@ $.widget('tompit.tpIde', {
 					path:firstLevel.attr('data-id')
 				});
 		});
-	},
+
+        $('#exBtnPreviousView').click(function () {
+            if (instance.options.navigation.index <= 0)
+                return;
+
+            instance.options.navigation.index--;
+            instance.selectNode({
+                path: instance.options.navigation.views[instance.options.navigation.index].path,
+                reorderNavigation: false,
+                stateIndex : instance.options.navigation.index + 1
+            });
+
+            instance._syncNavigationButtons();
+        });
+
+        $('#exBtnNextView').click(function () {
+            if (instance.options.navigation.index >= instance.options.navigation.views.length -1)
+                return;
+
+            instance.options.navigation.index++;
+            instance.selectNode({
+                path: instance.options.navigation.views[instance.options.navigation.index].path,
+                reorderNavigation: false,
+                stateIndex: instance.options.navigation.index - 1
+            });
+
+            instance._syncNavigationButtons();
+        });
+
+        instance._syncNavigationButtons();
+    },
 
 	_initializeExplorerNodes: function (e) {
 		e = $.extend({
@@ -252,7 +289,8 @@ $.widget('tompit.tpIde', {
 		e = $.extend({
 			target: null,
 			path:null,
-			scroll: true
+            scroll: true,
+            stateIndex : this.options.navigation.index
 		}, e);
 
 		if (e.target === null && e.path !== null)
@@ -264,6 +302,8 @@ $.widget('tompit.tpIde', {
 			if (typeof e.force === 'undefined' || e.force === false)
 				return;
 		}
+
+        this.unloadDesigner(e);
 
 		this.options.selection.explorerNode = path;
 
@@ -278,7 +318,47 @@ $.widget('tompit.tpIde', {
 		document.title = e.target.find('span[data-kind="documentName"]').html() + ' (' + this.options.properties.title + ')';
 
 		if (e.scroll)
-			this.scrollToNode(e);
+            this.scrollToNode(e);
+        
+        if (typeof this.options.selection.explorerNode !== 'undefined' && this.options.selection.explorerNode !== null && this.options.selection.explorerNode.length > 0) {
+            var existingIndex = -1;
+
+            var en = this.options.selection.explorerNode;
+
+            $.each(this.options.navigation.views, function (i, v) {
+                if (v.path === en) {
+                    existingIndex = i;
+                    return false;
+                }
+            });
+
+            if (existingIndex === -1) {
+                this.options.navigation.views.push({ path: en });
+
+                if (this.options.navigation.views.length > 25)
+                    this.options.navigation.views.shift();
+
+                this.options.navigation.index = Math.max(0, this.options.navigation.views.length - 1);
+            }
+            else {
+                var reorderNavigation = true;
+
+                if (typeof e.reorderNavigation !== 'undefined')
+                    reorderNavigation = e.reorderNavigation;
+                
+                if (reorderNavigation) {
+                    var existingState = this.options.navigation.views[existingIndex].state;
+
+                    this.options.navigation.views.splice(existingIndex, 1);
+                    this.options.navigation.views.push({ path: en, state: existingState });
+                    this.options.navigation.index = Math.max(0, this.options.navigation.views.length - 1);
+                }
+                else
+                    this.options.navigation.index = existingIndex;
+            }
+            
+            this._syncNavigationButtons();
+        }
 	},
 	_syncNode: function (s, e) {
 		var element = s._findElement(e.target);
@@ -304,7 +384,7 @@ $.widget('tompit.tpIde', {
 		}, 1000);
 	},
 
-	setSelection: function (path) {
+    setSelection: function (path) {
 		this.loadSection({
 			section: 'selection',
 			path: path
@@ -786,8 +866,8 @@ $.widget('tompit.tpIde', {
 	setDescription: function (title, description) {
 		$('#devPropertyDescription').html('<strong>' + title + '</strong><br/>' + description);
 	},
-	setSelectionId: function (id) {
-		this.options.selection.id = id;
+    setSelectionId: function (id) {
+        this.options.selection.id = id;
 	},
 	setDesignerSelectionId: function (id) {
 		this.options.selection.designerId = id;
@@ -856,8 +936,7 @@ $.widget('tompit.tpIde', {
                     $('#devTabErrorList').html(data);
                 }
 				else if (s === 'designer') {
-					$('#ide').off('toolbarClick');
-					instance.setActiveDesigner(null);
+                    $('#ide').off('toolbarClick');
 					$('#devDesigner').html(data);
 					instance.initializeDesigner();
 				}
@@ -907,7 +986,14 @@ $.widget('tompit.tpIde', {
 				});
 		});
 
-		tompit.initContainer('#devDesigner');
+        tompit.initContainer('#devDesigner');
+
+        if (this.options.designer.active !== null) {
+            var state = this.options.navigation.views[this.options.navigation.index].state;
+
+            if (typeof state !== 'undefined' && state !== null && $.isFunction(this.options.designer.active.onLoadState))
+                this.options.designer.active.onLoadState(state);
+        }
 	},
 	setPropertySaveMode: function (v) {
 		this.options.properties.saveMode = v;
@@ -919,12 +1005,22 @@ $.widget('tompit.tpIde', {
 	elementId: function (target) {
 		return $(target).closest('[data-id]').attr('data-id');
 	},
-	setActiveDesigner: function (d) {
-		this.options.designer.active = d;
+    unloadDesigner: function (e) {
+        if (this.options.designer.active === null)
+            return;
+
+        if (typeof e.stateIndex !== 'undefined' && $.isFunction(this.options.designer.active.onSaveState))
+            this.options.navigation.views[e.stateIndex].state = this.options.designer.active.onSaveState();
+
+        if ($.isFunction(this.options.designer.active.onUnload))
+            this.options.designer.active.onUnload();
+    },
+    setActiveDesigner: function (d) {
+        this.options.designer.active = d;
 	},
 	designerAction: function (d, progress) {
 		return this._action(d, progress, 'action');
-	},
+    },
 	ideAction: function (d, progress) {
 		return this._action(d, progress, 'ide');
 	},
@@ -1055,7 +1151,11 @@ $.widget('tompit.tpIde', {
 		}
 
 		return current;
-	},
+    },
+    _syncNavigationButtons: function () {
+        $('#exBtnPreviousView').prop('disabled', this.options.navigation.index === 0);
+        $('#exBtnNextView').prop('disabled', this.options.navigation.index >= this.options.navigation.views.length - 1);
+    },
 	/*
 	 * toolbar
 	 */

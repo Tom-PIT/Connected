@@ -81,7 +81,7 @@ namespace TomPIT.UI
 
 			if (path.StartsWith("Views/Dynamic/Master"))
 				return ViewKind.Master;
-			else if (path.StartsWith("Views/Dynamic/Partial"))
+			else if (path.StartsWith("Views/Dynamic/Partial") || path.StartsWith(":partial"))
 				return ViewKind.Partial;
 			else if (path.StartsWith("Views/Dynamic/Snippet"))
 				return ViewKind.Snippet;
@@ -196,7 +196,7 @@ namespace TomPIT.UI
 			if (!Exists)
 				return;
 
-			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(partial.TextBlob);
+			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(partial.Component);
 			Blob = Instance.GetService<IStorageService>().Select(partial.TextBlob);
 
 			var content = Instance.GetService<ICompilerService>().CompileView(Instance.Connection, partial);

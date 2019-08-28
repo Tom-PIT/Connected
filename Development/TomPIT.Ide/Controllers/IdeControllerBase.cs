@@ -229,7 +229,6 @@ namespace TomPIT.Controllers
 				return Ok();
 		}
 
-
 		protected abstract IdeModelBase CreateModel();
 	}
 }

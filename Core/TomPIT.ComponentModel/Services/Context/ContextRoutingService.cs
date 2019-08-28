@@ -195,6 +195,7 @@ namespace TomPIT.Services.Context
 			return string.Format("{0}/{1}", appUrl, route);
 		}
 
+		[Obsolete]
 		public string GenerateUrl(string primaryKey, string text, JArray existing, string displayProperty, string primaryKeyProperty)
 		{
 			var items = new List<IUrlRecord>();
@@ -217,7 +218,22 @@ namespace TomPIT.Services.Context
 				items.Add(new UrlRecord(id, txt));
 			}
 
-			return UrlGenerator.GenerateUrl(primaryKey, text, items);
+			return GenerateUrl(primaryKey, text, items);
+		}
+
+		public string GenerateUrl(string primaryKey, string text, Dictionary<string,string> existing)
+		{
+			var items = new List<IUrlRecord>();
+
+			foreach (var i in existing)
+				items.Add(new UrlRecord(i.Key, i.Value));
+
+			return GenerateUrl(primaryKey, text, items);
+		}
+
+		public string GenerateUrl(string primaryKey, string text, List<IUrlRecord> existing)
+		{
+			return UrlGenerator.GenerateUrl(primaryKey, text, existing);
 		}
 
 		public string ParseUrl(string template)
@@ -255,6 +271,19 @@ namespace TomPIT.Services.Context
 			}
 
 			return $"{Shell.HttpContext.Request.RootUrl()}/{compiledTokens.ToString().TrimEnd('/')}";
+		}
+
+		public T RouteValue<T>(string key)
+		{
+			if (Shell.HttpContext == null)
+				return default;
+
+			var routeValue = Shell.HttpContext.GetRouteValue(key);
+
+			if (routeValue == null)
+				return default;
+
+			return Types.Convert<T>(routeValue);
 		}
 	}
 }

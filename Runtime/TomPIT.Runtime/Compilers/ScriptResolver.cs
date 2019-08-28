@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -111,7 +112,12 @@ namespace TomPIT.Compilers
 			else
 				ms = Connection.GetService<IMicroServiceService>().Select(MicroService);
 
-			if (!(Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "Api", api) is IApi config))
+			var component = Connection.GetService<IComponentService>().SelectComponent(ms.Token, "Api", api);
+
+			if (component == null)
+				return null;
+
+			if (!(Connection.GetService<IComponentService>().SelectConfiguration(component.Token) is IApi config))
 				throw new RuntimeException($"{SR.ErrServiceOperationNotFound} ({microService}/{api}/{operation})");
 
 			if (config.MicroService(Connection) != MicroService)
@@ -119,11 +125,11 @@ namespace TomPIT.Compilers
 				if (config.Scope != ElementScope.Public)
 					throw new RuntimeException(SR.ErrScopeError);
 			}
-
+			
 			var op = config.Operations.FirstOrDefault(f => string.Compare(f.Name, TrimExtension(operation), true) == 0);
 
 			if (op == null)
-				throw new RuntimeException($"{SR.ErrComponentNotFound} ({api}/{operation})");
+				return null;// throw new RuntimeException($"{SR.ErrComponentNotFound} ({api}/{operation})");
 
 			if (config.MicroService(Connection) != MicroService)
 			{
@@ -151,8 +157,14 @@ namespace TomPIT.Compilers
 				originMicroService.ValidateMicroServiceReference(Connection, ms.Name);
 			}
 
-			if (!(Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "Script", TrimExtension(script)) is IScript s))
-				throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrComponentNotFound, microService, TrimExtension(script)));
+			var scriptName = TrimExtension(script);
+			var component = Connection.GetService<IComponentService>().SelectComponent(ms.Token, "Script", scriptName);
+
+			if (component == null)
+				return null;
+
+			if (!(Connection.GetService<IComponentService>().SelectConfiguration(component.Token) is IScript s))
+				throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrComponentNotFound, microService, scriptName));
 
 			if (((IConfiguration)s).MicroService(Connection) != MicroService)
 			{

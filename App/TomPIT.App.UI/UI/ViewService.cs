@@ -165,9 +165,9 @@ namespace TomPIT.UI
 				if (!view.Enabled)
 					continue;
 
-				var targetTokens = view.Url == null ? new string[0] : view.Url.Split('/');
+				var viewTokens = view.Url == null ? new string[0] : view.Url.Split('/');
 
-				if (tokens.Length != targetTokens.Length)
+				if (tokens.Length < RequiredTokens(viewTokens) || tokens.Length > viewTokens.Length)
 					continue;
 
 				bool match = true;
@@ -176,17 +176,16 @@ namespace TomPIT.UI
 				for (int j = 0; j < tokens.Length; j++)
 				{
 					var t1 = tokens[j];
-					var t2 = targetTokens[j];
+					var t2 = viewTokens[j];
 
-					if (t2.StartsWith("{") && t2.EndsWith("}"))
+					if (RouteParameter.IsParameter(t2))
 					{
+						var parameter = new RouteParameter(t2);
+
 						if (context != null)
-							routeData.Add(t2.Substring(1, t2.Length - 2), t1);
-
-						continue;
+							routeData.Add(parameter.Name, t1);
 					}
-
-					if (string.Compare(t1, t2, true) != 0)
+					else if (string.Compare(t1, t2, true) != 0)
 					{
 						match = false;
 						break;
@@ -195,14 +194,60 @@ namespace TomPIT.UI
 
 				if (match)
 				{
-					foreach (var j in routeData)
-						context.RouteData.Values[j.Key] = j.Value;
+					if (context != null)
+					{
+						foreach (var j in routeData)
+							context.RouteData.Values[j.Key] = j.Value;
+					}
+
+					if(tokens.Length != viewTokens.Length)
+					{
+						for (var j = tokens.Length; j < viewTokens.Length; j++)
+						{
+							if (!RouteParameter.IsParameter(viewTokens[j]))
+								return null;
+
+							var parameter = new RouteParameter(viewTokens[j]);
+
+							if (!parameter.IsOptional)
+								return null;
+
+							if (context != null && !string.IsNullOrWhiteSpace(parameter.DefaultValue))
+								context.RouteData.Values[parameter.Name] = parameter.DefaultValue;
+						}
+					}
 
 					return view;
 				}
 			}
 
 			return null;
+		}
+
+		private int RequiredTokens(string[] tokens)
+		{
+			if (tokens == null || tokens.Length == 0)
+				return 0;
+
+			var counter = 0;
+
+			foreach(var token in tokens)
+			{
+				if (!RouteParameter.IsParameter(token))
+				{
+					counter++;
+					continue;
+				}
+
+				var parameter = new RouteParameter(token);
+
+				if (!parameter.IsOptional)
+					counter++;
+				else
+					break;
+			}
+
+			return counter;
 		}
 
 		public string SelectContent(IGraphicInterface ui)
@@ -218,7 +263,7 @@ namespace TomPIT.UI
 			return Encoding.UTF8.GetString(r.Content);
 		}
 
-		public bool HasSnippetChanged(ViewKind kind, string url, ActionContext context)
+		public bool HasSnippetChanged(ViewKind kind, string url)
 		{
 			if (string.Compare(url, "_ViewImports", true) == 0)
 				return false;
@@ -279,7 +324,7 @@ namespace TomPIT.UI
 			return false;
 		}
 
-		public bool HasChanged(ViewKind kind, string url, ActionContext context)
+		public bool HasChanged(ViewKind kind, string url)
 		{
 			if (string.Compare(url, "_ViewImports", true) == 0)
 				return false;

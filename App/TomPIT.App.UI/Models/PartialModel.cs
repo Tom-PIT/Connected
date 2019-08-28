@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Services;
@@ -56,10 +57,28 @@ namespace TomPIT.Models
 			if (c == null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
 
+			MicroService = s;
+
+			IPartialView partial = null;
+
+			if (QualifierName.Contains('/'))
+			{
+				var partialTokens = QualifierName.Split('/');
+
+				MicroService.ValidateMicroServiceReference(Connection, partialTokens[0]);
+				var partialMs = Connection.GetService<IMicroServiceService>().Select(partialTokens[0]);
+
+				partial = Instance.GetService<IComponentService>().SelectConfiguration(partialMs.Token, "Partial", partialTokens[1]) as IPartialView;
+			}
+			else
+				partial = Instance.GetService<IComponentService>().SelectConfiguration(MicroService.Token, "Partial", QualifierName) as IPartialView;
+
+			var args = new ViewInvokeArguments(this);
+
 			Body.Remove("__name");
 			Body.Remove("__component");
 
-			MicroService = s;
+			Connection.GetService<ICompilerService>().Execute(((IConfiguration)partial).MicroService(Connection), partial.Invoke, this, args);
 		}
 	}
 }

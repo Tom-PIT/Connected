@@ -50,6 +50,8 @@ namespace TomPIT
 			
 			services.Configure<RazorViewEngineOptions>(opts =>
 			{
+				opts.ViewLocationExpanders.Add(new ViewLocationExpander());
+
 				opts.FileProviders.Add(
 					new ViewProvider()
 			  );

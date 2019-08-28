@@ -369,4 +369,22 @@
             });
 	}
 
+    ide.setActiveDesigner({
+        onUnload: function () {
+            textEditor.deactivateEditor();
+        },
+        onSaveState: function () {
+            return {
+                'position': textEditor.getEditor().getPosition()
+            }
+        },
+        onLoadState: function (state) {
+            if (typeof state.position !== 'undefined') {
+                textEditor.getEditor().setPosition(state.position);
+                textEditor.getEditor().revealLineInCenter(state.position.lineNumber);
+            }
+
+            textEditor.getEditor().focus();
+        }
+    });
 </script>

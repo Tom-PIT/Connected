@@ -65,7 +65,7 @@ namespace TomPIT.Configuration
 				ve.Context = t;
 
 				ve.Render(t.Request.Path);
-
+				
 				return Task.CompletedTask;
 			});
 		}

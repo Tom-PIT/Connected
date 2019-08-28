@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using TomPIT.Data;
 using TomPIT.Environment;
+using TomPIT.Routing;
 
 namespace TomPIT.Services.Context
 {
@@ -20,12 +22,16 @@ namespace TomPIT.Services.Context
 		string Resource(IUrlHelper helper, Guid blob);
 		string Avatar(Guid user);
 
+		T RouteValue<T>(string key);
 		void NotFound();
 		void Forbidden();
 		void Redirect(string url);
 		void BadRequest();
 
+		[Obsolete]
 		string GenerateUrl(string primaryKey, string text, JArray existing, string displayProperty, string primaryKeyProperty);
+		string GenerateUrl(string primaryKey, string text, Dictionary<string, string> existing);
+		string GenerateUrl(string primaryKey, string text, List<IUrlRecord> existing);
 		string ParseUrl(string template);
 		string ParseUrl(string template, IDictionary<string, object> parameters);
 	}

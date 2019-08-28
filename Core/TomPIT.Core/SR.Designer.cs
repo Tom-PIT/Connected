@@ -1141,6 +1141,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No Http context available.
+        /// </summary>
+        public static string ErrHttpContextNull {
+            get {
+                return ResourceManager.GetString("ErrHttpContextNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Http request not available..
         /// </summary>
         public static string ErrHttpRequestNotAvailable {

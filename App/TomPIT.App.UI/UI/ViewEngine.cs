@@ -9,6 +9,7 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Diagnostics;
 using TomPIT.Models;
+using TomPIT.Services;
 
 namespace TomPIT.UI
 {
@@ -32,6 +33,42 @@ namespace TomPIT.UI
 					return string.Format("~/Views/Dynamic/Snippet/Partial/{0}.{1}.cshtml", vi.Path, snippetName);
 				default:
 					throw new NotSupportedException();
+			}
+		}
+
+		public void RenderPartial(IExecutionContext context, string name)
+		{
+			var partialView = ResolveView(context, name);
+
+			if (partialView == null)
+				return;
+
+			var vm = CreatePartialModel(name);
+			var args = new ViewInvokeArguments(vm);
+
+			vm.Connection().GetService<ICompilerService>().Execute(((IConfiguration)partialView).MicroService(vm.Connection()), partialView.Invoke, this, args);
+
+			var viewEngineResult = Engine.FindView(vm.ActionContext, name, false);
+
+			if (!viewEngineResult.Success)
+			{
+				Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+				return;
+			}
+
+			var view = viewEngineResult.View;
+
+			if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
+				return;
+
+			var content = CreateContent(view, args);
+
+			var buffer = Encoding.UTF8.GetBytes(content);
+
+			if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
+			{
+				Context.Response.Headers.Add("X-TP-VIEW", name);
+				Context.Response.Body.Write(buffer, 0, buffer.Length);
 			}
 		}
 
@@ -68,9 +105,7 @@ namespace TomPIT.UI
 						return;
 				}
 
-				var actionContext = CreateActionContext(Context);
-				
-				var viewEngineResult = Engine.FindView(actionContext, name, false);
+				var viewEngineResult = Engine.FindView(model.ActionContext, name, false);
 
 				if (!viewEngineResult.Success)
 				{
@@ -125,6 +160,44 @@ namespace TomPIT.UI
 				cm.Component = vi.ViewComponent;
 
 			return model;
+		}
+
+		private RuntimeModel CreatePartialModel(string name)
+		{
+			var ac = CreateActionContext(Context);
+
+			ac.ActionDescriptor.Properties.Add("viewKind", ViewKind.Partial);
+
+			var vi = new ViewInfo(string.Format("/Views/Dynamic/Partial/{0}.cshtml", name), ac);
+			var ms = vi.ViewComponent == null ? null : Instance.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
+
+			var model = new RuntimeModel(Context.Request, ac, Temp);
+
+			model.Initialize(null, ms);
+
+			if (model is IComponentModel cm && vi.ViewComponent != null)
+				cm.Component = vi.ViewComponent;
+
+			return model;
+		}
+
+		private IPartialView ResolveView(IExecutionContext context, string qualifier)
+		{
+			var tokens = qualifier.Split('/');
+			var ms = context.MicroService;
+			var name = qualifier;
+
+			if (tokens.Length > 1)
+			{
+				ms = context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+
+				if (ms == null)
+					return null;
+
+				name = tokens[1];
+			}
+
+			return context.Connection().GetService<IComponentService>().SelectConfiguration(ms.Token, "Partial", name) as IPartialView;
 		}
 	}
 }

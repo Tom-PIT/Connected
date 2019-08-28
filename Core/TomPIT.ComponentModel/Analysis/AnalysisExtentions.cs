@@ -36,6 +36,9 @@ namespace TomPIT.ComponentModel.Analysis
 
 		public static bool Inherits(this ClassDeclarationSyntax scope, string baseTypeName)
 		{
+			if (scope.BaseList == null)
+				return false;
+
 			foreach(var baseType in scope.BaseList.Types)
 			{
 				if (!(baseType.Type is IdentifierNameSyntax id))

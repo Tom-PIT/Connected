@@ -16,7 +16,38 @@
 		_create: function () {
 			this._editors = [];
 		},
+        deactivateEditor: function () {
+            var target = this;
 
+            if (typeof target.options.instance !== 'undefined' && target.options.instance !== null) {
+                try {
+                    if (typeof target.options.timer !== 'undefined')
+                        clearInterval(target.options.timer);
+
+                    if (typeof target.options.instance.completionItemProvider !== 'undefined')
+                        target.options.instance.completionItemProvider.dispose();
+
+                    if (typeof target.options.instance.signatureHelpProvider !== 'undefined')
+                        target.options.instance.signatureHelpProvider.dispose();
+
+                    if (typeof target.options.instance.hoverProvider !== 'undefined')
+                        target.options.instance.hoverProvider.dispose();
+
+                    if (typeof target.options.instance.codeLensProvider !== 'undefined')
+                        target.options.instance.codeLensProvider.dispose();
+
+                    if (typeof target.options.instance.definitionProvider !== 'undefined')
+                        target.options.instance.definitionProvider.dispose();
+
+
+                    target.options.instance.dispose();
+                    target.options.instance = null;
+                }
+                catch (e) {
+                    console.log(e);
+                }
+            }
+        },
 		activateEditor: function (options) {
 			var target = this;
 
@@ -30,34 +61,7 @@
 
 				monaco.editor.setTheme('TomPIT');
 
-				if (target.options.instance !== null) {
-                    try {
-                        if (typeof target.options.timer !== 'undefined')
-                            clearInterval(target.options.timer);
-
-						if (typeof target.options.instance.completionItemProvider !== 'undefined')
-							target.options.instance.completionItemProvider.dispose();
-
-						if (typeof target.options.instance.signatureHelpProvider !== 'undefined')
-							target.options.instance.signatureHelpProvider.dispose();
-
-						if (typeof target.options.instance.hoverProvider !== 'undefined')
-							target.options.instance.hoverProvider.dispose();
-
-						if (typeof target.options.instance.codeLensProvider !== 'undefined')
-							target.options.instance.codeLensProvider.dispose();
-
-						if (typeof target.options.instance.definitionProvider!== 'undefined')
-							target.options.instance.definitionProvider.dispose();
-
-
-						target.options.instance.dispose();
-						target.options.instance = null;
-					}
-					catch (e) {
-						console.log(e);
-					}
-				}
+                target.deactivateEditor();
 
 				target.options = $.extend({
 					readOnly:false
@@ -146,7 +150,7 @@
 			var op = { identifier: identifier, range: range, text: text, forceMoveMarkers: true };
 
 			this.options.instance.executeEdits("insert-snippet", [op]);
-		},
+        },
 		getValue: function () {
 			return this.options.instance.getValue();
 		},
@@ -172,6 +176,9 @@
             this.options.changeState = false;
 
             return r;
+        },
+        getEditor: function () {
+            return this.options.instance;
         }
 
 	});
