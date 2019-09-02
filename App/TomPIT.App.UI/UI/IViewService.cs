@@ -9,7 +9,7 @@ namespace TomPIT.UI
 	internal interface IViewService
 	{
 		IView Select(string url, ActionContext context);
-		string SelectScripts(Guid microService, Guid view);
+		//string SelectScripts(Guid microService, Guid view);
 		IConfiguration Select(Guid view);
 		IMasterView SelectMaster(string name);
 		IPartialView SelectPartial(string name);

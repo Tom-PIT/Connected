@@ -2,6 +2,7 @@
 using TomPIT.Connectivity;
 using TomPIT.Design.Services;
 using TomPIT.Development.CodeAnalysis.SnippetProviders;
+using TomPIT.Development.Navigation;
 
 namespace TomPIT
 {
@@ -22,6 +23,7 @@ namespace TomPIT
 		private static void OnConnectionInitialize(object sender, SysConnectionArgs e)
 		{
 			e.Connection.RegisterService(typeof(IQaService), typeof(QaService));
+			e.Connection.RegisterService(typeof(INavigationDesignService), typeof(NavigationDesignService));
 		}
 	}
 }

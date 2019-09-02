@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Analysis.Manifest;
@@ -150,6 +151,40 @@ namespace TomPIT.Analysis
 			}
 
 			return result;
+		}
+
+		public List<IMicroService> FlattenReferences(Guid microService)
+		{
+			var r = new List<IMicroService>();
+
+			FlattenReferences(microService, r);
+
+			return r;
+		}
+
+		private void FlattenReferences(Guid microService, List<IMicroService> existing)
+		{
+			var refs = References(microService);
+
+			if (refs == null)
+				return;
+
+			foreach(var reference in refs.MicroServices)
+			{
+				if (string.IsNullOrWhiteSpace(reference.MicroService))
+					continue;
+
+				if (existing.FirstOrDefault(f => string.Compare(f.Name, reference.MicroService, true) == 0) != null)
+					continue;
+
+				var ms = Connection.GetService<IMicroServiceService>().Select(reference.MicroService);
+
+				if (ms != null)
+				{
+					existing.Add(ms);
+					FlattenReferences(ms.Token, existing);
+				}
+			}
 		}
 	}
 }

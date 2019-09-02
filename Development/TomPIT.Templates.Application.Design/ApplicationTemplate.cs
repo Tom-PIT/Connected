@@ -11,6 +11,7 @@ using TomPIT.Application.Data;
 using TomPIT.Application.Design.Media;
 using TomPIT.Application.Events;
 using TomPIT.Application.Features;
+using TomPIT.Application.Navigation;
 using TomPIT.Application.QA;
 using TomPIT.Application.Resources;
 using TomPIT.Application.Search;
@@ -35,16 +36,13 @@ namespace TomPIT.Application
 				{Partial.ComponentCategory, new ItemDescriptor("Partial view", Partial.ComponentCategory, typeof(Partial)) { Glyph = "fal fa-browser", Category = "UI" , Ordinal=2} },
 				{Theme.ComponentCategory, new ItemDescriptor("Theme", Theme.ComponentCategory, typeof(Theme)) { Glyph = "fal fa-pencil-paintbrush", Category = "UI" , Ordinal=3} },
 				{ScriptBundle.ComponentCategory,new ItemDescriptor("Script bundle", ScriptBundle.ComponentCategory, typeof(ScriptBundle)) { Glyph = "fab fa-js", Category = "UI", Ordinal=4 } },
+				{SiteMap.ComponentCategory,new ItemDescriptor("Site map", SiteMap.ComponentCategory, typeof(SiteMap)) { Glyph = "fal fa-route", Category = "UI", Ordinal=5 } },
 				{Api.ComponentCategory, new ItemDescriptor("Api", Api.ComponentCategory, typeof(Api)) { Glyph = "fal fa-broadcast-tower", Category = "Model" , Ordinal=100} },
 					 {Script.ComponentCategory, new ItemDescriptor("Script", Script.ComponentCategory, typeof(Script)) { Glyph = "fal fa-file-code", Category = "Model" , Ordinal=102} },
-                //{ Library.ComponentCategory, new ItemDescriptor("Library", Library.ComponentCategory, typeof(Library)) { Glyph = "fal fa-file-code", Category = "Model" , Ordinal=103} },
 				{Events.EventHandler.ComponentCategory, new ItemDescriptor("Event handler", Events.EventHandler.ComponentCategory, typeof(Events.EventHandler)) { Glyph = "fal fa-bullseye-pointer", Category = "Model" , Ordinal=104} },
 				{DistributedEvent.ComponentCategory, new ItemDescriptor("Distributed event", DistributedEvent.ComponentCategory, typeof(DistributedEvent)) { Glyph = "fal fa-chart-network", Category = "Model" , Ordinal=105} },
 				{HostedWorker.ComponentCategory, new ItemDescriptor("Hosted worker", HostedWorker.ComponentCategory, typeof(HostedWorker)) { Glyph = "fal fa-cog", Category = "Model" , Ordinal=106} },
 				{QueueHandlerConfiguration.ComponentCategory, new ItemDescriptor("Queue handler", QueueHandlerConfiguration.ComponentCategory, typeof(QueueHandlerConfiguration)) { Glyph = "fal fa-cog", Category = "Model" , Ordinal=107} },
-				//{DataSource.ComponentCategory, new ItemDescriptor("Data source", "DataSource", typeof(DataSource)) { Glyph = "fal fa-database", Category = "Data" , Ordinal=200} },
-				//{Transaction.ComponentCategory, new ItemDescriptor("Transaction", "Transaction", typeof(Transaction)) { Glyph = "fal fa-exchange-alt", Category = "Data" , Ordinal=201} },
-				//r.Add(new ItemDescriptor("Data management", DataManagement.ComponentCategory, typeof(DataManagement)) { Glyph = "fal fa-exchange-alt", Category = "Data", Value = "DataManagement" });
 				{Connection.ComponentCategory, new ItemDescriptor("Connection", "Connection", typeof(Connection)) { Glyph = "fal fa-server", Category = "Data" , Ordinal=202} },
 				{"FeatureSet", new ItemDescriptor("Feature set", "FeatureSet", typeof(FeatureSet)) { Glyph = "fal fa-function", Category = "Configuration" , Ordinal=250} },
 				{"Strings", new ItemDescriptor("String table", "StringTable", typeof(StringTable)) { Glyph = "fal fa-font", Category = "Resources" , Ordinal=300} } ,

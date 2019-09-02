@@ -151,33 +151,10 @@ namespace TomPIT.Designers
 				});
 			else if (string.Compare(action, "dataSources", true) == 0)
 				return Result.JsonResult(this, QueryDataSources());
-			else if (string.Compare(action, "createStronglyType", true) == 0)
-				return Result.JsonResult(this, CreateStronglyType(data));
 			else if (string.Compare(action, "definition", true) == 0)
 				return Result.JsonResult(this, CompletionProvider.Definition(Environment.Context, CreateSuggestionArgs(data)));
 
 			return base.OnAction(data, action);
-		}
-
-		private object CreateStronglyType(JObject data)
-		{
-			var ds = data.Required<Guid>("dataSource");
-			var readOnly = data.Optional("readOnly", false);
-			var name = data.Optional("name", string.Empty);
-			var currentText = data.Optional("currentText", string.Empty);
-
-			var st = new StronglyType(Connection)
-			{
-				Name = name,
-				ReadOnly = readOnly,
-				SourceCode = currentText,
-				DataSource = ds
-			};
-
-			return new JObject
-			{
-				{"text", st.Generate() }
-			};
 		}
 
 		private object QueryDataSources()

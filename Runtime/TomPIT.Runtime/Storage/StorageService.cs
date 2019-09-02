@@ -38,7 +38,7 @@ namespace TomPIT.Storage
 			}
 		}
 
-		public void Commit(Guid draft, string primaryKey)
+		public void Commit(string draft, string primaryKey)
 		{
 			var u = Connection.CreateUrl("Storage", "Commit");
 			var args = new JObject
@@ -48,7 +48,7 @@ namespace TomPIT.Storage
 			};
 
 			Connection.Post(u, args);
-			Remove(f => f.Draft == draft && string.Compare(f.PrimaryKey, primaryKey, true) == 0);
+			Remove(f => string.Compare(f.Draft, draft, true) == 0 && string.Compare(f.PrimaryKey, primaryKey, true) == 0);
 		}
 
 		public void Delete(Guid blob)
@@ -97,7 +97,7 @@ namespace TomPIT.Storage
 			return Connection.Get<List<Blob>>(u).ToList<IBlob>();
 		}
 
-		public List<IBlob> QueryDrafts(Guid draft)
+		public List<IBlob> QueryDrafts(string draft)
 		{
 			var u = Connection.CreateUrl("Storage", "QueryDrafts")
 				.AddParameter("draft", draft);

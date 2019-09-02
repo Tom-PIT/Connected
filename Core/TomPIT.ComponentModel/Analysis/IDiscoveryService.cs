@@ -15,5 +15,7 @@ namespace TomPIT.Analysis
 		IComponentManifest Manifest(Guid component);
 		IComponentManifest Manifest(string microService, string category, string componentName);
 		List<IComponentManifest> Manifests(Guid microService);
+
+		List<IMicroService> FlattenReferences(Guid microService);
 	}
 }

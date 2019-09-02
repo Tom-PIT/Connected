@@ -14,19 +14,18 @@ using TomPIT.Services;
 using TomPIT.Storage;
 using System.Linq;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.AspNetCore.Http;
 
 namespace TomPIT.UI
 {
 	internal class ViewService : SynchronizedClientRepository<IConfiguration, Guid>, IViewService
 	{
-		private ViewScriptsCache _scripts = null;
 		private Lazy<ConcurrentDictionary<Guid, bool>> _changeState = new Lazy<ConcurrentDictionary<Guid, bool>>();
 		private Lazy<ConcurrentDictionary<string, bool>> _snippetState = new Lazy<ConcurrentDictionary<string, bool>>();
 
 		public ViewService(ISysConnection connection) : base(connection, "view")
 		{
-			_scripts = new ViewScriptsCache(connection);
-
 			connection.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
 
 			connection.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
@@ -44,12 +43,6 @@ namespace TomPIT.UI
 				return;
 
 			ChangeState[e.Component] = true;
-
-			var c = Connection.GetService<IComponentService>().SelectComponent(e.Component);
-
-			if (c != null)
-				ViewScripts.Remove(e.MicroService, c.Token);
-
 			Refresh(e.Component);
 			SynchronizeSnippetsState(e.Component);
 
@@ -97,12 +90,6 @@ namespace TomPIT.UI
 				return;
 
 			ChangeState[e.Component] = true;
-
-			var c = Connection.GetService<IComponentService>().SelectComponent(e.Component);
-
-			if (c != null)
-				ViewScripts.Remove(e.MicroService, c.Token);
-
 			Refresh(e.Component);
 			SynchronizeSnippetsState(e.Component);
 			ReplaceLogin();
@@ -162,92 +149,20 @@ namespace TomPIT.UI
 			{
 				var view = i as IView;
 
-				if (!view.Enabled)
+				if (!view.Enabled || string.IsNullOrWhiteSpace(view.Url))
 					continue;
 
-				var viewTokens = view.Url == null ? new string[0] : view.Url.Split('/');
+				var template = TemplateParser.Parse(view.Url);
+				var path = url.StartsWith('/') ? url : $"/{url}";
+				var matcher = new TemplateMatcher(template, null);
+				var dictionary = context == null ? new RouteData() : context.RouteData;
+				var isMatch = matcher.TryMatch(path, dictionary.Values);
 
-				if (tokens.Length < RequiredTokens(viewTokens) || tokens.Length > viewTokens.Length)
-					continue;
-
-				bool match = true;
-				var routeData = new Dictionary<string, object>();
-
-				for (int j = 0; j < tokens.Length; j++)
-				{
-					var t1 = tokens[j];
-					var t2 = viewTokens[j];
-
-					if (RouteParameter.IsParameter(t2))
-					{
-						var parameter = new RouteParameter(t2);
-
-						if (context != null)
-							routeData.Add(parameter.Name, t1);
-					}
-					else if (string.Compare(t1, t2, true) != 0)
-					{
-						match = false;
-						break;
-					}
-				}
-
-				if (match)
-				{
-					if (context != null)
-					{
-						foreach (var j in routeData)
-							context.RouteData.Values[j.Key] = j.Value;
-					}
-
-					if(tokens.Length != viewTokens.Length)
-					{
-						for (var j = tokens.Length; j < viewTokens.Length; j++)
-						{
-							if (!RouteParameter.IsParameter(viewTokens[j]))
-								return null;
-
-							var parameter = new RouteParameter(viewTokens[j]);
-
-							if (!parameter.IsOptional)
-								return null;
-
-							if (context != null && !string.IsNullOrWhiteSpace(parameter.DefaultValue))
-								context.RouteData.Values[parameter.Name] = parameter.DefaultValue;
-						}
-					}
-
+				if (isMatch)
 					return view;
-				}
 			}
 
 			return null;
-		}
-
-		private int RequiredTokens(string[] tokens)
-		{
-			if (tokens == null || tokens.Length == 0)
-				return 0;
-
-			var counter = 0;
-
-			foreach(var token in tokens)
-			{
-				if (!RouteParameter.IsParameter(token))
-				{
-					counter++;
-					continue;
-				}
-
-				var parameter = new RouteParameter(token);
-
-				if (!parameter.IsOptional)
-					counter++;
-				else
-					break;
-			}
-
-			return counter;
 		}
 
 		public string SelectContent(IGraphicInterface ui)
@@ -479,14 +394,8 @@ namespace TomPIT.UI
 			return Get(c.Token) as IReport;
 		}
 
-		public string SelectScripts(Guid microService, Guid view)
-		{
-			return ViewScripts.Select(microService, view);
-		}
-
 		private ConcurrentDictionary<Guid, bool> ChangeState => _changeState.Value;
 		private ConcurrentDictionary<string, bool> SnippetState => _snippetState.Value;
-		private ViewScriptsCache ViewScripts => _scripts;
 
 		private void ReplaceLogin()
 		{

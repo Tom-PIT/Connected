@@ -6,7 +6,9 @@ using Microsoft.CodeAnalysis.Text;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using TomPIT.Analysis;
 using TomPIT.Annotations;
@@ -206,6 +208,10 @@ namespace TomPIT.Design.Services
 		private List<ISuggestion> SuggestContent(Document doc, SemanticModel model, TextSpan span)
 		{
 			var node = model.SyntaxTree.GetRoot().FindNode(span);
+
+			if (IsAssignmentExpression(node))
+				return SuggestPropertyValues(doc, model, span, node);
+			
 			MethodInfo methodInfo = null;
 			ConstructorInfo ctorInfo = null;
 			var index = 0;
@@ -234,7 +240,17 @@ namespace TomPIT.Design.Services
 				text = ParseExpressionText(args.Expression);
 			}
 
-			var pars = methodInfo == null ? ctorInfo.GetParameters() : methodInfo.GetParameters();
+			ParameterInfo[] pars = null;
+
+			if (methodInfo == null)
+				pars = ctorInfo.GetParameters();
+			else
+			{
+				pars = methodInfo.GetParameters();
+
+				if (pars.Length > 0 && methodInfo.GetCustomAttribute<ExtensionAttribute>() != null)
+					pars = pars.Skip(1).ToArray();
+			}
 
 			if (index >= pars.Length)
 				return null;
@@ -272,6 +288,59 @@ namespace TomPIT.Design.Services
 			}
 
 			return r;
+		}
+
+		private List<ISuggestion> SuggestPropertyValues(Document doc, SemanticModel model, TextSpan span, SyntaxNode node)
+		{
+			var assignment = node.Parent as AssignmentExpressionSyntax;
+
+			if (assignment == null)
+				return null;
+
+			var property = assignment.ResolvePropertyInfo(model);
+
+			if (property == null)
+				return null;
+
+			var att = property.FindAttribute<CodeAnalysisProviderAttribute>();
+
+			if (att == null)
+				return null;
+
+			var items = new List<ISuggestion>();
+
+			var provider = att.Type == null
+				? Type.GetType(att.TypeName).CreateInstance<ICodeAnalysisProvider>(new object[] { Context })
+				: att.Type.CreateInstance<ICodeAnalysisProvider>(new object[] { Context });
+
+			if (provider == null)
+				return items;
+
+			var literals = provider.ProvideLiterals(Context, new CodeAnalysisArgs(Args.Component, model, node, model.GetSymbolInfo(assignment), null));
+
+			if (literals != null && literals.Count > 0)
+			{
+				foreach (var i in literals)
+				{
+					items.Add(new Suggestion
+					{
+						Description = i.Description,
+						FilterText = i.Text,
+						InsertText = i.Value,
+						Kind = Suggestion.Text,
+						Label = i.Text,
+						SortText = i.Text
+					});
+				}
+			}
+
+			return items;
+
+		}
+
+		private bool IsAssignmentExpression(SyntaxNode node)
+		{
+			return node.Parent is AssignmentExpressionSyntax;
 		}
 
 		private string CleanupValue(string value)

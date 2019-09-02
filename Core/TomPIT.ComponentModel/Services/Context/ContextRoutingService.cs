@@ -1,13 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Template;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations;
 using TomPIT.Data;
 using TomPIT.Environment;
+using TomPIT.Navigation;
 using TomPIT.Routing;
 using TomPIT.Security;
 using TomPIT.Storage;
@@ -85,7 +86,7 @@ namespace TomPIT.Services.Context
 			if (u == null)
 				return null;
 
-			if(u.Avatar == Guid.Empty)
+			if (u.Avatar == Guid.Empty)
 			{
 				var image = Context.Connection().GetService<IGraphicsService>().CreateImage(u.DisplayName(), 512, 512);
 
@@ -221,7 +222,7 @@ namespace TomPIT.Services.Context
 			return GenerateUrl(primaryKey, text, items);
 		}
 
-		public string GenerateUrl(string primaryKey, string text, Dictionary<string,string> existing)
+		public string GenerateUrl(string primaryKey, string text, Dictionary<string, string> existing)
 		{
 			var items = new List<IUrlRecord>();
 
@@ -241,39 +242,26 @@ namespace TomPIT.Services.Context
 			return ParseUrl(template, null);
 		}
 
-		public string ParseUrl(string template, IDictionary<string,object> parameters)
+		public string ParseUrl(string template, RouteValueDictionary parameters)
 		{
-			var tokens = template.Split('/');
-			var compiledTokens = new StringBuilder();
+			return Context.Connection().GetService<INavigationService>().ParseUrl(template, parameters);
+		}
+		public string ParseUrl(string template, IDictionary<string, object> parameters)
+		{
+			RouteValueDictionary values = new RouteValueDictionary();
 
-			foreach(var token in tokens)
+			if(parameters!=null)
 			{
-				if (token.StartsWith('{') && token.EndsWith('}') && parameters !=null)
+				foreach(var parameter in parameters)
 				{
-					var key = token.Substring(1, token.Length - 2);
-					var match = false;
-
-					foreach(var parameter in parameters.Keys)
-					{
-						if(string.Compare(parameter, key, true) == 0)
-						{
-							compiledTokens.Append($"{Types.Convert<string>(parameters[parameter])}/");
-							match = true;
-							break;
-						}
-					}
-
-					if (!match)
-						compiledTokens.Append($"{token}/");
+					values.Add(parameter.Key, parameter.Value);
 				}
-				else
-					compiledTokens.Append($"{token}/");
 			}
 
-			return $"{Shell.HttpContext.Request.RootUrl()}/{compiledTokens.ToString().TrimEnd('/')}";
+			return ParseUrl(template, values);
 		}
 
-		public T RouteValue<T>(string key)
+		public T RouteValue<T>([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string key)
 		{
 			if (Shell.HttpContext == null)
 				return default;
@@ -284,6 +272,39 @@ namespace TomPIT.Services.Context
 				return default;
 
 			return Types.Convert<T>(routeValue);
+		}
+
+		public ISiteMapContainer QuerySiteMap(params string[] keys)
+		{
+			return Connection.GetService<INavigationService>().QuerySiteMap(keys);
+		}
+
+		public List<IBreadcrumb> QueryBreadcrumbs([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey)
+		{
+			return QueryBreadcrumbs(routeKey, null);
+		}
+
+		public List<IBreadcrumb> QueryBreadcrumbs([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey, IDictionary<string, object> parameters)
+		{
+			var values = new RouteValueDictionary();
+
+			if(parameters != null)
+			{
+				foreach (var parameter in parameters)
+					values.Add(parameter.Key, parameter.Value);
+			}
+
+			return QueryBreadcrumbs(routeKey, values);
+		}
+
+		public List<IBreadcrumb> QueryBreadcrumbs([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey, RouteValueDictionary parameters)
+		{
+			return Context.Connection().GetService<INavigationService>().QueryBreadcrumbs(routeKey, parameters);
+		}
+
+		public ISiteMapRoute SelectLink([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey)
+		{
+			return Context.Connection().GetService<INavigationService>().SelectRoute(routeKey);
 		}
 	}
 }

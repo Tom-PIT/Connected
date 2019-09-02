@@ -5,6 +5,8 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.ComponentModel.Data;
+using TomPIT.Data.DataProviders;
 using TomPIT.Services;
 using TomPIT.Services.Context;
 
@@ -12,126 +14,33 @@ namespace TomPIT.Data
 {
 	public class DataModelContext : EventArguments, IDataModelContext
 	{
-		internal const string DataSourceProvider = "TomPIT.Design.CodeAnalysis.Providers.DataSourceProvider, TomPIT.Design";
-		internal const string DataSourceParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.DataSourceParameterProvider, TomPIT.Design";
-		internal const string TransactionProvider = "TomPIT.Design.CodeAnalysis.Providers.TransactionProvider, TomPIT.Design";
-		internal const string TransactionParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.TransactionParameterProvider, TomPIT.Design";
 		internal const string ConnectionProvider = "TomPIT.Design.CodeAnalysis.Providers.ConnectionProvider, TomPIT.Design";
 		internal const string CommandTextProvider = "TomPIT.Design.CodeAnalysis.Providers.CommandTextProvider, TomPIT.Design";
-
-		private DatabaseGet _database = null;
-		private DatabasePost _databasePost = null;
 
 		public DataModelContext(IExecutionContext sender) : base(sender)
 		{
 		}
 
-		public JObject DataSource([CodeAnalysisProvider(DataSourceProvider)]string dataSource,
-		[CodeAnalysisProvider(DataSourceParameterProvider)]JObject arguments)
-		{
-			var q = new DataQualifier(this, dataSource);
-
-			return (JObject)DatabaseGet(q, arguments);
-		}
-
-		public JObject DataSource([CodeAnalysisProvider(DataSourceProvider)]string dataSource)
-		{
-			return DataSource(dataSource, null);
-		}
-
-		public T DataSource<T>([CodeAnalysisProvider(DataSourceProvider)]string dataSource,
-			[CodeAnalysisProvider(DataSourceParameterProvider)]JObject arguments)
-		{
-			var q = new DataQualifier(this, dataSource);
-			var r = DatabaseGet(q, arguments);
-
-			if (r == null)
-				return default(T);
-
-			return (T)r;
-		}
-
-		public T DataSource<T>([CodeAnalysisProvider(DataSourceProvider)]string dataSource)
-		{
-			return DataSource<T>(dataSource, null);
-		}
-
-		public T DataSource<T>([CodeAnalysisProvider(DataSourceProvider)]string dataSource,
-			[CodeAnalysisProvider(DataSourceParameterProvider)]JObject arguments, T defaultValue)
-		{
-			var q = new DataQualifier(this, dataSource);
-			var r = DatabaseGet(q, arguments);
-
-			if (r == null)
-				return defaultValue;
-
-			return (T)r;
-		}
-
-		private object DatabaseGet(DataQualifier q, JObject arguments)
-		{
-			return DatabaseRead.Execute(q.MicroService.Token, q.DataSource, arguments);
-		}
-
-		private JObject DatabasePost(DataQualifier q, JObject arguments)
-		{
-			return DatabaseWrite.Execute(q.MicroService.Token, q.DataSource, arguments);
-		}
-
-		private JObject DatabasePost(DataQualifier q, JObject arguments, IDataConnection connection)
-		{
-			return DatabaseWrite.Execute(q.MicroService.Token, q.DataSource, arguments, connection);
-		}
-
-		public JObject Transaction([CodeAnalysisProvider(TransactionProvider)]string transaction,
-			[CodeAnalysisProvider(TransactionParameterProvider)]JObject arguments)
-		{
-			return Transaction(null, transaction, arguments);
-		}
-
-		public JObject Transaction([CodeAnalysisProvider(TransactionProvider)]string transaction)
-		{
-			return Transaction(transaction, null);
-		}
-
-		public JObject Transaction(IDataConnection connection, [CodeAnalysisProvider(TransactionProvider)]string transaction,
-			[CodeAnalysisProvider(TransactionParameterProvider)]JObject arguments)
-		{
-			var q = new DataQualifier(this, transaction);
-
-			return DatabasePost(q, arguments, connection);
-		}
-
-		public JObject Transaction(IDataConnection connection, [CodeAnalysisProvider(TransactionProvider)]string transaction)
-		{
-			return Transaction(connection, transaction, null);
-		}
-
 		public IDataConnection OpenConnection([CodeAnalysisProvider(ConnectionProvider)]string connection)
 		{
-			return DatabaseRead.OpenConnection(connection);
-		}
+			var tokens = connection.Split('/');
+			var ms = Connection.GetService<IMicroServiceService>().Select(tokens[0]);
+			var component = Connection.GetService<IComponentService>().SelectComponent(ms.Token, "Connection", tokens[1]);
 
-		private DatabaseGet DatabaseRead
-		{
-			get
+			if (component == null)
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionNotFound, connection)).WithMetrics(this);
+
+			if (!(Connection.GetService<IComponentService>().SelectConfiguration(component.Token) is IConnection config))
 			{
-				if (_database == null)
-					_database = new DatabaseGet(this);
-
-				return _database;
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionNotFound, connection))
+				{
+					Component = component.Token
+				}.WithMetrics(this);
 			}
-		}
 
-		private DatabasePost DatabaseWrite
-		{
-			get
-			{
-				if (_databasePost == null)
-					_databasePost = new DatabasePost(this);
+			var dataProvider = CreateDataProvider(config);
 
-				return _databasePost;
-			}
+			return dataProvider.OpenConnection(config.Value);
 		}
 
 		public IDataReader<T> OpenReader<T>(IDataConnection connection, string commandText)
@@ -170,6 +79,44 @@ namespace TomPIT.Data
 				CommandText = commandText,
 				CloseConnection = true
 			};
+		}
+
+		/// <summary>
+		/// This method creates data provider for the valid connection.
+		/// </summary>
+		/// <param name="connection">A connection instance which holds the information about its data provider</param>
+		/// <returns>IDataProvider instance is a valid one is found.</returns>
+		protected IDataProvider CreateDataProvider(IConnection connection)
+		{
+			/*
+			 * Connection is not properly configured. We just notify the user about the issue.
+			 */
+			if (connection.DataProvider == Guid.Empty)
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionDataProviderNotSet, connection.ComponentName(Connection)))
+				{
+					Component = connection.Component,
+					EventId = ExecutionEvents.OpenConnection,
+				};
+			}
+
+			var provider = Connection.GetService<IDataProviderService>().Select(connection.DataProvider);
+			/*
+			 * Connection has invalid data provider set. This can be for various reasons:
+			 * --------------------------------------------------------------------------
+			 * - data provider has been removed from the configuration
+			 * - package misbehavior
+			 */
+			if (provider == null)
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionDataProviderNotFound, provider.Name))
+				{
+					Component = connection.Component,
+					EventId = ExecutionEvents.OpenConnection
+				};
+			}
+
+			return provider;
 		}
 	}
 }

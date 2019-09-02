@@ -200,7 +200,7 @@ namespace TomPIT.Sys.Data
                 var id = Guid.NewGuid();
 
                 DataModel.Blobs.Upload(blob.ResourceGroup, 1001, blob.PrimaryKey, Guid.Empty, blob.Topic,
-                    blob.FileName, blob.ContentType, Guid.Empty, content.Content, Storage.StoragePolicy.Singleton, id);
+                    blob.FileName, blob.ContentType, string.Empty, content.Content, Storage.StoragePolicy.Singleton, id);
 
                 state.Add(new JObject
                 {
@@ -211,7 +211,7 @@ namespace TomPIT.Sys.Data
             var raw = LZ4.LZ4Codec.Wrap(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(state)));
 
             DataModel.Blobs.Upload(DataModel.ResourceGroups.Default.Token, 1002, microService.ToString(), microService,
-                null, string.Format("{0}.json", microService), "application/json", Guid.Empty, raw, Storage.StoragePolicy.Singleton, Guid.NewGuid());
+                null, string.Format("{0}.json", microService), "application/json", string.Empty, raw, Storage.StoragePolicy.Singleton, Guid.NewGuid());
         }
 
         public JArray SelectRuntimeState(Guid microService, out Guid blobId)

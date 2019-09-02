@@ -14,7 +14,7 @@ namespace TomPIT.SysDb.Sql.Storage
 		public string ContentType { get; set; } = Png;
 		public string PrimaryKey { get; set; }
 		public Guid MicroService { get; set; }
-		public Guid Draft { get; set; }
+		public string Draft { get; set; }
 		public int Version { get; private set; }
 		public int Type { get; set; }
 		public string Topic { get; set; }
@@ -33,7 +33,7 @@ namespace TomPIT.SysDb.Sql.Storage
 			ContentType = GetString("content_type");
 			PrimaryKey = GetString("primary_key");
 			MicroService = GetGuid("service");
-			Draft = GetGuid("draft");
+			Draft = GetString("draft");
 			Version = GetInt("version");
 			Topic = GetString("topic");
 			Modified = GetDate("modified");

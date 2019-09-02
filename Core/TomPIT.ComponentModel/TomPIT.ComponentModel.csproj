@@ -11,7 +11,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <RootNamespace>TomPIT.ComponentModel</RootNamespace>
+    <RootNamespace>TomPIT</RootNamespace>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Microservice Platform</Product>

@@ -13,11 +13,11 @@ namespace TomPIT.Storage
 		event BlobChangedHandler BlobAdded;
 		event BlobChangedHandler BlobCommitted;
 
-		void Commit(Guid draft, string primaryKey);
+		void Commit(string draft, string primaryKey);
 		void Delete(Guid blob);
 		IBlob Select(Guid blob);
 		List<IBlob> Query(Guid microService, int kind, Guid resourceGroup, string primaryKey);
-		List<IBlob> QueryDrafts(Guid draft);
+		List<IBlob> QueryDrafts(string draft);
 		List<IBlob> Query(Guid microService);
 		void Restore(IBlob blob, byte[] content);
 		Guid Upload(IBlob blob, byte[] content, StoragePolicy policy);

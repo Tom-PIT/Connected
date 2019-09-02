@@ -14,7 +14,7 @@ namespace TomPIT.Sys.Controllers
 		{
 			var body = FromBody();
 
-			var draft = body.Required<Guid>("draft");
+			var draft = body.Required<string>("draft");
 			var primaryKey = body.Required<string>("primaryKey");
 
 			DataModel.Blobs.Commit(draft, primaryKey);
@@ -43,7 +43,7 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpGet]
-		public List<IBlob> QueryDrafts(Guid draft)
+		public List<IBlob> QueryDrafts(string draft)
 		{
 			return DataModel.Blobs.QueryDrafts(draft);
 		}
@@ -72,7 +72,7 @@ namespace TomPIT.Sys.Controllers
 			var topic = body.Optional("topic", string.Empty);
 			var fileName = body.Required<string>("fileName");
 			var contentType = body.Required<string>("contentType");
-			var draft = body.Optional("draft", Guid.Empty);
+			var draft = body.Optional("draft", string.Empty);
 			var content = body.Optional("content", string.Empty);
 			var policy = body.Optional("policy", StoragePolicy.Singleton);
 			var token = body.Optional("token", Guid.Empty);

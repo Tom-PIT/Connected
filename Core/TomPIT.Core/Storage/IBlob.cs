@@ -18,7 +18,7 @@ namespace TomPIT.Storage
 		string ContentType { get; }
 		string PrimaryKey { get; }
 		Guid MicroService { get; }
-		Guid Draft { get; }
+		string Draft { get; }
 		int Version { get; }
 		int Type { get; }
 		string Topic { get; }

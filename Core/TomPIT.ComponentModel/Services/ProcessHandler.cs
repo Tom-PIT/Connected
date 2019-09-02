@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using TomPIT.Annotations;
 using TomPIT.Data;
 
@@ -23,7 +24,9 @@ namespace TomPIT.Services
 			Context = context;
 		}
 
-		protected IDataModelContext Context { get; private set; }
+		[JsonIgnore]
+		[SkipValidation]
+		public IDataModelContext Context { get; private set; }
 
 		protected virtual void OnValidating(List<ValidationResult> results)
 		{

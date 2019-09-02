@@ -20,7 +20,7 @@ namespace TomPIT.SysDb.Sql.Storage
 			return r.Execute().ToList<IBlob>();
 		}
 
-		public void Commit(Guid draft, string primaryKey)
+		public void Commit(string draft, string primaryKey)
 		{
 			var w = new Writer("tompit.blob_commit");
 
@@ -81,7 +81,7 @@ namespace TomPIT.SysDb.Sql.Storage
 			return r.Execute().ToList<IBlob>();
 		}
 
-		public List<IBlob> QueryDrafts(Guid draft)
+		public List<IBlob> QueryDrafts(string draft)
 		{
 			var r = new Reader<Blob>("tompit.blob_que_draft");
 
@@ -91,7 +91,7 @@ namespace TomPIT.SysDb.Sql.Storage
 		}
 
 		public void Insert(IResourceGroup resourceGroup, Guid token, int type, string primaryKey,
-			Guid microService, string topic, string fileName, string contentType, int size, int version, DateTime modified, Guid draft)
+			Guid microService, string topic, string fileName, string contentType, int size, int version, DateTime modified, string draft)
 		{
 			var w = new Writer("tompit.blob_ins");
 
@@ -111,7 +111,7 @@ namespace TomPIT.SysDb.Sql.Storage
 			w.Execute();
 		}
 
-		public void Update(IBlob blob, string primaryKey, string fileName, string contentType, int size, int version, DateTime modified, Guid draft)
+		public void Update(IBlob blob, string primaryKey, string fileName, string contentType, int size, int version, DateTime modified, string draft)
 		{
 			var w = new Writer("tompit.blob_upd");
 

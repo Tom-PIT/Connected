@@ -192,7 +192,7 @@ namespace TomPIT.Design
             var blob = new Blob
             {
                 ContentType = "application/json",
-                Draft = Guid.NewGuid(),
+                Draft = Guid.NewGuid().ToString(),
                 FileName = string.Format("{0}.json", name),
                 ResourceGroup = s.ResourceGroup,
                 Size = content.Length,

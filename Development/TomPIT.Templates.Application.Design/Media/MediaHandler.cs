@@ -154,7 +154,7 @@ namespace TomPIT.Application.Design.Media
 				var blob = new Blob
 				{
 					ContentType = contentType,
-					Draft = metaData.UploadId.AsGuid(),
+					Draft = metaData.UploadId,
 					FileName = file.FileName,
 					MicroService = MicroService.Token,
 					ResourceGroup = MicroService.ResourceGroup,
@@ -211,7 +211,7 @@ namespace TomPIT.Application.Design.Media
 					targetFile.Size = metaData.FileSize;
 				}
 
-				Connection.GetService<IStorageService>().Commit(metaData.UploadId.AsGuid(), targetFile.Id.ToString());
+				Connection.GetService<IStorageService>().Commit(metaData.UploadId, targetFile.Id.ToString());
 
 				targetFile.Blob = blobId;
 				UpdateModified(folder);
@@ -732,7 +732,7 @@ namespace TomPIT.Application.Design.Media
 
 		private void AbordUpload()
 		{
-			var blobs = Connection.GetService<IStorageService>().QueryDrafts(Arguments["uploadId"].AsGuid());
+			var blobs = Connection.GetService<IStorageService>().QueryDrafts(Arguments["uploadId"]);
 
 			foreach (var blob in blobs)
 				Connection.GetService<IStorageService>().Delete(blob.Token);

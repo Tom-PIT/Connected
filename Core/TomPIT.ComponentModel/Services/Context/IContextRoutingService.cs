@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using TomPIT.Data;
+using TomPIT.Annotations;
 using TomPIT.Environment;
+using TomPIT.Navigation;
 using TomPIT.Routing;
 
 namespace TomPIT.Services.Context
@@ -34,5 +35,13 @@ namespace TomPIT.Services.Context
 		string GenerateUrl(string primaryKey, string text, List<IUrlRecord> existing);
 		string ParseUrl(string template);
 		string ParseUrl(string template, IDictionary<string, object> parameters);
+		string ParseUrl(string template, RouteValueDictionary parameters);
+
+		ISiteMapContainer QuerySiteMap(params string[] keys);
+		List<IBreadcrumb> QueryBreadcrumbs([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey);
+		List<IBreadcrumb> QueryBreadcrumbs([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey, IDictionary<string, object> parameters);
+		List<IBreadcrumb> QueryBreadcrumbs([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey, RouteValueDictionary parameters);
+
+		ISiteMapRoute SelectLink([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey);
 	}
 }

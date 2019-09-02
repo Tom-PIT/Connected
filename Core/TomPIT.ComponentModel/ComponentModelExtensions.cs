@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Routing;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
@@ -15,6 +16,8 @@ using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.Search;
 using TomPIT.Connectivity;
 using TomPIT.Data;
+using TomPIT.Navigation;
+using TomPIT.Routing;
 using TomPIT.Search;
 using TomPIT.Security;
 using TomPIT.Services;
@@ -23,6 +26,24 @@ namespace TomPIT
 {
 	public static class ComponentModelExtensions
 	{
+		private class Route : IRoute
+		{
+			public string Text { get; set; }
+			public string Url { get; set; }
+			public bool Enabled { get; set; }
+			public int Ordinal { get; set; }
+			public string Glyph { get; set; }
+			public string Css { get; set; }
+			public bool IsActive { get; set; }
+			public bool BeginGroup { get; set; }
+			public string Id { get; set; }
+			public List<IRoute> Items { get; set; }
+			public Guid Token { get; set; }
+			public string Target { get; set; }
+			public bool Visible { get; set; }
+			public string Category { get; set; }
+		}
+
 		public static string AsDuration(this TimeSpan duration, bool format)
 		{
 			return AsDuration(duration, format, DurationPrecision.Millisecond);
@@ -251,11 +272,11 @@ namespace TomPIT
 			return r;
 		}
 
-		public static Dictionary<string,string> ToDictionary(this IEnumerable items, string keyProperty, string valueProperty)
+		public static Dictionary<string, string> ToDictionary(this IEnumerable items, string keyProperty, string valueProperty)
 		{
 			var result = new Dictionary<string, string>();
 
-			foreach(var item in items)
+			foreach (var item in items)
 			{
 				var keyPropertyInfo = item.GetType().GetProperty(keyProperty);
 				var valuePropertyInfo = item.GetType().GetProperty(valueProperty);
@@ -273,6 +294,110 @@ namespace TomPIT
 			}
 
 			return result;
+		}
+
+		public static string ParseUrl(this ISiteMapRoute link, IExecutionContext context)
+		{
+			if (string.IsNullOrWhiteSpace(link.Template))
+				return null;
+
+			var routeData = Shell.HttpContext == null ? new RouteData() : Shell.HttpContext.GetRouteData();
+
+			return context.Services.Routing.ParseUrl(link.Template, routeData.Values);
+		}
+
+		public static void FromBreadcrumbs(this List<IRoute> routes, IDataModelContext context, [CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey, Dictionary<string, object> parameters)
+		{
+			var breadcrumbs = context.Services.Routing.QueryBreadcrumbs(routeKey, parameters);
+
+			if (breadcrumbs == null)
+				return;
+
+			foreach (var breadcrumb in breadcrumbs)
+			{
+				routes.Add(new Route
+				{
+					Text = breadcrumb.Text,
+					Url = breadcrumb.Url
+				});
+			}
+		}
+
+		public static void FromBreadcrumbs(this List<IRoute> routes, IDataModelContext context, [CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey, RouteValueDictionary parameters)
+		{
+			var breadcrumbs = context.Services.Routing.QueryBreadcrumbs(routeKey, parameters);
+
+			if (breadcrumbs == null)
+				return;
+
+			foreach (var breadcrumb in breadcrumbs)
+			{
+				routes.Add(new Route
+				{
+					Text = breadcrumb.Text,
+					Url = breadcrumb.Url
+				});
+			}
+		}
+
+		public static void FromBreadcrumbs(this List<IRoute> routes, IDataModelContext context, [CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey)
+		{
+			var breadcrumbs = context.Services.Routing.QueryBreadcrumbs(routeKey);
+
+			if (breadcrumbs == null)
+				return;
+
+			foreach (var breadcrumb in breadcrumbs)
+			{
+				routes.Add(new Route
+				{
+					Text = breadcrumb.Text,
+					Url = breadcrumb.Url
+				});
+			}
+
+		}
+
+		public static void FromSiteMap(this List<IRoute> routes, IDataModelContext context, [CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteSiteMapsProvider)]string routeKey)
+		{
+			var sitemap = context.Services.Routing.QuerySiteMap(routeKey);
+
+			if (sitemap == null)
+				return;
+
+			LoadItems(context, routes, sitemap.Items);
+		}
+
+		private static void LoadItems(IDataModelContext context, List<IRoute> routes, ConnectedList<ISiteMapRoute, ISiteMapContainer> items)
+		{
+			foreach (var route in items)
+			{
+				var url =new Route
+				{
+					Text = route.Text,
+					Url = route.ParseUrl(context)
+				};
+
+				routes.Add(url);
+
+				LoadItems(context, url.Items, route.Items);
+			}
+		}
+
+		private static void LoadItems(IDataModelContext context, List<IRoute> routes, ConnectedList<ISiteMapRoute, ISiteMapRoute> items)
+		{
+			foreach (var route in items)
+			{
+				var url = new Route
+				{
+					Text = route.Text,
+					Url = route.ParseUrl(context)
+				};
+
+				routes.Add(url);
+
+				LoadItems(context, url.Items, route.Items);
+			}
 		}
 	}
 }

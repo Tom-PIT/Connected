@@ -25,9 +25,9 @@ namespace TomPIT.Sys.Data
 				});
 		}
 
-		public void Commit(Guid draft, string primaryKey)
+		public void Commit(string draft, string primaryKey)
 		{
-			var cached = Where(f => f.Draft == draft);
+			var cached = Where(f => string.Compare(f.Draft, draft, true) == 0);
 
 			Shell.GetService<IDatabaseService>().Proxy.Storage.Commit(draft, primaryKey);
 
@@ -95,7 +95,7 @@ namespace TomPIT.Sys.Data
 			return Shell.GetService<IDatabaseService>().Proxy.Storage.Query(microService);
 		}
 
-		public List<IBlob> QueryDrafts(Guid draft)
+		public List<IBlob> QueryDrafts(string draft)
 		{
 			return Shell.GetService<IDatabaseService>().Proxy.Storage.QueryDrafts(draft);
 		}
@@ -119,7 +119,7 @@ namespace TomPIT.Sys.Data
 			}
 
 			Shell.GetService<IDatabaseService>().Proxy.Storage.Insert(r, token, type, primaryKey, microService, topic, fileName,
-				contentType, content == null ? 0 : content.Length, version, DateTime.UtcNow, Guid.Empty);
+				contentType, content == null ? 0 : content.Length, version, DateTime.UtcNow, string.Empty);
 
 			DataModel.BlobsContents.Update(resourceGroup, token, content);
 
@@ -135,10 +135,10 @@ namespace TomPIT.Sys.Data
 				Delete(i.Token);
 		}
 
-		public Guid Upload(Guid resourceGroup, int type, string primaryKey, Guid microService, string topic, string fileName, string contentType, Guid draft, byte[] content,
+		public Guid Upload(Guid resourceGroup, int type, string primaryKey, Guid microService, string topic, string fileName, string contentType, string draft, byte[] content,
 			StoragePolicy policy, Guid token)
 		{
-			if (draft != Guid.Empty || policy == StoragePolicy.Extended)
+			if (!string.IsNullOrEmpty(draft) || policy == StoragePolicy.Extended)
 				return Insert(token, resourceGroup, type, primaryKey, microService, topic, fileName, contentType, draft, content);
 
 			var r = resourceGroup == Guid.Empty
@@ -189,7 +189,7 @@ namespace TomPIT.Sys.Data
 			}
 		}
 
-		public Guid Insert(Guid token, Guid resourceGroup, int type, string primaryKey, Guid microService, string topic, string fileName, string contentType, Guid draft, byte[] content)
+		public Guid Insert(Guid token, Guid resourceGroup, int type, string primaryKey, Guid microService, string topic, string fileName, string contentType, string draft, byte[] content)
 		{
 			var r = resourceGroup == Guid.Empty
 				? DataModel.ResourceGroups.Default
@@ -218,7 +218,7 @@ namespace TomPIT.Sys.Data
 			return token;
 		}
 
-		public void Update(Guid token, string primaryKey, string fileName, string contentType, Guid draft, byte[] content)
+		public void Update(Guid token, string primaryKey, string fileName, string contentType, string draft, byte[] content)
 		{
 			var blob = Select(token);
 

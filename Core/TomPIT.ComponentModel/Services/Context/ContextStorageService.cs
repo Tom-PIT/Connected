@@ -11,7 +11,7 @@ namespace TomPIT.Services.Context
 		{
 		}
 
-		public void CommitDrafts(Guid draft, string primaryKey)
+		public void CommitDrafts(string draft, string primaryKey)
 		{
 			Context.Connection().GetService<IStorageService>().Commit(draft, primaryKey);
 		}
@@ -33,17 +33,17 @@ namespace TomPIT.Services.Context
             }
         }
 
-		public List<IBlob> QueryDrafts(Guid draft)
+		public List<IBlob> QueryDrafts(string draft)
 		{
 			return Context.Connection().GetService<IStorageService>().QueryDrafts(draft);
 		}
 
 		public Guid Upload(StoragePolicy policy, string fileName, string contentType, string primaryKey, byte[] content, string topic)
 		{
-			return Upload(policy, fileName, contentType, primaryKey, content, topic, Guid.Empty);
+			return Upload(policy, fileName, contentType, primaryKey, content, topic, string.Empty);
 		}
 
-		public Guid Upload(StoragePolicy policy, string fileName, string contentType, string primaryKey, byte[] content, string topic, Guid draft)
+		public Guid Upload(StoragePolicy policy, string fileName, string contentType, string primaryKey, byte[] content, string topic, string draft)
 		{
 			var ms = Context.MicroService.Token;
 			Guid rg = Guid.Empty;

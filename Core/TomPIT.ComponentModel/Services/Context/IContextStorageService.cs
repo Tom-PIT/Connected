@@ -7,12 +7,12 @@ namespace TomPIT.Services.Context
 	public interface IContextStorageService
 	{
 		Guid Upload(StoragePolicy policy, string fileName, string contentType, string primaryKey, byte[] content, string topic);
-		Guid Upload(StoragePolicy policy, string fileName, string contentType, string primaryKey, byte[] content, string topic, Guid draft);
+		Guid Upload(StoragePolicy policy, string fileName, string contentType, string primaryKey, byte[] content, string topic, string draft);
 
-		void CommitDrafts(Guid draft, string primaryKey);
-		List<IBlob> QueryDrafts(Guid draft);
+		void CommitDrafts(string draft, string primaryKey);
+		List<IBlob> QueryDrafts(string draft);
 
-        void Delete(Guid blob);
+		void Delete(Guid blob);
 
 		byte[] Download(Guid blob);
 	}

@@ -62,31 +62,17 @@ namespace TomPIT.Development.CodeAnalysis.SnippetProviders
 			var result = new List<ISuggestion>();
 			var insertText = new StringBuilder();
 			var isFirst = true;
-			var rvs = new List<IReturnValueParameter>();
 
 			foreach (var parameter in parameters)
 			{
 				if (!isFirst)
 					insertText.Append($"{identifier.Identifier.Text}.");
 
-				if (parameter is IReturnValueParameter returnValue)
-					rvs.Add(returnValue);
-				else
-				{
-					var mapping = parameter.IsNullable ? ", true" : string.Empty;
+				var mapping = parameter.IsNullable ? ", true" : string.Empty;
 
-					insertText.AppendLine($"SetParameter(\"{parameter.Name}\", {CodeAnalysisExtensions.RenderValue(Types.ToType(parameter.DataType))}{mapping});");
-				}
+				insertText.AppendLine($"SetParameter(\"{parameter.Name}\", {CodeAnalysisExtensions.RenderValue(Types.ToType(parameter.DataType))}{mapping});");
 
 				isFirst = false;
-			}
-
-			foreach(var returnValue in rvs)
-			{
-				if (!isFirst)
-					insertText.Append($"{identifier.Identifier.Text}.");
-
-				insertText.AppendLine($"SetReturnValueParameter(\"{returnValue.Name}\");");
 			}
 
 			result.Add(new Suggestion
