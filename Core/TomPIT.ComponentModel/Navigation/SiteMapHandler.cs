@@ -16,6 +16,16 @@ namespace TomPIT.Navigation
 				if (items != null && items.Count > 0)
 					r.AddRange(items);
 			}
+			else
+			{
+				foreach(var key in keys)
+				{
+					var items = OnInvoke(key);
+
+					if (items != null && items.Count > 0)
+						r.AddRange(items);
+				}
+			}
 
 			return r;
 		}

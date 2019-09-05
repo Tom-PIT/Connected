@@ -23,7 +23,7 @@ namespace TomPIT
 			if (context is IEndpointContext enc && !string.IsNullOrWhiteSpace(enc.Endpoint))
 				return Shell.GetService<IConnectivityService>().Select(enc.Endpoint);
 
-			var identity = context.GetIdentity();
+			var identity = GetIdentity();
 
 			if (identity != null && identity is Identity id)
 				return Shell.GetService<IConnectivityService>().Select(id.Endpoint);
@@ -31,9 +31,9 @@ namespace TomPIT
 			return Shell.GetService<IConnectivityService>().Select();
 		}
 
-		public static Guid GetAuthenticatedUserToken(this IExecutionContext context)
+		public static Guid GetAuthenticatedUserToken(this ISysConnection connection)
 		{
-			var u = GetAuthenticatedUser(context);
+			var u = GetAuthenticatedUser(connection);
 
 			if (u == null)
 				return Guid.Empty;
@@ -41,20 +41,25 @@ namespace TomPIT
 			return u.Token;
 		}
 
+		public static Guid GetAuthenticatedUserToken(this IExecutionContext context)
+		{
+			return GetAuthenticatedUserToken(context.Connection());
+		}
+
 		public static IUser GetAuthenticatedUser(this IExecutionContext context)
 		{
-			var identity = context.GetIdentity();
+			return GetAuthenticatedUser(context.Connection());
+		}
+
+		public static IUser GetAuthenticatedUser(this ISysConnection connection)
+		{
+			var identity = GetIdentity();
 
 			if (identity == null)
 				return null;
 
 			if (Guid.TryParse(identity.Name, out Guid token))
-			{
-				var ctx = context.Connection();
-
-				if (ctx != null)
-					return ctx.GetService<IUserService>().SelectByAuthenticationToken(token);
-			}
+				return connection.GetService<IUserService>().SelectByAuthenticationToken(token);
 
 			return null;
 		}
@@ -112,12 +117,17 @@ namespace TomPIT
 			return json.Required<string>("jwt");
 		}
 
-		public static string JwToken(this IExecutionContext context)
+		public static string JwToken()
 		{
 			return JwToken(Shell.HttpContext?.Request);
 		}
 
 		public static IIdentity GetIdentity(this IExecutionContext context)
+		{
+			return GetIdentity();
+		}
+
+		public static IIdentity GetIdentity()
 		{
 			if (Shell.HttpContext == null)
 				return null;
@@ -130,7 +140,7 @@ namespace TomPIT
 				return u.Identity;
 		}
 
-		public static ISysConnection CurrentConnection(this HttpContext context)
+		public static ISysConnection CurrentConnection()
 		{
 			if (!(Shell.HttpContext.User.Identity is Identity identity) || string.IsNullOrWhiteSpace(identity.Endpoint))
 				return null;

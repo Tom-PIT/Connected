@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TomPIT.Navigation;
 using TomPIT.Services;
 
 namespace TomPIT.Security
@@ -19,5 +20,6 @@ namespace TomPIT.Security
 
 		PermissionValue GetPermissionValue(Guid evidence, string schema, string claim);
 		void RegisterAuthenticationProvider(IAuthenticationProvider provider);
+		void Authorize(ISiteMapContainer container);
 	}
 }

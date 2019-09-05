@@ -8,12 +8,15 @@
 	};
 
 	tompit.GLOBALIZE = {
-		appUrlNotSet: 'Application URL not set',
-		restUrlNotSet: 'REST URL not set'
+		appUrlNotSet: 'Application URL not set'
 	};
 
     tompit.isView = function (request) {
         return request.getResponseHeader('X-TP-VIEW') !== null;
+    };
+
+    tompit.apiUrl = function(e) {
+        return tompit.url().api('invoke');
     };
 
 	tompit.invoke = function (e) {

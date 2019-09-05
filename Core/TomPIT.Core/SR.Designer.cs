@@ -1150,6 +1150,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to HTTP request header expected.
+        /// </summary>
+        public static string ErrHttpHeaderExpected {
+            get {
+                return ResourceManager.GetString("ErrHttpHeaderExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Http request not available..
         /// </summary>
         public static string ErrHttpRequestNotAvailable {

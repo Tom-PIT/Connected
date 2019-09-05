@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Navigation;
 using TomPIT.Connectivity;
+using TomPIT.Navigation;
 using TomPIT.Services;
 
 namespace TomPIT.Security
@@ -305,6 +307,30 @@ namespace TomPIT.Security
 			AuthenticationProviders.Add(provider);
 		}
 
+		public void Authorize(ISiteMapContainer container)
+		{
+			if (container == null)
+				return;
+
+			Authorize(container.Items.ToList(), Connection.GetAuthenticatedUserToken());
+		}
+
+		private void Authorize(List<ISiteMapRoute> routes, Guid user)
+		{
+			for(var i = routes.Count - 1; i >= 0; i--)
+			{
+				var route = routes[i];
+
+				if(route is ISiteMapAuthorizationElement ae)
+				{
+					if (!ae.Authorize(user))
+						routes.RemoveAt(i);
+					else
+						Authorize(route.Items.ToList(), user);
+				}
+			}
+		}
+
 		private MembershipCache Membership { get; }
 		internal AuthenticationTokensCache AuthenticationTokens { get; }
 		private List<IPermissionDescriptor> Descriptors => _descriptors.Value;
@@ -319,40 +345,5 @@ namespace TomPIT.Security
 				return _defaultAuthenticationProvider;
 			}
 		}
-
-		//private IAuthorizationResult AuthorizeFolder(IExecutionContext context, AuthorizationArgs e, int permissionCounter)
-		//{
-		//	if (e.Folder == Guid.Empty)
-		//		return AuthorizationResult.OK(permissionCounter);
-
-		//	var folder = Connection.GetService<IComponentService>().SelectFolder(e.Folder);
-
-		//	if (folder.Parent != Guid.Empty)
-		//	{
-		//		var args = new AuthorizationArgs(e.User, Claims.FolderAccess, folder.Token.ToString(), folder.Parent);
-
-		//		args.Schema.Empty = EmptyBehavior.Alow;
-		//		args.Schema.Level = AuthorizationLevel.Pessimistic;
-
-		//		var parentResult = AuthorizeFolder(context, args, permissionCounter);
-
-		//		if (!parentResult.Success)
-		//			return parentResult;
-
-		//		permissionCounter += parentResult.PermissionCount;
-		//	}
-
-		//	var folderArgs = new AuthorizationArgs(e.User, Claims.FolderAccess, e.Folder.ToString());
-
-		//	folderArgs.Schema.Empty = EmptyBehavior.Alow;
-		//	folderArgs.Schema.Level = AuthorizationLevel.Pessimistic;
-
-		//	var r = Authorize(context, folderArgs);
-
-		//	if (r is AuthorizationResult ar)
-		//		ar.PermissionCount += permissionCounter;
-
-		//	return r;
-		//}
 	}
 }

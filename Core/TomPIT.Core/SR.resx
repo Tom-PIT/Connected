@@ -1032,4 +1032,7 @@
   <data name="ErrHttpContextNull" xml:space="preserve">
     <value>No Http context available</value>
   </data>
+  <data name="ErrHttpHeaderExpected" xml:space="preserve">
+    <value>HTTP request header expected</value>
+  </data>
 </root>

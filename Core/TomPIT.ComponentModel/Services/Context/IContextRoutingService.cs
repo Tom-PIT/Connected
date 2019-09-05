@@ -37,7 +37,8 @@ namespace TomPIT.Services.Context
 		string ParseUrl(string template, IDictionary<string, object> parameters);
 		string ParseUrl(string template, RouteValueDictionary parameters);
 
-		ISiteMapContainer QuerySiteMap(params string[] keys);
+		ISiteMapContainer QuerySiteMap([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteSiteMapsProvider)]params string[] keys);
+		ISiteMapContainer QuerySiteMap(bool authorize, [CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteSiteMapsProvider)]params string[] keys);
 		List<IBreadcrumb> QueryBreadcrumbs([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey);
 		List<IBreadcrumb> QueryBreadcrumbs([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey, IDictionary<string, object> parameters);
 		List<IBreadcrumb> QueryBreadcrumbs([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey, RouteValueDictionary parameters);

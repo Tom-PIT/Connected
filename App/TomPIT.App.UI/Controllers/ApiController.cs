@@ -66,10 +66,14 @@ namespace TomPIT.Controllers
 
 		private ApiModel CreateModel()
 		{
-			var r = new ApiModel
-			{
-				Body = FromBody()
-			};
+			ApiModel r;
+			var apiHeader = Request.Headers["X-TP-API"];
+			var componentHeader = Request.Headers["X-TP-COMPONENT"];
+
+			if (!string.IsNullOrWhiteSpace(apiHeader))
+				r = new ApiModel(apiHeader, componentHeader);
+			else
+				r = new ApiModel { Body = FromBody() };
 
 			r.Databind();
 			r.Initialize(this, r.MicroService);

@@ -52,7 +52,8 @@ namespace TomPIT.Application.Design.Designers
 				MicroService = ms.Token,
 				Size = Convert.ToInt32(file.Length),
 				PrimaryKey = Element.Id,
-				ResourceGroup = ms.ResourceGroup
+				ResourceGroup = ms.ResourceGroup,
+				Type = BlobTypes.UserContent
 			};
 
 			using (var s = new MemoryStream())

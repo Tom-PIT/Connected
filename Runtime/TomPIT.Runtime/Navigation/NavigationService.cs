@@ -67,19 +67,14 @@ namespace TomPIT.Navigation
 
 			foreach (var handler in handlers)
 			{
-				var ms = Connection.GetService<IMicroServiceService>().Select(handler.MicroService);
-				var dataCtx = new DataModelContext(ExecutionContext.Create(Connection.Url, ms));
-				var instance = handler.Handler.CreateInstance<ISiteMapHandler>();
-
-				instance.Initialize(dataCtx);
-
+				var instance = Connection.CreateProcessHandler<ISiteMapHandler>(handler.MicroService, handler.Handler);
 				var containers = instance.Invoke(key);
 
 				if (containers == null || containers.Count == 0)
 					continue;
 
 				foreach (var container in containers)
-					BindContext(container, dataCtx);
+					BindContext(container, instance.Context);
 
 				r.AddRange(containers);
 			}

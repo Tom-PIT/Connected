@@ -72,10 +72,9 @@ namespace TomPIT
 			if (view == null)
 				return;
 
-			var vm = Html.ViewData.Model as IViewModel;
-			var args = new ViewInvokeArguments(vm);
+			var args = new ViewInvokeArguments(Html.ViewData, Html.TempData, Html.ViewBag);
 
-			vm.Connection().GetService<ICompilerService>().Execute(((IConfiguration)view).MicroService(vm.Connection()), view.Invoke, this, args);
+			args.Model.Connection().GetService<ICompilerService>().Execute(((IConfiguration)view).MicroService(args.Model.Connection()), view.Invoke, this, args);
 		}
 	}
 }

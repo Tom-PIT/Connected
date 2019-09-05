@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
-using TomPIT.ComponentModel.Data;
 using TomPIT.Design.Services;
 using TomPIT.Ide.CodeAnalysis;
-using TomPIT.Services;
 
 namespace TomPIT.Development.CodeAnalysis.SnippetProviders
 {
@@ -20,13 +16,9 @@ namespace TomPIT.Development.CodeAnalysis.SnippetProviders
 			if (node == null)
 				return null;
 
-			if (!(node is ExpressionStatementSyntax statement))
-				return null;
+			var variableName = ResolveVariable(node);
 
-			if (!(statement.Expression is MemberAccessExpressionSyntax member))
-				return null;
-
-			if (!(member.Expression is IdentifierNameSyntax identifier))
+			if (string.IsNullOrEmpty(variableName))
 				return null;
 
 			var declaration = node.DeclarationScope();
@@ -34,7 +26,7 @@ namespace TomPIT.Development.CodeAnalysis.SnippetProviders
 			if (declaration == null)
 				return null;
 
-			var variable = declaration.VariableDeclaration(identifier.Identifier.Text);
+			var variable = declaration.VariableDeclaration(variableName);
 
 			if (variable == null)
 				return null;
@@ -66,7 +58,7 @@ namespace TomPIT.Development.CodeAnalysis.SnippetProviders
 			foreach (var parameter in parameters)
 			{
 				if (!isFirst)
-					insertText.Append($"{identifier.Identifier.Text}.");
+					insertText.Append($"{variableName}.");
 
 				var mapping = parameter.IsNullable ? ", true" : string.Empty;
 
@@ -77,16 +69,34 @@ namespace TomPIT.Development.CodeAnalysis.SnippetProviders
 
 			result.Add(new Suggestion
 			{
-				Label="BindParameters",
-				InsertText=insertText.ToString(),
-				SortText="BindParameters",
-				FilterText="BindParameters",
+				Label = "BindParameters",
+				InsertText = insertText.ToString(),
+				SortText = "BindParameters",
+				FilterText = "BindParameters",
 				Kind = Suggestion.Snippet
 			});
 
 			return result;
 		}
 
+		private string ResolveVariable(SyntaxNode node)
+		{
+			if (node is ExpressionStatementSyntax statement)
+			{
+				if (statement.Expression is MemberAccessExpressionSyntax member)
+				{
 
+					if (member.Expression is IdentifierNameSyntax identifier)
+						return identifier.Identifier.ValueText;
+				}
+			}
+			else if (node is QualifiedNameSyntax qn)
+			{
+				if (qn.Left is IdentifierNameSyntax ins)
+					return ins.Identifier.ValueText;
+			}
+
+			return null;
+		}
 	}
 }

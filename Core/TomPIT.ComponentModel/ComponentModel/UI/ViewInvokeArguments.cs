@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Text;
-using Microsoft.AspNetCore.Http;
+﻿using System.Net;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Newtonsoft.Json.Linq;
 using TomPIT.Data;
 using TomPIT.Models;
 using TomPIT.Services;
@@ -19,9 +12,18 @@ namespace TomPIT.ComponentModel.UI
 		private ViewDataDictionary<IRuntimeModel> _viewData = null;
 		private TempDataDictionary _tempData = null;
 		private ViewBagDictionary _dynamicViewDataDictionary = null;
+		private dynamic _viewBag = null;
 		public ViewInvokeArguments(IViewModel context) : base(context)
 		{
 			Model = context;
+		}
+
+		public ViewInvokeArguments(ViewDataDictionary viewData, ITempDataDictionary tempData, dynamic viewBag) : base(viewData.Model as IExecutionContext)
+		{
+			Model = viewData.Model as IViewModel;
+			_viewData = viewData as ViewDataDictionary<IRuntimeModel>;
+			_tempData = tempData as TempDataDictionary;
+			_viewBag = viewBag;
 		}
 
 		public IViewModel Model { get; }
@@ -75,10 +77,11 @@ namespace TomPIT.ComponentModel.UI
 		{
 			get
 			{
+				if (_viewBag != null)
+					return _viewBag;
+
 				if (_dynamicViewDataDictionary == null)
-				{
 					_dynamicViewDataDictionary = new ViewBagDictionary(() => ViewData);
-				}
 
 				return _dynamicViewDataDictionary;
 			}

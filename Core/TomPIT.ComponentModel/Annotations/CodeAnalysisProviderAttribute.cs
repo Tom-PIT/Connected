@@ -26,5 +26,6 @@ namespace TomPIT.Annotations
 		public const string NavigationViewUrlProvider = "TomPIT.Design.CodeAnalysis.Providers.NavigationViewUrlProvider, " + DesignAssembly;
 		public const string RouteKeysProvider = "TomPIT.Development.CodeAnalysis.Providers.RouteKeysProvider, " + DevelopmentAssembly;
 		public const string RouteSiteMapsProvider = "TomPIT.Development.CodeAnalysis.Providers.RouteSiteMapsProvider, " + DevelopmentAssembly;
+		public const string MicroservicesProvider = "TomPIT.Development.CodeAnalysis.Providers.MicroServicesProvider, " + DevelopmentAssembly;
 	}
 }

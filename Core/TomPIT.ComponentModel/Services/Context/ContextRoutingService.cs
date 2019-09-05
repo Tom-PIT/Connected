@@ -274,9 +274,13 @@ namespace TomPIT.Services.Context
 			return Types.Convert<T>(routeValue);
 		}
 
-		public ISiteMapContainer QuerySiteMap(params string[] keys)
+		public ISiteMapContainer QuerySiteMap(bool authorize, [CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteSiteMapsProvider)]params string[] keys)
 		{
-			return Connection.GetService<INavigationService>().QuerySiteMap(keys);
+			return Connection.GetService<INavigationService>().QuerySiteMap(keys).WithAuthorization(Context);
+		}
+		public ISiteMapContainer QuerySiteMap([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteSiteMapsProvider)]params string[] keys)
+		{
+			return QuerySiteMap(false, keys);
 		}
 
 		public List<IBreadcrumb> QueryBreadcrumbs([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey)
