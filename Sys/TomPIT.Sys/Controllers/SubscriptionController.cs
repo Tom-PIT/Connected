@@ -23,6 +23,18 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpPost]
+		public bool Exists()
+		{
+			var body = FromBody();
+
+			var handler = body.Required<Guid>("handler");
+			var topic = body.Optional("topic", string.Empty);
+			var primaryKey = body.Required<string>("primaryKey");
+
+			return DataModel.Subscriptions.Select(handler, topic, primaryKey) != null;
+		}
+
+		[HttpPost]
 		public List<ISubscriber> QuerySubscribers()
 		{
 			var body = FromBody();

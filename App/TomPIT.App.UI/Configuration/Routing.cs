@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using System.Threading.Tasks;
+using TomPIT.Routing;
 using TomPIT.UI;
 
 namespace TomPIT.Configuration
@@ -11,6 +12,7 @@ namespace TomPIT.Configuration
 		{
 			routes.MapRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
 			routes.MapRoute("sys.api", "sys/api/invoke", new { controller = "Api", action = "Invoke" });
+			routes.MapRoute("sys.search", "sys/api/search", new { controller = "Api", action = "Search" });
 			routes.MapRoute("sys.partial", "sys/api/partial", new { controller = "Api", action = "Partial" });
 			routes.MapRoute("sys.setuserdata", "sys/api/setuserdata", new { controller = "Api", action = "SetUserData" });
 			routes.MapRoute("sys.getuserdata", "sys/api/getuserdata", new { controller = "Api", action = "GetUserData" });

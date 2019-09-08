@@ -15,15 +15,20 @@
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Microservice Platform</Product>
-    <AssemblyVersion>1.1.815.2</AssemblyVersion>
+    <AssemblyVersion>1.1.905.3</AssemblyVersion>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FileVersion>1.1.815.2</FileVersion>
-    <Version>1.1.815.2</Version>
+    <FileVersion>1.1.905.3</FileVersion>
+    <Version>1.1.905.3</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Data\DataProviders\Deployment\**" />
+    <EmbeddedResource Remove="Data\DataProviders\Deployment\**" />
+    <None Remove="Data\DataProviders\Deployment\**" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TomPIT.Core\TomPIT.Core.csproj" />
   </ItemGroup>
@@ -36,8 +41,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-18618-05" PrivateAssets="All" />
     <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Data\DataProviders\Deployment\" />
   </ItemGroup>
 </Project>

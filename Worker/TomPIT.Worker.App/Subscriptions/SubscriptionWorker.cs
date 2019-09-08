@@ -5,14 +5,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Services;
 
-namespace TomPIT.Worker.Services
+namespace TomPIT.Worker.Subscriptions
 {
-	internal class SubscriptionService : HostedService
+	internal class SubscriptionWorker : HostedService
 	{
 		private CancellationTokenSource _cancel = new CancellationTokenSource();
 		private Lazy<List<SubscriptionDispatcher>> _dispatchers = new Lazy<List<SubscriptionDispatcher>>();
 
-		public SubscriptionService()
+		public SubscriptionWorker()
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
 
@@ -24,15 +24,7 @@ namespace TomPIT.Worker.Services
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				var url = Instance.Connection.CreateUrl("SubscriptionManagement", "Dequeue");
-
-				var e = new JObject
-				{
-					{ "count", f.Available },
-					{ "resourceGroup", f.ResourceGroup }
-				};
-
-				var jobs = Instance.Connection.Post<List<QueueMessage>>(url, e);
+				var jobs = Instance.Connection.GetService<ISubscriptionWorkerService>().DequeueSubscriptions(f.ResourceGroup, f.Available);
 
 				if (jobs == null)
 					return;

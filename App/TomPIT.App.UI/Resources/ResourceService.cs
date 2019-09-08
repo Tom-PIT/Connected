@@ -131,7 +131,7 @@ namespace TomPIT.Resources
 
 		private string GetCodeSource(IScriptCodeSource d)
 		{
-			return Connection.GetService<IComponentService>().SelectText(d.MicroService(Connection), d);
+			return Connection.GetService<IComponentService>().SelectText(d.Configuration().MicroService(Connection), d);
 		}
 
 		private string GetFileSystemSource(IScriptFileSystemSource d)

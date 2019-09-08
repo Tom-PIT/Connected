@@ -14,18 +14,9 @@ namespace TomPIT.Services.Context
 		string CreateMailMessage([CodeAnalysisProvider(ExecutionContext.MailTemplateProvider)]string template, string user);
 		string CreateMailMessage<T>([CodeAnalysisProvider(ExecutionContext.MailTemplateProvider)]string template, string user, T arguments);
 
+		bool SubscriptionExists([CodeAnalysisProvider(ExecutionContext.SubscriptionProvider)]string subscription, string primaryKey, string topic);
 		void CreateSubscription([CodeAnalysisProvider(ExecutionContext.SubscriptionProvider)]string subscription, string primaryKey);
-		[Obsolete("Call SubscriptionEvent instead")]
-		void TriggerEvent([CodeAnalysisProvider(ExecutionContext.SubscriptionEventProvider)]string eventName, string primaryKey);
-		[Obsolete("Call SubscriptionEvent instead")]
-		void TriggerEvent<T>([CodeAnalysisProvider(ExecutionContext.SubscriptionEventProvider)]string eventName, string primaryKey, T arguments);
-
 		void CreateSubscription([CodeAnalysisProvider(ExecutionContext.SubscriptionProvider)]string subscription, string primaryKey, string topic);
-		[Obsolete("Call SubscriptionEvent instead")]
-		void TriggerEvent([CodeAnalysisProvider(ExecutionContext.SubscriptionEventProvider)]string eventName, string primaryKey, string topic);
-		[Obsolete("Call SubscriptionEvent instead")]
-		void TriggerEvent<T>([CodeAnalysisProvider(ExecutionContext.SubscriptionEventProvider)]string eventName, string primaryKey, string topic, T arguments);
-
 		void Enqueue<T>([CodeAnalysisProvider(ExecutionContext.QueueWorkerProvider)]string queue, T arguments);
 		void Enqueue<T>([CodeAnalysisProvider(ExecutionContext.QueueWorkerProvider)]string queue, T arguments, TimeSpan expire, TimeSpan nextVisible);
 
@@ -34,9 +25,9 @@ namespace TomPIT.Services.Context
 		void SubscriptionEvent([CodeAnalysisProvider(ExecutionContext.SubscriptionEventProvider)]string eventName, string primaryKey, string topic);
 		void SubscriptionEvent<T>([CodeAnalysisProvider(ExecutionContext.SubscriptionEventProvider)]string eventName, string primaryKey, string topic, T arguments);
 
-		Guid Event<T>([CodeAnalysisProvider(OperationArguments.EventProvider)]string name, T e);
-		Guid Event([CodeAnalysisProvider(OperationArguments.EventProvider)]string name);
-		Guid Event<T>([CodeAnalysisProvider(OperationArguments.EventProvider)]string name, T e, IEventCallback callback);
-		Guid Event([CodeAnalysisProvider(OperationArguments.EventProvider)]string name, IEventCallback callback);
+		Guid Event<T>([CodeAnalysisProvider(CodeAnalysisProviderAttribute.EventProvider)]string name, T e);
+		Guid Event([CodeAnalysisProvider(CodeAnalysisProviderAttribute.EventProvider)]string name);
+		Guid Event<T>([CodeAnalysisProvider(CodeAnalysisProviderAttribute.EventProvider)]string name, T e, IEventCallback callback);
+		Guid Event([CodeAnalysisProvider(CodeAnalysisProviderAttribute.EventProvider)]string name, IEventCallback callback);
 	}
 }

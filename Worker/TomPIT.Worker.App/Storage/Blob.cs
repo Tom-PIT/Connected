@@ -12,7 +12,7 @@ namespace TomPIT.Worker.Storage
 		public string ContentType { get; set; }
 		public string PrimaryKey { get; set; }
 		public Guid MicroService { get; set; }
-		public Guid Draft { get; set; }
+		public string Draft { get; set; }
 		public int Version { get; set; }
 		public int Type { get; set; }
 		public string Topic { get; set; }

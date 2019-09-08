@@ -1,7 +1,7 @@
 ﻿using System;
 using TomPIT.Cdn;
 
-namespace TomPIT.Worker.Services
+namespace TomPIT.Worker.Subscriptions
 {
 	internal class SubscriptionDescriptor : ISubscription
 	{

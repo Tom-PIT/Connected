@@ -33,7 +33,10 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 				connection = ins.ResolveConnection(Context);
 
 			if (connection == null)
-				connection = DefaultConnection();
+				connection = context.DefaultConnection();
+
+			if (connection == null)
+				return null;
 
 			var browser = connection.ResolveSchemaBrowser(Context);
 
@@ -47,19 +50,9 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 				return r;
 
 			foreach (var o in objects)
-				r.Add(new CodeAnalysisResult(o, o, null));
+				r.Add(new CodeAnalysisResult(o.Text, o.Value, o.Description));
 
 			return r;
-		}
-
-		private IConnection DefaultConnection()
-		{
-			var connections = Context.Connection().GetService<IComponentService>().QueryComponents(Context.MicroService.Token);
-
-			if (connections != null && connections.Count == 0)
-				return Context.Connection().GetService<IComponentService>().SelectConfiguration(connections[0].Token) as IConnection;
-
-			return null;
 		}
 	}
 }

@@ -10,6 +10,10 @@ namespace TomPIT.ComponentModel
 	{
 		private T _configuration = default;
 
+		public ConfigurationDescriptor(string identifier, string componentCategory) : this(null, identifier, componentCategory)
+		{
+		}
+
 		public ConfigurationDescriptor(IDataModelContext context, string identifier, string componentCategory) : base(context, identifier, componentCategory)
 		{
 		}
@@ -23,6 +27,12 @@ namespace TomPIT.ComponentModel
 
 				return _configuration;
 			}
+		}
+
+		protected override void OnValidate()
+		{
+			if (Configuration == null)
+				throw new RuntimeException($"{SR.ErrCannotFindConfiguration} ({MicroServiceName}/{ComponentName})");
 		}
 	}
 }

@@ -216,10 +216,10 @@ namespace TomPIT.Development.CodeAnalysis.SnippetProviders
 			{
 				r.Add(new Suggestion
 				{
-					FilterText = groupObject.Replace("[", string.Empty).Replace("]", string.Empty).Replace(".", string.Empty),
-					InsertText = $"\"{groupObject}\"",
-					Label = groupObject,
-					SortText = groupObject,
+					FilterText = groupObject.Text,
+					InsertText = $"\"{groupObject.Value}\"",
+					Label = groupObject.Text,
+					SortText = groupObject.Text,
 					Kind = Suggestion.Text
 				});
 			}

@@ -63,7 +63,7 @@ namespace TomPIT.Compilers
 			if (sourceCode == null)
 				return null;
 
-			var content = Connection.GetService<IComponentService>().SelectText(sourceCode.MicroService(Connection), sourceCode);
+			var content = Connection.GetService<IComponentService>().SelectText(sourceCode.Configuration().MicroService(Connection), sourceCode);
 
 			if (string.IsNullOrWhiteSpace(content))
 				return null;

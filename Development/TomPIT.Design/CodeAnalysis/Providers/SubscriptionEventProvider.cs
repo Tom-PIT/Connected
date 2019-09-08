@@ -24,7 +24,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 				if (string.IsNullOrWhiteSpace(ev.Name))
 					continue;
 
-				var ms = Context.Connection().GetService<IMicroServiceService>().Select(ev.MicroService(Context.Connection()));
+				var ms = Context.Connection().GetService<IMicroServiceService>().Select(ev.Configuration().MicroService(Context.Connection()));
 				var text = $"{ms.Name}/{component.Name}/{ev.Name}";
 
 				items.Add(new CodeAnalysisResult(text, text, null));

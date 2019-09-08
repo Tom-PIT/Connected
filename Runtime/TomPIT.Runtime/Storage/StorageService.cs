@@ -73,6 +73,23 @@ namespace TomPIT.Storage
 			return BlobContent.Select(b);
 		}
 
+		public IBlobContent Download(Guid microService, int type, Guid resourceGroup, string primaryKey)
+		{
+			var r = Get(f => f.MicroService == microService && f.Type == type && string.Compare(f.PrimaryKey, primaryKey, true) == 0);
+
+			if (r == null)
+			{
+				var rs = Query(microService, type, resourceGroup, primaryKey);
+
+				if (rs == null || rs.Count == 0)
+					return null;
+
+				r = rs[0];
+			}
+
+			return Download(r.Token);
+		}
+
 		public List<IBlobContent> Download(List<Guid> blobs)
 		{
 			return BlobContent.Query(blobs);

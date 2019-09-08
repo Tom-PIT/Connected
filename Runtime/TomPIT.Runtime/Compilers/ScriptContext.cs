@@ -23,7 +23,7 @@ namespace TomPIT.Runtime.Compilers
 		public ScriptContext(ISysConnection connection, ISourceCode sourceCode)
 		{
 			Connection = connection;
-			MicroService = Connection.GetService<IMicroServiceService>().Select(sourceCode.MicroService(Connection));
+			MicroService = Connection.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService(Connection));
 			LoadScript(sourceCode);
 		}
 

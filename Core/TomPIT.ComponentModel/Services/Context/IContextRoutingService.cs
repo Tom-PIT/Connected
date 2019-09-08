@@ -20,7 +20,7 @@ namespace TomPIT.Services.Context
 		string SearchUrl(string route);
 		string BigDataUrl(string route);
 		string Absolute(string url);
-		string Resource(IUrlHelper helper, Guid blob);
+		string Resource(Guid blob);
 		string Avatar(Guid user);
 
 		T RouteValue<T>(string key);
@@ -37,12 +37,16 @@ namespace TomPIT.Services.Context
 		string ParseUrl(string template, IDictionary<string, object> parameters);
 		string ParseUrl(string template, RouteValueDictionary parameters);
 
+		string ParseRoute([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey);
+		string ParseRoute([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey, IDictionary<string, object> parameters);
+		string ParseRoute([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey, RouteValueDictionary parameters);
+
 		ISiteMapContainer QuerySiteMap([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteSiteMapsProvider)]params string[] keys);
 		ISiteMapContainer QuerySiteMap(bool authorize, [CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteSiteMapsProvider)]params string[] keys);
 		List<IBreadcrumb> QueryBreadcrumbs([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey);
 		List<IBreadcrumb> QueryBreadcrumbs([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey, IDictionary<string, object> parameters);
 		List<IBreadcrumb> QueryBreadcrumbs([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey, RouteValueDictionary parameters);
 
-		ISiteMapRoute SelectLink([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey);
+		ISiteMapRoute SelectRoute([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey);
 	}
 }

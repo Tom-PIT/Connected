@@ -4,7 +4,7 @@ namespace TomPIT.Navigation
 {
 	public static class NavigationExtensions
 	{
-		public static ISiteMapContainer WithItems(this ISiteMapContainer container, params ISiteMapRoute[] items)
+		public static ISiteMapContainer WithRoutes(this ISiteMapContainer container, params ISiteMapRoute[] items)
 		{
 			foreach (var item in items)
 				container.Items.Add(item);
@@ -12,7 +12,7 @@ namespace TomPIT.Navigation
 			return container;
 		}
 
-		public static ISiteMapContainer WithItems(this ISiteMapContainer container, List<ISiteMapRoute> items)
+		public static ISiteMapContainer WithRoutes(this ISiteMapContainer container, List<ISiteMapRoute> items)
 		{
 			if (items == null)
 				return container;
@@ -23,21 +23,21 @@ namespace TomPIT.Navigation
 			return container;
 		}
 
-		public static ISiteMapRoute WithItems(this ISiteMapRoute route, params ISiteMapRoute[] items)
+		public static ISiteMapRoute WithRoutes(this ISiteMapRoute route, params ISiteMapRoute[] items)
 		{
 			foreach (var item in items)
-				route.Items.Add(item);
+				route.Routes.Add(item);
 
 			return route;
 		}
 
-		public static ISiteMapRoute WithItems(this ISiteMapRoute route, List<ISiteMapRoute> items)
+		public static ISiteMapRoute WithRoutes(this ISiteMapRoute route, List<ISiteMapRoute> items)
 		{
 			if (items == null)
 				return route;
 
 			foreach (var item in items)
-				route.Items.Add(item);
+				route.Routes.Add(item);
 
 			return route;
 		}

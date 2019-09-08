@@ -2,6 +2,7 @@
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TomPIT.ComponentModel.Data;
 using TomPIT.Design.Services;
 using TomPIT.Ide.CodeAnalysis;
 
@@ -32,6 +33,9 @@ namespace TomPIT.Development.CodeAnalysis.SnippetProviders
 				return null;
 
 			var connection = variable.ResolveConnection(e.Context);
+
+			if (connection == null)
+				connection = e.Context.DefaultConnection();
 
 			if (connection == null)
 				return null;
@@ -85,7 +89,6 @@ namespace TomPIT.Development.CodeAnalysis.SnippetProviders
 			{
 				if (statement.Expression is MemberAccessExpressionSyntax member)
 				{
-
 					if (member.Expression is IdentifierNameSyntax identifier)
 						return identifier.Identifier.ValueText;
 				}
@@ -94,6 +97,11 @@ namespace TomPIT.Development.CodeAnalysis.SnippetProviders
 			{
 				if (qn.Left is IdentifierNameSyntax ins)
 					return ins.Identifier.ValueText;
+			}
+			else if (node is MemberAccessExpressionSyntax ma)
+			{
+				if (ma.Expression is IdentifierNameSyntax identifier)
+					return identifier.Identifier.ValueText;
 			}
 
 			return null;

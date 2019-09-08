@@ -143,7 +143,12 @@ namespace TomPIT
 		public static ISysConnection CurrentConnection()
 		{
 			if (!(Shell.HttpContext.User.Identity is Identity identity) || string.IsNullOrWhiteSpace(identity.Endpoint))
+			{
+				if(Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
+					return Shell.GetService<IConnectivityService>().Select();
+
 				return null;
+			}
 
 			return Shell.GetService<IConnectivityService>().Select(identity.Endpoint);
 		}

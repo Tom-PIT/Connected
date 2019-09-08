@@ -344,7 +344,7 @@ namespace TomPIT.Design
                 Delete(text);
             else
             {
-                var s = Connection.GetService<IMicroServiceService>().Select(text.MicroService(Connection));
+                var s = Connection.GetService<IMicroServiceService>().Select(text.Configuration().MicroService(Connection));
                 var raw = Encoding.UTF8.GetBytes(content);
 
                 var b = new Blob

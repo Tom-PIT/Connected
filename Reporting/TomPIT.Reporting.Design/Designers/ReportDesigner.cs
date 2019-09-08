@@ -92,46 +92,46 @@ namespace TomPIT.Reporting.Design.Designers
 
 				foreach (var operation in config.Operations)
 				{
-					if (!(operation.Discover(Element.Environment.Context) is OperationManifest manifest) || !manifest.IsDataSource || manifest.Schema == null)
-						return;
+					//if (!(operation.Discover(Element.Environment.Context) is OperationManifest manifest) || !manifest.IsDataSource || manifest.Schema == null)
+					//	return;
 
-					var ds = new JsonDataSource
-					{
-						ConnectionName = $"{manifest.MicroService}/{manifest.Name}",
-						Name = manifest.Name.Replace("/", "")
-					};
+					//var ds = new JsonDataSource
+					//{
+					//	ConnectionName = $"{manifest.MicroService}/{manifest.Name}",
+					//	Name = manifest.Name.Replace("/", "")
+					//};
 
-					var root = new JsonSchemaNode
-					{
-						NodeType = JsonNodeType.Object
-					};
+					//var root = new JsonSchemaNode
+					//{
+					//	NodeType = JsonNodeType.Object
+					//};
 
-					var schema = new JsonSchemaNode
-					{
-						NodeType = JsonNodeType.Array,
-						Selected = true,
-						Name = manifest.SchemaName
-					};
+					//var schema = new JsonSchemaNode
+					//{
+					//	NodeType = JsonNodeType.Array,
+					//	Selected = true,
+					//	Name = manifest.SchemaName
+					//};
 
-					foreach (var child in manifest.Schema.Children())
-					{
-						if (child is JProperty property)
-							schema.AddChildren(new[] { new JsonSchemaNode(property.Name, true, JsonNodeType.Property, ResolvePropertyType(property.Value)) });
-						else if (child is JObject obj)
-						{
-							//TODO: implement object
-						}
-						else if (child is JArray array)
-						{
-							//TODO: implement collection
-						}
-					}
+					//foreach (var child in manifest.Schema.Children())
+					//{
+					//	if (child is JProperty property)
+					//		schema.AddChildren(new[] { new JsonSchemaNode(property.Name, true, JsonNodeType.Property, ResolvePropertyType(property.Value)) });
+					//	else if (child is JObject obj)
+					//	{
+					//		//TODO: implement object
+					//	}
+					//	else if (child is JArray array)
+					//	{
+					//		//TODO: implement collection
+					//	}
+					//}
 
-					root.AddChildren(schema);
+					//root.AddChildren(schema);
 
-					ds.Schema = root;
+					//ds.Schema = root;
 
-					_dataSources.Add(ds.Name, ds);
+					//_dataSources.Add(ds.Name, ds);
 				}
 			}
 		}

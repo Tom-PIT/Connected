@@ -326,7 +326,7 @@ namespace TomPIT.Security
 					if (!ae.Authorize(user))
 						routes.RemoveAt(i);
 					else
-						Authorize(route.Items.ToList(), user);
+						Authorize(route.Routes.ToList(), user);
 				}
 			}
 		}

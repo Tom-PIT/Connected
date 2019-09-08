@@ -22,6 +22,29 @@ namespace TomPIT.Services.Context
 			return Context.Connection().GetService<IStorageService>().Download(blob)?.Content;
 		}
 
+		public byte[] Download([CodeAnalysisProvider(CodeAnalysisProviderAttribute.MicroservicesProvider)]string microService, string primaryKey)
+		{
+			var ms = Context.Connection().GetService<IMicroServiceService>().Select(microService);
+
+			if (ms == null)
+				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})").WithMetrics(Context);
+
+			return Context.Connection().GetService<IStorageService>().Download(ms.Token, BlobTypes.UserContent, ms.ResourceGroup, primaryKey)?.Content;
+		}
+
+		public void Delete([CodeAnalysisProvider(CodeAnalysisProviderAttribute.MicroservicesProvider)]string microService, string primaryKey)
+		{
+			var ms = Context.Connection().GetService<IMicroServiceService>().Select(microService);
+
+			if (ms == null)
+				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})").WithMetrics(Context);
+
+			var blobs = Context.Connection().GetService<IStorageService>().Query(ms.Token, BlobTypes.UserContent, ms.ResourceGroup, primaryKey);
+
+			if (blobs != null && blobs.Count > 0)
+				Context.Connection().GetService<IStorageService>().Delete(blobs[0].Token);
+		}
+
 		public void Delete(Guid blob)
 		{
 			try

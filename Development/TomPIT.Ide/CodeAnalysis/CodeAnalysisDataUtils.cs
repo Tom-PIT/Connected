@@ -109,5 +109,15 @@ namespace TomPIT.Ide.CodeAnalysis
 				? Types.GetType(att.TypeName).CreateInstance<ISchemaBrowser>()
 				: att.Type.CreateInstance<ISchemaBrowser>();
 		}
+
+		public static IConnection DefaultConnection(this IExecutionContext context)
+		{
+			var connections = context.Connection().GetService<IComponentService>().QueryComponents(context.MicroService.Token, ComponentCategories.Connection);
+
+			if (connections != null && connections.Count == 1)
+				return context.Connection().GetService<IComponentService>().SelectConfiguration(connections[0].Token) as IConnection;
+
+			return null;
+		}
 	}
 }

@@ -48,10 +48,10 @@ namespace TomPIT.BigData
 
 		private void InitializeConfiguration()
 		{
-			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
+			Shell.GetService<IConnectivityService>().ConnectionInitialize += OnConnectionInitialize;
 		}
 
-		private void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
+		private void OnConnectionInitialize(object sender, SysConnectionArgs e)
 		{
 			e.Connection.RegisterService(typeof(INodeService), typeof(NodeService));
 			e.Connection.RegisterService(typeof(ITransactionService), typeof(TransactionService));

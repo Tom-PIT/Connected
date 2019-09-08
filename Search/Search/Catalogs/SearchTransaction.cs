@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Search;
 using TomPIT.Data;
 using TomPIT.Search.Indexing;
+using TomPIT.Services;
 
 namespace TomPIT.Search.Catalogs
 {
@@ -36,10 +38,8 @@ namespace TomPIT.Search.Catalogs
 			{
 				try
 				{
-					var catalogTokens = f.Split("/".ToCharArray(), 2);
-					var ms = Instance.GetService<IMicroServiceService>().Select(catalogTokens[0]);
-					var config = Instance.GetService<IComponentService>().SelectConfiguration(ms.Token, "SearchCatalog", catalogTokens[1]);
-					var catalog = IndexCache.Ensure(config.Component);
+					var config = new ConfigurationDescriptor<ISearchCatalog>(f, "SearchCatalog");
+					var catalog = IndexCache.Ensure(config.Component.Token);
 
 					if (catalog == null || !catalog.IsValid)
 						return;

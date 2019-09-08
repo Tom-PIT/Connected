@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Routing;
-using System.Net;
-using TomPIT.Routing;
+﻿using System.Net;
+using Microsoft.AspNetCore.Routing;
 using TomPIT.Storage;
 
-namespace TomPIT.Configuration
+namespace TomPIT.Routing
 {
-	internal class MediaHandler : RouteHandlerBase
+	public class MediaHandler : RouteHandlerBase
 	{
 		protected override void OnProcessRequest()
 		{

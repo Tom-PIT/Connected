@@ -46,7 +46,7 @@ namespace TomPIT.Development.Navigation
 			if (!string.IsNullOrWhiteSpace(route.RouteKey) && items.FirstOrDefault(f => string.Compare(f.RouteKey, route.RouteKey, true) == 0) == null)
 				items.Add(new NavigationRouteDescriptor { RouteKey = route.RouteKey, Template = route.Template, Text = route.Text });
 
-			foreach (var item in route.Items)
+			foreach (var item in route.Routes)
 				FillKeys(item, items);
 		}
 
@@ -114,7 +114,7 @@ namespace TomPIT.Development.Navigation
 			if (route is ISiteMapContextElement ctx)
 				ctx.Context = context;
 
-			foreach (var item in route.Items)
+			foreach (var item in route.Routes)
 				BindRoute(item, context);
 		}
 	}

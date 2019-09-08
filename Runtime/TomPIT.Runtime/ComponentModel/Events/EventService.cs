@@ -13,23 +13,18 @@ namespace TomPIT.ComponentModel.Events
 
 		private ISysConnection Connection { get; set; }
 
-		public Guid Trigger(Guid microService, string name, IEventCallback callback)
+		public Guid Trigger(IDistributedEvent ev, IEventCallback callback)
 		{
-			return Trigger<object>(microService, name, callback, null);
+			return Trigger<object>(ev, callback, null);
 		}
 
-		public Guid Trigger<T>(Guid microService, string name, IEventCallback callback, T e)
+		public Guid Trigger<T>(IDistributedEvent ev, IEventCallback callback, T e)
 		{
-			var ev = Connection.GetService<IComponentService>().SelectComponent(microService, "Event", name);
-
-			if (ev == null)
-				throw new TomPITException(SR.ErrEventNotDefined);
-
 			var u = Connection.CreateUrl("Event", "Trigger");
 			var args = new JObject
 			{
-				{"microService", microService },
-				{"name", name }
+				{"microService", ev.MicroService(Connection) },
+				{"name", ev.ComponentName(Connection) }
 			};
 
 			if (callback != null)

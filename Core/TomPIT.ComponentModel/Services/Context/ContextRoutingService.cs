@@ -62,18 +62,14 @@ namespace TomPIT.Services.Context
 			return r;
 		}
 
-		public string Resource(IUrlHelper helper, Guid blob)
+		public string Resource(Guid blob)
 		{
 			var b = Context.Connection().GetService<IStorageService>().Select(blob);
 
 			if (b == null)
 				return null;
 
-			return helper.RouteUrl("sys.resource", new
-			{
-				blob,
-				version = b.Version
-			});
+			return $"/sys/media/{blob}/{b.Version}";
 		}
 
 		public string Avatar(Guid user)
@@ -248,20 +244,45 @@ namespace TomPIT.Services.Context
 		}
 		public string ParseUrl(string template, IDictionary<string, object> parameters)
 		{
-			RouteValueDictionary values = new RouteValueDictionary();
+			var values = new RouteValueDictionary();
 
 			if(parameters!=null)
 			{
 				foreach(var parameter in parameters)
-				{
 					values.Add(parameter.Key, parameter.Value);
-				}
 			}
 
 			return ParseUrl(template, values);
 		}
 
-		public T RouteValue<T>([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string key)
+		public string ParseRoute([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey)
+		{
+			return ParseRoute(routeKey, null);
+		}
+
+		public string ParseRoute([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey, RouteValueDictionary parameters)
+		{
+			var route = SelectRoute(routeKey);
+
+			if (route == null)
+				return null;
+
+			return Context.Connection().GetService<INavigationService>().ParseUrl(route.Template, parameters);
+		}
+		public string ParseRoute([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey, IDictionary<string, object> parameters)
+		{
+			var values = new RouteValueDictionary();
+
+			if (parameters != null)
+			{
+				foreach (var parameter in parameters)
+					values.Add(parameter.Key, parameter.Value);
+			}
+
+			return ParseRoute(routeKey, values);
+		}
+
+		public T RouteValue<T>(string key)
 		{
 			if (Shell.HttpContext == null)
 				return default;
@@ -306,7 +327,7 @@ namespace TomPIT.Services.Context
 			return Context.Connection().GetService<INavigationService>().QueryBreadcrumbs(routeKey, parameters);
 		}
 
-		public ISiteMapRoute SelectLink([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey)
+		public ISiteMapRoute SelectRoute([CodeAnalysisProvider(CodeAnalysisProviderAttribute.RouteKeysProvider)]string routeKey)
 		{
 			return Context.Connection().GetService<INavigationService>().SelectRoute(routeKey);
 		}

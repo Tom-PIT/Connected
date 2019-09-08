@@ -12,7 +12,7 @@
 	};
 
 	tompit.invariantDate = function (v) {
-		if (typeof v === 'undefined' || v == null || !(v instanceof Date))
+		if (typeof v === 'undefined' || v === null || !(v instanceof Date))
 			return null;
 
 		var r = new Date(v.getFullYear(), v.getMonth(), v.getDay());
@@ -24,25 +24,25 @@
 
 	tompit.success = function (message, title, e) {
 		toastr.success(message, title, $.extend({
-			positionClass: 'toast-bottom-full-width text-center'
+			positionClass: 'tp-toast-bottom-full-width text-center'
 		}, e));
 	};
 
 	tompit.warning = function (message, title, e) {
 		toastr.warning(message, title, $.extend({
-			positionClass: 'toast-bottom-full-width text-center'
+			positionClass: 'tp-toast-bottom-full-width text-center'
 		}, e));
 	};
 
 	tompit.info = function (message, title, e) {
 		toastr.info(message, title, $.extend({
-			positionClass: 'toast-bottom-full-width text-center'
+			positionClass: 'tp-toast-bottom-full-width text-center'
 		}, e));
 	};
 
 	tompit.error = function (message, title, e) {
 		toastr.error(message, title, $.extend({
-			positionClass: 'toast-bottom-full-width text-center'
+			positionClass: 'tp-toast-bottom-full-width text-center'
 		}, e));
 	};
 

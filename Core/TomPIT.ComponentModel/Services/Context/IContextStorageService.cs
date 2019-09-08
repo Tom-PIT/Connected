@@ -16,7 +16,9 @@ namespace TomPIT.Services.Context
 		List<IBlob> Query([CodeAnalysisProvider(CodeAnalysisProviderAttribute.MicroservicesProvider)]string microService, string primaryKey);
 
 		void Delete(Guid blob);
+		void Delete([CodeAnalysisProvider(CodeAnalysisProviderAttribute.MicroservicesProvider)]string microService, string primaryKey);
 
 		byte[] Download(Guid blob);
+		byte[] Download([CodeAnalysisProvider(CodeAnalysisProviderAttribute.MicroservicesProvider)]string microService, string primaryKey);
 	}
 }

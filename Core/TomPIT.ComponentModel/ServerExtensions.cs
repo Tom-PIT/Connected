@@ -148,20 +148,20 @@ namespace TomPIT
 			return component.MicroService;
 		}
 
-		public static Guid MicroService(this IElement element, ISysConnection server)
-		{
-			var config = element.Configuration();
+		//public static Guid MicroService(this IElement element, ISysConnection server)
+		//{
+		//	var config = element.Configuration();
 
-			if (config == null)
-				return Guid.Empty;
+		//	if (config == null)
+		//		return Guid.Empty;
 
-			var component = server.GetService<IComponentService>().SelectComponent(config.Component);
+		//	var component = server.GetService<IComponentService>().SelectComponent(config.Component);
 
-			if (component == null)
-				return Guid.Empty;
+		//	if (component == null)
+		//		return Guid.Empty;
 
-			return component.MicroService;
-		}
+		//	return component.MicroService;
+		//}
 
 		public static T Closest<T>(this IElement instance)
 		{

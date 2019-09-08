@@ -170,7 +170,7 @@ CREATE TABLE [tompit].[blob]
 [content_type] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [primary_key] [nvarchar] (256) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [service] [uniqueidentifier] NULL,
-[draft] [uniqueidentifier] NULL,
+[draft] [nvarchar] (256) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [version] [int] NOT NULL,
 [topic] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [modified] [datetime] NOT NULL,
@@ -2930,11 +2930,12 @@ GO
 
 
 
+
 CREATE VIEW [tompit].[view_user]
 AS
 SELECT        u.*, l.token AS language_token
 FROM            tompit.[user] AS u LEFT OUTER JOIN
-                         tompit.language AS l ON u.id = l.id
+                         tompit.language AS l ON u.language = l.id
 
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3396,7 +3397,7 @@ GO
 PRINT N'Creating [tompit].[blob_que_draft]'
 GO
 CREATE PROCEDURE [tompit].[blob_que_draft]
-	@draft uniqueidentifier
+	@draft nvarchar(256)
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -3458,7 +3459,7 @@ PRINT N'Creating [tompit].[blob_commit]'
 GO
 CREATE PROCEDURE [tompit].[blob_commit]
 	@primary_key nvarchar(256),
-	@draft uniqueidentifier
+	@draft nvarchar(256)
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -4182,7 +4183,7 @@ CREATE PROCEDURE [tompit].[blob_ins]
 	@content_type nvarchar(128) = null,
 	@primary_key nvarchar(256) = null,
 	@service uniqueidentifier = null,
-	@draft uniqueidentifier = null,
+	@draft nvarchar(256) = null,
 	@version int,
 	@topic nvarchar(128) = null,
 	@modified smalldatetime 
@@ -4256,7 +4257,7 @@ CREATE PROCEDURE [tompit].[blob_upd]
 	@size int,
 	@content_type nvarchar(128) = null,
 	@primary_key nvarchar(256) = null,
-	@draft uniqueidentifier = null,
+	@draft nvarchar(256) = null,
 	@version int,
 	@modified smalldatetime 
 AS

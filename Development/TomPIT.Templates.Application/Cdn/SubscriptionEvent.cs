@@ -8,8 +8,9 @@ using TomPIT.ComponentModel.Events;
 namespace TomPIT.Application.Cdn
 {
 	[Create("Event", nameof(Name))]
-	[DefaultEvent(nameof(Invoke))]
-	public class SubscriptionEvent : ConfigurationElement, ISubscriptionEvent
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[Syntax(SyntaxAttribute.CSharp)]
+	public class SubscriptionEvent : SourceCodeElement, ISubscriptionEvent
 	{
 		private IServerEvent _invoke = null;
 

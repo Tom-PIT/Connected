@@ -18,6 +18,7 @@ namespace TomPIT
 		private static JsonSerializerSettings _jsonSettings = null;
 		//private static JsonSerializerSettings _ignoreMetaDataJsonSettings = null;
 		private static JsonMergeSettings _mergeSettings = null;
+		private static readonly string[] FileSizes = { "B", "KB", "MB", "GB", "TB" };
 
 		public static bool Compare(object left, object right)
 		{
@@ -421,19 +422,18 @@ namespace TomPIT
 
 		public static string ToFileSize(double value, string measureUnitCss)
 		{
-			string[] sizes = { "B", "KB", "MB", "GB", "TB" };
 			var order = 0;
 
-			while (value >= 1024 && order < sizes.Length - 1)
+			while (value >= 1024 && order < FileSizes.Length - 1)
 			{
 				order++;
-				value = value / 1024;
+				value /= 1024;
 			}
 
 			if (string.IsNullOrWhiteSpace(measureUnitCss))
-				return string.Format("{0:0.##} {1}", value, sizes[order]);
+				return string.Format("{0:0.##} {1}", value, FileSizes[order]);
 			else
-				return string.Format("{0:0.##} <span class=\"{2}\">{1}</span>", value, sizes[order], measureUnitCss);
+				return string.Format("{0:0.##} <span class=\"{2}\">{1}</span>", value, FileSizes[order], measureUnitCss);
 		}
 
 		public static string ToFileSize(double value)

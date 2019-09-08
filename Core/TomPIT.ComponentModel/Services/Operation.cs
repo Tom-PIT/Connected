@@ -21,7 +21,15 @@ namespace TomPIT.Services
 		public void Invoke()
 		{
 			Validate();
-			OnInvoke();
+
+			try
+			{
+				OnInvoke();
+			}
+			catch(Exception ex)
+			{
+				throw new ScriptException(this, ex);
+			}
 		}
 
 		protected virtual void OnInvoke()

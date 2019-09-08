@@ -1014,6 +1014,8 @@ $.widget('tompit.tpIde', {
 
         if ($.isFunction(this.options.designer.active.onUnload))
             this.options.designer.active.onUnload();
+
+        this.options.designer.active = null;
     },
     setActiveDesigner: function (d) {
         this.options.designer.active = d;

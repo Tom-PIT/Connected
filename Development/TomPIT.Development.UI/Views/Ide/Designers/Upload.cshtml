@@ -9,7 +9,7 @@
 		<br />
 		@if (Model.Resource.Blob != Guid.Empty)
 		{
-			<a href="@Model.Environment.Context.Services.Routing.Resource(Url, Model.Resource.Blob)" target="_blank">
+			<a href="@Model.Environment.Context.Services.Routing.Resource(Model.Resource.Blob)" target="_blank">
 				@Model.Resource.FileName
 			</a>
 			<hr />

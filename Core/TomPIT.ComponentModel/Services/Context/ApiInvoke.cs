@@ -7,6 +7,7 @@ using System.Text;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.Data;
 using TomPIT.Diagnostics;
 
 namespace TomPIT.Services.Context
@@ -76,14 +77,13 @@ namespace TomPIT.Services.Context
 
 			try
 			{
-				var args = new OperationInvokeArguments(ctx, op, arguments, transaction);
 				var operationType = Context.Connection().GetService<ICompilerService>().ResolveType(microService, op, op.Name);
 
 				if (synchronous)
 				{
 					if (operationType.IsSubclassOf(typeof(AsyncOperation)))
 					{
-						var opInstance = operationType.CreateInstance<AsyncOperation>(new object[] { args });
+						var opInstance = operationType.CreateInstance<AsyncOperation>(new object[] { new DataModelContext(ctx) });
 
 						opInstance.Async = false;
 
@@ -100,7 +100,7 @@ namespace TomPIT.Services.Context
 
 				if (HasReturnValue(operationType))
 				{
-					var opInstance = operationType.CreateInstance<IOperationBase>(new object[] { args });
+					var opInstance = operationType.CreateInstance<IOperationBase>(new object[] { new DataModelContext(ctx) });
 
 					if (arguments != null)
 						Types.Populate(JsonConvert.SerializeObject(arguments), opInstance);
@@ -111,7 +111,7 @@ namespace TomPIT.Services.Context
 				}
 				else
 				{
-					var opInstance = operationType.CreateInstance<IOperation>(new object[] { args });
+					var opInstance = operationType.CreateInstance<IOperation>(new object[] { new DataModelContext(ctx) });
 
 					if (arguments != null)
 						Types.Populate(JsonConvert.SerializeObject(arguments), opInstance);

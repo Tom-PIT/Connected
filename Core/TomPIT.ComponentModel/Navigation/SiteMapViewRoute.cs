@@ -28,7 +28,7 @@ namespace TomPIT.Navigation
 			}
 		}
 
-		public ConnectedList<ISiteMapRoute, ISiteMapRoute> Items
+		public ConnectedList<ISiteMapRoute, ISiteMapRoute> Routes
 		{
 			get
 			{

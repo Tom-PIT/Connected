@@ -28,16 +28,16 @@ namespace TomPIT.DataProviders.Sql
 				throw new NotSupportedException();
 		}
 
-		public List<string> QueryGroupObjects(IConnection connection)
+		public List<IGroupObject> QueryGroupObjects(IConnection connection)
 		{
 			return QueryGroupObjects(connection, "Stored procedures");
 		}
-		public List<string> QueryGroupObjects(IConnection connection, string schemaGroup)
+		public List<IGroupObject> QueryGroupObjects(IConnection connection, string schemaGroup)
 		{
 			using (var c = new SqlConnection(connection.Value))
 			{
 				var command = new SqlCommand(string.Format("select o.object_id, o.name, o.type, s.name from sys.objects o inner join sys.schemas s on o.schema_id = s.schema_id where type in ({0})", ResolveSchemaGroup(schemaGroup)), c);
-				var results = new List<string>();
+				var results = new List<IGroupObject>();
 				SqlDataReader rdr = null;
 
 				try
@@ -49,12 +49,14 @@ namespace TomPIT.DataProviders.Sql
 					while (rdr.Read())
 					{
 						string name = rdr.IsDBNull(1) ? string.Empty : rdr.GetString(1);
-						string schema = rdr.IsDBNull(3) ? string.Empty : string.Format("[{0}].", rdr.GetString(3));
+						string schema = rdr.IsDBNull(3) ? string.Empty : rdr.GetString(3);
 
-						results.Add(string.Format("{0}{1}", schema, string.Format("[{0}]", name)));
+						results.Add(new GroupObject
+						{
+							Text = $"{name} ({schema})",
+							Value = $"[{schema}].[{name}]"
+						});
 					}
-
-					results.Sort();
 
 					return results;
 				}

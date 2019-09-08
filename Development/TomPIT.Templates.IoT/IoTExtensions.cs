@@ -41,7 +41,7 @@ namespace TomPIT.IoT
 			if (string.IsNullOrWhiteSpace(view.Hub))
 				return null;
 
-			var ms = ((IElement)view).MicroService(context.Connection());
+			var ms = view.Configuration().MicroService(context.Connection());
 			var hub = view.Hub;
 
 			if (hub.Contains('/'))

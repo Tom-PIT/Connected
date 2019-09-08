@@ -6,8 +6,9 @@ using TomPIT.ComponentModel.Events;
 
 namespace TomPIT.Application.Cdn
 {
-	[DefaultEvent(nameof(Subscribe))]
-	public class Subscription : ComponentConfiguration, ISubscription
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[Syntax(SyntaxAttribute.CSharp)]
+	public class Subscription : SourceCodeConfiguration, ISubscription
 	{
 		private IServerEvent _subscribe = null;
 		private IServerEvent _subscribed = null;

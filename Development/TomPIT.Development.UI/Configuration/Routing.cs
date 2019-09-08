@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Routing;
 using System.Threading.Tasks;
 using TomPIT.ComponentModel.Routing;
+using TomPIT.Routing;
 
 namespace TomPIT.Configuration
 {
@@ -34,7 +35,6 @@ namespace TomPIT.Configuration
 
 				return Task.CompletedTask;
 			});
-
 		}
 	}
 }

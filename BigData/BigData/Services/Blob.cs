@@ -22,7 +22,7 @@ namespace TomPIT.BigData.Services
 
 		public Guid MicroService {get;set;}
 
-		public Guid Draft {get;set;}
+		public string Draft {get;set;}
 
 		public int Version {get;set;}
 

@@ -7,8 +7,8 @@ namespace TomPIT.Data.DataProviders
 	{
 		List<string> QuerySchemaGroups(IConnection repository);
 
-		List<string> QueryGroupObjects(IConnection repository);
-		List<string> QueryGroupObjects(IConnection repository, string schemaGroup);
+		List<IGroupObject> QueryGroupObjects(IConnection repository);
+		List<IGroupObject> QueryGroupObjects(IConnection repository, string schemaGroup);
 
 		List<ISchemaField> QuerySchema(IConnection repository, string schemaGroup, string groupObject);
 		List<ISchemaParameter> QueryParameters(IConnection repository, string schemaGroup, string groupObject);

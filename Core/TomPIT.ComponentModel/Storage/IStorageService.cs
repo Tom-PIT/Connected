@@ -23,6 +23,7 @@ namespace TomPIT.Storage
 		Guid Upload(IBlob blob, byte[] content, StoragePolicy policy);
 		Guid Upload(IBlob blob, byte[] content, StoragePolicy policy, Guid token);
 		IBlobContent Download(Guid blob);
+		IBlobContent Download(Guid microService, int kind, Guid resourceGroup, string primaryKey);
 		List<IBlobContent> Download(List<Guid> blobs);
 	}
 }

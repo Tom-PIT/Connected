@@ -1,12 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.Cdn;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Events;
 using TomPIT.ComponentModel.Handlers;
-using TomPIT.ComponentModel.Workers;
+using TomPIT.Data;
 using TomPIT.Environment;
 
 namespace TomPIT.Services.Context
@@ -77,38 +77,11 @@ namespace TomPIT.Services.Context
 
 		public void CreateSubscription(string subscription, string primaryKey, string topic)
 		{
-			var tokens = subscription.Split("/");
-			var ms = Context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+			var config = ComponentDescriptor.Subscription(new DataModelContext(Context), subscription);
 
-			if (ms == null)
-				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({tokens[0]})").WithMetrics(Context);
+			config.Validate();
 
-			Context.MicroService.ValidateMicroServiceReference(Context.Connection(), ms.Name);
-
-			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(ms.Token, "Subscription", tokens[1]) is TomPIT.ComponentModel.Cdn.ISubscription sub))
-				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrSubscriptionNotFound, subscription)).WithMetrics(Context);
-
-			Context.Connection().GetService<ISubscriptionService>().CreateSubscription(sub, primaryKey, topic);
-		}
-
-		public void TriggerEvent(string eventName, string primaryKey)
-		{
-			TriggerEvent<object>(eventName, primaryKey, null, null);
-		}
-
-		public void TriggerEvent<T>(string eventName, string primaryKey, T arguments)
-		{
-			TriggerEvent(eventName, primaryKey, null, arguments);
-		}
-
-		public void TriggerEvent(string eventName, string primaryKey, string topic)
-		{
-			TriggerEvent<object>(eventName, primaryKey, topic, null);
-		}
-
-		public void TriggerEvent<T>(string eventName, string primaryKey, string topic, T arguments)
-		{
-			SubscriptionEvent(eventName, primaryKey, topic, arguments);
+			Context.Connection().GetService<ISubscriptionService>().CreateSubscription(config.Configuration, primaryKey, topic);
 		}
 
 		public void Enqueue<T>([CodeAnalysisProvider(ExecutionContext.QueueWorkerProvider)]string queue, T arguments)
@@ -123,86 +96,76 @@ namespace TomPIT.Services.Context
 
 		private IQueueHandlerConfiguration ResolveQueue(string qualifier)
 		{
-			var tokens = qualifier.Split(new char[] { '/' }, 2);
-			var ms = Context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+			var config = ComponentDescriptor.Queue(new DataModelContext(Context), qualifier);
 
-			if (ms == null)
-				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({tokens[0]}").WithMetrics(Context);
+			config.Validate();
 
-			if (ms.Token != Context.MicroService.Token)
-				Context.MicroService.ValidateMicroServiceReference(Context.Connection(), ms.Name);
-
-			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(ms.Token, "Queue",tokens[1]) is IQueueHandlerConfiguration handler))
-				throw new RuntimeException(SR.ErrQueueWorkerNotFound);
-
-			return handler;
+			return config.Configuration;
 		}
 
-		public void SubscriptionEvent([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, TomPIT.Design")] string eventName, string primaryKey)
+		public void SubscriptionEvent([CodeAnalysisProvider(CodeAnalysisProviderAttribute.SubscriptionEventProvider)]string eventName, string primaryKey)
 		{
-			TriggerEvent(eventName, primaryKey, null);
+			SubscriptionEvent(eventName, primaryKey, null);
 		}
 
-		public void SubscriptionEvent<T>([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, TomPIT.Design")] string eventName, string primaryKey, T arguments)
+		public void SubscriptionEvent<T>([CodeAnalysisProvider(CodeAnalysisProviderAttribute.SubscriptionEventProvider)]string eventName, string primaryKey, T arguments)
 		{
-			TriggerEvent(eventName, primaryKey, null, arguments);
+			SubscriptionEvent(eventName, primaryKey, null, arguments);
 		}
 
-		public void SubscriptionEvent([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, TomPIT.Design")] string eventName, string primaryKey, string topic)
+		public void SubscriptionEvent([CodeAnalysisProvider(CodeAnalysisProviderAttribute.SubscriptionEventProvider)]string eventName, string primaryKey, string topic)
 		{
-			TriggerEvent<object>(eventName, primaryKey, topic, null);
+			SubscriptionEvent<object>(eventName, primaryKey, topic, null);
 		}
 
-		public void SubscriptionEvent<T>([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, TomPIT.Design")] string eventName, string primaryKey, string topic, T arguments)
+		public void SubscriptionEvent<T>([CodeAnalysisProvider(CodeAnalysisProviderAttribute.SubscriptionEventProvider)]string eventName, string primaryKey, string topic, T arguments)
 		{
-			var tokens = eventName.Split(new char[] { '/' }, 3);
-			var ms = Context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+			var config = ComponentDescriptor.Subscription(new DataModelContext(Context), eventName);
 
-			if (ms == null)
-				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({tokens[0]}").WithMetrics(Context);
+			config.Validate();
 
-			if (ms.Token != Context.MicroService.Token)
-				Context.MicroService.ValidateMicroServiceReference(Context.Connection(), ms.Name);
-
-			if (!(Context.Connection().GetService<IComponentService>().SelectConfiguration(ms.Token, "Subscription", tokens[1]) is TomPIT.ComponentModel.Cdn.ISubscription sub))
-				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrSubscriptionNotFound, tokens[1]));
-
-			var ev = sub.Events.FirstOrDefault(f => string.Compare(f.Name, tokens[2], true) == 0);
+			var ev = config.Configuration.Events.FirstOrDefault(f => string.Compare(f.Name, config.Element, true) == 0);
 
 			if (ev == null)
-				throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrSubscriptionEventNotFound, tokens[1], tokens[2])).WithMetrics(Context);
+				throw new RuntimeException($"{SR.ErrSubscriptionEventNotFound} ({config.MicroServiceName}/{config.ComponentName}/{config.Element})").WithMetrics(Context);
 
-			Context.Connection().GetService<ISubscriptionService>().TriggerEvent(sub, tokens[2], primaryKey, topic, arguments);
+			Context.Connection().GetService<ISubscriptionService>().TriggerEvent(config.Configuration, config.Element, primaryKey, topic, arguments);
 		}
 
-		public Guid Event<T>([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.EventProvider, TomPIT.Design")] string name, T e)
+		public Guid Event<T>([CodeAnalysisProvider(CodeAnalysisProviderAttribute.EventProvider)]string name, T e)
 		{
 			return Event(name, e, null);
 		}
 
-		public Guid Event([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.EventProvider, TomPIT.Design")] string name)
+		public Guid Event([CodeAnalysisProvider(CodeAnalysisProviderAttribute.EventProvider)]string name)
 		{
 			return Event<object>(name, null);
 		}
 
-		public Guid Event<T>([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.EventProvider, TomPIT.Design")] string name, T e, IEventCallback callback)
+		public Guid Event<T>([CodeAnalysisProvider(CodeAnalysisProviderAttribute.EventProvider)]string name, T e, IEventCallback callback)
 		{
 			if (callback is EventCallback ec)
 				ec.Attached = true;
 
-			var tokens = name.Split(new char[] { '/' }, 2);
-			Context.MicroService.ValidateMicroServiceReference(Context.Connection(), tokens[0]);
-			var ms = Context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+			var config = ComponentDescriptor.Event(new DataModelContext(Context), name);
 
-			if (ms == null)
-				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({tokens[0]})").WithMetrics(Context);
+			config.Validate();
 
-			return Context.Connection().GetService<IEventService>().Trigger(ms.Token, tokens[1], callback, e);
+			return Context.Connection().GetService<IEventService>().Trigger(config.Configuration, callback, e);
 		}
 
-		public Guid Event([CodeAnalysisProvider("TomPIT.Design.CodeAnalysis.Providers.EventProvider, TomPIT.Design")] string name, IEventCallback callback)
+		public Guid Event([CodeAnalysisProvider(CodeAnalysisProviderAttribute.EventProvider)]string name, IEventCallback callback)
 		{
 			return Event<object>(name, null, callback);
+		}
+
+		public bool SubscriptionExists([CodeAnalysisProvider(CodeAnalysisProviderAttribute.SubscriptionProvider)]string subscription, string primaryKey, string topic)
+		{
+			var config = ComponentDescriptor.Subscription(new DataModelContext(Context), subscription);
+
+			config.Validate();
+
+			return Context.Connection().GetService<ISubscriptionService>().SubscriptionExists(config.Configuration, primaryKey, topic);
 		}
 	}
 }

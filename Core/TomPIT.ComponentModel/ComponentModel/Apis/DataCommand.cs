@@ -45,7 +45,7 @@ namespace TomPIT.ComponentModel.Apis
 		public TomPIT.Data.IDataParameter SetParameter(string name, object value, bool nullMapping)
 		{
 			var parameter = Parameters.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0);
-			var mappedValue = nullMapping ? MapNullValue(value) : value;
+			var mappedValue = nullMapping ? MapNullValue(value) : MapValue(value);
 
 			if (parameter == null)
 			{
@@ -63,12 +63,21 @@ namespace TomPIT.ComponentModel.Apis
 			return parameter;
 		}
 
+		private object MapValue(object value)
+		{
+			if (value == null || value == DBNull.Value)
+				return value;
+
+			if (value.GetType().IsTypePrimitive())
+				return value;
+
+			return Types.Serialize(value);
+		}
 		
 		private object MapNullValue(object value)
 		{
 			if (value == null || value == DBNull.Value)
 				return DBNull.Value;
-
 			else if (value is string)
 			{
 				string v = TrimValue(value as string);
@@ -106,8 +115,8 @@ namespace TomPIT.ComponentModel.Apis
 				if ((TimeSpan)value == TimeSpan.Zero)
 					return DBNull.Value;
 			}
-
-			return value;
+			
+			return Types.Serialize(value);
 		}
 
 		private string TrimValue(string value)

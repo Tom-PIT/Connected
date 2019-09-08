@@ -33,7 +33,7 @@ namespace TomPIT.Reporting.Storage
 
 		protected IReport SelectReport(string url)
 		{
-			var connection = Shell.HttpContext.CurrentConnection();
+			var connection = SysExtensions.CurrentConnection();
 
 			if (connection == null)
 				return null;
@@ -63,7 +63,7 @@ namespace TomPIT.Reporting.Storage
 
 			if (config.TextBlob != Guid.Empty)
 			{
-				var connection = Shell.HttpContext.CurrentConnection();
+				var connection = SysExtensions.CurrentConnection();
 				var content = connection.GetService<IComponentService>().SelectText(((IConfiguration)config).MicroService(connection), config);
 				var ms = connection.GetService<IMicroServiceService>().Select(((IConfiguration)config).MicroService(connection));
 

@@ -95,7 +95,7 @@ namespace TomPIT.Navigation
 
 		private void BindContext(ISiteMapRoute route, IDataModelContext context)
 		{
-			foreach (var item in route.Items)
+			foreach (var item in route.Routes)
 			{
 				if (item is ISiteMapContextElement ctx)
 					ctx.Context = context;
@@ -243,7 +243,7 @@ namespace TomPIT.Navigation
 			if (!string.IsNullOrWhiteSpace(route.RouteKey) && !descriptor.RouteKeys.Contains(route.RouteKey.ToLowerInvariant()))
 				descriptor.RouteKeys.Add(route.RouteKey.ToLowerInvariant());
 
-			foreach (var item in route.Items)
+			foreach (var item in route.Routes)
 			{
 				if (!string.IsNullOrWhiteSpace(item.RouteKey) && !descriptor.RouteKeys.Contains(item.RouteKey.ToLowerInvariant()))
 					descriptor.RouteKeys.Add(item.RouteKey.ToLowerInvariant());
@@ -407,7 +407,7 @@ namespace TomPIT.Navigation
 
 		private ISiteMapRoute SelectRoute(ISiteMapRoute route, string routeKey)
 		{
-			foreach (var item in route.Items)
+			foreach (var item in route.Routes)
 			{
 				if (string.Compare(item.RouteKey, routeKey, true) == 0)
 					return item;

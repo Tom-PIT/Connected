@@ -31,7 +31,7 @@ namespace TomPIT.Reporting.Design.Storage
 		public override void SetData(XtraReport report, string url)
 		{
 			var rep = SelectReport(url);
-			var connection = Shell.HttpContext.CurrentConnection();
+			var connection = SysExtensions.CurrentConnection();
 
 			using (var ms = new MemoryStream())
 			{

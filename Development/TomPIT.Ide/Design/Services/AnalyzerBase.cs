@@ -125,7 +125,13 @@ namespace TomPIT.Design.Services
 			get
 			{
 				if (_workSpace == null)
-					_workSpace = new AdhocWorkspace(Host);
+				{
+					try
+					{
+						_workSpace = new AdhocWorkspace(Host);
+					}
+					catch { }
+				}
 
 				return _workSpace;
 			}

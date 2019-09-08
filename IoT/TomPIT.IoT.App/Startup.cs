@@ -53,7 +53,7 @@ namespace TomPIT.IoT
 				Configuration.Routing.Register(f.Builder);
 			});
 
-			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
+			Shell.GetService<IConnectivityService>().ConnectionInitialize += OnConnectionInitialize;
 			Instance.Run(app);
 
 			app.UseCors("TomPITPolicy");
@@ -65,7 +65,7 @@ namespace TomPIT.IoT
 			Instance.Connection.GetService<IAuthorizationService>().RegisterAuthenticationProvider(new IoTAuthenticationProvider());
 		}
 
-		private void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
+		private void OnConnectionInitialize(object sender, SysConnectionArgs e)
 		{
 			e.Connection.RegisterService(typeof(IIoTHubService), typeof(IoTHubService));
 		}

@@ -27,7 +27,6 @@
   {
     "outputFileName": "wwwroot/assets/quill.snow.min.css",
     "inputFiles": [
-      "wwwroot/assets/Libraries/Quill/quill.core.css",
       "wwwroot/assets/Libraries/Quill/quill.snow.css"
     ],
     "minify": {
@@ -38,7 +37,6 @@
   {
     "outputFileName": "wwwroot/assets/quill.bubble.min.css",
     "inputFiles": [
-      "wwwroot/assets/Libraries/Quill/quill.core.css",
       "wwwroot/assets/Libraries/Quill/quill.bubble.css"
     ],
     "minify": {

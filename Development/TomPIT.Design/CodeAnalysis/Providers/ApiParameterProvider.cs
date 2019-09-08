@@ -158,7 +158,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			get
 			{
 				if (_argumentsType == null)
-					_argumentsType = typeof(ScriptGlobals<>).MakeGenericType(typeof(OperationInvokeArguments));
+					_argumentsType = typeof(ScriptGlobals<>).MakeGenericType(typeof(EventArgs));
 
 				return _argumentsType;
 			}
@@ -169,7 +169,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 
 		public List<ISuggestion> QueryParameters(IApiOperation operation)
 		{
-			var txt = Context.Connection().GetService<IComponentService>().SelectText(operation.MicroService(Context.Connection()), operation);
+			var txt = Context.Connection().GetService<IComponentService>().SelectText(operation.Configuration().MicroService(Context.Connection()), operation);
 			var parameters = QueryParameters(Context, operation, txt);
 			var r = new List<ISuggestion>();
 
@@ -201,7 +201,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
                 return null;
 
 			_sourceCode = SourceText.From(text);
-			_microService = operation.MicroService(Context.Connection());
+			_microService = operation.Configuration().MicroService(Context.Connection());
 
 			var r = new List<ApiParameter>();
 			var o = new List<ICodeAnalysisResult>();

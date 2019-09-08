@@ -26,6 +26,14 @@ namespace TomPIT.Controllers
 		}
 
 		[HttpPost]
+		public IActionResult Search()
+		{
+			var model = CreateSearchModel();
+
+			return Json(model.Search());
+		}
+
+		[HttpPost]
 		public IActionResult SetUserData()
 		{
 			var model = CreateUserDataModel();
@@ -87,6 +95,16 @@ namespace TomPIT.Controllers
 			{
 				Body = FromBody()
 			};
+
+			r.Databind();
+			r.Initialize(this, r.MicroService);
+
+			return r;
+		}
+
+		private SearchModel CreateSearchModel()
+		{
+			var r = new SearchModel { Body = FromBody() };
 
 			r.Databind();
 			r.Initialize(this, r.MicroService);

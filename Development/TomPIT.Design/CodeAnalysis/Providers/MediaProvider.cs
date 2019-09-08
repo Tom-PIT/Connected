@@ -31,7 +31,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			if (string.IsNullOrWhiteSpace(file.FileName))
 				return;
 
-			var ms = Context.Connection().GetService<IMicroServiceService>().Select(file.MicroService(Context.Connection()));
+			var ms = Context.Connection().GetService<IMicroServiceService>().Select(file.Configuration().MicroService(Context.Connection()));
 			var text = $"{ms.Name}/{path}/{file.FileName}";
 
 			items.Add(new CodeAnalysisResult(text, text, null));

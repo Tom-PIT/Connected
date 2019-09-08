@@ -12,12 +12,16 @@ namespace TomPIT.Services
 {
 	public interface IDataModelContext : IExecutionContext
 	{
-		IDataConnection OpenConnection([CodeAnalysisProvider(OperationArguments.ConnectionProvider)]string connection);
+		IDataConnection OpenConnection([CodeAnalysisProvider(CodeAnalysisProviderAttribute.ConnectionProvider)]string connection);
 
-		IDataReader<T> OpenReader<T>(IDataConnection connection, [CodeAnalysisProvider(OperationArguments.CommandTextProvider)]string commandText);
-		IDataWriter OpenWriter(IDataConnection connection, [CodeAnalysisProvider(OperationArguments.CommandTextProvider)]string commandText);
+		IDataReader<T> OpenReader<T>(	IDataConnection connection, 
+												[CodeAnalysisProvider(CodeAnalysisProviderAttribute.CommandTextProvider)]string commandText);
+		IDataWriter OpenWriter(	IDataConnection connection, 
+										[CodeAnalysisProvider(CodeAnalysisProviderAttribute.CommandTextProvider)]string commandText);
 
-		IDataReader<T> OpenReader<T>([CodeAnalysisProvider(OperationArguments.ConnectionProvider)]string connection, [CodeAnalysisProvider(OperationArguments.CommandTextProvider)]string commandText);
-		IDataWriter OpenWriter([CodeAnalysisProvider(OperationArguments.ConnectionProvider)]string connection, [CodeAnalysisProvider(OperationArguments.CommandTextProvider)]string commandText);
+		IDataReader<T> OpenReader<T>(	[CodeAnalysisProvider(CodeAnalysisProviderAttribute.ConnectionProvider)]string connection, 
+												[CodeAnalysisProvider(CodeAnalysisProviderAttribute.CommandTextProvider)]string commandText);
+		IDataWriter OpenWriter(	[CodeAnalysisProvider(CodeAnalysisProviderAttribute.ConnectionProvider)]string connection, 
+										[CodeAnalysisProvider(CodeAnalysisProviderAttribute.CommandTextProvider)]string commandText);
 	}
 }

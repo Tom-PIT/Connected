@@ -107,7 +107,7 @@ namespace TomPIT.Worker.Services
 
 		private bool Invoke(EventDescriptor ed, IEventBinding i)
 		{
-			var ms = Instance.Connection.GetService<IMicroServiceService>().Select(i.MicroService(Instance.Connection));
+			var ms = Instance.Connection.GetService<IMicroServiceService>().Select(i.Configuration().MicroService(Instance.Connection));
 			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, ms);
 			var configuration = i.Closest<IEventHandler>();
 

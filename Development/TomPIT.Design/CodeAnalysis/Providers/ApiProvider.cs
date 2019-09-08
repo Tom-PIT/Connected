@@ -160,7 +160,7 @@ namespace TomPIT.Design.CodeAnalysis.Providers
 			get
 			{
 				if (_argumentsType == null)
-					_argumentsType = typeof(ScriptGlobals<>).MakeGenericType(typeof(OperationInvokeArguments));
+					_argumentsType = typeof(ScriptGlobals<>).MakeGenericType(typeof(EventArgs));
 
 				return _argumentsType;
 			}

@@ -11,6 +11,21 @@ namespace TomPIT.Cdn
 		{
 		}
 
+		public bool SubscriptionExists(ComponentModel.Cdn.ISubscription handler, string primaryKey, string topic)
+		{
+			var u = Connection.CreateUrl("Subscription", "Exists");
+			var e = new JObject
+			{
+				{ "handler", handler.Component },
+				{ "primaryKey",primaryKey }
+			};
+
+			if (!string.IsNullOrWhiteSpace(topic))
+				e.Add("topic", topic);
+
+			return Connection.Post<bool>(u, e);
+		}
+
 		public void CreateSubscription(ComponentModel.Cdn.ISubscription handler, string primaryKey, string topic)
 		{
 			var u = Connection.CreateUrl("Subscription", "Enqueue");

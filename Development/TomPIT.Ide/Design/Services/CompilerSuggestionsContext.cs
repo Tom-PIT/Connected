@@ -280,8 +280,8 @@ namespace TomPIT.Design.Services
 				{
 					Description = i.Description,
 					InsertText = i.Value,
-					FilterText = CleanupValue(i.Value),
-					SortText = CleanupValue(i.Text),
+					FilterText = i.Text,
+					SortText = i.Text,
 					Kind = Suggestion.Text,
 					Label = i.Text
 				});
@@ -341,14 +341,6 @@ namespace TomPIT.Design.Services
 		private bool IsAssignmentExpression(SyntaxNode node)
 		{
 			return node.Parent is AssignmentExpressionSyntax;
-		}
-
-		private string CleanupValue(string value)
-		{
-			if (string.IsNullOrWhiteSpace(value))
-				return value;
-
-			return value.Replace(".", string.Empty).Replace("[", string.Empty).Replace("]", string.Empty);
 		}
 
 		private List<ISuggestion> SuggestComplexInitializer(Document doc, SemanticModel model, TextSpan span, SyntaxNode node)

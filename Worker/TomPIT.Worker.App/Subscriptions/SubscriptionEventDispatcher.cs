@@ -2,7 +2,7 @@
 using TomPIT.Services;
 using TomPIT.Storage;
 
-namespace TomPIT.Worker.Services
+namespace TomPIT.Worker.Subscriptions
 {
 	internal class SubscriptionEventDispatcher : Dispatcher<IQueueMessage>
 	{

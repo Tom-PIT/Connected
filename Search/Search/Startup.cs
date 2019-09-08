@@ -49,10 +49,10 @@ namespace TomPIT.Search
 
 		private void InitializeConfiguration()
 		{
-			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
+			Shell.GetService<IConnectivityService>().ConnectionInitialize += OnConnectionInitialize;
 		}
 
-		private void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
+		private void OnConnectionInitialize(object sender, SysConnectionArgs e)
 		{
 			e.Connection.RegisterService(typeof(IIndexingService), typeof(IndexingService));
 		}

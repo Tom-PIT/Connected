@@ -47,15 +47,12 @@ namespace TomPIT.Dom
                 Items.Add(i.GetDomElement(this));
             }
 
-            Items.Add(new ContentElement(Environment, this));
             Items.Add(new PackageElement(Environment, this));
         }
 
         public override void LoadChildren(string id)
         {
-            if (id.Equals(ContentElement.DomId, StringComparison.OrdinalIgnoreCase))
-                Items.Add(new ContentElement(Environment, this));
-            else if (id.Equals(PackageElement.DomId, StringComparison.OrdinalIgnoreCase))
+            if (id.Equals(PackageElement.DomId, StringComparison.OrdinalIgnoreCase))
                 Items.Add(new PackageElement(Environment, this));
 
             var folder = Folders.FirstOrDefault(f => f.Token == id.AsGuid());

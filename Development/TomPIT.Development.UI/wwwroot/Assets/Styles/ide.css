@@ -393,3 +393,10 @@ li[data-kind="error-item"]:hover {
   color: #FFF;
   background-color: #2196f3;
 }
+.dx-texteditor.dx-editor-underlined:after {
+  border-bottom-color: #e0e0e0 !important;
+}
+.dx-widget input {
+  font-weight: 700;
+  color: #424242;
+}
