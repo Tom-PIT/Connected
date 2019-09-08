@@ -10,6 +10,7 @@ using TomPIT.Data.DataProviders;
 
 namespace TomPIT.Services
 {
+	[Obsolete]
 	public interface IDataModelContext : IExecutionContext
 	{
 		IDataConnection OpenConnection([CodeAnalysisProvider(CodeAnalysisProviderAttribute.ConnectionProvider)]string connection);

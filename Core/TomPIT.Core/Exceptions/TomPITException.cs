@@ -108,7 +108,7 @@ namespace TomPIT
 			{
 				foreach(var replace in ReplaceSources)
 				{
-					if (source.StartsWith(replace))
+					if (source.ToLowerInvariant().StartsWith(replace))
 						return sender.GetType().ShortName();
 				}
 			}

@@ -67,7 +67,7 @@ namespace TomPIT
 			dynamic instance = type.CreateInstance(ctorArgs);
 
 			if (instance is IProcessHandler ph)
-				ph.Initialize(context);
+				ph.Context = context;
 
 			return instance;
 		}

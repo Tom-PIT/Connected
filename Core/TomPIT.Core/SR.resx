@@ -1035,4 +1035,10 @@
   <data name="ErrHttpHeaderExpected" xml:space="preserve">
     <value>HTTP request header expected</value>
   </data>
+  <data name="ErrMethodNotFound" xml:space="preserve">
+    <value>Method not found</value>
+  </data>
+  <data name="ErrPropertyValueNull" xml:space="preserve">
+    <value>Property value null</value>
+  </data>
 </root>

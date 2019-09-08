@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using TomPIT.Security;
 using TomPIT.Services;
 
-namespace TomPIT.ComponentModel.Services.Context
+namespace TomPIT.Middleware.Services
 {
-	internal class ContextAuthorizationService : ContextClient, IContextAuthorizationService
+	internal class MiddlewareAuthorizationService : MiddlewareComponent, IMiddlewareAuthorizationService
 	{
-		public ContextAuthorizationService(IExecutionContext context) : base(context)
+		public MiddlewareAuthorizationService(IDataModelContext context) : base(context)
 		{
 		}
 

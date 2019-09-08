@@ -6,6 +6,7 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Connectivity;
+using TomPIT.Middleware.Services;
 using TomPIT.Services.Context;
 
 namespace TomPIT.Services
@@ -76,7 +77,7 @@ namespace TomPIT.Services
 			MicroService = microService;
 		}
 
-		public virtual IContextServices Services
+		public virtual IMiddlewareServices Services
 		{
 			get
 			{

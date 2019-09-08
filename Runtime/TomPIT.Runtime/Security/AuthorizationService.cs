@@ -312,7 +312,7 @@ namespace TomPIT.Security
 			if (container == null)
 				return;
 
-			Authorize(container.Items.ToList(), Connection.GetAuthenticatedUserToken());
+			Authorize(container.Routes.ToList(), Connection.GetAuthenticatedUserToken());
 		}
 
 		private void Authorize(List<ISiteMapRoute> routes, Guid user)

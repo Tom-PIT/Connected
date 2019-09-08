@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TomPIT.Middleware;
 
 namespace TomPIT.Services
 {
-	public interface IProcessHandler
+	public interface IProcessHandler: IMiddlewareComponent
 	{
-		void Initialize(IDataModelContext context);
-
-		IDataModelContext Context { get; }
 	}
 }

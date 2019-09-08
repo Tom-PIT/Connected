@@ -1,17 +1,14 @@
-﻿using Microsoft.CodeAnalysis;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.Caching;
 using TomPIT.Compilation;
@@ -19,9 +16,10 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.Compilation;
 using TomPIT.ComponentModel.Reports;
-using TomPIT.ComponentModel.Resources;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
+using TomPIT.Data;
+using TomPIT.Middleware;
 using TomPIT.Runtime.Compilers;
 using TomPIT.Runtime.Compilers.Views;
 using TomPIT.Services;
@@ -34,7 +32,6 @@ namespace TomPIT.Compilers
 	{
 		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _references = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
 		private static Lazy<ConcurrentDictionary<Guid, ManualResetEvent>> _scriptCreateState = new Lazy<ConcurrentDictionary<Guid, ManualResetEvent>>();
-
 		private static readonly string[] Usings = new string[]
 		{
 				"System",
@@ -48,12 +45,15 @@ namespace TomPIT.Compilers
 				"TomPIT.Data",
 				"TomPIT.Services",
 				"TomPIT.ComponentModel",
-				"TomPIT.ComponentModel.Apis"
+				"TomPIT.ComponentModel.Apis",
+				"TomPIT.Middleware"
 		};
 
 		public CompilerService(ISysConnection connection) : base(connection, "script")
 		{
 			Connection.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+
+			Scripts = new ScriptCache(connection);
 		}
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
@@ -111,20 +111,20 @@ namespace TomPIT.Compilers
 			return d;
 		}
 
-        public IScriptDescriptor GetScript(Guid microService, ISourceCode sourceCode)
-        {
-            var d = GetCachedScript(sourceCode.Id);
+		public IScriptDescriptor GetScript(Guid microService, ISourceCode sourceCode)
+		{
+			var d = GetCachedScript(sourceCode.Id);
 
-            if (d == null)
-                d = CreateScript(microService, sourceCode);
+			if (d == null)
+				d = CreateScript(microService, sourceCode);
 
-            return d;
-        }
+			return d;
+		}
 
-        public object Execute<T>(Guid microService, ISourceCode sourceCode, object sender, T e)
-        {
-            return Execute(microService, sourceCode, sender, e, out bool handled);
-        }
+		public object Execute<T>(Guid microService, ISourceCode sourceCode, object sender, T e)
+		{
+			return Execute(microService, sourceCode, sender, e, out bool handled);
+		}
 
 		public object Execute<T>(Guid microService, ISourceCode sourceCode, object sender, T e, out bool handled)
 		{
@@ -158,7 +158,7 @@ namespace TomPIT.Compilers
 
 			try
 			{
-				return Task.Run(()=>
+				return Task.Run(() =>
 				{
 					return script.Script(globals);
 				}).Result;
@@ -267,7 +267,7 @@ namespace TomPIT.Compilers
 			var errors = compiler.Script == null ? ImmutableArray<Microsoft.CodeAnalysis.Diagnostic>.Empty : compiler.Script.Compile();
 			var diagnostics = new List<IDiagnostic>();
 
-			foreach(var error in errors)
+			foreach (var error in errors)
 			{
 				var diagnostic = new Diagnostic
 				{
@@ -369,7 +369,7 @@ namespace TomPIT.Compilers
 			var rendererAtt = config.GetType().FindAttribute<ViewRendererAttribute>();
 			var content = string.Empty;
 
-			if(rendererAtt != null)
+			if (rendererAtt != null)
 			{
 				var renderer = (rendererAtt.Type ?? Types.GetType(rendererAtt.TypeName)).CreateInstance<IViewRenderer>();
 
@@ -378,7 +378,7 @@ namespace TomPIT.Compilers
 			else
 			{
 				var r = Connection.GetService<IStorageService>().Download(sourceCode.TextBlob);
-				
+
 				if (r == null)
 					return null;
 
@@ -461,7 +461,117 @@ namespace TomPIT.Compilers
 			return new ScriptContext(Connection, sourceCode);
 		}
 
+		public List<string> QuerySubClasses(IScript script)
+		{
+			var result = new List<string>();
+
+			var scriptType = ResolveType(script.MicroService(Connection), script, script.ComponentName(Connection));
+
+			if (scriptType == null)
+				return null;
+
+			foreach (var item in Scripts.Items)
+			{
+				var ms = item.MicroService(Connection);
+				var name = item.ComponentName(Connection);
+
+				var type = ResolveType(ms, item, name, false);
+
+				if (type == null)
+					continue;
+
+				type = type.BaseType;
+
+				while (type != null)
+				{
+					if (ScriptTypeComparer.Compare(scriptType, type))
+					{
+						var microService = Connection.GetService<IMicroServiceService>().Select(ms);
+
+						if (microService == null)
+							continue;
+
+						result.Add($"{microService.Name}/{name}");
+						break;
+					}
+				}
+			}
+
+			return result;
+		}
+
+		public T CreateInstance<T>(IDataModelContext context, ISourceCode sourceCode) where T : class
+		{
+			return CreateInstance<T>(context, sourceCode, null, sourceCode.Configuration().ComponentName(Connection));
+		}
+		public T CreateInstance<T>(ISourceCode sourceCode) where T : class
+		{
+			return CreateInstance<T>(null, sourceCode);
+		}
+
+		public T CreateInstance<T>(IDataModelContext context, ISourceCode sourceCode, string arguments, string typeName) where T : class
+		{
+			var ms = Connection.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService(Connection));
+
+			if (ms == null)
+				throw new RuntimeException(SR.ErrMicroServiceNotFound);
+
+			return CreateInstance<T>(context, sourceCode, ms, arguments, typeName);
+		}
+		public T CreateInstance<T>(ISourceCode sourceCode, string arguments, string typeName) where T : class
+		{
+			return CreateInstance<T>(null, sourceCode, arguments, typeName);
+		}
+
+		public T CreateInstance<T>(IDataModelContext context, ISourceCode sourceCode, string arguments) where T : class
+		{
+			return CreateInstance<T>(context, sourceCode, arguments, sourceCode.Configuration().ComponentName(Connection));
+		}
+		public T CreateInstance<T>(ISourceCode sourceCode, string arguments) where T : class
+		{
+			return CreateInstance<T>(null, sourceCode, arguments, sourceCode.Configuration().ComponentName(Connection));
+		}
+
+		public T CreateInstance<T>(IDataModelContext context, Type scriptType) where T : class
+		{
+			return CreateInstance<T>(context, scriptType, null);
+		}
+		public T CreateInstance<T>(IDataModelContext context, Type scriptType, string arguments) where T : class
+		{
+			return CreateInstance<T>(null, scriptType, context.MicroService, arguments);
+		}
+
+		private T CreateInstance<T>(IDataModelContext context, ISourceCode sourceCode, IMicroService microService, string arguments, string typeName) where T : class
+		{
+			var instanceType = ResolveType(microService.Token, sourceCode, typeName);
+
+			if (instanceType == null)
+				return default;
+
+			return CreateInstance<T>(context, instanceType, microService, arguments);
+		}
+
+		private T CreateInstance<T>(IDataModelContext context, Type scriptType, IMicroService microService, string arguments) where T : class
+		{
+			if (scriptType == null)
+				return default;
+
+			var instance = scriptType.CreateInstance<T>();
+
+			if (instance == null)
+				return default;
+
+			if (arguments != null)
+				Types.Populate(arguments, instance);
+
+			if (instance is IMiddlewareComponent mw)
+				mw.Context = context ?? new DataModelContext(Services.ExecutionContext.Create(Connection.Url, microService));
+
+			return instance;
+		}
+
 		private static ConcurrentDictionary<Guid, List<Guid>> References { get { return _references.Value; } }
 		private static ConcurrentDictionary<Guid, ManualResetEvent> ScriptCreateState { get { return _scriptCreateState.Value; } }
+		private ScriptCache Scripts { get; }
 	}
 }

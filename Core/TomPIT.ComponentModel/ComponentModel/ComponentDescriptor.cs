@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.ComponentModel.Cdn;
+﻿using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.Events;
 using TomPIT.ComponentModel.Handlers;
 using TomPIT.ComponentModel.UI;
@@ -47,7 +44,7 @@ namespace TomPIT.ComponentModel
 					Element = tokens[2];
 			}
 
-			if(Context==null)
+			if (Context == null)
 			{
 				_microService = SysExtensions.CurrentConnection().GetService<IMicroServiceService>().Select(MicroServiceName);
 
@@ -123,6 +120,11 @@ namespace TomPIT.ComponentModel
 		public static ConfigurationDescriptor<IDistributedEvent> Event(IDataModelContext context, string identifier)
 		{
 			return new ConfigurationDescriptor<IDistributedEvent>(context, identifier, ComponentCategories.Event);
+		}
+
+		public static ConfigurationDescriptor<IScript> Script(IDataModelContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IScript>(context, identifier, ComponentCategories.Script);
 		}
 	}
 }

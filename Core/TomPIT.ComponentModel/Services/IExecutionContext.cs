@@ -1,17 +1,17 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 using TomPIT.Services.Context;
 
 namespace TomPIT.Services
 {
-	public interface IExecutionContext
+	[Obsolete]
+	public interface IExecutionContext : IMiddlewareContext
 	{
-		IContextServices Services { get; }
-		IMicroService MicroService { get; }
-
 		JObject Invoke([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, [CodeAnalysisProvider(ExecutionContext.ApiParameterProvider)]JObject e, IApiTransaction transaction);
 		JObject Invoke([CodeAnalysisProvider(ExecutionContext.ApiProvider)]string api, [CodeAnalysisProvider(ExecutionContext.ApiParameterProvider)]JObject e);
 

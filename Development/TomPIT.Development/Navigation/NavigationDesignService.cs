@@ -5,6 +5,7 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Navigation;
 using TomPIT.Connectivity;
+using TomPIT.Data;
 using TomPIT.Navigation;
 using TomPIT.Services;
 
@@ -37,7 +38,7 @@ namespace TomPIT.Development.Navigation
 
 		private void FillKeys(ISiteMapContainer container, List<INavigationRouteDescriptor> items)
 		{
-			foreach (var item in container.Items)
+			foreach (var item in container.Routes)
 				FillKeys(item, items);
 		}
 
@@ -87,7 +88,8 @@ namespace TomPIT.Development.Navigation
 			if (type == null)
 				return null;
 
-			var instance = Connection.CreateProcessHandler<ISiteMapHandler>(microService, type);
+			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
+			var instance = Connection.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new DataModelContext(ExecutionContext.Create(Connection.Url, ms)), type);
 
 			if (instance == null)
 				return null;
@@ -105,7 +107,7 @@ namespace TomPIT.Development.Navigation
 
 		private void BindContainer(ISiteMapContainer container, IDataModelContext context)
 		{
-			foreach (var item in container.Items)
+			foreach (var item in container.Routes)
 				BindRoute(item, context);
 		}
 

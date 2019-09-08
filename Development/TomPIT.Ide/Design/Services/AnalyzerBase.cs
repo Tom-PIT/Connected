@@ -40,7 +40,8 @@ namespace TomPIT.Design.Services
 				"TomPIT.Data",
 				"TomPIT.Services",
 				"TomPIT.ComponentModel",
-				"TomPIT.ComponentModel.Apis"
+				"TomPIT.ComponentModel.Apis",
+				"TomPIT.Middleware"
 		};
 
 		public AnalyzerBase(IExecutionContext context)

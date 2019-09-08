@@ -7,7 +7,7 @@ namespace TomPIT.Navigation
 		public static ISiteMapContainer WithRoutes(this ISiteMapContainer container, params ISiteMapRoute[] items)
 		{
 			foreach (var item in items)
-				container.Items.Add(item);
+				container.Routes.Add(item);
 
 			return container;
 		}
@@ -18,7 +18,7 @@ namespace TomPIT.Navigation
 				return container;
 
 			foreach (var item in items)
-				container.Items.Add(item);
+				container.Routes.Add(item);
 
 			return container;
 		}

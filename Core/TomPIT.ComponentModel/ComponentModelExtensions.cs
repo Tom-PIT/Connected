@@ -378,7 +378,7 @@ namespace TomPIT
 			if (sitemap == null)
 				return;
 
-			LoadItems(context, routes, sitemap.Items);
+			LoadItems(context, routes, sitemap.Routes);
 		}
 
 		private static void LoadItems(IDataModelContext context, List<IRoute> routes, ConnectedList<ISiteMapRoute, ISiteMapContainer> items)

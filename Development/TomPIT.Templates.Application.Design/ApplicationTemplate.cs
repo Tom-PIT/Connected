@@ -12,7 +12,6 @@ using TomPIT.Application.Design.Media;
 using TomPIT.Application.Events;
 using TomPIT.Application.Features;
 using TomPIT.Application.Navigation;
-using TomPIT.Application.QA;
 using TomPIT.Application.Resources;
 using TomPIT.Application.Search;
 using TomPIT.Application.UI;
@@ -44,15 +43,15 @@ namespace TomPIT.Application
 				{HostedWorker.ComponentCategory, new ItemDescriptor("Hosted worker", HostedWorker.ComponentCategory, typeof(HostedWorker)) { Glyph = "fal fa-cog", Category = "Model" , Ordinal=106} },
 				{QueueHandlerConfiguration.ComponentCategory, new ItemDescriptor("Queue handler", QueueHandlerConfiguration.ComponentCategory, typeof(QueueHandlerConfiguration)) { Glyph = "fal fa-cog", Category = "Model" , Ordinal=107} },
 				{Connection.ComponentCategory, new ItemDescriptor("Connection", "Connection", typeof(Connection)) { Glyph = "fal fa-server", Category = "Data" , Ordinal=202} },
-				{"FeatureSet", new ItemDescriptor("Feature set", "FeatureSet", typeof(FeatureSet)) { Glyph = "fal fa-function", Category = "Configuration" , Ordinal=250} },
-				{"Strings", new ItemDescriptor("String table", "StringTable", typeof(StringTable)) { Glyph = "fal fa-font", Category = "Resources" , Ordinal=300} } ,
-				{"Media", new ItemDescriptor("Media", "Media", typeof(MediaResources)) { Glyph = "fal fa-images", Category = "Resources" , Ordinal=301} } ,
-				{ "Embedded", new ItemDescriptor("Embedded assembly", "Embedded Assembly", typeof(AssemblyEmbeddedResource)) { Glyph = "fal fa-file-code", Category = "Resources" , Ordinal=303, Value="Assembly"} } ,
-				{"File", new ItemDescriptor("File assembly", "File Assembly", typeof(AssemblyFileSystemResource)) { Glyph = "fal fa-file-code", Category = "Resources" , Ordinal=304, Value="Assembly"} },
-				{"Subscription", new ItemDescriptor("Subscription", "Subscription", typeof(Subscription)) { Glyph = "fal fa-bell", Category = "Cdn" , Ordinal=400} },
-				{"MailTemplate", new ItemDescriptor("Mail template", "MailTemplate", typeof(MailTemplate)) { Glyph = "fal fa-envelope", Category = "Cdn" , Ordinal=401} },
+				{ "FeatureSet", new ItemDescriptor("Feature set", "FeatureSet", typeof(FeatureSet)) { Glyph = "fal fa-function", Category = "Extensibility" , Ordinal=301} },
+				{"Strings", new ItemDescriptor("String table", "StringTable", typeof(StringTable)) { Glyph = "fal fa-font", Category = "Resources" , Ordinal=400} } ,
+				{"Media", new ItemDescriptor("Media", "Media", typeof(MediaResources)) { Glyph = "fal fa-images", Category = "Resources" , Ordinal=401} } ,
+				{ "Embedded", new ItemDescriptor("Embedded assembly", "Embedded Assembly", typeof(AssemblyEmbeddedResource)) { Glyph = "fal fa-file-code", Category = "Resources" , Ordinal=402, Value="Assembly"} } ,
+				{"File", new ItemDescriptor("File assembly", "File Assembly", typeof(AssemblyFileSystemResource)) { Glyph = "fal fa-file-code", Category = "Resources" , Ordinal=403, Value="Assembly"} },
+				{"Subscription", new ItemDescriptor("Subscription", "Subscription", typeof(Subscription)) { Glyph = "fal fa-bell", Category = "Cdn" , Ordinal=500} },
+				{"MailTemplate", new ItemDescriptor("Mail template", "MailTemplate", typeof(MailTemplate)) { Glyph = "fal fa-envelope", Category = "Cdn" , Ordinal=501} },
 				//{"TestSuite", new ItemDescriptor("Test suite", "TestSuite", typeof(TestSuite)) { Glyph = "fal fa-stethoscope", Category = "QA" , Ordinal=500} }
-				{"SearchCatalog", new ItemDescriptor("Search catalog", "SearchCatalog", typeof(SearchCatalog)) { Glyph = "fal fa-search", Category = "Search" , Ordinal=500} }
+				{"SearchCatalog", new ItemDescriptor("Search catalog", "SearchCatalog", typeof(SearchCatalog)) { Glyph = "fal fa-search", Category = "Search" , Ordinal=502} }
 			});
 		}
 

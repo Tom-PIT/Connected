@@ -10,10 +10,11 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using TomPIT.Annotations;
 using TomPIT.Data;
+using TomPIT.Middleware;
 
 namespace TomPIT.Services
 {
-	public abstract class ProcessHandler : IProcessHandler, IUniqueValueProvider
+	public abstract class ProcessHandler : MiddlewareComponent, IProcessHandler, IUniqueValueProvider
 	{
 		protected ProcessHandler()
 		{
@@ -23,10 +24,6 @@ namespace TomPIT.Services
 		{
 			Context = context;
 		}
-
-		[JsonIgnore]
-		[SkipValidation]
-		public IDataModelContext Context { get; private set; }
 
 		protected virtual void OnValidating(List<ValidationResult> results)
 		{
@@ -209,11 +206,6 @@ namespace TomPIT.Services
 			{
 				return null;
 			}
-		}
-
-		void IProcessHandler.Initialize(IDataModelContext context)
-		{
-			Context = context;
 		}
 	}
 }

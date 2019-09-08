@@ -8,7 +8,7 @@ namespace TomPIT.Navigation
 		private ConnectedList<ISiteMapRoute, ISiteMapContainer> _items = null;
 		public string Key { get; set; }
 
-		public ConnectedList<ISiteMapRoute, ISiteMapContainer> Items
+		public ConnectedList<ISiteMapRoute, ISiteMapContainer> Routes
 		{
 			get
 			{

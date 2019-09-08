@@ -1,26 +1,8 @@
-﻿using TomPIT.ComponentModel.Services.Context;
+﻿using TomPIT.Middleware.Services;
 
 namespace TomPIT.Services.Context
 {
-	public interface IContextServices
+	public interface IContextServices : IMiddlewareServices
 	{
-		IContextAuthorizationService Authorization { get; }
-
-		IContextDataService Data { get; }
-		IContextTimezoneService Timezone { get; }
-		IContextIdentityService Identity { get; }
-		IContextLocalizationService Localization { get; }
-		IContextRoutingService Routing { get; }
-		IContextDiagnosticService Diagnostic { get; }
-		IContextCachingService Cache { get; }
-		IContextValidationService Validation { get; }
-		IContextEnvironmentService Environment { get; }
-		IContextStorageService Storage { get; }
-		IContextCdnService Cdn { get; }
-		IContextIoTService IoT { get; }
-		IContextMediaService Media { get; }
-		IContextFeatureService Features { get; }
-		IContextSearchService Search { get; }
-		IContextBigDataService BigData { get; }
 	}
 }

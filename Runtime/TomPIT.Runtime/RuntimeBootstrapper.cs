@@ -18,6 +18,7 @@ using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Globalization;
 using TomPIT.IoT;
+using TomPIT.Middleware;
 using TomPIT.Navigation;
 using TomPIT.Search;
 using TomPIT.Security;

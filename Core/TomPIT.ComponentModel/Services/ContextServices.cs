@@ -1,4 +1,5 @@
-﻿using TomPIT.ComponentModel.Services.Context;
+﻿using TomPIT.Data;
+using TomPIT.Middleware.Services;
 using TomPIT.Services.Context;
 
 namespace TomPIT.Services
@@ -21,7 +22,8 @@ namespace TomPIT.Services
 		private IContextFeatureService _features = null;
 		private IContextSearchService _search = null;
 		private IContextBigDataService _bigData = null;
-		private IContextAuthorizationService _authorization = null;
+		private IMiddlewareAuthorizationService _authorization = null;
+		private IMiddlewareService _middleware = null;
 
 		public ContextServices(IExecutionContext context) : base(context)
 		{
@@ -203,14 +205,25 @@ namespace TomPIT.Services
 			}
 		}
 
-		public IContextAuthorizationService Authorization
+		public IMiddlewareAuthorizationService Authorization
 		{
 			get
 			{
 				if (_authorization == null)
-					_authorization = new ContextAuthorizationService(Context);
+					_authorization = new MiddlewareAuthorizationService(new DataModelContext( Context));
 
 				return _authorization;
+			}
+		}
+
+		public IMiddlewareService Middleware
+		{
+			get
+			{
+				if (_middleware == null)
+					_middleware = new MiddlewareService(new DataModelContext(Context));
+
+				return _middleware;
 			}
 		}
 	}

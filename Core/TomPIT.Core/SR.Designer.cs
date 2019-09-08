@@ -1564,6 +1564,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Method not found.
+        /// </summary>
+        public static string ErrMethodNotFound {
+            get {
+                return ResourceManager.GetString("ErrMethodNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Micro service not found.
         /// </summary>
         public static string ErrMicroServiceNotFound {
@@ -1839,6 +1848,15 @@ namespace TomPIT {
         public static string ErrPropertyNotFound {
             get {
                 return ResourceManager.GetString("ErrPropertyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Property value null.
+        /// </summary>
+        public static string ErrPropertyValueNull {
+            get {
+                return ResourceManager.GetString("ErrPropertyValueNull", resourceCulture);
             }
         }
         
