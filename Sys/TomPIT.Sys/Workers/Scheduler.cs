@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using TomPIT.Services;
+using TomPIT.Distributed;
 using TomPIT.Sys.Data;
 using TomPIT.SysDb.Workers;
 

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Application.Resources;
-using TomPIT.Design;
-using TomPIT.Dom;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
+using TomPIT.MicroServices.Resources;
 
-namespace TomPIT.Application.Design.Items
+namespace TomPIT.MicroServices.Design.Items
 {
 	internal class ScriptSourceCollection : ItemsBase
 	{

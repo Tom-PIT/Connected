@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.Loader;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Runtime.Loader;
-using TomPIT.Services;
+using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Configuration
 {
@@ -78,7 +78,7 @@ namespace TomPIT.Configuration
 
 		private void RegisterAssembly(List<Assembly> assemblies, string type)
 		{
-			var t = Types.GetType(type);
+			var t = Reflection.TypeExtensions.GetType(type);
 
 			if (t == null)
 				return;

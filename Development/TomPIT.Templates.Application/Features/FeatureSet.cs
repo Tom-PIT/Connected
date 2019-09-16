@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.Annotations;
+﻿using TomPIT.Annotations.Design;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Features;
+using TomPIT.MicroServices.Design;
 
-namespace TomPIT.Application.Features
+namespace TomPIT.MicroServices.Features
 {
-	public class FeatureSet : ComponentConfiguration, IFeatureSet
+	public class FeatureSet : ComponentConfiguration, IFeatureSetConfiguration
 	{
 		private ListItems<IFeature> _features = null;
 
-		[Items("TomPIT.Application.Design.Items.FeaturesCollection, TomPIT.Application.Design")]
+		[Items(DesignUtils.FeaturesItems)]
 		public ListItems<IFeature> Features
 		{
 			get

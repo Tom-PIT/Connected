@@ -1,21 +1,18 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
-using TomPIT.ComponentModel.Events;
-using TomPIT.Services;
+using TomPIT.MicroServices.BigData.Design;
+using TomPIT.Runtime;
 
-namespace TomPIT.BigData
+namespace TomPIT.MicroServices.BigData
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner, Mode = EnvironmentMode.Design)]
-	[DomDesigner("TomPIT.Management.Designers.BigDataPartitionDesigner, TomPIT.Management", Mode = EnvironmentMode.Runtime)]
+	[DomDesigner(DesignUtils.BigDataPartitionDesigner, Mode = EnvironmentMode.Runtime)]
 	[Syntax(SyntaxAttribute.CSharp)]
-	public class Partition : ComponentConfiguration, IPartitionConfiguration
+	public class Partition : SourceCodeConfiguration, IPartitionConfiguration
 	{
-		[Browsable(false)]
-		public Guid TextBlob { get; set; }
-
 		[EnvironmentVisibility(EnvironmentMode.Any)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
 		[DefaultValue(SchemaSynchronizationMode.Manual)]

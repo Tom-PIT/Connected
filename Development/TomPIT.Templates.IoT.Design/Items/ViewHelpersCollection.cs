@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Design;
-using TomPIT.Dom;
-using TomPIT.IoT.UI;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
+using TomPIT.MicroServices.IoT.UI;
 
-namespace TomPIT.IoT.Design.Items
+namespace TomPIT.MicroServices.IoT.Design.Items
 {
 	internal class ViewHelpersCollection : ItemsBase
 	{

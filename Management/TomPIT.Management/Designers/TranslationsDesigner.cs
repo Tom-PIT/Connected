@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json.Linq;
-using TomPIT.ActionResults;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
-using TomPIT.Design;
-using TomPIT.Designers;
-using TomPIT.Dom;
 using TomPIT.Environment;
+using TomPIT.Exceptions;
 using TomPIT.Globalization;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom;
 
 namespace TomPIT.Management.Designers
 {
-	public class TranslationsDesigner : DomDesigner<TomPIT.Dom.Element>
+	public class TranslationsDesigner : DomDesigner<DomElement>
 	{
 		private List<ILanguage> _languages = null;
-		public TranslationsDesigner(TomPIT.Dom.Element element) : base(element)
+		public TranslationsDesigner(DomElement element) : base(element)
 		{
 		}
 
@@ -33,28 +33,28 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				var r = new JArray();
-				var resourceGroups = GetService<IResourceGroupService>().Query().Select(f => f.Name);
-				var translationlanguage = Translation == Guid.Empty ? null : GetService<ILanguageService>().Select(Translation);
+				var resourceGroups = Environment.Context.Tenant.GetService<IResourceGroupService>().Query().Select(f => f.Name);
+				var translationlanguage = Translation == Guid.Empty ? null : Environment.Context.Tenant.GetService<ILanguageService>().Select(Translation);
 				var lcid = translationlanguage == null ? 0 : translationlanguage.Lcid;
 				var leadingLcid = 0;
 
 				if (Leading != Guid.Empty)
 				{
-					var leadinglanguage = GetService<ILanguageService>().Select(Leading);
+					var leadinglanguage = Environment.Context.Tenant.GetService<ILanguageService>().Select(Leading);
 
 					if (leadinglanguage != null)
 						leadingLcid = leadinglanguage.Lcid;
 				}
 
-				var stringTables = GetService<IComponentService>().QueryConfigurations(resourceGroups.ToList(), "StringTable");
+				var stringTables = Environment.Context.Tenant.GetService<IComponentService>().QueryConfigurations(resourceGroups.ToList(), "StringTable");
 
 				foreach (var stringTable in stringTables)
 				{
-					var microService = stringTable.MicroService(Connection);
-					var ms = GetService<IMicroServiceService>().Select(microService);
-					var componentName = stringTable.ComponentName(Connection);
+					var microService = stringTable.MicroService();
+					var ms = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(microService);
+					var componentName = stringTable.ComponentName();
 
-					if (!(stringTable is IStringTable table))
+					if (!(stringTable is IStringTableConfiguration table))
 						continue;
 
 					foreach (var str in table.Strings)
@@ -118,13 +118,13 @@ namespace TomPIT.Management.Designers
 			var language = data.Required<Guid>("translation");
 			var value = data.Optional("translatedValue", string.Empty);
 
-			var microService = GetService<IMicroServiceService>().Select(ms);
+			var microService = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(ms);
 
 			if (microService == null)
 				throw new RuntimeException(SR.ErrMicroServiceNotFound);
 
-			var config = GetService<IComponentService>().SelectConfiguration(microService.Token, "StringTable", component) as IStringTable;
-			var lang = GetService<ILanguageService>().Select(language);
+			var config = Environment.Context.Tenant.GetService<IComponentService>().SelectConfiguration(microService.Token, "StringTable", component) as IStringTableConfiguration;
+			var lang = Environment.Context.Tenant.GetService<ILanguageService>().Select(language);
 
 			if (lang == null)
 				throw new RuntimeException(SR.ErrLanguageNotFound);
@@ -136,7 +136,7 @@ namespace TomPIT.Management.Designers
 
 			str.UpdateTranslation(lang.Lcid, value);
 
-			GetService<IComponentDevelopmentService>().Update(config);
+			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(config);
 
 			return Result.EmptyResult(ViewModel);
 		}
@@ -155,7 +155,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_languages == null)
-					_languages = GetService<ILanguageService>().Query();
+					_languages = Environment.Context.Tenant.GetService<ILanguageService>().Query();
 
 				return _languages;
 			}

@@ -2,15 +2,14 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json.Linq;
-using TomPIT.Compilation;
 using TomPIT.Connectivity;
-using TomPIT.Services;
+using TomPIT.Middleware;
+using TomPIT.Serialization;
 
 namespace TomPIT.Caching
 {
-	internal class DataCachingService:ServiceBase, IDataCachingService, IDataCachingNotification
+	internal class DataCachingService : TenantObject, IDataCachingService, IDataCachingNotification
 	{
 		private static Lazy<MemoryCache> _cache = new Lazy<MemoryCache>();
 		private static readonly Lazy<ConcurrentDictionary<string, CachingHandlerState>> _states = new Lazy<ConcurrentDictionary<string, CachingHandlerState>>();
@@ -18,7 +17,7 @@ namespace TomPIT.Caching
 		private static MemoryCache Cache { get { return _cache.Value; } }
 		private static ConcurrentDictionary<string, CachingHandlerState> States { get { return _states.Value; } }
 
-		public DataCachingService(ISysConnection connection):base(connection)
+		public DataCachingService(ITenant tenant) : base(tenant)
 		{
 			Cache.Invalidate += OnInvalidate;
 		}
@@ -57,21 +56,21 @@ namespace TomPIT.Caching
 		{
 			Cache.Clear(cacheKey);
 
-			var u = Connection.CreateUrl("DataCache", "Clear");
+			var u = Tenant.CreateUrl("DataCache", "Clear");
 			var e = new JObject
 			{
 				{"key", cacheKey }
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 		}
 
 		public void Invalidate(string cacheKey, List<string> ids)
 		{
-			foreach(var i in ids)
+			foreach (var i in ids)
 				Cache.Refresh(cacheKey, i);
 
-			var u = Connection.CreateUrl("DataCache", "Invalidate");
+			var u = Tenant.CreateUrl("DataCache", "Invalidate");
 			var e = new JObject
 			{
 				{"key", cacheKey }
@@ -83,7 +82,7 @@ namespace TomPIT.Caching
 			foreach (var i in ids)
 				a.Add(i);
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 		}
 
 		public void RegisterHandler(string cacheKey, IDataCachingHandler handler)
@@ -109,7 +108,7 @@ namespace TomPIT.Caching
 
 		private void PublishRemove(string cacheKey, List<string> ids)
 		{
-			var u = Connection.CreateUrl("DataCache", "Remove");
+			var u = Tenant.CreateUrl("DataCache", "Remove");
 			var e = new JObject
 			{
 				{"key", cacheKey }
@@ -121,7 +120,7 @@ namespace TomPIT.Caching
 			foreach (var i in ids)
 				a.Add(i);
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 		}
 
 		public bool Exists(string key)
@@ -147,7 +146,7 @@ namespace TomPIT.Caching
 			var result = new List<T>();
 
 			foreach (var item in items)
-				result.Add(MarshallingConverter.Convert<T>(item));
+				result.Add(Marshall.Convert<T>(item));
 
 			return result;
 		}
@@ -173,14 +172,14 @@ namespace TomPIT.Caching
 					Set(key, id, item, options.Duration, options.SlidingExpiration);
 			}
 
-			return MarshallingConverter.Convert<T>(item);
+			return Marshall.Convert<T>(item);
 		}
 
 		public T Get<T>(string key, string id) where T : class
 		{
 			Initialize(key);
 
-			return MarshallingConverter.Convert<T>(Cache.Get<object>(key, id));
+			return Marshall.Convert<T>(Cache.Get<object>(key, id));
 		}
 
 		public T Get<T>(string key, Func<T, bool> predicate) where T : class
@@ -199,7 +198,7 @@ namespace TomPIT.Caching
 		{
 			Initialize(key);
 
-			return MarshallingConverter.Convert<T>(Cache.First<object>(key));
+			return Marshall.Convert<T>(Cache.First<object>(key));
 		}
 
 		public List<T> Where<T>(string key, Func<T, bool> predicate) where T : class

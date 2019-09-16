@@ -25,7 +25,7 @@ namespace TomPIT.Sys.Data
 		{
 			var tokens = id.Split('.');
 
-			var u = DataModel.Users.Select(tokens[0].AsGuid());
+			var u = DataModel.Users.Select(new Guid(tokens[0]));
 
 			if (u == null)
 			{
@@ -33,7 +33,7 @@ namespace TomPIT.Sys.Data
 				return;
 			}
 
-			var r = Shell.GetService<IDatabaseService>().Proxy.Security.Users.SelectMembership(u, tokens[1].AsGuid());
+			var r = Shell.GetService<IDatabaseService>().Proxy.Security.Users.SelectMembership(u, new Guid(tokens[1]));
 
 			if (r == null)
 			{
@@ -56,12 +56,12 @@ namespace TomPIT.Sys.Data
 				{
 					var tokens = id.Split('.');
 
-					var u = DataModel.Users.Select(tokens[0].AsGuid());
+					var u = DataModel.Users.Select(new Guid(tokens[0]));
 
 					if (u == null)
 						throw new SysException(SR.ErrUserNotFound);
 
-					return Shell.GetService<IDatabaseService>().Proxy.Security.Users.SelectMembership(u, tokens[1].AsGuid());
+					return Shell.GetService<IDatabaseService>().Proxy.Security.Users.SelectMembership(u, new Guid(tokens[1]));
 				});
 		}
 

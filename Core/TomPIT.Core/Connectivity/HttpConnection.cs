@@ -5,6 +5,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text;
+using TomPIT.Exceptions;
+using TomPIT.Serialization;
 
 namespace TomPIT.Connectivity
 {
@@ -105,7 +107,7 @@ namespace TomPIT.Connectivity
 				return default(T);
 			}
 
-			return Types.Deserialize<T>(content);
+			return SerializationExtensions.Deserialize<T>(content);
 		}
 
 		private void HandleResponseException(HttpResponseMessage response)
@@ -119,7 +121,7 @@ namespace TomPIT.Connectivity
 
 			try
 			{
-				ex = Types.Deserialize<JObject>(rt);
+				ex = SerializationExtensions.Deserialize<JObject>(rt);
 			}
 			catch
 			{
@@ -171,7 +173,7 @@ namespace TomPIT.Connectivity
 			if (content == null || Convert.IsDBNull(content))
 				return new StringContent(string.Empty);
 
-			var c = Types.Serialize(content);
+			var c = SerializationExtensions.Serialize(content);
 
 			content = CompressString(c);
 

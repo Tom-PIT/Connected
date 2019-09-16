@@ -1,6 +1,9 @@
 ﻿using TomPIT.Environment;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
+using TomPIT.Management.Environment;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
 	internal class EndpointElement : TransactionElement
 	{
@@ -20,7 +23,7 @@ namespace TomPIT.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			Connection.GetService<IInstanceEndpointManagementService>().Update(Endpoint.Token, Endpoint.Name, Endpoint.Type, Endpoint.Url, Endpoint.ReverseProxyUrl, Endpoint.Status, Endpoint.Verbs);
+			Environment.Context.Tenant.GetService<IInstanceEndpointManagementService>().Update(Endpoint.Token, Endpoint.Name, Endpoint.Type, Endpoint.Url, Endpoint.ReverseProxyUrl, Endpoint.Status, Endpoint.Verbs);
 
 			return true;
 		}

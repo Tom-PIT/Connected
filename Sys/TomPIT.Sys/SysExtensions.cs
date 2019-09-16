@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Builder;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
 using TomPIT.Sys.Data;
 using TomPIT.Sys.Exceptions;
 using TomPIT.Sys.Security;
@@ -32,7 +32,7 @@ namespace TomPIT.Sys
 				if (string.IsNullOrWhiteSpace(instance))
 					return Guid.Empty;
 
-				return instance.ToString().AsGuid();
+				return new Guid(instance.ToString());
 			}
 		}
 

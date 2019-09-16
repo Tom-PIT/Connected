@@ -1,14 +1,15 @@
-﻿using TomPIT.Annotations;
+﻿using TomPIT.Annotations.Design;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
 
-namespace TomPIT.IoT
+namespace TomPIT.MicroServices.IoT
 {
-	public class Hub : ComponentConfiguration, IIoTHub
+	public class Hub : ComponentConfiguration, IIoTHubConfiguration
 	{
 		private ListItems<IIoTDevice> _devices = null;
 
-		[Items("TomPIT.IoT.Design.Items.IoTDevicesCollection, TomPIT.IoT.Design")]
+		[Items("TomPIT.MicroServices.IoT.Design.Items.IoTDevicesCollection, TomPIT.MicroServices.IoT.Design")]
 		public ListItems<IIoTDevice> Devices
 		{
 			get
@@ -21,7 +22,7 @@ namespace TomPIT.IoT
 		}
 
 		[PropertyEditor(PropertyEditorAttribute.Select)]
-		[Items("TomPIT.IoT.Design.Items.IoTSchemasItems, TomPIT.IoT.Design")]
+		[Items("TomPIT.MicroServices.IoT.Design.Items.IoTSchemasItems, TomPIT.MicroServices.IoT.Design")]
 		public string Schema { get; set; }
 		public ElementScope Scope { get; set; } = ElementScope.Internal;
 	}

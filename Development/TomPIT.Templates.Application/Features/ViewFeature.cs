@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel.Features;
+using TomPIT.MicroServices.Design;
 
-namespace TomPIT.Application.Features
+namespace TomPIT.MicroServices.Features
 {
-	[Create("ViewFeature", nameof(Name))]
+	[Create(DesignUtils.ViewFeature, nameof(Name))]
 	public class ViewFeature : Feature, IViewFeature
 	{
 		[Required]

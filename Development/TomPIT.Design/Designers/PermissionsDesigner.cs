@@ -1,14 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Design;
-using TomPIT.Dom;
-using TomPIT.Ide;
+using Newtonsoft.Json.Linq;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom;
+using TomPIT.Middleware;
 using TomPIT.Security;
 
-namespace TomPIT.Designers
+namespace TomPIT.Design.Designers
 {
 	public class PermissionsDesigner : DomDesigner<IPermissionElement>
 	{
@@ -36,7 +37,7 @@ namespace TomPIT.Designers
 			get
 			{
 				if (_providers == null)
-					_providers = Connection.GetService<IAuthorizationService>().QueryProviders();
+					_providers = Environment.Context.Tenant.GetService<IAuthorizationService>().QueryProviders();
 
 				return _providers;
 			}
@@ -100,7 +101,7 @@ namespace TomPIT.Designers
 
 		public PermissionValue GetPermissionValue(IPermissionSchemaDescriptor d)
 		{
-			return Connection.GetService<IAuthorizationService>().GetPermissionValue(d.Id, SelectedSchema, SelectedClaim);
+			return Environment.Context.Tenant.GetService<IAuthorizationService>().GetPermissionValue(d.Id, SelectedSchema, SelectedClaim);
 		}
 
 		private List<IPermission> Permissions
@@ -112,10 +113,10 @@ namespace TomPIT.Designers
 					if (string.IsNullOrWhiteSpace(SelectedSchema))
 						return null;
 
-					var u = Connection.CreateUrl("Security", "SelectPermissions")
+					var u = Environment.Context.Tenant.CreateUrl("Security", "SelectPermissions")
 						.AddParameter("primaryKey", Owner.PrimaryKey);
 
-					_permissions = Connection.Get<List<Permission>>(u).ToList<IPermission>();
+					_permissions = Environment.Context.Tenant.Get<List<Permission>>(u).ToList<IPermission>();
 				}
 
 				return _permissions;
@@ -173,13 +174,13 @@ namespace TomPIT.Designers
 			SelectedClaim = data.Required<string>("claim");
 			SelectedSchema = data.Required<string>("schema");
 
-			var u = Connection.CreateUrl("SecurityManagement", "Reset");
+			var u = Environment.Context.Tenant.CreateUrl("SecurityManagement", "Reset");
 			var args = new JObject
 			{
 				{ "primaryKey", Owner.PrimaryKey }
 			};
 
-			Connection.Post(u, args);
+			Environment.Context.Tenant.Post(u, args);
 			_permissions = null;
 			return Result.ViewResult(this, "~/Views/Ide/Designers/PermissionDescriptors.cshtml");
 		}
@@ -199,7 +200,7 @@ namespace TomPIT.Designers
 			SelectedSchema = data.Required<string>("schema");
 			SelectedClaim = data.Required<string>("claim");
 
-			var u = Connection.CreateUrl("SecurityManagement", "SetPermission");
+			var u = Environment.Context.Tenant.CreateUrl("SecurityManagement", "SetPermission");
 			var args = new JObject
 			{
 				{ "claim", SelectedClaim },
@@ -211,7 +212,7 @@ namespace TomPIT.Designers
 				{ "component", Owner.PermissionComponent }
 			};
 
-			var value = Connection.Post<PermissionValue>(u, args).ToString();
+			var value = Environment.Context.Tenant.Post<PermissionValue>(u, args).ToString();
 			_permissions = null;
 			var claimCount = Permissions.Count(f => string.Compare(f.Claim, SelectedClaim, true) == 0 && f.Value != PermissionValue.NotSet);
 			var schemaCount = Permissions.Count(f => string.Compare(f.Schema, SelectedSchema, true) == 0 && f.Value != PermissionValue.NotSet);

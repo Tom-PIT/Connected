@@ -2,9 +2,11 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
-using TomPIT.Services;
+using TomPIT.Annotations.Design;
+using TomPIT.Environment;
+using TomPIT.Runtime;
 
-namespace TomPIT.Environment
+namespace TomPIT.Management.Environment
 {
 	public class ManagementResourceGroup : IResourceGroup
 	{
@@ -19,7 +21,7 @@ namespace TomPIT.Environment
 		public Guid Token { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
-		[Items("TomPIT.Items.StorageProviderItems, TomPIT.Management")]
+		[Items("TomPIT.Management.Items.StorageProviderItems, TomPIT.Management")]
 		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public Guid StorageProvider { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]

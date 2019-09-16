@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using TomPIT.Caching;
-using TomPIT.Notifications;
+using TomPIT.Messaging;
 
 namespace TomPIT.Connectivity
 {
 	internal class DataCachingClient : HubClient
 	{
-		public DataCachingClient(ISysConnection connection, string authenticationToken) : base(connection, authenticationToken)
+		public DataCachingClient(ITenant tenant, string authenticationToken) : base(tenant, authenticationToken)
 		{
 		}
 
@@ -26,7 +23,7 @@ namespace TomPIT.Connectivity
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Connection.GetService<IDataCachingService>() is IDataCachingNotification n)
+				if (Tenant.GetService<IDataCachingService>() is IDataCachingNotification n)
 					n.NotifyClear(e.Args);
 			});
 
@@ -34,7 +31,7 @@ namespace TomPIT.Connectivity
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Connection.GetService<IDataCachingService>() is IDataCachingNotification n)
+				if (Tenant.GetService<IDataCachingService>() is IDataCachingNotification n)
 					n.NotifyInvalidate(e.Args);
 			});
 
@@ -42,7 +39,7 @@ namespace TomPIT.Connectivity
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Connection.GetService<IDataCachingService>() is IDataCachingNotification n)
+				if (Tenant.GetService<IDataCachingService>() is IDataCachingNotification n)
 					n.NotifyRemove(e.Args);
 			});
 		}

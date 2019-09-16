@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+    <ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Design\TomPIT.Design.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Development\TomPIT.Development.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Ide.UI\TomPIT.Ide.UI.csproj" />

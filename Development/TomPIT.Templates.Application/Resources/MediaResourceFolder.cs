@@ -2,18 +2,21 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.MicroServices.Design;
 
-namespace TomPIT.Application.Resources
+namespace TomPIT.MicroServices.Resources
 {
-	[Create("Folder", nameof(Name))]
+	[Create(DesignUtils.Folder, nameof(Name))]
 	public class MediaResourceFolder : ConfigurationElement, IMediaResourceFolder
 	{
 		private ListItems<IMediaResourceFolder> _folders = null;
 		private ListItems<IMediaResourceFile> _files = null;
 
-		[Items("TomPIT.Application.Design.Items.MediaResourceFoldersCollection, TomPIT.Application.Design")]
+		[Browsable(false)]
 		public ListItems<IMediaResourceFolder> Folders
 		{
 			get
@@ -24,8 +27,7 @@ namespace TomPIT.Application.Resources
 				return _folders;
 			}
 		}
-
-		[Items("TomPIT.Application.Design.Items.MediaResourceFilesCollection, TomPIT.Application.Design")]
+		[Browsable(false)]
 		public ListItems<IMediaResourceFile> Files
 		{
 			get

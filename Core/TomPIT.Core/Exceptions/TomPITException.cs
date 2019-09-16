@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Reflection;
 using System.Text;
+using TomPIT.Reflection;
 
-namespace TomPIT
+namespace TomPIT.Exceptions
 {
 	public class TomPITException : Exception
 	{
@@ -106,7 +107,7 @@ namespace TomPIT
 				return sender.GetType().ShortName();
 			else
 			{
-				foreach(var replace in ReplaceSources)
+				foreach (var replace in ReplaceSources)
 				{
 					if (source.ToLowerInvariant().StartsWith(replace))
 						return sender.GetType().ShortName();

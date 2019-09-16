@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
+using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
-using TomPIT.Design;
-using TomPIT.Designers;
-using TomPIT.Dom;
+using TomPIT.Design.Designers;
 using TomPIT.Environment;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
 using TomPIT.Security;
+using TomPIT.Security.PermissionDescriptors;
 
 namespace TomPIT.Management.Dom
 {
-	internal class UrlSecurityElement : Element, IPermissionElement
+	internal class UrlSecurityElement : DomElement, IPermissionElement
 	{
 		public const string FolderId = "Url";
 		private List<string> _items = null;
-		private List<IView> _views = null;
+		private List<IViewConfiguration> _views = null;
 		private List<string> _claims = null;
 		private IPermissionDescriptor _descriptor = null;
 		private IDomDesigner _designer = null;
@@ -46,20 +46,20 @@ namespace TomPIT.Management.Dom
 				Items.Add(new UrlElement(this, url));
 		}
 
-		public List<IView> Views
+		public List<IViewConfiguration> Views
 		{
 			get
 			{
-				if(_views == null)
+				if (_views == null)
 				{
-					_views = new List<IView>();
+					_views = new List<IViewConfiguration>();
 
-					var resourceGroups = Connection.GetService<IResourceGroupService>().Query().Select(f => f.Name).ToList();
-					var views = Connection.GetService<ComponentModel.IComponentService>().QueryConfigurations(resourceGroups, "View");
+					var resourceGroups = Environment.Context.Tenant.GetService<IResourceGroupService>().Query().Select(f => f.Name).ToList();
+					var views = Environment.Context.Tenant.GetService<IComponentService>().QueryConfigurations(resourceGroups, ComponentCategories.View);
 
-					foreach(var view in views)
+					foreach (var view in views)
 					{
-						if (view is IView iv)
+						if (view is IViewConfiguration iv)
 							_views.Add(iv);
 					}
 				}
@@ -71,13 +71,13 @@ namespace TomPIT.Management.Dom
 		{
 			get
 			{
-				if(_items==null)
+				if (_items == null)
 				{
 					_items = new List<string>();
 
-					foreach(var view in Views)
+					foreach (var view in Views)
 					{
-						if (!(view is IView iview))
+						if (!(view is IViewConfiguration iview))
 							continue;
 
 						if (string.IsNullOrWhiteSpace(iview.Url))
@@ -136,7 +136,7 @@ namespace TomPIT.Management.Dom
 
 		public bool SupportsInherit => false;
 
-		public Guid ResourceGroup => Connection.GetService<IResourceGroupService>().Default.Token;
+		public Guid ResourceGroup => Environment.Context.Tenant.GetService<IResourceGroupService>().Default.Token;
 
 		public string PermissionComponent => null;
 	}

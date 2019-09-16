@@ -1,6 +1,8 @@
 ﻿@using System.Text.Encodings.Web;
+@using TomPIT.Ide;
+@using TomPIT.ComponentModel;
 
-@model TomPIT.Designers.TextDesigner
+@model TomPIT.Ide.Designers.TextDesigner
 
 @await Html.PartialAsync("~/Views/Ide/Designers/Signature.cshtml", Model.Signature)
 
@@ -9,7 +11,7 @@
 	<div class="btn-group">
 		@if (!string.IsNullOrWhiteSpace(Model.DebugFileName))
 		{
-			var url = Model.Environment.Context.MapPath(string.Format("~/sys/source-code/{0}/{1}/{2}", Model.Element.MicroService(), Model.Content.Configuration().Component, Model.Content.Id.ToString()));
+			var url = Model.Environment.Context.Services.Routing.MapPath(string.Format("~/sys/source-code/{0}/{1}/{2}", Model.Element.MicroService(), Model.Content.Configuration().Component, Model.Content.Id.ToString()));
 
 			<a href="@url" target="_blank" class="btn btn-sm btn-light" title="Download source code for debugging"><i class="fal fa-bug"></i></a>
 		}
@@ -18,7 +20,7 @@
 
 <div id="designEditor" class="text-editor text-editor-sa" data-fullscreen="true"></div>
 
-@if (Model.CompletionProvider != null)
+@if (Model.CodeAnalyzer != null)
 {
 	<div class="modal fade" tabindex="-1" role="dialog" id="modalStronglyTyped">
 		<div class="modal-dialog" role="document">
@@ -70,7 +72,7 @@
         onChange: function (value) {
             saveSourceCode();
         },
-        @if (Model.CompletionDiagnostic != null)
+        @if (Model.CodeDiagnostic != null)
         {
            <text>
         onCheckSyntax: function () {
@@ -78,12 +80,12 @@
         },
             </text>
         }
-        @if (Model.CompletionProvider != null)
+        @if (Model.CodeAnalyzer != null)
             {
            <text>
         onCreated: function (instance) {
 
-            @if (Model.CompletionDiagnostic != null)
+            @if (Model.CodeDiagnostic != null)
             {
                @:setErrorMarkers(false);
         }
@@ -319,7 +321,7 @@
 
 
 
-    @if (Model.CompletionDiagnostic != null)
+    @if (Model.CodeDiagnostic != null)
     {
        <text>
 

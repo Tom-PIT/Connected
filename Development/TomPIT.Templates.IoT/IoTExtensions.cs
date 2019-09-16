@@ -1,11 +1,14 @@
 ﻿using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
-using TomPIT.IoT.Annotations;
-using TomPIT.IoT.Models;
-using TomPIT.IoT.UI.Stencils;
-using TomPIT.Services;
+using TomPIT.Diagostics;
+using TomPIT.Exceptions;
+using TomPIT.MicroServices.IoT.Annotations;
+using TomPIT.MicroServices.IoT.Models;
+using TomPIT.MicroServices.IoT.UI.Stencils;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
 
-namespace TomPIT.IoT
+namespace TomPIT.MicroServices.IoT
 {
 	public static class IoTExtensions
 	{
@@ -19,7 +22,7 @@ namespace TomPIT.IoT
 			return stencil.GetType().FindAttribute<IoTElementAttribute>().DesignView;
 		}
 
-		public static StencilModel CreateModel(this IIoTElement stencil, IExecutionContext context)
+		public static StencilModel CreateModel(this IIoTElement stencil, IMiddlewareContext context)
 		{
 			var att = stencil.GetType().FindAttribute<IoTElementAttribute>();
 
@@ -36,23 +39,23 @@ namespace TomPIT.IoT
 			return element.Top + element.Height;
 		}
 
-		public static IIoTHub ResolveHub(this IIoTView view, IExecutionContext context)
+		public static IIoTHubConfiguration ResolveHub(this IIoTViewConfiguration view, IMiddlewareContext context)
 		{
 			if (string.IsNullOrWhiteSpace(view.Hub))
 				return null;
 
-			var ms = view.Configuration().MicroService(context.Connection());
+			var ms = view.Configuration().MicroService();
 			var hub = view.Hub;
 
 			if (hub.Contains('/'))
 			{
 				var tokens = hub.Split('/');
-				var originMicroService = context.Connection().GetService<IMicroServiceService>().Select(ms);
+				var originMicroService = context.Tenant.GetService<IMicroServiceService>().Select(ms);
 				hub = tokens[1];
 
-				originMicroService.ValidateMicroServiceReference(context.Connection(), tokens[0]);
+				originMicroService.ValidateMicroServiceReference(tokens[0]);
 
-				var microService = context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+				var microService = context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
 				if (microService == null)
 					throw new RuntimeException(SR.ErrMicroServiceNotFound).WithMetrics(context);
@@ -60,26 +63,26 @@ namespace TomPIT.IoT
 				ms = microService.Token;
 			}
 
-			return context.Connection().GetService<IComponentService>().SelectConfiguration(ms, "IoTHub", hub) as IIoTHub;
+			return context.Tenant.GetService<IComponentService>().SelectConfiguration(ms, ComponentCategories.IoTHub, hub) as IIoTHubConfiguration;
 		}
 
-		public static IIoTSchema ResolveSchema(this IIoTHub hub, IExecutionContext context)
+		public static IIoTSchemaConfiguration ResolveSchema(this IIoTHubConfiguration hub, IMiddlewareContext context)
 		{
 			if (string.IsNullOrWhiteSpace(hub.Schema))
 				return null;
 
-			var ms = hub.MicroService(context.Connection());
+			var ms = hub.MicroService();
 			var schema = hub.Schema;
 
 			if (schema.Contains('/'))
 			{
 				var tokens = schema.Split('/');
-				var originMicroService = context.Connection().GetService<IMicroServiceService>().Select(ms);
+				var originMicroService = context.Tenant.GetService<IMicroServiceService>().Select(ms);
 				schema = tokens[1];
 
-				originMicroService.ValidateMicroServiceReference(context.Connection(), tokens[0]);
+				originMicroService.ValidateMicroServiceReference(tokens[0]);
 
-				var microService = context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+				var microService = context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
 				if (microService == null)
 					throw new RuntimeException(SR.ErrMicroServiceNotFound).WithMetrics(context);
@@ -87,7 +90,7 @@ namespace TomPIT.IoT
 				ms = microService.Token;
 			}
 
-			return context.Connection().GetService<IComponentService>().SelectConfiguration(ms, "IoTSchema", schema) as IIoTSchema;
+			return context.Tenant.GetService<IComponentService>().SelectConfiguration(ms, ComponentCategories.IoTSchema, schema) as IIoTSchemaConfiguration;
 		}
 	}
 }

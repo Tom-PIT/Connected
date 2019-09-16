@@ -2,6 +2,9 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using TomPIT.Exceptions;
+using TomPIT.Reflection;
+using TomPIT.Serialization;
 
 namespace TomPIT
 {
@@ -34,7 +37,7 @@ namespace TomPIT
 						throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
 				}
 				else
-					return Types.Deserialize<T>(Types.Serialize(proposed));
+					return SerializationExtensions.Deserialize<T>(SerializationExtensions.Serialize(proposed));
 
 				if (typeof(T) == typeof(string) && string.IsNullOrWhiteSpace(r as string))
 					throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
@@ -77,7 +80,7 @@ namespace TomPIT
 						return r;
 				}
 				else
-					return Types.Deserialize<T>(Types.Serialize(proposed));
+					return SerializationExtensions.Deserialize<T>(SerializationExtensions.Serialize(proposed));
 
 				return default;
 			}

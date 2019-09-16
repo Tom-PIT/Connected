@@ -96,5 +96,52 @@ namespace TomPIT.SysDb.Sql.Development
 
 			w.Execute();
 		}
+
+		public void UpdateState(IComponent component, Guid element, IndexState indexState, DateTime indexTimestamp, AnalyzerState analyzerState, DateTime analyzerTimestamp)
+		{
+			var w = new Writer("tompit.component_upd_state");
+
+			w.CreateParameter("@id", component.GetId());
+			w.CreateParameter("@element", element, true);
+			w.CreateParameter("@index_state", indexState);
+			w.CreateParameter("@index_timestamp", indexTimestamp, true);
+			w.CreateParameter("@analyzer_state", analyzerState);
+			w.CreateParameter("@analyzer_timestamp", analyzerTimestamp, true);
+
+			w.Execute();
+		}
+
+		public List<IComponentDevelopmentState> QueryStates()
+		{
+			return new Reader<ComponentState>("tompit.component_state_que").Execute().ToList<IComponentDevelopmentState>();
+		}
+
+		public List<IComponentDevelopmentState> QueryStates(IMicroService microService)
+		{
+			var r = new Reader<ComponentState>("tompit.component_state_que");
+
+			r.CreateParameter("@microService", microService.GetId());
+
+			return r.Execute().ToList<IComponentDevelopmentState>();
+		}
+
+		public List<IComponentDevelopmentState> QueryStates(IComponent component)
+		{
+			var r = new Reader<ComponentState>("tompit.component_state_que");
+
+			r.CreateParameter("@component", component.GetId());
+
+			return r.Execute().ToList<IComponentDevelopmentState>();
+		}
+
+		public List<IComponentDevelopmentState> QueryStates(IComponent component, Guid element)
+		{
+			var r = new Reader<ComponentState>("tompit.component_state_que");
+
+			r.CreateParameter("@component", component.GetId());
+			r.CreateParameter("@element", element);
+
+			return r.Execute().ToList<IComponentDevelopmentState>();
+		}
 	}
 }

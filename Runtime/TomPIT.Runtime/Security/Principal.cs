@@ -2,10 +2,9 @@
 using System.Security.Claims;
 using System.Security.Principal;
 using TomPIT.Connectivity;
-using TomPIT.Security;
-using TomPIT.Services;
+using TomPIT.Runtime;
 
-namespace TomPIT.Server.Security
+namespace TomPIT.Security
 {
 	public class Principal : ClaimsPrincipal
 	{
@@ -28,7 +27,7 @@ namespace TomPIT.Server.Security
 			if (string.IsNullOrWhiteSpace(identity.Endpoint) && Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
 				return false;
 
-			var ctx = Shell.GetService<IConnectivityService>().Select(identity.Endpoint);
+			var ctx = Shell.GetService<IConnectivityService>().SelectTenant(identity.Endpoint);
 
 			if (ctx == null)
 				return false;

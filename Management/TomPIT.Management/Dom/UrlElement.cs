@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using TomPIT.Design;
-using TomPIT.Designers;
-using TomPIT.Dom;
+using TomPIT.Design.Designers;
 using TomPIT.Environment;
+using TomPIT.Ide;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
 using TomPIT.Security;
+using TomPIT.Security.PermissionDescriptors;
 
 namespace TomPIT.Management.Dom
 {
-	internal class UrlElement : Element, IUrlSecurityScope, IPermissionElement
+	internal class UrlElement : DomElement, IUrlSecurityScope, IPermissionElement
 	{
 		private List<string> _urls = null;
 		private List<string> _claims = null;
@@ -20,7 +21,7 @@ namespace TomPIT.Management.Dom
 		{
 			Path = path;
 
-			var tokens =  path.Split('/');
+			var tokens = path.Split('/');
 
 			Id = path.Replace('/', '$');
 			Title = tokens[tokens.Length - 1];
@@ -41,7 +42,7 @@ namespace TomPIT.Management.Dom
 		public override void LoadChildren(string id)
 		{
 			var tokens = id.Split('$');
-			var url = Urls.FirstOrDefault(f => string.Compare(f, tokens[tokens.Length-1], true) == 0);
+			var url = Urls.FirstOrDefault(f => string.Compare(f, tokens[tokens.Length - 1], true) == 0);
 
 			if (url != null)
 				Items.Add(new UrlElement(this, $"{Path}/{url}"));
@@ -122,7 +123,7 @@ namespace TomPIT.Management.Dom
 
 		public bool SupportsInherit => true;
 
-		public Guid ResourceGroup => Connection.GetService<IResourceGroupService>().Default.Token;
+		public Guid ResourceGroup => Environment.Context.Tenant.GetService<IResourceGroupService>().Default.Token;
 
 		public string PermissionComponent => null;
 	}

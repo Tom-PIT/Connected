@@ -1,16 +1,20 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using System.Threading.Tasks;
-using TomPIT.ComponentModel.Routing;
+using TomPIT.Development.Routing;
 using TomPIT.Routing;
 
-namespace TomPIT.Configuration
+namespace TomPIT.Development.Configuration
 {
 	internal static class Routing
 	{
 		public static void Register(IRouteBuilder routes)
 		{
 			routes.MapRoute("home", "", new { controller = "Home", action = "Index" });
+			routes.MapRoute("home.tool", "sys/tool/{tool}", new { controller = "Home", action = "Tool" });
+			routes.MapRoute("home.runtool", "sys/run-tool/{tool}", new { controller = "Home", action = "Action" });
+			routes.MapRoute("home.data", "sys/get-data/{tool}", new { controller = "Home", action = "Data" });
+			routes.MapRoute("home.autofix", "sys/auto-fix", new { controller = "Home", action = "AutoFix" });
 			routes.MapRoute("sys.apitest", "sys/apitest", new { controller = "ApiTest", action = "Index" });
 			routes.MapRoute("sys.apitest.invoke", "sys/apitest/invoke", new { controller = "ApiTest", action = "Invoke" });
 			routes.MapRoute("sys.apitest.save", "sys/apitest/save", new { controller = "ApiTest", action = "Save" });

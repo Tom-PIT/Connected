@@ -1,34 +1,36 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
 using TomPIT.ComponentModel.UI;
-using TomPIT.IoT.UI;
-using TomPIT.IoT.UI.Stencils;
+using TomPIT.Exceptions;
+using TomPIT.IoT;
+using TomPIT.MicroServices.IoT.UI;
+using TomPIT.MicroServices.IoT.UI.Stencils;
+using TomPIT.Middleware;
 using TomPIT.Models;
-using TomPIT.Services;
+using TomPIT.Serialization;
 
-namespace TomPIT.IoT.Models
+namespace TomPIT.MicroServices.IoT.Models
 {
-	public class IoTPartialModel : ExecutionContext, IViewModel, IForwardDataProvider
+	public class IoTPartialModel : MiddlewareContext, IViewModel, IDataForwardingProvider
 	{
 		private List<string> _stencils = null;
 		private List<IIoTElement> _targetStencils = null;
 		private List<IIoTFieldState> _state = null;
 
 		public IComponent Component { get; set; }
-		public IView ViewConfiguration => View as IView;
+		public IViewConfiguration ViewConfiguration => View as IViewConfiguration;
 		protected Controller Controller { get; private set; }
 		public ActionContext ActionContext { get; }
-		public IIoTView View { get; private set; }
+		public IIoTViewConfiguration View { get; private set; }
 		public JObject Arguments { get; set; }
 		public List<string> Stencils
 		{
@@ -75,17 +77,17 @@ namespace TomPIT.IoT.Models
 		{
 			Controller = controller;
 
-			var ms = GetService<IMicroServiceService>().Select(microService);
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
 			if (ms == null)
 				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
 
-			View = GetService<IComponentService>().SelectConfiguration(ms.Token, "View", view) as IIoTView;
+			View = Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "View", view) as IIoTViewConfiguration;
 
 			if (View == null)
 				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrViewNotFound, view));
 
-			Component = GetService<IComponentService>().SelectComponent(ViewConfiguration.Component);
+			Component = Tenant.GetService<IComponentService>().SelectComponent(ViewConfiguration.Component);
 
 			Initialize(null, ms);
 		}
@@ -105,7 +107,7 @@ namespace TomPIT.IoT.Models
 			data.Remove("$checkSum");
 
 			var checkSum = Encoding.UTF8.GetString(LZ4.LZ4Codec.Unwrap(Convert.FromBase64String(cs)));
-			var content = Types.Serialize(data);
+			var content = SerializationExtensions.Serialize(data);
 
 			using (var md = MD5.Create())
 			{

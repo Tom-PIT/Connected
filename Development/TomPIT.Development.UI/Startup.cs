@@ -1,14 +1,17 @@
-﻿using System;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using TomPIT.Connectivity;
-using TomPIT.Design;
+using TomPIT.Development.Analysis;
 using TomPIT.Environment;
-using TomPIT.Services;
+using TomPIT.Ide;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
+using TomPIT.Runtime.Configuration;
 
-namespace TomPIT.Servers.Development
+namespace TomPIT.Development
 {
 	public class Startup
 	{
@@ -21,7 +24,7 @@ namespace TomPIT.Servers.Development
 				{
 					foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
 					{
-						var t = Types.GetType(i);
+						var t = TypeExtensions.GetType(i);
 
 						if (t == null)
 							continue;
@@ -37,6 +40,9 @@ namespace TomPIT.Servers.Development
 			};
 
 			Instance.Initialize(services, e);
+
+			services.AddHostedService<ToolsRunner>();
+			services.AddHostedService<AutoFixRunner>();
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -51,12 +57,15 @@ namespace TomPIT.Servers.Development
 
 			DevelopmentBootstrapper.Run();
 			IdeBootstrapper.Run();
-			Shell.GetService<IConnectivityService>().ConnectionInitialized += OnConnectionInitialized;
+
+			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
+			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
+
 			Instance.Run(app);
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
 			{
-				var t = Types.GetType(i);
+				var t = TypeExtensions.GetType(i);
 
 				if (t == null)
 					continue;
@@ -67,11 +76,16 @@ namespace TomPIT.Servers.Development
 			}
 		}
 
+		private void OnTenantInitialize(object sender, TenantArgs e)
+		{
+			e.Tenant.RegisterService(typeof(IAutoFixService), typeof(AutoFixService));
+		}
+
 		private void RegisterDesignersRouting(IRouteBuilder builder)
 		{
 			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
 			{
-				var t = Types.GetType(i);
+				var t = TypeExtensions.GetType(i);
 
 				if (t == null)
 					continue;
@@ -82,11 +96,11 @@ namespace TomPIT.Servers.Development
 			}
 		}
 
-		private static void OnConnectionInitialized(object sender, SysConnectionArgs e)
+		private static void OnTenantInitialized(object sender, TenantArgs e)
 		{
 			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
 			{
-				var t = Types.GetType(i);
+				var t = TypeExtensions.GetType(i);
 
 				if (t == null)
 					continue;
@@ -94,7 +108,7 @@ namespace TomPIT.Servers.Development
 				var template = t.CreateInstance<IMicroServiceTemplate>();
 
 				if (template != null)
-					e.Connection.GetService<IMicroServiceTemplateService>().Register(template);
+					e.Tenant.GetService<IMicroServiceTemplateService>().Register(template);
 			}
 		}
 	}

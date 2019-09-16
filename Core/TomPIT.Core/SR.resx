@@ -1041,4 +1041,16 @@
   <data name="ErrPropertyValueNull" xml:space="preserve">
     <value>Property value null</value>
   </data>
+  <data name="ErrCannotResolveTenant" xml:space="preserve">
+    <value>Cannot resolve tenant in multi tenant environment</value>
+  </data>
+  <data name="ErrSysDevSearchPath" xml:space="preserve">
+    <value>Development search path not defined. Set 'Development Search Path' setting to enable development indexing.</value>
+  </data>
+  <data name="ErrSysSearchPathNotExist" xml:space="preserve">
+    <value>Development search directory does not exists.</value>
+  </data>
+  <data name="ErrCannotResolveComponentType" xml:space="preserve">
+    <value>Cannot resolve component type</value>
+  </data>
 </root>

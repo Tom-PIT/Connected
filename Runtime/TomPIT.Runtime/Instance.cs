@@ -1,27 +1,28 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Reflection;
+using System.Runtime.Loader;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Reflection;
-using System.Runtime.Loader;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
+using TomPIT.Distributed;
 using TomPIT.Environment;
+using TomPIT.Exceptions;
 using TomPIT.Globalization;
+using TomPIT.Reflection;
 using TomPIT.Runtime;
-using TomPIT.Runtime.Security;
+using TomPIT.Runtime.Configuration;
 using TomPIT.Security;
-using TomPIT.Services;
+using TomPIT.Security.Authentication;
 
 namespace TomPIT
 {
@@ -38,7 +39,7 @@ namespace TomPIT
 	{
 		private static IMvcBuilder _mvcBuilder = null;
 		private static List<IPlugin> _plugins = null;
-		internal static RequestLocalizationOptions RequestLocalizationOptions { get; private set; } 
+		internal static RequestLocalizationOptions RequestLocalizationOptions { get; private set; }
 
 		public static Guid Id { get; } = Guid.NewGuid();
 
@@ -77,7 +78,7 @@ namespace TomPIT
 			RuntimeBootstrapper.Run();
 
 			Shell.GetService<IRuntimeService>().Initialize(type, env);
-			Shell.GetService<IConnectivityService>().ConnectionInitialized += OnConnectionInitialized;
+			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
 
 			app.UseMvc(routes =>
 			{
@@ -93,12 +94,11 @@ namespace TomPIT
 			foreach (var plugin in Plugins)
 				plugin.Initialize(app, env);
 		}
-
-		private static void OnConnectionInitialized(object sender, SysConnectionArgs e)
+		private static void OnTenantInitialized(object sender, TenantArgs e)
 		{
 			foreach (var i in Shell.GetConfiguration<IClientSys>().DataProviders)
 			{
-				var t = Types.GetType(i);
+				var t = Reflection.TypeExtensions.GetType(i);
 
 				if (t == null)
 					continue;
@@ -106,7 +106,7 @@ namespace TomPIT
 				var provider = t.CreateInstance<IDataProvider>();
 
 				if (provider != null)
-					e.Connection.GetService<IDataProviderService>().Register(provider);
+					e.Tenant.GetService<IDataProviderService>().Register(provider);
 			}
 		}
 
@@ -154,7 +154,7 @@ namespace TomPIT
 
 				foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)
 				{
-					var t = Types.GetType(i);
+					var t = Reflection.TypeExtensions.GetType(i);
 
 					if (t == null)
 						continue;
@@ -189,30 +189,21 @@ namespace TomPIT
 			foreach (var plugin in Plugins)
 				plugin.ConfigureServices(services);
 		}
-
-		public static T GetService<T>()
-		{
-			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
-				throw new RuntimeException(SR.ErrSingleTenantOnly);
-
-			return Shell.GetService<IConnectivityService>().Select().GetService<T>();
-		}
-
-		public static ISysConnection Connection
+		public static ITenant Tenant
 		{
 			get
 			{
 				if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
 					throw new RuntimeException(SR.ErrSingleTenantOnly);
 
-				return Shell.GetService<IConnectivityService>().Select();
+				return Shell.GetService<IConnectivityService>().SelectDefaultTenant();
 			}
 		}
 
 		public static void Run(IApplicationBuilder app)
 		{
 			foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
-				Shell.GetService<IConnectivityService>().Insert(i.Name, i.Url, i.AuthenticationToken);
+				Shell.GetService<IConnectivityService>().InsertTenant(i.Name, i.Url, i.AuthenticationToken);
 		}
 
 		public static bool ResourceGroupExists(Guid resourceGroup)
@@ -222,7 +213,7 @@ namespace TomPIT
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
 			{
-				var rg = Connection.GetService<IResourceGroupService>().Select(i);
+				var rg = Tenant.GetService<IResourceGroupService>().Select(i);
 
 				if (rg != null)
 					return true;
@@ -241,7 +232,7 @@ namespace TomPIT
 
 					foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)
 					{
-						var t = Types.GetType(i);
+						var t = Reflection.TypeExtensions.GetType(i);
 
 						if (t == null)
 							continue;

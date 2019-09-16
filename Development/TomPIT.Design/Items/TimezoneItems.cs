@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.Dom;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
 
 namespace TomPIT.Design.Items
 {

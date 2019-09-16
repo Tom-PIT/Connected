@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Globalization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Globalization;
-using TomPIT.IoT.Models;
+using TomPIT.MicroServices.IoT.Models;
+using TomPIT.Security;
 
-namespace TomPIT.IoT.Controllers
+namespace TomPIT.MicroServices.IoT.Controllers
 {
 	[AllowAnonymous]
 	public class IoTController : Controller

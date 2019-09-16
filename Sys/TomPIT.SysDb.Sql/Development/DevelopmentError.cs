@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using TomPIT.Data.Sql;
 using TomPIT.Development;
 
 namespace TomPIT.SysDb.Sql.Development
 {
-	internal class DevelopmentError : LongPrimaryKeyRecord, IDevelopmentError
+	internal class DevelopmentError : LongPrimaryKeyRecord, IDevelopmentComponentError
 	{
 		public Guid MicroService { get; set; }
 		public Guid Component { get; set; }
@@ -15,6 +13,9 @@ namespace TomPIT.SysDb.Sql.Development
 		public string Message { get; set; }
 		public string ComponentName { get; set; }
 		public string ComponentCategory { get; set; }
+		public int Code { get; set; }
+		public ErrorCategory Category { get; set; }
+		public Guid Identifier { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -27,6 +28,9 @@ namespace TomPIT.SysDb.Sql.Development
 			Message = GetString("message");
 			ComponentName = GetString("component_name");
 			ComponentCategory = GetString("component_category");
+			Code = GetInt("code");
+			Category = GetValue("category", ErrorCategory.Syntax);
+			Identifier = GetGuid("identifier");
 		}
 	}
 }

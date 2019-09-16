@@ -15,7 +15,6 @@ namespace TomPIT.Sys.Data
 		private static readonly Lazy<Roles> _roles = new Lazy<Roles>(() => { return new Roles(Container); });
 		private static readonly Lazy<Blobs> _blobs = new Lazy<Blobs>(() => { return new Blobs(Container); });
 		private static readonly Lazy<BlobsContents> _blobsContents = new Lazy<BlobsContents>(() => { return new BlobsContents(Container); });
-		private static readonly Lazy<EnvironmentUnits> _environmentUnits = new Lazy<EnvironmentUnits>(() => { return new EnvironmentUnits(Container); });
 		private static readonly Lazy<InstanceEndpoints> _instanceEndpoints = new Lazy<InstanceEndpoints>(() => { return new InstanceEndpoints(Container); });
 		private static readonly Lazy<ResourceGroups> _resourceGroups = new Lazy<ResourceGroups>(() => { return new ResourceGroups(Container); });
 		private static readonly Lazy<Languages> _languages = new Lazy<Languages>(() => { return new Languages(Container); });
@@ -51,6 +50,8 @@ namespace TomPIT.Sys.Data
 		private static readonly Lazy<DevelopmentErrors> _devErrors = new Lazy<DevelopmentErrors>(() => { return new DevelopmentErrors(); });
 		private static readonly Lazy<Queueing> _queue = new Lazy<Queueing>(() => { return new Queueing(); });
 		private static readonly Lazy<Search> _search = new Lazy<Search>(() => { return new Search(); });
+		private static readonly Lazy<SysSearch> _sysSearch = new Lazy<SysSearch>(() => { return new SysSearch(); });
+		private static readonly Lazy<Tools> _tools = new Lazy<Tools>(() => { return new Tools(); });
 
 		public static MicroServicesMeta MicroServicesMeta { get { return _meta.Value; } }
 		public static MicroServices MicroServices { get { return _microServices.Value; } }
@@ -60,7 +61,6 @@ namespace TomPIT.Sys.Data
 		public static Roles Roles { get { return _roles.Value; } }
 		public static Blobs Blobs { get { return _blobs.Value; } }
 		public static BlobsContents BlobsContents { get { return _blobsContents.Value; } }
-		public static EnvironmentUnits EnvironmentUnits { get { return _environmentUnits.Value; } }
 		public static InstanceEndpoints InstanceEndpoints { get { return _instanceEndpoints.Value; } }
 		public static ResourceGroups ResourceGroups { get { return _resourceGroups.Value; } }
 		public static Languages Languages { get { return _languages.Value; } }
@@ -96,6 +96,8 @@ namespace TomPIT.Sys.Data
 		public static DevelopmentErrors DevelopmentErrors { get { return _devErrors.Value; } }
 		public static Queueing Queue { get { return _queue.Value; } }
 		public static Search Search { get { return _search.Value; } }
+		public static SysSearch SysSearch { get { return _sysSearch.Value; } }
+		public static Tools Tools { get { return _tools.Value; } }
 		internal static MemoryCache Container
 		{
 			get { return _cache.Value; }

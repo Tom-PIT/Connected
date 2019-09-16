@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.ComponentModel;
-using TomPIT.Services;
+using TomPIT.Middleware;
 
 namespace TomPIT.Models
 {
-	public class ModelBase : ExecutionContext, IUIModel, IRequestContextProvider
+	public class ModelBase : MiddlewareContext, IUIModel, IActionContextProvider
 	{
 		private IModelNavigation _navigation = null;
 

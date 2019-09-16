@@ -4,20 +4,21 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
-using TomPIT.Caching;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Navigation;
 using TomPIT.Connectivity;
-using TomPIT.Data;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
 using TomPIT.Services;
 
 namespace TomPIT.Navigation
 {
-	internal class NavigationService : ConfigurationAwareService<ISiteMapConfiguration>, INavigationService
+	internal class NavigationService : ConfigurationRepository<ISiteMapConfiguration>, INavigationService
 	{
 		private static Lazy<ConcurrentDictionary<string, List<NavigationHandlerDescriptor>>> _handlers = new Lazy<ConcurrentDictionary<string, List<NavigationHandlerDescriptor>>>(() => { return new ConcurrentDictionary<string, List<NavigationHandlerDescriptor>>(StringComparer.OrdinalIgnoreCase); });
-		public NavigationService(ISysConnection connection) : base(connection, "sitemap")
+		public NavigationService(ITenant tenant) : base(tenant, "sitemap")
 		{
 		}
 
@@ -78,8 +79,8 @@ namespace TomPIT.Navigation
 
 			foreach (var handler in handlers)
 			{
-				var ms = Connection.GetService<IMicroServiceService>().Select(handler.MicroService);
-				var instance =  Connection.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new DataModelContext(ExecutionContext.Create(Connection.Url, ms)), handler.Handler);
+				var ms = Tenant.GetService<IMicroServiceService>().Select(handler.MicroService);
+				var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MiddlewareContext(Tenant.Url, ms), handler.Handler);
 				var containers = instance.Invoke(key);
 
 				if (containers == null || containers.Count == 0)
@@ -94,23 +95,21 @@ namespace TomPIT.Navigation
 			return r;
 		}
 
-		private void BindContext(ISiteMapContainer container, IDataModelContext context)
+		private void BindContext(ISiteMapContainer container, IMiddlewareContext context)
 		{
 			foreach (var item in container.Routes)
 			{
-				if (item is ISiteMapContextElement ctx)
-					ctx.Context = context;
+				item.Context = context;
 
 				BindContext(item, context);
 			}
 		}
 
-		private void BindContext(ISiteMapRoute route, IDataModelContext context)
+		private void BindContext(ISiteMapRoute route, IMiddlewareContext context)
 		{
 			foreach (var item in route.Routes)
 			{
-				if (item is ISiteMapContextElement ctx)
-					ctx.Context = context;
+				item.Context = context;
 
 				BindContext(item, context);
 			}
@@ -120,8 +119,8 @@ namespace TomPIT.Navigation
 
 		private void RefreshNavigation(ISiteMapConfiguration configuration, bool removeOny = false)
 		{
-			var ms = ((IConfiguration)configuration).MicroService(Connection);
-			var type = Connection.GetService<ICompilerService>().ResolveType(ms, configuration, configuration.ComponentName(Connection));
+			var ms = ((IConfiguration)configuration).MicroService();
+			var type = Tenant.GetService<ICompilerService>().ResolveType(ms, configuration, configuration.ComponentName());
 			var handlerInstance = type.CreateInstance<ISiteMapHandler>();
 			handlerInstance.Context = configuration.CreateContext();
 
@@ -173,12 +172,12 @@ namespace TomPIT.Navigation
 			if (removeOny)
 				return;
 
-			var cmp = Connection.GetService<IComponentService>().SelectComponent(component);
+			var cmp = Tenant.GetService<IComponentService>().SelectComponent(component);
 
 			if (cmp == null)
 				return;
 
-			var config = Connection.GetService<IComponentService>().SelectConfiguration(cmp.Token) as ISiteMapConfiguration;
+			var config = Tenant.GetService<IComponentService>().SelectConfiguration(cmp.Token) as ISiteMapConfiguration;
 
 			RefreshNavigation(config);
 		}
@@ -254,7 +253,7 @@ namespace TomPIT.Navigation
 
 		public string ParseUrl(string template, RouteValueDictionary parameters)
 		{
-			if(parameters == null)
+			if (parameters == null)
 			{
 				if (Shell.HttpContext != null)
 					parameters = Shell.HttpContext.GetRouteData().Values;
@@ -266,17 +265,17 @@ namespace TomPIT.Navigation
 
 			var processedSegments = new List<string>();
 
-			foreach(var segment in parsedTemplate.Segments)
+			foreach (var segment in parsedTemplate.Segments)
 			{
 				var incomplete = false;
 
-				foreach(var part in segment.Parts)
+				foreach (var part in segment.Parts)
 				{
 					if (!part.IsParameter)
 						processedSegments.Add(part.Text);
 					else
 					{
-						if(!parameters.ContainsKey(part.Name))
+						if (!parameters.ContainsKey(part.Name))
 						{
 							if (part.IsOptional)
 							{
@@ -295,7 +294,9 @@ namespace TomPIT.Navigation
 					break;
 			}
 
-			return $"{Shell.HttpContext.Request.RootUrl()}/{string.Join('/', processedSegments)}";
+			var ctx = new MiddlewareContext();
+
+			return $"{ctx.Services.Routing.RootUrl}/{string.Join('/', processedSegments)}";
 		}
 
 		public ISiteMapRoute SelectRoute(string routeKey)
@@ -316,8 +317,8 @@ namespace TomPIT.Navigation
 
 		private ISiteMapRoute SelectRoute(NavigationHandlerDescriptor descriptor, string routeKey)
 		{
-			var ms = Connection.GetService<IMicroServiceService>().Select(descriptor.MicroService);
-			var handler = Connection.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new DataModelContext(ExecutionContext.Create(Connection.Url, ms)), descriptor.Handler);
+			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
+			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MiddlewareContext(Tenant.Url, ms), descriptor.Handler);
 
 			if (handler == null)
 				return null;
@@ -343,7 +344,7 @@ namespace TomPIT.Navigation
 
 		private ISiteMapRoute SelectRoute(ISiteMapContainer container, string routeKey)
 		{
-			foreach(var item in container.Routes)
+			foreach (var item in container.Routes)
 			{
 				if (string.Compare(item.RouteKey, routeKey, true) == 0)
 					return item;
@@ -379,11 +380,11 @@ namespace TomPIT.Navigation
 
 			var r = new List<string>();
 
-			foreach(var descriptor in Handlers)
+			foreach (var descriptor in Handlers)
 			{
-				foreach(var handler in descriptor.Value)
+				foreach (var handler in descriptor.Value)
 				{
-					foreach(var key in handler.RouteKeys)
+					foreach (var key in handler.RouteKeys)
 					{
 						if (r.Contains(key))
 							continue;

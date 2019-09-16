@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Sys.Api.Database;
@@ -26,7 +24,7 @@ namespace TomPIT.Sys.Data
 		protected override void OnInvalidate(string id)
 		{
 			var tokens = id.Split('.');
-			var file = DataModel.BigDataPartitionFiles.Select(tokens[0].AsGuid());
+			var file = DataModel.BigDataPartitionFiles.Select(new Guid(tokens[0]));
 
 			if (file == null)
 				throw new SysException(SR.ErrBigDataFileNotFound);

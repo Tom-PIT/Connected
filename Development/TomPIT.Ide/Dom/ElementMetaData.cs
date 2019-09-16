@@ -1,4 +1,4 @@
-﻿namespace TomPIT.Dom
+﻿namespace TomPIT.Ide.Dom
 {
 	public class ElementMetaData : IDomElementMetaData
 	{

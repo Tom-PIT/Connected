@@ -1,19 +1,19 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
+using TomPIT.Diagnostics;
+using TomPIT.Middleware;
 
-namespace TomPIT.Diagnostics
+namespace TomPIT.Management.Diagnostics
 {
-	internal class MetricManagementService : IMetricManagementService
+	internal class MetricManagementService : TenantObject, IMetricManagementService
 	{
-		public MetricManagementService(ISysConnection connection)
+		public MetricManagementService(ITenant tenant) : base(tenant)
 		{
-			Connection = connection;
-		}
 
-		private ISysConnection Connection { get; }
+		}
 
 		public void Clear()
 		{
@@ -27,14 +27,14 @@ namespace TomPIT.Diagnostics
 
 		public void Clear(Guid component, Guid element)
 		{
-			var u = Connection.CreateUrl("MetricManagement", "Clear");
+			var u = Tenant.CreateUrl("MetricManagement", "Clear");
 			var e = new JObject
 			{
 				{"component", component },
 				{"element", element }
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 		}
 
 		public List<IMetric> Query(DateTime date, Guid component)
@@ -44,7 +44,7 @@ namespace TomPIT.Diagnostics
 
 		public List<IMetric> Query(DateTime date, Guid component, Guid element)
 		{
-			var u = Connection.CreateUrl("MetricManagement", "Query");
+			var u = Tenant.CreateUrl("MetricManagement", "Query");
 			var e = new JObject
 			{
 				{"date", date },
@@ -52,7 +52,7 @@ namespace TomPIT.Diagnostics
 				{"element", element }
 			};
 
-			return Connection.Post<List<Metric>>(u, e).ToList<IMetric>();
+			return Tenant.Post<List<Metric>>(u, e).ToList<IMetric>();
 		}
 	}
 }

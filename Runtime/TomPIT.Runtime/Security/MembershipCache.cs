@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 
 namespace TomPIT.Security
 {
 	internal class MembershipCache : SynchronizedClientRepository<IMembership, string>
 	{
-		public MembershipCache(ISysConnection server) : base(server, "membership")
+		public MembershipCache(ITenant tenant) : base(tenant, "membership")
 		{
 		}
 
 		protected override void OnInitializing()
 		{
-			var u = Connection.CreateUrl("Security", "QueryMembership");
-			var ds = Connection.Get<List<Membership>>(u).ToList<IMembership>();
+			var u = Tenant.CreateUrl("Security", "QueryMembership");
+			var ds = Tenant.Get<List<Membership>>(u).ToList<IMembership>();
 
 			foreach (var i in ds)
 				Set(GenerateRandomKey(), i, TimeSpan.Zero);
@@ -33,11 +34,11 @@ namespace TomPIT.Security
 
 		public void Add(Guid user, Guid role)
 		{
-			var u = Connection.CreateUrl("User", "SelectMembership")
+			var u = Tenant.CreateUrl("User", "SelectMembership")
 				.AddParameter("user", user)
 				.AddParameter("role", role);
 
-			var d = Connection.Get<Membership>(u);
+			var d = Tenant.Get<Membership>(u);
 
 			if (d != null)
 				Set(GenerateRandomKey(), d, TimeSpan.Zero);

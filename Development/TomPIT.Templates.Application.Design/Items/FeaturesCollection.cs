@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.Application.Features;
-using TomPIT.Design;
-using TomPIT.Dom;
+﻿using System.Collections.Generic;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
+using TomPIT.MicroServices.Features;
 
-namespace TomPIT.Application.Design.Items
+namespace TomPIT.MicroServices.Design.Items
 {
 	internal class FeaturesCollection : ItemsBase
 	{

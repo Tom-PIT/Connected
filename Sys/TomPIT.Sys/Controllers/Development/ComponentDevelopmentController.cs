@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+using TomPIT.ComponentModel;
 using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Controllers.Development
@@ -34,6 +35,32 @@ namespace TomPIT.Sys.Controllers.Development
 			var folder = body.Optional("folder", Guid.Empty);
 
 			DataModel.Components.Update(component, name, folder);
+		}
+
+		[HttpPost]
+		public void UpdateIndexState()
+		{
+			var body = FromBody();
+
+			var component = body.Required<Guid>("component");
+			var element = body.Optional("element", Guid.Empty);
+			var indexState = body.Required<IndexState>("indexState");
+			var indexTimestamp = body.Required<DateTime>("indexTimestamp");
+
+			DataModel.Components.Update(component, element, indexState, indexTimestamp);
+		}
+
+		[HttpPost]
+		public void UpdateAnalyzerState()
+		{
+			var body = FromBody();
+
+			var component = body.Required<Guid>("component");
+			var element = body.Optional("element", Guid.Empty);
+			var analyzerState = body.Required<AnalyzerState>("analyzerState");
+			var analyzerTimestamp = body.Required<DateTime>("analyzerTimestamp");
+
+			DataModel.Components.Update(component, element, analyzerState, analyzerTimestamp);
 		}
 
 		[HttpPost]
@@ -77,7 +104,7 @@ namespace TomPIT.Sys.Controllers.Development
 			{
 				var prop = i.First as JProperty;
 
-				items.Add(prop.Name.AsGuid(), prop.Value.ToString().AsGuid());
+				items.Add(new Guid(prop.Name), new Guid(prop.Value.ToString()));
 			}
 
 			DataModel.Components.SaveRuntimeState(ms, items);

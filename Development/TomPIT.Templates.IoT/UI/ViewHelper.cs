@@ -1,8 +1,10 @@
-﻿using TomPIT.Annotations;
+﻿using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
+using TomPIT.Reflection;
+using TomPIT.UI;
 
-namespace TomPIT.IoT.UI
+namespace TomPIT.MicroServices.IoT.UI
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]

@@ -2,22 +2,26 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.ComponentModel.Events;
-using TomPIT.Services;
+using TomPIT.ComponentModel.Diagnostics;
+using TomPIT.Diagnostics;
+using TomPIT.MicroServices.Design;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
 
-namespace TomPIT.Application.Apis
+namespace TomPIT.MicroServices.Apis
 {
-	[DomElement("TomPIT.Application.Design.Dom.ApiOperationElement, TomPIT.Application.Design")]
+	[DomElement(DesignUtils.ApiOperationElement)]
 	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = EnvironmentMode.Runtime)]
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
-	[ComponentCreatedHandler("TomPIT.Development.Handlers.ApiOperationCreateHandler, TomPIT.Development")]
+	[ComponentCreatedHandler(DesignUtils.ApiOperationCreateHandler)]
 	public class Operation : ConfigurationElement, IApiOperation
 	{
 		private OperationProtocolOptions _protocols = null;
-		private IMetricConfiguration _metric = null;
+		private IMetricOptions _metric = null;
 
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[Required]
@@ -45,13 +49,13 @@ namespace TomPIT.Application.Apis
 		[DefaultValue(ElementScope.Public)]
 		public ElementScope Scope { get; set; } = ElementScope.Public;
 
-		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
-		public IMetricConfiguration Metrics
+		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		public IMetricOptions Metrics
 		{
 			get
 			{
 				if (_metric == null)
-					_metric = new MetricConfiguration { Parent = this };
+					_metric = new MetricOptions { Parent = this };
 
 				return _metric;
 			}

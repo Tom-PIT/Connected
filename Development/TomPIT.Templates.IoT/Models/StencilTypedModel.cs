@@ -1,11 +1,11 @@
-﻿using TomPIT.IoT.UI.Stencils;
-using TomPIT.Services;
+﻿using TomPIT.MicroServices.IoT.UI.Stencils;
+using TomPIT.Middleware;
 
-namespace TomPIT.IoT.Models
+namespace TomPIT.MicroServices.IoT.Models
 {
 	public abstract class StencilTypedModel<T> : StencilModel where T : IIoTElement
 	{
-		public StencilTypedModel(IExecutionContext context, IIoTElement element) : base(context, element)
+		public StencilTypedModel(IMiddlewareContext context, IIoTElement element) : base(context, element)
 		{
 		}
 

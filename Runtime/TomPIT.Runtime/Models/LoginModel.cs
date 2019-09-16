@@ -1,10 +1,11 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
+using TomPIT.Exceptions;
 using TomPIT.Routing;
+using TomPIT.Runtime;
 using TomPIT.Security;
-using TomPIT.Services;
 
 namespace TomPIT.Models
 {
@@ -21,12 +22,12 @@ namespace TomPIT.Models
 
 		public IAuthenticationResult Authenticate()
 		{
-			return Connection.GetService<IAuthorizationService>().Authenticate(UserName, Password);
+			return Tenant.GetService<IAuthorizationService>().Authenticate(UserName, Password);
 		}
 
 		public void ChangePassword()
 		{
-			var user = Connection.GetService<IUserService>().Select(UserName);
+			var user = Tenant.GetService<IUserService>().Select(UserName);
 
 			if (user == null)
 				throw new TomPITException(SR.ErrUserNotFound);
@@ -34,17 +35,17 @@ namespace TomPIT.Models
 			if (string.Compare(Password, ConfirmPassword, false) != 0)
 				throw new TomPITException(SR.ValPasswordMatch);
 
-			Connection.GetService<IUserService>().ChangePassword(user.Token, ExistingPassword, Password);
+			Tenant.GetService<IUserService>().ChangePassword(user.Token, ExistingPassword, Password);
 		}
 
-		public string ImageUrl { get { return this.MapPath("~/Assets/Images/Shell/Login.jpg"); } }
+		public string ImageUrl { get { return Services.Routing.MapPath("~/Assets/Images/Shell/Login.jpg"); } }
 
 		protected override void OnDatabinding()
 		{
 			Title = SR.Login;
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
-				Endpoint = Instance.Connection.Url;
+				Endpoint = Instance.Tenant.Url;
 
 			Navigation.Breadcrumbs.Add(new Route
 			{
@@ -52,16 +53,16 @@ namespace TomPIT.Models
 			});
 		}
 
-		public List<ISysConnectionDescriptor> QueryConnections()
+		public List<ITenantDescriptor> QueryConnections()
 		{
-			return Shell.GetService<IConnectivityService>().QueryConnections();
+			return Shell.GetService<IConnectivityService>().QueryTenants();
 		}
 
 		public bool HasPasswordSet
 		{
 			get
 			{
-				var u = Connection.GetService<IUserService>().Select(UserName);
+				var u = Tenant.GetService<IUserService>().Select(UserName);
 
 				return u != null && u.HasPassword;
 			}

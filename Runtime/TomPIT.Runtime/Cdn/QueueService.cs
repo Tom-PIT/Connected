@@ -1,29 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using TomPIT.ComponentModel.Handlers;
-using TomPIT.ComponentModel.Workers;
+using TomPIT.ComponentModel.Distributed;
 using TomPIT.Connectivity;
-using TomPIT.Services;
+using TomPIT.Middleware;
+using TomPIT.Serialization;
 
 namespace TomPIT.Cdn
 {
-	internal class QueueService : ServiceBase, IQueueService
+	internal class QueueService : TenantObject, IQueueService
 	{
-		public QueueService(ISysConnection connection) : base(connection)
+		public QueueService(ITenant tenant) : base(tenant)
 		{
 		}
 
-		public void Enqueue<T>(IQueueHandlerConfiguration handler, T arguments)
+		public void Enqueue<T>(IQueueConfiguration handler, T arguments)
 		{
 			Enqueue(handler, arguments, TimeSpan.FromDays(2), TimeSpan.Zero);
 		}
 
-		public void Enqueue<T>(IQueueHandlerConfiguration handler, T arguments, TimeSpan expire, TimeSpan nextVisible)
+		public void Enqueue<T>(IQueueConfiguration handler, T arguments, TimeSpan expire, TimeSpan nextVisible)
 		{
-			var url = Connection.CreateUrl("Queue", "Enqueue");
+			var url = Tenant.CreateUrl("Queue", "Enqueue");
 			var e = new JObject
 			{
 				{"component", handler.Component },
@@ -32,9 +29,9 @@ namespace TomPIT.Cdn
 			};
 
 			if (arguments != null)
-				e.Add("arguments", Types.Serialize(arguments));
+				e.Add("arguments", SerializationExtensions.Serialize(arguments));
 
-			Connection.Post(url, e);
+			Tenant.Post(url, e);
 		}
 	}
 }

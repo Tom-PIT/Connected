@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.Dom;
-using TomPIT.Ide;
+﻿using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
 using TomPIT.Management.Designers;
 
 namespace TomPIT.Management.Dom
 {
-	internal class TranslationElement : Element
+	internal class TranslationElement : DomElement
 	{
 		public const string FolderId = "Translations";
 		private TranslationsDesigner _designer = null;

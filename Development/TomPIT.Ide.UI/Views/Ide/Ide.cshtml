@@ -1,4 +1,6 @@
-﻿@model TomPIT.Ide.IEnvironment
+﻿@model TomPIT.Ide.Environment.IEnvironment
+@using TomPIT.Ide;
+
 @{
    Layout = "~/Views/Shared/Shell.cshtml";
 
@@ -13,9 +15,9 @@
        if (!string.IsNullOrWhiteSpace(component))
        {
            element = Context.Request.Query["element"].ToString();
-           var elementId = string.IsNullOrWhiteSpace(element) ? Guid.Empty : element.AsGuid();
+           var elementId = string.IsNullOrWhiteSpace(element) ? Guid.Empty : new Guid(element);
 
-           qspath = Model.ResolvePath(component.AsGuid(), elementId, out eventName);
+           qspath = Model.ResolvePath(new Guid(component), elementId, out eventName);
        }
    }
 }
@@ -35,10 +37,10 @@
 
 @{
 	var path = "Assets/Libraries/monaco/vs";
-	var ctx = Model as TomPIT.Services.IExecutionContext;
+	var ctx = Model as TomPIT.Middleware.IMiddlewareContext;
 
 	if (ctx != null)
-	{ path = ctx.MapPath("~/Assets/Libraries/monaco/vs"); }
+	{ path = ctx.Services.Routing.MapPath("~/Assets/Libraries/monaco/vs"); }
 }
 
 <script src="~/Assets/Libraries/monaco/vs/loader.js"></script>

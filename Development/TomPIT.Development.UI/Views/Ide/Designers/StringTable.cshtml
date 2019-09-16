@@ -11,7 +11,7 @@
     </div>
 <script>
     $('#gridStrings').dxDataGrid({
-        dataSource: @Html.Raw(Types.Serialize(Model.Items)),
+        dataSource: @Html.Raw(TomPIT.Serialization.SerializationExtensions.Serialize(Model.Items)),
         keyExpr: 'id',
         editing: {
             mode: "cell",

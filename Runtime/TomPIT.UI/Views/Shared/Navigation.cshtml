@@ -15,7 +15,7 @@
 	<ul class="nav-content">
 		@foreach (var j in i)
 		{
-			var activeCss = Model.CompareUrls(ViewContext.HttpContext.Request.Path, j.Url)
+			var activeCss = Model.Services.Routing.CompareUrls(ViewContext.HttpContext.Request.Path, j.Url)
 				? "active"
 				: string.Empty;
 

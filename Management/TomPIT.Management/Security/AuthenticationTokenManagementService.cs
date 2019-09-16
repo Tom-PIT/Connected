@@ -1,38 +1,38 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
+using TomPIT.Security;
 
-namespace TomPIT.Security
+namespace TomPIT.Management.Security
 {
-	internal class AuthenticationTokenManagementService : IAuthenticationTokenManagementService
+	internal class AuthenticationTokenManagementService : TenantObject, IAuthenticationTokenManagementService
 	{
-		public AuthenticationTokenManagementService(ISysConnection connection)
+		public AuthenticationTokenManagementService(ITenant tenant) : base(tenant)
 		{
-			Connection = connection;
-		}
 
-		private ISysConnection Connection { get; }
+		}
 
 		public void Delete(Guid token)
 		{
-			var u = Connection.CreateUrl("SecurityManagement", "DeleteAuthenticationToken");
+			var u = Tenant.CreateUrl("SecurityManagement", "DeleteAuthenticationToken");
 			var e = new JObject
 			{
 				{"token", token }
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 
-			if (Connection.GetService<IAuthorizationService>() is IAuthenticationTokenNotification n)
+			if (Tenant.GetService<IAuthorizationService>() is IAuthenticationTokenNotification n)
 				n.NotifyAuthenticationTokenRemoved(this, new AuthenticationTokenEventArgs(token));
 		}
 
 		public Guid Insert(Guid resourceGroup, Guid user, string name, string description, string key, AuthenticationTokenClaim claims, AuthenticationTokenStatus status,
 			DateTime validFrom, DateTime validTo, TimeSpan startTime, TimeSpan endTime, string ipRestrictions)
 		{
-			var u = Connection.CreateUrl("SecurityManagement", "InsertAuthenticationToken");
+			var u = Tenant.CreateUrl("SecurityManagement", "InsertAuthenticationToken");
 			var e = new JObject
 			{
 				{"resourceGroup", resourceGroup },
@@ -49,9 +49,9 @@ namespace TomPIT.Security
 				{"description", description }
 			};
 
-			var id = Connection.Post<Guid>(u, e);
+			var id = Tenant.Post<Guid>(u, e);
 
-			if (Connection.GetService<IAuthorizationService>() is IAuthenticationTokenNotification n)
+			if (Tenant.GetService<IAuthorizationService>() is IAuthenticationTokenNotification n)
 				n.NotifyAuthenticationTokenChanged(this, new AuthenticationTokenEventArgs(id));
 
 			return id;
@@ -59,7 +59,7 @@ namespace TomPIT.Security
 
 		public List<IAuthenticationToken> Query(string resourceGroup)
 		{
-			var u = Connection.CreateUrl("Security", "QueryAuthenticationTokens");
+			var u = Tenant.CreateUrl("Security", "QueryAuthenticationTokens");
 			var a = new JArray();
 			var e = new JObject
 				{
@@ -68,21 +68,21 @@ namespace TomPIT.Security
 
 			a.Add(resourceGroup);
 
-			return Connection.Post<List<AuthenticationToken>>(u, e).ToList<IAuthenticationToken>();
+			return Tenant.Post<List<AuthenticationToken>>(u, e).ToList<IAuthenticationToken>();
 		}
 
 		public IAuthenticationToken Select(Guid token)
 		{
-			var u = Connection.CreateUrl("Security", "SelectAuthenticationToken")
+			var u = Tenant.CreateUrl("Security", "SelectAuthenticationToken")
 				.AddParameter("token", token);
 
-			return Connection.Get<AuthenticationToken>(u);
+			return Tenant.Get<AuthenticationToken>(u);
 		}
 
 		public void Update(Guid token, Guid user, string name, string description, string key, AuthenticationTokenClaim claims, AuthenticationTokenStatus status, DateTime validFrom, DateTime validTo,
 			TimeSpan startTime, TimeSpan endTime, string ipRestrictions)
 		{
-			var u = Connection.CreateUrl("SecurityManagement", "UpdateAuthenticationToken");
+			var u = Tenant.CreateUrl("SecurityManagement", "UpdateAuthenticationToken");
 			var e = new JObject
 			{
 				{"token", token },
@@ -99,9 +99,9 @@ namespace TomPIT.Security
 				{"description", description }
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 
-			if (Connection.GetService<IAuthorizationService>() is IAuthenticationTokenNotification n)
+			if (Tenant.GetService<IAuthorizationService>() is IAuthenticationTokenNotification n)
 				n.NotifyAuthenticationTokenChanged(this, new AuthenticationTokenEventArgs(token));
 		}
 	}

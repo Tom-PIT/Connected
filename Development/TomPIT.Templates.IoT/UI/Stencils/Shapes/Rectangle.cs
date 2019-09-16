@@ -1,11 +1,11 @@
-﻿using TomPIT.Annotations;
-using TomPIT.IoT.Annotations;
+﻿using TomPIT.Annotations.Design;
+using TomPIT.MicroServices.IoT.Annotations;
 
-namespace TomPIT.IoT.UI.Stencils.Shapes
+namespace TomPIT.MicroServices.IoT.UI.Stencils.Shapes
 {
 	[IoTElement(typeof(RectangleModel), "~/Views/IoT/Stencils/Rectangle.cshtml", "~/Views/Ide/Designers/IoT/Stencils/Rectangle.cshtml")]
 	[ToolboxItemGlyph("~/Views/Ide/Designers/IoT/Stencils/RectangleGlyph.cshtml")]
-	[ComponentCreatingHandler("TomPIT.IoT.UI.Stencils.StencilCreateHandler, TomPIT.IoT")]
+	[ComponentCreatingHandler("TomPIT.MicroServices.IoT.UI.Stencils.StencilCreateHandler, TomPIT.MicroServices.IoT")]
 	public class Rectangle : IoTElement
 	{
 	}

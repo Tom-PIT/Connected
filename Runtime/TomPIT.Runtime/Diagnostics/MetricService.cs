@@ -1,21 +1,18 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
+using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 
 namespace TomPIT.Diagnostics
 {
-	internal class MetricService : IMetricService
+	internal class MetricService : TenantObject, IMetricService
 	{
 		private Lazy<ConcurrentQueue<IMetric>> _buffer = new Lazy<ConcurrentQueue<IMetric>>();
 
-		public MetricService(ISysConnection connection)
+		public MetricService(ITenant tenant) : base(tenant)
 		{
-			Connection = connection;
 		}
-
-		private ISysConnection Connection { get; }
-
 		public void Write(IMetric d)
 		{
 			Buffer.Enqueue(d);
@@ -69,9 +66,9 @@ namespace TomPIT.Diagnostics
 
 		private void Send(JObject data)
 		{
-			var u = Connection.CreateUrl("Metric", "Insert");
+			var u = Tenant.CreateUrl("Metric", "Insert");
 
-			Connection.Post(u, data);
+			Tenant.Post(u, data);
 		}
 
 		private ConcurrentQueue<IMetric> Buffer { get { return _buffer.Value; } }

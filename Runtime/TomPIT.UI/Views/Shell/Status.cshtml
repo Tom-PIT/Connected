@@ -7,7 +7,7 @@
 <div class="container">
     <div class="row justify-content-center mt-5">
         <div class="col-8 text-center">
-            <a href="@Context.Request.RootUrl()">
+            <a href="@Model.Services.Routing.RootUrl">
                 <img id="logo" src="~/Assets/Images/Shell/AppSys.png" class="img-fluid center-block">
             </a>
             <div class="mt-5 text-center">
@@ -32,7 +32,7 @@
                         {
                             <li class="list-inline-item mt-1"><a href="#" onclick="window.location.reload(true);" class="btn btn-outline-info btn-lg">@SR.ReloadView</a></li>
                         }
-                        <li class="list-inline-item mt-1"><a href="@Context.Request.RootUrl()" class="btn btn-outline-info btn-lg">@SR.ViewHome</a></li>
+                        <li class="list-inline-item mt-1"><a href="@Model.Services.Routing.RootUrl" class="btn btn-outline-info btn-lg">@SR.ViewHome</a></li>
                     </ul>
                 </div>
             </div>

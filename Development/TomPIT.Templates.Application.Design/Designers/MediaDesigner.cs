@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.Designers;
-using TomPIT.Dom;
+﻿using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom.ComponentModel;
 
-namespace TomPIT.Application.Design.Designers
+namespace TomPIT.MicroServices.Design.Designers
 {
 	public class MediaDesigner : FileManagerDesigner
 	{

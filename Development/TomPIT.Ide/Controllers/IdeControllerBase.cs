@@ -1,13 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
-using System;
-using TomPIT.ActionResults;
-using TomPIT.Annotations;
-using TomPIT.Ide;
-using TomPIT.Models;
+using TomPIT.Annotations.Design;
+using TomPIT.Controllers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Environment;
+using TomPIT.Ide.Models;
+using TomPIT.Serialization;
 
-namespace TomPIT.Controllers
+namespace TomPIT.Ide.Controllers
 {
 	public abstract class IdeControllerBase : ServerController
 	{
@@ -190,7 +191,7 @@ namespace TomPIT.Controllers
 			{
 				Response.Headers.Add("designerResult", "json");
 
-				return new Microsoft.AspNetCore.Mvc.JsonResult(Types.Serialize(((IDesignerActionResultJson)result).Data));
+				return new Microsoft.AspNetCore.Mvc.JsonResult(SerializationExtensions.Serialize(((IDesignerActionResultJson)result).Data));
 			}
 			else if (result is IDesignerActionResultView)
 			{

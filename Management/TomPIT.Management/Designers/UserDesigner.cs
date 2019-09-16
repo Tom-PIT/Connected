@@ -1,14 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.IO;
-using TomPIT.ActionResults;
-using TomPIT.Annotations;
-using TomPIT.Dom;
-using TomPIT.Ide;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.Design;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Management.Dom;
+using TomPIT.Management.Security;
 using TomPIT.Security;
 using TomPIT.Storage;
 
-namespace TomPIT.Designers
+namespace TomPIT.Management.Designers
 {
 	public class UserDesigner : DomDesigner<UserElement>
 	{
@@ -35,14 +36,14 @@ namespace TomPIT.Designers
 
 		private IDesignerActionResult ResetPassword(JObject data)
 		{
-			Connection.GetService<IUserManagementService>().ResetPassword(User.Token);
+			Environment.Context.Tenant.GetService<IUserManagementService>().ResetPassword(User.Token);
 
 			return Result.EmptyResult(this);
 		}
 
 		private IDesignerActionResult ResetAvatar(JObject data)
 		{
-			Connection.GetService<IUserService>().ChangeAvatar(User.Token, null, null, null);
+			Environment.Context.Tenant.GetService<IUserService>().ChangeAvatar(User.Token, null, null, null);
 
 			return Result.SectionResult(ViewModel, EnvironmentSection.Designer);
 		}
@@ -65,7 +66,7 @@ namespace TomPIT.Designers
 				s.Seek(0, SeekOrigin.Begin);
 				s.Read(buffer, 0, buffer.Length);
 
-				Connection.GetService<IUserService>().ChangeAvatar(User.Token, buffer, file.ContentType, System.IO.Path.GetFileName(file.FileName));
+				Environment.Context.Tenant.GetService<IUserService>().ChangeAvatar(User.Token, buffer, file.ContentType, System.IO.Path.GetFileName(file.FileName));
 			};
 
 			return Result.SectionResult(ViewModel, EnvironmentSection.Designer);
@@ -78,7 +79,7 @@ namespace TomPIT.Designers
 				if (User == null || User.Avatar == Guid.Empty)
 					return null;
 
-				var b = Connection.GetService<IStorageService>().Select(User.Avatar);
+				var b = Environment.Context.Tenant.GetService<IStorageService>().Select(User.Avatar);
 
 				if (b == null)
 					return null;

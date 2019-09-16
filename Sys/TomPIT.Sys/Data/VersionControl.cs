@@ -2,183 +2,184 @@
 using System.Collections.Generic;
 using TomPIT.ComponentModel;
 using TomPIT.Development;
+using TomPIT.Exceptions;
 using TomPIT.Sys.Api.Database;
 
 namespace TomPIT.Sys.Data
 {
-    internal class VersionControl
-    {
-        public Guid InsertCommit(Guid microService, Guid user, string comment, List<IComponent> components)
-        {
-            var ms = DataModel.MicroServices.Select(microService);
+	internal class VersionControl
+	{
+		public Guid InsertCommit(Guid microService, Guid user, string comment, List<IComponent> components)
+		{
+			var ms = DataModel.MicroServices.Select(microService);
 
-            if (ms == null)
-                throw new SysException(SR.ErrMicroServiceNotFound);
+			if (ms == null)
+				throw new SysException(SR.ErrMicroServiceNotFound);
 
-            var u = DataModel.Users.Select(user);
+			var u = DataModel.Users.Select(user);
 
-            if (u == null)
-                throw new SysException(SR.ErrUserNotFound);
+			if (u == null)
+				throw new SysException(SR.ErrUserNotFound);
 
-            var id = Guid.NewGuid();
+			var id = Guid.NewGuid();
 
-            Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.InsertCommit(id, ms, u, DateTime.UtcNow, comment, components);
+			Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.InsertCommit(id, ms, u, DateTime.UtcNow, comment, components);
 
-            return id;
-        }
+			return id;
+		}
 
-        public ILockInfo SelectLockInfo(Guid component, Guid user)
-        {
-            var c = DataModel.Components.Select(component);
+		public ILockInfo SelectLockInfo(Guid component, Guid user)
+		{
+			var c = DataModel.Components.Select(component);
 
-            if (c == null)
-                throw new SysException(SR.ErrComponentNotFound);
+			if (c == null)
+				throw new SysException(SR.ErrComponentNotFound);
 
-            var r = new LockInfo();
+			var r = new LockInfo();
 
-            if (c.LockStatus == LockStatus.Commit)
-                r.Result = LockInfoResult.ShouldLock;
-            else
-            {
-                if (user == c.LockUser)
-                    r.Result = LockInfoResult.NoAction;
-                else
-                {
-                    r.Result = LockInfoResult.Locked;
-                    r.Owner = c.LockUser;
-                }
-            }
+			if (c.LockStatus == LockStatus.Commit)
+				r.Result = LockInfoResult.ShouldLock;
+			else
+			{
+				if (user == c.LockUser)
+					r.Result = LockInfoResult.NoAction;
+				else
+				{
+					r.Result = LockInfoResult.Locked;
+					r.Owner = c.LockUser;
+				}
+			}
 
-            return r;
-        }
+			return r;
+		}
 
-        public List<ICommit> QueryCommits(Guid microService)
-        {
-            var ms = DataModel.MicroServices.Select(microService);
+		public List<ICommit> QueryCommits(Guid microService)
+		{
+			var ms = DataModel.MicroServices.Select(microService);
 
-            if (ms == null)
-                throw new SysException(SR.ErrMicroServiceNotFound);
+			if (ms == null)
+				throw new SysException(SR.ErrMicroServiceNotFound);
 
-            return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommits(ms);
-        }
+			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommits(ms);
+		}
 
-        public void DeleteHistory(Guid component)
-        {
-            var c = DataModel.Components.Select(component);
+		public void DeleteHistory(Guid component)
+		{
+			var c = DataModel.Components.Select(component);
 
-            if (c == null)
-                throw new RuntimeException(SR.ErrComponentNotFound);
+			if (c == null)
+				throw new RuntimeException(SR.ErrComponentNotFound);
 
-            var history = QueryHistory(component);
+			var history = QueryHistory(component);
 
-            foreach (var i in history)
-            {
-                try
-                {
-                    Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.DeleteHistory(i);
-                    DataModel.Blobs.Delete(i.Blob);
-                }
-                catch { }
-            }
-        }
+			foreach (var i in history)
+			{
+				try
+				{
+					Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.DeleteHistory(i);
+					DataModel.Blobs.Delete(i.Blob);
+				}
+				catch { }
+			}
+		}
 
-        public List<IComponentHistory> QueryHistory(Guid component)
-        {
-            var c = DataModel.Components.Select(component);
+		public List<IComponentHistory> QueryHistory(Guid component)
+		{
+			var c = DataModel.Components.Select(component);
 
-            if (c == null)
-                throw new RuntimeException(SR.ErrComponentNotFound);
+			if (c == null)
+				throw new RuntimeException(SR.ErrComponentNotFound);
 
-            return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryHistory(c);
-        }
+			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryHistory(c);
+		}
 
-        public List<IComponentHistory> QueryCommitDetails(Guid commit)
-        {
-            var c = SelectCommit(commit);
+		public List<IComponentHistory> QueryCommitDetails(Guid commit)
+		{
+			var c = SelectCommit(commit);
 
-            if (c == null)
-                throw new SysException(SR.ErrCommitNotFound);
+			if (c == null)
+				throw new SysException(SR.ErrCommitNotFound);
 
-            return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommitDetails(c);
-        }
+			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommitDetails(c);
+		}
 
-        public ICommit SelectCommit(Guid token)
-        {
-            return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.SelectCommit(token);
-        }
+		public ICommit SelectCommit(Guid token)
+		{
+			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.SelectCommit(token);
+		}
 
-        public List<IComponent> QueryCommitComponents(Guid commit)
-        {
-            var c = SelectCommit(commit);
+		public List<IComponent> QueryCommitComponents(Guid commit)
+		{
+			var c = SelectCommit(commit);
 
-            if (c == null)
-                throw new SysException(SR.ErrCommitNotFound);
+			if (c == null)
+				throw new SysException(SR.ErrCommitNotFound);
 
-            return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommitComponents(c);
-        }
+			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommitComponents(c);
+		}
 
-        public List<ICommit> QueryCommitsForComponent(Guid microService, Guid component)
-        {
-            var ms = DataModel.MicroServices.Select(microService);
+		public List<ICommit> QueryCommitsForComponent(Guid microService, Guid component)
+		{
+			var ms = DataModel.MicroServices.Select(microService);
 
-            if (ms == null)
-                throw new SysException(SR.ErrMicroServiceNotFound);
+			if (ms == null)
+				throw new SysException(SR.ErrMicroServiceNotFound);
 
-            var c = DataModel.Components.Select(component);
+			var c = DataModel.Components.Select(component);
 
-            if (c == null)
-                throw new SysException(SR.ErrComponentNotFound);
+			if (c == null)
+				throw new SysException(SR.ErrComponentNotFound);
 
-            return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommits(ms, c);
-        }
+			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommits(ms, c);
+		}
 
-        public List<ICommit> QueryCommits(Guid microService, Guid user)
-        {
-            var ms = DataModel.MicroServices.Select(microService);
+		public List<ICommit> QueryCommits(Guid microService, Guid user)
+		{
+			var ms = DataModel.MicroServices.Select(microService);
 
-            if (ms == null)
-                throw new SysException(SR.ErrMicroServiceNotFound);
+			if (ms == null)
+				throw new SysException(SR.ErrMicroServiceNotFound);
 
-            var u = DataModel.Users.Select(user);
+			var u = DataModel.Users.Select(user);
 
-            if (u == null)
-                throw new SysException(SR.ErrUserNotFound);
+			if (u == null)
+				throw new SysException(SR.ErrUserNotFound);
 
-            return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommits(ms, u);
-        }
+			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommits(ms, u);
+		}
 
-        public void Lock(Guid component, Guid user, LockVerb verb, Guid blob)
-        {
-            var c = DataModel.Components.Select(component);
+		public void Lock(Guid component, Guid user, LockVerb verb, Guid blob)
+		{
+			var c = DataModel.Components.Select(component);
 
-            if (c == null)
-                throw new SysException(SR.ErrComponentNotFound);
+			if (c == null)
+				throw new SysException(SR.ErrComponentNotFound);
 
-            var u = DataModel.Users.Select(user);
+			var u = DataModel.Users.Select(user);
 
-            if (u == null)
-                throw new SysException(SR.ErrUserNotFound);
+			if (u == null)
+				throw new SysException(SR.ErrUserNotFound);
 
-            if (c.LockStatus != LockStatus.Commit)
-                throw new SysException(SR.ErrComponentLocked);
+			if (c.LockStatus != LockStatus.Commit)
+				throw new SysException(SR.ErrComponentLocked);
 
-            Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, u, LockStatus.Lock, verb, DateTime.UtcNow);
-            Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.InsertComponentHistory(u, c, c.Name, verb, DateTime.UtcNow, blob);
+			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, u, LockStatus.Lock, verb, DateTime.UtcNow);
+			Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.InsertComponentHistory(u, c, c.Name, verb, DateTime.UtcNow, blob);
 
-            DataModel.Components.NotifyChanged(c);
-        }
+			DataModel.Components.NotifyChanged(c);
+		}
 
-        public void Undo(Guid component)
-        {
-            var c = DataModel.Components.Select(component);
+		public void Undo(Guid component)
+		{
+			var c = DataModel.Components.Select(component);
 
-            if (c == null)
-                throw new SysException(SR.ErrComponentNotFound);
+			if (c == null)
+				throw new SysException(SR.ErrComponentNotFound);
 
-            Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, null, LockStatus.Commit, LockVerb.None, DateTime.MinValue);
-            Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.UndoComponentHistory(c);
+			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, null, LockStatus.Commit, LockVerb.None, DateTime.MinValue);
+			Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.UndoComponentHistory(c);
 
-            DataModel.Components.NotifyChanged(c);
-        }
-    }
+			DataModel.Components.NotifyChanged(c);
+		}
+	}
 }

@@ -1,14 +1,16 @@
 ﻿@using TomPIT;
+@using TomPIT.Serialization;
+@using TomPIT.ComponentModel;
 @using Newtonsoft.Json;
 @using Newtonsoft.Json.Linq;
-@using TomPIT.IoT.UI;
-@using TomPIT.IoT;
+@using TomPIT.MicroServices.IoT.UI;
+@using TomPIT.MicroServices.IoT;
 
 @model TomPIT.Models.IViewModel
 
 @{
 	var view = Model.ViewConfiguration as IoTView;
-	var ms = Model.Connection().ResolveMicroService(Model.MicroService.Token);
+	var ms = Model.Tenant.GetService<IMicroServiceService>().Select(Model.MicroService.Token);
 
 	var bindings = new JArray();
 
@@ -45,13 +47,13 @@
 		iot.connect({
 		'url': '@string.Format("{0}/iot",Model.Services.Routing.GetServer(TomPIT.Environment.InstanceType.IoT, TomPIT.Environment.InstanceVerbs.All))',
 		'microService': '@ms.Name',
-		'appBaseUrl': '@Model.MapPath("~/sys/plugins/iot/partial")',
+		'appBaseUrl': '@Model.Services.Routing.MapPath("~/sys/plugins/iot/partial")',
 		'hub':'@view.Hub',
 		'id': 'iot'
 	});
 
 	@if (bindings.Count > 0)
 	{
-		@:iot.registerBindings(@Html.Raw(Types.Serialize(bindings)))
+		@:iot.registerBindings(@Html.Raw(SerializationExtensions.Serialize(bindings)))
 	}
 </script>

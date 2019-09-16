@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.Dom;
-using TomPIT.Globalization;
+﻿using TomPIT.Globalization;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
 using TomPIT.Management.Globalization;
 
 namespace TomPIT.Management.Dom
@@ -13,7 +11,7 @@ namespace TomPIT.Management.Dom
 		{
 			Language = language;
 			Title = Language.Name;
-			Id = Language.Token.AsString();
+			Id = Language.Token.ToString();
 		}
 
 		public ILanguage Language { get; }
@@ -22,7 +20,7 @@ namespace TomPIT.Management.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			Connection.GetService<IGlobalizationManagementService>().UpdateLanguage(Language.Token, Language.Name,
+			Environment.Context.Tenant.GetService<IGlobalizationManagementService>().UpdateLanguage(Language.Token, Language.Name,
 				Language.Lcid, Language.Status, Language.Mappings);
 
 			return true;

@@ -1,14 +1,14 @@
-﻿using TomPIT.ComponentModel;
-using TomPIT.Configuration;
-using TomPIT.Connectivity;
-using TomPIT.Diagnostics;
-using TomPIT.Environment;
+﻿using TomPIT.Connectivity;
 using TomPIT.Management.BigData;
+using TomPIT.Management.ComponentModel;
+using TomPIT.Management.Configuration;
 using TomPIT.Management.Deployment;
+using TomPIT.Management.Diagnostics;
+using TomPIT.Management.Environment;
 using TomPIT.Management.Globalization;
-using TomPIT.Security;
+using TomPIT.Management.Security;
 
-namespace TomPIT
+namespace TomPIT.Management
 {
 	public static class ManagementBootstrapper
 	{
@@ -19,25 +19,24 @@ namespace TomPIT
 
 		private static void RegisterServices()
 		{
-			Shell.GetService<IConnectivityService>().ConnectionInitialize += OnConnectionInitialize;
+			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 		}
 
-		private static void OnConnectionInitialize(object sender, SysConnectionArgs e)
+		private static void OnTenantInitialize(object sender, TenantArgs e)
 		{
-			e.Connection.RegisterService(typeof(ISettingManagementService), typeof(SettingManagementService));
-			e.Connection.RegisterService(typeof(IUserManagementService), typeof(UserManagementService));
-			e.Connection.RegisterService(typeof(IMembershipManagementService), typeof(MembershipManagementService));
-			e.Connection.RegisterService(typeof(IRoleManagementService), typeof(RoleManagementService));
-			e.Connection.RegisterService(typeof(ILoggingManagementService), typeof(LoggingManagementService));
-			e.Connection.RegisterService(typeof(IResourceGroupManagementService), typeof(ResourceGroupManagementService));
-			e.Connection.RegisterService(typeof(IMicroServiceManagementService), typeof(MicroServiceManagementService));
-			e.Connection.RegisterService(typeof(IInstanceEndpointManagementService), typeof(InstanceEndpointManagementService));
-			e.Connection.RegisterService(typeof(IEnvironmentUnitManagementService), typeof(EnvironmentUnitManagementService));
-			e.Connection.RegisterService(typeof(IAuthenticationTokenManagementService), typeof(AuthenticationTokenManagementService));
-			e.Connection.RegisterService(typeof(IDeploymentService), typeof(DeploymentService));
-			e.Connection.RegisterService(typeof(IMetricManagementService), typeof(MetricManagementService));
-			e.Connection.RegisterService(typeof(IBigDataManagementService), typeof(BigDataManagementService));
-			e.Connection.RegisterService(typeof(IGlobalizationManagementService), typeof(GlobalizationManagementService));
+			e.Tenant.RegisterService(typeof(ISettingManagementService), typeof(SettingManagementService));
+			e.Tenant.RegisterService(typeof(IUserManagementService), typeof(UserManagementService));
+			e.Tenant.RegisterService(typeof(IMembershipManagementService), typeof(MembershipManagementService));
+			e.Tenant.RegisterService(typeof(IRoleManagementService), typeof(RoleManagementService));
+			e.Tenant.RegisterService(typeof(ILoggingManagementService), typeof(LoggingManagementService));
+			e.Tenant.RegisterService(typeof(IResourceGroupManagementService), typeof(ResourceGroupManagementService));
+			e.Tenant.RegisterService(typeof(IMicroServiceManagementService), typeof(MicroServiceManagementService));
+			e.Tenant.RegisterService(typeof(IInstanceEndpointManagementService), typeof(InstanceEndpointManagementService));
+			e.Tenant.RegisterService(typeof(IAuthenticationTokenManagementService), typeof(AuthenticationTokenManagementService));
+			e.Tenant.RegisterService(typeof(IDeploymentService), typeof(DeploymentService));
+			e.Tenant.RegisterService(typeof(IMetricManagementService), typeof(MetricManagementService));
+			e.Tenant.RegisterService(typeof(IBigDataManagementService), typeof(BigDataManagementService));
+			e.Tenant.RegisterService(typeof(IGlobalizationManagementService), typeof(GlobalizationManagementService));
 		}
 	}
 }

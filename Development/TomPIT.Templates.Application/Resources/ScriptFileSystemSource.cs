@@ -2,7 +2,7 @@
 using TomPIT.Annotations;
 using TomPIT.ComponentModel.Resources;
 
-namespace TomPIT.Application.Resources
+namespace TomPIT.MicroServices.Resources
 {
 	public class ScriptFileSystemSource : ScriptSource, IScriptFileSystemSource
 	{

@@ -2,11 +2,11 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Events;
 using TomPIT.ComponentModel.IoT;
 
-namespace TomPIT.IoT
+namespace TomPIT.MicroServices.IoT
 {
 	[Create("Transaction", nameof(Name))]
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]

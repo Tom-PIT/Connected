@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -13,11 +13,11 @@
     <Version>1.1.905.3</Version>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Design\Services\**" />
+    <Compile Remove="Reflection\Services\**" />
     <Compile Remove="Items\**" />
-    <EmbeddedResource Remove="Design\Services\**" />
+    <EmbeddedResource Remove="Reflection\Services\**" />
     <EmbeddedResource Remove="Items\**" />
-    <None Remove="Design\Services\**" />
+    <None Remove="Reflection\Services\**" />
     <None Remove="Items\**" />
   </ItemGroup>
   <ItemGroup>

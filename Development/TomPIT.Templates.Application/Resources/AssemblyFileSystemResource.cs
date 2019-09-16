@@ -2,14 +2,13 @@
 using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.MicroServices.Design;
 
-namespace TomPIT.Application.Resources
+namespace TomPIT.MicroServices.Resources
 {
-	[Create("Assembly")]
+	[Create(DesignUtils.Assembly)]
 	public class AssemblyFileSystemResource : ComponentConfiguration, IAssemblyFileSystemResource
 	{
-		public const string ComponentCategory = "Assembly";
-
 		[Required]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		public string FileName { get; set; }

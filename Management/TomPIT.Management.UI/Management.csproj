@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -7,8 +7,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyName>TomPIT.Management.App</AssemblyName>
+    <RootNamespace>TomPIT.Management</RootNamespace>
+    <AssemblyName>TomPIT.Experience.Management</AssemblyName>
     <AssemblyVersion>1.1.905.3</AssemblyVersion>
     <FileVersion>1.1.905.3</FileVersion>
     <Version>1.1.905.3</Version>
@@ -16,6 +16,12 @@
   <PropertyGroup>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Views\Shell\**" />
+    <Content Remove="Views\Shell\**" />
+    <EmbeddedResource Remove="Views\Shell\**" />
+    <None Remove="Views\Shell\**" />
+  </ItemGroup>
   <ItemGroup>
     <Content Remove="compilerconfig.json" />
   </ItemGroup>
@@ -95,12 +101,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Views\Shell\" />
     <Folder Include="wwwroot\Assets\Libraries\DevExtreme\Latest\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+    <ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Design\TomPIT.Design.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Development\TomPIT.Development.csproj" />
     <ProjectReference Include="..\..\Development\TomPIT.Ide.UI\TomPIT.Ide.UI.csproj" />

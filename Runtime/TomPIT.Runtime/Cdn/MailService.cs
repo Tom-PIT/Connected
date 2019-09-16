@@ -1,20 +1,21 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
+using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
-using TomPIT.Services;
+using TomPIT.Middleware;
 
 namespace TomPIT.Cdn
 {
-	internal class MailService : ServiceBase, IMailService
+	internal class MailService : TenantObject, IMailService
 	{
-		public MailService(ISysConnection connection) : base(connection)
+		public MailService(ITenant tenant) : base(tenant)
 		{
 
 		}
 
-		public Guid Enqueue(string from, string to, string subject, string body, JArray headers, int attachmentCount, MailFormat format, DateTime sendDate, DateTime expire)
+		public Guid Enqueue(string from, string to, string subject, string body, JArray headers,
+			int attachmentCount, MailFormat format, DateTime sendDate, DateTime expire)
 		{
-			var u = Connection.CreateUrl("Mail", "Insert");
+			var u = Tenant.CreateUrl("Mail", "Insert");
 			var e = new JObject
 			{
 				{"from", from },
@@ -28,7 +29,7 @@ namespace TomPIT.Cdn
 				{"headers", headers }
 			};
 
-			return Connection.Post<Guid>(u, e);
+			return Tenant.Post<Guid>(u, e);
 		}
 	}
 }

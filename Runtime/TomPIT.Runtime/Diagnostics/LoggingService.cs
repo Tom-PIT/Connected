@@ -1,20 +1,19 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
+using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 
 namespace TomPIT.Diagnostics
 {
-	internal class LoggingService : ILoggingService
+	internal class LoggingService : TenantObject, ILoggingService
 	{
 		private Lazy<ConcurrentQueue<ILogEntry>> _buffer = new Lazy<ConcurrentQueue<ILogEntry>>();
 
-		public LoggingService(ISysConnection connection)
+		public LoggingService(ITenant tenant) : base(tenant)
 		{
-			Connection = connection;
-		}
 
-		private ISysConnection Connection { get; }
+		}
 
 		public void Write(ILogEntry d)
 		{
@@ -65,9 +64,9 @@ namespace TomPIT.Diagnostics
 
 		private void Send(JObject data)
 		{
-			var u = Connection.CreateUrl("Logging", "Insert");
+			var u = Tenant.CreateUrl("Logging", "Insert");
 
-			Connection.Post(u, data);
+			Tenant.Post(u, data);
 		}
 
 		private ConcurrentQueue<ILogEntry> Buffer { get { return _buffer.Value; } }

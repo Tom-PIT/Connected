@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.Storage;
 
@@ -8,7 +9,7 @@ namespace TomPIT.Routing
 	{
 		protected override void OnProcessRequest()
 		{
-			var blob = Instance.GetService<IStorageService>().Select((Context.GetRouteValue("id") as string).AsGuid());
+			var blob = Instance.Tenant.GetService<IStorageService>().Select(new Guid((Context.GetRouteValue("id") as string)));
 
 			if (blob == null)
 			{
@@ -20,7 +21,7 @@ namespace TomPIT.Routing
 			if (!HasBeenModified(blob.Modified))
 				return;
 
-			var content = Instance.GetService<IStorageService>().Download(blob.Token);
+			var content = Instance.Tenant.GetService<IStorageService>().Download(blob.Token);
 
 			Context.Response.ContentType = blob.ContentType;
 

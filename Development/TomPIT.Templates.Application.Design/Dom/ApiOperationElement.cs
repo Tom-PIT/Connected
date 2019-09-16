@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
-using TomPIT.Application.Security;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.Dom;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
+using TomPIT.MicroServices.Security;
+using TomPIT.Reflection;
 using TomPIT.Security;
 
-namespace TomPIT.Application.Design.Dom
+namespace TomPIT.MicroServices.Design.Dom
 {
 	internal class ApiOperationElement : ElementPermissionElement
 	{
@@ -49,7 +51,7 @@ namespace TomPIT.Application.Design.Dom
 			}
 		}
 
-		public override string PermissionComponent => ConfigurationElement.Closest<IApi>().Component.ToString();
+		public override string PermissionComponent => ConfigurationElement.Closest<IApiConfiguration>().Component.ToString();
 		public override bool SupportsInherit => true;
 	}
 }

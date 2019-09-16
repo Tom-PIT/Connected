@@ -1,23 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Data;
-using System.Dynamic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TomPIT.Converters;
 
 namespace TomPIT
 {
 	public static class Types
 	{
-		private static JsonSerializerSettings _jsonSettings = null;
-		//private static JsonSerializerSettings _ignoreMetaDataJsonSettings = null;
-		private static JsonMergeSettings _mergeSettings = null;
 		private static readonly string[] FileSizes = { "B", "KB", "MB", "GB", "TB" };
 
 		public static bool Compare(object left, object right)
@@ -185,31 +176,6 @@ namespace TomPIT
 				return DataType.String;
 		}
 
-		public static string ToFriendlyName(this Type type)
-		{
-			if (type == typeof(int))
-				return "int";
-			else if (type == typeof(short))
-				return "short";
-			else if (type == typeof(byte))
-				return "byte";
-			else if (type == typeof(bool))
-				return "bool";
-			else if (type == typeof(long))
-				return "long";
-			else if (type == typeof(float))
-				return "float";
-			else if (type == typeof(double))
-				return "double";
-			else if (type == typeof(decimal))
-				return "decimal";
-			else if (type == typeof(string))
-				return "string";
-			else if (type.IsGenericType)
-				return type.Name.Split('`')[0] + "<" + string.Join(", ", type.GetGenericArguments().Select(x => ToFriendlyName(x)).ToArray()) + ">";
-			else
-				return type.ShortName();
-		}
 		/// <summary>
 		/// This method verifies if specified value has a valid value. It checks for empty strings,
 		/// dates, guids and DBNull.Value.
@@ -280,146 +246,6 @@ namespace TomPIT
 			return Encoding.UTF8.GetString(System.Convert.FromBase64String(value));
 		}
 
-		public static string AsString(this int value)
-		{
-			return value.ToString(CultureInfo.InvariantCulture);
-		}
-
-		public static string AsString(this long value)
-		{
-			return value.ToString(CultureInfo.InvariantCulture);
-		}
-
-		public static string AsString(this float value)
-		{
-			return value.ToString(CultureInfo.InvariantCulture);
-		}
-
-		public static string AsString(this double value)
-		{
-			return value.ToString(CultureInfo.InvariantCulture);
-		}
-
-		public static string AsString(this short value)
-		{
-			return value.ToString(CultureInfo.InvariantCulture);
-		}
-
-		public static string AsString(this Guid value)
-		{
-			return value.ToString();
-		}
-
-		public static int AsInt(this string value)
-		{
-			return Convert<int>(value, CultureInfo.InvariantCulture);
-		}
-
-		public static long AsLong(this string value)
-		{
-			return Convert<long>(value, CultureInfo.InvariantCulture);
-		}
-
-		public static float AsFloat(this string value)
-		{
-			return Convert<float>(value, CultureInfo.InvariantCulture);
-		}
-
-		public static double AsDouble(this string value)
-		{
-			return Convert<double>(value, CultureInfo.InvariantCulture);
-		}
-
-		public static short AsShort(this string value)
-		{
-			return Convert<short>(value, CultureInfo.InvariantCulture);
-		}
-
-		public static Guid AsGuid(this string value)
-		{
-			return Convert<Guid>(value, CultureInfo.InvariantCulture);
-		}
-
-		public static Type GetType(string type)
-		{
-			var t = Type.GetType(type);
-
-			if (t != null)
-				return t;
-
-			var asm = LoadAssembly(type);
-
-			if (asm == null)
-				return null;
-
-			var typeName = type.Split(',')[0];
-
-			return asm.GetType(typeName);
-		}
-
-		public static string InvariantTypeName(this Assembly assembly, string fullName)
-		{
-			string[] tokens = fullName.Split(',');
-
-			if (tokens == null || tokens.Length == 0)
-				return null;
-
-			return string.Format("{0}, {1}", tokens[0].Trim(), assembly.FullName);
-		}
-
-		public static Assembly LoadAssembly(string type)
-		{
-			var tokens = type.Split(',');
-			var libraryName = string.Empty;
-			var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-			if (tokens.Length == 1)
-				libraryName = string.Format("{0}.dll", tokens[0].Trim());
-			else if (tokens.Length > 1)
-				libraryName = string.Format("{0}.dll", tokens[1].Trim());
-
-			var file = string.Format("{0}\\{1}", path, libraryName);
-
-			if (!File.Exists(file))
-				return null;
-
-			return AppDomain.CurrentDomain.Load(AssemblyName.GetAssemblyName(file));
-		}
-
-		public static string ShortName(this Assembly assembly)
-		{
-			return assembly.FullName.Split(',')[0];
-		}
-
-		public static object DefaultValue(this Type type)
-		{
-			if (type.IsValueType)
-				return Activator.CreateInstance(type);
-
-			return null;
-		}
-
-		public static bool IsNumericType(this Type type)
-		{
-			switch (Type.GetTypeCode(type))
-			{
-				case TypeCode.Byte:
-				case TypeCode.SByte:
-				case TypeCode.UInt16:
-				case TypeCode.UInt32:
-				case TypeCode.UInt64:
-				case TypeCode.Int16:
-				case TypeCode.Int32:
-				case TypeCode.Int64:
-				case TypeCode.Decimal:
-				case TypeCode.Double:
-				case TypeCode.Single:
-					return true;
-				default:
-					return false;
-			}
-		}
-
 		public static string ToFileSize(double value, string measureUnitCss)
 		{
 			var order = 0;
@@ -441,148 +267,199 @@ namespace TomPIT
 			return ToFileSize(value, string.Empty);
 		}
 
-		private static JsonSerializerSettings SerializerSettings
+		public static string AsDuration(this TimeSpan duration, bool format)
 		{
-			get
-			{
-				if (_jsonSettings == null)
-				{
-					_jsonSettings = new JsonSerializerSettings
-					{
-						Culture = CultureInfo.InvariantCulture,
-						DateFormatHandling = DateFormatHandling.IsoDateFormat,
-						DateParseHandling = DateParseHandling.DateTime,
-						DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
-						FloatFormatHandling = FloatFormatHandling.DefaultValue,
-						FloatParseHandling = FloatParseHandling.Double,
-						MissingMemberHandling = MissingMemberHandling.Ignore,
-						Formatting = Formatting.Indented,
-						DefaultValueHandling = DefaultValueHandling.Include,
-						TypeNameHandling = TypeNameHandling.None,
-						ContractResolver = new SerializationResolver(),
-						NullValueHandling = NullValueHandling.Ignore,
-						ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-						MetadataPropertyHandling = MetadataPropertyHandling.Default
-					};
-				}
+			return AsDuration(duration, format, DurationPrecision.Millisecond);
+		}
 
-				return _jsonSettings;
+		public static string AsDuration(this TimeSpan duration, bool format, DurationPrecision precision)
+		{
+			var da = SR.DurationDays;
+			var ha = SR.DurationHours;
+			var ma = SR.DurationMinutes;
+			var sa = SR.DurationSeconds;
+			var msa = SR.DurationMilliseconds;
+
+
+			var sb = new StringBuilder();
+
+			if (duration.Days > 0)
+			{
+				sb.AppendFormat("{0}{1}", duration.Days, format ? string.Format("<span class=\"small\">{0}</span>", da) : da);
+
+				if (duration.Hours > 0
+					|| duration.Minutes > 0
+					|| duration.Seconds > 0
+					|| duration.Milliseconds > 0)
+					sb.Append(" ");
+			}
+
+			if (precision == DurationPrecision.Day)
+				return sb.ToString();
+
+			if (duration.Hours == 0
+				&& duration.Minutes == 0
+				&& duration.Seconds == 0
+				&& duration.Milliseconds == 0)
+				return sb.ToString();
+
+			if (duration.Hours > 0)
+			{
+				sb.AppendFormat("{0}{1}", duration.Hours, format ? string.Format("<span class=\"small\">{0}</span>", ha) : ha);
+
+				if (duration.Minutes == 0
+					&& duration.Seconds == 0
+					&& duration.Milliseconds == 0)
+					return sb.ToString();
+				else
+					sb.Append(" ");
+			}
+
+			if (precision == DurationPrecision.Hour)
+				return sb.ToString();
+
+			if (duration.Minutes > 0)
+			{
+				sb.AppendFormat("{0}{1}", duration.Minutes, format ? string.Format("<span class=\"small\">{0}</span>", ma) : ma);
+
+				if (duration.Seconds == 0
+					&& duration.Milliseconds == 0)
+					return sb.ToString();
+				else
+					sb.Append(" ");
+			}
+
+			if (precision == DurationPrecision.Minute)
+				return sb.ToString();
+
+			if (duration.Seconds > 0)
+			{
+				sb.AppendFormat("{0}{1}", duration.Seconds, format ? string.Format("<span class=\"small\">{0}</span>", sa) : sa);
+
+				if (duration.Milliseconds == 0)
+					return sb.ToString();
+				else
+					sb.Append(" ");
+			}
+
+			if (precision == DurationPrecision.Second)
+				return sb.ToString();
+
+			if (duration.Milliseconds > 0)
+				sb.AppendFormat("{0}{1}", duration.Milliseconds, format ? string.Format("<span class=\"small\">{0}</span>", msa) : msa);
+
+			return sb.ToString();
+		}
+
+		public static string ToHtmlBreaks(this string value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+				return value;
+
+			return value.Replace(System.Environment.NewLine, " <br/>").Replace("\r\n", " <br/>").Replace("\n", " <br/>");
+		}
+
+		public static string InsertSpaces(string value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+				return string.Empty;
+
+			var r = new StringBuilder(value.Length * 2);
+
+			r.Append(value[0]);
+
+			for (int i = 1; i < value.Length; i++)
+			{
+				if (char.IsUpper(value[i]) && value[i - 1] != ' ' && !char.IsUpper(value[i - 1]))
+					r.Append(' ');
+
+				r.Append(value[i]);
+			}
+
+			return r.ToString();
+		}
+
+		public static string ToCurrentCulture(object value)
+		{
+			if (value == null || value == DBNull.Value)
+				return string.Empty;
+
+			var converter = System.ComponentModel.TypeDescriptor.GetConverter(value);
+
+			if (converter == null)
+				return value.ToString();
+
+			return converter.ConvertToString(value);
+		}
+
+		public static string ToDisplayFormat(object value, string displayFormatString)
+		{
+			if (value == null || value == DBNull.Value || string.IsNullOrWhiteSpace(value.ToString()))
+				return string.Empty;
+
+			if (string.IsNullOrWhiteSpace(displayFormatString))
+				return ToCurrentCulture(value);
+
+			try
+			{
+				return string.Format(displayFormatString, value);
+			}
+			catch
+			{
+				return ToCurrentCulture(value);
 			}
 		}
 
-		//private static JsonSerializerSettings IgnoreMetaDataSerializerSettings
-		//{
-		//	get
-		//	{
-		//		if (_ignoreMetaDataJsonSettings == null)
-		//		{
-		//			_ignoreMetaDataJsonSettings = new JsonSerializerSettings
-		//			{
-		//				Culture = CultureInfo.InvariantCulture,
-		//				DateFormatHandling = DateFormatHandling.IsoDateFormat,
-		//				DateParseHandling = DateParseHandling.DateTime,
-		//				DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
-		//				FloatFormatHandling = FloatFormatHandling.DefaultValue,
-		//				FloatParseHandling = FloatParseHandling.Double,
-		//				MissingMemberHandling = MissingMemberHandling.Ignore,
-		//				Formatting = Formatting.Indented,
-		//				DefaultValueHandling = DefaultValueHandling.Include,
-		//				TypeNameHandling = TypeNameHandling.Auto,
-		//				ContractResolver = new SerializationResolver(),
-		//				NullValueHandling = NullValueHandling.Ignore,
-		//				ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-		//				MetadataPropertyHandling = MetadataPropertyHandling.Ignore
-		//			};
-		//		}
-
-		//		return _ignoreMetaDataJsonSettings;
-		//	}
-		//}
-
-		private static JsonMergeSettings MergeSettings
+		public static string EllipseString(string value, int maxLength)
 		{
-			get
-			{
-				if (_mergeSettings == null)
-				{
-					_mergeSettings = new JsonMergeSettings
-					{
-						MergeArrayHandling = MergeArrayHandling.Merge,
-						MergeNullValueHandling = MergeNullValueHandling.Ignore,
-						PropertyNameComparison = StringComparison.OrdinalIgnoreCase
-					};
-				}
+			if (maxLength < 1)
+				return value;
 
-				return _mergeSettings;
-			}
+			if (string.IsNullOrWhiteSpace(value))
+				return value;
+
+			if (value.Length > maxLength)
+				return string.Format("{0}...", value.Substring(0, maxLength - 3));
+			else
+				return value;
 		}
 
-		public static void Merge(JObject left, object right)
+		public static string TextWithNumber(string text, int number)
 		{
-			if (left == null || right == null)
-				return;
-
-			left.Merge(right, MergeSettings);
+			if (number == 0)
+				return text;
+			else
+				return string.Format("{0} ({1})", text, number.ToString("n0"));
 		}
 
-		public static string Serialize(object instance)
+		public static string TextWithNumber(string text, ICollection items)
 		{
-			return JsonConvert.SerializeObject(instance, SerializerSettings);
+			if (items == null || items.Count == 0)
+				return text;
+
+			return TextWithNumber(text, items.Count);
 		}
 
-		public static void Populate(string value, object instance)
+		public static DateTime FromUtc(DateTime value, TimeZoneInfo timeZone)
 		{
-			JsonConvert.PopulateObject(value, instance, SerializerSettings);
+			if (value == DateTime.MinValue)
+				return value;
+
+			if (timeZone == null || timeZone == TimeZoneInfo.Utc)
+				return value;
+			else
+				return TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(value, DateTimeKind.Unspecified), timeZone);
 		}
 
-		public static object Deserialize(string json, Type type)
+		public static DateTime ToUtc(DateTime value, TimeZoneInfo timeZone)
 		{
-			if (string.IsNullOrWhiteSpace(json))
-				return default;
+			if (value == DateTime.MinValue)
+				return value;
 
-			return JsonConvert.DeserializeObject(json, type, SerializerSettings);
-		}
-
-		public static T Deserialize<T>(string json)
-		{
-			if (string.IsNullOrWhiteSpace(json))
-				return default;
-
-			return JsonConvert.DeserializeObject<T>(json, SerializerSettings);
-		}
-
-		public static dynamic ToDynamic(this object value)
-		{
-			IDictionary<string, object> expando = new ExpandoObject();
-
-			foreach (System.ComponentModel.PropertyDescriptor property in System.ComponentModel.TypeDescriptor.GetProperties(value.GetType()))
-				expando.Add(property.Name, property.GetValue(value));
-
-			return expando as ExpandoObject;
-		}
-
-		public static dynamic ToDynamic(this JObject value)
-		{
-			var converter = new Newtonsoft.Json.Converters.ExpandoObjectConverter();
-
-			return JsonConvert.DeserializeObject<ExpandoObject>(Serialize(value), converter);
-		}
-
-		public static dynamic ToDynamic(this JArray value)
-		{
-			var converter = new Newtonsoft.Json.Converters.ExpandoObjectConverter();
-
-			return JsonConvert.DeserializeObject<ExpandoObject>(Serialize(value), converter);
-		}
-
-		public static string ScriptTypeName(this Type type)
-		{
-			if (!type.FullName.Contains("+"))
-				return type.ShortName();
-
-			var tokens = type.FullName.Split('+');
-
-			return tokens[tokens.Length - 1];
+			if (timeZone == null || timeZone == TimeZoneInfo.Utc)
+				return value;
+			else
+				return TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(value, DateTimeKind.Unspecified), timeZone);
 		}
 	}
 }

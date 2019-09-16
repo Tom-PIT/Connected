@@ -1,6 +1,9 @@
-﻿using TomPIT.Security;
+﻿using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
+using TomPIT.Management.Security;
+using TomPIT.Security;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
 	internal class AuthenticationTokenElement : TransactionElement
 	{
@@ -8,7 +11,7 @@ namespace TomPIT.Dom
 		{
 			Token = token;
 			Title = Token.ToString();
-			Id = Token.Token.AsString();
+			Id = Token.Token.ToString();
 		}
 
 		public IAuthenticationToken Token { get; }
@@ -17,8 +20,8 @@ namespace TomPIT.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			Connection.GetService<IAuthenticationTokenManagementService>().Update(Token.Token, Token.User, Token.Name, Token.Description, Token.Key, Token.Claims, Token.Status, Token.ValidFrom, Token.ValidTo,
-				Token.StartTime, Token.EndTime, Token.IpRestrictions);
+			Environment.Context.Tenant.GetService<IAuthenticationTokenManagementService>().Update(Token.Token, Token.User, Token.Name, Token.Description,
+				Token.Key, Token.Claims, Token.Status, Token.ValidFrom, Token.ValidTo, Token.StartTime, Token.EndTime, Token.IpRestrictions);
 
 			return true;
 		}

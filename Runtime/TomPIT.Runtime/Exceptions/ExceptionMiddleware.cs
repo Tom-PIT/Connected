@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -6,13 +10,9 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using TomPIT.Diagnostics;
 using TomPIT.Models;
-using TomPIT.Services;
+using TomPIT.Runtime;
 
 namespace TomPIT.Exceptions
 {
@@ -64,7 +64,7 @@ namespace TomPIT.Exceptions
 				e.Metric = rt.Metric;
 			}
 
-			Instance.Connection.GetService<ILoggingService>().Write(e);
+			Instance.Tenant.GetService<ILoggingService>().Write(e);
 		}
 
 		protected virtual async Task OnHandleAjaxException(HttpContext context, Exception ex)

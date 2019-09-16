@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using TomPIT.Serialization;
 
 namespace TomPIT.Data.Sql
 {
@@ -134,7 +135,7 @@ namespace TomPIT.Data.Sql
 			else if (value is JObject || value is JArray)
 			{
 				p.SqlDbType = SqlDbType.NVarChar;
-				p.Value = Types.Serialize(value);
+				p.Value = SerializationExtensions.Serialize(value);
 			}
 			else
 				p.Value = value;

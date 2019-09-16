@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Services;
+using TomPIT.Middleware;
+using TomPIT.Runtime;
+using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Environment
 {
 	internal class ResourceGroupService : ClientRepository<IResourceGroup, Guid>, IResourceGroupService
 	{
-		public ResourceGroupService(ISysConnection connection) : base(connection, "resourceGroup")
+		public ResourceGroupService(ITenant tenant) : base(tenant, "resourceGroup")
 		{
 
 		}
@@ -18,9 +20,9 @@ namespace TomPIT.Environment
 
 		public List<IResourceGroup> Query()
 		{
-			var u = Connection.CreateUrl("ResourceGroup", "Query");
+			var u = Tenant.CreateUrl("ResourceGroup", "Query");
 
-			return Connection.Get<List<ResourceGroup>>(u).ToList<IResourceGroup>();
+			return Tenant.Get<List<ResourceGroup>>(u).ToList<IResourceGroup>();
 		}
 
 		public IResourceGroup Select(string name)
@@ -36,10 +38,10 @@ namespace TomPIT.Environment
 					return null;
 			}
 
-			var u = Connection.CreateUrl("ResourceGroup", "SelectByName")
+			var u = Tenant.CreateUrl("ResourceGroup", "SelectByName")
 			.AddParameter("resourceGroup", name);
 
-			r = Connection.Get<ResourceGroup>(u);
+			r = Tenant.Get<ResourceGroup>(u);
 
 			if (r != null)
 				Set(r.Token, r, TimeSpan.Zero);
@@ -54,10 +56,10 @@ namespace TomPIT.Environment
 				{
 					f.Duration = TimeSpan.Zero;
 
-					var u = Connection.CreateUrl("ResourceGroup", "Select")
+					var u = Tenant.CreateUrl("ResourceGroup", "Select")
 					.AddParameter("resourceGroup", resourceGroup);
 
-					var r = Connection.Get<ResourceGroup>(u);
+					var r = Tenant.Get<ResourceGroup>(u);
 
 					if (r != null)
 					{

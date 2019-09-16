@@ -2,9 +2,11 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
-using TomPIT.Services;
+using TomPIT.Annotations.Design;
+using TomPIT.ComponentModel;
+using TomPIT.Runtime;
 
-namespace TomPIT.ComponentModel
+namespace TomPIT.Management.ComponentModel
 {
 	internal class MicroService : IMicroService
 	{

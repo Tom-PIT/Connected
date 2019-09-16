@@ -1,13 +1,16 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.ActionResults;
+using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Diagnostics;
 using TomPIT.Diagnostics;
-using TomPIT.Dom;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom;
+using TomPIT.Management.Diagnostics;
 
-namespace TomPIT.Designers
+namespace TomPIT.Management.Designers
 {
 	public class MetricDesigner : DomDesigner<DomElement>
 	{
@@ -21,7 +24,7 @@ namespace TomPIT.Designers
 		public override string View => "~/Views/Ide/Designers/Metric.cshtml";
 		public override object ViewModel => this;
 
-		private IMetricConfiguration Configuration { get { return Element.Value as IMetricConfiguration; } }
+		private IMetricOptions Configuration { get { return Element.Value as IMetricOptions; } }
 		private Guid ElementId
 		{
 			get
@@ -41,7 +44,7 @@ namespace TomPIT.Designers
 				if (_data == null)
 				{
 
-					_data = GetService<IMetricManagementService>().Query(DateTime.UtcNow.Date, Configuration.Configuration().Component, ElementId).OrderByDescending(f => f.Start).ToList();
+					_data = Environment.Context.Tenant.GetService<IMetricManagementService>().Query(DateTime.UtcNow.Date, Configuration.Configuration().Component, ElementId).OrderByDescending(f => f.Start).ToList();
 
 					var success = Data.Where(f => f.Result == SessionResult.Success);
 
@@ -97,7 +100,7 @@ namespace TomPIT.Designers
 
 		private IDesignerActionResult Clear()
 		{
-			GetService<IMetricManagementService>().Clear(Configuration.Configuration().Component, ElementId);
+			Environment.Context.Tenant.GetService<IMetricManagementService>().Clear(Configuration.Configuration().Component, ElementId);
 			_data = null;
 
 			return Result.ViewResult(ViewModel, "~/Views/Ide/Designers/MetricData.cshtml");
@@ -108,7 +111,7 @@ namespace TomPIT.Designers
 			get
 			{
 				if (_log == null)
-					_log = GetService<ILoggingManagementService>().Query(Session).OrderBy(f => f.Created).ToList();
+					_log = Environment.Context.Tenant.GetService<ILoggingManagementService>().Query(Session).OrderBy(f => f.Created).ToList();
 
 				return _log;
 			}

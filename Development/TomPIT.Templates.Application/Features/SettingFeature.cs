@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.Annotations;
+﻿using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel.Features;
+using TomPIT.MicroServices.Design;
+using TomPIT.Runtime;
 
-namespace TomPIT.Application.Features
+namespace TomPIT.MicroServices.Features
 {
-	[Create("SettingFeature", nameof(Name))]
+	[Create(DesignUtils.SettingFeature, nameof(Name))]
 	public class SettingFeature : Feature, ISettingFeature
 	{
 		[PropertyCategory(PropertyCategoryAttribute.CategoryRouting)]
-		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public string Value { get; set; }
 	}
 }

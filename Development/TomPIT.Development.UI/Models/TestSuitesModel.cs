@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
-using System;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.QA;
+using TomPIT.ComponentModel.Quality;
 
-namespace TomPIT.Models
+namespace TomPIT.Development.Models
 {
 	public class TestSuitesModel : DevelopmentModel
 	{
 		private JArray _suites = null;
-		private ITestSuite _selection = null;
+		private ITestSuiteConfiguration _selection = null;
 		private IComponent _component = null;
 
 		public static TestSuitesModel Create(Controller controller, bool initializing)
@@ -36,7 +36,7 @@ namespace TomPIT.Models
 				{
 					_suites = new JArray();
 
-					var microServices = GetService<IMicroServiceService>().Query();
+					var microServices = Tenant.GetService<IMicroServiceService>().Query();
 
 					foreach (var microService in microServices)
 					{
@@ -50,7 +50,7 @@ namespace TomPIT.Models
 
 						msElement.Add("items", items);
 
-						var suites = GetService<IComponentService>().QueryComponents(microService.Token, "TestSuite");
+						var suites = Tenant.GetService<IComponentService>().QueryComponents(microService.Token, "TestSuite");
 
 						if (suites.Count == 0)
 							continue;
@@ -78,14 +78,14 @@ namespace TomPIT.Models
 					if (Selection == null)
 						return null;
 
-					_component = GetService<IComponentService>().SelectComponent(Selection.Component);
+					_component = Tenant.GetService<IComponentService>().SelectComponent(Selection.Component);
 				}
 
 				return _component;
 			}
 		}
 
-		public ITestSuite Selection
+		public ITestSuiteConfiguration Selection
 		{
 			get
 			{
@@ -96,7 +96,7 @@ namespace TomPIT.Models
 					if (suite == Guid.Empty)
 						return _selection;
 
-					_selection = GetService<IComponentService>().SelectConfiguration(suite) as ITestSuite;
+					_selection = Tenant.GetService<IComponentService>().SelectConfiguration(suite) as ITestSuiteConfiguration;
 				}
 
 				return _selection;

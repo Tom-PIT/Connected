@@ -1,17 +1,17 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
+using Newtonsoft.Json.Linq;
+using TomPIT.Configuration;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 
-namespace TomPIT.Configuration
+namespace TomPIT.Management.Configuration
 {
-	internal class SettingManagementService : ISettingManagementService
+	internal class SettingManagementService : TenantObject, ISettingManagementService
 	{
-		public SettingManagementService(ISysConnection connection)
+		public SettingManagementService(ITenant tenant) : base(tenant)
 		{
-			Connection = connection;
-		}
 
-		private ISysConnection Connection { get; }
+		}
 
 		public void Update(Guid resourceGroup, string name, string value, bool visible, DataType dataType, string tags)
 		{
@@ -25,11 +25,11 @@ namespace TomPIT.Configuration
 				{"tags", tags }
 			};
 
-			var u = Connection.CreateUrl("SettingManagement", "Update");
+			var u = Tenant.CreateUrl("SettingManagement", "Update");
 
-			Connection.Post(u, d);
+			Tenant.Post(u, d);
 
-			if (Connection.GetService<ISettingService>() is ISettingNotification n)
+			if (Tenant.GetService<ISettingService>() is ISettingNotification n)
 				n.NotifyChanged(this, new SettingEventArgs(resourceGroup, name));
 		}
 
@@ -41,11 +41,11 @@ namespace TomPIT.Configuration
 				{"name", name }
 			};
 
-			var u = Connection.CreateUrl("SettingManagement", "Delete");
+			var u = Tenant.CreateUrl("SettingManagement", "Delete");
 
-			Connection.Post(u, d);
+			Tenant.Post(u, d);
 
-			if (Connection.GetService<ISettingService>() is ISettingNotification n)
+			if (Tenant.GetService<ISettingService>() is ISettingNotification n)
 				n.NotifyChanged(this, new SettingEventArgs(resourceGroup, name));
 		}
 	}

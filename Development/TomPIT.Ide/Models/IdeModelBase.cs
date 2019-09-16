@@ -1,17 +1,19 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Dom;
-using TomPIT.Ide;
-using TomPIT.Services;
+﻿using System.Linq;
+using Newtonsoft.Json.Linq;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
+using TomPIT.Ide.Environment.Providers;
+using TomPIT.Middleware;
+using TomPIT.Models;
 
-namespace TomPIT.Models
+namespace TomPIT.Ide.Models
 {
 	public abstract class IdeModelBase : ShellModel, IEnvironment
 	{
 		private IDom _dom = null;
-		private IGlobalization _globalization = null;
-		private ISelection _selection = null;
+		private IGlobalizationProvider _globalization = null;
+		private ISelectionProvider _selection = null;
 
 		public virtual IDom Dom
 		{
@@ -26,30 +28,29 @@ namespace TomPIT.Models
 
 		protected abstract IDom CreateDom();
 
-		public virtual IGlobalization Globalization
+		public virtual IGlobalizationProvider Globalization
 		{
 			get
 			{
 				if (_globalization == null)
-					_globalization = new Ide.Globalization(this);
+					_globalization = new GlobalizationProvider(this);
 
 				return _globalization;
 			}
 		}
 
-		public virtual ISelection Selection
+		public virtual ISelectionProvider Selection
 		{
 			get
 			{
 				if (_selection == null)
-					_selection = new Selection(this);
+					_selection = new SelectionProvider(this);
 
 				return _selection;
 			}
 		}
 
-		public IExecutionContext Context => this;
-
+		public IMiddlewareContext Context => this;
 		public abstract string Id { get; }
 		public JObject RequestBody { get; set; }
 		public string Path { get; set; }

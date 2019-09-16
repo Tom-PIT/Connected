@@ -1,24 +1,28 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Deployment;
 using TomPIT.Design.Serialization;
+using TomPIT.Diagostics;
 using TomPIT.Environment;
+using TomPIT.Management.ComponentModel;
+using TomPIT.Management.Deployment.Packages;
+using TomPIT.Management.Deployment.Subscriptions;
+using TomPIT.Middleware;
 using TomPIT.Storage;
 
 namespace TomPIT.Management.Deployment
 {
-	internal class DeploymentService : IDeploymentService
+	internal class DeploymentService : TenantObject, IDeploymentService
 	{
 		private bool? _isLogged = null;
 		private IAccount _account = null;
 
-		public DeploymentService(ISysConnection connection)
+		public DeploymentService(ITenant tenant) : base(tenant)
 		{
-			Connection = connection;
 		}
 
 		public bool IsLogged
@@ -27,9 +31,9 @@ namespace TomPIT.Management.Deployment
 			{
 				if (_isLogged == null)
 				{
-					var u = Connection.CreateUrl("DeploymentManagement", "IsLogged");
+					var u = Tenant.CreateUrl("DeploymentManagement", "IsLogged");
 
-					_isLogged = Connection.Get<bool>(u);
+					_isLogged = Tenant.Get<bool>(u);
 				}
 
 				return (bool)_isLogged;
@@ -42,22 +46,20 @@ namespace TomPIT.Management.Deployment
 			{
 				if (_account == null)
 				{
-					var u = Connection.CreateUrl("DeploymentManagement", "SelectAccount");
+					var u = Tenant.CreateUrl("DeploymentManagement", "SelectAccount");
 
-					_account = Connection.Get<Account>(u);
+					_account = Tenant.Get<Account>(u);
 				}
 
 				return _account;
 			}
 		}
 
-		private ISysConnection Connection { get; }
-
 		public void LogOut()
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "Logout");
+			var u = Tenant.CreateUrl("DeploymentManagement", "Logout");
 
-			Connection.Post(u);
+			Tenant.Post(u);
 
 			_isLogged = null;
 			_account = null;
@@ -65,7 +67,7 @@ namespace TomPIT.Management.Deployment
 
 		public void LogIn(string userName, string password)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "Login");
+			var u = Tenant.CreateUrl("DeploymentManagement", "Login");
 			var e = new JObject
 				{
 					 {"user", userName },
@@ -75,7 +77,7 @@ namespace TomPIT.Management.Deployment
 			_isLogged = null;
 			_account = null;
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 
 			if (!IsLogged)
 				throw new Exception(SR.ErrLoginFailed);
@@ -83,7 +85,7 @@ namespace TomPIT.Management.Deployment
 
 		public Guid SignUp(string company, string firstName, string lastName, string password, string email, string country, string phone, string website)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "Signup");
+			var u = Tenant.CreateUrl("DeploymentManagement", "Signup");
 			var e = new JObject
 				{
 					 {"company", company },
@@ -96,32 +98,32 @@ namespace TomPIT.Management.Deployment
 					 {"website", website }
 				};
 
-			return Connection.Post<Guid>(u, e);
+			return Tenant.Post<Guid>(u, e);
 		}
 
 		public List<ICountry> QueryCountries()
 		{
-			var url = Connection.CreateUrl("DeploymentManagement", "QueryCountries");
+			var url = Tenant.CreateUrl("DeploymentManagement", "QueryCountries");
 
-			return Connection.Get<List<Country>>(url).ToList<ICountry>();
+			return Tenant.Get<List<Country>>(url).ToList<ICountry>();
 		}
 
 		public bool IsConfirmed(Guid accountKey)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "IsConfirmed");
+			var u = Tenant.CreateUrl("DeploymentManagement", "IsConfirmed");
 			var e = new JObject
 				{
 					 {"accountKey", accountKey }
 				};
 
-			return Connection.Post<bool>(u, e);
+			return Tenant.Post<bool>(u, e);
 		}
 
 		public void CreatePackage(Guid microService, Guid plan, string name, string title, string version, string description, string tags, string projectUrl, string imageUrl, string licenseUrl, string licenses, bool runtimeConfigurationSupported,
 			 bool autoVersion)
 		{
-			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
-			
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+
 			var package = new Package();
 			var m = package.MetaData as PackageMetaData;
 
@@ -143,7 +145,7 @@ namespace TomPIT.Management.Deployment
 			((PackageConfiguration)package.Configuration).RuntimeConfigurationSupported = runtimeConfigurationSupported;
 			((PackageConfiguration)package.Configuration).AutoVersioning = autoVersion;
 
-			package.Create(microService, Connection);
+			package.Create(microService, Tenant);
 
 			var blob = new Blob
 			{
@@ -154,81 +156,81 @@ namespace TomPIT.Management.Deployment
 				Type = BlobTypes.Package
 			};
 
-			var id = Connection.GetService<IStorageService>().Upload(blob, Connection.GetService<ISerializationService>().Serialize(package), StoragePolicy.Singleton);
+			var id = Tenant.GetService<IStorageService>().Upload(blob, Tenant.GetService<ISerializationService>().Serialize(package), StoragePolicy.Singleton);
 
 			if (ms.Package != id || ms.Plan != plan)
-				Connection.GetService<IMicroServiceManagementService>().Update(microService, ms.Name, ms.Status, ms.Template, ms.ResourceGroup, id, plan, ms.UpdateStatus, ms.CommitStatus);
+				Tenant.GetService<IMicroServiceManagementService>().Update(microService, ms.Name, ms.Status, ms.Template, ms.ResourceGroup, id, plan, ms.UpdateStatus, ms.CommitStatus);
 		}
 
 		public IPackage SelectPackage(Guid microService)
 		{
-			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
 			if (ms == null || ms.Package == Guid.Empty)
 				return null;
 
-			var content = Connection.GetService<IStorageService>().Download(ms.Package);
+			var content = Tenant.GetService<IStorageService>().Download(ms.Package);
 
 			if (content == null || content.Content == null || content.Content.Length == 0)
 				return null;
 
 			try
 			{
-				return (Package)Connection.GetService<ISerializationService>().Deserialize(content.Content, typeof(Package));
+				return (Package)Tenant.GetService<ISerializationService>().Deserialize(content.Content, typeof(Package));
 			}
 			catch (Exception ex)
 			{
-				Connection.LogError(null, nameof(DeploymentService), ex.Source, ex.Message);
+				Tenant.LogError(null, nameof(DeploymentService), ex.Source, ex.Message);
 				return null;
 			}
 		}
 
 		public IPackage DownloadPackage(Guid package)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "DownloadPackage");
+			var u = Tenant.CreateUrl("DeploymentManagement", "DownloadPackage");
 			var e = new JObject
 				{
 					 {"package", package}
 				};
 
-			var raw = Connection.Post<byte[]>(u, e);
+			var raw = Tenant.Post<byte[]>(u, e);
 
 			if (raw == null || raw.Length == 0)
 				return null;
 
-			return (Package)Connection.GetService<ISerializationService>().Deserialize(raw, typeof(Package));
+			return (Package)Tenant.GetService<ISerializationService>().Deserialize(raw, typeof(Package));
 		}
 
 		public void PublishPackage(Guid microService)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "PublishPackage");
+			var u = Tenant.CreateUrl("DeploymentManagement", "PublishPackage");
 			var e = new JObject
 				{
 					 {"microService", microService}
 				};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 
-			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
 			if (ms != null)
-				Connection.GetService<IMicroServiceManagementService>().Update(ms.Token, ms.Name, ms.Status, ms.Template, ms.ResourceGroup, ms.Package, ms.Plan, ms.UpdateStatus, CommitStatus.Synchronized);
+				Tenant.GetService<IMicroServiceManagementService>().Update(ms.Token, ms.Name, ms.Status, ms.Template, ms.ResourceGroup, ms.Package, ms.Plan, ms.UpdateStatus, CommitStatus.Synchronized);
 		}
 
 		public List<IPackageStateDescriptor> QueryPackages(Guid plan)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "QueryPackages");
+			var u = Tenant.CreateUrl("DeploymentManagement", "QueryPackages");
 			var e = new JObject
 			{
 				{"plan", plan }
 			};
 
-			return Connection.Post<List<PublishedPackage>>(u, e).ToList<IPackageStateDescriptor>();
+			return Tenant.Post<List<PublishedPackage>>(u, e).ToList<IPackageStateDescriptor>();
 		}
 
 		public void InsertInstallers(List<IInstallState> installers)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "InsertInstallers");
+			var u = Tenant.CreateUrl("DeploymentManagement", "InsertInstallers");
 			var e = new JObject();
 			var a = new JArray();
 
@@ -247,19 +249,19 @@ namespace TomPIT.Management.Deployment
 				a.Add(o);
 			}
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 		}
 
 		public List<IInstallState> QueryInstallers()
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "QueryInstallers");
+			var u = Tenant.CreateUrl("DeploymentManagement", "QueryInstallers");
 
-			return Connection.Get<List<InstallState>>(u).ToList<IInstallState>();
+			return Tenant.Get<List<InstallState>>(u).ToList<IInstallState>();
 		}
 
 		public void UpdateInstaller(Guid package, InstallStateStatus status, string error)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "UpdateInstaller");
+			var u = Tenant.CreateUrl("DeploymentManagement", "UpdateInstaller");
 			var e = new JObject
 				{
 					 {"package", package },
@@ -267,28 +269,28 @@ namespace TomPIT.Management.Deployment
 					 {"error", error }
 				};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 		}
 
 		public void DeleteInstaller(Guid package)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "DeleteInstaller");
+			var u = Tenant.CreateUrl("DeploymentManagement", "DeleteInstaller");
 			var e = new JObject
 				{
 					 {"package", package }
 				};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 		}
 
 		public void Deploy(Guid id, IPackage package)
 		{
-			new PackageDeployment(Connection, id, package).Deploy();
+			new PackageDeployment(Tenant, id, package).Deploy();
 		}
 
 		public List<IPublishedPackage> QueryPublishedPackages(List<Tuple<Guid, Guid>> packages)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "QueryPublishedPackages");
+			var u = Tenant.CreateUrl("DeploymentManagement", "QueryPublishedPackages");
 			var e = new JObject();
 			var a = new JArray();
 
@@ -303,37 +305,37 @@ namespace TomPIT.Management.Deployment
 				});
 			}
 
-			return Connection.Post<List<PublishedPackage>>(u, e).ToList<IPublishedPackage>();
+			return Tenant.Post<List<PublishedPackage>>(u, e).ToList<IPublishedPackage>();
 		}
 
 		public IPublishedPackage SelectPublishedPackage(Guid microService, Guid plan)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "SelectPublishedPackage");
+			var u = Tenant.CreateUrl("DeploymentManagement", "SelectPublishedPackage");
 			var e = new JObject
 				{
 					 {"microService", microService },
 					 {"plan", plan }
 				};
 
-			return Connection.Post<PublishedPackage>(u, e);
+			return Tenant.Post<PublishedPackage>(u, e);
 		}
 
 		public IPackageConfiguration SelectInstallerConfiguration(Guid package)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "DownloadConfiguration");
+			var u = Tenant.CreateUrl("DeploymentManagement", "DownloadConfiguration");
 			var e = new JObject
 				{
 					 {"package", package}
 				};
 
-			var raw = Connection.Post<byte[]>(u, e);
+			var raw = Tenant.Post<byte[]>(u, e);
 
 			if (raw == null || raw.Length == 0)
 				return null;
 
-			var config = (PackageConfiguration)Connection.GetService<ISerializationService>().Deserialize(raw, typeof(PackageConfiguration));
+			var config = (PackageConfiguration)Tenant.GetService<ISerializationService>().Deserialize(raw, typeof(PackageConfiguration));
 
-			var ms = Connection.GetService<IMicroServiceService>().Select(package);
+			var ms = Tenant.GetService<IMicroServiceService>().Select(package);
 			PackageConfiguration existing = SelectExistingInstallerConfiguration(package);
 
 			SynchronizeConfiguration(config, existing);
@@ -345,32 +347,32 @@ namespace TomPIT.Management.Deployment
 		{
 			var id = SelectInstallerConfigurationId(package);
 
-			var blobId = Connection.GetService<IStorageService>().Upload(new Blob
+			var blobId = Tenant.GetService<IStorageService>().Upload(new Blob
 			{
 				ContentType = "application/json",
 				FileName = string.Format("{0}.json", package),
 				MicroService = Guid.Empty,
 				PrimaryKey = package.ToString(),
 				Type = BlobTypes.InstallerConfiguration,
-				ResourceGroup = Connection.GetService<IResourceGroupService>().Default.Token,
-			}, Connection.GetService<ISerializationService>().Serialize(configuration), StoragePolicy.Singleton);
+				ResourceGroup = Tenant.GetService<IResourceGroupService>().Default.Token,
+			}, Tenant.GetService<ISerializationService>().Serialize(configuration), StoragePolicy.Singleton);
 
 			if (id != blobId)
 			{
-				var u = Connection.CreateUrl("DeploymentManagement", "InsertInstallerConfiguration");
+				var u = Tenant.CreateUrl("DeploymentManagement", "InsertInstallerConfiguration");
 				var e = new JObject
 					 {
 						  {"package", package },
 						  {"configuration", blobId }
 					 };
 
-				Connection.Post(u, e);
+				Tenant.Post(u, e);
 			}
 		}
 
 		private void SynchronizeConfiguration(PackageConfiguration configuration, PackageConfiguration existing)
 		{
-			var resourceGroups = Connection.GetService<IResourceGroupService>().Query();
+			var resourceGroups = Tenant.GetService<IResourceGroupService>().Query();
 			var defaultResourceGroup = resourceGroups[0].Token;
 
 			configuration.ResourceGroup = defaultResourceGroup;
@@ -412,13 +414,13 @@ namespace TomPIT.Management.Deployment
 
 		private Guid SelectInstallerConfigurationId(Guid package)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "SelectInstallerConfiguration");
+			var u = Tenant.CreateUrl("DeploymentManagement", "SelectInstallerConfiguration");
 			var e = new JObject
 				{
 					 {"package", package }
 				};
 
-			return Connection.Post<Guid>(u, e);
+			return Tenant.Post<Guid>(u, e);
 		}
 
 		private PackageConfiguration SelectExistingInstallerConfiguration(Guid package)
@@ -428,51 +430,51 @@ namespace TomPIT.Management.Deployment
 			if (id == Guid.Empty)
 				return null;
 
-			var content = Connection.GetService<IStorageService>().Download(id);
+			var content = Tenant.GetService<IStorageService>().Download(id);
 
 			if (content == null || content.Content.Length == 0)
 				return null;
 
-			return (PackageConfiguration)Connection.GetService<ISerializationService>().Deserialize(content.Content, typeof(PackageConfiguration));
+			return (PackageConfiguration)Tenant.GetService<ISerializationService>().Deserialize(content.Content, typeof(PackageConfiguration));
 		}
 
 		public List<IPackageDependency> QueryDependencies(Guid microService, Guid plan)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "QueryDependencies");
+			var u = Tenant.CreateUrl("DeploymentManagement", "QueryDependencies");
 			var e = new JObject
 				{
 					{"microService", microService },
 					{"plan", plan }
 				};
 
-			return Connection.Post<List<PackageDependency>>(u, e).ToList<IPackageDependency>();
+			return Tenant.Post<List<PackageDependency>>(u, e).ToList<IPackageDependency>();
 		}
 
 		public List<IInstallAudit> QueryInstallAudit(DateTime from)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "QueryInstallAudit");
+			var u = Tenant.CreateUrl("DeploymentManagement", "QueryInstallAudit");
 			var e = new JObject
 				{
 					 {"from", from }
 				};
 
-			return Connection.Post<List<InstallAudit>>(u, e).ToList<IInstallAudit>();
+			return Tenant.Post<List<InstallAudit>>(u, e).ToList<IInstallAudit>();
 		}
 
 		public List<IInstallAudit> QueryInstallAudit(Guid package)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "QueryInstallAudit");
+			var u = Tenant.CreateUrl("DeploymentManagement", "QueryInstallAudit");
 			var e = new JObject
 				{
 					 {"package", package }
 				};
 
-			return Connection.Post<List<InstallAudit>>(u, e).ToList<IInstallAudit>();
+			return Tenant.Post<List<InstallAudit>>(u, e).ToList<IInstallAudit>();
 		}
 
 		public List<IPackageVersion> CheckForUpdates(List<IMicroService> microServices)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "CheckForUpdates");
+			var u = Tenant.CreateUrl("DeploymentManagement", "CheckForUpdates");
 			var e = new JObject();
 			var a = new JArray();
 
@@ -493,57 +495,57 @@ namespace TomPIT.Management.Deployment
 					 });
 			}
 
-			return Connection.Post<List<PackageVersion>>(u, e).ToList<IPackageVersion>();
+			return Tenant.Post<List<PackageVersion>>(u, e).ToList<IPackageVersion>();
 		}
 
 		public ISubscriptionPlan SelectPlan(Guid token)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "SelectPlan");
+			var u = Tenant.CreateUrl("DeploymentManagement", "SelectPlan");
 			var e = new JObject
 			{
 				{"token", token }
 			};
 
-			return Connection.Post<SubscriptionPlan>(u, e);
+			return Tenant.Post<SubscriptionPlan>(u, e);
 		}
 
 		public List<ISubscriptionPlan> QuerySubscribedPlans()
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "QuerySubscribedPlans");
+			var u = Tenant.CreateUrl("DeploymentManagement", "QuerySubscribedPlans");
 
-			return Connection.Get<List<SubscriptionPlan>>(u).ToList<ISubscriptionPlan>();
+			return Tenant.Get<List<SubscriptionPlan>>(u).ToList<ISubscriptionPlan>();
 		}
 
 		public List<ISubscriptionPlan> QueryMyPlans()
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "QueryMyPlans");
+			var u = Tenant.CreateUrl("DeploymentManagement", "QueryMyPlans");
 
-			return Connection.Get<List<SubscriptionPlan>>(u).ToList<ISubscriptionPlan>();
+			return Tenant.Get<List<SubscriptionPlan>>(u).ToList<ISubscriptionPlan>();
 		}
 
 		public IPublishedPackage SelectPublishedPackage(Guid token)
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "SelectPublishedPackageByToken");
+			var u = Tenant.CreateUrl("DeploymentManagement", "SelectPublishedPackageByToken");
 			var e = new JObject
 			{
 					{"token", token }
 			};
 
-			return Connection.Post<PublishedPackage>(u, e);
+			return Tenant.Post<PublishedPackage>(u, e);
 		}
 
 		public List<string> QueryTags()
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "QueryTags");
+			var u = Tenant.CreateUrl("DeploymentManagement", "QueryTags");
 
-			return Connection.Get<List<string>>(u);
+			return Tenant.Get<List<string>>(u);
 		}
 
 		public List<ISubscription> QuerySubscriptions()
 		{
-			var u = Connection.CreateUrl("DeploymentManagement", "QuerySubscriptions");
+			var u = Tenant.CreateUrl("DeploymentManagement", "QuerySubscriptions");
 
-			return Connection.Get<List<Subscription>>(u).ToList<ISubscription>();
+			return Tenant.Get<List<Subscription>>(u).ToList<ISubscription>();
 		}
 	}
 }

@@ -1,15 +1,16 @@
-﻿using TomPIT.Annotations;
+﻿using TomPIT.Annotations.Design;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
 
-namespace TomPIT.IoT
+namespace TomPIT.MicroServices.IoT
 {
-	public class Schema : ComponentConfiguration, IIoTSchema
+	public class Schema : ComponentConfiguration, IIoTSchemaConfiguration
 	{
 		private ListItems<IIoTTransaction> _transactions = null;
 		private ListItems<IIoTSchemaField> _fields = null;
 
-		[Items("TomPIT.IoT.Design.Items.IoTTransactionsCollection, TomPIT.IoT.Design")]
+		[Items("TomPIT.MicroServices.IoT.Design.Items.IoTTransactionsCollection, TomPIT.MicroServices.IoT.Design")]
 		public ListItems<IIoTTransaction> Transactions
 		{
 			get
@@ -21,7 +22,7 @@ namespace TomPIT.IoT
 			}
 		}
 
-		[Items("TomPIT.IoT.Design.Items.IoTSchemaFieldsCollection, TomPIT.IoT.Design")]
+		[Items("TomPIT.MicroServices.IoT.Design.Items.IoTSchemaFieldsCollection, TomPIT.MicroServices.IoT.Design")]
 		public ListItems<IIoTSchemaField> Fields
 		{
 			get

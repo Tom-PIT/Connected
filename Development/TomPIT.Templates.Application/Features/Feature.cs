@@ -1,21 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Features;
-using TomPIT.Services;
+using TomPIT.MicroServices.Design;
+using TomPIT.Runtime;
 
-namespace TomPIT.Application.Features
+namespace TomPIT.MicroServices.Features
 {
-	[Create("Feature", nameof(Name))]
+	[Create(DesignUtils.ComponentFeature, nameof(Name))]
 	public abstract class Feature : ConfigurationElement, IFeature
 	{
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[Required]
-		[InvalidateEnvironment(EnvironmentSection.Explorer| EnvironmentSection.Designer)]
+		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		public string Name { get; set; }
 
 		[EnvironmentVisibility(EnvironmentMode.Any)]

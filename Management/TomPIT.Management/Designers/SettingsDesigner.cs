@@ -1,14 +1,17 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Actions;
-using TomPIT.Annotations;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.Design;
 using TomPIT.Configuration;
-using TomPIT.Design;
-using TomPIT.Dom;
+using TomPIT.Ide;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Designers.Toolbar;
+using TomPIT.Ide.Environment.Providers;
+using TomPIT.Management.Configuration;
+using TomPIT.Management.Dom;
 
-namespace TomPIT.Designers
+namespace TomPIT.Management.Designers
 {
 	internal class SettingsDesigner : ListDesigner<SettingsElement>, IDesignerSelectionProvider
 	{
@@ -28,7 +31,7 @@ namespace TomPIT.Designers
 
 			var setting = Owner.Existing.FirstOrDefault(f => string.Compare(f.Name, id, true) == 0);
 			var rg = DomQuery.Closest<IResourceGroupScope>(Owner);
-			Connection.GetService<ISettingManagementService>().Delete(rg == null ? Guid.Empty : rg.ResourceGroup.Token, setting.Name);
+			Environment.Context.Tenant.GetService<ISettingManagementService>().Delete(rg == null ? Guid.Empty : rg.ResourceGroup.Token, setting.Name);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer);
 		}
@@ -38,8 +41,8 @@ namespace TomPIT.Designers
 			var s = component as ISetting;
 			var rg = DomQuery.Closest<IResourceGroupScope>(Owner);
 			IdeExtensions.ProcessComponentCreated(Environment.Context, component);
-			Connection.GetService<ISettingManagementService>().Update(rg == null ? Guid.Empty : rg.ResourceGroup.Token, s.Name, s.Value, true, s.DataType, s.Tags);
-			s = Connection.GetService<ISettingService>().Select(rg == null ? Guid.Empty : rg.ResourceGroup.Token, s.Name);
+			Environment.Context.Tenant.GetService<ISettingManagementService>().Update(rg == null ? Guid.Empty : rg.ResourceGroup.Token, s.Name, s.Value, true, s.DataType, s.Tags);
+			s = Environment.Context.Tenant.GetService<ISettingService>().Select(rg == null ? Guid.Empty : rg.ResourceGroup.Token, s.Name);
 
 
 			var r = Result.SectionResult(this, EnvironmentSection.Designer);
@@ -58,7 +61,7 @@ namespace TomPIT.Designers
 
 		protected override bool OnCreateToolbarAction(IDesignerToolbarAction action)
 		{
-			return action.Id != Undo.ActionId && action.Id != Actions.Clear.ActionId;
+			return action.Id != Undo.ActionId && action.Id != Ide.Designers.Toolbar.Clear.ActionId;
 		}
 
 		public override bool SupportsReorder
@@ -77,7 +80,7 @@ namespace TomPIT.Designers
 
 					var rg = DomQuery.Closest<IResourceGroupScope>(Element);
 
-					_setting = Connection.GetService<ISettingService>().Select(rg == null ? Guid.Empty : rg.ResourceGroup.Token, SelectionId);
+					_setting = Environment.Context.Tenant.GetService<ISettingService>().Select(rg == null ? Guid.Empty : rg.ResourceGroup.Token, SelectionId);
 				}
 
 				return _setting;

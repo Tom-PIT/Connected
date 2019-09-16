@@ -1,11 +1,11 @@
-﻿using TomPIT.IoT.Models;
-using TomPIT.Services;
+﻿using TomPIT.MicroServices.IoT.Models;
+using TomPIT.Middleware;
 
-namespace TomPIT.IoT.UI.Stencils.Shapes
+namespace TomPIT.MicroServices.IoT.UI.Stencils.Shapes
 {
 	public class RectangleModel : VectorModel<Rectangle>
 	{
-		public RectangleModel(IExecutionContext context, IIoTElement element) : base(context, element)
+		public RectangleModel(IMiddlewareContext context, IIoTElement element) : base(context, element)
 		{
 		}
 	}

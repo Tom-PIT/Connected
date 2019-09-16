@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Html;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json.Linq;
-using System.Threading.Tasks;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Models;
+using TomPIT.Serialization;
+using TomPIT.UI;
 
 namespace TomPIT
 {
@@ -25,7 +27,7 @@ namespace TomPIT
 
 		public async Task<IHtmlContent> Render(string name, object arguments)
 		{
-			var a = arguments == null ? null : Types.Deserialize<JObject>(Types.Serialize(arguments));
+			var a = arguments == null ? null : SerializationExtensions.Deserialize<JObject>(arguments);
 
 			if (a != null && Html.ViewData.Model is IRuntimeModel rtModel)
 				rtModel.MergeArguments(a);
@@ -45,7 +47,7 @@ namespace TomPIT
 			return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), Html.ViewData.Model);
 		}
 
-		private IPartialView ResolveView(string qualifier)
+		private IPartialViewConfiguration ResolveView(string qualifier)
 		{
 			var tokens = qualifier.Split('/');
 			var model = Html.ViewData.Model as IRuntimeModel;
@@ -54,7 +56,7 @@ namespace TomPIT
 
 			if (tokens.Length > 1)
 			{
-				ms = model.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+				ms = model.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
 				if (ms == null)
 					return null;
@@ -62,7 +64,7 @@ namespace TomPIT
 				name = tokens[1];
 			}
 
-			return model.Connection().GetService<IComponentService>().SelectConfiguration(ms.Token, "Partial", name) as IPartialView;
+			return model.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "Partial", name) as IPartialViewConfiguration;
 		}
 
 		private void ProcessView(string name)
@@ -74,7 +76,7 @@ namespace TomPIT
 
 			var args = new ViewInvokeArguments(Html.ViewData, Html.TempData, Html.ViewBag);
 
-			args.Model.Connection().GetService<ICompilerService>().Execute(((IConfiguration)view).MicroService(args.Model.Connection()), view.Invoke, this, args);
+			args.Model.Tenant.GetService<ICompilerService>().Execute(((IConfiguration)view).MicroService(), view.Invoke, this, args);
 		}
 	}
 }

@@ -1,6 +1,6 @@
 ﻿@using TomPIT.Deployment;
 
-@model TomPIT.Designers.PackageDesigner
+@model TomPIT.Management.Designers.PackageDesigner
 
 @{
     var p = Model.Package;
@@ -152,7 +152,7 @@
 <script>
     	$('#editPlan').dxSelectBox({
 		value: '@Model.MicroService.Plan',
-            dataSource:@Html.Raw(Types.Serialize(Model.Plans)),
+            dataSource:@Html.Raw(TomPIT.Serialization.SerializationExtensions.Serialize(Model.Plans)),
             displayExpr: 'name',
             valueExpr: 'token',
         value: @Html.TP().JavaScript.Value(Model.MicroService.Plan)

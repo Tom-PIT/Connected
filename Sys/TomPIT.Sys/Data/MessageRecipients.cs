@@ -25,9 +25,9 @@ namespace TomPIT.Sys.Data
 		{
 			var tokens = id.Split('.');
 
-			Select(tokens[0].AsGuid(), tokens[1]);
+			Select(new Guid(tokens[0]), tokens[1]);
 
-			var m = DataModel.Messages.Select(tokens[0].AsGuid());
+			var m = DataModel.Messages.Select(new Guid(tokens[0]));
 
 			if (m == null)
 			{

@@ -772,6 +772,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot resolve component type.
+        /// </summary>
+        public static string ErrCannotResolveComponentType {
+            get {
+                return ResourceManager.GetString("ErrCannotResolveComponentType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot resolve HttpRequest.
         /// </summary>
         public static string ErrCannotResolveHttpRequest {
@@ -786,6 +795,15 @@ namespace TomPIT {
         public static string ErrCannotResolveMicroService {
             get {
                 return ResourceManager.GetString("ErrCannotResolveMicroService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot resolve tenant in multi tenant environment.
+        /// </summary>
+        public static string ErrCannotResolveTenant {
+            get {
+                return ResourceManager.GetString("ErrCannotResolveTenant", resourceCulture);
             }
         }
         
@@ -2046,6 +2064,24 @@ namespace TomPIT {
         public static string ErrSysContextRegistered {
             get {
                 return ResourceManager.GetString("ErrSysContextRegistered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Development search path not defined. Set &apos;Development Search Path&apos; setting to enable development indexing..
+        /// </summary>
+        public static string ErrSysDevSearchPath {
+            get {
+                return ResourceManager.GetString("ErrSysDevSearchPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Development search directory does not exists..
+        /// </summary>
+        public static string ErrSysSearchPathNotExist {
+            get {
+                return ResourceManager.GetString("ErrSysSearchPathNotExist", resourceCulture);
             }
         }
         

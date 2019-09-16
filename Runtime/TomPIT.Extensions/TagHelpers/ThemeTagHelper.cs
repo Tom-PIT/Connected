@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using TomPIT.ComponentModel;
-using TomPIT.Services;
+using TomPIT.Exceptions;
+using TomPIT.Middleware;
 
 namespace TomPIT.TagHelpers
 {
@@ -12,7 +13,7 @@ namespace TomPIT.TagHelpers
 			var microService = string.Empty;
 			var name = Name;
 
-			var ctx = ViewContext.ViewData.Model as IExecutionContext;
+			var ctx = ViewContext.ViewData.Model as IMiddlewareContext;
 
 			if (Name.Contains("/"))
 			{
@@ -21,22 +22,22 @@ namespace TomPIT.TagHelpers
 				microService = tokens[0];
 				name = tokens[1];
 
-				var ms = ctx.Connection().GetService<IMicroServiceService>().Select(ResolveMicroservice(ViewContext.ExecutingFilePath).Token);
-				var reference = ctx.Connection().GetService<IMicroServiceService>().Select(microService);
+				var ms = ctx.Tenant.GetService<IMicroServiceService>().Select(ResolveMicroservice(ViewContext.ExecutingFilePath).Token);
+				var reference = ctx.Tenant.GetService<IMicroServiceService>().Select(microService);
 
 				if (reference == null)
 					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
 
-				ms.ValidateMicroServiceReference(ctx.Connection(), reference.Name);
+				ms.ValidateMicroServiceReference(reference.Name);
 			}
 			else
 			{
-				var theme = ctx.Connection().GetService<IComponentService>().SelectComponent(ctx.MicroService.Token, "Theme", Name);
+				var theme = ctx.Tenant.GetService<IComponentService>().SelectComponent(ctx.MicroService.Token, "Theme", Name);
 
 				if (theme == null)
 					microService = ResolveMicroservice(ViewContext.ExecutingFilePath).Name;
 				else
-					microService = ctx.Connection().GetService<IMicroServiceService>().Select(ctx.MicroService.Token).Name;
+					microService = ctx.Tenant.GetService<IMicroServiceService>().Select(ctx.MicroService.Token).Name;
 			}
 
 			output.TagMode = TagMode.StartTagOnly;
@@ -44,7 +45,7 @@ namespace TomPIT.TagHelpers
 
 			output.Attributes.SetAttribute("rel", "stylesheet");
 			output.Attributes.SetAttribute("type", "text/css");
-			output.Attributes.SetAttribute("href", string.Format("{0}/sys/themes/{1}/{2}", ctx.RootUrl(), microService, name));
+			output.Attributes.SetAttribute("href", string.Format("{0}/sys/themes/{1}/{2}", ctx.Services.Routing.RootUrl, microService, name));
 		}
 	}
 }

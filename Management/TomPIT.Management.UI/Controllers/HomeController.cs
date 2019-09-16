@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using TomPIT.Models;
+using TomPIT.Ide.Controllers;
+using TomPIT.Ide.Models;
+using TomPIT.Management.Models;
 
-namespace TomPIT.Controllers
+namespace TomPIT.Management.Controllers
 {
 	[Authorize(Roles = "Full Control")]
 	public class HomeController : IdeControllerBase

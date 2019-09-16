@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Actions;
-using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.Design;
-using TomPIT.Designers;
 using TomPIT.Globalization;
+using TomPIT.Ide;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Designers.Toolbar;
 using TomPIT.Management.Dom;
 using TomPIT.Management.Globalization;
 using TomPIT.Management.Items;
@@ -39,7 +39,7 @@ namespace TomPIT.Management.Designers
 
 			var user = Owner.Existing.FirstOrDefault(f => f.Token == id);
 
-			Connection.GetService<IGlobalizationManagementService>().DeleteLanguage(user.Token);
+			Environment.Context.Tenant.GetService<IGlobalizationManagementService>().DeleteLanguage(user.Token);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 		}
@@ -47,9 +47,9 @@ namespace TomPIT.Management.Designers
 		private IDesignerActionResult CreateNode()
 		{
 			var existing = Owner.Existing;
-			var name = Connection.GetService<INamingService>().Create("Language", existing.Select(f => f.Name), true);
-			var id = Connection.GetService<IGlobalizationManagementService>().InsertLanguage(name, 0, TomPIT.Globalization.LanguageStatus.Hidden, string.Empty);
-			var language = Connection.GetService<ILanguageService>().Select(id);
+			var name = Environment.Context.Tenant.GetService<INamingService>().Create("Language", existing.Select(f => f.Name), true);
+			var id = Environment.Context.Tenant.GetService<IGlobalizationManagementService>().InsertLanguage(name, 0, TomPIT.Globalization.LanguageStatus.Hidden, string.Empty);
+			var language = Environment.Context.Tenant.GetService<ILanguageService>().Select(id);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 
@@ -63,7 +63,7 @@ namespace TomPIT.Management.Designers
 
 		protected override bool OnCreateToolbarAction(IDesignerToolbarAction action)
 		{
-			return action.Id != Undo.ActionId && action.Id != Actions.Clear.ActionId;
+			return action.Id != Undo.ActionId && action.Id != Ide.Designers.Toolbar.Clear.ActionId;
 		}
 
 		public override bool SupportsReorder

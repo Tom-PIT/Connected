@@ -1,17 +1,16 @@
-﻿using TomPIT.Annotations;
-using TomPIT.ComponentModel.Events;
+﻿using TomPIT.Annotations.Design;
+using TomPIT.ComponentModel.Messaging;
 using TomPIT.ComponentModel.UI;
+using TomPIT.Messaging;
+using TomPIT.UI;
 
-namespace TomPIT.Application.UI
+namespace TomPIT.MicroServices.UI
 {
-	[Create("Partial")]
-	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
-	[Syntax("razor")]
-	public class Partial : ViewBase, IPartialView
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[Syntax(SyntaxAttribute.Razor)]
+	public class Partial : ViewBase, IPartialViewConfiguration
 	{
 		private IServerEvent _invoke = null;
-
-		public const string ComponentCategory = "Partial";
 
 		[EventArguments(typeof(ViewInvokeArguments))]
 		public IServerEvent Invoke

@@ -4,13 +4,15 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text;
-using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
-using TomPIT.Design;
-using TomPIT.Ide;
+using TomPIT.Exceptions;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Designers;
+using TomPIT.Reflection;
 
-namespace TomPIT.Dom
+namespace TomPIT.Ide.Dom
 {
 	public class PropertyWriter
 	{
@@ -31,11 +33,6 @@ namespace TomPIT.Dom
 			if (!Types.TryConvert(value, out object validatedValue, property.PropertyType))
 				throw IdeException.ConversionError(this, IdeEvents.SaveProperty, property.Name, value, property.PropertyType);
 
-			var aw = property.FindAttribute<AllowWhitespaceAttribute>();
-
-			if (aw != null && value is string && string.IsNullOrWhiteSpace(validatedValue as string))
-				validatedValue = "&nbsp;";
-
 			ValidateValue(instance, property, validatedValue);
 
 			if (!SaveLocalizedValue(instance, property, validatedValue))
@@ -53,7 +50,7 @@ namespace TomPIT.Dom
 			{
 				var se = instance as ISourceCode;
 
-				Element.Environment.Context.Connection().GetService<ICompilerService>().Invalidate(Element.Environment.Context, Element.MicroService(), se.Configuration().Component(Element.Environment.Context), se);
+				Element.Environment.Context.Tenant.GetService<ICompilerService>().Invalidate(Element.Environment.Context, Element.MicroService(), se.Configuration().Component, se);
 
 				r.Invalidate |= EnvironmentSection.Events;
 			}
@@ -63,13 +60,6 @@ namespace TomPIT.Dom
 
 		private void SaveNonLocalizedValue(object instance, PropertyInfo property, object value)
 		{
-			var element = instance as IElement;
-
-			var att = property.FindAttribute<HtmlTextAttribute>();
-
-			if (att != null)
-				value = att.Sanitize(Element.Environment.Context, element, property, property.GetValue(instance), value);
-
 			property.SetValue(instance, value);
 		}
 
@@ -88,12 +78,7 @@ namespace TomPIT.Dom
 			if (loc == null || !loc.IsLocalizable)
 				return false;
 
-			var att = new HtmlTextAttribute();
-
-			var sanitized = att.Sanitize(Element.Environment.Context, element, property, property.GetValue(instance), value);
-			var text = Types.Convert<string>(sanitized);
-
-			Element.Environment.Context.Connection().GetService<IMicroServiceDevelopmentService>().UpdateString(Element.MicroService(), Element.Environment.Globalization.LanguageToken, element.Id, property.Name, text);
+			Element.Environment.Context.Tenant.GetService<IMicroServiceDevelopmentService>().UpdateString(Element.MicroService(), Element.Environment.Globalization.LanguageToken, element.Id, property.Name, property.GetValue(instance) as string);
 
 			return true;
 		}

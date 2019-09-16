@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TomPIT.Models;
+using TomPIT.Development.Models;
 
-namespace TomPIT.Controllers
+namespace TomPIT.Development.Controllers
 {
 	public class TestSuitesController : DevelopmentController
 	{

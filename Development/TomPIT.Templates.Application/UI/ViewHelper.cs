@@ -1,12 +1,16 @@
 ﻿using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
+using TomPIT.MicroServices.Design;
+using TomPIT.Reflection;
+using TomPIT.UI;
 
-namespace TomPIT.Application.UI
+namespace TomPIT.MicroServices.UI
 {
-	[Create("Helper", nameof(Name))]
-	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
-	[Syntax("csharp")]
+	[Create(DesignUtils.Helper, nameof(Name))]
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[Syntax(SyntaxAttribute.CSharp)]
 	[EventArguments(typeof(ViewHelperArguments))]
 	public class ViewHelper : Text, IViewHelper
 	{

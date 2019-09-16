@@ -1,7 +1,7 @@
-﻿@model TomPIT.Ide.IEnvironment
+﻿@model TomPIT.Ide.Environment.IEnvironment
 
 @{
-	var property = ViewBag.Property as TomPIT.Design.IProperty;
+	var property = ViewBag.Property as TomPIT.Ide.Properties.IProperty;
 
 	var obsolete = property.Obsolete ? "obsolete" : string.Empty;
 }

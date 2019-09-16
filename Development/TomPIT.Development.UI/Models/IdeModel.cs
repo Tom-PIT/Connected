@@ -1,13 +1,18 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Annotations;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
-using TomPIT.Design;
-using TomPIT.Dom;
+using TomPIT.Ide;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Models;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
 
-namespace TomPIT.Models
+namespace TomPIT.Development.Models
 {
 	public class IdeModel : IdeModelBase
 	{
@@ -18,7 +23,7 @@ namespace TomPIT.Models
 			get
 			{
 				if (_template == null)
-					_template = Connection.GetService<IMicroServiceTemplateService>().Select(MicroService.Template);
+					_template = Tenant.GetService<IMicroServiceTemplateService>().Select(MicroService.Template);
 
 				return _template;
 			}
@@ -39,7 +44,7 @@ namespace TomPIT.Models
 		{
 			get
 			{
-				return this.RouteUrl("ide", new { microService = MicroService.Url });
+				return MiddlewareDescriptor.Current.RouteUrl(this, "ide", new { microService = MicroService.Url });
 			}
 		}
 
@@ -84,12 +89,12 @@ namespace TomPIT.Models
 
 			var ms = DomQuery.Closest<IMicroServiceScope>(selection);
 			var category = descriptor.Value == null ? descriptor.Id.ToString() : descriptor.Value.ToString();
-			var id = GetService<IComponentDevelopmentService>().Insert(ms.MicroService.Token, fs == null ? Guid.Empty : fs.Token, category, name, descriptor.Type.TypeName());
+			var id = Tenant.GetService<IComponentDevelopmentService>().Insert(ms.MicroService.Token, fs == null ? Guid.Empty : fs.Token, category, name, descriptor.Type.TypeName());
 
 			config.Component = id;
 
 			IdeExtensions.ProcessComponentCreated(this, config);
-			GetService<IComponentDevelopmentService>().Update(config);
+			Tenant.GetService<IComponentDevelopmentService>().Update(config);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 			var target = fs == null ? selection.Root() : selection.Closest<IFolderScope>() as IDomElement;
@@ -116,7 +121,7 @@ namespace TomPIT.Models
 				parent = fs.Token;
 
 			var ms = DomQuery.Closest<IMicroServiceScope>(selection);
-			var id = GetService<IComponentDevelopmentService>().InsertFolder(ms.MicroService.Token, name, parent);
+			var id = Tenant.GetService<IComponentDevelopmentService>().InsertFolder(ms.MicroService.Token, name, parent);
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 
 			var target = fs == null ? selection.Root() : selection.Closest<IFolderScope>() as IDomElement;
@@ -145,7 +150,7 @@ namespace TomPIT.Models
 				return Result.EmptyResult(this);
 
 			var path = DomQuery.Path(Selection.Element);
-			GetService<IComponentDevelopmentService>().DeleteFolder(DomQuery.Closest<IMicroServiceScope>(Selection.Element).MicroService.Token, folder.Token);
+			Tenant.GetService<IComponentDevelopmentService>().DeleteFolder(DomQuery.Closest<IMicroServiceScope>(Selection.Element).MicroService.Token, folder.Token);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 
@@ -169,7 +174,7 @@ namespace TomPIT.Models
 				return Result.EmptyResult(this);
 
 			var path = DomQuery.Path(Selection.Element);
-			GetService<IComponentDevelopmentService>().Delete(component);
+			Tenant.GetService<IComponentDevelopmentService>().Delete(component);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 
@@ -188,7 +193,7 @@ namespace TomPIT.Models
 
 			if (folder != Guid.Empty)
 			{
-				var f = Connection.GetService<IComponentService>().SelectFolder(folder);
+				var f = Tenant.GetService<IComponentService>().SelectFolder(folder);
 				/*
 				 * it's a microservice not a folder
 				 */
@@ -196,13 +201,13 @@ namespace TomPIT.Models
 					folder = Guid.Empty;
 			}
 
-			var target = GetService<IComponentService>().SelectComponent(id);
+			var target = Tenant.GetService<IComponentService>().SelectComponent(id);
 
 			if (target != null)
 				MoveComponent(target, folder);
 			else
 			{
-				var targetFolder = GetService<IComponentService>().SelectFolder(id);
+				var targetFolder = Tenant.GetService<IComponentService>().SelectFolder(id);
 
 				if (targetFolder != null)
 					MoveFolder(targetFolder, folder);
@@ -221,12 +226,12 @@ namespace TomPIT.Models
 
 		private void MoveComponent(IComponent component, Guid folder)
 		{
-			GetService<IComponentDevelopmentService>().Update(component.Token, component.Name, folder);
+			Tenant.GetService<IComponentDevelopmentService>().Update(component.Token, component.Name, folder);
 		}
 
 		private void MoveFolder(IFolder f, Guid folder)
 		{
-			GetService<IComponentDevelopmentService>().UpdateFolder(f.MicroService, f.Token, f.Name, folder);
+			Tenant.GetService<IComponentDevelopmentService>().UpdateFolder(f.MicroService, f.Token, f.Name, folder);
 		}
 	}
 }

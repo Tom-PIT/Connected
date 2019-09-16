@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 using TomPIT.BigData;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
@@ -74,7 +73,7 @@ namespace TomPIT.Sys.Data
 
 		private ITransactionBlock Resolve(IQueueMessage message)
 		{
-			var id = message.Message.AsGuid();
+			var id = new Guid(message.Message);
 
 			return Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.SelectBlock(id);
 		}

@@ -1,15 +1,16 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 
 namespace TomPIT.IoT
 {
 	internal class IoTService : ClientRepository<List<IIoTFieldState>, Guid>, IIoTService, IIoTServiceNotification
 	{
-		public IoTService(ISysConnection connection) : base(connection, "iothubdata")
+		public IoTService(ITenant tenant) : base(tenant, "iothubdata")
 		{
 		}
 
@@ -54,13 +55,13 @@ namespace TomPIT.IoT
 				{
 					f.Duration = TimeSpan.Zero;
 
-					var u = Connection.CreateUrl("IoT", "SelectState");
+					var u = Tenant.CreateUrl("IoT", "SelectState");
 					var e = new JObject
 					{
 						{ "hub", hub }
 					};
 
-					var r = Connection.Post<List<IoTFieldState>>(u, e).ToList<IIoTFieldState>();
+					var r = Tenant.Post<List<IoTFieldState>>(u, e).ToList<IIoTFieldState>();
 
 					if (r == null)
 						r = new List<IIoTFieldState>();

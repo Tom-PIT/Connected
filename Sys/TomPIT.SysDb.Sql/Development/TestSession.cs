@@ -1,5 +1,5 @@
 ﻿using System;
-using TomPIT.QA;
+using TomPIT.Quality;
 
 namespace TomPIT.SysDb.Sql.Development
 {

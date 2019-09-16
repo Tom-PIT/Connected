@@ -1,32 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
-using TomPIT.Services;
+using TomPIT.Exceptions;
 
 namespace TomPIT.BigData
 {
-	internal class BigDataService : ServiceBase, IBigDataService
+	internal class BigDataService : TenantObject, IBigDataService
 	{
-		public BigDataService(ISysConnection connection) : base(connection)
+		public BigDataService(ITenant tenant) : base(tenant)
 		{
 		}
 
 		public void Add<T>(IPartitionConfiguration partition, List<T> items)
 		{
-			var url = Connection.GetService<IInstanceEndpointService>().Url(InstanceType.BigData, InstanceVerbs.Post);
+			var url = Tenant.GetService<IInstanceEndpointService>().Url(InstanceType.BigData, InstanceVerbs.Post);
 
 			if (string.IsNullOrWhiteSpace(url))
 				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceType.BigData}, {InstanceVerbs.Post})");
 
-			var ms = Connection.GetService<IMicroServiceService>().Select(((IConfiguration)partition).MicroService(Connection));
+			var ms = Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)partition).MicroService());
 
-			var u = $"{url}/data/{ms.Name}/{partition.ComponentName(Connection)}";
+			var u = $"{url}/data/{ms.Name}/{partition.ComponentName()}";
 
-			Connection.Post(u, items);
+			Tenant.Post(u, items);
 		}
 	}
 }

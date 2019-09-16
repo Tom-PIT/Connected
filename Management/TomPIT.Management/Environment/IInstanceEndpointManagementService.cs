@@ -1,6 +1,7 @@
 ﻿using System;
+using TomPIT.Environment;
 
-namespace TomPIT.Environment
+namespace TomPIT.Management.Environment
 {
 	public interface IInstanceEndpointManagementService
 	{

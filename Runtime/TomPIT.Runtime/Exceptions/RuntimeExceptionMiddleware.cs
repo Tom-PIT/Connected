@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json.Linq;
+using TomPIT.Serialization;
 
 namespace TomPIT.Exceptions
 {
@@ -34,7 +34,7 @@ namespace TomPIT.Exceptions
 						{ "message", ex.Message }
 					};
 
-			await context.Response.WriteAsync(Types.Serialize(jsonEx));
+			await context.Response.WriteAsync(SerializationExtensions.Serialize(jsonEx));
 		}
 	}
 }

@@ -1,15 +1,19 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Actions;
-using TomPIT.Annotations;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.Design;
 using TomPIT.Design;
-using TomPIT.Dom;
 using TomPIT.Environment;
-using TomPIT.Items;
+using TomPIT.Ide;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Designers.Toolbar;
+using TomPIT.Management.Dom;
+using TomPIT.Management.Environment;
+using TomPIT.Management.Items;
 
-namespace TomPIT.Designers
+namespace TomPIT.Management.Designers
 {
 	internal class ResourceGroupsDesigner : CollectionDesigner<ResourceGroupsElement>
 	{
@@ -35,7 +39,7 @@ namespace TomPIT.Designers
 
 			var user = Owner.Existing.FirstOrDefault(f => f.Token == id);
 
-			Connection.GetService<IResourceGroupManagementService>().Delete(user.Token);
+			Environment.Context.Tenant.GetService<IResourceGroupManagementService>().Delete(user.Token);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 		}
@@ -43,10 +47,10 @@ namespace TomPIT.Designers
 		private IDesignerActionResult CreateResourceGroup()
 		{
 			var existing = Owner.Existing;
-			var name = Connection.GetService<INamingService>().Create("ResourceGroup", existing.Select(f => f.Name), true);
+			var name = Environment.Context.Tenant.GetService<INamingService>().Create("ResourceGroup", existing.Select(f => f.Name), true);
 
-			var id = Connection.GetService<IResourceGroupManagementService>().Insert(name, Guid.Empty, string.Empty);
-			var resourceGroup = Connection.GetService<IResourceGroupService>().Select(id);
+			var id = Environment.Context.Tenant.GetService<IResourceGroupManagementService>().Insert(name, Guid.Empty, string.Empty);
+			var resourceGroup = Environment.Context.Tenant.GetService<IResourceGroupService>().Select(id);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 
@@ -60,7 +64,7 @@ namespace TomPIT.Designers
 
 		protected override bool OnCreateToolbarAction(IDesignerToolbarAction action)
 		{
-			return action.Id != Undo.ActionId && action.Id != Actions.Clear.ActionId;
+			return action.Id != Undo.ActionId && action.Id != Ide.Designers.Toolbar.Clear.ActionId;
 		}
 
 		public override bool SupportsReorder

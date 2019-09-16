@@ -1,15 +1,16 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
-using TomPIT.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
+using TomPIT.Runtime.Configuration;
+using TomPIT.Serialization;
 
 namespace TomPIT
 {
@@ -167,7 +168,7 @@ namespace TomPIT
 					{
 						if (File.Exists(sys))
 						{
-							_sys = Types.Deserialize(File.ReadAllText(sys), _sysType) as ISys;
+							_sys = SerializationExtensions.Deserialize(File.ReadAllText(sys), _sysType) as ISys;
 							break;
 						}
 

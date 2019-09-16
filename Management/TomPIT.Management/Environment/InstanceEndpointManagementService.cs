@@ -1,35 +1,35 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
+using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
+using TomPIT.Environment;
+using TomPIT.Middleware;
 
-namespace TomPIT.Environment
+namespace TomPIT.Management.Environment
 {
-	internal class InstanceEndpointManagementService : IInstanceEndpointManagementService
+	internal class InstanceEndpointManagementService : TenantObject, IInstanceEndpointManagementService
 	{
-		public InstanceEndpointManagementService(ISysConnection connection)
+		public InstanceEndpointManagementService(ITenant tenant) : base(tenant)
 		{
-			Connection = connection;
-		}
 
-		private ISysConnection Connection { get; }
+		}
 
 		public void Delete(Guid instance)
 		{
-			var u = Connection.CreateUrl("InstanceEndpointManagement", "Delete");
+			var u = Tenant.CreateUrl("InstanceEndpointManagement", "Delete");
 			var e = new JObject
 			{
 				{"token", instance }
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 
-			if (Connection.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
+			if (Tenant.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
 				n.NotifyRemoved(this, new InstanceEndpointEventArgs(instance));
 		}
 
 		public Guid Insert(string name, InstanceType type, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
 		{
-			var u = Connection.CreateUrl("InstanceEndpointManagement", "Insert");
+			var u = Tenant.CreateUrl("InstanceEndpointManagement", "Insert");
 			var e = new JObject
 			{
 				{"name", name },
@@ -40,9 +40,9 @@ namespace TomPIT.Environment
 				{"verbs", verbs.ToString() },
 			};
 
-			var id = Connection.Post<Guid>(u, e);
+			var id = Tenant.Post<Guid>(u, e);
 
-			if (Connection.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
+			if (Tenant.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
 				n.NotifyChanged(this, new InstanceEndpointEventArgs(id));
 
 			return id;
@@ -50,7 +50,7 @@ namespace TomPIT.Environment
 
 		public void Update(Guid instance, string name, InstanceType type, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
 		{
-			var u = Connection.CreateUrl("InstanceEndpointManagement", "Update");
+			var u = Tenant.CreateUrl("InstanceEndpointManagement", "Update");
 			var e = new JObject
 			{
 				{"token", instance },
@@ -62,9 +62,9 @@ namespace TomPIT.Environment
 				{"verbs", verbs.ToString() },
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 
-			if (Connection.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
+			if (Tenant.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
 				n.NotifyChanged(this, new InstanceEndpointEventArgs(instance));
 		}
 	}

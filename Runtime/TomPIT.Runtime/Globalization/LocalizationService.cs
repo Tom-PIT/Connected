@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.Connectivity;
-using TomPIT.Services;
+﻿using TomPIT.Connectivity;
 
 namespace TomPIT.Globalization
 {
-	internal class LocalizationService : ServiceBase, ILocalizationService
+	internal class LocalizationService : TenantObject, ILocalizationService
 	{
-		public LocalizationService(ISysConnection connection) : base(connection)
+		public LocalizationService(ITenant tenant) : base(tenant)
 		{
-			Cache = new StringsCache(Connection);
+			Cache = new StringsCache(Tenant);
 		}
 
 		public string GetString(string microService, string stringTable, string key, int lcid, bool throwException)

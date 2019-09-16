@@ -1,17 +1,20 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using Newtonsoft.Json.Linq;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
+using TomPIT.Data.DataProviders.Design;
 using TomPIT.Data.Sql;
 using TomPIT.DataProviders.Sql.Deployment;
 using TomPIT.Deployment;
 using TomPIT.Deployment.Database;
+using TomPIT.Exceptions;
+using TomPIT.Reflection;
 
 namespace TomPIT.DataProviders.Sql
 {
-	[SchemaBrowser("TomPIT.DataProviders.Sql.Browser, TomPIT.DataProviders.Sql")]
+	[SchemaBrowser("TomPIT.DataProviders.Sql.Design.Browser, TomPIT.DataProviders.Sql")]
 	public class SqlDataProvider : IDataProvider
 	{
 		public Guid Id => new Guid("{C5849300-11A4-4FAE-B433-3C89DD05DDF0}");
@@ -146,8 +149,8 @@ namespace TomPIT.DataProviders.Sql
 		{
 			var row = new JObject();
 
-			for(var i = 0; i < rdr.FieldCount; i++)
-				row.Add(rdr.GetName(i), new JValue( rdr.GetValue(i)));
+			for (var i = 0; i < rdr.FieldCount; i++)
+				row.Add(rdr.GetName(i), new JValue(rdr.GetValue(i)));
 
 			return row;
 		}

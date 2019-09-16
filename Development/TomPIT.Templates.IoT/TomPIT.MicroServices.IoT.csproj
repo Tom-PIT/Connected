@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>TomPIT.MicroServices.IoT</RootNamespace>
+    <AssemblyName>TomPIT.MicroServices.IoT</AssemblyName>
+    <AssemblyVersion>1.1.905.3</AssemblyVersion>
+    <FileVersion>1.1.905.3</FileVersion>
+    <Version>1.1.905.3</Version>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="lz4net" Version="1.0.15.93" />
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.2.0" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="2.2.0" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
+    <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+    <ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\**\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="wwwroot\Assets\Styles\iot.css" />
+    <EmbeddedResource Remove="wwwroot\Assets\Styles\iot.less" />
+    <EmbeddedResource Remove="wwwroot\Assets\Styles\Variables.css" />
+    <EmbeddedResource Remove="wwwroot\Assets\Styles\Variables.less" />
+    <EmbeddedResource Remove="wwwroot\Assets\Styles\Variables.min.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="wwwroot\Assets\Styles\iot.min.css" />
+    <None Remove="wwwroot\Assets\Styles\Variables.css" />
+    <None Remove="wwwroot\Assets\Styles\Variables.less" />
+    <None Remove="wwwroot\Assets\Styles\Variables.min.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="wwwroot\Assets\Styles\Variables.css">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="wwwroot\Assets\Styles\Variables.less">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="wwwroot\Assets\Styles\Variables.min.css">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.Templates.IoT&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName).Views.dll&quot; &quot;c:\Deploy\Plugins\TomPIT.Templates.IoT&quot;" />
+  </Target>
+</Project>

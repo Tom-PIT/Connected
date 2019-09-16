@@ -1,21 +1,24 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Annotations;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
-using TomPIT.Design;
-using TomPIT.Design.Services;
-using TomPIT.Designers.CodeGeneration;
-using TomPIT.Dom;
-using TomPIT.Services;
+using TomPIT.Ide.Analysis;
+using TomPIT.Ide.Analysis.Analyzers;
+using TomPIT.Ide.Analysis.Diagnostics;
+using TomPIT.Ide.Analysis.Lenses;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Designers.Signatures;
+using TomPIT.Ide.Dom;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
 
-namespace TomPIT.Designers
+namespace TomPIT.Ide.Designers
 {
 	public class TextDesigner : DomDesigner<IDomElement>
 	{
 		private ITextSignature _signature = null;
-		private ICodeCompletionProvider _provider = null;
+		private ICodeAnalyzer _analyzer = null;
 		private ICodeDiagnosticProvider _diagnostic = null;
 		private Type _argumentType = null;
 
@@ -48,7 +51,7 @@ namespace TomPIT.Designers
 			get
 			{
 				if (_text == null)
-					_text = Connection.GetService<IComponentService>().SelectText(Element.MicroService(), Content);
+					_text = Environment.Context.Tenant.GetService<IComponentService>().SelectText(Element.MicroService(), Content);
 
 				return _text;
 			}
@@ -65,7 +68,7 @@ namespace TomPIT.Designers
 				if (_signature == null)
 				{
 					if (string.Compare(Language, "Razor", true) == 0)
-						_signature = MethodSignature.CreateModel(typeof(IExecutionContext));
+						_signature = MethodSignature.CreateModel(typeof(IMiddlewareContext));
 					else
 					{
 						if (Owner.Property != null)
@@ -88,13 +91,13 @@ namespace TomPIT.Designers
 					if (Owner.Property == null)
 					{
 						if (Owner.Component == null)
-							_argumentType = typeof(IExecutionContext);
+							_argumentType = typeof(IMiddlewareContext);
 						else
 						{
 							var att = Owner.Component.GetType().FindAttribute<EventArgumentsAttribute>();
 
 							if (att != null)
-								_argumentType = att.Type ?? Types.GetType(att.TypeName);
+								_argumentType = att.Type ?? TypeExtensions.GetType(att.TypeName);
 						}
 					}
 					else
@@ -102,7 +105,7 @@ namespace TomPIT.Designers
 						var att = Owner.Property.FindAttribute<EventArgumentsAttribute>();
 
 						if (att != null)
-							_argumentType = att.Type ?? Types.GetType(att.TypeName);
+							_argumentType = att.Type ?? TypeExtensions.GetType(att.TypeName);
 					}
 				}
 
@@ -110,23 +113,23 @@ namespace TomPIT.Designers
 			}
 		}
 
-		public ICodeCompletionProvider CompletionProvider
+		public ICodeAnalyzer CodeAnalyzer
 		{
 			get
 			{
-				if (_provider == null)
-					_provider = Connection.GetService<ICodeCompletionService>().GetProvider(Language);
+				if (_analyzer == null)
+					_analyzer = Environment.Context.Tenant.GetService<ICodeAnalyzerService>().GetAnalyzer(Language);
 
-				return _provider;
+				return _analyzer;
 			}
 		}
 
-		public ICodeDiagnosticProvider CompletionDiagnostic
+		public ICodeDiagnosticProvider CodeDiagnostic
 		{
 			get
 			{
 				if (_diagnostic == null)
-					_diagnostic = Connection.GetService<ICodeDiagnosticService>().GetProvider(Language);
+					_diagnostic = Environment.Context.Tenant.GetService<ICodeDiagnosticService>().GetProvider(Language);
 
 				return _diagnostic;
 			}
@@ -135,15 +138,15 @@ namespace TomPIT.Designers
 		protected override IDesignerActionResult OnAction(JObject data, string action)
 		{
 			if (string.Compare(action, "provideItems", true) == 0)
-				return Result.JsonResult(this, CompletionProvider.Suggestions(Environment.Context, CreateSuggestionArgs(data)));
+				return Result.JsonResult(this, CodeAnalyzer.Suggestions(Environment.Context, CreateSuggestionArgs(data)));
 			else if (string.Compare(action, "checkSyntax", true) == 0)
 				return CheckSyntax();
 			else if (string.Compare(action, "hover", true) == 0)
-				return Result.JsonResult(this, CompletionProvider.Hover(Environment.Context, CreateSuggestionArgs(data)));
+				return Result.JsonResult(this, CodeAnalyzer.Hover(Environment.Context, CreateSuggestionArgs(data)));
 			else if (string.Compare(action, "signatureHelp", true) == 0)
-				return Result.JsonResult(this, CompletionProvider.Signatures(Environment.Context, CreateSuggestionArgs(data)));
+				return Result.JsonResult(this, CodeAnalyzer.Signatures(Environment.Context, CreateSuggestionArgs(data)));
 			else if (string.Compare(action, "codeLens", true) == 0)
-				return Result.JsonResult(this, CompletionProvider.CodeLens(Environment.Context, CreateCodeLensArgs(data)));
+				return Result.JsonResult(this, CodeAnalyzer.CodeLens(Environment.Context, CreateCodeLensArgs(data)));
 			else if (string.Compare(action, "resolvePath", true) == 0)
 				return Result.JsonResult(this, new JObject
 				{
@@ -152,14 +155,14 @@ namespace TomPIT.Designers
 			else if (string.Compare(action, "dataSources", true) == 0)
 				return Result.JsonResult(this, QueryDataSources());
 			else if (string.Compare(action, "definition", true) == 0)
-				return Result.JsonResult(this, CompletionProvider.Definition(Environment.Context, CreateSuggestionArgs(data)));
+				return Result.JsonResult(this, CodeAnalyzer.Definition(Environment.Context, CreateSuggestionArgs(data)));
 
 			return base.OnAction(data, action);
 		}
 
 		private object QueryDataSources()
 		{
-			var ds = Connection.GetService<IComponentService>().QueryComponents(Element.MicroService(), "DataSource").OrderBy(f => f.Name);
+			var ds = Environment.Context.Tenant.GetService<IComponentService>().QueryComponents(Element.MicroService(), "DataSource").OrderBy(f => f.Name);
 			var r = new JArray();
 
 			foreach (var i in ds)
@@ -176,7 +179,7 @@ namespace TomPIT.Designers
 
 		private CodeLensArgs CreateCodeLensArgs(JObject data)
 		{
-			var component = Connection.GetService<IComponentService>().SelectComponent(Content.Configuration().Component);
+			var component = Environment.Context.Tenant.GetService<IComponentService>().SelectComponent(Content.Configuration().Component);
 
 			return new CodeLensArgs(component,
 				Content,
@@ -186,7 +189,7 @@ namespace TomPIT.Designers
 
 		private CodeStateArgs CreateSuggestionArgs(JObject data)
 		{
-			var component = Connection.GetService<IComponentService>().SelectComponent(Content.Configuration().Component);
+			var component = Environment.Context.Tenant.GetService<IComponentService>().SelectComponent(Content.Configuration().Component);
 
 			return new CodeStateArgs(component,
 				Content,
@@ -199,10 +202,10 @@ namespace TomPIT.Designers
 
 		private IDesignerActionResult CheckSyntax()
 		{
-			if (CompletionDiagnostic == null)
+			if (CodeDiagnostic == null)
 				return Result.EmptyResult(ViewModel);
 
-			var result = CompletionDiagnostic.CheckSyntax(Environment, Content as ISourceCode, ArgumentType);
+			var result = CodeDiagnostic.CheckSyntax(Environment, Content as ISourceCode, ArgumentType);
 
 			return Result.JsonResult(this, result);
 		}
@@ -213,7 +216,7 @@ namespace TomPIT.Designers
 			{
 				if (string.Compare(Language, "csharp", true) == 0)
 					return string.Format("{0}.csx", Content.Id.ToString());
-				else if (string.Compare(Language, "razor", true)==0)
+				else if (string.Compare(Language, "razor", true) == 0)
 					return string.Format("{0}.cshtml", Content.Id.ToString());
 
 				return null;

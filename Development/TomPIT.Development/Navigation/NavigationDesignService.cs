@@ -5,21 +5,20 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Navigation;
 using TomPIT.Connectivity;
-using TomPIT.Data;
+using TomPIT.Middleware;
 using TomPIT.Navigation;
-using TomPIT.Services;
 
 namespace TomPIT.Development.Navigation
 {
-	internal class NavigationDesignService : ServiceBase, INavigationDesignService
+	internal class NavigationDesignService : TenantObject, INavigationDesignService
 	{
-		public NavigationDesignService(ISysConnection connection) : base(connection)
+		public NavigationDesignService(ITenant tenant) : base(tenant)
 		{
 
 		}
 		public List<INavigationRouteDescriptor> QueryRouteKeys(Guid microService)
 		{
-			var configurations = Connection.GetService<IComponentService>().QueryConfigurations(microService, "SiteMap");
+			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(microService, ComponentCategories.SiteMap);
 			var r = new List<INavigationRouteDescriptor>();
 
 			foreach (var configuration in configurations)
@@ -53,7 +52,7 @@ namespace TomPIT.Development.Navigation
 
 		public List<string> QuerySiteMapKeys(Guid microService)
 		{
-			var configurations = Connection.GetService<IComponentService>().QueryConfigurations(microService, "SiteMap");
+			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(microService, "SiteMap");
 			var r = new List<string>();
 
 			foreach (var configuration in configurations)
@@ -83,13 +82,13 @@ namespace TomPIT.Development.Navigation
 			if (!(configuration is ISiteMapConfiguration siteMap))
 				return null;
 
-			var type = Connection.GetService<ICompilerService>().ResolveType(microService, siteMap, siteMap.ComponentName(Connection));
+			var type = Tenant.GetService<ICompilerService>().ResolveType(microService, siteMap, siteMap.ComponentName());
 
 			if (type == null)
 				return null;
 
-			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
-			var instance = Connection.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new DataModelContext(ExecutionContext.Create(Connection.Url, ms)), type);
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MiddlewareContext(Tenant.Url, ms), type);
 
 			if (instance == null)
 				return null;
@@ -105,16 +104,15 @@ namespace TomPIT.Development.Navigation
 			return containers;
 		}
 
-		private void BindContainer(ISiteMapContainer container, IDataModelContext context)
+		private void BindContainer(ISiteMapContainer container, IMiddlewareContext context)
 		{
 			foreach (var item in container.Routes)
 				BindRoute(item, context);
 		}
 
-		private void BindRoute(ISiteMapRoute route, IDataModelContext context)
+		private void BindRoute(ISiteMapRoute route, IMiddlewareContext context)
 		{
-			if (route is ISiteMapContextElement ctx)
-				ctx.Context = context;
+			route.Context = context;
 
 			foreach (var item in route.Routes)
 				BindRoute(item, context);

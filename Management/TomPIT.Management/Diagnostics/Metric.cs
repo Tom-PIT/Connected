@@ -1,7 +1,8 @@
 ﻿using System;
+using TomPIT.Diagnostics;
 using TomPIT.Environment;
 
-namespace TomPIT.Diagnostics
+namespace TomPIT.Management.Diagnostics
 {
 	internal class Metric : IMetric
 	{

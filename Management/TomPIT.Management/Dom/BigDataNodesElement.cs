@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.BigData;
-using TomPIT.Dom;
-using TomPIT.Ide;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
 using TomPIT.Management.BigData;
 using TomPIT.Management.Designers;
 using TomPIT.Management.Items;
 
 namespace TomPIT.Management.Dom
 {
-	public class BigDataNodesElement : Element
+	public class BigDataNodesElement : DomElement
 	{
 		private ExistingResourceGroups _ds = null;
 		public const string FolderId = "BigDataNodes";
@@ -70,7 +70,7 @@ namespace TomPIT.Management.Dom
 
 		public override void LoadChildren(string id)
 		{
-			var d = Existing.FirstOrDefault(f => f.Token == id.AsGuid());
+			var d = Existing.FirstOrDefault(f => f.Token == new Guid(id));
 
 			if (d != null)
 				Items.Add(new BigDataNodeElement(this, d));
@@ -95,7 +95,7 @@ namespace TomPIT.Management.Dom
 				{
 					_ds = new ExistingResourceGroups();
 
-					var items = Connection.GetService<IBigDataManagementService>().QueryNodes();
+					var items = Environment.Context.Tenant.GetService<IBigDataManagementService>().QueryNodes();
 
 					if (items != null)
 						items = items.OrderBy(f => f.Name).ToList();

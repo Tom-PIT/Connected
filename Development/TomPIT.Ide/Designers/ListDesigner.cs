@@ -1,11 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Design;
-using TomPIT.Dom;
-using TomPIT.Ide;
+﻿using System.Linq;
+using Newtonsoft.Json.Linq;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment.Providers;
+using TomPIT.Reflection;
 
-namespace TomPIT.Designers
+namespace TomPIT.Ide.Designers
 {
 	public class ListDesigner<E> : CollectionDesigner<E>, ISupportsAddDesigner where E : IDomElement
 	{

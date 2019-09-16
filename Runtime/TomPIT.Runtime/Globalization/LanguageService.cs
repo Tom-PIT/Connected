@@ -4,20 +4,21 @@ using System.Globalization;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 
 namespace TomPIT.Globalization
 {
 	internal class LanguageService : SynchronizedClientRepository<ILanguage, Guid>, ILanguageService, ILanguageNotification
 	{
-		public LanguageService(ISysConnection connection) : base(connection, "language")
+		public LanguageService(ITenant tenant) : base(tenant, "language")
 		{
 
 		}
 
 		protected override void OnInitializing()
 		{
-			var u = Connection.CreateUrl("Language", "Query");
-			var languages = Connection.Get<List<Language>>(u).ToList<ILanguage>();
+			var u = Tenant.CreateUrl("Language", "Query");
+			var languages = Tenant.Get<List<Language>>(u).ToList<ILanguage>();
 
 			foreach (var language in languages)
 			{
@@ -30,10 +31,10 @@ namespace TomPIT.Globalization
 		{
 			RemoveCulture(Select(id));
 
-			var u = Connection.CreateUrl("Language", "Select")
+			var u = Tenant.CreateUrl("Language", "Select")
 			.AddParameter("language", id);
 
-			var r = Connection.Get<Language>(u);
+			var r = Tenant.Get<Language>(u);
 
 			if (r != null)
 			{

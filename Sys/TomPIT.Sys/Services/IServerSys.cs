@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Services;
+using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Sys.Services
 {

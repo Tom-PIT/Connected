@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TomPIT
+namespace TomPIT.Exceptions
 {
 	public enum ExceptionSeverity
 	{
@@ -17,7 +17,7 @@ namespace TomPIT
 
 		}
 
-		public RuntimeException(string source,  string message, Exception inner) : base(message, inner)
+		public RuntimeException(string source, string message, Exception inner) : base(message, inner)
 		{
 			Source = source;
 		}
@@ -26,7 +26,7 @@ namespace TomPIT
 		{
 
 		}
-		
+
 		public RuntimeException(string source, string message) : base(message)
 		{
 			Source = source;

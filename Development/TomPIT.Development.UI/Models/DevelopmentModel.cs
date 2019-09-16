@@ -1,6 +1,8 @@
-﻿using TomPIT.Routing;
+﻿using TomPIT.Middleware;
+using TomPIT.Models;
+using TomPIT.Routing;
 
-namespace TomPIT.Models
+namespace TomPIT.Development.Models
 {
 	public abstract class DevelopmentModel : ShellModel
 	{
@@ -13,7 +15,7 @@ namespace TomPIT.Models
 				Category = "Quality Assurance",
 				Text = "Test suites",
 
-				Url = this.RouteUrl("sys.testsuites", null)
+				Url = MiddlewareDescriptor.Current.RouteUrl(this, "sys.testsuites", null)
 			});
 
 			Navigation.Links.Add(new Route
@@ -21,7 +23,7 @@ namespace TomPIT.Models
 				Category = "Quality Assurance",
 				Text = "APIs",
 
-				Url = this.RouteUrl("sys.apitest", null)
+				Url = MiddlewareDescriptor.Current.RouteUrl(this, "sys.apitest", null)
 			});
 		}
 	}

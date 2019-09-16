@@ -24,12 +24,12 @@ namespace TomPIT.Sys.Data
 		protected override void OnInvalidate(string id)
 		{
 			var tokens = id.Split('.');
-			var rgId = tokens[0].AsGuid();
+			var rgId = new Guid(tokens[0]);
 			IResourceGroup rg = null;
 
 			if (rgId != Guid.Empty)
 			{
-				rg = DataModel.ResourceGroups.Select(tokens[0].AsGuid());
+				rg = DataModel.ResourceGroups.Select(new Guid(tokens[0]));
 
 				if (rg == null)
 				{

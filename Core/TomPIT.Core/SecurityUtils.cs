@@ -33,7 +33,7 @@ namespace TomPIT
 					if (idx == -1)
 					{
 						if (string.IsNullOrWhiteSpace(email))
-							return token.AsString();
+							return token.ToString();
 						else
 							return email;
 					}

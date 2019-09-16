@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using TomPIT.Serialization;
 
 namespace TomPIT
 {
@@ -29,7 +30,7 @@ namespace TomPIT
 
 			var cookie = request.Cookies[SecurityUtils.AuthenticationCookieName];
 
-			return Types.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
+			return SerializationExtensions.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
 		}
 
 		public static string GetAuthenticationEndpoint(this HttpRequest request)
@@ -54,14 +55,14 @@ namespace TomPIT
 			if (string.IsNullOrWhiteSpace(body))
 				return new JObject();
 
-			return Types.Deserialize<JObject>(body);
+			return SerializationExtensions.Deserialize<JObject>(body);
 		}
 
 		public static T ToType<T>(this Stream s)
 		{
 			var body = new StreamReader(s, Encoding.UTF8).ReadToEnd();
 
-			return Types.Deserialize<T>(body);
+			return SerializationExtensions.Deserialize<T>(body);
 		}
 	}
 }

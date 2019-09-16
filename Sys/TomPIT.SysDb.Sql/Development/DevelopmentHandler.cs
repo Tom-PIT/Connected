@@ -11,6 +11,7 @@ namespace TomPIT.SysDb.Sql.Development
 		private IVersionControlHandler _versionControl = null;
 		private ITestSuiteHandler _testSuite = null;
 		private IDevelopmentErrorHandler _errors = null;
+		private IToolsHandler _tools = null;
 
 		public IDevelopmentErrorHandler Errors
 		{
@@ -86,6 +87,17 @@ namespace TomPIT.SysDb.Sql.Development
 					_components = new ComponentHandler();
 
 				return _components;
+			}
+		}
+
+		public IToolsHandler Tools
+		{
+			get
+			{
+				if (_tools == null)
+					_tools = new ToolsHandler();
+
+				return _tools;
 			}
 		}
 	}

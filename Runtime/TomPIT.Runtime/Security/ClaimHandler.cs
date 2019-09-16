@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using System.Threading.Tasks;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
-using TomPIT.Security;
-using TomPIT.Services;
+using TomPIT.Middleware;
 
-namespace TomPIT.Runtime.Security
+namespace TomPIT.Security
 {
 	public class ClaimHandler : AuthorizationHandler<ClaimRequirement>
 	{
@@ -39,7 +38,7 @@ namespace TomPIT.Runtime.Security
 				return Task.CompletedTask;
 			}
 
-			var connection = Shell.GetService<IConnectivityService>().Select(identity.Endpoint);
+			var connection = Shell.GetService<IConnectivityService>().SelectTenant(identity.Endpoint);
 			var microService = connection.GetService<IMicroServiceService>().SelectByUrl(ms.ToString());
 
 			if (microService == null)
@@ -49,7 +48,7 @@ namespace TomPIT.Runtime.Security
 			}
 
 			var e = new AuthorizationArgs(identity.User.Token, requirement.Claim, microService.Token.ToString());
-			var r = connection.GetService<TomPIT.Security.IAuthorizationService>().Authorize(new ExecutionContext(microService), e);
+			var r = connection.GetService<TomPIT.Security.IAuthorizationService>().Authorize(new MiddlewareContext(microService), e);
 
 			if (!r.Success)
 			{

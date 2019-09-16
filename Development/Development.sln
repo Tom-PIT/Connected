@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.168
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29230.47
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Ide", "TomPIT.Ide\TomPIT.Ide.csproj", "{DB4C2043-C1D3-4457-ADCF-3083BACF6265}"
 EndProject
@@ -11,15 +11,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Development", "TomPI
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{B2F99931-C7AC-428A-A131-3AE9972BC414}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Application.Design", "TomPIT.Templates.Application.Design\TomPIT.Application.Design.csproj", "{04B6EB19-DDFC-4BCB-8760-7F50E3AFA736}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.MicroServices.Design", "TomPIT.Templates.Application.Design\TomPIT.MicroServices.Design.csproj", "{04B6EB19-DDFC-4BCB-8760-7F50E3AFA736}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Design", "TomPIT.Design\TomPIT.Design.csproj", "{DADCA7DE-BBB9-4465-ABB3-7A74CAC9EF4A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Application", "TomPIT.Templates.Application\TomPIT.Application.csproj", "{0CC9BA74-BA0A-49CA-A008-DD8499C313D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.MicroServices", "TomPIT.Templates.Application\TomPIT.MicroServices.csproj", "{0CC9BA74-BA0A-49CA-A008-DD8499C313D3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Templates.IoT", "TomPIT.Templates.IoT\TomPIT.Templates.IoT.csproj", "{0DE4C393-11AA-49CA-9297-79344B9CF508}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.MicroServices.IoT", "TomPIT.Templates.IoT\TomPIT.MicroServices.IoT.csproj", "{0DE4C393-11AA-49CA-9297-79344B9CF508}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Templates.IoT.Design", "TomPIT.Templates.IoT.Design\TomPIT.Templates.IoT.Design.csproj", "{032B9798-CA6A-430C-8E73-2F458ACAF741}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.MicroServices.IoT.Design", "TomPIT.Templates.IoT.Design\TomPIT.MicroServices.IoT.Design.csproj", "{032B9798-CA6A-430C-8E73-2F458ACAF741}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Development", "TomPIT.Development.UI\Development.csproj", "{E866D513-74B2-487B-93FC-2A89B7229497}"
 EndProject
@@ -37,9 +37,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.UI", "..\Runtime\Tom
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.DataProviders.Sql", "..\DataProviders\TomPIT.DataProviders.Sql\TomPIT.DataProviders.Sql.csproj", "{6DC521B2-6D33-4091-8419-F6150385FE3B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomPIT.BigData", "TomPIT.BigData\TomPIT.BigData.csproj", "{83F8669C-CD82-477D-A1D1-433382EB3944}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.MicroServices.BigData", "TomPIT.BigData\TomPIT.MicroServices.BigData.csproj", "{83F8669C-CD82-477D-A1D1-433382EB3944}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomPIT.BigData.Design", "TomPIT.BigData.Design\TomPIT.BigData.Design.csproj", "{F7400F20-F0E7-4AA6-A9ED-2E772AB58AA9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.MicroServices.BigData.Design", "TomPIT.BigData.Design\TomPIT.MicroServices.BigData.Design.csproj", "{F7400F20-F0E7-4AA6-A9ED-2E772AB58AA9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Sdk", "..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj", "{E7C80A61-73CD-4886-B722-A14C17078F77}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -115,6 +117,10 @@ Global
 		{F7400F20-F0E7-4AA6-A9ED-2E772AB58AA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7400F20-F0E7-4AA6-A9ED-2E772AB58AA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7400F20-F0E7-4AA6-A9ED-2E772AB58AA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7C80A61-73CD-4886-B722-A14C17078F77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7C80A61-73CD-4886-B722-A14C17078F77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7C80A61-73CD-4886-B722-A14C17078F77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7C80A61-73CD-4886-B722-A14C17078F77}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -132,6 +138,7 @@ Global
 		{6DC521B2-6D33-4091-8419-F6150385FE3B} = {BE07D9CA-7B69-4FB3-B883-17A8F08F564C}
 		{83F8669C-CD82-477D-A1D1-433382EB3944} = {B2F99931-C7AC-428A-A131-3AE9972BC414}
 		{F7400F20-F0E7-4AA6-A9ED-2E772AB58AA9} = {B2F99931-C7AC-428A-A131-3AE9972BC414}
+		{E7C80A61-73CD-4886-B722-A14C17078F77} = {BE07D9CA-7B69-4FB3-B883-17A8F08F564C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {817F1045-92EE-4B66-938E-4D4A21995F66}

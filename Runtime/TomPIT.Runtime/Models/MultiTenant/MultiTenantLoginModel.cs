@@ -1,11 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
-using System.ComponentModel.DataAnnotations;
-using TomPIT.Runtime;
-using TomPIT.Services;
+﻿using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json.Linq;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Models.MultiTenant
 {
-	public class MultiTenantLoginModel : LoginModel, IEndpointContext
+	public class MultiTenantLoginModel : LoginModel, ITenantProvider
 	{
 		[Required]
 		public string EndpointUrl { get { return Endpoint; } set { Endpoint = value; } }

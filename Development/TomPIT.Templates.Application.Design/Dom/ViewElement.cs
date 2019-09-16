@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
-using TomPIT.Application.Security;
-using TomPIT.ComponentModel;
-using TomPIT.Dom;
-using TomPIT.Ide;
-using TomPIT.Security;
+﻿using TomPIT.ComponentModel;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
 
-namespace TomPIT.Application.Design.Dom
+namespace TomPIT.MicroServices.Design.Dom
 {
 	public class ViewElement : ComponentElement
 	{

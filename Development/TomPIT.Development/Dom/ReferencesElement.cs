@@ -1,4 +1,6 @@
 ﻿using TomPIT.ComponentModel;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
 
 namespace TomPIT.Dom
 {

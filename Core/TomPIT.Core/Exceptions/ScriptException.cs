@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using TomPIT.Reflection;
 
-namespace TomPIT
+namespace TomPIT.Exceptions
 {
 	public class ScriptException : RuntimeException
 	{
-		public ScriptException(object sender, Exception inner): base($"({inner.Message} ({ResolveLine(inner)})", inner)
+		public ScriptException(object sender, Exception inner) : base($"({inner.Message} ({ResolveLine(inner)})", inner)
 		{
 			ExceptionSender = sender;
 			Source = ResolveSource();
@@ -54,7 +53,7 @@ namespace TomPIT
 
 			using (var r = new StringReader(ex.StackTrace))
 			{
-				while((currentLine =  r.ReadLine())!= null)
+				while ((currentLine = r.ReadLine()) != null)
 				{
 					var tokens = currentLine.Split(':');
 

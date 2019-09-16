@@ -1,21 +1,18 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace TomPIT.Connectivity
 {
-	public abstract class HubClient
+	public abstract class HubClient : TenantObject
 	{
 		private CancellationTokenSource _cancel = new CancellationTokenSource();
 
-		public HubClient(ISysConnection connection, string authenticationToken)
+		public HubClient(ITenant tenant, string authenticationToken) : base(tenant)
 		{
-			Connection = connection;
 			AuthenticationToken = authenticationToken;
 		}
-
-		protected ISysConnection Connection { get; }
 		protected HubConnection Hub { get; private set; }
 		protected string AuthenticationToken { get; }
 		protected abstract string HubName { get; }
@@ -26,7 +23,7 @@ namespace TomPIT.Connectivity
 				Disconnect();
 
 			_cancel = new CancellationTokenSource();
-			Hub = new HubConnectionBuilder().WithUrl(string.Format("{0}/{1}", Connection.Url, HubName), f =>
+			Hub = new HubConnectionBuilder().WithUrl(string.Format("{0}/{1}", Tenant.Url, HubName), f =>
 			{
 				f.AccessTokenProvider = () =>
 				{

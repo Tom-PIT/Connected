@@ -1,6 +1,9 @@
-﻿using TomPIT.Security;
+﻿using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
+using TomPIT.Management.Security;
+using TomPIT.Security;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
 	public class RoleElement : TransactionElement
 	{
@@ -19,7 +22,7 @@ namespace TomPIT.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			Connection.GetService<IRoleManagementService>().Update(Role.Token, Role.Name);
+			Environment.Context.Tenant.GetService<IRoleManagementService>().Update(Role.Token, Role.Name);
 
 			return true;
 		}

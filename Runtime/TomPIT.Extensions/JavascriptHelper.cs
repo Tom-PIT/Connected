@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using TomPIT.Reflection;
 
 namespace TomPIT
 {
@@ -26,7 +27,7 @@ namespace TomPIT
 				return Guid(value);
 			else if (value is bool)
 				return Bool((bool)value);
-			else if (Types.IsNumericType(value.GetType()))
+			else if (value.GetType().IsNumericType())
 				return Number(value, mapNull);
 
 			return Html.Raw(value);
@@ -59,7 +60,7 @@ namespace TomPIT
 
 			var number = Convert.ToDecimal(value);
 
-			if(mapNull && number == decimal.Zero)
+			if (mapNull && number == decimal.Zero)
 				return Html.Raw("null") as HtmlString;
 
 			if (decimalPlaces == -1)
