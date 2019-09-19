@@ -92,6 +92,8 @@ namespace TomPIT.Compilation
 				{
 					 CompilerService.LoadSystemAssembly("TomPIT.Core"),
 					 CompilerService.LoadSystemAssembly("TomPIT.ComponentModel"),
+					 CompilerService.LoadSystemAssembly("TomPIT.Sdk"),
+					 CompilerService.LoadSystemAssembly("TomPIT.Runtime"),
 					 CompilerService.LoadSystemAssembly("Newtonsoft.Json")
 				};
 		protected virtual string[] Usings

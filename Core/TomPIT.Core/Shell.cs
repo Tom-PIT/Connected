@@ -23,9 +23,17 @@ namespace TomPIT
 		private static Version _version = null;
 		private static bool _cleaned = false;
 		private static Lazy<List<string>> _loadedAssemblies = new Lazy<List<string>>();
+		private static readonly List<string> ProbingPaths;
 		static Shell()
 		{
 			_sm = new ServiceContainer(null);
+
+			ProbingPaths = new List<string>
+			{
+				typeof(object).Assembly.Location,
+				typeof(HttpContext).Assembly.Location
+			};
+
 			AssemblyLoadContext.Default.Resolving += OnResolvingAssembly;
 		}
 
@@ -75,6 +83,14 @@ namespace TomPIT
 
 			if (File.Exists(target))
 				return target;
+
+			foreach (var probingPath in ProbingPaths)
+			{
+				target = Path.Combine(Path.GetDirectoryName(probingPath), string.Format("{0}.dll", assemblyName));
+
+				if (File.Exists(target))
+					return target;
+			}
 
 			return null;
 		}

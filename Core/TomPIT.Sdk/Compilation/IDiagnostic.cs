@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 
 namespace TomPIT.Compilation
 {
@@ -14,6 +11,7 @@ namespace TomPIT.Compilation
 		int EndLine { get; }
 		int StartColumn { get; }
 		int EndColumn { get; }
-		string Id { get; }
+		string Code { get; }
+		string Source { get; }
 	}
 }

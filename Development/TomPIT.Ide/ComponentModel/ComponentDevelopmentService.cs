@@ -747,27 +747,71 @@ namespace TomPIT.Ide.ComponentModel
 
 		private void InvalidateIndexState(Guid component)
 		{
-			var u = Tenant.CreateUrl("ComponentDevelopment", "UpdateIndexState");
-			var e = new JObject
+			UpdateIndexStates(new List<IComponentIndexState>
 			{
-				{"component", component },
-				{"indexState", IndexState.Invalidated.ToString() },
-				{"indexTimestamp", DateTime.UtcNow }
-			};
-
-			Tenant.Post(u, e);
+				new ComponentIndexState
+				{
+					Component = Tenant.GetService<IComponentService>().SelectComponent(component),
+					State = IndexState.Invalidated,
+					TimeStamp = DateTime.UtcNow
+				}
+			});
 		}
 
 		private void InvalidateIndexState(IText element)
 		{
-			var u = Tenant.CreateUrl("ComponentDevelopment", "UpdateIndexState");
-			var e = new JObject
+			UpdateIndexStates(new List<IComponentIndexState>
 			{
-				{"component", element.Configuration().Component },
-				{"element", element.Id },
-				{"indexState", IndexState.Invalidated.ToString() },
-				{"indexTimestamp", DateTime.UtcNow }
-			};
+				new ComponentIndexState
+				{
+					Component = Tenant.GetService<IComponentService>().SelectComponent(element.Configuration().Component),
+					Element = element.Id,
+					State = IndexState.Invalidated,
+					TimeStamp = DateTime.UtcNow
+				}
+			});
+		}
+
+		public void UpdateIndexStates(List<IComponentIndexState> states)
+		{
+			var u = Tenant.CreateUrl("ComponentDevelopment", "UpdateIndexStates");
+			var e = new JObject();
+			var a = new JArray();
+
+			e.Add("items", a);
+
+			foreach (var state in states)
+			{
+				a.Add(new JObject
+				{
+					{"component", state.Component.Token },
+					{"element", state.Element },
+					{"state", state.State.ToString() },
+					{"timestamp", state.TimeStamp }
+				});
+			}
+
+			Tenant.Post(u, e);
+		}
+
+		public void UpdateAnalyzerStates(List<IComponentAnalyzerState> states)
+		{
+			var u = Tenant.CreateUrl("ComponentDevelopment", "UpdateAnalyzerStates");
+			var e = new JObject();
+			var a = new JArray();
+
+			e.Add("items", a);
+
+			foreach (var state in states)
+			{
+				e.Add(new JObject
+				{
+					{"component", state.Component.Token },
+					{"element", state.Element },
+					{"state", state.State.ToString() },
+					{"timestamp", state.TimeStamp }
+				});
+			}
 
 			Tenant.Post(u, e);
 		}

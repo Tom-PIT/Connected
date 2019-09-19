@@ -33,5 +33,8 @@ namespace TomPIT.Ide.ComponentModel
 		void RestoreComponent(IComponentImage image);
 		void RestoreComponent(Guid blob);
 		void Import(Guid microService, Guid blob);
+
+		void UpdateIndexStates(List<IComponentIndexState> states);
+		void UpdateAnalyzerStates(List<IComponentAnalyzerState> states);
 	}
 }

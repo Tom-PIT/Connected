@@ -33,17 +33,15 @@ namespace TomPIT.Compilation
 		private static Lazy<ConcurrentDictionary<Guid, ManualResetEvent>> _scriptCreateState = new Lazy<ConcurrentDictionary<Guid, ManualResetEvent>>();
 		private static readonly string[] Usings = new string[]
 		{
-				"System",
-				"System.Data",
-				"System.Text",
-				"System.Linq",
-				"System.Collections.Generic",
-				"Newtonsoft.Json",
-				"Newtonsoft.Json.Linq",
-				"TomPIT",
-				"TomPIT.Data",
-				"TomPIT.Middleware",
-				"TomPIT.Middleware.Interop"
+				//"System",
+				//"System.Data",
+				//"System.Text",
+				//"System.Linq",
+				//"System.Collections.Generic",
+				//"Newtonsoft.Json",
+				//"Newtonsoft.Json.Linq",
+				//"TomPIT",
+				//"TomPIT.Middleware"
 		};
 
 		public CompilerService(ITenant tenant) : base(tenant, "script")
@@ -279,7 +277,8 @@ namespace TomPIT.Compilation
 
 				diagnostic.EndLine = position.EndLinePosition.Line;
 				diagnostic.EndColumn = position.EndLinePosition.Character;
-				diagnostic.Id = error.Id;
+				diagnostic.Code = error.Id;
+				diagnostic.Source = error.Location.SourceTree.FilePath;
 				diagnostics.Add(diagnostic);
 			}
 

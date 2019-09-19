@@ -61,7 +61,10 @@ namespace TomPIT.Compilation
 
 			if (component == null)
 			{
-				var path = Assembly.GetEntryAssembly().Location;
+				var path = Shell.ResolveAssemblyPath(reference);
+
+				if (string.IsNullOrWhiteSpace(path))
+					return ImmutableArray<PortableExecutableReference>.Empty;
 
 				try
 				{

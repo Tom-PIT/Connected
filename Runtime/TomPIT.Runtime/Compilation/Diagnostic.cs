@@ -10,6 +10,7 @@ namespace TomPIT.Compilation
 		public int EndLine { get; set; }
 		public int StartColumn { get; set; }
 		public int EndColumn { get; set; }
-		public string Id { get; set; }
+		public string Code { get; set; }
+		public string Source { get; set; }
 	}
 }

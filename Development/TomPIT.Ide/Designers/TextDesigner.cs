@@ -10,8 +10,12 @@ using TomPIT.Ide.Analysis.Lenses;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Designers.Signatures;
 using TomPIT.Ide.Dom;
+using TomPIT.Ide.TextEditor;
+using TomPIT.Ide.TextEditor.Languages;
+using TomPIT.Ide.TextEditor.Services;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
+using TomPIT.Serialization;
 
 namespace TomPIT.Ide.Designers
 {
@@ -140,7 +144,7 @@ namespace TomPIT.Ide.Designers
 			if (string.Compare(action, "provideItems", true) == 0)
 				return Result.JsonResult(this, CodeAnalyzer.Suggestions(Environment.Context, CreateSuggestionArgs(data)));
 			else if (string.Compare(action, "checkSyntax", true) == 0)
-				return CheckSyntax();
+				return CheckSyntax(data);
 			else if (string.Compare(action, "hover", true) == 0)
 				return Result.JsonResult(this, CodeAnalyzer.Hover(Environment.Context, CreateSuggestionArgs(data)));
 			else if (string.Compare(action, "signatureHelp", true) == 0)
@@ -156,8 +160,62 @@ namespace TomPIT.Ide.Designers
 				return Result.JsonResult(this, QueryDataSources());
 			else if (string.Compare(action, "definition", true) == 0)
 				return Result.JsonResult(this, CodeAnalyzer.Definition(Environment.Context, CreateSuggestionArgs(data)));
+			else if (string.Compare(action, "provideCodeActions", true) == 0)
+			{
+				var model = CreateTextModel(data.Optional<JObject>("model", null));
+				var editor = GetTextEditor(model, data.Optional<string>("text", null));
+
+				if (editor == null)
+					return Result.JsonResult(this, null);
+
+				var range = CreateRange(data.Optional<JObject>("range", null));
+				var context = CreateCodeActionContext(data.Optional<JObject>("context", null));
+
+				return Result.JsonResult(this, editor.GetService<ICodeActionService>().ProvideCodeActions(range, context));
+			}
 
 			return base.OnAction(data, action);
+		}
+
+		private ITextEditor GetTextEditor(ITextModel model, string text)
+		{
+			var editor = Environment.Context.Tenant.GetService<ITextEditorService>().GetEditor(Environment.Context, Language);
+
+			if (editor == null)
+				return null;
+
+			editor.Text = text;
+			editor.Model = model;
+			editor.HostType = ArgumentType;
+
+			return editor;
+		}
+
+		private ITextModel CreateTextModel(JObject data)
+		{
+			var r = new TextModel();
+
+			SerializationExtensions.Populate(data, r);
+
+			return r;
+		}
+
+		private TextEditor.IRange CreateRange(JObject data)
+		{
+			var r = new TextEditor.Range();
+
+			SerializationExtensions.Populate(data, r);
+
+			return r;
+		}
+
+		private ICodeActionContext CreateCodeActionContext(JObject data)
+		{
+			var r = new CodeActionContext();
+
+			SerializationExtensions.Populate(data, r);
+
+			return r;
 		}
 
 		private object QueryDataSources()
@@ -200,12 +258,14 @@ namespace TomPIT.Ide.Designers
 				data.Optional("triggerKind", string.Empty));
 		}
 
-		private IDesignerActionResult CheckSyntax()
+		private IDesignerActionResult CheckSyntax(JObject data)
 		{
-			if (CodeDiagnostic == null)
+			var editor = GetTextEditor(CreateTextModel(data.Optional<JObject>("model", null)), data.Optional<string>("text", null));
+
+			if (editor == null)
 				return Result.EmptyResult(ViewModel);
 
-			var result = CodeDiagnostic.CheckSyntax(Environment, Content as ISourceCode, ArgumentType);
+			var result = editor.GetService<ISyntaxCheckService>().CheckSyntax(Content as ISourceCode);
 
 			return Result.JsonResult(this, result);
 		}

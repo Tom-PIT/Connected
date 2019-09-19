@@ -18,6 +18,25 @@ namespace TomPIT.Reflection
 {
 	public static class TypeExtensions
 	{
+		private static Dictionary<Type, string> Types = new Dictionary<Type, string>
+		{
+			{typeof(int), "int"},
+			{typeof(uint), "uint"},
+			{typeof(long), "long"},
+			{typeof(ulong), "ulong"},
+			{typeof(short), "short"},
+			{typeof(ushort), "ushort"},
+			{typeof(byte), "byte"},
+			{typeof(sbyte), "sbyte"},
+			{typeof(bool), "bool"},
+			{typeof(float), "float"},
+			{typeof(double), "double"},
+			{typeof(decimal), "decimal"},
+			{typeof(char), "char"},
+			{typeof(string), "string"},
+			{typeof(object), "object"},
+			{typeof(void), "void"}
+		};
 		public static T FindAttribute<T>(this PropertyInfo info) where T : Attribute
 		{
 			var atts = info.GetCustomAttributes<T>(true);
@@ -329,24 +348,8 @@ namespace TomPIT.Reflection
 
 		public static string ToFriendlyName(this Type type)
 		{
-			if (type == typeof(int))
-				return "int";
-			else if (type == typeof(short))
-				return "short";
-			else if (type == typeof(byte))
-				return "byte";
-			else if (type == typeof(bool))
-				return "bool";
-			else if (type == typeof(long))
-				return "long";
-			else if (type == typeof(float))
-				return "float";
-			else if (type == typeof(double))
-				return "double";
-			else if (type == typeof(decimal))
-				return "decimal";
-			else if (type == typeof(string))
-				return "string";
+			if (Types.ContainsKey(type))
+				return Types[type];
 			else if (type.IsGenericType)
 				return type.Name.Split('`')[0] + "<" + string.Join(", ", type.GetGenericArguments().Select(x => ToFriendlyName(x)).ToArray()) + ">";
 			else
@@ -355,6 +358,9 @@ namespace TomPIT.Reflection
 
 		public static Type GetType(string type)
 		{
+			if (Types.ContainsValue(type))
+				return Types.FirstOrDefault(f => string.Compare(f.Value, type, false) == 0).Key;
+
 			var t = Type.GetType(type);
 
 			if (t != null)

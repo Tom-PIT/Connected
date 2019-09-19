@@ -39,6 +39,8 @@
                     if (typeof target.options.instance.definitionProvider !== 'undefined')
                         target.options.instance.definitionProvider.dispose();
 
+                    if (typeof target.options.instance.codeActionProvider !== 'undefined')
+                        target.options.instance.codeActionProvider.dispose();
 
                     target.options.instance.dispose();
                     target.options.instance = null;
@@ -143,6 +145,11 @@
 
 			this.options.instance.definitionProvider = provider;
 		},
+        registerCodeActionProvider: function (language, options) {
+            var provider = monaco.languages.registerCodeActionProvider(language, options);
+
+            this.options.instance.codeActionProvider = provider;
+        },
 		insertText: function (text) {
 			var line = this.options.instance.getPosition();
 			var range = new monaco.Range(line.lineNumber, 1, line.lineNumber, 1);

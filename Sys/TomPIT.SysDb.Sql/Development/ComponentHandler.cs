@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Data.Sql;
 using TomPIT.Development;
@@ -97,18 +98,65 @@ namespace TomPIT.SysDb.Sql.Development
 			w.Execute();
 		}
 
-		public void UpdateState(IComponent component, Guid element, IndexState indexState, DateTime indexTimestamp, AnalyzerState analyzerState, DateTime analyzerTimestamp)
+		public void UpdateStates(List<IComponentIndexState> states)
 		{
-			var w = new Writer("tompit.component_upd_state");
+			var itemsParameter = new JArray();
 
-			w.CreateParameter("@id", component.GetId());
-			w.CreateParameter("@element", element, true);
-			w.CreateParameter("@index_state", indexState);
-			w.CreateParameter("@index_timestamp", indexTimestamp, true);
-			w.CreateParameter("@analyzer_state", analyzerState);
-			w.CreateParameter("@analyzer_timestamp", analyzerTimestamp, true);
+			foreach (var state in states)
+			{
+				var parameter = new JObject
+				{
+					{"id", state.Component.GetId().ToString() },
+					{"index_state", (int)state.State },
+					{"index_timestamp", state.TimeStamp }
+				};
+
+				if (state.Element != Guid.Empty)
+					parameter.Add("element", state.Element);
+
+				itemsParameter.Add(parameter);
+			}
+
+			var w = new Writer("tompit.component_upd_index_state");
+
+			w.CreateParameter("@items", itemsParameter);
 
 			w.Execute();
+		}
+
+		public void UpdateStates(List<IComponentAnalyzerState> states)
+		{
+			var itemsParameter = new JArray();
+
+			foreach (var state in states)
+			{
+				var parameter = new JObject
+				{
+					{"id", state.Component.GetId().ToString() },
+					{"analyzer_state", (int)state.State },
+					{"analyzer_timestamp", state.TimeStamp }
+				};
+
+				if (state.Element != Guid.Empty)
+					parameter.Add("element", state.Element);
+
+				itemsParameter.Add(parameter);
+			}
+
+			var w = new Writer("tompit.component_upd_analyzer_state");
+
+			w.CreateParameter("@items", itemsParameter);
+
+			w.Execute();
+		}
+
+		public List<IComponentDevelopmentState> QueryActiveAnalyzerStates(DateTime timeStamp)
+		{
+			var r = new Reader<ComponentState>("tompit.component_state_analyzer_que");
+
+			r.CreateParameter("@timestamp", timeStamp, true);
+
+			return r.Execute().ToList<IComponentDevelopmentState>();
 		}
 
 		public List<IComponentDevelopmentState> QueryStates()
@@ -140,6 +188,15 @@ namespace TomPIT.SysDb.Sql.Development
 
 			r.CreateParameter("@component", component.GetId());
 			r.CreateParameter("@element", element);
+
+			return r.Execute().ToList<IComponentDevelopmentState>();
+		}
+
+		public List<IComponentDevelopmentState> QueryActiveIndexStates(DateTime timeStamp)
+		{
+			var r = new Reader<ComponentState>("tompit.component_state_index_que");
+
+			r.CreateParameter("@timestamp", timeStamp, true);
 
 			return r.Execute().ToList<IComponentDevelopmentState>();
 		}

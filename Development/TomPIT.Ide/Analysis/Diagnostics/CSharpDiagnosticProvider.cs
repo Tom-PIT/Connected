@@ -56,7 +56,7 @@ namespace TomPIT.Ide.Analysis.Diagnostics
 
 		private bool IsSuppressed(IDiagnostic item)
 		{
-			if (item.Severity == DiagnosticSeverity.Warning && string.Compare(item.Id, "CS1702", true) == 0)
+			if (item.Severity == DiagnosticSeverity.Warning && string.Compare(item.Code, "CS1702", true) == 0)
 				return true;
 
 			return false;

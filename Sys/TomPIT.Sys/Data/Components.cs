@@ -377,46 +377,14 @@ namespace TomPIT.Sys.Data
 			Update(component, c.Name, c.Folder, runtimeConfiguration);
 		}
 
-		public void Update(Guid component, Guid element, IndexState indexState, DateTime indexTimestamp)
+		public void Update(List<IComponentIndexState> states)
 		{
-			var c = Select(component);
-
-			if (c == null)
-				throw new SysException(SR.ErrComponentNotFound);
-
-			var existingState = Shell.GetService<IDatabaseService>().Proxy.Development.Components.QueryStates(c, element);
-
-			var analyzerState = AnalyzerState.Analyzed;
-			var analyzerTimestamp = DateTime.MinValue;
-
-			if (existingState != null && existingState.Count > 0)
-			{
-				analyzerState = existingState[0].AnalyzerState;
-				analyzerTimestamp = existingState[0].AnalyzerTimestamp;
-			}
-
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.UpdateState(c, element, indexState, indexTimestamp, analyzerState, analyzerTimestamp);
+			Shell.GetService<IDatabaseService>().Proxy.Development.Components.UpdateStates(states);
 		}
 
-		public void Update(Guid component, Guid element, AnalyzerState analyzerState, DateTime analyzerTimestamp)
+		public void Update(List<IComponentAnalyzerState> states)
 		{
-			var c = Select(component);
-
-			if (c == null)
-				throw new SysException(SR.ErrComponentNotFound);
-
-			var existingState = Shell.GetService<IDatabaseService>().Proxy.Development.Components.QueryStates(c, element);
-
-			var indexState = IndexState.Synchronized;
-			var indexTimestamp = DateTime.MinValue;
-
-			if (existingState != null && existingState.Count > 0)
-			{
-				indexState = existingState[0].IndexState;
-				indexTimestamp = existingState[0].IndexTimestamp;
-			}
-
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.UpdateState(c, element, indexState, indexTimestamp, analyzerState, analyzerTimestamp);
+			Shell.GetService<IDatabaseService>().Proxy.Development.Components.UpdateStates(states);
 		}
 
 		public void Update(Guid component, string name, Guid folder, Guid runtimeConfiguration)

@@ -101,11 +101,17 @@ namespace TomPIT.Serialization
 
 		public static void Populate(string value, object instance)
 		{
+			if (string.IsNullOrWhiteSpace(value))
+				return;
+
 			JsonConvert.PopulateObject(value, instance, SerializerSettings);
 		}
 
 		public static void Populate(object value, object instance)
 		{
+			if (value == null)
+				return;
+
 			JsonConvert.PopulateObject(Serialize(value), instance, SerializerSettings);
 		}
 

@@ -31,19 +31,15 @@ namespace TomPIT.Ide.Analysis.Analyzers
 
 		private static readonly string[] Usings = new string[]
 		{
-				"System",
-				"System.Data",
-				"System.Text",
-				"System.Linq",
-				"System.Collections.Generic",
-				"Newtonsoft.Json",
-				"Newtonsoft.Json.Linq",
-				"TomPIT",
-				"TomPIT.Data",
-				"TomPIT.ComponentModel",
-				"TomPIT.ComponentModel.Apis",
-				"TomPIT.Middleware",
-				"TomPIT.Middleware.Interop"
+				//"System",
+				//"System.Data",
+				//"System.Text",
+				//"System.Linq",
+				//"System.Collections.Generic",
+				//"Newtonsoft.Json",
+				//"Newtonsoft.Json.Linq",
+				//"TomPIT",
+				//"TomPIT.Middleware",
 		};
 
 		public CSharpCodeAnalyzerBase(IMiddlewareContext context) : base(context)

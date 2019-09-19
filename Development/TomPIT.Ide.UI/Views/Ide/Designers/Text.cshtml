@@ -76,7 +76,7 @@
         {
            <text>
         onCheckSyntax: function () {
-            checkSyntax(false);
+            checkSyntax();
         },
             </text>
         }
@@ -92,7 +92,7 @@
 
 			  textEditor.registerCompletionItemProvider('@Model.Language', {
 					provideCompletionItems: function (model, position, context) {
-                    return new monaco.Promise(function (resolve, reject) {
+                    return new Promise(function (resolve, reject) {
                         ide.designerAction({
                             data: {
                                 action: 'provideItems',
@@ -114,14 +114,40 @@
 
                         }, false);
                     });
-
                 },
+              });
+
+            textEditor.registerCodeActionProvider('@Model.Language', {
+                provideCodeActions: function (model, range, context) {
+                    return new Promise(function (resolve, reject) {
+                        ide.designerAction({
+                            data: {
+                                action: 'provideCodeActions',
+                                section: 'designer',
+                                property: '@Model.PropertyName',
+                                model: {
+                                    'id': model.id,
+                                    'uri': model.uri.toString()
+                                },
+                                range:range,
+                                context: context,
+                                text: model.getValue()
+                            },
+                            onComplete: function (data) {
+                                resolve({
+                                    actions:data
+                                })
+                            }
+
+                        }, false);
+                    });
+                }
             });
 
             textEditor.registerSignatureHelpProvider('@Model.Language', {
                 signatureHelpTriggerCharacters: ['(', '[', ',', '&lt'],
                 provideSignatureHelp: function (model, position) {
-                    return new monaco.Promise(function (resolve, reject) {
+                    return new Promise(function (resolve, reject) {
                         ide.designerAction({
                             data: {
                                 action: 'signatureHelp',
@@ -134,7 +160,10 @@
                                 content: model.getValue()
                             },
                             onComplete: function (data) {
-                                resolve(data);
+                                resolve({
+                                    value: data,
+                                    dispose: function () {}
+                                });
                             }
                         }, false);
 
@@ -142,9 +171,9 @@
                 },
 			  });
 
-			  textEditor.registerDefinitionProvider('@Model.Language', {
+			  @*textEditor.registerDefinitionProvider('@Model.Language', {
 				  provideDefinition: function (model, position) {
-                    return new monaco.Promise(function (resolve, reject) {
+                    return new Promise(function (resolve, reject) {
                         ide.designerAction({
                             data: {
                                 action: 'definition',
@@ -166,11 +195,11 @@
 
                     });
 				  }
-			  });
+			  });*@
 
-            textEditor.registerHoverProvider('@Model.Language', {
+            @*textEditor.registerHoverProvider('@Model.Language', {
                 provideHover: function (model, position) {
-                    return new monaco.Promise(function (resolve, reject) {
+                    return new Promise(function (resolve, reject) {
                         ide.designerAction({
                             data: {
                                 action: 'hover',
@@ -189,47 +218,15 @@
 
                     });
                 },
-            });
+            });*@
 
-            var internalCommand = textEditor.addCommand(0, function (s, e) {
-					ide.newWindow(e.microService, e.component, e.element);
-            });
+     //       var internalCommand = textEditor.addCommand(0, function (s, e) {
+					//ide.newWindow(e.microService, e.component, e.element);
+     //       });
 
-			  textEditor.addAction({
-					id: 'strogly_type',
-					label: 'Create Data Entity',
-
-					keybindings: [
-						monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_T)
-					],
-
-					precondition: null,
-					keybindingContext: null,
-					contextMenuGroupId: 'navigation',
-					contextMenuOrder: 1.5,
-
-				  run: function (ed) {
-					  $('#modalStronglyTyped').modal('show');
-
-                      ide.designerAction({
-						  data: {
-							  'action':'dataSources'
-						  },
-						  onComplete: function (data) {
-							  var list = $('#listDataSources').dxList('instance');
-
-							  list.beginUpdate();
-							  list.option('dataSource', data);
-							  list.endUpdate();
-						  }
-					  }, false);
-						return null;
-					}
-			  });
-
-            textEditor.registerCodeLensProvider('@Model.Language', {
+            @*textEditor.registerCodeLensProvider('@Model.Language', {
                 provideCodeLenses: function (model, token) {
-                    return new monaco.Promise(function (resolve, reject) {
+                    return new Promise(function (resolve, reject) {
                         ide.designerAction({
                             data: {
                                 action: 'codeLens',
@@ -241,7 +238,7 @@
                             onComplete: function (data) {
                                 if (typeof data !== 'undefined' && data !== null) {
                                     $.each(data, function (i, v) {
-                                        v.command.id = internalCommand
+                                        //v.command.id = internalCommand
                                     });
                                 }
                                     resolve(data);
@@ -253,7 +250,7 @@
                 resolveCodeLens: function (model, codeLens, token) {
                     return codeLens;
                 }
-            });
+            });*@
 
             $('#editConnections').dxSelectBox({
 
@@ -325,7 +322,7 @@
     {
        <text>
 
-    function checkSyntax(successMessage) {
+    function checkSyntax() {
                 ide.saveProperty({
             data: {
                 property: '@Model.PropertyName',
@@ -334,24 +331,24 @@
                 path: propertyPath
             },
                     onComplete: function () {
-                        setErrorMarkers(successMessage);
+                        setErrorMarkers();
             }
         }, false);
     }
 
-    function setErrorMarkers(successMessage) {
+    function setErrorMarkers() {
         ide.designerAction({
             data: {
                 action: 'checkSyntax',
                 section: 'designer',
                 property: '@Model.PropertyName',
+                model: {
+                    'id': textEditor.getEditor().getModel().id,
+                    'uri': textEditor.getEditor().getModel().uri.toString()
+                },
+                text:textEditor.getEditor().getValue()
             },
             onComplete: function (data) {
-
-                if (data.length === 0 && successMessage) {
-                    tompit.success('No errors found in the source code', "Valid");
-                }
-
                 textEditor.setMarkers(data);
             }
         }, false);

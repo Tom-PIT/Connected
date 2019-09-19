@@ -43,6 +43,7 @@ namespace TomPIT.Development
 
 			services.AddHostedService<ToolsRunner>();
 			services.AddHostedService<AutoFixRunner>();
+			services.AddHostedService<ComponentAnalysisRunner>();
 		}
 
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)

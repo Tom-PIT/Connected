@@ -38,29 +38,55 @@ namespace TomPIT.Sys.Controllers.Development
 		}
 
 		[HttpPost]
-		public void UpdateIndexState()
+		public void UpdateIndexStates()
 		{
 			var body = FromBody();
+			var items = body.Required<JArray>("items");
+			var parameters = new List<IComponentIndexState>();
 
-			var component = body.Required<Guid>("component");
-			var element = body.Optional("element", Guid.Empty);
-			var indexState = body.Required<IndexState>("indexState");
-			var indexTimestamp = body.Required<DateTime>("indexTimestamp");
+			foreach (JObject item in items)
+			{
+				var cmp = DataModel.Components.Select(item.Required<Guid>("component"));
 
-			DataModel.Components.Update(component, element, indexState, indexTimestamp);
+				if (cmp == null)
+					continue;
+
+				parameters.Add(new ComponentIndexState
+				{
+					Component = cmp,
+					Element = item.Optional("element", Guid.Empty),
+					State = item.Required<IndexState>("state"),
+					TimeStamp = item.Required<DateTime>("timestamp")
+				});
+			}
+
+			DataModel.Components.Update(parameters);
 		}
 
 		[HttpPost]
-		public void UpdateAnalyzerState()
+		public void UpdateAnalyzerStates()
 		{
 			var body = FromBody();
+			var items = body.Required<JArray>("items");
+			var parameters = new List<IComponentAnalyzerState>();
 
-			var component = body.Required<Guid>("component");
-			var element = body.Optional("element", Guid.Empty);
-			var analyzerState = body.Required<AnalyzerState>("analyzerState");
-			var analyzerTimestamp = body.Required<DateTime>("analyzerTimestamp");
+			foreach (JObject item in items)
+			{
+				var cmp = DataModel.Components.Select(item.Required<Guid>("component"));
 
-			DataModel.Components.Update(component, element, analyzerState, analyzerTimestamp);
+				if (cmp == null)
+					continue;
+
+				parameters.Add(new ComponentAnalyzerState
+				{
+					Component = cmp,
+					Element = item.Optional("element", Guid.Empty),
+					State = item.Required<AnalyzerState>("index_state"),
+					TimeStamp = item.Required<DateTime>("indextimestamp")
+				});
+			}
+
+			DataModel.Components.Update(parameters);
 		}
 
 		[HttpPost]

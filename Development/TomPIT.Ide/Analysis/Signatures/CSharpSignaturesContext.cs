@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -38,7 +39,21 @@ namespace TomPIT.Ide.Analysis.Signatures
 			if (node == null || node.Parent == null)
 				return r;
 
-			var symbols = sm.GetSpeculativeSymbolInfo(Args.Position, node.Parent, SpeculativeBindingOption.BindAsExpression);
+			SymbolInfo symbols;
+			var currentNode = node.Parent;
+
+			while (true)
+			{
+				symbols = sm.GetSpeculativeSymbolInfo(Args.Position, currentNode, SpeculativeBindingOption.BindAsExpression);
+
+				if (symbols.Symbol != null || symbols.CandidateSymbols.Length > 0)
+					break;
+
+				currentNode = currentNode.Parent;
+
+				if (currentNode == null)
+					break;
+			}
 
 			if (symbols.Symbol != null)
 				r.Signatures.AddRange(CreateSignatures(symbols.Symbol));
@@ -48,6 +63,9 @@ namespace TomPIT.Ide.Analysis.Signatures
 
 			var list = node as ArgumentListSyntax;
 
+			if (list == null)
+				list = node.Parent as ArgumentListSyntax;
+
 			if (list != null)
 			{
 				foreach (var i in list.Arguments)
@@ -56,6 +74,23 @@ namespace TomPIT.Ide.Analysis.Signatures
 						r.ActiveParameter++;
 					else
 						break;
+				}
+			}
+
+			if (r.Signatures.Count > 1)
+			{
+				var exact = list == null
+					? r.Signatures.Where(f => f.Parameters.Count == 0)
+					: r.Signatures.Where(f => f.Parameters.Count == list.Arguments.Count);
+
+				if (exact.Count() > 0)
+					r.ActiveSignature = r.Signatures.IndexOf(exact.ElementAt(0));
+				else
+				{
+					exact = r.Signatures.Where(f => f.Parameters.Count > list.Arguments.Count);
+
+					if (exact.Count() > 0)
+						r.ActiveSignature = r.Signatures.IndexOf(exact.ElementAt(0));
 				}
 			}
 
