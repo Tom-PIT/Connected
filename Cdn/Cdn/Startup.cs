@@ -2,8 +2,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using TomPIT.Cdn.Services;
+using TomPIT.Cdn.Mail;
+using TomPIT.Cdn.Routing;
 using TomPIT.Environment;
+using TomPIT.Runtime;
 
 namespace TomPIT.Cdn
 {
@@ -31,7 +33,7 @@ namespace TomPIT.Cdn
 		{
 			Instance.Configure(InstanceType.Cdn, app, env, (f) =>
 			{
-				Cdn.Configuration.Routing.Register(f.Builder);
+				CdnRouting.Register(f.Builder);
 			});
 			Instance.Run(app);
 		}
@@ -39,7 +41,7 @@ namespace TomPIT.Cdn
 		private void RegisterTasks(IServiceCollection services)
 		{
 			services.AddSingleton<IHostedService, MailService>();
-			services.AddSingleton<IHostedService, ConnectionCleanupService>();
+			services.AddSingleton<IHostedService, SmtpConnectionCleanupService>();
 		}
 	}
 }

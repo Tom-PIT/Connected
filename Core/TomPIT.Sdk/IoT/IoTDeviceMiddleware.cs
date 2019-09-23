@@ -6,13 +6,8 @@ namespace TomPIT.IoT
 {
 	public abstract class IoTDeviceMiddleware : MiddlewareComponent, IIoTDeviceMiddleware
 	{
-		protected IoTDeviceMiddleware(IMiddlewareContext context, JObject arguments) : base(context)
-		{
-			Arguments = arguments;
-		}
-
 		[JsonIgnore]
-		public JObject Arguments { get; }
+		public JObject Arguments { get; set; }
 
 		public void Invoke()
 		{

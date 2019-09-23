@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TomPIT.Services;
+using Newtonsoft.Json.Linq;
+using TomPIT.Distributed;
+using TomPIT.Middleware;
+using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Worker.Services
 {
@@ -24,7 +26,7 @@ namespace TomPIT.Worker.Services
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				var url = Instance.Connection.CreateUrl("WorkerManagement", "Dequeue");
+				var url = Instance.Tenant.CreateUrl("WorkerManagement", "Dequeue");
 
 				var e = new JObject
 				{
@@ -32,7 +34,7 @@ namespace TomPIT.Worker.Services
 					{ "resourceGroup", f.ResourceGroup }
 				};
 
-				var jobs = Instance.Connection.Post<List<QueueMessage>>(url, e);
+				var jobs = Instance.Tenant.Post<List<QueueMessage>>(url, e);
 
 				if (jobs == null)
 					return;

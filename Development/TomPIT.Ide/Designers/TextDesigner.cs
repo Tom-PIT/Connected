@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Ide.Analysis;
 using TomPIT.Ide.Analysis.Analyzers;
 using TomPIT.Ide.Analysis.Diagnostics;
 using TomPIT.Ide.Analysis.Lenses;
+using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers.ActionResults;
-using TomPIT.Ide.Designers.Signatures;
 using TomPIT.Ide.Dom;
 using TomPIT.Ide.TextEditor;
 using TomPIT.Ide.TextEditor.Languages;
@@ -21,7 +21,6 @@ namespace TomPIT.Ide.Designers
 {
 	public class TextDesigner : DomDesigner<IDomElement>
 	{
-		private ITextSignature _signature = null;
 		private ICodeAnalyzer _analyzer = null;
 		private ICodeDiagnosticProvider _diagnostic = null;
 		private Type _argumentType = null;
@@ -64,27 +63,6 @@ namespace TomPIT.Ide.Designers
 		public string PropertyName => string.IsNullOrWhiteSpace(Environment.Selection.Property) ? "Template" : Environment.Selection.Property;
 
 		public string AttributeName => "Text";
-
-		public ITextSignature Signature
-		{
-			get
-			{
-				if (_signature == null)
-				{
-					if (string.Compare(Language, "Razor", true) == 0)
-						_signature = MethodSignature.CreateModel(typeof(IMiddlewareContext));
-					else
-					{
-						if (Owner.Property != null)
-							_signature = MethodSignature.Create(Owner.Property);
-						else
-							_signature = MethodSignature.Create(Owner.Value);
-					}
-				}
-
-				return _signature;
-			}
-		}
 
 		private Type ArgumentType
 		{
@@ -141,8 +119,21 @@ namespace TomPIT.Ide.Designers
 
 		protected override IDesignerActionResult OnAction(JObject data, string action)
 		{
-			if (string.Compare(action, "provideItems", true) == 0)
-				return Result.JsonResult(this, CodeAnalyzer.Suggestions(Environment.Context, CreateSuggestionArgs(data)));
+			if (string.Compare(action, "provideCompletionItems", true) == 0)
+			{
+				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
+				var editor = GetTextEditor(model, data.Optional<string>("text", null));
+
+				if (editor == null)
+					return Result.JsonResult(this, null);
+
+				var position = DeserializePosition(data.Optional<JObject>("position", null));
+				var context = DeserializeCompletionContext(data.Optional<JObject>("context", null));
+
+				return Result.JsonResult(this, editor.GetService<ICompletionItemService>().ProvideCompletionItems(position, context));
+			}
+			else if (string.Compare(action, "saveText", true) == 0)
+				return SaveText(data);
 			else if (string.Compare(action, "checkSyntax", true) == 0)
 				return CheckSyntax(data);
 			else if (string.Compare(action, "hover", true) == 0)
@@ -156,22 +147,32 @@ namespace TomPIT.Ide.Designers
 				{
 					{"path", Environment.ResolvePath(data.Required<Guid>("component"), data.Required<Guid>("element"), out _) }
 				});
-			else if (string.Compare(action, "dataSources", true) == 0)
-				return Result.JsonResult(this, QueryDataSources());
 			else if (string.Compare(action, "definition", true) == 0)
 				return Result.JsonResult(this, CodeAnalyzer.Definition(Environment.Context, CreateSuggestionArgs(data)));
 			else if (string.Compare(action, "provideCodeActions", true) == 0)
 			{
-				var model = CreateTextModel(data.Optional<JObject>("model", null));
+				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
 				var editor = GetTextEditor(model, data.Optional<string>("text", null));
 
 				if (editor == null)
 					return Result.JsonResult(this, null);
 
-				var range = CreateRange(data.Optional<JObject>("range", null));
-				var context = CreateCodeActionContext(data.Optional<JObject>("context", null));
+				var range = DeserializeRange(data.Optional<JObject>("range", null));
+				var context = DeserializeCodeActionContext(data.Optional<JObject>("context", null));
 
 				return Result.JsonResult(this, editor.GetService<ICodeActionService>().ProvideCodeActions(range, context));
+			}
+			else if (string.Compare(action, "provideDeclaration", true) == 0)
+			{
+				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
+				var editor = GetTextEditor(model, data.Optional<string>("text", null));
+
+				if (editor == null)
+					return Result.JsonResult(this, null);
+
+				var position = DeserializePosition(data.Optional<JObject>("position", null));
+
+				return Result.JsonResult(this, editor.GetService<IDeclarationProviderService>().ProvideDeclaration(position));
 			}
 
 			return base.OnAction(data, action);
@@ -179,7 +180,7 @@ namespace TomPIT.Ide.Designers
 
 		private ITextEditor GetTextEditor(ITextModel model, string text)
 		{
-			var editor = Environment.Context.Tenant.GetService<ITextEditorService>().GetEditor(Environment.Context, Language);
+			var editor = Environment.Context.Tenant.GetService<ITextEditorService>().GetEditor(Environment.Context, ResolveMicroService(model.Uri), Language);
 
 			if (editor == null)
 				return null;
@@ -191,7 +192,7 @@ namespace TomPIT.Ide.Designers
 			return editor;
 		}
 
-		private ITextModel CreateTextModel(JObject data)
+		private ITextModel DeserializeTextModel(JObject data)
 		{
 			var r = new TextModel();
 
@@ -200,7 +201,7 @@ namespace TomPIT.Ide.Designers
 			return r;
 		}
 
-		private TextEditor.IRange CreateRange(JObject data)
+		private TextEditor.IRange DeserializeRange(JObject data)
 		{
 			var r = new TextEditor.Range();
 
@@ -209,7 +210,16 @@ namespace TomPIT.Ide.Designers
 			return r;
 		}
 
-		private ICodeActionContext CreateCodeActionContext(JObject data)
+		private TextEditor.IPosition DeserializePosition(JObject data)
+		{
+			var r = new TextEditor.Position();
+
+			SerializationExtensions.Populate(data, r);
+
+			return r;
+		}
+
+		private ICodeActionContext DeserializeCodeActionContext(JObject data)
 		{
 			var r = new CodeActionContext();
 
@@ -218,19 +228,11 @@ namespace TomPIT.Ide.Designers
 			return r;
 		}
 
-		private object QueryDataSources()
+		private ICompletionContext DeserializeCompletionContext(JObject data)
 		{
-			var ds = Environment.Context.Tenant.GetService<IComponentService>().QueryComponents(Element.MicroService(), "DataSource").OrderBy(f => f.Name);
-			var r = new JArray();
+			var r = new CompletionContext();
 
-			foreach (var i in ds)
-			{
-				r.Add(new JObject
-				{
-					{ "value", i.Token },
-					{ "text",i.Name }
-				});
-			}
+			SerializationExtensions.Populate(data, r);
 
 			return r;
 		}
@@ -258,14 +260,35 @@ namespace TomPIT.Ide.Designers
 				data.Optional("triggerKind", string.Empty));
 		}
 
+		private IDesignerActionResult SaveText(JObject data)
+		{
+			var sc = ResolveSourceCode(data.Optional<JObject>("model", null));
+
+			if (sc == null)
+				return Result.EmptyResult(this);
+
+			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(sc, data.Optional<string>("text", null));
+			Environment.Context.Tenant.GetService<ICompilerService>().Invalidate(Environment.Context, sc.Configuration().MicroService(), sc.Configuration().Component, sc);
+
+			var r = Result.SectionResult(ViewModel, EnvironmentSection.Events);
+
+			return r;
+		}
+
 		private IDesignerActionResult CheckSyntax(JObject data)
 		{
-			var editor = GetTextEditor(CreateTextModel(data.Optional<JObject>("model", null)), data.Optional<string>("text", null));
+			var model = data.Optional<JObject>("model", null);
+			var sc = ResolveSourceCode(model);
+
+			if (sc == null)
+				return Result.EmptyResult(this);
+
+			var editor = GetTextEditor(DeserializeTextModel(model), data.Optional<string>("text", null));
 
 			if (editor == null)
 				return Result.EmptyResult(ViewModel);
 
-			var result = editor.GetService<ISyntaxCheckService>().CheckSyntax(Content as ISourceCode);
+			var result = editor.GetService<ISyntaxCheckService>().CheckSyntax(sc);
 
 			return Result.JsonResult(this, result);
 		}
@@ -281,6 +304,64 @@ namespace TomPIT.Ide.Designers
 
 				return null;
 			}
+		}
+
+		private IMicroService ResolveMicroService(string uri)
+		{
+			if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri u))
+				return default;
+
+			return Environment.Context.Tenant.GetService<IMicroServiceService>().Select(u.Authority);
+		}
+		private ISourceCode ResolveSourceCode(JObject data)
+		{
+			var uriString = data.Optional("uri", string.Empty);
+
+			if (string.IsNullOrWhiteSpace(uriString))
+				return default;
+
+			if (!Uri.TryCreate(uriString, UriKind.Absolute, out Uri u))
+				return default;
+
+			var ms = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(u.Authority);
+			var tokens = u.LocalPath.Trim('/').Split('/');
+			var category = tokens[0];
+			var component = tokens[1];
+			var element = Guid.Empty;
+
+			if (tokens.Length > 2)
+				element = new Guid(tokens[2]);
+
+			var cmp = Environment.Context.Tenant.GetService<IComponentService>().SelectComponent(ms.Token, category, component);
+			var config = Environment.Context.Tenant.GetService<IComponentService>().SelectConfiguration(cmp.Token);
+
+			if (config == null)
+				return null;
+
+			if (element == Guid.Empty || cmp.Token == element)
+				return config as ISourceCode;
+
+			return config.Find(element) as ISourceCode;
+		}
+
+		public LanguageFeature SupportedFeatures(string language, IMicroService microService)
+		{
+			var editor = Environment.Context.Tenant.GetService<ITextEditorService>().GetEditor(Environment.Context, microService, language);
+
+			if (editor == null)
+				return LanguageFeature.None;
+
+			return editor.Features;
+		}
+
+		public string ParseModelUri(IText text)
+		{
+			var component = Environment.Context.Tenant.GetService<IComponentService>().SelectComponent(text.Configuration().Component);
+
+			if (text is IConfiguration)
+				return $"/{component.Category}/{component.Name}";
+
+			return $"/{component.Category}/{component.Name}/{text.Id}";
 		}
 	}
 }

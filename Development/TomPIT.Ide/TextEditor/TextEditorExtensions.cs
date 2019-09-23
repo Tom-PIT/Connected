@@ -17,7 +17,13 @@ namespace TomPIT.Ide.TextEditor
 		{
 			var text = document.GetTextAsync().Result;
 
-			return TextLine.FromSpan(text, TextSpan.FromBounds(position, position));
+			foreach (var line in text.Lines)
+			{
+				if (line.Span.IntersectsWith(position))
+					return line;
+			}
+
+			return new TextLine();
 		}
 
 		public static int GetPosition(this Document document, IRange range)
@@ -26,6 +32,14 @@ namespace TomPIT.Ide.TextEditor
 			var span = text.Lines[range.StartLineNumber - 1].Span;
 
 			return span.Start + range.StartColumn - 1;
+		}
+
+		public static int GetPosition(this Document document, IPosition position)
+		{
+			var text = document.GetTextAsync().Result;
+			var span = text.Lines[position.LineNumber - 1].Span;
+
+			return span.Start + position.Column - 1;
 		}
 	}
 }

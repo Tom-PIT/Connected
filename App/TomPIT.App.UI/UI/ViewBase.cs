@@ -1,17 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc.Razor;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
-using System;
+﻿using System;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Newtonsoft.Json.Linq;
+using TomPIT.Collections;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Models;
-using TomPIT.Services;
+using TomPIT.Serialization;
+using TomPIT.UI;
 
-namespace TomPIT.UI
+namespace TomPIT.App.UI
 {
 	public abstract class ViewBase<T> : RazorPage<T>
 	{
@@ -33,8 +33,8 @@ namespace TomPIT.UI
 			if (helper == null)
 				return;
 
-			e.Connection().GetService<ICompilerService>().Execute(Configuration.MicroService(e.Connection()),
-				helper, this, new ViewHelperArguments(e, args, this as RazorPage<IViewModel>));
+			ViewModel.Tenant.GetService<ICompilerService>().Execute(Configuration.MicroService(),
+				helper, this, new ViewHelperArguments(ViewModel, args, this as RazorPage<IViewModel>));
 		}
 
 		public H Helper<H>(string name)
@@ -49,17 +49,17 @@ namespace TomPIT.UI
 			if (helper == null)
 				return default(H);
 
-			return (H)e.Connection().GetService<ICompilerService>().Execute(Configuration.MicroService(e.Connection()),
-				helper, this, new ViewHelperArguments(e, args, this as RazorPage<IViewModel>));
+			return (H)ViewModel.Tenant.GetService<ICompilerService>().Execute(Configuration.MicroService(),
+				helper, this, new ViewHelperArguments(ViewModel, args, this as RazorPage<IViewModel>));
 		}
 
-		public IViewModel e => Model as IViewModel;
+		private IViewModel ViewModel => Model as IViewModel;
 		private IConfiguration Configuration
 		{
 			get
 			{
 				if (_configuration == null)
-					_configuration = Instance.GetService<IComponentService>().SelectConfiguration(ComponentId);
+					_configuration = Instance.Tenant.GetService<IComponentService>().SelectConfiguration(ComponentId);
 
 				return _configuration;
 			}
@@ -69,18 +69,18 @@ namespace TomPIT.UI
 		{
 			get
 			{
-				if (_helpers == null && e != null)
+				if (_helpers == null && ViewModel != null)
 				{
 					if (Configuration != null)
 					{
 						if (string.Compare(ViewType, "partial", true) == 0)
-							_helpers = ((IPartialView)Configuration).Helpers;
+							_helpers = ((IPartialViewConfiguration)Configuration).Helpers;
 						else if (string.Compare(ViewType, "view", true) == 0)
-							_helpers = ((IView)Configuration).Helpers;
+							_helpers = ((IViewConfiguration)Configuration).Helpers;
 						else if (string.Compare(ViewType, "master", true) == 0)
-							_helpers = ((IMasterView)Configuration).Helpers;
+							_helpers = ((IMasterViewConfiguration)Configuration).Helpers;
 						else if (string.Compare(ViewType, "mailtemplate", true) == 0)
-							_helpers = ((IMailTemplate)Configuration).Helpers;
+							_helpers = ((IMailTemplateConfiguration)Configuration).Helpers;
 					}
 				}
 
@@ -90,7 +90,7 @@ namespace TomPIT.UI
 
 		protected string GetString(string stringTable, string key)
 		{
-			return e.Services.Localization.GetString(stringTable, key);
+			return ViewModel.Services.Globalization.GetString(stringTable, key);
 		}
 
 		protected string ToJsonString(object content)
@@ -98,7 +98,7 @@ namespace TomPIT.UI
 			if (content == null)
 				return null;
 
-			return Types.Serialize(content);
+			return SerializationExtensions.Serialize(content);
 		}
 	}
 }

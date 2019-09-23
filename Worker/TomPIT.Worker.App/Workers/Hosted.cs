@@ -1,35 +1,34 @@
 ﻿using TomPIT.Compilation;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Workers;
-using TomPIT.Data;
-using TomPIT.Services;
-using TomPIT.Workers;
+using TomPIT.ComponentModel.Distributed;
+using TomPIT.Distributed;
+using TomPIT.Middleware;
+using TomPIT.Serialization;
 
 namespace TomPIT.Worker.Workers
 {
 	internal class Hosted : Invoker
 	{
-		public Hosted(IHostedWorker worker, string state) : base(state)
+		public Hosted(IHostedWorkerConfiguration worker, string state) : base(state)
 		{
 			Worker = worker;
 		}
 
-		private IHostedWorker Worker { get; }
+		private IHostedWorkerConfiguration Worker { get; }
 
 		public override void Invoke()
 		{
-			var ms = Instance.Connection.GetService<IMicroServiceService>().Select(((IConfiguration)Worker).MicroService(Instance.Connection));
-			var type = Instance.GetService<ICompilerService>().ResolveType(ms.Token, Worker, Worker.ComponentName(Instance.Connection));
-			var ctx = ExecutionContext.Create(Instance.Connection.Url, ms);
-			var dataCtx = new DataModelContext(ctx);
-			var instance = type.CreateInstance<IHostedWorkerHandler>(new object[] { dataCtx });
+			var ms = Instance.Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)Worker).MicroService());
+			var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(ms.Token, Worker, Worker.ComponentName());
+			var ctx = MiddlewareDescriptor.Current.CreateContext(ms.Token);
+			var instance = Instance.Tenant.GetService<ICompilerService>().CreateInstance<IHostedWorkerMiddleware>(ctx, type);
 
 			if (!string.IsNullOrWhiteSpace(State))
-				Types.Populate(State, instance);
+				SerializationExtensions.Populate(State, instance);
 
 			instance.Invoke();
 
-			State = Types.Serialize(instance);
+			State = SerializationExtensions.Serialize(instance);
 		}
 	}
 }

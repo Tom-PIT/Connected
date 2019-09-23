@@ -2,57 +2,57 @@
 @using TomPIT.Ide;
 
 @{
-   Layout = "~/Views/Shared/Shell.cshtml";
+    Layout = "~/Views/Shared/Shell.cshtml";
 
-   var qspath = Context.Request.Query["path"].ToString();
-   var element = string.Empty;
-   var eventName = string.Empty;
+    var qspath = Context.Request.Query["path"].ToString();
+    var element = string.Empty;
+    var eventName = string.Empty;
 
-   if (string.IsNullOrWhiteSpace(qspath))
-   {
-       var component = Context.Request.Query["component"].ToString();
+    if (string.IsNullOrWhiteSpace(qspath))
+    {
+        var component = Context.Request.Query["component"].ToString();
 
-       if (!string.IsNullOrWhiteSpace(component))
-       {
-           element = Context.Request.Query["element"].ToString();
-           var elementId = string.IsNullOrWhiteSpace(element) ? Guid.Empty : new Guid(element);
+        if (!string.IsNullOrWhiteSpace(component))
+        {
+            element = Context.Request.Query["element"].ToString();
+            var elementId = string.IsNullOrWhiteSpace(element) ? Guid.Empty : new Guid(element);
 
-           qspath = Model.ResolvePath(new Guid(component), elementId, out eventName);
-       }
-   }
+            qspath = Model.ResolvePath(new Guid(component), elementId, out eventName);
+        }
+    }
 }
 
 @section head{
-	<environment names="Staging,Production">
-		<link rel="stylesheet" type="text/css" href="~/Assets/ide.min.css" />
-		<script src="~/Assets/ide.min.js"></script>
-	</environment>
-	<environment names="Development">
-		<link rel="stylesheet" type="text/css" href="~/Assets/Styles/ide.css" />
-		<script src="~/Assets/Scripts/ide.js"></script>
-		<script src="~/Assets/Scripts/textEditor.js"></script>
-	</environment>
+    <environment names="Staging,Production">
+        <link rel="stylesheet" type="text/css" href="~/Assets/ide.min.css" />
+        <script src="~/Assets/ide.min.js"></script>
+    </environment>
+    <environment names="Development">
+        <link rel="stylesheet" type="text/css" href="~/Assets/Styles/ide.css" />
+        <script src="~/Assets/Scripts/ide.js"></script>
+        <script src="~/Assets/Scripts/textEditor.js"></script>
+    </environment>
 
 }
 
 @{
-	var path = "Assets/Libraries/monaco/vs";
-	var ctx = Model as TomPIT.Middleware.IMiddlewareContext;
+    var path = "Assets/Libraries/monaco/vs";
+    var ctx = Model as TomPIT.Middleware.IMiddlewareContext;
 
-	if (ctx != null)
-	{ path = ctx.Services.Routing.MapPath("~/Assets/Libraries/monaco/vs"); }
+    if (ctx != null)
+    { path = ctx.Services.Routing.MapPath("~/Assets/Libraries/monaco/vs"); }
 }
 
 <script src="~/Assets/Libraries/monaco/vs/loader.js"></script>
 
 <div id="ide" class="h-100">
-	@await Html.PartialAsync("~/Views/Ide/Console.cshtml", Model)
+    @await Html.PartialAsync("~/Views/Ide/Console.cshtml", Model)
 </div>
 
 @section Scripts{
-	<script>
-		DevExpress.ui.setTemplateEngine("underscore");
-	</script>
+    <script>
+        DevExpress.ui.setTemplateEngine("underscore");
+    </script>
 }
 
 <script>
@@ -67,13 +67,18 @@
      }
 
     var ide = $('#ide').tpIde().data('tompit-tpIde');
+    var textEditor = null;
+    var textEditorState = null;
 
-		$('#ide').tpTextEditor({
-		    path: '@path'
-		});
+    require.config({ paths: { 'vs': '@path' } });
 
-        var textEditor = $('#ide').data('tompit-tpTextEditor');
-        require.config({ paths: { 'vs': '@path' } });
+    $('#devTextDesigner').tpTextEditor({
+        path: '@path',
+        onCreated: function (sender, instance) {
+            textEditorState = sender;
+            textEditor = instance;
+        }
+    });
 
     $('#devExplorer').keyup(function (e) {
         if (e.which === 39) {
@@ -112,8 +117,8 @@
             });
     </text>
 	}
-    
-   setInterval(function () {
+
+    function refreshErrorList() {
         ide.refreshSections({
             sections: 'errorList',
             path: ide.selectedPath(),
@@ -121,8 +126,12 @@
                 'error': ide.options.designer.errorListState.error,
                 'warning': ide.options.designer.errorListState.warning,
                 'info': ide.options.designer.errorListState.info
+            },
+            onComplete: function () {
+                setTimeout(refreshErrorList, 5000);
             }
         });
-    }, 5000);
+    }
 
+    refreshErrorList();
 </script>

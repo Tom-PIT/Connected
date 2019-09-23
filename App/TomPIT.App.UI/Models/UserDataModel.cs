@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using TomPIT.Security;
 
-namespace TomPIT.Models
+namespace TomPIT.App.Models
 {
 	public class UserDataModel : AjaxModel
 	{

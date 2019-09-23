@@ -17,7 +17,19 @@
 	</div>
 	<div class="col-lg-8  col-md-9 dev-designer">
 		<div data-tp-tag="progress-container"></div>
-		<div id="devDesigner">
+        <div id="devTextDesigner" class="collapse">
+            <div class="template-toolbar btn-toolbar justify-content-between">
+                <div class="btn-group">
+                    <a id="btnDebug" href="#" target="_blank" class="btn btn-sm btn-light collapse" title="Download source code for debugging"><i class="fal fa-bug"></i></a>
+                    
+                </div>
+                <div class="btn-group">
+                    <span class="pt-2 small collapse" title="Editor syntax" id="labelSyntaxLanguage"></span>
+                </div>
+            </div>
+            <div id="devTextDesignerEditor" class="text-editor text-editor-sa"></div>
+        </div>
+		<div id="devDesigner" class="collapse show">
 			@await Html.PartialAsync("~/Views/Ide/Designers/Empty.cshtml", Model)
 		</div>
 	</div>
@@ -30,21 +42,3 @@
 <div class="row no-gutters dev-footer bg-dark" id="devStatus">
 
 </div>
-<script type="text/html" id="docTemplate">
-	<div class="doc-title">
-		<%= text %>
-
-		<%
-		var css ='fa-times';
-		var kind = 'close';
-
-		if(!pinned)
-		{
-		css = 'fa-thumbtack';
-		kind = 'pin';
-		}
-		%>
-
-		<span class="float-right small doc-control-box" data-kind="<%= kind %>"><i class="fal <%= css %>"></i></span>
-	</div>
-</script>

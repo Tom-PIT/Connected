@@ -369,12 +369,10 @@ namespace TomPIT.Ide.ComponentModel
 				var blob = Tenant.GetService<IStorageService>().Upload(b, raw, StoragePolicy.Singleton);
 
 				if (text.TextBlob != blob)
-				{
 					text.TextBlob = blob;
-					Update(text.Configuration());
-				}
-				else
-					InvalidateIndexState(text);
+
+				Update(text.Configuration());
+				InvalidateIndexState(text);
 			}
 		}
 

@@ -278,8 +278,15 @@ namespace TomPIT.ComponentModel
 
 				if (rtContent != null)
 				{
-					if (Tenant.GetService<ISerializationService>().Deserialize(rtContent.Content, t) is IConfiguration rtInstance)
-						MergeWithRuntime(r, rtInstance);
+					try
+					{
+						if (Tenant.GetService<ISerializationService>().Deserialize(rtContent.Content, t) is IConfiguration rtInstance)
+							MergeWithRuntime(r, rtInstance);
+					}
+					catch (Exception ex)
+					{
+						Tenant.LogWarning(null, "Components", GetType().ShortName(), ex.Message);
+					}
 				}
 			}
 

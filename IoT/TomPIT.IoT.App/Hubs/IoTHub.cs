@@ -1,18 +1,19 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
-using TomPIT.Data;
+using TomPIT.Diagostics;
+using TomPIT.Exceptions;
 using TomPIT.IoT.Security;
-using TomPIT.IoT.Services;
-using TomPIT.Services;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
+using TomPIT.Serialization;
 
 namespace TomPIT.IoT.Hubs
 {
@@ -52,37 +53,39 @@ namespace TomPIT.IoT.Hubs
 			try
 			{
 				var hub = device.Device.Configuration();
-				var component = Instance.Connection.GetService<IComponentService>().SelectComponent(hub.Component);
-				var ms = Instance.Connection.GetService<IMicroServiceService>().Select(component.MicroService);
+				var component = Instance.Tenant.GetService<IComponentService>().SelectComponent(hub.Component);
+				var ms = Instance.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
 				var groupName = string.Format("{0}/{1}", ms.Name.ToLowerInvariant(), component.Name.ToLowerInvariant());
 
 				try
 				{
-					var ctx = ExecutionContext.Create(Instance.Connection.Url, ms);
-					var modelContext = new DataModelContext(ctx);
-					var type = Instance.GetService<ICompilerService>().ResolveType(ms.Token, device.Device, device.Device.Name, false);
+					var ctx = MiddlewareDescriptor.Current.CreateContext(ms.Token);
+					var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(ms.Token, device.Device, device.Device.Name, false);
 
 					if (type != null)
 					{
-						var handler = type.CreateInstance<IIoTDeviceHandler>(new object[] { modelContext, e });
+						var handler = Instance.Tenant.GetService<ICompilerService>().CreateInstance<IIoTDeviceMiddleware>(ctx, type);
+
+						handler.Arguments = e;
+						handler.Invoke();
 
 						if (e != null)
-							Types.Populate(JsonConvert.SerializeObject(e), handler);
+							SerializationExtensions.Populate(JsonConvert.SerializeObject(e), handler);
 
 						handler.Invoke();
 
 						if (e == null)
 							e = new JObject();
 
-						Merge(hub as IIoTHub, handler, e);
+						Merge(hub as IIoTHubConfiguration, handler, e);
 					}
 				}
 				catch (Exception ex)
 				{
-					Instance.Connection.LogError("IoT", ex.Source, ex.Message);
+					Instance.Tenant.LogError("IoT", ex.Source, ex.Message);
 				}
 
-				var changes = Instance.Connection.GetService<IIoTHubService>().SetData(device.Device, e);
+				var changes = Instance.Tenant.GetService<IIoTHubService>().SetData(device.Device, e);
 
 				if (changes == null || changes.Count == 0)
 					return;
@@ -95,10 +98,10 @@ namespace TomPIT.IoT.Hubs
 			}
 		}
 
-		private void Merge(IIoTHub hub, IIoTDeviceHandler handler, JObject arguments)
+		private void Merge(IIoTHubConfiguration hub, IIoTDeviceMiddleware handler, JObject arguments)
 		{
-			var schema = Instance.GetService<IIoTHubService>().SelectSchema(hub);
-			var serializedHandler = Types.Deserialize<JObject>(Types.Serialize(handler));
+			var schema = Instance.Tenant.GetService<IIoTHubService>().SelectSchema(hub);
+			var serializedHandler = SerializationExtensions.Deserialize<JObject>(handler);
 
 			foreach (var property in serializedHandler.Children())
 			{
@@ -128,7 +131,7 @@ namespace TomPIT.IoT.Hubs
 				var transaction = e.Required<string>("transaction");
 				var device = e.Required<string>("device");
 
-				var ms = Instance.Connection.GetService<IMicroServiceService>().Select(microService);
+				var ms = Instance.Tenant.GetService<IMicroServiceService>().Select(microService);
 
 				if (ms == null)
 					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
@@ -141,11 +144,11 @@ namespace TomPIT.IoT.Hubs
 					if (string.Compare(tokens[0], microService, true) == 0)
 						hub = tokens[1];
 
-					ms.ValidateMicroServiceReference(Instance.Connection, tokens[0]);
-					ms = Instance.Connection.GetService<IMicroServiceService>().Select(tokens[0]);
+					ms.ValidateMicroServiceReference(tokens[0]);
+					ms = Instance.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 				}
 
-				if (!(Instance.Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "IoTHub", hub) is IIoTHub config))
+				if (!(Instance.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "IoTHub", hub) is IIoTHubConfiguration config))
 					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrIoTHubNotFound, hub));
 
 				var hubDevice = config.Devices.FirstOrDefault(f => string.Compare(f.Name, device, true) == 0);
@@ -153,7 +156,7 @@ namespace TomPIT.IoT.Hubs
 				if (hubDevice == null)
 					throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrIoTHubDeviceNotFound, hub, device));
 
-				var schema = Instance.Connection.GetService<IIoTHubService>().SelectSchema(hubDevice.Closest<IIoTHub>());
+				var schema = Instance.Tenant.GetService<IIoTHubService>().SelectSchema(hubDevice.Closest<IIoTHubConfiguration>());
 				var t = hubDevice.Transactions.FirstOrDefault(f => string.Compare(f.Name, transaction, true) == 0);
 
 				if (t == null)
@@ -167,20 +170,16 @@ namespace TomPIT.IoT.Hubs
 					{"transaction",transaction }
 				};
 
-				var type = Instance.GetService<ICompilerService>().ResolveType(ms.Token, t, t.Name, false);
+				var ctx = MiddlewareDescriptor.Current.CreateContext(ms.Token);
+				var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(ms.Token, t, t.Name, false);
 
 				if (type != null)
 				{
-					var ctx = ExecutionContext.Create(Instance.Connection.Url, ms);
-					var dataContext = new DataModelContext(ctx);
-
-					var handler = type.CreateInstance<IIoTTransactionHandler>(new object[] {dataContext });
-
-					Types.Populate(JsonConvert.SerializeObject(e), handler);
+					var handler = Instance.Tenant.GetService<ICompilerService>().CreateInstance<IIoTTransactionMiddleware>(ctx, type, SerializationExtensions.Serialize(e));
 
 					handler.Invoke();
 
-					Types.Merge(e, handler);
+					SerializationExtensions.Merge(e, handler);
 				}
 				else
 				{

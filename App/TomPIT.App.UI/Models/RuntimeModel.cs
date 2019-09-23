@@ -1,16 +1,17 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
-using TomPIT.Services;
+using TomPIT.Middleware;
+using TomPIT.Models;
 
-namespace TomPIT.Models
+namespace TomPIT.App.Models
 {
-	public class RuntimeModel : ExecutionContext, IViewModel, IComponentModel
+	public class RuntimeModel : MiddlewareContext, IViewModel, IComponentModel
 	{
 		private IModelNavigation _navigation = null;
 		private JObject _arguments = null;
@@ -29,7 +30,7 @@ namespace TomPIT.Models
 
 		public IComponent Component { get; set; }
 
-		public IView ViewConfiguration { get; set; }
+		public IViewConfiguration ViewConfiguration { get; set; }
 
 		public virtual IEnumerable<ValidationResult> Validate()
 		{

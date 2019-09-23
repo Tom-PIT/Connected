@@ -17,7 +17,7 @@ namespace TomPIT.Compilation.Views
 		private IMailTemplateConfiguration Template { get; }
 		public override void Compile(ITenant tenant, IComponent component, IConfiguration configuration)
 		{
-			AppendBaseType(Builder, "TomPIT.UI.MailViewBase");
+			AppendBaseType(Builder, "TomPIT.App.UI.MailViewBase");
 			AddUsings(Builder);
 			AddTagHelpers(Builder);
 

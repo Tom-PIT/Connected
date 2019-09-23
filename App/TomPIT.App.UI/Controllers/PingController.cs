@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TomPIT.Controllers;
 
-namespace TomPIT.Controllers
+namespace TomPIT.App.Controllers
 {
 	[AllowAnonymous]
 	public class PingController : ServerController

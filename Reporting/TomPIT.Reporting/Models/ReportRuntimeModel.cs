@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.ComponentModel;
-using TomPIT.Services;
+﻿using TomPIT.ComponentModel;
+using TomPIT.Diagostics;
+using TomPIT.Exceptions;
+using TomPIT.Middleware;
 
-namespace TomPIT.Reporting.Models
+namespace TomPIT.MicroServices.Reporting.Models
 {
-	public class ReportRuntimeModel : ExecutionContext
+	public class ReportRuntimeModel : MiddlewareContext
 	{
-		public ReportRuntimeModel(IExecutionContext sender, string url) : base(sender)
+		public ReportRuntimeModel(IMiddlewareContext sender, string url) : base(sender)
 		{
 			ReportUrl = url;
 
@@ -18,12 +17,12 @@ namespace TomPIT.Reporting.Models
 				MicroServiceName = MicroService.Name;
 			else
 			{
-				var ms = Connection.GetService<IMicroServiceService>().Select(tokens[0]);
+				var ms = Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
 				if (ms == null)
 					throw new RuntimeException($"SR.ErrMicroServiceNotFound ({tokens[0]})").WithMetrics(this);
 
-				MicroService.ValidateMicroServiceReference(Connection, ms.Name);
+				MicroService.ValidateMicroServiceReference(ms.Name);
 
 				MicroServiceName = ms.Name;
 			}

@@ -1,18 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Reports;
 using TomPIT.ComponentModel.UI;
 
-namespace TomPIT.UI
+namespace TomPIT.App.UI
 {
 	internal interface IViewService
 	{
-		IView Select(string url, ActionContext context);
+		IViewConfiguration Select(string url, ActionContext context);
 		//string SelectScripts(Guid microService, Guid view);
 		IConfiguration Select(Guid view);
-		IMasterView SelectMaster(string name);
-		IPartialView SelectPartial(string name);
+		IMasterViewConfiguration SelectMaster(string name);
+		IPartialViewConfiguration SelectPartial(string name);
 
 		string SelectContent(IGraphicInterface ui);
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Host;
+using TomPIT.ComponentModel;
 using TomPIT.Ide.TextEditor.Languages;
 using TomPIT.Middleware;
 
@@ -43,5 +44,9 @@ namespace TomPIT.Ide.TextEditor
 		}
 
 		protected Dictionary<Type, IWorkspaceService> Services => _services.Value;
+
+		public virtual LanguageFeature Features => LanguageFeature.None;
+
+		public IMicroService MicroService { get; set; }
 	}
 }

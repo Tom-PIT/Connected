@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 
 namespace TomPIT.Search.Catalogs
 {
@@ -38,7 +34,7 @@ namespace TomPIT.Search.Catalogs
 			try
 			{
 				var content = value.Substring(7, value.Length - 8);
-				var raw = content.FromBase16();
+				var raw = Types.FromBase16(content);
 				var tokens = raw.Split(',');
 
 				if (tokens == null)
@@ -83,7 +79,7 @@ namespace TomPIT.Search.Catalogs
 			if (!string.IsNullOrWhiteSpace(Format))
 				sb.AppendFormat("f:{0},", Format);
 
-			return string.Format("[base16{0}]: [{1}]", sb.ToString().TrimEnd(',').ToBase16(), Text);
+			return string.Format("[base16{0}]: [{1}]", Types.ToBase16(sb.ToString().TrimEnd(',')), Text);
 		}
 	}
 }

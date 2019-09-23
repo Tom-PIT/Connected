@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
-using TomPIT.Services;
+using TomPIT.Diagostics;
+using TomPIT.Exceptions;
 
-namespace TomPIT.Models
+namespace TomPIT.App.Models
 {
 	public class ApiModel : AjaxModel
 	{
@@ -29,8 +30,8 @@ namespace TomPIT.Models
 			if (tokens.Length != 2)
 				throw new RuntimeException($"{SR.ErrInvalidQualifier} ({component}). {SR.ErrInvalidQualifierExpected}: 'microService.component'.").WithMetrics(this);
 
-			var s = Instance.GetService<IMicroServiceService>().Select(tokens[0].AsGuid());
-			var c = Instance.GetService<IComponentService>().SelectComponent(tokens[1].AsGuid());
+			var s = Tenant.GetService<IMicroServiceService>().Select(new Guid(tokens[0]));
+			var c = Tenant.GetService<IComponentService>().SelectComponent(new Guid(tokens[1]));
 
 			if (c == null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
@@ -54,8 +55,8 @@ namespace TomPIT.Models
 			if (tokens.Length != 2)
 				throw new RuntimeException($"{SR.ErrInvalidQualifier} ({component}). {SR.ErrInvalidQualifierExpected}: 'microService.component'.").WithMetrics(this);
 
-			var s = Instance.GetService<IMicroServiceService>().Select(tokens[0].AsGuid());
-			var c = Instance.GetService<IComponentService>().SelectComponent(tokens[1].AsGuid());
+			var s = Tenant.GetService<IMicroServiceService>().Select(new Guid(tokens[0]));
+			var c = Tenant.GetService<IComponentService>().SelectComponent(new Guid(tokens[1]));
 
 			if (c == null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
@@ -70,14 +71,14 @@ namespace TomPIT.Models
 		{
 			base.OnInitializing();
 
-			if(Body == null)
+			if (Body == null)
 			{
 				Body = new JObject();
 
 				if (Controller == null)
 					return;
 
-				foreach(var header in Controller.Request.Headers)
+				foreach (var header in Controller.Request.Headers)
 				{
 					if (!header.Key.StartsWith(HeaderParamPrefix))
 						continue;

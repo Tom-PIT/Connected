@@ -83,8 +83,8 @@ namespace TomPIT.Security
 		{
 			if (!context.Services.Identity.IsAuthenticated)
 				Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-
-			Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+			else
+				Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
 		}
 	}
 }

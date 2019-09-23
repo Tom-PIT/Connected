@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.Design;
-using TomPIT.Dom;
-using TomPIT.Reporting.UI;
+﻿using System.Collections.Generic;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
+using TomPIT.MicroServices.Reporting.UI;
 
-namespace TomPIT.Reporting.Design.Items
+namespace TomPIT.MicroServices.Reporting.Design.Items
 {
 	internal class SnippetCollection : ItemsBase
 	{

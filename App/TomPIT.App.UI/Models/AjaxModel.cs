@@ -1,13 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
-using TomPIT.Services;
+using TomPIT.Diagostics;
+using TomPIT.Exceptions;
+using TomPIT.Middleware;
+using TomPIT.Models;
 
-namespace TomPIT.Models
+namespace TomPIT.App.Models
 {
-	public class AjaxModel : ExecutionContext, IModel, IRequestContextProvider, IRuntimeModel
+	public class AjaxModel : MiddlewareContext, IModel, IActionContextProvider, IRuntimeModel
 	{
 		private IComponent _component = null;
 
@@ -29,7 +33,7 @@ namespace TomPIT.Models
 
 					var tokens = s.Split('.');
 
-					_component = Connection.GetService<IComponentService>().SelectComponent(tokens[1].AsGuid());
+					_component = Tenant.GetService<IComponentService>().SelectComponent(new Guid(tokens[1]));
 				}
 
 				return _component;

@@ -993,6 +993,22 @@ $.widget('tompit.tpIde', {
 
             if (typeof state !== 'undefined' && state !== null && $.isFunction(this.options.designer.active.onLoadState))
                 this.options.designer.active.onLoadState(state);
+
+            if ($.isFunction(this.options.designer.active.isTextDesigner)) {
+                var isText = this.options.designer.active.isTextDesigner();
+
+                if (isText){
+                    $('#devTextDesigner').collapse('show');
+                    $('#devDesigner').collapse('hide');
+                }
+                else{
+                    $('#devTextDesigner').collapse('hide');
+                    $('#devDesigner').collapse('show');
+                }
+            }
+        }
+        else {
+            $('#devTextDesigner').collapse('hide');
         }
 	},
 	setPropertySaveMode: function (v) {
@@ -1025,7 +1041,7 @@ $.widget('tompit.tpIde', {
     },
 	ideAction: function (d, progress) {
 		return this._action(d, progress, 'ide');
-	},
+    },
 	_action: function (d, progress, action) {
 		var url = new tompit.devUrl();
 		var instance = this;

@@ -46,6 +46,9 @@
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.5.3" />
   </ItemGroup>
   <ItemGroup>
+    <Content Update="Views\Ide\Designers\Text.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Ide\Designers\Upload.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

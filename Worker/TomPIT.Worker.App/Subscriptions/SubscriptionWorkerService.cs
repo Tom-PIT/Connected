@@ -1,42 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using TomPIT.Cdn;
 using TomPIT.Connectivity;
-using TomPIT.Services;
+using TomPIT.Middleware;
 using TomPIT.Storage;
 using TomPIT.Worker.Services;
 
 namespace TomPIT.Worker.Subscriptions
 {
-	internal class SubscriptionWorkerService : ServiceBase, ISubscriptionWorkerService
+	internal class SubscriptionWorkerService : TenantObject, ISubscriptionWorkerService
 	{
-		public SubscriptionWorkerService(ISysConnection connection) : base(connection)
+		public SubscriptionWorkerService(ITenant tenant) : base(tenant)
 		{
 		}
 
 		public void CompleteSubscription(Guid popReceipt)
 		{
-			var url = Connection.CreateUrl("SubscriptionManagement", "Complete");
+			var url = Tenant.CreateUrl("SubscriptionManagement", "Complete");
 			var d = new JObject
 			{
 				{"popReceipt", popReceipt }
 			};
 
-			Instance.Connection.Post(url, d);
+			Instance.Tenant.Post(url, d);
 		}
 
 		public void CompleteEvent(Guid popReceipt)
 		{
-			var url = Instance.Connection.CreateUrl("SubscriptionManagement", "CompleteEvent");
+			var url = Instance.Tenant.CreateUrl("SubscriptionManagement", "CompleteEvent");
 			var d = new JObject
 			{
 				{"popReceipt", popReceipt }
 			};
 
-			Instance.Connection.Post(url, d);
+			Instance.Tenant.Post(url, d);
 		}
 
 		public void InsertSubscribers(Guid token, List<IRecipient> recipients)
@@ -44,7 +43,7 @@ namespace TomPIT.Worker.Subscriptions
 			if (recipients == null || recipients.Count == 0)
 				return;
 
-			var u = Instance.Connection.CreateUrl("Subscription", "InsertSubscribers");
+			var u = Instance.Tenant.CreateUrl("Subscription", "InsertSubscribers");
 			var e = new JObject
 				{
 					{"subscription", token }
@@ -63,56 +62,56 @@ namespace TomPIT.Worker.Subscriptions
 					});
 			}
 
-			Instance.Connection.Post(u, e);
+			Instance.Tenant.Post(u, e);
 		}
 
 		public void PingSubscription(Guid popReceipt)
 		{
-			var url = Instance.Connection.CreateUrl("SubscriptionManagement", "Ping");
+			var url = Instance.Tenant.CreateUrl("SubscriptionManagement", "Ping");
 			var d = new JObject
 			{
 				{"popReceipt", popReceipt }
 			};
 
-			Instance.Connection.Post(url, d);
+			Instance.Tenant.Post(url, d);
 		}
 
 		public void PingSubscriptionEvent(Guid popReceipt)
 		{
-			var url = Instance.Connection.CreateUrl("SubscriptionManagement", "Ping");
+			var url = Instance.Tenant.CreateUrl("SubscriptionManagement", "Ping");
 			var d = new JObject
 			{
 				{"popReceipt", popReceipt }
 			};
 
-			Instance.Connection.Post(url, d);
+			Instance.Tenant.Post(url, d);
 		}
 
 		public ISubscription SelectSubscription(Guid token)
 		{
-			var u = Instance.Connection.CreateUrl("SubscriptionManagement", "Select");
+			var u = Instance.Tenant.CreateUrl("SubscriptionManagement", "Select");
 			var e = new JObject
 			{
 				{"token",  token}
 			};
 
-			return Instance.Connection.Post<SubscriptionDescriptor>(u, e);
+			return Instance.Tenant.Post<SubscriptionDescriptor>(u, e);
 		}
 
 		public ISubscriptionEvent SelectEvent(Guid token)
 		{
-			var u = Instance.Connection.CreateUrl("SubscriptionManagement", "SelectEvent");
+			var u = Instance.Tenant.CreateUrl("SubscriptionManagement", "SelectEvent");
 			var e = new JObject
 			{
 				{"token",  token}
 			};
 
-			return Instance.Connection.Post<SubscriptionEventDescriptor>(u, e);
+			return Instance.Tenant.Post<SubscriptionEventDescriptor>(u, e);
 		}
 
 		public List<IRecipient> QueryRecipients(Guid subscription, string primaryKey, string topic)
 		{
-			var u = Instance.Connection.CreateUrl("Subscription", "QuerySubscribers");
+			var u = Instance.Tenant.CreateUrl("Subscription", "QuerySubscribers");
 			var e = new JObject
 			{
 				{"handler",  subscription},
@@ -122,12 +121,12 @@ namespace TomPIT.Worker.Subscriptions
 			if (!string.IsNullOrWhiteSpace(topic))
 				e.Add("topic", topic);
 
-			return Instance.Connection.Post<List<Subscriber>>(u, e).ToList<IRecipient>();
+			return Instance.Tenant.Post<List<Subscriber>>(u, e).ToList<IRecipient>();
 		}
 
 		public List<IQueueMessage> DequeueSubscriptions(string resourceGroup, int count)
 		{
-			var url = Instance.Connection.CreateUrl("SubscriptionManagement", "Dequeue");
+			var url = Instance.Tenant.CreateUrl("SubscriptionManagement", "Dequeue");
 
 			var e = new JObject
 				{
@@ -135,12 +134,12 @@ namespace TomPIT.Worker.Subscriptions
 					{ "resourceGroup", resourceGroup }
 				};
 
-			return Instance.Connection.Post<List<QueueMessage>>(url, e).ToList<IQueueMessage>();
+			return Instance.Tenant.Post<List<QueueMessage>>(url, e).ToList<IQueueMessage>();
 		}
 
 		public List<IQueueMessage> DequeueSubscriptionEvents(string resourceGroup, int count)
 		{
-			var url = Instance.Connection.CreateUrl("SubscriptionManagement", "DequeueEvents");
+			var url = Instance.Tenant.CreateUrl("SubscriptionManagement", "DequeueEvents");
 
 			var e = new JObject
 				{
@@ -148,7 +147,7 @@ namespace TomPIT.Worker.Subscriptions
 					{ "resourceGroup", resourceGroup }
 				};
 
-			return Instance.Connection.Post<List<QueueMessage>>(url, e).ToList<IQueueMessage>();
+			return Instance.Tenant.Post<List<QueueMessage>>(url, e).ToList<IQueueMessage>();
 		}
 	}
 }

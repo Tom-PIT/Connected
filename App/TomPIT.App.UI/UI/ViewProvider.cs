@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
-namespace TomPIT.UI
+namespace TomPIT.App.UI
 {
 	public class ViewProvider : IFileProvider
 	{

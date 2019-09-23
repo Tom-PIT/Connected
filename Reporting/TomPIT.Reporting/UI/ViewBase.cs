@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
-using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 
-namespace TomPIT.Reporting.UI
+namespace TomPIT.MicroServices.Reporting.UI
 {
 	public abstract class ViewBase : ComponentConfiguration, IGraphicInterface
 	{
@@ -21,7 +20,7 @@ namespace TomPIT.Reporting.UI
 		[Browsable(false)]
 		public Guid TextBlob { get; set; }
 
-		[Items("TomPIT.Reporting.Design.Items.SnippetCollection, TomPIT.Reporting.Design")]
+		[Items("TomPIT.MicroServices.Reporting.Design.Items.SnippetCollection, TomPIT.MicroServices.Reporting.Design")]
 		public virtual ListItems<ISnippet> Snippets
 		{
 			get
@@ -33,7 +32,7 @@ namespace TomPIT.Reporting.UI
 			}
 		}
 
-		[Items("TomPIT.Reporting.Items.ScriptCollection, TomPIT.Reporting.Design")]
+		[Items("TomPIT.MicroServices.Reporting.Items.ScriptCollection, TomPIT.MicroServices.Reporting.Design")]
 		public ListItems<IText> Scripts
 		{
 			get
@@ -50,7 +49,7 @@ namespace TomPIT.Reporting.UI
 
 		}
 
-		[Items("TomPIT.Reporting.Design.Items.ViewHelpersCollection, TomPIT.Reporting.Design")]
+		[Items("TomPIT.MicroServices.Reporting.Design.Items.ViewHelpersCollection, TomPIT.MicroServices.Reporting.Design")]
 		public virtual ListItems<IViewHelper> Helpers
 		{
 			get

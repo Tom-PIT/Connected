@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TomPIT.Services;
+using TomPIT.Distributed;
+using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Worker.Subscriptions
 {
@@ -24,7 +24,7 @@ namespace TomPIT.Worker.Subscriptions
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				var jobs = Instance.Connection.GetService<ISubscriptionWorkerService>().DequeueSubscriptions(f.ResourceGroup, f.Available);
+				var jobs = Instance.Tenant.GetService<ISubscriptionWorkerService>().DequeueSubscriptions(f.ResourceGroup, f.Available);
 
 				if (jobs == null)
 					return;

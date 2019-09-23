@@ -183,7 +183,7 @@ namespace TomPIT.Navigation
 				throw new RuntimeException(SR.ErrNoUrlHelper);
 
 			/*
-			 * It's IRequestContextProvider for sure otherwise request would be null
+			 * It's the IActionContextProvider for sure otherwise request would be null
 			 */
 			var ac = context as IActionContextProvider;
 

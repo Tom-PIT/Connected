@@ -15,5 +15,6 @@ namespace TomPIT.Middleware
 		ITenant Tenant { get; }
 
 		string RouteUrl(IActionContextProvider provider, string routeName, object values);
+		IMiddlewareContext CreateContext(Guid microService);
 	}
 }

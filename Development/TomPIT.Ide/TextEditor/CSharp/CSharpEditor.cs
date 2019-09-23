@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -24,11 +25,14 @@ namespace TomPIT.Ide.TextEditor.CSharp
 		private DocumentInfo _docInfo = null;
 		private Project _project = null;
 		private Document _document = null;
+		private SourceText _sourceText = null;
 
 		public CSharpEditor()
 		{
 			Services.TryAdd(typeof(ISyntaxCheckService), new SyntaxCheckService(this));
 			Services.TryAdd(typeof(ICodeActionService), new CodeActionService(this));
+			Services.TryAdd(typeof(ICompletionItemService), new CompletionItemService(this));
+			Services.TryAdd(typeof(IDeclarationProviderService), new DeclarationProviderService(this));
 		}
 		protected MefHostServices Host
 		{
@@ -81,6 +85,7 @@ namespace TomPIT.Ide.TextEditor.CSharp
 						MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(object)).Location),
 						MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(Shell)).Location),
 						MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(System.Linq.Enumerable)).Location),
+						MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(ValidationResult)).Location),
 						MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(IServiceReference)).Location),
 						MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(IMiddlewareContext)).Location),
 						MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(JObject)).Location)
@@ -103,7 +108,8 @@ namespace TomPIT.Ide.TextEditor.CSharp
 					{
 						refs.Add(MetadataReference.CreateFromFile(Assembly.GetAssembly(HostType).Location));
 
-						_projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), "Script", "Script", LanguageNames.CSharp, isSubmission: true, hostObjectType: HostType);
+						_projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), "Script", "Script",
+							LanguageNames.CSharp, isSubmission: true, hostObjectType: typeof(ScriptGlobals<>).MakeGenericType(HostType));
 					}
 					else
 						_projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), "Script", "Script", LanguageNames.CSharp, isSubmission: true);
@@ -144,7 +150,7 @@ namespace TomPIT.Ide.TextEditor.CSharp
 				if (_docInfo == null)
 				{
 					_docInfo = DocumentInfo.Create(DocumentId.CreateNewId(Project.Id), "Script", sourceCodeKind: SourceCodeKind.Script,
-						loader: TextLoader.From(TextAndVersion.Create(SourceText.From(Text), VersionStamp.Create())));
+						loader: TextLoader.From(TextAndVersion.Create(SourceText, VersionStamp.Create())));
 				}
 
 				return _docInfo;
@@ -162,6 +168,17 @@ namespace TomPIT.Ide.TextEditor.CSharp
 			}
 		}
 
+		public SourceText SourceText
+		{
+			get
+			{
+				if (_sourceText == null)
+					_sourceText = SourceText.From(Text);
+
+				return _sourceText;
+			}
+		}
+
 		protected override void OnDispose()
 		{
 			base.OnDispose();
@@ -172,5 +189,11 @@ namespace TomPIT.Ide.TextEditor.CSharp
 			_workspace = null;
 			_host = null;
 		}
+
+		public override LanguageFeature Features =>
+			LanguageFeature.CheckSyntax
+			| LanguageFeature.CodeAction
+			| LanguageFeature.CompletionItem
+			| LanguageFeature.Declaration;
 	}
 }

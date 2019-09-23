@@ -1,22 +1,18 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
-using TomPIT.Data;
 using TomPIT.Search.Indexing;
-using TomPIT.Services;
 
 namespace TomPIT.Search.Catalogs
 {
 	internal class SearchTransaction
 	{
 		public SearchResults Results { get; private set; }
-		private ISearchOptions Options { get; set; }
-		public void Search(ISearchOptions options)
+		private ICatalogSearchOptions Options { get; set; }
+		public void Search(ICatalogSearchOptions options)
 		{
 			Options = options;
 			Results = new SearchResults();
@@ -38,7 +34,7 @@ namespace TomPIT.Search.Catalogs
 			{
 				try
 				{
-					var config = new ConfigurationDescriptor<ISearchCatalog>(f, "SearchCatalog");
+					var config = new ConfigurationDescriptor<ISearchCatalogConfiguration>(f, "SearchCatalog");
 					var catalog = IndexCache.Ensure(config.Component.Token);
 
 					if (catalog == null || !catalog.IsValid)
@@ -53,7 +49,7 @@ namespace TomPIT.Search.Catalogs
 						r.AddRange(sr);
 					}
 				}
-				catch(Exception ex)
+				catch (Exception ex)
 				{
 					Results.Messages.Add(new SearchResultMessage
 					{

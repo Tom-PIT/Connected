@@ -1,16 +1,19 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Apis;
-using TomPIT.ComponentModel.Events;
-using TomPIT.Data;
-using TomPIT.Services;
-using TomPIT.Services.Context;
+using TomPIT.ComponentModel.Messaging;
+using TomPIT.Diagostics;
+using TomPIT.Distributed;
+using TomPIT.Messaging;
+using TomPIT.Middleware;
+using TomPIT.Middleware.Interop;
+using TomPIT.Reflection;
+using TomPIT.Serialization;
 using TomPIT.Storage;
 
 namespace TomPIT.Worker.Services
@@ -27,22 +30,22 @@ namespace TomPIT.Worker.Services
 
 			Invoke(item, m);
 
-			var url = Instance.Connection.CreateUrl("EventManagement", "Complete");
+			var url = Instance.Tenant.CreateUrl("EventManagement", "Complete");
 			var d = new JObject
 			{
 				{"popReceipt", item.PopReceipt }
 			};
 
-			Instance.Connection.Post(url, d);
+			Instance.Tenant.Post(url, d);
 		}
 
 		private void Invoke(IQueueMessage queue, JObject data)
 		{
 			var id = data.Required<Guid>("id");
-			var url = Instance.Connection.CreateUrl("EventManagement", "Select")
+			var url = Instance.Tenant.CreateUrl("EventManagement", "Select")
 				.AddParameter("id", id);
 
-			var ed = Instance.Connection.Get<EventDescriptor>(url);
+			var ed = Instance.Tenant.Get<EventDescriptor>(url);
 
 			if (ed == null)
 				return;
@@ -57,7 +60,7 @@ namespace TomPIT.Worker.Services
 				{
 					foreach (var target in targets)
 					{
-						if (!(Instance.GetService<IComponentService>().SelectConfiguration(target.Item2) is IEventHandler configuration))
+						if (!(Instance.Tenant.GetService<IComponentService>().SelectConfiguration(target.Item2) is IEventHandlerConfiguration configuration))
 							return;
 
 						Parallel.ForEach(configuration.Events,
@@ -79,12 +82,9 @@ namespace TomPIT.Worker.Services
 
 		private void Callback(EventDescriptor ed, bool cancel)
 		{
-			var tokens = ed.Callback.Split('/');
-
-			if (!(Instance.GetService<IComponentService>().SelectConfiguration(tokens[1].AsGuid()) is IApi api))
-				return;
-
-			var op = api.Operations.FirstOrDefault(f => f.Id == tokens[2].AsGuid());
+			var ctx = MiddlewareDescriptor.Current.CreateContext(new Guid(ed.Callback.Split('/')[0]));
+			var descriptor = ComponentDescriptor.Api(ctx, ed.Callback);
+			var op = descriptor.Configuration.Operations.FirstOrDefault(f => f.Id == new Guid(descriptor.Element));
 
 			if (op == null)
 				return;
@@ -98,27 +98,22 @@ namespace TomPIT.Worker.Services
 			else
 				args["cancel"] = cancel;
 
-			var microService = Instance.GetService<IMicroServiceService>().Select(tokens[0].AsGuid());
-			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, microService);
-			var ai = new ApiInvoke(ctx);
-
-			ai.Execute(null, microService.Token, api.ComponentName(Instance.Connection), op.Name, args, null, true, true);
+			new ApiInvoker(ctx).Invoke(null, descriptor, ed.Arguments, true);
 		}
 
 		private bool Invoke(EventDescriptor ed, IEventBinding i)
 		{
-			var ms = Instance.Connection.GetService<IMicroServiceService>().Select(i.Configuration().MicroService(Instance.Connection));
-			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, ms);
-			var configuration = i.Closest<IEventHandler>();
+			var ctx = MiddlewareDescriptor.Current.CreateContext(i.Configuration().MicroService());
+			var configuration = i.Closest<IEventHandlerConfiguration>();
 
 			if (configuration == null)
 			{
-				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrElementClosestNull} ({nameof(IEventBinding)}->{nameof(IEventHandler)}");
+				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrElementClosestNull} ({nameof(IEventBinding)}->{nameof(IEventHandlerConfiguration)}");
 				return false;
 			}
 
-			var componentName = configuration.ComponentName(Instance.Connection);
-			var type = Instance.GetService<ICompilerService>().ResolveType(ms.Token, configuration, componentName, false);
+			var componentName = configuration.ComponentName();
+			var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(ctx.MicroService.Token, configuration, componentName, false);
 
 			if (type == null)
 			{
@@ -126,22 +121,19 @@ namespace TomPIT.Worker.Services
 				return false;
 			}
 
-			var dataContext = new DataModelContext(ctx);
-
 			try
 			{
-				var handler = type.CreateInstance<Notifications.IEventHandler>(new object[] { dataContext, ed.Name });
+				var handler = Instance.Tenant.GetService<ICompilerService>().CreateInstance<IEventMiddleware>(ctx, type, ed.Arguments);
 
-				if (!string.IsNullOrWhiteSpace(ed.Arguments))
-					Types.Populate(ed.Arguments, handler);
-				
+				handler.EventName = ed.Name;
+
 				Invoke(handler);
 
 				if (handler.Cancel)
 				{
 					var args = string.IsNullOrWhiteSpace(ed.Arguments)
 						? new JObject()
-						: Types.Deserialize<JObject>(ed.Arguments);
+						: SerializationExtensions.Deserialize<JObject>(ed.Arguments);
 
 					var property = args.Property("cancel", StringComparison.OrdinalIgnoreCase);
 
@@ -150,12 +142,12 @@ namespace TomPIT.Worker.Services
 					else
 						property.Value = true;
 
-					ed.Arguments = Types.Serialize(args);
+					ed.Arguments = SerializationExtensions.Serialize(args);
 
 					return handler.Cancel;
 				}
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				ctx.Services.Diagnostic.Error(nameof(EventJob), nameof(Invoke), $"{ex.Message}");
 			}
@@ -163,11 +155,11 @@ namespace TomPIT.Worker.Services
 			return false;
 		}
 
-		private void Invoke(Notifications.IEventHandler handler)
+		private void Invoke(IEventMiddleware handler)
 		{
 			Exception lastError = null;
 
-			for(var i = 0; i < 10; i++)
+			for (var i = 0; i < 10; i++)
 			{
 				try
 				{
@@ -175,7 +167,7 @@ namespace TomPIT.Worker.Services
 
 					return;
 				}
-				catch(Exception ex)
+				catch (Exception ex)
 				{
 					lastError = ex;
 					Thread.Sleep((i + 1) * 250);
@@ -187,15 +179,15 @@ namespace TomPIT.Worker.Services
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			Instance.Connection.LogError(nameof(EventJob), ex.Source, ex.Message);
+			Instance.Tenant.LogError(nameof(EventJob), ex.Source, ex.Message);
 
-			var url = Instance.Connection.CreateUrl("EventManagement", "Ping");
+			var url = Instance.Tenant.CreateUrl("EventManagement", "Ping");
 			var d = new JObject
 			{
 				{"popReceipt", item.PopReceipt }
 			};
 
-			Instance.Connection.Post(url, d);
+			Instance.Tenant.Post(url, d);
 		}
 	}
 }

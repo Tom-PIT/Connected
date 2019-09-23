@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using DevExpress.AspNetCore.Reporting.WebDocumentViewer;
 using DevExpress.AspNetCore.Reporting.WebDocumentViewer.Native.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace TomPIT.Reporting.Controllers
+namespace TomPIT.MicroServices.Reporting.Controllers
 {
 	public class ReportViewerController : WebDocumentViewerController
 	{

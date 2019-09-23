@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using TomPIT.Services;
+using TomPIT.Distributed;
+using TomPIT.Middleware;
 
 namespace TomPIT.Worker.Services
 {
@@ -24,14 +24,14 @@ namespace TomPIT.Worker.Services
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				var url = Instance.Connection.CreateUrl("QueueManagement", "Dequeue");
+				var url = Instance.Tenant.CreateUrl("QueueManagement", "Dequeue");
 
 				var e = new JObject
 				{
 					{ "count", f.Available }
 				};
 
-				var jobs = Instance.Connection.Post<List<QueueMessage>>(url, e);
+				var jobs = Instance.Tenant.Post<List<QueueMessage>>(url, e);
 
 				if (jobs == null)
 					return;

@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using DevExpress.DataAccess.Json;
 using Newtonsoft.Json.Linq;
-using TomPIT.Analysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.Reports;
-using TomPIT.Design;
-using TomPIT.Designers;
-using TomPIT.Dom;
-using TomPIT.Reporting.Design.Dom;
+using TomPIT.Ide;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.MicroServices.Reporting.Design.Dom;
+using TomPIT.Reflection;
 
-namespace TomPIT.Reporting.Design.Designers
+namespace TomPIT.MicroServices.Reporting.Design.Designers
 {
 	public class ReportDesigner : DomDesigner<IDomElement>
 	{
 		private IMicroService _microService = null;
-		private IReport _report = null;
+		private IReportConfiguration _report = null;
 		private Dictionary<string, JsonDataSource> _dataSources = null;
 		public ReportDesigner(IDomElement element) : base(element)
 		{
@@ -30,14 +29,14 @@ namespace TomPIT.Reporting.Design.Designers
 		{
 			get
 			{
-				if(_microService==null)
-					_microService = GetService<IMicroServiceService>().Select(Element.MicroService());
+				if (_microService == null)
+					_microService = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(Element.MicroService());
 
 				return _microService;
 			}
 		}
 
-		public IReport Report
+		public IReportConfiguration Report
 		{
 			get
 			{
@@ -45,14 +44,14 @@ namespace TomPIT.Reporting.Design.Designers
 				{
 					var element = Element as ReportElement;
 
-					_report = element.Component as IReport;
+					_report = element.Component as IReportConfiguration;
 				}
 
 				return _report;
 			}
 		}
 
-		public string ReportUrl => $"{MicroService.Name}/{Report.ComponentName(Connection)}";
+		public string ReportUrl => $"{MicroService.Name}/{Report.ComponentName()}";
 
 		public Dictionary<string, JsonDataSource> DataSources
 		{
@@ -64,9 +63,9 @@ namespace TomPIT.Reporting.Design.Designers
 
 					DiscoverOperations(MicroService.Name);
 
-					var references = GetService<IDiscoveryService>().References(MicroService.Token);
+					var references = Environment.Context.Tenant.GetService<IDiscoveryService>().References(MicroService.Token);
 
-					if(references !=null)
+					if (references != null)
 					{
 						foreach (var reference in references.MicroServices)
 							DiscoverOperations(reference.MicroService);
@@ -79,16 +78,16 @@ namespace TomPIT.Reporting.Design.Designers
 
 		private void DiscoverOperations(string microService)
 		{
-			var ms = GetService<IMicroServiceService>().Select(microService);
+			var ms = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(microService);
 
 			if (ms == null)
 				return;
 
-			var apis = GetService<IComponentService>().QueryConfigurations(ms.Token, "Api");
+			var apis = Environment.Context.Tenant.GetService<IComponentService>().QueryConfigurations(ms.Token, "Api");
 
 			foreach (var api in apis)
 			{
-				var config = api as IApi;
+				var config = api as IApiConfiguration;
 
 				foreach (var operation in config.Operations)
 				{
@@ -138,7 +137,7 @@ namespace TomPIT.Reporting.Design.Designers
 
 		private Type ResolvePropertyType(JToken value)
 		{
-			return Types.GetType(value.Value<string>());
+			return TypeExtensions.GetType(value.Value<string>());
 		}
 	}
 }

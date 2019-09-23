@@ -13,12 +13,12 @@ namespace TomPIT.Compilation.Views
 	{
 		private StringBuilder _sb = null;
 
-		public ReportProcessor(IReport report) : base(null)
+		public ReportProcessor(IReportConfiguration report) : base(null)
 		{
 			View = report;
 		}
 
-		private IReport View { get; }
+		private IReportConfiguration View { get; }
 
 		public override void Compile(ITenant tenant, IComponent component, IConfiguration configuration)
 		{

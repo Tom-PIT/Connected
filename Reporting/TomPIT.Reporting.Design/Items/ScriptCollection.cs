@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.Design;
-using TomPIT.Dom;
+﻿using System.Collections.Generic;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
+using TomPIT.MicroServices.Reporting.Scripting;
 
-namespace TomPIT.Reporting.Design.Items
+namespace TomPIT.MicroServices.Reporting.Design.Items
 {
 	internal class ScriptCollection : ItemsBase
 	{

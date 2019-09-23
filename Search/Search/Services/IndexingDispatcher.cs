@@ -1,5 +1,5 @@
 ﻿using System.Threading;
-using TomPIT.Services;
+using TomPIT.Distributed;
 using TomPIT.Storage;
 
 namespace TomPIT.Search.Services

@@ -53,7 +53,7 @@ namespace TomPIT.Search.Indexing
 
 			if (r == null)
 			{
-				if (!(Instance.GetService<IComponentService>().SelectConfiguration(catalog) is ISearchCatalog cat))
+				if (!(Instance.Tenant.GetService<IComponentService>().SelectConfiguration(catalog) is ISearchCatalogConfiguration cat))
 					return null;
 
 				r = new CatalogHost(cat, duration, slidingExpiration);

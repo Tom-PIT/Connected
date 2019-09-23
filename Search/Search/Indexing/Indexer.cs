@@ -1,18 +1,20 @@
-﻿using Lucene.Net.Documents;
-using Lucene.Net.Index;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using TomPIT.Annotations;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
+using TomPIT.Annotations.Search;
 using TomPIT.Compilation;
+using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
+using TomPIT.Diagostics;
+using TomPIT.Exceptions;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
 using TomPIT.Search.Catalogs;
-using TomPIT.Services;
 using TomPIT.Storage;
 
 namespace TomPIT.Search.Indexing
@@ -21,8 +23,8 @@ namespace TomPIT.Search.Indexing
 	{
 		private List<PropertyInfo> _properties = null;
 		private MethodInfo _queryMethod = null;
-		private ISearchProcessHandler _handler = null;
-		public Indexer(ISearchCatalog catalog, IQueueMessage message, IIndexRequest request, SearchVerb verb, string args)
+		private ISearchComponent _handler = null;
+		public Indexer(ISearchCatalogConfiguration catalog, IQueueMessage message, IIndexRequest request, SearchVerb verb, string args)
 		{
 			Catalog = catalog;
 			Request = request;
@@ -32,7 +34,7 @@ namespace TomPIT.Search.Indexing
 		}
 
 		private IQueueMessage Queue { get; }
-		private ISearchCatalog Catalog { get; }
+		private ISearchCatalogConfiguration Catalog { get; }
 		private IIndexRequest Request { get; }
 		private SearchVerb Verb { get; }
 		private string Arguments { get; }
@@ -53,18 +55,15 @@ namespace TomPIT.Search.Indexing
 			}
 		}
 
-		private ISearchProcessHandler Handler
+		private ISearchComponent Handler
 		{
 			get
 			{
 				if (_handler == null)
 				{
-					var handlerType = Instance.GetService<ICompilerService>().ResolveType(Request.MicroService, Catalog, Request.Catalog);
+					var handlerType = Instance.Tenant.GetService<ICompilerService>().ResolveType(Request.MicroService, Catalog, Request.Catalog);
 
-					_handler = handlerType.CreateInstance<ISearchProcessHandler>(new object[] { Catalog.CreateContext() });
-
-					if (!string.IsNullOrWhiteSpace(Arguments))
-						Types.Populate(Arguments, _handler);
+					_handler = Instance.Tenant.GetService<ICompilerService>().CreateInstance<ISearchComponent>(MiddlewareDescriptor.Current.CreateContext(Catalog.MicroService()), handlerType, Arguments);
 				}
 
 				return _handler;
@@ -75,7 +74,7 @@ namespace TomPIT.Search.Indexing
 		{
 			get
 			{
-				if (_queryMethod == null && Handler !=null)
+				if (_queryMethod == null && Handler != null)
 				{
 					var queryMethods = Handler.GetType().GetMethods();
 
@@ -122,7 +121,7 @@ namespace TomPIT.Search.Indexing
 
 		public void Index()
 		{
-			if (Verb == SearchVerb.Rebuild && Instance.GetService<IIndexingService>().SelectState(Catalog.Component) == null)
+			if (Verb == SearchVerb.Rebuild && Instance.Tenant.GetService<IIndexingService>().SelectState(Catalog.Component) == null)
 				return;
 
 			try
@@ -131,7 +130,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				Instance.Connection.LogError("Search", nameof(Indexer), ex.Message);
+				Instance.Tenant.LogError("Search", nameof(Indexer), ex.Message);
 
 				Success = false;
 			}
@@ -150,7 +149,7 @@ namespace TomPIT.Search.Indexing
 						Success = Delete();
 						break;
 					case SearchVerb.Rebuild:
-						var ci = Instance.GetService<IIndexingService>().SelectState(Catalog.Component);
+						var ci = Instance.Tenant.GetService<IIndexingService>().SelectState(Catalog.Component);
 
 						if (ci == null || ci.Status == CatalogStateStatus.Rebuilding)
 						{
@@ -158,11 +157,11 @@ namespace TomPIT.Search.Indexing
 							return;
 						}
 
-						Instance.GetService<IIndexingService>().Ping(Queue.PopReceipt, 3600);
+						Instance.Tenant.GetService<IIndexingService>().Ping(Queue.PopReceipt, 3600);
 
 						if (Rebuild())
 						{
-							Instance.GetService<IIndexingService>().CompleteRebuilding(Catalog.Component);
+							Instance.Tenant.GetService<IIndexingService>().CompleteRebuilding(Catalog.Component);
 							Success = true;
 						}
 						else
@@ -176,27 +175,27 @@ namespace TomPIT.Search.Indexing
 						break;
 				}
 			}
-			catch(ValidationException valEx)
+			catch (System.ComponentModel.DataAnnotations.ValidationException valEx)
 			{
 				if (Handler.ValidationFailed == SearchValidationBehavior.Complete)
 				{
-					Instance.Connection.LogWarning(null, "Search", valEx.Source, valEx.Message);
+					Instance.Tenant.LogWarning(null, "Search", valEx.Source, valEx.Message);
 					Success = true;
 				}
 				else
 				{
 					if (Verb == SearchVerb.Rebuild)
-						Instance.GetService<IIndexingService>().Ping(Queue.PopReceipt, 60);
+						Instance.Tenant.GetService<IIndexingService>().Ping(Queue.PopReceipt, 60);
 
-					Instance.Connection.LogError("Search", valEx.Source, valEx.Message);
+					Instance.Tenant.LogError("Search", valEx.Source, valEx.Message);
 				}
 			}
 			catch (Exception ex)
 			{
 				if (Verb == SearchVerb.Rebuild)
-					Instance.GetService<IIndexingService>().Ping(Queue.PopReceipt, 60);
+					Instance.Tenant.GetService<IIndexingService>().Ping(Queue.PopReceipt, 60);
 
-				Instance.Connection.LogError("Search", ex.Source, ex.Message);
+				Instance.Tenant.LogError("Search", ex.Source, ex.Message);
 			}
 		}
 
@@ -270,7 +269,7 @@ namespace TomPIT.Search.Indexing
 				}
 			}
 
-			if(vectorAtt != null)
+			if (vectorAtt != null)
 			{
 				switch (vectorAtt.Vector)
 				{
@@ -303,7 +302,7 @@ namespace TomPIT.Search.Indexing
 
 		protected bool Rebuild()
 		{
-			Instance.GetService<IIndexingService>().MarkRebuilding(Catalog.Component);
+			Instance.Tenant.GetService<IIndexingService>().MarkRebuilding(Catalog.Component);
 
 			try
 			{
@@ -315,7 +314,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch
 			{
-				Instance.GetService<IIndexingService>().ResetRebuilding(Catalog.Component);
+				Instance.Tenant.GetService<IIndexingService>().ResetRebuilding(Catalog.Component);
 			}
 
 			return false;
@@ -363,7 +362,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				Instance.Connection.LogError("Search", nameof(Insert), ex.Message);
+				Instance.Tenant.LogError("Search", nameof(Insert), ex.Message);
 
 				return false;
 			}
@@ -422,7 +421,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				Instance.Connection.LogError("Search", nameof(Update), ex.Message);
+				Instance.Tenant.LogError("Search", nameof(Update), ex.Message);
 
 				return false;
 			}
@@ -443,7 +442,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				Instance.Connection.LogError("Search", nameof(Update), ex.Message);
+				Instance.Tenant.LogError("Search", nameof(Update), ex.Message);
 
 				return false;
 			}
@@ -461,7 +460,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				Instance.Connection.LogError("Search", nameof(Update), ex.Message);
+				Instance.Tenant.LogError("Search", nameof(Update), ex.Message);
 
 				return false;
 			}
@@ -503,7 +502,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				Instance.Connection.LogError("Search", nameof(Delete), ex.Message);
+				Instance.Tenant.LogError("Search", nameof(Delete), ex.Message);
 
 				return false;
 			}
@@ -514,9 +513,9 @@ namespace TomPIT.Search.Indexing
 			var field = doc.GetField(SearchUtils.FieldLcid);
 
 			if (field == null)
-				doc.Add(new Field(SearchUtils.FieldLcid, 0.AsString(), Field.Store.YES, Field.Index.ANALYZED, Field.TermVector.NO));
+				doc.Add(new Field(SearchUtils.FieldLcid, 0.ToString(), Field.Store.YES, Field.Index.ANALYZED, Field.TermVector.NO));
 			else if (string.IsNullOrWhiteSpace(field.StringValue))
-				field.SetValue(0.AsString());
+				field.SetValue(0.ToString());
 		}
 	}
 }

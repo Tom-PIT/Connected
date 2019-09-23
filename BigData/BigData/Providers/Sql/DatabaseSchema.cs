@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using TomPIT.BigData.Data;
-using TomPIT.BigData.Services;
+using TomPIT.BigData.Transactions;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
+using TomPIT.Diagostics;
 
 namespace TomPIT.BigData.Providers.Sql
 {
@@ -50,7 +50,7 @@ namespace TomPIT.BigData.Providers.Sql
 			get
 			{
 				if (_partition == null)
-					_partition = Instance.GetService<IComponentService>().SelectConfiguration(File.Partition) as IPartitionConfiguration;
+					_partition = Instance.Tenant.GetService<IComponentService>().SelectConfiguration(File.Partition) as IPartitionConfiguration;
 
 				return _partition;
 			}
@@ -144,7 +144,7 @@ namespace TomPIT.BigData.Providers.Sql
 			}
 			catch (Exception ex)
 			{
-				Instance.Connection.LogError("BigData", ex.Source, ex.Message);
+				Instance.Tenant.LogError("BigData", ex.Source, ex.Message);
 			}
 		}
 

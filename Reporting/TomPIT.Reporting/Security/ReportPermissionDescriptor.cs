@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.Security;
+﻿using TomPIT.Security;
 
-namespace TomPIT.Reporting.Security
+namespace TomPIT.MicroServices.Reporting.Security
 {
 	public class ReportPermissionDescriptor : ComponentPermissionDescriptor
 	{

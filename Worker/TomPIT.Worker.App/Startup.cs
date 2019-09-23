@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
+using TomPIT.Runtime;
 using TomPIT.Worker.Services;
 using TomPIT.Worker.Subscriptions;
 
@@ -36,13 +37,13 @@ namespace TomPIT.Worker
 				Worker.Configuration.Routing.Register(f.Builder);
 			});
 
-			Shell.GetService<IConnectivityService>().ConnectionInitialize += OnConnectionInitialize;
+			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 			Instance.Run(app);
 		}
 
-		private void OnConnectionInitialize(object sender, SysConnectionArgs e)
+		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
-			e.Connection.RegisterService(typeof(ISubscriptionWorkerService), typeof(SubscriptionWorkerService));
+			e.Tenant.RegisterService(typeof(ISubscriptionWorkerService), typeof(SubscriptionWorkerService));
 		}
 
 		private void RegisterTasks(IServiceCollection services)

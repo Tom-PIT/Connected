@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -7,8 +7,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyName>TomPIT.App</AssemblyName>
-    <RootNamespace>TomPIT</RootNamespace>
+    <AssemblyName>TomPIT.Experience.App</AssemblyName>
+    <RootNamespace>TomPIT.App</RootNamespace>
     <CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
     <AssemblyVersion>1.1.905.3</AssemblyVersion>
     <FileVersion>1.1.905.3</FileVersion>

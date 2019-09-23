@@ -1,6 +1,4 @@
-﻿using TomPIT.ComponentModel.Workers;
-
-namespace TomPIT.Worker.Workers
+﻿namespace TomPIT.Worker.Workers
 {
 	public abstract class Invoker
 	{

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -22,8 +23,18 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services
 				script = service.GetScript(sourceCode.Configuration().MicroService(), sourceCode);
 			else
 			{
-				script = service.GetType().GetMethod(nameof(ICompilerService.GetScript),
-					 new Type[] { Editor.HostType }).Invoke(service, new object[] { sourceCode.Configuration().MicroService(), sourceCode }) as IScriptDescriptor;
+				var methods = service.GetType().GetMethods().Where(f => string.Compare(f.Name, nameof(ICompilerService.GetScript), false) == 0);
+
+				foreach (var method in methods)
+				{
+					if (method.IsGenericMethod)
+					{
+						var target = method.MakeGenericMethod(new Type[] { Editor.HostType });
+
+						script = target.Invoke(service, new object[] { sourceCode.Configuration().MicroService(), sourceCode }) as IScriptDescriptor;
+						break;
+					}
+				}
 			}
 
 			if (script == null)
@@ -37,6 +48,9 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services
 
 			foreach (var diagnostic in script.Errors)
 			{
+				if (diagnostic.Source == null)
+					continue;
+
 				if (diagnostic.Source.Contains("/"))
 				{
 					if (string.Compare(fileName, diagnostic.Source, true) != 0)

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AssemblyVersion>1.1.905.3</AssemblyVersion>
@@ -7,6 +7,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <AssemblyName>TomPIT.MicroServices.Reporting</AssemblyName>
+    <RootNamespace>TomPIT.MicroServices.Reporting</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="bundleconfig.json" />
@@ -36,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
+    <ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System">

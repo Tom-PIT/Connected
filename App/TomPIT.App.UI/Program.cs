@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
-namespace TomPIT
+namespace TomPIT.App
 {
 	public class Program
 	{

@@ -38,9 +38,10 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services
 			{
 				if (_providers == null)
 				{
-					_providers = new List<IActionProvider>();
-
-					_providers.Add(new UsingActionProvider());
+					_providers = new List<IActionProvider>
+					{
+						new UsingActionProvider()
+					};
 				}
 
 				return _providers;

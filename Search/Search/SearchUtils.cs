@@ -4,8 +4,7 @@ using System.Reflection;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
-using TomPIT.Data;
-using TomPIT.Services;
+using TomPIT.Reflection;
 
 namespace TomPIT.Search
 {
@@ -36,24 +35,24 @@ namespace TomPIT.Search
 				 || string.Compare(fieldName, FieldDate, true) == 0;
 		}
 
-		public static ISearchHandler<T> CreateHandler<T>(this ISearchCatalog catalog)
+		public static ISearchMiddleware<T> CreateHandler<T>(this ISearchCatalogConfiguration catalog)
 		{
-			var type = Instance.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(Instance.Connection), catalog, catalog.ComponentName(Instance.Connection));
+			var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(), catalog, catalog.ComponentName());
 
 			if (type == null)
 				return null;
 
-			return type.CreateInstance<ISearchHandler<T>>(new object[] { catalog.CreateContext() });
+			return type.CreateInstance<ISearchMiddleware<T>>();
 		}
 
-		public static Type CatalogType(this ISearchCatalog catalog)
+		public static Type CatalogType(this ISearchCatalogConfiguration catalog)
 		{
-			var type = Instance.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(Instance.Connection), catalog, catalog.ComponentName(Instance.Connection));
+			var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(), catalog, catalog.ComponentName());
 
 			if (type == null)
 				return null;
 
-			var searchHandler = type.GetInterface(typeof(ISearchHandler<>).FullName);
+			var searchHandler = type.GetInterface(typeof(ISearchMiddleware<>).FullName);
 
 			if (searchHandler == null)
 				return null;
@@ -61,7 +60,7 @@ namespace TomPIT.Search
 			return searchHandler.GetGenericArguments()[0];
 		}
 
-		public static List<PropertyInfo> CatalogProperties(this ISearchCatalog catalog)
+		public static List<PropertyInfo> CatalogProperties(this ISearchCatalogConfiguration catalog)
 		{
 			var type = CatalogType(catalog);
 
@@ -71,7 +70,7 @@ namespace TomPIT.Search
 			var properties = type.GetProperties();
 			var result = new List<PropertyInfo>();
 
-			foreach(var property in properties)
+			foreach (var property in properties)
 			{
 				if (!property.CanRead)
 					continue;

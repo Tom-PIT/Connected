@@ -1,17 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using System;
+﻿using System;
 using System.Net;
 using System.Text;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using TomPIT.App.Models;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Diagnostics;
+using TomPIT.Diagostics;
+using TomPIT.Middleware;
 using TomPIT.Models;
-using TomPIT.Services;
+using TomPIT.Security;
+using TomPIT.UI;
 
-namespace TomPIT.UI
+namespace TomPIT.App.UI
 {
 	internal class ViewEngine : ViewEngineBase, IViewEngine
 	{
@@ -36,7 +40,7 @@ namespace TomPIT.UI
 			}
 		}
 
-		public void RenderPartial(IExecutionContext context, string name)
+		public void RenderPartial(IMiddlewareContext context, string name)
 		{
 			var partialView = ResolveView(context, name);
 
@@ -46,7 +50,7 @@ namespace TomPIT.UI
 			var vm = CreatePartialModel(name);
 			var args = new ViewInvokeArguments(vm);
 
-			vm.Connection().GetService<ICompilerService>().Execute(((IConfiguration)partialView).MicroService(vm.Connection()), partialView.Invoke, this, args);
+			vm.Tenant.GetService<ICompilerService>().Execute(((IConfiguration)partialView).MicroService(), partialView.Invoke, this, args);
 
 			var viewEngineResult = Engine.FindView(vm.ActionContext, name, false);
 
@@ -99,7 +103,7 @@ namespace TomPIT.UI
 
 				if (model.ViewConfiguration != null)
 				{
-					model.GetService<ICompilerService>().Execute(((IConfiguration)model.ViewConfiguration).MicroService(model.Connection), model.ViewConfiguration.Invoke, this, invokeArgs);
+					model.Tenant.GetService<ICompilerService>().Execute(((IConfiguration)model.ViewConfiguration).MicroService(), model.ViewConfiguration.Invoke, this, invokeArgs);
 
 					if (Shell.HttpContext.Response.StatusCode != (int)HttpStatusCode.OK)
 						return;
@@ -141,13 +145,13 @@ namespace TomPIT.UI
 			var path = Context.Request.Path.ToString().Trim('/');
 
 			var ac = CreateActionContext(Context);
-			var view = Instance.GetService<IViewService>().Select(path, ac);
+			var view = Instance.Tenant.GetService<IViewService>().Select(path, ac);
 
 			if (view == null)
 				return null;
 
 			var vi = new ViewInfo(string.Format("/Views/{0}.cshtml", path), ac);
-			var ms = vi.ViewComponent == null ? null : Instance.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
+			var ms = vi.ViewComponent == null ? null : Instance.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
 
 			var model = new RuntimeModel(Context.Request, ac, Temp)
 			{
@@ -169,7 +173,7 @@ namespace TomPIT.UI
 			ac.ActionDescriptor.Properties.Add("viewKind", ViewKind.Partial);
 
 			var vi = new ViewInfo(string.Format("/Views/Dynamic/Partial/{0}.cshtml", name), ac);
-			var ms = vi.ViewComponent == null ? null : Instance.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
+			var ms = vi.ViewComponent == null ? null : Instance.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
 
 			var model = new RuntimeModel(Context.Request, ac, Temp);
 
@@ -181,7 +185,7 @@ namespace TomPIT.UI
 			return model;
 		}
 
-		private IPartialView ResolveView(IExecutionContext context, string qualifier)
+		private IPartialViewConfiguration ResolveView(IMiddlewareContext context, string qualifier)
 		{
 			var tokens = qualifier.Split('/');
 			var ms = context.MicroService;
@@ -189,7 +193,7 @@ namespace TomPIT.UI
 
 			if (tokens.Length > 1)
 			{
-				ms = context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+				ms = context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
 				if (ms == null)
 					return null;
@@ -197,7 +201,7 @@ namespace TomPIT.UI
 				name = tokens[1];
 			}
 
-			return context.Connection().GetService<IComponentService>().SelectConfiguration(ms.Token, "Partial", name) as IPartialView;
+			return context.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "Partial", name) as IPartialViewConfiguration;
 		}
 	}
 }

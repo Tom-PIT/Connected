@@ -107,6 +107,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contrib.Highlighter", "..\S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search", "..\Search\Search\Search.csproj", "{25CD6501-3B4B-4FDB-A029-3D926B4EB1EE}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Sdk", "..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj", "{9D552577-159B-4EE7-8A0A-D100F03323C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -261,6 +263,10 @@ Global
 		{25CD6501-3B4B-4FDB-A029-3D926B4EB1EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{25CD6501-3B4B-4FDB-A029-3D926B4EB1EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{25CD6501-3B4B-4FDB-A029-3D926B4EB1EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D552577-159B-4EE7-8A0A-D100F03323C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D552577-159B-4EE7-8A0A-D100F03323C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D552577-159B-4EE7-8A0A-D100F03323C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D552577-159B-4EE7-8A0A-D100F03323C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -303,6 +309,7 @@ Global
 		{62FAF569-C346-4BCC-AB8F-33D3A60E6FC1} = {B416F108-A394-48D8-B287-EBF5CD8797D9}
 		{40D854D4-B2E2-4A07-B77D-1735BAB5621A} = {B416F108-A394-48D8-B287-EBF5CD8797D9}
 		{25CD6501-3B4B-4FDB-A029-3D926B4EB1EE} = {B416F108-A394-48D8-B287-EBF5CD8797D9}
+		{9D552577-159B-4EE7-8A0A-D100F03323C5} = {BA4B5CE4-951B-4D6F-A95C-B673861C3DDF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {56CEBC0B-257E-403D-8CF9-1F6B50358F86}

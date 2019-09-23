@@ -7,7 +7,7 @@ namespace TomPIT.IoT
 	public interface IIoTDeviceMiddleware : IMiddlewareComponent
 	{
 		[JsonIgnore]
-		JObject Arguments { get; }
+		JObject Arguments { get; set; }
 		void Invoke();
 	}
 }

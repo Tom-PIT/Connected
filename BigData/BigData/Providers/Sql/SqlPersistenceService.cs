@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using TomPIT.BigData.Data;
-using TomPIT.BigData.Services;
+using TomPIT.BigData.Partitions;
+using TomPIT.BigData.Persistence;
+using TomPIT.BigData.Transactions;
 using TomPIT.ComponentModel.BigData;
 
 namespace TomPIT.BigData.Providers.Sql
@@ -86,7 +85,7 @@ namespace TomPIT.BigData.Providers.Sql
 				var max = stats.Count >= TransactionParser.FileSize ? stats.MaxTimestamp : DateTime.MinValue;
 				var status = stats.Count >= TransactionParser.FileSize ? PartitionFileStatus.Closed : PartitionFileStatus.Open;
 
-				Instance.GetService<IPartitionService>().UpdateFile(context.File.FileName, stats.MinTimestamp, max, stats.Count, status);
+				Instance.Tenant.GetService<IPartitionService>().UpdateFile(context.File.FileName, stats.MinTimestamp, max, stats.Count, status);
 			}
 
 			foreach (var field in provider.Schema.Fields)
@@ -171,7 +170,7 @@ namespace TomPIT.BigData.Providers.Sql
 			else
 				return;
 
-			Instance.GetService<IPartitionService>().UpdateFileStatistics(file.FileName, field.Name, startString, endString, startNumber, endNumber, startDate, endDate);
+			Instance.Tenant.GetService<IPartitionService>().UpdateFileStatistics(file.FileName, field.Name, startString, endString, startNumber, endNumber, startDate, endDate);
 		}
 	}
 }

@@ -278,7 +278,7 @@ namespace TomPIT.Compilation
 				diagnostic.EndLine = position.EndLinePosition.Line;
 				diagnostic.EndColumn = position.EndLinePosition.Character;
 				diagnostic.Code = error.Id;
-				diagnostic.Source = error.Location.SourceTree.FilePath;
+				diagnostic.Source = error.Location.SourceTree?.FilePath;
 				diagnostics.Add(diagnostic);
 			}
 
@@ -398,7 +398,7 @@ namespace TomPIT.Compilation
 					processor = new PartialProcessor(partial, content);
 				else if (config is IMailTemplateConfiguration mail)
 					processor = new MailTemplateProcessor(mail, content);
-				else if (config is IReport report)
+				else if (config is IReportConfiguration report)
 					processor = new ReportProcessor(report);
 			}
 

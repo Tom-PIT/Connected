@@ -19,7 +19,8 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services.ActionProviders
 
 			foreach (var marker in Arguments.Context.Markers)
 			{
-				if (string.Compare(marker.Code, "CS0246", true) == 0)
+				if (string.Compare(marker.Code, "CS0246", true) == 0
+					|| string.Compare(marker.Code, "CS0103", true) == 0)
 				{
 					var results = GetUsingActions(marker);
 
@@ -45,7 +46,7 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services.ActionProviders
 			if (methodName == null)
 				return null;
 
-			var typeInfo = CSharpAnalysisExtensions.ResolveTypeInfo(Arguments.Model, Arguments.Node);
+			var typeInfo = CSharpAnalysisExtensions.ResolveMemberAccessTypeInfo(Arguments.Model, Arguments.Node);
 
 			if (typeInfo.Type == null)
 				return null;
@@ -61,7 +62,16 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services.ActionProviders
 		}
 		private List<ICodeAction> GetUsingActions(IMarkerData marker)
 		{
-			var type = Arguments.Model.GetSpeculativeTypeInfo(Arguments.Node.Span.Start, Arguments.Node, SpeculativeBindingOption.BindAsTypeOrNamespace);
+			var span = Editor.Document.GetSpan(new Range
+			{
+				EndColumn = marker.EndColumn,
+				EndLineNumber = marker.EndLineNumber,
+				StartColumn = marker.StartColumn,
+				StartLineNumber = marker.StartLineNumber
+			});
+
+			var node = Arguments.Model.SyntaxTree.GetRoot().FindNode(span);
+			var type = CSharpAnalysisExtensions.ResolveTypeInfo(Arguments.Model, node);
 
 			if (type.Type == null)
 				return null;
@@ -93,7 +103,7 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services.ActionProviders
 				Command = new Command
 				{
 					Title = title,
-					Id = Guid.NewGuid().ToString()
+					Id = "AddUsing"
 				},
 				Title = title,
 				IsPreferred = true,

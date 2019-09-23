@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using TomPIT.Search;
+﻿using TomPIT.Search;
+using TomPIT.Serialization;
 
-namespace TomPIT.Models
+namespace TomPIT.App.Models
 {
 	public class SearchModel : AjaxModel
 	{
@@ -20,7 +17,7 @@ namespace TomPIT.Models
 			get
 			{
 				if (_options == null)
-					_options = Types.Deserialize<SearchOptions>(Types.Serialize(Body));
+					_options = SerializationExtensions.Deserialize<SearchOptions>(SerializationExtensions.Serialize(Body));
 
 				return _options;
 			}

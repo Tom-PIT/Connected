@@ -1,13 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <AssemblyName>TomPIT.BigData.App</AssemblyName>
+    <AssemblyName>TomPIT.Experience.BigData</AssemblyName>
     <RootNamespace>TomPIT.BigData</RootNamespace>
     <AssemblyVersion>1.1.905.3</AssemblyVersion>
     <FileVersion>1.1.905.3</FileVersion>
     <Version>1.1.905.3</Version>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Security\**" />
+    <Content Remove="Security\**" />
+    <EmbeddedResource Remove="Security\**" />
+    <None Remove="Security\**" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
@@ -17,12 +23,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+    <ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
     <ProjectReference Include="..\..\DataProviders\TomPIT.DataProviders.Sql\TomPIT.DataProviders.Sql.csproj" />
-    <ProjectReference Include="..\..\Development\TomPIT.Templates.Application\TomPIT.Application.csproj" />
     <ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Security\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Providers\Sql\SqlStrings.Designer.cs">

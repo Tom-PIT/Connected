@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.Annotations;
+﻿using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
+using TomPIT.Reflection;
+using TomPIT.UI;
 
-namespace TomPIT.Reporting.UI
+namespace TomPIT.MicroServices.Reporting.UI
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]

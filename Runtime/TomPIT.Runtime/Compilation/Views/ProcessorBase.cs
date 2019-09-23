@@ -25,6 +25,8 @@ namespace TomPIT.Compilation.Views
 		protected void AddUsings(StringBuilder builder)
 		{
 			builder.AppendLine("@using TomPIT;");
+			builder.AppendLine("@using TomPIT.Middleware;");
+			builder.AppendLine("@using TomPIT.Middleware.Interop;");
 			builder.AppendLine("@using System;");
 			builder.AppendLine("@using System.Linq;");
 			builder.AppendLine("@using System.Text;");
@@ -50,7 +52,7 @@ namespace TomPIT.Compilation.Views
 
 		protected void AppendBaseType(StringBuilder builder)
 		{
-			AppendBaseType(builder, "TomPIT.UI.ViewBase");
+			AppendBaseType(builder, "TomPIT.App.UI.ViewBase");
 		}
 
 		protected void AddTagHelpers(StringBuilder builder)

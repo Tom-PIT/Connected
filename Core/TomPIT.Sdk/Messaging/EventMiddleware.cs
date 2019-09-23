@@ -4,12 +4,7 @@ namespace TomPIT.Messaging
 {
 	public abstract class EventMiddleware : MiddlewareComponent, IEventMiddleware
 	{
-		protected EventMiddleware(IMiddlewareContext context, string eventName) : base(context)
-		{
-			EventName = eventName;
-		}
-
-		public string EventName { get; }
+		public string EventName { get; set; }
 		public bool Cancel { get; protected set; }
 
 		public void Invoke()
