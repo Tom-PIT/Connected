@@ -1,13 +1,13 @@
 ﻿using System;
 using TomPIT.ComponentModel;
 using TomPIT.Security;
-using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Navigation
 {
 	public abstract class SiteMapViewElement : SiteMapElement, ISiteMapAuthorizationElement
 	{
-		[CAP(CAP.NavigationViewUrlProvider)]
+		[CIP(CIP.SiteMapViewUrlProvider)]
 
 		public string View { get; set; }
 

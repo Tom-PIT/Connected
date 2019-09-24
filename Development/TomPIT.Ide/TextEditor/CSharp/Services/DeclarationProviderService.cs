@@ -15,7 +15,7 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services
 			var caret = Editor.Document.GetPosition(position);
 			var model = Editor.Document.GetSemanticModelAsync().Result;
 			var nodeToken = model.SyntaxTree.GetRoot().FindToken(caret);
-			var enclosingIdentifier = CSharpAnalysisExtensions.EnclosingIdentifier(nodeToken);
+			var enclosingIdentifier = CSharpQuery.EnclosingIdentifier(nodeToken);
 			var scope = enclosingIdentifier.Parent.DeclarationScope();
 
 			//var declaration = model.GetDeclaredSymbol(node);

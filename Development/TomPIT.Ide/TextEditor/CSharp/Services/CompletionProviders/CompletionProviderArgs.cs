@@ -4,7 +4,7 @@ using TomPIT.Ide.TextEditor.Languages;
 
 namespace TomPIT.Ide.TextEditor.CSharp.Services.CompletionProviders
 {
-	internal class CompletionProviderArgs : EventArgs
+	public class CompletionProviderArgs : EventArgs
 	{
 		public CompletionProviderArgs(ITextEditor editor, ICompletionContext context, SemanticModel model, IPosition position)
 		{

@@ -40,7 +40,8 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services
 					{
 						new DefaultProvider(),
 						new ScriptReferenceProvider(),
-						new SnippetCompletionProvider()
+						new SnippetCompletionProvider(),
+						new AttributeCompletionProvider()
 					};
 				}
 

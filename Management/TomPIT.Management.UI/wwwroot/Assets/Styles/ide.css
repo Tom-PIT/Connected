@@ -220,7 +220,7 @@ h4.dev-title {
   bottom: 40px;
 }
 .text-editor-sa {
-  height: calc(100vh - 167px) !important;
+  height: calc(100vh - 121px) !important;
 }
 .text-editor-int {
   height: calc(100vh - 350px) !important;

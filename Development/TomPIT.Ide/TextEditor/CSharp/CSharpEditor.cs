@@ -14,7 +14,7 @@ using TomPIT.Middleware;
 
 namespace TomPIT.Ide.TextEditor.CSharp
 {
-	internal class CSharpEditor : Editor
+	public class CSharpEditor : Editor
 	{
 		private static List<MetadataReference> _refs = null;
 

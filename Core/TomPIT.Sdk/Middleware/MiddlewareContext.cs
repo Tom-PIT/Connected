@@ -9,6 +9,7 @@ using TomPIT.Middleware.Interop;
 using TomPIT.Middleware.Services;
 using TomPIT.Serialization;
 using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware
 {
@@ -123,7 +124,7 @@ namespace TomPIT.Middleware
 			invoker.Invoke(this as IApiExecutionScope, descriptor, e);
 		}
 
-		public IDataConnection OpenConnection([CAP(CAP.ConnectionProvider)]string connection)
+		public IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection)
 		{
 			var tokens = connection.Split('/');
 			var descriptor = ComponentDescriptor.Connection(this, connection);
@@ -153,7 +154,7 @@ namespace TomPIT.Middleware
 			};
 		}
 
-		public IDataReader<T> OpenReader<T>([CAP(CAP.ConnectionProvider)]string connection, string commandText)
+		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, string commandText)
 		{
 			return new DataReader<T>(this)
 			{
@@ -163,7 +164,7 @@ namespace TomPIT.Middleware
 			};
 		}
 
-		public IDataWriter OpenWriter([CAP(CAP.ConnectionProvider)]string connection, string commandText)
+		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, string commandText)
 		{
 			return new DataWriter(this)
 			{

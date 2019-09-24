@@ -225,7 +225,7 @@ h4.dev-title {
 .text-editor-int {
   height: calc(100vh - 350px) !important;
   border: 1px solid #e0e0e0 !important;
-  border-top: none!important;
+  border-top: none !important;
 }
 .text-editor {
   border: 0;

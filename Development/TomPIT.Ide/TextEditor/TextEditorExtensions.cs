@@ -5,6 +5,14 @@ namespace TomPIT.Ide.TextEditor
 {
 	public static class TextEditorExtensions
 	{
+		public static TextSpan GetSpan(this Document document, IPosition position)
+		{
+			var text = document.GetTextAsync().Result;
+			var span = text.Lines[position.LineNumber - 1].Span;
+
+			return TextSpan.FromBounds(span.Start + position.Column - 1, span.Start + position.Column - 1);
+		}
+
 		public static TextSpan GetSpan(this Document document, IRange range)
 		{
 			var text = document.GetTextAsync().Result;

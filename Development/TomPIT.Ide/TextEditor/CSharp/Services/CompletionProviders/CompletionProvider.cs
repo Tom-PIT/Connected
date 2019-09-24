@@ -3,7 +3,7 @@ using TomPIT.Ide.TextEditor.Languages;
 
 namespace TomPIT.Ide.TextEditor.CSharp.Services.CompletionProviders
 {
-	internal class CompletionProvider : ICompletionProvider
+	public class CompletionProvider : ICompletionProvider
 	{
 		public List<ICompletionItem> ProvideItems(CompletionProviderArgs e)
 		{
@@ -13,7 +13,7 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services.CompletionProviders
 		}
 
 		protected CompletionProviderArgs Arguments { get; private set; }
-		protected CSharpEditor Editor => Arguments.Editor as CSharpEditor;
+		public CSharpEditor Editor => Arguments.Editor as CSharpEditor;
 
 		protected virtual List<ICompletionItem> OnProvideItems()
 		{

@@ -46,7 +46,7 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services.ActionProviders
 			if (methodName == null)
 				return null;
 
-			var typeInfo = CSharpAnalysisExtensions.ResolveMemberAccessTypeInfo(Arguments.Model, Arguments.Node);
+			var typeInfo = CSharpQuery.ResolveMemberAccessTypeInfo(Arguments.Model, Arguments.Node);
 
 			if (typeInfo.Type == null)
 				return null;
@@ -71,7 +71,7 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services.ActionProviders
 			});
 
 			var node = Arguments.Model.SyntaxTree.GetRoot().FindNode(span);
-			var type = CSharpAnalysisExtensions.ResolveTypeInfo(Arguments.Model, node);
+			var type = CSharpQuery.ResolveTypeInfo(Arguments.Model, node);
 
 			if (type.Type == null)
 				return null;

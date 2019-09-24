@@ -1,11 +1,11 @@
 ﻿using TomPIT.Collections;
-using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Navigation
 {
 	public interface ISiteMapRoute : ISiteMapElement
 	{
-		[CAP(CAP.NavigationUrlProvider)]
+		[CIP(CIP.SiteMapViewUrlProvider)]
 		string Template { get; }
 
 		string RouteKey { get; }

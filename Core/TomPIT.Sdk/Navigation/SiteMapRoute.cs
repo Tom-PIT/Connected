@@ -1,5 +1,5 @@
 ﻿using TomPIT.Collections;
-using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Navigation
 {
@@ -7,7 +7,7 @@ namespace TomPIT.Navigation
 	{
 		private ConnectedList<ISiteMapRoute, ISiteMapRoute> _items = null;
 
-		[CAP(CAP.NavigationUrlProvider)]
+		[CIP(CIP.SiteMapViewUrlProvider)]
 		public string Template { get; set; }
 
 		public string RouteKey { get; set; }
