@@ -1591,6 +1591,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to IMicroServiceContext expected.
+        /// </summary>
+        public static string ErrMicroServiceContextExpected {
+            get {
+                return ResourceManager.GetString("ErrMicroServiceContextExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Micro service not found.
         /// </summary>
         public static string ErrMicroServiceNotFound {

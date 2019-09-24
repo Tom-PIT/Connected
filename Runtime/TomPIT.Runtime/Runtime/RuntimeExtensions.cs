@@ -46,14 +46,24 @@ namespace TomPIT.Runtime
 			return Instance.ResourceGroupExists(ms.ResourceGroup);
 		}
 
-		public static IMiddlewareContext CreateContext(this IComponent component)
+		public static IMicroServiceContext CreateContext(this IComponent component)
 		{
-			return new MiddlewareContext(Instance.Tenant.Url, Instance.Tenant.GetService<IMicroServiceService>().Select(component.MicroService));
+			return new MicroServiceContext(component.MicroService, Instance.Tenant.Url);
 		}
 
-		public static IMiddlewareContext CreateContext(this IConfiguration configuration)
+		public static IMicroServiceContext CreateContext(this IConfiguration configuration)
 		{
 			return CreateContext(Instance.Tenant.GetService<IComponentService>().SelectComponent(configuration.Component));
+		}
+
+		public static void SetContext(this IMiddlewareObject target, IMiddlewareContext context)
+		{
+			var property = target.GetType().GetProperty("Context");
+
+			if (property.SetMethod == null)
+				return;
+
+			property.SetMethod.Invoke(target, new object[] { context });
 		}
 	}
 }

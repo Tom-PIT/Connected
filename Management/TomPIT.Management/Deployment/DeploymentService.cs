@@ -428,14 +428,25 @@ namespace TomPIT.Management.Deployment
 			var id = SelectInstallerConfigurationId(package);
 
 			if (id == Guid.Empty)
-				return null;
+				return default;
 
 			var content = Tenant.GetService<IStorageService>().Download(id);
 
 			if (content == null || content.Content.Length == 0)
-				return null;
+				return default;
 
-			return (PackageConfiguration)Tenant.GetService<ISerializationService>().Deserialize(content.Content, typeof(PackageConfiguration));
+			try
+			{
+				/*
+				 * this exception is thrown when migrating from version 1.1.905 to newer because
+				 * there were breaking changes in the configuration schema
+				 */
+				return (PackageConfiguration)Tenant.GetService<ISerializationService>().Deserialize(content.Content, typeof(PackageConfiguration));
+			}
+			catch
+			{
+				return default;
+			}
 		}
 
 		public List<IPackageDependency> QueryDependencies(Guid microService, Guid plan)

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.MicroServices</RootNamespace>
     <AssemblyName>TomPIT.MicroServices</AssemblyName>
-    <AssemblyVersion>1.1.905.3</AssemblyVersion>
-    <FileVersion>1.1.905.3</FileVersion>
-    <Version>1.1.905.3</Version>
+    <AssemblyVersion>1.1.924.6</AssemblyVersion>
+    <FileVersion>1.1.924.6</FileVersion>
+    <Version>1.1.924.6</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
@@ -24,7 +24,7 @@
     <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="2.2.0" PrivateAssets="All" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.Templates.Application&quot;" />
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.MicroServices&quot;" />
   </Target>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />

@@ -8,7 +8,7 @@ namespace TomPIT.UI
 	{
 		HttpContext Context { get; set; }
 		void Render(string name);
-		void RenderPartial(IMiddlewareContext context, string name);
+		void RenderPartial(IMicroServiceContext context, string name);
 		string SnippetPath(ViewContext context, string snippetname);
 	}
 }

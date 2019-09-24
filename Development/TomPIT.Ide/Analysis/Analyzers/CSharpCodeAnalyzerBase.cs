@@ -17,7 +17,7 @@ using TomPIT.Reflection;
 
 namespace TomPIT.Ide.Analysis.Analyzers
 {
-	public abstract class CSharpCodeAnalyzerBase : MiddlewareObject, IDisposable
+	public abstract class CSharpCodeAnalyzerBase : MicroServiceObject, IDisposable
 	{
 		private CompletionService _service = null;
 		private DocumentInfo _docInfo = null;
@@ -42,7 +42,7 @@ namespace TomPIT.Ide.Analysis.Analyzers
 				//"TomPIT.Middleware",
 		};
 
-		public CSharpCodeAnalyzerBase(IMiddlewareContext context) : base(context)
+		public CSharpCodeAnalyzerBase(IMicroServiceContext context) : base(context)
 		{
 
 		}

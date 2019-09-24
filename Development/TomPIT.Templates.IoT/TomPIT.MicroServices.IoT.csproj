@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.MicroServices.IoT</RootNamespace>
     <AssemblyName>TomPIT.MicroServices.IoT</AssemblyName>
-    <AssemblyVersion>1.1.905.3</AssemblyVersion>
-    <FileVersion>1.1.905.3</FileVersion>
-    <Version>1.1.905.3</Version>
+    <AssemblyVersion>1.1.924.6</AssemblyVersion>
+    <FileVersion>1.1.924.6</FileVersion>
+    <Version>1.1.924.6</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
@@ -57,6 +57,6 @@
     </Content>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.Templates.IoT&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName).Views.dll&quot; &quot;c:\Deploy\Plugins\TomPIT.Templates.IoT&quot;" />
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.MicroServices.IoT&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName).Views.dll&quot; &quot;c:\Deploy\Plugins\TomPIT.MicroServices.IoT&quot;" />
   </Target>
 </Project>

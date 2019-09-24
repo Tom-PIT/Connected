@@ -561,5 +561,15 @@ namespace TomPIT.Ide
 
 			return r;
 		}
+
+		public static void SetContext(this IMiddlewareObject target, IMiddlewareContext context)
+		{
+			var property = target.GetType().GetProperty("Context");
+
+			if (property.SetMethod == null)
+				return;
+
+			property.SetMethod.Invoke(target, new object[] { context });
+		}
 	}
 }

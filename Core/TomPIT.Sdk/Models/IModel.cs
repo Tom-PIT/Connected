@@ -6,7 +6,7 @@ using TomPIT.Middleware;
 
 namespace TomPIT.Models
 {
-	public interface IModel : IMiddlewareContext
+	public interface IModel : IMicroServiceContext
 	{
 		IEnumerable<ValidationResult> Validate();
 		void Initialize(Controller controller, IMicroService microService);

@@ -54,7 +54,7 @@ namespace TomPIT.Worker.Services
 			}
 
 			Invoker i = null;
-			var ctx = MiddlewareDescriptor.Current.CreateContext(configuration.MicroService());
+			var ctx = new MicroServiceContext(configuration.MicroService());
 			var metricId = ctx.Services.Diagnostic.StartMetric(configuration.Metrics, null);
 
 			try

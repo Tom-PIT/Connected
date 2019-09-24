@@ -4,7 +4,6 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Newtonsoft.Json.Linq;
-using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
 using TomPIT.Models;
@@ -125,13 +124,6 @@ namespace TomPIT.Middleware
 			{
 				return new MiddlewareDescriptor();
 			}
-		}
-
-		public IMiddlewareContext CreateContext(Guid microService)
-		{
-			var ms = Current.Tenant.GetService<IMicroServiceService>().Select(microService);
-
-			return new MiddlewareContext(Tenant.Url, ms);
 		}
 	}
 }

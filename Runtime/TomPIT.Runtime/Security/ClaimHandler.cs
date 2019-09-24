@@ -48,7 +48,7 @@ namespace TomPIT.Security
 			}
 
 			var e = new AuthorizationArgs(identity.User.Token, requirement.Claim, microService.Token.ToString());
-			var r = connection.GetService<TomPIT.Security.IAuthorizationService>().Authorize(new MiddlewareContext(microService), e);
+			var r = connection.GetService<TomPIT.Security.IAuthorizationService>().Authorize(new MicroServiceContext(microService), e);
 
 			if (!r.Success)
 			{

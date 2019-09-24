@@ -27,7 +27,7 @@ namespace TomPIT.Ide.TextEditor.CSharp
 		private Document _document = null;
 		private SourceText _sourceText = null;
 
-		public CSharpEditor()
+		public CSharpEditor(IMicroServiceContext context) : base(context)
 		{
 			Services.TryAdd(typeof(ISyntaxCheckService), new SyntaxCheckService(this));
 			Services.TryAdd(typeof(ICodeActionService), new CodeActionService(this));

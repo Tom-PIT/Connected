@@ -20,7 +20,7 @@ using TomPIT.Serialization;
 
 namespace TomPIT.MicroServices.IoT.Models
 {
-	public class IoTPartialModel : MiddlewareContext, IViewModel, IDataForwardingProvider
+	public class IoTPartialModel : MicroServiceContext, IViewModel, IDataForwardingProvider
 	{
 		private List<string> _stencils = null;
 		private List<IIoTElement> _targetStencils = null;

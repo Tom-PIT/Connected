@@ -56,7 +56,7 @@ namespace TomPIT.Worker.Services
 
 		private static void AddConfiguration(IConfiguration configuration)
 		{
-			if (!(configuration is IEventHandlerConfiguration eh))
+			if (!(configuration is IEventBindingConfiguration eh))
 				return;
 
 			var component = Instance.Tenant.GetService<IComponentService>().SelectComponent(configuration.Component);
@@ -80,7 +80,7 @@ namespace TomPIT.Worker.Services
 
 		private static void AddConfiguration(Guid configuration)
 		{
-			if (!(Instance.Tenant.GetService<IComponentService>().SelectConfiguration(configuration) is IEventHandlerConfiguration c))
+			if (!(Instance.Tenant.GetService<IComponentService>().SelectConfiguration(configuration) is IEventBindingConfiguration c))
 				return;
 
 			AddConfiguration(c);

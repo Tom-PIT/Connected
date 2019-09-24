@@ -78,27 +78,14 @@ namespace TomPIT.Middleware.Services
 		}
 		private string GetString(string stringTable, string key, int lcid, bool throwException)
 		{
-			var microService = Context.MicroService;
-			var st = stringTable;
+			var descriptor = ComponentDescriptor.StringTable(Context, stringTable);
 
-			if (st.Contains('/'))
-			{
-				var tokens = st.Split('/');
-
-				Context.MicroService.ValidateMicroServiceReference(tokens[0]);
-
-				microService = Context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
-
-				if (microService == null)
-					throw new Exception($"{SR.ErrMicroServiceNotFound} ({microService})");
-
-				st = tokens[1];
-			}
+			descriptor.Validate();
 
 			if (lcid == 0)
 				lcid = Thread.CurrentThread.CurrentUICulture.LCID;
 
-			return Context.Tenant.GetService<ILocalizationService>().GetString(microService.Name, st, key, lcid, throwException);
+			return Context.Tenant.GetService<ILocalizationService>().GetString(descriptor.MicroService.Name, descriptor.ComponentName, key, lcid, throwException);
 		}
 
 		public string GetString(string stringTable, string key)

@@ -1,9 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyVersion>1.1.905.3</AssemblyVersion>
-    <FileVersion>1.1.905.3</FileVersion>
-    <Version>1.1.905.3</Version>
+    <AssemblyVersion>1.1.924.6</AssemblyVersion>
+    <FileVersion>1.1.924.6</FileVersion>
+    <Version>1.1.924.6</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
@@ -28,6 +28,6 @@
     <ProjectReference Include="..\TomPIT.Reporting\TomPIT.Reporting.csproj" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.Templates.Reporting.Design&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName).Views.dll&quot; &quot;c:\Deploy\Plugins\TomPIT.Templates.Reporting.Design&quot;" />
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.MicroServices.Reporting.Design&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName).Views.dll&quot; &quot;c:\Deploy\Plugins\TomPIT.MicroServices.Reporting.Design&quot;" />
   </Target>
 </Project>

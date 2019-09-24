@@ -11,7 +11,7 @@ using TomPIT.Models;
 
 namespace TomPIT.App.Models
 {
-	public class AjaxModel : MiddlewareContext, IModel, IActionContextProvider, IRuntimeModel
+	public class AjaxModel : MicroServiceContext, IModel, IActionContextProvider, IRuntimeModel
 	{
 		private IComponent _component = null;
 

@@ -110,7 +110,7 @@ namespace TomPIT.Ide.Analysis
 				: att.Type.CreateInstance<ISchemaBrowser>();
 		}
 
-		public static IConnectionConfiguration DefaultConnection(this IMiddlewareContext context)
+		public static IConnectionConfiguration DefaultConnection(this IMicroServiceContext context)
 		{
 			var connections = context.Tenant.GetService<IComponentService>().QueryComponents(context.MicroService.Token, ComponentCategories.Connection);
 

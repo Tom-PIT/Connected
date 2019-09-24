@@ -5,10 +5,7 @@ using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Exceptions;
-using TomPIT.Middleware.Interop;
 using TomPIT.Middleware.Services;
-using TomPIT.Serialization;
-using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware
@@ -17,21 +14,18 @@ namespace TomPIT.Middleware
 	{
 		private IMiddlewareServices _services = null;
 		private ITenant _tenant = null;
+		private IMiddlewareInterop _interop = null;
 
 		public MiddlewareContext()
 		{
-
+			Initialize(null);
 		}
 
-		public MiddlewareContext(IMiddlewareContext sender) : this(sender, sender?.MicroService)
-		{
-		}
-
-		public MiddlewareContext(IMiddlewareContext sender, IMicroService microService)
+		public MiddlewareContext(IMiddlewareContext sender)
 		{
 			var endpoint = sender is ITenantProvider c ? c.Endpoint : null;
 
-			Initialize(endpoint, microService);
+			Initialize(endpoint);
 
 			if (sender is MiddlewareContext mw)
 				((MiddlewareDiagnosticService)Services.Diagnostic).MetricParent = ((MiddlewareDiagnosticService)mw.Services.Diagnostic).MetricParent;
@@ -39,26 +33,15 @@ namespace TomPIT.Middleware
 
 		public MiddlewareContext(string endpoint)
 		{
-			Initialize(endpoint, null);
+			Initialize(endpoint);
 		}
 
-		public MiddlewareContext(string endpoint, IMicroService microService)
-		{
-			Initialize(endpoint, microService);
-		}
-
-		public MiddlewareContext(IMicroService microService)
-		{
-			Initialize(null, microService);
-		}
-
-		protected void Initialize(string endpoint, IMicroService microService)
+		protected void Initialize(string endpoint)
 		{
 			Endpoint = endpoint;
-			MicroService = microService;
 
 			if (string.IsNullOrWhiteSpace(endpoint))
-				Endpoint = MiddlewareDescriptor.Current.Tenant?.Url;
+				Endpoint = Tenant?.Url;
 		}
 
 		public virtual IMiddlewareServices Services
@@ -72,9 +55,18 @@ namespace TomPIT.Middleware
 			}
 		}
 
-		public virtual IMicroService MicroService { get; protected set; }
-
 		public string Endpoint { get; protected set; }
+
+		public IMiddlewareInterop Interop
+		{
+			get
+			{
+				if (_interop == null)
+					_interop = new MiddlewareInterop(this);
+
+				return _interop;
+			}
+		}
 
 		public ITenant Tenant
 		{
@@ -83,45 +75,13 @@ namespace TomPIT.Middleware
 				if (_tenant == null)
 				{
 					if (string.IsNullOrWhiteSpace(Endpoint))
-					{
 						_tenant = MiddlewareDescriptor.Current.Tenant;
-
-						if (_tenant == null)
-							throw new TomPITException(SR.ErrCannotResolveTenant);
-					}
 					else
 						_tenant = Shell.GetService<IConnectivityService>().SelectTenant(Endpoint);
 				}
 
 				return _tenant;
 			}
-		}
-
-
-		public R Invoke<R>([CAP(CAP.ApiProvider)]string api)
-		{
-			var descriptor = ComponentDescriptor.Api(this, api);
-			var invoker = new ApiInvoker(this);
-			var result = invoker.Invoke(this as IApiExecutionScope, descriptor, EventArgs.Empty);
-
-			return Marshall.Convert<R>(result);
-		}
-
-		public R Invoke<R, A>([CAP(CAP.ApiProvider)] string api, A e)
-		{
-			var descriptor = ComponentDescriptor.Api(this, api);
-			var invoker = new ApiInvoker(this);
-			var result = invoker.Invoke(this as IApiExecutionScope, descriptor, e);
-
-			return Marshall.Convert<R>(result);
-		}
-
-		public void Invoke<A>([CAP(CAP.ApiProvider)] string api, A e)
-		{
-			var descriptor = ComponentDescriptor.Api(this, api);
-			var invoker = new ApiInvoker(this);
-
-			invoker.Invoke(this as IApiExecutionScope, descriptor, e);
 		}
 
 		public IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection)

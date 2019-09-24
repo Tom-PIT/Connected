@@ -64,7 +64,7 @@ namespace TomPIT.Middleware
 			var engine = Shell.HttpContext.RequestServices.GetService(typeof(IViewEngine)) as IViewEngine;
 
 			engine.Context = Shell.HttpContext;
-			engine.RenderPartial(Context, partialName);
+			engine.RenderPartial(Context as IMicroServiceContext, partialName);
 		}
 	}
 }

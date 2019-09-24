@@ -164,12 +164,11 @@ namespace TomPIT.Ide.ComponentModel
 					 {"component", component.Token }
 				};
 
-			InvalidateIndexState(component.Token);
-
 			if (runtimeConfigurationId != Guid.Empty)
 				args.Add("runtimeConfiguration", runtimeConfigurationId);
 
 			Tenant.Post(u, args);
+			InvalidateIndexState(component.Token);
 		}
 
 		public Guid Insert(Guid microService, Guid folder, string category, string name, string type)

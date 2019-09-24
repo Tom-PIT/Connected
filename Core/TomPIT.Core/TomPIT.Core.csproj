@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Globals">
     <SccProjectName>
     </SccProjectName>
@@ -16,9 +16,9 @@
     <Product>Tom PIT Micro service platform</Product>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>1.1.905.3</AssemblyVersion>
-    <FileVersion>1.1.905.3</FileVersion>
-    <Version>1.1.905.3</Version>
+    <AssemblyVersion>1.1.924.6</AssemblyVersion>
+    <FileVersion>1.1.924.6</FileVersion>
+    <Version>1.1.924.6</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>

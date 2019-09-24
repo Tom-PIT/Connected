@@ -8,5 +8,15 @@ namespace TomPIT.Middleware
 		{
 			return ServerUrl.Create(tenant.Url, controller, action);
 		}
+
+		internal static void SetContext(this IMiddlewareObject target, IMiddlewareContext context)
+		{
+			var property = target.GetType().GetProperty("Context");
+
+			if (property.SetMethod == null)
+				return;
+
+			property.SetMethod.Invoke(target, new object[] { context });
+		}
 	}
 }

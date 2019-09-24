@@ -8,9 +8,15 @@ using TomPIT.Middleware;
 
 namespace TomPIT.Ide.TextEditor
 {
-	public abstract class Editor : MiddlewareComponent, ITextEditor
+	public abstract class Editor : MicroServiceObject, ITextEditor
 	{
 		private Lazy<Dictionary<Type, IWorkspaceService>> _services = new Lazy<Dictionary<Type, IWorkspaceService>>();
+
+		public Editor(IMicroServiceContext context) : base(context)
+		{
+
+		}
+
 		public string Text { get; set; }
 		public ITextModel Model { get; set; }
 		public Type HostType { get; set; }

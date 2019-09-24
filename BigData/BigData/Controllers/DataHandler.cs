@@ -9,7 +9,7 @@ using TomPIT.Middleware;
 
 namespace TomPIT.BigData.Controllers
 {
-	internal class DataHandler : MiddlewareContext
+	internal class DataHandler : MicroServiceContext
 	{
 		public DataHandler(HttpContext context)
 		{
@@ -34,7 +34,9 @@ namespace TomPIT.BigData.Controllers
 				return;
 			}
 
-			Initialize(Instance.Tenant.Url, microService);
+			MicroService = microService;
+
+			Initialize(Instance.Tenant.Url);
 
 			Body = Context.Request.Body.ToType<JArray>();
 		}

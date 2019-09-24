@@ -60,7 +60,7 @@ namespace TomPIT.Worker.Services
 				{
 					foreach (var target in targets)
 					{
-						if (!(Instance.Tenant.GetService<IComponentService>().SelectConfiguration(target.Item2) is IEventHandlerConfiguration configuration))
+						if (!(Instance.Tenant.GetService<IComponentService>().SelectConfiguration(target.Item2) is IEventBindingConfiguration configuration))
 							return;
 
 						Parallel.ForEach(configuration.Events,
@@ -82,7 +82,7 @@ namespace TomPIT.Worker.Services
 
 		private void Callback(EventDescriptor ed, bool cancel)
 		{
-			var ctx = MiddlewareDescriptor.Current.CreateContext(new Guid(ed.Callback.Split('/')[0]));
+			var ctx = new MicroServiceContext(new Guid(ed.Callback.Split('/')[0]));
 			var descriptor = ComponentDescriptor.Api(ctx, ed.Callback);
 			var op = descriptor.Configuration.Operations.FirstOrDefault(f => f.Id == new Guid(descriptor.Element));
 
@@ -103,12 +103,12 @@ namespace TomPIT.Worker.Services
 
 		private bool Invoke(EventDescriptor ed, IEventBinding i)
 		{
-			var ctx = MiddlewareDescriptor.Current.CreateContext(i.Configuration().MicroService());
-			var configuration = i.Closest<IEventHandlerConfiguration>();
+			var ctx = new MicroServiceContext(i.Configuration().MicroService());
+			var configuration = i.Closest<IEventBindingConfiguration>();
 
 			if (configuration == null)
 			{
-				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrElementClosestNull} ({nameof(IEventBinding)}->{nameof(IEventHandlerConfiguration)}");
+				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrElementClosestNull} ({nameof(IEventBinding)}->{nameof(IEventBindingConfiguration)}");
 				return false;
 			}
 

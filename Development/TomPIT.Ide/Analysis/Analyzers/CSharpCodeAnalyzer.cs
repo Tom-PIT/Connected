@@ -10,7 +10,7 @@ namespace TomPIT.Ide.Analysis.Analyzers
 		private Type _argumentsType = null;
 		private SourceText _source = null;
 
-		public CSharpCodeAnalyzer(IMiddlewareContext context, T e) : base(context)
+		public CSharpCodeAnalyzer(IMiddlewareContext context, T e) : base(context as IMicroServiceContext)
 		{
 			Args = e;
 		}

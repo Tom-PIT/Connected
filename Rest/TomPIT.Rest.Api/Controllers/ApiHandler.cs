@@ -13,9 +13,9 @@ using TomPIT.Security;
 
 namespace TomPIT.Rest.Controllers
 {
-	public class ApiHandler : MiddlewareContext
+	public class ApiHandler : MicroServiceContext
 	{
-		public ApiHandler(HttpContext context, string endpoint) : base(endpoint)
+		public ApiHandler(HttpContext context)
 		{
 			var routeData = Shell.HttpContext.GetRouteData();
 
@@ -40,7 +40,7 @@ namespace TomPIT.Rest.Controllers
 			if (!Authorize(config, op))
 				return;
 
-			var r = Invoke<object, JObject>(string.Format("{0}/{1}", Api, Operation), ParseArguments());
+			var r = Interop.Invoke<object, JObject>(string.Format("{0}/{1}", Api, Operation), ParseArguments());
 
 			if (Shell.HttpContext.Response.StatusCode == (int)HttpStatusCode.OK)
 				RenderResult(JsonConvert.SerializeObject(r));
@@ -149,7 +149,7 @@ namespace TomPIT.Rest.Controllers
 
 			Api = component.Name;
 
-			Initialize(Endpoint, MicroService);
+			Initialize(Endpoint);
 
 			if (!(Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IApiConfiguration config))
 			{

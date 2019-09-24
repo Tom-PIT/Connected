@@ -20,6 +20,8 @@ namespace TomPIT.Ide.TextEditor.CSharp
 
 			if (member.Expression is IdentifierNameSyntax identifier)
 				return model.GetTypeInfo(identifier);
+			else if (member.Expression is InvocationExpressionSyntax ies)
+				return model.GetTypeInfo(ies);
 			else if (member.Expression is MemberAccessExpressionSyntax memberExpression)
 				return ResolveMemberAccessTypeInfo(model, memberExpression);
 

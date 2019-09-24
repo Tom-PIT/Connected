@@ -1,5 +1,4 @@
 ﻿using System;
-using TomPIT.ComponentModel;
 using TomPIT.Middleware;
 
 namespace TomPIT.Ide.TextEditor
@@ -34,7 +33,7 @@ namespace TomPIT.Ide.TextEditor
 
 	public interface ITextEditorService
 	{
-		ITextEditor GetEditor(IMiddlewareContext context, IMicroService microService, string language);
+		ITextEditor GetEditor(IMicroServiceContext context, string language);
 
 		void RegisterEditor(string language, Type editorType);
 	}

@@ -5,6 +5,7 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Navigation;
 using TomPIT.Connectivity;
+using TomPIT.Ide;
 using TomPIT.Middleware;
 using TomPIT.Navigation;
 
@@ -88,7 +89,7 @@ namespace TomPIT.Development.Navigation
 				return null;
 
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MiddlewareContext(Tenant.Url, ms), type);
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), type);
 
 			if (instance == null)
 				return null;
@@ -112,7 +113,7 @@ namespace TomPIT.Development.Navigation
 
 		private void BindRoute(ISiteMapRoute route, IMiddlewareContext context)
 		{
-			route.Context = context;
+			route.SetContext(context);
 
 			foreach (var item in route.Routes)
 				BindRoute(item, context);

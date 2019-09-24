@@ -56,7 +56,7 @@ namespace TomPIT.Cdn.Mail
 		private void CreateBody()
 		{
 			var builder = new BodyBuilder();
-			var ctx = new MiddlewareContext(Instance.Tenant.Url, null);
+			var ctx = new MiddlewareContext(Instance.Tenant.Url);
 
 			if (Configuration.Format == MailFormat.Html)
 			{

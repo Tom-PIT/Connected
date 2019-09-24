@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Resources;
 using TomPIT.Ide.Analysis;
-using TomPIT.Ide.Analysis.Suggestions;
 using TomPIT.Middleware;
 
 namespace TomPIT.Development.Analysis.Providers
@@ -20,60 +16,61 @@ namespace TomPIT.Development.Analysis.Providers
 
 		public override List<ICodeAnalysisResult> ProvideLiterals(IMiddlewareContext context, CodeAnalysisArgs e)
 		{
-			if (!(e.Node.Parent is ArgumentListSyntax arg))
-				return null;
+			return default;
+			//if (!(e.Node.Parent is ArgumentListSyntax arg))
+			//	return null;
 
-			if (!(arg.Parent is InvocationExpressionSyntax invoke))
-				return null;
+			//if (!(arg.Parent is InvocationExpressionSyntax invoke))
+			//	return null;
 
-			if (invoke.ArgumentList.Arguments.Count < 1)
-				return null;
+			//if (invoke.ArgumentList.Arguments.Count < 1)
+			//	return null;
 
-			var stringTable = invoke.ArgumentList.Arguments[0].GetText().ToString().Trim().Trim('"');
+			//var stringTable = invoke.ArgumentList.Arguments[0].GetText().ToString().Trim().Trim('"');
 
-			if (string.IsNullOrWhiteSpace(stringTable))
-				return null;
+			//if (string.IsNullOrWhiteSpace(stringTable))
+			//	return null;
 
-			var microService = context.MicroService;
+			//var microService = context.MicroService;
 
-			if (stringTable.Contains('/'))
-			{
-				var tokens = stringTable.Split('/');
+			//if (stringTable.Contains('/'))
+			//{
+			//	var tokens = stringTable.Split('/');
 
-				context.MicroService.ValidateMicroServiceReference(tokens[0]);
+			//	context.MicroService.ValidateMicroServiceReference(tokens[0]);
 
-				microService = context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
+			//	microService = context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
-				if (microService == null)
-					throw new Exception($"{SR.ErrMicroServiceNotFound} ({microService})");
+			//	if (microService == null)
+			//		throw new Exception($"{SR.ErrMicroServiceNotFound} ({microService})");
 
-				stringTable = tokens[1];
-			}
+			//	stringTable = tokens[1];
+			//}
 
-			var ds = context.Tenant.GetService<IComponentService>().SelectComponent(microService.Token, "StringTable", stringTable);
+			//var ds = context.Tenant.GetService<IComponentService>().SelectComponent(microService.Token, "StringTable", stringTable);
 
-			if (ds == null)
-				return null;
+			//if (ds == null)
+			//	return null;
 
-			if (!(context.Tenant.GetService<IComponentService>().SelectConfiguration(ds.Token) is IStringTableConfiguration config))
-				return null;
+			//if (!(context.Tenant.GetService<IComponentService>().SelectConfiguration(ds.Token) is IStringTableConfiguration config))
+			//	return null;
 
-			var r = new List<ICodeAnalysisResult>();
+			//var r = new List<ICodeAnalysisResult>();
 
-			if (config.Strings.Count == 0)
-			{
-				r.Add(new NoSuggestionResult("string table contains not strings"));
+			//if (config.Strings.Count == 0)
+			//{
+			//	r.Add(new NoSuggestionResult("string table contains not strings"));
 
-				return r;
-			}
+			//	return r;
+			//}
 
-			foreach (var i in config.Strings.OrderBy(f => f.Key))
-				r.Add(new CodeAnalysisResult(i.Key, i.Key, Types.EllipseString(i.DefaultValue, 64)));
+			//foreach (var i in config.Strings.OrderBy(f => f.Key))
+			//	r.Add(new CodeAnalysisResult(i.Key, i.Key, Types.EllipseString(i.DefaultValue, 64)));
 
-			if (r.Count > 0)
-				return r;
+			//if (r.Count > 0)
+			//	return r;
 
-			return null;
+			//return null;
 		}
 
 		public override List<ICodeAnalysisResult> ProvideHover(IMiddlewareContext context, CodeAnalysisArgs e)

@@ -20,35 +20,36 @@ namespace TomPIT.Development.Analysis.Providers
 
 		public override ICodeLensAnalysisResult CodeLens(IMiddlewareContext context, CodeAnalysisArgs e)
 		{
-			var component = e.ExpressionText;
+			return default;
+			//var component = e.ExpressionText;
 
-			if (FullyQualified)
-			{
-				var tokens = component.Split(new char[] { '/' }, 2);
+			//if (FullyQualified)
+			//{
+			//	var tokens = component.Split(new char[] { '/' }, 2);
 
-				if (tokens.Length == 2)
-					component = tokens[1];
-			}
+			//	if (tokens.Length == 2)
+			//		component = tokens[1];
+			//}
 
-			var c = context.Tenant.GetService<IComponentService>().SelectComponent(e.Component.MicroService, ComponentCategory, component);
+			//var c = context.Tenant.GetService<IComponentService>().SelectComponent(e.Component.MicroService, ComponentCategory, component);
 
-			if (c == null)
-				return null;
+			//if (c == null)
+			//	return null;
 
-			return new CodeLensAnalysisResult(c.Name, string.Format("{0}/{1}", c.MicroService, c.Token))
-			{
-				Command = new CodeLensCommand
-				{
-					Title = $"{c.Name} {ComponentCategory}",
-					Arguments = new CodeLensArguments
-					{
-						MicroService = c.MicroService.ToString(),
-						Component = c.Token.ToString(),
-						Element = c.Token.ToString(),
-						Kind = c.MicroService == context.MicroService.Token ? CodeLensArguments.InternalLink : CodeLensArguments.ExternalLink
-					}
-				}
-			};
+			//return new CodeLensAnalysisResult(c.Name, string.Format("{0}/{1}", c.MicroService, c.Token))
+			//{
+			//	Command = new CodeLensCommand
+			//	{
+			//		Title = $"{c.Name} {ComponentCategory}",
+			//		Arguments = new CodeLensArguments
+			//		{
+			//			MicroService = c.MicroService.ToString(),
+			//			Component = c.Token.ToString(),
+			//			Element = c.Token.ToString(),
+			//			Kind = c.MicroService == context.MicroService.Token ? CodeLensArguments.InternalLink : CodeLensArguments.ExternalLink
+			//		}
+			//	}
+			//};
 		}
 
 		public override List<ICodeAnalysisResult> ProvideLiterals(IMiddlewareContext context, CodeAnalysisArgs e)

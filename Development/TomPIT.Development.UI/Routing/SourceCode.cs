@@ -29,7 +29,7 @@ namespace TomPIT.Development.Routing
 			aa.Schema.Empty = EmptyBehavior.Deny;
 			aa.Schema.Level = AuthorizationLevel.Pessimistic;
 
-			if (!Tenant.GetService<IAuthorizationService>().Authorize(new MiddlewareContext(Tenant.Url, Tenant.GetService<IMicroServiceService>().Select(microService)), aa).Success)
+			if (!Tenant.GetService<IAuthorizationService>().Authorize(new MicroServiceContext(Tenant.GetService<IMicroServiceService>().Select(microService), Tenant.Url), aa).Success)
 			{
 				Context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
 				return;

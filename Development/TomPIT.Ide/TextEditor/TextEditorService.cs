@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Ide.TextEditor.CSharp;
 using TomPIT.Middleware;
@@ -17,17 +16,14 @@ namespace TomPIT.Ide.TextEditor
 			RegisterEditor("csharp", typeof(CSharpEditor));
 		}
 
-		public ITextEditor GetEditor(IMiddlewareContext context, IMicroService microService, string language)
+		public ITextEditor GetEditor(IMicroServiceContext context, string language)
 		{
 			if (Editors.ContainsKey(language.ToLowerInvariant()))
 			{
-				var editor = Editors[language.ToLowerInvariant()].CreateInstance<ITextEditor>();
+				var editor = Editors[language.ToLowerInvariant()].CreateInstance<ITextEditor>(new object[] { context });
 
 				if (editor == null)
 					return null;
-
-				editor.Context = context;
-				editor.MicroService = microService;
 
 				return editor;
 			}

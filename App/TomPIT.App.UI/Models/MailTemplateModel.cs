@@ -11,7 +11,7 @@ using TomPIT.Models;
 
 namespace TomPIT.App.Models
 {
-	public class MailTemplateModel : MiddlewareContext, IViewModel
+	public class MailTemplateModel : MicroServiceContext, IViewModel
 	{
 		public MailTemplateModel(HttpRequest request, ActionContext context, ITempDataProvider tempData, JObject arguments)
 		{
@@ -40,7 +40,9 @@ namespace TomPIT.App.Models
 
 		public void Initialize(Controller controller, IMicroService microService)
 		{
-			Initialize(Instance.Tenant.Url, microService);
+			MicroService = microService;
+
+			Initialize(null);
 		}
 
 		public void MergeArguments(JObject arguments)

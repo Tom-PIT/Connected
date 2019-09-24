@@ -50,7 +50,7 @@ namespace TomPIT.Ide.Models
 			}
 		}
 
-		public IMiddlewareContext Context => this;
+		public IMicroServiceContext Context => this;
 		public abstract string Id { get; }
 		public JObject RequestBody { get; set; }
 		public string Path { get; set; }

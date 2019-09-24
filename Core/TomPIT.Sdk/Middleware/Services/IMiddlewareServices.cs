@@ -15,7 +15,6 @@
 		IMiddlewareCdnService Cdn { get; }
 		IMiddlewareIoTService IoT { get; }
 		IMiddlewareMediaService Media { get; }
-		IMiddlewareFeatureService Features { get; }
 		IMiddlewareSearchService Search { get; }
 		IMiddlewareBigDataService BigData { get; }
 	}

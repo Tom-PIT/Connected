@@ -47,13 +47,11 @@ namespace TomPIT.Middleware.Services
 
 		private ISearchCatalogConfiguration ResolveCatalog(string catalog)
 		{
-			var tokens = catalog.Split("/");
+			var descriptor = ComponentDescriptor.SearchCatalog(Context, catalog);
 
-			Context.MicroService.ValidateMicroServiceReference(tokens[0]);
+			descriptor.Validate();
 
-			var ms = Context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
-
-			return Context.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "SearchCatalog", tokens[1]) as ISearchCatalogConfiguration;
+			return descriptor.Configuration;
 		}
 	}
 }

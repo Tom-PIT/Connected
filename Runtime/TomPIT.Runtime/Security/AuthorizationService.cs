@@ -313,9 +313,9 @@ namespace TomPIT.Security
 			if (container == null)
 				return;
 
-			var ctx = new MiddlewareContext(Tenant.Url, null);
-
-			Authorize(container.Routes.ToList(), ctx.Services.Identity.IsAuthenticated ? ctx.Services.Identity.User.Token : Guid.Empty);
+			Authorize(container.Routes.ToList(), container.Context.Services.Identity.IsAuthenticated
+				? container.Context.Services.Identity.User.Token
+				: Guid.Empty);
 		}
 
 		private void Authorize(List<ISiteMapRoute> routes, Guid user)

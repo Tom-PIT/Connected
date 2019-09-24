@@ -36,7 +36,7 @@ namespace TomPIT.Worker.Subscriptions
 				return;
 
 			var config = Instance.Tenant.GetService<IComponentService>().SelectConfiguration(sub.Handler) as ISubscriptionConfiguration;
-			var ctx = MiddlewareDescriptor.Current.CreateContext(config.MicroService());
+			var ctx = new MicroServiceContext(config.MicroService());
 			var middleware = Instance.Tenant.GetService<ICompilerService>().CreateInstance<ISubscriptionMiddleware>(ctx, config, message.Optional("arguments", string.Empty));
 
 			Instance.Tenant.GetService<ISubscriptionWorkerService>().InsertSubscribers(sub.Token, middleware.Invoke(sub));

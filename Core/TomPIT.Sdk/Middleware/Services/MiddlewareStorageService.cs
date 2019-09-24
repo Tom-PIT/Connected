@@ -90,7 +90,10 @@ namespace TomPIT.Middleware.Services
 		}
 		private Guid Upload(StoragePolicy policy, string fileName, string contentType, string primaryKey, byte[] content, string topic, string draft, Guid token)
 		{
-			var ms = Context.MicroService.Token;
+			if (!(Context is IMicroServiceContext msc))
+				throw new RuntimeException(SR.ErrMicroServiceContextExpected);
+
+			var ms = msc.MicroService.Token;
 			Guid rg = Guid.Empty;
 
 			if (ms != Guid.Empty)

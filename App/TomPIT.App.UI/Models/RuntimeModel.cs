@@ -11,7 +11,7 @@ using TomPIT.Models;
 
 namespace TomPIT.App.Models
 {
-	public class RuntimeModel : MiddlewareContext, IViewModel, IComponentModel
+	public class RuntimeModel : MicroServiceContext, IViewModel, IComponentModel
 	{
 		private IModelNavigation _navigation = null;
 		private JObject _arguments = null;
@@ -43,8 +43,9 @@ namespace TomPIT.App.Models
 		public void Initialize(Controller controller, IMicroService microService)
 		{
 			Controller = controller;
+			MicroService = microService;
 
-			base.Initialize(null, microService);
+			Initialize(null);
 
 			OnInitializing();
 		}

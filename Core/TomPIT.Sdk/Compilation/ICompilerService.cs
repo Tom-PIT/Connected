@@ -9,7 +9,7 @@ namespace TomPIT.Compilation
 {
 	public interface ICompilerService
 	{
-		void Invalidate(IMiddlewareContext context, Guid microService, Guid component, ISourceCode sourceCode);
+		void Invalidate(IMicroServiceContext context, Guid microService, Guid component, ISourceCode sourceCode);
 		object Execute<T>(Guid microService, ISourceCode sourceCode, object sender, T e);
 		object Execute<T>(Guid microService, ISourceCode sourceCode, object sender, T e, out bool handled);
 
@@ -24,15 +24,15 @@ namespace TomPIT.Compilation
 		IScriptContext CreateScriptContext(ISourceCode sourceCode);
 		List<string> QuerySubClasses(IScriptConfiguration script);
 
-		T CreateInstance<T>(IMiddlewareContext context, Type scriptType) where T : class;
-		T CreateInstance<T>(IMiddlewareContext context, Type scriptType, string arguments) where T : class;
+		T CreateInstance<T>(IMicroServiceContext context, Type scriptType) where T : class;
+		T CreateInstance<T>(IMicroServiceContext context, Type scriptType, string arguments) where T : class;
 
 		T CreateInstance<T>(ISourceCode sourceCode) where T : class;
 		T CreateInstance<T>(ISourceCode sourceCode, string arguments, string typeName) where T : class;
 		T CreateInstance<T>(ISourceCode sourceCode, string arguments) where T : class;
 
-		T CreateInstance<T>(IMiddlewareContext context, ISourceCode sourceCode) where T : class;
-		T CreateInstance<T>(IMiddlewareContext context, ISourceCode sourceCode, string arguments, string typeName) where T : class;
-		T CreateInstance<T>(IMiddlewareContext context, ISourceCode sourceCode, string arguments) where T : class;
+		T CreateInstance<T>(IMicroServiceContext context, ISourceCode sourceCode) where T : class;
+		T CreateInstance<T>(IMicroServiceContext context, ISourceCode sourceCode, string arguments, string typeName) where T : class;
+		T CreateInstance<T>(IMicroServiceContext context, ISourceCode sourceCode, string arguments) where T : class;
 	}
 }

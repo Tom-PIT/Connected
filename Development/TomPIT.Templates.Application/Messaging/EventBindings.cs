@@ -8,7 +8,7 @@ namespace TomPIT.MicroServices.Messaging
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
-	public class EventHandler : SourceCodeConfiguration, IEventHandlerConfiguration
+	public class EventBindings : SourceCodeConfiguration, IEventBindingConfiguration
 	{
 		private ListItems<IEventBinding> _bindings = null;
 

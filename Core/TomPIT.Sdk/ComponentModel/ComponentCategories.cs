@@ -20,14 +20,13 @@ namespace TomPIT.ComponentModel
 		public static string ScriptBundle => "ScriptBundle";
 		public static string DistributedEvent => "DistributedEvent";
 		public static string HostedWorker => "HostedWorker";
-		public static string FeatureSet => "FeatureSet";
 		public static string StringTable => "StringTable";
 		public static string Media => "Media";
 		public static string EmbeddedAssembly => "EmbeddedAssembly";
 		public static string FileAssembly => "FileAssembly";
 		public static string MailTemplate => "MailTemplate";
 		public static string SearchCatalog => "SearchCatalog";
-		public static string EventHandler => "EventHandler";
+		public static string EventBinder => "EventBinder";
 		public static string IoTHub => "IoTHub";
 		public static string IoTSchema => "IoTSchema";
 		public static string IoC => "IoC";

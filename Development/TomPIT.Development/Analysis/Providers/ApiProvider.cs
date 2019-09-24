@@ -237,35 +237,36 @@ namespace TomPIT.Development.Analysis.Providers
 
 		public override ICodeLensAnalysisResult CodeLens(IMiddlewareContext context, CodeAnalysisArgs e)
 		{
-			var qualifier = e.ExpressionText;
+			return default;
+			//var qualifier = e.ExpressionText;
 
-			if (!qualifier.Contains('/'))
-				qualifier = string.Format("{0}/{1}", e.Component.Name, qualifier);
+			//if (!qualifier.Contains('/'))
+			//	qualifier = string.Format("{0}/{1}", e.Component.Name, qualifier);
 
-			var descriptor = ComponentDescriptor.Api(context, qualifier);
+			//var descriptor = ComponentDescriptor.Api(context, qualifier);
 
-			if (descriptor.Configuration == null)
-				return null;
+			//if (descriptor.Configuration == null)
+			//	return null;
 
-			var op = descriptor.Configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
+			//var op = descriptor.Configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
 
-			if (op == null)
-				return null;
+			//if (op == null)
+			//	return null;
 
-			return new CodeLensAnalysisResult(descriptor.ComponentName, string.Format("{0}/{1}", descriptor.MicroService.Token, descriptor.Component.Token))
-			{
-				Command = new CodeLensCommand
-				{
-					Title = string.Format("{0}/{1}/{2}", descriptor.MicroService.Name, descriptor.ComponentName, descriptor.Element),
-					Arguments = new CodeLensArguments
-					{
-						MicroService = descriptor.MicroService.Token.ToString(),
-						Component = descriptor.Component.Token.ToString(),
-						Element = op.Id.ToString(),
-						Kind = descriptor.MicroService.Token == context.MicroService.Token ? CodeLensArguments.InternalLink : CodeLensArguments.ExternalLink
-					}
-				}
-			};
+			//return new CodeLensAnalysisResult(descriptor.ComponentName, string.Format("{0}/{1}", descriptor.MicroService.Token, descriptor.Component.Token))
+			//{
+			//	Command = new CodeLensCommand
+			//	{
+			//		Title = string.Format("{0}/{1}/{2}", descriptor.MicroService.Name, descriptor.ComponentName, descriptor.Element),
+			//		Arguments = new CodeLensArguments
+			//		{
+			//			MicroService = descriptor.MicroService.Token.ToString(),
+			//			Component = descriptor.Component.Token.ToString(),
+			//			Element = op.Id.ToString(),
+			//			Kind = descriptor.MicroService.Token == context.MicroService.Token ? CodeLensArguments.InternalLink : CodeLensArguments.ExternalLink
+			//		}
+			//	}
+			//};
 		}
 
 		private IComponent ResolveComponent(IMiddlewareContext context, Guid microService, string qualifier)

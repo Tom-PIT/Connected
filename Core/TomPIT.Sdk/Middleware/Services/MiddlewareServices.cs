@@ -15,7 +15,6 @@ namespace TomPIT.Middleware
 		private IMiddlewareCdnService _cdn = null;
 		private IMiddlewareIoTService _iot = null;
 		private IMiddlewareMediaService _media = null;
-		private IMiddlewareFeatureService _features = null;
 		private IMiddlewareSearchService _search = null;
 		private IMiddlewareBigDataService _bigData = null;
 		private IMiddlewareAuthorizationService _authorization = null;
@@ -143,17 +142,6 @@ namespace TomPIT.Middleware
 					_routing = new MiddlewareRoutingService(Context);
 
 				return _routing;
-			}
-		}
-
-		public IMiddlewareFeatureService Features
-		{
-			get
-			{
-				if (_features == null)
-					_features = new MiddlewareFeatureService(Context);
-
-				return _features;
 			}
 		}
 

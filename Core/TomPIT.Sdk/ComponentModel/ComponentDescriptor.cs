@@ -1,9 +1,13 @@
-﻿using TomPIT.ComponentModel.Apis;
+﻿using System.Linq;
+using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.Data;
 using TomPIT.ComponentModel.Distributed;
+using TomPIT.ComponentModel.IoT;
+using TomPIT.ComponentModel.Resources;
 using TomPIT.ComponentModel.Scripting;
+using TomPIT.ComponentModel.Search;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
@@ -21,7 +25,7 @@ namespace TomPIT.ComponentModel
 		}
 		public ComponentDescriptor(IMiddlewareContext context, string identifier, string componentCategory)
 		{
-			Context = context;
+			Context = context as IMicroServiceContext;
 			Category = componentCategory;
 
 			if (string.IsNullOrWhiteSpace(identifier))
@@ -35,8 +39,8 @@ namespace TomPIT.ComponentModel
 					throw new RuntimeException($"{SR.ErrInvalidQualifier}, {SR.ErrInvalidQualifierExpected}: 'microService/component'");
 
 				ComponentName = tokens[0];
-				MicroServiceName = context.MicroService.Name;
-				_microService = context.MicroService;
+				MicroServiceName = Context.MicroService.Name;
+				_microService = Context.MicroService;
 			}
 			else if (tokens.Length > 1)
 			{
@@ -44,7 +48,7 @@ namespace TomPIT.ComponentModel
 				ComponentName = tokens[1];
 
 				if (tokens.Length > 2)
-					Element = tokens[2];
+					Element = string.Join('/', tokens.Skip(2));
 			}
 
 			if (Context == null)
@@ -56,13 +60,13 @@ namespace TomPIT.ComponentModel
 				if (_microService == null)
 					throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({MicroServiceName})");
 
-				Context = new MiddlewareContext(tenant.Url, _microService);
+				Context = new MicroServiceContext(_microService, tenant.Url);
 			}
 		}
 
 		public string Element { get; private set; }
 		public string Category { get; }
-		protected IMiddlewareContext Context { get; }
+		protected IMicroServiceContext Context { get; }
 		public string ComponentName { get; }
 		public string MicroServiceName { get; }
 
@@ -145,6 +149,31 @@ namespace TomPIT.ComponentModel
 		public static ConfigurationDescriptor<IConnectionConfiguration> Connection(IMiddlewareContext context, string identifier)
 		{
 			return new ConfigurationDescriptor<IConnectionConfiguration>(context, identifier, ComponentCategories.Connection);
+		}
+
+		public static ConfigurationDescriptor<IIoTHubConfiguration> IoTHub(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IIoTHubConfiguration>(context, identifier, ComponentCategories.IoTHub);
+		}
+
+		public static ConfigurationDescriptor<ISearchCatalogConfiguration> SearchCatalog(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<ISearchCatalogConfiguration>(context, identifier, ComponentCategories.SearchCatalog);
+		}
+
+		public static ConfigurationDescriptor<IStringTableConfiguration> StringTable(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IStringTableConfiguration>(context, identifier, ComponentCategories.StringTable);
+		}
+
+		public static ConfigurationDescriptor<IMailTemplateConfiguration> MailTemplate(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IMailTemplateConfiguration>(context, identifier, ComponentCategories.MailTemplate);
+		}
+
+		public static ConfigurationDescriptor<IMediaResourcesConfiguration> Media(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IMediaResourcesConfiguration>(context, identifier, ComponentCategories.Media);
 		}
 	}
 }

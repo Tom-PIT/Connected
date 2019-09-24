@@ -8,7 +8,7 @@ namespace TomPIT.Ide.Analysis
 {
 	public abstract class CodeAnalysisProvider : CSharpCodeAnalyzerBase, ICodeAnalysisProvider
 	{
-		public CodeAnalysisProvider(IMiddlewareContext context) : base(context)
+		public CodeAnalysisProvider(IMiddlewareContext context) : base(context as IMicroServiceContext)
 		{
 
 		}

@@ -141,10 +141,10 @@ namespace TomPIT.MicroServices.Reporting.Storage
 
 			var tokens = dataSource.ConnectionName.Split('/');
 			var ms = tenant.GetService<IMicroServiceService>().Select(tokens[0]);
-			var ctx = new MiddlewareContext(tenant.Url, ms);
+			var ctx = new MicroServiceContext(ms, tenant.Url);
 			var result = new JsonDataSource();
 			var root = new JObject();
-			var apiDataSource = ctx.Invoke<object, JObject>(dataSource.ConnectionName, arguments);
+			var apiDataSource = ctx.Interop.Invoke<object, JObject>(dataSource.ConnectionName, arguments);
 			var schemaNode = dataSource.Schema.Nodes[0] as JsonSchemaNode;
 
 			if (apiDataSource is JObject)

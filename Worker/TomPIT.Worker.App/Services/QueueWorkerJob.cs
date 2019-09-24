@@ -43,7 +43,7 @@ namespace TomPIT.Worker.Services
 			if (configuration == null)
 				Instance.Tenant.LogError(nameof(QueueWorkerJob), nameof(Invoke), $"{SR.ErrQueueWorkerNotFound} ({component})");
 
-			var ctx = MiddlewareDescriptor.Current.CreateContext(configuration.MicroService());
+			var ctx = new MicroServiceContext(configuration.MicroService());
 			var metricId = ctx.Services.Diagnostic.StartMetric(configuration.Metrics, null);
 			Queue q = null;
 

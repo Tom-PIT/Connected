@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using TomPIT.Caching;
-using TomPIT.Middleware;
 
 namespace TomPIT.Data
 {
 	public abstract class Cache<T, K> : DataModel, IDataCachingHandler where T : class
 	{
-		protected Cache(IMiddlewareContext context, string cacheKey) : base(context)
+		protected Cache(string cacheKey)
 		{
 			CacheKey = cacheKey;
 

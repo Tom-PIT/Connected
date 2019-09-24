@@ -94,7 +94,7 @@ namespace TomPIT.Development.Models
 
 		public object Invoke()
 		{
-			return Invoke<object, object>(string.Format("{0}/{1}/{2}", MicroService.Name, Api, Operation), Body);
+			return Interop.Invoke<object, object>(string.Format("{0}/{1}/{2}", MicroService.Name, Api, Operation), Body);
 		}
 
 		private List<IApiTest> Tests

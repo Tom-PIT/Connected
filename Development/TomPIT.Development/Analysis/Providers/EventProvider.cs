@@ -187,46 +187,47 @@ namespace TomPIT.Development.Analysis.Providers
 
 		public override ICodeLensAnalysisResult CodeLens(IMiddlewareContext context, CodeAnalysisArgs e)
 		{
-			var qualifier = e.ExpressionText;
+			return default;
+			//var qualifier = e.ExpressionText;
 
-			var ms = context.MicroService.Token;
-			var microservice = Context.Tenant.GetService<IMicroServiceService>().Select(ms);
+			//var ms = context.MicroService.Token;
+			//var microservice = Context.Tenant.GetService<IMicroServiceService>().Select(ms);
 
-			if (qualifier.Contains('/'))
-			{
-				var msname = qualifier.Split('/')[0];
-				qualifier = qualifier.Split('/')[1];
+			//if (qualifier.Contains('/'))
+			//{
+			//	var msname = qualifier.Split('/')[0];
+			//	qualifier = qualifier.Split('/')[1];
 
-				microservice = Context.Tenant.GetService<IMicroServiceService>().Select(msname);
+			//	microservice = Context.Tenant.GetService<IMicroServiceService>().Select(msname);
 
-				if (microservice == null)
-					return new CodeLensAnalysisResult("Invalid reference", null);
+			//	if (microservice == null)
+			//		return new CodeLensAnalysisResult("Invalid reference", null);
 
-				ms = microservice.Token;
-			}
+			//	ms = microservice.Token;
+			//}
 
-			var ev = ResolveComponent(context, ms, qualifier);
+			//var ev = ResolveComponent(context, ms, qualifier);
 
-			if (ev == null)
-				return null;
+			//if (ev == null)
+			//	return null;
 
-			if (!(context.Tenant.GetService<IComponentService>().SelectConfiguration(ev.Token) is IDistributedEventConfiguration config))
-				return null;
+			//if (!(context.Tenant.GetService<IComponentService>().SelectConfiguration(ev.Token) is IDistributedEventConfiguration config))
+			//	return null;
 
-			return new CodeLensAnalysisResult(ev.Name, string.Format("{0}/{1}", ev.MicroService, ev.Token))
-			{
-				Command = new CodeLensCommand
-				{
-					Title = string.Format("{0}/{1}", microservice.Name, qualifier),
-					Arguments = new CodeLensArguments
-					{
-						MicroService = ev.MicroService.ToString(),
-						Component = ev.Token.ToString(),
-						Element = ev.Token.ToString(),
-						Kind = ev.MicroService == context.MicroService.Token ? CodeLensArguments.InternalLink : CodeLensArguments.ExternalLink
-					}
-				}
-			};
+			//return new CodeLensAnalysisResult(ev.Name, string.Format("{0}/{1}", ev.MicroService, ev.Token))
+			//{
+			//	Command = new CodeLensCommand
+			//	{
+			//		Title = string.Format("{0}/{1}", microservice.Name, qualifier),
+			//		Arguments = new CodeLensArguments
+			//		{
+			//			MicroService = ev.MicroService.ToString(),
+			//			Component = ev.Token.ToString(),
+			//			Element = ev.Token.ToString(),
+			//			Kind = ev.MicroService == context.MicroService.Token ? CodeLensArguments.InternalLink : CodeLensArguments.ExternalLink
+			//		}
+			//	}
+			//};
 		}
 
 		private IComponent ResolveComponent(IMiddlewareContext context, Guid microService, string qualifier)

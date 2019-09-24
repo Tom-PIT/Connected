@@ -63,7 +63,7 @@ namespace TomPIT.Search.Indexing
 				{
 					var handlerType = Instance.Tenant.GetService<ICompilerService>().ResolveType(Request.MicroService, Catalog, Request.Catalog);
 
-					_handler = Instance.Tenant.GetService<ICompilerService>().CreateInstance<ISearchComponent>(MiddlewareDescriptor.Current.CreateContext(Catalog.MicroService()), handlerType, Arguments);
+					_handler = Instance.Tenant.GetService<ICompilerService>().CreateInstance<ISearchComponent>(new MicroServiceContext(Catalog.MicroService()), handlerType, Arguments);
 				}
 
 				return _handler;

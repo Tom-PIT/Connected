@@ -61,7 +61,7 @@ namespace TomPIT.Development.Analysis
 			{
 				var ms = Dispatcher.Tenant.GetService<IMicroServiceService>().Select(error.MicroService);
 
-				fixProvider.Fix(this, new AutoFixArgs(new MiddlewareContext(Dispatcher.Tenant.Url, ms), error));
+				fixProvider.Fix(this, new AutoFixArgs(new MicroServiceContext(ms, Dispatcher.Tenant.Url), error));
 			}
 
 			Dispatcher.Tenant.GetService<IAutoFixService>().Complete(queue.PopReceipt);

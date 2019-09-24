@@ -35,27 +35,11 @@ namespace TomPIT.Middleware.Services
 
 		public List<IIoTFieldState> QueryState(string hub)
 		{
-			var tokens = hub.Split('/');
-			var ms = Context.MicroService.Token;
+			var descriptor = ComponentDescriptor.IoTHub(Context, hub);
 
-			if (tokens.Length > 1)
-			{
-				Context.MicroService.ValidateMicroServiceReference(tokens[0]);
+			descriptor.Validate();
 
-				var microService = Context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
-
-				if (microService == null)
-					throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({tokens[0]})");
-
-				ms = microService.Token;
-			}
-
-			var component = Context.Tenant.GetService<IComponentService>().SelectComponent(ms, "IoTHub", tokens[1]);
-
-			if (component == null)
-				throw new RuntimeException($"{SR.ErrIoTHubNotFound} ({tokens[1]})");
-
-			return Context.Tenant.GetService<IIoTService>().SelectState(component.Token);
+			return Context.Tenant.GetService<IIoTService>().SelectState(descriptor.Component.Token);
 		}
 
 		public IIoTFieldState SelectState(string hub, string field)

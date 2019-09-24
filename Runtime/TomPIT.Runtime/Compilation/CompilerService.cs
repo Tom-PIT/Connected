@@ -21,6 +21,7 @@ using TomPIT.Connectivity;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
+using TomPIT.Runtime;
 using TomPIT.Serialization;
 using TomPIT.Storage;
 using TomPIT.UI;
@@ -296,7 +297,7 @@ namespace TomPIT.Compilation
 			Set(script.Id, script, TimeSpan.Zero);
 		}
 
-		public void Invalidate(IMiddlewareContext context, Guid microService, Guid component, ISourceCode sourceCode)
+		public void Invalidate(IMicroServiceContext context, Guid microService, Guid component, ISourceCode sourceCode)
 		{
 			var u = context.Tenant.CreateUrl("NotificationDevelopment", "ScriptChanged");
 			var id = sourceCode.ScriptId();
@@ -496,7 +497,7 @@ namespace TomPIT.Compilation
 			return result;
 		}
 
-		public T CreateInstance<T>(IMiddlewareContext context, ISourceCode sourceCode) where T : class
+		public T CreateInstance<T>(IMicroServiceContext context, ISourceCode sourceCode) where T : class
 		{
 			return CreateInstance<T>(context, sourceCode, null, sourceCode.Configuration().ComponentName());
 		}
@@ -505,7 +506,7 @@ namespace TomPIT.Compilation
 			return CreateInstance<T>(null, sourceCode);
 		}
 
-		public T CreateInstance<T>(IMiddlewareContext context, ISourceCode sourceCode, string arguments, string typeName) where T : class
+		public T CreateInstance<T>(IMicroServiceContext context, ISourceCode sourceCode, string arguments, string typeName) where T : class
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService());
 
@@ -519,7 +520,7 @@ namespace TomPIT.Compilation
 			return CreateInstance<T>(null, sourceCode, arguments, typeName);
 		}
 
-		public T CreateInstance<T>(IMiddlewareContext context, ISourceCode sourceCode, string arguments) where T : class
+		public T CreateInstance<T>(IMicroServiceContext context, ISourceCode sourceCode, string arguments) where T : class
 		{
 			return CreateInstance<T>(context, sourceCode, arguments, sourceCode.Configuration().ComponentName());
 		}
@@ -528,16 +529,16 @@ namespace TomPIT.Compilation
 			return CreateInstance<T>(null, sourceCode, arguments, sourceCode.Configuration().ComponentName());
 		}
 
-		public T CreateInstance<T>(IMiddlewareContext context, Type scriptType) where T : class
+		public T CreateInstance<T>(IMicroServiceContext context, Type scriptType) where T : class
 		{
 			return CreateInstance<T>(context, scriptType, null);
 		}
-		public T CreateInstance<T>(IMiddlewareContext context, Type scriptType, string arguments) where T : class
+		public T CreateInstance<T>(IMicroServiceContext context, Type scriptType, string arguments) where T : class
 		{
 			return CreateInstance<T>(null, scriptType, context.MicroService, arguments);
 		}
 
-		private T CreateInstance<T>(IMiddlewareContext context, ISourceCode sourceCode, IMicroService microService, string arguments, string typeName) where T : class
+		private T CreateInstance<T>(IMicroServiceContext context, ISourceCode sourceCode, IMicroService microService, string arguments, string typeName) where T : class
 		{
 			var instanceType = ResolveType(microService.Token, sourceCode, typeName);
 
@@ -547,7 +548,7 @@ namespace TomPIT.Compilation
 			return CreateInstance<T>(context, instanceType, microService, arguments);
 		}
 
-		private T CreateInstance<T>(IMiddlewareContext context, Type scriptType, IMicroService microService, string arguments) where T : class
+		private T CreateInstance<T>(IMicroServiceContext context, Type scriptType, IMicroService microService, string arguments) where T : class
 		{
 			if (scriptType == null)
 				return default;
@@ -561,7 +562,7 @@ namespace TomPIT.Compilation
 				SerializationExtensions.Populate(arguments, instance);
 
 			if (instance is IMiddlewareObject mo)
-				mo.Context = context ?? new MiddlewareContext(Tenant.Url, microService);
+				mo.SetContext(context ?? new MicroServiceContext(microService, Tenant.Url));
 
 			return instance;
 		}

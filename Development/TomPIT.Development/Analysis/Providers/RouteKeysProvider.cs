@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Development.Navigation;
 using TomPIT.Ide.Analysis;
 using TomPIT.Middleware;
 
@@ -13,13 +12,14 @@ namespace TomPIT.Development.Analysis.Providers
 
 		public override List<ICodeAnalysisResult> ProvideLiterals(IMiddlewareContext context, CodeAnalysisArgs e)
 		{
-			var keys = context.Tenant.GetService<INavigationDesignService>().QueryRouteKeys(context.MicroService.Token);
-			var r = new List<ICodeAnalysisResult>();
+			return default;
+			//var keys = context.Tenant.GetService<INavigationDesignService>().QueryRouteKeys(context.MicroService.Token);
+			//var r = new List<ICodeAnalysisResult>();
 
-			foreach (var key in keys)
-				r.Add(new CodeAnalysisResult { Text = key.RouteKey, Value = key.RouteKey, Description = key.Template });
+			//foreach (var key in keys)
+			//	r.Add(new CodeAnalysisResult { Text = key.RouteKey, Value = key.RouteKey, Description = key.Template });
 
-			return r;
+			//return r;
 		}
 	}
 }

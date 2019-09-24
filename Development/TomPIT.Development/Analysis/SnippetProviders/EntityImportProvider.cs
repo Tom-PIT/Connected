@@ -252,22 +252,23 @@ namespace TomPIT.Development.Analysis.SnippetProviders
 
 		private List<ISuggestion> ConnectionsSuggestion(SnippetArgs e, ArgumentListSyntax list)
 		{
-			var connections = e.Context.Tenant.GetService<IComponentService>().QueryComponents(e.Context.MicroService.Token, ComponentCategories.Connection);
-			var r = new List<ISuggestion>();
+			return default;
+			//var connections = e.Context.Tenant.GetService<IComponentService>().QueryComponents(e.Context.MicroService.Token, ComponentCategories.Connection);
+			//var r = new List<ISuggestion>();
 
-			foreach (var connection in connections)
-			{
-				r.Add(new Suggestion
-				{
-					FilterText = connection.Name,
-					Kind = Suggestion.Text,
-					InsertText = $"\"{e.Context.MicroService.Name}/{connection.Name}\"",
-					Label = connection.Name,
-					SortText = connection.Name
-				});
-			}
+			//foreach (var connection in connections)
+			//{
+			//	r.Add(new Suggestion
+			//	{
+			//		FilterText = connection.Name,
+			//		Kind = Suggestion.Text,
+			//		InsertText = $"\"{e.Context.MicroService.Name}/{connection.Name}\"",
+			//		Label = connection.Name,
+			//		SortText = connection.Name
+			//	});
+			//}
 
-			return r;
+			//return r;
 		}
 
 		private string ConnectionName(ArgumentListSyntax list)

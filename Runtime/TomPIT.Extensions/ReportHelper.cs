@@ -15,7 +15,7 @@ namespace TomPIT
 
 		public async Task<IHtmlContent> Render(string name, string queryString = null)
 		{
-			var context = Html.ViewData.Model as IMiddlewareContext;
+			var context = Html.ViewData.Model as IMicroServiceContext;
 
 			if (context == null)
 				throw new RuntimeException(nameof(ReportHelper), SR.ErrExecutionContextExpected);

@@ -49,19 +49,11 @@ namespace TomPIT.Middleware.Services
 
 		public string ResourceUrl(string path)
 		{
-			var tokens = path.Split('/');
+			var descriptor = ComponentDescriptor.Media(Context, path);
 
-			Context.MicroService.ValidateMicroServiceReference(tokens[0]);
+			descriptor.Validate();
 
-			var ms = Context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
-
-			if (ms == null)
-				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({tokens[0]})");
-
-			var component = tokens[1];
-			var media = Context.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "Media", component) as IMediaResourcesConfiguration;
-
-			return FindFile(media, tokens.Skip(2));
+			return FindFile(descriptor.Configuration, descriptor.Element.Split('/'));
 		}
 
 		public string SanitizeText(string text)
@@ -147,6 +139,9 @@ namespace TomPIT.Middleware.Services
 
 		private void ReplaceImages(HtmlDocument doc)
 		{
+			if (!(Context is IMicroServiceContext msc))
+				throw new RuntimeException(SR.ErrMicroServiceContextExpected);
+
 			var images = doc.DocumentNode.SelectNodes(@"//img[@src]");
 
 			if (images == null || images.Count == 0)
@@ -182,9 +177,9 @@ namespace TomPIT.Middleware.Services
 					{
 						ContentType = mime,
 						FileName = "htmlImage",
-						MicroService = Context.MicroService.Token,
+						MicroService = msc.MicroService.Token,
 						PrimaryKey = Guid.NewGuid().ToString(),
-						ResourceGroup = Context.MicroService.ResourceGroup,
+						ResourceGroup = msc.MicroService.ResourceGroup,
 						Topic = "$HtmlImage",
 						Type = BlobTypes.HtmlImage
 					};

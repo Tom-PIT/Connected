@@ -37,18 +37,9 @@ namespace TomPIT.Middleware.Services
 
 		public string CreateMailMessage<T>(string template, string user, T arguments)
 		{
-			var tokens = template.Split("/");
-			var ms = Context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
+			var descriptor = ComponentDescriptor.MailTemplate(Context, template);
 
-			if (ms == null)
-				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({tokens[0]})").WithMetrics(Context);
-
-			Context.MicroService.ValidateMicroServiceReference(ms.Name);
-
-			var component = Context.Tenant.GetService<IComponentService>().SelectComponent(ms.Token, "MailTemplate", tokens[1]);
-
-			if (component == null || string.Compare(component.Category, "MailTemplate", true) != 0)
-				throw new RuntimeException($"{SR.ErrMailTemplateNotFound} ({template})").WithMetrics(Context);
+			descriptor.Validate();
 
 			var url = Context.Tenant.GetService<IRuntimeService>().Type == InstanceType.Application
 				? Context.Services.Routing.RootUrl
@@ -57,7 +48,7 @@ namespace TomPIT.Middleware.Services
 			if (string.IsNullOrWhiteSpace(url))
 				throw new RuntimeException(SR.ErrNoAppServer).WithMetrics(Context);
 
-			url = $"{url}/sys/mail-template/{component.Token}";
+			url = $"{url}/sys/mail-template/{descriptor.Component.Token}";
 
 			var e = new JObject();
 

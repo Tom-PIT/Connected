@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using TomPIT.Exceptions;
 using TomPIT.Middleware;
 
 namespace TomPIT.Storage
@@ -41,7 +42,10 @@ namespace TomPIT.Storage
 
 		private static Guid SaveUploadedFile(this IMiddlewareContext context, IFormFile file, string primaryKey, string draft)
 		{
-			var ms = context.MicroService;
+			if (!(context is IMicroServiceContext msc))
+				throw new RuntimeException(SR.ErrMicroServiceContextExpected);
+
+			var ms = msc.MicroService;
 
 			var b = new Blob
 			{

@@ -71,7 +71,7 @@ namespace TomPIT.Search
 					var type = Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(), catalog, catalog.ComponentName());
 					var instance = type.CreateInstance<IMiddlewareComponent>();
 
-					instance.Context = catalog.CreateContext();
+					instance.SetContext(catalog.CreateContext());
 
 					dynamic dInstance = instance;
 

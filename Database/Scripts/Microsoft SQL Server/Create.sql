@@ -589,45 +589,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[environment_unit]'
-GO
-CREATE TABLE [tompit].[environment_unit]
-(
-[id] [int] NOT NULL IDENTITY(1, 1),
-[name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
-[parent] [int] NULL,
-[token] [uniqueidentifier] NOT NULL,
-[ordinal] [int] NOT NULL
-) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating primary key [PK_environment_unit] on [tompit].[environment_unit]'
-GO
-ALTER TABLE [tompit].[environment_unit] ADD CONSTRAINT [PK_environment_unit] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[environment_unit_upd]'
-GO
-CREATE PROCEDURE [tompit].[environment_unit_upd]
-	@id int,
-	@name nvarchar(128),
-	@parent int = null,
-	@ordinal int
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	update environment_unit set
-		name = @name,
-		parent = @parent,
-		ordinal = @ordinal
-	where id = @id;
-END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[instance_endpoint_upd]'
 GO
 CREATE PROCEDURE [tompit].[instance_endpoint_upd]
@@ -898,7 +859,10 @@ CREATE TABLE [tompit].[dev_error]
 [component] [int] NOT NULL,
 [element] [uniqueidentifier] NULL,
 [severity] [int] NOT NULL,
-[message] [nvarchar] (1024) COLLATE Slovenian_CI_AS NULL
+[message] [nvarchar] (1024) COLLATE Slovenian_CI_AS NULL,
+[code] [int] NULL,
+[category] [int] NOT NULL,
+[identifier] [uniqueidentifier] NOT NULL
 ) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -912,9 +876,12 @@ GO
 PRINT N'Creating [tompit].[dev_error_view]'
 GO
 
+
+
+
 CREATE VIEW [tompit].[dev_error_view]
 AS
-SELECT	e.id, e.service, e.component, e.element, e.severity, e.message,
+SELECT	e.id, e.service, e.component, e.element, e.severity, e.message, e.code, e.category, e.identifier,
 		s.token service_token,
 		c.token component_token, c.name component_name, c.category component_category
 FROM tompit.dev_error e
@@ -999,14 +966,16 @@ GO
 PRINT N'Creating [tompit].[dev_error_que]'
 GO
 CREATE PROCEDURE [tompit].[dev_error_que]
-	@service int
+	@service int = NULL,
+	@category int = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SELECT *
 	FROM tompit.dev_error_view
-	WHERE service = @service;
+	WHERE (@service IS NULL OR service = @service)
+	AND (@category IS NULL OR category = @category);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -1057,13 +1026,15 @@ PRINT N'Creating [tompit].[dev_error_clr]'
 GO
 CREATE PROCEDURE [tompit].[dev_error_clr]
 	@component int,
-	@element uniqueidentifier = NULL
+	@element uniqueidentifier = NULL,
+	@category int
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	DELETE tompit.dev_error
 	WHERE component = @component
+	AND category = @category
 	AND (@element IS NULL OR element = @element);
 END
 GO
@@ -1107,8 +1078,8 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	INSERT tompit.dev_error ([service], component, element, severity, message)
-	SELECT @service, @component, element, severity, message FROM OPENJSON(@items) WITH (element uniqueidentifier, severity int, message nvarchar(1024));
+	INSERT tompit.dev_error ([service], component, element, severity, message, code, category, identifier)
+	SELECT @service, @component, element, severity, message, code, category, identifier FROM OPENJSON(@items) WITH (element uniqueidentifier, severity int, message nvarchar(1024), code int, category int, identifier uniqueidentifier);
 
 END
 GO
@@ -3131,6 +3102,21 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[dev_error_sel]'
+GO
+CREATE PROCEDURE [tompit].[dev_error_sel]
+	@identifier uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 *
+	FROM tompit.dev_error_view
+	WHERE (identifier = @identifier);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[api_test_ins]'
 GO
 CREATE PROCEDURE [tompit].[api_test_ins]
@@ -3149,6 +3135,20 @@ BEGIN
 
 	RETURN scope_identity();
 
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[dev_error_del]'
+GO
+CREATE PROCEDURE [tompit].[dev_error_del]
+	@identifier uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.dev_error
+	WHERE identifier = @identifier;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3308,6 +3308,50 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[component_state]'
+GO
+CREATE TABLE [tompit].[component_state]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[component] [int] NOT NULL,
+[index_state] [int] NOT NULL,
+[index_timestamp] [datetime2] NULL,
+[analyzer_state] [int] NOT NULL,
+[analyzer_timestamp] [datetime2] NULL,
+[element] [uniqueidentifier] NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_component_state] on [tompit].[component_state]'
+GO
+ALTER TABLE [tompit].[component_state] ADD CONSTRAINT [PK_component_state] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[view_component_state]'
+GO
+
+
+
+
+
+
+
+CREATE VIEW [tompit].[view_component_state]
+AS
+SELECT      c.id, c.name, c.token, c.type, c.category, c.runtime_configuration, c.modified,
+			c.service, c.folder, c.lock_status, c.lock_date, c.lock_user, c.lock_verb,
+			c.token lock_user_token,
+			c.folder_token, c.service_token,
+			s.index_state, s.index_timestamp, s.analyzer_state, s.analyzer_timestamp, s.element
+FROM        tompit.view_component AS c 
+LEFT JOIN	tompit.component_state s
+ON			c.id = s.id
+
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[big_data_partition_ins]'
 GO
 CREATE PROCEDURE [tompit].[big_data_partition_ins]
@@ -3361,6 +3405,22 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[component_state_analyzer_que]'
+GO
+CREATE PROCEDURE [tompit].[component_state_analyzer_que]
+	@timestamp datetime2(7) = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT *
+	FROM tompit.view_component_state
+	WHERE analyzer_state = 1
+	AND (@timestamp IS NULL OR analyzer_timestamp >= @timestamp);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[big_data_partition_upd]'
 GO
 CREATE PROCEDURE [tompit].[big_data_partition_upd]
@@ -3377,6 +3437,22 @@ BEGIN
 		status = @status, 
 		name = @name
 	WHERE id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[component_state_index_que]'
+GO
+CREATE PROCEDURE [tompit].[component_state_index_que]
+	@timestamp datetime2(7) = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT *
+	FROM tompit.view_component_state
+	WHERE index_state = 1
+	AND (@timestamp IS NULL OR index_timestamp >= @timestamp);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3406,6 +3482,35 @@ BEGIN
 	from	view_blob
 	WHERE	primary_key IS NULL
 	and draft = @draft;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[component_upd_analyzer_state]'
+GO
+CREATE PROCEDURE [tompit].[component_upd_analyzer_state]
+	@items nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	MERGE tompit.component_state AS d
+	USING (	SELECT id, element, analyzer_state, analyzer_timestamp FROM OPENJSON(@items) WITH (id int, element uniqueidentifier, analyzer_state int, analyzer_timestamp datetime2(7)))
+			AS s (component, element, analyzer_state, analyzer_timestamp)
+	ON (d.component = s.component AND (((d.element IS NULL AND s.element IS NULL)  OR d.element = s.element)))
+	WHEN MATCHED THEN UPDATE SET
+		analyzer_state = CASE	WHEN s.analyzer_state = 1 THEN 1 
+							WHEN s.analyzer_state = 0 THEN CASE	WHEN s.analyzer_timestamp < d.analyzer_timestamp THEN 1
+																ELSE 0
+														END
+					END,
+		analyzer_timestamp = CASE	WHEN d.analyzer_timestamp < s.analyzer_timestamp THEN s.analyzer_timestamp
+								ELSE d.analyzer_timestamp
+								END
+	WHEN NOT MATCHED THEN INSERT
+			(component, element, index_state, index_timestamp, analyzer_state, analyzer_timestamp)
+	VALUES	(s.component, s.element, 0, getutcdate(), s.analyzer_state, s.analyzer_timestamp);
+
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3473,6 +3578,35 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[component_upd_index_state]'
+GO
+CREATE PROCEDURE [tompit].[component_upd_index_state]
+	@items nvarchar(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	MERGE tompit.component_state AS d
+	USING (	SELECT id, element, index_state, index_timestamp FROM OPENJSON(@items) WITH (id int, element uniqueidentifier, index_state int, index_timestamp datetime2(7)))
+			AS s (component, element, index_state, index_timestamp)
+	ON (d.component = s.component AND (((d.element IS NULL AND s.element IS NULL)  OR d.element = s.element)))
+	WHEN MATCHED THEN UPDATE SET
+		index_state = CASE	WHEN s.index_state = 1 THEN 1 
+							WHEN s.index_state = 0 THEN CASE	WHEN s.index_timestamp < d.index_timestamp THEN 1
+																ELSE 0
+														END
+					END,
+		index_timestamp = CASE	WHEN d.index_timestamp < s.index_timestamp THEN s.index_timestamp
+								ELSE d.index_timestamp
+								END
+	WHEN NOT MATCHED THEN INSERT
+			(component, element, index_state, index_timestamp, analyzer_state, analyzer_timestamp)
+	VALUES	(s.component, s.element, s.index_state, s.index_timestamp, 0, getutcdate());
+
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[api_test_sel]'
 GO
 CREATE PROCEDURE [tompit].[api_test_sel]
@@ -3499,6 +3633,25 @@ BEGIN
 
 	delete blob 
 	WHERE (id = @id)
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[component_state_que]'
+GO
+CREATE PROCEDURE [tompit].[component_state_que]
+	@service int = NULL,
+	@component int = NULL,
+	@element uniqueidentifier = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT *
+	FROM tompit.view_component_state
+	WHERE id = @component
+	AND ((@element IS NULL AND element IS NULL) OR (element = @element))
+	AND (@service IS NULL OR service = @service)
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3687,25 +3840,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[environment_unit_upd_batch]'
-GO
-CREATE PROCEDURE [tompit].[environment_unit_upd_batch]
-	@items nvarchar(MAX)
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	UPDATE tompit.environment_unit SET
-		name = j.name,
-		parent = j.parent,
-		ordinal = j.ordinal
-	FROM OPENJSON(@items)  WITH ([name] nvarchar(128), parent int, ordinal int, id int)  AS j
-	WHERE tompit.environment_unit.id = j.id;
-
-END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[big_data_node_upd]'
 GO
 CREATE PROCEDURE [tompit].[big_data_node_upd]
@@ -3797,6 +3931,43 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[dev_tool_state]'
+GO
+CREATE TABLE [tompit].[dev_tool_state]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[tool] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[status] [int] NOT NULL,
+[last_run] [datetime] NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_dev_tool_state] on [tompit].[dev_tool_state]'
+GO
+ALTER TABLE [tompit].[dev_tool_state] ADD CONSTRAINT [PK_dev_tool_state] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding constraints to [tompit].[dev_tool_state]'
+GO
+ALTER TABLE [tompit].[dev_tool_state] ADD CONSTRAINT [IX_dev_tool_state] UNIQUE NONCLUSTERED  ([tool]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[dev_tool_state_que]'
+GO
+CREATE PROCEDURE [tompit].[dev_tool_state_que]
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT * 
+	FROM tompit.dev_tool_state;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[big_data_node_que]'
 GO
 CREATE PROCEDURE [tompit].[big_data_node_que]
@@ -3852,6 +4023,21 @@ BEGIN
 	from	view_blob
 	WHERE	primary_key IS NULL
 	and modified < @modified;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[dev_tool_state_sel]'
+GO
+CREATE PROCEDURE [tompit].[dev_tool_state_sel]
+	@name nvarchar(128)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 * 
+	FROM tompit.dev_tool_state
+	WHERE tool = @name;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3920,6 +4106,29 @@ BEGIN
 	output inserted.id into @ct;
 
 	select * from tompit.queue where id IN (select num from @ct);	
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[dev_tool_state_mdf]'
+GO
+CREATE PROCEDURE [tompit].[dev_tool_state_mdf]
+	@name nvarchar(128),
+	@status int,
+	@last_run datetime = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	MERGE tompit.dev_tool_state d
+	USING (SELECT @name, @status, @last_run) AS s (name, status, last_run)
+	ON (d.tool = s.name)
+	WHEN NOT MATCHED THEN INSERT
+			(tool, status, last_run)
+	VALUES	(@name, @status, @last_run)
+	WHEN MATCHED THEN UPDATE SET
+		status = s.status,
+		last_run = s.last_run;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -4448,21 +4657,6 @@ SELECT      m.id, m.message, m.topic, m.created, m.expire, m.retry_interval, m.t
 FROM        tompit.message AS m
 INNER JOIN	tompit.message_topic t on m.topic = t.id
 
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[environment_unit_del]'
-GO
-CREATE PROCEDURE [tompit].[environment_unit_del]
-	@id int
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	delete environment_unit
-	where id = @id;
-
-END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -5092,23 +5286,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[environment_unit_ins]'
-GO
-CREATE PROCEDURE [tompit].[environment_unit_ins]
-	@token uniqueidentifier,
-	@name nvarchar(128),
-	@parent int = null,
-	@ordinal int
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	insert environment_unit (name, parent, token, ordinal)
-	values (@name, @parent, @token, @ordinal);
-END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[version_control_commit_que]'
 GO
 CREATE PROCEDURE [tompit].[version_control_commit_que]
@@ -5576,20 +5753,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[view_environment_unit]'
-GO
-
-
-
-CREATE VIEW [tompit].[view_environment_unit]
-AS
-SELECT        u.*, p.token AS parent_token
-FROM            tompit.environment_unit AS u LEFT OUTER JOIN
-                         tompit.environment_unit AS p ON u.parent = p.id
-
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[big_data_transaction_sel]'
 GO
 CREATE PROCEDURE [tompit].[big_data_transaction_sel]
@@ -5689,21 +5852,6 @@ BEGIN
 	delete setting
 	where (@resource_group IS NULL OR resource_group = @resource_group)
 	and (name = @name);
-END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[environment_unit_sel]'
-GO
-CREATE PROCEDURE [tompit].[environment_unit_sel]
-	@token uniqueidentifier
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	select top 1 *
-	from view_environment_unit
-	where token = @token;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -6115,20 +6263,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[environment_unit_que]'
-GO
-CREATE PROCEDURE [tompit].[environment_unit_que]
-	
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	select *
-	from view_environment_unit ;
-END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[mail_que]'
 GO
 CREATE PROCEDURE [tompit].[mail_que]
@@ -6221,6 +6355,12 @@ ALTER TABLE [tompit].[blob] ADD CONSTRAINT [FK_blob_resource_group] FOREIGN KEY 
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Adding foreign keys to [tompit].[component_state]'
+GO
+ALTER TABLE [tompit].[component_state] ADD CONSTRAINT [FK_component_state_component] FOREIGN KEY ([component]) REFERENCES [tompit].[component] ([id]) ON DELETE CASCADE
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Adding foreign keys to [tompit].[dev_error]'
 GO
 ALTER TABLE [tompit].[dev_error] ADD CONSTRAINT [FK_dev_error_component] FOREIGN KEY ([component]) REFERENCES [tompit].[component] ([id]) ON DELETE CASCADE
@@ -6244,12 +6384,6 @@ GO
 ALTER TABLE [tompit].[component_history] ADD CONSTRAINT [FK_component_history_user] FOREIGN KEY ([user]) REFERENCES [tompit].[user] ([id])
 GO
 ALTER TABLE [tompit].[component_history] ADD CONSTRAINT [FK_component_history_version_control_commit] FOREIGN KEY ([commit]) REFERENCES [tompit].[version_control_commit] ([id]) ON DELETE CASCADE
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Adding foreign keys to [tompit].[environment_unit]'
-GO
-ALTER TABLE [tompit].[environment_unit] ADD CONSTRAINT [FK_environment_unit_environment_unit] FOREIGN KEY ([parent]) REFERENCES [tompit].[environment_unit] ([id])
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO

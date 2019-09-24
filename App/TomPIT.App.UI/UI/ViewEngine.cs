@@ -40,7 +40,7 @@ namespace TomPIT.App.UI
 			}
 		}
 
-		public void RenderPartial(IMiddlewareContext context, string name)
+		public void RenderPartial(IMicroServiceContext context, string name)
 		{
 			var partialView = ResolveView(context, name);
 
@@ -185,7 +185,7 @@ namespace TomPIT.App.UI
 			return model;
 		}
 
-		private IPartialViewConfiguration ResolveView(IMiddlewareContext context, string qualifier)
+		private IPartialViewConfiguration ResolveView(IMicroServiceContext context, string qualifier)
 		{
 			var tokens = qualifier.Split('/');
 			var ms = context.MicroService;

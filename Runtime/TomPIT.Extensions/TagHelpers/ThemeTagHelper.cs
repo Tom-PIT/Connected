@@ -13,7 +13,7 @@ namespace TomPIT.TagHelpers
 			var microService = string.Empty;
 			var name = Name;
 
-			var ctx = ViewContext.ViewData.Model as IMiddlewareContext;
+			var ctx = ViewContext.ViewData.Model as IMicroServiceContext;
 
 			if (Name.Contains("/"))
 			{

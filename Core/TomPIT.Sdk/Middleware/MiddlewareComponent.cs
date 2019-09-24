@@ -52,10 +52,8 @@ namespace TomPIT.Middleware
 			{
 				if (_validator == null)
 				{
-					_validator = new MiddlewareValidator(this)
-					{
-						Context = Context
-					};
+					_validator = new MiddlewareValidator(this);
+					_validator.SetContext(Context);
 
 					_validator.Validating += OnValidating;
 				}

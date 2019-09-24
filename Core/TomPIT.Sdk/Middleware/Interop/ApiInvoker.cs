@@ -22,13 +22,14 @@ namespace TomPIT.Middleware.Interop
 		{
 			ValidateReference(sender, descriptor);
 
-			var ctx = new MiddlewareContext(Context, descriptor.MicroService);
+			var ctx = new MicroServiceContext(descriptor.MicroService, Context);
+			var contextMs = Context as IMicroServiceContext;
 
 			switch (descriptor.Configuration.Scope)
 			{
 				// must be inside the same microservice
 				case ElementScope.Internal:
-					if (descriptor.MicroService.Token != Context.MicroService.Token)
+					if (contextMs != null && descriptor.MicroService.Token != contextMs.MicroService.Token)
 						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element))
 						{
 							Component = descriptor.Component.Token
@@ -59,7 +60,7 @@ namespace TomPIT.Middleware.Interop
 			switch (op.Scope)
 			{
 				case ElementScope.Internal:
-					if (descriptor.MicroService.Token != Context.MicroService.Token)
+					if (contextMs != null && descriptor.MicroService.Token != contextMs.MicroService.Token)
 						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element));
 					break;
 				case ElementScope.Private:
@@ -83,7 +84,7 @@ namespace TomPIT.Middleware.Interop
 						var opInstance = operationType.CreateInstance<IAsyncOperation>();
 
 						opInstance.SetAsyncState(false);
-						opInstance.Context = ctx;
+						opInstance.SetContext(ctx);
 
 						if (arguments != null)
 							SerializationExtensions.Populate(arguments, opInstance);
@@ -100,7 +101,7 @@ namespace TomPIT.Middleware.Interop
 				{
 					var opInstance = operationType.CreateInstance<IMiddlewareOperation>();
 
-					opInstance.Context = ctx;
+					opInstance.SetContext(ctx);
 
 					if (arguments != null)
 						SerializationExtensions.Populate(arguments, opInstance);

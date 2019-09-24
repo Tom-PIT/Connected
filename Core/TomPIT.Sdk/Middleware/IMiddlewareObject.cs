@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TomPIT.Middleware
+﻿namespace TomPIT.Middleware
 {
-	public interface IMiddlewareObject
+	public interface IMiddlewareObject : IContextObject<IMiddlewareContext>
 	{
-		IMiddlewareContext Context { get; set; }
+
 	}
 }

@@ -7,7 +7,7 @@ using TomPIT.Middleware;
 
 namespace TomPIT.Models
 {
-	public class ModelBase : MiddlewareContext, IUIModel, IActionContextProvider
+	public class ModelBase : MicroServiceContext, IUIModel, IActionContextProvider
 	{
 		private IModelNavigation _navigation = null;
 
@@ -30,7 +30,10 @@ namespace TomPIT.Models
 			if (initializing)
 				OnInitializing(p);
 
-			Initialize(string.IsNullOrWhiteSpace(p.Endpoint) ? Endpoint : p.Endpoint, p.MicroService == null ? MicroService : p.MicroService);
+			if (p.MicroService != null)
+				MicroService = p.MicroService;
+
+			Initialize(string.IsNullOrWhiteSpace(p.Endpoint) ? Endpoint : p.Endpoint);
 		}
 
 		public void Initialize(Controller controller, IMicroService microService)

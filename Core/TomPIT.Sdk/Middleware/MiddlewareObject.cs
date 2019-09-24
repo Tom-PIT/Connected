@@ -23,11 +23,11 @@ namespace TomPIT.Middleware
 			get
 			{
 				if (_context == null)
-					_context = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant?.Url, null);
+					_context = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant?.Url);
 
 				return _context;
 			}
-			set
+			private set
 			{
 				_context = value;
 			}

@@ -10,7 +10,7 @@ namespace TomPIT.Ide.Environment
 		IDom Dom { get; }
 		IGlobalizationProvider Globalization { get; }
 		ISelectionProvider Selection { get; }
-		IMiddlewareContext Context { get; }
+		IMicroServiceContext Context { get; }
 		string Id { get; }
 		JObject RequestBody { get; }
 		string IdeUrl { get; }

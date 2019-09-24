@@ -15,7 +15,7 @@ namespace TomPIT.App.Controllers
 		{
 			var m = CreateModel();
 
-			return Json(SerializationExtensions.Serialize(m.Invoke<object, JObject>(m.QualifierName, m.Body)));
+			return Json(SerializationExtensions.Serialize(m.Interop.Invoke<object, JObject>(m.QualifierName, m.Body)));
 		}
 
 		[HttpPost]

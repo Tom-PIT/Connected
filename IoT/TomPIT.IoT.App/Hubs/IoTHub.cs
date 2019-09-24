@@ -59,7 +59,7 @@ namespace TomPIT.IoT.Hubs
 
 				try
 				{
-					var ctx = MiddlewareDescriptor.Current.CreateContext(ms.Token);
+					var ctx = new MicroServiceContext(ms);
 					var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(ms.Token, device.Device, device.Device.Name, false);
 
 					if (type != null)
@@ -170,7 +170,7 @@ namespace TomPIT.IoT.Hubs
 					{"transaction",transaction }
 				};
 
-				var ctx = MiddlewareDescriptor.Current.CreateContext(ms.Token);
+				var ctx = new MicroServiceContext(ms.Token);
 				var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(ms.Token, t, t.Name, false);
 
 				if (type != null)

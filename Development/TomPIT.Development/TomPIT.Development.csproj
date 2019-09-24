@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -8,9 +8,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>TomPIT.Development</RootNamespace>
-    <AssemblyVersion>1.1.905.3</AssemblyVersion>
-    <FileVersion>1.1.905.3</FileVersion>
-    <Version>1.1.905.3</Version>
+    <AssemblyVersion>1.1.924.6</AssemblyVersion>
+    <FileVersion>1.1.924.6</FileVersion>
+    <Version>1.1.924.6</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Reflection\Services\**" />

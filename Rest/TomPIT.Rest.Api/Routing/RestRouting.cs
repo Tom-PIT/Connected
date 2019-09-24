@@ -13,7 +13,7 @@ namespace TomPIT.Rest.Routing
 
 			routes.MapRoute("{microservice}/{api}/{operation}", (t) =>
 			{
-				new ApiHandler(t, Instance.Tenant.Url).Invoke();
+				new ApiHandler(t).Invoke();
 
 				return Task.CompletedTask;
 			});

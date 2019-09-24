@@ -9,7 +9,7 @@ namespace TomPIT.MicroServices.Distributed
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
-	public class QueueHandlerConfiguration : SourceCodeConfiguration, IQueueConfiguration
+	public class Queue : SourceCodeConfiguration, IQueueConfiguration
 	{
 		private IMetricOptions _metric = null;
 

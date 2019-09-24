@@ -11,7 +11,7 @@ namespace TomPIT.Search.Catalogs
 		private static readonly Regex Regex = null;
 		private IMicroService _microService = null;
 		private IComponent _catalog = null;
-		private IMiddlewareContext _context = null;
+		private IMicroServiceContext _context = null;
 		private CultureInfo Culture { get; set; }
 
 		static SearchTextParser()
@@ -125,12 +125,12 @@ namespace TomPIT.Search.Catalogs
 		}
 
 
-		private IMiddlewareContext Context
+		private IMicroServiceContext Context
 		{
 			get
 			{
 				if (_context == null)
-					_context = MiddlewareDescriptor.Current.CreateContext(Catalog.MicroService);
+					_context = new MicroServiceContext(Catalog.MicroService);
 
 				return _context;
 			}

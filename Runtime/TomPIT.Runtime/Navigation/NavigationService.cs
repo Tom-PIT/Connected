@@ -80,7 +80,7 @@ namespace TomPIT.Navigation
 			foreach (var handler in handlers)
 			{
 				var ms = Tenant.GetService<IMicroServiceService>().Select(handler.MicroService);
-				var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MiddlewareContext(Tenant.Url, ms), handler.Handler);
+				var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), handler.Handler);
 				var containers = instance.Invoke(key);
 
 				if (containers == null || containers.Count == 0)
@@ -99,7 +99,7 @@ namespace TomPIT.Navigation
 		{
 			foreach (var item in container.Routes)
 			{
-				item.Context = context;
+				item.SetContext(context);
 
 				BindContext(item, context);
 			}
@@ -109,7 +109,7 @@ namespace TomPIT.Navigation
 		{
 			foreach (var item in route.Routes)
 			{
-				item.Context = context;
+				item.SetContext(context);
 
 				BindContext(item, context);
 			}
@@ -122,7 +122,7 @@ namespace TomPIT.Navigation
 			var ms = ((IConfiguration)configuration).MicroService();
 			var type = Tenant.GetService<ICompilerService>().ResolveType(ms, configuration, configuration.ComponentName());
 			var handlerInstance = type.CreateInstance<ISiteMapHandler>();
-			handlerInstance.Context = configuration.CreateContext();
+			handlerInstance.SetContext(configuration.CreateContext());
 
 			var containers = handlerInstance.Invoke();
 
@@ -318,7 +318,7 @@ namespace TomPIT.Navigation
 		private ISiteMapRoute SelectRoute(NavigationHandlerDescriptor descriptor, string routeKey)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
-			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MiddlewareContext(Tenant.Url, ms), descriptor.Handler);
+			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), descriptor.Handler);
 
 			if (handler == null)
 				return null;

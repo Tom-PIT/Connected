@@ -5,9 +5,9 @@ using TomPIT.Middleware;
 
 namespace TomPIT.MicroServices.Reporting.Models
 {
-	public class ReportRuntimeModel : MiddlewareContext
+	public class ReportRuntimeModel : MicroServiceContext
 	{
-		public ReportRuntimeModel(IMiddlewareContext sender, string url) : base(sender)
+		public ReportRuntimeModel(IMicroServiceContext sender, string url) : base(sender)
 		{
 			ReportUrl = url;
 

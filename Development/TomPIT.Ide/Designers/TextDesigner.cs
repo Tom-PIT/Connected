@@ -180,7 +180,7 @@ namespace TomPIT.Ide.Designers
 
 		private ITextEditor GetTextEditor(ITextModel model, string text)
 		{
-			var editor = Environment.Context.Tenant.GetService<ITextEditorService>().GetEditor(Environment.Context, ResolveMicroService(model.Uri), Language);
+			var editor = Environment.Context.Tenant.GetService<ITextEditorService>().GetEditor(new MicroServiceContext(ResolveMicroService(model.Uri), Environment.Context.Tenant.Url), Language);
 
 			if (editor == null)
 				return null;
@@ -346,7 +346,7 @@ namespace TomPIT.Ide.Designers
 
 		public LanguageFeature SupportedFeatures(string language, IMicroService microService)
 		{
-			var editor = Environment.Context.Tenant.GetService<ITextEditorService>().GetEditor(Environment.Context, microService, language);
+			var editor = Environment.Context.Tenant.GetService<ITextEditorService>().GetEditor(new MicroServiceContext(microService, Environment.Context.Tenant.Url), language);
 
 			if (editor == null)
 				return LanguageFeature.None;

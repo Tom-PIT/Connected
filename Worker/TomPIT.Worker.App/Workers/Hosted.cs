@@ -20,7 +20,7 @@ namespace TomPIT.Worker.Workers
 		{
 			var ms = Instance.Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)Worker).MicroService());
 			var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(ms.Token, Worker, Worker.ComponentName());
-			var ctx = MiddlewareDescriptor.Current.CreateContext(ms.Token);
+			var ctx = new MicroServiceContext(ms);
 			var instance = Instance.Tenant.GetService<ICompilerService>().CreateInstance<IHostedWorkerMiddleware>(ctx, type);
 
 			if (!string.IsNullOrWhiteSpace(State))
