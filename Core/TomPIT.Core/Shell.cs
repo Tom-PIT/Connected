@@ -184,7 +184,7 @@ namespace TomPIT
 					{
 						if (File.Exists(sys))
 						{
-							_sys = SerializationExtensions.Deserialize(File.ReadAllText(sys), _sysType) as ISys;
+							_sys = Serializer.Deserialize(File.ReadAllText(sys), _sysType) as ISys;
 							break;
 						}
 

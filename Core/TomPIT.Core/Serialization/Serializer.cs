@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace TomPIT.Serialization
 {
-	public static class SerializationExtensions
+	public static class Serializer
 	{
 		private static JsonSerializerSettings _jsonSettings = null;
 		private static JsonMergeSettings _mergeSettings = null;

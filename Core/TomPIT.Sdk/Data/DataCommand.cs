@@ -67,7 +67,7 @@ namespace TomPIT.Data
 			if (value.GetType().IsTypePrimitive())
 				return value;
 
-			return SerializationExtensions.Serialize(value);
+			return Serializer.Serialize(value);
 		}
 
 		private object MapNullValue(object value)
@@ -112,7 +112,7 @@ namespace TomPIT.Data
 					return DBNull.Value;
 			}
 
-			return SerializationExtensions.Serialize(value);
+			return Serializer.Serialize(value);
 		}
 
 		private string TrimValue(string value)

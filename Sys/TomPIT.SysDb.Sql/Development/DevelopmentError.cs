@@ -13,7 +13,7 @@ namespace TomPIT.SysDb.Sql.Development
 		public string Message { get; set; }
 		public string ComponentName { get; set; }
 		public string ComponentCategory { get; set; }
-		public int Code { get; set; }
+		public string Code { get; set; }
 		public ErrorCategory Category { get; set; }
 		public Guid Identifier { get; set; }
 
@@ -28,7 +28,7 @@ namespace TomPIT.SysDb.Sql.Development
 			Message = GetString("message");
 			ComponentName = GetString("component_name");
 			ComponentCategory = GetString("component_category");
-			Code = GetInt("code");
+			Code = GetString("code");
 			Category = GetValue("category", ErrorCategory.Syntax);
 			Identifier = GetGuid("identifier");
 		}

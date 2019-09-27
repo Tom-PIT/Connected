@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -6,7 +6,8 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.MicroServices.IoT.Design</RootNamespace>
     <AssemblyName>TomPIT.MicroServices.IoT.Design</AssemblyName>
     <AssemblyVersion>1.1.924.6</AssemblyVersion>
@@ -17,11 +18,7 @@
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.2.0" />
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="2.2.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
@@ -33,26 +30,6 @@
     <ProjectReference Include="..\TomPIT.Templates.IoT\TomPIT.MicroServices.IoT.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="wwwroot\**\*" />
-    <EmbeddedResource Remove="wwwroot\Assets\Styles\Designers\iotViewDesign.css" />
-    <EmbeddedResource Remove="wwwroot\Assets\Styles\Designers\iotViewDesign.less" />
-    <EmbeddedResource Remove="wwwroot\Assets\Styles\Designers\Variables.css" />
-    <EmbeddedResource Remove="wwwroot\Assets\Styles\Designers\Variables.less" />
-    <EmbeddedResource Remove="wwwroot\Assets\Styles\Designers\Variables.min.css" />
-    <None Remove="wwwroot\Assets\Styles\Designers\iotViewDesign.min.css" />
-    <None Remove="wwwroot\Assets\Styles\Designers\Variables.css" />
-    <None Remove="wwwroot\Assets\Styles\Designers\Variables.less" />
-    <None Remove="wwwroot\Assets\Styles\Designers\Variables.min.css" />
-    <None Remove="wwwroot\Assets\Styles\iotView.css" />
-    <Content Include="wwwroot\Assets\Styles\Designers\Variables.css">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Include="wwwroot\Assets\Styles\Designers\Variables.less">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Include="wwwroot\Assets\Styles\Designers\Variables.min.css">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
     <Content Update="Views\Ide\Designers\IoTDesigner.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

@@ -31,7 +31,7 @@ namespace TomPIT.Exceptions
 						{ "severity", severity.ToString().ToLower() }
 					};
 
-			await context.Response.WriteAsync(SerializationExtensions.Serialize(jsonEx));
+			await context.Response.WriteAsync(Serializer.Serialize(jsonEx));
 
 			return;
 		}

@@ -13,12 +13,12 @@ namespace TomPIT.Configuration
 {
 	internal class EmbeddedResourcesConfiguration : IPostConfigureOptions<StaticFileOptions>
 	{
-		public EmbeddedResourcesConfiguration(IHostingEnvironment environment)
+		public EmbeddedResourcesConfiguration(IWebHostEnvironment environment)
 		{
 			Environment = environment;
 		}
 
-		public IHostingEnvironment Environment { get; }
+		public IWebHostEnvironment Environment { get; }
 
 		public void PostConfigure(string name, StaticFileOptions options)
 		{

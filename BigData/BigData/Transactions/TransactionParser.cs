@@ -61,7 +61,7 @@ namespace TomPIT.BigData.Transactions
 			{
 				var itemInstance = argument.CreateInstance();
 
-				SerializationExtensions.Populate(item, itemInstance);
+				Serializer.Populate(item, itemInstance);
 
 				items.Add(itemInstance);
 			}

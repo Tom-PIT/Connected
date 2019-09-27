@@ -37,7 +37,7 @@ namespace TomPIT
 						throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
 				}
 				else
-					return SerializationExtensions.Deserialize<T>(SerializationExtensions.Serialize(proposed));
+					return Serializer.Deserialize<T>(Serializer.Serialize(proposed));
 
 				if (typeof(T) == typeof(string) && string.IsNullOrWhiteSpace(r as string))
 					throw new TomPITException(string.Format("{0} ({1}).", SR.ErrExpectedPropertyValue, propertyName));
@@ -80,7 +80,7 @@ namespace TomPIT
 						return r;
 				}
 				else
-					return SerializationExtensions.Deserialize<T>(SerializationExtensions.Serialize(proposed));
+					return Serializer.Deserialize<T>(Serializer.Serialize(proposed));
 
 				return default;
 			}

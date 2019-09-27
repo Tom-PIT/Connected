@@ -93,7 +93,7 @@ namespace TomPIT.Search.Catalogs
 						content.Add(field.Name, field.StringValue);
 					}
 
-					searchResult.Content = SerializationExtensions.Serialize(content);
+					searchResult.Content = Serializer.Serialize(content);
 					searchResult.Catalog = Catalog.Component;
 
 					Results.Add(searchResult);

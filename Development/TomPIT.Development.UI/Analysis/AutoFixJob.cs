@@ -28,7 +28,7 @@ namespace TomPIT.Development.Analysis
 		{
 			Message = item;
 
-			var m = SerializationExtensions.Deserialize<JObject>(item.Message);
+			var m = Serializer.Deserialize<JObject>(item.Message);
 
 			_timeout = new TimeoutTask(() =>
 			{

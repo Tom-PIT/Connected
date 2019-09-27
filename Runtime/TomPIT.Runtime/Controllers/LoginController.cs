@@ -170,7 +170,7 @@ namespace TomPIT.Controllers
 					 { "expiration",expiration.Ticks   }
 				};
 
-			Response.Cookies.Append(key, Convert.ToBase64String(Encoding.UTF8.GetBytes(SerializationExtensions.Serialize(content))), new CookieOptions
+			Response.Cookies.Append(key, Convert.ToBase64String(Encoding.UTF8.GetBytes(Serializer.Serialize(content))), new CookieOptions
 			{
 				HttpOnly = true,
 				Expires = expiration

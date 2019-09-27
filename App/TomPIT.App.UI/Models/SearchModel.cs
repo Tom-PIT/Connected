@@ -17,7 +17,7 @@ namespace TomPIT.App.Models
 			get
 			{
 				if (_options == null)
-					_options = SerializationExtensions.Deserialize<SearchOptions>(SerializationExtensions.Serialize(Body));
+					_options = Serializer.Deserialize<SearchOptions>(Serializer.Serialize(Body));
 
 				return _options;
 			}

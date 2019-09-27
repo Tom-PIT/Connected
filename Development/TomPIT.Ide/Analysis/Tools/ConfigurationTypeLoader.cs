@@ -27,13 +27,13 @@ namespace TomPIT.Ide.Analysis.Tools
 					{
 						if (Type.GetType(component.Type, false) == null)
 						{
-							LogError(tenant, component, $"{SR.ErrCannotResolveComponentType} ({component.Type})", ErrorCodes.ComponentTypeResolve);
+							LogError(tenant, component, $"{SR.ErrCannotResolveComponentType} ({component.Type})", ErrorCodes.ComponentTypeResolve.ToString());
 							continue;
 						}
 					}
 					catch (Exception ex)
 					{
-						LogError(tenant, component, ex.Message, ErrorCodes.ComponentTypeResolve);
+						LogError(tenant, component, ex.Message, ErrorCodes.ComponentTypeResolve.ToString());
 						continue;
 					}
 
@@ -43,13 +43,13 @@ namespace TomPIT.Ide.Analysis.Tools
 					}
 					catch (Exception ex)
 					{
-						LogError(tenant, component, ex.Message, ErrorCodes.ConfigurationLoad);
+						LogError(tenant, component, ex.Message, ErrorCodes.ConfigurationLoad.ToString());
 					}
 				}
 			}
 		}
 
-		private void LogError(ITenant tenant, IComponent component, string message, int code)
+		private void LogError(ITenant tenant, IComponent component, string message, string code)
 		{
 			tenant.GetService<IDesignerService>().InsertErrors(component.Token, new System.Collections.Generic.List<Development.IDevelopmentError>
 			{

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,19 +48,19 @@ namespace TomPIT.App
 			services.AddScoped<IViewEngine, ViewEngine>();
 			services.AddScoped<IMailTemplateViewEngine, MailTemplateViewEngine>();
 
+			services.Configure<MvcRazorRuntimeCompilationOptions>(opts =>
+				opts.FileProviders.Add(new ViewProvider())
+			);
+
 			services.Configure<RazorViewEngineOptions>(opts =>
 			{
 				opts.ViewLocationExpanders.Add(new ViewLocationExpander());
-
-				opts.FileProviders.Add(
-					new ViewProvider()
-			  );
 			}
 			);
 		}
 
 
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			app.UseResponseCompression();
 			Instance.Configure(InstanceType.Application, app, env, (f) =>

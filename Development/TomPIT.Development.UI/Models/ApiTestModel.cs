@@ -84,7 +84,7 @@ namespace TomPIT.Development.Models
 				if (!(Body["body"] is JValue body))
 					Body = new JObject();
 				else
-					Body = SerializationExtensions.Deserialize<JObject>(body.Value<string>());
+					Body = Serializer.Deserialize<JObject>(body.Value<string>());
 			}
 		}
 

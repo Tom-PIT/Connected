@@ -56,7 +56,7 @@ namespace TomPIT.Sys.Controllers.Development
 					Element = error.Optional("element", Guid.Empty),
 					Message = error.Required<string>("message"),
 					Severity = error.Required<DevelopmentSeverity>("severity"),
-					Code = error.Optional("code", 0),
+					Code = error.Optional("code", string.Empty),
 					Category = error.Required<ErrorCategory>("category"),
 					Identifier = Guid.NewGuid()
 				});

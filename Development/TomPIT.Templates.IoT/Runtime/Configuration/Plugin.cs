@@ -31,7 +31,7 @@ namespace TomPIT.MicroServices.IoT.Runtime.Configuration
 			};
 		}
 
-		public void Initialize(IApplicationBuilder app, IHostingEnvironment env)
+		public void Initialize(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 
 		}

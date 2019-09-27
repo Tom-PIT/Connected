@@ -14,110 +14,85 @@ namespace TomPIT.Diagostics
 	{
 		public static void LogInfo(this ITenant tenant, string source)
 		{
-			LogInfo(tenant, null, string.Empty, source, string.Empty, 0);
+			LogInfo(tenant, source, null);
 		}
 
-		public static void LogInfo(this ITenant tenant, IMiddlewareContext context, string source)
+		public static void LogInfo(this ITenant tenant, string source, string message)
 		{
-			LogInfo(tenant, context, string.Empty, source, string.Empty, 0);
+			LogInfo(tenant, source, message, null);
 		}
 
-		public static void LogInfo(this ITenant tenant, IMiddlewareContext context, string source, string message)
+		public static void LogInfo(this ITenant tenant, string source, string message, string category)
 		{
-			LogInfo(tenant, context, string.Empty, source, message, 0);
+			LogInfo(tenant, source, message, category, 0);
 		}
 
-		public static void LogInfo(this ITenant tenant, IMiddlewareContext context, string category, string source, string message)
+		public static void LogInfo(this ITenant tenant, string source, string message, string category, int eventId)
 		{
-			LogInfo(tenant, context, category, source, message, 0);
-		}
-
-		public static void LogInfo(this ITenant tenant, IMiddlewareContext context, string category, string source, string message, int eventId)
-		{
-			Write(tenant, TraceLevel.Info, context, category, source, message, eventId);
+			Write(tenant, TraceLevel.Info, source, message, category, eventId);
 		}
 
 		public static void LogError(this ITenant tenant, string source)
 		{
-			LogError(tenant, null, string.Empty, source, string.Empty, 0);
+			LogError(tenant, source, null);
 		}
 
-		public static void LogError(this ITenant tenant, IMiddlewareContext context, string source)
+		public static void LogError(this ITenant tenant, string source, string message)
 		{
-			LogError(tenant, context, string.Empty, source, string.Empty, 0);
+			LogError(tenant, source, message, null);
 		}
 
-		public static void LogError(this ITenant tenant, IMiddlewareContext context, string source, string message)
+		public static void LogError(this ITenant tenant, string source, string message, string category)
 		{
-			LogError(tenant, context, string.Empty, source, message, 0);
+			LogError(tenant, source, message, category, 0);
 		}
 
-		public static void LogError(this ITenant tenant, string category, string source, string message)
+		public static void LogError(this ITenant tenant, string category, string source, string message, int eventId)
 		{
-			Write(tenant, TraceLevel.Error, null, category, source, message, 0);
-		}
-
-		public static void LogError(this ITenant tenant, IMiddlewareContext context, string category, string source, string message)
-		{
-			LogError(tenant, context, category, source, message, 0);
-		}
-
-		public static void LogError(this ITenant tenant, IMiddlewareContext context, string category, string source, string message, int eventId)
-		{
-			Write(tenant, TraceLevel.Error, context, category, source, message, eventId);
+			Write(tenant, TraceLevel.Error, source, message, category, eventId);
 		}
 
 		public static void LogWarning(this ITenant tenant, string source)
 		{
-			LogWarning(tenant, null, string.Empty, source, string.Empty, 0);
+			LogWarning(tenant, source, null);
 		}
 
-		public static void LogWarning(this ITenant tenant, IMiddlewareContext context, string source)
+		public static void LogWarning(this ITenant tenant, string source, string message)
 		{
-			LogWarning(tenant, context, string.Empty, source, string.Empty, 0);
+			LogWarning(tenant, source, message, null);
 		}
 
-		public static void LogWarning(this ITenant tenant, IMiddlewareContext context, string source, string message)
+		public static void LogWarning(this ITenant tenant, string source, string message, string category)
 		{
-			LogWarning(tenant, context, string.Empty, source, message, 0);
+			LogWarning(tenant, source, message, category, 0);
 		}
 
-		public static void LogWarning(this ITenant tenant, IMiddlewareContext context, string category, string source, string message)
+		public static void LogWarning(this ITenant tenant, string category, string source, string message, int eventId)
 		{
-			LogWarning(tenant, context, category, source, message, 0);
-		}
-
-		public static void LogWarning(this ITenant tenant, IMiddlewareContext context, string category, string source, string message, int eventId)
-		{
-			Write(tenant, TraceLevel.Warning, context, category, source, message, eventId);
+			Write(tenant, TraceLevel.Warning, source, message, category, eventId);
 		}
 
 		public static void LogVerbose(this ITenant tenant, string source)
 		{
-			LogVerbose(tenant, null, string.Empty, source, string.Empty, 0);
+			LogVerbose(tenant, source, null);
 		}
 
-		public static void LogVerbose(this ITenant tenant, IMiddlewareContext context, string source)
+		public static void LogVerbose(this ITenant tenant, string source, string message)
 		{
-			LogVerbose(tenant, context, string.Empty, source, string.Empty, 0);
+			LogVerbose(tenant, source, message, null);
 		}
 
-		public static void LogVerbose(this ITenant tenant, IMiddlewareContext context, string source, string message)
+		public static void LogVerbose(this ITenant tenant, string source, string message, string category)
 		{
-			LogVerbose(tenant, context, string.Empty, source, message, 0);
+			LogVerbose(tenant, category, source, message, 0);
 		}
 
-		public static void LogVerbose(this ITenant tenant, IMiddlewareContext context, string category, string source, string message)
+		public static void LogVerbose(this ITenant tenant, string source, string message, string category, int eventId)
 		{
-			LogVerbose(tenant, context, category, source, message, 0);
+			Write(tenant, TraceLevel.Verbose, source, message, category, eventId);
 		}
 
-		public static void LogVerbose(this ITenant tenant, IMiddlewareContext context, string category, string source, string message, int eventId)
-		{
-			Write(tenant, TraceLevel.Verbose, context, category, source, message, eventId);
-		}
-
-		private static void Write(ITenant tenant, TraceLevel level, IMiddlewareContext context, string category, string source, string message, int eventId)
+		private static void Write(ITenant tenant, TraceLevel level, string source, string message, string category, int eventId)
 		{
 			var svc = tenant.GetService<ILoggingService>();
 

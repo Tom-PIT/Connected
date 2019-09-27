@@ -16,7 +16,7 @@ namespace TomPIT.Search
 
 		protected virtual T OnDeserializeResult(string searchResult)
 		{
-			var instance = SerializationExtensions.Deserialize<T>(searchResult);
+			var instance = Serializer.Deserialize<T>(searchResult);
 
 			OnDeserializingResult(instance);
 

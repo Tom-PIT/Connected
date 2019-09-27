@@ -24,11 +24,11 @@ namespace TomPIT.Worker.Workers
 			var instance = Instance.Tenant.GetService<ICompilerService>().CreateInstance<IHostedWorkerMiddleware>(ctx, type);
 
 			if (!string.IsNullOrWhiteSpace(State))
-				SerializationExtensions.Populate(State, instance);
+				Serializer.Populate(State, instance);
 
 			instance.Invoke();
 
-			State = SerializationExtensions.Serialize(instance);
+			State = Serializer.Serialize(instance);
 		}
 	}
 }

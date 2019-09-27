@@ -20,7 +20,7 @@ namespace TomPIT.Sys.Data
 				{"error", error }
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, SerializationExtensions.Serialize(message),
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, Serializer.Serialize(message),
 				TimeSpan.FromDays(2), TimeSpan.Zero, SysDb.Messaging.QueueScope.System);
 		}
 		public List<IDevelopmentComponentError> Query(Guid microService, ErrorCategory category)
@@ -105,7 +105,7 @@ namespace TomPIT.Sys.Data
 
 		private IDevelopmentError Resolve(IQueueMessage message)
 		{
-			var d = SerializationExtensions.Deserialize<JObject>(message.Message);
+			var d = Serializer.Deserialize<JObject>(message.Message);
 
 			var error = d.Required<Guid>("error");
 

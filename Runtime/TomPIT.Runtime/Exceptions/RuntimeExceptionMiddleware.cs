@@ -34,7 +34,7 @@ namespace TomPIT.Exceptions
 						{ "message", ex.Message }
 					};
 
-			await context.Response.WriteAsync(SerializationExtensions.Serialize(jsonEx));
+			await context.Response.WriteAsync(Serializer.Serialize(jsonEx));
 		}
 	}
 }

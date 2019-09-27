@@ -191,7 +191,7 @@ namespace TomPIT.Ide.Controllers
 			{
 				Response.Headers.Add("designerResult", "json");
 
-				return new Microsoft.AspNetCore.Mvc.JsonResult(SerializationExtensions.Serialize(((IDesignerActionResultJson)result).Data));
+				return new Microsoft.AspNetCore.Mvc.JsonResult(Serializer.Serialize(((IDesignerActionResultJson)result).Data));
 			}
 			else if (result is IDesignerActionResultView)
 			{

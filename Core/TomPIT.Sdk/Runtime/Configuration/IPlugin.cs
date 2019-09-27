@@ -9,7 +9,7 @@ namespace TomPIT.Runtime.Configuration
 {
 	public interface IPlugin
 	{
-		void Initialize(IApplicationBuilder app, IHostingEnvironment env);
+		void Initialize(IApplicationBuilder app, IWebHostEnvironment env);
 		void ConfigureServices(IServiceCollection services);
 
 		List<string> GetApplicationParts(ApplicationPartManager manager);

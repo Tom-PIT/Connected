@@ -22,7 +22,7 @@
 
 <script>
     $('#gridMicroservices').dxDataGrid({
-        dataSource:@Html.Raw(TomPIT.Serialization.SerializationExtensions.Serialize(Model.Packages)),
+        dataSource:@Html.Raw(TomPIT.Serialization.Serializer.Serialize(Model.Packages)),
         noDataText: 'no microservices',
         wordWrapEnabled: true,
         searchPanel: {

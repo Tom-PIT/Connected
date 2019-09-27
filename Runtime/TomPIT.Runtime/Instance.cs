@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -47,70 +48,10 @@ namespace TomPIT
 		{
 			Shell.RegisterConfigurationType(typeof(ClientSys));
 
-			ConfigureServices(services, e);
+			InitializeServices(services, e);
 		}
 
-		public static void Configure(InstanceType type, IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env, ConfigureRoutingHandler routingHandler)
-		{
-			app.UseAuthentication();
-			app.UseRequestLocalization(o =>
-			{
-				RequestLocalizationOptions = o;
-				o.DefaultRequestCulture = new RequestCulture(CultureInfo.InvariantCulture);
-				o.FallBackToParentCultures = true;
-				o.FallBackToParentUICultures = true;
-				/*
-				 * https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-2.2
-				 */
-				o.RequestCultureProviders.Insert(0, new IdentityCultureProvider());
-			});
-
-			app.UseAjaxExceptionMiddleware();
-			app.UseStaticFiles();
-			//app.UseStaticFiles(new StaticFileOptions
-			//{
-			//	FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "node_modules")),
-			//	RequestPath = "/node_modules"
-			//});
-
-			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
-
-			RuntimeBootstrapper.Run();
-
-			Shell.GetService<IRuntimeService>().Initialize(type, env);
-			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
-
-			app.UseMvc(routes =>
-			{
-				foreach (var i in Plugins)
-					i.RegisterRoutes(routes);
-
-				RoutingConfiguration.Register(routes);
-				routingHandler?.Invoke(new ConfigureRoutingArgs(routes));
-			});
-
-			Shell.Configure(app);
-
-			foreach (var plugin in Plugins)
-				plugin.Initialize(app, env);
-		}
-		private static void OnTenantInitialized(object sender, TenantArgs e)
-		{
-			foreach (var i in Shell.GetConfiguration<IClientSys>().DataProviders)
-			{
-				var t = Reflection.TypeExtensions.GetType(i);
-
-				if (t == null)
-					continue;
-
-				var provider = t.CreateInstance<IDataProvider>();
-
-				if (provider != null)
-					e.Tenant.GetService<IDataProviderService>().Register(provider);
-			}
-		}
-
-		private static void ConfigureServices(IServiceCollection services, ServicesConfigurationArgs e)
+		private static void InitializeServices(IServiceCollection services, ServicesConfigurationArgs e)
 		{
 			switch (e.Authentication)
 			{
@@ -140,6 +81,7 @@ namespace TomPIT
 
 			_mvcBuilder = services.AddMvc((o) =>
 			{
+				o.EnableEndpointRouting = false;
 				e.ConfigureMvc?.Invoke(o);
 
 				o.Filters.Add(new AuthenticationCookieFilter());
@@ -189,6 +131,61 @@ namespace TomPIT
 			foreach (var plugin in Plugins)
 				plugin.ConfigureServices(services);
 		}
+		public static void Configure(InstanceType type, IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler)
+		{
+			app.UseAuthentication();
+			app.UseRequestLocalization(o =>
+			{
+				RequestLocalizationOptions = o;
+				o.DefaultRequestCulture = new RequestCulture(CultureInfo.InvariantCulture);
+				o.FallBackToParentCultures = true;
+				o.FallBackToParentUICultures = true;
+				/*
+				 * https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-2.2
+				 */
+				o.RequestCultureProviders.Insert(0, new IdentityCultureProvider());
+			});
+
+			app.UseAjaxExceptionMiddleware();
+			app.UseStaticFiles();
+			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
+
+			RuntimeBootstrapper.Run();
+
+			Shell.GetService<IRuntimeService>().Initialize(type, env);
+			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
+
+			app.UseMvc(routes =>
+			{
+				foreach (var i in Plugins)
+					i.RegisterRoutes(routes);
+
+				RoutingConfiguration.Register(routes);
+				routingHandler?.Invoke(new ConfigureRoutingArgs(routes));
+			});
+
+			Shell.Configure(app);
+
+			foreach (var plugin in Plugins)
+				plugin.Initialize(app, env);
+		}
+		private static void OnTenantInitialized(object sender, TenantArgs e)
+		{
+			foreach (var i in Shell.GetConfiguration<IClientSys>().DataProviders)
+			{
+				var t = Reflection.TypeExtensions.GetType(i);
+
+				if (t == null)
+					continue;
+
+				var provider = t.CreateInstance<IDataProvider>();
+
+				if (provider != null)
+					e.Tenant.GetService<IDataProviderService>().Register(provider);
+			}
+		}
+
+
 		public static ITenant Tenant
 		{
 			get

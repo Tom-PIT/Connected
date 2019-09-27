@@ -15,7 +15,7 @@ namespace TomPIT.Data
 			foreach (var item in items)
 				array.Add(new JObject { { propertyName, new JValue(item) } });
 
-			return SerializationExtensions.Serialize(array);
+			return Serializer.Serialize(array);
 		}
 	}
 }

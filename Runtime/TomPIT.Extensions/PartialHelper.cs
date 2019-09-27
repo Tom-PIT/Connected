@@ -27,7 +27,7 @@ namespace TomPIT
 
 		public async Task<IHtmlContent> Render(string name, object arguments)
 		{
-			var a = arguments == null ? null : SerializationExtensions.Deserialize<JObject>(arguments);
+			var a = arguments == null ? null : Serializer.Deserialize<JObject>(arguments);
 
 			if (a != null && Html.ViewData.Model is IRuntimeModel rtModel)
 				rtModel.MergeArguments(a);

@@ -349,5 +349,17 @@ namespace TomPIT.Ide.TextEditor.CSharp
 
 			return null;
 		}
+
+		public static MarkerSeverity ToMarkerSeverity(this DiagnosticSeverity severity)
+		{
+			return severity switch
+			{
+				DiagnosticSeverity.Hidden => MarkerSeverity.Hint,
+				DiagnosticSeverity.Info => MarkerSeverity.Info,
+				DiagnosticSeverity.Warning => MarkerSeverity.Warning,
+				DiagnosticSeverity.Error => MarkerSeverity.Error,
+				_ => MarkerSeverity.Info,
+			};
+		}
 	}
 }

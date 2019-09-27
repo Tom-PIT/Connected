@@ -152,7 +152,7 @@
 <script>
     	$('#editPlan').dxSelectBox({
 		value: '@Model.MicroService.Plan',
-            dataSource:@Html.Raw(TomPIT.Serialization.SerializationExtensions.Serialize(Model.Plans)),
+            dataSource:@Html.Raw(TomPIT.Serialization.Serializer.Serialize(Model.Plans)),
             displayExpr: 'name',
             valueExpr: 'token',
         value: @Html.TP().JavaScript.Value(Model.MicroService.Plan)

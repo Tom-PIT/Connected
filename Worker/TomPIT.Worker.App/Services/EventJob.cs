@@ -133,7 +133,7 @@ namespace TomPIT.Worker.Services
 				{
 					var args = string.IsNullOrWhiteSpace(ed.Arguments)
 						? new JObject()
-						: SerializationExtensions.Deserialize<JObject>(ed.Arguments);
+						: Serializer.Deserialize<JObject>(ed.Arguments);
 
 					var property = args.Property("cancel", StringComparison.OrdinalIgnoreCase);
 
@@ -142,7 +142,7 @@ namespace TomPIT.Worker.Services
 					else
 						property.Value = true;
 
-					ed.Arguments = SerializationExtensions.Serialize(args);
+					ed.Arguments = Serializer.Serialize(args);
 
 					return handler.Cancel;
 				}

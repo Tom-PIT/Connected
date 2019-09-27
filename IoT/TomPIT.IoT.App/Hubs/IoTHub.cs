@@ -70,7 +70,7 @@ namespace TomPIT.IoT.Hubs
 						handler.Invoke();
 
 						if (e != null)
-							SerializationExtensions.Populate(JsonConvert.SerializeObject(e), handler);
+							Serializer.Populate(JsonConvert.SerializeObject(e), handler);
 
 						handler.Invoke();
 
@@ -101,7 +101,7 @@ namespace TomPIT.IoT.Hubs
 		private void Merge(IIoTHubConfiguration hub, IIoTDeviceMiddleware handler, JObject arguments)
 		{
 			var schema = Instance.Tenant.GetService<IIoTHubService>().SelectSchema(hub);
-			var serializedHandler = SerializationExtensions.Deserialize<JObject>(handler);
+			var serializedHandler = Serializer.Deserialize<JObject>(handler);
 
 			foreach (var property in serializedHandler.Children())
 			{
@@ -175,11 +175,11 @@ namespace TomPIT.IoT.Hubs
 
 				if (type != null)
 				{
-					var handler = Instance.Tenant.GetService<ICompilerService>().CreateInstance<IIoTTransactionMiddleware>(ctx, type, SerializationExtensions.Serialize(e));
+					var handler = Instance.Tenant.GetService<ICompilerService>().CreateInstance<IIoTTransactionMiddleware>(ctx, type, Serializer.Serialize(e));
 
 					handler.Invoke();
 
-					SerializationExtensions.Merge(e, handler);
+					Serializer.Merge(e, handler);
 				}
 				else
 				{

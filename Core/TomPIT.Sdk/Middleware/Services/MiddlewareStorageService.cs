@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TomPIT.ComponentModel;
+using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
 using TomPIT.Exceptions;
 using TomPIT.Storage;
@@ -55,7 +56,7 @@ namespace TomPIT.Middleware.Services
 			}
 			catch (Exception ex)
 			{
-				Context.Tenant.LogWarning(Context, nameof(MiddlewareStorageService), ex.Message);
+				Context.Tenant.LogWarning(nameof(MiddlewareStorageService), ex.Message, LogCategories.Middleware);
 			}
 		}
 

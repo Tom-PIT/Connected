@@ -13,7 +13,7 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services.CompletionProviders
 		}
 
 		protected CompletionProviderArgs Arguments { get; private set; }
-		public CSharpEditor Editor => Arguments.Editor as CSharpEditor;
+		public CSharpEditorBase Editor => Arguments.Editor as CSharpEditorBase;
 
 		protected virtual List<ICompletionItem> OnProvideItems()
 		{

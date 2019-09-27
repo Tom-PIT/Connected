@@ -28,7 +28,7 @@
 
 <script>
     $('#editSubscriptions').dxSelectBox({
-        dataSource:@Html.Raw(TomPIT.Serialization.SerializationExtensions.Serialize(Model.Subscriptions)),
+        dataSource:@Html.Raw(TomPIT.Serialization.Serializer.Serialize(Model.Subscriptions)),
         displayExpr: 'planName',
         valueExpr: 'plan',
         searchEnabled: true,

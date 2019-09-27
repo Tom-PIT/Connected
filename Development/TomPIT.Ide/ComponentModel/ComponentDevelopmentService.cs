@@ -8,6 +8,7 @@ using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
 using TomPIT.Deployment;
 using TomPIT.Design.Serialization;
+using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
 using TomPIT.Ide.Search;
 using TomPIT.Ide.VersionControl;
@@ -330,7 +331,6 @@ namespace TomPIT.Ide.ComponentModel
 
 			Tenant.Post(u, args);
 		}
-
 		private void UpdateRuntimeConfiguration(Guid component, Guid runtimeConfiguration)
 		{
 			var u = Tenant.CreateUrl("ComponentDevelopment", "UpdateRuntimeConfiguration");
@@ -388,6 +388,7 @@ namespace TomPIT.Ide.ComponentModel
 			catch { }
 
 			text.TextBlob = Guid.Empty;
+
 			Update(text.Configuration());
 		}
 
@@ -412,7 +413,7 @@ namespace TomPIT.Ide.ComponentModel
 			}
 			catch (Exception ex)
 			{
-				Tenant.LogWarning(null, "Remove Dependencies", ex.Message);
+				Tenant.LogWarning(ex.Source, ex.Message, LogCategories.Development);
 			}
 		}
 
@@ -452,7 +453,7 @@ namespace TomPIT.Ide.ComponentModel
 					 { "token", token }
 				};
 
-			var r = Tenant.Post<Guid>(u, args);
+			Tenant.Post(u, args);
 		}
 
 		public Guid InsertFolder(Guid microService, string name, Guid parent)
@@ -671,6 +672,7 @@ namespace TomPIT.Ide.ComponentModel
 				if (image.Dependencies.FirstOrDefault(f => f.Token == i) == null)
 					Tenant.GetService<IStorageService>().Delete(i);
 			}
+
 			/*
 		 * now restore configuration and all blobs
 		 */
@@ -707,17 +709,10 @@ namespace TomPIT.Ide.ComponentModel
 
 		public void Import(Guid microService, Guid blob)
 		{
-			var image = DownloadImage(blob);
-			var imageConfig = Tenant.GetService<ISerializationService>().Deserialize(image.Configuration.Content, Type.GetType(image.Type)) as IConfiguration;
-			var blobs = new Dictionary<Guid, Guid>();
+			throw new NotImplementedException();
 
-			//var elements = imageConfig.Children<IElement>();
-
-			//foreach (var i in elements)
-			//{
-
-			//		i.Reset();
-			//}
+			//var image = await DownloadImageAsync(blob);
+			//var imageConfig = Tenant.GetService<ISerializationService>().Deserialize(image.Configuration.Content, Type.GetType(image.Type)) as IConfiguration;
 		}
 
 		public List<IComponent> Query(Guid microService)

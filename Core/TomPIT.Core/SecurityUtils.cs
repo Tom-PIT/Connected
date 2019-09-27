@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
+using Microsoft.AspNetCore.Http;
 using TomPIT.Connectivity;
 using TomPIT.Security;
 
@@ -28,7 +28,7 @@ namespace TomPIT
 					return loginName;
 				else
 				{
-					int idx = email.IndexOf('@'); 
+					int idx = email.IndexOf('@');
 
 					if (idx == -1)
 					{

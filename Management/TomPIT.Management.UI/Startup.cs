@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
@@ -44,7 +45,7 @@ namespace TomPIT.Management
 			services.AddHostedService<PublishService>();
 		}
 
-		public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			Instance.Configure(InstanceType.Management, app, env, (f) =>
 		 {

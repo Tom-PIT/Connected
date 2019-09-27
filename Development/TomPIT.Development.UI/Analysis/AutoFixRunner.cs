@@ -15,11 +15,19 @@ namespace TomPIT.Development.Analysis
 		public AutoFixRunner()
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(5000);
+		}
 
-			var tenants = Shell.GetService<IConnectivityService>().QueryTenants();
+		protected override bool Initialize()
+		{
+			var tenants = Shell.GetService<IConnectivityService>()?.QueryTenants();
 
-			foreach (var tenant in tenants)
-				Dispatchers.Add(new AutoFixDispatcher(Shell.GetService<IConnectivityService>().SelectTenant(tenant.Url), _cancel));
+			if (tenants != null)
+			{
+				foreach (var tenant in tenants)
+					Dispatchers.Add(new AutoFixDispatcher(Shell.GetService<IConnectivityService>().SelectTenant(tenant.Url), _cancel));
+			}
+
+			return tenants != null;
 		}
 
 		protected override Task Process()

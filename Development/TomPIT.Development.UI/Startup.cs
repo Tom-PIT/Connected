@@ -46,7 +46,7 @@ namespace TomPIT.Development
 			services.AddHostedService<ComponentAnalysisRunner>();
 		}
 
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			Instance.Configure(InstanceType.Development, app, env, (f) =>
 		  {

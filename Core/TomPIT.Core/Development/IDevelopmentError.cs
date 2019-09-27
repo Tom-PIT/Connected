@@ -24,7 +24,7 @@ namespace TomPIT.Development
 		Guid Element { get; }
 		DevelopmentSeverity Severity { get; }
 		string Message { get; }
-		int Code { get; }
+		string Code { get; }
 		ErrorCategory Category { get; }
 		Guid Identifier { get; }
 	}

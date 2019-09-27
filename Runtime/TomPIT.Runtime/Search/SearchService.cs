@@ -35,9 +35,9 @@ namespace TomPIT.Search
 			};
 
 			if (args != null)
-				a.Add("arguments", SerializationExtensions.Serialize(args));
+				a.Add("arguments", Serializer.Serialize(args));
 
-			e.Add("arguments", SerializationExtensions.Serialize(a));
+			e.Add("arguments", Serializer.Serialize(a));
 
 			Tenant.Post(u, e);
 		}

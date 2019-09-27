@@ -24,7 +24,10 @@ namespace TomPIT.Sys
 		{
 			Shell.RegisterConfigurationType(typeof(ServerSys));
 
-			services.AddMvc();
+			services.AddMvc(o =>
+			{
+				o.EnableEndpointRouting = false;
+			});
 
 			services.AddAuthentication(options =>
 			{
@@ -46,7 +49,7 @@ namespace TomPIT.Sys
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 		}
 
-		public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			if (env.IsDevelopment())
 			{

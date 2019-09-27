@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Ide.TextEditor.Services;
@@ -67,7 +66,7 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services
 					EndColumn = diagnostic.EndColumn + 1,
 					EndLineNumber = diagnostic.EndLine + 1,
 					Message = diagnostic.Message,
-					Severity = ToSeverity(diagnostic.Severity),
+					Severity = diagnostic.Severity.ToMarkerSeverity(),
 					Source = diagnostic.Source,
 					Code = diagnostic.Code,
 					StartColumn = diagnostic.StartColumn + 1,
@@ -80,22 +79,6 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services
 
 			return result;
 
-		}
-		private MarkerSeverity ToSeverity(DiagnosticSeverity severity)
-		{
-			switch (severity)
-			{
-				case DiagnosticSeverity.Hidden:
-					return MarkerSeverity.Hint;
-				case DiagnosticSeverity.Info:
-					return MarkerSeverity.Info;
-				case DiagnosticSeverity.Warning:
-					return MarkerSeverity.Warning;
-				case DiagnosticSeverity.Error:
-					return MarkerSeverity.Error;
-				default:
-					return MarkerSeverity.Info;
-			}
 		}
 	}
 }

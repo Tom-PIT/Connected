@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.Development;
 using TomPIT.Ide.Analysis;
 using TomPIT.Ide.Analysis.Analyzers;
 using TomPIT.Ide.Analysis.Diagnostics;
@@ -122,7 +124,7 @@ namespace TomPIT.Ide.Designers
 			if (string.Compare(action, "provideCompletionItems", true) == 0)
 			{
 				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
-				var editor = GetTextEditor(model, data.Optional<string>("text", null));
+				using var editor = GetTextEditor(model, data.Optional<string>("text", null));
 
 				if (editor == null)
 					return Result.JsonResult(this, null);
@@ -143,36 +145,44 @@ namespace TomPIT.Ide.Designers
 			else if (string.Compare(action, "codeLens", true) == 0)
 				return Result.JsonResult(this, CodeAnalyzer.CodeLens(Environment.Context, CreateCodeLensArgs(data)));
 			else if (string.Compare(action, "resolvePath", true) == 0)
+			{
+				var path = Environment.ResolvePath(data.Required<Guid>("component"), data.Required<Guid>("element"), out _);
+
 				return Result.JsonResult(this, new JObject
 				{
-					{"path", Environment.ResolvePath(data.Required<Guid>("component"), data.Required<Guid>("element"), out _) }
+					{"path",  path}
 				});
+			}
 			else if (string.Compare(action, "definition", true) == 0)
 				return Result.JsonResult(this, CodeAnalyzer.Definition(Environment.Context, CreateSuggestionArgs(data)));
 			else if (string.Compare(action, "provideCodeActions", true) == 0)
 			{
 				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
-				var editor = GetTextEditor(model, data.Optional<string>("text", null));
+				using (var editor = GetTextEditor(model, data.Optional<string>("text", null)))
+				{
 
-				if (editor == null)
-					return Result.JsonResult(this, null);
+					if (editor == null)
+						return Result.JsonResult(this, null);
 
-				var range = DeserializeRange(data.Optional<JObject>("range", null));
-				var context = DeserializeCodeActionContext(data.Optional<JObject>("context", null));
+					var range = DeserializeRange(data.Optional<JObject>("range", null));
+					var context = DeserializeCodeActionContext(data.Optional<JObject>("context", null));
 
-				return Result.JsonResult(this, editor.GetService<ICodeActionService>().ProvideCodeActions(range, context));
+					return Result.JsonResult(this, editor.GetService<ICodeActionService>().ProvideCodeActions(range, context));
+				}
 			}
 			else if (string.Compare(action, "provideDeclaration", true) == 0)
 			{
 				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
-				var editor = GetTextEditor(model, data.Optional<string>("text", null));
+				using (var editor = GetTextEditor(model, data.Optional<string>("text", null)))
+				{
 
-				if (editor == null)
-					return Result.JsonResult(this, null);
+					if (editor == null)
+						return Result.JsonResult(this, null);
 
-				var position = DeserializePosition(data.Optional<JObject>("position", null));
+					var position = DeserializePosition(data.Optional<JObject>("position", null));
 
-				return Result.JsonResult(this, editor.GetService<IDeclarationProviderService>().ProvideDeclaration(position));
+					return Result.JsonResult(this, editor.GetService<IDeclarationProviderService>().ProvideDeclaration(position));
+				}
 			}
 
 			return base.OnAction(data, action);
@@ -196,7 +206,7 @@ namespace TomPIT.Ide.Designers
 		{
 			var r = new TextModel();
 
-			SerializationExtensions.Populate(data, r);
+			Serializer.Populate(data, r);
 
 			return r;
 		}
@@ -205,7 +215,7 @@ namespace TomPIT.Ide.Designers
 		{
 			var r = new TextEditor.Range();
 
-			SerializationExtensions.Populate(data, r);
+			Serializer.Populate(data, r);
 
 			return r;
 		}
@@ -214,7 +224,7 @@ namespace TomPIT.Ide.Designers
 		{
 			var r = new TextEditor.Position();
 
-			SerializationExtensions.Populate(data, r);
+			Serializer.Populate(data, r);
 
 			return r;
 		}
@@ -223,7 +233,7 @@ namespace TomPIT.Ide.Designers
 		{
 			var r = new CodeActionContext();
 
-			SerializationExtensions.Populate(data, r);
+			Serializer.Populate(data, r);
 
 			return r;
 		}
@@ -232,7 +242,7 @@ namespace TomPIT.Ide.Designers
 		{
 			var r = new CompletionContext();
 
-			SerializationExtensions.Populate(data, r);
+			Serializer.Populate(data, r);
 
 			return r;
 		}
@@ -283,14 +293,61 @@ namespace TomPIT.Ide.Designers
 			if (sc == null)
 				return Result.EmptyResult(this);
 
-			var editor = GetTextEditor(DeserializeTextModel(model), data.Optional<string>("text", null));
+			var component = sc.Configuration().Component;
+			List<IMarkerData> result = null;
 
-			if (editor == null)
+			using (var editor = GetTextEditor(DeserializeTextModel(model), data.Optional<string>("text", null)))
+			{
+				Environment.Context.Tenant.GetService<IDesignerService>().ClearErrors(component, sc.Id, Development.ErrorCategory.Syntax);
+
+				if (editor != null)
+				{
+
+					result = editor.GetService<ISyntaxCheckService>().CheckSyntax(sc);
+
+					if (result != null && result.Count > 0)
+					{
+						var errors = new List<IDevelopmentError>();
+
+						foreach (var error in result)
+						{
+							errors.Add(new DevelopmentError
+							{
+								Category = ErrorCategory.Syntax,
+								Code = error.Code,
+								Component = component,
+								Element = sc.Id,
+								Message = error.Message,
+								Severity = ResolveSeverity(error.Severity)
+							});
+						}
+
+						Environment.Context.Tenant.GetService<IDesignerService>().InsertErrors(component, errors);
+					}
+				}
+			}
+
+			if (result == null)
 				return Result.EmptyResult(ViewModel);
+			else
+				return Result.JsonResult(ViewModel, result);
+		}
 
-			var result = editor.GetService<ISyntaxCheckService>().CheckSyntax(sc);
-
-			return Result.JsonResult(this, result);
+		private DevelopmentSeverity ResolveSeverity(MarkerSeverity severity)
+		{
+			switch (severity)
+			{
+				case MarkerSeverity.Hint:
+					return DevelopmentSeverity.Info;
+				case MarkerSeverity.Info:
+					return DevelopmentSeverity.Info;
+				case MarkerSeverity.Warning:
+					return DevelopmentSeverity.Warning;
+				case MarkerSeverity.Error:
+					return DevelopmentSeverity.Error;
+				default:
+					return DevelopmentSeverity.Info;
+			}
 		}
 
 		public string DebugFileName
@@ -346,12 +403,14 @@ namespace TomPIT.Ide.Designers
 
 		public LanguageFeature SupportedFeatures(string language, IMicroService microService)
 		{
-			var editor = Environment.Context.Tenant.GetService<ITextEditorService>().GetEditor(new MicroServiceContext(microService, Environment.Context.Tenant.Url), language);
+			using (var editor = Environment.Context.Tenant.GetService<ITextEditorService>().GetEditor(new MicroServiceContext(microService, Environment.Context.Tenant.Url), language))
+			{
 
-			if (editor == null)
-				return LanguageFeature.None;
+				if (editor == null)
+					return LanguageFeature.None;
 
-			return editor.Features;
+				return editor.Features;
+			}
 		}
 
 		public string ParseModelUri(IText text)

@@ -71,7 +71,7 @@ namespace TomPIT.Middleware
 						return null;
 
 					var cookie = Shell.HttpContext.Request.Cookies[SecurityUtils.AuthenticationCookieName];
-					var json = SerializationExtensions.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
+					var json = Serializer.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
 
 					_jw = json.Required<string>("jwt");
 				}

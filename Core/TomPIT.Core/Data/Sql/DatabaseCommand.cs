@@ -135,7 +135,7 @@ namespace TomPIT.Data.Sql
 			else if (value is JObject || value is JArray)
 			{
 				p.SqlDbType = SqlDbType.NVarChar;
-				p.Value = SerializationExtensions.Serialize(value);
+				p.Value = Serializer.Serialize(value);
 			}
 			else
 				p.Value = value;

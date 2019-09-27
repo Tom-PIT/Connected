@@ -31,7 +31,7 @@ namespace TomPIT.Messaging
 				args.Add(new JObject { "callback", $"{callback.MicroService}/{callback.Component}/{callback.Element}" });
 
 			if (e != null)
-				args.Add("arguments", SerializationExtensions.Serialize(e));
+				args.Add("arguments", Serializer.Serialize(e));
 
 			return Tenant.Post<Guid>(u, args);
 		}

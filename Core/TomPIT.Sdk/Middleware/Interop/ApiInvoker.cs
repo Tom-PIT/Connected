@@ -79,15 +79,16 @@ namespace TomPIT.Middleware.Interop
 
 				if (synchronous)
 				{
-					if (operationType is IAsyncOperation)
+					if (operationType is IDistributedOperation)
 					{
-						var opInstance = operationType.CreateInstance<IAsyncOperation>();
+						var opInstance = operationType.CreateInstance<IDistributedOperation>();
+						var property = opInstance.GetType().GetProperty("Distributed");
 
-						opInstance.SetAsyncState(false);
-						opInstance.SetContext(ctx);
+						if (property.SetMethod != null)
+							property.SetMethod.Invoke(opInstance, new object[] { true });
 
 						if (arguments != null)
-							SerializationExtensions.Populate(arguments, opInstance);
+							Serializer.Populate(arguments, opInstance);
 
 						var method = GetInvoke(opInstance.GetType());
 
@@ -104,7 +105,7 @@ namespace TomPIT.Middleware.Interop
 					opInstance.SetContext(ctx);
 
 					if (arguments != null)
-						SerializationExtensions.Populate(arguments, opInstance);
+						Serializer.Populate(arguments, opInstance);
 
 					var method = GetInvoke(opInstance.GetType());
 
@@ -115,7 +116,7 @@ namespace TomPIT.Middleware.Interop
 					var opInstance = operationType.CreateInstance<IOperation>(new object[] { new MiddlewareContext(ctx) });
 
 					if (arguments != null)
-						SerializationExtensions.Populate(arguments, opInstance);
+						Serializer.Populate(arguments, opInstance);
 
 					opInstance.Invoke();
 
@@ -143,7 +144,7 @@ namespace TomPIT.Middleware.Interop
 
 		private MethodInfo GetInvoke(Type type)
 		{
-			var methods = type.GetMethods().Where(f => string.Compare(f.Name, "Invoke", false) == 0);
+			var methods = type.GetMethods().Where(f => string.Compare(f.Name, "InvokeAsync", false) == 0);
 
 			foreach (var method in methods)
 			{

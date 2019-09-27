@@ -56,7 +56,7 @@ namespace TomPIT.Middleware.Services
 				e.Add("user", user);
 
 			if (arguments != null)
-				e.Add("arguments", SerializationExtensions.Serialize(arguments));
+				e.Add("arguments", Serializer.Serialize(arguments));
 
 			return Context.Tenant.Post<string>(url, e, new Connectivity.HttpRequestArgs
 			{

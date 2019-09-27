@@ -1,6 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <AssemblyVersion>1.1.924.6</AssemblyVersion>
     <FileVersion>1.1.924.6</FileVersion>
     <Version>1.1.924.6</Version>
@@ -18,9 +19,6 @@
     <None Remove="wwwroot\assets\reporting.min.js" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bundleconfig.json" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="wwwroot\assets\reporting.design.min.css" />
     <EmbeddedResource Include="wwwroot\assets\reporting.design.min.js" />
     <EmbeddedResource Include="wwwroot\assets\reporting.min.css" />
@@ -28,13 +26,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DevExpress.AspNetCore.Reporting" Version="19.1.3" />
-    <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.2.0" />
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="2.2.0" PrivateAssets="All" />
-    <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="4.6.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
@@ -44,13 +38,6 @@
     <Reference Include="System">
       <HintPath>System</HintPath>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="package.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>package.json</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Update="package.json">

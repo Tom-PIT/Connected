@@ -559,7 +559,7 @@ namespace TomPIT.Compilation
 				return default;
 
 			if (arguments != null)
-				SerializationExtensions.Populate(arguments, instance);
+				Serializer.Populate(arguments, instance);
 
 			if (instance is IMiddlewareObject mo)
 				mo.SetContext(context ?? new MicroServiceContext(microService, Tenant.Url));

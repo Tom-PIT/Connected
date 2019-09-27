@@ -11,7 +11,7 @@ using TomPIT.Models;
 using TomPIT.Serialization;
 using TomPIT.UI;
 
-namespace TomPIT.App.UI
+namespace TomPIT.Runtime.UI
 {
 	public abstract class ViewBase<T> : RazorPage<T>
 	{
@@ -98,7 +98,7 @@ namespace TomPIT.App.UI
 			if (content == null)
 				return null;
 
-			return SerializationExtensions.Serialize(content);
+			return Serializer.Serialize(content);
 		}
 	}
 }

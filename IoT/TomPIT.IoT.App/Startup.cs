@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TomPIT.Configuration;
@@ -48,7 +49,7 @@ namespace TomPIT.IoT
 			services.AddSingleton<IHostedService, FlushingService>();
 		}
 
-		public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			Instance.Configure(InstanceType.Rest, app, env, (f) =>
 			{

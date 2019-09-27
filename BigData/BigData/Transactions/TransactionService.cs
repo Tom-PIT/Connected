@@ -136,7 +136,7 @@ namespace TomPIT.BigData.Transactions
 				Token = blockId,
 				ResourceGroup = Tenant.GetService<IResourceGroupService>().Default.Token,
 				Type = BlobTypes.BigDataTransactionBlock
-			}, Encoding.UTF8.GetBytes(SerializationExtensions.Serialize(items)), StoragePolicy.Singleton);
+			}, Encoding.UTF8.GetBytes(Serializer.Serialize(items)), StoragePolicy.Singleton);
 
 			return blockId;
 		}

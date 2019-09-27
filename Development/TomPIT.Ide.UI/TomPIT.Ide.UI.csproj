@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -6,7 +6,8 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT</RootNamespace>
     <AssemblyVersion>1.1.924.6</AssemblyVersion>
     <FileVersion>1.1.924.6</FileVersion>
@@ -17,9 +18,6 @@
     <Content Remove="Views\Shell\**" />
     <EmbeddedResource Remove="Views\Shell\**" />
     <None Remove="Views\Shell\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Views\Ide\Actions\AddItems.cshtml">

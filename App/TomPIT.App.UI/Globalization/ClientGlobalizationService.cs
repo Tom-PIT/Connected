@@ -186,7 +186,7 @@ namespace TomPIT.App.Globalization
 			if ((segments & ClientGlobalizationSegment.TimeZoneNames) == ClientGlobalizationSegment.TimeZoneNames)
 				r.Merge(LoadJson(string.Format("{0}\\timeZoneNames.json", main)), settings);
 
-			var content = SerializationExtensions.Serialize(r);
+			var content = Serializer.Serialize(r);
 
 			Locales.TryAdd(string.Format("{0}.{1}", locale, (long)segments), content);
 
@@ -207,7 +207,7 @@ namespace TomPIT.App.Globalization
 
 			var s = File.ReadAllText(fileName);
 
-			return SerializationExtensions.Deserialize<JObject>(s);
+			return Serializer.Deserialize<JObject>(s);
 		}
 	}
 }

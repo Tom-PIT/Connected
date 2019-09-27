@@ -221,7 +221,7 @@ namespace TomPIT.BigData.Partitions
 					return;
 				}
 
-				var existingSchema = SerializationExtensions.Deserialize<PartitionSchema>(Encoding.UTF8.GetString(content.Content));
+				var existingSchema = Serializer.Deserialize<PartitionSchema>(Encoding.UTF8.GetString(content.Content));
 
 				if (existingSchema.CompareTo(schema) != 0)
 				{
@@ -254,7 +254,7 @@ namespace TomPIT.BigData.Partitions
 				PrimaryKey = partition.ToString(),
 				ResourceGroup = microService.ResourceGroup,
 				Type = BlobTypes.BigDataPartitionSchema
-			}, Encoding.UTF8.GetBytes(SerializationExtensions.Serialize(schema)), StoragePolicy.Singleton);
+			}, Encoding.UTF8.GetBytes(Serializer.Serialize(schema)), StoragePolicy.Singleton);
 		}
 
 		public void UpdatePartition(Guid token, string name, PartitionStatus status)

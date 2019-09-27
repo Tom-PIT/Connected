@@ -17,7 +17,7 @@ namespace TomPIT.Sys.Data
 				{ "component",component}
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, SerializationExtensions.Serialize(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, Serializer.Serialize(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 		}
 
 		public void Enqueue(Guid component, Guid element)
@@ -29,7 +29,7 @@ namespace TomPIT.Sys.Data
 				{ "element",element}
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, SerializationExtensions.Serialize(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, Serializer.Serialize(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 		}
 	}
 }

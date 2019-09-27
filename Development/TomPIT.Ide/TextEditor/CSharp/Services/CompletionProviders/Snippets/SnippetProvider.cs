@@ -18,6 +18,6 @@ namespace TomPIT.Ide.TextEditor.CSharp.Services.CompletionProviders.Snippets
 		}
 
 		protected CompletionProviderArgs Arguments { get; private set; }
-		protected CSharpEditor Editor => Arguments.Editor as CSharpEditor;
+		protected CSharpEditorBase Editor => Arguments.Editor as CSharpEditorBase;
 	}
 }

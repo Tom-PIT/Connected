@@ -107,7 +107,7 @@ namespace TomPIT.MicroServices.IoT.Models
 			data.Remove("$checkSum");
 
 			var checkSum = Encoding.UTF8.GetString(LZ4.LZ4Codec.Unwrap(Convert.FromBase64String(cs)));
-			var content = SerializationExtensions.Serialize(data);
+			var content = Serializer.Serialize(data);
 
 			using (var md = MD5.Create())
 			{

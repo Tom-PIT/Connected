@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using TomPIT.Connectivity;
 using TomPIT.Ide.TextEditor.CSharp;
+using TomPIT.Ide.TextEditor.Razor;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 
@@ -14,6 +15,7 @@ namespace TomPIT.Ide.TextEditor
 		public TextEditorService(ITenant tenant) : base(tenant)
 		{
 			RegisterEditor("csharp", typeof(CSharpEditor));
+			RegisterEditor("razor", typeof(RazorEditor));
 		}
 
 		public ITextEditor GetEditor(IMicroServiceContext context, string language)

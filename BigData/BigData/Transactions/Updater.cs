@@ -132,7 +132,7 @@ namespace TomPIT.BigData.Transactions
 			if (content == null || content.Content == null)
 				return;
 
-			Items = SerializationExtensions.Deserialize<JArray>(Encoding.UTF8.GetString(content.Content));
+			Items = Serializer.Deserialize<JArray>(Encoding.UTF8.GetString(content.Content));
 
 			if (Items == null || Items.Count == 0)
 				return;

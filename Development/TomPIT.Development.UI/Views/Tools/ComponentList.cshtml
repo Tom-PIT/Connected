@@ -64,7 +64,7 @@
     });
 
     $('#dataGridComponents').dxDataGrid({
-        dataSource:@Html.Raw(TomPIT.Serialization.SerializationExtensions.Serialize(components.DataSource)),
+        dataSource:@Html.Raw(TomPIT.Serialization.Serializer.Serialize(components.DataSource)),
         searchPanel: {
            visible:true
         },

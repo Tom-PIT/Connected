@@ -7,9 +7,9 @@ namespace TomPIT.Middleware.Services
 {
 	public interface IMiddlewareDiagnosticService
 	{
-		void Error(string category, string source, string message);
-		void Warning(string category, string source, string message);
-		void Info(string category, string source, string message);
+		void Error(string source, string message, string category);
+		void Warning(string source, string message, string category);
+		void Info(string source, string message, string category);
 
 		void Console(string message);
 

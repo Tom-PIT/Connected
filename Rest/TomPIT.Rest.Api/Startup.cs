@@ -19,7 +19,7 @@ namespace TomPIT.Rest
 			Instance.Initialize(services, e);
 		}
 
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			Instance.Configure(InstanceType.Rest, app, env, (f) =>
 		  {

@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
-using TomPIT.Serialization;
 
 namespace TomPIT.Security.Authentication
 {
@@ -25,7 +24,7 @@ namespace TomPIT.Security.Authentication
 				return null;
 
 			var cookie = Request.Cookies[SecurityUtils.AuthenticationCookieName];
-			var json = SerializationExtensions.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
+			var json = Serialization.Serializer.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
 
 			var jwt = json.Required<string>("jwt");
 			var endpoint = json.Required<string>("endpoint");

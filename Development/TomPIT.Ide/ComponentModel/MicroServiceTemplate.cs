@@ -23,7 +23,7 @@ namespace TomPIT.Ide.ComponentModel
 			return new List<string>();
 		}
 
-		public virtual void Initialize(IApplicationBuilder app, IHostingEnvironment env)
+		public virtual void Initialize(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 		}
 

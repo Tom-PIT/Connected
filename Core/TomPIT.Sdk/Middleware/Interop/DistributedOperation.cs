@@ -5,17 +5,17 @@ using TomPIT.Exceptions;
 
 namespace TomPIT.Middleware.Interop
 {
-	public abstract class AsyncOperation : MiddlewareOperation, IOperation, IAsyncOperation
+	public abstract class DistributedOperation : MiddlewareOperation, IOperation, IDistributedOperation
 	{
 		private IMiddlewareCallback _callback = null;
-		protected AsyncOperation(string asyncPath)
+		protected DistributedOperation(string callbackPath)
 		{
-			AsyncPath = asyncPath;
+			CallbackPath = callbackPath;
 		}
 
 		public bool Cancel { get; set; }
-		private string AsyncPath { get; }
-		internal bool Async { get; set; } = true;
+		private string CallbackPath { get; }
+		internal bool Distributed { get; set; } = true;
 
 		public IMiddlewareCallback Callback
 		{
@@ -23,17 +23,17 @@ namespace TomPIT.Middleware.Interop
 			{
 				if (_callback == null)
 				{
-					if (string.IsNullOrWhiteSpace(AsyncPath))
+					if (string.IsNullOrWhiteSpace(CallbackPath))
 						throw new RuntimeException(SR.ErrAsyncPathExpected).WithMetrics(Context);
 
-					var descriptor = ComponentDescriptor.Api(Context, AsyncPath);
+					var descriptor = ComponentDescriptor.Api(Context, CallbackPath);
 
 					descriptor.Validate();
 
 					var op = descriptor.Configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
 
 					if (op == null)
-						throw new RuntimeException($"SR.ErrServiceOperationNotFound ({AsyncPath})");
+						throw new RuntimeException($"SR.ErrServiceOperationNotFound ({CallbackPath})");
 
 					_callback = new MiddlewareCallback(descriptor.MicroService.Token, descriptor.Component.Token, op.Id);
 				}
@@ -51,7 +51,7 @@ namespace TomPIT.Middleware.Interop
 		{
 			Validate();
 
-			if (Async)
+			if (Distributed)
 			{
 				OnBeginInvoke();
 
@@ -65,11 +65,6 @@ namespace TomPIT.Middleware.Interop
 		protected virtual void OnInvoke()
 		{
 
-		}
-
-		public void SetAsyncState(bool async)
-		{
-			Async = async;
 		}
 	}
 }

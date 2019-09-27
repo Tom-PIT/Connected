@@ -37,7 +37,7 @@ namespace TomPIT.MicroServices.Reporting.Design
 			};
 		}
 
-		public override void Initialize(IApplicationBuilder app, IHostingEnvironment env)
+		public override void Initialize(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			DevExpress.XtraReports.Web.Extensions.ReportStorageWebExtension.RegisterExtensionGlobal(new ReportDesignerStorage());
 		}

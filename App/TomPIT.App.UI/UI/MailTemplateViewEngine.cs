@@ -115,7 +115,7 @@ namespace TomPIT.App.UI
 				return null;
 
 			var arguments = Body.Optional("arguments", string.Empty);
-			var ja = string.IsNullOrWhiteSpace(arguments) ? new JObject() : SerializationExtensions.Deserialize<JObject>(arguments);
+			var ja = string.IsNullOrWhiteSpace(arguments) ? new JObject() : Serializer.Deserialize<JObject>(arguments);
 			var model = new MailTemplateModel(Context.Request, ac, Temp, ja);
 
 			model.Initialize(Instance.Tenant.GetService<IMicroServiceService>().Select(component.MicroService));

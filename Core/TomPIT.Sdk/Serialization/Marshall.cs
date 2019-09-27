@@ -24,21 +24,21 @@ namespace TomPIT.Serialization
 					return (R)instance;
 				}
 				else
-					return SerializationExtensions.Deserialize<R>(SerializationExtensions.Serialize(value));
+					return Serializer.Deserialize<R>(Serializer.Serialize(value));
 			}
 			else if (typeof(R) == typeof(JArray))
 			{
 				if (value is JArray)
 					return (R)value;
 
-				return Types.Convert<R>(SerializationExtensions.Deserialize<JArray>(SerializationExtensions.Serialize(value)));
+				return Types.Convert<R>(Serializer.Deserialize<JArray>(Serializer.Serialize(value)));
 			}
 			else if (typeof(R) == typeof(JObject))
 			{
 				if (value is JObject)
 					return (R)value;
 
-				return Types.Convert<R>(SerializationExtensions.Deserialize<JObject>(SerializationExtensions.Serialize(value)));
+				return Types.Convert<R>(Serializer.Deserialize<JObject>(Serializer.Serialize(value)));
 			}
 
 			return Types.Convert<R>(value);

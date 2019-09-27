@@ -28,7 +28,7 @@
 
 <script>
     $('#editPlans').dxSelectBox({
-        dataSource:@Html.Raw(TomPIT.Serialization.SerializationExtensions.Serialize(Model.MyPlans)),
+        dataSource:@Html.Raw(TomPIT.Serialization.Serializer.Serialize(Model.MyPlans)),
         displayExpr: 'name',
         valueExpr: 'token',
         searchEnabled: true,

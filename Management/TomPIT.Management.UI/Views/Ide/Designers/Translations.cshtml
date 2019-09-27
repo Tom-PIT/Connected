@@ -33,7 +33,7 @@
 </div>
 <script>
     $('#editLeadingLanguage').dxSelectBox({
-        dataSource:@Html.Raw(TomPIT.Serialization.SerializationExtensions.Serialize(Model.Languages)),
+        dataSource:@Html.Raw(TomPIT.Serialization.Serializer.Serialize(Model.Languages)),
         displayExpr: 'name',
         valueExpr: 'token',
         placeholder: 'Default',
@@ -45,7 +45,7 @@
     });
 
     $('#editTranslationLanguage').dxSelectBox({
-        dataSource:@Html.Raw(TomPIT.Serialization.SerializationExtensions.Serialize(Model.Languages)),
+        dataSource:@Html.Raw(TomPIT.Serialization.Serializer.Serialize(Model.Languages)),
         displayExpr: 'name',
         valueExpr: 'token',
         searchEnabled: true,
@@ -61,7 +61,7 @@
     });
 
     $('#gridStrings').dxDataGrid({
-        dataSource: @Html.Raw(TomPIT.Serialization.SerializationExtensions.Serialize(Model.Items)),
+        dataSource: @Html.Raw(TomPIT.Serialization.Serializer.Serialize(Model.Items)),
         keyExpr: 'id',
         editing: {
             mode: "cell",

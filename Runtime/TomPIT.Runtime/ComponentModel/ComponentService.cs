@@ -8,6 +8,7 @@ using TomPIT.Annotations.Design;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Design.Serialization;
+using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
@@ -269,7 +270,7 @@ namespace TomPIT.ComponentModel
 				if (throwException)
 					throw ex;
 				else
-					Tenant.LogError(null, "Components", GetType().ShortName(), ex.Message);
+					Tenant.LogError(GetType().ShortName(), ex.Message, LogCategories.Services);
 			}
 
 			if (blob == null && Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
@@ -285,7 +286,7 @@ namespace TomPIT.ComponentModel
 					}
 					catch (Exception ex)
 					{
-						Tenant.LogWarning(null, "Components", GetType().ShortName(), ex.Message);
+						Tenant.LogWarning(GetType().ShortName(), ex.Message, LogCategories.Services);
 					}
 				}
 			}

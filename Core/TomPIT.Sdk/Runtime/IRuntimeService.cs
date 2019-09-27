@@ -26,7 +26,7 @@ namespace TomPIT.Runtime
 
 	public interface IRuntimeService
 	{
-		void Initialize(InstanceType type, IHostingEnvironment environment);
+		void Initialize(InstanceType type, IWebHostEnvironment environment);
 		string ContentRoot { get; }
 		string WebRoot { get; }
 		RuntimeEnvironment Environment { get; }

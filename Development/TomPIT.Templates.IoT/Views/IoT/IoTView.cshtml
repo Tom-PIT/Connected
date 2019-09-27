@@ -54,6 +54,6 @@
 
 	@if (bindings.Count > 0)
 	{
-		@:iot.registerBindings(@Html.Raw(SerializationExtensions.Serialize(bindings)))
+		@:iot.registerBindings(@Html.Raw(Serializer.Serialize(bindings)))
 	}
 </script>

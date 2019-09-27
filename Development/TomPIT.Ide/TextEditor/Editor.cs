@@ -12,7 +12,7 @@ namespace TomPIT.Ide.TextEditor
 	{
 		private Lazy<Dictionary<Type, IWorkspaceService>> _services = new Lazy<Dictionary<Type, IWorkspaceService>>();
 
-		public Editor(IMicroServiceContext context) : base(context)
+		protected Editor(IMicroServiceContext context) : base(context)
 		{
 
 		}

@@ -16,7 +16,10 @@ namespace TomPIT.Development.Analysis
 		}
 		protected override Task Process()
 		{
-			var tenants = Shell.GetService<IConnectivityService>().QueryTenants();
+			var tenants = Shell.GetService<IConnectivityService>()?.QueryTenants();
+
+			if (tenants == null)
+				return Task.CompletedTask;
 
 			Parallel.ForEach(tenants,
 				 (i) =>

@@ -3,6 +3,7 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
+using TomPIT.Models;
 
 namespace TomPIT.Compilation.Views
 {
@@ -36,7 +37,7 @@ namespace TomPIT.Compilation.Views
 
 		private string ResolveModel()
 		{
-			return "TomPIT.Models.IViewModel";
+			return typeof(IViewModel).Name;
 		}
 
 		public override string Result { get { return Builder.ToString(); } }

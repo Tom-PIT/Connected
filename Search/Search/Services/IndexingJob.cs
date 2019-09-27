@@ -65,7 +65,7 @@ namespace TomPIT.Search.Services
 
 			try
 			{
-				var arguments = SerializationExtensions.Deserialize<JObject>(request.Arguments);
+				var arguments = Serializer.Deserialize<JObject>(request.Arguments);
 				var verb = arguments.Required<SearchVerb>("verb");
 				var args = arguments.Optional("arguments", string.Empty);
 

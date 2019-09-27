@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using TomPIT.Environment;
 
 namespace TomPIT.Runtime
@@ -13,7 +14,7 @@ namespace TomPIT.Runtime
 		public EnvironmentStage Stage { get; set; }
 		public EnvironmentMode Mode { get; set; } = EnvironmentMode.Runtime;
 
-		public void Initialize(InstanceType type, IHostingEnvironment environment)
+		public void Initialize(InstanceType type, IWebHostEnvironment environment)
 		{
 			Type = type;
 			ContentRoot = environment.ContentRootPath;
@@ -51,9 +52,9 @@ namespace TomPIT.Runtime
 					break;
 			}
 
-			if (environment.IsEnvironment(EnvironmentName.Development))
+			if (environment.IsEnvironment(Environments.Development))
 				Stage = EnvironmentStage.Development;
-			else if (environment.IsEnvironment(EnvironmentName.Staging))
+			else if (environment.IsEnvironment(Environments.Staging))
 				Stage = EnvironmentStage.Staging;
 			else
 				Stage = EnvironmentStage.Production;

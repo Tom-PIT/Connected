@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -6,15 +6,12 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <RootNamespace>TomPIT.Api</RootNamespace>
     <AssemblyVersion>1.1.924.6</AssemblyVersion>
     <FileVersion>1.1.924.6</FileVersion>
     <Version>1.1.924.6</Version>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
     <ProjectReference Include="..\TomPIT.SysDb\TomPIT.SysDb.csproj" />

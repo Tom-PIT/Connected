@@ -60,7 +60,7 @@ namespace TomPIT.MicroServices.Design.Media
 
 					Arguments = string.IsNullOrEmpty(query)
 						? new Dictionary<string, string>()
-						: SerializationExtensions.Deserialize<Dictionary<string, string>>(query);
+						: Serializer.Deserialize<Dictionary<string, string>>(query);
 				}
 			}
 			else
@@ -125,7 +125,7 @@ namespace TomPIT.MicroServices.Design.Media
 
 			Arguments = string.IsNullOrEmpty(query)
 				? new Dictionary<string, string>()
-				: SerializationExtensions.Deserialize<Dictionary<string, string>>(query);
+				: Serializer.Deserialize<Dictionary<string, string>>(query);
 
 			return true;
 		}
@@ -134,7 +134,7 @@ namespace TomPIT.MicroServices.Design.Media
 		{
 			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
 
-			var metaData = SerializationExtensions.Deserialize<ChunkMetaData>(Arguments["chunkMetadata"]);
+			var metaData = Serializer.Deserialize<ChunkMetaData>(Arguments["chunkMetadata"]);
 			var files = Context.Request.Form.Files;
 
 			if (files.Count == 0)
@@ -866,7 +866,7 @@ namespace TomPIT.MicroServices.Design.Media
 				a.Add(o);
 			}
 
-			var content = Encoding.UTF8.GetBytes(SerializationExtensions.Serialize(r));
+			var content = Encoding.UTF8.GetBytes(Serializer.Serialize(r));
 
 			Context.Response.ContentLength = content.Length;
 			Context.Response.Body.Write(content, 0, content.Length);
@@ -887,7 +887,7 @@ namespace TomPIT.MicroServices.Design.Media
 			if (ex != ExceptionKind.None)
 				r.Add("errorId", (int)ex);
 
-			var content = Encoding.UTF8.GetBytes(SerializationExtensions.Serialize(r));
+			var content = Encoding.UTF8.GetBytes(Serializer.Serialize(r));
 
 			Context.Response.ContentLength = content.Length;
 			Context.Response.Body.Write(content, 0, content.Length);

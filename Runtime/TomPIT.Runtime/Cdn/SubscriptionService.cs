@@ -59,7 +59,7 @@ namespace TomPIT.Cdn
 				e.Add("topic", topic);
 
 			if (arguments != null)
-				e.Add("arguments", SerializationExtensions.Serialize(arguments));
+				e.Add("arguments", Serializer.Serialize(arguments));
 
 			Tenant.Post(u, e);
 		}

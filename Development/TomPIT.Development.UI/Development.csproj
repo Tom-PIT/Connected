@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -6,7 +6,8 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.Development</RootNamespace>
     <AssemblyName>TomPIT.Experience.Development</AssemblyName>
     <AssemblyVersion>1.1.924.6</AssemblyVersion>
@@ -28,22 +29,21 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="lz4net" Version="1.0.15.93" />
-    <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="BuildBundlerMinifier" Version="2.9.406" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="1.1.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.10.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.10.0" />
+    <PackageReference Include="BuildBundlerMinifier" Version="3.0.415" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="3.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.3.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.3.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Extensions" Version="1.0.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="2.10.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="2.10.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.10.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="2.10.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" Version="2.10.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
-    <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
-    <PackageReference Include="System.ServiceModel.Primitives" Version="4.5.3" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="3.3.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.3.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.3.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="3.3.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" Version="3.3.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.6.0" />
+    <PackageReference Include="System.Drawing.Common" Version="4.6.0" />
+    <PackageReference Include="System.ServiceModel.Primitives" Version="4.6.0" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Views\Ide\Designers\Text.cshtml">

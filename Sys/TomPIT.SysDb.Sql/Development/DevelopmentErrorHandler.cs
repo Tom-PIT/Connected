@@ -49,7 +49,7 @@ namespace TomPIT.SysDb.Sql.Development
 				if (error.Element != Guid.Empty)
 					je.Add("element", error.Element);
 
-				if (error.Code > 0)
+				if (!string.IsNullOrWhiteSpace(error.Code))
 					je.Add("code", error.Code);
 
 				a.Add(je);

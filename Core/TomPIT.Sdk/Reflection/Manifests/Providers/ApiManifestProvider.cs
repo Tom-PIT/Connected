@@ -83,7 +83,7 @@ namespace TomPIT.Reflection.Manifests.Providers
 					BindType(root, returnType, om.ReturnType);
 				}
 			}
-			else if (operationType is IAsyncOperation)
+			else if (operationType is IDistributedOperation)
 				om.Async = true;
 		}
 

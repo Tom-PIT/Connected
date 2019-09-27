@@ -34,7 +34,7 @@ namespace TomPIT.Middleware.Services
 
 		}
 
-		public void Error(string category, string source, string message)
+		public void Error(string source, string message, string category)
 		{
 			Write(new LogEntry
 			{
@@ -46,7 +46,7 @@ namespace TomPIT.Middleware.Services
 			});
 		}
 
-		public void Info(string category, string source, string message)
+		public void Info(string source, string message, string category)
 		{
 			Write(new LogEntry
 			{
@@ -58,7 +58,7 @@ namespace TomPIT.Middleware.Services
 			});
 		}
 
-		public void Warning(string category, string source, string message)
+		public void Warning(string source, string message, string category)
 		{
 			Write(new LogEntry
 			{
@@ -88,7 +88,7 @@ namespace TomPIT.Middleware.Services
 			if (!metric.Enabled)
 				return Guid.Empty;
 
-			var content = args == null ? string.Empty : SerializationExtensions.Serialize(args);
+			var content = args == null ? string.Empty : Serializer.Serialize(args);
 			var length = content.Length;
 			var id = Guid.NewGuid();
 
@@ -115,7 +115,7 @@ namespace TomPIT.Middleware.Services
 			if (metricId == Guid.Empty)
 				return;
 
-			var content = args == null ? string.Empty : SerializationExtensions.Serialize(args);
+			var content = args == null ? string.Empty : Serializer.Serialize(args);
 			var length = content.Length;
 
 			if (Metric.TryRemove(metricId, out Metric m))

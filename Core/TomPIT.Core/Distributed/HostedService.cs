@@ -10,6 +10,7 @@ namespace TomPIT.Distributed
 		private Task _executingTask = null;
 		private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
 
+		protected bool Initialized { get; private set; }
 		public virtual Task StartAsync(CancellationToken cancellationToken)
 		{
 			_executingTask = ExecuteAsync(_cancel.Token);
@@ -41,7 +42,11 @@ namespace TomPIT.Distributed
 			{
 				try
 				{
-					await Process();
+					if (!Initialized)
+						Initialized = Initialize();
+
+					if (Initialized)
+						await Process();
 				}
 				catch
 				{
@@ -51,6 +56,11 @@ namespace TomPIT.Distributed
 				await Task.Delay(IntervalTimeout, stoppingToken);
 			}
 			while (!stoppingToken.IsCancellationRequested);
+		}
+
+		protected virtual bool Initialize()
+		{
+			return true;
 		}
 
 		protected abstract Task Process();

@@ -307,14 +307,14 @@ namespace TomPIT.Reflection
 		{
 			var converter = new Newtonsoft.Json.Converters.ExpandoObjectConverter();
 
-			return JsonConvert.DeserializeObject<ExpandoObject>(SerializationExtensions.Serialize(value), converter);
+			return JsonConvert.DeserializeObject<ExpandoObject>(Serializer.Serialize(value), converter);
 		}
 
 		public static dynamic ToDynamic(this JArray value)
 		{
 			var converter = new Newtonsoft.Json.Converters.ExpandoObjectConverter();
 
-			return JsonConvert.DeserializeObject<ExpandoObject>(SerializationExtensions.Serialize(value), converter);
+			return JsonConvert.DeserializeObject<ExpandoObject>(Serializer.Serialize(value), converter);
 		}
 
 		public static string ScriptTypeName(this Type type)

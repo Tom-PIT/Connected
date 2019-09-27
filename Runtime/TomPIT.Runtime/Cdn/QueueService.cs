@@ -29,7 +29,7 @@ namespace TomPIT.Cdn
 			};
 
 			if (arguments != null)
-				e.Add("arguments", SerializationExtensions.Serialize(arguments));
+				e.Add("arguments", Serializer.Serialize(arguments));
 
 			Tenant.Post(url, e);
 		}

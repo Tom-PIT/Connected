@@ -32,7 +32,7 @@
 		keyExpr: 'value',
 		valueExpr: 'value',
 		displayExpr:'text',
-		dataSource: @Html.Raw(TomPIT.Serialization.SerializationExtensions.Serialize(Model.Suites)),
+		dataSource: @Html.Raw(TomPIT.Serialization.Serializer.Serialize(Model.Suites)),
 		selectionMode: 'single',
 		grouped: true,
 		collapsibleGroups:true,

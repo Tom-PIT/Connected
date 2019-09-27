@@ -32,7 +32,7 @@ namespace TomPIT.Data
 					if (!(record is JObject row))
 						continue;
 
-					var instance = SerializationExtensions.Deserialize<T>(SerializationExtensions.Serialize(record));
+					var instance = Serializer.Deserialize<T>(Serializer.Serialize(record));
 
 					if (instance is IDataEntity entity)
 						entity.DataSource(row);
@@ -76,7 +76,7 @@ namespace TomPIT.Data
 					return Types.Convert<T>(property.Value);
 				}
 
-				return SerializationExtensions.Deserialize<T>(SerializationExtensions.Serialize(row));
+				return Serializer.Deserialize<T>(Serializer.Serialize(row));
 			}
 			finally
 			{

@@ -2,7 +2,7 @@
 
 namespace TomPIT.Middleware.Interop
 {
-	public abstract class AsyncOperationModel<TModel> : AsyncOperation, IOperationModel<TModel> where TModel : class
+	public abstract class AsyncOperationModel<TModel> : DistributedOperation, IOperationModel<TModel> where TModel : class
 	{
 		private TModel _model = default;
 		protected AsyncOperationModel(string asyncPath) : base(asyncPath)

@@ -30,7 +30,7 @@ namespace TomPIT.MicroServices.BigData
 			};
 		}
 
-		public void Initialize(IApplicationBuilder app, IHostingEnvironment env)
+		public void Initialize(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 
 		}

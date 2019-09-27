@@ -56,7 +56,7 @@ namespace TomPIT.MicroServices.Reporting.Runtime.Configuration
 			};
 		}
 
-		public void Initialize(IApplicationBuilder app, IHostingEnvironment env)
+		public void Initialize(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime)
 				DevExpress.XtraReports.Web.Extensions.ReportStorageWebExtension.RegisterExtensionGlobal(new ReportRuntimeStorage());

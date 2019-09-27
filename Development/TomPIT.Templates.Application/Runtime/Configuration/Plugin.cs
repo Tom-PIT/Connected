@@ -24,7 +24,7 @@ namespace TomPIT.MicroServices.Runtime.Configuration
 			return new List<string>();
 		}
 
-		public void Initialize(IApplicationBuilder app, IHostingEnvironment env)
+		public void Initialize(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 
 		}
