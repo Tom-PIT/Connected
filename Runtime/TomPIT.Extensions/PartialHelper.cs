@@ -8,6 +8,7 @@ using TomPIT.ComponentModel.UI;
 using TomPIT.Models;
 using TomPIT.Serialization;
 using TomPIT.UI;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT
 {
@@ -17,7 +18,7 @@ namespace TomPIT
 		{
 		}
 
-		public async Task<IHtmlContent> Render(string name)
+		public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)]string name)
 		{
 			ProcessView(name);
 
@@ -25,7 +26,7 @@ namespace TomPIT
 		}
 
 
-		public async Task<IHtmlContent> Render(string name, object arguments)
+		public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)]string name, object arguments)
 		{
 			var a = arguments == null ? null : Serializer.Deserialize<JObject>(arguments);
 
@@ -37,7 +38,7 @@ namespace TomPIT
 			return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), Html.ViewData.Model);
 		}
 
-		public async Task<IHtmlContent> Render(string name, JObject arguments)
+		public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)]string name, JObject arguments)
 		{
 			if (arguments != null && Html.ViewData.Model is IRuntimeModel rtModel)
 				rtModel.MergeArguments(arguments);

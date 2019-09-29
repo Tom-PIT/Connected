@@ -193,9 +193,13 @@
                                 text: model.getValue()
                             },
                             onComplete: function (data) {
-                                data.dispose = function () { };
+                                if (data) {
+                                    data.dispose = function () { };
 
-                                resolve(data);
+                                    resolve(data);
+                                }
+                                else
+                                    reject();
                             }
 
                         }, false);

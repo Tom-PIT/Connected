@@ -108,7 +108,7 @@ namespace TomPIT.App.UI
 					if (Shell.HttpContext.Response.StatusCode != (int)HttpStatusCode.OK)
 						return;
 				}
-
+				model.ActionContext.RouteData.Values.Add("Action", name);
 				var viewEngineResult = Engine.FindView(model.ActionContext, name, false);
 
 				if (!viewEngineResult.Success)
@@ -132,7 +132,7 @@ namespace TomPIT.App.UI
 				var buffer = Encoding.UTF8.GetBytes(content);
 
 				if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
-					Context.Response.Body.Write(buffer, 0, buffer.Length);
+					Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
 			}
 			finally
 			{
@@ -149,6 +149,8 @@ namespace TomPIT.App.UI
 
 			if (view == null)
 				return null;
+
+			ac.ActionDescriptor.Properties.Add("viewKind", ViewKind.View);
 
 			var vi = new ViewInfo(string.Format("/Views/{0}.cshtml", path), ac);
 			var ms = vi.ViewComponent == null ? null : Instance.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);

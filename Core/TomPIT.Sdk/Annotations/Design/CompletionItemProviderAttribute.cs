@@ -7,6 +7,7 @@ namespace TomPIT.Annotations.Design
 	{
 		public const string ConnectionProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.ConnectionCompletionProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string SiteMapViewUrlProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.SiteMapViewUrlCompletionProvider, " + SystemAssemblies.DevelopmentAssembly;
+		public const string PartialProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.PartialCompletionProvider, " + SystemAssemblies.DevelopmentAssembly;
 
 		public CompletionItemProviderAttribute() { }
 

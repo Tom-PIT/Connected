@@ -52,7 +52,7 @@ namespace TomPIT.Compilation.Views
 
 		protected void AppendBaseType(StringBuilder builder)
 		{
-			AppendBaseType(builder, "TomPIT.App.UI.ViewBase");
+			AppendBaseType(builder, "TomPIT.Runtime.UI.ViewBase");
 		}
 
 		protected void AddTagHelpers(StringBuilder builder)

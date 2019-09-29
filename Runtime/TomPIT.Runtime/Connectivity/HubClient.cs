@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Logging;
 
 namespace TomPIT.Connectivity
 {
@@ -32,6 +33,10 @@ namespace TomPIT.Connectivity
 
 				f.Headers.Add("TomPITInstanceId", Instance.Id.ToString());
 
+			}).ConfigureLogging((o) =>
+			{
+				o.AddDebug();
+				o.SetMinimumLevel(LogLevel.Debug);
 			}).Build();
 
 			Initialize();
@@ -63,7 +68,7 @@ namespace TomPIT.Connectivity
 					if (Hub == null)
 						return;
 
-					Hub.InvokeAsync("Heartbeat");
+					Hub.InvokeAsync("Heartbeat").Wait();
 				}
 				finally
 				{

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
-using TomPIT.Ide.TextEditor.CSharp.Services.CompletionProviders;
-using TomPIT.Ide.TextEditor.Languages;
+using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
+using TomPIT.Ide.TextServices.Languages;
 
 namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 {
@@ -11,14 +11,14 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 		protected override List<ICompletionItem> OnProvideItems()
 		{
 			var result = new List<ICompletionItem>();
-			var configs = Editor.Context.Tenant.GetService<IComponentService>().QueryConfigurations(Editor.MicroService.Token, ComponentCategories.View);
+			var configs = Editor.Context.Tenant.GetService<IComponentService>().QueryConfigurations(Editor.Context.MicroService.Token, ComponentCategories.View);
 
 			foreach (var config in configs)
 			{
 				if (!(config is IViewConfiguration view) || string.IsNullOrWhiteSpace(view.Url))
 					continue;
 
-				var viewName = $"{Editor.MicroService.Name}/{view.ComponentName()}";
+				var viewName = $"{Editor.Context.MicroService.Name}/{view.ComponentName()}";
 
 				result.Add(new CompletionItem
 				{

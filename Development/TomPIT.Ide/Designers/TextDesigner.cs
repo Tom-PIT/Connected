@@ -12,9 +12,9 @@ using TomPIT.Ide.Analysis.Lenses;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
-using TomPIT.Ide.TextEditor;
-using TomPIT.Ide.TextEditor.Languages;
-using TomPIT.Ide.TextEditor.Services;
+using TomPIT.Ide.TextServices;
+using TomPIT.Ide.TextServices.Languages;
+using TomPIT.Ide.TextServices.Services;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Serialization;
@@ -190,7 +190,7 @@ namespace TomPIT.Ide.Designers
 
 		private ITextEditor GetTextEditor(ITextModel model, string text)
 		{
-			var editor = Environment.Context.Tenant.GetService<ITextEditorService>().GetEditor(new MicroServiceContext(ResolveMicroService(model.Uri), Environment.Context.Tenant.Url), Language);
+			var editor = Environment.Context.Tenant.GetService<ITextService>().GetEditor(new MicroServiceContext(ResolveMicroService(model.Uri), Environment.Context.Tenant.Url), Language);
 
 			if (editor == null)
 				return null;
@@ -211,18 +211,18 @@ namespace TomPIT.Ide.Designers
 			return r;
 		}
 
-		private TextEditor.IRange DeserializeRange(JObject data)
+		private TextServices.IRange DeserializeRange(JObject data)
 		{
-			var r = new TextEditor.Range();
+			var r = new TextServices.Range();
 
 			Serializer.Populate(data, r);
 
 			return r;
 		}
 
-		private TextEditor.IPosition DeserializePosition(JObject data)
+		private TextServices.IPosition DeserializePosition(JObject data)
 		{
-			var r = new TextEditor.Position();
+			var r = new TextServices.Position();
 
 			Serializer.Populate(data, r);
 
@@ -403,7 +403,7 @@ namespace TomPIT.Ide.Designers
 
 		public LanguageFeature SupportedFeatures(string language, IMicroService microService)
 		{
-			using (var editor = Environment.Context.Tenant.GetService<ITextEditorService>().GetEditor(new MicroServiceContext(microService, Environment.Context.Tenant.Url), language))
+			using (var editor = Environment.Context.Tenant.GetService<ITextService>().GetEditor(new MicroServiceContext(microService, Environment.Context.Tenant.Url), language))
 			{
 
 				if (editor == null)

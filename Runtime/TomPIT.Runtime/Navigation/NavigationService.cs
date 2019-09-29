@@ -22,17 +22,17 @@ namespace TomPIT.Navigation
 		{
 		}
 
-		protected override void OnChanged(Guid component)
+		protected override void OnChanged(Guid microService, Guid component)
 		{
 			RefreshNavigation(component);
 		}
 
-		protected override void OnAdded(Guid component)
+		protected override void OnAdded(Guid microService, Guid component)
 		{
 			RefreshNavigation(component);
 		}
 
-		protected override void OnRemoved(Guid component)
+		protected override void OnRemoved(Guid microService, Guid component)
 		{
 			RefreshNavigation(component, true);
 		}

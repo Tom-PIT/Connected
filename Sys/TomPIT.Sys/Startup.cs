@@ -39,10 +39,13 @@ namespace TomPIT.Sys
 
 			});
 
+			services.AddAuthorization();
+
 			services.AddSignalR(o =>
 			{
 				o.EnableDetailedErrors = true;
 			});
+
 
 			RegisterTasks(services);
 
@@ -62,7 +65,12 @@ namespace TomPIT.Sys
 				//app.UseExceptionHandler();
 			}
 
-			app.UseSignalR(routes =>
+			app.UseStaticFiles();
+			app.UseRouting();
+			app.UseAuthentication();
+			app.UseAuthorization();
+
+			app.UseEndpoints(routes =>
 			{
 				routes.MapHub<CacheHub>("/caching");
 				routes.MapHub<IoTHub>("/iot");
@@ -75,7 +83,6 @@ namespace TomPIT.Sys
 				routes.MapRoute("default", "{controller}/{action}");
 			});
 
-			app.UseAuthentication();
 
 			ServerConfiguration.Initialize();
 			Shell.Configure(app);

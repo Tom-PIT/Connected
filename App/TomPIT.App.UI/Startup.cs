@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,11 +9,11 @@ using TomPIT.App.Globalization;
 using TomPIT.App.Resources;
 using TomPIT.App.Routing;
 using TomPIT.App.UI;
-using TomPIT.App.UI.Theming;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
 using TomPIT.Runtime;
 using TomPIT.UI;
+using TomPIT.UI.Theming;
 
 namespace TomPIT.App
 {
@@ -48,15 +47,18 @@ namespace TomPIT.App
 			services.AddScoped<IViewEngine, ViewEngine>();
 			services.AddScoped<IMailTemplateViewEngine, MailTemplateViewEngine>();
 
-			services.Configure<MvcRazorRuntimeCompilationOptions>(opts =>
-				opts.FileProviders.Add(new ViewProvider())
-			);
 
 			services.Configure<RazorViewEngineOptions>(opts =>
 			{
 				opts.ViewLocationExpanders.Add(new ViewLocationExpander());
 			}
 			);
+
+			Instance._mvcBuilder.AddRazorRuntimeCompilation(
+						(opts) =>
+						{
+							opts.FileProviders.Add(new ViewProvider());
+						});
 		}
 
 

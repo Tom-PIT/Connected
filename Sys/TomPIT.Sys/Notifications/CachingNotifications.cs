@@ -17,7 +17,7 @@ namespace TomPIT.Sys.Notifications
 	{
 		internal static IHubContext<CacheHub> Cache { get; set; }
 
-		private static async void Notify<T>(string method, T e)
+		private static void Notify<T>(string method, T e)
 		{
 			var args = new MessageEventArgs<T>(Guid.NewGuid(), e);
 
@@ -35,9 +35,9 @@ namespace TomPIT.Sys.Notifications
 				var sender = SysExtensions.RequestConnectionId("cache");
 
 				if (string.IsNullOrWhiteSpace(sender))
-					await Cache.Clients.All.SendAsync(method, args);
+					Cache.Clients.All.SendAsync(method, args).Wait();
 				else
-					await Cache.Clients.AllExcept(sender).SendAsync(method, args);
+					Cache.Clients.AllExcept(sender).SendAsync(method, args).Wait();
 			}
 		}
 

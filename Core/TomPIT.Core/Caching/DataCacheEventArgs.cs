@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace TomPIT.Caching
 {
 	public class DataCacheEventArgs : EventArgs
 	{
+		public DataCacheEventArgs()
+		{
+
+		}
 		public DataCacheEventArgs(string key, List<string> ids)
 		{
 			Key = key;
@@ -17,7 +20,7 @@ namespace TomPIT.Caching
 			Key = key;
 		}
 
-		public List<string> Ids { get; }
-		public string Key { get; }
+		public List<string> Ids { get; set; }
+		public string Key { get; set; }
 	}
 }

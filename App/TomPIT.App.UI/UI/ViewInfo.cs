@@ -237,6 +237,9 @@ namespace TomPIT.App.UI
 
 		private void LoadView(ActionContext context)
 		{
+			if (Instance.Tenant == null)
+				return;
+
 			var view = Instance.Tenant.GetService<IViewService>().Select(Path, context);
 
 			Exists = view != null;

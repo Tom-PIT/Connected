@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using TomPIT.ComponentModel;
-using TomPIT.Ide.TextEditor.CSharp.Services.CompletionProviders;
-using TomPIT.Ide.TextEditor.Languages;
+using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
+using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Reflection;
 
 namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
@@ -16,11 +16,11 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 		{
 			var items = new List<ICompletionItem>();
 
-			ProvideItems(items, Editor.MicroService.Token);
+			ProvideItems(items, Editor.Context.MicroService.Token);
 
 			if (IncludeReferences)
 			{
-				var references = Editor.Context.Tenant.GetService<IDiscoveryService>().References(Editor.MicroService.Token);
+				var references = Editor.Context.Tenant.GetService<IDiscoveryService>().References(Editor.Context.MicroService.Token);
 
 				if (references == null || references.MicroServices.Count == 0)
 					return items;
@@ -45,7 +45,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 			foreach (var i in components)
 			{
-				var text = $"{Editor.MicroService.Name}/{i.Name}";
+				var text = $"{Editor.Context.MicroService.Name}/{i.Name}";
 
 				items.Add(new CompletionItem
 				{

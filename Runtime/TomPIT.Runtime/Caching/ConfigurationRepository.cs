@@ -20,17 +20,17 @@ namespace TomPIT.Services
 
 		protected abstract string[] Categories { get; }
 
-		protected virtual void OnAdded(Guid component)
+		protected virtual void OnAdded(Guid microService, Guid component)
 		{
 
 		}
 
-		protected virtual void OnChanged(Guid component)
+		protected virtual void OnChanged(Guid microService, Guid component)
 		{
 
 		}
 
-		protected virtual void OnRemoved(Guid component)
+		protected virtual void OnRemoved(Guid microService, Guid component)
 		{
 
 		}
@@ -41,7 +41,7 @@ namespace TomPIT.Services
 				return;
 
 			Refresh(e.Component);
-			OnChanged(e.Component);
+			OnChanged(e.MicroService, e.Component);
 		}
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
@@ -54,7 +54,7 @@ namespace TomPIT.Services
 			foreach (var i in views)
 			{
 				Set(i.Component, i as T, TimeSpan.Zero);
-				OnChanged(i.Component);
+				OnChanged(e.MicroService, i.Component);
 			}
 		}
 
@@ -64,7 +64,7 @@ namespace TomPIT.Services
 				return;
 
 			Remove(e.Component);
-			OnRemoved(e.Component);
+			OnRemoved(e.MicroService, e.Component);
 		}
 
 		private void OnConfigurationAdded(ITenant sender, ConfigurationEventArgs e)
@@ -73,7 +73,7 @@ namespace TomPIT.Services
 				return;
 
 			Refresh(e.Component);
-			OnAdded(e.Component);
+			OnAdded(e.MicroService, e.Component);
 		}
 
 		private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
@@ -82,7 +82,7 @@ namespace TomPIT.Services
 				return;
 
 			Refresh(e.Component);
-			OnChanged(e.Component);
+			OnChanged(e.MicroService, e.Component);
 		}
 
 		private bool IsTargetCategory(string category)
@@ -106,7 +106,7 @@ namespace TomPIT.Services
 					continue;
 
 				Set(i.Component, i as T, TimeSpan.Zero);
-				OnChanged(i.Component);
+				OnChanged(i.MicroService(), i.Component);
 			}
 		}
 
@@ -115,12 +115,14 @@ namespace TomPIT.Services
 			if (Tenant.GetService<IComponentService>().SelectConfiguration(id) is T config)
 			{
 				Set(config.Component, config, TimeSpan.Zero);
-				OnChanged(id);
+				OnChanged(config.MicroService(), id);
 			}
 			else
 			{
+				var existing = Get(id);
+
 				Remove(id);
-				OnRemoved(id);
+				OnRemoved(existing == null ? Guid.Empty : existing.MicroService(), id);
 			}
 		}
 	}

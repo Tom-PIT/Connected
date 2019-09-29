@@ -38,7 +38,7 @@ namespace TomPIT
 
 	public static class Instance
 	{
-		private static IMvcBuilder _mvcBuilder = null;
+		public static IMvcBuilder _mvcBuilder = null;
 		private static List<IPlugin> _plugins = null;
 		internal static RequestLocalizationOptions RequestLocalizationOptions { get; private set; }
 
@@ -85,7 +85,8 @@ namespace TomPIT
 				e.ConfigureMvc?.Invoke(o);
 
 				o.Filters.Add(new AuthenticationCookieFilter());
-			}).ConfigureApplicationPartManager((m) =>
+			}).AddNewtonsoftJson()
+			.ConfigureApplicationPartManager((m) =>
 			{
 				var pa = new ApplicationPartsArgs();
 

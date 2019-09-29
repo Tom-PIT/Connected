@@ -4,6 +4,10 @@ namespace TomPIT.Storage
 {
 	public class BlobEventArgs : EventArgs
 	{
+		public BlobEventArgs()
+		{
+
+		}
 		public BlobEventArgs(Guid microService, Guid blob, int type, string primaryKey)
 		{
 			MicroService = microService;
@@ -12,9 +16,9 @@ namespace TomPIT.Storage
 			Type = type;
 		}
 
-		public Guid MicroService { get; }
-		public Guid Blob { get; }
-		public int Type { get; }
-		public string PrimaryKey { get; }
+		public Guid MicroService { get; set; }
+		public Guid Blob { get; set; }
+		public int Type { get; set; }
+		public string PrimaryKey { get; set; }
 	}
 }

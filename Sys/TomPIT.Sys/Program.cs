@@ -12,6 +12,11 @@ namespace TomPIT.Sys
 
 		public static IHostBuilder CreateHostBuilder(string[] args) =>
 			 Host.CreateDefaultBuilder(args)
+				  //.ConfigureLogging(logging =>
+				  //{
+				  //	logging.AddFilter("Microsoft.AspNetCore.SignalR", LogLevel.Debug);
+				  //	logging.AddFilter("Microsoft.AspNetCore.Http.Connections", LogLevel.Debug);
+				  //})
 				  .ConfigureWebHostDefaults(webBuilder =>
 				  {
 					  webBuilder.UseStartup<Startup>();

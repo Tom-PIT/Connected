@@ -253,23 +253,33 @@ namespace TomPIT.Sys.Data
 
 		public List<IComponent> Query(string resourceGroups, string categories)
 		{
-			var tokens = resourceGroups.Split(',');
+			var tokens = string.IsNullOrWhiteSpace(resourceGroups) ? new string[] { } : resourceGroups.Split(',');
 			var cats = categories.Split(',');
 
 			var r = new List<IComponent>();
 			var microServices = new List<IMicroService>();
 
-			foreach (var i in tokens)
+			if (tokens.Length == 0)
 			{
-				var rs = DataModel.ResourceGroups.Select(i);
+				var ms = DataModel.MicroServices.Query();
 
-				if (rs == null)
-					throw new SysException(string.Format("{0} ({1})", SR.ErrResourceGroupNotFound, i));
+				if (ms != null && ms.Count > 0)
+					microServices.AddRange(ms);
+			}
+			else
+			{
+				foreach (var i in tokens)
+				{
+					var rs = DataModel.ResourceGroups.Select(i);
 
-				var sols = DataModel.MicroServices.Query(rs.Token);
+					if (rs == null)
+						throw new SysException(string.Format("{0} ({1})", SR.ErrResourceGroupNotFound, i));
 
-				if (sols.Count > 0)
-					microServices.AddRange(sols);
+					var sols = DataModel.MicroServices.Query(rs.Token);
+
+					if (sols.Count > 0)
+						microServices.AddRange(sols);
+				}
 			}
 
 			foreach (var i in microServices)
