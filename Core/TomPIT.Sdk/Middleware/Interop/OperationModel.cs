@@ -11,7 +11,12 @@ namespace TomPIT.Middleware.Interop
 			get
 			{
 				if (_model == default)
-					_model = typeof(TModel).CreateInstance<TModel>(new object[] { Context });
+				{
+					_model = typeof(TModel).CreateInstance<TModel>();
+
+					if (_model is IMiddlewareObject mo)
+						mo.SetContext(Context);
+				}
 
 				return _model;
 			}

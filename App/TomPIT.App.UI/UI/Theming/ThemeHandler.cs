@@ -42,7 +42,7 @@ namespace TomPIT.App.UI.Theming
 				var buffer = Encoding.UTF8.GetBytes(theme);
 
 				Context.Response.ContentLength = buffer.Length;
-				Context.Response.Body.Write(buffer, 0, buffer.Length);
+				Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
 			}
 		}
 	}

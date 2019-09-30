@@ -72,22 +72,41 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 
 			var node = Arguments.Model.SyntaxTree.GetRoot().FindNode(span);
 			var type = CSharpQuery.ResolveTypeInfo(Arguments.Model, node);
+			var typeNames = new List<string>();
 
-			if (type.Type == null)
-				return null;
+			if (type.Type != null)
+				typeNames.Add(type.Type.MetadataName);
 
-			var typeName = type.Type.MetadataName;
-			var editor = Arguments.Editor as CSharpEditor;
+			if (node.IsInAttribute())
+			{
+				var attributeName = node.EnclosingAttributeName();
+
+				if (!attributeName.EndsWith("Attribute"))
+					attributeName += "Attribute";
+
+				if (!typeNames.Contains(attributeName))
+					typeNames.Add(attributeName);
+			}
+
 			var references = AssemblyReferenceResolver.ResolveReferences(Arguments.Model.Compilation);
-			var types = CSharpReflection.ResolveTypes(references, typeName);
 			var result = new List<ICodeAction>();
 
-			foreach (var t in types)
+			foreach (var typeName in typeNames)
 			{
-				if (string.Compare(t.Name, typeName, false) == 0)
-					result.Add(CreateUsing(marker, t.Namespace));
-				else
-					result.Add(CreateUsingAndChange(marker, t));
+				var types = CSharpReflection.ResolveTypes(references, typeName);
+
+				foreach (var t in types)
+				{
+					ICodeAction action = null;
+
+					if (string.Compare(t.Name, typeName, false) == 0)
+						action = CreateUsing(marker, t.Namespace);
+					else
+						action = CreateUsingAndChange(marker, t);
+
+					if (result.FirstOrDefault(f => string.Compare(f.Title, action.Title, false) == 0) == null)
+						result.Add(action);
+				}
 			}
 
 			return result;

@@ -68,7 +68,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 
 			var htmlDocument = parser.ParseDocument(Editor.Text);
 			var sourceText = SourceText.From(Editor.Text);
-			var caret = sourceText.GetPosition(Arguments.Position, OffsetDirection.Up);
+			var caret = sourceText.GetCaret(Arguments.Position, OffsetDirection.Up);
 
 			(IElement element, HtmlAttributeToken attribute) = FindAttributeAtPosition(htmlDocument, caret);
 

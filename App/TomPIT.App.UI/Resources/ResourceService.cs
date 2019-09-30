@@ -15,7 +15,7 @@ namespace TomPIT.App.Resources
 {
 	internal class ResourceService : ClientRepository<CompiledBundle, string>, IResourceService
 	{
-		public ResourceService(Tenant tenant) : base(tenant, "bundle")
+		public ResourceService(ITenant tenant) : base(tenant, "bundle")
 		{
 			tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
 			tenant.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
@@ -78,7 +78,7 @@ namespace TomPIT.App.Resources
 
 			var svc = Tenant.GetService<IComponentService>();
 
-			var c = svc.SelectComponent(ms.Token, "Bundle", name);
+			var c = svc.SelectComponent(ms.Token, ComponentCategories.ScriptBundle, name);
 
 			if (c == null)
 				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrBundleNotFound, name));

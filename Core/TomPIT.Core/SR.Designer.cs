@@ -583,6 +583,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Api double qualification is allowed if passed context is IMicroServiceContext. Please use triple qualifier or pass a IMicroServiceContext as a parameter..
+        /// </summary>
+        public static string ErrApiDoubleQualifier {
+            get {
+                return ResourceManager.GetString("ErrApiDoubleQualifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Api operation accepts GET requests only..
         /// </summary>
         public static string ErrApiOperationProtocolGetOnly {
@@ -1596,6 +1605,15 @@ namespace TomPIT {
         public static string ErrMicroServiceContextExpected {
             get {
                 return ResourceManager.GetString("ErrMicroServiceContextExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Micro service expected.
+        /// </summary>
+        public static string ErrMicroServiceExpected {
+            get {
+                return ResourceManager.GetString("ErrMicroServiceExpected", resourceCulture);
             }
         }
         

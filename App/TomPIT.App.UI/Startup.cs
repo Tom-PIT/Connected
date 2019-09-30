@@ -54,7 +54,7 @@ namespace TomPIT.App
 			}
 			);
 
-			Instance._mvcBuilder.AddRazorRuntimeCompilation(
+			Instance.Mvc.AddRazorRuntimeCompilation(
 						(opts) =>
 						{
 							opts.FileProviders.Add(new ViewProvider());

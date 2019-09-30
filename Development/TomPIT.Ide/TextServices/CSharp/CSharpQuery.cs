@@ -11,6 +11,30 @@ namespace TomPIT.Ide.TextServices.CSharp
 {
 	public static class CSharpQuery
 	{
+		public static T Closest<T>(this SyntaxNode node) where T : SyntaxNode
+		{
+			if (node == null)
+				return default;
+
+			if (node is T)
+				return (T)node;
+
+			return Closest<T>(node.Parent);
+		}
+		public static bool IsInAttribute(this SyntaxNode node)
+		{
+			return node.Closest<AttributeSyntax>() != null;
+		}
+
+		public static string EnclosingAttributeName(this SyntaxNode node)
+		{
+			var syntax = node.Closest<AttributeSyntax>();
+
+			if (syntax == null)
+				return default;
+
+			return !(syntax.Name is IdentifierNameSyntax name) ? null : name.Identifier.ValueText;
+		}
 		public static Microsoft.CodeAnalysis.TypeInfo ResolveMemberAccessTypeInfo(SemanticModel model, SyntaxNode node)
 		{
 			var member = node.FirstAncestorOrSelf<MemberAccessExpressionSyntax>();

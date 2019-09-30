@@ -7,7 +7,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 	{
 		protected override List<ICompletionItem> OnProvideItems()
 		{
-			var position = Editor.Document.GetPosition(Arguments.Position);
+			var position = Editor.Document.GetCaret(Arguments.Position);
 			var result = new List<ICompletionItem>();
 			var service = Microsoft.CodeAnalysis.Completion.CompletionService.GetService(Editor.Document);
 			var completions = service.GetCompletionsAsync(Editor.Document, position).Result;

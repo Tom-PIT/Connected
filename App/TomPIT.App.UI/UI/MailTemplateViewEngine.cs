@@ -61,7 +61,7 @@ namespace TomPIT.App.UI
 			var buffer = Encoding.UTF8.GetBytes(content);
 
 			if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
-				Context.Response.Body.Write(buffer, 0, buffer.Length);
+				Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
 		}
 
 		private JObject Body { get; set; }

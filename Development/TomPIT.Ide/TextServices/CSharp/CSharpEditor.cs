@@ -12,12 +12,14 @@ namespace TomPIT.Ide.TextServices.CSharp
 			Services.TryAdd(typeof(ICodeActionService), new CodeActionService(this));
 			Services.TryAdd(typeof(ICompletionItemService), new CompletionItemService(this));
 			Services.TryAdd(typeof(IDeclarationProviderService), new DeclarationProviderService(this));
+			Services.TryAdd(typeof(ISignatureHelpService), new SignatureHelpService(this));
 		}
 
 		public override LanguageFeature Features =>
 			LanguageFeature.CheckSyntax
 			| LanguageFeature.CodeAction
 			| LanguageFeature.CompletionItem
-			| LanguageFeature.Declaration;
+			| LanguageFeature.Declaration
+			| LanguageFeature.SignatureHelp;
 	}
 }

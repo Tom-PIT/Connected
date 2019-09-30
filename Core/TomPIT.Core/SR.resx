@@ -1056,4 +1056,10 @@
   <data name="ErrMicroServiceContextExpected" xml:space="preserve">
     <value>IMicroServiceContext expected</value>
   </data>
+  <data name="ErrApiDoubleQualifier" xml:space="preserve">
+    <value>Api double qualification is allowed if passed context is IMicroServiceContext. Please use triple qualifier or pass a IMicroServiceContext as a parameter.</value>
+  </data>
+  <data name="ErrMicroServiceExpected" xml:space="preserve">
+    <value>Micro service expected</value>
+  </data>
 </root>

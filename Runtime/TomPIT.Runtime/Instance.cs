@@ -38,7 +38,7 @@ namespace TomPIT
 
 	public static class Instance
 	{
-		public static IMvcBuilder _mvcBuilder = null;
+		public static IMvcBuilder Mvc { get; private set; }
 		private static List<IPlugin> _plugins = null;
 		internal static RequestLocalizationOptions RequestLocalizationOptions { get; private set; }
 
@@ -79,7 +79,7 @@ namespace TomPIT
 					break;
 			}
 
-			_mvcBuilder = services.AddMvc((o) =>
+			Mvc = services.AddMvc((o) =>
 			{
 				o.EnableEndpointRouting = false;
 				e.ConfigureMvc?.Invoke(o);
@@ -114,7 +114,7 @@ namespace TomPIT
 				}
 			});
 
-			_mvcBuilder.AddControllersAsServices();
+			Mvc.AddControllersAsServices();
 
 			services.AddAuthorization(options =>
 			{

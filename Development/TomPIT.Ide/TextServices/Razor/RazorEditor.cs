@@ -29,6 +29,7 @@ namespace TomPIT.Ide.TextServices.Razor
 			Services.TryAdd(typeof(ISyntaxCheckService), new SyntaxCheckService(this));
 			Services.TryAdd(typeof(ICompletionItemService), new CompletionItemService(this));
 			Services.TryAdd(typeof(ICodeActionService), new CodeActionService(this));
+			Services.TryAdd(typeof(ISignatureHelpService), new SignatureHelpService(this));
 		}
 
 		public override ProjectInfo ProjectInfo
@@ -91,7 +92,8 @@ namespace TomPIT.Ide.TextServices.Razor
 		public override LanguageFeature Features =>
 			LanguageFeature.CheckSyntax
 			| LanguageFeature.CompletionItem
-			| LanguageFeature.CodeAction;
+			| LanguageFeature.CodeAction
+			| LanguageFeature.SignatureHelp;
 
 		private void CreateSourceText()
 		{

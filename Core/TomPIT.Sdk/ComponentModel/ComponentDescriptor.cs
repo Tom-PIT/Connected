@@ -143,6 +143,19 @@ namespace TomPIT.ComponentModel
 
 		public static ConfigurationDescriptor<IApiConfiguration> Api(IMiddlewareContext context, string identifier)
 		{
+			var qualifiers = identifier.Count(f => f == '/');
+
+			if (qualifiers < 3)
+			{
+				if (!(context is IMicroServiceContext msc))
+					throw new RuntimeException(nameof(ComponentDescriptor), $"{SR.ErrApiDoubleQualifier} ({identifier})");
+
+				if (msc.MicroService == null)
+					throw new RuntimeException(nameof(ComponentDescriptor), SR.ErrMicroServiceExpected);
+
+				identifier = identifier.Insert(0, $"{msc.MicroService.Name}/");
+			}
+
 			return new ConfigurationDescriptor<IApiConfiguration>(context, identifier, ComponentCategories.Api);
 		}
 

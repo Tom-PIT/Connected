@@ -15,7 +15,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 			var result = new List<ICompletionItem>();
 
 			var service = Microsoft.CodeAnalysis.Completion.CompletionService.GetService(Editor.Document);
-			var span = service.GetDefaultCompletionListSpan(Editor.SourceText, Editor.Document.GetPosition(Arguments.Position));
+			var span = service.GetDefaultCompletionListSpan(Editor.SourceText, Editor.Document.GetCaret(Arguments.Position));
 			var trivia = Arguments.Model.SyntaxTree.GetRoot().FindTrivia(span.Start);
 
 			if (trivia != null && trivia.IsKind(SyntaxKind.LoadDirectiveTrivia))

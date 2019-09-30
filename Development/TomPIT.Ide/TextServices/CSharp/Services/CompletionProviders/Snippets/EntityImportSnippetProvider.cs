@@ -27,7 +27,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders.Snippets
 		protected override List<ICompletionItem> OnProvideItems()
 		{
 			var service = Microsoft.CodeAnalysis.Completion.CompletionService.GetService(Editor.Document);
-			var position = Editor.Document.GetPosition(Arguments.Position);
+			var position = Editor.Document.GetCaret(Arguments.Position);
 			var span = service.GetDefaultCompletionListSpan(Editor.SourceText, position);
 			var root = Arguments.Model.SyntaxTree.GetRoot();
 			var node = root.FindNode(span);

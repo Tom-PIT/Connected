@@ -12,7 +12,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 
 		public ILocation ProvideDeclaration(IPosition position)
 		{
-			var caret = Editor.Document.GetPosition(position);
+			var caret = Editor.Document.GetCaret(position);
 			var model = Editor.Document.GetSemanticModelAsync().Result;
 			var nodeToken = model.SyntaxTree.GetRoot().FindToken(caret);
 			var enclosingIdentifier = CSharpQuery.EnclosingIdentifier(nodeToken);

@@ -140,8 +140,19 @@ namespace TomPIT.Ide.Designers
 				return CheckSyntax(data);
 			else if (string.Compare(action, "hover", true) == 0)
 				return Result.JsonResult(this, CodeAnalyzer.Hover(Environment.Context, CreateSuggestionArgs(data)));
-			else if (string.Compare(action, "signatureHelp", true) == 0)
-				return Result.JsonResult(this, CodeAnalyzer.Signatures(Environment.Context, CreateSuggestionArgs(data)));
+			else if (string.Compare(action, "provideSignatureHelp", true) == 0)
+			{
+				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
+				using var editor = GetTextEditor(model, data.Optional<string>("text", null));
+
+				if (editor == null)
+					return Result.JsonResult(this, null);
+
+				var position = DeserializePosition(data.Optional<JObject>("position", null));
+				var context = DeserializeSignatureHelpContext(data.Optional<JObject>("context", null));
+
+				return Result.JsonResult(this, editor.GetService<ISignatureHelpService>().ProvideSignatureHelp(position, context));
+			}
 			else if (string.Compare(action, "codeLens", true) == 0)
 				return Result.JsonResult(this, CodeAnalyzer.CodeLens(Environment.Context, CreateCodeLensArgs(data)));
 			else if (string.Compare(action, "resolvePath", true) == 0)
@@ -241,6 +252,15 @@ namespace TomPIT.Ide.Designers
 		private ICompletionContext DeserializeCompletionContext(JObject data)
 		{
 			var r = new CompletionContext();
+
+			Serializer.Populate(data, r);
+
+			return r;
+		}
+
+		private ISignatureHelpContext DeserializeSignatureHelpContext(JObject data)
+		{
+			var r = new SignatureHelpContext();
 
 			Serializer.Populate(data, r);
 

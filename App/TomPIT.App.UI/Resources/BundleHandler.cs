@@ -19,7 +19,7 @@ namespace TomPIT.App.Resources
 				return;
 			}
 
-			var component = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, "Bundle", Context.GetRouteValue("bundle") as string);
+			var component = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategories.ScriptBundle, Context.GetRouteValue("bundle") as string);
 
 			if (component == null)
 			{
@@ -42,7 +42,7 @@ namespace TomPIT.App.Resources
 				var buffer = Encoding.UTF8.GetBytes(bundle);
 
 				Context.Response.ContentLength = buffer.Length;
-				Context.Response.Body.Write(buffer, 0, buffer.Length);
+				Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
 			}
 		}
 	}

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using TomPIT.Ide.TextServices.CSharp.Services.ActionProviders;
 using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Ide.TextServices.Services;
@@ -29,7 +30,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 					result.AddRange(results);
 			}
 
-			return result;
+			return result.GroupBy(f => f.Title).Select(f => f.First()).ToList();
 		}
 
 		private List<IActionProvider> Providers

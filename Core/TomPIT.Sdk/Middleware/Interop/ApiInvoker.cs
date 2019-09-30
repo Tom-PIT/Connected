@@ -144,7 +144,7 @@ namespace TomPIT.Middleware.Interop
 
 		private MethodInfo GetInvoke(Type type)
 		{
-			var methods = type.GetMethods().Where(f => string.Compare(f.Name, "InvokeAsync", false) == 0);
+			var methods = type.GetMethods().Where(f => string.Compare(f.Name, "Invoke", false) == 0);
 
 			foreach (var method in methods)
 			{

@@ -138,6 +138,9 @@
             if (features.declaration)
                 this._declaration(language);
 
+            if (features.signatureHelp)
+                this._signatureHelp(language);
+
         },
         setTargetProperty: function (property) {
             this.options.property = property;
@@ -230,6 +233,40 @@
                                     uri: monaco.Uri.parse(data.uri),
                                     range:data.range
                                 });
+                            }
+
+                        }, false);
+                    });
+                }
+            });
+        },
+        _signatureHelp: function (language) {
+            var instance = this;
+
+            monaco.languages.registerSignatureHelpProvider(language, {
+                provideSignatureHelp: function (model, position, token, context) {
+                    return new Promise(function (resolve, reject) {
+                        ide.designerAction({
+                            data: {
+                                action: 'provideSignatureHelp',
+                                section: 'designer',
+                                property: instance.options.property,
+                                model: {
+                                    'id': model.id,
+                                    'uri': model.uri.toString()
+                                },
+                                position: position,
+                                text: model.getValue()
+                            },
+                            onComplete: function (data) {
+                                if (data) {
+                                    resolve({
+                                        value: data,
+                                        dispose: function () {}
+                                    });
+                                }
+                                else
+                                    reject();
                             }
 
                         }, false);
