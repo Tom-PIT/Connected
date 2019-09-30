@@ -14,13 +14,13 @@ namespace TomPIT.Compilation
 {
 	internal class CompilerScript : TenantObject, IDisposable
 	{
-		public CompilerScript(ITenant tenant, Guid microService, ISourceCode sourceCode) : base(tenant)
+		public CompilerScript(ITenant tenant, Guid microService, IText sourceCode) : base(tenant)
 		{
 			MicroService = microService;
 			SourceCode = sourceCode;
 		}
 		public Guid MicroService { get; }
-		public ISourceCode SourceCode { get; }
+		public IText SourceCode { get; }
 		public List<Guid> ScriptReferences { get; private set; }
 		public void Create()
 		{

@@ -11,7 +11,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 		{
 		}
 
-		public List<IMarkerData> CheckSyntax(ISourceCode sourceCode)
+		public List<IMarkerData> CheckSyntax(IText sourceCode)
 		{
 			var model = Editor.Document.GetSemanticModelAsync().Result;
 			var compilation = model.Compilation;

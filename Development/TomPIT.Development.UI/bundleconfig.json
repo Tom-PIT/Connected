@@ -19,7 +19,7 @@
   {
     "outputFileName": "wwwroot/assets/idemap.min.css",
     "inputFiles": [
-      "wwwroot/assets/styles/bootstrap/bootstrap.css",
+      //"wwwroot/assets/styles/bootstrap/bootstrap.css",
       "wwwroot/assets/styles/fontawesome.css"
     ],
     "minify": {

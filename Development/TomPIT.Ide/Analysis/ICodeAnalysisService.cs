@@ -13,8 +13,8 @@ namespace TomPIT.Ide.Analysis
 {
 	public interface ICodeAnalysisService
 	{
-		List<IDiagnostic> CheckSyntax<T>(Guid microService, ISourceCode sourceCode);
-		List<IDiagnostic> CheckSyntax(Guid microService, ISourceCode sourceCode);
+		List<IDiagnostic> CheckSyntax<T>(Guid microService, IText sourceCode);
+		List<IDiagnostic> CheckSyntax(Guid microService, IText sourceCode);
 		ListItems<ISuggestion> Suggestions(IMiddlewareContext sender, CodeStateArgs e);
 		ISignatureInfo Signatures(IMiddlewareContext sender, CodeStateArgs e);
 		IHoverInfo Hover(IMiddlewareContext sender, CodeStateArgs e);

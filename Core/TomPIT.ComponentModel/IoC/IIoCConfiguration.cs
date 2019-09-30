@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel.IoC
 {
-	public interface IIoCConfiguration : IConfiguration, ISourceCode
+	public interface IIoCConfiguration : IConfiguration, IText
 	{
 	}
 }

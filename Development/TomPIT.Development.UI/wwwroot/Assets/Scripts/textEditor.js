@@ -36,7 +36,8 @@
                     wrappingIndent: 'indent',
                     showUnused: true,
                     autoIndent: true,
-                    wordWrap: 'on',
+                    wordWrap: 'off',
+                    tabCompletion:'on',
                     model: null,
                     minimap: {
                         enabled: false
@@ -72,10 +73,20 @@
                     }
                 };
 
+                monaco.editor.onDidCreateModel((model)=>{
+                    model.onDidChangeContent((e) => {
+                        target.setState({
+                            model: model.uri.toString(),
+                            dirty: true
+                        });
+                    });
+                });
+
                 if ($.isFunction(target.options.onCreated))
                     target.options.onCreated(target, target.getInstance());
             });
         },
+
         getDirtyModels: function () {
             var result = [];
 

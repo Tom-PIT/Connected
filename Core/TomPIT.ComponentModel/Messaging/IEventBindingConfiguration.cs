@@ -2,7 +2,7 @@
 
 namespace TomPIT.ComponentModel.Messaging
 {
-	public interface IEventBindingConfiguration : IConfiguration, ISourceCode
+	public interface IEventBindingConfiguration : IConfiguration, IText
 	{
 		ListItems<IEventBinding> Events { get; }
 	}

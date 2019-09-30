@@ -52,7 +52,7 @@ namespace TomPIT.Compilation.Views
 
 		protected void AppendBaseType(StringBuilder builder)
 		{
-			AppendBaseType(builder, "TomPIT.Runtime.UI.ViewBase");
+			builder.AppendLine($"@inherits TomPIT.Runtime.UI.ViewBase<TomPIT.Models.IViewModel>");
 		}
 
 		protected void AddTagHelpers(StringBuilder builder)

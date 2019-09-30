@@ -390,7 +390,7 @@ namespace TomPIT.Ide.Designers
 
 			return Environment.Context.Tenant.GetService<IMicroServiceService>().Select(u.Authority);
 		}
-		private ISourceCode ResolveSourceCode(JObject data)
+		private IText ResolveSourceCode(JObject data)
 		{
 			var uriString = data.Optional("uri", string.Empty);
 
@@ -416,9 +416,9 @@ namespace TomPIT.Ide.Designers
 				return null;
 
 			if (element == Guid.Empty || cmp.Token == element)
-				return config as ISourceCode;
+				return config as IText;
 
-			return config.Find(element) as ISourceCode;
+			return Environment.Context.Tenant.GetService<IDiscoveryService>().Find(config, element) as IText;
 		}
 
 		public LanguageFeature SupportedFeatures(string language, IMicroService microService)

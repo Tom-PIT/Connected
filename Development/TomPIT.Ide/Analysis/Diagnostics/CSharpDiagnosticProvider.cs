@@ -11,12 +11,12 @@ namespace TomPIT.Ide.Analysis.Diagnostics
 {
 	internal class CSharpDiagnosticProvider : ICodeDiagnosticProvider
 	{
-		public List<IDiagnosticInfo> CheckSyntax(IEnvironment environment, ISourceCode sourceCode, Type argumentType)
+		public List<IDiagnosticInfo> CheckSyntax(IEnvironment environment, IText sourceCode, Type argumentType)
 		{
 			var svc = environment.Context.Tenant.GetService<ICodeAnalysisService>();
 			var mi = argumentType == null
-				 ? svc.GetType().GetMethod("CheckSyntax", 0, new Type[] { typeof(Guid), typeof(ISourceCode) })
-				 : svc.GetType().GetMethod("CheckSyntax", 1, new Type[] { typeof(Guid), typeof(ISourceCode) });
+				 ? svc.GetType().GetMethod("CheckSyntax", 0, new Type[] { typeof(Guid), typeof(IText) })
+				 : svc.GetType().GetMethod("CheckSyntax", 1, new Type[] { typeof(Guid), typeof(IText) });
 
 			if (argumentType != null)
 				mi = mi.MakeGenericMethod(argumentType);

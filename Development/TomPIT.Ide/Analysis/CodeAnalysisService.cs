@@ -20,7 +20,7 @@ namespace TomPIT.Ide.Analysis
 		{
 
 		}
-		public List<IDiagnostic> CheckSyntax(Guid microService, ISourceCode sourceCode)
+		public List<IDiagnostic> CheckSyntax(Guid microService, IText sourceCode)
 		{
 			if (sourceCode.TextBlob == Guid.Empty)
 				return new List<IDiagnostic>();
@@ -31,7 +31,7 @@ namespace TomPIT.Ide.Analysis
 			return script == null ? new List<IDiagnostic>() : script.Errors;
 		}
 
-		public List<IDiagnostic> CheckSyntax<T>(Guid microService, ISourceCode sourceCode)
+		public List<IDiagnostic> CheckSyntax<T>(Guid microService, IText sourceCode)
 		{
 			if (sourceCode.TextBlob == Guid.Empty)
 				return new List<IDiagnostic>();

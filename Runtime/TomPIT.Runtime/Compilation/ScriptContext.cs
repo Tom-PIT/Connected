@@ -14,9 +14,9 @@ namespace TomPIT.Compilation
 		private Dictionary<string, ImmutableArray<PortableExecutableReference>> _references = null;
 		private ScriptResolver _sourceResolver = null;
 		private AssemblyResolver _assemblyResolver = null;
-		private Dictionary<string, ISourceCode> _sources = null;
+		private Dictionary<string, IText> _sources = null;
 		private StringBuilder _sourceText = null;
-		public ScriptContext(ITenant tenant, ISourceCode sourceCode) : base(tenant)
+		public ScriptContext(ITenant tenant, IText sourceCode) : base(tenant)
 		{
 			MicroService = Tenant.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService());
 			LoadScript(sourceCode);
@@ -34,7 +34,7 @@ namespace TomPIT.Compilation
 				return _sourceText;
 			}
 		}
-		private void LoadScript(ISourceCode sourceCode)
+		private void LoadScript(IText sourceCode)
 		{
 			ProcessScript(Tenant.GetService<IComponentService>().SelectText(MicroService.Token, sourceCode), string.Empty);
 		}
@@ -93,12 +93,12 @@ namespace TomPIT.Compilation
 
 		public string SourceCode => SourceText.ToString();
 
-		public Dictionary<string, ISourceCode> SourceFiles
+		public Dictionary<string, IText> SourceFiles
 		{
 			get
 			{
 				if (_sources == null)
-					_sources = new Dictionary<string, ISourceCode>();
+					_sources = new Dictionary<string, IText>();
 
 				return _sources;
 			}

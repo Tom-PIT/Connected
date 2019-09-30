@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.App.Globalization;
 using TomPIT.App.Resources;
@@ -69,7 +68,7 @@ namespace TomPIT.App.Routing
 					t.Request.Path = "/home";
 
 				var ve = t.RequestServices.GetService(typeof(IViewEngine)) as ViewEngine;
-				var engine = t.RequestServices.GetService(typeof(RazorProjectEngine)) as RazorProjectEngine;
+				//var engine = t.RequestServices.GetService(typeof(RazorProjectEngine)) as RazorProjectEngine;
 				//var reference = t.RequestServices.GetService(typeof(RuntimeCompilationFileProvider)) as RazorProjectEngine;
 				//var viewCompiler = t.RequestServices.GetService(typeof(Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompilerProvider)) as Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompilerProvider;
 

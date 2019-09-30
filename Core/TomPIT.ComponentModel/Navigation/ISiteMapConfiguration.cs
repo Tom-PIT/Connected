@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel.Navigation
 {
-	public interface ISiteMapConfiguration : IConfiguration, ISourceCode
+	public interface ISiteMapConfiguration : IConfiguration, IText
 	{
 
 	}

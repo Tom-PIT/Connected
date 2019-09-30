@@ -17,6 +17,12 @@
    }
 
    var features = Model.SupportedFeatures(Model.Language, ms);
+   var text = Model.Text == null ? string.Empty : JavaScriptEncoder.Default.Encode(Model.Text);
+
+   if(string.IsNullOrWhiteSpace(text))
+   {
+       text = JavaScriptEncoder.Default.Encode(Environment.NewLine);
+   }
 }
 <script>
     var modelUri = new monaco.Uri({
@@ -28,14 +34,7 @@
     var model = monaco.editor.getModel(modelUri);
 
     if (model == null) {
-        model = monaco.editor.createModel('@JavaScriptEncoder.Default.Encode(Model.Text)', '@Model.Language', modelUri);
-
-        model.onDidChangeContent((e) => {
-            textEditorState.setState({
-                model: model.uri.toString(),
-                dirty: true
-            });
-        });
+        model = monaco.editor.createModel('@text', '@Model.Language', modelUri);
 
         if (!textEditorState.isLanguageInitialized('@Model.Language')) {
             textEditorState.initializeLanguage('@Model.Language', {
@@ -47,7 +46,7 @@
         }
     }
     else
-        model.setValue('@JavaScriptEncoder.Default.Encode(Model.Text)');
+        model.setValue('@text');
 
     textEditorState.setTargetProperty('@Model.PropertyName');
 
@@ -82,11 +81,6 @@
         }
     });
 
-    $('textarea', $('#devTextDesignerEditor')).on('blur', function () {
-        clearTimeout(saveTimeout);
-        saveModels();
-    });
-
     var saveTimeout = setTimeout(saveModels, 2500);
 
     function saveModels() {
@@ -98,7 +92,7 @@
 
             return;
         }
-
+        
         var promises = [];
 
         $.each(dirty, function (i, v) {

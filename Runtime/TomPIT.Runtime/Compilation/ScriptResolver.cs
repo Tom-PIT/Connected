@@ -72,7 +72,7 @@ namespace TomPIT.Compilation
 			return new MemoryStream(Encoding.UTF8.GetBytes(content));
 		}
 
-		public ISourceCode LoadScript(string resolvedPath)
+		public IText LoadScript(string resolvedPath)
 		{
 			var tokens = resolvedPath.Split("/");
 			/*
@@ -92,7 +92,7 @@ namespace TomPIT.Compilation
 				return null;
 		}
 
-		private ISourceCode LoadApi(string microService, string api, string operation)
+		private IText LoadApi(string microService, string api, string operation)
 		{
 			IMicroService ms = null;
 
@@ -142,7 +142,7 @@ namespace TomPIT.Compilation
 
 		}
 
-		private ISourceCode LoadScript(string microService, string script)
+		private IText LoadScript(string microService, string script)
 		{
 			IMicroService ms = null;
 

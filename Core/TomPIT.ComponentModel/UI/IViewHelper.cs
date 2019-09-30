@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel.UI
 {
-	public interface IViewHelper : ISourceCode
+	public interface IViewHelper : IText
 	{
 		string Name { get; }
 	}

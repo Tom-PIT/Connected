@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel.Scripting
 {
-	public interface IScriptConfiguration : IConfiguration, ISourceCode
+	public interface IScriptConfiguration : IConfiguration, IText
 	{
 		ElementScope Scope { get; }
 	}

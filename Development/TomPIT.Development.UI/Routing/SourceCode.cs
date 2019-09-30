@@ -73,7 +73,7 @@ namespace TomPIT.Development.Routing
 
 				Context.Response.Headers.Add("Content-Disposition", string.Format("attachment;filename=\"{0}\"", fileName));
 				Context.Response.ContentLength = buffer.Length;
-				Context.Response.Body.Write(buffer, 0, buffer.Length);
+				Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
 			}
 		}
 
@@ -96,7 +96,7 @@ namespace TomPIT.Development.Routing
 
 		private string LoadRazorSource(Guid microService, IText text)
 		{
-			return Tenant.GetService<ICompilerService>().CompileView(Tenant, text as ISourceCode);
+			return Tenant.GetService<ICompilerService>().CompileView(Tenant, text as IText);
 		}
 	}
 }

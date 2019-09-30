@@ -113,9 +113,9 @@ namespace TomPIT.Ide.Dom.ComponentModel
 				Invalidate = EnvironmentSection.Explorer
 			};
 
-			if (text.GetType().ImplementsInterface<ISourceCode>())
+			if (text.GetType().ImplementsInterface<IText>())
 			{
-				var se = text as ISourceCode;
+				var se = text as IText;
 
 				Tenant.GetService<ICompilerService>().Invalidate(Environment.Context, this.MicroService(), se.Configuration().Component, se);
 

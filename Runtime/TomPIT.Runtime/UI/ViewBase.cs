@@ -25,7 +25,6 @@ namespace TomPIT.Runtime.UI
 
 		protected Guid ComponentId { get; set; }
 		protected string ViewType { get; set; }
-
 		public void Helper(string name, JObject args)
 		{
 			var helper = Helpers.FirstOrDefault(f => string.Compare(name, f.Name) == 0);

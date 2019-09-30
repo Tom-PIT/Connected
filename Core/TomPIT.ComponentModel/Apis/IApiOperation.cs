@@ -6,7 +6,7 @@ namespace TomPIT.ComponentModel.Apis
 	/// Each <code>IApiOperation</code> implements business logic which is based on the
 	/// input parameters and can return data in any data structure.
 	/// </summary>
-	public interface IApiOperation : ISourceCode, IElement
+	public interface IApiOperation : IText, IElement
 	{
 		/// <summary>
 		/// The name of the operation. This is used as part of the identifier

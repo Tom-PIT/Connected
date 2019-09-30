@@ -46,9 +46,9 @@ namespace TomPIT.Ide.Dom
 
 			r.Component = instance;
 
-			if (instance.GetType().ImplementsInterface<ISourceCode>())
+			if (instance.GetType().ImplementsInterface<IText>())
 			{
-				var se = instance as ISourceCode;
+				var se = instance as IText;
 
 				Element.Environment.Context.Tenant.GetService<ICompilerService>().Invalidate(Element.Environment.Context, Element.MicroService(), se.Configuration().Component, se);
 

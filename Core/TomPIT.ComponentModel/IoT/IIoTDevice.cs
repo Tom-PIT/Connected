@@ -2,7 +2,7 @@
 
 namespace TomPIT.ComponentModel.IoT
 {
-	public interface IIoTDevice : ISourceCode, IElement
+	public interface IIoTDevice : IText, IElement
 	{
 		string Name { get; }
 		string AuthenticationToken { get; }

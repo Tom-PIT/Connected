@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
+using TomPIT.Middleware;
 using TomPIT.Models;
 using TomPIT.Serialization;
 using TomPIT.UI;
@@ -22,7 +23,7 @@ namespace TomPIT
 		{
 			ProcessView(name);
 
-			return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), Html.ViewData.Model);
+			return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), Html.ViewData.Model as IMiddlewareContext);
 		}
 
 

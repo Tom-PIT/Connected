@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel.Distributed
 {
-	public interface IHostedWorkerConfiguration : IWorkerConfiguration, ISourceCode
+	public interface IHostedWorkerConfiguration : IWorkerConfiguration, IText
 	{
 
 	}

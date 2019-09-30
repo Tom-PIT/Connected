@@ -7,6 +7,6 @@ namespace TomPIT.Ide.Analysis.Diagnostics
 {
 	public interface ICodeDiagnosticProvider
 	{
-		List<IDiagnosticInfo> CheckSyntax(IEnvironment environment, ISourceCode sourceCode, Type argumentType);
+		List<IDiagnosticInfo> CheckSyntax(IEnvironment environment, IText sourceCode, Type argumentType);
 	}
 }

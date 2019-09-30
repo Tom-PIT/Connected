@@ -6,6 +6,6 @@ namespace TomPIT.Ide.TextServices.Services
 {
 	public interface ISyntaxCheckService : IWorkspaceService
 	{
-		List<IMarkerData> CheckSyntax(ISourceCode sourceCode);
+		List<IMarkerData> CheckSyntax(IText sourceCode);
 	}
 }

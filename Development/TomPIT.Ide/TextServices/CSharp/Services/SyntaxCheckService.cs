@@ -13,7 +13,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 		{
 		}
 
-		public List<IMarkerData> CheckSyntax(ISourceCode sourceCode)
+		public List<IMarkerData> CheckSyntax(IText sourceCode)
 		{
 			IScriptDescriptor script = null;
 			var service = Editor.Context.Tenant.GetService<ICompilerService>();

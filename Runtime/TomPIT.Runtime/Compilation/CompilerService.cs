@@ -78,7 +78,7 @@ namespace TomPIT.Compilation
 			return Get(sourceCodeId);
 		}
 
-		public IScriptDescriptor GetScript<T>(Guid microService, ISourceCode sourceCode)
+		public IScriptDescriptor GetScript<T>(Guid microService, IText sourceCode)
 		{
 			var d = GetCachedScript(sourceCode.Id);
 
@@ -107,7 +107,7 @@ namespace TomPIT.Compilation
 			return d;
 		}
 
-		public IScriptDescriptor GetScript(Guid microService, ISourceCode sourceCode)
+		public IScriptDescriptor GetScript(Guid microService, IText sourceCode)
 		{
 			var d = GetCachedScript(sourceCode.Id);
 
@@ -117,12 +117,12 @@ namespace TomPIT.Compilation
 			return d;
 		}
 
-		public object Execute<T>(Guid microService, ISourceCode sourceCode, object sender, T e)
+		public object Execute<T>(Guid microService, IText sourceCode, object sender, T e)
 		{
 			return Execute(microService, sourceCode, sender, e, out bool handled);
 		}
 
-		public object Execute<T>(Guid microService, ISourceCode sourceCode, object sender, T e, out bool handled)
+		public object Execute<T>(Guid microService, IText sourceCode, object sender, T e, out bool handled)
 		{
 			handled = false;
 
@@ -222,7 +222,7 @@ namespace TomPIT.Compilation
 			return r;
 		}
 
-		private IScriptDescriptor CreateScript(Guid microService, ISourceCode d)
+		private IScriptDescriptor CreateScript(Guid microService, IText d)
 		{
 			using (var script = new CompilerScript(Tenant, microService, d))
 			{
@@ -240,7 +240,7 @@ namespace TomPIT.Compilation
 			}
 		}
 
-		private IScriptDescriptor CreateScript<T>(Guid microService, ISourceCode d)
+		private IScriptDescriptor CreateScript<T>(Guid microService, IText d)
 		{
 			using (var script = new CompilerGenericScript<T>(Tenant, microService, d))
 			{
@@ -297,7 +297,7 @@ namespace TomPIT.Compilation
 			Set(script.Id, script, TimeSpan.Zero);
 		}
 
-		public void Invalidate(IMicroServiceContext context, Guid microService, Guid component, ISourceCode sourceCode)
+		public void Invalidate(IMicroServiceContext context, Guid microService, Guid component, IText sourceCode)
 		{
 			var u = context.Tenant.CreateUrl("NotificationDevelopment", "ScriptChanged");
 			var id = sourceCode.ScriptId();
@@ -352,7 +352,7 @@ namespace TomPIT.Compilation
 			}
 		}
 
-		public string CompileView(ITenant tenant, ISourceCode sourceCode)
+		public string CompileView(ITenant tenant, IText sourceCode)
 		{
 			if (sourceCode.TextBlob == Guid.Empty)
 				return null;
@@ -411,11 +411,11 @@ namespace TomPIT.Compilation
 			return processor.Result;
 		}
 
-		public Type ResolveType(Guid microService, ISourceCode sourceCode, string typeName)
+		public Type ResolveType(Guid microService, IText sourceCode, string typeName)
 		{
 			return ResolveType(microService, sourceCode, typeName, true);
 		}
-		public Type ResolveType(Guid microService, ISourceCode sourceCode, string typeName, bool throwException)
+		public Type ResolveType(Guid microService, IText sourceCode, string typeName, bool throwException)
 		{
 			var script = GetScript(microService, sourceCode);
 
@@ -453,7 +453,7 @@ namespace TomPIT.Compilation
 			return result;
 		}
 
-		public IScriptContext CreateScriptContext(ISourceCode sourceCode)
+		public IScriptContext CreateScriptContext(IText sourceCode)
 		{
 			return new ScriptContext(Tenant, sourceCode);
 		}
@@ -497,16 +497,16 @@ namespace TomPIT.Compilation
 			return result;
 		}
 
-		public T CreateInstance<T>(IMicroServiceContext context, ISourceCode sourceCode) where T : class
+		public T CreateInstance<T>(IMicroServiceContext context, IText sourceCode) where T : class
 		{
 			return CreateInstance<T>(context, sourceCode, null, sourceCode.Configuration().ComponentName());
 		}
-		public T CreateInstance<T>(ISourceCode sourceCode) where T : class
+		public T CreateInstance<T>(IText sourceCode) where T : class
 		{
 			return CreateInstance<T>(null, sourceCode);
 		}
 
-		public T CreateInstance<T>(IMicroServiceContext context, ISourceCode sourceCode, string arguments, string typeName) where T : class
+		public T CreateInstance<T>(IMicroServiceContext context, IText sourceCode, string arguments, string typeName) where T : class
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService());
 
@@ -515,16 +515,16 @@ namespace TomPIT.Compilation
 
 			return CreateInstance<T>(context, sourceCode, ms, arguments, typeName);
 		}
-		public T CreateInstance<T>(ISourceCode sourceCode, string arguments, string typeName) where T : class
+		public T CreateInstance<T>(IText sourceCode, string arguments, string typeName) where T : class
 		{
 			return CreateInstance<T>(null, sourceCode, arguments, typeName);
 		}
 
-		public T CreateInstance<T>(IMicroServiceContext context, ISourceCode sourceCode, string arguments) where T : class
+		public T CreateInstance<T>(IMicroServiceContext context, IText sourceCode, string arguments) where T : class
 		{
 			return CreateInstance<T>(context, sourceCode, arguments, sourceCode.Configuration().ComponentName());
 		}
-		public T CreateInstance<T>(ISourceCode sourceCode, string arguments) where T : class
+		public T CreateInstance<T>(IText sourceCode, string arguments) where T : class
 		{
 			return CreateInstance<T>(null, sourceCode, arguments, sourceCode.Configuration().ComponentName());
 		}
@@ -538,7 +538,7 @@ namespace TomPIT.Compilation
 			return CreateInstance<T>(null, scriptType, context.MicroService, arguments);
 		}
 
-		private T CreateInstance<T>(IMicroServiceContext context, ISourceCode sourceCode, IMicroService microService, string arguments, string typeName) where T : class
+		private T CreateInstance<T>(IMicroServiceContext context, IText sourceCode, IMicroService microService, string arguments, string typeName) where T : class
 		{
 			var instanceType = ResolveType(microService.Token, sourceCode, typeName);
 

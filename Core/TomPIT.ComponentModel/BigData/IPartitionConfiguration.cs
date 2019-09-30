@@ -5,7 +5,7 @@
 		Manual = 1,
 		Auto = 2
 	}
-	public interface IPartitionConfiguration : IConfiguration, ISourceCode
+	public interface IPartitionConfiguration : IConfiguration, IText
 	{
 		SchemaSynchronizationMode SchemaSynchronization { get; }
 	}

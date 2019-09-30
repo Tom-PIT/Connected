@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 
 namespace TomPIT.ComponentModel
 {
-	public class SourceCodeConfiguration : ComponentConfiguration, ISourceCode
+	public class SourceCodeConfiguration : ComponentConfiguration, IText
 	{
 		[Browsable(false)]
 		public Guid TextBlob { get; set; }

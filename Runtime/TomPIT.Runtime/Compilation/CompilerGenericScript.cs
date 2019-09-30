@@ -11,7 +11,7 @@ namespace TomPIT.Compilation
 {
 	internal class CompilerGenericScript<T> : CompilerScript
 	{
-		public CompilerGenericScript(ITenant tenant, Guid microService, ISourceCode sourceCode) : base(tenant, microService, sourceCode)
+		public CompilerGenericScript(ITenant tenant, Guid microService, IText sourceCode) : base(tenant, microService, sourceCode)
 		{
 		}
 

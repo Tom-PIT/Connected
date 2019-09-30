@@ -128,6 +128,11 @@ namespace TomPIT.Ide.TextServices.CSharp
 					if (HostType != null)
 						usings.Add(HostType.Namespace);
 
+					var included = IncludedUsings();
+
+					if (included != null && included.Count > 0)
+						usings.AddRange(included);
+
 					_options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
 						usings: usings,
 						metadataReferenceResolver: new AssemblyResolver(Context.Tenant, Context.MicroService.Token),
@@ -136,6 +141,11 @@ namespace TomPIT.Ide.TextServices.CSharp
 
 				return _options;
 			}
+		}
+
+		protected virtual List<string> IncludedUsings()
+		{
+			return null;
 		}
 
 		public virtual DocumentInfo DocumentInfo

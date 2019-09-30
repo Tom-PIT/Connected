@@ -9,7 +9,7 @@ namespace TomPIT.Compilation
 	{
 		string SourceCode { get; }
 
-		Dictionary<string, ISourceCode> SourceFiles { get; }
+		Dictionary<string, IText> SourceFiles { get; }
 		Dictionary<string, ImmutableArray<PortableExecutableReference>> References { get; }
 	}
 }

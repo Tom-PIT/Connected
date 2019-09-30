@@ -50,7 +50,9 @@ namespace TomPIT.Ide.TextServices.Razor
 						MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(RazorCompiledItemAttribute)).Location),
 						MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(IHtmlHelper)).Location),
 						MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(IHtmlContent)).Location),
-						MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(Renderer)).Location)
+						MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(Renderer)).Location),
+						MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(HtmlHelperPartialExtensions)).Location)
+
 					};
 
 					_projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), "View", "View", LanguageNames.CSharp, isSubmission: false);
@@ -63,6 +65,13 @@ namespace TomPIT.Ide.TextServices.Razor
 			}
 		}
 
+		protected override List<string> IncludedUsings()
+		{
+			return new List<string>
+			{
+				"Microsoft.AspNetCore.Mvc.Rendering"
+			};
+		}
 		public override DocumentInfo DocumentInfo
 		{
 			get

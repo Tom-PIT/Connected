@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel.Scripting
 {
-	public interface IPartialSourceCode : ISourceCode
+	public interface IPartialSourceCode : IText
 	{
 	}
 }
