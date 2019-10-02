@@ -228,6 +228,11 @@ namespace TomPIT.Ide.Designers
 
 			Serializer.Populate(data, r);
 
+			r.EndColumn = Math.Max(r.EndColumn - 1, 0);
+			r.EndLineNumber = Math.Max(r.EndLineNumber - 1, 0);
+			r.StartColumn = Math.Max(r.StartColumn - 1, 0);
+			r.StartLineNumber = Math.Max(r.StartLineNumber - 1, 0);
+
 			return r;
 		}
 
@@ -236,6 +241,9 @@ namespace TomPIT.Ide.Designers
 			var r = new TextServices.Position();
 
 			Serializer.Populate(data, r);
+
+			r.Column = Math.Max(r.Column - 1, 0);
+			r.LineNumber = Math.Max(r.LineNumber - 1, 0);
 
 			return r;
 		}

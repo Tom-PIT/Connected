@@ -18,10 +18,10 @@ namespace TomPIT.Worker.Workers
 
 		public override void Invoke()
 		{
-			var ms = Instance.Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)Worker).MicroService());
-			var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(ms.Token, Worker, Worker.ComponentName());
+			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)Worker).MicroService());
+			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ms.Token, Worker, Worker.ComponentName());
 			var ctx = new MicroServiceContext(ms);
-			var instance = Instance.Tenant.GetService<ICompilerService>().CreateInstance<IHostedWorkerMiddleware>(ctx, type);
+			var instance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IHostedWorkerMiddleware>(ctx, type);
 
 			if (!string.IsNullOrWhiteSpace(State))
 				Serializer.Populate(State, instance);

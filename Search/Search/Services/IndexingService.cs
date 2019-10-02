@@ -26,7 +26,7 @@ namespace TomPIT.Search.Services
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				var url = Instance.Tenant.CreateUrl("SearchManagement", "Dequeue");
+				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "Dequeue");
 
 				var e = new JObject
 				{
@@ -34,7 +34,7 @@ namespace TomPIT.Search.Services
 					{ "resourceGroup", f.ResourceGroup }
 				};
 
-				var jobs = Instance.Tenant.Post<List<QueueMessage>>(url, e);
+				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
 
 				if (jobs == null)
 					return;

@@ -180,7 +180,7 @@ namespace TomPIT.Management.Deployment
 			}
 			catch (Exception ex)
 			{
-				Tenant.LogError(null, nameof(DeploymentService), ex.Source, ex.Message);
+				Tenant.LogError(nameof(DeploymentService), ex.Source, ex.Message);
 				return null;
 			}
 		}

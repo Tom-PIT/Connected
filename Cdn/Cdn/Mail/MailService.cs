@@ -17,7 +17,7 @@ namespace TomPIT.Cdn.Mail
 
 		public MailService()
 		{
-			Instance.Tenant.GetService<ISettingService>().SettingChanged += OnSettingChanged;
+			MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().SettingChanged += OnSettingChanged;
 
 			SetInterval();
 
@@ -33,7 +33,7 @@ namespace TomPIT.Cdn.Mail
 
 		private void SetInterval()
 		{
-			var interval = Instance.Tenant.GetService<ISettingService>().GetValue<int>(Guid.Empty, "MailServiceTimer");
+			var interval = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<int>(Guid.Empty, "MailServiceTimer");
 
 			if (interval == 0)
 				interval = 5000;
@@ -45,14 +45,14 @@ namespace TomPIT.Cdn.Mail
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				var url = Instance.Tenant.CreateUrl("MailManagement", "Dequeue");
+				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("MailManagement", "Dequeue");
 
 				var e = new JObject
 				{
 					{ "count", f.Available },
 				};
 
-				var messages = Instance.Tenant.Post<List<MailMessage>>(url, e);
+				var messages = MiddlewareDescriptor.Current.Tenant.Post<List<MailMessage>>(url, e);
 
 				if (messages == null)
 					return;

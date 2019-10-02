@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using TomPIT.Diagnostics;
+using TomPIT.Middleware;
 using TomPIT.Models;
 using TomPIT.Runtime;
 
@@ -64,7 +65,7 @@ namespace TomPIT.Exceptions
 				e.Metric = rt.Metric;
 			}
 
-			Instance.Tenant.GetService<ILoggingService>().Write(e);
+			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Write(e);
 		}
 
 		protected virtual async Task OnHandleAjaxException(HttpContext context, Exception ex)

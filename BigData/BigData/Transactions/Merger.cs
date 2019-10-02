@@ -7,6 +7,7 @@ using TomPIT.BigData.Nodes;
 using TomPIT.BigData.Partitions;
 using TomPIT.BigData.Persistence;
 using TomPIT.Diagostics;
+using TomPIT.Middleware;
 
 namespace TomPIT.BigData.Transactions
 {
@@ -45,7 +46,7 @@ namespace TomPIT.BigData.Transactions
 			}
 			catch (Exception ex)
 			{
-				Instance.Tenant.LogError("BigData", ex.Source, ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("BigData", ex.Source, ex.Message);
 			}
 			finally
 			{
@@ -67,7 +68,7 @@ namespace TomPIT.BigData.Transactions
 			 * we'll select all rows at once which targets our data and then
 			 * operate on that set
 			 */
-			var files = Instance.Tenant.GetService<IPartitionService>().QueryFiles(Provider.Block.Partition, PartitionKey, min, max);
+			var files = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().QueryFiles(Provider.Block.Partition, PartitionKey, min, max);
 
 			foreach (var i in files)
 			{
@@ -205,7 +206,7 @@ namespace TomPIT.BigData.Transactions
 				if (dfc.Lock == Guid.Empty)
 					return null;
 
-				dfc.File = Instance.Tenant.GetService<IPartitionService>().SelectFile(fileId);
+				dfc.File = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().SelectFile(fileId);
 
 				return dfc;
 			}
@@ -245,9 +246,9 @@ namespace TomPIT.BigData.Transactions
 				if (context.Lock == Guid.Empty)
 					return context.Data;
 
-				var node = Instance.Tenant.GetService<INodeService>().Select(context.File.Node);
+				var node = MiddlewareDescriptor.Current.Tenant.GetService<INodeService>().Select(context.File.Node);
 
-				return Instance.Tenant.GetService<IPersistenceService>().Merge(Provider, node, context, MergePolicy.Full);
+				return MiddlewareDescriptor.Current.Tenant.GetService<IPersistenceService>().Merge(Provider, node, context, MergePolicy.Full);
 			}
 			finally
 			{
@@ -266,9 +267,9 @@ namespace TomPIT.BigData.Transactions
 				if (context.Data.Rows.Count == 0)
 					return null;
 
-				var node = Instance.Tenant.GetService<INodeService>().Select(context.File.Node);
+				var node = MiddlewareDescriptor.Current.Tenant.GetService<INodeService>().Select(context.File.Node);
 
-				return Instance.Tenant.GetService<IPersistenceService>().Merge(Provider, node, context, MergePolicy.Partial);
+				return MiddlewareDescriptor.Current.Tenant.GetService<IPersistenceService>().Merge(Provider, node, context, MergePolicy.Partial);
 			}
 			finally
 			{

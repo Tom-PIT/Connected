@@ -12,19 +12,7 @@ namespace TomPIT.App.UI
 
 			var viewKind = (ViewKind)context.ActionContext.ActionDescriptor.Properties["viewKind"];
 
-			if (viewKind == ViewKind.View)
-			{
-				var result = new List<string>
-				{
-					"/Views/Dynamic/{0}"
-				};
-
-				foreach (var location in viewLocations)
-					result.Add(location);
-
-				return result;
-			}
-			else if (viewKind == ViewKind.Partial)
+			if (viewKind == ViewKind.Partial)
 			{
 				var result = new List<string>
 				{

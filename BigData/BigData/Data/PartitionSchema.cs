@@ -7,6 +7,7 @@ using TomPIT.BigData.Transactions;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
+using TomPIT.Middleware;
 using TomPIT.Reflection;
 
 namespace TomPIT.BigData.Data
@@ -59,7 +60,7 @@ namespace TomPIT.BigData.Data
 
 		private void Discover()
 		{
-			var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)Configuration).MicroService(), Configuration, Configuration.ComponentName());
+			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)Configuration).MicroService(), Configuration, Configuration.ComponentName());
 
 			if (type == null)
 				return;

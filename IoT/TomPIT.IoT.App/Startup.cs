@@ -10,6 +10,7 @@ using TomPIT.IoT.Hubs;
 using TomPIT.IoT.Routing;
 using TomPIT.IoT.Security;
 using TomPIT.IoT.Services;
+using TomPIT.Middleware;
 using TomPIT.Runtime;
 using TomPIT.Security;
 
@@ -29,7 +30,7 @@ namespace TomPIT.IoT
 			services.AddCors(options => options.AddPolicy("TomPITPolicy",
 				builder =>
 				{
-					var setting = Instance.Tenant.GetService<ISettingService>().Select(Guid.Empty, "Cors Origins");
+					var setting = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().Select(Guid.Empty, "Cors Origins");
 					var origin = new string[] { "http://localhost" };
 
 					if (setting != null && !string.IsNullOrWhiteSpace(setting.Value))
@@ -65,7 +66,7 @@ namespace TomPIT.IoT
 				routes.MapHub<IoTServerHub>("/iot");
 			});
 
-			Instance.Tenant.GetService<IAuthorizationService>().RegisterAuthenticationProvider(new IoTAuthenticationProvider());
+			MiddlewareDescriptor.Current.Tenant.GetService<IAuthorizationService>().RegisterAuthenticationProvider(new IoTAuthenticationProvider());
 		}
 
 		private void OnTenantInitialize(object sender, TenantArgs e)

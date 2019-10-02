@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using Microsoft.AspNetCore.Routing;
+using TomPIT.Middleware;
 using TomPIT.Routing;
 
 namespace TomPIT.App.Globalization
@@ -12,7 +13,7 @@ namespace TomPIT.App.Globalization
 			var locale = Context.GetRouteValue("locale") as string;
 			var segments = (ClientGlobalizationSegment)Convert.ToInt64(Context.GetRouteValue("segments"));
 
-			var content = Instance.Tenant.GetService<IClientGlobalizationService>().LoadData(locale, segments);
+			var content = MiddlewareDescriptor.Current.Tenant.GetService<IClientGlobalizationService>().LoadData(locale, segments);
 
 			if (!HasBeenModified(DateTime.UtcNow.AddMonths(-3)))
 				return;

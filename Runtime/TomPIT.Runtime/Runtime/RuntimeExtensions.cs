@@ -48,12 +48,12 @@ namespace TomPIT.Runtime
 
 		public static IMicroServiceContext CreateContext(this IComponent component)
 		{
-			return new MicroServiceContext(component.MicroService, Instance.Tenant.Url);
+			return new MicroServiceContext(component.MicroService, MiddlewareDescriptor.Current.Tenant.Url);
 		}
 
 		public static IMicroServiceContext CreateContext(this IConfiguration configuration)
 		{
-			return CreateContext(Instance.Tenant.GetService<IComponentService>().SelectComponent(configuration.Component));
+			return CreateContext(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(configuration.Component));
 		}
 
 		public static void SetContext(this IMiddlewareObject target, IMiddlewareContext context)

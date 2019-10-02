@@ -141,7 +141,7 @@ namespace TomPIT.Search.Catalogs
 			get
 			{
 				if (_catalog == null)
-					_catalog = Instance.Tenant.GetService<IComponentService>().SelectComponent(Descriptor.Catalog);
+					_catalog = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(Descriptor.Catalog);
 
 				return _catalog;
 			}
@@ -152,7 +152,7 @@ namespace TomPIT.Search.Catalogs
 			get
 			{
 				if (_microService == null)
-					_microService = Instance.Tenant.GetService<IMicroServiceService>().Select(Catalog.MicroService);
+					_microService = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(Catalog.MicroService);
 
 				return _microService;
 			}

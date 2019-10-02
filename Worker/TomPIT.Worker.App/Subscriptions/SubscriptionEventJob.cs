@@ -26,17 +26,17 @@ namespace TomPIT.Worker.Subscriptions
 
 			Invoke(m);
 
-			Instance.Tenant.GetService<ISubscriptionWorkerService>().CompleteEvent(item.PopReceipt);
+			MiddlewareDescriptor.Current.Tenant.GetService<ISubscriptionWorkerService>().CompleteEvent(item.PopReceipt);
 		}
 
 		private void Invoke(JObject message)
 		{
-			var subscriptionEvent = Instance.Tenant.GetService<ISubscriptionWorkerService>().SelectEvent(message.Required<Guid>("id"));
+			var subscriptionEvent = MiddlewareDescriptor.Current.Tenant.GetService<ISubscriptionWorkerService>().SelectEvent(message.Required<Guid>("id"));
 
 			if (subscriptionEvent == null)
 				return;
 
-			if (!(Instance.Tenant.GetService<IComponentService>().SelectConfiguration(subscriptionEvent.Handler) is ISubscriptionConfiguration config))
+			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(subscriptionEvent.Handler) is ISubscriptionConfiguration config))
 				return;
 
 			var eventConfig = config.Events.FirstOrDefault(f => string.Compare(f.Name, subscriptionEvent.Name, true) == 0);
@@ -46,18 +46,18 @@ namespace TomPIT.Worker.Subscriptions
 
 			var ctx = new MicroServiceContext(config.MicroService());
 
-			var middleware = Instance.Tenant.GetService<ICompilerService>().CreateInstance<ISubscriptionEventMiddleware>(ctx, eventConfig, message.Optional("arguments", string.Empty));
+			var middleware = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<ISubscriptionEventMiddleware>(ctx, eventConfig, message.Optional("arguments", string.Empty));
 
 			middleware.Event = subscriptionEvent;
-			middleware.Recipients = Instance.Tenant.GetService<ISubscriptionWorkerService>().QueryRecipients(subscriptionEvent.Handler, subscriptionEvent.PrimaryKey, subscriptionEvent.Topic);
+			middleware.Recipients = MiddlewareDescriptor.Current.Tenant.GetService<ISubscriptionWorkerService>().QueryRecipients(subscriptionEvent.Handler, subscriptionEvent.PrimaryKey, subscriptionEvent.Topic);
 
 			middleware.Invoke();
 		}
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			Instance.Tenant.LogError(nameof(SubscriptionEventJob), ex.Source, ex.Message);
-			Instance.Tenant.GetService<ISubscriptionWorkerService>().PingSubscriptionEvent(item.PopReceipt);
+			MiddlewareDescriptor.Current.Tenant.LogError(nameof(SubscriptionEventJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.GetService<ISubscriptionWorkerService>().PingSubscriptionEvent(item.PopReceipt);
 		}
 	}
 }

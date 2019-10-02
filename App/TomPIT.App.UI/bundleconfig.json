@@ -66,7 +66,7 @@
       "wwwroot/assets/scripts/form.js"
     ],
     "minify": {
-      "enabled": true,
+      "enabled": false,
       "renameLocals": false
     },
     "sourceMap": false

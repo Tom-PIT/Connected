@@ -1,5 +1,5 @@
 ﻿using System;
-using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Services
 {
@@ -11,9 +11,9 @@ namespace TomPIT.Middleware.Services
 		TimeZoneInfo Timezone { get; }
 
 		Guid Language { get; }
-		string GetString([CAP(CAP.StringTableProvider)]string stringTable, [CAP(CAP.StringTableStringProvider)]string key);
-		string GetString([CAP(CAP.StringTableProvider)]string stringTable, [CAP(CAP.StringTableStringProvider)]string key, int lcid);
-		string TryGetString([CAP(CAP.StringTableProvider)]string stringTable, [CAP(CAP.StringTableStringProvider)]string key);
-		string TryGetString([CAP(CAP.StringTableProvider)]string stringTable, [CAP(CAP.StringTableStringProvider)]string key, int lcid);
+		string GetString([CIP(CIP.StringTableProvider)]string stringTable, [CIP(CIP.StringTableStringProvider)]string key);
+		string GetString([CIP(CIP.StringTableProvider)]string stringTable, [CIP(CIP.StringTableStringProvider)]string key, int lcid);
+		string TryGetString([CIP(CIP.StringTableProvider)]string stringTable, [CIP(CIP.StringTableStringProvider)]string key);
+		string TryGetString([CIP(CIP.StringTableProvider)]string stringTable, [CIP(CIP.StringTableStringProvider)]string key, int lcid);
 	}
 }

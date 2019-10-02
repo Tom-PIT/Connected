@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
 using TomPIT.Ide.TextServices.Languages;
 
@@ -12,23 +11,16 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 		protected override List<ICompletionItem> OnProvideItems()
 		{
 			var model = Editor.Document.GetSemanticModelAsync().Result;
-			var mappedText = SourceText.From(Editor.Text);
 			var result = new List<ICompletionItem>();
 			var service = Microsoft.CodeAnalysis.Completion.CompletionService.GetService(Editor.Document);
-			var caret = -1;
+			var caret = Editor.GetMappedCaret(Arguments.Position);
+			var token = model.SyntaxTree.GetRoot().FindToken(caret);
 
-			foreach (var token in model.SyntaxTree.GetRoot().DescendantTokens())
-			{
-				if (IsInRange(token))
-				{
-					caret = token.Span.End;
+			if (token == default)
+				return default;
 
-					if (IsInline(token))
-						caret--;
-
-					break;
-				}
-			}
+			if (!IsInline(token))
+				caret++;
 
 			if (caret == -1)
 				return null;
@@ -90,17 +82,9 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 			return true;
 		}
 
-		private bool IsInRange(Microsoft.CodeAnalysis.SyntaxToken token)
+		public override bool WillProvideItems(CompletionProviderArgs e, IReadOnlyCollection<ICompletionItem> existing)
 		{
-			var mappedSpan = token.GetLocation().GetMappedLineSpan();
-
-			if (!mappedSpan.HasMappedPath)
-				return false;
-
-			var mappedLine = Arguments.Position.LineNumber - 1;
-			var mappedColumn = Arguments.Position.Column - 1;
-
-			return mappedSpan.StartLinePosition.Line == mappedLine && (mappedSpan.Span.Start.Character <= mappedColumn && mappedSpan.Span.End.Character >= mappedColumn);
+			return existing.Count == 0;
 		}
 	}
 }

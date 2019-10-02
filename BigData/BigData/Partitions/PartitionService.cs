@@ -59,7 +59,7 @@ namespace TomPIT.BigData.Partitions
 
 			var ms = Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)configuration).MicroService());
 
-			var u = Instance.Tenant.CreateUrl("BigDataManagement", "InsertPartition");
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("BigDataManagement", "InsertPartition");
 			var e = new JObject
 				{
 					{"name", configuration.ComponentName() },
@@ -213,7 +213,7 @@ namespace TomPIT.BigData.Partitions
 			}
 			else
 			{
-				var content = Instance.Tenant.GetService<IStorageService>().Download(existingConfiguration[0].Token);
+				var content = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Download(existingConfiguration[0].Token);
 
 				if (content == null || content.Content == null)
 				{
@@ -246,7 +246,7 @@ namespace TomPIT.BigData.Partitions
 
 		private void CreateValidationSchema(IMicroService microService, Guid partition, PartitionSchema schema)
 		{
-			Instance.Tenant.GetService<IStorageService>().Upload(new Blob
+			MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Upload(new Blob
 			{
 				ContentType = "application/json",
 				FileName = partition.ToString(),
@@ -267,7 +267,7 @@ namespace TomPIT.BigData.Partitions
 				{"status", status.ToString() }
 			};
 
-			Instance.Tenant.Post(u, e);
+			MiddlewareDescriptor.Current.Tenant.Post(u, e);
 			Refresh(token);
 		}
 

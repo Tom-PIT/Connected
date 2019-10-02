@@ -159,11 +159,11 @@ namespace TomPIT.Ide.TextServices.CSharp
 				return null;
 
 			var declaringTypeName = string.Format(
-				"{0}.{1}, {2}",
-				ms.ContainingType.ContainingNamespace.ToString(),
-				ms.ContainingType.Name,
-				ms.ContainingAssembly.Name
-			);
+					"{0}.{1}, {2}",
+					ms.ContainingType.ContainingNamespace.ToString(),
+					ms.ContainingType.MetadataName,
+					ms.ContainingAssembly.ToDisplayString()
+				);
 
 			var type = Type.GetType(declaringTypeName);
 
@@ -183,10 +183,13 @@ namespace TomPIT.Ide.TextServices.CSharp
 			}
 
 			var argumentTypes = methodArgumentTypeNames.Select(typeName => Type.GetType(typeName));
-			var methods = Type.GetType(declaringTypeName).GetMethods();
+			var methods = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.MemberType == MemberTypes.Method);
 
-			foreach (var method in methods)
+			foreach (var member in methods)
 			{
+				if (!(member is MethodInfo method))
+					continue;
+
 				if (string.Compare(method.Name, ms.Name, false) != 0)
 					continue;
 

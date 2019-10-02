@@ -3,43 +3,38 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace TomPIT.Ide.TextServices
 {
-	public enum OffsetDirection
-	{
-		None = 0,
-		Up = 1,
-		Down = 2
-	}
 	public static class TextEditorExtensions
 	{
 		public static TextSpan GetSpan(this SourceText text, IPosition position)
 		{
-			var span = text.Lines[position.LineNumber - 1].Span;
+			var span = text.Lines[position.LineNumber].Span;
 
-			return TextSpan.FromBounds(span.Start + position.Column - 1, span.Start + position.Column - 1);
+			return TextSpan.FromBounds(span.Start + position.Column, span.Start + position.Column);
 		}
 
 		public static TextSpan GetSpan(this Document document, IPosition position)
 		{
 			var text = document.GetTextAsync().Result;
 
-			if (text.Lines.Count < position.LineNumber - 1)
+			if (text.Lines.Count < position.LineNumber)
 				return default;
 
-			var span = text.Lines[position.LineNumber - 1].Span;
+			var span = text.Lines[position.LineNumber].Span;
 
-			return TextSpan.FromBounds(span.Start + position.Column - 1, span.Start + position.Column - 1);
+			return TextSpan.FromBounds(span.Start + position.Column, span.Start + position.Column);
 		}
 
 		public static TextSpan GetSpan(this Document document, IRange range)
 		{
 			var text = document.GetTextAsync().Result;
 
-			if (text.Lines.Count < range.StartLineNumber - 1)
+			if (text.Lines.Count < range.StartLineNumber || text.Lines.Count < range.EndLineNumber)
 				return default;
 
-			var span = text.Lines[range.StartLineNumber - 1].Span;
+			var spanStart = text.Lines[range.StartLineNumber].Span;
+			var spanEnd = text.Lines[range.EndLineNumber].Span;
 
-			return TextSpan.FromBounds(span.Start + range.StartColumn - 1, span.Start + range.StartColumn - 1);
+			return TextSpan.FromBounds(spanStart.Start + range.StartColumn, spanEnd.Start + range.EndColumn);
 		}
 
 		public static TextLine GetLine(this SourceText text, int position)
@@ -66,66 +61,42 @@ namespace TomPIT.Ide.TextServices
 			return new TextLine();
 		}
 
-		public static int GetCaret(this SourceText text, LinePosition position, OffsetDirection direction = OffsetDirection.None)
+		public static int GetCaret(this SourceText text, LinePosition position)
 		{
-			var offset = 0;
+			var span = text.Lines[position.Line].Span;
 
-			switch (direction)
-			{
-				case OffsetDirection.Up:
-					offset = -1;
-					break;
-				case OffsetDirection.Down:
-					offset = 1;
-					break;
-			}
-
-			var span = text.Lines[position.Line + offset].Span;
-
-			return span.Start + position.Character + offset;
+			return span.Start + position.Character;
 		}
 
-		public static int GetCaret(this SourceText text, IPosition position, OffsetDirection direction = OffsetDirection.None)
+		public static int GetCaret(this SourceText text, IPosition position)
 		{
-			var offset = 0;
+			var span = text.Lines[position.LineNumber].Span;
 
-			switch (direction)
-			{
-				case OffsetDirection.Up:
-					offset = -1;
-					break;
-				case OffsetDirection.Down:
-					offset = 1;
-					break;
-			}
-
-			var span = text.Lines[position.LineNumber + offset].Span;
-
-			return span.Start + position.Column + offset;
+			return span.Start + position.Column;
 		}
 
 		public static int GetCaret(this Document document, IRange range)
 		{
 			var text = document.GetTextAsync().Result;
-			var span = text.Lines[range.StartLineNumber - 1].Span;
+			var span = text.Lines[range.StartLineNumber].Span;
 
-			return span.Start + range.StartColumn - 1;
+			return span.Start + range.StartColumn;
 		}
 
 		public static int GetCaret(this Document document, LinePosition position)
 		{
 			var text = document.GetTextAsync().Result;
-			var span = text.Lines[position.Line - 1].Span;
+			var span = text.Lines[position.Line].Span;
 
-			return span.Start + position.Character - 1;
+			return span.Start + position.Character;
 		}
 
 		public static int GetCaret(this Document document, IPosition position)
 		{
 			var text = document.GetTextAsync().Result;
-			var span = text.Lines[position.LineNumber - 1].Span;
+			var span = text.Lines[position.LineNumber].Span;
 
-			return span.Start + position.Column - 1;
+			return span.Start + position.Column;
 		}
 	}
 }

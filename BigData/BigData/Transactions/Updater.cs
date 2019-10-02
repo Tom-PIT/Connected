@@ -10,6 +10,7 @@ using TomPIT.BigData.Persistence;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.Exceptions;
+using TomPIT.Middleware;
 using TomPIT.Serialization;
 using TomPIT.Storage;
 
@@ -37,7 +38,7 @@ namespace TomPIT.BigData.Transactions
 			get
 			{
 				if (_partition == null)
-					_partition = Instance.Tenant.GetService<IPartitionService>().Select(Configuration);
+					_partition = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().Select(Configuration);
 
 				return _partition;
 			}
@@ -62,7 +63,7 @@ namespace TomPIT.BigData.Transactions
 			get
 			{
 				if (_configuration == null)
-					_configuration = Instance.Tenant.GetService<IComponentService>().SelectConfiguration(Block.Partition) as IPartitionConfiguration;
+					_configuration = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(Block.Partition) as IPartitionConfiguration;
 
 				return _configuration;
 			}
@@ -73,7 +74,7 @@ namespace TomPIT.BigData.Transactions
 			get
 			{
 				if (_microService == null)
-					_microService = Instance.Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)Configuration).MicroService());
+					_microService = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)Configuration).MicroService());
 
 				return _microService;
 			}
@@ -122,12 +123,12 @@ namespace TomPIT.BigData.Transactions
 
 		private void LoadData()
 		{
-			var blobs = Instance.Tenant.GetService<IStorageService>().Query(MicroService.Token, BlobTypes.BigDataTransactionBlock, MicroService.ResourceGroup, Block.Token.ToString());
+			var blobs = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Query(MicroService.Token, BlobTypes.BigDataTransactionBlock, MicroService.ResourceGroup, Block.Token.ToString());
 
 			if (blobs.Count == 0)
 				return;
 
-			var content = Instance.Tenant.GetService<IStorageService>().Download(blobs[0].Token);
+			var content = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Download(blobs[0].Token);
 
 			if (content == null || content.Content == null)
 				return;
@@ -143,7 +144,7 @@ namespace TomPIT.BigData.Transactions
 		private void CreateSchema()
 		{
 			Data = new Dictionary<string, DataTable>(StringComparer.OrdinalIgnoreCase);
-			Schema = Instance.Tenant.GetService<IPersistenceService>().SelectSchema(Configuration);
+			Schema = MiddlewareDescriptor.Current.Tenant.GetService<IPersistenceService>().SelectSchema(Configuration);
 
 			var schema = new DataTable();
 

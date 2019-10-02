@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TomPIT.Connectivity;
 using TomPIT.Deployment;
+using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
 using TomPIT.Distributed;
 
@@ -64,7 +65,7 @@ namespace TomPIT.Management.Deployment
 				catch (Exception ex)
 				{
 					tenant.GetService<IDeploymentService>().UpdateInstaller(installer.Package, InstallStateStatus.Error, ex.Message);
-					tenant.LogError(null, "InstallerService", ex.Source, ex.Message);
+					tenant.LogError(ex.Source, ex.Message, LogCategories.Installer);
 				}
 			}
 

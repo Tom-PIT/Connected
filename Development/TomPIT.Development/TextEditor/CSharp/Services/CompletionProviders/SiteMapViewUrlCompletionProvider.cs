@@ -15,7 +15,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 			foreach (var config in configs)
 			{
-				if (!(config is IViewConfiguration view) || string.IsNullOrWhiteSpace(view.Url))
+				if (!(config is IViewConfiguration view))
 					continue;
 
 				var viewName = $"{Editor.Context.MicroService.Name}/{view.ComponentName()}";
@@ -23,7 +23,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 				result.Add(new CompletionItem
 				{
 					FilterText = viewName,
-					InsertText = view.Url,
+					InsertText = viewName,
 					Label = viewName,
 					SortText = viewName,
 					Kind = CompletionItemKind.Text

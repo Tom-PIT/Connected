@@ -64,10 +64,10 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 		{
 			var span = Editor.Document.GetSpan(new Range
 			{
-				EndColumn = marker.EndColumn,
-				EndLineNumber = marker.EndLineNumber,
-				StartColumn = marker.StartColumn,
-				StartLineNumber = marker.StartLineNumber
+				EndColumn = marker.EndColumn - 1,
+				EndLineNumber = marker.EndLineNumber - 1,
+				StartColumn = marker.StartColumn - 1,
+				StartLineNumber = marker.StartLineNumber - 1
 			});
 
 			var node = Arguments.Model.SyntaxTree.GetRoot().FindNode(span);
@@ -160,10 +160,10 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 				Text = type.Name,
 				Range = new Range
 				{
-					StartColumn = marker.StartColumn,
-					EndColumn = marker.EndColumn,
-					EndLineNumber = marker.EndLineNumber,
-					StartLineNumber = marker.StartLineNumber
+					StartColumn = marker.StartColumn - 1,
+					EndColumn = marker.EndColumn - 1,
+					EndLineNumber = marker.EndLineNumber - 1,
+					StartLineNumber = marker.StartLineNumber - 1
 				}
 			});
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.Text;
 using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Middleware;
 
@@ -48,10 +49,13 @@ namespace TomPIT.Ide.TextServices
 			return default;
 		}
 
+		public abstract int GetCaret(IPosition position);
+		public abstract int GetMappedCaret(IPosition position);
+		public abstract IPosition GetMappedPosition(IPosition position);
+		public abstract TextSpan GetMappedSpan(IPosition position);
+
 		protected Dictionary<Type, IWorkspaceService> Services => _services.Value;
 
 		public virtual LanguageFeature Features => LanguageFeature.None;
-
-		//		public IMicroService MicroService { get; set; }
 	}
 }

@@ -10,6 +10,7 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
 using TomPIT.Configuration;
 using TomPIT.Diagostics;
+using TomPIT.Middleware;
 using TomPIT.Search.Analyzers;
 using TomPIT.Storage;
 
@@ -52,11 +53,11 @@ namespace TomPIT.Search.Catalogs
 			{
 				if (_searchDirectory == null)
 				{
-					_searchDirectory = Instance.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "Search Path");
+					_searchDirectory = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "Search Path");
 
 					if (string.IsNullOrWhiteSpace(_searchDirectory))
 					{
-						Instance.Tenant.LogError("Search", nameof(CatalogHost), "'Search Path' setting not defined");
+						MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(CatalogHost), "'Search Path' setting not defined");
 						throw new NullReferenceException();
 					}
 				}
@@ -109,14 +110,14 @@ namespace TomPIT.Search.Catalogs
 
 		private void OnFileNotFoundException(object sender, EventArgs e)
 		{
-			Instance.Tenant.GetService<IIndexingService>().Rebuild(Catalog.Component);
+			MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Rebuild(Catalog.Component);
 
 			_isValid = false;
 
-			Instance.Tenant.LogError("Search", nameof(FileNotFoundException), $"Index Corrupted ({Catalog.Component})");
+			MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(FileNotFoundException), $"Index Corrupted ({Catalog.Component})");
 		}
 
-		public bool IsValid { get { return _isValid && Instance.Tenant.GetService<IIndexingService>().SelectState(Catalog.Component) == null; } }
+		public bool IsValid { get { return _isValid && MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().SelectState(Catalog.Component) == null; } }
 
 		private FSDirectory Directory
 		{
@@ -169,7 +170,7 @@ namespace TomPIT.Search.Catalogs
 					Writer.Commit();
 
 					while (MessageBuffer.TryTake(out IQueueMessage m))
-						Instance.Tenant.GetService<IIndexingService>().Complete(m.PopReceipt);
+						MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Complete(m.PopReceipt);
 				}
 
 				OperationEnd();
@@ -179,11 +180,11 @@ namespace TomPIT.Search.Catalogs
 				_isValid = false;
 				OperationEnd();
 
-				Instance.Tenant.GetService<IIndexingService>().Rebuild(Catalog.Component);
+				MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Rebuild(Catalog.Component);
 
 				KillAll();
 
-				Instance.Tenant.LogError("Search", nameof(Flush), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Flush), ex.Message);
 			}
 			catch (Exception ex)
 			{
@@ -191,7 +192,7 @@ namespace TomPIT.Search.Catalogs
 				OperationEnd();
 				KillAll();
 
-				Instance.Tenant.LogError("Search", nameof(Flush), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Flush), ex.Message);
 			}
 		}
 
@@ -432,7 +433,7 @@ namespace TomPIT.Search.Catalogs
 				job.Search(Searcher);
 
 				//foreach (var duplicate in job.Duplicates)
-				//	Instance.GetService<ISearchService>().Index(Catalog, SearchVerb.Update, new JObject { { "Id", duplicate } });
+				//	MiddlewareDescriptor.Current.GetService<ISearchService>().Index(Catalog, SearchVerb.Update, new JObject { { "Id", duplicate } });
 
 				total = job.Total;
 			}
@@ -440,8 +441,8 @@ namespace TomPIT.Search.Catalogs
 			{
 				_isValid = false;
 
-				Instance.Tenant.LogError("Search", nameof(Search), ex.Message);
-				Instance.Tenant.GetService<IIndexingService>().Rebuild(Catalog.Component);
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Search), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Rebuild(Catalog.Component);
 
 				KillAll();
 
@@ -449,7 +450,7 @@ namespace TomPIT.Search.Catalogs
 			}
 			catch (Exception ex)
 			{
-				Instance.Tenant.LogError("Search", nameof(Search), $"{Catalog.ComponentName()} ({job.CommandText}, {ex.Message})");
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Search), $"{Catalog.ComponentName()} ({job.CommandText}, {ex.Message})");
 
 				_isValid = false;
 

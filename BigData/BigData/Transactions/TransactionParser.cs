@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
+using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Serialization;
 
@@ -43,7 +44,7 @@ namespace TomPIT.BigData.Transactions
 			get
 			{
 				if (_microService == null)
-					_microService = Instance.Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)Partition).MicroService());
+					_microService = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)Partition).MicroService());
 
 				return _microService;
 			}
@@ -51,10 +52,10 @@ namespace TomPIT.BigData.Transactions
 
 		public void Execute()
 		{
-			var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(MicroService.Token, Partition, Partition.ComponentName());
+			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(MicroService.Token, Partition, Partition.ComponentName());
 			var argument = type.GetInterface(typeof(IPartitionMiddleware<>).FullName).GetGenericArguments()[0];
 			//TODO: not implemented
-			dynamic instance = null;// Instance.Tenant.GetService<ICompilerService>().CreateInstance< type.CreateInstance();
+			dynamic instance = null;// MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance< type.CreateInstance();
 			var items = (IList)typeof(List<>).MakeGenericType(argument).CreateInstance();
 
 			foreach (var item in Items)

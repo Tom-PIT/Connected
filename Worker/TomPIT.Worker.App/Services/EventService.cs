@@ -26,7 +26,7 @@ namespace TomPIT.Worker.Services
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				var url = Instance.Tenant.CreateUrl("EventManagement", "Dequeue");
+				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Dequeue");
 
 				var e = new JObject
 				{
@@ -34,7 +34,7 @@ namespace TomPIT.Worker.Services
 					{ "resourceGroup", f.ResourceGroup }
 				};
 
-				var jobs = Instance.Tenant.Post<List<QueueMessage>>(url, e);
+				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
 
 				if (jobs == null)
 					return;

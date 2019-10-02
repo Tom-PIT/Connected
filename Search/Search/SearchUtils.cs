@@ -4,6 +4,7 @@ using System.Reflection;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
+using TomPIT.Middleware;
 using TomPIT.Reflection;
 
 namespace TomPIT.Search
@@ -37,7 +38,7 @@ namespace TomPIT.Search
 
 		public static ISearchMiddleware<T> CreateHandler<T>(this ISearchCatalogConfiguration catalog)
 		{
-			var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(), catalog, catalog.ComponentName());
+			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(), catalog, catalog.ComponentName());
 
 			if (type == null)
 				return null;
@@ -47,7 +48,7 @@ namespace TomPIT.Search
 
 		public static Type CatalogType(this ISearchCatalogConfiguration catalog)
 		{
-			var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(), catalog, catalog.ComponentName());
+			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(), catalog, catalog.ComponentName());
 
 			if (type == null)
 				return null;

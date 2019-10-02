@@ -2,6 +2,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.ComponentModel;
+using TomPIT.Middleware;
 using TomPIT.Routing;
 using TomPIT.UI.Theming;
 
@@ -11,7 +12,7 @@ namespace TomPIT.App.UI.Theming
 	{
 		protected override void OnProcessRequest()
 		{
-			var ms = Instance.Tenant.GetService<IMicroServiceService>().Select(Context.GetRouteValue("microService") as string);
+			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(Context.GetRouteValue("microService") as string);
 
 			if (ms == null)
 			{
@@ -20,7 +21,7 @@ namespace TomPIT.App.UI.Theming
 				return;
 			}
 
-			var component = Instance.Tenant.GetService<IComponentService>().SelectComponent(ms.Token, "Theme", Context.GetRouteValue("theme") as string);
+			var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(ms.Token, "Theme", Context.GetRouteValue("theme") as string);
 
 			if (component == null)
 			{
@@ -32,7 +33,7 @@ namespace TomPIT.App.UI.Theming
 			if (!HasBeenModified(component.Modified))
 				return;
 
-			var theme = Instance.Tenant.GetService<IThemeService>().Compile(ms.Name, component.Name);
+			var theme = MiddlewareDescriptor.Current.Tenant.GetService<IThemeService>().Compile(ms.Name, component.Name);
 
 			Context.Response.ContentType = "text/css";
 			SetModified(component.Modified);

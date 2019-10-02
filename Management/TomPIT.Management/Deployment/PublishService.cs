@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
 using TomPIT.Distributed;
 using TomPIT.Management.ComponentModel;
@@ -67,7 +68,7 @@ namespace TomPIT.Management.Deployment
 				}
 				catch (Exception ex)
 				{
-					tenant.LogError(null, microService.Name, nameof(PublishService), ex.Message);
+					tenant.LogError(ex.Source, ex.Message, LogCategories.Deployment);
 
 					tenant.GetService<IMicroServiceManagementService>().Update(microService.Token, microService.Name, microService.Status, microService.Template, microService.ResourceGroup,
 						 microService.Package, microService.Plan, microService.UpdateStatus, CommitStatus.PublishError);

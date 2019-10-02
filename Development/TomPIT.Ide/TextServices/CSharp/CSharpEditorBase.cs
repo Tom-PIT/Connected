@@ -206,5 +206,25 @@ namespace TomPIT.Ide.TextServices.CSharp
 
 			return tokens[^1];
 		}
+
+		public override int GetCaret(IPosition position)
+		{
+			return SourceText.GetCaret(position);
+		}
+
+		public override IPosition GetMappedPosition(IPosition position)
+		{
+			return position;
+		}
+
+		public override int GetMappedCaret(IPosition position)
+		{
+			return GetCaret(position);
+		}
+
+		public override TextSpan GetMappedSpan(IPosition position)
+		{
+			return SourceText.GetSpan(position);
+		}
 	}
 }

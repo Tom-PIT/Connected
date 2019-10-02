@@ -7,8 +7,10 @@ namespace TomPIT.Messaging
 		public string EventName { get; private set; }
 		public bool Cancel { get; protected set; }
 
-		public void Invoke()
+		public void Invoke(string eventName)
 		{
+			EventName = eventName;
+
 			Validate();
 			OnInvoke();
 		}

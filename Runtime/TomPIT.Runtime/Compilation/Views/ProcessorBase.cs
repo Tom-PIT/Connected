@@ -25,16 +25,6 @@ namespace TomPIT.Compilation.Views
 		protected void AddUsings(StringBuilder builder)
 		{
 			builder.AppendLine("@using TomPIT;");
-			builder.AppendLine("@using TomPIT.Middleware;");
-			builder.AppendLine("@using TomPIT.Middleware.Interop;");
-			builder.AppendLine("@using System;");
-			builder.AppendLine("@using System.Linq;");
-			builder.AppendLine("@using System.Text;");
-			builder.AppendLine("@using System.Data;");
-			builder.AppendLine("@using Newtonsoft.Json;");
-			builder.AppendLine("@using Newtonsoft.Json.Linq;");
-			builder.AppendLine("@using System.Collections;");
-			builder.AppendLine("@using System.Collections.Generic;");
 		}
 
 		protected void AppendViewMetaData(StringBuilder builder, string viewType, Guid componentId)

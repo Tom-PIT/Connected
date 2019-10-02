@@ -1,5 +1,6 @@
 ﻿using dotless.Core.Loggers;
 using TomPIT.Diagnostics;
+using TomPIT.Middleware;
 
 namespace TomPIT.UI.Theming
 {
@@ -17,7 +18,7 @@ namespace TomPIT.UI.Theming
 				Message = message
 			};
 
-			Instance.Tenant.GetService<ILoggingService>().Write(e);
+			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Write(e);
 		}
 	}
 }

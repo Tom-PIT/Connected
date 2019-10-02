@@ -25,29 +25,29 @@ namespace TomPIT.Worker.Subscriptions
 
 			Invoke(m);
 
-			Instance.Tenant.GetService<ISubscriptionWorkerService>().CompleteSubscription(item.PopReceipt);
+			MiddlewareDescriptor.Current.Tenant.GetService<ISubscriptionWorkerService>().CompleteSubscription(item.PopReceipt);
 		}
 
 		private void Invoke(JObject message)
 		{
-			var sub = Instance.Tenant.GetService<ISubscriptionWorkerService>().SelectSubscription(message.Required<Guid>("id"));
+			var sub = MiddlewareDescriptor.Current.Tenant.GetService<ISubscriptionWorkerService>().SelectSubscription(message.Required<Guid>("id"));
 
 			if (sub == null)
 				return;
 
-			var config = Instance.Tenant.GetService<IComponentService>().SelectConfiguration(sub.Handler) as ISubscriptionConfiguration;
+			var config = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(sub.Handler) as ISubscriptionConfiguration;
 			var ctx = new MicroServiceContext(config.MicroService());
-			var middleware = Instance.Tenant.GetService<ICompilerService>().CreateInstance<ISubscriptionMiddleware>(ctx, config, message.Optional("arguments", string.Empty));
+			var middleware = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<ISubscriptionMiddleware>(ctx, config, message.Optional("arguments", string.Empty));
 
-			Instance.Tenant.GetService<ISubscriptionWorkerService>().InsertSubscribers(sub.Token, middleware.Invoke(sub));
+			MiddlewareDescriptor.Current.Tenant.GetService<ISubscriptionWorkerService>().InsertSubscribers(sub.Token, middleware.Invoke(sub));
 
 			middleware.Created(sub);
 		}
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			Instance.Tenant.LogError(nameof(SubscriptionEventJob), ex.Source, ex.Message);
-			Instance.Tenant.GetService<ISubscriptionWorkerService>().PingSubscription(item.PopReceipt);
+			MiddlewareDescriptor.Current.Tenant.LogError(nameof(SubscriptionEventJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.GetService<ISubscriptionWorkerService>().PingSubscription(item.PopReceipt);
 		}
 	}
 }

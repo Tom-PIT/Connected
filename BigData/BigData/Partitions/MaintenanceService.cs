@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
+using TomPIT.Middleware;
 using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.BigData.Partitions
@@ -24,7 +25,7 @@ namespace TomPIT.BigData.Partitions
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				var jobs = Instance.Tenant.GetService<IPartitionMaintenanceService>().Dequeue(f.Available);
+				var jobs = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionMaintenanceService>().Dequeue(f.Available);
 
 				if (jobs == null)
 					return;

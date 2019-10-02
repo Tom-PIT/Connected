@@ -53,18 +53,18 @@ namespace TomPIT.IoT.Hubs
 			try
 			{
 				var hub = device.Device.Configuration();
-				var component = Instance.Tenant.GetService<IComponentService>().SelectComponent(hub.Component);
-				var ms = Instance.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
+				var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(hub.Component);
+				var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
 				var groupName = string.Format("{0}/{1}", ms.Name.ToLowerInvariant(), component.Name.ToLowerInvariant());
 
 				try
 				{
 					var ctx = new MicroServiceContext(ms);
-					var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(ms.Token, device.Device, device.Device.Name, false);
+					var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ms.Token, device.Device, device.Device.Name, false);
 
 					if (type != null)
 					{
-						var handler = Instance.Tenant.GetService<ICompilerService>().CreateInstance<IIoTDeviceMiddleware>(ctx, type);
+						var handler = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IIoTDeviceMiddleware>(ctx, type);
 
 						handler.Arguments = e;
 						handler.Invoke();
@@ -82,10 +82,10 @@ namespace TomPIT.IoT.Hubs
 				}
 				catch (Exception ex)
 				{
-					Instance.Tenant.LogError("IoT", ex.Source, ex.Message);
+					MiddlewareDescriptor.Current.Tenant.LogError("IoT", ex.Source, ex.Message);
 				}
 
-				var changes = Instance.Tenant.GetService<IIoTHubService>().SetData(device.Device, e);
+				var changes = MiddlewareDescriptor.Current.Tenant.GetService<IIoTHubService>().SetData(device.Device, e);
 
 				if (changes == null || changes.Count == 0)
 					return;
@@ -100,7 +100,7 @@ namespace TomPIT.IoT.Hubs
 
 		private void Merge(IIoTHubConfiguration hub, IIoTDeviceMiddleware handler, JObject arguments)
 		{
-			var schema = Instance.Tenant.GetService<IIoTHubService>().SelectSchema(hub);
+			var schema = MiddlewareDescriptor.Current.Tenant.GetService<IIoTHubService>().SelectSchema(hub);
 			var serializedHandler = Serializer.Deserialize<JObject>(handler);
 
 			foreach (var property in serializedHandler.Children())
@@ -131,7 +131,7 @@ namespace TomPIT.IoT.Hubs
 				var transaction = e.Required<string>("transaction");
 				var device = e.Required<string>("device");
 
-				var ms = Instance.Tenant.GetService<IMicroServiceService>().Select(microService);
+				var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(microService);
 
 				if (ms == null)
 					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
@@ -145,10 +145,10 @@ namespace TomPIT.IoT.Hubs
 						hub = tokens[1];
 
 					ms.ValidateMicroServiceReference(tokens[0]);
-					ms = Instance.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
+					ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 				}
 
-				if (!(Instance.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "IoTHub", hub) is IIoTHubConfiguration config))
+				if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "IoTHub", hub) is IIoTHubConfiguration config))
 					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrIoTHubNotFound, hub));
 
 				var hubDevice = config.Devices.FirstOrDefault(f => string.Compare(f.Name, device, true) == 0);
@@ -156,7 +156,7 @@ namespace TomPIT.IoT.Hubs
 				if (hubDevice == null)
 					throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrIoTHubDeviceNotFound, hub, device));
 
-				var schema = Instance.Tenant.GetService<IIoTHubService>().SelectSchema(hubDevice.Closest<IIoTHubConfiguration>());
+				var schema = MiddlewareDescriptor.Current.Tenant.GetService<IIoTHubService>().SelectSchema(hubDevice.Closest<IIoTHubConfiguration>());
 				var t = hubDevice.Transactions.FirstOrDefault(f => string.Compare(f.Name, transaction, true) == 0);
 
 				if (t == null)
@@ -171,11 +171,11 @@ namespace TomPIT.IoT.Hubs
 				};
 
 				var ctx = new MicroServiceContext(ms.Token);
-				var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(ms.Token, t, t.Name, false);
+				var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ms.Token, t, t.Name, false);
 
 				if (type != null)
 				{
-					var handler = Instance.Tenant.GetService<ICompilerService>().CreateInstance<IIoTTransactionMiddleware>(ctx, type, Serializer.Serialize(e));
+					var handler = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IIoTTransactionMiddleware>(ctx, type, Serializer.Serialize(e));
 
 					handler.Invoke();
 

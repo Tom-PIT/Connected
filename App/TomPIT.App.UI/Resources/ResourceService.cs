@@ -53,7 +53,7 @@ namespace TomPIT.App.Resources
 
 		private void Invalidate(ConfigurationEventArgs e)
 		{
-			if (string.Compare(e.Category, "Bundle", true) != 0)
+			if (string.Compare(e.Category, ComponentCategories.ScriptBundle, true) != 0)
 				return;
 
 			var c = Tenant.GetService<IComponentService>().SelectComponent(e.Component);

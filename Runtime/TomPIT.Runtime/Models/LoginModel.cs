@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
+using TomPIT.Middleware;
 using TomPIT.Routing;
 using TomPIT.Runtime;
 using TomPIT.Security;
@@ -45,7 +46,7 @@ namespace TomPIT.Models
 			Title = SR.Login;
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
-				Endpoint = Instance.Tenant.Url;
+				Endpoint = MiddlewareDescriptor.Current.Tenant.Url;
 
 			Navigation.Breadcrumbs.Add(new Route
 			{

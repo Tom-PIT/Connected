@@ -1,4 +1,5 @@
 ﻿using TomPIT.IoT.Hubs;
+using TomPIT.Middleware;
 using TomPIT.Security;
 using TomPIT.Security.Authentication;
 
@@ -13,7 +14,7 @@ namespace TomPIT.IoT.Security
 
 		public IClientAuthenticationResult Authenticate(string bearerKey)
 		{
-			var device = Instance.Tenant.GetService<IIoTHubService>().SelectDevice(bearerKey);
+			var device = MiddlewareDescriptor.Current.Tenant.GetService<IIoTHubService>().SelectDevice(bearerKey);
 
 			if (device != null)
 			{

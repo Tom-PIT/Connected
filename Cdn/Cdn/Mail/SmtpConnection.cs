@@ -53,7 +53,7 @@ namespace TomPIT.Cdn.Mail
 			catch (Exception ex)
 			{
 				State = ConnectionState.Idle;
-				Instance.Tenant.GetService<ILoggingService>().Write(new LogEntry
+				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Write(new LogEntry
 				{
 					Category = "Cdn",
 					Level = System.Diagnostics.TraceLevel.Error,
@@ -88,7 +88,7 @@ namespace TomPIT.Cdn.Mail
 				State = ConnectionState.Idle;
 				DnsResolve.Reset(Domain);
 
-				Instance.Tenant.GetService<ILoggingService>().Write(new LogEntry
+				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Write(new LogEntry
 				{
 					Category = "Cdn",
 					Level = System.Diagnostics.TraceLevel.Error,
@@ -112,7 +112,7 @@ namespace TomPIT.Cdn.Mail
 			catch (Exception ex)
 			{
 				State = ConnectionState.Idle;
-				Instance.Tenant.GetService<ILoggingService>().Write(new LogEntry
+				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Write(new LogEntry
 				{
 					Category = "Cdn",
 					Level = System.Diagnostics.TraceLevel.Error,

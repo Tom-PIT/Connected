@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
+using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
@@ -25,23 +26,23 @@ namespace TomPIT.Worker.Services
 
 			Invoke(item, m);
 
-			var url = Instance.Tenant.CreateUrl("QueueManagement", "Complete");
+			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Complete");
 			var d = new JObject
 			{
 				{"popReceipt", item.PopReceipt }
 			};
 
-			Instance.Tenant.Post(url, d);
+			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 		}
 
 		private void Invoke(IQueueMessage queue, JObject data)
 		{
 			var component = data.Required<Guid>("component");
 			var arguments = data.Optional<string>("arguments", null);
-			var configuration = Instance.Tenant.GetService<IComponentService>().SelectConfiguration(component) as IQueueConfiguration;
+			var configuration = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) as IQueueConfiguration;
 
 			if (configuration == null)
-				Instance.Tenant.LogError(nameof(QueueWorkerJob), nameof(Invoke), $"{SR.ErrQueueWorkerNotFound} ({component})");
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(QueueWorkerJob), nameof(Invoke), $"{SR.ErrQueueWorkerNotFound} ({component})");
 
 			var ctx = new MicroServiceContext(configuration.MicroService());
 			var metricId = ctx.Services.Diagnostic.StartMetric(configuration.Metrics, null);
@@ -59,7 +60,7 @@ namespace TomPIT.Worker.Services
 			{
 				if (q.HandlerInstance.ValidationFailed == Cdn.QueueValidationBehavior.Complete)
 				{
-					Instance.Tenant.LogWarning(ctx, "Queue", nameof(Invoke), ex.Message);
+					MiddlewareDescriptor.Current.Tenant.LogWarning(ex.Source, ex.Message, LogCategories.Worker);
 					return;
 				}
 				else
@@ -75,17 +76,17 @@ namespace TomPIT.Worker.Services
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			Instance.Tenant.LogError(nameof(QueueWorkerJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(nameof(QueueWorkerJob), ex.Source, ex.Message);
 
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
 
-			var url = Instance.Tenant.CreateUrl("QueueManagement", "Ping");
+			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Ping");
 			var d = new JObject
 			{
 				{"popReceipt", item.PopReceipt }
 			};
 
-			Instance.Tenant.Post(url, d);
+			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 		}
 	}
 }

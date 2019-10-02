@@ -9,24 +9,24 @@ namespace TomPIT.Search
 	{
 		public void Complete(Guid popReceipt)
 		{
-			var u = Instance.Tenant.CreateUrl("SearchManagement", "Complete");
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "Complete");
 			var e = new JObject
 			{
 				{"popReceipt", popReceipt }
 			};
 
-			Instance.Tenant.Post(u, e);
+			MiddlewareDescriptor.Current.Tenant.Post(u, e);
 		}
 
 		public void CompleteRebuilding(Guid catalog)
 		{
-			var u = Instance.Tenant.CreateUrl("SearchManagement", "DeleteState");
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "DeleteState");
 			var e = new JObject
 			{
 				{"catalog", catalog }
 			};
 
-			Instance.Tenant.Post(u, e);
+			MiddlewareDescriptor.Current.Tenant.Post(u, e);
 		}
 
 		public void Flush()
@@ -36,49 +36,49 @@ namespace TomPIT.Search
 
 		public void MarkRebuilding(Guid catalog)
 		{
-			var u = Instance.Tenant.CreateUrl("SearchManagement", "UpdateState");
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "UpdateState");
 			var e = new JObject
 			{
 				{"catalog", catalog },
 				{"status", CatalogStateStatus.Rebuilding.ToString() }
 			};
 
-			Instance.Tenant.Post(u, e);
+			MiddlewareDescriptor.Current.Tenant.Post(u, e);
 		}
 
 		public void Ping(Guid popReceipt, int nextVisible)
 		{
-			var u = Instance.Tenant.CreateUrl("SearchManagement", "Ping");
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "Ping");
 			var e = new JObject
 			{
 				{"popReceipt", popReceipt },
 				{"nextVisible", nextVisible }
 			};
 
-			Instance.Tenant.Post(u, e);
+			MiddlewareDescriptor.Current.Tenant.Post(u, e);
 		}
 
 		public void Rebuild(Guid catalog)
 		{
-			var u = Instance.Tenant.CreateUrl("SearchManagement", "InvalidateState");
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "InvalidateState");
 			var e = new JObject
 			{
 				{"catalog", catalog }
 			};
 
-			Instance.Tenant.Post(u, e);
+			MiddlewareDescriptor.Current.Tenant.Post(u, e);
 		}
 
 		public void ResetRebuilding(Guid catalog)
 		{
-			var u = Instance.Tenant.CreateUrl("SearchManagement", "UpdateState");
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "UpdateState");
 			var e = new JObject
 			{
 				{"catalog", catalog },
 				{"status", CatalogStateStatus.Pending.ToString() }
 			};
 
-			Instance.Tenant.Post(u, e);
+			MiddlewareDescriptor.Current.Tenant.Post(u, e);
 		}
 
 		public void Scave()
@@ -88,13 +88,13 @@ namespace TomPIT.Search
 
 		public ICatalogState SelectState(Guid catalog)
 		{
-			var u = Instance.Tenant.CreateUrl("SearchManagement", "SelectState");
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "SelectState");
 			var e = new JObject
 			{
 				{"catalog", catalog }
 			};
 
-			return Instance.Tenant.Post<CatalogState>(u, e);
+			return MiddlewareDescriptor.Current.Tenant.Post<CatalogState>(u, e);
 		}
 	}
 }

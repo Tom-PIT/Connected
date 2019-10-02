@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TomPIT.ComponentModel;
 using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
 using TomPIT.Ide.TextServices.Languages;
@@ -16,7 +15,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 		{
 			var items = new List<ICompletionItem>();
 
-			ProvideItems(items, Editor.Context.MicroService.Token);
+			ProvideItems(items, Editor.Context.MicroService);
 
 			if (IncludeReferences)
 			{
@@ -32,20 +31,20 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 					if (microService == null)
 						continue;
 
-					ProvideItems(items, microService.Token);
+					ProvideItems(items, microService);
 				}
 			}
 
 			return items;
 		}
 
-		private void ProvideItems(List<ICompletionItem> items, Guid microService)
+		private void ProvideItems(List<ICompletionItem> items, IMicroService microService)
 		{
-			var components = Editor.Context.Tenant.GetService<IComponentService>().QueryComponents(microService, ComponentCategory);
+			var components = Editor.Context.Tenant.GetService<IComponentService>().QueryComponents(microService.Token, ComponentCategory);
 
 			foreach (var i in components)
 			{
-				var text = $"{Editor.Context.MicroService.Name}/{i.Name}";
+				var text = $"{microService.Name}/{i.Name}";
 
 				items.Add(new CompletionItem
 				{

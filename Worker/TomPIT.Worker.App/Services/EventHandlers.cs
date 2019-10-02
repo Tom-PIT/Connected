@@ -5,6 +5,7 @@ using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Messaging;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Worker.Services
@@ -17,13 +18,13 @@ namespace TomPIT.Worker.Services
 
 		static EventHandlers()
 		{
-			var s = Instance.Tenant.GetService<IComponentService>();
+			var s = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>();
 
 			s.ConfigurationChanged += OnConfigurationChanged;
 			s.ConfigurationAdded += OnConfigurationAdded;
 			s.ConfigurationRemoved += OnConfigurationRemoved;
 
-			var configs = Instance.Tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, Category);
+			var configs = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, Category);
 
 			foreach (var i in configs)
 				AddConfiguration(i);
@@ -59,7 +60,7 @@ namespace TomPIT.Worker.Services
 			if (!(configuration is IEventBindingConfiguration eh))
 				return;
 
-			var component = Instance.Tenant.GetService<IComponentService>().SelectComponent(configuration.Component);
+			var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(configuration.Component);
 
 			foreach (var i in eh.Events)
 			{
@@ -80,7 +81,7 @@ namespace TomPIT.Worker.Services
 
 		private static void AddConfiguration(Guid configuration)
 		{
-			if (!(Instance.Tenant.GetService<IComponentService>().SelectConfiguration(configuration) is IEventBindingConfiguration c))
+			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(configuration) is IEventBindingConfiguration c))
 				return;
 
 			AddConfiguration(c);

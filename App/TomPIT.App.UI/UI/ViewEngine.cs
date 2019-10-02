@@ -145,7 +145,7 @@ namespace TomPIT.App.UI
 			var path = Context.Request.Path.ToString().Trim('/');
 
 			var ac = CreateActionContext(Context);
-			var view = Instance.Tenant.GetService<IViewService>().Select(path, ac);
+			var view = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().Select(path, ac);
 
 			if (view == null)
 				return null;
@@ -153,7 +153,7 @@ namespace TomPIT.App.UI
 			ac.ActionDescriptor.Properties.Add("viewKind", ViewKind.View);
 
 			var vi = new ViewInfo(string.Format("/Views/{0}.cshtml", path), ac);
-			var ms = vi.ViewComponent == null ? null : Instance.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
+			var ms = vi.ViewComponent == null ? null : MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
 
 			var model = new RuntimeModel(Context.Request, ac, Temp)
 			{
@@ -175,7 +175,7 @@ namespace TomPIT.App.UI
 			ac.ActionDescriptor.Properties.Add("viewKind", ViewKind.Partial);
 
 			var vi = new ViewInfo(string.Format("/Views/Dynamic/Partial/{0}.cshtml", name), ac);
-			var ms = vi.ViewComponent == null ? null : Instance.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
+			var ms = vi.ViewComponent == null ? null : MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
 
 			var model = new RuntimeModel(Context.Request, ac, Temp);
 

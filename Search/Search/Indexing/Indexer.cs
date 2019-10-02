@@ -10,6 +10,7 @@ using TomPIT.Annotations.Search;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
+using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
@@ -61,9 +62,9 @@ namespace TomPIT.Search.Indexing
 			{
 				if (_handler == null)
 				{
-					var handlerType = Instance.Tenant.GetService<ICompilerService>().ResolveType(Request.MicroService, Catalog, Request.Catalog);
+					var handlerType = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(Request.MicroService, Catalog, Request.Catalog);
 
-					_handler = Instance.Tenant.GetService<ICompilerService>().CreateInstance<ISearchComponent>(new MicroServiceContext(Catalog.MicroService()), handlerType, Arguments);
+					_handler = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<ISearchComponent>(new MicroServiceContext(Catalog.MicroService()), handlerType, Arguments);
 				}
 
 				return _handler;
@@ -121,7 +122,7 @@ namespace TomPIT.Search.Indexing
 
 		public void Index()
 		{
-			if (Verb == SearchVerb.Rebuild && Instance.Tenant.GetService<IIndexingService>().SelectState(Catalog.Component) == null)
+			if (Verb == SearchVerb.Rebuild && MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().SelectState(Catalog.Component) == null)
 				return;
 
 			try
@@ -130,7 +131,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				Instance.Tenant.LogError("Search", nameof(Indexer), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Indexer), ex.Message);
 
 				Success = false;
 			}
@@ -149,7 +150,7 @@ namespace TomPIT.Search.Indexing
 						Success = Delete();
 						break;
 					case SearchVerb.Rebuild:
-						var ci = Instance.Tenant.GetService<IIndexingService>().SelectState(Catalog.Component);
+						var ci = MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().SelectState(Catalog.Component);
 
 						if (ci == null || ci.Status == CatalogStateStatus.Rebuilding)
 						{
@@ -157,11 +158,11 @@ namespace TomPIT.Search.Indexing
 							return;
 						}
 
-						Instance.Tenant.GetService<IIndexingService>().Ping(Queue.PopReceipt, 3600);
+						MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Ping(Queue.PopReceipt, 3600);
 
 						if (Rebuild())
 						{
-							Instance.Tenant.GetService<IIndexingService>().CompleteRebuilding(Catalog.Component);
+							MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().CompleteRebuilding(Catalog.Component);
 							Success = true;
 						}
 						else
@@ -179,23 +180,23 @@ namespace TomPIT.Search.Indexing
 			{
 				if (Handler.ValidationFailed == SearchValidationBehavior.Complete)
 				{
-					Instance.Tenant.LogWarning(null, "Search", valEx.Source, valEx.Message);
+					MiddlewareDescriptor.Current.Tenant.LogWarning(valEx.Source, valEx.Message, LogCategories.Search);
 					Success = true;
 				}
 				else
 				{
 					if (Verb == SearchVerb.Rebuild)
-						Instance.Tenant.GetService<IIndexingService>().Ping(Queue.PopReceipt, 60);
+						MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Ping(Queue.PopReceipt, 60);
 
-					Instance.Tenant.LogError("Search", valEx.Source, valEx.Message);
+					MiddlewareDescriptor.Current.Tenant.LogError("Search", valEx.Source, valEx.Message);
 				}
 			}
 			catch (Exception ex)
 			{
 				if (Verb == SearchVerb.Rebuild)
-					Instance.Tenant.GetService<IIndexingService>().Ping(Queue.PopReceipt, 60);
+					MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Ping(Queue.PopReceipt, 60);
 
-				Instance.Tenant.LogError("Search", ex.Source, ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", ex.Source, ex.Message);
 			}
 		}
 
@@ -302,7 +303,7 @@ namespace TomPIT.Search.Indexing
 
 		protected bool Rebuild()
 		{
-			Instance.Tenant.GetService<IIndexingService>().MarkRebuilding(Catalog.Component);
+			MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().MarkRebuilding(Catalog.Component);
 
 			try
 			{
@@ -314,7 +315,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch
 			{
-				Instance.Tenant.GetService<IIndexingService>().ResetRebuilding(Catalog.Component);
+				MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().ResetRebuilding(Catalog.Component);
 			}
 
 			return false;
@@ -362,7 +363,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				Instance.Tenant.LogError("Search", nameof(Insert), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Insert), ex.Message);
 
 				return false;
 			}
@@ -421,7 +422,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				Instance.Tenant.LogError("Search", nameof(Update), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Update), ex.Message);
 
 				return false;
 			}
@@ -442,7 +443,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				Instance.Tenant.LogError("Search", nameof(Update), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Update), ex.Message);
 
 				return false;
 			}
@@ -460,7 +461,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				Instance.Tenant.LogError("Search", nameof(Update), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Update), ex.Message);
 
 				return false;
 			}
@@ -502,7 +503,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				Instance.Tenant.LogError("Search", nameof(Delete), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Delete), ex.Message);
 
 				return false;
 			}

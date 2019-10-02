@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
+using TomPIT.Middleware;
 
 namespace TomPIT.Search.Services
 {
@@ -13,7 +14,7 @@ namespace TomPIT.Search.Services
 
 		protected override Task Process()
 		{
-			Instance.Tenant.GetService<IIndexingService>().Flush();
+			MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Flush();
 
 			return Task.CompletedTask;
 		}

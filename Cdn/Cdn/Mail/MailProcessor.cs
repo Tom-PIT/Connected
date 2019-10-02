@@ -56,7 +56,7 @@ namespace TomPIT.Cdn.Mail
 		private void CreateBody()
 		{
 			var builder = new BodyBuilder();
-			var ctx = new MiddlewareContext(Instance.Tenant.Url);
+			var ctx = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
 
 			if (Configuration.Format == MailFormat.Html)
 			{
@@ -76,11 +76,11 @@ namespace TomPIT.Cdn.Mail
 			if (Configuration.AttachmentCount == 0)
 				return;
 
-			var blobs = Instance.Tenant.GetService<IStorageService>().Query(Configuration.Token);
+			var blobs = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Query(Configuration.Token);
 
 			foreach (var i in blobs)
 			{
-				var content = Instance.Tenant.GetService<IStorageService>().Download(i.Token);
+				var content = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Download(i.Token);
 
 				if (content == null)
 					continue;

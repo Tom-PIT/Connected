@@ -99,8 +99,13 @@
 
 
 	tompit.findProgress = function (s) {
-		if (typeof s !== 'undefined') {
-			var p = $('[data-tp-tag="progress-container"]', $(s));
+        if (typeof s !== 'undefined') {
+            var sel = s instanceof jQuery ? s : $(s);
+
+            if (sel.attr('[data-tp-tag="progress-container"]') !== null)
+                return sel.tpProgress('instance');
+
+			var p = $('[data-tp-tag="progress-container"]', sel);
 
 			if (p.length > 0)
 				return p.tpProgress('instance');

@@ -30,22 +30,22 @@ namespace TomPIT.Worker.Services
 
 			Invoke(item, m);
 
-			var url = Instance.Tenant.CreateUrl("EventManagement", "Complete");
+			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Complete");
 			var d = new JObject
 			{
 				{"popReceipt", item.PopReceipt }
 			};
 
-			Instance.Tenant.Post(url, d);
+			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 		}
 
 		private void Invoke(IQueueMessage queue, JObject data)
 		{
 			var id = data.Required<Guid>("id");
-			var url = Instance.Tenant.CreateUrl("EventManagement", "Select")
+			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Select")
 				.AddParameter("id", id);
 
-			var ed = Instance.Tenant.Get<EventDescriptor>(url);
+			var ed = MiddlewareDescriptor.Current.Tenant.Get<EventDescriptor>(url);
 
 			if (ed == null)
 				return;
@@ -60,7 +60,7 @@ namespace TomPIT.Worker.Services
 				{
 					foreach (var target in targets)
 					{
-						if (!(Instance.Tenant.GetService<IComponentService>().SelectConfiguration(target.Item2) is IEventBindingConfiguration configuration))
+						if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(target.Item2) is IEventBindingConfiguration configuration))
 							return;
 
 						Parallel.ForEach(configuration.Events,
@@ -113,7 +113,7 @@ namespace TomPIT.Worker.Services
 			}
 
 			var componentName = configuration.ComponentName();
-			var type = Instance.Tenant.GetService<ICompilerService>().ResolveType(ctx.MicroService.Token, configuration, componentName, false);
+			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ctx.MicroService.Token, configuration, componentName, false);
 
 			if (type == null)
 			{
@@ -123,11 +123,9 @@ namespace TomPIT.Worker.Services
 
 			try
 			{
-				var handler = Instance.Tenant.GetService<ICompilerService>().CreateInstance<IEventMiddleware>(ctx, type, ed.Arguments);
+				var handler = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IEventMiddleware>(ctx, type, ed.Arguments);
 
-				handler.EventName = ed.Name;
-
-				Invoke(handler);
+				Invoke(handler, ed.Name);
 
 				if (handler.Cancel)
 				{
@@ -155,7 +153,7 @@ namespace TomPIT.Worker.Services
 			return false;
 		}
 
-		private void Invoke(IEventMiddleware handler)
+		private void Invoke(IEventMiddleware handler, string eventName)
 		{
 			Exception lastError = null;
 
@@ -163,7 +161,7 @@ namespace TomPIT.Worker.Services
 			{
 				try
 				{
-					handler.Invoke();
+					handler.Invoke(eventName);
 
 					return;
 				}
@@ -179,15 +177,15 @@ namespace TomPIT.Worker.Services
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			Instance.Tenant.LogError(nameof(EventJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(nameof(EventJob), ex.Source, ex.Message);
 
-			var url = Instance.Tenant.CreateUrl("EventManagement", "Ping");
+			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Ping");
 			var d = new JObject
 			{
 				{"popReceipt", item.PopReceipt }
 			};
 
-			Instance.Tenant.Post(url, d);
+			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 		}
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
+using TomPIT.Middleware;
 
 namespace TomPIT.IoT.Hubs
 {
@@ -15,7 +16,7 @@ namespace TomPIT.IoT.Hubs
 		{
 			try
 			{
-				Instance.Tenant.GetService<IIoTHubService>().FlushChanges();
+				MiddlewareDescriptor.Current.Tenant.GetService<IIoTHubService>().FlushChanges();
 			}
 			catch
 			{

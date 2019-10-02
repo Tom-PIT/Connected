@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using TomPIT.App.Models;
 using TomPIT.ComponentModel;
 using TomPIT.Globalization;
+using TomPIT.Middleware;
 using TomPIT.Security;
 using TomPIT.Serialization;
 using TomPIT.UI;
@@ -30,7 +31,7 @@ namespace TomPIT.App.UI
 
 			var model = CreateModel(token);
 			var actionContext = CreateActionContext(Context);
-			var component = Instance.Tenant.GetService<IComponentService>().SelectComponent(token);
+			var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(token);
 
 			if (component == null)
 			{
@@ -74,7 +75,7 @@ namespace TomPIT.App.UI
 
 			if (!string.IsNullOrWhiteSpace(user))
 			{
-				var u = Instance.Tenant.GetService<IUserService>().Select(user);
+				var u = MiddlewareDescriptor.Current.Tenant.GetService<IUserService>().Select(user);
 
 				if (u == null)
 				{
@@ -95,7 +96,7 @@ namespace TomPIT.App.UI
 			if (language == Guid.Empty)
 				return;
 
-			var lang = Instance.Tenant.GetService<ILanguageService>().Select(language);
+			var lang = MiddlewareDescriptor.Current.Tenant.GetService<ILanguageService>().Select(language);
 
 			var ci = CultureInfo.GetCultureInfo(lang.Lcid);
 
@@ -109,7 +110,7 @@ namespace TomPIT.App.UI
 		private MailTemplateModel CreateModel(Guid token)
 		{
 			var ac = CreateActionContext(Context);
-			var component = Instance.Tenant.GetService<IComponentService>().SelectComponent(token);
+			var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(token);
 
 			if (component == null)
 				return null;
@@ -118,7 +119,7 @@ namespace TomPIT.App.UI
 			var ja = string.IsNullOrWhiteSpace(arguments) ? new JObject() : Serializer.Deserialize<JObject>(arguments);
 			var model = new MailTemplateModel(Context.Request, ac, Temp, ja);
 
-			model.Initialize(Instance.Tenant.GetService<IMicroServiceService>().Select(component.MicroService));
+			model.Initialize(MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(component.MicroService));
 
 			return model;
 		}

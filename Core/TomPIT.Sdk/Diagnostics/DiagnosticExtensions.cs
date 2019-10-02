@@ -47,7 +47,7 @@ namespace TomPIT.Diagostics
 			LogError(tenant, source, message, category, 0);
 		}
 
-		public static void LogError(this ITenant tenant, string category, string source, string message, int eventId)
+		public static void LogError(this ITenant tenant, string source, string message, string category, int eventId)
 		{
 			Write(tenant, TraceLevel.Error, source, message, category, eventId);
 		}
@@ -67,7 +67,7 @@ namespace TomPIT.Diagostics
 			LogWarning(tenant, source, message, category, 0);
 		}
 
-		public static void LogWarning(this ITenant tenant, string category, string source, string message, int eventId)
+		public static void LogWarning(this ITenant tenant, string source, string message, string category, int eventId)
 		{
 			Write(tenant, TraceLevel.Warning, source, message, category, eventId);
 		}
@@ -84,7 +84,7 @@ namespace TomPIT.Diagostics
 
 		public static void LogVerbose(this ITenant tenant, string source, string message, string category)
 		{
-			LogVerbose(tenant, category, source, message, 0);
+			LogVerbose(tenant, source, message, category, 0);
 		}
 
 		public static void LogVerbose(this ITenant tenant, string source, string message, string category, int eventId)

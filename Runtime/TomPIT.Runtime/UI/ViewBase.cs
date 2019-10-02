@@ -7,9 +7,11 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.UI;
+using TomPIT.Middleware;
 using TomPIT.Models;
 using TomPIT.Serialization;
 using TomPIT.UI;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Runtime.UI
 {
@@ -58,7 +60,7 @@ namespace TomPIT.Runtime.UI
 			get
 			{
 				if (_configuration == null)
-					_configuration = Instance.Tenant.GetService<IComponentService>().SelectConfiguration(ComponentId);
+					_configuration = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(ComponentId);
 
 				return _configuration;
 			}
@@ -87,7 +89,7 @@ namespace TomPIT.Runtime.UI
 			}
 		}
 
-		protected string GetString(string stringTable, string key)
+		protected string GetString([CIP(CIP.StringTableProvider)]string stringTable, [CIP(CIP.StringTableStringProvider)]string key)
 		{
 			return ViewModel.Services.Globalization.GetString(stringTable, key);
 		}

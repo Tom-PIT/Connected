@@ -6,6 +6,7 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.Diagostics;
 using TomPIT.Distributed;
+using TomPIT.Middleware;
 using TomPIT.Storage;
 
 namespace TomPIT.BigData.Transactions
@@ -27,7 +28,7 @@ namespace TomPIT.BigData.Transactions
 
 			_timeout = new TimeoutTask(() =>
 			{
-				Instance.Tenant.GetService<ITransactionService>().Ping(Message.PopReceipt);
+				MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(Message.PopReceipt);
 				return Task.CompletedTask;
 			}, TimeSpan.FromSeconds(45));
 
@@ -45,7 +46,7 @@ namespace TomPIT.BigData.Transactions
 
 		private void Invoke(IQueueMessage queue, Guid blockId)
 		{
-			var block = Instance.Tenant.GetService<ITransactionService>().Select(blockId);
+			var block = MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Select(blockId);
 
 			if (block == null)
 				return;
@@ -60,29 +61,29 @@ namespace TomPIT.BigData.Transactions
 			{
 				if (updater.UpdateRowCount == 0)
 				{
-					Instance.Tenant.GetService<ITransactionService>().Ping(queue.PopReceipt);
+					MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(queue.PopReceipt);
 					return;
 				}
 				else
 				{
-					var config = Instance.Tenant.GetService<IComponentService>().SelectConfiguration(block.Partition) as IPartitionConfiguration;
+					var config = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(block.Partition) as IPartitionConfiguration;
 
-					Instance.Tenant.GetService<ITransactionService>().Prepare(config, updater.LockedItems);
+					MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Prepare(config, updater.LockedItems);
 				}
 			}
 
-			Instance.Tenant.GetService<ITransactionService>().Complete(queue.PopReceipt, blockId);
+			MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Complete(queue.PopReceipt, blockId);
 		}
 
 		private void ValidateSchema(ITransactionBlock block)
 		{
-			Instance.Tenant.GetService<IPartitionService>().ValidateSchema(block.Partition);
+			MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().ValidateSchema(block.Partition);
 		}
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			Instance.Tenant.LogError(nameof(StorageJob), ex.Source, ex.Message);
-			Instance.Tenant.GetService<ITransactionService>().Ping(item.PopReceipt);
+			MiddlewareDescriptor.Current.Tenant.LogError(nameof(StorageJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(item.PopReceipt);
 		}
 	}
 }

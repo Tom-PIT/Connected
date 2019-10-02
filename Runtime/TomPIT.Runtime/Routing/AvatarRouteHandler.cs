@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using Microsoft.AspNetCore.Routing;
+using TomPIT.Middleware;
 using TomPIT.Storage;
 
 namespace TomPIT.Routing
@@ -16,7 +17,7 @@ namespace TomPIT.Routing
 			 * since this resource is not under authentication we don't have to
 			 * deal with authentication cookie.
 			 */
-			var ctx = Tenant ?? Instance.Tenant;
+			var ctx = Tenant ?? MiddlewareDescriptor.Current.Tenant;
 
 			var blob = new Guid(Context.GetRouteValue("token").ToString());
 			var version = Convert.ToInt32(Context.GetRouteValue("version").ToString());

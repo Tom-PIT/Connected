@@ -8,6 +8,7 @@ using TomPIT.BigData.Transactions;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.Diagostics;
+using TomPIT.Middleware;
 
 namespace TomPIT.BigData.Providers.Sql
 {
@@ -50,7 +51,7 @@ namespace TomPIT.BigData.Providers.Sql
 			get
 			{
 				if (_partition == null)
-					_partition = Instance.Tenant.GetService<IComponentService>().SelectConfiguration(File.Partition) as IPartitionConfiguration;
+					_partition = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(File.Partition) as IPartitionConfiguration;
 
 				return _partition;
 			}
@@ -144,7 +145,7 @@ namespace TomPIT.BigData.Providers.Sql
 			}
 			catch (Exception ex)
 			{
-				Instance.Tenant.LogError("BigData", ex.Source, ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("BigData", ex.Source, ex.Message);
 			}
 		}
 

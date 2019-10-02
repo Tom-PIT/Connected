@@ -3,6 +3,7 @@ using TomPIT.BigData.Nodes;
 using TomPIT.BigData.Persistence;
 using TomPIT.Diagostics;
 using TomPIT.Exceptions;
+using TomPIT.Middleware;
 
 namespace TomPIT.BigData.Partitions
 {
@@ -10,7 +11,7 @@ namespace TomPIT.BigData.Partitions
 	{
 		public Guid CreateFile(Guid partition, string partitionKey, DateTime timestamp)
 		{
-			var node = Instance.Tenant.GetService<INodeService>().SelectSmallest();
+			var node = MiddlewareDescriptor.Current.Tenant.GetService<INodeService>().SelectSmallest();
 
 			if (node == null)
 				throw new RuntimeException(SR.ErrBigDataNoNodes);
@@ -19,21 +20,21 @@ namespace TomPIT.BigData.Partitions
 
 			try
 			{
-				var fileId = Instance.Tenant.GetService<IPartitionService>().InsertFile(partition, node.Token, partitionKey, timestamp);
+				var fileId = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().InsertFile(partition, node.Token, partitionKey, timestamp);
 
 				if (fileId == Guid.Empty)
 					return Guid.Empty;
 
-				file = Instance.Tenant.GetService<IPartitionService>().SelectFile(fileId);
+				file = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().SelectFile(fileId);
 
-				Instance.Tenant.GetService<IPersistenceService>().SynchronizeSchema(node, file);
-				Instance.Tenant.GetService<IPartitionService>().UpdateFile(file.FileName, file.StartTimestamp, file.EndTimestamp, file.Count, PartitionFileStatus.Open);
+				MiddlewareDescriptor.Current.Tenant.GetService<IPersistenceService>().SynchronizeSchema(node, file);
+				MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().UpdateFile(file.FileName, file.StartTimestamp, file.EndTimestamp, file.Count, PartitionFileStatus.Open);
 
 				return fileId;
 			}
 			catch (Exception ex)
 			{
-				Instance.Tenant.LogError("BigData", ex.Source, ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("BigData", ex.Source, ex.Message);
 
 				if (file != null)
 					TryRollbackFileCreate(file.FileName);
@@ -46,22 +47,22 @@ namespace TomPIT.BigData.Partitions
 		{
 			try
 			{
-				Instance.Tenant.GetService<IPartitionService>().DeleteFile(file);
+				MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().DeleteFile(file);
 			}
 			catch (Exception ex)
 			{
-				Instance.Tenant.LogError("BigData", ex.Source, ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("BigData", ex.Source, ex.Message);
 			}
 		}
 
 		public Guid Lock(Guid file)
 		{
-			return Instance.Tenant.GetService<IPartitionService>().LockFile(file);
+			return MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().LockFile(file);
 		}
 
 		public void Release(Guid file)
 		{
-			Instance.Tenant.GetService<IPartitionService>().ReleaseFile(file);
+			MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().ReleaseFile(file);
 		}
 	}
 }

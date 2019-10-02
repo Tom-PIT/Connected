@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 
 namespace TomPIT.Security.Authentication
 {
@@ -103,7 +104,7 @@ namespace TomPIT.Security.Authentication
 			var userName = credentialTokens[0];
 			var password = credentialTokens[1];
 
-			var r = Instance.Tenant.GetService<IAuthorizationService>().Authenticate(userName, password);
+			var r = MiddlewareDescriptor.Current.Tenant.GetService<IAuthorizationService>().Authenticate(userName, password);
 
 			if (!r.Success)
 				return null;
@@ -139,7 +140,7 @@ namespace TomPIT.Security.Authentication
 			if (string.IsNullOrWhiteSpace(key))
 				return null;
 
-			var r = Instance.Tenant.GetService<IAuthorizationService>().Authenticate(key);
+			var r = MiddlewareDescriptor.Current.Tenant.GetService<IAuthorizationService>().Authenticate(key);
 
 			if (!r.Success)
 				return null;

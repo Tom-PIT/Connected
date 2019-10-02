@@ -20,19 +20,13 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 			var model = Editor.Document.GetSemanticModelAsync().Result;
 			var completion = CompletionService.GetService(Editor.Document);
 			var sm = Editor.Document.GetSemanticModelAsync().Result;
-			var caret = -1;
-			SyntaxNode node = null;
+			var caret = Editor.GetMappedCaret(position);
+			var token = model.SyntaxTree.GetRoot().FindToken(caret);
 
-			foreach (var token in model.SyntaxTree.GetRoot().DescendantTokens())
-			{
-				if (IsInRange(token, position))
-				{
-					caret = token.Span.End;
-					node = token.Parent;
+			if (token == default)
+				return default;
 
-					break;
-				}
-			}
+			SyntaxNode node = token.Parent;
 
 			if (node == null || node.Parent == null)
 				return r;
@@ -129,19 +123,6 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 				Label = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
 				Documentation = symbol.GetDocumentationCommentXml()
 			};
-		}
-
-		private bool IsInRange(Microsoft.CodeAnalysis.SyntaxToken token, IPosition position)
-		{
-			var mappedSpan = token.GetLocation().GetMappedLineSpan();
-
-			if (!mappedSpan.HasMappedPath)
-				return false;
-
-			var mappedLine = position.LineNumber - 1;
-			var mappedColumn = position.Column - 1;
-
-			return mappedSpan.StartLinePosition.Line == mappedLine && (mappedSpan.Span.Start.Character <= mappedColumn && mappedSpan.Span.End.Character >= mappedColumn);
 		}
 	}
 }

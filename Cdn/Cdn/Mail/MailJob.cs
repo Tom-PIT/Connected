@@ -21,7 +21,7 @@ namespace TomPIT.Cdn.Mail
 
 			if (string.IsNullOrWhiteSpace(domain))
 			{
-				Instance.Tenant.GetService<ILoggingService>().Write(new LogEntry
+				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Write(new LogEntry
 				{
 					Category = "Cdn",
 					Level = System.Diagnostics.TraceLevel.Error,
@@ -71,7 +71,7 @@ namespace TomPIT.Cdn.Mail
 			{
 				Fail(item, SR.ErrSendMailCancelled, 60);
 
-				Instance.Tenant.GetService<ILoggingService>().Write(new LogEntry
+				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Write(new LogEntry
 				{
 					Category = "Cdn",
 					Level = System.Diagnostics.TraceLevel.Error,
@@ -84,7 +84,7 @@ namespace TomPIT.Cdn.Mail
 
 		private void Fail(IMailMessage message, string error, int delay)
 		{
-			var u = Instance.Tenant.CreateUrl("MailManagement", "Update");
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("MailManagement", "Update");
 			var e = new JObject
 			{
 				{"popReceipt", message.PopReceipt },
@@ -92,23 +92,23 @@ namespace TomPIT.Cdn.Mail
 				{"delay", delay }
 			};
 
-			Instance.Tenant.Post(u, e);
+			MiddlewareDescriptor.Current.Tenant.Post(u, e);
 		}
 
 		private void Success(IMailMessage message)
 		{
-			var u = Instance.Tenant.CreateUrl("MailManagement", "DeleteByPopReceipt");
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("MailManagement", "DeleteByPopReceipt");
 			var e = new JObject
 			{
 				{"popReceipt", message.PopReceipt }
 			};
 
-			Instance.Tenant.Post(u, e);
+			MiddlewareDescriptor.Current.Tenant.Post(u, e);
 		}
 
 		protected override void OnError(IMailMessage item, Exception ex)
 		{
-			Instance.Tenant.LogError(nameof(MailJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(nameof(MailJob), ex.Source, ex.Message);
 		}
 	}
 }

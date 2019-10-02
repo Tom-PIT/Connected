@@ -17,8 +17,8 @@ using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
 using TomPIT.Distributed;
 using TomPIT.Environment;
-using TomPIT.Exceptions;
 using TomPIT.Globalization;
+using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
@@ -186,18 +186,6 @@ namespace TomPIT
 			}
 		}
 
-
-		public static ITenant Tenant
-		{
-			get
-			{
-				if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
-					throw new RuntimeException(SR.ErrSingleTenantOnly);
-
-				return Shell.GetService<IConnectivityService>().SelectDefaultTenant();
-			}
-		}
-
 		public static void Run(IApplicationBuilder app)
 		{
 			foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
@@ -211,7 +199,7 @@ namespace TomPIT
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
 			{
-				var rg = Tenant.GetService<IResourceGroupService>().Select(i);
+				var rg = MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>().Select(i);
 
 				if (rg != null)
 					return true;

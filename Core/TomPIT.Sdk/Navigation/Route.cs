@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TomPIT.Navigation
 {
-	internal class Route : IRoute
+	public class Route : IRoute
 	{
 		private List<IRoute> _items = null;
 		public string Text { get; set; }

@@ -23,30 +23,15 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 			var result = new List<ICompletionItem>();
 
 			var model = Editor.Document.GetSemanticModelAsync().Result;
+			var caret = Editor.GetMappedCaret(Arguments.Position);
+			var token = model.SyntaxTree.GetRoot().FindToken(caret);
 
-			foreach (var token in model.SyntaxTree.GetRoot().DescendantTokens())
-			{
-				if (IsInRange(token))
-				{
-					ProvideItems(result, token.Parent.Span);
-					break;
-				}
-			}
+			if (token == default)
+				return default;
+
+			ProvideItems(result, token.Parent.Span);
 
 			return result;
-		}
-
-		private bool IsInRange(Microsoft.CodeAnalysis.SyntaxToken token)
-		{
-			var mappedSpan = token.GetLocation().GetMappedLineSpan();
-
-			if (!mappedSpan.HasMappedPath)
-				return false;
-
-			var mappedLine = Arguments.Position.LineNumber - 1;
-			var mappedColumn = Arguments.Position.Column - 1;
-
-			return mappedSpan.StartLinePosition.Line == mappedLine && (mappedSpan.Span.Start.Character <= mappedColumn && mappedSpan.Span.End.Character >= mappedColumn);
 		}
 
 		private void ProvideItems(List<ICompletionItem> items, TextSpan span)

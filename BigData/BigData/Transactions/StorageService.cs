@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
+using TomPIT.Middleware;
 using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.BigData.Transactions
@@ -24,7 +25,7 @@ namespace TomPIT.BigData.Transactions
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				var jobs = Instance.Tenant.GetService<ITransactionService>().Dequeue(f.Available);
+				var jobs = MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Dequeue(f.Available);
 
 				if (jobs == null)
 					return;

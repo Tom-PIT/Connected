@@ -5,6 +5,7 @@ using TomPIT.BigData.Nodes;
 using TomPIT.BigData.Persistence;
 using TomPIT.Diagostics;
 using TomPIT.Distributed;
+using TomPIT.Middleware;
 using TomPIT.Storage;
 
 namespace TomPIT.BigData.Partitions
@@ -26,7 +27,7 @@ namespace TomPIT.BigData.Partitions
 
 			_timeout = new TimeoutTask(() =>
 			{
-				Instance.Tenant.GetService<IPartitionMaintenanceService>().Ping(Message.PopReceipt);
+				MiddlewareDescriptor.Current.Tenant.GetService<IPartitionMaintenanceService>().Ping(Message.PopReceipt);
 				return Task.CompletedTask;
 			}, TimeSpan.FromMinutes(15));
 
@@ -44,18 +45,18 @@ namespace TomPIT.BigData.Partitions
 
 		private void Invoke(IQueueMessage queue, Guid partition)
 		{
-			var files = Instance.Tenant.GetService<IPartitionService>().QueryFiles(partition);
+			var files = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().QueryFiles(partition);
 
 			foreach (var file in files)
-				Instance.Tenant.GetService<IPersistenceService>().SynchronizeSchema(Instance.Tenant.GetService<INodeService>().Select(file.Node), file);
+				MiddlewareDescriptor.Current.Tenant.GetService<IPersistenceService>().SynchronizeSchema(MiddlewareDescriptor.Current.Tenant.GetService<INodeService>().Select(file.Node), file);
 
-			Instance.Tenant.GetService<IPartitionMaintenanceService>().Complete(queue.PopReceipt, partition);
+			MiddlewareDescriptor.Current.Tenant.GetService<IPartitionMaintenanceService>().Complete(queue.PopReceipt, partition);
 		}
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			Instance.Tenant.LogError(nameof(MaintenanceJob), ex.Source, ex.Message);
-			Instance.Tenant.GetService<IPartitionMaintenanceService>().Ping(item.PopReceipt);
+			MiddlewareDescriptor.Current.Tenant.LogError(nameof(MaintenanceJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.GetService<IPartitionMaintenanceService>().Ping(item.PopReceipt);
 		}
 	}
 }

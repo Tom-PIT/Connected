@@ -24,14 +24,14 @@ namespace TomPIT.Worker.Services
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				var url = Instance.Tenant.CreateUrl("QueueManagement", "Dequeue");
+				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Dequeue");
 
 				var e = new JObject
 				{
 					{ "count", f.Available }
 				};
 
-				var jobs = Instance.Tenant.Post<List<QueueMessage>>(url, e);
+				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
 
 				if (jobs == null)
 					return;

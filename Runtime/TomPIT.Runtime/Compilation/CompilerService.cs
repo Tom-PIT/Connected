@@ -354,9 +354,6 @@ namespace TomPIT.Compilation
 
 		public string CompileView(ITenant tenant, IText sourceCode)
 		{
-			if (sourceCode.TextBlob == Guid.Empty)
-				return null;
-
 			var config = sourceCode.Configuration() as IConfiguration;
 			var cmp = tenant.GetService<IComponentService>().SelectComponent(config.Component);
 
@@ -372,7 +369,7 @@ namespace TomPIT.Compilation
 
 				content = renderer.CreateContent(tenant, cmp);
 			}
-			else
+			else if (sourceCode.TextBlob != Guid.Empty)
 			{
 				var r = Tenant.GetService<IStorageService>().Download(sourceCode.TextBlob);
 
@@ -381,9 +378,6 @@ namespace TomPIT.Compilation
 
 				content = Encoding.UTF8.GetString(r.Content);
 			}
-
-			if (string.IsNullOrWhiteSpace(content))
-				return null;
 
 			ProcessorBase processor = null;
 

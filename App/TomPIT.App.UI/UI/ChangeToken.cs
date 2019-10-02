@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Microsoft.Extensions.Primitives;
+using TomPIT.Middleware;
 
 namespace TomPIT.App.UI
 {
@@ -24,24 +25,24 @@ namespace TomPIT.App.UI
 				{
 					var path = _viewPath.Substring(7).Substring(0, _viewPath.Length - 14);
 
-					return Instance.Tenant.GetService<IViewService>().HasChanged(kind, path);
+					return MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().HasChanged(kind, path);
 				}
 				else if (kind == ViewKind.Snippet)
 				{
 					var snippetKind = ViewInfo.ResolveSnippetKind(_viewPath);
-					return Instance.Tenant.GetService<IViewService>().HasSnippetChanged(snippetKind, Path.GetFileNameWithoutExtension(_viewPath));
+					return MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().HasSnippetChanged(snippetKind, Path.GetFileNameWithoutExtension(_viewPath));
 				}
 				else if (kind == ViewKind.Report)
-					return Instance.Tenant.GetService<IViewService>().HasChanged(kind, _viewPath);
+					return MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().HasChanged(kind, _viewPath);
 				else if (kind == ViewKind.MailTemplate)
 				{
 					var tokens = _viewPath.Split('/');
 					var path = $"{tokens[tokens.Length - 2]}/{tokens[tokens.Length - 1]}";
 
-					return Instance.Tenant.GetService<IViewService>().HasChanged(kind, path);
+					return MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().HasChanged(kind, path);
 				}
 				else
-					return Instance.Tenant.GetService<IViewService>().HasChanged(kind, Path.GetFileNameWithoutExtension(_viewPath));
+					return MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().HasChanged(kind, Path.GetFileNameWithoutExtension(_viewPath));
 			}
 		}
 

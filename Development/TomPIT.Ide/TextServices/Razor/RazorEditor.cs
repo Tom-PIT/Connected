@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using TomPIT.Ide.TextServices.CSharp;
@@ -21,6 +20,7 @@ namespace TomPIT.Ide.TextServices.Razor
 {
 	public class RazorEditor : CSharpEditorBase
 	{
+		private const string ImportUsings = "@using System;@using System.Linq;\r\n@using TomPIT;\r\n@using Microsoft.AspNetCore.Mvc.Rendering;";
 		private SourceText _sourceText = null;
 		private ProjectInfo _projectInfo = null;
 		private DocumentInfo _documentInfo = null;
@@ -65,13 +65,6 @@ namespace TomPIT.Ide.TextServices.Razor
 			}
 		}
 
-		protected override List<string> IncludedUsings()
-		{
-			return new List<string>
-			{
-				"Microsoft.AspNetCore.Mvc.Rendering"
-			};
-		}
 		public override DocumentInfo DocumentInfo
 		{
 			get
@@ -110,19 +103,78 @@ namespace TomPIT.Ide.TextServices.Razor
 
 			var engine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, (builder) =>
 			{
-				SectionDirective.Register(builder);
-
 				builder.SetBaseType($"TomPIT.Runtime.Design.UI.DesignViewBase");
 			});
 
 			var document = RazorSourceDocument.Create(Text, Encoding.UTF8, new RazorSourceDocumentProperties($"{Model.Id}.cshtml", $"{Model.Id}.cshtml"));
-
-			var imports = ImmutableArray.Create<RazorSourceDocument>();
+			var imports = ImmutableArray.Create(RazorSourceDocument.Create(ImportUsings, "ImportUsings.cshtml"));
 			var tagHelpers = ImmutableArray.Create<TagHelperDescriptor>();
 
 			var sourceResult = engine.ProcessDesignTime(document, "view", imports, tagHelpers);
 
 			_sourceText = SourceText.From(sourceResult.GetCSharpDocument().GeneratedCode);
+		}
+
+		public override int GetMappedCaret(IPosition position)
+		{
+			var token = GetTokenAtMappedPosition(position);
+
+			if (token == default)
+				return -1;
+
+			return SourceText.GetCaret(token.GetLocation().GetLineSpan().StartLinePosition);
+		}
+
+		public override TextSpan GetMappedSpan(IPosition position)
+		{
+			var token = GetTokenAtMappedPosition(position);
+
+			if (token == default)
+				return default;
+
+			return token.GetLocation().SourceSpan;
+		}
+		public override IPosition GetMappedPosition(IPosition position)
+		{
+			var token = GetTokenAtMappedPosition(position);
+
+			if (token == default)
+				return null;
+
+			var startPosition = token.GetLocation().GetLineSpan().StartLinePosition;
+
+			return new Position
+			{
+				Column = startPosition.Character,
+				LineNumber = startPosition.Line
+			};
+		}
+
+		private SyntaxToken GetTokenAtMappedPosition(IPosition position)
+		{
+			var model = Document.GetSemanticModelAsync().Result;
+
+			foreach (var token in model.SyntaxTree.GetRoot().DescendantTokens())
+			{
+				if (IsOverlapping(token, position))
+					return token;
+			}
+
+			return default;
+		}
+
+		private bool IsOverlapping(SyntaxToken token, IPosition position)
+		{
+			var mappedSpan = token.GetLocation().GetMappedLineSpan();
+
+			if (!mappedSpan.HasMappedPath)
+				return false;
+
+			var mappedLine = position.LineNumber;
+			var mappedColumn = position.Column;
+
+			return mappedSpan.StartLinePosition.Line == mappedLine
+				&& (mappedSpan.Span.Start.Character <= mappedColumn && mappedSpan.Span.End.Character >= mappedColumn);
 		}
 	}
 }

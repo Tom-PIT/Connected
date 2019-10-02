@@ -31,7 +31,7 @@ namespace TomPIT.Search.Services
 
 			_timeout = new TimeoutTask(() =>
 			{
-				Instance.Tenant.GetService<IIndexingService>().Ping(Message.PopReceipt, 300);
+				MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Ping(Message.PopReceipt, 300);
 				return Task.CompletedTask;
 			}, TimeSpan.FromMinutes(4));
 
@@ -50,15 +50,15 @@ namespace TomPIT.Search.Services
 		private void Invoke(IQueueMessage queue, JObject data)
 		{
 			var id = data.Required<Guid>("id");
-			var url = Instance.Tenant.CreateUrl("SearchManagement", "Select")
+			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "Select")
 				.AddParameter("id", id);
 
-			var request = Instance.Tenant.Get<IndexRequest>(url);
+			var request = MiddlewareDescriptor.Current.Tenant.Get<IndexRequest>(url);
 
 			if (request == null)
 				return;
 
-			if (!(Instance.Tenant.GetService<IComponentService>().SelectConfiguration(request.MicroService, "SearchCatalog", request.Catalog) is ISearchCatalogConfiguration configuration))
+			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(request.MicroService, "SearchCatalog", request.Catalog) is ISearchCatalogConfiguration configuration))
 				return;
 
 			Indexer indexer = null;
@@ -73,29 +73,29 @@ namespace TomPIT.Search.Services
 			}
 			catch (Exception ex)
 			{
-				Instance.Tenant.LogError("Search", nameof(IndexingJob), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(IndexingJob), ex.Message);
 				return;
 			}
 
 			indexer.Index();
 
 			if (!indexer.Success)
-				Instance.Tenant.GetService<IIndexingService>().Ping(queue.PopReceipt, 15);
+				MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Ping(queue.PopReceipt, 15);
 		}
 
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			Instance.Tenant.LogError(nameof(IndexingJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(nameof(IndexingJob), ex.Source, ex.Message);
 
-			var url = Instance.Tenant.CreateUrl("SearchManagement", "Ping");
+			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "Ping");
 			var d = new JObject
 				{
 					{"popReceipt", item.PopReceipt },
 					{"nextVisible", 30 }
 				};
 
-			Instance.Tenant.Post(url, d);
+			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 		}
 	}
 }

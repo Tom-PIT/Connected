@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 using TomPIT.Runtime;
 using TomPIT.Security;
 
@@ -52,7 +53,7 @@ namespace TomPIT.Globalization
 			if (environment == RuntimeEnvironment.MultiTenant)
 				return Task.FromResult<ProviderCultureResult>(null);
 
-			var value = Instance.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "DefaultCulture");
+			var value = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "DefaultCulture");
 
 			if (!string.IsNullOrWhiteSpace(value))
 				return Task.FromResult(new ProviderCultureResult(value));

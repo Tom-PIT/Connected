@@ -24,30 +24,30 @@ namespace TomPIT.Worker.Services
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
 			var ms = Invoke(item, m);
 
-			var url = Instance.Tenant.CreateUrl("WorkerManagement", "Complete");
+			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("WorkerManagement", "Complete");
 			var d = new JObject
 			{
 				{"microService", ms },
 				{"popReceipt", item.PopReceipt }
 			};
 
-			Instance.Tenant.Post(url, d);
+			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 		}
 
 		private Guid Invoke(IQueueMessage queue, JObject data)
 		{
 			var worker = data.Required<Guid>("worker");
 			var state = data.Optional("state", Guid.Empty);
-			var configuration = Instance.Tenant.GetService<IComponentService>().SelectConfiguration(worker) as IWorkerConfiguration;
+			var configuration = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(worker) as IWorkerConfiguration;
 
 			if (configuration == null)
-				Instance.Tenant.LogError(SR.LogCategoryWorker, nameof(Invoke), string.Format("{0} ({1})", SR.ErrWorkerNotFound, worker));
+				MiddlewareDescriptor.Current.Tenant.LogError(SR.LogCategoryWorker, nameof(Invoke), string.Format("{0} ({1})", SR.ErrWorkerNotFound, worker));
 
 			var workerState = string.Empty;
 
 			if (state != Guid.Empty)
 			{
-				var blob = Instance.Tenant.GetService<IStorageService>().Download(state);
+				var blob = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Download(state);
 
 				if (blob != null)
 					workerState = Encoding.UTF8.GetString(blob.Content);
@@ -70,7 +70,7 @@ namespace TomPIT.Worker.Services
 				{
 					if (!string.IsNullOrWhiteSpace(i.State))
 					{
-						var id = Instance.Tenant.GetService<IStorageService>().Upload(new Blob
+						var id = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Upload(new Blob
 						{
 							ContentType = "application/json",
 							FileName = worker.ToString(),
@@ -80,19 +80,19 @@ namespace TomPIT.Worker.Services
 						}, Encoding.UTF8.GetBytes(i.State), StoragePolicy.Singleton);
 
 
-						var url = Instance.Tenant.CreateUrl("WorkerManagement", "AttachState");
+						var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("WorkerManagement", "AttachState");
 						var d = new JObject
 						{
 							{"worker", worker },
 							{"state", id }
 						};
 
-						Instance.Tenant.Post(url, d);
+						MiddlewareDescriptor.Current.Tenant.Post(url, d);
 					}
 				}
 				else
 				{
-					Instance.Tenant.GetService<IStorageService>().Upload(new Blob
+					MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Upload(new Blob
 					{
 						ContentType = "application/json",
 						FileName = worker.ToString(),
@@ -116,22 +116,22 @@ namespace TomPIT.Worker.Services
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			Instance.Tenant.LogError(nameof(WorkerJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(nameof(WorkerJob), ex.Source, ex.Message);
 
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
 			var worker = m.Required<Guid>("worker");
 
-			if (!(Instance.Tenant.GetService<IComponentService>().SelectConfiguration(worker) is IWorkerConfiguration configuration))
+			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(worker) is IWorkerConfiguration configuration))
 				return;
 
-			var url = Instance.Tenant.CreateUrl("WorkerManagement", "Error");
+			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("WorkerManagement", "Error");
 			var d = new JObject
 			{
 				{"popReceipt", item.PopReceipt },
 				{"microService", configuration.MicroService() }
 			};
 
-			Instance.Tenant.Post(url, d);
+			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 		}
 	}
 }
