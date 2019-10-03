@@ -77,27 +77,6 @@ namespace TomPIT.Middleware.Interop
 			{
 				var operationType = Context.Tenant.GetService<ICompilerService>().ResolveType(descriptor.MicroService.Token, op, op.Name);
 
-				if (synchronous)
-				{
-					if (operationType is IDistributedOperation)
-					{
-						var opInstance = operationType.CreateInstance<IDistributedOperation>();
-						var property = opInstance.GetType().GetProperty("Distributed");
-
-						if (property.SetMethod != null)
-							property.SetMethod.Invoke(opInstance, new object[] { true });
-
-						if (arguments != null)
-							Serializer.Populate(arguments, opInstance);
-
-						var method = GetInvoke(opInstance.GetType());
-
-						method.Invoke(opInstance, null);
-
-						return null;
-					}
-				}
-
 				if (HasReturnValue(operationType))
 				{
 					var opInstance = operationType.CreateInstance<IMiddlewareOperation>();
@@ -113,7 +92,17 @@ namespace TomPIT.Middleware.Interop
 				}
 				else
 				{
-					var opInstance = operationType.CreateInstance<IOperation>(new object[] { new MiddlewareContext(ctx) });
+					var opInstance = operationType.CreateInstance<IOperation>();
+
+					if (operationType is IDistributedOperation)
+					{
+						var property = opInstance.GetType().GetProperty(nameof(IDistributedOperation.OperationTarget));
+
+						if (property != null && property.SetMethod != null)
+							property.SetMethod.Invoke(opInstance, new object[] { synchronous ? DistributedOperationTarget.InProcess : DistributedOperationTarget.Distributed });
+					}
+
+					opInstance.SetContext(ctx);
 
 					if (arguments != null)
 						Serializer.Populate(arguments, opInstance);

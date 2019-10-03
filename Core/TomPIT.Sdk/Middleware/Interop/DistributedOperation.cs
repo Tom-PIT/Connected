@@ -1,22 +1,25 @@
 ﻿using System.Linq;
+using Newtonsoft.Json;
 using TomPIT.ComponentModel;
 using TomPIT.Diagostics;
 using TomPIT.Exceptions;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Interop
 {
 	public abstract class DistributedOperation : MiddlewareOperation, IOperation, IDistributedOperation
 	{
 		private IMiddlewareCallback _callback = null;
-		protected DistributedOperation(string callbackPath)
+		protected DistributedOperation([CIP(CIP.ApiOperationProvider)]string callbackPath)
 		{
 			CallbackPath = callbackPath;
 		}
 
 		public bool Cancel { get; set; }
 		private string CallbackPath { get; }
-		internal bool Distributed { get; set; } = true;
-
+		[JsonIgnore]
+		public DistributedOperationTarget OperationTarget { get; private set; } = DistributedOperationTarget.Distributed;
+		[JsonIgnore]
 		public IMiddlewareCallback Callback
 		{
 			get
@@ -51,7 +54,7 @@ namespace TomPIT.Middleware.Interop
 		{
 			Validate();
 
-			if (Distributed)
+			if (OperationTarget == DistributedOperationTarget.Distributed)
 			{
 				OnBeginInvoke();
 

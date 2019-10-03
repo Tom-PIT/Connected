@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 using TomPIT.ComponentModel;
 
 namespace TomPIT.Middleware
@@ -43,7 +44,7 @@ namespace TomPIT.Middleware
 		{
 			MicroService = microService;
 		}
-
+		[JsonIgnore]
 		public virtual IMicroService MicroService { get; protected set; }
 	}
 }

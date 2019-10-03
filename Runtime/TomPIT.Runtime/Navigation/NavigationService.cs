@@ -38,19 +38,22 @@ namespace TomPIT.Navigation
 		}
 
 		protected override string[] Categories => new string[] { ComponentCategories.SiteMap };
-
-		public ISiteMapContainer QuerySiteMap(params string[] keys)
+		public ISiteMapContainer QuerySiteMap(List<string> keys)
+		{
+			return QuerySiteMap(keys, null);
+		}
+		public ISiteMapContainer QuerySiteMap(List<string> keys, List<string> tags)
 		{
 			Initialize();
 
-			if (keys.Length == 0)
+			if (keys == null || keys.Count == 0)
 				return null;
 
 			var containers = new List<ISiteMapContainer>();
 
 			foreach (var key in keys)
 			{
-				var items = LoadSiteMap(key);
+				var items = LoadSiteMap(key, tags);
 
 				if (items != null && items.Count > 0)
 					containers.AddRange(items);
@@ -67,7 +70,7 @@ namespace TomPIT.Navigation
 			return r;
 		}
 
-		private List<ISiteMapContainer> LoadSiteMap(string key)
+		private List<ISiteMapContainer> LoadSiteMap(string key, List<string> tags)
 		{
 			if (!Handlers.ContainsKey(key))
 				return null;
@@ -85,6 +88,28 @@ namespace TomPIT.Navigation
 
 				if (containers == null || containers.Count == 0)
 					continue;
+
+				if (tags != null && tags.Count > 0)
+				{
+					for (var i = containers.Count - 1; i >= 0; i--)
+					{
+						var containerTags = containers[i].Tags;
+
+						if (containerTags == null || containerTags.Length == 0)
+						{
+							containers.RemoveAt(i);
+							continue;
+						}
+
+						var containerTagTokens = containerTags.Split(',', ';');
+
+						foreach (var token in containerTagTokens)
+						{
+							if (!tags.Any(f => string.Compare(f, token, true) == 0))
+								containers.RemoveAt(i);
+						}
+					}
+				}
 
 				foreach (var container in containers)
 					BindContext(container, instance.Context);

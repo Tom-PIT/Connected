@@ -183,13 +183,10 @@ namespace TomPIT.Ide.TextServices.CSharp
 			}
 
 			var argumentTypes = methodArgumentTypeNames.Select(typeName => Type.GetType(typeName));
-			var methods = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.MemberType == MemberTypes.Method);
+			var methods = type.GetAllMethods();
 
-			foreach (var member in methods)
+			foreach (var method in methods)
 			{
-				if (!(member is MethodInfo method))
-					continue;
-
 				if (string.Compare(method.Name, ms.Name, false) != 0)
 					continue;
 
@@ -311,8 +308,8 @@ namespace TomPIT.Ide.TextServices.CSharp
 			var declaringTypeName = string.Format(
 				"{0}.{1}, {2}",
 				ms.ContainingType.ContainingNamespace.ToString(),
-				ms.ContainingType.Name,
-				ms.ContainingAssembly.Name
+				ms.ContainingType.MetadataName,
+				ms.ContainingAssembly.ToDisplayString()
 			);
 
 			var type = Type.GetType(declaringTypeName);
@@ -328,12 +325,11 @@ namespace TomPIT.Ide.TextServices.CSharp
 				if (i.Type.ContainingNamespace == null || i.Type.ContainingAssembly == null)
 					continue;
 
-				methodArgumentTypeNames.Add(string.Format("{0}.{1}, {2}", i.Type.ContainingNamespace.ToString(), i.Type.Name, i.Type.ContainingAssembly.Name));
+				methodArgumentTypeNames.Add(string.Format("{0}.{1}, {2}", i.Type.ContainingNamespace.ToString(), i.Type.MetadataName, i.Type.ContainingAssembly.ToDisplayString()));
 			}
 
 			var argumentTypes = methodArgumentTypeNames.Select(typeName => Type.GetType(typeName));
-
-			var constructors = Type.GetType(declaringTypeName).GetConstructors();
+			var constructors = type.GetAllConstructors();
 
 			foreach (var ctor in constructors)
 			{
@@ -387,6 +383,34 @@ namespace TomPIT.Ide.TextServices.CSharp
 				DiagnosticSeverity.Error => MarkerSeverity.Error,
 				_ => MarkerSeverity.Info,
 			};
+		}
+
+		public static List<MethodInfo> GetAllMethods(this Type type)
+		{
+			var members = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.MemberType == MemberTypes.Method);
+			var result = new List<MethodInfo>();
+
+			foreach (var member in members)
+			{
+				if (member is MethodInfo method)
+					result.Add(method);
+			}
+
+			return result;
+		}
+
+		public static List<ConstructorInfo> GetAllConstructors(this Type type)
+		{
+			var members = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.MemberType == MemberTypes.Constructor);
+			var result = new List<ConstructorInfo>();
+
+			foreach (var member in members)
+			{
+				if (member is ConstructorInfo constructor)
+					result.Add(constructor);
+			}
+
+			return result;
 		}
 	}
 }

@@ -11,6 +11,7 @@ using TomPIT.Exceptions;
 using TomPIT.Messaging;
 using TomPIT.Runtime;
 using TomPIT.Serialization;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Services
 {
@@ -126,17 +127,17 @@ namespace TomPIT.Middleware.Services
 			Context.Tenant.GetService<ISubscriptionService>().TriggerEvent(config.Configuration, config.Element, primaryKey, topic, arguments);
 		}
 
-		public Guid Event<T>([CodeAnalysisProvider(CodeAnalysisProviderAttribute.EventProvider)]string name, T e)
+		public Guid Event<T>([CIP(CIP.DistributedEventProvider)]string name, T e)
 		{
 			return Event(name, e, null);
 		}
 
-		public Guid Event([CodeAnalysisProvider(CodeAnalysisProviderAttribute.EventProvider)]string name)
+		public Guid Event([CIP(CIP.DistributedEventProvider)]string name)
 		{
 			return Event<object>(name, null);
 		}
 
-		public Guid Event<T>([CodeAnalysisProvider(CodeAnalysisProviderAttribute.EventProvider)]string name, T e, IMiddlewareCallback callback)
+		public Guid Event<T>([CIP(CIP.DistributedEventProvider)]string name, T e, IMiddlewareCallback callback)
 		{
 			if (callback is MiddlewareCallback ec)
 				ec.Attached = true;
@@ -148,7 +149,7 @@ namespace TomPIT.Middleware.Services
 			return Context.Tenant.GetService<IEventService>().Trigger(config.Configuration, callback, e);
 		}
 
-		public Guid Event([CodeAnalysisProvider(CodeAnalysisProviderAttribute.EventProvider)]string name, IMiddlewareCallback callback)
+		public Guid Event([CIP(CIP.DistributedEventProvider)]string name, IMiddlewareCallback callback)
 		{
 			return Event<object>(name, null, callback);
 		}

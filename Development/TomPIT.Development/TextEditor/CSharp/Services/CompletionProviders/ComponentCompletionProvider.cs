@@ -43,18 +43,21 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			var components = Editor.Context.Tenant.GetService<IComponentService>().QueryComponents(microService.Token, ComponentCategory);
 
 			foreach (var i in components)
-			{
-				var text = $"{microService.Name}/{i.Name}";
+				OnProvideItems(items, microService, i);
+		}
 
-				items.Add(new CompletionItem
-				{
-					FilterText = text,
-					InsertText = text,
-					SortText = text,
-					Label = text,
-					Kind = CompletionItemKind.Text
-				});
-			}
+		protected virtual void OnProvideItems(List<ICompletionItem> items, IMicroService microService, IComponent component)
+		{
+			var text = $"{microService.Name}/{component.Name}";
+
+			items.Add(new CompletionItem
+			{
+				FilterText = text,
+				InsertText = text,
+				SortText = text,
+				Label = text,
+				Kind = CompletionItemKind.Text
+			});
 		}
 	}
 }

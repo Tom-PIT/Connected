@@ -77,17 +77,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 
 		private void ProvideItemsFromConstructor(List<ICompletionItem> items, TextSpan span, SyntaxNode node)
 		{
-			var args = node as AttributeArgumentSyntax;
-			var invocationSymbol = CSharpQuery.GetInvocationSymbolInfo(Arguments.Model, CSharpQuery.GetArgumentList(args));
-			var ctorInfo = CSharpQuery.GetConstructorInfo(Arguments.Model, CSharpQuery.GetMethodSymbol(Arguments.Model, CSharpQuery.GetArgumentList(args)));
-			var index = CSharpQuery.GetArgumentList(args).Arguments.IndexOf(args);
-
-			var pars = ctorInfo.GetParameters();
-
-			if (index >= pars.Length)
-				return;
-
-			var att = pars[index].GetCustomAttribute<CompletionItemProviderAttribute>();
+			var att = ResolveAttribute(node);
 
 			if (att == null)
 				return;
@@ -105,6 +95,36 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 				items.AddRange(result);
 		}
 
+		private CompletionItemProviderAttribute ResolveAttribute(SyntaxNode node)
+		{
+			var index = -1;
+			ParameterInfo[] parameters = null;
+
+			if (node is AttributeArgumentSyntax att)
+			{
+				var args = CSharpQuery.GetArgumentList(att);
+				var ctorInfo = CSharpQuery.GetConstructorInfo(Arguments.Model, CSharpQuery.GetMethodSymbol(Arguments.Model, args));
+
+				index = args.Arguments.IndexOf(att);
+				parameters = ctorInfo.GetParameters();
+			}
+			else if (node is ArgumentSyntax arg)
+			{
+				var args = CSharpQuery.GetArgumentList(arg);
+				var ctorInfo = CSharpQuery.GetConstructorInfo(Arguments.Model, CSharpQuery.GetMethodSymbol(Arguments.Model, args));
+
+				index = args.Arguments.IndexOf(arg);
+				parameters = ctorInfo.GetParameters();
+			}
+
+			if (index == -1 || parameters == null)
+				return default;
+
+			if (index >= parameters.Length)
+				return default;
+
+			return parameters[index].GetCustomAttribute<CompletionItemProviderAttribute>();
+		}
 		private void ProvideItemsFromMethod(List<ICompletionItem> items, TextSpan span, SyntaxNode node)
 		{
 			if (!(node is ArgumentSyntax args))
@@ -117,7 +137,10 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 			var methodInfo = CSharpQuery.GetMethodInfo(Arguments.Model, CSharpQuery.GetArgumentList(args));
 
 			if (methodInfo == null)
+			{
+				ProvideItemsFromConstructor(items, span, node);
 				return;
+			}
 
 			var index = CSharpQuery.GetArgumentList(args).Arguments.IndexOf(args);
 			var pars = methodInfo.GetParameters();

@@ -128,7 +128,7 @@ namespace TomPIT.ComponentModel
 
 		public static ConfigurationDescriptor<IDistributedEventConfiguration> Event(IMiddlewareContext context, string identifier)
 		{
-			return new ConfigurationDescriptor<IDistributedEventConfiguration>(context, identifier, ComponentCategories.Event);
+			return new ConfigurationDescriptor<IDistributedEventConfiguration>(context, identifier, ComponentCategories.DistributedEvent);
 		}
 
 		public static ConfigurationDescriptor<IScriptConfiguration> Script(IMiddlewareContext context, string identifier)
@@ -145,7 +145,7 @@ namespace TomPIT.ComponentModel
 		{
 			var qualifiers = identifier.Count(f => f == '/');
 
-			if (qualifiers < 3)
+			if (qualifiers < 2)
 			{
 				if (!(context is IMicroServiceContext msc))
 					throw new RuntimeException(nameof(ComponentDescriptor), $"{SR.ErrApiDoubleQualifier} ({identifier})");

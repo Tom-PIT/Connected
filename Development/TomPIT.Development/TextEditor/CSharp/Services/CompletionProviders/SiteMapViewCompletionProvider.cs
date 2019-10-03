@@ -6,7 +6,7 @@ using TomPIT.Ide.TextServices.Languages;
 
 namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 {
-	internal class SiteMapViewUrlCompletionProvider : CompletionProvider
+	internal class SiteMapViewCompletionProvider : CompletionProvider
 	{
 		protected override List<ICompletionItem> OnProvideItems()
 		{

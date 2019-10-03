@@ -1,6 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
 using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Services
 {
@@ -23,9 +24,9 @@ namespace TomPIT.Middleware.Services
 		void SubscriptionEvent([CAP(CAP.SubscriptionEventProvider)]string eventName, string primaryKey, string topic);
 		void SubscriptionEvent<T>([CAP(CAP.SubscriptionEventProvider)]string eventName, string primaryKey, string topic, T arguments);
 
-		Guid Event<T>([CAP(CAP.EventProvider)]string name, T e);
-		Guid Event([CAP(CAP.EventProvider)]string name);
-		Guid Event<T>([CAP(CAP.EventProvider)]string name, T e, IMiddlewareCallback callback);
-		Guid Event([CAP(CAP.EventProvider)]string name, IMiddlewareCallback callback);
+		Guid Event<T>([CIP(CIP.DistributedEventProvider)]string name, T e);
+		Guid Event([CIP(CIP.DistributedEventProvider)]string name);
+		Guid Event<T>([CIP(CIP.DistributedEventProvider)]string name, T e, IMiddlewareCallback callback);
+		Guid Event([CIP(CIP.DistributedEventProvider)]string name, IMiddlewareCallback callback);
 	}
 }

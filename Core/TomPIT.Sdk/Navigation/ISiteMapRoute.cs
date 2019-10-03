@@ -5,7 +5,7 @@ namespace TomPIT.Navigation
 {
 	public interface ISiteMapRoute : ISiteMapElement
 	{
-		[CIP(CIP.SiteMapViewUrlProvider)]
+		[CIP(CIP.SiteMapViewProvider)]
 		string Template { get; }
 
 		string RouteKey { get; }

@@ -14,6 +14,10 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 			var result = new List<ICompletionItem>();
 			var service = Microsoft.CodeAnalysis.Completion.CompletionService.GetService(Editor.Document);
 			var caret = Editor.GetMappedCaret(Arguments.Position);
+
+			if (caret == -1)
+				return default;
+
 			var token = model.SyntaxTree.GetRoot().FindToken(caret);
 
 			if (token == default)

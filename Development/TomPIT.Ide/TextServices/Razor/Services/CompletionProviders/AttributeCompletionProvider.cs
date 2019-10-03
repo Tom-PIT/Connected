@@ -24,6 +24,10 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 
 			var model = Editor.Document.GetSemanticModelAsync().Result;
 			var caret = Editor.GetMappedCaret(Arguments.Position);
+
+			if (caret == -1)
+				return default;
+
 			var token = model.SyntaxTree.GetRoot().FindToken(caret);
 
 			if (token == default)

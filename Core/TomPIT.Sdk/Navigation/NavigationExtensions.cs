@@ -125,7 +125,17 @@ namespace TomPIT.Navigation
 
 		public static void FromSiteMap(this List<IRoute> routes, IMiddlewareContext context, [CAP(CAP.RouteSiteMapsProvider)]string routeKey)
 		{
-			var sitemap = context.Services.Routing.QuerySiteMap(routeKey);
+			var sitemap = context.Services.Routing.QuerySiteMap(new List<string> { routeKey });
+
+			if (sitemap == null)
+				return;
+
+			LoadRoutes(context, routes, sitemap.Routes);
+		}
+
+		public static void FromSiteMap(this List<IRoute> routes, IMiddlewareContext context, [CAP(CAP.RouteSiteMapsProvider)]string routeKey, string tag)
+		{
+			var sitemap = context.Services.Routing.QuerySiteMap(new List<string> { routeKey }, true, new List<string> { tag });
 
 			if (sitemap == null)
 				return;

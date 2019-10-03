@@ -7,7 +7,7 @@ namespace TomPIT.Navigation
 {
 	public abstract class SiteMapViewElement : SiteMapElement, ISiteMapAuthorizationElement
 	{
-		[CIP(CIP.SiteMapViewUrlProvider)]
+		[CIP(CIP.SiteMapViewProvider)]
 
 		public string View { get; set; }
 

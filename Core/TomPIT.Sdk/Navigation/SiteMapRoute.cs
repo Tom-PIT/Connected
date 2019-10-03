@@ -7,7 +7,7 @@ namespace TomPIT.Navigation
 	{
 		private ConnectedList<ISiteMapRoute, ISiteMapRoute> _items = null;
 
-		[CIP(CIP.SiteMapViewUrlProvider)]
+		[CIP(CIP.SiteMapViewProvider)]
 		public string Template { get; set; }
 
 		public string RouteKey { get; set; }

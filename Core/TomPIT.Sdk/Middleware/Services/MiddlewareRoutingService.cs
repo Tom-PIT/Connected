@@ -295,13 +295,18 @@ namespace TomPIT.Middleware.Services
 			return Types.Convert<T>(routeValue);
 		}
 
-		public ISiteMapContainer QuerySiteMap(bool authorize, [CAS(CAS.RouteSiteMapsProvider)]params string[] keys)
+		public ISiteMapContainer QuerySiteMap(List<string> keys)
+		{
+			return QuerySiteMap(keys, true);
+		}
+		public ISiteMapContainer QuerySiteMap(List<string> keys, bool authorize)
 		{
 			return Context.Tenant.GetService<INavigationService>().QuerySiteMap(keys).WithAuthorization(Context);
 		}
-		public ISiteMapContainer QuerySiteMap([CAS(CAS.RouteSiteMapsProvider)]params string[] keys)
+
+		public ISiteMapContainer QuerySiteMap(List<string> keys, bool authorize, List<string> tags)
 		{
-			return QuerySiteMap(false, keys);
+			return Context.Tenant.GetService<INavigationService>().QuerySiteMap(keys, tags).WithAuthorization(Context);
 		}
 
 		public List<IBreadcrumb> QueryBreadcrumbs([CAS(CAS.RouteKeysProvider)]string routeKey)

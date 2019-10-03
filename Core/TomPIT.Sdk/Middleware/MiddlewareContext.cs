@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Connectivity;
@@ -44,6 +45,7 @@ namespace TomPIT.Middleware
 				Endpoint = Tenant?.Url;
 		}
 
+		[JsonIgnore]
 		public virtual IMiddlewareServices Services
 		{
 			get
@@ -54,9 +56,10 @@ namespace TomPIT.Middleware
 				return _services;
 			}
 		}
-
+		[JsonIgnore]
 		public string Endpoint { get; protected set; }
 
+		[JsonIgnore]
 		public IMiddlewareInterop Interop
 		{
 			get
@@ -67,7 +70,7 @@ namespace TomPIT.Middleware
 				return _interop;
 			}
 		}
-
+		[JsonIgnore]
 		public ITenant Tenant
 		{
 			get
@@ -96,7 +99,7 @@ namespace TomPIT.Middleware
 			return dataProvider.OpenConnection(descriptor.Configuration.Value);
 		}
 
-		public IDataReader<T> OpenReader<T>(IDataConnection connection, string commandText)
+		public IDataReader<T> OpenReader<T>(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)
 		{
 			return new DataReader<T>(this)
 			{
@@ -105,7 +108,7 @@ namespace TomPIT.Middleware
 			};
 		}
 
-		public IDataWriter OpenWriter(IDataConnection connection, string commandText)
+		public IDataWriter OpenWriter(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)
 		{
 			return new DataWriter(this)
 			{
@@ -114,7 +117,7 @@ namespace TomPIT.Middleware
 			};
 		}
 
-		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, string commandText)
+		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
 		{
 			return new DataReader<T>(this)
 			{
@@ -124,7 +127,7 @@ namespace TomPIT.Middleware
 			};
 		}
 
-		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, string commandText)
+		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
 		{
 			return new DataWriter(this)
 			{

@@ -28,7 +28,7 @@ namespace TomPIT.Messaging
 			};
 
 			if (callback != null)
-				args.Add(new JObject { "callback", $"{callback.MicroService}/{callback.Component}/{callback.Element}" });
+				args.Add("callback", $"{callback.MicroService}/{callback.Component}/{callback.Element}");
 
 			if (e != null)
 				args.Add("arguments", Serializer.Serialize(e));

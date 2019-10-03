@@ -1,11 +1,15 @@
 ﻿using Newtonsoft.Json;
 using TomPIT.Reflection;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Interop
 {
-	public abstract class OperationModel<TModel> : Operation, IOperationModel<TModel> where TModel : class
+	public abstract class DistributedOperationModel<TModel> : DistributedOperation, IOperationModel<TModel> where TModel : class
 	{
 		private TModel _model = default;
+		protected DistributedOperationModel([CIP(CIP.ApiOperationProvider)]string callbackPath) : base(callbackPath)
+		{
+		}
 		[JsonIgnore]
 		protected TModel Model
 		{

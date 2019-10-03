@@ -31,7 +31,8 @@ namespace TomPIT.Serialization
 						ContractResolver = new SerializationResolver(),
 						NullValueHandling = NullValueHandling.Ignore,
 						ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-						MetadataPropertyHandling = MetadataPropertyHandling.Default
+						MetadataPropertyHandling = MetadataPropertyHandling.Default,
+						ReferenceLoopHandling = ReferenceLoopHandling.Ignore
 					};
 				}
 

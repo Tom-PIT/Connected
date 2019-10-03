@@ -43,8 +43,9 @@ namespace TomPIT.Middleware.Services
 		string ParseRoute([CAP(CAP.RouteKeysProvider)]string routeKey, IDictionary<string, object> parameters);
 		string ParseRoute([CAP(CAP.RouteKeysProvider)]string routeKey, RouteValueDictionary parameters);
 
-		ISiteMapContainer QuerySiteMap([CAP(CAP.RouteSiteMapsProvider)]params string[] keys);
-		ISiteMapContainer QuerySiteMap(bool authorize, [CAP(CAP.RouteSiteMapsProvider)]params string[] keys);
+		ISiteMapContainer QuerySiteMap(List<string> keys);
+		ISiteMapContainer QuerySiteMap(List<string> keys, bool authorize);
+		ISiteMapContainer QuerySiteMap(List<string> keys, bool authorize, List<string> tags);
 		List<IBreadcrumb> QueryBreadcrumbs([CAP(CAP.RouteKeysProvider)]string routeKey);
 		List<IBreadcrumb> QueryBreadcrumbs([CAP(CAP.RouteKeysProvider)]string routeKey, IDictionary<string, object> parameters);
 		List<IBreadcrumb> QueryBreadcrumbs([CAP(CAP.RouteKeysProvider)]string routeKey, RouteValueDictionary parameters);

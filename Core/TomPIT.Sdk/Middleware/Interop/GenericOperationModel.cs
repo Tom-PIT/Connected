@@ -1,4 +1,5 @@
-﻿using TomPIT.Reflection;
+﻿using Newtonsoft.Json;
+using TomPIT.Reflection;
 
 namespace TomPIT.Middleware.Interop
 {
@@ -8,7 +9,7 @@ namespace TomPIT.Middleware.Interop
 		protected OperationModel()
 		{
 		}
-
+		[JsonIgnore]
 		protected TModel Model
 		{
 			get
