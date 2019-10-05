@@ -9,34 +9,34 @@ namespace TomPIT.Search
 		public SearchVerb Verb { get; set; } = SearchVerb.Update;
 		public virtual SearchValidationBehavior ValidationFailed => SearchValidationBehavior.Complete;
 
-		public T Deserialize(string searchResult)
+		public T Search(string searchResult)
 		{
-			return OnDeserializeResult(searchResult);
+			return OnSearch(searchResult);
 		}
 
-		protected virtual T OnDeserializeResult(string searchResult)
+		protected virtual T OnSearch(string searchResult)
 		{
 			var instance = Serializer.Deserialize<T>(searchResult);
 
-			OnDeserializingResult(instance);
+			OnSearch(instance);
 
 			return instance;
 		}
 
-		protected virtual void OnDeserializingResult(T instance)
+		protected virtual void OnSearch(T instance)
 		{
 
 		}
 
-		public List<T> Query()
+		public List<T> Index()
 		{
 			if (Verb != SearchVerb.Rebuild)
 				Validate();
 
-			return OnQuery();
+			return OnIndex();
 		}
 
-		protected virtual List<T> OnQuery()
+		protected virtual List<T> OnIndex()
 		{
 			return new List<T>();
 		}

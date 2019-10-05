@@ -5,10 +5,9 @@ using System.Linq;
 using TomPIT.Ide.Collections;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Dom;
-using TomPIT.MicroServices.IoT;
 using TomPIT.MicroServices.IoT.UI;
 
-namespace TomPIT.IoT
+namespace TomPIT.MicroServices.IoT.Design
 {
 	public class IoTTemplate : MicroServiceTemplate
 	{

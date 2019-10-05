@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using TomPIT.ComponentModel;
 using TomPIT.Diagostics;
@@ -10,12 +11,43 @@ namespace TomPIT.Middleware.Interop
 	public abstract class DistributedOperation : MiddlewareOperation, IOperation, IDistributedOperation
 	{
 		private IMiddlewareCallback _callback = null;
+		private List<IOperationResponse> _responses = null;
 		protected DistributedOperation([CIP(CIP.ApiOperationProvider)]string callbackPath)
 		{
 			CallbackPath = callbackPath;
 		}
 
-		public bool Cancel { get; set; }
+		[JsonIgnore]
+		public List<IOperationResponse> Responses
+		{
+			get
+			{
+				if (_responses == null)
+					_responses = new List<IOperationResponse>();
+
+				return _responses;
+			}
+		}
+
+		protected bool ResponseSuccessfull
+		{
+			get
+			{
+				if (Responses.Count == 0)
+					return true;
+
+				foreach (var response in Responses)
+				{
+					switch (response.Result)
+					{
+						case ResponseResult.Objection:
+							return false;
+					}
+				}
+
+				return true;
+			}
+		}
 		private string CallbackPath { get; }
 		[JsonIgnore]
 		public DistributedOperationTarget OperationTarget { get; private set; } = DistributedOperationTarget.Distributed;

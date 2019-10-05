@@ -1062,4 +1062,7 @@
   <data name="ErrMicroServiceExpected" xml:space="preserve">
     <value>Micro service expected</value>
   </data>
+  <data name="ErrCacheKeyNull" xml:space="preserve">
+    <value>Cache Key property not set. Please set 'Key' property before returning value from cache retrieve handler.</value>
+  </data>
 </root>

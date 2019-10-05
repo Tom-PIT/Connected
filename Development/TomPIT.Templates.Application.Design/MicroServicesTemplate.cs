@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.CodeAnalysis.Scripting;
 using TomPIT.ComponentModel;
 using TomPIT.Ide.Collections;
 using TomPIT.Ide.ComponentModel;
@@ -41,8 +40,8 @@ namespace TomPIT.MicroServices.Design
 				{ ComponentCategories.ScriptBundle,    new ItemDescriptor("Script bundle",    ComponentCategories.ScriptBundle,      typeof(ScriptBundle))                        { Glyph = "fab fa-js",                 Category = "UI",              Ordinal=4 } },
 				{ ComponentCategories.SiteMap,         new ItemDescriptor("Site map",         ComponentCategories.SiteMap,           typeof(SiteMap))                             { Glyph = "fal fa-route",              Category = "UI",              Ordinal=5 } },
 				{ ComponentCategories.Api,             new ItemDescriptor("Api",              ComponentCategories.Api,               typeof(Api))                                 { Glyph = "fal fa-broadcast-tower",    Category = "Middleware" ,     Ordinal=100} },
-				{ ComponentCategories.Script,          new ItemDescriptor("Script",           ComponentCategories.Script,            typeof(Script))                              { Glyph = "fal fa-file-code",          Category = "Middleware" ,     Ordinal=102} },
-				{ ComponentCategories.EventBinder,    new ItemDescriptor("Event bindings",   ComponentCategories.EventBinder,      typeof(EventBindings))                       { Glyph = "fal fa-bullseye-pointer",   Category = "Middleware" ,     Ordinal=104} },
+				{ ComponentCategories.Script,          new ItemDescriptor("Script",           ComponentCategories.Script,            typeof(Scripting.Script))                    { Glyph = "fal fa-file-code",          Category = "Middleware" ,     Ordinal=102} },
+				{ ComponentCategories.EventBinder,     new ItemDescriptor("Event bindings",   ComponentCategories.EventBinder,       typeof(EventBindings))                       { Glyph = "fal fa-bullseye-pointer",   Category = "Middleware" ,     Ordinal=104} },
 				{ ComponentCategories.DistributedEvent,new ItemDescriptor("Distributed event",ComponentCategories.DistributedEvent,  typeof(DistributedEvent))                    { Glyph = "fal fa-chart-network",      Category = "Distributed" ,    Ordinal=205} },
 				{ ComponentCategories.HostedWorker,    new ItemDescriptor("Hosted worker",    ComponentCategories.HostedWorker,      typeof(HostedWorker))                        { Glyph = "fal fa-cog",                Category = "Distributed" ,    Ordinal=206} },
 				{ ComponentCategories.Queue,           new ItemDescriptor("Queue middleware", ComponentCategories.Queue,             typeof(Queue))                               { Glyph = "fal fa-cog",                Category = "Distributed" ,    Ordinal=207} },

@@ -14,7 +14,7 @@ namespace TomPIT.Annotations.Design
 		public const string DistributedEventProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.DistributedEventProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string ApiProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.ApiProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string ApiOperationProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.ApiOperationProvider, " + SystemAssemblies.DevelopmentAssembly;
-
+		public const string SearchCatalogProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.SearchCatalogProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public CompletionItemProviderAttribute() { }
 
 		public CompletionItemProviderAttribute(string type)

@@ -8,6 +8,7 @@ using TomPIT.Deployment;
 using TomPIT.Design.Serialization;
 using TomPIT.Diagostics;
 using TomPIT.Environment;
+using TomPIT.Exceptions;
 using TomPIT.Management.ComponentModel;
 using TomPIT.Management.Deployment.Packages;
 using TomPIT.Management.Deployment.Subscriptions;
@@ -334,8 +335,6 @@ namespace TomPIT.Management.Deployment
 				return null;
 
 			var config = (PackageConfiguration)Tenant.GetService<ISerializationService>().Deserialize(raw, typeof(PackageConfiguration));
-
-			var ms = Tenant.GetService<IMicroServiceService>().Select(package);
 			PackageConfiguration existing = SelectExistingInstallerConfiguration(package);
 
 			SynchronizeConfiguration(config, existing);
@@ -443,7 +442,7 @@ namespace TomPIT.Management.Deployment
 				 */
 				return (PackageConfiguration)Tenant.GetService<ISerializationService>().Deserialize(content.Content, typeof(PackageConfiguration));
 			}
-			catch
+			catch (RuntimeException)
 			{
 				return default;
 			}

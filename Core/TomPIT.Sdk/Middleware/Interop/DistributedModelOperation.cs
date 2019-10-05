@@ -4,10 +4,10 @@ using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Interop
 {
-	public abstract class DistributedOperationModel<TModel> : DistributedOperation, IOperationModel<TModel> where TModel : class
+	public abstract class DistributedModelOperation<TModel> : DistributedOperation, IModelOperation<TModel> where TModel : class
 	{
 		private TModel _model = default;
-		protected DistributedOperationModel([CIP(CIP.ApiOperationProvider)]string callbackPath) : base(callbackPath)
+		protected DistributedModelOperation([CIP(CIP.ApiOperationProvider)]string callbackPath) : base(callbackPath)
 		{
 		}
 		[JsonIgnore]

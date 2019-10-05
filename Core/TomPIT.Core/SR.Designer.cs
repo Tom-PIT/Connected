@@ -754,6 +754,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cache Key property not set. Please set &apos;Key&apos; property before returning value from cache retrieve handler..
+        /// </summary>
+        public static string ErrCacheKeyNull {
+            get {
+                return ResourceManager.GetString("ErrCacheKeyNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot create component instance.
         /// </summary>
         public static string ErrCannotCreateComponentInstance {

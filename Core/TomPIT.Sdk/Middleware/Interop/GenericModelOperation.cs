@@ -3,10 +3,10 @@ using TomPIT.Reflection;
 
 namespace TomPIT.Middleware.Interop
 {
-	public abstract class OperationModel<TModel, TReturnValue> : Operation<TReturnValue>, IOperationModel<TModel> where TModel : class
+	public abstract class ModelOperation<TModel, TReturnValue> : Operation<TReturnValue>, IModelOperation<TModel> where TModel : class
 	{
 		private TModel _model = default;
-		protected OperationModel()
+		protected ModelOperation()
 		{
 		}
 		[JsonIgnore]

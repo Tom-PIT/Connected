@@ -105,6 +105,9 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 				var args = CSharpQuery.GetArgumentList(att);
 				var ctorInfo = CSharpQuery.GetConstructorInfo(Arguments.Model, CSharpQuery.GetMethodSymbol(Arguments.Model, args));
 
+				if (ctorInfo == null)
+					return default;
+
 				index = args.Arguments.IndexOf(att);
 				parameters = ctorInfo.GetParameters();
 			}
@@ -112,6 +115,9 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 			{
 				var args = CSharpQuery.GetArgumentList(arg);
 				var ctorInfo = CSharpQuery.GetConstructorInfo(Arguments.Model, CSharpQuery.GetMethodSymbol(Arguments.Model, args));
+
+				if (ctorInfo == null)
+					return default;
 
 				index = args.Arguments.IndexOf(arg);
 				parameters = ctorInfo.GetParameters();

@@ -1,4 +1,6 @@
-﻿namespace TomPIT.Middleware
+﻿using System.Collections.Generic;
+
+namespace TomPIT.Middleware
 {
 	public enum DistributedOperationTarget
 	{
@@ -8,9 +10,10 @@
 
 	public interface IDistributedOperation : IMiddlewareObject
 	{
-		bool Cancel { get; set; }
+		List<IOperationResponse> Responses { get; }
 		DistributedOperationTarget OperationTarget { get; }
 
 		IMiddlewareCallback Callback { get; }
+		void Invoke();
 	}
 }

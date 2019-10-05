@@ -27,7 +27,7 @@ namespace TomPIT.Sys
 			services.AddMvc(o =>
 			{
 				o.EnableEndpointRouting = false;
-			});
+			}).AddNewtonsoftJson();
 
 			services.AddAuthentication(options =>
 			{

@@ -12,7 +12,7 @@
   "designers": [
     "TomPIT.MicroServices.Design.MicroServicesTemplate, TomPIT.MicroServices.Design",
     "TomPIT.MicroServices.IoT.Design.IoTTemplate, TomPIT.MicroServices.IoT.Design",
-    "TomPIT.MicroServices.BigData.Design.Design.BigDataTemplate, TomPIT.MicroServices.BigData.Design"
+    "TomPIT.MicroServices.BigData.Design.BigDataTemplate, TomPIT.MicroServices.BigData.Design"
     //"TomPIT.Reporting.Design.ReportTemplate, TomPIT.Reporting.Design"
   ],
 	"plugins": {

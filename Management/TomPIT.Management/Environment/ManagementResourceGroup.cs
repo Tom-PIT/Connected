@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Environment;
+using TomPIT.Management.Items;
 using TomPIT.Runtime;
 
 namespace TomPIT.Management.Environment
@@ -21,7 +22,7 @@ namespace TomPIT.Management.Environment
 		public Guid Token { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
-		[Items("TomPIT.Management.Items.StorageProviderItems, TomPIT.Management")]
+		[Items(ManagementItems.StorageProvider)]
 		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public Guid StorageProvider { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]

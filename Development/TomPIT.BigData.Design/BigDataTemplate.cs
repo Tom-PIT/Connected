@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.BigData;
 using TomPIT.ComponentModel;
 using TomPIT.Ide.Collections;
 using TomPIT.Ide.ComponentModel;

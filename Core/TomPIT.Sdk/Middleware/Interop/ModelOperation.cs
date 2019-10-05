@@ -3,7 +3,7 @@ using TomPIT.Reflection;
 
 namespace TomPIT.Middleware.Interop
 {
-	public abstract class OperationModel<TModel> : Operation, IOperationModel<TModel> where TModel : class
+	public abstract class ModelOperation<TModel> : Operation, IModelOperation<TModel> where TModel : class
 	{
 		private TModel _model = default;
 		[JsonIgnore]

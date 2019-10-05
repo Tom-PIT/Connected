@@ -4,7 +4,7 @@ namespace TomPIT.Search
 {
 	public interface ISearchMiddleware<T> : ISearchComponent
 	{
-		List<T> Query();
-		T Deserialize(string searchResult);
+		List<T> Index();
+		T Search(string searchResult);
 	}
 }

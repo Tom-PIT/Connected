@@ -1012,6 +1012,10 @@ $.widget('tompit.tpIde', {
             $('#devDesigner').collapse('show');
         }
     },
+    showDesigner: function () {
+        $('#devTextDesigner').collapse('hide');
+        $('#devDesigner').collapse('show');
+    },
     setPropertySaveMode: function (v) {
         this.options.properties.saveMode = v;
         this.options.properties.state = [];

@@ -127,7 +127,7 @@ namespace TomPIT.Management.Deployment
 				Tenant.GetService<IComponentDevelopmentService>().Restore(Package.MicroService.Token, i, configuration, runtimeConfiguration);
 			}
 
-			var connections = Tenant.GetService<IComponentService>().QueryComponents(Package.MicroService.Token, "Tenant");
+			var connections = Tenant.GetService<IComponentService>().QueryComponents(Package.MicroService.Token, ComponentCategories.Connection);
 
 			foreach (var i in connections)
 			{

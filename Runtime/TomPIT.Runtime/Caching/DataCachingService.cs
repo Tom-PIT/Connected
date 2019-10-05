@@ -175,6 +175,30 @@ namespace TomPIT.Caching
 			return Marshall.Convert<T>(item);
 		}
 
+		public T Get<T>(string key, Func<T, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
+		{
+			Initialize(key);
+
+			var item = Get(key, predicate);
+
+			if (item == null)
+			{
+				var options = new EntryOptions
+				{
+					AllowNull = false,
+					Duration = TimeSpan.Zero,
+					SlidingExpiration = true
+				};
+
+				item = retrieve(options);
+
+				if (item != null && options.AllowNull)
+					Set(key, options.Key, item, options.Duration, options.SlidingExpiration);
+			}
+
+			return Marshall.Convert<T>(item);
+		}
+
 		public T Get<T>(string key, string id) where T : class
 		{
 			Initialize(key);

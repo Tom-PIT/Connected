@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
+using TomPIT.Management.Items;
 using TomPIT.Runtime;
 
 namespace TomPIT.Management.ComponentModel
@@ -28,7 +29,7 @@ namespace TomPIT.Management.ComponentModel
 		public Guid ResourceGroup { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
-		[Items("TomPIT.Items.MicroServiceTemplatesItems, TomPIT.Management")]
+		[Items(ManagementItems.MicroServiceTemplates)]
 		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public Guid Template { get; set; }
 		[Browsable(false)]

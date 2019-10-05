@@ -14,7 +14,7 @@ namespace TomPIT.Data
 		}
 
 		private string CacheKey { get; }
-		protected virtual TimeSpan Expiration => TimeSpan.Zero;
+		protected virtual TimeSpan Expiration => TimeSpan.FromSeconds(90);
 		protected virtual bool SlidingExpiration => true;
 
 		protected bool Exists()
@@ -55,6 +55,11 @@ namespace TomPIT.Data
 		protected T Get(Func<T, bool> predicate)
 		{
 			return Context.Tenant.GetService<IDataCachingService>().Get(CacheKey, predicate);
+		}
+
+		protected T Get(Func<T, bool> predicate, CacheRetrieveHandler<T> retrieve)
+		{
+			return Context.Tenant.GetService<IDataCachingService>().Get(CacheKey, predicate, retrieve);
 		}
 
 		protected T First()

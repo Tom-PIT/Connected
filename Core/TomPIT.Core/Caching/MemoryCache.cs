@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TomPIT.Exceptions;
 
 namespace TomPIT.Caching
 {
@@ -66,6 +67,35 @@ namespace TomPIT.Caching
 		public int Count(string key)
 		{
 			return Container.Count(key);
+		}
+
+		public T Get<T>(string key, Func<T, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
+		{
+			var r = Container.Get(key, predicate);
+
+			if (r == null)
+			{
+				if (retrieve == null)
+					return null;
+
+				var options = new EntryOptions();
+				T instance = retrieve(options);
+
+				if (EqualityComparer<T>.Default.Equals(instance, default))
+				{
+					if (!options.AllowNull)
+						return null;
+				}
+
+				if (string.IsNullOrWhiteSpace(options.Key))
+					throw new TomPITException(SR.ErrCacheKeyNull);
+
+				Set(key, options.Key, instance, options.Duration, options.SlidingExpiration);
+
+				return instance;
+			}
+			else
+				return (T)r.Instance;
 		}
 
 		public T Get<T>(string key, string id, CacheRetrieveHandler<T> retrieve) where T : class

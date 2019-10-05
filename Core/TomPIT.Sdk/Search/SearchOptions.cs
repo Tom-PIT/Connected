@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Search
 {
@@ -80,7 +80,7 @@ namespace TomPIT.Search
 			}
 		}
 
-		public void AddCatalog([CAP(CAP.SearchCatalogProvider)]string catalog)
+		public void AddCatalog([CIP(CIP.SearchCatalogProvider)]string catalog)
 		{
 			Catalogs.Add(catalog);
 		}

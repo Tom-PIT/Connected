@@ -61,7 +61,7 @@ namespace TomPIT
 
 		public static T ToType<T>(this Stream s)
 		{
-			var body = new StreamReader(s, Encoding.UTF8).ReadToEnd();
+			var body = new StreamReader(s, Encoding.UTF8).ReadToEndAsync().Result;
 
 			return Serializer.Deserialize<T>(body);
 		}

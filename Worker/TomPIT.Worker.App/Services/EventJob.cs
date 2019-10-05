@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,9 +12,7 @@ using TomPIT.Diagostics;
 using TomPIT.Distributed;
 using TomPIT.Messaging;
 using TomPIT.Middleware;
-using TomPIT.Middleware.Interop;
 using TomPIT.Reflection;
-using TomPIT.Serialization;
 using TomPIT.Storage;
 
 namespace TomPIT.Worker.Services
@@ -50,7 +49,7 @@ namespace TomPIT.Worker.Services
 			if (ed == null)
 				return;
 
-			var cancel = false;
+			var responses = new List<IOperationResponse>();
 
 			if (string.Compare(ed.Name, "$", true) != 0)
 			{
@@ -68,8 +67,15 @@ namespace TomPIT.Worker.Services
 							{
 								if (ed.Name.Equals(i.Event, StringComparison.OrdinalIgnoreCase))
 								{
-									if (Invoke(ed, i) & !cancel)
-										cancel = true;
+									var result = Invoke(ed, i);
+
+									if (result != null && result.Count > 0)
+									{
+										lock (responses)
+										{
+											responses.AddRange(result);
+										}
+									}
 								}
 							});
 					};
@@ -77,10 +83,10 @@ namespace TomPIT.Worker.Services
 			}
 
 			if (!string.IsNullOrWhiteSpace(ed.Callback))
-				Callback(ed, cancel);
+				Callback(ed, responses);
 		}
 
-		private void Callback(EventDescriptor ed, bool cancel)
+		private void Callback(EventDescriptor ed, List<IOperationResponse> responses)
 		{
 			var ctx = new MicroServiceContext(new Guid(ed.Callback.Split('/')[0]));
 			var descriptor = ComponentDescriptor.Api(ctx, ed.Callback);
@@ -89,19 +95,21 @@ namespace TomPIT.Worker.Services
 			if (op == null)
 				return;
 
-			var args = string.IsNullOrWhiteSpace(ed.Arguments)
-				? new JObject()
-				: JsonConvert.DeserializeObject<JObject>(ed.Arguments);
+			var instance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IDistributedOperation>(op, ed.Arguments);
+			var property = instance.GetType().GetProperty(nameof(IDistributedOperation.OperationTarget));
 
-			if (args.Property("cancel", StringComparison.OrdinalIgnoreCase) == null)
-				args.Add("cancel", cancel);
-			else
-				args["cancel"] = cancel;
+			if (property.SetMethod == null)
+				return;
 
-			new ApiInvoker(ctx).Invoke(null, descriptor, ed.Arguments, true);
+			property.SetMethod.Invoke(instance, new object[] { DistributedOperationTarget.InProcess });
+
+			if (responses != null && responses.Count > 0)
+				instance.Responses.AddRange(responses);
+
+			instance.Invoke();
 		}
 
-		private bool Invoke(EventDescriptor ed, IEventBinding i)
+		private List<IOperationResponse> Invoke(EventDescriptor ed, IEventBinding i)
 		{
 			var ctx = new MicroServiceContext(i.Configuration().MicroService());
 			var configuration = i.Closest<IEventBindingConfiguration>();
@@ -109,7 +117,7 @@ namespace TomPIT.Worker.Services
 			if (configuration == null)
 			{
 				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrElementClosestNull} ({nameof(IEventBinding)}->{nameof(IEventBindingConfiguration)}");
-				return false;
+				return null;
 			}
 
 			var componentName = configuration.ComponentName();
@@ -118,7 +126,7 @@ namespace TomPIT.Worker.Services
 			if (type == null)
 			{
 				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrTypeExpected} ({componentName})");
-				return false;
+				return null;
 			}
 
 			try
@@ -127,30 +135,14 @@ namespace TomPIT.Worker.Services
 
 				Invoke(handler, ed.Name);
 
-				if (handler.Cancel)
-				{
-					var args = string.IsNullOrWhiteSpace(ed.Arguments)
-						? new JObject()
-						: Serializer.Deserialize<JObject>(ed.Arguments);
-
-					var property = args.Property("cancel", StringComparison.OrdinalIgnoreCase);
-
-					if (property == null)
-						args.Add("cancel", true);
-					else
-						property.Value = true;
-
-					ed.Arguments = Serializer.Serialize(args);
-
-					return handler.Cancel;
-				}
+				return handler.Responses;
 			}
 			catch (Exception ex)
 			{
 				ctx.Services.Diagnostic.Error(nameof(EventJob), nameof(Invoke), $"{ex.Message}");
 			}
 
-			return false;
+			return null;
 		}
 
 		private void Invoke(IEventMiddleware handler, string eventName)
@@ -162,8 +154,6 @@ namespace TomPIT.Worker.Services
 				try
 				{
 					handler.Invoke(eventName);
-
-					return;
 				}
 				catch (Exception ex)
 				{
