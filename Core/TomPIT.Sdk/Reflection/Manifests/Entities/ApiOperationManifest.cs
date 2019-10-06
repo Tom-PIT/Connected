@@ -3,7 +3,7 @@ using TomPIT.ComponentModel;
 
 namespace TomPIT.Reflection.Manifests.Entities
 {
-	internal class ApiOperationManifest : ManifestType
+	public class ApiOperationManifest : ManifestType
 	{
 		private List<ManifestType> _extenders = null;
 		public ElementScope Scope { get; set; }

@@ -33,7 +33,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 				{
 					FilterText = text,
 					InsertText = text,
-					Kind = CompletionItemKind.TypeParameter,
+					Kind = CompletionItemKind.Reference,
 					Label = text,
 					SortText = text
 				});

@@ -2,17 +2,17 @@
 using TomPIT.ComponentModel;
 using TomPIT.Middleware.Interop;
 using TomPIT.Serialization;
-using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware
 {
-	internal class MiddlewareInterop : MiddlewareObject, IMiddlewareInterop
+	internal class MiddlewareINterop : MiddlewareObject, IMiddlewareInterop
 	{
-		public MiddlewareInterop(IMiddlewareContext context) : base(context)
+		public MiddlewareINterop(IMiddlewareContext context) : base(context)
 		{
 
 		}
-		public R Invoke<R>([CAP(CAP.ApiProvider)]string api)
+		public R Invoke<R>([CIP(CIP.ApiOperationProvider)]string api)
 		{
 			var descriptor = ComponentDescriptor.Api(Context, api);
 			var invoker = new ApiInvoker(Context);
@@ -21,7 +21,7 @@ namespace TomPIT.Middleware
 			return Marshall.Convert<R>(result);
 		}
 
-		public R Invoke<R, A>([CAP(CAP.ApiProvider)] string api, A e)
+		public R Invoke<R, A>([CIP(CIP.ApiOperationProvider)]string api, [CIP(CIP.ApiOperationParameterProvider)]A e)
 		{
 			var descriptor = ComponentDescriptor.Api(Context, api);
 			var invoker = new ApiInvoker(Context);
@@ -30,7 +30,7 @@ namespace TomPIT.Middleware
 			return Marshall.Convert<R>(result);
 		}
 
-		public void Invoke<A>([CAP(CAP.ApiProvider)] string api, A e)
+		public void Invoke<A>([CIP(CIP.ApiOperationProvider)]string api, [CIP(CIP.ApiOperationParameterProvider)]A e)
 		{
 			var descriptor = ComponentDescriptor.Api(Context, api);
 			var invoker = new ApiInvoker(Context);

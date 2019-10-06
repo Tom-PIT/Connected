@@ -152,6 +152,9 @@
             if (features.signatureHelp)
                 this._signatureHelp(language);
 
+            if (features.documentSymbol)
+                this._documentSymbol(language);
+
         },
         setTargetProperty: function (property) {
             this.options.property = property;
@@ -276,6 +279,35 @@
                                         dispose: function () {}
                                     });
                                 }
+                                else
+                                    reject();
+                            }
+
+                        }, false);
+                    });
+                }
+            });
+        },
+        _documentSymbol: function (language) {
+            var instance = this;
+
+            monaco.languages.registerDocumentSymbolProvider(language, {
+                provideDocumentSymbols: function (model, position, token, context) {
+                    return new Promise(function (resolve, reject) {
+                        ide.designerAction({
+                            data: {
+                                action: 'provideDocumentSymbols',
+                                section: 'designer',
+                                property: instance.options.property,
+                                model: {
+                                    'id': model.id,
+                                    'uri': model.uri.toString()
+                                },
+                                text: model.getValue()
+                            },
+                            onComplete: function (data) {
+                                if (data) 
+                                    resolve(data);
                                 else
                                     reject();
                             }

@@ -1,14 +1,14 @@
-﻿using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
+﻿using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware
 {
 	public interface IMiddlewareInterop
 	{
-		R Invoke<R>([CAP(CAP.ApiProvider)]string api);
+		R Invoke<R>([CIP(CIP.ApiOperationProvider)]string api);
 
-		R Invoke<R, A>([CAP(CAP.ApiProvider)]string api, A e);
+		R Invoke<R, A>([CIP(CIP.ApiOperationProvider)]string api, [CIP(CIP.ApiOperationParameterProvider)]A e);
 
-		void Invoke<A>([CAP(CAP.ApiProvider)]string api, A e);
+		void Invoke<A>([CIP(CIP.ApiOperationProvider)]string api, [CIP(CIP.ApiOperationParameterProvider)]A e);
 
 	}
 }

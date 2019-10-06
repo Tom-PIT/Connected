@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Environment;
 using TomPIT.Navigation;
 using TomPIT.Routing;
-using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Services
 {
@@ -39,17 +39,17 @@ namespace TomPIT.Middleware.Services
 		string ParseUrl(string template, IDictionary<string, object> parameters);
 		string ParseUrl(string template, RouteValueDictionary parameters);
 
-		string ParseRoute([CAP(CAP.RouteKeysProvider)]string routeKey);
-		string ParseRoute([CAP(CAP.RouteKeysProvider)]string routeKey, IDictionary<string, object> parameters);
-		string ParseRoute([CAP(CAP.RouteKeysProvider)]string routeKey, RouteValueDictionary parameters);
+		string ParseRoute([CIP(CIP.RouteKeyProvider)]string routeKey);
+		string ParseRoute([CIP(CIP.RouteKeyProvider)]string routeKey, IDictionary<string, object> parameters);
+		string ParseRoute([CIP(CIP.RouteKeyProvider)]string routeKey, RouteValueDictionary parameters);
 
 		ISiteMapContainer QuerySiteMap(List<string> keys);
 		ISiteMapContainer QuerySiteMap(List<string> keys, bool authorize);
 		ISiteMapContainer QuerySiteMap(List<string> keys, bool authorize, List<string> tags);
-		List<IBreadcrumb> QueryBreadcrumbs([CAP(CAP.RouteKeysProvider)]string routeKey);
-		List<IBreadcrumb> QueryBreadcrumbs([CAP(CAP.RouteKeysProvider)]string routeKey, IDictionary<string, object> parameters);
-		List<IBreadcrumb> QueryBreadcrumbs([CAP(CAP.RouteKeysProvider)]string routeKey, RouteValueDictionary parameters);
+		List<IBreadcrumb> QueryBreadcrumbs([CIP(CIP.RouteKeyProvider)]string routeKey);
+		List<IBreadcrumb> QueryBreadcrumbs([CIP(CIP.RouteKeyProvider)]string routeKey, IDictionary<string, object> parameters);
+		List<IBreadcrumb> QueryBreadcrumbs([CIP(CIP.RouteKeyProvider)]string routeKey, RouteValueDictionary parameters);
 
-		ISiteMapRoute SelectRoute([CAP(CAP.RouteKeysProvider)]string routeKey);
+		ISiteMapRoute SelectRoute([CIP(CIP.RouteKeyProvider)]string routeKey);
 	}
 }

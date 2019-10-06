@@ -43,6 +43,14 @@ namespace TomPIT.Reflection.Manifests.Providers
 
 			manifest.Operations.Add(om);
 
+			var script = ManifestExtensions.GetScript(Tenant, operation, null);
+
+			foreach (var diagnostic in script.Errors)
+				om.Diagnostics.Add(ManifestDiagnostic.FromDiagnostic(diagnostic, operation));
+
+			if (om.Diagnostics.HasErrors())
+				return;
+
 			var operationType = Tenant.GetService<ICompilerService>().ResolveType(MicroService.Token, operation, operation.Name, false);
 
 			if (operationType == null)
@@ -55,7 +63,6 @@ namespace TomPIT.Reflection.Manifests.Providers
 				om.SupportsTransaction = true;
 
 			var context = Tenant.GetService<ICompilerService>().CreateScriptContext(operation);
-
 			var tree = CreateSyntaxTree(context);
 
 			if (tree == null)

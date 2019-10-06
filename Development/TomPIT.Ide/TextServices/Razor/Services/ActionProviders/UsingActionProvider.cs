@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 using TomPIT.Ide.TextServices.CSharp;
 using TomPIT.Ide.TextServices.Languages;
 
@@ -63,22 +63,12 @@ namespace TomPIT.Ide.TextServices.Razor.Services.ActionProviders
 		}
 		private List<ICodeAction> GetUsingActions(IMarkerData marker)
 		{
-			var span = Editor.Document.GetSpan(new Range
-			{
-				EndColumn = marker.EndColumn,
-				EndLineNumber = marker.EndLineNumber,
-				StartColumn = marker.StartColumn,
-				StartLineNumber = marker.StartLineNumber
-			});
-
-			var node = Arguments.Model.SyntaxTree.GetRoot().FindNode(span);
-			var type = CSharpQuery.ResolveTypeInfo(Arguments.Model, node);
+			var type = CSharpQuery.ResolveTypeInfo(Arguments.Model, Arguments.Node);
 
 			if (type.Type == null)
 				return null;
 
 			var typeName = type.Type.MetadataName;
-			var editor = Arguments.Editor as CSharpEditor;
 			var references = AssemblyReferenceResolver.ResolveReferences(Arguments.Model.Compilation);
 			var types = CSharpReflection.ResolveTypes(references, typeName);
 			var result = new List<ICodeAction>();
@@ -101,11 +91,6 @@ namespace TomPIT.Ide.TextServices.Razor.Services.ActionProviders
 			var edits = new WorkspaceEdit();
 			var action = new CodeAction
 			{
-				Command = new Command
-				{
-					Title = title,
-					Id = "AddUsing"
-				},
 				Title = title,
 				IsPreferred = true,
 				Edit = edits,
@@ -153,31 +138,40 @@ namespace TomPIT.Ide.TextServices.Razor.Services.ActionProviders
 		}
 		private Range ResolveUsingRange()
 		{
-			var end = 1;
+			LinePosition end = new LinePosition(1, 1);
 
-			var usings = Arguments.Model.SyntaxTree.GetRoot().ChildNodes().OfType<UsingDirectiveSyntax>();
+			var us = LastUsingDirective();
 
-			if (usings.Count() == 0)
-			{
-				if (Arguments.Model.SyntaxTree.GetRoot().ContainsDirectives)
-				{
-					var last = Arguments.Model.SyntaxTree.GetRoot().GetLastDirective();
-
-					end = last.FullSpan.End;
-				}
-			}
-			else
-				end = usings.Last().FullSpan.End;
-
-			var line = Editor.Document.GetLine(end);
+			if (us != null)
+				end = us.GetLocation().GetMappedLineSpan().EndLinePosition;
 
 			return new Range
 			{
-				StartColumn = 1,
-				StartLineNumber = line.LineNumber + 1,
-				EndColumn = 1,
-				EndLineNumber = line.LineNumber + 1
+				StartColumn = end.Character,
+				StartLineNumber = end.Line + 2,
+				EndColumn = end.Character,
+				EndLineNumber = end.Line + 2
 			};
+		}
+
+		private UsingDirectiveSyntax LastUsingDirective()
+		{
+			var usings = Arguments.Model.SyntaxTree.GetRoot().DescendantNodes().OfType<UsingDirectiveSyntax>().ToList();
+
+			if (usings.Count == 0)
+				return null;
+
+			UsingDirectiveSyntax last = null;
+
+			foreach (var u in usings)
+			{
+				if (!u.GetLocation().GetMappedLineSpan().HasMappedPath || string.Compare(u.GetLocation().GetMappedLineSpan().Path, $"{Editor.Model.Id}.cshtml") != 0)
+					continue;
+
+				last = u;
+			}
+
+			return last;
 		}
 	}
 }

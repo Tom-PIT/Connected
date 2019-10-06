@@ -51,6 +51,7 @@ namespace TomPIT.Ide.TextServices
 
 		public abstract int GetCaret(IPosition position);
 		public abstract int GetMappedCaret(IPosition position);
+		public abstract int GetMappedCaret(IRange range);
 		public abstract IPosition GetMappedPosition(IPosition position);
 		public abstract TextSpan GetMappedSpan(IPosition position);
 

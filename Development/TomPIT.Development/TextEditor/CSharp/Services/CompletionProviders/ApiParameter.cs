@@ -1,4 +1,4 @@
-﻿namespace TomPIT.Development.Analysis.Providers
+﻿namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 {
 	internal class ApiParameter
 	{

@@ -2,7 +2,7 @@
 
 namespace TomPIT.Reflection.Manifests.Entities
 {
-	internal class ManifestProperty
+	public class ManifestProperty
 	{
 		private List<ManifestAttribute> _attributes = null;
 		public string Name { get; set; }

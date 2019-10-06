@@ -134,6 +134,16 @@ namespace TomPIT.Ide.Designers
 
 				return Result.JsonResult(this, editor.GetService<ICompletionItemService>().ProvideCompletionItems(position, context));
 			}
+			else if (string.Compare(action, "provideDocumentSymbols", true) == 0)
+			{
+				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
+				using var editor = GetTextEditor(model, data.Optional<string>("text", null));
+
+				if (editor == null)
+					return Result.JsonResult(this, null);
+
+				return Result.JsonResult(this, editor.GetService<IDocumentSymbolProviderService>().ProvideDocumentSymbols());
+			}
 			else if (string.Compare(action, "saveText", true) == 0)
 				return SaveText(data);
 			else if (string.Compare(action, "checkSyntax", true) == 0)

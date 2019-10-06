@@ -14,7 +14,10 @@ namespace TomPIT.Annotations.Design
 		public const string DistributedEventProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.DistributedEventProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string ApiProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.ApiProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string ApiOperationProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.ApiOperationProvider, " + SystemAssemblies.DevelopmentAssembly;
+		public const string ApiOperationParameterProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.ApiOperationParameterProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string SearchCatalogProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.SearchCatalogProvider, " + SystemAssemblies.DevelopmentAssembly;
+		public const string RouteKeyProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.RouteKeyProvider, " + SystemAssemblies.DevelopmentAssembly;
+		public const string RouteSiteMapsProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.RouteSiteMapsProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public CompletionItemProviderAttribute() { }
 
 		public CompletionItemProviderAttribute(string type)

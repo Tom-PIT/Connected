@@ -41,7 +41,8 @@
                 'codeAction': @Html.TP().JavaScript.Bool((features & LanguageFeature.CodeAction) == LanguageFeature.CodeAction),
                 'completionItem': @Html.TP().JavaScript.Bool((features & LanguageFeature.CompletionItem) == LanguageFeature.CompletionItem),
                 'declaration': @Html.TP().JavaScript.Bool((features & LanguageFeature.Declaration) == LanguageFeature.Declaration),
-                'signatureHelp': @Html.TP().JavaScript.Bool((features & LanguageFeature.SignatureHelp) == LanguageFeature.SignatureHelp)
+                'signatureHelp': @Html.TP().JavaScript.Bool((features & LanguageFeature.SignatureHelp) == LanguageFeature.SignatureHelp),
+                'documentSymbol': @Html.TP().JavaScript.Bool((features & LanguageFeature.DocumentSymbol) == LanguageFeature.DocumentSymbol)
             });
         }
     }

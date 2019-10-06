@@ -56,7 +56,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 				InsertText = text,
 				SortText = text,
 				Label = text,
-				Kind = CompletionItemKind.Text
+				Kind = CompletionItemKind.Reference
 			});
 		}
 	}

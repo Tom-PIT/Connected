@@ -124,7 +124,14 @@ namespace TomPIT.Ide.TextServices.Razor
 
 			return SourceText.GetCaret(token.GetLocation().GetLineSpan().StartLinePosition);
 		}
-
+		public override int GetMappedCaret(IRange range)
+		{
+			return GetMappedCaret(new Position
+			{
+				Column = range.StartColumn,
+				LineNumber = range.StartLineNumber
+			});
+		}
 		public override TextSpan GetMappedSpan(IPosition position)
 		{
 			var token = GetTokenAtMappedPosition(position);
@@ -170,11 +177,22 @@ namespace TomPIT.Ide.TextServices.Razor
 			if (!mappedSpan.HasMappedPath)
 				return false;
 
+			var path = $"{Model.Id}.cshtml";
+			var mappedPath = mappedSpan.Path;
+
+			if (string.Compare(path, mappedPath, true) != 0)
+				return false;
+
 			var mappedLine = position.LineNumber;
 			var mappedColumn = position.Column;
 
-			return mappedSpan.StartLinePosition.Line == mappedLine
+			var result = mappedSpan.StartLinePosition.Line == mappedLine
 				&& (mappedSpan.Span.Start.Character <= mappedColumn && mappedSpan.Span.End.Character >= mappedColumn);
+
+			if (result)
+				return result;
+
+			return result;
 		}
 	}
 }

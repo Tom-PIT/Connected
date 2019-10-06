@@ -3,7 +3,7 @@ using TomPIT.ComponentModel;
 
 namespace TomPIT.Reflection.Manifests.Entities
 {
-	internal class ApiManifest : ComponentManifest
+	public class ApiManifest : ComponentManifest
 	{
 		private List<ApiOperationManifest> _operations = null;
 

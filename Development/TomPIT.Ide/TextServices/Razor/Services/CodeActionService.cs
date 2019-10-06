@@ -16,11 +16,18 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 		public List<ICodeAction> ProvideCodeActions(IRange range, ICodeActionContext context)
 		{
 			var result = new List<ICodeAction>();
+			var caret = Editor.GetMappedCaret(range);
 
-			var span = Editor.Document.GetSpan(range);
+			if (caret == -1)
+				return null;
+
 			var model = Editor.Document.GetSemanticModelAsync().Result;
-			var node = model.SyntaxTree.GetRoot().FindNode(span);
-			var args = new CodeActionProviderArgs(Editor, context, model, node);
+			var token = model.SyntaxTree.GetRoot().FindToken(caret);
+
+			if (token.Parent == null)
+				return null;
+
+			var args = new CodeActionProviderArgs(Editor, context, model, token.Parent);
 
 			foreach (var provider in Providers)
 			{

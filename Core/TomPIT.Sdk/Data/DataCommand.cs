@@ -111,8 +111,10 @@ namespace TomPIT.Data
 				if ((TimeSpan)value == TimeSpan.Zero)
 					return DBNull.Value;
 			}
+			else
+				return Serializer.Serialize(value);
 
-			return Serializer.Serialize(value);
+			return value;
 		}
 
 		private string TrimValue(string value)

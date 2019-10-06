@@ -71,14 +71,14 @@ namespace TomPIT.Ide.TextServices.CSharp
 
 			while (true)
 			{
-				if (!currenToken.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.IdentifierToken)
-					&& !currenToken.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.DotToken))
+				if (!currenToken.IsKind(SyntaxKind.IdentifierToken)
+					&& !currenToken.IsKind(SyntaxKind.DotToken))
 					break;
 
 				currenToken = currenToken.GetPreviousToken();
 			}
 
-			if (currenToken.GetNextToken().IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.IdentifierToken))
+			if (currenToken.GetNextToken().IsKind(SyntaxKind.IdentifierToken))
 				return currenToken.GetNextToken();
 
 			return default;
@@ -158,14 +158,7 @@ namespace TomPIT.Ide.TextServices.CSharp
 			if (ms == null)
 				return null;
 
-			var declaringTypeName = string.Format(
-					"{0}.{1}, {2}",
-					ms.ContainingType.ContainingNamespace.ToString(),
-					ms.ContainingType.MetadataName,
-					ms.ContainingAssembly.ToDisplayString()
-				);
-
-			var type = Type.GetType(declaringTypeName);
+			var type = Type.GetType(ms.ContainingType.TypeIdentifier());
 
 			if (type == null)
 				return null;
@@ -179,7 +172,10 @@ namespace TomPIT.Ide.TextServices.CSharp
 				if (i.Type.ContainingNamespace == null || i.Type.ContainingAssembly == null)
 					continue;
 
-				methodArgumentTypeNames.Add(string.Format("{0}.{1}, {2}", i.Type.ContainingNamespace.ToString(), i.Type.Name, i.Type.ContainingAssembly.Name));
+				var argumentType = i.Type.TypeIdentifier();
+
+				if (!string.IsNullOrWhiteSpace(argumentType))
+					methodArgumentTypeNames.Add(argumentType);
 			}
 
 			var argumentTypes = methodArgumentTypeNames.Select(typeName => Type.GetType(typeName));
@@ -193,11 +189,12 @@ namespace TomPIT.Ide.TextServices.CSharp
 				if (ms.TypeParameters != null && method.GetGenericArguments().Count() != ms.TypeParameters.Length)
 					continue;
 
-				if (method.GetParameters().Count() != ms.Parameters.Length)
+				var parameters = method.GetParameters().ToList();
+
+				if (parameters.Count() != ms.Parameters.Length)
 					continue;
 
 				bool match = true;
-				var parameters = method.GetParameters();
 
 				for (var i = 0; i < methodArgumentTypeNames.Count; i++)
 				{
@@ -210,6 +207,14 @@ namespace TomPIT.Ide.TextServices.CSharp
 
 					if (pt.IsGenericMethodParameter)
 						continue;
+
+					if (at.IsGenericType && pt.IsGenericType)
+					{
+						var genericType = at.MakeGenericType(pt.GetGenericArguments());
+
+						if (genericType == pt)
+							continue;
+					}
 
 					if (pt.IsInterface)
 					{
@@ -387,7 +392,7 @@ namespace TomPIT.Ide.TextServices.CSharp
 
 		public static List<MethodInfo> GetAllMethods(this Type type)
 		{
-			var members = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.MemberType == MemberTypes.Method);
+			var members = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static).Where(f => f.MemberType == MemberTypes.Method);
 			var result = new List<MethodInfo>();
 
 			foreach (var member in members)
@@ -401,7 +406,7 @@ namespace TomPIT.Ide.TextServices.CSharp
 
 		public static List<ConstructorInfo> GetAllConstructors(this Type type)
 		{
-			var members = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.MemberType == MemberTypes.Constructor);
+			var members = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static).Where(f => f.MemberType == MemberTypes.Constructor);
 			var result = new List<ConstructorInfo>();
 
 			foreach (var member in members)
@@ -411,6 +416,37 @@ namespace TomPIT.Ide.TextServices.CSharp
 			}
 
 			return result;
+		}
+
+		public static string TypeIdentifier(this ITypeSymbol symbol)
+		{
+			if (symbol == null)
+				return null;
+
+			var ns = symbol.ContainingNamespace == null ? string.Empty : $"{symbol.ContainingNamespace.ToString()}.";
+
+			return $"{ns}{symbol.MetadataName}, {symbol.ContainingAssembly.ToDisplayString()}";
+		}
+
+		public static IdentifierNameSyntax IdentiferName(this InvocationExpressionSyntax syntax)
+		{
+			if (syntax == null)
+				return null;
+
+			var current = syntax.Expression;
+
+			while (current != null)
+			{
+				if (current is IdentifierNameSyntax idn)
+					return idn;
+
+				if (current is MemberAccessExpressionSyntax ma)
+					current = ma.Expression;
+				else
+					break;
+			}
+
+			return null;
 		}
 	}
 }

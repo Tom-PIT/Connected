@@ -65,7 +65,7 @@ namespace TomPIT.Middleware
 			get
 			{
 				if (_interop == null)
-					_interop = new MiddlewareInterop(this);
+					_interop = new MiddlewareINterop(this);
 
 				return _interop;
 			}

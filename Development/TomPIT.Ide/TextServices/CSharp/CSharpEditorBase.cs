@@ -222,6 +222,15 @@ namespace TomPIT.Ide.TextServices.CSharp
 			return GetCaret(position);
 		}
 
+		public override int GetMappedCaret(IRange range)
+		{
+			return GetCaret(new Position
+			{
+				Column = range.StartColumn,
+				LineNumber = range.StartLineNumber
+			});
+		}
+
 		public override TextSpan GetMappedSpan(IPosition position)
 		{
 			return SourceText.GetSpan(position);
