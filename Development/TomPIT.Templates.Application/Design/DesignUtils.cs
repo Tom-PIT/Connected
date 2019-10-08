@@ -29,6 +29,7 @@
 		public const string Helper = "Helper";
 		public const string Class = "Class";
 		public const string EventBinding = "EventBinding";
+		public const string IoCContainer = "IoCContainer";
 
 		public const string ApiOperationItems = "TomPIT.MicroServices.Design.Items.OperationCollection, " + DesignAssembly;
 		public const string ViewHelpersItems = "TomPIT.MicroServices.Design.Items.ViewHelpersCollection, " + DesignAssembly;

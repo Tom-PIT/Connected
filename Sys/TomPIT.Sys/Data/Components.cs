@@ -109,6 +109,22 @@ namespace TomPIT.Sys.Data
 			return r;
 		}
 
+		public IComponent SelectByNameSpace(Guid microService, string nameSpace, string name)
+		{
+			var r = Where(f => f.MicroService == microService && string.Compare(f.Name, name, true) == 0
+				 && string.Compare(f.NameSpace, nameSpace, true) == 0);
+
+			if (r != null && r.Count > 0)
+			{
+				if (r.Count > 1)
+					throw new SysException(string.Format("{0} ({1}.{2})", SR.ErrDuplicateComponentFound, nameSpace, name));
+
+				return r[0];
+			}
+
+			return null;
+		}
+
 		public IComponent Select(string category, string name)
 		{
 			var r = Where(f => string.Compare(f.Name, name, true) == 0
@@ -320,9 +336,22 @@ namespace TomPIT.Sys.Data
 			return Where(f => f.MicroService == microService && f.Folder == folder && f.LockVerb != LockVerb.Delete);
 		}
 
+		public List<IComponent> QueryByNameSpace(Guid microService, string nameSpace)
+		{
+			return Where(f => f.MicroService == microService && string.Compare(f.NameSpace, nameSpace, true) == 0 && f.LockVerb != LockVerb.Delete);
+		}
+
 		public List<IComponent> Query(Guid microService, string category)
 		{
 			return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0 && f.LockVerb != LockVerb.Delete);
+		}
+
+		public List<IComponent> QueryByNameSpace(Guid microService, string nameSpace, bool includeDeleted)
+		{
+			if (includeDeleted)
+				return Where(f => f.MicroService == microService && string.Compare(f.NameSpace, nameSpace, true) == 0 && f.LockVerb != LockVerb.Delete);
+			else
+				return Where(f => f.MicroService == microService && string.Compare(f.NameSpace, nameSpace, true) == 0);
 		}
 
 		public List<IComponent> Query(Guid microService, string category, bool includeDeleted)
@@ -333,12 +362,14 @@ namespace TomPIT.Sys.Data
 				return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0);
 		}
 
-		public void Insert(Guid component, Guid microService, Guid folder, string category, string name, string type, Guid runtimeConfiguration)
+		public void Insert(Guid component, Guid microService, Guid folder, string category, string nameSpace, string name, string type, Guid runtimeConfiguration)
 		{
 			var s = DataModel.MicroServices.Select(microService);
 
 			if (s == null)
 				throw new SysException(SR.ErrMicroServiceNotFound);
+
+			s.DemandDevelopmentStage();
 
 			IFolder f = folder == Guid.Empty
 				 ? null
@@ -349,12 +380,12 @@ namespace TomPIT.Sys.Data
 
 			var v = new Validator();
 
-			v.Unique(null, name, nameof(IComponent.Name), Query(microService, category, true));
+			v.Unique(null, name, nameof(IComponent.Name), QueryByNameSpace(microService, nameSpace, true));
 
 			if (!v.IsValid)
 				throw new SysException(v.ErrorMessage);
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Insert(s, DateTime.UtcNow, f, category, name, component, type, runtimeConfiguration);
+			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Insert(s, DateTime.UtcNow, f, category, nameSpace, name, component, type, runtimeConfiguration);
 
 			Refresh(component);
 			CachingNotifications.ComponentAdded(microService, folder, component, category);
@@ -374,6 +405,8 @@ namespace TomPIT.Sys.Data
 			if (c == null)
 				throw new SysException(SR.ErrComponentNotFound);
 
+			c.DemandDevelopmentStage();
+
 			Update(component, name, folder, c.RuntimeConfiguration);
 		}
 
@@ -383,6 +416,8 @@ namespace TomPIT.Sys.Data
 
 			if (c == null)
 				throw new SysException(SR.ErrComponentNotFound);
+
+			c.DemandDevelopmentStage();
 
 			Update(component, c.Name, c.Folder, runtimeConfiguration);
 		}
@@ -404,9 +439,11 @@ namespace TomPIT.Sys.Data
 			if (c == null)
 				throw new SysException(SR.ErrComponentNotFound);
 
+			c.DemandDevelopmentStage();
+
 			var v = new Validator();
 
-			v.Unique(c, name, nameof(IComponent.Name), Query(c.MicroService, c.Category));
+			v.Unique(c, name, nameof(IComponent.Name), QueryByNameSpace(c.MicroService, c.NameSpace));
 
 			if (!v.IsValid)
 				throw new SysException(v.ErrorMessage);
@@ -434,6 +471,8 @@ namespace TomPIT.Sys.Data
 			if (c == null)
 				throw new SysException(SR.ErrComponentNotFound);
 
+			c.DemandDevelopmentStage();
+
 			if (permanent)
 			{
 				Shell.GetService<IDatabaseService>().Proxy.Development.Components.Delete(c);
@@ -456,9 +495,9 @@ namespace TomPIT.Sys.Data
 			CachingNotifications.ComponentRemoved(c.MicroService, c.Folder, component, c.Category);
 		}
 
-		public string CreateComponentName(Guid microService, string prefix, string category)
+		public string CreateComponentName(Guid microService, string prefix, string nameSpace)
 		{
-			var existing = Where(f => f.MicroService == microService && string.Compare(category, f.Category, true) == 0);
+			var existing = Where(f => f.MicroService == microService && string.Compare(nameSpace, f.NameSpace, true) == 0);
 
 			return Shell.GetService<INamingService>().Create(prefix, existing.Select(f => f.Name), true);
 		}

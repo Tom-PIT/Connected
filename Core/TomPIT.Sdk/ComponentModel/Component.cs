@@ -37,7 +37,8 @@ namespace TomPIT.ComponentModel
 		public LockVerb LockVerb { get; set; }
 		[Browsable(false)]
 		public LockStatus LockStatus { get; set; }
-
+		[Browsable(false)]
+		public string NameSpace { get; set; }
 		public override string ToString()
 		{
 			if (string.IsNullOrWhiteSpace(Name))

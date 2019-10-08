@@ -16,6 +16,8 @@ namespace TomPIT.Sys.Data
 			if (ms == null)
 				throw new SysException(SR.ErrMicroServiceNotFound);
 
+			ms.DemandDevelopmentStage();
+
 			var u = DataModel.Users.Select(user);
 
 			if (u == null)
@@ -69,6 +71,8 @@ namespace TomPIT.Sys.Data
 
 			if (c == null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
+
+			c.DemandDevelopmentStage();
 
 			var history = QueryHistory(component);
 
@@ -155,6 +159,8 @@ namespace TomPIT.Sys.Data
 			if (c == null)
 				throw new SysException(SR.ErrComponentNotFound);
 
+			c.DemandDevelopmentStage();
+
 			var u = DataModel.Users.Select(user);
 
 			if (u == null)
@@ -175,6 +181,8 @@ namespace TomPIT.Sys.Data
 
 			if (c == null)
 				throw new SysException(SR.ErrComponentNotFound);
+
+			c.DemandDevelopmentStage();
 
 			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, null, LockStatus.Commit, LockVerb.None, DateTime.MinValue);
 			Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.UndoComponentHistory(c);

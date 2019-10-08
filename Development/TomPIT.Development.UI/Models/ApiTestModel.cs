@@ -55,20 +55,8 @@ namespace TomPIT.Development.Models
 			Api = tokens[1];
 			Operation = tokens[2];
 
-			if (!string.IsNullOrWhiteSpace(ms))
-			{
-				var svc = Tenant.GetService<IMicroServiceService>().Select(ms);
-				MicroService = svc ?? throw new RuntimeException("Api Test", SR.ErrMicroServiceNotFound);
-			}
-			else
-			{
-				var component = Tenant.GetService<IComponentService>().SelectComponent("Api", tokens[0]);
-
-				if (component == null)
-					throw new RuntimeException("Api Test", string.Format("{0} ({1})", SR.ErrComponentNotFound, tokens[0]));
-
-				MicroService = Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
-			}
+			var svc = Tenant.GetService<IMicroServiceService>().Select(ms);
+			MicroService = svc ?? throw new RuntimeException("Api Test", SR.ErrMicroServiceNotFound);
 
 			if (!string.IsNullOrWhiteSpace(qs))
 			{

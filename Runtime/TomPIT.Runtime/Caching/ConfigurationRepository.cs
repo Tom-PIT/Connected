@@ -106,7 +106,7 @@ namespace TomPIT.Services
 					continue;
 
 				Set(i.Component, i as T, TimeSpan.Zero);
-				OnChanged(i.MicroService(), i.Component);
+				OnAdded(i.MicroService(), i.Component);
 			}
 		}
 
@@ -115,7 +115,7 @@ namespace TomPIT.Services
 			if (Tenant.GetService<IComponentService>().SelectConfiguration(id) is T config)
 			{
 				Set(config.Component, config, TimeSpan.Zero);
-				OnChanged(config.MicroService(), id);
+				OnAdded(config.MicroService(), id);
 			}
 			else
 			{

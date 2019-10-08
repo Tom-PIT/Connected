@@ -6,9 +6,9 @@ using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware
 {
-	internal class MiddlewareINterop : MiddlewareObject, IMiddlewareInterop
+	internal class MiddlewareInterop : MiddlewareObject, IMiddlewareInterop
 	{
-		public MiddlewareINterop(IMiddlewareContext context) : base(context)
+		public MiddlewareInterop(IMiddlewareContext context) : base(context)
 		{
 
 		}

@@ -422,14 +422,7 @@ namespace TomPIT.Compilation
 			}
 
 			if (script != null && script.Assembly == null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
-			{
-				var sb = new StringBuilder();
-
-				foreach (var error in script.Errors)
-					sb.AppendLine(error.Message);
-
-				throw new RuntimeException(typeName, sb.ToString());
-			}
+				throw new CompilerException(Tenant, script, sourceCode);
 
 			var assembly = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
 			var target = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), script.Assembly, true) == 0);

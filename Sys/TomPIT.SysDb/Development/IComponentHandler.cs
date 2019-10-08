@@ -9,7 +9,7 @@ namespace TomPIT.SysDb.Development
 	public interface IComponentHandler
 	{
 		List<IComponent> Query();
-		void Insert(IMicroService microService, DateTime modified, IFolder folder, string category, string name, Guid token, string type, Guid runtimeConfiguration);
+		void Insert(IMicroService microService, DateTime modified, IFolder folder, string category, string nameSpace, string name, Guid token, string type, Guid runtimeConfiguration);
 		void Update(IComponent component, DateTime modified, string name, IFolder folder, Guid runtimeConfiguration);
 		void Update(IComponent component, IUser user, LockStatus status, LockVerb verb, DateTime date);
 		void UpdateStates(List<IComponentAnalyzerState> states);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using TomPIT.ComponentModel;
 using TomPIT.Sys.Data;
 using TomPIT.Sys.Exceptions;
 using TomPIT.Sys.Security;
@@ -61,6 +62,19 @@ namespace TomPIT.Sys
 			}
 
 			return r;
+		}
+
+		public static void DemandDevelopmentStage(this IMicroService microService)
+		{
+			if (microService.Status == MicroServiceStatus.Production)
+				throw new SysException(SR.ErrProductionStage);
+			else if (microService.Status == MicroServiceStatus.Staging)
+				throw new SysException(SR.ErrStagingStage);
+		}
+
+		public static void DemandDevelopmentStage(this IComponent component)
+		{
+			DataModel.MicroServices.Select(component.MicroService).DemandDevelopmentStage();
 		}
 	}
 }

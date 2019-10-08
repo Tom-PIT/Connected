@@ -1,38 +1,45 @@
 ﻿@model IUIModel
 
 @{
-    Layout = "~/Views/Shared/Sys.cshtml";
+    Layout = "~/Views/Shared/ShellDocument.cshtml";
+    ViewBag.Title = SR.ErrTitle;
 }
 
-<div class="container">
-    <div class="row justify-content-center mt-5">
-        <div class="col-8 text-center">
-            <a href="@Model.Services.Routing.RootUrl">
-                <img id="logo" src="~/Assets/Images/Shell/AppSys.png" class="img-fluid center-block">
-            </a>
-            <div class="mt-5 text-center">
-                <h4 class="text-center">
-                    @SR.ViewErrorTitle
-                </h4>
-                <br />
-                <i class="far fa-meh jumbo-font"></i>
-
-                <div class="mt-5">
-                    <div>
-                        @ViewData["exSource"]
-                    </div>
-                    <code>
-                        @ViewData["exMessage"]
-                    </code>
-                </div>
-                <hr />
-                <div class="mt-5">
-                    <ul class="list-inline">
-                        <li class="list-inline-item mt-1"><a href="#" onclick="window.location.reload(true);" class="btn btn-outline-info btn-lg">@SR.ReloadView</a></li>
-                        <li class="list-inline-item mt-1"><a href="@Model.Services.Routing.RootUrl" class="btn btn-outline-info btn-lg">@SR.ViewHome</a></li>
-                    </ul>
-                </div>
+<div class="tp-form mx-auto">
+    <div class="header text-center">
+        <h3 class="pt-5">@SR.ViewErrorTitle</h3>
+    </div>
+    <div class="body">
+        <div class="text-center">
+            <div>
+                @ViewData["exSource"]
             </div>
+            <code>
+                @if (ViewData["exPath"] != null)
+                {
+                    @if (ViewData["exUrl"] != null)
+                    {
+                        <a href="@ViewData["exUrl"]" target="_blank">@ViewData["exPath"]</a>
+                    }
+                    else
+                    {
+                        @ViewData["exPath"]
+                    }
+                    <br />
+                }
+
+                @if (ViewData["exLine"] != null)
+                {
+                    @Html.Raw($"{SR.ErrLine}: {ViewData["exLine"]}")
+                    <br />
+                }
+
+                @ViewData["exMessage"]
+            </code>
+        </div>
+        <div class="footer text-center">
+            <hr />
+            <a href="#" onclick="window.location.reload(true);" class="btn btn-link">@SR.ReloadView</a>
         </div>
     </div>
 </div>

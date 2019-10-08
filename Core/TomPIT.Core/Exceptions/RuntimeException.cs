@@ -12,6 +12,10 @@ namespace TomPIT.Exceptions
 	public class RuntimeException : TomPITException
 	{
 		private string _stackTrace = null;
+		public RuntimeException()
+		{
+
+		}
 		public RuntimeException(string message) : base(message)
 		{
 

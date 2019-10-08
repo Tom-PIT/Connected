@@ -78,7 +78,7 @@ namespace TomPIT.Compilation
 			/*
 			 * possible references:
 			 * --------------------
-			 * - Microservice/Script (2)
+			 * - Microservice/PublicScript (2)
 			 * - Microservice/Api/Operation (3)
 			 */
 
@@ -159,21 +159,21 @@ namespace TomPIT.Compilation
 			}
 
 			var scriptName = TrimExtension(script);
-			var component = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategories.Script, scriptName);
+			var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(ms.Token, ComponentCategories.NameSpacePublicScript, scriptName);
 
 			if (component == null)
 				return null;
 
-			if (!(Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IScriptConfiguration s))
+			if (!(Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IText text))
 				throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrComponentNotFound, microService, scriptName));
 
-			if (((IConfiguration)s).MicroService() != MicroService)
+			if (((IConfiguration)text).MicroService() != MicroService)
 			{
-				if (s.Scope != ElementScope.Public)
+				if (text is IScriptConfiguration s && s.Scope != ElementScope.Public)
 					throw new RuntimeException(SR.ErrScopeError);
 			}
 
-			return s;
+			return text;
 		}
 
 		public override string ResolveReference(string path, string baseFilePath)
@@ -222,18 +222,18 @@ namespace TomPIT.Compilation
 			{
 				if (string.IsNullOrWhiteSpace(baseFilePath))
 				{
-					var api = Tenant.GetService<IComponentService>().SelectComponent(MicroService, ComponentCategories.Api, tokens[0]);
+					var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(MicroService, ComponentCategories.NameSpacePublicScript, tokens[0]);
 
-					if (api != null)
+					if (component != null && string.Compare(component.Category, ComponentCategories.Api, true) == 0)
 						return $"{ms.Name}/{tokens[0]}/{tokens[1]}"; //api with ms
 					else
 						return $"{tokens[0]}/{tokens[1]}";//script
 				}
 				else
 				{
-					var api = Tenant.GetService<IComponentService>().SelectComponent(baseMs.Token, ComponentCategories.Api, tokens[0]);
+					var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(baseMs.Token, ComponentCategories.NameSpacePublicScript, tokens[0]);
 
-					if (api != null)
+					if (component != null && string.Compare(component.Category, ComponentCategories.Api, true) == 0)
 						return $"{baseMs.Name}/{tokens[0]}/{tokens[1]}"; //api with basems
 					else
 						return $"{tokens[0]}/{tokens[1]}";//script

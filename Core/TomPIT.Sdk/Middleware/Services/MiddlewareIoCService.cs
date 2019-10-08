@@ -1,5 +1,4 @@
-﻿using TomPIT.Compilation;
-using TomPIT.ComponentModel;
+﻿using TomPIT.IoC;
 
 namespace TomPIT.Middleware.Services
 {
@@ -9,13 +8,14 @@ namespace TomPIT.Middleware.Services
 		{
 		}
 
-		public IMiddlewareIoC UseMiddleware(string type)
+		public T UseMiddleware<T>() where T : class
 		{
-			var targetDescriptor = ComponentDescriptor.Script(Context, type);
+			return Context.Tenant.GetService<IIoCService>().CreateMiddleware<T>(((IMicroServiceContext)Context).MicroService.Token);
+		}
 
-			targetDescriptor.Validate();
-
-			return Context.Tenant.GetService<ICompilerService>().CreateInstance<IMiddlewareIoC>(targetDescriptor.Configuration);
+		public T UseMiddleware<T, A>(A arguments) where T : class
+		{
+			return Context.Tenant.GetService<IIoCService>().CreateMiddleware<T, A>(((IMicroServiceContext)Context).MicroService.Token, arguments);
 		}
 	}
 }

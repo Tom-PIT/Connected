@@ -15,6 +15,7 @@ using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Globalization;
+using TomPIT.IoC;
 using TomPIT.IoT;
 using TomPIT.Messaging;
 using TomPIT.Navigation;
@@ -86,6 +87,7 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(ILocalizationService), typeof(LocalizationService));
 			e.Tenant.RegisterService(typeof(IBigDataService), typeof(BigDataService));
 			e.Tenant.RegisterService(typeof(INavigationService), typeof(NavigationService));
+			e.Tenant.RegisterService(typeof(IIoCService), typeof(IoCService));
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 			{

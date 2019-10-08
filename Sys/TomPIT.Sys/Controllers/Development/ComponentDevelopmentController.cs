@@ -21,8 +21,9 @@ namespace TomPIT.Sys.Controllers.Development
 			var category = body.Required<string>("category");
 			var configuration = body.Optional("runtimeConfiguration", Guid.Empty);
 			var component = body.Required<Guid>("component");
+			var nameSpace = body.Required<string>("nameSpace");
 
-			DataModel.Components.Insert(component, microService, folder, category, name, type, configuration);
+			DataModel.Components.Insert(component, microService, folder, category, nameSpace, name, type, configuration);
 		}
 
 		[HttpPost]
@@ -113,9 +114,9 @@ namespace TomPIT.Sys.Controllers.Development
 		}
 
 		[HttpGet]
-		public string CreateName(Guid microService, string prefix, string category)
+		public string CreateName(Guid microService, string prefix, string nameSpace)
 		{
-			return DataModel.Components.CreateComponentName(microService, prefix, category);
+			return DataModel.Components.CreateComponentName(microService, prefix, nameSpace);
 		}
 
 		[HttpPost]

@@ -17,5 +17,6 @@ namespace TomPIT.ComponentModel
 		Guid LockUser { get; }
 		DateTime LockDate { get; }
 		LockVerb LockVerb { get; }
+		string NameSpace { get; }
 	}
 }

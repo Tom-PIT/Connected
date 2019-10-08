@@ -21,7 +21,7 @@ namespace TomPIT.SysDb.Sql.Development
 			w.Execute();
 		}
 
-		public void Insert(IMicroService service, DateTime modified, IFolder folder, string category, string name, Guid token, string type, Guid runtimeConfiguration)
+		public void Insert(IMicroService service, DateTime modified, IFolder folder, string category, string nameSpace, string name, Guid token, string type, Guid runtimeConfiguration)
 		{
 			var w = new Writer("tompit.component_ins");
 
@@ -33,6 +33,7 @@ namespace TomPIT.SysDb.Sql.Development
 			w.CreateParameter("@runtime_configuration", runtimeConfiguration, true);
 			w.CreateParameter("@service", service.GetId());
 			w.CreateParameter("@modified", modified);
+			w.CreateParameter("@namespace", nameSpace);
 
 			w.Execute();
 		}

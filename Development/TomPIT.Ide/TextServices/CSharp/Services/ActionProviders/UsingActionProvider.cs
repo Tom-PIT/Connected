@@ -160,10 +160,10 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 				Text = type.Name,
 				Range = new Range
 				{
-					StartColumn = marker.StartColumn - 1,
-					EndColumn = marker.EndColumn - 1,
-					EndLineNumber = marker.EndLineNumber - 1,
-					StartLineNumber = marker.StartLineNumber - 1
+					StartColumn = marker.StartColumn,
+					EndColumn = marker.EndColumn,
+					EndLineNumber = marker.EndLineNumber,
+					StartLineNumber = marker.StartLineNumber
 				}
 			});
 

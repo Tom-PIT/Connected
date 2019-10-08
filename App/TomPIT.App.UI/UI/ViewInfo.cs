@@ -34,7 +34,7 @@ namespace TomPIT.App.UI
 
 		public ViewInfo(string viewPath, ActionContext action)
 		{
-			if (string.Compare(System.IO.Path.GetFileNameWithoutExtension(viewPath), "_viewimports", true) == 0)
+			if (ChangeToken.SystemViews.FirstOrDefault(f => string.Compare(f, System.IO.Path.GetFileName(viewPath), true) == 0) != null)
 				return;
 
 			ResolvePath(viewPath);
@@ -49,7 +49,7 @@ namespace TomPIT.App.UI
 
 			if (Kind == ViewKind.View)
 			{
-				Path = viewPath.Substring(7);
+				Path = viewPath.Substring(20);
 				Path = Path[0..^7];
 			}
 			else if (Kind == ViewKind.Report)
@@ -58,14 +58,12 @@ namespace TomPIT.App.UI
 
 				Path = $"{tokens[^2]}/{tokens[^1].Split('.')[0]}";
 			}
-			else if (Kind == ViewKind.MailTemplate)
+			else
 			{
 				var tokens = FullPath.Split('/');
 
-				Path = $"{tokens[^2]}/{tokens[^1]}";
+				Path = $"{tokens[^2]}/{System.IO.Path.GetFileNameWithoutExtension(tokens[^1])}";
 			}
-			else
-				Path = System.IO.Path.GetFileNameWithoutExtension(viewPath);
 		}
 
 		public static ViewKind ResolveSnippetKind(string url)

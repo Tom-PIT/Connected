@@ -10,7 +10,9 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using TomPIT.ComponentModel;
 using TomPIT.Diagnostics;
+using TomPIT.Environment;
 using TomPIT.Middleware;
 using TomPIT.Models;
 using TomPIT.Runtime;
@@ -87,6 +89,30 @@ namespace TomPIT.Exceptions
 			r.ViewData.Model = new ExceptionModel(context, ex);
 			r.ViewData.Add("exSource", ex.Source);
 			var sb = new StringBuilder();
+
+			if (ex is ScriptException script)
+			{
+				r.ViewData.Add("exPath", script.Path);
+
+				if (!string.IsNullOrWhiteSpace(script.MicroService))
+				{
+					var tenant = MiddlewareDescriptor.Current.Tenant;
+					var ms = tenant.GetService<IMicroServiceService>().Select(script.MicroService);
+
+					if (ms != null && ms.Status != MicroServiceStatus.Production)
+					{
+						if (tenant != null)
+						{
+							var devUrl = tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Development, InstanceVerbs.All);
+
+							if (!string.IsNullOrWhiteSpace(devUrl))
+								r.ViewData.Add("exUrl", $"{devUrl}/ide/{script.MicroService}?component={script.Component}&element={script.Element}");
+						}
+					}
+				}
+
+				r.ViewData.Add("exLine", script.Line);
+			}
 
 			sb.AppendLine(ex.Message);
 

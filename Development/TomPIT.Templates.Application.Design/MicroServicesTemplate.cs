@@ -14,6 +14,7 @@ using TomPIT.MicroServices.Cdn;
 using TomPIT.MicroServices.Data;
 using TomPIT.MicroServices.Design.Media;
 using TomPIT.MicroServices.Distributed;
+using TomPIT.MicroServices.IoC;
 using TomPIT.MicroServices.Messaging;
 using TomPIT.MicroServices.Navigation;
 using TomPIT.MicroServices.Resources;
@@ -41,7 +42,9 @@ namespace TomPIT.MicroServices.Design
 				{ ComponentCategories.SiteMap,         new ItemDescriptor("Site map",         ComponentCategories.SiteMap,           typeof(SiteMap))                             { Glyph = "fal fa-route",              Category = "UI",              Ordinal=5 } },
 				{ ComponentCategories.Api,             new ItemDescriptor("Api",              ComponentCategories.Api,               typeof(Api))                                 { Glyph = "fal fa-broadcast-tower",    Category = "Middleware" ,     Ordinal=100} },
 				{ ComponentCategories.Script,          new ItemDescriptor("Script",           ComponentCategories.Script,            typeof(Scripting.Script))                    { Glyph = "fal fa-file-code",          Category = "Middleware" ,     Ordinal=102} },
-				{ ComponentCategories.EventBinder,     new ItemDescriptor("Event bindings",   ComponentCategories.EventBinder,       typeof(EventBindings))                       { Glyph = "fal fa-bullseye-pointer",   Category = "Middleware" ,     Ordinal=104} },
+				{ ComponentCategories.IoCContainer,    new ItemDescriptor("IoC Container",    ComponentCategories.IoCContainer,      typeof(IoCContainerConfiguration))           { Glyph = "fal fa-file-code",          Category = "Middleware" ,     Ordinal=103} },
+				{ ComponentCategories.IoCEndpoint,     new ItemDescriptor("IoC Endpoint",     ComponentCategories.IoCEndpoint,       typeof(IoCEndpointConfiguration))            { Glyph = "fal fa-file-code",          Category = "Middleware" ,     Ordinal=104} },
+				{ ComponentCategories.EventBinder,     new ItemDescriptor("Event bindings",   ComponentCategories.EventBinder,       typeof(EventBindings))                       { Glyph = "fal fa-bullseye-pointer",   Category = "Middleware" ,     Ordinal=105} },
 				{ ComponentCategories.DistributedEvent,new ItemDescriptor("Distributed event",ComponentCategories.DistributedEvent,  typeof(DistributedEvent))                    { Glyph = "fal fa-chart-network",      Category = "Distributed" ,    Ordinal=205} },
 				{ ComponentCategories.HostedWorker,    new ItemDescriptor("Hosted worker",    ComponentCategories.HostedWorker,      typeof(HostedWorker))                        { Glyph = "fal fa-cog",                Category = "Distributed" ,    Ordinal=206} },
 				{ ComponentCategories.Queue,           new ItemDescriptor("Queue middleware", ComponentCategories.Queue,             typeof(Queue))                               { Glyph = "fal fa-cog",                Category = "Distributed" ,    Ordinal=207} },

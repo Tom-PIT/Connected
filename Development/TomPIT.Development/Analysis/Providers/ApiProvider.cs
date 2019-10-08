@@ -273,25 +273,25 @@ namespace TomPIT.Development.Analysis.Providers
 		{
 			var api = context.Tenant.GetService<IComponentService>().SelectComponent(microService, ComponentCategories.Api, qualifier);
 
-			if (api == null)
-			{
-				api = context.Tenant.GetService<IComponentService>().SelectComponent(ComponentCategories.Api, qualifier);
+			//if (api == null)
+			//{
+			//	api = context.Tenant.GetService<IComponentService>().SelectComponent(microService, ComponentCategories.Api, qualifier);
 
-				if (api != null && api.MicroService != microService)
-				{
-					var ms = context.Tenant.GetService<IMicroServiceService>().Select(microService);
+			//	if (api != null && api.MicroService != microService)
+			//	{
+			//		var ms = context.Tenant.GetService<IMicroServiceService>().Select(microService);
 
-					try
-					{
-						var msName = context.Tenant.GetService<IMicroServiceService>().Select(api.MicroService);
-						ms.ValidateMicroServiceReference(msName.Name);
-					}
-					catch
-					{
-						return null;
-					}
-				}
-			}
+			//		try
+			//		{
+			//			var msName = context.Tenant.GetService<IMicroServiceService>().Select(api.MicroService);
+			//			ms.ValidateMicroServiceReference(msName.Name);
+			//		}
+			//		catch
+			//		{
+			//			return null;
+			//		}
+			//	}
+			//}
 
 			return api;
 		}

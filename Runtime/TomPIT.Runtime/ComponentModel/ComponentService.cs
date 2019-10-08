@@ -75,26 +75,6 @@ namespace TomPIT.ComponentModel
 			return Tenant.Get<List<Component>>(u).ToList<IComponent>();
 		}
 
-		public IComponent SelectComponent(string category, string name)
-		{
-			var r = Get(f => string.Compare(f.Category, category, true) == 0
-				&& string.Compare(f.Name, name, true) == 0);
-
-			if (r != null)
-				return r;
-
-			var u = Tenant.CreateUrl("Component", "SelectByName")
-				.AddParameter("category", category)
-				.AddParameter("name", name);
-
-			r = Tenant.Get<Component>(u);
-
-			if (r != null)
-				Set(r.Token, r);
-
-			return r;
-		}
-
 		public IComponent SelectComponent(Guid microService, string category, string name)
 		{
 			var r = Get(f => f.MicroService == microService
@@ -107,6 +87,28 @@ namespace TomPIT.ComponentModel
 			var u = Tenant.CreateUrl("Component", "Select")
 				.AddParameter("microService", microService)
 				.AddParameter("category", category)
+				.AddParameter("name", name);
+
+			r = Tenant.Get<Component>(u);
+
+			if (r != null)
+				Set(r.Token, r);
+
+			return r;
+		}
+
+		public IComponent SelectComponentByNameSpace(Guid microService, string nameSpace, string name)
+		{
+			var r = Get(f => f.MicroService == microService
+				&& string.Compare(f.NameSpace, nameSpace, true) == 0
+				&& string.Compare(f.Name, name, true) == 0);
+
+			if (r != null)
+				return r;
+
+			var u = Tenant.CreateUrl("Component", "SelectByNameSpace")
+				.AddParameter("microService", microService)
+				.AddParameter("nameSpace", nameSpace)
 				.AddParameter("name", name);
 
 			r = Tenant.Get<Component>(u);

@@ -76,7 +76,7 @@ namespace TomPIT.Management.Deployment
 		{
 			var m = Package.MicroService;
 
-			Tenant.GetService<IMicroServiceManagementService>().Insert(m.Token, m.Name, Configuration.ResourceGroup, m.Template, MicroServiceStatus.Production, Package,
+			Tenant.GetService<IMicroServiceManagementService>().Insert(m.Token, m.Name, Configuration.ResourceGroup, m.Template, MicroServiceStatus.Development, Package,
 				 Package.MetaData.Version);
 
 			DeployFolders();
@@ -85,6 +85,10 @@ namespace TomPIT.Management.Deployment
 			//DeployStrings();
 
 			Tenant.GetService<IComponentDevelopmentService>().DropRuntimeState(Package.MicroService.Token);
+
+			var ms = Tenant.GetService<IMicroServiceService>().Select(m.Token);
+
+			Tenant.GetService<IMicroServiceManagementService>().Update(ms.Token, ms.Name, MicroServiceStatus.Production, ms.Template, ms.ResourceGroup, ms.Package, ms.Plan, ms.UpdateStatus, ms.CommitStatus);
 		}
 
 		private void DeployFolders()
@@ -222,6 +226,12 @@ namespace TomPIT.Management.Deployment
 		 */
 			if (existing == null)
 				return;
+
+			if (existing.Status != MicroServiceStatus.Development)
+			{
+				Tenant.GetService<IMicroServiceManagementService>().Update(existing.Token, existing.Name, MicroServiceStatus.Development, existing.Template,
+					 existing.ResourceGroup, existing.Package, existing.Plan, existing.UpdateStatus, existing.CommitStatus);
+			}
 			/*
 		 * now, if last known state is null we must save state. this state will be merged with the installation
 		 */

@@ -73,7 +73,7 @@ namespace TomPIT.Compilation.Views
 				viewToken = tokens[1];
 			}
 
-			var m = tenant.GetService<IComponentService>().SelectComponent(ms, "MasterView", viewToken);
+			var m = tenant.GetService<IComponentService>().SelectComponent(ms, ComponentCategories.MasterView, viewToken);
 
 			if (m == null)
 				throw new RuntimeException(SR.ErrMasterViewNotFound);
@@ -95,7 +95,7 @@ namespace TomPIT.Compilation.Views
 
 			microService.ValidateMicroServiceReference(s.Name);
 
-			return string.Format("~/Views/Dynamic/Master/{0}.{1}.cshtml", s.Name, c.Name);
+			return $"~/Views/Dynamic/Master/{s.Name}/{c.Name}.cshtml";
 		}
 	}
 }

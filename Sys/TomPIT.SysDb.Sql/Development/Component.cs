@@ -19,6 +19,7 @@ namespace TomPIT.SysDb.Sql.Development
 		public Guid LockUser { get; set; }
 		public DateTime LockDate { get; set; }
 		public LockVerb LockVerb { get; set; }
+		public string NameSpace { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -36,6 +37,7 @@ namespace TomPIT.SysDb.Sql.Development
 			LockUser = GetGuid("lock_user_token");
 			LockDate = GetDate("lock_date");
 			LockVerb = GetValue("lock_verb", LockVerb.None);
+			NameSpace = GetString("namespace");
 		}
 	}
 }

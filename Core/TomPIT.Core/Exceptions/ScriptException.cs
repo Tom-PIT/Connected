@@ -6,13 +6,31 @@ namespace TomPIT.Exceptions
 {
 	public class ScriptException : RuntimeException
 	{
+		public ScriptException()
+		{
+
+		}
 		public ScriptException(object sender, Exception inner) : base($"({inner.Message} ({ResolveLine(inner)})", inner)
 		{
 			ExceptionSender = sender;
 			Source = ResolveSource();
+			Line = ResolveLine(inner);
+		}
+
+		public ScriptException(string source, string message, string line, string path, string microService, Guid component, Guid element) : base(source, message)
+		{
+			Line = line;
+			Path = path;
+			Component = component;
+			Element = element;
+			MicroService = microService;
 		}
 
 		private object ExceptionSender { get; }
+
+		public string MicroService { get; protected set; }
+		public string Line { get; protected set; }
+		public string Path { get; protected set; }
 		public override string StackTrace => InnerException?.StackTrace;
 
 

@@ -11,6 +11,7 @@ using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.Reports;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
+using TomPIT.Exceptions;
 using TomPIT.Routing;
 using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
@@ -311,7 +312,7 @@ namespace TomPIT.App.UI
 
 		public IMasterViewConfiguration SelectMaster(string name)
 		{
-			var tokens = name.Split('.');
+			var tokens = name.Split('/');
 			IComponent c = null;
 
 			if (tokens.Length > 1)
@@ -324,7 +325,7 @@ namespace TomPIT.App.UI
 				c = Tenant.GetService<IComponentService>().SelectComponent(s.Token, "MasterView", tokens[1].Trim());
 			}
 			else
-				c = Tenant.GetService<IComponentService>().SelectComponent("MasterView", name);
+				throw new RuntimeException(SR.ErrInvalidQualifier);
 
 			if (c == null)
 				return null;
@@ -349,20 +350,18 @@ namespace TomPIT.App.UI
 
 		public IPartialViewConfiguration SelectPartial(string name)
 		{
-			var tokens = name.Split('.');
+			var tokens = name.Split('/');
 			IComponent c = null;
 
-			if (tokens.Length == 2)
-			{
-				var s = Tenant.GetService<IMicroServiceService>().Select(tokens[0].Trim());
+			if (tokens.Length == 1)
+				return null;
 
-				if (s == null)
-					return null;
+			var s = Tenant.GetService<IMicroServiceService>().Select(tokens[0].Trim());
 
-				c = Tenant.GetService<IComponentService>().SelectComponent(s.Token, ComponentCategories.Partial, tokens[1].Trim());
-			}
-			else
-				c = Tenant.GetService<IComponentService>().SelectComponent(ComponentCategories.Partial, name);
+			if (s == null)
+				return null;
+
+			c = Tenant.GetService<IComponentService>().SelectComponent(s.Token, ComponentCategories.Partial, tokens[1].Trim());
 
 			if (c == null)
 				return null;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Primitives;
 using TomPIT.Middleware;
 
@@ -8,6 +9,7 @@ namespace TomPIT.App.UI
 	public class ChangeToken : IChangeToken
 	{
 		private string _viewPath = string.Empty;
+		internal static readonly string[] SystemViews = new string[] { "_ViewImports.cshtml", "_ViewStart.cshtml" };
 
 		public ChangeToken(string viewPath)
 		{
@@ -19,11 +21,19 @@ namespace TomPIT.App.UI
 		{
 			get
 			{
+				if (!_viewPath.StartsWith("/Views/Dynamic", StringComparison.OrdinalIgnoreCase))
+					return false;
+
+				var fileName = Path.GetFileName(_viewPath);
+
+				if (SystemViews.FirstOrDefault(f => string.Compare(f, fileName, true) == 0) != null)
+					return false;
+
 				var kind = ViewInfo.ResolveViewKind(_viewPath);
 
 				if (kind == ViewKind.View)
 				{
-					var path = _viewPath.Substring(7).Substring(0, _viewPath.Length - 14);
+					var path = _viewPath[0..^7].Substring(20);
 
 					return MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().HasChanged(kind, path);
 				}
@@ -42,7 +52,12 @@ namespace TomPIT.App.UI
 					return MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().HasChanged(kind, path);
 				}
 				else
-					return MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().HasChanged(kind, Path.GetFileNameWithoutExtension(_viewPath));
+				{
+					var path = _viewPath.Split('/');
+					var partialPath = $"{path[^2]}/{path[^1]}";
+
+					return MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().HasChanged(kind, partialPath);
+				}
 			}
 		}
 

@@ -16,7 +16,7 @@ namespace TomPIT.TagHelpers
 
 		protected IMicroService ResolveMicroservice(string executingFilePath)
 		{
-			var ms = System.IO.Path.GetFileNameWithoutExtension(executingFilePath).Split(new char[] { '.' }, 2)[0];
+			var ms = executingFilePath.Split('/')[^2];
 			var ctx = ViewContext.ViewData.Model as IMiddlewareContext;
 
 			return ctx.Tenant.GetService<IMicroServiceService>().Select(ms);

@@ -95,12 +95,7 @@ namespace TomPIT.Middleware.Interop
 					var opInstance = operationType.CreateInstance<IOperation>();
 
 					if (operationType is IDistributedOperation)
-					{
-						var property = opInstance.GetType().GetProperty(nameof(IDistributedOperation.OperationTarget));
-
-						if (property != null && property.SetMethod != null)
-							property.SetMethod.Invoke(opInstance, new object[] { synchronous ? DistributedOperationTarget.InProcess : DistributedOperationTarget.Distributed });
-					}
+						ReflectionExtensions.SetPropertyValue(opInstance, nameof(IDistributedOperation.OperationTarget), synchronous ? DistributedOperationTarget.InProcess : DistributedOperationTarget.Distributed);
 
 					opInstance.SetContext(ctx);
 

@@ -9,6 +9,21 @@ namespace TomPIT.Compilation
 {
 	public static class CompilerExtensions
 	{
+		public static string ResolvePath(this IText sourceCode, ITenant tenant)
+		{
+			var name = ScriptName(sourceCode, tenant);
+			var ms = sourceCode.Configuration().MicroService();
+			var microService = tenant.GetService<IMicroServiceService>().Select(ms);
+
+			if (sourceCode is IConfiguration)
+				return $"{microService.Name}/{name}";
+			else
+			{
+				var componentName = tenant.GetService<IComponentService>().SelectComponent(sourceCode.Configuration().Component);
+
+				return $"{microService.Name}/{componentName}/{name}";
+			}
+		}
 		public static string ScriptName(this IText sourceCode, ITenant tenant)
 		{
 			if (sourceCode is IServerEvent)

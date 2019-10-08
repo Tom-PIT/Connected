@@ -1065,4 +1065,22 @@
   <data name="ErrCacheKeyNull" xml:space="preserve">
     <value>Cache Key property not set. Please set 'Key' property before returning value from cache retrieve handler.</value>
   </data>
+  <data name="ErrLine" xml:space="preserve">
+    <value>Line</value>
+  </data>
+  <data name="ErrTitle" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="ErrProductionStage" xml:space="preserve">
+    <value>Microservice is in Production stage. No changes are allowed.</value>
+  </data>
+  <data name="ErrStagingStage" xml:space="preserve">
+    <value>Microservice is in Staging stage. No changes are allowed.</value>
+  </data>
+  <data name="ErrIoCMethodExpected" xml:space="preserve">
+    <value>Method expected</value>
+  </data>
+  <data name="ErrIoCPropertyExpected" xml:space="preserve">
+    <value>Property expected</value>
+  </data>
 </root>

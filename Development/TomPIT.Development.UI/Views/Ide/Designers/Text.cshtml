@@ -99,8 +99,15 @@
         $.each(dirty, function (i, v) {
             var model = textEditor.getModel(monaco.Uri.parse(v));
 
-            if (model == null)
+            if (model === null)
                 return true;
+
+            if (model.uri.toString() !== v) {
+                textEditorState.setState({
+                    'model': v,
+                    'dirty': false
+                });
+            }
 
             promises.push(new Promise(function (resolve, reject) {
                 ide.designerAction({

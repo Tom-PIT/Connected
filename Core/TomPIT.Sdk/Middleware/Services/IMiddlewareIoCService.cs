@@ -2,6 +2,7 @@
 {
 	public interface IMiddlewareIoCService
 	{
-		IMiddlewareIoC UseMiddleware(string type);
+		T UseMiddleware<T>() where T : class;
+		T UseMiddleware<T, A>(A arguments) where T : class;
 	}
 }

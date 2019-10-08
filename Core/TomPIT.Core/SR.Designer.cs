@@ -1393,6 +1393,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Method expected.
+        /// </summary>
+        public static string ErrIoCMethodExpected {
+            get {
+                return ResourceManager.GetString("ErrIoCMethodExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Property expected.
+        /// </summary>
+        public static string ErrIoCPropertyExpected {
+            get {
+                return ResourceManager.GetString("ErrIoCPropertyExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot convert value to the destination type.
         /// </summary>
         public static string ErrIoTConversionError {
@@ -1524,6 +1542,15 @@ namespace TomPIT {
         public static string ErrLanguageNotFound {
             get {
                 return ResourceManager.GetString("ErrLanguageNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line.
+        /// </summary>
+        public static string ErrLine {
+            get {
+                return ResourceManager.GetString("ErrLine", resourceCulture);
             }
         }
         
@@ -1897,6 +1924,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Microservice is in Production stage. No changes are allowed..
+        /// </summary>
+        public static string ErrProductionStage {
+            get {
+                return ResourceManager.GetString("ErrProductionStage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Property not found..
         /// </summary>
         public static string ErrPropertyNotFound {
@@ -2050,6 +2086,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Microservice is in Staging stage. No changes are allowed..
+        /// </summary>
+        public static string ErrStagingStage {
+            get {
+                return ResourceManager.GetString("ErrStagingStage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specified storage provider not registered.
         /// </summary>
         public static string ErrStorageProviderNotRegistered {
@@ -2136,6 +2181,15 @@ namespace TomPIT {
         public static string ErrTimezoneParametersSupportedOnDatesOnly {
             get {
                 return ResourceManager.GetString("ErrTimezoneParametersSupportedOnDatesOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string ErrTitle {
+            get {
+                return ResourceManager.GetString("ErrTitle", resourceCulture);
             }
         }
         

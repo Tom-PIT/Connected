@@ -20,12 +20,14 @@ namespace TomPIT.App.Models
 		{
 			ActionContext = context.ActionContext;
 			TempData = context.TempData;
+			MicroService = context.MicroService;
 		}
 
-		public RuntimeModel(HttpRequest request, ActionContext context, ITempDataProvider tempData)
+		public RuntimeModel(HttpRequest request, ActionContext context, ITempDataProvider tempData, IMicroService microService)
 		{
 			ActionContext = context;
 			TempData = tempData;
+			MicroService = microService;
 		}
 
 		public IComponent Component { get; set; }

@@ -1,4 +1,5 @@
 ﻿using TomPIT.Connectivity;
+using TomPIT.Reflection;
 
 namespace TomPIT.Middleware
 {
@@ -11,12 +12,7 @@ namespace TomPIT.Middleware
 
 		internal static void SetContext(this IMiddlewareObject target, IMiddlewareContext context)
 		{
-			var property = target.GetType().GetProperty("Context");
-
-			if (property.SetMethod == null)
-				return;
-
-			property.SetMethod.Invoke(target, new object[] { context });
+			ReflectionExtensions.SetPropertyValue(target, nameof(target.Context), context);
 		}
 	}
 }

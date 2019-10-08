@@ -152,12 +152,12 @@ namespace TomPIT.App.UI
 
 			ac.ActionDescriptor.Properties.Add("viewKind", ViewKind.View);
 
-			var vi = new ViewInfo(string.Format("/Views/{0}.cshtml", path), ac);
+			var vi = new ViewInfo(string.Format("/Views/Dynamic/View/{0}.cshtml", path), ac);
 			var ms = vi.ViewComponent == null ? null : MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
 
-			var model = new RuntimeModel(Context.Request, ac, Temp)
+			var model = new RuntimeModel(Context.Request, ac, Temp, ms)
 			{
-				ViewConfiguration = view
+				ViewConfiguration = view,
 			};
 
 			model.Initialize(null, ms);
@@ -177,7 +177,7 @@ namespace TomPIT.App.UI
 			var vi = new ViewInfo(string.Format("/Views/Dynamic/Partial/{0}.cshtml", name), ac);
 			var ms = vi.ViewComponent == null ? null : MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
 
-			var model = new RuntimeModel(Context.Request, ac, Temp);
+			var model = new RuntimeModel(Context.Request, ac, Temp, ms);
 
 			model.Initialize(null, ms);
 

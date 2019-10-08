@@ -40,17 +40,30 @@ namespace TomPIT.Caching
 
 		}
 
+		private void Initializing()
+		{
+			IsInitializing = true;
+
+			OnInitializing();
+
+			IsInitializing = false;
+		}
+
 		protected void Initialize()
 		{
+			if (IsInitializing)
+				return;
+
 			if (Initialized)
 				return;
 
-			OnInitializing();
+			Initializing();
 
 			Initialized = true;
 		}
 
 		private bool Initialized { get; set; }
+		private bool IsInitializing { get; set; }
 
 		protected override List<T> All()
 		{

@@ -71,9 +71,9 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpGet]
-		public IComponent SelectByName(string category, string name)
+		public IComponent SelectByNameSpace(Guid microService, string nameSpace, string name)
 		{
-			return DataModel.Components.Select(category, name);
+			return DataModel.Components.SelectByNameSpace(microService, nameSpace, name);
 		}
 	}
 }

@@ -29,7 +29,7 @@ namespace TomPIT.Ide.ComponentModel
 		{
 			var u = Tenant.CreateUrl("ComponentDevelopment", "CreateName")
 				 .AddParameter("microService", microService)
-				 .AddParameter("category", category)
+				 .AddParameter("nameSpace", ComponentCategories.ResolveNamespace(category))
 				 .AddParameter("prefix", prefix);
 
 			return Tenant.Get<string>(u);
@@ -162,7 +162,8 @@ namespace TomPIT.Ide.ComponentModel
 					 {"name", component.Name },
 					 {"type", component.Type },
 					 {"category", component.Category },
-					 {"component", component.Token }
+					 {"component", component.Token },
+					 {"nameSpace", ComponentCategories.ResolveNamespace( component.Category) }
 				};
 
 			if (runtimeConfigurationId != Guid.Empty)
@@ -216,7 +217,8 @@ namespace TomPIT.Ide.ComponentModel
 					 {"name", name },
 					 {"type", type },
 					 {"category", category },
-					 {"component", instance.Component }
+					 {"component", instance.Component },
+					 {"nameSpace", ComponentCategories.ResolveNamespace(category) }
 				};
 
 			Tenant.Post(u, args);
@@ -649,7 +651,8 @@ namespace TomPIT.Ide.ComponentModel
 						  {"name", image.Name },
 						  {"type", image.Type },
 						  {"category", image.Category },
-						  {"component", image.Token }
+						  {"component", image.Token },
+						  {"nameSpace", ComponentCategories.ResolveNamespace( image.Category) }
 					 };
 
 				Tenant.Post(u, args);
