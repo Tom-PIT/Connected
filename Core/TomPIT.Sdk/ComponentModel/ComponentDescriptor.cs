@@ -159,6 +159,11 @@ namespace TomPIT.ComponentModel
 			return new ConfigurationDescriptor<IApiConfiguration>(context, identifier, ComponentCategories.Api);
 		}
 
+		public static ConfigurationDescriptor<IDataHubConfiguration> DataHub(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IDataHubConfiguration>(context, identifier, ComponentCategories.DataHub);
+		}
+
 		public static ConfigurationDescriptor<IConnectionConfiguration> Connection(IMiddlewareContext context, string identifier)
 		{
 			return new ConfigurationDescriptor<IConnectionConfiguration>(context, identifier, ComponentCategories.Connection);

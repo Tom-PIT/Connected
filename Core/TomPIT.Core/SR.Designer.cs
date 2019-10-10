@@ -988,6 +988,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Data hub endpoint not found.
+        /// </summary>
+        public static string ErrDataHubEndpointNotFound {
+            get {
+                return ResourceManager.GetString("ErrDataHubEndpointNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Data hub endpoint policy not found.
+        /// </summary>
+        public static string ErrDataHubEndpointPolicyNotFound {
+            get {
+                return ResourceManager.GetString("ErrDataHubEndpointPolicyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parameter value expected..
         /// </summary>
         public static string ErrDataParameterExpected {

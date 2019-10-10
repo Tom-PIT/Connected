@@ -1083,4 +1083,10 @@
   <data name="ErrIoCPropertyExpected" xml:space="preserve">
     <value>Property expected</value>
   </data>
+  <data name="ErrDataHubEndpointNotFound" xml:space="preserve">
+    <value>Data hub endpoint not found</value>
+  </data>
+  <data name="ErrDataHubEndpointPolicyNotFound" xml:space="preserve">
+    <value>Data hub endpoint policy not found</value>
+  </data>
 </root>

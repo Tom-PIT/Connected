@@ -182,12 +182,20 @@
         return true;
     };
 
-    tompit.antiForgeryValue = function() {
+    tompit.antiForgeryValue = function () {
         var target = $('input[name="TomPITAntiForgery"]');
 
         if (target.length === 0)
             return null;
 
         return target.val();
-    }
+    };
+
+    tompit.createDataHub = function (selector) {
+        return $(selector).tpDataHub().data('tompit-tpDataHub');
+    };
+
+    tompit.createIotHub = function (selector) {
+        return $(selector).tpIoT().data('tompit-tpIoT');
+    };
 })(window.tompit = window.tompit || {}, jQuery);

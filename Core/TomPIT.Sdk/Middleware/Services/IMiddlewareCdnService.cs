@@ -7,6 +7,7 @@ namespace TomPIT.Middleware.Services
 {
 	public interface IMiddlewareCdnService
 	{
+		string DataHubServer { get; }
 		Guid SendMail(string from, string to, string subject, string body);
 		Guid SendMail(string from, string to, string subject, string body, JArray headers, int attachmentCount);
 
@@ -28,5 +29,7 @@ namespace TomPIT.Middleware.Services
 		Guid Event([CIP(CIP.DistributedEventProvider)]string name);
 		Guid Event<T>([CIP(CIP.DistributedEventProvider)]string name, T e, IMiddlewareCallback callback);
 		Guid Event([CIP(CIP.DistributedEventProvider)]string name, IMiddlewareCallback callback);
+
+		void Notify<T>([CIP(CIP.DataHubEndpointProvider)]string dataHubEndpoint, T e);
 	}
 }

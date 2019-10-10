@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-$.widget('tompit.tpMessaging', {
+$.widget('tompit.tpIoT', {
 	options: {
 		connections: []
 	},

@@ -15,22 +15,26 @@ namespace TomPIT.Cdn.Mail
 		private CancellationTokenSource _cancel = new CancellationTokenSource();
 		private Lazy<List<MailDispatcher>> _dispatchers = new Lazy<List<MailDispatcher>>();
 
-		public MailService()
-		{
-			MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().SettingChanged += OnSettingChanged;
-
-			SetInterval();
-
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new MailDispatcher(i, _cancel));
-		}
-
 		private void OnSettingChanged(object sender, SettingEventArgs e)
 		{
 			if (e.ResourceGroup == Guid.Empty && string.Compare(e.Name, "MailServiceTimer", true) == 0)
 				SetInterval();
 		}
 
+		protected override bool Initialize()
+		{
+			if (Instance.State == InstanceState.Initialining)
+				return false;
+
+			SetInterval();
+
+			MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().SettingChanged += OnSettingChanged;
+
+			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
+				Dispatchers.Add(new MailDispatcher(i, _cancel));
+
+			return true;
+		}
 		private void SetInterval()
 		{
 			var interval = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<int>(Guid.Empty, "MailServiceTimer");

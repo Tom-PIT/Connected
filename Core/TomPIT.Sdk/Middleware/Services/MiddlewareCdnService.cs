@@ -17,8 +17,27 @@ namespace TomPIT.Middleware.Services
 {
 	internal class MiddlewareCdnService : MiddlewareObject, IMiddlewareCdnService
 	{
+		private string _dataHubServer = null;
 		public MiddlewareCdnService(IMiddlewareContext context) : base(context)
 		{
+		}
+
+		public string DataHubServer
+		{
+			get
+			{
+				if (_dataHubServer == null)
+				{
+					_dataHubServer = Context.Services.Routing.GetServer(InstanceType.Cdn, InstanceVerbs.All);
+
+					if (_dataHubServer == null)
+						throw new RuntimeException(SR.ErrNoCdnServer);
+
+					_dataHubServer = $"{_dataHubServer}/dataHub";
+				}
+
+				return _dataHubServer;
+			}
 		}
 
 		public Guid SendMail(string from, string to, string subject, string body)
@@ -161,6 +180,29 @@ namespace TomPIT.Middleware.Services
 			config.Validate();
 
 			return Context.Tenant.GetService<ISubscriptionService>().SubscriptionExists(config.Configuration, primaryKey, topic);
+		}
+
+		public void Notify<T>([CIP(CIP.DataHubEndpointProvider)] string dataHubEndpoint, T e)
+		{
+			var descriptor = ComponentDescriptor.DataHub(Context, dataHubEndpoint);
+
+			descriptor.Validate();
+
+			var endpoint = Context.Services.Routing.GetServer(InstanceType.Cdn, InstanceVerbs.Post);
+
+			if (endpoint == null)
+				throw new RuntimeException(SR.ErrNoCdnServer);
+
+			var url = $"{endpoint}/data";
+			var args = new JObject
+			{
+				{"endpoint",  $"{descriptor.MicroService.Name}/{descriptor.Component.Name}/{descriptor.Element}"}
+			};
+
+			if (e != null)
+				args.Add("arguments", Serializer.Deserialize<JObject>(Serializer.Serialize(e)));
+
+			Context.Tenant.Post(url, args);
 		}
 	}
 }

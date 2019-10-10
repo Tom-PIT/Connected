@@ -36,6 +36,11 @@ namespace TomPIT
 		SingleTenant = 2
 	}
 
+	public enum InstanceState
+	{
+		Initialining = 1,
+		Running = 2
+	}
 	public static class Instance
 	{
 		public static IMvcBuilder Mvc { get; private set; }
@@ -43,7 +48,7 @@ namespace TomPIT
 		internal static RequestLocalizationOptions RequestLocalizationOptions { get; private set; }
 
 		public static Guid Id { get; } = Guid.NewGuid();
-
+		public static InstanceState State { get; private set; } = InstanceState.Initialining;
 		public static void Initialize(IServiceCollection services, ServicesConfigurationArgs e)
 		{
 			Shell.RegisterConfigurationType(typeof(ClientSys));
@@ -135,6 +140,7 @@ namespace TomPIT
 		public static void Configure(InstanceType type, IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler)
 		{
 			app.UseAuthentication();
+			app.UseAuthorization();
 			app.UseRequestLocalization(o =>
 			{
 				RequestLocalizationOptions = o;
@@ -190,6 +196,8 @@ namespace TomPIT
 		{
 			foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
 				Shell.GetService<IConnectivityService>().InsertTenant(i.Name, i.Url, i.AuthenticationToken);
+
+			State = InstanceState.Running;
 		}
 
 		public static bool ResourceGroupExists(Guid resourceGroup)

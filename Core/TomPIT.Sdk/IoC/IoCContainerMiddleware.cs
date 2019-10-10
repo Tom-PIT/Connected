@@ -45,12 +45,14 @@ namespace TomPIT.IoC
 	{
 		public void Invoke(A e)
 		{
-			var endpoints = CreateEndpoints(e);
+			Invoke(e, CreateEndpoints(e));
+		}
 
+		public void Invoke(A e, List<IIoCEndpointMiddleware> endpoints)
+		{
 			foreach (var endpoint in endpoints)
 				Invoke(e, endpoint);
 		}
-
 		public void Invoke(A e, IIoCEndpointMiddleware endpoint)
 		{
 			var method = endpoint.GetType().GetMethod(nameof(IIoCContainerMiddleware<A>.Invoke));
@@ -69,7 +71,11 @@ namespace TomPIT.IoC
 	{
 		public List<R> Invoke(A e)
 		{
-			var endpoints = CreateEndpoints(e);
+			return Invoke(e, CreateEndpoints(e));
+		}
+
+		public List<R> Invoke(A e, List<IIoCEndpointMiddleware> endpoints)
+		{
 			var result = new List<R>();
 
 			foreach (var endpoint in endpoints)

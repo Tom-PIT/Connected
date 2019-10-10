@@ -23,6 +23,7 @@
 		public static string EmbeddedAssembly => "EmbeddedAssembly";
 		public static string FileAssembly => "FileAssembly";
 		public static string MailTemplate => "MailTemplate";
+		public static string DataHub => "DataHub";
 		public static string SearchCatalog => "SearchCatalog";
 		public static string EventBinder => "EventBinder";
 		public static string IoTHub => "IoTHub";

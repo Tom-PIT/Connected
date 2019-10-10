@@ -75,10 +75,15 @@
 
                 monaco.editor.onDidCreateModel((model)=>{
                     model.onDidChangeContent((e) => {
-                        target.setState({
-                            model: model.uri.toString(),
-                            dirty: true
-                        });
+                        try {
+                            target.setState({
+                                model: model.uri.toString(),
+                                dirty: true
+                            });
+                        }
+                        catch (e) {
+                            console.log(e);
+                        }
                     });
                 });
 
@@ -165,27 +170,33 @@
             monaco.languages.registerCodeActionProvider(language, {
                 provideCodeActions: function (model, range, context) {
                     return new Promise(function (resolve, reject) {
-                        ide.designerAction({
-                            data: {
-                                action: 'provideCodeActions',
-                                section: 'designer',
-                                property: instance.options.property,
-                                model: {
-                                    'id': model.id,
-                                    'uri': model.uri.toString()
+                        try {
+                            ide.designerAction({
+                                data: {
+                                    action: 'provideCodeActions',
+                                    section: 'designer',
+                                    property: instance.options.property,
+                                    model: {
+                                        'id': model.id,
+                                        'uri': model.uri.toString()
+                                    },
+                                    range: range,
+                                    context: context,
+                                    text: model.getValue()
                                 },
-                                range: range,
-                                context: context,
-                                text: model.getValue()
-                            },
-                            onComplete: function (data) {
-                                resolve({
-                                    actions: data,
-                                    dispose: function () { }
-                                });
-                            }
+                                onComplete: function (data) {
+                                    resolve({
+                                        actions: data === null ? [] : data,
+                                        dispose: function () { }
+                                    });
+                                }
 
-                        }, false);
+                            }, false);
+                        }
+                        catch (e) {
+                            reject();
+                            console.log(e);
+                        }
                     });
                 }
             });
@@ -196,30 +207,36 @@
             monaco.languages.registerCompletionItemProvider(language, {
                 provideCompletionItems: function (model, position, context) {
                     return new Promise(function (resolve, reject) {
-                        ide.designerAction({
-                            data: {
-                                action: 'provideCompletionItems',
-                                section: 'designer',
-                                property: instance.options.property,
-                                model: {
-                                    'id': model.id,
-                                    'uri': model.uri.toString()
+                        try {
+                            ide.designerAction({
+                                data: {
+                                    action: 'provideCompletionItems',
+                                    section: 'designer',
+                                    property: instance.options.property,
+                                    model: {
+                                        'id': model.id,
+                                        'uri': model.uri.toString()
+                                    },
+                                    position: position,
+                                    context: context,
+                                    text: model.getValue()
                                 },
-                                position: position,
-                                context: context,
-                                text: model.getValue()
-                            },
-                            onComplete: function (data) {
-                                if (data) {
-                                    data.dispose = function () { };
+                                onComplete: function (data) {
+                                    if (data) {
+                                        data.dispose = function () { };
 
-                                    resolve(data);
+                                        resolve(data);
+                                    }
+                                    else
+                                        reject();
                                 }
-                                else
-                                    reject();
-                            }
 
-                        }, false);
+                            }, false);
+                        }
+                        catch (e) {
+                            reject();
+                            console.log(e);
+                        }
                     });
                 }
             });
@@ -230,26 +247,32 @@
             monaco.languages.registerDeclarationProvider(language, {
                 provideDeclaration: function (model, position) {
                     return new Promise(function (resolve, reject) {
-                        ide.designerAction({
-                            data: {
-                                action: 'provideDeclaration',
-                                section: 'designer',
-                                property: instance.options.property,
-                                model: {
-                                    'id': model.id,
-                                    'uri': model.uri.toString()
+                        try {
+                            ide.designerAction({
+                                data: {
+                                    action: 'provideDeclaration',
+                                    section: 'designer',
+                                    property: instance.options.property,
+                                    model: {
+                                        'id': model.id,
+                                        'uri': model.uri.toString()
+                                    },
+                                    position: position,
+                                    text: model.getValue()
                                 },
-                                position: position,
-                                text: model.getValue()
-                            },
-                            onComplete: function (data) {
-                                resolve({
-                                    uri: monaco.Uri.parse(data.uri),
-                                    range:data.range
-                                });
-                            }
+                                onComplete: function (data) {
+                                    resolve({
+                                        uri: monaco.Uri.parse(data.uri),
+                                        range: data.range
+                                    });
+                                }
 
-                        }, false);
+                            }, false);
+                        }
+                        catch (e) {
+                            reject();
+                            console.log(e);
+                        }
                     });
                 }
             });
@@ -260,30 +283,36 @@
             monaco.languages.registerSignatureHelpProvider(language, {
                 provideSignatureHelp: function (model, position, token, context) {
                     return new Promise(function (resolve, reject) {
-                        ide.designerAction({
-                            data: {
-                                action: 'provideSignatureHelp',
-                                section: 'designer',
-                                property: instance.options.property,
-                                model: {
-                                    'id': model.id,
-                                    'uri': model.uri.toString()
+                        try {
+                            ide.designerAction({
+                                data: {
+                                    action: 'provideSignatureHelp',
+                                    section: 'designer',
+                                    property: instance.options.property,
+                                    model: {
+                                        'id': model.id,
+                                        'uri': model.uri.toString()
+                                    },
+                                    position: position,
+                                    text: model.getValue()
                                 },
-                                position: position,
-                                text: model.getValue()
-                            },
-                            onComplete: function (data) {
-                                if (data) {
-                                    resolve({
-                                        value: data,
-                                        dispose: function () {}
-                                    });
+                                onComplete: function (data) {
+                                    if (data) {
+                                        resolve({
+                                            value: data,
+                                            dispose: function () { }
+                                        });
+                                    }
+                                    else
+                                        reject();
                                 }
-                                else
-                                    reject();
-                            }
 
-                        }, false);
+                            }, false);
+                        }
+                        catch (e) {
+                            reject();
+                            console.log(e);
+                        }
                     });
                 }
             });
@@ -294,25 +323,31 @@
             monaco.languages.registerDocumentSymbolProvider(language, {
                 provideDocumentSymbols: function (model, position, token, context) {
                     return new Promise(function (resolve, reject) {
-                        ide.designerAction({
-                            data: {
-                                action: 'provideDocumentSymbols',
-                                section: 'designer',
-                                property: instance.options.property,
-                                model: {
-                                    'id': model.id,
-                                    'uri': model.uri.toString()
+                        try {
+                            ide.designerAction({
+                                data: {
+                                    action: 'provideDocumentSymbols',
+                                    section: 'designer',
+                                    property: instance.options.property,
+                                    model: {
+                                        'id': model.id,
+                                        'uri': model.uri.toString()
+                                    },
+                                    text: model.getValue()
                                 },
-                                text: model.getValue()
-                            },
-                            onComplete: function (data) {
-                                if (data) 
-                                    resolve(data);
-                                else
-                                    reject();
-                            }
+                                onComplete: function (data) {
+                                    if (data)
+                                        resolve(data);
+                                    else
+                                        reject();
+                                }
 
-                        }, false);
+                            }, false);
+                        }
+                        catch (e) {
+                            reject();
+                            console.log(e);
+                        }
                     });
                 }
             });

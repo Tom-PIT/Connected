@@ -55,7 +55,8 @@ namespace TomPIT.MicroServices.Design
 				{ ComponentCategories.FileAssembly,    new ItemDescriptor("File assembly",    ComponentCategories.FileAssembly,      typeof(AssemblyFileSystemResource))          { Glyph = "fal fa-file-code",          Category = "Resources" ,      Ordinal=403,      Value="Assembly"} },
 				{ ComponentCategories.Subscription,    new ItemDescriptor("Subscription",     ComponentCategories.Subscription,      typeof(Subscription))                        { Glyph = "fal fa-bell",               Category = "Cdn" ,            Ordinal=500} },
 				{ ComponentCategories.MailTemplate,    new ItemDescriptor("Mail template",    ComponentCategories.MailTemplate,      typeof(MailTemplate))                        { Glyph = "fal fa-envelope",           Category = "Cdn" ,            Ordinal=501} },
-				{ ComponentCategories.SearchCatalog,   new ItemDescriptor("Search catalog",   ComponentCategories.SearchCatalog,     typeof(SearchCatalog))                       { Glyph = "fal fa-search",             Category = "Search" ,         Ordinal=502} }
+				{ ComponentCategories.DataHub,         new ItemDescriptor("Data hub",         ComponentCategories.DataHub,           typeof(DataHub))                             { Glyph = "fal fa-bell",               Category = "Cdn" ,            Ordinal=502} },
+				{ ComponentCategories.SearchCatalog,   new ItemDescriptor("Search catalog",   ComponentCategories.SearchCatalog,     typeof(SearchCatalog))                       { Glyph = "fal fa-search",             Category = "Search" ,         Ordinal=600} }
 			});
 		}
 
