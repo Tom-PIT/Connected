@@ -28,7 +28,7 @@
                     <br />
                 }
 
-                @if (ViewData["exLine"] != null)
+                @if (ViewData["exLine"] != null && Convert.ToInt32(ViewData["exLine"]) > 0)
                 {
                     @Html.Raw($"{SR.ErrLine}: {ViewData["exLine"]}")
                     <br />

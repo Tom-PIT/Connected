@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -16,6 +17,7 @@ using TomPIT.Routing;
 using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
 using TomPIT.Storage;
+using TomPIT.UI;
 
 namespace TomPIT.App.UI
 {
@@ -403,6 +405,50 @@ namespace TomPIT.App.UI
 				Startup.RouteBuilder.AddSystemLogin();
 			else
 				Startup.RouteBuilder.RemoveSystemLogin();
+		}
+
+		public ViewKind ResolveViewKind(string url)
+		{
+			var path = url.Trim('/');
+
+			if (path.StartsWith("Views/Dynamic/Master"))
+				return ViewKind.Master;
+			else if (path.StartsWith("Views/Dynamic/Partial") || path.StartsWith(":partial"))
+				return ViewKind.Partial;
+			else if (path.StartsWith("Views/Dynamic/Snippet"))
+				return ViewKind.Snippet;
+			else if (path.StartsWith("Views/Dynamic/MailTemplate"))
+				return ViewKind.MailTemplate;
+			else if (path.StartsWith("Views/Dynamic/Report"))
+				return ViewKind.Report;
+			else
+				return ViewKind.View;
+
+		}
+
+		public IMicroService ResolveMicroService(string url)
+		{
+			var kind = ResolveViewKind(url);
+
+			if (kind == ViewKind.View)
+			{
+				var path = string.Join('/', url.Trim('/').Split('/').Skip(3));
+
+				if (path.EndsWith(".cshtml"))
+					path = path[0..^7];
+
+				var view = Select(path, null);
+
+
+				if (view == null)
+					return null;
+
+				return Tenant.GetService<IMicroServiceService>().Select(view.MicroService());
+			}
+
+			var name = url.Trim('/').Split('/')[3];
+
+			return Tenant.GetService<IMicroServiceService>().Select(name);
 		}
 	}
 }

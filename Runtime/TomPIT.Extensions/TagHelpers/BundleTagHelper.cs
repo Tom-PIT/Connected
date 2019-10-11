@@ -28,7 +28,14 @@ namespace TomPIT.TagHelpers
 				if (reference == null)
 					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService)).WithMetrics(ctx);
 
-				ms.ValidateMicroServiceReference(reference.Name);
+				try
+				{
+					ms.ValidateMicroServiceReference(reference.Name);
+				}
+				catch
+				{
+					ctx.MicroService.ValidateMicroServiceReference(reference.Name);
+				}
 			}
 			else
 			{

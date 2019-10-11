@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
@@ -136,15 +135,8 @@ namespace TomPIT.Compilation
 
 			handled = true;
 
-			if (script.Errors != null && script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() > 0)
-			{
-				var sb = new StringBuilder();
-
-				foreach (var i in script.Errors)
-					sb.AppendLine(i.Message);
-
-				throw new RuntimeException(sb.ToString());
-			}
+			if (script.Errors != null && script.Errors.Where(f => f.Severity == DiagnosticSeverity.Error).Count() > 0)
+				throw new CompilerException(Tenant, script, sourceCode);
 
 			var globals = new ScriptGlobals<T>
 			{
@@ -154,10 +146,7 @@ namespace TomPIT.Compilation
 
 			try
 			{
-				return Task.Run(() =>
-				{
-					return script.Script(globals);
-				}).Result;
+				return script.Script(globals).Result;
 			}
 			catch (AggregateException ex)
 			{
@@ -552,6 +541,24 @@ namespace TomPIT.Compilation
 				mo.SetContext(context ?? new MicroServiceContext(microService, Tenant.Url));
 
 			return instance;
+		}
+
+		public IMicroService ResolveMicroService(object instance)
+		{
+			if (instance is IMicroServiceObject mo && mo.Context != null && mo.Context.MicroService != null)
+				return mo.Context.MicroService;
+
+			return ResolveMicroService(instance.GetType());
+		}
+
+		public IMicroService ResolveMicroService(Type type)
+		{
+			var script = Get(f => f.Assembly != null && string.Compare(type.Assembly.GetName().Name, f.Assembly, true) == 0);
+
+			if (script == null)
+				return null;
+
+			return Tenant.GetService<IMicroServiceService>().Select(script.MicroService);
 		}
 
 		private static ConcurrentDictionary<Guid, List<Guid>> References { get { return _references.Value; } }

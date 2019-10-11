@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
 using TomPIT.Middleware;
+using TomPIT.UI;
 
 namespace TomPIT.App.UI
 {
@@ -29,7 +30,7 @@ namespace TomPIT.App.UI
 				if (SystemViews.FirstOrDefault(f => string.Compare(f, fileName, true) == 0) != null)
 					return false;
 
-				var kind = ViewInfo.ResolveViewKind(_viewPath);
+				var kind = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().ResolveViewKind(_viewPath);
 
 				if (kind == ViewKind.View)
 				{
@@ -55,6 +56,9 @@ namespace TomPIT.App.UI
 				{
 					var path = _viewPath.Split('/');
 					var partialPath = $"{path[^2]}/{path[^1]}";
+
+					if (partialPath.EndsWith(".cshtml"))
+						partialPath = partialPath[0..^7];
 
 					return MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().HasChanged(kind, partialPath);
 				}

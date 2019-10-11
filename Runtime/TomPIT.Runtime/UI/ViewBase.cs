@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Newtonsoft.Json.Linq;
 using TomPIT.Collections;
@@ -101,5 +102,23 @@ namespace TomPIT.Runtime.UI
 
 			return Serializer.Serialize(content);
 		}
+
+		protected void NotFound()
+		{
+			Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+		}
+
+		protected void BadRequest()
+		{
+			Context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+		}
+		protected void Deny()
+		{
+			if (ViewModel.Services.Identity.User == null)
+				Context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+			else
+				Context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+		}
+
 	}
 }

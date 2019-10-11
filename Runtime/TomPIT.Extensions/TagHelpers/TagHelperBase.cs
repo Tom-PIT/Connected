@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using TomPIT.ComponentModel;
 using TomPIT.Middleware;
+using TomPIT.UI;
 
 namespace TomPIT.TagHelpers
 {
@@ -16,10 +17,7 @@ namespace TomPIT.TagHelpers
 
 		protected IMicroService ResolveMicroservice(string executingFilePath)
 		{
-			var ms = executingFilePath.Split('/')[^2];
-			var ctx = ViewContext.ViewData.Model as IMiddlewareContext;
-
-			return ctx.Tenant.GetService<IMicroServiceService>().Select(ms);
+			return MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().ResolveMicroService(executingFilePath);
 		}
 	}
 }

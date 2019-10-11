@@ -16,6 +16,8 @@ namespace TomPIT.Compilation
 		IScriptDescriptor GetScript<T>(Guid microService, IText sourceCode);
 		IScriptDescriptor GetScript(Guid microService, IText sourceCode);
 
+		IMicroService ResolveMicroService(Type type);
+		IMicroService ResolveMicroService(object instance);
 		string CompileView(ITenant tenant, IText sourceCode);
 
 		Type ResolveType(Guid microService, IText sourceCode, string typeName);

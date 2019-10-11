@@ -16,10 +16,17 @@ namespace TomPIT.Worker.Services
 		public QueueWorkerService()
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
-
-			Dispatchers.Add(new QueueWorkerDispatcher(_cancel));
 		}
 
+		protected override bool Initialize()
+		{
+			if (Instance.State == InstanceState.Initialining)
+				return false;
+
+			Dispatchers.Add(new QueueWorkerDispatcher(_cancel));
+
+			return true;
+		}
 		protected override Task Process()
 		{
 			Parallel.ForEach(Dispatchers, (f) =>

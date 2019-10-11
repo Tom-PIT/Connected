@@ -55,14 +55,14 @@
 	tompit.handleError = function (request, status, error) {
 		var title = null;
 		var message = null;
-		var severity = 'critical';
+        var severity = 'critical';
 
 		try {
 			var err = $.parseJSON(request.responseText);
 
 			title = err === null ? status : err.source;
 			message = err === null ? null : err.message;
-			severity = err === null ? 'critical' : typeof err.severity === 'undefined' ? critical : err.severity;
+            severity = err === null ? 'critical' : typeof err.severity === 'undefined' ? critical : err.severity;
 
 			var inner = err === null || typeof err.inner === 'undefined' ? null : err.inner;
 

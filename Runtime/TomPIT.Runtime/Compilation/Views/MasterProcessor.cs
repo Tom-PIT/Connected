@@ -25,10 +25,10 @@ namespace TomPIT.Compilation.Views
 
 			Builder.Append(Source);
 
-			var scripts = SelectScripts(tenant, component.MicroService, configuration as IGraphicInterface);
+			//var scripts = SelectScripts(tenant, component.MicroService, configuration as IGraphicInterface);
 
-			if (!string.IsNullOrWhiteSpace(scripts))
-				Builder.AppendFormat("<script>{0}</script>", scripts);
+			//if (!string.IsNullOrWhiteSpace(scripts))
+			//	Builder.AppendFormat("<script>{0}</script>", scripts);
 		}
 
 		public override string Result { get { return Builder.ToString(); } }

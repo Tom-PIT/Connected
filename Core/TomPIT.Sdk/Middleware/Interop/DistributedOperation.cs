@@ -91,7 +91,7 @@ namespace TomPIT.Middleware.Interop
 				OnBeginInvoke();
 
 				if (!((MiddlewareCallback)Callback).Attached)
-					Context.Services.Cdn.Event("$", this, Callback);
+					Context.Services.Cdn.DistributedEvent("$", this, Callback);
 			}
 			else
 				OnInvoke();

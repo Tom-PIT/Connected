@@ -6,6 +6,7 @@ namespace TomPIT.Caching
 {
 	public abstract class SynchronizedRepository<T, K> : CacheRepository<T, K> where T : class
 	{
+		private object _sync = new object();
 		public event CacheInvalidateHandler Invalidate;
 
 		protected SynchronizedRepository(IMemoryCache container, string key) : base(container, key)
@@ -40,69 +41,72 @@ namespace TomPIT.Caching
 
 		}
 
-		private void Initializing()
-		{
-			IsInitializing = true;
-
-			OnInitializing();
-
-			IsInitializing = false;
-		}
-
 		protected void Initialize()
 		{
-			if (IsInitializing)
-				return;
-
 			if (Initialized)
 				return;
 
-			Initializing();
+			lock (_sync)
+			{
+				if (Initialized)
+					return;
 
-			Initialized = true;
+				Initializing = true;
+
+				OnInitializing();
+
+				Initialized = true;
+				Initializing = false;
+			}
 		}
 
+		private bool Initializing { get; set; }
 		private bool Initialized { get; set; }
-		private bool IsInitializing { get; set; }
 
 		protected override List<T> All()
 		{
-			Initialize();
+			if (!Initializing)
+				Initialize();
 
 			return base.All();
 		}
 
 		protected override T First()
 		{
-			Initialize();
+			if (!Initializing)
+				Initialize();
 
 			return base.First();
 		}
 
 		protected override T Get(Func<T, bool> predicate)
 		{
-			Initialize();
+			if (!Initializing)
+				Initialize();
 
 			return base.Get(predicate);
 		}
 
 		protected override T Get(K id)
 		{
-			Initialize();
+			if (!Initializing)
+				Initialize();
 
 			return base.Get(id);
 		}
 
 		protected override T Get(K id, CacheRetrieveHandler<T> retrieve)
 		{
-			Initialize();
+			if (!Initializing)
+				Initialize();
 
 			return base.Get(id, retrieve);
 		}
 
 		protected override List<T> Where(Func<T, bool> predicate)
 		{
-			Initialize();
+			if (!Initializing)
+				Initialize();
 
 			return base.Where(predicate);
 		}

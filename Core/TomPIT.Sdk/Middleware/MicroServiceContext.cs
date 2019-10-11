@@ -1,6 +1,8 @@
 ﻿using System;
 using Newtonsoft.Json;
 using TomPIT.ComponentModel;
+using TomPIT.Connectivity;
+using TomPIT.Exceptions;
 
 namespace TomPIT.Middleware
 {
@@ -46,5 +48,16 @@ namespace TomPIT.Middleware
 		}
 		[JsonIgnore]
 		public virtual IMicroService MicroService { get; protected set; }
+
+		public static IMicroServiceContext FromIdentifier(string identifier, ITenant tenant)
+		{
+			var tokens = identifier.Split('/');
+			var ms = tenant.GetService<IMicroServiceService>().Select(tokens[0]);
+
+			if (ms == null)
+				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({tokens[0]})");
+
+			return new MicroServiceContext(ms, tenant.Url);
+		}
 	}
 }

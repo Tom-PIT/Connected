@@ -38,6 +38,9 @@ namespace TomPIT.Exceptions
 		{
 			string currentLine = null;
 
+			if (InnerException == null || string.IsNullOrWhiteSpace(InnerException.StackTrace))
+				return ExceptionSender.GetType().ScriptTypeName();
+
 			using (var r = new StringReader(InnerException.StackTrace))
 			{
 				while ((currentLine = r.ReadLine()) != null)
@@ -68,6 +71,9 @@ namespace TomPIT.Exceptions
 		private static string ResolveLine(Exception ex)
 		{
 			string currentLine = null;
+
+			if (ex == null || string.IsNullOrWhiteSpace(ex.StackTrace))
+				return 0.ToString();
 
 			using (var r = new StringReader(ex.StackTrace))
 			{

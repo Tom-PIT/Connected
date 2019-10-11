@@ -17,9 +17,6 @@ namespace TomPIT.Worker.Services
 		public WorkerService()
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
-
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new WorkerDispatcher(i, _cancel));
 		}
 
 		protected override Task Process()
@@ -48,6 +45,16 @@ namespace TomPIT.Worker.Services
 			return Task.CompletedTask;
 		}
 
+		protected override bool Initialize()
+		{
+			if (Instance.State == InstanceState.Initialining)
+				return false;
+
+			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
+				Dispatchers.Add(new WorkerDispatcher(i, _cancel));
+
+			return true;
+		}
 		private List<WorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
 	}
 }

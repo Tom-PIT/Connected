@@ -15,19 +15,10 @@ using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Storage;
+using TomPIT.UI;
 
 namespace TomPIT.App.UI
 {
-	internal enum ViewKind
-	{
-		Master = 1,
-		View = 2,
-		Partial = 3,
-		Snippet = 4,
-		MailTemplate = 5,
-		Report = 6
-	}
-
 	internal class ViewInfo : IFileInfo
 	{
 		private byte[] _viewContent = null;
@@ -45,7 +36,7 @@ namespace TomPIT.App.UI
 		{
 			FullPath = viewPath.Trim('/');
 
-			Kind = ResolveViewKind(viewPath);
+			Kind = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().ResolveViewKind(viewPath);
 
 			if (Kind == ViewKind.View)
 			{
@@ -74,24 +65,6 @@ namespace TomPIT.App.UI
 				return r;
 
 			return ViewKind.View;
-		}
-
-		public static ViewKind ResolveViewKind(string viewPath)
-		{
-			var path = viewPath.Trim('/');
-
-			if (path.StartsWith("Views/Dynamic/Master"))
-				return ViewKind.Master;
-			else if (path.StartsWith("Views/Dynamic/Partial") || path.StartsWith(":partial"))
-				return ViewKind.Partial;
-			else if (path.StartsWith("Views/Dynamic/Snippet"))
-				return ViewKind.Snippet;
-			else if (path.StartsWith("Views/Dynamic/MailTemplate"))
-				return ViewKind.MailTemplate;
-			else if (path.StartsWith("Views/Dynamic/Report"))
-				return ViewKind.Report;
-			else
-				return ViewKind.View;
 		}
 
 		private string FullPath { get; set; }

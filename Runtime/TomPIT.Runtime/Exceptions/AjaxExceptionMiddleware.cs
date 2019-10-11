@@ -24,9 +24,17 @@ namespace TomPIT.Exceptions
 				severity = ((RuntimeException)ex).Severity;
 			}
 
+			var source = ex.Source;
+
+			if (ex is ValidationException || ex is System.ComponentModel.DataAnnotations.ValidationException)
+			{
+				source = string.Empty;
+				severity = ExceptionSeverity.Warning;
+			}
+
 			var jsonEx = new JObject
 					{
-						{ "source", ex.Source },
+						{ "source", source },
 						{ "message", ex.Message },
 						{ "severity", severity.ToString().ToLower() }
 					};

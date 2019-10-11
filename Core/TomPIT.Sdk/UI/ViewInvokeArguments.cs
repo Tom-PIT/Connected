@@ -6,7 +6,7 @@ using TomPIT.Models;
 
 namespace TomPIT.UI
 {
-	public class ViewInvokeArguments : MiddlewareContext
+	public class ViewInvokeArguments : MicroServiceContext
 	{
 		private ViewDataDictionary<IRuntimeModel> _viewData = null;
 		private TempDataDictionary _tempData = null;
@@ -17,7 +17,7 @@ namespace TomPIT.UI
 			Model = context;
 		}
 
-		public ViewInvokeArguments(ViewDataDictionary viewData, ITempDataDictionary tempData, dynamic viewBag) : base(viewData.Model as IMiddlewareContext)
+		public ViewInvokeArguments(ViewDataDictionary viewData, ITempDataDictionary tempData, dynamic viewBag) : base(viewData.Model as IMicroServiceContext)
 		{
 			Model = viewData.Model as IViewModel;
 			_viewData = viewData as ViewDataDictionary<IRuntimeModel>;

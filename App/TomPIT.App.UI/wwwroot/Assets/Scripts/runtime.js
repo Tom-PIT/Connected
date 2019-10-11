@@ -191,10 +191,6 @@
         return target.val();
     };
 
-    tompit.createDataHub = function (selector) {
-        return $(selector).tpDataHub().data('tompit-tpDataHub');
-    };
-
     tompit.createIotHub = function (selector) {
         return $(selector).tpIoT().data('tompit-tpIoT');
     };

@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel.Distributed
 {
-	public interface IDistributedEventConfiguration : IConfiguration
+	public interface IDistributedEventConfiguration : IConfiguration, IText
 	{
 	}
 }

@@ -109,30 +109,42 @@ namespace TomPIT.App.UI
 						return;
 				}
 				model.ActionContext.RouteData.Values.Add("Action", name);
-				var viewEngineResult = Engine.FindView(model.ActionContext, name, false);
 
-				if (!viewEngineResult.Success)
+				try
 				{
-					if (string.Compare(name, "home", true) == 0)
-						throw new InvalidOperationException(SR.ErrDefaultViewNotSet);
-					else
+					var viewEngineResult = Engine.FindView(model.ActionContext, name, false);
+
+					if (!viewEngineResult.Success)
 					{
-						Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-						return;
+						if (string.Compare(name, "home", true) == 0)
+							throw new InvalidOperationException(SR.ErrDefaultViewNotSet);
+						else
+						{
+							Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+							return;
+						}
 					}
+
+					var view = viewEngineResult.View;
+
+					if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
+						return;
+
+					content = CreateContent(view, invokeArgs);
+
+					var buffer = Encoding.UTF8.GetBytes(content);
+
+					if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
+						Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
 				}
-
-				var view = viewEngineResult.View;
-
-				if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
-					return;
-
-				content = CreateContent(view, invokeArgs);
-
-				var buffer = Encoding.UTF8.GetBytes(content);
-
-				if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
-					Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
+				catch (CompilerException)
+				{
+					throw;
+				}
+				catch (Exception ex)
+				{
+					throw new CompilerException(model.Tenant, model.ViewConfiguration, ex);
+				}
 			}
 			finally
 			{

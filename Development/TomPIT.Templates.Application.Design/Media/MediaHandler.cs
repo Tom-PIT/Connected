@@ -869,7 +869,7 @@ namespace TomPIT.MicroServices.Design.Media
 			var content = Encoding.UTF8.GetBytes(Serializer.Serialize(r));
 
 			Context.Response.ContentLength = content.Length;
-			Context.Response.Body.Write(content, 0, content.Length);
+			Context.Response.Body.WriteAsync(content, 0, content.Length).Wait();
 		}
 
 		private void RenderResult(bool success, ExceptionKind ex = ExceptionKind.None)
@@ -890,7 +890,7 @@ namespace TomPIT.MicroServices.Design.Media
 			var content = Encoding.UTF8.GetBytes(Serializer.Serialize(r));
 
 			Context.Response.ContentLength = content.Length;
-			Context.Response.Body.Write(content, 0, content.Length);
+			Context.Response.Body.WriteAsync(content, 0, content.Length).Wait();
 		}
 
 		private void CreateThumbnail(IMediaResourceFile file)

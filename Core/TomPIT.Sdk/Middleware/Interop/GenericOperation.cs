@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using TomPIT.Annotations;
+using TomPIT.Compilation;
 using TomPIT.Exceptions;
 using TomPIT.Reflection;
 
@@ -56,9 +57,9 @@ namespace TomPIT.Middleware.Interop
 					return result;
 
 				var ext = ResolveExtenderType();
-				var extenderInstance = ext.CreateInstance(new object[] { Context });
+				var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this));
+				var extenderInstance = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, ext);
 				var arguments = extenderInstance.GetType().BaseType.GetGenericArguments();
-
 
 				Type inputType = arguments[0];
 				var list = typeof(List<>);

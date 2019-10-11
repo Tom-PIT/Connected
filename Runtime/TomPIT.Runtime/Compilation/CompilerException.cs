@@ -1,16 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
 
 namespace TomPIT.Compilation
 {
-	internal class CompilerException : ScriptException
+	public class CompilerException : ScriptException
 	{
 		private string _message = string.Empty;
+
+		public CompilerException(ITenant tenant, IViewConfiguration view, Exception inner) : base(view, inner)
+		{
+			_message = inner.Message;
+
+			if (view == null)
+				return;
+
+			var ms = tenant.GetService<IMicroServiceService>().Select(view.MicroService());
+
+			Source = $"{view.ComponentName()}.cshtml";
+			Path = $"{ms.Name}/{view.ComponentName()}.cshtml";
+			MicroService = ms.Name;
+			Component = view.Id;
+		}
 		public CompilerException(ITenant tenant, IScriptDescriptor script, IText sourceCode)
 		{
 			var sb = new StringBuilder();

@@ -49,6 +49,11 @@ namespace TomPIT.Worker.Services
 			if (ed == null)
 				return;
 
+			var eventInstance = CreateEventInstance(ed);
+
+			if (eventInstance != null)
+				eventInstance.Invoke();
+
 			var responses = new List<IOperationResponse>();
 
 			if (string.Compare(ed.Name, "$", true) != 0)
@@ -84,6 +89,9 @@ namespace TomPIT.Worker.Services
 
 			if (!string.IsNullOrWhiteSpace(ed.Callback))
 				Callback(ed, responses);
+
+			if (eventInstance != null)
+				eventInstance.Invoked();
 		}
 
 		private void Callback(EventDescriptor ed, List<IOperationResponse> responses)
@@ -176,6 +184,22 @@ namespace TomPIT.Worker.Services
 			};
 
 			MiddlewareDescriptor.Current.Tenant.Post(url, d);
+		}
+
+		private IDistributedEventMiddleware CreateEventInstance(EventDescriptor eventDescriptor)
+		{
+			var compiler = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>();
+			var context = MicroServiceContext.FromIdentifier(eventDescriptor.Name, MiddlewareDescriptor.Current.Tenant);
+			var descriptor = ComponentDescriptor.DistributedEvent(context, eventDescriptor.Name);
+
+			descriptor.Validate();
+
+			var type = compiler.ResolveType(context.MicroService.Token, descriptor.Configuration, descriptor.ComponentName, false);
+
+			if (type == null)
+				return null;
+
+			return compiler.CreateInstance<IDistributedEventMiddleware>(context, type, eventDescriptor.Arguments);
 		}
 	}
 }

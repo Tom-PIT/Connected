@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 
 namespace TomPIT.Compilation.Views
@@ -51,22 +50,22 @@ namespace TomPIT.Compilation.Views
 			builder.AppendLine("@addTagHelper *, TomPIT.Extensions");
 		}
 
-		protected string SelectScripts(ITenant tenant, Guid microService, IGraphicInterface config)
-		{
-			var r = new StringBuilder();
+		//protected string SelectScripts(ITenant tenant, Guid microService, IGraphicInterface config)
+		//{
+		//	var r = new StringBuilder();
 
-			foreach (var script in config.Scripts)
-			{
-				var scr = tenant.GetService<IComponentService>().SelectText(microService, script);
+		//	foreach (var script in config.Scripts)
+		//	{
+		//		var scr = tenant.GetService<IComponentService>().SelectText(microService, script);
 
-				if (!string.IsNullOrWhiteSpace(scr))
-				{
-					r.Append(scr);
-					r.AppendLine();
-				}
-			}
+		//		if (!string.IsNullOrWhiteSpace(scr))
+		//		{
+		//			r.Append(scr);
+		//			r.AppendLine();
+		//		}
+		//	}
 
-			return r.ToString();
-		}
+		//	return r.ToString();
+		//}
 	}
 }

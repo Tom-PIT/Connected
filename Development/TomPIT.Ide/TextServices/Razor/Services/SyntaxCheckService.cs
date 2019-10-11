@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.Ide.TextServices.CSharp;
 using TomPIT.Ide.TextServices.Services;
@@ -18,6 +19,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 
 			var result = new List<IMarkerData>();
 			var diagnostics = compilation.GetDiagnostics();
+
 			foreach (var diagnostic in diagnostics)
 			{
 				var source = diagnostic.Location.SourceTree?.FilePath;
@@ -26,6 +28,9 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 					continue;
 
 				if (string.Compare(Editor.Document.Name, source, true) != 0)
+					continue;
+
+				if (IsSuppressed(diagnostic))
 					continue;
 
 				var location = diagnostic.Location.GetMappedLineSpan();
@@ -47,6 +52,15 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 			}
 
 			return result;
+		}
+
+		private bool IsSuppressed(Diagnostic diagnostic)
+		{
+			if (string.Compare(diagnostic.Id, "CS0103", true) == 0
+				&& diagnostic.GetMessage().Contains("The name 'section'"))
+				return true;
+
+			return false;
 		}
 	}
 }

@@ -46,6 +46,11 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 			foreach (var script in scripts)
 				items.Add(CreateScriptItem($"{msName}{script.Name}"));
 
+			var containers = Editor.Context.Tenant.GetService<IComponentService>().QueryComponents(microService.Token, ComponentCategories.IoCContainer);
+
+			foreach (var container in containers)
+				items.Add(CreateScriptItem($"{msName}{container.Name}"));
+
 			var apis = Editor.Context.Tenant.GetService<IComponentService>().QueryConfigurations(microService.Token, ComponentCategories.Api);
 
 			foreach (IConfiguration api in apis)

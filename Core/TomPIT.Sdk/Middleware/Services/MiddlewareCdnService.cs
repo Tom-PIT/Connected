@@ -146,31 +146,31 @@ namespace TomPIT.Middleware.Services
 			Context.Tenant.GetService<ISubscriptionService>().TriggerEvent(config.Configuration, config.Element, primaryKey, topic, arguments);
 		}
 
-		public Guid Event<T>([CIP(CIP.DistributedEventProvider)]string name, T e)
+		public Guid DistributedEvent<T>([CIP(CIP.DistributedEventProvider)]string name, T e)
 		{
-			return Event(name, e, null);
+			return DistributedEvent(name, e, null);
 		}
 
-		public Guid Event([CIP(CIP.DistributedEventProvider)]string name)
+		public Guid DistributedEvent([CIP(CIP.DistributedEventProvider)]string name)
 		{
-			return Event<object>(name, null);
+			return DistributedEvent<object>(name, null);
 		}
 
-		public Guid Event<T>([CIP(CIP.DistributedEventProvider)]string name, T e, IMiddlewareCallback callback)
+		public Guid DistributedEvent<T>([CIP(CIP.DistributedEventProvider)]string name, T e, IMiddlewareCallback callback)
 		{
 			if (callback is MiddlewareCallback ec)
 				ec.Attached = true;
 
-			var config = ComponentDescriptor.Event(Context, name);
+			var config = ComponentDescriptor.DistributedEvent(Context, name);
 
 			config.Validate();
 
 			return Context.Tenant.GetService<IEventService>().Trigger(config.Configuration, callback, e);
 		}
 
-		public Guid Event([CIP(CIP.DistributedEventProvider)]string name, IMiddlewareCallback callback)
+		public Guid DistributedEvent([CIP(CIP.DistributedEventProvider)]string name, IMiddlewareCallback callback)
 		{
-			return Event<object>(name, null, callback);
+			return DistributedEvent<object>(name, null, callback);
 		}
 
 		public bool SubscriptionExists([CodeAnalysisProvider(CodeAnalysisProviderAttribute.SubscriptionProvider)]string subscription, string primaryKey, string topic)

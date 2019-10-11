@@ -10,12 +10,12 @@ namespace TomPIT.Middleware.Services
 
 		public T UseMiddleware<T>() where T : class
 		{
-			return Context.Tenant.GetService<IIoCService>().CreateMiddleware<T>(((IMicroServiceContext)Context).MicroService.Token);
+			return Context.Tenant.GetService<IIoCService>().CreateMiddleware<T>();
 		}
 
 		public T UseMiddleware<T, A>(A arguments) where T : class
 		{
-			return Context.Tenant.GetService<IIoCService>().CreateMiddleware<T, A>(((IMicroServiceContext)Context).MicroService.Token, arguments);
+			return Context.Tenant.GetService<IIoCService>().CreateMiddleware<T, A>(arguments);
 		}
 	}
 }

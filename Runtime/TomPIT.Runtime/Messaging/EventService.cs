@@ -1,8 +1,10 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
 using TomPIT.Connectivity;
+using TomPIT.Distributed;
 using TomPIT.Middleware;
 using TomPIT.Serialization;
 
@@ -20,6 +22,8 @@ namespace TomPIT.Messaging
 
 		public Guid Trigger<T>(IDistributedEventConfiguration ev, IMiddlewareCallback callback, T e)
 		{
+			TriggerInvoking(ev, e);
+
 			var u = Tenant.CreateUrl("Event", "Trigger");
 			var args = new JObject
 			{
@@ -34,6 +38,18 @@ namespace TomPIT.Messaging
 				args.Add("arguments", Serializer.Serialize(e));
 
 			return Tenant.Post<Guid>(u, args);
+		}
+
+		private void TriggerInvoking<T>(IDistributedEventConfiguration configuration, T e)
+		{
+			var type = Tenant.GetService<ICompilerService>().ResolveType(configuration.MicroService(), configuration, configuration.ComponentName(), false);
+
+			if (type == null)
+				return;
+
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IDistributedEventMiddleware>(new MicroServiceContext(configuration.MicroService(), Tenant.Url), type, Serializer.Serialize(e));
+
+			instance.Invoking();
 		}
 	}
 }

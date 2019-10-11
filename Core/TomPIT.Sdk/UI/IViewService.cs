@@ -3,9 +3,19 @@ using Microsoft.AspNetCore.Mvc;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 
-namespace TomPIT.App.UI
+namespace TomPIT.UI
 {
-	internal interface IViewService
+	public enum ViewKind
+	{
+		Master = 1,
+		View = 2,
+		Partial = 3,
+		Snippet = 4,
+		MailTemplate = 5,
+		Report = 6
+	}
+
+	public interface IViewService
 	{
 		IViewConfiguration Select(string url, ActionContext context);
 		//string SelectScripts(Guid microService, Guid view);
@@ -17,5 +27,8 @@ namespace TomPIT.App.UI
 
 		bool HasChanged(ViewKind kind, string url);
 		bool HasSnippetChanged(ViewKind kind, string url);
+
+		ViewKind ResolveViewKind(string url);
+		IMicroService ResolveMicroService(string url);
 	}
 }

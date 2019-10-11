@@ -126,7 +126,7 @@ namespace TomPIT.ComponentModel
 			return new ConfigurationDescriptor<IQueueConfiguration>(context, identifier, ComponentCategories.Queue);
 		}
 
-		public static ConfigurationDescriptor<IDistributedEventConfiguration> Event(IMiddlewareContext context, string identifier)
+		public static ConfigurationDescriptor<IDistributedEventConfiguration> DistributedEvent(IMiddlewareContext context, string identifier)
 		{
 			return new ConfigurationDescriptor<IDistributedEventConfiguration>(context, identifier, ComponentCategories.DistributedEvent);
 		}

@@ -25,10 +25,10 @@ namespace TomPIT.Middleware.Services
 		void SubscriptionEvent([CAP(CAP.SubscriptionEventProvider)]string eventName, string primaryKey, string topic);
 		void SubscriptionEvent<T>([CAP(CAP.SubscriptionEventProvider)]string eventName, string primaryKey, string topic, T arguments);
 
-		Guid Event<T>([CIP(CIP.DistributedEventProvider)]string name, T e);
-		Guid Event([CIP(CIP.DistributedEventProvider)]string name);
-		Guid Event<T>([CIP(CIP.DistributedEventProvider)]string name, T e, IMiddlewareCallback callback);
-		Guid Event([CIP(CIP.DistributedEventProvider)]string name, IMiddlewareCallback callback);
+		Guid DistributedEvent<T>([CIP(CIP.DistributedEventProvider)]string name, T e);
+		Guid DistributedEvent([CIP(CIP.DistributedEventProvider)]string name);
+		Guid DistributedEvent<T>([CIP(CIP.DistributedEventProvider)]string name, T e, IMiddlewareCallback callback);
+		Guid DistributedEvent([CIP(CIP.DistributedEventProvider)]string name, IMiddlewareCallback callback);
 
 		void Notify<T>([CIP(CIP.DataHubEndpointProvider)]string dataHubEndpoint, T e);
 	}

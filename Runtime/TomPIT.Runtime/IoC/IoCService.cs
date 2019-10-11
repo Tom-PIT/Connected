@@ -76,15 +76,15 @@ namespace TomPIT.IoC
 			}
 		}
 
-		public T CreateMiddleware<T>(Guid microService) where T : class
+		public T CreateMiddleware<T>() where T : class
 		{
-			return CreateMiddleware<T, object>(microService, null);
+			return CreateMiddleware<T, object>(null);
 		}
 
-		public T CreateMiddleware<T, A>(Guid microService, A arguments) where T : class
+		public T CreateMiddleware<T, A>(A arguments) where T : class
 		{
 			var compiler = Tenant.GetService<ICompilerService>();
-			var context = new MicroServiceContext(microService);
+			var context = new MicroServiceContext(compiler.ResolveMicroService(typeof(T)));
 			var instance = compiler.CreateInstance<T>(context, typeof(T));
 
 			Serializer.Populate(arguments, instance);

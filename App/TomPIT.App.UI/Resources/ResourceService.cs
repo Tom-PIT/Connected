@@ -93,7 +93,7 @@ namespace TomPIT.App.Resources
 
 			r = new CompiledBundle
 			{
-				Content = config.Minify
+				Content = config.Minify && ms.Status != MicroServiceStatus.Development
 				? Minify(sb.ToString())
 				: sb.ToString(),
 
