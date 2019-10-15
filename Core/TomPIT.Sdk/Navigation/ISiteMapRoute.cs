@@ -11,5 +11,6 @@ namespace TomPIT.Navigation
 		string RouteKey { get; }
 
 		ConnectedList<ISiteMapRoute, ISiteMapRoute> Routes { get; }
+		bool BeginGroup { get; }
 	}
 }

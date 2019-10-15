@@ -102,5 +102,7 @@ namespace TomPIT.Sys.Data
 		{
 			get { return _cache.Value; }
 		}
+
+		public static bool Initialized { get; set; }
 	}
 }

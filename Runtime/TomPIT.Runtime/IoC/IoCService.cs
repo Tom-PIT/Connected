@@ -27,6 +27,11 @@ namespace TomPIT.IoC
 			OnAdded(microService, component);
 		}
 
+		protected override void OnInitialized()
+		{
+			foreach (var i in All())
+				OnAdded(i.MicroService(), i.Component);
+		}
 		protected override void OnAdded(Guid microService, Guid component)
 		{
 			var configuration = Get(component);

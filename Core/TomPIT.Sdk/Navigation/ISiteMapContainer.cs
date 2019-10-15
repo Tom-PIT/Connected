@@ -7,5 +7,6 @@ namespace TomPIT.Navigation
 		string Key { get; }
 		ConnectedList<ISiteMapRoute, ISiteMapContainer> Routes { get; }
 		string Tags { get; }
+		string SpeculativeRouteKey { get; }
 	}
 }

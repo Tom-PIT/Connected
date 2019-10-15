@@ -20,6 +20,8 @@ namespace TomPIT.Middleware.Interop
 
 		public object Invoke<T>(IApiExecutionScope sender, ConfigurationDescriptor<IApiConfiguration> descriptor, T arguments, bool synchronous = false)
 		{
+			descriptor.Validate();
+
 			ValidateReference(sender, descriptor);
 
 			var ctx = new MicroServiceContext(descriptor.MicroService, Context);

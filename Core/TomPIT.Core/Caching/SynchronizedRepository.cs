@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
 
 namespace TomPIT.Caching
 {
@@ -51,13 +53,37 @@ namespace TomPIT.Caching
 				if (Initialized)
 					return;
 
+				Debug.WriteLine($"Initializing {GetType().Name}");
+
+				InitializeSignal = new ManualResetEvent(false);
 				Initializing = true;
 
-				OnInitializing();
+				try
+				{
+					OnInitializing();
+					Initialized = true;
+				}
+				catch
+				{
 
-				Initialized = true;
-				Initializing = false;
+				}
+				finally
+				{
+					Initializing = false;
+					InitializeSignal.Set();
+					InitializeSignal.Dispose();
+					InitializeSignal = null;
+				}
+
+				Debug.WriteLine($"Initialized {GetType().Name}");
 			}
+
+			OnInitialized();
+		}
+
+		protected virtual void OnInitialized()
+		{
+
 		}
 
 		private bool Initializing { get; set; }
@@ -65,6 +91,8 @@ namespace TomPIT.Caching
 
 		protected override List<T> All()
 		{
+			WaitForInitialization();
+
 			if (!Initializing)
 				Initialize();
 
@@ -73,6 +101,8 @@ namespace TomPIT.Caching
 
 		protected override T First()
 		{
+			WaitForInitialization();
+
 			if (!Initializing)
 				Initialize();
 
@@ -81,6 +111,8 @@ namespace TomPIT.Caching
 
 		protected override T Get(Func<T, bool> predicate)
 		{
+			WaitForInitialization();
+
 			if (!Initializing)
 				Initialize();
 
@@ -89,6 +121,8 @@ namespace TomPIT.Caching
 
 		protected override T Get(K id)
 		{
+			WaitForInitialization();
+
 			if (!Initializing)
 				Initialize();
 
@@ -97,6 +131,8 @@ namespace TomPIT.Caching
 
 		protected override T Get(K id, CacheRetrieveHandler<T> retrieve)
 		{
+			WaitForInitialization();
+
 			if (!Initializing)
 				Initialize();
 
@@ -105,10 +141,19 @@ namespace TomPIT.Caching
 
 		protected override List<T> Where(Func<T, bool> predicate)
 		{
+			WaitForInitialization();
+
 			if (!Initializing)
 				Initialize();
 
 			return base.Where(predicate);
+		}
+
+		private ManualResetEvent InitializeSignal { get; set; }
+
+		private void WaitForInitialization()
+		{
+			InitializeSignal?.WaitOne();
 		}
 	}
 }

@@ -18,7 +18,12 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 			var result = new List<ICodeAction>();
 
 			var span = Editor.Document.GetSpan(range);
-			var model = Editor.Document.GetSemanticModelAsync().Result;
+
+			var model = Editor.SemanticModel;
+
+			if (model == null)
+				return result;
+
 			var node = model.SyntaxTree.GetRoot().FindNode(span);
 			var args = new CodeActionProviderArgs(Editor, context, model, node);
 

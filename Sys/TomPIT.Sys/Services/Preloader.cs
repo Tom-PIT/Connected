@@ -33,6 +33,10 @@ namespace TomPIT.Sys.Services
 			return Task.CompletedTask;
 		}
 
+		protected override bool Initialize()
+		{
+			return DataModel.Initialized;
+		}
 		private void Load(IInstanceEndpoint endpoint)
 		{
 			if (string.IsNullOrWhiteSpace(endpoint.Url) || endpoint.Status == InstanceStatus.Disabled)

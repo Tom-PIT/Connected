@@ -17,10 +17,14 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 		{
 			var r = new SignatureHelp();
 
+			var sm = Editor.SemanticModel;
+
+			if (sm == null)
+				return r;
+
 			var completion = CompletionService.GetService(Editor.Document);
 			var caret = Editor.Document.GetCaret(position);
 			var span = completion.GetDefaultCompletionListSpan(Editor.SourceText, caret);
-			var sm = Editor.Document.GetSemanticModelAsync().Result;
 			var node = sm.SyntaxTree.GetRoot().FindNode(span);
 
 			if (node == null || node.Parent == null)

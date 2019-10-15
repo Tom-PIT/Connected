@@ -21,7 +21,7 @@
 
 	tompit.invoke = function (e) {
 		var progress = tompit.findProgress(e.container);
-
+        
 		var options = $.extend(tompit.ajaxDefaultOptions(), e, {
 			data: e.parameters,
 			progress: progress

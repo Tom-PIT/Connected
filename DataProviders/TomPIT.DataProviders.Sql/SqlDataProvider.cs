@@ -150,7 +150,7 @@ namespace TomPIT.DataProviders.Sql
 			var row = new JObject();
 
 			for (var i = 0; i < rdr.FieldCount; i++)
-				row.Add(rdr.GetName(i), new JValue(rdr.GetValue(i)));
+				row.Add(rdr.GetName(i), new JValue(GetValue(rdr, i)));
 
 			return row;
 		}
@@ -174,8 +174,7 @@ namespace TomPIT.DataProviders.Sql
 					mapping = (string)i.ExtendedProperties["mapping"];
 
 				int ord = rdr.GetOrdinal(mapping);
-
-				var value = rdr.GetValue(ord);
+				var value = GetValue(rdr, ord);
 
 				row.Add(i.ColumnName, new JValue(value == DBNull.Value ? null : value));
 			}
@@ -183,6 +182,18 @@ namespace TomPIT.DataProviders.Sql
 			return row;
 		}
 
+		private object GetValue(SqlDataReader reader, int index)
+		{
+			var value = reader.GetValue(index);
+
+			if (value == DBNull.Value || value == null)
+				return null;
+
+			if (value is DateTime date)
+				return DateTime.SpecifyKind(date, DateTimeKind.Utc);
+
+			return value;
+		}
 		private ReliableSqlConnection ResolveConnection(IDataCommandDescriptor command, IDataConnection connection)
 		{
 			DataConnection c = null;

@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
 using TomPIT.Models;
 using TomPIT.Runtime;
@@ -72,7 +73,22 @@ namespace TomPIT.Controllers
 
 				if (ModelState.IsValid)
 				{
-					var returnUrl = Request.Query["returnUrl"];
+					var referer = Request.Headers.ContainsKey("Referer") ? Request.Headers["Referer"].ToString() : null;
+					var returnUrl = string.Empty;
+
+					if (!string.IsNullOrWhiteSpace(referer))
+					{
+						try
+						{
+							var uri = new UriBuilder(referer);
+							var query = QueryHelpers.ParseQuery(uri.Query);
+
+							if (query.ContainsKey("returnUrl"))
+								returnUrl = query["returnUrl"];
+						}
+						catch { }
+					}
+
 
 					if (string.IsNullOrWhiteSpace(returnUrl))
 					{

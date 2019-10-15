@@ -68,7 +68,13 @@ namespace TomPIT.Compilation
 
 							if (!SourceFiles.ContainsKey(resolvedReference))
 							{
-								var sourceFile = ScriptResolver.LoadScript(resolvedReference);
+								IText sourceFile = null;
+
+								try
+								{
+									sourceFile = ScriptResolver.LoadScript(resolvedReference);
+								}
+								catch { }
 
 								if (sourceFile == null)
 									continue;

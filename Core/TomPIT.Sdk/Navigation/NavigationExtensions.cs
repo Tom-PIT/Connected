@@ -150,7 +150,8 @@ namespace TomPIT.Navigation
 				var url = new Route
 				{
 					Text = route.Text,
-					Url = route.ParseUrl(context)
+					Url = route.ParseUrl(context),
+					BeginGroup = route.BeginGroup
 				};
 
 				routes.Add(url);
@@ -166,7 +167,8 @@ namespace TomPIT.Navigation
 				var url = new Route
 				{
 					Text = route.Text,
-					Url = route.ParseUrl(context)
+					Url = route.ParseUrl(context),
+					BeginGroup = route.BeginGroup
 				};
 
 				routes.Add(url);

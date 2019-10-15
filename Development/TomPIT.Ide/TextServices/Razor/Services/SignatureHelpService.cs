@@ -17,7 +17,11 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 		{
 			var r = new SignatureHelp();
 
-			var model = Editor.Document.GetSemanticModelAsync().Result;
+			var model = Editor.SemanticModel;
+
+			if (model == null)
+				return r;
+
 			var completion = CompletionService.GetService(Editor.Document);
 			var sm = Editor.Document.GetSemanticModelAsync().Result;
 			var caret = Editor.GetMappedCaret(position);

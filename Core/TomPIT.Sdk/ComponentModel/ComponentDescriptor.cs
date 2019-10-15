@@ -126,9 +126,9 @@ namespace TomPIT.ComponentModel
 			return new ConfigurationDescriptor<IQueueConfiguration>(context, identifier, ComponentCategories.Queue);
 		}
 
-		public static ConfigurationDescriptor<IDistributedEventConfiguration> DistributedEvent(IMiddlewareContext context, string identifier)
+		public static ConfigurationDescriptor<IDistributedEventsConfiguration> DistributedEvent(IMiddlewareContext context, string identifier)
 		{
-			return new ConfigurationDescriptor<IDistributedEventConfiguration>(context, identifier, ComponentCategories.DistributedEvent);
+			return new ConfigurationDescriptor<IDistributedEventsConfiguration>(context, identifier, ComponentCategories.DistributedEvent);
 		}
 
 		public static ConfigurationDescriptor<IScriptConfiguration> Script(IMiddlewareContext context, string identifier)
@@ -192,6 +192,11 @@ namespace TomPIT.ComponentModel
 		public static ConfigurationDescriptor<IMediaResourcesConfiguration> Media(IMiddlewareContext context, string identifier)
 		{
 			return new ConfigurationDescriptor<IMediaResourcesConfiguration>(context, identifier, ComponentCategories.Media);
+		}
+
+		public static ConfigurationDescriptor<IPartialViewConfiguration> Partial(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IPartialViewConfiguration>(context, identifier, ComponentCategories.Partial);
 		}
 	}
 }

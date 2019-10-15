@@ -25,8 +25,7 @@ namespace TomPIT.Middleware
 		public void Validate()
 		{
 			ValidateRoot();
-			Validate(this, true);
-
+			Validate(Instance, true);
 		}
 
 		private void ValidateRoot()

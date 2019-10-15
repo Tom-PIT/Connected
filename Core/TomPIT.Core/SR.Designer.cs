@@ -1069,6 +1069,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Distributed event not found.
+        /// </summary>
+        public static string ErrDistributedEventNotFound {
+            get {
+                return ResourceManager.GetString("ErrDistributedEventNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to More than one component found for the specified name.
         /// </summary>
         public static string ErrDuplicateComponentFound {
@@ -2892,6 +2901,15 @@ namespace TomPIT {
         public static string ValMinValue {
             get {
                 return ResourceManager.GetString("ValMinValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to must contain non default value.
+        /// </summary>
+        public static string ValNonDefault {
+            get {
+                return ResourceManager.GetString("ValNonDefault", resourceCulture);
             }
         }
         

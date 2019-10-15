@@ -15,20 +15,20 @@ namespace TomPIT.Messaging
 		public EventService(ITenant tenant) : base(tenant)
 		{
 		}
-		public Guid Trigger(IDistributedEventConfiguration ev, IMiddlewareCallback callback)
+		public Guid Trigger(IDistributedEvent ev, IMiddlewareCallback callback)
 		{
 			return Trigger<object>(ev, callback, null);
 		}
 
-		public Guid Trigger<T>(IDistributedEventConfiguration ev, IMiddlewareCallback callback, T e)
+		public Guid Trigger<T>(IDistributedEvent ev, IMiddlewareCallback callback, T e)
 		{
 			TriggerInvoking(ev, e);
 
 			var u = Tenant.CreateUrl("Event", "Trigger");
 			var args = new JObject
 			{
-				{"microService", ev.MicroService() },
-				{"name", ev.ComponentName() }
+				{"microService", ev.Configuration().MicroService() },
+				{"name", $"{ev.Configuration().ComponentName()}/{ev.Name}" }
 			};
 
 			if (callback != null)
@@ -40,14 +40,14 @@ namespace TomPIT.Messaging
 			return Tenant.Post<Guid>(u, args);
 		}
 
-		private void TriggerInvoking<T>(IDistributedEventConfiguration configuration, T e)
+		private void TriggerInvoking<T>(IDistributedEvent configuration, T e)
 		{
-			var type = Tenant.GetService<ICompilerService>().ResolveType(configuration.MicroService(), configuration, configuration.ComponentName(), false);
+			var type = Tenant.GetService<ICompilerService>().ResolveType(configuration.Configuration().MicroService(), configuration, configuration.Name, false);
 
 			if (type == null)
 				return;
 
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IDistributedEventMiddleware>(new MicroServiceContext(configuration.MicroService(), Tenant.Url), type, Serializer.Serialize(e));
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IDistributedEventMiddleware>(new MicroServiceContext(configuration.Configuration().MicroService(), Tenant.Url), type, Serializer.Serialize(e));
 
 			instance.Invoking();
 		}

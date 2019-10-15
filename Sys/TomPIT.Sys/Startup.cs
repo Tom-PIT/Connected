@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TomPIT.Sys.Configuration;
+using TomPIT.Sys.Data;
 using TomPIT.Sys.Notifications;
 using TomPIT.Sys.Services;
 using TomPIT.Sys.Workers;
@@ -86,6 +87,7 @@ namespace TomPIT.Sys
 
 			ServerConfiguration.Initialize();
 			Shell.Configure(app);
+			DataModel.Initialized = true;
 		}
 
 		private void RegisterTasks(IServiceCollection services)

@@ -10,6 +10,7 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Messaging;
 using TomPIT.Diagostics;
 using TomPIT.Distributed;
+using TomPIT.Exceptions;
 using TomPIT.Messaging;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
@@ -194,7 +195,12 @@ namespace TomPIT.Worker.Services
 
 			descriptor.Validate();
 
-			var type = compiler.ResolveType(context.MicroService.Token, descriptor.Configuration, descriptor.ComponentName, false);
+			var ev = descriptor.Configuration.Events.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
+
+			if (ev == null)
+				throw new RuntimeException($"{SR.ErrDistributedEventNotFound} ({eventDescriptor.Name})");
+
+			var type = compiler.ResolveType(context.MicroService.Token, ev, ev.Name, false);
 
 			if (type == null)
 				return null;

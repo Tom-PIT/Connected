@@ -106,7 +106,6 @@ namespace TomPIT.Services
 					continue;
 
 				Set(i.Component, i as T, TimeSpan.Zero);
-				OnAdded(i.MicroService(), i.Component);
 			}
 		}
 

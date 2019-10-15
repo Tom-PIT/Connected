@@ -1089,4 +1089,10 @@
   <data name="ErrDataHubEndpointPolicyNotFound" xml:space="preserve">
     <value>Data hub endpoint policy not found</value>
   </data>
+  <data name="ErrDistributedEventNotFound" xml:space="preserve">
+    <value>Distributed event not found</value>
+  </data>
+  <data name="ValNonDefault" xml:space="preserve">
+    <value>must contain non default value</value>
+  </data>
 </root>

@@ -6,7 +6,7 @@ namespace TomPIT.Messaging
 {
 	public interface IEventService
 	{
-		Guid Trigger<T>(IDistributedEventConfiguration ev, IMiddlewareCallback callback, T e);
-		Guid Trigger(IDistributedEventConfiguration ev, IMiddlewareCallback callback);
+		Guid Trigger<T>(IDistributedEvent ev, IMiddlewareCallback callback, T e);
+		Guid Trigger(IDistributedEvent ev, IMiddlewareCallback callback);
 	}
 }

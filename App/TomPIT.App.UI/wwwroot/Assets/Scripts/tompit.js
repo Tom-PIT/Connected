@@ -24,25 +24,25 @@
 
 	tompit.success = function (message, title, e) {
 		toastr.success(message, title, $.extend({
-			positionClass: 'tp-toast-bottom-full-width text-center'
+            positionClass: 'tp-toast-bottom-center'
 		}, e));
 	};
 
 	tompit.warning = function (message, title, e) {
 		toastr.warning(message, title, $.extend({
-			positionClass: 'tp-toast-bottom-full-width text-center'
+			positionClass: 'tp-toast-bottom-center'
 		}, e));
 	};
 
 	tompit.info = function (message, title, e) {
 		toastr.info(message, title, $.extend({
-			positionClass: 'tp-toast-bottom-full-width text-center'
+            positionClass: 'tp-toast-bottom-center'
 		}, e));
 	};
 
 	tompit.error = function (message, title, e) {
 		toastr.error(message, title, $.extend({
-			positionClass: 'tp-toast-bottom-full-width text-center'
+			positionClass: 'tp-toast-bottom-center'
 		}, e));
 	};
 
@@ -126,15 +126,4 @@
 			});
 		}
 	};
-
-	tompit.disableNavigation = function () {
-		$('#_navtoggler').removeAttr('data-target');
-		$('#_sideBar').addClass('hidden');
-	};
-
-	tompit.onSearch = function (listener) {
-		$('#_sysBody').on('search', listener);
-	};
-
-
 })(window.tompit = window.tompit || {}, jQuery);

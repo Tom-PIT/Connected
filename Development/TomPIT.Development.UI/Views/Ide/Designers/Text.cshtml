@@ -82,18 +82,18 @@
         }
     });
 
-    var saveTimeout = setTimeout(saveModels, 2500);
+    var saveTimeout = setTimeout(saveModels, 1000);
 
     function saveModels() {
         var dirty = textEditorState.getDirtyModels();
 
         if (dirty.length === 0) {
             if (saveTimeout !== -1)
-                saveTimeout = setTimeout(saveModels, 2500);
+                saveTimeout = setTimeout(saveModels, 1000);
 
             return;
         }
-        
+
         var promises = [];
 
         $.each(dirty, function (i, v) {
@@ -143,7 +143,7 @@
 
         Promise.all(promises).then(function () {
             if (saveTimeout !== -1)
-                saveTimeout = setTimeout(saveModels, 2500);
+                saveTimeout = setTimeout(saveModels, 1000);
         });
     }
 

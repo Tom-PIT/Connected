@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
 using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.Exceptions;
@@ -16,7 +15,7 @@ namespace TomPIT.Middleware.Interop
 		{
 
 		}
-		[JsonIgnore]
+
 		public string Extender { get; set; }
 
 		public T Invoke<T>()

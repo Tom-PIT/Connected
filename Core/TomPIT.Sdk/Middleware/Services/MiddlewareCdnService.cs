@@ -165,7 +165,12 @@ namespace TomPIT.Middleware.Services
 
 			config.Validate();
 
-			return Context.Tenant.GetService<IEventService>().Trigger(config.Configuration, callback, e);
+			var ev = config.Configuration.Events.FirstOrDefault(f => string.Compare(f.Name, config.Element, true) == 0);
+
+			if (ev == null)
+				throw new RuntimeException($"{SR.ErrDistributedEventNotFound} ({name})");
+
+			return Context.Tenant.GetService<IEventService>().Trigger(ev, callback, e);
 		}
 
 		public Guid DistributedEvent([CIP(CIP.DistributedEventProvider)]string name, IMiddlewareCallback callback)

@@ -21,7 +21,11 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 			if (caret == -1)
 				return null;
 
-			var model = Editor.Document.GetSemanticModelAsync().Result;
+			var model = Editor.SemanticModel;
+
+			if (model == null)
+				return result;
+
 			var token = model.SyntaxTree.GetRoot().FindToken(caret);
 
 			if (token.Parent == null)

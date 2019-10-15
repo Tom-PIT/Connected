@@ -30,12 +30,17 @@ namespace TomPIT.Middleware
 			return Marshall.Convert<R>(result);
 		}
 
-		public void Invoke<A>([CIP(CIP.ApiOperationProvider)]string api, [CIP(CIP.ApiOperationParameterProvider)]A e)
+		public dynamic Invoke<A>([CIP(CIP.ApiOperationProvider)]string api, [CIP(CIP.ApiOperationParameterProvider)]A e)
 		{
 			var descriptor = ComponentDescriptor.Api(Context, api);
 			var invoker = new ApiInvoker(Context);
 
-			invoker.Invoke(this as IApiExecutionScope, descriptor, e);
+			return invoker.Invoke(this as IApiExecutionScope, descriptor, e);
+		}
+
+		public dynamic Invoke([CIP(CIP.ApiOperationProvider)]string api)
+		{
+			return Invoke<dynamic>(api);
 		}
 	}
 }

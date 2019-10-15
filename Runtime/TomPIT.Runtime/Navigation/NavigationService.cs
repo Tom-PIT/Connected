@@ -37,6 +37,11 @@ namespace TomPIT.Navigation
 			RefreshNavigation(component, true);
 		}
 
+		protected override void OnInitialized()
+		{
+			foreach (var i in All())
+				OnAdded(i.MicroService(), i.Component);
+		}
 		protected override string[] Categories => new string[] { ComponentCategories.SiteMap };
 		public ISiteMapContainer QuerySiteMap(List<string> keys)
 		{
@@ -124,6 +129,7 @@ namespace TomPIT.Navigation
 		{
 			foreach (var item in container.Routes)
 			{
+				ReflectionExtensions.SetPropertyValue(item, nameof(item.Parent), container);
 				item.SetContext(context);
 
 				BindContext(item, context);
@@ -134,6 +140,9 @@ namespace TomPIT.Navigation
 		{
 			foreach (var item in route.Routes)
 			{
+				if (item.Parent == null)
+					ReflectionExtensions.SetPropertyValue(item, nameof(item.Parent), route);
+
 				item.SetContext(context);
 
 				BindContext(item, context);
@@ -242,22 +251,33 @@ namespace TomPIT.Navigation
 			return result;
 		}
 
-		private void ProcessBreadcrumb(ISiteMapRoute item, List<IBreadcrumb> items, RouteValueDictionary parameters)
+		private void ProcessBreadcrumb(ISiteMapElement item, List<IBreadcrumb> items, RouteValueDictionary parameters)
 		{
+			var route = item as ISiteMapRoute;
+
 			var breadCrumb = new Breadcrumb
 			{
-				Key = item.Template,
 				Text = item.Text
 			};
+
+			if (route != null)
+				breadCrumb.Key = route.Template;
 			/*
 			 * Last breadcrumb should be without a link 
 			 * because it points to a currently displayed ui
 			 */
-			if (items.Count > 0 && !string.IsNullOrWhiteSpace(item.Template))
-				breadCrumb.Url = ParseUrl(item.Template, parameters);
+			if (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template))
+				breadCrumb.Url = ParseUrl(route.Template, parameters);
 
-			if (items.Count == 0 || !string.IsNullOrWhiteSpace(breadCrumb.Url))
-				items.Insert(0, breadCrumb);
+			if (item is ISiteMapContainer container && !string.IsNullOrWhiteSpace(container.SpeculativeRouteKey))
+			{
+				var speculativeRoute = SelectRoute(container.SpeculativeRouteKey);
+
+				if (speculativeRoute != null)
+					breadCrumb.Url = ParseUrl(speculativeRoute.Template, parameters);
+			}
+
+			items.Insert(0, breadCrumb);
 
 			ISiteMapElement parent = null;
 
@@ -273,7 +293,7 @@ namespace TomPIT.Navigation
 			}
 
 			if (parent != null)
-				ProcessBreadcrumb(parent as ISiteMapRoute, items, parameters);
+				ProcessBreadcrumb(parent, items, parameters);
 		}
 
 		public string ParseUrl(string template, RouteValueDictionary parameters)

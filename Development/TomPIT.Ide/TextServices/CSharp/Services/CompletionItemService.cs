@@ -17,7 +17,11 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 		{
 			var result = new Languages.CompletionList();
 
-			var model = Editor.Document.GetSemanticModelAsync().Result;
+			var model = Editor.SemanticModel;
+
+			if (model == null)
+				return result;
+
 			var args = new CompletionProviderArgs(Editor, context, model, position);
 
 			foreach (var provider in Providers)

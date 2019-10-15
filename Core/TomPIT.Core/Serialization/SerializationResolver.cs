@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using System;
-using System.Collections.Generic;
+﻿using Newtonsoft.Json.Serialization;
 
 namespace TomPIT.Serialization
 {
@@ -10,15 +7,6 @@ namespace TomPIT.Serialization
 		public SerializationResolver()
 		{
 			NamingStrategy = new CamelCaseNamingStrategy();
-		}
-		protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
-		{
-			var props = base.CreateProperties(type, memberSerialization);
-
-			foreach (var i in props)
-				i.Ignored = false;
-
-			return props;
 		}
 	}
 }

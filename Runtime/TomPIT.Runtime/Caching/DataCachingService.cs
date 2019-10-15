@@ -168,7 +168,7 @@ namespace TomPIT.Caching
 
 				item = retrieve(options);
 
-				if (item != null && options.AllowNull)
+				if (item != null || options.AllowNull)
 					Set(key, id, item, options.Duration, options.SlidingExpiration);
 			}
 

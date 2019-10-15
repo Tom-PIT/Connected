@@ -25,6 +25,8 @@ namespace TomPIT.Ide.TextServices.CSharp
 		private Project _project = null;
 		private Document _document = null;
 		private SourceText _sourceText = null;
+		private SemanticModel _model = null;
+		private bool _modelCalled = false;
 
 		public CSharpEditorBase(IMicroServiceContext context) : base(context)
 		{
@@ -234,6 +236,25 @@ namespace TomPIT.Ide.TextServices.CSharp
 		public override TextSpan GetMappedSpan(IPosition position)
 		{
 			return SourceText.GetSpan(position);
+		}
+
+		public SemanticModel SemanticModel
+		{
+			get
+			{
+				if (_model == null && !_modelCalled)
+				{
+					_modelCalled = true;
+
+					try
+					{
+						_model = Document.GetSemanticModelAsync().Result;
+					}
+					catch { }
+				}
+
+				return _model;
+			}
 		}
 	}
 }
