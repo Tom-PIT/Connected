@@ -1,8 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Scripting;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using Microsoft.CodeAnalysis.Scripting;
 
 namespace TomPIT.Compilation
 {

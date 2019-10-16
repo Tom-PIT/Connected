@@ -1,10 +1,13 @@
-﻿namespace TomPIT.Middleware.Interop
+﻿using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
+
+namespace TomPIT.Middleware.Interop
 {
 	public interface IOperation<TReturnValue> : IMiddlewareOperation
 	{
 		TReturnValue Invoke();
 		T Invoke<T>();
 
+		[CIP(CIP.ExtenderProvider)]
 		string Extender { get; set; }
 	}
 

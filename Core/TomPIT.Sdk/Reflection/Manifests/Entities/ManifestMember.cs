@@ -2,12 +2,10 @@
 
 namespace TomPIT.Reflection.Manifests.Entities
 {
-	public class ManifestProperty
+	public class ManifestMember
 	{
 		private List<ManifestAttribute> _attributes = null;
-		public string Name { get; set; }
-		public bool CanRead { get; set; }
-		public bool CanWrite { get; set; }
+		private List<ManifestProperty> _properties = null;
 		public string Type { get; set; }
 		public string Documentation { get; set; }
 		public List<ManifestAttribute> Attributes
@@ -18,6 +16,17 @@ namespace TomPIT.Reflection.Manifests.Entities
 					_attributes = new List<ManifestAttribute>();
 
 				return _attributes;
+			}
+		}
+
+		public List<ManifestProperty> Properties
+		{
+			get
+			{
+				if (_properties == null)
+					_properties = new List<ManifestProperty>();
+
+				return _properties;
 			}
 		}
 	}

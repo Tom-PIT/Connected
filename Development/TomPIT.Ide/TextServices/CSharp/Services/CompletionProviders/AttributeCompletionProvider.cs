@@ -49,14 +49,12 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 			if (property == null)
 				return;
 
-			var att = property.FindAttribute<CompletionItemProviderAttribute>();
+			var att = property.FindAttribute(typeof(CompletionItemProviderAttribute).FullTypeName());
 
 			if (att == null)
 				return;
 
-			var provider = att.Type == null
-				? Type.GetType(att.TypeName).CreateInstance<ICompletionProvider>()
-				: att.Type.CreateInstance<ICompletionProvider>();
+			var provider = CodeAnalysisExtensions.ResolveCompletionProvider(att);
 
 			if (provider == null)
 				return;

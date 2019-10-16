@@ -53,6 +53,10 @@ namespace TomPIT.ComponentModel
 
 		public static IComponentManifest Manifest(this IComponent component)
 		{
+			return Manifest(component, Guid.Empty);
+		}
+		public static IComponentManifest Manifest(this IComponent component, Guid element)
+		{
 			var config = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component.Token);
 
 			if (config == null)
@@ -67,7 +71,7 @@ namespace TomPIT.ComponentModel
 				Type.GetType(att.TypeName).CreateInstance<IComponentManifestProvider>()
 				: att.Type.CreateInstance<IComponentManifestProvider>();
 
-			return provider.CreateManifest(MiddlewareDescriptor.Current.Tenant, component.Token);
+			return provider.CreateManifest(MiddlewareDescriptor.Current.Tenant, component.Token, element);
 		}
 	}
 }

@@ -29,7 +29,7 @@ namespace TomPIT.Development.Analysis.SnippetProviders
 			var node = root.FindNode(e.Span);
 			var classScope = node.DeclaredClass();
 
-			if (classScope == null || !classScope.Inherits(nameof(DataEntity)))
+			if (classScope == null || classScope.LookupBaseType(e.Model, typeof(DataEntity).FullTypeName()) == null)
 				return null;
 
 			var token = root.FindToken(e.Position);

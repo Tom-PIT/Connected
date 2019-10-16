@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -24,6 +22,16 @@ namespace TomPIT.Design.CodeAnalysis
 			return null;
 		}
 
+		public static ClassDeclarationSyntax FindClass(this SyntaxTree tree, string name)
+		{
+			var declarations = tree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>();
+
+			if (declarations == null)
+				return null;
+
+			return declarations.FirstOrDefault(f => string.Compare(f.Identifier.ValueText, name, false) == 0);
+		}
+
 		public static ClassDeclarationSyntax FindClass(this SyntaxNode scope, string name)
 		{
 			var declarations = scope.DescendantNodes().OfType<ClassDeclarationSyntax>();
@@ -34,20 +42,62 @@ namespace TomPIT.Design.CodeAnalysis
 			return declarations.FirstOrDefault(f => string.Compare(f.Identifier.ValueText, name, false) == 0);
 		}
 
-		public static bool Inherits(this ClassDeclarationSyntax scope, string baseTypeName)
+		public static ITypeSymbol LookupBaseType(this ClassDeclarationSyntax scope, SemanticModel model, string baseTypeName)
 		{
 			if (scope.BaseList == null)
-				return false;
+				return null;
 
-			foreach(var baseType in scope.BaseList.Types)
+			foreach (var baseType in scope.BaseList.Types)
 			{
-				if (!(baseType.Type is IdentifierNameSyntax id))
-					continue;
+				var r = model.GetTypeInfo(baseType.Type).LookupBaseType(model, baseTypeName);
 
-				var tokens = id.Identifier.ValueText.Split('.');
+				if (r != null)
+					return r;
+			}
 
-				if (string.Compare(tokens[tokens.Length - 1], baseTypeName, false) == 0)
+			return null;
+		}
+
+		public static ITypeSymbol LookupBaseType(this TypeInfo type, SemanticModel model, string baseTypeName)
+		{
+			if (type.Type == null)
+				return null;
+
+			return type.Type.LookupBaseType(model, baseTypeName);
+		}
+		public static ITypeSymbol LookupBaseType(this ITypeSymbol type, SemanticModel model, string baseTypeName)
+		{
+			if (type == null)
+				return null;
+
+			var displayName = type.ToDisplayName();
+
+			if (string.Compare(displayName, baseTypeName, false) == 0)
+				return type;
+
+			foreach (var itf in type.AllInterfaces)
+			{
+				displayName = itf.ToDisplayName();
+
+				if (string.Compare(displayName, baseTypeName, false) == 0)
+					return itf;
+			}
+
+			if (type.BaseType == null)
+				return null;
+
+			return type.BaseType.LookupBaseType(model, baseTypeName);
+		}
+		public static bool IsInheritedFrom(this ITypeSymbol symbol, string type)
+		{
+			var current = symbol;
+
+			while (current != null)
+			{
+				if (string.Compare(current.ToDisplayName(), type, false) == 0)
 					return true;
+
+				current = current.BaseType;
 			}
 
 			return false;
@@ -97,6 +147,37 @@ namespace TomPIT.Design.CodeAnalysis
 				return null;
 
 			return declarations.FirstOrDefault(f => string.Compare(f.Identifier.ValueText, name, false) == 0);
+		}
+
+		internal static string ToDisplayName(this ITypeSymbol symbol)
+		{
+			var sb = new StringBuilder();
+
+			if (!string.IsNullOrWhiteSpace(symbol.ContainingNamespace.Name))
+				sb.Append($"{symbol.ContainingNamespace.ToDisplayString()}.");
+
+			sb.Append(symbol.MetadataName);
+
+			if (!string.IsNullOrWhiteSpace(symbol.ContainingAssembly.Name))
+				sb.Append($", {symbol.ContainingAssembly.ToDisplayString()}");
+
+			return sb.ToString();
+		}
+
+		internal static string ToManifestTypeName(ITypeSymbol symbol)
+		{
+			if (symbol is INamedTypeSymbol namedType)
+				return namedType.ToDisplayString();
+
+			return symbol.ToDisplayName();
+		}
+
+		internal static string ToManifestTypeName(TypeSyntax syntax)
+		{
+			if (syntax is PredefinedTypeSyntax predefined)
+				return predefined.Keyword.ValueText;
+			else
+				return syntax.GetText().ToString();
 		}
 	}
 }

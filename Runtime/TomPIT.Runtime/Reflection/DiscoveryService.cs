@@ -115,15 +115,24 @@ namespace TomPIT.Reflection
 
 		public IComponentManifest Manifest(Guid component)
 		{
+			return Manifest(component, Guid.Empty);
+		}
+
+		public IComponentManifest Manifest(Guid component, Guid element)
+		{
 			var c = Tenant.GetService<IComponentService>().SelectComponent(component);
 
 			if (c == null)
 				return null;
 
-			return c.Manifest();
+			return c.Manifest(element);
 		}
 
 		public IComponentManifest Manifest(string microService, string category, string componentName)
+		{
+			return Manifest(microService, category, componentName, Guid.Empty);
+		}
+		public IComponentManifest Manifest(string microService, string category, string componentName, Guid element)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
@@ -135,7 +144,7 @@ namespace TomPIT.Reflection
 			if (c == null)
 				return null;
 
-			return c.Manifest();
+			return c.Manifest(element);
 		}
 
 		public List<IComponentManifest> Manifests(Guid microService)

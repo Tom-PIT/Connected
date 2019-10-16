@@ -50,7 +50,8 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 						new HtmlAttributeItemsProvider(),
 						new SnippetCompletionProvider(),
 						new CompletionProviders.AttributeCompletionProvider(),
-						new CompletionProviders.DefaultProvider()
+						new CompletionProviders.DefaultProvider(),
+						new CompletionProviders.InteropProvider()
 					};
 				}
 

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TomPIT.Reflection.Manifests
+﻿namespace TomPIT.Reflection.Manifests
 {
 	public interface IComponentManifest
 	{

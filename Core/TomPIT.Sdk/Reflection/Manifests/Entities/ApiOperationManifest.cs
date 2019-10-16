@@ -9,7 +9,7 @@ namespace TomPIT.Reflection.Manifests.Entities
 		public ElementScope Scope { get; set; }
 		public ManifestType ReturnType { get; set; }
 
-		public bool Async { get; set; }
+		public bool Distributed { get; set; }
 		public bool SupportsTransaction { get; set; }
 		public List<ManifestType> Extenders
 		{

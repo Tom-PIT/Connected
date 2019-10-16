@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.Design.CodeAnalysis;
 using TomPIT.Middleware;
 using TomPIT.Middleware.Interop;
 using TomPIT.Reflection.Manifests.Entities;
@@ -30,7 +34,12 @@ namespace TomPIT.Reflection.Manifests.Providers
 		private void BindOperations(ApiManifest manifest)
 		{
 			foreach (var operation in Configuration.Operations)
+			{
+				if (Element != Guid.Empty && Element != operation.Id)
+					continue;
+
 				BindOperation(manifest, operation);
+			}
 		}
 
 		private void BindOperation(ApiManifest manifest, IApiOperation operation)
@@ -62,52 +71,66 @@ namespace TomPIT.Reflection.Manifests.Providers
 			if (operationType.FindAttribute<SupportsTransactionAttribute>() != null)
 				om.SupportsTransaction = true;
 
-			var context = Tenant.GetService<ICompilerService>().CreateScriptContext(operation);
-			var tree = CreateSyntaxTree(context);
+			var sw = new Stopwatch();
+			sw.Start();
+			var compilation = Tenant.GetService<ICompilerService>().GetCompilation(operation);
 
-			if (tree == null)
+			if (compilation == null)
 			{
 				om.SyntaxTreeException();
 				return;
 			}
 
-			var root = tree.GetRoot();
+			sw.Stop();
+			var tree = compilation.SyntaxTrees.FirstOrDefault(f => string.Compare(f.FilePath, $"{operation.Name}.csx", true) == 0);
+			var declaration = tree.FindClass(operation.Name);
+			var model = compilation.GetSemanticModel(tree);
 
-			BindType(root, operationType, om);
-			BindExtenders(root, operationType, om);
-			var returnValue = operationType.GetInterface(typeof(IOperation<>).FullName);
+			BindType(model, declaration, om);
+			BindExtenders(model, declaration, om);
 
-			if (returnValue != null)
+			var returnSymbol = declaration.LookupBaseType(model, typeof(IOperation<>).FullTypeName());
+
+			if (returnSymbol != null)
 			{
-				var genericArgs = returnValue.GetGenericArguments();
 
-				if (genericArgs.Length > 0)
+				var namedType = returnSymbol as INamedTypeSymbol;
+				var argument = namedType.TypeArguments[0] as INamedTypeSymbol;
+
+				if (argument != null)
 				{
-					var returnType = genericArgs[0];
-
 					om.ReturnType = new ManifestType();
 
-					BindType(root, returnType, om.ReturnType);
+					BindType(model, argument, om.ReturnType, manifest.Types);
 				}
 			}
-			else if (operationType is IDistributedOperation)
-				om.Async = true;
+
+			var distributed = declaration.LookupBaseType(model, typeof(IDistributedOperation).FullTypeName());
+
+			if (distributed != null)
+				om.Distributed = true;
 		}
 
-		private void BindExtenders(SyntaxNode scope, Type operationType, ApiOperationManifest manifest)
+		private void BindExtenders(SemanticModel model, ClassDeclarationSyntax syntax, ApiOperationManifest manifest)
 		{
-			var extenders = operationType.FindAttributes<ExtenderAttribute>();
-
-			if (extenders == null)
+			if (syntax.AttributeLists == null)
 				return;
 
-			foreach (var extender in extenders)
+			foreach (var attributeList in syntax.AttributeLists)
 			{
-				var extenderType = new ManifestType();
+				foreach (var attribute in attributeList.Attributes)
+				{
+					var type = model.GetTypeInfo(attribute);
 
-				BindType(scope, extender.Extender, extenderType);
+					if (type.Type == null || !type.Type.IsInheritedFrom(typeof(ExtenderAttribute).FullTypeName()))
+						continue;
 
-				manifest.Extenders.Add(extenderType);
+					var extenderType = new ManifestType();
+
+					//BindType(model, type.Type, extenderType);
+
+					manifest.Extenders.Add(extenderType);
+				}
 			}
 		}
 	}

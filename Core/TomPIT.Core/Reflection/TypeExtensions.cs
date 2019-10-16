@@ -293,6 +293,14 @@ namespace TomPIT.Reflection
 			return string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
 		}
 
+		public static string FullTypeName(this Type type)
+		{
+			if (type == null)
+				return null;
+
+			return string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().FullName);
+		}
+
 		public static dynamic ToDynamic(this object value)
 		{
 			IDictionary<string, object> expando = new ExpandoObject();

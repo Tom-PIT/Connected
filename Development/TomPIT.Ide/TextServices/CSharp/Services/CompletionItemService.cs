@@ -49,6 +49,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 						new ScriptReferenceProvider(),
 						new SnippetCompletionProvider(),
 						new AttributeCompletionProvider(),
+						new InteropCompletionProvider(),
 						new DefaultProvider()
 					};
 				}

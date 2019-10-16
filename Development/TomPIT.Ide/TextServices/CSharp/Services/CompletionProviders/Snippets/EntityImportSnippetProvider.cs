@@ -33,7 +33,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders.Snippets
 			var node = root.FindNode(span);
 			var classScope = node.DeclaredClass();
 
-			if (classScope == null || !classScope.Inherits(nameof(DataEntity)))
+			if (classScope == null || classScope.LookupBaseType(Arguments.Model, typeof(DataEntity).FullTypeName()) == null)
 				return null;
 
 			var token = root.FindToken(position);

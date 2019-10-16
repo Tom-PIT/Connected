@@ -302,40 +302,43 @@ namespace TomPIT.Ide.Analysis.Suggestions
 			if (property == null)
 				return null;
 
-			var att = property.FindAttribute<CodeAnalysisProviderAttribute>();
+			var att = property.FindAttribute(typeof(CompletionItemProviderAttribute).FullName);
 
 			if (att == null)
 				return null;
 
 			var items = new List<ISuggestion>();
 
-			var provider = att.Type == null
-				? Type.GetType(att.TypeName).CreateInstance<ICodeAnalysisProvider>(new object[] { Context })
-				: att.Type.CreateInstance<ICodeAnalysisProvider>(new object[] { Context });
+			var provider = CodeAnalysisExtensions.ResolveCompletionProvider(att);
 
-			if (provider == null)
-				return items;
+			return null;
+			//if (provider == null)
+			//	return items;
 
-			var literals = provider.ProvideLiterals(Context, new CodeAnalysisArgs(Args.Component, model, node, model.GetSymbolInfo(assignment), null));
+			//var result = provider.ProvideItems(Arguments);
 
-			if (literals != null && literals.Count > 0)
-			{
-				foreach (var i in literals)
-				{
-					items.Add(new Suggestion
-					{
-						Description = i.Description,
-						FilterText = i.Text,
-						InsertText = i.Value,
-						Kind = Suggestion.Text,
-						Label = i.Text,
-						SortText = i.Text
-					});
-				}
-			}
+			//if (result != null && result.Count > 0)
+			//	items.AddRange(result);
 
-			return items;
+			//var literals = provider.ProvideLiterals(Context, new CodeAnalysisArgs(Args.Component, model, node, model.GetSymbolInfo(assignment), null));
 
+			//if (literals != null && literals.Count > 0)
+			//{
+			//	foreach (var i in literals)
+			//	{
+			//		items.Add(new Suggestion
+			//		{
+			//			Description = i.Description,
+			//			FilterText = i.Text,
+			//			InsertText = i.Value,
+			//			Kind = Suggestion.Text,
+			//			Label = i.Text,
+			//			SortText = i.Text
+			//		});
+			//	}
+			//}
+
+			//return items;
 		}
 
 		private bool IsAssignmentExpression(SyntaxNode node)

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Text;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using TomPIT.Annotations;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
@@ -20,8 +18,14 @@ namespace TomPIT.Reflection.Manifests.Providers
 		private IMicroService _microService = null;
 		public IComponentManifest CreateManifest(ITenant tenant, Guid component)
 		{
+			return CreateManifest(tenant, component, Guid.Empty);
+		}
+
+		public IComponentManifest CreateManifest(ITenant tenant, Guid component, Guid element)
+		{
 			Tenant = tenant;
 			Component = Tenant.GetService<IComponentService>().SelectComponent(component);
+			Element = element;
 
 			if (Component == null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
@@ -31,6 +35,7 @@ namespace TomPIT.Reflection.Manifests.Providers
 			return OnCreateManifest();
 		}
 
+		protected Guid Element { get; private set; }
 		protected IComponent Component { get; private set; }
 
 		protected C Configuration { get; private set; }
@@ -63,95 +68,61 @@ namespace TomPIT.Reflection.Manifests.Providers
 			return CSharpSyntaxTree.ParseText(context.SourceCode);
 		}
 
-		protected string ExtractDocumentation(CSharpSyntaxNode node)
+		protected void BindProperties(SemanticModel model, ITypeSymbol symbol, List<ManifestProperty> properties, List<ManifestMember> types)
 		{
-			var trivias = node.GetLeadingTrivia();
+			var member = ManifestExtensions.BindType(model, symbol, types);
 
-			if (trivias == null || trivias.Count == 0)
-				return null;
-
-			var enumerator = trivias.GetEnumerator();
-
-			while (enumerator.MoveNext())
-			{
-				var trivia = enumerator.Current;
-
-				if (trivia.Kind().Equals(SyntaxKind.SingleLineDocumentationCommentTrivia))
-				{
-					var xml = trivia.GetStructure();
-
-					if (xml == null)
-						continue;
-
-					var fullString = xml.ToFullString();
-					var sb = new StringBuilder();
-					string currentLine = null;
-
-					using (var r = new StringReader(fullString))
-					{
-						while ((currentLine = r.ReadLine()) != null)
-						{
-							currentLine = currentLine.Trim();
-
-							if (currentLine.StartsWith("///"))
-								currentLine = currentLine.Substring(3).Trim();
-
-							sb.AppendLine(currentLine);
-						}
-					}
-
-					return sb.ToString();
-				}
-			}
-
-			return null;
+			if (member != null && member.Properties.Count > 0)
+				properties.AddRange(member.Properties);
 		}
 
-		protected void BindProperties(SyntaxNode scope, Type type, List<ManifestProperty> properties)
+		protected void BindProperties(SemanticModel model, TypeDeclarationSyntax symbol, List<ManifestProperty> properties)
 		{
-			var props = type.GetProperties();
-
-			foreach (var property in props)
+			foreach (var member in symbol.Members)
 			{
-				if (!property.CanWrite || !property.SetMethod.IsPublic || !property.CanRead || !property.GetMethod.IsPublic)
+				if (!(member is PropertyDeclarationSyntax pdx))
+					continue;
+
+				if (pdx.Modifiers.FirstOrDefault(f => string.Compare(f.ValueText, "public", false) == 0) == null)
 					continue;
 
 				var p = new ManifestProperty
 				{
-					Name = property.Name,
-					Type = property.PropertyType.ToFriendlyName(),
+					Name = pdx.Identifier.ValueText,
+					Type = CodeAnalysisExtentions.ToManifestTypeName(pdx.Type)
 				};
 
-				var skipValidation = property.FindAttribute<SkipValidationAttribute>();
-
-				if (skipValidation == null)
+				foreach (var accessor in pdx.AccessorList.Accessors)
 				{
-					var attributes = property.GetCustomAttributes(true);
+					if (string.Compare(accessor.Keyword.ValueText, "get", false) == 0)
+						p.CanRead = true;
+					else if (string.Compare(accessor.Keyword.ValueText, "set", false) == 0)
+						p.CanWrite = true;
+				}
 
-					if (attributes != null)
+				foreach (var attributeList in pdx.AttributeLists)
+				{
+					foreach (var attribute in attributeList.Attributes)
 					{
-						foreach (var attribute in attributes)
-						{
-							if (attribute is ValidationAttribute va)
-								p.Validation.Add(ManifestValidationAttributeResolver.Resolve(va));
-						}
+						var att = ManifestAttributeResolver.Resolve(model, attribute);
+
+						if (att != null)
+							p.Attributes.Add(att);
 					}
 				}
 
-				var propertyNode = scope.FindProperty(property.Name);
-
-				if (propertyNode != null)
-					p.Documentation = ExtractDocumentation(propertyNode);
+				p.Documentation = ManifestExtensions.ExtractDocumentation(pdx);
 
 				properties.Add(p);
+
+				//	if (!property.IsPrimitive() && !property.IsIndexer() && !property.IsCollection())
+				//		BindProperties()
 			}
 		}
 
-		protected void BindType(SyntaxNode scope, Type type, ManifestType manifest)
+		protected void BindType(SemanticModel model, TypeDeclarationSyntax symbol, ManifestType manifest)
 		{
-			var classDeclaration = scope.FindClass(type.Name);
-
-			if (classDeclaration == null)
+			if (symbol == null)
 			{
 				manifest.ImplementationStatus = ImplementationStatus.Invalid;
 				manifest.ImplementationError = "Not implemented";
@@ -159,9 +130,24 @@ namespace TomPIT.Reflection.Manifests.Providers
 				return;
 			}
 
-			manifest.Documentation = ExtractDocumentation(classDeclaration);
+			manifest.Documentation = ManifestExtensions.ExtractDocumentation(symbol);
 
-			BindProperties(scope, type, manifest.Properties);
+			BindProperties(model, symbol, manifest.Properties);
+		}
+
+		protected void BindType(SemanticModel model, ITypeSymbol symbol, ManifestType manifest, List<ManifestMember> types)
+		{
+			if (symbol == null)
+			{
+				manifest.ImplementationStatus = ImplementationStatus.Invalid;
+				manifest.ImplementationError = "Not implemented";
+
+				return;
+			}
+
+			//manifest.Documentation = ExtractDocumentation(symbol);
+
+			BindProperties(model, symbol, manifest.Properties, types);
 		}
 	}
 }

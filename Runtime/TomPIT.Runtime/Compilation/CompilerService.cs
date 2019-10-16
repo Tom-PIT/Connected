@@ -223,7 +223,7 @@ namespace TomPIT.Compilation
 
 				script.Create();
 
-				Compile(result, script);
+				Compile(result, script, true);
 
 				return result;
 			}
@@ -241,14 +241,32 @@ namespace TomPIT.Compilation
 
 				script.Create();
 
-				Compile(result, script);
+				Compile(result, script, true);
 
 				return result;
 			}
 		}
 
-		private void Compile(IScriptDescriptor script, CompilerScript compiler)
+		public Microsoft.CodeAnalysis.Compilation GetCompilation(IText sourceCode)
 		{
+			var microService = sourceCode.Configuration().MicroService();
+
+			using var script = new CompilerScript(Tenant, microService, sourceCode);
+
+			var result = new ScriptDescriptor
+			{
+				Id = sourceCode.Id,
+				MicroService = microService
+			};
+
+			script.Create();
+
+			return Compile(result, script, false);
+		}
+
+		private Microsoft.CodeAnalysis.Compilation Compile(IScriptDescriptor script, CompilerScript compiler, bool cache)
+		{
+			Microsoft.CodeAnalysis.Compilation result = null;
 			var errors = compiler.Script == null ? ImmutableArray<Microsoft.CodeAnalysis.Diagnostic>.Empty : compiler.Script.Compile();
 			var diagnostics = new List<IDiagnostic>();
 
@@ -277,13 +295,19 @@ namespace TomPIT.Compilation
 			if (compiler.Script != null && script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() == 0)
 			{
 				((ScriptDescriptor)script).Script = compiler.Script.CreateDelegate();
-				((ScriptDescriptor)script).Assembly = compiler.Script.GetCompilation().AssemblyName;
+
+				result = compiler.Script.GetCompilation();
+
+				((ScriptDescriptor)script).Assembly = result.AssemblyName;
 			}
 
 			if (compiler.ScriptReferences != null && compiler.ScriptReferences.Count > 0)
 				References.AddOrUpdate(compiler.SourceCode.Id, compiler.ScriptReferences, (key, oldValue) => oldValue = compiler.ScriptReferences);
 
-			Set(script.Id, script, TimeSpan.Zero);
+			if (cache)
+				Set(script.Id, script, TimeSpan.Zero);
+
+			return result;
 		}
 
 		public void Invalidate(IMicroServiceContext context, Guid microService, Guid component, IText sourceCode)

@@ -6,6 +6,7 @@ using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.Exceptions;
 using TomPIT.Reflection;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Interop
 {
@@ -16,6 +17,7 @@ namespace TomPIT.Middleware.Interop
 
 		}
 
+		[CIP(CIP.ExtenderProvider)]
 		public string Extender { get; set; }
 
 		public T Invoke<T>()

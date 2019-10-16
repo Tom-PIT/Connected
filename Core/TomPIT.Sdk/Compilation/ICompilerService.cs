@@ -36,5 +36,7 @@ namespace TomPIT.Compilation
 		T CreateInstance<T>(IMicroServiceContext context, IText sourceCode) where T : class;
 		T CreateInstance<T>(IMicroServiceContext context, IText sourceCode, string arguments, string typeName) where T : class;
 		T CreateInstance<T>(IMicroServiceContext context, IText sourceCode, string arguments) where T : class;
+
+		Microsoft.CodeAnalysis.Compilation GetCompilation(IText sourceCode);
 	}
 }

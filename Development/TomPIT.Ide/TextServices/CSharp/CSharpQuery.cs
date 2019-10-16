@@ -72,7 +72,8 @@ namespace TomPIT.Ide.TextServices.CSharp
 			while (true)
 			{
 				if (!currenToken.IsKind(SyntaxKind.IdentifierToken)
-					&& !currenToken.IsKind(SyntaxKind.DotToken))
+					&& !currenToken.IsKind(SyntaxKind.DotToken)
+					&& !currenToken.IsKind(SyntaxKind.QuestionToken))
 					break;
 
 				currenToken = currenToken.GetPreviousToken();
