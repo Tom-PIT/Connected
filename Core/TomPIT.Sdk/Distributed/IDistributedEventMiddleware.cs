@@ -4,7 +4,7 @@ namespace TomPIT.Distributed
 {
 	public interface IDistributedEventMiddleware : IMiddlewareComponent
 	{
-		void Invoking();
+		bool Invoking();
 		void Invoke();
 		void Invoked();
 	}

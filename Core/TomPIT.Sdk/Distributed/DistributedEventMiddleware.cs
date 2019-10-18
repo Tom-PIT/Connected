@@ -24,15 +24,15 @@ namespace TomPIT.Distributed
 		{
 
 		}
-		public void Invoking()
+		public bool Invoking()
 		{
 			Validate();
-			OnInvoking();
+			return OnInvoking();
 		}
 
-		protected virtual void OnInvoking()
+		protected virtual bool OnInvoking()
 		{
-
+			return true;
 		}
 	}
 }

@@ -17,8 +17,8 @@ namespace TomPIT.Middleware.Services
 		bool SubscriptionExists([CAP(CAP.SubscriptionProvider)]string subscription, string primaryKey, string topic);
 		void CreateSubscription([CAP(CAP.SubscriptionProvider)]string subscription, string primaryKey);
 		void CreateSubscription([CAP(CAP.SubscriptionProvider)]string subscription, string primaryKey, string topic);
-		void Enqueue<T>([CAP(CAP.QueueWorkerProvider)]string queue, T arguments);
-		void Enqueue<T>([CAP(CAP.QueueWorkerProvider)]string queue, T arguments, TimeSpan expire, TimeSpan nextVisible);
+		void Enqueue<T>([CIP(CIP.QueueWorkersProvider)]string queue, T arguments);
+		void Enqueue<T>([CIP(CIP.QueueWorkersProvider)]string queue, T arguments, TimeSpan expire, TimeSpan nextVisible);
 
 		void SubscriptionEvent([CAP(CAP.SubscriptionEventProvider)]string eventName, string primaryKey);
 		void SubscriptionEvent<T>([CAP(CAP.SubscriptionEventProvider)]string eventName, string primaryKey, T arguments);

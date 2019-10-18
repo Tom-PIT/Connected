@@ -8,23 +8,23 @@ namespace TomPIT.Worker.Workers
 {
 	public class Queue
 	{
-		public Queue(string args, IQueueConfiguration handler)
+		public Queue(string args, IQueueWorker worker)
 		{
 			Args = args;
-			Handler = handler;
+			Worker = worker;
 		}
 
 		private string Args { get; }
-		private IQueueConfiguration Handler { get; }
+		private IQueueWorker Worker { get; }
 
 		public IQueueMiddleware HandlerInstance { get; private set; }
 		public void Invoke()
 		{
-			var ms = ((IConfiguration)Handler).MicroService();
+			var ms = Worker.Configuration().MicroService();
 
-			var queueType = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ms, Handler, Handler.ComponentName());
+			var queueType = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ms, Worker, Worker.Name);
 			var dataCtx = new MicroServiceContext(ms);
-			MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IQueueMiddleware>(dataCtx, queueType, Args);
+			HandlerInstance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IQueueMiddleware>(dataCtx, queueType, Args);
 
 			HandlerInstance.Invoke();
 		}

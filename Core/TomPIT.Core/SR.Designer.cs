@@ -1429,6 +1429,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to IoC operation not found.
+        /// </summary>
+        public static string ErrIoCOperationNotFound {
+            get {
+                return ResourceManager.GetString("ErrIoCOperationNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Property expected.
         /// </summary>
         public static string ErrIoCPropertyExpected {

@@ -89,14 +89,13 @@ namespace TomPIT.Middleware
 
 		public IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection)
 		{
-			var tokens = connection.Split('/');
 			var descriptor = ComponentDescriptor.Connection(this, connection);
 
 			descriptor.Validate();
 
 			var dataProvider = CreateDataProvider(descriptor.Configuration);
 
-			return dataProvider.OpenConnection(descriptor.Configuration.Value);
+			return dataProvider.OpenConnection(descriptor.Configuration.Value, Connection);
 		}
 
 		public IDataReader<T> OpenReader<T>(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)
@@ -174,5 +173,7 @@ namespace TomPIT.Middleware
 
 			return provider;
 		}
+
+		internal IDataConnection Connection { get; set; }
 	}
 }

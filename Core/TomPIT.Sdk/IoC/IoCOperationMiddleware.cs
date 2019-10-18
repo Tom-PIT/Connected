@@ -8,7 +8,7 @@ using TomPIT.Serialization;
 
 namespace TomPIT.IoC
 {
-	public abstract class IoCContainerMiddleware : MiddlewareComponent, IIoCContainerMiddleware
+	public abstract class IoCOperationMiddleware : MiddlewareComponent, IIoCOperationMiddleware
 	{
 		protected List<IIoCEndpointMiddleware> CreateEndpoints<A>(A e)
 		{
@@ -41,7 +41,7 @@ namespace TomPIT.IoC
 		}
 	}
 
-	public abstract class IoCContainerMiddleware<A> : IoCContainerMiddleware, IIoCContainerMiddleware<A>
+	public abstract class IoCOperationMiddleware<A> : IoCOperationMiddleware, IIoCOperationMiddleware<A>
 	{
 		public void Invoke(A e)
 		{
@@ -55,10 +55,10 @@ namespace TomPIT.IoC
 		}
 		public void Invoke(A e, IIoCEndpointMiddleware endpoint)
 		{
-			var method = endpoint.GetType().GetMethod(nameof(IIoCContainerMiddleware<A>.Invoke));
+			var method = endpoint.GetType().GetMethod(nameof(IIoCOperationMiddleware<A>.Invoke));
 
 			if (method == null)
-				throw new RuntimeException($"{SR.ErrIoCMethodExpected} ({nameof(IIoCContainerMiddleware<A>.Invoke)}");
+				throw new RuntimeException($"{SR.ErrIoCMethodExpected} ({nameof(IIoCOperationMiddleware<A>.Invoke)}");
 
 			var parameters = method.GetParameters();
 			var parameter = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(Context as IMicroServiceContext, parameters[0].ParameterType, Serializer.Serialize(e));
@@ -67,7 +67,7 @@ namespace TomPIT.IoC
 		}
 	}
 
-	public abstract class IoCContainerMiddleware<R, A> : IoCContainerMiddleware, IIoCContainerMiddleware<R, A>
+	public abstract class IoCOperationMiddleware<R, A> : IoCOperationMiddleware, IIoCContainerMiddleware<R, A>
 	{
 		public List<R> Invoke(A e)
 		{
@@ -85,10 +85,10 @@ namespace TomPIT.IoC
 		}
 		public R Invoke(A e, IIoCEndpointMiddleware endpoint)
 		{
-			var method = endpoint.GetType().GetMethod(nameof(IIoCContainerMiddleware<A>.Invoke));
+			var method = endpoint.GetType().GetMethod(nameof(IIoCOperationMiddleware<A>.Invoke));
 
 			if (method == null)
-				throw new RuntimeException($"{SR.ErrIoCMethodExpected} ({nameof(IIoCContainerMiddleware<A>.Invoke)}");
+				throw new RuntimeException($"{SR.ErrIoCMethodExpected} ({nameof(IIoCOperationMiddleware<A>.Invoke)}");
 
 			var parameters = method.GetParameters();
 			var parameter = CreateInstance(parameters[0].ParameterType, e);

@@ -84,7 +84,7 @@ namespace TomPIT.Middleware
 			get
 			{
 				if (_cache == null)
-					_cache = new MiddlewareCachingService();
+					_cache = new MiddlewareCachingService(Context);
 
 				return _cache;
 			}

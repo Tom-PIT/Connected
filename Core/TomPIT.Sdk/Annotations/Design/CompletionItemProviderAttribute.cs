@@ -20,6 +20,7 @@ namespace TomPIT.Annotations.Design
 		public const string RouteSiteMapsProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.RouteSiteMapsProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string DataHubEndpointProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.DataHubEndpointProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string ExtenderProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.ExtenderCompletionProvider, " + SystemAssemblies.DevelopmentAssembly;
+		public const string QueueWorkersProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.QueueWorkersProvider, " + SystemAssemblies.DevelopmentAssembly;
 		//public const string IoCContainersProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.IoCContainersProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public CompletionItemProviderAttribute() { }
 

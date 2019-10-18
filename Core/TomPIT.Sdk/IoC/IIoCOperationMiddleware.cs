@@ -3,18 +3,18 @@ using TomPIT.Middleware;
 
 namespace TomPIT.IoC
 {
-	public interface IIoCContainerMiddleware : IMiddlewareComponent
+	public interface IIoCOperationMiddleware : IMiddlewareComponent
 	{
 	}
 
-	public interface IIoCContainerMiddleware<A> : IIoCContainerMiddleware
+	public interface IIoCOperationMiddleware<A> : IIoCOperationMiddleware
 	{
 		void Invoke(A e);
 		void Invoke(A e, List<IIoCEndpointMiddleware> endpoints);
 		void Invoke(A e, IIoCEndpointMiddleware endpoint);
 	}
 
-	public interface IIoCContainerMiddleware<R, A> : IIoCContainerMiddleware
+	public interface IIoCContainerMiddleware<R, A> : IIoCOperationMiddleware
 	{
 		List<R> Invoke(A e);
 		List<R> Invoke(A e, List<IIoCEndpointMiddleware> endpoints);

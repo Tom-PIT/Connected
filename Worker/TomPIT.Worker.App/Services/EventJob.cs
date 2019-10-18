@@ -53,7 +53,12 @@ namespace TomPIT.Worker.Services
 			var eventInstance = CreateEventInstance(ed);
 
 			if (eventInstance != null)
+			{
+				if (!eventInstance.Invoking())
+					return;
+
 				eventInstance.Invoke();
+			}
 
 			var responses = new List<IOperationResponse>();
 
@@ -190,8 +195,8 @@ namespace TomPIT.Worker.Services
 		private IDistributedEventMiddleware CreateEventInstance(EventDescriptor eventDescriptor)
 		{
 			var compiler = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>();
-			var context = MicroServiceContext.FromIdentifier(eventDescriptor.Name, MiddlewareDescriptor.Current.Tenant);
-			var descriptor = ComponentDescriptor.DistributedEvent(context, eventDescriptor.Name);
+			var context = new MicroServiceContext(eventDescriptor.MicroService, MiddlewareDescriptor.Current.Tenant.Url);
+			var descriptor = ComponentDescriptor.DistributedEvent(context, $"{context.MicroService.Name}/{eventDescriptor.Name}");
 
 			descriptor.Validate();
 

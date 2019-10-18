@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.ComponentModel.IoC;
 using TomPIT.ComponentModel.Scripting;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
@@ -80,19 +81,18 @@ namespace TomPIT.Compilation
 			 * --------------------
 			 * - Microservice/PublicScript (2)
 			 * - Microservice/Api/Operation (3)
+			 * - Microservice/IoCContainer/Operation (3)
 			 */
-
-			var ms = Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
 			if (tokens.Length == 2)
 				return LoadScript(tokens[0], tokens[1]);
 			else if (tokens.Length == 3)
-				return LoadApi(tokens[0], tokens[1], tokens[2]);
+				return Load(tokens[0], tokens[1], tokens[2]);
 			else
 				return null;
 		}
 
-		private IText LoadApi(string microService, string api, string operation)
+		private IText Load(string microService, string componentName, string element)
 		{
 			IMicroService ms = null;
 
@@ -113,13 +113,23 @@ namespace TomPIT.Compilation
 			else
 				ms = Tenant.GetService<IMicroServiceService>().Select(MicroService);
 
-			var component = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, "Api", api);
+			var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(ms.Token, ComponentCategories.NameSpacePublicScript, componentName);
 
 			if (component == null)
 				return null;
 
+			if (string.Compare(component.Category, ComponentCategories.Api, true) == 0)
+				return LoadApiOperation(microService, component, element);
+			else if (string.Compare(component.Category, ComponentCategories.IoCContainer, true) == 0)
+				return LoadIoCOperation(microService, component, element);
+			else
+				return null;
+		}
+
+		private IText LoadApiOperation(string microService, IComponent component, string operation)
+		{
 			if (!(Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IApiConfiguration config))
-				throw new RuntimeException($"{SR.ErrServiceOperationNotFound} ({microService}/{api}/{operation})");
+				throw new RuntimeException($"{SR.ErrServiceOperationNotFound} ({microService}/{component.Name}/{operation})");
 
 			if (config.MicroService() != MicroService)
 			{
@@ -130,7 +140,7 @@ namespace TomPIT.Compilation
 			var op = config.Operations.FirstOrDefault(f => string.Compare(f.Name, TrimExtension(operation), true) == 0);
 
 			if (op == null)
-				return null;// throw new RuntimeException($"{SR.ErrComponentNotFound} ({api}/{operation})");
+				return null;
 
 			if (config.MicroService() != MicroService)
 			{
@@ -139,7 +149,14 @@ namespace TomPIT.Compilation
 			}
 
 			return op;
+		}
 
+		private IText LoadIoCOperation(string microService, IComponent component, string operation)
+		{
+			if (!(Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IIoCContainerConfiguration config))
+				throw new RuntimeException($"{SR.ErrIoCOperationNotFound} ({microService}/{component.Name}/{operation})");
+
+			return config.Operations.FirstOrDefault(f => string.Compare(f.Name, TrimExtension(operation), true) == 0);
 		}
 
 		private IText LoadScript(string microService, string script)
@@ -186,7 +203,9 @@ namespace TomPIT.Compilation
 			 * - Script (1)
 			 * - Microservice/Script (2)
 			 * - Api/Operation (2)
+			 * - IoCContainer/Operation (2)
 			 * - Microservice/Api/Operation (3)
+			 * - Microservice/IoCContainer/Operation (3)
 			 */
 
 			var tokens = resolvedPath.Split(new char[] { '/' }, 3);
@@ -211,7 +230,7 @@ namespace TomPIT.Compilation
 			}
 
 			if (string.IsNullOrWhiteSpace(extension))
-				tokens[tokens.Length - 1] = $"{fileName}.csx";
+				tokens[^1] = $"{fileName}.csx";
 
 			/*
 			 * fully qualified
@@ -224,7 +243,11 @@ namespace TomPIT.Compilation
 				{
 					var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(MicroService, ComponentCategories.NameSpacePublicScript, tokens[0]);
 
-					if (component != null && string.Compare(component.Category, ComponentCategories.Api, true) == 0)
+					if (component != null &&
+						(
+							string.Compare(component.Category, ComponentCategories.Api, true) == 0
+							|| string.Compare(component.Category, ComponentCategories.IoCContainer, true) == 0
+						))
 						return $"{ms.Name}/{tokens[0]}/{tokens[1]}"; //api with ms
 					else
 						return $"{tokens[0]}/{tokens[1]}";//script
@@ -233,7 +256,11 @@ namespace TomPIT.Compilation
 				{
 					var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(baseMs.Token, ComponentCategories.NameSpacePublicScript, tokens[0]);
 
-					if (component != null && string.Compare(component.Category, ComponentCategories.Api, true) == 0)
+					if (component != null &&
+						(
+							string.Compare(component.Category, ComponentCategories.Api, true) == 0
+							|| string.Compare(component.Category, ComponentCategories.IoCContainer, true) == 0
+						))
 						return $"{baseMs.Name}/{tokens[0]}/{tokens[1]}"; //api with basems
 					else
 						return $"{tokens[0]}/{tokens[1]}";//script
@@ -253,7 +280,7 @@ namespace TomPIT.Compilation
 
 		private string TrimExtension(string fileName)
 		{
-			return fileName.EndsWith(".csx") ? fileName.Substring(0, fileName.Length - 4) : fileName;
+			return fileName.EndsWith(".csx") ? fileName[0..^4] : fileName;
 		}
 	}
 }

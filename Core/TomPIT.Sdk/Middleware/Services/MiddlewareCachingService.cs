@@ -4,100 +4,110 @@ using TomPIT.Caching;
 
 namespace TomPIT.Middleware.Services
 {
-	internal class MiddlewareCachingService : IMiddlewareCachingService
+	internal class MiddlewareCachingService : MiddlewareComponent, IMiddlewareCachingService
 	{
-		private static Lazy<MemoryCache> _cache = new Lazy<MemoryCache>();
-
-		private static MemoryCache Cache { get { return _cache.Value; } }
+		public MiddlewareCachingService(IMiddlewareContext context) : base(context)
+		{
+		}
 
 		public bool Exists(string key)
 		{
-			return Cache.Exists(key);
+			return Context.Tenant.GetService<IDataCachingService>().Exists(key);
 		}
 
 		public bool IsEmpty(string key)
 		{
-			return Cache.IsEmpty(key);
+			return Context.Tenant.GetService<IDataCachingService>().IsEmpty(key);
 		}
 
 		public void CreateKey(string key)
 		{
-			Cache.CreateKey(key);
+			Context.Tenant.GetService<IDataCachingService>().CreateKey(key);
 		}
 
 		public List<T> All<T>(string key) where T : class
 		{
-			return Cache.All<T>(key);
+			return Context.Tenant.GetService<IDataCachingService>().All<T>(key);
 		}
 
 		public T Get<T>(string key, string id, CacheRetrieveHandler<T> retrieve) where T : class
 		{
-			return Cache.Get<T>(key, id, retrieve);
+			return Context.Tenant.GetService<IDataCachingService>().Get<T>(key, id, retrieve);
 		}
 
 		public void Clear(string key)
 		{
-			Cache.Clear(key);
+			Context.Tenant.GetService<IDataCachingService>().Clear(key);
 		}
 
 		public T Get<T>(string key, string id) where T : class
 		{
-			return Cache.Get<T>(key, id);
+			return Context.Tenant.GetService<IDataCachingService>().Get<T>(key, id);
 		}
 
 		public T Get<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			return Cache.Get<T>(key, predicate);
+			return Context.Tenant.GetService<IDataCachingService>().Get(key, predicate);
+		}
+
+		public T Get<T>(string key, Func<T, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
+		{
+			return Context.Tenant.GetService<IDataCachingService>().Get(key, predicate, retrieve);
 		}
 
 		public T First<T>(string key) where T : class
 		{
-			return Cache.First<T>(key);
+			return Context.Tenant.GetService<IDataCachingService>().First<T>(key);
 		}
 
 		public List<T> Where<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			return Cache.Where<T>(key, predicate);
+			return Context.Tenant.GetService<IDataCachingService>().Where(key, predicate);
 		}
 
-		public T Set<T>(string key, string id, T instance)
+		public T Set<T>(string key, string id, T instance) where T : class
 		{
-			return Cache.Set<T>(key, id, instance);
+			return Context.Tenant.GetService<IDataCachingService>().Set(key, id, instance);
 		}
 
-		public T Set<T>(string key, string id, T instance, TimeSpan duration)
+		public T Set<T>(string key, string id, T instance, TimeSpan duration) where T : class
 		{
-			return Cache.Set<T>(key, id, instance, duration);
+			return Context.Tenant.GetService<IDataCachingService>().Set(key, id, instance, duration);
 		}
 
-		public T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration)
+		public T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration) where T : class
 		{
-			return Cache.Set<T>(key, id, instance, duration, slidingExpiration);
+			return Context.Tenant.GetService<IDataCachingService>().Set(key, id, instance, duration, slidingExpiration);
 		}
 
 		public void Remove(string key, string id)
 		{
-			Cache.Remove(key, id);
+			Context.Tenant.GetService<IDataCachingService>().Remove(key, new List<string> { id });
 		}
 
-		public void Remove<T>(string key, Func<T, bool> predicate) where T : class
+		public void Remove(string key, List<string> predicate)
 		{
-			Cache.Remove<T>(key, predicate);
+			Context.Tenant.GetService<IDataCachingService>().Remove(key, predicate);
 		}
 
 		public string GenerateKey(params object[] parameters)
 		{
-			return Cache.GenerateKey(parameters);
+			return Context.Tenant.GetService<IDataCachingService>().GenerateKey(parameters);
 		}
 
 		public string GenerateRandomKey(string key)
 		{
-			return Cache.GenerateRandomKey(key);
+			return Context.Tenant.GetService<IDataCachingService>().GenerateRandomKey(key);
 		}
 
 		public int Count(string key)
 		{
-			return Cache.Count(key);
+			return Context.Tenant.GetService<IDataCachingService>().Count(key);
+		}
+
+		public void Reset(string key)
+		{
+			Context.Tenant.GetService<IDataCachingService>().Reset(key);
 		}
 	}
 }

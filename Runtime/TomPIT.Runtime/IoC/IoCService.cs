@@ -100,7 +100,7 @@ namespace TomPIT.IoC
 			return instance;
 		}
 
-		public List<IIoCEndpointMiddleware> CreateEndpoints<A>(IIoCContainerMiddleware sender, A e)
+		public List<IIoCEndpointMiddleware> CreateEndpoints<A>(IIoCOperationMiddleware sender, A e)
 		{
 			Initialize();
 
@@ -130,7 +130,7 @@ namespace TomPIT.IoC
 			return result;
 		}
 
-		public bool HasEndpoints<A>(IIoCContainerMiddleware sender, A e)
+		public bool HasEndpoints<A>(IIoCOperationMiddleware sender, A e)
 		{
 			Initialize();
 

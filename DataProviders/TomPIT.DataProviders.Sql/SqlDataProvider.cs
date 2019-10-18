@@ -92,9 +92,9 @@ namespace TomPIT.DataProviders.Sql
 			}
 		}
 
-		public IDataConnection OpenConnection(string connectionString)
+		public IDataConnection OpenConnection(string connectionString, IDataConnection existingConnection)
 		{
-			return new DataConnection(this, connectionString);
+			return new DataConnection(this, connectionString, existingConnection);
 		}
 
 		public JObject Query(IDataCommandDescriptor command, DataTable schema)

@@ -19,57 +19,57 @@ namespace TomPIT.Data
 
 		protected bool Exists()
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Exists(CacheKey);
+			return Context.Services.Cache.Exists(CacheKey);
 		}
 
 		protected bool IsEmpty()
 		{
-			return Context.Tenant.GetService<IDataCachingService>().IsEmpty(CacheKey);
+			return Context.Services.Cache.IsEmpty(CacheKey);
 		}
 
 		protected void CreateKey()
 		{
-			Context.Tenant.GetService<IDataCachingService>().CreateKey(CacheKey);
+			Context.Services.Cache.CreateKey(CacheKey);
 		}
 
 		protected List<T> All()
 		{
-			return Context.Tenant.GetService<IDataCachingService>().All<T>(CacheKey);
+			return Context.Services.Cache.All<T>(CacheKey);
 		}
 
 		protected T Get(K id, CacheRetrieveHandler<T> retrieve)
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Get(CacheKey, id.ToString(), retrieve);
+			return Context.Services.Cache.Get(CacheKey, id.ToString(), retrieve);
 		}
 
 		protected void Clear()
 		{
-			Context.Tenant.GetService<IDataCachingService>().Clear(CacheKey);
+			Context.Services.Cache.Clear(CacheKey);
 		}
 
 		protected T Get(K id)
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Get<T>(CacheKey, id.ToString());
+			return Context.Services.Cache.Get<T>(CacheKey, id.ToString());
 		}
 
 		protected T Get(Func<T, bool> predicate)
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Get(CacheKey, predicate);
+			return Context.Services.Cache.Get(CacheKey, predicate);
 		}
 
 		protected T Get(Func<T, bool> predicate, CacheRetrieveHandler<T> retrieve)
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Get(CacheKey, predicate, retrieve);
+			return Context.Services.Cache.Get(CacheKey, predicate, retrieve);
 		}
 
 		protected T First()
 		{
-			return Context.Tenant.GetService<IDataCachingService>().First<T>(CacheKey);
+			return Context.Services.Cache.First<T>(CacheKey);
 		}
 
 		protected List<T> Where(Func<T, bool> predicate)
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Where(CacheKey, predicate);
+			return Context.Services.Cache.Where(CacheKey, predicate);
 		}
 
 		protected T Set(K id, T instance)
@@ -79,31 +79,31 @@ namespace TomPIT.Data
 
 		protected T Set(K id, T instance, TimeSpan duration)
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Set(CacheKey, id.ToString(), instance, duration);
+			return Context.Services.Cache.Set(CacheKey, id.ToString(), instance, duration);
 		}
 
 		protected T Set(K id, T instance, TimeSpan duration, bool slidingExpiration)
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Set(CacheKey, id.ToString(), instance, duration, slidingExpiration);
+			return Context.Services.Cache.Set(CacheKey, id.ToString(), instance, duration, slidingExpiration);
 		}
 		protected void Remove(K id)
 		{
-			Context.Tenant.GetService<IDataCachingService>().Remove(CacheKey, new List<string> { id.ToString() });
+			Context.Services.Cache.Remove(CacheKey, new List<string> { id.ToString() });
 		}
 
 		protected int Count()
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Count(CacheKey);
+			return Context.Services.Cache.Count(CacheKey);
 		}
 
 		protected string GenerateKey(params object[] parameters)
 		{
-			return Context.Tenant.GetService<IDataCachingService>().GenerateKey(parameters);
+			return Context.Services.Cache.GenerateKey(parameters);
 		}
 
 		protected string GenerateRandomKey()
 		{
-			return Context.Tenant.GetService<IDataCachingService>().GenerateRandomKey(CacheKey);
+			return Context.Services.Cache.GenerateRandomKey(CacheKey);
 		}
 
 		protected void Refresh(K id)
@@ -161,7 +161,7 @@ namespace TomPIT.Data
 
 		protected void Reset()
 		{
-			Context.Tenant.GetService<IDataCachingService>().Reset(CacheKey);
+			Context.Services.Cache.Reset(CacheKey);
 		}
 	}
 }

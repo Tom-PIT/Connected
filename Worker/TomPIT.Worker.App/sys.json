@@ -2,22 +2,23 @@
   "connections": [
     {
       "name": "localhost",
-      "url": "http://sys-app/cm/sys",
-      "authenticationToken": "F221ECECDB704EFB9568A8756115EBEC"
+      "url": "http://localhost:44001",
+      "authenticationToken": "defaultAuthenticationToken"
     }
   ],
-	"resourceGroups": [
-		"Default"
-	],
-	"dataProviders": [
-		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
-	],
-	"plugins": {
-		"location": "c:\\Deploy\\Plugins",
-		"shadowCopy": true,
-		"items": [
-			"TomPIT.Application.Plugin, TomPIT.Application",
-			"TomPIT.IoT.Plugin, TomPIT.IoT"
-		]
-	}
+  "resourceGroups": [
+    "Default"
+  ],
+  "dataProviders": [
+    "TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
+  ],
+  "plugins": {
+    "location": "c:\\Deploy\\Plugins",
+    "shadowCopy": true,
+    "items": [
+      "TomPIT.MicroServices.Configuration.Runtime.Plugin, TomPIT.MicroServices",
+      "TomPIT.MicroServices.IoT.Configuration.Runtime.Plugin, TomPIT.MicroServices.IoT"
+      //"TomPIT.Reporting.Plugin, TomPIT.Reporting"
+    ]
+  }
 }

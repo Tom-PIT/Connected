@@ -98,23 +98,23 @@ namespace TomPIT.Middleware.Services
 			Context.Tenant.GetService<ISubscriptionService>().CreateSubscription(config.Configuration, primaryKey, topic);
 		}
 
-		public void Enqueue<T>([CodeAnalysisProvider(CodeAnalysisProviderAttribute.QueueWorkerProvider)]string queue, T arguments)
+		public void Enqueue<T>([CIP(CIP.QueueWorkersProvider)]string queue, T arguments)
 		{
 			Context.Tenant.GetService<IQueueService>().Enqueue(ResolveQueue(queue), arguments);
 		}
 
-		public void Enqueue<T>([CodeAnalysisProvider(CodeAnalysisProviderAttribute.QueueWorkerProvider)]string queue, T arguments, TimeSpan expire, TimeSpan nextVisible)
+		public void Enqueue<T>([CIP(CIP.QueueWorkersProvider)]string queue, T arguments, TimeSpan expire, TimeSpan nextVisible)
 		{
 			Context.Tenant.GetService<IQueueService>().Enqueue(ResolveQueue(queue), arguments, expire, nextVisible);
 		}
 
-		private IQueueConfiguration ResolveQueue(string qualifier)
+		private IQueueWorker ResolveQueue(string qualifier)
 		{
 			var config = ComponentDescriptor.Queue(Context, qualifier);
 
 			config.Validate();
 
-			return config.Configuration;
+			return config.Configuration.Workers.FirstOrDefault(f => string.Compare(f.Name, config.Element, true) == 0);
 		}
 
 		public void SubscriptionEvent([CodeAnalysisProvider(CodeAnalysisProviderAttribute.SubscriptionEventProvider)]string eventName, string primaryKey)

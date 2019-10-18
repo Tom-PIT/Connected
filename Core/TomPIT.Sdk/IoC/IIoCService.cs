@@ -6,7 +6,7 @@ namespace TomPIT.IoC
 	{
 		T CreateMiddleware<T>() where T : class;
 		T CreateMiddleware<T, A>(A arguments) where T : class;
-		List<IIoCEndpointMiddleware> CreateEndpoints<A>(IIoCContainerMiddleware sender, A e);
-		bool HasEndpoints<A>(IIoCContainerMiddleware sender, A e);
+		List<IIoCEndpointMiddleware> CreateEndpoints<A>(IIoCOperationMiddleware sender, A e);
+		bool HasEndpoints<A>(IIoCOperationMiddleware sender, A e);
 	}
 }

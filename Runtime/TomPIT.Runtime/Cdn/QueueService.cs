@@ -1,5 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
+using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
@@ -13,17 +14,18 @@ namespace TomPIT.Cdn
 		{
 		}
 
-		public void Enqueue<T>(IQueueConfiguration handler, T arguments)
+		public void Enqueue<T>(IQueueWorker worker, T arguments)
 		{
-			Enqueue(handler, arguments, TimeSpan.FromDays(2), TimeSpan.Zero);
+			Enqueue(worker, arguments, TimeSpan.FromDays(2), TimeSpan.Zero);
 		}
 
-		public void Enqueue<T>(IQueueConfiguration handler, T arguments, TimeSpan expire, TimeSpan nextVisible)
+		public void Enqueue<T>(IQueueWorker worker, T arguments, TimeSpan expire, TimeSpan nextVisible)
 		{
 			var url = Tenant.CreateUrl("Queue", "Enqueue");
 			var e = new JObject
 			{
-				{"component", handler.Component },
+				{"component", worker.Configuration().Component },
+				{"worker", worker.Name },
 				{"expire", expire  },
 				{"nextVisible", nextVisible  }
 			};

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -38,11 +39,22 @@ namespace TomPIT.Worker.Services
 		private void Invoke(IQueueMessage queue, JObject data)
 		{
 			var component = data.Required<Guid>("component");
+			var worker = data.Required<string>("worker");
 			var arguments = data.Optional<string>("arguments", null);
-			var configuration = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) as IQueueConfiguration;
 
-			if (configuration == null)
+			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) is IQueueConfiguration configuration))
+			{
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(QueueWorkerJob), nameof(Invoke), $"{SR.ErrCannotFindConfiguration} ({component})");
+				return;
+			}
+
+			var w = configuration.Workers.FirstOrDefault(f => string.Compare(f.Name, worker, true) == 0);
+
+			if (w == null)
+			{
 				MiddlewareDescriptor.Current.Tenant.LogError(nameof(QueueWorkerJob), nameof(Invoke), $"{SR.ErrQueueWorkerNotFound} ({component})");
+				return;
+			}
 
 			var ctx = new MicroServiceContext(configuration.MicroService());
 			var metricId = ctx.Services.Diagnostic.StartMetric(configuration.Metrics, null);
@@ -50,7 +62,7 @@ namespace TomPIT.Worker.Services
 
 			try
 			{
-				q = new Queue(arguments, configuration);
+				q = new Queue(arguments, w);
 
 				q.Invoke();
 

@@ -5,8 +5,8 @@ namespace TomPIT.Cdn
 {
 	public interface IQueueService
 	{
-		void Enqueue<T>(IQueueConfiguration handler, T arguments);
-		void Enqueue<T>(IQueueConfiguration handler, T arguments, TimeSpan expire, TimeSpan nextVisible);
+		void Enqueue<T>(IQueueWorker worker, T arguments);
+		void Enqueue<T>(IQueueWorker worker, T arguments, TimeSpan expire, TimeSpan nextVisible);
 
 	}
 }

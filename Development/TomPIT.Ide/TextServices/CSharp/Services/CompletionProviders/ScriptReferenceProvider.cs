@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.ComponentModel.IoC;
 using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Reflection;
 
@@ -46,10 +47,18 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 			foreach (var script in scripts)
 				items.Add(CreateScriptItem($"{msName}{script.Name}"));
 
-			var containers = Editor.Context.Tenant.GetService<IComponentService>().QueryComponents(microService.Token, ComponentCategories.IoCContainer);
+			var containers = Editor.Context.Tenant.GetService<IComponentService>().QueryConfigurations(microService.Token, ComponentCategories.IoCContainer);
 
 			foreach (var container in containers)
-				items.Add(CreateScriptItem($"{msName}{container.Name}"));
+			{
+				if (!(container is IIoCContainerConfiguration iocConfiguation))
+					continue;
+
+				var containerName = iocConfiguation.ComponentName();
+
+				foreach (var operation in iocConfiguation.Operations)
+					items.Add(CreateScriptItem($"{msName}{containerName}/{operation.Name}"));
+			}
 
 			var apis = Editor.Context.Tenant.GetService<IComponentService>().QueryConfigurations(microService.Token, ComponentCategories.Api);
 

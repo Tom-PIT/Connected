@@ -24,6 +24,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 				return result;
 
 			var args = new CompletionProviderArgs(Editor, context, model, position);
+			var processed = false;
 
 			foreach (var provider in Providers)
 			{
@@ -32,11 +33,14 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 
 				var results = provider.ProvideItems(args);
 
+				if (results != null)
+					processed = true;
+
 				if (results != null && results.Count > 0)
 					result.Suggestions.AddRange(results);
 			}
 
-			return result.Suggestions.Count == 0 ? null : result;
+			return result.Suggestions.Count == 0 && !processed ? null : result;
 		}
 
 		private List<ICompletionProvider> Providers

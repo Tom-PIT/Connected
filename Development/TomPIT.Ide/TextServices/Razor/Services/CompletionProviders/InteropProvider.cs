@@ -56,8 +56,11 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 			if (node is IdentifierNameSyntax)
 				node = node.Parent;
 
-			CreatePropertyStack(node, stack);
+			CreatePropertyStack(model, node, stack);
 			var properties = FindProperty(stack, operation.ReturnType.Properties, manifest.Types);
+
+			if (properties == null)
+				return result;
 
 			foreach (var i in properties)
 			{
@@ -77,7 +80,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 
 		private List<ManifestProperty> FindProperty(Stack<string> stack, List<ManifestProperty> properties, List<ManifestMember> types)
 		{
-			if (stack.Count == 0)
+			if (stack.Count < 2)
 				return properties;
 
 			var result = properties;
@@ -94,7 +97,12 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 				var type = types.FirstOrDefault(f => string.Compare(property.Type, f.Type, false) == 0);
 
 				if (type == null)
+				{
+					if (stack.Count > 0)
+						return null;
+
 					return result;
+				}
 
 				result = type.Properties;
 			}
@@ -102,13 +110,34 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 			return result;
 		}
 
-		private void CreatePropertyStack(SyntaxNode node, Stack<string> stack)
+		private void CreatePropertyStack(SemanticModel model, SyntaxNode node, Stack<string> stack)
 		{
 			if (node is MemberAccessExpressionSyntax member)
 			{
 				stack.Push(member.Name.Identifier.ValueText);
 
-				CreatePropertyStack(member.Expression, stack);
+				CreatePropertyStack(model, member.Expression, stack);
+			}
+			else if (node is MemberBindingExpressionSyntax binding)
+			{
+				var previousToken = binding.OperatorToken.GetPreviousToken();
+
+				stack.Push(binding.Name.Identifier.ValueText);
+
+				CreatePropertyStack(model, previousToken.Parent, stack);
+			}
+			else if (node is ConditionalAccessExpressionSyntax conditional)
+			{
+				var previousToken = conditional.OperatorToken.GetPreviousToken();
+
+				CreatePropertyStack(model, previousToken.Parent, stack);
+			}
+			else if (node is IdentifierNameSyntax identifier)
+			{
+				var token = model.SyntaxTree.GetRoot().FindToken(identifier.SpanStart);
+
+				if (token.GetPreviousToken().Kind() == SyntaxKind.DotToken)
+					stack.Push(identifier.Identifier.ValueText);
 			}
 		}
 		private ConfigurationDescriptor<IApiConfiguration> ResolveApi()

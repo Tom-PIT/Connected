@@ -1095,4 +1095,7 @@
   <data name="ValNonDefault" xml:space="preserve">
     <value>must contain non default value</value>
   </data>
+  <data name="ErrIoCOperationNotFound" xml:space="preserve">
+    <value>IoC operation not found</value>
+  </data>
 </root>
