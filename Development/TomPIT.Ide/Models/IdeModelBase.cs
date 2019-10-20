@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Newtonsoft.Json.Linq;
+using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
 using TomPIT.Ide.Environment;
@@ -74,10 +76,23 @@ namespace TomPIT.Ide.Models
 				return DeleteComponent(data);
 			else if (string.Compare(action, "move", true) == 0)
 				return Move(data);
+			else if (string.Compare(action, "clearErrors", true) == 0)
+				return ClearErrors(data);
 
 			return Result.EmptyResult(this);
 		}
 
+		protected virtual IDesignerActionResult ClearErrors(JObject data)
+		{
+			var component = data.Required<Guid>("component");
+			var element = data.Required<Guid>("element");
+
+			Tenant.GetService<IDesignerService>().ClearErrors(component, element, Development.ErrorCategory.Syntax);
+			Tenant.GetService<IDesignerService>().ClearErrors(component, element, Development.ErrorCategory.Type);
+			Tenant.GetService<IDesignerService>().ClearErrors(component, element, Development.ErrorCategory.Validation);
+
+			return Result.EmptyResult(this);
+		}
 		protected virtual IDesignerActionResult Move(JObject data)
 		{
 			return Result.EmptyResult(this);

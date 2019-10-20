@@ -73,10 +73,18 @@ namespace TomPIT.Reflection.Manifests.Providers
 			var member = ManifestExtensions.BindType(model, symbol, types);
 
 			if (member != null && member.Properties.Count > 0)
-				properties.AddRange(member.Properties);
+			{
+				foreach (var property in member.Properties)
+				{
+					if (properties.FirstOrDefault(f => string.Compare(f.Name, property.Name, false) == 0) != null)
+						continue;
+
+					properties.Add(property);
+				}
+			}
 		}
 
-		protected void BindProperties(SemanticModel model, TypeDeclarationSyntax symbol, List<ManifestProperty> properties)
+		protected void BindProperties(SemanticModel model, TypeDeclarationSyntax symbol, List<ManifestProperty> properties, List<ManifestMember> types)
 		{
 			foreach (var member in symbol.Members)
 			{
@@ -114,13 +122,18 @@ namespace TomPIT.Reflection.Manifests.Providers
 				p.Documentation = ManifestExtensions.ExtractDocumentation(pdx);
 
 				properties.Add(p);
+			}
 
-				//	if (!property.IsPrimitive() && !property.IsIndexer() && !property.IsCollection())
-				//		BindProperties()
+			foreach (var baseType in symbol.BaseList.Types)
+			{
+				var type = model.GetTypeInfo(baseType.Type);
+
+				if (type.Type != null)
+					BindProperties(model, type.Type, properties, types);
 			}
 		}
 
-		protected void BindType(SemanticModel model, TypeDeclarationSyntax symbol, ManifestType manifest)
+		protected void BindType(SemanticModel model, TypeDeclarationSyntax symbol, ManifestType manifest, List<ManifestMember> types)
 		{
 			if (symbol == null)
 			{
@@ -132,7 +145,7 @@ namespace TomPIT.Reflection.Manifests.Providers
 
 			manifest.Documentation = ManifestExtensions.ExtractDocumentation(symbol);
 
-			BindProperties(model, symbol, manifest.Properties);
+			BindProperties(model, symbol, manifest.Properties, types);
 		}
 
 		protected void BindType(SemanticModel model, ITypeSymbol symbol, ManifestType manifest, List<ManifestMember> types)

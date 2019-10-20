@@ -2,17 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Dynamic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Exceptions;
-using TomPIT.Serialization;
 
 namespace TomPIT.Reflection
 {
@@ -299,30 +295,6 @@ namespace TomPIT.Reflection
 				return null;
 
 			return string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().FullName);
-		}
-
-		public static dynamic ToDynamic(this object value)
-		{
-			IDictionary<string, object> expando = new ExpandoObject();
-
-			foreach (System.ComponentModel.PropertyDescriptor property in System.ComponentModel.TypeDescriptor.GetProperties(value.GetType()))
-				expando.Add(property.Name, property.GetValue(value));
-
-			return expando as ExpandoObject;
-		}
-
-		public static dynamic ToDynamic(this JObject value)
-		{
-			var converter = new Newtonsoft.Json.Converters.ExpandoObjectConverter();
-
-			return JsonConvert.DeserializeObject<ExpandoObject>(Serializer.Serialize(value), converter);
-		}
-
-		public static dynamic ToDynamic(this JArray value)
-		{
-			var converter = new Newtonsoft.Json.Converters.ExpandoObjectConverter();
-
-			return JsonConvert.DeserializeObject<ExpandoObject>(Serializer.Serialize(value), converter);
 		}
 
 		public static string ScriptTypeName(this Type type)

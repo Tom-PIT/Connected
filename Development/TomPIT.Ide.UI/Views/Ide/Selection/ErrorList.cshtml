@@ -78,7 +78,15 @@ else
             var component = $(this).attr('data-component');
             var element = $(this).attr('data-element');
 
-			window.open(url.environment() + '?component=' + component + '&element=' + element, '_blank');
+            ide.ideAction({
+                data: {
+                    'action': 'clearErrors',
+                    'component': component,
+                    'element': element,
+                }, onComplete: function (data) {
+                    window.open(url.environment() + '?component=' + component + '&element=' + element, '_blank');
+                }
+            });
         });
 
         $('.error-list-button').click(function () {

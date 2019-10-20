@@ -21,7 +21,7 @@ namespace TomPIT.Middleware
 
 		public static T WithConnection<T>(this T operation, IMiddlewareContext context) where T : IMiddlewareOperation
 		{
-			if (operation is MiddlewareContext op && context is MiddlewareContext mc)
+			if (operation.Context is MiddlewareContext op && context is MiddlewareContext mc)
 				op.Connection = mc?.Connection;
 
 			return operation;

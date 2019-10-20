@@ -39,6 +39,7 @@ namespace TomPIT.DataProviders.Sql
 						{
 							Attached = true;
 							_connection = dc.Connection;
+							Transaction = dc.Transaction;
 						}
 					}
 					else

@@ -70,7 +70,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 				}
 				else
 				{
-					if (node is ArgumentSyntax)
+					if (node is ArgumentSyntax arg && arg.Expression is AnonymousObjectCreationExpressionSyntax)
 						r.Add(AllParametersSnippet(parameters));
 				}
 			}
@@ -147,44 +147,26 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 		{
 			var sb = new StringBuilder();
 
-			sb.AppendLine("new JObject{");
-
 			foreach (var i in config.Properties.OrderBy(f => f.Name))
-				sb.AppendLine(string.Format("\t{{\"{0}\", /*{1}*/}},", i.Name, i.Type));
+			{
+				var t = TypeExtensions.GetType(i.Type);
+				object value = "null";
+
+				if (t != null)
+					value = t.DefaultValue();
+
+				sb.AppendLine($"{i.Name} = {value},");
+			}
 
 			return new CompletionItem
 			{
 				Label = "AllParameters",
-				InsertText = $"{RemoveTrailingComma(sb)}}}",
+				InsertText = $"{RemoveTrailingComma(sb)}",
 				Detail = "Insert all api parameters",
 				FilterText = "AllParameters",
 				Kind = CompletionItemKind.Snippet
 			};
 		}
-		private ICompletionItem RequiredParametersSnippet(List<ApiParameter> config)
-		{
-			var sb = new StringBuilder();
-
-			sb.AppendLine("new JObject{");
-
-			foreach (var i in config.OrderBy(f => f.Name))
-			{
-				if (!i.Required)
-					continue;
-
-				sb.AppendLine(string.Format("\t{{\"{0}\", /*{1}*/}},", i.Name, i.DataType));
-			}
-
-			return new CompletionItem
-			{
-				Label = "RequiredParameters",
-				FilterText = "RequiredParameters",
-				Kind = CompletionItemKind.Snippet,
-				InsertText = $"{RemoveTrailingComma(sb)}}}",
-				Detail = "Insert required operation parameters"
-			};
-		}
-
 		private bool IsArguments(SemanticModel model, InvocationExpressionSyntax node)
 		{
 			var idn = node.IdentiferName();
@@ -208,7 +190,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 		private ApiOperationManifest QueryParameters(IApiOperation operation)
 		{
-			var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifest(operation.Configuration().Component) as ApiManifest;
+			var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifest(operation.Configuration().Component, operation.Id) as ApiManifest;
 
 			if (manifest == null)
 				return null;

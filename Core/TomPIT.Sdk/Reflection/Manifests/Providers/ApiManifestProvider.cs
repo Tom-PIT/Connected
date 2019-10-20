@@ -86,7 +86,7 @@ namespace TomPIT.Reflection.Manifests.Providers
 			var declaration = tree.FindClass(operation.Name);
 			var model = compilation.GetSemanticModel(tree);
 
-			BindType(model, declaration, om);
+			BindType(model, declaration, om, manifest.Types);
 			BindExtenders(model, declaration, om);
 
 			var returnSymbol = declaration.LookupBaseType(model, typeof(IOperation<>).FullTypeName());

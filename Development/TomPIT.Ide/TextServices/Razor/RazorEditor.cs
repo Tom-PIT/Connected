@@ -192,6 +192,19 @@ namespace TomPIT.Ide.TextServices.Razor
 			if (result)
 				return result;
 
+			var next = token.GetNextToken();
+
+			if (next == default)
+				return result;
+
+			var nextMappedSpan = token.GetLocation().GetMappedLineSpan();
+
+			if (!nextMappedSpan.HasMappedPath)
+				return result;
+
+			if (new LinePosition(mappedLine, mappedColumn) < nextMappedSpan.StartLinePosition)
+				return true;
+
 			return result;
 		}
 	}

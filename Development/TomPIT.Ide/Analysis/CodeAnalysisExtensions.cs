@@ -101,7 +101,7 @@ namespace TomPIT.Ide.Analysis
 			{
 				var type = model.GetTypeInfo(ocx);
 
-				return ResolveProperty(type.ConvertedType, ins.Identifier.ValueText);
+				return ResolveProperty(type.Type, ins.Identifier.ValueText);
 			}
 
 			return null;

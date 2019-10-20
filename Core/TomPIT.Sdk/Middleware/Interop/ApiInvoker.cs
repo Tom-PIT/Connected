@@ -74,6 +74,7 @@ namespace TomPIT.Middleware.Interop
 			var metric = ctx.Services.Diagnostic.StartMetric(op.Metrics, op.Id, arguments);
 			var success = true;
 			JObject result = null;
+			IMiddlewareComponent opInstance = null;
 
 			try
 			{
@@ -81,7 +82,7 @@ namespace TomPIT.Middleware.Interop
 
 				if (HasReturnValue(operationType))
 				{
-					var opInstance = operationType.CreateInstance<IMiddlewareOperation>();
+					opInstance = operationType.CreateInstance<IMiddlewareOperation>();
 
 					opInstance.SetContext(ctx);
 
@@ -94,7 +95,7 @@ namespace TomPIT.Middleware.Interop
 				}
 				else
 				{
-					var opInstance = operationType.CreateInstance<IOperation>();
+					opInstance = operationType.CreateInstance<IOperation>();
 
 					if (operationType is IDistributedOperation)
 						ReflectionExtensions.SetPropertyValue(opInstance, nameof(IDistributedOperation.OperationTarget), synchronous ? DistributedOperationTarget.InProcess : DistributedOperationTarget.Distributed);
@@ -104,19 +105,19 @@ namespace TomPIT.Middleware.Interop
 					if (arguments != null)
 						Serializer.Populate(arguments, opInstance);
 
-					opInstance.Invoke();
+					((IOperation)opInstance).Invoke();
 
 					return null;
 				}
 			}
 			catch (Exception ex)
 			{
-				var resolvedException = ex.InnerException ?? ex;
+				var resolvedException = TomPITException.Unwrap(opInstance, ex);
 				success = false;
 
 				ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Fail, new JObject
 				{
-					{"exception", resolvedException.Message }
+					{"exception", $"{resolvedException.Source}/{resolvedException.Message}" }
 				});
 
 				throw resolvedException;

@@ -35,5 +35,4 @@ namespace TomPIT.Runtime
 		EnvironmentStage Stage { get; }
 		EnvironmentMode Mode { get; }
 	}
-
 }

@@ -48,6 +48,7 @@ namespace TomPIT.Runtime
 		{
 			Shell.RegisterService(typeof(IRuntimeService), typeof(RuntimeService));
 			Shell.RegisterService(typeof(IConnectivityService), typeof(ConnectivityService));
+			Shell.RegisterService(typeof(IMicroServiceResolutionService), typeof(MicroServiceResolutionService));
 
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 		}

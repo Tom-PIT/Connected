@@ -160,9 +160,6 @@ namespace TomPIT.Ide.Controllers
 		{
 			var m = CreateModel();
 
-			if (string.IsNullOrWhiteSpace(m.RequestBody.Optional("path", string.Empty)))
-				throw IdeException.PathNotSet(this, IdeEvents.IdeAction);
-
 			m.Path = m.RequestBody.Optional("path", string.Empty);
 
 			return ResolveDesignerResult(m, m.Action(m.RequestBody));

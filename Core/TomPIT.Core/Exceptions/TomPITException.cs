@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Text;
+using TomPIT.ComponentModel;
 using TomPIT.Reflection;
 
 namespace TomPIT.Exceptions
@@ -8,7 +9,7 @@ namespace TomPIT.Exceptions
 	public class TomPITException : Exception
 	{
 		private string _message = string.Empty;
-		private static readonly string[] ReplaceSources = new string[] { "tompit.", "system." };
+		//private static readonly string[] ReplaceSources = new string[] { "tompit.", "system.", "middlewarevalidator" };
 		public TomPITException() { }
 
 		public TomPITException(string source, string message)
@@ -83,38 +84,50 @@ namespace TomPIT.Exceptions
 		public static Exception Unwrap(object sender, Exception ex)
 		{
 			if (ex is TargetInvocationException)
-			{
-				var re = ex.InnerException;
+				return UnwrapWithData(sender, ex.InnerException);
+			else
+				return UnwrapWithData(sender, ex);
+		}
 
-				if (sender != null)
-					re.Source = ResolveSource(sender, re.Source);
-
-				return re;
-			}
-
+		private static Exception UnwrapWithData(object sender, Exception ex)
+		{
 			if (sender != null)
-				ex.Source = ResolveSource(sender, ex.Source);
+			{
+				var script = ResolveScript(sender);
+
+				if (script != null)
+				{
+					if (ex.Data.Contains("Script"))
+						ex.Data["Script"] = script;
+					else
+						ex.Data.Add("Script", script);
+				}
+
+				var resolutionService = Shell.GetService<IMicroServiceResolutionService>();
+
+				if (resolutionService != null)
+				{
+					var ms = resolutionService.ResolveMicroService(sender);
+
+					if (ms != null)
+					{
+						if (ex.Data.Contains("MicroService"))
+							ex.Data["MicroService"] = ms;
+						else
+							ex.Data.Add("MicroService", ms);
+					}
+				}
+			}
 
 			return ex;
 		}
 
-		private static string ResolveSource(object sender, string source)
+		private static string ResolveScript(object sender)
 		{
 			if (sender == null)
-				return source;
+				return null;
 
-			if (string.IsNullOrEmpty(source))
-				return sender.GetType().ShortName();
-			else
-			{
-				foreach (var replace in ReplaceSources)
-				{
-					if (source.ToLowerInvariant().StartsWith(replace))
-						return sender.GetType().ShortName();
-				}
-			}
-
-			return source;
+			return sender.GetType().ShortName();
 		}
 	}
 }
