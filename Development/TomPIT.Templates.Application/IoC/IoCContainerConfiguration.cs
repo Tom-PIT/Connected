@@ -6,6 +6,7 @@ using TomPIT.MicroServices.Design;
 
 namespace TomPIT.MicroServices.IoC
 {
+	[Manifest(DesignUtils.IoCManifest)]
 	public class IoCContainerConfiguration : ComponentConfiguration, IIoCContainerConfiguration
 	{
 		private ListItems<IIoCOperation> _ops = null;

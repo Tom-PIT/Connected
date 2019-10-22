@@ -18,6 +18,7 @@ namespace TomPIT.Compilation
 
 		IMicroService ResolveMicroService(Type type);
 		IMicroService ResolveMicroService(object instance);
+		IComponent ResolveComponent(object instance);
 		string CompileView(ITenant tenant, IText sourceCode);
 
 		Type ResolveType(Guid microService, IText sourceCode, string typeName);

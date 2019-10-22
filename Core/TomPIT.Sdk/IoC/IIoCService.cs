@@ -1,12 +1,16 @@
 ﻿using System.Collections.Generic;
+using TomPIT.ComponentModel.IoC;
 
 namespace TomPIT.IoC
 {
 	public interface IIoCService
 	{
-		T CreateMiddleware<T>() where T : class;
-		T CreateMiddleware<T, A>(A arguments) where T : class;
-		List<IIoCEndpointMiddleware> CreateEndpoints<A>(IIoCOperationMiddleware sender, A e);
-		bool HasEndpoints<A>(IIoCOperationMiddleware sender, A e);
+		R Invoke<R>(IIoCOperation operation);
+		R Invoke<R>(IIoCOperation operation, object e);
+
+		void Invoke(IIoCOperation operation);
+		void Invoke(IIoCOperation operation, object e);
+		List<IIoCEndpointMiddleware> CreateEndpoints(IIoCOperation operation, object e);
+		bool HasEndpoints(IIoCOperation sender, object e);
 	}
 }

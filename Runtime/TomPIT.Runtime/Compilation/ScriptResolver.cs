@@ -5,7 +5,6 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.ComponentModel.IoC;
 using TomPIT.ComponentModel.Scripting;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
@@ -81,7 +80,6 @@ namespace TomPIT.Compilation
 			 * --------------------
 			 * - Microservice/PublicScript (2)
 			 * - Microservice/Api/Operation (3)
-			 * - Microservice/IoCContainer/Operation (3)
 			 */
 
 			if (tokens.Length == 2)
@@ -120,8 +118,6 @@ namespace TomPIT.Compilation
 
 			if (string.Compare(component.Category, ComponentCategories.Api, true) == 0)
 				return LoadApiOperation(microService, component, element);
-			else if (string.Compare(component.Category, ComponentCategories.IoCContainer, true) == 0)
-				return LoadIoCOperation(microService, component, element);
 			else
 				return null;
 		}
@@ -149,14 +145,6 @@ namespace TomPIT.Compilation
 			}
 
 			return op;
-		}
-
-		private IText LoadIoCOperation(string microService, IComponent component, string operation)
-		{
-			if (!(Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IIoCContainerConfiguration config))
-				throw new RuntimeException($"{SR.ErrIoCOperationNotFound} ({microService}/{component.Name}/{operation})");
-
-			return config.Operations.FirstOrDefault(f => string.Compare(f.Name, TrimExtension(operation), true) == 0);
 		}
 
 		private IText LoadScript(string microService, string script)

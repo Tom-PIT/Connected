@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.Collections;
+using TomPIT.ComponentModel;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Models;
@@ -202,6 +203,19 @@ namespace TomPIT.Navigation
 			var helper = svc.GetUrlHelper(ac.ActionContext);
 
 			return helper.RouteUrl(routeName, values);
+		}
+
+		internal static string ResolveRouteTemplate(IMiddlewareContext context, string viewName)
+		{
+			if (string.IsNullOrWhiteSpace(viewName) || context == null)
+				return null;
+
+			var view = ComponentDescriptor.View(context, viewName);
+
+			if (view.Configuration == null)
+				throw new RuntimeException($"{SR.ErrViewNotFound} ({viewName})");
+
+			return view.Configuration.Url;
 		}
 	}
 }

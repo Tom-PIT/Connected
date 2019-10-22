@@ -1,4 +1,8 @@
-﻿using TomPIT.IoC;
+﻿using System.Linq;
+using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.IoC;
+using TomPIT.Exceptions;
+using TomPIT.IoC;
 
 namespace TomPIT.Middleware.Services
 {
@@ -8,14 +12,38 @@ namespace TomPIT.Middleware.Services
 		{
 		}
 
-		public T UseMiddleware<T>() where T : class
+		public R Invoke<R>(string middlewareOperation)
 		{
-			return Context.Tenant.GetService<IIoCService>().CreateMiddleware<T>();
+			return Context.Tenant.GetService<IIoCService>().Invoke<R>(ResolveOperation(middlewareOperation));
 		}
 
-		public T UseMiddleware<T, A>(A arguments) where T : class
+		public void Invoke(string middlewareOperation)
 		{
-			return Context.Tenant.GetService<IIoCService>().CreateMiddleware<T, A>(arguments);
+			Context.Tenant.GetService<IIoCService>().Invoke(ResolveOperation(middlewareOperation));
+		}
+
+		public R Invoke<R>(string middlewareOperation, object e)
+		{
+			return Context.Tenant.GetService<IIoCService>().Invoke<R>(ResolveOperation(middlewareOperation), e);
+		}
+
+		public void Invoke(string middlewareOperation, object e)
+		{
+			Context.Tenant.GetService<IIoCService>().Invoke(ResolveOperation(middlewareOperation), e);
+		}
+
+		private IIoCOperation ResolveOperation(string middlewareOperation)
+		{
+			var descriptor = ComponentDescriptor.IoCContainer(Context, middlewareOperation);
+
+			descriptor.Validate();
+
+			var operation = descriptor.Configuration.Operations.FirstOrDefault(f => string.Compare(descriptor.Element, f.Name, true) == 0);
+
+			if (operation == null)
+				throw new RuntimeException($"{SR.ErrIoCOperationNotFound} ({middlewareOperation})");
+
+			return operation;
 		}
 	}
 }

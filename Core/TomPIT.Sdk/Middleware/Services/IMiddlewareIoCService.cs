@@ -1,8 +1,13 @@
-﻿namespace TomPIT.Middleware.Services
+﻿using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
+
+namespace TomPIT.Middleware.Services
 {
 	public interface IMiddlewareIoCService
 	{
-		T UseMiddleware<T>() where T : class;
-		T UseMiddleware<T, A>(A arguments) where T : class;
+		R Invoke<R>([CIP(CIP.IoCOperationsProvider)]string middlewareOperation);
+		void Invoke([CIP(CIP.IoCOperationsProvider)]string middlewareOperation);
+
+		R Invoke<R>([CIP(CIP.IoCOperationsProvider)]string middlewareOperation, [CIP(CIP.IoCOperationParametersProvider)]object e);
+		void Invoke([CIP(CIP.IoCOperationsProvider)]string middlewareOperation, [CIP(CIP.IoCOperationParametersProvider)]object e);
 	}
 }

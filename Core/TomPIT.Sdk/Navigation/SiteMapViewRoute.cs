@@ -1,6 +1,4 @@
 ﻿using TomPIT.Collections;
-using TomPIT.ComponentModel;
-using TomPIT.Exceptions;
 
 namespace TomPIT.Navigation
 {
@@ -10,24 +8,13 @@ namespace TomPIT.Navigation
 
 		private string _template = null;
 
-		public string RouteKey { get; set; }
 		public bool BeginGroup { get; set; }
 		string ISiteMapRoute.Template
 		{
 			get
 			{
 				if (_template == null)
-				{
-					if (string.IsNullOrWhiteSpace(View) || Context == null)
-						return null;
-
-					var view = ComponentDescriptor.View(Context, View);
-
-					if (view.Configuration == null)
-						throw new RuntimeException($"{SR.ErrViewNotFound} ({View})");
-
-					_template = view.Configuration.Url;
-				}
+					_template = NavigationExtensions.ResolveRouteTemplate(Context, View);
 
 				return _template;
 			}

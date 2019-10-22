@@ -213,38 +213,38 @@ namespace TomPIT.Compilation
 
 		private IScriptDescriptor CreateScript(Guid microService, IText d)
 		{
-			using (var script = new CompilerScript(Tenant, microService, d))
+			using var script = new CompilerScript(Tenant, microService, d);
+
+			var result = new ScriptDescriptor
 			{
-				var result = new ScriptDescriptor
-				{
-					Id = d.Id,
-					MicroService = microService
-				};
+				Id = d.Id,
+				MicroService = microService,
+				Component = d.Configuration().Component
+			};
 
-				script.Create();
+			script.Create();
 
-				Compile(result, script, true);
+			Compile(result, script, true);
 
-				return result;
-			}
+			return result;
 		}
 
 		private IScriptDescriptor CreateScript<T>(Guid microService, IText d)
 		{
-			using (var script = new CompilerGenericScript<T>(Tenant, microService, d))
+			using var script = new CompilerGenericScript<T>(Tenant, microService, d);
+
+			var result = new ScriptDescriptor
 			{
-				var result = new ScriptDescriptor
-				{
-					Id = d.Id,
-					MicroService = microService
-				};
+				Id = d.Id,
+				MicroService = microService,
+				Component = d.Configuration().Component
+			};
 
-				script.Create();
+			script.Create();
 
-				Compile(result, script, true);
+			Compile(result, script, true);
 
-				return result;
-			}
+			return result;
 		}
 
 		public Microsoft.CodeAnalysis.Compilation GetCompilation(IText sourceCode)
@@ -256,7 +256,8 @@ namespace TomPIT.Compilation
 			var result = new ScriptDescriptor
 			{
 				Id = sourceCode.Id,
-				MicroService = microService
+				MicroService = microService,
+				Component = sourceCode.Configuration().Component
 			};
 
 			script.Create();
@@ -565,6 +566,19 @@ namespace TomPIT.Compilation
 				mo.SetContext(context ?? new MicroServiceContext(microService, Tenant.Url));
 
 			return instance;
+		}
+
+		public IComponent ResolveComponent(object instance)
+		{
+			if (instance == null)
+				return null;
+
+			var script = Get(f => f.Assembly != null && string.Compare(instance.GetType().Assembly.GetName().Name, f.Assembly, true) == 0);
+
+			if (script == null)
+				return null;
+
+			return Tenant.GetService<IComponentService>().SelectComponent(script.Component);
 		}
 
 		public IMicroService ResolveMicroService(object instance)

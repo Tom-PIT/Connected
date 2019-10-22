@@ -219,7 +219,12 @@ namespace TomPIT.Navigation
 		private void FillRouteKeys(NavigationHandlerDescriptor descriptor, ISiteMapContainer container)
 		{
 			foreach (var item in container.Routes)
+			{
+				if (container is ISiteMapRouteContainer routeContainer && !string.IsNullOrWhiteSpace(routeContainer.RouteKey) && !descriptor.RouteKeys.Contains(routeContainer.RouteKey.ToLowerInvariant()))
+					descriptor.RouteKeys.Add(routeContainer.RouteKey.ToLowerInvariant());
+
 				FillRouteKeys(descriptor, item);
+			}
 		}
 
 		private void FillRouteKeys(NavigationHandlerDescriptor descriptor, ISiteMapRoute route)
@@ -269,12 +274,17 @@ namespace TomPIT.Navigation
 			if (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template))
 				breadCrumb.Url = ParseUrl(route.Template, parameters);
 
-			if (item is ISiteMapContainer container && !string.IsNullOrWhiteSpace(container.SpeculativeRouteKey))
+			if (item is ISiteMapContainer container)
 			{
-				var speculativeRoute = SelectRoute(container.SpeculativeRouteKey);
+				if (!string.IsNullOrWhiteSpace(container.SpeculativeRouteKey))
+				{
+					var speculativeRoute = SelectRoute(container.SpeculativeRouteKey);
 
-				if (speculativeRoute != null)
-					breadCrumb.Url = ParseUrl(speculativeRoute.Template, parameters);
+					if (speculativeRoute != null)
+						breadCrumb.Url = ParseUrl(speculativeRoute.Template, parameters);
+				}
+				else if (container is ISiteMapRouteContainer routeContainer && !string.IsNullOrWhiteSpace(routeContainer.Template))
+					breadCrumb.Url = ParseUrl(routeContainer.Template, parameters);
 			}
 
 			items.Insert(0, breadCrumb);
@@ -378,6 +388,16 @@ namespace TomPIT.Navigation
 
 			foreach (var container in containers)
 			{
+				if (container is ISiteMapRouteContainer routeContainer && string.Compare(routeContainer.RouteKey, routeKey, true) == 0)
+				{
+					return new SiteMapRoute
+					{
+						RouteKey = routeKey,
+						Text = routeContainer.Text,
+						Template = routeContainer.Template
+					};
+				}
+
 				var r = SelectRoute(container, routeKey);
 
 				if (r != null)

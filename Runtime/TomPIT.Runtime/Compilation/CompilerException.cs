@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.ComponentModel.IoC;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
@@ -104,14 +105,26 @@ namespace TomPIT.Compilation
 			}
 			else
 			{
-				var operation = (config as IApiConfiguration).Operations.FirstOrDefault(f => string.Compare(f.Name, System.IO.Path.GetFileNameWithoutExtension(tokens[2]), true) == 0);
-
-				if (operation != null)
+				if (config is IApiConfiguration api)
 				{
-					Source = operation.ScriptName(tenant);
-					Element = operation.Id;
-				}
+					var operation = api.Operations.FirstOrDefault(f => string.Compare(f.Name, System.IO.Path.GetFileNameWithoutExtension(tokens[2]), true) == 0);
 
+					if (operation != null)
+					{
+						Source = operation.ScriptName(tenant);
+						Element = operation.Id;
+					}
+				}
+				else if (config is IIoCContainerConfiguration ioc)
+				{
+					var operation = ioc.Operations.FirstOrDefault(f => string.Compare(f.Name, System.IO.Path.GetFileNameWithoutExtension(tokens[2]), true) == 0);
+
+					if (operation != null)
+					{
+						Source = operation.ScriptName(tenant);
+						Element = operation.Id;
+					}
+				}
 			}
 		}
 

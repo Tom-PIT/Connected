@@ -55,6 +55,7 @@
 		public const string ViewElement = "TomPIT.MicroServices.Design.Dom.ViewElement, " + DesignAssembly;
 
 		public const string ApiManifest = "TomPIT.Reflection.Manifests.Providers.ApiManifestProvider, " + SdkAssembly;
+		public const string IoCManifest = "TomPIT.Reflection.Manifests.Providers.IoCManifestProvider, " + SdkAssembly;
 
 		public const string ApiOperationCreateHandler = "TomPIT.Development.Handlers.ApiOperationCreateHandler, " + SdkAssembly;
 		public const string MasterCreateHandler = "TomPIT.Handlers.MasterCreateHandler, " + DevelopmentAssembly;

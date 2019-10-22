@@ -21,7 +21,8 @@ namespace TomPIT.Annotations.Design
 		public const string DataHubEndpointProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.DataHubEndpointProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string ExtenderProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.ExtenderCompletionProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string QueueWorkersProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.QueueWorkersProvider, " + SystemAssemblies.DevelopmentAssembly;
-		//public const string IoCContainersProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.IoCContainersProvider, " + SystemAssemblies.DevelopmentAssembly;
+		public const string IoCOperationsProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.IoCOperationsProvider, " + SystemAssemblies.DevelopmentAssembly;
+		public const string IoCOperationParametersProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.IoCOperationParametersProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public CompletionItemProviderAttribute() { }
 
 		public CompletionItemProviderAttribute(string type)

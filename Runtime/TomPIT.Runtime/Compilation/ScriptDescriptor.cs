@@ -11,5 +11,6 @@ namespace TomPIT.Compilation
 		public Guid MicroService { get; set; }
 		public Guid Id { get; set; }
 		public string Assembly { get; set; }
+		public Guid Component { get; set; }
 	}
 }

@@ -39,7 +39,12 @@ namespace TomPIT.Development.Navigation
 		private void FillKeys(ISiteMapContainer container, List<INavigationRouteDescriptor> items)
 		{
 			foreach (var item in container.Routes)
+			{
+				if (container is ISiteMapRouteContainer routeContainer)
+					items.Add(new NavigationRouteDescriptor { RouteKey = routeContainer.Key, Template = routeContainer.Template, Text = routeContainer.Text });
+
 				FillKeys(item, items);
+			}
 		}
 
 		private void FillKeys(ISiteMapRoute route, List<INavigationRouteDescriptor> items)

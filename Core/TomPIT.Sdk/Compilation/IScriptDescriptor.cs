@@ -11,5 +11,6 @@ namespace TomPIT.Compilation
 		List<IDiagnostic> Errors { get; }
 		Guid MicroService { get; }
 		Guid Id { get; }
+		Guid Component { get; }
 	}
 }

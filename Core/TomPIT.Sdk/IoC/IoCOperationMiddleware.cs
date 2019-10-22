@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using TomPIT.Compilation;
+using TomPIT.ComponentModel.IoC;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
@@ -8,16 +12,18 @@ using TomPIT.Serialization;
 
 namespace TomPIT.IoC
 {
-	public abstract class IoCOperationMiddleware : MiddlewareComponent, IIoCOperationMiddleware
+	public abstract class IoCOperationMiddlewareBase : MiddlewareComponent, IIoCOperationContext
 	{
-		protected List<IIoCEndpointMiddleware> CreateEndpoints<A>(A e)
+		IIoCOperation IIoCOperationContext.Operation { get; set; }
+
+		protected List<IIoCEndpointMiddleware> CreateEndpoints()
 		{
-			return Context.Tenant.GetService<IIoCService>().CreateEndpoints(this, e);
+			return Context.Tenant.GetService<IIoCService>().CreateEndpoints(((IIoCOperationContext)this).Operation, this);
 		}
 
 		protected IIoCEndpointMiddleware FirstEndpoint<A>(A e)
 		{
-			var endpoints = CreateEndpoints(e);
+			var endpoints = CreateEndpoints();
 
 			if (endpoints == null || endpoints.Count == 0)
 				return null;
@@ -25,9 +31,9 @@ namespace TomPIT.IoC
 			return endpoints[0];
 		}
 
-		protected IIoCEndpointMiddleware LastEndpoint<A>(A e)
+		protected IIoCEndpointMiddleware LastEndpoint()
 		{
-			var endpoints = CreateEndpoints(e);
+			var endpoints = CreateEndpoints();
 
 			if (endpoints == null || endpoints.Count == 0)
 				return null;
@@ -35,63 +41,111 @@ namespace TomPIT.IoC
 			return endpoints[^1];
 		}
 
-		protected bool HasEndpoints<A>(A e)
+		protected bool HasEndpoints()
 		{
-			return Context.Tenant.GetService<IIoCService>().HasEndpoints(this, e);
+			return Context.Tenant.GetService<IIoCService>().HasEndpoints(((IIoCOperationContext)this).Operation, this);
 		}
 	}
 
-	public abstract class IoCOperationMiddleware<A> : IoCOperationMiddleware, IIoCOperationMiddleware<A>
+	public abstract class IoCOperationMiddleware : IoCOperationMiddlewareBase, IIoCOperationMiddleware
 	{
-		public void Invoke(A e)
+		public void Invoke()
 		{
-			Invoke(e, CreateEndpoints(e));
+			Validate();
+			OnInvoke();
 		}
 
-		public void Invoke(A e, List<IIoCEndpointMiddleware> endpoints)
+		protected virtual void OnInvoke()
 		{
-			foreach (var endpoint in endpoints)
-				Invoke(e, endpoint);
+			Invoke(CreateEndpoints());
 		}
-		public void Invoke(A e, IIoCEndpointMiddleware endpoint)
+
+		protected void Invoke(IIoCEndpointMiddleware endpoint)
 		{
-			var method = endpoint.GetType().GetMethod(nameof(IIoCOperationMiddleware<A>.Invoke));
+			var method = endpoint.GetType().GetMethod(nameof(IIoCEndpointMiddleware<object>.Invoke));
 
 			if (method == null)
-				throw new RuntimeException($"{SR.ErrIoCMethodExpected} ({nameof(IIoCOperationMiddleware<A>.Invoke)}");
+				throw new RuntimeException($"{SR.ErrIoCMethodExpected} ({nameof(IIoCOperationMiddleware<object>.Invoke)}");
 
 			var parameters = method.GetParameters();
-			var parameter = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(Context as IMicroServiceContext, parameters[0].ParameterType, Serializer.Serialize(e));
+			var parameter = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(Context as IMicroServiceContext, parameters[0].ParameterType, Serializer.Serialize(this));
 
 			method.Invoke(endpoint, new object[] { parameter });
 		}
+
+		protected void Invoke(List<IIoCEndpointMiddleware> endpoints)
+		{
+			Parallel.ForEach(endpoints,
+				(i) =>
+				{
+					Invoke(i);
+				});
+		}
 	}
 
-	public abstract class IoCOperationMiddleware<R, A> : IoCOperationMiddleware, IIoCContainerMiddleware<R, A>
+	public abstract class IoCOperationMiddleware<R> : IoCOperationMiddlewareBase, IIoCOperationMiddleware<R>
 	{
-		public List<R> Invoke(A e)
+		public R Invoke()
 		{
-			return Invoke(e, CreateEndpoints(e));
+			Validate();
+
+			return OnInvoke();
 		}
 
-		public List<R> Invoke(A e, List<IIoCEndpointMiddleware> endpoints)
+		protected virtual R OnInvoke()
+		{
+			return Invoke(CreateEndpoints());
+		}
+
+		protected R Invoke(List<IIoCEndpointMiddleware> endpoints)
 		{
 			var result = new List<R>();
 
-			foreach (var endpoint in endpoints)
-				result.Add(Invoke(e, endpoint));
+			Parallel.ForEach(endpoints,
+				(i) =>
+				{
+					var r = Invoke(i);
 
-			return result;
+					if (r != default)
+					{
+						lock (result)
+						{
+							result.Add(r);
+						}
+					}
+				});
+
+			if (result.Count == 0)
+				return default;
+
+			if (typeof(R) is IList)
+			{
+				var instance = typeof(R).CreateInstance() as IList;
+
+				foreach (var item in result)
+				{
+					if (item is IList list)
+					{
+						foreach (var subItem in list)
+							instance.Add(subItem);
+					}
+				}
+
+				return (R)instance;
+			}
+
+			return result.Last();
 		}
-		public R Invoke(A e, IIoCEndpointMiddleware endpoint)
+
+		protected R Invoke(IIoCEndpointMiddleware endpoint)
 		{
-			var method = endpoint.GetType().GetMethod(nameof(IIoCOperationMiddleware<A>.Invoke));
+			var method = endpoint.GetType().GetMethod(nameof(IIoCOperationMiddleware<object>.Invoke));
 
 			if (method == null)
-				throw new RuntimeException($"{SR.ErrIoCMethodExpected} ({nameof(IIoCOperationMiddleware<A>.Invoke)}");
+				throw new RuntimeException($"{SR.ErrIoCMethodExpected} ({nameof(IIoCOperationMiddleware<object>.Invoke)}");
 
 			var parameters = method.GetParameters();
-			var parameter = CreateInstance(parameters[0].ParameterType, e);
+			var parameter = CreateInstance(parameters[0].ParameterType, this);
 
 			var result = method.Invoke(endpoint, new object[] { parameter });
 

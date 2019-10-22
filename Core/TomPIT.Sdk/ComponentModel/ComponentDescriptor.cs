@@ -4,6 +4,7 @@ using TomPIT.ComponentModel.BigData;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.Data;
 using TomPIT.ComponentModel.Distributed;
+using TomPIT.ComponentModel.IoC;
 using TomPIT.ComponentModel.IoT;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.ComponentModel.Scripting;
@@ -197,6 +198,11 @@ namespace TomPIT.ComponentModel
 		public static ConfigurationDescriptor<IPartialViewConfiguration> Partial(IMiddlewareContext context, string identifier)
 		{
 			return new ConfigurationDescriptor<IPartialViewConfiguration>(context, identifier, ComponentCategories.Partial);
+		}
+
+		public static ConfigurationDescriptor<IIoCContainerConfiguration> IoCContainer(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IIoCContainerConfiguration>(context, identifier, ComponentCategories.IoCContainer);
 		}
 	}
 }
