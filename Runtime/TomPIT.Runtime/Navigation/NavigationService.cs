@@ -174,7 +174,7 @@ namespace TomPIT.Navigation
 
 						var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
 
-						FillRouteKeys(descriptor, container);
+						FillDescriptor(descriptor, container);
 
 						Handlers[container.Key].Add(descriptor);
 					}
@@ -182,7 +182,7 @@ namespace TomPIT.Navigation
 					{
 						var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
 
-						FillRouteKeys(descriptor, container);
+						FillDescriptor(descriptor, container);
 
 						Handlers.TryAdd(container.Key, new List<NavigationHandlerDescriptor>
 						{
@@ -216,28 +216,40 @@ namespace TomPIT.Navigation
 			RefreshNavigation(config);
 		}
 
-		private void FillRouteKeys(NavigationHandlerDescriptor descriptor, ISiteMapContainer container)
+		private void FillDescriptor(NavigationHandlerDescriptor descriptor, ISiteMapContainer container)
 		{
 			foreach (var item in container.Routes)
 			{
-				if (container is ISiteMapRouteContainer routeContainer && !string.IsNullOrWhiteSpace(routeContainer.RouteKey) && !descriptor.RouteKeys.Contains(routeContainer.RouteKey.ToLowerInvariant()))
-					descriptor.RouteKeys.Add(routeContainer.RouteKey.ToLowerInvariant());
+				if (container is ISiteMapRouteContainer routeContainer)
+				{
+					if (!string.IsNullOrWhiteSpace(routeContainer.RouteKey) && !descriptor.RouteKeys.Contains(routeContainer.RouteKey.ToLowerInvariant()))
+						descriptor.RouteKeys.Add(routeContainer.RouteKey.ToLowerInvariant());
 
-				FillRouteKeys(descriptor, item);
+					if (!string.IsNullOrWhiteSpace(routeContainer.Template) && !descriptor.RouteKeys.Contains(routeContainer.Template.ToLowerInvariant()))
+						descriptor.Templates.Add(routeContainer.Template);
+				}
+
+				FillDescriptor(descriptor, item);
 			}
 		}
 
-		private void FillRouteKeys(NavigationHandlerDescriptor descriptor, ISiteMapRoute route)
+		private void FillDescriptor(NavigationHandlerDescriptor descriptor, ISiteMapRoute route)
 		{
 			if (!string.IsNullOrWhiteSpace(route.RouteKey) && !descriptor.RouteKeys.Contains(route.RouteKey.ToLowerInvariant()))
 				descriptor.RouteKeys.Add(route.RouteKey.ToLowerInvariant());
+
+			if (!string.IsNullOrWhiteSpace(route.Template) && !descriptor.RouteKeys.Contains(route.Template.ToLowerInvariant()))
+				descriptor.Templates.Add(route.Template.ToLowerInvariant());
 
 			foreach (var item in route.Routes)
 			{
 				if (!string.IsNullOrWhiteSpace(item.RouteKey) && !descriptor.RouteKeys.Contains(item.RouteKey.ToLowerInvariant()))
 					descriptor.RouteKeys.Add(item.RouteKey.ToLowerInvariant());
 
-				FillRouteKeys(descriptor, item);
+				if (!string.IsNullOrWhiteSpace(item.Template) && !descriptor.RouteKeys.Contains(item.Template.ToLowerInvariant()))
+					descriptor.Templates.Add(item.Template.ToLowerInvariant());
+
+				FillDescriptor(descriptor, item);
 			}
 		}
 		public List<IBreadcrumb> QueryBreadcrumbs(string routeKey, RouteValueDictionary parameters)
@@ -354,6 +366,41 @@ namespace TomPIT.Navigation
 			return $"{ctx.Services.Routing.RootUrl}/{string.Join('/', processedSegments)}";
 		}
 
+		public ISiteMapRoute MatchRoute(string url)
+		{
+			Initialize();
+
+			foreach (var handler in Handlers)
+			{
+				foreach (var descriptor in handler.Value)
+				{
+					foreach (var template in descriptor.Templates)
+					{
+						var parsedTemplate = TemplateParser.Parse(template);
+						var matcher = new TemplateMatcher(parsedTemplate, GetDefaults(parsedTemplate));
+						var values = new RouteValueDictionary();
+
+						if (matcher.TryMatch(url, values))
+							return SelectRouteByTemplate(descriptor, template);
+					}
+				}
+			}
+
+			return null;
+		}
+
+		private static RouteValueDictionary GetDefaults(RouteTemplate parsedTemplate)
+		{
+			var result = new RouteValueDictionary();
+
+			foreach (var parameter in parsedTemplate.Parameters)
+			{
+				if (parameter.DefaultValue != null)
+					result.Add(parameter.Name, parameter.DefaultValue);
+			}
+
+			return result;
+		}
 		public ISiteMapRoute SelectRoute(string routeKey)
 		{
 			Initialize();
@@ -365,6 +412,43 @@ namespace TomPIT.Navigation
 					if (descriptor.RouteKeys.Contains(routeKey.ToLowerInvariant()))
 						return SelectRoute(descriptor, routeKey);
 				}
+			}
+
+			return null;
+		}
+
+		private ISiteMapRoute SelectRouteByTemplate(NavigationHandlerDescriptor descriptor, string template)
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
+			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), descriptor.Handler);
+
+			if (handler == null)
+				return null;
+
+			var containers = handler.Invoke();
+
+			if (containers == null)
+				return null;
+
+			foreach (var container in containers)
+				BindContext(container, handler.Context);
+
+			foreach (var container in containers)
+			{
+				if (container is ISiteMapRouteContainer routeContainer && string.Compare(routeContainer.Template, template, true) == 0)
+				{
+					return new SiteMapRoute
+					{
+						RouteKey = routeContainer.RouteKey,
+						Text = routeContainer.Text,
+						Template = routeContainer.Template
+					};
+				}
+
+				var r = SelectRouteByTemplate(container, template);
+
+				if (r != null)
+					return r;
 			}
 
 			return null;
@@ -431,6 +515,38 @@ namespace TomPIT.Navigation
 					return item;
 
 				var r = SelectRoute(item, routeKey);
+
+				if (r != null)
+					return r;
+			}
+
+			return null;
+		}
+
+		private ISiteMapRoute SelectRouteByTemplate(ISiteMapContainer container, string template)
+		{
+			foreach (var item in container.Routes)
+			{
+				if (string.Compare(item.Template, template, true) == 0)
+					return item;
+
+				var r = SelectRouteByTemplate(item, template);
+
+				if (r != null)
+					return r;
+			}
+
+			return null;
+		}
+
+		private ISiteMapRoute SelectRouteByTemplate(ISiteMapRoute route, string template)
+		{
+			foreach (var item in route.Routes)
+			{
+				if (string.Compare(item.Template, template, true) == 0)
+					return item;
+
+				var r = SelectRoute(item, template);
 
 				if (r != null)
 					return r;

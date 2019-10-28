@@ -24,7 +24,6 @@ namespace TomPIT.App.UI
 	internal class ViewService : SynchronizedClientRepository<IConfiguration, Guid>, IViewService
 	{
 		private Lazy<ConcurrentDictionary<Guid, bool>> _changeState = new Lazy<ConcurrentDictionary<Guid, bool>>();
-		private Lazy<ConcurrentDictionary<string, bool>> _snippetState = new Lazy<ConcurrentDictionary<string, bool>>();
 
 		public ViewService(ITenant tenant) : base(tenant, "view")
 		{
@@ -46,7 +45,6 @@ namespace TomPIT.App.UI
 
 			ChangeState[e.Component] = true;
 			Refresh(e.Component);
-			SynchronizeSnippetsState(e.Component);
 
 			ReplaceLogin();
 		}
@@ -72,7 +70,6 @@ namespace TomPIT.App.UI
 			ChangeState[e.Component] = true;
 
 			Remove(e.Component);
-			SynchronizeSnippetsState(e.Component);
 			ReplaceLogin();
 		}
 
@@ -82,7 +79,6 @@ namespace TomPIT.App.UI
 				return;
 
 			Refresh(e.Component);
-			SynchronizeSnippetsState(e.Component);
 			ReplaceLogin();
 		}
 
@@ -93,23 +89,7 @@ namespace TomPIT.App.UI
 
 			ChangeState[e.Component] = true;
 			Refresh(e.Component);
-			SynchronizeSnippetsState(e.Component);
 			ReplaceLogin();
-		}
-
-		private void SynchronizeSnippetsState(Guid component)
-		{
-			try
-			{
-				var config = Tenant.GetService<IComponentService>().SelectConfiguration(component) as ISnippetView;
-
-				if (config == null)
-					return;
-
-				foreach (var i in config.Snippets)
-					SnippetState[$"{component}/{i.Name}"] = true;
-			}
-			catch { }
 		}
 
 		private bool IsTargetCategory(string category)
@@ -178,67 +158,6 @@ namespace TomPIT.App.UI
 				return null;
 
 			return Encoding.UTF8.GetString(r.Content);
-		}
-
-		public bool HasSnippetChanged(ViewKind kind, string url)
-		{
-			if (string.Compare(url, "_ViewImports", true) == 0)
-				return false;
-
-			var tokens = url.Split('.');
-
-			var component = Guid.Empty;
-			var snippet = string.Empty;
-
-			switch (kind)
-			{
-				case ViewKind.Master:
-					var masterUrl = url.Split('.');
-
-					var master = SelectMaster(url);
-
-					if (master == null)
-						return false;
-
-					component = master.Component;
-					snippet = masterUrl[masterUrl.Length - 1];
-					break;
-				case ViewKind.Partial:
-					var partialUrl = url.Split('.');
-					var partial = SelectPartial(partialUrl[0]);
-
-					if (partial == null)
-						return false;
-
-					component = partial.Component;
-					snippet = partialUrl[1];
-					break;
-				case ViewKind.View:
-					var viewUrl = url.Split('.');
-
-					var view = Select(viewUrl[0], null);
-					snippet = viewUrl[1];
-
-					if (view == null)
-						return false;
-
-					component = view.Component;
-					break;
-				default:
-					break;
-			}
-
-			if (component == null)
-				return false;
-
-			if (SnippetState.TryGetValue($"{component}/{snippet}", out bool r))
-			{
-				SnippetState[$"{component}/{snippet}"] = false;
-
-				return r;
-			}
-
-			return false;
 		}
 
 		public bool HasChanged(ViewKind kind, string url)
@@ -395,7 +314,6 @@ namespace TomPIT.App.UI
 		}
 
 		private ConcurrentDictionary<Guid, bool> ChangeState => _changeState.Value;
-		private ConcurrentDictionary<string, bool> SnippetState => _snippetState.Value;
 
 		private void ReplaceLogin()
 		{
@@ -415,8 +333,6 @@ namespace TomPIT.App.UI
 				return ViewKind.Master;
 			else if (path.StartsWith("Views/Dynamic/Partial") || path.StartsWith(":partial"))
 				return ViewKind.Partial;
-			else if (path.StartsWith("Views/Dynamic/Snippet"))
-				return ViewKind.Snippet;
 			else if (path.StartsWith("Views/Dynamic/MailTemplate"))
 				return ViewKind.MailTemplate;
 			else if (path.StartsWith("Views/Dynamic/Report"))

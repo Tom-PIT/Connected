@@ -48,17 +48,7 @@ namespace TomPIT.App.UI
 			}
 
 			var view = viewEngineResult.View;
-
-			if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
-				return;
-
-			var invokeArgs = new ViewInvokeArguments(model);
-
-			if (Shell.HttpContext.Response.StatusCode != (int)HttpStatusCode.OK)
-				return;
-
-			var content = CreateContent(view, invokeArgs);
-
+			var content = CreateContent(view, model);
 			var buffer = Encoding.UTF8.GetBytes(content);
 
 			if (Context.Response.StatusCode == (int)HttpStatusCode.OK)

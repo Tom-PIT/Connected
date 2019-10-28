@@ -19,13 +19,27 @@ namespace TomPIT.Exceptions
 			context.Response.ContentType = "application/json";
 
 			var severity = ExceptionSeverity.Critical;
+			var source = ex.Source;
+			var message = ex.Message;
 
 			if (ex is RuntimeException)
 			{
 				severity = ((RuntimeException)ex).Severity;
-			}
 
-			var source = ex.Source;
+				if (ex is ScriptException script)
+				{
+					source = $"{script.MicroService}/{script.Path} ({script.Line})";
+				}
+			}
+			else if (ex.Data != null && ex.Data.Count > 0)
+			{
+				var script = ex.Data.Contains("Script") ? ex.Data["Script"].ToString() : string.Empty;
+				var ms = ex.Data.Contains("MicroService") ? ex.Data["MicroService"] : null;
+				var msName = ms == null ? string.Empty : (ms as IMicroService).Name;
+
+				if (!string.IsNullOrWhiteSpace(script))
+					source = $"{msName}/{script}";
+			}
 
 			if (ex is ValidationException || ex is System.ComponentModel.DataAnnotations.ValidationException)
 			{

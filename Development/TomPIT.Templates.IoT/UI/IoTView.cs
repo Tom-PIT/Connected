@@ -5,13 +5,9 @@ using TomPIT.Annotations.Design;
 using TomPIT.Collections;
 using TomPIT.ComponentModel.Diagnostics;
 using TomPIT.ComponentModel.IoT;
-using TomPIT.ComponentModel.Messaging;
-using TomPIT.ComponentModel.UI;
 using TomPIT.Diagnostics;
-using TomPIT.Messaging;
 using TomPIT.MicroServices.IoT.UI.Stencils;
 using TomPIT.Runtime;
-using TomPIT.UI;
 
 namespace TomPIT.MicroServices.IoT.UI
 {
@@ -21,12 +17,8 @@ namespace TomPIT.MicroServices.IoT.UI
 	[ViewRenderer("TomPIT.MicroServices.IoT.UI.IoTRenderer, TomPIT.MicroServices.IoT")]
 	public class IoTView : ViewBase, IIoTViewConfiguration
 	{
-		private IServerEvent _invoke = null;
 		private IMetricOptions _metric = null;
 		private ListItems<IIoTElement> _elements = null;
-
-		[Browsable(false)]
-		public override ListItems<IViewHelper> Helpers => null;
 
 		[Browsable(false)]
 		public ListItems<IIoTElement> Elements
@@ -59,9 +51,6 @@ namespace TomPIT.MicroServices.IoT.UI
 		[Items(ItemsAttribute.LayoutItems)]
 		public string Layout { get; set; }
 
-		[Browsable(false)]
-		public override ListItems<ISnippet> Snippets => null;
-
 		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public IMetricOptions Metrics
 		{
@@ -71,18 +60,6 @@ namespace TomPIT.MicroServices.IoT.UI
 					_metric = new MetricOptions { Parent = this };
 
 				return _metric;
-			}
-		}
-
-		[EventArguments(typeof(ViewInvokeArguments))]
-		public IServerEvent Invoke
-		{
-			get
-			{
-				if (_invoke == null)
-					_invoke = new ServerEvent { Parent = this };
-
-				return _invoke;
 			}
 		}
 	}

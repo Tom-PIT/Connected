@@ -395,21 +395,16 @@ namespace TomPIT.Compilation
 
 			ProcessorBase processor = null;
 
-			if (sourceCode is ISnippet snippet)
-				processor = new SnippetProcessor(snippet, content);
-			else
-			{
-				if (config is IMasterViewConfiguration master)
-					processor = new MasterProcessor(master, content);
-				else if (config is IViewConfiguration view)
-					processor = new ViewProcessor(view, content);
-				else if (config is IPartialViewConfiguration partial)
-					processor = new PartialProcessor(partial, content);
-				else if (config is IMailTemplateConfiguration mail)
-					processor = new MailTemplateProcessor(mail, content);
-				else if (config is IReportConfiguration report)
-					processor = new ReportProcessor(report);
-			}
+			if (config is IMasterViewConfiguration master)
+				processor = new MasterProcessor(master, content);
+			else if (config is IViewConfiguration view)
+				processor = new ViewProcessor(view, content);
+			else if (config is IPartialViewConfiguration partial)
+				processor = new PartialProcessor(partial, content);
+			else if (config is IMailTemplateConfiguration mail)
+				processor = new MailTemplateProcessor(mail, content);
+			else if (config is IReportConfiguration report)
+				processor = new ReportProcessor(report);
 
 			if (processor == null)
 				return null;

@@ -47,6 +47,7 @@ namespace TomPIT.MicroServices.Apis
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[DefaultValue(ElementScope.Public)]
+		[InvalidateEnvironment(EnvironmentSection.Explorer)]
 		public ElementScope Scope { get; set; } = ElementScope.Public;
 
 		[EnvironmentVisibility(EnvironmentMode.Runtime)]

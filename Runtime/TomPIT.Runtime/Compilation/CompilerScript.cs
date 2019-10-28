@@ -28,6 +28,7 @@ namespace TomPIT.Compilation
 
 			if (string.IsNullOrWhiteSpace(code))
 				return;
+			var msv = Tenant.GetService<IMicroServiceService>().Select(MicroService);
 
 			var options = ScriptOptions.Default
 				 .WithImports(Usings)
@@ -35,6 +36,7 @@ namespace TomPIT.Compilation
 				 .WithSourceResolver(new ScriptResolver(Tenant, MicroService))
 				 .WithMetadataResolver(new AssemblyResolver(Tenant, MicroService))
 				 .WithEmitDebugInformation(true)
+				 //.WithFilePath($"http://localhost:44002/sys/source-code/{msv.Name}/{SourceCode.ScriptName(Tenant)}")
 				 .WithFilePath(SourceCode.ScriptName(Tenant))
 				 .WithFileEncoding(Encoding.UTF8);
 

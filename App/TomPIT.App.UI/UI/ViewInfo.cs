@@ -5,13 +5,10 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 using TomPIT.Annotations.Design;
-using TomPIT.Collections;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.Reports;
-using TomPIT.ComponentModel.UI;
-using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Storage;
@@ -116,9 +113,6 @@ namespace TomPIT.App.UI
 					break;
 				case ViewKind.View:
 					LoadView(context);
-					break;
-				case ViewKind.Snippet:
-					LoadSnippet();
 					break;
 				case ViewKind.Partial:
 					LoadPartial();
@@ -246,99 +240,6 @@ namespace TomPIT.App.UI
 			Blob = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Select(master.TextBlob);
 
 			var content = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, master);
-
-			if (!string.IsNullOrWhiteSpace(content))
-				_viewContent = Encoding.UTF8.GetBytes(content);
-
-			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
-		}
-
-		private void LoadSnippet()
-		{
-			var tokens = FullPath.Split('/');
-
-			switch (ResolveSnippetKind(FullPath))
-			{
-				case ViewKind.Master:
-					LoadMasterSnippet(tokens[4]);
-					break;
-				case ViewKind.View:
-					var viewPath = string.Empty;
-
-					for (int i = 4; i < tokens.Length; i++)
-						viewPath += string.Format("{0}/", tokens[i]);
-
-					LoadViewSnippet(viewPath.Trim('/'));
-					break;
-				case ViewKind.Partial:
-					LoadPartialSnippet(tokens[4]);
-					break;
-				default:
-					throw new NotSupportedException();
-			}
-		}
-
-		private void LoadPartialSnippet(string name)
-		{
-			var vt = System.IO.Path.GetFileNameWithoutExtension(name);
-			var view = System.IO.Path.GetFileNameWithoutExtension(vt);
-			var snippet = System.IO.Path.GetExtension(vt).Trim('.');
-
-			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().SelectPartial(view) is IPartialViewConfiguration c))
-				throw new RuntimeException(SR.ErrPartialViewNotFound);
-
-			LoadSnippetContent(c.Component, snippet, c.Snippets);
-		}
-
-		private void LoadMasterSnippet(string name)
-		{
-			var vt = System.IO.Path.GetFileNameWithoutExtension(name);
-			var view = System.IO.Path.GetFileNameWithoutExtension(vt);
-			var snippet = System.IO.Path.GetExtension(vt).Trim('.');
-
-			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().SelectMaster(view) is IMasterViewConfiguration c))
-				throw new RuntimeException(SR.ErrMasterViewNotFound);
-
-			LoadSnippetContent(c.Component, snippet, c.Snippets);
-		}
-
-		private void LoadViewSnippet(string name)
-		{
-			var vt = System.IO.Path.GetFileNameWithoutExtension(name);
-			var view = System.IO.Path.GetFileNameWithoutExtension(vt);
-			var snippet = System.IO.Path.GetExtension(vt).Trim('.');
-			var url = string.Empty;
-			var tokens = name.Split('/');
-
-			if (tokens.Length == 1)
-				url = view;
-			else
-			{
-				for (int i = 0; i < tokens.Length - 1; i++)
-					url += string.Format("{0}/", tokens[i]);
-
-				url += string.Format("{0}/", view);
-
-				url = url.Trim('/');
-			}
-
-			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().Select(url, null) is IViewConfiguration c))
-				throw new RuntimeException(SR.ErrComponentNotFound);
-
-			LoadSnippetContent(c.Component, snippet, c.Snippets);
-		}
-
-		private void LoadSnippetContent(Guid configuration, string snippet, ListItems<ISnippet> snippets)
-		{
-			if (!(snippets.FirstOrDefault(f => f is ISnippet && string.Compare(((ISnippet)f).Name, snippet, true) == 0) is ISnippet s))
-				throw new RuntimeException(SR.ErrSnippetNotFound);
-
-			Exists = true;
-
-			ViewComponent = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(configuration);
-			Blob = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Select(s.TextBlob);
-
-			var content = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, s);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);

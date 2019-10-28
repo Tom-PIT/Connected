@@ -6,6 +6,7 @@ namespace TomPIT.Navigation
 	internal class NavigationHandlerDescriptor
 	{
 		private List<string> _keys = null;
+		private List<string> _templates = null;
 		public NavigationHandlerDescriptor(Guid microService, Guid component, Type handler)
 		{
 			Component = component;
@@ -25,6 +26,17 @@ namespace TomPIT.Navigation
 					_keys = new List<string>();
 
 				return _keys;
+			}
+		}
+
+		public List<string> Templates
+		{
+			get
+			{
+				if (_templates == null)
+					_templates = new List<string>();
+
+				return _templates;
 			}
 		}
 	}

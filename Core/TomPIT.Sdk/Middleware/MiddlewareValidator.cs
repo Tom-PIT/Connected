@@ -15,12 +15,12 @@ namespace TomPIT.Middleware
 	internal class MiddlewareValidator : MiddlewareObject
 	{
 		public event ValidatingHandler Validating;
-		public MiddlewareValidator(object instance)
+		public MiddlewareValidator(IMiddlewareComponent instance)
 		{
 			Instance = instance;
 		}
 
-		private object Instance { get; }
+		private IMiddlewareComponent Instance { get; }
 
 		public void Validate()
 		{
@@ -141,7 +141,7 @@ namespace TomPIT.Middleware
 						var serviceProvider = new ValidationServiceProvider();
 
 						serviceProvider.AddService(typeof(IMiddlewareContext), Context);
-						serviceProvider.AddService(typeof(IUniqueValueProvider), this);
+						serviceProvider.AddService(typeof(IUniqueValueProvider), Instance);
 
 						var ctx = new ValidationContext(instance, serviceProvider, new Dictionary<object, object>
 						{

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using TomPIT.Data;
 using TomPIT.Security;
+using TomPIT.Serialization;
 
 namespace TomPIT.Middleware.Services
 {
@@ -12,17 +12,17 @@ namespace TomPIT.Middleware.Services
 		{
 		}
 
-		public IUserData Create(string primaryKey, object value)
+		public IUserData Create<A, V>(A primaryKey, V value)
 		{
 			return Create(primaryKey, value, null);
 		}
 
-		public IUserData Create(string primaryKey, object value, string topic)
+		public IUserData Create<A, V>(A primaryKey, V value, string topic)
 		{
 			return new UserData
 			{
-				PrimaryKey = primaryKey,
-				Value = Types.Convert<string>(value, CultureInfo.InvariantCulture),
+				PrimaryKey = Serializer.Serialize(primaryKey),
+				Value = Serializer.Serialize(value),
 				Topic = topic
 			};
 		}
@@ -34,53 +34,43 @@ namespace TomPIT.Middleware.Services
 			return Context.Tenant.GetService<IUserDataService>().Query(user, topic);
 		}
 
-		public T Select<T>(string primaryKey, string topic)
+		public string Select<A>(A primaryKey)
 		{
-			var r = Select(primaryKey, topic);
-
-			if (string.IsNullOrWhiteSpace(r))
-				return default(T);
-
-			return Types.Convert<T>(r, CultureInfo.InvariantCulture);
+			return Select<string, A>(primaryKey);
 		}
 
-		public T Select<T>(string primaryKey)
+		public string Select<A>(A primaryKey, string topic)
 		{
-			var r = Select(primaryKey);
-
-			if (string.IsNullOrWhiteSpace(r))
-				return default(T);
-
-			return Types.Convert<T>(r, CultureInfo.InvariantCulture);
+			return Select<string, A>(primaryKey, topic);
 		}
 
-		public string Select(string primaryKey)
+		public R Select<R, A>(A primaryKey)
 		{
 			var user = Context.Services.Identity.IsAuthenticated ? Context.Services.Identity.User.Token : Guid.Empty;
 
-			return Context.Tenant.GetService<IUserDataService>().Select(user, primaryKey)?.Value;
+			return Serializer.Deserialize<R>(Context.Tenant.GetService<IUserDataService>().Select(user, Serializer.Serialize(primaryKey))?.Value);
 		}
 
-		public string Select(string primaryKey, string topic)
+		public R Select<R, A>(A primaryKey, string topic)
 		{
 			var user = Context.Services.Identity.IsAuthenticated ? Context.Services.Identity.User.Token : Guid.Empty;
 
-			return Context.Tenant.GetService<IUserDataService>().Select(user, primaryKey, topic)?.Value;
+			return Serializer.Deserialize<R>(Context.Tenant.GetService<IUserDataService>().Select(user, Serializer.Serialize(primaryKey), topic)?.Value);
 		}
 
-		public void Update(string primaryKey, object value)
+		public void Update<A, V>(A primaryKey, V value)
 		{
 			Update(primaryKey, value, null);
 		}
 
-		public void Update(string primaryKey, object value, string topic)
+		public void Update<A, V>(A primaryKey, V value, string topic)
 		{
 			Update(new List<IUserData>
 			{
 				new UserData
 				{
-					PrimaryKey=primaryKey,
-					Value=Types.Convert<string>(value, CultureInfo.InvariantCulture),
+					PrimaryKey=Serializer.Serialize( primaryKey),
+					Value=Serializer.Serialize(value),
 					Topic=topic
 				}
 			});

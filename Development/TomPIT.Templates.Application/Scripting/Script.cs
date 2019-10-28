@@ -12,10 +12,12 @@ namespace TomPIT.MicroServices.Scripting
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
 	[ComponentCreatedHandler(DesignUtils.ScriptCreateHandler)]
+	[DomElement(DesignUtils.ScriptElement)]
 	public class Script : ComponentConfiguration, IScriptConfiguration
 	{
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[DefaultValue(ElementScope.Internal)]
+		[InvalidateEnvironment(EnvironmentSection.Explorer)]
 		public ElementScope Scope { get; set; } = ElementScope.Internal;
 
 		[Browsable(false)]

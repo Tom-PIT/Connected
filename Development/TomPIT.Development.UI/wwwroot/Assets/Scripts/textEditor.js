@@ -187,7 +187,7 @@
                                 onComplete: function (data) {
                                     resolve({
                                         actions: data === null ? [] : data,
-                                        dispose: function () { }
+                                        dispose: function () { data = null; }
                                     });
                                 }
 
@@ -223,7 +223,9 @@
                                 },
                                 onComplete: function (data) {
                                     if (data) {
-                                        data.dispose = function () { };
+                                        data.dispose = function () {
+                                            data = null;
+                                        };
 
                                         resolve(data);
                                     }
@@ -300,7 +302,10 @@
                                     if (data) {
                                         resolve({
                                             value: data,
-                                            dispose: function () { }
+                                            dispose: function () {
+
+                                                data = null;
+                                            }
                                         });
                                     }
                                     else
@@ -352,195 +357,5 @@
                 }
             });
         }
-    });
-
-    $.widget('tompit.tpTextEditor1', {
-
-        options: {
-            onCreated: function (instance) {
-                return false;
-            },
-            onChanged: function (value) {
-                return false;
-            },
-            instance: null
-        },
-
-        _create: function () {
-            this._editors = [];
-        },
-        deactivateEditor: function () {
-            var target = this;
-
-            if (typeof target.options.instance !== 'undefined' && target.options.instance !== null) {
-                try {
-                    if (typeof target.options.timer !== 'undefined')
-                        clearInterval(target.options.timer);
-
-                    if (typeof target.options.instance.completionItemProvider !== 'undefined')
-                        target.options.instance.completionItemProvider.dispose();
-
-                    if (typeof target.options.instance.signatureHelpProvider !== 'undefined')
-                        target.options.instance.signatureHelpProvider.dispose();
-
-                    if (typeof target.options.instance.hoverProvider !== 'undefined')
-                        target.options.instance.hoverProvider.dispose();
-
-                    if (typeof target.options.instance.codeLensProvider !== 'undefined')
-                        target.options.instance.codeLensProvider.dispose();
-
-                    if (typeof target.options.instance.definitionProvider !== 'undefined')
-                        target.options.instance.definitionProvider.dispose();
-
-                    if (typeof target.options.instance.codeActionProvider !== 'undefined')
-                        target.options.instance.codeActionProvider.dispose();
-
-                    target.options.instance.dispose();
-                    target.options.instance = null;
-                }
-                catch (e) {
-                    console.log(e);
-                }
-            }
-        },
-        activateEditor: function (options) {
-            var target = this;
-
-            require(['vs/editor/editor.main'], function () {
-                monaco.editor.defineTheme('TomPIT', {
-
-                    base: 'vs',
-                    inherit: true,
-                    rules: [{ background: 'f5f5f5' }]
-                });
-
-                monaco.editor.setTheme('TomPIT');
-
-                target.deactivateEditor();
-
-                target.options = $.extend({
-                    readOnly: false
-                }, options);
-
-                var src = options.source === null || options.source.length === 0 ? '\n' : options.source.join('\n');
-
-                target.options.hasChanged = false;
-                target.options.changeState = false;
-                target.options.instance = monaco.editor.create(document.getElementById(options.elementId), {
-                    value: src,
-                    language: options.language,
-                    lineNumbers: true,
-                    scrollBeyondLastLine: true,
-                    automaticLayout: true,
-                    folding: true,
-                    formatOnPaste: true,
-                    formatOnType: true,
-                    glyphMargin: true,
-                    lineNumbersMinChars: 4,
-                    parameterHints: {
-                        enabled: true
-                    },
-                    wrappingColumn: 0,
-                    wrappingIndent: 'indent',
-                    readOnly: options.readOnly,
-                    showUnused: true,
-                    autoIndent: true,
-                    wordWrap: 'on',
-                    tabCompletion: 'on'
-                });
-
-                target.options.timer = setInterval(function () {
-                    try {
-                        if ($.isFunction(target.options.onCheckSyntax) && target.observeDirty())
-                            target.options.onCheckSyntax();
-                    } catch (e) {
-                        console.log(e);
-                    }
-                }, 2500);
-
-                if ($.isFunction(options.onCreated))
-                    options.onCreated(target.options.instance);
-
-                target.options.instance.onDidChangeModelContent((e) => {
-                    target.options.hasChanged = true;
-                    target.options.changeState = true;
-                });
-
-                $('textarea', target.element).on('blur', function () {
-                    if (target.options.hasChanged && typeof options.onChange !== 'undefined') {
-                        options.onChange(target.options.instance.getValue());
-                        target.options.hasChanged = false;
-                    }
-                });
-            });
-        },
-        registerCompletionItemProvider: function (language, options) {
-            var provider = monaco.languages.registerCompletionItemProvider(language, options);
-
-            this.options.instance.completionItemProvider = provider;
-        },
-        registerSignatureHelpProvider: function (language, options) {
-            var provider = monaco.languages.registerSignatureHelpProvider(language, options);
-
-            this.options.instance.signatureHelpProvider = provider;
-        },
-        registerHoverProvider: function (language, options) {
-            var provider = monaco.languages.registerHoverProvider(language, options);
-
-            this.options.instance.hoverProvider = provider;
-        },
-        registerCodeLensProvider: function (language, options) {
-            var provider = monaco.languages.registerCodeLensProvider(language, options);
-
-            this.options.instance.codeLensProvider = provider;
-        },
-        registerDefinitionProvider: function (language, options) {
-            var provider = monaco.languages.registerDefinitionProvider(language, options);
-
-            this.options.instance.definitionProvider = provider;
-        },
-        registerCodeActionProvider: function (language, options) {
-            var provider = monaco.languages.registerCodeActionProvider(language, options);
-
-            this.options.instance.codeActionProvider = provider;
-        },
-        insertText: function (text) {
-            var line = this.options.instance.getPosition();
-            var range = new monaco.Range(line.lineNumber, 1, line.lineNumber, 1);
-            var identifier = { major: 1, minor: 1 };
-            var op = { identifier: identifier, range: range, text: text, forceMoveMarkers: true };
-
-            this.options.instance.executeEdits("insert-snippet", [op]);
-        },
-        getValue: function () {
-            return this.options.instance.getValue();
-        },
-        setValue: function (s) {
-            return this.options.instance.setValue(s);
-        },
-        formatDocument: function () {
-            this.options.instance.trigger('format', 'editor.action.formatDocument');
-        },
-        setMarkers: function (markers) {
-            monaco.editor.setModelMarkers(this.options.instance.getModel(), 'syntax', markers);
-
-        },
-        addCommand: function (k, h) {
-            return this.options.instance.addCommand(k, h);
-        },
-        addAction: function (k) {
-            return this.options.instance.addAction(k);
-        },
-        observeDirty: function () {
-            var r = this.options.changeState;
-
-            this.options.changeState = false;
-
-            return r;
-        },
-        getEditor: function () {
-            return this.options.instance;
-        }
-
     });
 })(jQuery);

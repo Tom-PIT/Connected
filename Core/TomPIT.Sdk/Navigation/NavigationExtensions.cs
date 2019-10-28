@@ -213,7 +213,7 @@ namespace TomPIT.Navigation
 			var view = ComponentDescriptor.View(context, viewName);
 
 			if (view.Configuration == null)
-				throw new RuntimeException($"{SR.ErrViewNotFound} ({viewName})");
+				return null;
 
 			return view.Configuration.Url;
 		}

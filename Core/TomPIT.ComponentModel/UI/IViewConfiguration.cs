@@ -1,11 +1,10 @@
 ﻿using TomPIT.ComponentModel.Diagnostics;
-using TomPIT.ComponentModel.Messaging;
 
 namespace TomPIT.ComponentModel.UI
 {
-	public interface IViewConfiguration : IConfiguration, IGraphicInterface, ISnippetView
+	public interface IViewConfiguration : IConfiguration, IGraphicInterface
 	{
-		IServerEvent Invoke { get; }
+		//IServerEvent Invoke { get; }
 
 		string Url { get; }
 		string Layout { get; }

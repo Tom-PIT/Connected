@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using TomPIT.Data;
+using TomPIT.Reflection;
 
 namespace TomPIT.Middleware.Interop
 {
@@ -17,5 +19,20 @@ namespace TomPIT.Middleware.Interop
 		}
 
 		protected abstract List<TOutput> OnExtend(List<TInput> items);
+
+		protected virtual TOutput Convert(TInput item)
+		{
+			var r = OnCreateInstance();
+
+			if (r is DataEntity entity && item is DataEntity itemEntity)
+				entity.Deserialize(itemEntity);
+
+			return r;
+		}
+
+		protected virtual TOutput OnCreateInstance()
+		{
+			return (TOutput)typeof(TOutput).CreateInstance();
+		}
 	}
 }

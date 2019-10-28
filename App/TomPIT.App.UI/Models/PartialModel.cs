@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Middleware;
 using TomPIT.Models;
-using TomPIT.UI;
 
 namespace TomPIT.App.Models
 {
@@ -32,12 +30,8 @@ namespace TomPIT.App.Models
 			Component = descriptor.Component;
 			QualifierName = $"{MicroService.Name}/{descriptor.ComponentName}";
 
-			var args = new ViewInvokeArguments(this);
-
 			Body.Remove("__name");
 			Body.Remove("__component");
-
-			Tenant.GetService<ICompilerService>().Execute(descriptor.Configuration.MicroService(), descriptor.Configuration.Invoke, this, args);
 		}
 	}
 }

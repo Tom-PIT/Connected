@@ -1,9 +1,7 @@
-﻿using TomPIT.ComponentModel.Messaging;
-
-namespace TomPIT.ComponentModel.UI
+﻿namespace TomPIT.ComponentModel.UI
 {
-	public interface IPartialViewConfiguration : IConfiguration, IGraphicInterface, ISnippetView
+	public interface IPartialViewConfiguration : IConfiguration, IGraphicInterface
 	{
-		IServerEvent Invoke { get; }
+		//IServerEvent Invoke { get; }
 	}
 }

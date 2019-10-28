@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Messaging;
+using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
 using TomPIT.Distributed;
 using TomPIT.Exceptions;
@@ -104,6 +105,16 @@ namespace TomPIT.Worker.Services
 		{
 			var ctx = new MicroServiceContext(new Guid(ed.Callback.Split('/')[0]));
 			var descriptor = ComponentDescriptor.Api(ctx, ed.Callback);
+
+			try
+			{
+				descriptor.Validate();
+			}
+			catch (RuntimeException ex)
+			{
+				ctx.Services.Diagnostic.Error(nameof(EventJob), ex.Message, LogCategories.Worker);
+			}
+
 			var op = descriptor.Configuration.Operations.FirstOrDefault(f => f.Id == new Guid(descriptor.Element));
 
 			if (op == null)

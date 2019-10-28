@@ -38,11 +38,6 @@ namespace TomPIT.App.UI
 
 					return MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().HasChanged(kind, path);
 				}
-				else if (kind == ViewKind.Snippet)
-				{
-					var snippetKind = ViewInfo.ResolveSnippetKind(_viewPath);
-					return MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().HasSnippetChanged(snippetKind, Path.GetFileNameWithoutExtension(_viewPath));
-				}
 				else if (kind == ViewKind.Report)
 					return MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().HasChanged(kind, _viewPath);
 				else if (kind == ViewKind.MailTemplate)

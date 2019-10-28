@@ -9,7 +9,9 @@ using TomPIT.MicroServices.Design;
 namespace TomPIT.MicroServices.Resources
 {
 	[Create(DesignUtils.ScriptBundle)]
-	public class ScriptBundle : ComponentConfiguration, IScriptBundleConfiguration
+	[ComponentCreatedHandler(DesignUtils.ScriptBundleHandler)]
+	[DomElement(DesignUtils.ScriptBundleElement)]
+	public class ScriptBundle : ComponentConfiguration, IScriptBundleConfiguration, IScriptBundleInitializer
 	{
 		private ListItems<IScriptSource> _scripts = null;
 
@@ -28,6 +30,14 @@ namespace TomPIT.MicroServices.Resources
 		[DefaultValue(true)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
 		public bool Minify { get; set; } = true;
+
+		public IScriptSource CreateDefaultFile()
+		{
+			return new ScriptCodeSource
+			{
+				Name = "Default"
+			};
+		}
 	}
 }
 

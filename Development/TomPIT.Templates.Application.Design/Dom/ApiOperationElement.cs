@@ -16,16 +16,27 @@ namespace TomPIT.MicroServices.Design.Dom
 
 		public ApiOperationElement(ReflectorCreateArgs e) : base(e)
 		{
+			SetGlyph();
 		}
 
 		public ApiOperationElement(IDomElement parent, object instance) : base(parent, instance)
 		{
+			SetGlyph();
 		}
 
 		public ApiOperationElement(IDomElement parent, object instance, PropertyInfo property, int index) : base(parent, instance, property, index)
 		{
+			SetGlyph();
 		}
 
+		private void SetGlyph()
+		{
+			if (Operation.Scope == ComponentModel.ElementScope.Public)
+				Glyph = "fal fa-file-code text-success";
+			else
+				Glyph = "fal fa-file-code text-secondary";
+		}
+		private IApiOperation Operation => Component as IApiOperation;
 		public override List<string> Claims
 		{
 			get

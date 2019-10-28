@@ -48,24 +48,9 @@ namespace TomPIT.App.UI
 				return;
 
 			var vm = CreatePartialModel(name);
-			var args = new ViewInvokeArguments(vm);
-
-			vm.Tenant.GetService<ICompilerService>().Execute(((IConfiguration)partialView).MicroService(), partialView.Invoke, this, args);
-
 			var viewEngineResult = Engine.FindView(vm.ActionContext, name, false);
-
-			if (!viewEngineResult.Success)
-			{
-				Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-				return;
-			}
-
 			var view = viewEngineResult.View;
-
-			if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
-				return;
-
-			var content = CreateContent(view, args);
+			var content = CreateContent(view, vm);
 
 			var buffer = Encoding.UTF8.GetBytes(content);
 
@@ -99,15 +84,6 @@ namespace TomPIT.App.UI
 				if (string.Compare(model.ViewConfiguration.Url, "login", true) != 0 && !SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url))
 					return;
 
-				var invokeArgs = new ViewInvokeArguments(model);
-
-				if (model.ViewConfiguration != null)
-				{
-					model.Tenant.GetService<ICompilerService>().Execute(((IConfiguration)model.ViewConfiguration).MicroService(), model.ViewConfiguration.Invoke, this, invokeArgs);
-
-					if (Shell.HttpContext.Response.StatusCode != (int)HttpStatusCode.OK)
-						return;
-				}
 				model.ActionContext.RouteData.Values.Add("Action", name);
 
 				try
@@ -130,7 +106,7 @@ namespace TomPIT.App.UI
 					if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
 						return;
 
-					content = CreateContent(view, invokeArgs);
+					content = CreateContent(view, model);
 
 					var buffer = Encoding.UTF8.GetBytes(content);
 

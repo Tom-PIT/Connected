@@ -28,6 +28,17 @@ namespace TomPIT.Compilation
 			Path = $"{ms.Name}/{view.ComponentName()}.cshtml";
 			MicroService = ms.Name;
 			Component = view.Id;
+
+			if (inner != null && inner.Data.Count > 0)
+			{
+				foreach (var data in inner.Data.Keys)
+				{
+					if (Data.Contains(data))
+						Data[data] = inner.Data[data];
+					else
+						Data.Add(data, inner.Data[data]);
+				}
+			}
 		}
 		public CompilerException(ITenant tenant, IScriptDescriptor script, IText sourceCode)
 		{

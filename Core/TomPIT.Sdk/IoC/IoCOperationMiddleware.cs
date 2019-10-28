@@ -16,14 +16,29 @@ namespace TomPIT.IoC
 	{
 		IIoCOperation IIoCOperationContext.Operation { get; set; }
 
+		protected List<IIoCEndpointMiddleware> CreateEndpoints(object e)
+		{
+			return Context.Tenant.GetService<IIoCService>().CreateEndpoints(((IIoCOperationContext)this).Operation, e);
+		}
+
 		protected List<IIoCEndpointMiddleware> CreateEndpoints()
 		{
 			return Context.Tenant.GetService<IIoCService>().CreateEndpoints(((IIoCOperationContext)this).Operation, this);
 		}
 
-		protected IIoCEndpointMiddleware FirstEndpoint<A>(A e)
+		protected IIoCEndpointMiddleware FirstEndpoint()
 		{
 			var endpoints = CreateEndpoints();
+
+			if (endpoints == null || endpoints.Count == 0)
+				return null;
+
+			return endpoints[0];
+		}
+
+		protected IIoCEndpointMiddleware FirstEndpoint(object e)
+		{
+			var endpoints = CreateEndpoints(e);
 
 			if (endpoints == null || endpoints.Count == 0)
 				return null;
@@ -41,23 +56,24 @@ namespace TomPIT.IoC
 			return endpoints[^1];
 		}
 
+		protected IIoCEndpointMiddleware LastEndpoint(object e)
+		{
+			var endpoints = CreateEndpoints(e);
+
+			if (endpoints == null || endpoints.Count == 0)
+				return null;
+
+			return endpoints[^1];
+		}
+
+		protected bool HasEndpoints(object e)
+		{
+			return Context.Tenant.GetService<IIoCService>().HasEndpoints(((IIoCOperationContext)this).Operation, e);
+		}
+
 		protected bool HasEndpoints()
 		{
 			return Context.Tenant.GetService<IIoCService>().HasEndpoints(((IIoCOperationContext)this).Operation, this);
-		}
-	}
-
-	public abstract class IoCOperationMiddleware : IoCOperationMiddlewareBase, IIoCOperationMiddleware
-	{
-		public void Invoke()
-		{
-			Validate();
-			OnInvoke();
-		}
-
-		protected virtual void OnInvoke()
-		{
-			Invoke(CreateEndpoints());
 		}
 
 		protected void Invoke(IIoCEndpointMiddleware endpoint)
@@ -81,30 +97,15 @@ namespace TomPIT.IoC
 					Invoke(i);
 				});
 		}
-	}
 
-	public abstract class IoCOperationMiddleware<R> : IoCOperationMiddlewareBase, IIoCOperationMiddleware<R>
-	{
-		public R Invoke()
+		protected T Invoke<T>(List<IIoCEndpointMiddleware> endpoints)
 		{
-			Validate();
-
-			return OnInvoke();
-		}
-
-		protected virtual R OnInvoke()
-		{
-			return Invoke(CreateEndpoints());
-		}
-
-		protected R Invoke(List<IIoCEndpointMiddleware> endpoints)
-		{
-			var result = new List<R>();
+			var result = new List<T>();
 
 			Parallel.ForEach(endpoints,
 				(i) =>
 				{
-					var r = Invoke(i);
+					var r = Invoke<T>(i);
 
 					if (r != default)
 					{
@@ -118,9 +119,9 @@ namespace TomPIT.IoC
 			if (result.Count == 0)
 				return default;
 
-			if (typeof(R) is IList)
+			if (typeof(T) is IList)
 			{
-				var instance = typeof(R).CreateInstance() as IList;
+				var instance = typeof(T).CreateInstance() as IList;
 
 				foreach (var item in result)
 				{
@@ -131,13 +132,13 @@ namespace TomPIT.IoC
 					}
 				}
 
-				return (R)instance;
+				return (T)instance;
 			}
 
 			return result.Last();
 		}
 
-		protected R Invoke(IIoCEndpointMiddleware endpoint)
+		protected T Invoke<T>(IIoCEndpointMiddleware endpoint)
 		{
 			var method = endpoint.GetType().GetMethod(nameof(IIoCOperationMiddleware<object>.Invoke));
 
@@ -152,15 +153,15 @@ namespace TomPIT.IoC
 			if (result == null)
 				return default;
 
-			if (typeof(R).IsPrimitive)
+			if (typeof(T).IsPrimitive)
 			{
 				if (result == default)
 					return default;
 
-				return (R)result;
+				return (T)result;
 			}
 
-			return (R)CreateInstance(typeof(R), result);
+			return (T)CreateInstance(typeof(T), result);
 		}
 
 		private object CreateInstance(Type type, object arguments)
@@ -176,6 +177,35 @@ namespace TomPIT.IoC
 				Serializer.Populate(arguments, instance);
 
 			return instance;
+		}
+	}
+
+	public abstract class IoCOperationMiddleware : IoCOperationMiddlewareBase, IIoCOperationMiddleware
+	{
+		public void Invoke()
+		{
+			Validate();
+			OnInvoke();
+		}
+
+		protected virtual void OnInvoke()
+		{
+			Invoke(CreateEndpoints());
+		}
+	}
+
+	public abstract class IoCOperationMiddleware<R> : IoCOperationMiddlewareBase, IIoCOperationMiddleware<R>
+	{
+		public R Invoke()
+		{
+			Validate();
+
+			return OnInvoke();
+		}
+
+		protected virtual R OnInvoke()
+		{
+			return Invoke<R>(CreateEndpoints());
 		}
 	}
 }

@@ -5,7 +5,6 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.ComponentModel.Scripting;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
 
@@ -127,31 +126,12 @@ namespace TomPIT.Compilation
 			if (!(Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IApiConfiguration config))
 				throw new RuntimeException($"{SR.ErrServiceOperationNotFound} ({microService}/{component.Name}/{operation})");
 
-			if (config.MicroService() != MicroService)
-			{
-				if (config.Scope != ElementScope.Public)
-					throw new RuntimeException(SR.ErrScopeError);
-			}
-
-			var op = config.Operations.FirstOrDefault(f => string.Compare(f.Name, TrimExtension(operation), true) == 0);
-
-			if (op == null)
-				return null;
-
-			if (config.MicroService() != MicroService)
-			{
-				if (op.Scope != ElementScope.Public)
-					throw new RuntimeException(SR.ErrScopeError);
-			}
-
-			return op;
+			return config.Operations.FirstOrDefault(f => string.Compare(f.Name, TrimExtension(operation), true) == 0);
 		}
 
 		private IText LoadScript(string microService, string script)
 		{
-			IMicroService ms = null;
-
-			ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
 			if (ms == null)
 				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})");
@@ -166,17 +146,11 @@ namespace TomPIT.Compilation
 			var scriptName = TrimExtension(script);
 			var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(ms.Token, ComponentCategories.NameSpacePublicScript, scriptName);
 
-			if (component == null)
+			if (component == null || component.LockVerb == Development.LockVerb.Delete)
 				return null;
 
 			if (!(Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IText text))
 				throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrComponentNotFound, microService, scriptName));
-
-			if (((IConfiguration)text).MicroService() != MicroService)
-			{
-				if (text is IScriptConfiguration s && s.Scope != ElementScope.Public)
-					throw new RuntimeException(SR.ErrScopeError);
-			}
 
 			return text;
 		}

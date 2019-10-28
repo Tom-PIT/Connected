@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.App.Globalization;
 using TomPIT.App.Resources;
 using TomPIT.App.UI;
 using TomPIT.App.UI.Theming;
+using TomPIT.Middleware;
+using TomPIT.Navigation;
 using TomPIT.Routing;
 using TomPIT.UI;
 
@@ -67,10 +70,10 @@ namespace TomPIT.App.Routing
 				if (string.IsNullOrWhiteSpace(t.Request.Path.ToString().Trim('/')))
 					t.Request.Path = "/home";
 
+				if (Redirect(t))
+					return Task.CompletedTask;
+
 				var ve = t.RequestServices.GetService(typeof(IViewEngine)) as ViewEngine;
-				//var engine = t.RequestServices.GetService(typeof(RazorProjectEngine)) as RazorProjectEngine;
-				//var reference = t.RequestServices.GetService(typeof(RuntimeCompilationFileProvider)) as RazorProjectEngine;
-				//var viewCompiler = t.RequestServices.GetService(typeof(Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompilerProvider)) as Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompilerProvider;
 
 				ve.Context = t;
 
@@ -78,6 +81,13 @@ namespace TomPIT.App.Routing
 
 				return Task.CompletedTask;
 			});
+		}
+
+		private static bool Redirect(HttpContext context)
+		{
+			var ctx = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path);
+
+			return false;
 		}
 	}
 }

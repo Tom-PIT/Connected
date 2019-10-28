@@ -10,7 +10,6 @@ namespace TomPIT.UI
 		Master = 1,
 		View = 2,
 		Partial = 3,
-		Snippet = 4,
 		MailTemplate = 5,
 		Report = 6
 	}
@@ -26,7 +25,6 @@ namespace TomPIT.UI
 		string SelectContent(IGraphicInterface ui);
 
 		bool HasChanged(ViewKind kind, string url);
-		bool HasSnippetChanged(ViewKind kind, string url);
 
 		ViewKind ResolveViewKind(string url);
 		IMicroService ResolveMicroService(string url);

@@ -52,6 +52,17 @@
 		throw message;
 	};
 
+    tompit.resolveErrorMessage = function (request) {
+        try {
+            var err = $.parseJSON(request.responseText);
+
+            return err === null ? null : err.message;
+        }
+        catch (e) {
+            message = error;
+        }
+    };
+
 	tompit.handleError = function (request, status, error) {
 		var title = null;
 		var message = null;

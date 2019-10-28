@@ -5,16 +5,16 @@ namespace TomPIT.Middleware.Services
 {
 	public interface IMiddlewareUserDataService
 	{
-		string Select(string primaryKey);
-		string Select(string primaryKey, string topic);
-		T Select<T>(string primaryKey);
-		T Select<T>(string primaryKey, string topic);
+		string Select<A>(A primaryKey);
+		string Select<A>(A primaryKey, string topic);
+		R Select<R, A>(A primaryKey);
+		R Select<R, A>(A primaryKey, string topic);
 		List<IUserData> Query(string topic);
-		void Update(string primaryKey, object value);
-		void Update(string primaryKey, object value, string topic);
+		void Update<A, V>(A primaryKey, V value);
+		void Update<A, V>(A primaryKey, V value, string topic);
 		void Update(List<IUserData> data);
 
-		IUserData Create(string primaryKey, object value);
-		IUserData Create(string primaryKey, object value, string topic);
+		IUserData Create<A, V>(A primaryKey, V value);
+		IUserData Create<A, V>(A primaryKey, V value, string topic);
 	}
 }

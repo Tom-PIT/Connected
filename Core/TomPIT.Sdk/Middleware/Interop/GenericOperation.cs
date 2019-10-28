@@ -60,9 +60,7 @@ namespace TomPIT.Middleware.Interop
 				var ext = ResolveExtenderType();
 				var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this));
 				var extenderInstance = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, ext);
-				var arguments = extenderInstance.GetType().BaseType.GetGenericArguments();
-
-				Type inputType = arguments[0];
+				var inputType = GetExtendingType(extenderInstance);
 				var list = typeof(List<>);
 				var genericList = list.MakeGenericType(new Type[] { inputType });
 				var method = extenderInstance.GetType().GetMethod("Extend", new Type[] { genericList });
@@ -96,6 +94,18 @@ namespace TomPIT.Middleware.Interop
 			}
 		}
 
+		private Type GetExtendingType(object extenderInstance)
+		{
+			var interfaces = extenderInstance.GetType().GetInterfaces();
+
+			foreach (var i in interfaces)
+			{
+				if (i.IsGenericType && string.Compare(i.Name, typeof(IExtender<object, object>).Name, false) == 0)
+					return i.GetGenericArguments()[0];
+			}
+
+			return null;
+		}
 		protected virtual TReturnValue OnInvoke()
 		{
 			return default;

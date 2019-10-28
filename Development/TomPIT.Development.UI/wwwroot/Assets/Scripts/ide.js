@@ -36,6 +36,14 @@ $.widget('tompit.tpIde', {
     },
     initialize: function () {
         this.initializeExplorer();
+        var instance = this;
+
+        $(document).keyup(function (e) {
+            if (e.ctrlKey && e.altKey && e.keyCode === 37)
+                instance._previousView();
+            else if (e.ctrlKey && e.altKey && e.keyCode === 39)
+                instance._nextView();
+        });
     },
     setLanguage: function (value) {
         this.options.globalization.language = value;
@@ -108,36 +116,42 @@ $.widget('tompit.tpIde', {
         });
 
         $('#exBtnPreviousView').click(function () {
-            if (instance.options.navigation.index <= 0)
-                return;
-
-            instance.options.navigation.index--;
-            instance.selectNode({
-                path: instance.options.navigation.views[instance.options.navigation.index].path,
-                reorderNavigation: false,
-                stateIndex: instance.options.navigation.index + 1
-            });
-
-            instance._syncNavigationButtons();
+            instance._previousView();
         });
 
         $('#exBtnNextView').click(function () {
-            if (instance.options.navigation.index >= instance.options.navigation.views.length - 1)
-                return;
-
-            instance.options.navigation.index++;
-            instance.selectNode({
-                path: instance.options.navigation.views[instance.options.navigation.index].path,
-                reorderNavigation: false,
-                stateIndex: instance.options.navigation.index - 1
-            });
-
-            instance._syncNavigationButtons();
+            instance._nextView();
         });
 
         instance._syncNavigationButtons();
     },
+    _previousView : function () {
+        if (this.options.navigation.index <= 0)
+            return;
 
+        this.options.navigation.index--;
+        this.selectNode({
+            path: this.options.navigation.views[this.options.navigation.index].path,
+            reorderNavigation: false,
+            stateIndex: this.options.navigation.index + 1
+        });
+
+        this._syncNavigationButtons();
+
+    },
+    _nextView : function () {
+            if (this.options.navigation.index >= this.options.navigation.views.length - 1)
+                return;
+
+            this.options.navigation.index++;
+            this.selectNode({
+                path: this.options.navigation.views[this.options.navigation.index].path,
+                reorderNavigation: false,
+                stateIndex: this.options.navigation.index - 1
+            });
+
+            this._syncNavigationButtons();
+    },
     _initializeExplorerNodes: function (e) {
         e = $.extend({
             selector: null,

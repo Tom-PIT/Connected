@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.ComponentModel.Cdn;
@@ -59,7 +60,18 @@ namespace TomPIT.ComponentModel
 				_microService = tenant.GetService<IMicroServiceService>().Select(MicroServiceName);
 
 				if (_microService == null)
-					throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({MicroServiceName})");
+				{
+					if (Guid.TryParse(MicroServiceName, out Guid ms))
+					{
+						_microService = tenant.GetService<IMicroServiceService>().Select(ms);
+
+						if (_microService != null)
+							MicroServiceName = _microService.Name;
+					}
+
+					if (_microService == null)
+						throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({MicroServiceName})");
+				}
 
 				Context = new MicroServiceContext(_microService, tenant.Url);
 			}
@@ -68,15 +80,25 @@ namespace TomPIT.ComponentModel
 		public string Element { get; private set; }
 		public string Category { get; }
 		protected IMicroServiceContext Context { get; }
-		public string ComponentName { get; }
-		public string MicroServiceName { get; }
+		public string ComponentName { get; private set; }
+		public string MicroServiceName { get; private set; }
 
 		public IMicroService MicroService
 		{
 			get
 			{
 				if (_microService == null)
+				{
 					_microService = Context.Tenant.GetService<IMicroServiceService>().Select(MicroServiceName);
+
+					if (_microService == null && Guid.TryParse(MicroServiceName, out Guid mn))
+					{
+						_microService = Context.Tenant.GetService<IMicroServiceService>().Select(mn);
+
+						if (_microService != null)
+							MicroServiceName = _microService.Name;
+					}
+				}
 
 				return _microService;
 			}
@@ -87,7 +109,17 @@ namespace TomPIT.ComponentModel
 			get
 			{
 				if (_component == null)
+				{
 					_component = Context.Tenant.GetService<IComponentService>().SelectComponent(MicroService.Token, Category, ComponentName);
+
+					if (_component == null && Guid.TryParse(ComponentName, out Guid cn))
+					{
+						_component = Context.Tenant.GetService<IComponentService>().SelectComponent(cn);
+
+						if (_component != null)
+							ComponentName = _component.Name;
+					}
+				}
 
 				return _component;
 			}
