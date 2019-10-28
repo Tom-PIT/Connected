@@ -38,7 +38,7 @@ namespace TomPIT.Sys.Notifications
 		}
 
 		public static void Clear(string key) { Notify(nameof(Clear), new DataCacheEventArgs(key)); }
-		public static void Invalidate(string key, List<string> ids) { Notify(nameof(Clear), new DataCacheEventArgs(key, ids)); }
-		public static void Remove(string key, List<string> ids) { Notify(nameof(Clear), new DataCacheEventArgs(key, ids)); }
+		public static void Invalidate(string key, List<string> ids) { Notify(nameof(Invalidate), new DataCacheEventArgs(key, ids)); }
+		public static void Remove(string key, List<string> ids) { Notify(nameof(Remove), new DataCacheEventArgs(key, ids)); }
 	}
 }

@@ -16,6 +16,7 @@ namespace TomPIT.Middleware
 		private IMiddlewareServices _services = null;
 		private ITenant _tenant = null;
 		private IMiddlewareInterop _interop = null;
+		private IMiddlewareEnvironment _environment = null;
 
 		public MiddlewareContext()
 		{
@@ -70,6 +71,19 @@ namespace TomPIT.Middleware
 				return _interop;
 			}
 		}
+
+		[JsonIgnore]
+		public IMiddlewareEnvironment Environment
+		{
+			get
+			{
+				if (_environment == null)
+					_environment = new MiddlewareEnvironment();
+
+				return _environment;
+			}
+		}
+
 		[JsonIgnore]
 		public ITenant Tenant
 		{

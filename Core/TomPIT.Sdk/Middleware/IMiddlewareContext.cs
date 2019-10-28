@@ -8,7 +8,7 @@ namespace TomPIT.Middleware
 	public interface IMiddlewareContext
 	{
 		IMiddlewareServices Services { get; }
-
+		IMiddlewareEnvironment Environment { get; }
 		ITenant Tenant { get; }
 
 		IMiddlewareInterop Interop { get; }

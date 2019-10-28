@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -11,9 +9,9 @@ namespace TomPIT.Sys.Notifications
 	[Authorize(AuthenticationSchemes = "TomPIT")]
 	public class DataCacheHub : Hub
 	{
-		public DataCacheHub(IHubContext<CacheHub> context)
+		public DataCacheHub(IHubContext<DataCacheHub> context)
 		{
-			CachingNotifications.Cache = context;
+			DataCachingNotifications.Cache = context;
 		}
 
 		public override Task OnConnectedAsync()
