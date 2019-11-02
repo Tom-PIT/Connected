@@ -366,7 +366,7 @@ namespace TomPIT.Navigation
 			return $"{ctx.Services.Routing.RootUrl}/{string.Join('/', processedSegments)}";
 		}
 
-		public ISiteMapRoute MatchRoute(string url)
+		public ISiteMapRoute MatchRoute(string url, RouteValueDictionary parameters)
 		{
 			Initialize();
 
@@ -378,9 +378,8 @@ namespace TomPIT.Navigation
 					{
 						var parsedTemplate = TemplateParser.Parse(template);
 						var matcher = new TemplateMatcher(parsedTemplate, GetDefaults(parsedTemplate));
-						var values = new RouteValueDictionary();
 
-						if (matcher.TryMatch(url, values))
+						if (matcher.TryMatch(url, parameters))
 							return SelectRouteByTemplate(descriptor, template);
 					}
 				}
@@ -420,6 +419,7 @@ namespace TomPIT.Navigation
 		private ISiteMapRoute SelectRouteByTemplate(NavigationHandlerDescriptor descriptor, string template)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
+
 			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), descriptor.Handler);
 
 			if (handler == null)

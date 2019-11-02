@@ -1098,4 +1098,7 @@
   <data name="ErrIoCOperationNotFound" xml:space="preserve">
     <value>IoC operation not found</value>
   </data>
+  <data name="ErrCannotResolveExtender" xml:space="preserve">
+    <value>Cannot resolve extender</value>
+  </data>
 </root>

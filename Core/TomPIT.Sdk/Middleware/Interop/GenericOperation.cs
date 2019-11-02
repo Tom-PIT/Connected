@@ -104,7 +104,7 @@ namespace TomPIT.Middleware.Interop
 					return i.GetGenericArguments()[0];
 			}
 
-			return null;
+			throw new RuntimeException($"{SR.ErrCannotResolveExtender} ({GetType().ShortName()})");
 		}
 		protected virtual TReturnValue OnInvoke()
 		{

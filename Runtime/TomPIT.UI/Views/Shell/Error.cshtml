@@ -34,6 +34,15 @@
                     <br />
                 }
 
+                @if (ViewData["exScript"] != null)
+                {
+                   @if (ViewData["exScriptMicroService"] != null)
+                   {
+                        <span>@ViewData["exScriptMicroService"]/</span>
+                   }
+                   @Html.Raw(ViewData["exScript"])
+                   <br/>
+                }
                 @ViewData["exMessage"]
             </code>
         </div>

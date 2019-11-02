@@ -272,7 +272,7 @@ h4.dev-title {
 }
 
 .text-editor-sa {
-    height: ~"calc(100vh - 121px)" !important;
+    height: ~"calc(100vh - 122px)" !important;
 }
 
 .text-editor-int {
@@ -287,6 +287,27 @@ h4.dev-title {
     min-height: 75px;
 }
 
+.ide-errors-panel{
+    position:fixed;
+    bottom:25px;
+    width:100%;
+    background-color:@Grey100;
+    font-family: Consolas, 'Lucida Console';
+    font-size:0.8rem;
+    border-top:1px solid @Grey300;
+}
+
+.ide-errors-panel:focus{
+    outline:none;
+}
+
+.ide-errors-panel ul{
+    margin:0;
+}
+.ide-errors-panel li {
+    padding: 0 15px;
+    border-bottom: 1px dotted @Grey500;
+}
 .designer-title {
     padding-bottom: 5px;
     padding-left: 5px;
@@ -313,6 +334,10 @@ h4.dev-title {
 .dev-signature {
     padding: 5px;
     font-family: Consolas, 'Lucida Console', Courier New, Courier, monospace;
+}
+
+.clickable{
+    cursor:pointer;
 }
 
 .reflector-type {

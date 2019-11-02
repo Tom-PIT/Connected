@@ -76,7 +76,7 @@ namespace TomPIT.IoC
 			return Context.Tenant.GetService<IIoCService>().HasEndpoints(((IIoCOperationContext)this).Operation, this);
 		}
 
-		protected void Invoke(IIoCEndpointMiddleware endpoint)
+		protected void Invoke(IIoCEndpointMiddleware endpoint, object e)
 		{
 			var method = endpoint.GetType().GetMethod(nameof(IIoCEndpointMiddleware<object>.Invoke));
 
@@ -84,9 +84,13 @@ namespace TomPIT.IoC
 				throw new RuntimeException($"{SR.ErrIoCMethodExpected} ({nameof(IIoCOperationMiddleware<object>.Invoke)}");
 
 			var parameters = method.GetParameters();
-			var parameter = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(Context as IMicroServiceContext, parameters[0].ParameterType, Serializer.Serialize(this));
+			var parameter = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(Context as IMicroServiceContext, parameters[0].ParameterType, Serializer.Serialize(e));
 
 			method.Invoke(endpoint, new object[] { parameter });
+		}
+		protected void Invoke(IIoCEndpointMiddleware endpoint)
+		{
+			Invoke(endpoint, this);
 		}
 
 		protected void Invoke(List<IIoCEndpointMiddleware> endpoints)
@@ -138,7 +142,7 @@ namespace TomPIT.IoC
 			return result.Last();
 		}
 
-		protected T Invoke<T>(IIoCEndpointMiddleware endpoint)
+		protected T Invoke<T>(IIoCEndpointMiddleware endpoint, object e)
 		{
 			var method = endpoint.GetType().GetMethod(nameof(IIoCOperationMiddleware<object>.Invoke));
 
@@ -146,14 +150,14 @@ namespace TomPIT.IoC
 				throw new RuntimeException($"{SR.ErrIoCMethodExpected} ({nameof(IIoCOperationMiddleware<object>.Invoke)}");
 
 			var parameters = method.GetParameters();
-			var parameter = CreateInstance(parameters[0].ParameterType, this);
+			var parameter = CreateInstance(parameters[0].ParameterType, e);
 
 			var result = method.Invoke(endpoint, new object[] { parameter });
 
 			if (result == null)
 				return default;
 
-			if (typeof(T).IsPrimitive)
+			if (typeof(T).IsTypePrimitive())
 			{
 				if (result == default)
 					return default;
@@ -162,6 +166,11 @@ namespace TomPIT.IoC
 			}
 
 			return (T)CreateInstance(typeof(T), result);
+
+		}
+		protected T Invoke<T>(IIoCEndpointMiddleware endpoint)
+		{
+			return Invoke<T>(endpoint, this);
 		}
 
 		private object CreateInstance(Type type, object arguments)
@@ -173,7 +182,7 @@ namespace TomPIT.IoC
 
 			ReflectionExtensions.SetPropertyValue(instance, nameof(IMiddlewareObject.Context), Context);
 
-			if (arguments != null)
+			if (arguments != null && !type.IsTypePrimitive())
 				Serializer.Populate(arguments, instance);
 
 			return instance;

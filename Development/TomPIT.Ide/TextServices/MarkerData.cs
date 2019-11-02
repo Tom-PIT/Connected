@@ -9,6 +9,7 @@ namespace TomPIT.Ide.TextServices
 		private List<IRelatedInformation> _relatedInformation = null;
 		public string Code { get; set; }
 
+		public bool External { get; set; } = false;
 		public int EndColumn { get; set; }
 
 		public int EndLineNumber { get; set; }

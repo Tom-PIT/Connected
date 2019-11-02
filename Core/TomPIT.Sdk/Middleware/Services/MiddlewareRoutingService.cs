@@ -269,17 +269,9 @@ namespace TomPIT.Middleware.Services
 
 			return Context.Tenant.GetService<INavigationService>().ParseUrl(route.Template, parameters);
 		}
-		public string ParseRoute([CIP(CIP.RouteKeyProvider)]string routeKey, IDictionary<string, object> parameters)
+		public string ParseRoute([CIP(CIP.RouteKeyProvider)]string routeKey, object parameters)
 		{
-			var values = new RouteValueDictionary();
-
-			if (parameters != null)
-			{
-				foreach (var parameter in parameters)
-					values.Add(parameter.Key, parameter.Value);
-			}
-
-			return ParseRoute(routeKey, values);
+			return ParseRoute(routeKey, new RouteValueDictionary(parameters));
 		}
 
 		public T RouteValue<T>(string key)
@@ -314,17 +306,9 @@ namespace TomPIT.Middleware.Services
 			return QueryBreadcrumbs(routeKey, null);
 		}
 
-		public List<IBreadcrumb> QueryBreadcrumbs([CIP(CIP.RouteKeyProvider)]string routeKey, IDictionary<string, object> parameters)
+		public List<IBreadcrumb> QueryBreadcrumbs([CIP(CIP.RouteKeyProvider)]string routeKey, object parameters)
 		{
-			var values = new RouteValueDictionary();
-
-			if (parameters != null)
-			{
-				foreach (var parameter in parameters)
-					values.Add(parameter.Key, parameter.Value);
-			}
-
-			return QueryBreadcrumbs(routeKey, values);
+			return QueryBreadcrumbs(routeKey, new RouteValueDictionary(parameters));
 		}
 
 		public List<IBreadcrumb> QueryBreadcrumbs([CIP(CIP.RouteKeyProvider)]string routeKey, RouteValueDictionary parameters)

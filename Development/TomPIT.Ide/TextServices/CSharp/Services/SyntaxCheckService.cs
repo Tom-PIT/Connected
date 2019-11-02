@@ -47,18 +47,20 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 
 			foreach (var diagnostic in script.Errors)
 			{
+				var external = false;
+
 				if (diagnostic.Source == null)
-					continue;
+					external = true;
 
 				if (diagnostic.Source.Contains("/"))
 				{
 					if (string.Compare(fileName, diagnostic.Source, true) != 0)
-						continue;
+						external = true;
 				}
 				else
 				{
 					if (string.Compare(scriptName, diagnostic.Source, true) != 0)
-						continue;
+						external = true;
 				}
 
 				var marker = new MarkerData
@@ -70,7 +72,8 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 					Source = diagnostic.Source,
 					Code = diagnostic.Code,
 					StartColumn = diagnostic.StartColumn + 1,
-					StartLineNumber = diagnostic.StartLine + 1
+					StartLineNumber = diagnostic.StartLine + 1,
+					External = external
 				};
 
 				result.Add(marker);

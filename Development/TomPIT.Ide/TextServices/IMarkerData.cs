@@ -27,5 +27,6 @@ namespace TomPIT.Ide.TextServices
 		int StartColumn { get; }
 		int StartLineNumber { get; }
 		List<MarkerTag> Tags { get; }
+		bool External { get; }
 	}
 }

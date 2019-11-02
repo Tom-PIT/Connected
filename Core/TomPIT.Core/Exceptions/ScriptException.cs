@@ -50,18 +50,18 @@ namespace TomPIT.Exceptions
 					if (tokens.Length < 2)
 						continue;
 
-					var fileToken = tokens[tokens.Length - 2];
+					var fileToken = tokens[^2];
 
-					if (!fileToken.Trim().EndsWith("csx"))
-						continue;
-
-					var lineToken = tokens[tokens.Length - 2].Split(' ');
-
-					if (lineToken.Length > 1)
+					if (fileToken.Trim().EndsWith("csx"))
 					{
-						var path = lineToken[lineToken.Length - 1];
+						var lineToken = tokens[^2].Split(' ');
 
-						return path.Substring(0, path.Length - 4);
+						if (lineToken.Length > 1)
+						{
+							var path = lineToken[^1];
+
+							return path[0..^4];
+						}
 					}
 				}
 			}
@@ -86,10 +86,10 @@ namespace TomPIT.Exceptions
 
 					var fileToken = tokens[tokens.Length - 2];
 
-					if (!fileToken.Trim().EndsWith("csx"))
+					if (!fileToken.Trim().EndsWith("csx") && fileToken.Trim().EndsWith("cshtml"))
 						continue;
 
-					var lineToken = tokens[tokens.Length - 1].Split(' ');
+					var lineToken = tokens[^1].Split(' ');
 
 					if (lineToken.Length > 1)
 						return lineToken[1].ToString();

@@ -78,7 +78,8 @@
                         try {
                             target.setState({
                                 model: model.uri.toString(),
-                                dirty: true
+                                dirty: true,
+                                timestamp: Date.now()
                             });
                         }
                         catch (e) {
@@ -97,7 +98,7 @@
 
             $.each(this.options.state, function (i, v) {
                 if (v.dirty)
-                    result.push(v.model);
+                    result.push(v);
             });
 
             return result;
@@ -108,6 +109,11 @@
 
             $.each(this.options.state, function (i, v) {
                 if (v.model === state.model) {
+                    if (!state.dirty) {
+                        if (state.timestamp < v.timestamp)
+                            return false;
+                    }
+
                     existingState = v;
                     existingStateIndex = i;
                     return false;
@@ -118,10 +124,13 @@
                 if (!state.dirty)
                     return;
 
+                if (typeof state.timestamp === 'undefined')
+                    state.timestamp = Date.now();
+
                 this.options.state.push(state);
             }
             else {
-                if (!state.dirty)
+                if (!state.dirty && state.timestamp >= existingState.timestamp)
                     this.options.state.splice(existingStateIndex, 1);
                 else
                     existingState.dirty = true;

@@ -6,5 +6,6 @@ namespace TomPIT.Navigation
 	{
 		ISiteMapElement Parent { get; }
 		string Text { get; }
+		bool Visible { get; }
 	}
 }

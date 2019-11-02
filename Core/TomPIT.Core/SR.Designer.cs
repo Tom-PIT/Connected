@@ -799,6 +799,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot resolve extender.
+        /// </summary>
+        public static string ErrCannotResolveExtender {
+            get {
+                return ResourceManager.GetString("ErrCannotResolveExtender", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot resolve HttpRequest.
         /// </summary>
         public static string ErrCannotResolveHttpRequest {

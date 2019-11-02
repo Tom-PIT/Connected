@@ -10,6 +10,6 @@ namespace TomPIT.Navigation
 		List<IBreadcrumb> QueryBreadcrumbs(string routeKey, RouteValueDictionary parameters);
 		string ParseUrl(string template, RouteValueDictionary parameters);
 		ISiteMapRoute SelectRoute(string routeKey);
-		ISiteMapRoute MatchRoute(string url);
+		ISiteMapRoute MatchRoute(string url, RouteValueDictionary parameters);
 	}
 }

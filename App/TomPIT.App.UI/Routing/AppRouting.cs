@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -85,7 +86,15 @@ namespace TomPIT.App.Routing
 
 		private static bool Redirect(HttpContext context)
 		{
-			var ctx = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path);
+			var routes = new RouteValueDictionary();
+
+			if (MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes) is ISiteMapRedirectRoute redirect)
+			{
+				context.Response.StatusCode = (int)HttpStatusCode.Redirect;
+				context.Response.Redirect(redirect.RedirectUrl(routes));
+
+				return true;
+			}
 
 			return false;
 		}

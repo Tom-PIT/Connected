@@ -9,5 +9,7 @@ namespace TomPIT.Navigation
 
 		[JsonIgnore]
 		public ISiteMapElement Parent { get; set; }
+
+		public bool Visible { get; set; } = true;
 	}
 }

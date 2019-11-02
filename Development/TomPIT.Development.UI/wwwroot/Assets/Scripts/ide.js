@@ -36,13 +36,24 @@ $.widget('tompit.tpIde', {
     },
     initialize: function () {
         this.initializeExplorer();
-        var instance = this;
+        this.setErrors();
 
+        var instance = this;
+           
         $(document).keyup(function (e) {
             if (e.ctrlKey && e.altKey && e.keyCode === 37)
                 instance._previousView();
             else if (e.ctrlKey && e.altKey && e.keyCode === 39)
                 instance._nextView();
+        });
+
+        $('#devStatusErrors').click(function () {
+            instance.showDevErrors();
+        });
+
+        $('#ideErrors').blur(function () {
+            $(this).removeAttr('tabindex');
+            $(this).collapse('hide');
         });
     },
     setLanguage: function (value) {
@@ -890,9 +901,42 @@ $.widget('tompit.tpIde', {
 	 * status bar
 	 */
     statusText: function (html) {
-        $('#devStatus').html(html);
+        $('#devStatusText').html(html);
     },
+    setErrors: function (errors) {
+        if (typeof errors === 'undefined' || errors.length === 0) {
+            $('#devStatusErrors').html('<i class="fal fa-check-circle text-success"></i><span class="px-2">0</span>');
+            $('#devStatusErrors').attr('data-count', 0);
+            $('#devStatusErrors').removeClass('clickable');
+        }
+        else {
+            $('#devStatusErrors').html('<i class="fal fa-times-circle text-danger"></i><span class="px-2">' + errors.length + '</span>');
+            $('#devStatusErrors').attr('data-count', errors.length);
+            $('#devStatusErrors').addClass('clickable');
 
+            var list = $('<ul class="list-unstyled">');
+            
+            $.each(errors, function (i, v) {
+                list.append($('<li>')
+                    .append('<div class ="row">'
+                        + '<div class="col-md-10">' + v.message + '</div>'
+                        + '<div class="col-md-2">' + v.source + '</div></div>')
+                );
+            });
+
+            $('#ideErrors').html(list);
+        }
+    },
+    showDevErrors: function () {
+        var att = $('#devStatusErrors').attr('data-count');
+
+        if (att === null || att === "0")
+            return;
+
+        $('#ideErrors').attr('tabindex', 0);
+        $('#ideErrors').collapse('show');
+        $('#ideErrors').focus();
+    },
     loadSection: function (e) {
         var url = new tompit.devUrl();
         var instance = this;
@@ -1041,6 +1085,7 @@ $.widget('tompit.tpIde', {
         return $(target).closest('[data-id]').attr('data-id');
     },
     unloadDesigner: function (e) {
+        this.setErrors();
         if (this.options.designer.active === null)
             return;
 

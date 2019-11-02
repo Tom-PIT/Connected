@@ -97,17 +97,16 @@
         var promises = [];
 
         $.each(dirty, function (i, v) {
-            var model = textEditor.getModel(monaco.Uri.parse(v));
+            var model = textEditor.getModel(monaco.Uri.parse(v.model));
 
             if (model === null)
                 return true;
 
-            if (model.uri.toString() !== v) {
-                textEditorState.setState({
-                    'model': v,
-                    'dirty': false
-                });
-            }
+            textEditorState.setState({
+                'model': v.model,
+                'dirty': false,
+                'timestamp': v.timestamp
+            });
 
             promises.push(new Promise(function (resolve, reject) {
                 ide.designerAction({
@@ -122,11 +121,6 @@
                         'text': model.getValue(),
                     },
                     onComplete: function () {
-                        textEditorState.setState({
-                            'model': model.uri.toString(),
-                            'dirty': false
-                        });
-
                         resolve();
 
                         @if ((features & LanguageFeature.CheckSyntax)== LanguageFeature.CheckSyntax)
@@ -165,7 +159,15 @@
                 text:model.getValue()
             },
             onComplete: function (data) {
-                monaco.editor.setModelMarkers(model, 'syntax', data);
+                var internal = [];
+
+                $.each(data, function (i, v) {
+                    if (!v.external)
+                        internal.push(v);
+                });
+
+                monaco.editor.setModelMarkers(model, 'syntax', internal);
+                ide.setErrors(data);    
             }
         }, false);
     }

@@ -68,7 +68,7 @@ namespace TomPIT.Middleware.Interop
 					var op = descriptor.Configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
 
 					if (op == null)
-						throw new RuntimeException($"SR.ErrServiceOperationNotFound ({CallbackPath})");
+						throw new RuntimeException($"{SR.ErrServiceOperationNotFound} ({CallbackPath})");
 
 					_callback = new MiddlewareCallback(descriptor.MicroService.Token, descriptor.Component.Token, op.Id);
 				}

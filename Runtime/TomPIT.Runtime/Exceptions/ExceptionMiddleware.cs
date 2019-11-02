@@ -89,6 +89,8 @@ namespace TomPIT.Exceptions
 			r.ViewData.Model = new ExceptionModel(context, ex);
 			r.ViewData.Add("exSource", ex.Source);
 			var sb = new StringBuilder();
+			var tenant = MiddlewareDescriptor.Current.Tenant;
+			var devUrl = tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Development, InstanceVerbs.All);
 
 			if (ex is ScriptException script)
 			{
@@ -96,22 +98,33 @@ namespace TomPIT.Exceptions
 
 				if (!string.IsNullOrWhiteSpace(script.MicroService))
 				{
-					var tenant = MiddlewareDescriptor.Current.Tenant;
+
 					var ms = tenant.GetService<IMicroServiceService>().Select(script.MicroService);
 
 					if (ms != null && ms.Status != MicroServiceStatus.Production)
 					{
-						if (tenant != null)
-						{
-							var devUrl = tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Development, InstanceVerbs.All);
-
-							if (!string.IsNullOrWhiteSpace(devUrl))
-								r.ViewData.Add("exUrl", $"{devUrl}/ide/{script.MicroService}?component={script.Component}&element={script.Element}");
-						}
+						if (tenant != null && !string.IsNullOrWhiteSpace(devUrl))
+							r.ViewData.Add("exUrl", $"{devUrl}/ide/{script.MicroService}?component={script.Component}&element={script.Element}");
 					}
 				}
 
 				r.ViewData.Add("exLine", script.Line);
+			}
+
+			if (ex.Data != null && ex.Data.Count > 0)
+			{
+				if (ex.Data.Contains("Script"))
+					r.ViewData.Add("exScript", ex.Data["Script"]);
+
+				if (ex.Data.Contains("MicroService") && !string.IsNullOrWhiteSpace(devUrl))
+				{
+					var scriptMs = ex.Data["MicroService"] as IMicroService;
+					//TODO: resolve fully qualified component to be able to parse edit url
+
+					if (scriptMs != null)
+						r.ViewData.Add("exScriptMicroService", scriptMs.Name);
+					//	r.ViewData.Add("exScriptUrl", $"{devUrl}/ide/{scriptMs.Name}?component={script.Component}&element={script.Element}");
+				}
 			}
 
 			sb.AppendLine(ex.Message);

@@ -1,7 +1,9 @@
-﻿namespace TomPIT.ComponentModel.IoC
+﻿using TomPIT.Collections;
+
+namespace TomPIT.ComponentModel.IoC
 {
-	public interface IIoCEndpointConfiguration : IConfiguration, IText
+	public interface IIoCEndpointConfiguration : IConfiguration
 	{
-		string Container { get; }
+		ListItems<IIoCEndpoint> Endpoints { get; }
 	}
 }

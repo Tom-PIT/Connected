@@ -36,32 +36,39 @@ namespace TomPIT.IoC
 		{
 			var configuration = Get(component);
 
-			if (configuration == null || string.IsNullOrWhiteSpace(configuration.Container))
+			if (configuration == null)
 				return;
 
-			var type = Tenant.GetService<ICompilerService>().ResolveType(microService, configuration, configuration.ComponentName(), false);
-
-			if (type == null)
-				return;
-
-			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
-
-			lock (_endpoints)
+			foreach (var endpoint in configuration.Endpoints)
 			{
-				var descriptor = new IoCEndpointDescriptor
-				{
-					Component = configuration.Component,
-					Type = type
-				};
+				if (string.IsNullOrWhiteSpace(endpoint.Name) || string.IsNullOrWhiteSpace(endpoint.Container))
+					continue;
 
-				if (Endpoints.ContainsKey(configuration.Container))
-					Endpoints[configuration.Container].Add(descriptor);
-				else
+				var type = Tenant.GetService<ICompilerService>().ResolveType(microService, endpoint, endpoint.Name, false);
+
+				if (type == null)
+					return;
+
+				var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+
+				lock (_endpoints)
 				{
-					Endpoints.TryAdd(configuration.Container, new List<IoCEndpointDescriptor>
+					var descriptor = new IoCEndpointDescriptor
+					{
+						Component = configuration.Component,
+						Element = endpoint.Id,
+						Type = type
+					};
+
+					if (Endpoints.ContainsKey(endpoint.Container))
+						Endpoints[endpoint.Container].Add(descriptor);
+					else
+					{
+						Endpoints.TryAdd(endpoint.Container, new List<IoCEndpointDescriptor>
 					{
 						descriptor
 					});
+					}
 				}
 			}
 		}

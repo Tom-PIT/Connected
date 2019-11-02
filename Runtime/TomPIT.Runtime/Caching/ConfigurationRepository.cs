@@ -114,14 +114,14 @@ namespace TomPIT.Services
 			if (Tenant.GetService<IComponentService>().SelectConfiguration(id) is T config)
 			{
 				Set(config.Component, config, TimeSpan.Zero);
-				OnAdded(config.MicroService(), id);
+				//				OnAdded(config.MicroService(), id);
 			}
 			else
 			{
 				var existing = Get(id);
 
 				Remove(id);
-				OnRemoved(existing == null ? Guid.Empty : existing.MicroService(), id);
+				//			OnRemoved(existing == null ? Guid.Empty : existing.MicroService(), id);
 			}
 		}
 	}
