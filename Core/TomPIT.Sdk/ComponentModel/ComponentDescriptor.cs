@@ -130,8 +130,8 @@ namespace TomPIT.ComponentModel
 			if (MicroService == null)
 				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({MicroServiceName})");
 
-			if (Context != null)
-				Context.MicroService.ValidateMicroServiceReference(MicroServiceName);
+			//if (Context != null)
+			//	Context.MicroService.ValidateMicroServiceReference(MicroServiceName);
 
 			if (Component == null)
 				throw new RuntimeException($"{SR.ErrComponentNotFound} ({ComponentName})");

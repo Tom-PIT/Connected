@@ -11,12 +11,12 @@
   color: #333;
   font-weight: normal;
   font-size: 14px;
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
+  font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
   line-height: 1.35715;
 }
 .dx-theme-generic-typography input,
 .dx-theme-generic-typography textarea {
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
+  font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
   line-height: 1.35715;
 }
 .dx-theme-generic-typography h1,
@@ -1291,14 +1291,14 @@
   color: #333;
   font-weight: normal;
   font-size: 14px;
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
+  font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
   line-height: 1.35715;
 }
-.dx-widget input,
-.dx-widget textarea {
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
-  line-height: 1.35715;
-}
+    .dx-widget input,
+    .dx-widget textarea {
+        font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
+        line-height: 1.35715;
+    }
 .dx-state-disabled.dx-widget,
 .dx-state-disabled .dx-widget {
   opacity: 0.5;
@@ -1320,17 +1320,17 @@
   background-color: #fff;
 }
 .dx-field {
-  color: #333;
-  font-weight: normal;
-  font-size: 14px;
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
-  line-height: 1.35715;
+    color: #333;
+    font-weight: normal;
+    font-size: 14px;
+    font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
+    line-height: 1.35715;
 }
-.dx-field input,
-.dx-field textarea {
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
-  line-height: 1.35715;
-}
+    .dx-field input,
+    .dx-field textarea {
+        font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
+        line-height: 1.35715;
+    }
 .dx-field-label {
   color: #333;
   cursor: default;
@@ -2338,17 +2338,17 @@
   background-color: rgba(255, 255, 255, 0.8);
 }
 .dx-overlay-wrapper {
-  color: #333;
-  font-weight: normal;
-  font-size: 14px;
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
-  line-height: 1.35715;
+    color: #333;
+    font-weight: normal;
+    font-size: 14px;
+    font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
+    line-height: 1.35715;
 }
-.dx-overlay-wrapper input,
-.dx-overlay-wrapper textarea {
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
-  line-height: 1.35715;
-}
+    .dx-overlay-wrapper input,
+    .dx-overlay-wrapper textarea {
+        font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
+        line-height: 1.35715;
+    }
 .dx-popup-wrapper .dx-state-focused.dx-overlay-content {
   border: 1px solid #ddd;
 }
@@ -4478,17 +4478,17 @@
   outline: none;
 }
 .dx-menu-base {
-  color: #333;
-  font-weight: normal;
-  font-size: 14px;
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
-  line-height: 1.35715;
+    color: #333;
+    font-weight: normal;
+    font-size: 14px;
+    font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
+    line-height: 1.35715;
 }
-.dx-menu-base input,
-.dx-menu-base textarea {
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
-  line-height: 1.35715;
-}
+    .dx-menu-base input,
+    .dx-menu-base textarea {
+        font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
+        line-height: 1.35715;
+    }
 .dx-menu-base.dx-state-focused {
   outline: none;
 }
@@ -6490,17 +6490,17 @@
   margin-top: 10px;
 }
 .dx-datagrid-column-chooser {
-  color: #333;
-  font-weight: normal;
-  font-size: 14px;
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
-  line-height: 1.35715;
+    color: #333;
+    font-weight: normal;
+    font-size: 14px;
+    font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
+    line-height: 1.35715;
 }
-.dx-datagrid-column-chooser input,
-.dx-datagrid-column-chooser textarea {
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
-  line-height: 1.35715;
-}
+    .dx-datagrid-column-chooser input,
+    .dx-datagrid-column-chooser textarea {
+        font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
+        line-height: 1.35715;
+    }
 .dx-datagrid-export-menu .dx-menu-item .dx-icon-exportxlsx {
   width: 16px;
   height: 16px;
@@ -7966,17 +7966,17 @@
   background-color: rgba(221, 221, 221, 0.2);
 }
 .dx-pivotgrid .dx-ie .dx-pivotgrid-fields-area {
-  color: #333;
-  font-weight: normal;
-  font-size: 14px;
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
-  line-height: 1.35715;
+    color: #333;
+    font-weight: normal;
+    font-size: 14px;
+    font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
+    line-height: 1.35715;
 }
-.dx-pivotgrid .dx-ie .dx-pivotgrid-fields-area input,
-.dx-pivotgrid .dx-ie .dx-pivotgrid-fields-area textarea {
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
-  line-height: 1.35715;
-}
+    .dx-pivotgrid .dx-ie .dx-pivotgrid-fields-area input,
+    .dx-pivotgrid .dx-ie .dx-pivotgrid-fields-area textarea {
+        font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
+        line-height: 1.35715;
+    }
 .dx-pivotgrid .dx-column-header .dx-pivotgrid-fields-area {
   margin-left: -5px;
   padding-left: 5px;
@@ -8711,17 +8711,17 @@
   margin-top: 10px;
 }
 .dx-treelist-column-chooser {
-  color: #333;
-  font-weight: normal;
-  font-size: 14px;
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
-  line-height: 1.35715;
+    color: #333;
+    font-weight: normal;
+    font-size: 14px;
+    font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
+    line-height: 1.35715;
 }
-.dx-treelist-column-chooser input,
-.dx-treelist-column-chooser textarea {
-  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Verdana, sans-serif;
-  line-height: 1.35715;
-}
+    .dx-treelist-column-chooser input,
+    .dx-treelist-column-chooser textarea {
+        font-family: 'Open Sans', 'Segoe UI', Helvetica, Verdana, sans-serif;
+        line-height: 1.35715;
+    }
 .dx-treelist-export-menu .dx-menu-item .dx-icon-exportxlsx {
   width: 16px;
   height: 16px;

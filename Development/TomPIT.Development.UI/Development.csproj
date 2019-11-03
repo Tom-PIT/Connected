@@ -58,7 +58,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\Assets\Fonts\OpenSans\" />
-    <Folder Include="wwwroot\Assets\Libraries\DevExtreme\18.2.4\icons\" />
     <Folder Include="wwwroot\Assets\Libraries\Underscore\1.9.1\" />
   </ItemGroup>
   <ItemGroup>

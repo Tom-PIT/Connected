@@ -8295,44 +8295,19 @@ input.dx-hidden {
 * Copyright (c) 2012 - 2019 Developer Express Inc. ALL RIGHTS RESERVED
 * Read about DevExtreme licensing here: https://js.devexpress.com/Licensing/
 */
-@import "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700";
-@font-face {
-  font-family: 'RobotoFallback';
-  font-style: normal;
-  font-weight: 300;
-  src: local('Roboto Light'), local('Roboto-Light'), url(Libraries/DevExtreme/Latest/fonts/Roboto-300.woff2) format('woff2'), url(Libraries/DevExtreme/Latest/fonts/Roboto-300.woff) format('woff'), url(Libraries/DevExtreme/Latest/fonts/Roboto-300.ttf) format('truetype');
-}
-@font-face {
-  font-family: 'RobotoFallback';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Roboto'), local('Roboto-Regular'), url(Libraries/DevExtreme/Latest/fonts/Roboto-400.woff2) format('woff2'), url(Libraries/DevExtreme/Latest/fonts/Roboto-400.woff) format('woff'), url(Libraries/DevExtreme/Latest/fonts/Roboto-400.ttf) format('truetype');
-}
-@font-face {
-  font-family: 'RobotoFallback';
-  font-style: normal;
-  font-weight: 500;
-  src: local('Roboto Medium'), local('Roboto-Medium'), url(Libraries/DevExtreme/Latest/fonts/Roboto-500.woff2) format('woff2'), url(Libraries/DevExtreme/Latest/fonts/Roboto-500.woff) format('woff'), url(Libraries/DevExtreme/Latest/fonts/Roboto-500.ttf) format('truetype');
-}
-@font-face {
-  font-family: 'RobotoFallback';
-  font-style: normal;
-  font-weight: 700;
-  src: local('Roboto Bold'), local('Roboto-Bold'), url(Libraries/DevExtreme/Latest/fonts/Roboto-700.woff2) format('woff2'), url(Libraries/DevExtreme/Latest/fonts/Roboto-700.woff) format('woff'), url(Libraries/DevExtreme/Latest/fonts/Roboto-700.ttf) format('truetype');
-}
 .dx-theme-material-typography {
   background-color: #fff;
   color: rgba(0, 0, 0, 0.87);
   font-weight: normal;
   font-size: 14px;
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
+  font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
   line-height: 1.2857;
 }
-.dx-theme-material-typography input,
-.dx-theme-material-typography textarea {
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
-}
+    .dx-theme-material-typography input,
+    .dx-theme-material-typography textarea {
+        font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+        line-height: 1.2857;
+    }
 .dx-theme-material-typography h1 {
   font-weight: 300;
   font-size: 96px;
@@ -9656,17 +9631,17 @@ input.dx-hidden {
   background-repeat: no-repeat;
 }
 .dx-widget {
-  color: rgba(0, 0, 0, 0.87);
-  font-weight: normal;
-  font-size: 14px;
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
+    color: rgba(0, 0, 0, 0.87);
+    font-weight: normal;
+    font-size: 14px;
+    font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+    line-height: 1.2857;
 }
-.dx-widget input,
-.dx-widget textarea {
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
-}
+    .dx-widget input,
+    .dx-widget textarea {
+        font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+        line-height: 1.2857;
+    }
 .dx-state-disabled.dx-widget,
 .dx-state-disabled .dx-widget {
   opacity: 0.38;
@@ -9690,17 +9665,17 @@ input.dx-hidden {
   margin: 2px 2px 3px;
 }
 .dx-field {
-  color: rgba(0, 0, 0, 0.87);
-  font-weight: normal;
-  font-size: 14px;
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
+    color: rgba(0, 0, 0, 0.87);
+    font-weight: normal;
+    font-size: 14px;
+    font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+    line-height: 1.2857;
 }
-.dx-field input,
-.dx-field textarea {
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
-}
+    .dx-field input,
+    .dx-field textarea {
+        font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+        line-height: 1.2857;
+    }
 .dx-field-label {
   color: rgba(117, 117, 117, 0.87);
   font-size: 12px;
@@ -11064,17 +11039,17 @@ input.dx-hidden {
   background-color: rgba(0, 0, 0, 0.32);
 }
 .dx-overlay-wrapper {
-  color: rgba(0, 0, 0, 0.87);
-  font-weight: normal;
-  font-size: 14px;
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
+    color: rgba(0, 0, 0, 0.87);
+    font-weight: normal;
+    font-size: 14px;
+    font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+    line-height: 1.2857;
 }
-.dx-overlay-wrapper input,
-.dx-overlay-wrapper textarea {
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
-}
+    .dx-overlay-wrapper input,
+    .dx-overlay-wrapper textarea {
+        font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+        line-height: 1.2857;
+    }
 .dx-loadpanel-content {
   border: 1px solid #e0e0e0;
   background: #fff;
@@ -14123,17 +14098,17 @@ input.dx-hidden {
   background-color: rgba(224, 224, 224, 0.87);
 }
 .dx-menu-base {
-  color: rgba(0, 0, 0, 0.87);
-  font-weight: normal;
-  font-size: 14px;
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
+    color: rgba(0, 0, 0, 0.87);
+    font-weight: normal;
+    font-size: 14px;
+    font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+    line-height: 1.2857;
 }
-.dx-menu-base input,
-.dx-menu-base textarea {
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
-}
+    .dx-menu-base input,
+    .dx-menu-base textarea {
+        font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+        line-height: 1.2857;
+    }
 .dx-menu-base.dx-state-focused {
   outline: none;
 }
@@ -16260,17 +16235,17 @@ input.dx-hidden {
   margin-top: 10px;
 }
 .dx-datagrid-column-chooser {
-  color: rgba(0, 0, 0, 0.87);
-  font-weight: normal;
-  font-size: 14px;
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
+    color: rgba(0, 0, 0, 0.87);
+    font-weight: normal;
+    font-size: 14px;
+    font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+    line-height: 1.2857;
 }
-.dx-datagrid-column-chooser input,
-.dx-datagrid-column-chooser textarea {
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
-}
+    .dx-datagrid-column-chooser input,
+    .dx-datagrid-column-chooser textarea {
+        font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+        line-height: 1.2857;
+    }
 .dx-datagrid-export-menu .dx-menu-item .dx-icon-exportxlsx {
   width: 16px;
   height: 16px;
@@ -18136,17 +18111,17 @@ input.dx-hidden {
   background-color: rgba(221, 221, 221, 0.2);
 }
 .dx-pivotgrid .dx-ie .dx-pivotgrid-fields-area {
-  color: rgba(0, 0, 0, 0.87);
-  font-weight: normal;
-  font-size: 14px;
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
+    color: rgba(0, 0, 0, 0.87);
+    font-weight: normal;
+    font-size: 14px;
+    font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+    line-height: 1.2857;
 }
-.dx-pivotgrid .dx-ie .dx-pivotgrid-fields-area input,
-.dx-pivotgrid .dx-ie .dx-pivotgrid-fields-area textarea {
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
-}
+    .dx-pivotgrid .dx-ie .dx-pivotgrid-fields-area input,
+    .dx-pivotgrid .dx-ie .dx-pivotgrid-fields-area textarea {
+        font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+        line-height: 1.2857;
+    }
 .dx-pivotgrid .dx-column-header .dx-pivotgrid-fields-area {
   margin-left: -5px;
   padding-left: 5px;
@@ -19051,17 +19026,17 @@ input.dx-hidden {
   margin-top: 10px;
 }
 .dx-treelist-column-chooser {
-  color: rgba(0, 0, 0, 0.87);
-  font-weight: normal;
-  font-size: 14px;
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
+    color: rgba(0, 0, 0, 0.87);
+    font-weight: normal;
+    font-size: 14px;
+    font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+    line-height: 1.2857;
 }
-.dx-treelist-column-chooser input,
-.dx-treelist-column-chooser textarea {
-  font-family: "Roboto", "RobotoFallback", "Helvetica", "Arial", sans-serif;
-  line-height: 1.2857;
-}
+    .dx-treelist-column-chooser input,
+    .dx-treelist-column-chooser textarea {
+        font-family: "Open Sans", "Helvetica", "Arial", sans-serif;
+        line-height: 1.2857;
+    }
 .dx-treelist-export-menu .dx-menu-item .dx-icon-exportxlsx {
   width: 16px;
   height: 16px;
