@@ -413,7 +413,8 @@ CREATE TABLE [tompit].[component]
 [lock_status] [int] NOT NULL CONSTRAINT [DF_component_status] DEFAULT ((0)),
 [lock_user] [int] NULL,
 [lock_date] [datetime] NULL,
-[lock_verb] [int] NOT NULL CONSTRAINT [DF_component_lock_verb] DEFAULT ((0))
+[lock_verb] [int] NOT NULL CONSTRAINT [DF_component_lock_verb] DEFAULT ((0)),
+[namespace] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
 ) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -430,10 +431,13 @@ GO
 
 
 
+
+
+
 CREATE VIEW [tompit].[view_component]
 AS
 SELECT      c.id, c.name, c.token, c.type, c.category, c.runtime_configuration, c.modified,
-			c.service, c.folder, c.lock_status, c.lock_date, c.lock_user, c.lock_verb,
+			c.service, c.folder, c.lock_status, c.lock_date, c.lock_user, c.lock_verb, c.namespace,
 			u.token lock_user_token,
 			f.token as folder_token, s.token AS [service_token]
 FROM        tompit.component AS c 
@@ -659,13 +663,14 @@ CREATE PROCEDURE [tompit].[component_ins]
 	@category nvarchar(128),
 	@runtime_configuration uniqueidentifier = NULL,
 	@modified datetime,
-	@service int
+	@service int,
+	@namespace nvarchar(128)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	insert tompit.component (folder, name, token, type, category, runtime_configuration, modified, service)
-	values (@folder, @name, @token, @type, @category, @runtime_configuration, @modified, @service);
+	insert tompit.component (folder, name, token, type, category, runtime_configuration, modified, service, namespace)
+	values (@folder, @name, @token, @type, @category, @runtime_configuration, @modified, @service, @namespace);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -860,7 +865,7 @@ CREATE TABLE [tompit].[dev_error]
 [element] [uniqueidentifier] NULL,
 [severity] [int] NOT NULL,
 [message] [nvarchar] (1024) COLLATE Slovenian_CI_AS NULL,
-[code] [int] NULL,
+[code] [varchar] (32) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [category] [int] NOT NULL,
 [identifier] [uniqueidentifier] NOT NULL
 ) ON [PRIMARY]
@@ -1079,7 +1084,7 @@ BEGIN
 	SET NOCOUNT ON;
 
 	INSERT tompit.dev_error ([service], component, element, severity, message, code, category, identifier)
-	SELECT @service, @component, element, severity, message, code, category, identifier FROM OPENJSON(@items) WITH (element uniqueidentifier, severity int, message nvarchar(1024), code int, category int, identifier uniqueidentifier);
+	SELECT @service, @component, element, severity, message, code, category, identifier FROM OPENJSON(@items) WITH (element uniqueidentifier, severity int, message nvarchar(1024), code varchar(32), category int, identifier uniqueidentifier);
 
 END
 GO

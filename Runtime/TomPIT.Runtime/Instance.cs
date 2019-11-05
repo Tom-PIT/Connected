@@ -97,6 +97,9 @@ namespace TomPIT
 
 				e.ProvideApplicationParts?.Invoke(pa);
 
+				foreach (var assembly in pa.Assemblies)
+					m.ApplicationParts.Add(new AssemblyPart(assembly));
+
 				foreach (var i in pa.Parts)
 					ConfigurePlugins(m, i);
 

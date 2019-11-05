@@ -43,8 +43,8 @@ namespace TomPIT.MicroServices.Reporting.Runtime.Configuration
 
 			return new List<string>
 			{
-				"TomPIT.Reporting",
-				"TomPIT.Reporting.Views"
+				"TomPIT.MicroServices.Reporting",
+				"TomPIT.MicroServices.Reporting.Views"
 			};
 		}
 
@@ -52,7 +52,7 @@ namespace TomPIT.MicroServices.Reporting.Runtime.Configuration
 		{
 			return new List<string>
 			{
-				"TomPIT.Reporting"
+				"TomPIT.MicroServices.Reporting"
 			};
 		}
 

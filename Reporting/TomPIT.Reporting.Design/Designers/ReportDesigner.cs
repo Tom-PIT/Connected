@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using DevExpress.DataAccess.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.Reports;
 using TomPIT.Ide;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Dom;
 using TomPIT.MicroServices.Reporting.Design.Dom;
 using TomPIT.Reflection;
+using TomPIT.Reflection.Manifests.Entities;
 
 namespace TomPIT.MicroServices.Reporting.Design.Designers
 {
@@ -61,14 +61,14 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 				{
 					_dataSources = new Dictionary<string, JsonDataSource>();
 
-					DiscoverOperations(MicroService.Name);
+					ResolveDataSources(MicroService.Name);
 
 					var references = Environment.Context.Tenant.GetService<IDiscoveryService>().References(MicroService.Token);
 
 					if (references != null)
 					{
 						foreach (var reference in references.MicroServices)
-							DiscoverOperations(reference.MicroService);
+							ResolveDataSources(reference.MicroService);
 					}
 				}
 
@@ -76,61 +76,64 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			}
 		}
 
-		private void DiscoverOperations(string microService)
+		private void ResolveDataSources(string microService)
 		{
+			if (string.IsNullOrWhiteSpace(microService))
+				return;
+
 			var ms = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(microService);
 
 			if (ms == null)
 				return;
 
-			var apis = Environment.Context.Tenant.GetService<IComponentService>().QueryConfigurations(ms.Token, "Api");
+			var apis = Environment.Context.Tenant.GetService<IComponentService>().QueryComponents(ms.Token, ComponentCategories.Api);
 
 			foreach (var api in apis)
 			{
-				var config = api as IApiConfiguration;
+				var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifest(api.Token) as ApiManifest;
 
-				foreach (var operation in config.Operations)
+				foreach (var operation in manifest.Operations)
 				{
-					//if (!(operation.Discover(Element.Environment.Context) is OperationManifest manifest) || !manifest.IsDataSource || manifest.Schema == null)
-					//	return;
+					if (operation.ReturnType == null || string.IsNullOrWhiteSpace(operation.ReturnType.Name))
+						continue;
 
-					//var ds = new JsonDataSource
-					//{
-					//	ConnectionName = $"{manifest.MicroService}/{manifest.Name}",
-					//	Name = manifest.Name.Replace("/", "")
-					//};
+					var ds = new JsonDataSource
+					{
+						ConnectionName = $"{manifest.MicroService}/{manifest.Name}",
+						Name = manifest.Name.Replace("/", "")
+					};
 
-					//var root = new JsonSchemaNode
-					//{
-					//	NodeType = JsonNodeType.Object
-					//};
+					var root = new JsonSchemaNode
+					{
+						NodeType = JsonNodeType.Object
+					};
 
-					//var schema = new JsonSchemaNode
-					//{
-					//	NodeType = JsonNodeType.Array,
-					//	Selected = true,
-					//	Name = manifest.SchemaName
-					//};
+					var schema = new JsonSchemaNode
+					{
+						NodeType = JsonNodeType.Array,
+						Selected = true,
+						Name = operation.Name
+					};
 
-					//foreach (var child in manifest.Schema.Children())
-					//{
-					//	if (child is JProperty property)
-					//		schema.AddChildren(new[] { new JsonSchemaNode(property.Name, true, JsonNodeType.Property, ResolvePropertyType(property.Value)) });
-					//	else if (child is JObject obj)
-					//	{
-					//		//TODO: implement object
-					//	}
-					//	else if (child is JArray array)
-					//	{
-					//		//TODO: implement collection
-					//	}
-					//}
+					foreach (var child in operation.ReturnType.Properties)
+					{
+						//if (child is JProperty property)
+						schema.AddChildren(new[] { new JsonSchemaNode(child.Name, true, JsonNodeType.Property, ResolvePropertyType(child.Type)) });
+						//else if (child is JObject obj)
+						//{
+						//	//TODO: implement object
+						//}
+						//else if (child is JArray array)
+						//{
+						//	//TODO: implement collection
+						//}
+					}
 
-					//root.AddChildren(schema);
+					root.AddChildren(schema);
 
-					//ds.Schema = root;
+					ds.Schema = root;
 
-					//_dataSources.Add(ds.Name, ds);
+					_dataSources.Add(ds.Name, ds);
 				}
 			}
 		}

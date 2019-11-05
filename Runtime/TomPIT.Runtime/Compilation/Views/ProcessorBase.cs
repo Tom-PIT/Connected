@@ -24,6 +24,7 @@ namespace TomPIT.Compilation.Views
 		protected void AddUsings(StringBuilder builder)
 		{
 			builder.AppendLine("@using TomPIT;");
+			builder.AppendLine("@using TomPIT.Models;");
 		}
 
 		protected void AppendViewMetaData(StringBuilder builder, string viewType, Guid componentId)

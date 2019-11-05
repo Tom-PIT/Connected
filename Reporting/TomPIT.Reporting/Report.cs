@@ -7,10 +7,10 @@ using TomPIT.Runtime;
 
 namespace TomPIT.MicroServices.Reporting
 {
-	[DomDesigner("TomPIT.Reporting.Design.Designers.ReportDesigner, TomPIT.Reporting.Design")]
+	[DomDesigner("TomPIT.MicroServices.Reporting.Design.Designers.ReportDesigner, TomPIT.MicroServices.Reporting.Design")]
 	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = EnvironmentMode.Runtime)]
-	[DomElement("TomPIT.Reporting.Design.Dom.ReportElement, TomPIT.Reporting.Design")]
-	[ViewRenderer("TomPIT.Reporting.UI.ReportRenderer, TomPIT.Reporting")]
+	[DomElement("TomPIT.MicroServices.Reporting.Design.Dom.ReportElement, TomPIT.MicroServices.Reporting.Design")]
+	[ViewRenderer("TomPIT.MicroServices.Reporting.UI.ReportRenderer, TomPIT.MicroServices.Reporting")]
 	public class Report : ComponentConfiguration, IReportConfiguration
 	{
 		[Browsable(false)]

@@ -59,7 +59,7 @@
             return err === null ? null : err.message;
         }
         catch (e) {
-            message = error;
+            return null;
         }
     };
 

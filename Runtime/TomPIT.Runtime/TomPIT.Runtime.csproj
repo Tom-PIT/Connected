@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -15,9 +15,9 @@
     <Product>Tom PIT Micro service platform</Product>
     <RepositoryUrl>
     </RepositoryUrl>
-    <AssemblyVersion>1.1.924.6</AssemblyVersion>
-    <FileVersion>1.1.924.6</FileVersion>
-    <Version>1.1.924.6</Version>
+    <AssemblyVersion>1.1.1103.16</AssemblyVersion>
+    <FileVersion>1.1.1103.16</FileVersion>
+    <Version>1.1.1103.16</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>
@@ -25,7 +25,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="dotless" Version="1.6.7" />
-    <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="lz4net" Version="1.0.15.93" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.0.0" />

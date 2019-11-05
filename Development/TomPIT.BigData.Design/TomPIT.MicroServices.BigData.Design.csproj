@@ -1,9 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <AssemblyVersion>1.1.924.6</AssemblyVersion>
-    <FileVersion>1.1.924.6</FileVersion>
-    <Version>1.1.924.6</Version>
+    <AssemblyVersion>1.1.1103.16</AssemblyVersion>
+    <FileVersion>1.1.1103.16</FileVersion>
+    <Version>1.1.1103.16</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />

@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <AssemblyVersion>1.1.924.6</AssemblyVersion>
-    <FileVersion>1.1.924.6</FileVersion>
-    <Version>1.1.924.6</Version>
+    <AssemblyVersion>1.1.1103.16</AssemblyVersion>
+    <FileVersion>1.1.1103.16</FileVersion>
+    <Version>1.1.1103.16</Version>
     <AssemblyName>TomPIT.Experience.Search</AssemblyName>
     <RootNamespace>TomPIT.Search</RootNamespace>
   </PropertyGroup>

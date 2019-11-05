@@ -24,6 +24,11 @@ namespace TomPIT.MicroServices.Reporting.Design
 		});
 		}
 
+		public override List<IItemDescriptor> ProvideGlobalAddItems(IDomElement parent)
+		{
+			return _items.Values.ToList();
+		}
+
 		public override List<IItemDescriptor> ProvideAddItems(IDomElement parent)
 		{
 			return _items.Values.ToList();
@@ -41,5 +46,7 @@ namespace TomPIT.MicroServices.Reporting.Design
 		{
 			DevExpress.XtraReports.Web.Extensions.ReportStorageWebExtension.RegisterExtensionGlobal(new ReportDesignerStorage());
 		}
+
+		public override TemplateKind Kind => TemplateKind.Plugin;
 	}
 }

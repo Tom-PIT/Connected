@@ -1,10 +1,11 @@
 ﻿{
 	"connections": [
-		{
-			"name": "localhost",
-			"url": "http://localhost:44001",
-			"authenticationToken": "defaultAuthenticationToken"
-		}
+    {
+      "name": "localhost",
+      //"url": "http://localhost:44001",
+      "url": "http://sys-app/termoshop/sys",
+      "authenticationToken": "8354505c-19f9-4ecb-bc0f-108204c78555"
+    }
 	],
 	"dataProviders": [
 		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
@@ -12,8 +13,8 @@
   "designers": [
     "TomPIT.MicroServices.Design.MicroServicesTemplate, TomPIT.MicroServices.Design",
     "TomPIT.MicroServices.IoT.Design.IoTTemplate, TomPIT.MicroServices.IoT.Design",
-    "TomPIT.MicroServices.BigData.Design.BigDataTemplate, TomPIT.MicroServices.BigData.Design"
-    //"TomPIT.Reporting.Design.ReportTemplate, TomPIT.Reporting.Design"
+    "TomPIT.MicroServices.BigData.Design.BigDataTemplate, TomPIT.MicroServices.BigData.Design",
+    "TomPIT.MicroServices.Reporting.Design.ReportTemplate, TomPIT.MicroServices.Reporting.Design"
   ],
 	"plugins": {
 		"location": "c:\\Deploy\\Plugins",
@@ -22,7 +23,7 @@
       "TomPIT.MicroServices.Runtime.Configuration.Plugin, TomPIT.MicroServices",
       "TomPIT.MicroServices.IoT.Runtime.Configuration.Plugin, TomPIT.MicroServices.IoT",
       "TomPIT.MicroServices.BigData.Runtime.Configuration.Plugin, TomPIT.MicroServices.BigData",
-      //"TomPIT.Reporting.Plugin, TomPIT.Reporting"
+      "TomPIT.MicroServices.Reporting.Runtime.Configuration.Plugin, TomPIT.MicroServices.Reporting"
     ]
 	}
 }
