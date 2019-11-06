@@ -7,6 +7,7 @@ using TomPIT.Deployment;
 using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
 using TomPIT.Distributed;
+using TomPIT.Middleware;
 
 namespace TomPIT.Management.Deployment
 {
@@ -17,6 +18,10 @@ namespace TomPIT.Management.Deployment
 			IntervalTimeout = TimeSpan.FromSeconds(10);
 		}
 
+		protected override bool Initialize()
+		{
+			return Instance.State == InstanceState.Running;
+		}
 		protected override Task Process()
 		{
 			var tenants = Shell.GetService<IConnectivityService>().QueryTenants();
@@ -24,6 +29,8 @@ namespace TomPIT.Management.Deployment
 			Parallel.ForEach(tenants,
 				(i) =>
 				{
+					MiddlewareDescriptor.Current.Tenant = Shell.GetService<IConnectivityService>().SelectTenant(i.Url);
+
 					ExecuteInstallers(Shell.GetService<IConnectivityService>().SelectTenant(i.Url));
 				});
 

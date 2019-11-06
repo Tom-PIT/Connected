@@ -2,8 +2,11 @@
   "connections": [
     {
       "name": "localhost",
-      "url": "http://localhost:44001",
-      "authenticationToken": "defaultAuthenticationToken"
+      //"url": "http://localhost:44001",
+      //"authenticationToken": "defaultAuthenticationToken"
+      "url": "http://sys-app/termoshop/sys",
+      "authenticationToken": "8354505c-19f9-4ecb-bc0f-108204c78555"
+
     }
   ],
   "resourceGroups": [

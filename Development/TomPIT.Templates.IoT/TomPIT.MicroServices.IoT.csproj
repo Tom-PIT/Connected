@@ -10,9 +10,9 @@
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.MicroServices.IoT</RootNamespace>
     <AssemblyName>TomPIT.MicroServices.IoT</AssemblyName>
-    <AssemblyVersion>1.1.1103.16</AssemblyVersion>
-    <FileVersion>1.1.1103.16</FileVersion>
-    <Version>1.1.1103.16</Version>
+    <AssemblyVersion>1.1.1106.1</AssemblyVersion>
+    <FileVersion>1.1.1106.1</FileVersion>
+    <Version>1.1.1106.1</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>

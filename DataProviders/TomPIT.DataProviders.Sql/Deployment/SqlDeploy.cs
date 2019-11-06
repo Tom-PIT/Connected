@@ -212,7 +212,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 				var code = view.Definition;
 
 				if (existing != null)
-					code = string.Format("ALTER {0}", code.Substring(6));
+					code = string.Format("ALTER {0}", code.Trim().Substring(6));
 
 				Command.Exec(code);
 			}

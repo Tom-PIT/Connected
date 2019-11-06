@@ -12,7 +12,7 @@ namespace TomPIT.Middleware
 		Guid UserToken { get; }
 		IUser User { get; }
 		string JwToken { get; }
-		ITenant Tenant { get; }
+		ITenant Tenant { get; set; }
 
 		string RouteUrl(IActionContextProvider provider, string routeName, object values);
 	}

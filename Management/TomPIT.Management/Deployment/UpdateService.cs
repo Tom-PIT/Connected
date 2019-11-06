@@ -6,6 +6,7 @@ using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Distributed;
 using TomPIT.Management.ComponentModel;
+using TomPIT.Middleware;
 
 namespace TomPIT.Management.Deployment
 {
@@ -13,7 +14,12 @@ namespace TomPIT.Management.Deployment
 	{
 		public UpdateService()
 		{
-			IntervalTimeout = TimeSpan.FromHours(1);
+			IntervalTimeout = TimeSpan.FromMinutes(1);
+		}
+
+		protected override bool Initialize()
+		{
+			return Instance.State == InstanceState.Running;
 		}
 
 		protected override Task Process()
@@ -23,6 +29,8 @@ namespace TomPIT.Management.Deployment
 			Parallel.ForEach(tenants,
 				 (i) =>
 				 {
+					 MiddlewareDescriptor.Current.Tenant = Shell.GetService<IConnectivityService>().SelectTenant(i.Url);
+
 					 CheckForUpdates(Shell.GetService<IConnectivityService>().SelectTenant(i.Url));
 				 });
 

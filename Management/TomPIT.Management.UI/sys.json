@@ -3,6 +3,8 @@
     {
       "name": "localhost",
       //"url": "http://localhost:44001",
+      //"url": "http://sys-app/common/sys",
+      //"authenticationToken": "defaultAuthenticationToken"
       "url": "http://sys-app/termoshop/sys",
       "authenticationToken": "8354505c-19f9-4ecb-bc0f-108204c78555"
     }

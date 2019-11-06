@@ -157,7 +157,18 @@ namespace TomPIT
 			});
 
 			app.UseAjaxExceptionMiddleware();
+			//var assetsDirectors = $"{env.WebRootPath}\\Assets";
+
+			//if (Directory.Exists(assetsDirectors))
+			//{
+			//	app.UseStaticFiles(new StaticFileOptions(new SharedOptions
+			//	{
+			//		RequestPath = "/sys/assets",
+			//		FileProvider = new PhysicalFileProvider($"{env.WebRootPath}\\Assets")
+			//	}));
+			//}
 			app.UseStaticFiles();
+
 			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
 
 			RuntimeBootstrapper.Run();

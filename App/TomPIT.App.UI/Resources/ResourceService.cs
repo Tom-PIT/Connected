@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using System.Text.RegularExpressions;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
@@ -158,16 +157,7 @@ namespace TomPIT.App.Resources
 
 		private string Minify(string source)
 		{
-			source = Regex.Replace(source, @"[a-zA-Z]+#", "#");
-			source = Regex.Replace(source, @"[\n\r]+\s*", string.Empty);
-			source = Regex.Replace(source, @"\s+", " ");
-			source = Regex.Replace(source, @"\s?([:,;{}])\s?", "$1");
-			source = source.Replace(";}", "}");
-			source = Regex.Replace(source, @"([\s:]0)(px|pt|%|em)", "$1");
-
-			// Remove comments from CSS
-			source = Regex.Replace(source, @"/\*[\d\D]*?\*/", string.Empty);
-
+			//TODO: implement minifier
 			return source;
 		}
 	}

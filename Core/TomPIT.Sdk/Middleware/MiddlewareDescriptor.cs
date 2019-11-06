@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Newtonsoft.Json.Linq;
@@ -19,6 +20,7 @@ namespace TomPIT.Middleware
 		private IUser _user = null;
 		private string _jw = null;
 		private ITenant _tenant = null;
+		private string _endpoint = null;
 
 		internal MiddlewareDescriptor() { }
 		public IIdentity Identity
@@ -74,11 +76,14 @@ namespace TomPIT.Middleware
 					var json = Serializer.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
 
 					_jw = json.Required<string>("jwt");
+					_endpoint = json.Required<string>("endpoint");
 				}
 
 				return _jw;
 			}
 		}
+
+		private string Endpoint => JwToken == null ? null : _endpoint;
 
 		public ITenant Tenant
 		{
@@ -86,6 +91,11 @@ namespace TomPIT.Middleware
 			{
 				if (_tenant == null)
 				{
+					_tenant = Thread.GetData(Thread.GetNamedDataSlot("Tenant")) as ITenant;
+
+					if (_tenant != null)
+						return _tenant;
+
 					var id = Identity as Identity;
 
 					if (id == null || string.IsNullOrWhiteSpace(id.Endpoint))
@@ -93,13 +103,22 @@ namespace TomPIT.Middleware
 						if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 							_tenant = Shell.GetService<IConnectivityService>().SelectDefaultTenant();
 						else
-							return null;
+						{
+							if (!string.IsNullOrWhiteSpace(Endpoint))
+								_tenant = Shell.GetService<IConnectivityService>().SelectTenant(Endpoint);
+							else
+								return null;
+						}
 					}
 					else
 						_tenant = Shell.GetService<IConnectivityService>().SelectTenant(id.Endpoint);
 				}
 
 				return _tenant;
+			}
+			set
+			{
+				Thread.SetData(Thread.GetNamedDataSlot("Tenant"), value);
 			}
 		}
 

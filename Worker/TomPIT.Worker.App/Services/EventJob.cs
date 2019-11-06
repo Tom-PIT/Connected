@@ -120,7 +120,7 @@ namespace TomPIT.Worker.Services
 			if (op == null)
 				return;
 
-			var instance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IDistributedOperation>(op, ed.Arguments);
+			var instance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IDistributedOperation>(ctx, op, ed.Arguments, op.Name);
 			var property = instance.GetType().GetProperty(nameof(IDistributedOperation.OperationTarget));
 
 			if (property.SetMethod == null)

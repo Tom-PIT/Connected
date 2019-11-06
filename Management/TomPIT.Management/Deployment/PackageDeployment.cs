@@ -88,7 +88,7 @@ namespace TomPIT.Management.Deployment
 
 			var ms = Tenant.GetService<IMicroServiceService>().Select(m.Token);
 
-			Tenant.GetService<IMicroServiceManagementService>().Update(ms.Token, ms.Name, MicroServiceStatus.Production, ms.Template, ms.ResourceGroup, ms.Package, ms.Plan, ms.UpdateStatus, ms.CommitStatus);
+			Tenant.GetService<IMicroServiceManagementService>().Update(ms.Token, ms.Name, MicroServiceStatus.Production, ms.Template, ms.ResourceGroup, ms.Package, Package.MetaData.Plan, ms.UpdateStatus, ms.CommitStatus);
 		}
 
 		private void DeployFolders()

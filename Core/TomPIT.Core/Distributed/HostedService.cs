@@ -53,7 +53,10 @@ namespace TomPIT.Distributed
 					//TODO: handle exception
 				}
 
-				await Task.Delay(IntervalTimeout, stoppingToken);
+				if (Initialized)
+					await Task.Delay(IntervalTimeout, stoppingToken);
+				else
+					await Task.Delay(1000, stoppingToken);
 			}
 			while (!stoppingToken.IsCancellationRequested);
 		}

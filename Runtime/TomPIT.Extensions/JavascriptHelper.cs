@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using System.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TomPIT.Reflection;
@@ -84,7 +85,7 @@ namespace TomPIT
 			if (value == null)
 				return Html.Raw("null") as HtmlString;
 
-			return Html.Raw(string.Format("'{0}'", value.ToString())) as HtmlString;
+			return Html.Raw(string.Format("'{0}'", HttpUtility.JavaScriptStringEncode(value.ToString()))) as HtmlString;
 		}
 
 		public IHtmlContent Bool(bool value)
