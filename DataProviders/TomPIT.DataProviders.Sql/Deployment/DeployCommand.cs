@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Text;
 using TomPIT.Data.Sql;
@@ -205,14 +206,22 @@ namespace TomPIT.DataProviders.Sql.Deployment
 			Command.ExecuteNonQuery();
 		}
 
-		public void AddUniqueConstraint(ITable table, ITableColumn column, ITableConstraint constraint)
+		public void AddUniqueConstraint(ITable table, List<string> columns, ITableConstraint constraint)
 		{
 			var builder = new StringBuilder();
 
 			builder.AppendLine(string.Format("ALTER TABLE [{0}].[{1}]", table.Schema, table.Name));
 			builder.AppendLine(string.Format("ADD CONSTRAINT [{0}] UNIQUE NONCLUSTERED", constraint.Name));
 			builder.AppendLine("(");
-			builder.AppendLine(string.Format("[{0}] ASC", column.Name));
+
+			for (var i = 0; i < columns.Count; i++)
+			{
+				builder.AppendLine($"[{columns[i]}] ASC");
+
+				if (columns.Count > 0 && i < columns.Count - 1)
+					builder.AppendLine(",");
+			}
+
 			builder.AppendLine(")");
 
 			Command.CommandText = builder.ToString();

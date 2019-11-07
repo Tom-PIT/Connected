@@ -28,7 +28,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 			try
 			{
-				LastState = Context.LoadState();
+				LastState = Context.LoadState(Context);
 
 				DropObsolete();
 				DeploySchemas();
@@ -251,6 +251,124 @@ namespace TomPIT.DataProviders.Sql.Deployment
 						AlterColumn(table, column, existingColumn);
 				}
 			}
+
+			var processedConstraints = new List<string>();
+
+			foreach (var column in table.Columns)
+			{
+				var existingColumn = existing.FindColumn(column.Name);
+
+				SynchronizeColumn(table, column, existing, existingColumn, processedConstraints);
+			}
+		}
+
+		private void SynchronizeColumn(ITable table, ITableColumn column, ITable existingTable, ITableColumn existing, List<string> processedConstraints)
+		{
+			if (existing != null)
+			{
+				if (string.Compare(column.DefaultValue, existing.DefaultValue, false) != 0)
+				{
+					Command.DropDefault(table, column);
+					Command.AddDefault(table, column);
+				}
+
+				foreach (var constraint in existing.Constraints)
+				{
+					if (column.Constraints.FirstOrDefault(f => string.Compare(f.Name, constraint.Name, true) == 0) != null)
+						continue;
+
+					Command.DropConstraint(table, constraint);
+				}
+
+				foreach (var constraint in column.Constraints)
+				{
+					if (string.Compare(constraint.Type, "PRIMARY KEY", true) == 0)
+					{
+						if (existing.Constraints.FirstOrDefault(f => string.Compare(f.Name, constraint.Name, true) == 0) != null)
+							continue;
+
+						Command.AddPrimaryKey(table, column, constraint);
+					}
+					else if (string.Compare(constraint.Type, "UNIQUE", true) == 0)
+					{
+						if (processedConstraints.Contains(constraint.Name))
+							continue;
+
+						processedConstraints.Add(constraint.Name);
+
+						var columns = ConstraintColumns(table, constraint.Name);
+
+						if (HasConstraintChanged(existingTable, table, constraint.Name))
+						{
+							if (ConstraintExists(table, constraint.Name))
+								Command.DropConstraint(table, constraint);
+
+							Command.AddUniqueConstraint(table, columns, constraint);
+						}
+					}
+				}
+			}
+			else
+			{
+				foreach (var constraint in column.Constraints)
+				{
+					if (string.Compare(constraint.Type, "PRIMARY KEY", true) == 0)
+						Command.AddPrimaryKey(table, column, constraint);
+					else if (string.Compare(constraint.Type, "UNIQUE", true) == 0)
+					{
+						if (processedConstraints.Contains(constraint.Name))
+							continue;
+
+						processedConstraints.Add(constraint.Name);
+
+						Command.AddUniqueConstraint(table, ConstraintColumns(table, constraint.Name), constraint);
+					}
+				}
+			}
+		}
+
+		private bool HasConstraintChanged(ITable existing, ITable table, string constraintName)
+		{
+			var existingColumns = ConstraintColumns(existing, constraintName);
+			var columns = ConstraintColumns(table, constraintName);
+
+			if (existingColumns.Count != columns.Count)
+				return true;
+
+			for (var i = 0; i < existingColumns.Count; i++)
+			{
+				if (string.Compare(existingColumns[i], columns[i], false) != 0)
+					return true;
+			}
+
+			return false;
+		}
+
+		private bool ConstraintExists(ITable table, string constraintName)
+		{
+			foreach (var column in table.Columns)
+			{
+				if (column.Constraints.FirstOrDefault(f => string.Compare(f.Name, constraintName, false) == 0) != null)
+					return true;
+			}
+
+			return false;
+		}
+
+		private List<string> ConstraintColumns(ITable table, string constraintName)
+		{
+			var result = new List<string>();
+
+			foreach (var column in table.Columns)
+			{
+				foreach (var constraint in column.Constraints)
+				{
+					if (string.Compare(constraint.Name, constraintName, false) == 0)
+						result.Add(column.Name);
+				}
+			}
+
+			return result;
 		}
 
 		private void AlterColumn(ITable table, ITableColumn column, ITableColumn existing)
@@ -262,53 +380,11 @@ namespace TomPIT.DataProviders.Sql.Deployment
 			builder.AppendLine(";");
 
 			Command.Exec(builder.ToString());
-
-			if (string.Compare(column.DefaultValue, existing.DefaultValue, false) != 0)
-			{
-				if (!string.IsNullOrWhiteSpace(existing.DefaultValue))
-					Command.DropDefault(table, column);
-
-				Command.AddDefault(table, column);
-			}
-
-			foreach (var constraint in existing.Constraints)
-			{
-				if (column.Constraints.FirstOrDefault(f => string.Compare(f.Name, constraint.Name, true) == 0) != null)
-					continue;
-
-				Command.DropConstraint(table, constraint);
-			}
-
-			foreach (var constraint in column.Constraints)
-			{
-				if (string.Compare(constraint.Type, "PRIMARY KEY", true) == 0)
-				{
-					if (existing.Constraints.FirstOrDefault(f => string.Compare(f.Name, constraint.Name, true) == 0) != null)
-						continue;
-
-					Command.AddPrimaryKey(table, column, constraint);
-				}
-				else if (string.Compare(constraint.Type, "UNIQUE", true) == 0)
-				{
-					if (existing.Constraints.FirstOrDefault(f => string.Compare(f.Name, constraint.Name, true) == 0) != null)
-						continue;
-
-					Command.AddUniqueConstraint(table, column, constraint);
-				}
-			}
 		}
 
 		private void AddColumn(ITable table, ITableColumn column)
 		{
 			Command.AddColumn(table, column);
-
-			foreach (var constraint in column.Constraints)
-			{
-				if (string.Compare(constraint.Type, "PRIMARY KEY", true) == 0)
-					Command.AddPrimaryKey(table, column, constraint);
-				else if (string.Compare(constraint.Type, "UNIQUE", true) == 0)
-					Command.AddUniqueConstraint(table, column, constraint);
-			}
 		}
 
 		private bool CompareColumns(ITableColumn column, ITableColumn existing)

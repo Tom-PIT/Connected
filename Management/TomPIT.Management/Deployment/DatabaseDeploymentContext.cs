@@ -24,7 +24,7 @@ namespace TomPIT.Management.Deployment
 		private Guid ResourceGroup => Tenant.GetService<IResourceGroupService>().Default.Token;
 		private string StateKey => ((IPackageDatabase)Database).Connection.ToString();
 
-		public IDatabase LoadState()
+		public IDatabase LoadState(IDatabaseDeploymentContext context)
 		{
 			var blobs = Tenant.GetService<IStorageService>().Query(Package.MicroService.Token, BlobTypes.DatabaseState, ResourceGroup, StateKey);
 
@@ -35,12 +35,32 @@ namespace TomPIT.Management.Deployment
 
 			if (content == null)
 				return null;
+			try
+			{
+				if (!(Tenant.GetService<ISerializationService>().Deserialize(content.Content, typeof(PackageDatabaseState)) is PackageDatabaseState result))
+					return null;
 
-			return Tenant.GetService<ISerializationService>().Deserialize(content.Content, typeof(PackageDatabase)) as IDatabase;
+				if (string.Compare(context.ConnectionString, result.ConnectionString, true) == 0)
+					return result.Database;
+			}
+			catch
+			{
+				return null;
+			}
+
+			return null;
 		}
 
 		public void SaveState()
 		{
+			var state = new PackageDatabaseState
+			{
+				Database = Database,
+				ConnectionString = ConnectionString
+			};
+
+			var serializedState = Tenant.GetService<ISerializationService>().Serialize(state);
+
 			Tenant.GetService<IStorageService>().Upload(new Blob
 			{
 				MicroService = Package.MicroService.Token,
@@ -49,7 +69,7 @@ namespace TomPIT.Management.Deployment
 				PrimaryKey = StateKey,
 				ResourceGroup = ResourceGroup,
 				Type = BlobTypes.DatabaseState
-			}, Tenant.GetService<ISerializationService>().Serialize(Database), StoragePolicy.Singleton);
+			}, serializedState, StoragePolicy.Singleton);
 		}
 
 		public T GetService<T>()
