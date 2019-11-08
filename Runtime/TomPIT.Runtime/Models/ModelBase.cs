@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.ComponentModel;
-using TomPIT.Services;
+using TomPIT.Middleware;
 
 namespace TomPIT.Models
 {
-	public class ModelBase : ExecutionContext, IUIModel, IRequestContextProvider
+	public class ModelBase : MicroServiceContext, IUIModel, IActionContextProvider
 	{
 		private IModelNavigation _navigation = null;
 
@@ -30,7 +30,10 @@ namespace TomPIT.Models
 			if (initializing)
 				OnInitializing(p);
 
-			Initialize(string.IsNullOrWhiteSpace(p.Endpoint) ? Endpoint : p.Endpoint, p.MicroService == null ? MicroService : p.MicroService);
+			if (p.MicroService != null)
+				MicroService = p.MicroService;
+
+			Initialize(string.IsNullOrWhiteSpace(p.Endpoint) ? Endpoint : p.Endpoint);
 		}
 
 		public void Initialize(Controller controller, IMicroService microService)

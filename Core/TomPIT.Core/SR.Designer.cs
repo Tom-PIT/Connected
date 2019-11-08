@@ -583,6 +583,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Api double qualification is allowed if passed context is IMicroServiceContext. Please use triple qualifier or pass a IMicroServiceContext as a parameter..
+        /// </summary>
+        public static string ErrApiDoubleQualifier {
+            get {
+                return ResourceManager.GetString("ErrApiDoubleQualifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Api operation accepts GET requests only..
         /// </summary>
         public static string ErrApiOperationProtocolGetOnly {
@@ -745,6 +754,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cache Key property not set. Please set &apos;Key&apos; property before returning value from cache retrieve handler..
+        /// </summary>
+        public static string ErrCacheKeyNull {
+            get {
+                return ResourceManager.GetString("ErrCacheKeyNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot create component instance.
         /// </summary>
         public static string ErrCannotCreateComponentInstance {
@@ -772,6 +790,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot resolve component type.
+        /// </summary>
+        public static string ErrCannotResolveComponentType {
+            get {
+                return ResourceManager.GetString("ErrCannotResolveComponentType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot resolve extender.
+        /// </summary>
+        public static string ErrCannotResolveExtender {
+            get {
+                return ResourceManager.GetString("ErrCannotResolveExtender", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot resolve HttpRequest.
         /// </summary>
         public static string ErrCannotResolveHttpRequest {
@@ -786,6 +822,15 @@ namespace TomPIT {
         public static string ErrCannotResolveMicroService {
             get {
                 return ResourceManager.GetString("ErrCannotResolveMicroService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot resolve tenant in multi tenant environment.
+        /// </summary>
+        public static string ErrCannotResolveTenant {
+            get {
+                return ResourceManager.GetString("ErrCannotResolveTenant", resourceCulture);
             }
         }
         
@@ -952,6 +997,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Data hub endpoint not found.
+        /// </summary>
+        public static string ErrDataHubEndpointNotFound {
+            get {
+                return ResourceManager.GetString("ErrDataHubEndpointNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Data hub endpoint policy not found.
+        /// </summary>
+        public static string ErrDataHubEndpointPolicyNotFound {
+            get {
+                return ResourceManager.GetString("ErrDataHubEndpointPolicyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parameter value expected..
         /// </summary>
         public static string ErrDataParameterExpected {
@@ -1011,6 +1074,15 @@ namespace TomPIT {
         public static string ErrDeserialize {
             get {
                 return ResourceManager.GetString("ErrDeserialize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Distributed event not found.
+        /// </summary>
+        public static string ErrDistributedEventNotFound {
+            get {
+                return ResourceManager.GetString("ErrDistributedEventNotFound", resourceCulture);
             }
         }
         
@@ -1146,6 +1218,15 @@ namespace TomPIT {
         public static string ErrHttpContextNull {
             get {
                 return ResourceManager.GetString("ErrHttpContextNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to HTTP request header expected.
+        /// </summary>
+        public static string ErrHttpHeaderExpected {
+            get {
+                return ResourceManager.GetString("ErrHttpHeaderExpected", resourceCulture);
             }
         }
         
@@ -1348,6 +1429,33 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Method expected.
+        /// </summary>
+        public static string ErrIoCMethodExpected {
+            get {
+                return ResourceManager.GetString("ErrIoCMethodExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IoC operation not found.
+        /// </summary>
+        public static string ErrIoCOperationNotFound {
+            get {
+                return ResourceManager.GetString("ErrIoCOperationNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Property expected.
+        /// </summary>
+        public static string ErrIoCPropertyExpected {
+            get {
+                return ResourceManager.GetString("ErrIoCPropertyExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot convert value to the destination type.
         /// </summary>
         public static string ErrIoTConversionError {
@@ -1483,6 +1591,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Line.
+        /// </summary>
+        public static string ErrLine {
+            get {
+                return ResourceManager.GetString("ErrLine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Login failed. Please try again..
         /// </summary>
         public static string ErrLoginFailed {
@@ -1551,6 +1668,33 @@ namespace TomPIT {
         public static string ErrMediaFolderNotFound {
             get {
                 return ResourceManager.GetString("ErrMediaFolderNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Method not found.
+        /// </summary>
+        public static string ErrMethodNotFound {
+            get {
+                return ResourceManager.GetString("ErrMethodNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IMicroServiceContext expected.
+        /// </summary>
+        public static string ErrMicroServiceContextExpected {
+            get {
+                return ResourceManager.GetString("ErrMicroServiceContextExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Micro service expected.
+        /// </summary>
+        public static string ErrMicroServiceExpected {
+            get {
+                return ResourceManager.GetString("ErrMicroServiceExpected", resourceCulture);
             }
         }
         
@@ -1825,11 +1969,29 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Microservice is in Production stage. No changes are allowed..
+        /// </summary>
+        public static string ErrProductionStage {
+            get {
+                return ResourceManager.GetString("ErrProductionStage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Property not found..
         /// </summary>
         public static string ErrPropertyNotFound {
             get {
                 return ResourceManager.GetString("ErrPropertyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Property value null.
+        /// </summary>
+        public static string ErrPropertyValueNull {
+            get {
+                return ResourceManager.GetString("ErrPropertyValueNull", resourceCulture);
             }
         }
         
@@ -1969,6 +2131,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Microservice is in Staging stage. No changes are allowed..
+        /// </summary>
+        public static string ErrStagingStage {
+            get {
+                return ResourceManager.GetString("ErrStagingStage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specified storage provider not registered.
         /// </summary>
         public static string ErrStorageProviderNotRegistered {
@@ -2023,6 +2194,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Development search path not defined. Set &apos;Development Search Path&apos; setting to enable development indexing..
+        /// </summary>
+        public static string ErrSysDevSearchPath {
+            get {
+                return ResourceManager.GetString("ErrSysDevSearchPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Development search directory does not exists..
+        /// </summary>
+        public static string ErrSysSearchPathNotExist {
+            get {
+                return ResourceManager.GetString("ErrSysSearchPathNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Theme not found.
         /// </summary>
         public static string ErrThemeNotFound {
@@ -2037,6 +2226,15 @@ namespace TomPIT {
         public static string ErrTimezoneParametersSupportedOnDatesOnly {
             get {
                 return ResourceManager.GetString("ErrTimezoneParametersSupportedOnDatesOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string ErrTitle {
+            get {
+                return ResourceManager.GetString("ErrTitle", resourceCulture);
             }
         }
         
@@ -2721,6 +2919,15 @@ namespace TomPIT {
         public static string ValMinValue {
             get {
                 return ResourceManager.GetString("ValMinValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to must contain non default value.
+        /// </summary>
+        public static string ValNonDefault {
+            get {
+                return ResourceManager.GetString("ValNonDefault", resourceCulture);
             }
         }
         

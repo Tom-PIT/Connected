@@ -2,7 +2,9 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.Deployment;
+using TomPIT.Reflection;
 
 namespace TomPIT.ComponentModel
 {

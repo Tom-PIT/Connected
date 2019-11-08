@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Design;
-using TomPIT.Dom;
-using TomPIT.Ide;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
 
-namespace TomPIT.Designers
+namespace TomPIT.Ide.Designers
 {
-	public interface ICollectionDesigner : IDomDesigner, IEnvironmentClient, IDomClient
+	public interface ICollectionDesigner : IDomDesigner, IEnvironmentObject, IDomObject
 	{
 		List<IItemDescriptor> Items { get; }
 		List<IItemDescriptor> Descriptors { get; }

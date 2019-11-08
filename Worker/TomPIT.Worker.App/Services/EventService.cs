@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TomPIT.Services;
+using Newtonsoft.Json.Linq;
+using TomPIT.Distributed;
+using TomPIT.Middleware;
+using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Worker.Services
 {
@@ -15,16 +17,23 @@ namespace TomPIT.Worker.Services
 		public EventService()
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
+		}
+
+		protected override bool Initialize()
+		{
+			if (Instance.State == InstanceState.Initialining)
+				return false;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
 				Dispatchers.Add(new EventDispatcher(i, _cancel));
-		}
 
+			return true;
+		}
 		protected override Task Process()
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				var url = Instance.Connection.CreateUrl("EventManagement", "Dequeue");
+				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Dequeue");
 
 				var e = new JObject
 				{
@@ -32,7 +41,7 @@ namespace TomPIT.Worker.Services
 					{ "resourceGroup", f.ResourceGroup }
 				};
 
-				var jobs = Instance.Connection.Post<List<QueueMessage>>(url, e);
+				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
 
 				if (jobs == null)
 					return;

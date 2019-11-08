@@ -1,9 +1,9 @@
 ﻿@using TomPIT;
 
-@model TomPIT.Ide.IEnvironment
+@model TomPIT.Ide.Environment.IEnvironment
 
 @{
-	var node = ViewBag.CurrentNode as TomPIT.Dom.IDomElement;
+	var node = ViewBag.CurrentNode as TomPIT.Ide.Dom.IDomElement;
 
 	if (node == null)
 	{ return; }
@@ -28,12 +28,12 @@
 		{
 			validationCss = "dev-explorer-node-validation";
 
-			if (messages.Count(f => f.Type == TomPIT.ComponentModel.ValidationMessageType.Error) > 0)
+			if (messages.Count(f => f.Type == TomPIT.Design.Validation.ValidationMessageType.Error) > 0)
 			{
 				validationCss += string.Format(" {0}", "validation-error");
 				glyph = "fal fa-fw fa-exclamation-triangle dev-explorer-node-danger";
 			}
-			else if (messages.Count(f => f.Type == TomPIT.ComponentModel.ValidationMessageType.Warning) > 0)
+			else if (messages.Count(f => f.Type == TomPIT.Design.Validation.ValidationMessageType.Warning) > 0)
 			{
 				validationCss += string.Format(" {0}", "validation-warning");
 				glyph = "fal fa-fw fa-exclamation-triangle dev-explorer-node-warning";

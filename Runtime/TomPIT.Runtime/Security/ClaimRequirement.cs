@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace TomPIT.Runtime.Security
+namespace TomPIT.Security
 {
 	public class ClaimRequirement : IAuthorizationRequirement
 	{

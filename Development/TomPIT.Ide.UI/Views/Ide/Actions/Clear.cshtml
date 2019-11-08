@@ -1,7 +1,7 @@
-﻿@model TomPIT.Design.IDesignerToolbarAction
+﻿@model TomPIT.Ide.Designers.IDesignerToolbarAction
 
 @{
-    var action = Model as TomPIT.Actions.Clear;
+    var action = Model as TomPIT.Ide.Designers.Toolbar.Clear;
 
     var css = !action.Visible ? "collapse" : string.Empty;
 

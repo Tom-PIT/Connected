@@ -2,7 +2,9 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
-using TomPIT.Services;
+using TomPIT.Annotations.Design;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
 
 namespace TomPIT.Environment
 {

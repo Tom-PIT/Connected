@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Routing;
+﻿using System;
 using System.Net;
+using Microsoft.AspNetCore.Routing;
+using TomPIT.Middleware;
 using TomPIT.Storage;
 
 namespace TomPIT.Routing
@@ -15,10 +17,10 @@ namespace TomPIT.Routing
 			 * since this resource is not under authentication we don't have to
 			 * deal with authentication cookie.
 			 */
-			var ctx = Connection ?? Instance.Connection;
+			var ctx = Tenant ?? MiddlewareDescriptor.Current.Tenant;
 
-			var blob = Context.GetRouteValue("token").ToString().AsGuid();
-			var version = Context.GetRouteValue("version").ToString().AsInt();
+			var blob = new Guid(Context.GetRouteValue("token").ToString());
+			var version = Convert.ToInt32(Context.GetRouteValue("version").ToString());
 
 			var b = ctx.GetService<IStorageService>().Select(blob);
 
@@ -40,7 +42,7 @@ namespace TomPIT.Routing
 			if (content != null && content.Content != null && content.Content.Length > 0)
 			{
 				Context.Response.ContentLength = content.Content.Length;
-				Context.Response.Body.Write(content.Content, 0, content.Content.Length);
+				Context.Response.Body.WriteAsync(content.Content, 0, content.Content.Length);
 			}
 		}
 	}

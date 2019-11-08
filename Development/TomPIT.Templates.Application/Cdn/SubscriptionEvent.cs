@@ -1,35 +1,21 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
-using TomPIT.ComponentModel.Events;
+using TomPIT.MicroServices.Design;
 
-namespace TomPIT.Application.Cdn
+namespace TomPIT.MicroServices.Cdn
 {
-	[Create("Event", nameof(Name))]
-	[DefaultEvent(nameof(Invoke))]
-	public class SubscriptionEvent : ConfigurationElement, ISubscriptionEvent
+	[Create(DesignUtils.ComponentEvent, nameof(Name))]
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[Syntax(SyntaxAttribute.CSharp)]
+	public class SubscriptionEvent : SourceCodeElement, ISubscriptionEvent
 	{
-		private IServerEvent _invoke = null;
-
 		[Required]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		public string Name { get; set; }
-
-		[EventArguments(typeof(SubscriptionEventInvokeArguments))]
-		public IServerEvent Invoke
-		{
-			get
-			{
-				if (_invoke == null)
-					_invoke = new ServerEvent { Parent = this };
-
-				return _invoke;
-			}
-		}
-
 		public override string ToString()
 		{
 			return string.IsNullOrWhiteSpace(Name) ? base.ToString() : Name;

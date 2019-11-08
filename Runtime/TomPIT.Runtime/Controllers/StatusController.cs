@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Models;
-using TomPIT.Services;
+using TomPIT.Runtime;
 
 namespace TomPIT.Controllers
 {
@@ -85,8 +86,20 @@ namespace TomPIT.Controllers
 
 		protected virtual IActionResult CreateLoginResult()
 		{
+			var returnUrl = string.Empty;
+
+			var statusCodeReExecuteFeature = HttpContext.Features.Get<IStatusCodeReExecuteFeature>();
+
+			if (statusCodeReExecuteFeature != null)
+				returnUrl = $"returnUrl={statusCodeReExecuteFeature.OriginalPathBase}{statusCodeReExecuteFeature.OriginalPath}{statusCodeReExecuteFeature.OriginalQueryString}";
+
+			var loginUrl = "~/login";
+
+			if (!string.IsNullOrWhiteSpace(returnUrl))
+				loginUrl += $"?{returnUrl}";
+
 			if (Shell.GetService<IRuntimeService>().Type == Environment.InstanceType.Application)
-				return new RedirectResult("~/login");
+				return new RedirectResult(loginUrl);
 
 			var model = new LoginModel();
 

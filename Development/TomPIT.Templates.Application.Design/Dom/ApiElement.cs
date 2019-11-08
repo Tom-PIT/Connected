@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Application.Security;
 using TomPIT.ComponentModel;
-using TomPIT.Dom;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
+using TomPIT.MicroService.Security;
 using TomPIT.Security;
 
-namespace TomPIT.Application.Design.Dom
+namespace TomPIT.MicroServices.Design.Dom
 {
 	internal class ApiElement : ComponentPermissionElement
 	{

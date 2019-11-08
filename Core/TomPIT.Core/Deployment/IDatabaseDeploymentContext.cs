@@ -9,7 +9,7 @@ namespace TomPIT.Deployment
 		T GetService<T>();
 		IDatabase Database { get; }
 
-		IDatabase LoadState();
+		IDatabase LoadState(IDatabaseDeploymentContext context);
 		void SaveState();
 	}
 }

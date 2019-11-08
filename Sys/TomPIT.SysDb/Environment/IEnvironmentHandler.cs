@@ -16,16 +16,6 @@ namespace TomPIT.SysDb.Environment
 		IInstanceEndpoint SelectInstanceEndpoint(Guid token);
 		List<IInstanceEndpoint> QueryInstanceEndpoints();
 		/*
-		 * Environment units
-		 */
-		void InsertEnvironmentUnit(Guid token, string name, IEnvironmentUnit parent, int ordinal);
-		void UpdateEnvironmentUnit(IEnvironmentUnit item, string name, IEnvironmentUnit parent, int ordinal);
-		void UpdateEnvironmentUnits(List<EnvironmentUnitBatchDescriptor> items);
-		void DeleteEnvironmentUnit(IEnvironmentUnit item);
-
-		List<IEnvironmentUnit> QueryEnvironmentUnits();
-		IEnvironmentUnit SelectEnvironmentUnit(Guid token);
-		/*
 		 * Resource groups
 		 */
 		void InsertResourceGroup(Guid token, string name, Guid storageProvider, string connectionString);

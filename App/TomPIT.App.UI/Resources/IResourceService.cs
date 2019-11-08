@@ -1,4 +1,4 @@
-﻿namespace TomPIT.Resources
+﻿namespace TomPIT.App.Resources
 {
 	public interface IResourceService
 	{

@@ -1,12 +1,12 @@
 ﻿using TomPIT.Design;
-using TomPIT.IoT.UI.Stencils.Shapes;
-using TomPIT.Services;
+using TomPIT.MicroServices.IoT.UI.Stencils.Shapes;
+using TomPIT.Middleware;
 
-namespace TomPIT.IoT.UI.Stencils
+namespace TomPIT.MicroServices.IoT.UI.Stencils
 {
 	internal class StencilCreateHandler : IComponentCreateHandler
 	{
-		public void InitializeNewComponent(IExecutionContext context, object instance)
+		public void InitializeNewComponent(IMiddlewareContext context, object instance)
 		{
 			if (instance is Rectangle r)
 				InitializeRectangle(r);

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomPIT.Reporting", "TomPIT.Reporting\TomPIT.Reporting.csproj", "{59C7E45E-B61C-4314-B161-3A5FF2693CBD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Reporting", "TomPIT.Reporting\TomPIT.Reporting.csproj", "{59C7E45E-B61C-4314-B161-3A5FF2693CBD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{49360F79-85F2-4AC5-A304-1CB3075568E1}"
 EndProject
@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Core", "..\Core\TomP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.ComponentModel", "..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj", "{EAEB5342-53F0-499F-8ACC-634A9EA922CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomPIT.Reporting.Design", "TomPIT.Reporting.Design\TomPIT.Reporting.Design.csproj", "{91A76ACE-6073-48CF-81E6-27F774C0AD6E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Reporting.Design", "TomPIT.Reporting.Design\TomPIT.Reporting.Design.csproj", "{91A76ACE-6073-48CF-81E6-27F774C0AD6E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Design", "..\Development\TomPIT.Design\TomPIT.Design.csproj", "{2FBBD1A1-7DDC-4D14-850B-AE796F7F12F3}"
 EndProject
@@ -22,6 +22,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Extensions", "..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj", "{5B577CBD-1BB8-4DD8-8E89-AF70B168A5E0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Runtime", "..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj", "{D2917EE8-C0C6-4FF9-B4D3-8FA33518858E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Sdk", "..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj", "{1C17D25D-B1F6-4430-9B4C-65B2A558BE4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +67,10 @@ Global
 		{D2917EE8-C0C6-4FF9-B4D3-8FA33518858E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2917EE8-C0C6-4FF9-B4D3-8FA33518858E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2917EE8-C0C6-4FF9-B4D3-8FA33518858E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C17D25D-B1F6-4430-9B4C-65B2A558BE4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C17D25D-B1F6-4430-9B4C-65B2A558BE4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C17D25D-B1F6-4430-9B4C-65B2A558BE4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C17D25D-B1F6-4430-9B4C-65B2A558BE4E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -77,6 +83,7 @@ Global
 		{0686A544-DCC7-4756-BC4E-90A87A7BDAC6} = {49360F79-85F2-4AC5-A304-1CB3075568E1}
 		{5B577CBD-1BB8-4DD8-8E89-AF70B168A5E0} = {49360F79-85F2-4AC5-A304-1CB3075568E1}
 		{D2917EE8-C0C6-4FF9-B4D3-8FA33518858E} = {49360F79-85F2-4AC5-A304-1CB3075568E1}
+		{1C17D25D-B1F6-4430-9B4C-65B2A558BE4E} = {49360F79-85F2-4AC5-A304-1CB3075568E1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F000A469-7989-4BEE-AE25-00E2B083B8B9}

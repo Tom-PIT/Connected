@@ -36,6 +36,25 @@ $.widget('tompit.tpIde', {
     },
     initialize: function () {
         this.initializeExplorer();
+        this.setErrors();
+
+        var instance = this;
+           
+        $(document).keyup(function (e) {
+            if (e.ctrlKey && e.altKey && e.keyCode === 37)
+                instance._previousView();
+            else if (e.ctrlKey && e.altKey && e.keyCode === 39)
+                instance._nextView();
+        });
+
+        $('#devStatusErrors').click(function () {
+            instance.showDevErrors();
+        });
+
+        $('#ideErrors').blur(function () {
+            $(this).removeAttr('tabindex');
+            $(this).collapse('hide');
+        });
     },
     setLanguage: function (value) {
         this.options.globalization.language = value;
@@ -108,36 +127,42 @@ $.widget('tompit.tpIde', {
         });
 
         $('#exBtnPreviousView').click(function () {
-            if (instance.options.navigation.index <= 0)
-                return;
-
-            instance.options.navigation.index--;
-            instance.selectNode({
-                path: instance.options.navigation.views[instance.options.navigation.index].path,
-                reorderNavigation: false,
-                stateIndex: instance.options.navigation.index + 1
-            });
-
-            instance._syncNavigationButtons();
+            instance._previousView();
         });
 
         $('#exBtnNextView').click(function () {
-            if (instance.options.navigation.index >= instance.options.navigation.views.length - 1)
-                return;
-
-            instance.options.navigation.index++;
-            instance.selectNode({
-                path: instance.options.navigation.views[instance.options.navigation.index].path,
-                reorderNavigation: false,
-                stateIndex: instance.options.navigation.index - 1
-            });
-
-            instance._syncNavigationButtons();
+            instance._nextView();
         });
 
         instance._syncNavigationButtons();
     },
+    _previousView : function () {
+        if (this.options.navigation.index <= 0)
+            return;
 
+        this.options.navigation.index--;
+        this.selectNode({
+            path: this.options.navigation.views[this.options.navigation.index].path,
+            reorderNavigation: false,
+            stateIndex: this.options.navigation.index + 1
+        });
+
+        this._syncNavigationButtons();
+
+    },
+    _nextView : function () {
+            if (this.options.navigation.index >= this.options.navigation.views.length - 1)
+                return;
+
+            this.options.navigation.index++;
+            this.selectNode({
+                path: this.options.navigation.views[this.options.navigation.index].path,
+                reorderNavigation: false,
+                stateIndex: this.options.navigation.index - 1
+            });
+
+            this._syncNavigationButtons();
+    },
     _initializeExplorerNodes: function (e) {
         e = $.extend({
             selector: null,
@@ -876,9 +901,42 @@ $.widget('tompit.tpIde', {
 	 * status bar
 	 */
     statusText: function (html) {
-        $('#devStatus').html(html);
+        $('#devStatusText').html(html);
     },
+    setErrors: function (errors) {
+        if (typeof errors === 'undefined' || errors.length === 0) {
+            $('#devStatusErrors').html('<i class="fal fa-check-circle text-success"></i><span class="px-2">0</span>');
+            $('#devStatusErrors').attr('data-count', 0);
+            $('#devStatusErrors').removeClass('clickable');
+        }
+        else {
+            $('#devStatusErrors').html('<i class="fal fa-times-circle text-danger"></i><span class="px-2">' + errors.length + '</span>');
+            $('#devStatusErrors').attr('data-count', errors.length);
+            $('#devStatusErrors').addClass('clickable');
 
+            var list = $('<ul class="list-unstyled">');
+            
+            $.each(errors, function (i, v) {
+                list.append($('<li>')
+                    .append('<div class ="row">'
+                        + '<div class="col-md-10">' + v.message + '</div>'
+                        + '<div class="col-md-2">' + v.source + '</div></div>')
+                );
+            });
+
+            $('#ideErrors').html(list);
+        }
+    },
+    showDevErrors: function () {
+        var att = $('#devStatusErrors').attr('data-count');
+
+        if (att === null || att === "0")
+            return;
+
+        $('#ideErrors').attr('tabindex', 0);
+        $('#ideErrors').collapse('show');
+        $('#ideErrors').focus();
+    },
     loadSection: function (e) {
         var url = new tompit.devUrl();
         var instance = this;
@@ -993,7 +1051,28 @@ $.widget('tompit.tpIde', {
 
             if (typeof state !== 'undefined' && state !== null && $.isFunction(this.options.designer.active.onLoadState))
                 this.options.designer.active.onLoadState(state);
+
+            if ($.isFunction(this.options.designer.active.isTextDesigner)) {
+                var isText = this.options.designer.active.isTextDesigner();
+
+                if (isText) {
+                    $('#devTextDesigner').collapse('show');
+                    $('#devDesigner').collapse('hide');
+                }
+                else {
+                    $('#devTextDesigner').collapse('hide');
+                    $('#devDesigner').collapse('show');
+                }
+            }
         }
+        else {
+            $('#devTextDesigner').collapse('hide');
+            $('#devDesigner').collapse('show');
+        }
+    },
+    showDesigner: function () {
+        $('#devTextDesigner').collapse('hide');
+        $('#devDesigner').collapse('show');
     },
     setPropertySaveMode: function (v) {
         this.options.properties.saveMode = v;
@@ -1006,6 +1085,7 @@ $.widget('tompit.tpIde', {
         return $(target).closest('[data-id]').attr('data-id');
     },
     unloadDesigner: function (e) {
+        this.setErrors();
         if (this.options.designer.active === null)
             return;
 
@@ -1014,6 +1094,8 @@ $.widget('tompit.tpIde', {
 
         if ($.isFunction(this.options.designer.active.onUnload))
             this.options.designer.active.onUnload();
+
+        this.options.designer.active = null;
     },
     setActiveDesigner: function (d) {
         this.options.designer.active = d;

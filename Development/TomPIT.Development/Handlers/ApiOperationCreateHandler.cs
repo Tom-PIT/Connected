@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.ComponentModel;
+﻿using System.Text;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Design;
-using TomPIT.Services;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Middleware;
 
 namespace TomPIT.Development.Handlers
 {
 	internal class ApiOperationCreateHandler : IComponentCreateHandler
 	{
-		public void InitializeNewComponent(IExecutionContext context, object instance)
+		public void InitializeNewComponent(IMiddlewareContext context, object instance)
 		{
 			if (instance is IApiOperation operation)
 			{
@@ -22,14 +20,10 @@ namespace TomPIT.Development.Handlers
 				sb.AppendLine($"public class {operation.Name} : Operation");
 				sb.AppendLine("{");
 				sb.AppendLine("");
-				sb.AppendLine($"public {operation.Name} (IDataModelContext context) : base (context)");
-				sb.AppendLine("{");
-				sb.AppendLine("");
-				sb.AppendLine("}");
 				sb.AppendLine("");
 				sb.AppendLine("}");
 
-				context.Connection().GetService<IComponentDevelopmentService>().Update(operation, sb.ToString());
+				context.Tenant.GetService<IComponentDevelopmentService>().Update(operation, sb.ToString());
 			}
 		}
 	}

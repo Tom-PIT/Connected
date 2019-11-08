@@ -24,7 +24,7 @@ namespace TomPIT.Management.Models
 
 				try
 				{
-					return Designer.Environment.Context.Connection().GetService<ICryptographyService>().Decrypt(Database.ConnectionString);
+					return Designer.Environment.Context.Tenant.GetService<ICryptographyService>().Decrypt(Database.ConnectionString);
 				}
 				catch { return null; }
 			}
@@ -37,7 +37,7 @@ namespace TomPIT.Management.Models
 				if (Database.DataProviderId == Guid.Empty)
 					return null;
 
-				return Designer.Environment.Context.Connection().GetService<IDataProviderService>().Select(Database.DataProviderId);
+				return Designer.Environment.Context.Tenant.GetService<IDataProviderService>().Select(Database.DataProviderId);
 			}
 		}
 

@@ -1,22 +1,21 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Linq;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
-using System.Threading.Tasks;
-using TomPIT.Configuration;
+using TomPIT.App.Globalization;
+using TomPIT.App.Resources;
+using TomPIT.App.Routing;
+using TomPIT.App.UI;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
-using TomPIT.Globalization;
-using TomPIT.IoT;
-using TomPIT.Resources;
-using TomPIT.Themes;
+using TomPIT.Runtime;
 using TomPIT.UI;
+using TomPIT.UI.Theming;
 
-namespace TomPIT
+namespace TomPIT.App
 {
 	public class Startup
 	{
@@ -47,20 +46,23 @@ namespace TomPIT
 
 			services.AddScoped<IViewEngine, ViewEngine>();
 			services.AddScoped<IMailTemplateViewEngine, MailTemplateViewEngine>();
-			
+
+
 			services.Configure<RazorViewEngineOptions>(opts =>
 			{
 				opts.ViewLocationExpanders.Add(new ViewLocationExpander());
-
-				opts.FileProviders.Add(
-					new ViewProvider()
-			  );
 			}
 			);
+
+			Instance.Mvc.AddRazorRuntimeCompilation(
+						(opts) =>
+						{
+							opts.FileProviders.Add(new ViewProvider());
+						});
 		}
 
 
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			app.UseResponseCompression();
 			Instance.Configure(InstanceType.Application, app, env, (f) =>
@@ -68,7 +70,7 @@ namespace TomPIT
 				app.UseMiddleware<IgnoreRouteMiddleware>();
 
 				RouteBuilder = f.Builder;
-				Configuration.Routing.Register(f.Builder);
+				AppRouting.Register(f.Builder);
 			});
 
 			InitializeConfiguration();
@@ -77,15 +79,15 @@ namespace TomPIT
 
 		private void InitializeConfiguration()
 		{
-			Shell.GetService<IConnectivityService>().ConnectionInitializing += OnConnectionInitializing;
+			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 		}
 
-		private void OnConnectionInitializing(object sender, SysConnectionArgs e)
+		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
-			e.Connection.RegisterService(typeof(IViewService), typeof(ViewService));
-			e.Connection.RegisterService(typeof(IThemeService), typeof(ThemeService));
-			e.Connection.RegisterService(typeof(IResourceService), typeof(ResourceService));
-			e.Connection.RegisterService(typeof(IClientGlobalizationService), typeof(ClientGlobalizationService));
+			e.Tenant.RegisterService(typeof(IViewService), typeof(ViewService));
+			e.Tenant.RegisterService(typeof(IThemeService), typeof(ThemeService));
+			e.Tenant.RegisterService(typeof(IResourceService), typeof(ResourceService));
+			e.Tenant.RegisterService(typeof(IClientGlobalizationService), typeof(ClientGlobalizationService));
 		}
 	}
 }

@@ -1,6 +1,6 @@
 ﻿@using TomPIT;
 
-@model TomPIT.Design.IProperty
+@model TomPIT.Ide.Properties.IProperty
 
 @{
 
@@ -10,16 +10,16 @@
     {
         if (Model.Value is DateTime)
         {
-            value = StringUtils.ToDisplayFormat(Model.Environment.Context.Services.Timezone.FromUtc((DateTime)Model.Value), Model.Format);
+            value = Types.ToDisplayFormat(Model.Environment.Context.Services.Globalization.FromUtc((DateTime)Model.Value), Model.Format);
         }
         else
         {
-            value = StringUtils.ToDisplayFormat(Model.Value, Model.Format);
+            value = Types.ToDisplayFormat(Model.Value, Model.Format);
         }
     }
     else
     {
-        value = StringUtils.ToDisplayFormat(Model.Value, Model.Format);
+        value = Types.ToDisplayFormat(Model.Value, Model.Format);
     }
 }
 

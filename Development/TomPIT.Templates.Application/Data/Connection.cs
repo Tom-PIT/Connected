@@ -1,16 +1,16 @@
 ﻿using System;
 using System.ComponentModel;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
+using TomPIT.MicroServices.Design;
 
-namespace TomPIT.Application.Data
+namespace TomPIT.MicroServices.Data
 {
-	[Create("Connection")]
-	public class Connection : ComponentConfiguration, IConnection
+	[Create(DesignUtils.ComponentConnection)]
+	public class Connection : ComponentConfiguration, IConnectionConfiguration
 	{
-		public const string ComponentCategory = "Connection";
-
 		[PropertyEditor(PropertyEditorAttribute.TextArea)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		public string Value { get; set; }
@@ -19,7 +19,7 @@ namespace TomPIT.Application.Data
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
 		public bool Enabled { get; set; } = true;
 
-		[Items("TomPIT.Application.Design.Items.DataProviderItems, TomPIT.Application.Design")]
+		[Items(DesignUtils.DataProviderItems)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		public Guid DataProvider { get; set; }

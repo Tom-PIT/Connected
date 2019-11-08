@@ -1,14 +1,14 @@
 ﻿using System.Linq;
-using TomPIT.IoT.Models;
-using TomPIT.Services;
+using TomPIT.MicroServices.IoT.Models;
+using TomPIT.Middleware;
 
-namespace TomPIT.IoT.UI.Stencils.Shapes
+namespace TomPIT.MicroServices.IoT.UI.Stencils.Shapes
 {
 	public class TextModel : VectorModel<Text>
 	{
 		private string _text = null;
 
-		public TextModel(IExecutionContext context, IIoTElement element) : base(context, element)
+		public TextModel(IMiddlewareContext context, IIoTElement element) : base(context, element)
 		{
 		}
 

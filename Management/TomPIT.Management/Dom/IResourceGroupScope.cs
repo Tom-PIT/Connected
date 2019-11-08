@@ -1,6 +1,6 @@
 ﻿using TomPIT.Environment;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
 	public interface IResourceGroupScope
 	{

@@ -1,20 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Threading;
-using TomPIT.Compilation;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Newtonsoft.Json.Linq;
+using TomPIT.App.Models;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.UI;
 using TomPIT.Globalization;
-using TomPIT.Models;
+using TomPIT.Middleware;
 using TomPIT.Security;
-using TomPIT.Server.Security;
+using TomPIT.Serialization;
+using TomPIT.UI;
 
-namespace TomPIT.UI
+namespace TomPIT.App.UI
 {
 	public class MailTemplateViewEngine : ViewEngineBase, IMailTemplateViewEngine
 	{
@@ -31,9 +31,9 @@ namespace TomPIT.UI
 
 			var model = CreateModel(token);
 			var actionContext = CreateActionContext(Context);
-			var component = Instance.GetService<IComponentService>().SelectComponent(token);
+			var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(token);
 
-			if(component == null)
+			if (component == null)
 			{
 				Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
 				return;
@@ -48,21 +48,11 @@ namespace TomPIT.UI
 			}
 
 			var view = viewEngineResult.View;
-
-			if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
-				return;
-
-			var invokeArgs = new ViewInvokeArguments(model);
-
-			if (Shell.HttpContext.Response.StatusCode != (int)HttpStatusCode.OK)
-				return;
-
-			var content = CreateContent(view, invokeArgs);
-
+			var content = CreateContent(view, model);
 			var buffer = Encoding.UTF8.GetBytes(content);
 
 			if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
-				Context.Response.Body.Write(buffer, 0, buffer.Length);
+				Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
 		}
 
 		private JObject Body { get; set; }
@@ -75,7 +65,7 @@ namespace TomPIT.UI
 
 			if (!string.IsNullOrWhiteSpace(user))
 			{
-				var u = Instance.GetService<IUserService>().Select(user);
+				var u = MiddlewareDescriptor.Current.Tenant.GetService<IUserService>().Select(user);
 
 				if (u == null)
 				{
@@ -96,7 +86,7 @@ namespace TomPIT.UI
 			if (language == Guid.Empty)
 				return;
 
-			var lang = Instance.GetService<ILanguageService>().Select(language);
+			var lang = MiddlewareDescriptor.Current.Tenant.GetService<ILanguageService>().Select(language);
 
 			var ci = CultureInfo.GetCultureInfo(lang.Lcid);
 
@@ -110,16 +100,16 @@ namespace TomPIT.UI
 		private MailTemplateModel CreateModel(Guid token)
 		{
 			var ac = CreateActionContext(Context);
-			var component = Instance.GetService<IComponentService>().SelectComponent(token);
+			var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(token);
 
 			if (component == null)
 				return null;
 
 			var arguments = Body.Optional("arguments", string.Empty);
-			var ja = string.IsNullOrWhiteSpace(arguments) ? new JObject() : Types.Deserialize<JObject>(arguments);
+			var ja = string.IsNullOrWhiteSpace(arguments) ? new JObject() : Serializer.Deserialize<JObject>(arguments);
 			var model = new MailTemplateModel(Context.Request, ac, Temp, ja);
 
-			model.Initialize(Instance.GetService<IMicroServiceService>().Select(component.MicroService));
+			model.Initialize(MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(component.MicroService));
 
 			return model;
 		}

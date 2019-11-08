@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using TomPIT.ComponentModel;
-using TomPIT.Design;
-using TomPIT.Dom;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
 
-namespace TomPIT.Items
+namespace TomPIT.Management.Items
 {
 	internal class MicroServicesCollection : ItemsBase
 	{

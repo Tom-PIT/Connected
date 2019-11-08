@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 
-namespace TomPIT
+namespace TomPIT.Ide
 {
 	public static class IdeRouting
 	{

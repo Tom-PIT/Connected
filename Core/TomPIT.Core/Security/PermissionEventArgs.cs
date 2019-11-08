@@ -4,6 +4,10 @@ namespace TomPIT.Security
 {
 	public class PermissionEventArgs : EventArgs
 	{
+		public PermissionEventArgs()
+		{
+
+		}
 		public PermissionEventArgs(Guid resourceGroup, Guid evidence, string schema, string claim, string primaryKey)
 		{
 			Evidence = evidence;
@@ -13,10 +17,10 @@ namespace TomPIT.Security
 			ResourceGroup = resourceGroup;
 		}
 
-		public Guid ResourceGroup { get; }
-		public Guid Evidence { get; }
-		public string Schema { get; }
+		public Guid ResourceGroup { get; set; }
+		public Guid Evidence { get; set; }
+		public string Schema { get; set; }
 		public string Claim { get; set; }
-		public string PrimaryKey { get; }
+		public string PrimaryKey { get; set; }
 	}
 }

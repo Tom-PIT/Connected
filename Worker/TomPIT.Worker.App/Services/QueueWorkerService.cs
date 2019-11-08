@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using TomPIT.Services;
+using TomPIT.Distributed;
+using TomPIT.Middleware;
 
 namespace TomPIT.Worker.Services
 {
@@ -16,22 +16,29 @@ namespace TomPIT.Worker.Services
 		public QueueWorkerService()
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
-
-			Dispatchers.Add(new QueueWorkerDispatcher(_cancel));
 		}
 
+		protected override bool Initialize()
+		{
+			if (Instance.State == InstanceState.Initialining)
+				return false;
+
+			Dispatchers.Add(new QueueWorkerDispatcher(_cancel));
+
+			return true;
+		}
 		protected override Task Process()
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				var url = Instance.Connection.CreateUrl("QueueManagement", "Dequeue");
+				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Dequeue");
 
 				var e = new JObject
 				{
 					{ "count", f.Available }
 				};
 
-				var jobs = Instance.Connection.Post<List<QueueMessage>>(url, e);
+				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
 
 				if (jobs == null)
 					return;

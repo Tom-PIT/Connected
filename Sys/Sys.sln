@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.168
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29230.47
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.SysDb", "TomPIT.SysDb\TomPIT.SysDb.csproj", "{EAF20A01-6FEA-4536-97EB-0D4D2ED2C477}"
 EndProject
@@ -17,7 +17,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencie
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Core", "..\Core\TomPIT.Core\TomPIT.Core.csproj", "{0A55F87E-0A0C-4B76-A75F-78A834F988FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomPIT.StorageProvider.Azure", "TomPIT.StorageProvider.Azure\TomPIT.StorageProvider.Azure.csproj", "{DCCD98D9-A3FD-4B23-9D08-E1F87ED801BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.StorageProvider.Azure", "TomPIT.StorageProvider.Azure\TomPIT.StorageProvider.Azure.csproj", "{DCCD98D9-A3FD-4B23-9D08-E1F87ED801BD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucene.Net", "..\Search\Lucene.Core\Lucene.Net.csproj", "{15DDEABE-8867-4910-8E6B-8590D6128249}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contrib.Highlighter", "..\Search\Lucene.Highlighter\Contrib.Highlighter.csproj", "{27CB8D04-550F-47F8-A232-2A169DED885C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contrib.Memory", "..\Search\Lucene.Memory\Contrib.Memory.csproj", "{B468B793-1101-4ACB-A5E3-1A87A29283B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,12 +59,27 @@ Global
 		{DCCD98D9-A3FD-4B23-9D08-E1F87ED801BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCCD98D9-A3FD-4B23-9D08-E1F87ED801BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCCD98D9-A3FD-4B23-9D08-E1F87ED801BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15DDEABE-8867-4910-8E6B-8590D6128249}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15DDEABE-8867-4910-8E6B-8590D6128249}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15DDEABE-8867-4910-8E6B-8590D6128249}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15DDEABE-8867-4910-8E6B-8590D6128249}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27CB8D04-550F-47F8-A232-2A169DED885C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27CB8D04-550F-47F8-A232-2A169DED885C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27CB8D04-550F-47F8-A232-2A169DED885C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27CB8D04-550F-47F8-A232-2A169DED885C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B468B793-1101-4ACB-A5E3-1A87A29283B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B468B793-1101-4ACB-A5E3-1A87A29283B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B468B793-1101-4ACB-A5E3-1A87A29283B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B468B793-1101-4ACB-A5E3-1A87A29283B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0A55F87E-0A0C-4B76-A75F-78A834F988FC} = {E79173C7-C521-42E8-8230-4FBEBA374CE8}
+		{15DDEABE-8867-4910-8E6B-8590D6128249} = {E79173C7-C521-42E8-8230-4FBEBA374CE8}
+		{27CB8D04-550F-47F8-A232-2A169DED885C} = {E79173C7-C521-42E8-8230-4FBEBA374CE8}
+		{B468B793-1101-4ACB-A5E3-1A87A29283B2} = {E79173C7-C521-42E8-8230-4FBEBA374CE8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C4E4C312-6F7C-4453-A6BF-AA3C797290C8}

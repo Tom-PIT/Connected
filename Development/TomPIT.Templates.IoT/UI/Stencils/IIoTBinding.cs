@@ -1,6 +1,6 @@
 ﻿using TomPIT.ComponentModel;
 
-namespace TomPIT.IoT.UI.Stencils
+namespace TomPIT.MicroServices.IoT.UI.Stencils
 {
 	public interface IIoTBinding : IConfigurationElement
 	{

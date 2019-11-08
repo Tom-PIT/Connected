@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Design;
+using TomPIT.Ide.Collections;
 
-namespace TomPIT.Dom
+namespace TomPIT.Ide.Dom
 {
 	public interface IDom
 	{

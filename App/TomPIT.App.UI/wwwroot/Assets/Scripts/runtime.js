@@ -8,17 +8,20 @@
 	};
 
 	tompit.GLOBALIZE = {
-		appUrlNotSet: 'Application URL not set',
-		restUrlNotSet: 'REST URL not set'
+		appUrlNotSet: 'Application URL not set'
 	};
 
     tompit.isView = function (request) {
         return request.getResponseHeader('X-TP-VIEW') !== null;
     };
 
+    tompit.apiUrl = function(e) {
+        return tompit.url().api('invoke');
+    };
+
 	tompit.invoke = function (e) {
 		var progress = tompit.findProgress(e.container);
-
+        
 		var options = $.extend(tompit.ajaxDefaultOptions(), e, {
 			data: e.parameters,
 			progress: progress
@@ -69,7 +72,23 @@
 		tompit.post(options);
 	};
 
-	tompit.setUserData = function (e) {
+    tompit.search = function (e) {
+        var progress = tompit.findProgress(e.container);
+
+        var options = $.extend(tompit.ajaxDefaultOptions(), e, {
+            data: e.parameters,
+            progress: progress
+        });
+
+        if (options.data === null)
+            options.data = {};
+
+        options.url = tompit.url().api('search');
+
+        tompit.post(options);
+    };
+
+    tompit.setUserData = function (e) {
 		var options = $.extend(tompit.ajaxDefaultOptions(), e, {
 			data: {
 				'data': e
@@ -163,12 +182,16 @@
         return true;
     };
 
-    tompit.antiForgeryValue = function() {
+    tompit.antiForgeryValue = function () {
         var target = $('input[name="TomPITAntiForgery"]');
 
         if (target.length === 0)
             return null;
 
         return target.val();
-    }
+    };
+
+    tompit.createIotHub = function (selector) {
+        return $(selector).tpIoT().data('tompit-tpIoT');
+    };
 })(window.tompit = window.tompit || {}, jQuery);

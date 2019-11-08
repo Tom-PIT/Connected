@@ -1,390 +1,176 @@
 ﻿@using System.Text.Encodings.Web;
+@using TomPIT.Ide;
+@using TomPIT.ComponentModel;
+@using TomPIT.Ide.TextServices;
 
-@model TomPIT.Designers.TextDesigner
+@model TomPIT.Ide.Designers.TextDesigner
+@*@await Html.PartialAsync("~/Views/Ide/Designers/Signature.cshtml", Model.Signature)*@
+@{
+    var uriPath = Model.ParseModelUri(Model.Content);
+    var ms = Model.Environment.Context.Tenant.GetService<IMicroServiceService>().Select(Model.Content.Configuration().MicroService());
 
-@await Html.PartialAsync("~/Views/Ide/Designers/Signature.cshtml", Model.Signature)
+    var url = string.Empty;
 
-<div class="template-toolbar btn-toolbar justify-content-between">
+    if (!string.IsNullOrWhiteSpace(Model.DebugFileName))
+    {
+        url = Model.Environment.Context.Services.Routing.MapPath(string.Format("~/sys/source-code/{0}/{1}/{2}", Model.Element.MicroService(), Model.Content.Configuration().Component, Model.Content.Id.ToString()));
+    }
 
-	<div class="btn-group">
-		@if (!string.IsNullOrWhiteSpace(Model.DebugFileName))
-		{
-			var url = Model.Environment.Context.MapPath(string.Format("~/sys/source-code/{0}/{1}/{2}", Model.Element.MicroService(), Model.Content.Configuration().Component, Model.Content.Id.ToString()));
+    var features = Model.SupportedFeatures(Model.Language, ms);
+    var text = Model.Text == null ? string.Empty : JavaScriptEncoder.Default.Encode(Model.Text);
 
-			<a href="@url" target="_blank" class="btn btn-sm btn-light" title="Download source code for debugging"><i class="fal fa-bug"></i></a>
-		}
-	</div>
-</div>
-
-<div id="designEditor" class="text-editor text-editor-sa" data-fullscreen="true"></div>
-
-@if (Model.CompletionProvider != null)
-{
-	<div class="modal fade" tabindex="-1" role="dialog" id="modalStronglyTyped">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">Create Data Entity</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Connections</label>
-                        <div id="editConnections"></div>
-                    </div>
-                    <div id="listDataSources"></div>
-                    <hr />
-                    <div class="form-group">
-                        <label>Class name</label>
-                        <div id="textTypeName"></div>
-                    </div>
-                    <div class="form-group">
-                        <div id="checkReadOnly"></div>
-                    </div>
-                </div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-primary" id="btnCreateStronglyTyped">Create</button>
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-				</div>
-			</div>
-		</div>
-	</div>
+    if (string.IsNullOrWhiteSpace(text))
+    {
+        text = JavaScriptEncoder.Default.Encode(Environment.NewLine);
+    }
 }
 <script>
-        @{
-            var lines = string.IsNullOrWhiteSpace(Model.Text) ? new string[0] : Model.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
-    }
-
-    var src = [@foreach (var i in lines){
-        @:'@Html.Raw(JavaScriptEncoder.Default.Encode(i))',
-    }
-        ];
-
-    textEditor.activateEditor({
-        id: 'design',
-        elementId: 'designEditor',
-        source: src,
-        language: '@Model.Language',
-        onChange: function (value) {
-            saveSourceCode();
-        },
-        @if (Model.CompletionDiagnostic != null)
-        {
-           <text>
-        onCheckSyntax: function () {
-            checkSyntax(false);
-        },
-            </text>
-        }
-        @if (Model.CompletionProvider != null)
-            {
-           <text>
-        onCreated: function (instance) {
-
-            @if (Model.CompletionDiagnostic != null)
-            {
-               @:setErrorMarkers(false);
-        }
-
-			  textEditor.registerCompletionItemProvider('@Model.Language', {
-					provideCompletionItems: function (model, position, context) {
-                    return new monaco.Promise(function (resolve, reject) {
-                        ide.designerAction({
-                            data: {
-                                action: 'provideItems',
-										 section: 'designer',
-										  property: '@Model.PropertyName',
-                                position: model.getOffsetAt({
-                                    lineNumber: position.lineNumber,
-                                    column: position.column
-                                }),
-                                triggerCharacter: context.triggerCharacter,
-                                triggerKind:context.triggerKind,
-                                content: model.getValue()
-                            },
-                            onComplete: function (data) {
-                                resolve({
-                                    suggestions:data
-                                })
-                            }
-
-                        }, false);
-                    });
-
-                },
-            });
-
-            textEditor.registerSignatureHelpProvider('@Model.Language', {
-                signatureHelpTriggerCharacters: ['(', '[', ',', '&lt'],
-                provideSignatureHelp: function (model, position) {
-                    return new monaco.Promise(function (resolve, reject) {
-                        ide.designerAction({
-                            data: {
-                                action: 'signatureHelp',
-										 section: 'designer',
-										  property: '@Model.PropertyName',
-                                position: model.getOffsetAt({
-                                    lineNumber: position.lineNumber,
-                                    column: position.column
-                                }),
-                                content: model.getValue()
-                            },
-                            onComplete: function (data) {
-                                resolve(data);
-                            }
-                        }, false);
-
-                    });
-                },
-			  });
-
-			  textEditor.registerDefinitionProvider('@Model.Language', {
-				  provideDefinition: function (model, position) {
-                    return new monaco.Promise(function (resolve, reject) {
-                        ide.designerAction({
-                            data: {
-                                action: 'definition',
-										 section: 'designer',
-										  property: '@Model.PropertyName',
-                                position: model.getOffsetAt({
-                                    lineNumber: position.lineNumber,
-                                    column: position.column
-                                }),
-                                content: model.getValue()
-                            },
-									onComplete: function (data) {
-										resolve({
-											uri: monaco.Uri.parse(data.url),
-											range: new monaco.Range(data.range.startLineNumber, data.range.startColumn, data.range.endLineNumber, data.range.endColumn)
-										});
-                            }
-                        }, false);
-
-                    });
-				  }
-			  });
-
-            textEditor.registerHoverProvider('@Model.Language', {
-                provideHover: function (model, position) {
-                    return new monaco.Promise(function (resolve, reject) {
-                        ide.designerAction({
-                            data: {
-                                action: 'hover',
-										 section: 'designer',
-										  property: '@Model.PropertyName',
-                                position: model.getOffsetAt({
-                                    lineNumber: position.lineNumber,
-                                    column: position.column
-                                }),
-                                content: model.getValue()
-                            },
-                            onComplete: function (data) {
-                                resolve(data);
-                            }
-                        }, false);
-
-                    });
-                },
-            });
-
-            var internalCommand = textEditor.addCommand(0, function (s, e) {
-					ide.newWindow(e.microService, e.component, e.element);
-            });
-
-			  textEditor.addAction({
-					id: 'strogly_type',
-					label: 'Create Data Entity',
-
-					keybindings: [
-						monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_T)
-					],
-
-					precondition: null,
-					keybindingContext: null,
-					contextMenuGroupId: 'navigation',
-					contextMenuOrder: 1.5,
-
-				  run: function (ed) {
-					  $('#modalStronglyTyped').modal('show');
-
-                      ide.designerAction({
-						  data: {
-							  'action':'dataSources'
-						  },
-						  onComplete: function (data) {
-							  var list = $('#listDataSources').dxList('instance');
-
-							  list.beginUpdate();
-							  list.option('dataSource', data);
-							  list.endUpdate();
-						  }
-					  }, false);
-						return null;
-					}
-			  });
-
-            textEditor.registerCodeLensProvider('@Model.Language', {
-                provideCodeLenses: function (model, token) {
-                    return new monaco.Promise(function (resolve, reject) {
-                        ide.designerAction({
-                            data: {
-                                action: 'codeLens',
-										 section: 'designer',
-										  property: '@Model.PropertyName',
-                                token: token,
-                                content: model.getValue()
-                            },
-                            onComplete: function (data) {
-                                if (typeof data !== 'undefined' && data !== null) {
-                                    $.each(data, function (i, v) {
-                                        v.command.id = internalCommand
-                                    });
-                                }
-                                    resolve(data);
-                            }
-                        }, false);
-
-                    });
-                },
-                resolveCodeLens: function (model, codeLens, token) {
-                    return codeLens;
-                }
-            });
-
-            $('#editConnections').dxSelectBox({
-
-            });
-
-			  $('#listDataSources').dxList({
-				  displayExpr: 'text',
-				  valueExpr: 'value',
-				  noDataText: 'no data sources found in this microservice',
-				  height: '250px',
-				  searchEnabled: true,
-				  searchExpr: 'text',
-				  selectionMode:'single',
-				  searchEditorOptions: {
-					  'placeholder':'search data sources'
-                  },
-                  onSelectionChanged: function (e) {
-                      var selectedItems = e.component.option('selectedItems');
-
-                      if (selectedItems != null && selectedItems.length > 0)
-                          $('#textTypeName').dxTextBox('instance').option('value', selectedItems[0].text);
-                  }
-			  });
-
-			  $('#textTypeName').dxTextBox({
-			  });
-
-			  $('#checkReadOnly').dxCheckBox({
-				  'value': false,
-				  'text': 'read only'
-			  });
-
-			  $('#btnCreateStronglyTyped').click(function () {
-				  var keys = $('#listDataSources').dxList('instance').option('selectedItems');
-
-				  if (keys === null || keys.length === 0) {
-					  tompit.warning('Data source must be selected.');
-
-					  return;
-				  }
-
-				  var value = keys[0].value;
-
-                  ide.designerAction({
-                      data: {
-                          'action': 'createStronglyType',
-                          'dataSource': value,
-                          'readOnly': $('#checkReadOnly').dxCheckBox('instance').option('value'),
-                          'name': $('#textTypeName').dxTextBox('instance').option('value'),
-                          'currentText': textEditor.getValue()
-                      },
-                      onComplete: function (data) {
-                          $('#modalStronglyTyped').modal('hide');
-
-                          textEditor.insertText(data.text);
-                      }
-                  }, false);
-			  });
-		  }
-
-        </text>
-            }
+    var modelUri = new monaco.Uri({
+        scheme: 'inmemory',
+        authority: '@ms.Name',
+        path:'@uriPath'
     });
 
+    var model = monaco.editor.getModel(modelUri);
 
+    if (model == null) {
+        model = monaco.editor.createModel('@text', '@Model.Language', modelUri);
 
-
-    @if (Model.CompletionDiagnostic != null)
-    {
-       <text>
-
-    function checkSyntax(successMessage) {
-                ide.saveProperty({
-            data: {
-                property: '@Model.PropertyName',
-                attribute: '@Model.AttributeName',
-                value: textEditor.getValue(),
-                path: propertyPath
-            },
-                    onComplete: function () {
-                        setErrorMarkers(successMessage);
-            }
-        }, false);
-    }
-
-    function setErrorMarkers(successMessage) {
-        ide.designerAction({
-            data: {
-                action: 'checkSyntax',
-                section: 'designer',
-                property: '@Model.PropertyName',
-            },
-            onComplete: function (data) {
-
-                if (data.length === 0 && successMessage) {
-                    tompit.success('No errors found in the source code', "Valid");
-                }
-
-                textEditor.setMarkers(data);
-            }
-        }, false);
-    }
-        </text>
-    }
-
-    function saveSourceCode() {
-                    ide.saveProperty({
-                data: {
-                    property: '@Model.PropertyName',
-                    attribute: '@Model.AttributeName',
-                    section: 'designer',
-                    value: textEditor.getValue(),
-                    path: propertyPath
-                }
+        if (!textEditorState.isLanguageInitialized('@Model.Language')) {
+            textEditorState.initializeLanguage('@Model.Language', {
+                'codeAction': @Html.TP().JavaScript.Bool((features & LanguageFeature.CodeAction) == LanguageFeature.CodeAction),
+                'completionItem': @Html.TP().JavaScript.Bool((features & LanguageFeature.CompletionItem) == LanguageFeature.CompletionItem),
+                'declaration': @Html.TP().JavaScript.Bool((features & LanguageFeature.Declaration) == LanguageFeature.Declaration),
+                'signatureHelp': @Html.TP().JavaScript.Bool((features & LanguageFeature.SignatureHelp) == LanguageFeature.SignatureHelp),
+                'documentSymbol': @Html.TP().JavaScript.Bool((features & LanguageFeature.DocumentSymbol) == LanguageFeature.DocumentSymbol)
             });
-	}
+        }
+    }
+    else
+        model.setValue('@text');
+
+    textEditorState.setTargetProperty('@Model.PropertyName');
+
+    textEditor.setModel(model);
+    textEditor.setup({
+        debug: {
+            url: '@url'
+        },
+        language:'@Model.Language'
+    });
 
     ide.setActiveDesigner({
         onUnload: function () {
-            textEditor.deactivateEditor();
+            clearTimeout(saveTimeout);
+            saveTimeout = -1;
         },
         onSaveState: function () {
             return {
-                'position': textEditor.getEditor().getPosition()
+                'position': textEditor.getPosition()
             }
         },
         onLoadState: function (state) {
             if (typeof state.position !== 'undefined') {
-                textEditor.getEditor().setPosition(state.position);
-                textEditor.getEditor().revealLineInCenter(state.position.lineNumber);
+                textEditor.setPosition(state.position);
+                textEditor.revealLineInCenter(state.position.lineNumber);
             }
 
-            textEditor.getEditor().focus();
+            textEditor.focus();
+        },
+        isTextDesigner: function () {
+            return true;
         }
     });
+
+    var saveTimeout = setTimeout(saveModels, 1000);
+
+    function saveModels() {
+        var dirty = textEditorState.getDirtyModels();
+
+        if (dirty.length === 0) {
+            if (saveTimeout !== -1)
+                saveTimeout = setTimeout(saveModels, 1000);
+
+            return;
+        }
+
+        var promises = [];
+
+        $.each(dirty, function (i, v) {
+            var model = textEditor.getModel(monaco.Uri.parse(v.model));
+
+            if (model === null)
+                return true;
+
+            textEditorState.setState({
+                'model': v.model,
+                'dirty': false,
+                'timestamp': v.timestamp
+            });
+
+            promises.push(new Promise(function (resolve, reject) {
+                ide.designerAction({
+                    'data': {
+                        'action': 'saveText',
+                        'property': '@Model.PropertyName',
+                        'attribute': '@Model.AttributeName',
+                        'model':{
+                            'uri': model.uri.toString(),
+                            'id': model.id
+                        },
+                        'text': model.getValue(),
+                    },
+                    onComplete: function () {
+                        resolve();
+
+                        @if ((features & LanguageFeature.CheckSyntax)== LanguageFeature.CheckSyntax)
+                        {
+                           <text>
+                                setErrorMarkers(model);
+                            </text>
+                        }
+
+                        }
+                }, false);
+            }));
+        });
+
+        Promise.all(promises).then(function () {
+            if (saveTimeout !== -1)
+                saveTimeout = setTimeout(saveModels, 1000);
+        });
+    }
+
+    @if((features & LanguageFeature.CheckSyntax) == LanguageFeature.CheckSyntax) {
+    <text>
+    setErrorMarkers(model);
+
+    function setErrorMarkers(model) {
+        ide.designerAction({
+            data: {
+                property: '@Model.PropertyName',
+                attribute: '@Model.AttributeName',
+                action: 'checkSyntax',
+                section: 'designer',
+                model: {
+                    'id': model.id,
+                    'uri': model.uri.toString()
+                },
+                text:model.getValue()
+            },
+            onComplete: function (data) {
+                var internal = [];
+
+                $.each(data, function (i, v) {
+                    if (!v.external)
+                        internal.push(v);
+                });
+
+                monaco.editor.setModelMarkers(model, 'syntax', internal);
+                ide.setErrors(data);
+            }
+        }, false);
+    }
+    </text>
+    }
 </script>

@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <RootNamespace>TomPIT.MicroServices.Design</RootNamespace>
+    <AssemblyName>TomPIT.MicroServices.Design</AssemblyName>
+    <AssemblyVersion>1.1.1106.2</AssemblyVersion>
+    <FileVersion>1.1.1106.2</FileVersion>
+    <Version>1.1.1106.2</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Designers\Security\**" />
+    <EmbeddedResource Remove="Designers\Security\**" />
+    <None Remove="Designers\Security\**" />
+  </ItemGroup>
+  <PropertyGroup>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
+    <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+    <ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
+    <ProjectReference Include="..\TomPIT.Design\TomPIT.Design.csproj" />
+    <ProjectReference Include="..\TomPIT.Development\TomPIT.Development.csproj" />
+    <ProjectReference Include="..\TomPIT.Ide\TomPIT.Ide.csproj" />
+    <ProjectReference Include="..\TomPIT.Templates.Application\TomPIT.MicroServices.csproj" />
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.MicroServices.Design&quot;" />
+  </Target>
+</Project>

@@ -1,16 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using TomPIT.Annotations;
-using TomPIT.Designers;
+using TomPIT.Annotations.Design;
 using TomPIT.Environment;
-using TomPIT.Ide;
-using TomPIT.Items;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
+using TomPIT.Management.Designers;
+using TomPIT.Management.Environment;
+using TomPIT.Management.Items;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
-	public class ResourceGroupsElement : Element
+	public class ResourceGroupsElement : DomElement
 	{
 		private ExistingResourceGroups _ds = null;
 		public const string FolderId = "ResourceGroups";
@@ -66,7 +70,7 @@ namespace TomPIT.Dom
 
 		public override void LoadChildren(string id)
 		{
-			var d = Existing.FirstOrDefault(f => f.Token == id.AsGuid());
+			var d = Existing.FirstOrDefault(f => f.Token == new Guid(id));
 
 			if (d != null)
 				Items.Add(new ResourceGroupElement(this, d));
@@ -91,7 +95,7 @@ namespace TomPIT.Dom
 				{
 					_ds = new ExistingResourceGroups();
 
-					var items = Connection.GetService<IResourceGroupManagementService>().Query();
+					var items = Environment.Context.Tenant.GetService<IResourceGroupManagementService>().Query();
 
 					if (items != null)
 						items = items.OrderBy(f => f.Name).ToList();

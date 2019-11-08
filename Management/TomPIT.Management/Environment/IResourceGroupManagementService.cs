@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TomPIT.Environment
+namespace TomPIT.Management.Environment
 {
 	public interface IResourceGroupManagementService
 	{

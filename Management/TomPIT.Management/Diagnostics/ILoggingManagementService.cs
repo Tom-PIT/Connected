@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using TomPIT.Diagnostics;
 
-namespace TomPIT.Diagnostics
+namespace TomPIT.Management.Diagnostics
 {
 	public interface ILoggingManagementService
 	{

@@ -16,9 +16,9 @@
 		"location": "c:\\Deploy\\Plugins",
 		"shadowCopy": true,
     "items": [
-      "TomPIT.Application.Plugin, TomPIT.Application",
-      "TomPIT.IoT.Plugin, TomPIT.IoT",
-      "TomPIT.Reporting.Plugin, TomPIT.Reporting"
+      "TomPIT.MicroServices.Configuration.Runtime.Plugin, TomPIT.MicroServices",
+      "TomPIT.MicroServices.IoT.Configuration.Runtime.Plugin, TomPIT.MicroServices.IoT"
+      //"TomPIT.Reporting.Plugin, TomPIT.Reporting"
     ]
 	}
 }

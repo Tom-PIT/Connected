@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using System;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
-using System;
 using TomPIT.ComponentModel;
 using TomPIT.Configuration;
 using TomPIT.Environment;
 using TomPIT.Globalization;
-using TomPIT.Notifications;
+using TomPIT.Messaging;
+using TomPIT.Reflection;
 using TomPIT.Security;
 using TomPIT.Storage;
 using TomPIT.Sys.Data;
@@ -16,7 +17,7 @@ namespace TomPIT.Sys.Notifications
 	{
 		internal static IHubContext<CacheHub> Cache { get; set; }
 
-		private static async void Notify<T>(string method, T e)
+		private static void Notify<T>(string method, T e)
 		{
 			var args = new MessageEventArgs<T>(Guid.NewGuid(), e);
 
@@ -34,9 +35,9 @@ namespace TomPIT.Sys.Notifications
 				var sender = SysExtensions.RequestConnectionId("cache");
 
 				if (string.IsNullOrWhiteSpace(sender))
-					await Cache.Clients.All.SendAsync(method, args);
+					Cache.Clients.All.SendAsync(method, args).Wait();
 				else
-					await Cache.Clients.AllExcept(sender).SendAsync(method, args);
+					Cache.Clients.AllExcept(sender).SendAsync(method, args).Wait();
 			}
 		}
 
@@ -46,8 +47,6 @@ namespace TomPIT.Sys.Notifications
 		public static void FolderRemoved(Guid microService, Guid folder) { Notify(nameof(FolderRemoved), new FolderEventArgs(microService, folder)); }
 		public static void InstanceEndpointChanged(Guid endpoint) { Notify(nameof(InstanceEndpointChanged), new InstanceEndpointEventArgs(endpoint)); }
 		public static void InstanceEndpointRemoved(Guid endpoint) { Notify(nameof(InstanceEndpointRemoved), new InstanceEndpointEventArgs(endpoint)); }
-		public static void EnvironmentUnitChanged(Guid environmentUnit) { Notify(nameof(EnvironmentUnitChanged), new EnvironmentUnitEventArgs(environmentUnit)); }
-		public static void EnvironmentUnitRemoved(Guid environmentUnit) { Notify(nameof(EnvironmentUnitRemoved), new EnvironmentUnitEventArgs(environmentUnit)); }
 		public static void ResourceGroupChanged(Guid resourceGroup) { Notify(nameof(ResourceGroupChanged), new ResourceGroupEventArgs(resourceGroup)); }
 		public static void ResourceGroupRemoved(Guid resourceGroup) { Notify(nameof(ResourceGroupRemoved), new ResourceGroupEventArgs(resourceGroup)); }
 		public static void SettingChanged(Guid resourceGroup, string name) { Notify(nameof(SettingChanged), new SettingEventArgs(resourceGroup, name)); }

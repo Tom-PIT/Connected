@@ -174,17 +174,19 @@ namespace TomPIT.DataProviders.Sql.Deployment
 				else if (string.Compare(i.ConstraintType, "PRIMARY KEY", true) == 0
 					|| string.Compare(i.ConstraintType, "UNIQUE", true) == 0)
 				{
-					var usage = columnsUsage.FirstOrDefault(f => string.Compare(f.ConstraintName, i.ConstraintName, true) == 0
-						&& string.Compare(f.ConstraintSchema, i.ConstraintSchema, true) == 0);
+					var columns = columnsUsage.Where(f => string.Compare(f.ConstraintName, i.ConstraintName, true) == 0);
 
-					var col = t.Columns.FirstOrDefault(f => string.Compare(f.Name, usage.ColumnName, true) == 0);
-
-					col.Constraints.Add(new TableConstraint
+					foreach (var column in columns)
 					{
-						Name = i.ConstraintName,
-						Schema = i.ConstraintSchema,
-						Type = i.ConstraintType
-					});
+						var col = t.Columns.FirstOrDefault(f => string.Compare(f.Name, column.ColumnName, true) == 0);
+
+						col.Constraints.Add(new TableConstraint
+						{
+							Name = i.ConstraintName,
+							Schema = i.ConstraintSchema,
+							Type = i.ConstraintType
+						});
+					}
 				}
 			}
 		}

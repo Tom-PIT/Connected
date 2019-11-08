@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.MicroServices.Design;
+using TomPIT.Middleware;
 using TomPIT.Storage;
 
-namespace TomPIT.Application.Resources
+namespace TomPIT.MicroServices.Resources
 {
-	[Create("EmbeddedAssembly")]
-	[DomDesigner("TomPIT.Application.Design.Designers.AssemblyEmbeddedDesigner, TomPIT.Application.Design")]
+	[Create(DesignUtils.EmbeddedAssembly)]
+	[DomDesigner(DesignUtils.AssemblyEmbeddedDesigner)]
 	public class AssemblyEmbeddedResource : ComponentConfiguration, IAssemblyEmbeddedResource, IExternalResourceElement
 	{
-		public const string ComponentCategory = "Assembly";
-
 		[Browsable(false)]
 		public Guid Blob { get; set; }
 		[Browsable(false)]
@@ -24,10 +25,10 @@ namespace TomPIT.Application.Resources
 			return new List<Guid> { Blob };
 		}
 
-		public void Delete(ExternalResourceDeleteArgs e)
+		public void Clean(Guid resource)
 		{
 			if (Blob != Guid.Empty)
-				e.Connection.GetService<IStorageService>().Delete(Blob);
+				MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Delete(Blob);
 		}
 	}
 }

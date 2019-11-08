@@ -1,15 +1,16 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
-using TomPIT.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
+using TomPIT.Runtime.Configuration;
+using TomPIT.Serialization;
 
 namespace TomPIT
 {
@@ -22,9 +23,17 @@ namespace TomPIT
 		private static Version _version = null;
 		private static bool _cleaned = false;
 		private static Lazy<List<string>> _loadedAssemblies = new Lazy<List<string>>();
+		private static readonly List<string> ProbingPaths;
 		static Shell()
 		{
 			_sm = new ServiceContainer(null);
+
+			ProbingPaths = new List<string>
+			{
+				typeof(object).Assembly.Location,
+				typeof(HttpContext).Assembly.Location
+			};
+
 			AssemblyLoadContext.Default.Resolving += OnResolvingAssembly;
 		}
 
@@ -74,6 +83,14 @@ namespace TomPIT
 
 			if (File.Exists(target))
 				return target;
+
+			foreach (var probingPath in ProbingPaths)
+			{
+				target = Path.Combine(Path.GetDirectoryName(probingPath), string.Format("{0}.dll", assemblyName));
+
+				if (File.Exists(target))
+					return target;
+			}
 
 			return null;
 		}
@@ -167,7 +184,7 @@ namespace TomPIT
 					{
 						if (File.Exists(sys))
 						{
-							_sys = Types.Deserialize(File.ReadAllText(sys), _sysType) as ISys;
+							_sys = Serializer.Deserialize(File.ReadAllText(sys), _sysType) as ISys;
 							break;
 						}
 

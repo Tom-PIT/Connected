@@ -1,4 +1,4 @@
-﻿namespace TomPIT
+﻿namespace TomPIT.Ide
 {
 	public static class IdeEvents
 	{
@@ -6,5 +6,6 @@
 		public const int SaveProperty = 10002;
 		public const int DesignerSection = 10003;
 		public const int IdeAction = 10004;
+		public const int AutoFixInitialize = 10005;
 	}
 }

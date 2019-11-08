@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
-using TomPIT.Services;
+using TomPIT.Middleware;
+using TomPIT.Models;
 
-namespace TomPIT.Models
+namespace TomPIT.App.Models
 {
 	public class PartialModel : AjaxModel, IViewModel
 	{
-		public IView ViewConfiguration => null;
+		public IViewConfiguration ViewConfiguration => null;
 
 		public IModelNavigation Navigation => null;
 		public string Title => null;
@@ -18,67 +18,20 @@ namespace TomPIT.Models
 
 		protected override void OnDatabinding()
 		{
-			if (string.IsNullOrWhiteSpace(Body.Optional("__name", string.Empty)))
-			{
-				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrDataParameterExpected, "__name"))
-				{
-					Event = ExecutionEvents.DataRead,
-				}.WithMetrics(this);
-			}
+			var identifier = Body.Required<string>("__name");
+			var context = FromIdentifier(identifier, MiddlewareDescriptor.Current.Tenant);
 
-			QualifierName = Body.Optional("__name", string.Empty);
+			MicroService = context.MicroService;
 
-			if (string.IsNullOrWhiteSpace(Body.Optional("__component", string.Empty)))
-			{
-				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrDataParameterExpected, "__component"))
-				{
-					Event = ExecutionEvents.DataRead,
-				}.WithMetrics(this);
-			}
+			var descriptor = ComponentDescriptor.Partial(this, identifier);
 
-			var component = Body.Optional("__component", string.Empty);
-			var tokens = component.Split('.');
+			descriptor.Validate();
 
-			if (tokens.Length != 2)
-			{
-				throw new RuntimeException(string.Format("{0} ({1}). {2}: {3}.", SR.ErrInvalidQualifier, component, SR.ErrInvalidQualifierExpected, "microService.component"))
-				{
-					Event = ExecutionEvents.DataRead
-				}.WithMetrics(this);
-			}
-
-			var s = Instance.GetService<IMicroServiceService>().Select(tokens[0].AsGuid());
-
-			if (s == null)
-				throw new RuntimeException(SR.ErrMicroServiceNotFound);
-
-			var c = Instance.GetService<IComponentService>().SelectComponent(tokens[1].AsGuid());
-
-			if (c == null)
-				throw new RuntimeException(SR.ErrComponentNotFound);
-
-			MicroService = s;
-
-			IPartialView partial = null;
-
-			if (QualifierName.Contains('/'))
-			{
-				var partialTokens = QualifierName.Split('/');
-
-				MicroService.ValidateMicroServiceReference(Connection, partialTokens[0]);
-				var partialMs = Connection.GetService<IMicroServiceService>().Select(partialTokens[0]);
-
-				partial = Instance.GetService<IComponentService>().SelectConfiguration(partialMs.Token, "Partial", partialTokens[1]) as IPartialView;
-			}
-			else
-				partial = Instance.GetService<IComponentService>().SelectConfiguration(MicroService.Token, "Partial", QualifierName) as IPartialView;
-
-			var args = new ViewInvokeArguments(this);
+			Component = descriptor.Component;
+			QualifierName = $"{MicroService.Name}/{descriptor.ComponentName}";
 
 			Body.Remove("__name");
 			Body.Remove("__component");
-
-			Connection.GetService<ICompilerService>().Execute(((IConfiguration)partial).MicroService(Connection), partial.Invoke, this, args);
 		}
 	}
 }

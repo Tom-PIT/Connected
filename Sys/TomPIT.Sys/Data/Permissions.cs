@@ -20,14 +20,14 @@ namespace TomPIT.Sys.Data
 			var ds = Shell.GetService<IDatabaseService>().Proxy.Security.Permissions.Query();
 
 			foreach (var i in ds)
-				Set(GenerateKey(i.Evidence.AsString(), i.Schema, i.Claim, i.PrimaryKey), i, TimeSpan.Zero);
+				Set(GenerateKey(i.Evidence.ToString(), i.Schema, i.Claim, i.PrimaryKey), i, TimeSpan.Zero);
 		}
 
 		protected override void OnInvalidate(string id)
 		{
 			var tokens = id.Split('.');
 
-			var r = Shell.GetService<IDatabaseService>().Proxy.Security.Permissions.Select(tokens[0].AsGuid(), tokens[1], tokens[2], tokens[3]);
+			var r = Shell.GetService<IDatabaseService>().Proxy.Security.Permissions.Select(new Guid(tokens[0]), tokens[1], tokens[2], tokens[3]);
 
 			if (r == null)
 			{
@@ -40,7 +40,7 @@ namespace TomPIT.Sys.Data
 
 		public IPermission Select(Guid evidence, string schema, string claim, string primaryKey)
 		{
-			return Get(GenerateKey(evidence.AsString(), schema, claim, primaryKey),
+			return Get(GenerateKey(evidence.ToString(), schema, claim, primaryKey),
 				(f) =>
 				{
 					return Shell.GetService<IDatabaseService>().Proxy.Security.Permissions.Select(evidence, schema, claim, primaryKey);
@@ -78,7 +78,7 @@ namespace TomPIT.Sys.Data
 
 			Shell.GetService<IDatabaseService>().Proxy.Security.Permissions.Insert(rg, evidence, schema, claim, descriptor, primaryKey, value, component);
 
-			var key = GenerateKey(evidence.AsString(), schema, claim, primaryKey);
+			var key = GenerateKey(evidence.ToString(), schema, claim, primaryKey);
 
 			Refresh(key);
 			CachingNotifications.PermissionAdded(resourceGroup, evidence, schema, claim, primaryKey);
@@ -93,7 +93,7 @@ namespace TomPIT.Sys.Data
 
 			Shell.GetService<IDatabaseService>().Proxy.Security.Permissions.Update(p, value);
 
-			var key = GenerateKey(evidence.AsString(), schema, claim, primaryKey);
+			var key = GenerateKey(evidence.ToString(), schema, claim, primaryKey);
 
 			Refresh(key);
 			CachingNotifications.PermissionChanged(p.ResourceGroup, evidence, schema, claim, primaryKey);
@@ -108,7 +108,7 @@ namespace TomPIT.Sys.Data
 
 			Shell.GetService<IDatabaseService>().Proxy.Security.Permissions.Delete(p);
 
-			var key = GenerateKey(evidence.AsString(), schema, claim, primaryKey);
+			var key = GenerateKey(evidence.ToString(), schema, claim, primaryKey);
 
 			Remove(key);
 			CachingNotifications.PermissionRemoved(p.ResourceGroup, evidence, schema, claim, primaryKey);

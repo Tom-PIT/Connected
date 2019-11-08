@@ -1,6 +1,6 @@
 ﻿@using TomPIT;
 
-@model TomPIT.Design.IProperty
+@model TomPIT.Ide.Properties.IProperty
 
 @{
 	var value = Model.Value;
@@ -8,7 +8,7 @@
 	//if (value != null && value.GetType().IsEnum)
 	//{ value = Convert.ChangeType(value, value.GetType().GetEnumUnderlyingType()); }
 
-	var items = DomQuery.Items(Model);
+	var items = TomPIT.Ide.DomQuery.Items(Model);
 	var required = Model.Validation.Required.IsRequired ? "required" : string.Empty;
 }
 
@@ -20,7 +20,7 @@
 <script>
     $('[name="@Model.Name"]').dxSelectBox({
         stylingMode: 'underlined',
-        dataSource:@Html.Raw(Types.Serialize(items)) ,
+        dataSource:@Html.Raw(TomPIT.Serialization.Serializer.Serialize(items)) ,
         displayExpr: 'text',
         valueExpr: 'value',
         value: '@value',

@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using TomPIT.Data.DataProviders;
-using TomPIT.Design;
-using TomPIT.Dom;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
 
-namespace TomPIT.Application.Design.Items
+namespace TomPIT.MicroServices.Design.Items
 {
 	internal class DataProviderItems : ItemsBase
 	{
 		protected override void OnQueryDescriptors(IDomElement element, List<IItemDescriptor> items)
 		{
-			var ds = element.Environment.Context.Connection().GetService<IDataProviderService>().Query();
+			var ds = element.Environment.Context.Tenant.GetService<IDataProviderService>().Query();
 
 			items.Add(new ItemDescriptor(SR.DevSelect, Guid.Empty.ToString()));
 

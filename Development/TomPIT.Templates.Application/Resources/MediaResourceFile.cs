@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.MicroServices.Design;
+using TomPIT.Middleware;
 using TomPIT.Storage;
 
-namespace TomPIT.Application.Resources
+namespace TomPIT.MicroServices.Resources
 {
-	[Create("MediaFile")]
-	[DomDesigner("TomPIT.Application.Design.Designers.MediaResourceFileUploadDesigner, TomPIT.Application.Design")]
+	[Create(DesignUtils.MediaFile)]
+	[DomDesigner(DesignUtils.MediaResourceFileUploadDesigner)]
 	public class MediaResourceFile : ConfigurationElement, IMediaResourceFile
 	{
 		[Browsable(false)]
@@ -20,7 +23,7 @@ namespace TomPIT.Application.Resources
 		public string FileName { get; set; }
 
 		[Browsable(false)]
-		public long Size {get; set;}
+		public long Size { get; set; }
 
 		[Browsable(false)]
 		public DateTime Modified { get; set; }
@@ -30,10 +33,10 @@ namespace TomPIT.Application.Resources
 			return new List<Guid> { Blob, Thumb };
 		}
 
-		public void Delete(ExternalResourceDeleteArgs e)
+		public void Delete(Guid resource)
 		{
 			if (Blob != Guid.Empty)
-				e.Connection.GetService<IStorageService>().Delete(Blob);
+				MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Delete(Blob);
 		}
 
 		public override string ToString()

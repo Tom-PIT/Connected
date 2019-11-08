@@ -9,5 +9,6 @@
 		IVersionControlHandler VersionControl { get; }
 		ITestSuiteHandler TestSuite { get; }
 		IDevelopmentErrorHandler Errors { get; }
+		IToolsHandler Tools { get; }
 	}
 }

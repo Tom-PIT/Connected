@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace TomPIT.Sys
 {
@@ -7,11 +7,19 @@ namespace TomPIT.Sys
 	{
 		public static void Main(string[] args)
 		{
-			CreateWebHostBuilder(args).Build().Run();
+			CreateHostBuilder(args).Build().Run();
 		}
 
-		public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-			 WebHost.CreateDefaultBuilder(args)
-				  .UseStartup<Startup>();
+		public static IHostBuilder CreateHostBuilder(string[] args) =>
+			 Host.CreateDefaultBuilder(args)
+				  //.ConfigureLogging(logging =>
+				  //{
+				  //	logging.AddFilter("Microsoft.AspNetCore.SignalR", LogLevel.Debug);
+				  //	logging.AddFilter("Microsoft.AspNetCore.Http.Connections", LogLevel.Debug);
+				  //})
+				  .ConfigureWebHostDefaults(webBuilder =>
+				  {
+					  webBuilder.UseStartup<Startup>();
+				  });
 	}
 }

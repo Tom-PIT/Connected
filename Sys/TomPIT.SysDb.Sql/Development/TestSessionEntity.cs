@@ -1,6 +1,6 @@
 ﻿using System;
 using TomPIT.Data.Sql;
-using TomPIT.QA;
+using TomPIT.Quality;
 
 namespace TomPIT.SysDb.Sql.Development
 {

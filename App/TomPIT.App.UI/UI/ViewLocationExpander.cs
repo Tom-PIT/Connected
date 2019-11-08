@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Razor;
+using TomPIT.UI;
 
-namespace TomPIT.UI
+namespace TomPIT.App.UI
 {
 	internal class ViewLocationExpander : IViewLocationExpander
 	{
@@ -15,7 +13,19 @@ namespace TomPIT.UI
 
 			var viewKind = (ViewKind)context.ActionContext.ActionDescriptor.Properties["viewKind"];
 
-			if(viewKind == ViewKind.Partial)
+			if (viewKind == ViewKind.View)
+			{
+				var result = new List<string>
+				{
+					"/Views/Dynamic/View/{0}.cshtml"
+				};
+
+				foreach (var location in viewLocations)
+					result.Add(location);
+
+				return result;
+			}
+			if (viewKind == ViewKind.Partial)
 			{
 				var result = new List<string>
 				{

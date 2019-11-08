@@ -1,12 +1,16 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using TomPIT.ActionResults;
-using TomPIT.Annotations;
-using TomPIT.ComponentModel.Workers;
-using TomPIT.Dom;
-using TomPIT.Services;
+﻿using System;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.Design;
+using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Distributed;
+using TomPIT.Distributed;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom;
+using TomPIT.Management.Distributed;
+using TomPIT.Middleware;
 
-namespace TomPIT.Designers
+namespace TomPIT.Management.Designers
 {
 	internal class ScheduleDesigner : DomDesigner<DomElement>
 	{
@@ -18,7 +22,7 @@ namespace TomPIT.Designers
 
 		public override string View => "~/Views/Ide/Designers/Scheduler.cshtml";
 
-		private IWorker Worker => Component as IWorker;
+		private IWorkerConfiguration Worker => Component as IWorkerConfiguration;
 
 		public override object ViewModel
 		{
@@ -28,10 +32,10 @@ namespace TomPIT.Designers
 				{
 					var worker = Worker;
 
-					var url = Connection.CreateUrl("Worker", "Select")
+					var url = Environment.Context.Tenant.CreateUrl("Worker", "Select")
 						.AddParameter("worker", worker.Component);
 
-					var d = Connection.Get<ScheduledJob>(url);
+					var d = Environment.Context.Tenant.Get<ScheduledJob>(url);
 
 					if (d == null)
 					{
@@ -44,7 +48,7 @@ namespace TomPIT.Designers
 					_job = new ScheduledJobDescriptor
 					{
 						Job = d,
-						Title = worker.ComponentName(Connection)
+						Title = worker.ComponentName()
 					};
 
 					_job.Context = Environment.Context;
@@ -71,7 +75,7 @@ namespace TomPIT.Designers
 			var d = (ViewModel as ScheduledJobDescriptor).Job as ScheduledJob;
 			var status = data.Required<WorkerStatus>("status");
 
-			var url = Connection.CreateUrl("WorkerManagement", "Update");
+			var url = Environment.Context.Tenant.CreateUrl("WorkerManagement", "Update");
 
 			var p = new JObject
 			{
@@ -80,7 +84,7 @@ namespace TomPIT.Designers
 				{ "logging" , d.Logging }
 			};
 
-			Connection.Post(url, p);
+			Environment.Context.Tenant.Post(url, p);
 
 			_job = null;
 
@@ -109,7 +113,7 @@ namespace TomPIT.Designers
 			d.Weekdays = data.Optional("weekdays", WorkerWeekDays.All);
 			d.Kind = WorkerKind.Worker;
 
-			var url = Connection.CreateUrl("WorkerManagement", "UpdateConfiguration");
+			var url = Environment.Context.Tenant.CreateUrl("WorkerManagement", "UpdateConfiguration");
 
 			var p = new JObject
 			{
@@ -133,7 +137,7 @@ namespace TomPIT.Designers
 				{ "kind" , d.Kind.ToString() }
 			};
 
-			Connection.Post(url, p);
+			Environment.Context.Tenant.Post(url, p);
 
 			_job = null;
 			d = (ViewModel as ScheduledJobDescriptor).Job as ScheduledJob;

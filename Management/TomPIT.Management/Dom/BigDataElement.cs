@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.Dom;
-using TomPIT.Ide;
+﻿using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
 
 namespace TomPIT.Management.Dom
 {
-	public class BigDataElement : Element
+	public class BigDataElement : DomElement
 	{
 		public const string DomId = "BigData";
 

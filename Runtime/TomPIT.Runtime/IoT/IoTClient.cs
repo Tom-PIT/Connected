@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using TomPIT.Connectivity;
-using TomPIT.Notifications;
+using TomPIT.Messaging;
 
 namespace TomPIT.IoT
 {
 	internal class IoTClient : HubClient
 	{
-		public IoTClient(ISysConnection connection, string authenticationToken) : base(connection, authenticationToken)
+		public IoTClient(ITenant tenant, string authenticationToken) : base(tenant, authenticationToken)
 		{
 		}
 
@@ -23,8 +23,8 @@ namespace TomPIT.IoT
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Connection.GetService<IIoTService>() is IIoTServiceNotification n)
-					n.NotifyStateChanged(Connection, e.Args);
+				if (Tenant.GetService<IIoTService>() is IIoTServiceNotification n)
+					n.NotifyStateChanged(Tenant, e.Args);
 			});
 		}
 	}

@@ -139,7 +139,19 @@ namespace TomPIT.Sys.Data
 			StoragePolicy policy, Guid token)
 		{
 			if (!string.IsNullOrEmpty(draft) || policy == StoragePolicy.Extended)
-				return Insert(token, resourceGroup, type, primaryKey, microService, topic, fileName, contentType, draft, content);
+			{
+				var existingDrafts = QueryDrafts(draft);
+				var existingDraft = existingDrafts.FirstOrDefault(f => string.Compare(f.FileName, fileName, true) == 0);
+
+				if (existingDraft == null)
+					return Insert(token, resourceGroup, type, primaryKey, microService, topic, fileName, contentType, draft, content);
+				else
+				{
+					Update(existingDraft.Token, null, fileName, contentType, draft, content);
+
+					return existingDraft.Token;
+				}
+			}
 
 			var r = resourceGroup == Guid.Empty
 				? DataModel.ResourceGroups.Default

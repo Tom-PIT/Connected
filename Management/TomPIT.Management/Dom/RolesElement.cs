@@ -1,15 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using TomPIT.Annotations;
-using TomPIT.Designers;
-using TomPIT.Items;
+using TomPIT.Annotations.Design;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.Management.Designers;
+using TomPIT.Management.Items;
 using TomPIT.Security;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
-	public class RolesElement : Element
+	public class RolesElement : DomElement
 	{
 		public const string FolderId = "Roles";
 		private RolesDesigner _designer = null;
@@ -64,7 +67,7 @@ namespace TomPIT.Dom
 
 		public override void LoadChildren(string id)
 		{
-			var role = Connection.GetService<IRoleService>().Select(id.AsGuid());
+			var role = Environment.Context.Tenant.GetService<IRoleService>().Select(new Guid(id));
 
 			Items.Add(new RoleElement(this, role));
 		}
@@ -88,7 +91,7 @@ namespace TomPIT.Dom
 				{
 					_roles = new ExistingRoles();
 
-					var ds = Connection.GetService<IRoleService>().Query().Where(f => f.Behavior == RoleBehavior.Explicit && f.Visibility == RoleVisibility.Visible).OrderBy(f => f.Name);
+					var ds = Environment.Context.Tenant.GetService<IRoleService>().Query().Where(f => f.Behavior == RoleBehavior.Explicit && f.Visibility == RoleVisibility.Visible).OrderBy(f => f.Name);
 
 					foreach (var i in ds)
 						_roles.Items.Add(i);

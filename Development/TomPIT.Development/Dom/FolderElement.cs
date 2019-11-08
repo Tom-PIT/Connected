@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
-using TomPIT.Design;
-using TomPIT.Security;
+using TomPIT.Ide;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
+using TomPIT.Ide.Verbs;
 
 namespace TomPIT.Dom
 {
@@ -49,7 +52,7 @@ namespace TomPIT.Dom
 
 		public override void LoadChildren(string id)
 		{
-			var folder = Folders.FirstOrDefault(f => f.Token == id.AsGuid());
+			var folder = Folders.FirstOrDefault(f => f.Token == new Guid(id));
 
 			if (folder != null)
 			{
@@ -57,7 +60,7 @@ namespace TomPIT.Dom
 				return;
 			}
 
-			var component = Components.FirstOrDefault(f => f.Token == id.AsGuid());
+			var component = Components.FirstOrDefault(f => f.Token == new Guid(id));
 
 			if (component != null)
 				Items.Add(component.GetDomElement(this));
@@ -68,7 +71,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_folders == null)
-					_folders = GetService<IComponentService>().QueryFolders(DomQuery.Closest<IMicroServiceScope>(this).MicroService.Token, Folder.Token);
+					_folders = Environment.Context.Tenant.GetService<IComponentService>().QueryFolders(DomQuery.Closest<IMicroServiceScope>(this).MicroService.Token, Folder.Token);
 
 				return _folders;
 			}
@@ -79,7 +82,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_components == null)
-					_components = GetService<IComponentService>().QueryComponents(DomQuery.Closest<IMicroServiceScope>(this).MicroService.Token, Folder.Token);
+					_components = Environment.Context.Tenant.GetService<IComponentService>().QueryComponents(DomQuery.Closest<IMicroServiceScope>(this).MicroService.Token, Folder.Token);
 
 				return _components;
 			}
@@ -87,7 +90,7 @@ namespace TomPIT.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			GetService<IComponentDevelopmentService>().UpdateFolder(Folder.MicroService, Folder.Token, Folder.Name, Folder.Parent);
+			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().UpdateFolder(Folder.MicroService, Folder.Token, Folder.Name, Folder.Parent);
 
 			return true;
 		}

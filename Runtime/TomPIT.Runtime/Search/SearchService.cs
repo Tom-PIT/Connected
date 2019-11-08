@@ -1,30 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
-using TomPIT.Services;
+using TomPIT.Exceptions;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
+using TomPIT.Serialization;
 
 namespace TomPIT.Search
 {
-	internal class SearchService : ServiceBase, ISearchService
+	internal class SearchService : TenantObject, ISearchService
 	{
-		public SearchService(ISysConnection connection) : base(connection)
+		public SearchService(ITenant tenant) : base(tenant)
 		{
 		}
 
-		public void Index<T>(ISearchCatalog catalog, SearchVerb verb, T args)
+		public void Index<T>(ISearchCatalogConfiguration catalog, SearchVerb verb, T args)
 		{
-			var u = Connection.CreateUrl("Search", "Index");
+			var u = Tenant.CreateUrl("Search", "Index");
 			var e = new JObject
 			{
-				{"microService", ((IConfiguration)catalog).MicroService(Connection) },
-				{"catalog", catalog.ComponentName(Connection) }
+				{"microService", ((IConfiguration)catalog).MicroService() },
+				{"catalog", catalog.ComponentName() }
 			};
 
 			var a = new JObject
@@ -33,22 +35,22 @@ namespace TomPIT.Search
 			};
 
 			if (args != null)
-				a.Add("arguments", Types.Serialize(args));
+				a.Add("arguments", Serializer.Serialize(args));
 
-			e.Add("arguments", Types.Serialize(a));
+			e.Add("arguments", Serializer.Serialize(a));
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 		}
 
 		public IClientSearchResults Search(ISearchOptions options)
 		{
-			var url = Connection.GetService<IInstanceEndpointService>().Url(InstanceType.Search, InstanceVerbs.Post);
+			var url = Tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Search, InstanceVerbs.Post);
 
 			if (string.IsNullOrWhiteSpace(url))
 				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceType.Search}, {InstanceVerbs.Post})");
 
 			var u = ServerUrl.Create(url, "Search", "Search");
-			var results = Connection.Post<SearchResults>(u, options);
+			var results = Tenant.Post<SearchResults>(u, options);
 			var clientResults = new ClientSearchResults();
 			var handlers = new Dictionary<Guid, dynamic>();
 
@@ -58,18 +60,22 @@ namespace TomPIT.Search
 			clientResults.SearchTime = results.SearchTime;
 			clientResults.Total = results.Total;
 
-			foreach(var result in results.Items)
+			foreach (var result in results.Items)
 			{
 				if (result.Catalog == Guid.Empty)
 					continue;
 
 				if (!handlers.ContainsKey(result.Catalog))
 				{
-					var catalog = Connection.GetService<IComponentService>().SelectConfiguration(result.Catalog) as ISearchCatalog;
-					var type = Connection.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(Connection), catalog, catalog.ComponentName(Connection));
-					dynamic instance = type.CreateInstance<ISearchProcessHandler>(new object[] { catalog.CreateContext() });
+					var catalog = Tenant.GetService<IComponentService>().SelectConfiguration(result.Catalog) as ISearchCatalogConfiguration;
+					var type = Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(), catalog, catalog.ComponentName());
+					var instance = type.CreateInstance<IMiddlewareComponent>();
 
-					handlers.Add(result.Catalog, instance);
+					instance.SetContext(catalog.CreateContext());
+
+					dynamic dInstance = instance;
+
+					handlers.Add(result.Catalog, dInstance);
 				}
 
 				var handler = handlers[result.Catalog];

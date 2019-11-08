@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
+using TomPIT.Reflection;
 
 namespace TomPIT.ComponentModel
 {

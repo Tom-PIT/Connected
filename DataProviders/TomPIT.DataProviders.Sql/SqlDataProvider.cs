@@ -1,17 +1,20 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using Newtonsoft.Json.Linq;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
+using TomPIT.Data.DataProviders.Design;
 using TomPIT.Data.Sql;
 using TomPIT.DataProviders.Sql.Deployment;
 using TomPIT.Deployment;
 using TomPIT.Deployment.Database;
+using TomPIT.Exceptions;
+using TomPIT.Reflection;
 
 namespace TomPIT.DataProviders.Sql
 {
-	[SchemaBrowser("TomPIT.DataProviders.Sql.Browser, TomPIT.DataProviders.Sql")]
+	[SchemaBrowser("TomPIT.DataProviders.Sql.Design.Browser, TomPIT.DataProviders.Sql")]
 	public class SqlDataProvider : IDataProvider
 	{
 		public Guid Id => new Guid("{C5849300-11A4-4FAE-B433-3C89DD05DDF0}");
@@ -89,9 +92,9 @@ namespace TomPIT.DataProviders.Sql
 			}
 		}
 
-		public IDataConnection OpenConnection(string connectionString)
+		public IDataConnection OpenConnection(string connectionString, IDataConnection existingConnection)
 		{
-			return new DataConnection(this, connectionString);
+			return new DataConnection(this, connectionString, existingConnection);
 		}
 
 		public JObject Query(IDataCommandDescriptor command, DataTable schema)
@@ -146,8 +149,8 @@ namespace TomPIT.DataProviders.Sql
 		{
 			var row = new JObject();
 
-			for(var i = 0; i < rdr.FieldCount; i++)
-				row.Add(rdr.GetName(i), new JValue( rdr.GetValue(i)));
+			for (var i = 0; i < rdr.FieldCount; i++)
+				row.Add(rdr.GetName(i), new JValue(GetValue(rdr, i)));
 
 			return row;
 		}
@@ -171,8 +174,7 @@ namespace TomPIT.DataProviders.Sql
 					mapping = (string)i.ExtendedProperties["mapping"];
 
 				int ord = rdr.GetOrdinal(mapping);
-
-				var value = rdr.GetValue(ord);
+				var value = GetValue(rdr, ord);
 
 				row.Add(i.ColumnName, new JValue(value == DBNull.Value ? null : value));
 			}
@@ -180,6 +182,18 @@ namespace TomPIT.DataProviders.Sql
 			return row;
 		}
 
+		private object GetValue(SqlDataReader reader, int index)
+		{
+			var value = reader.GetValue(index);
+
+			if (value == DBNull.Value || value == null)
+				return null;
+
+			if (value is DateTime date)
+				return DateTime.SpecifyKind(date, DateTimeKind.Utc);
+
+			return value;
+		}
 		private ReliableSqlConnection ResolveConnection(IDataCommandDescriptor command, IDataConnection connection)
 		{
 			DataConnection c = null;

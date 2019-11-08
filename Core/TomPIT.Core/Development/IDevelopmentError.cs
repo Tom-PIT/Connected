@@ -1,9 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace TomPIT.Development
 {
+	public enum ErrorCategory
+	{
+		NotSet = 0,
+		Syntax = 1,
+		Validation = 2,
+		Type = 3
+	}
+
 	public enum DevelopmentSeverity
 	{
 		Hidden = 0,
@@ -11,11 +17,15 @@ namespace TomPIT.Development
 		Warning = 2,
 		Error = 3
 	}
-	public interface IDevelopmentError: IDevelopmentComponentError
+
+	public interface IDevelopmentError
 	{
-		Guid MicroService { get; }
 		Guid Component { get; }
-		string ComponentName { get; }
-		string ComponentCategory { get; }
+		Guid Element { get; }
+		DevelopmentSeverity Severity { get; }
+		string Message { get; }
+		string Code { get; }
+		ErrorCategory Category { get; }
+		Guid Identifier { get; }
 	}
 }

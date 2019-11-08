@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.ServiceModel;
 using System.Text;
 using System.Web;
 using DevExpress.DataAccess.Json;
 using DevExpress.XtraReports.UI;
 using DevExpress.XtraReports.Web.Extensions;
-using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Reports;
 using TomPIT.Connectivity;
-using TomPIT.Design;
-using TomPIT.Services;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
 
-namespace TomPIT.Reporting.Storage
+namespace TomPIT.MicroServices.Reporting.Storage
 {
 	public class ReportRuntimeStorage : ReportStorageWebExtension
 	{
@@ -31,11 +29,11 @@ namespace TomPIT.Reporting.Storage
 			return false;
 		}
 
-		protected IReport SelectReport(string url)
+		protected IReportConfiguration SelectReport(string url)
 		{
-			var connection = Shell.HttpContext.CurrentConnection();
+			var tenant = MiddlewareDescriptor.Current.Tenant;
 
-			if (connection == null)
+			if (tenant == null)
 				return null;
 
 			var tokens = url.Split('/');
@@ -43,14 +41,14 @@ namespace TomPIT.Reporting.Storage
 			if (tokens.Length != 2)
 				return null;
 
-			var ms = connection.GetService<IMicroServiceService>().Select(tokens[0]);
+			var ms = tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
 			if (ms == null)
 				return null;
 
 			var subTokens = tokens[1].Split('?');
 
-			return connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "Report", subTokens[0]) as IReport;
+			return tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "Report", subTokens[0]) as IReportConfiguration;
 		}
 		public override byte[] GetData(string url)
 		{
@@ -63,9 +61,9 @@ namespace TomPIT.Reporting.Storage
 
 			if (config.TextBlob != Guid.Empty)
 			{
-				var connection = Shell.HttpContext.CurrentConnection();
-				var content = connection.GetService<IComponentService>().SelectText(((IConfiguration)config).MicroService(connection), config);
-				var ms = connection.GetService<IMicroServiceService>().Select(((IConfiguration)config).MicroService(connection));
+				var tenant = MiddlewareDescriptor.Current.Tenant;
+				var content = tenant.GetService<IComponentService>().SelectText(((IConfiguration)config).MicroService(), config);
+				var ms = tenant.GetService<IMicroServiceService>().Select(((IConfiguration)config).MicroService());
 
 				if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Design)
 				{
@@ -114,7 +112,7 @@ namespace TomPIT.Reporting.Storage
 			foreach (var s in queryString.Keys)
 				arguments.Add(s.ToString(), queryString[s.ToString()]);
 
-			var connection = Shell.GetService<IConnectivityService>().Select();
+			var connection = Shell.GetService<IConnectivityService>().SelectDefaultTenant();
 
 			if (report.DataSource is JsonDataSource js)
 			{
@@ -124,7 +122,7 @@ namespace TomPIT.Reporting.Storage
 				report.DataMember = dataMember;
 			}
 
-			foreach(var band in report.Bands)
+			foreach (var band in report.Bands)
 			{
 				if (band is DetailReportBand detail && detail.DataSource != null && detail.DataSource is JsonDataSource djs)
 				{
@@ -136,17 +134,17 @@ namespace TomPIT.Reporting.Storage
 			}
 		}
 
-		private JsonDataSource CreateDataSource(JsonDataSource dataSource, ISysConnection connection, JObject arguments)
+		private JsonDataSource CreateDataSource(JsonDataSource dataSource, ITenant tenant, JObject arguments)
 		{
 			if (dataSource == null || string.IsNullOrWhiteSpace(dataSource.ConnectionName))
 				return null;
 
 			var tokens = dataSource.ConnectionName.Split('/');
-			var ms = connection.GetService<IMicroServiceService>().Select(tokens[0]);
-			var ctx = ExecutionContext.Create(connection.Url, ms);
+			var ms = tenant.GetService<IMicroServiceService>().Select(tokens[0]);
+			var ctx = new MicroServiceContext(ms, tenant.Url);
 			var result = new JsonDataSource();
 			var root = new JObject();
-			var apiDataSource = ctx.Invoke<object>(dataSource.ConnectionName, arguments);
+			var apiDataSource = ctx.Interop.Invoke<object, JObject>(dataSource.ConnectionName, arguments);
 			var schemaNode = dataSource.Schema.Nodes[0] as JsonSchemaNode;
 
 			if (apiDataSource is JObject)
@@ -154,7 +152,7 @@ namespace TomPIT.Reporting.Storage
 			else if (apiDataSource is JArray ja)
 				root.Add(schemaNode.Name, ja);
 			else if (apiDataSource.GetType().IsCollection())
-				root.Add(schemaNode.Name, JsonConvert.DeserializeObject<JArray>( JsonConvert.SerializeObject(apiDataSource)));
+				root.Add(schemaNode.Name, JsonConvert.DeserializeObject<JArray>(JsonConvert.SerializeObject(apiDataSource)));
 			else
 				root.Add(schemaNode.Name, new JArray { JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(apiDataSource)) });
 

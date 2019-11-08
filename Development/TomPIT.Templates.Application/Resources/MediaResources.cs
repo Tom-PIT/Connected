@@ -1,16 +1,20 @@
-﻿using TomPIT.Annotations;
+﻿using System.ComponentModel;
+using TomPIT.Annotations.Design;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.MicroServices.Design;
+using TomPIT.Runtime;
 
-namespace TomPIT.Application.Resources
+namespace TomPIT.MicroServices.Resources
 {
-	[DomDesigner("TomPIT.Application.Design.Designers.MediaDesigner, TomPIT.Application.Design", Mode = Services.EnvironmentMode.Design)]
-	public class MediaResources : ComponentConfiguration, IMediaResources
+	[DomDesigner(DesignUtils.MediaDesigner, Mode = EnvironmentMode.Design)]
+	public class MediaResources : ComponentConfiguration, IMediaResourcesConfiguration
 	{
 		private ListItems<IMediaResourceFolder> _folders = null;
 		private ListItems<IMediaResourceFile> _files = null;
 
-		[Items("TomPIT.Application.Design.Items.MediaResourceFoldersCollection, TomPIT.Application.Design")]
+		[Browsable(false)]
 		public ListItems<IMediaResourceFolder> Folders
 		{
 			get
@@ -22,7 +26,7 @@ namespace TomPIT.Application.Resources
 			}
 		}
 
-		[Items("TomPIT.Application.Design.Items.MediaResourceFilesCollection, TomPIT.Application.Design")]
+		[Browsable(false)]
 		public ListItems<IMediaResourceFile> Files
 		{
 			get

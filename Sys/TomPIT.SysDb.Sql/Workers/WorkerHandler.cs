@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Data.Sql;
-using TomPIT.Services;
+using TomPIT.Distributed;
 using TomPIT.SysDb.Workers;
 
 namespace TomPIT.SysDb.Sql.Workers

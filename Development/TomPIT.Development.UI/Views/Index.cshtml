@@ -1,81 +1,41 @@
 ﻿
-@model TomPIT.Models.HomeModel
+@model TomPIT.Development.Models.HomeModel
 
 @{
-    Layout = "~/Views/Shared/Shell.cshtml";
+   Layout = "~/Views/Shared/Shell.cshtml";
 }
 
 <div class="doc-canvas h-100">
     <div class="paper">
         <div class="container-fluid">
-            <div class="m-1">
-                <div class="row">
-                    <div class="col-sm-9">
-                        <h4>@StringUtils.TextWithNumber("Microservices", Model.Discovery.Services.Count)</h4>
+            <div class="row">
+                <div class="col">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" id="btnMicroServiceList" class="btn btn-sm active btn-light" title="Microservices" data-tool="MicroServiceList" data-group="view"><i class="fal fa-puzzle-piece"></i></button>
+                        <button type="button" id="btnComponentList" class="btn btn-sm btn-light" title="Components" data-tool="ComponentList" data-group="view"><i class="fal fa-file"></i></button>
                     </div>
-                    <div class="col-sm-3">
-                        <div id="search"></div>
-                    </div>
+                    <hr/>
                 </div>
             </div>
-
-            <hr />
-
-            <ul class="list-unstyled">
-                @foreach (var i in Model.Discovery.Services.OrderBy(f => f.Name))
-                {
-                    <li data-kind="microService" class="microservice-list-item collapse show" data-url="@i.Url">
-                        <span data-search="true">@i.Name</span>
-                        @if (i.CommitStatus != TomPIT.ComponentModel.CommitStatus.Synchronized)
-                        {
-                            <span class="badge badge-warning">not synchronized</span>
-                        }
-
-                        <div>
-                            <small>@Model.ResolveTemplate(i)</small>
-                        </div>
-                    </li>
-                }
-            </ul>
-
+            <div id="toolContainer">
+                @await Html.PartialAsync("~/Views/Tools/MicroServiceList.cshtml")
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    $('[data-kind="microService"]').click(function (e) {
-        var url = $(this).attr('data-url');
+    $('[data-tool]').click(function () {
+        var button = $(this);
+        var tool = $(this).attr('data-tool');
 
-        window.location = '@Model.RootUrl()/ide/' + url;
+        tompit.post({
+            'url': '@Model.Services.Routing.RootUrl/sys/tool/' + tool,
+            onSuccess: function (data) {
+                $('[data-group="view"]').removeClass('active');
+                button.addClass('active');
+                $('#toolContainer').html(data);
+            }
+        });
     });
-
-    $('#search').dxTextBox({
-        mode: 'search',
-        onValueChanged: function (e) {
-
-            $.each($('[data-kind="microService"]'), function (i, v) {
-                if (e.value.length === 0)
-                    $(v).collapse('show');
-                else {
-                    var searchElements = $(v).find('[data-search="true"]');
-                    var hit = false;
-
-                    $.each(searchElements, function (si, sv) {
-                        var result = new RegExp(e.value, 'i').exec($(v).html());
-
-                        if (result) {
-                            $(v).collapse('show');
-                            hit = true;
-
-                            return false;
-                        }
-                    });
-
-                    if (!hit)
-                        $(v).collapse('hide');
-                }
-            });
-        }
-    });
-
 </script>

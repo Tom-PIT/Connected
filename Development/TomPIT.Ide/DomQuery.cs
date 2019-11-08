@@ -3,13 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using TomPIT.Annotations;
-using TomPIT.Design;
-using TomPIT.Dom;
+using TomPIT.Annotations.Design;
+using TomPIT.Exceptions;
 using TomPIT.Ide;
-using TomPIT.Services;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment.Providers;
+using TomPIT.Ide.Properties;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
 
-namespace TomPIT
+namespace TomPIT.Ide
 {
 	public static class DomQuery
 	{
@@ -193,7 +198,7 @@ namespace TomPIT
 		private static List<IItemDescriptor> ItemsByAttribute(IDomElement element, PropertyInfo property, ItemsAttribute att)
 		{
 			var cp = att.Type == null
-				? Types.GetType(att.TypeName).CreateInstance<IItemsProvider>()
+				? Reflection.TypeExtensions.GetType(att.TypeName).CreateInstance<IItemsProvider>()
 				: att.Type.CreateInstance<IItemsProvider>();
 
 			if (cp == null)
@@ -384,7 +389,7 @@ namespace TomPIT
 			if (attribute == null)
 				return null;
 
-			var type = attribute.Type ?? Types.GetType(attribute.TypeName);
+			var type = attribute.Type ?? Reflection.TypeExtensions.GetType(attribute.TypeName);
 			var instance = type.CreateInstance<IDomDesigner>(new object[] { element });
 
 			if (instance == null)
@@ -393,9 +398,9 @@ namespace TomPIT
 			return instance;
 		}
 
-		public static void SetId(this ISelection selection, string id)
+		public static void SetId(this ISelectionProvider selection, string id)
 		{
-			if (selection is Selection s)
+			if (selection is SelectionProvider s)
 				s.Id = id;
 		}
 

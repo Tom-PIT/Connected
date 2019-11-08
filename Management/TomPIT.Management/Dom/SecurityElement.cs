@@ -1,9 +1,9 @@
-﻿using TomPIT.Ide;
-using TomPIT.Management.Dom;
+﻿using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
-	public class SecurityElement : Element
+	public class SecurityElement : DomElement
 	{
 		public const string FolderId = "Security";
 

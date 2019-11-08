@@ -6,13 +6,14 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
-using TomPIT.Services;
+using TomPIT.Middleware;
+using TomPIT.Models;
 
-namespace TomPIT.Models
+namespace TomPIT.App.Models
 {
-	public class MailTemplateModel : ExecutionContext, IViewModel
+	public class MailTemplateModel : MicroServiceContext, IViewModel
 	{
-		public MailTemplateModel(HttpRequest request, ActionContext context,  ITempDataProvider tempData, JObject arguments)
+		public MailTemplateModel(HttpRequest request, ActionContext context, ITempDataProvider tempData, JObject arguments)
 		{
 			ActionContext = context;
 			Arguments = arguments;
@@ -22,7 +23,7 @@ namespace TomPIT.Models
 		public ActionContext ActionContext { get; }
 		public JObject Arguments { get; }
 
-		public IView ViewConfiguration => null;
+		public IViewConfiguration ViewConfiguration => null;
 
 		public IModelNavigation Navigation => null;
 
@@ -39,7 +40,9 @@ namespace TomPIT.Models
 
 		public void Initialize(Controller controller, IMicroService microService)
 		{
-			Initialize(Instance.Connection.Url, microService);
+			MicroService = microService;
+
+			Initialize(null);
 		}
 
 		public void MergeArguments(JObject arguments)

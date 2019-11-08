@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Dom;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
 
-namespace TomPIT.Ide
+namespace TomPIT.Management.Ide
 {
-	internal class Dom : DomBase
+	internal class Dom : DomRoot
 	{
 		public Dom(IEnvironment environment, string path) : base(environment, path)
 		{
@@ -12,7 +13,7 @@ namespace TomPIT.Ide
 
 		public override List<IDomElement> Root()
 		{
-			return DomRoot.QueryDomRoot(Environment);
+			return DomRootProvider.QueryDomRoot(Environment);
 		}
 	}
 }

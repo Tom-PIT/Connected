@@ -1,16 +1,17 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
-using TomPIT.Services;
+using TomPIT.Middleware;
+using TomPIT.Runtime;
 
 namespace TomPIT.ComponentModel
 {
 	internal class FolderCache : SynchronizedClientRepository<IFolder, Guid>
 	{
-		public FolderCache(ISysConnection connection) : base(connection, "folder")
+		public FolderCache(ITenant tenant) : base(tenant, "folder")
 		{
 		}
 
@@ -18,20 +19,20 @@ namespace TomPIT.ComponentModel
 		{
 			List<Folder> ds = null;
 
-			if (Connection.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
+			if (Tenant.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
 			{
-				var u = Connection.CreateUrl("Folder", "Query");
-				ds = Connection.Get<List<Folder>>(u);
+				var u = Tenant.CreateUrl("Folder", "Query");
+				ds = Tenant.Get<List<Folder>>(u);
 			}
 			else
 			{
-				var u = Connection.CreateUrl("Folder", "QueryForResourceGroups");
+				var u = Tenant.CreateUrl("Folder", "QueryForResourceGroups");
 				var e = new JArray();
 
-				foreach (var i in Connection.GetService<IResourceGroupService>().Query())
+				foreach (var i in Tenant.GetService<IResourceGroupService>().Query())
 					e.Add(i.Name.ToString());
 
-				ds = Connection.Post<List<Folder>>(u, e);
+				ds = Tenant.Post<List<Folder>>(u, e);
 			}
 
 			foreach (var i in ds)
@@ -40,10 +41,10 @@ namespace TomPIT.ComponentModel
 
 		protected override void OnInvalidate(Guid id)
 		{
-			var u = Connection.CreateUrl("Folder", "SelectByToken")
+			var u = Tenant.CreateUrl("Folder", "SelectByToken")
 				.AddParameter("token", id);
 
-			var d = Connection.Get<Folder>(u);
+			var d = Tenant.Get<Folder>(u);
 
 			if (d == null)
 				return;
@@ -86,13 +87,13 @@ namespace TomPIT.ComponentModel
 					Remove(i.Token);
 			}
 
-			var u = Connection.CreateUrl("Folder", "QueryForMicroService");
+			var u = Tenant.CreateUrl("Folder", "QueryForMicroService");
 			var e = new JObject
 			{
 				{"microService", microService }
 			};
 
-			var items = Connection.Post<List<Folder>>(u, e);
+			var items = Tenant.Post<List<Folder>>(u, e);
 
 			foreach (var i in items)
 				Set(i.Token, i, TimeSpan.Zero);

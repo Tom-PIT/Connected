@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using TomPIT.ComponentModel;
-using TomPIT.Dom;
-using TomPIT.Reporting.Security;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
+using TomPIT.MicroServices.Reporting.Security;
 using TomPIT.Security;
 
-namespace TomPIT.Reporting.Design.Dom
+namespace TomPIT.MicroServices.Reporting.Design.Dom
 {
 	internal class ReportElement : ComponentPermissionElement
 	{

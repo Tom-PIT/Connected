@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
-using TomPIT.Design;
-using TomPIT.Ide;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Environment;
+using TomPIT.Ide.Verbs;
 
-namespace TomPIT.Dom
+namespace TomPIT.Ide.Dom
 {
-	public interface IDomElement : IEnvironmentClient
+	public interface IDomElement : IEnvironmentObject
 	{
 		string Id { get; }
 		string Title { get; }

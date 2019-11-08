@@ -1,15 +1,18 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Actions;
-using TomPIT.Annotations;
-using TomPIT.Design;
-using TomPIT.Dom;
-using TomPIT.Items;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.Design;
+using TomPIT.Ide;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Designers.Toolbar;
+using TomPIT.Management.Dom;
+using TomPIT.Management.Items;
+using TomPIT.Management.Security;
 using TomPIT.Security;
 
-namespace TomPIT.Designers
+namespace TomPIT.Management.Designers
 {
 	internal class AuthenticationTokensDesigner : CollectionDesigner<AuthenticationTokensElement>
 	{
@@ -35,7 +38,7 @@ namespace TomPIT.Designers
 
 			var token = Owner.Existing.FirstOrDefault(f => f.Token == id);
 
-			Connection.GetService<IAuthenticationTokenManagementService>().Delete(token.Token);
+			Environment.Context.Tenant.GetService<IAuthenticationTokenManagementService>().Delete(token.Token);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 		}
@@ -50,11 +53,11 @@ namespace TomPIT.Designers
 			 * find a way to pull a specific user from the system 
 			 * without querying the entire set
 			 */
-			var users = Connection.GetService<IUserService>().Query();
-			var id = Connection.GetService<IAuthenticationTokenManagementService>().Insert(rg, users[0].Token, "AuthenticationToken", null, key, AuthenticationTokenClaim.None, AuthenticationTokenStatus.Disabled, DateTime.MinValue,
+			var users = Environment.Context.Tenant.GetService<IUserService>().Query();
+			var id = Environment.Context.Tenant.GetService<IAuthenticationTokenManagementService>().Insert(rg, users[0].Token, "AuthenticationToken", null, key, AuthenticationTokenClaim.None, AuthenticationTokenStatus.Disabled, DateTime.MinValue,
 				DateTime.MinValue, TimeSpan.Zero, TimeSpan.Zero, string.Empty);
 
-			var token = Connection.GetService<IAuthenticationTokenManagementService>().Select(id);
+			var token = Environment.Context.Tenant.GetService<IAuthenticationTokenManagementService>().Select(id);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 
@@ -68,7 +71,7 @@ namespace TomPIT.Designers
 
 		protected override bool OnCreateToolbarAction(IDesignerToolbarAction action)
 		{
-			return action.Id != Undo.ActionId && action.Id != Actions.Clear.ActionId;
+			return action.Id != Undo.ActionId && action.Id != Ide.Designers.Toolbar.Clear.ActionId;
 		}
 
 		public override bool SupportsReorder

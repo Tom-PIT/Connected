@@ -1,7 +1,7 @@
-﻿@model TomPIT.Ide.IEnvironment
+﻿@model TomPIT.Ide.Environment.IEnvironment
 
 @{
-   var items = Model.Context.MicroService == null ? null : Model.Context.Connection().GetService<TomPIT.Design.IDesignerService>().QueryErrors(Model.Context.MicroService.Token);
+   var items = Model.Context.MicroService == null ? null : Model.Context.Tenant.GetService<TomPIT.Ide.Designers.IDesignerService>().QueryErrors(Model.Context.MicroService.Token);
 }
 
 @if (items == null || items.Count == 0)
@@ -67,7 +67,7 @@ else
                   }
                }
                <div><i class="@glyph"></i> <strong>@error.ComponentName</strong> @error.ComponentCategory</div>
-               <span title="@error.Message">@StringUtils.EllipseString(error.Message, 128)</span>
+               <span title="@error.Message">@Types.EllipseString(error.Message, 128)</span>
            </li>
         }
     </ul>
@@ -78,7 +78,15 @@ else
             var component = $(this).attr('data-component');
             var element = $(this).attr('data-element');
 
-			window.open(url.environment() + '?component=' + component + '&element=' + element, '_blank');
+            ide.ideAction({
+                data: {
+                    'action': 'clearErrors',
+                    'component': component,
+                    'element': element,
+                }, onComplete: function (data) {
+                    window.open(url.environment() + '?component=' + component + '&element=' + element, '_blank');
+                }
+            });
         });
 
         $('.error-list-button').click(function () {

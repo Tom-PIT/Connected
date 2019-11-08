@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using TomPIT.Annotations;
-using TomPIT.BigData.Services;
+using TomPIT.Annotations.BigData;
+using TomPIT.BigData.Transactions;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
 
 namespace TomPIT.BigData.Data
 {
-	internal class PartitionSchema: IComparable<PartitionSchema>
+	internal class PartitionSchema : IComparable<PartitionSchema>
 	{
 		private List<PartitionSchemaField> _fields = null;
 
@@ -59,12 +60,12 @@ namespace TomPIT.BigData.Data
 
 		private void Discover()
 		{
-			var type = Instance.GetService<ICompilerService>().ResolveType(((IConfiguration)Configuration).MicroService(Instance.Connection), Configuration, Configuration.ComponentName(Instance.Connection));
+			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)Configuration).MicroService(), Configuration, Configuration.ComponentName());
 
 			if (type == null)
 				return;
 
-			var handler = type.GetInterface(typeof(IPartitionHandler<>).FullName);
+			var handler = type.GetInterface(typeof(IPartitionMiddleware<>).FullName);
 			var entityType = handler.GetGenericArguments()[0];
 			var properties = entityType.GetProperties();
 
@@ -109,10 +110,10 @@ namespace TomPIT.BigData.Data
 			{
 				Fields.Add(new PartitionSchemaDateField
 				{
-					Index=false,
-					Key=false,
-					Name=Merger.TimestampColumn,
-					Type=typeof(DateTime)
+					Index = false,
+					Key = false,
+					Name = Merger.TimestampColumn,
+					Type = typeof(DateTime)
 				});
 			}
 		}
@@ -134,7 +135,7 @@ namespace TomPIT.BigData.Data
 				return new PartitionSchemaStringField
 				{
 					Length = 1,
-					Type=typeof(string)
+					Type = typeof(string)
 				};
 			}
 			else if (property.PropertyType == typeof(string))
@@ -170,7 +171,7 @@ namespace TomPIT.BigData.Data
 			{
 				return new PartitionSchemaDateField
 				{
-					Type=typeof(DateTime)
+					Type = typeof(DateTime)
 				};
 			}
 
@@ -202,7 +203,7 @@ namespace TomPIT.BigData.Data
 			if (Fields.Count != other.Fields.Count)
 				return -1;
 
-			foreach(var field in Fields)
+			foreach (var field in Fields)
 			{
 				var otherField = other.Fields.FirstOrDefault(f => string.Compare(field.Name, f.Name, true) == 0);
 

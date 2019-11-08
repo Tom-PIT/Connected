@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TomPIT
+namespace TomPIT.Exceptions
 {
 	public enum ExceptionSeverity
 	{
@@ -12,16 +12,25 @@ namespace TomPIT
 	public class RuntimeException : TomPITException
 	{
 		private string _stackTrace = null;
+		public RuntimeException()
+		{
+
+		}
 		public RuntimeException(string message) : base(message)
 		{
 
+		}
+
+		public RuntimeException(string source, string message, Exception inner) : base(message, inner)
+		{
+			Source = source;
 		}
 
 		public RuntimeException(string message, Exception inner) : base(message, inner)
 		{
 
 		}
-		
+
 		public RuntimeException(string source, string message) : base(message)
 		{
 			Source = source;

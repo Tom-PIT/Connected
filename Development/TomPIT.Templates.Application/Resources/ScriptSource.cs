@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 
-namespace TomPIT.Application.Resources
+namespace TomPIT.MicroServices.Resources
 {
 	public abstract class ScriptSource : ConfigurationElement, IScriptSource
 	{

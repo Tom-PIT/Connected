@@ -21,124 +21,17 @@
 .dev-property-grid .dx-widget input {
   font-weight: normal;
 }
+.dev-property-grid .dx-widget input,
+.dev-property-grid .dx-widget select,
+.dev-property-grid .dx-widget textarea {
+  font-size: 0.8rem;
+}
 .dx-widget input {
   font-weight: 700;
   color: #424242;
 }
 .badge-primary {
   background-color: #03a9f4;
-}
-.document-body {
-  background-color: #f5f5f5;
-  min-height: 250px;
-  color: #616161;
-}
-.document-body .canvas {
-  margin: 10px 15px 15px 15px;
-}
-.document-body .paper {
-  border: 1px solid #e0e0e0;
-  background-color: #fff;
-}
-.document-body .paper .document-content {
-  padding: 75px 75px;
-  font-size: 0.9rem;
-}
-.document-body .paper .document-content.tp-form.thin {
-  padding: 15px;
-}
-.document-title {
-  font-weight: 100;
-  font-size: 1.15rem;
-  padding-top: 5px;
-}
-.document-body h1,
-.document-body h2,
-.document-body h3,
-.document-toolbar h1,
-.document-toolbar h2,
-.document-toolbar h3,
-.document-toolbar h4 {
-  font-weight: 100!important;
-}
-.document-body .paper .document-content h3 {
-  margin-bottom: 15px;
-  font-size: 1.5rem;
-  text-transform: none;
-}
-.document-body .paper .document-content h3.underlined {
-  border-bottom: 1px solid #eeeeee;
-}
-.document-toolbar {
-  padding: 15px;
-}
-.document-toolbar:empty {
-  display: none;
-}
-@media (max-width: 1199px) {
-  .document-body .paper .document-content {
-    padding: 35px;
-  }
-}
-@media (max-width: 991px) {
-  .document-body .paper .document-content {
-    padding: 15px;
-  }
-}
-@media (max-width: 767px) {
-  .container.document-container {
-    padding: 0;
-  }
-  .document-body .canvas {
-    margin: 0;
-    border: 0;
-  }
-  .document-body .paper .document-content {
-    padding: 5px;
-  }
-  .document-body .paper {
-    border: 0;
-  }
-}
-@media (max-width: 575px) {
-  .document-body .canvas {
-    margin: 0;
-    border: 0;
-  }
-  .document-body .paper {
-    border: 0;
-  }
-}
-.document-toolbar .btn-link.dropdown-toggle {
-  color: #616161;
-}
-.document-toolbar .btn-link.dropdown-toggle:hover {
-  color: #03a9f4;
-}
-.document-toolbar .dropdown-menu {
-  padding: 0;
-  border: 1px solid #e0e0e0;
-}
-.document-toolbar .dropdown-menu .dropdown-item {
-  padding: 15px;
-}
-.document-toolbar .dropdown-menu .dropdown-item a {
-  color: #616161;
-}
-.document-toolbar .dropdown-menu .dropdown-item a:hover {
-  color: #03a9f4;
-}
-.form-group label {
-  font-size: 0.9rem;
-  color: #757575;
-}
-.form-group .form-data {
-  font-weight: 700;
-  color: #424242;
-  border-bottom: 1px solid #e0e0e0;
-}
-.form-group .form-data.normal {
-  font-weight: normal;
 }
 .tp-form .btn,
 .document-toolbar .btn {

@@ -1,15 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using TomPIT.Annotations;
-using TomPIT.Designers;
-using TomPIT.Items;
+using TomPIT.Annotations.Design;
+using TomPIT.Ide;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.Management.Designers;
+using TomPIT.Management.Items;
+using TomPIT.Management.Security;
 using TomPIT.Security;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
-	internal class AuthenticationTokensElement : Element
+	internal class AuthenticationTokensElement : DomElement
 	{
 		private ExistingTokens _ds = null;
 		private AuthenticationTokensDesigner _designer = null;
@@ -64,7 +69,7 @@ namespace TomPIT.Dom
 
 		public override void LoadChildren(string id)
 		{
-			var d = Existing.FirstOrDefault(f => f.Token == id.AsGuid());
+			var d = Existing.FirstOrDefault(f => f.Token == new Guid(id));
 
 			if (d != null)
 				Items.Add(new AuthenticationTokenElement(this, d));
@@ -89,7 +94,7 @@ namespace TomPIT.Dom
 				{
 					_ds = new ExistingTokens();
 
-					var items = Connection.GetService<IAuthenticationTokenManagementService>().Query(DomQuery.Closest<IResourceGroupScope>(this).ResourceGroup.Name);
+					var items = Environment.Context.Tenant.GetService<IAuthenticationTokenManagementService>().Query(DomQuery.Closest<IResourceGroupScope>(this).ResourceGroup.Name);
 
 					if (items != null)
 						items = items.OrderBy(f => f.Key).ToList();

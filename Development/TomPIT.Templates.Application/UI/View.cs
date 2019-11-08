@@ -1,23 +1,20 @@
 ﻿using System.ComponentModel;
 using TomPIT.Annotations;
-using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Events;
+using TomPIT.Annotations.Design;
+using TomPIT.ComponentModel.Diagnostics;
 using TomPIT.ComponentModel.UI;
+using TomPIT.Diagnostics;
+using TomPIT.MicroServices.Design;
+using TomPIT.Runtime;
 
-namespace TomPIT.Application.UI
+namespace TomPIT.MicroServices.UI
 {
-	[Create("View")]
-	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
-	//[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = Services.EnvironmentMode.Runtime)]
-	[DomElement("TomPIT.Application.Design.Dom.ViewElement, TomPIT.Application.Design")]
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[DomElement(DesignUtils.ViewElement)]
 	[Syntax(SyntaxAttribute.Razor)]
-	public class View : ViewBase, IApplicationView
+	public class View : ViewBase, IViewConfiguration
 	{
-		private IServerEvent _invoke = null;
-
-		private IMetricConfiguration _metric = null;
-		public const string ComponentCategory = "View";
-		public const string ComponentAuthority = "View";
+		private IMetricOptions _metric = null;
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryRouting)]
 		public string Url { get; set; }
@@ -29,27 +26,15 @@ namespace TomPIT.Application.UI
 		[DefaultValue(true)]
 		public bool Enabled { get; set; } = true;
 
-		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
-		public IMetricConfiguration Metrics
+		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		public IMetricOptions Metrics
 		{
 			get
 			{
 				if (_metric == null)
-					_metric = new MetricConfiguration { Parent = this };
+					_metric = new MetricOptions { Parent = this };
 
 				return _metric;
-			}
-		}
-
-		[EventArguments(typeof(ViewInvokeArguments))]
-		public IServerEvent Invoke
-		{
-			get
-			{
-				if (_invoke == null)
-					_invoke = new ServerEvent { Parent = this };
-
-				return _invoke;
 			}
 		}
 	}

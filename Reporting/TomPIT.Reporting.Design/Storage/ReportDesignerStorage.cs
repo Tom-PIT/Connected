@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using DevExpress.XtraReports.UI;
-using DevExpress.XtraReports.Web.Extensions;
-using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Reports;
-using TomPIT.Design;
-using TomPIT.Reporting.Storage;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.MicroServices.Reporting.Storage;
+using TomPIT.Middleware;
 
-namespace TomPIT.Reporting.Design.Storage
+namespace TomPIT.MicroServices.Reporting.Design.Storage
 {
 	internal class ReportDesignerStorage : ReportRuntimeStorage
 	{
@@ -31,14 +28,14 @@ namespace TomPIT.Reporting.Design.Storage
 		public override void SetData(XtraReport report, string url)
 		{
 			var rep = SelectReport(url);
-			var connection = Shell.HttpContext.CurrentConnection();
+			var tenant = MiddlewareDescriptor.Current.Tenant;
 
 			using (var ms = new MemoryStream())
 			{
 				report.SaveLayoutToXml(ms);
 				ms.Seek(0, SeekOrigin.Begin);
 
-				connection.GetService<IComponentDevelopmentService>().Update(rep, Encoding.UTF8.GetString(ms.ToArray()));
+				tenant.GetService<IComponentDevelopmentService>().Update(rep, Encoding.UTF8.GetString(ms.ToArray()));
 			}
 		}
 

@@ -1,16 +1,17 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 using TomPIT.Security;
 
 namespace TomPIT.Data
 {
 	internal class UserDataService : ClientRepository<List<IUserData>, Guid>, IUserDataService, IUserNotification
 	{
-		public UserDataService(ISysConnection connection) : base(connection, "userdata")
+		public UserDataService(ITenant tenant) : base(tenant, "userdata")
 		{
 		}
 
@@ -81,7 +82,7 @@ namespace TomPIT.Data
 			if (user == Guid.Empty)
 				return;
 
-			var u = Connection.CreateUrl("UserData", "Update");
+			var u = Tenant.CreateUrl("UserData", "Update");
 			var e = new JObject
 			{
 				{"user", user }
@@ -107,7 +108,7 @@ namespace TomPIT.Data
 				a.Add(item);
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 
 			Remove(user);
 		}
@@ -117,13 +118,13 @@ namespace TomPIT.Data
 			return Get(user,
 				(f) =>
 				{
-					var u = Connection.CreateUrl("UserData", "Query");
+					var u = Tenant.CreateUrl("UserData", "Query");
 					var e = new JObject
 					{
 						{"user", user }
 					};
 
-					return Connection.Post<List<UserData>>(u, e).ToList<IUserData>();
+					return Tenant.Post<List<UserData>>(u, e).ToList<IUserData>();
 				});
 		}
 	}

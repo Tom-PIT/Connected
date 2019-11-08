@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using TomPIT.Services;
+using Newtonsoft.Json;
+using TomPIT.Distributed;
 using TomPIT.Sys.Data;
 using TomPIT.Sys.Notifications;
 using TomPIT.SysDb.Messaging;
@@ -62,7 +62,7 @@ namespace TomPIT.Sys.Services
 			object args = JsonConvert.DeserializeObject(state.Content, argsType);
 
 			if (CachingNotifications.Cache != null)
-				CachingNotifications.Cache.Clients.Client(recipient.Connection).SendCoreAsync(state.Method, new object[] { args });
+				CachingNotifications.Cache.Clients.Client(recipient.Connection).SendCoreAsync(state.Method, new object[] { args }).Wait();
 
 			return true;
 		}

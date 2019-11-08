@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.QA;
+using TomPIT.Quality;
 
 namespace TomPIT.SysDb.Development
 {

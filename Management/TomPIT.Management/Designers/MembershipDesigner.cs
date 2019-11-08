@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Dom;
-using TomPIT.Ide;
+using TomPIT.Diagostics;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Management.Dom;
+using TomPIT.Management.Security;
 using TomPIT.Security;
 
-namespace TomPIT.Designers
+namespace TomPIT.Management.Designers
 {
 	public class MembershipDesigner : DomDesigner<MembershipElement>
 	{
@@ -60,7 +62,7 @@ namespace TomPIT.Designers
 			SelectedRole = data.Required<Guid>("role");
 			var user = data.Required<Guid>("user");
 
-			Connection.GetService<IMembershipManagementService>().Insert(user, SelectedRole);
+			Environment.Context.Tenant.GetService<IMembershipManagementService>().Insert(user, SelectedRole);
 
 			return Result.ViewResult(this, "~/Views/Ide/Designers/MembershipList.cshtml");
 		}
@@ -70,7 +72,7 @@ namespace TomPIT.Designers
 			SelectedRole = data.Required<Guid>("role");
 			var user = data.Required<Guid>("user");
 
-			Connection.GetService<IMembershipManagementService>().Delete(user, SelectedRole);
+			Environment.Context.Tenant.GetService<IMembershipManagementService>().Delete(user, SelectedRole);
 
 			return Result.ViewResult(this, "~/Views/Ide/Designers/MembershipUsers.cshtml");
 		}
@@ -80,7 +82,7 @@ namespace TomPIT.Designers
 			get
 			{
 				if (_roles == null)
-					_roles = Connection.GetService<IRoleService>().Query().Where(f => f.Behavior == RoleBehavior.Explicit).OrderBy(f => f.Name).ToList();
+					_roles = Environment.Context.Tenant.GetService<IRoleService>().Query().Where(f => f.Behavior == RoleBehavior.Explicit).OrderBy(f => f.Name).ToList();
 
 				return _roles;
 			}
@@ -91,7 +93,7 @@ namespace TomPIT.Designers
 			get
 			{
 				if (_all == null)
-					_all = Connection.GetService<IUserService>().Query();
+					_all = Environment.Context.Tenant.GetService<IUserService>().Query();
 
 				return _all;
 			}
@@ -130,7 +132,7 @@ namespace TomPIT.Designers
 
 						if (u == null)
 						{
-							Connection.LogWarning(null, "MembershipDesigner", string.Format("Membership user not found (role:'{0}', user:'{1}')", i.User, SelectedRole));
+							Environment.Context.Tenant.LogWarning(null, "MembershipDesigner", string.Format("Membership user not found (role:'{0}', user:'{1}')", i.User, SelectedRole));
 
 							continue;
 						}
@@ -148,7 +150,7 @@ namespace TomPIT.Designers
 			get
 			{
 				if (_membership == null)
-					_membership = Connection.GetService<IMembershipManagementService>().Query(SelectedRole);
+					_membership = Environment.Context.Tenant.GetService<IMembershipManagementService>().Query(SelectedRole);
 
 				return _membership;
 			}

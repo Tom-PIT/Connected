@@ -1,6 +1,7 @@
 ﻿@using TomPIT;
+@using TomPIT.Reflection;
 
-@model TomPIT.Design.IProperty
+@model TomPIT.Ide.Properties.IProperty
 
 @{
 	object value = null;
@@ -22,16 +23,16 @@
 	var required = Model.Validation.Required.IsRequired ? "required" : string.Empty;
 	var type = "date";
 
-	var att = Model.PropertyInfo.FindAttribute<TomPIT.Annotations.DateEditorFormatAttribute>();
+	var att = Model.PropertyInfo.FindAttribute<TomPIT.Annotations.Design.DateEditorFormatAttribute>();
 
 	if (att != null)
 	{
 		switch (att.Format)
 		{
-			case TomPIT.Annotations.DateEditorFormat.DateTime:
+			case TomPIT.Annotations.Design.DateEditorFormat.DateTime:
 				type = "datetime";
 				break;
-			case TomPIT.Annotations.DateEditorFormat.Time:
+			case TomPIT.Annotations.Design.DateEditorFormat.Time:
 				type = "time";
 				break;
 		}

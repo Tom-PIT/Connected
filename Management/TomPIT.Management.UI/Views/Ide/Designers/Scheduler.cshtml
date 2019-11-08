@@ -1,7 +1,7 @@
 ﻿@using TomPIT;
-@using TomPIT.Services;
+@using TomPIT.Distributed;
 
-@model TomPIT.Services.ScheduledJobDescriptor
+@model TomPIT.Management.Distributed.ScheduledJobDescriptor
 
 <script src="~/Assets/Scripts/Designers/scheduler.js"></script>
 
@@ -51,35 +51,35 @@
            ? ""
            : string.Format("{0}:{1}", Model.Job.EndTime.Hour.ToString("00"), Model.Job.EndTime.Minute.ToString("00"));
 
-   var pattern1Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Once
+   var pattern1Css = Model.Job.Interval == WorkerInterval.Once
          ? "show"
          : string.Empty;
 
-   var pattern2Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Second
+   var pattern2Css = Model.Job.Interval == WorkerInterval.Second
            ? "show"
            : string.Empty;
 
-   var pattern3Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Minute
+   var pattern3Css = Model.Job.Interval == WorkerInterval.Minute
            ? "show"
            : string.Empty;
 
-   var pattern4Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Hour
+   var pattern4Css = Model.Job.Interval == WorkerInterval.Hour
            ? "show"
            : string.Empty;
 
-   var pattern5Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Day
+   var pattern5Css = Model.Job.Interval == WorkerInterval.Day
            ? "show"
            : string.Empty;
 
-   var pattern6Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Week
+   var pattern6Css = Model.Job.Interval == WorkerInterval.Week
            ? "show"
            : string.Empty;
 
-   var pattern7Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Month
+   var pattern7Css = Model.Job.Interval == WorkerInterval.Month
          ? "show"
          : string.Empty;
 
-   var pattern8Css = Model.Job.Interval == TomPIT.Services.WorkerInterval.Year
+   var pattern8Css = Model.Job.Interval == WorkerInterval.Year
            ? "show"
            : string.Empty;
 
@@ -92,13 +92,13 @@
            : string.Format("{0}-{1}-{2}", Model.Job.EndDate.Year.ToString("0000"), Model.Job.EndDate.Month.ToString("00"), Model.Job.EndDate.Day.ToString("00"));
 
 
-   var monday = (Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Monday) == TomPIT.Services.WorkerWeekDays.Monday;
-   var tuesday = (Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Tuesday) == TomPIT.Services.WorkerWeekDays.Tuesday;
-   var wednesday = (Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Wednesday) == TomPIT.Services.WorkerWeekDays.Wednesday;
-   var thursday = (Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Thursday) == TomPIT.Services.WorkerWeekDays.Thursday;
-   var friday = (Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Friday) == TomPIT.Services.WorkerWeekDays.Friday;
-   var saturday = (Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Saturday) == TomPIT.Services.WorkerWeekDays.Saturday;
-   var sunday = (Model.Job.Weekdays & TomPIT.Services.WorkerWeekDays.Sunday) == TomPIT.Services.WorkerWeekDays.Sunday;
+   var monday = (Model.Job.Weekdays & WorkerWeekDays.Monday) == WorkerWeekDays.Monday;
+   var tuesday = (Model.Job.Weekdays & WorkerWeekDays.Tuesday) == WorkerWeekDays.Tuesday;
+   var wednesday = (Model.Job.Weekdays & WorkerWeekDays.Wednesday) == WorkerWeekDays.Wednesday;
+   var thursday = (Model.Job.Weekdays & WorkerWeekDays.Thursday) == WorkerWeekDays.Thursday;
+   var friday = (Model.Job.Weekdays & WorkerWeekDays.Friday) == WorkerWeekDays.Friday;
+   var saturday = (Model.Job.Weekdays & WorkerWeekDays.Saturday) == WorkerWeekDays.Saturday;
+   var sunday = (Model.Job.Weekdays & WorkerWeekDays.Sunday) == WorkerWeekDays.Sunday;
 }
 <div class="doc-canvas">
     <form>

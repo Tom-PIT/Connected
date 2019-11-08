@@ -1,18 +1,12 @@
-﻿using System;
-using System.ComponentModel;
-using TomPIT.Annotations;
+﻿using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
-using TomPIT.Navigation;
+using TomPIT.ComponentModel.Navigation;
 
-namespace TomPIT.Application.Navigation
+namespace TomPIT.MicroServices.Navigation
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
-	public class SiteMap : ComponentConfiguration, ISiteMapConfiguration
+	public class SiteMap : SourceCodeConfiguration, ISiteMapConfiguration
 	{
-		public const string ComponentCategory = "SiteMap";
-
-		[Browsable(false)]
-		public Guid TextBlob { get; set; }
 	}
 }

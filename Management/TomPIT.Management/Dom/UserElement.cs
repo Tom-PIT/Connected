@@ -1,7 +1,11 @@
-﻿using TomPIT.Designers;
+﻿using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
+using TomPIT.Management.Designers;
+using TomPIT.Management.Security;
 using TomPIT.Security;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
 	public class UserElement : TransactionElement
 	{
@@ -22,7 +26,7 @@ namespace TomPIT.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			Connection.GetService<IUserManagementService>().Update(User.Token, User.LoginName, User.Email, User.Status, User.FirstName, User.LastName, User.Description, User.Pin,
+			Environment.Context.Tenant.GetService<IUserManagementService>().Update(User.Token, User.LoginName, User.Email, User.Status, User.FirstName, User.LastName, User.Description, User.Pin,
 				User.Language, User.TimeZone, User.NotificationEnabled, User.Mobile, User.Phone);
 
 			return true;

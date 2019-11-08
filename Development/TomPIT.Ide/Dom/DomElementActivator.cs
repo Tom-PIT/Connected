@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Reflection;
-using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
-using TomPIT.Ide;
+using TomPIT.Ide.Dom.ComponentModel;
+using TomPIT.Ide.Environment;
+using TomPIT.Reflection;
 
-namespace TomPIT.Dom
+namespace TomPIT.Ide.Dom
 {
 	internal class DomElementActivator
 	{
@@ -116,9 +118,9 @@ namespace TomPIT.Dom
 				return Instance as IComponent;
 
 			if (Instance is IConfiguration cfg)
-				return Environment.Context.Connection().GetService<IComponentService>().SelectComponent(cfg.Component);
+				return Environment.Context.Tenant.GetService<IComponentService>().SelectComponent(cfg.Component);
 			else if (Instance is IElement e)
-				return Environment.Context.Connection().GetService<IComponentService>().SelectComponent(e.Configuration().Component);
+				return Environment.Context.Tenant.GetService<IComponentService>().SelectComponent(e.Configuration().Component);
 			else
 				return null;
 		}

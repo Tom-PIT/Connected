@@ -1,6 +1,6 @@
-﻿using TomPIT.Dom;
+﻿using TomPIT.Ide.Dom;
 
-namespace TomPIT.Designers
+namespace TomPIT.Ide.Designers
 {
 	public class EmptyDesigner : DomDesigner<DomElement>
 	{

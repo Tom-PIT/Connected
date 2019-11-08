@@ -1,12 +1,14 @@
 ﻿using System.ComponentModel;
-using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.MicroServices.Design;
 
-namespace TomPIT.Application.Resources
+namespace TomPIT.MicroServices.Resources
 {
-	[DomDesigner("TomPIT.Application.Design.Designers.StringTable, TomPIT.Application.Design")]
-	public class StringTable : ComponentConfiguration, IStringTable
+	[DomDesigner(DesignUtils.StringTableDesigner)]
+	public class StringTable : ComponentConfiguration, IStringTableConfiguration
 	{
 		private ListItems<IStringResource> _strings = null;
 

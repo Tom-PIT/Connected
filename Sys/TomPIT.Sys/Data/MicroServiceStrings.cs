@@ -53,7 +53,7 @@ namespace TomPIT.Sys.Data
 		{
 			var tokens = id.Split(".");
 
-			var s = DataModel.MicroServices.Select(tokens[0].AsGuid());
+			var s = DataModel.MicroServices.Select(new Guid(tokens[0]));
 
 			if (s == null)
 			{
@@ -61,7 +61,7 @@ namespace TomPIT.Sys.Data
 				return;
 			}
 
-			var l = DataModel.Languages.Select(tokens[1].AsGuid());
+			var l = DataModel.Languages.Select(new Guid(tokens[1]));
 
 			if (l == null)
 			{
@@ -69,7 +69,7 @@ namespace TomPIT.Sys.Data
 				return;
 			}
 
-			var r = Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.SelectString(s, l, tokens[2].AsGuid(), tokens[3]);
+			var r = Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.SelectString(s, l, new Guid(tokens[2]), tokens[3]);
 
 			Set(id, r, TimeSpan.Zero);
 		}

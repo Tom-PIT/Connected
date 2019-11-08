@@ -1,4 +1,4 @@
-﻿namespace TomPIT.Models
+﻿namespace TomPIT.Ide.Models
 {
 	public class QuestionModel
 	{

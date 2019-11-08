@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using TomPIT.Design;
-using TomPIT.Dom;
-using TomPIT.Reporting.Design.Storage;
-using TomPIT.Reporting.UI;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Dom;
+using TomPIT.MicroServices.Reporting.Design.Storage;
 
-namespace TomPIT.Reporting.Design
+namespace TomPIT.MicroServices.Reporting.Design
 {
 	public class ReportTemplate : MicroServiceTemplate
 	{
@@ -20,12 +20,13 @@ namespace TomPIT.Reporting.Design
 		static ReportTemplate()
 		{
 			_items = new ConcurrentDictionary<string, IItemDescriptor>(new Dictionary<string, IItemDescriptor>{
-				{"Report", new ItemDescriptor("Report", "Report", typeof(Report)) { Category ="UI", Glyph="fal fa-browser", Ordinal = 101} },
-				{"View", new ItemDescriptor("Report View", "View", typeof(ReportView)) { Category ="UI", Glyph="fal fa-browser", Ordinal = 102 } },
-				{MasterView.ComponentCategory, new ItemDescriptor("Master view", MasterView.ComponentCategory, typeof(MasterView)) { Glyph = "fal fa-browser", Category = "UI" , Ordinal = 103} },
-				{"Theme", new ItemDescriptor("Theme", "Theme", typeof(Theme)) { Category ="UI", Glyph="fal fa-pencil-paintbrush", Ordinal = 104} },
-
+				{"Report", new ItemDescriptor("Report", "Report", typeof(Report)) { Category ="UI", Glyph="fal fa-browser", Ordinal = 101} }
 		});
+		}
+
+		public override List<IItemDescriptor> ProvideGlobalAddItems(IDomElement parent)
+		{
+			return _items.Values.ToList();
 		}
 
 		public override List<IItemDescriptor> ProvideAddItems(IDomElement parent)
@@ -37,13 +38,15 @@ namespace TomPIT.Reporting.Design
 		{
 			return new List<string>
 			{
-				"TomPIT.Reporting.Design.Views.dll"
+				"TomPIT.MicroServices.Reporting.Design.Views.dll"
 			};
 		}
 
-		public override void Initialize(IApplicationBuilder app, IHostingEnvironment env)
+		public override void Initialize(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			DevExpress.XtraReports.Web.Extensions.ReportStorageWebExtension.RegisterExtensionGlobal(new ReportDesignerStorage());
 		}
+
+		public override TemplateKind Kind => TemplateKind.Plugin;
 	}
 }

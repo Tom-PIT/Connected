@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -6,13 +10,12 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using TomPIT.ComponentModel;
 using TomPIT.Diagnostics;
+using TomPIT.Environment;
+using TomPIT.Middleware;
 using TomPIT.Models;
-using TomPIT.Services;
+using TomPIT.Runtime;
 
 namespace TomPIT.Exceptions
 {
@@ -64,7 +67,7 @@ namespace TomPIT.Exceptions
 				e.Metric = rt.Metric;
 			}
 
-			Instance.Connection.GetService<ILoggingService>().Write(e);
+			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Write(e);
 		}
 
 		protected virtual async Task OnHandleAjaxException(HttpContext context, Exception ex)
@@ -86,6 +89,43 @@ namespace TomPIT.Exceptions
 			r.ViewData.Model = new ExceptionModel(context, ex);
 			r.ViewData.Add("exSource", ex.Source);
 			var sb = new StringBuilder();
+			var tenant = MiddlewareDescriptor.Current.Tenant;
+			var devUrl = tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Development, InstanceVerbs.All);
+
+			if (ex is ScriptException script)
+			{
+				r.ViewData.Add("exPath", script.Path);
+
+				if (!string.IsNullOrWhiteSpace(script.MicroService))
+				{
+
+					var ms = tenant.GetService<IMicroServiceService>().Select(script.MicroService);
+
+					if (ms != null && ms.Status != MicroServiceStatus.Production)
+					{
+						if (tenant != null && !string.IsNullOrWhiteSpace(devUrl))
+							r.ViewData.Add("exUrl", $"{devUrl}/ide/{script.MicroService}?component={script.Component}&element={script.Element}");
+					}
+				}
+
+				r.ViewData.Add("exLine", script.Line);
+			}
+
+			if (ex.Data != null && ex.Data.Count > 0)
+			{
+				if (ex.Data.Contains("Script"))
+					r.ViewData.Add("exScript", ex.Data["Script"]);
+
+				if (ex.Data.Contains("MicroService") && !string.IsNullOrWhiteSpace(devUrl))
+				{
+					var scriptMs = ex.Data["MicroService"] as IMicroService;
+					//TODO: resolve fully qualified component to be able to parse edit url
+
+					if (scriptMs != null)
+						r.ViewData.Add("exScriptMicroService", scriptMs.Name);
+					//	r.ViewData.Add("exScriptUrl", $"{devUrl}/ide/{scriptMs.Name}?component={script.Component}&element={script.Element}");
+				}
+			}
 
 			sb.AppendLine(ex.Message);
 

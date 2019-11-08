@@ -1,13 +1,13 @@
-﻿using TomPIT.Annotations;
+﻿using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel.UI;
+using TomPIT.MicroServices.Design;
 
-namespace TomPIT.Application.UI
+namespace TomPIT.MicroServices.UI
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.Razor)]
-	[ComponentCreatedHandler("TomPIT.Handlers.MasterCreateHandler, TomPIT.Development")]
-	public class MasterView : ViewBase, IMasterView
+	[ComponentCreatedHandler(DesignUtils.MasterCreateHandler)]
+	public class MasterView : ViewBase, IMasterViewConfiguration
 	{
-		public const string ComponentCategory = "MasterView";
 	}
 }

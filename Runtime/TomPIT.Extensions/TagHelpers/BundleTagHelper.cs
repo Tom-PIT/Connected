@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using TomPIT.ComponentModel;
-using TomPIT.Services;
+using TomPIT.Diagostics;
+using TomPIT.Exceptions;
+using TomPIT.Middleware;
 
 namespace TomPIT.TagHelpers
 {
@@ -11,7 +13,7 @@ namespace TomPIT.TagHelpers
 		{
 			var microService = string.Empty;
 			var name = Name;
-			var ctx = ViewContext.ViewData.Model as IExecutionContext;
+			var ctx = ViewContext.ViewData.Model as IMicroServiceContext;
 
 			if (Name.Contains("/"))
 			{
@@ -20,26 +22,33 @@ namespace TomPIT.TagHelpers
 				microService = tokens[0];
 				name = tokens[1];
 
-				var ms = ctx.Connection().GetService<IMicroServiceService>().Select(ResolveMicroservice(ViewContext.ExecutingFilePath).Token);
-				var reference = ctx.Connection().GetService<IMicroServiceService>().Select(microService);
+				var ms = ctx.Tenant.GetService<IMicroServiceService>().Select(ResolveMicroservice(ViewContext.ExecutingFilePath).Token);
+				var reference = ctx.Tenant.GetService<IMicroServiceService>().Select(microService);
 
 				if (reference == null)
 					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService)).WithMetrics(ctx);
 
-				ms.ValidateMicroServiceReference(ctx.Connection(), reference.Name);
+				try
+				{
+					ms.ValidateMicroServiceReference(reference.Name);
+				}
+				catch
+				{
+					ctx.MicroService.ValidateMicroServiceReference(reference.Name);
+				}
 			}
 			else
 			{
-				var bundle = ctx.Connection().GetService<IComponentService>().SelectComponent(ctx.MicroService.Token, "Bundle", Name);
+				var bundle = ctx.Tenant.GetService<IComponentService>().SelectComponent(ctx.MicroService.Token, "Bundle", Name);
 
 				if (bundle == null)
 					microService = ResolveMicroservice(ViewContext.ExecutingFilePath).Name;
 				else
-					microService = ctx.Connection().GetService<IMicroServiceService>().Select(ctx.MicroService.Token).Name;
+					microService = ctx.Tenant.GetService<IMicroServiceService>().Select(ctx.MicroService.Token).Name;
 			}
 
 			output.TagName = "script";
-			output.Attributes.SetAttribute("src", string.Format("{0}/sys/bundles/{1}/{2}", ctx.RootUrl(), microService, name));
+			output.Attributes.SetAttribute("src", string.Format("{0}/sys/bundles/{1}/{2}", ctx.Services.Routing.RootUrl, microService, name));
 		}
 	}
 }

@@ -1,12 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.MicroServices.Design;
+using TomPIT.Runtime;
 
-namespace TomPIT.Application.Resources
+namespace TomPIT.MicroServices.Resources
 {
-	[Create("String", nameof(Key))]
+	[Create(DesignUtils.String, nameof(Key))]
 	public class StringResource : ConfigurationElement, IStringResource
 	{
 		private ListItems<IStringTranslation> _translations = null;
@@ -21,7 +25,7 @@ namespace TomPIT.Application.Resources
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
 		public bool IsLocalizable { get; set; } = true;
 
-		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
+		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		[CollectionRuntimeMerge(CollectionRuntimeMerge.Override)]
 		public ListItems<IStringTranslation> Translations
 		{

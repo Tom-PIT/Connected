@@ -1,4 +1,4 @@
-﻿@model TomPIT.Models.TestSuitesModel
+﻿@model TomPIT.Development.Models.TestSuitesModel
 
 @if (Model.Selection == null)
 {
@@ -33,7 +33,7 @@ else
 
 		<small>scenario</small>
 		<div class="text-scenario">
-			@StringUtils.TextWithNumber(scenario.Name, testCases)
+			@Types.TextWithNumber(scenario.Name, testCases)
 		</div>
 
 		@foreach (var testCase in scenario.TestCases)

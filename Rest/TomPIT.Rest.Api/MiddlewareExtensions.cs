@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using TomPIT.Rest.Controllers;
 
 namespace TomPIT.Rest
 {

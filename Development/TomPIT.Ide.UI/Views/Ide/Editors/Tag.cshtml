@@ -1,19 +1,20 @@
 ﻿@using TomPIT;
+@using TomPIT.Reflection;
 
-@model TomPIT.Design.IProperty
+@model TomPIT.Ide.Properties.IProperty
 
 @{
 	var value = Types.Convert<string>(Model.Value);
 
 	var required = Model.Validation.Required.IsRequired ? "required" : string.Empty;
-	var items = DomQuery.Items(Model);
-	var att = Model.PropertyInfo.FindAttribute<TomPIT.Annotations.TagEditorAttribute>();
+	var items = TomPIT.Ide.DomQuery.Items(Model);
+	var att = Model.PropertyInfo.FindAttribute<TomPIT.Annotations.Design.TagEditorAttribute>();
 	var selectionControls = att == null ? false : att.SelectionControls;
 	var allowCustom = att == null ? false : att.AllowCustomValues;
 	var values = new List<string>();
 
 	if (items == null)
-	{ items = new List<TomPIT.Design.IItemDescriptor>(); }
+	{ items = new List<TomPIT.Ide.Collections.IItemDescriptor>(); }
 
 	if (Model.PropertyInfo.PropertyType.IsEnum && Model.PropertyInfo.PropertyType.FindAttribute<FlagsAttribute>() != null)
 	{
@@ -32,7 +33,7 @@
 
 			if (items.FirstOrDefault(f => string.Compare(f.Value.ToString(), v, true) == 0) == null)
 			{
-				items.Add(new TomPIT.Design.ItemDescriptor(v, v));
+				items.Add(new TomPIT.Ide.Collections.ItemDescriptor(v, v));
 			}
 
 		}

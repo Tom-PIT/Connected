@@ -1,19 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
-using TomPIT.Design;
-using TomPIT.Dom;
+using TomPIT.Ide;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
 
-namespace TomPIT.IoT.Design.Items
+namespace TomPIT.MicroServices.IoT.Design.Items
 {
 	internal class IoTSchemasItems : ItemsBase
 	{
 		protected override void OnQueryDescriptors(IDomElement element, List<IItemDescriptor> items)
 		{
 			var s = element.MicroService();
-			var server = element.Environment.Context.Connection();
+			var tenant = element.Environment.Context.Tenant;
 
-			var ds = server.GetService<IComponentService>().QueryComponents(s, "IoTSchema").OrderBy(f => f.Name);
+			var ds = tenant.GetService<IComponentService>().QueryComponents(s, "IoTSchema").OrderBy(f => f.Name);
 
 			items.Add(Empty(SR.DevSelect, string.Empty));
 

@@ -763,12 +763,12 @@ namespace TomPIT.Converters
 
 		public static EnumerableStringConversion<T> ConvertToEnumerable<T>(string valueList)
 		{
-			return ConvertToEnumerable<T>(valueList, new GenericStringSplitter());
+			return ConvertToEnumerable<T>(valueList, new StringSplitter());
 		}
 
 		public static EnumerableStringConversion<T> ConvertToEnumerable<T>(string valueList, string seperator)
 		{
-			return ConvertToEnumerable<T>(valueList, new GenericStringSplitter(seperator));
+			return ConvertToEnumerable<T>(valueList, new StringSplitter(seperator));
 		}
 
 		public static EnumerableStringConversion<T> ConvertToEnumerable<T>(string valueList, IStringSplitter stringSplitter)
@@ -788,7 +788,7 @@ namespace TomPIT.Converters
 
 		public static EnumerableStringConversion<object> ConvertToEnumerable(string valueList, Type destinationType, string seperator)
 		{
-			return ConvertToEnumerable(valueList, destinationType, new GenericStringSplitter(seperator));
+			return ConvertToEnumerable(valueList, destinationType, new StringSplitter(seperator));
 		}
 
 		public static EnumerableStringConversion<object> ConvertToEnumerable(string valueList, Type destinationType, IStringSplitter stringSplitter)
@@ -798,22 +798,22 @@ namespace TomPIT.Converters
 
 		public static string ConvertToStringRepresentation(IEnumerable values)
 		{
-			return ConvertToStringRepresentation(values, DefaultCulture, new GenericStringConcatenator());
+			return ConvertToStringRepresentation(values, DefaultCulture, new StringConcatenator());
 		}
 
 		public static string ConvertToStringRepresentation(IEnumerable values, string seperator)
 		{
-			return ConvertToStringRepresentation(values, DefaultCulture, new GenericStringConcatenator(seperator));
+			return ConvertToStringRepresentation(values, DefaultCulture, new StringConcatenator(seperator));
 		}
 
 		public static string ConvertToStringRepresentation(IEnumerable values, string seperator, string nullValue)
 		{
-			return ConvertToStringRepresentation(values, DefaultCulture, new GenericStringConcatenator(seperator, nullValue));
+			return ConvertToStringRepresentation(values, DefaultCulture, new StringConcatenator(seperator, nullValue));
 		}
 
 		public static string ConvertToStringRepresentation(IEnumerable values, CultureInfo culture)
 		{
-			return ConvertToStringRepresentation(values, culture, new GenericStringConcatenator());
+			return ConvertToStringRepresentation(values, culture, new StringConcatenator());
 		}
 
 		public static string ConvertToStringRepresentation(IEnumerable values, IStringConcatenator stringConcatenator)

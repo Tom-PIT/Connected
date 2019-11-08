@@ -1,17 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.Design;
-using TomPIT.Design.Services;
-using TomPIT.Services.Context;
+using TomPIT.Development.Quality;
+using TomPIT.Exceptions;
+using TomPIT.Ide.Analysis.Suggestions;
+using TomPIT.Models;
+using TomPIT.Serialization;
 
-namespace TomPIT.Models
+namespace TomPIT.Development.Models
 {
 	public class ApiTestModel : DevelopmentModel
 	{
@@ -54,20 +55,8 @@ namespace TomPIT.Models
 			Api = tokens[1];
 			Operation = tokens[2];
 
-			if (!string.IsNullOrWhiteSpace(ms))
-			{
-				var svc = Connection.GetService<IMicroServiceService>().Select(ms);
-				MicroService = svc ?? throw new RuntimeException("Api Test", SR.ErrMicroServiceNotFound);
-			}
-			else
-			{
-				var component = Connection.GetService<IComponentService>().SelectComponent("Api", tokens[0]);
-
-				if (component == null)
-					throw new RuntimeException("Api Test", string.Format("{0} ({1})", SR.ErrComponentNotFound, tokens[0]));
-
-				MicroService = Connection.GetService<IMicroServiceService>().Select(component.MicroService);
-			}
+			var svc = Tenant.GetService<IMicroServiceService>().Select(ms);
+			MicroService = svc ?? throw new RuntimeException("Api Test", SR.ErrMicroServiceNotFound);
 
 			if (!string.IsNullOrWhiteSpace(qs))
 			{
@@ -83,7 +72,7 @@ namespace TomPIT.Models
 				if (!(Body["body"] is JValue body))
 					Body = new JObject();
 				else
-					Body = Types.Deserialize<JObject>(body.Value<string>());
+					Body = Serializer.Deserialize<JObject>(body.Value<string>());
 			}
 		}
 
@@ -93,7 +82,7 @@ namespace TomPIT.Models
 
 		public object Invoke()
 		{
-			return Invoke<object>(string.Format("{0}/{1}/{2}", MicroService.Name, Api, Operation), Body);
+			return Interop.Invoke<object, object>(string.Format("{0}/{1}/{2}", MicroService.Name, Api, Operation), Body);
 		}
 
 		private List<IApiTest> Tests
@@ -101,7 +90,7 @@ namespace TomPIT.Models
 			get
 			{
 				if (_tests == null)
-					_tests = Connection.GetService<IQaService>().Query();
+					_tests = Tenant.GetService<IQualityService>().Query();
 
 				return _tests;
 			}
@@ -111,14 +100,14 @@ namespace TomPIT.Models
 		{
 			var identifier = Body.Required<Guid>("identifier");
 
-			Connection.GetService<IQaService>().Delete(identifier);
+			Tenant.GetService<IQualityService>().Delete(identifier);
 		}
 
 		public string SelectBody()
 		{
 			var identifier = Body.Required<Guid>("identifier");
 
-			return Connection.GetService<IQaService>().SelectBody(identifier);
+			return Tenant.GetService<IQualityService>().SelectBody(identifier);
 		}
 
 		public List<IApiTest> QueryTests()
@@ -205,10 +194,10 @@ namespace TomPIT.Models
 			var body = Body.Optional("body", string.Empty);
 
 			if (identifier == Guid.Empty)
-				return Connection.GetService<IQaService>().Insert(title, description, api, body, tags);
+				return Tenant.GetService<IQualityService>().Insert(title, description, api, body, tags);
 			else
 			{
-				Connection.GetService<IQaService>().Update(identifier, title, description, api, body, tags);
+				Tenant.GetService<IQualityService>().Update(identifier, title, description, api, body, tags);
 
 				return identifier;
 			}
@@ -235,15 +224,15 @@ namespace TomPIT.Models
 				if (_operations == null)
 				{
 					_operations = new List<string>();
-					var ms = GetService<IMicroServiceService>().Query();
+					var ms = Tenant.GetService<IMicroServiceService>().Query();
 
 					foreach (var microService in ms)
 					{
-						var apis = GetService<IComponentService>().QueryComponents(microService.Token, "Api");
+						var apis = Tenant.GetService<IComponentService>().QueryComponents(microService.Token, ComponentCategories.Api);
 
 						foreach (var api in apis)
 						{
-							var config = GetService<IComponentService>().SelectConfiguration(api.Token) as IApi;
+							var config = Tenant.GetService<IComponentService>().SelectConfiguration(api.Token) as IApiConfiguration;
 
 							foreach (var operation in config.Operations)
 							{
@@ -264,20 +253,20 @@ namespace TomPIT.Models
 
 		public List<ISuggestion> ProvideItems()
 		{
-			var api = Body.Optional("api", string.Empty);
+			//-----------------------------------------------
+			//TODO: implement parameters from manifest
+			//-----------------------------------------------
 
-			if (string.IsNullOrWhiteSpace(api))
-				return null;
+			//var api = Body.Optional("api", string.Empty);
 
-			var qualifier = new ApiQualifier(this, api);
+			//if (string.IsNullOrWhiteSpace(api))
+			return null;
 
-			if (string.IsNullOrWhiteSpace(qualifier.Operation))
-				return null;
+			//var descriptor = ComponentDescriptor.Api(this, api);
 
-			if (!(GetService<IComponentService>().SelectConfiguration(qualifier.MicroService.Token, "Api", qualifier.Api) is IApi configuration))
-				return null;
+			//descriptor.Validate();
 
-			return configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, qualifier.Operation, true) == 0)?.DiscoverParameters(this);
+			//return descriptor.Configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0)?.DiscoverParameters(this);
 		}
 	}
 }

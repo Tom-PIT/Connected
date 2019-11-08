@@ -5,25 +5,24 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
-using TomPIT.Application.Resources;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
-using TomPIT.Design;
 using TomPIT.Exceptions;
-using TomPIT.Ide.Design.VersionControl;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.VersionControl;
+using TomPIT.MicroServices.Resources;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
 using TomPIT.Routing;
+using TomPIT.Serialization;
 using TomPIT.Storage;
 using TomPIT.UI;
 
-namespace TomPIT.Application.Design.Media
+namespace TomPIT.MicroServices.Design.Media
 {
 	internal enum MediaCommand
 	{
@@ -61,13 +60,13 @@ namespace TomPIT.Application.Design.Media
 
 					Arguments = string.IsNullOrEmpty(query)
 						? new Dictionary<string, string>()
-						: Types.Deserialize<Dictionary<string, string>>(query);
+						: Serializer.Deserialize<Dictionary<string, string>>(query);
 				}
 			}
 			else
 				ParseQueryString();
 
-			MicroService = Connection.GetService<IMicroServiceService>().Select((string)Context.GetRouteValue("microService"));
+			MicroService = Tenant.GetService<IMicroServiceService>().Select((string)Context.GetRouteValue("microService"));
 
 			if (MicroService == null)
 			{
@@ -75,7 +74,7 @@ namespace TomPIT.Application.Design.Media
 				return;
 			}
 
-			Media = Connection.GetService<IComponentService>().SelectConfiguration(MicroService.Token, "Media", (string)Context.GetRouteValue("component")) as IMediaResources;
+			Media = Tenant.GetService<IComponentService>().SelectConfiguration(MicroService.Token, "Media", (string)Context.GetRouteValue("component")) as IMediaResourcesConfiguration;
 
 			if (Media == null)
 			{
@@ -83,7 +82,7 @@ namespace TomPIT.Application.Design.Media
 				return;
 			}
 
-			Component = Connection.GetService<IComponentService>().SelectComponent(Media.Component);
+			Component = Tenant.GetService<IComponentService>().SelectComponent(Media.Component);
 
 			switch (Command)
 			{
@@ -126,16 +125,16 @@ namespace TomPIT.Application.Design.Media
 
 			Arguments = string.IsNullOrEmpty(query)
 				? new Dictionary<string, string>()
-				: Types.Deserialize<Dictionary<string, string>>(query);
+				: Serializer.Deserialize<Dictionary<string, string>>(query);
 
 			return true;
 		}
 
 		private void UploadChunk()
 		{
-			Connection.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
+			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
 
-			var metaData = Types.Deserialize<ChunkMetaData>(Arguments["chunkMetadata"]);
+			var metaData = Serializer.Deserialize<ChunkMetaData>(Arguments["chunkMetadata"]);
 			var files = Context.Request.Form.Files;
 
 			if (files.Count == 0)
@@ -161,13 +160,13 @@ namespace TomPIT.Application.Design.Media
 					Type = BlobTypes.UserContent
 				};
 
-				var blobs = Connection.GetService<IStorageService>().QueryDrafts(blob.Draft);
+				var blobs = Tenant.GetService<IStorageService>().QueryDrafts(blob.Draft);
 				var existing = blobs.Count == 0 ? null : blobs[0];
 				var buffer = new List<byte>();
 
-				if(existing !=null)
+				if (existing != null)
 				{
-					var content = Connection.GetService<IStorageService>().Download(existing.Token);
+					var content = Tenant.GetService<IStorageService>().Download(existing.Token);
 
 					if (content != null && content.Content != null && content.Content.Length > 0)
 						buffer.AddRange(content.Content);
@@ -179,7 +178,7 @@ namespace TomPIT.Application.Design.Media
 
 				buffer.AddRange(newBuffer);
 
-				blobId = Connection.GetService<IStorageService>().Upload(blob, buffer.ToArray(), StoragePolicy.Singleton);
+				blobId = Tenant.GetService<IStorageService>().Upload(blob, buffer.ToArray(), StoragePolicy.Singleton);
 			}
 
 			if (metaData.Index == metaData.TotalCount - 1)
@@ -205,18 +204,18 @@ namespace TomPIT.Application.Design.Media
 				}
 				else
 				{
-					Connection.GetService<IStorageService>().Delete(targetFile.Blob);
+					Tenant.GetService<IStorageService>().Delete(targetFile.Blob);
 
 					targetFile.Modified = DateTime.UtcNow;
 					targetFile.Size = metaData.FileSize;
 				}
 
-				Connection.GetService<IStorageService>().Commit(metaData.UploadId, targetFile.Id.ToString());
+				Tenant.GetService<IStorageService>().Commit(metaData.UploadId, targetFile.Id.ToString());
 
 				targetFile.Blob = blobId;
 				UpdateModified(folder);
 				CreateThumbnail(targetFile);
-				Connection.GetService<IComponentDevelopmentService>().Update(Media);
+				Tenant.GetService<IComponentDevelopmentService>().Update(Media);
 			}
 
 			RenderResult(true);
@@ -224,7 +223,7 @@ namespace TomPIT.Application.Design.Media
 
 		private void Rename()
 		{
-			Connection.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
+			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
 
 			var id = Arguments["id"];
 			var name = Arguments["name"];
@@ -267,7 +266,7 @@ namespace TomPIT.Application.Design.Media
 
 			UpdateModified(parent);
 
-			Connection.GetService<IComponentDevelopmentService>().Update(Media);
+			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
 			RenderResult(true);
 		}
 
@@ -282,7 +281,7 @@ namespace TomPIT.Application.Design.Media
 
 		private void Remove()
 		{
-			Connection.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
+			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
 
 			var id = Arguments["id"];
 
@@ -291,7 +290,7 @@ namespace TomPIT.Application.Design.Media
 			else
 				DeleteFile(id);
 
-			Connection.GetService<IComponentDevelopmentService>().Update(Media);
+			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
 			RenderResult(true);
 		}
 
@@ -340,7 +339,7 @@ namespace TomPIT.Application.Design.Media
 			{
 				try
 				{
-					Connection.GetService<IStorageService>().Delete(file.Blob);
+					Tenant.GetService<IStorageService>().Delete(file.Blob);
 				}
 				catch { }
 			}
@@ -349,7 +348,7 @@ namespace TomPIT.Application.Design.Media
 			{
 				try
 				{
-					Connection.GetService<IStorageService>().Delete(file.Thumb);
+					Tenant.GetService<IStorageService>().Delete(file.Thumb);
 				}
 				catch { }
 			}
@@ -357,7 +356,7 @@ namespace TomPIT.Application.Design.Media
 
 		private void Move()
 		{
-			Connection.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
+			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
 
 			var sourceId = Arguments["sourceId"];
 			var destinationId = Arguments["destinationId"];
@@ -367,7 +366,7 @@ namespace TomPIT.Application.Design.Media
 			else
 				MoveFile(sourceId, destinationId);
 
-			Connection.GetService<IComponentDevelopmentService>().Update(Media);
+			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
 
 			RenderResult(true);
 		}
@@ -411,7 +410,7 @@ namespace TomPIT.Application.Design.Media
 			if (destinationFolder != null)
 				UpdateModified(destinationFolder);
 
-			Connection.GetService<IComponentDevelopmentService>().Update(Media);
+			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
 			RenderResult(true);
 		}
 
@@ -467,7 +466,7 @@ namespace TomPIT.Application.Design.Media
 			if (destinationFolder != null)
 				UpdateModified(destinationFolder);
 
-			Connection.GetService<IComponentDevelopmentService>().Update(Media);
+			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
 			RenderResult(true);
 		}
 
@@ -510,10 +509,14 @@ namespace TomPIT.Application.Design.Media
 
 			if (file.Thumb != Guid.Empty)
 			{
-				var blob = Connection.GetService<IStorageService>().Select(file.Thumb);
+				var blob = Tenant.GetService<IStorageService>().Select(file.Thumb);
 
 				if (blob != null)
-					descriptor.Icon = $"{Shell.HttpContext.Request.RootUrl()}/sys/media/{blob.Token}/{blob.Version}";
+				{
+					var ctx = new MicroServiceContext(Tenant.GetService<IMicroServiceService>().Select(blob.MicroService), Tenant.Url);
+
+					descriptor.Icon = $"{ctx.Services.Routing.RootUrl}/sys/media/{blob.Token}/{blob.Version}";
+				}
 			}
 
 			return descriptor;
@@ -533,14 +536,14 @@ namespace TomPIT.Application.Design.Media
 
 		private void CreateDir()
 		{
-			Connection.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
+			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
 
 			var parentId = Arguments["parentId"];
 			var name = Arguments["name"];
 
 			var parent = ResolveFolder(parentId);
 
-			if(parent == null)
+			if (parent == null)
 			{
 				if (Media.Folders.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0) != null)
 				{
@@ -571,14 +574,14 @@ namespace TomPIT.Application.Design.Media
 				UpdateModified(parent);
 			}
 
-			Connection.GetService<IComponentDevelopmentService>().Update(Media);
+			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
 
 			RenderResult(true);
 		}
 
 		private void Copy()
 		{
-			Connection.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
+			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
 
 			var sourceId = Arguments["sourceId"];
 			var destinationId = Arguments["destinationId"];
@@ -588,7 +591,7 @@ namespace TomPIT.Application.Design.Media
 			else
 				CopyFile(sourceId, destinationId);
 
-			Connection.GetService<IComponentDevelopmentService>().Update(Media);
+			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
 
 			RenderResult(true);
 		}
@@ -681,23 +684,23 @@ namespace TomPIT.Application.Design.Media
 
 			if (file.Blob != Guid.Empty)
 			{
-				var blob = Connection.GetService<IStorageService>().Select(file.Blob);
+				var blob = Tenant.GetService<IStorageService>().Select(file.Blob);
 
 				if (blob != null)
 				{
-					var content = Connection.GetService<IStorageService>().Download(file.Blob);
+					var content = Tenant.GetService<IStorageService>().Download(file.Blob);
 
-					if(content != null)
+					if (content != null)
 					{
-						newFile.Blob = Connection.GetService<IStorageService>().Upload(new Blob
+						newFile.Blob = Tenant.GetService<IStorageService>().Upload(new Blob
 						{
-							ContentType=blob.ContentType,
-							FileName=blob.FileName,
-							MicroService=blob.MicroService,
-							PrimaryKey=newFile.Id.ToString(),
-							ResourceGroup=blob.ResourceGroup,
-							Topic=blob.Topic,
-							Type=blob.Type
+							ContentType = blob.ContentType,
+							FileName = blob.FileName,
+							MicroService = blob.MicroService,
+							PrimaryKey = newFile.Id.ToString(),
+							ResourceGroup = blob.ResourceGroup,
+							Topic = blob.Topic,
+							Type = blob.Type
 						}, content.Content, StoragePolicy.Singleton);
 					}
 				}
@@ -705,15 +708,15 @@ namespace TomPIT.Application.Design.Media
 
 			if (file.Thumb != Guid.Empty)
 			{
-				var blob = Connection.GetService<IStorageService>().Select(file.Thumb);
+				var blob = Tenant.GetService<IStorageService>().Select(file.Thumb);
 
 				if (blob != null)
 				{
-					var content = Connection.GetService<IStorageService>().Download(file.Thumb);
+					var content = Tenant.GetService<IStorageService>().Download(file.Thumb);
 
 					if (content != null)
 					{
-						newFile.Thumb = Connection.GetService<IStorageService>().Upload(new Blob
+						newFile.Thumb = Tenant.GetService<IStorageService>().Upload(new Blob
 						{
 							ContentType = blob.ContentType,
 							FileName = blob.FileName,
@@ -732,10 +735,10 @@ namespace TomPIT.Application.Design.Media
 
 		private void AbordUpload()
 		{
-			var blobs = Connection.GetService<IStorageService>().QueryDrafts(Arguments["uploadId"]);
+			var blobs = Tenant.GetService<IStorageService>().QueryDrafts(Arguments["uploadId"]);
 
 			foreach (var blob in blobs)
-				Connection.GetService<IStorageService>().Delete(blob.Token);
+				Tenant.GetService<IStorageService>().Delete(blob.Token);
 
 			RenderResult(true);
 		}
@@ -743,7 +746,7 @@ namespace TomPIT.Application.Design.Media
 		private MediaCommand Command { get; set; }
 		private Dictionary<string, string> Arguments { get; set; }
 		private IMicroService MicroService { get; set; }
-		private IMediaResources Media { get; set; }
+		private IMediaResourcesConfiguration Media { get; set; }
 		private IComponent Component { get; set; }
 
 		private IMediaResourceFolder ResolveFolder(string path)
@@ -763,7 +766,7 @@ namespace TomPIT.Application.Design.Media
 
 				if (result == null)
 				{
-					RenderResult(false,  ExceptionKind.FileNotFound);
+					RenderResult(false, ExceptionKind.FileNotFound);
 					throw new NotFoundException(SR.ErrMediaFolderNotFound);
 				}
 			}
@@ -807,9 +810,9 @@ namespace TomPIT.Application.Design.Media
 			var tokens = path.Split('/');
 			IMediaResourceFolder currentFolder = null;
 
-			foreach(var token in tokens)
+			foreach (var token in tokens)
 			{
-				if(currentFolder == null)
+				if (currentFolder == null)
 				{
 					var folder = Media.Folders.FirstOrDefault(f => string.Compare(f.Name, token, true) == 0);
 
@@ -863,13 +866,13 @@ namespace TomPIT.Application.Design.Media
 				a.Add(o);
 			}
 
-			var content = Encoding.UTF8.GetBytes(Types.Serialize(r));
+			var content = Encoding.UTF8.GetBytes(Serializer.Serialize(r));
 
 			Context.Response.ContentLength = content.Length;
-			Context.Response.Body.Write(content, 0, content.Length);
+			Context.Response.Body.WriteAsync(content, 0, content.Length).Wait();
 		}
 
-		private void RenderResult(bool success, ExceptionKind ex =  ExceptionKind.None)
+		private void RenderResult(bool success, ExceptionKind ex = ExceptionKind.None)
 		{
 			if (_responseStarted)
 				return;
@@ -884,10 +887,10 @@ namespace TomPIT.Application.Design.Media
 			if (ex != ExceptionKind.None)
 				r.Add("errorId", (int)ex);
 
-			var content = Encoding.UTF8.GetBytes(Types.Serialize(r));
+			var content = Encoding.UTF8.GetBytes(Serializer.Serialize(r));
 
 			Context.Response.ContentLength = content.Length;
-			Context.Response.Body.Write(content, 0, content.Length);
+			Context.Response.Body.WriteAsync(content, 0, content.Length).Wait();
 		}
 
 		private void CreateThumbnail(IMediaResourceFile file)
@@ -895,13 +898,13 @@ namespace TomPIT.Application.Design.Media
 			if (file.Blob == Guid.Empty)
 				return;
 
-			var blob = Connection.GetService<IStorageService>().Select(file.Blob);
+			var blob = Tenant.GetService<IStorageService>().Select(file.Blob);
 
 			if (blob != null && blob.ContentType.StartsWith("image/"))
 			{
-				var content = Connection.GetService<IStorageService>().Download(blob.Token);
+				var content = Tenant.GetService<IStorageService>().Download(blob.Token);
 
-				if(content != null)
+				if (content != null)
 				{
 					using (var ms = new MemoryStream(content.Content))
 					{
@@ -909,16 +912,16 @@ namespace TomPIT.Application.Design.Media
 
 						if (image != null)
 						{
-							var thumbnail = Connection.GetService<IGraphicsService>().Resize(image, 100, 100, true);
+							var thumbnail = Tenant.GetService<IGraphicsService>().Resize(image, 100, 100, true);
 
-							file.Thumb = Connection.GetService<IStorageService>().Upload(new Blob
+							file.Thumb = Tenant.GetService<IStorageService>().Upload(new Blob
 							{
 								ContentType = blob.ContentType,
-								FileName=blob.FileName,
-								MicroService=blob.MicroService,
-								PrimaryKey=$"t{file.Id.ToString()}",
-								ResourceGroup=blob.ResourceGroup,
-								Type=blob.Type
+								FileName = blob.FileName,
+								MicroService = blob.MicroService,
+								PrimaryKey = $"t{file.Id.ToString()}",
+								ResourceGroup = blob.ResourceGroup,
+								Type = blob.Type
 							}, thumbnail, StoragePolicy.Singleton);
 						}
 					}

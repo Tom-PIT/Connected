@@ -1,14 +1,15 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
-using System.Threading.Tasks;
-using TomPIT.BigData.Services;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Client;
+using TomPIT.BigData.Nodes;
+using TomPIT.BigData.Partitions;
 using TomPIT.Connectivity;
-using TomPIT.Notifications;
+using TomPIT.Messaging;
 
 namespace TomPIT.BigData.Connectivity
 {
 	internal class BigDataClient : HubClient
 	{
-		public BigDataClient(ISysConnection connection, string authenticationToken) : base(connection, authenticationToken)
+		public BigDataClient(ITenant tenant, string authenticationToken) : base(tenant, authenticationToken)
 		{
 			Task.Run(() =>
 			{
@@ -30,21 +31,21 @@ namespace TomPIT.BigData.Connectivity
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				Connection.GetService<INodeService>().NotifyChanged(e.Args.Node);
+				Tenant.GetService<INodeService>().NotifyChanged(e.Args.Node);
 			});
 
 			Hub.On<MessageEventArgs<NodeArgs>>("NodeChanged", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				Connection.GetService<INodeService>().NotifyChanged(e.Args.Node);
+				Tenant.GetService<INodeService>().NotifyChanged(e.Args.Node);
 			});
 
 			Hub.On<MessageEventArgs<NodeArgs>>("NodeRemoved", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				Connection.GetService<INodeService>().NotifyRemoved(e.Args.Node);
+				Tenant.GetService<INodeService>().NotifyRemoved(e.Args.Node);
 			});
 		}
 
@@ -54,49 +55,49 @@ namespace TomPIT.BigData.Connectivity
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				Connection.GetService<IPartitionService>().NotifyChanged(e.Args.Configuration);
+				Tenant.GetService<IPartitionService>().NotifyChanged(e.Args.Configuration);
 			});
 
 			Hub.On<MessageEventArgs<PartitionArgs>>("PartitionChanged", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				Connection.GetService<IPartitionService>().NotifyChanged(e.Args.Configuration);
+				Tenant.GetService<IPartitionService>().NotifyChanged(e.Args.Configuration);
 			});
 
 			Hub.On<MessageEventArgs<PartitionArgs>>("PartitionRemoved", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				Connection.GetService<IPartitionService>().NotifyRemoved(e.Args.Configuration);
+				Tenant.GetService<IPartitionService>().NotifyRemoved(e.Args.Configuration);
 			});
 
 			Hub.On<MessageEventArgs<PartitionFileArgs>>("PartitionFileAdded", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				Connection.GetService<IPartitionService>().NotifyFileChanged(e.Args.FileName);
+				Tenant.GetService<IPartitionService>().NotifyFileChanged(e.Args.FileName);
 			});
 
 			Hub.On<MessageEventArgs<PartitionFileArgs>>("PartitionFileChanged", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				Connection.GetService<IPartitionService>().NotifyFileChanged(e.Args.FileName);
+				Tenant.GetService<IPartitionService>().NotifyFileChanged(e.Args.FileName);
 			});
 
 			Hub.On<MessageEventArgs<PartitionFileArgs>>("PartitionFileRemoved", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				Connection.GetService<IPartitionService>().NotifyFileRemoved(e.Args.FileName);
+				Tenant.GetService<IPartitionService>().NotifyFileRemoved(e.Args.FileName);
 			});
 
 			Hub.On<MessageEventArgs<PartitionFieldStatisticArgs>>("PartitionFieldStatisticsChanged", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				Connection.GetService<IPartitionService>().NotifyFieldStatisticChanged(e.Args.File, e.Args.FieldName);
+				Tenant.GetService<IPartitionService>().NotifyFieldStatisticChanged(e.Args.File, e.Args.FieldName);
 			});
 		}
 	}

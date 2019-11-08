@@ -1,56 +1,56 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
+using TomPIT.Security;
 
-namespace TomPIT.Security
+namespace TomPIT.Management.Security
 {
-	internal class MembershipManagementService : IMembershipManagementService
+	internal class MembershipManagementService : TenantObject, IMembershipManagementService
 	{
-		public MembershipManagementService(ISysConnection connection)
+		public MembershipManagementService(ITenant tenant) : base(tenant)
 		{
-			Connection = connection;
-		}
 
-		private ISysConnection Connection { get; }
+		}
 
 		public void Delete(Guid user, Guid role)
 		{
-			var u = Connection.CreateUrl("SecurityManagement", "DeleteMembership");
+			var u = Tenant.CreateUrl("SecurityManagement", "DeleteMembership");
 			var e = new JObject
 			{
 				{"user", user},
 				{"role", role}
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 
-			if (Connection.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+			if (Tenant.GetService<IAuthorizationService>() is IAuthorizationNotification n)
 				n.NotifyMembershipRemoved(this, new MembershipEventArgs(user, role));
 		}
 
 		public void Insert(Guid user, Guid role)
 		{
-			var u = Connection.CreateUrl("SecurityManagement", "InsertMembership");
+			var u = Tenant.CreateUrl("SecurityManagement", "InsertMembership");
 			var e = new JObject
 			{
 				{"user", user},
 				{"role", role}
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 
-			if (Connection.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+			if (Tenant.GetService<IAuthorizationService>() is IAuthorizationNotification n)
 				n.NotifyMembershipAdded(this, new MembershipEventArgs(user, role));
 		}
 
 		public List<IMembership> Query(Guid role)
 		{
-			var u = Connection.CreateUrl("SecurityManagement", "QueryMembership")
+			var u = Tenant.CreateUrl("SecurityManagement", "QueryMembership")
 				.AddParameter("role", role);
 
-			return Connection.Get<List<Membership>>(u).ToList<IMembership>();
+			return Tenant.Get<List<Membership>>(u).ToList<IMembership>();
 		}
 	}
 }

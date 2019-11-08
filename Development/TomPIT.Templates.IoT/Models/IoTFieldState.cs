@@ -1,6 +1,7 @@
 ﻿using System;
+using TomPIT.IoT;
 
-namespace TomPIT.IoT.Models
+namespace TomPIT.MicroServices.IoT.Models
 {
 	internal class IoTFieldState : IIoTFieldState
 	{

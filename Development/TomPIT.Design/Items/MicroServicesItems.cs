@@ -1,7 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
-using TomPIT.Dom;
+using TomPIT.Ide;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
+using TomPIT.Reflection;
 
 namespace TomPIT.Design.Items
 {
@@ -10,7 +14,7 @@ namespace TomPIT.Design.Items
 		protected override void OnQueryDescriptors(IDomElement element, List<IItemDescriptor> items)
 		{
 			var ms = element.MicroService();
-			var s = element.Environment.Context.Connection().GetService<IMicroServiceService>().Query().OrderBy(f => f.Name);
+			var s = element.Environment.Context.Tenant.GetService<IMicroServiceService>().Query().OrderBy(f => f.Name);
 			var existing = ((IElement)element.Component).Closest<ListItems<IServiceReference>>();
 			var value = element.Component as IServiceReference;
 

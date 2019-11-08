@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 
-namespace TomPIT.Dom
+namespace TomPIT.Ide.Dom
 {
-	public class PropertyElement : Element
+	public class PropertyElement : DomElement
 	{
 		public PropertyElement(IDomElement parent, object component, string propertyName) : base(parent)
 		{

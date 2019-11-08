@@ -1,30 +1,31 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using System.Text.RegularExpressions;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
-using TomPIT.Services;
+using TomPIT.Exceptions;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
 using TomPIT.Storage;
 
-namespace TomPIT.Resources
+namespace TomPIT.App.Resources
 {
 	internal class ResourceService : ClientRepository<CompiledBundle, string>, IResourceService
 	{
-		public ResourceService(ISysConnection connection) : base(connection, "bundle")
+		public ResourceService(ITenant tenant) : base(tenant, "bundle")
 		{
-			connection.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
-			connection.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
-			connection.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
+			tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
+			tenant.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
+			tenant.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
 
-			connection.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+			tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
 		}
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
 		{
-			if (!Connection.IsMicroServiceSupported(e.MicroService))
+			if (!Tenant.IsMicroServiceSupported(e.MicroService))
 				return;
 
 			foreach (var i in All())
@@ -34,27 +35,27 @@ namespace TomPIT.Resources
 			}
 		}
 
-		private void OnConfigurationRemoved(ISysConnection sender, ConfigurationEventArgs e)
+		private void OnConfigurationRemoved(ITenant sender, ConfigurationEventArgs e)
 		{
 			Invalidate(e);
 		}
 
-		private void OnConfigurationAdded(ISysConnection sender, ConfigurationEventArgs e)
+		private void OnConfigurationAdded(ITenant sender, ConfigurationEventArgs e)
 		{
 			Invalidate(e);
 		}
 
-		private void OnConfigurationChanged(ISysConnection sender, ConfigurationEventArgs e)
+		private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
 		{
 			Invalidate(e);
 		}
 
 		private void Invalidate(ConfigurationEventArgs e)
 		{
-			if (string.Compare(e.Category, "Bundle", true) != 0)
+			if (string.Compare(e.Category, ComponentCategories.ScriptBundle, true) != 0)
 				return;
 
-			var c = Connection.GetService<IComponentService>().SelectComponent(e.Component);
+			var c = Tenant.GetService<IComponentService>().SelectComponent(e.Component);
 
 			if (c == null)
 				return;
@@ -64,7 +65,7 @@ namespace TomPIT.Resources
 
 		public string Bundle(string microService, string name)
 		{
-			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
 			if (ms == null)
 				throw new RuntimeException(GetType().ShortName(), string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
@@ -74,14 +75,14 @@ namespace TomPIT.Resources
 			if (r != null)
 				return r.Content;
 
-			var svc = Connection.GetService<IComponentService>();
+			var svc = Tenant.GetService<IComponentService>();
 
-			var c = svc.SelectComponent(ms.Token, "Bundle", name);
+			var c = svc.SelectComponent(ms.Token, ComponentCategories.ScriptBundle, name);
 
 			if (c == null)
 				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrBundleNotFound, name));
 
-			if (!(svc.SelectConfiguration(c.Token) is IScriptBundle config))
+			if (!(svc.SelectConfiguration(c.Token) is IScriptBundleConfiguration config))
 				return null;
 
 			var sb = new StringBuilder();
@@ -91,7 +92,7 @@ namespace TomPIT.Resources
 
 			r = new CompiledBundle
 			{
-				Content = config.Minify
+				Content = config.Minify && ms.Status != MicroServiceStatus.Development
 				? Minify(sb.ToString())
 				: sb.ToString(),
 
@@ -121,7 +122,7 @@ namespace TomPIT.Resources
 			if (d.Blob == Guid.Empty)
 				return string.Empty;
 
-			var content = Connection.GetService<IStorageService>().Download(d.Blob);
+			var content = Tenant.GetService<IStorageService>().Download(d.Blob);
 
 			if (content == null || content.Content == null || content.Content.Length == 0)
 				return string.Empty;
@@ -131,7 +132,7 @@ namespace TomPIT.Resources
 
 		private string GetCodeSource(IScriptCodeSource d)
 		{
-			return Connection.GetService<IComponentService>().SelectText(d.MicroService(Connection), d);
+			return Tenant.GetService<IComponentService>().SelectText(d.Configuration().MicroService(), d);
 		}
 
 		private string GetFileSystemSource(IScriptFileSystemSource d)
@@ -156,16 +157,7 @@ namespace TomPIT.Resources
 
 		private string Minify(string source)
 		{
-			source = Regex.Replace(source, @"[a-zA-Z]+#", "#");
-			source = Regex.Replace(source, @"[\n\r]+\s*", string.Empty);
-			source = Regex.Replace(source, @"\s+", " ");
-			source = Regex.Replace(source, @"\s?([:,;{}])\s?", "$1");
-			source = source.Replace(";}", "}");
-			source = Regex.Replace(source, @"([\s:]0)(px|pt|%|em)", "$1");
-
-			// Remove comments from CSS
-			source = Regex.Replace(source, @"/\*[\d\D]*?\*/", string.Empty);
-
+			//TODO: implement minifier
 			return source;
 		}
 	}

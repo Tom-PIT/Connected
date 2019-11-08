@@ -1,19 +1,28 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using TomPIT.Annotations;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.Design;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
 using TomPIT.Design;
-using TomPIT.Designers;
-using TomPIT.Dom;
+using TomPIT.Exceptions;
 using TomPIT.Ide;
-using TomPIT.Services;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
+using TomPIT.Ide.Environment;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
 
-namespace TomPIT
+namespace TomPIT.Ide
 {
 	public static class IdeExtensions
 	{
@@ -97,23 +106,23 @@ namespace TomPIT
 
 		public static string SelectedPath(this IEnvironment environment)
 		{
-			if (environment.Dom is DomBase)
-				return ((DomBase)environment.Dom).SelectedPath;
+			if (environment.Dom is DomRoot)
+				return ((DomRoot)environment.Dom).SelectedPath;
 
 			return null;
 		}
 
 		public static IDomElement Selected(this IEnvironment environment)
 		{
-			if (environment.Dom is DomBase)
-				return ((DomBase)environment.Dom).Selected;
+			if (environment.Dom is DomRoot)
+				return ((DomRoot)environment.Dom).Selected;
 
 			return null;
 		}
 
 		public static IDomElement GetDomElement(this IComponent component, IDomElement parent)
 		{
-			var type = Types.GetType(component.Type);
+			var type = Reflection.TypeExtensions.GetType(component.Type);
 
 			if (type == null)
 				return new TypeExceptionElement(parent, component);
@@ -164,12 +173,12 @@ namespace TomPIT
 		{
 			eventName = string.Empty;
 
-			var c = environment.Context.Connection().GetService<IComponentService>().SelectComponent(component);
+			var c = environment.Context.Tenant.GetService<IComponentService>().SelectComponent(component);
 
 			if (c == null)
 				throw new TomPITException(SR.ErrComponentNotFound);
 
-			var config = environment.Context.Connection().GetService<IComponentService>().SelectConfiguration(c.Token);
+			var config = environment.Context.Tenant.GetService<IComponentService>().SelectConfiguration(c.Token);
 
 			if (config == null)
 				throw new TomPITException(string.Format("{0} ({1})", SR.ErrCannotFindConfiguration, c.Name));
@@ -425,14 +434,14 @@ namespace TomPIT
 			return att.View;
 		}
 
-		public static void ProcessComponentCreating(IExecutionContext context, object instance)
+		public static void ProcessComponentCreating(IMiddlewareContext context, object instance)
 		{
 			var att = instance.GetType().FindAttribute<ComponentCreatingHandlerAttribute>();
 
 			if (att != null)
 			{
 				var handler = att.Type == null
-					? Types.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
+					? Reflection.TypeExtensions.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
 					: att.Type.CreateInstance<IComponentCreateHandler>();
 
 				if (handler != null)
@@ -440,14 +449,14 @@ namespace TomPIT
 			}
 		}
 
-		public static void ProcessComponentCreated(IExecutionContext context, object instance)
+		public static void ProcessComponentCreated(IMiddlewareContext context, object instance)
 		{
 			var att = instance.GetType().FindAttribute<ComponentCreatedHandlerAttribute>();
 
 			if (att != null)
 			{
 				var handler = att.Type == null
-					? Types.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
+					? Reflection.TypeExtensions.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
 					: att.Type.CreateInstance<IComponentCreateHandler>();
 
 				if (handler != null)
@@ -455,11 +464,11 @@ namespace TomPIT
 			}
 		}
 
-		public static string Glyph(this IComponent component, ISysConnection connection)
+		public static string Glyph(this IComponent component, ITenant tenant)
 		{
 			var r = "fal fa-file";
-			var ms = connection.GetService<IMicroServiceService>().Select(component.MicroService);
-			var template = connection.GetService<IMicroServiceTemplateService>().Select(ms.Template);
+			var ms = tenant.GetService<IMicroServiceService>().Select(component.MicroService);
+			var template = tenant.GetService<IMicroServiceTemplateService>().Select(ms.Template);
 
 			var items = template.ProvideAddItems(null);
 			var item = items.FirstOrDefault(f => string.Compare(component.Type, f.Type.TypeName(), true) == 0);
@@ -468,6 +477,16 @@ namespace TomPIT
 				r = item.Glyph;
 
 			return r;
+		}
+
+		public static void SetContext(this IMiddlewareObject target, IMiddlewareContext context)
+		{
+			var property = target.GetType().GetProperty("Context");
+
+			if (property.SetMethod == null)
+				return;
+
+			property.SetMethod.Invoke(target, new object[] { context });
 		}
 	}
 }

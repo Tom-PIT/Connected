@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using TomPIT.Annotations;
-using TomPIT.ComponentModel;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.MicroServices.Design;
+using TomPIT.Middleware;
 using TomPIT.Storage;
 
-namespace TomPIT.Application.Resources
+namespace TomPIT.MicroServices.Resources
 {
-	[Create("ScriptUpload")]
-	[DomDesigner("TomPIT.Application.Design.Designers.ScriptUploadDesigner, TomPIT.Application.Design")]
+	[Create(DesignUtils.Javascript)]
+	[DomDesigner(DesignUtils.ScriptUploadDesigner)]
 	public class ScriptUploadSource : ScriptSource, IScriptUploadSource, IExternalResourceElement
 	{
 		[Browsable(false)]
@@ -22,10 +24,10 @@ namespace TomPIT.Application.Resources
 			return new List<Guid> { Blob };
 		}
 
-		public void Delete(ExternalResourceDeleteArgs e)
+		public void Clean(Guid resource)
 		{
-			if (Blob != Guid.Empty)
-				e.Connection.GetService<IStorageService>().Delete(Blob);
+			if (resource != Guid.Empty)
+				MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Delete(Blob);
 		}
 	}
 }

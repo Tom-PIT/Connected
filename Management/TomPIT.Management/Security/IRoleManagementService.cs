@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TomPIT.Security
+namespace TomPIT.Management.Security
 {
 	public interface IRoleManagementService
 	{

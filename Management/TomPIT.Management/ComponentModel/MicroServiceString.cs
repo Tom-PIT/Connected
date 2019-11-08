@@ -1,6 +1,7 @@
 ﻿using System;
+using TomPIT.ComponentModel;
 
-namespace TomPIT.ComponentModel
+namespace TomPIT.Management.ComponentModel
 {
 	internal class MicroServiceString : IMicroServiceString
 	{

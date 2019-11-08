@@ -1,8 +1,10 @@
 ﻿using TomPIT.Development.Designers;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
 
 namespace TomPIT.Dom
 {
-	internal class VersionControlElement : Element
+	internal class VersionControlElement : DomElement
 	{
 		public const string ElementId = "VersionControl";
 

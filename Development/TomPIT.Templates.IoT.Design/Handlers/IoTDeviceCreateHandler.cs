@@ -1,16 +1,16 @@
 ﻿using System;
 using TomPIT.Design;
-using TomPIT.Services;
+using TomPIT.Middleware;
 
-namespace TomPIT.IoT.Handlers
+namespace TomPIT.MicroServices.IoT.Design.Handlers
 {
 	internal class IoTDeviceCreateHandler : IComponentCreateHandler
 	{
-		public void InitializeNewComponent(IExecutionContext context, object instance)
+		public void InitializeNewComponent(IMiddlewareContext context, object instance)
 		{
 			var d = instance as IoTDevice;
 
-			d.AuthenticationToken = Guid.NewGuid().AsString();
+			d.AuthenticationToken = Guid.NewGuid().ToString();
 		}
 	}
 }

@@ -1,16 +1,17 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.IO;
-using TomPIT.ActionResults;
-using TomPIT.Annotations;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
-using TomPIT.Design;
-using TomPIT.Designers;
-using TomPIT.Dom;
+using TomPIT.Ide;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom.ComponentModel;
 using TomPIT.Storage;
 
-namespace TomPIT.Application.Design.Designers
+namespace TomPIT.MicroServices.Design.Designers
 {
 	internal class MediaResourceFileUploadDesigner : DomDesigner<ReflectionElement>, IUploadDesigner
 	{
@@ -43,7 +44,7 @@ namespace TomPIT.Application.Design.Designers
 
 			var file = files[0];
 
-			var ms = Connection.GetService<IMicroServiceService>().Select(Element.MicroService());
+			var ms = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(Element.MicroService());
 
 			var b = new Blob
 			{
@@ -52,7 +53,8 @@ namespace TomPIT.Application.Design.Designers
 				MicroService = ms.Token,
 				Size = Convert.ToInt32(file.Length),
 				PrimaryKey = Element.Id,
-				ResourceGroup = ms.ResourceGroup
+				ResourceGroup = ms.ResourceGroup,
+				Type = BlobTypes.UserContent
 			};
 
 			using (var s = new MemoryStream())
@@ -64,12 +66,12 @@ namespace TomPIT.Application.Design.Designers
 				s.Seek(0, SeekOrigin.Begin);
 				s.Read(buffer, 0, buffer.Length);
 
-				var id = Connection.GetService<IStorageService>().Upload(b, buffer, StoragePolicy.Singleton);
+				var id = Environment.Context.Tenant.GetService<IStorageService>().Upload(b, buffer, StoragePolicy.Singleton);
 
 				Resource.Blob = id;
 				Resource.FileName = b.FileName;
 
-				Connection.GetService<IComponentDevelopmentService>().Update(Resource.Configuration());
+				Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(Resource.Configuration());
 			};
 
 			return Result.SectionResult(ViewModel, EnvironmentSection.Designer | EnvironmentSection.Explorer);

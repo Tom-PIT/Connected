@@ -1,7 +1,7 @@
 ﻿using System;
 using TomPIT.Exceptions;
 
-namespace TomPIT
+namespace TomPIT.Ide
 {
 	public class IdeException : TomPITException
 	{

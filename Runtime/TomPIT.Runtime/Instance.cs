@@ -1,27 +1,29 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Reflection;
+using System.Runtime.Loader;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Reflection;
-using System.Runtime.Loader;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
+using TomPIT.Distributed;
 using TomPIT.Environment;
 using TomPIT.Globalization;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
 using TomPIT.Runtime;
-using TomPIT.Runtime.Security;
+using TomPIT.Runtime.Configuration;
 using TomPIT.Security;
-using TomPIT.Services;
+using TomPIT.Security.Authentication;
 
 namespace TomPIT
 {
@@ -34,83 +36,27 @@ namespace TomPIT
 		SingleTenant = 2
 	}
 
+	public enum InstanceState
+	{
+		Initialining = 1,
+		Running = 2
+	}
 	public static class Instance
 	{
-		private static IMvcBuilder _mvcBuilder = null;
+		public static IMvcBuilder Mvc { get; private set; }
 		private static List<IPlugin> _plugins = null;
-		internal static RequestLocalizationOptions RequestLocalizationOptions { get; private set; } 
+		internal static RequestLocalizationOptions RequestLocalizationOptions { get; private set; }
 
 		public static Guid Id { get; } = Guid.NewGuid();
-
+		public static InstanceState State { get; private set; } = InstanceState.Initialining;
 		public static void Initialize(IServiceCollection services, ServicesConfigurationArgs e)
 		{
 			Shell.RegisterConfigurationType(typeof(ClientSys));
 
-			ConfigureServices(services, e);
+			InitializeServices(services, e);
 		}
 
-		public static void Configure(InstanceType type, IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env, ConfigureRoutingHandler routingHandler)
-		{
-			app.UseAuthentication();
-			app.UseRequestLocalization(o =>
-			{
-				RequestLocalizationOptions = o;
-				o.DefaultRequestCulture = new RequestCulture(CultureInfo.InvariantCulture);
-				o.FallBackToParentCultures = true;
-				o.FallBackToParentUICultures = true;
-				/*
-				 * https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-2.2
-				 */
-				o.RequestCultureProviders.Insert(0, new IdentityCultureProvider());
-			});
-
-			app.UseAjaxExceptionMiddleware();
-			app.UseStaticFiles();
-			//app.UseStaticFiles(new StaticFileOptions
-			//{
-			//	FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "node_modules")),
-			//	RequestPath = "/node_modules"
-			//});
-
-			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
-
-			RuntimeBootstrapper.Run();
-
-			Shell.GetService<IRuntimeService>().Initialize(type, env);
-			Shell.GetService<IConnectivityService>().ConnectionInitialized += OnConnectionInitialized;
-
-			app.UseMvc(routes =>
-			{
-				foreach (var i in Plugins)
-					i.RegisterRoutes(routes);
-
-				RoutingConfiguration.Register(routes);
-				routingHandler?.Invoke(new ConfigureRoutingArgs(routes));
-			});
-
-			Shell.Configure(app);
-
-			foreach (var plugin in Plugins)
-				plugin.Initialize(app, env);
-		}
-
-		private static void OnConnectionInitialized(object sender, SysConnectionArgs e)
-		{
-			foreach (var i in Shell.GetConfiguration<IClientSys>().DataProviders)
-			{
-				var t = Types.GetType(i);
-
-				if (t == null)
-					continue;
-
-				var provider = t.CreateInstance<IDataProvider>();
-
-				if (provider != null)
-					e.Connection.GetService<IDataProviderService>().Register(provider);
-			}
-		}
-
-		private static void ConfigureServices(IServiceCollection services, ServicesConfigurationArgs e)
+		private static void InitializeServices(IServiceCollection services, ServicesConfigurationArgs e)
 		{
 			switch (e.Authentication)
 			{
@@ -138,23 +84,28 @@ namespace TomPIT
 					break;
 			}
 
-			_mvcBuilder = services.AddMvc((o) =>
+			Mvc = services.AddMvc((o) =>
 			{
+				o.EnableEndpointRouting = false;
 				e.ConfigureMvc?.Invoke(o);
 
 				o.Filters.Add(new AuthenticationCookieFilter());
-			}).ConfigureApplicationPartManager((m) =>
+			}).AddNewtonsoftJson()
+			.ConfigureApplicationPartManager((m) =>
 			{
 				var pa = new ApplicationPartsArgs();
 
 				e.ProvideApplicationParts?.Invoke(pa);
+
+				foreach (var assembly in pa.Assemblies)
+					m.ApplicationParts.Add(new AssemblyPart(assembly));
 
 				foreach (var i in pa.Parts)
 					ConfigurePlugins(m, i);
 
 				foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)
 				{
-					var t = Types.GetType(i);
+					var t = Reflection.TypeExtensions.GetType(i);
 
 					if (t == null)
 						continue;
@@ -171,7 +122,7 @@ namespace TomPIT
 				}
 			});
 
-			_mvcBuilder.AddControllersAsServices();
+			Mvc.AddControllersAsServices();
 
 			services.AddAuthorization(options =>
 			{
@@ -189,30 +140,78 @@ namespace TomPIT
 			foreach (var plugin in Plugins)
 				plugin.ConfigureServices(services);
 		}
-
-		public static T GetService<T>()
+		public static void Configure(InstanceType type, IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler)
 		{
-			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
-				throw new RuntimeException(SR.ErrSingleTenantOnly);
-
-			return Shell.GetService<IConnectivityService>().Select().GetService<T>();
-		}
-
-		public static ISysConnection Connection
-		{
-			get
+			app.UseAuthentication();
+			app.UseAuthorization();
+			app.UseRequestLocalization(o =>
 			{
-				if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
-					throw new RuntimeException(SR.ErrSingleTenantOnly);
+				RequestLocalizationOptions = o;
+				o.DefaultRequestCulture = new RequestCulture(CultureInfo.InvariantCulture);
+				o.FallBackToParentCultures = true;
+				o.FallBackToParentUICultures = true;
+				/*
+				 * https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-2.2
+				 */
+				o.RequestCultureProviders.Insert(0, new IdentityCultureProvider());
+			});
 
-				return Shell.GetService<IConnectivityService>().Select();
+			app.UseAjaxExceptionMiddleware();
+			//var assetsDirectors = $"{env.WebRootPath}\\Assets";
+
+			//if (Directory.Exists(assetsDirectors))
+			//{
+			//	app.UseStaticFiles(new StaticFileOptions(new SharedOptions
+			//	{
+			//		RequestPath = "/sys/assets",
+			//		FileProvider = new PhysicalFileProvider($"{env.WebRootPath}\\Assets")
+			//	}));
+			//}
+			app.UseStaticFiles();
+
+			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
+
+			RuntimeBootstrapper.Run();
+
+			Shell.GetService<IRuntimeService>().Initialize(type, env);
+			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
+
+			app.UseMvc(routes =>
+			{
+				foreach (var i in Plugins)
+					i.RegisterRoutes(routes);
+
+				RoutingConfiguration.Register(routes);
+				routingHandler?.Invoke(new ConfigureRoutingArgs(routes));
+			});
+
+			Shell.Configure(app);
+
+			foreach (var plugin in Plugins)
+				plugin.Initialize(app, env);
+		}
+		private static void OnTenantInitialized(object sender, TenantArgs e)
+		{
+			foreach (var i in Shell.GetConfiguration<IClientSys>().DataProviders)
+			{
+				var t = Reflection.TypeExtensions.GetType(i);
+
+				if (t == null)
+					continue;
+
+				var provider = t.CreateInstance<IDataProvider>();
+
+				if (provider != null)
+					e.Tenant.GetService<IDataProviderService>().Register(provider);
 			}
 		}
 
 		public static void Run(IApplicationBuilder app)
 		{
 			foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
-				Shell.GetService<IConnectivityService>().Insert(i.Name, i.Url, i.AuthenticationToken);
+				Shell.GetService<IConnectivityService>().InsertTenant(i.Name, i.Url, i.AuthenticationToken);
+
+			State = InstanceState.Running;
 		}
 
 		public static bool ResourceGroupExists(Guid resourceGroup)
@@ -222,7 +221,7 @@ namespace TomPIT
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
 			{
-				var rg = Connection.GetService<IResourceGroupService>().Select(i);
+				var rg = MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>().Select(i);
 
 				if (rg != null)
 					return true;
@@ -241,7 +240,7 @@ namespace TomPIT
 
 					foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)
 					{
-						var t = Types.GetType(i);
+						var t = Reflection.TypeExtensions.GetType(i);
 
 						if (t == null)
 							continue;

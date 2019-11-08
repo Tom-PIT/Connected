@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -16,13 +13,15 @@ namespace TomPIT.Sys.Controllers
 		{
 			var body = FromBody();
 			var component = body.Required<Guid>("component");
+			var worker = body.Required<string>("worker");
 			var args = body.Optional("arguments", string.Empty);
 			var expire = body.Optional("expire", TimeSpan.FromDays(2));
 			var nextVisible = body.Optional("nextVisible", TimeSpan.Zero);
 
 			var message = new JObject
 			{
-				{"component", component }
+				{"component", component },
+				{"worker", worker}
 			};
 
 			if (args != null)

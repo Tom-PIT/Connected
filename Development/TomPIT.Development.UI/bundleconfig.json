@@ -1,6 +1,6 @@
 ﻿[
-	{
-		"outputFileName": "wwwroot/assets/styles.min.css",
+  {
+    "outputFileName": "wwwroot/assets/styles.min.css",
     "inputFiles": [
       "wwwroot/assets/fonts/opensans/opensans.css",
       "wwwroot/assets/styles/bootstrap/bootstrap.css",
@@ -10,34 +10,46 @@
       "wwwroot/assets/styles/tompit.css",
       "wwwroot/assets/styles/designers.css"
     ],
-		"minify": {
-			"enabled": true,
-			"renameLocals": true
-		},
-		"sourceMap": false
-	},
-	{
-		"outputFileName": "wwwroot/assets/iot.min.css",
-		"inputFiles": [
-			"wwwroot/assets/styles/iot.css"
-		],
-		"minify": {
-			"enabled": true,
-			"renameLocals": true
-		},
-		"sourceMap": false
-	},
-	{
-		"outputFileName": "wwwroot/assets/ide.min.css",
-		"inputFiles": [
-			"wwwroot/assets/styles/ide.css"
-		],
-		"minify": {
-			"enabled": true,
-			"renameLocals": true
-		},
-		"sourceMap": false
-	},
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/assets/idemap.min.css",
+    "inputFiles": [
+      //"wwwroot/assets/styles/bootstrap/bootstrap.css",
+      "wwwroot/assets/styles/fontawesome.css"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/assets/iot.min.css",
+    "inputFiles": [
+      "wwwroot/assets/styles/iot.css"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/assets/ide.min.css",
+    "inputFiles": [
+      "wwwroot/assets/styles/ide.css"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    "sourceMap": false
+  },
   {
     "outputFileName": "wwwroot/assets/scripts.min.js",
     "inputFiles": [
@@ -78,27 +90,27 @@
     },
     "sourceMap": false
   },
-	{
-		"outputFileName": "wwwroot/assets/scripts.foot.min.js",
-		"inputFiles": [
-			"wwwroot/assets/scripts/foot.js"
-		],
-		"minify": {
-			"enabled": true,
-			"renameLocals": false
-		},
-		"sourceMap": false
-	},
-	{
-		"outputFileName": "wwwroot/assets/ide.min.js",
-		"inputFiles": [
-			"wwwroot/assets/scripts/ide.js",
-			"wwwroot/assets/scripts/textEditor.js"
-		],
-		"minify": {
-			"enabled": true,
-			"renameLocals": false
-		},
-		"sourceMap": false
-	}
+  {
+    "outputFileName": "wwwroot/assets/scripts.foot.min.js",
+    "inputFiles": [
+      "wwwroot/assets/scripts/foot.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/assets/ide.min.js",
+    "inputFiles": [
+      "wwwroot/assets/scripts/ide.js",
+      "wwwroot/assets/scripts/textEditor.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    },
+    "sourceMap": false
+  }
 ]

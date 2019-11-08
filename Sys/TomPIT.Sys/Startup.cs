@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TomPIT.Sys.Configuration;
+using TomPIT.Sys.Data;
 using TomPIT.Sys.Notifications;
 using TomPIT.Sys.Services;
 using TomPIT.Sys.Workers;
@@ -24,7 +25,10 @@ namespace TomPIT.Sys
 		{
 			Shell.RegisterConfigurationType(typeof(ServerSys));
 
-			services.AddMvc();
+			services.AddMvc(o =>
+			{
+				o.EnableEndpointRouting = false;
+			}).AddNewtonsoftJson();
 
 			services.AddAuthentication(options =>
 			{
@@ -36,17 +40,20 @@ namespace TomPIT.Sys
 
 			});
 
+			services.AddAuthorization();
+
 			services.AddSignalR(o =>
 			{
 				o.EnableDetailedErrors = true;
 			});
+
 
 			RegisterTasks(services);
 
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 		}
 
-		public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			if (env.IsDevelopment())
 			{
@@ -59,7 +66,12 @@ namespace TomPIT.Sys
 				//app.UseExceptionHandler();
 			}
 
-			app.UseSignalR(routes =>
+			app.UseStaticFiles();
+			app.UseRouting();
+			app.UseAuthentication();
+			app.UseAuthorization();
+
+			app.UseEndpoints(routes =>
 			{
 				routes.MapHub<CacheHub>("/caching");
 				routes.MapHub<IoTHub>("/iot");
@@ -72,10 +84,10 @@ namespace TomPIT.Sys
 				routes.MapRoute("default", "{controller}/{action}");
 			});
 
-			app.UseAuthentication();
 
 			ServerConfiguration.Initialize();
 			Shell.Configure(app);
+			DataModel.Initialized = true;
 		}
 
 		private void RegisterTasks(IServiceCollection services)

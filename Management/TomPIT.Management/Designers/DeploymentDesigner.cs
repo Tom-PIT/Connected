@@ -1,13 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.ActionResults;
+using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Data.DataProviders;
 using TomPIT.Deployment;
 using TomPIT.Environment;
+using TomPIT.Exceptions;
+using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Management.Deployment;
+using TomPIT.Management.Deployment.Packages;
 using TomPIT.Management.Dom;
 using TomPIT.Management.Models;
 using TomPIT.Security;
@@ -57,7 +59,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_plans == null)
-					_plans = Connection.GetService<IDeploymentService>().QuerySubscribedPlans();
+					_plans = Environment.Context.Tenant.GetService<IDeploymentService>().QuerySubscribedPlans();
 
 				return _plans;
 			}
@@ -70,9 +72,9 @@ namespace TomPIT.Management.Designers
 			{
 				if (_packages == null && Plan != null)
 				{
-					_packages = Connection.GetService<IDeploymentService>().QueryPackages(Plan.Token);
+					_packages = Environment.Context.Tenant.GetService<IDeploymentService>().QueryPackages(Plan.Token);
 
-					if(_packages !=null)
+					if (_packages != null)
 					{
 						foreach (var package in _packages)
 							package.State = ResolveState(package.Token, package.Service);
@@ -110,7 +112,7 @@ namespace TomPIT.Management.Designers
 			var plan = data.Required<Guid>("plan");
 			ListView = data.Required<MicroserviceListView>("view");
 
-			Plan = GetService<IDeploymentService>().SelectPlan(plan);
+			Plan = Environment.Context.Tenant.GetService<IDeploymentService>().SelectPlan(plan);
 
 			return Result.ViewResult(ViewModel, "~/Views/Ide/Designers/MicroServiceList.cshtml");
 		}
@@ -119,7 +121,7 @@ namespace TomPIT.Management.Designers
 		{
 			var microService = data.Required<Guid>("microService");
 			var plan = data.Required<Guid>("plan");
-			var pp = Connection.GetService<IDeploymentService>().SelectPublishedPackage(microService, plan);
+			var pp = Environment.Context.Tenant.GetService<IDeploymentService>().SelectPublishedPackage(microService, plan);
 
 			return Result.ViewResult(new DeploymentPackageCardModel(this, pp), "~/Views/Ide/Designers/DeploymentPackageCard.cshtml");
 		}
@@ -133,7 +135,7 @@ namespace TomPIT.Management.Designers
 					 {"timestamp",DateTime.UtcNow.Ticks }
 				};
 
-			var changes = Connection.GetService<IDeploymentService>().QueryInstallAudit(new DateTime(timestamp)).GroupBy(f => f.Package).Select(f => f.First().Package);
+			var changes = Environment.Context.Tenant.GetService<IDeploymentService>().QueryInstallAudit(new DateTime(timestamp)).GroupBy(f => f.Package).Select(f => f.First().Package);
 			var a = new JArray();
 			r.Add("packages", a);
 
@@ -178,13 +180,13 @@ namespace TomPIT.Management.Designers
 			var package = data.Required<Guid>("package");
 			var value = data.Required<string>("value");
 			var database = data.Required<string>("database");
-			var config = Connection.GetService<IDeploymentService>().SelectInstallerConfiguration(package);
+			var config = Environment.Context.Tenant.GetService<IDeploymentService>().SelectInstallerConfiguration(package);
 			var db = config.Databases.FirstOrDefault(f => string.Compare(database, f.Name, true) == 0);
 
 			if (db == null)
 				throw new RuntimeException(SR.ErrDatabaseConfigurationNotFound);
 
-			var r = Connection.GetService<IDataProviderService>().Select(db.DataProviderId);
+			var r = Environment.Context.Tenant.GetService<IDataProviderService>().Select(db.DataProviderId);
 
 			if (r == null)
 				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrDataProviderNotFound, db.DataProvider));
@@ -199,7 +201,7 @@ namespace TomPIT.Management.Designers
 			var database = data.Optional("database", string.Empty);
 			var dependency = data.Optional("dependency", Guid.Empty);
 
-			var config = Connection.GetService<IDeploymentService>().SelectInstallerConfiguration(package);
+			var config = Environment.Context.Tenant.GetService<IDeploymentService>().SelectInstallerConfiguration(package);
 
 			if (!string.IsNullOrWhiteSpace(database))
 			{
@@ -210,7 +212,7 @@ namespace TomPIT.Management.Designers
 					var value = data.Optional("value", string.Empty);
 
 					if (!string.IsNullOrWhiteSpace(value))
-						value = Connection.GetService<ICryptographyService>().Encrypt(value);
+						value = Environment.Context.Tenant.GetService<ICryptographyService>().Encrypt(value);
 
 					((PackageConfigurationDatabase)db).ConnectionString = value;
 				}
@@ -242,7 +244,7 @@ namespace TomPIT.Management.Designers
 					((PackageConfiguration)config).ResourceGroup = data.Required<Guid>("value");
 			}
 
-			Connection.GetService<IDeploymentService>().UpdateInstallerConfiguration(package, config);
+			Environment.Context.Tenant.GetService<IDeploymentService>().UpdateInstallerConfiguration(package, config);
 
 			return Result.EmptyResult(ViewModel);
 		}
@@ -252,20 +254,20 @@ namespace TomPIT.Management.Designers
 			var package = data.Required<Guid>("package");
 
 			var r = new List<IInstallState>();
-			var pcg = Connection.GetService<IDeploymentService>().SelectPublishedPackage(package);
-			var dependencyConfiguration = Connection.GetService<IDeploymentService>().QueryDependencies(pcg.Service, pcg.Plan);
-			var config = Connection.GetService<IDeploymentService>().SelectInstallerConfiguration(package);
+			var pcg = Environment.Context.Tenant.GetService<IDeploymentService>().SelectPublishedPackage(package);
+			var dependencyConfiguration = Environment.Context.Tenant.GetService<IDeploymentService>().QueryDependencies(pcg.Service, pcg.Plan);
+			var config = Environment.Context.Tenant.GetService<IDeploymentService>().SelectInstallerConfiguration(package);
 
 			var criteria = new List<Tuple<Guid, Guid>>();
 
 			foreach (var dependency in dependencyConfiguration)
 				criteria.Add(new Tuple<Guid, Guid>(dependency.MicroService, dependency.Plan));
 
-			var dependencyPackages = criteria.Count > 0 ? Connection.GetService<IDeploymentService>().QueryPublishedPackages(criteria) : new List<IPublishedPackage>();
+			var dependencyPackages = criteria.Count > 0 ? Environment.Context.Tenant.GetService<IDeploymentService>().QueryPublishedPackages(criteria) : new List<IPublishedPackage>();
 
 			r.Add(CreateInstallState(pcg.Token, Guid.Empty));
 
-			foreach(var dependency in dependencyConfiguration)
+			foreach (var dependency in dependencyConfiguration)
 			{
 				var targetPackage = dependencyPackages.FirstOrDefault(f => f.Service == dependency.MicroService && f.Plan == dependency.Plan);
 
@@ -277,12 +279,12 @@ namespace TomPIT.Management.Designers
 				if (d != null && !d.Enabled)
 					continue;
 
-				var dependencyPackageConfiguration = Connection.GetService<IDeploymentService>().SelectInstallerConfiguration(targetPackage.Token);
+				var dependencyPackageConfiguration = Environment.Context.Tenant.GetService<IDeploymentService>().SelectInstallerConfiguration(targetPackage.Token);
 
 				r.Add(CreateInstallState(targetPackage.Token, pcg.Token));
 			}
 
-			Connection.GetService<IDeploymentService>().InsertInstallers(r);
+			Environment.Context.Tenant.GetService<IDeploymentService>().InsertInstallers(r);
 
 			return Result.EmptyResult(ViewModel);
 		}
@@ -298,7 +300,7 @@ namespace TomPIT.Management.Designers
 
 		private IDesignerActionResult Install(JObject data)
 		{
-			PackageInfo = Connection.GetService<IDeploymentService>().SelectPublishedPackage(data.Required<Guid>("package"));
+			PackageInfo = Environment.Context.Tenant.GetService<IDeploymentService>().SelectPublishedPackage(data.Required<Guid>("package"));
 
 			return Result.ViewResult(ViewModel, "~/Views/Ide/Designers/DeploymentPackage.cshtml");
 		}
@@ -309,7 +311,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_microServices == null)
-					_microServices = Connection.GetService<IMicroServiceService>().Query();
+					_microServices = Environment.Context.Tenant.GetService<IMicroServiceService>().Query();
 
 				return _microServices;
 			}
@@ -320,7 +322,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_installers == null)
-					_installers = Connection.GetService<IDeploymentService>().QueryInstallers();
+					_installers = Environment.Context.Tenant.GetService<IDeploymentService>().QueryInstallers();
 
 				return _installers;
 			}
@@ -331,7 +333,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_resourceGroups == null)
-					_resourceGroups = Connection.GetService<IResourceGroupService>().Query();
+					_resourceGroups = Environment.Context.Tenant.GetService<IResourceGroupService>().Query();
 
 				return _resourceGroups;
 			}
@@ -400,7 +402,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_dependencies == null)
-					_dependencies = Connection.GetService<IDeploymentService>().QueryDependencies(PackageInfo.Service, PackageInfo.Plan);
+					_dependencies = Environment.Context.Tenant.GetService<IDeploymentService>().QueryDependencies(PackageInfo.Service, PackageInfo.Plan);
 
 				return _dependencies;
 			}
@@ -417,7 +419,7 @@ namespace TomPIT.Management.Designers
 					foreach (var dependency in Dependencies)
 						criteria.Add(new Tuple<Guid, Guid>(dependency.MicroService, dependency.Plan));
 
-					_dependencyPackages = Connection.GetService<IDeploymentService>().QueryPublishedPackages(criteria);
+					_dependencyPackages = Environment.Context.Tenant.GetService<IDeploymentService>().QueryPublishedPackages(criteria);
 				}
 
 				return _dependencyPackages;
@@ -429,7 +431,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_myPlans == null)
-					_myPlans = Connection.GetService<IDeploymentService>().QueryMyPlans();
+					_myPlans = Environment.Context.Tenant.GetService<IDeploymentService>().QueryMyPlans();
 
 				return _myPlans;
 			}
@@ -439,7 +441,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_subscriptions == null)
-					_subscriptions = Connection.GetService<IDeploymentService>().QuerySubscriptions();
+					_subscriptions = Environment.Context.Tenant.GetService<IDeploymentService>().QuerySubscriptions();
 
 				return _subscriptions;
 			}

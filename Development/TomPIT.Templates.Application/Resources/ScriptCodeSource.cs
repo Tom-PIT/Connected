@@ -1,14 +1,16 @@
 ﻿using System;
 using System.ComponentModel;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.MicroServices.Design;
 
-namespace TomPIT.Application.Resources
+namespace TomPIT.MicroServices.Resources
 {
-	[Create("Javascript", nameof(Name))]
-	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
-	[Syntax("javascript")]
+	[Create(DesignUtils.Javascript, nameof(Name))]
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[Syntax(SyntaxAttribute.Javascript)]
 	public class ScriptCodeSource : ScriptSource, IText, IScriptCodeSource
 	{
 		[Browsable(false)]

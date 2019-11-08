@@ -138,7 +138,7 @@ namespace TomPIT.Sys.Data
 			if (m == null)
 				return;
 
-			var partition = m.Message.AsGuid();
+			var partition = new Guid(m.Message);
 
 			var p = Select(partition);
 

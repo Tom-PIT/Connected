@@ -27,7 +27,7 @@
             {
                 var user = Model.GetUser(component.LockUser);
                 var badgeCss = "badge-success";
-                var enabled = user.Token == Shell.HttpContext.CurrentUserToken();
+                var enabled = user.Token == TomPIT.Middleware.MiddlewareDescriptor.Current.UserToken;
                 var rowCss = enabled ? string.Empty : "vc-item-disabled";
                 if (component.LockVerb == TomPIT.Development.LockVerb.Edit)
                 { badgeCss = "badge-warning"; }

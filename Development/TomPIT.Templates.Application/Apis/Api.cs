@@ -1,24 +1,25 @@
 ﻿using System.ComponentModel;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.Services;
+using TomPIT.MicroServices.Design;
+using TomPIT.Runtime;
 
-namespace TomPIT.Application.Apis
+namespace TomPIT.MicroServices.Apis
 {
-	[Create("Api")]
-	[DomElement("TomPIT.Application.Design.Dom.ApiElement, TomPIT.Application.Design")]
+	[Create(DesignUtils.ComponentApi)]
+	[DomElement(DesignUtils.ApiElement)]
 	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = EnvironmentMode.Runtime)]
-	[Manifest("TomPIT.ComponentModel.Analysis.Manifest.Providers.ApiManifestProvider, TomPIT.ComponentModel")]
-	public class Api : ComponentConfiguration, IApi
+	[Manifest(DesignUtils.ApiManifest)]
+	public class Api : ComponentConfiguration, IApiConfiguration
 	{
-		public const string ComponentCategory = "Api";
-
 		private ListItems<IApiOperation> _ops = null;
 		private ApiProtocolOptions _protocols = null;
 
-		[Items("TomPIT.Application.Design.Items.OperationCollection, TomPIT.Application.Design")]
-		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
+		[Items(DesignUtils.ApiOperationItems)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		[DomDesigner(DomDesignerAttribute.EmptyDesigner, Mode = EnvironmentMode.Runtime)]
 		public ListItems<IApiOperation> Operations
 		{

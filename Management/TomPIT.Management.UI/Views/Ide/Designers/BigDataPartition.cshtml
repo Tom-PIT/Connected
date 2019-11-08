@@ -88,7 +88,7 @@
 </div>
 <script>
     $('#gridFiles').dxDataGrid({
-        dataSource:@Html.Raw(Types.Serialize(Model.Files))
+        dataSource:@Html.Raw(TomPIT.Serialization.Serializer.Serialize(Model.Files))
     });
 </script>
 

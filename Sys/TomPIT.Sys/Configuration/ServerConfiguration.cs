@@ -1,5 +1,6 @@
 ﻿using TomPIT.Api.ComponentModel;
 using TomPIT.Api.Storage;
+using TomPIT.Reflection;
 using TomPIT.Security;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Security;
@@ -39,7 +40,7 @@ namespace TomPIT.Sys.Configuration
 
 			foreach (var i in sys.StorageProviders)
 			{
-				var t = Types.GetType(i);
+				var t = TypeExtensions.GetType(i);
 
 				if (t == null)
 					throw new SysException(string.Format("{0} ({1})", SR.ErrInvalidStorageProviderType, i));

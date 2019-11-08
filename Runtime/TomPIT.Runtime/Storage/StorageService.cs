@@ -1,11 +1,12 @@
-﻿using LZ4;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using LZ4;
+using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 
 namespace TomPIT.Storage
 {
@@ -18,10 +19,10 @@ namespace TomPIT.Storage
 		public event BlobChangedHandler BlobAdded;
 		public event BlobChangedHandler BlobCommitted;
 
-		public StorageService(ISysConnection connection) : base(connection, "blob")
+		public StorageService(ITenant tenant) : base(tenant, "blob")
 		{
-			_blobContent = new BlobContentCache(Connection);
-			Connection.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+			_blobContent = new BlobContentCache(Tenant);
+			Tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
 		}
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
@@ -40,26 +41,26 @@ namespace TomPIT.Storage
 
 		public void Commit(string draft, string primaryKey)
 		{
-			var u = Connection.CreateUrl("Storage", "Commit");
+			var u = Tenant.CreateUrl("Storage", "Commit");
 			var args = new JObject
 			{
 				{ "draft", draft },
 				{ "primaryKey", primaryKey }
 			};
 
-			Connection.Post(u, args);
+			Tenant.Post(u, args);
 			Remove(f => string.Compare(f.Draft, draft, true) == 0 && string.Compare(f.PrimaryKey, primaryKey, true) == 0);
 		}
 
 		public void Delete(Guid blob)
 		{
-			var u = Connection.CreateUrl("Storage", "Delete");
+			var u = Tenant.CreateUrl("Storage", "Delete");
 			var args = new JObject
 			{
 				{ "blob", blob }
 			};
 
-			Connection.Post(u, args);
+			Tenant.Post(u, args);
 			Remove(blob);
 		}
 
@@ -73,6 +74,23 @@ namespace TomPIT.Storage
 			return BlobContent.Select(b);
 		}
 
+		public IBlobContent Download(Guid microService, int type, Guid resourceGroup, string primaryKey)
+		{
+			var r = Get(f => f.MicroService == microService && f.Type == type && string.Compare(f.PrimaryKey, primaryKey, true) == 0);
+
+			if (r == null)
+			{
+				var rs = Query(microService, type, resourceGroup, primaryKey);
+
+				if (rs == null || rs.Count == 0)
+					return null;
+
+				r = rs[0];
+			}
+
+			return Download(r.Token);
+		}
+
 		public List<IBlobContent> Download(List<Guid> blobs)
 		{
 			return BlobContent.Query(blobs);
@@ -80,29 +98,29 @@ namespace TomPIT.Storage
 
 		public List<IBlob> Query(Guid microService, int type, Guid resourceGroup, string primaryKey)
 		{
-			var u = Connection.CreateUrl("Storage", "Query")
+			var u = Tenant.CreateUrl("Storage", "Query")
 				.AddParameter("microService", microService)
 				.AddParameter("type", type)
 				.AddParameter("resourceGroup", resourceGroup)
 				.AddParameter("primaryKey", primaryKey);
 
-			return Connection.Get<List<Blob>>(u).ToList<IBlob>();
+			return Tenant.Get<List<Blob>>(u).ToList<IBlob>();
 		}
 
 		public List<IBlob> Query(Guid microService)
 		{
-			var u = Connection.CreateUrl("Storage", "QueryByMicroService")
+			var u = Tenant.CreateUrl("Storage", "QueryByMicroService")
 				.AddParameter("microService", microService);
 
-			return Connection.Get<List<Blob>>(u).ToList<IBlob>();
+			return Tenant.Get<List<Blob>>(u).ToList<IBlob>();
 		}
 
 		public List<IBlob> QueryDrafts(string draft)
 		{
-			var u = Connection.CreateUrl("Storage", "QueryDrafts")
+			var u = Tenant.CreateUrl("Storage", "QueryDrafts")
 				.AddParameter("draft", draft);
 
-			return Connection.Get<List<Blob>>(u).ToList<IBlob>();
+			return Tenant.Get<List<Blob>>(u).ToList<IBlob>();
 		}
 
 		public IBlob Select(Guid blob)
@@ -110,10 +128,10 @@ namespace TomPIT.Storage
 			return Get(blob,
 				(f) =>
 				{
-					var u = Connection.CreateUrl("Storage", "Select")
+					var u = Tenant.CreateUrl("Storage", "Select")
 						.AddParameter("blob", blob);
 
-					return Connection.Get<Blob>(u);
+					return Tenant.Get<Blob>(u);
 				});
 		}
 
@@ -126,7 +144,7 @@ namespace TomPIT.Storage
 		{
 			var compressed = content == null ? null : LZ4Codec.Wrap(content);
 
-			var u = Connection.CreateUrl("Storage", "Upload");
+			var u = Tenant.CreateUrl("Storage", "Upload");
 			var args = new JObject
 			{
 				{"resourceGroup", blob.ResourceGroup },
@@ -142,7 +160,7 @@ namespace TomPIT.Storage
 				{"token", token.ToString() }
 			};
 
-			var r = Connection.Post<Guid>(u, args);
+			var r = Tenant.Post<Guid>(u, args);
 
 			Remove(r);
 			BlobContent.Delete(r);
@@ -155,7 +173,7 @@ namespace TomPIT.Storage
 		{
 			var compressed = content == null ? null : LZ4Codec.Wrap(content);
 
-			var u = Connection.CreateUrl("Storage", "Deploy");
+			var u = Tenant.CreateUrl("Storage", "Deploy");
 			var args = new JObject
 			{
 				{"resourceGroup", blob.ResourceGroup },
@@ -172,7 +190,7 @@ namespace TomPIT.Storage
 				{"version", blob.Version }
 			};
 
-			var r = Connection.Post<Guid>(u, args);
+			var r = Tenant.Post<Guid>(u, args);
 
 			BlobContent.Delete(r);
 		}
@@ -182,7 +200,7 @@ namespace TomPIT.Storage
 			Remove(e.Blob);
 			BlobContent.Delete(e.Blob);
 
-			BlobChanged?.Invoke(Connection, e);
+			BlobChanged?.Invoke(Tenant, e);
 		}
 
 		public void NotifyRemoved(object sender, BlobEventArgs e)
@@ -190,12 +208,12 @@ namespace TomPIT.Storage
 			Remove(e.Blob);
 			BlobContent.Delete(e.Blob);
 
-			BlobRemoved?.Invoke(Connection, e);
+			BlobRemoved?.Invoke(Tenant, e);
 		}
 
 		public void NotifyAdded(object sender, BlobEventArgs e)
 		{
-			BlobAdded?.Invoke(Connection, e);
+			BlobAdded?.Invoke(Tenant, e);
 		}
 
 		public void NotifyCommitted(object sender, BlobEventArgs e)
@@ -203,7 +221,7 @@ namespace TomPIT.Storage
 			Remove(e.Blob);
 			BlobContent.Delete(e.Blob);
 
-			BlobCommitted?.Invoke(Connection, e);
+			BlobCommitted?.Invoke(Tenant, e);
 		}
 
 		private BlobContentCache BlobContent { get { return _blobContent; } }

@@ -1,33 +1,32 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 
-namespace TomPIT.Environment
+namespace TomPIT.Management.Environment
 {
-	internal class ResourceGroupManagementService : IResourceGroupManagementService
+	internal class ResourceGroupManagementService : TenantObject, IResourceGroupManagementService
 	{
-		public ResourceGroupManagementService(ISysConnection connection)
+		public ResourceGroupManagementService(ITenant tenant) : base(tenant)
 		{
-			Connection = connection;
-		}
 
-		private ISysConnection Connection { get; }
+		}
 
 		public void Delete(Guid token)
 		{
-			var u = Connection.CreateUrl("ResourceGroupManagement", "Delete");
+			var u = Tenant.CreateUrl("ResourceGroupManagement", "Delete");
 			var d = new JObject
 			{
 				{"token",token }
 			};
 
-			Connection.Post(u, d);
+			Tenant.Post(u, d);
 		}
 
 		public Guid Insert(string name, Guid storageProvider, string connectionString)
 		{
-			var u = Connection.CreateUrl("ResourceGroupManagement", "Insert");
+			var u = Tenant.CreateUrl("ResourceGroupManagement", "Insert");
 			var d = new JObject
 			{
 				{"name",name },
@@ -35,12 +34,12 @@ namespace TomPIT.Environment
 				{"connectionString",connectionString }
 			};
 
-			return Connection.Post<Guid>(u, d);
+			return Tenant.Post<Guid>(u, d);
 		}
 
 		public void Update(Guid token, string name, Guid storageProvider, string connectionString)
 		{
-			var u = Connection.CreateUrl("ResourceGroupManagement", "Update");
+			var u = Tenant.CreateUrl("ResourceGroupManagement", "Update");
 			var d = new JObject
 			{
 				{"token",token },
@@ -49,14 +48,14 @@ namespace TomPIT.Environment
 				{"connectionString",connectionString }
 			};
 
-			Connection.Post(u, d);
+			Tenant.Post(u, d);
 		}
 
 		public List<ManagementResourceGroup> Query()
 		{
-			var u = Connection.CreateUrl("ResourceGroupManagement", "Query");
+			var u = Tenant.CreateUrl("ResourceGroupManagement", "Query");
 
-			return Connection.Get<List<ManagementResourceGroup>>(u);
+			return Tenant.Get<List<ManagementResourceGroup>>(u);
 		}
 	}
 }

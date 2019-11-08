@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using TomPIT.Caching;
+using TomPIT.Exceptions;
 
 namespace TomPIT.Connectivity
 {
-	internal class ConnectivityService : SynchronizedRepository<ISysConnection, string>, IConnectivityService
+	internal class ConnectivityService : SynchronizedRepository<ITenant, string>, IConnectivityService
 	{
-		private Lazy<List<ISysConnectionDescriptor>> _connections = new Lazy<List<ISysConnectionDescriptor>>();
-		public event ConnectionHandler ConnectionInitialized;
-		public event ConnectionHandler ConnectionInitialize;
-		public event ConnectionHandler ConnectionInitializing;
+		private Lazy<List<ITenantDescriptor>> _connections = new Lazy<List<ITenantDescriptor>>();
+		public event TenantHandler TenantInitialized;
+		public event TenantHandler TenantInitialize;
+		public event TenantHandler TenantInitializing;
 
 		public ConnectivityService() : base(MemoryCache.Default, "syscontext")
 		{
@@ -17,39 +18,39 @@ namespace TomPIT.Connectivity
 		}
 
 
-		public ISysConnection Select()
+		public ITenant SelectDefaultTenant()
 		{
 			return First();
 		}
 
-		public ISysConnection Select(string url)
+		public ITenant SelectTenant(string url)
 		{
 			if (string.IsNullOrWhiteSpace(url))
-				return Select();
+				return SelectDefaultTenant();
 
 			return Get(url);
 		}
 
-		public void Insert(string name, string url, string authenticationToken)
+		public void InsertTenant(string name, string url, string authenticationToken)
 		{
 			if (Get(url) != null)
 				throw new RuntimeException(SR.ErrSysContextRegistered);
 
-			var instance = new SysConnection(url, authenticationToken);
+			var instance = new Tenant(url, authenticationToken);
 
-			Connections.Add(new SysConnectionDescriptor(name, url, authenticationToken));
+			Connections.Add(new TenantDescriptor(name, url, authenticationToken));
 
 			Set(url, instance, TimeSpan.Zero);
-			ConnectionInitializing?.Invoke(this, new SysConnectionArgs(instance));
-			ConnectionInitialize?.Invoke(this, new SysConnectionArgs(instance));
-			ConnectionInitialized?.Invoke(this, new SysConnectionArgs(instance));
+			TenantInitializing?.Invoke(this, new TenantArgs(instance));
+			TenantInitialize?.Invoke(this, new TenantArgs(instance));
+			TenantInitialized?.Invoke(this, new TenantArgs(instance));
 		}
 
-		public List<ISysConnectionDescriptor> QueryConnections()
+		public List<ITenantDescriptor> QueryTenants()
 		{
 			return Connections;
 		}
 
-		private List<ISysConnectionDescriptor> Connections { get { return _connections.Value; } }
+		private List<ITenantDescriptor> Connections { get { return _connections.Value; } }
 	}
 }

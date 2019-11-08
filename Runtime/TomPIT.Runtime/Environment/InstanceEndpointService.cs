@@ -3,7 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Services;
+using TomPIT.Distributed;
+using TomPIT.Middleware;
 
 namespace TomPIT.Environment
 {
@@ -11,15 +12,15 @@ namespace TomPIT.Environment
 	{
 		private ConcurrentDictionary<string, RoundRobin> _rr = new ConcurrentDictionary<string, RoundRobin>();
 
-		public InstanceEndpointService(ISysConnection connection) : base(connection, "instanceendpoint")
+		public InstanceEndpointService(ITenant connection) : base(connection, "instanceendpoint")
 		{
 
 		}
 
 		protected override void OnInitializing()
 		{
-			var u = Connection.CreateUrl("InstanceEndpoint", "Query");
-			var ds = Connection.Get<List<InstanceEndpoint>>(u);
+			var u = Tenant.CreateUrl("InstanceEndpoint", "Query");
+			var ds = Tenant.Get<List<InstanceEndpoint>>(u);
 
 			foreach (var i in ds)
 			{
@@ -81,10 +82,10 @@ namespace TomPIT.Environment
 
 		private IInstanceEndpoint Load(Guid endpoint)
 		{
-			var u = Connection.CreateUrl("InstanceEndpoint", "Select")
+			var u = Tenant.CreateUrl("InstanceEndpoint", "Select")
 				.AddParameter("endpoint", endpoint);
 
-			return Connection.Get<InstanceEndpoint>(u);
+			return Tenant.Get<InstanceEndpoint>(u);
 		}
 
 		public string Url(InstanceType type, InstanceVerbs verb)

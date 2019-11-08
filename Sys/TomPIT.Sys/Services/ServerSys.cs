@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
-using TomPIT.Services;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
+using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Sys.Services
 {

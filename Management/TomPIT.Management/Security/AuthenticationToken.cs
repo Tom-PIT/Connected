@@ -2,8 +2,11 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
+using TomPIT.Runtime;
+using TomPIT.Security;
 
-namespace TomPIT.Security
+namespace TomPIT.Management.Security
 {
 	internal class AuthenticationToken : IAuthenticationToken
 	{
@@ -14,37 +17,37 @@ namespace TomPIT.Security
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
 		[Required]
 		[MaxLength(128)]
-		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public string Key { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
-		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public AuthenticationTokenClaim Claims { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
-		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public AuthenticationTokenStatus Status { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
-		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		[DateEditorFormat(DateEditorFormat.DateTime)]
 		public DateTime ValidFrom { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
-		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		[DateEditorFormat(DateEditorFormat.DateTime)]
 		public DateTime ValidTo { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
-		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public TimeSpan StartTime { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
-		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public TimeSpan EndTime { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
-		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		[PropertyEditor(PropertyEditorAttribute.Tag)]
 		[MaxLength(2048)]
 		[TagEditor(AllowCustomValues = true)]
@@ -54,9 +57,9 @@ namespace TomPIT.Security
 		public Guid ResourceGroup { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
-		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
-		[Items("TomPIT.Items.UserItems, TomPIT.Management")]
+		[Items("TomPIT.Management.Items.UserItems, TomPIT.Management")]
 		[Required]
 		public Guid User { get; set; }
 
@@ -64,13 +67,13 @@ namespace TomPIT.Security
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[MaxLength(128)]
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
-		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public string Name { get; set; }
 
 		[MaxLength(1024)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		[PropertyEditor(PropertyEditorAttribute.TextArea)]
-		[EnvironmentVisibility(Services.EnvironmentMode.Any)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public string Description { get; set; }
 
 		public override string ToString()

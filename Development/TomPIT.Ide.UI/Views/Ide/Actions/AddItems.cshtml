@@ -1,9 +1,9 @@
 ﻿@using TomPIT;
 
-@model TomPIT.Design.IDesignerToolbarAction
+@model TomPIT.Ide.Designers.IDesignerToolbarAction
 
 @{
-	var action = Model as TomPIT.Actions.AddItems;
+	var action = Model as TomPIT.Ide.Designers.Toolbar.AddItems;
 
 	if (action.Items.Count == 0) { return; }
 }
