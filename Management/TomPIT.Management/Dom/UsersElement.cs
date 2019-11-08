@@ -2,14 +2,16 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using TomPIT.Annotations;
-using TomPIT.Designers;
-using TomPIT.Items;
+using TomPIT.Annotations.Design;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.Management.Designers;
+using TomPIT.Management.Items;
 using TomPIT.Security;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
-	public class UsersElement : Element
+	public class UsersElement : DomElement
 	{
 		public const string FolderId = "Users";
 		private UsersDesigner _designer = null;
@@ -64,7 +66,7 @@ namespace TomPIT.Dom
 
 		public override void LoadChildren(string id)
 		{
-			var user = Connection.GetService<IUserService>().Select(id);
+			var user = Environment.Context.Tenant.GetService<IUserService>().Select(id);
 
 			Items.Add(new UserElement(this, user));
 		}
@@ -88,7 +90,7 @@ namespace TomPIT.Dom
 				{
 					_users = new ExistingUsers();
 
-					var ds = Connection.GetService<IUserService>().Query().OrderBy(f => f.DisplayName());
+					var ds = Environment.Context.Tenant.GetService<IUserService>().Query().OrderBy(f => f.DisplayName());
 
 					foreach (var i in ds)
 						_users.Items.Add(i);

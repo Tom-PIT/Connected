@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Data.Sql;
-using TomPIT.QA;
+using TomPIT.Quality;
 using TomPIT.SysDb.Development;
 
 namespace TomPIT.SysDb.Sql.Development

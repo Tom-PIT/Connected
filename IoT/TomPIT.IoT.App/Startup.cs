@@ -1,13 +1,17 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
 using TomPIT.IoT.Hubs;
+using TomPIT.IoT.Routing;
 using TomPIT.IoT.Security;
 using TomPIT.IoT.Services;
+using TomPIT.Middleware;
+using TomPIT.Runtime;
 using TomPIT.Security;
 
 namespace TomPIT.IoT
@@ -26,7 +30,7 @@ namespace TomPIT.IoT
 			services.AddCors(options => options.AddPolicy("TomPITPolicy",
 				builder =>
 				{
-					var setting = Instance.GetService<ISettingService>().Select(Guid.Empty, "Cors Origins");
+					var setting = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().Select(Guid.Empty, "Cors Origins");
 					var origin = new string[] { "http://localhost" };
 
 					if (setting != null && !string.IsNullOrWhiteSpace(setting.Value))
@@ -46,14 +50,14 @@ namespace TomPIT.IoT
 			services.AddSingleton<IHostedService, FlushingService>();
 		}
 
-		public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			Instance.Configure(InstanceType.Rest, app, env, (f) =>
 			{
-				Configuration.Routing.Register(f.Builder);
+				IoTRouting.Register(f.Builder);
 			});
 
-			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
+			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 			Instance.Run(app);
 
 			app.UseCors("TomPITPolicy");
@@ -62,12 +66,12 @@ namespace TomPIT.IoT
 				routes.MapHub<IoTServerHub>("/iot");
 			});
 
-			Instance.Connection.GetService<IAuthorizationService>().RegisterAuthenticationProvider(new IoTAuthenticationProvider());
+			MiddlewareDescriptor.Current.Tenant.GetService<IAuthorizationService>().RegisterAuthenticationProvider(new IoTAuthenticationProvider());
 		}
 
-		private void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
+		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
-			e.Connection.RegisterService(typeof(IIoTHubService), typeof(IoTHubService));
+			e.Tenant.RegisterService(typeof(IIoTHubService), typeof(IoTHubService));
 		}
 	}
 }

@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.Configuration;
-using TomPIT.Designers;
-using TomPIT.Items;
+using TomPIT.Ide;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
+using TomPIT.Management.Configuration;
+using TomPIT.Management.Designers;
+using TomPIT.Management.Items;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
 	public class SettingsElement : TransactionElement
 	{
@@ -77,7 +82,7 @@ namespace TomPIT.Dom
 					_ds = new ExistingSettings();
 
 					var rg = DomQuery.Closest<IResourceGroupScope>(this);
-					var items = Connection.GetService<ISettingService>().Query(rg == null ? Guid.Empty : rg.ResourceGroup.Token);
+					var items = Environment.Context.Tenant.GetService<ISettingService>().Query(rg == null ? Guid.Empty : rg.ResourceGroup.Token);
 
 					if (items != null)
 						items = items.OrderBy(f => f.Name).ToList();
@@ -96,7 +101,7 @@ namespace TomPIT.Dom
 		{
 			var s = component as ISetting;
 
-			Connection.GetService<ISettingManagementService>().Update(s.ResourceGroup, s.Name, s.Value, s.Visible, s.DataType, s.Tags);
+			Environment.Context.Tenant.GetService<ISettingManagementService>().Update(s.ResourceGroup, s.Name, s.Value, s.Visible, s.DataType, s.Tags);
 
 			return true;
 		}

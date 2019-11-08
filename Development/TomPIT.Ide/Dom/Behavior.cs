@@ -1,8 +1,8 @@
-﻿using TomPIT.Ide;
+﻿using TomPIT.Ide.Environment;
 
-namespace TomPIT.Dom
+namespace TomPIT.Ide.Dom
 {
-	public class Behavior : EnvironmentClient, IDomElementBehavior
+	public class Behavior : EnvironmentObject, IDomElementBehavior
 	{
 		public Behavior(IEnvironment environment) : base(environment)
 		{

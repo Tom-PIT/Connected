@@ -1,6 +1,9 @@
-﻿using TomPIT.Designers;
+﻿using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
+using TomPIT.Management.Designers;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
 	public class MembershipElement : TransactionElement
 	{

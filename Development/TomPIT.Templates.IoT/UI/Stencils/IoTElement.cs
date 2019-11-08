@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
 
-namespace TomPIT.IoT.UI.Stencils
+namespace TomPIT.MicroServices.IoT.UI.Stencils
 {
 	public abstract class IoTElement : Element, IIoTElement
 	{

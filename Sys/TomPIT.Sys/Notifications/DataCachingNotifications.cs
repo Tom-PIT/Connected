@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using TomPIT.Caching;
-using TomPIT.Notifications;
+using TomPIT.Messaging;
+using TomPIT.Reflection;
 using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Notifications
@@ -14,7 +13,7 @@ namespace TomPIT.Sys.Notifications
 	{
 		internal static IHubContext<DataCacheHub> Cache { get; set; }
 
-		private static async void Notify<T>(string method, T e)
+		private static void Notify<T>(string method, T e)
 		{
 			var args = new MessageEventArgs<T>(Guid.NewGuid(), e);
 
@@ -32,14 +31,14 @@ namespace TomPIT.Sys.Notifications
 				var sender = SysExtensions.RequestConnectionId("datacache");
 
 				if (string.IsNullOrWhiteSpace(sender))
-					await Cache.Clients.All.SendAsync(method, args);
+					Cache.Clients.All.SendAsync(method, args).Wait();
 				else
-					await Cache.Clients.AllExcept(sender).SendAsync(method, args);
+					Cache.Clients.AllExcept(sender).SendAsync(method, args).Wait();
 			}
 		}
 
 		public static void Clear(string key) { Notify(nameof(Clear), new DataCacheEventArgs(key)); }
-		public static void Invalidate(string key, List<string> ids) { Notify(nameof(Clear), new DataCacheEventArgs(key, ids)); }
-		public static void Remove(string key, List<string> ids) { Notify(nameof(Clear), new DataCacheEventArgs(key, ids)); }
+		public static void Invalidate(string key, List<string> ids) { Notify(nameof(Invalidate), new DataCacheEventArgs(key, ids)); }
+		public static void Remove(string key, List<string> ids) { Notify(nameof(Remove), new DataCacheEventArgs(key, ids)); }
 	}
 }

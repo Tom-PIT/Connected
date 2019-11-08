@@ -1,79 +1,26 @@
 ﻿(function ($) {
-	'use strict';
+    'use strict';
 
-	$.widget('tompit.tpTextEditor', {
-
-		options: {
-			onCreated: function (instance) {
-				return false;
-			},
-			onChanged: function (value) {
-				return false;
-			},
-			instance:null
-		},
-
-		_create: function () {
-			this._editors = [];
-		},
-        deactivateEditor: function () {
+    $.widget('tompit.tpTextEditor', {
+        options: {
+            instance: null,
+            state: [],
+            languages: []
+        },
+        _create: function () {
             var target = this;
 
-            if (typeof target.options.instance !== 'undefined' && target.options.instance !== null) {
-                try {
-                    if (typeof target.options.timer !== 'undefined')
-                        clearInterval(target.options.timer);
+            require(['vs/editor/editor.main'], function () {
+                monaco.editor.defineTheme('TomPIT', {
+                    base: 'vs',
+                    inherit: true,
+                    rules: [{ background: 'f5f5f5' }]
+                });
 
-                    if (typeof target.options.instance.completionItemProvider !== 'undefined')
-                        target.options.instance.completionItemProvider.dispose();
+                monaco.editor.setTheme('TomPIT');
 
-                    if (typeof target.options.instance.signatureHelpProvider !== 'undefined')
-                        target.options.instance.signatureHelpProvider.dispose();
-
-                    if (typeof target.options.instance.hoverProvider !== 'undefined')
-                        target.options.instance.hoverProvider.dispose();
-
-                    if (typeof target.options.instance.codeLensProvider !== 'undefined')
-                        target.options.instance.codeLensProvider.dispose();
-
-                    if (typeof target.options.instance.definitionProvider !== 'undefined')
-                        target.options.instance.definitionProvider.dispose();
-
-
-                    target.options.instance.dispose();
-                    target.options.instance = null;
-                }
-                catch (e) {
-                    console.log(e);
-                }
-            }
-        },
-		activateEditor: function (options) {
-			var target = this;
-
-			require(['vs/editor/editor.main'], function () {
-				monaco.editor.defineTheme('TomPIT', {
-
-					base: 'vs',
-					inherit: true,
-					rules: [{ background: 'f5f5f5' }]
-				});
-
-				monaco.editor.setTheme('TomPIT');
-
-                target.deactivateEditor();
-
-				target.options = $.extend({
-					readOnly:false
-				}, options);
-
-				var src = options.source === null || options.source.length === 0 ? '\n' : options.source.join('\n');
-
-                target.options.hasChanged = false;
-                target.options.changeState = false;
-                target.options.instance = monaco.editor.create(document.getElementById(options.elementId), {
-                    value: src,
-                    language: options.language,
+                target.options.instance = monaco.editor.create(document.getElementById('devTextDesignerEditor'), {
+                    language: null,
                     lineNumbers: true,
                     scrollBeyondLastLine: true,
                     automaticLayout: true,
@@ -85,101 +32,339 @@
                     parameterHints: {
                         enabled: true
                     },
-					wrappingColumn: 0,
-					wrappingIndent: 'indent',
-                    readOnly: options.readOnly,
+                    wrappingColumn: 0,
+                    wrappingIndent: 'indent',
                     showUnused: true,
                     autoIndent: true,
-                    wordWrap:'on'
-				});
-
-                target.options.timer = setInterval(function () {
-                    try {
-                        if ($.isFunction(target.options.onCheckSyntax) && target.observeDirty())
-                            target.options.onCheckSyntax();
-                    } catch (e) {
-                        console.log(e);
+                    wordWrap: 'off',
+                    tabCompletion:'on',
+                    model: null,
+                    minimap: {
+                        enabled: false
                     }
-                }, 2500);
+                },
+                    {
+                        editorService: {
+                            openEditor: function(e) {
+                                alert(`open editor called!` + JSON.stringify(e));
+                            },
+                            resolveEditor:function(e) {
+                                alert(`open editor called!` + JSON.stringify(e));
+                            }
+                        }
+                    });
 
-				if ($.isFunction(options.onCreated))
-					options.onCreated(target.options.instance);
+                target.options.instance.setup = function (options) {
+                    var debug = options.debug;
+                    var debugButton = $('#btnDebug');
 
-				target.options.instance.onDidChangeModelContent((e) => {
-                    target.options.hasChanged = true;
-                    target.options.changeState = true;
-				});
+                    if (typeof debug !== 'undefined' && typeof debug.url !== 'undefined' && debug.url.length > 0) {
+                        debugButton.collapse('show');
+                        debugButton.attr('href', debug.url);
+                    }
+                    else
+                        debugButton.collapse('hide');
 
-				$('textarea', target.element).on('blur', function () {
-					if (target.options.hasChanged && typeof options.onChange !== 'undefined') {
-						options.onChange(target.options.instance.getValue());
-						target.options.hasChanged = false;
-					}
-				});
-			});
-		},
-		registerCompletionItemProvider: function (language, options) {
-			var provider = monaco.languages.registerCompletionItemProvider(language, options);
+                    if (typeof options.language === 'undefined' || options.length === 0)
+                        $('#labelSyntaxLanguage').collapse('hide');
+                    else {
+                        $('#labelSyntaxLanguage').html(options.language);
+                        $('#labelSyntaxLanguage').collapse('show');
+                    }
+                };
 
-			this.options.instance.completionItemProvider = provider;
-		},
-		registerSignatureHelpProvider: function (language, options) {
-			var provider = monaco.languages.registerSignatureHelpProvider(language, options);
+                monaco.editor.onDidCreateModel((model)=>{
+                    model.onDidChangeContent((e) => {
+                        try {
+                            target.setState({
+                                model: model.uri.toString(),
+                                dirty: true,
+                                timestamp: Date.now()
+                            });
+                        }
+                        catch (e) {
+                            console.log(e);
+                        }
+                    });
+                });
 
-			this.options.instance.signatureHelpProvider = provider;
-		},
-		registerHoverProvider: function (language, options) {
-			var provider = monaco.languages.registerHoverProvider(language, options);
-
-			this.options.instance.hoverProvider = provider;
-		},
-		registerCodeLensProvider: function (language, options) {
-			var provider = monaco.languages.registerCodeLensProvider(language, options);
-
-			this.options.instance.codeLensProvider = provider;
-		},
-		registerDefinitionProvider: function (language, options) {
-			var provider = monaco.languages.registerDefinitionProvider(language, options);
-
-			this.options.instance.definitionProvider = provider;
-		},
-		insertText: function (text) {
-			var line = this.options.instance.getPosition();
-			var range = new monaco.Range(line.lineNumber, 1, line.lineNumber, 1);
-			var identifier = { major: 1, minor: 1 };
-			var op = { identifier: identifier, range: range, text: text, forceMoveMarkers: true };
-
-			this.options.instance.executeEdits("insert-snippet", [op]);
+                if ($.isFunction(target.options.onCreated))
+                    target.options.onCreated(target, target.getInstance());
+            });
         },
-		getValue: function () {
-			return this.options.instance.getValue();
-		},
-		setValue: function (s) {
-			return this.options.instance.setValue(s);
-		},
-		formatDocument: function () {
-			this.options.instance.trigger('format', 'editor.action.formatDocument');
-		},
-		setMarkers: function (markers) {
-			monaco.editor.setModelMarkers(this.options.instance.getModel(), 'syntax', markers);
 
-		},
-		addCommand: function (k, h) {
-			return this.options.instance.addCommand(k, h);
-		},
-		addAction: function (k) {
-			return this.options.instance.addAction(k);
+        getDirtyModels: function () {
+            var result = [];
+
+            $.each(this.options.state, function (i, v) {
+                if (v.dirty)
+                    result.push(v);
+            });
+
+            return result;
         },
-        observeDirty: function () {
-            var r = this.options.changeState;
+        setState: function (state) {
+            var existingState = null;
+            var existingStateIndex = -1;
 
-            this.options.changeState = false;
+            $.each(this.options.state, function (i, v) {
+                if (v.model === state.model) {
+                    if (!state.dirty) {
+                        if (state.timestamp < v.timestamp)
+                            return false;
+                    }
 
-            return r;
+                    existingState = v;
+                    existingStateIndex = i;
+                    return false;
+                }
+            });
+
+            if (existingState === null) {
+                if (!state.dirty)
+                    return;
+
+                if (typeof state.timestamp === 'undefined')
+                    state.timestamp = Date.now();
+
+                this.options.state.push(state);
+            }
+            else {
+                if (!state.dirty && state.timestamp >= existingState.timestamp)
+                    this.options.state.splice(existingStateIndex, 1);
+                else
+                    existingState.dirty = true;
+            }
         },
-        getEditor: function () {
+        getInstance: function () {
             return this.options.instance;
-        }
+        },
+        isLanguageInitialized: function (language) {
+            var result = false;
 
-	});
+            $.each(this.options.languages, function (i, v) {
+                if (v === language) {
+                    result = true;
+                    return false;
+                }
+            });
+
+            return result;
+        },
+        initializeLanguage: function (language, features) {
+            this.options.languages.push(language);
+
+            if (features.codeAction)
+                this._codeAction(language);
+
+            if (features.completionItem)
+                this._completionItem(language);
+
+            if (features.declaration)
+                this._declaration(language);
+
+            if (features.signatureHelp)
+                this._signatureHelp(language);
+
+            if (features.documentSymbol)
+                this._documentSymbol(language);
+
+        },
+        setTargetProperty: function (property) {
+            this.options.property = property;
+        },
+        _codeAction: function (language) {
+            var instance = this;
+
+            monaco.languages.registerCodeActionProvider(language, {
+                provideCodeActions: function (model, range, context) {
+                    return new Promise(function (resolve, reject) {
+                        try {
+                            ide.designerAction({
+                                data: {
+                                    action: 'provideCodeActions',
+                                    section: 'designer',
+                                    property: instance.options.property,
+                                    model: {
+                                        'id': model.id,
+                                        'uri': model.uri.toString()
+                                    },
+                                    range: range,
+                                    context: context,
+                                    text: model.getValue()
+                                },
+                                onComplete: function (data) {
+                                    resolve({
+                                        actions: data === null ? [] : data,
+                                        dispose: function () { data = null; }
+                                    });
+                                }
+
+                            }, false);
+                        }
+                        catch (e) {
+                            reject();
+                            console.log(e);
+                        }
+                    });
+                }
+            });
+        },
+        _completionItem: function (language) {
+            var instance = this;
+
+            monaco.languages.registerCompletionItemProvider(language, {
+                provideCompletionItems: function (model, position, context) {
+                    return new Promise(function (resolve, reject) {
+                        try {
+                            ide.designerAction({
+                                data: {
+                                    action: 'provideCompletionItems',
+                                    section: 'designer',
+                                    property: instance.options.property,
+                                    model: {
+                                        'id': model.id,
+                                        'uri': model.uri.toString()
+                                    },
+                                    position: position,
+                                    context: context,
+                                    text: model.getValue()
+                                },
+                                onComplete: function (data) {
+                                    if (data) {
+                                        data.dispose = function () {
+                                            data = null;
+                                        };
+
+                                        resolve(data);
+                                    }
+                                    else
+                                        reject();
+                                }
+
+                            }, false);
+                        }
+                        catch (e) {
+                            reject();
+                            console.log(e);
+                        }
+                    });
+                }
+            });
+        },
+        _declaration: function (language) {
+            var instance = this;
+
+            monaco.languages.registerDeclarationProvider(language, {
+                provideDeclaration: function (model, position) {
+                    return new Promise(function (resolve, reject) {
+                        try {
+                            ide.designerAction({
+                                data: {
+                                    action: 'provideDeclaration',
+                                    section: 'designer',
+                                    property: instance.options.property,
+                                    model: {
+                                        'id': model.id,
+                                        'uri': model.uri.toString()
+                                    },
+                                    position: position,
+                                    text: model.getValue()
+                                },
+                                onComplete: function (data) {
+                                    resolve({
+                                        uri: monaco.Uri.parse(data.uri),
+                                        range: data.range
+                                    });
+                                }
+
+                            }, false);
+                        }
+                        catch (e) {
+                            reject();
+                            console.log(e);
+                        }
+                    });
+                }
+            });
+        },
+        _signatureHelp: function (language) {
+            var instance = this;
+
+            monaco.languages.registerSignatureHelpProvider(language, {
+                provideSignatureHelp: function (model, position, token, context) {
+                    return new Promise(function (resolve, reject) {
+                        try {
+                            ide.designerAction({
+                                data: {
+                                    action: 'provideSignatureHelp',
+                                    section: 'designer',
+                                    property: instance.options.property,
+                                    model: {
+                                        'id': model.id,
+                                        'uri': model.uri.toString()
+                                    },
+                                    position: position,
+                                    text: model.getValue()
+                                },
+                                onComplete: function (data) {
+                                    if (data) {
+                                        resolve({
+                                            value: data,
+                                            dispose: function () {
+
+                                                data = null;
+                                            }
+                                        });
+                                    }
+                                    else
+                                        reject();
+                                }
+
+                            }, false);
+                        }
+                        catch (e) {
+                            reject();
+                            console.log(e);
+                        }
+                    });
+                }
+            });
+        },
+        _documentSymbol: function (language) {
+            var instance = this;
+
+            monaco.languages.registerDocumentSymbolProvider(language, {
+                provideDocumentSymbols: function (model, position, token, context) {
+                    return new Promise(function (resolve, reject) {
+                        try {
+                            ide.designerAction({
+                                data: {
+                                    action: 'provideDocumentSymbols',
+                                    section: 'designer',
+                                    property: instance.options.property,
+                                    model: {
+                                        'id': model.id,
+                                        'uri': model.uri.toString()
+                                    },
+                                    text: model.getValue()
+                                },
+                                onComplete: function (data) {
+                                    if (data)
+                                        resolve(data);
+                                    else
+                                        reject();
+                                }
+
+                            }, false);
+                        }
+                        catch (e) {
+                            reject();
+                            console.log(e);
+                        }
+                    });
+                }
+            });
+        }
+    });
 })(jQuery);

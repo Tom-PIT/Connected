@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Html;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json.Linq;
-using System.Threading.Tasks;
-using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
+using TomPIT.Middleware;
 using TomPIT.Models;
+using TomPIT.Serialization;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT
 {
@@ -15,37 +17,31 @@ namespace TomPIT
 		{
 		}
 
-		public async Task<IHtmlContent> Render(string name)
+		public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)]string name)
 		{
-			ProcessView(name);
-
-			return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), Html.ViewData.Model);
+			return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), Html.ViewData.Model as IMiddlewareContext);
 		}
 
 
-		public async Task<IHtmlContent> Render(string name, object arguments)
+		public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)]string name, object arguments)
 		{
-			var a = arguments == null ? null : Types.Deserialize<JObject>(Types.Serialize(arguments));
+			var a = arguments == null ? null : Serializer.Deserialize<JObject>(arguments);
 
 			if (a != null && Html.ViewData.Model is IRuntimeModel rtModel)
 				rtModel.MergeArguments(a);
 
-			ProcessView(name);
-
 			return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), Html.ViewData.Model);
 		}
 
-		public async Task<IHtmlContent> Render(string name, JObject arguments)
+		public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)]string name, JObject arguments)
 		{
 			if (arguments != null && Html.ViewData.Model is IRuntimeModel rtModel)
 				rtModel.MergeArguments(arguments);
 
-			ProcessView(name);
-
 			return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), Html.ViewData.Model);
 		}
 
-		private IPartialView ResolveView(string qualifier)
+		private IPartialViewConfiguration ResolveView(string qualifier)
 		{
 			var tokens = qualifier.Split('/');
 			var model = Html.ViewData.Model as IRuntimeModel;
@@ -54,7 +50,7 @@ namespace TomPIT
 
 			if (tokens.Length > 1)
 			{
-				ms = model.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+				ms = model.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
 				if (ms == null)
 					return null;
@@ -62,20 +58,7 @@ namespace TomPIT
 				name = tokens[1];
 			}
 
-			return model.Connection().GetService<IComponentService>().SelectConfiguration(ms.Token, "Partial", name) as IPartialView;
-		}
-
-		private void ProcessView(string name)
-		{
-			var view = ResolveView(name);
-
-			if (view == null)
-				return;
-
-			var vm = Html.ViewData.Model as IViewModel;
-			var args = new ViewInvokeArguments(vm);
-
-			vm.Connection().GetService<ICompilerService>().Execute(((IConfiguration)view).MicroService(vm.Connection()), view.Invoke, this, args);
+			return model.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "Partial", name) as IPartialViewConfiguration;
 		}
 	}
 }

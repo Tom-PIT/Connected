@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
-using TomPIT.Models;
+using TomPIT.Development.Models;
 
-namespace TomPIT.Controllers
+namespace TomPIT.Development.Controllers
 {
 	public class ApiTestController : DevelopmentController
 	{

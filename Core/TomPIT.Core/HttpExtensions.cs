@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Globalization;
+﻿using System;
 using System.IO;
 using System.Text;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+using TomPIT.Serialization;
 
 namespace TomPIT
 {
@@ -29,7 +28,7 @@ namespace TomPIT
 
 			var cookie = request.Cookies[SecurityUtils.AuthenticationCookieName];
 
-			return Types.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
+			return Serializer.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
 		}
 
 		public static string GetAuthenticationEndpoint(this HttpRequest request)
@@ -49,19 +48,22 @@ namespace TomPIT
 
 		public static JObject ToJObject(this Stream s)
 		{
-			var body = new StreamReader(s, Encoding.UTF8).ReadToEnd();
+			using (var reader = new StreamReader(s, Encoding.UTF8))
+			{
+				var body = reader.ReadToEndAsync().Result;
 
-			if (string.IsNullOrWhiteSpace(body))
-				return new JObject();
+				if (string.IsNullOrWhiteSpace(body))
+					return new JObject();
 
-			return Types.Deserialize<JObject>(body);
+				return Serializer.Deserialize<JObject>(body);
+			}
 		}
 
 		public static T ToType<T>(this Stream s)
 		{
-			var body = new StreamReader(s, Encoding.UTF8).ReadToEnd();
+			var body = new StreamReader(s, Encoding.UTF8).ReadToEndAsync().Result;
 
-			return Types.Deserialize<T>(body);
+			return Serializer.Deserialize<T>(body);
 		}
 	}
 }

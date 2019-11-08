@@ -1,16 +1,17 @@
 ﻿using System;
 using System.ComponentModel;
-using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Reports;
+using TomPIT.Runtime;
 
-namespace TomPIT.Reporting
+namespace TomPIT.MicroServices.Reporting
 {
-	[DomDesigner("TomPIT.Reporting.Design.Designers.ReportDesigner, TomPIT.Reporting.Design")]
-	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = Services.EnvironmentMode.Runtime)]
-	[DomElement("TomPIT.Reporting.Design.Dom.ReportElement, TomPIT.Reporting.Design")]
-	[ViewRenderer("TomPIT.Reporting.UI.ReportRenderer, TomPIT.Reporting")]
-	public class Report : ComponentConfiguration, IReport
+	[DomDesigner("TomPIT.MicroServices.Reporting.Design.Designers.ReportDesigner, TomPIT.MicroServices.Reporting.Design")]
+	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = EnvironmentMode.Runtime)]
+	[DomElement("TomPIT.MicroServices.Reporting.Design.Dom.ReportElement, TomPIT.MicroServices.Reporting.Design")]
+	[ViewRenderer("TomPIT.MicroServices.Reporting.UI.ReportRenderer, TomPIT.MicroServices.Reporting")]
+	public class Report : ComponentConfiguration, IReportConfiguration
 	{
 		[Browsable(false)]
 		public Guid TextBlob { get; set; }

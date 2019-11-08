@@ -1,6 +1,6 @@
 ﻿using TomPIT.Security;
 
-namespace TomPIT.IoT.Security
+namespace TomPIT.MicroServices.IoT.Security
 {
 	public class IoTViewPermissionDescriptor : ComponentPermissionDescriptor
 	{

@@ -1,7 +1,7 @@
 ﻿using System;
 using TomPIT.Diagnostics;
 
-namespace TomPIT
+namespace TomPIT.Management
 {
 	public static class ManagementExtensions
 	{

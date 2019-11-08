@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Text;
 using TomPIT.Models;
-using TomPIT.Services;
+using TomPIT.Runtime;
+using TomPIT.Security;
+using TomPIT.Serialization;
 
 namespace TomPIT.Controllers
 {
@@ -71,20 +73,35 @@ namespace TomPIT.Controllers
 
 				if (ModelState.IsValid)
 				{
-					var returnUrl = Request.Query["returnUrl"];
+					var referer = Request.Headers.ContainsKey("Referer") ? Request.Headers["Referer"].ToString() : null;
+					var returnUrl = string.Empty;
+
+					if (!string.IsNullOrWhiteSpace(referer))
+					{
+						try
+						{
+							var uri = new UriBuilder(referer);
+							var query = QueryHelpers.ParseQuery(uri.Query);
+
+							if (query.ContainsKey("returnUrl"))
+								returnUrl = query["returnUrl"];
+						}
+						catch { }
+					}
+
 
 					if (string.IsNullOrWhiteSpace(returnUrl))
 					{
 						var loc = body.Optional("location", string.Empty);
 
 						if (string.IsNullOrWhiteSpace(loc))
-							returnUrl = m.RootUrl();
+							returnUrl = m.Services.Routing.RootUrl;
 						else
 						{
-							var relative = Request.HttpContext.RelativePath(loc);
+							var relative = m.Services.Routing.RelativePath(loc);
 
-							if (relative.Trim('/').StartsWith("sys/", StringComparison.OrdinalIgnoreCase) ||relative.Trim('/').StartsWith("login", StringComparison.OrdinalIgnoreCase))
-								returnUrl = m.RootUrl();
+							if (relative.Trim('/').StartsWith("sys/", StringComparison.OrdinalIgnoreCase) || relative.Trim('/').StartsWith("login", StringComparison.OrdinalIgnoreCase))
+								returnUrl = m.Services.Routing.RootUrl;
 							else
 								returnUrl = m.Services.Routing.Absolute(loc);
 						}
@@ -135,7 +152,7 @@ namespace TomPIT.Controllers
 					var returnUrl = Request.Query["returnUrl"];
 
 					if (string.IsNullOrWhiteSpace(returnUrl))
-						returnUrl = m.RootUrl();
+						returnUrl = m.Services.Routing.RootUrl;
 
 					return AjaxRedirect(returnUrl);
 				}
@@ -166,10 +183,10 @@ namespace TomPIT.Controllers
 				{
 					 { "jwt",token },
 					 { "endpoint",model.Endpoint   },
-					 { "expiration",expiration.Ticks.AsString()   }
+					 { "expiration",expiration.Ticks   }
 				};
 
-			Response.Cookies.Append(key, Convert.ToBase64String(Encoding.UTF8.GetBytes(Types.Serialize(content))), new CookieOptions
+			Response.Cookies.Append(key, Convert.ToBase64String(Encoding.UTF8.GetBytes(Serializer.Serialize(content))), new CookieOptions
 			{
 				HttpOnly = true,
 				Expires = expiration

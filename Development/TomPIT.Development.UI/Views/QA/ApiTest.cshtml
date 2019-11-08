@@ -1,6 +1,6 @@
 ﻿@using System.Text.Encodings.Web;
 
-@model TomPIT.Models.ApiTestModel
+@model TomPIT.Development.Models.ApiTestModel
 
 @section head{
 	<environment names="Staging,Production">
@@ -23,10 +23,10 @@
 
 @{
 	var path = "Assets/Libraries/monaco/vs";
-	var ctx = Model as TomPIT.Services.IExecutionContext;
+	var ctx = Model as TomPIT.Middleware.IMiddlewareContext;
 
 	if (ctx != null)
-	{ path = ctx.MapPath("~/Assets/Libraries/monaco/vs"); }
+	{ path = ctx.Services.Routing.MapPath("~/Assets/Libraries/monaco/vs"); }
 }
 
 <script src="~/Assets/Libraries/monaco/vs/loader.js"></script>

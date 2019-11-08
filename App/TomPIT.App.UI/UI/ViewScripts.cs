@@ -1,4 +1,4 @@
-﻿namespace TomPIT.UI
+﻿namespace TomPIT.App.UI
 {
 	internal class ViewScripts
 	{

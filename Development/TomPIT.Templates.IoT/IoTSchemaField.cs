@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
 
-namespace TomPIT.IoT
+namespace TomPIT.MicroServices.IoT
 {
 	[Create("Field", nameof(Name))]
 	public class IoTSchemaField : ConfigurationElement, IIoTSchemaField

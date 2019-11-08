@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Data.Sql;
@@ -11,83 +9,6 @@ namespace TomPIT.SysDb.Sql.Environment
 {
 	internal class EnvironmentHandler : IEnvironmentHandler
 	{
-		/*
-		 * Environment units
-		 */
-		public void DeleteEnvironmentUnit(IEnvironmentUnit target)
-		{
-			var w = new Writer("tompit.environment_unit_del");
-
-			w.CreateParameter("@id", target.GetId());
-
-			w.Execute();
-		}
-
-		public void InsertEnvironmentUnit(Guid token, string name, IEnvironmentUnit parent, int ordinal)
-		{
-			var w = new Writer("tompit.environment_unit_ins");
-
-			w.CreateParameter("@token", token);
-			w.CreateParameter("@name", name);
-			w.CreateParameter("@parent", parent == null ? 0 : parent.GetId(), true);
-			w.CreateParameter("@ordinal", ordinal);
-
-			w.Execute();
-		}
-
-		public IEnvironmentUnit SelectEnvironmentUnit(Guid token)
-		{
-			var r = new Reader<EnvironmentUnit>("tompit.environment_unit_sel");
-
-			r.CreateParameter("@token", token);
-
-			return r.ExecuteSingleRow();
-		}
-
-		public List<IEnvironmentUnit> QueryEnvironmentUnits()
-		{
-			return new Reader<EnvironmentUnit>("tompit.environment_unit_que").Execute().ToList<IEnvironmentUnit>();
-		}
-
-		public void UpdateEnvironmentUnits(List<EnvironmentUnitBatchDescriptor> items)
-		{
-			var a = new JArray();
-
-			foreach (var i in items)
-			{
-				var element = new JObject
-				{
-					{"name", i.Name },
-					{"ordinal", i.Ordinal },
-					{"id", i.Unit.GetId().ToString() }
-				};
-
-				if (i.Parent != null)
-					element.Add("parent", i.Parent.GetId().ToString());
-
-
-				a.Add(element);
-			}
-
-			var w = new Writer("tompit.environment_unit_upd_batch");
-
-			w.CreateParameter("@items", JsonConvert.SerializeObject(a));
-
-			w.Execute();
-		}
-
-		public void UpdateEnvironmentUnit(IEnvironmentUnit target, string name, IEnvironmentUnit parent, int ordinal)
-		{
-			var w = new Writer("tompit.environment_unit_upd");
-
-			w.CreateParameter("@id", target.GetId());
-			w.CreateParameter("@name", name);
-			w.CreateParameter("@parent", parent == null ? 0 : parent.GetId(), true);
-			w.CreateParameter("@ordinal", ordinal);
-
-			w.Execute();
-		}
-
 		/*
 		 * Instance endpoints
 		 */

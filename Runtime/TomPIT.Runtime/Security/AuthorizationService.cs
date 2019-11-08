@@ -1,11 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
-using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
-using TomPIT.Services;
+using TomPIT.Middleware;
+using TomPIT.Navigation;
+using TomPIT.Runtime;
+using TomPIT.Runtime.Configuration;
+using TomPIT.Security.Authentication;
+using TomPIT.Security.AuthorizationProviders;
 
 namespace TomPIT.Security
 {
@@ -17,14 +21,13 @@ namespace TomPIT.Security
 		private Lazy<List<IAuthenticationProvider>> _authProviders = new Lazy<List<IAuthenticationProvider>>();
 		private IAuthenticationProvider _defaultAuthenticationProvider = null;
 
-		public AuthorizationService(ISysConnection connection) : base(connection, "permissions")
+		public AuthorizationService(ITenant tenant) : base(tenant, "permissions")
 		{
-			Membership = new MembershipCache(connection);
-			AuthenticationTokens = new AuthenticationTokensCache(connection);
+			Membership = new MembershipCache(tenant);
+			AuthenticationTokens = new AuthenticationTokensCache(tenant);
 
 			Providers.Add(new RoleAuthorizationProvider());
 			Providers.Add(new UserAuthorizationProvider());
-			Providers.Add(new EnvironmentUnitAuthorizationProvider());
 			Providers.Add(new PolicyAuthorizationProvider());
 		}
 
@@ -32,15 +35,15 @@ namespace TomPIT.Security
 		{
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
 			{
-				var u = Connection.CreateUrl("Security", "QueryPermissions");
-				var ds = Connection.Get<List<Permission>>(u).ToList<IPermission>();
+				var u = Tenant.CreateUrl("Security", "QueryPermissions");
+				var ds = Tenant.Get<List<Permission>>(u).ToList<IPermission>();
 
 				foreach (var i in ds)
 					Set(GenerateRandomKey(), i, TimeSpan.Zero);
 			}
 			else
 			{
-				var u = Connection.CreateUrl("Security", "QueryPermissionsForResourceGroup");
+				var u = Tenant.CreateUrl("Security", "QueryPermissionsForResourceGroup");
 				var a = new JArray();
 				var e = new JObject
 				{
@@ -50,7 +53,7 @@ namespace TomPIT.Security
 				foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
 					a.Add(i);
 
-				var ds = Connection.Post<List<Permission>>(u, e).ToList<IPermission>();
+				var ds = Tenant.Post<List<Permission>>(u, e).ToList<IPermission>();
 
 				foreach (var i in ds)
 					Set(GenerateRandomKey(), i, TimeSpan.Zero);
@@ -83,7 +86,7 @@ namespace TomPIT.Security
 			return DefaultAuthenticationProvider.Authenticate(authenticationToken);
 		}
 
-		public IAuthorizationResult Authorize(IExecutionContext context, AuthorizationArgs e)
+		public IAuthorizationResult Authorize(IMiddlewareContext context, AuthorizationArgs e)
 		{
 			if (string.IsNullOrWhiteSpace(e.Claim))
 				return AuthorizationResult.Fail(AuthorizationResultReason.NoClaim, 0);
@@ -109,17 +112,17 @@ namespace TomPIT.Security
 
 			if (permissions.Count == 0)
 			{
-//				if (folderResult.PermissionCount == 0)
+				//				if (folderResult.PermissionCount == 0)
 				//{
-					switch (e.Schema.Empty)
-					{
-						case EmptyBehavior.Deny:
-							return AuthorizationResult.Fail(AuthorizationResultReason.Empty, permissions.Count);
-						case EmptyBehavior.Alow:
-							return AuthorizationResult.OK(permissions.Count);
-						default:
-							throw new NotSupportedException();
-					}
+				switch (e.Schema.Empty)
+				{
+					case EmptyBehavior.Deny:
+						return AuthorizationResult.Fail(AuthorizationResultReason.Empty, permissions.Count);
+					case EmptyBehavior.Alow:
+						return AuthorizationResult.OK(permissions.Count);
+					default:
+						throw new NotSupportedException();
+				}
 				//}
 				//else
 				//	return folderResult;
@@ -270,13 +273,13 @@ namespace TomPIT.Security
 
 		private void LoadPermission(PermissionEventArgs e)
 		{
-			var u = Connection.CreateUrl("Security", "SelectPermission")
+			var u = Tenant.CreateUrl("Security", "SelectPermission")
 				.AddParameter("evidence", e.Evidence)
 				.AddParameter("schema", e.Schema)
 				.AddParameter("claim", e.Claim)
 				.AddParameter("primaryKey", e.PrimaryKey);
 
-			var d = Connection.Get<Permission>(u);
+			var d = Tenant.Get<Permission>(u);
 
 			if (d != null)
 				Set(GenerateRandomKey(), d, TimeSpan.Zero);
@@ -289,13 +292,13 @@ namespace TomPIT.Security
 
 		public bool IsInRole(Guid user, string role)
 		{
-			var r = Connection.GetService<IRoleService>().Select(role);
+			var r = Tenant.GetService<IRoleService>().Select(role);
 
 			if (r == null)
 				return false;
 
 			if (r.Behavior == RoleBehavior.Implicit)
-				return RoleAuthorizationProvider.IsInImplicitRole(Connection, user, r);
+				return RoleAuthorizationProvider.IsInImplicitRole(Tenant, user, r);
 
 			return Membership.Select(user, r.Token) != null;
 		}
@@ -303,6 +306,32 @@ namespace TomPIT.Security
 		public void RegisterAuthenticationProvider(IAuthenticationProvider provider)
 		{
 			AuthenticationProviders.Add(provider);
+		}
+
+		public void Authorize(ISiteMapContainer container)
+		{
+			if (container == null)
+				return;
+
+			Authorize(container.Routes.ToList(), container.Context.Services.Identity.IsAuthenticated
+				? container.Context.Services.Identity.User.Token
+				: Guid.Empty);
+		}
+
+		private void Authorize(List<ISiteMapRoute> routes, Guid user)
+		{
+			for (var i = routes.Count - 1; i >= 0; i--)
+			{
+				var route = routes[i];
+
+				if (route is ISiteMapAuthorizationElement ae)
+				{
+					if (!ae.Authorize(user))
+						routes.RemoveAt(i);
+					else
+						Authorize(route.Routes.ToList(), user);
+				}
+			}
 		}
 
 		private MembershipCache Membership { get; }
@@ -314,45 +343,10 @@ namespace TomPIT.Security
 			get
 			{
 				if (_defaultAuthenticationProvider == null)
-					_defaultAuthenticationProvider = new DefaultAuthenticationProvider(Connection);
+					_defaultAuthenticationProvider = new DefaultAuthenticationProvider(Tenant);
 
 				return _defaultAuthenticationProvider;
 			}
 		}
-
-		//private IAuthorizationResult AuthorizeFolder(IExecutionContext context, AuthorizationArgs e, int permissionCounter)
-		//{
-		//	if (e.Folder == Guid.Empty)
-		//		return AuthorizationResult.OK(permissionCounter);
-
-		//	var folder = Connection.GetService<IComponentService>().SelectFolder(e.Folder);
-
-		//	if (folder.Parent != Guid.Empty)
-		//	{
-		//		var args = new AuthorizationArgs(e.User, Claims.FolderAccess, folder.Token.ToString(), folder.Parent);
-
-		//		args.Schema.Empty = EmptyBehavior.Alow;
-		//		args.Schema.Level = AuthorizationLevel.Pessimistic;
-
-		//		var parentResult = AuthorizeFolder(context, args, permissionCounter);
-
-		//		if (!parentResult.Success)
-		//			return parentResult;
-
-		//		permissionCounter += parentResult.PermissionCount;
-		//	}
-
-		//	var folderArgs = new AuthorizationArgs(e.User, Claims.FolderAccess, e.Folder.ToString());
-
-		//	folderArgs.Schema.Empty = EmptyBehavior.Alow;
-		//	folderArgs.Schema.Level = AuthorizationLevel.Pessimistic;
-
-		//	var r = Authorize(context, folderArgs);
-
-		//	if (r is AuthorizationResult ar)
-		//		ar.PermissionCount += permissionCounter;
-
-		//	return r;
-		//}
 	}
 }

@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
-using TomPIT.Application.Security;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.Dom;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
+using TomPIT.MicroServices.Security;
+using TomPIT.Reflection;
 using TomPIT.Security;
 
-namespace TomPIT.Application.Design.Dom
+namespace TomPIT.MicroServices.Design.Dom
 {
 	internal class ApiOperationElement : ElementPermissionElement
 	{
@@ -14,16 +16,27 @@ namespace TomPIT.Application.Design.Dom
 
 		public ApiOperationElement(ReflectorCreateArgs e) : base(e)
 		{
+			SetGlyph();
 		}
 
 		public ApiOperationElement(IDomElement parent, object instance) : base(parent, instance)
 		{
+			SetGlyph();
 		}
 
 		public ApiOperationElement(IDomElement parent, object instance, PropertyInfo property, int index) : base(parent, instance, property, index)
 		{
+			SetGlyph();
 		}
 
+		private void SetGlyph()
+		{
+			if (Operation.Scope == ComponentModel.ElementScope.Public)
+				Glyph = "fal fa-file-code text-success";
+			else
+				Glyph = "fal fa-file-code text-secondary";
+		}
+		private IApiOperation Operation => Component as IApiOperation;
 		public override List<string> Claims
 		{
 			get
@@ -49,7 +62,7 @@ namespace TomPIT.Application.Design.Dom
 			}
 		}
 
-		public override string PermissionComponent => ConfigurationElement.Closest<IApi>().Component.ToString();
+		public override string PermissionComponent => ConfigurationElement.Closest<IApiConfiguration>().Component.ToString();
 		public override bool SupportsInherit => true;
 	}
 }

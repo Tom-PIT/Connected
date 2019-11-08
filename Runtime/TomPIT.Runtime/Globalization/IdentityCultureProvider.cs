@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
+using TomPIT.Runtime;
 using TomPIT.Security;
-using TomPIT.Services;
 
 namespace TomPIT.Globalization
 {
@@ -21,22 +20,22 @@ namespace TomPIT.Globalization
 
 			var identity = httpContext.User.Identity as Identity;
 
-			if(identity == null || identity.User == null)
+			if (identity == null || identity.User == null)
 				return SettingCulture(httpContext);
 
 			var languageToken = identity.User.Language;
 
-			if(languageToken == Guid.Empty)
+			if (languageToken == Guid.Empty)
 				return SettingCulture(httpContext);
 
-			var endpoint = Shell.GetService<IConnectivityService>().Select(identity.Endpoint);
+			var endpoint = Shell.GetService<IConnectivityService>().SelectTenant(identity.Endpoint);
 
 			if (endpoint == null)
 				return SettingCulture(httpContext);
 
 			var language = endpoint.GetService<ILanguageService>().Select(languageToken);
 
-			if(language == null || language.Status == LanguageStatus.Hidden || language.Lcid == 0)
+			if (language == null || language.Status == LanguageStatus.Hidden || language.Lcid == 0)
 				return SettingCulture(httpContext);
 
 			var culture = CultureInfo.GetCultureInfo(language.Lcid);
@@ -54,7 +53,7 @@ namespace TomPIT.Globalization
 			if (environment == RuntimeEnvironment.MultiTenant)
 				return Task.FromResult<ProviderCultureResult>(null);
 
-			var value = Instance.GetService<ISettingService>().GetValue<string>(Guid.Empty, "DefaultCulture");
+			var value = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "DefaultCulture");
 
 			if (!string.IsNullOrWhiteSpace(value))
 				return Task.FromResult(new ProviderCultureResult(value));

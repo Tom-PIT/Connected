@@ -1,38 +1,39 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Analysis;
 using TomPIT.ComponentModel;
-using TomPIT.Design;
-using TomPIT.Dom;
+using TomPIT.Ide;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
+using TomPIT.Reflection;
 
-namespace TomPIT.IoT.Design.Items
+namespace TomPIT.MicroServices.IoT.Design.Items
 {
 	internal class IoTHubsItems : ItemsBase
 	{
 		protected override void OnQueryDescriptors(IDomElement element, List<IItemDescriptor> items)
 		{
 			var s = element.MicroService();
-			var server = element.Environment.Context.Connection();
+			var tenant = element.Environment.Context.Tenant;
 
-			var ds = server.GetService<IComponentService>().QueryComponents(s, "IoTHub").OrderBy(f => f.Name);
+			var ds = tenant.GetService<IComponentService>().QueryComponents(s, "IoTHub").OrderBy(f => f.Name);
 
 			items.Add(Empty(SR.DevSelect, string.Empty));
 
 			foreach (var i in ds)
 				items.Add(new ItemDescriptor(i.Name, i.Name));
 
-			var refs = server.GetService<IDiscoveryService>().References(element.MicroService());
+			var refs = tenant.GetService<IDiscoveryService>().References(element.MicroService());
 
 			var external = new List<ItemDescriptor>();
 
 			foreach (var i in refs.MicroServices)
 			{
-				var ms = server.GetService<IMicroServiceService>().Select(i.MicroService);
+				var ms = tenant.GetService<IMicroServiceService>().Select(i.MicroService);
 
 				if (ms == null)
 					continue;
 
-				ds = server.GetService<IComponentService>().QueryComponents(server.ResolveMicroServiceToken(i.MicroService), "IoTHub").OrderBy(f => f.Name);
+				ds = tenant.GetService<IComponentService>().QueryComponents(ms.Token, "IoTHub").OrderBy(f => f.Name);
 
 				foreach (var j in ds)
 				{

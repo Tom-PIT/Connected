@@ -1,15 +1,19 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Actions;
-using TomPIT.Annotations;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.Design;
 using TomPIT.Design;
-using TomPIT.Dom;
-using TomPIT.Items;
+using TomPIT.Ide;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Designers.Toolbar;
+using TomPIT.Management.Dom;
+using TomPIT.Management.Items;
+using TomPIT.Management.Security;
 using TomPIT.Security;
 
-namespace TomPIT.Designers
+namespace TomPIT.Management.Designers
 {
 	internal class UsersDesigner : CollectionDesigner<UsersElement>
 	{
@@ -35,7 +39,7 @@ namespace TomPIT.Designers
 
 			var user = Owner.Existing.FirstOrDefault(f => f.Token == id);
 
-			Connection.GetService<IUserManagementService>().Delete(user.Token);
+			Environment.Context.Tenant.GetService<IUserManagementService>().Delete(user.Token);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 		}
@@ -43,7 +47,7 @@ namespace TomPIT.Designers
 		protected override IDesignerActionResult Clear(JObject data)
 		{
 			foreach (var i in Owner.Existing)
-				Connection.GetService<IUserManagementService>().Delete(i.Token);
+				Environment.Context.Tenant.GetService<IUserManagementService>().Delete(i.Token);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 		}
@@ -51,12 +55,12 @@ namespace TomPIT.Designers
 		private IDesignerActionResult CreateUser()
 		{
 			var existing = Owner.Existing;
-			var name = Connection.GetService<INamingService>().Create("User", existing.Select(f => f.LoginName), true);
+			var name = Environment.Context.Tenant.GetService<INamingService>().Create("User", existing.Select(f => f.LoginName), true);
 
-			var id = Connection.GetService<IUserManagementService>().Insert(name, string.Empty, UserStatus.Inactive, string.Empty, string.Empty, string.Empty, null, string.Empty,
+			var id = Environment.Context.Tenant.GetService<IUserManagementService>().Insert(name, string.Empty, UserStatus.Inactive, string.Empty, string.Empty, string.Empty, null, string.Empty,
 				Guid.Empty, string.Empty, true, string.Empty, string.Empty);
 
-			var user = Connection.GetService<IUserService>().Select(id.ToString());
+			var user = Environment.Context.Tenant.GetService<IUserService>().Select(id.ToString());
 
 			var r = Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 

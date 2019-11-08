@@ -1,15 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
-using TomPIT.Designers;
-using TomPIT.Items;
+using TomPIT.Ide;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.Management.ComponentModel;
+using TomPIT.Management.Designers;
+using TomPIT.Management.Items;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
-	internal class MicroServicesElement : Element
+	internal class MicroServicesElement : DomElement
 	{
 		private ExistingMicroServices _ds = null;
 		private MicroServicesDesigner _designer = null;
@@ -64,7 +69,7 @@ namespace TomPIT.Dom
 
 		public override void LoadChildren(string id)
 		{
-			var d = Existing.FirstOrDefault(f => f.Token == id.AsGuid());
+			var d = Existing.FirstOrDefault(f => f.Token == new Guid(id));
 
 			if (d != null)
 				Items.Add(new MicroServiceManagementElement(this, d));
@@ -89,7 +94,7 @@ namespace TomPIT.Dom
 				{
 					_ds = new ExistingMicroServices();
 
-					var items = Connection.GetService<IMicroServiceManagementService>().Query(DomQuery.Closest<IResourceGroupScope>(this).ResourceGroup.Token);
+					var items = Environment.Context.Tenant.GetService<IMicroServiceManagementService>().Query(DomQuery.Closest<IResourceGroupScope>(this).ResourceGroup.Token);
 
 					if (items != null)
 						items = items.OrderBy(f => f.Name).ToList();

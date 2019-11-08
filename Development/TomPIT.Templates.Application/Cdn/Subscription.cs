@@ -1,43 +1,18 @@
-﻿using System.ComponentModel;
-using TomPIT.Annotations;
+﻿using TomPIT.Annotations.Design;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
-using TomPIT.ComponentModel.Events;
+using TomPIT.MicroServices.Design;
 
-namespace TomPIT.Application.Cdn
+namespace TomPIT.MicroServices.Cdn
 {
-	[DefaultEvent(nameof(Subscribe))]
-	public class Subscription : ComponentConfiguration, ISubscription
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[Syntax(SyntaxAttribute.CSharp)]
+	public class Subscription : SourceCodeConfiguration, ISubscriptionConfiguration
 	{
-		private IServerEvent _subscribe = null;
-		private IServerEvent _subscribed = null;
 		private ListItems<ISubscriptionEvent> _events = null;
 
-		[EventArguments(typeof(SubscriptionSubscribeArguments))]
-		public IServerEvent Subscribe
-		{
-			get
-			{
-				if (_subscribe == null)
-					_subscribe = new ServerEvent { Parent = this };
-
-				return _subscribe;
-			}
-		}
-
-		[EventArguments(typeof(SubscriptionSubscribedArguments))]
-		public IServerEvent Subscribed
-		{
-			get
-			{
-				if (_subscribed == null)
-					_subscribed = new ServerEvent { Parent = this };
-
-				return _subscribed;
-			}
-		}
-
-		[Items("TomPIT.Application.Design.Items.SubscriptionEventsCollection, TomPIT.Application.Design")]
+		[Items(DesignUtils.SubscriptionEventsItems)]
 		public ListItems<ISubscriptionEvent> Events
 		{
 			get

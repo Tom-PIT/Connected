@@ -1,6 +1,6 @@
 ﻿using TomPIT.Security;
 
-namespace TomPIT.Application.Security
+namespace TomPIT.MicroServices.Security
 {
 	public class AreaPermissionDescriptor : ComponentPermissionDescriptor
 	{

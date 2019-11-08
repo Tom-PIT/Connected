@@ -1,11 +1,13 @@
 ﻿using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
+using TomPIT.Reflection;
 
-namespace TomPIT.IoT
+namespace TomPIT.MicroServices.IoT
 {
 	[Create("Javascript", nameof(Name))]
-	[DomDesigner("TomPIT.Designers.TextDesigner, TomPIT.Ide")]
-	[Syntax("javascript")]
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[Syntax(SyntaxAttribute.Javascript)]
 	public class Javascript : Text
 	{
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]

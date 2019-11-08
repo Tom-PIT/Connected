@@ -2,14 +2,15 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Events;
 using TomPIT.ComponentModel.IoT;
 
-namespace TomPIT.IoT
+namespace TomPIT.MicroServices.IoT
 {
 	[Create("IoTDevice", nameof(Name))]
-	[ComponentCreatingHandler("TomPIT.IoT.Handlers.IoTDeviceCreateHandler, TomPIT.IoT.Design")]
+	[ComponentCreatingHandler("TomPIT.MicroServices.IoT.Handlers.IoTDeviceCreateHandler, TomPIT.MicroServices.IoT.Design")]
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
 	public class IoTDevice : ConfigurationElement, IIoTDevice
@@ -24,7 +25,7 @@ namespace TomPIT.IoT
 		[Required]
 		public string AuthenticationToken { get; set; }
 
-		[Items("TomPIT.IoT.Design.Items.IoTTransactionsCollection, TomPIT.IoT.Design")]
+		[Items("TomPIT.MicroServices.IoT.Design.Items.IoTTransactionsCollection, TomPIT.MicroServices.IoT.Design")]
 		public ListItems<IIoTTransaction> Transactions
 		{
 			get

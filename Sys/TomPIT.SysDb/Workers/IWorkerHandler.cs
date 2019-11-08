@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.Services;
+using TomPIT.Distributed;
 
 namespace TomPIT.SysDb.Workers
 {

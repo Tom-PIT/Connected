@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Data.Sql;
 using TomPIT.Development;
@@ -20,7 +21,7 @@ namespace TomPIT.SysDb.Sql.Development
 			w.Execute();
 		}
 
-		public void Insert(IMicroService service, DateTime modified, IFolder folder, string category, string name, Guid token, string type, Guid runtimeConfiguration)
+		public void Insert(IMicroService service, DateTime modified, IFolder folder, string category, string nameSpace, string name, Guid token, string type, Guid runtimeConfiguration)
 		{
 			var w = new Writer("tompit.component_ins");
 
@@ -32,6 +33,7 @@ namespace TomPIT.SysDb.Sql.Development
 			w.CreateParameter("@runtime_configuration", runtimeConfiguration, true);
 			w.CreateParameter("@service", service.GetId());
 			w.CreateParameter("@modified", modified);
+			w.CreateParameter("@namespace", nameSpace);
 
 			w.Execute();
 		}
@@ -95,6 +97,109 @@ namespace TomPIT.SysDb.Sql.Development
 			w.CreateParameter("@lock_verb", verb);
 
 			w.Execute();
+		}
+
+		public void UpdateStates(List<IComponentIndexState> states)
+		{
+			var itemsParameter = new JArray();
+
+			foreach (var state in states)
+			{
+				var parameter = new JObject
+				{
+					{"id", state.Component.GetId().ToString() },
+					{"index_state", (int)state.State },
+					{"index_timestamp", state.TimeStamp }
+				};
+
+				if (state.Element != Guid.Empty)
+					parameter.Add("element", state.Element);
+
+				itemsParameter.Add(parameter);
+			}
+
+			var w = new Writer("tompit.component_upd_index_state");
+
+			w.CreateParameter("@items", itemsParameter);
+
+			w.Execute();
+		}
+
+		public void UpdateStates(List<IComponentAnalyzerState> states)
+		{
+			var itemsParameter = new JArray();
+
+			foreach (var state in states)
+			{
+				var parameter = new JObject
+				{
+					{"id", state.Component.GetId().ToString() },
+					{"analyzer_state", (int)state.State },
+					{"analyzer_timestamp", state.TimeStamp }
+				};
+
+				if (state.Element != Guid.Empty)
+					parameter.Add("element", state.Element);
+
+				itemsParameter.Add(parameter);
+			}
+
+			var w = new Writer("tompit.component_upd_analyzer_state");
+
+			w.CreateParameter("@items", itemsParameter);
+
+			w.Execute();
+		}
+
+		public List<IComponentDevelopmentState> QueryActiveAnalyzerStates(DateTime timeStamp)
+		{
+			var r = new Reader<ComponentState>("tompit.component_state_analyzer_que");
+
+			r.CreateParameter("@timestamp", timeStamp, true);
+
+			return r.Execute().ToList<IComponentDevelopmentState>();
+		}
+
+		public List<IComponentDevelopmentState> QueryStates()
+		{
+			return new Reader<ComponentState>("tompit.component_state_que").Execute().ToList<IComponentDevelopmentState>();
+		}
+
+		public List<IComponentDevelopmentState> QueryStates(IMicroService microService)
+		{
+			var r = new Reader<ComponentState>("tompit.component_state_que");
+
+			r.CreateParameter("@microService", microService.GetId());
+
+			return r.Execute().ToList<IComponentDevelopmentState>();
+		}
+
+		public List<IComponentDevelopmentState> QueryStates(IComponent component)
+		{
+			var r = new Reader<ComponentState>("tompit.component_state_que");
+
+			r.CreateParameter("@component", component.GetId());
+
+			return r.Execute().ToList<IComponentDevelopmentState>();
+		}
+
+		public List<IComponentDevelopmentState> QueryStates(IComponent component, Guid element)
+		{
+			var r = new Reader<ComponentState>("tompit.component_state_que");
+
+			r.CreateParameter("@component", component.GetId());
+			r.CreateParameter("@element", element);
+
+			return r.Execute().ToList<IComponentDevelopmentState>();
+		}
+
+		public List<IComponentDevelopmentState> QueryActiveIndexStates(DateTime timeStamp)
+		{
+			var r = new Reader<ComponentState>("tompit.component_state_index_que");
+
+			r.CreateParameter("@timestamp", timeStamp, true);
+
+			return r.Execute().ToList<IComponentDevelopmentState>();
 		}
 	}
 }

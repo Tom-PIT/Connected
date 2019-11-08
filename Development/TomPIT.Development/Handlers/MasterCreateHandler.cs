@@ -1,20 +1,21 @@
 ﻿using System.Text;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Design;
-using TomPIT.Services;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Middleware;
 
 namespace TomPIT.Handlers
 {
 	internal class MasterCreateHandler : IComponentCreateHandler
 	{
-		public void InitializeNewComponent(IExecutionContext context, object instance)
+		public void InitializeNewComponent(IMiddlewareContext context, object instance)
 		{
-			if (instance is IMasterView m)
+			if (instance is IMasterViewConfiguration m)
 			{
 				var sb = new StringBuilder();
 
 				sb.AppendLine("<!DOCTYPE html>");
-				sb.AppendLine("@model TomPIT.Services.IExecutionContext");
+				sb.AppendLine("@model TomPIT.Middleware.IMiddlewareContext");
 				sb.AppendLine("<html>");
 				sb.AppendLine("<head>");
 				sb.AppendLine("<title>@ViewBag.Title</title>");
@@ -36,7 +37,7 @@ namespace TomPIT.Handlers
 				sb.AppendLine("</body>");
 				sb.AppendLine("</html>");
 
-				context.Connection().GetService<IComponentDevelopmentService>().Update(m, sb.ToString());
+				context.Tenant.GetService<IComponentDevelopmentService>().Update(m, sb.ToString());
 			}
 		}
 	}

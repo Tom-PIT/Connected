@@ -1,26 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Scripting;
 using TomPIT.Design;
-using TomPIT.Services;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Middleware;
 
 namespace TomPIT.Development.Handlers
 {
 	internal class ScriptCreateHandler : IComponentCreateHandler
 	{
-		public void InitializeNewComponent(IExecutionContext context, object instance)
+		public void InitializeNewComponent(IMiddlewareContext context, object instance)
 		{
-			if (instance is IScript script)
+			if (instance is IScriptConfiguration script)
 			{
 				var sb = new StringBuilder();
 
-				sb.AppendLine($"public class {script.ComponentName(context.Connection())}");
+				sb.AppendLine($"public class {script.ComponentName()}");
 				sb.AppendLine("{");
 				sb.AppendLine("");
 				sb.AppendLine("}");
 
-				context.Connection().GetService<IComponentDevelopmentService>().Update(script, sb.ToString());
+				context.Tenant.GetService<IComponentDevelopmentService>().Update(script, sb.ToString());
 			}
 		}
 	}

@@ -1,16 +1,17 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
-using TomPIT.Services;
+using TomPIT.Middleware;
+using TomPIT.Models;
 
-namespace TomPIT.Models
+namespace TomPIT.App.Models
 {
-	public class RuntimeModel : ExecutionContext, IViewModel, IComponentModel
+	public class RuntimeModel : MicroServiceContext, IViewModel, IComponentModel
 	{
 		private IModelNavigation _navigation = null;
 		private JObject _arguments = null;
@@ -19,17 +20,19 @@ namespace TomPIT.Models
 		{
 			ActionContext = context.ActionContext;
 			TempData = context.TempData;
+			MicroService = context.MicroService;
 		}
 
-		public RuntimeModel(HttpRequest request, ActionContext context, ITempDataProvider tempData)
+		public RuntimeModel(HttpRequest request, ActionContext context, ITempDataProvider tempData, IMicroService microService)
 		{
 			ActionContext = context;
 			TempData = tempData;
+			MicroService = microService;
 		}
 
 		public IComponent Component { get; set; }
 
-		public IView ViewConfiguration { get; set; }
+		public IViewConfiguration ViewConfiguration { get; set; }
 
 		public virtual IEnumerable<ValidationResult> Validate()
 		{
@@ -42,8 +45,9 @@ namespace TomPIT.Models
 		public void Initialize(Controller controller, IMicroService microService)
 		{
 			Controller = controller;
+			MicroService = microService;
 
-			base.Initialize(null, microService);
+			Initialize(null);
 
 			OnInitializing();
 		}

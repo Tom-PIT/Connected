@@ -1,37 +1,28 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.FileProviders;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using TomPIT.Annotations;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileProviders;
+using TomPIT.Annotations.Design;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.Reports;
-using TomPIT.ComponentModel.UI;
-using TomPIT.Services;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
 using TomPIT.Storage;
+using TomPIT.UI;
 
-namespace TomPIT.UI
+namespace TomPIT.App.UI
 {
-	internal enum ViewKind
-	{
-		Master = 1,
-		View = 2,
-		Partial = 3,
-		Snippet = 4,
-		MailTemplate = 5,
-		Report = 6
-	}
-
 	internal class ViewInfo : IFileInfo
 	{
 		private byte[] _viewContent = null;
 
 		public ViewInfo(string viewPath, ActionContext action)
 		{
-			if (string.Compare(System.IO.Path.GetFileNameWithoutExtension(viewPath), "_viewimports", true) == 0)
+			if (ChangeToken.SystemViews.FirstOrDefault(f => string.Compare(f, System.IO.Path.GetFileName(viewPath), true) == 0) != null)
 				return;
 
 			ResolvePath(viewPath);
@@ -42,27 +33,25 @@ namespace TomPIT.UI
 		{
 			FullPath = viewPath.Trim('/');
 
-			Kind = ResolveViewKind(viewPath);
+			Kind = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().ResolveViewKind(viewPath);
 
 			if (Kind == ViewKind.View)
 			{
-				Path = viewPath.Substring(7);
-				Path = Path.Substring(0, Path.Length - 7);
+				Path = viewPath.Substring(20);
+				Path = Path[0..^7];
 			}
-			else if(Kind == ViewKind.Report)
+			else if (Kind == ViewKind.Report)
 			{
 				var tokens = viewPath.Split('/');
 
-				Path = $"{tokens[tokens.Length - 2]}/{tokens[tokens.Length - 1].Split('.')[0]}";
+				Path = $"{tokens[^2]}/{tokens[^1].Split('.')[0]}";
 			}
-			else if (Kind == ViewKind.MailTemplate)
+			else
 			{
 				var tokens = FullPath.Split('/');
 
-				Path = $"{tokens[tokens.Length-2]}/{tokens[tokens.Length-1]}";
+				Path = $"{tokens[^2]}/{System.IO.Path.GetFileNameWithoutExtension(tokens[^1])}";
 			}
-			else
-				Path = System.IO.Path.GetFileNameWithoutExtension(viewPath);
 		}
 
 		public static ViewKind ResolveSnippetKind(string url)
@@ -73,24 +62,6 @@ namespace TomPIT.UI
 				return r;
 
 			return ViewKind.View;
-		}
-
-		public static ViewKind ResolveViewKind(string viewPath)
-		{
-			var path = viewPath.Trim('/');
-
-			if (path.StartsWith("Views/Dynamic/Master"))
-				return ViewKind.Master;
-			else if (path.StartsWith("Views/Dynamic/Partial") || path.StartsWith(":partial"))
-				return ViewKind.Partial;
-			else if (path.StartsWith("Views/Dynamic/Snippet"))
-				return ViewKind.Snippet;
-			else if (path.StartsWith("Views/Dynamic/MailTemplate"))
-				return ViewKind.MailTemplate;
-			else if (path.StartsWith("Views/Dynamic/Report"))
-				return ViewKind.Report;
-			else
-				return ViewKind.View;
 		}
 
 		private string FullPath { get; set; }
@@ -109,10 +80,9 @@ namespace TomPIT.UI
 				if (_viewContent == null)
 					return 0;
 
-				using (var stream = new MemoryStream(_viewContent))
-				{
-					return stream.Length;
-				}
+				using var stream = new MemoryStream(_viewContent);
+
+				return stream.Length;
 			}
 		}
 
@@ -121,22 +91,18 @@ namespace TomPIT.UI
 
 		public Stream CreateReadStream()
 		{
-			return new MemoryStream(_viewContent == null ? new byte[0] : _viewContent);
+			return new MemoryStream(_viewContent ?? Array.Empty<byte>());
 		}
 
 		public IConfiguration GetConfiguration()
 		{
-			switch (Kind)
+			return Kind switch
 			{
-				case ViewKind.Master:
-					return Instance.GetService<IViewService>().SelectMaster(Path);
-				case ViewKind.View:
-					return Instance.GetService<IViewService>().Select(Path, null);
-				case ViewKind.Partial:
-					return Instance.GetService<IViewService>().SelectPartial(Path);
-				default:
-					throw new NotSupportedException();
-			}
+				ViewKind.Master => MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().SelectMaster(Path),
+				ViewKind.View => MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().Select(Path, null),
+				ViewKind.Partial => MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().SelectPartial(Path),
+				_ => throw new NotSupportedException(),
+			};
 		}
 		private void Load(ActionContext context)
 		{
@@ -147,9 +113,6 @@ namespace TomPIT.UI
 					break;
 				case ViewKind.View:
 					LoadView(context);
-					break;
-				case ViewKind.Snippet:
-					LoadSnippet();
 					break;
 				case ViewKind.Partial:
 					LoadPartial();
@@ -169,17 +132,17 @@ namespace TomPIT.UI
 		{
 			var tokens = Path.Split('/');
 
-			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(tokens[0].AsGuid(), "MailTemplate", System.IO.Path.GetFileNameWithoutExtension( tokens[1]));
+			ViewComponent = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(new Guid(tokens[0]), "MailTemplate", System.IO.Path.GetFileNameWithoutExtension(tokens[1]));
 
 			Exists = ViewComponent != null && string.Compare(ViewComponent.Category, "MailTemplate", true) == 0;
 
 			if (!Exists)
 				return;
 
-			if (!(Instance.GetService<IComponentService>().SelectConfiguration(ViewComponent.Token) is IMailTemplate config))
+			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(ViewComponent.Token) is IMailTemplateConfiguration config))
 				return;
 
-			var content = Instance.GetService<ICompilerService>().CompileView(Instance.Connection, config);
+			var content = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, config);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);
@@ -189,17 +152,17 @@ namespace TomPIT.UI
 
 		private void LoadPartial()
 		{
-			var partial = Instance.GetService<IViewService>().SelectPartial(Path);
+			var partial = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().SelectPartial(Path);
 
 			Exists = partial != null;
 
 			if (!Exists)
 				return;
 
-			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(partial.Component);
-			Blob = Instance.GetService<IStorageService>().Select(partial.TextBlob);
+			ViewComponent = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(partial.Component);
+			Blob = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Select(partial.TextBlob);
 
-			var content = Instance.GetService<ICompilerService>().CompileView(Instance.Connection, partial);
+			var content = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, partial);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);
@@ -210,12 +173,12 @@ namespace TomPIT.UI
 		private void LoadReport()
 		{
 			var tokens = Path.Split('/');
-			var ms = Instance.GetService<IMicroServiceService>().Select(tokens[0]);
+			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
 			if (ms == null)
 				return;
 
-			var report = Instance.GetService<IComponentService>().SelectComponent(ms.Token, "Report", tokens[1]);
+			var report = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(ms.Token, "Report", tokens[1]);
 
 			Exists = report != null;
 
@@ -223,9 +186,9 @@ namespace TomPIT.UI
 				return;
 
 			ViewComponent = report;
-			var reportConfig = Instance.GetService<IComponentService>().SelectConfiguration(report.Token) as IReport;
+			var reportConfig = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(report.Token) as IReportConfiguration;
 
-			var content = Instance.GetService<ICompilerService>().CompileView(Instance.Connection, reportConfig);
+			var content = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, reportConfig);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);
@@ -235,7 +198,10 @@ namespace TomPIT.UI
 
 		private void LoadView(ActionContext context)
 		{
-			var view = Instance.GetService<IViewService>().Select(Path, context);
+			if (MiddlewareDescriptor.Current.Tenant == null)
+				return;
+
+			var view = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().Select(Path, context);
 
 			Exists = view != null;
 
@@ -244,17 +210,17 @@ namespace TomPIT.UI
 
 			var config = view.Configuration();
 			var rendererAtt = config.GetType().FindAttribute<ViewRendererAttribute>();
-			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(config.Component);
+			ViewComponent = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(config.Component);
 
 			if (rendererAtt != null)
 				LastModified = ViewComponent.Modified;
 			else
 			{
-				Blob = Instance.GetService<IStorageService>().Select(view.TextBlob);
+				Blob = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Select(view.TextBlob);
 				LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
 			}
 
-			var content = Instance.GetService<ICompilerService>().CompileView(Instance.Connection, view);
+			var content = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, view);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);
@@ -262,7 +228,7 @@ namespace TomPIT.UI
 
 		private void LoadMaster()
 		{
-			var master = Instance.GetService<IViewService>().SelectMaster(Path);
+			var master = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().SelectMaster(Path);
 
 			Exists = master != null;
 
@@ -270,111 +236,15 @@ namespace TomPIT.UI
 				return;
 
 			var config = master.Configuration();
-			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(config.Component);
-			Blob = Instance.GetService<IStorageService>().Select(master.TextBlob);
+			ViewComponent = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(config.Component);
+			Blob = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Select(master.TextBlob);
 
-			var content = Instance.GetService<ICompilerService>().CompileView(Instance.Connection, master);
-
-			if (!string.IsNullOrWhiteSpace(content))
-				_viewContent = Encoding.UTF8.GetBytes(content);
-
-			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
-		}
-
-		private void LoadSnippet()
-		{
-			var tokens = FullPath.Split('/');
-
-			switch (ResolveSnippetKind(FullPath))
-			{
-				case ViewKind.Master:
-					LoadMasterSnippet(tokens[4]);
-					break;
-				case ViewKind.View:
-					var viewPath = string.Empty;
-
-					for (int i = 4; i < tokens.Length; i++)
-						viewPath += string.Format("{0}/", tokens[i]);
-
-					LoadViewSnippet(viewPath.Trim('/'));
-					break;
-				case ViewKind.Partial:
-					LoadPartialSnippet(tokens[4]);
-					break;
-				default:
-					throw new NotSupportedException();
-			}
-		}
-
-		private void LoadPartialSnippet(string name)
-		{
-			var vt = System.IO.Path.GetFileNameWithoutExtension(name);
-			var view = System.IO.Path.GetFileNameWithoutExtension(vt);
-			var snippet = System.IO.Path.GetExtension(vt).Trim('.');
-
-			if (!(Instance.GetService<IViewService>().SelectPartial(view) is IPartialView c))
-				throw new RuntimeException(SR.ErrPartialViewNotFound);
-
-			LoadSnippetContent(c.Component, snippet, c.Snippets);
-		}
-
-		private void LoadMasterSnippet(string name)
-		{
-			var vt = System.IO.Path.GetFileNameWithoutExtension(name);
-			var view = System.IO.Path.GetFileNameWithoutExtension(vt);
-			var snippet = System.IO.Path.GetExtension(vt).Trim('.');
-
-			var c = Instance.GetService<IViewService>().SelectMaster(view) as IMasterView;
-
-			if (c == null)
-				throw new RuntimeException(SR.ErrMasterViewNotFound);
-
-			LoadSnippetContent(c.Component, snippet, c.Snippets);
-		}
-
-		private void LoadViewSnippet(string name)
-		{
-			var vt = System.IO.Path.GetFileNameWithoutExtension(name);
-			var view = System.IO.Path.GetFileNameWithoutExtension(vt);
-			var snippet = System.IO.Path.GetExtension(vt).Trim('.');
-			var url = string.Empty;
-			var tokens = name.Split('/');
-
-			if (tokens.Length == 1)
-				url = view;
-			else
-			{
-				for (int i = 0; i < tokens.Length - 1; i++)
-					url += string.Format("{0}/", tokens[i]);
-
-				url += string.Format("{0}/", view);
-
-				url = url.Trim('/');
-			}
-
-			if (!(Instance.GetService<IViewService>().Select(url, null) is IView c))
-				throw new RuntimeException(SR.ErrComponentNotFound);
-
-			LoadSnippetContent(c.Component, snippet, c.Snippets);
-		}
-
-		private void LoadSnippetContent(Guid configuration, string snippet, ListItems<ISnippet> snippets)
-		{
-			if (!(snippets.FirstOrDefault(f => f is ISnippet && string.Compare(((ISnippet)f).Name, snippet, true) == 0) is ISnippet s))
-				throw new RuntimeException(SR.ErrSnippetNotFound);
-
-			Exists = true;
-
-			ViewComponent = Instance.GetService<IComponentService>().SelectComponent(configuration);
-			Blob = Instance.GetService<IStorageService>().Select(s.TextBlob);
-
-			var content = Instance.GetService<ICompilerService>().CompileView(Instance.Connection, s);
+			var content = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, master);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);
 
 			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
-
 		}
 	}
 }

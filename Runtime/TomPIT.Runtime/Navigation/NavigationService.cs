@@ -4,41 +4,61 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
-using TomPIT.Caching;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Navigation;
 using TomPIT.Connectivity;
-using TomPIT.Data;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
 using TomPIT.Services;
 
 namespace TomPIT.Navigation
 {
-	internal class NavigationService : SynchronizedClientRepository<IConfiguration, Guid>, INavigationService
+	internal class NavigationService : ConfigurationRepository<ISiteMapConfiguration>, INavigationService
 	{
-		private static readonly string[] TargetCategories = { "SiteMap" };
 		private static Lazy<ConcurrentDictionary<string, List<NavigationHandlerDescriptor>>> _handlers = new Lazy<ConcurrentDictionary<string, List<NavigationHandlerDescriptor>>>(() => { return new ConcurrentDictionary<string, List<NavigationHandlerDescriptor>>(StringComparer.OrdinalIgnoreCase); });
-		public NavigationService(ISysConnection connection) : base(connection, "sitemap")
+		public NavigationService(ITenant tenant) : base(tenant, "sitemap")
 		{
-			connection.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
-			connection.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
-			connection.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
-			connection.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
-			connection.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
 		}
 
-		public ISiteMapContainer QuerySiteMap(params string[] keys)
+		protected override void OnChanged(Guid microService, Guid component)
+		{
+			RefreshNavigation(component);
+		}
+
+		protected override void OnAdded(Guid microService, Guid component)
+		{
+			RefreshNavigation(component);
+		}
+
+		protected override void OnRemoved(Guid microService, Guid component)
+		{
+			RefreshNavigation(component, true);
+		}
+
+		protected override void OnInitialized()
+		{
+			foreach (var i in All())
+				OnAdded(i.MicroService(), i.Component);
+		}
+		protected override string[] Categories => new string[] { ComponentCategories.SiteMap };
+		public ISiteMapContainer QuerySiteMap(List<string> keys)
+		{
+			return QuerySiteMap(keys, null);
+		}
+		public ISiteMapContainer QuerySiteMap(List<string> keys, List<string> tags)
 		{
 			Initialize();
 
-			if (keys.Length == 0)
+			if (keys == null || keys.Count == 0)
 				return null;
 
 			var containers = new List<ISiteMapContainer>();
 
 			foreach (var key in keys)
 			{
-				var items = LoadSiteMap(key);
+				var items = LoadSiteMap(key, tags);
 
 				if (items != null && items.Count > 0)
 					containers.AddRange(items);
@@ -48,14 +68,14 @@ namespace TomPIT.Navigation
 
 			foreach (var container in containers)
 			{
-				if (container.Items != null && container.Items.Count > 0)
-					r.Items.AddRange(container.Items);
+				if (container.Routes != null && container.Routes.Count > 0)
+					r.Routes.AddRange(container.Routes);
 			}
 
 			return r;
 		}
 
-		private List<ISiteMapContainer> LoadSiteMap(string key)
+		private List<ISiteMapContainer> LoadSiteMap(string key, List<string> tags)
 		{
 			if (!Handlers.ContainsKey(key))
 				return null;
@@ -67,19 +87,37 @@ namespace TomPIT.Navigation
 
 			foreach (var handler in handlers)
 			{
-				var ms = Connection.GetService<IMicroServiceService>().Select(handler.MicroService);
-				var dataCtx = new DataModelContext(ExecutionContext.Create(Connection.Url, ms));
-				var instance = handler.Handler.CreateInstance<ISiteMapHandler>();
-
-				instance.Initialize(dataCtx);
-
+				var ms = Tenant.GetService<IMicroServiceService>().Select(handler.MicroService);
+				var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), handler.Handler);
 				var containers = instance.Invoke(key);
 
 				if (containers == null || containers.Count == 0)
 					continue;
 
+				if (tags != null && tags.Count > 0)
+				{
+					for (var i = containers.Count - 1; i >= 0; i--)
+					{
+						var containerTags = containers[i].Tags;
+
+						if (containerTags == null || containerTags.Length == 0)
+						{
+							containers.RemoveAt(i);
+							continue;
+						}
+
+						var containerTagTokens = containerTags.Split(',', ';');
+
+						foreach (var token in containerTagTokens)
+						{
+							if (!tags.Any(f => string.Compare(f, token, true) == 0))
+								containers.RemoveAt(i);
+						}
+					}
+				}
+
 				foreach (var container in containers)
-					BindContext(container, dataCtx);
+					BindContext(container, instance.Context);
 
 				r.AddRange(containers);
 			}
@@ -87,97 +125,38 @@ namespace TomPIT.Navigation
 			return r;
 		}
 
-		private void BindContext(ISiteMapContainer container, IDataModelContext context)
+		private void BindContext(ISiteMapContainer container, IMiddlewareContext context)
 		{
-			foreach (var item in container.Items)
+			foreach (var item in container.Routes)
 			{
-				if (item is ISiteMapContextElement ctx)
-					ctx.Context = context;
+				ReflectionExtensions.SetPropertyValue(item, nameof(item.Parent), container);
+				item.SetContext(context);
 
 				BindContext(item, context);
 			}
 		}
 
-		private void BindContext(ISiteMapRoute route, IDataModelContext context)
+		private void BindContext(ISiteMapRoute route, IMiddlewareContext context)
 		{
-			foreach (var item in route.Items)
+			foreach (var item in route.Routes)
 			{
-				if (item is ISiteMapContextElement ctx)
-					ctx.Context = context;
+				if (item.Parent == null)
+					ReflectionExtensions.SetPropertyValue(item, nameof(item.Parent), route);
+
+				item.SetContext(context);
 
 				BindContext(item, context);
 			}
-		}
-
-		private void OnComponentChanged(ISysConnection sender, ComponentEventArgs e)
-		{
-			if (!IsTargetCategory(e.Category))
-				return;
-
-			Refresh(e.Component);
-			RefreshNavigation(e.Component);
-		}
-
-		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
-		{
-			if (!Connection.IsMicroServiceSupported(e.MicroService))
-				return;
-
-			var views = Connection.GetService<IComponentService>().QueryConfigurations(e.MicroService, string.Join(',', TargetCategories));
-
-			foreach (var i in views)
-			{
-				Set(i.Component, i, TimeSpan.Zero);
-				RefreshNavigation(i.Component);
-			}
-		}
-
-		private void OnConfigurationRemoved(ISysConnection sender, ConfigurationEventArgs e)
-		{
-			if (!IsTargetCategory(e.Category))
-				return;
-
-			Remove(e.Component);
-			RefreshNavigation(e.Component, true);
-		}
-
-		private void OnConfigurationAdded(ISysConnection sender, ConfigurationEventArgs e)
-		{
-			if (!IsTargetCategory(e.Category))
-				return;
-
-			Refresh(e.Component);
-			RefreshNavigation(e.Component);
-		}
-
-		private void OnConfigurationChanged(ISysConnection sender, ConfigurationEventArgs e)
-		{
-			if (!IsTargetCategory(e.Category))
-				return;
-
-			Refresh(e.Component);
-			RefreshNavigation(e.Component);
-		}
-
-		private bool IsTargetCategory(string category)
-		{
-			foreach (var targetCategory in TargetCategories)
-			{
-				if (string.Compare(targetCategory, category, true) == 0)
-					return true;
-			}
-
-			return false;
 		}
 
 		private ConcurrentDictionary<string, List<NavigationHandlerDescriptor>> Handlers => _handlers.Value;
 
 		private void RefreshNavigation(ISiteMapConfiguration configuration, bool removeOny = false)
 		{
-			var ms = ((IConfiguration)configuration).MicroService(Connection);
-			var type = Connection.GetService<ICompilerService>().ResolveType(ms, configuration, configuration.ComponentName(Connection));
+			var ms = ((IConfiguration)configuration).MicroService();
+			var type = Tenant.GetService<ICompilerService>().ResolveType(ms, configuration, configuration.ComponentName());
 			var handlerInstance = type.CreateInstance<ISiteMapHandler>();
-			handlerInstance.Initialize(configuration.CreateContext());
+			handlerInstance.SetContext(configuration.CreateContext());
 
 			var containers = handlerInstance.Invoke();
 
@@ -195,7 +174,7 @@ namespace TomPIT.Navigation
 
 						var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
 
-						FillRouteKeys(descriptor, container);
+						FillDescriptor(descriptor, container);
 
 						Handlers[container.Key].Add(descriptor);
 					}
@@ -203,7 +182,7 @@ namespace TomPIT.Navigation
 					{
 						var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
 
-						FillRouteKeys(descriptor, container);
+						FillDescriptor(descriptor, container);
 
 						Handlers.TryAdd(container.Key, new List<NavigationHandlerDescriptor>
 						{
@@ -227,33 +206,50 @@ namespace TomPIT.Navigation
 			if (removeOny)
 				return;
 
-			var cmp = Connection.GetService<IComponentService>().SelectComponent(component);
+			var cmp = Tenant.GetService<IComponentService>().SelectComponent(component);
 
 			if (cmp == null)
 				return;
 
-			var config = Connection.GetService<IComponentService>().SelectConfiguration(cmp.Token) as ISiteMapConfiguration;
+			var config = Tenant.GetService<IComponentService>().SelectConfiguration(cmp.Token) as ISiteMapConfiguration;
 
 			RefreshNavigation(config);
 		}
 
-		private void FillRouteKeys(NavigationHandlerDescriptor descriptor, ISiteMapContainer container)
+		private void FillDescriptor(NavigationHandlerDescriptor descriptor, ISiteMapContainer container)
 		{
-			foreach (var item in container.Items)
-				FillRouteKeys(descriptor, item);
+			foreach (var item in container.Routes)
+			{
+				if (container is ISiteMapRouteContainer routeContainer)
+				{
+					if (!string.IsNullOrWhiteSpace(routeContainer.RouteKey) && !descriptor.RouteKeys.Contains(routeContainer.RouteKey.ToLowerInvariant()))
+						descriptor.RouteKeys.Add(routeContainer.RouteKey.ToLowerInvariant());
+
+					if (!string.IsNullOrWhiteSpace(routeContainer.Template) && !descriptor.RouteKeys.Contains(routeContainer.Template.ToLowerInvariant()))
+						descriptor.Templates.Add(routeContainer.Template);
+				}
+
+				FillDescriptor(descriptor, item);
+			}
 		}
 
-		private void FillRouteKeys(NavigationHandlerDescriptor descriptor, ISiteMapRoute route)
+		private void FillDescriptor(NavigationHandlerDescriptor descriptor, ISiteMapRoute route)
 		{
 			if (!string.IsNullOrWhiteSpace(route.RouteKey) && !descriptor.RouteKeys.Contains(route.RouteKey.ToLowerInvariant()))
 				descriptor.RouteKeys.Add(route.RouteKey.ToLowerInvariant());
 
-			foreach (var item in route.Items)
+			if (!string.IsNullOrWhiteSpace(route.Template) && !descriptor.RouteKeys.Contains(route.Template.ToLowerInvariant()))
+				descriptor.Templates.Add(route.Template.ToLowerInvariant());
+
+			foreach (var item in route.Routes)
 			{
 				if (!string.IsNullOrWhiteSpace(item.RouteKey) && !descriptor.RouteKeys.Contains(item.RouteKey.ToLowerInvariant()))
 					descriptor.RouteKeys.Add(item.RouteKey.ToLowerInvariant());
 
-				FillRouteKeys(descriptor, item);
+				if (!string.IsNullOrWhiteSpace(item.Template) && !descriptor.RouteKeys.Contains(item.Template.ToLowerInvariant()))
+					descriptor.Templates.Add(item.Template.ToLowerInvariant());
+
+				FillDescriptor(descriptor, item);
 			}
 		}
 		public List<IBreadcrumb> QueryBreadcrumbs(string routeKey, RouteValueDictionary parameters)
@@ -272,22 +268,38 @@ namespace TomPIT.Navigation
 			return result;
 		}
 
-		private void ProcessBreadcrumb(ISiteMapRoute item, List<IBreadcrumb> items, RouteValueDictionary parameters)
+		private void ProcessBreadcrumb(ISiteMapElement item, List<IBreadcrumb> items, RouteValueDictionary parameters)
 		{
+			var route = item as ISiteMapRoute;
+
 			var breadCrumb = new Breadcrumb
 			{
-				Key = item.Template,
 				Text = item.Text
 			};
+
+			if (route != null)
+				breadCrumb.Key = route.Template;
 			/*
 			 * Last breadcrumb should be without a link 
 			 * because it points to a currently displayed ui
 			 */
-			if (items.Count > 0 && !string.IsNullOrWhiteSpace(item.Template))
-				breadCrumb.Url = ParseUrl(item.Template, parameters);
+			if (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template))
+				breadCrumb.Url = ParseUrl(route.Template, parameters);
 
-			if (items.Count == 0 || !string.IsNullOrWhiteSpace(breadCrumb.Url))
-				items.Insert(0, breadCrumb);
+			if (item is ISiteMapContainer container)
+			{
+				if (!string.IsNullOrWhiteSpace(container.SpeculativeRouteKey))
+				{
+					var speculativeRoute = SelectRoute(container.SpeculativeRouteKey);
+
+					if (speculativeRoute != null)
+						breadCrumb.Url = ParseUrl(speculativeRoute.Template, parameters);
+				}
+				else if (container is ISiteMapRouteContainer routeContainer && !string.IsNullOrWhiteSpace(routeContainer.Template))
+					breadCrumb.Url = ParseUrl(routeContainer.Template, parameters);
+			}
+
+			items.Insert(0, breadCrumb);
 
 			ISiteMapElement parent = null;
 
@@ -303,12 +315,12 @@ namespace TomPIT.Navigation
 			}
 
 			if (parent != null)
-				ProcessBreadcrumb(parent as ISiteMapRoute, items, parameters);
+				ProcessBreadcrumb(parent, items, parameters);
 		}
 
 		public string ParseUrl(string template, RouteValueDictionary parameters)
 		{
-			if(parameters == null)
+			if (parameters == null)
 			{
 				if (Shell.HttpContext != null)
 					parameters = Shell.HttpContext.GetRouteData().Values;
@@ -320,17 +332,17 @@ namespace TomPIT.Navigation
 
 			var processedSegments = new List<string>();
 
-			foreach(var segment in parsedTemplate.Segments)
+			foreach (var segment in parsedTemplate.Segments)
 			{
 				var incomplete = false;
 
-				foreach(var part in segment.Parts)
+				foreach (var part in segment.Parts)
 				{
 					if (!part.IsParameter)
 						processedSegments.Add(part.Text);
 					else
 					{
-						if(!parameters.ContainsKey(part.Name))
+						if (!parameters.ContainsKey(part.Name))
 						{
 							if (part.IsOptional)
 							{
@@ -349,9 +361,45 @@ namespace TomPIT.Navigation
 					break;
 			}
 
-			return $"{Shell.HttpContext.Request.RootUrl()}/{string.Join('/', processedSegments)}";
+			var ctx = new MiddlewareContext();
+
+			return $"{ctx.Services.Routing.RootUrl}/{string.Join('/', processedSegments)}";
 		}
 
+		public ISiteMapRoute MatchRoute(string url, RouteValueDictionary parameters)
+		{
+			Initialize();
+
+			foreach (var handler in Handlers)
+			{
+				foreach (var descriptor in handler.Value)
+				{
+					foreach (var template in descriptor.Templates)
+					{
+						var parsedTemplate = TemplateParser.Parse(template);
+						var matcher = new TemplateMatcher(parsedTemplate, GetDefaults(parsedTemplate));
+
+						if (matcher.TryMatch(url, parameters))
+							return SelectRouteByTemplate(descriptor, template);
+					}
+				}
+			}
+
+			return null;
+		}
+
+		private static RouteValueDictionary GetDefaults(RouteTemplate parsedTemplate)
+		{
+			var result = new RouteValueDictionary();
+
+			foreach (var parameter in parsedTemplate.Parameters)
+			{
+				if (parameter.DefaultValue != null)
+					result.Add(parameter.Name, parameter.DefaultValue);
+			}
+
+			return result;
+		}
 		public ISiteMapRoute SelectRoute(string routeKey)
 		{
 			Initialize();
@@ -368,9 +416,11 @@ namespace TomPIT.Navigation
 			return null;
 		}
 
-		private ISiteMapRoute SelectRoute(NavigationHandlerDescriptor descriptor, string routeKey)
+		private ISiteMapRoute SelectRouteByTemplate(NavigationHandlerDescriptor descriptor, string template)
 		{
-			var handler = Connection.CreateProcessHandler<ISiteMapHandler>(descriptor.MicroService, descriptor.Handler);
+			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
+
+			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), descriptor.Handler);
 
 			if (handler == null)
 				return null;
@@ -385,6 +435,53 @@ namespace TomPIT.Navigation
 
 			foreach (var container in containers)
 			{
+				if (container is ISiteMapRouteContainer routeContainer && string.Compare(routeContainer.Template, template, true) == 0)
+				{
+					return new SiteMapRoute
+					{
+						RouteKey = routeContainer.RouteKey,
+						Text = routeContainer.Text,
+						Template = routeContainer.Template
+					};
+				}
+
+				var r = SelectRouteByTemplate(container, template);
+
+				if (r != null)
+					return r;
+			}
+
+			return null;
+		}
+
+		private ISiteMapRoute SelectRoute(NavigationHandlerDescriptor descriptor, string routeKey)
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
+			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), descriptor.Handler);
+
+			if (handler == null)
+				return null;
+
+			var containers = handler.Invoke();
+
+			if (containers == null)
+				return null;
+
+			foreach (var container in containers)
+				BindContext(container, handler.Context);
+
+			foreach (var container in containers)
+			{
+				if (container is ISiteMapRouteContainer routeContainer && string.Compare(routeContainer.RouteKey, routeKey, true) == 0)
+				{
+					return new SiteMapRoute
+					{
+						RouteKey = routeKey,
+						Text = routeContainer.Text,
+						Template = routeContainer.Template
+					};
+				}
+
 				var r = SelectRoute(container, routeKey);
 
 				if (r != null)
@@ -396,7 +493,7 @@ namespace TomPIT.Navigation
 
 		private ISiteMapRoute SelectRoute(ISiteMapContainer container, string routeKey)
 		{
-			foreach(var item in container.Items)
+			foreach (var item in container.Routes)
 			{
 				if (string.Compare(item.RouteKey, routeKey, true) == 0)
 					return item;
@@ -412,7 +509,7 @@ namespace TomPIT.Navigation
 
 		private ISiteMapRoute SelectRoute(ISiteMapRoute route, string routeKey)
 		{
-			foreach (var item in route.Items)
+			foreach (var item in route.Routes)
 			{
 				if (string.Compare(item.RouteKey, routeKey, true) == 0)
 					return item;
@@ -425,32 +522,37 @@ namespace TomPIT.Navigation
 
 			return null;
 		}
-		protected override void OnInitializing()
+
+		private ISiteMapRoute SelectRouteByTemplate(ISiteMapContainer container, string template)
 		{
-			var sitemaps = Connection.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, string.Join(',', TargetCategories));
-
-			foreach (var i in sitemaps)
+			foreach (var item in container.Routes)
 			{
-				if (i == null || !(i is ISiteMapConfiguration siteMap))
-					continue;
+				if (string.Compare(item.Template, template, true) == 0)
+					return item;
 
-				Set(i.Component, i, TimeSpan.Zero);
-				RefreshNavigation(siteMap);
+				var r = SelectRouteByTemplate(item, template);
+
+				if (r != null)
+					return r;
 			}
+
+			return null;
 		}
 
-		protected override void OnInvalidate(Guid id)
+		private ISiteMapRoute SelectRouteByTemplate(ISiteMapRoute route, string template)
 		{
-			if (Connection.GetService<IComponentService>().SelectConfiguration(id) is IConfiguration ui)
+			foreach (var item in route.Routes)
 			{
-				Set(ui.Component, ui, TimeSpan.Zero);
-				RefreshNavigation(id);
+				if (string.Compare(item.Template, template, true) == 0)
+					return item;
+
+				var r = SelectRoute(item, template);
+
+				if (r != null)
+					return r;
 			}
-			else
-			{
-				Remove(id);
-				RefreshNavigation(id, true);
-			}
+
+			return null;
 		}
 
 		public List<string> QueryRouteKeys()
@@ -459,11 +561,11 @@ namespace TomPIT.Navigation
 
 			var r = new List<string>();
 
-			foreach(var descriptor in Handlers)
+			foreach (var descriptor in Handlers)
 			{
-				foreach(var handler in descriptor.Value)
+				foreach (var handler in descriptor.Value)
 				{
-					foreach(var key in handler.RouteKeys)
+					foreach (var key in handler.RouteKeys)
 					{
 						if (r.Contains(key))
 							continue;

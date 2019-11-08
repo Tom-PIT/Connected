@@ -1,10 +1,11 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text;
+using Newtonsoft.Json.Linq;
+using TomPIT.Exceptions;
+using TomPIT.Serialization;
 
 namespace TomPIT.Connectivity
 {
@@ -105,7 +106,7 @@ namespace TomPIT.Connectivity
 				return default(T);
 			}
 
-			return Types.Deserialize<T>(content);
+			return Serializer.Deserialize<T>(content);
 		}
 
 		private void HandleResponseException(HttpResponseMessage response)
@@ -119,7 +120,7 @@ namespace TomPIT.Connectivity
 
 			try
 			{
-				ex = Types.Deserialize<JObject>(rt);
+				ex = Serializer.Deserialize<JObject>(rt);
 			}
 			catch
 			{
@@ -171,7 +172,7 @@ namespace TomPIT.Connectivity
 			if (content == null || Convert.IsDBNull(content))
 				return new StringContent(string.Empty);
 
-			var c = Types.Serialize(content);
+			var c = Serializer.Serialize(content);
 
 			content = CompressString(c);
 

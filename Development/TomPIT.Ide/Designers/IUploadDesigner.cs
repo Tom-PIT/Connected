@@ -1,10 +1,10 @@
 ﻿using TomPIT.ComponentModel.Resources;
-using TomPIT.Dom;
-using TomPIT.Ide;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
 
-namespace TomPIT.Designers
+namespace TomPIT.Ide.Designers
 {
-	public interface IUploadDesigner : IDomDesigner, IEnvironmentClient, IDomClient
+	public interface IUploadDesigner : IDomDesigner, IEnvironmentObject, IDomObject
 	{
 		IUploadResource Resource { get; }
 

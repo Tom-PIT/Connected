@@ -1,15 +1,10 @@
-﻿using Lucene.Net.Documents;
+﻿using System.Collections.Generic;
+using System.Web;
 using Lucene.Net.QueryParsers;
 using Lucene.Net.Search;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Web;
-using TomPIT.Annotations;
 using TomPIT.ComponentModel.Search;
+using TomPIT.Serialization;
 
 namespace TomPIT.Search.Catalogs
 {
@@ -17,7 +12,7 @@ namespace TomPIT.Search.Catalogs
 	{
 		private List<string> _duplicates = null;
 
-		protected SearchJob(ISearchCatalog catalog, ISearchOptions options)
+		protected SearchJob(ISearchCatalogConfiguration catalog, ISearchOptions options)
 		{
 			Catalog = catalog;
 			Options = options;
@@ -98,7 +93,7 @@ namespace TomPIT.Search.Catalogs
 						content.Add(field.Name, field.StringValue);
 					}
 
-					searchResult.Content = Types.Serialize(content);
+					searchResult.Content = Serializer.Serialize(content);
 					searchResult.Catalog = Catalog.Component;
 
 					Results.Add(searchResult);
@@ -110,6 +105,6 @@ namespace TomPIT.Search.Catalogs
 			}
 		}
 
-		protected ISearchCatalog Catalog { get; }
+		protected ISearchCatalogConfiguration Catalog { get; }
 	}
 }

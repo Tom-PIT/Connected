@@ -12,7 +12,7 @@ namespace TomPIT.StorageProvider.Azure
 	{
 		public void Delete(IServerResourceGroup resourceGroup, Guid blob)
 		{
-			var ablob = AzureUtils.GetBlobReference(resourceGroup, AzureUtils.StorageContainer, blob.AsString());
+			var ablob = AzureUtils.GetBlobReference(resourceGroup, AzureUtils.StorageContainer, blob.ToString());
 
 			Task.Run(async () =>
 			{
@@ -25,7 +25,7 @@ namespace TomPIT.StorageProvider.Azure
 
 		public IBlobContent Download(IServerResourceGroup resourceGroup, Guid blob)
 		{
-			var ablob = AzureUtils.GetBlobReference(resourceGroup, AzureUtils.StorageContainer, blob.AsString());
+			var ablob = AzureUtils.GetBlobReference(resourceGroup, AzureUtils.StorageContainer, blob.ToString());
 
 			return Task.Run<IBlobContent>(async () =>
 			 {
@@ -70,7 +70,7 @@ namespace TomPIT.StorageProvider.Azure
 
 		public void Upload(IServerResourceGroup resourceGroup, Guid blob, byte[] content)
 		{
-			var b = AzureUtils.GetBlobReference(resourceGroup, AzureUtils.StorageContainer, blob.AsString());
+			var b = AzureUtils.GetBlobReference(resourceGroup, AzureUtils.StorageContainer, blob.ToString());
 
 			//if (b != null)
 			//	b.DeleteIfExistsAsync();

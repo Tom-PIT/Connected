@@ -1,24 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
+using TomPIT.Exceptions;
 
 namespace TomPIT.Globalization
 {
-	internal class StringsCache : ClientRepository<IStringTable, string>
+	internal class StringsCache : ClientRepository<IStringTableConfiguration, string>
 	{
-		public StringsCache(ISysConnection connection) : base(connection, "servicestrings")
+		public StringsCache(ITenant tenant) : base(tenant, "servicestrings")
 		{
-			Connection.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
-			Connection.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
+			Tenant.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
+			Tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
 		}
 
-		private void OnConfigurationChanged(ISysConnection sender, ConfigurationEventArgs e)
+		private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
 		{
 			if (string.Compare(e.Category, "StringTable", true) != 0)
 				return;
@@ -26,7 +25,7 @@ namespace TomPIT.Globalization
 			Invalidate(e.MicroService, e.Component);
 		}
 
-		private void OnComponentChanged(ISysConnection sender, ComponentEventArgs e)
+		private void OnComponentChanged(ITenant sender, ComponentEventArgs e)
 		{
 			if (string.Compare(e.Category, "StringTable", true) != 0)
 				return;
@@ -36,8 +35,8 @@ namespace TomPIT.Globalization
 
 		private void Invalidate(Guid microService, Guid component)
 		{
-			var ms = Connection.GetService<IMicroServiceService>().Select(microService);
-			var c = Connection.GetService<IComponentService>().SelectComponent(component);
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+			var c = Tenant.GetService<IComponentService>().SelectComponent(component);
 
 			var key = $"{ms.Name}{c.Name}";
 
@@ -49,14 +48,14 @@ namespace TomPIT.Globalization
 			var cacheKey = $"{microService}{stringTable}";
 			var table = Get(cacheKey);
 
-			if(table == null)
+			if (table == null)
 			{
-				var ms = Connection.GetService<IMicroServiceService>().Select(microService);
+				var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
 				if (ms == null)
 					throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})");
 
-				table = Connection.GetService<IComponentService>().SelectConfiguration(ms.Token, "StringTable", stringTable) as IStringTable;
+				table = Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "StringTable", stringTable) as IStringTableConfiguration;
 
 				Set(key, table, TimeSpan.Zero);
 			}

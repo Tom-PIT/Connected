@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using TomPIT.ActionResults;
+using Newtonsoft.Json.Linq;
 using TomPIT.Deployment;
-using TomPIT.Designers;
-using TomPIT.Dom;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom;
 using TomPIT.Management.Deployment;
 
 namespace TomPIT.Management.Designers
@@ -43,27 +43,27 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_countries == null)
-					_countries = Connection.GetService<IDeploymentService>().QueryCountries();
+					_countries = Environment.Context.Tenant.GetService<IDeploymentService>().QueryCountries();
 
 				return _countries;
 			}
 		}
 
-		public IAccount Account { get { return Connection.GetService<IDeploymentService>().Account; } }
+		public IAccount Account { get { return Environment.Context.Tenant.GetService<IDeploymentService>().Account; } }
 		protected abstract string MainView { get; }
 
 		private IDesignerActionResult Logoff(JObject data)
 		{
-			Connection.GetService<IDeploymentService>().LogOut();
+			Environment.Context.Tenant.GetService<IDeploymentService>().LogOut();
 
 			return Result.ViewResult(this, LoginView);
 		}
 
 		private IDesignerActionResult Login(JObject data)
 		{
-			Connection.GetService<IDeploymentService>().LogIn(data.Required<string>("user"), data.Required<string>("password"));
+			Environment.Context.Tenant.GetService<IDeploymentService>().LogIn(data.Required<string>("user"), data.Required<string>("password"));
 
-			if (Connection.GetService<IDeploymentService>().IsLogged)
+			if (Environment.Context.Tenant.GetService<IDeploymentService>().IsLogged)
 			{
 				var r = Result.ViewResult(ViewModel, MainView);
 
@@ -92,14 +92,14 @@ namespace TomPIT.Management.Designers
 			var phone = data.Optional("phone", string.Empty);
 			var email = data.Required<string>("email");
 
-			PublisherKey = Connection.GetService<IDeploymentService>().SignUp(company, firstName, lastName, password, email, country, phone, website);
+			PublisherKey = Environment.Context.Tenant.GetService<IDeploymentService>().SignUp(company, firstName, lastName, password, email, country, phone, website);
 
 			return Result.ViewResult(ViewModel, "~/Views/Ide/Designers/DeploymentInbox.cshtml");
 		}
 
 		private IDesignerActionResult CheckConfirmation(JObject data)
 		{
-			var r = Connection.GetService<IDeploymentService>().IsConfirmed(data.Required<Guid>("publisherKey"));
+			var r = Environment.Context.Tenant.GetService<IDeploymentService>().IsConfirmed(data.Required<Guid>("publisherKey"));
 
 			if (!r)
 				return Result.EmptyResult(ViewModel);

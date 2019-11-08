@@ -24,7 +24,7 @@ namespace TomPIT.Management.Models
 			get
 			{
 				if (_packageInfo == null)
-					_packageInfo = Designer.DependencyPackages.FirstOrDefault(f=>f.Service == Dependency.MicroService);
+					_packageInfo = Designer.DependencyPackages.FirstOrDefault(f => f.Service == Dependency.MicroService);
 
 				return _packageInfo;
 			}
@@ -35,7 +35,7 @@ namespace TomPIT.Management.Models
 			get
 			{
 				if (_configuration == null)
-					_configuration = Designer.Environment.Context.Connection().GetService<IDeploymentService>().SelectInstallerConfiguration(Designer.PackageInfo.Token);
+					_configuration = Designer.Environment.Context.Tenant.GetService<IDeploymentService>().SelectInstallerConfiguration(Designer.PackageInfo.Token);
 
 				return _configuration;
 			}

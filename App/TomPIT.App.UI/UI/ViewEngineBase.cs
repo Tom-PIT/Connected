@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.IO;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -6,10 +7,9 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
-using System.IO;
-using TomPIT.ComponentModel.UI;
+using TomPIT.Models;
 
-namespace TomPIT.UI
+namespace TomPIT.App.UI
 {
 	public abstract class ViewEngineBase
 	{
@@ -30,11 +30,17 @@ namespace TomPIT.UI
 			return new ActionContext(context, context?.GetRouteData(), new ActionDescriptor());
 		}
 
-		protected string CreateContent(Microsoft.AspNetCore.Mvc.ViewEngines.IView view, ViewInvokeArguments e)
+		protected string CreateContent(Microsoft.AspNetCore.Mvc.ViewEngines.IView view, IViewModel model)
 		{
+			var temp = new TempDataDictionary(model.ActionContext.HttpContext, model.TempData);
+			var viewData = new ViewDataDictionary<IRuntimeModel>(metadataProvider: new EmptyModelMetadataProvider(), modelState: new ModelStateDictionary())
+			{
+				Model = model
+			};
+
 			using (var output = new StringWriter())
 			{
-				var viewContext = new ViewContext(e.Model.ActionContext, view, e.ViewData, e.TempData, output, new HtmlHelperOptions());
+				var viewContext = new ViewContext(model.ActionContext, view, viewData, temp, output, new HtmlHelperOptions());
 
 				view.RenderAsync(viewContext).GetAwaiter().GetResult();
 

@@ -1,16 +1,16 @@
-﻿using Lucene.Net.Documents;
-using Lucene.Net.Index;
-using Lucene.Net.Store;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
+using Lucene.Net.Store;
+using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
 using TomPIT.Configuration;
-using TomPIT.Diagnostics;
+using TomPIT.Diagostics;
+using TomPIT.Middleware;
 using TomPIT.Search.Analyzers;
 using TomPIT.Storage;
 
@@ -31,7 +31,7 @@ namespace TomPIT.Search.Catalogs
 		private bool _disposing = false;
 		private string _searchDirectory = null;
 
-		public CatalogHost(ISearchCatalog catalog, TimeSpan duration, bool slidingExpiration)
+		public CatalogHost(ISearchCatalogConfiguration catalog, TimeSpan duration, bool slidingExpiration)
 		{
 			Catalog = catalog;
 			Duration = duration;
@@ -44,8 +44,8 @@ namespace TomPIT.Search.Catalogs
 		private TimeSpan Duration { get; }
 		private bool SlidingExpiration { get; }
 		private DateTime ExpirationDate { get; set; } = DateTime.MinValue;
-		public string FileName { get { return Catalog.Component.AsString(); } }
-		public ISearchCatalog Catalog { get; }
+		public string FileName { get { return Catalog.Component.ToString(); } }
+		public ISearchCatalogConfiguration Catalog { get; }
 
 		private string SearchDirectory
 		{
@@ -53,11 +53,11 @@ namespace TomPIT.Search.Catalogs
 			{
 				if (_searchDirectory == null)
 				{
-					_searchDirectory = Instance.GetService<ISettingService>().GetValue<string>(Guid.Empty, "Search Path");
+					_searchDirectory = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "Search Path");
 
 					if (string.IsNullOrWhiteSpace(_searchDirectory))
 					{
-						Instance.Connection.LogError("Search", nameof(CatalogHost), "'Search Path' setting not defined");
+						MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(CatalogHost), "'Search Path' setting not defined");
 						throw new NullReferenceException();
 					}
 				}
@@ -110,14 +110,14 @@ namespace TomPIT.Search.Catalogs
 
 		private void OnFileNotFoundException(object sender, EventArgs e)
 		{
-			Instance.GetService<IIndexingService>().Rebuild(Catalog.Component);
+			MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Rebuild(Catalog.Component);
 
 			_isValid = false;
 
-			Instance.Connection.LogError("Search", nameof(FileNotFoundException), $"Index Corrupted ({Catalog.Component})");
+			MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(FileNotFoundException), $"Index Corrupted ({Catalog.Component})");
 		}
 
-		public bool IsValid { get { return _isValid && Instance.GetService<IIndexingService>().SelectState(Catalog.Component) == null; } }
+		public bool IsValid { get { return _isValid && MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().SelectState(Catalog.Component) == null; } }
 
 		private FSDirectory Directory
 		{
@@ -170,7 +170,7 @@ namespace TomPIT.Search.Catalogs
 					Writer.Commit();
 
 					while (MessageBuffer.TryTake(out IQueueMessage m))
-						Instance.GetService<IIndexingService>().Complete(m.PopReceipt);
+						MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Complete(m.PopReceipt);
 				}
 
 				OperationEnd();
@@ -180,11 +180,11 @@ namespace TomPIT.Search.Catalogs
 				_isValid = false;
 				OperationEnd();
 
-				Instance.GetService<IIndexingService>().Rebuild(Catalog.Component);
+				MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Rebuild(Catalog.Component);
 
 				KillAll();
 
-				Instance.Connection.LogError("Search", nameof(Flush), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Flush), ex.Message);
 			}
 			catch (Exception ex)
 			{
@@ -192,7 +192,7 @@ namespace TomPIT.Search.Catalogs
 				OperationEnd();
 				KillAll();
 
-				Instance.Connection.LogError("Search", nameof(Flush), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Flush), ex.Message);
 			}
 		}
 
@@ -404,11 +404,11 @@ namespace TomPIT.Search.Catalogs
 
 			switch (options.Kind)
 			{
-				case QueryKind.Term:
+				case CommandKind.Term:
 					job = new TermSearchJob(Catalog, options);
 
 					break;
-				case QueryKind.Query:
+				case CommandKind.Query:
 					job = new QuerySearchJob(Catalog, options);
 
 					break;
@@ -433,7 +433,7 @@ namespace TomPIT.Search.Catalogs
 				job.Search(Searcher);
 
 				//foreach (var duplicate in job.Duplicates)
-				//	Instance.GetService<ISearchService>().Index(Catalog, SearchVerb.Update, new JObject { { "Id", duplicate } });
+				//	MiddlewareDescriptor.Current.GetService<ISearchService>().Index(Catalog, SearchVerb.Update, new JObject { { "Id", duplicate } });
 
 				total = job.Total;
 			}
@@ -441,8 +441,8 @@ namespace TomPIT.Search.Catalogs
 			{
 				_isValid = false;
 
-				Instance.Connection.LogError("Search", nameof(Search), ex.Message);
-				Instance.GetService<IIndexingService>().Rebuild(Catalog.Component);
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Search), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Rebuild(Catalog.Component);
 
 				KillAll();
 
@@ -450,7 +450,7 @@ namespace TomPIT.Search.Catalogs
 			}
 			catch (Exception ex)
 			{
-				Instance.Connection.LogError("Search", nameof(Search), $"{Catalog.ComponentName(Instance.Connection)} ({job.CommandText}, {ex.Message})");
+				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Search), $"{Catalog.ComponentName()} ({job.CommandText}, {ex.Message})");
 
 				_isValid = false;
 

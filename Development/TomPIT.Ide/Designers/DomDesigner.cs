@@ -1,15 +1,15 @@
 ﻿using Newtonsoft.Json.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Design;
-using TomPIT.Dom;
-using TomPIT.Ide;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
+using TomPIT.Ide.Resources;
 
-namespace TomPIT.Designers
+namespace TomPIT.Ide.Designers
 {
-	public abstract class DomDesigner<E> : EnvironmentClient, IDomDesigner, IDomClient where E : IDomElement
+	public abstract class DomDesigner<E> : EnvironmentObject, IDomDesigner, IDomObject where E : IDomElement
 	{
 		private IDesignerToolbar _toolbar = null;
-		private IDesignerToolbox _toolbox = null;
+		private IToolbox _toolbox = null;
 
 		protected DomDesigner(E element) : base(element.Environment)
 		{
@@ -26,7 +26,7 @@ namespace TomPIT.Designers
 			{
 				if (_toolbar == null)
 				{
-					_toolbar = new Toolbar(Environment);
+					_toolbar = new DesignerToolbar(Environment);
 
 					OnCreateToolbar(_toolbar);
 				}
@@ -70,7 +70,7 @@ namespace TomPIT.Designers
 
 		public virtual bool SupportsChaining { get; } = true;
 
-		public IDesignerToolbox Toolbox
+		public IToolbox Toolbox
 		{
 			get
 			{

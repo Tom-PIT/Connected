@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using TomPIT;
-using TomPIT.Services;
+using TomPIT.Distributed;
+using TomPIT.Middleware;
+using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Search.Services
 {
@@ -25,7 +26,7 @@ namespace TomPIT.Search.Services
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				var url = Instance.Connection.CreateUrl("SearchManagement", "Dequeue");
+				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "Dequeue");
 
 				var e = new JObject
 				{
@@ -33,7 +34,7 @@ namespace TomPIT.Search.Services
 					{ "resourceGroup", f.ResourceGroup }
 				};
 
-				var jobs = Instance.Connection.Post<List<QueueMessage>>(url, e);
+				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
 
 				if (jobs == null)
 					return;

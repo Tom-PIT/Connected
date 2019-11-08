@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Actions;
-using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.Design;
-using TomPIT.Dom;
 using TomPIT.Ide;
-using TomPIT.Items;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Designers.Toolbar;
+using TomPIT.Management.Dom;
+using TomPIT.Management.Items;
+using TomPIT.Management.Security;
 using TomPIT.Security;
 
-namespace TomPIT.Designers
+namespace TomPIT.Management.Designers
 {
 	internal class RolesDesigner : CollectionDesigner<RolesElement>
 	{
@@ -32,7 +35,7 @@ namespace TomPIT.Designers
 			var id = data.Required<Guid>("id");
 			var user = Owner.Existing.FirstOrDefault(f => f.Token == id);
 
-			Connection.GetService<IRoleManagementService>().Delete(user.Token);
+			Environment.Context.Tenant.GetService<IRoleManagementService>().Delete(user.Token);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 		}
@@ -40,7 +43,7 @@ namespace TomPIT.Designers
 		protected override IDesignerActionResult Clear(JObject data)
 		{
 			foreach (var i in Owner.Existing)
-				Connection.GetService<IRoleManagementService>().Delete(i.Token);
+				Environment.Context.Tenant.GetService<IRoleManagementService>().Delete(i.Token);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 		}
@@ -48,10 +51,10 @@ namespace TomPIT.Designers
 		private IDesignerActionResult CreateRole()
 		{
 			var existing = Owner.Existing;
-			var name = Connection.GetService<INamingService>().Create("Role", existing.Select(f => f.Name), true);
+			var name = Environment.Context.Tenant.GetService<INamingService>().Create("Role", existing.Select(f => f.Name), true);
 
-			var id = Connection.GetService<IRoleManagementService>().Insert(name);
-			var role = Connection.GetService<IRoleService>().Select(id);
+			var id = Environment.Context.Tenant.GetService<IRoleManagementService>().Insert(name);
+			var role = Environment.Context.Tenant.GetService<IRoleService>().Select(id);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 

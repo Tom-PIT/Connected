@@ -2,40 +2,40 @@
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
-using TomPIT.IoT.UI.Stencils;
-using TomPIT.Services;
+using TomPIT.IoT;
+using TomPIT.MicroServices.IoT.UI.Stencils;
+using TomPIT.Middleware;
+using TomPIT.Runtime;
 
-namespace TomPIT.IoT.Models
+namespace TomPIT.MicroServices.IoT.Models
 {
-	public abstract class StencilModel
+	public abstract class StencilModel : MiddlewareObject
 	{
 		private List<IIoTFieldState> _ds = null;
-		private IIoTHub _hub = null;
-		private IIoTView _view = null;
+		private IIoTHubConfiguration _hub = null;
+		private IIoTViewConfiguration _view = null;
 
-		public StencilModel(IExecutionContext context, IIoTElement element)
+		public StencilModel(IMiddlewareContext context, IIoTElement element) : base(context)
 		{
-			Context = context;
 			Element = element;
 		}
 
 		public IIoTElement Element { get; }
-		public IExecutionContext Context { get; }
 
 		public bool IsDesignTime { get { return (Shell.GetService<IRuntimeService>().Mode & EnvironmentMode.Design) == EnvironmentMode.Design; } }
 
-		public IIoTView View
+		public IIoTViewConfiguration View
 		{
 			get
 			{
 				if (_view == null)
-					_view = Context.Connection().GetService<IComponentService>().SelectConfiguration(Element.Configuration().Component) as IIoTView;
+					_view = Context.Tenant.GetService<IComponentService>().SelectConfiguration(Element.Configuration().Component) as IIoTViewConfiguration;
 
 				return _view;
 			}
 		}
 
-		public IIoTHub Hub
+		public IIoTHubConfiguration Hub
 		{
 			get
 			{
@@ -52,9 +52,9 @@ namespace TomPIT.IoT.Models
 			{
 				if (_ds == null && Hub != null)
 				{
-					var ds = Context.Connection().GetService<IIoTService>().SelectState(Hub.Component);
+					var ds = Context.Tenant.GetService<IIoTService>().SelectState(Hub.Component);
 
-					if (Context is IForwardDataProvider fw && fw.ForwardState != null && fw.ForwardState.Count > 0)
+					if (Context is IDataForwardingProvider fw && fw.ForwardState != null && fw.ForwardState.Count > 0)
 					{
 						_ds = new List<IIoTFieldState>();
 

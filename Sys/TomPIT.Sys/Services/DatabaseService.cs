@@ -16,7 +16,7 @@ namespace TomPIT.Sys.Services
 
 			if (!string.IsNullOrWhiteSpace(sys.Database))
 			{
-				var type = Types.GetType(sys.Database);
+				var type = Reflection.TypeExtensions.GetType(sys.Database);
 
 				if (type != null)
 					Proxy = type.Assembly.CreateInstance(type.FullName) as ISysDbProxy;

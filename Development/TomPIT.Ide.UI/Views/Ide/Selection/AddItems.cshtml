@@ -1,4 +1,4 @@
-﻿@model TomPIT.Ide.IEnvironment
+﻿@model TomPIT.Ide.Environment.IEnvironment
 
 @if (Model.Selection.AddItems == null)
 {
@@ -47,7 +47,8 @@ else
 				'item': $(this).attr('data-id')
 			},
 			onComplete: function (data) {
-				$('#devDesigner').html(data);
+                $('#devDesigner').html(data);
+                ide.showDesigner();
 			}
 		})
 	});

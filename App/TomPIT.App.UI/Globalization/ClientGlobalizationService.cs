@@ -1,12 +1,11 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
-using TomPIT.Compilation;
-using TomPIT.Services;
+using Newtonsoft.Json.Linq;
+using TomPIT.Runtime;
+using TomPIT.Serialization;
 
-namespace TomPIT.Globalization
+namespace TomPIT.App.Globalization
 {
 	internal class ClientGlobalizationService : IClientGlobalizationService
 	{
@@ -187,7 +186,7 @@ namespace TomPIT.Globalization
 			if ((segments & ClientGlobalizationSegment.TimeZoneNames) == ClientGlobalizationSegment.TimeZoneNames)
 				r.Merge(LoadJson(string.Format("{0}\\timeZoneNames.json", main)), settings);
 
-			var content = Types.Serialize(r);
+			var content = Serializer.Serialize(r);
 
 			Locales.TryAdd(string.Format("{0}.{1}", locale, (long)segments), content);
 
@@ -208,7 +207,7 @@ namespace TomPIT.Globalization
 
 			var s = File.ReadAllText(fileName);
 
-			return Types.Deserialize<JObject>(s);
+			return Serializer.Deserialize<JObject>(s);
 		}
 	}
 }

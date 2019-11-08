@@ -1,10 +1,10 @@
 ﻿@using TomPIT;
 
-@model TomPIT.Design.IProperty
+@model TomPIT.Ide.Properties.IProperty
 
 @{
 
-    var user = Shell.GetService<TomPIT.Security.IUserService>().Select(Types.Convert<string>(Model.Value));
+    var user = Model.Environment.Context.Services.Identity.GetUser(Types.Convert<string>(Model.Value));
 }
 
 <div class="read-only">

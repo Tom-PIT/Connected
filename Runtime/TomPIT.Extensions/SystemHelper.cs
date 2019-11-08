@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
+﻿using System;
 using System.Text;
-using TomPIT.Services;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using TomPIT.Middleware;
 
 namespace TomPIT
 {
@@ -17,10 +17,10 @@ namespace TomPIT
 			if (user == Guid.Empty)
 				return DefaultAvatar();
 
-			if (!(Html.ViewData.Model is IExecutionContext m))
+			if (!(Html.ViewData.Model is IMiddlewareContext m))
 				return DefaultAvatar();
 
-			var url = m.MapPath(m.Services.Routing.Avatar(user));
+			var url = m.Services.Routing.MapPath(m.Services.Routing.Avatar(user));
 
 			if (string.IsNullOrWhiteSpace(url))
 				return DefaultAvatar();

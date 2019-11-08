@@ -1,7 +1,6 @@
-﻿using TomPIT.Design;
-using TomPIT.Dom;
+﻿using TomPIT.Ide.Environment.Providers;
 
-namespace TomPIT.Designers
+namespace TomPIT.Ide.Designers
 {
 	public interface ISupportsAddDesigner : IDomDesigner
 	{

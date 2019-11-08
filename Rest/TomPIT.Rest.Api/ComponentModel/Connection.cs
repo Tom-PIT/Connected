@@ -9,7 +9,7 @@ namespace TomPIT.Rest.ComponentModel
 
 		public static T GetService<T>()
 		{
-			return Shell.GetService<IConnectivityService>().Select().GetService<T>();
+			return Shell.GetService<IConnectivityService>().SelectDefaultTenant().GetService<T>();
 		}
 
 		public static List<string> ResourceGroups

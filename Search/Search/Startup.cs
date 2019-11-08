@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using TomPIT;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
+using TomPIT.Runtime;
+using TomPIT.Search.Routing;
 using TomPIT.Search.Services;
 
 namespace TomPIT.Search
@@ -29,11 +31,11 @@ namespace TomPIT.Search
 			RegisterTasks(services);
 		}
 
-		public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			Instance.Configure(InstanceType.Search, app, env, (f) =>
 			{
-				Search.Configuration.Routing.Register(f.Builder);
+				SearchRouting.Register(f.Builder);
 			});
 
 			InitializeConfiguration();
@@ -49,12 +51,12 @@ namespace TomPIT.Search
 
 		private void InitializeConfiguration()
 		{
-			Shell.GetService<IConnectivityService>().ConnectionRegistered += OnConnectionRegistered;
+			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 		}
 
-		private void OnConnectionRegistered(object sender, SysConnectionRegisteredArgs e)
+		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
-			e.Connection.RegisterService(typeof(IIndexingService), typeof(IndexingService));
+			e.Tenant.RegisterService(typeof(IIndexingService), typeof(IndexingService));
 		}
 	}
 }

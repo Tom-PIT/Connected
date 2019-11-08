@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.Dom;
 using TomPIT.Globalization;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
 
 namespace TomPIT.Design.Items
 {
@@ -9,7 +10,7 @@ namespace TomPIT.Design.Items
 	{
 		protected override void OnQueryDescriptors(IDomElement element, List<IItemDescriptor> items)
 		{
-			var ds = element.Environment.Context.Connection().GetService<ILanguageService>().Query();
+			var ds = element.Environment.Context.Tenant.GetService<ILanguageService>().Query();
 
 			items.Add(new ItemDescriptor(SR.DevLiDefault, Guid.Empty.ToString()));
 

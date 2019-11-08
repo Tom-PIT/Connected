@@ -1,9 +1,11 @@
-﻿using TomPIT.Designers;
-using TomPIT.Ide;
+﻿using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
+using TomPIT.Management.Designers;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
-	public class PackageElement : Element
+	public class PackageElement : DomElement
 	{
 		private IDomDesigner _designer = null;
 		public const string DomId = "{1C2FADC9-8E2F-4277-8551-4BDEE39871D7}";

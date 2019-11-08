@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using DevExpress.DataAccess.Json;
 using Newtonsoft.Json.Linq;
-using TomPIT.Analysis;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.Reports;
-using TomPIT.Design;
-using TomPIT.Designers;
-using TomPIT.Dom;
-using TomPIT.Reporting.Design.Dom;
+using TomPIT.Ide;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.MicroServices.Reporting.Design.Dom;
+using TomPIT.Reflection;
+using TomPIT.Reflection.Manifests.Entities;
 
-namespace TomPIT.Reporting.Design.Designers
+namespace TomPIT.MicroServices.Reporting.Design.Designers
 {
 	public class ReportDesigner : DomDesigner<IDomElement>
 	{
 		private IMicroService _microService = null;
-		private IReport _report = null;
+		private IReportConfiguration _report = null;
 		private Dictionary<string, JsonDataSource> _dataSources = null;
 		public ReportDesigner(IDomElement element) : base(element)
 		{
@@ -30,14 +29,14 @@ namespace TomPIT.Reporting.Design.Designers
 		{
 			get
 			{
-				if(_microService==null)
-					_microService = GetService<IMicroServiceService>().Select(Element.MicroService());
+				if (_microService == null)
+					_microService = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(Element.MicroService());
 
 				return _microService;
 			}
 		}
 
-		public IReport Report
+		public IReportConfiguration Report
 		{
 			get
 			{
@@ -45,14 +44,14 @@ namespace TomPIT.Reporting.Design.Designers
 				{
 					var element = Element as ReportElement;
 
-					_report = element.Component as IReport;
+					_report = element.Component as IReportConfiguration;
 				}
 
 				return _report;
 			}
 		}
 
-		public string ReportUrl => $"{MicroService.Name}/{Report.ComponentName(Connection)}";
+		public string ReportUrl => $"{MicroService.Name}/{Report.ComponentName()}";
 
 		public Dictionary<string, JsonDataSource> DataSources
 		{
@@ -62,14 +61,14 @@ namespace TomPIT.Reporting.Design.Designers
 				{
 					_dataSources = new Dictionary<string, JsonDataSource>();
 
-					DiscoverOperations(MicroService.Name);
+					ResolveDataSources(MicroService.Name);
 
-					var references = GetService<IDiscoveryService>().References(MicroService.Token);
+					var references = Environment.Context.Tenant.GetService<IDiscoveryService>().References(MicroService.Token);
 
-					if(references !=null)
+					if (references != null)
 					{
 						foreach (var reference in references.MicroServices)
-							DiscoverOperations(reference.MicroService);
+							ResolveDataSources(reference.MicroService);
 					}
 				}
 
@@ -77,23 +76,26 @@ namespace TomPIT.Reporting.Design.Designers
 			}
 		}
 
-		private void DiscoverOperations(string microService)
+		private void ResolveDataSources(string microService)
 		{
-			var ms = GetService<IMicroServiceService>().Select(microService);
+			if (string.IsNullOrWhiteSpace(microService))
+				return;
+
+			var ms = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(microService);
 
 			if (ms == null)
 				return;
 
-			var apis = GetService<IComponentService>().QueryConfigurations(ms.Token, "Api");
+			var apis = Environment.Context.Tenant.GetService<IComponentService>().QueryComponents(ms.Token, ComponentCategories.Api);
 
 			foreach (var api in apis)
 			{
-				var config = api as IApi;
+				var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifest(api.Token) as ApiManifest;
 
-				foreach (var operation in config.Operations)
+				foreach (var operation in manifest.Operations)
 				{
-					if (!(operation.Discover(Element.Environment.Context) is OperationManifest manifest) || !manifest.IsDataSource || manifest.Schema == null)
-						return;
+					if (operation.ReturnType == null || string.IsNullOrWhiteSpace(operation.ReturnType.Name))
+						continue;
 
 					var ds = new JsonDataSource
 					{
@@ -110,21 +112,21 @@ namespace TomPIT.Reporting.Design.Designers
 					{
 						NodeType = JsonNodeType.Array,
 						Selected = true,
-						Name = manifest.SchemaName
+						Name = operation.Name
 					};
 
-					foreach (var child in manifest.Schema.Children())
+					foreach (var child in operation.ReturnType.Properties)
 					{
-						if (child is JProperty property)
-							schema.AddChildren(new[] { new JsonSchemaNode(property.Name, true, JsonNodeType.Property, ResolvePropertyType(property.Value)) });
-						else if (child is JObject obj)
-						{
-							//TODO: implement object
-						}
-						else if (child is JArray array)
-						{
-							//TODO: implement collection
-						}
+						//if (child is JProperty property)
+						schema.AddChildren(new[] { new JsonSchemaNode(child.Name, true, JsonNodeType.Property, ResolvePropertyType(child.Type)) });
+						//else if (child is JObject obj)
+						//{
+						//	//TODO: implement object
+						//}
+						//else if (child is JArray array)
+						//{
+						//	//TODO: implement collection
+						//}
 					}
 
 					root.AddChildren(schema);
@@ -138,7 +140,7 @@ namespace TomPIT.Reporting.Design.Designers
 
 		private Type ResolvePropertyType(JToken value)
 		{
-			return Types.GetType(value.Value<string>());
+			return TypeExtensions.GetType(value.Value<string>());
 		}
 	}
 }

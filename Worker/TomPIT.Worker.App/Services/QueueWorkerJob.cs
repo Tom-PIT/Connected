@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Handlers;
-using TomPIT.ComponentModel.Workers;
-using TomPIT.Services;
+using TomPIT.ComponentModel.Distributed;
+using TomPIT.Diagnostics;
+using TomPIT.Diagostics;
+using TomPIT.Distributed;
+using TomPIT.Middleware;
 using TomPIT.Storage;
 using TomPIT.Worker.Workers;
 
@@ -27,42 +27,52 @@ namespace TomPIT.Worker.Services
 
 			Invoke(item, m);
 
-			var url = Instance.Connection.CreateUrl("QueueManagement", "Complete");
+			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Complete");
 			var d = new JObject
 			{
 				{"popReceipt", item.PopReceipt }
 			};
 
-			Instance.Connection.Post(url, d);
+			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 		}
 
 		private void Invoke(IQueueMessage queue, JObject data)
 		{
 			var component = data.Required<Guid>("component");
+			var worker = data.Required<string>("worker");
 			var arguments = data.Optional<string>("arguments", null);
-			var configuration = Instance.GetService<IComponentService>().SelectConfiguration(component) as IQueueHandlerConfiguration;
 
-			if (configuration == null)
-				Instance.Connection.LogError(nameof(QueueWorkerJob), nameof(Invoke), $"{SR.ErrQueueWorkerNotFound} ({component})");
+			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) is IQueueConfiguration configuration))
+			{
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(QueueWorkerJob), nameof(Invoke), $"{SR.ErrCannotFindConfiguration} ({component})");
+				return;
+			}
 
-			var ms = Instance.Connection.GetService<IMicroServiceService>().Select(((IConfiguration)configuration).MicroService(Instance.Connection));
-			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, ms);
+			var w = configuration.Workers.FirstOrDefault(f => string.Compare(f.Name, worker, true) == 0);
+
+			if (w == null)
+			{
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(QueueWorkerJob), nameof(Invoke), $"{SR.ErrQueueWorkerNotFound} ({component})");
+				return;
+			}
+
+			var ctx = new MicroServiceContext(configuration.MicroService());
 			var metricId = ctx.Services.Diagnostic.StartMetric(configuration.Metrics, null);
 			Queue q = null;
-			
+
 			try
 			{
-				q = new Queue(arguments, configuration);
-				
+				q = new Queue(arguments, w);
+
 				q.Invoke();
 
 				ctx.Services.Diagnostic.StopMetric(metricId, Diagnostics.SessionResult.Success, null);
 			}
-			catch(ValidationException ex)
+			catch (ValidationException ex)
 			{
 				if (q.HandlerInstance.ValidationFailed == Cdn.QueueValidationBehavior.Complete)
 				{
-					Instance.Connection.LogWarning(ctx, "Queue", nameof(Invoke), ex.Message);
+					MiddlewareDescriptor.Current.Tenant.LogWarning(ex.Source, ex.Message, LogCategories.Worker);
 					return;
 				}
 				else
@@ -78,17 +88,17 @@ namespace TomPIT.Worker.Services
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			Instance.Connection.LogError(nameof(QueueWorkerJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(nameof(QueueWorkerJob), ex.Source, ex.Message);
 
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
 
-			var url = Instance.Connection.CreateUrl("QueueManagement", "Ping");
+			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Ping");
 			var d = new JObject
 			{
 				{"popReceipt", item.PopReceipt }
 			};
 
-			Instance.Connection.Post(url, d);
+			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 		}
 	}
 }

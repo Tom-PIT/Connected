@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using TomPIT.Security;
 
-namespace TomPIT.Security
+namespace TomPIT.Management.Security
 {
 	public interface IAuthenticationTokenManagementService
 	{

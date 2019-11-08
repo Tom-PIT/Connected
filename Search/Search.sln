@@ -15,11 +15,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Runtime", "..\Runtim
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lucene", "Lucene", "{213A3A31-8D26-4DEE-90C8-04215A728FDF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucene.Net", "Lucene.Core\Lucene.Net.csproj", "{5D4AD9BE-1FFB-41AB-9943-25737971BF57}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucene.Net", "Lucene.Core\Lucene.Net.csproj", "{5D4AD9BE-1FFB-41AB-9943-25737971BF57}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contrib.Memory", "Lucene.Memory\Contrib.Memory.csproj", "{112B9A7C-29CC-4539-8F5A-45669C07CD4D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contrib.Memory", "Lucene.Memory\Contrib.Memory.csproj", "{112B9A7C-29CC-4539-8F5A-45669C07CD4D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contrib.Highlighter", "Lucene.Highlighter\Contrib.Highlighter.csproj", "{901D5415-383C-4AA6-A256-879558841BEA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contrib.Highlighter", "Lucene.Highlighter\Contrib.Highlighter.csproj", "{901D5415-383C-4AA6-A256-879558841BEA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Sdk", "..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj", "{F22DFDDE-A092-41FB-B76E-F0937673DD48}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,6 +87,14 @@ Global
 		{901D5415-383C-4AA6-A256-879558841BEA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{901D5415-383C-4AA6-A256-879558841BEA}.Release35|Any CPU.ActiveCfg = Release|Any CPU
 		{901D5415-383C-4AA6-A256-879558841BEA}.Release35|Any CPU.Build.0 = Release|Any CPU
+		{F22DFDDE-A092-41FB-B76E-F0937673DD48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F22DFDDE-A092-41FB-B76E-F0937673DD48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F22DFDDE-A092-41FB-B76E-F0937673DD48}.Debug35|Any CPU.ActiveCfg = Debug|Any CPU
+		{F22DFDDE-A092-41FB-B76E-F0937673DD48}.Debug35|Any CPU.Build.0 = Debug|Any CPU
+		{F22DFDDE-A092-41FB-B76E-F0937673DD48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F22DFDDE-A092-41FB-B76E-F0937673DD48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F22DFDDE-A092-41FB-B76E-F0937673DD48}.Release35|Any CPU.ActiveCfg = Release|Any CPU
+		{F22DFDDE-A092-41FB-B76E-F0937673DD48}.Release35|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -96,6 +106,7 @@ Global
 		{5D4AD9BE-1FFB-41AB-9943-25737971BF57} = {213A3A31-8D26-4DEE-90C8-04215A728FDF}
 		{112B9A7C-29CC-4539-8F5A-45669C07CD4D} = {213A3A31-8D26-4DEE-90C8-04215A728FDF}
 		{901D5415-383C-4AA6-A256-879558841BEA} = {213A3A31-8D26-4DEE-90C8-04215A728FDF}
+		{F22DFDDE-A092-41FB-B76E-F0937673DD48} = {0B435E13-0793-41D1-ACED-0E82DF395B38}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {234DAD2B-1B2B-4761-99A7-735F1D275925}

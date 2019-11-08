@@ -1,8 +1,9 @@
-﻿using TomPIT.Ide;
+﻿using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
-	public class EnvironmentElement : Element
+	public class EnvironmentElement : DomElement
 	{
 		public const string DomId = "Environment";
 
@@ -20,7 +21,6 @@ namespace TomPIT.Dom
 		public override void LoadChildren()
 		{
 			Items.Add(new EndpointsElement(this));
-			Items.Add(new EnvironmentUnitsElement(this));
 			Items.Add(new SettingsElement(this));
 		}
 
@@ -28,8 +28,6 @@ namespace TomPIT.Dom
 		{
 			if (string.Compare(id, EndpointsElement.DomId, true) == 0)
 				Items.Add(new EndpointsElement(this));
-			else if (string.Compare(id, EnvironmentUnitsElement.DomId, true) == 0)
-				Items.Add(new EnvironmentUnitsElement(this));
 			else if (string.Compare(id, SettingsElement.ElementId, true) == 0)
 				Items.Add(new SettingsElement(this));
 		}

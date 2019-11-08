@@ -1,16 +1,20 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Apis;
-using TomPIT.ComponentModel.Events;
-using TomPIT.Data;
-using TomPIT.Services;
-using TomPIT.Services.Context;
+using TomPIT.ComponentModel.Messaging;
+using TomPIT.Diagnostics;
+using TomPIT.Diagostics;
+using TomPIT.Distributed;
+using TomPIT.Exceptions;
+using TomPIT.Messaging;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
 using TomPIT.Storage;
 
 namespace TomPIT.Worker.Services
@@ -27,27 +31,37 @@ namespace TomPIT.Worker.Services
 
 			Invoke(item, m);
 
-			var url = Instance.Connection.CreateUrl("EventManagement", "Complete");
+			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Complete");
 			var d = new JObject
 			{
 				{"popReceipt", item.PopReceipt }
 			};
 
-			Instance.Connection.Post(url, d);
+			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 		}
 
 		private void Invoke(IQueueMessage queue, JObject data)
 		{
 			var id = data.Required<Guid>("id");
-			var url = Instance.Connection.CreateUrl("EventManagement", "Select")
+			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Select")
 				.AddParameter("id", id);
 
-			var ed = Instance.Connection.Get<EventDescriptor>(url);
+			var ed = MiddlewareDescriptor.Current.Tenant.Get<EventDescriptor>(url);
 
 			if (ed == null)
 				return;
 
-			var cancel = false;
+			var eventInstance = CreateEventInstance(ed);
+
+			if (eventInstance != null)
+			{
+				if (!eventInstance.Invoking())
+					return;
+
+				eventInstance.Invoke();
+			}
+
+			var responses = new List<IOperationResponse>();
 
 			if (string.Compare(ed.Name, "$", true) != 0)
 			{
@@ -57,7 +71,7 @@ namespace TomPIT.Worker.Services
 				{
 					foreach (var target in targets)
 					{
-						if (!(Instance.GetService<IComponentService>().SelectConfiguration(target.Item2) is IEventHandler configuration))
+						if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(target.Item2) is IEventBindingConfiguration configuration))
 							return;
 
 						Parallel.ForEach(configuration.Events,
@@ -65,8 +79,15 @@ namespace TomPIT.Worker.Services
 							{
 								if (ed.Name.Equals(i.Event, StringComparison.OrdinalIgnoreCase))
 								{
-									if (Invoke(ed, i) & !cancel)
-										cancel = true;
+									var result = Invoke(ed, i);
+
+									if (result != null && result.Count > 0)
+									{
+										lock (responses)
+										{
+											responses.AddRange(result);
+										}
+									}
 								}
 							});
 					};
@@ -74,108 +95,92 @@ namespace TomPIT.Worker.Services
 			}
 
 			if (!string.IsNullOrWhiteSpace(ed.Callback))
-				Callback(ed, cancel);
+				Callback(ed, responses);
+
+			if (eventInstance != null)
+				eventInstance.Invoked();
 		}
 
-		private void Callback(EventDescriptor ed, bool cancel)
+		private void Callback(EventDescriptor ed, List<IOperationResponse> responses)
 		{
-			var tokens = ed.Callback.Split('/');
+			var ctx = new MicroServiceContext(new Guid(ed.Callback.Split('/')[0]));
+			var descriptor = ComponentDescriptor.Api(ctx, ed.Callback);
 
-			if (!(Instance.GetService<IComponentService>().SelectConfiguration(tokens[1].AsGuid()) is IApi api))
-				return;
+			try
+			{
+				descriptor.Validate();
+			}
+			catch (RuntimeException ex)
+			{
+				ctx.Services.Diagnostic.Error(nameof(EventJob), ex.Message, LogCategories.Worker);
+			}
 
-			var op = api.Operations.FirstOrDefault(f => f.Id == tokens[2].AsGuid());
+			var op = descriptor.Configuration.Operations.FirstOrDefault(f => f.Id == new Guid(descriptor.Element));
 
 			if (op == null)
 				return;
 
-			var args = string.IsNullOrWhiteSpace(ed.Arguments)
-				? new JObject()
-				: JsonConvert.DeserializeObject<JObject>(ed.Arguments);
+			var instance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IDistributedOperation>(ctx, op, ed.Arguments, op.Name);
+			var property = instance.GetType().GetProperty(nameof(IDistributedOperation.OperationTarget));
 
-			if (args.Property("cancel", StringComparison.OrdinalIgnoreCase) == null)
-				args.Add("cancel", cancel);
-			else
-				args["cancel"] = cancel;
+			if (property.SetMethod == null)
+				return;
 
-			var microService = Instance.GetService<IMicroServiceService>().Select(tokens[0].AsGuid());
-			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, microService);
-			var ai = new ApiInvoke(ctx);
+			property.SetMethod.Invoke(instance, new object[] { DistributedOperationTarget.InProcess });
 
-			ai.Execute(null, microService.Token, api.ComponentName(Instance.Connection), op.Name, args, null, true, true);
+			if (responses != null && responses.Count > 0)
+				instance.Responses.AddRange(responses);
+
+			instance.Invoke();
 		}
 
-		private bool Invoke(EventDescriptor ed, IEventBinding i)
+		private List<IOperationResponse> Invoke(EventDescriptor ed, IEventBinding i)
 		{
-			var ms = Instance.Connection.GetService<IMicroServiceService>().Select(i.MicroService(Instance.Connection));
-			var ctx = TomPIT.Services.ExecutionContext.Create(Instance.Connection.Url, ms);
-			var configuration = i.Closest<IEventHandler>();
+			var ctx = new MicroServiceContext(i.Configuration().MicroService());
+			var configuration = i.Closest<IEventBindingConfiguration>();
 
 			if (configuration == null)
 			{
-				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrElementClosestNull} ({nameof(IEventBinding)}->{nameof(IEventHandler)}");
-				return false;
+				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrElementClosestNull} ({nameof(IEventBinding)}->{nameof(IEventBindingConfiguration)}");
+				return null;
 			}
 
-			var componentName = configuration.ComponentName(Instance.Connection);
-			var type = Instance.GetService<ICompilerService>().ResolveType(ms.Token, configuration, componentName, false);
+			var componentName = configuration.ComponentName();
+			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ctx.MicroService.Token, configuration, componentName, false);
 
 			if (type == null)
 			{
 				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrTypeExpected} ({componentName})");
-				return false;
+				return null;
 			}
-
-			var dataContext = new DataModelContext(ctx);
 
 			try
 			{
-				var handler = type.CreateInstance<Notifications.IEventHandler>(new object[] { dataContext, ed.Name });
+				var handler = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IEventMiddleware>(ctx, type, ed.Arguments);
 
-				if (!string.IsNullOrWhiteSpace(ed.Arguments))
-					Types.Populate(ed.Arguments, handler);
-				
-				Invoke(handler);
+				Invoke(handler, ed.Name);
 
-				if (handler.Cancel)
-				{
-					var args = string.IsNullOrWhiteSpace(ed.Arguments)
-						? new JObject()
-						: Types.Deserialize<JObject>(ed.Arguments);
-
-					var property = args.Property("cancel", StringComparison.OrdinalIgnoreCase);
-
-					if (property == null)
-						args.Add("cancel", true);
-					else
-						property.Value = true;
-
-					ed.Arguments = Types.Serialize(args);
-
-					return handler.Cancel;
-				}
+				return handler.Responses;
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				ctx.Services.Diagnostic.Error(nameof(EventJob), nameof(Invoke), $"{ex.Message}");
 			}
 
-			return false;
+			return null;
 		}
 
-		private void Invoke(Notifications.IEventHandler handler)
+		private void Invoke(IEventMiddleware handler, string eventName)
 		{
 			Exception lastError = null;
 
-			for(var i = 0; i < 10; i++)
+			for (var i = 0; i < 10; i++)
 			{
 				try
 				{
-					handler.Invoke();
-
-					return;
+					handler.Invoke(eventName);
 				}
-				catch(Exception ex)
+				catch (Exception ex)
 				{
 					lastError = ex;
 					Thread.Sleep((i + 1) * 250);
@@ -187,15 +192,36 @@ namespace TomPIT.Worker.Services
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			Instance.Connection.LogError(nameof(EventJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(nameof(EventJob), ex.Source, ex.Message);
 
-			var url = Instance.Connection.CreateUrl("EventManagement", "Ping");
+			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Ping");
 			var d = new JObject
 			{
 				{"popReceipt", item.PopReceipt }
 			};
 
-			Instance.Connection.Post(url, d);
+			MiddlewareDescriptor.Current.Tenant.Post(url, d);
+		}
+
+		private IDistributedEventMiddleware CreateEventInstance(EventDescriptor eventDescriptor)
+		{
+			var compiler = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>();
+			var context = new MicroServiceContext(eventDescriptor.MicroService, MiddlewareDescriptor.Current.Tenant.Url);
+			var descriptor = ComponentDescriptor.DistributedEvent(context, $"{context.MicroService.Name}/{eventDescriptor.Name}");
+
+			descriptor.Validate();
+
+			var ev = descriptor.Configuration.Events.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
+
+			if (ev == null)
+				throw new RuntimeException($"{SR.ErrDistributedEventNotFound} ({eventDescriptor.Name})");
+
+			var type = compiler.ResolveType(context.MicroService.Token, ev, ev.Name, false);
+
+			if (type == null)
+				return null;
+
+			return compiler.CreateInstance<IDistributedEventMiddleware>(context, type, eventDescriptor.Arguments);
 		}
 	}
 }

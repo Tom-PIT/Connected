@@ -2,10 +2,12 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Design;
-using TomPIT.Dom;
+using TomPIT.ComponentModel;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Dom;
 
-namespace TomPIT.BigData.Design
+namespace TomPIT.MicroServices.BigData.Design
 {
 	public class BigDataTemplate : MicroServiceTemplate
 	{
@@ -15,8 +17,9 @@ namespace TomPIT.BigData.Design
 
 		static BigDataTemplate()
 		{
-			_items = new ConcurrentDictionary<string, IItemDescriptor>(new Dictionary<string, IItemDescriptor>{
-				{"BigDataPartition", new ItemDescriptor("Partition", "BigDataPartition", typeof(Partition)) { Category ="Big Data", Glyph="fal fa-broadcast-tower", Ordinal=100} }
+			_items = new ConcurrentDictionary<string, IItemDescriptor>(new Dictionary<string, IItemDescriptor>
+			{
+				{ ComponentCategories.BigDataPartition,      new ItemDescriptor("Partition",     ComponentCategories.BigDataPartition,     typeof(Partition)) { Category ="Big Data",   Glyph="fal fa-broadcast-tower",  Ordinal=100}}
 			});
 		}
 

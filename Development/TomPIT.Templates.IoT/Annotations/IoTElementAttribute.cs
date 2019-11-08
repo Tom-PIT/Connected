@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TomPIT.IoT.Annotations
+namespace TomPIT.MicroServices.IoT.Annotations
 {
 	public enum IoTDesignerVerbs
 	{
@@ -24,6 +24,6 @@ namespace TomPIT.IoT.Annotations
 		public string DesignView { get; }
 		public Type Model { get; }
 
-		public IoTDesignerVerbs Verbs { get;  set; } = IoTDesignerVerbs.All;
+		public IoTDesignerVerbs Verbs { get; set; } = IoTDesignerVerbs.All;
 	}
 }

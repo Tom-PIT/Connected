@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TomPIT.Globalization
+namespace TomPIT.App.Globalization
 {
 	[Flags]
 	public enum ClientGlobalizationSegment : long

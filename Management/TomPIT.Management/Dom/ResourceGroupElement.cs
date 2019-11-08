@@ -1,7 +1,10 @@
 ﻿using System;
 using TomPIT.Environment;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
+using TomPIT.Management.Environment;
 
-namespace TomPIT.Dom
+namespace TomPIT.Management.Dom
 {
 	internal class ResourceGroupElement : TransactionElement, IResourceGroupScope
 	{
@@ -9,7 +12,7 @@ namespace TomPIT.Dom
 		{
 			ResourceGroup = resourceGroup;
 			Title = ResourceGroup.Name;
-			Id = ResourceGroup.Token.AsString();
+			Id = ResourceGroup.Token.ToString();
 		}
 
 		public IResourceGroup ResourceGroup { get; }
@@ -36,7 +39,7 @@ namespace TomPIT.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			Connection.GetService<IResourceGroupManagementService>().Update(ManagementResourceGroup.Token, ManagementResourceGroup.Name,
+			Environment.Context.Tenant.GetService<IResourceGroupManagementService>().Update(ManagementResourceGroup.Token, ManagementResourceGroup.Name,
 				ManagementResourceGroup.StorageProvider, ManagementResourceGroup.ConnectionString);
 
 			return true;

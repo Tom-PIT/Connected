@@ -1,0 +1,176 @@
+﻿@using System.Text.Encodings.Web;
+@using TomPIT.Ide;
+@using TomPIT.ComponentModel;
+@using TomPIT.Ide.TextServices;
+
+@model TomPIT.Ide.Designers.TextDesigner
+@*@await Html.PartialAsync("~/Views/Ide/Designers/Signature.cshtml", Model.Signature)*@
+@{
+   var uriPath = Model.ParseModelUri(Model.Content);
+   var ms = Model.Environment.Context.Tenant.GetService<IMicroServiceService>().Select(Model.Content.Configuration().MicroService());
+
+   var url = string.Empty;
+
+   if (!string.IsNullOrWhiteSpace(Model.DebugFileName))
+   {
+       url = Model.Environment.Context.Services.Routing.MapPath(string.Format("~/sys/source-code/{0}/{1}/{2}", Model.Element.MicroService(), Model.Content.Configuration().Component, Model.Content.Id.ToString()));
+   }
+
+   var features = Model.SupportedFeatures(Model.Language, ms);
+   var text = Model.Text == null ? string.Empty : JavaScriptEncoder.Default.Encode(Model.Text);
+
+   if(string.IsNullOrWhiteSpace(text))
+   {
+       text = JavaScriptEncoder.Default.Encode(Environment.NewLine);
+   }
+}
+<script>
+    var modelUri = new monaco.Uri({
+        scheme: 'inmemory',
+        authority: '@ms.Name',
+        path:'@uriPath'
+    });
+
+    var model = monaco.editor.getModel(modelUri);
+
+    if (model == null) {
+        model = monaco.editor.createModel('@text', '@Model.Language', modelUri);
+
+        if (!textEditorState.isLanguageInitialized('@Model.Language')) {
+            textEditorState.initializeLanguage('@Model.Language', {
+                'codeAction': @Html.TP().JavaScript.Bool((features & LanguageFeature.CodeAction) == LanguageFeature.CodeAction),
+                'completionItem': @Html.TP().JavaScript.Bool((features & LanguageFeature.CompletionItem) == LanguageFeature.CompletionItem),
+                'declaration': @Html.TP().JavaScript.Bool((features & LanguageFeature.Declaration) == LanguageFeature.Declaration),
+                'signatureHelp': @Html.TP().JavaScript.Bool((features & LanguageFeature.SignatureHelp) == LanguageFeature.SignatureHelp),
+                'documentSymbol': @Html.TP().JavaScript.Bool((features & LanguageFeature.DocumentSymbol) == LanguageFeature.DocumentSymbol)
+            });
+        }
+    }
+    else
+        model.setValue('@text');
+
+    textEditorState.setTargetProperty('@Model.PropertyName');
+
+    textEditor.setModel(model);
+    textEditor.setup({
+        debug: {
+            url: '@url'
+        },
+        language:'@Model.Language'
+    });
+
+    ide.setActiveDesigner({
+        onUnload: function () {
+            clearTimeout(saveTimeout);
+            saveTimeout = -1;
+        },
+        onSaveState: function () {
+            return {
+                'position': textEditor.getPosition()
+            }
+        },
+        onLoadState: function (state) {
+            if (typeof state.position !== 'undefined') {
+                textEditor.setPosition(state.position);
+                textEditor.revealLineInCenter(state.position.lineNumber);
+            }
+
+            textEditor.focus();
+        },
+        isTextDesigner: function () {
+            return true;
+        }
+    });
+
+    var saveTimeout = setTimeout(saveModels, 1000);
+
+    function saveModels() {
+        var dirty = textEditorState.getDirtyModels();
+
+        if (dirty.length === 0) {
+            if (saveTimeout !== -1)
+                saveTimeout = setTimeout(saveModels, 1000);
+
+            return;
+        }
+
+        var promises = [];
+
+        $.each(dirty, function (i, v) {
+            var model = textEditor.getModel(monaco.Uri.parse(v.model));
+
+            if (model === null)
+                return true;
+
+            textEditorState.setState({
+                'model': v.model,
+                'dirty': false,
+                'timestamp': v.timestamp
+            });
+
+            promises.push(new Promise(function (resolve, reject) {
+                ide.designerAction({
+                    'data': {
+                        'action': 'saveText',
+                        'property': '@Model.PropertyName',
+                        'attribute': '@Model.AttributeName',
+                        'model':{
+                            'uri': model.uri.toString(),
+                            'id': model.id
+                        },
+                        'text': model.getValue(),
+                    },
+                    onComplete: function () {
+                        resolve();
+
+                        @if ((features & LanguageFeature.CheckSyntax)== LanguageFeature.CheckSyntax)
+                        {
+                           <text>
+                                setErrorMarkers(model);
+                            </text>
+                        }
+
+                        }
+                }, false);
+            }));
+        });
+
+        Promise.all(promises).then(function () {
+            if (saveTimeout !== -1)
+                saveTimeout = setTimeout(saveModels, 1000);
+        });
+    }
+
+    @if((features & LanguageFeature.CheckSyntax) == LanguageFeature.CheckSyntax) { 
+    <text>
+    setErrorMarkers(model);
+
+    function setErrorMarkers(model) {
+        ide.designerAction({
+            data: {
+                property: '@Model.PropertyName',
+                attribute: '@Model.AttributeName',
+                action: 'checkSyntax',
+                section: 'designer',
+                model: {
+                    'id': model.id,
+                    'uri': model.uri.toString()
+                },
+                text:model.getValue()
+            },
+            onComplete: function (data) {
+                var internal = [];
+
+                $.each(data, function (i, v) {
+                    if (!v.external)
+                        internal.push(v);
+                });
+
+                monaco.editor.setModelMarkers(model, 'syntax', internal);
+                ide.setErrors(data);    
+            }
+        }, false);
+    }
+    </text>
+    }
+</script>

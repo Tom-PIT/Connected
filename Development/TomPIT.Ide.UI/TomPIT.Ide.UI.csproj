@@ -6,20 +6,18 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>1.1.815.2</AssemblyVersion>
-    <FileVersion>1.1.815.2</FileVersion>
-    <Version>1.1.815.2</Version>
+    <AssemblyVersion>1.1.1106.2</AssemblyVersion>
+    <FileVersion>1.1.1106.2</FileVersion>
+    <Version>1.1.1106.2</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Views\Shell\**" />
     <Content Remove="Views\Shell\**" />
     <EmbeddedResource Remove="Views\Shell\**" />
     <None Remove="Views\Shell\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Views\Ide\Actions\AddItems.cshtml">

@@ -1,8 +1,8 @@
-﻿using TomPIT.Ide;
+﻿using TomPIT.Ide.Environment;
 
-namespace TomPIT.Dom
+namespace TomPIT.Ide.Dom
 {
-	public interface IDomElementBehavior : IEnvironmentClient
+	public interface IDomElementBehavior : IEnvironmentObject
 	{
 		bool AutoExpand { get; }
 		bool Static { get; }

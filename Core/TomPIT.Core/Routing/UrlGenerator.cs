@@ -157,7 +157,7 @@ namespace TomPIT.Routing
 				{
 					var d = existing.FirstOrDefault(f => string.Compare(f.Id, id, true) == 0);
 
-					if (d != null)
+					if (d != null && !string.IsNullOrWhiteSpace(d.Url))
 					{
 						var idx = d.Url.LastIndexOf('-');
 

@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Search;
-using TomPIT.Data;
-using TomPIT.Services;
+using TomPIT.Middleware;
 
 namespace TomPIT.Search.Catalogs
 {
@@ -16,7 +11,7 @@ namespace TomPIT.Search.Catalogs
 		private static readonly Regex Regex = null;
 		private IMicroService _microService = null;
 		private IComponent _catalog = null;
-		private IDataModelContext _context = null;
+		private IMicroServiceContext _context = null;
 		private CultureInfo Culture { get; set; }
 
 		static SearchTextParser()
@@ -98,7 +93,7 @@ namespace TomPIT.Search.Catalogs
 			string title = string.Empty;
 
 			if (!string.IsNullOrWhiteSpace(token.Key))
-				title = Context.Services.Localization.TryGetString(token.StringTable, token.Key, Culture.LCID);
+				title = Context.Services.Globalization.TryGetString(token.StringTable, token.Key, Culture.LCID);
 
 			if (string.IsNullOrWhiteSpace(title))
 				title = token.Key;
@@ -130,12 +125,12 @@ namespace TomPIT.Search.Catalogs
 		}
 
 
-		private IDataModelContext Context 
+		private IMicroServiceContext Context
 		{
 			get
 			{
 				if (_context == null)
-					_context = Catalog.CreateContext();
+					_context = new MicroServiceContext(Catalog.MicroService);
 
 				return _context;
 			}
@@ -146,7 +141,7 @@ namespace TomPIT.Search.Catalogs
 			get
 			{
 				if (_catalog == null)
-					_catalog = Instance.GetService<IComponentService>().SelectComponent(Descriptor.Catalog);
+					_catalog = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(Descriptor.Catalog);
 
 				return _catalog;
 			}
@@ -157,7 +152,7 @@ namespace TomPIT.Search.Catalogs
 			get
 			{
 				if (_microService == null)
-					_microService = Instance.Connection.GetService<IMicroServiceService>().Select(Catalog.MicroService);
+					_microService = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(Catalog.MicroService);
 
 				return _microService;
 			}

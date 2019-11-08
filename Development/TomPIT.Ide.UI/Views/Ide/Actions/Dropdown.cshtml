@@ -1,9 +1,9 @@
 ﻿@using TomPIT;
 
-@model TomPIT.Design.IDesignerToolbarAction
+@model TomPIT.Ide.Designers.IDesignerToolbarAction
 
 @{
-	var action = Model as TomPIT.Actions.Dropdown;
+	var action = Model as TomPIT.Ide.Designers.Toolbar.Dropdown;
 
 	if (action.Items.Count == 0) { return; }
 }

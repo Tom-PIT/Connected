@@ -5,15 +5,15 @@ using TomPIT.ComponentModel.Apis;
 using TomPIT.Connectivity;
 using TomPIT.Security;
 
-namespace TomPIT.Application.Security
+namespace TomPIT.MicroServices.Security
 {
 	public class ApiOperationPermissionDescriptor : IPermissionDescriptor
 	{
 		public string Id => "Api operation";
 
-		public IPermissionDescription GetDescription(ISysConnection connection, Guid evidence, string component)
+		public IPermissionDescription GetDescription(ITenant tenant, Guid evidence, string component)
 		{
-			var api = connection.GetService<IComponentService>().SelectConfiguration(component.AsGuid()) as IApi;
+			var api = tenant.GetService<IComponentService>().SelectConfiguration(new Guid(component)) as IApiConfiguration;
 
 			if (api == null)
 				return null;

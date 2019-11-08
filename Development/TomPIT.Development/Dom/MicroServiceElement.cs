@@ -2,25 +2,27 @@
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
-using TomPIT.Design;
 using TomPIT.Ide;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
 
 namespace TomPIT.Dom
 {
-	public class MicroServiceElement : Element, IMicroServiceScope
+	public class MicroServiceElement : DomElement, IMicroServiceScope
 	{
 		private List<IFolder> _folders = null;
 		private List<IComponent> _components = null;
 
 		public MicroServiceElement(IEnvironment environment, Guid microService) : base(environment, null)
 		{
-			MicroService = GetService<IMicroServiceService>().Select(microService);
+			MicroService = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(microService);
 
 			Id = microService.ToString();
 			Title = MicroService.Name;
 			Glyph = "fal fa-share-alt";
 
-			Template = GetService<IMicroServiceTemplateService>().Select(MicroService.Template);
+			Template = Environment.Context.Tenant.GetService<IMicroServiceTemplateService>().Select(MicroService.Template);
 
 			((Behavior)Behavior).Static = true;
 			((Behavior)Behavior).Container = true;
@@ -60,7 +62,7 @@ namespace TomPIT.Dom
 				return;
 			}
 
-			var folder = Folders.FirstOrDefault(f => f.Token == id.AsGuid());
+			var folder = Folders.FirstOrDefault(f => f.Token == new Guid(id));
 
 			if (folder != null)
 			{
@@ -68,7 +70,7 @@ namespace TomPIT.Dom
 				return;
 			}
 
-			var component = Components.FirstOrDefault(f => f.Token == id.AsGuid());
+			var component = Components.FirstOrDefault(f => f.Token == new Guid(id));
 
 			if (component != null)
 			{
@@ -84,7 +86,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_folders == null)
-					_folders = GetService<IComponentService>().QueryFolders(MicroService.Token, Guid.Empty);
+					_folders = Environment.Context.Tenant.GetService<IComponentService>().QueryFolders(MicroService.Token, Guid.Empty);
 
 				return _folders;
 			}
@@ -95,7 +97,7 @@ namespace TomPIT.Dom
 			get
 			{
 				if (_components == null)
-					_components = GetService<IComponentService>().QueryComponents(MicroService.Token, Guid.Empty);
+					_components = Environment.Context.Tenant.GetService<IComponentService>().QueryComponents(MicroService.Token, Guid.Empty);
 
 				return _components;
 			}

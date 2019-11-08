@@ -1,4 +1,4 @@
-﻿namespace TomPIT.ComponentModel
+﻿namespace TomPIT.Development.ComponentModel
 {
 	public interface IDependency
 	{

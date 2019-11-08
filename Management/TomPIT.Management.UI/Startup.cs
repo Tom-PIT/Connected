@@ -1,74 +1,77 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using TomPIT.Connectivity;
-using TomPIT.Design;
 using TomPIT.Environment;
-using TomPIT.Management.Services;
-using TomPIT.Services;
+using TomPIT.Ide;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Management.Deployment;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
+using TomPIT.Runtime.Configuration;
 
-namespace TomPIT.Servers.Management
+namespace TomPIT.Management
 {
-    public class Startup
-    {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            var e = new ServicesConfigurationArgs
-            {
-                Authentication = AuthenticationType.MultiTenant,
-                ProvideApplicationParts = (args) =>
-                {
-                    foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-                    {
-                        var t = Types.GetType(i);
+	public class Startup
+	{
+		public void ConfigureServices(IServiceCollection services)
+		{
+			var e = new ServicesConfigurationArgs
+			{
+				Authentication = AuthenticationType.MultiTenant,
+				ProvideApplicationParts = (args) =>
+				{
+					foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+					{
+						var t = Reflection.TypeExtensions.GetType(i);
 
-                        if (t == null)
-                            continue;
+						if (t == null)
+							continue;
 
-                        var template = t.CreateInstance<IMicroServiceTemplate>();
+						var template = t.CreateInstance<IMicroServiceTemplate>();
 
-                        var ds = template.GetApplicationParts();
+						var ds = template.GetApplicationParts();
 
-                        if (ds != null && ds.Count > 0)
-                            args.Parts.AddRange(ds);
-                    }
-                }
-            };
+						if (ds != null && ds.Count > 0)
+							args.Parts.AddRange(ds);
+					}
+				}
+			};
 
-            Instance.Initialize(services, e);
+			Instance.Initialize(services, e);
 
-            services.AddHostedService<InstallerService>();
-            services.AddHostedService<UpdateService>();
-            services.AddHostedService<PublishService>();
-        }
+			services.AddHostedService<InstallerService>();
+			services.AddHostedService<UpdateService>();
+			services.AddHostedService<PublishService>();
+		}
 
-        public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
-        {
-            Instance.Configure(InstanceType.Management, app, env, (f) =>
-          {
-              IdeRouting.Register(f.Builder, "Home", null);
-          });
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+		{
+			Instance.Configure(InstanceType.Management, app, env, (f) =>
+		 {
+			 IdeRouting.Register(f.Builder, "Home", null);
+		 });
 
-            IdeBootstrapper.Run();
-            ManagementBootstrapper.Run();
-            Shell.GetService<IConnectivityService>().ConnectionInitialized += OnConnectionInitialized;
-            Instance.Run(app);
-        }
+			IdeBootstrapper.Run();
+			ManagementBootstrapper.Run();
+			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
+			Instance.Run(app);
+		}
 
-        private static void OnConnectionInitialized(object sender, SysConnectionArgs e)
-        {
-            foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-            {
-                var t = Types.GetType(i);
+		private static void OnTenantInitialized(object sender, TenantArgs e)
+		{
+			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+			{
+				var t = Reflection.TypeExtensions.GetType(i);
 
-                if (t == null)
-                    continue;
+				if (t == null)
+					continue;
 
-                var template = t.CreateInstance<IMicroServiceTemplate>();
+				var template = t.CreateInstance<IMicroServiceTemplate>();
 
-                if (template != null)
-                    e.Connection.GetService<IMicroServiceTemplateService>().Register(template);
-            }
-        }
-    }
+				if (template != null)
+					e.Tenant.GetService<IMicroServiceTemplateService>().Register(template);
+			}
+		}
+	}
 }

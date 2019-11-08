@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using TomPIT.Annotations;
-using TomPIT.Dom;
+using TomPIT.Annotations.Design;
 using TomPIT.Globalization;
-using TomPIT.Ide;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
 using TomPIT.Management.Designers;
 using TomPIT.Management.Items;
 
 namespace TomPIT.Management.Dom
 {
-	internal class LanguagesElement : Element
+	internal class LanguagesElement : DomElement
 	{
 		private ExistingLanguages _ds = null;
 		public const string FolderId = "Languages";
@@ -69,7 +69,7 @@ namespace TomPIT.Management.Dom
 
 		public override void LoadChildren(string id)
 		{
-			var d = Existing.FirstOrDefault(f => f.Token == id.AsGuid());
+			var d = Existing.FirstOrDefault(f => f.Token == new Guid(id));
 
 			if (d != null)
 				Items.Add(new LanguageElement(this, d));
@@ -94,7 +94,7 @@ namespace TomPIT.Management.Dom
 				{
 					_ds = new ExistingLanguages();
 
-					var items = Connection.GetService<ILanguageService>().Query();
+					var items = Environment.Context.Tenant.GetService<ILanguageService>().Query();
 
 					if (items != null)
 						items = items.OrderBy(f => f.Name).ToList();

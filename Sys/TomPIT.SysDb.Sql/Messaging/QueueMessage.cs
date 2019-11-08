@@ -20,7 +20,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 		{
 			base.OnCreate();
 
-			Id = GetLong("id").AsString();
+			Id = GetLong("id").ToString();
 			Message = GetString("message");
 			Created = GetDate("created");
 			Expire = GetDate("expire");

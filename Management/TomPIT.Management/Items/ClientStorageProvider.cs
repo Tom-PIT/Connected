@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TomPIT.Items
+namespace TomPIT.Management.Items
 {
 	internal class ClientStorageProvider
 	{

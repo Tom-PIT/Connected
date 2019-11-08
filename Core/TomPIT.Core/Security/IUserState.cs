@@ -1,9 +1,7 @@
-﻿using System;
-
-namespace TomPIT.Security
+﻿namespace TomPIT.Security
 {
 	public interface IUserState
 	{
-		Guid EnvironmentUnit { get; set; }
+		//Guid EnvironmentUnit { get; set; }
 	}
 }

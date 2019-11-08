@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using TomPIT.Environment;
+using TomPIT.Rest.Routing;
+using TomPIT.Runtime;
 
 namespace TomPIT.Rest
 {
@@ -17,11 +19,11 @@ namespace TomPIT.Rest
 			Instance.Initialize(services, e);
 		}
 
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			Instance.Configure(InstanceType.Rest, app, env, (f) =>
 		  {
-			  Configuration.Routing.Register(f.Builder);
+			  RestRouting.Register(f.Builder);
 		  });
 
 			Instance.Run(app);

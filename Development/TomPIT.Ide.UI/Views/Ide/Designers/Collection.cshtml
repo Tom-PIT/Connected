@@ -1,7 +1,7 @@
-﻿@model TomPIT.Designers.ICollectionDesigner
+﻿@model TomPIT.Ide.Designers.ICollectionDesigner
 
 @{
-    var path = TomPIT.DomQuery.Path(Model.Element);
+    var path = TomPIT.Ide.DomQuery.Path(Model.Element);
 }
 <div class="dev-canvas">
     <div class="paper">
@@ -119,7 +119,7 @@
                         action: 'move',
                         section:'designer',
                     id: $(ui.item).attr('data-id'),
-                        index: ui.item.position,
+                        index: ui.item.index(),
                         oldIndex: $(this).attr('data-previndex')
                      }
             });

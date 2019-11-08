@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TomPIT.Resources
+namespace TomPIT.App.Resources
 {
 	internal class CompiledBundle
 	{

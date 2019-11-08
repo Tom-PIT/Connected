@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 
 namespace TomPIT.Security
 {
 	internal class RoleService : SynchronizedClientRepository<IRole, Guid>, IRoleService, IRoleNotification
 	{
-		public RoleService(ISysConnection connection) : base(connection, "role")
+		public RoleService(ITenant tenant) : base(tenant, "role")
 		{
 
 		}
 
 		protected override void OnInitializing()
 		{
-			var u = Connection.CreateUrl("Role", "Query");
-			var ds = Connection.Get<List<Role>>(u).ToList<IRole>();
+			var u = Tenant.CreateUrl("Role", "Query");
+			var ds = Tenant.Get<List<Role>>(u).ToList<IRole>();
 
 			Set(SecurityUtils.FullControlRole, new SystemRole(SecurityUtils.FullControlRole, "Full control", RoleBehavior.Explicit, RoleVisibility.Hidden), TimeSpan.Zero);
 			Set(SecurityUtils.AuthenticatedRole, new SystemRole(SecurityUtils.AuthenticatedRole, "Authenticated", RoleBehavior.Implicit, RoleVisibility.Hidden), TimeSpan.Zero);
@@ -45,10 +46,10 @@ namespace TomPIT.Security
 		{
 			Remove(e.Role);
 
-			var u = Connection.CreateUrl("Role", "Select")
+			var u = Tenant.CreateUrl("Role", "Select")
 				.AddParameter("token", e.Role);
 
-			var role = Connection.Get<Role>(u);
+			var role = Tenant.Get<Role>(u);
 
 			if (role != null)
 				Set(role.Token, role, TimeSpan.Zero);

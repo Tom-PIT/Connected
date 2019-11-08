@@ -1,15 +1,16 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.ActionResults;
+using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Deployment;
-using TomPIT.Dom;
+using TomPIT.Ide;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Management.Deployment;
-using TomPIT.Management.Designers;
+using TomPIT.Management.Dom;
 
-namespace TomPIT.Designers
+namespace TomPIT.Management.Designers
 {
 	public class PackageDesigner : DeploymentDesignerBase<PackageElement>, ISignupDesigner
 	{
@@ -37,7 +38,7 @@ namespace TomPIT.Designers
 
 		private IDesignerActionResult Publish()
 		{
-			Connection.GetService<IDeploymentService>().PublishPackage(MicroService.Token);
+			Environment.Context.Tenant.GetService<IDeploymentService>().PublishPackage(MicroService.Token);
 
 			var r = Result.EmptyResult(ViewModel);
 
@@ -63,7 +64,7 @@ namespace TomPIT.Designers
 			var rt = data.Optional("runtimeConfigurationSupported", false);
 			var av = data.Optional("autoVersion", true);
 
-			Connection.GetService<IDeploymentService>().CreatePackage(MicroService.Token, plan, name, title, version.ToString(), description,
+			Environment.Context.Tenant.GetService<IDeploymentService>().CreatePackage(MicroService.Token, plan, name, title, version.ToString(), description,
 				 tags, projectUrl, imageUrl, licenseUrl, licenses, rt, av);
 
 			var r = Result.EmptyResult(ViewModel);
@@ -81,7 +82,7 @@ namespace TomPIT.Designers
 			get
 			{
 				if (_package == null)
-					_package = Connection.GetService<IDeploymentService>().SelectPackage(MicroService.Token);
+					_package = Environment.Context.Tenant.GetService<IDeploymentService>().SelectPackage(MicroService.Token);
 
 				return _package;
 			}
@@ -130,7 +131,7 @@ namespace TomPIT.Designers
 			get
 			{
 				if (_plans == null)
-					_plans = GetService<IDeploymentService>().QuerySubscribedPlans().OrderBy(f=>f.Name).ToList();
+					_plans = Environment.Context.Tenant.GetService<IDeploymentService>().QuerySubscribedPlans().OrderBy(f => f.Name).ToList();
 
 				return _plans;
 			}
@@ -141,7 +142,7 @@ namespace TomPIT.Designers
 			get
 			{
 				if (_tags == null)
-					_tags = GetService<IDeploymentService>().QueryTags();
+					_tags = Environment.Context.Tenant.GetService<IDeploymentService>().QueryTags();
 
 				return _tags;
 			}

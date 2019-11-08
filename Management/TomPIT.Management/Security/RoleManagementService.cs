@@ -1,43 +1,43 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
+using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
+using TomPIT.Security;
 
-namespace TomPIT.Security
+namespace TomPIT.Management.Security
 {
-	internal class RoleManagementService : IRoleManagementService
+	internal class RoleManagementService : TenantObject, IRoleManagementService
 	{
-		public RoleManagementService(ISysConnection connection)
+		public RoleManagementService(ITenant tenant) : base(tenant)
 		{
-			Connection = connection;
-		}
 
-		private ISysConnection Connection { get; }
+		}
 
 		public void Delete(Guid token)
 		{
-			var u = Connection.CreateUrl("RoleManagement", "Delete");
+			var u = Tenant.CreateUrl("RoleManagement", "Delete");
 			var e = new JObject
 			{
 				{"token", token}
 			};
 
-			Connection.Post<Guid>(u, e);
+			Tenant.Post<Guid>(u, e);
 
-			if (Connection.GetService<IRoleService>() is IRoleNotification n)
+			if (Tenant.GetService<IRoleService>() is IRoleNotification n)
 				n.NotifyChanged(this, new RoleEventArgs(token));
 		}
 
 		public Guid Insert(string name)
 		{
-			var u = Connection.CreateUrl("RoleManagement", "Insert");
+			var u = Tenant.CreateUrl("RoleManagement", "Insert");
 			var e = new JObject
 			{
 				{"name", name}
 			};
 
-			var id = Connection.Post<Guid>(u, e);
+			var id = Tenant.Post<Guid>(u, e);
 
-			if (Connection.GetService<IRoleService>() is IRoleNotification n)
+			if (Tenant.GetService<IRoleService>() is IRoleNotification n)
 				n.NotifyChanged(this, new RoleEventArgs(id));
 
 			return id;
@@ -45,16 +45,16 @@ namespace TomPIT.Security
 
 		public void Update(Guid token, string name)
 		{
-			var u = Connection.CreateUrl("RoleManagement", "Update");
+			var u = Tenant.CreateUrl("RoleManagement", "Update");
 			var e = new JObject
 			{
 				{"name", name},
 				{"token", token}
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 
-			if (Connection.GetService<IRoleService>() is IRoleNotification n)
+			if (Tenant.GetService<IRoleService>() is IRoleNotification n)
 				n.NotifyChanged(this, new RoleEventArgs(token));
 		}
 	}

@@ -1,23 +1,22 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
+using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
-using TomPIT.Storage;
+using TomPIT.Middleware;
+using TomPIT.Security;
 
-namespace TomPIT.Security
+namespace TomPIT.Management.Security
 {
-	internal class UserManagementService : IUserManagementService
+	internal class UserManagementService : TenantObject, IUserManagementService
 	{
-		public UserManagementService(ISysConnection connection)
+		public UserManagementService(ITenant tenant) : base(tenant)
 		{
-			Connection = connection;
-		}
 
-		private ISysConnection Connection { get; }
+		}
 
 		public Guid Insert(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string password, string pin, Guid language, string timezone,
 			bool notificationEnabled, string mobile, string phone)
 		{
-			var u = Connection.CreateUrl("UserManagement", "Insert");
+			var u = Tenant.CreateUrl("UserManagement", "Insert");
 			var e = new JObject
 			{
 				{"email", email},
@@ -34,37 +33,37 @@ namespace TomPIT.Security
 				{"phone", phone}
 			};
 
-			return Connection.Post<Guid>(u, e);
+			return Tenant.Post<Guid>(u, e);
 		}
 
 		public void ResetPassword(Guid user)
 		{
-			var u = Connection.CreateUrl("UserManagement", "ResetPassword");
+			var u = Tenant.CreateUrl("UserManagement", "ResetPassword");
 			var e = new JObject
 			{
 				{"user", user}
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 		}
 
 		public void Delete(Guid user)
 		{
-			var u = Connection.CreateUrl("UserManagement", "Delete");
+			var u = Tenant.CreateUrl("UserManagement", "Delete");
 			var e = new JObject
 			{
 				{"user", user}
 			};
 
-			Connection.Post<Guid>(u, e);
+			Tenant.Post<Guid>(u, e);
 
-			if (Connection.GetService<IUserService>() is IUserNotification n)
+			if (Tenant.GetService<IUserService>() is IUserNotification n)
 				n.NotifyChanged(this, new UserEventArgs(user));
 		}
 
 		public void Update(Guid user, string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language, string timezone, bool notificationEnabled, string mobile, string phone)
 		{
-			var u = Connection.CreateUrl("UserManagement", "Update");
+			var u = Tenant.CreateUrl("UserManagement", "Update");
 			var e = new JObject
 			{
 				{"email", email},
@@ -82,9 +81,9 @@ namespace TomPIT.Security
 				{"phone", phone}
 			};
 
-			Connection.Post<Guid>(u, e);
+			Tenant.Post<Guid>(u, e);
 
-			if (Connection.GetService<IUserService>() is IUserNotification n)
+			if (Tenant.GetService<IUserService>() is IUserNotification n)
 				n.NotifyChanged(this, new UserEventArgs(user));
 		}
 	}

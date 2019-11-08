@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using TomPIT.BigData.Services;
+﻿using TomPIT.BigData.Partitions;
 
 namespace TomPIT.BigData.Providers.Sql
 {

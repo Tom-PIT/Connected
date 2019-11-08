@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TomPIT.Configuration
+namespace TomPIT.Management.Configuration
 {
 	public interface ISettingManagementService
 	{

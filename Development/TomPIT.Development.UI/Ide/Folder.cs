@@ -1,7 +1,7 @@
 ﻿using System;
 using TomPIT.ComponentModel;
 
-namespace TomPIT.Ide
+namespace TomPIT.Development.Ide
 {
 	internal class Folder : IFolder
 	{

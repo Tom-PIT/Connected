@@ -1,12 +1,13 @@
 ﻿using System;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 
 namespace TomPIT.ComponentModel
 {
 	internal class MicroServiceMetaCache : ClientRepository<string, Guid>
 	{
-		public MicroServiceMetaCache(ISysConnection connection) : base(connection, "microservicemeta")
+		public MicroServiceMetaCache(ITenant tenant) : base(tenant, "microservicemeta")
 		{
 		}
 
@@ -14,10 +15,10 @@ namespace TomPIT.ComponentModel
 		{
 			return Get(microService, f =>
 			{
-				var u = Connection.CreateUrl("MicroService", "SelectMeta")
+				var u = Tenant.CreateUrl("MicroService", "SelectMeta")
 					.AddParameter("microService", microService);
 
-				return Connection.Get<string>(u);
+				return Tenant.Get<string>(u);
 			});
 		}
 	}

@@ -1,36 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
 using TomPIT.Globalization;
-using TomPIT.Services;
+using TomPIT.Middleware;
 
 namespace TomPIT.Management.Globalization
 {
-	internal class GlobalizationManagementService :  ServiceBase, IGlobalizationManagementService
+	internal class GlobalizationManagementService : TenantObject, IGlobalizationManagementService
 	{
-		public GlobalizationManagementService(ISysConnection connection) : base(connection)
+		public GlobalizationManagementService(ITenant tenant) : base(tenant)
 		{
 		}
 
 		public void DeleteLanguage(Guid token)
 		{
-			var u = Connection.CreateUrl("GlobalizationManagement", "DeleteLanguage");
+			var u = Tenant.CreateUrl("GlobalizationManagement", "DeleteLanguage");
 			var e = new JObject
 			{
 				{"token", token }
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 
-			if (Connection.GetService<ILanguageService>() is ILanguageNotification n)
+			if (Tenant.GetService<ILanguageService>() is ILanguageNotification n)
 				n.NotifyRemoved(this, new LanguageEventArgs(token));
 		}
 
 		public Guid InsertLanguage(string name, int lcid, LanguageStatus status, string mappings)
 		{
-			var u = Connection.CreateUrl("GlobalizationManagement", "InsertLanguage");
+			var u = Tenant.CreateUrl("GlobalizationManagement", "InsertLanguage");
 			var e = new JObject
 			{
 				{"name", name },
@@ -39,9 +37,9 @@ namespace TomPIT.Management.Globalization
 				{"mappings", mappings }
 			};
 
-			var id = Connection.Post<Guid>(u, e);
+			var id = Tenant.Post<Guid>(u, e);
 
-			if (Connection.GetService<ILanguageService>() is ILanguageNotification n)
+			if (Tenant.GetService<ILanguageService>() is ILanguageNotification n)
 				n.NotifyChanged(this, new LanguageEventArgs(id));
 
 			return id;
@@ -49,7 +47,7 @@ namespace TomPIT.Management.Globalization
 
 		public void UpdateLanguage(Guid token, string name, int lcid, LanguageStatus status, string mappings)
 		{
-			var u = Connection.CreateUrl("GlobalizationManagement", "UpdateLanguage");
+			var u = Tenant.CreateUrl("GlobalizationManagement", "UpdateLanguage");
 			var e = new JObject
 			{
 				{"name", name },
@@ -59,9 +57,9 @@ namespace TomPIT.Management.Globalization
 				{"token", token }
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 
-			if (Connection.GetService<ILanguageService>() is ILanguageNotification n)
+			if (Tenant.GetService<ILanguageService>() is ILanguageNotification n)
 				n.NotifyChanged(this, new LanguageEventArgs(token));
 		}
 	}

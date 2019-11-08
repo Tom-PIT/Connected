@@ -73,3 +73,64 @@
   color: #FFF;
   background-color: #2196f3;
 }
+.kpi {
+  padding: 5px;
+  border-radius: 4px;
+  text-align: center;
+}
+.kpi.boxed {
+  min-height: 130px;
+}
+.kpi.info {
+  background-color: #03a9f4;
+  border-color: #0288d1;
+  color: #FFF;
+}
+.kpi.success {
+  background-color: #4caf50;
+  border-color: #388e3c;
+  color: #FFF;
+}
+.kpi.warning {
+  background-color: #ff9800;
+  border-color: #f57c00;
+  color: #FFF;
+}
+.kpi.light {
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  color: #757575;
+}
+.kpi.danger {
+  background-color: #f44336;
+  border-color: #d32f2f;
+  color: #FFF;
+}
+.kpi.info button,
+.kpi.warning button,
+.kpi.success button,
+.kpi.danger button {
+  color: #FFF;
+}
+.kpi-title {
+  padding-top: 5px;
+  font-size: 0.9rem;
+}
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 100;
+  white-space: nowrap;
+  min-height: 50px;
+}
+.kpi-value.small {
+  font-size: 1rem;
+}
+.kpi-measure-unit {
+  font-size: 0.9rem;
+}
+.kpi hr {
+  margin: 5px;
+}
+.pointer {
+  cursor: pointer;
+}

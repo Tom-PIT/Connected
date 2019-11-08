@@ -1,6 +1,6 @@
 ﻿@using Newtonsoft.Json;
 
-@model TomPIT.Models.TestSuitesModel
+@model TomPIT.Development.Models.TestSuitesModel
 
 @{
 	Layout = "~/Views/Shared/Shell.cshtml";
@@ -32,7 +32,7 @@
 		keyExpr: 'value',
 		valueExpr: 'value',
 		displayExpr:'text',
-		dataSource: @Html.Raw(Types.Serialize(Model.Suites)),
+		dataSource: @Html.Raw(TomPIT.Serialization.Serializer.Serialize(Model.Suites)),
 		selectionMode: 'single',
 		grouped: true,
 		collapsibleGroups:true,

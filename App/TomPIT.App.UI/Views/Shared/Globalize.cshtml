@@ -1,13 +1,13 @@
-﻿@using TomPIT.Globalization;
+﻿@using TomPIT.App.Globalization;
 
-@model TomPIT.Services.IExecutionContext
+@model TomPIT.Middleware.IMiddlewareContext
 
 @{
 	var locale = "en";
 
-	if (Model.Services.Localization.Language != Guid.Empty)
+	if (Model.Services.Globalization.Language != Guid.Empty)
 	{
-		var language = Model.Connection().GetService<TomPIT.Globalization.ILanguageService>().Select(Model.Services.Localization.Language);
+		var language = Model.Tenant.GetService<TomPIT.Globalization.ILanguageService>().Select(Model.Services.Globalization.Language);
 
 		if (language != null)
 		{
@@ -44,7 +44,7 @@
 			 | ClientGlobalizationSegment.TimeZoneNames;
 	}
 
-	var url = string.Format("{0}/sys/globalize/{1}/{2}", Model.RootUrl(), locale, (long)segments);
+	var url = string.Format("{0}/sys/globalize/{1}/{2}", Model.Services.Routing.RootUrl, locale, (long)segments);
 }
 
 <script>

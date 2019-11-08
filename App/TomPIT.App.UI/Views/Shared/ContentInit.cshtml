@@ -1,7 +1,7 @@
-﻿@model TomPIT.Services.IExecutionContext
+﻿@model TomPIT.Middleware.IMiddlewareContext
 
 @{
-	var rootUrl = Model.RootUrl();
+	var rootUrl = Model.Services.Routing.RootUrl;
 	var component = string.Empty;
 
 	if (Model is IComponentModel cm && cm.Component != null)

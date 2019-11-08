@@ -1,26 +1,24 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
-using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Events;
+using TomPIT.Annotations.Design;
+using TomPIT.Collections;
+using TomPIT.ComponentModel.Diagnostics;
 using TomPIT.ComponentModel.IoT;
-using TomPIT.ComponentModel.UI;
-using TomPIT.IoT.UI.Stencils;
+using TomPIT.Diagnostics;
+using TomPIT.MicroServices.IoT.UI.Stencils;
+using TomPIT.Runtime;
 
-namespace TomPIT.IoT.UI
+namespace TomPIT.MicroServices.IoT.UI
 {
-	[DomDesigner("TomPIT.IoT.Designers.IoTViewDesigner, TomPIT.IoT.Design")]
-	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = Services.EnvironmentMode.Runtime)]
-	[DomElement("TomPIT.IoT.Dom.IoTViewElement, TomPIT.IoT.Design")]
-	[ViewRenderer("TomPIT.IoT.UI.IoTRenderer, TomPIT.IoT")]
-	public class IoTView : ViewBase, IIoTView
+	[DomDesigner("TomPIT.MicroServices.IoT.Design.Designers.IoTViewDesigner, TomPIT.MicroServices.IoT.Design")]
+	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = EnvironmentMode.Runtime)]
+	[DomElement("TomPIT.MicroServices.IoT.Design.Dom.IoTViewElement, TomPIT.MicroServices.IoT.Design")]
+	[ViewRenderer("TomPIT.MicroServices.IoT.UI.IoTRenderer, TomPIT.MicroServices.IoT")]
+	public class IoTView : ViewBase, IIoTViewConfiguration
 	{
-		private IServerEvent _invoke = null;
-		private IMetricConfiguration _metric = null;
+		private IMetricOptions _metric = null;
 		private ListItems<IIoTElement> _elements = null;
-
-		[Browsable(false)]
-		public override ListItems<IViewHelper> Helpers => null;
 
 		[Browsable(false)]
 		public ListItems<IIoTElement> Elements
@@ -44,7 +42,7 @@ namespace TomPIT.IoT.UI
 		[DefaultValue(true)]
 		public bool Enabled { get; set; } = true;
 		[PropertyEditor(PropertyEditorAttribute.Select)]
-		[Items("TomPIT.IoT.Design.Items.IoTHubsItems, TomPIT.IoT.Design")]
+		[Items("TomPIT.MicroServices.IoT.Design.Items.IoTHubsItems, TomPIT.MicroServices.IoT.Design")]
 		[Required]
 		public string Hub { get; set; }
 
@@ -53,30 +51,15 @@ namespace TomPIT.IoT.UI
 		[Items(ItemsAttribute.LayoutItems)]
 		public string Layout { get; set; }
 
-		[Browsable(false)]
-		public override ListItems<ISnippet> Snippets => null;
-
-		[EnvironmentVisibility(Services.EnvironmentMode.Runtime)]
-		public IMetricConfiguration Metrics
+		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		public IMetricOptions Metrics
 		{
 			get
 			{
 				if (_metric == null)
-					_metric = new MetricConfiguration { Parent = this };
+					_metric = new MetricOptions { Parent = this };
 
 				return _metric;
-			}
-		}
-
-		[EventArguments(typeof(ViewInvokeArguments))]
-		public IServerEvent Invoke
-		{
-			get
-			{
-				if (_invoke == null)
-					_invoke = new ServerEvent { Parent = this };
-
-				return _invoke;
 			}
 		}
 	}

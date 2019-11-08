@@ -1,9 +1,10 @@
-﻿using Lucene.Net.QueryParsers;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
-using TomPIT.Annotations;
+using Lucene.Net.QueryParsers;
+using TomPIT.Annotations.Search;
 using TomPIT.ComponentModel.Search;
+using TomPIT.Reflection;
 using TomPIT.Search.Analyzers;
 
 namespace TomPIT.Search.Catalogs
@@ -12,7 +13,7 @@ namespace TomPIT.Search.Catalogs
 	{
 		private static Regex _rx = null;
 
-		public TermSearchJob(ISearchCatalog catalog, ISearchOptions options) : base(catalog, options)
+		public TermSearchJob(ISearchCatalogConfiguration catalog, ISearchOptions options) : base(catalog, options)
 		{
 		}
 
@@ -53,7 +54,7 @@ namespace TomPIT.Search.Catalogs
 
 			sb.Append(")");
 
-			sb.Append($" AND {SearchUtils.FieldLcid}:{Options.Globalization.Lcid.AsString()}");
+			sb.Append($" AND {SearchUtils.FieldLcid}:{Options.Globalization.Lcid.ToString()}");
 
 			return sb.ToString();
 		}
@@ -94,7 +95,7 @@ namespace TomPIT.Search.Catalogs
 			//	return r;
 			//}
 			//else
-				return commandText;
+			return commandText;
 		}
 
 		private static Regex regex

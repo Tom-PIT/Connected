@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Design;
-using TomPIT.Dom;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
 
-namespace TomPIT.IoT.Items
+namespace TomPIT.MicroServices.IoT.Items
 {
 	internal class ScriptCollection : ItemsBase
 	{

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
+using TomPIT.Middleware;
 using TomPIT.Search.Catalogs;
 
 namespace TomPIT.Search.Indexing
@@ -53,7 +54,7 @@ namespace TomPIT.Search.Indexing
 
 			if (r == null)
 			{
-				if (!(Instance.GetService<IComponentService>().SelectConfiguration(catalog) is ISearchCatalog cat))
+				if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(catalog) is ISearchCatalogConfiguration cat))
 					return null;
 
 				r = new CatalogHost(cat, duration, slidingExpiration);

@@ -1,7 +1,7 @@
-﻿@model TomPIT.Designers.ICollectionDesigner
+﻿@model TomPIT.Ide.Designers.ICollectionDesigner
 
 @{
-	var setting = (ViewBag.CollectionItem as TomPIT.Design.ItemDescriptor).Value as TomPIT.Configuration.ISetting;
+	var setting = (ViewBag.CollectionItem as TomPIT.Ide.Collections.ItemDescriptor).Value as TomPIT.Configuration.ISetting;
 	var tokens = setting.Tags.Split(',');
 }
 <div data-component="list-item">

@@ -1,16 +1,18 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
+using TomPIT.Exceptions;
+using TomPIT.Middleware;
 using TomPIT.Storage;
 
 namespace TomPIT.Security
 {
 	internal class UserService : ClientRepository<IUser, Guid>, IUserService, IUserNotification
 	{
-		public UserService(ISysConnection connection) : base(connection, "user")
+		public UserService(ITenant tenant) : base(tenant, "user")
 		{
 
 		}
@@ -19,9 +21,9 @@ namespace TomPIT.Security
 
 		public List<IUser> Query()
 		{
-			var u = Connection.CreateUrl("User", "Query");
+			var u = Tenant.CreateUrl("User", "Query");
 
-			return Connection.Get<List<User>>(u).ToList<IUser>();
+			return Tenant.Get<List<User>>(u).ToList<IUser>();
 		}
 
 		public IUser Select(string qualifier)
@@ -38,10 +40,10 @@ namespace TomPIT.Security
 			if (r != null)
 				return r;
 
-			var u = Connection.CreateUrl("User", "Select")
+			var u = Tenant.CreateUrl("User", "Select")
 				.AddParameter("qualifier", qualifier);
 
-			r = Connection.Get<User>(u);
+			r = Tenant.Get<User>(u);
 
 			if (r != null)
 				Set(r.Token, r);
@@ -56,10 +58,10 @@ namespace TomPIT.Security
 			if (r != null)
 				return r;
 
-			var u = Connection.CreateUrl("User", "SelectByAuthenticationToken")
+			var u = Tenant.CreateUrl("User", "SelectByAuthenticationToken")
 				.AddParameter("token", token);
 
-			r = Connection.Get<User>(u);
+			r = Tenant.Get<User>(u);
 
 			if (r != null)
 				Set(r.Token, r);
@@ -69,7 +71,7 @@ namespace TomPIT.Security
 
 		public void ChangePassword(Guid user, string existingPassword, string password)
 		{
-			var u = Connection.CreateUrl("UserManagement", "ChangePassword");
+			var u = Tenant.CreateUrl("UserManagement", "ChangePassword");
 			var e = new JObject
 			{
 				{"user",user },
@@ -77,7 +79,7 @@ namespace TomPIT.Security
 				{"newPassword",password }
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 		}
 
 		public void Logout(int user)
@@ -89,7 +91,7 @@ namespace TomPIT.Security
 		{
 			Remove(e.User);
 
-			UserChanged?.Invoke(Connection, e);
+			UserChanged?.Invoke(Tenant, e);
 		}
 
 		public void ChangeAvatar(Guid user, byte[] contentBytes, string contentType, string fileName)
@@ -105,7 +107,7 @@ namespace TomPIT.Security
 				if (usr.Avatar == Guid.Empty)
 					return;
 
-				Connection.GetService<IStorageService>().Delete(usr.Avatar);
+				Tenant.GetService<IStorageService>().Delete(usr.Avatar);
 			}
 			else
 			{
@@ -119,20 +121,20 @@ namespace TomPIT.Security
 					Type = BlobTypes.Avatar
 				};
 
-				avatarId = Connection.GetService<IStorageService>().Upload(b, contentBytes, StoragePolicy.Singleton);
+				avatarId = Tenant.GetService<IStorageService>().Upload(b, contentBytes, StoragePolicy.Singleton);
 
 				if (avatarId == usr.Avatar)
 					return;
 			}
 
-			var u = Connection.CreateUrl("UserManagement", "ChangeAvatar");
+			var u = Tenant.CreateUrl("UserManagement", "ChangeAvatar");
 			var e = new JObject
 			{
 				{"user", user},
 				{"avatar", avatarId }
 			};
 
-			Connection.Post(u, e);
+			Tenant.Post(u, e);
 
 			NotifyChanged(this, new UserEventArgs(user));
 		}

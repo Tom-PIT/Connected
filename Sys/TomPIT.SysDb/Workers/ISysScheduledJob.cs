@@ -1,5 +1,5 @@
 ﻿using System;
-using TomPIT.Services;
+using TomPIT.Distributed;
 
 namespace TomPIT.SysDb.Workers
 {

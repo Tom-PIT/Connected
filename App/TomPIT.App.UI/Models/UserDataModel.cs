@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using TomPIT.Security;
 
-namespace TomPIT.Models
+namespace TomPIT.App.Models
 {
 	public class UserDataModel : AjaxModel
 	{
@@ -10,7 +10,7 @@ namespace TomPIT.Models
 		{
 			var jo = Body.Required<JObject>("data");
 
-			return Services.Data.User.Select(jo.Required<string>("primaryKey"), jo.Optional("topic", string.Empty));
+			return Services.Data.User.Select<JToken, JToken>(jo.Required<JToken>("primaryKey"), jo.Optional("topic", string.Empty));
 		}
 
 		public object QueryData()
@@ -34,7 +34,7 @@ namespace TomPIT.Models
 		{
 			var jo = Body.Property("data").Value as JObject;
 
-			Services.Data.User.Update(jo.Required<string>("primaryKey"), jo.Optional<object>("value", null), jo.Optional("topic", string.Empty));
+			Services.Data.User.Update(jo.Required<JToken>("primaryKey"), jo.Optional<JToken>("value", null), jo.Optional("topic", string.Empty));
 		}
 
 		private void SetArrayData()
@@ -43,7 +43,7 @@ namespace TomPIT.Models
 			var items = new List<IUserData>();
 
 			foreach (JObject i in a)
-				items.Add(Services.Data.User.Create(i.Required<string>("primaryKey"), i.Optional<object>("value", null), i.Optional("topic", string.Empty)));
+				items.Add(Services.Data.User.Create(i.Required<JToken>("primaryKey"), i.Optional<JToken>("value", null), i.Optional("topic", string.Empty)));
 
 			Services.Data.User.Update(items);
 		}

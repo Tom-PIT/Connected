@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
-using TomPIT.Services;
+using TomPIT.Distributed;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Workers;
@@ -204,7 +204,7 @@ namespace TomPIT.Sys.Data
 			var treshold = 3;
 
 			if (setting != null)
-				treshold = setting.Value.AsInt();
+				treshold = Convert.ToInt32(setting.Value);
 
 			var status = WorkerStatus.Enabled;
 

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Design;
-using TomPIT.Dom;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Dom;
 using TomPIT.Security;
 
-namespace TomPIT.Items
+namespace TomPIT.Management.Items
 {
 	internal class RolesCollection : ItemsBase
 	{

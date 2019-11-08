@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using TomPIT.Services;
+using TomPIT.ComponentModel;
+using TomPIT.Exceptions;
+using TomPIT.Middleware;
 
 namespace TomPIT
 {
@@ -16,7 +15,7 @@ namespace TomPIT
 
 		public async Task<IHtmlContent> Render(string name, string queryString = null)
 		{
-			var context = Html.ViewData.Model as IExecutionContext;
+			var context = Html.ViewData.Model as IMicroServiceContext;
 
 			if (context == null)
 				throw new RuntimeException(nameof(ReportHelper), SR.ErrExecutionContextExpected);
@@ -28,7 +27,7 @@ namespace TomPIT
 			{
 				var tokens = name.Split('/');
 
-				context.MicroService.ValidateMicroServiceReference(context.Connection(), tokens[0]);
+				context.MicroService.ValidateMicroServiceReference(tokens[0]);
 
 				microService = tokens[0];
 				report = tokens[1];

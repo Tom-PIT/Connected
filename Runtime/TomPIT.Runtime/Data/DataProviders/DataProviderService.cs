@@ -7,7 +7,7 @@ namespace TomPIT.Data.DataProviders
 {
 	internal class DataProviderService : ClientRepository<IDataProvider, Guid>, IDataProviderService
 	{
-		public DataProviderService(ISysConnection connection) : base(connection, "dataprovider")
+		public DataProviderService(ITenant tenant) : base(tenant, "dataprovider")
 		{
 
 		}

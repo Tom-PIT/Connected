@@ -1,10 +1,8 @@
-﻿
-using TomPIT.Annotations;
-using TomPIT.ComponentModel;
+﻿using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.Services;
+using TomPIT.Runtime;
 
-namespace TomPIT.Application.Apis
+namespace TomPIT.MicroServices.Apis
 {
 	internal class OperationProtocolOptions : ApiProtocolOptions, IOperationProtocolOptions
 	{

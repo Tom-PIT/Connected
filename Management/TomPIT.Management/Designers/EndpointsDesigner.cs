@@ -1,16 +1,19 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Actions;
-using TomPIT.Annotations;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.Design;
 using TomPIT.Design;
-using TomPIT.Dom;
 using TomPIT.Environment;
 using TomPIT.Ide;
-using TomPIT.Items;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Designers.Toolbar;
+using TomPIT.Management.Dom;
+using TomPIT.Management.Environment;
+using TomPIT.Management.Items;
 
-namespace TomPIT.Designers
+namespace TomPIT.Management.Designers
 {
 	internal class EndpointsDesigner : CollectionDesigner<EndpointsElement>
 	{
@@ -36,7 +39,7 @@ namespace TomPIT.Designers
 
 			var endpoint = Owner.Existing.FirstOrDefault(f => f.Token == id);
 
-			Connection.GetService<IInstanceEndpointManagementService>().Delete(endpoint.Token);
+			Environment.Context.Tenant.GetService<IInstanceEndpointManagementService>().Delete(endpoint.Token);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 		}
@@ -44,7 +47,7 @@ namespace TomPIT.Designers
 		protected override IDesignerActionResult Clear(JObject data)
 		{
 			foreach (var i in Owner.Existing)
-				Connection.GetService<IInstanceEndpointManagementService>().Delete(i.Token);
+				Environment.Context.Tenant.GetService<IInstanceEndpointManagementService>().Delete(i.Token);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 		}
@@ -52,10 +55,10 @@ namespace TomPIT.Designers
 		private IDesignerActionResult CreateEndpoint()
 		{
 			var existing = Owner.Existing;
-			var name = Connection.GetService<INamingService>().Create("Endpoint", existing.Select(f => f.Name), true);
+			var name = Environment.Context.Tenant.GetService<INamingService>().Create("Endpoint", existing.Select(f => f.Name), true);
 
-			var id = Connection.GetService<IInstanceEndpointManagementService>().Insert(name, InstanceType.Application, string.Empty, string.Empty, InstanceStatus.Disabled, InstanceVerbs.All);
-			var endpoint = Connection.GetService<IInstanceEndpointService>().Select(id);
+			var id = Environment.Context.Tenant.GetService<IInstanceEndpointManagementService>().Insert(name, InstanceType.Application, string.Empty, string.Empty, InstanceStatus.Disabled, InstanceVerbs.All);
+			var endpoint = Environment.Context.Tenant.GetService<IInstanceEndpointService>().Select(id);
 			var r = Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 
 			r.MessageKind = InformationKind.Success;

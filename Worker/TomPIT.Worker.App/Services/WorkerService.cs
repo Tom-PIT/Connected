@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TomPIT.Services;
+using Newtonsoft.Json.Linq;
+using TomPIT.Distributed;
+using TomPIT.Middleware;
+using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Worker.Services
 {
@@ -15,16 +17,13 @@ namespace TomPIT.Worker.Services
 		public WorkerService()
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
-
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new WorkerDispatcher(i, _cancel));
 		}
 
 		protected override Task Process()
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				var url = Instance.Connection.CreateUrl("WorkerManagement", "Dequeue");
+				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("WorkerManagement", "Dequeue");
 
 				var e = new JObject
 				{
@@ -32,7 +31,7 @@ namespace TomPIT.Worker.Services
 					{ "resourceGroup", f.ResourceGroup }
 				};
 
-				var jobs = Instance.Connection.Post<List<QueueMessage>>(url, e);
+				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
 
 				if (jobs == null)
 					return;
@@ -46,6 +45,16 @@ namespace TomPIT.Worker.Services
 			return Task.CompletedTask;
 		}
 
+		protected override bool Initialize()
+		{
+			if (Instance.State == InstanceState.Initialining)
+				return false;
+
+			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
+				Dispatchers.Add(new WorkerDispatcher(i, _cancel));
+
+			return true;
+		}
 		private List<WorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
 	}
 }

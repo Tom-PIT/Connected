@@ -12,16 +12,18 @@ namespace TomPIT.DataProviders.Sql
 	internal class DataConnection : IDataConnection, IDisposable
 	{
 		private ReliableSqlConnection _connection = null;
-		private SqlTransaction _transaction = null;
 		private Dictionary<string, SqlCommand> _commands = null;
-		private bool _commited = false;
 
-		public DataConnection(IDataProvider provider, string connectionString)
+		public DataConnection(IDataProvider provider, string connectionString, IDataConnection existingConnection)
 		{
+			ExistingConnection = existingConnection;
 			Provider = provider;
 			ConnectionString = connectionString;
 		}
 
+		private bool Commited { get; set; }
+		private bool Attached { get; set; }
+		private IDataConnection ExistingConnection { get; }
 		private IDataProvider Provider { get; }
 		private string ConnectionString { get; }
 
@@ -31,7 +33,17 @@ namespace TomPIT.DataProviders.Sql
 			{
 				if (_connection == null)
 				{
-					_connection = new ReliableSqlConnection(ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
+					if (ExistingConnection != null)
+					{
+						if (ExistingConnection is DataConnection dc && string.Compare(dc.ConnectionString, ConnectionString, true) == 0)
+						{
+							Attached = true;
+							_connection = dc.Connection;
+							Transaction = dc.Transaction;
+						}
+					}
+					else
+						_connection = new ReliableSqlConnection(ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
 
 					Open();
 				}
@@ -42,10 +54,10 @@ namespace TomPIT.DataProviders.Sql
 
 		public void Begin(IsolationLevel isolationLevel)
 		{
-			if (_transaction != null)
+			if (Transaction != null)
 				return;
 
-			_transaction = Connection.BeginTransaction(isolationLevel) as SqlTransaction;
+			Transaction = Connection.BeginTransaction(isolationLevel) as SqlTransaction;
 		}
 
 		public void Begin()
@@ -55,48 +67,57 @@ namespace TomPIT.DataProviders.Sql
 
 		public void Commit()
 		{
-			if (_commited)
+			if (Commited)
 				return;
 
-			if (_transaction != null)
-				_transaction.Commit();
+			if (Transaction != null)
+				Transaction.Commit();
 
-			_commited = true;
+			Commited = true;
 		}
 
 		public void Dispose()
 		{
 			if (Connection != null)
 			{
-				if (_transaction != null)
-					_transaction.Dispose();
+				if (Transaction != null)
+					Transaction.Dispose();
 
-				if (Connection.State == ConnectionState.Open)
-					Connection.Close();
+				if (!Attached)
+				{
+					if (Connection.State == ConnectionState.Open)
+						Connection.Close();
 
-				Connection.Dispose();
+					Connection.Dispose();
+				}
 			}
 		}
 
 		public void Rollback()
 		{
-			if (_commited)
+			if (Commited)
 				return;
 
-			if (_transaction != null)
-				_transaction.Rollback();
+			if (Transaction != null)
+				Transaction.Rollback();
 
-			_commited = true;
+			Commited = true;
 		}
 
 		public void Open()
 		{
+			if (Attached)
+				return;
+
 			if (Connection.State == ConnectionState.Closed)
 				Connection.Open();
 		}
 
 		public void Close()
 		{
+			if (Attached)
+				return;
+
 			if (Connection.State == ConnectionState.Open)
 				Connection.Close();
 		}
@@ -122,6 +143,6 @@ namespace TomPIT.DataProviders.Sql
 			}
 		}
 
-		public SqlTransaction Transaction { get { return _transaction; } }
+		public SqlTransaction Transaction { get; private set; }
 	}
 }

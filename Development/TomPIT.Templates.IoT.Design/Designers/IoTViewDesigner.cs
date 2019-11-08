@@ -1,17 +1,22 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Analysis;
-using TomPIT.Annotations;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.Design;
 using TomPIT.Design;
-using TomPIT.Designers;
-using TomPIT.Dom;
-using TomPIT.IoT.UI;
-using TomPIT.IoT.UI.Stencils;
-using TomPIT.IoT.UI.Stencils.Shapes;
+using TomPIT.Exceptions;
+using TomPIT.Ide;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment.Providers;
+using TomPIT.MicroServices.IoT.UI;
+using TomPIT.MicroServices.IoT.UI.Stencils;
+using TomPIT.MicroServices.IoT.UI.Stencils.Shapes;
+using TomPIT.Reflection;
 
-namespace TomPIT.IoT.Designers
+namespace TomPIT.MicroServices.IoT.Design.Designers
 {
 	public class IoTViewDesigner : DomDesigner<IDomElement>, IDesignerSelectionProvider
 	{
@@ -39,12 +44,12 @@ namespace TomPIT.IoT.Designers
 
 					if (!string.IsNullOrWhiteSpace(SelectionId))
 					{
-						var id = SelectionId.AsGuid();
+						var id = new Guid(SelectionId);
 
 						if (id == Guid.Empty)
 							return _value;
 
-						var target = GetService<IDiscoveryService>().Find(IoTView, id);
+						var target = Environment.Context.Tenant.GetService<IDiscoveryService>().Find(IoTView, id);
 
 						if (target != null)
 						{
@@ -98,9 +103,9 @@ namespace TomPIT.IoT.Designers
 			}
 
 			ResizeView();
-			GetService<IComponentDevelopmentService>().Update(IoTView);
+			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(IoTView);
 
-			return Result.SectionResult(ViewModel, TomPIT.Annotations.EnvironmentSection.Properties);
+			return Result.SectionResult(ViewModel, EnvironmentSection.Properties);
 		}
 
 		private IDesignerActionResult SaveProperties(JObject data)
@@ -129,9 +134,9 @@ namespace TomPIT.IoT.Designers
 			}
 
 			ResizeView();
-			GetService<IComponentDevelopmentService>().Update(IoTView);
+			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(IoTView);
 
-			return Result.SectionResult(ViewModel, TomPIT.Annotations.EnvironmentSection.Properties);
+			return Result.SectionResult(ViewModel, EnvironmentSection.Properties);
 		}
 
 		private void SaveProperty(IIoTElement element, string key, JValue value)
@@ -152,7 +157,7 @@ namespace TomPIT.IoT.Designers
 
 			stencil.Left = x;
 			stencil.Top = y;
-			stencil.Name = GetService<INamingService>().Create(ti.Text, IoTView.Elements.Select(f => f.Name));
+			stencil.Name = Environment.Context.Tenant.GetService<INamingService>().Create(ti.Text, IoTView.Elements.Select(f => f.Name));
 
 			IoTView.Elements.Add(stencil);
 			ResizeView();
@@ -162,14 +167,14 @@ namespace TomPIT.IoT.Designers
 			if (att != null)
 			{
 				var handler = att.Type == null
-					? Types.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
+					? TypeExtensions.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
 					: att.Type.CreateInstance<IComponentCreateHandler>();
 
 				if (handler != null)
 					handler.InitializeNewComponent(Environment.Context, stencil);
 			}
 
-			GetService<IComponentDevelopmentService>().Update(IoTView);
+			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(IoTView);
 
 			return Result.ViewResult(stencil.CreateModel(Environment.Context), "~/Views/Ide/Designers/IoT/Stencil.cshtml");
 		}

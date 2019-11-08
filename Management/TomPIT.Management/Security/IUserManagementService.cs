@@ -1,6 +1,7 @@
 ﻿using System;
+using TomPIT.Security;
 
-namespace TomPIT.Security
+namespace TomPIT.Management.Security
 {
 	public interface IUserManagementService
 	{

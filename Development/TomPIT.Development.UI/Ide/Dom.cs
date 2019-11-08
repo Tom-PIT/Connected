@@ -1,11 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Design;
 using TomPIT.Dom;
+using TomPIT.Ide;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
 
-namespace TomPIT.Ide
+namespace TomPIT.Development.Ide
 {
-	public class Dom : DomBase
+	public class Dom : DomRoot
 	{
 		public Dom(IEnvironment environment, string path) : base(environment, path)
 		{
@@ -27,7 +31,7 @@ namespace TomPIT.Ide
 			if (ms == null)
 				return null;
 
-			var template = Environment.Context.Connection().GetService<IMicroServiceTemplateService>().Select(ms.MicroService.Template);
+			var template = Environment.Context.Tenant.GetService<IMicroServiceTemplateService>().Select(ms.MicroService.Template);
 
 			if (template == null)
 				return null;
@@ -38,9 +42,9 @@ namespace TomPIT.Ide
 			if (addItems != null && addItems.Count > 0)
 				r.AddRange(addItems);
 
-			var templates = Environment.Context.Connection().GetService<IMicroServiceTemplateService>().Query().Where(f => f.Kind == TemplateKind.Plugin && f.Token != ms.MicroService.Template);
+			var templates = Environment.Context.Tenant.GetService<IMicroServiceTemplateService>().Query().Where(f => f.Kind == TemplateKind.Plugin && f.Token != ms.MicroService.Template);
 
-			foreach(var t in templates)
+			foreach (var t in templates)
 			{
 				addItems = t.ProvideGlobalAddItems(selection);
 

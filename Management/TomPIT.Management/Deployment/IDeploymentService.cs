@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TomPIT.ComponentModel;
 using TomPIT.Deployment;
+using TomPIT.Management.Deployment.Packages;
 
 namespace TomPIT.Management.Deployment
 {

@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TomPIT.BigData;
-using TomPIT.Dom;
+﻿using TomPIT.BigData;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
 using TomPIT.Management.BigData;
 
 namespace TomPIT.Management.Dom
@@ -13,7 +11,7 @@ namespace TomPIT.Management.Dom
 		{
 			Node = node;
 			Title = Node.Name;
-			Id = Node.Token.AsString();
+			Id = Node.Token.ToString();
 		}
 
 		public INode Node { get; }
@@ -22,7 +20,7 @@ namespace TomPIT.Management.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			Connection.GetService<IBigDataManagementService>().UpdateNode(Node.Token, Node.Name,
+			Environment.Context.Tenant.GetService<IBigDataManagementService>().UpdateNode(Node.Token, Node.Name,
 				Node.ConnectionString, Node.AdminConnectionString, Node.Status, Node.Size);
 
 			return true;

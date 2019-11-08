@@ -1,24 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json.Linq;
-using TomPIT.ActionResults;
+﻿using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel.Resources;
-using TomPIT.Designers;
-using TomPIT.Dom;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom;
 
 namespace TomPIT.Development.Designers
 {
-	public class StringTableDesigner : DomDesigner<Dom.Element>
+	public class StringTableDesigner : DomDesigner<DomElement>
 	{
-		public StringTableDesigner(Element element) : base(element)
+		public StringTableDesigner(DomElement element) : base(element)
 		{
 		}
 
 		public override object ViewModel => this;
 		public override string View => "~/Views/Ide/Designers/StringTable.cshtml";
 
-		public IStringTable StringTable { get { return Component as IStringTable; } }
+		public IStringTableConfiguration StringTable { get { return Component as IStringTableConfiguration; } }
 
 		public JArray Items
 		{

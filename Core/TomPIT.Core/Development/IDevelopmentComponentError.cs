@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace TomPIT.Development
 {
-	public interface IDevelopmentComponentError
+	public interface IDevelopmentComponentError : IDevelopmentError
 	{
-		Guid Element { get; }
-		DevelopmentSeverity Severity { get; }
-		string Message { get; }
+		Guid MicroService { get; }
+		string ComponentName { get; }
+		string ComponentCategory { get; }
 	}
 }

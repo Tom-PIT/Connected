@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using TomPIT.ComponentModel;
-using TomPIT.Dom;
-using TomPIT.IoT.Security;
-using TomPIT.Security;
+﻿using TomPIT.ComponentModel;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Dom.ComponentModel;
 
-namespace TomPIT.IoT.Dom
+namespace TomPIT.MicroServices.IoT.Design.Dom
 {
 	internal class IoTViewElement : ComponentElement
 	{

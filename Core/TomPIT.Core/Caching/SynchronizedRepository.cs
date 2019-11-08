@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
 
 namespace TomPIT.Caching
 {
 	public abstract class SynchronizedRepository<T, K> : CacheRepository<T, K> where T : class
 	{
+		private object _sync = new object();
 		public event CacheInvalidateHandler Invalidate;
 
 		protected SynchronizedRepository(IMemoryCache container, string key) : base(container, key)
@@ -45,53 +48,112 @@ namespace TomPIT.Caching
 			if (Initialized)
 				return;
 
-			OnInitializing();
+			lock (_sync)
+			{
+				if (Initialized)
+					return;
 
-			Initialized = true;
+				Debug.WriteLine($"Initializing {GetType().Name}");
+
+				InitializeSignal = new ManualResetEvent(false);
+				Initializing = true;
+
+				try
+				{
+					OnInitializing();
+					Initialized = true;
+				}
+				catch
+				{
+
+				}
+				finally
+				{
+					Initializing = false;
+					InitializeSignal.Set();
+					InitializeSignal.Dispose();
+					InitializeSignal = null;
+				}
+
+				Debug.WriteLine($"Initialized {GetType().Name}");
+			}
+
+			OnInitialized();
 		}
 
+		protected virtual void OnInitialized()
+		{
+
+		}
+
+		private bool Initializing { get; set; }
 		private bool Initialized { get; set; }
 
 		protected override List<T> All()
 		{
-			Initialize();
+			WaitForInitialization();
+
+			if (!Initializing)
+				Initialize();
 
 			return base.All();
 		}
 
 		protected override T First()
 		{
-			Initialize();
+			WaitForInitialization();
+
+			if (!Initializing)
+				Initialize();
 
 			return base.First();
 		}
 
 		protected override T Get(Func<T, bool> predicate)
 		{
-			Initialize();
+			WaitForInitialization();
+
+			if (!Initializing)
+				Initialize();
 
 			return base.Get(predicate);
 		}
 
 		protected override T Get(K id)
 		{
-			Initialize();
+			WaitForInitialization();
+
+			if (!Initializing)
+				Initialize();
 
 			return base.Get(id);
 		}
 
 		protected override T Get(K id, CacheRetrieveHandler<T> retrieve)
 		{
-			Initialize();
+			WaitForInitialization();
+
+			if (!Initializing)
+				Initialize();
 
 			return base.Get(id, retrieve);
 		}
 
 		protected override List<T> Where(Func<T, bool> predicate)
 		{
-			Initialize();
+			WaitForInitialization();
+
+			if (!Initializing)
+				Initialize();
 
 			return base.Where(predicate);
+		}
+
+		private ManualResetEvent InitializeSignal { get; set; }
+
+		private void WaitForInitialization()
+		{
+			InitializeSignal?.WaitOne();
 		}
 	}
 }

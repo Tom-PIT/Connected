@@ -1,6 +1,7 @@
-﻿using TomPIT.Dom;
+﻿using TomPIT.Ide.Dom;
+using TomPIT.Ide.Models;
 
-namespace TomPIT.Models
+namespace TomPIT.Management.Models
 {
 	public class HomeModel : IdeModelBase
 	{
@@ -15,7 +16,7 @@ namespace TomPIT.Models
 		}
 
 		public override string Id => string.Empty;
-		public override string IdeUrl => this.RootUrl();
+		public override string IdeUrl => Services.Routing.RootUrl;
 
 		protected override void OnDatabinding()
 		{

@@ -2,10 +2,12 @@
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
-using TomPIT.Dom;
-using TomPIT.Ide;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Environment;
+using TomPIT.Reflection;
 
-namespace TomPIT.Models
+namespace TomPIT.Ide.Models
 {
 	public class AddItemModel
 	{
@@ -33,8 +35,8 @@ namespace TomPIT.Models
 							_proposedName = string.Format("{0}1", Descriptor.Text.Replace(" ", string.Empty));
 						else
 						{
-							var existing = Environment.Context.Connection().GetService<IComponentService>().QueryComponents(Environment.Selection.Element.MicroService(), category).Select(f => f.Name);
-							_proposedName = Environment.Context.Connection().GetService<INamingService>().Create(Descriptor.Id, existing);
+							var existing = Environment.Context.Tenant.GetService<IComponentService>().QueryComponents(Environment.Selection.Element.MicroService(), category).Select(f => f.Name);
+							_proposedName = Environment.Context.Tenant.GetService<INamingService>().Create(Descriptor.Id, existing);
 						}
 					}
 				}
@@ -58,8 +60,8 @@ namespace TomPIT.Models
 			}
 
 			var ms = DomQuery.Closest<IMicroServiceScope>(Environment.Selection.Element).MicroService.Token;
-			var existingFolders = Environment.Context.Connection().GetService<IComponentService>().QueryFolders(ms, folder == null ? Guid.Empty : folder.Token);
-			return Environment.Context.Connection().GetService<INamingService>().Create("Folder", existingFolders.Select(f1 => f1.Name));
+			var existingFolders = Environment.Context.Tenant.GetService<IComponentService>().QueryFolders(ms, folder == null ? Guid.Empty : folder.Token);
+			return Environment.Context.Tenant.GetService<INamingService>().Create("Folder", existingFolders.Select(f1 => f1.Name));
 		}
 	}
 }

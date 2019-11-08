@@ -1,17 +1,21 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
 using System.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Dom;
-using TomPIT.Ide;
-using TomPIT.Services;
+using Newtonsoft.Json.Linq;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom;
+using TomPIT.Ide.Environment;
+using TomPIT.Ide.Environment.Providers;
+using TomPIT.Middleware;
+using TomPIT.Models;
 
-namespace TomPIT.Models
+namespace TomPIT.Ide.Models
 {
 	public abstract class IdeModelBase : ShellModel, IEnvironment
 	{
 		private IDom _dom = null;
-		private IGlobalization _globalization = null;
-		private ISelection _selection = null;
+		private IGlobalizationProvider _globalization = null;
+		private ISelectionProvider _selection = null;
 
 		public virtual IDom Dom
 		{
@@ -26,30 +30,29 @@ namespace TomPIT.Models
 
 		protected abstract IDom CreateDom();
 
-		public virtual IGlobalization Globalization
+		public virtual IGlobalizationProvider Globalization
 		{
 			get
 			{
 				if (_globalization == null)
-					_globalization = new Ide.Globalization(this);
+					_globalization = new GlobalizationProvider(this);
 
 				return _globalization;
 			}
 		}
 
-		public virtual ISelection Selection
+		public virtual ISelectionProvider Selection
 		{
 			get
 			{
 				if (_selection == null)
-					_selection = new Selection(this);
+					_selection = new SelectionProvider(this);
 
 				return _selection;
 			}
 		}
 
-		public IExecutionContext Context => this;
-
+		public IMicroServiceContext Context => this;
 		public abstract string Id { get; }
 		public JObject RequestBody { get; set; }
 		public string Path { get; set; }
@@ -73,10 +76,23 @@ namespace TomPIT.Models
 				return DeleteComponent(data);
 			else if (string.Compare(action, "move", true) == 0)
 				return Move(data);
+			else if (string.Compare(action, "clearErrors", true) == 0)
+				return ClearErrors(data);
 
 			return Result.EmptyResult(this);
 		}
 
+		protected virtual IDesignerActionResult ClearErrors(JObject data)
+		{
+			var component = data.Required<Guid>("component");
+			var element = data.Required<Guid>("element");
+
+			Tenant.GetService<IDesignerService>().ClearErrors(component, element, Development.ErrorCategory.Syntax);
+			Tenant.GetService<IDesignerService>().ClearErrors(component, element, Development.ErrorCategory.Type);
+			Tenant.GetService<IDesignerService>().ClearErrors(component, element, Development.ErrorCategory.Validation);
+
+			return Result.EmptyResult(this);
+		}
 		protected virtual IDesignerActionResult Move(JObject data)
 		{
 			return Result.EmptyResult(this);

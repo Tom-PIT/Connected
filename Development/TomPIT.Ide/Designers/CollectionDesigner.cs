@@ -1,16 +1,18 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using TomPIT.ActionResults;
-using TomPIT.Actions;
-using TomPIT.Annotations;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.Design;
 using TomPIT.Design;
-using TomPIT.Dom;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Designers.Toolbar;
+using TomPIT.Ide.Dom;
+using TomPIT.Reflection;
 
-namespace TomPIT.Designers
+namespace TomPIT.Ide.Designers
 {
 	public class CollectionDesigner<E> : DomDesigner<E>, ICollectionDesigner where E : IDomElement
 	{
@@ -41,7 +43,7 @@ namespace TomPIT.Designers
 			if (OnCreateToolbarAction(addItems))
 				Toolbar.Items.Add(addItems);
 
-			var search = new Actions.Search(Environment);
+			var search = new Toolbar.Search(Environment);
 
 			if (OnCreateToolbarAction(search))
 				Toolbar.Items.Add(search);
@@ -79,7 +81,7 @@ namespace TomPIT.Designers
 							var d = new ItemDescriptor
 							{
 								Text = en.Current.ToString(),
-								Id = DomQuery.Key(en.Current, idx.AsString()),
+								Id = DomQuery.Key(en.Current, idx.ToString()),
 								Value = en.Current
 							};
 
@@ -209,7 +211,7 @@ namespace TomPIT.Designers
 			if (mi == null)
 				throw IdeException.MissingAddMethod(this, IdeEvents.DesignerAction, Component.GetType().Name);
 
-			Connection.GetService<INamingService>().Create(df, items);
+			Element.Environment.Context.Tenant.GetService<INamingService>().Create(df, items);
 
 			IdeExtensions.ProcessComponentCreating(Environment.Context, df);
 

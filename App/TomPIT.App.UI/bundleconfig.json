@@ -27,7 +27,6 @@
   {
     "outputFileName": "wwwroot/assets/quill.snow.min.css",
     "inputFiles": [
-      "wwwroot/assets/Libraries/Quill/quill.core.css",
       "wwwroot/assets/Libraries/Quill/quill.snow.css"
     ],
     "minify": {
@@ -38,7 +37,6 @@
   {
     "outputFileName": "wwwroot/assets/quill.bubble.min.css",
     "inputFiles": [
-      "wwwroot/assets/Libraries/Quill/quill.core.css",
       "wwwroot/assets/Libraries/Quill/quill.bubble.css"
     ],
     "minify": {
@@ -60,7 +58,6 @@
       "wwwroot/assets/scripts/toastr.js",
       "wwwroot/assets/scripts/tompit.js",
       "wwwroot/assets/scripts/runtime.js",
-      "wwwroot/assets/scripts/jquery.signalR-2.2.3.min.js",
       "wwwroot/assets/scripts/timer.js",
       "wwwroot/assets/scripts/jscroll.js",
       "wwwroot/assets/scripts/moment.js",
@@ -68,7 +65,7 @@
       "wwwroot/assets/scripts/form.js"
     ],
     "minify": {
-      "enabled": true,
+      "enabled": false,
       "renameLocals": false
     },
     "sourceMap": false
@@ -99,8 +96,8 @@
     "outputFileName": "wwwroot/assets/messaging.min.js",
     "inputFiles": [
       "wwwroot/assets/scripts/signalr.js",
-      "wwwroot/assets/scripts/d3.js",
-      "wwwroot/assets/scripts/messaging.js"
+      "wwwroot/assets/scripts/iot.js",
+      "wwwroot/assets/scripts/dataHub.js"
     ],
     "minify": {
       "enabled": false,

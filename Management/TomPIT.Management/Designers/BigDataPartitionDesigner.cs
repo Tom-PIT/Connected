@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json.Linq;
-using TomPIT.ActionResults;
+using TomPIT.Annotations.Design;
 using TomPIT.BigData;
-using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
-using TomPIT.Designers;
-using TomPIT.Dom;
+using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom;
 using TomPIT.Management.BigData;
 
 namespace TomPIT.Management.Designers
@@ -19,14 +17,14 @@ namespace TomPIT.Management.Designers
 		private IPartition _partition = null;
 		public BigDataPartitionDesigner(DomElement element) : base(element)
 		{
-			
+
 		}
 		public IPartition Partition
 		{
 			get
 			{
 				if (_partition == null)
-					_partition = GetService<IBigDataManagementService>().SelectPartition(((IPartitionConfiguration)Element.Component).Component);
+					_partition = Environment.Context.Tenant.GetService<IBigDataManagementService>().SelectPartition(((IPartitionConfiguration)Element.Component).Component);
 
 				return _partition;
 			}
@@ -40,7 +38,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_files == null)
-					_files = GetService<IBigDataManagementService>().QueryFiles(Partition.Configuration);
+					_files = Environment.Context.Tenant.GetService<IBigDataManagementService>().QueryFiles(Partition.Configuration);
 
 				return _files;
 			}
@@ -59,8 +57,9 @@ namespace TomPIT.Management.Designers
 		}
 		protected override IDesignerActionResult OnAction(JObject data, string action)
 		{
-			GetService<IBigDataManagementService>().FixPartition(Partition.Configuration, Partition.Name);
-			return Result.SectionResult(ViewModel, Annotations.EnvironmentSection.Designer);
+			Environment.Context.Tenant.GetService<IBigDataManagementService>().FixPartition(Partition.Configuration, Partition.Name);
+
+			return Result.SectionResult(ViewModel, EnvironmentSection.Designer);
 		}
 	}
 }

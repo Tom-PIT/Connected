@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using System;
+﻿using System;
+using Microsoft.AspNetCore.Authorization;
 using TomPIT.ComponentModel;
-using TomPIT.Models;
+using TomPIT.Development.Models;
+using TomPIT.Ide.Controllers;
+using TomPIT.Ide.Models;
 
-namespace TomPIT.Controllers
+namespace TomPIT.Development.Controllers
 {
 	[Authorize(Policy = "Implement Micro Service")]
 	public class IdeController : IdeControllerBase
@@ -14,7 +16,7 @@ namespace TomPIT.Controllers
 
 			var microService = RouteData.Values["microService"] as string;
 
-			r.Initialize(this, r.Connection.GetService<IMicroServiceService>().SelectByUrl(microService));
+			r.Initialize(this, r.Tenant.GetService<IMicroServiceService>().SelectByUrl(microService));
 
 			if (r.MicroService == null)
 				throw new NullReferenceException();

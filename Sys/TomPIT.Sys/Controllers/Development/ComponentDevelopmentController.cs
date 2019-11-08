@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+using TomPIT.ComponentModel;
 using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Controllers.Development
@@ -20,8 +21,9 @@ namespace TomPIT.Sys.Controllers.Development
 			var category = body.Required<string>("category");
 			var configuration = body.Optional("runtimeConfiguration", Guid.Empty);
 			var component = body.Required<Guid>("component");
+			var nameSpace = body.Required<string>("nameSpace");
 
-			DataModel.Components.Insert(component, microService, folder, category, name, type, configuration);
+			DataModel.Components.Insert(component, microService, folder, category, nameSpace, name, type, configuration);
 		}
 
 		[HttpPost]
@@ -34,6 +36,58 @@ namespace TomPIT.Sys.Controllers.Development
 			var folder = body.Optional("folder", Guid.Empty);
 
 			DataModel.Components.Update(component, name, folder);
+		}
+
+		[HttpPost]
+		public void UpdateIndexStates()
+		{
+			var body = FromBody();
+			var items = body.Required<JArray>("items");
+			var parameters = new List<IComponentIndexState>();
+
+			foreach (JObject item in items)
+			{
+				var cmp = DataModel.Components.Select(item.Required<Guid>("component"));
+
+				if (cmp == null)
+					continue;
+
+				parameters.Add(new ComponentIndexState
+				{
+					Component = cmp,
+					Element = item.Optional("element", Guid.Empty),
+					State = item.Required<IndexState>("state"),
+					TimeStamp = item.Required<DateTime>("timestamp")
+				});
+			}
+
+			DataModel.Components.Update(parameters);
+		}
+
+		[HttpPost]
+		public void UpdateAnalyzerStates()
+		{
+			var body = FromBody();
+			var items = body.Required<JArray>("items");
+			var parameters = new List<IComponentAnalyzerState>();
+
+			foreach (JObject item in items)
+			{
+				var cmp = DataModel.Components.Select(item.Required<Guid>("component"));
+
+				if (cmp == null)
+					continue;
+
+				parameters.Add(new ComponentAnalyzerState
+				{
+					Component = cmp,
+					Element = item.Optional("element", Guid.Empty),
+					State = item.Required<AnalyzerState>("index_state"),
+					TimeStamp = item.Required<DateTime>("indextimestamp")
+				});
+			}
+
+			DataModel.Components.Update(parameters);
 		}
 
 		[HttpPost]
@@ -60,9 +114,9 @@ namespace TomPIT.Sys.Controllers.Development
 		}
 
 		[HttpGet]
-		public string CreateName(Guid microService, string prefix, string category)
+		public string CreateName(Guid microService, string prefix, string nameSpace)
 		{
-			return DataModel.Components.CreateComponentName(microService, prefix, category);
+			return DataModel.Components.CreateComponentName(microService, prefix, nameSpace);
 		}
 
 		[HttpPost]
@@ -77,7 +131,7 @@ namespace TomPIT.Sys.Controllers.Development
 			{
 				var prop = i.First as JProperty;
 
-				items.Add(prop.Name.AsGuid(), prop.Value.ToString().AsGuid());
+				items.Add(new Guid(prop.Name), new Guid(prop.Value.ToString()));
 			}
 
 			DataModel.Components.SaveRuntimeState(ms, items);

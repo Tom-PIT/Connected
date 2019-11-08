@@ -1,19 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json.Linq;
-using TomPIT.ActionResults;
-using TomPIT.Application.Resources;
-using TomPIT.Design;
 using TomPIT.Development.Designers;
-using TomPIT.Dom;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Designers.ActionResults;
+using TomPIT.Ide.Dom;
+using TomPIT.MicroServices.Resources;
 
-namespace TomPIT.Application.Design.Designers
+namespace TomPIT.MicroServices.Design.Designers
 {
 	internal class StringTable : StringTableDesigner
 	{
-		public StringTable(Element element) : base(element)
+		public StringTable(DomElement element) : base(element)
 		{
 		}
 
@@ -28,7 +26,7 @@ namespace TomPIT.Application.Design.Designers
 
 			StringTable.Strings.Add(existing);
 
-			Connection.GetService<IComponentDevelopmentService>().Update(StringTable);
+			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(StringTable);
 
 			return Result.JsonResult(ViewModel, existing.Id);
 		}
@@ -46,7 +44,7 @@ namespace TomPIT.Application.Design.Designers
 				existing.IsLocalizable = data.Optional("isLocalizable", existing.IsLocalizable);
 			}
 
-			Connection.GetService<IComponentDevelopmentService>().Update(StringTable);
+			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(StringTable);
 
 			return Result.EmptyResult(ViewModel);
 		}
@@ -60,7 +58,7 @@ namespace TomPIT.Application.Design.Designers
 			if (existing != null)
 				StringTable.Strings.Remove(existing);
 
-			Connection.GetService<IComponentDevelopmentService>().Update(StringTable);
+			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(StringTable);
 
 			return Result.EmptyResult(ViewModel);
 		}

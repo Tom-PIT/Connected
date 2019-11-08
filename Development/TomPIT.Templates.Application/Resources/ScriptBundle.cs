@@ -1,18 +1,21 @@
 ﻿using System.ComponentModel;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
+using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.MicroServices.Design;
 
-namespace TomPIT.Application.Resources
+namespace TomPIT.MicroServices.Resources
 {
-	[Create("ScriptBundle")]
-	public class ScriptBundle : ComponentConfiguration, IScriptBundle
+	[Create(DesignUtils.ScriptBundle)]
+	[ComponentCreatedHandler(DesignUtils.ScriptBundleHandler)]
+	[DomElement(DesignUtils.ScriptBundleElement)]
+	public class ScriptBundle : ComponentConfiguration, IScriptBundleConfiguration, IScriptBundleInitializer
 	{
-		public const string ComponentCategory = "Bundle";
-
 		private ListItems<IScriptSource> _scripts = null;
 
-		[Items("TomPIT.Application.Design.Items.ScriptSourceCollection, TomPIT.Application.Design")]
+		[Items(DesignUtils.ScriptSourceItems)]
 		public ListItems<IScriptSource> Scripts
 		{
 			get
@@ -27,6 +30,14 @@ namespace TomPIT.Application.Resources
 		[DefaultValue(true)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
 		public bool Minify { get; set; } = true;
+
+		public IScriptSource CreateDefaultFile()
+		{
+			return new ScriptCodeSource
+			{
+				Name = "Default"
+			};
+		}
 	}
 }
 

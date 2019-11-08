@@ -1,7 +1,7 @@
 ﻿using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 
-namespace TomPIT.Application.Resources
+namespace TomPIT.MicroServices.Resources
 {
 	public class StringTranslation : ConfigurationElement, IStringTranslation
 	{

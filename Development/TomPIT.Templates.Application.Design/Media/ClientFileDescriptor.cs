@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace TomPIT.Application.Design.Media
+namespace TomPIT.MicroServices.Design.Media
 {
 	internal class ClientFileDescriptor
 	{

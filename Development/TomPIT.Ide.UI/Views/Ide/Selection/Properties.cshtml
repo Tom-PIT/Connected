@@ -1,4 +1,4 @@
-﻿@model TomPIT.Ide.IEnvironment
+﻿@model TomPIT.Ide.Environment.IEnvironment
 
 <div class="dev-property-grid">
 	<div class="dev-property-grid-content">
@@ -79,7 +79,7 @@
 		@:ide.setPropertySaveMode('instant');
 	}
 
-		@if(Model.Selection.Designer is TomPIT.Dom.IDesignerSelectionProvider sp)
+		@if(Model.Selection.Designer is TomPIT.Ide.Environment.Providers.IDesignerSelectionProvider sp)
 		{
 			@:ide.setDesignerSelectionId('@sp.SelectionId');
 		}

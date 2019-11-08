@@ -1,9 +1,9 @@
-﻿using TomPIT.Annotations;
+﻿using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.Services;
+using TomPIT.Runtime;
 
-namespace TomPIT.Application.Apis
+namespace TomPIT.MicroServices.Apis
 {
 	internal class ApiProtocolOptions : ConfigurationElement, IApiProtocolOptions
 	{

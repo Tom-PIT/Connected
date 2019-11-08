@@ -2,11 +2,12 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Design;
-using TomPIT.Dom;
-using TomPIT.IoT.UI;
+using TomPIT.Ide.Collections;
+using TomPIT.Ide.ComponentModel;
+using TomPIT.Ide.Dom;
+using TomPIT.MicroServices.IoT.UI;
 
-namespace TomPIT.IoT
+namespace TomPIT.MicroServices.IoT.Design
 {
 	public class IoTTemplate : MicroServiceTemplate
 	{

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Api.Storage;
+using TomPIT.Reflection;
 using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Services
@@ -76,7 +77,7 @@ namespace TomPIT.Sys.Services
 					return Providers.First().Value;
 			}
 
-			DefaultStorageProvider = Types.GetType(ev.Value).CreateInstance<IStorageProvider>();
+			DefaultStorageProvider = Reflection.TypeExtensions.GetType(ev.Value).CreateInstance<IStorageProvider>();
 
 			return DefaultStorageProvider;
 		}

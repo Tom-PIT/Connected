@@ -12,7 +12,7 @@
 	};
 
 	tompit.invariantDate = function (v) {
-		if (typeof v === 'undefined' || v == null || !(v instanceof Date))
+		if (typeof v === 'undefined' || v === null || !(v instanceof Date))
 			return null;
 
 		var r = new Date(v.getFullYear(), v.getMonth(), v.getDay());
@@ -24,25 +24,25 @@
 
 	tompit.success = function (message, title, e) {
 		toastr.success(message, title, $.extend({
-			positionClass: 'toast-bottom-full-width text-center'
+            positionClass: 'tp-toast-bottom-center'
 		}, e));
 	};
 
 	tompit.warning = function (message, title, e) {
 		toastr.warning(message, title, $.extend({
-			positionClass: 'toast-bottom-full-width text-center'
+			positionClass: 'tp-toast-bottom-center'
 		}, e));
 	};
 
 	tompit.info = function (message, title, e) {
 		toastr.info(message, title, $.extend({
-			positionClass: 'toast-bottom-full-width text-center'
+            positionClass: 'tp-toast-bottom-center'
 		}, e));
 	};
 
 	tompit.error = function (message, title, e) {
 		toastr.error(message, title, $.extend({
-			positionClass: 'toast-bottom-full-width text-center'
+			positionClass: 'tp-toast-bottom-center'
 		}, e));
 	};
 
@@ -52,17 +52,28 @@
 		throw message;
 	};
 
+    tompit.resolveErrorMessage = function (request) {
+        try {
+            var err = $.parseJSON(request.responseText);
+
+            return err === null ? null : err.message;
+        }
+        catch (e) {
+            return null;
+        }
+    };
+
 	tompit.handleError = function (request, status, error) {
 		var title = null;
 		var message = null;
-		var severity = 'critical';
+        var severity = 'critical';
 
 		try {
 			var err = $.parseJSON(request.responseText);
 
 			title = err === null ? status : err.source;
 			message = err === null ? null : err.message;
-			severity = err === null ? 'critical' : typeof err.severity === 'undefined' ? critical : err.severity;
+            severity = err === null ? 'critical' : typeof err.severity === 'undefined' ? critical : err.severity;
 
 			var inner = err === null || typeof err.inner === 'undefined' ? null : err.inner;
 
@@ -99,8 +110,13 @@
 
 
 	tompit.findProgress = function (s) {
-		if (typeof s !== 'undefined') {
-			var p = $('[data-tp-tag="progress-container"]', $(s));
+        if (typeof s !== 'undefined') {
+            var sel = s instanceof jQuery ? s : $(s);
+
+            if (sel.attr('[data-tp-tag="progress-container"]') !== null)
+                return sel.tpProgress('instance');
+
+			var p = $('[data-tp-tag="progress-container"]', sel);
 
 			if (p.length > 0)
 				return p.tpProgress('instance');
@@ -121,15 +137,4 @@
 			});
 		}
 	};
-
-	tompit.disableNavigation = function () {
-		$('#_navtoggler').removeAttr('data-target');
-		$('#_sideBar').addClass('hidden');
-	};
-
-	tompit.onSearch = function (listener) {
-		$('#_sysBody').on('search', listener);
-	};
-
-
 })(window.tompit = window.tompit || {}, jQuery);

@@ -1,17 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using System;
+﻿using System;
 using System.Net;
 using System.Text;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using TomPIT.App.Models;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Diagnostics;
+using TomPIT.Diagostics;
+using TomPIT.Middleware;
 using TomPIT.Models;
-using TomPIT.Services;
+using TomPIT.Security;
+using TomPIT.UI;
 
-namespace TomPIT.UI
+namespace TomPIT.App.UI
 {
 	internal class ViewEngine : ViewEngineBase, IViewEngine
 	{
@@ -36,7 +40,7 @@ namespace TomPIT.UI
 			}
 		}
 
-		public void RenderPartial(IExecutionContext context, string name)
+		public void RenderPartial(IMicroServiceContext context, string name)
 		{
 			var partialView = ResolveView(context, name);
 
@@ -44,24 +48,9 @@ namespace TomPIT.UI
 				return;
 
 			var vm = CreatePartialModel(name);
-			var args = new ViewInvokeArguments(vm);
-
-			vm.Connection().GetService<ICompilerService>().Execute(((IConfiguration)partialView).MicroService(vm.Connection()), partialView.Invoke, this, args);
-
 			var viewEngineResult = Engine.FindView(vm.ActionContext, name, false);
-
-			if (!viewEngineResult.Success)
-			{
-				Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-				return;
-			}
-
 			var view = viewEngineResult.View;
-
-			if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
-				return;
-
-			var content = CreateContent(view, args);
+			var content = CreateContent(view, vm);
 
 			var buffer = Encoding.UTF8.GetBytes(content);
 
@@ -95,40 +84,43 @@ namespace TomPIT.UI
 				if (string.Compare(model.ViewConfiguration.Url, "login", true) != 0 && !SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url))
 					return;
 
-				var invokeArgs = new ViewInvokeArguments(model);
+				model.ActionContext.RouteData.Values.Add("Action", name);
 
-				if (model.ViewConfiguration != null)
+				try
 				{
-					model.GetService<ICompilerService>().Execute(((IConfiguration)model.ViewConfiguration).MicroService(model.Connection), model.ViewConfiguration.Invoke, this, invokeArgs);
+					var viewEngineResult = Engine.FindView(model.ActionContext, name, false);
 
-					if (Shell.HttpContext.Response.StatusCode != (int)HttpStatusCode.OK)
-						return;
-				}
-
-				var viewEngineResult = Engine.FindView(model.ActionContext, name, false);
-
-				if (!viewEngineResult.Success)
-				{
-					if (string.Compare(name, "home", true) == 0)
-						throw new InvalidOperationException(SR.ErrDefaultViewNotSet);
-					else
+					if (!viewEngineResult.Success)
 					{
-						Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-						return;
+						if (string.Compare(name, "home", true) == 0)
+							throw new InvalidOperationException(SR.ErrDefaultViewNotSet);
+						else
+						{
+							Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+							return;
+						}
 					}
+
+					var view = viewEngineResult.View;
+
+					if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
+						return;
+
+					content = CreateContent(view, model);
+
+					var buffer = Encoding.UTF8.GetBytes(content);
+
+					if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
+						Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
 				}
-
-				var view = viewEngineResult.View;
-
-				if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
-					return;
-
-				content = CreateContent(view, invokeArgs);
-
-				var buffer = Encoding.UTF8.GetBytes(content);
-
-				if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
-					Context.Response.Body.Write(buffer, 0, buffer.Length);
+				catch (CompilerException)
+				{
+					throw;
+				}
+				catch (Exception ex)
+				{
+					throw new CompilerException(model.Tenant, model.ViewConfiguration, ex);
+				}
 			}
 			finally
 			{
@@ -141,17 +133,19 @@ namespace TomPIT.UI
 			var path = Context.Request.Path.ToString().Trim('/');
 
 			var ac = CreateActionContext(Context);
-			var view = Instance.GetService<IViewService>().Select(path, ac);
+			var view = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().Select(path, ac);
 
 			if (view == null)
 				return null;
 
-			var vi = new ViewInfo(string.Format("/Views/{0}.cshtml", path), ac);
-			var ms = vi.ViewComponent == null ? null : Instance.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
+			ac.ActionDescriptor.Properties.Add("viewKind", ViewKind.View);
 
-			var model = new RuntimeModel(Context.Request, ac, Temp)
+			var vi = new ViewInfo(string.Format("/Views/Dynamic/View/{0}.cshtml", path), ac);
+			var ms = vi.ViewComponent == null ? null : MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
+
+			var model = new RuntimeModel(Context.Request, ac, Temp, ms)
 			{
-				ViewConfiguration = view
+				ViewConfiguration = view,
 			};
 
 			model.Initialize(null, ms);
@@ -169,9 +163,9 @@ namespace TomPIT.UI
 			ac.ActionDescriptor.Properties.Add("viewKind", ViewKind.Partial);
 
 			var vi = new ViewInfo(string.Format("/Views/Dynamic/Partial/{0}.cshtml", name), ac);
-			var ms = vi.ViewComponent == null ? null : Instance.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
+			var ms = vi.ViewComponent == null ? null : MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
 
-			var model = new RuntimeModel(Context.Request, ac, Temp);
+			var model = new RuntimeModel(Context.Request, ac, Temp, ms);
 
 			model.Initialize(null, ms);
 
@@ -181,7 +175,7 @@ namespace TomPIT.UI
 			return model;
 		}
 
-		private IPartialView ResolveView(IExecutionContext context, string qualifier)
+		private IPartialViewConfiguration ResolveView(IMicroServiceContext context, string qualifier)
 		{
 			var tokens = qualifier.Split('/');
 			var ms = context.MicroService;
@@ -189,7 +183,7 @@ namespace TomPIT.UI
 
 			if (tokens.Length > 1)
 			{
-				ms = context.Connection().GetService<IMicroServiceService>().Select(tokens[0]);
+				ms = context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
 				if (ms == null)
 					return null;
@@ -197,7 +191,7 @@ namespace TomPIT.UI
 				name = tokens[1];
 			}
 
-			return context.Connection().GetService<IComponentService>().SelectConfiguration(ms.Token, "Partial", name) as IPartialView;
+			return context.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "Partial", name) as IPartialViewConfiguration;
 		}
 	}
 }
