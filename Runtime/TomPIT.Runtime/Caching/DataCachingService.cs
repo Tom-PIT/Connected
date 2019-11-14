@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
+using System.Reflection;
 using Newtonsoft.Json.Linq;
+using TomPIT.Annotations;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
+using TomPIT.Reflection;
 using TomPIT.Serialization;
 
 namespace TomPIT.Caching
@@ -142,11 +146,11 @@ namespace TomPIT.Caching
 		{
 			Initialize(key);
 
-			var items = Cache.All<object>(key);
+			var items = Cache.All<CacheValue>(key);
 			var result = new List<T>();
 
 			foreach (var item in items)
-				result.Add(Marshall.Convert<T>(item));
+				result.Add(Serializer.Deserialize<T>(item.Value));
 
 			return result;
 		}
@@ -155,7 +159,7 @@ namespace TomPIT.Caching
 		{
 			Initialize(key);
 
-			var item = Cache.Get<object>(key, id);
+			var item = Cache.Get<CacheValue>(key, id);
 
 			if (item == null)
 			{
@@ -166,51 +170,63 @@ namespace TomPIT.Caching
 					SlidingExpiration = true
 				};
 
-				item = retrieve(options);
+				var result = retrieve(options);
 
-				if (item != null || options.AllowNull)
-					Set(key, id, item, options.Duration, options.SlidingExpiration);
+				if (result != null || options.AllowNull)
+					Set(key, id, result, options.Duration, options.SlidingExpiration);
+
+				return result;
 			}
 
-			return Marshall.Convert<T>(item);
+			return Serializer.Deserialize<T>(item.Value);
 		}
 
-		public T Get<T>(string key, Func<T, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
+		public T Get<T>(string key, Func<dynamic, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
 		{
 			Initialize(key);
 
-			var item = Get(key, predicate);
+			var all = Cache.All<CacheValue>(key);
 
-			if (item == null)
+			if (all != null && all.Count > 0)
 			{
-				var options = new EntryOptions
-				{
-					AllowNull = false,
-					Duration = TimeSpan.Zero,
-					SlidingExpiration = true
-				};
+				var target = all.FirstOrDefault(f => predicate(f.Key));
 
-				item = retrieve(options);
-
-				if (item != null && options.AllowNull)
-					Set(key, options.Key, item, options.Duration, options.SlidingExpiration);
+				if (target != null)
+					return Serializer.Deserialize<T>(target.Value);
 			}
 
-			return Marshall.Convert<T>(item);
+			var options = new EntryOptions
+			{
+				AllowNull = false,
+				Duration = TimeSpan.Zero,
+				SlidingExpiration = true
+			};
+
+			var result = retrieve(options);
+
+			if (result != null && options.AllowNull)
+				Set(key, options.Key, result, options.Duration, options.SlidingExpiration);
+
+			return result;
 		}
 
 		public T Get<T>(string key, string id) where T : class
 		{
 			Initialize(key);
 
-			return Marshall.Convert<T>(Cache.Get<object>(key, id));
+			var item = Cache.Get<CacheValue>(key, id);
+
+			if (item == null)
+				return default;
+
+			return Serializer.Deserialize<T>(item.Value);
 		}
 
-		public T Get<T>(string key, Func<T, bool> predicate) where T : class
+		public T Get<T>(string key, Func<dynamic, bool> predicate) where T : class
 		{
 			Initialize(key);
 
-			var items = Where(key, predicate);
+			var items = Where<T>(key, predicate);
 
 			if (items == null || items.Count == 0)
 				return default;
@@ -222,40 +238,73 @@ namespace TomPIT.Caching
 		{
 			Initialize(key);
 
-			return Marshall.Convert<T>(Cache.First<object>(key));
+			var first = Cache.First<CacheValue>(key);
+
+			if (first == null)
+				return default;
+
+			return Serializer.Deserialize<T>(first.Value);
 		}
 
-		public List<T> Where<T>(string key, Func<T, bool> predicate) where T : class
+		public List<T> Where<T>(string key, Func<dynamic, bool> predicate) where T : class
 		{
 			Initialize(key);
 
-			var items = All<T>(key);
+			var items = All<CacheValue>(key);
 
 			if (items == null || items.Count == 0)
 				return new List<T>();
 
-			return items.Where(predicate).ToList();
+			var results = items.Where(f => predicate(f.Key)).ToList();
+
+			if (results == null || results.Count == 0)
+				return new List<T>();
+
+			var r = new List<T>();
+
+			foreach (var result in results)
+				r.Add(Serializer.Deserialize<T>(result));
+
+			return r;
 		}
 
 		public T Set<T>(string key, string id, T instance) where T : class
 		{
 			Initialize(key);
 
-			return Cache.Set(key, id, instance);
+			Cache.Set(key, id, new CacheValue
+			{
+				Key = CreateKey(instance),
+				Value = Serializer.Serialize(instance)
+			});
+
+			return instance;
 		}
 
 		public T Set<T>(string key, string id, T instance, TimeSpan duration) where T : class
 		{
 			Initialize(key);
 
-			return Cache.Set(key, id, instance, duration);
+			Cache.Set(key, id, new CacheValue
+			{
+				Key = CreateKey(instance),
+				Value = Serializer.Serialize(instance)
+			}, duration);
+
+			return instance;
 		}
 
 		public T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration) where T : class
 		{
 			Initialize(key);
 
-			return Cache.Set(key, id, instance, duration, slidingExpiration);
+			Cache.Set(key, id, new CacheValue
+			{
+				Key = CreateKey(instance),
+				Value = Serializer.Serialize(instance)
+			}, duration, slidingExpiration);
+
+			return instance;
 		}
 
 		public int Count(string key)
@@ -332,6 +381,38 @@ namespace TomPIT.Caching
 			States[cacheKey].Initialized = false;
 
 			Cache.Clear(cacheKey);
+		}
+
+		private static dynamic CreateKey(object instance)
+		{
+			if (instance == null)
+				return new ExpandoObject();
+
+			var result = new ExpandoObject();
+			var members = instance.GetType().GetMembers(BindingFlags.Public | BindingFlags.Instance);
+
+			foreach (var member in members)
+			{
+				if (member is PropertyInfo property && property.CanRead)
+				{
+					var att = property.FindAttribute<CachePropertyAttribute>();
+
+					if (att == null || att.Visibility == CachePropertyVisibility.Visible)
+					{
+						var value = property.GetValue(instance);
+
+						if (property.PropertyType == typeof(string) && !string.IsNullOrWhiteSpace(value as string) && (att == null || att.Storage == CachePropertyStorage.Optimized))
+						{
+							if (value.ToString().Length > 128)
+								value = value.ToString().Substring(0, 128);
+						}
+
+						result.TryAdd(property.Name, property.GetValue(instance));
+					}
+				}
+			}
+
+			return result;
 		}
 	}
 }

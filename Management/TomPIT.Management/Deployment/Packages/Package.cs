@@ -202,6 +202,11 @@ namespace TomPIT.Management.Deployment.Packages
 
 			foreach (var i in components)
 			{
+				var config = tenant.GetService<IComponentService>().SelectConfiguration(i.Token);
+
+				if (config == null)
+					throw new RuntimeException($"{SR.ErrCannotFindConfiguration} ({i.Name}, {i.Category})");
+
 				Components.Add(new PackageComponent
 				{
 					Category = i.Category,
@@ -212,7 +217,6 @@ namespace TomPIT.Management.Deployment.Packages
 					Type = i.Type,
 				});
 
-				var config = tenant.GetService<IComponentService>().SelectConfiguration(i.Token);
 				Configurations.Add(config);
 
 				if (Configuration.RuntimeConfigurationSupported && i.RuntimeConfiguration != Guid.Empty)

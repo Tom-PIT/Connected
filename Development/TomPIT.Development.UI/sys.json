@@ -1,10 +1,11 @@
 ﻿{
 	"connections": [
-		{
-			"name": "localhost",
-			"url": "http://localhost:44001",
-			"authenticationToken": "defaultAuthenticationToken"
-		}
+    {
+      "name": "localhost",
+      //"url": "http://localhost:44001",
+      "url": "http://sys-app/common/sys",
+      "authenticationToken": "defaultAuthenticationToken"
+    }
 	],
 	"dataProviders": [
 		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"

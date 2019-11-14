@@ -6,8 +6,6 @@ using TomPIT.MicroServices.Design;
 
 namespace TomPIT.MicroServices.Messaging
 {
-	[DomDesigner(DomDesignerAttribute.TextDesigner)]
-	[Syntax(SyntaxAttribute.CSharp)]
 	public class EventBindings : SourceCodeConfiguration, IEventBindingConfiguration
 	{
 		private ListItems<IEventBinding> _bindings = null;

@@ -88,6 +88,7 @@ namespace TomPIT.Middleware.Interop
 
 			if (OperationTarget == DistributedOperationTarget.Distributed)
 			{
+				OnAuthorize();
 				OnBeginInvoke();
 
 				if (!((MiddlewareCallback)Callback).Attached)
@@ -95,9 +96,17 @@ namespace TomPIT.Middleware.Interop
 			}
 			else
 				OnInvoke();
+
+			if (IsCommitable)
+				OnCommit();
 		}
 
 		protected virtual void OnInvoke()
+		{
+
+		}
+
+		protected virtual void OnAuthorize()
 		{
 
 		}

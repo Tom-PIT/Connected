@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Distributed;
 using TomPIT.Ide;
 using TomPIT.Ide.Collections;
 using TomPIT.Ide.Dom;
@@ -12,39 +13,52 @@ namespace TomPIT.MicroServices.Design.Items
 	{
 		protected override void OnQueryDescriptors(IDomElement element, List<IItemDescriptor> items)
 		{
-			var s = element.MicroService();
-			var tenant = element.Environment.Context.Tenant;
-
-			var ds = tenant.GetService<IComponentService>().QueryComponents(s, ComponentCategories.DistributedEvent).OrderBy(f => f.Name);
-
 			items.Add(Empty(SR.DevSelect, string.Empty));
+			var ms = element.Environment.Context.Tenant.GetService<IMicroServiceService>().Select(element.MicroService());
 
-			foreach (var i in ds)
-				items.Add(new ItemDescriptor(i.Name, i.Name));
+			if (ms == null)
+				return;
 
-			var refs = tenant.GetService<IDiscoveryService>().References(element.MicroService());
+			BindMicroService(element, items, ms.Name);
 
-			var external = new List<ItemDescriptor>();
+			var refs = element.Environment.Context.Tenant.GetService<IDiscoveryService>().References(ms.Token);
 
-			foreach (var i in refs.MicroServices)
+			if (refs == null || refs.MicroServices.Count == 0)
+				return;
+
+			foreach (var reference in refs.MicroServices)
+				BindMicroService(element, items, reference.MicroService);
+		}
+
+		private void BindMicroService(IDomElement element, List<IItemDescriptor> items, string name)
+		{
+			if (string.IsNullOrWhiteSpace(name))
+				return;
+
+			var ms = element.Environment.Context.Tenant.GetService<IMicroServiceService>().Select(name);
+
+			if (ms == null)
+				return;
+
+			var components = element.Environment.Context.Tenant.GetService<IComponentService>().QueryComponents(ms.Token, ComponentCategories.DistributedEvent).OrderBy(f => f.Name);
+
+			foreach (var component in components)
+				BindComponent(element, items, ms, component);
+		}
+
+		private void BindComponent(IDomElement element, List<IItemDescriptor> items, IMicroService microService, IComponent component)
+		{
+			var configuration = element.Environment.Context.Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) as IDistributedEventsConfiguration;
+
+			if (configuration == null)
+				return;
+
+			foreach (var e in configuration.Events)
 			{
-				var ms = tenant.GetService<IMicroServiceService>().Select(i.MicroService);
+				var value = $"{microService.Name}/{component.Name}/{e.Name}";
 
-				if (ms == null)
-					continue;
-
-				ds = tenant.GetService<IComponentService>().QueryComponents(ms.Token, ComponentCategories.DistributedEvent).OrderBy(f => f.Name);
-
-				foreach (var j in ds)
-				{
-					var key = string.Format("{0}/{1}", ms.Name, j.Name);
-
-					external.Add(new ItemDescriptor(key, key));
-				}
+				items.Add(new ItemDescriptor(value, value));
 			}
-
-			if (external.Count > 0)
-				items.AddRange(external.OrderBy(f => f.Text));
 		}
 	}
 }

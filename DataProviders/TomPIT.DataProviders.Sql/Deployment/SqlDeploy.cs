@@ -445,11 +445,19 @@ namespace TomPIT.DataProviders.Sql.Deployment
 				for (int i = 0; i < uniqueConstraints.Count; i++)
 				{
 					var constraint = uniqueConstraints[i];
-					var column = Context.Database.FindUniqueConstraintColumn(constraint.Name);
+					var columns = ConstraintColumns(table, constraint.Name);
 
 					builder.AppendLine(string.Format("CONSTRAINT [{0}] UNIQUE NONCLUSTERED", constraint.Name));
 					builder.AppendLine("(");
-					builder.AppendLine(string.Format("[{0}] ASC", column.Name));
+
+					for (var column = 0; column < columns.Count; column++)
+					{
+						builder.AppendLine(string.Format("[{0}] ASC", columns[column]));
+
+						if (columns.Count > 1 && column < columns.Count - 1)
+							builder.AppendLine(",");
+					}
+
 					builder.AppendLine(")");
 
 					if (i < uniqueConstraints.Count - 1 && uniqueConstraints.Count > 1)

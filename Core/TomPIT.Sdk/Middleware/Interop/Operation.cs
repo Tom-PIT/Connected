@@ -11,7 +11,11 @@ namespace TomPIT.Middleware.Interop
 
 			try
 			{
+				OnAuthorize();
 				OnInvoke();
+
+				if (IsCommitable)
+					OnCommit();
 			}
 			catch (Exception ex)
 			{
@@ -20,6 +24,11 @@ namespace TomPIT.Middleware.Interop
 		}
 
 		protected virtual void OnInvoke()
+		{
+
+		}
+
+		protected virtual void OnAuthorize()
 		{
 
 		}

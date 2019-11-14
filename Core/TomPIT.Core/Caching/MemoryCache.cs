@@ -7,7 +7,7 @@ using TomPIT.Exceptions;
 
 namespace TomPIT.Caching
 {
-	public class MemoryCache : IMemoryCache, IDisposable
+	public sealed class MemoryCache : IMemoryCache, IDisposable
 	{
 		private static Lazy<MemoryCache> _default = new Lazy<MemoryCache>();
 

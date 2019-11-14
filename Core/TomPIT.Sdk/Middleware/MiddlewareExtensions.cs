@@ -27,6 +27,14 @@ namespace TomPIT.Middleware
 			return operation;
 		}
 
+		public static T WithTransaction<T>(this T operation, IMiddlewareOperation middleware) where T : IMiddlewareOperation
+		{
+			if (middleware is MiddlewareOperation o)
+				o.AttachTransaction(operation);
+
+			return operation;
+		}
+
 		internal static void SetContext(this IMiddlewareObject target, IMiddlewareContext context)
 		{
 			ReflectionExtensions.SetPropertyValue(target, nameof(target.Context), context);

@@ -49,7 +49,12 @@ namespace TomPIT.Middleware.Interop
 
 			try
 			{
+				OnAuthorize();
+
 				var result = OnInvoke();
+
+				if (IsCommitable)
+					OnCommit();
 
 				if (result == null)
 					return result;
@@ -63,7 +68,10 @@ namespace TomPIT.Middleware.Interop
 				var inputType = GetExtendingType(extenderInstance);
 				var list = typeof(List<>);
 				var genericList = list.MakeGenericType(new Type[] { inputType });
-				var method = extenderInstance.GetType().GetMethod("Extend", new Type[] { genericList });
+				var method = extenderInstance.GetType().GetMethod("ExtendAsync", new Type[] { genericList });
+
+				if (method == null)
+					method = extenderInstance.GetType().GetMethod("Extend", new Type[] { genericList });
 
 				if (result.GetType().IsCollection())
 				{
@@ -75,7 +83,7 @@ namespace TomPIT.Middleware.Interop
 					foreach (var i in extenderResult)
 						listResult.Add(i);
 
-					return result;
+					return OnAuthorize(result);
 				}
 				else
 				{
@@ -83,9 +91,9 @@ namespace TomPIT.Middleware.Interop
 
 					listInstance.Add(result);
 
-					var listResult = (IList)method.Invoke(extenderInstance, new object[] { listInstance });
+					var listResult = method.Invoke(extenderInstance, new object[] { listInstance }) as IList;
 
-					return (TReturnValue)listResult[0];
+					return OnAuthorize((TReturnValue)listResult[0]);
 				}
 			}
 			catch (Exception ex)
@@ -109,6 +117,16 @@ namespace TomPIT.Middleware.Interop
 		protected virtual TReturnValue OnInvoke()
 		{
 			return default;
+		}
+
+		protected virtual TReturnValue OnAuthorize(TReturnValue e)
+		{
+			return e;
+		}
+
+		protected virtual void OnAuthorize()
+		{
+
 		}
 
 		private void ValidateExtender()

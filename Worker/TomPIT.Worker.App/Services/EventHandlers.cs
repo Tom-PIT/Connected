@@ -12,8 +12,6 @@ namespace TomPIT.Worker.Services
 {
 	internal static class EventHandlers
 	{
-		private const string Category = "EventHandler";
-
 		private static Lazy<ConcurrentDictionary<string, List<Tuple<Guid, Guid>>>> _handlers = new Lazy<ConcurrentDictionary<string, List<Tuple<Guid, Guid>>>>();
 
 		static EventHandlers()
@@ -24,7 +22,7 @@ namespace TomPIT.Worker.Services
 			s.ConfigurationAdded += OnConfigurationAdded;
 			s.ConfigurationRemoved += OnConfigurationRemoved;
 
-			var configs = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, Category);
+			var configs = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, ComponentCategories.EventBinder);
 
 			foreach (var i in configs)
 				AddConfiguration(i);
@@ -32,7 +30,7 @@ namespace TomPIT.Worker.Services
 
 		private static void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
 		{
-			if (!e.Category.Equals(Category))
+			if (!e.Category.Equals(ComponentCategories.EventBinder))
 				return;
 
 			RemoveConfiguration(e.MicroService, e.Component);
@@ -41,7 +39,7 @@ namespace TomPIT.Worker.Services
 
 		private static void OnConfigurationRemoved(ITenant sender, ConfigurationEventArgs e)
 		{
-			if (!e.Category.Equals(Category))
+			if (!e.Category.Equals(ComponentCategories.EventBinder))
 				return;
 
 			RemoveConfiguration(e.MicroService, e.Component);
@@ -49,7 +47,7 @@ namespace TomPIT.Worker.Services
 
 		private static void OnConfigurationAdded(ITenant sender, ConfigurationEventArgs e)
 		{
-			if (!e.Category.Equals(Category))
+			if (!e.Category.Equals(ComponentCategories.EventBinder))
 				return;
 
 			AddConfiguration(e.Component);
