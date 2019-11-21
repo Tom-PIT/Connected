@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.ComponentModel;
 using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
-using TomPIT.Exceptions;
 using TomPIT.Storage;
-using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
 
 namespace TomPIT.Middleware.Services
 {
@@ -25,24 +22,24 @@ namespace TomPIT.Middleware.Services
 			return Context.Tenant.GetService<IStorageService>().Download(blob)?.Content;
 		}
 
-		public byte[] Download([CAP(CAP.MicroservicesProvider)]string microService, string primaryKey)
+		public byte[] Download(string primaryKey)
 		{
-			var ms = Context.Tenant.GetService<IMicroServiceService>().Select(microService);
-
-			if (ms == null)
-				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})").WithMetrics(Context);
-
-			return Context.Tenant.GetService<IStorageService>().Download(ms.Token, BlobTypes.UserContent, ms.ResourceGroup, primaryKey)?.Content;
+			return Download(primaryKey, null);
 		}
 
-		public void Delete([CAP(CAP.MicroservicesProvider)]string microService, string primaryKey)
+		public byte[] Download(string primaryKey, string topic)
 		{
-			var ms = Context.Tenant.GetService<IMicroServiceService>().Select(microService);
+			return Context.Tenant.GetService<IStorageService>().Download(Guid.Empty, BlobTypes.UserContent, Guid.Empty, primaryKey, topic)?.Content;
+		}
 
-			if (ms == null)
-				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})").WithMetrics(Context);
+		public void Delete(string primaryKey)
+		{
+			Delete(primaryKey, null);
+		}
 
-			var blobs = Context.Tenant.GetService<IStorageService>().Query(ms.Token, BlobTypes.UserContent, ms.ResourceGroup, primaryKey);
+		public void Delete(string primaryKey, string topic)
+		{
+			var blobs = Context.Tenant.GetService<IStorageService>().Query(Guid.Empty, BlobTypes.UserContent, Guid.Empty, primaryKey, topic);
 
 			if (blobs != null && blobs.Count > 0)
 				Context.Tenant.GetService<IStorageService>().Delete(blobs[0].Token);
@@ -60,14 +57,13 @@ namespace TomPIT.Middleware.Services
 			}
 		}
 
-		public List<IBlob> Query([CAP(CAP.MicroservicesProvider)]string microService, string primaryKey)
+		public List<IBlob> Query(string primaryKey)
 		{
-			var ms = Context.Tenant.GetService<IMicroServiceService>().Select(microService);
-
-			if (ms == null)
-				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})").WithMetrics(Context);
-
-			return Context.Tenant.GetService<IStorageService>().Query(ms.Token, BlobTypes.UserContent, ms.ResourceGroup, primaryKey);
+			return Query(primaryKey, null);
+		}
+		public List<IBlob> Query(string primaryKey, string topic)
+		{
+			return Context.Tenant.GetService<IStorageService>().Query(Guid.Empty, BlobTypes.UserContent, Guid.Empty, primaryKey, topic);
 		}
 
 		public List<IBlob> QueryDrafts(string draft)
@@ -91,27 +87,11 @@ namespace TomPIT.Middleware.Services
 		}
 		private Guid Upload(StoragePolicy policy, string fileName, string contentType, string primaryKey, byte[] content, string topic, string draft, Guid token)
 		{
-			if (!(Context is IMicroServiceContext msc))
-				throw new RuntimeException(SR.ErrMicroServiceContextExpected);
-
-			var ms = msc.MicroService.Token;
-			Guid rg = Guid.Empty;
-
-			if (ms != Guid.Empty)
-			{
-				var m = Context.Tenant.GetService<IMicroServiceService>().Select(ms);
-
-				if (m != null)
-					rg = m.ResourceGroup;
-			}
-
 			var b = new Blob
 			{
 				ContentType = contentType,
 				Draft = draft,
 				FileName = fileName,
-				MicroService = ms,
-				ResourceGroup = rg,
 				PrimaryKey = primaryKey,
 				Topic = topic,
 				Type = BlobTypes.UserContent

@@ -140,7 +140,7 @@ namespace TomPIT.IoC
 
 			foreach (var endpoint in endpoints)
 			{
-				var endpointInstance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCEndpointMiddleware>(ctx, endpoint.Type);
+				var endpointInstance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCEndpointMiddleware>(ctx, endpoint.Type, Serializer.Serialize(e));
 
 				if (endpointInstance == null)
 					continue;

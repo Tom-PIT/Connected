@@ -44,6 +44,16 @@ namespace TomPIT.Middleware.Interop
 
 		public TReturnValue Invoke()
 		{
+			var result = ProcessInvoke();
+
+			if (Context is MiddlewareContext mc)
+				mc.CloseConnections();
+
+			return result;
+		}
+
+		private TReturnValue ProcessInvoke()
+		{
 			ValidateExtender();
 			Validate();
 
@@ -100,6 +110,7 @@ namespace TomPIT.Middleware.Interop
 			{
 				throw TomPITException.Unwrap(this, ex);
 			}
+
 		}
 
 		private Type GetExtendingType(object extenderInstance)

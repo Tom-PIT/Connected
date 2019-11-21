@@ -87,11 +87,11 @@ namespace TomPIT.Middleware
 
 			references.Add(instance);
 
-			var properties = instance.GetType().GetProperties();
+			var properties = instance.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
 			foreach (var property in properties)
 			{
-				if (property.GetMethod == null || !property.GetMethod.IsPublic)
+				if (property.GetMethod == null)
 					continue;
 
 				var skipAtt = property.FindAttribute<SkipValidationAttribute>();
@@ -99,10 +99,16 @@ namespace TomPIT.Middleware
 				if (skipAtt != null)
 					continue;
 
-				if (property.PropertyType.IsTypePrimitive())
-					ValidateProperty(results, instance, property);
-				else if (property.PropertyType.IsCollection())
+				ValidateProperty(results, instance, property);
+
+				if (!property.GetMethod.IsPublic)
+					continue;
+
+				if (property.PropertyType.IsCollection())
 				{
+					if (!property.GetMethod.IsPublic)
+						continue;
+
 					if (!(GetValue(instance, property) is IEnumerable ien))
 						continue;
 
@@ -118,6 +124,9 @@ namespace TomPIT.Middleware
 				}
 				else
 				{
+					if (!property.GetMethod.IsPublic)
+						continue;
+
 					var value = GetValue(instance, property);
 
 					if (value == null)

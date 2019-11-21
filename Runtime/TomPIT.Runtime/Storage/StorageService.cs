@@ -74,6 +74,23 @@ namespace TomPIT.Storage
 			return BlobContent.Select(b);
 		}
 
+		public IBlobContent Download(Guid microService, int type, Guid resourceGroup, string primaryKey, string topic)
+		{
+			var r = Get(f => f.MicroService == microService && f.Type == type && string.Compare(f.PrimaryKey, primaryKey, true) == 0 && string.Compare(f.Topic, topic, true) == 0);
+
+			if (r == null)
+			{
+				var rs = Query(microService, type, resourceGroup, primaryKey, topic);
+
+				if (rs == null || rs.Count == 0)
+					return null;
+
+				r = rs[0];
+			}
+
+			return Download(r.Token);
+		}
+
 		public IBlobContent Download(Guid microService, int type, Guid resourceGroup, string primaryKey)
 		{
 			var r = Get(f => f.MicroService == microService && f.Type == type && string.Compare(f.PrimaryKey, primaryKey, true) == 0);
@@ -94,6 +111,18 @@ namespace TomPIT.Storage
 		public List<IBlobContent> Download(List<Guid> blobs)
 		{
 			return BlobContent.Query(blobs);
+		}
+
+		public List<IBlob> Query(Guid microService, int type, Guid resourceGroup, string primaryKey, string topic)
+		{
+			var u = Tenant.CreateUrl("Storage", "QueryByTopic")
+				.AddParameter("microService", microService)
+				.AddParameter("type", type)
+				.AddParameter("resourceGroup", resourceGroup)
+				.AddParameter("primaryKey", primaryKey)
+				.AddParameter("topic", topic);
+
+			return Tenant.Get<List<Blob>>(u).ToList<IBlob>();
 		}
 
 		public List<IBlob> Query(Guid microService, int type, Guid resourceGroup, string primaryKey)

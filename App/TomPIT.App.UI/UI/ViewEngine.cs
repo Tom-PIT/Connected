@@ -10,6 +10,7 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
+using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Models;
 using TomPIT.Security;
@@ -119,7 +120,10 @@ namespace TomPIT.App.UI
 				}
 				catch (Exception ex)
 				{
-					throw new CompilerException(model.Tenant, model.ViewConfiguration, ex);
+					if (ex is NotFoundException || ex.InnerException is NotFoundException)
+						Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+					else
+						throw new CompilerException(model.Tenant, model.ViewConfiguration, ex);
 				}
 			}
 			finally

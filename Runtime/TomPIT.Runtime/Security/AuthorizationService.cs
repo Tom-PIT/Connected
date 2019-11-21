@@ -14,7 +14,7 @@ using TomPIT.Security.AuthorizationProviders;
 namespace TomPIT.Security
 {
 	internal class AuthorizationService : SynchronizedClientRepository<IPermission, string>,
-		IAuthorizationService, IAuthorizationNotification, IMembershipProvider, IAuthenticationTokenNotification
+		IAuthorizationService, IAuthorizationNotification, IMembershipProvider, IAuthenticationTokenNotification, IPermissionService
 	{
 		private List<IAuthorizationProvider> _providers = null;
 		private Lazy<List<IPermissionDescriptor>> _descriptors = new Lazy<List<IPermissionDescriptor>>();
@@ -332,6 +332,64 @@ namespace TomPIT.Security
 						Authorize(route.Routes.ToList(), user);
 				}
 			}
+		}
+
+		PermissionValue IPermissionService.Toggle(string claim, string schema, Guid evidence, string primaryKey, string permissionDescriptor)
+		{
+			var u = Tenant.CreateUrl("SecurityManagement", "SetPermission");
+			var args = new JObject
+			{
+				{ "claim", claim },
+				{ "schema", schema },
+				{ "descriptor", permissionDescriptor },
+				{ "primaryKey", primaryKey },
+				{ "evidence", evidence }
+			};
+
+			var value = Tenant.Post<PermissionValue>(u, args);
+
+			NotifyPermissionChanged(this, new PermissionEventArgs(Guid.Empty, evidence, schema, claim, primaryKey));
+
+			return value;
+		}
+
+		void IPermissionService.Reset(string claim, string schema, string primaryKey)
+		{
+			var u = Tenant.CreateUrl("SecurityManagement", "Reset");
+			var args = new JObject
+			{
+				{ "claim", claim },
+				{ "schema", schema },
+				{ "primaryKey", primaryKey }
+			};
+
+			Tenant.Post(u, args);
+
+			var permissions = Where(f => string.Compare(f.Claim, claim, true) == 0 && string.Compare(f.Schema, schema, true) == 0 && string.Compare(f.PrimaryKey, primaryKey, true) == 0);
+
+			foreach (var permission in permissions)
+				NotifyPermissionRemoved(this, new PermissionEventArgs(Guid.Empty, permission.Evidence, permission.Schema, permission.Claim, permission.PrimaryKey));
+		}
+
+		void IPermissionService.Reset(string primaryKey)
+		{
+			var u = Tenant.CreateUrl("SecurityManagement", "Reset");
+			var args = new JObject
+			{
+				{ "primaryKey", primaryKey }
+			};
+
+			Tenant.Post(u, args);
+
+			var permissions = Where(f => string.Compare(f.PrimaryKey, primaryKey, true) == 0);
+
+			foreach (var permission in permissions)
+				NotifyPermissionRemoved(this, new PermissionEventArgs(Guid.Empty, permission.Evidence, permission.Schema, permission.Claim, permission.PrimaryKey));
+		}
+
+		List<IPermission> IPermissionService.Query(string permissionDescriptor, string primaryKey)
+		{
+			return Where(f => string.Compare(f.PrimaryKey, primaryKey, true) == 0 && string.Compare(f.Descriptor, permissionDescriptor, true) == 0).ToList();
 		}
 
 		private MembershipCache Membership { get; }

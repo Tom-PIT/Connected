@@ -149,6 +149,11 @@ namespace TomPIT.Navigation
 			}
 		}
 
+		public List<string> QueryKeys()
+		{
+			return Handlers.Keys.ToList();
+		}
+
 		private ConcurrentDictionary<string, List<NavigationHandlerDescriptor>> Handlers => _handlers.Value;
 
 		private void RefreshNavigation(ISiteMapConfiguration configuration, bool removeOny = false)

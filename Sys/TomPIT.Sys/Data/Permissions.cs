@@ -114,11 +114,16 @@ namespace TomPIT.Sys.Data
 			CachingNotifications.PermissionRemoved(p.ResourceGroup, evidence, schema, claim, primaryKey);
 		}
 
-		public void Reset(string primaryKey)
+		public void Reset(string claim, string schema, string primaryKey)
 		{
-			var p = Where(f => string.Compare(f.PrimaryKey, primaryKey, true) == 0);
+			List<IPermission> permissions = null;
 
-			foreach (var i in p)
+			if (!string.IsNullOrWhiteSpace(claim))
+				permissions = Where(f => string.Compare(f.PrimaryKey, primaryKey, true) == 0 && string.Compare(f.Claim, claim, true) == 0 && string.Compare(f.Schema, schema, true) == 0);
+			else
+				permissions = Where(f => string.Compare(f.PrimaryKey, primaryKey, true) == 0);
+
+			foreach (var i in permissions)
 				Delete(i.Evidence, i.Schema, i.Claim, i.PrimaryKey);
 		}
 	}

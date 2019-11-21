@@ -19,7 +19,6 @@ namespace TomPIT.Annotations.Design
 
 		public const string ApiParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiParameterProvider, " + DesignAssembly;
 		public const string MailTemplateProvider = "TomPIT.Design.CodeAnalysis.Providers.MailTemplateProvider, " + DesignAssembly;
-		public const string MediaProvider = "TomPIT.Design.CodeAnalysis.Providers.MediaProvider, " + DesignAssembly;
 		public const string IoTHubProvider = "TomPIT.Design.CodeAnalysis.Providers.IoTHubProvider, " + DesignAssembly;
 		public const string IoTHubFieldProvider = "TomPIT.Design.CodeAnalysis.Providers.IoTHubFieldProvider, " + DesignAssembly;
 		//public const string QueueWorkerProvider = "TomPIT.Design.CodeAnalysis.Providers.QueueWorkerProvider, " + DesignAssembly;

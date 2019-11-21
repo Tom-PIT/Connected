@@ -5319,10 +5319,11 @@ IF @@ERROR <> 0 SET NOEXEC ON
 GO
 PRINT N'Creating [tompit].[view_permission]'
 GO
+
 CREATE VIEW [tompit].[view_permission]
 AS
 SELECT        tompit.permission.*, tompit.resource_group.token AS resource_group_token
-FROM            tompit.permission INNER JOIN
+FROM            tompit.permission LEFT JOIN
                          tompit.resource_group ON tompit.permission.resource_group = tompit.resource_group.id
 GO
 IF @@ERROR <> 0 SET NOEXEC ON

@@ -24,15 +24,15 @@ namespace TomPIT.Search.Catalogs
 
 		protected override MultiFieldQueryParser CreateParser()
 		{
-			var fields = new List<string>
-			{
-				SearchUtils.FieldLcid,
-				SearchUtils.FieldTitle,
-				SearchUtils.FieldTags,
-				SearchUtils.FieldDate,
-				SearchUtils.FieldKey,
-				SearchUtils.FieldAuthor
-			};
+			var fields = new List<string>();
+			//{
+			//	SearchUtils.FieldTitle,
+			//	SearchUtils.FieldTags,
+			//	SearchUtils.FieldDate,
+			//	SearchUtils.FieldKey,
+			//	SearchUtils.FieldAuthor,
+			//	SearchUtils.FieldText
+			//};
 
 			var properties = Catalog.CatalogProperties();
 
@@ -40,6 +40,9 @@ namespace TomPIT.Search.Catalogs
 			{
 				foreach (var property in properties)
 				{
+					if (string.Compare(property.Name, SearchUtils.FieldLcid, true) == 0)
+						continue;
+
 					if (property.CanRead && property.GetMethod.IsPublic)
 						fields.Add(property.Name.ToLowerInvariant());
 				}

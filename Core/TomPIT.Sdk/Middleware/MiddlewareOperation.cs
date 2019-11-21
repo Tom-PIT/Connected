@@ -35,10 +35,12 @@ namespace TomPIT.Middleware
 
 			IsCommitable = false;
 
-			return new MiddlewareTransaction(Context)
+			Transaction = new MiddlewareTransaction(Context)
 			{
 				Id = Guid.NewGuid()
 			};
+
+			return Transaction;
 		}
 
 		protected bool IsCommitable { get; private set; } = true;

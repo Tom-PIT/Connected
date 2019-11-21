@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using TomPIT.Storage;
-using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
 
 namespace TomPIT.Middleware.Services
 {
@@ -13,12 +12,15 @@ namespace TomPIT.Middleware.Services
 
 		void CommitDrafts(string draft, string primaryKey);
 		List<IBlob> QueryDrafts(string draft);
-		List<IBlob> Query([CAP(CAP.MicroservicesProvider)]string microService, string primaryKey);
+		List<IBlob> Query(string primaryKey, string topic);
+		List<IBlob> Query(string primaryKey);
 
 		void Delete(Guid blob);
-		void Delete([CAP(CAP.MicroservicesProvider)]string microService, string primaryKey);
+		void Delete(string primaryKey, string topic);
+		void Delete(string primaryKey);
 
 		byte[] Download(Guid blob);
-		byte[] Download([CAP(CAP.MicroservicesProvider)]string microService, string primaryKey);
+		byte[] Download(string primaryKey, string topic);
+		byte[] Download(string primaryKey);
 	}
 }

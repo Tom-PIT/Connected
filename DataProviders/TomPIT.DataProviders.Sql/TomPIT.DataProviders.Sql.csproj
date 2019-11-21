@@ -7,9 +7,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <AssemblyVersion>1.1.1114.7</AssemblyVersion>
-    <FileVersion>1.1.1114.7</FileVersion>
-    <Version>1.1.1114.7</Version>
+    <AssemblyVersion>1.1.1121.1</AssemblyVersion>
+    <FileVersion>1.1.1121.1</FileVersion>
+    <Version>1.1.1121.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />

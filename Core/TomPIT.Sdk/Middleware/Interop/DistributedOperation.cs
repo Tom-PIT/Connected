@@ -99,6 +99,9 @@ namespace TomPIT.Middleware.Interop
 
 			if (IsCommitable)
 				OnCommit();
+
+			if (Context is MiddlewareContext mc)
+				mc.CloseConnections();
 		}
 
 		protected virtual void OnInvoke()
