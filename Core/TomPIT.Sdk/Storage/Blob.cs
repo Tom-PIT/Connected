@@ -4,6 +4,7 @@ namespace TomPIT.Storage
 {
 	public class Blob : IBlob
 	{
+		public const string ContentTypeJson = "application/json";
 		public Guid ResourceGroup { get; set; }
 		public string FileName { get; set; }
 		public Guid Token { get; set; }

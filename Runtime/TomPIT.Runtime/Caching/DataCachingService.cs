@@ -2,11 +2,14 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.Connectivity;
+using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Serialization;
@@ -204,10 +207,44 @@ namespace TomPIT.Caching
 
 			var result = retrieve(options);
 
-			if (result != null && options.AllowNull)
+			if (result != null || options.AllowNull)
+			{
+				if (string.IsNullOrWhiteSpace(options.Key))
+					options.Key = CreateKeyFromAttributes(result);
+
+				if (string.IsNullOrWhiteSpace(key))
+					throw new RuntimeException(SR.ErrCacheKeyNull);
+
 				Set(key, options.Key, result, options.Duration, options.SlidingExpiration);
+			}
 
 			return result;
+		}
+
+		private string CreateKeyFromAttributes(object instance)
+		{
+			var properties = instance.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+			var key = new StringBuilder();
+
+			foreach (var property in properties)
+			{
+				var att = property.FindAttribute<CacheKeyAttribute>();
+
+				if (att == null)
+					continue;
+
+				var value = property.GetValue(instance);
+
+				if (key.Length > 0)
+					key.Append('/');
+
+				if (value == null)
+					continue;
+
+				key.Append(Types.Convert<string>(value, CultureInfo.InvariantCulture));
+			}
+
+			return key.ToString();
 		}
 
 		public T Get<T>(string key, string id) where T : class

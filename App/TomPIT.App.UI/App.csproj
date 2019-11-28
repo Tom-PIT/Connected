@@ -11,9 +11,9 @@
     <AssemblyName>TomPIT.Experience.App</AssemblyName>
     <RootNamespace>TomPIT.App</RootNamespace>
     <CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
-    <AssemblyVersion>1.1.1121.1</AssemblyVersion>
-    <FileVersion>1.1.1121.1</FileVersion>
-    <Version>1.1.1121.1</Version>
+    <AssemblyVersion>1.1.1124.1</AssemblyVersion>
+    <FileVersion>1.1.1124.1</FileVersion>
+    <Version>1.1.1124.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="compilerconfig.json" />
@@ -39,6 +39,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.3.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="System.CodeDom" Version="4.6.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.6.0" />
     <PackageReference Include="System.Drawing.Common" Version="4.6.0" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.6.0" />

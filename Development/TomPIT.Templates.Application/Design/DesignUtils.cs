@@ -63,7 +63,7 @@
 		public const string ScriptCreateHandler = "TomPIT.Handlers.ScriptCreateHandler, " + DevelopmentAssembly;
 		public const string ScriptBundleHandler = "TomPIT.Development.Handlers.ScriptBundleCreateHandler, " + DevelopmentAssembly;
 
-		public const string ScheduleDesigner = "TomPIT.Designers.ScheduleDesigner, " + ManagementAssembly;
+		public const string ScheduleDesigner = "TomPIT.Management.Designers.ScheduleDesigner, " + ManagementAssembly;
 		public const string AssemblyEmbeddedDesigner = "TomPIT.MicroServices.Design.Designers.AssemblyEmbeddedDesigner, " + DesignAssembly;
 		public const string MediaResourceFileUploadDesigner = "TomPIT.MicroServices.Design.Designers.MediaResourceFileUploadDesigner, " + DesignAssembly;
 		public const string MediaDesigner = "TomPIT.MicroServices.Design.Designers.MediaDesigner, " + DesignAssembly;

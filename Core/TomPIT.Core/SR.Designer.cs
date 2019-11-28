@@ -754,7 +754,7 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cache Key property not set. Please set &apos;Key&apos; property before returning value from cache retrieve handler..
+        ///   Looks up a localized string similar to Cache Key property not set. Please set &apos;Key&apos; property before returning value from cache retrieve handler or set CacheKeyAttribute on at least one property..
         /// </summary>
         public static string ErrCacheKeyNull {
             get {

@@ -236,5 +236,10 @@ namespace TomPIT.ComponentModel
 		{
 			return new ConfigurationDescriptor<IIoCContainerConfiguration>(context, identifier, ComponentCategories.IoCContainer);
 		}
+
+		public static ConfigurationDescriptor<IHostedWorkerConfiguration> HostedWorker(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IHostedWorkerConfiguration>(context, identifier, ComponentCategories.HostedWorker);
+		}
 	}
 }

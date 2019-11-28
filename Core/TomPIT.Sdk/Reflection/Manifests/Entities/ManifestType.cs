@@ -17,7 +17,7 @@ namespace TomPIT.Reflection.Manifests.Entities
 		public string ImplementationError { get; set; }
 		public string Name { get; set; }
 		public string Documentation { get; set; }
-
+		public bool IsArray { get; set; }
 		public List<IDevelopmentError> Diagnostics
 		{
 			get

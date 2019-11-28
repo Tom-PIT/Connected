@@ -12,6 +12,7 @@ using TomPIT.Ide.Dom;
 using TomPIT.MicroServices.Apis;
 using TomPIT.MicroServices.Cdn;
 using TomPIT.MicroServices.Data;
+using TomPIT.MicroServices.Deployment;
 using TomPIT.MicroServices.Design.Media;
 using TomPIT.MicroServices.Distributed;
 using TomPIT.MicroServices.IoC;
@@ -56,7 +57,8 @@ namespace TomPIT.MicroServices.Design
 				{ ComponentCategories.Subscription,    new ItemDescriptor("Subscription",     ComponentCategories.Subscription,      typeof(Subscription))                        { Glyph = "fal fa-bell",               Category = "Cdn" ,            Ordinal=500} },
 				{ ComponentCategories.MailTemplate,    new ItemDescriptor("Mail template",    ComponentCategories.MailTemplate,      typeof(MailTemplate))                        { Glyph = "fal fa-envelope text-primary",           Category = "Cdn" ,            Ordinal=501} },
 				{ ComponentCategories.DataHub,         new ItemDescriptor("Data hub",         ComponentCategories.DataHub,           typeof(DataHub))                             { Glyph = "fal fa-bell",               Category = "Cdn" ,            Ordinal=502} },
-				{ ComponentCategories.SearchCatalog,   new ItemDescriptor("Search catalog",   ComponentCategories.SearchCatalog,     typeof(SearchCatalog))                       { Glyph = "fal fa-search",             Category = "Search" ,         Ordinal=600} }
+				{ ComponentCategories.SearchCatalog,   new ItemDescriptor("Search catalog",   ComponentCategories.SearchCatalog,     typeof(SearchCatalog))                       { Glyph = "fal fa-search",             Category = "Search" ,         Ordinal=600} },
+				{ ComponentCategories.Installer,       new ItemDescriptor("Installer",        ComponentCategories.Installer,         typeof(Installer))                           { Glyph = "fal fa-inbox-in",           Category = "Deployment" ,      Ordinal=700} }
 			});
 		}
 

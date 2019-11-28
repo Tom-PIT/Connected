@@ -120,12 +120,17 @@ namespace TomPIT.Reflection.Manifests
 		}
 		private static ManifestMember BindType(SemanticModel model, INamedTypeSymbol symbol, List<ManifestMember> types)
 		{
-			var current = symbol;
+			INamedTypeSymbol current = null;
+
+			if (symbol.IsArray(model) && !symbol.TypeArguments.IsEmpty && symbol.TypeArguments[0] is INamedTypeSymbol nt)
+				current = nt;
+			else
+				current = symbol;
 
 			if (symbol.TypeKind != TypeKind.Class)
 				return null;
 
-			var name = symbol.Name;
+			var name = current.Name;
 
 			var existing = types.FirstOrDefault(f => string.Compare(f.Type, name, true) == 0);
 

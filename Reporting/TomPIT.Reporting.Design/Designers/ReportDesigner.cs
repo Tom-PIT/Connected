@@ -100,7 +100,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 					var ds = new JsonDataSource
 					{
 						ConnectionName = $"{manifest.MicroService}/{manifest.Name}",
-						Name = manifest.Name.Replace("/", "")
+						Name = operation.Name
 					};
 
 					var root = new JsonSchemaNode

@@ -13,9 +13,7 @@ namespace TomPIT.Reflection
 		IElement Find(IConfiguration configuration, Guid id);
 
 		IComponentManifest Manifest(Guid component);
-		IComponentManifest Manifest(Guid component, Guid element);
 		IComponentManifest Manifest(string microService, string category, string componentName);
-		IComponentManifest Manifest(string microService, string category, string componentName, Guid element);
 		List<IComponentManifest> Manifests(Guid microService);
 
 		List<IMicroService> FlattenReferences(Guid microService);
