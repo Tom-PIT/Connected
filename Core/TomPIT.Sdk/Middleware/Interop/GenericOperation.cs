@@ -59,7 +59,8 @@ namespace TomPIT.Middleware.Interop
 
 			try
 			{
-				OnAuthorize();
+				if (Context.Environment.IsInteractive)
+					OnAuthorize();
 
 				var result = OnInvoke();
 
@@ -93,7 +94,10 @@ namespace TomPIT.Middleware.Interop
 					foreach (var i in extenderResult)
 						listResult.Add(i);
 
-					return OnAuthorize(result);
+					if (Context.Environment.IsInteractive)
+						return OnAuthorize(result);
+					else
+						return result;
 				}
 				else
 				{
@@ -103,14 +107,16 @@ namespace TomPIT.Middleware.Interop
 
 					var listResult = method.Invoke(extenderInstance, new object[] { listInstance }) as IList;
 
-					return OnAuthorize((TReturnValue)listResult[0]);
+					if (Context.Environment.IsInteractive)
+						return OnAuthorize((TReturnValue)listResult[0]);
+					else
+						return (TReturnValue)listResult[0];
 				}
 			}
 			catch (Exception ex)
 			{
 				throw TomPITException.Unwrap(this, ex);
 			}
-
 		}
 
 		private Type GetExtendingType(object extenderInstance)

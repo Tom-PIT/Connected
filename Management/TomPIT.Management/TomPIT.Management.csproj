@@ -8,9 +8,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <RootNamespace>TomPIT.Management</RootNamespace>
-    <AssemblyVersion>1.1.1124.1</AssemblyVersion>
-    <FileVersion>1.1.1124.1</FileVersion>
-    <Version>1.1.1124.1</Version>
+    <AssemblyVersion>1.1.1128.1</AssemblyVersion>
+    <FileVersion>1.1.1128.1</FileVersion>
+    <Version>1.1.1128.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />

@@ -1101,4 +1101,7 @@
   <data name="ErrCannotResolveExtender" xml:space="preserve">
     <value>Cannot resolve extender</value>
   </data>
+  <data name="WrnContainerKeyNull" xml:space="preserve">
+    <value>Container key not set. Container's routes will be ignored.</value>
+  </data>
 </root>

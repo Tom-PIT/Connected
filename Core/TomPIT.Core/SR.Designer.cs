@@ -3004,6 +3004,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Container key not set. Container&apos;s routes will be ignored..
+        /// </summary>
+        public static string WrnContainerKeyNull {
+            get {
+                return ResourceManager.GetString("WrnContainerKeyNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Existing package not found. Reverting to Invalidated state..
         /// </summary>
         public static string WrnPackageNotFound {
