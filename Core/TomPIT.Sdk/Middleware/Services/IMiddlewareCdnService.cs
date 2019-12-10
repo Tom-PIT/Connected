@@ -1,5 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
+using TomPIT.Cdn;
 using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
@@ -31,5 +32,11 @@ namespace TomPIT.Middleware.Services
 		Guid DistributedEvent([CIP(CIP.DistributedEventProvider)]string name, IMiddlewareCallback callback);
 
 		void Notify<T>([CIP(CIP.DataHubEndpointProvider)]string dataHubEndpoint, T e);
+
+		Guid PrintReport([CIP(CIP.ReportProvider)]string report, IPrinter printer);
+		Guid PrintReport([CIP(CIP.ReportProvider)]string report, IPrinter printer, object arguments);
+		Guid PrintReport([CIP(CIP.ReportProvider)]string report, IPrinter printer, object arguments, string provider);
+
+		IPrintJob SelectPrintJob(Guid job);
 	}
 }

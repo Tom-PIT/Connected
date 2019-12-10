@@ -1,8 +1,7 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using TomPIT.Deployment;
 
-namespace TomPIT.Sys.Data
+namespace TomPIT.Sys.Data.Deploy
 {
 	internal class PublishedPackage : IPublishedPackage
 	{

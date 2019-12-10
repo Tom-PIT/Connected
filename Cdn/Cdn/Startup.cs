@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TomPIT.Cdn.Data;
 using TomPIT.Cdn.Mail;
+using TomPIT.Cdn.Printing;
 using TomPIT.Cdn.Routing;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
@@ -77,12 +78,14 @@ namespace TomPIT.Cdn
 		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
 			e.Tenant.RegisterService(typeof(IDataHubService), typeof(DataHubService));
+			e.Tenant.RegisterService(typeof(IPrintingManagementService), typeof(PrintingManagementService));
 		}
 
 		private void RegisterTasks(IServiceCollection services)
 		{
 			services.AddSingleton<IHostedService, MailService>();
 			services.AddSingleton<IHostedService, SmtpConnectionCleanupService>();
+			services.AddSingleton<IHostedService, PrintingService>();
 		}
 	}
 }

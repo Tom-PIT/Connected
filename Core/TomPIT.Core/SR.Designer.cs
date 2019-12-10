@@ -1969,6 +1969,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot resolve printing provider.
+        /// </summary>
+        public static string ErrPrintingProviderResolve {
+            get {
+                return ResourceManager.GetString("ErrPrintingProviderResolve", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Microservice is in Production stage. No changes are allowed..
         /// </summary>
         public static string ErrProductionStage {

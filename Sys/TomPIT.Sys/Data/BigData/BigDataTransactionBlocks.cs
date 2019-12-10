@@ -4,7 +4,7 @@ using TomPIT.BigData;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
 
-namespace TomPIT.Sys.Data
+namespace TomPIT.Sys.Data.BigData
 {
 	internal class BigDataTransactionBlocks
 	{

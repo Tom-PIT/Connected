@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using TomPIT.Data.Sql;
 using TomPIT.Search;
 
@@ -8,8 +6,8 @@ namespace TomPIT.SysDb.Sql.Search
 {
 	internal class CatalogState : PrimaryKeyRecord, ICatalogState
 	{
-		public Guid Catalog {get;set;}
-		public CatalogStateStatus Status {get;set;}
+		public Guid Catalog { get; set; }
+		public CatalogStateStatus Status { get; set; }
 
 		protected override void OnCreate()
 		{

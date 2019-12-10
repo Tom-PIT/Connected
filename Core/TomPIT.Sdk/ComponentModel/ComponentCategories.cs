@@ -31,6 +31,7 @@
 		public static string IoTSchema => "IoTSchema";
 		public static string IoCContainer => "IoCContainer";
 		public static string IoCEndpoint => "IoCEndpoint";
+		public static string Report => "Report";
 
 		public static string NameSpacePublicScript => "PublicScript";
 		public static string NameSpaceInternalScript => "InternalScript";

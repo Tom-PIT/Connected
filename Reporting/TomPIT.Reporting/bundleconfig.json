@@ -22,8 +22,8 @@
       "node_modules/devexpress-reporting/dist/css/dx-reportdesigner.css"
     ],
     "minify": {
-      "enabled": true,
-      "renameLocals": true
+      "enabled": false,
+      "renameLocals": false
     },
     "sourceMap": false
   },

@@ -210,18 +210,13 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 				return null;
 			}
 
+			result.ConnectionName = $"{descriptor.MicroService.Name}/{descriptor.Component.Name}/{descriptor.Element}";
+
 			var op = descriptor.Configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
 
 			CreateRoot(result);
 
 			result.Name = op.Name;
-
-			var schema = new JsonSchemaNode(api, true, JsonNodeType.Array)
-			{
-				DisplayName = op.Name
-			};
-
-			result.Schema.AddChildren(schema);
 
 			var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifest(descriptor.Component.Token) as ApiManifest;
 
@@ -238,6 +233,13 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			if (schemaType == null)
 				return null;
 
+			var schema = new JsonSchemaNode(schemaType.Type, true, JsonNodeType.Array)
+			{
+				DisplayName = schemaType.Type
+			};
+
+			result.Schema.AddChildren(schema);
+
 			var fields = new List<JsonSchemaNode>();
 
 			foreach (var property in schemaType.Properties)
@@ -245,7 +247,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 				var type = Type.GetType(property.Type, false);
 
 				if (type == null)
-					type = typeof(string);
+					type = TypeExtensions.FromFriendlyName(property.Type);
 
 				fields.Add(new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
 				{
@@ -254,24 +256,6 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			}
 
 			schema.AddChildren(fields.ToArray());
-
-			//var mockData = new JObject();
-
-			//foreach (JsonSchemaNode dsSchema in ds.Schema.Children)
-			//{
-			//	var schemaData = new JArray();
-
-			//	mockData.Add(dsSchema.Name, schemaData);
-
-			//	var record = new JObject();
-
-			//	foreach (JsonSchemaNode field in dsSchema.Children)
-			//		record.Add(field.Name, field.Name);
-
-			//	schemaData.Add(record);
-			//}
-
-			//ds.JsonSource = new CustomJsonSource(Serializer.Serialize(mockData));
 
 			return result;
 		}

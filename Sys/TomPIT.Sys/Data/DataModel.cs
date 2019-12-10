@@ -1,5 +1,7 @@
 ﻿using System;
 using TomPIT.Caching;
+using TomPIT.Sys.Data.BigData;
+using TomPIT.Sys.Data.IoT;
 
 namespace TomPIT.Sys.Data
 {
@@ -52,6 +54,7 @@ namespace TomPIT.Sys.Data
 		private static readonly Lazy<Search> _search = new Lazy<Search>(() => { return new Search(); });
 		private static readonly Lazy<SysSearch> _sysSearch = new Lazy<SysSearch>(() => { return new SysSearch(); });
 		private static readonly Lazy<Tools> _tools = new Lazy<Tools>(() => { return new Tools(); });
+		private static readonly Lazy<Printing> _printing = new Lazy<Printing>(() => { return new Printing(); });
 
 		public static MicroServicesMeta MicroServicesMeta { get { return _meta.Value; } }
 		public static MicroServices MicroServices { get { return _microServices.Value; } }
@@ -98,6 +101,7 @@ namespace TomPIT.Sys.Data
 		public static Search Search { get { return _search.Value; } }
 		public static SysSearch SysSearch { get { return _sysSearch.Value; } }
 		public static Tools Tools { get { return _tools.Value; } }
+		public static Printing Printing { get { return _printing.Value; } }
 		internal static MemoryCache Container
 		{
 			get { return _cache.Value; }

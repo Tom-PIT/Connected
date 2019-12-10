@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using TomPIT.Deployment;
 using TomPIT.Sys.Data;
+using TomPIT.Sys.Data.Deploy;
 
 namespace TomPIT.Sys.Controllers.Management
 {
@@ -272,7 +273,7 @@ namespace TomPIT.Sys.Controllers.Management
 		}
 
 		[HttpGet]
-		public List<string> QueryTags ()
+		public List<string> QueryTags()
 		{
 			return DataModel.Deployment.QueryTags();
 		}

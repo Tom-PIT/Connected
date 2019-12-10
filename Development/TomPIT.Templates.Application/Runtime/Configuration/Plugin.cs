@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using TomPIT.Cdn;
 using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.MicroServices.Runtime.Configuration
@@ -22,6 +23,11 @@ namespace TomPIT.MicroServices.Runtime.Configuration
 		public List<string> GetEmbeddedResources()
 		{
 			return new List<string>();
+		}
+
+		public List<IPrintingProvider> GetPrintingProviders()
+		{
+			return null;
 		}
 
 		public void Initialize(IApplicationBuilder app, IWebHostEnvironment env)

@@ -1104,4 +1104,7 @@
   <data name="WrnContainerKeyNull" xml:space="preserve">
     <value>Container key not set. Container's routes will be ignored.</value>
   </data>
+  <data name="ErrPrintingProviderResolve" xml:space="preserve">
+    <value>Cannot resolve printing provider</value>
+  </data>
 </root>

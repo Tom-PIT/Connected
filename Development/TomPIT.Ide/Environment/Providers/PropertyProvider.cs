@@ -139,6 +139,9 @@ namespace TomPIT.Ide.Environment.Providers
 
 			foreach (var i in props)
 			{
+				if (i.IsIndexer())
+					continue;
+
 				if (!i.CanWrite)
 				{
 					var isBrowsable = i.FindAttribute<BrowsableAttribute>();
