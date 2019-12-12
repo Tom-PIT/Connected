@@ -4896,6 +4896,48 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[print_job]'
+GO
+CREATE TABLE [tompit].[print_job]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[created] [datetime] NOT NULL,
+[token] [uniqueidentifier] NOT NULL,
+[status] [int] NOT NULL,
+[error] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[component] [uniqueidentifier] NOT NULL,
+[arguments] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[provider] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_print_job] on [tompit].[print_job]'
+GO
+ALTER TABLE [tompit].[print_job] ADD CONSTRAINT [PK_print_job] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating index [IX_print_job] on [tompit].[print_job]'
+GO
+CREATE NONCLUSTERED INDEX [IX_print_job] ON [tompit].[print_job] ([token]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[print_job_del]'
+GO
+CREATE PROCEDURE [tompit].[print_job_del]
+	@token uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.print_job
+	WHERE token = @token;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[event_sel]'
 GO
 CREATE PROCEDURE [tompit].[event_sel]
@@ -4945,6 +4987,28 @@ BEGIN
 		VALUES (@name, @value)
 	WHEN MATCHED THEN
 		UPDATE SET value = @value;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[print_job_ins]'
+GO
+CREATE PROCEDURE [tompit].[print_job_ins]
+	@token uniqueidentifier,
+	@created datetime,
+	@status int,
+	@component uniqueidentifier,
+	@arguments nvarchar(max) = NULL,
+	@provider nvarchar(128)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.print_job 
+			(token, created, status, component, arguments, provider)
+	VALUES	(@token, @created, @status, @component, @arguments, @provider);
+
+	RETURN scope_identity();
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -5027,6 +5091,21 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[print_job_sel]'
+GO
+CREATE PROCEDURE [tompit].[print_job_sel]
+	@token uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 *
+	FROM	tompit.print_job 
+	WHERE token = @token;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[event_ins]'
 GO
 CREATE PROCEDURE [tompit].[event_ins]
@@ -5078,6 +5157,24 @@ BEGIN
 		name = @name,
 		description = @description
 	WHERE id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[print_job_upd]'
+GO
+CREATE PROCEDURE [tompit].[print_job_upd]
+	@token uniqueidentifier,
+	@error nvarchar(128) = NULL,
+	@status int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	UPDATE tompit.print_job SET
+		error = @error,
+		status = @status
+	WHERE token = @token;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON

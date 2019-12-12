@@ -19,6 +19,14 @@ namespace TomPIT.DataProviders.Sql
 			ExistingConnection = existingConnection;
 			Provider = provider;
 			ConnectionString = connectionString;
+
+			if (ExistingConnection != null && ExistingConnection is DataConnection dc && string.Compare(dc.ConnectionString, ConnectionString, true) == 0)
+			{
+				Attached = true;
+
+				_connection = dc.Connection;
+				Transaction = dc.Transaction;
+			}
 		}
 
 		private bool Commited { get; set; }
@@ -33,17 +41,7 @@ namespace TomPIT.DataProviders.Sql
 			{
 				if (_connection == null)
 				{
-					if (ExistingConnection != null)
-					{
-						if (ExistingConnection is DataConnection dc && string.Compare(dc.ConnectionString, ConnectionString, true) == 0)
-						{
-							Attached = true;
-							_connection = dc.Connection;
-							Transaction = dc.Transaction;
-						}
-					}
-					else
-						_connection = new ReliableSqlConnection(ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
+					_connection = new ReliableSqlConnection(ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
 
 					Open();
 				}
@@ -70,7 +68,7 @@ namespace TomPIT.DataProviders.Sql
 			if (Commited)
 				return;
 
-			if (Transaction != null)
+			if (!Attached && Transaction != null)
 				Transaction.Commit();
 
 			Commited = true;
@@ -80,11 +78,11 @@ namespace TomPIT.DataProviders.Sql
 		{
 			if (Connection != null)
 			{
-				if (Transaction != null)
-					Transaction.Dispose();
-
 				if (!Attached)
 				{
+					if (Transaction != null)
+						Transaction.Dispose();
+
 					if (Connection.State == ConnectionState.Open)
 						Connection.Close();
 
@@ -98,7 +96,7 @@ namespace TomPIT.DataProviders.Sql
 			if (Commited)
 				return;
 
-			if (Transaction != null)
+			if (!Attached && Transaction != null)
 				Transaction.Rollback();
 
 			Commited = true;

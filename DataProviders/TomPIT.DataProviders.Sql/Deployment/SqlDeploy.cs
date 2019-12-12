@@ -186,22 +186,39 @@ namespace TomPIT.DataProviders.Sql.Deployment
 						sb.AppendLine(line);
 					else
 					{
-						if (line.Trim().StartsWith("CREATE PROCEDURE", StringComparison.OrdinalIgnoreCase))
+						var tokens = line.Trim().Split(" ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+
+						if (tokens.Length == 0)
 						{
-							statementStarted = true;
-							sb.AppendLine($"{keyword} PROCEDURE [{routine.Schema}].[{routine.Name}]");
+							sb.AppendLine(line);
+							continue;
 						}
-						else if (line.Trim().StartsWith("CREATE FUNCTION", StringComparison.OrdinalIgnoreCase))
+
+						if (tokens[0].StartsWith("CREATE", StringComparison.OrdinalIgnoreCase))
 						{
-							statementStarted = true;
-							sb.AppendLine($"{keyword} FUNCTION [{routine.Schema}].[{routine.Name}]()");
+							if (tokens.Length > 1)
+							{
+								if (tokens[1].StartsWith("PROCEDURE", StringComparison.OrdinalIgnoreCase))
+								{
+									statementStarted = true;
+									sb.AppendLine($"{keyword} PROCEDURE [{routine.Schema}].[{routine.Name}]");
+								}
+								else if (tokens[1].StartsWith("FUNCTION", StringComparison.OrdinalIgnoreCase))
+								{
+									statementStarted = true;
+									sb.AppendLine($"{keyword} FUNCTION [{routine.Schema}].[{routine.Name}]()");
+								}
+							}
+							else
+								sb.AppendLine(line);
 						}
+						else
+							sb.AppendLine(line);
 					}
 				}
 			}
 
 			return sb.ToString();
-
 		}
 
 		private void DeployViews()

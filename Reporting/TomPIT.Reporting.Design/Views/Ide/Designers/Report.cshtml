@@ -6,7 +6,10 @@
         if (ide.getState('reportingLoaded') !== true) {
             ide.setState('reportingLoaded', true);
 
-            $("head").append($("<link rel='stylesheet' href='/Assets/reporting.design.min.css' type='text/css' media='screen' />"));
+            @{ 
+               var designerCss = $"{Model.Environment.Context.Services.Routing.RootUrl}/Assets/reporting.design.min.css";
+            }
+            $("head").append("<link rel='stylesheet' href='@designerCss' type='text/css' media='screen' />");
         }
 
         var rd = null;
