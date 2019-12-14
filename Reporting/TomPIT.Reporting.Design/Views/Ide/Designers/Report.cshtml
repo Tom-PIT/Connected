@@ -3,15 +3,6 @@
 @using DevExpress.AspNetCore
 
     <script>
-        if (ide.getState('reportingLoaded') !== true) {
-            ide.setState('reportingLoaded', true);
-
-            @{ 
-               var designerCss = $"{Model.Environment.Context.Services.Routing.RootUrl}/Assets/reporting.design.min.css";
-            }
-            $("head").append("<link rel='stylesheet' href='@designerCss' type='text/css' media='screen' />");
-        }
-
         var rd = null;
 
         function customizeActions(s, e) {

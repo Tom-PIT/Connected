@@ -48,5 +48,22 @@ namespace TomPIT.MicroServices.Reporting.Design
 		}
 
 		public override TemplateKind Kind => TemplateKind.Plugin;
+
+		public override List<IIdeResource> ProvideIdeResources()
+		{
+			return new List<IIdeResource>
+			{
+				new IdeResource
+				{
+					Type = IdeResourceType.Script,
+					Path="~/Assets/reporting.design.min.js"
+				},
+				new IdeResource
+				{
+					Type = IdeResourceType.Stylesheet,
+					Path="~/Assets/reporting.design.min.css"
+				},
+			};
+		}
 	}
 }

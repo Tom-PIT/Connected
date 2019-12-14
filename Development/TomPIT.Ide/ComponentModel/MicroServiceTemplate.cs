@@ -62,5 +62,10 @@ namespace TomPIT.Ide.ComponentModel
 		{
 
 		}
+
+		public virtual List<IIdeResource> ProvideIdeResources()
+		{
+			return null;
+		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿@model TomPIT.Ide.Environment.IEnvironment
 @using TomPIT.Ide;
+@using TomPIT.Ide.ComponentModel;
 
 @{
     Layout = "~/Views/Shared/Shell.cshtml";
@@ -23,6 +24,32 @@
 }
 
 @section head{
+    @{
+        var templates = Model.Context.Tenant.GetService<IMicroServiceTemplateService>().Query();
+
+        foreach (var template in templates)
+        {
+            var resources = template.ProvideIdeResources();
+
+            if (resources == null)
+            {
+                continue;
+            }
+
+            foreach (var resource in resources)
+            {
+                if (resource.Type == IdeResourceType.Script)
+                {
+                    <script src="@Model.Context.Services.Routing.Absolute(resource.Path)"></script>
+                }
+                else if (resource.Type == IdeResourceType.Stylesheet)
+                {
+                    <link rel="stylesheet" type="text/css" href="@Model.Context.Services.Routing.Absolute(resource.Path)" />
+                }
+            }
+        }
+    }
+
     <environment names="Staging,Production">
         <link rel="stylesheet" type="text/css" href="~/Assets/ide.min.css" />
         <script src="~/Assets/ide.min.js"></script>
