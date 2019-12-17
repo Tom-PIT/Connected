@@ -29,8 +29,8 @@ namespace TomPIT.Middleware
 
 		public static T WithTransaction<T>(this T operation, IMiddlewareOperation middleware) where T : IMiddlewareOperation
 		{
-			if (middleware is MiddlewareOperation o)
-				o.AttachTransaction(operation);
+			if (operation is MiddlewareOperation o)
+				o.AttachTransaction(middleware);
 
 			return operation;
 		}

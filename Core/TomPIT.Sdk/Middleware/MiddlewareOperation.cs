@@ -12,6 +12,19 @@ namespace TomPIT.Middleware
 
 		protected MiddlewareOperation(IMiddlewareTransaction transaction)
 		{
+			AttachTransaction(transaction);
+		}
+
+		protected IMiddlewareTransaction Transaction { get; private set; }
+
+		internal void AttachTransaction(IMiddlewareOperation sender)
+		{
+			if (sender is MiddlewareOperation o)
+				AttachTransaction(o.Transaction);
+		}
+
+		private void AttachTransaction(IMiddlewareTransaction transaction)
+		{
 			Transaction = transaction;
 
 			if (transaction is MiddlewareTransaction t)
@@ -20,20 +33,10 @@ namespace TomPIT.Middleware
 			IsCommitable = false;
 		}
 
-		protected IMiddlewareTransaction Transaction { get; private set; }
-
-		internal void AttachTransaction(IMiddlewareOperation sender)
-		{
-			if (sender is MiddlewareOperation o)
-				Transaction = o.Transaction;
-		}
-
 		public IMiddlewareTransaction Begin()
 		{
 			if (Transaction != null)
 				return Transaction;
-
-			IsCommitable = false;
 
 			Transaction = new MiddlewareTransaction(Context)
 			{
@@ -58,7 +61,7 @@ namespace TomPIT.Middleware
 
 		protected void Commit()
 		{
-			if (Transaction != null)
+			if (!IsCommitable)
 				return;
 
 			if (Transaction is MiddlewareTransaction t)
@@ -67,7 +70,7 @@ namespace TomPIT.Middleware
 
 		protected void Rollback()
 		{
-			if (Transaction != null)
+			if (!IsCommitable)
 				return;
 
 			if (Transaction is MiddlewareTransaction t)
