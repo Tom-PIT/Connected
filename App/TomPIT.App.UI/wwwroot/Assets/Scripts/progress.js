@@ -44,7 +44,7 @@ $.widget('tompit.tpProgress', {
 
 				e.html(html + txt + progress + '</div>');
 			}
-        }, options.showAfter);
+        }, instance.options.showAfter);
 	},
 	hide: function () {
 		this.element.removeAttr('data-inprogress');
