@@ -18,7 +18,19 @@
 	};
 
 	function ajaxRequest(options) {
-		var data = options.onPrepareData(options.data);
+        var data = options.onPrepareData(options.data),
+            deps = {
+                items: []
+            };
+
+        if (options.dependencies) {
+            if ($.isPlainObject(options.dependencies)) {
+                deps = options.dependencies;
+            }
+            else {
+                deps.items = options.dependencies;
+            }
+        }
 
 		$.ajax({
 			url: options.url,
@@ -34,9 +46,9 @@
                         request.setRequestHeader(key, options.headers[key]);
                 }
 
-				if (options.dependencies.length > 0) {
-					$.each(options.dependencies, function (index, value) {
-						$(value).prop('disabled', true);
+                if (deps.items.length > 0) {
+                    $.each(deps.items, function (index, value) {
+                        tompit.setElementDisabled($(value), true);
 					});
 				}
 
@@ -47,21 +59,24 @@
 				options.onSuccess(data, status, request, options.progress);
 			},
 			complete: function (request, status) {
-				options.onComplete(request, status, options.progress);
+                options.onComplete(request, status, options.progress);
 
-				if (!options.onQueryContinueProgress(request, status, options.progress)) {
-					if (options.dependencies) {
-                        $.each(options.dependencies, function (index, value) {
-                            $(value).prop('disabled', false);
+                if (!options.onQueryContinueProgress(request, status, options.progress)) {
+                    if (deps.items.length > 0) {
+                        $.each(deps.items, function (index, value) {
+                            tompit.setElementDisabled($(value), false);
                         });
-					}
+                    }
 
-					if (options.progress)
-						options.progress.hide();
-				} else {
-					if (options.progress)
-						options.progress.show();
-				}
+                    if (options.progress) {
+                        options.progress.hide();
+                    }
+                }
+                else {
+                    if (options.progress) {
+                        options.progress.show();
+                    }
+                }
 			},
 			error: function (request, status, error) {
 				if (!options.onError(request, status, error, options.progress)) {

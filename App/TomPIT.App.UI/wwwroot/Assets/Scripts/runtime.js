@@ -194,4 +194,22 @@
     tompit.createIotHub = function (selector) {
         return $(selector).tpIoT().data('tompit-tpIoT');
     };
+
+
+    tompit.setElementDisabled = function (element, disabled) {
+        var $elt = $(element);
+        $elt.prop('disabled', disabled);
+        $elt.data('tp-disabled', disabled);
+    };
+
+    tompit.getElementDisabled = function (element) {
+        var $elt = $(element);
+        if ($elt.prop('disabled')) {
+            return true;
+        }
+        if ($elt.data('tp-disabled')) {
+            return true;
+        }
+        return false;
+    };
 })(window.tompit = window.tompit || {}, jQuery);
