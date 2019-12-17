@@ -17,5 +17,6 @@
 		IMiddlewareMediaService Media { get; }
 		IMiddlewareSearchService Search { get; }
 		IMiddlewareBigDataService BigData { get; }
+		IMiddlewareMembershipService Membership { get; }
 	}
 }

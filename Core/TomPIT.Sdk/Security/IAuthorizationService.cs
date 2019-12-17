@@ -21,5 +21,8 @@ namespace TomPIT.Security
 		PermissionValue GetPermissionValue(Guid evidence, string schema, string claim);
 		void RegisterAuthenticationProvider(IAuthenticationProvider provider);
 		void Authorize(ISiteMapContainer container);
+
+		List<IMembership> QueryMembership(Guid user);
+		List<IMembership> QueryMembershipForRole(Guid role);
 	}
 }

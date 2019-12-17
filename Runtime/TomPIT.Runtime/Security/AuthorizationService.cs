@@ -406,5 +406,10 @@ namespace TomPIT.Security
 				return _defaultAuthenticationProvider;
 			}
 		}
+
+		public List<IMembership> QueryMembershipForRole(Guid role)
+		{
+			return Membership.QueryForRole(role);
+		}
 	}
 }

@@ -54,6 +54,9 @@ namespace TomPIT.Sys.Data
 
 		public List<IPermission> Query(List<Guid> resourceGroups)
 		{
+			if (!resourceGroups.Contains(Guid.Empty))
+				resourceGroups.Add(Guid.Empty);
+
 			return Where(f => resourceGroups.Any(t => t == f.ResourceGroup));
 		}
 

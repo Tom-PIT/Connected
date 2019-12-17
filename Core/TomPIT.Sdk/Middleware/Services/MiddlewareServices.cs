@@ -19,6 +19,7 @@ namespace TomPIT.Middleware
 		private IMiddlewareBigDataService _bigData = null;
 		private IMiddlewareAuthorizationService _authorization = null;
 		private IMiddlewareIoCService _ioc = null;
+		private IMiddlewareMembershipService _membership = null;
 
 		public MiddlewareServices(IMiddlewareContext context) : base(context)
 		{
@@ -186,6 +187,17 @@ namespace TomPIT.Middleware
 					_ioc = new MiddlewareIoCService(Context);
 
 				return _ioc;
+			}
+		}
+
+		public IMiddlewareMembershipService Membership
+		{
+			get
+			{
+				if (_membership == null)
+					_membership = new MiddlewareMembershipService(Context);
+
+				return _membership;
 			}
 		}
 	}
