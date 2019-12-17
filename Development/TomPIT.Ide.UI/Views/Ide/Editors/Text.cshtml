@@ -20,7 +20,7 @@
         maxLength: @Model.Validation.MaxLength.MaxLength,
                 </text>
            }
-        value:'@Html.Raw(value)',
+        value: @Html.TP().JavaScript.String(value),
         onValueChanged: function (e) {
 			  ide.saveProperty({
 				  data: {

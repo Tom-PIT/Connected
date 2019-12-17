@@ -5,7 +5,7 @@ using TomPIT.Caching;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
 
-namespace TomPIT.Sys.Data
+namespace TomPIT.Sys.Data.BigData
 {
 	internal class BigDataNodes : SynchronizedRepository<INode, Guid>
 	{

@@ -79,7 +79,7 @@ namespace TomPIT.Search
 				}
 
 				var handler = handlers[result.Catalog];
-				var entity = handler.Deserialize(result.Content);
+				var entity = handler.Search(result.Content);
 
 				clientResults.Items.Add(new ClientSearchResult
 				{

@@ -336,6 +336,40 @@ namespace TomPIT.Reflection
 				return type.ShortName();
 		}
 
+		public static Type FromFriendlyName(string friendlyName)
+		{
+			if (string.Compare(friendlyName, "string", true) == 0)
+				return typeof(string);
+			else if (string.Compare(friendlyName, "char", true) == 0)
+				return typeof(char);
+			else if (string.Compare(friendlyName, "ubyte", true) == 0)
+				return typeof(byte);
+			else if (string.Compare(friendlyName, "byte", true) == 0)
+				return typeof(byte);
+			else if (string.Compare(friendlyName, "ushort", true) == 0)
+				return typeof(ushort);
+			else if (string.Compare(friendlyName, "short", true) == 0)
+				return typeof(short);
+			else if (string.Compare(friendlyName, "uint", true) == 0)
+				return typeof(uint);
+			else if (string.Compare(friendlyName, "int", true) == 0)
+				return typeof(int);
+			else if (string.Compare(friendlyName, "ulong", true) == 0)
+				return typeof(ulong);
+			else if (string.Compare(friendlyName, "long", true) == 0)
+				return typeof(long);
+			else if (string.Compare(friendlyName, "float", true) == 0)
+				return typeof(float);
+			else if (string.Compare(friendlyName, "double", true) == 0)
+				return typeof(double);
+			else if (string.Compare(friendlyName, "uint", true) == 0)
+				return typeof(uint);
+			else if (string.Compare(friendlyName, "decimal", true) == 0)
+				return typeof(decimal);
+			else
+				return typeof(string);
+		}
+
 		public static Type GetType(string type)
 		{
 			if (Types.ContainsValue(type))

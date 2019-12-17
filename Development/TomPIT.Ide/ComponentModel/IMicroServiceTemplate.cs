@@ -22,6 +22,7 @@ namespace TomPIT.Ide.ComponentModel
 		List<IItemDescriptor> ProvideGlobalAddItems(IDomElement parent);
 		IComponent References(IEnvironment environment, Guid microService);
 		List<string> GetApplicationParts();
+		List<IIdeResource> ProvideIdeResources();
 		void Initialize(IApplicationBuilder app, IWebHostEnvironment env);
 
 		TemplateKind Kind { get; }

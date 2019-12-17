@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using DevExpress.DataAccess.Json;
 using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.Reports;
 using TomPIT.Ide;
+using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
+using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
 using TomPIT.MicroServices.Reporting.Design.Dom;
 using TomPIT.Reflection;
@@ -17,7 +22,8 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 	{
 		private IMicroService _microService = null;
 		private IReportConfiguration _report = null;
-		private Dictionary<string, JsonDataSource> _dataSources = null;
+		private List<ReportDataSource> _dataSources = null;
+		private List<JsonDataSource> _reportDataSources = null;
 		public ReportDesigner(IDomElement element) : base(element)
 		{
 		}
@@ -53,13 +59,13 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 		public string ReportUrl => $"{MicroService.Name}/{Report.ComponentName()}";
 
-		public Dictionary<string, JsonDataSource> DataSources
+		public List<ReportDataSource> DataSources
 		{
 			get
 			{
 				if (_dataSources == null)
 				{
-					_dataSources = new Dictionary<string, JsonDataSource>();
+					_dataSources = new List<ReportDataSource>();
 
 					ResolveDataSources(MicroService.Name);
 
@@ -76,6 +82,27 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			}
 		}
 
+		public List<JsonDataSource> ReportDataSources
+		{
+			get
+			{
+				if (_reportDataSources == null)
+				{
+					_reportDataSources = new List<JsonDataSource>();
+
+					foreach (var api in Report.Apis)
+					{
+						var ds = CreateDataSource(api);
+
+						if (ds != null)
+							_reportDataSources.Add(ds);
+					}
+				}
+
+				return _reportDataSources;
+			}
+		}
+
 		private void ResolveDataSources(string microService)
 		{
 			if (string.IsNullOrWhiteSpace(microService))
@@ -86,54 +113,43 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			if (ms == null)
 				return;
 
+			_dataSources.Add(new ReportDataSource
+			{
+				Id = ms.Token.ToString(),
+				Text = ms.Name
+			});
+
 			var apis = Environment.Context.Tenant.GetService<IComponentService>().QueryComponents(ms.Token, ComponentCategories.Api);
 
 			foreach (var api in apis)
 			{
 				var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifest(api.Token) as ApiManifest;
+				var config = Environment.Context.Tenant.GetService<IComponentService>().SelectConfiguration(api.Token) as IApiConfiguration;
+
+				_dataSources.Add(new ReportDataSource
+				{
+					Parent = ms.Token.ToString(),
+					Id = api.Token.ToString(),
+					Text = api.Name
+				});
 
 				foreach (var operation in manifest.Operations)
 				{
+					var op = config.Operations.FirstOrDefault(f => string.Compare(f.Name, operation.Name, true) == 0);
+
+					if (op == null)
+						continue;
+
 					if (operation.ReturnType == null || string.IsNullOrWhiteSpace(operation.ReturnType.Name))
 						continue;
 
-					var ds = new JsonDataSource
+					_dataSources.Add(new ReportDataSource
 					{
-						ConnectionName = $"{manifest.MicroService}/{manifest.Name}",
-						Name = manifest.Name.Replace("/", "")
-					};
-
-					var root = new JsonSchemaNode
-					{
-						NodeType = JsonNodeType.Object
-					};
-
-					var schema = new JsonSchemaNode
-					{
-						NodeType = JsonNodeType.Array,
-						Selected = true,
-						Name = operation.Name
-					};
-
-					foreach (var child in operation.ReturnType.Properties)
-					{
-						//if (child is JProperty property)
-						schema.AddChildren(new[] { new JsonSchemaNode(child.Name, true, JsonNodeType.Property, ResolvePropertyType(child.Type)) });
-						//else if (child is JObject obj)
-						//{
-						//	//TODO: implement object
-						//}
-						//else if (child is JArray array)
-						//{
-						//	//TODO: implement collection
-						//}
-					}
-
-					root.AddChildren(schema);
-
-					ds.Schema = root;
-
-					_dataSources.Add(ds.Name, ds);
+						Parent = api.Token.ToString(),
+						Id = op.Id.ToString(),
+						Text = operation.Name,
+						IsDataSource = true
+					});
 				}
 			}
 		}
@@ -141,6 +157,117 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 		private Type ResolvePropertyType(JToken value)
 		{
 			return TypeExtensions.GetType(value.Value<string>());
+		}
+
+		protected override IDesignerActionResult OnAction(JObject data, string action)
+		{
+			if (string.Compare(action, "loadApis", true) == 0)
+				return Result.JsonResult(ViewModel, DataSources);
+			else if (string.Compare(action, "addApi", true) == 0)
+				return AddApi(data);
+
+			return base.OnAction(data, action);
+		}
+
+		private IDesignerActionResult AddApi(JObject data)
+		{
+			var api = data.Required<Guid>("api");
+			var operation = data.Required<Guid>("operation");
+
+			if (!(Environment.Context.Tenant.GetService<IComponentService>().SelectConfiguration(api) is IApiConfiguration config))
+				return Result.EmptyResult(ViewModel);
+
+			var microService = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(config.MicroService());
+			var op = config.Operations.FirstOrDefault(f => f.Id == operation);
+
+			if (op == null)
+				return Result.EmptyResult(ViewModel);
+
+			var url = $"{microService.Name}/{config.ComponentName()}/{op.Name}";
+
+			if (Report.Apis.FirstOrDefault(f => string.Compare(f, url, true) == 0) != null)
+				return Result.EmptyResult(ViewModel);
+
+			Report.Apis.Add(url);
+
+			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(Report);
+
+			return Result.SectionResult(ViewModel, EnvironmentSection.Designer);
+		}
+
+		private JsonDataSource CreateDataSource(string api)
+		{
+			var result = new JsonDataSource();
+
+			var descriptor = ComponentDescriptor.Api(Environment.Context, api);
+
+			try
+			{
+				descriptor.Validate();
+			}
+			catch
+			{
+				return null;
+			}
+
+			result.ConnectionName = $"{descriptor.MicroService.Name}/{descriptor.Component.Name}/{descriptor.Element}";
+
+			var op = descriptor.Configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
+
+			CreateRoot(result);
+
+			result.Name = op.Name;
+
+			var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifest(descriptor.Component.Token) as ApiManifest;
+
+			if (manifest == null)
+				return null;
+
+			var opManifest = manifest.Operations.FirstOrDefault(f => string.Compare(f.Name, op.Name, true) == 0);
+
+			if (opManifest == null)
+				return null;
+
+			var schemaType = manifest.Types.FirstOrDefault(f => string.Compare(f.Type, opManifest.ReturnType.Name, false) == 0);
+
+			if (schemaType == null)
+				return null;
+
+			var schema = new JsonSchemaNode(schemaType.Type, true, JsonNodeType.Array)
+			{
+				DisplayName = schemaType.Type
+			};
+
+			result.Schema.AddChildren(schema);
+
+			var fields = new List<JsonSchemaNode>();
+
+			foreach (var property in schemaType.Properties)
+			{
+				var type = Type.GetType(property.Type, false);
+
+				if (type == null)
+					type = TypeExtensions.FromFriendlyName(property.Type);
+
+				fields.Add(new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
+				{
+					Type = type
+				}));
+			}
+
+			schema.AddChildren(fields.ToArray());
+
+			return result;
+		}
+
+		private void CreateRoot(JsonDataSource ds)
+		{
+			var root = new JsonSchemaNode
+			{
+				NodeType = JsonNodeType.Object
+			};
+
+			ds.Schema = root;
 		}
 	}
 }

@@ -2,7 +2,7 @@
 	"connections": [
 		{
 			"name": "localhost",
-			"url": "http://localhost:44001",
+			"url": "http://sys-app/common/sys",
 			"authenticationToken": "defaultAuthenticationToken"
 		}
 	],
@@ -13,11 +13,12 @@
 		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
 	],
 	"plugins": {
-		"location": "c:\\Deploy\\Plugins",
-		"shadowCopy": true,
-		"items": [
-			"TomPIT.Application.Plugin, TomPIT.Application",
-			"TomPIT.IoT.Plugin, TomPIT.IoT"
-		]
+		//"location": "c:\\Deploy\\Plugins",
+		//"shadowCopy": true,
+    "items": [
+      //"TomPIT.MicroServices.Configuration.Runtime.Plugin, TomPIT.MicroServices",
+      //"TomPIT.MicroServices.IoT.Configuration.Runtime.Plugin, TomPIT.MicroServices.IoT",
+      "TomPIT.MicroServices.Reporting.Runtime.Configuration.Plugin, TomPIT.MicroServices.Reporting"
+    ]
 	}
 }

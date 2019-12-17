@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Data;
 
@@ -16,6 +17,12 @@ namespace TomPIT.Middleware
 		{
 		}
 
+		protected virtual void OnValidate(List<ValidationResult> results)
+		{
+
+		}
+
+		[Obsolete("Use OnValidating")]
 		protected virtual void OnValidating(List<ValidationResult> results)
 		{
 
@@ -64,6 +71,7 @@ namespace TomPIT.Middleware
 
 		private void OnValidating(object sender, List<ValidationResult> results)
 		{
+			OnValidate(results);
 			OnValidating(results);
 		}
 	}

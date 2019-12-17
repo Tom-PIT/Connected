@@ -4,18 +4,46 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
+using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Design.Serialization;
 using TomPIT.Reflection.Manifests;
+using TomPIT.Reflection.Manifests.Entities;
+using TomPIT.Storage;
 
 namespace TomPIT.Reflection
 {
-	internal class DiscoveryService : TenantObject, IDiscoveryService
+	internal class DiscoveryService : ClientRepository<IComponentManifest, Guid>, IDiscoveryService
 	{
-		public DiscoveryService(ITenant tenant) : base(tenant)
+		public DiscoveryService(ITenant tenant) : base(tenant, "manifest")
 		{
-
+			Tenant.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
+			Tenant.GetService<IComponentService>().ComponentRemoved += OnComponentRemoved;
+			Tenant.GetService<IComponentService>().ComponentAdded += OnComponentAdded;
+			Tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
 		}
+
+		private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
+		{
+			Remove(e.Component);
+		}
+
+		private void OnComponentAdded(ITenant sender, ComponentEventArgs e)
+		{
+			Remove(e.Component);
+		}
+
+		private void OnComponentRemoved(ITenant sender, ComponentEventArgs e)
+		{
+			Remove(e.Component);
+		}
+
+		private void OnComponentChanged(ITenant sender, ComponentEventArgs e)
+		{
+			Remove(e.Component);
+		}
+
 		public IElement Find(IConfiguration configuration, Guid id)
 		{
 			return Find(configuration, id, new List<object>());
@@ -115,36 +143,72 @@ namespace TomPIT.Reflection
 
 		public IComponentManifest Manifest(Guid component)
 		{
-			return Manifest(component, Guid.Empty);
+			return Get(component,
+				(f) =>
+				{
+					var c = Tenant.GetService<IComponentService>().SelectComponent(component);
+
+					if (c == null)
+						return null;
+
+					var ms = Tenant.GetService<IMicroServiceService>().Select(c.MicroService);
+
+					if (ms == null)
+						return null;
+
+					var existing = Tenant.GetService<IStorageService>().Download(ms.Token, BlobTypes.Manifest, ms.ResourceGroup, $"manifest{component}");
+					IComponentManifest result = null;
+
+					if (existing == null)
+					{
+						result = c.Manifest();
+						SaveManifest(c, result);
+					}
+					else
+					{
+						try
+						{
+							result = Tenant.GetService<ISerializationService>().Deserialize(existing.Content, typeof(ComponentManifest)) as IComponentManifest;
+						}
+						catch
+						{
+							result = c.Manifest();
+							SaveManifest(c, result);
+						}
+					}
+
+					Set(component, result, TimeSpan.Zero);
+
+					return result;
+				});
 		}
 
-		public IComponentManifest Manifest(Guid component, Guid element)
+		private void SaveManifest(IComponent component, IComponentManifest manifest)
 		{
-			var c = Tenant.GetService<IComponentService>().SelectComponent(component);
-
-			if (c == null)
-				return null;
-
-			return c.Manifest(element);
+			Tenant.GetService<IStorageService>().Upload(new Blob
+			{
+				ContentType = Blob.ContentTypeJson,
+				FileName = $"{manifest.Name}.json",
+				MicroService = component.MicroService,
+				PrimaryKey = $"manifest{component.Token}",
+				Type = BlobTypes.Manifest,
+				ResourceGroup = component.ResourceGroup()
+			}, Tenant.GetService<ISerializationService>().Serialize(manifest), StoragePolicy.Singleton);
 		}
 
 		public IComponentManifest Manifest(string microService, string category, string componentName)
-		{
-			return Manifest(microService, category, componentName, Guid.Empty);
-		}
-		public IComponentManifest Manifest(string microService, string category, string componentName, Guid element)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
 			if (ms == null)
 				return null;
 
-			var c = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, category, componentName);
+			var component = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, category, componentName);
 
-			if (c == null)
+			if (component == null)
 				return null;
 
-			return c.Manifest(element);
+			return Manifest(component.Token);
 		}
 
 		public List<IComponentManifest> Manifests(Guid microService)
@@ -154,7 +218,7 @@ namespace TomPIT.Reflection
 
 			foreach (var component in components)
 			{
-				var manifest = component.Manifest();
+				var manifest = Manifest(component.Token);
 
 				if (manifest != null)
 					result.Add(manifest);

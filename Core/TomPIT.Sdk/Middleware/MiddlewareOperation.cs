@@ -4,7 +4,7 @@ using TomPIT.UI;
 
 namespace TomPIT.Middleware
 {
-	public abstract class MiddlewareOperation : MiddlewareComponent, IMiddlewareOperation
+	public abstract class MiddlewareOperation : MiddlewareComponent, IMiddlewareOperation, IMiddlewareTransactionClient
 	{
 		protected MiddlewareOperation()
 		{
@@ -12,49 +12,41 @@ namespace TomPIT.Middleware
 
 		protected MiddlewareOperation(IMiddlewareTransaction transaction)
 		{
-			Transaction = transaction;
-
-			Transaction.Notify(this);
+			AttachTransaction(transaction);
 		}
 
-		protected IMiddlewareTransaction Transaction { get; }
+		protected IMiddlewareTransaction Transaction { get; private set; }
 
-		public IMiddlewareTransaction BeginTransaction()
+		internal void AttachTransaction(IMiddlewareOperation sender)
 		{
-			return new MiddlewareTransaction(Context)
+			if (sender is MiddlewareOperation o)
+				AttachTransaction(o.Transaction);
+		}
+
+		private void AttachTransaction(IMiddlewareTransaction transaction)
+		{
+			Transaction = transaction;
+
+			if (transaction is MiddlewareTransaction t)
+				t.Notify(this);
+
+			IsCommitable = false;
+		}
+
+		public IMiddlewareTransaction Begin()
+		{
+			if (Transaction != null)
+				return Transaction;
+
+			Transaction = new MiddlewareTransaction(Context)
 			{
 				Id = Guid.NewGuid()
 			};
+
+			return Transaction;
 		}
 
-		public IMiddlewareTransaction BeginTransaction(string name)
-		{
-			return new MiddlewareTransaction(Context)
-			{
-				Id = Guid.NewGuid(),
-				Name = name
-			};
-		}
-
-		public void Commit()
-		{
-			OnCommit();
-		}
-
-		protected virtual void OnCommit()
-		{
-
-		}
-
-		public void Rollback()
-		{
-			OnRollback();
-		}
-
-		protected virtual void OnRollback()
-		{
-
-		}
+		protected bool IsCommitable { get; private set; } = true;
 
 		protected void RenderPartial(string partialName)
 		{
@@ -65,6 +57,44 @@ namespace TomPIT.Middleware
 
 			engine.Context = Shell.HttpContext;
 			engine.RenderPartial(Context as IMicroServiceContext, partialName);
+		}
+
+		protected void Commit()
+		{
+			if (!IsCommitable)
+				return;
+
+			if (Transaction is MiddlewareTransaction t)
+				t.Commit();
+		}
+
+		protected void Rollback()
+		{
+			if (!IsCommitable)
+				return;
+
+			if (Transaction is MiddlewareTransaction t)
+				t.Rollback();
+		}
+
+		void IMiddlewareTransactionClient.CommitTransaction()
+		{
+			OnCommit();
+		}
+
+		void IMiddlewareTransactionClient.RollbackTransaction()
+		{
+			OnRollback();
+		}
+
+		protected virtual void OnCommit()
+		{
+
+		}
+
+		protected virtual void OnRollback()
+		{
+
 		}
 	}
 }

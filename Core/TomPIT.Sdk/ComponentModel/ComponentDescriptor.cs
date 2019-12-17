@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Newtonsoft.Json;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.ComponentModel.Cdn;
@@ -7,6 +8,7 @@ using TomPIT.ComponentModel.Data;
 using TomPIT.ComponentModel.Distributed;
 using TomPIT.ComponentModel.IoC;
 using TomPIT.ComponentModel.IoT;
+using TomPIT.ComponentModel.Reports;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.ComponentModel.Scripting;
 using TomPIT.ComponentModel.Search;
@@ -79,7 +81,8 @@ namespace TomPIT.ComponentModel
 
 		public string Element { get; private set; }
 		public string Category { get; }
-		protected IMicroServiceContext Context { get; }
+		[JsonIgnore]
+		public IMicroServiceContext Context { get; }
 		public string ComponentName { get; private set; }
 		public string MicroServiceName { get; private set; }
 
@@ -235,6 +238,16 @@ namespace TomPIT.ComponentModel
 		public static ConfigurationDescriptor<IIoCContainerConfiguration> IoCContainer(IMiddlewareContext context, string identifier)
 		{
 			return new ConfigurationDescriptor<IIoCContainerConfiguration>(context, identifier, ComponentCategories.IoCContainer);
+		}
+
+		public static ConfigurationDescriptor<IHostedWorkerConfiguration> HostedWorker(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IHostedWorkerConfiguration>(context, identifier, ComponentCategories.HostedWorker);
+		}
+
+		public static ConfigurationDescriptor<IReportConfiguration> Report(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IReportConfiguration>(context, identifier, ComponentCategories.Report);
 		}
 	}
 }

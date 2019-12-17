@@ -3,12 +3,14 @@
 @model TomPIT.MicroServices.Reporting.Models.ReportRuntimeModel
 
 @{ 
-    var queryString = ViewData[$"parameters{Model.MicroServiceName}/{Model.ReportName}"];
-    var fullUrl = Model.ReportUrl;
+   var queryString = ViewData[$"parameters{Model.MicroServiceName}/{Model.ReportName}"];
+   var fullUrl = Model.ReportUrl;
 
-    if (queryString != null)
-    {
-        fullUrl = $"{Model.ReportUrl}?{queryString}";
-    }
+   if (queryString != null)
+   {
+       fullUrl = $"{Model.ReportUrl}?{queryString}";
+   }
+
+   var handler = $"{Model.Services.Routing.RootUrl}/DXXRDV";
 }
-@Html.DevExpress().WebDocumentViewer("DocumentViewer").Height("1000px").Bind(fullUrl)
+@Html.DevExpress().WebDocumentViewer("DocumentViewer").HandlerUri(handler).Height("1000px").Bind(fullUrl)

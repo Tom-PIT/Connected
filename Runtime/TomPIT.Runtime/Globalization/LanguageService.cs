@@ -12,7 +12,7 @@ namespace TomPIT.Globalization
 	{
 		public LanguageService(ITenant tenant) : base(tenant, "language")
 		{
-
+			Initialize();
 		}
 
 		protected override void OnInitializing()

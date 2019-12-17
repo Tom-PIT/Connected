@@ -1,9 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TomPIT.ComponentModel;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
+using TomPIT.Serialization;
 
 namespace TomPIT
 {
@@ -13,7 +16,12 @@ namespace TomPIT
 		{
 		}
 
-		public async Task<IHtmlContent> Render(string name, string queryString = null)
+		public async Task<IHtmlContent> Render(string name)
+		{
+			return await Render(name, null);
+		}
+
+		public async Task<IHtmlContent> Render(string name, object arguments)
 		{
 			var context = Html.ViewData.Model as IMicroServiceContext;
 
@@ -33,8 +41,12 @@ namespace TomPIT
 				report = tokens[1];
 			}
 
-			if (!string.IsNullOrWhiteSpace(queryString))
-				Html.ViewData[$"parameters{microService}/{report}"] = queryString;
+			var queryString = string.Empty;
+
+			if (arguments != null)
+				queryString = Convert.ToBase64String(Encoding.UTF8.GetBytes(Serializer.Serialize(arguments)));
+
+			Html.ViewData[$"parameters{microService}/{report}"] = queryString;
 
 			return await Html.PartialAsync($"~/Views/Dynamic/Report/{microService}/{report}.cshtml", Html.ViewData.Model);
 		}

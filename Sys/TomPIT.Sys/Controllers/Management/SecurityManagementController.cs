@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.Security;
 using TomPIT.Sys.Data;
 
@@ -61,8 +61,10 @@ namespace TomPIT.Sys.Controllers.Management
 			var body = FromBody();
 
 			var primaryKey = body.Required<string>("primaryKey");
+			var claim = body.Optional("claim", string.Empty);
+			var schema = body.Optional("schema", string.Empty);
 
-			DataModel.Permissions.Reset(primaryKey);
+			DataModel.Permissions.Reset(claim, schema, primaryKey);
 		}
 
 		[HttpGet]

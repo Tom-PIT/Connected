@@ -5,6 +5,7 @@ namespace TomPIT.Middleware.Interop
 	public interface IOperation<TReturnValue> : IMiddlewareOperation
 	{
 		TReturnValue Invoke();
+
 		T Invoke<T>();
 
 		[CIP(CIP.ExtenderProvider)]

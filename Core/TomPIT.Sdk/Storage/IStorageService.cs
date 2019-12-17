@@ -17,6 +17,7 @@ namespace TomPIT.Storage
 		void Delete(Guid blob);
 		IBlob Select(Guid blob);
 		List<IBlob> Query(Guid microService, int kind, Guid resourceGroup, string primaryKey);
+		List<IBlob> Query(Guid microService, int kind, Guid resourceGroup, string primaryKey, string topic);
 		List<IBlob> QueryDrafts(string draft);
 		List<IBlob> Query(Guid microService);
 		void Restore(IBlob blob, byte[] content);
@@ -24,6 +25,7 @@ namespace TomPIT.Storage
 		Guid Upload(IBlob blob, byte[] content, StoragePolicy policy, Guid token);
 		IBlobContent Download(Guid blob);
 		IBlobContent Download(Guid microService, int kind, Guid resourceGroup, string primaryKey);
+		IBlobContent Download(Guid microService, int kind, Guid resourceGroup, string primaryKey, string topic);
 		List<IBlobContent> Download(List<Guid> blobs);
 	}
 }

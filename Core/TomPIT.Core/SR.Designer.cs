@@ -754,7 +754,7 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cache Key property not set. Please set &apos;Key&apos; property before returning value from cache retrieve handler..
+        ///   Looks up a localized string similar to Cache Key property not set. Please set &apos;Key&apos; property before returning value from cache retrieve handler or set CacheKeyAttribute on at least one property..
         /// </summary>
         public static string ErrCacheKeyNull {
             get {
@@ -1969,6 +1969,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot resolve printing provider.
+        /// </summary>
+        public static string ErrPrintingProviderResolve {
+            get {
+                return ResourceManager.GetString("ErrPrintingProviderResolve", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Microservice is in Production stage. No changes are allowed..
         /// </summary>
         public static string ErrProductionStage {
@@ -3000,6 +3009,15 @@ namespace TomPIT {
         public static string ViewHome {
             get {
                 return ResourceManager.GetString("ViewHome", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Container key not set. Container&apos;s routes will be ignored..
+        /// </summary>
+        public static string WrnContainerKeyNull {
+            get {
+                return ResourceManager.GetString("WrnContainerKeyNull", resourceCulture);
             }
         }
         

@@ -79,6 +79,8 @@ namespace TomPIT.Ide.ComponentModel
 				Tenant.GetService<IIdeSearchService>().Delete(c.Token);
 			}
 
+			DeleteManifest(c);
+
 			u = Tenant.CreateUrl("NotificationDevelopment", "ConfigurationRemoved");
 			args = new JObject
 				{
@@ -152,6 +154,8 @@ namespace TomPIT.Ide.ComponentModel
 					}
 				}
 			}
+
+			DeleteManifest(microService, component.Token);
 
 			var u = Tenant.CreateUrl("ComponentDevelopment", "Insert");
 
@@ -242,6 +246,8 @@ namespace TomPIT.Ide.ComponentModel
 			if (performLock)
 				Tenant.GetService<IVersionControlService>().Lock(component, Development.LockVerb.Edit);
 
+			DeleteManifest(component);
+
 			var u = Tenant.CreateUrl("ComponentDevelopment", "Update");
 			var args = new JObject
 				{
@@ -324,6 +330,8 @@ namespace TomPIT.Ide.ComponentModel
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification n)
 				n.NotifyChanged(this, new ConfigurationEventArgs(c.MicroService, configuration.Component, c.Category));
+
+			DeleteManifest(c);
 
 			var u = Tenant.CreateUrl("NotificationDevelopment", "ConfigurationChanged");
 			var args = new JObject
@@ -703,6 +711,8 @@ namespace TomPIT.Ide.ComponentModel
 
 			foreach (var source in sources)
 				InvalidateIndexState(source);
+
+			DeleteManifest(image.Token);
 		}
 
 		public void RestoreComponent(Guid blob)
@@ -809,6 +819,37 @@ namespace TomPIT.Ide.ComponentModel
 			}
 
 			Tenant.Post(u, e);
+		}
+
+		private void DeleteManifest(Guid component)
+		{
+			var c = Tenant.GetService<IComponentService>().SelectComponent(component);
+
+			if (c == null)
+				return;
+
+			DeleteManifest(c);
+		}
+
+		private void DeleteManifest(IComponent component)
+		{
+			DeleteManifest(component.MicroService, component.Token);
+		}
+
+		private void DeleteManifest(Guid microService, Guid component)
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+
+			if (ms == null)
+				return;
+
+			var blobs = Tenant.GetService<IStorageService>().Query(ms.Token, BlobTypes.Manifest, ms.ResourceGroup, $"manifest{component}");
+
+			if (blobs == null || blobs.Count == 0)
+				return;
+
+			foreach (var blob in blobs)
+				Tenant.GetService<IStorageService>().Delete(blob.Token);
 		}
 	}
 }

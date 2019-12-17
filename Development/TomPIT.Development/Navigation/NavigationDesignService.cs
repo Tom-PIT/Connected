@@ -41,7 +41,7 @@ namespace TomPIT.Development.Navigation
 			foreach (var item in container.Routes)
 			{
 				if (container is ISiteMapRouteContainer routeContainer)
-					items.Add(new NavigationRouteDescriptor { RouteKey = routeContainer.Key, Template = routeContainer.Template, Text = routeContainer.Text });
+					items.Add(new NavigationRouteDescriptor { RouteKey = routeContainer.RouteKey, Template = routeContainer.Template, Text = routeContainer.Text });
 
 				FillKeys(item, items);
 			}

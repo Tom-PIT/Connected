@@ -81,7 +81,7 @@ namespace TomPIT.Search.Indexing
 
 					foreach (var method in queryMethods)
 					{
-						if (string.Compare(method.Name, "Query", false) != 0)
+						if (string.Compare(method.Name, "Index", false) != 0)
 							continue;
 
 						if (!method.IsPublic || method.ContainsGenericParameters)

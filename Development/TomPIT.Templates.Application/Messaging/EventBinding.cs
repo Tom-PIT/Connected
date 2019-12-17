@@ -9,18 +9,26 @@ using TomPIT.Reflection;
 namespace TomPIT.MicroServices.Messaging
 {
 	[Create(DesignUtils.EventBinding)]
-	public class EventBinding : ConfigurationElement, IEventBinding
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[Syntax(SyntaxAttribute.CSharp)]
+	public class EventBinding : SourceCodeElement, IEventBinding
 	{
-		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[Required]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		[Items(DesignUtils.EventItems)]
 		public string Event { get; set; }
 
+		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
+		[Required]
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Name { get; set; }
+
 		public override string ToString()
 		{
-			return string.IsNullOrWhiteSpace(Event) ? GetType().ShortName() : Event;
+			return string.IsNullOrWhiteSpace(Name)
+				? GetType().ShortName()
+				: Name;
 		}
 	}
 }

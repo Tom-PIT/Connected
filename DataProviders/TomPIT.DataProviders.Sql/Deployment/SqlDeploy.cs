@@ -186,22 +186,39 @@ namespace TomPIT.DataProviders.Sql.Deployment
 						sb.AppendLine(line);
 					else
 					{
-						if (line.Trim().StartsWith("CREATE PROCEDURE", StringComparison.OrdinalIgnoreCase))
+						var tokens = line.Trim().Split(" ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+
+						if (tokens.Length == 0)
 						{
-							statementStarted = true;
-							sb.AppendLine($"{keyword} PROCEDURE [{routine.Schema}].[{routine.Name}]");
+							sb.AppendLine(line);
+							continue;
 						}
-						else if (line.Trim().StartsWith("CREATE FUNCTION", StringComparison.OrdinalIgnoreCase))
+
+						if (tokens[0].StartsWith("CREATE", StringComparison.OrdinalIgnoreCase))
 						{
-							statementStarted = true;
-							sb.AppendLine($"{keyword} FUNCTION [{routine.Schema}].[{routine.Name}]()");
+							if (tokens.Length > 1)
+							{
+								if (tokens[1].StartsWith("PROCEDURE", StringComparison.OrdinalIgnoreCase))
+								{
+									statementStarted = true;
+									sb.AppendLine($"{keyword} PROCEDURE [{routine.Schema}].[{routine.Name}]");
+								}
+								else if (tokens[1].StartsWith("FUNCTION", StringComparison.OrdinalIgnoreCase))
+								{
+									statementStarted = true;
+									sb.AppendLine($"{keyword} FUNCTION [{routine.Schema}].[{routine.Name}]()");
+								}
+							}
+							else
+								sb.AppendLine(line);
 						}
+						else
+							sb.AppendLine(line);
 					}
 				}
 			}
 
 			return sb.ToString();
-
 		}
 
 		private void DeployViews()
@@ -445,11 +462,19 @@ namespace TomPIT.DataProviders.Sql.Deployment
 				for (int i = 0; i < uniqueConstraints.Count; i++)
 				{
 					var constraint = uniqueConstraints[i];
-					var column = Context.Database.FindUniqueConstraintColumn(constraint.Name);
+					var columns = ConstraintColumns(table, constraint.Name);
 
 					builder.AppendLine(string.Format("CONSTRAINT [{0}] UNIQUE NONCLUSTERED", constraint.Name));
 					builder.AppendLine("(");
-					builder.AppendLine(string.Format("[{0}] ASC", column.Name));
+
+					for (var column = 0; column < columns.Count; column++)
+					{
+						builder.AppendLine(string.Format("[{0}] ASC", columns[column]));
+
+						if (columns.Count > 1 && column < columns.Count - 1)
+							builder.AppendLine(",");
+					}
+
 					builder.AppendLine(")");
 
 					if (i < uniqueConstraints.Count - 1 && uniqueConstraints.Count > 1)

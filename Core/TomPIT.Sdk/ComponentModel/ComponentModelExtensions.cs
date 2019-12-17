@@ -51,6 +51,19 @@ namespace TomPIT.ComponentModel
 				throw new RuntimeException(SR.ErrReferenceMissingSource, string.Format("{0} ({1}->{2})", SR.ErrReferenceMissing, service.Name, reference));
 		}
 
+		public static Guid ResourceGroup(this IComponent component)
+		{
+			if (MiddlewareDescriptor.Current.Tenant == null)
+				return Guid.Empty;
+
+			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
+
+			if (ms == null)
+				return Guid.Empty;
+
+			return ms.ResourceGroup;
+		}
+
 		public static IComponentManifest Manifest(this IComponent component)
 		{
 			return Manifest(component, Guid.Empty);

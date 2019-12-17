@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
+using TomPIT.ComponentModel.Deployment;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
 using TomPIT.Deployment;
+using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Management.ComponentModel;
@@ -69,6 +72,46 @@ namespace TomPIT.Management.Deployment
 
 				if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification n)
 					n.NotifyMicroServiceInstalled(this, new MicroServiceInstallEventArgs(Package.MicroService.Token, success));
+			}
+
+			RunInstallers();
+		}
+
+		private void RunInstallers()
+		{
+			var installers = Tenant.GetService<IComponentService>().QueryConfigurations(Package.MicroService.Token, ComponentCategories.Installer);
+
+			if (installers.Count == 0)
+				return;
+
+			foreach (var installer in installers)
+				RunInstaller(installer as IInstallerConfiguration);
+		}
+
+		private void RunInstaller(IInstallerConfiguration configuration)
+		{
+			var type = Tenant.GetService<ICompilerService>().ResolveType(Package.MicroService.Token, configuration, configuration.ComponentName(), false);
+
+			if (type == null)
+				return;
+
+			try
+			{
+				var context = new MicroServiceContext(Package.MicroService.Token, Tenant.Url);
+				var instance = Tenant.GetService<ICompilerService>().CreateInstance<IInstallerMiddleware>(context, type);
+
+				instance.Invoke();
+			}
+			catch (Exception ex)
+			{
+				Tenant.GetService<ILoggingService>().Write(new LogEntry
+				{
+					Category = LogCategories.Deployment,
+					Component = configuration.Component,
+					Level = System.Diagnostics.TraceLevel.Error,
+					Message = ex.Message,
+					Source = ex.Source
+				});
 			}
 		}
 

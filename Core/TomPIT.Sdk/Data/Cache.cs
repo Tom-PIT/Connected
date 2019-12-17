@@ -52,14 +52,14 @@ namespace TomPIT.Data
 			return Context.Services.Cache.Get<T>(CacheKey, id.ToString());
 		}
 
-		protected T Get(Func<T, bool> predicate)
+		protected T Get(Func<dynamic, bool> predicate)
 		{
-			return Context.Services.Cache.Get(CacheKey, predicate);
+			return Context.Services.Cache.Get<T>(CacheKey, predicate);
 		}
 
-		protected T Get(Func<T, bool> predicate, CacheRetrieveHandler<T> retrieve)
+		protected T Get(Func<dynamic, bool> predicate, CacheRetrieveHandler<T> retrieve)
 		{
-			return Context.Services.Cache.Get(CacheKey, predicate, retrieve);
+			return Context.Services.Cache.Get<T>(CacheKey, predicate, retrieve);
 		}
 
 		protected T First()
@@ -67,9 +67,9 @@ namespace TomPIT.Data
 			return Context.Services.Cache.First<T>(CacheKey);
 		}
 
-		protected List<T> Where(Func<T, bool> predicate)
+		protected List<T> Where(Func<dynamic, bool> predicate)
 		{
-			return Context.Services.Cache.Where(CacheKey, predicate);
+			return Context.Services.Cache.Where<T>(CacheKey, predicate);
 		}
 
 		protected T Set(K id, T instance)

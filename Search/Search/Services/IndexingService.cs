@@ -22,6 +22,11 @@ namespace TomPIT.Search.Services
 				Dispatchers.Add(new IndexingDispatcher(i, _cancel));
 		}
 
+		protected override bool Initialize()
+		{
+			return Instance.State == InstanceState.Running;
+		}
+
 		protected override Task Process()
 		{
 			Parallel.ForEach(Dispatchers, (f) =>

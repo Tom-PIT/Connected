@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Web;
 using DevExpress.DataAccess.Json;
 using DevExpress.XtraReports.UI;
 using DevExpress.XtraReports.Web.Extensions;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Reports;
@@ -14,6 +12,7 @@ using TomPIT.Connectivity;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
+using TomPIT.Serialization;
 
 namespace TomPIT.MicroServices.Reporting.Storage
 {
@@ -99,18 +98,53 @@ namespace TomPIT.MicroServices.Reporting.Storage
 			}
 		}
 
+		public XtraReport CreateReport(Guid component, object arguments)
+		{
+			var config = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) as IReportConfiguration;
+
+			if (config == null)
+				return null;
+
+			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(config.MicroService());
+
+			XtraReport r = null;
+			var url = $"{ms.Name}/{config.ComponentName()}";
+
+			if (arguments != null)
+				url += $"?{Convert.ToBase64String(Encoding.UTF8.GetBytes(Serializer.Serialize(arguments)))}";
+
+			if (config.TextBlob != Guid.Empty)
+			{
+				var tenant = MiddlewareDescriptor.Current.Tenant;
+				var content = tenant.GetService<IComponentService>().SelectText(((IConfiguration)config).MicroService(), config);
+
+				r = new XtraReport();
+
+				using var loadStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+
+				r.LoadLayoutFromXml(loadStream);
+
+				BindDataSources(ms, r, url);
+			}
+
+			if (r == null)
+				r = new XtraReport();
+
+			r.RequestParameters = false;
+
+			foreach (var parameter in r.Parameters)
+				parameter.Visible = false;
+
+			return r;
+		}
+
 		private void BindDataSources(IMicroService microService, XtraReport report, string url)
 		{
 			var tokens = url.Split(new char[] { '?' }, 2);
+			JObject arguments = null;
 
-			if (tokens.Length != 2)
-				return;
-
-			var queryString = HttpUtility.ParseQueryString(tokens[1]);
-			var arguments = new JObject();
-
-			foreach (var s in queryString.Keys)
-				arguments.Add(s.ToString(), queryString[s.ToString()]);
+			if (tokens.Length == 2)
+				arguments = ParseArguments(tokens[1]);
 
 			var connection = Shell.GetService<IConnectivityService>().SelectDefaultTenant();
 
@@ -118,7 +152,7 @@ namespace TomPIT.MicroServices.Reporting.Storage
 			{
 				var dataMember = report.DataMember;
 
-				report.DataSource = CreateDataSource(js, connection, arguments);
+				report.DataSource = CreateDataSource(js, dataMember, connection, arguments);
 				report.DataMember = dataMember;
 			}
 
@@ -128,35 +162,50 @@ namespace TomPIT.MicroServices.Reporting.Storage
 				{
 					var dataMember = detail.DataMember;
 
-					detail.DataSource = CreateDataSource(djs, connection, arguments);
+					detail.DataSource = CreateDataSource(djs, dataMember, connection, arguments);
 					detail.DataMember = dataMember;
 				}
 			}
 		}
 
-		private JsonDataSource CreateDataSource(JsonDataSource dataSource, ITenant tenant, JObject arguments)
+		private JObject ParseArguments(string queryString)
+		{
+			return Serializer.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(queryString)));
+
+		}
+		private JsonDataSource CreateDataSource(JsonDataSource dataSource, string dataMember, ITenant tenant, JObject arguments)
 		{
 			if (dataSource == null || string.IsNullOrWhiteSpace(dataSource.ConnectionName))
 				return null;
 
-			var tokens = dataSource.ConnectionName.Split('/');
-			var ms = tenant.GetService<IMicroServiceService>().Select(tokens[0]);
-			var ctx = new MicroServiceContext(ms, tenant.Url);
-			var result = new JsonDataSource();
-			var root = new JObject();
-			var apiDataSource = ctx.Interop.Invoke<object, JObject>(dataSource.ConnectionName, arguments);
-			var schemaNode = dataSource.Schema.Nodes[0] as JsonSchemaNode;
+			var descriptor = ComponentDescriptor.Api(MicroServiceContext.FromIdentifier(dataSource.ConnectionName, tenant), dataSource.ConnectionName);
 
-			if (apiDataSource is JObject)
-				root.Add(schemaNode.Name, new JArray { apiDataSource });
-			else if (apiDataSource is JArray ja)
-				root.Add(schemaNode.Name, ja);
-			else if (apiDataSource.GetType().IsCollection())
-				root.Add(schemaNode.Name, JsonConvert.DeserializeObject<JArray>(JsonConvert.SerializeObject(apiDataSource)));
+			descriptor.Validate();
+
+			var ds = descriptor.Context.Interop.Invoke<object, JObject>(dataSource.ConnectionName, arguments);
+
+			if (ds == null)
+				return null;
+			string serializedDs = string.Empty;
+
+			if (!ds.GetType().IsCollection())
+			{
+				var list = new List<object>
+				{
+					ds
+				};
+
+				serializedDs = $"{{{dataMember}:{Serializer.Serialize(list)}}}";
+			}
 			else
-				root.Add(schemaNode.Name, new JArray { JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(apiDataSource)) });
+				serializedDs = $"{{{dataMember}:{Serializer.Serialize(ds)}}}";
 
-			result.JsonSource = new CustomJsonSource(JsonConvert.SerializeObject(root));
+			var result = new JsonDataSource
+			{
+				JsonSource = new CustomJsonSource(serializedDs)
+			};
+
+			result.Fill();
 
 			return result;
 		}

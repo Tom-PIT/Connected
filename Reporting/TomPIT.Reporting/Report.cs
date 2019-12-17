@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
@@ -13,7 +14,20 @@ namespace TomPIT.MicroServices.Reporting
 	[ViewRenderer("TomPIT.MicroServices.Reporting.UI.ReportRenderer, TomPIT.MicroServices.Reporting")]
 	public class Report : ComponentConfiguration, IReportConfiguration
 	{
+		private List<string> _apis = null;
+
 		[Browsable(false)]
 		public Guid TextBlob { get; set; }
+
+		public List<string> Apis
+		{
+			get
+			{
+				if (_apis == null)
+					_apis = new List<string>();
+
+				return _apis;
+			}
+		}
 	}
 }

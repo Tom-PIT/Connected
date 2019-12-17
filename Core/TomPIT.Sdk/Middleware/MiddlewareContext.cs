@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
@@ -17,6 +18,7 @@ namespace TomPIT.Middleware
 		private ITenant _tenant = null;
 		private IMiddlewareInterop _interop = null;
 		private IMiddlewareEnvironment _environment = null;
+		private List<IDataConnection> _connections = null;
 
 		public MiddlewareContext()
 		{
@@ -109,7 +111,11 @@ namespace TomPIT.Middleware
 
 			var dataProvider = CreateDataProvider(descriptor.Configuration);
 
-			return dataProvider.OpenConnection(descriptor.Configuration.Value, Connection);
+			var con = dataProvider.OpenConnection(descriptor.Configuration.Value, Connection);
+
+			Connections.Add(con);
+
+			return con;
 		}
 
 		public IDataReader<T> OpenReader<T>(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)
@@ -189,5 +195,44 @@ namespace TomPIT.Middleware
 		}
 
 		internal IDataConnection Connection { get; set; }
+		internal void CloseConnections()
+		{
+			foreach (var connection in Connections)
+				connection.Close();
+		}
+
+		private bool _disposed = false;
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposed)
+			{
+				if (disposing)
+				{
+					foreach (var connection in Connections)
+						connection.Dispose();
+
+					Connections.Clear();
+				}
+
+				_disposed = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+		}
+
+		private List<IDataConnection> Connections
+		{
+			get
+			{
+				if (_connections == null)
+					_connections = new List<IDataConnection>();
+
+				return _connections;
+			}
+		}
 	}
 }

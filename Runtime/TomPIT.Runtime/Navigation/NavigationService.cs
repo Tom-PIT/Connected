@@ -8,6 +8,8 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Navigation;
 using TomPIT.Connectivity;
+using TomPIT.Diagnostics;
+using TomPIT.Diagostics;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
@@ -149,6 +151,11 @@ namespace TomPIT.Navigation
 			}
 		}
 
+		public List<string> QueryKeys()
+		{
+			return Handlers.Keys.ToList();
+		}
+
 		private ConcurrentDictionary<string, List<NavigationHandlerDescriptor>> Handlers => _handlers.Value;
 
 		private void RefreshNavigation(ISiteMapConfiguration configuration, bool removeOny = false)
@@ -167,6 +174,15 @@ namespace TomPIT.Navigation
 			{
 				foreach (var container in containers)
 				{
+					if (string.IsNullOrWhiteSpace(container.Key))
+					{
+						MiddlewareDescriptor.Current.Tenant.LogWarning(nameof(NavigationService), $"{SR.WrnContainerKeyNull} ({container.Text})", LogCategories.Navigation);
+						continue;
+					}
+
+					if (string.IsNullOrWhiteSpace(container.Key))
+						continue;
+
 					if (Handlers.ContainsKey(container.Key))
 					{
 						if (Handlers[container.Key].FirstOrDefault(f => f.Component == configuration.Component) != null)

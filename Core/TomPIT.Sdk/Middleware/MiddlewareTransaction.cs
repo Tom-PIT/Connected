@@ -5,21 +5,20 @@ namespace TomPIT.Middleware
 {
 	internal class MiddlewareTransaction : MiddlewareObject, IMiddlewareTransaction
 	{
-		private Stack<IMiddlewareOperation> _operations = null;
+		private Stack<IMiddlewareTransactionClient> _operations = null;
 
 		public Guid Id { get; set; }
-		public string Name { get; set; }
 
 		public MiddlewareTransaction(IMiddlewareContext context) : base(context)
 		{
 		}
 
-		private Stack<IMiddlewareOperation> Operations
+		private Stack<IMiddlewareTransactionClient> Operations
 		{
 			get
 			{
 				if (_operations == null)
-					_operations = new Stack<IMiddlewareOperation>();
+					_operations = new Stack<IMiddlewareTransactionClient>();
 
 				return _operations;
 			}
@@ -31,7 +30,7 @@ namespace TomPIT.Middleware
 			{
 				try
 				{
-					Operations.Pop().Commit();
+					Operations.Pop().CommitTransaction();
 				}
 				catch (Exception ex)
 				{
@@ -40,7 +39,7 @@ namespace TomPIT.Middleware
 			}
 		}
 
-		public void Notify(IMiddlewareOperation operation)
+		public void Notify(IMiddlewareTransactionClient operation)
 		{
 			Operations.Push(operation);
 		}
@@ -51,7 +50,7 @@ namespace TomPIT.Middleware
 			{
 				try
 				{
-					Operations.Pop().Rollback();
+					Operations.Pop().RollbackTransaction();
 				}
 				catch (Exception ex)
 				{

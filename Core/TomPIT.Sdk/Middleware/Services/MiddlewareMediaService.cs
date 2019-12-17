@@ -65,19 +65,17 @@ namespace TomPIT.Middleware.Services
 			ReplaceImages(doc);
 			Sanitize(doc);
 
-			using (var ms = new MemoryStream())
-			using (var w = new StreamWriter(ms))
-			{
-				doc.Save(w);
+			using var ms = new MemoryStream();
+			using var w = new StreamWriter(ms);
 
-				w.Flush();
-				ms.Seek(0, SeekOrigin.Begin);
+			doc.Save(w);
 
-				using (StreamReader sr = new StreamReader(ms))
-				{
-					return sr.ReadToEnd();
-				}
-			}
+			w.Flush();
+			ms.Seek(0, SeekOrigin.Begin);
+
+			using StreamReader sr = new StreamReader(ms);
+
+			return sr.ReadToEnd();
 		}
 
 		private string FindFile(IMediaResourcesConfiguration media, IEnumerable<string> path)
@@ -139,9 +137,6 @@ namespace TomPIT.Middleware.Services
 
 		private void ReplaceImages(HtmlDocument doc)
 		{
-			if (!(Context is IMicroServiceContext msc))
-				throw new RuntimeException(SR.ErrMicroServiceContextExpected);
-
 			var images = doc.DocumentNode.SelectNodes(@"//img[@src]");
 
 			if (images == null || images.Count == 0)
@@ -162,7 +157,7 @@ namespace TomPIT.Middleware.Services
 						continue;
 
 					var meta = tokens[0].Split(';');
-					var imageData = tokens[tokens.Length - 1];
+					var imageData = tokens[^1];
 
 					if (meta == null || meta.Length == 0)
 						continue;
@@ -177,9 +172,7 @@ namespace TomPIT.Middleware.Services
 					{
 						ContentType = mime,
 						FileName = "htmlImage",
-						MicroService = msc.MicroService.Token,
 						PrimaryKey = Guid.NewGuid().ToString(),
-						ResourceGroup = msc.MicroService.ResourceGroup,
 						Topic = "$HtmlImage",
 						Type = BlobTypes.HtmlImage
 					};

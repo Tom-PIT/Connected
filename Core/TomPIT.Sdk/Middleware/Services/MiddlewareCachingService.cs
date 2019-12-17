@@ -45,12 +45,12 @@ namespace TomPIT.Middleware.Services
 			return Context.Tenant.GetService<IDataCachingService>().Get<T>(key, id);
 		}
 
-		public T Get<T>(string key, Func<T, bool> predicate) where T : class
+		public T Get<T>(string key, Func<dynamic, bool> predicate) where T : class
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Get(key, predicate);
+			return Context.Tenant.GetService<IDataCachingService>().Get<T>(key, predicate);
 		}
 
-		public T Get<T>(string key, Func<T, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
+		public T Get<T>(string key, Func<dynamic, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
 		{
 			return Context.Tenant.GetService<IDataCachingService>().Get(key, predicate, retrieve);
 		}
@@ -60,9 +60,9 @@ namespace TomPIT.Middleware.Services
 			return Context.Tenant.GetService<IDataCachingService>().First<T>(key);
 		}
 
-		public List<T> Where<T>(string key, Func<T, bool> predicate) where T : class
+		public List<T> Where<T>(string key, Func<dynamic, bool> predicate) where T : class
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Where(key, predicate);
+			return Context.Tenant.GetService<IDataCachingService>().Where<T>(key, predicate);
 		}
 
 		public T Set<T>(string key, string id, T instance) where T : class

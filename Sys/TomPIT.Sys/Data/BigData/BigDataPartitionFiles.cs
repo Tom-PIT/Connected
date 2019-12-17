@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
 
-namespace TomPIT.Sys.Data
+namespace TomPIT.Sys.Data.BigData
 {
 	public class BigDataPartitionFiles : SynchronizedRepository<IPartitionFile, Guid>
 	{
@@ -58,7 +57,7 @@ namespace TomPIT.Sys.Data
 
 		public List<IPartitionFile> Query(Guid partition)
 		{
-			return Where(f=>f.Partition==partition);
+			return Where(f => f.Partition == partition);
 		}
 
 		public List<IPartitionFile> Query()

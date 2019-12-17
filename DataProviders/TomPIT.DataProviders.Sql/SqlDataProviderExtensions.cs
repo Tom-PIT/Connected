@@ -109,7 +109,7 @@ namespace TomPIT.DataProviders.Sql
 			{
 				foreach (var j in i.Constraints)
 				{
-					if (string.Compare(j.Type, "UNIQUE", true) == 0)
+					if (string.Compare(j.Type, "UNIQUE", true) == 0 && r.FirstOrDefault(f => string.Compare(f.Name, j.Name, false) == 0) == null)
 						r.Add(j);
 				}
 			}

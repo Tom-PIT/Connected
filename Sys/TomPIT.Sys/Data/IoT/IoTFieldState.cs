@@ -1,6 +1,6 @@
 ﻿using TomPIT.IoT;
 
-namespace TomPIT.Sys.Data
+namespace TomPIT.Sys.Data.IoT
 {
 	internal class IoTFieldState : IIoTFieldStateModifier
 	{

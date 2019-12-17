@@ -5,7 +5,7 @@ using TomPIT.IoT;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
 
-namespace TomPIT.Sys.Data
+namespace TomPIT.Sys.Data.IoT
 {
 	public class IoTState : CacheRepository<List<IIoTFieldState>, Guid>
 	{

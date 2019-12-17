@@ -158,6 +158,13 @@ namespace TomPIT.Reflection.Manifests.Providers
 				return;
 			}
 
+			manifest.IsArray = symbol.IsArray(model);
+
+			if (symbol.IsArray(model) && symbol is INamedTypeSymbol nt1 && !nt1.TypeArguments.IsEmpty && nt1.TypeArguments[0] is INamedTypeSymbol nt)
+				manifest.Name = nt.Name;
+			else
+				manifest.Name = symbol.Name;
+
 			//manifest.Documentation = ExtractDocumentation(symbol);
 
 			BindProperties(model, symbol, manifest.Properties, types);

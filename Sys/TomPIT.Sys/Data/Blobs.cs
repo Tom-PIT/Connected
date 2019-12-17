@@ -64,7 +64,9 @@ namespace TomPIT.Sys.Data
 
 		public List<IBlob> Query(Guid resourceGroup, int type, string primaryKey)
 		{
-			var r = DataModel.ResourceGroups.Select(resourceGroup);
+			var r = resourceGroup == Guid.Empty
+				? DataModel.ResourceGroups.Default
+				: DataModel.ResourceGroups.Select(resourceGroup);
 
 			if (r == null)
 				throw new SysException(SR.ErrResourceGroupNotFound);
@@ -74,7 +76,9 @@ namespace TomPIT.Sys.Data
 
 		public List<IBlob> Query(Guid resourceGroup, int type, string primaryKey, Guid microService, string topic)
 		{
-			var r = DataModel.ResourceGroups.Select(resourceGroup);
+			var r = resourceGroup == Guid.Empty
+				? DataModel.ResourceGroups.Default
+				: DataModel.ResourceGroups.Select(resourceGroup);
 
 			if (r == null)
 				throw new SysException(SR.ErrResourceGroupNotFound);

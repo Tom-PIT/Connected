@@ -25,11 +25,13 @@
 		public static string MailTemplate => "MailTemplate";
 		public static string DataHub => "DataHub";
 		public static string SearchCatalog => "SearchCatalog";
+		public static string Installer => "Installer";
 		public static string EventBinder => "EventBinder";
 		public static string IoTHub => "IoTHub";
 		public static string IoTSchema => "IoTSchema";
 		public static string IoCContainer => "IoCContainer";
 		public static string IoCEndpoint => "IoCEndpoint";
+		public static string Report => "Report";
 
 		public static string NameSpacePublicScript => "PublicScript";
 		public static string NameSpaceInternalScript => "InternalScript";
@@ -38,6 +40,7 @@
 		public static string NameSpaceReference => "Reference";
 		public static string NameSpaceResource => "Resource";
 		public static string NameSpaceMiddleware => "Middleware";
+		public static string NameSpaceDeployment => "Deployment";
 
 		public static string[] ScriptCategories => new string[] { Script, IoCContainer };
 		public static string ResolveNamespace(string category)
@@ -75,6 +78,8 @@
 				return NameSpaceResource;
 			else if (string.Compare(category, EventBinder, true) == 0)
 				return NameSpaceMiddleware;
+			else if (string.Compare(category, Installer, true) == 0)
+				return NameSpaceDeployment;
 			else
 				return "Default";
 		}

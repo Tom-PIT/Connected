@@ -56,11 +56,11 @@ namespace TomPIT.MicroServices.Design.Media
 				if (!ParseQueryString())
 				{
 					Command = (MediaCommand)Enum.Parse(typeof(MediaCommand), Context.Request.Form["command"]);
-					string query = Context.Request.Form["arguments"];
+					string args = Context.Request.Form["arguments"];
 
-					Arguments = string.IsNullOrEmpty(query)
-						? new Dictionary<string, string>()
-						: Serializer.Deserialize<Dictionary<string, string>>(query);
+					Arguments = string.IsNullOrEmpty(args)
+						? new JObject()
+						: Serializer.Deserialize<JObject>(args);
 				}
 			}
 			else
@@ -123,9 +123,10 @@ namespace TomPIT.MicroServices.Design.Media
 			Command = (MediaCommand)Enum.Parse(typeof(MediaCommand), Context.Request.Query["command"]);
 			string query = Context.Request.Query["arguments"];
 
-			Arguments = string.IsNullOrEmpty(query)
-				? new Dictionary<string, string>()
-				: Serializer.Deserialize<Dictionary<string, string>>(query);
+			if (!string.IsNullOrWhiteSpace(query))
+				Arguments = Serializer.Deserialize<JObject>(query);
+			else
+				Arguments = new JObject();
 
 			return true;
 		}
@@ -134,7 +135,7 @@ namespace TomPIT.MicroServices.Design.Media
 		{
 			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
 
-			var metaData = Serializer.Deserialize<ChunkMetaData>(Arguments["chunkMetadata"]);
+			var metaData = Serializer.Deserialize<ChunkMetaData>(Arguments.Required<string>("chunkMetadata"));
 			var files = Context.Request.Form.Files;
 
 			if (files.Count == 0)
@@ -183,7 +184,7 @@ namespace TomPIT.MicroServices.Design.Media
 
 			if (metaData.Index == metaData.TotalCount - 1)
 			{
-				var folder = ResolveFolder(Arguments["destinationId"]);
+				var folder = ResolveFolder(Arguments.Required<string>("destinationId"));
 				var targetFile = folder == null
 					? Media.Files.FirstOrDefault(f => string.Compare(f.FileName, metaData.FileName, true) == 0)
 					: folder.Files.FirstOrDefault(f => string.Compare(f.FileName, metaData.FileName, true) == 0);
@@ -225,10 +226,9 @@ namespace TomPIT.MicroServices.Design.Media
 		{
 			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
 
-			var id = Arguments["id"];
-			var name = Arguments["name"];
-
-			var tokens = id.Split("/");
+			var path = PathInfo;
+			var name = Arguments.Required<string>("name");
+			var tokens = path.Split("/");
 			IMediaResourceFolder parent = null;
 			IMediaResourceFile file = null;
 
@@ -283,20 +283,20 @@ namespace TomPIT.MicroServices.Design.Media
 		{
 			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
 
-			var id = Arguments["id"];
+			var path = PathInfo;
 
-			if (IsFolder(id))
-				DeleteFolder(id);
+			if (IsFolder(path))
+				DeleteFolder(path);
 			else
-				DeleteFile(id);
+				DeleteFile(path);
 
 			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
 			RenderResult(true);
 		}
 
-		private void DeleteFolder(string id)
+		private void DeleteFolder(string path)
 		{
-			DeleteFolder(ResolveFolder(id));
+			DeleteFolder(ResolveFolder(path));
 		}
 
 		private void DeleteFolder(IMediaResourceFolder folder)
@@ -318,9 +318,9 @@ namespace TomPIT.MicroServices.Design.Media
 			}
 		}
 
-		private void DeleteFile(string id)
+		private void DeleteFile(string path)
 		{
-			DeleteFile(ResolveFile(id));
+			DeleteFile(ResolveFile(path));
 		}
 
 		private void DeleteFile(IMediaResourceFile file)
@@ -358,13 +358,13 @@ namespace TomPIT.MicroServices.Design.Media
 		{
 			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
 
-			var sourceId = Arguments["sourceId"];
-			var destinationId = Arguments["destinationId"];
+			var sourcePath = SourcePathInfo;
+			var destinationPath = DestinationPathInfo;
 
-			if (IsFolder(sourceId))
-				MoveFolder(sourceId, destinationId);
+			if (IsFolder(sourcePath))
+				MoveFolder(sourcePath, destinationPath);
 			else
-				MoveFile(sourceId, destinationId);
+				MoveFile(sourcePath, destinationPath);
 
 			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
 
@@ -472,7 +472,7 @@ namespace TomPIT.MicroServices.Design.Media
 
 		private void GetDirContents()
 		{
-			var path = Arguments["parentId"];
+			var path = PathInfo;
 			var parentFolder = ResolveFolder(path);
 			var result = new List<ClientFileDescriptor>();
 
@@ -538,10 +538,10 @@ namespace TomPIT.MicroServices.Design.Media
 		{
 			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
 
-			var parentId = Arguments["parentId"];
-			var name = Arguments["name"];
+			var path = PathInfo;
+			var name = Arguments.Required<string>("name");
 
-			var parent = ResolveFolder(parentId);
+			var parent = ResolveFolder(path);
 
 			if (parent == null)
 			{
@@ -583,13 +583,13 @@ namespace TomPIT.MicroServices.Design.Media
 		{
 			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
 
-			var sourceId = Arguments["sourceId"];
-			var destinationId = Arguments["destinationId"];
+			var sourcePath = SourcePathInfo;
+			var destinationPath = DestinationPathInfo;
 
-			if (IsFolder(sourceId))
-				CopyFolder(sourceId, destinationId);
+			if (IsFolder(sourcePath))
+				CopyFolder(sourcePath, destinationPath);
 			else
-				CopyFile(sourceId, destinationId);
+				CopyFile(sourcePath, destinationPath);
 
 			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
 
@@ -735,7 +735,7 @@ namespace TomPIT.MicroServices.Design.Media
 
 		private void AbordUpload()
 		{
-			var blobs = Tenant.GetService<IStorageService>().QueryDrafts(Arguments["uploadId"]);
+			var blobs = Tenant.GetService<IStorageService>().QueryDrafts(Arguments.Required<string>("uploadId"));
 
 			foreach (var blob in blobs)
 				Tenant.GetService<IStorageService>().Delete(blob.Token);
@@ -744,7 +744,7 @@ namespace TomPIT.MicroServices.Design.Media
 		}
 
 		private MediaCommand Command { get; set; }
-		private Dictionary<string, string> Arguments { get; set; }
+		private JObject Arguments { get; set; }
 		private IMicroService MicroService { get; set; }
 		private IMediaResourcesConfiguration Media { get; set; }
 		private IComponent Component { get; set; }
@@ -766,6 +766,9 @@ namespace TomPIT.MicroServices.Design.Media
 
 				if (result == null)
 				{
+					if (!IsFolder(path) && tokens.Length == 1)
+						return null;
+
 					RenderResult(false, ExceptionKind.FileNotFound);
 					throw new NotFoundException(SR.ErrMediaFolderNotFound);
 				}
@@ -926,6 +929,54 @@ namespace TomPIT.MicroServices.Design.Media
 						}
 					}
 				}
+			}
+		}
+
+		private string PathInfo
+		{
+			get
+			{
+				if (!Arguments.ContainsKey("pathInfo"))
+					return string.Empty;
+
+				var pathInfo = Arguments.Optional<JArray>("pathInfo", null);
+
+				if (pathInfo == null || pathInfo.Last == null)
+					return string.Empty;
+
+				return ((JObject)pathInfo.Last).Required<string>("key");
+			}
+		}
+
+		private string SourcePathInfo
+		{
+			get
+			{
+				if (!Arguments.ContainsKey("sourcePathInfo"))
+					return string.Empty;
+
+				var pathInfo = Arguments.Optional<JArray>("sourcePathInfo", null);
+
+				if (pathInfo == null || pathInfo.Last == null)
+					return string.Empty;
+
+				return ((JObject)pathInfo.Last).Required<string>("key");
+			}
+		}
+
+		private string DestinationPathInfo
+		{
+			get
+			{
+				if (!Arguments.ContainsKey("destinationPathInfo"))
+					return string.Empty;
+
+				var pathInfo = Arguments.Optional<JArray>("destinationPathInfo", null);
+
+				if (pathInfo == null || pathInfo.Last == null)
+					return string.Empty;
+
+				return ((JObject)pathInfo.Last).Required<string>("key");
 			}
 		}
 	}

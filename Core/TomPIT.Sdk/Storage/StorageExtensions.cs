@@ -1,32 +1,33 @@
 ﻿using System;
 using System.IO;
 using Microsoft.AspNetCore.Http;
-using TomPIT.Exceptions;
 using TomPIT.Middleware;
+using TomPIT.Middleware.Services;
 
 namespace TomPIT.Storage
 {
 	public static class StorageExtensions
 	{
-		public static void SaveUploadedFiles(this IMiddlewareContext context, string primaryKey)
+		public static void SaveUploadedFiles(this IMiddlewareStorageService service, string primaryKey, string topic)
 		{
-			SaveUploadedFiles(context, primaryKey, null);
+			SaveUploadedFiles(service, primaryKey, null, topic);
 		}
-		public static void SaveUploadedFileAsDrafts(this IMiddlewareContext context, string draft)
+		public static void SaveUploadedFileAsDrafts(this IMiddlewareStorageService service, string draft, string topic)
 		{
-			SaveUploadedFiles(context, null, draft);
-		}
-
-		public static Guid SaveUploadedFile(this IMiddlewareContext context, string primaryKey, IFormFile file)
-		{
-			return SaveUploadedFile(context, file, primaryKey, null);
-		}
-		public static Guid SaveUploadedFileAsDraft(this IMiddlewareContext context, string draft, IFormFile file)
-		{
-			return SaveUploadedFile(context, file, null, draft);
+			SaveUploadedFiles(service, null, draft, topic);
 		}
 
-		private static void SaveUploadedFiles(this IMiddlewareContext context, string primaryKey, string draft)
+		public static Guid SaveUploadedFile(this IMiddlewareStorageService service, string primaryKey, string topic, IFormFile file)
+		{
+			return SaveUploadedFile(service, file, primaryKey, null, topic);
+		}
+
+		public static Guid SaveUploadedFileAsDraft(this IMiddlewareStorageService service, string draft, string topic, IFormFile file)
+		{
+			return SaveUploadedFile(service, file, null, draft, topic);
+		}
+
+		private static void SaveUploadedFiles(this IMiddlewareStorageService service, string primaryKey, string draft, string topic)
 		{
 			if (Shell.HttpContext == null)
 				return;
@@ -37,26 +38,20 @@ namespace TomPIT.Storage
 				return;
 
 			foreach (var file in files)
-				SaveUploadedFile(context, file, primaryKey, draft);
+				SaveUploadedFile(service, file, primaryKey, draft, topic);
 		}
 
-		private static Guid SaveUploadedFile(this IMiddlewareContext context, IFormFile file, string primaryKey, string draft)
+		private static Guid SaveUploadedFile(this IMiddlewareStorageService service, IFormFile file, string primaryKey, string draft, string topic)
 		{
-			if (!(context is IMicroServiceContext msc))
-				throw new RuntimeException(SR.ErrMicroServiceContextExpected);
-
-			var ms = msc.MicroService;
-
 			var b = new Blob
 			{
 				ContentType = file.ContentType,
 				FileName = Path.GetFileName(file.FileName),
-				MicroService = ms.Token,
 				Size = Convert.ToInt32(file.Length),
-				ResourceGroup = ms.ResourceGroup,
 				Draft = draft,
 				PrimaryKey = primaryKey,
-				Type = BlobTypes.UserContent
+				Type = BlobTypes.UserContent,
+				Topic = topic
 			};
 
 			using (var s = new MemoryStream())
@@ -68,7 +63,7 @@ namespace TomPIT.Storage
 				s.Seek(0, SeekOrigin.Begin);
 				s.Read(buffer, 0, buffer.Length);
 
-				return context.Tenant.GetService<IStorageService>().Upload(b, buffer, StoragePolicy.Singleton);
+				return MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Upload(b, buffer, StoragePolicy.Singleton);
 			}
 		}
 	}

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using TomPIT.Cdn;
 using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.MicroServices.BigData
@@ -28,6 +29,11 @@ namespace TomPIT.MicroServices.BigData
 			{
 				"TomPIT.MicroServices.BigData"
 			};
+		}
+
+		public List<IPrintingProvider> GetPrintingProviders()
+		{
+			return null;
 		}
 
 		public void Initialize(IApplicationBuilder app, IWebHostEnvironment env)

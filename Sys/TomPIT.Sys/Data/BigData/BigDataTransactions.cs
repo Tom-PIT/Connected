@@ -5,7 +5,7 @@ using TomPIT.Caching;
 using TomPIT.Sys.Api.Database;
 using TomPIT.SysDb.Messaging;
 
-namespace TomPIT.Sys.Data
+namespace TomPIT.Sys.Data.BigData
 {
 	internal class BigDataTransactions : SynchronizedRepository<ITransaction, Guid>
 	{
@@ -46,7 +46,7 @@ namespace TomPIT.Sys.Data
 
 			var blocks = DataModel.BigDataTransactionBlocks.Query(transaction.Token);
 
-			foreach(var block in blocks)
+			foreach (var block in blocks)
 				Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(BigDataTransactionBlocks.Queue, block.Token.ToString(), TimeSpan.FromDays(14), TimeSpan.Zero, QueueScope.System);
 
 			Update(transaction.Token, transaction.BlockRemaining, TransactionStatus.Running);

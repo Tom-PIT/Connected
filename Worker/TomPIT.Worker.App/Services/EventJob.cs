@@ -51,6 +51,12 @@ namespace TomPIT.Worker.Services
 			if (ed == null)
 				return;
 
+			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(ed.MicroService);
+
+			if (ms == null)
+				return;
+
+			var eventName = $"{ms.Name}/{ed.Name}";
 			var eventInstance = CreateEventInstance(ed);
 
 			if (eventInstance != null)
@@ -65,7 +71,7 @@ namespace TomPIT.Worker.Services
 
 			if (string.Compare(ed.Name, "$", true) != 0)
 			{
-				var targets = EventHandlers.Query(ed.Name);
+				var targets = EventHandlers.Query(eventName);
 
 				if (targets != null)
 				{
@@ -77,7 +83,7 @@ namespace TomPIT.Worker.Services
 						Parallel.ForEach(configuration.Events,
 							(i) =>
 							{
-								if (ed.Name.Equals(i.Event, StringComparison.OrdinalIgnoreCase))
+								if (string.Compare(eventName, i.Event, true) == 0)
 								{
 									var result = Invoke(ed, i);
 
@@ -121,12 +127,8 @@ namespace TomPIT.Worker.Services
 				return;
 
 			var instance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IDistributedOperation>(ctx, op, ed.Arguments, op.Name);
-			var property = instance.GetType().GetProperty(nameof(IDistributedOperation.OperationTarget));
 
-			if (property.SetMethod == null)
-				return;
-
-			property.SetMethod.Invoke(instance, new object[] { DistributedOperationTarget.InProcess });
+			ReflectionExtensions.SetPropertyValue(instance, nameof(IDistributedOperation.OperationTarget), DistributedOperationTarget.InProcess);
 
 			if (responses != null && responses.Count > 0)
 				instance.Responses.AddRange(responses);
@@ -136,21 +138,15 @@ namespace TomPIT.Worker.Services
 
 		private List<IOperationResponse> Invoke(EventDescriptor ed, IEventBinding i)
 		{
-			var ctx = new MicroServiceContext(i.Configuration().MicroService());
-			var configuration = i.Closest<IEventBindingConfiguration>();
-
-			if (configuration == null)
-			{
-				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrElementClosestNull} ({nameof(IEventBinding)}->{nameof(IEventBindingConfiguration)}");
+			if (string.IsNullOrEmpty(i.Name))
 				return null;
-			}
 
-			var componentName = configuration.ComponentName();
-			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ctx.MicroService.Token, configuration, componentName, false);
+			var ctx = new MicroServiceContext(i.Configuration().MicroService());
+			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ctx.MicroService.Token, i, i.Name, false);
 
 			if (type == null)
 			{
-				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrTypeExpected} ({componentName})");
+				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrTypeExpected} ({i.Name})");
 				return null;
 			}
 
@@ -179,6 +175,7 @@ namespace TomPIT.Worker.Services
 				try
 				{
 					handler.Invoke(eventName);
+					break;
 				}
 				catch (Exception ex)
 				{
@@ -187,7 +184,8 @@ namespace TomPIT.Worker.Services
 				}
 			}
 
-			throw lastError;
+			if (lastError != null)
+				throw lastError;
 		}
 
 		protected override void OnError(IQueueMessage item, Exception ex)

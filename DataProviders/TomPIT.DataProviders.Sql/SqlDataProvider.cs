@@ -41,26 +41,26 @@ namespace TomPIT.DataProviders.Sql
 			if (connection.State == ConnectionState.Closed)
 				connection.Open();
 
-			try
+			//try
+			//{
+			SetupParameters(command, cmd);
+
+			foreach (var i in command.Parameters)
+				cmd.Parameters[i.Name].Value = i.Value;
+
+			cmd.ExecuteNonQuery();
+
+			foreach (var i in command.Parameters)
 			{
-				SetupParameters(command, cmd);
-
-				foreach (var i in command.Parameters)
-					cmd.Parameters[i.Name].Value = i.Value;
-
-				cmd.ExecuteNonQuery();
-
-				foreach (var i in command.Parameters)
-				{
-					if (i.Direction == ParameterDirection.ReturnValue)
-						i.Value = cmd.Parameters[i.Name].Value;
-				}
+				if (i.Direction == ParameterDirection.ReturnValue)
+					i.Value = cmd.Parameters[i.Name].Value;
 			}
-			finally
-			{
-				if (!externalConnection)
-					connection.Close();
-			}
+			//}
+			//finally
+			//{
+			//	if (!externalConnection)
+			//		connection.Close();
+			//}
 		}
 
 		private void SetupParameters(IDataCommandDescriptor command, SqlCommand cmd)
@@ -140,8 +140,8 @@ namespace TomPIT.DataProviders.Sql
 				if (rdr != null && !rdr.IsClosed)
 					rdr.Close();
 
-				if (connection == null && con.State == ConnectionState.Open)
-					con.Close();
+				//if (connection == null && con.State == ConnectionState.Open)
+				//	con.Close();
 			}
 		}
 

@@ -9,5 +9,6 @@
 		public const string Deployment = "Deployment";
 		public const string Worker = "Worker";
 		public const string Search = "Search";
+		public const string Navigation = "Navigation";
 	}
 }

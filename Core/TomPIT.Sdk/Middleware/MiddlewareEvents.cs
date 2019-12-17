@@ -13,5 +13,6 @@
 		 * CDN
 		 */
 		public const int SendMail = 601;
+		public const int Printing = 602;
 	}
 }

@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System.Collections;
+using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using TomPIT.Reflection;
 
 namespace TomPIT.Design.CodeAnalysis
 {
@@ -64,6 +66,11 @@ namespace TomPIT.Design.CodeAnalysis
 				return null;
 
 			return type.Type.LookupBaseType(model, baseTypeName);
+		}
+
+		public static bool IsArray(this ITypeSymbol type, SemanticModel model)
+		{
+			return type.LookupBaseType(model, typeof(IEnumerable).FullTypeName()) != default;
 		}
 		public static ITypeSymbol LookupBaseType(this ITypeSymbol type, SemanticModel model, string baseTypeName)
 		{
