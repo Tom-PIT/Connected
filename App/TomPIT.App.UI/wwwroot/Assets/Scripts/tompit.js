@@ -109,18 +109,27 @@
 	};
 
 
-	tompit.findProgress = function (s) {
-        if (typeof s !== 'undefined') {
+    tompit.findProgress = function (s) {
+        if (typeof s === 'undefined') {
+            // Find default progress
+            if (app.findMasterProgress) {
+                var p = app.findMasterProgress();
+                if (p.length > 0) {
+                    return p.tpProgress('instance');
+                }
+            }
+        }
+        else {
             var sel = s instanceof jQuery ? s : $(s);
-
-            if (sel.attr('[data-tp-tag="progress-container"]') !== null)
+            if (sel.attr('[data-tp-tag="progress-container"]') !== null) {
                 return sel.tpProgress('instance');
+            }
 
-			var p = $('[data-tp-tag="progress-container"]', sel);
-
-			if (p.length > 0)
-				return p.tpProgress('instance');
-		}
+            var p = $('[data-tp-tag="progress-container"]', sel);
+            if (p.length > 0) {
+                return p.tpProgress('instance');
+            }
+        }
 
 		return null;
 	};
