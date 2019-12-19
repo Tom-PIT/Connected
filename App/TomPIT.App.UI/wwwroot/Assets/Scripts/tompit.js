@@ -110,17 +110,10 @@
 
 
     tompit.findProgress = function (s) {
-        if (typeof s === 'undefined') {
-            // Find default progress
-            if (app.findMasterProgress) {
-                var p = app.findMasterProgress();
-                if (p.length > 0) {
-                    return p.tpProgress('instance');
-                }
-            }
-        }
-        else {
+
+        if (typeof s !== 'undefined') {
             var sel = s instanceof jQuery ? s : $(s);
+
             if (sel.attr('[data-tp-tag="progress-container"]') !== null) {
                 return sel.tpProgress('instance');
             }
@@ -131,7 +124,12 @@
             }
         }
 
-		return null;
+        var mp = $('[data-tp-tag="progress-container"][data-kind="master-progress-container"]');
+        if (mp.length > 0) {
+            return mp.tpProgress('instance');
+        }
+
+        return null;
 	};
 
 	tompit.resetContainer = function (options) {
