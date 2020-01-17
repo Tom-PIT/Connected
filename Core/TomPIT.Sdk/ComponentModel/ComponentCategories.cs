@@ -31,6 +31,8 @@
 		public static string IoTSchema => "IoTSchema";
 		public static string IoCContainer => "IoCContainer";
 		public static string IoCEndpoint => "IoCEndpoint";
+		public static string DependencyInjection => "DependencyInjection";
+		public static string UIDependencyInjection => "UIDependencyInjection";
 		public static string Report => "Report";
 
 		public static string NameSpacePublicScript => "PublicScript";

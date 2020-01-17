@@ -6,9 +6,9 @@ namespace TomPIT.Annotations.Design
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = true)]
 	public class DomDesignerAttribute : Attribute
 	{
-		public const string PermissionsDesigner = "TomPIT.Designers.PermissionsDesigner, TomPIT.Design";
+		public const string PermissionsDesigner = "TomPIT.Design.Designers.PermissionsDesigner, TomPIT.Design";
 		public const string MetricDesigner = "TomPIT.Management.Designers.MetricDesigner, TomPIT.Management";
-		public const string EmptyDesigner = "TomPIT.Designers.EmptyDesigner, TomPIT.Ide";
+		public const string EmptyDesigner = "TomPIT.Ide.Designers.EmptyDesigner, TomPIT.Ide";
 		public const string TextDesigner = "TomPIT.Ide.Designers.TextDesigner, TomPIT.Ide";
 
 		public DomDesignerAttribute() { }

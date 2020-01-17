@@ -205,6 +205,8 @@ namespace TomPIT.MicroServices.Reporting.Storage
 				JsonSource = new CustomJsonSource(serializedDs)
 			};
 
+			var y = result;
+
 			result.Fill();
 
 			return result;

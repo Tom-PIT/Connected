@@ -46,9 +46,13 @@
 		public const string DataHubEndpointPolicyItems = "TomPIT.MicroServices.Design.Items.DataHubEndpointPolicyCollection, " + DesignAssembly;
 		public const string DistributedEventItems = "TomPIT.MicroServices.Design.Items.DistributedEventCollection, " + DesignAssembly;
 		public const string IoCOperationItems = "TomPIT.MicroServices.Design.Items.IoCOperationCollection, " + DesignAssembly;
+		public const string DependencyInjectionsItems = "TomPIT.MicroServices.Design.Items.DependencyInjectionsCollection, " + DesignAssembly;
+		public const string UIDependencyInjectionsItems = "TomPIT.MicroServices.Design.Items.UIDependencyInjectionsCollection, " + DesignAssembly;
+		public const string ViewsItems = "TomPIT.MicroServices.Design.Items.ViewsItems, " + DesignAssembly;
+		public const string PartialsItems = "TomPIT.MicroServices.Design.Items.PartialsItems, " + DesignAssembly;
 		public const string QueueWorkerItems = "TomPIT.MicroServices.Design.Items.QueueWorkersCollection, " + DesignAssembly;
 		public const string IoCEndpointItems = "TomPIT.MicroServices.Design.Items.IoCEndpointCollection, " + DesignAssembly;
-
+		public const string ApiOperationListItems = "TomPIT.MicroServices.Design.Items.ApiOperationsItems, " + DesignAssembly;
 		public const string ApiElement = "TomPIT.MicroServices.Design.Dom.ApiElement, " + DesignAssembly;
 		public const string ApiOperationElement = "TomPIT.MicroServices.Design.Dom.ApiOperationElement, " + DesignAssembly;
 		public const string ScriptElement = "TomPIT.MicroServices.Design.Dom.ScriptElement, " + DesignAssembly;

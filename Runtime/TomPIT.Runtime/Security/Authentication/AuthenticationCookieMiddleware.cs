@@ -1,21 +1,31 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json.Linq;
 using TomPIT.Serialization;
 
 namespace TomPIT.Security.Authentication
 {
-	public class AuthenticationCookieFilter : IResultFilter
+	public class AuthenticationCookieMiddleware
 	{
-		public void OnResultExecuted(ResultExecutedContext context)
+		private readonly RequestDelegate _next;
+
+		public AuthenticationCookieMiddleware(RequestDelegate next)
 		{
+			_next = next;
 		}
 
-		public void OnResultExecuting(ResultExecutingContext context)
+		public async Task InvokeAsync(HttpContext context)
 		{
-			var cookie = context.HttpContext.Request.Cookies[SecurityUtils.AuthenticationCookieName];
+			SlideCookie(context);
+
+			await _next(context);
+		}
+
+		private void SlideCookie(HttpContext context)
+		{
+			var cookie = context.Request.Cookies[SecurityUtils.AuthenticationCookieName];
 
 			if (string.IsNullOrWhiteSpace(cookie))
 				return;
@@ -38,9 +48,9 @@ namespace TomPIT.Security.Authentication
 
 				json["expiration"] = expires.Ticks;
 
-				context.HttpContext.Response.Cookies.Delete(SecurityUtils.AuthenticationCookieName);
+				context.Response.Cookies.Delete(SecurityUtils.AuthenticationCookieName);
 
-				context.HttpContext.Response.Cookies.Append(SecurityUtils.AuthenticationCookieName,
+				context.Response.Cookies.Append(SecurityUtils.AuthenticationCookieName,
 					Convert.ToBase64String(Encoding.UTF8.GetBytes(Serializer.Serialize(json))), new CookieOptions
 					{
 						HttpOnly = true,

@@ -34,14 +34,19 @@ namespace TomPIT.Middleware.Services
 				if (string.IsNullOrWhiteSpace(src))
 					continue;
 
-				if (IsExternalResource(src))
+				if (IsExternalResource(src) && !IsMediaImage(src))
 					continue;
 
 				if (newImages == null || newImages.Count == 0)
 					DropResource(src);
 				else
 				{
-					if (newImages.FirstOrDefault(f => string.Compare(f.Attributes["src"].Value, src, true) == 0) == null)
+					if (IsMediaImage(src))
+					{
+						if (newImages.FirstOrDefault(f => string.Compare(f.Attributes["src"].Value, MediaIdentifier(src), true) == 0) == null)
+							DropResource(src);
+					}
+					else if (newImages.FirstOrDefault(f => string.Compare(f.Attributes["src"].Value, src, true) == 0) == null)
 						DropResource(src);
 				}
 			}
@@ -148,6 +153,14 @@ namespace TomPIT.Middleware.Services
 
 				if (att != null)
 				{
+					if (IsMediaImage(att.Value))
+					{
+						var mediaImageTokens = att.Value.Split('/');
+
+						att.Value = mediaImageTokens[^2];
+						continue;
+					}
+
 					if (!att.Value.StartsWith("data:"))
 						continue;
 
@@ -177,9 +190,7 @@ namespace TomPIT.Middleware.Services
 						Type = BlobTypes.HtmlImage
 					};
 
-					var imageId = Context.Tenant.GetService<IStorageService>().Upload(blob, Convert.FromBase64String(imageData), StoragePolicy.Extended);
-
-					att.Value = $"/sys/media/{imageId}/0";
+					att.Value = Context.Tenant.GetService<IStorageService>().Upload(blob, Convert.FromBase64String(imageData), StoragePolicy.Extended).ToString();
 				}
 			}
 		}
@@ -266,7 +277,7 @@ namespace TomPIT.Middleware.Services
 			if (string.IsNullOrWhiteSpace(url))
 				return false;
 
-			if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+			if (Uri.TryCreate(url, UriKind.Absolute, out Uri _))
 				return true;
 
 			return false;
@@ -274,10 +285,15 @@ namespace TomPIT.Middleware.Services
 
 		private void DropResource(string url)
 		{
-			var tokens = url.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+			if (IsMediaImage(url))
+				Context.Services.Storage.Delete(MediaIdentifier(url));
+			else
+			{
+				var tokens = url.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
-			if (tokens.Length > 2)
-				Context.Services.Storage.Delete(new Guid(tokens[2]));
+				if (tokens.Length > 2)
+					Context.Services.Storage.Delete(new Guid(tokens[2]));
+			}
 		}
 
 		public string StripHtml(string htmlText)
@@ -290,6 +306,33 @@ namespace TomPIT.Middleware.Services
 				return htmlText;
 
 			return doc.DocumentNode.InnerText;
+		}
+
+		private string MediaIdentifier(string url)
+		{
+			return url.Split('/')[^2];
+		}
+
+		private bool IsMediaImage(string url)
+		{
+			if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+				return false;
+
+			var template = new Uri(Context.Services.Routing.Absolute($"~/sys/media/{Guid.NewGuid()}/1"), UriKind.Absolute);
+
+			if (uri.Segments.Length != template.Segments.Length)
+				return false;
+
+			if (Uri.Compare(uri, template, UriComponents.Scheme | UriComponents.HostAndPort, UriFormat.UriEscaped, StringComparison.OrdinalIgnoreCase) != 0)
+				return false;
+
+			for (var i = 0; i < uri.Segments.Length - 2; i++)
+			{
+				if (string.Compare(uri.Segments[i], template.Segments[i], true) != 0)
+					return false;
+			}
+
+			return true;
 		}
 	}
 }

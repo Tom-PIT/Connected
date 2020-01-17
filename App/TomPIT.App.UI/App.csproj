@@ -11,9 +11,9 @@
     <AssemblyName>TomPIT.Experience.App</AssemblyName>
     <RootNamespace>TomPIT.App</RootNamespace>
     <CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
-    <AssemblyVersion>1.1.1217.1</AssemblyVersion>
-    <FileVersion>1.1.1217.1</FileVersion>
-    <Version>1.1.1217.1</Version>
+    <AssemblyVersion>1.1.1217.2</AssemblyVersion>
+    <FileVersion>1.1.1217.2</FileVersion>
+    <Version>1.1.1217.2</Version>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="compilerconfig.json" />
@@ -58,6 +58,9 @@
     <ProjectReference Include="..\..\Runtime\TomPIT.UI\TomPIT.UI.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Content Update="Views\UIInjectionView.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\_ViewImports.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

@@ -1,14 +1,10 @@
-﻿using System.Collections.Generic;
-using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
-using TomPIT.Ide.TextServices.Languages;
+﻿using TomPIT.ComponentModel;
 
 namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 {
-	internal class PartialCompletionProvider : CompletionProvider
+	internal class PartialCompletionProvider : ComponentCompletionProvider
 	{
-		protected override List<ICompletionItem> OnProvideItems()
-		{
-			return base.OnProvideItems();
-		}
+		protected override string ComponentCategory => ComponentCategories.Partial;
+		protected override bool IncludeReferences => true;
 	}
 }

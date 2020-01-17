@@ -29,7 +29,7 @@ namespace TomPIT.Middleware.Services
 
 			try
 			{
-				return MapPath(url);
+				return $"{RootUrl}{MapPath(url)}";
 			}
 			catch
 			{

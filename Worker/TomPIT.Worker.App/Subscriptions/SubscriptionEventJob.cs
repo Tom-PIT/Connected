@@ -45,8 +45,7 @@ namespace TomPIT.Worker.Subscriptions
 				return;
 
 			var ctx = new MicroServiceContext(config.MicroService());
-
-			var middleware = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<ISubscriptionEventMiddleware>(ctx, eventConfig, message.Optional("arguments", string.Empty));
+			var middleware = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<ISubscriptionEventMiddleware>(ctx, eventConfig, subscriptionEvent.Arguments, eventConfig.Name);
 
 			middleware.Event = subscriptionEvent;
 			middleware.Recipients = MiddlewareDescriptor.Current.Tenant.GetService<ISubscriptionWorkerService>().QueryRecipients(subscriptionEvent.Handler, subscriptionEvent.PrimaryKey, subscriptionEvent.Topic);

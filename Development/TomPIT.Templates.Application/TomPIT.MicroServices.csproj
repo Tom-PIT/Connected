@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <RootNamespace>TomPIT.MicroServices</RootNamespace>
     <AssemblyName>TomPIT.MicroServices</AssemblyName>
-    <AssemblyVersion>1.1.1217.1</AssemblyVersion>
-    <FileVersion>1.1.1217.1</FileVersion>
-    <Version>1.1.1217.1</Version>
+    <AssemblyVersion>1.1.1217.2</AssemblyVersion>
+    <FileVersion>1.1.1217.2</FileVersion>
+    <Version>1.1.1217.2</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>

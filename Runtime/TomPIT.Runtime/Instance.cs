@@ -89,7 +89,6 @@ namespace TomPIT
 				o.EnableEndpointRouting = false;
 				e.ConfigureMvc?.Invoke(o);
 
-				o.Filters.Add(new AuthenticationCookieFilter());
 			}).AddNewtonsoftJson()
 			.ConfigureApplicationPartManager((m) =>
 			{
@@ -142,6 +141,8 @@ namespace TomPIT
 		}
 		public static void Configure(InstanceType type, IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler)
 		{
+			app.UseMiddleware<AuthenticationCookieMiddleware>();
+
 			app.UseAuthentication();
 			app.UseAuthorization();
 			app.UseRequestLocalization(o =>

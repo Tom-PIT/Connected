@@ -2,6 +2,7 @@
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.Connectivity;
+using TomPIT.Models;
 
 namespace TomPIT.Compilation.Views
 {
@@ -17,10 +18,11 @@ namespace TomPIT.Compilation.Views
 		private IMailTemplateConfiguration Template { get; }
 		public override void Compile(ITenant tenant, IComponent component, IConfiguration configuration)
 		{
-			AppendBaseType(Builder, "TomPIT.App.UI.MailViewBase");
+			AppendBaseType(Builder, "TomPIT.Runtime.UI.MailViewBase", "TomPIT.Models.IViewModel");
 			AddUsings(Builder);
 			AddTagHelpers(Builder);
 
+			Builder.AppendLine(string.Format("@model {0}", ResolveModel()));
 			AppendViewMetaData(Builder, "MailTemplate", component.Token);
 
 			Builder.Append(Source);
@@ -37,6 +39,11 @@ namespace TomPIT.Compilation.Views
 
 				return _sb;
 			}
+		}
+
+		private string ResolveModel()
+		{
+			return typeof(IViewModel).Name;
 		}
 	}
 }
