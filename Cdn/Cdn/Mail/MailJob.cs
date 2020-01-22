@@ -48,7 +48,7 @@ namespace TomPIT.Cdn.Mail
 			try
 			{
 				var address = MailboxAddress.Parse(item.To);
-				var message = new MailProcessor(item);
+				var message = new MailProcessor(item, ((MailDispatcher)Owner).ResourceGroup);
 
 				message.Create();
 

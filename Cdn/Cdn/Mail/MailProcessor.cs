@@ -1,5 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using MimeKit;
+using TomPIT.Environment;
 using TomPIT.Middleware;
 using TomPIT.Storage;
 
@@ -7,9 +9,10 @@ namespace TomPIT.Cdn.Mail
 {
 	internal class MailProcessor
 	{
-		public MailProcessor(IMailMessage message)
+		public MailProcessor(IMailMessage message, string resourceGroup)
 		{
 			Configuration = message;
+			ResourceGroup = resourceGroup;
 		}
 
 		public void Create()
@@ -23,6 +26,7 @@ namespace TomPIT.Cdn.Mail
 
 		public MimeMessage Message { get; private set; }
 		private IMailMessage Configuration { get; }
+		private string ResourceGroup { get; }
 
 		private void CreateMeta()
 		{
@@ -76,7 +80,8 @@ namespace TomPIT.Cdn.Mail
 			if (Configuration.AttachmentCount == 0)
 				return;
 
-			var blobs = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Query(Configuration.Token);
+			var rg = MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>().Select(ResourceGroup);
+			var blobs = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Query(Guid.Empty, BlobTypes.MailAttachment, rg.Token, Configuration.Token.ToString());
 
 			foreach (var i in blobs)
 			{

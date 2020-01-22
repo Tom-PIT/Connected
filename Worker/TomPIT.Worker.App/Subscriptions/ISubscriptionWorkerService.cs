@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using TomPIT.Cdn;
 using TomPIT.Storage;
 
@@ -11,7 +9,6 @@ namespace TomPIT.Worker.Subscriptions
 	{
 		void CompleteSubscription(Guid popReceipt);
 		void CompleteEvent(Guid popReceipt);
-		ISubscription SelectSubscription(Guid token);
 		ISubscriptionEvent SelectEvent(Guid token);
 		void InsertSubscribers(Guid token, List<IRecipient> recipients);
 		void PingSubscription(Guid popReceipt);

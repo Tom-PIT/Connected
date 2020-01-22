@@ -291,7 +291,8 @@ CREATE TABLE [tompit].[subscriber]
 [id] [bigint] NOT NULL IDENTITY(1, 1),
 [subscription] [bigint] NOT NULL,
 [resource_type] [int] NOT NULL,
-[resource_primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL
+[resource_primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[token] [uniqueidentifier] NULL
 ) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -453,13 +454,14 @@ GO
 CREATE PROCEDURE [tompit].[subscriber_ins]
 	@subscription bigint,
 	@resource_type int,
-	@resource_primary_key nvarchar(128)
+	@resource_primary_key nvarchar(128),
+	@token uniqueidentifier
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	INSERT tompit.subscriber (subscription, resource_type, resource_primary_key)
-	VALUES (@subscription, @resource_type, @resource_primary_key);
+	INSERT tompit.subscriber (subscription, resource_type, resource_primary_key, token)
+	VALUES (@subscription, @resource_type, @resource_primary_key, @token);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -505,10 +507,11 @@ IF @@ERROR <> 0 SET NOEXEC ON
 GO
 PRINT N'Creating [tompit].[view_subscriber]'
 GO
+
 CREATE VIEW [tompit].[view_subscriber]
 AS
 
-SELECT s.id, s.subscription, s.resource_type, s.resource_primary_key,
+SELECT s.id, s.subscription, s.resource_type, s.resource_primary_key, s.token,
 	su.token subscription_token
 FROM tompit.subscriber s
 INNER JOIN tompit.subscription su ON s.subscription = su.id
@@ -547,18 +550,20 @@ GO
 PRINT N'Creating [tompit].[subscriber_sel]'
 GO
 CREATE PROCEDURE [tompit].[subscriber_sel]
-	@subscription bigint,
-	@resource_type int,
-	@resource_primary_key nvarchar(128)
+	@subscription bigint = NULL,
+	@resource_type int = NULL,
+	@resource_primary_key nvarchar(128) = NULL,
+	@token uniqueidentifier = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SELECT TOP 1 *
 	FROM tompit.view_subscriber 
-	WHERE (subscription = @subscription)
-	AND (resource_type = @resource_type)
-	AND (resource_primary_key = @resource_primary_key);
+	WHERE (@subscription IS NULL OR subscription = @subscription)
+	AND (@resource_type IS NULL OR resource_type = @resource_type)
+	AND (@resource_primary_key IS NULL OR resource_primary_key = @resource_primary_key)
+	AND (@token IS NULL OR token = @token);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3040,11 +3045,11 @@ BEGIN
 	SET NOCOUNT ON;
 
 	MERGE tompit.subscriber d
-	USING (SELECT resource_type, resource_primary_key FROM OPENJSON(@items) WITH (resource_type int, resource_primary_key nvarchar(128))) AS s (resource_type, resource_primary_key)
+	USING (SELECT resource_type, resource_primary_key, token FROM OPENJSON(@items) WITH (resource_type int, resource_primary_key nvarchar(128), token uniqueidentifier)) AS s (resource_type, resource_primary_key, token)
 	ON (d.subscription = @subscription AND d.resource_type = s.resource_type AND d.resource_primary_key = s.resource_primary_key)
 	WHEN NOT MATCHED THEN
-	INSERT (subscription, resource_type, resource_primary_key)
-	VALUES (@subscription, s.resource_type, s.resource_primary_key);
+	INSERT (subscription, resource_type, resource_primary_key, token)
+	VALUES (@subscription, s.resource_type, s.resource_primary_key, s.token);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON

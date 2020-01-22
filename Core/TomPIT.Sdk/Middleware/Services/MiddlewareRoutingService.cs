@@ -29,7 +29,7 @@ namespace TomPIT.Middleware.Services
 
 			try
 			{
-				return $"{RootUrl}{MapPath(url)}";
+				return $"{RootUrl}{MapPath(url, false)}";
 			}
 			catch
 			{
@@ -332,19 +332,30 @@ namespace TomPIT.Middleware.Services
 			return path.Substring(Shell.HttpContext.Request.PathBase.Value.Length);
 		}
 
-		public string MapPath(string relativePath)
+		private string MapPath(string relativePath, bool includePathBase)
 		{
 			if (string.IsNullOrEmpty(relativePath))
 				return null;
 			else if (relativePath[0] == '~')
 			{
 				var segment = new PathString(relativePath.Substring(1));
-				var applicationPath = Shell.HttpContext.Request.PathBase;
 
-				return applicationPath.Add(segment).Value;
+				if (includePathBase)
+				{
+					var applicationPath = Shell.HttpContext.Request.PathBase;
+
+					return applicationPath.Add(segment).Value;
+				}
+				else
+					return segment.Value;
 			}
 
 			return relativePath;
+		}
+
+		public string MapPath(string relativePath)
+		{
+			return MapPath(relativePath, true);
 		}
 
 		public bool CompareUrls(string path1, string path2)

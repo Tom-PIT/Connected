@@ -20,7 +20,7 @@ namespace TomPIT
 			if (!(Html.ViewData.Model is IMiddlewareContext m))
 				return DefaultAvatar();
 
-			var url = m.Services.Routing.MapPath(m.Services.Routing.Avatar(user));
+			var url = m.Services.Routing.Avatar(user);
 
 			if (string.IsNullOrWhiteSpace(url))
 				return DefaultAvatar();

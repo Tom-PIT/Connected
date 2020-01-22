@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TomPIT.Cdn;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
@@ -63,6 +63,21 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, SysDb.Messaging.QueueScope.System);
 		}
 
+		public ISubscriber SelectSubscriber(Guid token)
+		{
+			return Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.SelectSubscriber(token);
+		}
+
+		public ISubscriber SelectSubscriber(Guid subscription, SubscriptionResourceType type, string resourcePrimaryKey)
+		{
+			var sub = Select(subscription);
+
+			if (sub == null)
+				throw new SysException(SR.ErrSubscriptionNotFound);
+
+			return Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.SelectSubscriber(sub, type, resourcePrimaryKey);
+		}
+
 		public ISubscriber SelectSubscriber(Guid handler, string topic, string primaryKey, SubscriptionResourceType type, string resourcePrimaryKey)
 		{
 			var subscription = Select(handler, topic, primaryKey);
@@ -92,7 +107,7 @@ namespace TomPIT.Sys.Data
 
 			var id = Guid.NewGuid();
 
-			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.InsertSubscriber(sub, type, resourcePrimaryKey);
+			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.InsertSubscriber(sub, id, type, resourcePrimaryKey);
 
 			return id;
 		}
@@ -117,7 +132,7 @@ namespace TomPIT.Sys.Data
 			var sub = Select(handler, topic, primaryKey);
 
 			if (sub == null)
-				throw new SysException(SR.ErrSubscriptionEventNotFound);
+				throw new SysException($"{SR.ErrSubscriptionNotFoundForPrimaryKey} ({primaryKey})");
 
 			var id = Guid.NewGuid();
 			var ms = microService == Guid.Empty

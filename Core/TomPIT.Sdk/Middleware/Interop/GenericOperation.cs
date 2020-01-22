@@ -56,22 +56,29 @@ namespace TomPIT.Middleware.Interop
 		{
 			ValidateExtender();
 			Validate();
+			ValidateDependencies();
 
 			try
 			{
 				if (Context.Environment.IsInteractive)
+				{
 					OnAuthorize();
+					AuthorizeDependencies();
+				}
 
 				var result = OnInvoke();
 
 				if (IsCommitable)
+				{
 					OnCommit();
+					CommitDependencies();
+				}
 
 				if (result == null)
 					return result;
 
 				if (string.IsNullOrWhiteSpace(Extender))
-					return result;
+					return DependencyInjections.Invoke(result);
 
 				var ext = ResolveExtenderType();
 				var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this));
@@ -95,9 +102,9 @@ namespace TomPIT.Middleware.Interop
 						listResult.Add(i);
 
 					if (Context.Environment.IsInteractive)
-						return OnAuthorize(result);
+						return DependencyInjections.Authorize(OnAuthorize(result));
 					else
-						return result;
+						return DependencyInjections.Invoke(result);
 				}
 				else
 				{
@@ -108,9 +115,9 @@ namespace TomPIT.Middleware.Interop
 					var listResult = method.Invoke(extenderInstance, new object[] { listInstance }) as IList;
 
 					if (Context.Environment.IsInteractive)
-						return OnAuthorize((TReturnValue)listResult[0]);
+						return DependencyInjections.Authorize(OnAuthorize(((TReturnValue)listResult[0])));
 					else
-						return (TReturnValue)listResult[0];
+						return DependencyInjections.Invoke((TReturnValue)listResult[0]);
 				}
 			}
 			catch (Exception ex)
@@ -167,6 +174,24 @@ namespace TomPIT.Middleware.Interop
 				throw new RuntimeException($"{SR.ErrExtenderNotSupported} ({Extender})");
 
 			return extender.Extender;
+		}
+
+		protected internal void CommitDependencies()
+		{
+			foreach (var dependency in DependencyInjections)
+				dependency.Commit();
+		}
+
+		protected internal void AuthorizeDependencies()
+		{
+			foreach (var dependency in DependencyInjections)
+				dependency.Authorize();
+		}
+
+		protected internal void ValidateDependencies()
+		{
+			foreach (var dependency in DependencyInjections)
+				dependency.Validate();
 		}
 	}
 }

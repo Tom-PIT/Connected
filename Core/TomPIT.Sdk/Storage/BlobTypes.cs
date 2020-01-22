@@ -25,5 +25,6 @@
 		public const int DatabaseState = 1003;
 		public const int UserContent = 1103;
 		public const int BigDataTransactionBlock = 1201;
+		public const int MailAttachment = 1301;
 	}
 }

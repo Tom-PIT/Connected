@@ -85,31 +85,32 @@ namespace TomPIT.Middleware.Interop
 		public void Invoke()
 		{
 			Validate();
+			DependencyInjections.Validate();
 
 			if (OperationTarget == DistributedOperationTarget.Distributed)
 			{
-				OnAuthorize();
 				OnBeginInvoke();
 
 				if (!((MiddlewareCallback)Callback).Attached)
 					Context.Services.Cdn.DistributedEvent("$", this, Callback);
 			}
 			else
+			{
 				OnInvoke();
+				DependencyInjections.Invoke<object>(null);
+			}
 
 			if (IsCommitable)
+			{
 				OnCommit();
+				DependencyInjections.Commit();
+			}
 
 			if (Context is MiddlewareContext mc)
 				mc.CloseConnections();
 		}
 
 		protected virtual void OnInvoke()
-		{
-
-		}
-
-		protected virtual void OnAuthorize()
 		{
 
 		}

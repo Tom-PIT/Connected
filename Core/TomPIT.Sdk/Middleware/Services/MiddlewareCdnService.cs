@@ -1,42 +1,87 @@
 ﻿using System;
-using System.Linq;
 using Newtonsoft.Json.Linq;
-using TomPIT.Annotations.Design;
 using TomPIT.Cdn;
-using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Distributed;
-using TomPIT.Diagostics;
-using TomPIT.Environment;
-using TomPIT.Exceptions;
-using TomPIT.Messaging;
-using TomPIT.Runtime;
-using TomPIT.Serialization;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Services
 {
 	internal class MiddlewareCdnService : MiddlewareObject, IMiddlewareCdnService
 	{
-		private string _dataHubServer = null;
+		private IMiddlewareEmail _email = null;
+		private IMiddlewareSubscriptions _subscriptions = null;
+		private IMiddlewareDataHub _dataHub = null;
+		private IMiddlewareEvents _events = null;
+		private IMiddlewareQueue _queue = null;
+		private IMiddlewarePrinting _printing = null;
 		public MiddlewareCdnService(IMiddlewareContext context) : base(context)
 		{
 		}
 
-		public string DataHubServer
+		public string DataHubServer => DataHub.Server;
+
+		public IMiddlewareEmail Mail
 		{
 			get
 			{
-				if (_dataHubServer == null)
-				{
-					_dataHubServer = Context.Services.Routing.GetServer(InstanceType.Cdn, InstanceVerbs.All);
+				if (_email == null)
+					_email = new MiddlewareEmail();
 
-					if (_dataHubServer == null)
-						throw new RuntimeException(SR.ErrNoCdnServer);
+				return _email;
+			}
+		}
 
-					_dataHubServer = $"{_dataHubServer}/dataHub";
-				}
+		public IMiddlewareSubscriptions Subscriptions
+		{
+			get
+			{
+				if (_subscriptions == null)
+					_subscriptions = new MiddlewareSubscriptions();
 
-				return _dataHubServer;
+				return _subscriptions;
+			}
+		}
+
+		public IMiddlewareDataHub DataHub
+		{
+			get
+			{
+				if (_dataHub == null)
+					_dataHub = new MiddlewareDataHub();
+
+				return _dataHub;
+			}
+		}
+
+		public IMiddlewareEvents Events
+		{
+			get
+			{
+				if (_events == null)
+					_events = new MiddlewareEvents();
+
+				return _events;
+			}
+		}
+
+		public IMiddlewareQueue Queue
+		{
+			get
+			{
+				if (_queue == null)
+					_queue = new MiddlewareQueue();
+
+				return _queue;
+			}
+		}
+
+		public IMiddlewarePrinting Printing
+		{
+			get
+			{
+				if (_printing == null)
+					_printing = new MiddlewarePrinting();
+
+				return _printing;
 			}
 		}
 
@@ -47,7 +92,7 @@ namespace TomPIT.Middleware.Services
 
 		public Guid SendMail(string from, string to, string subject, string body, JArray headers, int attachmentCount)
 		{
-			return Context.Tenant.GetService<IMailService>().Enqueue(from, to, subject, body, headers, attachmentCount, MailFormat.Html, DateTime.UtcNow, DateTime.UtcNow.AddHours(24));
+			return Mail.Send(from, to, subject, body, headers, attachmentCount);
 		}
 
 		public string CreateMailMessage(string template, string user)
@@ -57,31 +102,7 @@ namespace TomPIT.Middleware.Services
 
 		public string CreateMailMessage<T>(string template, string user, T arguments)
 		{
-			var descriptor = ComponentDescriptor.MailTemplate(Context, template);
-
-			descriptor.Validate();
-
-			var url = Context.Tenant.GetService<IRuntimeService>().Type == InstanceType.Application
-				? Context.Services.Routing.RootUrl
-				: Context.Tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Application, InstanceVerbs.Post);
-
-			if (string.IsNullOrWhiteSpace(url))
-				throw new RuntimeException(SR.ErrNoAppServer).WithMetrics(Context);
-
-			url = $"{url}/sys/mail-template/{descriptor.Component.Token}";
-
-			var e = new JObject();
-
-			if (!string.IsNullOrWhiteSpace(user))
-				e.Add("user", user);
-
-			if (arguments != null)
-				e.Add("arguments", Serializer.Serialize(arguments));
-
-			return Context.Tenant.Post<string>(url, e, new Connectivity.HttpRequestArgs
-			{
-				ReadRawResponse = true
-			});
+			return Mail.Create(template, user, arguments);
 		}
 
 		public void CreateSubscription(string subscription, string primaryKey)
@@ -91,59 +112,37 @@ namespace TomPIT.Middleware.Services
 
 		public void CreateSubscription(string subscription, string primaryKey, string topic)
 		{
-			var config = ComponentDescriptor.Subscription(Context, subscription);
-
-			config.Validate();
-
-			Context.Tenant.GetService<ISubscriptionService>().CreateSubscription(config.Configuration, primaryKey, topic);
+			Subscriptions.Create(subscription, primaryKey, topic);
 		}
 
 		public void Enqueue<T>([CIP(CIP.QueueWorkersProvider)]string queue, T arguments)
 		{
-			Context.Tenant.GetService<IQueueService>().Enqueue(ResolveQueue(queue), arguments);
+			Queue.Enqueue(queue, arguments);
 		}
 
 		public void Enqueue<T>([CIP(CIP.QueueWorkersProvider)]string queue, T arguments, TimeSpan expire, TimeSpan nextVisible)
 		{
-			Context.Tenant.GetService<IQueueService>().Enqueue(ResolveQueue(queue), arguments, expire, nextVisible);
+			Queue.Enqueue(queue, arguments, expire, nextVisible);
 		}
 
-		private IQueueWorker ResolveQueue(string qualifier)
-		{
-			var config = ComponentDescriptor.Queue(Context, qualifier);
-
-			config.Validate();
-
-			return config.Configuration.Workers.FirstOrDefault(f => string.Compare(f.Name, config.Element, true) == 0);
-		}
-
-		public void SubscriptionEvent([CodeAnalysisProvider(CodeAnalysisProviderAttribute.SubscriptionEventProvider)]string eventName, string primaryKey)
+		public void SubscriptionEvent([CIP(CIP.SubscriptionEventProvider)]string eventName, string primaryKey)
 		{
 			SubscriptionEvent(eventName, primaryKey, null);
 		}
 
-		public void SubscriptionEvent<T>([CodeAnalysisProvider(CodeAnalysisProviderAttribute.SubscriptionEventProvider)]string eventName, string primaryKey, T arguments)
+		public void SubscriptionEvent<T>([CIP(CIP.SubscriptionEventProvider)]string eventName, string primaryKey, T arguments)
 		{
 			SubscriptionEvent(eventName, primaryKey, null, arguments);
 		}
 
-		public void SubscriptionEvent([CodeAnalysisProvider(CodeAnalysisProviderAttribute.SubscriptionEventProvider)]string eventName, string primaryKey, string topic)
+		public void SubscriptionEvent([CIP(CIP.SubscriptionEventProvider)]string eventName, string primaryKey, string topic)
 		{
 			SubscriptionEvent<object>(eventName, primaryKey, topic, null);
 		}
 
-		public void SubscriptionEvent<T>([CodeAnalysisProvider(CodeAnalysisProviderAttribute.SubscriptionEventProvider)]string eventName, string primaryKey, string topic, T arguments)
+		public void SubscriptionEvent<T>([CIP(CIP.SubscriptionEventProvider)]string eventName, string primaryKey, string topic, T arguments)
 		{
-			var config = ComponentDescriptor.Subscription(Context, eventName);
-
-			config.Validate();
-
-			var ev = config.Configuration.Events.FirstOrDefault(f => string.Compare(f.Name, config.Element, true) == 0);
-
-			if (ev == null)
-				throw new RuntimeException($"{SR.ErrSubscriptionEventNotFound} ({config.MicroServiceName}/{config.ComponentName}/{config.Element})").WithMetrics(Context);
-
-			Context.Tenant.GetService<ISubscriptionService>().TriggerEvent(config.Configuration, config.Element, primaryKey, topic, arguments);
+			Subscriptions.TriggerEvent(eventName, primaryKey, topic, arguments);
 		}
 
 		public Guid DistributedEvent<T>([CIP(CIP.DistributedEventProvider)]string name, T e)
@@ -158,19 +157,7 @@ namespace TomPIT.Middleware.Services
 
 		public Guid DistributedEvent<T>([CIP(CIP.DistributedEventProvider)]string name, T e, IMiddlewareCallback callback)
 		{
-			if (callback is MiddlewareCallback ec)
-				ec.Attached = true;
-
-			var config = ComponentDescriptor.DistributedEvent(Context, name);
-
-			config.Validate();
-
-			var ev = config.Configuration.Events.FirstOrDefault(f => string.Compare(f.Name, config.Element, true) == 0);
-
-			if (ev == null)
-				throw new RuntimeException($"{SR.ErrDistributedEventNotFound} ({name})");
-
-			return Context.Tenant.GetService<IEventService>().Trigger(ev, callback, e);
+			return Events.TriggerEvent(name, e, callback);
 		}
 
 		public Guid DistributedEvent([CIP(CIP.DistributedEventProvider)]string name, IMiddlewareCallback callback)
@@ -178,36 +165,14 @@ namespace TomPIT.Middleware.Services
 			return DistributedEvent<object>(name, null, callback);
 		}
 
-		public bool SubscriptionExists([CodeAnalysisProvider(CodeAnalysisProviderAttribute.SubscriptionProvider)]string subscription, string primaryKey, string topic)
+		public bool SubscriptionExists([CIP(CIP.SubscriptionProvider)]string subscription, string primaryKey, string topic)
 		{
-			var config = ComponentDescriptor.Subscription(Context, subscription);
-
-			config.Validate();
-
-			return Context.Tenant.GetService<ISubscriptionService>().SubscriptionExists(config.Configuration, primaryKey, topic);
+			return Subscriptions.Exists(subscription, primaryKey, topic);
 		}
 
 		public void Notify<T>([CIP(CIP.DataHubEndpointProvider)] string dataHubEndpoint, T e)
 		{
-			var descriptor = ComponentDescriptor.DataHub(Context, dataHubEndpoint);
-
-			descriptor.Validate();
-
-			var endpoint = Context.Services.Routing.GetServer(InstanceType.Cdn, InstanceVerbs.Post);
-
-			if (endpoint == null)
-				throw new RuntimeException(SR.ErrNoCdnServer);
-
-			var url = $"{endpoint}/data";
-			var args = new JObject
-			{
-				{"endpoint",  $"{descriptor.MicroService.Name}/{descriptor.Component.Name}/{descriptor.Element}"}
-			};
-
-			if (e != null)
-				args.Add("arguments", Serializer.Deserialize<JObject>(Serializer.Serialize(e)));
-
-			Context.Tenant.Post(url, args);
+			DataHub.Notify(dataHubEndpoint, e);
 		}
 
 		public Guid PrintReport(string report, IPrinter printer)
@@ -222,11 +187,7 @@ namespace TomPIT.Middleware.Services
 
 		public Guid PrintReport(string report, IPrinter printer, object arguments, string provider)
 		{
-			var descriptor = ComponentDescriptor.Report(Context, report);
-
-			descriptor.Validate();
-
-			return Context.Tenant.GetService<IPrintingService>().Insert(provider, printer, descriptor.Component.Token, arguments);
+			return Printing.PrintReport(report, printer, arguments, provider);
 		}
 
 		public IPrintJob SelectPrintJob(Guid job)

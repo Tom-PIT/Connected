@@ -1,12 +1,27 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using TomPIT.Middleware;
+﻿using TomPIT.Middleware;
+using TomPIT.Reflection;
+using TomPIT.Serialization;
 
 namespace TomPIT.IoC
 {
 	public abstract class DependencyInjectionObject : MiddlewareObject, IDependencyInjectionObject
 	{
-		public IMiddlewareOperation Operation { get; private set; }
+		private IMiddlewareOperation _operation = null;
+
+		public IMiddlewareOperation Operation
+		{
+			get
+			{
+				return _operation;
+			}
+			private set
+			{
+				_operation = value;
+
+				if (_operation != null)
+					ReflectionExtensions.SetPropertyValue(this, nameof(Context), _operation.Context);
+			}
+		}
 
 		public void Authorize()
 		{
@@ -18,12 +33,28 @@ namespace TomPIT.IoC
 
 		}
 
-		public void Validate(List<ValidationResult> results)
+		public void Validate()
 		{
-			OnValidate(results);
+			OnValidate();
 		}
 
-		protected virtual void OnValidate(List<ValidationResult> results)
+		protected virtual void OnValidate()
+		{
+
+		}
+
+		public void Synchronize(object instance)
+		{
+			if (instance != null)
+				Serializer.Populate(instance, this);
+		}
+
+		public void Commit()
+		{
+			OnCommit();
+		}
+
+		protected virtual void OnCommit()
 		{
 
 		}
@@ -31,7 +62,7 @@ namespace TomPIT.IoC
 
 	public class DependencyInjectionMiddleware : DependencyInjectionObject, IDependencyInjectionMiddleware
 	{
-		public void Invoke()
+		public void Invoke(object e)
 		{
 			OnInvoke();
 		}
@@ -54,12 +85,12 @@ namespace TomPIT.IoC
 			return e;
 		}
 
-		public T Invoke()
+		public T Invoke(T e)
 		{
-			return OnInvoke();
+			return OnInvoke(e);
 		}
 
-		protected virtual T OnInvoke()
+		protected virtual T OnInvoke(T e)
 		{
 			return default;
 		}

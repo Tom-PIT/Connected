@@ -30,7 +30,7 @@ namespace TomPIT.Worker.Subscriptions
 
 		private void Invoke(JObject message)
 		{
-			var sub = MiddlewareDescriptor.Current.Tenant.GetService<ISubscriptionWorkerService>().SelectSubscription(message.Required<Guid>("id"));
+			var sub = MiddlewareDescriptor.Current.Tenant.GetService<ISubscriptionService>().SelectSubscription(message.Required<Guid>("id"));
 
 			if (sub == null)
 				return;

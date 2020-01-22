@@ -7,6 +7,7 @@ namespace TomPIT.Models
 	{
 		private List<IRoute> _breadcrumbs = null;
 		private List<IRoute> _links = null;
+		private List<IRoute> _menu = null;
 
 		public List<IRoute> Breadcrumbs
 		{
@@ -27,6 +28,17 @@ namespace TomPIT.Models
 					_links = new List<IRoute>();
 
 				return _links;
+			}
+		}
+
+		public List<IRoute> Menu
+		{
+			get
+			{
+				if (_menu == null)
+					_menu = new List<IRoute>();
+
+				return _menu;
 			}
 		}
 	}

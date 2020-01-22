@@ -12,7 +12,7 @@ namespace TomPIT.Distributed
 
 		public event EventHandler Enqueued;
 
-		public Dispatcher(CancellationTokenSource cancel, int workerSize)
+		protected Dispatcher(CancellationTokenSource cancel, int workerSize)
 		{
 			_cancel = cancel;
 

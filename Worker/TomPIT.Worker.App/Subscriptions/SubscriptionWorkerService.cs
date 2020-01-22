@@ -87,17 +87,6 @@ namespace TomPIT.Worker.Subscriptions
 			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 		}
 
-		public ISubscription SelectSubscription(Guid token)
-		{
-			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SubscriptionManagement", "Select");
-			var e = new JObject
-			{
-				{"token",  token}
-			};
-
-			return MiddlewareDescriptor.Current.Tenant.Post<SubscriptionDescriptor>(u, e);
-		}
-
 		public ISubscriptionEvent SelectEvent(Guid token)
 		{
 			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SubscriptionManagement", "SelectEvent");

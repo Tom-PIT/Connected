@@ -1,11 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using TomPIT.Compilation;
 using TomPIT.Exceptions;
+using TomPIT.IoC;
+using TomPIT.Reflection;
+using TomPIT.Serialization;
 using TomPIT.UI;
 
 namespace TomPIT.Middleware
 {
-	public abstract class MiddlewareOperation : MiddlewareComponent, IMiddlewareOperation, IMiddlewareTransactionClient
+	public abstract class MiddlewareOperation : MiddlewareComponent, IMiddlewareOperation, IMiddlewareTransactionClient, ISerializationStateProvider
 	{
+		private List<IDependencyInjectionObject> _dependencies = null;
 		protected MiddlewareOperation()
 		{
 		}
@@ -16,6 +22,7 @@ namespace TomPIT.Middleware
 		}
 
 		protected IMiddlewareTransaction Transaction { get; private set; }
+		object ISerializationStateProvider.SerializationState { get; set; }
 
 		internal void AttachTransaction(IMiddlewareOperation sender)
 		{
@@ -95,6 +102,33 @@ namespace TomPIT.Middleware
 		protected virtual void OnRollback()
 		{
 
+		}
+
+		protected internal List<IDependencyInjectionObject> DependencyInjections
+		{
+			get
+			{
+				if (_dependencies == null)
+				{
+					var component = Context.Tenant.GetService<ICompilerService>().ResolveComponent(this);
+					var ms = Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this);
+
+					_dependencies = Context.Tenant.GetService<IDependencyInjectionService>().QueryApiDependencies($"{ms.Name}/{component.Name}/{GetType().ShortName()}", this);
+
+					if (_dependencies != null)
+					{
+						foreach (var dependency in _dependencies)
+						{
+							ReflectionExtensions.SetPropertyValue(dependency, nameof(IDependencyInjectionObject.Operation), this);
+							dependency.Synchronize(((ISerializationStateProvider)this).SerializationState);
+						}
+					}
+					else
+						_dependencies = new List<IDependencyInjectionObject>();
+				}
+
+				return _dependencies;
+			}
 		}
 	}
 }

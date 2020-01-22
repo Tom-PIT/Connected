@@ -1,24 +1,23 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using TomPIT.Middleware;
+﻿using TomPIT.Middleware;
 
 namespace TomPIT.IoC
 {
 	public interface IDependencyInjectionObject : IMiddlewareObject
 	{
 		IMiddlewareOperation Operation { get; }
-		void Validate(List<ValidationResult> results);
+		void Validate();
 		void Authorize();
-
+		void Commit();
+		void Synchronize(object instance);
 	}
 	public interface IDependencyInjectionMiddleware : IDependencyInjectionObject
 	{
-		void Invoke();
+		void Invoke(object e);
 	}
 
 	public interface IDependencyInjectionMiddleware<T> : IDependencyInjectionObject
 	{
-		T Invoke();
+		T Invoke(T e);
 		T Authorize(T e);
 	}
 }

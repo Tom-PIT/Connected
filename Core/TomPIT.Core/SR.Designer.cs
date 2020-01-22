@@ -2194,6 +2194,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Subscription not found for the specified primary key.
+        /// </summary>
+        public static string ErrSubscriptionNotFoundForPrimaryKey {
+            get {
+                return ResourceManager.GetString("ErrSubscriptionNotFoundForPrimaryKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sys context already registered..
         /// </summary>
         public static string ErrSysContextRegistered {

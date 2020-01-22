@@ -14,8 +14,6 @@ namespace TomPIT.Annotations.Design
 
 
 		public const string MicroservicesProvider = "TomPIT.Development.CodeAnalysis.Providers.MicroServicesProvider, " + DevelopmentAssembly;
-		public const string SubscriptionProvider = "TomPIT.Design.CodeAnalysis.Providers.SubscriptionProvider, " + DesignAssembly;
-		public const string SubscriptionEventProvider = "TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, " + DesignAssembly;
 
 		public const string ApiParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiParameterProvider, " + DesignAssembly;
 		public const string MailTemplateProvider = "TomPIT.Design.CodeAnalysis.Providers.MailTemplateProvider, " + DesignAssembly;

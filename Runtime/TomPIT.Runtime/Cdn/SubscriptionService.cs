@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.Connectivity;
@@ -62,6 +65,118 @@ namespace TomPIT.Cdn
 				e.Add("arguments", Serializer.Serialize(arguments));
 
 			Tenant.Post(u, e);
+		}
+
+		public List<IRecipient> QuerySubscribers(ISubscriptionConfiguration configuration, string primaryKey)
+		{
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("Subscription", "QuerySubscribers");
+			var e = new JObject
+			{
+				{"handler",  configuration.Component},
+				{"primaryKey",  primaryKey}
+			};
+
+			return MiddlewareDescriptor.Current.Tenant.Post<List<Recipient>>(u, e).ToList<IRecipient>();
+		}
+
+		public IRecipient SelectSubscriber(Guid token)
+		{
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("Subscription", "SelectSubscriberByToken");
+			var e = new JObject
+			{
+				{"token",  token}
+			};
+
+			return MiddlewareDescriptor.Current.Tenant.Post<Recipient>(u, e);
+		}
+
+		public IRecipient SelectSubscriber(Guid subscription, SubscriptionResourceType type, string resourcePrimaryKey)
+		{
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("Subscription", "SelectSubscriberBySubscription");
+			var e = new JObject
+			{
+				{"subscription",  subscription},
+				{"type",  type.ToString()},
+				{"resourcePrimaryKey",  resourcePrimaryKey}
+			};
+
+			return MiddlewareDescriptor.Current.Tenant.Post<Recipient>(u, e);
+		}
+
+		public Guid InsertSubscriber(Guid subscription, SubscriptionResourceType type, string resourcePrimaryKey)
+		{
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("Subscription", "InsertSubscriber");
+			var e = new JObject
+			{
+				{"subscription",  subscription},
+				{"type",  type.ToString()},
+				{"resourcePrimaryKey",  resourcePrimaryKey}
+			};
+
+			return MiddlewareDescriptor.Current.Tenant.Post<Guid>(u, e);
+		}
+
+		public void DeleteSubscriber(Guid subscription, SubscriptionResourceType type, string resourcePrimaryKey)
+		{
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("Subscription", "DeleteSubscriber");
+			var e = new JObject
+			{
+				{"subscription",  subscription},
+				{"type",  type.ToString()},
+				{"resourcePrimaryKey",  resourcePrimaryKey}
+			};
+
+			MiddlewareDescriptor.Current.Tenant.Post(u, e);
+		}
+
+		public void InsertSubscribers(Guid subscription, List<IRecipient> recipients)
+		{
+			if (recipients == null || recipients.Count == 0)
+				return;
+
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("Subscription", "InsertSubscribers");
+			var e = new JObject
+				{
+					{"subscription", subscription }
+				};
+
+			var a = new JArray();
+
+			e.Add("items", a);
+
+			foreach (var recipient in recipients)
+			{
+				a.Add(new JObject
+					{
+						{"type", recipient.Type.ToString() },
+						{"resourcePrimaryKey", recipient.ResourcePrimaryKey }
+					});
+			}
+
+			MiddlewareDescriptor.Current.Tenant.Post(u, e);
+		}
+
+		public ISubscription SelectSubscription(Guid token)
+		{
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("Subscription", "SelectSubscription");
+			var e = new JObject
+			{
+				{"token",  token}
+			};
+
+			return MiddlewareDescriptor.Current.Tenant.Post<SubscriptionDescriptor>(u, e);
+		}
+
+		public ISubscription SelectSubscription(Guid configuration, string primaryKey)
+		{
+			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("Subscription", "SelectSubscriptionByConfiguration");
+			var e = new JObject
+			{
+				{"handler",  configuration},
+				{"primaryKey",  primaryKey}
+			};
+
+			return MiddlewareDescriptor.Current.Tenant.Post<SubscriptionDescriptor>(u, e);
 		}
 	}
 }
