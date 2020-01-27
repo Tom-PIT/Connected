@@ -143,5 +143,18 @@
 				$(value).prop('disabled', false);
 			});
 		}
-	};
+    };
+
+
+    // Various formats (to be used with e.g. DevExpress.localization)
+    tompit.formatting = {
+        number: {
+            dxDdisplayFormat: "###,###,###,###,##0.##",
+            dxEditFormat: "##############0.######"
+        },
+        date: {
+            dxLongDateDisplay: "longdate",
+            momentDateTimeDisplay: "L LT"
+        }
+    };
 })(window.tompit = window.tompit || {}, jQuery);

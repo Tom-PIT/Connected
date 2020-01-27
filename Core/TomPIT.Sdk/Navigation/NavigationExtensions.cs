@@ -217,5 +217,66 @@ namespace TomPIT.Navigation
 
 			return view.Configuration.Url;
 		}
+
+
+		/// <summary>
+		/// Searches <see cref="ISiteMapContainer"/> for route with specified key.
+		/// </summary>
+		/// <param name="container">Instance of <see cref="ISiteMapContainer"/>.</param>
+		/// <param name="routeKey">Route key.</param>
+		/// <returns>Route (with child routes) if found; <code>null</code> otherwise.</returns>
+		public static ISiteMapRoute FindSiteMapRoute(this ISiteMapContainer container, string routeKey)
+		{
+			if (container == null || container.Routes == null || container.Routes.Count < 1)
+			{
+				return null;
+			}
+
+			foreach (var r in container.Routes)
+			{
+				var retVal = r.FindSiteMapRoute(routeKey);
+				if (retVal != null)
+				{
+					return retVal;
+				}
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Searches <see cref="ISiteMapRoute"/> for route with specified key.
+		/// </summary>
+		/// <param name="route">Instance of <see cref="ISiteMapRoute"/>.</param>
+		/// <param name="routeKey">Route key.</param>
+		/// <returns>Route (with child routes) if found; <code>null</code> otherwise.</returns>
+		public static ISiteMapRoute FindSiteMapRoute(this ISiteMapRoute route, string routeKey)
+		{
+			if (route == null)
+			{
+				return null;
+			}
+
+			if (string.Compare(routeKey, route.RouteKey, true) == 0)
+			{
+				return route;
+			}
+
+			if (route.Routes == null || route.Routes.Count < 1)
+			{
+				return null;
+			}
+
+			foreach (var r in route.Routes)
+			{
+				var retVal = r.FindSiteMapRoute(routeKey);
+				if (retVal != null)
+				{
+					return retVal;
+				}
+			}
+
+			return null;
+		}
 	}
 }
