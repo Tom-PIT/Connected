@@ -47,7 +47,7 @@ namespace TomPIT.IoC
 				var type = Tenant.GetService<ICompilerService>().ResolveType(microService, endpoint, endpoint.Name, false);
 
 				if (type == null)
-					return;
+					continue;
 
 				var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 

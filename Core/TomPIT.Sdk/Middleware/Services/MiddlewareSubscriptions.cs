@@ -113,7 +113,15 @@ namespace TomPIT.Middleware.Services
 		{
 			var sub = SelectSubscription(subscription, primaryKey);
 
-			return Context.Tenant.GetService<ISubscriptionService>().InsertSubscriber(sub.Token, SubscriptionResourceType.Alien, email);
+			var alien = Context.Tenant.GetService<IAlienService>().Select(email);
+			var alienToken = Guid.Empty;
+
+			if (alien == null)
+				alienToken = Context.Tenant.GetService<IAlienService>().Insert(null, null, email, null, null, Guid.Empty, null);
+			else
+				alienToken = alien.Token;
+
+			return Context.Tenant.GetService<ISubscriptionService>().InsertSubscriber(sub.Token, SubscriptionResourceType.Alien, alienToken.ToString());
 		}
 
 		public void UnsubscribeUser(string subscription, string primaryKey, string identifier)
