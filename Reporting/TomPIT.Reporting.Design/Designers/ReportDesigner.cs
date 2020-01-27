@@ -247,7 +247,18 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 				var type = Type.GetType(property.Type, false);
 
 				if (type == null)
-					type = TypeExtensions.FromFriendlyName(property.Type);
+				{
+					var manifestType = manifest.Types.FirstOrDefault(f => string.Compare(f.Type, property.Type, false) == 0);
+
+					if (manifestType != null)
+					{
+						fields.Add(CreateObjectNode(manifest, property, manifestType));
+
+						continue;
+					}
+					else
+						type = TypeExtensions.FromFriendlyName(property.Type);
+				}
 
 				fields.Add(new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
 				{
@@ -258,6 +269,39 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			schema.AddChildren(fields.ToArray());
 
 			return result;
+		}
+
+		private JsonSchemaNode CreateObjectNode(ApiManifest manifest, ManifestProperty property, ManifestMember member)
+		{
+			var objectNode = new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
+			{
+
+			});
+
+			foreach (var memberProperty in member.Properties)
+				objectNode.AddChildren(new DevExpress.DataAccess.Node<JsonNode>[] { CreatePropertyNode(manifest, memberProperty, member) });
+
+			return objectNode;
+		}
+
+		private JsonSchemaNode CreatePropertyNode(ApiManifest manifest, ManifestProperty property, ManifestMember member)
+		{
+			var type = Type.GetType(property.Type, false);
+
+			if (type == null)
+			{
+				var manifestType = manifest.Types.FirstOrDefault(f => string.Compare(f.Type, property.Type, false) == 0);
+
+				if (manifestType != null)
+					return CreateObjectNode(manifest, property, manifestType);
+				else
+					type = TypeExtensions.FromFriendlyName(property.Type);
+			}
+
+			return new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
+			{
+				Type = type
+			});
 		}
 
 		private void CreateRoot(JsonDataSource ds)
