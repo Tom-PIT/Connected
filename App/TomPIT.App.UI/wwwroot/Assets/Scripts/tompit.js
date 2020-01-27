@@ -149,7 +149,7 @@
     // Various formats (to be used with e.g. DevExpress.localization)
     tompit.formatting = {
         number: {
-            dxDdisplayFormat: "###,###,###,###,##0.##",
+            dxDisplayFormat: "###,###,###,###,##0.##",
             dxEditFormat: "##############0.######"
         },
         date: {
