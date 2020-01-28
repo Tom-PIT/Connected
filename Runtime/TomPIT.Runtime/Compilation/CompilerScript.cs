@@ -36,7 +36,6 @@ namespace TomPIT.Compilation
 				 .WithSourceResolver(new ScriptResolver(Tenant, MicroService))
 				 .WithMetadataResolver(new AssemblyResolver(Tenant, MicroService))
 				 .WithEmitDebugInformation(true)
-				 //.WithFilePath($"http://localhost:44002/sys/source-code/{msv.Name}/{SourceCode.ScriptName(Tenant)}")
 				 .WithFilePath(SourceCode.ScriptName(Tenant))
 				 .WithFileEncoding(Encoding.UTF8);
 
@@ -82,7 +81,7 @@ namespace TomPIT.Compilation
 					}
 				}
 
-				Script = CreateScript(code, options, loader);
+				Script = CreateScript($"{code};{System.Environment.NewLine}{GenerateStaticCode()}", options, loader);
 			}
 		}
 
@@ -110,5 +109,19 @@ namespace TomPIT.Compilation
 
 		//public IScriptDescriptor Result { get; private set; }
 		public Script<object> Script { get; private set; }
+
+		private string GenerateStaticCode()
+		{
+			var sb = new StringBuilder();
+
+			sb.AppendLine($"public static class {CompilerService.ScriptInfoClassName}");
+			sb.AppendLine("{");
+			sb.AppendLine($"public static System.Guid MicroService => new System.Guid(\"{MicroService.ToString()}\");");
+			sb.AppendLine($"public static System.Guid SourceCode => new System.Guid(\"{SourceCode.Id.ToString()}\");");
+			sb.AppendLine($"public static System.Guid Component => new System.Guid(\"{SourceCode.Configuration().Component.ToString()}\");");
+			sb.AppendLine("}");
+
+			return sb.ToString();
+		}
 	}
 }

@@ -29,6 +29,8 @@ namespace TomPIT.Compilation
 {
 	internal class CompilerService : ClientRepository<IScriptDescriptor, Guid>, ICompilerService, ICompilerNotification
 	{
+		internal const string ScriptInfoClassName = "__ScriptInfo";
+
 		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _references = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
 		private static Lazy<ConcurrentDictionary<Guid, ManualResetEvent>> _scriptCreateState = new Lazy<ConcurrentDictionary<Guid, ManualResetEvent>>();
 		private static readonly string[] Usings = new string[]
@@ -568,12 +570,14 @@ namespace TomPIT.Compilation
 			if (instance == null)
 				return null;
 
-			var script = Get(f => f.Assembly != null && string.Compare(instance.GetType().Assembly.GetName().Name, f.Assembly, true) == 0);
+			var typeInfo = instance.GetType().Assembly.DefinedTypes.FirstOrDefault(f => string.Compare(f.Name, ScriptInfoClassName, false) == 0);
 
-			if (script == null)
+			if (typeInfo == null)
 				return null;
 
-			return Tenant.GetService<IComponentService>().SelectComponent(script.Component);
+			var component = (Guid)typeInfo.GetProperty("Component").GetValue(null);
+
+			return Tenant.GetService<IComponentService>().SelectComponent(component);
 		}
 
 		public IMicroService ResolveMicroService(object instance)
@@ -586,12 +590,17 @@ namespace TomPIT.Compilation
 
 		public IMicroService ResolveMicroService(Type type)
 		{
-			var script = Get(f => f.Assembly != null && string.Compare(type.Assembly.GetName().Name, f.Assembly, true) == 0);
-
-			if (script == null)
+			if (type == null)
 				return null;
 
-			return Tenant.GetService<IMicroServiceService>().Select(script.MicroService);
+			var typeInfo = type.Assembly.DefinedTypes.FirstOrDefault(f => string.Compare(f.Name, ScriptInfoClassName, false) == 0);
+
+			if (typeInfo == null)
+				return null;
+
+			var ms = (Guid)typeInfo.GetProperty("MicroService").GetValue(null);
+
+			return Tenant.GetService<IMicroServiceService>().Select(ms);
 		}
 
 		private static ConcurrentDictionary<Guid, List<Guid>> References { get { return _references.Value; } }

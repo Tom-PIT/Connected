@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>2.1.122.1</AssemblyVersion>
-    <FileVersion>2.1.122.1</FileVersion>
-    <Version>2.1.122.1</Version>
+    <AssemblyVersion>2.1.128.2</AssemblyVersion>
+    <FileVersion>2.1.128.2</FileVersion>
+    <Version>2.1.128.2</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Views\Shell\**" />
