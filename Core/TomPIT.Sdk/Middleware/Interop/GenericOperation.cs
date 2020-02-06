@@ -66,7 +66,7 @@ namespace TomPIT.Middleware.Interop
 					AuthorizeDependencies();
 				}
 
-				var result = OnInvoke();
+				var result = DependencyInjections.Invoke(OnInvoke());
 
 				if (IsCommitable)
 				{
@@ -78,7 +78,7 @@ namespace TomPIT.Middleware.Interop
 					return result;
 
 				if (string.IsNullOrWhiteSpace(Extender))
-					return DependencyInjections.Invoke(result);
+					return result;
 
 				var ext = ResolveExtenderType();
 				var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this));
@@ -104,7 +104,7 @@ namespace TomPIT.Middleware.Interop
 					if (Context.Environment.IsInteractive)
 						return DependencyInjections.Authorize(OnAuthorize(result));
 					else
-						return DependencyInjections.Invoke(result);
+						return result;
 				}
 				else
 				{
@@ -117,7 +117,7 @@ namespace TomPIT.Middleware.Interop
 					if (Context.Environment.IsInteractive)
 						return DependencyInjections.Authorize(OnAuthorize(((TReturnValue)listResult[0])));
 					else
-						return DependencyInjections.Invoke((TReturnValue)listResult[0]);
+						return (TReturnValue)listResult[0];
 				}
 			}
 			catch (Exception ex)

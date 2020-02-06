@@ -37,6 +37,9 @@
         else
             options.data.__view = options.view;
 
+        if (typeof options.__viewUrl === 'undefined')
+            options.data.__viewUrl = window.location.href;
+
         delete options.view;
         delete options.parameters;
 
@@ -49,18 +52,21 @@
                 var selector = partial.attr('data-selector');
                 var mode = partial.attr('data-inject');
 
-                if (selector !== null) {
-                    if (mode === 'Before')
-                        $(selector).before(partial.html());
-                    else if (mode === 'Prepend')
-                        $(selector).prepend(partial.html());
-                    else if (mode === 'After')
-                        $(selector).after(partial.html());
-                    else if (mode === 'Replace')
-                        $(selector).html(partial.html());
-                    else
-                        $(selector).append(partial.html());
+                if (!selector) {
+                    selector = document.body;
+                    mode = 'Append';
                 }
+
+                if (mode === 'Before')
+                    $(selector).before(partial.html());
+                else if (mode === 'Prepend')
+                    $(selector).prepend(partial.html());
+                else if (mode === 'After')
+                    $(selector).after(partial.html());
+                else if (mode === 'Replace')
+                    $(selector).html(partial.html());
+                else
+                    $(selector).append(partial.html());
             });
         };
 
@@ -100,7 +106,7 @@
 
         $.each(tompit.invokeInjectors, function (i, v) {
             if (v.api && v.api !== api)
-                return false;
+                return;
 
             if (v.provideData) {
                 var rd = v.provideData(options.data);
@@ -110,6 +116,24 @@
             }
         });
 
+        options.onSuccessCompleting = function (data, status, request) {
+            var result = data;
+
+            $.each(tompit.invokeInjectors, function (i, v) {
+                if (v.api && v.api !== api)
+                    return;
+
+                if (v.extendData) {
+                    new Promise((resolve, reject) => {
+                        result = v.extendData(options.data, data);
+                        resolve();
+                    });
+                }
+            });
+
+            return result;
+        };
+
 		tompit.post(options);
 	};
 
@@ -117,6 +141,9 @@
         var exists = false;
 
         $.each(tompit.invokeInjectors, function (i, v) {
+            if (typeof e.name === 'undefined')
+                return false;
+
             if (v.name === e.name) {
                 v = e;
                 exists = true;

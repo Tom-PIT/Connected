@@ -219,7 +219,7 @@ namespace TomPIT.Management.Deployment.Packages
 
 				Configurations.Add(config);
 
-				if (Configuration.RuntimeConfigurationSupported && i.RuntimeConfiguration != Guid.Empty)
+				if ((string.Compare(i.Category, ComponentCategories.StringTable, true) == 0 || Configuration.RuntimeConfigurationSupported) && i.RuntimeConfiguration != Guid.Empty)
 					CreateBlob(tenant, i.RuntimeConfiguration);
 
 				CreateBlob(tenant, i.Token);

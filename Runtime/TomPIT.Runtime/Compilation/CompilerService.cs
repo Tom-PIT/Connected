@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -574,6 +575,30 @@ namespace TomPIT.Compilation
 
 			if (typeInfo == null)
 				return null;
+
+			var sourceFiles = (List<string>)typeInfo.GetProperty("SourceFiles").GetValue(null);
+
+			foreach (var file in sourceFiles)
+			{
+				var tokens = file.Split('/');
+				var typeName = Path.GetFileNameWithoutExtension(tokens[^1]);
+
+				if (string.Compare(typeName, instance.GetType().Name, false) == 0)
+				{
+					if (tokens.Length == 3)
+					{
+						var r = ComponentDescriptor.Api(new MiddlewareContext(Tenant.Url), Path.ChangeExtension(file, null));
+
+						try
+						{
+							r.Validate();
+
+							return r.Component;
+						}
+						catch { }
+					}
+				}
+			}
 
 			var component = (Guid)typeInfo.GetProperty("Component").GetValue(null);
 

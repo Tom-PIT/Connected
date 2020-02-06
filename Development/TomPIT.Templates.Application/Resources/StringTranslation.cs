@@ -7,5 +7,6 @@ namespace TomPIT.MicroServices.Resources
 	{
 		public int Lcid { get; set; }
 		public string Value { get; set; }
+		public bool Changed { get; set; }
 	}
 }

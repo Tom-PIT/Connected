@@ -12,10 +12,10 @@ namespace TomPIT.App.Models
 
 		public ApiModel()
 		{
-
+			Shell.HttpContext.Items["RootModel"] = this;
 		}
 
-		public ApiModel(string api, string component)
+		public ApiModel(string api, string component) : this()
 		{
 			if (string.IsNullOrWhiteSpace(api))
 				throw new RuntimeException($"{SR.ErrHttpHeaderExpected} (X-TP-API)").WithMetrics(this);

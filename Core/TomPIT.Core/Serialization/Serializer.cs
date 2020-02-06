@@ -114,9 +114,6 @@ namespace TomPIT.Serialization
 				return;
 
 			JsonConvert.PopulateObject(Serialize(value), instance, SerializerSettings);
-
-			if (instance is ISerializationStateProvider provider)
-				provider.SerializationState = value;
 		}
 
 		public static object Deserialize(string json, Type type)

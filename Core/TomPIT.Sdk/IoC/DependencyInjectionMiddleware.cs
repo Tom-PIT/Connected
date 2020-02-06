@@ -1,4 +1,5 @@
 ﻿using TomPIT.Middleware;
+using TomPIT.Models;
 using TomPIT.Reflection;
 using TomPIT.Serialization;
 
@@ -7,6 +8,15 @@ namespace TomPIT.IoC
 	public abstract class DependencyInjectionObject : MiddlewareObject, IDependencyInjectionObject
 	{
 		private IMiddlewareOperation _operation = null;
+
+		protected DependencyInjectionObject()
+		{
+			if (Shell.HttpContext == null || Shell.HttpContext.Items["RootModel"] == null)
+				return;
+
+			if (Shell.HttpContext.Items["RootModel"] is IRuntimeModel model)
+				Serializer.Populate(model.Arguments, this);
+		}
 
 		public IMiddlewareOperation Operation
 		{
@@ -43,12 +53,6 @@ namespace TomPIT.IoC
 
 		}
 
-		public void Synchronize(object instance)
-		{
-			if (instance != null)
-				Serializer.Populate(instance, this);
-		}
-
 		public void Commit()
 		{
 			OnCommit();
@@ -64,10 +68,10 @@ namespace TomPIT.IoC
 	{
 		public void Invoke(object e)
 		{
-			OnInvoke();
+			OnInvoke(e);
 		}
 
-		protected virtual void OnInvoke()
+		protected virtual void OnInvoke(object e)
 		{
 
 		}

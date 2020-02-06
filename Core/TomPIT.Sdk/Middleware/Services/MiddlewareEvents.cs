@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Distributed;
 using TomPIT.Exceptions;
 using TomPIT.Messaging;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
@@ -24,14 +25,19 @@ namespace TomPIT.Middleware.Services
 			if (callback is MiddlewareCallback ec)
 				ec.Attached = true;
 
-			var config = ComponentDescriptor.DistributedEvent(Context, name);
+			IDistributedEvent ev = null;
 
-			config.Validate();
+			if (string.Compare(name, "$", true) != 0)
+			{
+				var config = ComponentDescriptor.DistributedEvent(Context, name);
 
-			var ev = config.Configuration.Events.FirstOrDefault(f => string.Compare(f.Name, config.Element, true) == 0);
+				config.Validate();
 
-			if (ev == null)
-				throw new RuntimeException($"{SR.ErrDistributedEventNotFound} ({name})");
+				ev = config.Configuration.Events.FirstOrDefault(f => string.Compare(f.Name, config.Element, true) == 0);
+
+				if (ev == null)
+					throw new RuntimeException($"{SR.ErrDistributedEventNotFound} ({name})");
+			}
 
 			return Context.Tenant.GetService<IEventService>().Trigger(ev, callback, e);
 		}

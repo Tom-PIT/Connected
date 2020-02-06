@@ -4,5 +4,6 @@
 	{
 		int Lcid { get; }
 		string Value { get; }
+		bool Changed { get; }
 	}
 }

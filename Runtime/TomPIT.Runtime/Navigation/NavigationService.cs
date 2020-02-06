@@ -161,8 +161,16 @@ namespace TomPIT.Navigation
 		private void RefreshNavigation(ISiteMapConfiguration configuration, bool removeOny = false)
 		{
 			var ms = ((IConfiguration)configuration).MicroService();
-			var type = Tenant.GetService<ICompilerService>().ResolveType(ms, configuration, configuration.ComponentName());
+			var type = Tenant.GetService<ICompilerService>().ResolveType(ms, configuration, configuration.ComponentName(), false);
+
+			if (type == null)
+				return;
+
 			var handlerInstance = type.CreateInstance<ISiteMapHandler>();
+
+			if (handlerInstance == null)
+				return;
+
 			handlerInstance.SetContext(configuration.CreateContext());
 
 			var containers = handlerInstance.Invoke();
@@ -229,7 +237,14 @@ namespace TomPIT.Navigation
 
 			var config = Tenant.GetService<IComponentService>().SelectConfiguration(cmp.Token) as ISiteMapConfiguration;
 
-			RefreshNavigation(config);
+			try
+			{
+				RefreshNavigation(config);
+			}
+			catch (Exception ex)
+			{
+				Tenant.LogError(nameof(NavigationService), ex.Message, LogCategories.Navigation);
+			}
 		}
 
 		private void FillDescriptor(NavigationHandlerDescriptor descriptor, ISiteMapContainer container)

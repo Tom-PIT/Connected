@@ -55,7 +55,10 @@
 				if (options.progress)
 					options.progress.show();
 			},
-			success: function (data, status, request) {
+            success: function (data, status, request) {
+                if (options.onSuccessCompleting)
+                    data = options.onSuccessCompleting(data, status, request);
+
                 options.onSuccess(data, status, request, options.progress);
 
                 if (options.onSuccessCompleted)

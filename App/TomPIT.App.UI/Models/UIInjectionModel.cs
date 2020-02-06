@@ -73,7 +73,18 @@ namespace TomPIT.App.Models
 			if (string.IsNullOrWhiteSpace(ViewUrl))
 				return;
 
-			MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(new Uri(ViewUrl).LocalPath, Controller.Request.RouteValues);
+			MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(ViewUrl).LocalPath), Controller.Request.RouteValues);
+
+			foreach (var i in Controller.Request.RouteValues)
+				Arguments.Add(i.Key, Types.Convert<string>(i.Value));
+
+			foreach (var i in ActionContext.HttpContext.Request.Query)
+			{
+				if (Arguments.ContainsKey(i.Key))
+					continue;
+
+				Arguments.Add(i.Key, i.Value.ToString());
+			}
 		}
 	}
 }

@@ -45,7 +45,7 @@ namespace TomPIT.MicroServices.Design.Items
 				{
 					var key = $"{ms.Name}/{componentName}/{op.Name}";
 
-					items.Add(new ItemDescriptor($"{op.Name} ({componentName}/{op.Name})", key));
+					items.Add(new ItemDescriptor($"{op.Name} ({componentName}/{ms.Name})", key));
 				}
 			}
 		}

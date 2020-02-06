@@ -83,7 +83,7 @@ namespace TomPIT.Compilation
 								ProcessScript(ScriptResolver.ReadText(resolvedReference)?.ToString(), resolvedReference);
 							}
 						}
-						else if (line.StartsWith("#r"))
+						else if (line.StartsWith("#r "))
 						{
 							var path = AssemblyResolver.ResolvePath(token, basePath);
 

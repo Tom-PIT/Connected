@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <AssemblyVersion>2.1.128.2</AssemblyVersion>
-    <FileVersion>2.1.128.2</FileVersion>
-    <Version>2.1.128.2</Version>
+    <AssemblyVersion>2.1.206.2</AssemblyVersion>
+    <FileVersion>2.1.206.2</FileVersion>
+    <Version>2.1.206.2</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.1.0" />
