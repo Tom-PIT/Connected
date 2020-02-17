@@ -101,7 +101,7 @@ namespace TomPIT
 			if (date == DateTime.MinValue)
 				return Html.Raw("null") as HtmlString;
 
-			return Html.Raw(string.Format("new Date({0}, {1}, {2}, {3}, {4}, {5})", date.Year, date.Month - 1, date.Day, date.Hour, date.Minute, date.Second));
+			return Html.Raw($"new Date(Date.UTC({date.Year}, {date.Month - 1}, {date.Day}, {date.Hour}, {date.Minute}, {date.Second}))");
 		}
 
 		public IHtmlContent Array(IEnumerable<string> items)
