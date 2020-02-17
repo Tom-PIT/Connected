@@ -56,13 +56,21 @@
 					options.progress.show();
 			},
             success: function (data, status, request) {
-                if (options.onSuccessCompleting)
-                    data = options.onSuccessCompleting(data, status, request);
+                if (options.onSuccessCompleting) {
+                    options.onSuccessCompleting(data, status, request).then((d) => {
+                        data = d;
+                        options.onSuccess(data, status, request, options.progress);
 
-                options.onSuccess(data, status, request, options.progress);
+                        if (options.onSuccessCompleted)
+                            options.onSuccessCompleted(data, status, request);
+                    });
+                }
+                else {
+                    options.onSuccess(data, status, request, options.progress);
 
-                if (options.onSuccessCompleted)
-                    options.onSuccessCompleted(data, status, request);
+                    if (options.onSuccessCompleted)
+                        options.onSuccessCompleted(data, status, request);
+                }
 			},
 			complete: function (request, status) {
                 options.onComplete(request, status, options.progress);

@@ -4,6 +4,7 @@ using System.Threading;
 using MailKit.Net.Smtp;
 using MimeKit;
 using TomPIT.Cdn.Dns;
+using TomPIT.Configuration;
 using TomPIT.Diagnostics;
 using TomPIT.Middleware;
 
@@ -19,6 +20,7 @@ namespace TomPIT.Cdn.Mail
 	{
 		private SmtpClient _client = null;
 		private ConnectionState _state = ConnectionState.Idle;
+		private static SmtpConnectionConfigurationCache _configCache = null;
 
 		public SmtpConnection(string domainName)
 		{
@@ -74,14 +76,63 @@ namespace TomPIT.Cdn.Mail
 				if (_client.IsConnected)
 					return;
 
-				string server = DnsResolve.Resolve(Domain);
+				var server = string.Empty;
+				var localDomain = string.Empty;
+
+				foreach (var middleware in ConfigurationCache.Handlers)
+				{
+					var descriptor = middleware.ResolveSmtpServer(new DomainEventArgs(Domain));
+
+					if (descriptor != null)
+					{
+						server = descriptor.Server;
+						localDomain = descriptor.LocalDomain;
+
+						break;
+					}
+				}
+
+				if (string.IsNullOrWhiteSpace(server))
+					server = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "SmtpServer");
+
+				if (string.IsNullOrWhiteSpace(server))
+					server = DnsResolve.Resolve(Domain);
 
 				if (string.IsNullOrWhiteSpace(server))
 					throw new SmtpException(SmtpExceptionType.CannotResolveDomain, Domain);
 
-				//_client.LocalDomain = "tompit.net";
+				if (string.IsNullOrWhiteSpace(localDomain))
+					localDomain = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "SmtpLocalDomain");
+
+				_client.LocalDomain = localDomain;
 				_client.Connect(new Uri(string.Format("smtp://{0}", server)), token);
-				//_client.Connect(server, 587, MailKit.Security.SecureSocketOptions.StartTls, token);
+
+				foreach (var middleware in ConfigurationCache.Handlers)
+				{
+					var credentials = middleware.GetCredentials(new SmtpCredentialsEventArgs(Domain));
+
+					if (credentials != null)
+					{
+						if (credentials is ISmtpBasicCredentials basic)
+						{
+							if (credentials.Encoding != null)
+								_client.Authenticate(credentials.Encoding, basic.UserName, basic.Password);
+							else
+								_client.Authenticate(basic.UserName, basic.Password);
+						}
+						else if (credentials is ISmtpNetworkCredentials network)
+						{
+							if (credentials.Encoding != null)
+								_client.Authenticate(credentials.Encoding, network.Credentials);
+							else
+								_client.Authenticate(network.Credentials);
+						}
+						else
+							throw new NotSupportedException();
+
+						break;
+					}
+				}
 			}
 			catch (SocketException ex)
 			{
@@ -202,6 +253,17 @@ namespace TomPIT.Cdn.Mail
 			catch
 			{
 				return false;
+			}
+		}
+
+		private static SmtpConnectionConfigurationCache ConfigurationCache
+		{
+			get
+			{
+				if (_configCache == null)
+					_configCache = new SmtpConnectionConfigurationCache(MiddlewareDescriptor.Current.Tenant);
+
+				return _configCache;
 			}
 		}
 	}

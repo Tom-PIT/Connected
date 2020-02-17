@@ -1,4 +1,5 @@
 ﻿using TomPIT.Data.Sql;
+using TomPIT.SysDb.Analytics;
 using TomPIT.SysDb.BigData;
 using TomPIT.SysDb.Cdn;
 using TomPIT.SysDb.Data;
@@ -14,6 +15,7 @@ using TomPIT.SysDb.Messaging;
 using TomPIT.SysDb.Printing;
 using TomPIT.SysDb.Search;
 using TomPIT.SysDb.Security;
+using TomPIT.SysDb.Sql.Analytics;
 using TomPIT.SysDb.Sql.BigData;
 using TomPIT.SysDb.Sql.Cdn;
 using TomPIT.SysDb.Sql.Configuration;
@@ -55,6 +57,7 @@ namespace TomPIT.SysDb.Sql
 		private IMessagingHandler _messaging = null;
 		private ISearchHandler _search = null;
 		private IPrintingHandler _printing = null;
+		private IAnalyticsHandler _analytics = null;
 
 		public IMessagingHandler Messaging
 		{
@@ -240,6 +243,17 @@ namespace TomPIT.SysDb.Sql
 					_printing = new PrintingHandler();
 
 				return _printing;
+			}
+		}
+
+		public IAnalyticsHandler Analytics
+		{
+			get
+			{
+				if (_analytics == null)
+					_analytics = new AnalyticsHandler();
+
+				return _analytics;
 			}
 		}
 

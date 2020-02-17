@@ -56,21 +56,22 @@ namespace TomPIT.Worker.Services
 			if (ms == null)
 				return;
 
-			var eventName = $"{ms.Name}/{ed.Name}";
-			var eventInstance = CreateEventInstance(ed);
-
-			if (eventInstance != null)
-			{
-				if (!eventInstance.Invoking())
-					return;
-
-				eventInstance.Invoke();
-			}
-
 			var responses = new List<IOperationResponse>();
+			IDistributedEventMiddleware eventInstance = null;
 
 			if (string.Compare(ed.Name, "$", true) != 0)
 			{
+				var eventName = $"{ms.Name}/{ed.Name}";
+				eventInstance = CreateEventInstance(ed);
+
+				if (eventInstance != null)
+				{
+					if (!eventInstance.Invoking())
+						return;
+
+					eventInstance.Invoke();
+				}
+
 				var targets = EventHandlers.Query(eventName);
 
 				if (targets != null)

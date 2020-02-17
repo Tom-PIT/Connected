@@ -5905,6 +5905,62 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[mru]'
+GO
+CREATE TABLE [tompit].[mru]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[type] [int] NOT NULL,
+[primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[entity_type] [int] NOT NULL,
+[entity_primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[date] [datetime2] NOT NULL,
+[tags] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[token] [uniqueidentifier] NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_mru] on [tompit].[mru]'
+GO
+ALTER TABLE [tompit].[mru] ADD CONSTRAINT [PK_mru] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[mru_mdf]'
+GO
+CREATE PROCEDURE [tompit].[mru_mdf]
+	@type int,
+	@primary_key nvarchar(128),
+	@entity_type int,
+	@entity_primary_key nvarchar(128),
+	@tags nvarchar(128) = NULL,
+	@token uniqueidentifier,
+	@date datetime2(7)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	MERGE tompit.mru AS t
+	USING (SELECT @type, @primary_key, @entity_type, @entity_primary_key, @tags, @date) AS s ([type], primary_key, entity_type, entity_primary_key, tags, date)
+	ON (t.type = s.type AND t.primary_key = s.primary_key AND t.entity_type = s.entity_type AND t.entity_primary_key = s.entity_primary_key AND ((t.tags IS NULL AND s.tags IS NULL) OR t.tags = s.tags))
+	WHEN NOT MATCHED THEN
+	INSERT ([type], primary_key, entity_type, entity_primary_key, tags, [date], token)
+	VALUES (s.[type], s.primary_key, s.entity_type, s.entity_primary_key, s.tags, s.date, @token)
+	WHEN MATCHED THEN
+	UPDATE SET
+		date = @date;
+
+	RETURN (SELECT COUNT (*) 
+			FROM tompit.mru 
+			WHERE [type] = @type 
+			AND entity_type = @entity_type 
+			AND entity_primary_key = @entity_primary_key 
+			AND ((tags IS NULL AND @tags IS NULL) OR tags = @tags))
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[role_que]'
 GO
 CREATE PROCEDURE [tompit].[role_que]
@@ -5914,6 +5970,27 @@ BEGIN
 
 	SELECT *
 	FROM tompit.role;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[mru_que]'
+GO
+CREATE PROCEDURE [tompit].[mru_que]
+	@type int,
+	@entity_type int,
+	@entity_primary_key nvarchar(128),
+	@tags nvarchar(128) = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT * 
+	FROM tompit.mru 
+	WHERE [type] = @type 
+	AND entity_type = @entity_type 
+	AND entity_primary_key = @entity_primary_key 
+	AND ((tags IS NULL AND @tags IS NULL) OR tags = @tags);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -5944,6 +6021,20 @@ BEGIN
 	SELECT *
 	FROM tompit.view_membership
 	WHERE (@user IS NULL OR [user] = @user);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[mru_del]'
+GO
+CREATE PROCEDURE [tompit].[mru_del]
+	@token uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.mru 
+	WHERE token = @token
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON

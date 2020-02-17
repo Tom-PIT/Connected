@@ -17,6 +17,9 @@ namespace TomPIT.Cdn.Mail
 
 		protected override void DoWork(IMailMessage item)
 		{
+			if (item.Expire <= DateTime.UtcNow)
+				return;
+
 			var domain = item.ReceiverDomain();
 
 			if (string.IsNullOrWhiteSpace(domain))
