@@ -27,6 +27,10 @@ namespace TomPIT.Middleware.Interop
 				if (Context is MiddlewareContext mc)
 					mc.CloseConnections();
 			}
+			catch (System.ComponentModel.DataAnnotations.ValidationException)
+			{
+				throw;
+			}
 			catch (Exception ex)
 			{
 				throw new ScriptException(this, ex);

@@ -149,6 +149,9 @@ namespace TomPIT.Routing
 
 			result = sb.ToString().Trim().Trim('-');
 
+			if (string.IsNullOrWhiteSpace(result))
+				result = "0";
+
 			if (existing == null || existing.Count == 0)
 				return result;
 			else

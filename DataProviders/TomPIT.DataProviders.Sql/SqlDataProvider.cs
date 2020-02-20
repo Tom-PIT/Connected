@@ -10,6 +10,7 @@ using TomPIT.DataProviders.Sql.Deployment;
 using TomPIT.Deployment;
 using TomPIT.Deployment.Database;
 using TomPIT.Exceptions;
+using TomPIT.Middleware;
 using TomPIT.Reflection;
 
 namespace TomPIT.DataProviders.Sql
@@ -92,9 +93,9 @@ namespace TomPIT.DataProviders.Sql
 			}
 		}
 
-		public IDataConnection OpenConnection(string connectionString, IDataConnection existingConnection)
+		public IDataConnection OpenConnection(string connectionString, IDataConnection existingConnection, IMiddlewareTransaction transaction)
 		{
-			return new DataConnection(this, connectionString, existingConnection);
+			return new DataConnection(this, connectionString, existingConnection, transaction);
 		}
 
 		public JObject Query(IDataCommandDescriptor command, DataTable schema)

@@ -36,6 +36,9 @@ namespace TomPIT.Middleware
 			if (transaction is MiddlewareTransaction t)
 				t.Notify(this);
 
+			if (Context is MiddlewareContext m)
+				m.Transaction = transaction;
+
 			IsCommitable = false;
 		}
 
@@ -44,10 +47,15 @@ namespace TomPIT.Middleware
 			if (Transaction != null)
 				return Transaction;
 
-			Transaction = new MiddlewareTransaction(Context)
+			var transaction = new MiddlewareTransaction(Context)
 			{
 				Id = Guid.NewGuid()
 			};
+
+			if (Context is MiddlewareContext m)
+				m.Transaction = transaction;
+
+			Transaction = transaction;
 
 			return Transaction;
 		}

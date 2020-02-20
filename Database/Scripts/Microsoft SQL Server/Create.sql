@@ -5905,6 +5905,23 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[mru_tag]'
+GO
+CREATE TABLE [tompit].[mru_tag]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[mru] [bigint] NOT NULL,
+[tag] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_mru_tag] on [tompit].[mru_tag]'
+GO
+ALTER TABLE [tompit].[mru_tag] ADD CONSTRAINT [PK_mru_tag] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[mru]'
 GO
 CREATE TABLE [tompit].[mru]
@@ -5915,7 +5932,6 @@ CREATE TABLE [tompit].[mru]
 [entity_type] [int] NOT NULL,
 [entity_primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [date] [datetime2] NOT NULL,
-[tags] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [token] [uniqueidentifier] NOT NULL
 ) ON [PRIMARY]
 GO
@@ -5934,29 +5950,52 @@ CREATE PROCEDURE [tompit].[mru_mdf]
 	@primary_key nvarchar(128),
 	@entity_type int,
 	@entity_primary_key nvarchar(128),
-	@tags nvarchar(128) = NULL,
 	@token uniqueidentifier,
-	@date datetime2(7)
+	@date datetime2(7),
+	@tags nvarchar(max)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	MERGE tompit.mru AS t
-	USING (SELECT @type, @primary_key, @entity_type, @entity_primary_key, @tags, @date) AS s ([type], primary_key, entity_type, entity_primary_key, tags, date)
-	ON (t.type = s.type AND t.primary_key = s.primary_key AND t.entity_type = s.entity_type AND t.entity_primary_key = s.entity_primary_key AND ((t.tags IS NULL AND s.tags IS NULL) OR t.tags = s.tags))
-	WHEN NOT MATCHED THEN
-	INSERT ([type], primary_key, entity_type, entity_primary_key, tags, [date], token)
-	VALUES (s.[type], s.primary_key, s.entity_type, s.entity_primary_key, s.tags, s.date, @token)
-	WHEN MATCHED THEN
-	UPDATE SET
-		date = @date;
+	DECLARE @id bigint
+	DECLARE @rv bigint
 
-	RETURN (SELECT COUNT (*) 
-			FROM tompit.mru 
-			WHERE [type] = @type 
-			AND entity_type = @entity_type 
-			AND entity_primary_key = @entity_primary_key 
-			AND ((tags IS NULL AND @tags IS NULL) OR tags = @tags))
+	MERGE tompit.mru AS t
+	USING
+	(
+		SELECT @type, @primary_key, @entity_type, @entity_primary_key, @date
+	) AS s ([type], primary_key, entity_type, entity_primary_key, date)
+	ON (t.type = s.type AND t.primary_key = s.primary_key AND t.entity_type = s.entity_type AND t.entity_primary_key = s.entity_primary_key)
+	WHEN NOT MATCHED THEN
+		INSERT ([type], primary_key, entity_type, entity_primary_key, [date], token)
+		VALUES (s.[type], s.primary_key, s.entity_type, s.entity_primary_key, s.date, @token)
+	WHEN MATCHED THEN
+		UPDATE SET
+			date = @date,
+			@id = id;
+
+	IF(@id IS NULL)
+	BEGIN
+		SET @id = SCOPE_IDENTITY()
+		SET @rv = @id
+	END
+
+	MERGE tompit.mru_tag AS t
+	USING
+	(
+		SELECT	@id, tag
+		FROM	OPENJSON(@tags) WITH (tag nvarchar(128))
+	) AS s (mru, tag)
+	ON (t.mru = s.mru AND t.tag = s.tag)
+	WHEN NOT MATCHED THEN
+		INSERT
+		(mru, tag)
+		VALUES
+		(s.mru, s.tag)
+	WHEN NOT MATCHED BY SOURCE AND t.mru = @id THEN
+		DELETE;
+
+	RETURN @rv
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -5977,20 +6016,23 @@ GO
 PRINT N'Creating [tompit].[mru_que]'
 GO
 CREATE PROCEDURE [tompit].[mru_que]
-	@type int,
 	@entity_type int,
 	@entity_primary_key nvarchar(128),
-	@tags nvarchar(128) = NULL
+	@tags nvarchar(max)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT * 
-	FROM tompit.mru 
-	WHERE [type] = @type 
-	AND entity_type = @entity_type 
-	AND entity_primary_key = @entity_primary_key 
-	AND ((tags IS NULL AND @tags IS NULL) OR tags = @tags);
+	SELECT m.*, t.tag
+	FROM tompit.mru m
+	inner join tompit.mru_tag t ON t.mru = m.id
+	inner join
+	(
+		SELECT tag
+		FROM OPENJSON(@tags) WITH(tag nvarchar(128))
+	) tt ON tt.tag = t.tag
+	WHERE m.entity_type = @entity_type 
+	AND m.entity_primary_key = @entity_primary_key 
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -6637,6 +6679,12 @@ GO
 PRINT N'Adding foreign keys to [tompit].[message_topic]'
 GO
 ALTER TABLE [tompit].[message_topic] ADD CONSTRAINT [FK_message_topic_resource_group] FOREIGN KEY ([resource_group]) REFERENCES [tompit].[resource_group] ([id]) ON DELETE CASCADE
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding foreign keys to [tompit].[mru_tag]'
+GO
+ALTER TABLE [tompit].[mru_tag] ADD CONSTRAINT [FK_mru_tag_mru] FOREIGN KEY ([mru]) REFERENCES [tompit].[mru] ([id]) ON DELETE CASCADE
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO

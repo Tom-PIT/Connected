@@ -22,7 +22,10 @@ namespace TomPIT.Middleware
 		public static T WithConnection<T>(this T operation, IMiddlewareContext context) where T : IMiddlewareOperation
 		{
 			if (operation.Context is MiddlewareContext op && context is MiddlewareContext mc)
+			{
+				op.Owner = mc;
 				op.Connection = mc?.Connection;
+			}
 
 			return operation;
 		}

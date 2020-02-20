@@ -19,6 +19,7 @@ namespace TomPIT.Middleware
 		private IMiddlewareInterop _interop = null;
 		private IMiddlewareEnvironment _environment = null;
 		private List<IDataConnection> _connections = null;
+		private IDataConnection _connection = null;
 
 		public MiddlewareContext()
 		{
@@ -61,6 +62,7 @@ namespace TomPIT.Middleware
 		}
 		[JsonIgnore]
 		public string Endpoint { get; protected set; }
+		internal IMiddlewareTransaction Transaction { get; set; }
 
 		[JsonIgnore]
 		public IMiddlewareInterop Interop
@@ -105,15 +107,19 @@ namespace TomPIT.Middleware
 
 		public IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection)
 		{
+			if (Connection == null && Owner != null)
+				return Owner.OpenConnection(connection);
+
 			var descriptor = ComponentDescriptor.Connection(this, connection);
 
 			descriptor.Validate();
 
 			var dataProvider = CreateDataProvider(descriptor.Configuration);
 
-			var con = dataProvider.OpenConnection(descriptor.Configuration.Value, Connection);
+			var con = dataProvider.OpenConnection(descriptor.Configuration.Value, Connection, Transaction);
 
 			Connections.Add(con);
+			Connection = con;
 
 			return con;
 		}
@@ -194,7 +200,20 @@ namespace TomPIT.Middleware
 			return provider;
 		}
 
-		internal IDataConnection Connection { get; set; }
+		internal IDataConnection Connection
+		{
+			get
+			{
+				if (_connection != null)
+					return _connection;
+
+				_connection = Owner?.Connection;
+
+				return _connection;
+			}
+			set { _connection = value; }
+		}
+		internal MiddlewareContext Owner { get; set; }
 		internal void CloseConnections()
 		{
 			foreach (var connection in Connections)

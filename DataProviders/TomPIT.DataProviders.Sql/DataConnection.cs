@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.Sql;
+using TomPIT.Middleware;
 
 namespace TomPIT.DataProviders.Sql
 {
@@ -14,7 +15,7 @@ namespace TomPIT.DataProviders.Sql
 		private ReliableSqlConnection _connection = null;
 		private Dictionary<string, SqlCommand> _commands = null;
 
-		public DataConnection(IDataProvider provider, string connectionString, IDataConnection existingConnection)
+		public DataConnection(IDataProvider provider, string connectionString, IDataConnection existingConnection, IMiddlewareTransaction transaction)
 		{
 			ExistingConnection = existingConnection;
 			Provider = provider;
@@ -27,8 +28,14 @@ namespace TomPIT.DataProviders.Sql
 				_connection = dc.Connection;
 				Transaction = dc.Transaction;
 			}
+
+			MiddlewareTransaction = transaction;
+
+			if (MiddlewareTransaction is IMiddlewareConnectionBag bag)
+				bag.Push(this);
 		}
 
+		private IMiddlewareTransaction MiddlewareTransaction { get; set; }
 		private bool Commited { get; set; }
 		private bool Attached { get; set; }
 		private IDataConnection ExistingConnection { get; }
@@ -68,6 +75,9 @@ namespace TomPIT.DataProviders.Sql
 			if (Commited)
 				return;
 
+			if (MiddlewareTransaction != null && MiddlewareTransaction.State == MiddlewareTransactionState.Active)
+				return;
+
 			if (!Attached && Transaction != null)
 				Transaction.Commit();
 
@@ -96,6 +106,9 @@ namespace TomPIT.DataProviders.Sql
 			if (Commited)
 				return;
 
+			if (MiddlewareTransaction != null && MiddlewareTransaction.State == MiddlewareTransactionState.Active)
+				return;
+
 			if (!Attached && Transaction != null)
 				Transaction.Rollback();
 
@@ -109,11 +122,17 @@ namespace TomPIT.DataProviders.Sql
 
 			if (Connection.State == ConnectionState.Closed)
 				Connection.Open();
+
+			if (MiddlewareTransaction != null)
+				Begin();
 		}
 
 		public void Close()
 		{
 			if (Attached)
+				return;
+
+			if (MiddlewareTransaction != null && MiddlewareTransaction.State == MiddlewareTransactionState.Active)
 				return;
 
 			if (Connection.State == ConnectionState.Open)

@@ -11,9 +11,9 @@
     <AssemblyName>TomPIT.Experience.App</AssemblyName>
     <RootNamespace>TomPIT.App</RootNamespace>
     <CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
-    <AssemblyVersion>2.1.213.2</AssemblyVersion>
-    <FileVersion>2.1.213.2</FileVersion>
-    <Version>2.1.213.2</Version>
+    <AssemblyVersion>2.1.217.2</AssemblyVersion>
+    <FileVersion>2.1.217.2</FileVersion>
+    <Version>2.1.217.2</Version>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="compilerconfig.json" />
