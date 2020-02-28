@@ -6,7 +6,7 @@
 		Prepend = 2,
 		After = 3,
 		Append = 4,
-		Replace = 3
+		Replace = 5
 	}
 	public interface IUIDependencyDescriptor
 	{
