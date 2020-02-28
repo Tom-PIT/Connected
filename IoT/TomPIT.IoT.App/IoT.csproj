@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AssemblyName>TomPIT.Experience.IoT</AssemblyName>
     <RootNamespace>TomPIT.IoT</RootNamespace>
-    <AssemblyVersion>2.1.217.2</AssemblyVersion>
-    <FileVersion>2.1.217.2</FileVersion>
-    <Version>2.1.217.2</Version>
+    <AssemblyVersion>2.1.220.1</AssemblyVersion>
+    <FileVersion>2.1.220.1</FileVersion>
+    <Version>2.1.220.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="wwwroot\**" />

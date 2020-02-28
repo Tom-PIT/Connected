@@ -8,6 +8,7 @@
     @await Html.PartialAsync("~/Views/Shared/StandardHeaders.cshtml")
     @await Html.PartialAsync("~/Views/Shared/Header.cshtml")
     @RenderSection("head", false)
+    @await Html.PartialAsync("~/Views/Shared/MasterInjection.cshtml", Model)
 </head>
 
 <body>

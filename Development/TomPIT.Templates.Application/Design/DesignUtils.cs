@@ -50,6 +50,7 @@
 		public const string UIDependencyInjectionsItems = "TomPIT.MicroServices.Design.Items.UIDependencyInjectionsCollection, " + DesignAssembly;
 		public const string ViewsItems = "TomPIT.MicroServices.Design.Items.ViewsItems, " + DesignAssembly;
 		public const string PartialsItems = "TomPIT.MicroServices.Design.Items.PartialsItems, " + DesignAssembly;
+		public const string MasterItems = "TomPIT.MicroServices.Design.Items.MasterItems, " + DesignAssembly;
 		public const string QueueWorkerItems = "TomPIT.MicroServices.Design.Items.QueueWorkersCollection, " + DesignAssembly;
 		public const string IoCEndpointItems = "TomPIT.MicroServices.Design.Items.IoCEndpointCollection, " + DesignAssembly;
 		public const string ApiOperationListItems = "TomPIT.MicroServices.Design.Items.ApiOperationsItems, " + DesignAssembly;

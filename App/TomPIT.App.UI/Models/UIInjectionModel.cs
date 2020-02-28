@@ -52,7 +52,19 @@ namespace TomPIT.App.Models
 				if (_views == null)
 				{
 					if (string.IsNullOrWhiteSpace(PartialIdentifier))
+					{
 						_views = Tenant.GetService<IUIDependencyInjectionService>().QueryViewDependencies(ViewIdentifier, null);
+
+						var masterViews = Tenant.GetService<IUIDependencyInjectionService>().QueryMasterDependencies(ViewConfiguration.Layout, null, ComponentModel.IoC.MasterDependencyKind.Client);
+
+						if (masterViews != null && masterViews.Count > 0)
+						{
+							if (_views == null)
+								_views = masterViews;
+							else
+								_views.AddRange(masterViews);
+						}
+					}
 					else
 						_views = Tenant.GetService<IUIDependencyInjectionService>().QueryPartialDependencies(PartialIdentifier, null);
 

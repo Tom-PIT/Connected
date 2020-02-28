@@ -67,6 +67,28 @@ namespace TomPIT.IoC
 			return CreateDependencies(targets.ToList<IUIDependency>(), arguments);
 		}
 
+		public List<IUIDependencyDescriptor> QueryMasterDependencies(string master, object arguments, MasterDependencyKind kind)
+		{
+			var targets = new List<IMasterDependency>();
+
+			foreach (var config in All())
+			{
+				foreach (var dependency in config.Injections)
+				{
+					if (string.IsNullOrWhiteSpace(dependency.Name))
+						continue;
+
+					if (dependency is IMasterDependency masterDependency && masterDependency.Kind == kind)
+					{
+						if (string.IsNullOrWhiteSpace(master) || string.Compare(masterDependency.Master, master, true) == 0)
+							targets.Add(masterDependency);
+					}
+				}
+			}
+
+			return CreateDependencies(targets.ToList<IUIDependency>(), arguments);
+		}
+
 		private List<IUIDependencyDescriptor> CreateDependencies(List<IUIDependency> dependencies, object arguments)
 		{
 			if (dependencies.Count == 0)

@@ -11,6 +11,7 @@ namespace TomPIT.MicroServices.Design.Items
 		{
 			items.Add(new ItemDescriptor("View Dependency", "View Dependency", typeof(ViewDependency)));
 			items.Add(new ItemDescriptor("Partial Dependency", "Partial Dependency", typeof(PartialDependency)));
+			items.Add(new ItemDescriptor("Master Dependency", "Master Dependency", typeof(MasterDependency)));
 		}
 	}
 }
