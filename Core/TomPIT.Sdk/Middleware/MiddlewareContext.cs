@@ -49,6 +49,7 @@ namespace TomPIT.Middleware
 				Endpoint = Tenant?.Url;
 		}
 
+		private string ExistingConnectionKey { get; set; }
 		[JsonIgnore]
 		public virtual IMiddlewareServices Services
 		{
@@ -107,21 +108,31 @@ namespace TomPIT.Middleware
 
 		public IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection)
 		{
+			if (HasExistingConnection(connection))
+				return Connection;
+
 			if (Connection == null && Owner != null)
-				return Owner.OpenConnection(connection);
+				Connection = Owner.OpenConnection(connection);
 
 			var descriptor = ComponentDescriptor.Connection(this, connection);
 
 			descriptor.Validate();
 
 			var dataProvider = CreateDataProvider(descriptor.Configuration);
-
 			var con = dataProvider.OpenConnection(descriptor.Configuration.Value, Connection, Transaction);
 
-			Connections.Add(con);
+			if (!Connections.Contains(con))
+				Connections.Add(con);
+
 			Connection = con;
+			ExistingConnectionKey = connection;
 
 			return con;
+		}
+
+		private bool HasExistingConnection(string connection)
+		{
+			return Connection != null && string.Compare(ExistingConnectionKey, connection, true) == 0;
 		}
 
 		public IDataReader<T> OpenReader<T>(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)

@@ -256,7 +256,7 @@ namespace TomPIT.Navigation
 					if (!string.IsNullOrWhiteSpace(routeContainer.RouteKey) && !descriptor.RouteKeys.Contains(routeContainer.RouteKey.ToLowerInvariant()))
 						descriptor.RouteKeys.Add(routeContainer.RouteKey.ToLowerInvariant());
 
-					if (!string.IsNullOrWhiteSpace(routeContainer.Template) && !descriptor.RouteKeys.Contains(routeContainer.Template.ToLowerInvariant()))
+					if (!string.IsNullOrWhiteSpace(routeContainer.Template) && !descriptor.Templates.Contains(routeContainer.Template.ToLowerInvariant()))
 						descriptor.Templates.Add(routeContainer.Template);
 				}
 
@@ -269,7 +269,7 @@ namespace TomPIT.Navigation
 			if (!string.IsNullOrWhiteSpace(route.RouteKey) && !descriptor.RouteKeys.Contains(route.RouteKey.ToLowerInvariant()))
 				descriptor.RouteKeys.Add(route.RouteKey.ToLowerInvariant());
 
-			if (!string.IsNullOrWhiteSpace(route.Template) && !descriptor.RouteKeys.Contains(route.Template.ToLowerInvariant()))
+			if (!string.IsNullOrWhiteSpace(route.Template) && !descriptor.Templates.Contains(route.Template.ToLowerInvariant()))
 				descriptor.Templates.Add(route.Template.ToLowerInvariant());
 
 			foreach (var item in route.Routes)
@@ -277,7 +277,7 @@ namespace TomPIT.Navigation
 				if (!string.IsNullOrWhiteSpace(item.RouteKey) && !descriptor.RouteKeys.Contains(item.RouteKey.ToLowerInvariant()))
 					descriptor.RouteKeys.Add(item.RouteKey.ToLowerInvariant());
 
-				if (!string.IsNullOrWhiteSpace(item.Template) && !descriptor.RouteKeys.Contains(item.Template.ToLowerInvariant()))
+				if (!string.IsNullOrWhiteSpace(item.Template) && !descriptor.Templates.Contains(item.Template.ToLowerInvariant()))
 					descriptor.Templates.Add(item.Template.ToLowerInvariant());
 
 				FillDescriptor(descriptor, item);

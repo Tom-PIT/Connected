@@ -16,9 +16,9 @@
     <Product>Tom PIT Micro service platform</Product>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>2.1.220.1</AssemblyVersion>
-    <FileVersion>2.1.220.1</FileVersion>
-    <Version>2.1.220.1</Version>
+    <AssemblyVersion>2.1.302.1</AssemblyVersion>
+    <FileVersion>2.1.302.1</FileVersion>
+    <Version>2.1.302.1</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>
