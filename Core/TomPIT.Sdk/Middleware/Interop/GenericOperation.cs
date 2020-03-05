@@ -70,6 +70,7 @@ namespace TomPIT.Middleware.Interop
 
 				if (IsCommitable)
 				{
+					Commit();
 					OnCommit();
 					CommitDependencies();
 				}

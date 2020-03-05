@@ -102,6 +102,7 @@ namespace TomPIT.Middleware.Interop
 
 			if (IsCommitable)
 			{
+				Commit();
 				OnCommit();
 				DependencyInjections.Commit();
 			}
