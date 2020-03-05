@@ -1,4 +1,5 @@
-﻿using TomPIT.Connectivity;
+﻿using System;
+using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Reflection;
 
@@ -11,6 +12,7 @@ namespace TomPIT.Middleware
 			return ServerUrl.Create(tenant.Url, controller, action);
 		}
 
+		[Obsolete("Use WithContext extension method.")]
 		public static T WithConnection<T>(this T operation, IDataConnection connection) where T : IMiddlewareOperation
 		{
 			if (operation.Context is MiddlewareContext context)
@@ -19,21 +21,30 @@ namespace TomPIT.Middleware
 			return operation;
 		}
 
+		[Obsolete("Use WithContext extension method.")]
 		public static T WithConnection<T>(this T operation, IMiddlewareContext context) where T : IMiddlewareOperation
+		{
+			return WithContext(operation, context);
+		}
+
+		public static T WithContext<T>(this T operation, IMiddlewareContext context) where T : IMiddlewareOperation
 		{
 			if (operation.Context is MiddlewareContext op && context is MiddlewareContext mc)
 			{
 				op.Owner = mc;
 				op.Connection = mc?.Connection;
+
+				if (operation is MiddlewareOperation mop && mc.Transaction != null)
+					mop.AttachTransaction(mc.Transaction);
 			}
 
 			return operation;
 		}
-
+		[Obsolete]
 		public static T WithTransaction<T>(this T operation, IMiddlewareOperation middleware) where T : IMiddlewareOperation
 		{
-			if (operation is MiddlewareOperation o)
-				o.AttachTransaction(middleware);
+			//if (operation is MiddlewareOperation o)
+			//	o.AttachTransaction(middleware);
 
 			return operation;
 		}
