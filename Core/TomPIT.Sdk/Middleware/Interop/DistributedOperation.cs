@@ -92,7 +92,7 @@ namespace TomPIT.Middleware.Interop
 				OnBeginInvoke();
 
 				if (!((MiddlewareCallback)Callback).Attached)
-					Context.Services.Cdn.DistributedEvent("$", this, Callback);
+					Context.Services.Cdn.Events.TriggerEvent("$", this, Callback);
 			}
 			else
 			{
@@ -103,12 +103,21 @@ namespace TomPIT.Middleware.Interop
 			if (IsCommitable)
 			{
 				Commit();
-				OnCommit();
+				//OnCommit();
 				DependencyInjections.Commit();
 			}
 
 			if (Context is MiddlewareContext mc)
 				mc.CloseConnections();
+
+			if (IsCommitable)
+			{
+				if (Transaction is MiddlewareTransaction t)
+					t.Complete();
+			}
+
+			if (!IsCommitted)
+				OnCommit();
 		}
 
 		protected virtual void OnInvoke()

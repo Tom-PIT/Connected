@@ -21,12 +21,21 @@ namespace TomPIT.Middleware.Interop
 				if (IsCommitable)
 				{
 					Commit();
-					OnCommit();
+					//OnCommit();
 					DependencyInjections.Commit();
 				}
 
 				if (Context is MiddlewareContext mc)
 					mc.CloseConnections();
+
+				if (IsCommitable)
+				{
+					if (Transaction is MiddlewareTransaction t)
+						t.Complete();
+				}
+
+				if (!IsCommitted)
+					OnCommit();
 			}
 			catch (System.ComponentModel.DataAnnotations.ValidationException)
 			{

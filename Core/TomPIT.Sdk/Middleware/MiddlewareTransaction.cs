@@ -43,19 +43,19 @@ namespace TomPIT.Middleware
 				}
 			}
 
-			while (Operations.Count > 0)
-			{
-				try
-				{
-					Operations.Pop().CommitTransaction();
-				}
-				catch (Exception ex)
-				{
-					Context.Services.Diagnostic.Error("Middleware", nameof(MiddlewareTransaction), ex.Message);
-				}
-			}
+			//while (Operations.Count > 0)
+			//{
+			//	try
+			//	{
+			//		Operations.Pop().CommitTransaction();
+			//	}
+			//	catch (Exception ex)
+			//	{
+			//		Context.Services.Diagnostic.Error("Middleware", nameof(MiddlewareTransaction), ex.Message);
+			//	}
+			//}
 
-			State = MiddlewareTransactionState.Completed;
+			//State = MiddlewareTransactionState.Completed;
 		}
 
 		public void Notify(IMiddlewareTransactionClient operation)
@@ -109,6 +109,23 @@ namespace TomPIT.Middleware
 
 				return _connections;
 			}
+		}
+
+		public void Complete()
+		{
+			while (Operations.Count > 0)
+			{
+				try
+				{
+					Operations.Pop().CommitTransaction();
+				}
+				catch (Exception ex)
+				{
+					Context.Services.Diagnostic.Error("Middleware", nameof(MiddlewareTransaction), ex.Message);
+				}
+			}
+
+			State = MiddlewareTransactionState.Completed;
 		}
 	}
 }

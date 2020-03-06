@@ -80,6 +80,7 @@ namespace TomPIT.Middleware
 		}
 
 		protected bool IsCommitable { get; private set; } = true;
+		protected internal bool IsCommitted { get; set; }
 
 		protected void RenderPartial(string partialName)
 		{
@@ -112,6 +113,10 @@ namespace TomPIT.Middleware
 
 		void IMiddlewareTransactionClient.CommitTransaction()
 		{
+			if (IsCommitted)
+				return;
+
+			IsCommitted = true;
 			OnCommit();
 		}
 
