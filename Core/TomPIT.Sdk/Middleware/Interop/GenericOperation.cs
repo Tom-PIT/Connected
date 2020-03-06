@@ -24,7 +24,7 @@ namespace TomPIT.Middleware.Interop
 		{
 			var r = Invoke();
 
-			if (r == default)
+			if (r == null)
 				return default;
 
 			if (r.GetType().IsCollection())

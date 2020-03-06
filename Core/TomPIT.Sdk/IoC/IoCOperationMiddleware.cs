@@ -111,7 +111,7 @@ namespace TomPIT.IoC
 				{
 					var r = Invoke<T>(i);
 
-					if (r != default)
+					if (r != null)
 					{
 						lock (result)
 						{
