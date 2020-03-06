@@ -12,6 +12,7 @@ namespace TomPIT.Middleware
 	public abstract class MiddlewareOperation : MiddlewareComponent, IMiddlewareOperation, IMiddlewareTransactionClient
 	{
 		private List<IDependencyInjectionObject> _dependencies = null;
+		//private IMiddlewareTransaction _transaction = null;
 		protected MiddlewareOperation()
 		{
 		}
@@ -21,7 +22,25 @@ namespace TomPIT.Middleware
 			AttachTransaction(transaction);
 		}
 
-		protected IMiddlewareTransaction Transaction { get; private set; }
+		protected IMiddlewareTransaction Transaction { get; set; }
+		//{
+		//	get
+		//	{
+		//		if (_transaction == null)
+		//		{
+		//			if (Context is MiddlewareContext ctx)
+		//			{
+		//				if (ctx.Transaction != null)
+		//					AttachTransaction(ctx.Transaction);
+		//				else if (ctx.Owner?.Transaction != null)
+		//					AttachTransaction(ctx.Owner.Transaction);
+		//			}
+		//		}
+
+		//		return _transaction;
+		//	}
+		//	private set { _transaction = value; }
+		//}
 
 		internal void AttachTransaction(IMiddlewareOperation sender)
 		{
@@ -29,7 +48,7 @@ namespace TomPIT.Middleware
 				AttachTransaction(o.Transaction);
 		}
 
-		private void AttachTransaction(IMiddlewareTransaction transaction)
+		internal void AttachTransaction(IMiddlewareTransaction transaction)
 		{
 			Transaction = transaction;
 
@@ -61,6 +80,7 @@ namespace TomPIT.Middleware
 		}
 
 		protected bool IsCommitable { get; private set; } = true;
+		protected internal bool IsCommitted { get; set; }
 
 		protected void RenderPartial(string partialName)
 		{
@@ -93,6 +113,10 @@ namespace TomPIT.Middleware
 
 		void IMiddlewareTransactionClient.CommitTransaction()
 		{
+			if (IsCommitted)
+				return;
+
+			IsCommitted = true;
 			OnCommit();
 		}
 

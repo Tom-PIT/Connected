@@ -14,69 +14,23 @@ namespace TomPIT.Data
 
 		public List<T> Query()
 		{
-			try
-			{
-				var ds = Connection.Query(CreateCommand());
-				var r = new List<T>();
+			var ds = Connection.Query(CreateCommand());
+			var r = new List<T>();
 
-				if (ds == null || ds.Count == 0)
-					return r;
-
-				var array = ds.Optional<JArray>("data", null);
-
-				if (array == null)
-					return r;
-
-				foreach (var record in array)
-				{
-					if (!(record is JObject row))
-						continue;
-
-					T instance = default;
-
-					if (typeof(T).IsTypePrimitive())
-					{
-						if (row.Count == 0)
-							return default;
-
-						var property = row.First.Value<JProperty>();
-
-						instance = Types.Convert<T>(property.Value);
-					}
-					else
-						instance = Serializer.Deserialize<T>(Serializer.Serialize(record));
-
-					if (instance is IDataEntity entity)
-						entity.DataSource(row);
-
-					r.Add(instance);
-				}
-
+			if (ds == null || ds.Count == 0)
 				return r;
-			}
-			finally
+
+			var array = ds.Optional<JArray>("data", null);
+
+			if (array == null)
+				return r;
+
+			foreach (var record in array)
 			{
-				if (CloseConnection)
-					Connection.Close();
-			}
-		}
+				if (!(record is JObject row))
+					continue;
 
-		public T Select()
-		{
-			try
-			{
-				var ds = Connection.Query(CreateCommand());
-
-				if (ds == null || ds.Count == 0)
-					return default;
-
-				var array = ds.Optional<JArray>("data", null);
-
-				if (array == null || array.Count == 0)
-					return default;
-
-				if (!(array[0] is JObject row))
-					return default;
+				T instance = default;
 
 				if (typeof(T).IsTypePrimitive())
 				{
@@ -85,21 +39,51 @@ namespace TomPIT.Data
 
 					var property = row.First.Value<JProperty>();
 
-					return Types.Convert<T>(property.Value);
+					instance = Types.Convert<T>(property.Value);
 				}
-
-				var instance = Serializer.Deserialize<T>(Serializer.Serialize(row));
+				else
+					instance = Serializer.Deserialize<T>(Serializer.Serialize(record));
 
 				if (instance is IDataEntity entity)
 					entity.DataSource(row);
 
-				return instance;
+				r.Add(instance);
 			}
-			finally
+
+			return r;
+		}
+
+		public T Select()
+		{
+			var ds = Connection.Query(CreateCommand());
+
+			if (ds == null || ds.Count == 0)
+				return default;
+
+			var array = ds.Optional<JArray>("data", null);
+
+			if (array == null || array.Count == 0)
+				return default;
+
+			if (!(array[0] is JObject row))
+				return default;
+
+			if (typeof(T).IsTypePrimitive())
 			{
-				if (CloseConnection)
-					Connection.Close();
+				if (row.Count == 0)
+					return default;
+
+				var property = row.First.Value<JProperty>();
+
+				return Types.Convert<T>(property.Value);
 			}
+
+			var instance = Serializer.Deserialize<T>(Serializer.Serialize(row));
+
+			if (instance is IDataEntity entity)
+				entity.DataSource(row);
+
+			return instance;
 		}
 	}
 }

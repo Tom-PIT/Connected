@@ -14,6 +14,7 @@ namespace TomPIT.DataProviders.Sql
 	{
 		private ReliableSqlConnection _connection = null;
 		private Dictionary<string, SqlCommand> _commands = null;
+		private List<DataConnection> _connections = null;
 
 		public DataConnection(IDataProvider provider, string connectionString, IDataConnection existingConnection, IMiddlewareTransaction transaction)
 		{
@@ -33,10 +34,12 @@ namespace TomPIT.DataProviders.Sql
 
 			if (MiddlewareTransaction is IMiddlewareConnectionBag bag)
 				bag.Push(this);
+
+			Connections.Add(this);
 		}
 
 		private IMiddlewareTransaction MiddlewareTransaction { get; set; }
-		private bool Commited { get; set; }
+		private bool Completed { get; set; }
 		private bool Attached { get; set; }
 		private IDataConnection ExistingConnection { get; }
 		private IDataProvider Provider { get; }
@@ -59,13 +62,24 @@ namespace TomPIT.DataProviders.Sql
 
 		public void Begin(IsolationLevel isolationLevel)
 		{
-			if (Transaction != null)
-				return;
-
 			if (Connection.State == ConnectionState.Closed)
 				Connection.Open();
 
+			if (Transaction?.Connection != null)
+			{
+				return;
+			}
+
 			Transaction = Connection.BeginTransaction(isolationLevel) as SqlTransaction;
+
+			foreach(var connection in Connections)
+			{
+				if (connection.Connection != Connection)
+					continue;
+
+				if (connection.Transaction == null)
+					connection.Transaction = Transaction;
+			}
 		}
 
 		public void Begin()
@@ -75,54 +89,53 @@ namespace TomPIT.DataProviders.Sql
 
 		public void Commit()
 		{
-			if (Commited)
+			if (Completed)
 				return;
 
 			if (MiddlewareTransaction != null && MiddlewareTransaction.State == MiddlewareTransactionState.Active)
 				return;
 
 			if (!Attached && Transaction != null)
-				Transaction.Commit();
+				CommitTransaction();
+			else
+			{
+				foreach (var connection in Connections)
+				{
+					if (connection.Connection == Connection && !connection.Attached)
+					{
+						connection.IsCommittable = true;
+						break;
+					}
+				}
+			}
 
-			Commited = true;
+
+			Completed = true;
 		}
+
+		private bool IsCommittable { get; set; }
 
 		public void Dispose()
 		{
-			if (Connection != null)
-			{
-				if (!Attached)
-				{
-					if (Transaction != null)
-						Transaction.Dispose();
-
-					if (Connection.State == ConnectionState.Open)
-						Connection.Close();
-
-					Connection.Dispose();
-				}
-			}
+			Close();
 		}
 
 		public void Rollback()
 		{
-			if (Commited)
+			if (Completed)
 				return;
 
 			if (MiddlewareTransaction != null && MiddlewareTransaction.State == MiddlewareTransactionState.Active)
 				return;
 
 			if (!Attached && Transaction != null)
-				Transaction.Rollback();
+				RollbackTransaction();
 
-			Commited = true;
+			Completed = true;
 		}
 
 		public void Open()
 		{
-			if (Attached)
-				return;
-
 			if (Connection.State == ConnectionState.Closed)
 				Connection.Open();
 
@@ -138,8 +151,20 @@ namespace TomPIT.DataProviders.Sql
 			if (MiddlewareTransaction != null && MiddlewareTransaction.State == MiddlewareTransactionState.Active)
 				return;
 
-			if (Connection.State == ConnectionState.Open)
+			if (Connection != null && Connection.State == ConnectionState.Open)
+			{
+				if (Transaction != null)
+				{
+					if (IsCommittable)
+						CommitTransaction();
+					else
+						RollbackTransaction();
+
+					IsCommittable = false;
+				}
+
 				Connection.Close();
+			}
 		}
 
 		public void Execute(IDataCommandDescriptor command)
@@ -164,5 +189,39 @@ namespace TomPIT.DataProviders.Sql
 		}
 
 		public SqlTransaction Transaction { get; private set; }
+
+		private List<DataConnection> Connections
+		{
+			get
+			{
+				if (_connections == null)
+				{
+					if (ExistingConnection != null && ExistingConnection is DataConnection dc)
+						return dc.Connections;
+
+					_connections = new List<DataConnection>();
+				}
+
+				return _connections;
+			}
+		}
+
+		private void CommitTransaction()
+		{
+			if (Transaction == null || Transaction.Connection == null)
+				return;
+
+			Transaction.Commit();
+			Transaction = null;
+		}
+
+		private void RollbackTransaction()
+		{
+			if (Transaction == null || Transaction.Connection == null)
+				return;
+
+			Transaction.Rollback();
+			Transaction = null;
+		}
 	}
 }

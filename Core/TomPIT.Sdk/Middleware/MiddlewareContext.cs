@@ -158,8 +158,7 @@ namespace TomPIT.Middleware
 			return new DataReader<T>(this)
 			{
 				Connection = OpenConnection(connection),
-				CommandText = commandText,
-				CloseConnection = true
+				CommandText = commandText
 			};
 		}
 
@@ -168,8 +167,7 @@ namespace TomPIT.Middleware
 			return new DataWriter(this)
 			{
 				Connection = OpenConnection(connection),
-				CommandText = commandText,
-				CloseConnection = true
+				CommandText = commandText
 			};
 		}
 
@@ -258,6 +256,9 @@ namespace TomPIT.Middleware
 		{
 			get
 			{
+				if (Owner != null)
+					return Owner.Connections;
+
 				if (_connections == null)
 					_connections = new List<IDataConnection>();
 

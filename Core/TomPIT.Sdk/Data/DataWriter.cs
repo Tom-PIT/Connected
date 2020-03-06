@@ -11,43 +11,27 @@ namespace TomPIT.Data
 
 		public void Execute()
 		{
-			try
-			{
-				Connection.Execute(CreateCommand());
-			}
-			finally
-			{
-				if (CloseConnection)
-					Connection.Close();
-			}
+			Connection.Execute(CreateCommand());
 		}
 
 		public T Execute<T>()
 		{
-			try
+			var command = CreateCommand();
+
+			Connection.Execute(command);
+
+			foreach (var parameter in command.Parameters)
 			{
-				var command = CreateCommand();
-
-				Connection.Execute(command);
-
-				foreach (var parameter in command.Parameters)
+				if (parameter.Direction == System.Data.ParameterDirection.ReturnValue)
 				{
-					if (parameter.Direction == System.Data.ParameterDirection.ReturnValue)
-					{
-						if (Types.TryConvert<T>(parameter.Value, out T r))
-							return r;
+					if (Types.TryConvert<T>(parameter.Value, out T r))
+						return r;
 
-						break;
-					}
+					break;
 				}
+			}
 
-				return default;
-			}
-			finally
-			{
-				if (CloseConnection)
-					Connection.Close();
-			}
+			return default;
 		}
 
 		public IDataParameter SetReturnValueParameter(string name)

@@ -46,8 +46,8 @@ namespace TomPIT.Middleware.Interop
 		{
 			var result = ProcessInvoke();
 
-			if (Context is MiddlewareContext mc)
-				mc.CloseConnections();
+			//if (Context is MiddlewareContext mc)
+			//	mc.CloseConnections();
 
 			return result;
 		}
@@ -70,9 +70,22 @@ namespace TomPIT.Middleware.Interop
 
 				if (IsCommitable)
 				{
-					OnCommit();
+					Commit();
+					//OnCommit();
 					CommitDependencies();
 				}
+
+				if (Context is MiddlewareContext mc)
+					mc.CloseConnections();
+
+				if (IsCommitable)
+				{
+					if (Transaction is MiddlewareTransaction t)
+						t.Complete();
+				}
+
+				if (!IsCommitted)
+					OnCommit();
 
 				if (result == null)
 					return result;
