@@ -8,6 +8,7 @@ namespace TomPIT.IoC
 		void Validate();
 		void Authorize();
 		void Commit();
+		void Rollback();
 	}
 	public interface IDependencyInjectionMiddleware : IDependencyInjectionObject
 	{

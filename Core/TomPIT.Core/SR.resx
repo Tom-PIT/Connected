@@ -1110,4 +1110,7 @@
   <data name="ErrSubscriptionNotFoundForPrimaryKey" xml:space="preserve">
     <value>Subscription not found for the specified primary key</value>
   </data>
+  <data name="ErrTransactionNotNull" xml:space="preserve">
+    <value>Transaction already attached.</value>
+  </data>
 </root>

@@ -168,7 +168,15 @@ namespace TomPIT
 			//		FileProvider = new PhysicalFileProvider($"{env.WebRootPath}\\Assets")
 			//	}));
 			//}
-			app.UseStaticFiles();
+			var cachePeriod = env.IsDevelopment() ? "600" : "604800";
+
+			app.UseStaticFiles(new StaticFileOptions
+			{
+				OnPrepareResponse = ctx =>
+				{
+					ctx.Context.Response.Headers.Append("Cache-Control", $"public, max-age={cachePeriod}");
+				}
+			});
 
 			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Exceptions;
@@ -12,75 +11,32 @@ namespace TomPIT.Middleware
 	public abstract class MiddlewareOperation : MiddlewareComponent, IMiddlewareOperation, IMiddlewareTransactionClient
 	{
 		private List<IDependencyInjectionObject> _dependencies = null;
-		//private IMiddlewareTransaction _transaction = null;
-		protected MiddlewareOperation()
+
+		public IMiddlewareTransaction Transaction
 		{
-		}
-
-		protected MiddlewareOperation(IMiddlewareTransaction transaction)
-		{
-			AttachTransaction(transaction);
-		}
-
-		protected IMiddlewareTransaction Transaction { get; set; }
-		//{
-		//	get
-		//	{
-		//		if (_transaction == null)
-		//		{
-		//			if (Context is MiddlewareContext ctx)
-		//			{
-		//				if (ctx.Transaction != null)
-		//					AttachTransaction(ctx.Transaction);
-		//				else if (ctx.Owner?.Transaction != null)
-		//					AttachTransaction(ctx.Owner.Transaction);
-		//			}
-		//		}
-
-		//		return _transaction;
-		//	}
-		//	private set { _transaction = value; }
-		//}
-
-		internal void AttachTransaction(IMiddlewareOperation sender)
-		{
-			if (sender is MiddlewareOperation o)
-				AttachTransaction(o.Transaction);
-		}
-
-		internal void AttachTransaction(IMiddlewareTransaction transaction)
-		{
-			Transaction = transaction;
-
-			if (transaction is MiddlewareTransaction t)
-				t.Notify(this);
-
-			if (Context is MiddlewareContext m)
-				m.Transaction = transaction;
-
-			IsCommitable = false;
-		}
-
-		public IMiddlewareTransaction Begin()
-		{
-			if (Transaction != null)
-				return Transaction;
-
-			var transaction = new MiddlewareTransaction(Context)
+			get
 			{
-				Id = Guid.NewGuid()
-			};
+				if (Context is MiddlewareContext mc)
+				{
+					var transaction = mc.Transaction;
 
-			if (Context is MiddlewareContext m)
-				m.Transaction = transaction;
+					if (transaction != null && transaction is MiddlewareTransaction mt)
+						mt.Notify(this);
 
-			Transaction = transaction;
+					return transaction;
+				}
 
-			return Transaction;
+				return null;
+			}
+			internal set
+			{
+				if (Context is MiddlewareContext mc)
+					mc.Transaction = value;
+
+				if (value is MiddlewareTransaction transaction)
+					transaction.Notify(this);
+			}
 		}
-
-		protected bool IsCommitable { get; private set; } = true;
-		protected internal bool IsCommitted { get; set; }
 
 		protected void RenderPartial(string partialName)
 		{
@@ -93,35 +49,21 @@ namespace TomPIT.Middleware
 			engine.RenderPartial(Context as IMicroServiceContext, partialName);
 		}
 
-		protected void Commit()
-		{
-			if (!IsCommitable)
-				return;
-
-			if (Transaction is MiddlewareTransaction t)
-				t.Commit();
-		}
-
 		protected void Rollback()
 		{
-			if (!IsCommitable)
-				return;
-
 			if (Transaction is MiddlewareTransaction t)
 				t.Rollback();
 		}
 
 		void IMiddlewareTransactionClient.CommitTransaction()
 		{
-			if (IsCommitted)
-				return;
-
-			IsCommitted = true;
 			OnCommit();
+			OnCommitDependencies();
 		}
 
 		void IMiddlewareTransactionClient.RollbackTransaction()
 		{
+			OnRollbackDependencies();
 			OnRollback();
 		}
 
@@ -161,6 +103,43 @@ namespace TomPIT.Middleware
 
 				return _dependencies;
 			}
+		}
+
+		protected internal void Invoked()
+		{
+			var mc = Context as MiddlewareContext;
+
+			if (mc?.Owner == null)
+			{
+				if (!(Transaction is MiddlewareTransaction transaction))
+					return;
+
+				transaction.Commit();
+			}
+		}
+
+		protected internal virtual void OnCommitDependencies()
+		{
+			foreach (var dependency in DependencyInjections)
+				dependency.Commit();
+		}
+
+		protected internal virtual void OnRollbackDependencies()
+		{
+			foreach (var dependency in DependencyInjections)
+				dependency.Rollback();
+		}
+
+		protected internal void OnAuthorizeDependencies()
+		{
+			foreach (var dependency in DependencyInjections)
+				dependency.Authorize();
+		}
+
+		protected internal void OnValidateDependencies()
+		{
+			foreach (var dependency in DependencyInjections)
+				dependency.Validate();
 		}
 	}
 }

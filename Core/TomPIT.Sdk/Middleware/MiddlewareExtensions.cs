@@ -15,9 +15,6 @@ namespace TomPIT.Middleware
 		[Obsolete("Use WithContext extension method.")]
 		public static T WithConnection<T>(this T operation, IDataConnection connection) where T : IMiddlewareOperation
 		{
-			if (operation.Context is MiddlewareContext context)
-				context.Connection = connection;
-
 			return operation;
 		}
 
@@ -32,10 +29,9 @@ namespace TomPIT.Middleware
 			if (operation.Context is MiddlewareContext op && context is MiddlewareContext mc)
 			{
 				op.Owner = mc;
-				op.Connection = mc?.Connection;
 
 				if (operation is MiddlewareOperation mop && mc.Transaction != null)
-					mop.AttachTransaction(mc.Transaction);
+					mop.Transaction = mc.Transaction;
 			}
 
 			return operation;

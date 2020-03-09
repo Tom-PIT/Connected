@@ -8,34 +8,17 @@ namespace TomPIT.Middleware.Interop
 		public void Invoke()
 		{
 			Validate();
-			DependencyInjections.Validate();
+			OnValidateDependencies();
 
 			try
 			{
 				OnAuthorize();
-				DependencyInjections.Authorize();
+				OnAuthorizeDependencies();
 
 				OnInvoke();
 				DependencyInjections.Invoke<object>(null);
 
-				if (IsCommitable)
-				{
-					Commit();
-					//OnCommit();
-					DependencyInjections.Commit();
-				}
-
-				if (Context is MiddlewareContext mc)
-					mc.CloseConnections();
-
-				if (IsCommitable)
-				{
-					if (Transaction is MiddlewareTransaction t)
-						t.Complete();
-				}
-
-				if (!IsCommitted)
-					OnCommit();
+				Invoked();
 			}
 			catch (System.ComponentModel.DataAnnotations.ValidationException)
 			{

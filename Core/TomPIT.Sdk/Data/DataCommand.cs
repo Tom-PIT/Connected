@@ -146,25 +146,5 @@ namespace TomPIT.Data
 
 			return r;
 		}
-
-
-		public void Dispose()
-		{
-			if (_parameters != null)
-			{
-				_parameters.Clear();
-				_parameters = null;
-			}
-
-			CommandText = null;
-
-			Connection = null;
-
-			OnDispose();
-		}
-
-		protected virtual void OnDispose()
-		{
-		}
 	}
 }

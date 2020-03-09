@@ -85,7 +85,7 @@ namespace TomPIT.Middleware.Interop
 		public void Invoke()
 		{
 			Validate();
-			DependencyInjections.Validate();
+			OnValidateDependencies();
 
 			if (OperationTarget == DistributedOperationTarget.Distributed)
 			{
@@ -100,24 +100,7 @@ namespace TomPIT.Middleware.Interop
 				DependencyInjections.Invoke<object>(null);
 			}
 
-			if (IsCommitable)
-			{
-				Commit();
-				//OnCommit();
-				DependencyInjections.Commit();
-			}
-
-			if (Context is MiddlewareContext mc)
-				mc.CloseConnections();
-
-			if (IsCommitable)
-			{
-				if (Transaction is MiddlewareTransaction t)
-					t.Complete();
-			}
-
-			if (!IsCommitted)
-				OnCommit();
+			Invoked();
 		}
 
 		protected virtual void OnInvoke()

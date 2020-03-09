@@ -2284,6 +2284,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Transaction already attached..
+        /// </summary>
+        public static string ErrTransactionNotNull {
+            get {
+                return ResourceManager.GetString("ErrTransactionNotNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Expected type in the script not found.
         /// </summary>
         public static string ErrTypeExpected {

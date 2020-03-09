@@ -44,48 +44,21 @@ namespace TomPIT.Middleware.Interop
 
 		public TReturnValue Invoke()
 		{
-			var result = ProcessInvoke();
-
-			//if (Context is MiddlewareContext mc)
-			//	mc.CloseConnections();
-
-			return result;
-		}
-
-		private TReturnValue ProcessInvoke()
-		{
 			ValidateExtender();
 			Validate();
-			ValidateDependencies();
+			OnValidateDependencies();
 
 			try
 			{
 				if (Context.Environment.IsInteractive)
 				{
 					OnAuthorize();
-					AuthorizeDependencies();
+					OnAuthorizeDependencies();
 				}
 
 				var result = DependencyInjections.Invoke(OnInvoke());
 
-				if (IsCommitable)
-				{
-					Commit();
-					//OnCommit();
-					CommitDependencies();
-				}
-
-				if (Context is MiddlewareContext mc)
-					mc.CloseConnections();
-
-				if (IsCommitable)
-				{
-					if (Transaction is MiddlewareTransaction t)
-						t.Complete();
-				}
-
-				if (!IsCommitted)
-					OnCommit();
+				Invoked();
 
 				if (result == null)
 					return result;
@@ -135,6 +108,8 @@ namespace TomPIT.Middleware.Interop
 			}
 			catch (Exception ex)
 			{
+				Rollback();
+
 				throw TomPITException.Unwrap(this, ex);
 			}
 		}
@@ -187,24 +162,6 @@ namespace TomPIT.Middleware.Interop
 				throw new RuntimeException($"{SR.ErrExtenderNotSupported} ({Extender})");
 
 			return extender.Extender;
-		}
-
-		protected internal void CommitDependencies()
-		{
-			foreach (var dependency in DependencyInjections)
-				dependency.Commit();
-		}
-
-		protected internal void AuthorizeDependencies()
-		{
-			foreach (var dependency in DependencyInjections)
-				dependency.Authorize();
-		}
-
-		protected internal void ValidateDependencies()
-		{
-			foreach (var dependency in DependencyInjections)
-				dependency.Validate();
 		}
 	}
 }

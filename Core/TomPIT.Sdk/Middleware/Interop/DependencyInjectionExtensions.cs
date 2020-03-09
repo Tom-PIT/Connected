@@ -35,24 +35,6 @@ namespace TomPIT.Middleware.Interop
 			return result;
 		}
 
-		public static void Commit(this List<IDependencyInjectionObject> items)
-		{
-			foreach (var dependency in items)
-				dependency.Commit();
-		}
-
-		public static void Validate(this List<IDependencyInjectionObject> items)
-		{
-			foreach (var dependency in items)
-				dependency.Validate();
-		}
-
-		public static void Authorize(this List<IDependencyInjectionObject> items)
-		{
-			foreach (var dependency in items)
-				dependency.Authorize();
-		}
-
 		public static T Authorize<T>(this List<IDependencyInjectionObject> items, T e)
 		{
 			var result = e;

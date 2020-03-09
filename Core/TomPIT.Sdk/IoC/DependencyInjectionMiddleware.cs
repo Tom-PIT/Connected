@@ -62,6 +62,16 @@ namespace TomPIT.IoC
 		{
 
 		}
+
+		public void Rollback()
+		{
+			OnRollback();
+		}
+
+		protected virtual void OnRollback()
+		{
+
+		}
 	}
 
 	public class DependencyInjectionMiddleware : DependencyInjectionObject, IDependencyInjectionMiddleware

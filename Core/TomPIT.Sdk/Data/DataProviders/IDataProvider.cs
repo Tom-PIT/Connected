@@ -3,7 +3,6 @@ using System.Data;
 using Newtonsoft.Json.Linq;
 using TomPIT.Deployment;
 using TomPIT.Deployment.Database;
-using TomPIT.Middleware;
 
 namespace TomPIT.Data.DataProviders
 {
@@ -50,7 +49,7 @@ namespace TomPIT.Data.DataProviders
 		/// <param name="connectionString">The actual connection string of the data source 
 		/// to connect to.</param>
 		/// <returns></returns>
-		IDataConnection OpenConnection(string connectionString, IDataConnection existingConnection, IMiddlewareTransaction transaction);
+		IDataConnection OpenConnection(string connectionString);
 
 		//IDeploymentDatabase CreateDatabasePackage(string connectionString);
 		//void DeployPackage(string connectionString, IDeploymentDatabase package);
