@@ -26,6 +26,7 @@ namespace TomPIT.Middleware.Interop
 			}
 			catch (Exception ex)
 			{
+				Rollback();
 				throw new ScriptException(this, ex);
 			}
 		}

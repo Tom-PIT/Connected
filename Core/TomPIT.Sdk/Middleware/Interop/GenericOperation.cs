@@ -106,6 +106,10 @@ namespace TomPIT.Middleware.Interop
 						return (TReturnValue)listResult[0];
 				}
 			}
+			catch (System.ComponentModel.DataAnnotations.ValidationException)
+			{
+				throw;
+			}
 			catch (Exception ex)
 			{
 				Rollback();
