@@ -221,16 +221,20 @@
 		options.data.__component = tompit.DEFAULTS.component;
 		options.url = tompit.url().api('partial');
 
-        options.onSuccessCompleted = function () {
-            tompit.uiInjection({
-                data: {
-                    'partial': name,
-                    '__viewUrl': window.location.href
-                }
-            });
-        };
+    options.onSuccessCompleted = function () {
+      var injectionOptions = {
+        data: {
+          'partial': name,
+          '__viewUrl': window.location.href
+        }
+      };
 
-        tompit.post(options);
+      $.extend(injectionOptions.data, options.data);
+
+      tompit.uiInjection(injectionOptions);
+    };
+
+    tompit.post(options);
 	};
 
     tompit.search = function (e) {

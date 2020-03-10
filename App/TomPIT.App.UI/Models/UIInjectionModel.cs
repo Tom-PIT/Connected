@@ -88,14 +88,17 @@ namespace TomPIT.App.Models
 			MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(ViewUrl).LocalPath), Controller.Request.RouteValues);
 
 			foreach (var i in Controller.Request.RouteValues)
-				Arguments.Add(i.Key, Types.Convert<string>(i.Value));
+			{
+				if (!Arguments.ContainsKey(i.Key))
+					Arguments.Add(i.Key, Types.Convert<string>(i.Value));
+			}
 
 			foreach (var i in ActionContext.HttpContext.Request.Query)
 			{
 				if (Arguments.ContainsKey(i.Key))
 					continue;
 
-				Arguments.Add(i.Key, i.Value.ToString());
+					Arguments.Add(i.Key, i.Value.ToString());
 			}
 		}
 	}
