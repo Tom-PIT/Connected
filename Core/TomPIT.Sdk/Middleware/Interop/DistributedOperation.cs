@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using TomPIT.ComponentModel;
@@ -87,20 +88,32 @@ namespace TomPIT.Middleware.Interop
 			Validate();
 			OnValidating();
 
-			if (OperationTarget == DistributedOperationTarget.Distributed)
+			try
 			{
-				OnBeginInvoke();
+				if (OperationTarget == DistributedOperationTarget.Distributed)
+				{
+					OnBeginInvoke();
 
-				if (!((MiddlewareCallback)Callback).Attached)
-					Context.Services.Cdn.Events.TriggerEvent("$", this, Callback);
+					if (!((MiddlewareCallback)Callback).Attached)
+						Context.Services.Cdn.Events.TriggerEvent("$", this, Callback);
+				}
+				else
+				{
+					OnInvoke();
+					DependencyInjections.Invoke<object>(null);
+				}
+
+				Invoked();
 			}
-			else
+			catch (System.ComponentModel.DataAnnotations.ValidationException)
 			{
-				OnInvoke();
-				DependencyInjections.Invoke<object>(null);
+				throw;
 			}
-
-			Invoked();
+			catch (Exception ex)
+			{
+				Rollback();
+				throw new ScriptException(this, ex);
+			}
 		}
 
 		protected virtual void OnInvoke()

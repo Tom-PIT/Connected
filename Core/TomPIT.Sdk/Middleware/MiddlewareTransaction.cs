@@ -33,28 +33,30 @@ namespace TomPIT.Middleware
 
 			foreach (var connection in mc.Connections.DataConnections)
 			{
-				try
+				/*try
 				{
 					connection.Commit();
 				}
 				catch (Exception ex)
 				{
 					Context.Services.Diagnostic.Error("Api", nameof(MiddlewareTransaction), ex.Message);
-				}
+				}*/
+				connection.Commit();
 			}
 
 			mc.CloseConnections();
 
 			while (Operations.Count > 0)
 			{
-				try
+				/*try
 				{
 					Operations.Pop().CommitTransaction();
 				}
 				catch (Exception ex)
 				{
 					Context.Services.Diagnostic.Error("Middleware", nameof(MiddlewareTransaction), ex.Message);
-				}
+				}*/
+				Operations.Pop().CommitTransaction();
 			}
 
 			State = MiddlewareTransactionState.Completed;
@@ -76,28 +78,30 @@ namespace TomPIT.Middleware
 
 			foreach (var connection in mc.Connections.DataConnections)
 			{
-				try
+				/*try
 				{
 					connection.Rollback();
 				}
 				catch (Exception ex)
 				{
 					Context.Services.Diagnostic.Error("Api", nameof(MiddlewareTransaction), ex.Message);
-				}
+				}*/
+				connection.Rollback();
 			}
 
 			mc.CloseConnections();
 
 			while (Operations.Count > 0)
 			{
-				try
+				/*try
 				{
 					Operations.Pop().RollbackTransaction();
 				}
 				catch (Exception ex)
 				{
 					Context.Services.Diagnostic.Error("Api", nameof(MiddlewareTransaction), ex.Message);
-				}
+				}*/
+				Operations.Pop().RollbackTransaction();
 			}
 
 			State = MiddlewareTransactionState.Completed;
