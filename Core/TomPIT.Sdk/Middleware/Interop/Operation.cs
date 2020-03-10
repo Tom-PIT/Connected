@@ -3,17 +3,17 @@ using TomPIT.Exceptions;
 
 namespace TomPIT.Middleware.Interop
 {
-	public abstract class Operation : MiddlewareOperation, IOperation
+	public abstract class Operation : MiddlewareApiOperation, IOperation
 	{
 		public void Invoke()
 		{
 			Validate();
-			OnValidateDependencies();
+			OnValidating();
 
 			try
 			{
 				OnAuthorize();
-				OnAuthorizeDependencies();
+				OnAuthorizing();
 
 				OnInvoke();
 				DependencyInjections.Invoke<object>(null);

@@ -1,16 +1,10 @@
-﻿using System.Collections.Generic;
-using TomPIT.Compilation;
-using TomPIT.ComponentModel;
-using TomPIT.Exceptions;
-using TomPIT.IoC;
-using TomPIT.Reflection;
+﻿using TomPIT.Exceptions;
 using TomPIT.UI;
 
 namespace TomPIT.Middleware
 {
 	public abstract class MiddlewareOperation : MiddlewareComponent, IMiddlewareOperation, IMiddlewareTransactionClient
 	{
-		private List<IDependencyInjectionObject> _dependencies = null;
 
 		public IMiddlewareTransaction Transaction
 		{
@@ -58,12 +52,12 @@ namespace TomPIT.Middleware
 		void IMiddlewareTransactionClient.CommitTransaction()
 		{
 			OnCommit();
-			OnCommitDependencies();
+			OnCommitting();
 		}
 
 		void IMiddlewareTransactionClient.RollbackTransaction()
 		{
-			OnRollbackDependencies();
+			OnRollbacking();
 			OnRollback();
 		}
 
@@ -75,34 +69,6 @@ namespace TomPIT.Middleware
 		protected virtual void OnRollback()
 		{
 
-		}
-
-		protected internal List<IDependencyInjectionObject> DependencyInjections
-		{
-			get
-			{
-				if (_dependencies == null)
-				{
-					var component = Context.Tenant.GetService<ICompilerService>().ResolveComponent(this);
-
-					if (component != null)
-					{
-						var ms = Context.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
-
-						_dependencies = Context.Tenant.GetService<IDependencyInjectionService>().QueryApiDependencies($"{ms.Name}/{component.Name}/{GetType().ShortName()}", this);
-					}
-
-					if (_dependencies != null)
-					{
-						foreach (var dependency in _dependencies)
-							ReflectionExtensions.SetPropertyValue(dependency, nameof(IDependencyInjectionObject.Operation), this);
-					}
-					else
-						_dependencies = new List<IDependencyInjectionObject>();
-				}
-
-				return _dependencies;
-			}
 		}
 
 		protected internal void Invoked()
@@ -118,28 +84,20 @@ namespace TomPIT.Middleware
 			}
 		}
 
-		protected internal virtual void OnCommitDependencies()
+		protected internal virtual void OnCommitting()
 		{
-			foreach (var dependency in DependencyInjections)
-				dependency.Commit();
 		}
 
-		protected internal virtual void OnRollbackDependencies()
+		protected internal virtual void OnRollbacking()
 		{
-			foreach (var dependency in DependencyInjections)
-				dependency.Rollback();
 		}
 
-		protected internal void OnAuthorizeDependencies()
+		protected internal virtual void OnAuthorizing()
 		{
-			foreach (var dependency in DependencyInjections)
-				dependency.Authorize();
 		}
 
-		protected internal void OnValidateDependencies()
+		protected internal virtual void OnValidating()
 		{
-			foreach (var dependency in DependencyInjections)
-				dependency.Validate();
 		}
 	}
 }

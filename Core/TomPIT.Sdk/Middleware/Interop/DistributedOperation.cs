@@ -8,7 +8,7 @@ using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Interop
 {
-	public abstract class DistributedOperation : MiddlewareOperation, IOperation, IDistributedOperation
+	public abstract class DistributedOperation : MiddlewareApiOperation, IOperation, IDistributedOperation
 	{
 		private IMiddlewareCallback _callback = null;
 		private List<IOperationResponse> _responses = null;
@@ -85,7 +85,7 @@ namespace TomPIT.Middleware.Interop
 		public void Invoke()
 		{
 			Validate();
-			OnValidateDependencies();
+			OnValidating();
 
 			if (OperationTarget == DistributedOperationTarget.Distributed)
 			{

@@ -10,7 +10,7 @@ using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Interop
 {
-	public abstract class Operation<TReturnValue> : MiddlewareOperation, IOperation<TReturnValue>
+	public abstract class Operation<TReturnValue> : MiddlewareApiOperation, IOperation<TReturnValue>
 	{
 		protected Operation()
 		{
@@ -46,14 +46,14 @@ namespace TomPIT.Middleware.Interop
 		{
 			ValidateExtender();
 			Validate();
-			OnValidateDependencies();
+			OnValidating();
 
 			try
 			{
 				if (Context.Environment.IsInteractive)
 				{
 					OnAuthorize();
-					OnAuthorizeDependencies();
+					OnAuthorizing();
 				}
 
 				var result = DependencyInjections.Invoke(OnInvoke());
