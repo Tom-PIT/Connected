@@ -298,6 +298,9 @@ namespace TomPIT.Middleware.Services
 
 		public string StripHtml(string htmlText)
 		{
+			if (string.IsNullOrWhiteSpace(htmlText))
+				return string.Empty;
+
 			var doc = new HtmlDocument();
 
 			doc.LoadHtml(htmlText);
