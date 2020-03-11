@@ -10,6 +10,8 @@ namespace TomPIT.Middleware
 {
 	public class MiddlewareContext : IMiddlewareContext
 	{
+		#region Members
+
 		private IMiddlewareServices _services = null;
 		private ITenant _tenant = null;
 		private IMiddlewareInterop _interop = null;
@@ -17,6 +19,41 @@ namespace TomPIT.Middleware
 		private MiddlewareConnectionPool _connections = null;
 		private IMiddlewareTransaction _transaction = null;
 
+		#endregion
+
+		#region Constructors
+
+		public MiddlewareContext()
+		{
+			Initialize(null);
+		}
+
+		public MiddlewareContext(IMiddlewareObject owner) : this(owner?.Context)
+		{
+		}
+
+		public MiddlewareContext(IMiddlewareContext sender)
+		{
+			var endpoint = sender is ITenantProvider c ? c.Endpoint : null;
+
+			Initialize(endpoint);
+
+			if (sender is MiddlewareContext mw)
+			{
+				((MiddlewareDiagnosticService)Services.Diagnostic).MetricParent = ((MiddlewareDiagnosticService)mw.Services.Diagnostic).MetricParent;
+
+				Owner = mw;
+			}
+		}
+
+		public MiddlewareContext(string endpoint)
+		{
+			Initialize(endpoint);
+		}
+
+		#endregion
+
+		#region Properties
 
 		public Guid Id { get; private set; }
 
@@ -111,46 +148,9 @@ namespace TomPIT.Middleware
 			}
 		}
 
+		#endregion
 
-		public MiddlewareContext()
-		{
-			Initialize(null);
-		}
-
-		public MiddlewareContext(IMiddlewareObject owner) : this(owner?.Context)
-		{
-		}
-
-		public MiddlewareContext(IMiddlewareContext sender)
-		{
-			var endpoint = sender is ITenantProvider c ? c.Endpoint : null;
-
-			Initialize(endpoint);
-
-			if (sender is MiddlewareContext mw)
-			{
-				((MiddlewareDiagnosticService)Services.Diagnostic).MetricParent = ((MiddlewareDiagnosticService)mw.Services.Diagnostic).MetricParent;
-
-				Owner = mw;
-			}
-		}
-
-		public MiddlewareContext(string endpoint)
-		{
-			Initialize(endpoint);
-		}
-		
-
-		protected void Initialize(string endpoint)
-		{
-			Id = Guid.NewGuid();
-
-			Endpoint = endpoint;
-
-			if (string.IsNullOrWhiteSpace(endpoint))
-				Endpoint = Tenant?.Url;
-		}
-
+		#region Methods
 
 		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
 		{
@@ -170,6 +170,19 @@ namespace TomPIT.Middleware
 			};
 		}
 
+		#endregion
+
+		#region Helpers
+
+		protected void Initialize(string endpoint)
+		{
+			Id = Guid.NewGuid();
+
+			Endpoint = endpoint;
+
+			if (string.IsNullOrWhiteSpace(endpoint))
+				Endpoint = Tenant?.Url;
+		}
 
 		internal IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection)
 		{
@@ -196,5 +209,7 @@ namespace TomPIT.Middleware
 		{
 			Connections.CloseConnections();
 		}
+
+		#endregion
 	}
 }
