@@ -17,33 +17,8 @@ namespace TomPIT.Middleware
 		private MiddlewareConnectionPool _connections = null;
 		private IMiddlewareTransaction _transaction = null;
 
-		public MiddlewareContext()
-		{
-			Initialize(null);
-		}
 
-		public MiddlewareContext(IMiddlewareContext sender)
-		{
-			var endpoint = sender is ITenantProvider c ? c.Endpoint : null;
-
-			Initialize(endpoint);
-
-			if (sender is MiddlewareContext mw)
-				((MiddlewareDiagnosticService)Services.Diagnostic).MetricParent = ((MiddlewareDiagnosticService)mw.Services.Diagnostic).MetricParent;
-		}
-
-		public MiddlewareContext(string endpoint)
-		{
-			Initialize(endpoint);
-		}
-
-		protected void Initialize(string endpoint)
-		{
-			Endpoint = endpoint;
-
-			if (string.IsNullOrWhiteSpace(endpoint))
-				Endpoint = Tenant?.Url;
-		}
+		public Guid Id { get; private set; }
 
 		[JsonIgnore]
 		public virtual IMiddlewareServices Services
@@ -54,37 +29,6 @@ namespace TomPIT.Middleware
 					_services = new MiddlewareServices(this);
 
 				return _services;
-			}
-		}
-		[JsonIgnore]
-		public string Endpoint { get; protected set; }
-		internal IMiddlewareTransaction Transaction
-		{
-			get
-			{
-				if (_transaction != null)
-					return _transaction;
-
-				return BeginTransaction();
-			}
-			set
-			{
-				if (_transaction != null)
-					throw new RuntimeException(SR.ErrTransactionNotNull);
-
-				_transaction = value;
-			}
-		}
-
-		[JsonIgnore]
-		public IMiddlewareInterop Interop
-		{
-			get
-			{
-				if (_interop == null)
-					_interop = new MiddlewareInterop(this);
-
-				return _interop;
 			}
 		}
 
@@ -117,28 +61,96 @@ namespace TomPIT.Middleware
 			}
 		}
 
-		internal IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection)
+		[JsonIgnore]
+		public IMiddlewareInterop Interop
 		{
-			return Connections.OpenConnection(this, connection);
+			get
+			{
+				if (_interop == null)
+					_interop = new MiddlewareInterop(this);
+
+				return _interop;
+			}
 		}
 
-		//public IDataReader<T> OpenReader<T>(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)
-		//{
-		//	return new DataReader<T>(this)
-		//	{
-		//		Connection = connection,
-		//		CommandText = commandText
-		//	};
-		//}
 
-		//public IDataWriter OpenWriter(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)
-		//{
-		//	return new DataWriter(this)
-		//	{
-		//		Connection = connection,
-		//		CommandText = commandText
-		//	};
-		//}
+		internal MiddlewareContext Owner { get; set; }
+
+		[JsonIgnore]
+		public string Endpoint { get; protected set; }
+
+		internal MiddlewareConnectionPool Connections
+		{
+			get
+			{
+				if (Owner != null)
+					return Owner.Connections;
+
+				if (_connections == null)
+					_connections = new MiddlewareConnectionPool();
+
+				return _connections;
+			}
+		}
+
+		internal IMiddlewareTransaction Transaction
+		{
+			get
+			{
+				if (_transaction != null)
+					return _transaction;
+
+				return BeginTransaction();
+			}
+			set
+			{
+				if (_transaction != null)
+					throw new RuntimeException(SR.ErrTransactionNotNull);
+
+				_transaction = value;
+			}
+		}
+
+
+		public MiddlewareContext()
+		{
+			Initialize(null);
+		}
+
+		public MiddlewareContext(IMiddlewareObject owner) : this(owner?.Context)
+		{
+		}
+
+		public MiddlewareContext(IMiddlewareContext sender)
+		{
+			var endpoint = sender is ITenantProvider c ? c.Endpoint : null;
+
+			Initialize(endpoint);
+
+			if (sender is MiddlewareContext mw)
+			{
+				((MiddlewareDiagnosticService)Services.Diagnostic).MetricParent = ((MiddlewareDiagnosticService)mw.Services.Diagnostic).MetricParent;
+
+				Owner = mw;
+			}
+		}
+
+		public MiddlewareContext(string endpoint)
+		{
+			Initialize(endpoint);
+		}
+		
+
+		protected void Initialize(string endpoint)
+		{
+			Id = Guid.NewGuid();
+
+			Endpoint = endpoint;
+
+			if (string.IsNullOrWhiteSpace(endpoint))
+				Endpoint = Tenant?.Url;
+		}
+
 
 		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
 		{
@@ -158,7 +170,11 @@ namespace TomPIT.Middleware
 			};
 		}
 
-		internal MiddlewareContext Owner { get; set; }
+
+		internal IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection)
+		{
+			return Connections.OpenConnection(this, connection);
+		}
 
 		private IMiddlewareTransaction BeginTransaction()
 		{
@@ -179,20 +195,6 @@ namespace TomPIT.Middleware
 		internal void CloseConnections()
 		{
 			Connections.CloseConnections();
-		}
-
-		internal MiddlewareConnectionPool Connections
-		{
-			get
-			{
-				if (Owner != null)
-					return Owner.Connections;
-
-				if (_connections == null)
-					_connections = new MiddlewareConnectionPool();
-
-				return _connections;
-			}
 		}
 	}
 }
