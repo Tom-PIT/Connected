@@ -534,7 +534,7 @@ namespace TomPIT.Compilation
 		}
 		public T CreateInstance<T>(IMicroServiceContext context, Type scriptType, string arguments) where T : class
 		{
-			return CreateInstance<T>(null, scriptType, context.MicroService, arguments);
+			return CreateInstance<T>(context, scriptType, context.MicroService, arguments);
 		}
 
 		private T CreateInstance<T>(IMicroServiceContext context, IText sourceCode, IMicroService microService, string arguments, string typeName) where T : class

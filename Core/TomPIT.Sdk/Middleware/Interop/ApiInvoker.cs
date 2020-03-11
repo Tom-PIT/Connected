@@ -24,7 +24,7 @@ namespace TomPIT.Middleware.Interop
 
 			ValidateReference(sender, descriptor);
 
-			var ctx = new MicroServiceContext(descriptor.MicroService, Context);
+			var ctx = new MicroServiceContext(descriptor.MicroService, Context.Tenant.Url);
 			var contextMs = Context as IMicroServiceContext;
 
 			switch (descriptor.Configuration.Scope)

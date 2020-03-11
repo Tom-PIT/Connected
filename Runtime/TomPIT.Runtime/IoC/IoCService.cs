@@ -7,6 +7,7 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoC;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
+using TomPIT.Reflection;
 using TomPIT.Serialization;
 using TomPIT.Services;
 
@@ -90,15 +91,9 @@ namespace TomPIT.IoC
 			}
 		}
 
-		public void Invoke(IIoCOperation operation)
+		public void Invoke(IMiddlewareContext context, IIoCOperation operation, object e = null)
 		{
-			Invoke(operation, null);
-		}
-
-		public void Invoke(IIoCOperation operation, object e)
-		{
-			var context = new MicroServiceContext(operation.Configuration().MicroService(), Tenant.Url);
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCOperationMiddleware>(context, operation, Serializer.Serialize(e), operation.Name);
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCOperationMiddleware>(new MicroServiceContext(operation.Configuration().MicroService(), context), operation, Serializer.Serialize(e), operation.Name);
 
 			if (instance is IIoCOperationContext iocContext)
 				iocContext.Operation = operation;
@@ -106,15 +101,9 @@ namespace TomPIT.IoC
 			instance.Invoke();
 		}
 
-		public R Invoke<R>(IIoCOperation operation)
+		public R Invoke<R>(IMiddlewareContext context, IIoCOperation operation, object e = null)
 		{
-			return Invoke<R>(operation, null);
-		}
-
-		public R Invoke<R>(IIoCOperation operation, object e)
-		{
-			var context = new MicroServiceContext(operation.Configuration().MicroService(), Tenant.Url);
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<object>(context, operation, Serializer.Serialize(e), operation.Name);
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<object>(new MicroServiceContext(operation.Configuration().MicroService(), context), operation, Serializer.Serialize(e), operation.Name);
 
 			if (instance is IIoCOperationContext iocContext)
 				iocContext.Operation = operation;
@@ -126,7 +115,7 @@ namespace TomPIT.IoC
 			return Marshall.Convert<R>(r);
 		}
 
-		public List<IIoCEndpointMiddleware> CreateEndpoints(IIoCOperation operation, object e)
+		public List<IIoCEndpointMiddleware> CreateEndpoints(IMiddlewareContext context, IIoCOperation operation, object e)
 		{
 			Initialize();
 
@@ -136,7 +125,7 @@ namespace TomPIT.IoC
 			if (endpoints == null)
 				return result;
 
-			var ctx = new MicroServiceContext(operation.Configuration().MicroService(), Tenant.Url);
+			var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
 
 			foreach (var endpoint in endpoints)
 			{
@@ -154,7 +143,7 @@ namespace TomPIT.IoC
 			return result;
 		}
 
-		public bool HasEndpoints(IIoCOperation operation, object e)
+		public bool HasEndpoints(IMiddlewareContext context, IIoCOperation operation, object e)
 		{
 			Initialize();
 
@@ -163,7 +152,7 @@ namespace TomPIT.IoC
 			if (endpoints == null)
 				return false;
 
-			var ctx = new MicroServiceContext(operation.Configuration().MicroService(), Tenant.Url);
+			var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
 
 			foreach (var endpoint in endpoints)
 			{
