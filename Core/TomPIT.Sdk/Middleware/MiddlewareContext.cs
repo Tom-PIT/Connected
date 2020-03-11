@@ -55,7 +55,9 @@ namespace TomPIT.Middleware
 
 		#region Properties
 
+#if DEBUG
 		public Guid Id { get; private set; }
+#endif
 
 		[JsonIgnore]
 		public virtual IMiddlewareServices Services
@@ -176,7 +178,9 @@ namespace TomPIT.Middleware
 
 		protected void Initialize(string endpoint)
 		{
+#if DEBUG
 			Id = Guid.NewGuid();
+#endif
 
 			Endpoint = endpoint;
 

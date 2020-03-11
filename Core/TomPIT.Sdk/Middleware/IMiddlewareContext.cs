@@ -8,7 +8,10 @@ namespace TomPIT.Middleware
 {
 	public interface IMiddlewareContext
 	{
+#if DEBUG
 		Guid Id { get; }
+#endif
+
 		IMiddlewareServices Services { get; }
 		IMiddlewareEnvironment Environment { get; }
 		ITenant Tenant { get; }
