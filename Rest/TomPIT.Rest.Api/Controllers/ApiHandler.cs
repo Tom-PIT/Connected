@@ -117,7 +117,7 @@ namespace TomPIT.Rest.Controllers
 			var buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(json));
 			Shell.HttpContext.Response.ContentLength = buffer.Length;
 
-			Shell.HttpContext.Response.Body.Write(buffer, 0, buffer.Length);
+			Shell.HttpContext.Response.Body.WriteAsync(buffer, 0, buffer.Length);
 		}
 
 		private void RenderResult(string content)
@@ -129,7 +129,7 @@ namespace TomPIT.Rest.Controllers
 			Shell.HttpContext.Response.ContentType = "application/json";
 			Shell.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
 
-			Shell.HttpContext.Response.Body.Write(buffer, 0, buffer.Length);
+			Shell.HttpContext.Response.Body.WriteAsync(buffer, 0, buffer.Length);
 		}
 
 		private IApiConfiguration GetConfiguration()
