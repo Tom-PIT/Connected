@@ -147,7 +147,7 @@ namespace TomPIT.Worker.Services
 
 			if (type == null)
 			{
-				ctx.Services.Diagnostic.Warning(nameof(EventJob), nameof(Invoke), $"{SR.ErrTypeExpected} ({i.Name})");
+				ctx.Services.Diagnostic.Warning(nameof(EventJob), $"{SR.ErrTypeExpected} ({i.Name})", nameof(Invoke));
 				return null;
 			}
 
@@ -161,7 +161,7 @@ namespace TomPIT.Worker.Services
 			}
 			catch (Exception ex)
 			{
-				ctx.Services.Diagnostic.Error(nameof(EventJob), nameof(Invoke), $"{ex.Message}");
+				ctx.Services.Diagnostic.Error(nameof(EventJob), ex.Message, nameof(Invoke));
 			}
 
 			return null;
