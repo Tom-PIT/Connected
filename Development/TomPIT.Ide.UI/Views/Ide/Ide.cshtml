@@ -22,6 +22,15 @@
             qspath = Model.ResolvePath(new Guid(component), elementId, out eventName);
         }
     }
+
+
+    var path = "Assets/Libraries/monaco/vs";
+
+    var ctx = Model as TomPIT.Middleware.IMiddlewareContext;
+    if (ctx != null)
+    {
+        path = ctx.Services.Routing.MapPath("~/Assets/Libraries/monaco/vs");
+    }
 }
 
 @section head {
@@ -61,16 +70,6 @@
         <script src="~/Assets/Scripts/ide.js"></script>
         <script src="~/Assets/Scripts/textEditor.js"></script>
     </environment>
-}
-
-@{
-    var path = "Assets/Libraries/monaco/vs";
-    var ctx = Model as TomPIT.Middleware.IMiddlewareContext;
-
-    if (ctx != null)
-    {
-        path = ctx.Services.Routing.MapPath("~/Assets/Libraries/monaco/vs");
-    }
 }
 
 <script src="~/Assets/Libraries/monaco/vs/loader.js"></script>
@@ -132,7 +131,7 @@
 
 	@if (!string.IsNullOrWhiteSpace(qspath))
 	{
-       <text>
+        <text>
 		ide.expandTo({
             'path': '@qspath',
             @if (!string.IsNullOrWhiteSpace(eventName)) {
@@ -148,7 +147,7 @@
                 </text>
                 }
             });
-    </text>
+        </text>
 	}
 
 
