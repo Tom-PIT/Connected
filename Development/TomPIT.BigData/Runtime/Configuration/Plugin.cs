@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TomPIT.Cdn;
 using TomPIT.Runtime.Configuration;
 
-namespace TomPIT.MicroServices.BigData
+namespace TomPIT.MicroServices.BigData.Runtime.Configuration
 {
 	internal class Plugin : IPlugin
 	{

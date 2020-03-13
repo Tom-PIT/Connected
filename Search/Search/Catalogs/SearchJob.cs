@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Web;
+﻿using System.Web;
 using Lucene.Net.QueryParsers;
 using Lucene.Net.Search;
 using Newtonsoft.Json.Linq;
@@ -10,8 +9,6 @@ namespace TomPIT.Search.Catalogs
 {
 	internal abstract class SearchJob
 	{
-		private List<string> _duplicates = null;
-
 		protected SearchJob(ISearchCatalogConfiguration catalog, ISearchOptions options)
 		{
 			Catalog = catalog;

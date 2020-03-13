@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using TomPIT.ComponentModel;
+﻿using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
@@ -13,7 +12,7 @@ namespace TomPIT.BigData
 		{
 		}
 
-		public void Add<T>(IPartitionConfiguration partition, List<T> items)
+		public void Update<T>(IPartitionConfiguration partition, T items)
 		{
 			var url = Tenant.GetService<IInstanceEndpointService>().Url(InstanceType.BigData, InstanceVerbs.Post);
 

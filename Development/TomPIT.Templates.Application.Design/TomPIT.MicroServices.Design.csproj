@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>TomPIT.MicroServices.Design</RootNamespace>
     <AssemblyName>TomPIT.MicroServices.Design</AssemblyName>
-    <AssemblyVersion>2.1.302.1</AssemblyVersion>
-    <FileVersion>2.1.302.1</FileVersion>
-    <Version>2.1.302.1</Version>
+    <AssemblyVersion>2.1.311.1</AssemblyVersion>
+    <FileVersion>2.1.311.1</FileVersion>
+    <Version>2.1.311.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Designers\Security\**" />
@@ -16,8 +16,8 @@
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />

@@ -6,12 +6,12 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>TomPIT.Experience.IoT</AssemblyName>
     <RootNamespace>TomPIT.IoT</RootNamespace>
-    <AssemblyVersion>2.1.302.1</AssemblyVersion>
-    <FileVersion>2.1.302.1</FileVersion>
-    <Version>2.1.302.1</Version>
+    <AssemblyVersion>2.1.311.1</AssemblyVersion>
+    <FileVersion>2.1.311.1</FileVersion>
+    <Version>2.1.311.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="wwwroot\**" />
@@ -22,9 +22,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="3.0.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.3.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="3.1.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.4.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />

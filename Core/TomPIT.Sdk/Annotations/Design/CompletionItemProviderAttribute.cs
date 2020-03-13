@@ -28,7 +28,7 @@ namespace TomPIT.Annotations.Design
 		public const string ReportProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.ReportProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string SubscriptionProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.SubscriptionProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string SubscriptionEventProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.SubscriptionEventProvider, " + SystemAssemblies.DevelopmentAssembly;
-
+		public const string BigDataPartitionProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.BigDataPartitionProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public CompletionItemProviderAttribute() { }
 
 		public CompletionItemProviderAttribute(string type)

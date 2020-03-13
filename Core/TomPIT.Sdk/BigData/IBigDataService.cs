@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using TomPIT.ComponentModel.BigData;
+﻿using TomPIT.ComponentModel.BigData;
 
 namespace TomPIT.BigData
 {
@@ -11,6 +10,6 @@ namespace TomPIT.BigData
 
 	public interface IBigDataService
 	{
-		void Add<T>(IPartitionConfiguration partition, List<T> items);
+		void Update<T>(IPartitionConfiguration partition, T items);
 	}
 }
