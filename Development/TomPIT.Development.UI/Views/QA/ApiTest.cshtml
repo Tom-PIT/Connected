@@ -2,163 +2,177 @@
 
 @model TomPIT.Development.Models.ApiTestModel
 
-@section head{
-	<environment names="Staging,Production">
-		<link rel="stylesheet" type="text/css" href="~/Assets/ide.min.css" />
-		<script src="~/Assets/ide.min.js"></script>
-	</environment>
-	<environment names="Development">
+@{
+    Layout = "~/Views/Shared/Shell.cshtml";
+
+    var text = "{\n}";
+    var lines = string.IsNullOrWhiteSpace(text) ?
+        new string[] { "{", "}" } :
+        text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
+
+
+    var path = "Assets/Libraries/monaco/vs";
+
+    var ctx = Model as TomPIT.Middleware.IMiddlewareContext;
+    if (ctx != null)
+    {
+        path = ctx.Services.Routing.MapPath("~/Assets/Libraries/monaco/vs");
+    }
+}
+
+@section head {
+    <environment names="Staging,Production">
+        <link rel="stylesheet" type="text/css" href="~/Assets/ide.min.css" />
+        <script src="~/Assets/ide.min.js"></script>
+    </environment>
+
+    <environment names="Development">
 		<link rel="stylesheet" type="text/css" href="~/Assets/Styles/development.css" />
-		<script src="~/Assets/Scripts/ide.js"></script>
-		<script src="~/Assets/Scripts/textEditor.js"></script>
-	</environment>
-
-}
-
-@{
-	Layout = "~/Views/Shared/Shell.cshtml";
-
-	var text = string.Empty;
-}
-
-@{
-	var path = "Assets/Libraries/monaco/vs";
-	var ctx = Model as TomPIT.Middleware.IMiddlewareContext;
-
-	if (ctx != null)
-	{ path = ctx.Services.Routing.MapPath("~/Assets/Libraries/monaco/vs"); }
+        <script src="~/Assets/Scripts/ide.js"></script>
+        <script src="~/Assets/Scripts/textEditor.js"></script>
+    </environment>
 }
 
 <script src="~/Assets/Libraries/monaco/vs/loader.js"></script>
 
+
 <div id="ide">
-	<div class="doc-canvas">
-		<div class="paper">
-			<div data-tp-tag="progress-container">
+    <div class="doc-canvas">
+        <div class="paper">
+            <div data-tp-tag="progress-container"></div>
 
-			</div>
-			<div class="row">
-				<div class="col-3">
-					<h6>Existing tests</h6>
-					<hr />
-					<div class="form-group">
-						<label for="editTag">Tags</label>
-						<div id="editTag"></div>
-					</div>
-					<div class="form-group">
-						<label for="existingTests">Tests</label>
-						<div id="existingTests"></div>
-					</div>
-				</div>
-				<div class="col-9">
-					<h6>Test <a href="#" class="float-right" id="clearCommand">x</a></h6>
-					<hr />
-					<div class="form-group">
-						<label>API</label>
-						<div id="editApi" />
-					</div>
-					<div class="form-group pt-1">
-						<ul class="nav nav-tabs" role="tablist">
-							<li class="nav-item">
-								<a class="nav-link active" href="#navRequestBody" role="tab" data-toggle="tab" id="tabRequest">Request body</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" href="#navResponseBody" role="tab" data-toggle="tab" id="tabResponse">Response body</a>
-							</li>
+            <div class="row">
+                <div class="col-3">
+                    <h6>Existing tests</h6>
+                    <hr />
+                    <div class="form-group">
+                        <label for="editTag">Tags</label>
+                        <div id="editTag"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="existingTests">Tests</label>
+                        <div id="existingTests"></div>
+                    </div>
+                </div>
 
-						</ul>
-						<div class="tab-content">
-							<div id="navRequestBody" class="tab-pane fade in active show" role="tabpanel">
-								<div id="designEditor" class="text-editor text-editor-int" data-fullscreen="true"></div>
-							</div>
-							<div id="navResponseBody" class="tab-pane fade" role="tabpanel">
-								<div id="designEditorResponse" class="text-editor text-editor-int" data-fullscreen="true"></div>
-							</div>
-						</div>
-						<div class="form-group pt-1">
-							<button type="button" class="btn btn-primary" id="buttonSubmit">Submit</button>
-							<div class="float-right">
-								<div class="btn-toolbar">
-									<div class="btn-group">
-										<button type="button" class="btn btn-light" data-tp-tag="toolbar-action" id="btnSave">
-											Save
-										</button>
+                <div class="col-9">
+                    <h6>Test <a href="#" class="float-right" id="clearCommand">x</a></h6>
+                    <hr />
+                    <div class="form-group">
+                        <label>API</label>
+                        <div id="editApi" />
+                    </div>
+                    <div class="form-group pt-1">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#navRequestBody" role="tab" data-toggle="tab" id="tabRequest">Request body</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#navResponseBody" role="tab" data-toggle="tab" id="tabResponse">Response body</a>
+                            </li>
 
-										<button type="button" class="btn btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-											<span class="caret"></span>
-											<span class="sr-only">@SR.ToggleDropdown</span>
-										</button>
-										<ul class="dropdown-menu">
-											<li class="dropdown-item" id="liSaveAs"><a href="#" data-tp-tag="toolbar-action">Save as</a></li>
-										</ul>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="navRequestBody" class="tab-pane fade in active show" role="tabpanel">
+                                <div data-role="text-editor" class="text-editor text-editor-int" data-fullscreen="true"></div>
+                            </div>
+                            <div id="navResponseBody" class="tab-pane fade" role="tabpanel">
+                                <div data-role="text-editor" class="text-editor text-editor-int" data-fullscreen="true"></div>
+                            </div>
+                        </div>
+                        <div class="form-group pt-1">
+                            <button type="button" class="btn btn-primary" id="buttonSubmit">Submit</button>
+                            <div class="float-right">
+                                <div class="btn-toolbar">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-light" data-tp-tag="toolbar-action" id="btnSave">
+                                            Save
+                                        </button>
 
-				</div>
-			</div>
-
-		</div>
-
-	</div>
+                                        <button type="button" class="btn btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span class="caret"></span>
+                                            <span class="sr-only">@SR.ToggleDropdown</span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li class="dropdown-item" id="liSaveAs"><a href="#" data-tp-tag="toolbar-action">Save as</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div tabindex="-1" class="modal fade right collapse modal-stacked" id="saveModal" role="dialog" aria-labelledby="saveModal" data-backdrop="false">
-	<div class="modal-dialog modal-full-height modal-right" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<p class="heading lead">Save API test</p>
-				<button class="close" aria-label="Close" type="button" data-dismiss="modal">
-					<span class="white-text" aria-hidden="true">×</span>
-				</button>
-			</div>
-			<div class="modal-body">
-				<form id="saveForm">
-					<div class="form-group">
-						<label for="editName">Title</label>
-						<div id="editTitle"></div>
-					</div>
-					<div class="form-group">
-						<label for="editDescription">Description</label>
-						<div id="editDescription"></div>
-					</div>
-					<div class="form-group">
-						<label for="editTags">Tags</label>
-						<div id="editTags"></div>
-					</div>
-				</form>
-			</div>
-			<div class="modal-footer justify-content-center">
-				<button type="button" class="btn btn-success" id="btnSaveTest">
-					Save
-				</button>
-				<button type="button" class="btn btn-link" data-dismiss="modal">
-					Cancel
-				</button>
-			</div>
-		</div>
-	</div>
+    <div class="modal-dialog modal-full-height modal-right" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p class="heading lead">Save API test</p>
+                <button class="close" aria-label="Close" type="button" data-dismiss="modal">
+                    <span class="white-text" aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="saveForm">
+                    <div class="form-group">
+                        <label for="editName">Title</label>
+                        <div id="editTitle"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDescription">Description</label>
+                        <div id="editDescription"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTags">Tags</label>
+                        <div id="editTags"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-success" id="btnSaveTest">
+                    Save
+                </button>
+                <button type="button" class="btn btn-link" data-dismiss="modal">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
-@section Scripts{
-	<script>
-		DevExpress.ui.setTemplateEngine("underscore");
-	</script>
+
+@section Scripts {
+    <script>
+        DevExpress.ui.setTemplateEngine("underscore");
+    </script>
 }
 
+
 <script>
-    var selectedTest = null;
-    var saveAs = false;
+    var selectedTest = null,
+        saveAs = false,
+        defaultRequestBody = '{\n}',
+        textEditorRequestBody = null,
+        defaultResponseBody = '',
+        textEditorResponseBody = null;
 
     var existingTags = [
-        @foreach (var i in Model.TestCategories) {
-           <text>
-        '@i',
-        </text>
+        @foreach (var i in Model.TestCategories)
+        {
+           <text>'@i',</text>
         }
-        ];
+    ];
+
+    var src = [
+        @foreach (var i in lines)
+        {
+            @:'@Html.Raw(JavaScriptEncoder.Default.Encode(i))',
+        }
+    ];
 
     $("#existingTests").dxList({
         searchEnabled: true,
@@ -181,101 +195,55 @@
 
     $('[data-tp-tag="progress-container"]').tpProgress();
 
-        var ide = $('#navRequestBody').tpIde().data('tompit-tpIde');
-        var ide2 = $('#navResponseBody').tpIde().data('tompit-tpIde');
+    require.config({ paths: { 'vs': '@path' } });
+
 
     $('#navRequestBody').tpTextEditor({
-            path: '@path'
-
-        });
-
-        $('#navResponseBody').tpTextEditor({
-            path: '@path'
-
-        });
-
-        var textEditor = $('#navRequestBody').data('tompit-tpTextEditor');
-        var textEditor2 = $('#navResponseBody').data('tompit-tpTextEditor');
-
-        require.config({ paths: { 'vs': '@path' } });
-
-        @{
-            var lines = string.IsNullOrWhiteSpace(text) ? new string[0] : text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
-    }
-
-    var src = [@foreach (var i in lines){
-        @:'@Html.Raw(JavaScriptEncoder.Default.Encode(i))',
-    }
-        ];
-
-	textEditor.activateEditor({
-		id: 'design',
-		elementId: 'designEditor',
-		source: src,
-		language: 'json',
-		onCreated: function () {
-			textEditor.registerCompletionItemProvider('json', {
-				provideCompletionItems: function (model, position, context) {
-					return new monaco.Promise(function (resolve, reject) {
-
-						var api = $('#editApi').dxSelectBox('instance').option('value');
-						var body = textEditor.getValue();
-
-						tompit.post({
-							url: '@Url.RouteUrl("sys.apitest.provideitems")',
-							data: {
-								'api': api,
-								'body': body,
-								'position': model.getOffsetAt({
-									lineNumber: position.lineNumber,
-									column: position.column
-								}),
-								'triggerCharacter': context.triggerCharacter,
-								'triggerKind': context.triggerKind,
-							},
-							progress: tompit.findProgress('#ide'),
-							onSuccess: function (data) {
-								resolve({
-									suggestions: data
-								})
-							}
-						});
-					});
-            }
-			})
-		}
-	});
-
-    textEditor2.activateEditor({
-        id: 'designResponse',
-        elementId: 'designEditorResponse',
-        source: ['\n'
-    ]        ,
+        path: '@path',
+        source: src,
         language: 'json',
-    }
-    );
+        onCreated: function (sender, instance) {
+            textEditorRequestBody = instance;
+        }
+    });
+
+    $('#navResponseBody').tpTextEditor({
+        path: '@path',
+        source: [],
+        language: 'json',
+        onCreated: function (sender, instance) {
+            instance.updateOptions({ readOnly: true });
+            textEditorResponseBody = instance;
+        }
+    });
+
 
     $('#buttonSubmit').click(function () {
         if (!DevExpress.validationEngine.validateGroup('form').isValid)
             return;
 
-        var api = $('#editApi').dxSelectBox('instance').option('value');
-        var body = textEditor.getValue();
+        var api = $('#editApi').dxSelectBox('instance').option('value'),
+            body = textEditorRequestBody.getValue();
 
         tompit.post({
             url: '@Url.RouteUrl("sys.apitest.invoke")',
             data: {
                 'api': api,
-                'body':body
+                'body': body
             },
-            progress:tompit.findProgress('#ide'),
+            progress: tompit.findProgress('#ide'),
             onSuccess: function (data) {
-                textEditor2.setValue(JSON.stringify(data));
-                textEditor2.formatDocument();
+                textEditorResponseBody.setValue(JSON.stringify(data));
+
+                textEditorResponseBody.updateOptions({ readOnly: false });
+                textEditorResponseBody.getAction('editor.action.formatDocument').run()
+                    .then(() => {
+                        textEditorResponseBody.updateOptions({ readOnly: true })
+                    });
+
                 $('#tabResponse').tab('show');
             }
         });
-
     });
 
     $('#btnSave').click(function () {
@@ -287,7 +255,6 @@
             $('#editTags').dxTagBox('instance').option('value', $('#editTag').dxTagBox('instance').option('value'));
         }
 
-
         $('#saveModal').modal('show');
     });
 
@@ -296,7 +263,7 @@
             return;
 
         saveAs = true;
-		 $('#editTitle').dxTextBox('instance').option('value', $('#editApi').dxSelectBox('instance').option('value'));
+        $('#editTitle').dxTextBox('instance').option('value', $('#editApi').dxSelectBox('instance').option('value'));
         $('#saveModal').modal('show');
     });
 
@@ -308,14 +275,14 @@
     });
 
 	$('#editApi').dxSelectBox({
-		items:@Html.Raw(Html.TP().JavaScript.Array(Model.Operations)),
-		searchEnabled:true
+		items: @Html.Raw(Html.TP().JavaScript.Array(Model.Operations)),
+		searchEnabled: true
     }).dxValidator({
         validationRules: [{
             type: 'required'
         }],
         validationGroup: 'form'
-        });
+    });
 
     $('#editTitle').dxTextBox({
         maxLength: 128,
@@ -339,7 +306,7 @@
             type: 'required'
         }],
         validationGroup: 'save'
-        });
+    });
 
     $('#btnSaveTest').click(function () {
         if (!DevExpress.validationEngine.validateGroup('save').isValid
@@ -349,15 +316,16 @@
         var data = {
             'title': $('#editTitle').dxTextBox('instance').option('value'),
             'description': $('#editDescription').dxTextArea('instance').option('value'),
-			  'api': $('#editApi').dxSelectBox('instance').option('value'),
-            'body': textEditor.getValue(),
+			'api': $('#editApi').dxSelectBox('instance').option('value'),
+            'body': textEditorRequestBody.getValue(),
             'identifier': saveAs ? null: selectedTest,
             'tags': $('#editTags').dxTagBox('instance').option('value').toString()
         };
 
         tompit.post({
             url: '@Url.RouteUrl("sys.apitest.save")',
-            data:data,
+            data: data,
+            progress: tompit.findProgress('#ide'),
             onSuccess: function (data) {
                 saveAs = false;
                 selectedTest = data.identifier;
@@ -369,12 +337,14 @@
         });
     });
 
+
     function refreshExisting() {
         tompit.post({
             'url': '@Url.RouteUrl("sys.apitest.querytests")',
             'data': {
                 'tags': $('#editTag').dxTagBox('instance').option('value').toString()
             },
+            progress: tompit.findProgress('#ide'),
             onSuccess: function (data) {
                 $('#existingTests').dxList('instance').option('dataSource', data);
 
@@ -382,7 +352,7 @@
                     $('#existingTests').dxList('instance').option('selectedItemKeys', [selectedTest]);
                 }
             }
-          })
+        })
     }
 
     function refreshEditor() {
@@ -398,7 +368,7 @@
 
             selectedTest = item.identifier;
 
-			  $('#editApi').dxSelectBox('instance').option('value', item.api);
+			$('#editApi').dxSelectBox('instance').option('value', item.api);
             $('#editTitle').dxTextBox('instance').option('value', item.title);
             $('#editDescription').dxTextArea('instance').option('value', item.description);
             $('#editTags').dxTagBox('instance').option('value', item.tags.split(','));
@@ -408,8 +378,12 @@
                 'data': {
                     'identifier': selectedTest
                 },
+                progress: tompit.findProgress('#ide'),
                 onSuccess: function (data) {
-                    textEditor.setValue(data.body);
+                    textEditorRequestBody.setValue(data.body);
+                    textEditorRequestBody.getAction('editor.action.formatDocument').run();
+
+                    textEditorResponseBody.setValue(defaultResponseBody);
                 }
             })
         }
@@ -419,17 +393,21 @@
 
     function deleteItem(e) {
         tompit.post({
-            'url':'@Url.RouteUrl("sys.apitest.delete")',
+            'url': '@Url.RouteUrl("sys.apitest.delete")',
             'data': {
                 'identifier': e.itemData.identifier
-            }
-
-          });
+            },
+            progress: tompit.findProgress('#ide')
+        });
     }
 
-    $('#clearCommand').click(function () {
-        $('#existingTests').dxList('instance').unselectAll();
+    $('#clearCommand').click(function (e) {
+        e.preventDefault();
 
+        $('#existingTests').dxList('instance').unselectAll();
         selectedTest = null;
+
+        textEditorRequestBody.setValue(defaultRequestBody);
+        textEditorResponseBody.setValue(defaultResponseBody);
     });
 </script>
