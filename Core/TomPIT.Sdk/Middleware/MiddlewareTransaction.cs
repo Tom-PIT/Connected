@@ -48,6 +48,11 @@ namespace TomPIT.Middleware
 				return;
 			}
 
+			if (State != MiddlewareTransactionState.Active)
+			{
+				return;
+			}
+
 			Operations.Push(operation);
 		}
 
