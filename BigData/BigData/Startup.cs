@@ -41,7 +41,8 @@ namespace TomPIT.BigData
 			{
 				BigData.Configuration.Routing.Register(f.Builder);
 			});
-			InitializeConfiguration();
+
+			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 			Instance.Run(app);
 		}
 
@@ -49,11 +50,6 @@ namespace TomPIT.BigData
 		{
 			services.AddSingleton<IHostedService, StorageService>();
 			services.AddSingleton<IHostedService, MaintenanceService>();
-		}
-
-		private void InitializeConfiguration()
-		{
-			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 		}
 
 		private void OnTenantInitialize(object sender, TenantArgs e)

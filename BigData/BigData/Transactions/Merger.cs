@@ -47,6 +47,8 @@ namespace TomPIT.BigData.Transactions
 			catch (Exception ex)
 			{
 				MiddlewareDescriptor.Current.Tenant.LogError("BigData", ex.Source, ex.Message);
+
+				throw;
 			}
 			finally
 			{

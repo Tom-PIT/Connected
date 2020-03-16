@@ -405,32 +405,16 @@ namespace TomPIT.Navigation
 			{
 				foreach (var descriptor in handler.Value)
 				{
-					foreach (var template in descriptor.Templates)
-					{
-						var parsedTemplate = TemplateParser.Parse(template);
-						var matcher = new TemplateMatcher(parsedTemplate, GetDefaults(parsedTemplate));
+					var template = descriptor.Match(url, parameters);
 
-						if (matcher.TryMatch(url, parameters))
-							return SelectRouteByTemplate(descriptor, template);
-					}
+					if (template != null)
+						return SelectRouteByTemplate(descriptor, template);
 				}
 			}
 
 			return null;
 		}
 
-		private static RouteValueDictionary GetDefaults(RouteTemplate parsedTemplate)
-		{
-			var result = new RouteValueDictionary();
-
-			foreach (var parameter in parsedTemplate.Parameters)
-			{
-				if (parameter.DefaultValue != null)
-					result.Add(parameter.Name, parameter.DefaultValue);
-			}
-
-			return result;
-		}
 		public ISiteMapRoute SelectRoute(string routeKey)
 		{
 			Initialize();
@@ -450,7 +434,6 @@ namespace TomPIT.Navigation
 		private ISiteMapRoute SelectRouteByTemplate(NavigationHandlerDescriptor descriptor, string template)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
-
 			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), descriptor.Handler);
 
 			if (handler == null)

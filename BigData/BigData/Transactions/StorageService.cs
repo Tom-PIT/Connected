@@ -16,11 +16,18 @@ namespace TomPIT.BigData.Transactions
 		public StorageService()
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
+		}
+
+		protected override bool Initialize()
+		{
+			if (Instance.State == InstanceState.Initialining)
+				return false;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
 				Dispatchers.Add(new StorageDispatcher(i, _cancel));
-		}
 
+			return true;
+		}
 		protected override Task Process()
 		{
 			Parallel.ForEach(Dispatchers, (f) =>

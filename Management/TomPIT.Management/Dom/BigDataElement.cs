@@ -21,12 +21,18 @@ namespace TomPIT.Management.Dom
 		public override void LoadChildren()
 		{
 			Items.Add(new BigDataNodesElement(Environment, this));
+			Items.Add(new BigDataPartitionsElement(this));
+			Items.Add(new BigDataTransactionsElement(this));
 		}
 
 		public override void LoadChildren(string id)
 		{
 			if (string.Compare(id, BigDataNodesElement.FolderId, true) == 0)
 				Items.Add(new BigDataNodesElement(Environment, this));
+			else if (string.Compare(id, BigDataPartitionsElement.NodeId, true) == 0)
+				Items.Add(new BigDataPartitionsElement(this));
+			else if (string.Compare(id, BigDataTransactionsElement.NodeId, true) == 0)
+				Items.Add(new BigDataTransactionsElement(this));
 		}
 	}
 }

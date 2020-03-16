@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -20,6 +21,7 @@ namespace TomPIT.ComponentModel
 {
 	internal class ComponentService : ClientRepository<IComponent, Guid>, IComponentService, IComponentNotification
 	{
+		private Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>> _configurationCache = new Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>>();
 		public event ComponentChangedHandler ComponentChanged;
 		public event ComponentChangedHandler ComponentAdded;
 		public event ComponentChangedHandler ComponentRemoved;
@@ -245,6 +247,13 @@ namespace TomPIT.ComponentModel
 			if (component == null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
 
+			if (ConfigurationCache.ContainsKey(component.Token))
+			{
+				var state = ConfigurationCache[component.Token];
+
+				return Tenant.GetService<ISerializationService>().Deserialize(state.State, state.Type) as IConfiguration;
+			}
+
 			var content = blob ?? Tenant.GetService<IStorageService>().Download(component.Token);
 
 			if (content == null)
@@ -293,6 +302,12 @@ namespace TomPIT.ComponentModel
 				}
 			}
 
+			ConfigurationCache.TryAdd(component.Token, new ConfigurationSerializationState
+			{
+				Type = r.GetType(),
+				State = Tenant.GetService<ISerializationService>().Serialize(r)
+			});
+
 			return r;
 		}
 
@@ -321,6 +336,7 @@ namespace TomPIT.ComponentModel
 			if (existing != null)
 				Remove(existing.Token);
 
+			ConfigurationCache.Remove(e.Component, out _);
 			ConfigurationChanged?.Invoke(Tenant, e);
 		}
 
@@ -551,5 +567,7 @@ namespace TomPIT.ComponentModel
 			Folders.Delete(e.Folder);
 			FolderChanged?.Invoke(sender, e);
 		}
+
+		private ConcurrentDictionary<Guid, ConfigurationSerializationState> ConfigurationCache => _configurationCache.Value;
 	}
 }
