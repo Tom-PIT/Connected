@@ -66,9 +66,6 @@ namespace TomPIT.DataProviders.Sql
 			if (Connection.State == ConnectionState.Closed)
 				Connection.Open();
 
-			if (Connection.State == ConnectionState.Closed)
-				Connection.Open();
-
 			if (Transaction?.Connection != null)
 			{
 				return;
