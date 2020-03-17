@@ -1,7 +1,7 @@
 ﻿@model TomPIT.Ide.Designers.FileManagerDesigner
 
 @{
-    var url = $"/sys/designers/application/media/{Model.Environment.Context.MicroService.Name}/{Model.MediaName}";
+    var url = Model.Environment.Context.Services.Routing.Absolute($"/sys/designers/application/media/{Model.Environment.Context.MicroService.Name}/{Model.MediaName}");
 }
 <div class="document-body" id="deploymentDesigner">
     <div class="document-container">
