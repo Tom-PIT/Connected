@@ -2,12 +2,12 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoC;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
-using TomPIT.Reflection;
 using TomPIT.Serialization;
 using TomPIT.Services;
 
@@ -30,8 +30,10 @@ namespace TomPIT.IoC
 
 		protected override void OnInitialized()
 		{
-			foreach (var i in All())
+			Parallel.ForEach(All(), (i) =>
+			{
 				OnAdded(i.MicroService(), i.Component);
+			});
 		}
 		protected override void OnAdded(Guid microService, Guid component)
 		{
@@ -52,24 +54,28 @@ namespace TomPIT.IoC
 
 				var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
-				lock (_endpoints)
+				var descriptor = new IoCEndpointDescriptor
 				{
-					var descriptor = new IoCEndpointDescriptor
-					{
-						Component = configuration.Component,
-						Element = endpoint.Id,
-						Type = type
-					};
+					Component = configuration.Component,
+					Element = endpoint.Id,
+					Type = type
+				};
 
-					if (Endpoints.ContainsKey(endpoint.Container))
-						Endpoints[endpoint.Container].Add(descriptor);
-					else
+				if (Endpoints.ContainsKey(endpoint.Container))
+				{
+					var list = Endpoints[endpoint.Container];
+
+					lock (list)
 					{
-						Endpoints.TryAdd(endpoint.Container, new List<IoCEndpointDescriptor>
+						list.Add(descriptor);
+					}
+				}
+				else
+				{
+					Endpoints.TryAdd(endpoint.Container, new List<IoCEndpointDescriptor>
 					{
 						descriptor
 					});
-					}
 				}
 			}
 		}

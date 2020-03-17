@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using TomPIT.Annotations.Design;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
@@ -57,7 +58,7 @@ namespace TomPIT.ComponentModel
 				.AddParameter("microService", microService)
 				.AddParameter("category", category);
 
-			return Tenant.Get<List<Component>>(u).ToList<IComponent>();
+			return CacheComponents(Tenant.Get<List<Component>>(u).ToList<IComponent>());
 		}
 
 		public List<IComponent> QueryComponents(Guid microService, Guid folder)
@@ -66,7 +67,7 @@ namespace TomPIT.ComponentModel
 				.AddParameter("microService", microService)
 				.AddParameter("folder", folder);
 
-			return Tenant.Get<List<Component>>(u).ToList<IComponent>();
+			return CacheComponents(Tenant.Get<List<Component>>(u).ToList<IComponent>());
 		}
 
 		public List<IComponent> QueryComponents(Guid microService)
@@ -74,7 +75,7 @@ namespace TomPIT.ComponentModel
 			var u = Tenant.CreateUrl("Component", "Query")
 				.AddParameter("microService", microService);
 
-			return Tenant.Get<List<Component>>(u).ToList<IComponent>();
+			return CacheComponents(Tenant.Get<List<Component>>(u).ToList<IComponent>());
 		}
 
 		public IComponent SelectComponent(Guid microService, string category, string name)
@@ -170,25 +171,22 @@ namespace TomPIT.ComponentModel
 			var contents = Tenant.GetService<IStorageService>().Download(ids);
 			var runtimeContents = mode == EnvironmentMode.Design ? null : Tenant.GetService<IStorageService>().Download(rtIds);
 
-			foreach (var i in contents)
+			Parallel.ForEach(contents, (i) =>
 			{
 				var component = SelectComponent(i.Blob);
 
 				if (component == null)
-					continue;
+					return;
 
-				var config = SelectConfiguration(component, i, false);
+				IBlobContent runtime = null;
 
 				if (mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
-				{
-					var rt = runtimeContents.FirstOrDefault(f => f.Blob == component.RuntimeConfiguration);
+					runtime = runtimeContents.FirstOrDefault(f => f.Blob == component.RuntimeConfiguration);
 
-					if (rt != null)
-						MergeWithRuntime(config, SelectConfiguration(component, rt, false));
-				}
+				var config = SelectConfiguration(component, i, runtime, false);
 
 				r.Add(config);
-			}
+			});
 
 			return r;
 		}
@@ -229,7 +227,7 @@ namespace TomPIT.ComponentModel
 			if (cmp == null)
 				return null;
 
-			return SelectConfiguration(cmp, null, true);
+			return SelectConfiguration(cmp, null, null, true);
 		}
 
 		public IConfiguration SelectConfiguration(Guid component)
@@ -239,10 +237,10 @@ namespace TomPIT.ComponentModel
 			if (cmp == null)
 				return null;
 
-			return SelectConfiguration(cmp, null, true);
+			return SelectConfiguration(cmp, null, null, true);
 		}
 
-		private IConfiguration SelectConfiguration(IComponent component, IBlobContent blob, bool throwException)
+		private IConfiguration SelectConfiguration(IComponent component, IBlobContent blob, IBlobContent runtime, bool throwException)
 		{
 			if (component == null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
@@ -286,7 +284,9 @@ namespace TomPIT.ComponentModel
 
 			if (blob == null && Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
 			{
-				var rtContent = Tenant.GetService<IStorageService>().Download(component.RuntimeConfiguration);
+				var rtContent = runtime == null
+					? Tenant.GetService<IStorageService>().Download(component.RuntimeConfiguration)
+					: runtime;
 
 				if (rtContent != null)
 				{
@@ -569,5 +569,16 @@ namespace TomPIT.ComponentModel
 		}
 
 		private ConcurrentDictionary<Guid, ConfigurationSerializationState> ConfigurationCache => _configurationCache.Value;
+
+		private List<IComponent> CacheComponents(List<IComponent> components)
+		{
+			if (components == null)
+				return components;
+
+			foreach (var component in components)
+				Set(component.Token, component);
+
+			return components;
+		}
 	}
 }

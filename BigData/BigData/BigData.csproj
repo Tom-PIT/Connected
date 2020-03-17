@@ -4,9 +4,9 @@
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <AssemblyName>TomPIT.Experience.BigData</AssemblyName>
     <RootNamespace>TomPIT.BigData</RootNamespace>
-    <AssemblyVersion>2.1.311.1</AssemblyVersion>
-    <FileVersion>2.1.311.1</FileVersion>
-    <Version>2.1.311.1</Version>
+    <AssemblyVersion>2.1.316.15</AssemblyVersion>
+    <FileVersion>2.1.316.15</FileVersion>
+    <Version>2.1.316.15</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Security\**" />

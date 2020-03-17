@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -216,6 +217,9 @@ namespace TomPIT.Compilation
 
 		private IScriptDescriptor CreateScript(Guid microService, IText d)
 		{
+			var sw = new Stopwatch();
+			sw.Start();
+
 			using var script = new CompilerScript(Tenant, microService, d);
 
 			var result = new ScriptDescriptor
@@ -227,8 +231,14 @@ namespace TomPIT.Compilation
 
 			script.Create();
 
-			Compile(result, script, true);
+			sw.Stop();
+			var x1 = sw.ElapsedMilliseconds;
+			sw.Reset();
 
+			sw.Start();
+			Compile(result, script, true);
+			sw.Stop();
+			Console.WriteLine($"{sw.ElapsedMilliseconds}-{x1}");
 			return result;
 		}
 
@@ -436,9 +446,7 @@ namespace TomPIT.Compilation
 			if (script != null && script.Assembly == null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
 				throw new CompilerException(Tenant, script, sourceCode);
 
-			var assembly = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
 			var target = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), script.Assembly, true) == 0);
-
 			var result = target?.GetTypes().FirstOrDefault(f => string.Compare(f.Name, typeName, true) == 0);
 
 			if (result == null)
@@ -454,7 +462,15 @@ namespace TomPIT.Compilation
 
 		public IScriptContext CreateScriptContext(IText sourceCode)
 		{
-			return new ScriptContext(Tenant, sourceCode);
+			var sw = new Stopwatch();
+			sw.Start();
+
+			var result = new ScriptContext(Tenant, sourceCode);
+			sw.Stop();
+
+			Console.WriteLine($"ctx:{sw.ElapsedMilliseconds}");
+
+			return result;
 		}
 
 		public List<string> QuerySubClasses(IScriptConfiguration script)

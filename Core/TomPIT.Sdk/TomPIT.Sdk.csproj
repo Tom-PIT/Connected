@@ -1,18 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>TomPIT</RootNamespace>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
-    <AssemblyVersion>2.1.311.1</AssemblyVersion>
+    <AssemblyVersion>2.1.316.15</AssemblyVersion>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FileVersion>2.1.311.1</FileVersion>
-    <Version>2.1.311.1</Version>
+    <FileVersion>2.1.316.15</FileVersion>
+    <Version>2.1.316.15</Version>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>  
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.22" />
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="3.4.0" />

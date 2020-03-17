@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.Ide</RootNamespace>
-    <AssemblyVersion>2.1.311.1</AssemblyVersion>
-    <FileVersion>2.1.311.1</FileVersion>
-    <Version>2.1.311.1</Version>
+    <AssemblyVersion>2.1.316.15</AssemblyVersion>
+    <FileVersion>2.1.316.15</FileVersion>
+    <Version>2.1.316.15</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AngleSharp.Css" Version="0.13.0" />

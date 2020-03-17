@@ -13,24 +13,27 @@ namespace TomPIT.Middleware
 	internal class MiddlewareConnectionPool : ConcurrentDictionary<MiddlewareContext, List<DataConnectionDescriptor>>, IDisposable
 	{
 		private int Identity { get; set; }
-		public IDataConnection OpenConnection(MiddlewareContext sender, string connection)
+		public IDataConnection OpenConnection(MiddlewareContext sender, string connection, ConnectionBehavior behavior)
 		{
 			var descriptor = ComponentDescriptor.Connection(sender, connection);
 
 			descriptor.Validate();
 
-			var existing = TryExisting(sender, connection, descriptor.Configuration);
+			var existing = behavior == ConnectionBehavior.Shared
+				? TryExisting(sender, connection, descriptor.Configuration)
+				: null;
 
 			if (existing != null)
 				return existing.Connection;
 
 			if (sender.Owner != null)
-				return sender.Owner.OpenConnection(connection);
+				return sender.Owner.OpenConnection(connection, behavior);
 
 			var dataProvider = CreateDataProvider(sender, descriptor.Configuration);
-			var con = dataProvider.OpenConnection(descriptor.Configuration.Value);
+			var con = dataProvider.OpenConnection(descriptor.Configuration.Value, behavior);
 
-			AddConnection(sender, dataProvider, descriptor.Configuration.Value, con);
+			if (behavior == ConnectionBehavior.Shared)
+				AddConnection(sender, dataProvider, descriptor.Configuration.Value, con);
 
 			return con;
 		}

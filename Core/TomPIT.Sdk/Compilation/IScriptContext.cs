@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using TomPIT.ComponentModel;
@@ -9,7 +10,7 @@ namespace TomPIT.Compilation
 	{
 		string SourceCode { get; }
 
-		Dictionary<string, IText> SourceFiles { get; }
+		ConcurrentDictionary<string, IText> SourceFiles { get; }
 		Dictionary<string, ImmutableArray<PortableExecutableReference>> References { get; }
 	}
 }

@@ -156,18 +156,34 @@ namespace TomPIT.Middleware
 
 		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
 		{
+			if (Transaction.State == MiddlewareTransactionState.Active)
+				return OpenReader<T>(connection, commandText, ConnectionBehavior.Shared);
+			else
+				return OpenReader<T>(connection, commandText, ConnectionBehavior.Isolated);
+		}
+
+		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText, ConnectionBehavior behavior)
+		{
 			return new DataReader<T>(this)
 			{
-				Connection = OpenConnection(connection),
+				Connection = OpenConnection(connection, behavior),
 				CommandText = commandText
 			};
 		}
 
 		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
 		{
+			if (Transaction.State == MiddlewareTransactionState.Active)
+				return OpenWriter(connection, commandText, ConnectionBehavior.Shared);
+			else
+				return OpenWriter(connection, commandText, ConnectionBehavior.Isolated);
+		}
+
+		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText, ConnectionBehavior behavior)
+		{
 			return new DataWriter(this)
 			{
-				Connection = OpenConnection(connection),
+				Connection = OpenConnection(connection, behavior),
 				CommandText = commandText
 			};
 		}
@@ -188,9 +204,9 @@ namespace TomPIT.Middleware
 				Endpoint = Tenant?.Url;
 		}
 
-		internal IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection)
+		internal IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection, ConnectionBehavior behavior)
 		{
-			return Connections.OpenConnection(this, connection);
+			return Connections.OpenConnection(this, connection, behavior);
 		}
 
 		private IMiddlewareTransaction BeginTransaction()
