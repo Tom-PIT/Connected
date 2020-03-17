@@ -163,7 +163,7 @@ namespace TomPIT.ComponentModel
 
 		public List<IConfiguration> QueryConfigurations(List<IComponent> components)
 		{
-			var r = new List<IConfiguration>();
+			var r = new ConcurrentBag<IConfiguration>();
 			var ids = components.Select(f => f.Token).Distinct().ToList();
 			var rtIds = components.Select(f => f.RuntimeConfiguration).Distinct().Where(f => f != Guid.Empty).ToList();
 
@@ -173,7 +173,7 @@ namespace TomPIT.ComponentModel
 
 			Parallel.ForEach(contents, (i) =>
 			{
-				var component = SelectComponent(i.Blob);
+				var component = components.FirstOrDefault(f => f.Token == i.Blob);
 
 				if (component == null)
 					return;
@@ -188,7 +188,7 @@ namespace TomPIT.ComponentModel
 				r.Add(config);
 			});
 
-			return r;
+			return r.ToList();
 		}
 
 		public List<IConfiguration> QueryConfigurations(Guid microService, string categories)
@@ -302,11 +302,14 @@ namespace TomPIT.ComponentModel
 				}
 			}
 
-			ConfigurationCache.TryAdd(component.Token, new ConfigurationSerializationState
+			if (r != null)
 			{
-				Type = r.GetType(),
-				State = Tenant.GetService<ISerializationService>().Serialize(r)
-			});
+				ConfigurationCache.TryAdd(component.Token, new ConfigurationSerializationState
+				{
+					Type = r.GetType(),
+					State = Tenant.GetService<ISerializationService>().Serialize(r)
+				});
+			}
 
 			return r;
 		}

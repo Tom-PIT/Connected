@@ -47,7 +47,7 @@ namespace TomPIT.Compilation
 				return;
 
 			string currentLine = null;
-			var sourceFiles = new List<string>();
+			var references = new List<string>();
 
 			using (var reader = new StringReader(sourceCode))
 			{
@@ -66,12 +66,7 @@ namespace TomPIT.Compilation
 						var token = tokens[1].Substring(1, tokens[1].Length - 2);
 
 						if (line.StartsWith("#load"))
-						{
-							var resolvedReference = ScriptResolver.ResolveReference(token, basePath);
-
-							if (!SourceFiles.ContainsKey(resolvedReference))
-								sourceFiles.Add(resolvedReference);
-						}
+							references.Add(token);
 						else if (line.StartsWith("#r "))
 						{
 							var path = AssemblyResolver.ResolvePath(token, basePath);
@@ -85,21 +80,26 @@ namespace TomPIT.Compilation
 				}
 			}
 
-			Parallel.ForEach(sourceFiles, (i) =>
+			Parallel.ForEach(references, (i) =>
 			{
+				var resolvedReference = ScriptResolver.ResolveReference(i, basePath);
+
+				if (SourceFiles.ContainsKey(resolvedReference))
+					return;
+
 				IText sourceFile = null;
 
 				try
 				{
-					sourceFile = ScriptResolver.LoadScript(i);
+					sourceFile = ScriptResolver.LoadScript(resolvedReference);
 				}
 				catch { }
 
 				if (sourceFile == null)
 					return;
 
-				SourceFiles.TryAdd(i, sourceFile);
-				ProcessScript(ScriptResolver.ReadText(i)?.ToString(), i);
+				SourceFiles.TryAdd(resolvedReference, sourceFile);
+				ProcessScript(ScriptResolver.ReadText(resolvedReference)?.ToString(), resolvedReference);
 			});
 		}
 
