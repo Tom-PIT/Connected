@@ -470,31 +470,71 @@ namespace TomPIT.ComponentModel
 			var val = property.GetValue(design);
 			var rtVal = rtProperty.GetValue(runtime);
 
-			if (!(val is IEnumerable denum) || !(rtVal is IEnumerable renum))
+			if (val is IEnumerable<IElement> dEltEnum && rtVal is IEnumerable<IElement> rEltEnum)
+			{
+				MergeCollectionSynchronizeElements(dEltEnum, rEltEnum, references, force);
 				return;
+			}
 
+			if (!(val is IEnumerable denum) || !(rtVal is IEnumerable renum))
+			{
+				return;
+			}
+
+			// Note: the code below assumes that lists contain items with the same
+			//			order. This might not be the case!!!
 			var de = denum.GetEnumerator();
 			var re = renum.GetEnumerator();
 
 			while (de.MoveNext())
 			{
 				if (!re.MoveNext())
+				{
 					break;
+				}
 
 				var dinstance = de.Current;
-
 				if (dinstance == null)
+				{
 					return;
+				}
 
 				var rinstance = re.Current;
-
 				if (rinstance == null)
+				{
 					return;
+				}
 
 				var props = dinstance.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
 				foreach (var i in props)
+				{
 					MergeProperty(dinstance, i, rinstance, references, force);
+				}
+			}
+		}
+
+		private void MergeCollectionSynchronizeElements(IEnumerable<IElement> dEltEnum, IEnumerable<IElement> rEltEnum, List<object> references, bool force)
+		{
+			var de = dEltEnum.GetEnumerator();
+			while (de.MoveNext())
+			{
+				var dinstance = de.Current;
+				if (dinstance == null)
+				{
+					return;
+				}
+
+				var rinstance = rEltEnum.FirstOrDefault(x => x.Id == dinstance.Id);
+				if (rinstance == null)
+				{
+					continue;
+				}
+
+				var props = dinstance.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+				foreach (var i in props)
+				{
+					MergeProperty(dinstance, i, rinstance, references, force);
+				}
 			}
 		}
 
