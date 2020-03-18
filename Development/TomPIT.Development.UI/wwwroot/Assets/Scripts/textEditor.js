@@ -95,7 +95,7 @@
                 };
 
 
-                monaco.editor.onDidCreateModel((model)=>{
+                monaco.editor.onDidCreateModel((model) => {
                     model.onDidChangeContent((e) => {
                         try {
                             target.setState({
