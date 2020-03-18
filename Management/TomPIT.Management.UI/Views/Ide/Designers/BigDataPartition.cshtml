@@ -88,7 +88,26 @@
 </div>
 <script>
     $('#gridFiles').dxDataGrid({
-        dataSource:@Html.Raw(TomPIT.Serialization.Serializer.Serialize(Model.Files))
+        dataSource:@Html.Raw(TomPIT.Serialization.Serializer.Serialize(Model.Files)),
+        keyExpr: 'fileName',
+        searchPanel: {
+            visible: true
+        },
+        paging: {
+            pageSize: 10
+        },
+        columns: [
+            {
+                dataField: 'fileName',
+                caption: 'File',
+                sortOrder: 'asc',
+                cellTemplate: function (element, info) {
+                    $('<div>')
+                        .append(info.data.fileName)
+                        .appendTo(element);
+                }
+            }
+        ],
     });
 </script>
 

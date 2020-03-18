@@ -3,7 +3,6 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.BigData;
-using TomPIT.ComponentModel.BigData;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
@@ -24,7 +23,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_partition == null)
-					_partition = Environment.Context.Tenant.GetService<IBigDataManagementService>().SelectPartition(((IPartitionConfiguration)Element.Component).Component);
+					_partition = Element.Component as IPartition;
 
 				return _partition;
 			}

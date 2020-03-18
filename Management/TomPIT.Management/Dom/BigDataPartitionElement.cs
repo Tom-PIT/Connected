@@ -1,14 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using TomPIT.BigData;
+using TomPIT.Ide.Designers;
 using TomPIT.Ide.Dom;
 using TomPIT.Management.BigData;
+using TomPIT.Management.Designers;
 
 namespace TomPIT.Management.Dom
 {
 	public class BigDataPartitionElement : DomElement
 	{
 		private List<IPartitionFile> _files = null;
+		private BigDataPartitionDesigner _designer = null;
 		public BigDataPartitionElement(IDomElement parent, IPartition partition) : base(parent)
 		{
 			Partition = partition;
@@ -17,8 +20,19 @@ namespace TomPIT.Management.Dom
 			Id = partition.Configuration.ToString();
 		}
 
+		public override object Component => Partition;
 		private IPartition Partition { get; set; }
 
+		public override IDomDesigner Designer
+		{
+			get
+			{
+				if (_designer == null)
+					_designer = new BigDataPartitionDesigner(this);
+
+				return _designer;
+			}
+		}
 		public override int ChildrenCount => Files.Count;
 		public override bool HasChildren => Files.Count > 0;
 

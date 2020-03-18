@@ -11,9 +11,9 @@
     <AssemblyName>TomPIT.Experience.App</AssemblyName>
     <RootNamespace>TomPIT.App</RootNamespace>
     <CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
-    <AssemblyVersion>2.1.318.3</AssemblyVersion>
-    <FileVersion>2.1.318.3</FileVersion>
-    <Version>2.1.318.3</Version>
+    <AssemblyVersion>2.1.318.4</AssemblyVersion>
+    <FileVersion>2.1.318.4</FileVersion>
+    <Version>2.1.318.4</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="UI\RouteParameter.cs" />
