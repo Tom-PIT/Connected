@@ -52,6 +52,9 @@ namespace TomPIT.Data
 					r.Add(instance);
 				}
 
+				if (Connection.Behavior == ConnectionBehavior.Isolated)
+					Connection.Commit();
+
 				return r;
 			}
 			finally
@@ -93,11 +96,14 @@ namespace TomPIT.Data
 				if (instance is IDataEntity entity)
 					entity.DataSource(row);
 
+				if (Connection.Behavior == ConnectionBehavior.Isolated)
+					Connection.Commit();
+
 				return instance;
 			}
 			finally
 			{
-				if (Connection.Behavior == ConnectionBehavior.Shared)
+				if (Connection.Behavior == ConnectionBehavior.Isolated)
 					Connection.Close();
 			}
 		}

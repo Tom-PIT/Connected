@@ -33,11 +33,14 @@ namespace TomPIT.Data
 					}
 				}
 
+				if (Connection.Behavior == ConnectionBehavior.Isolated)
+					Connection.Commit();
+
 				return default;
 			}
 			finally
 			{
-				if (Connection.Behavior == ConnectionBehavior.Shared)
+				if (Connection.Behavior == ConnectionBehavior.Isolated)
 					Connection.Close();
 			}
 		}
