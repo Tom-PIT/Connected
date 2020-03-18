@@ -19,8 +19,15 @@
 
                 monaco.editor.setTheme('TomPIT');
 
-                target.options.instance = monaco.editor.create(document.getElementById('devTextDesignerEditor'), {
+
+                var editor = $('[data-role="text-editor"]', $(target.element));
+                if (!editor.length) {
+                    console.warn('Editor container not found!!!');
+                }
+
+                var editorOpts = {
                     language: null,
+                    value: null,
                     lineNumbers: true,
                     scrollBeyondLastLine: true,
                     automaticLayout: true,
@@ -42,7 +49,20 @@
                     minimap: {
                         enabled: false
                     }
-                },
+                };
+
+                if (target.options.language) {
+                    editorOpts.language = target.options.language;
+                }
+
+                if (target.options.source) {
+                    editorOpts.value = target.options.source.join('\n');
+                    editorOpts.model = undefined;
+                }
+
+                target.options.instance = monaco.editor.create(
+                    editor[0],
+                    editorOpts,
                     {
                         editorService: {
                             openEditor: function (e) {
@@ -52,7 +72,8 @@
                                 alert(`open editor called!` + JSON.stringify(e));
                             }
                         }
-                    });
+                    }
+                );
 
                 target.options.instance.setup = function (options) {
                     var debug = options.debug;
@@ -73,6 +94,7 @@
                     }
                 };
 
+
                 monaco.editor.onDidCreateModel((model) => {
                     model.onDidChangeContent((e) => {
                         try {
@@ -88,8 +110,9 @@
                     });
                 });
 
-                if ($.isFunction(target.options.onCreated))
+                if ($.isFunction(target.options.onCreated)) {
                     target.options.onCreated(target, target.getInstance());
+                }
             });
         },
 
