@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -217,9 +216,6 @@ namespace TomPIT.Compilation
 
 		private IScriptDescriptor CreateScript(Guid microService, IText d)
 		{
-			var sw = new Stopwatch();
-			sw.Start();
-
 			using var script = new CompilerScript(Tenant, microService, d);
 
 			var result = new ScriptDescriptor
@@ -231,14 +227,8 @@ namespace TomPIT.Compilation
 
 			script.Create();
 
-			sw.Stop();
-			var x1 = sw.ElapsedMilliseconds;
-			sw.Reset();
-
-			sw.Start();
 			Compile(result, script, true);
-			sw.Stop();
-			Console.WriteLine($"{sw.ElapsedMilliseconds}-{x1}");
+
 			return result;
 		}
 
@@ -281,6 +271,7 @@ namespace TomPIT.Compilation
 		private Microsoft.CodeAnalysis.Compilation Compile(IScriptDescriptor script, CompilerScript compiler, bool cache)
 		{
 			Microsoft.CodeAnalysis.Compilation result = null;
+
 			var errors = compiler.Script == null ? ImmutableArray<Microsoft.CodeAnalysis.Diagnostic>.Empty : compiler.Script.Compile();
 			var diagnostics = new List<IDiagnostic>();
 
@@ -304,14 +295,13 @@ namespace TomPIT.Compilation
 				diagnostics.Add(diagnostic);
 			}
 
+
 			((ScriptDescriptor)script).Errors = diagnostics;
 
 			if (compiler.Script != null && script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() == 0)
 			{
 				((ScriptDescriptor)script).Script = compiler.Script.CreateDelegate();
-
 				result = compiler.Script.GetCompilation();
-
 				((ScriptDescriptor)script).Assembly = result.AssemblyName;
 			}
 
@@ -462,15 +452,7 @@ namespace TomPIT.Compilation
 
 		public IScriptContext CreateScriptContext(IText sourceCode)
 		{
-			var sw = new Stopwatch();
-			sw.Start();
-
-			var result = new ScriptContext(Tenant, sourceCode);
-			sw.Stop();
-
-			Console.WriteLine($"ctx:{sw.ElapsedMilliseconds}");
-
-			return result;
+			return new ScriptContext(Tenant, sourceCode);
 		}
 
 		public List<string> QuerySubClasses(IScriptConfiguration script)
