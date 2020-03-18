@@ -102,7 +102,7 @@ namespace TomPIT.Middleware
 			while (Operations.Count > 0)
 			{
 				Operations.TryPop(out IMiddlewareTransactionClient op);
-				op?.CommitTransaction();
+				op?.RollbackTransaction();
 			}
 
 			// The end
