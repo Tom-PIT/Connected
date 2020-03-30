@@ -10,9 +10,9 @@
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.Management</RootNamespace>
     <AssemblyName>TomPIT.Experience.Management</AssemblyName>
-    <AssemblyVersion>2.1.318.4</AssemblyVersion>
-    <FileVersion>2.1.318.4</FileVersion>
-    <Version>2.1.318.4</Version>
+    <AssemblyVersion>2.1.319.1</AssemblyVersion>
+    <FileVersion>2.1.319.1</FileVersion>
+    <Version>2.1.319.1</Version>
   </PropertyGroup>
   <PropertyGroup>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>

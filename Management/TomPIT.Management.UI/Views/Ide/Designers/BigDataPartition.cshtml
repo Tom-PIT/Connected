@@ -88,7 +88,7 @@
 </div>
 <script>
     $('#gridFiles').dxDataGrid({
-        dataSource:@Html.Raw(TomPIT.Serialization.Serializer.Serialize(Model.Files)),
+        dataSource:@Html.Raw(TomPIT.Serialization.Serializer.Serialize(Model.DataSource)),
         keyExpr: 'fileName',
         searchPanel: {
             visible: true
@@ -101,12 +101,51 @@
                 dataField: 'fileName',
                 caption: 'File',
                 sortOrder: 'asc',
+                calculateCellValue: function (data) {
+                    var result = [];
+
+                    result.push(data.fileName);
+                    result.push(data.nodeName);
+
+                    return result.join();
+                },
                 cellTemplate: function (element, info) {
                     $('<div>')
-                        .append(info.data.fileName)
+                        .append('<strong>' + info.data.fileName + '</strong>')
+                        .append('<br/>')
+                        .append('<span class="text-secondary"> ' + info.data.nodeName + '</span>')
                         .appendTo(element);
                 }
-            }
+            },
+            {
+                dataField: 'key',
+                caption: 'Key',
+                cellTemplate: function (element, info) {
+                    $('<div>')
+                        .append(info.data.key)
+                        .appendTo(element);
+                }
+            },
+            {
+                dataField: 'start',
+                caption: 'Range',
+                cellTemplate: function (element, info) {
+                    $('<div>')
+                        .append(info.data.start)
+                        .append('<br/>')
+                        .append(info.data.end)
+                        .appendTo(element);
+                }
+            },
+            {
+                dataField: 'count',
+                caption: 'Records',
+                cellTemplate: function (element, info) {
+                    $('<div>')
+                        .append(info.data.count)
+                        .appendTo(element);
+                }
+            },
         ],
     });
 </script>

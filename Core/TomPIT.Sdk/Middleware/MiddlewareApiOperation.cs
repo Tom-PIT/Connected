@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.IoC;
@@ -10,6 +11,7 @@ namespace TomPIT.Middleware
 	{
 		private List<IDependencyInjectionObject> _dependencies = null;
 
+		[SkipValidation]
 		protected internal List<IDependencyInjectionObject> DependencyInjections
 		{
 			get

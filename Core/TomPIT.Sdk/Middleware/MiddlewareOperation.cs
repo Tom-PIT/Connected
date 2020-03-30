@@ -1,11 +1,12 @@
-﻿using TomPIT.Exceptions;
+﻿using TomPIT.Annotations;
+using TomPIT.Exceptions;
 using TomPIT.UI;
 
 namespace TomPIT.Middleware
 {
 	public abstract class MiddlewareOperation : MiddlewareComponent, IMiddlewareOperation, IMiddlewareTransactionClient
 	{
-
+		[SkipValidation]
 		public IMiddlewareTransaction Transaction
 		{
 			get
