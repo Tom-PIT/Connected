@@ -10,6 +10,8 @@ namespace TomPIT.DataProviders.Sql.Deployment
 {
 	internal class SqlDeploy
 	{
+		private List<string> _droppedTableConstraints = null;
+		private List<string> _droppedReferentialConstraints = null;
 		public SqlDeploy(IDatabaseDeploymentContext context, IDatabase existing)
 		{
 			Context = context;
@@ -21,6 +23,28 @@ namespace TomPIT.DataProviders.Sql.Deployment
 		private IDatabase Existing { get; }
 		private DeployCommand Command { get; }
 		private IDatabase LastState { get; set; }
+
+		private List<string> DroppedTableConstraints
+		{
+			get
+			{
+				if (_droppedTableConstraints == null)
+					_droppedTableConstraints = new List<string>();
+
+				return _droppedTableConstraints;
+			}
+		}
+
+		private List<string> DroppedReferentialConstraints
+		{
+			get
+			{
+				if (_droppedReferentialConstraints == null)
+					_droppedReferentialConstraints = new List<string>();
+
+				return _droppedReferentialConstraints;
+			}
+		}
 
 		public void Deploy()
 		{
@@ -77,10 +101,10 @@ namespace TomPIT.DataProviders.Sql.Deployment
 					foreach (var column in table.Columns)
 					{
 						foreach (var constraint in column.Constraints)
-							Command.DropConstraint(table, constraint);
+							DropConstraint(table, constraint);
 
 						if (!string.IsNullOrWhiteSpace(column.Reference.Name))
-							Command.DropConstraint(table, column.Reference);
+							DropConstraint(table, column.Reference);
 					}
 
 					Command.DropTable(table);
@@ -94,10 +118,10 @@ namespace TomPIT.DataProviders.Sql.Deployment
 						if (targetColumn == null)
 						{
 							foreach (var constraint in column.Constraints)
-								Command.DropConstraint(table, constraint);
+								DropConstraint(table, constraint);
 
 							if (!string.IsNullOrWhiteSpace(column.Reference.Name))
-								Command.DropConstraint(table, column.Reference);
+								DropConstraint(table, column.Reference);
 
 							Command.DropColumn(table, column);
 						}
@@ -108,11 +132,11 @@ namespace TomPIT.DataProviders.Sql.Deployment
 								var existing = targetColumn.Constraints.FirstOrDefault(f => string.Compare(constraint.Name, f.Name, true) == 0);
 
 								if (existing == null)
-									Command.DropConstraint(table, constraint);
+									DropConstraint(table, constraint);
 							}
 
 							if (!string.IsNullOrWhiteSpace(column.Reference.Name) && string.Compare(column.Reference.Name, targetColumn.Reference.Name) != 0)
-								Command.DropConstraint(table, column.Reference);
+								DropConstraint(table, column.Reference);
 						}
 					}
 				}
@@ -294,7 +318,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 					if (column.Constraints.FirstOrDefault(f => string.Compare(f.Name, constraint.Name, true) == 0) != null)
 						continue;
 
-					Command.DropConstraint(table, constraint);
+					DropConstraint(table, constraint);
 				}
 
 				foreach (var constraint in column.Constraints)
@@ -318,7 +342,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 						if (HasConstraintChanged(existingTable, table, constraint.Name))
 						{
 							if (ConstraintExists(table, constraint.Name))
-								Command.DropConstraint(table, constraint);
+								DropConstraint(table, constraint);
 
 							Command.AddUniqueConstraint(table, columns, constraint);
 						}
@@ -342,6 +366,28 @@ namespace TomPIT.DataProviders.Sql.Deployment
 					}
 				}
 			}
+		}
+
+		private void DropConstraint(ITable table, IReferentialConstraint constraint)
+		{
+			var key = $"{table.Schema}{table.Name}{constraint.Name}";
+
+			if (DroppedReferentialConstraints.Contains(key))
+				return;
+
+			DroppedReferentialConstraints.Add(key);
+			Command.DropConstraint(table, constraint);
+		}
+
+		private void DropConstraint(ITable table, ITableConstraint constraint)
+		{
+			var key = $"{table.Schema}{table.Name}{constraint.Name}";
+
+			if (DroppedTableConstraints.Contains(key))
+				return;
+
+			DroppedTableConstraints.Add(key);
+			Command.DropConstraint(table, constraint);
 		}
 
 		private bool HasConstraintChanged(ITable existing, ITable table, string constraintName)
