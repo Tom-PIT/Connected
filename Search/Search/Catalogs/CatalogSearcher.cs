@@ -1,6 +1,6 @@
-﻿using Lucene.Net.Index;
+﻿using System;
+using Lucene.Net.Index;
 using Lucene.Net.Search;
-using System;
 
 namespace TomPIT.Search.Catalogs
 {
@@ -52,10 +52,15 @@ namespace TomPIT.Search.Catalogs
 			}
 		}
 
-		public void TryDispose()
+		public bool TryDispose()
 		{
 			if (_reader != null && _reader.RefCount < 2)
+			{
 				Kill();
+				return true;
+			}
+
+			return false;
 		}
 	}
 }

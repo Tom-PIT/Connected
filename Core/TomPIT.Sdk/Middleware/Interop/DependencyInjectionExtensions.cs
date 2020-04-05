@@ -7,17 +7,17 @@ namespace TomPIT.Middleware.Interop
 {
 	internal static class DependencyInjectionExtensions
 	{
-		public static T Invoke<T>(this List<IDependencyInjectionObject> items, T e)
+		public static T Invoke<T>(this List<IApiDependencyInjectionObject> items, T e)
 		{
 			var result = e;
 
 			foreach (var dependency in items)
 			{
-				if (dependency is IDependencyInjectionMiddleware im)
+				if (dependency is IApiDependencyInjectionMiddleware im)
 					im.Invoke(result);
 				else
 				{
-					if (!dependency.GetType().GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDependencyInjectionMiddleware<>)))
+					if (!dependency.GetType().GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IApiDependencyInjectionMiddleware<>)))
 						continue;
 
 					var methods = dependency.GetType().GetMethods().Where(f => string.Compare(f.Name, "Invoke", false) == 0);
@@ -35,13 +35,13 @@ namespace TomPIT.Middleware.Interop
 			return result;
 		}
 
-		public static T Authorize<T>(this List<IDependencyInjectionObject> items, T e)
+		public static T Authorize<T>(this List<IApiDependencyInjectionObject> items, T e)
 		{
 			var result = e;
 
 			foreach (var dependency in items)
 			{
-				if (!dependency.GetType().GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDependencyInjectionMiddleware<>)))
+				if (!dependency.GetType().GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IApiDependencyInjectionMiddleware<>)))
 					continue;
 
 				var methods = dependency.GetType().GetMethods().Where(f => string.Compare(f.Name, "Authorize", false) == 0);

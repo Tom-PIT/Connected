@@ -1,11 +1,13 @@
-﻿using TomPIT.Middleware;
+﻿using System;
+using TomPIT.Middleware;
 using TomPIT.Models;
 using TomPIT.Reflection;
 using TomPIT.Serialization;
 
 namespace TomPIT.IoC
 {
-	public abstract class DependencyInjectionObject : MiddlewareObject, IDependencyInjectionObject
+	[Obsolete]
+	public abstract class DependencyInjectionObject : MiddlewareObject, IApiDependencyInjectionObject
 	{
 		private IMiddlewareOperation _operation = null;
 
@@ -74,7 +76,8 @@ namespace TomPIT.IoC
 		}
 	}
 
-	public class DependencyInjectionMiddleware : DependencyInjectionObject, IDependencyInjectionMiddleware
+	[Obsolete]
+	public class DependencyInjectionMiddleware : DependencyInjectionObject, IApiDependencyInjectionMiddleware
 	{
 		public void Invoke(object e)
 		{
@@ -86,8 +89,8 @@ namespace TomPIT.IoC
 
 		}
 	}
-
-	public class DependencyInjectionMiddleware<T> : DependencyInjectionObject, IDependencyInjectionMiddleware<T>
+	[Obsolete]
+	public class DependencyInjectionMiddleware<T> : DependencyInjectionObject, IApiDependencyInjectionMiddleware<T>
 	{
 		public T Authorize(T e)
 		{
