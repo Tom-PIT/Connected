@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
@@ -14,7 +16,7 @@ namespace TomPIT.Compilation
 		private Dictionary<string, ImmutableArray<PortableExecutableReference>> _references = null;
 		private ScriptResolver _sourceResolver = null;
 		private AssemblyResolver _assemblyResolver = null;
-		private Dictionary<string, IText> _sources = null;
+		private ConcurrentDictionary<string, IText> _sources = null;
 		private StringBuilder _sourceText = null;
 		public ScriptContext(ITenant tenant, IText sourceCode) : base(tenant)
 		{
@@ -45,6 +47,7 @@ namespace TomPIT.Compilation
 				return;
 
 			string currentLine = null;
+			var references = new List<string>();
 
 			using (var reader = new StringReader(sourceCode))
 			{
@@ -63,27 +66,8 @@ namespace TomPIT.Compilation
 						var token = tokens[1].Substring(1, tokens[1].Length - 2);
 
 						if (line.StartsWith("#load"))
-						{
-							var resolvedReference = ScriptResolver.ResolveReference(token, basePath);
-
-							if (!SourceFiles.ContainsKey(resolvedReference))
-							{
-								IText sourceFile = null;
-
-								try
-								{
-									sourceFile = ScriptResolver.LoadScript(resolvedReference);
-								}
-								catch { }
-
-								if (sourceFile == null)
-									continue;
-
-								SourceFiles.Add(resolvedReference, sourceFile);
-								ProcessScript(ScriptResolver.ReadText(resolvedReference)?.ToString(), resolvedReference);
-							}
-						}
-						else if (line.StartsWith("#r"))
+							references.Add(token);
+						else if (line.StartsWith("#r "))
 						{
 							var path = AssemblyResolver.ResolvePath(token, basePath);
 
@@ -95,16 +79,38 @@ namespace TomPIT.Compilation
 					}
 				}
 			}
+
+			Parallel.ForEach(references, (i) =>
+			{
+				var resolvedReference = ScriptResolver.ResolveReference(i, basePath);
+
+				if (SourceFiles.ContainsKey(resolvedReference))
+					return;
+
+				IText sourceFile = null;
+
+				try
+				{
+					sourceFile = ScriptResolver.LoadScript(resolvedReference);
+				}
+				catch { }
+
+				if (sourceFile == null)
+					return;
+
+				SourceFiles.TryAdd(resolvedReference, sourceFile);
+				ProcessScript(ScriptResolver.ReadText(resolvedReference)?.ToString(), resolvedReference);
+			});
 		}
 
 		public string SourceCode => SourceText.ToString();
 
-		public Dictionary<string, IText> SourceFiles
+		public ConcurrentDictionary<string, IText> SourceFiles
 		{
 			get
 			{
 				if (_sources == null)
-					_sources = new Dictionary<string, IText>();
+					_sources = new ConcurrentDictionary<string, IText>();
 
 				return _sources;
 			}

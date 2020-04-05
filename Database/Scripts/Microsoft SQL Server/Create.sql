@@ -291,7 +291,8 @@ CREATE TABLE [tompit].[subscriber]
 [id] [bigint] NOT NULL IDENTITY(1, 1),
 [subscription] [bigint] NOT NULL,
 [resource_type] [int] NOT NULL,
-[resource_primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL
+[resource_primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[token] [uniqueidentifier] NULL
 ) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -453,13 +454,14 @@ GO
 CREATE PROCEDURE [tompit].[subscriber_ins]
 	@subscription bigint,
 	@resource_type int,
-	@resource_primary_key nvarchar(128)
+	@resource_primary_key nvarchar(128),
+	@token uniqueidentifier
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	INSERT tompit.subscriber (subscription, resource_type, resource_primary_key)
-	VALUES (@subscription, @resource_type, @resource_primary_key);
+	INSERT tompit.subscriber (subscription, resource_type, resource_primary_key, token)
+	VALUES (@subscription, @resource_type, @resource_primary_key, @token);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -505,10 +507,11 @@ IF @@ERROR <> 0 SET NOEXEC ON
 GO
 PRINT N'Creating [tompit].[view_subscriber]'
 GO
+
 CREATE VIEW [tompit].[view_subscriber]
 AS
 
-SELECT s.id, s.subscription, s.resource_type, s.resource_primary_key,
+SELECT s.id, s.subscription, s.resource_type, s.resource_primary_key, s.token,
 	su.token subscription_token
 FROM tompit.subscriber s
 INNER JOIN tompit.subscription su ON s.subscription = su.id
@@ -547,18 +550,20 @@ GO
 PRINT N'Creating [tompit].[subscriber_sel]'
 GO
 CREATE PROCEDURE [tompit].[subscriber_sel]
-	@subscription bigint,
-	@resource_type int,
-	@resource_primary_key nvarchar(128)
+	@subscription bigint = NULL,
+	@resource_type int = NULL,
+	@resource_primary_key nvarchar(128) = NULL,
+	@token uniqueidentifier = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SELECT TOP 1 *
 	FROM tompit.view_subscriber 
-	WHERE (subscription = @subscription)
-	AND (resource_type = @resource_type)
-	AND (resource_primary_key = @resource_primary_key);
+	WHERE (@subscription IS NULL OR subscription = @subscription)
+	AND (@resource_type IS NULL OR resource_type = @resource_type)
+	AND (@resource_primary_key IS NULL OR resource_primary_key = @resource_primary_key)
+	AND (@token IS NULL OR token = @token);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3040,11 +3045,11 @@ BEGIN
 	SET NOCOUNT ON;
 
 	MERGE tompit.subscriber d
-	USING (SELECT resource_type, resource_primary_key FROM OPENJSON(@items) WITH (resource_type int, resource_primary_key nvarchar(128))) AS s (resource_type, resource_primary_key)
+	USING (SELECT resource_type, resource_primary_key, token FROM OPENJSON(@items) WITH (resource_type int, resource_primary_key nvarchar(128), token uniqueidentifier)) AS s (resource_type, resource_primary_key, token)
 	ON (d.subscription = @subscription AND d.resource_type = s.resource_type AND d.resource_primary_key = s.resource_primary_key)
 	WHEN NOT MATCHED THEN
-	INSERT (subscription, resource_type, resource_primary_key)
-	VALUES (@subscription, s.resource_type, s.resource_primary_key);
+	INSERT (subscription, resource_type, resource_primary_key, token)
+	VALUES (@subscription, s.resource_type, s.resource_primary_key, s.token);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -5900,6 +5905,101 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[mru_tag]'
+GO
+CREATE TABLE [tompit].[mru_tag]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[mru] [bigint] NOT NULL,
+[tag] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_mru_tag] on [tompit].[mru_tag]'
+GO
+ALTER TABLE [tompit].[mru_tag] ADD CONSTRAINT [PK_mru_tag] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[mru]'
+GO
+CREATE TABLE [tompit].[mru]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[type] [int] NOT NULL,
+[primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[entity_type] [int] NOT NULL,
+[entity_primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[date] [datetime2] NOT NULL,
+[token] [uniqueidentifier] NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_mru] on [tompit].[mru]'
+GO
+ALTER TABLE [tompit].[mru] ADD CONSTRAINT [PK_mru] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[mru_mdf]'
+GO
+CREATE PROCEDURE [tompit].[mru_mdf]
+	@type int,
+	@primary_key nvarchar(128),
+	@entity_type int,
+	@entity_primary_key nvarchar(128),
+	@token uniqueidentifier,
+	@date datetime2(7),
+	@tags nvarchar(max)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DECLARE @id bigint
+	DECLARE @rv bigint
+
+	MERGE tompit.mru AS t
+	USING
+	(
+		SELECT @type, @primary_key, @entity_type, @entity_primary_key, @date
+	) AS s ([type], primary_key, entity_type, entity_primary_key, date)
+	ON (t.type = s.type AND t.primary_key = s.primary_key AND t.entity_type = s.entity_type AND t.entity_primary_key = s.entity_primary_key)
+	WHEN NOT MATCHED THEN
+		INSERT ([type], primary_key, entity_type, entity_primary_key, [date], token)
+		VALUES (s.[type], s.primary_key, s.entity_type, s.entity_primary_key, s.date, @token)
+	WHEN MATCHED THEN
+		UPDATE SET
+			date = @date,
+			@id = id;
+
+	IF(@id IS NULL)
+	BEGIN
+		SET @id = SCOPE_IDENTITY()
+		SET @rv = @id
+	END
+
+	MERGE tompit.mru_tag AS t
+	USING
+	(
+		SELECT	@id, tag
+		FROM	OPENJSON(@tags) WITH (tag nvarchar(128))
+	) AS s (mru, tag)
+	ON (t.mru = s.mru AND t.tag = s.tag)
+	WHEN NOT MATCHED THEN
+		INSERT
+		(mru, tag)
+		VALUES
+		(s.mru, s.tag)
+	WHEN NOT MATCHED BY SOURCE AND t.mru = @id THEN
+		DELETE;
+
+	RETURN @rv
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[role_que]'
 GO
 CREATE PROCEDURE [tompit].[role_que]
@@ -5909,6 +6009,30 @@ BEGIN
 
 	SELECT *
 	FROM tompit.role;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[mru_que]'
+GO
+CREATE PROCEDURE [tompit].[mru_que]
+	@entity_type int,
+	@entity_primary_key nvarchar(128),
+	@tags nvarchar(max)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT m.*, t.tag
+	FROM tompit.mru m
+	inner join tompit.mru_tag t ON t.mru = m.id
+	inner join
+	(
+		SELECT tag
+		FROM OPENJSON(@tags) WITH(tag nvarchar(128))
+	) tt ON tt.tag = t.tag
+	WHERE m.entity_type = @entity_type 
+	AND m.entity_primary_key = @entity_primary_key 
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -5939,6 +6063,20 @@ BEGIN
 	SELECT *
 	FROM tompit.view_membership
 	WHERE (@user IS NULL OR [user] = @user);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[mru_del]'
+GO
+CREATE PROCEDURE [tompit].[mru_del]
+	@token uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.mru 
+	WHERE token = @token
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -6541,6 +6679,12 @@ GO
 PRINT N'Adding foreign keys to [tompit].[message_topic]'
 GO
 ALTER TABLE [tompit].[message_topic] ADD CONSTRAINT [FK_message_topic_resource_group] FOREIGN KEY ([resource_group]) REFERENCES [tompit].[resource_group] ([id]) ON DELETE CASCADE
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding foreign keys to [tompit].[mru_tag]'
+GO
+ALTER TABLE [tompit].[mru_tag] ADD CONSTRAINT [FK_mru_tag_mru] FOREIGN KEY ([mru]) REFERENCES [tompit].[mru] ([id]) ON DELETE CASCADE
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO

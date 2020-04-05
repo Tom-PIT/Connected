@@ -69,13 +69,18 @@ namespace TomPIT.App.UI
 
 				if (u == null)
 				{
-					Context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-					return;
+					if (MiddlewareDescriptor.Current.Tenant.GetService<IAlienService>().Select(new Guid(user)) == null)
+					{
+						Context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+						return;
+					}
 				}
+				else
+				{
+					Context.User = new Principal(new Identity(u));
 
-				Context.User = new Principal(new Identity(u));
-
-				SetCulture(u.Language);
+					SetCulture(u.Language);
+				}
 			}
 
 			SetCulture(Body.Optional("language", Guid.Empty));

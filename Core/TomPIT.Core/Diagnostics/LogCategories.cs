@@ -10,5 +10,6 @@
 		public const string Worker = "Worker";
 		public const string Search = "Search";
 		public const string Navigation = "Navigation";
+		public const string Cdn = "Cdn";
 	}
 }

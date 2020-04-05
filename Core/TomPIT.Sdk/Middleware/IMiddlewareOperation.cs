@@ -2,6 +2,7 @@
 {
 	public interface IMiddlewareOperation : IMiddlewareComponent
 	{
-		IMiddlewareTransaction Begin();
+		//IMiddlewareTransaction Begin();
+		IMiddlewareTransaction Transaction { get; }
 	}
 }

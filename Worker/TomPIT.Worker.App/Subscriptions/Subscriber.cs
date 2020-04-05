@@ -8,5 +8,6 @@ namespace TomPIT.Worker.Subscriptions
 		public Guid Subscription { get; set; }
 		public SubscriptionResourceType Type { get; set; }
 		public string ResourcePrimaryKey { get; set; }
+		public Guid Token { get; set; }
 	}
 }

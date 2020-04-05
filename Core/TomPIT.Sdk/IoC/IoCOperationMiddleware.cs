@@ -18,12 +18,12 @@ namespace TomPIT.IoC
 
 		protected List<IIoCEndpointMiddleware> CreateEndpoints(object e)
 		{
-			return Context.Tenant.GetService<IIoCService>().CreateEndpoints(((IIoCOperationContext)this).Operation, e);
+			return Context.Tenant.GetService<IIoCService>().CreateEndpoints(Context, ((IIoCOperationContext)this).Operation, e);
 		}
 
 		protected List<IIoCEndpointMiddleware> CreateEndpoints()
 		{
-			return Context.Tenant.GetService<IIoCService>().CreateEndpoints(((IIoCOperationContext)this).Operation, this);
+			return Context.Tenant.GetService<IIoCService>().CreateEndpoints(Context, ((IIoCOperationContext)this).Operation, this);
 		}
 
 		protected IIoCEndpointMiddleware FirstEndpoint()
@@ -68,12 +68,12 @@ namespace TomPIT.IoC
 
 		protected bool HasEndpoints(object e)
 		{
-			return Context.Tenant.GetService<IIoCService>().HasEndpoints(((IIoCOperationContext)this).Operation, e);
+			return Context.Tenant.GetService<IIoCService>().HasEndpoints(Context, ((IIoCOperationContext)this).Operation, e);
 		}
 
 		protected bool HasEndpoints()
 		{
-			return Context.Tenant.GetService<IIoCService>().HasEndpoints(((IIoCOperationContext)this).Operation, this);
+			return Context.Tenant.GetService<IIoCService>().HasEndpoints(Context, ((IIoCOperationContext)this).Operation, this);
 		}
 
 		protected void Invoke(IIoCEndpointMiddleware endpoint, object e)
@@ -111,7 +111,7 @@ namespace TomPIT.IoC
 				{
 					var r = Invoke<T>(i);
 
-					if (r != default)
+					if (r != null)
 					{
 						lock (result)
 						{

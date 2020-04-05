@@ -1,6 +1,7 @@
-﻿@model TomPIT.Ide.Environment.IEnvironment
-@using TomPIT.Ide;
+﻿@using TomPIT.Ide;
 @using TomPIT.Ide.ComponentModel;
+
+@model TomPIT.Ide.Environment.IEnvironment
 
 @{
     Layout = "~/Views/Shared/Shell.cshtml";
@@ -21,9 +22,18 @@
             qspath = Model.ResolvePath(new Guid(component), elementId, out eventName);
         }
     }
+
+
+    var path = "Assets/Libraries/monaco/vs";
+
+    var ctx = Model as TomPIT.Middleware.IMiddlewareContext;
+    if (ctx != null)
+    {
+        path = ctx.Services.Routing.MapPath("~/Assets/Libraries/monaco/vs");
+    }
 }
 
-@section head{
+@section head {
     @{
         var templates = Model.Context.Tenant.GetService<IMicroServiceTemplateService>().Query();
 
@@ -54,29 +64,23 @@
         <link rel="stylesheet" type="text/css" href="~/Assets/ide.min.css" />
         <script src="~/Assets/ide.min.js"></script>
     </environment>
+
     <environment names="Development">
         <link rel="stylesheet" type="text/css" href="~/Assets/Styles/ide.css" />
         <script src="~/Assets/Scripts/ide.js"></script>
         <script src="~/Assets/Scripts/textEditor.js"></script>
     </environment>
-
-}
-
-@{
-    var path = "Assets/Libraries/monaco/vs";
-    var ctx = Model as TomPIT.Middleware.IMiddlewareContext;
-
-    if (ctx != null)
-    { path = ctx.Services.Routing.MapPath("~/Assets/Libraries/monaco/vs"); }
 }
 
 <script src="~/Assets/Libraries/monaco/vs/loader.js"></script>
+
 
 <div id="ide" class="h-100">
     @await Html.PartialAsync("~/Views/Ide/Console.cshtml", Model)
 </div>
 
-@section Scripts{
+
+@section Scripts {
     <script>
         DevExpress.ui.setTemplateEngine("underscore");
     </script>
@@ -85,19 +89,20 @@
 <script>
     tompit.disableNavigation();
 
-        tompit.DEVDEFAULTS = {
+    tompit.DEVDEFAULTS = {
         environmentUrl: '@Model.IdeUrl',
-    }
+    };
 
     tompit.DEVGLOBALIZE = {
         appUrlNotSet: '@SR.ErrJsEnvironmentUrlNotSet'
-     }
+    };
 
-    var ide = $('#ide').tpIde().data('tompit-tpIde');
-    var textEditor = null;
-    var textEditorState = null;
+    var ide = $('#ide').tpIde().data('tompit-tpIde'),
+        textEditor = null,
+        textEditorState = null;
 
     require.config({ paths: { 'vs': '@path' } });
+
 
     $('#devTextDesigner').tpTextEditor({
         path: '@path',
@@ -126,7 +131,7 @@
 
 	@if (!string.IsNullOrWhiteSpace(qspath))
 	{
-       <text>
+        <text>
 		ide.expandTo({
             'path': '@qspath',
             @if (!string.IsNullOrWhiteSpace(eventName)) {
@@ -142,8 +147,9 @@
                 </text>
                 }
             });
-    </text>
+        </text>
 	}
+
 
     function refreshErrorList() {
         ide.refreshSections({

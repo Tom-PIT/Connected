@@ -102,11 +102,11 @@ namespace TomPIT.BigData.Providers.Sql {
         
         /// <summary>
         ///   Looks up a localized string similar to CREATE PROCEDURE merge_{0}
-        ///	@rows struct_{0} READONLY
+        ///	@rows nvarchar(max)
         ///AS
         ///
         ///MERGE {0} AS t
-        ///USING (SELECT * FROM @rows) AS s ({1})
+        ///USING (SELECT * FROM OPENJSON(@rows) WITH ({5})) AS s ({1})
         ///ON ({2})
         ///	WHEN matched THEN
         ///		UPDATE SET {3}
@@ -121,23 +121,12 @@ namespace TomPIT.BigData.Providers.Sql {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CREATE TYPE dbo.struct_{0} AS TABLE 
-        ///({1}
-        ///).
-        /// </summary>
-        internal static string CreateTableType {
-            get {
-                return ResourceManager.GetString("CreateTableType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to CREATE PROCEDURE merge_{0}
-        ///	@rows struct_{1} READONLY
+        ///	@rows nvarchar(max)
         ///AS
         ///
         ///MERGE {1} AS t
-        ///USING (SELECT * FROM @rows) AS s ({2})
+        ///USING (SELECT * FROM OPENJSON(@rows) WITH ({5})) AS s ({2})
         ///ON ({3})
         ///	WHEN matched THEN
         ///		UPDATE SET {4}
@@ -176,16 +165,6 @@ namespace TomPIT.BigData.Providers.Sql {
         internal static string DropProcedureUpdate {
             get {
                 return ResourceManager.GetString("DropProcedureUpdate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to IF EXISTS (SELECT * FROM sys.types WHERE is_table_type = 1 AND name = &apos;struct_{0}&apos;)
-        /// DROP TYPE struct_{0}.
-        /// </summary>
-        internal static string DropStruct {
-            get {
-                return ResourceManager.GetString("DropStruct", resourceCulture);
             }
         }
         

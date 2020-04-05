@@ -16,9 +16,17 @@ namespace TomPIT.BigData.Partitions
 		public MaintenanceService()
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(4900);
+		}
+
+		protected override bool Initialize()
+		{
+			if (Instance.State == InstanceState.Initialining)
+				return false;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
 				Dispatchers.Add(new MaintenanceDispatcher(i, _cancel));
+
+			return true;
 		}
 
 		protected override Task Process()

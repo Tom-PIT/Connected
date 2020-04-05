@@ -14,6 +14,7 @@ namespace TomPIT
 		private SystemHelper _sys = null;
 		private ReportHelper _reports = null;
 		private SearchResultsHelper _searchResults = null;
+		private IoCHelper _ioc = null;
 
 		internal Renderer(IHtmlHelper helper)
 		{
@@ -30,6 +31,17 @@ namespace TomPIT
 					_searchResults = new SearchResultsHelper(Html);
 
 				return _searchResults;
+			}
+		}
+
+		public IoCHelper IoC
+		{
+			get
+			{
+				if (_ioc == null)
+					_ioc = new IoCHelper(Html);
+
+				return _ioc;
 			}
 		}
 

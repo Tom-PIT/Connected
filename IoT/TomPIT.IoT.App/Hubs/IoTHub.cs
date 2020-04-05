@@ -20,7 +20,10 @@ namespace TomPIT.IoT.Hubs
 	[Authorize(AuthenticationSchemes = "TomPIT")]
 	public class IoTServerHub : Microsoft.AspNetCore.SignalR.Hub
 	{
-		private static readonly string[] SpecialTransactionParameters = { "microService", "hub", "device", "transaction" };
+		private static readonly string[] SpecialTransactionParameters = { "microService", Hub, Device, "transaction" };
+
+		private const string Device = "device";
+		private const string Hub = "hub";
 
 		public IoTServerHub(IHubContext<IoTServerHub> context)
 		{
@@ -90,6 +93,16 @@ namespace TomPIT.IoT.Hubs
 				if (changes == null || changes.Count == 0)
 					return;
 
+				if (changes.ContainsKey(Device))
+					changes[Device] = device.Device.Name;
+				else
+					changes.Add(Device, device.Device.Name);
+
+				if (changes.ContainsKey(Hub))
+					changes[Hub] = hub.ComponentName();
+				else
+					changes.Add(Hub, hub.ComponentName());
+
 				await Clients.Group(groupName).SendAsync("data", changes);
 			}
 			catch (Exception ex)
@@ -127,9 +140,9 @@ namespace TomPIT.IoT.Hubs
 			try
 			{
 				var microService = e.Required<string>("microService");
-				var hub = e.Required<string>("hub");
+				var hub = e.Required<string>(Hub);
 				var transaction = e.Required<string>("transaction");
-				var device = e.Required<string>("device");
+				var device = e.Required<string>(Device);
 
 				var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(microService);
 

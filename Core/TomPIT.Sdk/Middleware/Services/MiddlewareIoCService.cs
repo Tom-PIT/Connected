@@ -14,22 +14,22 @@ namespace TomPIT.Middleware.Services
 
 		public R Invoke<R>(string middlewareOperation)
 		{
-			return Context.Tenant.GetService<IIoCService>().Invoke<R>(ResolveOperation(middlewareOperation));
+			return Context.Tenant.GetService<IIoCService>().Invoke<R>(Context, ResolveOperation(middlewareOperation));
 		}
 
 		public void Invoke(string middlewareOperation)
 		{
-			Context.Tenant.GetService<IIoCService>().Invoke(ResolveOperation(middlewareOperation));
+			Context.Tenant.GetService<IIoCService>().Invoke(Context, ResolveOperation(middlewareOperation));
 		}
 
 		public R Invoke<R>(string middlewareOperation, object e)
 		{
-			return Context.Tenant.GetService<IIoCService>().Invoke<R>(ResolveOperation(middlewareOperation), e);
+			return Context.Tenant.GetService<IIoCService>().Invoke<R>(Context, ResolveOperation(middlewareOperation), e);
 		}
 
 		public void Invoke(string middlewareOperation, object e)
 		{
-			Context.Tenant.GetService<IIoCService>().Invoke(ResolveOperation(middlewareOperation), e);
+			Context.Tenant.GetService<IIoCService>().Invoke(Context, ResolveOperation(middlewareOperation), e);
 		}
 
 		private IIoCOperation ResolveOperation(string middlewareOperation)

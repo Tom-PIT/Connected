@@ -134,7 +134,7 @@ namespace TomPIT.Management.Designers
 			if (str == null)
 				throw new RuntimeException(SR.ErrStringResourceNotFound);
 
-			str.UpdateTranslation(lang.Lcid, value);
+			str.UpdateTranslation(lang.Lcid, value, true);
 
 			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(config);
 

@@ -35,7 +35,7 @@ namespace TomPIT.Middleware
 			if (af == null)
 				return;
 
-			if (Shell.HttpContext == null)
+			if (Shell.HttpContext == null || !Context.Environment.IsInteractive)
 				return;
 
 			if (!(Shell.HttpContext.RequestServices.GetService(typeof(IAntiforgery)) is IAntiforgery service))
@@ -89,6 +89,12 @@ namespace TomPIT.Middleware
 
 			var properties = instance.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
+			if (properties.Length == 0)
+				return;
+
+			var publicProps = new List<PropertyInfo>();
+			var nonPublicProps = new List<PropertyInfo>();
+
 			foreach (var property in properties)
 			{
 				if (property.GetMethod == null)
@@ -99,16 +105,31 @@ namespace TomPIT.Middleware
 				if (skipAtt != null)
 					continue;
 
+				if (property.GetMethod.IsPublic)
+					publicProps.Add(property);
+				else
+					nonPublicProps.Add(property);
+			}
+			/*
+			 * First, iterate only through the public properties
+			 * At this point we won't validate complex objects, only the attributes directly on the
+			 * passed instance
+			 */
+			foreach (var property in publicProps)
 				ValidateProperty(results, instance, property);
-
-				if (!property.GetMethod.IsPublic)
-					continue;
-
+			/*
+			 * If root validation failed we won't go deep because this would probably cause
+			 * duplicate and/or confusing validation messages
+			 */
+			if (results.Count > 0)
+				return;
+			/*
+			 * Second step is to validate complex public members and collections. 
+			 */
+			foreach (var property in publicProps)
+			{
 				if (property.PropertyType.IsCollection())
 				{
-					if (!property.GetMethod.IsPublic)
-						continue;
-
 					if (!(GetValue(instance, property) is IEnumerable ien))
 						continue;
 
@@ -124,9 +145,6 @@ namespace TomPIT.Middleware
 				}
 				else
 				{
-					if (!property.GetMethod.IsPublic)
-						continue;
-
 					var value = GetValue(instance, property);
 
 					if (value == null)
@@ -135,6 +153,17 @@ namespace TomPIT.Middleware
 					ValidateProperties(results, value, references);
 				}
 			}
+			/*
+			 * If any complex validation failed we won't validate private members because
+			 * it is possible that initialization would fail for the reason of validation being failed.
+			 */
+			if (results.Count > 0)
+				return;
+			/*
+			 * Now that validation of the public properties succeed we can go validate nonpublic members
+			 */
+			foreach (var property in nonPublicProps)
+				ValidateProperty(results, instance, property);
 		}
 
 		private void ValidateProperty(List<ValidationResult> results, object instance, PropertyInfo property)
@@ -176,6 +205,17 @@ namespace TomPIT.Middleware
 			try
 			{
 				return property.GetValue(component);
+			}
+			catch (TargetInvocationException tex)
+			{
+				if (tex.InnerException is ValidationException)
+					throw tex.InnerException;
+
+				return null;
+			}
+			catch (ValidationException vex)
+			{
+				throw vex;
 			}
 			catch
 			{

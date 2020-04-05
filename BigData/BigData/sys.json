@@ -2,8 +2,11 @@
 	"connections": [
 		{
 			"name": "localhost",
+			//"url": "http://sys-app/common/sys",
 			"url": "http://localhost:44001",
+			//"url": "http://sys-app/inel/sys",
 			"authenticationToken": "defaultAuthenticationToken"
+			//"authenticationToken": "8354505c-19f9-4ecb-bc0f-108204c78555"
 		}
 	],
 	"resourceGroups": [
@@ -15,10 +18,10 @@
 	"plugins": {
 		"location": "c:\\Deploy\\Plugins",
 		"shadowCopy": true,
-    "items": [
-      "TomPIT.Application.Plugin, TomPIT.Application",
-      "TomPIT.IoT.Plugin, TomPIT.IoT",
-      "TomPIT.BigData.Plugin, TomPIT.BigData"
-    ]
+		"items": [
+			"TomPIT.MicroServices.Configuration.Runtime.Plugin, TomPIT.MicroServices",
+			"TomPIT.MicroServices.IoT.Configuration.Runtime.Plugin, TomPIT.MicroServices.IoT",
+			"TomPIT.MicroServices.Reporting.Runtime.Configuration.Plugin, TomPIT.MicroServices.Reporting"
+		]
 	}
 }

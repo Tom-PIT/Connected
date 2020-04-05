@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Data;
 using TomPIT.Connectivity;
 using TomPIT.Data;
-using TomPIT.Data.DataProviders;
 using TomPIT.Exceptions;
 using TomPIT.Middleware.Services;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
@@ -14,15 +10,26 @@ namespace TomPIT.Middleware
 {
 	public class MiddlewareContext : IMiddlewareContext
 	{
+		#region Members
+
 		private IMiddlewareServices _services = null;
 		private ITenant _tenant = null;
 		private IMiddlewareInterop _interop = null;
 		private IMiddlewareEnvironment _environment = null;
-		private List<IDataConnection> _connections = null;
+		private MiddlewareConnectionPool _connections = null;
+		private IMiddlewareTransaction _transaction = null;
+
+		#endregion
+
+		#region Constructors
 
 		public MiddlewareContext()
 		{
 			Initialize(null);
+		}
+
+		public MiddlewareContext(IMiddlewareObject owner) : this(owner?.Context)
+		{
 		}
 
 		public MiddlewareContext(IMiddlewareContext sender)
@@ -32,7 +39,11 @@ namespace TomPIT.Middleware
 			Initialize(endpoint);
 
 			if (sender is MiddlewareContext mw)
+			{
 				((MiddlewareDiagnosticService)Services.Diagnostic).MetricParent = ((MiddlewareDiagnosticService)mw.Services.Diagnostic).MetricParent;
+
+				Owner = mw;
+			}
 		}
 
 		public MiddlewareContext(string endpoint)
@@ -40,13 +51,13 @@ namespace TomPIT.Middleware
 			Initialize(endpoint);
 		}
 
-		protected void Initialize(string endpoint)
-		{
-			Endpoint = endpoint;
+		#endregion
 
-			if (string.IsNullOrWhiteSpace(endpoint))
-				Endpoint = Tenant?.Url;
-		}
+		#region Properties
+
+#if DEBUG
+		public Guid Id { get; private set; }
+#endif
 
 		[JsonIgnore]
 		public virtual IMiddlewareServices Services
@@ -57,20 +68,6 @@ namespace TomPIT.Middleware
 					_services = new MiddlewareServices(this);
 
 				return _services;
-			}
-		}
-		[JsonIgnore]
-		public string Endpoint { get; protected set; }
-
-		[JsonIgnore]
-		public IMiddlewareInterop Interop
-		{
-			get
-			{
-				if (_interop == null)
-					_interop = new MiddlewareInterop(this);
-
-				return _interop;
 			}
 		}
 
@@ -103,136 +100,136 @@ namespace TomPIT.Middleware
 			}
 		}
 
-		public IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection)
+		[JsonIgnore]
+		public IMiddlewareInterop Interop
 		{
-			var descriptor = ComponentDescriptor.Connection(this, connection);
-
-			descriptor.Validate();
-
-			var dataProvider = CreateDataProvider(descriptor.Configuration);
-
-			var con = dataProvider.OpenConnection(descriptor.Configuration.Value, Connection);
-
-			Connections.Add(con);
-
-			return con;
-		}
-
-		public IDataReader<T> OpenReader<T>(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)
-		{
-			return new DataReader<T>(this)
+			get
 			{
-				Connection = connection,
-				CommandText = commandText
-			};
+				if (_interop == null)
+					_interop = new MiddlewareInterop(this);
+
+				return _interop;
+			}
 		}
 
-		public IDataWriter OpenWriter(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)
+
+		internal MiddlewareContext Owner { get; set; }
+
+		[JsonIgnore]
+		public string Endpoint { get; protected set; }
+
+		internal MiddlewareConnectionPool Connections
 		{
-			return new DataWriter(this)
+			get
 			{
-				Connection = connection,
-				CommandText = commandText
-			};
+				if (Owner != null)
+					return Owner.Connections;
+
+				if (_connections == null)
+					_connections = new MiddlewareConnectionPool();
+
+				return _connections;
+			}
 		}
+
+		internal IMiddlewareTransaction Transaction
+		{
+			get
+			{
+				if (_transaction != null)
+					return _transaction;
+
+				return BeginTransaction();
+			}
+			set
+			{
+				if (_transaction != null)
+					throw new RuntimeException(SR.ErrTransactionNotNull);
+
+				_transaction = value;
+			}
+		}
+
+		#endregion
+
+		#region Methods
 
 		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
 		{
+			if (Transaction.State == MiddlewareTransactionState.Active)
+				return OpenReader<T>(connection, commandText, ConnectionBehavior.Shared);
+			else
+				return OpenReader<T>(connection, commandText, ConnectionBehavior.Isolated);
+		}
+
+		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText, ConnectionBehavior behavior)
+		{
 			return new DataReader<T>(this)
 			{
-				Connection = OpenConnection(connection),
-				CommandText = commandText,
-				CloseConnection = true
+				Connection = OpenConnection(connection, behavior),
+				CommandText = commandText
 			};
 		}
 
 		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
 		{
+			if (Transaction.State == MiddlewareTransactionState.Active)
+				return OpenWriter(connection, commandText, ConnectionBehavior.Shared);
+			else
+				return OpenWriter(connection, commandText, ConnectionBehavior.Isolated);
+		}
+
+		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText, ConnectionBehavior behavior)
+		{
 			return new DataWriter(this)
 			{
-				Connection = OpenConnection(connection),
-				CommandText = commandText,
-				CloseConnection = true
+				Connection = OpenConnection(connection, behavior),
+				CommandText = commandText
 			};
 		}
 
-		/// <summary>
-		/// This method creates data provider for the valid connection.
-		/// </summary>
-		/// <param name="connection">A connection instance which holds the information about its data provider</param>
-		/// <returns>IDataProvider instance is a valid one is found.</returns>
-		protected IDataProvider CreateDataProvider(IConnectionConfiguration connection)
+		#endregion
+
+		#region Helpers
+
+		protected void Initialize(string endpoint)
 		{
-			/*
-			 * Connection is not properly configured. We just notify the user about the issue.
-			 */
-			if (connection.DataProvider == Guid.Empty)
-			{
-				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionDataProviderNotSet, connection.ComponentName()))
-				{
-					Component = connection.Component,
-					EventId = MiddlewareEvents.OpenConnection,
-				};
-			}
+#if DEBUG
+			Id = Guid.NewGuid();
+#endif
 
-			var provider = Tenant.GetService<IDataProviderService>().Select(connection.DataProvider);
-			/*
-			 * Connection has invalid data provider set. This can be for various reasons:
-			 * --------------------------------------------------------------------------
-			 * - data provider has been removed from the configuration
-			 * - package misbehavior
-			 */
-			if (provider == null)
-			{
-				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionDataProviderNotFound, provider.Name))
-				{
-					Component = connection.Component,
-					EventId = MiddlewareEvents.OpenConnection
-				};
-			}
+			Endpoint = endpoint;
 
-			return provider;
+			if (string.IsNullOrWhiteSpace(endpoint))
+				Endpoint = Tenant?.Url;
 		}
 
-		internal IDataConnection Connection { get; set; }
+		internal IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection, ConnectionBehavior behavior)
+		{
+			return Connections.OpenConnection(this, connection, behavior);
+		}
+
+		private IMiddlewareTransaction BeginTransaction()
+		{
+			if (_transaction != null)
+				return _transaction;
+
+			if (Owner != null)
+				return Owner.BeginTransaction();
+
+			_transaction = new MiddlewareTransaction(this)
+			{
+				Id = Guid.NewGuid()
+			};
+
+			return _transaction;
+		}
+
 		internal void CloseConnections()
 		{
-			foreach (var connection in Connections)
-				connection.Close();
+			Connections.CloseConnections();
 		}
 
-		private bool _disposed = false;
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (!_disposed)
-			{
-				if (disposing)
-				{
-					foreach (var connection in Connections)
-						connection.Dispose();
-
-					Connections.Clear();
-				}
-
-				_disposed = true;
-			}
-		}
-
-		public void Dispose()
-		{
-			Dispose(true);
-		}
-
-		private List<IDataConnection> Connections
-		{
-			get
-			{
-				if (_connections == null)
-					_connections = new List<IDataConnection>();
-
-				return _connections;
-			}
-		}
+		#endregion
 	}
 }

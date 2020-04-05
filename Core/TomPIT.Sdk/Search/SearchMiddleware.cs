@@ -1,13 +1,65 @@
 ﻿using System.Collections.Generic;
+using TomPIT.Annotations;
+using TomPIT.Compilation;
+using TomPIT.ComponentModel;
+using TomPIT.IoC;
 using TomPIT.Middleware;
+using TomPIT.Reflection;
 using TomPIT.Serialization;
 
 namespace TomPIT.Search
 {
 	public abstract class SearchMiddleware<T> : MiddlewareComponent, ISearchMiddleware<T>
 	{
+		private List<ISearchDependencyInjectionMiddleware> _dependencies = null;
+		private List<string> _customProperties = null;
+
+		[SkipValidation]
+		protected internal List<ISearchDependencyInjectionMiddleware> DependencyInjections
+		{
+			get
+			{
+				if (_dependencies == null)
+				{
+					var component = Context.Tenant.GetService<ICompilerService>().ResolveComponent(this);
+
+					if (component != null)
+					{
+						var ms = Context.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
+
+						_dependencies = Context.Tenant.GetService<IDependencyInjectionService>().QuerySearchDependencies($"{ms.Name}/{component.Name}", this);
+					}
+
+					if (_dependencies == null)
+						_dependencies = new List<ISearchDependencyInjectionMiddleware>();
+				}
+
+				return _dependencies;
+			}
+		}
+
 		public SearchVerb Verb { get; set; } = SearchVerb.Update;
 		public virtual SearchValidationBehavior ValidationFailed => SearchValidationBehavior.Complete;
+
+		[SkipValidation]
+		public List<string> Properties
+		{
+			get
+			{
+				if (_customProperties == null)
+				{
+					_customProperties = new List<string>();
+
+					foreach (var dependency in DependencyInjections)
+					{
+						if (dependency.Properties != null && dependency.Properties.Count > 0)
+							_customProperties.AddRange(dependency.Properties);
+					}
+				}
+
+				return _customProperties;
+			}
+		}
 
 		public T Search(string searchResult)
 		{
@@ -20,7 +72,15 @@ namespace TomPIT.Search
 
 			OnSearch(instance);
 
-			return instance;
+			if (!(typeof(T) is ISearchEntity))
+				return instance;
+
+			var result = instance as ISearchEntity;
+
+			foreach (var dependency in DependencyInjections)
+				result = dependency.Search(result);
+
+			return result == null ? default : (T)result;
 		}
 
 		protected virtual void OnSearch(T instance)
@@ -33,7 +93,31 @@ namespace TomPIT.Search
 			if (Verb != SearchVerb.Rebuild)
 				Validate();
 
-			return OnIndex();
+			var result = OnIndex();
+
+			if (result == null)
+				result = new List<T>();
+
+			if (!(typeof(T).ImplementsInterface(typeof(ISearchEntity))))
+				return result;
+
+			var items = new List<ISearchEntity>();
+
+			foreach (var item in result)
+				items.Add(item as ISearchEntity);
+
+			foreach (var dependency in DependencyInjections)
+				items = dependency.Index(items == null ? new List<ISearchEntity>() : items);
+
+			if (items == null)
+				return null;
+
+			result = new List<T>();
+
+			foreach (var item in items)
+				result.Add((T)item);
+
+			return result;
 		}
 
 		protected virtual List<T> OnIndex()

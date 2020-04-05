@@ -17,6 +17,9 @@ namespace TomPIT.Cdn.Mail
 
 		protected override void DoWork(IMailMessage item)
 		{
+			if (item.Expire <= DateTime.UtcNow)
+				return;
+
 			var domain = item.ReceiverDomain();
 
 			if (string.IsNullOrWhiteSpace(domain))
@@ -48,7 +51,7 @@ namespace TomPIT.Cdn.Mail
 			try
 			{
 				var address = MailboxAddress.Parse(item.To);
-				var message = new MailProcessor(item);
+				var message = new MailProcessor(item, ((MailDispatcher)Owner).ResourceGroup);
 
 				message.Create();
 

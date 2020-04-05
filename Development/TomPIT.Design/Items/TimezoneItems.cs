@@ -14,7 +14,7 @@ namespace TomPIT.Design.Items
 			items.Add(new ItemDescriptor(SR.DevLiDefault, string.Empty));
 
 			foreach (var i in ds)
-				items.Add(new ItemDescriptor(i.DisplayName, i.DisplayName));
+				items.Add(new ItemDescriptor(i.DisplayName, i.Id));
 		}
 	}
 }

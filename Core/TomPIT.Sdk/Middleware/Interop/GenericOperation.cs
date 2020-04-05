@@ -10,7 +10,7 @@ using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Interop
 {
-	public abstract class Operation<TReturnValue> : MiddlewareOperation, IOperation<TReturnValue>
+	public abstract class Operation<TReturnValue> : MiddlewareApiOperation, IOperation<TReturnValue>
 	{
 		protected Operation()
 		{
@@ -24,7 +24,7 @@ namespace TomPIT.Middleware.Interop
 		{
 			var r = Invoke();
 
-			if (r == default)
+			if (r == null)
 				return default;
 
 			if (r.GetType().IsCollection())
@@ -44,28 +44,21 @@ namespace TomPIT.Middleware.Interop
 
 		public TReturnValue Invoke()
 		{
-			var result = ProcessInvoke();
-
-			if (Context is MiddlewareContext mc)
-				mc.CloseConnections();
-
-			return result;
-		}
-
-		private TReturnValue ProcessInvoke()
-		{
 			ValidateExtender();
 			Validate();
+			OnValidating();
 
 			try
 			{
 				if (Context.Environment.IsInteractive)
+				{
 					OnAuthorize();
+					OnAuthorizing();
+				}
 
-				var result = OnInvoke();
+				var result = DependencyInjections.Invoke(OnInvoke());
 
-				if (IsCommitable)
-					OnCommit();
+				Invoked();
 
 				if (result == null)
 					return result;
@@ -74,7 +67,7 @@ namespace TomPIT.Middleware.Interop
 					return result;
 
 				var ext = ResolveExtenderType();
-				var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this));
+				var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this), Context);
 				var extenderInstance = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, ext);
 				var inputType = GetExtendingType(extenderInstance);
 				var list = typeof(List<>);
@@ -95,7 +88,7 @@ namespace TomPIT.Middleware.Interop
 						listResult.Add(i);
 
 					if (Context.Environment.IsInteractive)
-						return OnAuthorize(result);
+						return DependencyInjections.Authorize(OnAuthorize(result));
 					else
 						return result;
 				}
@@ -108,13 +101,19 @@ namespace TomPIT.Middleware.Interop
 					var listResult = method.Invoke(extenderInstance, new object[] { listInstance }) as IList;
 
 					if (Context.Environment.IsInteractive)
-						return OnAuthorize((TReturnValue)listResult[0]);
+						return DependencyInjections.Authorize(OnAuthorize(((TReturnValue)listResult[0])));
 					else
 						return (TReturnValue)listResult[0];
 				}
 			}
+			catch (System.ComponentModel.DataAnnotations.ValidationException)
+			{
+				throw;
+			}
 			catch (Exception ex)
 			{
+				Rollback();
+
 				throw TomPITException.Unwrap(this, ex);
 			}
 		}

@@ -21,11 +21,24 @@ namespace TomPIT.Messaging
 		public Guid Trigger<T>(IDistributedEvent ev, IMiddlewareCallback callback, T e)
 		{
 			var u = Tenant.CreateUrl("Event", "Trigger");
-			var args = new JObject
+			JObject args;
+
+			if (ev != null)
 			{
-				{"microService", ev.Configuration().MicroService() },
-				{"name", $"{ev.Configuration().ComponentName()}/{ev.Name}" }
-			};
+				args = new JObject
+				{
+					{"microService", ev.Configuration().MicroService() },
+					{"name", $"{ev.Configuration().ComponentName()}/{ev.Name}" }
+				};
+			}
+			else
+			{
+				args = new JObject
+				{
+					{"microService", callback.MicroService.ToString() },
+					{"name", "$" }
+				};
+			}
 
 			if (callback != null)
 				args.Add("callback", $"{callback.MicroService}/{callback.Component}/{callback.Element}");

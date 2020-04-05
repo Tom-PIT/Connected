@@ -260,6 +260,20 @@ namespace TomPIT.Security
 			return r.Value;
 		}
 
+		public PermissionValue GetPermissionValue(Guid evidence, string schema, string claim, string descriptor, string primaryKey)
+		{
+			var r = Get(f => f.Evidence == evidence
+				  && f.Schema.Equals(schema, StringComparison.OrdinalIgnoreCase)
+				  && f.Claim.Equals(claim, StringComparison.OrdinalIgnoreCase)
+				  && string.Compare(f.Descriptor, descriptor, true) == 0
+				  && string.Compare(f.PrimaryKey, primaryKey, true) == 0);
+
+			if (r == null)
+				return PermissionValue.NotSet;
+
+			return r.Value;
+		}
+
 		private List<IAuthorizationProvider> Providers
 		{
 			get
@@ -405,6 +419,11 @@ namespace TomPIT.Security
 
 				return _defaultAuthenticationProvider;
 			}
+		}
+
+		public List<IMembership> QueryMembershipForRole(Guid role)
+		{
+			return Membership.QueryForRole(role);
 		}
 	}
 }

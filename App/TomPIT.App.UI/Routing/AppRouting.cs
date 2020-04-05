@@ -26,6 +26,7 @@ namespace TomPIT.App.Routing
 			routes.MapRoute("sys.setuserdata", "sys/api/setuserdata", new { controller = "Api", action = "SetUserData" });
 			routes.MapRoute("sys.getuserdata", "sys/api/getuserdata", new { controller = "Api", action = "GetUserData" });
 			routes.MapRoute("sys.queryuserdata", "sys/api/queryuserdata", new { controller = "Api", action = "QueryUserData" });
+			routes.MapRoute("sys.uiinjection", "sys/api/uiinjection", new { controller = "Api", action = "UIInjection" });
 
 			routes.MapRoute("sys/themes/{microService}/{theme}", (t) =>
 			{

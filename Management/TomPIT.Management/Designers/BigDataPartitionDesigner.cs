@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.BigData;
-using TomPIT.ComponentModel.BigData;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
@@ -15,6 +15,7 @@ namespace TomPIT.Management.Designers
 	{
 		private List<IPartitionFile> _files = null;
 		private IPartition _partition = null;
+		private JArray _dataSource = null;
 		public BigDataPartitionDesigner(DomElement element) : base(element)
 		{
 
@@ -24,7 +25,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_partition == null)
-					_partition = Environment.Context.Tenant.GetService<IBigDataManagementService>().SelectPartition(((IPartitionConfiguration)Element.Component).Component);
+					_partition = Element.Component as IPartition;
 
 				return _partition;
 			}
@@ -41,6 +42,45 @@ namespace TomPIT.Management.Designers
 					_files = Environment.Context.Tenant.GetService<IBigDataManagementService>().QueryFiles(Partition.Configuration);
 
 				return _files;
+			}
+		}
+
+		public JArray DataSource
+		{
+			get
+			{
+				if (_dataSource == null)
+				{
+					_dataSource = new JArray();
+
+					foreach (var file in Files)
+					{
+						var jo = new JObject
+						{
+							{"fileName", file.FileName },
+							{"node", file.Node },
+							{"key", file.Key },
+							{"count", file.Count },
+							{"status", file.Status.ToString() }
+						};
+
+						if (file.StartTimestamp != DateTime.MinValue)
+							jo.Add("start", file.StartTimestamp);
+
+						if (file.EndTimestamp != DateTime.MinValue)
+							jo.Add("end", file.EndTimestamp);
+
+
+						var node = Environment.Context.Tenant.GetService<IBigDataManagementService>().SelectNode(file.Node);
+
+						if (node != null)
+							jo.Add("nodeName", node.Name);
+
+						_dataSource.Add(jo);
+					}
+				}
+
+				return _dataSource;
 			}
 		}
 

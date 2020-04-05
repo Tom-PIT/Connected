@@ -1,19 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using TomPIT.Exceptions;
+﻿using System.Collections.Generic;
+using TomPIT.Annotations;
+using TomPIT.Compilation;
+using TomPIT.ComponentModel;
+using TomPIT.IoC;
 using TomPIT.Middleware;
-using TomPIT.Security;
 
 namespace TomPIT.Cdn
 {
 	public abstract class SubscriptionMiddleware : MiddlewareComponent, ISubscriptionMiddleware
 	{
+		private List<ISubscriptionDependencyInjectionMiddleware> _dependencies = null;
+
+		[SkipValidation]
+		protected internal List<ISubscriptionDependencyInjectionMiddleware> DependencyInjections
+		{
+			get
+			{
+				if (_dependencies == null)
+				{
+					var component = Context.Tenant.GetService<ICompilerService>().ResolveComponent(this);
+
+					if (component != null)
+					{
+						var ms = Context.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
+
+						_dependencies = Context.Tenant.GetService<IDependencyInjectionService>().QuerySubscriptionDependencies($"{ms.Name}/{component.Name}", this);
+					}
+
+					if (_dependencies == null)
+						_dependencies = new List<ISubscriptionDependencyInjectionMiddleware>();
+				}
+
+				return _dependencies;
+			}
+		}
+
 		protected ISubscription Subscription { get; private set; }
 		public void Created(ISubscription subscription)
 		{
 			Subscription = subscription;
 
 			OnCreated();
+
+			foreach (var dependency in DependencyInjections)
+				dependency.Created();
 		}
 
 
@@ -28,7 +58,12 @@ namespace TomPIT.Cdn
 
 			Subscription = subscription;
 
-			return OnInvoke();
+			var result = OnInvoke();
+
+			foreach (var dependency in DependencyInjections)
+				dependency.Invoke(result);
+
+			return result;
 		}
 
 		protected virtual List<IRecipient> OnInvoke()
@@ -36,47 +71,19 @@ namespace TomPIT.Cdn
 			return null;
 		}
 
-		public IRecipient CreateUserRecipient(string identifier)
+		protected IRecipient CreateUserRecipient(string identifier)
 		{
-			var user = Context.Tenant.GetService<IUserService>().Select(identifier);
-
-			if (user == null)
-				throw new RuntimeException($"{SR.ErrUserNotFound} ({identifier})");
-
-			return new Recipient
-			{
-				Type = SubscriptionResourceType.User,
-				ResourcePrimaryKey = user.Token.ToString()
-			};
+			return CdnUtils.CreateUserRecipient(Context, identifier);
 		}
 
-		public IRecipient CreateRoleRecipient(string roleName)
+		protected IRecipient CreateRoleRecipient(string roleName)
 		{
-			var role = Context.Tenant.GetService<IRoleService>().Select(roleName);
-
-			if (role == null)
-				throw new RuntimeException($"{SR.ErrRoleNotFound} ({roleName})");
-
-			return new Recipient
-			{
-				Type = SubscriptionResourceType.Role,
-				ResourcePrimaryKey = role.Token.ToString()
-			};
+			return CdnUtils.CreateRoleRecipient(Context, roleName);
 		}
 
-		public IRecipient CreateAlienRecipient(string email)
+		protected IRecipient CreateAlienRecipient(string email)
 		{
-			var service = Context.Tenant.GetService<IAlienService>();
-			var alien = service.Select(email);
-
-			if (alien == null)
-				alien = service.Select(service.Insert(null, null, email, null, null, Guid.Empty, null));
-
-			return new Recipient
-			{
-				Type = SubscriptionResourceType.Alien,
-				ResourcePrimaryKey = alien.Token.ToString()
-			};
+			return CdnUtils.CreateAlienRecipient(Context, email);
 		}
 	}
 }

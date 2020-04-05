@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using TomPIT.Annotations.Design;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
@@ -20,6 +22,7 @@ namespace TomPIT.ComponentModel
 {
 	internal class ComponentService : ClientRepository<IComponent, Guid>, IComponentService, IComponentNotification
 	{
+		private Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>> _configurationCache = new Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>>();
 		public event ComponentChangedHandler ComponentChanged;
 		public event ComponentChangedHandler ComponentAdded;
 		public event ComponentChangedHandler ComponentRemoved;
@@ -55,7 +58,7 @@ namespace TomPIT.ComponentModel
 				.AddParameter("microService", microService)
 				.AddParameter("category", category);
 
-			return Tenant.Get<List<Component>>(u).ToList<IComponent>();
+			return CacheComponents(Tenant.Get<List<Component>>(u).ToList<IComponent>());
 		}
 
 		public List<IComponent> QueryComponents(Guid microService, Guid folder)
@@ -64,7 +67,7 @@ namespace TomPIT.ComponentModel
 				.AddParameter("microService", microService)
 				.AddParameter("folder", folder);
 
-			return Tenant.Get<List<Component>>(u).ToList<IComponent>();
+			return CacheComponents(Tenant.Get<List<Component>>(u).ToList<IComponent>());
 		}
 
 		public List<IComponent> QueryComponents(Guid microService)
@@ -72,7 +75,7 @@ namespace TomPIT.ComponentModel
 			var u = Tenant.CreateUrl("Component", "Query")
 				.AddParameter("microService", microService);
 
-			return Tenant.Get<List<Component>>(u).ToList<IComponent>();
+			return CacheComponents(Tenant.Get<List<Component>>(u).ToList<IComponent>());
 		}
 
 		public IComponent SelectComponent(Guid microService, string category, string name)
@@ -160,7 +163,7 @@ namespace TomPIT.ComponentModel
 
 		public List<IConfiguration> QueryConfigurations(List<IComponent> components)
 		{
-			var r = new List<IConfiguration>();
+			var r = new ConcurrentBag<IConfiguration>();
 			var ids = components.Select(f => f.Token).Distinct().ToList();
 			var rtIds = components.Select(f => f.RuntimeConfiguration).Distinct().Where(f => f != Guid.Empty).ToList();
 
@@ -168,27 +171,24 @@ namespace TomPIT.ComponentModel
 			var contents = Tenant.GetService<IStorageService>().Download(ids);
 			var runtimeContents = mode == EnvironmentMode.Design ? null : Tenant.GetService<IStorageService>().Download(rtIds);
 
-			foreach (var i in contents)
+			Parallel.ForEach(contents, (i) =>
 			{
-				var component = SelectComponent(i.Blob);
+				var component = components.FirstOrDefault(f => f.Token == i.Blob);
 
 				if (component == null)
-					continue;
+					return;
 
-				var config = SelectConfiguration(component, i, false);
+				IBlobContent runtime = null;
 
 				if (mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
-				{
-					var rt = runtimeContents.FirstOrDefault(f => f.Blob == component.RuntimeConfiguration);
+					runtime = runtimeContents.FirstOrDefault(f => f.Blob == component.RuntimeConfiguration);
 
-					if (rt != null)
-						MergeWithRuntime(config, SelectConfiguration(component, rt, false));
-				}
+				var config = SelectConfiguration(component, i, runtime, false);
 
 				r.Add(config);
-			}
+			});
 
-			return r;
+			return r.ToList();
 		}
 
 		public List<IConfiguration> QueryConfigurations(Guid microService, string categories)
@@ -227,7 +227,7 @@ namespace TomPIT.ComponentModel
 			if (cmp == null)
 				return null;
 
-			return SelectConfiguration(cmp, null, true);
+			return SelectConfiguration(cmp, null, null, true);
 		}
 
 		public IConfiguration SelectConfiguration(Guid component)
@@ -237,13 +237,20 @@ namespace TomPIT.ComponentModel
 			if (cmp == null)
 				return null;
 
-			return SelectConfiguration(cmp, null, true);
+			return SelectConfiguration(cmp, null, null, true);
 		}
 
-		private IConfiguration SelectConfiguration(IComponent component, IBlobContent blob, bool throwException)
+		private IConfiguration SelectConfiguration(IComponent component, IBlobContent blob, IBlobContent runtime, bool throwException)
 		{
 			if (component == null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
+
+			if (ConfigurationCache.ContainsKey(component.Token))
+			{
+				var state = ConfigurationCache[component.Token];
+
+				return Tenant.GetService<ISerializationService>().Deserialize(state.State, state.Type) as IConfiguration;
+			}
 
 			var content = blob ?? Tenant.GetService<IStorageService>().Download(component.Token);
 
@@ -277,7 +284,9 @@ namespace TomPIT.ComponentModel
 
 			if (blob == null && Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
 			{
-				var rtContent = Tenant.GetService<IStorageService>().Download(component.RuntimeConfiguration);
+				var rtContent = runtime == null
+					? Tenant.GetService<IStorageService>().Download(component.RuntimeConfiguration)
+					: runtime;
 
 				if (rtContent != null)
 				{
@@ -291,6 +300,15 @@ namespace TomPIT.ComponentModel
 						Tenant.LogWarning(GetType().ShortName(), ex.Message, LogCategories.Services);
 					}
 				}
+			}
+
+			if (r != null)
+			{
+				ConfigurationCache.TryAdd(component.Token, new ConfigurationSerializationState
+				{
+					Type = r.GetType(),
+					State = Tenant.GetService<ISerializationService>().Serialize(r)
+				});
 			}
 
 			return r;
@@ -321,6 +339,7 @@ namespace TomPIT.ComponentModel
 			if (existing != null)
 				Remove(existing.Token);
 
+			ConfigurationCache.Remove(e.Component, out _);
 			ConfigurationChanged?.Invoke(Tenant, e);
 		}
 
@@ -454,31 +473,71 @@ namespace TomPIT.ComponentModel
 			var val = property.GetValue(design);
 			var rtVal = rtProperty.GetValue(runtime);
 
-			if (!(val is IEnumerable denum) || !(rtVal is IEnumerable renum))
+			if (val is IEnumerable<IElement> dEltEnum && rtVal is IEnumerable<IElement> rEltEnum)
+			{
+				MergeCollectionSynchronizeElements(dEltEnum, rEltEnum, references, force);
 				return;
+			}
 
+			if (!(val is IEnumerable denum) || !(rtVal is IEnumerable renum))
+			{
+				return;
+			}
+
+			// Note: the code below assumes that lists contain items with the same
+			//			order. This might not be the case!!!
 			var de = denum.GetEnumerator();
 			var re = renum.GetEnumerator();
 
 			while (de.MoveNext())
 			{
 				if (!re.MoveNext())
+				{
 					break;
+				}
 
 				var dinstance = de.Current;
-
 				if (dinstance == null)
+				{
 					return;
+				}
 
 				var rinstance = re.Current;
-
 				if (rinstance == null)
+				{
 					return;
+				}
 
 				var props = dinstance.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
 				foreach (var i in props)
+				{
 					MergeProperty(dinstance, i, rinstance, references, force);
+				}
+			}
+		}
+
+		private void MergeCollectionSynchronizeElements(IEnumerable<IElement> dEltEnum, IEnumerable<IElement> rEltEnum, List<object> references, bool force)
+		{
+			var de = dEltEnum.GetEnumerator();
+			while (de.MoveNext())
+			{
+				var dinstance = de.Current;
+				if (dinstance == null)
+				{
+					return;
+				}
+
+				var rinstance = rEltEnum.FirstOrDefault(x => x.Id == dinstance.Id);
+				if (rinstance == null)
+				{
+					continue;
+				}
+
+				var props = dinstance.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+				foreach (var i in props)
+				{
+					MergeProperty(dinstance, i, rinstance, references, force);
+				}
 			}
 		}
 
@@ -550,6 +609,19 @@ namespace TomPIT.ComponentModel
 		{
 			Folders.Delete(e.Folder);
 			FolderChanged?.Invoke(sender, e);
+		}
+
+		private ConcurrentDictionary<Guid, ConfigurationSerializationState> ConfigurationCache => _configurationCache.Value;
+
+		private List<IComponent> CacheComponents(List<IComponent> components)
+		{
+			if (components == null)
+				return components;
+
+			foreach (var component in components)
+				Set(component.Token, component);
+
+			return components;
 		}
 	}
 }

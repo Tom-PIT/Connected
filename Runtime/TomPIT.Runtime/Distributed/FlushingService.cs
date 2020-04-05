@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using TomPIT.Analytics;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 
@@ -28,6 +29,9 @@ namespace TomPIT.Distributed
 
 						if (connection.GetService<IMetricService>() is MetricService m)
 							m.Flush();
+
+						if (connection.GetService<IAnalyticsService>() is AnalyticsService a)
+							((MruService)a.Mru).Flush();
 					});
 			}
 			catch

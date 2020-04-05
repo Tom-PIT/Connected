@@ -22,6 +22,7 @@ namespace TomPIT.Compilation
 		public Guid MicroService { get; }
 		public IText SourceCode { get; }
 		public List<Guid> ScriptReferences { get; private set; }
+		private IScriptContext ScriptContext { get; set; }
 		public void Create()
 		{
 			var code = Tenant.GetService<IComponentService>().SelectText(MicroService, SourceCode);
@@ -36,23 +37,22 @@ namespace TomPIT.Compilation
 				 .WithSourceResolver(new ScriptResolver(Tenant, MicroService))
 				 .WithMetadataResolver(new AssemblyResolver(Tenant, MicroService))
 				 .WithEmitDebugInformation(true)
-				 //.WithFilePath($"http://localhost:44002/sys/source-code/{msv.Name}/{SourceCode.ScriptName(Tenant)}")
 				 .WithFilePath(SourceCode.ScriptName(Tenant))
 				 .WithFileEncoding(Encoding.UTF8);
 
 			using (var loader = new InteractiveAssemblyLoader())
 			{
-				var scriptContext = Tenant.GetService<ICompilerService>().CreateScriptContext(SourceCode);
+				ScriptContext = Tenant.GetService<ICompilerService>().CreateScriptContext(SourceCode);
 
 				var refs = new List<Guid>();
 
-				foreach (var reference in scriptContext.SourceFiles)
+				foreach (var reference in ScriptContext.SourceFiles)
 					refs.Add(reference.Value.Id);
 
 				if (refs.Count > 0)
 					ScriptReferences = refs;
 
-				foreach (var reference in scriptContext.References)
+				foreach (var reference in ScriptContext.References)
 				{
 					if (reference.Value == ImmutableArray<PortableExecutableReference>.Empty)
 						continue;
@@ -82,7 +82,7 @@ namespace TomPIT.Compilation
 					}
 				}
 
-				Script = CreateScript(code, options, loader);
+				Script = CreateScript($"{code};{System.Environment.NewLine}{GenerateStaticCode()}", options, loader);
 			}
 		}
 
@@ -110,5 +110,28 @@ namespace TomPIT.Compilation
 
 		//public IScriptDescriptor Result { get; private set; }
 		public Script<object> Script { get; private set; }
+
+		private string GenerateStaticCode()
+		{
+			var sb = new StringBuilder();
+
+			sb.AppendLine($"public static class {CompilerService.ScriptInfoClassName}");
+			sb.AppendLine("{");
+			sb.AppendLine("private static readonly System.Collections.Generic.List<string> _sourceFiles = new System.Collections.Generic.List<string>{");
+
+			foreach (var file in ScriptContext.SourceFiles)
+			{
+				sb.AppendLine($"\"{file.Key}\",");
+			}
+
+			sb.AppendLine("};");
+			sb.AppendLine($"public static System.Guid MicroService => new System.Guid(\"{MicroService.ToString()}\");");
+			sb.AppendLine($"public static System.Guid SourceCode => new System.Guid(\"{SourceCode.Id.ToString()}\");");
+			sb.AppendLine($"public static System.Guid Component => new System.Guid(\"{SourceCode.Configuration().Component.ToString()}\");");
+			sb.AppendLine($"public static System.Collections.Generic.List<string> SourceFiles => _sourceFiles;");
+			sb.AppendLine("}");
+
+			return sb.ToString();
+		}
 	}
 }

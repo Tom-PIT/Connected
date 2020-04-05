@@ -45,16 +45,20 @@ namespace TomPIT.MicroServices.Resources
 				: Key;
 		}
 
-		public void UpdateTranslation(int lcid, string value)
+		public void UpdateTranslation(int lcid, string value, bool auditChange)
 		{
 			if (Translations.FirstOrDefault(f => f.Lcid == lcid) is StringTranslation existing)
+			{
 				existing.Value = value;
+				existing.Changed = auditChange;
+			}
 			else
 			{
 				Translations.Add(new StringTranslation
 				{
 					Lcid = lcid,
-					Value = value
+					Value = value,
+					Changed = auditChange
 				});
 			}
 		}

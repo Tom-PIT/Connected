@@ -27,6 +27,16 @@ namespace TomPIT.Security.Authentication
 			var cookie = Request.Cookies[SecurityUtils.AuthenticationCookieName];
 			var json = Serialization.Serializer.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie)));
 
+			var expiration = json.Optional("expiration", 0L);
+
+			if (expiration > 0)
+			{
+				var dt = new DateTime(expiration);
+
+				if (dt < DateTime.UtcNow)
+					return null;
+			}
+
 			var jwt = json.Required<string>("jwt");
 			var endpoint = json.Required<string>("endpoint");
 

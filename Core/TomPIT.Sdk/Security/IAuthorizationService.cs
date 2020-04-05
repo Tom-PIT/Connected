@@ -19,7 +19,11 @@ namespace TomPIT.Security
 		List<IPermissionDescriptor> QueryDescriptors();
 
 		PermissionValue GetPermissionValue(Guid evidence, string schema, string claim);
+		PermissionValue GetPermissionValue(Guid evidence, string schema, string claim, string descriptor, string primaryKey);
 		void RegisterAuthenticationProvider(IAuthenticationProvider provider);
 		void Authorize(ISiteMapContainer container);
+
+		List<IMembership> QueryMembership(Guid user);
+		List<IMembership> QueryMembershipForRole(Guid role);
 	}
 }

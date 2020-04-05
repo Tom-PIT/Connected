@@ -41,6 +41,20 @@ namespace TomPIT.App.UI
 			}
 		}
 
+		public string CompilePartial(IMicroServiceContext context, string name)
+		{
+			var partialView = ResolveView(context, name);
+
+			if (partialView == null)
+				return null;
+
+			var vm = CreatePartialModel(name);
+			var viewEngineResult = Engine.FindView(vm.ActionContext, name, false);
+			var view = viewEngineResult.View;
+
+			return CreateContent(view, vm);
+		}
+
 		public void RenderPartial(IMicroServiceContext context, string name)
 		{
 			var partialView = ResolveView(context, name);

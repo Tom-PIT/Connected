@@ -41,8 +41,6 @@ namespace TomPIT.App.Models
 		public void Initialize(Controller controller, IMicroService microService)
 		{
 			MicroService = microService;
-
-			Initialize(null);
 		}
 
 		public void MergeArguments(JObject arguments)

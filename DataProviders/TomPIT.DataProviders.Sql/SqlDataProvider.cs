@@ -41,8 +41,6 @@ namespace TomPIT.DataProviders.Sql
 			if (connection.State == ConnectionState.Closed)
 				connection.Open();
 
-			//try
-			//{
 			SetupParameters(command, cmd);
 
 			foreach (var i in command.Parameters)
@@ -55,12 +53,6 @@ namespace TomPIT.DataProviders.Sql
 				if (i.Direction == ParameterDirection.ReturnValue)
 					i.Value = cmd.Parameters[i.Name].Value;
 			}
-			//}
-			//finally
-			//{
-			//	if (!externalConnection)
-			//		connection.Close();
-			//}
 		}
 
 		private void SetupParameters(IDataCommandDescriptor command, SqlCommand cmd)
@@ -92,9 +84,9 @@ namespace TomPIT.DataProviders.Sql
 			}
 		}
 
-		public IDataConnection OpenConnection(string connectionString, IDataConnection existingConnection)
+		public IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior)
 		{
-			return new DataConnection(this, connectionString, existingConnection);
+			return new DataConnection(this, connectionString, behavior);
 		}
 
 		public JObject Query(IDataCommandDescriptor command, DataTable schema)

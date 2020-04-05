@@ -7,7 +7,7 @@ namespace TomPIT.Middleware.Interop
 		public bool ValidateResult { get; set; } = true;
 		protected TReturnValue Validate(TReturnValue item, string errorMessage)
 		{
-			if (item == default && ValidateResult)
+			if (item == null && ValidateResult)
 				throw new ValidationException(errorMessage, new Exceptions.NotFoundException(errorMessage));
 
 			return item;

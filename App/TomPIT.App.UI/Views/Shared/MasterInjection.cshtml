@@ -1,0 +1,28 @@
+﻿@model TomPIT.Middleware.IMiddlewareContext
+
+@{ 
+   var model = Model as IViewModel;
+
+   if (model == null || model.ViewConfiguration == null)
+   {
+       return;
+   }
+
+   var layout = model.ViewConfiguration.Layout;
+   var dependencies = Model.Tenant.GetService<TomPIT.IoC.IUIDependencyInjectionService>().QueryMasterDependencies(layout, model.Arguments, TomPIT.ComponentModel.IoC.MasterDependencyKind.Server);
+}
+
+@if (dependencies == null || dependencies.Count == 0)
+{
+    return;
+}
+
+@foreach(var dependency in dependencies)
+{
+    if(string.IsNullOrWhiteSpace(dependency.Partial))
+    {
+        continue;
+    }
+
+    @await Html.TP().Partial.Render(dependency.Partial, model.Arguments)
+}

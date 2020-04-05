@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using TomPIT.ComponentModel;
@@ -8,7 +9,7 @@ using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Interop
 {
-	public abstract class DistributedOperation : MiddlewareOperation, IOperation, IDistributedOperation
+	public abstract class DistributedOperation : MiddlewareApiOperation, IOperation, IDistributedOperation
 	{
 		private IMiddlewareCallback _callback = null;
 		private List<IOperationResponse> _responses = null;
@@ -85,31 +86,37 @@ namespace TomPIT.Middleware.Interop
 		public void Invoke()
 		{
 			Validate();
+			OnValidating();
 
-			if (OperationTarget == DistributedOperationTarget.Distributed)
+			try
 			{
-				OnAuthorize();
-				OnBeginInvoke();
+				if (OperationTarget == DistributedOperationTarget.Distributed)
+				{
+					OnBeginInvoke();
 
-				if (!((MiddlewareCallback)Callback).Attached)
-					Context.Services.Cdn.DistributedEvent("$", this, Callback);
+					if (!((MiddlewareCallback)Callback).Attached)
+						Context.Services.Cdn.Events.TriggerEvent("$", this, Callback);
+				}
+				else
+				{
+					OnInvoke();
+					DependencyInjections.Invoke<object>(null);
+				}
+
+				Invoked();
 			}
-			else
-				OnInvoke();
-
-			if (IsCommitable)
-				OnCommit();
-
-			if (Context is MiddlewareContext mc)
-				mc.CloseConnections();
+			catch (System.ComponentModel.DataAnnotations.ValidationException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				Rollback();
+				throw new ScriptException(this, ex);
+			}
 		}
 
 		protected virtual void OnInvoke()
-		{
-
-		}
-
-		protected virtual void OnAuthorize()
 		{
 
 		}

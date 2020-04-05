@@ -6,9 +6,11 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.ComponentModel.Deployment;
+using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
 using TomPIT.Deployment;
+using TomPIT.Design.Serialization;
 using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Ide.ComponentModel;
@@ -154,21 +156,28 @@ namespace TomPIT.Management.Deployment
 		{
 			foreach (var i in Package.Components)
 			{
+				var isStringTable = string.Compare(i.Category, ComponentCategories.StringTable, true) == 0;
 				var configuration = Package.Blobs.FirstOrDefault(f => f.Type == BlobTypes.Configuration && f.PrimaryKey == i.Token.ToString());
-				var runtimeConfiguration = Configuration.RuntimeConfigurationSupported && Configuration.RuntimeConfiguration ? Package.Blobs.FirstOrDefault(f => f.Type == BlobTypes.RuntimeConfiguration
-					  && string.Compare(f.PrimaryKey, i.RuntimeConfiguration.ToString(), true) == 0) : null;
+				var runtimeConfiguration = isStringTable || (Configuration.RuntimeConfigurationSupported && Configuration.RuntimeConfiguration) ? Package.Blobs.FirstOrDefault(f => f.Type == BlobTypes.RuntimeConfiguration
+						  && string.Compare(f.PrimaryKey, i.RuntimeConfiguration.ToString(), true) == 0) : null;
 
-				if (!Configuration.RuntimeConfiguration)
+				if (!Configuration.RuntimeConfiguration || isStringTable)
 				{
 					var state = LastKnownState == null ? Guid.Empty : LastKnownState.FirstOrDefault(f => f.Key == configuration.Token).Value;
 					/*
-			  * if existing runtime configuration found override component's runtime configuration
-			  * set to no runtime configuration otherwise
-			  */
+					* if existing runtime configuration found override component's runtime configuration
+					* set to no runtime configuration otherwise
+					*/
 					if (state != Guid.Empty)
 						((PackageComponent)i).RuntimeConfiguration = state;
 					else
-						((PackageComponent)i).RuntimeConfiguration = Guid.Empty;
+					{
+						if (!isStringTable)
+							((PackageComponent)i).RuntimeConfiguration = Guid.Empty;
+					}
+
+					if (isStringTable && runtimeConfiguration != null)
+						MergeTranslations(i, runtimeConfiguration, state);
 				}
 
 				Tenant.GetService<IComponentDevelopmentService>().Restore(Package.MicroService.Token, i, configuration, runtimeConfiguration);
@@ -288,6 +297,82 @@ namespace TomPIT.Management.Deployment
 		 * are not part of microservice configuration.
 		 */
 			Tenant.GetService<IMicroServiceManagementService>().Delete(existing.Token);
+		}
+		/// <summary>
+		/// This method merges string table translations. If the administrator changes the translation on the target system the Changed flag is set
+		/// to true on the translation. This method checks for all those flags and leave strings as is if they were changed, they are overriden otherwise
+		/// </summary>
+		/// <param name="component">Deploying component.</param>
+		/// <param name="runtimeConfiguration">Deploying runtime configuration.</param>
+		/// <param name="state">Existing state id.</param>
+		private void MergeTranslations(IPackageComponent component, IPackageBlob runtimeConfiguration, Guid state)
+		{
+			var type = Type.GetType(component.Type);
+			var config = Tenant.GetService<ISerializationService>().Deserialize(Convert.FromBase64String(runtimeConfiguration.Content), type) as IStringTableConfiguration;
+			var existingConfigBlob = state == Guid.Empty ? null : Tenant.GetService<IStorageService>().Download(state);
+
+			ResetAuditFlag(config);
+
+			if (existingConfigBlob == null)
+			{
+				OverrideStringTableConfiguration(config, runtimeConfiguration);
+				return;
+			}
+
+			if (!(Tenant.GetService<ISerializationService>().Deserialize(existingConfigBlob.Content, type) is IStringTableConfiguration existingConfig))
+			{
+				OverrideStringTableConfiguration(config, runtimeConfiguration);
+				return;
+			}
+
+			foreach (var s in config.Strings)
+			{
+				var existingString = existingConfig.Strings.FirstOrDefault(f => string.Compare(f.Key, s.Key, true) == 0);
+
+				/*
+				 * override changed translations
+				 */
+				foreach (var translation in s.Translations)
+				{
+					if (existingString == null)
+						continue;
+
+					var existingTranslation = existingString.Translations.FirstOrDefault(f => f.Lcid == translation.Lcid);
+
+					if (existingTranslation != null && existingTranslation.Changed)
+						s.UpdateTranslation(translation.Lcid, existingTranslation.Value, true);
+				}
+				/*
+				 * add existing translations
+				 */
+				foreach (var existingTranslation in existingString.Translations)
+				{
+					var translation = s.Translations.FirstOrDefault(f => f.Lcid == existingTranslation.Lcid);
+
+					if (translation == null)
+						s.UpdateTranslation(translation.Lcid, existingTranslation.Value, true);
+				}
+			}
+
+			OverrideStringTableConfiguration(config, runtimeConfiguration);
+		}
+
+		private void ResetAuditFlag(IStringTableConfiguration stringTable)
+		{
+			foreach (var s in stringTable.Strings)
+			{
+				foreach (var translation in s.Translations)
+				{
+					if (translation.Changed)
+						s.UpdateTranslation(translation.Lcid, translation.Value, false);
+				}
+			}
+		}
+
+		private void OverrideStringTableConfiguration(IStringTableConfiguration config, IPackageBlob blob)
+		{
+			if (blob is PackageBlob pb)
+				pb.Content = Convert.ToBase64String(Tenant.GetService<ISerializationService>().Serialize(config));
 		}
 	}
 }

@@ -432,9 +432,6 @@ namespace TomPIT.Search.Catalogs
 			{
 				job.Search(Searcher);
 
-				//foreach (var duplicate in job.Duplicates)
-				//	MiddlewareDescriptor.Current.GetService<ISearchService>().Index(Catalog, SearchVerb.Update, new JObject { { "Id", duplicate } });
-
 				total = job.Total;
 			}
 			catch (FileNotFoundException ex)
@@ -461,7 +458,10 @@ namespace TomPIT.Search.Catalogs
 				try
 				{
 					if (Searcher != job.Searcher)
-						Searcher.TryDispose();
+					{
+						if (Searcher.TryDispose())
+							KillSearcher();
+					}
 				}
 				catch { }
 			}

@@ -174,7 +174,7 @@ namespace TomPIT.ComponentModel
 
 		public static ConfigurationDescriptor<IPartitionConfiguration> BigDataPartition(IMiddlewareContext context, string identifier)
 		{
-			return new ConfigurationDescriptor<IPartitionConfiguration>(context, identifier, ComponentCategories.Script);
+			return new ConfigurationDescriptor<IPartitionConfiguration>(context, identifier, ComponentCategories.BigDataPartition);
 		}
 
 		public static ConfigurationDescriptor<IApiConfiguration> Api(IMiddlewareContext context, string identifier)

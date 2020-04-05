@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -29,6 +30,8 @@ namespace TomPIT.Compilation
 {
 	internal class CompilerService : ClientRepository<IScriptDescriptor, Guid>, ICompilerService, ICompilerNotification
 	{
+		internal const string ScriptInfoClassName = "__ScriptInfo";
+
 		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _references = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
 		private static Lazy<ConcurrentDictionary<Guid, ManualResetEvent>> _scriptCreateState = new Lazy<ConcurrentDictionary<Guid, ManualResetEvent>>();
 		private static readonly string[] Usings = new string[]
@@ -268,6 +271,7 @@ namespace TomPIT.Compilation
 		private Microsoft.CodeAnalysis.Compilation Compile(IScriptDescriptor script, CompilerScript compiler, bool cache)
 		{
 			Microsoft.CodeAnalysis.Compilation result = null;
+
 			var errors = compiler.Script == null ? ImmutableArray<Microsoft.CodeAnalysis.Diagnostic>.Empty : compiler.Script.Compile();
 			var diagnostics = new List<IDiagnostic>();
 
@@ -291,14 +295,13 @@ namespace TomPIT.Compilation
 				diagnostics.Add(diagnostic);
 			}
 
+
 			((ScriptDescriptor)script).Errors = diagnostics;
 
 			if (compiler.Script != null && script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() == 0)
 			{
 				((ScriptDescriptor)script).Script = compiler.Script.CreateDelegate();
-
 				result = compiler.Script.GetCompilation();
-
 				((ScriptDescriptor)script).Assembly = result.AssemblyName;
 			}
 
@@ -433,9 +436,7 @@ namespace TomPIT.Compilation
 			if (script != null && script.Assembly == null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
 				throw new CompilerException(Tenant, script, sourceCode);
 
-			var assembly = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
 			var target = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), script.Assembly, true) == 0);
-
 			var result = target?.GetTypes().FirstOrDefault(f => string.Compare(f.Name, typeName, true) == 0);
 
 			if (result == null)
@@ -531,7 +532,7 @@ namespace TomPIT.Compilation
 		}
 		public T CreateInstance<T>(IMicroServiceContext context, Type scriptType, string arguments) where T : class
 		{
-			return CreateInstance<T>(null, scriptType, context.MicroService, arguments);
+			return CreateInstance<T>(context, scriptType, context.MicroService, arguments);
 		}
 
 		private T CreateInstance<T>(IMicroServiceContext context, IText sourceCode, IMicroService microService, string arguments, string typeName) where T : class
@@ -568,12 +569,38 @@ namespace TomPIT.Compilation
 			if (instance == null)
 				return null;
 
-			var script = Get(f => f.Assembly != null && string.Compare(instance.GetType().Assembly.GetName().Name, f.Assembly, true) == 0);
+			var typeInfo = instance.GetType().Assembly.DefinedTypes.FirstOrDefault(f => string.Compare(f.Name, ScriptInfoClassName, false) == 0);
 
-			if (script == null)
+			if (typeInfo == null)
 				return null;
 
-			return Tenant.GetService<IComponentService>().SelectComponent(script.Component);
+			var sourceFiles = (List<string>)typeInfo.GetProperty("SourceFiles").GetValue(null);
+
+			foreach (var file in sourceFiles)
+			{
+				var tokens = file.Split('/');
+				var typeName = Path.GetFileNameWithoutExtension(tokens[^1]);
+
+				if (string.Compare(typeName, instance.GetType().Name, false) == 0)
+				{
+					if (tokens.Length == 3)
+					{
+						var r = ComponentDescriptor.Api(new MiddlewareContext(Tenant.Url), Path.ChangeExtension(file, null));
+
+						try
+						{
+							r.Validate();
+
+							return r.Component;
+						}
+						catch { }
+					}
+				}
+			}
+
+			var component = (Guid)typeInfo.GetProperty("Component").GetValue(null);
+
+			return Tenant.GetService<IComponentService>().SelectComponent(component);
 		}
 
 		public IMicroService ResolveMicroService(object instance)
@@ -586,12 +613,17 @@ namespace TomPIT.Compilation
 
 		public IMicroService ResolveMicroService(Type type)
 		{
-			var script = Get(f => f.Assembly != null && string.Compare(type.Assembly.GetName().Name, f.Assembly, true) == 0);
-
-			if (script == null)
+			if (type == null)
 				return null;
 
-			return Tenant.GetService<IMicroServiceService>().Select(script.MicroService);
+			var typeInfo = type.Assembly.DefinedTypes.FirstOrDefault(f => string.Compare(f.Name, ScriptInfoClassName, false) == 0);
+
+			if (typeInfo == null)
+				return null;
+
+			var ms = (Guid)typeInfo.GetProperty("MicroService").GetValue(null);
+
+			return Tenant.GetService<IMicroServiceService>().Select(ms);
 		}
 
 		private static ConcurrentDictionary<Guid, List<Guid>> References { get { return _references.Value; } }

@@ -57,7 +57,7 @@ namespace TomPIT.Globalization
 
 				table = Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "StringTable", stringTable) as IStringTableConfiguration;
 
-				Set(key, table, TimeSpan.Zero);
+				Set(cacheKey, table, TimeSpan.Zero);
 			}
 
 			var str = table.Strings.FirstOrDefault(f => string.Compare(f.Key, key, true) == 0);

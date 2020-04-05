@@ -1,5 +1,4 @@
-﻿using TomPIT.Exceptions;
-using TomPIT.Middleware;
+﻿using TomPIT.Middleware;
 
 namespace TomPIT.ComponentModel
 {
@@ -28,8 +27,8 @@ namespace TomPIT.ComponentModel
 
 		protected override void OnValidate()
 		{
-			if (Configuration == null)
-				throw new RuntimeException($"{SR.ErrCannotFindConfiguration} ({MicroServiceName}/{ComponentName})");
+			//if (Configuration == null)
+			//	throw new RuntimeException($"{SR.ErrCannotFindConfiguration} ({MicroServiceName}/{ComponentName})");
 		}
 	}
 }

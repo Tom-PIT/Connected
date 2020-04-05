@@ -11,15 +11,7 @@ namespace TomPIT.Data
 
 		public void Execute()
 		{
-			try
-			{
-				Connection.Execute(CreateCommand());
-			}
-			finally
-			{
-				if (CloseConnection)
-					Connection.Close();
-			}
+			Connection.Execute(CreateCommand());
 		}
 
 		public T Execute<T>()
@@ -41,11 +33,14 @@ namespace TomPIT.Data
 					}
 				}
 
+				if (Connection.Behavior == ConnectionBehavior.Isolated)
+					Connection.Commit();
+
 				return default;
 			}
 			finally
 			{
-				if (CloseConnection)
+				if (Connection.Behavior == ConnectionBehavior.Isolated)
 					Connection.Close();
 			}
 		}

@@ -32,13 +32,13 @@ namespace TomPIT.Sys.Data
 				return;
 			}
 
-			var message = Select(popReceipt);
+			var message = SelectByPopReceipt(popReceipt);
 
 			if (message == null)
 				throw new SysException(SR.ErrMailMessageNotFound);
 
 			if (message.DequeueCount >= MailDequeueMax || message.Expire < DateTime.UtcNow)
-				Delete(popReceipt);
+				Delete(message.Token);
 			else
 				Shell.GetService<IDatabaseService>().Proxy.Cdn.Mail.Update(popReceipt, error, DateTime.UtcNow.AddSeconds(delay));
 		}

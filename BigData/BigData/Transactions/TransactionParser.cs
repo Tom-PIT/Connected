@@ -54,8 +54,7 @@ namespace TomPIT.BigData.Transactions
 		{
 			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(MicroService.Token, Partition, Partition.ComponentName());
 			var argument = type.GetInterface(typeof(IPartitionMiddleware<>).FullName).GetGenericArguments()[0];
-			//TODO: not implemented
-			dynamic instance = null;// MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance< type.CreateInstance();
+			var middleware = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<MiddlewareComponent>(new MicroServiceContext(MicroService), type);
 			var items = (IList)typeof(List<>).MakeGenericType(argument).CreateInstance();
 
 			foreach (var item in Items)
@@ -67,12 +66,12 @@ namespace TomPIT.BigData.Transactions
 				items.Add(itemInstance);
 			}
 
-			var methods = instance.GetType().GetMethods();
+			var methods = middleware.GetType().GetMethods();
 			MethodInfo target = null;
 
 			foreach (MethodInfo method in methods)
 			{
-				if (string.Compare(method.Name, "Invoke", false) != 0)
+				if (string.Compare(method.Name, nameof(PartitionMiddleware<object>.Invoke), false) != 0)
 					continue;
 
 				var parameters = method.GetParameters();
@@ -87,7 +86,7 @@ namespace TomPIT.BigData.Transactions
 				}
 			}
 
-			items = target.Invoke(instance, new object[] { items });
+			items = (IList)target.Invoke(middleware, new object[] { items });
 
 			if (items == null || items.Count == 0)
 				return;

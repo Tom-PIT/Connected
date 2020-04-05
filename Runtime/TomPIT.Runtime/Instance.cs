@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TomPIT.Configuration;
@@ -89,7 +90,6 @@ namespace TomPIT
 				o.EnableEndpointRouting = false;
 				e.ConfigureMvc?.Invoke(o);
 
-				o.Filters.Add(new AuthenticationCookieFilter());
 			}).AddNewtonsoftJson()
 			.ConfigureApplicationPartManager((m) =>
 			{
@@ -142,6 +142,8 @@ namespace TomPIT
 		}
 		public static void Configure(InstanceType type, IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler)
 		{
+			app.UseMiddleware<AuthenticationCookieMiddleware>();
+
 			app.UseAuthentication();
 			app.UseAuthorization();
 			app.UseRequestLocalization(o =>
@@ -167,7 +169,20 @@ namespace TomPIT
 			//		FileProvider = new PhysicalFileProvider($"{env.WebRootPath}\\Assets")
 			//	}));
 			//}
-			app.UseStaticFiles();
+			var cachePeriod = env.IsDevelopment() ? "600" : "604800";
+
+			var contentTypeProvider = new FileExtensionContentTypeProvider();
+
+			contentTypeProvider.Mappings[".webmanifest"] = "application/manifest+json";
+
+			app.UseStaticFiles(new StaticFileOptions
+			{
+				OnPrepareResponse = ctx =>
+				{
+					ctx.Context.Response.Headers.Append("Cache-Control", $"public, max-age={cachePeriod}");
+				},
+				ContentTypeProvider = contentTypeProvider
+			});
 
 			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
 

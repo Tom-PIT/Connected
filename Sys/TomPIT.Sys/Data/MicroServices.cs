@@ -23,6 +23,9 @@ namespace TomPIT.Sys.Data
 
 		public IMicroService Select(string name)
 		{
+			if (string.IsNullOrWhiteSpace(name))
+				return null;
+
 			var r = Get(f => string.Compare(f.Name, name, true) == 0);
 
 			if (r != null)

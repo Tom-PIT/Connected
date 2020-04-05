@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using TomPIT.Security;
+using TomPIT.Serialization;
 
 namespace TomPIT.App.Models
 {
@@ -16,8 +17,28 @@ namespace TomPIT.App.Models
 		public object QueryData()
 		{
 			var jo = Body.Required<JObject>("data");
+			var result = Services.Data.User.Query(jo.Required<string>("topic"));
 
-			return Services.Data.User.Query(jo.Required<string>("topic"));
+			if (result == null)
+				return null;
+
+			var r = new JArray();
+
+			foreach (var i in result)
+			{
+				var item = new JObject();
+
+				item.Add("primaryKey", Serializer.Deserialize<JToken>(i.PrimaryKey));
+
+				if (!string.IsNullOrWhiteSpace(i.Value))
+					item.Add("value", Serializer.Deserialize<JToken>(i.Value));
+
+				item.Add("topic", i.Topic);
+
+				r.Add(item);
+			}
+
+			return r;
 		}
 
 		public void SetData()

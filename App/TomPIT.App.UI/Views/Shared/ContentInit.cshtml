@@ -1,17 +1,37 @@
-﻿@model TomPIT.Middleware.IMiddlewareContext
+﻿@using TomPIT.ComponentModel;
+@using TomPIT.IoC;
+@using TomPIT.ComponentModel.IoC;
+
+@model TomPIT.Middleware.IMiddlewareContext
 
 @{
-	var rootUrl = Model.Services.Routing.RootUrl;
-	var component = string.Empty;
+   var rootUrl = Model.Services.Routing.RootUrl;
+   var component = string.Empty;
 
-	if (Model is IComponentModel cm && cm.Component != null)
-	{ component = string.Format("{0}.{1}", cm.Component.MicroService.ToString(), cm.Component.Token.ToString()); }
+   if (Model is IComponentModel cm && cm.Component != null)
+   { component = string.Format("{0}.{1}", cm.Component.MicroService.ToString(), cm.Component.Token.ToString()); }
+
+   var uiModel = Model as IViewModel;
+   var view = string.Empty;
+   var injections = 0;
+
+   if(uiModel != null)
+   {
+       view = $"{uiModel.MicroService.Name}/{uiModel.ViewConfiguration.ComponentName()}";
+        var layout = uiModel.ViewConfiguration.Layout;
+        var masterDependencies = uiModel.Tenant.GetService<IUIDependencyInjectionService>().QueryMasterDependencies(layout, uiModel.Arguments, MasterDependencyKind.Client);
+        var viewDependencies = uiModel.Tenant.GetService<IUIDependencyInjectionService>().QueryViewDependencies(view, uiModel.Arguments);
+
+        injections = Convert.ToInt32(masterDependencies?.Count) + Convert.ToInt32(viewDependencies?.Count);
+   }
 }
 
 <script>
     tompit.DEFAULTS = {
         appUrl: '@rootUrl',
-        component:'@component'
+        component: '@component',
+        view: '@view',
+        injections: @injections
     };
 
     tompit.GLOBALIZE = {

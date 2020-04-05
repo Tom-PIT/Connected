@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace TomPIT.BigData.Data
 {
-	internal abstract class PartitionSchemaField: IComparable
+	[JsonConverter(typeof(PartitionSchemaFieldConverter))]
+	internal abstract class PartitionSchemaField : IComparable
 	{
 		public string Name { get; set; }
 		public bool Key { get; set; }

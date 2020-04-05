@@ -14,8 +14,6 @@ namespace TomPIT.Annotations.Design
 
 
 		public const string MicroservicesProvider = "TomPIT.Development.CodeAnalysis.Providers.MicroServicesProvider, " + DevelopmentAssembly;
-		public const string SubscriptionProvider = "TomPIT.Design.CodeAnalysis.Providers.SubscriptionProvider, " + DesignAssembly;
-		public const string SubscriptionEventProvider = "TomPIT.Design.CodeAnalysis.Providers.SubscriptionEventProvider, " + DesignAssembly;
 
 		public const string ApiParameterProvider = "TomPIT.Design.CodeAnalysis.Providers.ApiParameterProvider, " + DesignAssembly;
 		public const string MailTemplateProvider = "TomPIT.Design.CodeAnalysis.Providers.MailTemplateProvider, " + DesignAssembly;
@@ -23,7 +21,7 @@ namespace TomPIT.Annotations.Design
 		public const string IoTHubFieldProvider = "TomPIT.Design.CodeAnalysis.Providers.IoTHubFieldProvider, " + DesignAssembly;
 		//public const string QueueWorkerProvider = "TomPIT.Design.CodeAnalysis.Providers.QueueWorkerProvider, " + DesignAssembly;
 		public const string PartialProvider = "TomPIT.Design.CodeAnalysis.Providers.PartialProvider, " + DesignAssembly;
-		public const string BigDataPartitionProvider = "TomPIT.Design.CodeAnalysis.Providers.BigDataPartitionProvider, " + DesignAssembly;
+
 
 		public CodeAnalysisProviderAttribute() { }
 

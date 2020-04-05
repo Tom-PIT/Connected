@@ -5,7 +5,8 @@ $.widget('tompit.tpProgress', {
 		selector: null,
 		disable: true,
 		text: null,
-		textCss:null
+        textCss: null,
+        showAfter: 500
 	},
 
 	_create: function () {
@@ -43,7 +44,7 @@ $.widget('tompit.tpProgress', {
 
 				e.html(html + txt + progress + '</div>');
 			}
-		}, 500);
+        }, instance.options.showAfter);
 	},
 	hide: function () {
 		this.element.removeAttr('data-inprogress');

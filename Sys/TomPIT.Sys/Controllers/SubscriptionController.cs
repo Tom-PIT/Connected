@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using TomPIT.Cdn;
 using TomPIT.Sys.Data;
 
@@ -59,6 +59,26 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpPost]
+		public ISubscriber SelectSubscriberByToken()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			return DataModel.Subscriptions.SelectSubscriber(token);
+		}
+
+		[HttpPost]
+		public ISubscriber SelectSubscriberBySubscription()
+		{
+			var body = FromBody();
+			var subscription = body.Required<Guid>("subscription");
+			var type = body.Required<SubscriptionResourceType>("type");
+			var resourcePrimaryKey = body.Required<string>("resourcePrimaryKey");
+
+			return DataModel.Subscriptions.SelectSubscriber(subscription, type, resourcePrimaryKey);
+		}
+
+		[HttpPost]
 		public Guid InsertSubscriber()
 		{
 			var body = FromBody();
@@ -112,6 +132,26 @@ namespace TomPIT.Sys.Controllers
 			var arguments = body.Optional("arguments", string.Empty);
 
 			return DataModel.Subscriptions.InsertSubscriptionEvent(microService, handler, name, topic, primaryKey, arguments);
+		}
+
+		[HttpPost]
+		public ISubscription SelectSubscription()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			return DataModel.Subscriptions.Select(token);
+		}
+
+		[HttpPost]
+		public ISubscription SelectSubscriptionByConfiguration()
+		{
+			var body = FromBody();
+			var handler = body.Required<Guid>("handler");
+			var topic = body.Optional("topic", string.Empty);
+			var primaryKey = body.Required<string>("primaryKey");
+
+			return DataModel.Subscriptions.Select(handler, topic, primaryKey);
 		}
 	}
 }

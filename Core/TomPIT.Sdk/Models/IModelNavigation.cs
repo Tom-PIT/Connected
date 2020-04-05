@@ -7,5 +7,6 @@ namespace TomPIT.Models
 	{
 		List<IRoute> Breadcrumbs { get; }
 		List<IRoute> Links { get; }
+		List<IRoute> Menu { get; }
 	}
 }

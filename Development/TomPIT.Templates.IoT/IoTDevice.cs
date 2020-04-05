@@ -10,7 +10,7 @@ using TomPIT.ComponentModel.IoT;
 namespace TomPIT.MicroServices.IoT
 {
 	[Create("IoTDevice", nameof(Name))]
-	[ComponentCreatingHandler("TomPIT.MicroServices.IoT.Handlers.IoTDeviceCreateHandler, TomPIT.MicroServices.IoT.Design")]
+	[ComponentCreatingHandler("TomPIT.MicroServices.IoT.Design.Handlers.IoTDeviceCreateHandler, TomPIT.MicroServices.IoT.Design")]
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
 	public class IoTDevice : ConfigurationElement, IIoTDevice

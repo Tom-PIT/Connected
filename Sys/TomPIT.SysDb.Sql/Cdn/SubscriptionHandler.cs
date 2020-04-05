@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.Cdn;
 using TomPIT.Data.Sql;
 using TomPIT.SysDb.Cdn;
@@ -59,11 +59,12 @@ namespace TomPIT.SysDb.Sql.Cdn
 			w.Execute();
 		}
 
-		public void InsertSubscriber(ISubscription subscription, SubscriptionResourceType type, string resourcePrimaryKey)
+		public void InsertSubscriber(ISubscription subscription, Guid token, SubscriptionResourceType type, string resourcePrimaryKey)
 		{
 			var w = new Writer("tompit.subscriber_ins");
 
 			w.CreateParameter("@subscription", subscription.GetId());
+			w.CreateParameter("@token", token);
 			w.CreateParameter("@resource_type", type);
 			w.CreateParameter("@resource_primary_key", resourcePrimaryKey);
 
@@ -80,7 +81,8 @@ namespace TomPIT.SysDb.Sql.Cdn
 				a.Add(new JObject
 				{
 					{"resource_type", Convert.ToInt32(i.Type) },
-					{"resource_primary_key", i.ResourcePrimaryKey }
+					{"resource_primary_key", i.ResourcePrimaryKey },
+					{"token", i.Token }
 				});
 			};
 
@@ -108,6 +110,15 @@ namespace TomPIT.SysDb.Sql.Cdn
 		public ISubscriptionEvent SelectEvent(Guid token)
 		{
 			var r = new Reader<SubscriptionEvent>("tompit.subscription_event_sel");
+
+			r.CreateParameter("@token", token);
+
+			return r.ExecuteSingleRow();
+		}
+
+		public ISubscriber SelectSubscriber(Guid token)
+		{
+			var r = new Reader<Subscriber>("tompit.subscriber_sel");
 
 			r.CreateParameter("@token", token);
 

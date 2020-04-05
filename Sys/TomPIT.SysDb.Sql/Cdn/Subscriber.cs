@@ -10,6 +10,8 @@ namespace TomPIT.SysDb.Sql.Cdn
 		public SubscriptionResourceType Type { get; set; }
 		public string ResourcePrimaryKey { get; set; }
 
+		public Guid Token { get; set; }
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -17,6 +19,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 			Subscription = GetGuid("subscription_token");
 			Type = GetValue("resource_type", SubscriptionResourceType.User);
 			ResourcePrimaryKey = GetString("resource_primary_key");
+			Token = GetGuid("token");
 		}
 	}
 }

@@ -40,6 +40,11 @@ namespace TomPIT.Compilation.Views
 			builder.AppendLine($"@inherits {baseType}<TModel>");
 		}
 
+		protected void AppendBaseType(StringBuilder builder, string baseType, string modelType)
+		{
+			builder.AppendLine($"@inherits {baseType}<{modelType}>");
+		}
+
 		protected void AppendBaseType(StringBuilder builder)
 		{
 			builder.AppendLine($"@inherits TomPIT.Runtime.UI.ViewBase<TomPIT.Models.IViewModel>");

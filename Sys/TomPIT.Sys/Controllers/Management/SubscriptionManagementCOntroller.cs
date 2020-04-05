@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.Cdn;
 using TomPIT.Storage;
 using TomPIT.Sys.Data;
@@ -27,15 +27,6 @@ namespace TomPIT.Sys.Controllers.Management
 			var r = new List<IQueueMessage>();
 
 			return DataModel.Subscriptions.DequeueEvents(count);
-		}
-
-		[HttpPost]
-		public ISubscription Select()
-		{
-			var body = FromBody();
-			var token = body.Required<Guid>("token");
-
-			return DataModel.Subscriptions.Select(token);
 		}
 
 		[HttpPost]

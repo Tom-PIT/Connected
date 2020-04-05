@@ -19,6 +19,12 @@ namespace TomPIT.App.Controllers
 		}
 
 		[HttpPost]
+		public IActionResult UIInjection()
+		{
+			return PartialView("~/Views/UIInjectionView.cshtml", CreateUIInjectionModel());
+		}
+
+		[HttpPost]
 		public IActionResult Partial()
 		{
 			var model = CreatePartialModel();
@@ -93,6 +99,19 @@ namespace TomPIT.App.Controllers
 		private PartialModel CreatePartialModel()
 		{
 			var r = new PartialModel
+			{
+				Body = FromBody()
+			};
+
+			r.Databind();
+			r.Initialize(this, r.MicroService);
+
+			return r;
+		}
+
+		private UIInjectionModel CreateUIInjectionModel()
+		{
+			var r = new UIInjectionModel
 			{
 				Body = FromBody()
 			};

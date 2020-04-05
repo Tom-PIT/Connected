@@ -14,24 +14,13 @@ namespace TomPIT.DataProviders.Sql
 		private ReliableSqlConnection _connection = null;
 		private Dictionary<string, SqlCommand> _commands = null;
 
-		public DataConnection(IDataProvider provider, string connectionString, IDataConnection existingConnection)
+		public DataConnection(IDataProvider provider, string connectionString, ConnectionBehavior behavior)
 		{
-			ExistingConnection = existingConnection;
 			Provider = provider;
 			ConnectionString = connectionString;
-
-			if (ExistingConnection != null && ExistingConnection is DataConnection dc && string.Compare(dc.ConnectionString, ConnectionString, true) == 0)
-			{
-				Attached = true;
-
-				_connection = dc.Connection;
-				Transaction = dc.Transaction;
-			}
+			Behavior = behavior;
 		}
 
-		private bool Commited { get; set; }
-		private bool Attached { get; set; }
-		private IDataConnection ExistingConnection { get; }
 		private IDataProvider Provider { get; }
 		private string ConnectionString { get; }
 
@@ -50,74 +39,49 @@ namespace TomPIT.DataProviders.Sql
 			}
 		}
 
-		public void Begin(IsolationLevel isolationLevel)
-		{
-			if (Transaction != null)
-				return;
-
-			Transaction = Connection.BeginTransaction(isolationLevel) as SqlTransaction;
-		}
-
-		public void Begin()
-		{
-			Begin(IsolationLevel.Unspecified);
-		}
-
 		public void Commit()
 		{
-			if (Commited)
+			if (Transaction == null || Transaction.Connection == null)
 				return;
 
-			if (!Attached && Transaction != null)
-				Transaction.Commit();
-
-			Commited = true;
+			Transaction.Commit();
+			Transaction = null;
 		}
 
 		public void Dispose()
 		{
-			if (Connection != null)
-			{
-				if (!Attached)
-				{
-					if (Transaction != null)
-						Transaction.Dispose();
-
-					if (Connection.State == ConnectionState.Open)
-						Connection.Close();
-
-					Connection.Dispose();
-				}
-			}
+			Close();
 		}
 
 		public void Rollback()
 		{
-			if (Commited)
+			if (Transaction == null || Transaction.Connection == null)
 				return;
 
-			if (!Attached && Transaction != null)
-				Transaction.Rollback();
-
-			Commited = true;
+			Transaction.Rollback();
+			Transaction = null;
 		}
 
 		public void Open()
 		{
-			if (Attached)
-				return;
-
 			if (Connection.State == ConnectionState.Closed)
 				Connection.Open();
+
+			if (Transaction?.Connection != null)
+			{
+				return;
+			}
+
+			Transaction = Connection.BeginTransaction(IsolationLevel.Unspecified) as SqlTransaction;
 		}
 
 		public void Close()
 		{
-			if (Attached)
-				return;
-
-			if (Connection.State == ConnectionState.Open)
+			if (Connection != null && Connection.State == ConnectionState.Open)
+			{
+				Rollback();
 				Connection.Close();
+			}
 		}
 
 		public void Execute(IDataCommandDescriptor command)
@@ -142,5 +106,7 @@ namespace TomPIT.DataProviders.Sql
 		}
 
 		public SqlTransaction Transaction { get; private set; }
+
+		public ConnectionBehavior Behavior { get; private set; }
 	}
 }

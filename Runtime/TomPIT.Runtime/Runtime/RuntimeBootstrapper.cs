@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using TomPIT.Analytics;
 using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Cdn;
@@ -90,6 +91,9 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(INavigationService), typeof(NavigationService));
 			e.Tenant.RegisterService(typeof(IIoCService), typeof(IoCService));
 			e.Tenant.RegisterService(typeof(IPrintingService), typeof(PrintingService));
+			e.Tenant.RegisterService(typeof(IUIDependencyInjectionService), typeof(UIDependencyInjectionService));
+			e.Tenant.RegisterService(typeof(IDependencyInjectionService), typeof(DependencyInjectionService));
+			e.Tenant.RegisterService(typeof(IAnalyticsService), typeof(AnalyticsService));
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 			{

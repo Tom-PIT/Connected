@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Lucene.Net.Documents;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
@@ -79,10 +80,54 @@ namespace TomPIT.Search
 				if (!property.GetMethod.IsPublic)
 					continue;
 
+				if (!property.PropertyType.IsTypePrimitive())
+					continue;
+
 				result.Add(property);
 			}
 
 			return result;
+		}
+
+		public static List<string> CatalogCustomProperties(this ISearchCatalogConfiguration catalog)
+		{
+			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(catalog.MicroService(), catalog, catalog.ComponentName(), false);
+
+			if (type == null)
+				return null;
+
+			var instance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<ISearchComponent>(new MicroServiceContext(catalog.MicroService()), type);
+
+			if (instance != null)
+				return instance.Properties;
+
+			return null;
+		}
+
+		public static Field.Index ToFieldIndex(SearchMode mode)
+		{
+			return mode switch
+			{
+				SearchMode.Analyzed => Field.Index.ANALYZED,
+				SearchMode.AnalyzedNoNorms => Field.Index.ANALYZED_NO_NORMS,
+				SearchMode.No => Field.Index.NO,
+				SearchMode.NotAnalyzed => Field.Index.NOT_ANALYZED,
+				SearchMode.NotAnalyzedNoNorms => Field.Index.NOT_ANALYZED_NO_NORMS,
+				_ => throw new NotSupportedException()
+			};
+		}
+
+		public static Field.TermVector ToTermVector(SearchTermVector vector)
+		{
+			return vector switch
+			{
+				SearchTermVector.No => Field.TermVector.NO,
+				SearchTermVector.WithOffsets => Field.TermVector.WITH_OFFSETS,
+				SearchTermVector.WithPositions => Field.TermVector.WITH_POSITIONS,
+				SearchTermVector.WithPositionsAndOffsets => Field.TermVector.WITH_POSITIONS_OFFSETS,
+				SearchTermVector.Yes => Field.TermVector.YES,
+				_ => throw new NotSupportedException()
+			};
 		}
 	}
 }

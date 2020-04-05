@@ -1,4 +1,5 @@
-﻿using TomPIT.SysDb.BigData;
+﻿using TomPIT.SysDb.Analytics;
+using TomPIT.SysDb.BigData;
 using TomPIT.SysDb.Cdn;
 using TomPIT.SysDb.Data;
 using TomPIT.SysDb.Deployment;
@@ -37,6 +38,7 @@ namespace TomPIT.SysDb
 		IMessagingHandler Messaging { get; }
 		ISearchHandler Search { get; }
 		IPrintingHandler Printing { get; }
+		IAnalyticsHandler Analytics { get; }
 
 		void Initialize(string connectionString);
 	}

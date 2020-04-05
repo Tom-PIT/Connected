@@ -1,4 +1,5 @@
-﻿using TomPIT.Cdn;
+﻿using System;
+using TomPIT.Cdn;
 
 namespace TomPIT.Sys.Data
 {
@@ -6,5 +7,7 @@ namespace TomPIT.Sys.Data
 	{
 		public SubscriptionResourceType Type { get; set; } = SubscriptionResourceType.User;
 		public string ResourcePrimaryKey { get; set; }
+
+		public Guid Token { get; set; }
 	}
 }

@@ -22,8 +22,14 @@ namespace TomPIT.Middleware
 			MicroService = context.MicroService;
 		}
 
-		public MicroServiceContext(Guid microService) : this(microService, null)
+		public MicroServiceContext(Guid microService) : this(microService, string.Empty)
 		{
+		}
+
+		public MicroServiceContext(Guid microService, IMiddlewareContext context) : base(context)
+		{
+			if (Tenant != null)
+				MicroService = Tenant.GetService<IMicroServiceService>().Select(microService);
 		}
 
 		public MicroServiceContext(Guid microService, string endpoint) : base(endpoint)
@@ -43,6 +49,11 @@ namespace TomPIT.Middleware
 		}
 
 		public MicroServiceContext(IMicroService microService, IMiddlewareContext context) : base(context)
+		{
+			MicroService = microService;
+		}
+
+		public MicroServiceContext(IMicroService microService, IMiddlewareObject owner) : base(owner?.Context)
 		{
 			MicroService = microService;
 		}

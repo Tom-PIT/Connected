@@ -1,15 +1,28 @@
-﻿using TomPIT.Middleware;
+﻿using System;
+using TomPIT.Exceptions;
+using TomPIT.Middleware;
 
 namespace TomPIT.Cdn
 {
-	public abstract class QueueMiddleware : MiddlewareComponent, IQueueMiddleware
+	public abstract class QueueMiddleware : MiddlewareOperation, IQueueMiddleware
 	{
 		public virtual QueueValidationBehavior ValidationFailed => QueueValidationBehavior.Retry;
 
 		public void Invoke()
 		{
 			Validate();
-			OnInvoke();
+
+			try
+			{
+				OnInvoke();
+
+				Invoked();
+			}
+			catch (Exception ex)
+			{
+				Rollback();
+				throw new ScriptException(this, ex);
+			}
 		}
 
 		protected abstract void OnInvoke();

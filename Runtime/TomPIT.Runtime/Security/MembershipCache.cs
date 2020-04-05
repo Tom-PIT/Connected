@@ -22,6 +22,10 @@ namespace TomPIT.Security
 				Set(GenerateRandomKey(), i, TimeSpan.Zero);
 		}
 
+		public List<IMembership> QueryForRole(Guid role)
+		{
+			return Where(f => f.Role == role);
+		}
 		public List<IMembership> Query(Guid user)
 		{
 			return Where(f => f.User == user);

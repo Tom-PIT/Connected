@@ -84,7 +84,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 		{
 			var builder = new StringBuilder();
 
-			builder.AppendLine(string.Format("ALTER TABLE [{0}].[{1}] WITH CHECK ADD CONSTRAINT [{2}] FOREIGN KEY ({3})",
+			builder.AppendLine(string.Format("ALTER TABLE [{0}].[{1}] WITH CHECK ADD CONSTRAINT [{2}] FOREIGN KEY ([{3}])",
 				detailTable.Schema, detailTable.Name, detail.Reference.Name, detail.Name));
 
 			builder.AppendLine(string.Format("REFERENCES [{0}].[{1}] ([{2}])", masterTable.Schema, masterTable.Name, master.Name));
