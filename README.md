@@ -26,4 +26,4 @@ You can fully digitalize business processes with the technologies provided in th
 You can get Tom PIT.connected from the [Tom PIT download](https://www.tompit.net/download) page.
 
 ## Nest steps
-* [Tom PIT .connected documentation](https://github.com/Tom-PIT/MicroService-Platform/wiki)
+* [Tom PIT .connected documentation](https://github.com/Tom-PIT/Connected/wiki)
