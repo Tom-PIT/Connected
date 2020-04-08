@@ -2,7 +2,7 @@
 
 namespace TomPIT.IoC
 {
-	public interface IDependencyInjectionObject : IMiddlewareObject
+	public interface IApiDependencyInjectionObject : IMiddlewareObject
 	{
 		IMiddlewareOperation Operation { get; }
 		void Validate();
@@ -10,12 +10,12 @@ namespace TomPIT.IoC
 		void Commit();
 		void Rollback();
 	}
-	public interface IDependencyInjectionMiddleware : IDependencyInjectionObject
+	public interface IApiDependencyInjectionMiddleware : IApiDependencyInjectionObject
 	{
 		void Invoke(object e);
 	}
 
-	public interface IDependencyInjectionMiddleware<T> : IDependencyInjectionObject
+	public interface IApiDependencyInjectionMiddleware<T> : IApiDependencyInjectionObject
 	{
 		T Invoke(T e);
 		T Authorize(T e);

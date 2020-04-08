@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using HtmlAgilityPack;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using TomPIT.Annotations.Search;
@@ -222,7 +223,7 @@ namespace TomPIT.Search.Indexing
 			switch (dataType)
 			{
 				case DataType.String:
-					return value.ToString();
+					return StripHtml(value.ToString());
 				case DataType.Integer:
 				case DataType.Long:
 				case DataType.Float:
@@ -236,6 +237,25 @@ namespace TomPIT.Search.Indexing
 			}
 		}
 
+		private string StripHtml(string value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+				return value;
+
+			if (!value.Contains("<"))
+				return value;
+
+			var doc = new HtmlDocument();
+
+			doc.LoadHtml(value);
+
+			if (doc == null)
+				return value;
+
+			return doc.DocumentNode.InnerText;
+
+		}
+
 		private void AddValue(Document doc, PropertyInfo property, object value)
 		{
 			if (value == null || value == DBNull.Value)
@@ -245,58 +265,20 @@ namespace TomPIT.Search.Indexing
 			var indexAtt = property.FindAttribute<SearchModeAttribute>();
 			var vectorAtt = property.FindAttribute<SearchTermVectorAttribute>();
 
-			var store = storeAtt != null && storeAtt.Enabled ? Field.Store.YES : Field.Store.NO;
-			var index = Field.Index.NO;
-			var vector = Field.TermVector.NO;
-
-			if (indexAtt != null)
-			{
-				switch (indexAtt.Mode)
-				{
-					case SearchMode.Analyzed:
-						index = Field.Index.ANALYZED;
-						break;
-					case SearchMode.NotAnalyzed:
-						index = Field.Index.NOT_ANALYZED;
-						break;
-					case SearchMode.NotAnalyzedNoNorms:
-						index = Field.Index.NOT_ANALYZED_NO_NORMS;
-						break;
-					case SearchMode.AnalyzedNoNorms:
-						index = Field.Index.ANALYZED_NO_NORMS;
-						break;
-					default:
-						throw new NotSupportedException();
-				}
-			}
-
-			if (vectorAtt != null)
-			{
-				switch (vectorAtt.Vector)
-				{
-					case SearchTermVector.Yes:
-						vector = Field.TermVector.YES;
-						break;
-					case SearchTermVector.WithPositions:
-						vector = Field.TermVector.WITH_POSITIONS;
-						break;
-					case SearchTermVector.WithOffsets:
-						vector = Field.TermVector.WITH_OFFSETS;
-						break;
-					case SearchTermVector.WithPositionsAndOffsets:
-						vector = Field.TermVector.WITH_POSITIONS_OFFSETS;
-						break;
-					default:
-						break;
-				}
-			}
-
-			var field = new Field(property.Name.ToLowerInvariant(), ConvertValue(Types.ToDataType(property.PropertyType), value), store, index, vector);
-
+			var store = storeAtt == null ? Field.Store.YES : storeAtt.Enabled ? Field.Store.YES : Field.Store.NO;
+			var index = indexAtt == null ? Field.Index.ANALYZED : SearchUtils.ToFieldIndex(indexAtt.Mode);
+			var vector = vectorAtt == null ? Field.TermVector.NO : SearchUtils.ToTermVector(vectorAtt.Vector);
 			var boost = property.FindAttribute<SearchBoostAttribute>();
 
-			if (boost != null)
-				field.Boost = boost.Boost;
+			AddValue(doc, property.Name, ConvertValue(Types.ToDataType(property.PropertyType), value), store, index, vector, boost == null ? 0f : boost.Boost);
+		}
+
+		private void AddValue(Document doc, string fieldName, object value, Field.Store store, Field.Index index, Field.TermVector vector, float boost)
+		{
+			var field = new Field(fieldName.ToLowerInvariant(), ConvertValue(Types.ToDataType(value.GetType()), value), store, index, vector);
+
+			if (boost != 0f)
+				field.Boost = boost;
 
 			doc.Add(field);
 		}
@@ -321,8 +303,21 @@ namespace TomPIT.Search.Indexing
 			return false;
 		}
 
+		private void ProcessField(Document doc, CatalogHost catalog, ISearchField field)
+		{
+			if (string.IsNullOrWhiteSpace(field.Value))
+				return;
+
+			if (doc.GetField(field.Name) != null)
+				return;
+
+			AddValue(doc, field.Name, field.Value, Field.Store.YES, SearchUtils.ToFieldIndex(field.Mode), SearchUtils.ToTermVector(field.TermVector), field.Boost);
+		}
 		private void ProcessField(Document doc, CatalogHost catalog, object instance, PropertyInfo property)
 		{
+			if (!property.PropertyType.IsTypePrimitive())
+				return;
+
 			var value = property.GetValue(instance);
 
 			if (string.IsNullOrWhiteSpace(Types.Convert<string>(value)))
@@ -350,6 +345,12 @@ namespace TomPIT.Search.Indexing
 					{
 						if (property.CanRead && property.GetMethod.IsPublic)
 							ProcessField(doc, catalog, i, property);
+					}
+
+					if (i is ISearchEntity e)
+					{
+						foreach (var field in e.Properties)
+							ProcessField(doc, catalog, field);
 					}
 
 					EnsureLocale(doc);
@@ -388,6 +389,12 @@ namespace TomPIT.Search.Indexing
 					{
 						if (property.CanRead && property.GetMethod.IsPublic)
 							ProcessField(doc, catalog, i, property);
+					}
+
+					if (i is ISearchEntity e)
+					{
+						foreach (var field in e.Properties)
+							ProcessField(doc, catalog, field);
 					}
 
 					var locale = 0;

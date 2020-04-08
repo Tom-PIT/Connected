@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.IoC;
@@ -8,9 +9,10 @@ namespace TomPIT.Middleware
 {
 	public abstract class MiddlewareApiOperation : MiddlewareOperation
 	{
-		private List<IDependencyInjectionObject> _dependencies = null;
+		private List<IApiDependencyInjectionObject> _dependencies = null;
 
-		protected internal List<IDependencyInjectionObject> DependencyInjections
+		[SkipValidation]
+		protected internal List<IApiDependencyInjectionObject> DependencyInjections
 		{
 			get
 			{
@@ -28,10 +30,10 @@ namespace TomPIT.Middleware
 					if (_dependencies != null)
 					{
 						foreach (var dependency in _dependencies)
-							ReflectionExtensions.SetPropertyValue(dependency, nameof(IDependencyInjectionObject.Operation), this);
+							ReflectionExtensions.SetPropertyValue(dependency, nameof(IApiDependencyInjectionObject.Operation), this);
 					}
 					else
-						_dependencies = new List<IDependencyInjectionObject>();
+						_dependencies = new List<IApiDependencyInjectionObject>();
 				}
 
 				return _dependencies;

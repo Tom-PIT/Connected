@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using TomPIT.BigData;
+﻿using TomPIT.BigData;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
 
@@ -11,16 +10,11 @@ namespace TomPIT.Middleware.Services
 		{
 		}
 
-		public void Add<T>(string partition, T item)
-		{
-			Add(partition, new List<T> { item });
-		}
-
-		public void Add<T>(string partition, List<T> items)
+		public void Update<T>(string partition, T item)
 		{
 			var descriptor = ComponentDescriptor.BigDataPartition(Context, partition);
 
-			Context.Tenant.GetService<IBigDataService>().Add(descriptor.Configuration as IPartitionConfiguration, items);
+			Context.Tenant.GetService<IBigDataService>().Update(descriptor.Configuration as IPartitionConfiguration, item);
 		}
 	}
 }

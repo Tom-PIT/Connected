@@ -15,6 +15,9 @@ namespace TomPIT.IoT
 			OnInvoke();
 		}
 
-		protected abstract void OnInvoke();
+		protected virtual void OnInvoke()
+		{
+
+		}
 	}
 }

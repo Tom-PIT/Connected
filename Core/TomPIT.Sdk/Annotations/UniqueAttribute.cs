@@ -12,6 +12,9 @@ namespace TomPIT.Annotations
 
 		protected override ValidationResult IsValid(object value, ValidationContext validationContext)
 		{
+			if (value == null)
+				return ValidationResult.Success;
+
 			var provider = validationContext.GetService(typeof(IUniqueValueProvider)) as IUniqueValueProvider;
 			var context = validationContext.GetService(typeof(IMiddlewareContext)) as IMiddlewareContext;
 

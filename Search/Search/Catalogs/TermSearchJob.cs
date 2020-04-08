@@ -21,8 +21,6 @@ namespace TomPIT.Search.Catalogs
 		{
 			var sb = new StringBuilder();
 
-			//sb.AppendFormat("({0}:{1}", SearchUtils.FieldTitle, CommandText);
-			//sb.AppendFormat(" OR {0}:{1}", SearchUtils.FieldTags, CommandText);
 			sb.AppendFormat("(");
 
 			var properties = Catalog.CatalogProperties();
@@ -47,6 +45,21 @@ namespace TomPIT.Search.Catalogs
 						sb.Append(" OR ");
 
 					sb.Append($" {property.Name.ToLowerInvariant()}:{CommandText}");
+
+					first = false;
+				}
+			}
+
+			var customProperties = Catalog.CatalogCustomProperties();
+
+			if (customProperties != null)
+			{
+				foreach (var property in customProperties)
+				{
+					if (!first)
+						sb.Append(" OR ");
+
+					sb.Append($" {property.ToLowerInvariant()}:{CommandText}");
 
 					first = false;
 				}
@@ -79,22 +92,19 @@ namespace TomPIT.Search.Catalogs
 				}
 			}
 
+			var customProperties = Catalog.CatalogCustomProperties();
+
+			if (customProperties != null)
+			{
+				foreach (var property in customProperties)
+					fields.Add(property.ToLowerInvariant());
+			}
+
 			return new MultiFieldQueryParser(Lucene.Net.Util.Version.LUCENE_30, fields.ToArray(), new ReadAnalyzer());
 		}
 
 		protected override string PrepareCommandText(string commandText)
 		{
-			//var col = regex.Matches(commandText);
-			//var r = string.Empty;
-
-			//if (col != null && col.Count > 0)
-			//{
-			//	foreach (Match item in col)
-			//		r = string.Concat(commandText, " ", item.Value);
-
-			//	return r;
-			//}
-			//else
 			return commandText;
 		}
 

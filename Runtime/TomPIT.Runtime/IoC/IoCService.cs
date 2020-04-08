@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoC;
@@ -29,8 +30,10 @@ namespace TomPIT.IoC
 
 		protected override void OnInitialized()
 		{
-			foreach (var i in All())
+			Parallel.ForEach(All(), (i) =>
+			{
 				OnAdded(i.MicroService(), i.Component);
+			});
 		}
 		protected override void OnAdded(Guid microService, Guid component)
 		{
@@ -51,24 +54,28 @@ namespace TomPIT.IoC
 
 				var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
-				lock (_endpoints)
+				var descriptor = new IoCEndpointDescriptor
 				{
-					var descriptor = new IoCEndpointDescriptor
-					{
-						Component = configuration.Component,
-						Element = endpoint.Id,
-						Type = type
-					};
+					Component = configuration.Component,
+					Element = endpoint.Id,
+					Type = type
+				};
 
-					if (Endpoints.ContainsKey(endpoint.Container))
-						Endpoints[endpoint.Container].Add(descriptor);
-					else
+				if (Endpoints.ContainsKey(endpoint.Container))
+				{
+					var list = Endpoints[endpoint.Container];
+
+					lock (list)
 					{
-						Endpoints.TryAdd(endpoint.Container, new List<IoCEndpointDescriptor>
+						list.Add(descriptor);
+					}
+				}
+				else
+				{
+					Endpoints.TryAdd(endpoint.Container, new List<IoCEndpointDescriptor>
 					{
 						descriptor
 					});
-					}
 				}
 			}
 		}
@@ -90,15 +97,9 @@ namespace TomPIT.IoC
 			}
 		}
 
-		public void Invoke(IIoCOperation operation)
+		public void Invoke(IMiddlewareContext context, IIoCOperation operation, object e = null)
 		{
-			Invoke(operation, null);
-		}
-
-		public void Invoke(IIoCOperation operation, object e)
-		{
-			var context = new MicroServiceContext(operation.Configuration().MicroService(), Tenant.Url);
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCOperationMiddleware>(context, operation, Serializer.Serialize(e), operation.Name);
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCOperationMiddleware>(new MicroServiceContext(operation.Configuration().MicroService(), context), operation, Serializer.Serialize(e), operation.Name);
 
 			if (instance is IIoCOperationContext iocContext)
 				iocContext.Operation = operation;
@@ -106,15 +107,9 @@ namespace TomPIT.IoC
 			instance.Invoke();
 		}
 
-		public R Invoke<R>(IIoCOperation operation)
+		public R Invoke<R>(IMiddlewareContext context, IIoCOperation operation, object e = null)
 		{
-			return Invoke<R>(operation, null);
-		}
-
-		public R Invoke<R>(IIoCOperation operation, object e)
-		{
-			var context = new MicroServiceContext(operation.Configuration().MicroService(), Tenant.Url);
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<object>(context, operation, Serializer.Serialize(e), operation.Name);
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<object>(new MicroServiceContext(operation.Configuration().MicroService(), context), operation, Serializer.Serialize(e), operation.Name);
 
 			if (instance is IIoCOperationContext iocContext)
 				iocContext.Operation = operation;
@@ -126,7 +121,7 @@ namespace TomPIT.IoC
 			return Marshall.Convert<R>(r);
 		}
 
-		public List<IIoCEndpointMiddleware> CreateEndpoints(IIoCOperation operation, object e)
+		public List<IIoCEndpointMiddleware> CreateEndpoints(IMiddlewareContext context, IIoCOperation operation, object e)
 		{
 			Initialize();
 
@@ -136,7 +131,7 @@ namespace TomPIT.IoC
 			if (endpoints == null)
 				return result;
 
-			var ctx = new MicroServiceContext(operation.Configuration().MicroService(), Tenant.Url);
+			var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
 
 			foreach (var endpoint in endpoints)
 			{
@@ -154,7 +149,7 @@ namespace TomPIT.IoC
 			return result;
 		}
 
-		public bool HasEndpoints(IIoCOperation operation, object e)
+		public bool HasEndpoints(IMiddlewareContext context, IIoCOperation operation, object e)
 		{
 			Initialize();
 
@@ -163,7 +158,7 @@ namespace TomPIT.IoC
 			if (endpoints == null)
 				return false;
 
-			var ctx = new MicroServiceContext(operation.Configuration().MicroService(), Tenant.Url);
+			var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
 
 			foreach (var endpoint in endpoints)
 			{

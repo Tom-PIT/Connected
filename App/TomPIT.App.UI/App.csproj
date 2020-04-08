@@ -6,14 +6,14 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <AssemblyName>TomPIT.Experience.App</AssemblyName>
     <RootNamespace>TomPIT.App</RootNamespace>
     <CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
-    <AssemblyVersion>2.1.302.1</AssemblyVersion>
-    <FileVersion>2.1.302.1</FileVersion>
-    <Version>2.1.302.1</Version>
+    <AssemblyVersion>2.1.403.3</AssemblyVersion>
+    <FileVersion>2.1.403.3</FileVersion>
+    <Version>2.1.403.3</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="UI\RouteParameter.cs" />
@@ -27,7 +27,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="compilerconfig.json" />
-    <None Include="UI\RouteParameter.cs" />
     <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\event.js" />
     <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\supplemental.js" />
     <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\unresolved.js" />
@@ -37,16 +36,16 @@
     <None Include="wwwroot\Assets\Libraries\DevExtreme\Latest\fonts\Roboto-700.woff2" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.0.0" />
-    <PackageReference Include="BuildBundlerMinifier" Version="3.0.415" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.1.2" />
+    <PackageReference Include="BuildBundlerMinifier" Version="3.2.435" />
     <PackageReference Include="dotless.Core" Version="1.6.7" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.0.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.3.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="System.CodeDom" Version="4.6.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.6.0" />
-    <PackageReference Include="System.Drawing.Common" Version="4.6.0" />
-    <PackageReference Include="System.ServiceModel.Primitives" Version="4.6.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.1.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.4.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="System.CodeDom" Version="4.7.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
+    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+    <PackageReference Include="System.ServiceModel.Primitives" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\segments\" />

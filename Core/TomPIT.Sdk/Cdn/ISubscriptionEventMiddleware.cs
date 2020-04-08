@@ -9,5 +9,6 @@ namespace TomPIT.Cdn
 		List<IRecipient> Recipients { get; set; }
 
 		void Invoke();
+		void Commit();
 	}
 }

@@ -67,7 +67,7 @@ namespace TomPIT.Middleware.Interop
 					return result;
 
 				var ext = ResolveExtenderType();
-				var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this));
+				var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this), Context);
 				var extenderInstance = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, ext);
 				var inputType = GetExtendingType(extenderInstance);
 				var list = typeof(List<>);

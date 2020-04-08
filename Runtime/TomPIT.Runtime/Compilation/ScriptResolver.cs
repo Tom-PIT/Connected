@@ -53,6 +53,9 @@ namespace TomPIT.Compilation
 		}
 		public override string NormalizePath(string path, string baseFilePath)
 		{
+			if (path.Contains(":"))
+				return path.Split(':')[1];
+
 			return path;
 		}
 
@@ -73,7 +76,9 @@ namespace TomPIT.Compilation
 
 		public IText LoadScript(string resolvedPath)
 		{
-			var tokens = resolvedPath.Split("/");
+			var root = resolvedPath.Split(':');
+			var tokens = root.Length == 1 ? root[0].Split("/") : root[1].Split("/");
+			var calling = root.Length > 1 ? root[0] : null;
 			/*
 			 * possible references:
 			 * --------------------
@@ -82,14 +87,14 @@ namespace TomPIT.Compilation
 			 */
 
 			if (tokens.Length == 2)
-				return LoadScript(tokens[0], tokens[1]);
+				return LoadScript(calling, tokens[0], tokens[1]);
 			else if (tokens.Length == 3)
-				return Load(tokens[0], tokens[1], tokens[2]);
+				return Load(calling, tokens[0], tokens[1], tokens[2]);
 			else
 				return null;
 		}
 
-		private IText Load(string microService, string componentName, string element)
+		private IText Load(string callingMicroService, string microService, string componentName, string element)
 		{
 			IMicroService ms = null;
 
@@ -99,13 +104,6 @@ namespace TomPIT.Compilation
 
 				if (ms == null)
 					throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})");
-
-				if (ms.Token != MicroService)
-				{
-					var originMicroService = Tenant.GetService<IMicroServiceService>().Select(MicroService);
-
-					originMicroService.ValidateMicroServiceReference(ms.Name);
-				}
 			}
 			else
 				ms = Tenant.GetService<IMicroServiceService>().Select(MicroService);
@@ -129,19 +127,12 @@ namespace TomPIT.Compilation
 			return config.Operations.FirstOrDefault(f => string.Compare(f.Name, TrimExtension(operation), true) == 0);
 		}
 
-		private IText LoadScript(string microService, string script)
+		private IText LoadScript(string callingMicroService, string microService, string script)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
 			if (ms == null)
 				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})");
-
-			if (ms.Token != MicroService)
-			{
-				var originMicroService = Tenant.GetService<IMicroServiceService>().Select(MicroService);
-
-				originMicroService.ValidateMicroServiceReference(ms.Name);
-			}
 
 			var scriptName = TrimExtension(script);
 			var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(ms.Token, ComponentCategories.NameSpacePublicScript, scriptName);
@@ -176,9 +167,12 @@ namespace TomPIT.Compilation
 			var ms = Tenant.GetService<IMicroServiceService>().Select(MicroService);
 			IMicroService baseMs = null;
 
-			if (baseFilePath != null)
+			if (!string.IsNullOrWhiteSpace(baseFilePath))
 			{
-				var baseMsToken = baseFilePath.Split('/')[0];
+				var root = baseFilePath.Split(':');
+				var baseMsToken = root.Length == 1
+					? root[0].Split('/')[0]
+					: root[1].Split('/')[0];
 
 				if (baseMsToken.EndsWith(".csx"))
 					baseMs = ms;
@@ -198,7 +192,7 @@ namespace TomPIT.Compilation
 			 * fully qualified
 			 */
 			if (tokens.Length == 3)
-				return $"{tokens[0]}/{tokens[1]}/{tokens[2]}";
+				return ValidatePath(ms, baseMs, $"{tokens[0]}/{tokens[1]}/{tokens[2]}");
 			else if (tokens.Length == 2)
 			{
 				if (string.IsNullOrWhiteSpace(baseFilePath))
@@ -210,9 +204,9 @@ namespace TomPIT.Compilation
 							string.Compare(component.Category, ComponentCategories.Api, true) == 0
 							|| string.Compare(component.Category, ComponentCategories.IoCContainer, true) == 0
 						))
-						return $"{ms.Name}/{tokens[0]}/{tokens[1]}"; //api with ms
+						return ValidatePath(ms, baseMs, $"{ms.Name}/{tokens[0]}/{tokens[1]}"); //api with ms
 					else
-						return $"{tokens[0]}/{tokens[1]}";//script
+						return ValidatePath(ms, baseMs, $"{tokens[0]}/{tokens[1]}");//script
 				}
 				else
 				{
@@ -223,9 +217,9 @@ namespace TomPIT.Compilation
 							string.Compare(component.Category, ComponentCategories.Api, true) == 0
 							|| string.Compare(component.Category, ComponentCategories.IoCContainer, true) == 0
 						))
-						return $"{baseMs.Name}/{tokens[0]}/{tokens[1]}"; //api with basems
+						return ValidatePath(ms, baseMs, $"{baseMs.Name}/{tokens[0]}/{tokens[1]}"); //api with basems
 					else
-						return $"{tokens[0]}/{tokens[1]}";//script
+						return ValidatePath(ms, baseMs, $"{tokens[0]}/{tokens[1]}");//script
 				}
 			}
 			else
@@ -234,10 +228,23 @@ namespace TomPIT.Compilation
 				 * script
 				 */
 				if (string.IsNullOrWhiteSpace(baseFilePath))
-					return $"{ms.Name}/{tokens[0]}";
+					return ValidatePath(ms, baseMs, $"{ms.Name}/{tokens[0]}");
 				else
-					return $"{baseMs.Name}/{tokens[0]}";
+					return ValidatePath(ms, baseMs, $"{baseMs.Name}/{tokens[0]}");
 			}
+		}
+
+		private string ValidatePath(IMicroService origin, IMicroService baseMicroService, string resolvedPath)
+		{
+			var target = baseMicroService == null
+				? origin
+				: baseMicroService;
+
+			var ms = resolvedPath.Split('/')[0];
+
+			target.ValidateMicroServiceReference(ms);
+
+			return resolvedPath;
 		}
 
 		private string TrimExtension(string fileName)

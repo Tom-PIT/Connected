@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 using TomPIT.Compilation;
@@ -41,8 +42,10 @@ namespace TomPIT.Navigation
 
 		protected override void OnInitialized()
 		{
-			foreach (var i in All())
+			Parallel.ForEach(All(), (i) =>
+			{
 				OnAdded(i.MicroService(), i.Component);
+			});
 		}
 		protected override string[] Categories => new string[] { ComponentCategories.SiteMap };
 		public ISiteMapContainer QuerySiteMap(List<string> keys)
@@ -178,41 +181,43 @@ namespace TomPIT.Navigation
 			if (containers == null)
 				return;
 
-			lock (_handlers.Value)
+			foreach (var container in containers)
 			{
-				foreach (var container in containers)
+				if (string.IsNullOrWhiteSpace(container.Key))
 				{
-					if (string.IsNullOrWhiteSpace(container.Key))
-					{
-						MiddlewareDescriptor.Current.Tenant.LogWarning(nameof(NavigationService), $"{SR.WrnContainerKeyNull} ({container.Text})", LogCategories.Navigation);
+					MiddlewareDescriptor.Current.Tenant.LogWarning(nameof(NavigationService), $"{SR.WrnContainerKeyNull} ({container.Text})", LogCategories.Navigation);
+					continue;
+				}
+
+				if (string.IsNullOrWhiteSpace(container.Key))
+					continue;
+
+				if (Handlers.ContainsKey(container.Key))
+				{
+					if (Handlers[container.Key].FirstOrDefault(f => f.Component == configuration.Component) != null)
 						continue;
-					}
 
-					if (string.IsNullOrWhiteSpace(container.Key))
-						continue;
+					var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
 
-					if (Handlers.ContainsKey(container.Key))
+					FillDescriptor(descriptor, container);
+
+					var list = Handlers[container.Key];
+
+					lock (list)
 					{
-						if (Handlers[container.Key].FirstOrDefault(f => f.Component == configuration.Component) != null)
-							continue;
-
-						var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
-
-						FillDescriptor(descriptor, container);
-
-						Handlers[container.Key].Add(descriptor);
+						list.Add(descriptor);
 					}
-					else
-					{
-						var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
+				}
+				else
+				{
+					var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
 
-						FillDescriptor(descriptor, container);
+					FillDescriptor(descriptor, container);
 
-						Handlers.TryAdd(container.Key, new List<NavigationHandlerDescriptor>
+					Handlers.TryAdd(container.Key, new List<NavigationHandlerDescriptor>
 						{
 							descriptor
 						});
-					}
 				}
 			}
 		}
@@ -221,10 +226,13 @@ namespace TomPIT.Navigation
 		{
 			foreach (var key in Handlers)
 			{
-				var handlers = key.Value.Where(f => f.Component == component);
+				lock (key.Value)
+				{
+					var handlers = key.Value.Where(f => f.Component == component);
 
-				for (var i = handlers.Count() - 1; i >= 0; i--)
-					key.Value.Remove(handlers.ElementAt(i));
+					for (var i = handlers.Count() - 1; i >= 0; i--)
+						key.Value.Remove(handlers.ElementAt(i));
+				}
 			}
 
 			if (removeOny)
@@ -405,32 +413,16 @@ namespace TomPIT.Navigation
 			{
 				foreach (var descriptor in handler.Value)
 				{
-					foreach (var template in descriptor.Templates)
-					{
-						var parsedTemplate = TemplateParser.Parse(template);
-						var matcher = new TemplateMatcher(parsedTemplate, GetDefaults(parsedTemplate));
+					var template = descriptor.Match(url, parameters);
 
-						if (matcher.TryMatch(url, parameters))
-							return SelectRouteByTemplate(descriptor, template);
-					}
+					if (template != null)
+						return SelectRouteByTemplate(descriptor, template);
 				}
 			}
 
 			return null;
 		}
 
-		private static RouteValueDictionary GetDefaults(RouteTemplate parsedTemplate)
-		{
-			var result = new RouteValueDictionary();
-
-			foreach (var parameter in parsedTemplate.Parameters)
-			{
-				if (parameter.DefaultValue != null)
-					result.Add(parameter.Name, parameter.DefaultValue);
-			}
-
-			return result;
-		}
 		public ISiteMapRoute SelectRoute(string routeKey)
 		{
 			Initialize();
@@ -450,7 +442,6 @@ namespace TomPIT.Navigation
 		private ISiteMapRoute SelectRouteByTemplate(NavigationHandlerDescriptor descriptor, string template)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
-
 			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), descriptor.Handler);
 
 			if (handler == null)

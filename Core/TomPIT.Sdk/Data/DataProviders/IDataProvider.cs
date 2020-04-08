@@ -49,7 +49,7 @@ namespace TomPIT.Data.DataProviders
 		/// <param name="connectionString">The actual connection string of the data source 
 		/// to connect to.</param>
 		/// <returns></returns>
-		IDataConnection OpenConnection(string connectionString);
+		IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior);
 
 		//IDeploymentDatabase CreateDatabasePackage(string connectionString);
 		//void DeployPackage(string connectionString, IDeploymentDatabase package);

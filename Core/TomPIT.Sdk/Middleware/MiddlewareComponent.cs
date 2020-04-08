@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using TomPIT.Annotations;
 using TomPIT.Data;
 
 namespace TomPIT.Middleware
@@ -18,12 +18,6 @@ namespace TomPIT.Middleware
 		}
 
 		protected virtual void OnValidate(List<ValidationResult> results)
-		{
-
-		}
-
-		[Obsolete("Use OnValidating")]
-		protected virtual void OnValidating(List<ValidationResult> results)
 		{
 
 		}
@@ -53,6 +47,7 @@ namespace TomPIT.Middleware
 			Validator.Validate(instance, false);
 		}
 
+		[SkipValidation]
 		private MiddlewareValidator Validator
 		{
 			get
@@ -72,7 +67,6 @@ namespace TomPIT.Middleware
 		private void OnValidating(object sender, List<ValidationResult> results)
 		{
 			OnValidate(results);
-			OnValidating(results);
 		}
 	}
 }

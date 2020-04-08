@@ -1,11 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using TomPIT.Annotations.Search;
 using TomPIT.Data;
 
 namespace TomPIT.Search
 {
-	public class SearchEntity : DataEntity
+	public class SearchEntity : DataEntity, ISearchEntity
 	{
+		private List<ISearchField> _properties = null;
+
+		[JsonConverter(typeof(SearchPropertiesConverter))]
+		public List<ISearchField> Properties
+		{
+			get
+			{
+				if (_properties == null)
+					_properties = new List<ISearchField>();
+
+				return _properties;
+			}
+		}
+
 		[SearchStore(true)]
 		[SearchMode(SearchMode.NotAnalyzed)]
 		[SearchTermVector(SearchTermVector.No)]

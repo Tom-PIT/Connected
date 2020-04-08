@@ -26,7 +26,7 @@ namespace TomPIT.BigData.Controllers
 				return;
 			}
 
-			Configuration = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(microService.Token, "BigDataPartition", partition.ToString()) as IPartitionConfiguration;
+			Configuration = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(microService.Token, ComponentCategories.BigDataPartition, partition.ToString()) as IPartitionConfiguration;
 
 			if (Configuration == null)
 			{

@@ -271,6 +271,7 @@ namespace TomPIT.Compilation
 		private Microsoft.CodeAnalysis.Compilation Compile(IScriptDescriptor script, CompilerScript compiler, bool cache)
 		{
 			Microsoft.CodeAnalysis.Compilation result = null;
+
 			var errors = compiler.Script == null ? ImmutableArray<Microsoft.CodeAnalysis.Diagnostic>.Empty : compiler.Script.Compile();
 			var diagnostics = new List<IDiagnostic>();
 
@@ -294,14 +295,13 @@ namespace TomPIT.Compilation
 				diagnostics.Add(diagnostic);
 			}
 
+
 			((ScriptDescriptor)script).Errors = diagnostics;
 
 			if (compiler.Script != null && script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() == 0)
 			{
 				((ScriptDescriptor)script).Script = compiler.Script.CreateDelegate();
-
 				result = compiler.Script.GetCompilation();
-
 				((ScriptDescriptor)script).Assembly = result.AssemblyName;
 			}
 
@@ -436,9 +436,7 @@ namespace TomPIT.Compilation
 			if (script != null && script.Assembly == null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
 				throw new CompilerException(Tenant, script, sourceCode);
 
-			var assembly = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
 			var target = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), script.Assembly, true) == 0);
-
 			var result = target?.GetTypes().FirstOrDefault(f => string.Compare(f.Name, typeName, true) == 0);
 
 			if (result == null)
@@ -534,7 +532,7 @@ namespace TomPIT.Compilation
 		}
 		public T CreateInstance<T>(IMicroServiceContext context, Type scriptType, string arguments) where T : class
 		{
-			return CreateInstance<T>(null, scriptType, context.MicroService, arguments);
+			return CreateInstance<T>(context, scriptType, context.MicroService, arguments);
 		}
 
 		private T CreateInstance<T>(IMicroServiceContext context, IText sourceCode, IMicroService microService, string arguments, string typeName) where T : class

@@ -1,29 +1,61 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Linq;
 
 namespace TomPIT.Middleware
 {
 	internal class MiddlewareTransaction : MiddlewareObject, IMiddlewareTransaction
 	{
-		private Stack<IMiddlewareTransactionClient> _operations = null;
+		#region Members
 
-		public Guid Id { get; set; }
-		public MiddlewareTransactionState State { get; private set; } = MiddlewareTransactionState.Active;
+		private ConcurrentStack<IMiddlewareTransactionClient> _operations = null;
+
+		#endregion
+
+		#region Constructors
 
 		public MiddlewareTransaction(IMiddlewareContext context) : base(context)
 		{
 		}
 
-		private Stack<IMiddlewareTransactionClient> Operations
+		#endregion
+
+		#region Properties
+
+		public Guid Id { get; set; }
+
+		public MiddlewareTransactionState State { get; private set; } = MiddlewareTransactionState.Active;
+
+		private ConcurrentStack<IMiddlewareTransactionClient> Operations
 		{
 			get
 			{
 				if (_operations == null)
-					_operations = new Stack<IMiddlewareTransactionClient>();
+					_operations = new ConcurrentStack<IMiddlewareTransactionClient>();
 
 				return _operations;
 			}
 		}
+
+		#endregion
+
+		#region Methods
+
+		public void Notify(IMiddlewareTransactionClient operation)
+		{
+			if (operation == null || Operations.Contains(operation))
+			{
+				return;
+			}
+
+			if (State != MiddlewareTransactionState.Active)
+			{
+				return;
+			}
+
+			Operations.Push(operation);
+		}
+
 
 		public void Commit()
 		{
@@ -31,43 +63,24 @@ namespace TomPIT.Middleware
 
 			var mc = Context as MiddlewareContext;
 
+			// Commit all DB transactions
 			foreach (var connection in mc.Connections.DataConnections)
 			{
-				/*try
-				{
-					connection.Commit();
-				}
-				catch (Exception ex)
-				{
-					Context.Services.Diagnostic.Error("Api", nameof(MiddlewareTransaction), ex.Message);
-				}*/
 				connection.Commit();
 			}
 
+			// Close all DB connections
 			mc.CloseConnections();
 
+			// Commit Transactions
 			while (Operations.Count > 0)
 			{
-				/*try
-				{
-					Operations.Pop().CommitTransaction();
-				}
-				catch (Exception ex)
-				{
-					Context.Services.Diagnostic.Error("Middleware", nameof(MiddlewareTransaction), ex.Message);
-				}*/
-				Operations.Pop().CommitTransaction();
+				Operations.TryPop(out IMiddlewareTransactionClient op);
+				op?.CommitTransaction();
 			}
 
+			// The end
 			State = MiddlewareTransactionState.Completed;
-		}
-
-		public void Notify(IMiddlewareTransactionClient operation)
-		{
-			if (Operations.Contains(operation))
-				return;
-
-			Operations.Push(operation);
 		}
 
 		public void Rollback()
@@ -76,35 +89,26 @@ namespace TomPIT.Middleware
 
 			var mc = Context as MiddlewareContext;
 
+			// Rollback all DB transactions
 			foreach (var connection in mc.Connections.DataConnections)
 			{
-				/*try
-				{
-					connection.Rollback();
-				}
-				catch (Exception ex)
-				{
-					Context.Services.Diagnostic.Error("Api", nameof(MiddlewareTransaction), ex.Message);
-				}*/
 				connection.Rollback();
 			}
 
+			// Close all DB connections
 			mc.CloseConnections();
 
+			// Commit Transactions
 			while (Operations.Count > 0)
 			{
-				/*try
-				{
-					Operations.Pop().RollbackTransaction();
-				}
-				catch (Exception ex)
-				{
-					Context.Services.Diagnostic.Error("Api", nameof(MiddlewareTransaction), ex.Message);
-				}*/
-				Operations.Pop().RollbackTransaction();
+				Operations.TryPop(out IMiddlewareTransactionClient op);
+				op?.RollbackTransaction();
 			}
 
+			// The end
 			State = MiddlewareTransactionState.Completed;
 		}
+
+		#endregion
 	}
 }

@@ -1,4 +1,5 @@
-﻿using TomPIT.Middleware;
+﻿using System.Collections.Generic;
+using TomPIT.Middleware;
 
 namespace TomPIT.Search
 {
@@ -12,5 +13,7 @@ namespace TomPIT.Search
 	{
 		SearchVerb Verb { get; set; }
 		SearchValidationBehavior ValidationFailed { get; }
+
+		List<string> Properties { get; }
 	}
 }

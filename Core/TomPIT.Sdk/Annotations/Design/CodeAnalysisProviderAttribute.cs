@@ -21,7 +21,7 @@ namespace TomPIT.Annotations.Design
 		public const string IoTHubFieldProvider = "TomPIT.Design.CodeAnalysis.Providers.IoTHubFieldProvider, " + DesignAssembly;
 		//public const string QueueWorkerProvider = "TomPIT.Design.CodeAnalysis.Providers.QueueWorkerProvider, " + DesignAssembly;
 		public const string PartialProvider = "TomPIT.Design.CodeAnalysis.Providers.PartialProvider, " + DesignAssembly;
-		public const string BigDataPartitionProvider = "TomPIT.Design.CodeAnalysis.Providers.BigDataPartitionProvider, " + DesignAssembly;
+
 
 		public CodeAnalysisProviderAttribute() { }
 

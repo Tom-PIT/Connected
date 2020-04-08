@@ -25,15 +25,6 @@ namespace TomPIT.Search.Catalogs
 		protected override MultiFieldQueryParser CreateParser()
 		{
 			var fields = new List<string>();
-			//{
-			//	SearchUtils.FieldTitle,
-			//	SearchUtils.FieldTags,
-			//	SearchUtils.FieldDate,
-			//	SearchUtils.FieldKey,
-			//	SearchUtils.FieldAuthor,
-			//	SearchUtils.FieldText
-			//};
-
 			var properties = Catalog.CatalogProperties();
 
 			if (properties != null)
@@ -46,6 +37,14 @@ namespace TomPIT.Search.Catalogs
 					if (property.CanRead && property.GetMethod.IsPublic)
 						fields.Add(property.Name.ToLowerInvariant());
 				}
+			}
+
+			var customProperties = Catalog.CatalogCustomProperties();
+
+			if (customProperties != null)
+			{
+				foreach (var property in customProperties)
+					fields.Add(property.ToLowerInvariant());
 			}
 
 			return new MultiFieldQueryParser(Lucene.Net.Util.Version.LUCENE_30, fields.ToArray(), new ReadAnalyzer());

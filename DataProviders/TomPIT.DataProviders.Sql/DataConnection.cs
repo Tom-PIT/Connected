@@ -14,10 +14,11 @@ namespace TomPIT.DataProviders.Sql
 		private ReliableSqlConnection _connection = null;
 		private Dictionary<string, SqlCommand> _commands = null;
 
-		public DataConnection(IDataProvider provider, string connectionString)
+		public DataConnection(IDataProvider provider, string connectionString, ConnectionBehavior behavior)
 		{
 			Provider = provider;
 			ConnectionString = connectionString;
+			Behavior = behavior;
 		}
 
 		private IDataProvider Provider { get; }
@@ -66,9 +67,6 @@ namespace TomPIT.DataProviders.Sql
 			if (Connection.State == ConnectionState.Closed)
 				Connection.Open();
 
-			if (Connection.State == ConnectionState.Closed)
-				Connection.Open();
-
 			if (Transaction?.Connection != null)
 			{
 				return;
@@ -108,5 +106,7 @@ namespace TomPIT.DataProviders.Sql
 		}
 
 		public SqlTransaction Transaction { get; private set; }
+
+		public ConnectionBehavior Behavior { get; private set; }
 	}
 }

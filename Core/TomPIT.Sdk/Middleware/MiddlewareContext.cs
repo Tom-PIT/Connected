@@ -10,6 +10,8 @@ namespace TomPIT.Middleware
 {
 	public class MiddlewareContext : IMiddlewareContext
 	{
+		#region Members
+
 		private IMiddlewareServices _services = null;
 		private ITenant _tenant = null;
 		private IMiddlewareInterop _interop = null;
@@ -17,9 +19,17 @@ namespace TomPIT.Middleware
 		private MiddlewareConnectionPool _connections = null;
 		private IMiddlewareTransaction _transaction = null;
 
+		#endregion
+
+		#region Constructors
+
 		public MiddlewareContext()
 		{
 			Initialize(null);
+		}
+
+		public MiddlewareContext(IMiddlewareObject owner) : this(owner?.Context)
+		{
 		}
 
 		public MiddlewareContext(IMiddlewareContext sender)
@@ -29,7 +39,11 @@ namespace TomPIT.Middleware
 			Initialize(endpoint);
 
 			if (sender is MiddlewareContext mw)
+			{
 				((MiddlewareDiagnosticService)Services.Diagnostic).MetricParent = ((MiddlewareDiagnosticService)mw.Services.Diagnostic).MetricParent;
+
+				Owner = mw;
+			}
 		}
 
 		public MiddlewareContext(string endpoint)
@@ -37,13 +51,13 @@ namespace TomPIT.Middleware
 			Initialize(endpoint);
 		}
 
-		protected void Initialize(string endpoint)
-		{
-			Endpoint = endpoint;
+		#endregion
 
-			if (string.IsNullOrWhiteSpace(endpoint))
-				Endpoint = Tenant?.Url;
-		}
+		#region Properties
+
+#if DEBUG
+		public Guid Id { get; private set; }
+#endif
 
 		[JsonIgnore]
 		public virtual IMiddlewareServices Services
@@ -54,37 +68,6 @@ namespace TomPIT.Middleware
 					_services = new MiddlewareServices(this);
 
 				return _services;
-			}
-		}
-		[JsonIgnore]
-		public string Endpoint { get; protected set; }
-		internal IMiddlewareTransaction Transaction
-		{
-			get
-			{
-				if (_transaction != null)
-					return _transaction;
-
-				return BeginTransaction();
-			}
-			set
-			{
-				if (_transaction != null)
-					throw new RuntimeException(SR.ErrTransactionNotNull);
-
-				_transaction = value;
-			}
-		}
-
-		[JsonIgnore]
-		public IMiddlewareInterop Interop
-		{
-			get
-			{
-				if (_interop == null)
-					_interop = new MiddlewareInterop(this);
-
-				return _interop;
 			}
 		}
 
@@ -117,48 +100,114 @@ namespace TomPIT.Middleware
 			}
 		}
 
-		internal IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection)
+		[JsonIgnore]
+		public IMiddlewareInterop Interop
 		{
-			return Connections.OpenConnection(this, connection);
+			get
+			{
+				if (_interop == null)
+					_interop = new MiddlewareInterop(this);
+
+				return _interop;
+			}
 		}
 
-		//public IDataReader<T> OpenReader<T>(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)
-		//{
-		//	return new DataReader<T>(this)
-		//	{
-		//		Connection = connection,
-		//		CommandText = commandText
-		//	};
-		//}
 
-		//public IDataWriter OpenWriter(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)
-		//{
-		//	return new DataWriter(this)
-		//	{
-		//		Connection = connection,
-		//		CommandText = commandText
-		//	};
-		//}
+		internal MiddlewareContext Owner { get; set; }
+
+		[JsonIgnore]
+		public string Endpoint { get; protected set; }
+
+		internal MiddlewareConnectionPool Connections
+		{
+			get
+			{
+				if (Owner != null)
+					return Owner.Connections;
+
+				if (_connections == null)
+					_connections = new MiddlewareConnectionPool();
+
+				return _connections;
+			}
+		}
+
+		internal IMiddlewareTransaction Transaction
+		{
+			get
+			{
+				if (_transaction != null)
+					return _transaction;
+
+				return BeginTransaction();
+			}
+			set
+			{
+				if (_transaction != null)
+					throw new RuntimeException(SR.ErrTransactionNotNull);
+
+				_transaction = value;
+			}
+		}
+
+		#endregion
+
+		#region Methods
 
 		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
 		{
+			if (Transaction.State == MiddlewareTransactionState.Active)
+				return OpenReader<T>(connection, commandText, ConnectionBehavior.Shared);
+			else
+				return OpenReader<T>(connection, commandText, ConnectionBehavior.Isolated);
+		}
+
+		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText, ConnectionBehavior behavior)
+		{
 			return new DataReader<T>(this)
 			{
-				Connection = OpenConnection(connection),
+				Connection = OpenConnection(connection, behavior),
 				CommandText = commandText
 			};
 		}
 
 		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
 		{
+			if (Transaction.State == MiddlewareTransactionState.Active)
+				return OpenWriter(connection, commandText, ConnectionBehavior.Shared);
+			else
+				return OpenWriter(connection, commandText, ConnectionBehavior.Isolated);
+		}
+
+		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText, ConnectionBehavior behavior)
+		{
 			return new DataWriter(this)
 			{
-				Connection = OpenConnection(connection),
+				Connection = OpenConnection(connection, behavior),
 				CommandText = commandText
 			};
 		}
 
-		internal MiddlewareContext Owner { get; set; }
+		#endregion
+
+		#region Helpers
+
+		protected void Initialize(string endpoint)
+		{
+#if DEBUG
+			Id = Guid.NewGuid();
+#endif
+
+			Endpoint = endpoint;
+
+			if (string.IsNullOrWhiteSpace(endpoint))
+				Endpoint = Tenant?.Url;
+		}
+
+		internal IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection, ConnectionBehavior behavior)
+		{
+			return Connections.OpenConnection(this, connection, behavior);
+		}
 
 		private IMiddlewareTransaction BeginTransaction()
 		{
@@ -181,18 +230,6 @@ namespace TomPIT.Middleware
 			Connections.CloseConnections();
 		}
 
-		internal MiddlewareConnectionPool Connections
-		{
-			get
-			{
-				if (Owner != null)
-					return Owner.Connections;
-
-				if (_connections == null)
-					_connections = new MiddlewareConnectionPool();
-
-				return _connections;
-			}
-		}
+		#endregion
 	}
 }

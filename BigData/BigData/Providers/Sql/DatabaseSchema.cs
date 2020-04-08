@@ -140,7 +140,6 @@ namespace TomPIT.BigData.Providers.Sql
 			{
 				new NodeAdminWriter(Node, string.Format(SqlStrings.DropProcedure, TableName), CommandType.Text).Execute();
 				new NodeAdminWriter(Node, string.Format(SqlStrings.DropProcedureUpdate, PartialTableName), CommandType.Text).Execute();
-				new NodeAdminWriter(Node, string.Format(SqlStrings.DropStruct, TableName), CommandType.Text).Execute();
 				new NodeAdminWriter(Node, string.Format(SqlStrings.DropTable, TableName), CommandType.Text).Execute();
 			}
 			catch (Exception ex)
@@ -201,17 +200,26 @@ namespace TomPIT.BigData.Providers.Sql
 		{
 			new NodeAdminWriter(Node, string.Format(SqlStrings.DropProcedure, TableName), CommandType.Text).Execute();
 			new NodeAdminWriter(Node, string.Format(SqlStrings.DropProcedureUpdate, PartialTableName), CommandType.Text).Execute();
-			new NodeAdminWriter(Node, string.Format(SqlStrings.DropStruct, TableName), CommandType.Text).Execute();
 
-			new NodeAdminWriter(Node, string.Format(SqlStrings.CreateTableType, TableName, CreateTableTypeColumns()), CommandType.Text).Execute();
-
-			var commandText = string.Format(SqlStrings.CreateMergeProcedure, TableName, CreateProcedureColumns(), CreateMergeOn(), CreateSetStatement(), CreateInsertFields());
+			var commandText = string.Format(SqlStrings.CreateMergeProcedure, TableName, CreateProcedureColumns(), CreateMergeOn(), CreateSetStatement(), CreateInsertFields(), CreateRowFields());
 
 			new NodeAdminWriter(Node, commandText, CommandType.Text).Execute();
 
-			commandText = string.Format(SqlStrings.CreateUpdateProcedure, PartialTableName, TableName, CreateProcedureColumns(), CreateMergeOn(), CreateSetStatement(), CreateInsertFields());
+			commandText = string.Format(SqlStrings.CreateUpdateProcedure, PartialTableName, TableName, CreateProcedureColumns(), CreateMergeOn(), CreateSetStatement(), CreateInsertFields(), CreateRowFields());
 
 			new NodeAdminWriter(Node, commandText, CommandType.Text).Execute();
+		}
+
+		private string CreateRowFields()
+		{
+			var result = new StringBuilder();
+
+			foreach (var field in Schema.Fields)
+			{
+				result.Append($"{field.Name} {GetSqlType(field)},");
+			}
+
+			return result.ToString().TrimEnd(',');
 		}
 
 		private string CreateProcedureColumns()
@@ -226,23 +234,6 @@ namespace TomPIT.BigData.Providers.Sql
 					continue;
 
 				sb.AppendFormat("{0},", i.Name);
-			}
-
-			return sb.ToString().TrimEnd(',');
-		}
-
-		private string CreateTableTypeColumns()
-		{
-			var sb = new StringBuilder();
-
-			sb.Append($"{Merger.TimestampColumn} datetime2 NOT NULL,");
-
-			foreach (var i in Schema.Fields)
-			{
-				if (IsSystemColumn(i.Name))
-					continue;
-
-				sb.AppendFormat("{0} {1},", i.Name, GetSqlType(i));
 			}
 
 			return sb.ToString().TrimEnd(',');

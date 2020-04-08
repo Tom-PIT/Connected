@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 
 namespace TomPIT.Data
 {
-	public interface IDataCommand
+	public interface IDataCommand : IDisposable
 	{
 		string CommandText { get; set; }
 		CommandType CommandType { get; set; }
