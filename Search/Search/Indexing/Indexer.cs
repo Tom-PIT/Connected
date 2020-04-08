@@ -399,8 +399,8 @@ namespace TomPIT.Search.Indexing
 
 					var locale = 0;
 					var pk = string.Empty;
-					var lcidProperty = Properties.FirstOrDefault(f => string.Compare(f.Name, SearchUtils.FieldLcid, false) == 0);
-					var idProperty = Properties.FirstOrDefault(f => string.Compare(f.Name, SearchUtils.FieldKey, false) == 0);
+					var lcidProperty = Properties.FirstOrDefault(f => string.Compare(f.Name, SearchUtils.FieldLcid, true) == 0);
+					var idProperty = Properties.FirstOrDefault(f => string.Compare(f.Name, SearchUtils.FieldKey, true) == 0);
 
 					if (lcidProperty != null)
 					{

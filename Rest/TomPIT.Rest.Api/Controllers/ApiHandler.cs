@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Middleware;
+using TomPIT.Reflection;
 using TomPIT.Security;
 
 namespace TomPIT.Rest.Controllers
@@ -43,7 +45,14 @@ namespace TomPIT.Rest.Controllers
 			var r = Interop.Invoke<object, JObject>(string.Format("{0}/{1}", Api, Operation), ParseArguments());
 
 			if (Shell.HttpContext.Response.StatusCode == (int)HttpStatusCode.OK)
-				RenderResult(JsonConvert.SerializeObject(r));
+			{
+				var type = Tenant.GetService<ICompilerService>().ResolveType(config.MicroService(), op, op.Name, false);
+
+				if (type != null && type.ImplementsInterface(typeof(IDistributedOperation)))
+					Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.Accepted;
+				else
+					RenderResult(JsonConvert.SerializeObject(r));
+			}
 		}
 
 		private bool Authorize(IApiConfiguration api, IApiOperation operation)

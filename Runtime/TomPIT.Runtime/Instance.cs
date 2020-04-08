@@ -133,8 +133,6 @@ namespace TomPIT
 			services.AddSingleton<IAuthorizationHandler, ClaimHandler>();
 			services.AddTransient<IActionContextAccessor, ActionContextAccessor>();
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-			services.ConfigureOptions(typeof(EmbeddedResourcesConfiguration));
-
 			services.AddSingleton<IHostedService, FlushingService>();
 
 			foreach (var plugin in Plugins)
@@ -174,15 +172,18 @@ namespace TomPIT
 			var contentTypeProvider = new FileExtensionContentTypeProvider();
 
 			contentTypeProvider.Mappings[".webmanifest"] = "application/manifest+json";
-
-			app.UseStaticFiles(new StaticFileOptions
+			var staticOptions = new StaticFileOptions
 			{
 				OnPrepareResponse = ctx =>
 				{
 					ctx.Context.Response.Headers.Append("Cache-Control", $"public, max-age={cachePeriod}");
 				},
-				ContentTypeProvider = contentTypeProvider
-			});
+				ContentTypeProvider = contentTypeProvider,
+			};
+
+			EmbeddedResourcesConfiguration.Configure(env, staticOptions);
+
+			app.UseStaticFiles(staticOptions);
 
 			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
 

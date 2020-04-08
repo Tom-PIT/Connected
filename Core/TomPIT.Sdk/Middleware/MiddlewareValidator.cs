@@ -82,6 +82,12 @@ namespace TomPIT.Middleware
 		}
 		private void ValidateProperties(List<ValidationResult> results, object instance, List<object> references)
 		{
+			if (instance == null)
+				return;
+
+			if (instance.GetType().IsTypePrimitive())
+				return;
+
 			if (instance == null || references.Contains(instance))
 				return;
 

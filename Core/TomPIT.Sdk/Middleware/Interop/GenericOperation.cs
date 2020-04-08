@@ -22,6 +22,13 @@ namespace TomPIT.Middleware.Interop
 
 		public T Invoke<T>()
 		{
+			return Invoke<T>(null);
+		}
+		public T Invoke<T>(IMiddlewareContext context)
+		{
+			if (context != null)
+				this.WithContext(context);
+
 			var r = Invoke();
 
 			if (r == null)
@@ -44,6 +51,13 @@ namespace TomPIT.Middleware.Interop
 
 		public TReturnValue Invoke()
 		{
+			return Invoke(null);
+		}
+		public TReturnValue Invoke(IMiddlewareContext context)
+		{
+			if (context != null)
+				this.WithContext(context);
+
 			ValidateExtender();
 			Validate();
 			OnValidating();

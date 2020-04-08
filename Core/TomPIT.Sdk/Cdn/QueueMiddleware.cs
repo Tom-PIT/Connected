@@ -10,6 +10,13 @@ namespace TomPIT.Cdn
 
 		public void Invoke()
 		{
+			Invoke(null);
+		}
+		public void Invoke(IMiddlewareContext context)
+		{
+			if (context != null)
+				this.WithContext(context);
+
 			Validate();
 
 			try

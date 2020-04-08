@@ -6,21 +6,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Options;
 using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Configuration
 {
-	internal class EmbeddedResourcesConfiguration : IPostConfigureOptions<StaticFileOptions>
+	internal static class EmbeddedResourcesConfiguration
 	{
-		public EmbeddedResourcesConfiguration(IWebHostEnvironment environment)
-		{
-			Environment = environment;
-		}
-
-		public IWebHostEnvironment Environment { get; }
-
-		public void PostConfigure(string name, StaticFileOptions options)
+		public static void Configure(IWebHostEnvironment environment, StaticFileOptions options)
 		{
 			var assemblies = new List<Assembly>();
 
@@ -33,15 +25,14 @@ namespace TomPIT.Configuration
 					RegisterAssemblyFromName(assemblies, j);
 			}
 
-			name = name ?? throw new ArgumentNullException(nameof(name));
 			options = options ?? throw new ArgumentNullException(nameof(options));
 
 			options.ContentTypeProvider = options.ContentTypeProvider ?? new FileExtensionContentTypeProvider();
 
-			if (options.FileProvider == null && Environment.WebRootFileProvider == null)
+			if (options.FileProvider == null && environment.WebRootFileProvider == null)
 				throw new InvalidOperationException("Missing FileProvider.");
 
-			options.FileProvider = options.FileProvider ?? Environment.WebRootFileProvider;
+			options.FileProvider = options.FileProvider ?? environment.WebRootFileProvider;
 
 			var basePath = "wwwroot";
 
@@ -62,7 +53,7 @@ namespace TomPIT.Configuration
 			options.FileProvider = new CompositeFileProvider(fileProviders.ToArray());
 		}
 
-		private void RegisterAssemblyFromName(List<Assembly> assemblies, string j)
+		private static void RegisterAssemblyFromName(List<Assembly> assemblies, string j)
 		{
 			var path = Shell.ResolveAssemblyPath(j);
 
@@ -76,7 +67,7 @@ namespace TomPIT.Configuration
 				assemblies.Add(asm);
 		}
 
-		private void RegisterAssembly(List<Assembly> assemblies, string type)
+		private static void RegisterAssembly(List<Assembly> assemblies, string type)
 		{
 			var t = Reflection.TypeExtensions.GetType(type);
 

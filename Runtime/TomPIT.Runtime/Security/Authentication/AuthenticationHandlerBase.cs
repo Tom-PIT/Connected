@@ -144,7 +144,14 @@ namespace TomPIT.Security.Authentication
 				if (string.Compare(tokens[0], "bearer", true) != 0)
 					return null;
 
-				key = tokens[1];
+				try
+				{
+					key = Encoding.UTF8.GetString(Convert.FromBase64String(tokens[1]));
+				}
+				catch
+				{
+					return null;
+				}
 			}
 
 			if (string.IsNullOrWhiteSpace(key))

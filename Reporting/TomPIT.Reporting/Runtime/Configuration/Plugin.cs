@@ -83,9 +83,9 @@ namespace TomPIT.MicroServices.Reporting.Runtime.Configuration
 			//	return Task.CompletedTask;
 			//});
 
-			builder.MapRoute("sys.reporting.viewer", "DXXRDV", new { controller = "ReportViewer", action = "Invoke" }, null, new { Namespace = "TomPIT.Reporting.Controllers" });
-			builder.MapRoute("sys.reporting.querybuilder", "DXXQB", new { controller = "ReportQueryBuilder", action = "Invoke" }, null, new { Namespace = "TomPIT.Reporting.Controllers" });
-			builder.MapRoute("sys.reporting.designer", "DXXRD", new { controller = "Designer", action = "Invoke" }, null, new { Namespace = "TomPIT.Reporting.Controllers" });
+			builder.MapRoute("sys.reporting.viewer", "DXXRDV", new { controller = "ReportViewer", action = "Invoke" }, null, new { Namespace = "TomPIT.MicroServices.Reporting.Controllers" });
+			builder.MapRoute("sys.reporting.querybuilder", "DXXQB", new { controller = "ReportQueryBuilder", action = "Invoke" }, null, new { Namespace = "TomPIT.MicroServices.Reporting.Controllers" });
+			builder.MapRoute("sys.reporting.designer", "DXXRD", new { controller = "Designer", action = "Invoke" }, null, new { Namespace = "TomPIT.MicroServices.Reporting.Controllers" });
 		}
 	}
 }

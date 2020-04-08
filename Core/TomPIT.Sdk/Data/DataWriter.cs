@@ -11,7 +11,18 @@ namespace TomPIT.Data
 
 		public void Execute()
 		{
-			Connection.Execute(CreateCommand());
+			try
+			{
+				Connection.Execute(CreateCommand());
+
+				if (Connection.Behavior == ConnectionBehavior.Isolated)
+					Connection.Commit();
+			}
+			finally
+			{
+				if (Connection.Behavior == ConnectionBehavior.Isolated)
+					Connection.Close();
+			}
 		}
 
 		public T Execute<T>()
