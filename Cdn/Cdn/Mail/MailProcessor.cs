@@ -92,7 +92,8 @@ namespace TomPIT.Cdn.Mail
 
 				using (var ms = new MemoryStream(content.Content))
 				{
-					builder.Attachments.Add(MimeEntity.Load(ms));
+					//builder.Attachments.Add(MimeEntity.Load(ms));
+					builder.Attachments.Add(i.FileName, content.Content, ContentType.Parse(i.ContentType));
 				}
 			}
 		}
