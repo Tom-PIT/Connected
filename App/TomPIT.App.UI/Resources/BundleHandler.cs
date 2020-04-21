@@ -10,7 +10,10 @@ namespace TomPIT.App.Resources
 	{
 		protected override void OnProcessRequest()
 		{
-			var ms = Tenant.GetService<IMicroServiceService>().Select(Context.GetRouteValue("microService") as string);
+			var msRoute = Context.GetRouteValue("microService") as string;
+			var bundleRoute = Context.GetRouteValue("bundle") as string;
+
+			var ms = Tenant.GetService<IMicroServiceService>().Select(msRoute);
 
 			if (ms == null)
 			{
@@ -19,7 +22,7 @@ namespace TomPIT.App.Resources
 				return;
 			}
 
-			var component = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategories.ScriptBundle, Context.GetRouteValue("bundle") as string);
+			var component = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategories.ScriptBundle, bundleRoute);
 
 			if (component == null)
 			{

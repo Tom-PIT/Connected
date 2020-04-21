@@ -11,7 +11,6 @@ namespace TomPIT.Worker.Services
 {
 	internal class EventService : HostedService
 	{
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
 		private Lazy<List<EventDispatcher>> _dispatchers = new Lazy<List<EventDispatcher>>();
 
 		public EventService()
@@ -19,17 +18,17 @@ namespace TomPIT.Worker.Services
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
 		}
 
-		protected override bool Initialize()
+		protected override bool Initialize(CancellationToken cancel)
 		{
 			if (Instance.State == InstanceState.Initialining)
 				return false;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new EventDispatcher(i, _cancel));
+				Dispatchers.Add(new EventDispatcher(i, cancel));
 
 			return true;
 		}
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -41,6 +40,9 @@ namespace TomPIT.Worker.Services
 					{ "resourceGroup", f.ResourceGroup }
 				};
 
+				if (cancel.IsCancellationRequested)
+					return;
+
 				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
 
 				if (jobs == null)
@@ -48,6 +50,9 @@ namespace TomPIT.Worker.Services
 
 				foreach (var i in jobs)
 				{
+					if (cancel.IsCancellationRequested)
+						return;
+
 					f.Enqueue(i);
 				}
 			});

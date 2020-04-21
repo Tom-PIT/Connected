@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.Exceptions;
 using TomPIT.IoC;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
@@ -9,7 +11,7 @@ using TomPIT.Serialization;
 
 namespace TomPIT.Search
 {
-	public abstract class SearchMiddleware<T> : MiddlewareComponent, ISearchMiddleware<T>
+	public abstract class SearchMiddleware<T> : MiddlewareOperation, ISearchMiddleware<T>
 	{
 		private List<ISearchDependencyInjectionMiddleware> _dependencies = null;
 		private List<string> _customProperties = null;
@@ -63,7 +65,19 @@ namespace TomPIT.Search
 
 		public T Search(string searchResult)
 		{
-			return OnSearch(searchResult);
+			try
+			{
+				var result = OnSearch(searchResult);
+
+				Invoked();
+
+				return result;
+			}
+			catch (Exception ex)
+			{
+				Rollback();
+				throw new ScriptException(this, ex);
+			}
 		}
 
 		protected virtual T OnSearch(string searchResult)
@@ -72,13 +86,13 @@ namespace TomPIT.Search
 
 			OnSearch(instance);
 
-			if (!(typeof(T) is ISearchEntity))
+			if (!typeof(T).ImplementsInterface<ISearchEntity>())
 				return instance;
 
 			var result = instance as ISearchEntity;
 
 			foreach (var dependency in DependencyInjections)
-				result = dependency.Search(result);
+				result = dependency.Search(result, searchResult);
 
 			return result == null ? default : (T)result;
 		}
@@ -89,6 +103,23 @@ namespace TomPIT.Search
 		}
 
 		public List<T> Index()
+		{
+			try
+			{
+				var result = PerformIndex();
+
+				Invoked();
+
+				return result;
+			}
+			catch (Exception ex)
+			{
+				Rollback();
+				throw new ScriptException(this, ex);
+			}
+		}
+
+		private List<T> PerformIndex()
 		{
 			if (Verb != SearchVerb.Rebuild)
 				Validate();

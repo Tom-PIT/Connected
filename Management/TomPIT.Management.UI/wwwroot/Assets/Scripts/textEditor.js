@@ -210,13 +210,29 @@
                                     property: instance.options.property,
                                     model: {
                                         'id': model.id,
-                                        'uri': model.uri.toString()
+                                        'uri': model.uri.toString(),
+                                        'version': model._versionId
                                     },
                                     range: range,
                                     context: context,
                                     text: model.getValue()
                                 },
                                 onComplete: function (data) {
+                                    if (data) {
+                                        for (let i = 0; i < data.length; i++) {
+                                            var edit = data[i].edit;
+
+                                            if (edit) {
+                                                for (let j = 0; j < edit.edits.length; j++) {
+                                                    var textEdit = edit.edits[j];
+
+                                                    if (textEdit.resource) {
+                                                            textEdit.resource = monaco.Uri.parse(textEdit.resource);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                     resolve({
                                         actions: data === null ? [] : data,
                                         dispose: function () { data = null; }
@@ -247,7 +263,8 @@
                                     property: instance.options.property,
                                     model: {
                                         'id': model.id,
-                                        'uri': model.uri.toString()
+                                        'uri': model.uri.toString(),
+                                        'version': model._versionId
                                     },
                                     position: position,
                                     context: context,
@@ -289,7 +306,8 @@
                                     property: instance.options.property,
                                     model: {
                                         'id': model.id,
-                                        'uri': model.uri.toString()
+                                        'uri': model.uri.toString(),
+                                        'version': model._versionId
                                     },
                                     position: position,
                                     text: model.getValue()
@@ -325,7 +343,8 @@
                                     property: instance.options.property,
                                     model: {
                                         'id': model.id,
-                                        'uri': model.uri.toString()
+                                        'uri': model.uri.toString(),
+                                        'version': model._versionId
                                     },
                                     position: position,
                                     text: model.getValue()
@@ -368,7 +387,8 @@
                                     property: instance.options.property,
                                     model: {
                                         'id': model.id,
-                                        'uri': model.uri.toString()
+                                        'uri': model.uri.toString(),
+                                        'version': model._versionId
                                     },
                                     text: model.getValue()
                                 },

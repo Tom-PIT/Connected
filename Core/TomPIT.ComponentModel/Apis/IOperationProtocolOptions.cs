@@ -7,6 +7,10 @@ namespace TomPIT.ComponentModel.Apis
 	{
 		Get = 1,
 		Post = 2,
+		Delete = 4,
+		Put = 8,
+		Patch = 16,
+		Head = 32,
 		All = 127
 	}
 

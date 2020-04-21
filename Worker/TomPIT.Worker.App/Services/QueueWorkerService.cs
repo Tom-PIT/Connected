@@ -10,7 +10,6 @@ namespace TomPIT.Worker.Services
 {
 	internal class QueueWorkerService : HostedService
 	{
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
 		private Lazy<List<QueueWorkerDispatcher>> _dispatchers = new Lazy<List<QueueWorkerDispatcher>>();
 
 		public QueueWorkerService()
@@ -18,16 +17,16 @@ namespace TomPIT.Worker.Services
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
 		}
 
-		protected override bool Initialize()
+		protected override bool Initialize(CancellationToken cancel)
 		{
 			if (Instance.State == InstanceState.Initialining)
 				return false;
 
-			Dispatchers.Add(new QueueWorkerDispatcher(_cancel));
+			Dispatchers.Add(new QueueWorkerDispatcher(cancel));
 
 			return true;
 		}
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -40,11 +39,17 @@ namespace TomPIT.Worker.Services
 
 				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
 
+				if (cancel.IsCancellationRequested)
+					return;
+
 				if (jobs == null)
 					return;
 
 				foreach (var i in jobs)
 				{
+					if (cancel.IsCancellationRequested)
+						return;
+
 					f.Enqueue(i);
 				}
 			});

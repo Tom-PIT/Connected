@@ -244,7 +244,7 @@ namespace TomPIT.Search.Catalogs
 			}
 		}
 
-		public void Drop()
+		public void Drop(CancellationToken cancel)
 		{
 			try
 			{
@@ -266,7 +266,7 @@ namespace TomPIT.Search.Catalogs
 			}
 		}
 
-		public void Reset()
+		public void Reset(CancellationToken cancel)
 		{
 			lock (sync)
 			{

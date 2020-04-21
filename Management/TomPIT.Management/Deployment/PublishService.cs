@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
@@ -18,12 +19,12 @@ namespace TomPIT.Management.Deployment
 			IntervalTimeout = TimeSpan.FromSeconds(30);
 		}
 
-		protected override bool Initialize()
+		protected override bool Initialize(CancellationToken cancel)
 		{
 			return Instance.State == InstanceState.Running;
 		}
 
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			var tenants = Shell.GetService<IConnectivityService>().QueryTenants();
 

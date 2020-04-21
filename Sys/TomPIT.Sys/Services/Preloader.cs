@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Connectivity;
 using TomPIT.Distributed;
@@ -16,7 +17,7 @@ namespace TomPIT.Sys.Services
 			IntervalTimeout = TimeSpan.FromSeconds(45);
 		}
 
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			try
 			{
@@ -33,7 +34,7 @@ namespace TomPIT.Sys.Services
 			return Task.CompletedTask;
 		}
 
-		protected override bool Initialize()
+		protected override bool Initialize(CancellationToken cancel)
 		{
 			return DataModel.Initialized;
 		}

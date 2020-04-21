@@ -5,7 +5,6 @@ namespace TomPIT.Ide.TextServices.Languages
 	public class WorkspaceEdit : IWorkspaceEdit
 	{
 		private List<IResourceEdit> _edits = null;
-
 		public List<IResourceEdit> Edits
 		{
 			get

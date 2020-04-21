@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
 using TomPIT.Sys.Data;
@@ -12,7 +13,7 @@ namespace TomPIT.Sys.Services
 			IntervalTimeout = TimeSpan.FromSeconds(15);
 		}
 
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			try
 			{

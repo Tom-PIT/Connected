@@ -13,7 +13,7 @@ namespace TomPIT.Cdn.Printing
 	internal class PrintJob : DispatcherJob<IQueueMessage>
 	{
 		private TimeoutTask _timeout = null;
-		public PrintJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public PrintJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -34,7 +34,7 @@ namespace TomPIT.Cdn.Printing
 				MiddlewareDescriptor.Current.Tenant.GetService<IPrintingManagementService>().Ping(item.PopReceipt);
 
 				return Task.CompletedTask;
-			}, TimeSpan.FromMinutes(4));
+			}, TimeSpan.FromMinutes(4), Cancel);
 
 			_timeout.Start();
 

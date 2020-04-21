@@ -61,6 +61,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Method not allowed..
+        /// </summary>
+        public static string ApiOperationInvalidVerb {
+            get {
+                return ResourceManager.GetString("ApiOperationInvalidVerb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The specified argument {0} cannot be greater than its ceiling value of {1}..
         /// </summary>
         public static string ArgumentCannotBeGreaterThanBaseline {
@@ -1623,6 +1632,24 @@ namespace TomPIT {
         public static string ErrMailTemplateNotFound {
             get {
                 return ResourceManager.GetString("ErrMailTemplateNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manifest not found.
+        /// </summary>
+        public static string ErrManifestNull {
+            get {
+                return ResourceManager.GetString("ErrManifestNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manifest property not found.
+        /// </summary>
+        public static string ErrManifestPropertyNull {
+            get {
+                return ResourceManager.GetString("ErrManifestPropertyNull", resourceCulture);
             }
         }
         

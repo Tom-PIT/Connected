@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Connectivity;
 using TomPIT.Deployment;
@@ -18,11 +19,11 @@ namespace TomPIT.Management.Deployment
 			IntervalTimeout = TimeSpan.FromSeconds(10);
 		}
 
-		protected override bool Initialize()
+		protected override bool Initialize(CancellationToken cancel)
 		{
 			return Instance.State == InstanceState.Running;
 		}
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			var tenants = Shell.GetService<IConnectivityService>().QueryTenants();
 
@@ -31,22 +32,22 @@ namespace TomPIT.Management.Deployment
 				{
 					MiddlewareDescriptor.Current.Tenant = Shell.GetService<IConnectivityService>().SelectTenant(i.Url);
 
-					ExecuteInstallers(Shell.GetService<IConnectivityService>().SelectTenant(i.Url));
+					ExecuteInstallers(cancel, Shell.GetService<IConnectivityService>().SelectTenant(i.Url));
 				});
 
 
 			return Task.CompletedTask;
 		}
 
-		private void ExecuteInstallers(ITenant tenant)
+		private void ExecuteInstallers(CancellationToken cancel, ITenant tenant)
 		{
 			var installers = tenant.GetService<IDeploymentService>().QueryInstallers();
 
 			if (installers.Count > 0)
-				InstallPackage(tenant, installers);
+				InstallPackage(cancel, tenant, installers);
 		}
 
-		private void InstallPackage(ITenant tenant, List<IInstallState> installers)
+		private void InstallPackage(CancellationToken cancel, ITenant tenant, List<IInstallState> installers)
 		{
 			var pending = installers.Where(f => f.Status == InstallStateStatus.Pending);
 
@@ -60,7 +61,13 @@ namespace TomPIT.Management.Deployment
 
 			foreach (var installer in roots)
 			{
+				if (cancel.IsCancellationRequested)
+					return;
+
 				var package = tenant.GetService<IDeploymentService>().DownloadPackage(installer.Package);
+
+				if (cancel.IsCancellationRequested)
+					return;
 
 				tenant.GetService<IDeploymentService>().UpdateInstaller(installer.Package, InstallStateStatus.Installing, null);
 
@@ -76,7 +83,7 @@ namespace TomPIT.Management.Deployment
 				}
 			}
 
-			ExecuteInstallers(tenant);
+			ExecuteInstallers(cancel, tenant);
 		}
 	}
 }

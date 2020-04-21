@@ -1113,4 +1113,13 @@
   <data name="ErrTransactionNotNull" xml:space="preserve">
     <value>Transaction already attached.</value>
   </data>
+  <data name="ApiOperationInvalidVerb" xml:space="preserve">
+    <value>Method not allowed.</value>
+  </data>
+  <data name="ErrManifestNull" xml:space="preserve">
+    <value>Manifest not found</value>
+  </data>
+  <data name="ErrManifestPropertyNull" xml:space="preserve">
+    <value>Manifest property not found</value>
+  </data>
 </root>

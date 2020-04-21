@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using TomPIT.Middleware;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT
 {
@@ -142,6 +145,16 @@ namespace TomPIT
 
 				return _shared;
 			}
+		}
+
+		public IHtmlContent Property([CIP(CIP.ApiOperationProvider)]string api, [CIP(CIP.ApiOperationParameterProvider)]string property)
+		{
+			var result = new PropertyRenderer(Html.ViewData.Model as IMiddlewareContext, api, property).Result;
+
+			if (result == null)
+				return null;
+
+			return Html.Raw(result);
 		}
 	}
 }

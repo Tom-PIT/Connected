@@ -5,7 +5,9 @@ using System.Text;
 using System.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using TomPIT.Middleware;
 using TomPIT.Reflection;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT
 {
@@ -116,6 +118,13 @@ namespace TomPIT
 			sb.Append("]");
 
 			return Html.Raw(sb.ToString());
+		}
+
+		public IHtmlContent BundlePath([CIP(CIP.BundleProvider)]string name)
+		{
+			var model = Html.ViewData.Model as IMiddlewareContext;
+
+			return Html.Raw($"{model.Services.Routing.RootUrl}/sys/bundles/{name}".ToLowerInvariant());
 		}
 	}
 }

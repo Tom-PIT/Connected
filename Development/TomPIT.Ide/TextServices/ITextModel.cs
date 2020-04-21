@@ -4,5 +4,6 @@
 	{
 		string Id { get; }
 		string Uri { get; }
+		int Version { get; }
 	}
 }

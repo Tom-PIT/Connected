@@ -39,6 +39,17 @@ namespace TomPIT.Routing
 					return false;
 				}
 			}
+			else if (string.IsNullOrEmpty(Context.Request.Headers["ETag"]))
+			{
+				var lastMod = new DateTime(Convert.ToInt64(Context.Request.Headers["If-Modified-Since"]));
+
+				if (lastMod == date)
+				{
+					Context.Response.StatusCode = 304;
+
+					return false;
+				}
+			}
 
 			return true;
 		}
@@ -48,6 +59,8 @@ namespace TomPIT.Routing
 			date = new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second);
 
 			Context.Response.Headers["Last-Modified"] = date.ToUniversalTime().ToString("r");
+			Context.Response.Headers["ETag"] = date.ToUniversalTime().Ticks.ToString();
+			Context.Response.Headers["Cache-Control"] = "public, max-age=600";
 		}
 
 		protected ITenant Tenant => MiddlewareDescriptor.Current.Tenant;

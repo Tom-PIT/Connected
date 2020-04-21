@@ -42,7 +42,7 @@ namespace TomPIT.Search.Catalogs
 				var calculatedMax = Options.Paging.Size;
 
 				if (Options.Paging.Index > 0)
-					calculatedMax = Options.Paging.Size + (Options.Paging.Size * Options.Paging.Size);
+					calculatedMax = Options.Paging.Size + (Options.Paging.Index * Options.Paging.Size);
 
 				var collector = TopScoreDocCollector.Create(calculatedMax, true);
 				var parser = CreateParser();

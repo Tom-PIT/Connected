@@ -338,7 +338,8 @@ namespace TomPIT.Navigation
 					breadCrumb.Url = ParseUrl(routeContainer.Template, parameters);
 			}
 
-			items.Insert(0, breadCrumb);
+			if (item.Visible)
+				items.Insert(0, breadCrumb);
 
 			ISiteMapElement parent = null;
 

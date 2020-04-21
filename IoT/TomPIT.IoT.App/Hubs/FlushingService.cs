@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
@@ -12,7 +13,7 @@ namespace TomPIT.IoT.Hubs
 			IntervalTimeout = TimeSpan.FromMilliseconds(250);
 		}
 
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			try
 			{

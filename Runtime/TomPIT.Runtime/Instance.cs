@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Threading;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -47,9 +48,10 @@ namespace TomPIT
 		public static IMvcBuilder Mvc { get; private set; }
 		private static List<IPlugin> _plugins = null;
 		internal static RequestLocalizationOptions RequestLocalizationOptions { get; private set; }
-
 		public static Guid Id { get; } = Guid.NewGuid();
 		public static InstanceState State { get; private set; } = InstanceState.Initialining;
+		public static CancellationToken Stopping { get; private set; }
+		public static CancellationToken Stopped { get; private set; }
 		public static void Initialize(IServiceCollection services, ServicesConfigurationArgs e)
 		{
 			Shell.RegisterConfigurationType(typeof(ClientSys));
@@ -142,6 +144,14 @@ namespace TomPIT
 		{
 			app.UseMiddleware<AuthenticationCookieMiddleware>();
 
+			var lifetime = app.ApplicationServices.GetService<Microsoft.Extensions.Hosting.IApplicationLifetime>();
+
+			if (lifetime != null)
+			{
+				Stopping = lifetime.ApplicationStopping;
+				Stopped = lifetime.ApplicationStopped;
+			}
+
 			app.UseAuthentication();
 			app.UseAuthorization();
 			app.UseRequestLocalization(o =>
@@ -157,21 +167,12 @@ namespace TomPIT
 			});
 
 			app.UseAjaxExceptionMiddleware();
-			//var assetsDirectors = $"{env.WebRootPath}\\Assets";
 
-			//if (Directory.Exists(assetsDirectors))
-			//{
-			//	app.UseStaticFiles(new StaticFileOptions(new SharedOptions
-			//	{
-			//		RequestPath = "/sys/assets",
-			//		FileProvider = new PhysicalFileProvider($"{env.WebRootPath}\\Assets")
-			//	}));
-			//}
 			var cachePeriod = env.IsDevelopment() ? "600" : "604800";
-
 			var contentTypeProvider = new FileExtensionContentTypeProvider();
 
 			contentTypeProvider.Mappings[".webmanifest"] = "application/manifest+json";
+
 			var staticOptions = new StaticFileOptions
 			{
 				OnPrepareResponse = ctx =>

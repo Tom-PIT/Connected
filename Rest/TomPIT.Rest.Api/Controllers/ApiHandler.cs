@@ -198,7 +198,7 @@ namespace TomPIT.Rest.Controllers
 
 			if (!op.Protocols.Rest)
 			{
-				RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ErrApiOperationProtocolRestDisabled, Api, Operation));
+				RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1}/{2})", SR.ErrApiOperationProtocolRestDisabled, Api, Operation));
 				return null;
 			}
 
@@ -209,7 +209,8 @@ namespace TomPIT.Rest.Controllers
 					case ApiOperationVerbs.Get:
 						if (!Shell.HttpContext.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
 						{
-							RenderError(StatusCodes.Status400BadRequest, string.Format("{0} ({1}/{2})", SR.ErrApiOperationProtocolGetOnly, Api, Operation));
+							SetAllowHeader(op.Protocols.RestVerbs);
+							RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
 							return null;
 						}
 
@@ -217,7 +218,43 @@ namespace TomPIT.Rest.Controllers
 					case ApiOperationVerbs.Post:
 						if (!Shell.HttpContext.Request.Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
 						{
-							RenderError(StatusCodes.Status400BadRequest, string.Format("{0} ({1}/{2})", SR.ErrApiOperationProtocolPostOnly, Api, Operation));
+							SetAllowHeader(op.Protocols.RestVerbs);
+							RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
+							return null;
+						}
+						break;
+					case ApiOperationVerbs.Patch:
+						if (!Shell.HttpContext.Request.Method.Equals("PATCH", StringComparison.OrdinalIgnoreCase))
+						{
+							SetAllowHeader(op.Protocols.RestVerbs);
+							RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
+							return null;
+						}
+
+						break;
+					case ApiOperationVerbs.Delete:
+						if (!Shell.HttpContext.Request.Method.Equals("DELETE", StringComparison.OrdinalIgnoreCase))
+						{
+							SetAllowHeader(op.Protocols.RestVerbs);
+							RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
+							return null;
+						}
+
+						break;
+					case ApiOperationVerbs.Put:
+						if (!Shell.HttpContext.Request.Method.Equals("PUT", StringComparison.OrdinalIgnoreCase))
+						{
+							SetAllowHeader(op.Protocols.RestVerbs);
+							RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
+							return null;
+						}
+
+						break;
+					case ApiOperationVerbs.Head:
+						if (!Shell.HttpContext.Request.Method.Equals("HEAD", StringComparison.OrdinalIgnoreCase))
+						{
+							SetAllowHeader(op.Protocols.RestVerbs);
+							RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
 							return null;
 						}
 
@@ -227,11 +264,36 @@ namespace TomPIT.Rest.Controllers
 
 			if (op.Scope != ElementScope.Public)
 			{
-				RenderError((int)HttpStatusCode.MethodNotAllowed, SR.ErrScopeError);
+				RenderError((int)HttpStatusCode.NotFound, SR.ErrScopeError);
 				return null;
 			}
 
 			return op;
+		}
+
+		private void SetAllowHeader(ApiOperationVerbs verbs)
+		{
+			var sb = new StringBuilder();
+
+			if ((verbs & ApiOperationVerbs.Get) == ApiOperationVerbs.Get)
+				sb.Append($"GET,");
+
+			if ((verbs & ApiOperationVerbs.Head) == ApiOperationVerbs.Head)
+				sb.Append($"HEAD,");
+
+			if ((verbs & ApiOperationVerbs.Post) == ApiOperationVerbs.Post)
+				sb.Append($"POST,");
+
+			if ((verbs & ApiOperationVerbs.Put) == ApiOperationVerbs.Put)
+				sb.Append($"PUT,");
+
+			if ((verbs & ApiOperationVerbs.Delete) == ApiOperationVerbs.Delete)
+				sb.Append($"DELETE,");
+
+			if ((verbs & ApiOperationVerbs.Patch) == ApiOperationVerbs.Patch)
+				sb.Append($"PATCH,");
+
+			Shell.HttpContext.Response.Headers.Add(Enum.GetName(typeof(HttpResponseHeader), HttpResponseHeader.Allow), sb.ToString().TrimEnd(','));
 		}
 	}
 }

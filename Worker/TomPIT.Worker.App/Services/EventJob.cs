@@ -21,7 +21,7 @@ namespace TomPIT.Worker.Services
 {
 	internal class EventJob : DispatcherJob<IQueueMessage>
 	{
-		public EventJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public EventJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 

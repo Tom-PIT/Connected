@@ -85,7 +85,7 @@ namespace TomPIT.Search
 				{
 					Catalog = result.Catalog,
 					Content = result.Content,
-					Entity = entity,
+					Entity = entity == null ? null : Serializer.Serialize(entity),
 					Score = result.Score,
 					Text = result.Text,
 					Title = result.Title

@@ -9,7 +9,7 @@ namespace TomPIT.Distributed
 	{
 		private bool _isRunning = false;
 
-		public DispatcherJob(Dispatcher<T> owner, CancellationTokenSource cancel)
+		public DispatcherJob(Dispatcher<T> owner, CancellationToken cancel)
 		{
 			Owner = owner;
 			Cancel = cancel;
@@ -27,17 +27,17 @@ namespace TomPIT.Distributed
 				return;
 			}
 
-			await Task.Run(async () => await Dequeue(), Cancel.Token);
+			await Task.Run(async () => await Dequeue(), Cancel);
 		}
 
 		protected Dispatcher<T> Owner { get; }
-		protected CancellationTokenSource Cancel { get; }
+		protected CancellationToken Cancel { get; }
 
 		private Task Dequeue()
 		{
 			_isRunning = true;
 
-			var token = Cancel.Token;
+			var token = Cancel;
 
 			while (!token.IsCancellationRequested)
 			{
@@ -70,7 +70,7 @@ namespace TomPIT.Distributed
 					}
 				}
 
-				token.WaitHandle.WaitOne(TimeSpan.FromMilliseconds(1));
+				Task.Delay(1);
 			}
 
 			_isRunning = false;

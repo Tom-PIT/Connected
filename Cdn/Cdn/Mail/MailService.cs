@@ -21,7 +21,7 @@ namespace TomPIT.Cdn.Mail
 				SetInterval();
 		}
 
-		protected override bool Initialize()
+		protected override bool Initialize(CancellationToken cancel)
 		{
 			if (Instance.State == InstanceState.Initialining)
 				return false;
@@ -31,7 +31,7 @@ namespace TomPIT.Cdn.Mail
 			MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().SettingChanged += OnSettingChanged;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new MailDispatcher(i, _cancel));
+				Dispatchers.Add(new MailDispatcher(i, cancel));
 
 			return true;
 		}
@@ -45,7 +45,7 @@ namespace TomPIT.Cdn.Mail
 			IntervalTimeout = TimeSpan.FromMilliseconds(interval);
 		}
 
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -58,11 +58,19 @@ namespace TomPIT.Cdn.Mail
 
 				var messages = MiddlewareDescriptor.Current.Tenant.Post<List<MailMessage>>(url, e);
 
+				if (cancel.IsCancellationRequested)
+					return;
+
 				if (messages == null)
 					return;
 
 				foreach (var i in messages)
+				{
+					if (cancel.IsCancellationRequested)
+						return;
+
 					f.Enqueue(i);
+				}
 			});
 
 			return Task.CompletedTask;

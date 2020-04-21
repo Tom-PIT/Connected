@@ -17,7 +17,7 @@ namespace TomPIT.Development.Analysis
 	internal class AutoFixJob : DispatcherJob<IQueueMessage>
 	{
 		private TimeoutTask _timeout = null;
-		public AutoFixJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public AutoFixJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -34,7 +34,7 @@ namespace TomPIT.Development.Analysis
 			{
 				Dispatcher.Tenant.GetService<IAutoFixService>().Ping(Message.PopReceipt);
 				return Task.CompletedTask;
-			}, TimeSpan.FromMinutes(4));
+			}, TimeSpan.FromMinutes(4), Cancel);
 
 			_timeout.Start();
 

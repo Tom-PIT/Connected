@@ -91,7 +91,7 @@ namespace TomPIT.Reflection.Manifests.Providers
 				if (!(member is PropertyDeclarationSyntax pdx))
 					continue;
 
-				if (pdx.Modifiers.FirstOrDefault(f => string.Compare(f.ValueText, "public", false) == 0) == null)
+				if (pdx.Modifiers.FirstOrDefault(f => string.Compare(f.ValueText, "public", false) == 0) == new SyntaxToken())//never returns null
 					continue;
 
 				var p = new ManifestProperty
@@ -100,14 +100,21 @@ namespace TomPIT.Reflection.Manifests.Providers
 					Type = CodeAnalysisExtentions.ToManifestTypeName(pdx.Type)
 				};
 
-				foreach (var accessor in pdx.AccessorList.Accessors)
+				if (pdx.AccessorList == null)
 				{
-					if (string.Compare(accessor.Keyword.ValueText, "get", false) == 0)
+					if (pdx.ExpressionBody is ArrowExpressionClauseSyntax)
 						p.CanRead = true;
-					else if (string.Compare(accessor.Keyword.ValueText, "set", false) == 0)
-						p.CanWrite = true;
 				}
-
+				else
+				{
+					foreach (var accessor in pdx.AccessorList.Accessors)
+					{
+						if (string.Compare(accessor.Keyword.ValueText, "get", false) == 0)
+							p.CanRead = true;
+						else if (string.Compare(accessor.Keyword.ValueText, "set", false) == 0)
+							p.CanWrite = true;
+					}
+				}
 				foreach (var attributeList in pdx.AttributeLists)
 				{
 					foreach (var attribute in attributeList.Attributes)

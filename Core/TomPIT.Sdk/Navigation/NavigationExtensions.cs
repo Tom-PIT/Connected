@@ -152,7 +152,8 @@ namespace TomPIT.Navigation
 				{
 					Text = route.Text,
 					Url = route.ParseUrl(context),
-					BeginGroup = route.BeginGroup
+					BeginGroup = route.BeginGroup,
+					Visible = route.Visible,
 				};
 
 				routes.Add(url);

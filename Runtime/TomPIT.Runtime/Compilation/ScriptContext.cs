@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Exceptions;
 
 namespace TomPIT.Compilation
 {
@@ -38,7 +39,7 @@ namespace TomPIT.Compilation
 		}
 		private void LoadScript(IText sourceCode)
 		{
-			ProcessScript(Tenant.GetService<IComponentService>().SelectText(MicroService.Token, sourceCode), string.Empty);
+			ProcessScript(Tenant.GetService<IComponentService>().SelectText(MicroService.Token, sourceCode), sourceCode.ResolvePath(Tenant));
 		}
 
 		private void ProcessScript(string sourceCode, string basePath)
@@ -82,7 +83,19 @@ namespace TomPIT.Compilation
 
 			Parallel.ForEach(references, (i) =>
 			{
-				var resolvedReference = ScriptResolver.ResolveReference(i, basePath);
+				var resolvedReference = string.Empty;
+
+				try
+				{
+					resolvedReference = ScriptResolver.ResolveReference(i, basePath);
+				}
+				catch (RuntimeException ex)
+				{
+					if (string.IsNullOrWhiteSpace(basePath))
+						throw ex;
+
+					throw new RuntimeException($"{ex.Message} ({basePath})");
+				}
 
 				if (SourceFiles.ContainsKey(resolvedReference))
 					return;

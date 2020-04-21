@@ -8,7 +8,7 @@ namespace TomPIT.Development.Analysis
 {
 	internal class ComponentAnalysisJob : DispatcherJob<IComponentDevelopmentState>
 	{
-		public ComponentAnalysisJob(Dispatcher<IComponentDevelopmentState> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public ComponentAnalysisJob(Dispatcher<IComponentDevelopmentState> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 

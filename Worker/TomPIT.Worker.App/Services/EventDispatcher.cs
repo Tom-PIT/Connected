@@ -6,12 +6,12 @@ namespace TomPIT.Worker.Services
 {
 	internal class EventDispatcher : Dispatcher<IQueueMessage>
 	{
-		public EventDispatcher(string resourceGroup, CancellationTokenSource cancel) : base(cancel, 128)
+		public EventDispatcher(string resourceGroup, CancellationToken cancel) : base(cancel, 128)
 		{
 			ResourceGroup = resourceGroup;
 		}
 
-		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationTokenSource cancel)
+		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationToken cancel)
 		{
 			return new EventJob(this, cancel);
 		}

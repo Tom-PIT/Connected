@@ -15,7 +15,7 @@ namespace TomPIT.Worker.Subscriptions
 {
 	internal class SubscriptionJob : DispatcherJob<IQueueMessage>
 	{
-		public SubscriptionJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public SubscriptionJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 

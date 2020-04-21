@@ -17,12 +17,12 @@ namespace TomPIT.IoC
 			return items;
 		}
 
-		public ISearchEntity Search(ISearchEntity searchResult)
+		public ISearchEntity Search(ISearchEntity searchResult, string content)
 		{
-			return OnSearch(searchResult);
+			return OnSearch(searchResult, content);
 		}
 
-		protected virtual ISearchEntity OnSearch(ISearchEntity searchResult)
+		protected virtual ISearchEntity OnSearch(ISearchEntity searchResult, string content)
 		{
 			return searchResult;
 		}

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
+using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
 using TomPIT.Storage;
@@ -14,6 +16,7 @@ namespace TomPIT.App.Resources
 {
 	internal class ResourceService : ClientRepository<CompiledBundle, string>, IResourceService
 	{
+		private const string FromPreprocessorPattern = "\"(.*?)\"";
 		public ResourceService(ITenant tenant) : base(tenant, "bundle")
 		{
 			tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
@@ -108,13 +111,44 @@ namespace TomPIT.App.Resources
 		private string GetSource(IScriptSource source)
 		{
 			if (source is IScriptFileSystemSource)
-				return GetFileSystemSource(source as IScriptFileSystemSource);
+				return Preprocessor(GetFileSystemSource(source as IScriptFileSystemSource));
 			else if (source is IScriptCodeSource)
-				return GetCodeSource(source as IScriptCodeSource);
+				return Preprocessor(GetCodeSource(source as IScriptCodeSource));
 			else if (source is IScriptUploadSource)
-				return GetUploadSource(source as IScriptUploadSource);
+				return Preprocessor(GetUploadSource(source as IScriptUploadSource));
 			else
 				throw new NotSupportedException();
+		}
+
+		private string Preprocessor(string source)
+		{
+			if (string.IsNullOrWhiteSpace(source))
+				return source;
+
+			var result = new StringBuilder();
+			using var reader = new StringReader(source);
+
+			while (reader.Peek() != -1)
+			{
+				var line = reader.ReadLine();
+
+				if (line.Trim().StartsWith("import", StringComparison.OrdinalIgnoreCase))
+					line = Regex.Replace(line, FromPreprocessorPattern, new MatchEvaluator(ProcessPath));
+
+				result.AppendLine(line);
+			}
+
+			return result.ToString();
+		}
+
+		private string ProcessPath(Match match)
+		{
+			if (!match.Value.StartsWith("\"@:"))
+				return match.Value;
+
+			var path = match.Value[3..^1];
+
+			return $"\"{new MiddlewareContext(Tenant.Url).Services.Routing.RootUrl}/sys/bundles/{path}\"";
 		}
 
 		private string GetUploadSource(IScriptUploadSource d)
@@ -157,8 +191,7 @@ namespace TomPIT.App.Resources
 
 		private string Minify(string source)
 		{
-			//TODO: implement minifier
-			return source;
+			return new BundleMinifier().Minify(source);
 		}
 	}
 }

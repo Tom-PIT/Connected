@@ -8,11 +8,11 @@ namespace TomPIT.Distributed
 	{
 		private ConcurrentQueue<T> _items = null;
 		private ConcurrentBag<DispatcherJob<T>> _workers = null;
-		private CancellationTokenSource _cancel = null;
+		private CancellationToken _cancel;
 
 		public event EventHandler Enqueued;
 
-		protected Dispatcher(CancellationTokenSource cancel, int workerSize)
+		protected Dispatcher(CancellationToken cancel, int workerSize)
 		{
 			_cancel = cancel;
 
@@ -20,7 +20,7 @@ namespace TomPIT.Distributed
 				Jobs.Add(CreateWorker(_cancel));
 		}
 
-		protected abstract DispatcherJob<T> CreateWorker(CancellationTokenSource cancel);
+		protected abstract DispatcherJob<T> CreateWorker(CancellationToken cancel);
 
 		public int Available { get { return Jobs.Count - Queue.Count; } }
 

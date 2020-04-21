@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
@@ -17,12 +18,12 @@ namespace TomPIT.Management.Deployment
 			IntervalTimeout = TimeSpan.FromMinutes(1);
 		}
 
-		protected override bool Initialize()
+		protected override bool Initialize(CancellationToken cancel)
 		{
 			return Instance.State == InstanceState.Running;
 		}
 
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			var tenants = Shell.GetService<IConnectivityService>().QueryTenants();
 
@@ -31,14 +32,14 @@ namespace TomPIT.Management.Deployment
 				 {
 					 MiddlewareDescriptor.Current.Tenant = Shell.GetService<IConnectivityService>().SelectTenant(i.Url);
 
-					 CheckForUpdates(Shell.GetService<IConnectivityService>().SelectTenant(i.Url));
+					 CheckForUpdates(Shell.GetService<IConnectivityService>().SelectTenant(i.Url), cancel);
 				 });
 
 
 			return Task.CompletedTask;
 		}
 
-		private void CheckForUpdates(ITenant tenant)
+		private void CheckForUpdates(ITenant tenant, CancellationToken cancel)
 		{
 			var microServices = tenant.GetService<IMicroServiceService>().Query();
 			var checkingMicroServices = new ListItems<IMicroService>();
@@ -52,6 +53,9 @@ namespace TomPIT.Management.Deployment
 			}
 
 			var updates = tenant.GetService<IDeploymentService>().CheckForUpdates(checkingMicroServices);
+
+			if (cancel.IsCancellationRequested)
+				return;
 
 			foreach (var update in updates)
 			{

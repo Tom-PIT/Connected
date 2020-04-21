@@ -14,7 +14,7 @@ namespace TomPIT.BigData.Transactions
 	internal class StorageJob : DispatcherJob<IQueueMessage>
 	{
 		private TimeoutTask _timeout = null;
-		public StorageJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public StorageJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -30,7 +30,7 @@ namespace TomPIT.BigData.Transactions
 			{
 				MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(Message.PopReceipt);
 				return Task.CompletedTask;
-			}, TimeSpan.FromSeconds(45));
+			}, TimeSpan.FromSeconds(45), Cancel);
 
 			_timeout.Start();
 

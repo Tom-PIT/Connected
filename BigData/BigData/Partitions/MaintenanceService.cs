@@ -10,7 +10,6 @@ namespace TomPIT.BigData.Partitions
 {
 	internal class MaintenanceService : HostedService
 	{
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
 		private Lazy<List<MaintenanceDispatcher>> _dispatchers = new Lazy<List<MaintenanceDispatcher>>();
 
 		public MaintenanceService()
@@ -18,28 +17,36 @@ namespace TomPIT.BigData.Partitions
 			IntervalTimeout = TimeSpan.FromMilliseconds(4900);
 		}
 
-		protected override bool Initialize()
+		protected override bool Initialize(CancellationToken cancel)
 		{
 			if (Instance.State == InstanceState.Initialining)
 				return false;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new MaintenanceDispatcher(i, _cancel));
+				Dispatchers.Add(new MaintenanceDispatcher(i, cancel));
 
 			return true;
 		}
 
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
 				var jobs = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionMaintenanceService>().Dequeue(f.Available);
 
+				if (cancel.IsCancellationRequested)
+					return;
+
 				if (jobs == null)
 					return;
 
 				foreach (var i in jobs)
+				{
+					if (cancel.IsCancellationRequested)
+						return;
+
 					f.Enqueue(i);
+				}
 			});
 
 			return Task.CompletedTask;
