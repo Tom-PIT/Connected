@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
+using TomPIT.Serialization;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT
@@ -120,6 +121,13 @@ namespace TomPIT
 			return Html.Raw(sb.ToString());
 		}
 
+		public IHtmlContent Object(object value)
+		{
+			if (value == null)
+				return Html.Raw("{}");
+
+			return Html.Raw(Serializer.Serialize(value));
+		}
 		public IHtmlContent BundlePath([CIP(CIP.BundleProvider)]string name)
 		{
 			var model = Html.ViewData.Model as IMiddlewareContext;

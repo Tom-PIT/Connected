@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
@@ -15,7 +16,9 @@ namespace TomPIT.Exceptions
 
 		protected override async Task OnHandleAjaxException(HttpContext context, Exception ex)
 		{
-			context.Response.StatusCode = 500;
+			if (context.Response.StatusCode == (int)HttpStatusCode.OK)
+				context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
 			context.Response.ContentType = "application/json";
 
 			var severity = ExceptionSeverity.Critical;

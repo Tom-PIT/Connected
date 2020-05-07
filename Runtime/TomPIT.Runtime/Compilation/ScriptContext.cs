@@ -112,7 +112,11 @@ namespace TomPIT.Compilation
 					return;
 
 				SourceFiles.TryAdd(resolvedReference, sourceFile);
-				ProcessScript(ScriptResolver.ReadText(resolvedReference)?.ToString(), resolvedReference);
+
+				var text = ScriptResolver.ReadText(resolvedReference);
+
+				if (text != null)
+					ProcessScript(text.ToString(), resolvedReference);
 			});
 		}
 

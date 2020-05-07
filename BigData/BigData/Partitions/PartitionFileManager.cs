@@ -34,7 +34,7 @@ namespace TomPIT.BigData.Partitions
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("BigData", ex.Source, ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, "BigData");
 
 				if (file != null)
 					TryRollbackFileCreate(file.FileName);
@@ -51,7 +51,7 @@ namespace TomPIT.BigData.Partitions
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("BigData", ex.Source, ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, "BigData");
 			}
 		}
 

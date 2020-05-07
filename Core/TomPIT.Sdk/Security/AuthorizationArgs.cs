@@ -6,16 +6,11 @@ namespace TomPIT.Security
 	{
 		private AuthorizationSchema _schema = null;
 
-		public AuthorizationArgs(Guid user, string claim, string primaryKey) : this(user, claim, primaryKey, Guid.Empty)
-		{
-		}
-
-		public AuthorizationArgs(Guid user, string claim, string primaryKey, Guid folder)
+		public AuthorizationArgs(Guid user, string claim, string primaryKey)
 		{
 			User = user;
 			PrimaryKey = primaryKey;
 			Claim = claim;
-			Folder = folder;
 		}
 
 		public IAuthorizationSchema Schema
@@ -29,9 +24,9 @@ namespace TomPIT.Security
 			}
 		}
 
+
 		public Guid User { get; }
 		public string PrimaryKey { get; }
 		public string Claim { get; }
-		public Guid Folder { get; }
 	}
 }

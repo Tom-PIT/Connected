@@ -73,7 +73,7 @@ namespace TomPIT.Search.Services
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(IndexingJob), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(IndexingJob), ex.Message, "Search");
 				return;
 			}
 
@@ -86,7 +86,7 @@ namespace TomPIT.Search.Services
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.LogError(nameof(IndexingJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(IndexingJob));
 
 			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "Ping");
 			var d = new JObject

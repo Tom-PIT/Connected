@@ -11,7 +11,7 @@ namespace TomPIT.Security
 
 	public interface IPermission
 	{
-		Guid Evidence { get; }
+		string Evidence { get; }
 		string Schema { get; }
 		string Claim { get; }
 		string Descriptor { get; }

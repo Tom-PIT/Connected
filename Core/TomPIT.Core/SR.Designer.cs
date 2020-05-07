@@ -133,6 +133,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Authorization policy not supported.
+        /// </summary>
+        public static string AuthorizationPolicyNotSupported {
+            get {
+                return ResourceManager.GetString("AuthorizationPolicyNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Authorization policy property not found. You should define a property with a required name or define an AuthorizationPropertyAttribute on one property..
+        /// </summary>
+        public static string AuthorizationPropertyNotFound {
+            get {
+                return ResourceManager.GetString("AuthorizationPropertyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Big data node successfully created.
         /// </summary>
         public static string BigDataNodeCreateSuccess {
@@ -561,6 +579,15 @@ namespace TomPIT {
         public static string EnterCredentials {
             get {
                 return ResourceManager.GetString("EnterCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to not found.
+        /// </summary>
+        public static string EntityNotFound {
+            get {
+                return ResourceManager.GetString("EntityNotFound", resourceCulture);
             }
         }
         
@@ -2631,6 +2658,15 @@ namespace TomPIT {
         public static string NavigateBack {
             get {
                 return ResourceManager.GetString("NavigateBack", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Policy authorization failed.
+        /// </summary>
+        public static string PolicyAuthorizationFailed {
+            get {
+                return ResourceManager.GetString("PolicyAuthorizationFailed", resourceCulture);
             }
         }
         

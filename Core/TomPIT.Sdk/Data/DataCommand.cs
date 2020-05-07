@@ -48,7 +48,8 @@ namespace TomPIT.Data
 				parameter = new DataParameter
 				{
 					Name = name,
-					Value = mappedValue
+					Value = mappedValue,
+					Type = ResolveType(value)
 				};
 
 				Parameters.Add(parameter);
@@ -57,6 +58,14 @@ namespace TomPIT.Data
 			parameter.Value = mappedValue;
 
 			return parameter;
+		}
+
+		private Type ResolveType(object value)
+		{
+			if (value == null || value == DBNull.Value)
+				return typeof(string);
+
+			return value.GetType();
 		}
 
 		private object MapValue(object value)
@@ -140,7 +149,8 @@ namespace TomPIT.Data
 				{
 					Direction = parameter.Direction,
 					Name = parameter.Name,
-					Value = parameter.Value
+					Value = parameter.Value,
+					DataType = parameter.Type.IsEnum ? Enum.GetUnderlyingType(parameter.Type) : parameter.Type
 				});
 			}
 

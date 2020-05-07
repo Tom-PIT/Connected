@@ -191,7 +191,7 @@ namespace TomPIT.Worker.Services
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.LogError(nameof(EventJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(EventJob));
 
 			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Ping");
 			var d = new JObject

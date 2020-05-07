@@ -31,15 +31,6 @@ namespace TomPIT.Compilation
 				return;
 			var msv = Tenant.GetService<IMicroServiceService>().Select(MicroService);
 
-			var options = ScriptOptions.Default
-				 .WithImports(Usings)
-				 .WithReferences(References)
-				 .WithSourceResolver(new ScriptResolver(Tenant, MicroService))
-				 .WithMetadataResolver(new AssemblyResolver(Tenant, MicroService))
-				 .WithEmitDebugInformation(true)
-				 .WithFilePath(SourceCode.ScriptName(Tenant))
-				 .WithFileEncoding(Encoding.UTF8);
-
 			using (var loader = new InteractiveAssemblyLoader())
 			{
 				ScriptContext = Tenant.GetService<ICompilerService>().CreateScriptContext(SourceCode);
@@ -51,6 +42,15 @@ namespace TomPIT.Compilation
 
 				if (refs.Count > 0)
 					ScriptReferences = refs;
+
+				var options = ScriptOptions.Default
+					 .WithImports(Usings)
+					 .WithReferences(References)
+					 .WithSourceResolver(new ScriptResolver(Tenant, MicroService))
+					 .WithMetadataResolver(new AssemblyResolver(Tenant, MicroService))
+					 .WithEmitDebugInformation(true)
+					 .WithFilePath(SourceCode.ScriptName(Tenant))
+					 .WithFileEncoding(Encoding.UTF8);
 
 				foreach (var reference in ScriptContext.References)
 				{
@@ -77,7 +77,11 @@ namespace TomPIT.Compilation
 							var asm = AssemblyResolver.LoadDependency(Tenant, ms, name);
 
 							if (asm != null)
-								loader.RegisterDependency(asm);
+							{
+								var identity = AssemblyIdentity.FromAssemblyDefinition(asm);
+
+								loader.RegisterDependency(identity, "c:\\bin");
+							}
 						}
 					}
 				}
@@ -86,6 +90,16 @@ namespace TomPIT.Compilation
 			}
 		}
 
+		//private object CreateInMemoryAssemblyMetadata(Assembly assembly)
+		//{
+		//	var modulePtr = Marshal.GetHINSTANCE(assembly.ManifestModule);
+
+		//	var peReader = new PEReader((byte*)modulePtr, bytes.Length));
+		//	var metadataBlock = peReader.GetMetadata();
+		//	var moduleMetadata = ModuleMetadata.CreateFromMetadata((IntPtr)metadataBlock.Pointer, metadataBlock.Length);
+		//	var assemblyMetadata = AssemblyMetadata.Create(moduleMetadata);
+		//	var reference = assemblyMetadata.GetReference();
+		//}
 		protected virtual Script<object> CreateScript(string sourceCode, ScriptOptions options, InteractiveAssemblyLoader loader)
 		{
 			return CSharpScript.Create(sourceCode, options: options, assemblyLoader: loader);

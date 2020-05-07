@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
@@ -132,7 +133,7 @@ namespace TomPIT.Management.Designers
 
 						if (u == null)
 						{
-							Environment.Context.Tenant.LogWarning(null, "MembershipDesigner", string.Format("Membership user not found (role:'{0}', user:'{1}')", i.User, SelectedRole));
+							Environment.Context.Tenant.LogWarning("MembershipDesigner", string.Format("Membership user not found (role:'{0}', user:'{1}')", i.User, SelectedRole), LogCategories.Management);
 
 							continue;
 						}

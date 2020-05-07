@@ -41,7 +41,7 @@ namespace TomPIT.Worker.Services
 			var configuration = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(worker) as IWorkerConfiguration;
 
 			if (configuration == null)
-				MiddlewareDescriptor.Current.Tenant.LogError(SR.LogCategoryWorker, nameof(Invoke), string.Format("{0} ({1})", SR.ErrWorkerNotFound, worker));
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), string.Format("{0} ({1})", SR.ErrWorkerNotFound, worker), SR.LogCategoryWorker);
 
 			var workerState = string.Empty;
 
@@ -116,7 +116,7 @@ namespace TomPIT.Worker.Services
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.LogError(nameof(WorkerJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(WorkerJob));
 
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
 			var worker = m.Required<Guid>("worker");

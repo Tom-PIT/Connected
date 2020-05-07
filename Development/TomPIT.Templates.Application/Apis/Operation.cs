@@ -33,7 +33,7 @@ namespace TomPIT.MicroServices.Apis
 			return string.IsNullOrWhiteSpace(Name) ? GetType().ShortName() : Name;
 		}
 
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public IOperationProtocolOptions Protocols
 		{
 			get

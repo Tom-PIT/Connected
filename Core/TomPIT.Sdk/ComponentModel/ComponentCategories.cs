@@ -27,6 +27,7 @@
 		public static string SearchCatalog => "SearchCatalog";
 		public static string Installer => "Installer";
 		public static string EventBinder => "EventBinder";
+		public static string AuthorizationPolicy => "AuthorizationPolicy";
 		public static string IoTHub => "IoTHub";
 		public static string IoTSchema => "IoTSchema";
 		public static string IoCContainer => "IoCContainer";
@@ -50,7 +51,8 @@
 		{
 			if (string.Compare(category, Api, true) == 0
 				|| string.Compare(category, Script, true) == 0
-				|| string.Compare(category, IoCContainer, true) == 0)
+				|| string.Compare(category, IoCContainer, true) == 0
+				|| string.Compare(category, AuthorizationPolicy, true) == 0)
 				return NameSpacePublicScript;
 			else if (string.Compare(category, Subscription, true) == 0
 				|| string.Compare(category, Queue, true) == 0

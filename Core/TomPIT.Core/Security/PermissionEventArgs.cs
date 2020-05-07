@@ -8,7 +8,7 @@ namespace TomPIT.Security
 		{
 
 		}
-		public PermissionEventArgs(Guid resourceGroup, Guid evidence, string schema, string claim, string primaryKey)
+		public PermissionEventArgs(Guid resourceGroup, string evidence, string schema, string claim, string primaryKey)
 		{
 			Evidence = evidence;
 			Schema = schema;
@@ -18,7 +18,7 @@ namespace TomPIT.Security
 		}
 
 		public Guid ResourceGroup { get; set; }
-		public Guid Evidence { get; set; }
+		public string Evidence { get; set; }
 		public string Schema { get; set; }
 		public string Claim { get; set; }
 		public string PrimaryKey { get; set; }

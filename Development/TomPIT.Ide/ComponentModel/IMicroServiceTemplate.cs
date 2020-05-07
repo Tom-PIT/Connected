@@ -27,6 +27,6 @@ namespace TomPIT.Ide.ComponentModel
 
 		TemplateKind Kind { get; }
 
-		void RegisterRoutes(IRouteBuilder builder);
+		void RegisterRoutes(IEndpointRouteBuilder builder);
 	}
 }

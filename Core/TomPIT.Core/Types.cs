@@ -143,6 +143,22 @@ namespace TomPIT
 			}
 		}
 
+		public static DbType ToDbType(DataType type)
+		{
+			return type switch
+			{
+				DataType.String => DbType.String,
+				DataType.Integer => DbType.Int32,
+				DataType.Float => DbType.Single,
+				DataType.Date => DbType.DateTime2,
+				DataType.Bool => DbType.Boolean,
+				DataType.Guid => DbType.Guid,
+				DataType.Binary => DbType.Binary,
+				DataType.Long => DbType.Int64,
+				_ => DbType.String
+			};
+		}
+
 		public static DataType ToDataType(Type type)
 		{
 			if (type == typeof(byte)

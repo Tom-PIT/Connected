@@ -32,7 +32,7 @@ namespace TomPIT.MicroServices.Apis
 			}
 		}
 
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public IApiProtocolOptions Protocols
 		{
 			get

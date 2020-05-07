@@ -1122,4 +1122,16 @@
   <data name="ErrManifestPropertyNull" xml:space="preserve">
     <value>Manifest property not found</value>
   </data>
+  <data name="AuthorizationPolicyNotSupported" xml:space="preserve">
+    <value>Authorization policy not supported</value>
+  </data>
+  <data name="PolicyAuthorizationFailed" xml:space="preserve">
+    <value>Policy authorization failed</value>
+  </data>
+  <data name="AuthorizationPropertyNotFound" xml:space="preserve">
+    <value>Authorization policy property not found. You should define a property with a required name or define an AuthorizationPropertyAttribute on one property.</value>
+  </data>
+  <data name="EntityNotFound" xml:space="preserve">
+    <value>not found</value>
+  </data>
 </root>

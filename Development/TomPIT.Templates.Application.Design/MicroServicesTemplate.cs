@@ -20,6 +20,7 @@ using TomPIT.MicroServices.Messaging;
 using TomPIT.MicroServices.Navigation;
 using TomPIT.MicroServices.Resources;
 using TomPIT.MicroServices.Search;
+using TomPIT.MicroServices.Security;
 using TomPIT.MicroServices.UI;
 using TomPIT.MicroServices.UI.Theming;
 
@@ -48,6 +49,7 @@ namespace TomPIT.MicroServices.Design
 				{ ComponentCategories.IoCEndpoint,     new ItemDescriptor("IoC Endpoints",     ComponentCategories.IoCEndpoint,       typeof(IoCEndpointConfiguration))            { Glyph = "fal fa-file-code",          Category = "Middleware" ,     Ordinal=104} },
 				{ ComponentCategories.DependencyInjection,     new ItemDescriptor("Dependency Injection",     ComponentCategories.DependencyInjection,       typeof(DependencyInjectionConfiguration))            { Glyph = "fal fa-file-code",          Category = "Middleware" ,     Ordinal=105} },
 				{ ComponentCategories.EventBinder,     new ItemDescriptor("Event bindings",   ComponentCategories.EventBinder,       typeof(EventBindings))                       { Glyph = "fal fa-bullseye-pointer",   Category = "Middleware" ,     Ordinal=106} },
+				{ ComponentCategories.AuthorizationPolicy,     new ItemDescriptor("Authorization policy",   ComponentCategories.AuthorizationPolicy,       typeof(AuthorizationPolicy))                       { Glyph = "fal fa-shield-check",   Category = "Middleware" ,     Ordinal=107} },
 				{ ComponentCategories.DistributedEvent,new ItemDescriptor("Distributed events",ComponentCategories.DistributedEvent,  typeof(DistributedEvents))                    { Glyph = "fal fa-chart-network",      Category = "Distributed" ,    Ordinal=205} },
 				{ ComponentCategories.HostedWorker,    new ItemDescriptor("Hosted worker",    ComponentCategories.HostedWorker,      typeof(HostedWorker))                        { Glyph = "fal fa-cog",                Category = "Distributed" ,    Ordinal=206} },
 				{ ComponentCategories.Queue,           new ItemDescriptor("Queue middleware", ComponentCategories.Queue,             typeof(Queue))                               { Glyph = "fal fa-cog",                Category = "Distributed" ,    Ordinal=207} },
@@ -70,9 +72,9 @@ namespace TomPIT.MicroServices.Design
 			return _items.Values.ToList();
 		}
 
-		public override void RegisterRoutes(IRouteBuilder builder)
+		public override void RegisterRoutes(IEndpointRouteBuilder builder)
 		{
-			builder.MapRoute("sys/designers/application/media/{microService}/{component}", (t) =>
+			builder.Map("sys/designers/application/media/{microService}/{component}", (t) =>
 			{
 				new MediaHandler().ProcessRequest(t);
 

@@ -82,7 +82,7 @@ namespace TomPIT.BigData.Transactions
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.LogError(nameof(StorageJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(StorageJob));
 			MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(item.PopReceipt);
 		}
 	}

@@ -57,7 +57,7 @@ namespace TomPIT.Compilation
 
 		public static ImmutableArray<PortableExecutableReference> Resolve(ITenant tenant, Guid microService, string reference)
 		{
-			var component = tenant.GetService<IComponentService>().SelectComponent(microService, "Assembly", reference);
+			var component = tenant.GetService<IComponentService>().SelectComponent(microService, ComponentCategories.EmbeddedAssembly, reference);
 
 			if (component == null)
 			{
@@ -121,7 +121,7 @@ namespace TomPIT.Compilation
 			if (content == null || content.Content == null || content.Content.Length == 0)
 				return ImmutableArray<PortableExecutableReference>.Empty;
 
-			var mr = MetadataReference.CreateFromImage(ImmutableArray.Create(content.Content));
+			var mr = MetadataReference.CreateFromStream(new MemoryStream(content.Content));
 
 			return ImmutableArray.Create(mr);
 		}
@@ -147,13 +147,14 @@ namespace TomPIT.Compilation
 			}
 			catch
 			{
+				//return ResolveUploadReference(Tenant, )
 				return base.ResolveMissingAssembly(definition, referenceIdentity);
 			}
 		}
 
 		public static Assembly LoadDependency(ITenant tenant, Guid microService, string name)
 		{
-			var component = tenant.GetService<IComponentService>().SelectComponent(microService, "Assembly", name);
+			var component = tenant.GetService<IComponentService>().SelectComponent(microService, ComponentCategories.EmbeddedAssembly, name);
 
 			if (component == null)
 				return null;

@@ -27,6 +27,9 @@ namespace TomPIT.Middleware
 
 				return _context;
 			}
+			/*
+			 * this setter must be present because of reflection
+			 */
 			private set
 			{
 				_context = value;

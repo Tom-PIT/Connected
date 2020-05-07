@@ -13,7 +13,7 @@ namespace TomPIT.Sys.Controllers.Management
 		{
 			var body = FromBody();
 
-			var evidence = body.Required<Guid>("evidence");
+			var evidence = body.Required<string>("evidence");
 			var claim = body.Required<string>("claim");
 			var schema = body.Required<string>("schema");
 			var descriptor = body.Required<string>("descriptor");

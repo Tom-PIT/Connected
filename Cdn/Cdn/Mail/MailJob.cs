@@ -111,7 +111,7 @@ namespace TomPIT.Cdn.Mail
 
 		protected override void OnError(IMailMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.LogError(nameof(MailJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(MailJob));
 		}
 	}
 }

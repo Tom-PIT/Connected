@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using Newtonsoft.Json.Linq;
@@ -12,7 +11,6 @@ namespace TomPIT.DataProviders.Sql
 	internal class DataConnection : IDataConnection, IDisposable
 	{
 		private ReliableSqlConnection _connection = null;
-		private Dictionary<string, SqlCommand> _commands = null;
 
 		public DataConnection(IDataProvider provider, string connectionString, ConnectionBehavior behavior)
 		{
@@ -92,17 +90,6 @@ namespace TomPIT.DataProviders.Sql
 		public JObject Query(IDataCommandDescriptor command)
 		{
 			return Provider.Query(command, null, this);
-		}
-
-		public Dictionary<string, SqlCommand> Commands
-		{
-			get
-			{
-				if (_commands == null)
-					_commands = new Dictionary<string, SqlCommand>();
-
-				return _commands;
-			}
 		}
 
 		public SqlTransaction Transaction { get; private set; }

@@ -905,29 +905,42 @@ namespace TomPIT.MicroServices.Design.Media
 
 			if (blob != null && blob.ContentType.StartsWith("image/"))
 			{
-				var content = Tenant.GetService<IStorageService>().Download(blob.Token);
+				if (string.Compare(blob.ContentType, "image/svg+xml", true) == 0)
+					return;
 
-				if (content != null)
+				try
 				{
-					using (var ms = new MemoryStream(content.Content))
+					var content = Tenant.GetService<IStorageService>().Download(blob.Token);
+
+					if (content != null)
 					{
-						var image = Image.FromStream(ms);
-
-						if (image != null)
+						using (var ms = new MemoryStream(content.Content))
 						{
-							var thumbnail = Tenant.GetService<IGraphicsService>().Resize(image, 100, 100, true);
+							var image = Image.FromStream(ms);
 
-							file.Thumb = Tenant.GetService<IStorageService>().Upload(new Blob
+							if (image != null)
 							{
-								ContentType = blob.ContentType,
-								FileName = blob.FileName,
-								MicroService = blob.MicroService,
-								PrimaryKey = $"t{file.Id.ToString()}",
-								ResourceGroup = blob.ResourceGroup,
-								Type = blob.Type
-							}, thumbnail, StoragePolicy.Singleton);
+								var thumbnail = Tenant.GetService<IGraphicsService>().Resize(image, 100, 100, true);
+
+								file.Thumb = Tenant.GetService<IStorageService>().Upload(new Blob
+								{
+									ContentType = blob.ContentType,
+									FileName = blob.FileName,
+									MicroService = blob.MicroService,
+									PrimaryKey = $"t{file.Id.ToString()}",
+									ResourceGroup = blob.ResourceGroup,
+									Type = blob.Type
+								}, thumbnail, StoragePolicy.Singleton);
+							}
 						}
 					}
+				}
+				catch
+				{
+					/*
+					 * could be unsupported image type. we don't really care because it just that
+					 * thumbnail won't be created
+					 */
 				}
 			}
 		}

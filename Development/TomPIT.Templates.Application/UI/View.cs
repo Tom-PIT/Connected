@@ -37,5 +37,8 @@ namespace TomPIT.MicroServices.UI
 				return _metric;
 			}
 		}
+
+		[DefaultValue(true)]
+		public bool AuthorizationEnabled { get; set; } = true;
 	}
 }

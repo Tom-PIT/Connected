@@ -11,5 +11,7 @@
 		public const string Search = "Search";
 		public const string Navigation = "Navigation";
 		public const string Cdn = "Cdn";
+		public const string Management = "Management";
+		public const string Security = "Security";
 	}
 }

@@ -66,6 +66,7 @@ namespace TomPIT.Middleware.Interop
 			{
 				if (Context.Environment.IsInteractive)
 				{
+					AuthorizePolicies();
 					OnAuthorize();
 					OnAuthorizing();
 				}

@@ -57,7 +57,7 @@ namespace TomPIT.Search.Catalogs
 
 					if (string.IsNullOrWhiteSpace(_searchDirectory))
 					{
-						MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(CatalogHost), "'Search Path' setting not defined");
+						MiddlewareDescriptor.Current.Tenant.LogError(nameof(CatalogHost), "'Search Path' setting not defined", "Search");
 						throw new NullReferenceException();
 					}
 				}
@@ -114,7 +114,7 @@ namespace TomPIT.Search.Catalogs
 
 			_isValid = false;
 
-			MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(FileNotFoundException), $"Index Corrupted ({Catalog.Component})");
+			MiddlewareDescriptor.Current.Tenant.LogError(nameof(FileNotFoundException), $"Index Corrupted ({Catalog.Component})", "Search");
 		}
 
 		public bool IsValid { get { return _isValid && MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().SelectState(Catalog.Component) == null; } }
@@ -184,7 +184,7 @@ namespace TomPIT.Search.Catalogs
 
 				KillAll();
 
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Flush), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Flush), ex.Message, "Search");
 			}
 			catch (Exception ex)
 			{
@@ -192,7 +192,7 @@ namespace TomPIT.Search.Catalogs
 				OperationEnd();
 				KillAll();
 
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Flush), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Flush), ex.Message, "Search");
 			}
 		}
 
@@ -438,7 +438,7 @@ namespace TomPIT.Search.Catalogs
 			{
 				_isValid = false;
 
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Search), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Search), ex.Message, "Search");
 				MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Rebuild(Catalog.Component);
 
 				KillAll();
@@ -447,7 +447,7 @@ namespace TomPIT.Search.Catalogs
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Search), $"{Catalog.ComponentName()} ({job.CommandText}, {ex.Message})");
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Search), $"{Catalog.ComponentName()} ({job.CommandText}, {ex.Message})", "Search");
 
 				_isValid = false;
 

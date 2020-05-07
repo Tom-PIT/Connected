@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using TomPIT.Environment;
 
 namespace TomPIT.Runtime
@@ -34,5 +35,7 @@ namespace TomPIT.Runtime
 		InstanceType Type { get; }
 		EnvironmentStage Stage { get; }
 		EnvironmentMode Mode { get; }
+
+		IApplicationBuilder Host { get; }
 	}
 }

@@ -20,14 +20,14 @@ namespace TomPIT.Sys.Data
 			var ds = Shell.GetService<IDatabaseService>().Proxy.Security.Permissions.Query();
 
 			foreach (var i in ds)
-				Set(GenerateKey(i.Evidence.ToString(), i.Schema, i.Claim, i.PrimaryKey), i, TimeSpan.Zero);
+				Set(GenerateKey(i.Evidence, i.Schema, i.Claim, i.PrimaryKey), i, TimeSpan.Zero);
 		}
 
 		protected override void OnInvalidate(string id)
 		{
 			var tokens = id.Split('.');
 
-			var r = Shell.GetService<IDatabaseService>().Proxy.Security.Permissions.Select(new Guid(tokens[0]), tokens[1], tokens[2], tokens[3]);
+			var r = Shell.GetService<IDatabaseService>().Proxy.Security.Permissions.Select(tokens[0], tokens[1], tokens[2], tokens[3]);
 
 			if (r == null)
 			{
@@ -38,7 +38,7 @@ namespace TomPIT.Sys.Data
 			Set(id, r, TimeSpan.Zero);
 		}
 
-		public IPermission Select(Guid evidence, string schema, string claim, string primaryKey)
+		public IPermission Select(string evidence, string schema, string claim, string primaryKey)
 		{
 			return Get(GenerateKey(evidence.ToString(), schema, claim, primaryKey),
 				(f) =>
@@ -67,7 +67,7 @@ namespace TomPIT.Sys.Data
 
 		public List<IPermission> Query() { return All(); }
 
-		public void Insert(Guid resourceGroup, Guid evidence, string schema, string claim, string descriptor, string primaryKey, PermissionValue value, string component)
+		public void Insert(Guid resourceGroup, string evidence, string schema, string claim, string descriptor, string primaryKey, PermissionValue value, string component)
 		{
 			IResourceGroup rg = null;
 
@@ -87,7 +87,7 @@ namespace TomPIT.Sys.Data
 			CachingNotifications.PermissionAdded(resourceGroup, evidence, schema, claim, primaryKey);
 		}
 
-		public void Update(Guid evidence, string schema, string claim, string primaryKey, PermissionValue value)
+		public void Update(string evidence, string schema, string claim, string primaryKey, PermissionValue value)
 		{
 			var p = Select(evidence, schema, claim, primaryKey);
 
@@ -102,7 +102,7 @@ namespace TomPIT.Sys.Data
 			CachingNotifications.PermissionChanged(p.ResourceGroup, evidence, schema, claim, primaryKey);
 		}
 
-		public void Delete(Guid evidence, string schema, string claim, string primaryKey)
+		public void Delete(string evidence, string schema, string claim, string primaryKey)
 		{
 			var p = Select(evidence, schema, claim, primaryKey);
 

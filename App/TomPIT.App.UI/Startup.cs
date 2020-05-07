@@ -19,7 +19,7 @@ namespace TomPIT.App
 {
 	public class Startup
 	{
-		internal static IRouteBuilder RouteBuilder = null;
+		internal static IEndpointRouteBuilder RouteBuilder = null;
 		public void ConfigureServices(IServiceCollection services)
 		{
 			var e = new ServicesConfigurationArgs
@@ -70,7 +70,7 @@ namespace TomPIT.App
 				app.UseMiddleware<IgnoreRouteMiddleware>();
 
 				RouteBuilder = f.Builder;
-				AppRouting.Register(f.Builder);
+				AppRouting.Register(app, f.Builder);
 			});
 
 			InitializeConfiguration();

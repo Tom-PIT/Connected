@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -146,10 +147,14 @@ namespace TomPIT.Exceptions
 
 		protected virtual async Task HandleException(HttpContext context, Exception ex)
 		{
+			var resolvedException = ResolveException(ex);
+
+			SetResponseStatus(context, resolvedException);
+
 			if (context.Request.IsAjaxRequest() || !Shell.GetService<IRuntimeService>().SupportsUI)
-				await OnHandleAjaxException(context, ResolveException(ex));
+				await OnHandleAjaxException(context, resolvedException);
 			else
-				await OnHandleException(context, ResolveException(ex));
+				await OnHandleException(context, resolvedException);
 		}
 
 		private Exception ResolveException(Exception ex)
@@ -158,6 +163,16 @@ namespace TomPIT.Exceptions
 				return ex.InnerException;
 
 			return ex;
+		}
+
+		private void SetResponseStatus(HttpContext context, Exception ex)
+		{
+			if (ex is ForbiddenException)
+				context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+			else if (ex is NotFoundException)
+				context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+			else if (ex is UnauthorizedException)
+				context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
 		}
 	}
 }

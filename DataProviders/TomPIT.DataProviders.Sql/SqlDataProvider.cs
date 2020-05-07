@@ -71,6 +71,7 @@ namespace TomPIT.DataProviders.Sql
 					var p = new SqlParameter
 					{
 						ParameterName = i.Name,
+						DbType = ResolveType(i)
 					};
 
 					if (i.Direction == ParameterDirection.ReturnValue)
@@ -82,6 +83,17 @@ namespace TomPIT.DataProviders.Sql
 						rv = p;
 				}
 			}
+		}
+
+		private DbType ResolveType(ICommandParameter i)
+		{
+			if (i.DataType != null)
+				return Types.ToDbType(Types.ToDataType(i.DataType));
+
+			if (i.Value == null)
+				return DbType.String;
+
+			return Types.ToDbType(Types.ToDataType(i.Value.GetType()));
 		}
 
 		public IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior)
@@ -205,7 +217,6 @@ namespace TomPIT.DataProviders.Sql
 
 		private SqlCommand ResolveCommand(IDataCommandDescriptor command, ReliableSqlConnection connection, IDataConnection dataConnection)
 		{
-			var commandKey = string.Format("{0}/{1}", command.CommandText, command.CommandType).ToLowerInvariant();
 			DataConnection dc = null;
 
 			if (dataConnection != null)
@@ -214,9 +225,6 @@ namespace TomPIT.DataProviders.Sql
 					throw new RuntimeException(string.Format(SR.ErrInvalidConnectionType, typeof(DataConnection).ShortName()));
 
 				dc = dataConnection as DataConnection;
-
-				if (dc.Commands.ContainsKey(commandKey))
-					return dc.Commands[commandKey];
 			}
 
 			var r = connection.CreateCommand();
@@ -229,8 +237,6 @@ namespace TomPIT.DataProviders.Sql
 			{
 				if (dc.Transaction != null)
 					r.Transaction = dc.Transaction;
-
-				dc.Commands.Add(commandKey, r);
 			}
 
 			return r;

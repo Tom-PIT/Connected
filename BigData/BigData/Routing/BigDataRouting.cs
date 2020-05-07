@@ -1,17 +1,17 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using System.Threading.Tasks;
 using TomPIT.BigData.Controllers;
 
 namespace TomPIT.BigData.Configuration
 {
 	internal static class Routing
 	{
-		public static void Register(IRouteBuilder builder)
+		public static void Register(IEndpointRouteBuilder builder)
 		{
-			builder.MapRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+			builder.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
 
-			builder.MapRoute("data/{microService}/{partition}", (t) =>
+			builder.Map("data/{microService}/{partition}", (t) =>
 			{
 				var handler = new DataHandler(t);
 

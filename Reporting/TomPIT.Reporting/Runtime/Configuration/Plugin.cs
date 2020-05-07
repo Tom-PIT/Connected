@@ -76,16 +76,16 @@ namespace TomPIT.MicroServices.Reporting.Runtime.Configuration
 			app.UseDevExpressControls();
 		}
 
-		public void RegisterRoutes(IRouteBuilder builder)
+		public void RegisterRoutes(IEndpointRouteBuilder builder)
 		{
 			//builder.MapRoute("sys/plugins/iot/partial/{id}", (t) =>
 			//{
 			//	return Task.CompletedTask;
 			//});
 
-			builder.MapRoute("sys.reporting.viewer", "DXXRDV", new { controller = "ReportViewer", action = "Invoke" }, null, new { Namespace = "TomPIT.MicroServices.Reporting.Controllers" });
-			builder.MapRoute("sys.reporting.querybuilder", "DXXQB", new { controller = "ReportQueryBuilder", action = "Invoke" }, null, new { Namespace = "TomPIT.MicroServices.Reporting.Controllers" });
-			builder.MapRoute("sys.reporting.designer", "DXXRD", new { controller = "Designer", action = "Invoke" }, null, new { Namespace = "TomPIT.MicroServices.Reporting.Controllers" });
+			builder.MapControllerRoute("sys.reporting.viewer", "DXXRDV", new { controller = "ReportViewer", action = "Invoke" }, null, new { Namespace = "TomPIT.MicroServices.Reporting.Controllers" });
+			builder.MapControllerRoute("sys.reporting.querybuilder", "DXXQB", new { controller = "ReportQueryBuilder", action = "Invoke" }, null, new { Namespace = "TomPIT.MicroServices.Reporting.Controllers" });
+			builder.MapControllerRoute("sys.reporting.designer", "DXXRD", new { controller = "Designer", action = "Invoke" }, null, new { Namespace = "TomPIT.MicroServices.Reporting.Controllers" });
 		}
 	}
 }

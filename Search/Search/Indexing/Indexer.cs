@@ -133,7 +133,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Indexer), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Indexer), ex.Message, "Search");
 
 				Success = false;
 			}
@@ -190,7 +190,7 @@ namespace TomPIT.Search.Indexing
 					if (Verb == SearchVerb.Rebuild)
 						MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Ping(Queue.PopReceipt, 60);
 
-					MiddlewareDescriptor.Current.Tenant.LogError("Search", valEx.Source, valEx.Message);
+					MiddlewareDescriptor.Current.Tenant.LogError(valEx.Source, valEx.Message, "Search");
 				}
 			}
 			catch (Exception ex)
@@ -198,7 +198,7 @@ namespace TomPIT.Search.Indexing
 				if (Verb == SearchVerb.Rebuild)
 					MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Ping(Queue.PopReceipt, 60);
 
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", ex.Source, ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, "Search");
 			}
 		}
 
@@ -379,7 +379,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Insert), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Insert), ex.Message, "Search");
 
 				return false;
 			}
@@ -457,7 +457,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Update), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Update), ex.Message, "Search");
 
 				return false;
 			}
@@ -481,7 +481,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Update), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Update), ex.Message, "Search");
 
 				return false;
 			}
@@ -499,7 +499,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Update), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Update), ex.Message, "Search");
 
 				return false;
 			}
@@ -544,7 +544,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Delete), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Delete), ex.Message, "Search");
 
 				return false;
 			}

@@ -5,7 +5,7 @@ namespace TomPIT.Ide.Security
 {
 	internal class Permission : IPermission
 	{
-		public Guid Evidence { get; set; }
+		public string Evidence { get; set; }
 		public string Schema { get; set; }
 		public string Claim { get; set; }
 		public string Descriptor { get; set; }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
@@ -12,7 +13,7 @@ namespace TomPIT.Cdn
 
 		}
 
-		public Guid Enqueue(string from, string to, string subject, string body, JArray headers,
+		public Guid Enqueue(string from, string to, string subject, string body, Dictionary<string, object> headers,
 			int attachmentCount, MailFormat format, DateTime sendDate, DateTime expire)
 		{
 			var u = Tenant.CreateUrl("Mail", "Insert");
@@ -25,9 +26,23 @@ namespace TomPIT.Cdn
 				{"format", format.ToString() },
 				{"attachmentCount", attachmentCount },
 				{"nextVisible", sendDate },
-				{"expire", expire },
-				{"headers", headers }
+				{"expire", expire }
 			};
+
+			if (headers != null && headers.Count > 0)
+			{
+				var a = new JArray();
+
+				foreach (var header in headers)
+				{
+					a.Add(new JObject
+					{
+						{header.Key, JToken.FromObject(header.Value) }
+					});
+				}
+
+				e.Add("headers", a);
+			}
 
 			return Tenant.Post<Guid>(u, e);
 		}

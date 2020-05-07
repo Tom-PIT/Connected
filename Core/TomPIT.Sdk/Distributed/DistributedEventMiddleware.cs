@@ -2,7 +2,7 @@
 
 namespace TomPIT.Distributed
 {
-	public abstract class DistributedEventMiddleware : MiddlewareComponent, IDistributedEventMiddleware
+	public abstract class DistributedEventMiddleware : MiddlewareOperation, IDistributedEventMiddleware
 	{
 		public void Invoke()
 		{
@@ -15,8 +15,9 @@ namespace TomPIT.Distributed
 
 		}
 
-		public void Invoked()
+		public new void Invoked()
 		{
+			base.Invoked();
 			OnInvoked();
 		}
 

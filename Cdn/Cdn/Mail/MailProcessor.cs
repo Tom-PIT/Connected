@@ -53,6 +53,9 @@ namespace TomPIT.Cdn.Mail
 					var tokens = line.Split(new char[] { '=' }, 2);
 
 					Message.Headers.Add(tokens[0], tokens[1]);
+
+					if (string.Compare(tokens[0], Enum.GetName(typeof(HeaderId), HeaderId.References), true) == 0)
+						Message.References.Add(tokens[1]);
 				}
 			}
 		}

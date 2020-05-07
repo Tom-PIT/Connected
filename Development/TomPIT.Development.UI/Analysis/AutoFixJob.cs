@@ -70,7 +70,7 @@ namespace TomPIT.Development.Analysis
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			Dispatcher.Tenant.LogError(nameof(AutoFixJob), ex.Source, ex.Message);
+			Dispatcher.Tenant.LogError(ex.Source, ex.Message, nameof(AutoFixJob));
 			Dispatcher.Tenant.GetService<IAutoFixService>().Complete(item.PopReceipt);
 		}
 	}

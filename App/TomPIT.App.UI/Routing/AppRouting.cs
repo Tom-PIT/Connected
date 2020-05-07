@@ -17,46 +17,46 @@ namespace TomPIT.App.Routing
 {
 	internal static class AppRouting
 	{
-		public static void Register(IRouteBuilder routes)
+		public static void Register(IApplicationBuilder app, IEndpointRouteBuilder routes)
 		{
-			routes.MapRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
-			routes.MapRoute("sys.api", "sys/api/invoke", new { controller = "Api", action = "Invoke" });
-			routes.MapRoute("sys.search", "sys/api/search", new { controller = "Api", action = "Search" });
-			routes.MapRoute("sys.partial", "sys/api/partial", new { controller = "Api", action = "Partial" });
-			routes.MapRoute("sys.setuserdata", "sys/api/setuserdata", new { controller = "Api", action = "SetUserData" });
-			routes.MapRoute("sys.getuserdata", "sys/api/getuserdata", new { controller = "Api", action = "GetUserData" });
-			routes.MapRoute("sys.queryuserdata", "sys/api/queryuserdata", new { controller = "Api", action = "QueryUserData" });
-			routes.MapRoute("sys.uiinjection", "sys/api/uiinjection", new { controller = "Api", action = "UIInjection" });
+			routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+			routes.MapControllerRoute("sys.api", "sys/api/invoke", new { controller = "Api", action = "Invoke" });
+			routes.MapControllerRoute("sys.search", "sys/api/search", new { controller = "Api", action = "Search" });
+			routes.MapControllerRoute("sys.partial", "sys/api/partial", new { controller = "Api", action = "Partial" });
+			routes.MapControllerRoute("sys.setuserdata", "sys/api/setuserdata", new { controller = "Api", action = "SetUserData" });
+			routes.MapControllerRoute("sys.getuserdata", "sys/api/getuserdata", new { controller = "Api", action = "GetUserData" });
+			routes.MapControllerRoute("sys.queryuserdata", "sys/api/queryuserdata", new { controller = "Api", action = "QueryUserData" });
+			routes.MapControllerRoute("sys.uiinjection", "sys/api/uiinjection", new { controller = "Api", action = "UIInjection" });
 
-			routes.MapRoute("sys/themes/{microService}/{theme}", (t) =>
+			routes.Map("sys/themes/{microService}/{theme}", (t) =>
 			{
 				new ThemeHandler().ProcessRequest(t);
 
 				return Task.CompletedTask;
 			});
 
-			routes.MapRoute("sys/globalize/{locale}/{segments}", (t) =>
+			routes.Map("sys/globalize/{locale}/{segments}", (t) =>
 			{
 				new GlobalizationHandler().ProcessRequest(t);
 
 				return Task.CompletedTask;
 			});
 
-			routes.MapRoute("sys/bundles/{microService}/{bundle}", (t) =>
+			routes.Map("sys/bundles/{microService}/{bundle}", (t) =>
 			{
 				new BundleHandler().ProcessRequest(t);
 
 				return Task.CompletedTask;
 			});
 
-			routes.MapRoute("sys/media/{id}/{version}", (t) =>
+			routes.Map("sys/media/{id}/{version}", (t) =>
 			{
 				new MediaHandler().ProcessRequest(t);
 
 				return Task.CompletedTask;
 			});
 
-			routes.MapRoute("sys/mail-template/{token}", (t) =>
+			routes.Map("sys/mail-template/{token}", (t) =>
 			{
 				var ve = t.RequestServices.GetService(typeof(IMailTemplateViewEngine)) as MailTemplateViewEngine;
 
@@ -67,22 +67,47 @@ namespace TomPIT.App.Routing
 				return Task.CompletedTask;
 			});
 
-			routes.MapRoute("{*.}", (t) =>
+			routes.Map("{*.}", async (t) =>
 			{
-				if (string.IsNullOrWhiteSpace(t.Request.Path.ToString().Trim('/')))
-					t.Request.Path = "/home";
-
-				if (Redirect(t))
-					return Task.CompletedTask;
-
-				var ve = t.RequestServices.GetService(typeof(IViewEngine)) as ViewEngine;
-
-				ve.Context = t;
-
-				ve.Render(t.Request.Path);
-
-				return Task.CompletedTask;
+				await RenderView(t);
 			});
+
+			app.Use(async (context, next) =>
+			{
+				if (string.Compare(context.Request.Path.Value, "/login", true) == 0)
+				{
+					var view = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().Select(context.Request.Path.Value, null);
+
+					if (view != null && view.Enabled)
+					{
+						await RenderView(context);
+						return;
+					}
+
+				}
+
+				await next();
+			});
+		}
+
+		private static async Task RenderView(HttpContext context)
+		{
+			if (string.IsNullOrWhiteSpace(context.Request.Path.ToString().Trim('/')))
+				context.Request.Path = "/home";
+
+			if (Redirect(context))
+			{
+				await Task.CompletedTask;
+				return;
+			}
+
+			var ve = context.RequestServices.GetService(typeof(IViewEngine)) as ViewEngine;
+
+			ve.Context = context;
+
+			ve.Render(context.Request.Path);
+
+			await Task.CompletedTask;
 		}
 
 		private static bool Redirect(HttpContext context)

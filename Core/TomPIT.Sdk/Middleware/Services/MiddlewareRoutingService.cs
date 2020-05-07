@@ -389,7 +389,7 @@ namespace TomPIT.Middleware.Services
 				var request = Shell.HttpContext?.Request;
 
 				if (request == null)
-					return null;
+					return GetServer(InstanceType.Application, InstanceVerbs.All);
 
 				return string.Format("{0}://{1}/{2}", request.Scheme, request.Host, request.PathBase.ToString().Trim('/')).TrimEnd('/');
 			}

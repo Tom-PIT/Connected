@@ -53,7 +53,7 @@ namespace TomPIT.Management.Deployment
 
 				if (package == null)
 				{
-					tenant.LogWarning(null, nameof(PublishService), $"{SR.WrnPackageNotFound} ({microService.Name})");
+					tenant.LogWarning(nameof(PublishService), $"{SR.WrnPackageNotFound} ({microService.Name})", LogCategories.Deployment);
 
 					tenant.GetService<IMicroServiceManagementService>().Update(microService.Token, microService.Name, microService.Status, microService.Template, microService.ResourceGroup,
 						 microService.Package, microService.Plan, microService.UpdateStatus, CommitStatus.Invalidated);

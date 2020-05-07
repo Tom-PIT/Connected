@@ -89,9 +89,7 @@ namespace TomPIT
 
 			Mvc = services.AddMvc((o) =>
 			{
-				o.EnableEndpointRouting = false;
 				e.ConfigureMvc?.Invoke(o);
-
 			}).AddNewtonsoftJson()
 			.ConfigureApplicationPartManager((m) =>
 			{
@@ -124,7 +122,8 @@ namespace TomPIT
 				}
 			});
 
-			Mvc.AddControllersAsServices();
+			services.AddControllersWithViews();
+			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
 			services.AddAuthorization(options =>
 			{
@@ -132,9 +131,9 @@ namespace TomPIT
 				policy.Requirements.Add(new ClaimRequirement(Claims.ImplementMicroservice)));
 			});
 
-			services.AddSingleton<IAuthorizationHandler, ClaimHandler>();
-			services.AddTransient<IActionContextAccessor, ActionContextAccessor>();
+
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+			services.AddSingleton<IAuthorizationHandler, ClaimHandler>();
 			services.AddSingleton<IHostedService, FlushingService>();
 
 			foreach (var plugin in Plugins)
@@ -142,6 +141,7 @@ namespace TomPIT
 		}
 		public static void Configure(InstanceType type, IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler)
 		{
+			RuntimeService._host = app;
 			app.UseMiddleware<AuthenticationCookieMiddleware>();
 
 			var lifetime = app.ApplicationServices.GetService<Microsoft.Extensions.Hosting.IApplicationLifetime>();
@@ -151,7 +151,10 @@ namespace TomPIT
 				Stopping = lifetime.ApplicationStopping;
 				Stopped = lifetime.ApplicationStopped;
 			}
+			ConfigureStaticFiles(app, env);
 
+			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
+			app.UseRouting();
 			app.UseAuthentication();
 			app.UseAuthorization();
 			app.UseRequestLocalization(o =>
@@ -168,6 +171,27 @@ namespace TomPIT
 
 			app.UseAjaxExceptionMiddleware();
 
+			RuntimeBootstrapper.Run();
+
+			Shell.GetService<IRuntimeService>().Initialize(type, env);
+			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
+			app.UseEndpoints(routes =>
+			{
+				foreach (var i in Plugins)
+					i.RegisterRoutes(routes);
+
+				RoutingConfiguration.Register(routes);
+				routingHandler?.Invoke(new ConfigureRoutingArgs(routes));
+			});
+
+			Shell.Configure(app);
+
+			foreach (var plugin in Plugins)
+				plugin.Initialize(app, env);
+		}
+
+		private static void ConfigureStaticFiles(IApplicationBuilder app, IWebHostEnvironment env)
+		{
 			var cachePeriod = env.IsDevelopment() ? "600" : "604800";
 			var contentTypeProvider = new FileExtensionContentTypeProvider();
 
@@ -185,27 +209,6 @@ namespace TomPIT
 			EmbeddedResourcesConfiguration.Configure(env, staticOptions);
 
 			app.UseStaticFiles(staticOptions);
-
-			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
-
-			RuntimeBootstrapper.Run();
-
-			Shell.GetService<IRuntimeService>().Initialize(type, env);
-			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
-
-			app.UseMvc(routes =>
-			{
-				foreach (var i in Plugins)
-					i.RegisterRoutes(routes);
-
-				RoutingConfiguration.Register(routes);
-				routingHandler?.Invoke(new ConfigureRoutingArgs(routes));
-			});
-
-			Shell.Configure(app);
-
-			foreach (var plugin in Plugins)
-				plugin.Initialize(app, env);
 		}
 		private static void OnTenantInitialized(object sender, TenantArgs e)
 		{

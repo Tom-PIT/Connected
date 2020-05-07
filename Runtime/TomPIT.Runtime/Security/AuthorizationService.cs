@@ -88,16 +88,23 @@ namespace TomPIT.Security
 
 		public IAuthorizationResult Authorize(IMiddlewareContext context, AuthorizationArgs e)
 		{
+			if (context is IElevationContext ec)
+			{
+				if (ec.Claims != null)
+				{
+					foreach (var claim in ec.Claims)
+					{
+						if (string.Compare(claim, e.Claim, true) == 0)
+							return AuthorizationResult.OK(0);
+					}
+				}
+			}
+
 			if (string.IsNullOrWhiteSpace(e.Claim))
 				return AuthorizationResult.Fail(AuthorizationResultReason.NoClaim, 0);
 
 			if (string.IsNullOrWhiteSpace(e.PrimaryKey))
 				return AuthorizationResult.Fail(AuthorizationResultReason.NoPrimaryKey, 0);
-
-			//var folderResult = AuthorizeFolder(context, e, 0);
-
-			//if (!folderResult.Success)
-			//	return folderResult;
 
 			var permissions = Where(f => string.Compare(f.Claim, e.Claim, true) == 0
 				&& string.Compare(f.PrimaryKey, e.PrimaryKey, true) == 0);
@@ -112,20 +119,12 @@ namespace TomPIT.Security
 
 			if (permissions.Count == 0)
 			{
-				//				if (folderResult.PermissionCount == 0)
-				//{
-				switch (e.Schema.Empty)
+				return e.Schema.Empty switch
 				{
-					case EmptyBehavior.Deny:
-						return AuthorizationResult.Fail(AuthorizationResultReason.Empty, permissions.Count);
-					case EmptyBehavior.Alow:
-						return AuthorizationResult.OK(permissions.Count);
-					default:
-						throw new NotSupportedException();
-				}
-				//}
-				//else
-				//	return folderResult;
+					EmptyBehavior.Deny => AuthorizationResult.Fail(AuthorizationResultReason.Empty, permissions.Count),
+					EmptyBehavior.Alow => AuthorizationResult.OK(permissions.Count),
+					_ => throw new NotSupportedException(),
+				};
 			}
 
 			bool denyFound = false;
@@ -209,7 +208,7 @@ namespace TomPIT.Security
 			if (!Instance.ResourceGroupExists(e.ResourceGroup))
 				return;
 
-			Remove(f => f.Evidence == e.Evidence
+			Remove(f => string.Compare(f.Evidence, e.Evidence, true) == 0
 				&& f.Schema.Equals(e.Schema, StringComparison.OrdinalIgnoreCase)
 				&& f.Claim.Equals(e.Claim, StringComparison.OrdinalIgnoreCase)
 				&& f.PrimaryKey.Equals(e.PrimaryKey, StringComparison.OrdinalIgnoreCase));
@@ -220,7 +219,7 @@ namespace TomPIT.Security
 			if (!Instance.ResourceGroupExists(e.ResourceGroup))
 				return;
 
-			Remove(f => f.Evidence == e.Evidence
+			Remove(f => string.Compare(f.Evidence, e.Evidence, true) == 0
 				&& f.Schema.Equals(e.Schema, StringComparison.OrdinalIgnoreCase)
 				&& f.Claim.Equals(e.Claim, StringComparison.OrdinalIgnoreCase)
 				&& f.PrimaryKey.Equals(e.PrimaryKey, StringComparison.OrdinalIgnoreCase));
@@ -248,9 +247,9 @@ namespace TomPIT.Security
 			return Descriptors;
 		}
 
-		public PermissionValue GetPermissionValue(Guid evidence, string schema, string claim)
+		public PermissionValue GetPermissionValue(string evidence, string schema, string claim)
 		{
-			var r = Get(f => f.Evidence == evidence
+			var r = Get(f => string.Compare(f.Evidence, evidence, true) == 0
 				  && f.Schema.Equals(schema, StringComparison.OrdinalIgnoreCase)
 				  && f.Claim.Equals(claim, StringComparison.OrdinalIgnoreCase));
 
@@ -260,9 +259,9 @@ namespace TomPIT.Security
 			return r.Value;
 		}
 
-		public PermissionValue GetPermissionValue(Guid evidence, string schema, string claim, string descriptor, string primaryKey)
+		public PermissionValue GetPermissionValue(string evidence, string schema, string claim, string descriptor, string primaryKey)
 		{
-			var r = Get(f => f.Evidence == evidence
+			var r = Get(f => string.Compare(f.Evidence, evidence, true) == 0
 				  && f.Schema.Equals(schema, StringComparison.OrdinalIgnoreCase)
 				  && f.Claim.Equals(claim, StringComparison.OrdinalIgnoreCase)
 				  && string.Compare(f.Descriptor, descriptor, true) == 0
@@ -348,7 +347,7 @@ namespace TomPIT.Security
 			}
 		}
 
-		PermissionValue IPermissionService.Toggle(string claim, string schema, Guid evidence, string primaryKey, string permissionDescriptor)
+		PermissionValue IPermissionService.Toggle(string claim, string schema, string evidence, string primaryKey, string permissionDescriptor)
 		{
 			var u = Tenant.CreateUrl("SecurityManagement", "SetPermission");
 			var args = new JObject
@@ -404,6 +403,19 @@ namespace TomPIT.Security
 		List<IPermission> IPermissionService.Query(string permissionDescriptor, string primaryKey)
 		{
 			return Where(f => string.Compare(f.PrimaryKey, primaryKey, true) == 0 && string.Compare(f.Descriptor, permissionDescriptor, true) == 0).ToList();
+		}
+
+		List<IPermission> IPermissionService.Query(string permissionDescriptor, Guid user)
+		{
+			var membership = QueryMembership(user);
+			var result = new List<IPermission>();
+
+			foreach (var m in membership)
+				result.AddRange(Where(f => string.Compare(f.Evidence, m.Role.ToString(), true) == 0 && string.Compare(f.Descriptor, permissionDescriptor, true) == 0));
+
+			result.AddRange(Where(f => string.Compare(f.Evidence, user.ToString(), true) == 0 && string.Compare(f.Descriptor, permissionDescriptor, true) == 0));
+
+			return result;
 		}
 
 		private MembershipCache Membership { get; }

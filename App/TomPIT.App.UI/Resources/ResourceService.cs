@@ -17,6 +17,7 @@ namespace TomPIT.App.Resources
 	internal class ResourceService : ClientRepository<CompiledBundle, string>, IResourceService
 	{
 		private const string FromPreprocessorPattern = "\"(.*?)\"";
+		private const string FromPreprocessorPatternSingle = "\'(.*?)\'";
 		public ResourceService(ITenant tenant) : base(tenant, "bundle")
 		{
 			tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
@@ -133,7 +134,12 @@ namespace TomPIT.App.Resources
 				var line = reader.ReadLine();
 
 				if (line.Trim().StartsWith("import", StringComparison.OrdinalIgnoreCase))
-					line = Regex.Replace(line, FromPreprocessorPattern, new MatchEvaluator(ProcessPath));
+				{
+					if (line.Contains('"'))
+						line = Regex.Replace(line, FromPreprocessorPattern, new MatchEvaluator(ProcessPath));
+					else
+						line = Regex.Replace(line, FromPreprocessorPatternSingle, new MatchEvaluator(ProcessPath));
+				}
 
 				result.AppendLine(line);
 			}
@@ -143,7 +149,7 @@ namespace TomPIT.App.Resources
 
 		private string ProcessPath(Match match)
 		{
-			if (!match.Value.StartsWith("\"@:"))
+			if (!match.Value.StartsWith("\"@:") && !match.Value.StartsWith("\'@:"))
 				return match.Value;
 
 			var path = match.Value[3..^1];

@@ -55,7 +55,7 @@ namespace TomPIT.BigData.Partitions
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.LogError(nameof(MaintenanceJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(MaintenanceJob));
 			MiddlewareDescriptor.Current.Tenant.GetService<IPartitionMaintenanceService>().Ping(item.PopReceipt);
 		}
 	}

@@ -19,8 +19,12 @@ namespace TomPIT.Middleware.Interop
 
 			try
 			{
-				OnAuthorize();
-				OnAuthorizing();
+				if (Context.Environment.IsInteractive)
+				{
+					AuthorizePolicies();
+					OnAuthorize();
+					OnAuthorizing();
+				}
 
 				OnInvoke();
 				DependencyInjections.Invoke<object>(null);

@@ -7,18 +7,26 @@ namespace TomPIT.Runtime
 {
 	internal static class RoutingConfiguration
 	{
-		public static void Register(IRouteBuilder routes)
+		public static void Register(IEndpointRouteBuilder routes)
 		{
 			var statusController = "Status";
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
 				statusController = "MultiTenantStatus";
 
-			routes.MapRoute("sys.status", "sys/status/{code}", new { controller = statusController, action = "Index" });
+			routes.MapControllerRoute("sys.status", "sys/status/{code}", new { controller = statusController, action = "Index" });
 
-			routes.AddSystemLogin();
+			var loginController = "Login";
 
-			routes.MapRoute("sys/avatar/{token}/{version}", (t) =>
+			if (Shell.GetService<IRuntimeService>().Environment == Runtime.RuntimeEnvironment.MultiTenant)
+				loginController = "MultiTenantLogin";
+
+			routes.MapControllerRoute("login", "login", new { controller = loginController, action = "Index" });
+			routes.MapControllerRoute("login.authenticate", "login/authenticate", new { controller = loginController, action = "Authenticate" });
+			routes.MapControllerRoute("login.changepassword", "login/change-password", new { controller = loginController, action = "ChangePassword" });
+			routes.MapControllerRoute("logoff", "logoff", new { controller = loginController, action = "Logoff" });
+
+			routes.Map("sys/avatar/{token}/{version}", (t) =>
 			{
 				new AvatarRouteHandler().ProcessRequest(t);
 

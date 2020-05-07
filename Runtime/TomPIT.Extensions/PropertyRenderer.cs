@@ -41,7 +41,7 @@ namespace TomPIT
 
 					_manifest = manifest.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
 
-					if (Manifest == null)
+					if (_manifest == null)
 						throw new NullReferenceException($"{SR.ErrManifestNull} ({Api})");
 				}
 

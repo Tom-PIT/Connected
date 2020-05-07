@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
@@ -303,6 +304,15 @@ namespace TomPIT.Compilation
 				((ScriptDescriptor)script).Script = compiler.Script.CreateDelegate();
 				result = compiler.Script.GetCompilation();
 				((ScriptDescriptor)script).Assembly = result.AssemblyName;
+				var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => f.FullName == result.Assembly.Identity.GetDisplayName());
+
+				if (asm != null)
+				{
+					var loadContext = AssemblyLoadContext.GetLoadContext(asm);
+
+					if (loadContext != null)
+						loadContext.Resolving += OnResolving;
+				}
 			}
 
 			if (compiler.ScriptReferences != null && compiler.ScriptReferences.Count > 0)
@@ -312,6 +322,11 @@ namespace TomPIT.Compilation
 				Set(script.Id, script, TimeSpan.Zero);
 
 			return result;
+		}
+
+		private Assembly OnResolving(AssemblyLoadContext arg1, AssemblyName arg2)
+		{
+			return null;
 		}
 
 		public void Invalidate(IMicroServiceContext context, Guid microService, Guid component, IText sourceCode)

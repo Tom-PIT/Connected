@@ -58,7 +58,7 @@ namespace TomPIT.Ide.ComponentModel
 			return cs.SelectComponent(id);
 		}
 
-		public virtual void RegisterRoutes(IRouteBuilder builder)
+		public virtual void RegisterRoutes(IEndpointRouteBuilder builder)
 		{
 
 		}

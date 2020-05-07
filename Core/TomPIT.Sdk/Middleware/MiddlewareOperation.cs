@@ -1,12 +1,17 @@
-﻿using TomPIT.Annotations;
-using TomPIT.Exceptions;
-using TomPIT.UI;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using TomPIT.Annotations;
+using TomPIT.Reflection;
+using TomPIT.Security;
 
 namespace TomPIT.Middleware
 {
 	public abstract class MiddlewareOperation : MiddlewareComponent, IMiddlewareOperation, IMiddlewareTransactionClient
 	{
 		[SkipValidation]
+		[EditorBrowsable(EditorBrowsableState.Advanced)]
 		public IMiddlewareTransaction Transaction
 		{
 			get
@@ -33,16 +38,16 @@ namespace TomPIT.Middleware
 			}
 		}
 
-		protected void RenderPartial(string partialName)
-		{
-			if (Shell.HttpContext == null)
-				throw new RuntimeException(SR.ErrHttpContextNull);
+		//protected void RenderPartial(string partialName)
+		//{
+		//	if (Shell.HttpContext == null)
+		//		throw new RuntimeException(SR.ErrHttpContextNull);
 
-			var engine = Shell.HttpContext.RequestServices.GetService(typeof(IViewEngine)) as IViewEngine;
+		//	var engine = Shell.HttpContext.RequestServices.GetService(typeof(IViewEngine)) as IViewEngine;
 
-			engine.Context = Shell.HttpContext;
-			engine.RenderPartial(Context as IMicroServiceContext, partialName);
-		}
+		//	engine.Context = Shell.HttpContext;
+		//	engine.RenderPartial(Context as IMicroServiceContext, partialName);
+		//}
 
 		protected void Rollback()
 		{
@@ -88,7 +93,7 @@ namespace TomPIT.Middleware
 		protected internal virtual void OnCommitting()
 		{
 		}
-
+		[EditorBrowsable(EditorBrowsableState.Advanced)]
 		protected internal virtual void OnRollbacking()
 		{
 		}
@@ -99,6 +104,52 @@ namespace TomPIT.Middleware
 
 		protected internal virtual void OnValidating()
 		{
+		}
+
+		protected internal virtual void AuthorizePolicies()
+		{
+			var attributes = GetType().GetCustomAttributes(true);
+
+			var targets = new List<AuthorizationPolicyAttribute>();
+
+			foreach (var attribute in attributes)
+			{
+				if (!(attribute is AuthorizationPolicyAttribute policy))
+					continue;
+
+				targets.Add(policy);
+			}
+
+			Exception firstFail = null;
+			bool onePassed = false;
+
+			foreach (var attribute in targets.OrderByDescending(f => f.Priority))
+			{
+				var args = attribute.PolicyType.GetGenericArguments();
+				var instance = attribute.PolicyType.CreateInstance<IAuthorizationPolicyMiddleware>();
+
+				if (instance == null)
+					continue;
+
+				try
+				{
+					if (attribute.Behavior == AuthorizationPolicyBehavior.Optional && onePassed)
+						continue;
+
+					instance.Authorize(this, attribute.Policy);
+					onePassed = true;
+				}
+				catch (Exception ex)
+				{
+					if (attribute.Behavior == AuthorizationPolicyBehavior.Mandatory)
+						throw ex;
+
+					firstFail = ex;
+				}
+
+				if (!onePassed && firstFail != null)
+					throw firstFail;
+			}
 		}
 	}
 }

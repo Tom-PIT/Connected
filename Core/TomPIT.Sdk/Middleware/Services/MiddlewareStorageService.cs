@@ -53,7 +53,7 @@ namespace TomPIT.Middleware.Services
 			}
 			catch (Exception ex)
 			{
-				Context.Tenant.LogWarning(nameof(MiddlewareStorageService), ex.Message, LogCategories.Middleware);
+				Context.Tenant.LogWarning(ex.Message, LogCategories.Middleware, nameof(MiddlewareStorageService));
 			}
 		}
 

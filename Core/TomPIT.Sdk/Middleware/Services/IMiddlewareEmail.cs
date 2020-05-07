@@ -1,5 +1,5 @@
 ﻿using System;
-using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using CAP = TomPIT.Annotations.Design.CodeAnalysisProviderAttribute;
 
 namespace TomPIT.Middleware.Services
@@ -7,7 +7,7 @@ namespace TomPIT.Middleware.Services
 	public interface IMiddlewareEmail
 	{
 		Guid Send(string from, string to, string subject, string body);
-		Guid Send(string from, string to, string subject, string body, JArray headers, int attachmentCount);
+		Guid Send(string from, string to, string subject, string body, Dictionary<string, object> headers, int attachmentCount);
 
 		string Create([CAP(CAP.MailTemplateProvider)]string template, string user);
 		string Create([CAP(CAP.MailTemplateProvider)]string template, string user, object arguments);

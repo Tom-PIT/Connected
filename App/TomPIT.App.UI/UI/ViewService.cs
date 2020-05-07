@@ -13,7 +13,6 @@ using TomPIT.ComponentModel.Reports;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
-using TomPIT.Routing;
 using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
 using TomPIT.Storage;
@@ -35,7 +34,7 @@ namespace TomPIT.App.UI
 
 			tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
 
-			ReplaceLogin();
+			//			ReplaceLogin();
 		}
 
 		private void OnComponentChanged(ITenant sender, ComponentEventArgs e)
@@ -45,8 +44,6 @@ namespace TomPIT.App.UI
 
 			ChangeState[e.Component] = true;
 			Refresh(e.Component);
-
-			ReplaceLogin();
 		}
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
@@ -59,7 +56,7 @@ namespace TomPIT.App.UI
 			foreach (var i in views)
 				Set(i.Component, i, TimeSpan.Zero);
 
-			ReplaceLogin();
+			//ReplaceLogin();
 		}
 
 		private void OnConfigurationRemoved(ITenant sender, ConfigurationEventArgs e)
@@ -70,7 +67,7 @@ namespace TomPIT.App.UI
 			ChangeState[e.Component] = true;
 
 			Remove(e.Component);
-			ReplaceLogin();
+			//ReplaceLogin();
 		}
 
 		private void OnConfigurationAdded(ITenant sender, ConfigurationEventArgs e)
@@ -79,7 +76,7 @@ namespace TomPIT.App.UI
 				return;
 
 			Refresh(e.Component);
-			ReplaceLogin();
+			//ReplaceLogin();
 		}
 
 		private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
@@ -89,7 +86,8 @@ namespace TomPIT.App.UI
 
 			ChangeState[e.Component] = true;
 			Refresh(e.Component);
-			ReplaceLogin();
+
+			//ReplaceLogin();
 		}
 
 		private bool IsTargetCategory(string category)
@@ -143,6 +141,7 @@ namespace TomPIT.App.UI
 				if (isMatch)
 					return view;
 			}
+			var login = views.Where(f => ((IViewConfiguration)f).Url == "login");
 
 			return null;
 		}
@@ -315,15 +314,15 @@ namespace TomPIT.App.UI
 
 		private ConcurrentDictionary<Guid, bool> ChangeState => _changeState.Value;
 
-		private void ReplaceLogin()
-		{
-			var exists = Select("login", null);
+		//private void ReplaceLogin()
+		//{
+		//	var exists = Select("login", null);
 
-			if (exists == null)
-				Startup.RouteBuilder.AddSystemLogin();
-			else
-				Startup.RouteBuilder.RemoveSystemLogin();
-		}
+		//	if (exists == null)
+		//		Startup.RouteBuilder.AddSystemLogin();
+		//	else
+		//		Startup.RouteBuilder.RemoveSystemLogin();
+		//}
 
 		public ViewKind ResolveViewKind(string url)
 		{

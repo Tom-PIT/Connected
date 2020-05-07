@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using TomPIT.Environment;
 
@@ -6,6 +7,7 @@ namespace TomPIT.Runtime
 {
 	internal class RuntimeService : IRuntimeService
 	{
+		internal static IApplicationBuilder _host;
 		public string ContentRoot { get; set; }
 		public string WebRoot { get; set; }
 		public RuntimeEnvironment Environment { get; set; } = RuntimeEnvironment.SingleTenant;
@@ -13,6 +15,8 @@ namespace TomPIT.Runtime
 		public InstanceType Type { get; set; }
 		public EnvironmentStage Stage { get; set; }
 		public EnvironmentMode Mode { get; set; } = EnvironmentMode.Runtime;
+
+		public IApplicationBuilder Host => _host;
 
 		public void Initialize(InstanceType type, IWebHostEnvironment environment)
 		{

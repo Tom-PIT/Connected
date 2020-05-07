@@ -85,7 +85,7 @@ namespace TomPIT.IoT.Hubs
 				}
 				catch (Exception ex)
 				{
-					MiddlewareDescriptor.Current.Tenant.LogError("IoT", ex.Source, ex.Message);
+					MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, "IoT");
 				}
 
 				var changes = MiddlewareDescriptor.Current.Tenant.GetService<IIoTHubService>().SetData(device.Device, e);
