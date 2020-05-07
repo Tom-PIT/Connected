@@ -4298,7 +4298,7 @@ GO
 CREATE TABLE [tompit].[permission]
 (
 [id] [bigint] NOT NULL IDENTITY(1, 1),
-[evidence] [uniqueidentifier] NOT NULL,
+[evidence] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [schema] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [claim] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [descriptor] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
@@ -6237,7 +6237,7 @@ GO
 PRINT N'Creating [tompit].[permission_ins]'
 GO
 CREATE PROCEDURE [tompit].[permission_ins]
-	@evidence uniqueidentifier,
+	@evidence nvarchar(128),
 	@schema nvarchar(128),
 	@claim nvarchar(128),
 	@descriptor nvarchar(128),
@@ -6486,7 +6486,7 @@ GO
 PRINT N'Creating [tompit].[permission_sel]'
 GO
 CREATE PROCEDURE [tompit].[permission_sel]
-	@evidence uniqueidentifier = null,
+	@evidence nvarchar(128) = null,
 	@schema nvarchar(128) = null,
 	@claim nvarchar(128) = null,
 	@primary_key nvarchar(128)
