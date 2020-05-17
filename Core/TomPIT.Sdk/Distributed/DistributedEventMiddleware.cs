@@ -6,6 +6,7 @@ namespace TomPIT.Distributed
 	{
 		public void Invoke()
 		{
+			Context.Grant();
 			Validate();
 			OnInvoke();
 		}

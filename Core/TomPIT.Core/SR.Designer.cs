@@ -673,6 +673,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This action requires an authenticated user..
+        /// </summary>
+        public static string ErrAuthenticatedUserRequired {
+            get {
+                return ResourceManager.GetString("ErrAuthenticatedUserRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid password.
         /// </summary>
         public static string ErrAuthenticationFailed {
@@ -885,6 +894,15 @@ namespace TomPIT {
         public static string ErrClaimNotFound {
             get {
                 return ResourceManager.GetString("ErrClaimNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Claim is null.
+        /// </summary>
+        public static string ErrClaimNull {
+            get {
+                return ResourceManager.GetString("ErrClaimNull", resourceCulture);
             }
         }
         
@@ -1308,6 +1326,15 @@ namespace TomPIT {
         public static string ErrInstanceNull {
             get {
                 return ResourceManager.GetString("ErrInstanceNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Authorization model.
+        /// </summary>
+        public static string ErrInvalidAuthorizationModel {
+            get {
+                return ResourceManager.GetString("ErrInvalidAuthorizationModel", resourceCulture);
             }
         }
         
@@ -2023,6 +2050,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to primaryKey argument is null.
+        /// </summary>
+        public static string ErrPrimaryKeyNull {
+            get {
+                return ResourceManager.GetString("ErrPrimaryKeyNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot resolve printing provider.
         /// </summary>
         public static string ErrPrintingProviderResolve {
@@ -2662,7 +2698,7 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Policy authorization failed.
+        ///   Looks up a localized string similar to Policy authorization failed..
         /// </summary>
         public static string PolicyAuthorizationFailed {
             get {

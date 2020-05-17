@@ -8,6 +8,7 @@
 		NoAllowFound = 3,
 		DenyFound = 4,
 		NoClaim = 5,
+		NoPermissionDescriptor = 6,
 		Other = 99
 	}
 

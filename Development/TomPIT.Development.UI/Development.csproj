@@ -10,9 +10,9 @@
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.Development</RootNamespace>
     <AssemblyName>TomPIT.Experience.Development</AssemblyName>
-    <AssemblyVersion>2.1.507.2</AssemblyVersion>
-    <FileVersion>2.1.507.2</FileVersion>
-    <Version>2.1.507.2</Version>
+    <AssemblyVersion>2.1.513.4</AssemblyVersion>
+    <FileVersion>2.1.513.4</FileVersion>
+    <Version>2.1.513.4</Version>
   </PropertyGroup>
   <PropertyGroup>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
@@ -41,6 +41,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="3.4.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" Version="3.4.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.2" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.2" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.7.0" />
@@ -50,6 +51,9 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Ide\Designers\Upload.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\VersionControl\VersionControl.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\QA\ApiTest.cshtml">

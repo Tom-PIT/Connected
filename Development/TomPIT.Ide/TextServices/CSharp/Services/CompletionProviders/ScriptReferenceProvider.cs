@@ -58,11 +58,6 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 				foreach (var operation in configuration.Operations)
 					items.Add(CreateScriptItem($"{msName}{apiName}/{operation.Name}"));
 			}
-
-			var policies = Editor.Context.Tenant.GetService<IComponentService>().QueryComponents(microService.Token, ComponentCategories.AuthorizationPolicy);
-
-			foreach (var policy in policies)
-				items.Add(CreateScriptItem($"{msName}{policy.Name}"));
 		}
 
 		private ICompletionItem CreateScriptItem(string name)

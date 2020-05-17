@@ -1,5 +1,4 @@
-﻿using System;
-using TomPIT.Connectivity;
+﻿using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Middleware.Services;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
@@ -8,10 +7,6 @@ namespace TomPIT.Middleware
 {
 	public interface IMiddlewareContext
 	{
-#if DEBUG
-		Guid Id { get; }
-#endif
-
 		IMiddlewareServices Services { get; }
 		IMiddlewareEnvironment Environment { get; }
 		ITenant Tenant { get; }

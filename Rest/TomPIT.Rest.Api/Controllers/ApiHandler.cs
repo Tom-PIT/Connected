@@ -58,7 +58,7 @@ namespace TomPIT.Rest.Controllers
 		private bool Authorize(IApiConfiguration api, IApiOperation operation)
 		{
 			var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(api.Component);
-			var e = new AuthorizationArgs(MiddlewareDescriptor.Current.UserToken, Claims.Invoke, api.Component.ToString());
+			var e = new AuthorizationArgs(MiddlewareDescriptor.Current.UserToken, Claims.Invoke, api.Component.ToString(), "Api");
 
 			e.Schema.Empty = EmptyBehavior.Deny;
 			e.Schema.Level = AuthorizationLevel.Pessimistic;
@@ -75,7 +75,7 @@ namespace TomPIT.Rest.Controllers
 				return false;
 			}
 
-			e = new AuthorizationArgs(MiddlewareDescriptor.Current.UserToken, Claims.Invoke, operation.Id.ToString());
+			e = new AuthorizationArgs(MiddlewareDescriptor.Current.UserToken, Claims.Invoke, operation.Id.ToString(), "Api operation");
 
 			e.Schema.Empty = EmptyBehavior.Deny;
 			e.Schema.Level = AuthorizationLevel.Pessimistic;

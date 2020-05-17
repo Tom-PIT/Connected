@@ -1,0 +1,59 @@
+﻿@using System.Text.Encodings.Web;
+
+@model TomPIT.Development.Models.VersionControlModel
+
+@{
+    Layout = "~/Views/Shared/Shell.cshtml";
+
+    var scriptUrl = $"{Model.Services.Routing.RootUrl}/assets/scripts/versionControl.js";
+    var textEditorPath = $"{Model.Services.Routing.RootUrl}/Assets/Libraries/monaco/vs";
+}
+
+@section head{
+    <link rel="stylesheet" type="text/css" href="~/Assets/Styles/versionControl.min.css" />
+
+}
+
+<script src="~/Assets/Libraries/monaco/vs/loader.js"></script>
+
+<div id="versionControl">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="btn-toolbar dev-toolbar justify-content-between" role="toolbar" name="designerToolbar">
+                <div class="btn-group" role="group">
+                    <a href="#" data-command="repositories" class="btn btn-small btn-link" role="button">Repositories</a>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3">
+                <div name="explorer">
+
+                </div>
+            </div>
+            <div class="col-sm-9">
+                <div name="diff">
+
+                </div>
+                <div name="designer">
+                    designer
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    tompit.disableNavigation();
+</script>
+
+<script type="module">
+    require.config({ paths: { 'vs': '@textEditorPath' } });
+
+    import { VersionControl } from '@scriptUrl';
+
+    new VersionControl({
+        selector: '#versionControl',
+        rootUrl:'@Model.Services.Routing.RootUrl'
+    });
+</script>

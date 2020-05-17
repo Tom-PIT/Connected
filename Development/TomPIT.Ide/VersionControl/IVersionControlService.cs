@@ -23,5 +23,8 @@ namespace TomPIT.Ide.VersionControl
 
 		void Rollback(Guid commit, Guid component);
 		void Rollback(Guid commit);
+
+		List<IVersionControlDescriptor> GetChanges();
+		IVersionControlDiffDescriptor GetDiff(Guid component, Guid blob);
 	}
 }

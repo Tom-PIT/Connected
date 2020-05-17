@@ -1,9 +1,14 @@
-﻿using System.Collections.Generic;
-
-namespace TomPIT.Security
+﻿namespace TomPIT.Security
 {
+	public enum ElevationContextState
+	{
+		Granted = 1,
+		Revoked = 2
+	}
 	public interface IElevationContext
 	{
-		List<string> Claims { get; }
+		ElevationContextState State { get; }
+		void Grant();
+		void Revoke();
 	}
 }

@@ -67,6 +67,7 @@ namespace TomPIT.Search
 		{
 			try
 			{
+				Context.Grant();
 				var result = OnSearch(searchResult);
 
 				Invoked();
@@ -106,6 +107,7 @@ namespace TomPIT.Search
 		{
 			try
 			{
+				Context.Grant();
 				var result = PerformIndex();
 
 				Invoked();

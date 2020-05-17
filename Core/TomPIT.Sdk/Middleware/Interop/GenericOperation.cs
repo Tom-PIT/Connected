@@ -103,7 +103,7 @@ namespace TomPIT.Middleware.Interop
 						listResult.Add(i);
 
 					if (Context.Environment.IsInteractive)
-						return DependencyInjections.Authorize(OnAuthorize(result));
+						return DependencyInjections.Authorize(OnAuthorize(AuthorizePolicies(result)));
 					else
 						return result;
 				}
@@ -116,13 +116,15 @@ namespace TomPIT.Middleware.Interop
 					var listResult = method.Invoke(extenderInstance, new object[] { listInstance }) as IList;
 
 					if (Context.Environment.IsInteractive)
-						return DependencyInjections.Authorize(OnAuthorize(((TReturnValue)listResult[0])));
+						return DependencyInjections.Authorize(OnAuthorize(AuthorizePolicies((TReturnValue)listResult[0])));
 					else
 						return (TReturnValue)listResult[0];
 				}
 			}
 			catch (System.ComponentModel.DataAnnotations.ValidationException)
 			{
+				Rollback();
+
 				throw;
 			}
 			catch (Exception ex)
@@ -181,6 +183,72 @@ namespace TomPIT.Middleware.Interop
 				throw new RuntimeException($"{SR.ErrExtenderNotSupported} ({Extender})");
 
 			return extender.Extender;
+		}
+
+		private TReturnValue AuthorizePolicies(TReturnValue e)
+		{
+			if (e == null)
+				return e;
+
+			var attributes = GetType().GetCustomAttributes(true);
+			var targets = new List<AuthorizationPolicyAttribute>();
+
+			foreach (var attribute in attributes)
+			{
+				if (!(attribute is AuthorizationPolicyAttribute policy) || policy.MiddlewareStage != AuthorizationMiddlewareStage.Result)
+					continue;
+
+				targets.Add(policy);
+			}
+
+			if (typeof(TReturnValue).IsCollection())
+			{
+				var items = (IList)e;
+				var result = typeof(TReturnValue).CreateInstance<IList>();
+
+				foreach (var item in items)
+				{
+					var authorized = AuthorizePoliciesItem(item, targets);
+
+					if (authorized != default)
+						result.Add(authorized);
+				}
+
+				return (TReturnValue)result;
+			}
+			else
+				return (TReturnValue)AuthorizePoliciesItem(e, targets);
+		}
+
+		private object AuthorizePoliciesItem(object e, List<AuthorizationPolicyAttribute> attributes)
+		{
+			Exception firstFail = null;
+			bool onePassed = false;
+
+			foreach (var attribute in attributes.OrderByDescending(f => f.Priority))
+			{
+				try
+				{
+					if (attribute.Behavior == AuthorizationPolicyBehavior.Optional && onePassed)
+						continue;
+
+					attribute.Authorize(Context, e);
+
+					onePassed = true;
+				}
+				catch (Exception ex)
+				{
+					if (attribute.Behavior == AuthorizationPolicyBehavior.Mandatory)
+						return default;
+
+					firstFail = ex;
+				}
+			}
+
+			if (!onePassed && firstFail != null)
+				return default;
+
+			return e;
 		}
 	}
 }

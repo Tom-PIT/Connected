@@ -16,11 +16,11 @@ using TomPIT.MicroServices.Deployment;
 using TomPIT.MicroServices.Design.Media;
 using TomPIT.MicroServices.Distributed;
 using TomPIT.MicroServices.IoC;
+using TomPIT.MicroServices.Management;
 using TomPIT.MicroServices.Messaging;
 using TomPIT.MicroServices.Navigation;
 using TomPIT.MicroServices.Resources;
 using TomPIT.MicroServices.Search;
-using TomPIT.MicroServices.Security;
 using TomPIT.MicroServices.UI;
 using TomPIT.MicroServices.UI.Theming;
 
@@ -49,7 +49,6 @@ namespace TomPIT.MicroServices.Design
 				{ ComponentCategories.IoCEndpoint,     new ItemDescriptor("IoC Endpoints",     ComponentCategories.IoCEndpoint,       typeof(IoCEndpointConfiguration))            { Glyph = "fal fa-file-code",          Category = "Middleware" ,     Ordinal=104} },
 				{ ComponentCategories.DependencyInjection,     new ItemDescriptor("Dependency Injection",     ComponentCategories.DependencyInjection,       typeof(DependencyInjectionConfiguration))            { Glyph = "fal fa-file-code",          Category = "Middleware" ,     Ordinal=105} },
 				{ ComponentCategories.EventBinder,     new ItemDescriptor("Event bindings",   ComponentCategories.EventBinder,       typeof(EventBindings))                       { Glyph = "fal fa-bullseye-pointer",   Category = "Middleware" ,     Ordinal=106} },
-				{ ComponentCategories.AuthorizationPolicy,     new ItemDescriptor("Authorization policy",   ComponentCategories.AuthorizationPolicy,       typeof(AuthorizationPolicy))                       { Glyph = "fal fa-shield-check",   Category = "Middleware" ,     Ordinal=107} },
 				{ ComponentCategories.DistributedEvent,new ItemDescriptor("Distributed events",ComponentCategories.DistributedEvent,  typeof(DistributedEvents))                    { Glyph = "fal fa-chart-network",      Category = "Distributed" ,    Ordinal=205} },
 				{ ComponentCategories.HostedWorker,    new ItemDescriptor("Hosted worker",    ComponentCategories.HostedWorker,      typeof(HostedWorker))                        { Glyph = "fal fa-cog",                Category = "Distributed" ,    Ordinal=206} },
 				{ ComponentCategories.Queue,           new ItemDescriptor("Queue middleware", ComponentCategories.Queue,             typeof(Queue))                               { Glyph = "fal fa-cog",                Category = "Distributed" ,    Ordinal=207} },
@@ -63,7 +62,8 @@ namespace TomPIT.MicroServices.Design
 				{ ComponentCategories.SmtpConnection,  new ItemDescriptor("SMTP Connection",  ComponentCategories.SmtpConnection,    typeof(SmtpConnection))                      { Glyph = "fal fa-envelope",               Category = "Cdn" ,            Ordinal=502} },
 				{ ComponentCategories.DataHub,         new ItemDescriptor("Data hub",         ComponentCategories.DataHub,           typeof(DataHub))                             { Glyph = "fal fa-bell",               Category = "Cdn" ,            Ordinal=503} },
 				{ ComponentCategories.SearchCatalog,   new ItemDescriptor("Search catalog",   ComponentCategories.SearchCatalog,     typeof(SearchCatalog))                       { Glyph = "fal fa-search",             Category = "Search" ,         Ordinal=600} },
-				{ ComponentCategories.Installer,       new ItemDescriptor("Installer",        ComponentCategories.Installer,         typeof(Installer))                           { Glyph = "fal fa-inbox-in",           Category = "Deployment" ,      Ordinal=700} }
+				{ ComponentCategories.Installer,       new ItemDescriptor("Installer",        ComponentCategories.Installer,         typeof(Installer))                           { Glyph = "fal fa-inbox-in",           Category = "Deployment" ,      Ordinal=700} },
+				{ ComponentCategories.Management,     new ItemDescriptor("Management",   ComponentCategories.Management,       typeof(ManagementConfiguration))                       { Glyph = "fal fa-cogs",   Category = "Management" ,     Ordinal=800} },
 			});
 		}
 

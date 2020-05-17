@@ -49,7 +49,7 @@ namespace TomPIT.Data
 				{
 					Name = name,
 					Value = mappedValue,
-					Type = ResolveType(value)
+					Type = ResolveType(mappedValue)
 				};
 
 				Parameters.Add(parameter);
@@ -74,7 +74,12 @@ namespace TomPIT.Data
 				return value;
 
 			if (value.GetType().IsTypePrimitive())
+			{
+				if (value.GetType().IsEnum)
+					return Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()));
+
 				return value;
+			}
 
 			return Serializer.Serialize(value);
 		}

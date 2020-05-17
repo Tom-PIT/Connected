@@ -1125,13 +1125,25 @@
   <data name="AuthorizationPolicyNotSupported" xml:space="preserve">
     <value>Authorization policy not supported</value>
   </data>
-  <data name="PolicyAuthorizationFailed" xml:space="preserve">
-    <value>Policy authorization failed</value>
-  </data>
   <data name="AuthorizationPropertyNotFound" xml:space="preserve">
     <value>Authorization policy property not found. You should define a property with a required name or define an AuthorizationPropertyAttribute on one property.</value>
   </data>
   <data name="EntityNotFound" xml:space="preserve">
     <value>not found</value>
+  </data>
+  <data name="PolicyAuthorizationFailed" xml:space="preserve">
+    <value>Policy authorization failed.</value>
+  </data>
+  <data name="ErrInvalidAuthorizationModel" xml:space="preserve">
+    <value>Invalid Authorization model</value>
+  </data>
+  <data name="ErrClaimNull" xml:space="preserve">
+    <value>Claim is null</value>
+  </data>
+  <data name="ErrAuthenticatedUserRequired" xml:space="preserve">
+    <value>This action requires an authenticated user.</value>
+  </data>
+  <data name="ErrPrimaryKeyNull" xml:space="preserve">
+    <value>primaryKey argument is null</value>
   </data>
 </root>

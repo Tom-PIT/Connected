@@ -7,6 +7,8 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoC;
 using TomPIT.Connectivity;
+using TomPIT.Diagnostics;
+using TomPIT.Diagostics;
 using TomPIT.Middleware;
 using TomPIT.Serialization;
 using TomPIT.Services;
@@ -42,17 +44,26 @@ namespace TomPIT.IoC
 			if (configuration == null)
 				return;
 
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+
 			foreach (var endpoint in configuration.Endpoints)
 			{
 				if (string.IsNullOrWhiteSpace(endpoint.Name) || string.IsNullOrWhiteSpace(endpoint.Container))
 					continue;
 
-				var type = Tenant.GetService<ICompilerService>().ResolveType(microService, endpoint, endpoint.Name, false);
+				Type type = null;
+
+				try
+				{
+					type = Tenant.GetService<ICompilerService>().ResolveType(microService, endpoint, endpoint.Name, false);
+				}
+				catch (Exception ex)
+				{
+					Tenant.LogError($"{ms.Name}/{endpoint.Configuration().ComponentName()}/{endpoint.Name}", ex.Message, LogCategories.IoC);
+				}
 
 				if (type == null)
 					continue;
-
-				var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
 				var descriptor = new IoCEndpointDescriptor
 				{

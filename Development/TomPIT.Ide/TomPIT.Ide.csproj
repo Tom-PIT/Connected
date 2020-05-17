@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.Ide</RootNamespace>
-    <AssemblyVersion>2.1.507.2</AssemblyVersion>
-    <FileVersion>2.1.507.2</FileVersion>
-    <Version>2.1.507.2</Version>
+    <AssemblyVersion>2.1.513.4</AssemblyVersion>
+    <FileVersion>2.1.513.4</FileVersion>
+    <Version>2.1.513.4</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AngleSharp.Css" Version="0.13.0" />

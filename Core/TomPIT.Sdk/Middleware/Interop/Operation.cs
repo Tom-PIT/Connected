@@ -33,6 +33,7 @@ namespace TomPIT.Middleware.Interop
 			}
 			catch (System.ComponentModel.DataAnnotations.ValidationException)
 			{
+				Rollback();
 				throw;
 			}
 			catch (Exception ex)

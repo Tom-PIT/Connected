@@ -13,5 +13,6 @@
 		public const string Cdn = "Cdn";
 		public const string Management = "Management";
 		public const string Security = "Security";
+		public const string IoC = "IoC";
 	}
 }

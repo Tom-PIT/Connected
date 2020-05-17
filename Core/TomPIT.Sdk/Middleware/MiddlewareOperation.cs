@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using TomPIT.Annotations;
-using TomPIT.Reflection;
-using TomPIT.Security;
 
 namespace TomPIT.Middleware
 {
@@ -114,7 +112,7 @@ namespace TomPIT.Middleware
 
 			foreach (var attribute in attributes)
 			{
-				if (!(attribute is AuthorizationPolicyAttribute policy))
+				if (!(attribute is AuthorizationPolicyAttribute policy) || policy.MiddlewareStage == AuthorizationMiddlewareStage.Result)
 					continue;
 
 				targets.Add(policy);
@@ -125,18 +123,13 @@ namespace TomPIT.Middleware
 
 			foreach (var attribute in targets.OrderByDescending(f => f.Priority))
 			{
-				var args = attribute.PolicyType.GetGenericArguments();
-				var instance = attribute.PolicyType.CreateInstance<IAuthorizationPolicyMiddleware>();
-
-				if (instance == null)
-					continue;
-
 				try
 				{
 					if (attribute.Behavior == AuthorizationPolicyBehavior.Optional && onePassed)
 						continue;
 
-					instance.Authorize(this, attribute.Policy);
+					attribute.Authorize(Context, this);
+
 					onePassed = true;
 				}
 				catch (Exception ex)
@@ -146,10 +139,10 @@ namespace TomPIT.Middleware
 
 					firstFail = ex;
 				}
-
-				if (!onePassed && firstFail != null)
-					throw firstFail;
 			}
+
+			if (!onePassed && firstFail != null)
+				throw firstFail;
 		}
 	}
 }

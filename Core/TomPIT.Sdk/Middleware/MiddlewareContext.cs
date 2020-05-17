@@ -4,21 +4,21 @@ using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Exceptions;
 using TomPIT.Middleware.Services;
+using TomPIT.Security;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware
 {
-	public class MiddlewareContext : IMiddlewareContext
+	public class MiddlewareContext : IMiddlewareContext, IElevationContext
 	{
 		#region Members
-
+		private ElevationContextState _elevationState = ElevationContextState.Revoked;
 		private IMiddlewareServices _services = null;
 		private ITenant _tenant = null;
 		private IMiddlewareInterop _interop = null;
 		private IMiddlewareEnvironment _environment = null;
 		private MiddlewareConnectionPool _connections = null;
 		private IMiddlewareTransaction _transaction = null;
-
 		#endregion
 
 		#region Constructors
@@ -54,11 +54,8 @@ namespace TomPIT.Middleware
 		#endregion
 
 		#region Properties
-
-#if DEBUG
-		public Guid Id { get; private set; }
-#endif
-
+		[JsonIgnore]
+		ElevationContextState IElevationContext.State => Owner == null ? _elevationState : Owner._elevationState;
 		[JsonIgnore]
 		public virtual IMiddlewareServices Services
 		{
@@ -194,10 +191,6 @@ namespace TomPIT.Middleware
 
 		protected void Initialize(string endpoint)
 		{
-#if DEBUG
-			Id = Guid.NewGuid();
-#endif
-
 			Endpoint = endpoint;
 
 			if (string.IsNullOrWhiteSpace(endpoint))
@@ -228,6 +221,16 @@ namespace TomPIT.Middleware
 		internal void CloseConnections()
 		{
 			Connections.CloseConnections();
+		}
+
+		void IElevationContext.Grant()
+		{
+			_elevationState = ElevationContextState.Granted;
+		}
+
+		void IElevationContext.Revoke()
+		{
+			_elevationState = ElevationContextState.Granted;
 		}
 
 		#endregion

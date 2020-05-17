@@ -40,7 +40,7 @@ namespace TomPIT.Development.Reflection
 		private bool Authorize(IMicroService microService)
 		{
 			var e = new AuthorizationArgs(Context.Services.Identity.IsAuthenticated ? Context.Services.Identity.User.Token : Guid.Empty,
-				Claims.ImplementMicroservice, microService.Token.ToString());
+				Claims.ImplementMicroservice, microService.Token.ToString(), "Micro service");
 
 			e.Schema.Empty = EmptyBehavior.Deny;
 			e.Schema.Level = AuthorizationLevel.Pessimistic;

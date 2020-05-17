@@ -88,17 +88,8 @@ namespace TomPIT.Security
 
 		public IAuthorizationResult Authorize(IMiddlewareContext context, AuthorizationArgs e)
 		{
-			if (context is IElevationContext ec)
-			{
-				if (ec.Claims != null)
-				{
-					foreach (var claim in ec.Claims)
-					{
-						if (string.Compare(claim, e.Claim, true) == 0)
-							return AuthorizationResult.OK(0);
-					}
-				}
-			}
+			if (context is IElevationContext ec && ec.State == ElevationContextState.Granted)
+				return AuthorizationResult.OK(0);
 
 			if (string.IsNullOrWhiteSpace(e.Claim))
 				return AuthorizationResult.Fail(AuthorizationResultReason.NoClaim, 0);
@@ -106,8 +97,12 @@ namespace TomPIT.Security
 			if (string.IsNullOrWhiteSpace(e.PrimaryKey))
 				return AuthorizationResult.Fail(AuthorizationResultReason.NoPrimaryKey, 0);
 
+			if (string.IsNullOrWhiteSpace(e.PermissionDescriptor))
+				return AuthorizationResult.Fail(AuthorizationResultReason.NoPermissionDescriptor, 0);
+
 			var permissions = Where(f => string.Compare(f.Claim, e.Claim, true) == 0
-				&& string.Compare(f.PrimaryKey, e.PrimaryKey, true) == 0);
+				&& string.Compare(f.PrimaryKey, e.PrimaryKey, true) == 0
+				&& string.Compare(f.Descriptor, e.PermissionDescriptor, true) == 0);
 
 			var state = new Dictionary<string, object>();
 

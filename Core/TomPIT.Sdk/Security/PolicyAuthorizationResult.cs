@@ -1,4 +1,6 @@
-﻿namespace TomPIT.Security
+﻿using TomPIT.Annotations;
+
+namespace TomPIT.Security
 {
 	public class PolicyAuthorizationResult
 	{
@@ -13,7 +15,7 @@
 
 		public string Message { get; set; }
 
-		public static PolicyAuthorizationResult Default(IAuthorizationPolicyMiddleware sender, string policy)
+		public static PolicyAuthorizationResult Default(AuthorizationPolicyAttribute sender, object policy)
 		{
 			return new PolicyAuthorizationResult($"{SR.PolicyAuthorizationFailed} ({sender.GetType().Name}.{policy})");
 		}

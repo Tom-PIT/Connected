@@ -1,24 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using TomPIT.Annotations;
 using TomPIT.Data;
-using TomPIT.Security;
 
 namespace TomPIT.Middleware
 {
-	public abstract class MiddlewareComponent : MiddlewareObject, IMiddlewareComponent, IElevationContext
+	public abstract class MiddlewareComponent : MiddlewareObject, IMiddlewareComponent
 	{
 		private MiddlewareValidator _validator = null;
-		private List<string> _claims = null;
-		public MiddlewareComponent()
+		protected MiddlewareComponent()
 		{
 
 		}
 
-		public MiddlewareComponent(IMiddlewareContext context) : base(context)
+		protected MiddlewareComponent(IMiddlewareContext context) : base(context)
 		{
 		}
 
@@ -69,28 +65,9 @@ namespace TomPIT.Middleware
 			}
 		}
 
-		List<string> IElevationContext.Claims
-		{
-			get
-			{
-				if (_claims == null)
-					_claims = new List<string>();
-
-				return _claims;
-			}
-		}
-
 		private void OnValidating(object sender, List<ValidationResult> results)
 		{
 			OnValidate(results);
-		}
-
-		protected void Elevate(string claim)
-		{
-			var ctx = this as IElevationContext;
-
-			if (!ctx.Claims.Contains(claim, StringComparer.OrdinalIgnoreCase))
-				ctx.Claims.Add(claim);
 		}
 	}
 }
