@@ -27,6 +27,7 @@ namespace TomPIT.Development.Configuration
 			routes.MapControllerRoute("sys.vc.designer", "sys/version-control/designer", new { controller = "VersionControl", action = "Designer" });
 			routes.MapControllerRoute("sys.vc.changes", "sys/version-control/changes", new { controller = "VersionControl", action = "Changes" });
 			routes.MapControllerRoute("sys.vc.diff", "sys/version-control/diff", new { controller = "VersionControl", action = "Diff" });
+			routes.MapControllerRoute("sys.vc.commit", "sys/version-control/commit", new { controller = "VersionControl", action = "Commit" });
 			//routes.MapControllerRoute("sys.testsuites", "sys/test-suites", new { controller = "TestSuites", action = "Index" });
 			//routes.MapControllerRoute("sys.testsuites.select", "sys/test-suites/select", new { controller = "TestSuites", action = "Select" });
 

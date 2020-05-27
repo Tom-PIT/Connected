@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Collections;
@@ -13,7 +11,7 @@ namespace TomPIT.MicroServices.IoT
 	[ComponentCreatingHandler("TomPIT.MicroServices.IoT.Design.Handlers.IoTDeviceCreateHandler, TomPIT.MicroServices.IoT.Design")]
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
-	public class IoTDevice : ConfigurationElement, IIoTDevice
+	public class IoTDevice : SourceCodeElement, IIoTDevice
 	{
 		private ListItems<IIoTTransaction> _transactions = null;
 
@@ -36,9 +34,6 @@ namespace TomPIT.MicroServices.IoT
 				return _transactions;
 			}
 		}
-
-		[Browsable(false)]
-		public Guid TextBlob { get; set; }
 
 		public override string ToString()
 		{

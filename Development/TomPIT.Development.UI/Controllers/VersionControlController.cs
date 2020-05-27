@@ -26,5 +26,12 @@ namespace TomPIT.Development.Controllers
 		{
 			return Json(new VersionControlChangesModel(FromBody()).GetDiff());
 		}
+
+		public IActionResult Commit()
+		{
+			new VersionControlChangesModel(FromBody()).Commit();
+
+			return new EmptyResult();
+		}
 	}
 }

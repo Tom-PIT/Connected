@@ -284,36 +284,23 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[subscriber]'
+PRINT N'Creating [tompit].[version_control_commit]'
 GO
-CREATE TABLE [tompit].[subscriber]
+CREATE TABLE [tompit].[version_control_commit]
 (
-[id] [bigint] NOT NULL IDENTITY(1, 1),
-[subscription] [bigint] NOT NULL,
-[resource_type] [int] NOT NULL,
-[resource_primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
-[token] [uniqueidentifier] NULL
-) ON [PRIMARY]
+[id] [int] NOT NULL IDENTITY(1, 1),
+[created] [datetime] NOT NULL,
+[user] [int] NOT NULL,
+[comment] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[token] [uniqueidentifier] NOT NULL,
+[service] [uniqueidentifier] NOT NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating primary key [PK_subscriber] on [tompit].[subscriber]'
+PRINT N'Creating primary key [PK_version_control_commit] on [tompit].[version_control_commit]'
 GO
-ALTER TABLE [tompit].[subscriber] ADD CONSTRAINT [PK_subscriber] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[subscriber_del]'
-GO
-CREATE PROCEDURE [tompit].[subscriber_del]
-	@id bigint
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	DELETE tompit.subscriber
-	WHERE id = @id;
-END
+ALTER TABLE [tompit].[version_control_commit] ADD CONSTRAINT [PK_version_control_commit] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -348,6 +335,117 @@ GO
 PRINT N'Creating primary key [PK_user] on [tompit].[user]'
 GO
 ALTER TABLE [tompit].[user] ADD CONSTRAINT [PK_user] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[component_history]'
+GO
+CREATE TABLE [tompit].[component_history]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[created] [datetime] NOT NULL,
+[configuration] [uniqueidentifier] NOT NULL,
+[name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[user] [int] NOT NULL,
+[commit] [int] NULL,
+[component] [uniqueidentifier] NOT NULL,
+[verb] [int] NOT NULL CONSTRAINT [DF_component_history_verb] DEFAULT ((0))
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_component_history] on [tompit].[component_history]'
+GO
+ALTER TABLE [tompit].[component_history] ADD CONSTRAINT [PK_component_history] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding constraints to [tompit].[component_history]'
+GO
+ALTER TABLE [tompit].[component_history] ADD CONSTRAINT [IX_component_history] UNIQUE NONCLUSTERED  ([configuration]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[component_history_view]'
+GO
+
+
+
+CREATE VIEW [tompit].[component_history_view]
+AS
+
+SELECT h.id, h.created, h.configuration, h.name, h.[user], h.[commit], h.component, h.verb, 
+		c.token commit_token,
+		u.token user_token
+FROM tompit.component_history h
+INNER JOIN tompit.[user] u ON h.[user] = u.id
+LEFT JOIN tompit.version_control_commit c ON h.[commit] = c.id;
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[component_history_sel]'
+GO
+CREATE PROCEDURE [tompit].[component_history_sel]
+	@component uniqueidentifier,
+	@commit int = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 *
+	FROM tompit.component_history_view 
+	WHERE (component = @component)
+	AND ([commit] = @commit);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[component_history_open_sel]'
+GO
+CREATE PROCEDURE [tompit].[component_history_open_sel]
+	@component uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1*
+	FROM tompit.component_history_view 
+	WHERE (component = @component)
+	AND ([commit] IS NULL);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[subscriber]'
+GO
+CREATE TABLE [tompit].[subscriber]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[subscription] [bigint] NOT NULL,
+[resource_type] [int] NOT NULL,
+[resource_primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[token] [uniqueidentifier] NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_subscriber] on [tompit].[subscriber]'
+GO
+ALTER TABLE [tompit].[subscriber] ADD CONSTRAINT [PK_subscriber] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[subscriber_del]'
+GO
+CREATE PROCEDURE [tompit].[subscriber_del]
+	@id bigint
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.subscriber
+	WHERE id = @id;
+END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -5018,26 +5116,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[version_control_commit]'
-GO
-CREATE TABLE [tompit].[version_control_commit]
-(
-[id] [int] NOT NULL IDENTITY(1, 1),
-[created] [datetime] NOT NULL,
-[user] [int] NOT NULL,
-[comment] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
-[token] [uniqueidentifier] NOT NULL,
-[service] [uniqueidentifier] NOT NULL
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating primary key [PK_version_control_commit] on [tompit].[version_control_commit]'
-GO
-ALTER TABLE [tompit].[version_control_commit] ADD CONSTRAINT [PK_version_control_commit] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[version_control_commit_del]'
 GO
 CREATE PROCEDURE [tompit].[version_control_commit_del]
@@ -5249,34 +5327,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[component_history]'
-GO
-CREATE TABLE [tompit].[component_history]
-(
-[id] [int] NOT NULL IDENTITY(1, 1),
-[created] [datetime] NOT NULL,
-[configuration] [uniqueidentifier] NOT NULL,
-[name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
-[user] [int] NOT NULL,
-[commit] [int] NULL,
-[component] [uniqueidentifier] NOT NULL,
-[verb] [int] NOT NULL CONSTRAINT [DF_component_history_verb] DEFAULT ((0))
-) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating primary key [PK_component_history] on [tompit].[component_history]'
-GO
-ALTER TABLE [tompit].[component_history] ADD CONSTRAINT [PK_component_history] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Adding constraints to [tompit].[component_history]'
-GO
-ALTER TABLE [tompit].[component_history] ADD CONSTRAINT [IX_component_history] UNIQUE NONCLUSTERED  ([configuration]) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[version_control_commit_ins]'
 GO
 CREATE PROCEDURE [tompit].[version_control_commit_ins]
@@ -5306,7 +5356,8 @@ BEGIN
 
 	UPDATE tompit.component_history SET
 		[commit] = @id
-	WHERE component IN (SELECT token FROM OPENJSON(@components) WITH (token uniqueidentifier));
+	WHERE component IN (SELECT token FROM OPENJSON(@components) WITH (token uniqueidentifier))
+	AND [commit] IS NULL;
 		
 END
 GO
@@ -5522,23 +5573,6 @@ BEGIN
 	WHERE component = @component
 	AND [commit] IS NULL;
 END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[component_history_view]'
-GO
-
-
-
-CREATE VIEW [tompit].[component_history_view]
-AS
-
-SELECT h.id, h.created, h.configuration, h.name, h.[user], h.[commit], h.component, h.verb, 
-		c.token commit_token,
-		u.token user_token
-FROM tompit.component_history h
-INNER JOIN tompit.[user] u ON h.[user] = u.id
-LEFT JOIN tompit.version_control_commit c ON h.[commit] = c.id;
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -6541,6 +6575,25 @@ GO
 PRINT N'Creating primary key [PK_metric_agg_day] on [tompit].[metric_agg_day]'
 GO
 ALTER TABLE [tompit].[metric_agg_day] ADD CONSTRAINT [PK_metric_agg_day] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[version_control_endpoint]'
+GO
+CREATE TABLE [tompit].[version_control_endpoint]
+(
+[id] [int] NOT NULL,
+[name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[url] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[user_name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[password] [varbinary] (128) NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_version_control_endpoint] on [tompit].[version_control_endpoint]'
+GO
+ALTER TABLE [tompit].[version_control_endpoint] ADD CONSTRAINT [PK_version_control_endpoint] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO

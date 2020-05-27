@@ -3,9 +3,9 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>TomPIT.MicroServices.Design</RootNamespace>
     <AssemblyName>TomPIT.MicroServices.Design</AssemblyName>
-    <AssemblyVersion>2.1.513.4</AssemblyVersion>
-    <FileVersion>2.1.513.4</FileVersion>
-    <Version>2.1.513.4</Version>
+    <AssemblyVersion>2.1.520.3</AssemblyVersion>
+    <FileVersion>2.1.520.3</FileVersion>
+    <Version>2.1.520.3</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Designers\Security\**" />

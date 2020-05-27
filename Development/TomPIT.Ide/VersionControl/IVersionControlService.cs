@@ -5,6 +5,11 @@ using TomPIT.Development;
 
 namespace TomPIT.Ide.VersionControl
 {
+	public enum ChangeQueryMode
+	{
+		MetaData = 1,
+		Full = 2
+	}
 	public interface IVersionControlService
 	{
 		void Lock(Guid component, LockVerb verb);
@@ -20,11 +25,13 @@ namespace TomPIT.Ide.VersionControl
 		List<IComponentHistory> QueryHistory(Guid component);
 		List<IComponent> QueryCommitComponents(Guid commit);
 		List<IComponentHistory> QueryCommitDetails(Guid commit);
+		IComponentHistory SelectCommitDetail(Guid commit, Guid component);
+		IComponentHistory SelectNonCommited(Guid component);
 
 		void Rollback(Guid commit, Guid component);
 		void Rollback(Guid commit);
 
-		List<IVersionControlDescriptor> GetChanges();
-		IVersionControlDiffDescriptor GetDiff(Guid component, Guid blob);
+		IChangeDescriptor GetChanges(ChangeQueryMode mode);
+		IVersionControlDiffDescriptor GetDiff(Guid component, Guid id);
 	}
 }

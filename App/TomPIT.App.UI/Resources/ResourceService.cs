@@ -154,7 +154,9 @@ namespace TomPIT.App.Resources
 
 			var path = match.Value[3..^1];
 
-			return $"\"{new MiddlewareContext(Tenant.Url).Services.Routing.RootUrl}/sys/bundles/{path}\"";
+			var ctx = new MiddlewareContext(Tenant.Url);
+
+			return $"\"{ctx.Services.Routing.RootUrl}/sys/bundles/{path}\"";
 		}
 
 		private string GetUploadSource(IScriptUploadSource d)

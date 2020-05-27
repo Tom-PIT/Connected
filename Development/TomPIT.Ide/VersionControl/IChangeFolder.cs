@@ -2,9 +2,9 @@
 
 namespace TomPIT.Ide.VersionControl
 {
-	public interface IVersionControlFolder
+	public interface IChangeFolder
 	{
-		Guid Token { get; }
+		Guid Id { get; }
 		string Name { get; }
 		Guid Parent { get; }
 	}

@@ -107,6 +107,16 @@ namespace TomPIT.Sys.Data
 			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommitDetails(c);
 		}
 
+		public IComponentHistory SelectCommitDetail(Guid commit, Guid component)
+		{
+			var c = SelectCommit(commit);
+
+			if (c == null)
+				throw new SysException(SR.ErrCommitNotFound);
+
+			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.SelectCommitDetail(c, component);
+		}
+
 		public ICommit SelectCommit(Guid token)
 		{
 			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.SelectCommit(token);
@@ -120,6 +130,11 @@ namespace TomPIT.Sys.Data
 				throw new SysException(SR.ErrCommitNotFound);
 
 			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommitComponents(c);
+		}
+
+		public IComponentHistory SelectNonCommited(Guid component)
+		{
+			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.SelectNonCommited(component);
 		}
 
 		public List<ICommit> QueryCommitsForComponent(Guid microService, Guid component)

@@ -67,14 +67,29 @@ class Toolbar {
         var command = e.currentTarget.getAttribute('data-command');
 
         this.dispatch({
-            command: command
+            command: command,
+            target: e.target
         });
     }
     dispatch(e) {
-        if (e.command === 'repositories') {
-            this.host.designer.load({
-                name: 'repositories'
-            });         
+        for (let i = 0; i<e.target.parentNode.children.length; i++){
+            var element = e.target.parentNode.children[i];
+
+            if (element === e.target)
+                element.classList.add('active');
+            else
+                element.classList.remove('active');
+        }
+
+        if (e.command === 'view-changes') {
+            this.host.explorer.reload({
+                provider: 'changes'
+            });
+        }
+        else if (e.command === 'view-push') {
+            this.host.explorer.reload({
+                provider: 'push'
+            });
         }
     }
 }
@@ -138,6 +153,19 @@ class Server {
     }
     diff(e) {
         const url = `${this.rootUrl}/sys/version-control/diff`;
+
+        return new Promise((resolve) => {
+            tompit.post({
+                url: url,
+                data: e,
+                onSuccess: async (e) => {
+                    resolve(e);
+                }
+            });
+        });
+    }
+    commit(e) {
+        const url = `${this.rootUrl}/sys/version-control/commit`;
 
         return new Promise((resolve) => {
             tompit.post({
@@ -217,7 +245,7 @@ class Diff {
 
         var result = await this.host.server.diff({
             component: e.component,
-            blob: e.blob
+            id: e.id
         });
 
         this.serverModel = monaco.editor.createModel(result.original, result.syntax);
@@ -264,15 +292,26 @@ class Diff {
 class Explorer {
     constructor(e) {
         this._host = e.element;
-
+        this._domProvider = null;
         this._initialize();
-        this.reload();
+        this.reload({
+            provider:'changes'
+        });
+    }
+    get domProvider() {
+        return this._domProvider;
     }
     get host() {
         return this._host;
     }
     get explorer() {
-        return this.host.element.querySelector('[name="explorer"]');
+        return this.host.element.querySelector('[name="explorer"] [name="explorerContent"]');
+    }
+    get toolbar() {
+        return this.host.element.querySelector('[name="explorer"] [name="explorerToolbar"]');
+    }
+    get selectedItems() {
+        return this._domProvider.selectedItems;
     }
     _initialize() {
         var instance = this;
@@ -281,43 +320,207 @@ class Explorer {
             e.stopPropagation();
             e.preventDefault();
 
+            var caret = e.target.closest('[data-type="caret"]');
+
+            if (caret) {
+                instance.toggle({
+                    element:caret
+                });
+
+                return;
+            }
+
             var target = e.target.closest('li[data-id][data-type]');
 
             if (target === null)
                 return;
 
             instance.selectNode({
-                id: target.getAttribute('data-id'),
-                type: target.getAttribute('data-type'),
-                component: target.getAttribute('data-component'),
-                microservice: target.getAttribute('data-microservice'),
-                folder: target.getAttribute('data-folder'),
-                blob: target.getAttribute('data-blob')
+                node: target,
+                target:e.target
             });
         });
     }
     selectNode(e) {
+        var ev = new CustomEvent('selectionChanged', {
+            detail: {
+                node: e.node,
+                target: e.target
+            },
+            cancelable:true
+        });
+
+        this.host.element.dispatchEvent(ev);
+
+        if (ev.defaultPrevented)
+            return;
+        
         var nodes = this.explorer.querySelectorAll('li.tp-change-item');
-        var target = this.explorer.querySelector(`li.tp-change-item[data-id="${e.id}"]`);
-
-        var isBlob = e.id.replace('-', '').replace('0', '').trim().length > 0;
-
-        if (isBlob)
-            this.host.diff.load(e);
-        else
-            this.host.designer.load(e);
 
         for (let i = 0; i < nodes.length; i++) {
             var node = nodes[i];
 
-            if (node === target)
+            if (node === e.node)
                 node.classList.add('tp-active');
             else
                 node.classList.remove('tp-active');
         }
     }
+    async reload(e) {
+        if (e.provider === 'changes') {
+            this._domProvider = new ChangesDomProvider({
+                host: this.host
+            });
+        }
+        else if (e.provider === 'push') {
+            this._domProvider = new PushDomProvider({
+                host: this.host
+            });
+        }
+
+        this.domProvider.reload(e);
+    }
+    toggle(e) {
+        let item = e.element.closest('li');
+
+        e.element.classList.toggle('fa-caret-right');
+        e.element.classList.toggle('fa-caret-down');
+
+        let list = item.querySelector('li > ul');
+
+        if (list === null)
+            return;
+
+        list.classList.toggle('tp-hidden');
+    }
+}
+
+class DomProvider{
+    constructor(e) {
+        this._host = e.host;
+        let instance = this;
+
+        this.host.element.addEventListener('selectionChanged', e => {
+            instance.onSelectionChanged(e);
+        });
+    }
+    get selectedItems() {
+        return null;
+    }
+    get host() {
+        return this._host;
+    }
+    onSelectionChanged(e) {
+        
+    }
+    reload(e) {
+
+    }
     findNode(e) {
-        return this.explorer.querySelector(`[data-id="${e.id}"]`);
+        return this.host.explorer.explorer.querySelector(`[data-id="${e.id}"]`);
+    }
+    ensureListHost(e) {
+        for (let i = 0; i < e.element.children.length; i++) {
+            let child = e.element.children[i];
+
+            if (child.tagName === 'UL')
+                return child;
+        }
+
+        let result = this.createList();
+
+        e.element.appendChild(result);
+
+        return result;
+    }
+    isGuidEmpty(e) {
+        if (!e)
+            return true;
+
+        return e.replace(/-/g, '').replace(/0/g, '').length === 0;
+    }
+    createList() {
+        var result = document.createElement('ul');
+
+        result.className = 'tp-vc-list';
+
+        return result;
+    }
+    createText(e) {
+        let element = document.createElement('span');
+
+        element.className = 'tp-vc-item-text';
+        element.innerHTML = e.text;
+
+        return element;
+    }
+    createCaret() {
+        var element = document.createElement('i');
+
+        element.className = 'fal fa-fw fa-caret-down';
+        element.setAttribute('data-type', 'caret');
+
+        return element;
+    }
+    createIcon(e) {
+        var element = document.createElement('i');
+
+        let scheme = 'fal';
+
+        if (e.scheme) {
+            if (e.scheme === 'solid')
+                scheme = 'fas';
+        }
+
+        element.className = `${scheme} fa-fw ${e.icon} text-${e.color}`;
+
+        return element;
+    }
+}
+
+class ChangesDomProvider extends DomProvider{
+    constructor(e) {
+        super(e);
+    }
+    onSelectionChanged(e) {
+        let node = e.detail.node;
+
+        if (e.detail.target.closest('.dx-checkbox-container') !== null)
+            e.preventDefault();
+        else {
+            var component = node.closest('li[data-type="component"]');
+            var microService = node.closest('li[data-type="microService"]');
+
+            let args = {
+                id: node.getAttribute('data-id'),
+                type: node.getAttribute('data-type'),
+                component: component ? component.getAttribute('data-id') : null,
+                microservice: microService ? microService.getAttribute('data-id') : null
+            };
+
+            this.host.diff.load(args);
+        }
+    }
+    get selectedItems() {
+        var spanElements = this.host.explorer.explorer.querySelectorAll('span[data-type="component-selection"]');
+        var result = [];
+
+        for (let i = 0; i < spanElements.length; i++) {
+            let element = spanElements[i];
+            var checkBox = $(element).dxCheckBox('instance');
+
+            if (checkBox.option('value') === true) {
+                let component = element.closest('[data-type="component"]');
+                let microService = component.closest('[data-type="microService"]');
+
+                result.push({
+                    component: component.getAttribute('data-id'),
+                    microService: microService.getAttribute('data-id')
+                });
+            }
+        }
+
+        return result;
     }
     async reload(e) {
         let id = null;
@@ -333,62 +536,279 @@ class Explorer {
 
         var node = id
             ? this.findNode(args)
-            : this.explorer;
+            : this.host.explorer.explorer;
 
         node.innerHTML = '';
+        this.host.explorer.toolbar.innerHTML = '';
+        this._createToolbar();
 
-        var list = document.createElement('ul');
+        var list = this.createList();
+
+        list.classList.add('tp-top-level');
 
         node.appendChild(list);
 
-        for (let i = 0; i < args.changes.length; i++) {
-            const change = args.changes[i];
-            var item = this._createElement({
+        for (let i = 0; i < args.changes.microServices.length; i++) {
+            const change = args.changes.microServices[i];
+            this._createMicroServiceElement({
                 list: list,
-                change: change
-            });
-
-            this._loadChildren({
-                item: item,
+                microService: change,
                 change: change
             });
         }
     }
-    _loadChildren(e) {
-        if (!e.change.items)
-            return;
+    _createToolbar() {
+        let group = document.createElement('div');
 
-        var list = document.createElement('ul');
+        group.className = 'btn-group btn-group-sm';
 
-        for (let i = 0; i < e.change.items.length; i++) {
-            const change = e.change.items[i];
-            var item = this._createElement({
-                list: list,
-                change: change
-            });
+        let commit = document.createElement('a');
 
-            this._loadChildren({
-                item: item,
-                change: change
-            });
-        }
+        commit.setAttribute('href', '#');
+        commit.innerHTML = 'Commit';
 
-        e.item.appendChild(list);
+        let instance = this;
+
+        commit.addEventListener('click', e => {
+            instance.host.designer.load({
+                name:'Commit'
+            });  
+        });
+
+        group.appendChild(commit);
+
+        this.host.explorer.toolbar.appendChild(group);
     }
-    _createElement(e) {
-        let item = document.createElement('li');
+    _createMicroServiceElement(e) {
+        var item = document.createElement('li');
 
         item.setAttribute('data-id', e.change.id);
-        item.setAttribute('data-type', e.change.type);
-        item.setAttribute('data-component', e.change.component);
-        item.setAttribute('data-microservice', e.change.microservice);
-        item.setAttribute('data-folder', e.change.folder);
-        item.setAttribute('data-blob', e.change.blob);
+        item.setAttribute('data-type', 'microService');
         item.className = 'tp-change-item';
-        item.innerHTML = e.change.name;
+        item.append(this.createCaret());
+        item.append(this.createIcon({
+            icon: 'fa-share-alt',
+            color: 'default'
+        }));
+        item.append(this.createText({
+            text: e.change.name
+        }));
 
         e.list.appendChild(item);
 
-        return item;
+        var childList = this.createList();
+
+        item.appendChild(childList);
+
+        for (var i = 0; i < e.change.components.length; i++) {
+            let component = e.change.components[i];
+            let folder = this._findFolder({
+                microService: e.change,
+                folder: component.folder
+            });
+
+            if (!folder)
+                folder = item;
+
+            this._createComponentElement({
+                folder: folder,
+                component: component
+            });
+        }
+    }
+    _createComponentElement(e) {
+        let listHost = this.ensureListHost({
+            element: e.folder
+        });
+
+        let listItem = document.createElement('li');
+
+        listItem.setAttribute('data-id', e.component.id);
+        listItem.setAttribute('data-type', 'component');
+        listItem.className = 'tp-change-item';
+
+        if (e.component.elements && e.component.elements.length > 0)
+            listItem.append(this.createCaret());
+
+        listItem.append(this.createIcon({
+            icon: 'fa-file',
+            color: 'default'
+        }));
+
+        let span = document.createElement('span');
+
+        span.className = 'px-1';
+        span.setAttribute('data-type', 'component-selection');
+
+        listItem.append(span);
+
+        $(span).dxCheckBox({
+            value:true
+        });
+
+        listItem.append(this.createText({
+            text: e.component.name
+        }));
+
+        listHost.appendChild(listItem);
+
+        this._createComponentChildren({
+            item: listItem,
+            items: e.component.elements
+        });
+    }
+    _createComponentChildren(e) {
+        if (!e.items || e.items.length === 0)
+            return;
+
+        var listHost = this.ensureListHost({
+            element: e.item
+        });
+
+        for (let i = 0; i < e.items.length; i++) {
+            let item = e.items[i];
+            let listItem = document.createElement('li');
+
+            listItem.setAttribute('data-id', item.id);
+            listItem.setAttribute('data-type', 'element');
+            listItem.className = 'tp-change-item';
+
+            if (item.elements && item.elements.length > 0) {
+                listItem.append(this.createCaret());
+
+                listItem.append(this.createIcon({
+                    icon: 'fa-folder',
+                    color: 'warning'
+                }));
+            }
+            else {
+                listItem.append(this.createIcon({
+                    icon: 'fa-file',
+                    color: 'default'
+                }));
+            }
+
+            let fileName = item.name;
+
+            if (item.blob && item.blob.fileName)
+                fileName = item.blob.fileName;
+
+            listItem.append(this.createText({
+                text: fileName
+            }));
+
+            listHost.appendChild(listItem);
+
+            this._createComponentChildren({
+                item: listItem,
+                items: item.elements
+            });
+        }
+    }
+    _findFolder(e) {
+        if (this.isGuidEmpty(e.folder))
+            return null;
+
+        let existing = this.selectFolder(e.folder);
+
+        if (existing !== null)
+            return existing;
+
+        let stack = [];
+        let current = null;
+
+        for (let i = 0; i < e.microService.folders.length; i++) {
+            let folder = e.microService.folders[i];
+
+            if (folder.id === e.folder) {
+                current = folder;
+                break;
+            }
+        }
+
+        while (current !== null) {
+            stack.push(current);
+
+            if (this.isGuidEmpty(current.parent))
+                break;
+
+            for (let i = 0; i < e.microService.folders.length; i++) {
+                var folder = e.microService.folders[i];
+
+                if (folder.id === current.parent) {
+                    current = folder;
+                    break;
+                }
+            }
+        }
+
+        stack = stack.reverse();
+        let currentHost = this.selectMicroService(e.microService.id);
+
+        for (let i = 0; i < stack.length; i++) {
+            let folder = stack[i];
+            existing = this.selectFolder(folder.id);
+
+            if (existing === null) {
+                let list = this.ensureListHost({
+                    element: currentHost
+                });
+
+                let listItem = document.createElement('li');
+
+                listItem.setAttribute('data-id', folder.id);
+                listItem.setAttribute('data-type', 'folder');
+                listItem.className = 'tp-change-item';
+
+                listItem.append(this.createCaret());
+                listItem.append(this.createIcon({
+                    icon: 'fa-folder',
+                    scheme: 'solid',
+                    color: 'warning'
+                }));
+
+                listItem.append(this.createText({
+                    text: folder.name
+                }));
+
+                list.appendChild(listItem);
+
+                currentHost = listItem;
+            }
+        }
+
+        return currentHost;
+    }
+    selectFolder(id) {
+        return this.host.explorer.explorer.querySelector(`li[data-type="folder"][data-id="${id}"]`);
+    }
+    selectMicroService(id) {
+        return this.host.explorer.explorer.querySelector(`li[data-type="microService"][data-id="${id}"]`);
+    }
+
+}
+
+class PushDomProvider extends DomProvider{
+    constructor(e) {
+        super(e);
+    }
+    async reload(e) {
+        let id = null;
+
+        if (e && e.id)
+            id = e.id;
+
+        var args = {
+            id: id
+        };
+
+        args.changes = await this.host.server.changes(args);
+
+        var node = id
+            ? this.findNode(args)
+            : this.host.explorer.explorer;
+
+        node.innerHTML = '';
+        this.host.explorer.toolbar.innerHTML = '';
     }
 }

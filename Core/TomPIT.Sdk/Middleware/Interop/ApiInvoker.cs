@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -120,7 +121,8 @@ namespace TomPIT.Middleware.Interop
 					{"exception", $"{resolvedException.Source}/{resolvedException.Message}" }
 				});
 
-				throw resolvedException;
+				ExceptionDispatchInfo.Capture(resolvedException).Throw();
+				throw;
 			}
 			finally
 			{

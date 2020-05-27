@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
@@ -27,6 +28,17 @@ namespace TomPIT.Ide.VersionControl
 			var u = Tenant.CreateUrl("VersionControl", "QueryChanges");
 
 			return Tenant.Post<List<Component>>(u).ToList<IComponent>();
+		}
+
+		public IComponentHistory SelectNonCommited(Guid component)
+		{
+			var u = Tenant.CreateUrl("VersionControl", "SelectNonCommited");
+			var args = new JObject
+			{
+				{"component", component }
+			};
+
+			return Tenant.Post<ComponentHistory>(u, args);
 		}
 
 		public List<IComponent> Changes(Guid microService)
@@ -257,209 +269,66 @@ namespace TomPIT.Ide.VersionControl
 			return Tenant.Post<List<ComponentHistory>>(u, e).ToList<IComponentHistory>();
 		}
 
-		public List<IVersionControlDescriptor> GetChanges()
+		public IComponentHistory SelectCommitDetail(Guid commit, Guid component)
 		{
-			var result = new List<IVersionControlDescriptor>();
+			var u = Tenant.CreateUrl("VersionControl", "SelectCommitDetail");
+			var e = new JObject
+				{
+					 {"commit", commit },
+					 {"component", component }
+				};
+
+			return Tenant.Post<ComponentHistory>(u, e);
+		}
+
+		public IChangeDescriptor GetChanges(ChangeQueryMode mode)
+		{
+			var result = new ChangeDescriptor();
 			var changes = Changes();
 
 			var groups = changes.GroupBy(f => f.MicroService);
 
 			foreach (var group in groups)
-				result.Add(CreateMicroserviceChanges(group));
+				result.MicroServices.Add(CreateMicroserviceChanges(group, mode));
 
 			return result;
 		}
 
-		private IVersionControlDescriptor CreateMicroserviceChanges(IGrouping<Guid, IComponent> group)
+		private IChangeMicroService CreateMicroserviceChanges(IGrouping<Guid, IComponent> group, ChangeQueryMode mode)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(group.Key);
-
-			var result = new VersionControlDescriptor
+			var result = new ChangeMicroService
 			{
-				Id = group.Key,
-				Microservice = group.Key,
-				Name = ms.Name
+				Name = ms.Name,
+				Id = ms.Token
 			};
 
 			var folders = Tenant.GetService<IComponentService>().QueryFolders(ms.Token);
 
+			foreach (var folder in folders)
+			{
+				result.Folders.Add(new ChangeFolder
+				{
+					Name = folder.Name,
+					Parent = folder.Parent,
+					Id = folder.Token
+				});
+			}
+
 			foreach (var component in group)
-			{
-				var folder = CreateFolderTree(result, component, folders);
-
-				if (folder == null)
-					folder = result;
-
-				folder.Items.Add(ResolveComponent(component));
-			}
+				result.Components.Add(new ComponentParser(Tenant, component, mode).Parse());
 
 			return result;
 		}
 
-		private IVersionControlDescriptor CreateFolderTree(VersionControlDescriptor descriptor, IComponent component, List<IFolder> folders)
-		{
-			if (component.Folder == Guid.Empty)
-				return null;
-
-			var paths = CreateFolderPath(folders, component.Folder);
-			var current = descriptor;
-
-			while (paths.Count > 0)
-			{
-				var folder = paths.Pop();
-
-				if (descriptor.Items.FirstOrDefault(f => f.Id == folder.Token) == null)
-				{
-					var folderDescriptor = new VersionControlDescriptor
-					{
-						Id = folder.Token,
-						Folder = folder.Parent,
-						Name = folder.Name,
-						Microservice = folder.MicroService
-					};
-
-					current.Items.Add(folderDescriptor);
-					current = folderDescriptor;
-				}
-			}
-
-			return current;
-		}
-
-		private Stack<IFolder> CreateFolderPath(List<IFolder> folders, Guid target)
-		{
-			var result = new Stack<IFolder>();
-
-			while (target != Guid.Empty)
-			{
-				var folder = folders.FirstOrDefault(f => f.Token == target);
-
-				if (folder == null)
-					return null;
-
-				result.Push(folder);
-
-				target = folder.Parent;
-			}
-
-			return result;
-		}
-
-		private IVersionControlDescriptor ResolveComponent(IComponent component)
-		{
-			var config = Tenant.GetService<IComponentService>().SelectConfiguration(component.Token);
-
-			var descriptor = new VersionControlDescriptor
-			{
-				Folder = component.Folder,
-				Id = component.Token,
-				Name = component.Name,
-				Syntax = ResolveSyntax(config),
-				Microservice = component.MicroService,
-				Component = component.Token
-			};
-
-			if (config is IText text)
-				descriptor.Blob = text.TextBlob;
-
-			var texts = config.Children<IText>();
-
-			foreach (var txt in texts)
-			{
-				if (txt == config)
-					continue;
-
-				CreateTextChain(descriptor, txt);
-			}
-
-			return descriptor;
-		}
-
-		private void CreateTextChain(IVersionControlDescriptor descriptor, IText txt)
-		{
-			var chains = new Stack<IElement>();
-			var current = txt.Parent;
-
-			while (current != null)
-			{
-				if (current is IConfiguration)
-					break;
-
-				chains.Push(current);
-
-				current = current.Parent;
-			}
-
-			var currentDescriptor = descriptor;
-
-			while (chains.Count > 0)
-			{
-				var chain = chains.Pop();
-
-				var chainDescriptor = currentDescriptor.Items.FirstOrDefault(f => f.Id == chain.Id);
-
-				if (chainDescriptor == null)
-				{
-					chainDescriptor = new VersionControlDescriptor
-					{
-						Id = chain.Id,
-						Name = ResolveName(chain),
-						Component = descriptor.Component,
-						Microservice = descriptor.Microservice
-					};
-
-					currentDescriptor.Items.Add(chainDescriptor);
-				}
-
-				currentDescriptor = chainDescriptor;
-			}
-
-			currentDescriptor.Items.Add(new VersionControlDescriptor
-			{
-				Blob = txt.TextBlob,
-				Id = txt.Id,
-				Name = txt.ToString(),
-				Component = descriptor.Component,
-				Microservice = descriptor.Microservice,
-				Syntax = ResolveSyntax(txt)
-			});
-		}
-
-		private string ResolveName(IElement element)
-		{
-			if (element.Parent == null || element.Parent.GetType().IsCollection())
-				return element.ToString();
-
-			var props = element.Parent.GetType().GetProperties();
-
-			foreach (var property in props)
-			{
-				if (property.GetType().IsCollection())
-					continue;
-
-				var value = property.GetValue(element.Parent);
-
-				if (value == element)
-					return property.Name;
-			}
-
-			return element.ToString();
-		}
-		private string ResolveSyntax(object text)
-		{
-			var syntax = text.GetType().FindAttribute<SyntaxAttribute>();
-
-			return syntax == null ? SyntaxAttribute.CSharp : syntax.Syntax;
-		}
-
-		public IVersionControlDiffDescriptor GetDiff(Guid component, Guid blob)
+		public IVersionControlDiffDescriptor GetDiff(Guid component, Guid id)
 		{
 			var config = Tenant.GetService<IComponentService>().SelectConfiguration(component);
 
 			if (config == null)
 				return null;
 
-			var target = config.Children<IText>().FirstOrDefault(f => f.TextBlob == blob);
+			var target = config.Children<IText>().FirstOrDefault(f => f.Id == id);
 
 			if (target == null)
 				return null;
@@ -470,8 +339,33 @@ namespace TomPIT.Ide.VersionControl
 			{
 				Modified = Tenant.GetService<IComponentService>().SelectText(config.MicroService(), target),
 				Syntax = syntax == null ? SyntaxAttribute.CSharp : syntax.Syntax,
-				Original = string.Empty/*TODO:connect to the server*/
+				Original = ResolveOriginal(config, id)
 			};
+		}
+
+		private string ResolveOriginal(IConfiguration config, Guid id)
+		{
+			var unCommited = SelectNonCommited(config.Component);
+
+			if (unCommited == null)
+				return null;
+
+			var image = Tenant.GetService<IComponentDevelopmentService>().SelectComponentImage(unCommited.Blob);
+
+			if (image == null)
+				return null;
+
+			if (id == config.Component)
+				return Encoding.UTF8.GetString(image.Configuration.Content);
+			else
+			{
+				var dep = image.Dependencies.FirstOrDefault(f => string.Compare(f.PrimaryKey, id.ToString(), true) == 0);
+
+				if (dep == null)
+					return null;
+
+				return Encoding.UTF8.GetString(dep.Content);
+			}
 		}
 	}
 }

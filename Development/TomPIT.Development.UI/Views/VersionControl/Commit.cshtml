@@ -1,0 +1,32 @@
+﻿@model TomPIT.Middleware.IMiddlewareContext
+
+@{
+    var scriptUrl = $"{Model.Services.Routing.RootUrl}/assets/scripts/vc/commit.js";
+}
+
+    <div class="tp-form">
+        <div class="container" id="commit">
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label>Comment</label>
+                        <div id="editComment"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <button type="button" class="btn btn-primary" disabled id="btnCommit">Commit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script type="module">
+
+    import { Commit } from '@scriptUrl';
+
+    new Commit({
+        selector:'#commit'
+    });
+</script>

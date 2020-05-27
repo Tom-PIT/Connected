@@ -16,12 +16,23 @@ namespace TomPIT.Development.Models
 
 		public IVersionControlDiffDescriptor GetDiff()
 		{
-			return Tenant.GetService<IVersionControlService>().GetDiff(Arguments.Required<Guid>("component"), Arguments.Required<Guid>("blob"));
+			return Tenant.GetService<IVersionControlService>().GetDiff(Arguments.Required<Guid>("component"), Arguments.Required<Guid>("id"));
 		}
 
-		public List<IVersionControlDescriptor> GetChanges()
+		public void Commit()
 		{
-			return Tenant.GetService<IVersionControlService>().GetChanges();
+			var components = Arguments.Required<JArray>("components");
+			var items = new List<Guid>();
+
+			foreach (JObject component in components)
+				items.Add(component.Required<Guid>("component"));
+
+			Tenant.GetService<IVersionControlService>().Commit(items, Arguments.Required<string>("comment"));
+		}
+
+		public IChangeDescriptor GetChanges()
+		{
+			return Tenant.GetService<IVersionControlService>().GetChanges(ChangeQueryMode.MetaData);
 		}
 	}
 }

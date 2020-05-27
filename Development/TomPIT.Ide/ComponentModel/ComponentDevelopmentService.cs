@@ -617,7 +617,7 @@ namespace TomPIT.Ide.ComponentModel
 			};
 		}
 
-		private ComponentImage DownloadImage(Guid blob)
+		public IComponentImage SelectComponentImage(Guid blob)
 		{
 			var content = Tenant.GetService<IStorageService>().Download(blob);
 
@@ -717,7 +717,7 @@ namespace TomPIT.Ide.ComponentModel
 
 		public void RestoreComponent(Guid blob)
 		{
-			RestoreComponent(DownloadImage(blob));
+			RestoreComponent(SelectComponentImage(blob));
 		}
 
 		public void Import(Guid microService, Guid blob)

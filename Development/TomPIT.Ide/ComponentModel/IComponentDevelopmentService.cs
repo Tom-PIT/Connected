@@ -30,6 +30,7 @@ namespace TomPIT.Ide.ComponentModel
 		Dictionary<Guid, Guid> SelectRuntimeState(Guid microService);
 
 		IComponentImage CreateComponentImage(Guid component);
+		IComponentImage SelectComponentImage(Guid blob);
 		void RestoreComponent(IComponentImage image);
 		void RestoreComponent(Guid blob);
 		void Import(Guid microService, Guid blob);

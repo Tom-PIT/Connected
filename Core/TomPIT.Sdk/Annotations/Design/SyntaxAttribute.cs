@@ -2,7 +2,7 @@
 
 namespace TomPIT.Annotations.Design
 {
-	public class SyntaxAttribute : Attribute
+	public sealed class SyntaxAttribute : Attribute
 	{
 		public const string Razor = "razor";
 		public const string CSharp = "csharp";

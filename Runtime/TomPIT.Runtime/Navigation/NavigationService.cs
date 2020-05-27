@@ -192,32 +192,27 @@ namespace TomPIT.Navigation
 				if (string.IsNullOrWhiteSpace(container.Key))
 					continue;
 
-				if (Handlers.ContainsKey(container.Key))
+				if (!Handlers.ContainsKey(container.Key))
 				{
-					if (Handlers[container.Key].FirstOrDefault(f => f.Component == configuration.Component) != null)
-						continue;
-
-					var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
-
-					FillDescriptor(descriptor, container);
-
-					var list = Handlers[container.Key];
-
-					lock (list)
+					lock (Handlers)
 					{
-						list.Add(descriptor);
+						if (!Handlers.ContainsKey(container.Key))
+							Handlers.TryAdd(container.Key, new List<NavigationHandlerDescriptor>());
 					}
 				}
-				else
+
+				if (Handlers[container.Key].FirstOrDefault(f => f.Component == configuration.Component) != null)
+					continue;
+
+				var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
+
+				FillDescriptor(descriptor, container);
+
+				var list = Handlers[container.Key];
+
+				lock (list)
 				{
-					var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
-
-					FillDescriptor(descriptor, container);
-
-					Handlers.TryAdd(container.Key, new List<NavigationHandlerDescriptor>
-						{
-							descriptor
-						});
+					list.Add(descriptor);
 				}
 			}
 		}

@@ -20,18 +20,24 @@
     <div class="container-fluid">
         <div class="row">
             <div class="btn-toolbar dev-toolbar justify-content-between" role="toolbar" name="designerToolbar">
-                <div class="btn-group" role="group">
-                    <a href="#" data-command="repositories" class="btn btn-small btn-link" role="button">Repositories</a>
+                <div class="btn-group btn-group-sm" role="group">
+                    <a href="#" data-command="view-changes" class="btn btn-small btn-link active" role="button">Changes</a>
+                    <a href="#" data-command="view-push" class="btn btn-small btn-link" role="button">Push</a>
                 </div>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-3">
+            <div class="col-sm-3 px-0">
                 <div name="explorer">
+                    <div name="explorerToolbar" class="btn-toolbar tp-vc-explorer-toolbar">
 
+                    </div>
+                    <div name="explorerContent">
+
+                    </div>
                 </div>
             </div>
-            <div class="col-sm-9">
+            <div class="col-sm-9 px-0">
                 <div name="diff">
 
                 </div>
@@ -52,7 +58,7 @@
 
     import { VersionControl } from '@scriptUrl';
 
-    new VersionControl({
+    window.versionControl = new VersionControl({
         selector: '#versionControl',
         rootUrl:'@Model.Services.Routing.RootUrl'
     });
