@@ -916,6 +916,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No files are selected for commit..
+        /// </summary>
+        public static string ErrCommitNoFiles {
+            get {
+                return ResourceManager.GetString("ErrCommitNoFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Commit not found.
         /// </summary>
         public static string ErrCommitNotFound {
@@ -2131,6 +2140,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Repository not found.
+        /// </summary>
+        public static string ErrRepositoryNotFound {
+            get {
+                return ResourceManager.GetString("ErrRepositoryNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Resource group not found.
         /// </summary>
         public static string ErrResourceGroupNotFound {
@@ -2694,6 +2712,24 @@ namespace TomPIT {
         public static string NavigateBack {
             get {
                 return ResourceManager.GetString("NavigateBack", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Smtp endpoint not set. Smtp listener disabled..
+        /// </summary>
+        public static string NoSmtpEndpoint {
+            get {
+                return ResourceManager.GetString("NoSmtpEndpoint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Smtp host name not set. Smtp listener disabled..
+        /// </summary>
+        public static string NoSmtpHostName {
+            get {
+                return ResourceManager.GetString("NoSmtpHostName", resourceCulture);
             }
         }
         

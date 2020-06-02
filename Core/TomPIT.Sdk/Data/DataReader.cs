@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Reflection;
 using Newtonsoft.Json.Linq;
+using TomPIT.Annotations;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
-using TomPIT.Serialization;
 
 namespace TomPIT.Data
 {
@@ -32,7 +36,7 @@ namespace TomPIT.Data
 					if (!(record is JObject row))
 						continue;
 
-					T instance = default;
+					T instance;
 
 					if (typeof(T).IsTypePrimitive())
 					{
@@ -44,10 +48,7 @@ namespace TomPIT.Data
 						instance = Types.Convert<T>(property.Value);
 					}
 					else
-						instance = Serializer.Deserialize<T>(Serializer.Serialize(record));
-
-					if (instance is IDataEntity entity)
-						entity.DataSource(row);
+						instance = CreateRecord(row);
 
 					r.Add(instance);
 				}
@@ -91,10 +92,7 @@ namespace TomPIT.Data
 					return Types.Convert<T>(property.Value);
 				}
 
-				var instance = Serializer.Deserialize<T>(Serializer.Serialize(row));
-
-				if (instance is IDataEntity entity)
-					entity.DataSource(row);
+				var instance = CreateRecord(row);
 
 				if (Connection.Behavior == ConnectionBehavior.Isolated)
 					Connection.Commit();
@@ -106,6 +104,148 @@ namespace TomPIT.Data
 				if (Connection.Behavior == ConnectionBehavior.Isolated)
 					Connection.Close();
 			}
+		}
+
+		private T CreateRecord(JObject row)
+		{
+			var instance = typeof(T).CreateInstance();
+
+			Deserialize(instance, row);
+
+			if (instance is IDataEntity entity)
+				entity.DataSource(row);
+
+			return (T)instance;
+		}
+
+		private void Deserialize(object instance, JObject row)
+		{
+			var properties = instance.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+			foreach (var property in properties)
+			{
+				var ignore = property.FindAttribute<MappingIgnoreAttribute>();
+
+				if (ignore != null)
+					continue;
+
+				var att = property.FindAttribute<MappingAttribute>();
+				var name = property.Name;
+
+				if (att != null)
+					name = att.DataSourceField;
+
+				var rowProperty = row.Property(name, StringComparison.OrdinalIgnoreCase);
+
+				if (rowProperty == null)
+					continue;
+
+				var value = rowProperty.Value;
+
+				if (property.IsPrimitive())
+					SetValue(instance, property, value);
+				else if (property.PropertyType.IsCollection())
+					DeserializeCollection(instance, property, value);
+				else
+					DeserializeObject(instance, property, value);
+			}
+		}
+
+		private void DeserializeCollection(object instance, PropertyInfo property, JToken token)
+		{
+			var currentValue = EnsureInstance(instance, property) as IList;
+
+			if (currentValue == null)
+				return;
+
+			if (!(token is JArray array))
+				return;
+
+			foreach (var item in array)
+			{
+				var arrayType = currentValue.GetType().GetElementType();
+
+				if (item is JValue value)
+				{
+					if (!arrayType.IsPrimitive)
+						continue;
+
+					var converted = ConvertValue(arrayType, value.Value);
+
+					if (converted != null)
+						currentValue.Add(converted);
+				}
+				else if (item is JObject obj)
+				{
+					var arrayItem = arrayType.CreateInstance();
+
+					currentValue.Add(arrayItem);
+
+					Deserialize(arrayItem, obj);
+				}
+			}
+		}
+
+		private void DeserializeObject(object instance, PropertyInfo property, JToken token)
+		{
+			var currentValue = EnsureInstance(instance, property);
+
+			if (currentValue == null)
+				return;
+
+			if (!(token is JObject o))
+				return;
+
+			Deserialize(currentValue, o);
+		}
+
+		private void SetValue(object instance, PropertyInfo property, JToken token)
+		{
+			if (!property.CanWrite)
+				return;
+
+			if (!(token is JValue jv))
+				return;
+
+			var converted = ConvertValue(property.PropertyType, jv.Value);
+
+			if (converted == null)
+				return;
+
+			property.SetValue(instance, converted);
+		}
+
+		private object EnsureInstance(object instance, PropertyInfo property)
+		{
+			var currentValue = property.GetValue(instance);
+
+			if (currentValue != null)
+				return currentValue;
+
+			if (!property.CanWrite)
+				return null;
+
+			property.SetValue(instance, property.PropertyType.CreateInstance());
+
+			return property.GetValue(instance);
+		}
+
+		private object ConvertValue(Type propertyType, object value)
+		{
+			if (value == null)
+				return value;
+
+			var converter = TypeDescriptor.GetConverter(propertyType);
+
+			if (!converter.CanConvertFrom(value.GetType()))
+			{
+				if (Types.TryConvert(value, out object result, propertyType))
+					return result;
+
+				return null;
+			}
+
+			return converter.ConvertFrom(value);
 		}
 	}
 }

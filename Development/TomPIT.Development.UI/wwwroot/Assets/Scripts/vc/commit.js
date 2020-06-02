@@ -17,12 +17,21 @@
             }
         });
 
-        this.element.querySelector('#btnCommit').addEventListener('click', e => {
+        this.element.querySelector('#btnCommit').addEventListener('click', async e => {
             let selectedComponents = versionControl.explorer.selectedItems;
 
-            versionControl.server.commit({
+            await versionControl.server.commit({
                 components: selectedComponents,
                 comment: $('#editComment').dxTextArea('instance').option('value')
+            });
+
+            await versionControl.explorer.reload({
+                provider: 'changes'
+            });
+
+            versionControl.explorer.selectNode({
+                node: null,
+                target: null
             });
         });
     }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.Development.Models;
 
 namespace TomPIT.Development.Controllers
@@ -30,6 +31,25 @@ namespace TomPIT.Development.Controllers
 		public IActionResult Commit()
 		{
 			new VersionControlChangesModel(FromBody()).Commit();
+
+			return new EmptyResult();
+		}
+
+		public IActionResult Undo()
+		{
+			new VersionControlChangesModel(FromBody()).Undo();
+
+			return new EmptyResult();
+		}
+
+		public IActionResult QueryActiveBindings()
+		{
+			return Json(new VersionControlChangesModel(FromBody()).QueryActiveBindings().OrderBy(f => f.ServiceName));
+		}
+
+		public IActionResult DesignerAction()
+		{
+			new VersionControlDesignerModel(FromBody()).DesignerAction();
 
 			return new EmptyResult();
 		}

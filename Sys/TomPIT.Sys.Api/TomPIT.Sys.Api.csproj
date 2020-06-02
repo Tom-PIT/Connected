@@ -8,9 +8,12 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>TomPIT.Api</RootNamespace>
-    <AssemblyVersion>2.1.520.3</AssemblyVersion>
-    <FileVersion>2.1.520.3</FileVersion>
-    <Version>2.1.520.3</Version>
+    <AssemblyVersion>2.1.527.1</AssemblyVersion>
+    <FileVersion>2.1.527.1</FileVersion>
+    <Version>2.1.527.1</Version>
+    <Authors>Tom PIT</Authors>
+    <Company>Tom PIT</Company>
+    <Product>Tom PIT.connected</Product>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />

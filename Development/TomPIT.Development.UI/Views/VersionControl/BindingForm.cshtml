@@ -1,0 +1,66 @@
+﻿@using  TomPIT.Serialization;
+
+@model TomPIT.Development.Models.VersionControlDesignerModel
+@{ 
+   var binding = Model.Arguments.Optional("binding", string.Empty);
+   var descriptor = !string.IsNullOrWhiteSpace(binding) ? Model.SelectRepository(Model.Arguments.Required<string>("binding")) : null;
+}
+<div class="tp-form" id="bindingsEditor">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label>Name</label>
+                    <div id="editName"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label>Url</label>
+                    <div id="editUrl"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label>User name</label>
+                    <div id="editUserName"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label>Password</label>
+                    <div id="editPassword"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                    <button type="button" class="btn btn-link float-right" id="btnCancel">Cancel</button>
+                    @if (!string.IsNullOrWhiteSpace(binding))
+                    {
+                        <button type="button" class="btn btn-link float-right" id="btnDelete">Delete</button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    versionControl.bindings.initEditor({
+        selector: '#bindingsEditor',
+        data: {
+            name: @Html.TP().JavaScript.Value(descriptor?.Name),
+            url: @Html.TP().JavaScript.Value(descriptor?.Url),
+            userName: @Html.TP().JavaScript.Value(descriptor?.UserName)
+        }
+    });
+</script>

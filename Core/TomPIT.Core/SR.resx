@@ -1146,4 +1146,16 @@
   <data name="ErrPrimaryKeyNull" xml:space="preserve">
     <value>primaryKey argument is null</value>
   </data>
+  <data name="ErrCommitNoFiles" xml:space="preserve">
+    <value>No files are selected for commit.</value>
+  </data>
+  <data name="ErrRepositoryNotFound" xml:space="preserve">
+    <value>Repository not found</value>
+  </data>
+  <data name="NoSmtpEndpoint" xml:space="preserve">
+    <value>Smtp endpoint not set. Smtp listener disabled.</value>
+  </data>
+  <data name="NoSmtpHostName" xml:space="preserve">
+    <value>Smtp host name not set. Smtp listener disabled.</value>
+  </data>
 </root>

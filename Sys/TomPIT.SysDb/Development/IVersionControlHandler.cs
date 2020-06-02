@@ -26,5 +26,16 @@ namespace TomPIT.SysDb.Development
       List<IComponentHistory> QueryCommitDetails(ICommit commit);
       IComponentHistory SelectCommitDetail(ICommit commit, Guid component);
       IComponentHistory SelectNonCommited(Guid component);
+
+      List<IRepository> QueryRepositories();
+      List<IMicroServiceBinding> QueryActiveBindings();
+      IMicroServiceBinding SelectBinding(IMicroService service, IRepository repository);
+      List<IMicroServiceBinding> QueryBindings(IMicroService service);
+      void UpdateBinding(IMicroService service, IRepository repository, long commit, DateTime date, bool active);
+      void DeleteBinding(IMicroService service, IRepository repository);
+      void InsertRepository(string name, string url, string userName, byte[] password);
+      void UpdateRepository(IRepository repository, string name, string url, string userName, byte[] password);
+      void DeleteRepository(IRepository repository);
+      IRepository SelectRepository(string name);
    }
 }

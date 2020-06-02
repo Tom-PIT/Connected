@@ -13,12 +13,12 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
-    <Product>Tom PIT Micro service platform</Product>
+    <Product>Tom PIT.connected</Product>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>2.1.520.3</AssemblyVersion>
-    <FileVersion>2.1.520.3</FileVersion>
-    <Version>2.1.520.3</Version>
+    <AssemblyVersion>2.1.527.1</AssemblyVersion>
+    <FileVersion>2.1.527.1</FileVersion>
+    <Version>2.1.527.1</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>

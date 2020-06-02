@@ -137,5 +137,100 @@ namespace TomPIT.Sys.Controllers.Development
 
          DataModel.VersionControl.Undo(component);
       }
+
+      [HttpGet]
+      public List<IRepository> QueryRepositories()
+      {
+         return DataModel.VersionControl.QueryRepositories();
+      }
+      [HttpGet]
+      public List<IMicroServiceBinding> QueryActiveBindings()
+      {
+         return DataModel.VersionControl.QueryActiveBindings();
+      }
+      [HttpPost]
+      public IMicroServiceBinding SelectBinding()
+      {
+         var body = FromBody();
+         var service = body.Required<Guid>("service");
+         var repo = body.Required<string>("repository");
+
+         return DataModel.VersionControl.SelectBinding(service, repo);
+      }
+      [HttpPost]
+      public List<IMicroServiceBinding> QueryBindings()
+      {
+         var body = FromBody();
+         var service = body.Required<Guid>("service");
+
+         return DataModel.VersionControl.QueryBindings(service);
+      }
+      [HttpPost]
+      public void UpdateBinding()
+      {
+         var body = FromBody();
+         var service = body.Required<Guid>("service");
+         var repository = body.Required<string>("repository");
+         var commit = body.Required<long>("commit");
+         var date = body.Required<DateTime>("date");
+         var active = body.Required<bool>("active");
+
+         DataModel.VersionControl.UpdateBinding(service, repository, commit, date, active);
+      }
+      [HttpPost]
+      public void DeleteBinding()
+      {
+         var body = FromBody();
+         var service = body.Required<Guid>("service");
+         var repository = body.Required<string>("repository");
+
+         DataModel.VersionControl.DeleteBinding(service, repository);
+      }
+      [HttpPost]
+      public void InsertRepository()
+      {
+         var body = FromBody();
+         var name = body.Required<string>("name");
+         var url = body.Required<string>("url");
+         var userName = body.Required<string>("userName");
+         var password = body.Required<string>("password");
+
+         DataModel.VersionControl.InsertRepository(name, url, userName, password);
+      }
+      [HttpPost]
+      public void UpdateRepository()
+      {
+         var body = FromBody();
+
+         var existingName = body.Required<string>("existingName");
+         var name = body.Required<string>("name");
+         var url = body.Required<string>("url");
+         var userName = body.Required<string>("userName");
+         var password = body.Required<string>("password");
+
+         DataModel.VersionControl.UpdateRepository(existingName, name, url, userName, password);
+      }
+      [HttpPost]
+      public void DeleteRepository()
+      {
+         var body = FromBody();
+
+         var existingName = body.Required<string>("existingName");
+         var name = body.Required<string>("name");
+         var url = body.Required<string>("url");
+         var userName = body.Required<string>("userName");
+         var password = body.Required<string>("password");
+
+         DataModel.VersionControl.UpdateRepository(existingName, name, url, userName, password);
+      }
+      [HttpPost]
+      public IRepository SelectRepository()
+      {
+         var body = FromBody();
+
+         var name = body.Required<string>("name");
+
+         return DataModel.VersionControl.SelectRepository(name);
+      }
    }
 }

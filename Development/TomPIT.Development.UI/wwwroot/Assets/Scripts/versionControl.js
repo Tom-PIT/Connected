@@ -91,6 +91,11 @@ class Toolbar {
                 provider: 'push'
             });
         }
+        else if (e.command === 'view-bindings') {
+            this.host.designer.load({
+                name: 'bindings'
+            });
+        }
     }
 }
 
@@ -109,6 +114,11 @@ class Designer {
     }
     hide() {
         this.designer.classList.remove('tp-active');
+    }
+    reset() {
+        this.designer.setHtml('');
+        this.show();
+        this.host.diff.hide();
     }
     async load(e) {
         let partial = await this.host.server.designer(e);
@@ -138,8 +148,34 @@ class Server {
             });
         });
     }
+    designerAction(e) {
+        const url = `${this.rootUrl}/sys/version-control/designer-action`;
+
+        return new Promise((resolve) => {
+            tompit.post({
+                url: url,
+                data: e,
+                onSuccess: async (e) => {
+                    resolve(e);
+                }
+            });
+        });
+    }
     changes(e) {
         const url = `${this.rootUrl}/sys/version-control/changes`;
+
+        return new Promise((resolve) => {
+            tompit.post({
+                url: url,
+                data: e,
+                onSuccess: async (e) => {
+                    resolve(e);
+                }
+            });
+        });
+    }
+    queryBindings(e) {
+        const url = `${this.rootUrl}/sys/version-control/query-bindings`;
 
         return new Promise((resolve) => {
             tompit.post({
@@ -166,6 +202,19 @@ class Server {
     }
     commit(e) {
         const url = `${this.rootUrl}/sys/version-control/commit`;
+
+        return new Promise((resolve) => {
+            tompit.post({
+                url: url,
+                data: e,
+                onSuccess: async (e) => {
+                    resolve(e);
+                }
+            });
+        });
+    }
+    undo(e) {
+        const url = `${this.rootUrl}/sys/version-control/undo`;
 
         return new Promise((resolve) => {
             tompit.post({
@@ -367,6 +416,9 @@ class Explorer {
         }
     }
     async reload(e) {
+        if (this._domProvider)
+            this._domProvider.disconnect();
+
         if (e.provider === 'changes') {
             this._domProvider = new ChangesDomProvider({
                 host: this.host
@@ -400,9 +452,14 @@ class DomProvider{
         this._host = e.host;
         let instance = this;
 
-        this.host.element.addEventListener('selectionChanged', e => {
+        this.selectionChangedListener = (e) => {
             instance.onSelectionChanged(e);
-        });
+        };
+
+        this.host.element.addEventListener('selectionChanged', this.selectionChangedListener);
+    }
+    disconnect() {
+        this.host.element.removeEventListener('selectionChanged', this.selectionChangedListener);
     }
     get selectedItems() {
         return null;
@@ -483,6 +540,11 @@ class ChangesDomProvider extends DomProvider{
         super(e);
     }
     onSelectionChanged(e) {
+        if (!e.detail.node) {
+            this.host.designer.reset();
+            return;
+        }
+
         let node = e.detail.node;
 
         if (e.detail.target.closest('.dx-checkbox-container') !== null)
@@ -565,6 +627,7 @@ class ChangesDomProvider extends DomProvider{
         let commit = document.createElement('a');
 
         commit.setAttribute('href', '#');
+        commit.className = "btn btn-link btn-small";
         commit.innerHTML = 'Commit';
 
         let instance = this;
@@ -576,6 +639,34 @@ class ChangesDomProvider extends DomProvider{
         });
 
         group.appendChild(commit);
+
+        let undo = document.createElement('a');
+
+        undo.setAttribute('href', '#');
+        undo.className = "btn btn-link btn-small";
+        undo.innerHTML = 'Undo';
+
+        undo.addEventListener('click', async e => {
+            if (!confirm('Are you sure you want to undo selected changes?'))
+                return;
+
+            let selectedComponents = instance.selectedItems;
+
+            await instance.host.server.undo({
+                components: selectedComponents
+            });
+
+            await instance.host.explorer.reload({
+                provider: 'changes'
+            });
+
+            instance.host.explorer.selectNode({
+                node: null,
+                target: null
+            });
+        });
+
+        group.appendChild(undo);
 
         this.host.explorer.toolbar.appendChild(group);
     }
@@ -788,7 +879,7 @@ class ChangesDomProvider extends DomProvider{
 
 }
 
-class PushDomProvider extends DomProvider{
+class PushDomProvider extends DomProvider {
     constructor(e) {
         super(e);
     }
@@ -802,13 +893,97 @@ class PushDomProvider extends DomProvider{
             id: id
         };
 
-        args.changes = await this.host.server.changes(args);
-
         var node = id
             ? this.findNode(args)
             : this.host.explorer.explorer;
 
         node.innerHTML = '';
         this.host.explorer.toolbar.innerHTML = '';
+
+        var bindings = await this.host.server.queryBindings(args);
+        var list = this.createList();
+
+        list.classList.add('tp-top-level');
+
+        node.appendChild(list);
+
+        for (let i = 0; i < bindings.length; i++) {
+            const binding = bindings[i];
+            this._createMicroServiceElement({
+                list: list,
+                microService: binding
+            });
+        }
+    }
+    _createMicroServiceElement(e) {
+        var item = document.createElement('li');
+
+        item.setAttribute('data-id', e.microService.service);
+        item.setAttribute('data-type', 'microService');
+        item.setAttribute('data-designer', 'push');
+        item.className = 'tp-change-item';
+        //item.append(this.createCaret());
+        //item.append(this.createIcon({
+        //    icon: 'fa-share-alt',
+        //    color: 'default'
+        //}));
+        item.append(this.createText({
+            text: e.microService.serviceName
+        }));
+
+        e.list.appendChild(item);
+
+        //var childList = this.createList();
+
+        //item.appendChild(childList);
+
+        //for (var i = 0; i < e.change.components.length; i++) {
+        //    let component = e.change.components[i];
+        //    let folder = this._findFolder({
+        //        microService: e.change,
+        //        folder: component.folder
+        //    });
+
+        //    if (!folder)
+        //        folder = item;
+
+        //    this._createComponentElement({
+        //        folder: folder,
+        //        component: component
+        //    });
+        //}
+    }
+    onSelectionChanged(e) {
+        if (!e.detail.node) {
+            this.host.designer.reset();
+            return;
+        }
+
+        let node = e.detail.node;
+
+        if (e.detail.target.closest('.dx-checkbox-container') !== null)
+            e.preventDefault();
+        else {
+            var microService = node.closest('li[data-type="microService"]');
+            var item = node.closest('li');
+            var designer = item.getAttribute('data-designer');
+
+            if (designer) {
+                this.host.designer.load({
+                    name: designer,
+                    microService:microService.getAttribute('data-id')
+                });
+            }
+            else {
+                let args = {
+                    id: node.getAttribute('data-id'),
+                    type: node.getAttribute('data-type'),
+                    component: component ? component.getAttribute('data-id') : null,
+                    microservice: microService ? microService.getAttribute('data-id') : null
+                };
+
+                this.host.diff.load(args);
+            }
+        }
     }
 }

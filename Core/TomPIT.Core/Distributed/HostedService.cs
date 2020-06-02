@@ -49,7 +49,10 @@ namespace TomPIT.Distributed
 				}
 
 				if (Initialized)
-					await Task.Delay(IntervalTimeout, cancel);
+				{
+					if (IntervalTimeout > TimeSpan.Zero)
+						await Task.Delay(IntervalTimeout, cancel);
+				}
 				else
 					await Task.Delay(1000, cancel);
 			}

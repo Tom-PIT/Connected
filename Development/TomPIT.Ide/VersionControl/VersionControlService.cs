@@ -367,5 +367,120 @@ namespace TomPIT.Ide.VersionControl
 				return Encoding.UTF8.GetString(dep.Content);
 			}
 		}
+
+		public List<IRepository> QueryRepositories()
+		{
+			var u = Tenant.CreateUrl("VersionControl", "QueryRepositories");
+
+			return Tenant.Get<List<Repository>>(u).ToList<IRepository>();
+		}
+
+		public List<IMicroServiceBinding> QueryActiveBindings()
+		{
+			var u = Tenant.CreateUrl("VersionControl", "QueryActiveBindings");
+
+			return Tenant.Get<List<MicroServiceBinding>>(u).ToList<IMicroServiceBinding>();
+		}
+
+		public IMicroServiceBinding SelectBinding(Guid service, string repository)
+		{
+			var u = Tenant.CreateUrl("VersionControl", "SelectBinding");
+			var e = new JObject
+				{
+					 {"service", service },
+					{"repository", repository }
+				};
+
+			return Tenant.Post<MicroServiceBinding>(u, e);
+		}
+
+		public List<IMicroServiceBinding> QueryBindings(Guid service)
+		{
+			var u = Tenant.CreateUrl("VersionControl", "QueryBindings");
+			var e = new JObject
+				{
+					 {"service", service }
+				};
+
+			return Tenant.Post<List<MicroServiceBinding>>(u, e).ToList<IMicroServiceBinding>();
+		}
+
+		public void UpdateBinding(Guid service, string repository, long commit, DateTime date, bool active)
+		{
+			var u = Tenant.CreateUrl("VersionControl", "UpdateBinding");
+			var e = new JObject
+				{
+					 {"service", service },
+					{"repository", repository },
+					{"commit", commit },
+					{"date", date },
+					{"active", active }
+				};
+
+			Tenant.Post(u, e);
+		}
+
+		public void DeleteBinding(Guid service, string repository)
+		{
+			var u = Tenant.CreateUrl("VersionControl", "DeleteBinding");
+			var e = new JObject
+				{
+					 {"service", service},
+				{"repository", repository }
+				};
+
+			Tenant.Post(u, e);
+		}
+
+		public void InsertRepository(string name, string url, string userName, string password)
+		{
+			var u = Tenant.CreateUrl("VersionControl", "InsertRepository");
+			var e = new JObject
+				{
+					 {"name", name },
+					{"url", url },
+					{"userName", userName },
+					{"password", password }
+				};
+
+			Tenant.Post(u, e);
+		}
+
+		public void UpdateRepository(string existingName, string name, string url, string userName, string password)
+		{
+			var u = Tenant.CreateUrl("VersionControl", "UpdateRepository");
+			var e = new JObject
+				{
+					 {"existingName", existingName },
+					{"name", name },
+					{"url", url },
+					{"userName", userName },
+					{"password", password }
+				};
+
+			Tenant.Post(u, e);
+		}
+
+		public void DeleteRepository(string name)
+		{
+			var u = Tenant.CreateUrl("VersionControl", "DeleteRepository");
+			var e = new JObject
+				{
+					 {"name", name }
+				};
+
+			Tenant.Post(u, e);
+		}
+
+		public IRepository SelectRepository(string name)
+		{
+			var u = Tenant.CreateUrl("VersionControl", "SelectRepository");
+			var e = new JObject
+				{
+					 {"name", name }
+				};
+
+			return Tenant.Post<Repository>(u, e);
+		}
 	}
 }

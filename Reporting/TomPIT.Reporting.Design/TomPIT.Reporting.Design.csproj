@@ -2,14 +2,17 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <AssemblyVersion>2.1.520.3</AssemblyVersion>
-    <FileVersion>2.1.520.3</FileVersion>
-    <Version>2.1.520.3</Version>
+    <AssemblyVersion>2.1.527.1</AssemblyVersion>
+    <FileVersion>2.1.527.1</FileVersion>
+    <Version>2.1.527.1</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <AssemblyName>TomPIT.MicroServices.Reporting.Design</AssemblyName>
     <RootNamespace>TomPIT.MicroServices.Reporting.Design</RootNamespace>
+    <Authors>Tom PIT</Authors>
+    <Company>Tom PIT</Company>
+    <Product>Tom PIT.connected</Product>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />

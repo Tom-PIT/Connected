@@ -161,5 +161,100 @@ namespace TomPIT.SysDb.Sql.Development
 
          w.Execute();
       }
+
+      public List<IRepository> QueryRepositories()
+      {
+         return new Reader<Repository>("tompit.version_control_repository_que").Execute().ToList<IRepository>();
+      }
+
+      public List<IMicroServiceBinding> QueryActiveBindings()
+      {
+         return new Reader<MicroServiceBinding>("tompit.service_binding_que_active").Execute().ToList<IMicroServiceBinding>();
+      }
+
+      public IMicroServiceBinding SelectBinding(IMicroService service, IRepository repository)
+      {
+         var r = new Reader<MicroServiceBinding>("tompit.service_binding_sel");
+
+         r.CreateParameter("@service", service.GetId());
+         r.CreateParameter("@repository", repository.GetId());
+
+         return r.ExecuteSingleRow();
+      }
+
+      public List<IMicroServiceBinding> QueryBindings(IMicroService service)
+      {
+         var r = new Reader<MicroServiceBinding>("tompit.service_binding_que");
+
+         r.CreateParameter("@service", service.GetId());
+
+         return r.Execute().ToList<IMicroServiceBinding>();
+      }
+
+      public void UpdateBinding(IMicroService service, IRepository repository, long commit, DateTime date, bool active)
+      {
+         var w = new Writer("tompit.service_binding_upd");
+
+         w.CreateParameter("@service", service.GetId());
+         w.CreateParameter("@repository", repository.GetId());
+         w.CreateParameter("@commit", commit);
+         w.CreateParameter("@date", date);
+         w.CreateParameter("@active", active);
+
+         w.Execute();
+      }
+
+      public void DeleteBinding(IMicroService service, IRepository repository)
+      {
+         var w = new Writer("tompit.service_binding_del");
+
+         w.CreateParameter("@service", service.GetId());
+         w.CreateParameter("@repository", repository.GetId());
+
+         w.Execute();
+      }
+
+      public void InsertRepository(string name, string url, string userName, byte[] password)
+      {
+         var w = new Writer("tompit.version_control_repository_ins");
+
+         w.CreateParameter("@name", name);
+         w.CreateParameter("@url", url);
+         w.CreateParameter("@user_name", userName);
+         w.CreateParameter("@password", password);
+
+         w.Execute();
+      }
+
+      public void UpdateRepository(IRepository repository, string name, string url, string userName, byte[] password)
+      {
+         var w = new Writer("tompit.version_control_repository_upd");
+
+         w.CreateParameter("@id", repository.GetId());
+         w.CreateParameter("@name", name);
+         w.CreateParameter("@url", url);
+         w.CreateParameter("@user_name", userName);
+         w.CreateParameter("@password", password);
+
+         w.Execute();
+      }
+
+      public void DeleteRepository(IRepository repository)
+      {
+         var w = new Writer("tompit.version_control_repository_del");
+
+         w.CreateParameter("@repository", repository.GetId());
+
+         w.Execute();
+      }
+
+      public IRepository SelectRepository(string name)
+      {
+         var r = new Reader<Repository>("tompit.version_control_repository_sel");
+
+         r.CreateParameter("@name", name);
+
+         return r.ExecuteSingleRow();
+      }
    }
 }
