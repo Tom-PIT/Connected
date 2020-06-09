@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
-using Newtonsoft.Json.Linq;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.DataProviders.Design;
@@ -9,53 +8,20 @@ using TomPIT.Data.Sql;
 using TomPIT.DataProviders.Sql.Deployment;
 using TomPIT.Deployment;
 using TomPIT.Deployment.Database;
-using TomPIT.Exceptions;
-using TomPIT.Reflection;
 
 namespace TomPIT.DataProviders.Sql
 {
 	[SchemaBrowser("TomPIT.DataProviders.Sql.Design.Browser, TomPIT.DataProviders.Sql")]
-	public class SqlDataProvider : IDataProvider
+	public class SqlDataProvider : DataProviderBase<DataConnection>, IDeployDataProvider
 	{
-		public Guid Id => new Guid("{C5849300-11A4-4FAE-B433-3C89DD05DDF0}");
+		public SqlDataProvider() : base("Microsoft SQL Server", new Guid("{C5849300-11A4-4FAE-B433-3C89DD05DDF0}"))
+		{
 
-		public string Name => "Microsoft SQL Server";
+		}
 
 		public bool SupportsDeploy => true;
 
-		public void Execute(IDataCommandDescriptor command)
-		{
-			Execute(command, null);
-		}
-
-		public void Execute(IDataCommandDescriptor command, IDataConnection connection)
-		{
-			var con = ResolveConnection(command, connection);
-			var com = ResolveCommand(command, con, connection);
-
-			Execute(command, con, com, connection != null);
-		}
-
-		private void Execute(IDataCommandDescriptor command, ReliableSqlConnection connection, SqlCommand cmd, bool externalConnection)
-		{
-			if (connection.State == ConnectionState.Closed)
-				connection.Open();
-
-			SetupParameters(command, cmd);
-
-			foreach (var i in command.Parameters)
-				cmd.Parameters[i.Name].Value = i.Value;
-
-			cmd.ExecuteNonQuery();
-
-			foreach (var i in command.Parameters)
-			{
-				if (i.Direction == ParameterDirection.ReturnValue)
-					i.Value = cmd.Parameters[i.Name].Value;
-			}
-		}
-
-		private void SetupParameters(IDataCommandDescriptor command, SqlCommand cmd)
+		protected override void SetupParameters(IDataCommandDescriptor command, IDbCommand cmd)
 		{
 			if (cmd.Parameters.Count > 0)
 			{
@@ -85,175 +51,31 @@ namespace TomPIT.DataProviders.Sql
 			}
 		}
 
-		private DbType ResolveType(ICommandParameter i)
+		protected override object GetParameterValue(IDbCommand command, string parameterName)
 		{
-			if (i.DataType != null)
-				return Types.ToDbType(Types.ToDataType(i.DataType));
+			var cmd = command as SqlCommand;
 
-			if (i.Value == null)
-				return DbType.String;
-
-			return Types.ToDbType(Types.ToDataType(i.Value.GetType()));
+			return cmd.Parameters[parameterName].Value;
 		}
 
-		public IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior)
+		protected override void SetParameterValue(IDbCommand command, string parameterName, object value)
+		{
+			var cmd = command as SqlCommand;
+
+			cmd.Parameters[parameterName].Value = value;
+		}
+		public override IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior)
 		{
 			return new DataConnection(this, connectionString, behavior);
 		}
 
-		public JObject Query(IDataCommandDescriptor command, DataTable schema)
+		protected override IDbConnection CreateConnection(string connectionString)
 		{
-			return Query(command, schema, null);
+			return new ReliableSqlConnection(connectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
 		}
-		public JObject Query(IDataCommandDescriptor command, DataTable schema, IDataConnection connection)
-		{
-			var con = ResolveConnection(command, connection);
-			var com = ResolveCommand(command, con, connection);
-
-			if (con.State == ConnectionState.Closed)
-				con.Open();
-
-			SqlDataReader rdr = null;
-
-			try
-			{
-				SetupParameters(command, com);
-
-				foreach (var i in command.Parameters)
-					com.Parameters[i.Name].Value = i.Value;
-
-				rdr = com.ExecuteReader();
-				var r = new JObject();
-				var a = new JArray();
-
-				r.Add("data", a);
-
-				while (rdr.Read())
-				{
-					var row = schema == null
-						? CreateDataRow(rdr)
-						: CreateDataRow(rdr, schema);
-
-					a.Add(row);
-				}
-
-				return r;
-			}
-			finally
-			{
-				if (rdr != null && !rdr.IsClosed)
-					rdr.Close();
-
-				//if (connection == null && con.State == ConnectionState.Open)
-				//	con.Close();
-			}
-		}
-
-		private JObject CreateDataRow(SqlDataReader rdr)
-		{
-			var row = new JObject();
-
-			for (var i = 0; i < rdr.FieldCount; i++)
-				row.Add(rdr.GetName(i), new JValue(GetValue(rdr, i)));
-
-			return row;
-		}
-
-		private JObject CreateDataRow(SqlDataReader rdr, DataTable schema)
-		{
-			var row = new JObject();
-
-			foreach (DataColumn i in schema.Columns)
-			{
-				if (i.ExtendedProperties.Contains("unbound"))
-				{
-					row.Add(i.ColumnName, string.Empty);
-
-					continue;
-				}
-
-				var mapping = i.ColumnName;
-
-				if (i.ExtendedProperties.Contains("mapping"))
-					mapping = (string)i.ExtendedProperties["mapping"];
-
-				int ord = rdr.GetOrdinal(mapping);
-				var value = GetValue(rdr, ord);
-
-				row.Add(i.ColumnName, new JValue(value == DBNull.Value ? null : value));
-			}
-
-			return row;
-		}
-
-		private object GetValue(SqlDataReader reader, int index)
-		{
-			var value = reader.GetValue(index);
-
-			if (value == DBNull.Value || value == null)
-				return null;
-
-			if (value is DateTime date)
-				return DateTime.SpecifyKind(date, DateTimeKind.Utc);
-
-			return value;
-		}
-		private ReliableSqlConnection ResolveConnection(IDataCommandDescriptor command, IDataConnection connection)
-		{
-			DataConnection c = null;
-
-			if (connection != null)
-			{
-				c = connection as DataConnection;
-
-				if (c == null)
-					throw new RuntimeException(string.Format(SR.ErrInvalidConnectionType, typeof(DataConnection).ShortName()));
-			}
-
-			return c == null
-				? new ReliableSqlConnection(command.ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed)
-				: c.Connection;
-		}
-
-		private SqlCommand ResolveCommand(IDataCommandDescriptor command, ReliableSqlConnection connection, IDataConnection dataConnection)
-		{
-			DataConnection dc = null;
-
-			if (dataConnection != null)
-			{
-				if (!(dataConnection is DataConnection))
-					throw new RuntimeException(string.Format(SR.ErrInvalidConnectionType, typeof(DataConnection).ShortName()));
-
-				dc = dataConnection as DataConnection;
-			}
-
-			var r = connection.CreateCommand();
-
-			r.CommandText = command.CommandText;
-			r.CommandType = command.CommandType;
-			r.CommandTimeout = command.CommandTimeout;
-
-			if (dc != null)
-			{
-				if (dc.Transaction != null)
-					r.Transaction = dc.Transaction;
-			}
-
-			return r;
-		}
-
 		public IDatabase CreateSchema(string connectionString)
 		{
 			return Package.Create(connectionString);
-		}
-
-		public void TestConnection(string connectionString)
-		{
-			using (var c = new SqlConnection(connectionString))
-			{
-				c.Open();
-				c.Close();
-			}
 		}
 
 		public void CreateDatabase(string connectionString)

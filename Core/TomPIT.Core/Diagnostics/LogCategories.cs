@@ -14,5 +14,6 @@
 		public const string Management = "Management";
 		public const string Security = "Security";
 		public const string IoC = "IoC";
+		public const string BigData = "BigData";
 	}
 }

@@ -9,6 +9,8 @@
         return document.querySelector(this._selector);
     }
     _setupUI() {
+        var instance = this;
+
         $('#editComment').dxTextArea({
             valueChangeEvent:'keyup',
             onValueChanged: e => {
@@ -39,7 +41,17 @@
         $('#editBinding').dxSelectBox({
             dataSource: this._dataSources.bindings,
             displayExpr: 'name',
-            valueExpr: 'id'
+            valueExpr: 'id',
+            onValueChanged: async e => {
+                instance.reloadBranches({
+                    repository: e.value
+                });
+            }
+        });
+    }
+    async reloadBranches(e) {
+        var branches = await versionControl.server.queryBranches({
+            repository : e.repository
         });
     }
 }

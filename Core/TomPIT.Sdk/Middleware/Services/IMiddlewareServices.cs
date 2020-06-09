@@ -16,7 +16,6 @@
 		IMiddlewareIoTService IoT { get; }
 		IMiddlewareMediaService Media { get; }
 		IMiddlewareSearchService Search { get; }
-		IMiddlewareBigDataService BigData { get; }
 		IMiddlewareMembershipService Membership { get; }
 		IMiddlewareAnalyticsService Analytics { get; }
 	}

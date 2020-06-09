@@ -168,12 +168,30 @@ namespace TomPIT.Middleware
 			};
 		}
 
+		public IDataReader<T> OpenReader<T>(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)
+		{
+			return new DataReader<T>(this)
+			{
+				Connection = connection,
+				CommandText = commandText
+			};
+		}
+
 		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
 		{
 			if (Transaction.State == MiddlewareTransactionState.Active)
 				return OpenWriter(connection, commandText, ConnectionBehavior.Shared);
 			else
 				return OpenWriter(connection, commandText, ConnectionBehavior.Isolated);
+		}
+
+		public IDataWriter OpenWriter(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)
+		{
+			return new DataWriter(this)
+			{
+				Connection = connection,
+				CommandText = commandText
+			};
 		}
 
 		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText, ConnectionBehavior behavior)
@@ -199,7 +217,12 @@ namespace TomPIT.Middleware
 
 		internal IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection, ConnectionBehavior behavior)
 		{
-			return Connections.OpenConnection(this, connection, behavior);
+			return OpenConnection(connection, behavior, null);
+		}
+
+		public IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection, ConnectionBehavior behavior, object arguments)
+		{
+			return Connections.OpenConnection(this, connection, behavior, arguments);
 		}
 
 		private IMiddlewareTransaction BeginTransaction()

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using TomPIT.Annotations.BigData;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
@@ -37,14 +38,14 @@ namespace TomPIT.BigData
 		{
 			Validate(item);
 
-			var properties = item.GetType().GetProperties();
+			var properties = item.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
 			var key = false;
 			var partitionKey = false;
 
 			foreach (var property in properties)
 			{
-				if (!property.CanRead || property.GetMethod.IsPublic)
+				if (!property.CanRead)
 					continue;
 
 				var keyAtt = property.FindAttribute<BigDataKeyAttribute>();
@@ -64,7 +65,7 @@ namespace TomPIT.BigData
 					if (partitionKey)
 						throw new ValidationException(SR.ValBigDataMultiplePartitionKey);
 
-					key = true;
+					partitionKey = true;
 				}
 			}
 		}

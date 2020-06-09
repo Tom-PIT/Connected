@@ -101,10 +101,7 @@ namespace TomPIT.Cdn.Mail
 				if (string.IsNullOrWhiteSpace(server))
 					throw new SmtpException(SmtpExceptionType.CannotResolveDomain, Domain);
 
-				if (string.IsNullOrWhiteSpace(localDomain))
-					localDomain = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "SmtpLocalDomain");
-
-				_client.LocalDomain = localDomain;
+				_client.LocalDomain = SmtpService.HostName;
 				_client.Connect(new Uri(string.Format("smtp://{0}", server)), token);
 
 				foreach (var middleware in ConfigurationCache.Handlers)

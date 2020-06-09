@@ -9,7 +9,9 @@ using TomPIT.MicroServices.Design;
 namespace TomPIT.MicroServices.Data
 {
 	[Create(DesignUtils.ComponentConnection)]
-	public class Connection : ComponentConfiguration, IConnectionConfiguration
+	[Syntax(SyntaxAttribute.CSharp)]
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	public class Connection : SourceCodeConfiguration, IConnectionConfiguration
 	{
 		[PropertyEditor(PropertyEditorAttribute.TextArea)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]

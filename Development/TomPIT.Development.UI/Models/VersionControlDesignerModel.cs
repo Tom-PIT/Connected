@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Ide.VersionControl;
 
@@ -59,6 +60,21 @@ namespace TomPIT.Development.Models
 		public IRepository SelectRepository(string name)
 		{
 			return Tenant.GetService<IVersionControlService>().SelectRepository(name);
+		}
+
+		public List<object> QueryBranches()
+		{
+			var binding = Arguments.Required<string>("binding");
+			var repo = Repositories.FirstOrDefault(f => string.Compare(f.Name, binding, true) == 0);
+			var url = $"{repo.Url}/VersionControl/IBranches/QueryBranches";
+			var args = new JObject
+			{
+				{"repository", repo.Name }
+			};
+
+			var result = Tenant.Post<List<object>>(url, args);
+
+			return null;
 		}
 	}
 }

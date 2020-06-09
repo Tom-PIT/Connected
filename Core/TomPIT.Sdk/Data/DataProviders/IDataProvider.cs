@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Data;
 using Newtonsoft.Json.Linq;
-using TomPIT.Deployment;
-using TomPIT.Deployment.Database;
 
 namespace TomPIT.Data.DataProviders
 {
@@ -50,14 +48,6 @@ namespace TomPIT.Data.DataProviders
 		/// to connect to.</param>
 		/// <returns></returns>
 		IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior);
-
-		//IDeploymentDatabase CreateDatabasePackage(string connectionString);
-		//void DeployPackage(string connectionString, IDeploymentDatabase package);
-
-		bool SupportsDeploy { get; }
-		IDatabase CreateSchema(string connectionString);
-		void Deploy(IDatabaseDeploymentContext context);
 		void TestConnection(string connectionString);
-		void CreateDatabase(string connectionString);
 	}
 }

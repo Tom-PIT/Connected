@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations.BigData;
 using TomPIT.BigData.Transactions;
-using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.Middleware;
@@ -47,6 +46,7 @@ namespace TomPIT.BigData.Data
 
 		public string PartitionKeyField { get; set; }
 		public string KeyField { get; set; }
+		public IPartitionComponent Middleware { get; private set; }
 		public List<PartitionSchemaField> Fields
 		{
 			get
@@ -60,14 +60,16 @@ namespace TomPIT.BigData.Data
 
 		private void Discover()
 		{
-			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)Configuration).MicroService(), Configuration, Configuration.ComponentName());
+			var ctx = new MicroServiceContext(Configuration.MicroService());
+			var type = Configuration.Middleware(ctx);
 
 			if (type == null)
 				return;
 
-			var handler = type.GetInterface(typeof(IPartitionMiddleware<>).FullName);
-			var entityType = handler.GetGenericArguments()[0];
-			var properties = entityType.GetProperties();
+			Middleware = ctx.CreateMiddleware<IPartitionComponent>(type);
+
+			var entityType = Configuration.BigDataPartitionType(ctx);
+			var properties = entityType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
 			foreach (var property in properties)
 			{
@@ -83,7 +85,7 @@ namespace TomPIT.BigData.Data
 					continue;
 				}
 
-				var ignore = property.FindAttribute<BigDataIngoreAttribute>();
+				var ignore = property.FindAttribute<BigDataIgnoreAttribute>();
 
 				if (ignore != null)
 					continue;
@@ -99,6 +101,11 @@ namespace TomPIT.BigData.Data
 				field.Name = property.Name;
 				field.Key = IsKey(property);
 				field.Index = IsIndex(property);
+
+				var aggregate = property.FindAttribute<BigDataAggregateAttribute>();
+
+				if (aggregate != null)
+					field.Attributes.Add(aggregate);
 
 				Fields.Add(field);
 

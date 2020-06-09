@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.BigData;
 using TomPIT.Storage;
 using TomPIT.Sys.Data;
@@ -32,7 +32,7 @@ namespace TomPIT.Sys.Controllers.Management
 		{
 			var body = FromBody();
 			var name = body.Required<string>("name");
-			var connectionString = body.Required<string>("connectionString");
+			var connectionString = body.Optional("connectionString", string.Empty);
 			var adminConnectionString = body.Optional("adminConnectionString", string.Empty);
 			var status = body.Required<NodeStatus>("status");
 

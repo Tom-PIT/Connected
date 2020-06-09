@@ -57,13 +57,13 @@ namespace TomPIT.BigData.Transactions
 			return Tenant.Post<List<QueueMessage>>(u, e).ToList<IQueueMessage>();
 		}
 
-		public void Ping(Guid popReceipt)
+		public void Ping(Guid popReceipt, TimeSpan delay)
 		{
 			var u = Tenant.CreateUrl("BigDataManagement", "PingTransactionBlock");
 			var e = new JObject
 			{
 				{"popReceipt", popReceipt },
-				{"nextVisible", 60 }
+				{"nextVisible", Convert.ToInt32(delay.TotalSeconds) }
 			};
 
 			Tenant.Post(u, e);

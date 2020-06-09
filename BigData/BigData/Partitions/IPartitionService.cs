@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TomPIT.BigData.Persistence;
 using TomPIT.ComponentModel.BigData;
 
 namespace TomPIT.BigData.Partitions
@@ -9,6 +10,7 @@ namespace TomPIT.BigData.Partitions
 		List<IPartition> Query();
 		IPartition Select(IPartitionConfiguration configuration);
 		IPartitionFile SelectFile(Guid fileName);
+		List<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp, List<IndexParameter> parameters);
 		List<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp);
 		List<IPartitionFile> QueryFiles(Guid partition);
 		Guid InsertFile(Guid partition, Guid node, string key, DateTime timeStamp);

@@ -246,7 +246,7 @@ namespace TomPIT.Management.Deployment
 					if (dp == null)
 						throw new RuntimeException(string.Format("{0} ({1})", SR.ErrDataProviderNotFound, config.DataProvider));
 
-					if (dp.SupportsDeploy)
+					if (dp is IDeployDataProvider deploy)
 					{
 						var cs = config.ConnectionString;
 
@@ -255,7 +255,7 @@ namespace TomPIT.Management.Deployment
 
 						cs = Tenant.GetService<ICryptographyService>().Decrypt(cs);
 
-						dp.Deploy(new DatabaseDeploymentContext(Tenant, Package, cs, i));
+						deploy.Deploy(new DatabaseDeploymentContext(Tenant, Package, cs, i));
 					}
 				}
 			}

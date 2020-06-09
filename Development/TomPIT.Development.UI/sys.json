@@ -9,9 +9,11 @@
       //"authenticationToken": "8354505c-19f9-4ecb-bc0f-108204c78555"
     }
 	],
-	"dataProviders": [
-		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
-	],
+  "dataProviders": [
+    "TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql",
+    "TomPIT.DataProviders.Modbus.ModbusDataProvider, TomPIT.DataProviders.Modbus",
+    "TomPIT.DataProviders.BigData.BigDataProvider, TomPIT.DataProviders.BigData"
+  ],
   "designers": [
     "TomPIT.MicroServices.Design.MicroServicesTemplate, TomPIT.MicroServices.Design",
     "TomPIT.MicroServices.IoT.Design.IoTTemplate, TomPIT.MicroServices.IoT.Design",

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace TomPIT.Distributed
 {
-	public sealed class TimeoutTask
+	public sealed class TimeoutTask : IDisposable
 	{
 		private readonly Func<Task> _action;
 		private Task _task;
@@ -38,8 +38,9 @@ namespace TomPIT.Distributed
 
 		public void Stop()
 		{
-			if (!IsRunning)
+			if (CancelSource.IsCancellationRequested)
 				return;
+
 			try
 			{
 				CancelSource.Cancel();
@@ -61,10 +62,13 @@ namespace TomPIT.Distributed
 			{
 				try
 				{
-					while (!CancelSource.IsCancellationRequested && IsRunning)
+					while (!CancelSource.IsCancellationRequested || IsRunning)
 					{
-						await Task.Delay(_interval, CancelSource.Token).ConfigureAwait(false);
-						await _action().ConfigureAwait(false);
+						if (_task != null)
+						{
+							await Task.Delay(_interval, CancelSource.Token).ConfigureAwait(false);
+							await _action().ConfigureAwait(false);
+						}
 					}
 				}
 				finally
@@ -72,6 +76,18 @@ namespace TomPIT.Distributed
 					IsRunning = false;
 				}
 			}, CancelSource.Token);
+		}
+
+		public void Dispose()
+		{
+			Stop();
+			CancelSource.Dispose();
+
+			if (_task != null)
+			{
+				_task.Dispose();
+				_task = null;
+			}
 		}
 	}
 }

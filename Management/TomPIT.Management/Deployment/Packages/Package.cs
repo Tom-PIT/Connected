@@ -358,10 +358,10 @@ namespace TomPIT.Management.Deployment.Packages
 
 				Databases.Add(database);
 
-				if (!dp.SupportsDeploy)
+				if (!(dp is IDeployDataProvider deploy))
 					continue;
 
-				var db = dp.CreateSchema(i.Value);
+				var db = deploy.CreateSchema(i.Value);
 
 				CreateTables(database, db);
 				CreateViews(database, db);

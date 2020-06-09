@@ -907,6 +907,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Command text not set..
+        /// </summary>
+        public static string ErrCommandTextNull {
+            get {
+                return ResourceManager.GetString("ErrCommandTextNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot commit components from different microservices..
         /// </summary>
         public static string ErrCommitMultipleMicroservice {
@@ -1915,6 +1924,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No queries in big data partition.
+        /// </summary>
+        public static string ErrNoQuery {
+            get {
+                return ResourceManager.GetString("ErrNoQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No REST server is registered. To manage Instances go to the Management console and search for the Environment/Instances node..
         /// </summary>
         public static string ErrNoRestServer {
@@ -2100,6 +2118,15 @@ namespace TomPIT {
         public static string ErrPropertyValueNull {
             get {
                 return ResourceManager.GetString("ErrPropertyValueNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Query not found.
+        /// </summary>
+        public static string ErrQueryNotFound {
+            get {
+                return ResourceManager.GetString("ErrQueryNotFound", resourceCulture);
             }
         }
         

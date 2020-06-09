@@ -1350,6 +1350,67 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[version_control_repository]'
+GO
+CREATE TABLE [tompit].[version_control_repository]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[url] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[user_name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[password] [varbinary] (128) NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_version_control_endpoint] on [tompit].[version_control_repository]'
+GO
+ALTER TABLE [tompit].[version_control_repository] ADD CONSTRAINT [PK_version_control_endpoint] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[service_binding]'
+GO
+CREATE TABLE [tompit].[service_binding]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[service] [int] NOT NULL,
+[repository] [int] NOT NULL,
+[commit] [bigint] NOT NULL,
+[date] [datetime] NOT NULL,
+[active] [bit] NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_service_binding] on [tompit].[service_binding]'
+GO
+ALTER TABLE [tompit].[service_binding] ADD CONSTRAINT [PK_service_binding] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[view_service_binding]'
+GO
+
+CREATE VIEW [tompit].[view_service_binding]
+AS
+WITH raw AS 
+(
+	SELECT	service, MAX(created) as last_commit
+	FROM	tompit.version_control_commit
+	GROUP BY service
+)
+SELECT b.id, b.service, b.repository, b.[commit], b.date, b.active,
+		r.name repository_name, r.url repository_url, 
+		r1.last_commit,
+		s.token service_token, s.name service_name
+FROM	tompit.service_binding b
+		INNER JOIN tompit.service s ON b.service = s.id
+		INNER JOIN tompit.version_control_repository r ON b.repository = r.id
+		INNER JOIN raw r1 ON r1.service = s.token;
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[alien_view]'
 GO
 CREATE VIEW [tompit].[alien_view]
@@ -1400,6 +1461,18 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[version_control_repository_que]'
+GO
+CREATE PROCEDURE [tompit].[version_control_repository_que]
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT * FROM tompit.version_control_repository;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[alien_que]'
 GO
 CREATE PROCEDURE [tompit].[alien_que]
@@ -1425,6 +1498,21 @@ BEGIN
 	select top 1 *
 	from [service]
 	where id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[service_binding_que_active]'
+GO
+CREATE PROCEDURE [tompit].[service_binding_que_active]
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT s.id service, s.name service_name, s.token service_token, b.id, b.repository, b.[commit], b.date, b.active, b.repository_name, b.repository_url, b.last_commit
+	FROM tompit.service s
+	LEFT JOIN tompit.view_service_binding b ON s.id = b.service
+	WHERE b.active IS NULL OR b.active = 1;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -1462,6 +1550,23 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[service_binding_sel]'
+GO
+CREATE PROCEDURE [tompit].[service_binding_sel]
+	@service int,
+	@repository int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 * 
+	FROM tompit.view_service_binding
+	WHERE service = @service
+	AND repository = @repository;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[service_sel]'
 GO
 CREATE PROCEDURE [tompit].[service_sel]
@@ -1483,6 +1588,21 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[service_binding_que]'
+GO
+CREATE PROCEDURE [tompit].[service_binding_que]
+	@service int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT * 
+	FROM tompit.view_service_binding
+	WHERE service = @service;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[message_subscriber_del]'
 GO
 CREATE PROCEDURE [tompit].[message_subscriber_del]
@@ -1495,6 +1615,36 @@ BEGIN
 	delete tompit.message_subscriber 
 	where topic = @topic
 	and connection = @connection;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[service_binding_upd]'
+GO
+CREATE PROCEDURE [tompit].[service_binding_upd]
+	@service int,
+	@repository int,
+	@commit bigint,
+	@date datetime,
+	@active bit
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	IF (@active = 1)
+		UPDATE tompit.service_binding SET active = 0 WHERE service = @service AND repository = @repository;
+
+	MERGE tompit.service_binding AS t
+	USING (SELECT @service, @repository) AS s (service, repository)
+	ON (t.service = s.service AND t.repository = s.repository)
+	WHEN NOT MATCHED THEN
+		INSERT (service, repository, [commit], date, active)
+		VALUES (@service, @repository, @commit, @date, 1)
+	WHEN MATCHED THEN
+		UPDATE SET
+			[commit] = @commit,
+			 date = @date,
+			 active = @active;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -1546,6 +1696,21 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[service_binding_del]'
+GO
+CREATE PROCEDURE [tompit].[service_binding_del]
+	@service int,
+	@repository int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.service_binding 
+	WHERE service = @service AND repository = @repository;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[language_que]'
 GO
 CREATE PROCEDURE [tompit].[language_que]
@@ -1560,6 +1725,27 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[version_control_repository_ins]'
+GO
+CREATE PROCEDURE [tompit].[version_control_repository_ins]
+	@name nvarchar(128),
+	@url nvarchar(1024),
+	@user_name nvarchar(128),
+	@password varbinary(128)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.version_control_repository
+		(name, url, user_name, password)
+	VALUES
+		(@name, @url, @user_name, @password);
+
+	RETURN scope_identity();
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[user_del]'
 GO
 CREATE PROCEDURE [tompit].[user_del]
@@ -1570,6 +1756,28 @@ BEGIN
 
 	delete [user] 
 	where id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[version_control_repository_upd]'
+GO
+CREATE PROCEDURE [tompit].[version_control_repository_upd]
+	@id int,
+	@name nvarchar(128),
+	@url nvarchar(1024),
+	@user_name nvarchar(128),
+	@password varbinary(128)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	UPDATE tompit.version_control_repository SET
+		name = @name, 
+		url = @url, 
+		user_name = @user_name, 
+		password = @password
+	WHERE id = @id;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -1624,6 +1832,35 @@ BEGIN
 	from language
 	where token = @token;
 	
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[version_control_repository_del]'
+GO
+CREATE PROCEDURE [tompit].[version_control_repository_del]
+	@id int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.version_control_repository
+	WHERE id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[version_control_repository_sel]'
+GO
+CREATE PROCEDURE [tompit].[version_control_repository_sel]
+	@name nvarchar(128)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 * 
+	FROM tompit.version_control_repository
+	WHERE name = @name;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -2617,7 +2854,7 @@ CREATE TABLE [tompit].[big_data_node]
 (
 [id] [int] NOT NULL IDENTITY(1, 1),
 [name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
-[connection_string] [nvarchar] (256) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[connection_string] [nvarchar] (256) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [admin_connection_string] [nvarchar] (256) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [token] [uniqueidentifier] NOT NULL,
 [status] [int] NOT NULL,
@@ -3898,7 +4135,7 @@ PRINT N'Creating [tompit].[big_data_node_ins]'
 GO
 CREATE PROCEDURE [tompit].[big_data_node_ins]
 	@name nvarchar(128),
-	@connection_string nvarchar(256),
+	@connection_string nvarchar(256) = NULL,
 	@admin_connection_string nvarchar(256) = NULL,
 	@token uniqueidentifier,
 	@status int
@@ -3952,7 +4189,7 @@ PRINT N'Creating [tompit].[big_data_node_upd]'
 GO
 CREATE PROCEDURE [tompit].[big_data_node_upd]
 	@name nvarchar(128),
-	@connection_string nvarchar(256),
+	@connection_string nvarchar(256) = NULL,
 	@admin_connection_string nvarchar(256) = NULL,
 	@status int,
 	@size bigint,
@@ -6578,25 +6815,6 @@ ALTER TABLE [tompit].[metric_agg_day] ADD CONSTRAINT [PK_metric_agg_day] PRIMARY
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[version_control_endpoint]'
-GO
-CREATE TABLE [tompit].[version_control_endpoint]
-(
-[id] [int] NOT NULL,
-[name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
-[url] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
-[user_name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[password] [varbinary] (128) NULL
-) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating primary key [PK_version_control_endpoint] on [tompit].[version_control_endpoint]'
-GO
-ALTER TABLE [tompit].[version_control_endpoint] ADD CONSTRAINT [PK_version_control_endpoint] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Adding foreign keys to [tompit].[alien]'
 GO
 ALTER TABLE [tompit].[alien] ADD CONSTRAINT [FK_alien_language] FOREIGN KEY ([language]) REFERENCES [tompit].[language] ([id])
@@ -6756,6 +6974,12 @@ GO
 PRINT N'Adding foreign keys to [tompit].[service]'
 GO
 ALTER TABLE [tompit].[service] ADD CONSTRAINT [FK_solution_resource_group] FOREIGN KEY ([resource_group]) REFERENCES [tompit].[resource_group] ([id]) ON DELETE CASCADE
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding foreign keys to [tompit].[service_binding]'
+GO
+ALTER TABLE [tompit].[service_binding] ADD CONSTRAINT [FK_service_binding_service] FOREIGN KEY ([service]) REFERENCES [tompit].[service] ([id]) ON DELETE CASCADE
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO

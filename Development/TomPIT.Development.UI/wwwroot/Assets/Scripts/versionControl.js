@@ -187,6 +187,19 @@ class Server {
             });
         });
     }
+    queryBranches(e) {
+        const url = `${this.rootUrl}/sys/version-control/query-branches`;
+
+        return new Promise((resolve) => {
+            tompit.post({
+                url: url,
+                data: e,
+                onSuccess: async (e) => {
+                    resolve(e);
+                }
+            });
+        });
+    }
     diff(e) {
         const url = `${this.rootUrl}/sys/version-control/diff`;
 
@@ -229,6 +242,9 @@ class Server {
 }
 
 HTMLElement.prototype.setHtml = function (html) {
+    if (jQuery) 
+        jQuery.cleanData(this.querySelectorAll('*'));
+
     this.innerHTML = html;
 
     let scripts = this.querySelectorAll('script');

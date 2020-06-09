@@ -47,7 +47,7 @@ namespace TomPIT.Management.Models
 			{
 				return DataProvider == null
 					? false
-					: DataProvider.SupportsDeploy;
+					: DataProvider is IDeployDataProvider;
 			}
 		}
 	}

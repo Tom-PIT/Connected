@@ -12,8 +12,6 @@ namespace TomPIT.Storage
 {
 	internal class StorageService : ClientRepository<IBlob, Guid>, IStorageService, IStorageNotification
 	{
-		private BlobContentCache _blobContent = null;
-
 		public event BlobChangedHandler BlobChanged;
 		public event BlobChangedHandler BlobRemoved;
 		public event BlobChangedHandler BlobAdded;
@@ -21,7 +19,7 @@ namespace TomPIT.Storage
 
 		public StorageService(ITenant tenant) : base(tenant, "blob")
 		{
-			_blobContent = new BlobContentCache(Tenant);
+			BlobContent = new BlobContentCache(Tenant);
 			Tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
 		}
 
@@ -253,6 +251,6 @@ namespace TomPIT.Storage
 			BlobCommitted?.Invoke(Tenant, e);
 		}
 
-		private BlobContentCache BlobContent { get { return _blobContent; } }
+		private BlobContentCache BlobContent { get; } = null;
 	}
 }

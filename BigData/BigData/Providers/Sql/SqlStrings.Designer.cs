@@ -101,70 +101,12 @@ namespace TomPIT.BigData.Providers.Sql {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CREATE PROCEDURE merge_{0}
-        ///	@rows nvarchar(max)
-        ///AS
-        ///
-        ///MERGE {0} AS t
-        ///USING (SELECT * FROM OPENJSON(@rows) WITH ({5})) AS s ({1})
-        ///ON ({2})
-        ///	WHEN matched THEN
-        ///		UPDATE SET {3}
-        ///	WHEN not matched THEN
-        ///		INSERT ({1}) values ({4})
-        ///  OUTPUT $action, inserted.*;.
-        /// </summary>
-        internal static string CreateMergeProcedure {
-            get {
-                return ResourceManager.GetString("CreateMergeProcedure", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to CREATE PROCEDURE merge_{0}
-        ///	@rows nvarchar(max)
-        ///AS
-        ///
-        ///MERGE {1} AS t
-        ///USING (SELECT * FROM OPENJSON(@rows) WITH ({5})) AS s ({2})
-        ///ON ({3})
-        ///	WHEN matched THEN
-        ///		UPDATE SET {4}
-        ///	OUTPUT inserted.*;.
-        /// </summary>
-        internal static string CreateUpdateProcedure {
-            get {
-                return ResourceManager.GetString("CreateUpdateProcedure", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to IF EXISTS(SELECT * FROM sys.indexes WHERE object_id = object_id(&apos;{0}&apos;) AND NAME =&apos;IX_{0}_{1}&apos;)
         ///	DROP INDEX IX_{0}_{1} ON {0}.
         /// </summary>
         internal static string DropIndex {
             get {
                 return ResourceManager.GetString("DropIndex", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to IF EXISTS ( SELECT  * FROM    sys.objects WHERE   object_id = OBJECT_ID(N&apos;merge_{0}&apos;) AND type IN (N&apos;P&apos;, N&apos;PC&apos;)) 
-        ///DROP PROCEDURE merge_{0}.
-        /// </summary>
-        internal static string DropProcedure {
-            get {
-                return ResourceManager.GetString("DropProcedure", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to IF EXISTS ( SELECT  * FROM    sys.objects WHERE   object_id = OBJECT_ID(N&apos;merge_{0}&apos;) AND type IN (N&apos;P&apos;, N&apos;PC&apos;)) 
-        ///DROP PROCEDURE merge_{0}.
-        /// </summary>
-        internal static string DropProcedureUpdate {
-            get {
-                return ResourceManager.GetString("DropProcedureUpdate", resourceCulture);
             }
         }
         

@@ -19,6 +19,15 @@ namespace TomPIT.BigData.Configuration
 
 				return Task.CompletedTask;
 			});
+
+			builder.Map("query/{microService}/{partition}", (t) =>
+			{
+				var handler = new QueryHandler(t);
+
+				handler.ProcessRequest();
+
+				return Task.CompletedTask;
+			});
 		}
 	}
 }

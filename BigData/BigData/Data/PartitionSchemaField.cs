@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace TomPIT.BigData.Data
@@ -6,11 +7,24 @@ namespace TomPIT.BigData.Data
 	[JsonConverter(typeof(PartitionSchemaFieldConverter))]
 	internal abstract class PartitionSchemaField : IComparable
 	{
+		private List<Attribute> _attributes = null;
 		public string Name { get; set; }
 		public bool Key { get; set; }
 		public bool Index { get; set; }
 
 		public Type Type { get; set; }
+
+		[JsonIgnore]
+		public List<Attribute> Attributes
+		{
+			get
+			{
+				if (_attributes == null)
+					_attributes = new List<Attribute>();
+
+				return _attributes;
+			}
+		}
 
 		public virtual int CompareTo(object obj)
 		{

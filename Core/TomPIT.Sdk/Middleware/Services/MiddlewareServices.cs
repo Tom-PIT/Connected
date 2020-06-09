@@ -16,7 +16,6 @@ namespace TomPIT.Middleware
 		private IMiddlewareIoTService _iot = null;
 		private IMiddlewareMediaService _media = null;
 		private IMiddlewareSearchService _search = null;
-		private IMiddlewareBigDataService _bigData = null;
 		private IMiddlewareAuthorizationService _authorization = null;
 		private IMiddlewareIoCService _ioc = null;
 		private IMiddlewareMembershipService _membership = null;
@@ -155,17 +154,6 @@ namespace TomPIT.Middleware
 					_search = new MiddlewareSearchService(Context);
 
 				return _search;
-			}
-		}
-
-		public IMiddlewareBigDataService BigData
-		{
-			get
-			{
-				if (_bigData == null)
-					_bigData = new MiddlewareBigDataService(Context);
-
-				return _bigData;
 			}
 		}
 

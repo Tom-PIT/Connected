@@ -5,9 +5,10 @@ using TomPIT.Data;
 
 namespace TomPIT.Distributed
 {
-	public abstract class DispatcherJob<T>
+	public abstract class DispatcherJob<T> : IDisposable
 	{
 		private bool _isRunning = false;
+		private bool _disposed = false;
 
 		public DispatcherJob(Dispatcher<T> owner, CancellationToken cancel)
 		{
@@ -80,5 +81,27 @@ namespace TomPIT.Distributed
 
 		protected abstract void DoWork(T item);
 		protected abstract void OnError(T item, Exception ex);
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_disposed)
+				return;
+
+			if (disposing)
+				OnDisposing();
+
+			_disposed = true;
+		}
+
+		protected virtual void OnDisposing()
+		{
+
+		}
 	}
 }

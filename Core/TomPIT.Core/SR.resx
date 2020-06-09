@@ -1158,4 +1158,13 @@
   <data name="NoSmtpHostName" xml:space="preserve">
     <value>Smtp host name not set. Smtp listener disabled.</value>
   </data>
+  <data name="ErrCommandTextNull" xml:space="preserve">
+    <value>Command text not set.</value>
+  </data>
+  <data name="ErrNoQuery" xml:space="preserve">
+    <value>No queries in big data partition</value>
+  </data>
+  <data name="ErrQueryNotFound" xml:space="preserve">
+    <value>Query not found</value>
+  </data>
 </root>

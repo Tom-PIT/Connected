@@ -9,5 +9,6 @@ namespace TomPIT.Middleware
 		public IDataProvider DataProvider { get; set; }
 		public string ConnectionString { get; set; }
 		public int Id { get; set; }
+		public string Arguments { get; set; }
 	}
 }

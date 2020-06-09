@@ -39,12 +39,13 @@ namespace TomPIT.Cdn.Mail
 
 		public static string HostName { get; private set; }
 		public static string Greeting { get; private set; }
+		public static string Endpoint { get; private set; }
 		private void Run(CancellationToken token)
 		{
 			var tenant = MiddlewareDescriptor.Current.Tenant;
-			var endpoint = tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "Smtp Endpoint");
+			Endpoint = tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "Smtp Endpoint");
 
-			if (string.IsNullOrWhiteSpace(endpoint))
+			if (string.IsNullOrWhiteSpace(Endpoint))
 			{
 				tenant.LogWarning(SR.NoSmtpEndpoint);
 				return;
@@ -67,7 +68,7 @@ namespace TomPIT.Cdn.Mail
 
 			try
 			{
-				_listener.Bind(new IPEndPoint(IPAddress.Parse(endpoint), 25));
+				_listener.Bind(new IPEndPoint(IPAddress.Parse(Endpoint), 25));
 				_listener.Listen(100);
 
 				while (!token.IsCancellationRequested)

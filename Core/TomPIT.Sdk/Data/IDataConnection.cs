@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using Newtonsoft.Json.Linq;
 using TomPIT.Data.DataProviders;
 
@@ -16,5 +17,7 @@ namespace TomPIT.Data
 		JObject Query(IDataCommandDescriptor command);
 
 		ConnectionBehavior Behavior { get; }
+
+		IDbConnection Connection { get; }
 	}
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -317,10 +316,11 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders.Snippets
 
 			var connection = Editor.Context.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, ComponentCategories.Connection, tokens[1]) as IConnectionConfiguration;
 
-			if (connection == null || connection.DataProvider == Guid.Empty)
+			if (connection == null)
 				return (null, null);
 
-			var provider = Editor.Context.Tenant.GetService<IDataProviderService>().Select(connection.DataProvider);
+			var cs = connection.ResolveConnectionString(Editor.Context);
+			var provider = Editor.Context.Tenant.GetService<IDataProviderService>().Select(cs.DataProvider);
 
 			if (provider == null)
 				return (null, null);
@@ -330,9 +330,14 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders.Snippets
 			if (att == null)
 				return (null, null);
 
-			return (att.Type == null
-				? Reflection.TypeExtensions.GetType(att.TypeName).CreateInstance<ISchemaBrowser>()
+			var result = (att.Type == null
+				? TypeExtensions.GetType(att.TypeName).CreateInstance<ISchemaBrowser>()
 				: att.Type.CreateInstance<ISchemaBrowser>(), connection);
+
+			if (result.Item1 != null)
+				ReflectionExtensions.SetPropertyValue(result.Item1, nameof(result.Item1.Context), Arguments.Editor.Context);
+
+			return result;
 		}
 	}
 }

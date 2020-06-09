@@ -1,15 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Text;
+using Newtonsoft.Json.Linq;
+using TomPIT.Annotations.BigData;
 using TomPIT.BigData.Data;
 using TomPIT.BigData.Partitions;
 using TomPIT.BigData.Persistence;
 using TomPIT.BigData.Transactions;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.Middleware;
+using TomPIT.Serialization;
 
 namespace TomPIT.BigData.Providers.Sql
 {
-	internal class SqlPersistenceService : IPersistenceService
+	internal class SqlPersistenceService : MiddlewareObject, IPersistenceService
 	{
 		public DataTable Merge(IUpdateProvider provider, INode node, DataFileContext context, MergePolicy policy)
 		{
@@ -26,9 +32,9 @@ namespace TomPIT.BigData.Providers.Sql
 
 		private DataTable PartialMerge(IUpdateProvider provider, INode node, DataFileContext context)
 		{
-			var w = new NodeReader<MergeResultRecord>(node, $"merge_p_{context.TableName()}", CommandType.StoredProcedure);
+			var w = new NodeReader<MergeResultRecord>(node, CreateCommandText(provider, context, false), CommandType.StoredProcedure);
 
-			w.CreateParameter("@rows", context.Data);
+			w.CreateParameter("@rows", CreateParameter(context.Data));
 
 			w.Execute();
 
@@ -37,16 +43,16 @@ namespace TomPIT.BigData.Providers.Sql
 			var dt = context.Data.Clone();
 
 			foreach (var i in w.Result)
-				dt.Rows.Add(i.ItemArray);
+				MergeResultRecord(dt, i);
 
 			return dt;
 		}
 
 		private DataTable FullMerge(IUpdateProvider provider, INode node, DataFileContext context)
 		{
-			var w = new NodeReader<MergeResultRecord>(node, $"merge_t_{context.TableName()}", CommandType.StoredProcedure);
+			var w = new NodeReader<MergeResultRecord>(node, CreateCommandText(provider, context, true), CommandType.Text);
 
-			w.CreateParameter("@rows", context.Data);
+			w.CreateParameter("@rows", CreateParameter(context.Data));
 
 			w.Execute();
 
@@ -55,16 +61,199 @@ namespace TomPIT.BigData.Providers.Sql
 			var dt = context.Data.Clone();
 
 			foreach (var i in w.Result)
-			{
-				var itemArray = new object[i.ItemArray.Length - 1];
-
-				Array.Copy(i.ItemArray, 1, itemArray, 0, i.ItemArray.Length - 1);
-
-				dt.Rows.Add(itemArray);
-			}
+				MergeResultRecord(dt, i);
 
 			return dt;
 		}
+
+		private void MergeResultRecord(DataTable table, MergeResultRecord record)
+		{
+			var row = table.NewRow();
+
+			foreach (var field in record.Fields)
+			{
+				var column = FindColumn(table, field.Name);
+
+				if (column == null)
+					continue;
+
+				row[column] = field.Value;
+			}
+
+			table.Rows.Add(row);
+		}
+
+		private DataColumn FindColumn(DataTable table, string columnName)
+		{
+			foreach (DataColumn column in table.Columns)
+			{
+				if (string.Compare(column.ColumnName, columnName, true) == 0)
+					return column;
+			}
+
+			return null;
+		}
+
+		private string CreateParameter(DataTable data)
+		{
+			var result = new JArray();
+
+			foreach (DataRow row in data.Rows)
+			{
+				var item = new JObject();
+
+				foreach (DataColumn column in data.Columns)
+				{
+					var value = row[column];
+
+					if (value == null || value == DBNull.Value)
+						continue;
+
+					item.Add(new JProperty(column.ColumnName, value));
+				}
+
+				if (item.Count > 0)
+					result.Add(item);
+			}
+
+			return Serializer.Serialize(result);
+		}
+
+		private string CreateCommandText(IUpdateProvider provider, DataFileContext context, bool fullMerge)
+		{
+			var result = new StringBuilder();
+
+			result.AppendLine($"MERGE t_{context.TableName()} AS t");
+			result.AppendLine("USING (SELECT * FROM OPENJSON(@rows) WITH (");
+			var hit = false;
+
+			foreach (var field in provider.Schema.Fields)
+			{
+				if (hit)
+					result.Append(", ");
+
+				hit = true;
+				result.Append($"{field.Name} {ResolveFieldDataTypeString(field)}");
+			}
+
+			result.Append(")) AS s (");
+			hit = false;
+
+			foreach (var field in provider.Schema.Fields)
+			{
+				if (hit)
+					result.Append(", ");
+
+				hit = true;
+				result.Append($"{field.Name}");
+			}
+
+			result.AppendLine(")");
+			result.Append("ON (");
+			hit = false;
+
+			foreach (var field in provider.Schema.Fields)
+			{
+				if (!field.Key && string.Compare(Merger.TimestampColumn, field.Name, true) != 0)
+					continue;
+
+				if (hit)
+					result.Append(" AND ");
+
+				hit = true;
+				result.Append($"t.{field.Name} = s.{field.Name}");
+			}
+
+			result.AppendLine(")");
+			result.AppendLine("WHEN matched THEN");
+			result.Append("UPDATE SET ");
+			hit = false;
+
+			foreach (var field in provider.Schema.Fields)
+			{
+				if (field.Key)
+					continue;
+
+				if (provider.Schema.Middleware.Timestamp == TimestampBehavior.Static && string.Compare(field.Name, Merger.TimestampColumn, true) == 0)
+					continue;
+
+				if (hit)
+					result.Append(", ");
+
+				hit = true;
+
+				var aggregate = field.Attributes.FirstOrDefault(f => f is BigDataAggregateAttribute) as BigDataAggregateAttribute;
+
+				if (aggregate != null)
+				{
+					switch (aggregate.Mode)
+					{
+						case AggregateMode.None:
+							result.Append($"t.{field.Name} = s.{field.Name}");
+							break;
+						case AggregateMode.Sum:
+							result.Append($"t.{field.Name} = t.{field.Name} + s.{field.Name}");
+							break;
+						default:
+							throw new NotSupportedException();
+					}
+				}
+				else
+					result.Append($"t.{field.Name} = s.{field.Name}");
+			}
+
+			if (fullMerge)
+			{
+				result.AppendLine(" WHEN not matched THEN");
+				result.Append("INSERT (");
+				hit = false;
+
+				foreach (var field in provider.Schema.Fields)
+				{
+					if (hit)
+						result.Append(", ");
+
+					hit = true;
+					result.Append(field.Name);
+				}
+
+				result.Append(") VALUES (");
+				hit = false;
+
+				foreach (var field in provider.Schema.Fields)
+				{
+					if (hit)
+						result.Append(", ");
+
+					hit = true;
+					result.Append($"s.{field.Name}");
+				}
+
+				result.AppendLine(")");
+			}
+
+			if (fullMerge)
+				result.AppendLine("OUTPUT $action, inserted.*;");
+			else
+				result.AppendLine("OUTPUT inserted.*;");
+
+			return result.ToString();
+		}
+
+		private string ResolveFieldDataTypeString(PartitionSchemaField field)
+		{
+			if (field is PartitionSchemaStringField sf)
+				return $"nvarchar({sf.Length})";
+			else if (field is PartitionSchemaNumberField nf)
+				return $"float";
+			else if (field is PartitionSchemaDateField df)
+				return $"datetime2(7)";
+			else if (field is PartitionSchemaBoolField bf)
+				return $"bit";
+			else
+				throw new NotSupportedException();
+		}
+
 		public PartitionSchema SelectSchema(IPartitionConfiguration configuration)
 		{
 			return new PartitionSchema(configuration);
@@ -172,6 +361,15 @@ namespace TomPIT.BigData.Providers.Sql
 				return;
 
 			MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().UpdateFileStatistics(file.FileName, field.Name, startString, endString, startNumber, endNumber, startDate, endDate);
+		}
+
+		public JArray Query(IPartitionConfiguration configuration, List<QueryParameter> parameters)
+		{
+			var query = new Query(Context, configuration, parameters);
+
+			query.Execute();
+
+			return query.Result;
 		}
 	}
 }

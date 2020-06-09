@@ -1,18 +1,15 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Middleware;
 
 namespace TomPIT.BigData
 {
-	public enum TimestampBehavior
+	public enum AggregateMode
 	{
-		Static = 1,
-		Dynamic = 2
+		None = 1,
+		Sum = 2
 	}
 
-	public interface IPartitionMiddleware<T> : IMiddlewareComponent
+	public interface IPartitionMiddleware<T> : IPartitionComponent
 	{
-		TimestampBehavior Timestamp { get; }
-
 		List<T> Invoke(List<T> items);
 	}
 }

@@ -53,5 +53,10 @@ namespace TomPIT.Development.Controllers
 
 			return new EmptyResult();
 		}
+
+		public IActionResult QueryBranches()
+		{
+			return Json(new VersionControlDesignerModel(FromBody()).QueryBranches());
+		}
 	}
 }

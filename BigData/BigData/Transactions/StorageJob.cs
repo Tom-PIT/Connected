@@ -28,7 +28,7 @@ namespace TomPIT.BigData.Transactions
 
 			_timeout = new TimeoutTask(() =>
 			{
-				MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(Message.PopReceipt);
+				MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(Message.PopReceipt, TimeSpan.FromMinutes(1));
 				return Task.CompletedTask;
 			}, TimeSpan.FromSeconds(45), Cancel);
 
@@ -40,7 +40,8 @@ namespace TomPIT.BigData.Transactions
 			}
 			finally
 			{
-				_timeout.Stop();
+				_timeout.Dispose();
+				_timeout = null;
 			}
 		}
 
@@ -49,30 +50,53 @@ namespace TomPIT.BigData.Transactions
 			var block = MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Select(blockId);
 
 			if (block == null)
-				return;
-
-			ValidateSchema(block);
-
-			var updater = new Updater(block);
-
-			updater.Execute();
-
-			if (updater.LockedItems != null && updater.LockedItems.Count > 0)
 			{
-				if (updater.UpdateRowCount == 0)
-				{
-					MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(queue.PopReceipt);
-					return;
-				}
-				else
-				{
-					var config = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(block.Partition) as IPartitionConfiguration;
-
-					MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Prepare(config, updater.LockedItems);
-				}
+				MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Complete(queue.PopReceipt, blockId);
+				return;
 			}
 
-			MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Complete(queue.PopReceipt, blockId);
+			ValidateSchema(block);
+			//var lockAcquired = false;
+
+			//for (var i = 1; i < 10; i++)
+			//{
+			//	if (lockAcquired = UpdaterPool.Lock(block.Partition))
+			//		break;
+			//}
+
+			//if (!lockAcquired)
+			//{
+			//	MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(queue.PopReceipt, TimeSpan.FromSeconds(5));
+			//	return;
+			//}
+
+			try
+			{
+				var updater = new Updater(block);
+
+				updater.Execute();
+
+				if (updater.LockedItems != null && updater.LockedItems.Count > 0)
+				{
+					if (updater.UpdateRowCount == 0)
+					{
+						MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(queue.PopReceipt, TimeSpan.FromSeconds(1));
+						return;
+					}
+					else
+					{
+						var config = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(block.Partition) as IPartitionConfiguration;
+
+						MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Prepare(config, updater.LockedItems);
+					}
+				}
+
+				MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Complete(queue.PopReceipt, blockId);
+			}
+			finally
+			{
+				UpdaterPool.Release(block.Partition);
+			}
 		}
 
 		private void ValidateSchema(ITransactionBlock block)
@@ -83,7 +107,16 @@ namespace TomPIT.BigData.Transactions
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
 			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(StorageJob));
-			MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(item.PopReceipt);
+			MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(item.PopReceipt, TimeSpan.FromSeconds(5));
+		}
+
+		protected override void OnDisposing()
+		{
+			if (_timeout != null)
+			{
+				_timeout.Dispose();
+				_timeout = null;
+			}
 		}
 	}
 }

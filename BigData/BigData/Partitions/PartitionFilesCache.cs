@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
@@ -29,6 +30,10 @@ namespace TomPIT.BigData.Partitions
 				&& (string.IsNullOrWhiteSpace(key) || string.Compare(f.Key, key, true) == 0)
 				&& (startTimestamp == DateTime.MinValue || f.StartTimestamp <= startTimestamp)
 				&& (endTimestamp == DateTime.MinValue || f.Status == PartitionFileStatus.Open || endTimestamp <= f.EndTimestamp));
+		}
+		public List<IPartitionFile> Where(List<Guid> files)
+		{
+			return Where(f => files.Any(g => g == f.FileName));
 		}
 		protected override void OnInitializing()
 		{

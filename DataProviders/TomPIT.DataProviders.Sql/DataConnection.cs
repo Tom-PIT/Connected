@@ -8,7 +8,7 @@ using TomPIT.Data.Sql;
 
 namespace TomPIT.DataProviders.Sql
 {
-	internal class DataConnection : IDataConnection, IDisposable
+	public sealed class DataConnection : IDataConnection, IDisposable
 	{
 		private ReliableSqlConnection _connection = null;
 
@@ -22,7 +22,7 @@ namespace TomPIT.DataProviders.Sql
 		private IDataProvider Provider { get; }
 		private string ConnectionString { get; }
 
-		public ReliableSqlConnection Connection
+		public IDbConnection Connection
 		{
 			get
 			{

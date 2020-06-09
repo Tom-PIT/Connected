@@ -1,8 +1,8 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
+using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.DataProviders.Design;
 using TomPIT.Middleware;
@@ -92,10 +92,11 @@ namespace TomPIT.Ide.Analysis
 
 		public static ISchemaBrowser ResolveSchemaBrowser(this IConnectionConfiguration connection, IMiddlewareContext context)
 		{
-			if (connection == null || connection.DataProvider == Guid.Empty)
+			if (connection == null)
 				return null;
 
-			var dataProvider = context.Tenant.GetService<IDataProviderService>().Select(connection.DataProvider);
+			var cs = connection.ResolveConnectionString(context);
+			var dataProvider = context.Tenant.GetService<IDataProviderService>().Select(cs.DataProvider);
 
 			if (dataProvider == null)
 				return null;
@@ -105,9 +106,14 @@ namespace TomPIT.Ide.Analysis
 			if (att == null)
 				return null;
 
-			return att.Type == null
+			var result = att.Type == null
 				? Reflection.TypeExtensions.GetType(att.TypeName).CreateInstance<ISchemaBrowser>()
 				: att.Type.CreateInstance<ISchemaBrowser>();
+
+			if (result != null)
+				ReflectionExtensions.SetPropertyValue(result, nameof(result.Context), context);
+
+			return result;
 		}
 
 		public static IConnectionConfiguration DefaultConnection(this IMicroServiceContext context)

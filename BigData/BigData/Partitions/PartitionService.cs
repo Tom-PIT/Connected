@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using TomPIT.BigData.Data;
@@ -204,31 +205,28 @@ namespace TomPIT.BigData.Partitions
 			var configuration = Tenant.GetService<IComponentService>().SelectConfiguration(partition) as IPartitionConfiguration;
 			var schema = Tenant.GetService<IPersistenceService>().SelectSchema(configuration);
 			var microService = Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)configuration).MicroService());
-			var existingConfiguration = Tenant.GetService<IStorageService>().Query(microService.Token, BlobTypes.BigDataPartitionSchema, microService.ResourceGroup, partition.ToString());
+			var existingConfiguration = Tenant.GetService<IStorageService>().Download(microService.Token, BlobTypes.BigDataPartitionSchema, microService.ResourceGroup, partition.ToString());
 
-			if (existingConfiguration == null || existingConfiguration.Count == 0)
+			if (existingConfiguration == null || existingConfiguration.Content == null)
 			{
 				CreateValidationSchema(microService, partition, schema);
 				return;
 			}
 			else
 			{
-				var content = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Download(existingConfiguration[0].Token);
-
-				if (content == null || content.Content == null)
-				{
-					CreateValidationSchema(microService, partition, schema);
-					return;
-				}
-
-				var existingSchema = Serializer.Deserialize<PartitionSchema>(Encoding.UTF8.GetString(content.Content));
+				var existingSchema = Serializer.Deserialize<PartitionSchema>(Encoding.UTF8.GetString(existingConfiguration.Content));
 
 				if (existingSchema.CompareTo(schema) != 0)
 				{
-					if (configuration.SchemaSynchronization == SchemaSynchronizationMode.Auto)
-						UpdatePartition(partition, configuration.ComponentName(), PartitionStatus.Maintenance);
-					else
-						UpdatePartition(partition, configuration.ComponentName(), PartitionStatus.Invalid);
+					var p = Select(configuration);
+
+					if (p.Status == PartitionStatus.Active)
+					{
+						if (configuration.SchemaSynchronization == SchemaSynchronizationMode.Auto)
+							UpdatePartition(partition, configuration.ComponentName(), PartitionStatus.Maintenance);
+						else
+							UpdatePartition(partition, configuration.ComponentName(), PartitionStatus.Invalid);
+					}
 
 					throw new RuntimeException(SR.ErrBigDataPartitionSchemaChanged);
 				}
@@ -274,6 +272,39 @@ namespace TomPIT.BigData.Partitions
 		public List<IPartitionFile> QueryFiles(Guid partition)
 		{
 			return Files.Query(partition);
+		}
+
+		public List<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp, List<IndexParameter> parameters)
+		{
+			var candidates = Files.Query(partition, key, startTimestamp, endTimestamp);
+			var result = candidates.GroupBy(f => f.FileName).Select(f => f.First()).Select(f => f.FileName).ToList();
+			var fieldHits = new List<Guid>();
+
+			if (parameters.Count == 0)
+				return candidates;
+
+			foreach (var parameter in parameters)
+			{
+				List<Guid> hits = null;
+
+				if (parameter is IndexDiscreteParameter discrete)
+					hits = Fields.Query(result, partition, key, discrete.Name, discrete.ValueType, discrete.Value);
+				else if (parameter is IndexRangeParameter range)
+					hits = Fields.Query(result, partition, key, range.Name, range.ValueType, range.StartValue, range.EndValue);
+				else if (parameter is IndexArrayParameter array)
+					hits = Fields.Query(result, partition, key, array.Name, array.ValueType, array.Values);
+
+				foreach (var hit in hits)
+				{
+					if (!fieldHits.Contains(hit))
+						fieldHits.Add(hit);
+				}
+			}
+
+			if (fieldHits.Count == 0)
+				return new List<IPartitionFile>();
+
+			return Files.Where(fieldHits);
 		}
 
 		private PartitionFilesCache Files { get; }

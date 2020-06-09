@@ -2,8 +2,8 @@
 	"connections": [
     {
       "name": "localhost",
-      "url": "http://sys-app/common/sys",
-      //"url": "http://localhost:44001",
+      //"url": "http://sys-app/common/sys",
+      "url": "http://localhost:44001",
       //"url": "http://sys-app/skaza/sys",
       "authenticationToken": "defaultAuthenticationToken"
       //"authenticationToken": "8354505c-19f9-4ecb-bc0f-108204c78555"
@@ -12,9 +12,10 @@
 	"resourceGroups": [
 		"Default"
 	],
-	"dataProviders": [
-		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
-	],
+  "dataProviders": [
+    "TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql",
+    "TomPIT.DataProviders.BigData.BigDataProvider, TomPIT.DataProviders.BigData"
+  ],
 	"plugins": {
 		"location": "c:\\Deploy\\Plugins",
 		"shadowCopy": true,

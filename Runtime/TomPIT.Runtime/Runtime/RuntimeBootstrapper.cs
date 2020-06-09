@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using TomPIT.Analytics;
-using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Cdn;
 using TomPIT.Compilation;
@@ -87,7 +86,6 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IGraphicsService), typeof(GraphicsService));
 			e.Tenant.RegisterService(typeof(ISearchService), typeof(SearchService));
 			e.Tenant.RegisterService(typeof(ILocalizationService), typeof(LocalizationService));
-			e.Tenant.RegisterService(typeof(IBigDataService), typeof(BigDataService));
 			e.Tenant.RegisterService(typeof(INavigationService), typeof(NavigationService));
 			e.Tenant.RegisterService(typeof(IIoCService), typeof(IoCService));
 			e.Tenant.RegisterService(typeof(IPrintingService), typeof(PrintingService));

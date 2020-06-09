@@ -3,7 +3,7 @@
 namespace TomPIT.Annotations.BigData
 {
 	[AttributeUsage(AttributeTargets.Property)]
-	public class BigDataIngoreAttribute : Attribute
+	public class BigDataIgnoreAttribute : Attribute
 	{
 	}
 }

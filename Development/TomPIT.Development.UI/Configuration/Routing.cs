@@ -31,6 +31,7 @@ namespace TomPIT.Development.Configuration
 			routes.MapControllerRoute("sys.vc.undo", "sys/version-control/undo", new { controller = "VersionControl", action = "Undo" });
 			routes.MapControllerRoute("sys.vc.querybindings", "sys/version-control/query-bindings", new { controller = "VersionControl", action = "QueryActiveBindings" });
 			routes.MapControllerRoute("sys.vc.designeraction", "sys/version-control/designer-action", new { controller = "VersionControl", action = "DesignerAction" });
+			routes.MapControllerRoute("sys.vc.querybranches", "sys/version-control/query-branches", new { controller = "VersionControl", action = "QueryBranches" });
 			//routes.MapControllerRoute("sys.testsuites", "sys/test-suites", new { controller = "TestSuites", action = "Index" });
 			//routes.MapControllerRoute("sys.testsuites.select", "sys/test-suites/select", new { controller = "TestSuites", action = "Select" });
 
