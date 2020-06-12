@@ -16,7 +16,7 @@ namespace TomPIT.Data.DataProviders.Design
 
 		protected IConnectionString ResolveConnectionString(IConnectionConfiguration configuration)
 		{
-			return configuration.ResolveConnectionString(Context);
+			return configuration.ResolveConnectionString(Context, ConnectionStringContext.Elevated);
 		}
 	}
 }

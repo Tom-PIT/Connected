@@ -319,7 +319,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders.Snippets
 			if (connection == null)
 				return (null, null);
 
-			var cs = connection.ResolveConnectionString(Editor.Context);
+			var cs = connection.ResolveConnectionString(Editor.Context, ConnectionStringContext.Elevated);
 			var provider = Editor.Context.Tenant.GetService<IDataProviderService>().Select(cs.DataProvider);
 
 			if (provider == null)

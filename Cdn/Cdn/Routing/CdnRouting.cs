@@ -8,7 +8,6 @@ namespace TomPIT.Cdn.Routing
 		public static void Register(IEndpointRouteBuilder routes)
 		{
 			routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
-			routes.MapControllerRoute("sys.data", "data", new { controller = "Data", action = "Notify" });
 		}
 	}
 }

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TomPIT.Cdn.Data;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Messaging;
@@ -17,7 +18,7 @@ using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Storage;
 
-namespace TomPIT.Worker.Services
+namespace TomPIT.Cdn.Events
 {
 	internal class EventJob : DispatcherJob<IQueueMessage>
 	{
@@ -106,6 +107,25 @@ namespace TomPIT.Worker.Services
 
 			if (eventInstance != null)
 				eventInstance.Invoked();
+
+			Notify(ms, ed, responses);
+		}
+
+		private void Notify(IMicroService microService, EventDescriptor descriptor, List<IOperationResponse> responses)
+		{
+			if (responses.Count > 0)
+			{
+				foreach (var response in responses)
+				{
+					if (response.Result == ResponseResult.Objection)
+						return;
+				}
+			}
+
+			Task.Run(async () =>
+			{
+				await MiddlewareDescriptor.Current.Tenant.GetService<IDataHubService>().NotifyAsync(new DataHubNotificationArgs($"{microService.Name}/{descriptor.Name}", descriptor.Arguments));
+			});
 		}
 
 		private void Callback(EventDescriptor ed, List<IOperationResponse> responses)

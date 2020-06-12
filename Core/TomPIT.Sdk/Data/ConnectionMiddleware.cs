@@ -8,8 +8,10 @@ namespace TomPIT.Data
 {
 	public abstract class ConnectionMiddleware : MiddlewareComponent, IConnectionMiddleware
 	{
-		public IConnectionString Invoke()
+		public IConnectionString Invoke(ConnectionMiddlewareArgs e)
 		{
+			ConnectionContext = e.ConnectionContext;
+
 			Validate();
 			return OnInvoke();
 		}
@@ -20,6 +22,8 @@ namespace TomPIT.Data
 		}
 
 		protected List<IDataProvider> DataProviders => Context.Tenant.GetService<IDataProviderService>().Query();
+
+		public ConnectionStringContext ConnectionContext { get; private set; } = ConnectionStringContext.User;
 
 		protected Guid ResolveProvider(string name)
 		{

@@ -316,7 +316,7 @@ namespace TomPIT.Development.Analysis.SnippetProviders
 			if (connection == null)
 				return (null, null);
 
-			var cs = connection.ResolveConnectionString(e.Context);
+			var cs = connection.ResolveConnectionString(e.Context, ConnectionStringContext.Elevated);
 			var provider = e.Context.Tenant.GetService<IDataProviderService>().Select(cs.DataProvider);
 
 			if (provider == null)

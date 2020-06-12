@@ -324,5 +324,43 @@ namespace TomPIT.Ide.Dom
 		}
 
 		protected IDesignerService DesignerService { get { return Tenant.GetService<IDesignerService>(); } }
+
+		protected string WithFileExtension(string value)
+		{
+			object target = Property;
+
+			if (target == null)
+				target = Component;
+
+			if (target == null)
+				return value;
+
+			var extension = target.GetType().FindAttribute<FileNameExtensionAttribute>();
+
+			if (extension != null)
+				return $"{value}.{extension.Extension}";
+
+			var syntax = target.GetType().FindAttribute<SyntaxAttribute>();
+
+			if (syntax == null)
+				return value;
+
+			if (string.Compare(syntax.Syntax, SyntaxAttribute.CSharp, true) == 0)
+				return $"{value}.csx";
+			else if (string.Compare(syntax.Syntax, SyntaxAttribute.Css, true) == 0)
+				return $"{value}.css";
+			else if (string.Compare(syntax.Syntax, SyntaxAttribute.Javascript, true) == 0)
+				return $"{value}.jsm";
+			else if (string.Compare(syntax.Syntax, SyntaxAttribute.Json, true) == 0)
+				return $"{value}.json";
+			else if (string.Compare(syntax.Syntax, SyntaxAttribute.Less, true) == 0)
+				return $"{value}.less";
+			else if (string.Compare(syntax.Syntax, SyntaxAttribute.Razor, true) == 0)
+				return $"{value}.cshtml";
+			else if (string.Compare(syntax.Syntax, SyntaxAttribute.Sql, true) == 0)
+				return $"{value}.sql";
+			else
+				return value;
+		}
 	}
 }

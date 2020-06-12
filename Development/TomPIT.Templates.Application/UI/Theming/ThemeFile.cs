@@ -3,6 +3,7 @@ using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI.Theming;
+using TomPIT.Reflection;
 
 namespace TomPIT.MicroServices.UI.Theming
 {
@@ -12,5 +13,13 @@ namespace TomPIT.MicroServices.UI.Theming
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[Required]
 		public string Name { get; set; }
+
+		public override string ToString()
+		{
+			if (string.IsNullOrWhiteSpace(Name))
+				return GetType().ShortName();
+
+			return Name;
+		}
 	}
 }

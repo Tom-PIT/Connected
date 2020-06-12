@@ -835,6 +835,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot obtain Entity state.
+        /// </summary>
+        public static string ErrCannotGetEntityState {
+            get {
+                return ResourceManager.GetString("ErrCannotGetEntityState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot resolve component type.
         /// </summary>
         public static string ErrCannotResolveComponentType {
@@ -1857,6 +1866,24 @@ namespace TomPIT {
         public static string ErrMissingRemoveMethod {
             get {
                 return ResourceManager.GetString("ErrMissingRemoveMethod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Model connection not set.
+        /// </summary>
+        public static string ErrModelConnectionNotSet {
+            get {
+                return ResourceManager.GetString("ErrModelConnectionNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Model operation not found.
+        /// </summary>
+        public static string ErrModelOperationNotFound {
+            get {
+                return ResourceManager.GetString("ErrModelOperationNotFound", resourceCulture);
             }
         }
         

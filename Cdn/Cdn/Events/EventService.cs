@@ -7,7 +7,7 @@ using TomPIT.Distributed;
 using TomPIT.Middleware;
 using TomPIT.Runtime.Configuration;
 
-namespace TomPIT.Worker.Services
+namespace TomPIT.Cdn.Events
 {
 	internal class EventService : HostedService
 	{

@@ -9,7 +9,7 @@ using TomPIT.MicroServices.Design;
 namespace TomPIT.MicroServices.Data
 {
 	[Create(DesignUtils.ComponentConnection)]
-	[Syntax(SyntaxAttribute.CSharp)]
+	[FileNameExtension("connection")]
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	public class Connection : SourceCodeConfiguration, IConnectionConfiguration
 	{

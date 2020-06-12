@@ -195,11 +195,6 @@ namespace TomPIT.ComponentModel
 			return new ConfigurationDescriptor<IApiConfiguration>(context, identifier, ComponentCategories.Api);
 		}
 
-		public static ConfigurationDescriptor<IDataHubConfiguration> DataHub(IMiddlewareContext context, string identifier)
-		{
-			return new ConfigurationDescriptor<IDataHubConfiguration>(context, identifier, ComponentCategories.DataHub);
-		}
-
 		public static ConfigurationDescriptor<IConnectionConfiguration> Connection(IMiddlewareContext context, string identifier)
 		{
 			return new ConfigurationDescriptor<IConnectionConfiguration>(context, identifier, ComponentCategories.Connection);
@@ -248,6 +243,11 @@ namespace TomPIT.ComponentModel
 		public static ConfigurationDescriptor<IReportConfiguration> Report(IMiddlewareContext context, string identifier)
 		{
 			return new ConfigurationDescriptor<IReportConfiguration>(context, identifier, ComponentCategories.Report);
+		}
+
+		public static ConfigurationDescriptor<IModelConfiguration> Model(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IModelConfiguration>(context, identifier, ComponentCategories.Model);
 		}
 	}
 }

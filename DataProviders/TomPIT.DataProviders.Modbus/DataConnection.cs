@@ -20,6 +20,7 @@ namespace TomPIT.DataProviders.Modbus
 		private IDataProvider Provider { get; }
 		private string ConnectionString { get; }
 
+		public IDbTransaction Transaction { get; set; }
 		public IDbConnection Connection
 		{
 			get

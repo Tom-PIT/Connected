@@ -50,7 +50,6 @@ namespace TomPIT.Worker
 		private void RegisterTasks(IServiceCollection services)
 		{
 			services.AddSingleton<IHostedService, WorkerService>();
-			services.AddSingleton<IHostedService, EventService>();
 			services.AddSingleton<IHostedService, SubscriptionWorker>();
 			services.AddSingleton<IHostedService, SubscriptionEventWorker>();
 			services.AddSingleton<IHostedService, QueueWorkerService>();

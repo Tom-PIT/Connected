@@ -4,6 +4,7 @@ using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Exceptions;
 using TomPIT.Middleware.Services;
+using TomPIT.Reflection;
 using TomPIT.Security;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
@@ -205,8 +206,6 @@ namespace TomPIT.Middleware
 
 		#endregion
 
-		#region Helpers
-
 		protected void Initialize(string endpoint)
 		{
 			Endpoint = endpoint;
@@ -222,7 +221,7 @@ namespace TomPIT.Middleware
 
 		public IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection, ConnectionBehavior behavior, object arguments)
 		{
-			return Connections.OpenConnection(this, connection, behavior, arguments);
+			return Connections.OpenConnection(this, connection, behavior, arguments).Item1;
 		}
 
 		private IMiddlewareTransaction BeginTransaction()
@@ -256,6 +255,13 @@ namespace TomPIT.Middleware
 			_elevationState = ElevationContextState.Granted;
 		}
 
-		#endregion
+		public T OpenModel<T>() where T : IModelComponent
+		{
+			var result = TypeExtensions.CreateInstance<IModelComponent>(typeof(T));
+
+			ReflectionExtensions.SetPropertyValue(result, nameof(result.Context), this);
+
+			return (T)result;
+		}
 	}
 }

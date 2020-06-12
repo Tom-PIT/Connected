@@ -8,7 +8,7 @@ using TomPIT.Connectivity;
 using TomPIT.Middleware;
 using TomPIT.Runtime.Configuration;
 
-namespace TomPIT.Worker.Services
+namespace TomPIT.Cdn.Events
 {
 	internal static class EventHandlers
 	{

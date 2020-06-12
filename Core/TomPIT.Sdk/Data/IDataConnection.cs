@@ -19,5 +19,6 @@ namespace TomPIT.Data
 		ConnectionBehavior Behavior { get; }
 
 		IDbConnection Connection { get; }
+		IDbTransaction Transaction { get; set; }
 	}
 }

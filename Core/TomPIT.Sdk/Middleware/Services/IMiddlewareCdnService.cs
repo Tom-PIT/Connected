@@ -5,7 +5,6 @@
 		IMiddlewareEmail Mail { get; }
 		IMiddlewareSubscriptions Subscriptions { get; }
 		IMiddlewareEvents Events { get; }
-		IMiddlewareDataHub DataHub { get; }
 		IMiddlewarePrinting Printing { get; }
 		IMiddlewareQueue Queue { get; }
 	}

@@ -21,9 +21,9 @@ namespace TomPIT.Ide.Dom.ComponentModel
 			Glyph = component.Glyph(Environment.Context.Tenant);
 
 			if (_loaded && Configuration == null)
-				Title = string.Format("(!){0}", Target.Name);
+				Title = WithFileExtension(string.Format("(!){0}", Target.Name));
 			else
-				Title = Target.Name;
+				Title = WithFileExtension(Target.Name);
 
 			((Behavior)Behavior).AutoExpand = false;
 			((Behavior)Behavior).Static = false;

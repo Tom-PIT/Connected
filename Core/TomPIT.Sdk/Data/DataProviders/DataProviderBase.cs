@@ -204,7 +204,7 @@ namespace TomPIT.Data.DataProviders
 
 		protected virtual IDbCommand ResolveCommand(IDataCommandDescriptor command, IDbConnection connection, IDataConnection dataConnection)
 		{
-			T dc;
+			T dc = default;
 
 			if (dataConnection != null)
 			{
@@ -219,6 +219,12 @@ namespace TomPIT.Data.DataProviders
 			r.CommandText = command.CommandText;
 			r.CommandType = command.CommandType;
 			r.CommandTimeout = command.CommandTimeout;
+
+			if (dc != default)
+			{
+				if (dc.Transaction != null)
+					r.Transaction = dc.Transaction;
+			}
 
 			return r;
 		}

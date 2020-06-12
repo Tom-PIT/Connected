@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Threading.Tasks;
 
 namespace TomPIT.Cdn.Data
 {
@@ -7,9 +7,6 @@ namespace TomPIT.Cdn.Data
 	 */
 	internal interface IDataHubService
 	{
-		void Connect(string microService, string dataHub, string connectionId, List<DataHubEndpointSubscriber> endpoints);
-		void Disconnect(string connectionId);
-
-		void Notify(string endpoint, string arguments);
+		Task NotifyAsync(DataHubNotificationArgs e);
 	}
 }

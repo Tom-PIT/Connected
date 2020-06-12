@@ -3201,10 +3201,11 @@ IF @@ERROR <> 0 SET NOEXEC ON
 GO
 PRINT N'Creating [tompit].[view_big_data_index_field]'
 GO
+
 CREATE VIEW [tompit].[view_big_data_index_field]
 AS
 SELECT f.id, f.[index], f.field_name, f.start_string, f.end_string, f.start_number, f.end_number, f.start_date, f.end_date,
-		i.[file]
+		i.[file], i.[key]
 FROM tompit.big_data_index_field f
 INNER JOIN tompit.big_data_index i ON f.[index] = i.id;
 GO

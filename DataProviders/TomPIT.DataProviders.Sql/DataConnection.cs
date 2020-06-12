@@ -92,7 +92,7 @@ namespace TomPIT.DataProviders.Sql
 			return Provider.Query(command, null, this);
 		}
 
-		public SqlTransaction Transaction { get; private set; }
+		public IDbTransaction Transaction { get; set; }
 
 		public ConnectionBehavior Behavior { get; private set; }
 	}

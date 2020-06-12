@@ -4,7 +4,6 @@
 	{
 		private IMiddlewareEmail _email = null;
 		private IMiddlewareSubscriptions _subscriptions = null;
-		private IMiddlewareDataHub _dataHub = null;
 		private IMiddlewareEvents _events = null;
 		private IMiddlewareQueue _queue = null;
 		private IMiddlewarePrinting _printing = null;
@@ -31,17 +30,6 @@
 					_subscriptions = new MiddlewareSubscriptions();
 
 				return _subscriptions;
-			}
-		}
-
-		public IMiddlewareDataHub DataHub
-		{
-			get
-			{
-				if (_dataHub == null)
-					_dataHub = new MiddlewareDataHub();
-
-				return _dataHub;
 			}
 		}
 

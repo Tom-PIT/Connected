@@ -48,11 +48,11 @@ namespace TomPIT.Distributed
 					//TODO: handle exception
 				}
 
+				if (Initialized && IntervalTimeout == TimeSpan.Zero)
+					break;
+
 				if (Initialized)
-				{
-					if (IntervalTimeout > TimeSpan.Zero)
-						await Task.Delay(IntervalTimeout, cancel);
-				}
+					await Task.Delay(IntervalTimeout, cancel);
 				else
 					await Task.Delay(1000, cancel);
 			}

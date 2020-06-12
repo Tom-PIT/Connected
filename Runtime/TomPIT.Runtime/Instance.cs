@@ -52,6 +52,8 @@ namespace TomPIT
 		public static InstanceState State { get; private set; } = InstanceState.Initialining;
 		public static CancellationToken Stopping { get; private set; }
 		public static CancellationToken Stopped { get; private set; }
+
+		private static bool CorsEnabled { get; set; }
 		public static void Initialize(IServiceCollection services, ServicesConfigurationArgs e)
 		{
 			Shell.RegisterConfigurationType(typeof(ClientSys));
@@ -122,6 +124,26 @@ namespace TomPIT
 				}
 			});
 
+			if (e.CorsEnabled)
+			{
+				CorsEnabled = true;
+
+				services.AddCors(options => options.AddPolicy("TomPITPolicy",
+					builder =>
+					{
+						var setting = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().Select(Guid.Empty, "Cors Origins");
+						var origin = new string[] { "http://localhost" };
+
+						if (setting != null && !string.IsNullOrWhiteSpace(setting.Value))
+							origin = setting.Value.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+
+						builder.AllowAnyMethod()
+						.AllowAnyHeader()
+						.WithOrigins(origin)
+						.AllowCredentials();
+					}));
+			}
+
 			services.AddControllersWithViews();
 			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
@@ -155,6 +177,10 @@ namespace TomPIT
 
 			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
 			app.UseRouting();
+
+			if (CorsEnabled)
+				app.UseCors("TomPITPolicy");
+
 			app.UseAuthentication();
 			app.UseAuthorization();
 			app.UseRequestLocalization(o =>

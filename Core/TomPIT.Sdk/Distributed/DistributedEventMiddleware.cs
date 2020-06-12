@@ -1,4 +1,6 @@
-﻿using TomPIT.Middleware;
+﻿using System;
+using TomPIT.Exceptions;
+using TomPIT.Middleware;
 
 namespace TomPIT.Distributed
 {
@@ -6,9 +8,24 @@ namespace TomPIT.Distributed
 	{
 		public void Invoke()
 		{
-			Context.Grant();
-			Validate();
-			OnInvoke();
+			try
+			{
+				Context.Grant();
+				Validate();
+				OnInvoke();
+				Invoked();
+			}
+			catch (System.ComponentModel.DataAnnotations.ValidationException)
+			{
+				Rollback();
+				throw;
+			}
+			catch (Exception ex)
+			{
+				Rollback();
+				throw new ScriptException(this, ex);
+			}
+
 		}
 
 		protected virtual void OnInvoke()

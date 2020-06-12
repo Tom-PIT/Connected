@@ -91,6 +91,6 @@ namespace TomPIT.DataProviders.BigData
 		}
 
 		public ConnectionBehavior Behavior { get; private set; }
-		internal BigDataTransaction Transaction { get; private set; }
+		public IDbTransaction Transaction { get; set; }
 	}
 }

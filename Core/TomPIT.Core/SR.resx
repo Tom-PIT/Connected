@@ -1167,4 +1167,13 @@
   <data name="ErrQueryNotFound" xml:space="preserve">
     <value>Query not found</value>
   </data>
+  <data name="ErrModelConnectionNotSet" xml:space="preserve">
+    <value>Model connection not set</value>
+  </data>
+  <data name="ErrModelOperationNotFound" xml:space="preserve">
+    <value>Model operation not found</value>
+  </data>
+  <data name="ErrCannotGetEntityState" xml:space="preserve">
+    <value>Cannot obtain Entity state</value>
+  </data>
 </root>

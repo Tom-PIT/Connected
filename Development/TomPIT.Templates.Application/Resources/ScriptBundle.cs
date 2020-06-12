@@ -11,6 +11,7 @@ namespace TomPIT.MicroServices.Resources
 	[Create(DesignUtils.ScriptBundle)]
 	[ComponentCreatedHandler(DesignUtils.ScriptBundleHandler)]
 	[DomElement(DesignUtils.ScriptBundleElement)]
+	[FileNameExtension("jsm")]
 	public class ScriptBundle : ComponentConfiguration, IScriptBundleConfiguration, IScriptBundleInitializer
 	{
 		private ListItems<IScriptSource> _scripts = null;

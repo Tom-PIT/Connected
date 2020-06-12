@@ -3,6 +3,7 @@
 	public static class ComponentCategories
 	{
 		public static string Api => "Api";
+		public static string Model => "Model";
 		public static string View => "View";
 		public static string Subscription => "Subscription";
 		public static string Queue => "Queue";
@@ -23,7 +24,7 @@
 		public static string EmbeddedAssembly => "EmbeddedAssembly";
 		public static string FileAssembly => "FileAssembly";
 		public static string MailTemplate => "MailTemplate";
-		public static string DataHub => "DataHub";
+		//public static string DataHub => "DataHub";
 		public static string SearchCatalog => "SearchCatalog";
 		public static string Installer => "Installer";
 		public static string EventBinder => "EventBinder";
@@ -51,7 +52,8 @@
 		{
 			if (string.Compare(category, Api, true) == 0
 				|| string.Compare(category, Script, true) == 0
-				|| string.Compare(category, IoCContainer, true) == 0)
+				|| string.Compare(category, IoCContainer, true) == 0
+				|| string.Compare(category, Model, true) == 0)
 				return NameSpacePublicScript;
 			else if (string.Compare(category, Subscription, true) == 0
 				|| string.Compare(category, Queue, true) == 0

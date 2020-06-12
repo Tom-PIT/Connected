@@ -22,7 +22,8 @@ namespace TomPIT.TagHelpers
 				microService = tokens[0];
 				name = tokens[1];
 
-				var ms = ctx.Tenant.GetService<IMicroServiceService>().Select(ResolveMicroservice(ViewContext.ExecutingFilePath).Token);
+				var resolved = ResolveMicroservice(ViewContext.ExecutingFilePath);
+				var ms = resolved == null ? null : ctx.Tenant.GetService<IMicroServiceService>().Select(resolved.Token);
 				var reference = ctx.Tenant.GetService<IMicroServiceService>().Select(microService);
 
 				if (reference == null)
@@ -30,7 +31,8 @@ namespace TomPIT.TagHelpers
 
 				try
 				{
-					ms.ValidateMicroServiceReference(reference.Name);
+					if (ms != null)
+						ms.ValidateMicroServiceReference(reference.Name);
 				}
 				catch
 				{

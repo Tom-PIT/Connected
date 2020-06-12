@@ -35,6 +35,11 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders.Snippets
 			if (variable == null)
 				return default;
 
+			return ConnectionSnippet(variable);
+		}
+
+		private List<ICompletionItem> ConnectionSnippet(VariableDeclaratorSyntax variable)
+		{
 			var connection = variable.ResolveConnection(Editor.Context);
 
 			if (connection == null)
@@ -90,7 +95,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders.Snippets
 			foreach (var parameter in parameters)
 			{
 				if (!isFirst)
-					insertText.Append($"{variableName}.");
+					insertText.Append($"{variable.Identifier.ValueText}.");
 
 				var mapping = parameter.IsNullable ? ", true" : string.Empty;
 

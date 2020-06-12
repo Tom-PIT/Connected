@@ -2,7 +2,7 @@
 using TomPIT.Distributed;
 using TomPIT.Storage;
 
-namespace TomPIT.Worker.Services
+namespace TomPIT.Cdn.Events
 {
 	internal class EventDispatcher : Dispatcher<IQueueMessage>
 	{

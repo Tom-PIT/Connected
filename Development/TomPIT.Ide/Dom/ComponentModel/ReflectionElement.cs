@@ -33,7 +33,8 @@ namespace TomPIT.Ide.Dom.ComponentModel
 			Index = index;
 
 			Id = DomQuery.Key(Value, string.Empty);
-			Title = property == null ? instance.ToString() : property.Name;
+
+			Title = WithFileExtension(property == null ? instance.ToString() : property.Name);
 
 			Initialize();
 

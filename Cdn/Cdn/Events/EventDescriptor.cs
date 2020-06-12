@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TomPIT.Worker.Services
+namespace TomPIT.Cdn.Events
 {
 	internal class EventDescriptor
 	{

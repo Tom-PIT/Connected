@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using TomPIT.Exceptions;
 using TomPIT.Middleware;
 
 namespace TomPIT.Messaging
 {
-	public abstract class EventMiddleware : MiddlewareComponent, IEventMiddleware
+	public abstract class EventMiddleware : MiddlewareOperation, IEventMiddleware
 	{
 		private List<IOperationResponse> _responses = null;
 		public string EventName { get; private set; }
@@ -22,8 +24,23 @@ namespace TomPIT.Messaging
 		{
 			EventName = eventName;
 
-			Validate();
-			OnInvoke();
+			try
+			{
+				Validate();
+				OnInvoke();
+
+				Invoked();
+			}
+			catch (System.ComponentModel.DataAnnotations.ValidationException)
+			{
+				Rollback();
+				throw;
+			}
+			catch (Exception ex)
+			{
+				Rollback();
+				throw new ScriptException(this, ex);
+			}
 		}
 
 		protected abstract void OnInvoke();

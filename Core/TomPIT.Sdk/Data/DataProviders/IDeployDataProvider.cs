@@ -8,5 +8,7 @@ namespace TomPIT.Data.DataProviders
 		IDatabase CreateSchema(string connectionString);
 		void Deploy(IDatabaseDeploymentContext context);
 		void CreateDatabase(string connectionString);
+
+		void Synchronize(string connectionString, IModelSchema schema);
 	}
 }

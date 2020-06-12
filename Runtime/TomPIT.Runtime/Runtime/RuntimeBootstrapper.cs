@@ -92,6 +92,7 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IUIDependencyInjectionService), typeof(UIDependencyInjectionService));
 			e.Tenant.RegisterService(typeof(IDependencyInjectionService), typeof(DependencyInjectionService));
 			e.Tenant.RegisterService(typeof(IAnalyticsService), typeof(AnalyticsService));
+			e.Tenant.RegisterService(typeof(IModelService), typeof(ModelService));
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 			{

@@ -6,6 +6,7 @@ using TomPIT.Data.DataProviders;
 using TomPIT.Data.DataProviders.Design;
 using TomPIT.Data.Sql;
 using TomPIT.DataProviders.Sql.Deployment;
+using TomPIT.DataProviders.Sql.Synchronization;
 using TomPIT.Deployment;
 using TomPIT.Deployment.Database;
 
@@ -103,6 +104,13 @@ namespace TomPIT.DataProviders.Sql
 			var existing = CreateSchema(context.ConnectionString);
 
 			new SqlDeploy(context, existing).Deploy();
+		}
+
+		public void Synchronize(string connectionString, IModelSchema schema)
+		{
+			var sync = new Synchronizer(connectionString, schema);
+
+			sync.Execute();
 		}
 	}
 }
