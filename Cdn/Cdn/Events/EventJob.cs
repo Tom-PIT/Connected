@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using TomPIT.Cdn.Data;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Messaging;
@@ -124,7 +123,7 @@ namespace TomPIT.Cdn.Events
 
 			Task.Run(async () =>
 			{
-				await MiddlewareDescriptor.Current.Tenant.GetService<IDataHubService>().NotifyAsync(new DataHubNotificationArgs($"{microService.Name}/{descriptor.Name}", descriptor.Arguments));
+				await MiddlewareDescriptor.Current.Tenant.GetService<IEventHubService>().NotifyAsync(new EventHubNotificationArgs($"{microService.Name}/{descriptor.Name}", descriptor.Arguments));
 			});
 		}
 

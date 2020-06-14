@@ -1,19 +1,37 @@
 ﻿using TomPIT.Middleware;
+using TomPIT.Reflection;
+using TomPIT.Security;
 
 namespace TomPIT.IoT
 {
 	public abstract class IoTTransactionMiddleware : MiddlewareComponent, IIoTTransactionMiddleware
 	{
-		protected IoTTransactionMiddleware(IMiddlewareContext context) : base(context)
-		{
-		}
-
 		public void Invoke()
 		{
 			Validate();
+			AuthorizePolicies();
+			OnAuthorize();
 			OnInvoke();
 		}
 
-		protected abstract void OnInvoke();
+		private void AuthorizePolicies()
+		{
+			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, this);
+		}
+
+		protected virtual void OnAuthorize()
+		{
+
+		}
+
+		protected virtual void OnInvoke()
+		{
+
+		}
+
+		public override string ToString()
+		{
+			return GetType().ShortName();
+		}
 	}
 }

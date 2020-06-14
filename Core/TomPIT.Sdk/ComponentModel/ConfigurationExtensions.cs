@@ -6,7 +6,9 @@ using TomPIT.BigData;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.ComponentModel.Data;
+using TomPIT.ComponentModel.IoT;
 using TomPIT.Data;
+using TomPIT.IoT;
 using TomPIT.Middleware;
 using TomPIT.Serialization;
 
@@ -41,9 +43,14 @@ namespace TomPIT.ComponentModel
 			return GetMiddlewareType(configuration, context, typeof(IModelMiddleware<>));
 		}
 
-		public static List<PropertyInfo> GetMiddlewareProperties(Type type, bool all)
+		public static Type IoTHubSchemaType(this IIoTHubConfiguration configuration, IMiddlewareContext context)
 		{
-			return all
+			return GetMiddlewareType(configuration, context, typeof(IIoTHubMiddleware<>));
+		}
+
+		public static List<PropertyInfo> GetMiddlewareProperties(Type type, bool includePrivate)
+		{
+			return includePrivate
 				? type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).ToList()
 				: type.GetProperties(BindingFlags.Public | BindingFlags.Instance).ToList();
 		}

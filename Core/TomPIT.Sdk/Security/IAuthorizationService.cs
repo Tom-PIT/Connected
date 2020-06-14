@@ -25,5 +25,8 @@ namespace TomPIT.Security
 
 		List<IMembership> QueryMembership(Guid user);
 		List<IMembership> QueryMembershipForRole(Guid role);
+
+		void AuthorizePolicies(IMiddlewareContext context, object instance);
+		void AuthorizePolicies(IMiddlewareContext context, object instance, string method);
 	}
 }

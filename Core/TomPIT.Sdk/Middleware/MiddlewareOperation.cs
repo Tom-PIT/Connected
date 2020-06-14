@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using TomPIT.Annotations;
+using TomPIT.Security;
 
 namespace TomPIT.Middleware
 {
@@ -106,43 +104,7 @@ namespace TomPIT.Middleware
 
 		protected internal virtual void AuthorizePolicies()
 		{
-			var attributes = GetType().GetCustomAttributes(true);
-
-			var targets = new List<AuthorizationPolicyAttribute>();
-
-			foreach (var attribute in attributes)
-			{
-				if (!(attribute is AuthorizationPolicyAttribute policy) || policy.MiddlewareStage == AuthorizationMiddlewareStage.Result)
-					continue;
-
-				targets.Add(policy);
-			}
-
-			Exception firstFail = null;
-			bool onePassed = false;
-
-			foreach (var attribute in targets.OrderByDescending(f => f.Priority))
-			{
-				try
-				{
-					if (attribute.Behavior == AuthorizationPolicyBehavior.Optional && onePassed)
-						continue;
-
-					attribute.Authorize(Context, this);
-
-					onePassed = true;
-				}
-				catch (Exception ex)
-				{
-					if (attribute.Behavior == AuthorizationPolicyBehavior.Mandatory)
-						throw ex;
-
-					firstFail = ex;
-				}
-			}
-
-			if (!onePassed && firstFail != null)
-				throw firstFail;
+			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, this);
 		}
 	}
 }

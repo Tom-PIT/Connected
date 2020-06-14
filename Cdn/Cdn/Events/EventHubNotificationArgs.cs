@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace TomPIT.Cdn.Data
+namespace TomPIT.Cdn.Events
 {
-	public class DataHubNotificationArgs : EventArgs
+	public class EventHubNotificationArgs : EventArgs
 	{
-		public DataHubNotificationArgs(string eventName, string arguments)
+		public EventHubNotificationArgs(string eventName, string arguments)
 		{
 			Name = eventName;
 			Arguments = arguments;

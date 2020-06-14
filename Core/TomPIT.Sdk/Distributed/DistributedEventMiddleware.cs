@@ -1,6 +1,7 @@
 ﻿using System;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
+using TomPIT.Security;
 
 namespace TomPIT.Distributed
 {
@@ -52,6 +53,11 @@ namespace TomPIT.Distributed
 		protected virtual bool OnInvoking()
 		{
 			return true;
+		}
+
+		public void Authorize(EventConnectionArgs e)
+		{
+			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, this);
 		}
 	}
 }

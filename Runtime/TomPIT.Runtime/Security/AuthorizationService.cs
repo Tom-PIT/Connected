@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using TomPIT.Annotations;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
@@ -431,6 +432,53 @@ namespace TomPIT.Security
 		public List<IMembership> QueryMembershipForRole(Guid role)
 		{
 			return Membership.QueryForRole(role);
+		}
+
+		public void AuthorizePolicies(IMiddlewareContext context, object instance)
+		{
+			AuthorizePolicies(context, instance, null);
+		}
+		public void AuthorizePolicies(IMiddlewareContext context, object instance, string method)
+		{
+			var attributes = instance.GetType().GetCustomAttributes(true);
+
+			var targets = new List<AuthorizationPolicyAttribute>();
+
+			foreach (var attribute in attributes)
+			{
+				if (!(attribute is AuthorizationPolicyAttribute policy)
+					|| policy.MiddlewareStage == AuthorizationMiddlewareStage.Result)
+					continue;
+
+				if (string.Compare(method, policy.Method, true) == 0)
+					targets.Add(policy);
+			}
+
+			Exception firstFail = null;
+			bool onePassed = false;
+
+			foreach (var attribute in targets.OrderByDescending(f => f.Priority))
+			{
+				try
+				{
+					if (attribute.Behavior == AuthorizationPolicyBehavior.Optional && onePassed)
+						continue;
+
+					attribute.Authorize(context, instance);
+
+					onePassed = true;
+				}
+				catch (Exception ex)
+				{
+					if (attribute.Behavior == AuthorizationPolicyBehavior.Mandatory)
+						throw ex;
+
+					firstFail = ex;
+				}
+			}
+
+			if (!onePassed && firstFail != null)
+				throw firstFail;
 		}
 	}
 }

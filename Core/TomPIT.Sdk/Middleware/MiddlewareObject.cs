@@ -23,7 +23,11 @@ namespace TomPIT.Middleware
 			get
 			{
 				if (_context == null)
+				{
 					_context = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant?.Url);
+
+					OnContextChanged();
+				}
 
 				return _context;
 			}
@@ -32,8 +36,18 @@ namespace TomPIT.Middleware
 			 */
 			private set
 			{
-				_context = value;
+				if (_context != value)
+				{
+					_context = value;
+
+					OnContextChanged();
+				}
 			}
+		}
+
+		protected virtual void OnContextChanged()
+		{
+
 		}
 	}
 }

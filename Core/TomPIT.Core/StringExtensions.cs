@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 
 namespace TomPIT
 {
@@ -12,6 +10,14 @@ namespace TomPIT
 		public static string WithMilliseconds(this DateTime value)
 		{
 			return value.ToString(PreciseDateFormat, CultureInfo.InvariantCulture);
+		}
+
+		public static string ToCamelCase(this string value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+				return value;
+
+			return $"{char.ToLowerInvariant(value[0])}{value.Substring(1)}";
 		}
 	}
 }

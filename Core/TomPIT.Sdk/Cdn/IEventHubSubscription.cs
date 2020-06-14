@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.Cdn
 {
-	public interface IDataHubEvent
+	public interface IEventHubSubscription
 	{
 		string Name { get; }
 	}

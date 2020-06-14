@@ -131,13 +131,13 @@ namespace TomPIT.ComponentModel
 		public void Validate()
 		{
 			if (MicroService == null)
-				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({MicroServiceName})");
+				throw new NotFoundException($"{SR.ErrMicroServiceNotFound} ({MicroServiceName})");
 
 			//if (Context != null)
 			//	Context.MicroService.ValidateMicroServiceReference(MicroServiceName);
 
 			if (Component == null)
-				throw new RuntimeException($"{SR.ErrComponentNotFound} ({ComponentName})");
+				throw new NotFoundException($"{SR.ErrComponentNotFound} ({ComponentName})");
 
 			OnValidate();
 		}

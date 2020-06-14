@@ -34,6 +34,7 @@ namespace TomPIT.Annotations
 		private IAuthorizationModel _model = null;
 		public AuthorizationPolicyBehavior Behavior { get; set; } = AuthorizationPolicyBehavior.Mandatory;
 		public int Priority { get; set; }
+		public string Method { get; set; }
 		protected IMiddlewareContext Context => Model.Context;
 		public AuthorizationMiddlewareStage MiddlewareStage { get; set; } = AuthorizationMiddlewareStage.Before;
 

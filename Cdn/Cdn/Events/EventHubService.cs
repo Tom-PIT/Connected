@@ -3,15 +3,15 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
 using TomPIT.Serialization;
 
-namespace TomPIT.Cdn.Data
+namespace TomPIT.Cdn.Events
 {
-	internal class DataHubService : TenantObject, IDataHubService
+	internal class EventHubService : TenantObject, IEventHubService
 	{
-		public DataHubService(ITenant tenant) : base(tenant)
+		public EventHubService(ITenant tenant) : base(tenant)
 		{
 		}
 
-		public async Task NotifyAsync(DataHubNotificationArgs e)
+		public async Task NotifyAsync(EventHubNotificationArgs e)
 		{
 			var args = new JObject
 			{
@@ -21,7 +21,7 @@ namespace TomPIT.Cdn.Data
 			if (!string.IsNullOrWhiteSpace(e.Arguments))
 				args.Add("arguments", Serializer.Deserialize<JObject>(e.Arguments));
 
-			await DataHubs.Data.Clients.Group(e.Name.ToLowerInvariant()).SendCoreAsync("data", new object[] { args });
+			await EventHubs.Events.Clients.Group(e.Name.ToLowerInvariant()).SendCoreAsync("event", new object[] { args });
 		}
 	}
 }

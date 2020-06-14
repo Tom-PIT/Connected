@@ -45,7 +45,7 @@ namespace TomPIT.IoT.Hubs
 					{"value", i.Value }
 				});
 
-				r.Add(i.Field, i.Value);
+				r.Add(i.Field.ToCamelCase(), i.Value);
 			}
 
 			Buffer.Enqueue(e);

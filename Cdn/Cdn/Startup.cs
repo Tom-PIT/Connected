@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using TomPIT.Cdn.Data;
 using TomPIT.Cdn.Events;
 using TomPIT.Cdn.Mail;
 using TomPIT.Cdn.Printing;
@@ -46,7 +45,7 @@ namespace TomPIT.Cdn
 			Instance.Configure(InstanceType.Cdn, app, env, (f) =>
 			{
 				CdnRouting.Register(f.Builder);
-				f.Builder.MapHub<DataHub>("/dataHub");
+				f.Builder.MapHub<EventHub>("/events");
 			});
 
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
@@ -55,7 +54,7 @@ namespace TomPIT.Cdn
 
 		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
-			e.Tenant.RegisterService(typeof(IDataHubService), typeof(DataHubService));
+			e.Tenant.RegisterService(typeof(IEventHubService), typeof(EventHubService));
 			e.Tenant.RegisterService(typeof(IPrintingManagementService), typeof(PrintingManagementService));
 		}
 
