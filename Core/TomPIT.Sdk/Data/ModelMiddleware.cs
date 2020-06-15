@@ -11,6 +11,7 @@ using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
+using TomPIT.Serialization;
 
 namespace TomPIT.Data
 {
@@ -241,6 +242,20 @@ namespace TomPIT.Data
 						writer.SetReturnValueParameter(property.Name);
 				}
 			}
+		}
+
+		public T CreateEntity(object instance)
+		{
+			return CreateEntity<T>(instance);
+		}
+
+		public R CreateEntity<R>(object instance)
+		{
+			var result = (R)typeof(R).CreateInstance();
+
+			Serializer.Populate(instance, result);
+
+			return result;
 		}
 	}
 }

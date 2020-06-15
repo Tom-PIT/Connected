@@ -9,5 +9,8 @@ namespace TomPIT.Data
 
 		T Select(string operation);
 		T Select(string operation, object e);
+
+		T CreateEntity(object instance);
+		R CreateEntity<R>(object instance);
 	}
 }

@@ -233,15 +233,14 @@
             },
             progress: tompit.findProgress('#ide'),
             onSuccess: function (data) {
+                $('#tabResponse').tab('show');
                 textEditorResponseBody.setValue(JSON.stringify(data));
 
                 textEditorResponseBody.updateOptions({ readOnly: false });
                 textEditorResponseBody.getAction('editor.action.formatDocument').run()
                     .then(() => {
-                        textEditorResponseBody.updateOptions({ readOnly: true })
+                        textEditorResponseBody.updateOptions({ readOnly: true });
                     });
-
-                $('#tabResponse').tab('show');
             }
         });
     });
@@ -409,5 +408,10 @@
 
         textEditorRequestBody.setValue(defaultRequestBody);
         textEditorResponseBody.setValue(defaultResponseBody);
+
+    });
+
+    $('#tabResponse').on('shown.bs.tab', ()=> {
+        textEditorResponseBody.layout();
     });
 </script>
