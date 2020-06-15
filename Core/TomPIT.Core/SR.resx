@@ -1176,4 +1176,13 @@
   <data name="ErrCannotGetEntityState" xml:space="preserve">
     <value>Cannot obtain Entity state</value>
   </data>
+  <data name="ErrCannotResolveProcedureName" xml:space="preserve">
+    <value>Cannot resolve stored procedure name</value>
+  </data>
+  <data name="ErrCommandTextNotSet" xml:space="preserve">
+    <value>Command text not set</value>
+  </data>
+  <data name="DataProviderParserNull" xml:space="preserve">
+    <value>Data provider does not support parsing text</value>
+  </data>
 </root>

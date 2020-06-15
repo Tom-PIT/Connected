@@ -92,5 +92,7 @@ namespace TomPIT.DataProviders.BigData
 
 		public ConnectionBehavior Behavior { get; private set; }
 		public IDbTransaction Transaction { get; set; }
+
+		public ICommandTextParser Parser => null;
 	}
 }

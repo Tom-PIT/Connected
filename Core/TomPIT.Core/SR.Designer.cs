@@ -295,6 +295,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Data provider does not support parsing text.
+        /// </summary>
+        public static string DataProviderParserNull {
+            get {
+                return ResourceManager.GetString("DataProviderParserNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Default retry strategy for technology {0}, named &apos;{1}&apos;, is not defined..
         /// </summary>
         public static string DefaultRetryStrategyMappingNotFound {
@@ -880,6 +889,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot resolve stored procedure name.
+        /// </summary>
+        public static string ErrCannotResolveProcedureName {
+            get {
+                return ResourceManager.GetString("ErrCannotResolveProcedureName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot resolve tenant in multi tenant environment.
         /// </summary>
         public static string ErrCannotResolveTenant {
@@ -912,6 +930,15 @@ namespace TomPIT {
         public static string ErrClaimNull {
             get {
                 return ResourceManager.GetString("ErrClaimNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Command text not set.
+        /// </summary>
+        public static string ErrCommandTextNotSet {
+            get {
+                return ResourceManager.GetString("ErrCommandTextNotSet", resourceCulture);
             }
         }
         

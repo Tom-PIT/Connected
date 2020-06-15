@@ -129,20 +129,28 @@ namespace TomPIT.Compilation
 		{
 			var sb = new StringBuilder();
 
+			new List<SourceFileDescriptor>
+			{
+				new SourceFileDescriptor{FileName="", Category="ee" }
+			};
+
 			sb.AppendLine($"public static class {CompilerService.ScriptInfoClassName}");
 			sb.AppendLine("{");
-			sb.AppendLine("private static readonly System.Collections.Generic.List<string> _sourceFiles = new System.Collections.Generic.List<string>{");
+			sb.AppendLine("private static readonly System.Collections.Generic.List<TomPIT.Compilation.SourceFileDescriptor> _sourceFiles = new System.Collections.Generic.List<TomPIT.Compilation.SourceFileDescriptor>{");
 
 			foreach (var file in ScriptContext.SourceFiles)
 			{
-				sb.AppendLine($"\"{file.Key}\",");
+				var config = file.Value.Configuration();
+				var component = Tenant.GetService<IComponentService>().SelectComponent(config.Component);
+
+				sb.AppendLine($"new TomPIT.Compilation.SourceFileDescriptor{{FileName=\"{file.Key}\", Category=\"{component.Category}\", Component=new System.Guid(\"{component.Token.ToString()}\")}}");
 			}
 
 			sb.AppendLine("};");
 			sb.AppendLine($"public static System.Guid MicroService => new System.Guid(\"{MicroService.ToString()}\");");
 			sb.AppendLine($"public static System.Guid SourceCode => new System.Guid(\"{SourceCode.Id.ToString()}\");");
 			sb.AppendLine($"public static System.Guid Component => new System.Guid(\"{SourceCode.Configuration().Component.ToString()}\");");
-			sb.AppendLine($"public static System.Collections.Generic.List<string> SourceFiles => _sourceFiles;");
+			sb.AppendLine($"public static System.Collections.Generic.List<TomPIT.Compilation.SourceFileDescriptor> SourceFiles => _sourceFiles;");
 			sb.AppendLine("}");
 
 			return sb.ToString();

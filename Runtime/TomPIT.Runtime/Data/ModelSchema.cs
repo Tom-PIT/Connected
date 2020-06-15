@@ -20,6 +20,7 @@ namespace TomPIT.Data
 
 		public string Schema { get; set; }
 		public string Name { get; set; }
+		public string Type { get; set; }
 
 		public bool Equals([AllowNull] ModelSchema other)
 		{
@@ -37,7 +38,9 @@ namespace TomPIT.Data
 
 			for (var i = 0; i < Columns.Count; i++)
 			{
-				if (!Columns[i].Equals(other.Columns[i]))
+				var left = Columns[i] as IEquatable<IModelSchemaColumn>;
+
+				if (!left.Equals(other.Columns[i]))
 					return false;
 			}
 

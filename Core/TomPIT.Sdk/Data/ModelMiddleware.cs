@@ -1,9 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Reflection;
+using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
+using TomPIT.Diagnostics;
+using TomPIT.Exceptions;
 using TomPIT.Middleware;
+using TomPIT.Reflection;
 
 namespace TomPIT.Data
 {
@@ -13,64 +20,92 @@ namespace TomPIT.Data
 		private IModelConfiguration _configuration = null;
 		public void Execute(string operation)
 		{
-			throw new System.NotImplementedException();
+			Execute(operation, null);
 		}
 
 		public R Execute<R>(string operation)
 		{
-			throw new System.NotImplementedException();
+			return Execute<R>(operation, null);
 		}
 
 		public void Execute(string operation, object e)
 		{
-			throw new System.NotImplementedException();
+			Execute<object>(operation, e);
 		}
 
 		public R Execute<R>(string operation, object e)
 		{
-			throw new System.NotImplementedException();
+			var op = ResolveOperation(operation);
+			var con = OpenConnection();
+			var descriptor = CreateDescriptor(op, con);
+
+			var w = Context.OpenWriter(con, descriptor.CommandText);
+
+			w.CommandType = descriptor.Type == CommandTextType.Procedure ? CommandType.StoredProcedure : CommandType.Text;
+
+			BindParameters(w, e, descriptor);
+
+			return w.Execute<R>();
 		}
 
 		public List<T> Query(string operation)
 		{
-			var op = ResolveOperation(operation);
-
-			throw new System.NotImplementedException();
+			return Query(operation, null);
 		}
 
 		public List<R> Query<R>(string operation)
 		{
-			throw new System.NotImplementedException();
+			return Query<R>(operation, null);
 		}
 
 		public List<T> Query(string operation, object e)
 		{
-			throw new System.NotImplementedException();
+			return Query<T>(operation, e);
 		}
 
 		public List<R> Query<R>(string operation, object e)
 		{
-			throw new System.NotImplementedException();
+			var op = ResolveOperation(operation);
+			var con = OpenConnection();
+			var descriptor = CreateDescriptor(op, con);
+
+			var r = Context.OpenReader<R>(con, descriptor.CommandText);
+
+			r.CommandType = descriptor.Type == CommandTextType.Procedure ? CommandType.StoredProcedure : CommandType.Text;
+
+			BindParameters(r, e, descriptor);
+
+			return r.Query();
 		}
 
 		public T Select(string operation)
 		{
-			throw new System.NotImplementedException();
+			return Select(operation, null);
 		}
 
 		public R Select<R>(string operation)
 		{
-			throw new System.NotImplementedException();
+			return Select<R>(operation, null);
 		}
 
 		public T Select(string operation, object e)
 		{
-			throw new System.NotImplementedException();
+			return Select<T>(operation, e);
 		}
 
 		public R Select<R>(string operation, object e)
 		{
-			throw new System.NotImplementedException();
+			var op = ResolveOperation(operation);
+			var con = OpenConnection();
+			var descriptor = CreateDescriptor(op, con);
+
+			var r = Context.OpenReader<R>(con, descriptor.CommandText);
+
+			r.CommandType = descriptor.Type == CommandTextType.Procedure ? CommandType.StoredProcedure : CommandType.Text;
+
+			BindParameters(r, e, descriptor);
+
+			return r.Select();
 		}
 
 		private IComponent Component
@@ -110,6 +145,102 @@ namespace TomPIT.Data
 		private void SyncEntity()
 		{
 			Context.Tenant.GetService<IModelService>().SynchronizeEntity(Configuration);
+		}
+
+		private IDataConnection OpenConnection()
+		{
+			if (Configuration.Connection == Guid.Empty)
+				throw new RuntimeException(nameof(ModelMiddleware<T>), $"{SR.ErrModelConnectionNotSet} ({Configuration.ComponentName()})", LogCategories.Middleware);
+
+			var connection = Context.Tenant.GetService<IComponentService>().SelectComponent(Configuration.Connection);
+
+			if (connection == null)
+				throw new RuntimeException(nameof(ModelMiddleware<T>), SR.ErrConnectionNotFound, LogCategories.Middleware);
+
+			//TODO: implement option to set ConnectionBehavior
+			return Context.OpenConnection(connection.Name, ConnectionBehavior.Shared, this);
+		}
+
+		private ICommandTextDescriptor CreateDescriptor(IModelOperation operation, IDataConnection connection)
+		{
+			var text = Context.Tenant.GetService<IComponentService>().SelectText(Configuration.MicroService(), operation);
+
+			if (string.IsNullOrWhiteSpace(text))
+				throw new RuntimeException(nameof(ModelMiddleware<T>), $"{SR.ErrCommandTextNotSet} ({Configuration.ComponentName()}/{operation.Name})", LogCategories.Middleware);
+
+			var parser = connection.Parser;
+
+			if (parser == null)
+				throw new RuntimeException(nameof(ModelMiddleware<T>), $"{SR.DataProviderParserNull} ({Configuration.ComponentName()}/{operation.Name})", LogCategories.Middleware);
+
+			return parser.Parse(text);
+		}
+
+		private void BindParameters(IDataCommand command, object e, ICommandTextDescriptor descriptor)
+		{
+			foreach (var parameter in command.Parameters)
+				command.SetParameter(parameter.Name, null);
+
+			if (e == null)
+				return;
+
+			var properties = e.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+			foreach (var parameter in descriptor.Parameters)
+			{
+				PropertyInfo property = null;
+
+				foreach (var prop in properties)
+				{
+					var att = prop.FindAttribute<ParameterMappingAttribute>();
+
+					if (att != null && string.Compare(parameter.Name, att.Name, true) == 0)
+					{
+						property = prop;
+						break;
+					}
+				}
+
+				if (property == null)
+					property = properties.FirstOrDefault(f => string.Compare(f.Name, parameter.Name, true) == 0);
+
+				var candidates = new List<string>
+				{
+					parameter.Name.Replace("@", "")
+				};
+
+				if (property == null)
+				{
+					foreach (var prop in properties)
+					{
+						foreach (var candidate in candidates)
+						{
+							if (string.Compare(candidate, prop.Name, true) == 0)
+							{
+								property = prop;
+								break;
+							}
+						}
+
+						if (property != null)
+							break;
+					}
+				}
+
+				if (property != null)
+					command.SetParameter(parameter.Name, property.GetValue(e));
+			}
+
+			if (command is IDataWriter writer)
+			{
+				foreach (var property in properties)
+				{
+					var att = property.FindAttribute<ReturnValueAttribute>();
+
+					if (att != null)
+						writer.SetReturnValueParameter(property.Name);
+				}
+			}
 		}
 	}
 }

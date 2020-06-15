@@ -11,6 +11,7 @@ namespace TomPIT.DataProviders.Sql
 	public sealed class DataConnection : IDataConnection, IDisposable
 	{
 		private ReliableSqlConnection _connection = null;
+		private ICommandTextParser _parser = null;
 
 		public DataConnection(IDataProvider provider, string connectionString, ConnectionBehavior behavior)
 		{
@@ -95,5 +96,16 @@ namespace TomPIT.DataProviders.Sql
 		public IDbTransaction Transaction { get; set; }
 
 		public ConnectionBehavior Behavior { get; private set; }
+
+		public ICommandTextParser Parser
+		{
+			get
+			{
+				if (_parser == null)
+					_parser = new CommandTextParser();
+
+				return _parser;
+			}
+		}
 	}
 }

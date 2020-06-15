@@ -75,5 +75,7 @@ namespace TomPIT.DataProviders.Modbus
 		}
 
 		public ConnectionBehavior Behavior { get; private set; }
+
+		public ICommandTextParser Parser => null;
 	}
 }

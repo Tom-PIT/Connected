@@ -6,5 +6,6 @@ namespace TomPIT.Annotations
 	{
 		public string Name { get; set; }
 		public string Schema { get; set; }
+		public string Type { get; set; }
 	}
 }

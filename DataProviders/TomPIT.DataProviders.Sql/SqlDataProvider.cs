@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using TomPIT.Data;
@@ -106,9 +107,9 @@ namespace TomPIT.DataProviders.Sql
 			new SqlDeploy(context, existing).Deploy();
 		}
 
-		public void Synchronize(string connectionString, IModelSchema schema)
+		public void Synchronize(string connectionString, IModelSchema schema, List<IModelOperationSchema> procedures)
 		{
-			var sync = new Synchronizer(connectionString, schema);
+			var sync = new Synchronizer(connectionString, schema, procedures);
 
 			sync.Execute();
 		}

@@ -20,5 +20,6 @@ namespace TomPIT.Data
 
 		IDbConnection Connection { get; }
 		IDbTransaction Transaction { get; set; }
+		ICommandTextParser Parser { get; }
 	}
 }

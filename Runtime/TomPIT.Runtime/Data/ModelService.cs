@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
@@ -20,13 +21,49 @@ namespace TomPIT.Data
 	internal class ModelService : TenantObject, IModelService
 	{
 		private Lazy<ConcurrentDictionary<Guid, EntityState>> _state = new Lazy<ConcurrentDictionary<Guid, EntityState>>();
+
+		public ModelService(ITenant tenant) : base(tenant)
+		{
+			Tenant.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
+			Tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
+		}
+
+		private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
+		{
+			if (string.Compare(e.Category, ComponentCategories.Model, true) == 0)
+				InvalidateEntity(e.Component);
+		}
+
+		private void OnComponentChanged(ITenant sender, ComponentEventArgs e)
+		{
+			if (string.Compare(e.Category, ComponentCategories.Model, true) == 0)
+				InvalidateEntity(e.Component);
+		}
+
+		private void InvalidateEntity(Guid configuration)
+		{
+			if (!State.TryGetValue(configuration, out EntityState state))
+				return;
+
+			InvalidateState(state);
+		}
+
 		public void InvalidateEntity(IModelConfiguration configuration)
 		{
-			var state = EnsureState(configuration);
+			InvalidateState(EnsureState(configuration));
+		}
 
+		private void InvalidateState(EntityState state)
+		{
 			lock (state)
 			{
 				state.Valid = false;
+
+				foreach (var operation in state.Operations)
+				{
+					operation.Valid = false;
+					operation.Text = null;
+				}
 			}
 		}
 
@@ -45,13 +82,38 @@ namespace TomPIT.Data
 		{
 			var schema = CreateSchema(configuration);
 
-			if (schema.Equals(state.Schema))
-				return;
+			if (state.Initialized && schema.Equals(state.Schema))
+			{
+				state.Valid = true;
+
+				if (state.Operations.Count == configuration.Operations.Count)
+				{
+					var ms = configuration.MicroService();
+
+					for (var i = 0; i < configuration.Operations.Count; i++)
+					{
+						var stateOp = new ModelOperationSchema
+						{
+							Text = Tenant.GetService<IComponentService>().SelectText(ms, configuration.Operations[i])
+						};
+
+						if (!stateOp.Equals(state.Operations[i]))
+						{
+							state.Valid = false;
+							break;
+						}
+					}
+
+					if (state.Valid)
+						return;
+				}
+			}
 
 			SynchronizeSchema(configuration, schema);
 
 			state.Schema = schema;
 			state.Valid = true;
+			state.Initialized = true;
 		}
 
 		private void SynchronizeSchema(IModelConfiguration configuration, ModelSchema schema)
@@ -87,8 +149,23 @@ namespace TomPIT.Data
 				};
 			}
 
+			var procedures = new List<IModelOperationSchema>();
+
+			foreach (var operation in configuration.Operations)
+			{
+				var text = Tenant.GetService<IComponentService>().SelectText(ctx.MicroService.Token, operation);
+
+				if (!string.IsNullOrWhiteSpace(text))
+				{
+					procedures.Add(new ModelOperationSchema
+					{
+						Text = text
+					});
+				}
+			}
+
 			if (provider is IDeployDataProvider deploy)
-				deploy.Synchronize(cs.Value, schema);
+				deploy.Synchronize(cs.Value, schema, procedures);
 		}
 
 		private EntityState EnsureState(IModelConfiguration configuration)
@@ -97,10 +174,22 @@ namespace TomPIT.Data
 			{
 				existing = new EntityState
 				{
-					Valid = true,
+					Valid = false,
 				};
 
 				existing.Schema = CreateSchema(configuration);
+				var ms = configuration.MicroService();
+
+				foreach (var operation in configuration.Operations)
+				{
+					existing.Operations.Add(new OperationState
+					{
+						Id = operation.Id,
+						Initialized = false,
+						Name = operation.Name,
+						Text = Tenant.GetService<IComponentService>().SelectText(ms, operation)
+					});
+				}
 			};
 
 			if (!State.TryAdd(configuration.Component, existing))
@@ -123,6 +212,7 @@ namespace TomPIT.Data
 			var schema = type.FindAttribute<SchemaAttribute>();
 
 			result.Name = type.ShortName();
+			result.Type = "Table";
 
 			if (schema != null)
 			{
@@ -130,6 +220,9 @@ namespace TomPIT.Data
 
 				if (!string.IsNullOrWhiteSpace(schema.Name))
 					result.Name = schema.Name;
+
+				if (!string.IsNullOrWhiteSpace(schema.Type))
+					result.Type = schema.Type;
 			}
 
 			foreach (var property in properties)
@@ -172,9 +265,9 @@ namespace TomPIT.Data
 				if (maxLength != null)
 					column.MaxLength = maxLength.Length;
 
-				var required = property.FindAttribute<RequiredAttribute>();
+				var nullable = property.FindAttribute<NullableAttribute>();
 
-				column.IsNullable = required == null;
+				column.IsNullable = nullable != null && nullable.IsNullable;
 
 				var dependency = property.FindAttribute<DependencyAttribute>();
 

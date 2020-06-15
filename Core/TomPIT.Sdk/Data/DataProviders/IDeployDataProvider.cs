@@ -1,4 +1,5 @@
-﻿using TomPIT.Deployment;
+﻿using System.Collections.Generic;
+using TomPIT.Deployment;
 using TomPIT.Deployment.Database;
 
 namespace TomPIT.Data.DataProviders
@@ -9,6 +10,6 @@ namespace TomPIT.Data.DataProviders
 		void Deploy(IDatabaseDeploymentContext context);
 		void CreateDatabase(string connectionString);
 
-		void Synchronize(string connectionString, IModelSchema schema);
+		void Synchronize(string connectionString, IModelSchema schema, List<IModelOperationSchema> procedures);
 	}
 }

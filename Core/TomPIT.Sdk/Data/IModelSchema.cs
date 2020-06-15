@@ -8,5 +8,6 @@ namespace TomPIT.Data
 
 		string Schema { get; }
 		string Name { get; }
+		string Type { get; }
 	}
 }

@@ -589,27 +589,21 @@ namespace TomPIT.Compilation
 			if (typeInfo == null)
 				return null;
 
-			var sourceFiles = (List<string>)typeInfo.GetProperty("SourceFiles").GetValue(null);
+			var sourceFiles = (List<SourceFileDescriptor>)typeInfo.GetProperty("SourceFiles").GetValue(null);
 
 			foreach (var file in sourceFiles)
 			{
-				var tokens = file.Split('/');
+				var tokens = file.FileName.Split('/');
 				var typeName = Path.GetFileNameWithoutExtension(tokens[^1]);
 
 				if (string.Compare(typeName, instance.GetType().Name, false) == 0)
 				{
-					if (tokens.Length == 3)
-					{
-						var r = ComponentDescriptor.Api(new MiddlewareContext(Tenant.Url), Path.ChangeExtension(file, null));
+					var cmp = Tenant.GetService<IComponentService>().SelectComponent(file.Component);
 
-						try
-						{
-							r.Validate();
+					if (cmp != null)
+						return cmp;
 
-							return r.Component;
-						}
-						catch { }
-					}
+					break;
 				}
 			}
 
