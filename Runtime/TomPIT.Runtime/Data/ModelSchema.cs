@@ -21,7 +21,8 @@ namespace TomPIT.Data
 		public string Schema { get; set; }
 		public string Name { get; set; }
 		public string Type { get; set; }
-
+		public bool Ignore { get; set; }
+		public string Dependency { get; set; }
 		public bool Equals([AllowNull] ModelSchema other)
 		{
 			if (other == null)
@@ -31,6 +32,9 @@ namespace TomPIT.Data
 				return false;
 
 			if (string.Compare(Schema, other.Schema, false) != 0)
+				return false;
+
+			if (string.Compare(Dependency, other.Dependency, false) != 0)
 				return false;
 
 			if (Columns.Count != other.Columns.Count)

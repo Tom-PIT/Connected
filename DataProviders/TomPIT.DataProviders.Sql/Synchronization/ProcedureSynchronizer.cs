@@ -1,22 +1,21 @@
 ﻿using System.Data.SqlClient;
 using System.Text.RegularExpressions;
+using TomPIT.Data;
 using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 
 namespace TomPIT.DataProviders.Sql.Synchronization
 {
-	internal class ProcedureSynchronizer
+	internal class ProcedureSynchronizer : SynchronizerBase
 	{
-		public ProcedureSynchronizer(SqlCommand command, string text)
+		public ProcedureSynchronizer(SqlCommand command, IModelSchema schema, string text) : base(command, schema)
 		{
-			Command = command;
 			Text = text;
 		}
 
-		private SqlCommand Command { get; }
 		private string Text { get; }
 
-		public void Execute()
+		protected override void OnExecute()
 		{
 			var descriptor = new CommandTextParser().Parse(Text);
 

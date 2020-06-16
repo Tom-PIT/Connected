@@ -584,7 +584,14 @@ namespace TomPIT.Compilation
 			if (instance == null)
 				return null;
 
-			var typeInfo = instance.GetType().Assembly.DefinedTypes.FirstOrDefault(f => string.Compare(f.Name, ScriptInfoClassName, false) == 0);
+			return ResolveComponent(instance.GetType());
+		}
+		public IComponent ResolveComponent(Type type)
+		{
+			if (type == null)
+				return null;
+
+			var typeInfo = type.Assembly.DefinedTypes.FirstOrDefault(f => string.Compare(f.Name, ScriptInfoClassName, false) == 0);
 
 			if (typeInfo == null)
 				return null;
@@ -596,7 +603,7 @@ namespace TomPIT.Compilation
 				var tokens = file.FileName.Split('/');
 				var typeName = Path.GetFileNameWithoutExtension(tokens[^1]);
 
-				if (string.Compare(typeName, instance.GetType().Name, false) == 0)
+				if (string.Compare(typeName, type.Name, false) == 0)
 				{
 					var cmp = Tenant.GetService<IComponentService>().SelectComponent(file.Component);
 

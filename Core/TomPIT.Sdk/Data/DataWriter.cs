@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using TomPIT.Middleware;
 
 namespace TomPIT.Data
@@ -32,22 +33,31 @@ namespace TomPIT.Data
 				var command = CreateCommand();
 
 				Connection.Execute(command);
+				var result = default(T);
 
 				foreach (var parameter in command.Parameters)
 				{
 					if (parameter.Direction == System.Data.ParameterDirection.ReturnValue)
 					{
-						if (Types.TryConvert<T>(parameter.Value, out T r))
-							return r;
+						var par = Parameters.FirstOrDefault(f => string.Compare(parameter.Name, f.Name, true) == 0);
 
-						break;
+						if (par == null)
+							continue;
+
+						if (Types.TryConvert(parameter.Value, out T r))
+						{
+							par.Value = r;
+
+							if (Types.Compare(result, default(T)))
+								result = r;
+						}
 					}
 				}
 
 				if (Connection.Behavior == ConnectionBehavior.Isolated)
 					Connection.Commit();
 
-				return default;
+				return result;
 			}
 			finally
 			{

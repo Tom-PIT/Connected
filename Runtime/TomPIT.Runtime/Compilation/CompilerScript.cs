@@ -143,7 +143,7 @@ namespace TomPIT.Compilation
 				var config = file.Value.Configuration();
 				var component = Tenant.GetService<IComponentService>().SelectComponent(config.Component);
 
-				sb.AppendLine($"new TomPIT.Compilation.SourceFileDescriptor{{FileName=\"{file.Key}\", Category=\"{component.Category}\", Component=new System.Guid(\"{component.Token.ToString()}\")}}");
+				sb.AppendLine($"new TomPIT.Compilation.SourceFileDescriptor{{FileName=\"{file.Key}\", Category=\"{component.Category}\", Component=new System.Guid(\"{component.Token.ToString()}\")}},");
 			}
 
 			sb.AppendLine("};");

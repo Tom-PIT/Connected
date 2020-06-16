@@ -4,7 +4,7 @@ namespace TomPIT.Data
 {
 	public interface IModelSchemaColumn
 	{
-		string Name { get; set; }
+		string Name { get; }
 		DbType DataType { get; }
 
 		bool IsIdentity { get; }
@@ -14,7 +14,8 @@ namespace TomPIT.Data
 		string DefaultValue { get; }
 		int MaxLength { get; }
 		bool IsNullable { get; }
-		string Dependency { get; }
-
+		string DependencyType { get; }
+		string DependencyProperty { get; }
+		string IndexGroup { get; }
 	}
 }

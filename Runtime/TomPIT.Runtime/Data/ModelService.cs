@@ -81,6 +81,16 @@ namespace TomPIT.Data
 		private void SynchronizeEntity(IModelConfiguration configuration, EntityState state)
 		{
 			var schema = CreateSchema(configuration);
+			var depSynchronizer = new DepencencySynchronizer(Tenant, schema, configuration);
+
+			depSynchronizer.Synchronize();
+
+			if (schema.Ignore)
+			{
+				state.Initialized = true;
+				state.Valid = true;
+				return;
+			}
 
 			if (state.Initialized && schema.Equals(state.Schema))
 			{
@@ -225,6 +235,11 @@ namespace TomPIT.Data
 					result.Type = schema.Type;
 			}
 
+			var dependency = type.FindAttribute<DependencyAttribute>();
+
+			if (dependency != null)
+				result.Dependency = dependency.Model.Name;
+
 			foreach (var property in properties)
 			{
 				if (!property.CanWrite)
@@ -253,6 +268,7 @@ namespace TomPIT.Data
 				{
 					column.IsIndex = true;
 					column.IsUnique = idx.Unique;
+					column.IndexGroup = idx.Group;
 				}
 
 				var def = property.FindAttribute<DefaultValueAttribute>();
@@ -269,10 +285,13 @@ namespace TomPIT.Data
 
 				column.IsNullable = nullable != null && nullable.IsNullable;
 
-				var dependency = property.FindAttribute<DependencyAttribute>();
+				var dep = property.FindAttribute<DependencyAttribute>();
 
-				if (dependency != null)
-					column.Dependency = dependency.Model;
+				if (dep != null)
+				{
+					column.DependencyType = dep.Model.Name;
+					column.DependencyProperty = dep.Property;
+				}
 
 				result.Columns.Add(column);
 			}

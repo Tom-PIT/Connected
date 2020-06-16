@@ -46,7 +46,11 @@ namespace TomPIT.Data
 
 			BindParameters(w, e, descriptor);
 
-			return w.Execute<R>();
+			var result = w.Execute<R>();
+
+			BindReturnValues(w, e);
+
+			return result;
 		}
 
 		public List<T> Query(string operation)
@@ -203,15 +207,18 @@ namespace TomPIT.Data
 				}
 
 				if (property == null)
-					property = properties.FirstOrDefault(f => string.Compare(f.Name, parameter.Name, true) == 0);
+					property = properties.FirstOrDefault(f => string.Compare(f.Name, parameter.Name, false) == 0);
 
-				var candidates = new List<string>
-				{
-					parameter.Name.Replace("@", "")
-				};
+				if (property == null)
+					property = properties.FirstOrDefault(f => string.Compare(f.Name, parameter.Name, true) == 0);
 
 				if (property == null)
 				{
+					var candidates = new List<string>
+					{
+						parameter.Name.Replace("@", "")
+					};
+
 					foreach (var prop in properties)
 					{
 						foreach (var candidate in candidates)
@@ -256,6 +263,99 @@ namespace TomPIT.Data
 			Serializer.Populate(instance, result);
 
 			return result;
+		}
+
+		private void BindReturnValues(IDataWriter w, object e)
+		{
+			if (e == null)
+				return;
+
+			List<PropertyInfo> properties = null;
+
+
+			foreach (var parameter in w.Parameters)
+			{
+				if (parameter.Direction != ParameterDirection.ReturnValue)
+					continue;
+
+				if (properties == null)
+				{
+					properties = new List<PropertyInfo>();
+
+					var all = e.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+					foreach (var prop in all)
+					{
+						if (prop.FindAttribute<ReturnValueAttribute>() != null)
+							properties.Add(prop);
+					}
+				}
+
+				PropertyInfo property = null;
+
+				foreach (var prop in properties)
+				{
+					var name = prop.FindAttribute<ParameterMappingAttribute>();
+
+					if (name != null)
+					{
+						if (string.Compare(name.Name, parameter.Name, true) == 0)
+							property = prop;
+
+						break;
+					}
+				}
+
+				if (property == null)
+				{
+					foreach (var prop in properties)
+					{
+						if (string.Compare(prop.Name, parameter.Name, false) == 0)
+						{
+							property = prop;
+							break;
+						}
+					}
+				}
+
+				if (property == null)
+				{
+					foreach (var prop in properties)
+					{
+						if (string.Compare(prop.Name, parameter.Name, true) == 0)
+						{
+							property = prop;
+							break;
+						}
+					}
+				}
+
+				if (property == null)
+				{
+					var candidates = new List<string>
+					{
+						parameter.Name.Replace("@", string.Empty)
+					};
+
+					foreach (var prop in properties)
+					{
+						foreach (var candidate in candidates)
+						{
+							if (string.Compare(prop.Name, candidate, true) == 0)
+							{
+								property = prop;
+								break;
+							}
+						}
+
+						if (property != null)
+							break;
+					}
+				}
+
+				if (property != null)
+					property.SetValue(e, parameter.Value);
+			}
 		}
 	}
 }
