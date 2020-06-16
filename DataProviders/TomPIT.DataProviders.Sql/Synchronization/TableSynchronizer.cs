@@ -192,8 +192,6 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 		{
 			if (existingColumn.Equals(column))
 				return;
-
-
 		}
 
 		private void DropColumn(IModelSchemaColumn existingColumn, IModelSchema existingSchema, List<IndexDescriptor> existingIndexes)
