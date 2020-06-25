@@ -6,7 +6,6 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
-using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Serialization;
 
@@ -15,48 +14,32 @@ namespace TomPIT.Middleware
 	internal class MiddlewareConnectionPool : ConcurrentDictionary<MiddlewareContext, List<DataConnectionDescriptor>>, IDisposable
 	{
 		private int Identity { get; set; }
-		public (IDataConnection, IModelConfiguration) OpenConnection(MiddlewareContext sender, string connection, ConnectionBehavior behavior, object arguments)
+		public IDataConnection OpenConnection(MiddlewareContext sender, string connection, ConnectionBehavior behavior, object arguments)
 		{
-			IConnectionConfiguration connectionConfiguration = null;
-			var model = ComponentDescriptor.Model(sender, connection);
+			var descriptor = ComponentDescriptor.Connection(sender, connection);
 
-			if (model.Configuration == null)
-			{
-				var descriptor = ComponentDescriptor.Connection(sender, connection);
+			descriptor.Validate();
 
-				descriptor.Validate();
-
-				connectionConfiguration = descriptor.Configuration;
-			}
-			else
-			{
-				if (model.Configuration.Connection == Guid.Empty)
-					throw new RuntimeException(nameof(MiddlewareConnectionPool), $"{SR.ErrModelConnectionNotSet} ({model.ComponentName})", LogCategories.Middleware);
-
-				connectionConfiguration = sender.Tenant.GetService<IComponentService>().SelectConfiguration(model.Configuration.Connection) as IConnectionConfiguration;
-
-				if (connectionConfiguration == null)
-					throw new RuntimeException(nameof(MiddlewareConnectionPool), SR.ErrComponentNotFound, LogCategories.Middleware);
-			}
+			var connectionConfiguration = descriptor.Configuration;
+			var connectionString = connectionConfiguration.ResolveConnectionString(sender, ConnectionStringContext.User, arguments);
 
 			var existing = behavior == ConnectionBehavior.Shared
-				? TryExisting(sender, connection, connectionConfiguration, arguments)
+				? TryExisting(sender, connectionString, arguments)
 				: null;
 
 			if (existing != null)
-				return (existing.Connection, model?.Configuration);
+				return existing.Connection;
 
 			if (sender.Owner != null)
-				return (sender.Owner.OpenConnection(connection, behavior, arguments), model?.Configuration);
+				return sender.Owner.OpenConnection(connection, behavior, arguments);
 
-			var connectionString = connectionConfiguration.ResolveConnectionString(sender, ConnectionStringContext.User, arguments);
 			var dataProvider = CreateDataProvider(sender, connectionConfiguration, connectionString.DataProvider);
 			var con = dataProvider.OpenConnection(connectionString.Value, behavior);
 
 			if (behavior == ConnectionBehavior.Shared)
 				AddConnection(sender, dataProvider, connectionString.Value, arguments, con);
 
-			return (con, model?.Configuration);
+			return con;
 		}
 
 		public void CloseConnections()
@@ -89,15 +72,15 @@ namespace TomPIT.Middleware
 			});
 		}
 
-		private DataConnectionDescriptor TryExisting(MiddlewareContext context, string connection, IConnectionConfiguration configuration, object arguments)
+		private DataConnectionDescriptor TryExisting(MiddlewareContext context, IConnectionString connectionString, object arguments)
 		{
 			if (!ContainsKey(context))
 				return null;
 
 			var args = arguments == null ? string.Empty : Serializer.Serialize(arguments);
 
-			return this[context].FirstOrDefault(f => f.DataProvider.Id == configuration.DataProvider
-				&& string.Compare(f.ConnectionString, configuration.Value, true) == 0
+			return this[context].FirstOrDefault(f => f.DataProvider.Id == connectionString.DataProvider
+				&& string.Compare(f.ConnectionString, connectionString.Value, true) == 0
 				&& string.Compare(f.Arguments, args, true) == 0);
 		}
 

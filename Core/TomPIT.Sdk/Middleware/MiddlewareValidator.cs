@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using TomPIT.Annotations;
 using TomPIT.Data;
@@ -176,6 +177,12 @@ namespace TomPIT.Middleware
 		{
 			var attributes = property.GetCustomAttributes(false);
 
+			if (!ValidateRequestValue(results, instance, property))
+				return;
+
+			if (property.PropertyType.IsEnum && !property.PropertyType.IsEnumDefined(property.GetValue(instance)))
+				results.Add(new ValidationResult($"{SR.ValEnumValueNotDefined} ({property.PropertyType.ShortName()}, {property.GetValue(instance)})"));
+
 			foreach (var attribute in attributes)
 			{
 				if (attribute is ValidationAttribute val)
@@ -204,6 +211,29 @@ namespace TomPIT.Middleware
 					}
 				}
 			}
+		}
+
+		private bool ValidateRequestValue(List<ValidationResult> results, object instance, PropertyInfo property)
+		{
+			var value = GetValue(instance, property);
+
+			if (value == null || !(value is string s))
+				return true;
+
+			var att = property.FindAttribute<ValidateRequestAttribute>();
+
+			if (att != null && !att.ValidateRequest)
+				return true;
+
+			var decoded = HttpUtility.HtmlDecode(s);
+
+			if (decoded.Replace(" ", string.Empty).Contains("<script>"))
+			{
+				results.Add(new ValidationResult(SR.ValScriptTagNotAllowed));
+				return false;
+			}
+
+			return true;
 		}
 
 		private object GetValue(object component, PropertyInfo property)

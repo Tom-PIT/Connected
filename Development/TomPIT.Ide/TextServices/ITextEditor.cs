@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Text;
+using TomPIT.ComponentModel;
 using TomPIT.Middleware;
 
 namespace TomPIT.Ide.TextServices
@@ -19,5 +20,7 @@ namespace TomPIT.Ide.TextServices
 		int GetMappedCaret(IPosition position);
 		IPosition GetMappedPosition(IPosition position);
 		TextSpan GetMappedSpan(IPosition position);
+
+		IText Script { get; set; }
 	}
 }

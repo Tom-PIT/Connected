@@ -4,7 +4,7 @@ namespace TomPIT.Security
 {
 	public interface IAuthorizationModel : IMiddlewareObject
 	{
-		object Instance { get; set; }
-		T GetValueFromInstance<T>(string propertyName);
+		object AuthorizationTarget { get; set; }
+		T GetValueFromTarget<T>(string propertyName);
 	}
 }

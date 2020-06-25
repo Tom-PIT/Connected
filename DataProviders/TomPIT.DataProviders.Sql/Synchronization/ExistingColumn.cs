@@ -3,7 +3,7 @@ using TomPIT.Data;
 
 namespace TomPIT.DataProviders.Sql.Synchronization
 {
-	internal class ExistingSchemaColumn : IModelSchemaColumn
+	internal class ExistingColumn : IModelSchemaColumn
 	{
 		public string Name { get; set; }
 

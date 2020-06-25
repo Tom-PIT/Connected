@@ -216,6 +216,7 @@ namespace TomPIT.Ide.Designers
 			if (editor == null)
 				return null;
 
+			editor.Script = Content;
 			editor.Text = text;
 			editor.Model = model;
 			editor.HostType = ArgumentType;

@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using TomPIT.Data.DataProviders;
 
 namespace TomPIT.Data
 {
 	public interface ICommandTextDescriptor
 	{
 		CommandTextType Type { get; }
-		CommandStatementType Statement { get; }
+		OperationType Statement { get; }
 		string Procedure { get; }
 
 		List<ICommandTextParameter> Parameters { get; }

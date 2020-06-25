@@ -14,7 +14,7 @@ using TomPIT.Deployment.Database;
 namespace TomPIT.DataProviders.Sql
 {
 	[SchemaBrowser("TomPIT.DataProviders.Sql.Design.Browser, TomPIT.DataProviders.Sql")]
-	public class SqlDataProvider : DataProviderBase<DataConnection>, IDeployDataProvider
+	public class SqlDataProvider : DataProviderBase<DataConnection>, IDeployDataProvider, IOrmProvider
 	{
 		public SqlDataProvider() : base("Microsoft SQL Server", new Guid("{C5849300-11A4-4FAE-B433-3C89DD05DDF0}"))
 		{
@@ -88,16 +88,15 @@ namespace TomPIT.DataProviders.Sql
 
 			builder.InitialCatalog = string.Empty;
 
-			using (var c = new SqlConnection(builder.ConnectionString))
-			{
-				c.Open();
+			using var c = new SqlConnection(builder.ConnectionString);
 
-				var com = new SqlCommand(string.Format("CREATE DATABASE {0}", ic), c);
+			c.Open();
 
-				com.ExecuteNonQuery();
+			var com = new SqlCommand(string.Format("CREATE DATABASE {0}", ic), c);
 
-				c.Close();
-			}
+			com.ExecuteNonQuery();
+
+			c.Close();
 		}
 
 		public void Deploy(IDatabaseDeploymentContext context)
@@ -107,11 +106,16 @@ namespace TomPIT.DataProviders.Sql
 			new SqlDeploy(context, existing).Deploy();
 		}
 
-		public void Synchronize(string connectionString, IModelSchema schema, List<IModelOperationSchema> procedures)
+		public void Synchronize(string connectionString, IModelSchema model, List<IModelOperationSchema> procedures)
 		{
-			var sync = new Synchronizer(connectionString, schema, procedures);
+			var sync = new Synchronizer(connectionString, model, procedures);
 
 			sync.Execute();
+		}
+
+		public ICommandTextDescriptor Parse(string connectionString, IModelOperationSchema operation)
+		{
+			return new CommandTextParser().Parse(operation.Text);
 		}
 	}
 }

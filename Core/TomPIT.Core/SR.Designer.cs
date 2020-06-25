@@ -3085,6 +3085,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enum value not defined.
+        /// </summary>
+        public static string ValEnumValueNotDefined {
+            get {
+                return ResourceManager.GetString("ValEnumValueNotDefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Please enter an existing passsword..
         /// </summary>
         public static string ValExistingPassword {
@@ -3216,6 +3225,15 @@ namespace TomPIT {
         public static string ValReservedValue {
             get {
                 return ResourceManager.GetString("ValReservedValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Script tag is not allowed.
+        /// </summary>
+        public static string ValScriptTagNotAllowed {
+            get {
+                return ResourceManager.GetString("ValScriptTagNotAllowed", resourceCulture);
             }
         }
         

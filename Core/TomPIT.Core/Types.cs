@@ -143,6 +143,60 @@ namespace TomPIT
 			}
 		}
 
+		public static Type ToType(DbType type)
+		{
+			switch (type)
+			{
+				case DbType.AnsiString:
+				case DbType.AnsiStringFixedLength:
+				case DbType.String:
+				case DbType.StringFixedLength:
+				case DbType.Xml:
+					return typeof(string);
+				case DbType.Binary:
+				case DbType.Object:
+					return typeof(object);
+				case DbType.Boolean:
+					return typeof(bool);
+				case DbType.Byte:
+					return typeof(byte);
+				case DbType.Int16:
+					return typeof(short);
+				case DbType.Int32:
+					return typeof(int);
+				case DbType.SByte:
+					return typeof(sbyte);
+				case DbType.UInt16:
+					return typeof(ushort);
+				case DbType.UInt32:
+					return typeof(uint);
+				case DbType.Int64:
+					return typeof(long);
+				case DbType.UInt64:
+					return typeof(ulong);
+				case DbType.Currency:
+				case DbType.Decimal:
+					return typeof(decimal);
+				case DbType.Double:
+					return typeof(double);
+				case DbType.Single:
+					return typeof(float);
+				case DbType.VarNumeric:
+					return typeof(decimal);
+				case DbType.Date:
+				case DbType.DateTime:
+				case DbType.DateTime2:
+				case DbType.Time:
+					return typeof(DateTime);
+				case DbType.DateTimeOffset:
+					return typeof(DateTimeOffset);
+				case DbType.Guid:
+					return typeof(Guid);
+				default:
+					throw new NotSupportedException();
+			}
+		}
+
 		public static DbType ToDbType(DataType type)
 		{
 			return type switch

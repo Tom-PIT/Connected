@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.SqlServer.Management.SqlParser.Parser;
 using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using TomPIT.Data;
+using TomPIT.Data.DataProviders;
 
 namespace TomPIT.DataProviders.Sql.Parsing
 {
@@ -14,7 +15,7 @@ namespace TomPIT.DataProviders.Sql.Parsing
 		private List<ICommandTextParameter> _parameters = null;
 		private List<ICommandTextVariable> _variables = null;
 		public CommandTextType Type { get; private set; } = CommandTextType.Text;
-		public CommandStatementType Statement { get; private set; } = CommandStatementType.NotSet;
+		public OperationType Statement { get; private set; } = OperationType.Other;
 		public string Procedure { get; private set; }
 		private string Sql { get; set; }
 
@@ -77,16 +78,25 @@ namespace TomPIT.DataProviders.Sql.Parsing
 			if (sql is SqlProcedureDefinitionForCreate create)
 				Procedure = create.Name.Sql;
 
-			if (Statement == CommandStatementType.NotSet)
+			if (Statement == OperationType.Other)
 			{
 				if (sql is SqlSelectStatement)
-					Statement = CommandStatementType.Select;
+					Statement = OperationType.Query;
 				else if (sql is SqlDeleteStatement)
-					Statement = CommandStatementType.Delete;
+					Statement = OperationType.Delete;
 				else if (sql is SqlUpdateStatement)
-					Statement = CommandStatementType.Update;
+					Statement = OperationType.Update;
 				else if (sql is SqlInsertStatement)
-					Statement = CommandStatementType.Insert;
+					Statement = OperationType.Insert;
+			}
+
+			if (sql is SqlTopSpecification top && Statement == OperationType.Query)
+			{
+				if (top.Value is SqlScalarExpression scalar)
+				{
+					if (Types.TryConvert(scalar.Sql, out int topn) && topn == 1)
+						Statement = OperationType.Select;
+				}
 			}
 
 			if (sql is SqlScalarVariableRefExpression var)

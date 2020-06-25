@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Diagostics;
 using TomPIT.Exceptions;
+using TomPIT.Reflection;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Interop
@@ -13,9 +15,18 @@ namespace TomPIT.Middleware.Interop
 	{
 		private IMiddlewareCallback _callback = null;
 		private List<IOperationResponse> _responses = null;
+		[Obsolete("Please use parameterless constructor")]
 		protected DistributedOperation([CIP(CIP.ApiOperationProvider)]string callbackPath)
 		{
 			CallbackPath = callbackPath;
+		}
+
+		protected DistributedOperation()
+		{
+			var component = Context.Tenant.GetService<ICompilerService>().ResolveComponent(this);
+			var ms = Context.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
+
+			CallbackPath = $"{ms.Name}/{component.Name}/{GetType().ShortName()}";
 		}
 
 		[JsonIgnore]

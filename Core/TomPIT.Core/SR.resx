@@ -1185,4 +1185,10 @@
   <data name="DataProviderParserNull" xml:space="preserve">
     <value>Data provider does not support parsing text</value>
   </data>
+  <data name="ValScriptTagNotAllowed" xml:space="preserve">
+    <value>Script tag is not allowed</value>
+  </data>
+  <data name="ValEnumValueNotDefined" xml:space="preserve">
+    <value>Enum value not defined</value>
+  </data>
 </root>

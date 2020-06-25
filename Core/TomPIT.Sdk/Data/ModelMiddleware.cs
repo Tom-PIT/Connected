@@ -12,6 +12,7 @@ using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Serialization;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Data
 {
@@ -19,22 +20,22 @@ namespace TomPIT.Data
 	{
 		private IComponent _component = null;
 		private IModelConfiguration _configuration = null;
-		public void Execute(string operation)
+		public void Execute([CIP(CIP.ModelExecuteOperationProvider)]string operation)
 		{
 			Execute(operation, null);
 		}
 
-		public R Execute<R>(string operation)
+		public R Execute<R>([CIP(CIP.ModelExecuteOperationProvider)]string operation)
 		{
 			return Execute<R>(operation, null);
 		}
 
-		public void Execute(string operation, object e)
+		public void Execute([CIP(CIP.ModelExecuteOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e)
 		{
 			Execute<object>(operation, e);
 		}
 
-		public R Execute<R>(string operation, object e)
+		public R Execute<R>([CIP(CIP.ModelExecuteOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e)
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
@@ -53,22 +54,22 @@ namespace TomPIT.Data
 			return result;
 		}
 
-		public List<T> Query(string operation)
+		public List<T> Query([CIP(CIP.ModelQueryOperationProvider)]string operation)
 		{
 			return Query(operation, null);
 		}
 
-		public List<R> Query<R>(string operation)
+		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)]string operation)
 		{
 			return Query<R>(operation, null);
 		}
 
-		public List<T> Query(string operation, object e)
+		public List<T> Query([CIP(CIP.ModelQueryOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e)
 		{
 			return Query<T>(operation, e);
 		}
 
-		public List<R> Query<R>(string operation, object e)
+		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e)
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
@@ -83,22 +84,22 @@ namespace TomPIT.Data
 			return r.Query();
 		}
 
-		public T Select(string operation)
+		public T Select([CIP(CIP.ModelQueryOperationProvider)]string operation)
 		{
 			return Select(operation, null);
 		}
 
-		public R Select<R>(string operation)
+		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)]string operation)
 		{
 			return Select<R>(operation, null);
 		}
 
-		public T Select(string operation, object e)
+		public T Select([CIP(CIP.ModelQueryOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e)
 		{
 			return Select<T>(operation, e);
 		}
 
-		public R Select<R>(string operation, object e)
+		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e)
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
@@ -162,8 +163,9 @@ namespace TomPIT.Data
 			if (connection == null)
 				throw new RuntimeException(nameof(ModelMiddleware<T>), SR.ErrConnectionNotFound, LogCategories.Middleware);
 
+			var ms = Context.Tenant.GetService<IMicroServiceService>().Select(Configuration.MicroService());
 			//TODO: implement option to set ConnectionBehavior
-			return Context.OpenConnection(connection.Name, ConnectionBehavior.Shared, this);
+			return Context.OpenConnection($"{ms.Name}/{connection.Name}", ConnectionBehavior.Shared, null);
 		}
 
 		private ICommandTextDescriptor CreateDescriptor(IModelOperation operation, IDataConnection connection)
@@ -356,6 +358,56 @@ namespace TomPIT.Data
 				if (property != null)
 					property.SetValue(e, parameter.Value);
 			}
+		}
+
+		public T Merge(T entity, object instance)
+		{
+			if (instance == null)
+				return entity;
+
+			return OnMerge(entity, instance);
+		}
+
+		protected virtual T OnMerge(T entity, object instance)
+		{
+			var browser = new PropertyBrowser(instance)
+			{
+				Mode = PropertyBrowserMode.Reflection,
+				ReadWrite = false,
+				Flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance
+			};
+
+			var properties = browser.Browse();
+
+			foreach (var property in properties)
+			{
+				if (property.IsCollection())
+					continue;
+
+				if (property.PropertyType.IsTypePrimitive())
+				{
+					var target = entity.GetType().GetProperty(property.Name);
+
+					if (target == null || !target.CanWrite)
+						continue;
+
+					var pk = target.FindAttribute<PrimaryKeyAttribute>();
+
+					if (pk != null)
+						continue;
+
+					try
+					{
+						var value = property.GetValue(instance);
+
+						if (Types.TryConvert(value, out object converted, target.PropertyType))
+							target.SetValue(entity, converted);
+					}
+					catch { }
+				}
+			}
+
+			return entity;
 		}
 	}
 }

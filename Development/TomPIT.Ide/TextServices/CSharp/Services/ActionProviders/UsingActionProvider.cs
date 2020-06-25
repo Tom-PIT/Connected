@@ -151,6 +151,9 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 
 			var rte = result.Edit as ResourceTextEdit;
 
+			if (rte == null && result.Edit is WorkspaceEdit wsEdit && wsEdit.Edits != null && wsEdit.Edits.Count > 0)
+				rte = wsEdit.Edits[0] as ResourceTextEdit;
+
 			rte.Edit = new TextEdit
 			{
 				Text = type.Name,

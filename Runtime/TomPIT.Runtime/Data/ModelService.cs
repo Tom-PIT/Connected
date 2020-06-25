@@ -174,8 +174,8 @@ namespace TomPIT.Data
 				}
 			}
 
-			if (provider is IDeployDataProvider deploy)
-				deploy.Synchronize(cs.Value, schema, procedures);
+			if (provider is IOrmProvider orm)
+				orm.Synchronize(cs.Value, schema, procedures);
 		}
 
 		private EntityState EnsureState(IModelConfiguration configuration)
@@ -311,44 +311,49 @@ namespace TomPIT.Data
 
 		private DbType ResolveDbType(PropertyInfo property)
 		{
-			if (property.PropertyType == typeof(char) || property.PropertyType == typeof(string))
+			var type = property.PropertyType;
+
+			if (type.IsEnum)
+				type = Enum.GetUnderlyingType(type);
+
+			if (type == typeof(char) || type == typeof(string))
 				return DbType.String;
-			else if (property.PropertyType == typeof(byte))
+			else if (type == typeof(byte))
 				return DbType.Byte;
-			else if (property.PropertyType == typeof(bool))
+			else if (type == typeof(bool))
 				return DbType.Boolean;
-			else if (property.PropertyType == typeof(DateTime))
+			else if (type == typeof(DateTime))
 				return DbType.DateTime2;
-			else if (property.PropertyType == typeof(DateTimeOffset))
+			else if (type == typeof(DateTimeOffset))
 				return DbType.DateTimeOffset;
-			else if (property.PropertyType == typeof(decimal))
+			else if (type == typeof(decimal))
 				return DbType.Decimal;
-			else if (property.PropertyType == typeof(double))
+			else if (type == typeof(double))
 				return DbType.Double;
-			else if (property.PropertyType == typeof(Guid))
+			else if (type == typeof(Guid))
 				return DbType.Guid;
-			else if (property.PropertyType == typeof(short))
+			else if (type == typeof(short))
 				return DbType.Int16;
-			else if (property.PropertyType == typeof(int))
+			else if (type == typeof(int))
 				return DbType.Int32;
-			else if (property.PropertyType == typeof(long))
+			else if (type == typeof(long))
 				return DbType.Int64;
-			else if (property.PropertyType == typeof(sbyte))
+			else if (type == typeof(sbyte))
 				return DbType.SByte;
-			else if (property.PropertyType == typeof(float))
+			else if (type == typeof(float))
 				return DbType.Single;
-			else if (property.PropertyType == typeof(TimeSpan))
+			else if (type == typeof(TimeSpan))
 				return DbType.Time;
-			else if (property.PropertyType == typeof(ushort))
+			else if (type == typeof(ushort))
 				return DbType.UInt16;
-			else if (property.PropertyType == typeof(uint))
+			else if (type == typeof(uint))
 				return DbType.UInt32;
-			else if (property.PropertyType == typeof(ulong))
+			else if (type == typeof(ulong))
 				return DbType.UInt64;
-			else if (property.PropertyType == typeof(byte[]))
+			else if (type == typeof(byte[]))
 				return DbType.Binary;
 			else
-				return DbType.Object;
+				return DbType.Binary;
 		}
 	}
 }

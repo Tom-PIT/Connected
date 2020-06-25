@@ -9,6 +9,16 @@ namespace TomPIT.Data
 {
 	public abstract class DataEntity : IDataEntity
 	{
+		private static readonly JsonSerializerSettings _deserializeSettings;
+
+		static DataEntity()
+		{
+			_deserializeSettings = new JsonSerializerSettings
+			{
+				NullValueHandling = NullValueHandling.Ignore,
+				ContractResolver = new PrivateContractResolver()
+			};
+		}
 		public string Serialize()
 		{
 			return OnSerialize();
@@ -26,12 +36,7 @@ namespace TomPIT.Data
 
 		protected virtual void OnDeserialize(JObject state)
 		{
-			var settings = new JsonSerializerSettings
-			{
-				NullValueHandling = NullValueHandling.Ignore
-			};
-
-			JsonConvert.PopulateObject(Serializer.Serialize(state), this, settings);
+			JsonConvert.PopulateObject(Serializer.Serialize(state), this, _deserializeSettings);
 		}
 
 		protected virtual void OnDeserialized()

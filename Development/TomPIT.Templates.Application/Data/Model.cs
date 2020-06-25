@@ -11,6 +11,7 @@ namespace TomPIT.MicroServices.Data
 	[Create(DesignUtils.ComponentModel)]
 	[Syntax(SyntaxAttribute.CSharp)]
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.Model, TomPIT.MicroServices.Design")]
 	public class Model : SourceCodeConfiguration, IModelConfiguration
 	{
 		private ListItems<IModelOperation> _operations = null;

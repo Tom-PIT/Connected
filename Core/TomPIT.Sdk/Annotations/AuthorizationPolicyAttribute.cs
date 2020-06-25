@@ -64,7 +64,7 @@ namespace TomPIT.Annotations
 		{
 			ReflectionExtensions.SetPropertyValue(Model, nameof(Model.Context), context);
 
-			Model.Instance = instance;
+			Model.AuthorizationTarget = instance;
 
 			var grantAttributes = ResolveGrantAttributes();
 
@@ -173,7 +173,7 @@ namespace TomPIT.Annotations
 				try
 				{
 					target.Model = Model;
-					target.Authorize(Context, Model.Instance);
+					target.Authorize(Context, Model.AuthorizationTarget);
 					return true;
 				}
 				catch (ForbiddenException)
