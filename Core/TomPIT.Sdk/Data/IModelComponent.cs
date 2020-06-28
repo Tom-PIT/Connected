@@ -4,6 +4,11 @@ using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Data
 {
+	public enum ConcurrencyMode
+	{
+		Enabled = 1,
+		Disabled = 2
+	}
 	public interface IModelComponent : IMiddlewareComponent
 	{
 		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)]string operation);
@@ -12,9 +17,9 @@ namespace TomPIT.Data
 		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e);
 		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)]string operation);
 
-		public R Execute<R>([CIP(CIP.ModelExecuteOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e);
-		public R Execute<R>([CIP(CIP.ModelExecuteOperationProvider)]string operation);
-		void Execute([CIP(CIP.ModelExecuteOperationProvider)]string operation);
-		void Execute([CIP(CIP.ModelExecuteOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e);
+		int Execute([CIP(CIP.ModelExecuteOperationProvider)]string operation);
+		int Execute([CIP(CIP.ModelExecuteOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e);
+
+		public ConcurrencyMode Concurrency { get; }
 	}
 }

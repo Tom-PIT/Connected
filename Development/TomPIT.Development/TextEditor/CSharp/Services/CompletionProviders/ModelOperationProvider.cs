@@ -95,7 +95,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			var sourceFile = type.Type.DeclaringSyntaxReferences[0].SyntaxTree.FilePath;
 
 			if (string.IsNullOrWhiteSpace(sourceFile))
-				return null;
+				sourceFile = $"{Arguments.Editor.Context.MicroService.Name}/{type.Type.Name}";
 
 			sourceFile = Path.GetFileNameWithoutExtension(sourceFile);
 

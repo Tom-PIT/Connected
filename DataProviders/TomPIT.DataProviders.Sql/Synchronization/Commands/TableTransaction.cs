@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using TomPIT.Annotations.Models;
 using TomPIT.Data;
 
 namespace TomPIT.DataProviders.Sql.Synchronization.Commands
@@ -42,8 +43,6 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 			{
 				case DbType.AnsiString:
 				case DbType.String:
-				case DbType.Date:
-				case DbType.DateTime:
 				case DbType.AnsiStringFixedLength:
 				case DbType.StringFixedLength:
 					return 50.ToString();
@@ -52,11 +51,13 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 				case DbType.Time:
 				case DbType.DateTime2:
 				case DbType.DateTimeOffset:
-					return 7.ToString();
+					return column.DatePrecision.ToString();
 				case DbType.VarNumeric:
 					return 8.ToString();
 				case DbType.Xml:
 					return "MAX";
+				case DbType.Decimal:
+					return $"{column.Precision}, {column.Scale}";
 				default:
 					return 50.ToString();
 			}
@@ -67,14 +68,14 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 			return column.DataType switch
 			{
 				DbType.AnsiString => $"[varchar]({ResolveColumnLength(column)}",
-				DbType.Binary => $"[binary]({ResolveColumnLength(column)}",
+				DbType.Binary => column.IsVersion ? "[timestamp]" : $"[binary]({ResolveColumnLength(column)}",
 				DbType.Byte => "[tinyint]",
 				DbType.Boolean => "[bit]",
 				DbType.Currency => "[money]",
 				DbType.Date => "[date]",
-				DbType.DateTime => "[datetime]",
-				DbType.Decimal => "[float]",
-				DbType.Double => "[float]",
+				DbType.DateTime => column.DateKind == DateKind.SmallDateTime ? "[smalldatetime]" : "[datetime]",
+				DbType.Decimal => $"[decimal]({ResolveColumnLength(column)})",
+				DbType.Double => "[real]",
 				DbType.Guid => "[uniqueidentifier]",
 				DbType.Int16 => "[smallint]",
 				DbType.Int32 => "[int]",
@@ -87,7 +88,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 				DbType.UInt16 => "[int]",
 				DbType.UInt32 => "[bigint]",
 				DbType.UInt64 => "[float]",
-				DbType.VarNumeric => "[float]",
+				DbType.VarNumeric => $"[numeric]({ResolveColumnLength(column)})",
 				DbType.AnsiStringFixedLength => $"[char]({ResolveColumnLength(column)})",
 				DbType.StringFixedLength => $"[char]({ResolveColumnLength(column)})",
 				DbType.Xml => "[xml]",
@@ -103,6 +104,9 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 
 			foreach (var column in schema.Columns)
 			{
+				if (column.IsPrimaryKey)
+					continue;
+
 				if (column.IsIndex)
 				{
 					if (string.IsNullOrWhiteSpace(column.IndexGroup))

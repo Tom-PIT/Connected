@@ -8,5 +8,6 @@ namespace TomPIT.MicroServices.IoT.Models
 		public DateTime Modified { get; set; }
 		public string Field { get; set; }
 		public string Value { get; set; }
+		public string Device { get; set; }
 	}
 }

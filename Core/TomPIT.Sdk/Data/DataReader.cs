@@ -207,7 +207,12 @@ namespace TomPIT.Data
 			if (!(token is JValue jv))
 				return;
 
-			var converted = ConvertValue(property.PropertyType, jv.Value);
+			object converted = null;
+
+			if (property.PropertyType == typeof(string) && jv.Value is byte[])
+				converted = ((Version)(byte[])jv.Value).ToString();
+			else
+				converted = ConvertValue(property.PropertyType, jv.Value);
 
 			if (converted == null)
 				return;

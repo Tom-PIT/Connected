@@ -45,7 +45,7 @@ namespace TomPIT.DataProviders.Sql
 			else if (string.Compare(value, "nvarchar", true) == 0)
 				return DbType.String;
 			else if (string.Compare(value, "real", true) == 0)
-				return DbType.Decimal;
+				return DbType.Double;
 			else if (string.Compare(value, "smalldatetime", true) == 0)
 				return DbType.DateTime;
 			else if (string.Compare(value, "smallmoney", true) == 0)
@@ -57,7 +57,7 @@ namespace TomPIT.DataProviders.Sql
 			else if (string.Compare(value, "time", true) == 0)
 				return DbType.Time;
 			else if (string.Compare(value, "timestamp", true) == 0)
-				return DbType.Int64;
+				return DbType.Binary;
 			else if (string.Compare(value, "tinyint", true) == 0)
 				return DbType.Byte;
 			else if (string.Compare(value, "uniqueidentifier", true) == 0)

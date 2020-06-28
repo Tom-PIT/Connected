@@ -13,7 +13,7 @@ namespace TomPIT.Data
 		void Open();
 		void Close();
 
-		void Execute(IDataCommandDescriptor command);
+		int Execute(IDataCommandDescriptor command);
 		JObject Query(IDataCommandDescriptor command);
 
 		ConnectionBehavior Behavior { get; }

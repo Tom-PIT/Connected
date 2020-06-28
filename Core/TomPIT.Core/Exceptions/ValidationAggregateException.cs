@@ -3,14 +3,14 @@ using System.Text;
 
 namespace TomPIT.Exceptions
 {
-	public class ValidationException : TomPITException
+	public class ValidationAggregateException : TomPITException
 	{
-		public ValidationException(List<string> errors)
+		public ValidationAggregateException(List<string> errors)
 		{
 			Errors = errors;
 		}
 
-		public ValidationException(string error)
+		public ValidationAggregateException(string error)
 		{
 			Errors = new List<string>
 			{

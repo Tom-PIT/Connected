@@ -29,7 +29,7 @@ namespace TomPIT.Data.DataProviders
 		/// <param name="connection">This parameter can be null. If passed non null
 		/// reference implementators should use this connection instead of opening 
 		/// a new one.</param>
-		void Execute(IDataCommandDescriptor command, IDataConnection connection);
+		int Execute(IDataCommandDescriptor command, IDataConnection connection);
 		/// <summary>
 		/// Id of the DataProvider which is used by data source and transaction
 		/// components to referring to the specific provider.

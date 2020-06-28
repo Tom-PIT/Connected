@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
-using TomPIT.Annotations;
+using TomPIT.Annotations.Models;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
@@ -20,22 +20,12 @@ namespace TomPIT.Data
 	{
 		private IComponent _component = null;
 		private IModelConfiguration _configuration = null;
-		public void Execute([CIP(CIP.ModelExecuteOperationProvider)]string operation)
+		public int Execute([CIP(CIP.ModelExecuteOperationProvider)]string operation)
 		{
-			Execute(operation, null);
+			return Execute(operation, null);
 		}
 
-		public R Execute<R>([CIP(CIP.ModelExecuteOperationProvider)]string operation)
-		{
-			return Execute<R>(operation, null);
-		}
-
-		public void Execute([CIP(CIP.ModelExecuteOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e)
-		{
-			Execute<object>(operation, e);
-		}
-
-		public R Execute<R>([CIP(CIP.ModelExecuteOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e)
+		public int Execute([CIP(CIP.ModelExecuteOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e)
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
@@ -47,11 +37,14 @@ namespace TomPIT.Data
 
 			BindParameters(w, e, descriptor);
 
-			var result = w.Execute<R>();
+			var recordsAffected = w.Execute();
+
+			if (recordsAffected == 0 && Concurrency == ConcurrencyMode.Enabled)
+				throw new ConcurrencyException(GetType(), operation);
 
 			BindReturnValues(w, e);
 
-			return result;
+			return recordsAffected;
 		}
 
 		public List<T> Query([CIP(CIP.ModelQueryOperationProvider)]string operation)
@@ -238,7 +231,16 @@ namespace TomPIT.Data
 				}
 
 				if (property != null)
-					command.SetParameter(parameter.Name, property.GetValue(e));
+				{
+					var value = property.GetValue(e);
+					var nullable = property.FindAttribute<NullableAttribute>() != null;
+					var version = property.FindAttribute<VersionAttribute>();
+
+					if (version != null)
+						value = (byte[])Version.Parse(value);
+
+					command.SetParameter(parameter.Name, value, nullable);
+				}
 			}
 
 			if (command is IDataWriter writer)
@@ -248,7 +250,11 @@ namespace TomPIT.Data
 					var att = property.FindAttribute<ReturnValueAttribute>();
 
 					if (att != null)
-						writer.SetReturnValueParameter(property.Name);
+					{
+						var parameter = writer.SetReturnValueParameter(property.Name);
+
+						parameter.Type = property.PropertyType;
+					}
 				}
 			}
 		}
@@ -274,10 +280,12 @@ namespace TomPIT.Data
 
 			List<PropertyInfo> properties = null;
 
-
 			foreach (var parameter in w.Parameters)
 			{
 				if (parameter.Direction != ParameterDirection.ReturnValue)
+					continue;
+
+				if (parameter.Value == DBNull.Value)
 					continue;
 
 				if (properties == null)
@@ -356,7 +364,23 @@ namespace TomPIT.Data
 				}
 
 				if (property != null)
-					property.SetValue(e, parameter.Value);
+				{
+					var existingValue = property.GetValue(e);
+					var overwriteAtt = property.FindAttribute<ReturnValueAttribute>();
+
+					switch (overwriteAtt.ValueBehavior)
+					{
+						case PropertyValueBehavior.OverwriteDefault:
+							var defaultValue = property.PropertyType.GetDefaultValue();
+
+							if (Types.Compare(existingValue, defaultValue))
+								property.SetValue(e, parameter.Value);
+							break;
+						case PropertyValueBehavior.AlwaysOverwrite:
+							property.SetValue(e, parameter.Value);
+							break;
+					}
+				}
 			}
 		}
 
@@ -409,5 +433,7 @@ namespace TomPIT.Data
 
 			return entity;
 		}
+
+		public ConcurrencyMode Concurrency { get; set; } = ConcurrencyMode.Enabled;
 	}
 }

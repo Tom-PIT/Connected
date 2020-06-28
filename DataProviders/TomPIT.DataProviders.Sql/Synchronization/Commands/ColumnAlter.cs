@@ -25,7 +25,8 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 
 			if (Column.DataType != ExistingColumn.DataType
 				|| Column.IsNullable != ExistingColumn.IsNullable
-				|| Column.MaxLength != ExistingColumn.MaxLength)
+				|| Column.MaxLength != ExistingColumn.MaxLength
+				|| Column.IsVersion != ExistingColumn.IsVersion)
 				Owner.CreateCommand(CommandText).ExecuteNonQuery();
 
 			if (string.Compare(ExistingColumn.DefaultValue, Column.DefaultValue, false) != 0)

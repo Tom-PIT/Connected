@@ -64,9 +64,9 @@ namespace TomPIT.DataProviders.Modbus
 				Connection.Close();
 		}
 
-		public void Execute(IDataCommandDescriptor command)
+		public int Execute(IDataCommandDescriptor command)
 		{
-			Provider.Execute(command, this);
+			return Provider.Execute(command, this);
 		}
 
 		public JObject Query(IDataCommandDescriptor command)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -210,6 +211,18 @@ namespace TomPIT.Cdn.Events
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
+			if (ex is ValidationException val)
+			{
+				var urlComplete = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Complete");
+				var descriptorComplete = new JObject
+				{
+					{"popReceipt", item.PopReceipt }
+				};
+
+				MiddlewareDescriptor.Current.Tenant.Post(urlComplete, descriptorComplete);
+				return;
+			}
+
 			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(EventJob));
 
 			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Ping");

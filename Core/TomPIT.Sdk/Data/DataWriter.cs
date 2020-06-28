@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using TomPIT.Data.DataProviders;
 using TomPIT.Middleware;
 
 namespace TomPIT.Data
@@ -10,14 +11,19 @@ namespace TomPIT.Data
 		{
 		}
 
-		public void Execute()
+		public int Execute()
 		{
 			try
 			{
-				Connection.Execute(CreateCommand());
+				var command = CreateCommand();
+				var recordsAffected = Connection.Execute(command);
 
 				if (Connection.Behavior == ConnectionBehavior.Isolated)
 					Connection.Commit();
+
+				BindReturnValues(command);
+
+				return recordsAffected;
 			}
 			finally
 			{
@@ -33,36 +39,45 @@ namespace TomPIT.Data
 				var command = CreateCommand();
 
 				Connection.Execute(command);
-				var result = default(T);
-
-				foreach (var parameter in command.Parameters)
-				{
-					if (parameter.Direction == System.Data.ParameterDirection.ReturnValue)
-					{
-						var par = Parameters.FirstOrDefault(f => string.Compare(parameter.Name, f.Name, true) == 0);
-
-						if (par == null)
-							continue;
-
-						if (Types.TryConvert(parameter.Value, out T r))
-						{
-							par.Value = r;
-
-							if (Types.Compare(result, default(T)))
-								result = r;
-						}
-					}
-				}
 
 				if (Connection.Behavior == ConnectionBehavior.Isolated)
 					Connection.Commit();
 
-				return result;
+				BindReturnValues(command);
+
+				foreach (var parameter in Parameters)
+				{
+					if (parameter.Direction == System.Data.ParameterDirection.ReturnValue
+						&& Types.TryConvert(parameter.Value, out T r))
+						return r;
+				}
+
+				return default;
 			}
 			finally
 			{
 				if (Connection.Behavior == ConnectionBehavior.Isolated)
 					Connection.Close();
+			}
+		}
+
+		private void BindReturnValues(IDataCommandDescriptor command)
+		{
+			foreach (var parameter in command.Parameters)
+			{
+				if (parameter.Direction == System.Data.ParameterDirection.ReturnValue)
+				{
+					if (parameter.Value == DBNull.Value)
+						continue;
+
+					var par = Parameters.FirstOrDefault(f => string.Compare(parameter.Name, f.Name, true) == 0);
+
+					if (par == null)
+						continue;
+
+					if (Types.TryConvert(parameter.Value, out object r, par.Type))
+						par.Value = r;
+				}
 			}
 		}
 

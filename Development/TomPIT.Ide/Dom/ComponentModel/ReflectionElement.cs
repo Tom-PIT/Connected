@@ -46,7 +46,15 @@ namespace TomPIT.Ide.Dom.ComponentModel
 					Glyph = "fal fa-wrench";
 			}
 
-			SortChildren = Value == null || !Value.GetType().IsCollection();
+			if (property != null && IsCollection)
+			{
+				var vd = property.FindAttribute<CollectionDesignerAttribute>();
+
+				if (vd != null && !vd.Sort)
+					SortChildren = false;
+			}
+			else
+				SortChildren = Value == null || !Value.GetType().IsCollection();
 		}
 
 		/// <summary>

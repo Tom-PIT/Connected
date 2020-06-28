@@ -97,12 +97,12 @@ namespace TomPIT.Data.DataProviders
 			return value;
 		}
 
-		public virtual void Execute(IDataCommandDescriptor command)
+		public virtual int Execute(IDataCommandDescriptor command)
 		{
-			Execute(command, null);
+			return Execute(command, null);
 		}
 
-		public virtual void Execute(IDataCommandDescriptor command, IDataConnection connection)
+		public virtual int Execute(IDataCommandDescriptor command, IDataConnection connection)
 		{
 			if (connection.Connection.State == ConnectionState.Closed)
 				connection.Open();
@@ -115,13 +115,15 @@ namespace TomPIT.Data.DataProviders
 			foreach (var i in command.Parameters)
 				SetParameterValue(com, i.Name, i.Value);
 
-			Execute(command, con, com);
+			var recordsAffected = Execute(command, con, com);
 
 			foreach (var i in command.Parameters)
 			{
 				if (i.Direction == ParameterDirection.ReturnValue)
 					i.Value = GetParameterValue(com, i.Name);
 			}
+
+			return recordsAffected;
 		}
 
 		protected virtual void SetParameterValue(IDbCommand command, string parameterName, object value)
@@ -138,12 +140,12 @@ namespace TomPIT.Data.DataProviders
 		{
 		}
 
-		protected virtual void Execute(IDataCommandDescriptor command, IDbConnection connection, IDbCommand cmd)
+		protected virtual int Execute(IDataCommandDescriptor command, IDbConnection connection, IDbCommand cmd)
 		{
 			if (connection.State == ConnectionState.Closed)
 				connection.Open();
 
-			cmd.ExecuteNonQuery();
+			return cmd.ExecuteNonQuery();
 		}
 
 		public virtual JObject Query(IDataCommandDescriptor command, DataTable schema)

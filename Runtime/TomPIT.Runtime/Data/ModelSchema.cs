@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace TomPIT.Data
 {
-	internal class ModelSchema : IEquatable<ModelSchema>, IModelSchema
+	internal class ModelSchema : IModelSchema
 	{
 		private List<IModelSchemaColumn> _columns = null;
 		public List<IModelSchemaColumn> Columns
@@ -23,7 +23,7 @@ namespace TomPIT.Data
 		public string Type { get; set; }
 		public bool Ignore { get; set; }
 		public string Dependency { get; set; }
-		public bool Equals([AllowNull] ModelSchema other)
+		public bool Equals([AllowNull] IModelSchema other)
 		{
 			if (other == null)
 				return false;

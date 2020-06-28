@@ -1024,6 +1024,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Data concurrency issue occured. Please retry the operation.
+        /// </summary>
+        public static string ErrConcurrencyMessage {
+            get {
+                return ResourceManager.GetString("ErrConcurrencyMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Concurrency.
+        /// </summary>
+        public static string ErrConcurrencySource {
+            get {
+                return ResourceManager.GetString("ErrConcurrencySource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Data provider not found.
         /// </summary>
         public static string ErrConnectionDataProviderNotFound {
@@ -2190,6 +2208,24 @@ namespace TomPIT {
         public static string ErrQueueWorkerNotFound {
             get {
                 return ResourceManager.GetString("ErrQueueWorkerNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot obtain record lock.
+        /// </summary>
+        public static string ErrRecordLock {
+            get {
+                return ResourceManager.GetString("ErrRecordLock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Record unlock failed. The most common reason is that a lock has expired. This could mean your transaction has written inconsistent data..
+        /// </summary>
+        public static string ErrRecordUnlock {
+            get {
+                return ResourceManager.GetString("ErrRecordUnlock", resourceCulture);
             }
         }
         

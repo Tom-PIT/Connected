@@ -80,6 +80,8 @@ namespace TomPIT.Data
 
 				return value;
 			}
+			else if (value is byte[])
+				return value;
 
 			return Serializer.Serialize(value);
 		}

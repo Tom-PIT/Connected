@@ -85,9 +85,9 @@ namespace TomPIT.Middleware.Services
 			Context.Tenant.GetService<IDataCachingService>().Remove(key, new List<string> { id });
 		}
 
-		public void Remove(string key, List<string> predicate)
+		public void Remove(string key, List<string> ids)
 		{
-			Context.Tenant.GetService<IDataCachingService>().Remove(key, predicate);
+			Context.Tenant.GetService<IDataCachingService>().Remove(key, ids);
 		}
 
 		public string GenerateKey(params object[] parameters)

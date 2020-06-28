@@ -183,22 +183,28 @@ namespace TomPIT.Ide.Dom
 				return;
 
 			var enm = en.GetEnumerator();
-			int idx = 0;
+			var idx = 0;
+			var sorted = new List<IDomElement>();
 
 			while (enm.MoveNext())
 			{
 				var element = CreatePropertyElement(enm.Current, null, idx);
 
 				if (element != null)
-					properties.Add(element);
+					sorted.Add(element);
 				else
-					properties.Add(new ReflectionElement(this, enm.Current, null, idx)
+					sorted.Add(new ReflectionElement(this, enm.Current, null, idx)
 					{
 						SortChildren = false
 					});
 
 				idx++;
 			}
+
+			if (SortChildren)
+				sorted = sorted.OrderBy(f => f.Title).ToList();
+
+			properties.AddRange(sorted);
 		}
 
 		public virtual IDomDesigner PropertyDesigner(string propertyName)

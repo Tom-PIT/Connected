@@ -21,16 +21,17 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 			get
 			{
 				var tokens = Description.Split(',');
+				var result = IndexType.Index;
 
 				foreach (var token in tokens)
 				{
-					if (string.Compare(token.Trim(), "unique", true) == 0)
-						return IndexType.Unique;
-					else if (token.Trim().StartsWith("primary key "))
+					if (token.Trim().Contains("primary key", StringComparison.OrdinalIgnoreCase))
 						return IndexType.PrimaryKey;
+					else if (string.Compare(token.Trim(), "unique", true) == 0)
+						result = IndexType.Unique;
 				}
 
-				return IndexType.Index;
+				return result;
 			}
 		}
 

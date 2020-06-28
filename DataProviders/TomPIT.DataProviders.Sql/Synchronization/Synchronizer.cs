@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using TomPIT.Annotations;
+using TomPIT.Annotations.Models;
 using TomPIT.Data;
 using TomPIT.Data.Sql;
 using TomPIT.DataProviders.Sql.Synchronization.Commands;

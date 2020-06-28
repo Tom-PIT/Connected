@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Data;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Models;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Security;
 

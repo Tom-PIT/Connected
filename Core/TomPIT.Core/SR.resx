@@ -1191,4 +1191,16 @@
   <data name="ValEnumValueNotDefined" xml:space="preserve">
     <value>Enum value not defined</value>
   </data>
+  <data name="ErrConcurrencyMessage" xml:space="preserve">
+    <value>Data concurrency issue occured. Please retry the operation</value>
+  </data>
+  <data name="ErrConcurrencySource" xml:space="preserve">
+    <value>Concurrency</value>
+  </data>
+  <data name="ErrRecordLock" xml:space="preserve">
+    <value>Cannot obtain record lock</value>
+  </data>
+  <data name="ErrRecordUnlock" xml:space="preserve">
+    <value>Record unlock failed. The most common reason is that a lock has expired. This could mean your transaction has written inconsistent data.</value>
+  </data>
 </root>

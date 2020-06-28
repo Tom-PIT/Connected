@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace TomPIT.Data
 {
-	public interface IModelSchema
+	public interface IModelSchema : IEquatable<IModelSchema>
 	{
 		List<IModelSchemaColumn> Columns { get; }
 

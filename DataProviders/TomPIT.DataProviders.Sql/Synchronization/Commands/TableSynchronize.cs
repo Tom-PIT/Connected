@@ -21,12 +21,14 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 			{
 				if (ShouldRecreate)
 					new TableRecreate(Owner, ExistingModel).Execute();
-				else
+				else if (ShouldAlter)
 					new TableAlter(Owner, ExistingModel).Execute();
 			}
 			else
 				new TableCreate(Owner, false).Execute();
 		}
+
+		private bool ShouldAlter => !Model.Equals(ExistingModel);
 
 		private ExistingModel ExistingModel
 		{
@@ -86,7 +88,12 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 
 					if (column.DataType != existing.DataType
 						|| column.MaxLength != existing.MaxLength
-						|| column.IsNullable != existing.IsNullable)
+						|| column.IsNullable != existing.IsNullable
+						|| column.IsVersion != existing.IsVersion
+						|| column.Precision != existing.Precision
+						|| column.Scale != existing.Scale
+						|| column.DateKind != existing.DateKind
+						|| column.DatePrecision != existing.DatePrecision)
 						return true;
 				}
 

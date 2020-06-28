@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Globalization;
 using System.Reflection;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Models;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Connectivity;
@@ -248,7 +247,7 @@ namespace TomPIT.Data
 				if (property.FindAttribute<MappingIgnoreAttribute>() != null)
 					continue;
 
-				var column = new ModelSchemaColumn
+				var column = new ModelSchemaColumn(result)
 				{
 					Name = ResolveColumnName(property),
 					DataType = ResolveDbType(property)
@@ -260,6 +259,8 @@ namespace TomPIT.Data
 				{
 					column.IsPrimaryKey = true;
 					column.IsIdentity = pk.Identity;
+					column.IsUnique = true;
+					column.IsIndex = true;
 				}
 
 				var idx = property.FindAttribute<IndexAttribute>();
@@ -271,15 +272,58 @@ namespace TomPIT.Data
 					column.IndexGroup = idx.Group;
 				}
 
-				var def = property.FindAttribute<DefaultValueAttribute>();
+				if (column.DataType == DbType.Decimal
+					|| column.DataType == DbType.VarNumeric)
+				{
+					var numeric = property.FindAttribute<NumericAttribute>();
+
+					if (numeric != null)
+					{
+						column.Precision = numeric.Percision;
+						column.Scale = numeric.Scale;
+					}
+					else
+					{
+						column.Precision = 20;
+						column.Scale = 5;
+					}
+
+				}
+
+				if (column.DataType == DbType.Date
+					|| column.DataType == DbType.DateTime
+					|| column.DataType == DbType.DateTime2
+					|| column.DataType == DbType.DateTimeOffset
+					|| column.DataType == DbType.Time)
+				{
+					var att = property.FindAttribute<DateAttribute>();
+
+					if (att != null)
+					{
+						column.DateKind = att.Kind;
+						column.DatePrecision = att.Precision;
+					}
+					else
+					{
+						column.DateKind = DateKind.DateTime2;
+						column.DatePrecision = 7;
+					}
+				}
+
+				var def = property.FindAttribute<DefaultAttribute>();
 
 				if (def != null)
 					column.DefaultValue = Types.Convert<string>(def.Value, CultureInfo.InvariantCulture);
 
-				var maxLength = property.FindAttribute<MaxLengthAttribute>();
+				if (property.FindAttribute<VersionAttribute>() != null)
+					column.IsVersion = true;
+				else
+				{
+					var maxLength = property.FindAttribute<LengthAttribute>();
 
-				if (maxLength != null)
-					column.MaxLength = maxLength.Length;
+					if (maxLength != null)
+						column.MaxLength = maxLength.Length;
+				}
 
 				var nullable = property.FindAttribute<NullableAttribute>();
 
@@ -317,13 +361,39 @@ namespace TomPIT.Data
 				type = Enum.GetUnderlyingType(type);
 
 			if (type == typeof(char) || type == typeof(string))
+			{
+				if (property.FindAttribute<VersionAttribute>() != null)
+					return DbType.Binary;
+
 				return DbType.String;
+			}
 			else if (type == typeof(byte))
 				return DbType.Byte;
 			else if (type == typeof(bool))
 				return DbType.Boolean;
 			else if (type == typeof(DateTime))
-				return DbType.DateTime2;
+			{
+				var att = property.FindAttribute<DateAttribute>();
+
+				if (att == null)
+					return DbType.DateTime2;
+
+				switch (att.Kind)
+				{
+					case DateKind.Date:
+						return DbType.Date;
+					case DateKind.DateTime:
+						return DbType.DateTime;
+					case DateKind.DateTime2:
+						return DbType.DateTime2;
+					case DateKind.SmallDateTime:
+						return DbType.DateTime;
+					case DateKind.Time:
+						return DbType.Time;
+					default:
+						return DbType.DateTime2;
+				}
+			}
 			else if (type == typeof(DateTimeOffset))
 				return DbType.DateTimeOffset;
 			else if (type == typeof(decimal))

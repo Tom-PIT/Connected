@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using TomPIT.Data;
 using TomPIT.DataProviders.Sql.Synchronization.Commands;
@@ -37,7 +38,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 			Type = owner.Model.Type;
 			Schema = owner.Model.SchemaName();
 
-			Columns.AddRange(new Columns(owner).Execute());
+			Columns.AddRange(new Columns(owner, this).Execute());
 			Descriptor = new SpHelp(owner).Execute();
 
 			if (Columns.FirstOrDefault(f => string.Compare(f.Name, Descriptor.Identity.Identity, true) == 0) is ExistingColumn c)
@@ -61,6 +62,8 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 							break;
 						case IndexType.PrimaryKey:
 							col.IsPrimaryKey = true;
+							col.IsIndex = true;
+							col.IsUnique = true;
 							break;
 					}
 				}
@@ -109,6 +112,11 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 			}
 
 			return result;
+		}
+
+		public bool Equals([AllowNull] IModelSchema other)
+		{
+			throw new System.NotImplementedException();
 		}
 	}
 }

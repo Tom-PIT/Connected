@@ -4,5 +4,6 @@
 	{
 		string Field { get; }
 		string Value { get; }
+		string Device { get; }
 	}
 }

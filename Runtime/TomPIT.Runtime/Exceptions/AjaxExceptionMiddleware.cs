@@ -44,7 +44,7 @@ namespace TomPIT.Exceptions
 					source = $"{msName}/{script}";
 			}
 
-			if (ex is ValidationException || ex is System.ComponentModel.DataAnnotations.ValidationException)
+			if (ex is ValidationAggregateException || ex is System.ComponentModel.DataAnnotations.ValidationException)
 			{
 				var ms = ex.Data.Contains("MicroService") ? ex.Data["MicroService"] as IMicroService : null;
 

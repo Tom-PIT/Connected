@@ -23,7 +23,7 @@ namespace TomPIT.IoT.Services
 			Tenant.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
 			Tenant.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
 
-			var configurations = tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, "IoTHub");
+			var configurations = tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, ComponentCategories.IoTHub);
 
 			foreach (var i in configurations)
 			{
@@ -36,25 +36,25 @@ namespace TomPIT.IoT.Services
 
 		private void OnConfigurationAdded(ITenant sender, ConfigurationEventArgs e)
 		{
-			if (string.Compare(e.Category, "IoTHub", true) == 0)
+			if (string.Compare(e.Category, ComponentCategories.IoTHub, true) == 0)
 				Reload(e.Component);
 		}
 
 		private void OnConfigurationRemoved(ITenant sender, ConfigurationEventArgs e)
 		{
-			if (string.Compare(e.Category, "IoTHub", true) == 0)
+			if (string.Compare(e.Category, ComponentCategories.IoTHub, true) == 0)
 				Remove(e.Component);
 		}
 
 		private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
 		{
-			if (string.Compare(e.Category, "IoTHub", true) == 0)
+			if (string.Compare(e.Category, ComponentCategories.IoTHub, true) == 0)
 				Reload(e.Component);
 		}
 
 		private void OnComponentChanged(ITenant sender, ComponentEventArgs e)
 		{
-			if (string.Compare(e.Category, "IoTHub", true) == 0)
+			if (string.Compare(e.Category, ComponentCategories.IoTHub, true) == 0)
 				Reload(e.Component);
 		}
 
@@ -80,7 +80,7 @@ namespace TomPIT.IoT.Services
 					continue;
 
 				var value = property.GetValue(data);
-				var field = state.FirstOrDefault(f => string.Compare(f.Field, property.Name, true) == 0);
+				var field = state.FirstOrDefault(f => string.Compare(f.Device, device, true) == 0 && string.Compare(f.Field, property.Name, true) == 0);
 
 				if (field != null)
 				{
@@ -101,7 +101,8 @@ namespace TomPIT.IoT.Services
 				changed.Add(new IoTFieldStateModifier
 				{
 					Field = property.Name,
-					Value = Types.Convert<string>(value, CultureInfo.InvariantCulture)
+					Value = Types.Convert<string>(value, CultureInfo.InvariantCulture),
+					Device = device
 				});
 			}
 
