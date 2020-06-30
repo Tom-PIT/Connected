@@ -3556,7 +3556,8 @@ CREATE TABLE [tompit].[iot_state]
 [hub] [uniqueidentifier] NOT NULL,
 [field] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [value] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[modified] [datetime2] NOT NULL
+[modified] [datetime2] NOT NULL,
+[device] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
 ) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3582,11 +3583,11 @@ BEGIN
 	SET NOCOUNT ON;
 
 	MERGE tompit.iot_state AS d
-	USING (SELECT * FROM OPENJSON (@items) WITH (hub uniqueidentifier, field nvarchar(128), value nvarchar(1024))) AS s (hub, field, value)
-	ON (d.hub = s.hub AND d.field = s.field)
+	USING (SELECT * FROM OPENJSON (@items) WITH (hub uniqueidentifier, field nvarchar(128), value nvarchar(1024), device nvarchar(128))) AS s (hub, field, value, device)
+	ON (d.hub = s.hub AND d.field = s.field AND d.device = s.device)
 	WHEN NOT MATCHED BY TARGET THEN
-		INSERT (hub, field, modified)
-		VALUES (hub, field, GETUTCDATE())
+		INSERT (hub, field, modified, device)
+		VALUES (hub, field, GETUTCDATE(), device)
 	WHEN MATCHED THEN
 		UPDATE SET
 			value = s.value,
