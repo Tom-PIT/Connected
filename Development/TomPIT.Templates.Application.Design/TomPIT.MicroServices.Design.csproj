@@ -23,8 +23,18 @@
     <None Remove="CreateHandlers\Templates\ApiOperation.txt" />
     <None Remove="CreateHandlers\Templates\DistributedEvent.txt" />
     <None Remove="CreateHandlers\Templates\Model.txt" />
+    <None Remove="CreateHandlers\Templates\Partial.txt" />
+    <None Remove="CreateHandlers\Templates\ScriptBundle.txt" />
+    <None Remove="CreateHandlers\Templates\ScriptBundlePartial.txt" />
+    <None Remove="CreateHandlers\Templates\ScriptBundleView.txt" />
+    <None Remove="CreateHandlers\Templates\View.txt" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="CreateHandlers\Templates\ScriptBundlePartial.txt" />
+    <EmbeddedResource Include="CreateHandlers\Templates\ScriptBundle.txt" />
+    <EmbeddedResource Include="CreateHandlers\Templates\Partial.txt" />
+    <EmbeddedResource Include="CreateHandlers\Templates\View.txt" />
+    <EmbeddedResource Include="CreateHandlers\Templates\ScriptBundleView.txt" />
     <EmbeddedResource Include="CreateHandlers\Templates\DistributedEvent.txt" />
     <EmbeddedResource Include="CreateHandlers\Templates\ApiOperation.txt" />
     <EmbeddedResource Include="CreateHandlers\Templates\Model.txt" />

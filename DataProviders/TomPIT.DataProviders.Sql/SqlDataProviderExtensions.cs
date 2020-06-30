@@ -164,5 +164,27 @@ namespace TomPIT.DataProviders.Sql
 		{
 			return "PRIMARY";
 		}
+
+		public static string ParseDefaultValue(string value)
+		{
+			if (string.IsNullOrEmpty(value))
+				return value;
+
+			if (value.StartsWith("N'"))
+				return value;
+
+			var defValue = $"N'{value}'";
+
+			if (value.Length > 1)
+			{
+				var last = value.Trim()[^1];
+				var prev = value.Trim()[0..^1].Trim()[^1];
+
+				if (last == ')' && prev == '(')
+					defValue = value;
+			}
+
+			return defValue;
+		}
 	}
 }

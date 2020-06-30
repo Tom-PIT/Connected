@@ -9,6 +9,8 @@ namespace TomPIT.Data
 		public bool Valid { get; set; }
 		public ModelSchema Schema { get; set; }
 
+		public bool IsInitializing { get; set; }
+
 		public List<OperationState> Operations
 		{
 			get

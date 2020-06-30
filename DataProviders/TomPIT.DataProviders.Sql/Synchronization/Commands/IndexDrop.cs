@@ -20,7 +20,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 					break;
 				case IndexType.Unique:
 				case IndexType.PrimaryKey:
-					new ConstraintDrop(Owner, Index);
+					new ConstraintDrop(Owner, Index).Execute();
 					break;
 			}
 		}

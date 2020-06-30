@@ -1,24 +1,36 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
+using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
-using TomPIT.Security;
 
 namespace TomPIT.IoT
 {
-	public abstract class IoTDeviceMiddleware : MiddlewareComponent, IIoTDeviceMiddleware
+	public abstract class IoTDeviceMiddleware : MiddlewareOperation, IIoTDeviceMiddleware
 	{
 		private List<IIoTTransactionMiddleware> _transactions = null;
 		public void Invoke()
 		{
-			Validate();
-			AuthorizePolicies();
-			OnAuthorize();
-			OnInvoke();
-		}
-
-		private void AuthorizePolicies()
-		{
-			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, this);
+			try
+			{
+				Validate();
+				AuthorizePolicies();
+				OnAuthorize();
+				OnInvoke();
+				Invoked();
+			}
+			catch (ValidationException)
+			{
+				Rollback();
+				throw;
+			}
+			catch (Exception ex)
+			{
+				Rollback();
+				throw new ScriptException(this, ex);
+			}
 		}
 
 		protected virtual void OnAuthorize()
@@ -50,6 +62,9 @@ namespace TomPIT.IoT
 			}
 		}
 
+		[JsonIgnore]
+		public string Name { get; set; }
+
 		protected virtual List<IIoTTransactionMiddleware> OnCreateTransactions()
 		{
 			return new List<IIoTTransactionMiddleware>();
@@ -68,7 +83,10 @@ namespace TomPIT.IoT
 
 		public override string ToString()
 		{
-			return GetType().ShortName();
+			if (string.IsNullOrWhiteSpace(Name))
+				return GetType().ShortName();
+
+			return Name;
 		}
 	}
 }

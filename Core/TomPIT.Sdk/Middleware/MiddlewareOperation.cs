@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Newtonsoft.Json;
 using TomPIT.Annotations;
 using TomPIT.Security;
 
@@ -8,6 +9,7 @@ namespace TomPIT.Middleware
 	{
 		[SkipValidation]
 		[EditorBrowsable(EditorBrowsableState.Advanced)]
+		[JsonIgnore]
 		public IMiddlewareTransaction Transaction
 		{
 			get

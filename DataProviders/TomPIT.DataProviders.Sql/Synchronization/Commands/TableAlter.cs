@@ -22,7 +22,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 			{
 				if (!ColumnsMatched(index))
 				{
-					new IndexDrop(Owner, index);
+					new IndexDrop(Owner, index).Execute();
 					dropped.Add(index);
 				}
 			}
@@ -35,17 +35,9 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 				var column = Model.Columns.FirstOrDefault(f => string.Compare(f.Name, existingColumn.Name, true) == 0);
 
 				if (column == null)
-					new ColumnDrop(Owner, existingColumn, Existing);
+					new ColumnDrop(Owner, existingColumn, Existing).Execute();
 				else
-					new ColumnAlter(Owner, column, Existing, existingColumn);
-			}
-
-			foreach (var column in Model.Columns)
-			{
-				var existing = Existing.Columns.FirstOrDefault(f => string.Compare(f.Name, column.Name, true) == 0);
-
-				if (existing == null)
-					new ColumnAdd(Owner, column);
+					new ColumnAlter(Owner, column, Existing, existingColumn).Execute();
 			}
 
 			var indexes = ParseIndexes(Model);
@@ -53,7 +45,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 			foreach (var index in indexes)
 			{
 				if (!IndexExists(index))
-					new IndexCreate(Owner, index);
+					new IndexCreate(Owner, index).Execute();
 			}
 		}
 

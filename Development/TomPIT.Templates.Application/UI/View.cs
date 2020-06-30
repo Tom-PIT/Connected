@@ -12,6 +12,7 @@ namespace TomPIT.MicroServices.UI
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[DomElement(DesignUtils.ViewElement)]
 	[Syntax(SyntaxAttribute.Razor)]
+	[ComponentCreatedHandler(DesignUtils.ViewCreateHandler)]
 	public class View : ViewBase, IViewConfiguration
 	{
 		private IMetricOptions _metric = null;

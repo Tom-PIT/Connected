@@ -98,9 +98,9 @@ namespace TomPIT.IoT
 			OnAuthorize();
 		}
 
-		private void AuthorizePolicies(string method)
+		private void AuthorizePolicies(IoTConnectionMethod context)
 		{
-			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, this, method);
+			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, this, context.ToString());
 		}
 
 		protected virtual void OnAuthorize()

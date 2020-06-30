@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 
 namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 {
 	internal class TableSynchronize : TableTransaction
 	{
-		private List<IndexDescriptor> _indexes = null;
 		private ExistingModel _existingSchema = null;
 		public TableSynchronize(ISynchronizer owner) : base(owner)
 		{
@@ -19,6 +17,8 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 
 			if (TableExists)
 			{
+				Owner.ExistingModel = ExistingModel;
+
 				if (ShouldRecreate)
 					new TableRecreate(Owner, ExistingModel).Execute();
 				else if (ShouldAlter)
@@ -53,7 +53,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 				{
 					var existing = ExistingModel.Columns.FirstOrDefault(f => string.Compare(f.Name, column.Name, true) == 0);
 
-					if (existing == null && column.IsIdentity)
+					if (existing == null)
 						return true;
 
 					if (existing.IsIdentity != column.IsIdentity)
@@ -66,8 +66,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 
 					if (column == null && existing.IsIdentity)
 						return true;
-
-					if (column.IsIdentity != existing.IsIdentity)
+					else if (column != null && column.IsIdentity != existing.IsIdentity)
 						return true;
 				}
 

@@ -17,6 +17,8 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 
 			add.Execute();
 
+			ExecuteDefaults(add.TemporaryName);
+
 			if (HasIdentity)
 				new IdentityInsert(Owner, add.TemporaryName, true).Execute();
 
@@ -29,7 +31,6 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 			new TableRename(Owner, add.TemporaryName).Execute();
 
 			ExecutePrimaryKey();
-			ExecuteDefaults();
 			ExecuteIndexes();
 		}
 
@@ -55,12 +56,12 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 				new PrimaryKeyAdd(Owner, pk).Execute();
 		}
 
-		private void ExecuteDefaults()
+		private void ExecuteDefaults(string tableName)
 		{
 			foreach (var column in Owner.Model.Columns)
 			{
 				if (!string.IsNullOrWhiteSpace(column.DefaultValue))
-					new DefaultAdd(Owner, column).Execute();
+					new DefaultAdd(Owner, column, tableName).Execute();
 			}
 		}
 

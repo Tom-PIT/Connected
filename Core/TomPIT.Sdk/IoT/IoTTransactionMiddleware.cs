@@ -1,22 +1,39 @@
-﻿using TomPIT.Middleware;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
+using TomPIT.Exceptions;
+using TomPIT.Middleware;
 using TomPIT.Reflection;
-using TomPIT.Security;
 
 namespace TomPIT.IoT
 {
-	public abstract class IoTTransactionMiddleware : MiddlewareComponent, IIoTTransactionMiddleware
+	public abstract class IoTTransactionMiddleware : MiddlewareOperation, IIoTTransactionMiddleware
 	{
-		public void Invoke()
-		{
-			Validate();
-			AuthorizePolicies();
-			OnAuthorize();
-			OnInvoke();
-		}
+		[JsonIgnore]
+		public string Name { get; set; }
 
-		private void AuthorizePolicies()
+		public void Invoke(IIoTDeviceMiddleware device)
 		{
-			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, this);
+			try
+			{
+
+				Validate();
+				AuthorizePolicies();
+				OnAuthorize();
+				OnInvoke(device);
+
+				Invoked();
+			}
+			catch (ValidationException)
+			{
+				Rollback();
+				throw;
+			}
+			catch (Exception ex)
+			{
+				Rollback();
+				throw new ScriptException(this, ex);
+			}
 		}
 
 		protected virtual void OnAuthorize()
@@ -24,14 +41,17 @@ namespace TomPIT.IoT
 
 		}
 
-		protected virtual void OnInvoke()
+		protected virtual void OnInvoke(IIoTDeviceMiddleware device)
 		{
 
 		}
 
 		public override string ToString()
 		{
-			return GetType().ShortName();
+			if (string.IsNullOrWhiteSpace(Name))
+				return GetType().ShortName();
+
+			return Name;
 		}
 	}
 }

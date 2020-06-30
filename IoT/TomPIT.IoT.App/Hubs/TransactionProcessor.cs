@@ -9,7 +9,10 @@ namespace TomPIT.IoT.Hubs
 		{
 			DeviceName = data.Required<string>("device").ToLowerInvariant();
 			Transaction = data.Required<string>("transaction");
-			Arguments = data.Required<JObject>("arguments");
+			Arguments = data.Optional<JObject>("arguments", null);
+
+			if (Arguments == null)
+				Arguments = new JObject();
 		}
 
 		public string Transaction { get; }
@@ -22,7 +25,7 @@ namespace TomPIT.IoT.Hubs
 			var transaction = FindTransaction(Transaction);
 			Serializer.Populate(Arguments, transaction);
 
-			transaction.Invoke();
+			transaction.Invoke(Device);
 
 			TransactionArguments = Serializer.Deserialize<JObject>(Serializer.Serialize(transaction));
 		}

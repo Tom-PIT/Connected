@@ -5,9 +5,12 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 {
 	internal class DefaultAdd : ColumnTransaction
 	{
-		public DefaultAdd(ISynchronizer owner, IModelSchemaColumn column) : base(owner, column)
+		public DefaultAdd(ISynchronizer owner, IModelSchemaColumn column, string tableName) : base(owner, column)
 		{
+			TableName = tableName;
 		}
+
+		private string TableName { get; }
 
 		protected override void OnExecute()
 		{
@@ -20,19 +23,10 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 			{
 				var text = new StringBuilder();
 
-				var defValue = $"N'{Column.DefaultValue}'";
+				var defValue = SqlDataProviderExtensions.ParseDefaultValue(Column.DefaultValue);
 
-				if (Column.DefaultValue.Length > 1)
-				{
-					var last = Column.DefaultValue.Trim()[^1];
-					var prev = Column.DefaultValue.Trim()[0..^1].Trim()[^1];
-
-					if (last == ')' && prev == '(')
-						defValue = Column.DefaultValue;
-				}
-
-				text.AppendLine($"ALTER TABLE {Escape(Model.SchemaName(), Owner.Model.Name)}");
-				text.AppendLine($"ADD CONSTRAINT DF_{Unescape(Model.SchemaName())}_{Unescape(Owner.Model.Name)}_{Column.Name} DEFAULT {defValue} FOR {Column.Name}");
+				text.AppendLine($"ALTER TABLE {Escape(Model.SchemaName(), TableName)}");
+				text.AppendLine($"ADD CONSTRAINT {Owner.GenerateConstraintName(ConstraintNameType.Default)} DEFAULT {defValue} FOR {Column.Name}");
 
 				return text.ToString();
 			}

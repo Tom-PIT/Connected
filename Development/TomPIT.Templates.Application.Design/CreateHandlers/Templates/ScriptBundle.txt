@@ -1,0 +1,8 @@
+﻿import { Error } from '@:ui/core';
+
+export class [NAME]{
+    constructor(e) {
+        super(e);
+    }
+    
+}

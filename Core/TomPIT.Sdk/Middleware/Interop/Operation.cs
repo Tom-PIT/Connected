@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.Exceptions;
 
 namespace TomPIT.Middleware.Interop
@@ -31,7 +32,7 @@ namespace TomPIT.Middleware.Interop
 
 				Invoked();
 			}
-			catch (System.ComponentModel.DataAnnotations.ValidationException)
+			catch (ValidationException)
 			{
 				Rollback();
 				throw;

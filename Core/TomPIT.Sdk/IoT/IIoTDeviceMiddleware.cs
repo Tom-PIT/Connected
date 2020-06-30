@@ -8,5 +8,7 @@ namespace TomPIT.IoT
 		void Invoke();
 
 		List<IIoTTransactionMiddleware> Transactions { get; }
+
+		string Name { get; }
 	}
 }

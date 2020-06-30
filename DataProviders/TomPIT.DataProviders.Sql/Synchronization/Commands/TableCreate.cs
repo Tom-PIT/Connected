@@ -39,10 +39,12 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 
 		private void ExecuteDefaults()
 		{
+			var name = Temporary ? TemporaryName : Model.Name;
+
 			foreach (var column in Owner.Model.Columns)
 			{
 				if (!string.IsNullOrWhiteSpace(column.DefaultValue))
-					new DefaultAdd(Owner, column).Execute();
+					new DefaultAdd(Owner, column, name).Execute();
 			}
 		}
 

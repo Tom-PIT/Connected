@@ -20,7 +20,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 			var indexes = Existing.ResolveIndexes(Column.Name);
 
 			foreach (var index in indexes)
-				new IndexDrop(Owner, index);
+				new IndexDrop(Owner, index).Execute();
 
 			Owner.CreateCommand(CommandText).ExecuteNonQuery();
 		}

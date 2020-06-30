@@ -58,6 +58,6 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 			}
 		}
 
-		public string DefaultValue => ConstraintType == ConstraintType.Default && Keys.StartsWith("(") && Keys.EndsWith(")") ? Keys[1..^2] : Keys;
+		public string DefaultValue => ConstraintType == ConstraintType.Default && Keys.StartsWith("(") && Keys.EndsWith(")") ? Keys[1..^1] : Keys;
 	}
 }

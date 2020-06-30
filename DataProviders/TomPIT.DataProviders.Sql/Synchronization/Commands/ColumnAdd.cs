@@ -17,7 +17,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 				new PrimaryKeyAdd(Owner, Column).Execute();
 
 			if (!string.IsNullOrWhiteSpace(Column.DefaultValue))
-				new DefaultAdd(Owner, Column).Execute();
+				new DefaultAdd(Owner, Column, Model.Name).Execute();
 		}
 
 		private string CommandText

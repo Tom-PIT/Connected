@@ -14,6 +14,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 		private ReliableSqlConnection _con = null;
 		private IDbTransaction _transaction = null;
 		private Dictionary<ConstraintNameType, List<string>> _constraintNames = null;
+		private ExistingModel _existingModel = null;
 
 		public Synchronizer(string connectionString, IModelSchema model, List<IModelOperationSchema> procedures)
 		{
@@ -25,6 +26,34 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 		private List<IModelOperationSchema> Procedures { get; }
 		private string ConnectionString { get; }
 		public IModelSchema Model { get; }
+
+		public ExistingModel ExistingModel
+		{
+			get { return _existingModel; }
+			set
+			{
+				if (ExistingModel != value)
+				{
+					_existingModel = value;
+
+					foreach (var index in _existingModel.Descriptor.Constraints)
+					{
+						switch (index.ConstraintType)
+						{
+							case ConstraintType.Default:
+								AddConstraint(ConstraintNameType.Default, index.Name);
+								break;
+							case ConstraintType.PrimaryKey:
+								AddConstraint(ConstraintNameType.PrimaryKey, index.Name);
+								break;
+							case ConstraintType.Unique:
+								AddConstraint(ConstraintNameType.Index, index.Name);
+								break;
+						}
+					}
+				}
+			}
+		}
 
 		public void Execute()
 		{
@@ -126,7 +155,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 				Connection.Close();
 		}
 
-		public string GenerateConstraintName(ConstraintNameType type)
+		private void AddConstraint(ConstraintNameType type, string name)
 		{
 			if (!ConstraintNames.TryGetValue(type, out List<string> existing))
 			{
@@ -135,6 +164,11 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 				ConstraintNames.Add(type, existing);
 			}
 
+			if (!ConstraintNameExists(name))
+				existing.Add(name);
+		}
+		public string GenerateConstraintName(ConstraintNameType type)
+		{
 			var index = 0;
 
 			while (true)
@@ -146,7 +180,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 
 				if (!ConstraintNameExists(value))
 				{
-					existing.Add(value);
+					AddConstraint(type, value);
 					return value;
 				}
 
@@ -172,6 +206,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 		{
 			return type switch
 			{
+				ConstraintNameType.Default => "DF",
 				ConstraintNameType.PrimaryKey => "PK",
 				ConstraintNameType.Index => "IX",
 				_ => "IX"

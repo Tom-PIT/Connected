@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 using TomPIT.Annotations;
 using TomPIT.Data;
 
@@ -49,6 +50,7 @@ namespace TomPIT.Middleware
 		}
 
 		[SkipValidation]
+		[JsonIgnore]
 		private MiddlewareValidator Validator
 		{
 			get

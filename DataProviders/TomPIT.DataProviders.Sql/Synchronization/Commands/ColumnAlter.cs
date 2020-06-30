@@ -19,23 +19,30 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 			if (ExistingColumn.Equals(Column))
 				return;
 
-			if (!string.IsNullOrWhiteSpace(ExistingColumn.DefaultValue)
-				&& string.Compare(ExistingColumn.DefaultValue, Column.DefaultValue, false) != 0)
-				new DefaultDrop(Owner, Column);
+			if (!string.IsNullOrWhiteSpace(ExistingColumn.DefaultValue))
+			{
+				var existingDefault = SqlDataProviderExtensions.ParseDefaultValue(ExistingColumn.DefaultValue);
+				var def = SqlDataProviderExtensions.ParseDefaultValue(Column.DefaultValue);
 
+				if (string.Compare(existingDefault, def, false) != 0)
+					new DefaultDrop(Owner, Column).Execute();
+			}
 			if (Column.DataType != ExistingColumn.DataType
 				|| Column.IsNullable != ExistingColumn.IsNullable
 				|| Column.MaxLength != ExistingColumn.MaxLength
 				|| Column.IsVersion != ExistingColumn.IsVersion)
 				Owner.CreateCommand(CommandText).ExecuteNonQuery();
 
-			if (string.Compare(ExistingColumn.DefaultValue, Column.DefaultValue, false) != 0)
-				new DefaultAdd(Owner, Column);
+			var ed = SqlDataProviderExtensions.ParseDefaultValue(ExistingColumn.DefaultValue);
+			var nd = SqlDataProviderExtensions.ParseDefaultValue(Column.DefaultValue);
+
+			if (string.Compare(ed, nd, false) != 0)
+				new DefaultAdd(Owner, Column, Model.Name).Execute();
 
 			if (!ExistingColumn.IsPrimaryKey && Column.IsPrimaryKey)
-				new PrimaryKeyAdd(Owner, Column);
+				new PrimaryKeyAdd(Owner, Column).Execute();
 			else if (ExistingColumn.IsPrimaryKey && !Column.IsPrimaryKey)
-				new PrimaryKeyRemove(Owner, Existing, ExistingColumn);
+				new PrimaryKeyRemove(Owner, Existing, ExistingColumn).Execute();
 		}
 
 		private string CommandText

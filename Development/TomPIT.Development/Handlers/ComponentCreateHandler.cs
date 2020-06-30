@@ -7,12 +7,14 @@ using TomPIT.Middleware;
 
 namespace TomPIT.Development.Handlers
 {
-	public abstract class ComponentCreateHandler<T> : IComponentCreateHandler where T : class, IText
+	public abstract class ComponentCreateHandler<T> : IComponentCreateHandler where T : class
 	{
 		private Regex _rx = null;
 		protected T Instance { get; private set; }
 		protected IMiddlewareContext Context { get; private set; }
 		protected string ComponentName { get; private set; }
+
+		protected IMicroService MicroService { get; private set; }
 
 		public void InitializeNewComponent(IMiddlewareContext context, object instance)
 		{
@@ -22,7 +24,16 @@ namespace TomPIT.Development.Handlers
 			if (Instance == null)
 				return;
 
-			ComponentName = Instance.Configuration().ComponentName();
+			if (Instance is IConfiguration config)
+			{
+				ComponentName = config.ComponentName();
+				MicroService = context.Tenant.GetService<IMicroServiceService>().Select(config.MicroService());
+			}
+			else if (instance is IElement e)
+			{
+				ComponentName = e.Configuration().ComponentName();
+				MicroService = context.Tenant.GetService<IMicroServiceService>().Select(e.Configuration().MicroService());
+			}
 
 			OnInitializeNewComponent();
 		}

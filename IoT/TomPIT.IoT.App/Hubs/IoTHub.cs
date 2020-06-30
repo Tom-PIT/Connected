@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
@@ -12,7 +11,7 @@ using TomPIT.Middleware;
 
 namespace TomPIT.IoT.Hubs
 {
-	[Authorize(AuthenticationSchemes = "TomPIT")]
+	//[Authorize(AuthenticationSchemes = "TomPIT")]
 	public class IoTServerHub : Hub
 	{
 		private const string Device = "device";
@@ -28,7 +27,7 @@ namespace TomPIT.IoT.Hubs
 			try
 			{
 				foreach (var device in devices)
-					AuthorizeHub($"{device.MicroService}/{device.Hub}", "Register");
+					AuthorizeHub($"{device.MicroService}/{device.Hub}", IoTConnectionMethod.Device);
 
 				foreach (var device in devices)
 					await Groups.AddToGroupAsync(Context.ConnectionId, device.ToString().ToLowerInvariant());
@@ -61,7 +60,7 @@ namespace TomPIT.IoT.Hubs
 			try
 			{
 				foreach (var subscription in subscriptions)
-					AuthorizeHub(subscription.ToString(), "Add");
+					AuthorizeHub(subscription.ToString(), IoTConnectionMethod.Client);
 
 				foreach (var subscription in subscriptions)
 					await Groups.AddToGroupAsync(Context.ConnectionId, subscription.ToString().ToLowerInvariant());
@@ -89,7 +88,7 @@ namespace TomPIT.IoT.Hubs
 			}
 		}
 
-		private void AuthorizeHub(string identifier, string method)
+		private void AuthorizeHub(string identifier, IoTConnectionMethod method)
 		{
 			var ctx = new MiddlewareContext();
 			var descriptor = ComponentDescriptor.IoTHub(ctx, identifier);

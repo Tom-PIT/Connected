@@ -59,13 +59,16 @@ namespace TomPIT.Data
 				}
 			}
 
-			var properties = EntityType.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
+			var properties = EntityType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
 
 			foreach (var property in properties)
 			{
 				var att = property.FindAttribute<DependencyAttribute>();
 
 				if (att == null)
+					continue;
+
+				if (!att.Model.ImplementsInterface<IModelComponent>())
 					continue;
 
 				if (references.Contains(att.Model))

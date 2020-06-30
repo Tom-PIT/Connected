@@ -70,10 +70,27 @@ namespace TomPIT.Data
 		{
 			var state = EnsureState(configuration);
 
+			if (state.IsInitializing)//possible cyclic reference
+				return;
+
 			lock (state)
 			{
+				if (state.IsInitializing)
+					return;
+
 				if (!state.Valid)
-					SynchronizeEntity(configuration, state);
+				{
+					state.IsInitializing = true;
+
+					try
+					{
+						SynchronizeEntity(configuration, state);
+					}
+					finally
+					{
+						state.IsInitializing = false;
+					}
+				}
 			}
 		}
 
