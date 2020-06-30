@@ -197,6 +197,43 @@ namespace TomPIT
 			}
 		}
 
+		public static DbType ToDbType(Type type)
+		{
+			if (type == typeof(string))
+				return DbType.String;
+			else if (type == typeof(byte[]))
+				return DbType.Binary;
+			else if (type == typeof(byte))
+				return DbType.Byte;
+			else if (type == typeof(bool))
+				return DbType.Boolean;
+			else if (type == typeof(DateTime))
+				return DbType.DateTime2;
+			else if (type == typeof(decimal))
+				return DbType.Decimal;
+			else if (type == typeof(double))
+				return DbType.Double;
+			else if (type == typeof(Guid))
+				return DbType.Guid;
+			else if (type == typeof(short))
+				return DbType.Int16;
+			else if (type == typeof(int))
+				return DbType.Int32;
+			else if (type == typeof(long))
+				return DbType.Int64;
+			else if (type == typeof(sbyte))
+				return DbType.SByte;
+			else if (type == typeof(float))
+				return DbType.Single;
+			else if (type == typeof(ushort))
+				return DbType.UInt16;
+			else if (type == typeof(uint))
+				return DbType.UInt32;
+			else if (type == typeof(ulong))
+				return DbType.UInt64;
+			else
+				return DbType.Object;
+		}
 		public static DbType ToDbType(DataType type)
 		{
 			return type switch

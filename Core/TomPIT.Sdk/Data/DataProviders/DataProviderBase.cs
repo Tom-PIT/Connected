@@ -39,12 +39,12 @@ namespace TomPIT.Data.DataProviders
 		protected DbType ResolveType(ICommandParameter i)
 		{
 			if (i.DataType != null)
-				return Types.ToDbType(Types.ToDataType(i.DataType));
+				return Types.ToDbType(i.DataType);
 
 			if (i.Value == null)
 				return DbType.String;
 
-			return Types.ToDbType(Types.ToDataType(i.Value.GetType()));
+			return Types.ToDbType(i.Value.GetType());
 		}
 
 		protected JObject CreateDataRow(IDataReader rdr)
