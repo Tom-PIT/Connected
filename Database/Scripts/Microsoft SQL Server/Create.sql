@@ -1,4 +1,17 @@
+﻿/*
+Run this script on:
 
+        sys-db\sql2017.tompit_new    -  This database will be modified
+
+to synchronize it with:
+
+        sys-db\sql2017.tompit_sys
+
+You are recommended to back up your database before running this script
+
+Script created by SQL Compare Engine version 12.3.3.4490 from Red Gate Software Ltd at 6/30/2020 9:57:03 AM
+
+*/
 SET NUMERIC_ROUNDABORT OFF
 GO
 SET ANSI_PADDING, ANSI_WARNINGS, CONCAT_NULL_YIELDS_NULL, ARITHABORT, QUOTED_IDENTIFIER, ANSI_NULLS ON
