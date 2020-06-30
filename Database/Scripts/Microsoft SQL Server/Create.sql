@@ -1,4 +1,17 @@
+﻿/*
+Run this script on:
 
+        sys-db\sql2017.tompit_new    -  This database will be modified
+
+to synchronize it with:
+
+        sys-db\sql2017.tompit_sys
+
+You are recommended to back up your database before running this script
+
+Script created by SQL Compare Engine version 12.3.3.4490 from Red Gate Software Ltd at 6/30/2020 9:57:03 AM
+
+*/
 SET NUMERIC_ROUNDABORT OFF
 GO
 SET ANSI_PADDING, ANSI_WARNINGS, CONCAT_NULL_YIELDS_NULL, ARITHABORT, QUOTED_IDENTIFIER, ANSI_NULLS ON
@@ -3556,7 +3569,8 @@ CREATE TABLE [tompit].[iot_state]
 [hub] [uniqueidentifier] NOT NULL,
 [field] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [value] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[modified] [datetime2] NOT NULL
+[modified] [datetime2] NOT NULL,
+[device] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
 ) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3582,11 +3596,11 @@ BEGIN
 	SET NOCOUNT ON;
 
 	MERGE tompit.iot_state AS d
-	USING (SELECT * FROM OPENJSON (@items) WITH (hub uniqueidentifier, field nvarchar(128), value nvarchar(1024))) AS s (hub, field, value)
-	ON (d.hub = s.hub AND d.field = s.field)
+	USING (SELECT * FROM OPENJSON (@items) WITH (hub uniqueidentifier, field nvarchar(128), value nvarchar(1024), device nvarchar(128))) AS s (hub, field, value, device)
+	ON (d.hub = s.hub AND d.field = s.field AND d.device = s.device)
 	WHEN NOT MATCHED BY TARGET THEN
-		INSERT (hub, field, modified)
-		VALUES (hub, field, GETUTCDATE())
+		INSERT (hub, field, modified, device)
+		VALUES (hub, field, GETUTCDATE(), device)
 	WHEN MATCHED THEN
 		UPDATE SET
 			value = s.value,
