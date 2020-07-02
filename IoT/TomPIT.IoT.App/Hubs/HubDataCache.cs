@@ -36,27 +36,32 @@ namespace TomPIT.IoT.Hubs
 			var schema = Tenant.GetService<IIoTService>().SelectState(hub);
 			var resultProps = new Dictionary<string, JObject>(StringComparer.OrdinalIgnoreCase);
 
-			foreach (var i in fields)
+			lock (schema)
 			{
-				SynchronizeField(schema, i);
+				foreach (var i in fields)
+				{
+					SynchronizeField(schema, i);
 
-				pendingFieldsArray.Add(new JObject
+					pendingFieldsArray.Add(new JObject
 				{
 					{"field", i.Field },
 					{"value", i.Value },
 					{"device", i.Device }
 				});
 
-				if (!resultProps.TryGetValue(i.Device, out JObject props))
-				{
-					props = new JObject();
+					var deviceName = i.Device.Split('/')[^1];
 
-					result.Add(i.Device, props);
+					if (!resultProps.TryGetValue(i.Device, out JObject props))
+					{
+						props = new JObject();
+
+						result.Add(deviceName, props);
+						resultProps.Add(i.Device, props);
+					}
+
+					props.Add(i.Field.ToCamelCase(), i.Value);
 				}
-
-				props.Add(i.Field.ToLowerInvariant(), i.Value);
 			}
-
 			Buffer.Enqueue(pending);
 
 			var hash = JsonConvert.SerializeObject(result);

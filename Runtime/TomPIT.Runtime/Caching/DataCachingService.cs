@@ -426,6 +426,10 @@ namespace TomPIT.Caching
 				return new ExpandoObject();
 
 			var result = new ExpandoObject();
+
+			if (instance.GetType().IsCollection())
+				return result;
+
 			var members = instance.GetType().GetMembers(BindingFlags.Public | BindingFlags.Instance);
 
 			foreach (var member in members)

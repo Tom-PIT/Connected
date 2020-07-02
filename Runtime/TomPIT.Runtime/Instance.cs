@@ -166,7 +166,7 @@ namespace TomPIT
 			RuntimeService._host = app;
 			app.UseMiddleware<AuthenticationCookieMiddleware>();
 
-			var lifetime = app.ApplicationServices.GetService<Microsoft.Extensions.Hosting.IApplicationLifetime>();
+			var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
 
 			if (lifetime != null)
 			{

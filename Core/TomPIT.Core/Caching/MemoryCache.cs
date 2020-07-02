@@ -310,6 +310,11 @@ namespace TomPIT.Caching
 			return sb.ToString();
 		}
 
+		public ICollection<string> Keys(string key)
+		{
+			return Container.Keys(key);
+		}
+
 		public static MemoryCache Default { get { return _default.Value; } }
 	}
 }

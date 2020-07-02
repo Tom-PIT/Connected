@@ -6,5 +6,7 @@ namespace TomPIT.IoT.Hubs
 	{
 		JObject SetData(string device, object data);
 		void FlushChanges();
+
+
 	}
 }

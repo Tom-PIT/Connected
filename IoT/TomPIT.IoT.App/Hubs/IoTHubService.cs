@@ -74,36 +74,39 @@ namespace TomPIT.IoT.Services
 
 			var properties = ConfigurationExtensions.GetMiddlewareProperties(data.GetType(), false);
 
-			foreach (var property in properties)
+			lock (state)
 			{
-				if (!property.PropertyType.IsTypePrimitive() || property.PropertyType.IsCollection())
-					continue;
-
-				var value = property.GetValue(data);
-				var field = state.FirstOrDefault(f => string.Compare(f.Device, device, true) == 0 && string.Compare(f.Field, property.Name, true) == 0);
-
-				if (field != null)
+				foreach (var property in properties)
 				{
-					object existingValue = null;
+					if (!property.PropertyType.IsTypePrimitive() || property.PropertyType.IsCollection())
+						continue;
 
-					if (string.IsNullOrWhiteSpace(field.Value))
-						existingValue = TypeExtensions.DefaultValue(property.PropertyType);
-					else
+					var value = property.GetValue(data);
+					var field = state.FirstOrDefault(f => string.Compare(f.Device, device, true) == 0 && string.Compare(f.Field, property.Name, true) == 0);
+
+					if (field != null)
 					{
-						if (!Types.TryConvertInvariant(field.Value, out existingValue, property.PropertyType))
-							existingValue = null;
+						object existingValue = null;
+
+						if (string.IsNullOrWhiteSpace(field.Value))
+							existingValue = TypeExtensions.DefaultValue(property.PropertyType);
+						else
+						{
+							if (!Types.TryConvertInvariant(field.Value, out existingValue, property.PropertyType))
+								existingValue = null;
+						}
+
+						if (Types.Compare(value, existingValue))
+							continue;
 					}
 
-					if (Types.Compare(value, existingValue))
-						continue;
+					changed.Add(new IoTFieldStateModifier
+					{
+						Field = property.Name,
+						Value = Types.Convert<string>(value, CultureInfo.InvariantCulture),
+						Device = device
+					});
 				}
-
-				changed.Add(new IoTFieldStateModifier
-				{
-					Field = property.Name,
-					Value = Types.Convert<string>(value, CultureInfo.InvariantCulture),
-					Device = device
-				});
 			}
 
 			if (changed.Count == 0)

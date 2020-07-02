@@ -7,5 +7,6 @@ namespace TomPIT.App.Resources
 		public string Content { get; set; }
 		public Guid MicroService { get; set; }
 		public string Name { get; set; }
+		public string Url { get; set; }
 	}
 }

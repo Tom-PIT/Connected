@@ -91,6 +91,11 @@ namespace TomPIT.BigData.Providers.Sql
 			var properties = SchemaType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 			IndexParameters = new List<IndexParameter>();
 
+			var tsParameter = Parameters.FirstOrDefault(f => string.Compare(Merger.TimestampColumn, f.Name, true) == 0);
+
+			if (tsParameter != null)
+				SetTimestampValues(tsParameter.Value);
+
 			foreach (var property in properties)
 			{
 				var parameter = Parameters.FirstOrDefault(f => string.Compare(f.Name, property.Name, true) == 0);
@@ -99,24 +104,7 @@ namespace TomPIT.BigData.Providers.Sql
 					continue;
 
 				if (string.Compare(Merger.TimestampColumn, property.Name, true) == 0)
-				{
-					var tsValue = parameter.Value;
-
-					if (tsValue != null)
-					{
-						if (tsValue.GetType().IsCollection())
-						{
-							var timestamps = tsValue as IList;
-
-							StartTimestamp = Types.Convert<DateTime>(timestamps[0]);
-							EndTimestamp = Types.Convert<DateTime>(timestamps[1]);
-						}
-						else
-							StartTimestamp = Types.Convert<DateTime>(tsValue);
-					}
-
 					continue;
-				}
 
 				var partitionKey = property.FindAttribute<BigDataPartitionKeyAttribute>();
 
@@ -178,6 +166,22 @@ namespace TomPIT.BigData.Providers.Sql
 					});
 				}
 			}
+		}
+
+		private void SetTimestampValues(object value)
+		{
+			if (value == null)
+				return;
+
+			if (value.GetType().IsCollection())
+			{
+				var timestamps = value as IList;
+
+				StartTimestamp = Types.Convert<DateTime>(timestamps[0]);
+				EndTimestamp = Types.Convert<DateTime>(timestamps[1]);
+			}
+			else
+				StartTimestamp = Types.Convert<DateTime>(value);
 		}
 
 		private void PrepareCommandText()

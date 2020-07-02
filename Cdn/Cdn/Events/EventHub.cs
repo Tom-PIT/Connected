@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -12,7 +11,7 @@ using TomPIT.Middleware;
 
 namespace TomPIT.Cdn.Events
 {
-	[Authorize(AuthenticationSchemes = "TomPIT")]
+	//[Authorize(AuthenticationSchemes = "TomPIT")]
 	public class EventHub : Hub
 	{
 		public EventHub(IHubContext<EventHub> context)

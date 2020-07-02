@@ -36,5 +36,6 @@ namespace TomPIT.Caching
 		string GenerateRandomKey(string key);
 
 		int Count(string key);
+		ICollection<string> Keys(string key);
 	}
 }

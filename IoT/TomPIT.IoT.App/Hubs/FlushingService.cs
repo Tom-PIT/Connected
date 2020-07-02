@@ -10,9 +10,13 @@ namespace TomPIT.IoT.Hubs
 	{
 		public FlushingService()
 		{
-			IntervalTimeout = TimeSpan.FromMilliseconds(250);
+			IntervalTimeout = TimeSpan.FromMilliseconds(1000);
 		}
 
+		protected override bool Initialize(CancellationToken cancel)
+		{
+			return Instance.State == InstanceState.Running;
+		}
 		protected override Task Process(CancellationToken cancel)
 		{
 			try

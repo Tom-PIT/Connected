@@ -17,6 +17,7 @@ namespace TomPIT.MicroServices.Resources
 		private ListItems<IScriptSource> _scripts = null;
 
 		[Items(DesignUtils.ScriptSourceItems)]
+		[CollectionDesigner(Sort = false)]
 		public ListItems<IScriptSource> Scripts
 		{
 			get

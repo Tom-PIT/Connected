@@ -23,7 +23,8 @@ namespace TomPIT.Sys.Controllers
 				fields.Add(new IoTFieldState
 				{
 					Field = i.Required<string>("field"),
-					Value = i.Optional("value", string.Empty)
+					Value = i.Optional("value", string.Empty),
+					Device = i.Optional("device", string.Empty)
 				});
 			}
 

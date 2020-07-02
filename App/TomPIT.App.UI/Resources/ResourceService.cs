@@ -61,10 +61,16 @@ namespace TomPIT.App.Resources
 
 			var c = Tenant.GetService<IComponentService>().SelectComponent(e.Component);
 
-			if (c == null)
+			if (c == null || e.Component != c.Token)
 				return;
 
-			Remove(GenerateKey(e.MicroService, c.Name.ToLowerInvariant()));
+			foreach (var key in Keys())
+			{
+				var tokens = key.Split('.', 3);
+
+				if (new Guid(tokens[0]) == e.MicroService && string.Compare(tokens[1], c.Name.ToLowerInvariant(), true) == 0)
+					Remove(key);
+			}
 		}
 
 		public string Bundle(string microService, string name)
@@ -74,7 +80,9 @@ namespace TomPIT.App.Resources
 			if (ms == null)
 				throw new RuntimeException(GetType().ShortName(), string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
 
-			var r = Get(GenerateKey(ms.Token, name.ToLowerInvariant()));
+			var ctx = new MicroServiceContext(ms.Token, Tenant.Url);
+			var key = GenerateKey(ms.Token, name.ToLowerInvariant(), ctx.Services.Routing.RootUrl);
+			var r = Get(key);
 
 			if (r != null)
 				return r.Content;
@@ -101,10 +109,11 @@ namespace TomPIT.App.Resources
 				: sb.ToString(),
 
 				Name = name,
-				MicroService = ms.Token
+				MicroService = ms.Token,
+				Url = ctx.Services.Routing.RootUrl
 			};
 
-			Set(GenerateKey(ms.Token, name.ToLowerInvariant()), r);
+			Set(key, r);
 
 			return r.Content;
 		}
@@ -199,7 +208,8 @@ namespace TomPIT.App.Resources
 
 		private string Minify(string source)
 		{
-			return new BundleMinifier().Minify(source);
+			return source;
+			//	return new BundleMinifier().Minify(source);
 		}
 	}
 }
