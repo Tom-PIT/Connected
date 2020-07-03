@@ -11,6 +11,8 @@ namespace TomPIT.SysDb.Sql.IoT
 		public DateTime Modified { get; set; }
 		public string Device { get; set; }
 
+		public object RawValue => null;
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
