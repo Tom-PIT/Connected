@@ -104,6 +104,7 @@ namespace TomPIT.IoT.Services
 					{
 						Field = property.Name,
 						Value = Types.Convert<string>(value, CultureInfo.InvariantCulture),
+						RawValue = value,
 						Device = device
 					});
 				}

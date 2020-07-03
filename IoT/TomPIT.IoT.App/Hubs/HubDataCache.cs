@@ -59,7 +59,7 @@ namespace TomPIT.IoT.Hubs
 						resultProps.Add(i.Device, props);
 					}
 
-					props.Add(i.Field.ToCamelCase(), i.Value);
+					props.Add(i.Field.ToCamelCase(), new JValue(i.RawValue));
 				}
 			}
 			Buffer.Enqueue(pending);

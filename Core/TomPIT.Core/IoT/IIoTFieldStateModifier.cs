@@ -5,5 +5,6 @@
 		string Field { get; }
 		string Value { get; }
 		string Device { get; }
+		object RawValue { get; }
 	}
 }
