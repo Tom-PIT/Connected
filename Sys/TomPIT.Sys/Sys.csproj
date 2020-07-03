@@ -9,9 +9,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>TomPIT.Sys</RootNamespace>
-    <AssemblyVersion>2.1.630.7</AssemblyVersion>
-    <FileVersion>2.1.630.7</FileVersion>
-    <Version>2.1.630.7</Version>
+    <AssemblyVersion>2.1.703.1</AssemblyVersion>
+    <FileVersion>2.1.703.1</FileVersion>
+    <Version>2.1.703.1</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
