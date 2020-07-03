@@ -40,8 +40,18 @@ namespace TomPIT.Data
 
 		public TomPIT.Data.IDataParameter SetParameter(string name, object value, bool nullMapping)
 		{
+			return ResolveParameter(name, value, nullMapping, null);
+		}
+		public TomPIT.Data.IDataParameter SetParameter(string name, object value, bool nullMapping, DbType type)
+		{
+			return ResolveParameter(name, value, nullMapping, type);
+		}
+
+		private TomPIT.Data.IDataParameter ResolveParameter(string name, object value, bool nullMapping, DbType? type)
+		{
 			var parameter = Parameters.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0);
 			var mappedValue = nullMapping ? MapNullValue(value) : MapValue(value);
+			var dbType = type != null ? (DbType)type : mappedValue == null || mappedValue == DBNull.Value ? DbType.String : Types.ToDbType(mappedValue.GetType());
 
 			if (parameter == null)
 			{
@@ -49,7 +59,7 @@ namespace TomPIT.Data
 				{
 					Name = name,
 					Value = mappedValue,
-					Type = ResolveType(mappedValue)
+					Type = dbType
 				};
 
 				Parameters.Add(parameter);
@@ -157,7 +167,7 @@ namespace TomPIT.Data
 					Direction = parameter.Direction,
 					Name = parameter.Name,
 					Value = parameter.Value,
-					DataType = parameter.Type.IsEnum ? Enum.GetUnderlyingType(parameter.Type) : parameter.Type
+					DataType = parameter.Type
 				});
 			}
 

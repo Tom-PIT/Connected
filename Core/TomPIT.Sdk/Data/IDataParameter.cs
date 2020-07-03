@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 
 namespace TomPIT.Data
 {
@@ -8,7 +7,6 @@ namespace TomPIT.Data
 		string Name { get; set; }
 		object Value { get; set; }
 		ParameterDirection Direction { get; set; }
-		Type Type { get; set; }
-
+		DbType Type { get; set; }
 	}
 }

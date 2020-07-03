@@ -36,17 +36,6 @@ namespace TomPIT.Data.DataProviders
 			return c.Connection;
 		}
 
-		protected DbType ResolveType(ICommandParameter i)
-		{
-			if (i.DataType != null)
-				return Types.ToDbType(i.DataType);
-
-			if (i.Value == null)
-				return DbType.String;
-
-			return Types.ToDbType(i.Value.GetType());
-		}
-
 		protected JObject CreateDataRow(IDataReader rdr)
 		{
 			var row = new JObject();

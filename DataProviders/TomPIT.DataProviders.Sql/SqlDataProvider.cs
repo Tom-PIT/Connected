@@ -39,7 +39,7 @@ namespace TomPIT.DataProviders.Sql
 					var p = new SqlParameter
 					{
 						ParameterName = i.Name,
-						DbType = ResolveType(i)
+						DbType = i.DataType
 					};
 
 					if (i.Direction == ParameterDirection.ReturnValue)

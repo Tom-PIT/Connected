@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.Design;
 using TomPIT.Development;
 using TomPIT.Ide.Analysis;
 using TomPIT.Ide.Analysis.Analyzers;
@@ -26,6 +27,7 @@ namespace TomPIT.Ide.Designers
 		private ICodeAnalyzer _analyzer = null;
 		private ICodeDiagnosticProvider _diagnostic = null;
 		private Type _argumentType = null;
+		private IAmbientProvider _ambientProvider = null;
 
 		private string _text = null;
 
@@ -121,6 +123,18 @@ namespace TomPIT.Ide.Designers
 
 		protected override IDesignerActionResult OnAction(JObject data, string action)
 		{
+			if (AmbientProvider != null)
+			{
+				foreach (var a in AmbientProvider.ToolbarActions)
+				{
+					if (string.Compare(a.Action, action, true) == 0)
+					{
+						a.Invoke(Environment.Context, Content);
+						return Result.EmptyResult(this);
+					}
+				}
+			}
+
 			if (string.Compare(action, "provideCompletionItems", true) == 0)
 			{
 				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
@@ -460,6 +474,29 @@ namespace TomPIT.Ide.Designers
 				return $"/{component.Category}/{component.Name}";
 
 			return $"/{component.Category}/{component.Name}/{text.Id}";
+		}
+
+		public IAmbientProvider AmbientProvider
+		{
+			get
+			{
+				if (_ambientProvider == null)
+				{
+					var designer = Content.Configuration().GetType().FindAttribute<DomDesignerAttribute>();
+
+					if (string.IsNullOrWhiteSpace(designer.AmbientProvider))
+						return null;
+
+					var ambientType = Type.GetType(designer.AmbientProvider, false);
+
+					if (ambientType == null)
+						return null;
+
+					_ambientProvider = ambientType.CreateInstance<IAmbientProvider>();
+				}
+
+				return _ambientProvider;
+			}
 		}
 	}
 }

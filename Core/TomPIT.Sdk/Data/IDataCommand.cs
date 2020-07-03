@@ -15,5 +15,6 @@ namespace TomPIT.Data
 
 		IDataParameter SetParameter(string name, object value);
 		IDataParameter SetParameter(string name, object value, bool nullMapping);
+		IDataParameter SetParameter(string name, object value, bool nullMapping, DbType type);
 	}
 }

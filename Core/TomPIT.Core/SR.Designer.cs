@@ -1231,6 +1231,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Entity state not found.
+        /// </summary>
+        public static string ErrEntityStateNotFound {
+            get {
+                return ResourceManager.GetString("ErrEntityStateNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Environment unit not found.
         /// </summary>
         public static string ErrEnvironmentUnitNotFound {

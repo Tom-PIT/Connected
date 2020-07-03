@@ -1203,4 +1203,7 @@
   <data name="ErrRecordUnlock" xml:space="preserve">
     <value>Record unlock failed. The most common reason is that a lock has expired. This could mean your transaction has written inconsistent data.</value>
   </data>
+  <data name="ErrEntityStateNotFound" xml:space="preserve">
+    <value>Entity state not found</value>
+  </data>
 </root>

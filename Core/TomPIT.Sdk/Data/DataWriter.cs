@@ -75,7 +75,7 @@ namespace TomPIT.Data
 					if (par == null)
 						continue;
 
-					if (Types.TryConvert(parameter.Value, out object r, par.Type))
+					if (Types.TryConvert(parameter.Value, out object r, Types.ToType(par.Type)))
 						par.Value = r;
 				}
 			}

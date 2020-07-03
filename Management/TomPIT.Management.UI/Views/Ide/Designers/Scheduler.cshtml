@@ -105,8 +105,8 @@
         <div class="paper" id="scheduleDesigner">
             <div class="btn-toolbar justify-content-between">
                 <div class="btn-group mr-2">
-                    <button type="button" class="btn btn-secondary">@SRM.WorkerRun</button>
-                    <button type="button" class="btn btn-secondary">@SRM.WorkerReset</button>
+                    <button type="button" class="btn btn-secondary" id="btnRun">@SRM.WorkerRun</button>
+                    <button type="button" class="btn btn-secondary" id="btnReset">@SRM.WorkerReset</button>
                 </div>
                 <div class="btn-group">
                     <button type="button" class="btn @statusCss" data-toggle="button" id="btnStatus" @Html.TP().Attributes.Disabled(Model.Job.Status == WorkerStatus.Queued)>@statusText</button>

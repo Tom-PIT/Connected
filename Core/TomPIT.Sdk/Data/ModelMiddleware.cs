@@ -253,7 +253,7 @@ namespace TomPIT.Data
 					{
 						var parameter = writer.SetReturnValueParameter(property.Name);
 
-						parameter.Type = property.PropertyType;
+						parameter.Type = Types.ToDbType(property);
 					}
 				}
 			}

@@ -79,6 +79,28 @@
                     var debug = options.debug;
                     var debugButton = $('#btnDebug');
 
+                    $('#customActions').empty();
+
+                    if (options.actions) {
+                        for (let i = 0; i < options.actions.length; i++) {
+                            const action = options.actions[i];
+                            $('#customActions').append(`<a href="#" class="btn btn-sm btn-light" title="${action.text}" data-tag="custom-action" data-action="${action.action}"><i class="${action.glyph}"></i></a>`);
+                        }
+
+                        $('a[data-tag="custom-action"]').click((e) => {
+                            var target = $(e.target).closest('a');
+
+                            ide.designerAction({
+                                data: {
+                                    action: target.attr('data-action')
+                                },
+                                onComplete: () => {
+                                    tompit.success('Entity synchronized');
+                                }
+                            });
+                        });
+                    }
+
                     if (typeof debug !== 'undefined' && typeof debug.url !== 'undefined' && debug.url.length > 0) {
                         debugButton.collapse('show');
                         debugButton.attr('href', debug.url);

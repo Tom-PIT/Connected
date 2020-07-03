@@ -10,7 +10,7 @@ namespace TomPIT.MicroServices.Data
 {
 	[Create(DesignUtils.ComponentModel)]
 	[Syntax(SyntaxAttribute.CSharp)]
-	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[DomDesigner(DomDesignerAttribute.TextDesigner, AmbientProvider = "TomPIT.MicroServices.Design.Designers.ModelAmbientProvider, TomPIT.MicroServices.Design")]
 	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.Model, TomPIT.MicroServices.Design")]
 	public class Model : SourceCodeConfiguration, IModelConfiguration
 	{
