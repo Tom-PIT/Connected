@@ -42,7 +42,7 @@ namespace TomPIT.DataProviders.BigData
 					var p = new BigDataParameter
 					{
 						ParameterName = i.Name,
-						DbType = ResolveType(i)
+						DbType = i.DataType
 					};
 
 					if (i.Direction == ParameterDirection.ReturnValue)
