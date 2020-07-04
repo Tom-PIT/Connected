@@ -54,6 +54,10 @@ namespace TomPIT.Sys.Data
 				});
 		}
 
+		public bool CandidatesExists(string topic)
+		{
+			return Where(f => string.Compare(f.Topic, topic, true) == 0).Count > 0;
+		}
 		public List<ISubscriber> Query()
 		{
 			return All();

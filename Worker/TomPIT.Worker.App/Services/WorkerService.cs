@@ -22,11 +22,16 @@ namespace TomPIT.Worker.Services
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
+				var available = f.Available;
+
+				if (available == 0)
+					return;
+
 				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("WorkerManagement", "Dequeue");
 
 				var e = new JObject
 				{
-					{ "count", f.Available },
+					{ "count", available},
 					{ "resourceGroup", f.ResourceGroup }
 				};
 

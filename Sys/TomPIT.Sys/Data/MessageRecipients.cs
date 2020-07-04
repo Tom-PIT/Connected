@@ -84,6 +84,10 @@ namespace TomPIT.Sys.Data
 				Set(GenerateKey(message, i.Connection), i, TimeSpan.Zero);
 		}
 
+		public void Remove(IRecipient recipient)
+		{
+			Remove(GenerateKey(recipient.Message, recipient.Connection));
+		}
 		public void Delete(Guid message)
 		{
 			var ds = Where(f => f.Message == message);

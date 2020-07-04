@@ -1,28 +1,28 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace TomPIT.Distributed
 {
-	public abstract class Dispatcher<T>
+	public abstract class Dispatcher<T> : IDisposable
 	{
 		private ConcurrentQueue<T> _items = null;
-		private ConcurrentBag<DispatcherJob<T>> _workers = null;
-		private CancellationToken _cancel;
-
-		public event EventHandler Enqueued;
+		private List<DispatcherJob<T>> _workers = null;
+		private readonly CancellationToken _cancel;
+		private bool _disposed = false;
 
 		protected Dispatcher(CancellationToken cancel, int workerSize)
 		{
 			_cancel = cancel;
-
-			for (int i = 0; i < workerSize; i++)
-				Jobs.Add(CreateWorker(_cancel));
+			WorkerSize = workerSize;
 		}
+
+		private int WorkerSize { get; }
 
 		protected abstract DispatcherJob<T> CreateWorker(CancellationToken cancel);
 
-		public int Available { get { return Jobs.Count - Queue.Count; } }
+		public int Available { get { return Math.Max(0, (WorkerSize * 4) - Queue.Count); } }
 
 		public bool Dequeue(out T item)
 		{
@@ -33,7 +33,24 @@ namespace TomPIT.Distributed
 		{
 			Queue.Enqueue(item);
 
-			Enqueued?.Invoke(this, EventArgs.Empty);
+			if (Jobs.Count < WorkerSize)
+			{
+				var worker = CreateWorker(_cancel);
+
+				worker.Completed += OnCompleted;
+
+				if (worker.IsRunning)
+					Jobs.Add(worker);
+			}
+		}
+
+		private void OnCompleted(object sender, EventArgs e)
+		{
+			try
+			{
+				Jobs.Remove(sender as DispatcherJob<T>);
+			}
+			catch { }
 		}
 
 		private ConcurrentQueue<T> Queue
@@ -47,15 +64,39 @@ namespace TomPIT.Distributed
 			}
 		}
 
-		private ConcurrentBag<DispatcherJob<T>> Jobs
+		private List<DispatcherJob<T>> Jobs
 		{
 			get
 			{
 				if (_workers == null)
-					_workers = new ConcurrentBag<DispatcherJob<T>>();
+					_workers = new List<DispatcherJob<T>>();
 
 				return _workers;
 			}
 		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposed)
+			{
+				if (disposing)
+				{
+
+					try
+					{
+						Jobs.Clear();
+					}
+					catch { }
+				}
+
+				_disposed = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+		}
 	}
 }
+

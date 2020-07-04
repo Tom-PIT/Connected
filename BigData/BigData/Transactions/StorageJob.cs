@@ -40,7 +40,7 @@ namespace TomPIT.BigData.Transactions
 			}
 			finally
 			{
-				_timeout.Dispose();
+				_timeout.Stop();
 				_timeout = null;
 			}
 		}
@@ -56,19 +56,6 @@ namespace TomPIT.BigData.Transactions
 			}
 
 			ValidateSchema(block);
-			//var lockAcquired = false;
-
-			//for (var i = 1; i < 10; i++)
-			//{
-			//	if (lockAcquired = UpdaterPool.Lock(block.Partition))
-			//		break;
-			//}
-
-			//if (!lockAcquired)
-			//{
-			//	MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(queue.PopReceipt, TimeSpan.FromSeconds(5));
-			//	return;
-			//}
 
 			try
 			{
@@ -114,7 +101,7 @@ namespace TomPIT.BigData.Transactions
 		{
 			if (_timeout != null)
 			{
-				_timeout.Dispose();
+				_timeout.Stop();
 				_timeout = null;
 			}
 		}

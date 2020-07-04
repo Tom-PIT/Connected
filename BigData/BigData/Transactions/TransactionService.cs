@@ -47,6 +47,9 @@ namespace TomPIT.BigData.Transactions
 
 		public List<IQueueMessage> Dequeue(int count)
 		{
+			if (count == 0)
+				return new List<IQueueMessage>();
+
 			var u = Tenant.CreateUrl("BigDataManagement", "DequeueTransactionBlocks");
 			var e = new JObject
 			{

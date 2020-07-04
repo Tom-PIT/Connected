@@ -24,7 +24,7 @@ namespace TomPIT.Sys.Notifications
 				Content = JsonConvert.SerializeObject(args)
 			};
 
-			DataModel.Messages.Insert("iot", args.Message, JsonConvert.SerializeObject(state), DateTime.UtcNow.AddMinutes(5), TimeSpan.FromSeconds(5), SysExtensions.RequestInstanceId);
+			DataModel.Messages.Insert("iot", args.Message, JsonConvert.SerializeObject(state), DateTime.UtcNow.AddSeconds(15), TimeSpan.FromSeconds(3), SysExtensions.RequestInstanceId);
 
 			if (Cache != null)
 			{

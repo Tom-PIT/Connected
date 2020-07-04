@@ -2,8 +2,8 @@
   "connections": [
     {
       "name": "localhost",
-      "url": "http://localhost:44001",
-      //"url": "http://sys-app/production/sys",
+      //"url": "http://localhost:44001",
+      "url": "http://sys-app/production/sys",
       "authenticationToken": "defaultAuthenticationToken"
     }
   ],

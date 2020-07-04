@@ -56,6 +56,9 @@ namespace TomPIT.Sys.Data
 
 		public void Insert(string topic, Guid token, string content, DateTime expire, TimeSpan retryInterval, Guid senderInstance)
 		{
+			if (DataModel.MessageSubscribers.CandidatesExists(topic))
+				return;
+
 			var t = DataModel.MessageTopics.Ensure(topic);
 
 			if (t == null)
@@ -67,6 +70,16 @@ namespace TomPIT.Sys.Data
 			DataModel.MessageRecipients.Load(token);
 		}
 
+		public void Clean(List<IMessage> messages, List<IRecipient> recipients)
+		{
+			foreach (var message in messages)
+				Remove(message.Token);
+
+			foreach (var recipient in recipients)
+				DataModel.MessageRecipients.Remove(recipient);
+
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.Clean(messages, recipients);
+		}
 		public void Delete(Guid message)
 		{
 			var m = Select(message);

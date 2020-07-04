@@ -14,7 +14,7 @@ namespace TomPIT.BigData.Transactions
 
 		public StorageService()
 		{
-			IntervalTimeout = TimeSpan.FromMilliseconds(490);
+			IntervalTimeout = TimeSpan.FromMilliseconds(100);
 		}
 
 		protected override bool Initialize(CancellationToken cancel)

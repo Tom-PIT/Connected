@@ -1,82 +1,79 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading;
-using System.Threading.Tasks;
 using TomPIT.Data;
 
 namespace TomPIT.Distributed
 {
 	public abstract class DispatcherJob<T> : IDisposable
 	{
-		private bool _isRunning = false;
 		private bool _disposed = false;
+		private BackgroundWorker _worker = null;
 
+		public event EventHandler Completed;
 		public DispatcherJob(Dispatcher<T> owner, CancellationToken cancel)
 		{
 			Owner = owner;
 			Cancel = cancel;
 
-			owner.Enqueued += OnEnqueued;
+			cancel.Register(() =>
+			{
+				Worker.CancelAsync();
+			});
 
-			OnEnqueued(this, EventArgs.Empty);
+			Worker.RunWorkerAsync();
 		}
 
-		private async void OnEnqueued(object sender, EventArgs e)
-		{
-			if (_isRunning)
-			{
-				await Task.CompletedTask;
-				return;
-			}
+		public Guid Id => Guid.NewGuid();
+		public bool IsRunning => Worker.IsBusy;
 
-			await Task.Run(async () => await Dequeue(), Cancel);
+		private BackgroundWorker Worker
+		{
+			get
+			{
+				if (_worker == null)
+				{
+					_worker = new BackgroundWorker();
+					_worker.RunWorkerCompleted += OnCompleted;
+					_worker.DoWork += Dequeue;
+				}
+
+				return _worker;
+			}
+		}
+
+		private void OnCompleted(object sender, RunWorkerCompletedEventArgs e)
+		{
+			Completed?.Invoke(this, EventArgs.Empty);
 		}
 
 		protected Dispatcher<T> Owner { get; }
 		protected CancellationToken Cancel { get; }
 
-		private Task Dequeue()
+		private void Dequeue(object sender, DoWorkEventArgs e)
 		{
-			_isRunning = true;
+			T item = default;
 
-			var token = Cancel;
-
-			while (!token.IsCancellationRequested)
+			try
 			{
-				T item = default;
-
-				try
+				while (Owner.Dequeue(out item))
 				{
-					if (!Owner.Dequeue(out item))
-						break;
-
-					if (item is IPopReceiptRecord)
-					{
-						var pa = item as IPopReceiptRecord;
-
-						if (pa.NextVisible <= DateTime.UtcNow)
-							continue;
-					}
+					if (item is IPopReceiptRecord pr && pr.NextVisible <= DateTime.UtcNow)
+						continue;
 
 					DoWork(item);
 				}
-				catch (Exception ex)
-				{
-					try
-					{
-						OnError(item, ex);
-					}
-					catch
-					{
-						//eat exception to avoid process crash
-					}
-				}
-
-				Task.Delay(1);
 			}
-
-			_isRunning = false;
-
-			return Task.CompletedTask;
+			catch (Exception ex)
+			{
+				try
+				{
+					OnError(item, ex);
+				}
+				catch
+				{
+				}
+			}
 		}
 
 		protected abstract void DoWork(T item);
@@ -92,6 +89,19 @@ namespace TomPIT.Distributed
 		{
 			if (_disposed)
 				return;
+
+			if (_worker != null)
+			{
+				try
+				{
+					_worker.Dispose();
+					_worker = null;
+				}
+				catch
+				{
+
+				}
+			}
 
 			if (disposing)
 				OnDisposing();
