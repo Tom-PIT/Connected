@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
+using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
@@ -15,34 +17,76 @@ namespace TomPIT.Worker.Services
 {
 	internal class WorkerJob : DispatcherJob<IQueueMessage>
 	{
+		private TimeoutTask _timeout = null;
+
 		public WorkerJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
+		private JObject Message { get; set; }
+		private Guid Worker { get; set; }
+		private IWorkerConfiguration Configuration { get; set; }
 		protected override void DoWork(IQueueMessage item)
 		{
-			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
-			var ms = Invoke(item, m);
-
-			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("WorkerManagement", "Complete");
-			var d = new JObject
+			if (!Initialize(item))
 			{
-				{"microService", ms },
-				{"popReceipt", item.PopReceipt }
-			};
+				if (Configuration != null)
+					Proxy.Complete(Configuration.MicroService(), item.PopReceipt);
 
-			MiddlewareDescriptor.Current.Tenant.Post(url, d);
+				return;
+			}
+
+			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
+
+			_timeout = new TimeoutTask(() =>
+			{
+				Proxy.Ping(Configuration.MicroService(), item.PopReceipt);
+
+				return Task.CompletedTask;
+			}, TimeSpan.FromSeconds(45), Cancel);
+
+
+			_timeout.Start();
+			Guid ms;
+
+			try
+			{
+				ms = Invoke(item, m);
+			}
+			finally
+			{
+				_timeout.Stop();
+				_timeout = null;
+			}
+
+			Proxy.Complete(Configuration.MicroService(), item.PopReceipt);
+		}
+
+		private bool Initialize(IQueueMessage message)
+		{
+			try
+			{
+				Message = JsonConvert.DeserializeObject(message.Message) as JObject;
+				Worker = Message.Required<Guid>("worker");
+
+				if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(Worker) is IWorkerConfiguration configuration))
+					return false;
+
+				Configuration = configuration;
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), ex.Message, LogCategories.Worker);
+
+				return false;
+			}
 		}
 
 		private Guid Invoke(IQueueMessage queue, JObject data)
 		{
-			var worker = data.Required<Guid>("worker");
-			var state = data.Optional("state", Guid.Empty);
-			var configuration = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(worker) as IWorkerConfiguration;
-
-			if (configuration == null)
-				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), string.Format("{0} ({1})", SR.ErrWorkerNotFound, worker), SR.LogCategoryWorker);
-
+			var state = Message.Optional("state", Guid.Empty);
 			var workerState = string.Empty;
 
 			if (state != Guid.Empty)
@@ -54,12 +98,12 @@ namespace TomPIT.Worker.Services
 			}
 
 			Invoker i = null;
-			var ctx = new MicroServiceContext(configuration.MicroService());
-			var metricId = ctx.Services.Diagnostic.StartMetric(configuration.Metrics, null);
+			var ctx = new MicroServiceContext(Configuration.MicroService());
+			var metricId = ctx.Services.Diagnostic.StartMetric(Configuration.Metrics, null);
 
 			try
 			{
-				if (configuration is IHostedWorkerConfiguration hc)
+				if (Configuration is IHostedWorkerConfiguration hc)
 					i = new Hosted(hc, workerState);
 				else
 					throw new NotSupportedException();
@@ -73,21 +117,13 @@ namespace TomPIT.Worker.Services
 						var id = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Upload(new Blob
 						{
 							ContentType = "application/json",
-							FileName = worker.ToString(),
-							MicroService = configuration.MicroService(),
-							PrimaryKey = worker.ToString(),
+							FileName = Worker.ToString(),
+							MicroService = Configuration.MicroService(),
+							PrimaryKey = Worker.ToString(),
 							Type = BlobTypes.WorkerState
 						}, Encoding.UTF8.GetBytes(i.State), StoragePolicy.Singleton);
 
-
-						var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("WorkerManagement", "AttachState");
-						var d = new JObject
-						{
-							{"worker", worker },
-							{"state", id }
-						};
-
-						MiddlewareDescriptor.Current.Tenant.Post(url, d);
+						Proxy.AttachState(Worker, id);
 					}
 				}
 				else
@@ -95,9 +131,9 @@ namespace TomPIT.Worker.Services
 					MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Upload(new Blob
 					{
 						ContentType = "application/json",
-						FileName = worker.ToString(),
-						MicroService = configuration.MicroService(),
-						PrimaryKey = worker.ToString(),
+						FileName = Worker.ToString(),
+						MicroService = Configuration.MicroService(),
+						PrimaryKey = Worker.ToString(),
 						Type = BlobTypes.WorkerState
 					}, Encoding.UTF8.GetBytes(i.State), StoragePolicy.Singleton);
 				}
@@ -111,27 +147,26 @@ namespace TomPIT.Worker.Services
 				throw;
 			}
 
-			return configuration.MicroService();
+			return Configuration.MicroService();
 		}
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
 			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(WorkerJob));
 
-			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
-			var worker = m.Required<Guid>("worker");
+			if (Configuration != null)
+				Proxy.Error(Configuration.MicroService(), item.PopReceipt);
+		}
 
-			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(worker) is IWorkerConfiguration configuration))
-				return;
+		private IWorkerProxyService Proxy => MiddlewareDescriptor.Current.Tenant.GetService<IWorkerProxyService>();
 
-			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("WorkerManagement", "Error");
-			var d = new JObject
+		protected override void OnDisposing()
+		{
+			if (_timeout != null)
 			{
-				{"popReceipt", item.PopReceipt },
-				{"microService", configuration.MicroService() }
-			};
-
-			MiddlewareDescriptor.Current.Tenant.Post(url, d);
+				_timeout.Stop();
+				_timeout = null;
+			}
 		}
 	}
 }

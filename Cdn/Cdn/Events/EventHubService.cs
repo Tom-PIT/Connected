@@ -18,7 +18,7 @@ namespace TomPIT.Cdn.Events
 				{"event", e.Name }
 			};
 
-			if (!string.IsNullOrWhiteSpace(e.Arguments))
+			if (e.Arguments != null)
 				args.Add("arguments", Serializer.Deserialize<JObject>(e.Arguments));
 
 			await EventHubs.Events.Clients.Group(e.Name.ToLowerInvariant()).SendCoreAsync("event", new object[] { args });

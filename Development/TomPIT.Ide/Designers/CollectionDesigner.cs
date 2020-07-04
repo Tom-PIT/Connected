@@ -140,14 +140,9 @@ namespace TomPIT.Ide.Designers
 			if (mi == null)
 				throw IdeException.MissingRemoveMethod(this, IdeEvents.DesignerAction, Component.GetType().Name);
 
-			var indexer = Component.GetType().GetProperty("Item");
+			var item = Items[idx];
 
-			if (indexer == null)
-				throw IdeException.MissingIndexer(this, IdeEvents.DesignerAction, Component.GetType().Name);
-
-			var item = indexer.GetValue(Component, new object[] { idx });
-
-			mi.Invoke(Component, new object[] { item });
+			mi.Invoke(Component, new object[] { item.Value });
 
 			Environment.Commit(Component, Element.Property == null ? string.Empty : Element.Property.Name, null);
 

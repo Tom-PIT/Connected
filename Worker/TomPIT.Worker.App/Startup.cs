@@ -45,6 +45,7 @@ namespace TomPIT.Worker
 		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
 			e.Tenant.RegisterService(typeof(ISubscriptionWorkerService), typeof(SubscriptionWorkerService));
+			e.Tenant.RegisterService(typeof(IWorkerProxyService), typeof(WorkerProxyService));
 		}
 
 		private void RegisterTasks(IServiceCollection services)

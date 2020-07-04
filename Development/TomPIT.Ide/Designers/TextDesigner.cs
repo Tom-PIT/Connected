@@ -484,6 +484,9 @@ namespace TomPIT.Ide.Designers
 				{
 					var designer = Content.Configuration().GetType().FindAttribute<DomDesignerAttribute>();
 
+					if (designer == null)
+						return null;
+
 					if (string.IsNullOrWhiteSpace(designer.AmbientProvider))
 						return null;
 
