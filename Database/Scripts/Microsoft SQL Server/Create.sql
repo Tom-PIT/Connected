@@ -2102,6 +2102,61 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[message_recipient]'
+GO
+CREATE TABLE [tompit].[message_recipient]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[message] [bigint] NOT NULL,
+[subscriber] [bigint] NOT NULL,
+[retry_count] [int] NOT NULL,
+[next_visible] [datetime2] NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_message_recipient] on [tompit].[message_recipient]'
+GO
+ALTER TABLE [tompit].[message_recipient] ADD CONSTRAINT [PK_message_recipient] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[message]'
+GO
+CREATE TABLE [tompit].[message]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[message] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[topic] [bigint] NOT NULL,
+[created] [datetime2] NOT NULL,
+[expire] [datetime2] NOT NULL,
+[retry_interval] [int] NOT NULL,
+[token] [uniqueidentifier] NOT NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_message] on [tompit].[message]'
+GO
+ALTER TABLE [tompit].[message] ADD CONSTRAINT [PK_message] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[message_clean]'
+GO
+CREATE PROCEDURE [tompit].[message_clean]
+	@messages nvarchar(max),
+	@recipients nvarchar(max)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.message_recipient WHERE id IN (SELECT id FROM OPENJSON(@recipients) WITH (id bigint));
+	DELETE tompit.message WHERE id IN (SELECT id FROM OPENJSON(@messages) WITH (id bigint));
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[search_catalog_state]'
 GO
 CREATE TABLE [tompit].[search_catalog_state]
@@ -2326,46 +2381,6 @@ BEGIN
 	WHERE (@component IS NULL OR component = @component)
 	AND (@element IS NULL OR element = @element);
 END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[message_recipient]'
-GO
-CREATE TABLE [tompit].[message_recipient]
-(
-[id] [bigint] NOT NULL IDENTITY(1, 1),
-[message] [bigint] NOT NULL,
-[subscriber] [bigint] NOT NULL,
-[retry_count] [int] NOT NULL,
-[next_visible] [datetime2] NOT NULL
-) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating primary key [PK_message_recipient] on [tompit].[message_recipient]'
-GO
-ALTER TABLE [tompit].[message_recipient] ADD CONSTRAINT [PK_message_recipient] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[message]'
-GO
-CREATE TABLE [tompit].[message]
-(
-[id] [bigint] NOT NULL IDENTITY(1, 1),
-[message] [nvarchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[topic] [bigint] NOT NULL,
-[created] [datetime2] NOT NULL,
-[expire] [datetime2] NOT NULL,
-[retry_interval] [int] NOT NULL,
-[token] [uniqueidentifier] NOT NULL
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating primary key [PK_message] on [tompit].[message]'
-GO
-ALTER TABLE [tompit].[message] ADD CONSTRAINT [PK_message] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
