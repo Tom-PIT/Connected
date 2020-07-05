@@ -93,11 +93,11 @@ namespace TomPIT.Globalization
 			if (culture == null)
 				return;
 
-			if (Instance.RequestLocalizationOptions.SupportedCultures.Contains(culture))
-				return;
+			if (!Instance.RequestLocalizationOptions.SupportedCultures.Contains(culture))
+				Instance.RequestLocalizationOptions.SupportedCultures.Add(culture);
 
-			Instance.RequestLocalizationOptions.SupportedCultures.Add(culture);
-			Instance.RequestLocalizationOptions.SupportedUICultures.Add(culture);
+			if (!Instance.RequestLocalizationOptions.SupportedUICultures.Contains(culture))
+				Instance.RequestLocalizationOptions.SupportedUICultures.Add(culture);
 		}
 
 		private CultureInfo GetCulture(ILanguage language)

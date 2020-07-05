@@ -43,7 +43,7 @@ namespace TomPIT.Globalization
 			if (culture == null)
 				return SettingCulture(httpContext);
 
-			return Task.FromResult(new ProviderCultureResult(culture.Name));
+			return Task.FromResult(new ProviderCultureResult(culture.Name, culture.Name));
 		}
 
 		private Task<ProviderCultureResult> SettingCulture(HttpContext httpContext)
@@ -56,7 +56,7 @@ namespace TomPIT.Globalization
 			var value = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "DefaultCulture");
 
 			if (!string.IsNullOrWhiteSpace(value))
-				return Task.FromResult(new ProviderCultureResult(value));
+				return Task.FromResult(new ProviderCultureResult(value, value));
 
 			return Task.FromResult<ProviderCultureResult>(null);
 		}
