@@ -282,7 +282,7 @@ namespace TomPIT.ComponentModel
 					Tenant.LogError(GetType().ShortName(), ex.Message, LogCategories.Services);
 			}
 
-			if (blob == null && Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
+			if (/*blob == null && */Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
 			{
 				var rtContent = runtime == null
 					? Tenant.GetService<IStorageService>().Download(component.RuntimeConfiguration)
