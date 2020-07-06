@@ -47,7 +47,7 @@ namespace TomPIT.Ide.Designers
 				var att = Content.GetType().FindAttribute<SyntaxAttribute>();
 
 				if (att == null)
-					return "razor";
+					return "csharp";
 
 				return att.Syntax;
 			}
@@ -219,6 +219,48 @@ namespace TomPIT.Ide.Designers
 					return Result.JsonResult(this, editor.GetService<IDeclarationProviderService>().ProvideDeclaration(position));
 				}
 			}
+			else if (string.Compare(action, "provideDefinition", true) == 0)
+			{
+				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
+				using (var editor = GetTextEditor(model, data.Optional<string>("text", null)))
+				{
+
+					if (editor == null)
+						return Result.JsonResult(this, null);
+
+					var position = DeserializePosition(data.Optional<JObject>("position", null));
+
+					return Result.JsonResult(this, editor.GetService<IDefinitionProviderService>().ProvideDefinition(position));
+				}
+			}
+			else if (string.Compare(action, "loadModel", true) == 0)
+			{
+				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
+				var tokens = model.Uri.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+				var ms = tokens[1];
+				var category = tokens[2];
+				var component = tokens[3];
+				var microService = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(ms);
+				var c = Environment.Context.Tenant.GetService<IComponentService>().SelectComponent(microService.Token, category, component);
+				var target = Environment.Context.Tenant.GetService<IDiscoveryService>().Find(c.Token, new Guid(tokens[^1]));
+				var text = Environment.Context.Tenant.GetService<IComponentService>().SelectText(Environment.Context.MicroService.Token, target as IText);
+				using var editor = GetTextEditor(model, text);
+				var syntax = Content.GetType().FindAttribute<SyntaxAttribute>();
+
+				return Result.JsonResult(this, new ModelDescriptor
+				{
+					CodeAction = (editor.Features & LanguageFeature.CodeAction) == LanguageFeature.CodeAction,
+					CodeCompletion = (editor.Features & LanguageFeature.CompletionItem) == LanguageFeature.CompletionItem,
+					Declaration = (editor.Features & LanguageFeature.Declaration) == LanguageFeature.Declaration,
+					Definition = (editor.Features & LanguageFeature.Definition) == LanguageFeature.Definition,
+					DocumentSymbol = (editor.Features & LanguageFeature.DocumentSymbol) == LanguageFeature.DocumentSymbol,
+					SignatureHelp = (editor.Features & LanguageFeature.SignatureHelp) == LanguageFeature.SignatureHelp,
+					FileName = text == null ? string.Empty : ((IText)target).FileName(),
+					Language = syntax == null ? "csharp" : syntax.Syntax,
+					Text = text
+				});
+			}
+
 
 			return base.OnAction(data, action);
 		}

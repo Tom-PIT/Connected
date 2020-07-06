@@ -1,17 +1,19 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using TomPIT.Compilation;
+using TomPIT.ComponentModel;
+using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Ide.TextServices.Services;
-using ILocation = TomPIT.Ide.TextServices.Languages.ILocation;
 
 namespace TomPIT.Ide.TextServices.CSharp.Services
 {
-	internal class DeclarationProviderService : CSharpEditorService, IDeclarationProviderService
+	internal class DefinitionProviderService : CSharpEditorService, IDefinitionProviderService
 	{
-		public DeclarationProviderService(CSharpEditor editor) : base(editor)
+		public DefinitionProviderService(CSharpEditor editor) : base(editor)
 		{
 		}
 
-		public ILocation ProvideDeclaration(IPosition position)
+		public ILocation ProvideDefinition(IPosition position)
 		{
 			var caret = Editor.Document.GetCaret(position);
 			var model = Editor.Document.GetSemanticModelAsync().Result;
@@ -25,7 +27,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 
 				var refs = symbol.Symbol.DeclaringSyntaxReferences[0];
 
-				if (!string.IsNullOrWhiteSpace(refs.SyntaxTree.FilePath))
+				if (string.IsNullOrWhiteSpace(refs.SyntaxTree.FilePath))
 					return null;
 
 				var line = Editor.Document.GetLine(refs.Span.Start);
@@ -42,11 +44,25 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 						StartColumn = start,
 						StartLineNumber = line.LineNumber + 1
 					},
-					Uri = Editor.Model.Uri
+					Uri = ResolveModel(refs.SyntaxTree.FilePath)
 				};
 			}
 
 			return null;
 		}
+
+		private string ResolveModel(string path)
+		{
+			var result = Editor.Context.Tenant.GetService<ICompilerService>().ResolveText(Editor.Context.MicroService.Token, path);
+
+			if (result == null)
+				return null;
+
+			var component = Editor.Context.Tenant.GetService<IComponentService>().SelectComponent(result.Configuration().Component);
+			var ms = Editor.Context.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
+
+			return $"inmemory://{ms.Name}/{component.Category}/{component.Name}/{result.Id.ToString()}";
+		}
+
 	}
 }

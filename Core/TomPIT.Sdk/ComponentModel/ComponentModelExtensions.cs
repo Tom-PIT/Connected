@@ -86,5 +86,6 @@ namespace TomPIT.ComponentModel
 
 			return provider.CreateManifest(MiddlewareDescriptor.Current.Tenant, component.Token, element);
 		}
+
 	}
 }

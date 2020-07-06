@@ -642,6 +642,13 @@ namespace TomPIT.Compilation
 			return Tenant.GetService<IMicroServiceService>().Select(ms);
 		}
 
+		public IText ResolveText(Guid microService, string path)
+		{
+			var resolver = new ScriptResolver(Tenant, microService);
+
+			return resolver.LoadScript(path);
+		}
+
 		private static ConcurrentDictionary<Guid, List<Guid>> References { get { return _references.Value; } }
 		private static ConcurrentDictionary<Guid, ManualResetEvent> ScriptCreateState { get { return _scriptCreateState.Value; } }
 		private ScriptCache Scripts { get; }

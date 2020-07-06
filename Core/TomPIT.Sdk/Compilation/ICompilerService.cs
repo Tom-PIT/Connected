@@ -40,5 +40,7 @@ namespace TomPIT.Compilation
 		T CreateInstance<T>(IMicroServiceContext context, IText sourceCode, string arguments) where T : class;
 
 		Microsoft.CodeAnalysis.Compilation GetCompilation(IText sourceCode);
+
+		public IText ResolveText(Guid microService, string path);
 	}
 }
