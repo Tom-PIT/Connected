@@ -5,10 +5,10 @@
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
-    <AssemblyVersion>2.1.705.2</AssemblyVersion>
+    <AssemblyVersion>2.1.707.12</AssemblyVersion>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FileVersion>2.1.705.2</FileVersion>
-    <Version>2.1.705.2</Version>
+    <FileVersion>2.1.707.12</FileVersion>
+    <Version>2.1.707.12</Version>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
