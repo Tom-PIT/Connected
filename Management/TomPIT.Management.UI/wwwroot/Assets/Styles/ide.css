@@ -422,3 +422,16 @@ li[data-kind="error-item"]:hover {
   font-weight: 700;
   color: #424242;
 }
+.model-tab {
+  padding: 0 3px;
+  cursor: pointer;
+}
+.model-tab.active {
+  font-weight: 700;
+}
+.model-tab .close-model {
+  padding: 0 2px;
+}
+.model-tab .close-model:hover {
+  display: inline;
+}

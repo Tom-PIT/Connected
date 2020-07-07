@@ -55,18 +55,26 @@
                     lineNumbers: true,
                     scrollBeyondLastLine: true,
                     automaticLayout: true,
+                    autoClosingBrackets: 'always',
+                    autoClosingOvertype: 'always',
+                    autoClosingQuotes: 'always',
+                    autoIndent: 'Brackets',
+                    colorDecorators: true,
+                    fixedOverflowWidgets: true,
                     folding: true,
                     formatOnPaste: true,
                     formatOnType: true,
                     glyphMargin: true,
                     lineNumbersMinChars: 4,
+                    layoutInfo: {
+                        heigth:'100%'
+                    },
                     parameterHints: {
                         enabled: true
                     },
                     wrappingColumn: 0,
                     wrappingIndent: 'indent',
                     showUnused: true,
-                    autoIndent: true,
                     wordWrap: 'off',
                     tabCompletion: 'on',
                     model: null,
@@ -151,20 +159,22 @@
 
                 const editorService = target.options.instance._codeEditorService;
                 const openEditorBase = editorService.openCodeEditor.bind(editorService);
-                editorService.openCodeEditor = async (input, source) => {
-                    const result = await openEditorBase(input, source);
-                    if (result === null) {
-                        let model = monaco.editor.getModel(input.resource);
 
-                        if (model !== null) {
-                            source.setModel(model);
-                            target.activateModel(model.id, model.fileName);
-                        }
-                    }
+                editorService.openCodeEditor = (input, source) => {
+                    return new Promise((resolve, reject) => {
+                        openEditorBase(input, source).then((result) => {
+                            if (result === null) {
+                                let model = monaco.editor.getModel(input.resource);
 
-                    target.options.instance.layout();
+                                if (model !== null) {
+                                    source.setModel(model);
+                                    target.activateModel(model.id, model.fileName);
+                                }
+                            }
 
-                    return result;
+                            resolve(result);
+                        });
+                    });
                 };
 
                 target.options.instance.setup = function (options) {
@@ -468,17 +478,46 @@
                                 },
                                 onComplete: function (data) {
                                     var uri = monaco.Uri.parse(data.uri);
-                                    //var model = monaco.editor.getModel(uri);
+                                    var model = monaco.editor.getModel(uri);
 
-                                    //if (model === null)
-                                    //    model = monaco.editor.createModel('', language, uri);
+                                    if (model === null) {
+                                        ide.designerAction({
+                                            data: {
+                                                action: 'loadModel',
+                                                model: {
+                                                    'uri': uri.toString()
+                                                }
+                                            },
+                                            onComplete: (e) => {
+                                                var model = monaco.editor.createModel(e.text, e.language, uri.toString());
 
-                                    //instance.options.instance.setModel(model);
+                                                model.fileName = e.fileName;
 
-                                    resolve({
-                                        uri: uri,
-                                        range: data.range
-                                    });
+                                                if (!textEditorState.isLanguageInitialized(e.language)) {
+                                                    textEditorState.initializeLanguage(e.language, {
+                                                        codeAction: e.codeAction,
+                                                        completionItem: e.codeCompletion,
+                                                        declaration: e.declaration,
+                                                        definition: e.definition,
+                                                        signatureHelp: e.signatureHelp,
+                                                        documentSymbol: e.documentSymbol
+                                                    });
+                                                }
+
+
+                                                resolve({
+                                                    uri: uri,
+                                                    range: data.range
+                                                });
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        resolve({
+                                            uri: uri,
+                                            range: data.range
+                                        });
+                                    }
                                 }
 
                             }, false);

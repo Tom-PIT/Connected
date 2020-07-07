@@ -22,29 +22,21 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 
 			if (symbol.Symbol != null)
 			{
-				if (symbol.Symbol.DeclaringSyntaxReferences.Length == 0)
+				if (symbol.Symbol.Locations.Length == 0 || !symbol.Symbol.Locations[0].IsInSource)
 					return null;
 
-				var refs = symbol.Symbol.DeclaringSyntaxReferences[0];
-
-				if (string.IsNullOrWhiteSpace(refs.SyntaxTree.FilePath))
-					return null;
-
-				var line = Editor.Document.GetLine(refs.Span.Start);
-				var length = refs.Span.End - refs.Span.Start;
-				var start = refs.Span.Start - line.Start + 1;
-				var end = start + length;
+				var span = symbol.Symbol.Locations[0].GetLineSpan();
 
 				return new Languages.Location
 				{
 					Range = new Range
 					{
-						EndColumn = end,
-						EndLineNumber = line.LineNumber + 1,
-						StartColumn = start,
-						StartLineNumber = line.LineNumber + 1
+						EndColumn = span.EndLinePosition.Character,
+						EndLineNumber = span.EndLinePosition.Line,
+						StartColumn = span.StartLinePosition.Character,
+						StartLineNumber = span.StartLinePosition.Line
 					},
-					Uri = ResolveModel(refs.SyntaxTree.FilePath)
+					Uri = ResolveModel(symbol.Symbol.DeclaringSyntaxReferences[0].SyntaxTree.FilePath)
 				};
 			}
 
@@ -53,7 +45,9 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 
 		private string ResolveModel(string path)
 		{
-			var result = Editor.Context.Tenant.GetService<ICompilerService>().ResolveText(Editor.Context.MicroService.Token, path);
+			var result = string.IsNullOrWhiteSpace(path)
+				? Editor.Script
+				: Editor.Context.Tenant.GetService<ICompilerService>().ResolveText(Editor.Context.MicroService.Token, path);
 
 			if (result == null)
 				return null;

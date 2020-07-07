@@ -10,6 +10,30 @@
         _create: function () {
             var target = this;
 
+            document.querySelector('#modelTabs').addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var t = e.target.closest('[data-model]');
+
+                if (t === null)
+                    return;
+
+                target.activateModel(t.getAttribute('data-model'));
+            });
+
+            document.querySelector('#modelTabs').addEventListener('dblclick', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var t = e.target.closest('[data-model]');
+
+                if (t === null)
+                    return;
+
+                target.closeModel(t.getAttribute('data-model'));
+            });
+
             require(['vs/editor/editor.main'], function () {
                 monaco.editor.defineTheme('TomPIT', {
                     base: 'vs',
@@ -22,7 +46,7 @@
 
                 var editor = $('[data-role="text-editor"]', $(target.element));
                 if (!editor.length) {
-                    console.warn('Editor container not found!!!');
+                    console.warn('Editor container not found.');
                 }
 
                 var editorOpts = {
@@ -31,18 +55,26 @@
                     lineNumbers: true,
                     scrollBeyondLastLine: true,
                     automaticLayout: true,
+                    autoClosingBrackets: 'always',
+                    autoClosingOvertype: 'always',
+                    autoClosingQuotes: 'always',
+                    autoIndent: 'Brackets',
+                    colorDecorators: true,
+                    fixedOverflowWidgets: true,
                     folding: true,
                     formatOnPaste: true,
                     formatOnType: true,
                     glyphMargin: true,
                     lineNumbersMinChars: 4,
+                    layoutInfo: {
+                        heigth:'100%'
+                    },
                     parameterHints: {
                         enabled: true
                     },
                     wrappingColumn: 0,
                     wrappingIndent: 'indent',
                     showUnused: true,
-                    autoIndent: true,
                     wordWrap: 'off',
                     tabCompletion: 'on',
                     model: null,
@@ -64,16 +96,86 @@
                     editor[0],
                     editorOpts,
                     {
-                        editorService: {
-                            openEditor: function (e) {
-                                alert(`open editor called!` + JSON.stringify(e));
-                            },
-                            resolveEditor: function (e) {
-                                alert(`open editor called!` + JSON.stringify(e));
+                        textModelService: {
+                            createModelReference: (uri)=>{
+                                return new Promise((resolve, reject) => {
+                                    var result = {
+                                        uri: uri,
+                                        load: () => {
+                                            return Promise.resolve(textEditorModel);
+                                        },
+                                        dispose: () => {
+
+                                        },
+                                        textEditorModel: null
+                                    };
+
+                                    result.textEditorModel = monaco.editor.getModel(uri);
+
+                                    if (result.textEditorModel === null) {
+                                        ide.designerAction({
+                                            data: {
+                                                action: 'loadModel',
+                                                model: {
+                                                    'uri': uri.toString()
+                                                }
+                                            },
+                                            onComplete: (e) => {
+                                                result.textEditorModel = monaco.editor.createModel(e.text, e.language, uri.toString());
+
+                                                result.textEditorModel.fileName = e.fileName;
+
+                                                if (!textEditorState.isLanguageInitialized(e.language)) {
+                                                    textEditorState.initializeLanguage(e.language, {
+                                                        codeAction: e.codeAction,
+                                                        completionItem: e.codeCompletion,
+                                                        declaration: e.declaration,
+                                                        definition: e.definition,
+                                                        signatureHelp: e.signatureHelp,
+                                                        documentSymbol: e.documentSymbol
+                                                    });
+                                                }
+
+                                                
+                                                resolve({
+                                                    object: result,
+                                                    dispose: () => { }
+                                                });
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        
+                                        resolve({
+                                            object: result,
+                                            dispose: () => { }
+                                        });
+                                    }
+                                });
                             }
                         }
                     }
                 );
+
+                const editorService = target.options.instance._codeEditorService;
+                const openEditorBase = editorService.openCodeEditor.bind(editorService);
+
+                editorService.openCodeEditor = (input, source) => {
+                    return new Promise((resolve, reject) => {
+                        openEditorBase(input, source).then((result) => {
+                            if (result === null) {
+                                let model = monaco.editor.getModel(input.resource);
+
+                                if (model !== null) {
+                                    source.setModel(model);
+                                    target.activateModel(model.id, model.fileName);
+                                }
+                            }
+
+                            resolve(result);
+                        });
+                    });
+                };
 
                 target.options.instance.setup = function (options) {
                     var debug = options.debug;
@@ -208,6 +310,9 @@
             if (features.declaration)
                 this._declaration(language);
 
+            if (features.definition)
+                this._definition(language);
+
             if (features.signatureHelp)
                 this._signatureHelp(language);
 
@@ -249,7 +354,7 @@
                                                     var textEdit = edit.edits[j];
 
                                                     if (textEdit.resource) {
-                                                        textEdit.resource = monaco.Uri.parse(textEdit.resource);
+                                                            textEdit.resource = monaco.Uri.parse(textEdit.resource);
                                                     }
                                                 }
                                             }
@@ -351,6 +456,80 @@
                 }
             });
         },
+        _definition: function (language) {
+            var instance = this;
+
+            monaco.languages.registerDefinitionProvider(language, {
+                provideDefinition: function (model, position) {
+                    return  new Promise(function (resolve, reject) {
+                        try {
+                            ide.designerAction({
+                                data: {
+                                    action: 'provideDefinition',
+                                    section: 'designer',
+                                    property: instance.options.property,
+                                    model: {
+                                        'id': model.id,
+                                        'uri': model.uri.toString(),
+                                        'version': model._versionId
+                                    },
+                                    position: position,
+                                    text: model.getValue()
+                                },
+                                onComplete: function (data) {
+                                    var uri = monaco.Uri.parse(data.uri);
+                                    var model = monaco.editor.getModel(uri);
+
+                                    if (model === null) {
+                                        ide.designerAction({
+                                            data: {
+                                                action: 'loadModel',
+                                                model: {
+                                                    'uri': uri.toString()
+                                                }
+                                            },
+                                            onComplete: (e) => {
+                                                var model = monaco.editor.createModel(e.text, e.language, uri.toString());
+
+                                                model.fileName = e.fileName;
+
+                                                if (!textEditorState.isLanguageInitialized(e.language)) {
+                                                    textEditorState.initializeLanguage(e.language, {
+                                                        codeAction: e.codeAction,
+                                                        completionItem: e.codeCompletion,
+                                                        declaration: e.declaration,
+                                                        definition: e.definition,
+                                                        signatureHelp: e.signatureHelp,
+                                                        documentSymbol: e.documentSymbol
+                                                    });
+                                                }
+
+
+                                                resolve({
+                                                    uri: uri,
+                                                    range: data.range
+                                                });
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        resolve({
+                                            uri: uri,
+                                            range: data.range
+                                        });
+                                    }
+                                }
+
+                            }, false);
+                        }
+                        catch (e) {
+                            reject();
+                            console.log(e);
+                        }
+                    });
+                }
+            });
+        },
         _signatureHelp: function (language) {
             var instance = this;
 
@@ -430,6 +609,49 @@
                     });
                 }
             });
+        },
+        activateModel: function (id, fileName) {
+            let models = monaco.editor.getModels();
+
+            var tab = $(`span[data-model="${id}"]`);
+
+            if (tab.length === 0) 
+                $('#modelTabs').append(`<span class="model-tab" data-model="${id}">${fileName}</span>`);
+
+            for (let i = 0; i < models.length; i++) {
+                let model = models[i];
+
+                if (model.id === id) {
+                    $('span[data-model]').removeClass('active');
+                    $(`span[data-model="${id}"]`).addClass('active');
+
+                    this.options.instance.setModel(model);
+
+                    break;
+                }
+            }
+        },
+        closeModel: function (id) {
+            let models = monaco.editor.getModels();
+
+            if (models.length < 2)
+                return;
+
+            for (let i = 0; i < models.length; i++) {
+                let model = models[i];
+
+                if (model.id === id) {
+                    model.dispose();
+                    $(`span[data-model="${id}"]`).remove();
+
+                    if (i === 0)
+                        this.activateModel(models[1].id);
+                    else
+                        this.activateModel(models[i-1].id);
+
+                    break;
+                }
+            }
         }
     });
 })(jQuery);
