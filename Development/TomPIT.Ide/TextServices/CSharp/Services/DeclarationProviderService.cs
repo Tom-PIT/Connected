@@ -1,7 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using TomPIT.Compilation;
-using TomPIT.ComponentModel;
 using TomPIT.Ide.TextServices.Services;
 using ILocation = TomPIT.Ide.TextServices.Languages.ILocation;
 
@@ -30,35 +28,22 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 				if (!string.IsNullOrWhiteSpace(refs.SyntaxTree.FilePath))
 					return null;
 
-				var line = TextEditorExtensions.GetLine(SourceCode(refs.SyntaxTree.FilePath), refs.Span.Start);
-				var length = refs.Span.End - refs.Span.Start;
-				var start = refs.Span.Start - line.Start + 1;
-				var end = start + length;
+				var span = symbol.Symbol.Locations[0].GetLineSpan();
 
 				return new Languages.Location
 				{
 					Range = new Range
 					{
-						EndColumn = end,
-						EndLineNumber = line.LineNumber + 1,
-						StartColumn = start,
-						StartLineNumber = line.LineNumber + 1
+						EndColumn = span.EndLinePosition.Character + 1,
+						EndLineNumber = span.EndLinePosition.Line + 1,
+						StartColumn = span.StartLinePosition.Character + 1,
+						StartLineNumber = span.StartLinePosition.Line + 1
 					},
 					Uri = Editor.Model.Uri
 				};
 			}
 
 			return null;
-		}
-
-		private string SourceCode(string path)
-		{
-			var result = Editor.Context.Tenant.GetService<ICompilerService>().ResolveText(Editor.Context.MicroService.Token, path);
-
-			if (result == null)
-				return null;
-
-			return Editor.Context.Tenant.GetService<IComponentService>().SelectText(result.Configuration().MicroService(), result);
 		}
 	}
 }

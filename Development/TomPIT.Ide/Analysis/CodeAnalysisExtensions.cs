@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
+using TomPIT.Ide.TextServices.CSharp.Services.DefinitionProviders;
 using TomPIT.Reflection;
 
 namespace TomPIT.Ide.Analysis
@@ -197,6 +198,25 @@ namespace TomPIT.Ide.Analysis
 				return null;
 
 			return completionType.CreateInstance<ICompletionProvider>();
+		}
+
+		internal static IDefinitionProvider ResolveDefinitionProvider(AttributeData data)
+		{
+			if (data == null || data.ConstructorArguments.Length == 0)
+				return null;
+
+			var constant = data.ConstructorArguments[0];
+			Type completionType = null;
+
+			if (constant.Value is INamedTypeSymbol name)
+				completionType = Reflection.TypeExtensions.GetType(name.ToDisplayName());
+			else if (constant.Value is string cv)
+				completionType = Reflection.TypeExtensions.GetType(cv);
+
+			if (completionType == null)
+				return null;
+
+			return completionType.CreateInstance<IDefinitionProvider>();
 		}
 	}
 }

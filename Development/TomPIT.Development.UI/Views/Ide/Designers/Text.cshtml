@@ -38,8 +38,9 @@
         if (model == null) {
             model = monaco.editor.createModel('@text', '@Model.Language', modelUri);
             model.fileName = '@Model.Element.Title';
+            model.microService = '@Model.Environment.Context.MicroService.Name';
 
-            textEditorWidget.activateModel(model.id, model.fileName);
+            textEditorWidget.activateModel(model.id, model.fileName, model.microService);
 
             if (!textEditorState.isLanguageInitialized('@Model.Language')) {
                 textEditorState.initializeLanguage('@Model.Language', {

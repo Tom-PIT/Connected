@@ -10,6 +10,9 @@ namespace TomPIT.Design
 		{
 			var value = text.ToString();
 
+			if (text is IConfiguration c)
+				value = c.ComponentName();
+
 			var extension = text.GetType().FindAttribute<FileNameExtensionAttribute>();
 
 			if (extension != null)

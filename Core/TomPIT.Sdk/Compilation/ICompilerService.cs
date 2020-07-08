@@ -42,5 +42,6 @@ namespace TomPIT.Compilation
 		Microsoft.CodeAnalysis.Compilation GetCompilation(IText sourceCode);
 
 		public IText ResolveText(Guid microService, string path);
+		public string ResolveReference(Guid microService, string path);
 	}
 }

@@ -257,6 +257,7 @@ namespace TomPIT.Ide.Designers
 					SignatureHelp = (editor.Features & LanguageFeature.SignatureHelp) == LanguageFeature.SignatureHelp,
 					FileName = text == null ? string.Empty : ((IText)target).FileName(),
 					Language = syntax == null ? "csharp" : syntax.Syntax,
+					MicroService = microService.Name,
 					Text = text
 				});
 			}

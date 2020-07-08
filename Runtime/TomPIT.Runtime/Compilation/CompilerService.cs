@@ -642,6 +642,17 @@ namespace TomPIT.Compilation
 			return Tenant.GetService<IMicroServiceService>().Select(ms);
 		}
 
+		public string ResolveReference(Guid microService, string path)
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+
+			if (ms == null)
+				return path;
+
+			var resolver = new ScriptResolver(Tenant, microService);
+
+			return resolver.ResolveReference(path, ms.Name);
+		}
 		public IText ResolveText(Guid microService, string path)
 		{
 			var resolver = new ScriptResolver(Tenant, microService);

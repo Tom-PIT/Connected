@@ -5,7 +5,20 @@
         options: {
             instance: null,
             state: [],
-            languages: []
+            languages: [],
+            colors: [
+                { ms: null, color: 'transparent' },
+                { ms: null, color: '#e1f5fe' },
+                { ms: null, color: '#e8f5e9' },
+                { ms: null, color: '#fbe9e7' },
+                { ms: null, color: '#ede7f6' },
+                { ms: null, color: '#eceff1' },
+                { ms: null, color: '#efebe9' },
+                { ms: null, color: '#fff8e1' },
+                { ms: null, color: '#fce4ec' },
+                { ms: null, color: '#e0f7fa' },
+                { ms: null, color: '#fffde7' }
+            ]
         },
         _create: function () {
             var target = this;
@@ -35,13 +48,7 @@
             });
 
             require(['vs/editor/editor.main'], function () {
-                monaco.editor.defineTheme('TomPIT', {
-                    base: 'vs',
-                    inherit: true,
-                    rules: [{ background: 'f5f5f5' }]
-                });
-
-                monaco.editor.setTheme('TomPIT');
+                monaco.editor.setTheme('vs');
 
 
                 var editor = $('[data-role="text-editor"]', $(target.element));
@@ -67,7 +74,7 @@
                     glyphMargin: true,
                     lineNumbersMinChars: 4,
                     layoutInfo: {
-                        heigth:'100%'
+                        heigth: '100%'
                     },
                     parameterHints: {
                         enabled: true
@@ -97,7 +104,7 @@
                     editorOpts,
                     {
                         textModelService: {
-                            createModelReference: (uri)=>{
+                            createModelReference: (uri) => {
                                 return new Promise((resolve, reject) => {
                                     var result = {
                                         uri: uri,
@@ -124,6 +131,7 @@
                                                 result.textEditorModel = monaco.editor.createModel(e.text, e.language, uri.toString());
 
                                                 result.textEditorModel.fileName = e.fileName;
+                                                result.textEditorModel.microService = e.microService;
 
                                                 if (!textEditorState.isLanguageInitialized(e.language)) {
                                                     textEditorState.initializeLanguage(e.language, {
@@ -136,7 +144,7 @@
                                                     });
                                                 }
 
-                                                
+
                                                 resolve({
                                                     object: result,
                                                     dispose: () => { }
@@ -145,7 +153,6 @@
                                         });
                                     }
                                     else {
-                                        
                                         resolve({
                                             object: result,
                                             dispose: () => { }
@@ -168,7 +175,7 @@
 
                                 if (model !== null) {
                                     source.setModel(model);
-                                    target.activateModel(model.id, model.fileName);
+                                    target.activateModel(model.id, model.fileName, model.microService);
                                 }
                             }
 
@@ -354,7 +361,7 @@
                                                     var textEdit = edit.edits[j];
 
                                                     if (textEdit.resource) {
-                                                            textEdit.resource = monaco.Uri.parse(textEdit.resource);
+                                                        textEdit.resource = monaco.Uri.parse(textEdit.resource);
                                                     }
                                                 }
                                             }
@@ -461,7 +468,7 @@
 
             monaco.languages.registerDefinitionProvider(language, {
                 provideDefinition: function (model, position) {
-                    return  new Promise(function (resolve, reject) {
+                    return new Promise(function (resolve, reject) {
                         try {
                             ide.designerAction({
                                 data: {
@@ -492,6 +499,7 @@
                                                 var model = monaco.editor.createModel(e.text, e.language, uri.toString());
 
                                                 model.fileName = e.fileName;
+                                                model.microService = e.microService;
 
                                                 if (!textEditorState.isLanguageInitialized(e.language)) {
                                                     textEditorState.initializeLanguage(e.language, {
@@ -610,13 +618,40 @@
                 }
             });
         },
-        activateModel: function (id, fileName) {
+        activateModel: function (id, fileName, ms) {
             let models = monaco.editor.getModels();
 
             var tab = $(`span[data-model="${id}"]`);
 
-            if (tab.length === 0) 
-                $('#modelTabs').append(`<span class="model-tab" data-model="${id}">${fileName}</span>`);
+            if (tab.length === 0) {
+                var color = null;
+
+                for (let i = 0; i < this.options.colors.length; i++) {
+                    let cl = this.options.colors[i];
+
+                    if (cl.ms === ms) {
+                        color = cl.color;
+                        break;
+                    }
+                }
+
+                if (color === null) {
+                    for (let i = 0; i < this.options.colors.length; i++) {
+                        let cl = this.options.colors[i];
+
+                        if (cl.ms === null) {
+                            cl.ms = ms;
+                            color = cl;
+                            break;
+                        }
+                    }
+                }
+
+                if (color === null)
+                    color = this.options.colors[0];
+
+                $('#modelTabs').append(`<span class="model-tab" data-model="${id}" style="background-color:${color.color}" title="${ms}">${fileName}</span>`);
+            }
 
             for (let i = 0; i < models.length; i++) {
                 let model = models[i];
@@ -647,7 +682,7 @@
                     if (i === 0)
                         this.activateModel(models[1].id);
                     else
-                        this.activateModel(models[i-1].id);
+                        this.activateModel(models[i - 1].id);
 
                     break;
                 }
