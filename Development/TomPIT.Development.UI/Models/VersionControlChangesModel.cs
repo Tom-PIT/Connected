@@ -50,7 +50,7 @@ namespace TomPIT.Development.Models
 			return Tenant.GetService<IVersionControlService>().GetChanges(ChangeQueryMode.MetaData);
 		}
 
-		public List<IMicroServiceBinding> QueryActiveBindings()
+		public List<IRepositoryBinding> QueryActiveBindings()
 		{
 			return Tenant.GetService<IVersionControlService>().QueryActiveBindings();
 		}

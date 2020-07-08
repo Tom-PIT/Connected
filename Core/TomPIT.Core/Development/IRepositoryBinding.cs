@@ -2,7 +2,7 @@
 
 namespace TomPIT.Development
 {
-	public interface IMicroServiceBinding
+	public interface IRepositoryBinding
 	{
 		Guid Service { get; }
 		long Commit { get; }

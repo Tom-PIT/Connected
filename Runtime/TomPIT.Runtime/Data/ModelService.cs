@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Reflection;
-using TomPIT.Annotations;
 using TomPIT.Annotations.Models;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
@@ -116,7 +115,7 @@ namespace TomPIT.Data
 				if (!property.CanWrite)
 					continue;
 
-				if (property.FindAttribute<MappingIgnoreAttribute>() != null)
+				if (property.FindAttribute<IgnoreAttribute>() != null)
 					continue;
 
 				var column = new ModelSchemaColumn(result)
@@ -217,14 +216,12 @@ namespace TomPIT.Data
 
 		private string ResolveColumnName(PropertyInfo property)
 		{
-			var mapping = property.FindAttribute<MappingAttribute>();
+			var mapping = property.FindAttribute<NameAttribute>();
 
 			if (mapping != null)
-				return mapping.DataSourceField;
+				return mapping.ColumnName;
 
-			return property.Name;
+			return property.Name.ToCamelCase();
 		}
-
-
 	}
 }

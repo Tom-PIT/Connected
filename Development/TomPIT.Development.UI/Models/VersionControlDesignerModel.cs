@@ -7,7 +7,7 @@ namespace TomPIT.Development.Models
 {
 	public class VersionControlDesignerModel : DevelopmentModel
 	{
-		private List<IRepository> _repositories = null;
+		private List<IRepositoriesEndpoint> _repositories = null;
 		public VersionControlDesignerModel(JObject arguments)
 		{
 			Arguments = arguments;
@@ -15,7 +15,7 @@ namespace TomPIT.Development.Models
 
 		public JObject Arguments { get; }
 
-		public List<IRepository> Repositories
+		public List<IRepositoriesEndpoint> Repositories
 		{
 			get
 			{
@@ -57,7 +57,7 @@ namespace TomPIT.Development.Models
 			Tenant.GetService<IVersionControlService>().InsertRepository(name, url, userName, password);
 		}
 
-		public IRepository SelectRepository(string name)
+		public IRepositoriesEndpoint SelectRepository(string name)
 		{
 			return Tenant.GetService<IVersionControlService>().SelectRepository(name);
 		}

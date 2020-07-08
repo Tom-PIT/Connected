@@ -5,21 +5,26 @@ namespace TomPIT.Data
 {
 	public class ConcurrencyManager
 	{
-		public ConcurrencyManager(Action invoke, Action reload) : this(invoke, reload, 3)
+		public ConcurrencyManager(Action invokeAction, Action reloadAction) : this(invokeAction, reloadAction, 3)
 		{
 		}
 
-		public ConcurrencyManager(Action invoke, Action reload, int retryCount)
+		public ConcurrencyManager(Action invokeAction, Action reloadAction, int retryCount)
 		{
-			Invoke = invoke;
-			Reload = reload;
+			InvokeAction = invokeAction;
+			ReloadAction = reloadAction;
 			RetryCount = retryCount;
 
 			Execute();
 		}
 
-		private Action Invoke { get; }
-		private Action Reload { get; }
+		public static void Invoke(Action invoke, Action reload)
+		{
+			new ConcurrencyManager(invoke, reload);
+		}
+
+		private Action InvokeAction { get; }
+		private Action ReloadAction { get; }
 
 		public int RetryCount { get; } = 3;
 
@@ -31,13 +36,13 @@ namespace TomPIT.Data
 			{
 				try
 				{
-					Invoke();
+					InvokeAction();
 					return;
 				}
 				catch (ConcurrencyException ex)
 				{
 					lastException = ex;
-					Reload();
+					ReloadAction();
 				}
 			}
 

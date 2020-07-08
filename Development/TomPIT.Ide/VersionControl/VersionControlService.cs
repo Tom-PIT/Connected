@@ -368,21 +368,21 @@ namespace TomPIT.Ide.VersionControl
 			}
 		}
 
-		public List<IRepository> QueryRepositories()
+		public List<IRepositoriesEndpoint> QueryRepositories()
 		{
 			var u = Tenant.CreateUrl("VersionControl", "QueryRepositories");
 
-			return Tenant.Get<List<Repository>>(u).ToList<IRepository>();
+			return Tenant.Get<List<Repository>>(u).ToList<IRepositoriesEndpoint>();
 		}
 
-		public List<IMicroServiceBinding> QueryActiveBindings()
+		public List<IRepositoryBinding> QueryActiveBindings()
 		{
 			var u = Tenant.CreateUrl("VersionControl", "QueryActiveBindings");
 
-			return Tenant.Get<List<MicroServiceBinding>>(u).ToList<IMicroServiceBinding>();
+			return Tenant.Get<List<MicroServiceBinding>>(u).ToList<IRepositoryBinding>();
 		}
 
-		public IMicroServiceBinding SelectBinding(Guid service, string repository)
+		public IRepositoryBinding SelectBinding(Guid service, string repository)
 		{
 			var u = Tenant.CreateUrl("VersionControl", "SelectBinding");
 			var e = new JObject
@@ -394,7 +394,7 @@ namespace TomPIT.Ide.VersionControl
 			return Tenant.Post<MicroServiceBinding>(u, e);
 		}
 
-		public List<IMicroServiceBinding> QueryBindings(Guid service)
+		public List<IRepositoryBinding> QueryBindings(Guid service)
 		{
 			var u = Tenant.CreateUrl("VersionControl", "QueryBindings");
 			var e = new JObject
@@ -402,7 +402,7 @@ namespace TomPIT.Ide.VersionControl
 					 {"service", service }
 				};
 
-			return Tenant.Post<List<MicroServiceBinding>>(u, e).ToList<IMicroServiceBinding>();
+			return Tenant.Post<List<MicroServiceBinding>>(u, e).ToList<IRepositoryBinding>();
 		}
 
 		public void UpdateBinding(Guid service, string repository, long commit, DateTime date, bool active)
@@ -472,7 +472,7 @@ namespace TomPIT.Ide.VersionControl
 			Tenant.Post(u, e);
 		}
 
-		public IRepository SelectRepository(string name)
+		public IRepositoriesEndpoint SelectRepository(string name)
 		{
 			var u = Tenant.CreateUrl("VersionControl", "SelectRepository");
 			var e = new JObject

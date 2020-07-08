@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.Development
 {
-	public interface IRepository
+	public interface IRepositoriesEndpoint
 	{
 		string Name { get; }
 		string Url { get; }

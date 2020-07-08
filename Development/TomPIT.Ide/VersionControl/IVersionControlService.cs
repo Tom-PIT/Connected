@@ -34,15 +34,15 @@ namespace TomPIT.Ide.VersionControl
 		IChangeDescriptor GetChanges(ChangeQueryMode mode);
 		IVersionControlDiffDescriptor GetDiff(Guid component, Guid id);
 
-		List<IRepository> QueryRepositories();
-		List<IMicroServiceBinding> QueryActiveBindings();
-		IMicroServiceBinding SelectBinding(Guid service, string repository);
-		List<IMicroServiceBinding> QueryBindings(Guid service);
+		List<IRepositoriesEndpoint> QueryRepositories();
+		List<IRepositoryBinding> QueryActiveBindings();
+		IRepositoryBinding SelectBinding(Guid service, string repository);
+		List<IRepositoryBinding> QueryBindings(Guid service);
 		void UpdateBinding(Guid service, string repository, long commit, DateTime date, bool active);
 		void DeleteBinding(Guid service, string repository);
 		void InsertRepository(string name, string url, string userName, string password);
 		void UpdateRepository(string existingName, string name, string url, string userName, string password);
 		void DeleteRepository(string name);
-		IRepository SelectRepository(string name);
+		IRepositoriesEndpoint SelectRepository(string name);
 	}
 }

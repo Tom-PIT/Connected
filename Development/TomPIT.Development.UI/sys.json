@@ -2,7 +2,7 @@
 	"connections": [
     {
       "name": "localhost",
-      //"url": "http://sys-app/production/sys",
+      //"url": "http://sys-app/common/sys",
       "url": "http://localhost:44001",
       //"url": "http://sys-app/inel/sys",
       "authenticationToken": "defaultAuthenticationToken"

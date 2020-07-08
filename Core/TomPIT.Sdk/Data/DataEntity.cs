@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using TomPIT.Annotations;
+using TomPIT.Annotations.Models;
 using TomPIT.Reflection;
 using TomPIT.Serialization;
 
@@ -53,17 +53,17 @@ namespace TomPIT.Data
 				if (!property.CanWrite)
 					continue;
 
-				var atts = property.FindAttributes<MappingAttribute>();
+				var atts = property.FindAttributes<NameAttribute>();
 
 				if (atts == null || atts.Count == 0)
 					continue;
 
 				foreach (var att in atts)
 				{
-					if (string.IsNullOrWhiteSpace(att.DataSourceField))
+					if (string.IsNullOrWhiteSpace(att.ColumnName))
 						continue;
 
-					var prop = state.Property(att.DataSourceField, StringComparison.OrdinalIgnoreCase);
+					var prop = state.Property(att.ColumnName, StringComparison.OrdinalIgnoreCase);
 
 					if (prop == null)
 						continue;

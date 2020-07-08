@@ -2,7 +2,7 @@
 
 namespace TomPIT.Ide.VersionControl
 {
-	internal class Repository : IRepository
+	internal class Repository : IRepositoriesEndpoint
 	{
 		public string Name { get; set; }
 

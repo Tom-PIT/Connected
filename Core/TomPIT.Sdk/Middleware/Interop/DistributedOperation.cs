@@ -140,7 +140,6 @@ namespace TomPIT.Middleware.Interop
 
 		protected virtual void OnInvoke()
 		{
-
 		}
 
 		protected virtual void OnAuthorize()

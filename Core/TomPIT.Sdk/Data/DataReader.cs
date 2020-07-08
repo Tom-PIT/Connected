@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
-using TomPIT.Annotations;
+using TomPIT.Annotations.Models;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 
@@ -124,16 +124,16 @@ namespace TomPIT.Data
 
 			foreach (var property in properties)
 			{
-				var ignore = property.FindAttribute<MappingIgnoreAttribute>();
+				var ignore = property.FindAttribute<IgnoreAttribute>();
 
 				if (ignore != null)
 					continue;
 
-				var att = property.FindAttribute<MappingAttribute>();
+				var att = property.FindAttribute<NameAttribute>();
 				var name = property.Name;
 
 				if (att != null)
-					name = att.DataSourceField;
+					name = att.ColumnName;
 
 				var rowProperty = row.Property(name, StringComparison.OrdinalIgnoreCase);
 

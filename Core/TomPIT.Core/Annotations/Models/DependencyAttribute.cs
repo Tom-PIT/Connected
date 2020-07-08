@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TomPIT.Annotations
+namespace TomPIT.Annotations.Models
 {
 	public sealed class DependencyAttribute : Attribute
 	{
