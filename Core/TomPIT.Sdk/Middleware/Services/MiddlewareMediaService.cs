@@ -58,7 +58,7 @@ namespace TomPIT.Middleware.Services
 
 			descriptor.Validate();
 
-			return FindFile(descriptor.Configuration, descriptor.Element.Split('/'));
+			return GetUrl(FindFile(descriptor.Configuration, descriptor.Element.Split('/')).Blob);
 		}
 
 		public string SanitizeText(string text)
@@ -83,7 +83,7 @@ namespace TomPIT.Middleware.Services
 			return sr.ReadToEnd();
 		}
 
-		private string FindFile(IMediaResourcesConfiguration media, IEnumerable<string> path)
+		private IMediaResourceFile FindFile(IMediaResourcesConfiguration media, IEnumerable<string> path)
 		{
 			if (path.Count() == 1)
 			{
@@ -92,7 +92,7 @@ namespace TomPIT.Middleware.Services
 				if (file == null)
 					throw new RuntimeException($"{SR.ErrMediaFileNotFound} ({path.ElementAt(0)})");
 
-				return GetUrl(file.Blob);
+				return file;
 			}
 			else
 			{
@@ -105,7 +105,7 @@ namespace TomPIT.Middleware.Services
 			}
 		}
 
-		private string FindFile(IMediaResourceFolder folder, IEnumerable<string> path)
+		private IMediaResourceFile FindFile(IMediaResourceFolder folder, IEnumerable<string> path)
 		{
 			if (path.Count() == 1)
 			{
@@ -114,7 +114,7 @@ namespace TomPIT.Middleware.Services
 				if (file == null)
 					throw new RuntimeException($"{SR.ErrMediaFileNotFound} ({path.ElementAt(0)})");
 
-				return GetUrl(file.Blob);
+				return file;
 			}
 			else
 			{
@@ -336,6 +336,15 @@ namespace TomPIT.Middleware.Services
 			}
 
 			return true;
+		}
+
+		public IMediaResourceFile SelectFile(string path)
+		{
+			var descriptor = ComponentDescriptor.Media(Context, path);
+
+			descriptor.Validate();
+
+			return FindFile(descriptor.Configuration, descriptor.Element.Split('/'));
 		}
 	}
 }

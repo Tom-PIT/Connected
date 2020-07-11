@@ -4,10 +4,10 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.Design;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Globalization;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
@@ -136,7 +136,7 @@ namespace TomPIT.Management.Designers
 
 			str.UpdateTranslation(lang.Lcid, value, true);
 
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(config);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(config);
 
 			return Result.EmptyResult(ViewModel);
 		}

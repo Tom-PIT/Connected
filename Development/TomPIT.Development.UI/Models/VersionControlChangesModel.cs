@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using TomPIT.Design;
 using TomPIT.Exceptions;
-using TomPIT.Ide.VersionControl;
 
 namespace TomPIT.Development.Models
 {
@@ -15,9 +15,9 @@ namespace TomPIT.Development.Models
 
 		public JObject Arguments { get; }
 
-		public IVersionControlDiffDescriptor GetDiff()
+		public IDiffDescriptor GetDiff()
 		{
-			return Tenant.GetService<IVersionControlService>().GetDiff(Arguments.Required<Guid>("component"), Arguments.Required<Guid>("id"));
+			return Tenant.GetService<IDesignService>().VersionControl.GetDiff(Arguments.Required<Guid>("component"), Arguments.Required<Guid>("id"));
 		}
 
 		public void Commit()
@@ -31,7 +31,7 @@ namespace TomPIT.Development.Models
 			if (items.Count == 0)
 				throw new RuntimeException(SR.ErrCommitNoFiles);
 
-			Tenant.GetService<IVersionControlService>().Commit(items, Arguments.Required<string>("comment"));
+			Tenant.GetService<IDesignService>().VersionControl.Commit(items, Arguments.Required<string>("comment"));
 		}
 
 		public void Undo()
@@ -42,17 +42,17 @@ namespace TomPIT.Development.Models
 			foreach (JObject component in components)
 				items.Add(component.Required<Guid>("component"));
 
-			Tenant.GetService<IVersionControlService>().Undo(items);
+			Tenant.GetService<IDesignService>().VersionControl.Undo(items);
 		}
 
 		public IChangeDescriptor GetChanges()
 		{
-			return Tenant.GetService<IVersionControlService>().GetChanges(ChangeQueryMode.MetaData);
+			return Tenant.GetService<IDesignService>().VersionControl.GetChanges(ChangeQueryMode.MetaData);
 		}
 
-		public List<IRepositoryBinding> QueryActiveBindings()
+		public List<IServiceBinding> QueryActiveBindings()
 		{
-			return Tenant.GetService<IVersionControlService>().QueryActiveBindings();
+			return Tenant.GetService<IDesignService>().Bindings.QueryActive();
 		}
 	}
 }

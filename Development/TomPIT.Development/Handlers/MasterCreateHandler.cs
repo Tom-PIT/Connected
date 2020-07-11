@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Design;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Middleware;
 
 namespace TomPIT.Handlers
@@ -37,7 +36,7 @@ namespace TomPIT.Handlers
 				sb.AppendLine("</body>");
 				sb.AppendLine("</html>");
 
-				context.Tenant.GetService<IComponentDevelopmentService>().Update(m, sb.ToString());
+				context.Tenant.GetService<IDesignService>().Components.Update(m, sb.ToString());
 			}
 		}
 	}

@@ -3,7 +3,7 @@ using TomPIT.Development;
 
 namespace TomPIT.SysDb.Sql.Development
 {
-	internal class Repository : PrimaryKeyRecord, IRepository
+	internal class Repository : PrimaryKeyRecord, IRepositoriesEndpoint
 	{
 		public string Name { get; set; }
 

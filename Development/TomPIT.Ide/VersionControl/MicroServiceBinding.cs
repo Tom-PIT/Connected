@@ -3,7 +3,7 @@ using TomPIT.Development;
 
 namespace TomPIT.Ide.VersionControl
 {
-	internal class MicroServiceBinding : IRepositoryBinding
+	internal class MicroServiceBinding : IServiceBinding
 	{
 		public Guid Service { get; set; }
 

@@ -4,7 +4,7 @@ using TomPIT.Development;
 
 namespace TomPIT.SysDb.Sql.Development
 {
-	internal class MicroServiceBinding : PrimaryKeyRecord, IMicroServiceBinding
+	internal class MicroServiceBinding : PrimaryKeyRecord, IServiceBinding
 	{
 		public long Commit { get; set; }
 

@@ -1,8 +1,8 @@
 ﻿using System.IO;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.Design;
 using TomPIT.Development.Handlers;
-using TomPIT.Ide.ComponentModel;
 
 namespace TomPIT.MicroServices.Design.CreateHandlers
 {
@@ -27,10 +27,10 @@ namespace TomPIT.MicroServices.Design.CreateHandlers
 			var text = Regex.Replace(reader.ReadToEnd(), OnReplace);
 
 			if (Instance is IScriptBundleInitializer initializer)
-				Instance.Scripts.Add(initializer.CreateDefaultFile());
+				Instance.Scripts.Add(initializer.CreateDefaultFile(Instance));
 
-			Context.Tenant.GetService<IComponentDevelopmentService>().Update(Instance);
-			Context.Tenant.GetService<IComponentDevelopmentService>().Update(Instance.Scripts[0] as IText, text);
+			Context.Tenant.GetService<IDesignService>().Components.Update(Instance);
+			Context.Tenant.GetService<IDesignService>().Components.Update(Instance.Scripts[0] as IText, text);
 		}
 	}
 }

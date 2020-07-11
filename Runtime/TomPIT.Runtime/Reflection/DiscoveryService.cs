@@ -4,12 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
+using TomPIT.Annotations.Design;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
 using TomPIT.Design.Serialization;
 using TomPIT.Reflection.Manifests;
 using TomPIT.Reflection.Manifests.Entities;
+using TomPIT.Runtime;
 using TomPIT.Storage;
 
 namespace TomPIT.Reflection
@@ -259,6 +262,185 @@ namespace TomPIT.Reflection
 					FlattenReferences(ms.Token, existing);
 				}
 			}
+		}
+
+		public List<T> Children<T>(IConfiguration configuration) where T : IElement
+		{
+			var r = new List<T>();
+
+			if (configuration is T)
+				r.Add((T)configuration);
+
+			var props = Properties(configuration, false, false);
+			var refs = new List<object>
+			{
+				configuration
+			};
+
+			foreach (var i in props)
+				Children(configuration, i, r, refs);
+
+			return r;
+
+		}
+
+		private void Children<T>(object instance, List<T> items, List<object> refs) where T : IElement
+		{
+			var props = Properties(instance, false, false);
+
+			foreach (var i in props)
+				Children(instance, i, items, refs);
+		}
+
+		private void Children<T>(object configuration, PropertyInfo property, List<T> items, List<object> refs) where T : IElement
+		{
+			if (property.IsIndexer() || property.IsPrimitive())
+				return;
+
+			var value = property.GetValue(configuration);
+
+			if (value == null)
+				return;
+
+			if (refs.Contains(value))
+				return;
+
+			refs.Add(value);
+
+			if (property.IsCollection())
+			{
+				if (!(value is IEnumerable en))
+					return;
+
+				var enm = en.GetEnumerator();
+
+				while (enm.MoveNext())
+				{
+					if (enm.Current == null)
+						continue;
+
+					if (enm.Current is T)
+						items.Add((T)enm.Current);
+
+					Children(enm.Current, items, refs);
+				}
+			}
+			else if (!property.IsPrimitive())
+			{
+				if (value is T && !items.Contains((T)value))
+					items.Add((T)value);
+
+				Children(value, items, refs);
+			}
+		}
+
+		public List<Guid> Dependencies(IConfiguration configuration)
+		{
+			var r = new List<Guid>();
+			var texts = Children<IText>(configuration);
+
+			foreach (var j in texts)
+			{
+				if (j.TextBlob == Guid.Empty)
+					continue;
+
+				r.Add(j.TextBlob);
+			}
+
+			var er = Children<IExternalResourceElement>(configuration);
+
+			foreach (var j in er)
+			{
+				var items = j.QueryResources();
+
+				if (items == null || items.Count == 0)
+					continue;
+
+				foreach (var k in items)
+					r.Add(k);
+			}
+
+			return r;
+		}
+
+		public PropertyInfo[] Properties(object instance, bool writableOnly, bool filterByEnvironment)
+		{
+			var mode = Shell.GetService<IRuntimeService>().Mode;
+			PropertyInfo[] properties = null;
+
+			properties = instance.GetType().GetProperties();
+
+			if (properties == null)
+				return null;
+
+			var temp = new List<PropertyInfo>();
+
+			foreach (var i in properties)
+			{
+				var getMethod = i.GetGetMethod();
+				var setMethod = i.GetSetMethod();
+
+				if (writableOnly && setMethod == null)
+					continue;
+
+				if (getMethod == null)
+					continue;
+
+				if ((getMethod != null && getMethod.IsStatic) || (setMethod != null && setMethod.IsStatic))
+					continue;
+
+				if (setMethod != null && !setMethod.IsPublic)
+					continue;
+
+				temp.Add(i);
+			}
+
+			properties = temp.ToArray();
+
+			if (filterByEnvironment)
+			{
+				switch (mode)
+				{
+					case EnvironmentMode.Design:
+						return FilterDesignProperties(properties);
+					case EnvironmentMode.Runtime:
+						return FilterRuntimeProperties(properties);
+					default:
+						throw new NotSupportedException();
+				}
+			}
+
+			return properties;
+		}
+
+		private PropertyInfo[] FilterDesignProperties(PropertyInfo[] properties)
+		{
+			var r = new List<PropertyInfo>();
+
+			foreach (var i in properties)
+			{
+				var env = i.FindAttribute<EnvironmentVisibilityAttribute>();
+
+				if (env == null || ((env.Visibility & EnvironmentMode.Design) == EnvironmentMode.Design))
+					r.Add(i);
+			}
+
+			return r.ToArray();
+		}
+
+		private PropertyInfo[] FilterRuntimeProperties(PropertyInfo[] properties)
+		{
+			var r = new List<PropertyInfo>();
+
+			foreach (var i in properties)
+			{
+				var env = i.FindAttribute<EnvironmentVisibilityAttribute>();
+
+				if (env != null && ((env.Visibility & EnvironmentMode.Runtime) == EnvironmentMode.Runtime))
+					r.Add(i);
+			}
+
+			return r.ToArray();
 		}
 	}
 }

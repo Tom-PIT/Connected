@@ -162,17 +162,17 @@ namespace TomPIT.SysDb.Sql.Development
          w.Execute();
       }
 
-      public List<IRepository> QueryRepositories()
+      public List<IRepositoriesEndpoint> QueryRepositories()
       {
-         return new Reader<Repository>("tompit.version_control_repository_que").Execute().ToList<IRepository>();
+         return new Reader<Repository>("tompit.version_control_repository_que").Execute().ToList<IRepositoriesEndpoint>();
       }
 
-      public List<IMicroServiceBinding> QueryActiveBindings()
+      public List<IServiceBinding> QueryActiveBindings()
       {
-         return new Reader<MicroServiceBinding>("tompit.service_binding_que_active").Execute().ToList<IMicroServiceBinding>();
+         return new Reader<MicroServiceBinding>("tompit.service_binding_que_active").Execute().ToList<IServiceBinding>();
       }
 
-      public IMicroServiceBinding SelectBinding(IMicroService service, IRepository repository)
+      public IServiceBinding SelectBinding(IMicroService service, IRepositoriesEndpoint repository)
       {
          var r = new Reader<MicroServiceBinding>("tompit.service_binding_sel");
 
@@ -182,16 +182,16 @@ namespace TomPIT.SysDb.Sql.Development
          return r.ExecuteSingleRow();
       }
 
-      public List<IMicroServiceBinding> QueryBindings(IMicroService service)
+      public List<IServiceBinding> QueryBindings(IMicroService service)
       {
          var r = new Reader<MicroServiceBinding>("tompit.service_binding_que");
 
          r.CreateParameter("@service", service.GetId());
 
-         return r.Execute().ToList<IMicroServiceBinding>();
+         return r.Execute().ToList<IServiceBinding>();
       }
 
-      public void UpdateBinding(IMicroService service, IRepository repository, long commit, DateTime date, bool active)
+      public void UpdateBinding(IMicroService service, IRepositoriesEndpoint repository, long commit, DateTime date, bool active)
       {
          var w = new Writer("tompit.service_binding_upd");
 
@@ -204,7 +204,7 @@ namespace TomPIT.SysDb.Sql.Development
          w.Execute();
       }
 
-      public void DeleteBinding(IMicroService service, IRepository repository)
+      public void DeleteBinding(IMicroService service, IRepositoriesEndpoint repository)
       {
          var w = new Writer("tompit.service_binding_del");
 
@@ -226,7 +226,7 @@ namespace TomPIT.SysDb.Sql.Development
          w.Execute();
       }
 
-      public void UpdateRepository(IRepository repository, string name, string url, string userName, byte[] password)
+      public void UpdateRepository(IRepositoriesEndpoint repository, string name, string url, string userName, byte[] password)
       {
          var w = new Writer("tompit.version_control_repository_upd");
 
@@ -239,7 +239,7 @@ namespace TomPIT.SysDb.Sql.Development
          w.Execute();
       }
 
-      public void DeleteRepository(IRepository repository)
+      public void DeleteRepository(IRepositoriesEndpoint repository)
       {
          var w = new Writer("tompit.version_control_repository_del");
 
@@ -248,7 +248,7 @@ namespace TomPIT.SysDb.Sql.Development
          w.Execute();
       }
 
-      public IRepository SelectRepository(string name)
+      public IRepositoriesEndpoint SelectRepository(string name)
       {
          var r = new Reader<Repository>("tompit.version_control_repository_sel");
 

@@ -11,7 +11,6 @@ using TomPIT.Deployment;
 using TomPIT.Deployment.Database;
 using TomPIT.Exceptions;
 using TomPIT.Globalization;
-using TomPIT.Ide;
 using TomPIT.Management.ComponentModel;
 using TomPIT.Management.Deployment.Packages.Database;
 using TomPIT.Reflection;
@@ -224,12 +223,12 @@ namespace TomPIT.Management.Deployment.Packages
 
 				CreateBlob(tenant, i.Token);
 
-				var texts = config.Children<IText>();
+				var texts = tenant.GetService<IDiscoveryService>().Children<IText>(config);
 
 				foreach (var j in texts)
 					CreateBlob(tenant, j.TextBlob);
 
-				var er = config.Children<IExternalResourceElement>();
+				var er = tenant.GetService<IDiscoveryService>().Children<IExternalResourceElement>(config);
 
 				foreach (var j in er)
 				{

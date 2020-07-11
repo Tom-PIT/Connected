@@ -1,6 +1,6 @@
 ﻿using TomPIT.ComponentModel;
+using TomPIT.Design;
 using TomPIT.Exceptions;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Verbs;
 using TomPIT.Middleware;
@@ -91,9 +91,9 @@ namespace TomPIT.Ide.Dom.ComponentModel
 		public override bool Commit(object component, string property, string attribute)
 		{
 			if (component == Target)
-				Tenant.GetService<IComponentDevelopmentService>().Update(Target.Token, Target.Name, Target.Folder);
+				Tenant.GetService<IDesignService>().Components.Update(Target.Token, Target.Name, Target.Folder);
 			else
-				Tenant.GetService<IComponentDevelopmentService>().Update(Configuration);
+				Tenant.GetService<IDesignService>().Components.Update(Configuration);
 
 			return true;
 		}

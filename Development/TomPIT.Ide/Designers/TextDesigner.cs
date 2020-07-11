@@ -10,7 +10,6 @@ using TomPIT.Ide.Analysis;
 using TomPIT.Ide.Analysis.Analyzers;
 using TomPIT.Ide.Analysis.Diagnostics;
 using TomPIT.Ide.Analysis.Lenses;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
 using TomPIT.Ide.TextServices;
@@ -373,7 +372,7 @@ namespace TomPIT.Ide.Designers
 			if (sc == null)
 				return Result.EmptyResult(this);
 
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(sc, data.Optional<string>("text", null));
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(sc, data.Optional<string>("text", null));
 			Environment.Context.Tenant.GetService<ICompilerService>().Invalidate(Environment.Context, sc.Configuration().MicroService(), sc.Configuration().Component, sc);
 
 			var r = Result.SectionResult(ViewModel, EnvironmentSection.Events);

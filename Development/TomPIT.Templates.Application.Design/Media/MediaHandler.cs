@@ -11,9 +11,8 @@ using Microsoft.AspNetCore.StaticFiles;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.Design;
 using TomPIT.Exceptions;
-using TomPIT.Ide.ComponentModel;
-using TomPIT.Ide.VersionControl;
 using TomPIT.MicroServices.Resources;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
@@ -133,7 +132,7 @@ namespace TomPIT.MicroServices.Design.Media
 
 		private void UploadChunk()
 		{
-			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
+			Tenant.GetService<IDesignService>().VersionControl.Lock(Media.Component, Development.LockVerb.Edit);
 
 			var metaData = Serializer.Deserialize<ChunkMetaData>(Arguments.Required<string>("chunkMetadata"));
 			var files = Context.Request.Form.Files;
@@ -216,7 +215,7 @@ namespace TomPIT.MicroServices.Design.Media
 				targetFile.Blob = blobId;
 				UpdateModified(folder);
 				CreateThumbnail(targetFile);
-				Tenant.GetService<IComponentDevelopmentService>().Update(Media);
+				Tenant.GetService<IDesignService>().Components.Update(Media);
 			}
 
 			RenderResult(true);
@@ -224,7 +223,7 @@ namespace TomPIT.MicroServices.Design.Media
 
 		private void Rename()
 		{
-			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
+			Tenant.GetService<IDesignService>().VersionControl.Lock(Media.Component, Development.LockVerb.Edit);
 
 			var path = PathInfo;
 			var name = Arguments.Required<string>("name");
@@ -266,7 +265,7 @@ namespace TomPIT.MicroServices.Design.Media
 
 			UpdateModified(parent);
 
-			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
+			Tenant.GetService<IDesignService>().Components.Update(Media);
 			RenderResult(true);
 		}
 
@@ -281,7 +280,7 @@ namespace TomPIT.MicroServices.Design.Media
 
 		private void Remove()
 		{
-			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
+			Tenant.GetService<IDesignService>().VersionControl.Lock(Media.Component, Development.LockVerb.Edit);
 
 			var path = PathInfo;
 
@@ -290,7 +289,7 @@ namespace TomPIT.MicroServices.Design.Media
 			else
 				DeleteFile(path);
 
-			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
+			Tenant.GetService<IDesignService>().Components.Update(Media);
 			RenderResult(true);
 		}
 
@@ -356,7 +355,7 @@ namespace TomPIT.MicroServices.Design.Media
 
 		private void Move()
 		{
-			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
+			Tenant.GetService<IDesignService>().VersionControl.Lock(Media.Component, Development.LockVerb.Edit);
 
 			var sourcePath = SourcePathInfo;
 			var destinationPath = DestinationPathInfo;
@@ -366,7 +365,7 @@ namespace TomPIT.MicroServices.Design.Media
 			else
 				MoveFile(sourcePath, destinationPath);
 
-			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
+			Tenant.GetService<IDesignService>().Components.Update(Media);
 
 			RenderResult(true);
 		}
@@ -410,7 +409,7 @@ namespace TomPIT.MicroServices.Design.Media
 			if (destinationFolder != null)
 				UpdateModified(destinationFolder);
 
-			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
+			Tenant.GetService<IDesignService>().Components.Update(Media);
 			RenderResult(true);
 		}
 
@@ -466,7 +465,7 @@ namespace TomPIT.MicroServices.Design.Media
 			if (destinationFolder != null)
 				UpdateModified(destinationFolder);
 
-			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
+			Tenant.GetService<IDesignService>().Components.Update(Media);
 			RenderResult(true);
 		}
 
@@ -536,7 +535,7 @@ namespace TomPIT.MicroServices.Design.Media
 
 		private void CreateDir()
 		{
-			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
+			Tenant.GetService<IDesignService>().VersionControl.Lock(Media.Component, Development.LockVerb.Edit);
 
 			var path = PathInfo;
 			var name = Arguments.Required<string>("name");
@@ -574,14 +573,14 @@ namespace TomPIT.MicroServices.Design.Media
 				UpdateModified(parent);
 			}
 
-			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
+			Tenant.GetService<IDesignService>().Components.Update(Media);
 
 			RenderResult(true);
 		}
 
 		private void Copy()
 		{
-			Tenant.GetService<IVersionControlService>().Lock(Media.Component, Development.LockVerb.Edit);
+			Tenant.GetService<IDesignService>().VersionControl.Lock(Media.Component, Development.LockVerb.Edit);
 
 			var sourcePath = SourcePathInfo;
 			var destinationPath = DestinationPathInfo;
@@ -591,7 +590,7 @@ namespace TomPIT.MicroServices.Design.Media
 			else
 				CopyFile(sourcePath, destinationPath);
 
-			Tenant.GetService<IComponentDevelopmentService>().Update(Media);
+			Tenant.GetService<IDesignService>().Components.Update(Media);
 
 			RenderResult(true);
 		}

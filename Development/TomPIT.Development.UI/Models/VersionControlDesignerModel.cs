@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-using TomPIT.Ide.VersionControl;
+using TomPIT.Design;
 
 namespace TomPIT.Development.Models
 {
@@ -20,7 +20,7 @@ namespace TomPIT.Development.Models
 			get
 			{
 				if (_repositories == null)
-					_repositories = Tenant.GetService<IVersionControlService>().QueryRepositories();
+					_repositories = Tenant.GetService<IDesignService>().Repositories.Query();
 
 				return _repositories;
 			}
@@ -44,7 +44,7 @@ namespace TomPIT.Development.Models
 			var userName = Arguments.Required<string>("userName");
 			var password = Arguments.Required<string>("password");
 
-			Tenant.GetService<IVersionControlService>().UpdateRepository(existingName, name, url, userName, password);
+			Tenant.GetService<IDesignService>().Repositories.Update(existingName, name, url, userName, password);
 		}
 
 		private void InsertBinding()
@@ -54,12 +54,12 @@ namespace TomPIT.Development.Models
 			var userName = Arguments.Required<string>("userName");
 			var password = Arguments.Required<string>("password");
 
-			Tenant.GetService<IVersionControlService>().InsertRepository(name, url, userName, password);
+			Tenant.GetService<IDesignService>().Repositories.Insert(name, url, userName, password);
 		}
 
 		public IRepositoriesEndpoint SelectRepository(string name)
 		{
-			return Tenant.GetService<IVersionControlService>().SelectRepository(name);
+			return Tenant.GetService<IDesignService>().Repositories.Select(name);
 		}
 
 		public List<object> QueryBranches()

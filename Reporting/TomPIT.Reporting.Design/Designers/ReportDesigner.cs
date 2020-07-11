@@ -7,8 +7,8 @@ using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.Reports;
+using TomPIT.Design;
 using TomPIT.Ide;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
@@ -190,7 +190,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 			Report.Apis.Add(url);
 
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(Report);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(Report);
 
 			return Result.SectionResult(ViewModel, EnvironmentSection.Designer);
 		}

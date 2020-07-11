@@ -139,17 +139,17 @@ namespace TomPIT.Sys.Controllers.Development
       }
 
       [HttpGet]
-      public List<IRepository> QueryRepositories()
+      public List<IRepositoriesEndpoint> QueryRepositories()
       {
          return DataModel.VersionControl.QueryRepositories();
       }
       [HttpGet]
-      public List<IMicroServiceBinding> QueryActiveBindings()
+      public List<IServiceBinding> QueryActiveBindings()
       {
          return DataModel.VersionControl.QueryActiveBindings();
       }
       [HttpPost]
-      public IMicroServiceBinding SelectBinding()
+      public IServiceBinding SelectBinding()
       {
          var body = FromBody();
          var service = body.Required<Guid>("service");
@@ -158,7 +158,7 @@ namespace TomPIT.Sys.Controllers.Development
          return DataModel.VersionControl.SelectBinding(service, repo);
       }
       [HttpPost]
-      public List<IMicroServiceBinding> QueryBindings()
+      public List<IServiceBinding> QueryBindings()
       {
          var body = FromBody();
          var service = body.Required<Guid>("service");
@@ -224,7 +224,7 @@ namespace TomPIT.Sys.Controllers.Development
          DataModel.VersionControl.UpdateRepository(existingName, name, url, userName, password);
       }
       [HttpPost]
-      public IRepository SelectRepository()
+      public IRepositoriesEndpoint SelectRepository()
       {
          var body = FromBody();
 

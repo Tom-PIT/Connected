@@ -33,11 +33,11 @@ namespace TomPIT.MicroServices.Resources
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
 		public bool Minify { get; set; } = true;
 
-		public IScriptSource CreateDefaultFile()
+		public IScriptSource CreateDefaultFile(IScriptBundleConfiguration configuration)
 		{
 			return new ScriptCodeSource
 			{
-				Name = "Default"
+				Name = configuration.ComponentName()
 			};
 		}
 	}

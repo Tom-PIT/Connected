@@ -1,4 +1,5 @@
 ﻿using TomPIT.ComponentModel;
+using TomPIT.Design;
 
 namespace TomPIT.Ide.ComponentModel
 {

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
-using TomPIT.Ide.ComponentModel;
+using TomPIT.Design;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Properties;
 using TomPIT.Reflection;
@@ -193,7 +193,7 @@ namespace TomPIT.Ide.Dom.ComponentModel
 
 			if (config != null)
 			{
-				Tenant.GetService<IComponentDevelopmentService>().Update(config);
+				Tenant.GetService<IDesignService>().Components.Update(config);
 
 				return true;
 			}

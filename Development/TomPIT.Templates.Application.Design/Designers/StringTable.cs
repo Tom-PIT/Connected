@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using TomPIT.Design;
 using TomPIT.Development.Designers;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
 using TomPIT.MicroServices.Resources;
@@ -26,7 +26,7 @@ namespace TomPIT.MicroServices.Design.Designers
 
 			StringTable.Strings.Add(existing);
 
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(StringTable);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(StringTable);
 
 			return Result.JsonResult(ViewModel, existing.Id);
 		}
@@ -44,7 +44,7 @@ namespace TomPIT.MicroServices.Design.Designers
 				existing.IsLocalizable = data.Optional("isLocalizable", existing.IsLocalizable);
 			}
 
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(StringTable);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(StringTable);
 
 			return Result.EmptyResult(ViewModel);
 		}
@@ -58,7 +58,7 @@ namespace TomPIT.MicroServices.Design.Designers
 			if (existing != null)
 				StringTable.Strings.Remove(existing);
 
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(StringTable);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(StringTable);
 
 			return Result.EmptyResult(ViewModel);
 		}

@@ -6,7 +6,6 @@ using TomPIT.Design;
 using TomPIT.Exceptions;
 using TomPIT.Ide;
 using TomPIT.Ide.Collections;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
@@ -103,7 +102,7 @@ namespace TomPIT.MicroServices.IoT.Design.Designers
 			}
 
 			ResizeView();
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(IoTView);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(IoTView);
 
 			return Result.SectionResult(ViewModel, EnvironmentSection.Properties);
 		}
@@ -134,7 +133,7 @@ namespace TomPIT.MicroServices.IoT.Design.Designers
 			}
 
 			ResizeView();
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(IoTView);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(IoTView);
 
 			return Result.SectionResult(ViewModel, EnvironmentSection.Properties);
 		}
@@ -174,7 +173,7 @@ namespace TomPIT.MicroServices.IoT.Design.Designers
 					handler.InitializeNewComponent(Environment.Context, stencil);
 			}
 
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(IoTView);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(IoTView);
 
 			return Result.ViewResult(stencil.CreateModel(Environment.Context), "~/Views/Ide/Designers/IoT/Stencil.cshtml");
 		}

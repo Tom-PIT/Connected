@@ -2,7 +2,7 @@
 using TomPIT.Annotations.Design;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
-using TomPIT.Ide.ComponentModel;
+using TomPIT.Design;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Properties;
 using TomPIT.Reflection;
@@ -105,7 +105,7 @@ namespace TomPIT.Ide.Dom.ComponentModel
 			if (text == null)
 				return null;
 
-			Tenant.GetService<IComponentDevelopmentService>().Update(text, value);
+			Tenant.GetService<IDesignService>().Components.Update(text, value);
 
 			var r = new TransactionResult(true)
 			{

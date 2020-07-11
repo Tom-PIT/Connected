@@ -27,6 +27,7 @@
 		//public static string DataHub => "DataHub";
 		public static string SearchCatalog => "SearchCatalog";
 		public static string Installer => "Installer";
+		public static string Runtime => "Runtime";
 		public static string EventBinder => "EventBinder";
 		public static string Management => "Management";
 		public static string IoTHub => "IoTHub";

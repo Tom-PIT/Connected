@@ -207,15 +207,15 @@ namespace TomPIT.Sys.Data
 			DataModel.Components.NotifyChanged(c);
 		}
 
-		public List<IRepository> QueryRepositories()
+		public List<IRepositoriesEndpoint> QueryRepositories()
 		{
 			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryRepositories();
 		}
-		public List<IMicroServiceBinding> QueryActiveBindings()
+		public List<IServiceBinding> QueryActiveBindings()
 		{
 			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryActiveBindings();
 		}
-		public IMicroServiceBinding SelectBinding(Guid service, string repository)
+		public IServiceBinding SelectBinding(Guid service, string repository)
 		{
 			var ms = DataModel.MicroServices.Select(service);
 
@@ -229,7 +229,7 @@ namespace TomPIT.Sys.Data
 
 			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.SelectBinding(ms, repo);
 		}
-		public List<IMicroServiceBinding> QueryBindings(Guid service)
+		public List<IServiceBinding> QueryBindings(Guid service)
 		{
 			var ms = DataModel.MicroServices.Select(service);
 
@@ -293,7 +293,7 @@ namespace TomPIT.Sys.Data
 
 			Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.DeleteRepository(repo);
 		}
-		public IRepository SelectRepository(string name)
+		public IRepositoriesEndpoint SelectRepository(string name)
 		{
 			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.SelectRepository(name);
 		}

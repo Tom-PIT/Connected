@@ -2,7 +2,6 @@
 using System.Text.RegularExpressions;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Middleware;
 
 namespace TomPIT.Development.Handlers
@@ -44,7 +43,7 @@ namespace TomPIT.Development.Handlers
 			using var reader = new StreamReader(stream);
 			var text = Regex.Replace(reader.ReadToEnd(), OnReplace);
 
-			Context.Tenant.GetService<IComponentDevelopmentService>().Update(Instance as IText, text);
+			Context.Tenant.GetService<IDesignService>().Components.Update(Instance as IText, text);
 		}
 
 		protected abstract string Template { get; }

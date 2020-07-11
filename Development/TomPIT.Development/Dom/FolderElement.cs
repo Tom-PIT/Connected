@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.Design;
 using TomPIT.Ide;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Dom;
@@ -90,7 +91,7 @@ namespace TomPIT.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().UpdateFolder(Folder.MicroService, Folder.Token, Folder.Name, Folder.Parent);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.UpdateFolder(Folder.MicroService, Folder.Token, Folder.Name, Folder.Parent);
 
 			return true;
 		}
