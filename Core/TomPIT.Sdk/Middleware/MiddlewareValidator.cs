@@ -215,9 +215,15 @@ namespace TomPIT.Middleware
 
 		private bool ValidateRequestValue(List<ValidationResult> results, object instance, PropertyInfo property)
 		{
+			if (property.PropertyType != typeof(string))
+				return true;
+
+			if (!property.CanWrite)
+				return true;
+
 			var value = GetValue(instance, property);
 
-			if (value == null || !(value is string s))
+			if (value == null)
 				return true;
 
 			var att = property.FindAttribute<ValidateRequestAttribute>();
@@ -225,7 +231,7 @@ namespace TomPIT.Middleware
 			if (att != null && !att.ValidateRequest)
 				return true;
 
-			var decoded = HttpUtility.HtmlDecode(s);
+			var decoded = HttpUtility.HtmlDecode(value.ToString());
 
 			if (decoded.Replace(" ", string.Empty).Contains("<script>"))
 			{
