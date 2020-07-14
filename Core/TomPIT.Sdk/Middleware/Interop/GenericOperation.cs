@@ -253,14 +253,14 @@ namespace TomPIT.Middleware.Interop
 					catch (Exception ex)
 					{
 						if (attribute.Behavior == AuthorizationPolicyBehavior.Mandatory)
-							return default;
+							throw ex;
 
 						firstFail = ex;
 					}
 				}
 
 				if (!onePassed && firstFail != null)
-					return default;
+					throw firstFail;
 
 				return e;
 			}
