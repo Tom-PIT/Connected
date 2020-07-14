@@ -6,6 +6,7 @@ using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.Exceptions;
 using TomPIT.Reflection;
+using TomPIT.Security;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Interop
@@ -222,33 +223,52 @@ namespace TomPIT.Middleware.Interop
 
 		private object AuthorizePoliciesItem(object e, List<AuthorizationPolicyAttribute> attributes)
 		{
+			if (attributes.Count == 0)
+				return e;
+
+			var restore = false;
+
+			if (Context is IElevationContext c && c.State == ElevationContextState.Granted)
+			{
+				restore = true;
+				Context.Revoke();
+			}
+
 			Exception firstFail = null;
 			bool onePassed = false;
 
-			foreach (var attribute in attributes.OrderByDescending(f => f.Priority))
+			try
 			{
-				try
+				foreach (var attribute in attributes.OrderByDescending(f => f.Priority))
 				{
-					if (attribute.Behavior == AuthorizationPolicyBehavior.Optional && onePassed)
-						continue;
+					try
+					{
+						if (attribute.Behavior == AuthorizationPolicyBehavior.Optional && onePassed)
+							continue;
 
-					attribute.Authorize(Context, e);
+						attribute.Authorize(Context, e);
 
-					onePassed = true;
+						onePassed = true;
+					}
+					catch (Exception ex)
+					{
+						if (attribute.Behavior == AuthorizationPolicyBehavior.Mandatory)
+							return default;
+
+						firstFail = ex;
+					}
 				}
-				catch (Exception ex)
-				{
-					if (attribute.Behavior == AuthorizationPolicyBehavior.Mandatory)
-						return default;
 
-					firstFail = ex;
-				}
+				if (!onePassed && firstFail != null)
+					return default;
+
+				return e;
 			}
-
-			if (!onePassed && firstFail != null)
-				return default;
-
-			return e;
+			finally
+			{
+				if (restore)
+					Context.Grant();
+			}
 		}
 	}
 }
