@@ -21,11 +21,35 @@ namespace TomPIT.Cdn.Events
 			s.ConfigurationChanged += OnConfigurationChanged;
 			s.ConfigurationAdded += OnConfigurationAdded;
 			s.ConfigurationRemoved += OnConfigurationRemoved;
+			s.ComponentChanged += OnComponentChanged;
+
+			MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+
 
 			var configs = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, ComponentCategories.EventBinder);
 
 			foreach (var i in configs)
 				AddConfiguration(i);
+		}
+
+		private static void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
+		{
+			var configs = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().QueryComponents(e.MicroService, ComponentCategories.EventBinder);
+
+			foreach (var i in configs)
+			{
+				RemoveConfiguration(e.MicroService, i.Token);
+				AddConfiguration(i.Token);
+			}
+		}
+
+		private static void OnComponentChanged(ITenant sender, ComponentEventArgs e)
+		{
+			if (!e.Category.Equals(ComponentCategories.EventBinder))
+				return;
+
+			RemoveConfiguration(e.MicroService, e.Component);
+			AddConfiguration(e.Component);
 		}
 
 		private static void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)

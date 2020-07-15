@@ -64,7 +64,7 @@
                     automaticLayout: true,
                     autoClosingBrackets: 'beforeWhitespace',
                     autoClosingOvertype: 'always',
-                    autoClosingQuotes: 'always',
+                    autoClosingQuotes: 'beforeWhitespace',
                     autoIndent: 'brackets',
                     colorDecorators: true,
                     fixedOverflowWidgets: true,

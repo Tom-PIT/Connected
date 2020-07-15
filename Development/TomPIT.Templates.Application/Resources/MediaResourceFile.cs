@@ -48,7 +48,11 @@ namespace TomPIT.MicroServices.Resources
 
 		public void Clean(Guid resource)
 		{
+			if (Blob != Guid.Empty)
+				MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Delete(Blob);
 
+			if (Thumb != Guid.Empty)
+				MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Delete(Thumb);
 		}
 	}
 }

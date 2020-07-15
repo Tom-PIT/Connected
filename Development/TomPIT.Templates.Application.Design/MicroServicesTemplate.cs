@@ -66,8 +66,8 @@ namespace TomPIT.MicroServices.Design
 
 				{ ComponentCategories.StringTable,     new ItemDescriptor("String table",     ComponentCategories.StringTable,       typeof(StringTable))                         { Glyph = "fal fa-font",               Category = "Resources" ,      Ordinal=400} } ,
 				{ ComponentCategories.Media,           new ItemDescriptor("Media",            ComponentCategories.Media,             typeof(MediaResources))                      { Glyph = "fal fa-images",             Category = "Resources" ,      Ordinal=401} } ,
-				{ ComponentCategories.EmbeddedAssembly,new ItemDescriptor("Embedded assembly",ComponentCategories.EmbeddedAssembly,  typeof(AssemblyEmbeddedResource))            { Glyph = "fal fa-file-code",          Category = "Resources" ,      Ordinal=402,      Value="Assembly"} } ,
-				{ ComponentCategories.FileAssembly,    new ItemDescriptor("File assembly",    ComponentCategories.FileAssembly,      typeof(AssemblyFileSystemResource))          { Glyph = "fal fa-file-code",          Category = "Resources" ,      Ordinal=403,      Value="Assembly"} },
+				{ ComponentCategories.EmbeddedAssembly,new ItemDescriptor("Embedded assembly",ComponentCategories.EmbeddedAssembly,  typeof(AssemblyEmbeddedResource))            { Glyph = "fal fa-file-code",          Category = "Resources" ,      Ordinal=402 }  } ,
+				{ ComponentCategories.FileAssembly,    new ItemDescriptor("File assembly",    ComponentCategories.FileAssembly,      typeof(AssemblyFileSystemResource))          { Glyph = "fal fa-file-code",          Category = "Resources" ,      Ordinal=403} },
 
 				{ ComponentCategories.Installer,       new ItemDescriptor("Installer",        ComponentCategories.Installer,         typeof(Installer))                           { Glyph = "fal fa-inbox-in",           Category = "Infrastructure" ,      Ordinal=510} },
 				{ ComponentCategories.Runtime,       new ItemDescriptor("Runtime",        ComponentCategories.Runtime,         typeof(RuntimeConfiguration))                           { Glyph = "fal fa-cogs",           Category = "Infrastructure" ,      Ordinal=520} },

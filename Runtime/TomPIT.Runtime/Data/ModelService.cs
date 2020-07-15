@@ -90,6 +90,9 @@ namespace TomPIT.Data
 			var result = new ModelSchema();
 
 			var schema = type.FindAttribute<SchemaAttribute>();
+			var ignore = type.FindAttribute<IgnoreAttribute>();
+
+			schema.Ignore = ignore != null;
 
 			result.Name = type.ShortName();
 			result.Type = "Table";

@@ -50,7 +50,19 @@ namespace TomPIT.Design
 				Tenant.GetService<IDesignService>().VersionControl.Lock(component, Development.LockVerb.Delete);
 
 			if (permanent)
+			{
+				var config = Tenant.GetService<IComponentService>().SelectConfiguration(c.Token);
+
+				if (config != null)
+				{
+					var texts = Tenant.GetService<IDiscoveryService>().Children<IText>(config);
+
+					foreach (var text in texts)
+						Delete(text);
+				}
+
 				RemoveDependencies(c.Token);
+			}
 
 			var u = Tenant.CreateUrl("ComponentDevelopment", "Delete");
 			var args = new JObject

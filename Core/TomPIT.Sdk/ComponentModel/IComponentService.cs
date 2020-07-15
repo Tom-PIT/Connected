@@ -37,6 +37,7 @@ namespace TomPIT.ComponentModel
 		List<IComponent> QueryComponents(Guid microService, string category);
 		List<IComponent> QueryComponents(Guid microService, Guid folder);
 		List<IComponent> QueryComponents(Guid microService);
+		List<IComponent> QueryComponents(List<string> resourceGroups, string categories);
 
 
 		string CreateName(Guid microService, string category, string prefix);

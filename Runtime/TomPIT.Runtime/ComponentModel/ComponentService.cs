@@ -623,5 +623,20 @@ namespace TomPIT.ComponentModel
 
 			return components;
 		}
+
+		public List<IComponent> QueryComponents(List<string> resourceGroups, string categories)
+		{
+			var r = new List<IConfiguration>();
+			var sb = new StringBuilder();
+
+			foreach (var i in resourceGroups)
+				sb.AppendFormat("{0},", i.ToString());
+
+			var u = Tenant.CreateUrl("Component", "QueryByResourceGroups")
+				.AddParameter("resourceGroups", sb.ToString().TrimEnd(','))
+				.AddParameter("categories", categories);
+
+			return Tenant.Get<List<Component>>(u).ToList<IComponent>();
+		}
 	}
 }
