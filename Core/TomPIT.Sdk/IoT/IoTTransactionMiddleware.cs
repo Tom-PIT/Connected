@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.ExceptionServices;
 using Newtonsoft.Json;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
@@ -32,7 +33,10 @@ namespace TomPIT.IoT
 			catch (Exception ex)
 			{
 				Rollback();
-				throw new ScriptException(this, ex);
+
+				var se = new ScriptException(this, TomPITException.Unwrap(this, ex));
+
+				ExceptionDispatchInfo.Capture(se).Throw();
 			}
 		}
 

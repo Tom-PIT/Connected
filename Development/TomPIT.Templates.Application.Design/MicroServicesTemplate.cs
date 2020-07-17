@@ -22,6 +22,7 @@ using TomPIT.MicroServices.Navigation;
 using TomPIT.MicroServices.Resources;
 using TomPIT.MicroServices.Runtime;
 using TomPIT.MicroServices.Search;
+using TomPIT.MicroServices.Security;
 using TomPIT.MicroServices.UI;
 using TomPIT.MicroServices.UI.Theming;
 
@@ -52,6 +53,7 @@ namespace TomPIT.MicroServices.Design
 				{ ComponentCategories.IoCContainer,    new ItemDescriptor("IoC Container",    ComponentCategories.IoCContainer,      typeof(IoCContainerConfiguration))           { Glyph = "fal fa-file-code",          Category = "Middleware" ,     Ordinal=190} },
 				{ ComponentCategories.IoCEndpoint,     new ItemDescriptor("IoC Endpoints",     ComponentCategories.IoCEndpoint,       typeof(IoCEndpointConfiguration))            { Glyph = "fal fa-file-code",          Category = "Middleware" ,     Ordinal=191} },
 				{ ComponentCategories.DependencyInjection,     new ItemDescriptor("Dependency Injection",     ComponentCategories.DependencyInjection,       typeof(DependencyInjectionConfiguration))            { Glyph = "fal fa-file-code",          Category = "Middleware" ,     Ordinal=192} },
+				{ ComponentCategories.PermissionDescriptor,     new ItemDescriptor("Permission Descriptor",     ComponentCategories.PermissionDescriptor,       typeof(PermissionDescriptor))            { Glyph = "fal fa-shield",          Category = "Middleware" ,     Ordinal=193} },
 
 				{ ComponentCategories.View,            new ItemDescriptor("View",             ComponentCategories.View,              typeof(View))                                { Glyph = "fal fa-window-maximize",    Category = "UI",              Ordinal=210 } },
 				{ ComponentCategories.Partial,         new ItemDescriptor("Partial view",     ComponentCategories.Partial,           typeof(Partial))                             { Glyph = "fal fa-window-restore",     Category = "UI" ,             Ordinal=220} },

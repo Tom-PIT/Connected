@@ -20,17 +20,17 @@ public enum AuthorizationMiddlewareStage
 	Result = 3
 }
 
+internal enum EnumOperation
+{
+	HigherThan = 1,
+	AtLeast = 2,
+}
+
 namespace TomPIT.Annotations
 {
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
 	public abstract class AuthorizationPolicyAttribute : Attribute
 	{
-		private enum EnumOperation
-		{
-			HigherThan = 1,
-			AtLeast = 2,
-		}
-
 		private IAuthorizationModel _model = null;
 		public AuthorizationPolicyBehavior Behavior { get; set; } = AuthorizationPolicyBehavior.Mandatory;
 		public int Priority { get; set; }
@@ -39,6 +39,7 @@ namespace TomPIT.Annotations
 		public AuthorizationMiddlewareStage MiddlewareStage { get; set; } = AuthorizationMiddlewareStage.Before;
 
 		protected virtual string PermissionDescriptor => GetType().Name;
+
 		protected T GetModel<T>() where T : IAuthorizationModel
 		{
 			if (!(Model is T))
@@ -185,22 +186,22 @@ namespace TomPIT.Annotations
 			return false;
 		}
 
-		protected static object[] AtLeast(object value)
+		protected static string[] AtLeast(object value)
 		{
-			return AddEnumValues(value, EnumOperation.AtLeast);
+			return SelectEnumValues(value, EnumOperation.AtLeast);
 		}
-		protected static object[] HigherThan(object value)
+		protected static string[] HigherThan(object value)
 		{
-			return AddEnumValues(value, EnumOperation.HigherThan);
+			return SelectEnumValues(value, EnumOperation.HigherThan);
 		}
 
-		private static object[] AddEnumValues(object value, EnumOperation operation)
+		internal static string[] SelectEnumValues(object value, EnumOperation operation)
 		{
 			if (!value.GetType().IsEnum)
 				return null;
 
 			var names = Enum.GetNames(value.GetType());
-			var result = new List<object>();
+			var result = new List<string>();
 			var underlyingType = Enum.GetUnderlyingType(value.GetType());
 			var rawValue = Convert.ChangeType(value, underlyingType);
 			var underlyingValue = Convert.ToDecimal(rawValue);

@@ -17,6 +17,9 @@ namespace TomPIT.Middleware
 		{
 			if (operation.Context is MiddlewareContext op && context is MiddlewareContext mc)
 			{
+				if (op.Owner == mc)
+					return operation;
+
 				op.Owner = mc;
 
 				if (operation is MiddlewareOperation mop && mc.Transaction != null)

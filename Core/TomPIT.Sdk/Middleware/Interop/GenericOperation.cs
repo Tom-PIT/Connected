@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.Exceptions;
@@ -132,7 +133,11 @@ namespace TomPIT.Middleware.Interop
 			{
 				Rollback();
 
-				throw TomPITException.Unwrap(this, ex);
+				var se = new ScriptException(this, TomPITException.Unwrap(this, ex));
+
+				ExceptionDispatchInfo.Capture(se).Throw();
+
+				throw;
 			}
 		}
 

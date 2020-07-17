@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.ExceptionServices;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 
@@ -27,7 +28,10 @@ namespace TomPIT.Distributed
 			catch (Exception ex)
 			{
 				Rollback();
-				throw new ScriptException(this, ex);
+
+				var se = new ScriptException(this, TomPITException.Unwrap(this, ex));
+
+				ExceptionDispatchInfo.Capture(se).Throw();
 			}
 		}
 

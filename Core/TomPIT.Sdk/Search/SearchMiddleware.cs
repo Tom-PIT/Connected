@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -77,7 +78,11 @@ namespace TomPIT.Search
 			catch (Exception ex)
 			{
 				Rollback();
-				throw new ScriptException(this, ex);
+
+				var se = new ScriptException(this, TomPITException.Unwrap(this, ex));
+
+				ExceptionDispatchInfo.Capture(se).Throw();
+				throw;
 			}
 		}
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using Newtonsoft.Json;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -134,7 +135,9 @@ namespace TomPIT.Middleware.Interop
 			catch (Exception ex)
 			{
 				Rollback();
-				throw new ScriptException(this, ex);
+				var se = new ScriptException(this, TomPITException.Unwrap(this, ex));
+
+				ExceptionDispatchInfo.Capture(se).Throw();
 			}
 		}
 

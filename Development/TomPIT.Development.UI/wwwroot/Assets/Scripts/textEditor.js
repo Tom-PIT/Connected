@@ -23,29 +23,33 @@
         _create: function () {
             var target = this;
 
-            document.querySelector('#modelTabs').addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+            let tabs = document.querySelector('#modelTabs');
 
-                var t = e.target.closest('[data-model]');
+            if (tabs !== null) {
+                tabs.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
 
-                if (t === null)
-                    return;
+                    var t = e.target.closest('[data-model]');
 
-                target.activateModel(t.getAttribute('data-model'));
-            });
+                    if (t === null)
+                        return;
 
-            document.querySelector('#modelTabs').addEventListener('dblclick', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+                    target.activateModel(t.getAttribute('data-model'));
+                });
 
-                var t = e.target.closest('[data-model]');
+                tabs.addEventListener('dblclick', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
 
-                if (t === null)
-                    return;
+                    var t = e.target.closest('[data-model]');
 
-                target.closeModel(t.getAttribute('data-model'));
-            });
+                    if (t === null)
+                        return;
+
+                    target.closeModel(t.getAttribute('data-model'));
+                });
+            }
 
             require(['vs/editor/editor.main'], function () {
                 monaco.editor.setTheme('vs');

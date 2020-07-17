@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Annotations;
 using TomPIT.Middleware;
 
 namespace TomPIT.Management
 {
 	public abstract class ManagementMiddleware : MiddlewareComponent, IManagementMiddleware
 	{
-		private List<AuthorizationPolicyAttribute> _authorizationPolicies = null;
-		public List<AuthorizationPolicyAttribute> AuthorizationPolicies
+		private List<IAuthorizationPolicyDescriptor> _authorizationPolicies = null;
+		public List<IAuthorizationPolicyDescriptor> AuthorizationPolicies
 		{
 			get
 			{
@@ -18,9 +17,9 @@ namespace TomPIT.Management
 			}
 		}
 
-		protected virtual List<AuthorizationPolicyAttribute> OnCreateAuthorizationPolicies()
+		protected virtual List<IAuthorizationPolicyDescriptor> OnCreateAuthorizationPolicies()
 		{
-			return new List<AuthorizationPolicyAttribute>();
+			return new List<IAuthorizationPolicyDescriptor>();
 		}
 	}
 }
