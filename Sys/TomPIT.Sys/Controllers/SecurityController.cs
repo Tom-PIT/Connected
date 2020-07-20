@@ -39,9 +39,9 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpGet]
-		public IPermission SelectPermission(string evidence, string schema, string claim, string primaryKey)
+		public IPermission SelectPermission(string evidence, string schema, string claim, string primaryKey, string descriptor)
 		{
-			return DataModel.Permissions.Select(evidence, schema, claim, primaryKey);
+			return DataModel.Permissions.Select(evidence, schema, claim, primaryKey, descriptor);
 		}
 
 		[HttpGet]

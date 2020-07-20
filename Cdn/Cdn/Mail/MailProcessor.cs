@@ -8,18 +8,6 @@ using TomPIT.Storage;
 
 namespace TomPIT.Cdn.Mail
 {
-	internal enum MailProcessorResult
-	{
-		Cancelled = 0,
-		OK = 250,
-		SyntaxErrorInParameters = 501, //Syntax error in parameters or arguments
-		MailboxNotFound = 550,//Requested action not taken: mailbox unavailable
-		AccessDenied = 530,//Access denied
-		MessageTooLarge = 552,//Requested action aborted: exceeded storage allocation
-		Error = 451,//Requested action not taken: local error in processing
-		NotImplemented = 502//Command not implemented
-	}
-
 	internal class MailProcessor
 	{
 		public MailProcessor(IMailMessage message, string resourceGroup)
@@ -112,35 +100,182 @@ namespace TomPIT.Cdn.Mail
 			}
 		}
 
-		public static MailProcessorResult ProcessMail(MemoryStream stream, List<AuthorizedRecipient> recipients)
+		public static InboxMessageResult ProcessMail(MemoryStream stream, List<AuthorizedRecipient> recipients)
 		{
 			if (stream == null || stream.Length == 0)
-				return MailProcessorResult.Error;
+				return InboxMessageResult.Error;
 
 			var context = new MessageContext(stream);
 
 			if (context.Message == null)
-				return MailProcessorResult.Error;
+				return InboxMessageResult.Error;
 
-			var r = MailProcessorResult.MailboxNotFound;
+			var r = InboxMessageResult.MailboxNotFound;
 
 			foreach (var recipient in recipients)
 			{
 				r = ProcessRecipient(context, recipient);
 
-				if (r == MailProcessorResult.OK
-					|| r == MailProcessorResult.MessageTooLarge
-					|| r == MailProcessorResult.NotImplemented
-					|| r == MailProcessorResult.AccessDenied)
+				if (r == InboxMessageResult.OK
+					|| r == InboxMessageResult.MessageTooLarge
+					|| r == InboxMessageResult.NotImplemented
+					|| r == InboxMessageResult.AccessDenied
+					|| r == InboxMessageResult.Error
+					|| r == InboxMessageResult.SyntaxErrorInParameters
+					|| r == InboxMessageResult.MailboxNotFound
+					)
 					break;
 			}
 
 			return r;
 		}
 
-		private static MailProcessorResult ProcessRecipient(MessageContext context, AuthorizedRecipient recipient)
+		private static InboxMessageResult ProcessRecipient(MessageContext context, AuthorizedRecipient recipient)
 		{
-			return MailProcessorResult.OK;
+			return MiddlewareDescriptor.Current.Tenant.GetService<IInboxService>().ProcessMail(recipient.Email.Address, CreateInboxMessage(context.Message, context.Length));
+		}
+
+		private static IInboxMessage CreateInboxMessage(MimeMessage message, long length)
+		{
+			var result = new InboxMessage
+			{
+				Date = message.Date,
+				Size = length,
+				MessageId = message.MessageId,
+				MimeVersion = message.MimeVersion,
+				ResentDate = message.ResentDate,
+				Subject = message.Subject,
+				InReplyTo = message.InReplyTo,
+				ResentMessageId = message.ResentMessageId,
+				Body = string.IsNullOrWhiteSpace(message.HtmlBody) ? message.TextBody : message.HtmlBody
+			};
+
+			foreach (var header in message.Headers)
+				result.Headers.Add(new InboxHeader(header.Field, header.Value));
+
+			foreach (var part in message.Attachments)
+			{
+				if (!(part is MimePart mp))
+					continue;
+
+				using var ms = new MemoryStream();
+
+				mp.Content.WriteTo(ms);
+
+				ms.Seek(0, SeekOrigin.Begin);
+
+				result.Attachments.Add(new InboxAttachment
+				{
+					Charset = part.ContentType.Charset,
+					ContentType = part.ContentType.MimeType,
+					MediaSubtype = part.ContentType.MediaSubtype,
+					MediaType = part.ContentType.MediaType,
+					Name = mp.FileName,
+					Content = ms.ToArray()
+				});
+			}
+
+			foreach (var address in message.Bcc)
+				result.Bcc.Add(CreateAddress(address));
+
+			foreach (var address in message.From)
+				result.From.Add(CreateAddress(address));
+
+			foreach (var address in message.To)
+				result.To.Add(CreateAddress(address));
+
+			foreach (var address in message.Cc)
+				result.Cc.Add(CreateAddress(address));
+
+			foreach (var address in message.ReplyTo)
+				result.ReplyTo.Add(CreateAddress(address));
+
+			foreach (var address in message.ResentBcc)
+				result.ResentBcc.Add(CreateAddress(address));
+
+			foreach (var address in message.ResentCc)
+				result.ResentCc.Add(CreateAddress(address));
+
+			foreach (var address in message.ResentFrom)
+				result.ResentFrom.Add(CreateAddress(address));
+
+			foreach (var address in message.ResentReplyTo)
+				result.ResentReplyTo.Add(CreateAddress(address));
+
+			if (message.ResentSender != null)
+				result.ResentSender = CreateAddress(message.ResentSender);
+
+			foreach (var address in message.ResentTo)
+				result.ResentTo.Add(CreateAddress(address));
+
+			if (message.Sender != null)
+				result.Sender = CreateAddress(message.Sender);
+
+			switch (message.Priority)
+			{
+				case MessagePriority.NonUrgent:
+					result.Priority = Priority.NotUrgent;
+					break;
+				case MessagePriority.Normal:
+					result.Priority = Priority.Normal;
+					break;
+				case MessagePriority.Urgent:
+					result.Priority = Priority.Urgent;
+					break;
+				default:
+					break;
+			}
+
+			switch (message.XPriority)
+			{
+				case MimeKit.XMessagePriority.Highest:
+					result.XPriority = XMessagePriority.Highest;
+					break;
+				case MimeKit.XMessagePriority.High:
+					result.XPriority = XMessagePriority.High;
+					break;
+				case MimeKit.XMessagePriority.Normal:
+					result.XPriority = XMessagePriority.Normal;
+					break;
+				case MimeKit.XMessagePriority.Low:
+					result.XPriority = XMessagePriority.Low;
+					break;
+				case MimeKit.XMessagePriority.Lowest:
+					result.XPriority = XMessagePriority.Lowest;
+					break;
+				default:
+					break;
+			}
+
+			switch (message.Importance)
+			{
+				case MessageImportance.Low:
+					result.Importance = Importance.Low;
+					break;
+				case MessageImportance.Normal:
+					result.Importance = Importance.Normal;
+					break;
+				case MessageImportance.High:
+					result.Importance = Importance.High;
+					break;
+				default:
+					break;
+			}
+
+			return result;
+		}
+
+		private static IInboxAddress CreateAddress(InternetAddress address)
+		{
+			var result = new InboxAddress
+			{
+				Name = address.Name
+			};
+
+			if (address is MailboxAddress mail)
+				result.Address = mail.Address;
+
+			return result;
 		}
 	}
 }

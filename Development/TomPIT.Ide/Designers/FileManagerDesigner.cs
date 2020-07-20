@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.StaticFiles;
 using TomPIT.ComponentModel;
@@ -30,7 +29,7 @@ namespace TomPIT.Ide.Designers
 			{
 				if (_extensions == null)
 				{
-					var setting = Environment.Context.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "Allowed file extensions");
+					var setting = Environment.Context.Tenant.GetService<ISettingService>().GetValue<string>("Allowed file extensions", null, null);
 
 					if (setting != null)
 					{

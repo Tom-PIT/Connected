@@ -1206,4 +1206,10 @@
   <data name="ErrEntityStateNotFound" xml:space="preserve">
     <value>Entity state not found</value>
   </data>
+  <data name="ErrEmailInUse" xml:space="preserve">
+    <value>Email is already in use</value>
+  </data>
+  <data name="ErrLoginInUse" xml:space="preserve">
+    <value>Login name is already in use</value>
+  </data>
 </root>

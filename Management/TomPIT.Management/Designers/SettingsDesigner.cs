@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.Configuration;
@@ -30,8 +29,7 @@ namespace TomPIT.Management.Designers
 				throw IdeException.ExpectedParameter(this, IdeEvents.DesignerAction, "id");
 
 			var setting = Owner.Existing.FirstOrDefault(f => string.Compare(f.Name, id, true) == 0);
-			var rg = DomQuery.Closest<IResourceGroupScope>(Owner);
-			Environment.Context.Tenant.GetService<ISettingManagementService>().Delete(rg == null ? Guid.Empty : rg.ResourceGroup.Token, setting.Name);
+			Environment.Context.Tenant.GetService<ISettingManagementService>().Delete(setting.Name, null, null);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer);
 		}
@@ -39,10 +37,9 @@ namespace TomPIT.Management.Designers
 		protected override IDesignerActionResult OnCreateComponent(object component)
 		{
 			var s = component as ISetting;
-			var rg = DomQuery.Closest<IResourceGroupScope>(Owner);
 			IdeExtensions.ProcessComponentCreated(Environment.Context, component);
-			Environment.Context.Tenant.GetService<ISettingManagementService>().Update(rg == null ? Guid.Empty : rg.ResourceGroup.Token, s.Name, s.Value, true, s.DataType, s.Tags);
-			s = Environment.Context.Tenant.GetService<ISettingService>().Select(rg == null ? Guid.Empty : rg.ResourceGroup.Token, s.Name);
+			Environment.Context.Tenant.GetService<ISettingManagementService>().Update(s.Name, null, null, s.Value);
+			s = Environment.Context.Tenant.GetService<ISettingService>().Select(s.Name, null, null);
 
 
 			var r = Result.SectionResult(this, EnvironmentSection.Designer);
@@ -78,9 +75,7 @@ namespace TomPIT.Management.Designers
 					if (string.IsNullOrWhiteSpace(SelectionId))
 						return null;
 
-					var rg = DomQuery.Closest<IResourceGroupScope>(Element);
-
-					_setting = Environment.Context.Tenant.GetService<ISettingService>().Select(rg == null ? Guid.Empty : rg.ResourceGroup.Token, SelectionId);
+					_setting = Environment.Context.Tenant.GetService<ISettingService>().Select(SelectionId, null, null);
 				}
 
 				return _setting;

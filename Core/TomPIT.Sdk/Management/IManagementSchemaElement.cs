@@ -1,11 +1,12 @@
-﻿namespace TomPIT.Annotations
+﻿namespace TomPIT.Management
 {
 	public enum SchemaElementType
 	{
 		Container = 1,
 		Descriptor = 2
 	}
-	public interface IAuthorizationSchemaElement
+
+	public interface IManagementSchemaElement
 	{
 		string Text { get; }
 		int ChildrenCount { get; }

@@ -17,7 +17,7 @@ namespace TomPIT.Cdn.Mail
 
 		private void OnSettingChanged(object sender, SettingEventArgs e)
 		{
-			if (e.ResourceGroup == Guid.Empty && string.Compare(e.Name, "MailServiceTimer", true) == 0)
+			if (string.Compare(e.Name, "MailServiceTimer", true) == 0 && string.IsNullOrWhiteSpace(e.Type) && string.IsNullOrWhiteSpace(e.PrimaryKey))
 				SetInterval();
 		}
 
@@ -37,7 +37,7 @@ namespace TomPIT.Cdn.Mail
 		}
 		private void SetInterval()
 		{
-			var interval = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<int>(Guid.Empty, "MailServiceTimer");
+			var interval = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<int>("MailServiceTimer", null, null);
 
 			if (interval == 0)
 				interval = 5000;

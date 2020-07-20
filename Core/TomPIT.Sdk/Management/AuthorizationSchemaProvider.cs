@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using TomPIT.Annotations;
 
-namespace TomPIT.Annotations
+namespace TomPIT.Management
 {
-	public class AuthorizationSchemaProvider : IAuthorizationSchemaProvider
+	public class AuthorizationSchemaProvider : ManagementSchemaProvider, IAuthorizationSchemaProvider
 	{
-		public string RootKey { get; protected set; }
-
-		public bool SupportsSchema { get; protected set; }
 
 		public List<string> QueryClaims()
 		{
@@ -17,16 +15,6 @@ namespace TomPIT.Annotations
 		protected virtual List<string> OnQueryClaims()
 		{
 			return new List<string>();
-		}
-
-		public List<IAuthorizationSchemaElement> QuerySchema(string parent)
-		{
-			return OnQuerySchema(parent);
-		}
-
-		protected virtual List<IAuthorizationSchemaElement> OnQuerySchema(string parent)
-		{
-			return new List<IAuthorizationSchemaElement>();
 		}
 
 		protected List<string> HigherThan(object value)

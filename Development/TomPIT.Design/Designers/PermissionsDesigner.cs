@@ -101,7 +101,7 @@ namespace TomPIT.Design.Designers
 
 		public PermissionValue GetPermissionValue(IPermissionSchemaDescriptor d)
 		{
-			return Environment.Context.Tenant.GetService<IAuthorizationService>().GetPermissionValue(d.Id, SelectedSchema, SelectedClaim);
+			return Environment.Context.Tenant.GetService<IAuthorizationService>().GetPermissionValue(d.Id, SelectedSchema, SelectedClaim, Owner.PermissionDescriptor.Id);
 		}
 
 		private List<IPermission> Permissions

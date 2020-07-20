@@ -1231,6 +1231,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Email is already in use.
+        /// </summary>
+        public static string ErrEmailInUse {
+            get {
+                return ResourceManager.GetString("ErrEmailInUse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Entity state not found.
         /// </summary>
         public static string ErrEntityStateNotFound {
@@ -1749,6 +1758,15 @@ namespace TomPIT {
         public static string ErrLoginFailed {
             get {
                 return ResourceManager.GetString("ErrLoginFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Login name is already in use.
+        /// </summary>
+        public static string ErrLoginInUse {
+            get {
+                return ResourceManager.GetString("ErrLoginInUse", resourceCulture);
             }
         }
         

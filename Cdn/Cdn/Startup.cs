@@ -56,6 +56,7 @@ namespace TomPIT.Cdn
 		{
 			e.Tenant.RegisterService(typeof(IEventHubService), typeof(EventHubService));
 			e.Tenant.RegisterService(typeof(IPrintingManagementService), typeof(PrintingManagementService));
+			e.Tenant.RegisterService(typeof(IInboxService), typeof(InboxService));
 		}
 
 		private void RegisterTasks(IServiceCollection services)

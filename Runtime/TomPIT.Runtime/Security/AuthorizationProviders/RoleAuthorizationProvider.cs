@@ -40,6 +40,8 @@ namespace TomPIT.Security.AuthorizationProviders
 		{
 			var roles = ResolveImplicitRoles(context, e);
 
+			state.Add("roles", roles);
+
 			if (e.User != Guid.Empty)
 			{
 				var membership = context.Tenant.GetService<IAuthorizationService>() as IMembershipProvider;
@@ -55,8 +57,6 @@ namespace TomPIT.Security.AuthorizationProviders
 
 			if (roles.Contains(SecurityUtils.FullControlRole))
 				return AuthorizationProviderResult.Success;
-
-			state.Add("roles", roles);
 
 			return AuthorizationProviderResult.NotHandled;
 		}

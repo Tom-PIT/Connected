@@ -13,6 +13,6 @@ namespace TomPIT.SysDb.Security
 
 		List<IPermission> Query();
 
-		IPermission Select(string evidence, string schema, string claim, string primaryKey);
+		IPermission Select(string evidence, string schema, string claim, string primaryKey, string descriptor);
 	}
 }

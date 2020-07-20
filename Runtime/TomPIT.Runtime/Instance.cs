@@ -131,7 +131,7 @@ namespace TomPIT
 				services.AddCors(options => options.AddPolicy("TomPITPolicy",
 					builder =>
 					{
-						var setting = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().Select(Guid.Empty, "Cors Origins");
+						var setting = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().Select("Cors Origins", null, null);
 						var origin = new string[] { "http://localhost" };
 
 						if (setting != null && !string.IsNullOrWhiteSpace(setting.Value))

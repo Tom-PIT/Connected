@@ -6,5 +6,6 @@ namespace TomPIT.Management
 	public interface IManagementMiddleware : IMiddlewareComponent
 	{
 		List<IAuthorizationPolicyDescriptor> AuthorizationPolicies { get; }
+		List<IConfigurationDescriptor> Configuration { get; }
 	}
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using TomPIT.Sys.Data;
+﻿using TomPIT.Sys.Data;
 using TomPIT.Sys.Diagnostics;
 
 namespace TomPIT.Sys.Search
@@ -17,7 +16,7 @@ namespace TomPIT.Sys.Search
 				{
 					_searchDirectory = string.Empty;
 
-					var setting = DataModel.Settings.Select(Guid.Empty, "Development Search Path");
+					var setting = DataModel.Settings.Select("Development Search Path", null, null);
 
 					if (setting == null || string.IsNullOrWhiteSpace(setting.Value))
 					{

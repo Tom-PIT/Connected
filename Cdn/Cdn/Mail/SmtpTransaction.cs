@@ -54,7 +54,7 @@ namespace TomPIT.Cdn.Mail
 							writer.WriteLine(line);
 					}
 
-					var processorResult = MailProcessorResult.OK;
+					var processorResult = InboxMessageResult.OK;
 
 					if (State == State.Quit && !completed)
 					{
@@ -71,7 +71,7 @@ namespace TomPIT.Cdn.Mail
 
 					if (respond)
 					{
-						if (processorResult != MailProcessorResult.OK)
+						if (processorResult != InboxMessageResult.OK)
 							SendResponse(processorResult);
 						else
 							SendResponse(response);
@@ -89,7 +89,7 @@ namespace TomPIT.Cdn.Mail
 				{
 					try
 					{
-						SendResponse(MailProcessorResult.Error);
+						SendResponse(InboxMessageResult.Error);
 					}
 					catch { }
 				}
@@ -104,7 +104,7 @@ namespace TomPIT.Cdn.Mail
 
 				if (Output != null)
 				{
-					try { SendResponse(MailProcessorResult.Error); }
+					try { SendResponse(InboxMessageResult.Error); }
 					catch { }
 				}
 			}
@@ -201,7 +201,7 @@ namespace TomPIT.Cdn.Mail
 			_socket = null;
 		}
 
-		private void SendResponse(MailProcessorResult result)
+		private void SendResponse(InboxMessageResult result)
 		{
 			if (Output == null)
 				return;
@@ -210,25 +210,25 @@ namespace TomPIT.Cdn.Mail
 
 			switch (result)
 			{
-				case MailProcessorResult.OK:
+				case InboxMessageResult.OK:
 					line = string.Format("{0} {1}", (int)result, "OK");
 					break;
-				case MailProcessorResult.MailboxNotFound:
+				case InboxMessageResult.MailboxNotFound:
 					line = string.Format("{0} {1}", (int)result, "Requested action not taken: mailbox unavailable");
 					break;
-				case MailProcessorResult.AccessDenied:
+				case InboxMessageResult.AccessDenied:
 					line = string.Format("{0} {1}", (int)result, "Access denied");
 					break;
-				case MailProcessorResult.MessageTooLarge:
+				case InboxMessageResult.MessageTooLarge:
 					line = string.Format("{0} {1}", (int)result, "Requested action aborted: exceeded storage allocation");
 					break;
-				case MailProcessorResult.Error:
+				case InboxMessageResult.Error:
 					line = string.Format("{0} {1}", (int)result, "Requested action not taken: local error in processing");
 					break;
-				case MailProcessorResult.NotImplemented:
+				case InboxMessageResult.NotImplemented:
 					line = string.Format("{0} {1}", (int)result, "Command not implemented");
 					break;
-				case MailProcessorResult.SyntaxErrorInParameters:
+				case InboxMessageResult.SyntaxErrorInParameters:
 					line = string.Format("{0} {1}", (int)result, "Syntax error in parameters or arguments");
 					break;
 			}

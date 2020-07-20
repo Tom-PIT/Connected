@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using TomPIT.Annotations;
+using TomPIT.Reflection;
 
 namespace TomPIT.Middleware
 {
@@ -48,6 +49,11 @@ namespace TomPIT.Middleware
 		protected virtual void OnContextChanged()
 		{
 
+		}
+
+		public override string ToString()
+		{
+			return GetType().ShortName();
 		}
 	}
 }

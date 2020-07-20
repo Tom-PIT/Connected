@@ -21,7 +21,7 @@ namespace TomPIT.Sys.Controllers.Management
 			var resourceGroup = body.Optional("resourceGroup", Guid.Empty);
 			var component = body.Optional("component", string.Empty);
 
-			var p = DataModel.Permissions.Select(evidence, schema, claim, primaryKey);
+			var p = DataModel.Permissions.Select(evidence, schema, claim, primaryKey, descriptor);
 
 			if (p == null)
 			{
@@ -47,9 +47,9 @@ namespace TomPIT.Sys.Controllers.Management
 				}
 
 				if (v == PermissionValue.NotSet)
-					DataModel.Permissions.Delete(evidence, schema, claim, primaryKey);
+					DataModel.Permissions.Delete(evidence, schema, claim, primaryKey, descriptor);
 				else
-					DataModel.Permissions.Update(evidence, schema, claim, primaryKey, v);
+					DataModel.Permissions.Update(evidence, schema, claim, primaryKey, descriptor, v);
 
 				return v;
 			}
@@ -63,8 +63,9 @@ namespace TomPIT.Sys.Controllers.Management
 			var primaryKey = body.Required<string>("primaryKey");
 			var claim = body.Optional("claim", string.Empty);
 			var schema = body.Optional("schema", string.Empty);
+			var descriptor = body.Optional("descriptor", string.Empty);
 
-			DataModel.Permissions.Reset(claim, schema, primaryKey);
+			DataModel.Permissions.Reset(claim, schema, primaryKey, descriptor);
 		}
 
 		[HttpGet]

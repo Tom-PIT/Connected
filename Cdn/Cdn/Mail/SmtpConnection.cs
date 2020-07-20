@@ -93,7 +93,7 @@ namespace TomPIT.Cdn.Mail
 				}
 
 				if (string.IsNullOrWhiteSpace(server))
-					server = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "SmtpServer");
+					server = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>("SmtpServer", null, null);
 
 				if (string.IsNullOrWhiteSpace(server))
 					server = DnsResolve.Resolve(Domain);

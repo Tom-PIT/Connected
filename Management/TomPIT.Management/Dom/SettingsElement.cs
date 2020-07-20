@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -82,7 +81,7 @@ namespace TomPIT.Management.Dom
 					_ds = new ExistingSettings();
 
 					var rg = DomQuery.Closest<IResourceGroupScope>(this);
-					var items = Environment.Context.Tenant.GetService<ISettingService>().Query(rg == null ? Guid.Empty : rg.ResourceGroup.Token);
+					var items = Environment.Context.Tenant.GetService<ISettingService>().Query().Where(f => string.IsNullOrEmpty(f.Type) && string.IsNullOrEmpty(f.PrimaryKey));
 
 					if (items != null)
 						items = items.OrderBy(f => f.Name).ToList();
@@ -101,7 +100,7 @@ namespace TomPIT.Management.Dom
 		{
 			var s = component as ISetting;
 
-			Environment.Context.Tenant.GetService<ISettingManagementService>().Update(s.ResourceGroup, s.Name, s.Value, s.Visible, s.DataType, s.Tags);
+			Environment.Context.Tenant.GetService<ISettingManagementService>().Update(s.Name, null, null, s.Value);
 
 			return true;
 		}

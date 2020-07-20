@@ -225,5 +225,10 @@ namespace TomPIT.Annotations
 
 			return result.ToArray();
 		}
+
+		public override string ToString()
+		{
+			return PermissionDescriptor;
+		}
 	}
 }

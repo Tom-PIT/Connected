@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using TomPIT.Caching;
 using TomPIT.Configuration;
-using TomPIT.Environment;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
 
@@ -16,29 +15,16 @@ namespace TomPIT.Sys.Data
 		{
 		}
 
-		private void Refresh(Guid resourceGroup, string name)
+		private void Refresh(string name, string type, string primaryKey)
 		{
-			Refresh(GenerateKey(resourceGroup, name));
+			Refresh(GenerateKey(name, type, primaryKey));
 		}
 
 		protected override void OnInvalidate(string id)
 		{
 			var tokens = id.Split('.');
-			var rgId = new Guid(tokens[0]);
-			IResourceGroup rg = null;
 
-			if (rgId != Guid.Empty)
-			{
-				rg = DataModel.ResourceGroups.Select(new Guid(tokens[0]));
-
-				if (rg == null)
-				{
-					Remove(id);
-					return;
-				}
-			}
-
-			var r = Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Select(rg, tokens[1]);
+			var r = Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Select(tokens[0], tokens[1], tokens[2]);
 
 			if (r == null)
 			{
@@ -49,24 +35,14 @@ namespace TomPIT.Sys.Data
 			Set(id, r, TimeSpan.Zero);
 		}
 
-		public ISetting Select(Guid resourceGroup, string name)
+		public ISetting Select(string name, string type, string primaryKey)
 		{
-			var key = GenerateKey(resourceGroup, name);
+			var key = GenerateKey(name, type, primaryKey);
 
 			return Get(key,
 				(f) =>
 			{
-				IResourceGroup r = null;
-
-				if (resourceGroup != Guid.Empty)
-				{
-					r = DataModel.ResourceGroups.Select(resourceGroup);
-
-					if (r == null)
-						throw new SysException(SR.ErrResourceGroupNotFound);
-				}
-
-				var d = Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Select(r, name);
+				var d = Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Select(name, type, primaryKey);
 
 				f.AllowNull = true;
 				f.Duration = d == null ? TimeSpan.FromMinutes(5) : TimeSpan.Zero;
@@ -77,55 +53,44 @@ namespace TomPIT.Sys.Data
 			});
 		}
 
-		public List<ISetting> Where(Guid resourceGroup)
-		{
-			return Where(f => f != null && f.ResourceGroup == resourceGroup);
-		}
-
 		protected override void OnInitializing()
 		{
 			var ds = Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Query();
 
 			foreach (var i in ds)
-				Set(GenerateKey(i.ResourceGroup, i.Name), i, TimeSpan.Zero);
+				Set(GenerateKey(i.Name, i.Type, i.PrimaryKey), i, TimeSpan.Zero);
 		}
 
-		public void Update(Guid resourceGroup, string name, string value, bool visible, DataType dataType, string tags)
+		public void Update(string name, string type, string primaryKey, string value)
 		{
-			IResourceGroup r = null;
+			var setting = Select(name, type, primaryKey);
 
-			if (resourceGroup != Guid.Empty)
-			{
-				r = DataModel.ResourceGroups.Select(resourceGroup);
+			if (setting == null)
+				Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Insert(name, type, primaryKey, value);
+			else
+				Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Update(setting, value);
 
-				if (r == null)
-					throw new SysException(SR.ErrResourceGroupNotFound);
-			}
+			Refresh(name, type, primaryKey);
 
-			Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Update(r, name, value, visible, dataType, tags);
-
-			Refresh(resourceGroup, name);
-
-			CachingNotifications.SettingChanged(resourceGroup, name);
+			CachingNotifications.SettingChanged(name, type, primaryKey);
 		}
 
-		public void Delete(Guid resourceGroup, string name)
+		public List<ISetting> Query()
 		{
-			IResourceGroup r = null;
+			return All();
+		}
+		public void Delete(string name, string type, string primaryKey)
+		{
+			var setting = Select(name, type, primaryKey);
 
-			if (resourceGroup != Guid.Empty)
-			{
-				r = DataModel.ResourceGroups.Select(resourceGroup);
+			if (setting == null)
+				return;
 
-				if (r == null)
-					throw new SysException(SR.ErrResourceGroupNotFound);
-			}
+			Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Delete(setting);
 
-			Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Delete(r, name);
+			Remove(GenerateKey(name, type, primaryKey));
 
-			Remove(GenerateKey(resourceGroup, name));
-
-			CachingNotifications.SettingRemoved(resourceGroup, name);
+			CachingNotifications.SettingRemoved(name, type, primaryKey);
 		}
 	}
 }

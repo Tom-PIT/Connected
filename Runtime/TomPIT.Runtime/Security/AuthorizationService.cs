@@ -207,7 +207,8 @@ namespace TomPIT.Security
 			Remove(f => string.Compare(f.Evidence, e.Evidence, true) == 0
 				&& f.Schema.Equals(e.Schema, StringComparison.OrdinalIgnoreCase)
 				&& f.Claim.Equals(e.Claim, StringComparison.OrdinalIgnoreCase)
-				&& f.PrimaryKey.Equals(e.PrimaryKey, StringComparison.OrdinalIgnoreCase));
+				&& f.PrimaryKey.Equals(e.PrimaryKey, StringComparison.OrdinalIgnoreCase)
+				&& string.Compare(f.Descriptor, e.Descriptor, true) == 0);
 		}
 
 		public void NotifyPermissionChanged(object sender, PermissionEventArgs e)
@@ -218,7 +219,8 @@ namespace TomPIT.Security
 			Remove(f => string.Compare(f.Evidence, e.Evidence, true) == 0
 				&& f.Schema.Equals(e.Schema, StringComparison.OrdinalIgnoreCase)
 				&& f.Claim.Equals(e.Claim, StringComparison.OrdinalIgnoreCase)
-				&& f.PrimaryKey.Equals(e.PrimaryKey, StringComparison.OrdinalIgnoreCase));
+				&& f.PrimaryKey.Equals(e.PrimaryKey, StringComparison.OrdinalIgnoreCase)
+				&& string.Compare(f.Descriptor, e.Descriptor, true) == 0);
 
 			LoadPermission(e);
 		}
@@ -243,11 +245,12 @@ namespace TomPIT.Security
 			return Descriptors;
 		}
 
-		public PermissionValue GetPermissionValue(string evidence, string schema, string claim)
+		public PermissionValue GetPermissionValue(string evidence, string schema, string claim, string descriptor)
 		{
 			var r = Get(f => string.Compare(f.Evidence, evidence, true) == 0
-				  && f.Schema.Equals(schema, StringComparison.OrdinalIgnoreCase)
-				  && f.Claim.Equals(claim, StringComparison.OrdinalIgnoreCase));
+					&& f.Schema.Equals(schema, StringComparison.OrdinalIgnoreCase)
+					&& f.Claim.Equals(claim, StringComparison.OrdinalIgnoreCase)
+					&& string.Compare(f.Descriptor, descriptor, true) == 0);
 
 			if (r == null)
 				return PermissionValue.NotSet;
@@ -286,7 +289,8 @@ namespace TomPIT.Security
 				.AddParameter("evidence", e.Evidence)
 				.AddParameter("schema", e.Schema)
 				.AddParameter("claim", e.Claim)
-				.AddParameter("primaryKey", e.PrimaryKey);
+				.AddParameter("primaryKey", e.PrimaryKey)
+				.AddParameter("descriptor", e.Descriptor);
 
 			var d = Tenant.Get<Permission>(u);
 
@@ -357,27 +361,31 @@ namespace TomPIT.Security
 
 			var value = Tenant.Post<PermissionValue>(u, args);
 
-			NotifyPermissionChanged(this, new PermissionEventArgs(Guid.Empty, evidence, schema, claim, primaryKey));
+			NotifyPermissionChanged(this, new PermissionEventArgs(Guid.Empty, evidence, schema, claim, primaryKey, permissionDescriptor));
 
 			return value;
 		}
 
-		void IPermissionService.Reset(string claim, string schema, string primaryKey)
+		void IPermissionService.Reset(string claim, string schema, string primaryKey, string descriptor)
 		{
 			var u = Tenant.CreateUrl("SecurityManagement", "Reset");
 			var args = new JObject
 			{
 				{ "claim", claim },
 				{ "schema", schema },
-				{ "primaryKey", primaryKey }
+				{ "primaryKey", primaryKey },
+				{ "descriptor", descriptor }
 			};
 
 			Tenant.Post(u, args);
 
-			var permissions = Where(f => string.Compare(f.Claim, claim, true) == 0 && string.Compare(f.Schema, schema, true) == 0 && string.Compare(f.PrimaryKey, primaryKey, true) == 0);
+			var permissions = Where(f => string.Compare(f.Claim, claim, true) == 0
+				&& string.Compare(f.Schema, schema, true) == 0
+				&& string.Compare(f.PrimaryKey, primaryKey, true) == 0
+				&& string.Compare(f.Descriptor, descriptor, true) == 0);
 
 			foreach (var permission in permissions)
-				NotifyPermissionRemoved(this, new PermissionEventArgs(Guid.Empty, permission.Evidence, permission.Schema, permission.Claim, permission.PrimaryKey));
+				NotifyPermissionRemoved(this, new PermissionEventArgs(Guid.Empty, permission.Evidence, permission.Schema, permission.Claim, permission.PrimaryKey, permission.Descriptor));
 		}
 
 		void IPermissionService.Reset(string primaryKey)
@@ -393,7 +401,7 @@ namespace TomPIT.Security
 			var permissions = Where(f => string.Compare(f.PrimaryKey, primaryKey, true) == 0);
 
 			foreach (var permission in permissions)
-				NotifyPermissionRemoved(this, new PermissionEventArgs(Guid.Empty, permission.Evidence, permission.Schema, permission.Claim, permission.PrimaryKey));
+				NotifyPermissionRemoved(this, new PermissionEventArgs(Guid.Empty, permission.Evidence, permission.Schema, permission.Claim, permission.PrimaryKey, permission.Descriptor));
 		}
 
 		List<IPermission> IPermissionService.Query(string permissionDescriptor, string primaryKey)

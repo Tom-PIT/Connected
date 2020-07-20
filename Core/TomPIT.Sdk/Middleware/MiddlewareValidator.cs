@@ -79,7 +79,6 @@ namespace TomPIT.Middleware
 					Source = GetType().ScriptTypeName()
 				};
 			}
-
 		}
 		private void ValidateProperties(List<ValidationResult> results, object instance, List<object> references)
 		{
@@ -173,6 +172,51 @@ namespace TomPIT.Middleware
 				ValidateProperty(results, instance, property);
 		}
 
+		public static void ValidatePropertyValue(IMiddlewareContext context, List<ValidationResult> results, object instance, string propertyName, object proposedValue)
+		{
+			var property = instance.GetType().GetProperty(propertyName);
+
+			if (property == null)
+				return;
+
+			var attributes = property.GetCustomAttributes(false);
+
+			if (!ValidateRequestValue(results, instance, property, proposedValue))
+				return;
+
+			if (property.PropertyType.IsEnum && !property.PropertyType.IsEnumDefined(property.GetValue(instance)))
+				results.Add(new ValidationResult($"{SR.ValEnumValueNotDefined} ({property.PropertyType.ShortName()}, {property.GetValue(instance)})"));
+
+			foreach (var attribute in attributes)
+			{
+				if (attribute is ValidationAttribute val)
+				{
+					try
+					{
+						var serviceProvider = new ValidationServiceProvider();
+
+						serviceProvider.AddService(typeof(IMiddlewareContext), context);
+						serviceProvider.AddService(typeof(IUniqueValueProvider), instance);
+
+						var ctx = new ValidationContext(instance, serviceProvider, new Dictionary<object, object>
+						{
+							{ "entity", instance }
+						})
+						{
+							DisplayName = property.Name,
+							MemberName = property.Name
+						};
+
+						val.Validate(GetValue(instance, property), ctx);
+					}
+					catch (ValidationException ex)
+					{
+						results.Add(new ValidationResult(ex.Message, new List<string> { property.Name }));
+					}
+				}
+			}
+		}
+
 		private void ValidateProperty(List<ValidationResult> results, object instance, PropertyInfo property)
 		{
 			var attributes = property.GetCustomAttributes(false);
@@ -213,16 +257,8 @@ namespace TomPIT.Middleware
 			}
 		}
 
-		private bool ValidateRequestValue(List<ValidationResult> results, object instance, PropertyInfo property)
+		private static bool ValidateRequestValue(List<ValidationResult> results, object instance, PropertyInfo property, object value)
 		{
-			if (property.PropertyType != typeof(string))
-				return true;
-
-			if (!property.CanWrite)
-				return true;
-
-			var value = GetValue(instance, property);
-
 			if (value == null)
 				return true;
 
@@ -241,8 +277,18 @@ namespace TomPIT.Middleware
 
 			return true;
 		}
+		private static bool ValidateRequestValue(List<ValidationResult> results, object instance, PropertyInfo property)
+		{
+			if (property.PropertyType != typeof(string))
+				return true;
 
-		private object GetValue(object component, PropertyInfo property)
+			if (!property.CanWrite)
+				return true;
+
+			return ValidateRequestValue(results, instance, property, GetValue(instance, property));
+		}
+
+		private static object GetValue(object component, PropertyInfo property)
 		{
 			try
 			{

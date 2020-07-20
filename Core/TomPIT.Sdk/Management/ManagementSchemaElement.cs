@@ -1,6 +1,6 @@
-﻿namespace TomPIT.Annotations
+﻿namespace TomPIT.Management
 {
-	public class AuthorizationSchemaElement : IAuthorizationSchemaElement
+	public class ManagementSchemaElement : IManagementSchemaElement
 	{
 		public string Text { get; set; }
 

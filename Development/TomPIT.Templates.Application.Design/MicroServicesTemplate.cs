@@ -11,6 +11,7 @@ using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Dom;
 using TomPIT.MicroServices.Apis;
 using TomPIT.MicroServices.Cdn;
+using TomPIT.MicroServices.Configuration;
 using TomPIT.MicroServices.Data;
 using TomPIT.MicroServices.Deployment;
 using TomPIT.MicroServices.Design.Media;
@@ -64,6 +65,7 @@ namespace TomPIT.MicroServices.Design
 
 				{ ComponentCategories.MailTemplate,    new ItemDescriptor("Mail template",    ComponentCategories.MailTemplate,      typeof(MailTemplate))                        { Glyph = "fal fa-envelope",           Category = "Distribution" ,            Ordinal=310} },
 				{ ComponentCategories.Subscription,    new ItemDescriptor("Subscription",     ComponentCategories.Subscription,      typeof(Subscription))                        { Glyph = "fal fa-bell",               Category = "Distribution" ,            Ordinal=320} },
+				{ ComponentCategories.Inbox,    new ItemDescriptor("Inbox",    ComponentCategories.Inbox,      typeof(Inbox))                        { Glyph = "fal fa-envelope",           Category = "Distribution" ,            Ordinal=325} },
 				{ ComponentCategories.SmtpConnection,  new ItemDescriptor("SMTP Connection",  ComponentCategories.SmtpConnection,    typeof(SmtpConnection))                      { Glyph = "fal fa-envelope",               Category = "Distribution" ,            Ordinal=330} },
 
 				{ ComponentCategories.StringTable,     new ItemDescriptor("String table",     ComponentCategories.StringTable,       typeof(StringTable))                         { Glyph = "fal fa-font",               Category = "Resources" ,      Ordinal=400} } ,
@@ -71,6 +73,7 @@ namespace TomPIT.MicroServices.Design
 				{ ComponentCategories.EmbeddedAssembly,new ItemDescriptor("Embedded assembly",ComponentCategories.EmbeddedAssembly,  typeof(AssemblyEmbeddedResource))            { Glyph = "fal fa-file-code",          Category = "Resources" ,      Ordinal=402 }  } ,
 				{ ComponentCategories.FileAssembly,    new ItemDescriptor("File assembly",    ComponentCategories.FileAssembly,      typeof(AssemblyFileSystemResource))          { Glyph = "fal fa-file-code",          Category = "Resources" ,      Ordinal=403} },
 
+				{ ComponentCategories.Settings,     new ItemDescriptor("Settings",   ComponentCategories.Settings,       typeof(SettingsConfiguration))                       { Glyph = "fal fa-cogs",   Category = "Infrastructure" ,     Ordinal=505} },
 				{ ComponentCategories.Installer,       new ItemDescriptor("Installer",        ComponentCategories.Installer,         typeof(Installer))                           { Glyph = "fal fa-inbox-in",           Category = "Infrastructure" ,      Ordinal=510} },
 				{ ComponentCategories.Runtime,       new ItemDescriptor("Runtime",        ComponentCategories.Runtime,         typeof(RuntimeConfiguration))                           { Glyph = "fal fa-cogs",           Category = "Infrastructure" ,      Ordinal=520} },
 				{ ComponentCategories.Management,     new ItemDescriptor("Management",   ComponentCategories.Management,       typeof(ManagementConfiguration))                       { Glyph = "fal fa-cogs",   Category = "Infrastructure" ,     Ordinal=530} },

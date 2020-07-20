@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using TomPIT.Middleware;
 
 namespace TomPIT.Security
@@ -7,29 +8,22 @@ namespace TomPIT.Security
 	{
 		public AuthorizationProviderResult Authorize(IPermission permission, AuthorizationArgs e, Dictionary<string, object> state)
 		{
-			Arguments = e;
 			State = state;
+			Value = permission.Value;
+			PrimaryKey = e.PrimaryKey;
+			User = e.User;
+			Claim = e.Claim;
 
-			return OnAuthorize(permission);
+			return OnAuthorize();
 		}
 
-		protected AuthorizationArgs Arguments { get; private set; }
+		protected string Claim { get; private set; }
+		protected Guid User { get; private set; }
+		protected PermissionValue Value { get; private set; }
+		protected string PrimaryKey { get; private set; }
 		protected Dictionary<string, object> State { get; private set; }
 
-		protected virtual AuthorizationProviderResult OnAuthorize(IPermission permission)
-		{
-			return AuthorizationProviderResult.NotHandled;
-		}
-
-		public AuthorizationProviderResult PreAuthorize(AuthorizationArgs e, Dictionary<string, object> state)
-		{
-			Arguments = e;
-			State = state;
-
-			return OnPreAuthorize();
-		}
-
-		protected virtual AuthorizationProviderResult OnPreAuthorize()
+		protected virtual AuthorizationProviderResult OnAuthorize()
 		{
 			return AuthorizationProviderResult.NotHandled;
 		}

@@ -49,7 +49,7 @@ namespace TomPIT.SysDb.Sql.Security
 			return new Reader<Permission>("tompit.permission_que").Execute().ToList<IPermission>();
 		}
 
-		public IPermission Select(string evidence, string schema, string claim, string primaryKey)
+		public IPermission Select(string evidence, string schema, string claim, string primaryKey, string descriptor)
 		{
 			var r = new Reader<Permission>("tompit.permission_sel");
 
@@ -57,6 +57,7 @@ namespace TomPIT.SysDb.Sql.Security
 			r.CreateParameter("@schema", schema, true);
 			r.CreateParameter("@claim", claim, true);
 			r.CreateParameter("@primary_key", primaryKey);
+			r.CreateParameter("@descriptor", descriptor);
 
 			return r.ExecuteSingleRow();
 		}

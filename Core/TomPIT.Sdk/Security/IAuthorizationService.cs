@@ -18,7 +18,7 @@ namespace TomPIT.Security
 		void RegisterDescriptor(IPermissionDescriptor descriptor);
 		List<IPermissionDescriptor> QueryDescriptors();
 
-		PermissionValue GetPermissionValue(string evidence, string schema, string claim);
+		PermissionValue GetPermissionValue(string evidence, string schema, string claim, string descriptor);
 		PermissionValue GetPermissionValue(string evidence, string schema, string claim, string descriptor, string primaryKey);
 		void RegisterAuthenticationProvider(IAuthenticationProvider provider);
 		void Authorize(ISiteMapContainer container);

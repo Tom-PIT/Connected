@@ -36,17 +36,6 @@ namespace TomPIT.Middleware
 			}
 		}
 
-		//protected void RenderPartial(string partialName)
-		//{
-		//	if (Shell.HttpContext == null)
-		//		throw new RuntimeException(SR.ErrHttpContextNull);
-
-		//	var engine = Shell.HttpContext.RequestServices.GetService(typeof(IViewEngine)) as IViewEngine;
-
-		//	engine.Context = Shell.HttpContext;
-		//	engine.RenderPartial(Context as IMicroServiceContext, partialName);
-		//}
-
 		protected void Rollback()
 		{
 			if (Transaction is MiddlewareTransaction t)
