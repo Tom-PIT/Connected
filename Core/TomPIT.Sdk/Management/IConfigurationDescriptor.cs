@@ -2,8 +2,8 @@
 {
 	public interface IConfigurationDescriptor
 	{
-		string Partial { get; }
-		string Name { get; }
+		string Text { get; }
+		string Category { get; }
 		IManagementSchemaProvider SchemaProvider { get; }
 	}
 }

@@ -1,13 +1,11 @@
 ﻿using TomPIT.Middleware;
-using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Management
 {
-	public class ConfigurationDescriptor : MiddlewareObject, IConfigurationDescriptor
+	public abstract class ConfigurationDescriptor : MiddlewareObject, IConfigurationDescriptor
 	{
-		[CIP(CIP.PartialProvider)]
-		public string Partial { get; set; }
-		public string Name { get; set; }
+		public string Text { get; set; }
+		public string Category { get; set; }
 		public IManagementSchemaProvider SchemaProvider { get; set; }
 	}
 }

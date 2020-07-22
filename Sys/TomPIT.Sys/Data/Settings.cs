@@ -24,7 +24,7 @@ namespace TomPIT.Sys.Data
 		{
 			var tokens = id.Split('.');
 
-			var r = Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Select(tokens[0], tokens[1], tokens[2]);
+			var r = Shell.GetService<IDatabaseService>().Proxy.Management.Settings.Select(tokens[0], tokens.Length > 1 ? tokens[1] : null, tokens.Length > 2 ? tokens[2] : null);
 
 			if (r == null)
 			{

@@ -1897,6 +1897,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot create middleware.
+        /// </summary>
+        public static string ErrMiddlewareNull {
+            get {
+                return ResourceManager.GetString("ErrMiddlewareNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Missing Add method..
         /// </summary>
         public static string ErrMissingAddMethod {
@@ -2361,6 +2370,15 @@ namespace TomPIT {
         public static string ErrServiceOperationNotFound {
             get {
                 return ResourceManager.GetString("ErrServiceOperationNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings middleware does not contain requested property.
+        /// </summary>
+        public static string ErrSettingPropertyNull {
+            get {
+                return ResourceManager.GetString("ErrSettingPropertyNull", resourceCulture);
             }
         }
         

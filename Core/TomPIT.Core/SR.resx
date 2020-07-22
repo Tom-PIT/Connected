@@ -1212,4 +1212,10 @@
   <data name="ErrLoginInUse" xml:space="preserve">
     <value>Login name is already in use</value>
   </data>
+  <data name="ErrMiddlewareNull" xml:space="preserve">
+    <value>Cannot create middleware</value>
+  </data>
+  <data name="ErrSettingPropertyNull" xml:space="preserve">
+    <value>Settings middleware does not contain requested property</value>
+  </data>
 </root>

@@ -53,11 +53,11 @@ namespace TomPIT.Search.Catalogs
 			{
 				if (_searchDirectory == null)
 				{
-					_searchDirectory = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "Search Path");
+					_searchDirectory = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>("SearchPath", null, null);
 
 					if (string.IsNullOrWhiteSpace(_searchDirectory))
 					{
-						MiddlewareDescriptor.Current.Tenant.LogError(nameof(CatalogHost), "'Search Path' setting not defined", "Search");
+						MiddlewareDescriptor.Current.Tenant.LogError(nameof(CatalogHost), "'SearchPath' setting not defined", "Search");
 						throw new NullReferenceException();
 					}
 				}

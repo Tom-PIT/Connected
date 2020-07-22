@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Html;
+﻿using System;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TomPIT.Middleware;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
@@ -147,9 +148,25 @@ namespace TomPIT
 			}
 		}
 
+		[Obsolete("Please use Api Property instead.")]
 		public IHtmlContent Property([CIP(CIP.ApiOperationProvider)]string api, [CIP(CIP.ApiOperationParameterProvider)]string property)
 		{
-			var result = new PropertyRenderer(Html.ViewData.Model as IMiddlewareContext, api, property).Result;
+			return ApiProperty(api, property);
+		}
+
+		public IHtmlContent ApiProperty([CIP(CIP.ApiOperationProvider)]string api, [CIP(CIP.ApiOperationParameterProvider)]string property)
+		{
+			var result = new ApiPropertyRenderer(Html.ViewData.Model as IMiddlewareContext, api, property).Result;
+
+			if (result == null)
+				return null;
+
+			return Html.Raw(result);
+		}
+
+		public IHtmlContent SettingProperty([CIP(CIP.SettingMiddlewareProvider)]string middleware, [CIP(CIP.SettingMiddlewareParameterProvider)]string property)
+		{
+			var result = new SettingPropertyRenderer(Html.ViewData.Model as IMiddlewareContext, middleware, property).Result;
 
 			if (result == null)
 				return null;

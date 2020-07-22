@@ -43,7 +43,7 @@ namespace TomPIT.Cdn.Mail
 		private void Run(CancellationToken token)
 		{
 			var tenant = MiddlewareDescriptor.Current.Tenant;
-			Endpoint = tenant.GetService<ISettingService>().GetValue<string>("Smtp Endpoint", null, null);
+			Endpoint = tenant.GetService<ISettingService>().GetValue<string>("SmtpEndpoint", null, null);
 
 			if (string.IsNullOrWhiteSpace(Endpoint))
 			{
@@ -51,7 +51,7 @@ namespace TomPIT.Cdn.Mail
 				return;
 			}
 
-			HostName = tenant.GetService<ISettingService>().GetValue<string>("Smtp Host Name", null, null);
+			HostName = tenant.GetService<ISettingService>().GetValue<string>("SmtpHostName", null, null);
 
 			if (string.IsNullOrWhiteSpace(HostName))
 			{
@@ -59,7 +59,7 @@ namespace TomPIT.Cdn.Mail
 				return;
 			}
 
-			Greeting = tenant.GetService<ISettingService>().GetValue<string>("Smtp Greeting", null, null);
+			Greeting = tenant.GetService<ISettingService>().GetValue<string>("SmtpGreeting", null, null);
 
 			if (string.IsNullOrWhiteSpace(Greeting))
 				Greeting = HostName;

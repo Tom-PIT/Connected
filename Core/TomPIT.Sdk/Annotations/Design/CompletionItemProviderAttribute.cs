@@ -34,6 +34,8 @@ namespace TomPIT.Annotations.Design
 		public const string ModelQueryOperationProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.ModelQueryOperationProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string ModelExecuteOperationProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.ModelExecuteOperationProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string ModelOperationParametersProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.ModelOperationParametersProvider, " + SystemAssemblies.DevelopmentAssembly;
+		public const string SettingMiddlewareProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.SettingMiddlewareProvider, " + SystemAssemblies.DevelopmentAssembly;
+		public const string SettingMiddlewareParameterProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.SettingMiddlewareParameterProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public CompletionItemProviderAttribute() { }
 
 		public CompletionItemProviderAttribute(string type)

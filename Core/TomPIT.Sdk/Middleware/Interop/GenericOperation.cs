@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using TomPIT.Annotations;
@@ -123,7 +124,7 @@ namespace TomPIT.Middleware.Interop
 						return (TReturnValue)listResult[0];
 				}
 			}
-			catch (System.ComponentModel.DataAnnotations.ValidationException)
+			catch (ValidationException)
 			{
 				Rollback();
 
@@ -133,11 +134,21 @@ namespace TomPIT.Middleware.Interop
 			{
 				Rollback();
 
-				var se = new ScriptException(this, TomPITException.Unwrap(this, ex));
+				var unwrapped = TomPITException.Unwrap(this, ex);
 
-				ExceptionDispatchInfo.Capture(se).Throw();
+				if (unwrapped is ValidationException)
+				{
+					ExceptionDispatchInfo.Capture(unwrapped).Throw();
+					throw;
+				}
+				else
+				{
+					var se = new ScriptException(this, unwrapped);
 
-				throw;
+					ExceptionDispatchInfo.Capture(se).Throw();
+
+					throw;
+				}
 			}
 		}
 

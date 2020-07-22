@@ -1,53 +1,27 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
-using TomPIT.ComponentModel;
 using TomPIT.Middleware;
-using TomPIT.Reflection;
 using TomPIT.Reflection.Manifests.Entities;
 
 namespace TomPIT
 {
-	internal class PropertyRenderer
+	internal abstract class PropertyRenderer
 	{
 		private StringBuilder _builder = null;
-		private ApiOperationManifest _manifest = null;
 		private ManifestProperty _property = null;
-		public PropertyRenderer(IMiddlewareContext context, string api, string propertyName)
+		public PropertyRenderer(IMiddlewareContext context, string propertyName)
 		{
 			Context = context;
-			Api = api;
+
 			PropertyName = propertyName;
-
-			GenerateContent();
 		}
 
+		protected string PropertyName { get; }
 
-		private IMiddlewareContext Context { get; }
-		private string Api { get; }
-		private string PropertyName { get; }
-		private ApiOperationManifest Manifest
-		{
-			get
-			{
-				if (_manifest == null)
-				{
-					var descriptor = ComponentDescriptor.Api(Context, Api);
+		protected IMiddlewareContext Context { get; }
 
-					descriptor.Validate();
-
-					if (!(Context.Tenant.GetService<IDiscoveryService>().Manifest(descriptor.MicroService.Name, ComponentCategories.Api, descriptor.Component.Name) is ApiManifest manifest))
-						throw new NullReferenceException($"{SR.ErrManifestNull} ({Api})");
-
-					_manifest = manifest.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
-
-					if (_manifest == null)
-						throw new NullReferenceException($"{SR.ErrManifestNull} ({Api})");
-				}
-
-				return _manifest;
-			}
-		}
+		protected abstract ManifestType Manifest { get; }
 
 		private ManifestProperty Property
 		{
@@ -58,7 +32,7 @@ namespace TomPIT
 					_property = Manifest.Properties.FirstOrDefault(f => string.Compare(f.Name, PropertyName, true) == 0);
 
 					if (_property == null)
-						throw new NullReferenceException($"{SR.ErrManifestPropertyNull} ({Api}, {PropertyName})");
+						throw new NullReferenceException($"{SR.ErrManifestPropertyNull} ({PropertyName})");
 				}
 
 				return _property;
@@ -76,7 +50,15 @@ namespace TomPIT
 			}
 		}
 
-		public string Result => Builder.ToString();
+		public string Result
+		{
+			get
+			{
+				GenerateContent();
+
+				return Builder.ToString();
+			}
+		}
 
 		private void GenerateContent()
 		{

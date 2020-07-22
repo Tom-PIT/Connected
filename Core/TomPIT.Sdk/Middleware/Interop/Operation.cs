@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.ExceptionServices;
 using TomPIT.Exceptions;
 
 namespace TomPIT.Middleware.Interop
@@ -40,7 +41,23 @@ namespace TomPIT.Middleware.Interop
 			catch (Exception ex)
 			{
 				Rollback();
-				throw new ScriptException(this, ex);
+
+				var unwrapped = TomPITException.Unwrap(this, ex);
+
+				if (unwrapped is ValidationException)
+				{
+					ExceptionDispatchInfo.Capture(unwrapped).Throw();
+					throw;
+				}
+				else
+				{
+					var se = new ScriptException(this, unwrapped);
+
+					ExceptionDispatchInfo.Capture(se).Throw();
+
+					throw;
+				}
+
 			}
 		}
 

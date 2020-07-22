@@ -184,7 +184,7 @@ namespace TomPIT.Middleware
 			if (!ValidateRequestValue(results, instance, property, proposedValue))
 				return;
 
-			if (property.PropertyType.IsEnum && !property.PropertyType.IsEnumDefined(property.GetValue(instance)))
+			if (property.PropertyType.IsEnum && !property.PropertyType.IsEnumDefined(proposedValue))
 				results.Add(new ValidationResult($"{SR.ValEnumValueNotDefined} ({property.PropertyType.ShortName()}, {property.GetValue(instance)})"));
 
 			foreach (var attribute in attributes)
@@ -207,7 +207,7 @@ namespace TomPIT.Middleware
 							MemberName = property.Name
 						};
 
-						val.Validate(GetValue(instance, property), ctx);
+						val.Validate(proposedValue, ctx);
 					}
 					catch (ValidationException ex)
 					{

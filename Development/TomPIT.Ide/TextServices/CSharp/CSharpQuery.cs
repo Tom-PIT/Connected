@@ -311,6 +311,9 @@ namespace TomPIT.Ide.TextServices.CSharp
 			if (ms.IsExtensionMethod)
 				ms = ms.GetConstructedReducedFrom();
 
+			if (ms == null)
+				return null;
+
 			var declaringTypeName = string.Format(
 				"{0}.{1}, {2}",
 				ms.ContainingType.ContainingNamespace.ToString(),

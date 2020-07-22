@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.ComponentModel;
+using Newtonsoft.Json;
 using TomPIT.Annotations;
 using TomPIT.Reflection;
 
@@ -19,6 +20,7 @@ namespace TomPIT.Middleware
 
 		[JsonIgnore]
 		[SkipValidation]
+		[Browsable(false)]
 		public IMiddlewareContext Context
 		{
 			get
