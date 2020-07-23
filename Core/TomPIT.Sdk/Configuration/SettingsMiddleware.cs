@@ -24,7 +24,7 @@ namespace TomPIT.Configuration
 				var defaultValue = property.FindAttribute<DefaultValueAttribute>();
 
 				if (defaultValue != null)
-					return Types.Convert<T>(defaultValue);
+					return Types.Convert<T>(defaultValue.Value);
 				else
 					return default;
 			}

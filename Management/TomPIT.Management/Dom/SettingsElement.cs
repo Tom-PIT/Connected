@@ -81,7 +81,7 @@ namespace TomPIT.Management.Dom
 					_ds = new ExistingSettings();
 
 					var rg = DomQuery.Closest<IResourceGroupScope>(this);
-					var items = Environment.Context.Tenant.GetService<ISettingService>().Query().Where(f => string.IsNullOrEmpty(f.Type) && string.IsNullOrEmpty(f.PrimaryKey));
+					var items = Environment.Context.Tenant.GetService<ISettingService>().Query().Where(f => f != null && string.IsNullOrEmpty(f.Type) && string.IsNullOrEmpty(f.PrimaryKey));
 
 					if (items != null)
 						items = items.OrderBy(f => f.Name).ToList();

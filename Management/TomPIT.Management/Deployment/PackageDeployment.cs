@@ -178,7 +178,13 @@ namespace TomPIT.Management.Deployment
 					}
 
 					if (isStringTable && runtimeConfiguration != null)
-						MergeTranslations(i, runtimeConfiguration, state);
+					{
+						try
+						{
+							MergeTranslations(i, runtimeConfiguration, state);
+						}
+						catch { }
+					}
 				}
 
 				Tenant.GetService<IDesignService>().Components.Restore(Package.MicroService.Token, i, configuration, runtimeConfiguration);
