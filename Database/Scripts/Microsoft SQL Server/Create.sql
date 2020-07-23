@@ -2194,6 +2194,41 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[setting]'
+GO
+CREATE TABLE [tompit].[setting]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[value] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[type] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_setting] on [tompit].[setting]'
+GO
+ALTER TABLE [tompit].[setting] ADD CONSTRAINT [PK_setting] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[setting_upd]'
+GO
+CREATE PROCEDURE [tompit].[setting_upd]
+	@id int,
+	@value nvarchar(1024) = null
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	UPDATE tompit.setting SET
+		value = @value
+	WHERE id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[search_ins]'
 GO
 CREATE PROCEDURE [tompit].[search_ins]
@@ -2211,6 +2246,23 @@ BEGIN
 
 	RETURN scope_identity();
 	
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[setting_ins]'
+GO
+CREATE PROCEDURE [tompit].[setting_ins]
+	@name nvarchar(128),
+	@type nvarchar(128) = NULL,
+	@primary_key nvarchar(128) = NULL,
+	@value nvarchar(1024) = null
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.setting (name, type, primary_key, value)
+	VALUES (@name, @type, @primary_key, @value);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3530,39 +3582,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[setting]'
-GO
-CREATE TABLE [tompit].[setting]
-(
-[id] [int] NOT NULL IDENTITY(1, 1),
-[resource_group] [int] NULL,
-[name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
-[value] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[visible] [bit] NOT NULL,
-[data_type] [int] NOT NULL,
-[tags] [nvarchar] (256) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
-) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating primary key [PK_setting] on [tompit].[setting]'
-GO
-ALTER TABLE [tompit].[setting] ADD CONSTRAINT [PK_setting] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[view_setting]'
-GO
-
-
-CREATE VIEW [tompit].[view_setting]
-AS
-SELECT        s.*, r.token resource_token
-FROM            tompit.setting AS s LEFT OUTER JOIN
-                         tompit.resource_group AS r ON s.resource_group = r.id
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[iot_state]'
 GO
 CREATE TABLE [tompit].[iot_state]
@@ -3636,7 +3655,7 @@ BEGIN
 	SET NOCOUNT ON;
 
 	select * 
-	from view_setting;
+	from setting;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -5536,16 +5555,18 @@ GO
 PRINT N'Creating [tompit].[setting_sel]'
 GO
 CREATE PROCEDURE [tompit].[setting_sel]
-	@resource_group int = NULL,
-	@name nvarchar(128)
+	@name nvarchar(128),
+	@type nvarchar(128) = NULL,
+	@primary_key nvarchar(128) = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	select top 1 *
-	from view_setting
-	where (@resource_group IS NULL OR resource_group = @resource_group)
-	and (name = @name);
+	from setting
+	where (name = @name)
+	AND ((@type IS NULL AND type IS NULL) OR (@type = @type))
+	AND ((@primary_key IS NULL AND primary_key IS NULL) OR (@primary_key = @primary_key));
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -6372,15 +6393,17 @@ GO
 PRINT N'Creating [tompit].[setting_del]'
 GO
 CREATE PROCEDURE [tompit].[setting_del]
-	@resource_group int = NULL,
-	@name nvarchar(128) = null
+	@name nvarchar(128),
+	@type nvarchar(128) = NULL,
+	@primary_key nvarchar(128) = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	delete setting
-	where (@resource_group IS NULL OR resource_group = @resource_group)
-	and (name = @name);
+	where (name = @name)
+	AND ((@type IS NULL AND type IS NULL) OR (type = @type))
+	AND ((@primary_key IS NULL AND primary_key IS NULL) OR (primary_key = @primary_key));
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -6618,31 +6641,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[setting_mdf]'
-GO
-CREATE PROCEDURE [tompit].[setting_mdf]
-	@resource_group int = NULL,
-	@name nvarchar(128),
-	@visible bit,
-	@data_type int,
-	@tags nvarchar(256) = null,
-	@value nvarchar(1024) = null
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	MERGE setting AS d
-	USING (SELECT @name, @resource_group) AS s (name, resource_group)
-	ON (d.name = s.name) and (s.resource_group IS NULL OR d.resource_group = s.resource_group)
-	WHEN NOT MATCHED THEN
-		INSERT (resource_group, name, visible, data_type, tags, value)
-		VALUES (@resource_group, @name, @visible, @data_type, @tags, @value)
-	WHEN MATCHED THEN
-		UPDATE SET visible = @visible, data_type = @data_type, tags = @tags, value = @value;
-END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[membership_ins]'
 GO
 CREATE PROCEDURE [tompit].[membership_ins]
@@ -6777,7 +6775,8 @@ CREATE PROCEDURE [tompit].[permission_sel]
 	@evidence nvarchar(128) = null,
 	@schema nvarchar(128) = null,
 	@claim nvarchar(128) = null,
-	@primary_key nvarchar(128)
+	@primary_key nvarchar(128),
+	@descriptor nvarchar(128) = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -6787,6 +6786,7 @@ BEGIN
 	where (@evidence is null or evidence = @evidence)
 	and (@schema is null or [schema] = @schema)
 	and (@claim is null or claim = @claim)
+	and (@descriptor is null or descriptor = @descriptor)
 	and primary_key = @primary_key;
 END
 GO
@@ -6979,12 +6979,6 @@ GO
 PRINT N'Adding foreign keys to [tompit].[permission]'
 GO
 ALTER TABLE [tompit].[permission] ADD CONSTRAINT [FK_permission_resource_group] FOREIGN KEY ([resource_group]) REFERENCES [tompit].[resource_group] ([id]) ON DELETE CASCADE
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Adding foreign keys to [tompit].[setting]'
-GO
-ALTER TABLE [tompit].[setting] ADD CONSTRAINT [FK_setting_resource_group] FOREIGN KEY ([resource_group]) REFERENCES [tompit].[resource_group] ([id]) ON DELETE CASCADE
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
@@ -7774,151 +7768,6 @@ BEGIN TRY
 	DECLARE @xp int
 SELECT @xp=1
 EXEC sp_addextendedproperty N'MS_DiagramPaneCount', @xp, 'SCHEMA', N'tompit', 'VIEW', N'view_service_string', NULL, NULL
-END TRY
-BEGIN CATCH
-	DECLARE @msg nvarchar(max);
-	DECLARE @severity int;
-	DECLARE @state int;
-	SELECT @msg = ERROR_MESSAGE(), @severity = ERROR_SEVERITY(), @state = ERROR_STATE();
-	RAISERROR(@msg, @severity, @state);
-
-	SET NOEXEC ON
-END CATCH
-GO
-BEGIN TRY
-	EXEC sp_addextendedproperty N'MS_DiagramPane1', N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
-Begin DesignProperties = 
-   Begin PaneConfigurations = 
-      Begin PaneConfiguration = 0
-         NumPanes = 4
-         Configuration = "(H (1[40] 4[20] 2[20] 3) )"
-      End
-      Begin PaneConfiguration = 1
-         NumPanes = 3
-         Configuration = "(H (1 [50] 4 [25] 3))"
-      End
-      Begin PaneConfiguration = 2
-         NumPanes = 3
-         Configuration = "(H (1 [50] 2 [25] 3))"
-      End
-      Begin PaneConfiguration = 3
-         NumPanes = 3
-         Configuration = "(H (4 [30] 2 [40] 3))"
-      End
-      Begin PaneConfiguration = 4
-         NumPanes = 2
-         Configuration = "(H (1 [56] 3))"
-      End
-      Begin PaneConfiguration = 5
-         NumPanes = 2
-         Configuration = "(H (2 [66] 3))"
-      End
-      Begin PaneConfiguration = 6
-         NumPanes = 2
-         Configuration = "(H (4 [50] 3))"
-      End
-      Begin PaneConfiguration = 7
-         NumPanes = 1
-         Configuration = "(V (3))"
-      End
-      Begin PaneConfiguration = 8
-         NumPanes = 3
-         Configuration = "(H (1[56] 4[18] 2) )"
-      End
-      Begin PaneConfiguration = 9
-         NumPanes = 2
-         Configuration = "(H (1 [75] 4))"
-      End
-      Begin PaneConfiguration = 10
-         NumPanes = 2
-         Configuration = "(H (1[66] 2) )"
-      End
-      Begin PaneConfiguration = 11
-         NumPanes = 2
-         Configuration = "(H (4 [60] 2))"
-      End
-      Begin PaneConfiguration = 12
-         NumPanes = 1
-         Configuration = "(H (1) )"
-      End
-      Begin PaneConfiguration = 13
-         NumPanes = 1
-         Configuration = "(V (4))"
-      End
-      Begin PaneConfiguration = 14
-         NumPanes = 1
-         Configuration = "(V (2))"
-      End
-      ActivePaneConfig = 0
-   End
-   Begin DiagramPane = 
-      Begin Origin = 
-         Top = 0
-         Left = 0
-      End
-      Begin Tables = 
-         Begin Table = "s"
-            Begin Extent = 
-               Top = 6
-               Left = 38
-               Bottom = 136
-               Right = 209
-            End
-            DisplayFlags = 280
-            TopColumn = 0
-         End
-         Begin Table = "r"
-            Begin Extent = 
-               Top = 6
-               Left = 247
-               Bottom = 136
-               Right = 424
-            End
-            DisplayFlags = 280
-            TopColumn = 0
-         End
-      End
-   End
-   Begin SQLPane = 
-   End
-   Begin DataPane = 
-      Begin ParameterDefaults = ""
-      End
-   End
-   Begin CriteriaPane = 
-      Begin ColumnWidths = 11
-         Column = 1440
-         Alias = 900
-         Table = 1170
-         Output = 720
-         Append = 1400
-         NewValue = 1170
-         SortType = 1350
-         SortOrder = 1410
-         GroupBy = 1350
-         Filter = 1350
-         Or = 1350
-         Or = 1350
-         Or = 1350
-      End
-   End
-End
-', 'SCHEMA', N'tompit', 'VIEW', N'view_setting', NULL, NULL
-END TRY
-BEGIN CATCH
-	DECLARE @msg nvarchar(max);
-	DECLARE @severity int;
-	DECLARE @state int;
-	SELECT @msg = ERROR_MESSAGE(), @severity = ERROR_SEVERITY(), @state = ERROR_STATE();
-	RAISERROR(@msg, @severity, @state);
-
-	SET NOEXEC ON
-END CATCH
-GO
-BEGIN TRY
-	DECLARE @xp int
-SELECT @xp=1
-EXEC sp_addextendedproperty N'MS_DiagramPaneCount', @xp, 'SCHEMA', N'tompit', 'VIEW', N'view_setting', NULL, NULL
 END TRY
 BEGIN CATCH
 	DECLARE @msg nvarchar(max);
