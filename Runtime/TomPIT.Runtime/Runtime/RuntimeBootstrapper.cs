@@ -95,7 +95,7 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IModelService), typeof(ModelService));
 			e.Tenant.RegisterService(typeof(IDesignService), typeof(DesignService));
 
-			if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime)
+			if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 				e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
