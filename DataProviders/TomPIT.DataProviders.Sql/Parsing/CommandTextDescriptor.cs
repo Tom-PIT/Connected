@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 using Microsoft.SqlServer.Management.SqlParser.Parser;
 using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
+using TomPIT.Diagnostics;
+using TomPIT.Exceptions;
 
 namespace TomPIT.DataProviders.Sql.Parsing
 {
@@ -48,6 +51,16 @@ namespace TomPIT.DataProviders.Sql.Parsing
 			Sql = sql;
 
 			var result = Parser.Parse(Sql);
+
+			if (result.Errors.Count() > 0)
+			{
+				var sb = new StringBuilder();
+
+				foreach (var error in result.Errors)
+					sb.AppendLine(error.Message);
+
+				throw new RuntimeException(nameof(CommandTextDescriptor), sb.ToString(), LogCategories.Deployment);
+			}
 
 			foreach (var batch in result.Script.Batches)
 			{

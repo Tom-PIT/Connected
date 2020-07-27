@@ -441,3 +441,6 @@ li[data-kind="error-item"]:hover {
 .model-tab .close-model:hover {
   display: inline;
 }
+span[data-kind="empty"] {
+  padding: 0 1px;
+}

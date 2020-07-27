@@ -55,7 +55,15 @@ namespace TomPIT.App.Models
 					{
 						_views = Tenant.GetService<IUIDependencyInjectionService>().QueryViewDependencies(ViewIdentifier, null);
 
-						var masterViews = Tenant.GetService<IUIDependencyInjectionService>().QueryMasterDependencies(ViewConfiguration.Layout, null, ComponentModel.IoC.MasterDependencyKind.Client);
+						var layout = ViewConfiguration.Layout;
+
+						if (!layout.Contains("/"))
+						{
+							var ms = Tenant.GetService<IMicroServiceService>().Select(ViewConfiguration.MicroService());
+
+							layout = $"{ms.Name}/{layout}";
+						}
+						var masterViews = Tenant.GetService<IUIDependencyInjectionService>().QueryMasterDependencies(layout, null, ComponentModel.IoC.MasterDependencyKind.Client);
 
 						if (masterViews != null && masterViews.Count > 0)
 						{
@@ -98,7 +106,7 @@ namespace TomPIT.App.Models
 				if (Arguments.ContainsKey(i.Key))
 					continue;
 
-					Arguments.Add(i.Key, i.Value.ToString());
+				Arguments.Add(i.Key, i.Value.ToString());
 			}
 		}
 	}

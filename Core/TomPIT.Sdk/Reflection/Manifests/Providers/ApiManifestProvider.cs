@@ -113,7 +113,7 @@ namespace TomPIT.Reflection.Manifests.Providers
 
 		private void BindExtenders(SemanticModel model, ClassDeclarationSyntax syntax, ApiOperationManifest manifest)
 		{
-			if (syntax.AttributeLists == null)
+			if (syntax == null || syntax.AttributeLists == null)
 				return;
 
 			foreach (var attributeList in syntax.AttributeLists)

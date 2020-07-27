@@ -20,12 +20,12 @@ namespace TomPIT.Data
 	{
 		private IComponent _component = null;
 		private IModelConfiguration _configuration = null;
-		public int Execute([CIP(CIP.ModelExecuteOperationProvider)]string operation)
+		public int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation)
 		{
 			return Execute(operation, null);
 		}
 
-		public int Execute([CIP(CIP.ModelExecuteOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e)
+		public int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
@@ -47,22 +47,22 @@ namespace TomPIT.Data
 			return recordsAffected;
 		}
 
-		public List<T> Query([CIP(CIP.ModelQueryOperationProvider)]string operation)
+		public List<T> Query([CIP(CIP.ModelQueryOperationProvider)] string operation)
 		{
 			return Query(operation, null);
 		}
 
-		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)]string operation)
+		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)] string operation)
 		{
 			return Query<R>(operation, null);
 		}
 
-		public List<T> Query([CIP(CIP.ModelQueryOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e)
+		public List<T> Query([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
 		{
 			return Query<T>(operation, e);
 		}
 
-		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e)
+		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
@@ -77,22 +77,22 @@ namespace TomPIT.Data
 			return r.Query();
 		}
 
-		public T Select([CIP(CIP.ModelQueryOperationProvider)]string operation)
+		public T Select([CIP(CIP.ModelQueryOperationProvider)] string operation)
 		{
 			return Select(operation, null);
 		}
 
-		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)]string operation)
+		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)] string operation)
 		{
 			return Select<R>(operation, null);
 		}
 
-		public T Select([CIP(CIP.ModelQueryOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e)
+		public T Select([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
 		{
 			return Select<T>(operation, e);
 		}
 
-		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)]string operation, [CIP(CIP.ModelOperationParametersProvider)]object e)
+		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
@@ -131,19 +131,12 @@ namespace TomPIT.Data
 
 		private IModelOperation ResolveOperation(string operation)
 		{
-			SyncEntity();
-
 			var op = Configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, operation, true) == 0);
 
 			if (op == null)
 				throw Context.Services.Diagnostic.Exception($"{SR.ErrModelOperationNotFound} ({Component.Name}/{operation})");
 
 			return op;
-		}
-
-		private void SyncEntity()
-		{
-			Context.Tenant.GetService<IModelService>().SynchronizeEntity(Configuration);
 		}
 
 		private IDataConnection OpenConnection()

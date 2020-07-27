@@ -63,14 +63,18 @@
 
 <div data-kind="explorer-node" data-id="@node.Id" class="dev-explorer-node" data-static="@Html.TP().JavaScript.Bool(node.Behavior.Static)" data-container="@Html.TP().JavaScript.Bool(node.Behavior.Container)">
 	<div class="dev-explorer-node-content">
-		@if (node.HasChildren)
-		{
-			var css = node.Items.Count == 0 || !node.Behavior.AutoExpand ? "fa-chevron-right" : "fa-chevron-down";
+        <span data-kind="toggler">
+            @if (node.HasChildren)
+            {
+                var css = node.Items.Count == 0 || !node.Behavior.AutoExpand ? "fa-chevron-right" : "fa-chevron-down";
+                <i class="fal @css" data-kind="toggler"></i>
+            }
+            else
+            {
+				<span data-kind="empty">&nbsp;</span>
+            }
+        </span>
 
-			<span data-kind="toggler">
-				<i class="fal @css" data-kind="toggler"></i>
-			</span>
-		}
 		<div class="dev-explorer-node-text">
 			@if (!string.IsNullOrWhiteSpace(glyph))
 			{

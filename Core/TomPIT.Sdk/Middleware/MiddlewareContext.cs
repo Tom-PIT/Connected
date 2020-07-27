@@ -152,7 +152,7 @@ namespace TomPIT.Middleware
 
 		#region Methods
 
-		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
+		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText)
 		{
 			if (Transaction.State == MiddlewareTransactionState.Active)
 				return OpenReader<T>(connection, commandText, ConnectionBehavior.Shared);
@@ -160,7 +160,7 @@ namespace TomPIT.Middleware
 				return OpenReader<T>(connection, commandText, ConnectionBehavior.Isolated);
 		}
 
-		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText, ConnectionBehavior behavior)
+		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText, ConnectionBehavior behavior)
 		{
 			return new DataReader<T>(this)
 			{
@@ -169,7 +169,7 @@ namespace TomPIT.Middleware
 			};
 		}
 
-		public IDataReader<T> OpenReader<T>(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)
+		public IDataReader<T> OpenReader<T>(IDataConnection connection, [CIP(CIP.CommandTextProvider)] string commandText)
 		{
 			return new DataReader<T>(this)
 			{
@@ -178,7 +178,7 @@ namespace TomPIT.Middleware
 			};
 		}
 
-		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
+		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText)
 		{
 			if (Transaction.State == MiddlewareTransactionState.Active)
 				return OpenWriter(connection, commandText, ConnectionBehavior.Shared);
@@ -186,7 +186,7 @@ namespace TomPIT.Middleware
 				return OpenWriter(connection, commandText, ConnectionBehavior.Isolated);
 		}
 
-		public IDataWriter OpenWriter(IDataConnection connection, [CIP(CIP.CommandTextProvider)]string commandText)
+		public IDataWriter OpenWriter(IDataConnection connection, [CIP(CIP.CommandTextProvider)] string commandText)
 		{
 			return new DataWriter(this)
 			{
@@ -195,7 +195,7 @@ namespace TomPIT.Middleware
 			};
 		}
 
-		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText, ConnectionBehavior behavior)
+		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText, ConnectionBehavior behavior)
 		{
 			return new DataWriter(this)
 			{
@@ -214,12 +214,12 @@ namespace TomPIT.Middleware
 				Endpoint = Tenant?.Url;
 		}
 
-		internal IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection, ConnectionBehavior behavior)
+		internal IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)] string connection, ConnectionBehavior behavior)
 		{
 			return OpenConnection(connection, behavior, null);
 		}
 
-		public IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection, ConnectionBehavior behavior, object arguments)
+		public IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)] string connection, ConnectionBehavior behavior, object arguments)
 		{
 			return Connections.OpenConnection(this, connection, behavior, arguments);
 		}
