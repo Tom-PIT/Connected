@@ -18,6 +18,7 @@ namespace TomPIT.Caching
 		List<T> All<T>(string key) where T : class;
 		T Get<T>(string key, string id, CacheRetrieveHandler<T> retrieve) where T : class;
 		void Clear(string key);
+		IEnumerator<T> GetEnumerator<T>(string key) where T : class;
 		T Get<T>(string key, string id) where T : class;
 		T Get<T>(string key, Func<T, bool> predicate) where T : class;
 		T Get<T>(string key, Func<T, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class;

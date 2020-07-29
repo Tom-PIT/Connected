@@ -54,6 +54,10 @@ namespace TomPIT.Caching
 			Container.CreateKey(key);
 		}
 
+		public IEnumerator<T> GetEnumerator<T>(string key) where T : class
+		{
+			return Container.GetEnumerator<T>(key);
+		}
 		public List<T> All<T>(string key) where T : class
 		{
 			List<T> r = Container.All<T>(key);

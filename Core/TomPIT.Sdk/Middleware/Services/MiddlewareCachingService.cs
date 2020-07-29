@@ -30,6 +30,11 @@ namespace TomPIT.Middleware.Services
 			return Context.Tenant.GetService<IDataCachingService>().All<T>(key);
 		}
 
+		public T Get<T>(string key, Func<T, bool> matchEvaluator, CacheRetrieveHandler<T> retrieve) where T : class
+		{
+			return Context.Tenant.GetService<IDataCachingService>().Get<T>(key, matchEvaluator, retrieve);
+		}
+
 		public T Get<T>(string key, string id, CacheRetrieveHandler<T> retrieve) where T : class
 		{
 			return Context.Tenant.GetService<IDataCachingService>().Get<T>(key, id, retrieve);

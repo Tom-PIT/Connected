@@ -15,6 +15,7 @@ namespace TomPIT.Caching
 		bool IsEmpty(string key);
 		void CreateKey(string key);
 		List<T> All<T>(string key) where T : class;
+		T Get<T>(string key, Func<T, bool> matchEvaluator, CacheRetrieveHandler<T> retrieve) where T : class;
 		T Get<T>(string key, string id, CacheRetrieveHandler<T> retrieve) where T : class;
 		T Get<T>(string key, Func<dynamic, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class;
 		T Get<T>(string key, string id) where T : class;

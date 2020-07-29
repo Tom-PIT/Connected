@@ -221,6 +221,46 @@ namespace TomPIT.Caching
 			return result;
 		}
 
+		public T Get<T>(string key, Func<T, bool> evaluator, CacheRetrieveHandler<T> retrieve) where T : class
+		{
+			Initialize(key);
+
+			var enumerator = Cache.GetEnumerator<CacheValue>(key);
+
+			if (enumerator != null)
+			{
+				while (enumerator.MoveNext())
+				{
+					var instance = Serializer.Deserialize<T>(enumerator.Current.Value);
+
+					if (evaluator(instance))
+						return instance;
+				}
+			}
+
+			var options = new EntryOptions
+			{
+				AllowNull = false,
+				Duration = TimeSpan.Zero,
+				SlidingExpiration = true
+			};
+
+			var result = retrieve(options);
+
+			if (result != null || options.AllowNull)
+			{
+				if (string.IsNullOrWhiteSpace(options.Key))
+					options.Key = CreateKeyFromAttributes(result);
+
+				if (string.IsNullOrWhiteSpace(key))
+					throw new RuntimeException(SR.ErrCacheKeyNull);
+
+				Set(key, options.Key, result, options.Duration, options.SlidingExpiration);
+			}
+
+			return result;
+		}
+
 		private string CreateKeyFromAttributes(object instance)
 		{
 			var properties = instance.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);

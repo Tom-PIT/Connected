@@ -100,7 +100,17 @@ namespace TomPIT.Middleware.Services
 
 		private T Deserialize<T>(string value)
 		{
-			return Serializer.Deserialize<T>(value);
+			if (typeof(T).IsTypePrimitive())
+				return Types.Convert<T>(value);
+
+			try
+			{
+				return Serializer.Deserialize<T>(value);
+			}
+			catch
+			{
+				return Types.Convert<T>(value);
+			}
 		}
 	}
 }
