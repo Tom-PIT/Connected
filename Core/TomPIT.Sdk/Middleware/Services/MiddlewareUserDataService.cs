@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using TomPIT.Data;
+using TomPIT.Reflection;
 using TomPIT.Security;
 using TomPIT.Serialization;
 
@@ -21,8 +23,8 @@ namespace TomPIT.Middleware.Services
 		{
 			return new UserData
 			{
-				PrimaryKey = Serializer.Serialize(primaryKey),
-				Value = Serializer.Serialize(value),
+				PrimaryKey = Serialize(primaryKey),
+				Value = Serialize(value),
 				Topic = topic
 			};
 		}
@@ -48,14 +50,14 @@ namespace TomPIT.Middleware.Services
 		{
 			var user = Context.Services.Identity.IsAuthenticated ? Context.Services.Identity.User.Token : Guid.Empty;
 
-			return Serializer.Deserialize<R>(Context.Tenant.GetService<IUserDataService>().Select(user, Serializer.Serialize(primaryKey))?.Value);
+			return Deserialize<R>(Context.Tenant.GetService<IUserDataService>().Select(user, Serialize(primaryKey))?.Value);
 		}
 
 		public R Select<R, A>(A primaryKey, string topic)
 		{
 			var user = Context.Services.Identity.IsAuthenticated ? Context.Services.Identity.User.Token : Guid.Empty;
 
-			return Serializer.Deserialize<R>(Context.Tenant.GetService<IUserDataService>().Select(user, Serializer.Serialize(primaryKey), topic)?.Value);
+			return Deserialize<R>(Context.Tenant.GetService<IUserDataService>().Select(user, Serialize(primaryKey), topic)?.Value);
 		}
 
 		public void Update<A, V>(A primaryKey, V value)
@@ -69,8 +71,8 @@ namespace TomPIT.Middleware.Services
 			{
 				new UserData
 				{
-					PrimaryKey=Serializer.Serialize( primaryKey),
-					Value=Serializer.Serialize(value),
+					PrimaryKey=Serialize( primaryKey),
+					Value=Serialize(value),
 					Topic=topic
 				}
 			});
@@ -81,6 +83,24 @@ namespace TomPIT.Middleware.Services
 			var user = Context.Services.Identity.IsAuthenticated ? Context.Services.Identity.User.Token : Guid.Empty;
 
 			Context.Tenant.GetService<IUserDataService>().Update(user, data);
+		}
+
+		private string Serialize(object value)
+		{
+			if (value == null)
+				return null;
+
+			if (value is JValue v)
+				return v.Value.ToString();
+			else if (value.GetType().IsTypePrimitive())
+				return value.ToString();
+
+			return Serializer.Serialize(value);
+		}
+
+		private T Deserialize<T>(string value)
+		{
+			return Serializer.Deserialize<T>(value);
 		}
 	}
 }
