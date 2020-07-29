@@ -9,9 +9,9 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>2.1.724.1</AssemblyVersion>
-    <FileVersion>2.1.724.1</FileVersion>
-    <Version>2.1.724.1</Version>
+    <AssemblyVersion>2.1.727.1</AssemblyVersion>
+    <FileVersion>2.1.727.1</FileVersion>
+    <Version>2.1.727.1</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
