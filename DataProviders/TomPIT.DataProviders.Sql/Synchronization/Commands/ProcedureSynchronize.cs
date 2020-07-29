@@ -55,18 +55,18 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 
 		private string SetAlterProcedureStatement(Match match)
 		{
-			if (match.Value.StartsWith("ALTER", System.StringComparison.OrdinalIgnoreCase))
+			if (match.Value.Trim().StartsWith("ALTER", System.StringComparison.OrdinalIgnoreCase))
 				return match.Value;
 
-			return $"ALTER {match.Value.Substring(7)}";
+			return $"ALTER {match.Value.Trim().Substring(7)}";
 		}
 
 		private string SetCreateProcedureStatement(Match match)
 		{
-			if (match.Value.StartsWith("CREATE", System.StringComparison.OrdinalIgnoreCase))
+			if (match.Value.Trim().StartsWith("CREATE", System.StringComparison.OrdinalIgnoreCase))
 				return match.Value;
 
-			return $"CREATE {match.Value.Substring(6)}";
+			return $"CREATE {match.Value.Trim().Substring(6)}";
 		}
 	}
 }

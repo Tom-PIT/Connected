@@ -488,6 +488,11 @@
                                     text: model.getValue()
                                 },
                                 onComplete: function (data) {
+                                    if (!data || !data.uri) {
+                                        reject();
+                                        return;
+                                    }
+
                                     var uri = monaco.Uri.parse(data.uri);
                                     var model = monaco.editor.getModel(uri);
 
