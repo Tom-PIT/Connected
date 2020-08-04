@@ -80,7 +80,7 @@ namespace TomPIT.App.Models
 
 				foreach (var header in Controller.Request.Headers)
 				{
-					if (!header.Key.StartsWith(HeaderParamPrefix))
+					if (!header.Key.StartsWith(HeaderParamPrefix, StringComparison.OrdinalIgnoreCase))
 						continue;
 
 					var key = header.Key.Substring(HeaderParamPrefix.Length);

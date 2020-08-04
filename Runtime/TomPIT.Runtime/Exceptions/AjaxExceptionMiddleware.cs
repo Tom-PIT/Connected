@@ -27,11 +27,21 @@ namespace TomPIT.Exceptions
 
 			if (ex is RuntimeException)
 			{
-				severity = ((RuntimeException)ex).Severity;
-
-				if (ex is ScriptException script)
+				if (ex.InnerException != null && ex.InnerException is UnauthorizedException)
 				{
-					source = $"{script.MicroService}/{script.Path} ({script.Line})";
+					severity = ExceptionSeverity.Warning;
+					context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+
+					message = ex.InnerException.Message;
+				}
+				else
+				{
+					severity = ((RuntimeException)ex).Severity;
+
+					if (ex is ScriptException script)
+					{
+						source = $"{script.MicroService}/{script.Path} ({script.Line})";
+					}
 				}
 			}
 			else if (ex.Data != null && ex.Data.Count > 0)
