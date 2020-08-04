@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyVersion>2.1.729.3</AssemblyVersion>
-    <FileVersion>2.1.729.3</FileVersion>
-    <Version>2.1.729.3</Version>
+    <AssemblyVersion>2.1.804.1</AssemblyVersion>
+    <FileVersion>2.1.804.1</FileVersion>
+    <Version>2.1.804.1</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
