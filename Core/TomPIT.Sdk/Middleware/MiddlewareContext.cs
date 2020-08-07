@@ -221,7 +221,14 @@ namespace TomPIT.Middleware
 
 		public IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)] string connection, ConnectionBehavior behavior, object arguments)
 		{
-			return Connections.OpenConnection(this, connection, behavior, arguments);
+			try
+			{
+				return Connections.OpenConnection(this, connection, behavior, arguments);
+			}
+			catch
+			{
+				throw;
+			}
 		}
 
 		private IMiddlewareTransaction BeginTransaction()
