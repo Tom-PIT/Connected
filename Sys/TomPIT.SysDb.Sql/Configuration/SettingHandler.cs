@@ -22,18 +22,19 @@ namespace TomPIT.SysDb.Sql.Configuration
 			return new Reader<Setting>("tompit.setting_que").Execute().ToList<ISetting>();
 		}
 
-		public ISetting Select(string name, string type, string primaryKey)
+		public ISetting Select(string name, string nameSpace, string type, string primaryKey)
 		{
 			var p = new Reader<Setting>("tompit.setting_sel");
 
 			p.CreateParameter("@name", name);
 			p.CreateParameter("@type", type, true);
 			p.CreateParameter("@primary_key", primaryKey, true);
+			p.CreateParameter("@namespace", nameSpace, true);
 
 			return p.ExecuteSingleRow();
 		}
 
-		public void Insert(string name, string type, string primaryKey, string value)
+		public void Insert(string name, string nameSpace, string type, string primaryKey, string value)
 		{
 			var w = new Writer("tompit.setting_ins");
 
@@ -41,6 +42,7 @@ namespace TomPIT.SysDb.Sql.Configuration
 			w.CreateParameter("@type", type, true);
 			w.CreateParameter("@primary_key", primaryKey, true);
 			w.CreateParameter("@value", value, true);
+			w.CreateParameter("@namespace", nameSpace, true);
 
 			w.Execute();
 		}

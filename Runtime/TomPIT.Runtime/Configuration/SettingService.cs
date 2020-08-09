@@ -15,9 +15,9 @@ namespace TomPIT.Configuration
 
 		}
 
-		public T GetValue<T>(string name, string type, string primaryKey)
+		public T GetValue<T>(string name, string nameSpace, string type, string primaryKey)
 		{
-			var s = Select(name, type, primaryKey);
+			var s = Select(name, nameSpace, type, primaryKey);
 
 			if (Types.TryConvert(s.Value, out T vr))
 				return vr;
@@ -32,9 +32,9 @@ namespace TomPIT.Configuration
 			return Tenant.Get<List<Setting>>(u).ToList<ISetting>();
 		}
 
-		public ISetting Select(string name, string type, string primaryKey)
+		public ISetting Select(string name, string nameSpace, string type, string primaryKey)
 		{
-			var key = GenerateKey(name, type, primaryKey);
+			var key = GenerateKey(name, nameSpace, type, primaryKey);
 			var r = Get(key);
 
 			if (r != null)
@@ -44,6 +44,7 @@ namespace TomPIT.Configuration
 			{
 				Name = name,
 				Type = type,
+				NameSpace = nameSpace,
 				PrimaryKey = primaryKey
 			});
 
@@ -67,17 +68,18 @@ namespace TomPIT.Configuration
 			SettingChanged?.Invoke(sender, e);
 		}
 
-		public void Update(string name, string type, string primaryKey, object value)
+		public void Update(string name, string nameSpace, string type, string primaryKey, object value)
 		{
 			Tenant.Post(Tenant.CreateUrl("SettingManagement", "Update"), new
 			{
 				Name = name,
 				Type = type,
 				PrimaryKey = primaryKey,
-				Value = value
+				Value = value,
+				NameSpace = nameSpace
 			});
 
-			NotifyChanged(this, new SettingEventArgs(name, type, primaryKey));
+			NotifyChanged(this, new SettingEventArgs(name, nameSpace, type, primaryKey));
 		}
 	}
 }

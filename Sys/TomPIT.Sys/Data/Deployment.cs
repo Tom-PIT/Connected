@@ -43,9 +43,9 @@ namespace TomPIT.Sys.Data
 				UserName = user;
 				Password = password;
 
-				var setting = DataModel.Settings.Select("marketplaceCredentials", null, null);
+				var setting = DataModel.Settings.Select("marketplaceCredentials", null, null, null);
 				var value = Shell.GetService<ICryptographyService>().Encrypt(this, string.Format("{0} {1}", user, password));
-				DataModel.Settings.Update("marketplaceCredentials", null, null, value);
+				DataModel.Settings.Update("marketplaceCredentials", null, null, null, value);
 
 				LoadAccountProfile();
 			}
@@ -66,7 +66,7 @@ namespace TomPIT.Sys.Data
 
 		public void Logout()
 		{
-			DataModel.Settings.Update("marketplaceCredentials", null, null, null);
+			DataModel.Settings.Update("marketplaceCredentials", null, null, null, null);
 
 			IsLogged = false;
 			Account = null;
@@ -74,7 +74,7 @@ namespace TomPIT.Sys.Data
 
 		private void TryLogin()
 		{
-			var loginInfo = DataModel.Settings.Select("marketplaceCredentials", null, null);
+			var loginInfo = DataModel.Settings.Select("marketplaceCredentials", null, null, null);
 
 			if (loginInfo == null || string.IsNullOrWhiteSpace(loginInfo.Value))
 				return;

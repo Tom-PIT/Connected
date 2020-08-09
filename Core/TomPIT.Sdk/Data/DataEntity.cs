@@ -92,6 +92,7 @@ namespace TomPIT.Data
 			return instance;
 		}
 
+		//TODO: implement nested properties
 		public static void MergeProperties(object instance, Dictionary<string, object> properties)
 		{
 			if (properties == null || properties.Count == 0)

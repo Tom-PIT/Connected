@@ -9,6 +9,7 @@ namespace TomPIT.SysDb.Sql.Configuration
 		public string Value { get; set; }
 		public string Type { get; set; }
 		public string PrimaryKey { get; set; }
+		public string NameSpace { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -18,6 +19,7 @@ namespace TomPIT.SysDb.Sql.Configuration
 			Value = GetString("value");
 			Type = GetString("type");
 			PrimaryKey = GetString("primary_key");
+			NameSpace = GetString("namespace");
 		}
 	}
 }

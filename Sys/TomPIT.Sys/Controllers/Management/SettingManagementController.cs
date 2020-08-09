@@ -14,8 +14,9 @@ namespace TomPIT.Sys.Controllers.Management
 			var value = body.Optional("value", string.Empty);
 			var type = body.Optional("type", string.Empty);
 			var primaryKey = body.Optional("type", string.Empty);
+			var nameSpace = body.Optional("nameSpace", string.Empty);
 
-			DataModel.Settings.Update(name, type, primaryKey, value);
+			DataModel.Settings.Update(name, nameSpace, type, primaryKey, value);
 		}
 
 		[HttpPost]
@@ -26,8 +27,9 @@ namespace TomPIT.Sys.Controllers.Management
 			var name = body.Required<string>("name");
 			var type = body.Optional("type", string.Empty);
 			var primaryKey = body.Optional("type", string.Empty);
+			var nameSpace = body.Optional("nameSpace", string.Empty);
 
-			DataModel.Settings.Delete(name, type, primaryKey);
+			DataModel.Settings.Delete(name, nameSpace, type, primaryKey);
 		}
 	}
 }

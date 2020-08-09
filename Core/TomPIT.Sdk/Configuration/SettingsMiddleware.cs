@@ -14,9 +14,12 @@ namespace TomPIT.Configuration
 		[Browsable(false)]
 		public string PrimaryKey { get; set; }
 
+		[Browsable(false)]
+		public string NameSpace { get; set; }
+
 		protected T GetValue<T>(string name)
 		{
-			var result = Context.Tenant.GetService<ISettingService>().GetValue<object>(name, Type, PrimaryKey);
+			var result = Context.Tenant.GetService<ISettingService>().GetValue<object>(name, NameSpace, Type, PrimaryKey);
 
 			if (result == null)
 			{
@@ -35,7 +38,7 @@ namespace TomPIT.Configuration
 		protected void SetValue<T>(string name, T value)
 		{
 			Validate(name, value);
-			Context.Tenant.GetService<ISettingService>().Update(name, Type, PrimaryKey, value);
+			Context.Tenant.GetService<ISettingService>().Update(name, NameSpace, Type, PrimaryKey, value);
 		}
 
 		protected void Validate<T>(string name, T value)

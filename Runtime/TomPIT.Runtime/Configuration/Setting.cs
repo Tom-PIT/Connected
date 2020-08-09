@@ -21,6 +21,7 @@ namespace TomPIT.Configuration
 
 		public string PrimaryKey { get; set; }
 
+		public string NameSpace { get; set; }
 		public override string ToString()
 		{
 			return string.IsNullOrWhiteSpace(Name)

@@ -8,9 +8,9 @@ namespace TomPIT.Configuration
 	{
 		event SettingChangedHandler SettingChanged;
 
-		T GetValue<T>(string name, string type, string primaryKey);
+		T GetValue<T>(string name, string nameSpace, string type, string primaryKey);
 		List<ISetting> Query();
-		ISetting Select(string name, string type, string primaryKey);
-		void Update(string name, string type, string primaryKey, object value);
+		ISetting Select(string name, string nameSpace, string type, string primaryKey);
+		void Update(string name, string nameSpace, string type, string primaryKey, object value);
 	}
 }

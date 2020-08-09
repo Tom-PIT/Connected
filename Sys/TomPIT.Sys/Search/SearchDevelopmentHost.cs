@@ -16,7 +16,7 @@ namespace TomPIT.Sys.Search
 				{
 					_searchDirectory = string.Empty;
 
-					var setting = DataModel.Settings.Select("Development Search Path", null, null);
+					var setting = DataModel.Settings.Select("Development Search Path", null, null, null);
 
 					if (setting == null || string.IsNullOrWhiteSpace(setting.Value))
 					{

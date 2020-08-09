@@ -200,7 +200,7 @@ namespace TomPIT.Sys.Data
 				return;
 
 			var worker = Resolve(m);
-			var setting = DataModel.Settings.Select(Settings.TaskFailTreshold, null, null);
+			var setting = DataModel.Settings.Select(Settings.TaskFailTreshold, null, null, null);
 			var treshold = 3;
 
 			if (setting != null)

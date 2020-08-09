@@ -6,5 +6,6 @@
 		string Value { get; }
 		string Type { get; }
 		string PrimaryKey { get; }
+		string NameSpace { get; }
 	}
 }

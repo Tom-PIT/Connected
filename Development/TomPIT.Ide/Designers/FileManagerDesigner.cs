@@ -29,7 +29,7 @@ namespace TomPIT.Ide.Designers
 			{
 				if (_extensions == null)
 				{
-					var setting = Environment.Context.Tenant.GetService<ISettingService>().GetValue<string>("Allowed file extensions", null, null);
+					var setting = Environment.Context.Tenant.GetService<ISettingService>().GetValue<string>("Allowed file extensions", null, null, null);
 
 					if (setting != null)
 					{

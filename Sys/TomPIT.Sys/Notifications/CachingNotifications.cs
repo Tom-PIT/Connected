@@ -49,8 +49,8 @@ namespace TomPIT.Sys.Notifications
 		public static void InstanceEndpointRemoved(Guid endpoint) { Notify(nameof(InstanceEndpointRemoved), new InstanceEndpointEventArgs(endpoint)); }
 		public static void ResourceGroupChanged(Guid resourceGroup) { Notify(nameof(ResourceGroupChanged), new ResourceGroupEventArgs(resourceGroup)); }
 		public static void ResourceGroupRemoved(Guid resourceGroup) { Notify(nameof(ResourceGroupRemoved), new ResourceGroupEventArgs(resourceGroup)); }
-		public static void SettingChanged(string name, string type, string primaryKey) { Notify(nameof(SettingChanged), new SettingEventArgs(name, type, primaryKey)); }
-		public static void SettingRemoved(string name, string type, string primaryKey) { Notify(nameof(SettingRemoved), new SettingEventArgs(name, type, primaryKey)); }
+		public static void SettingChanged(string name, string nameSpace, string type, string primaryKey) { Notify(nameof(SettingChanged), new SettingEventArgs(name, nameSpace, type, primaryKey)); }
+		public static void SettingRemoved(string name, string nameSpace, string type, string primaryKey) { Notify(nameof(SettingRemoved), new SettingEventArgs(name, nameSpace, type, primaryKey)); }
 		public static void MicroServiceChanged(Guid microService) { Notify(nameof(MicroServiceChanged), new MicroServiceEventArgs(microService)); }
 		public static void MicroServiceInstalled(Guid microService, bool success) { Notify(nameof(MicroServiceInstalled), new MicroServiceInstallEventArgs(microService, success)); }
 		public static void MicroServiceRemoved(Guid microService) { Notify(nameof(MicroServiceRemoved), new MicroServiceEventArgs(microService)); }
