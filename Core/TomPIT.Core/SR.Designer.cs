@@ -2221,6 +2221,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Property is read only..
+        /// </summary>
+        public static string ErrPropertyReadOnly {
+            get {
+                return ResourceManager.GetString("ErrPropertyReadOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Property value null.
         /// </summary>
         public static string ErrPropertyValueNull {

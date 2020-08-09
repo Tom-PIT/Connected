@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Models;
+using TomPIT.Exceptions;
 using TomPIT.Reflection;
 using TomPIT.Serialization;
 
@@ -87,6 +90,32 @@ namespace TomPIT.Data
 			instance.Deserialize(this);
 
 			return instance;
+		}
+
+		public static void MergeProperties(object instance, Dictionary<string, object> properties)
+		{
+			if (properties == null || properties.Count == 0)
+				return;
+
+			foreach (var property in properties)
+			{
+				var reflected = instance.GetType().GetProperty(property.Key, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+				if (reflected == null)
+					throw new RuntimeException($"{SR.ErrPropertyNotFound} ({property.Key})");
+
+				if (!reflected.CanWrite)
+					throw new RuntimeException($"SR.ErrPropertyReadOnly ({property.Key})");
+
+				var value = Types.Convert(property.Value, reflected.PropertyType);
+
+				reflected.SetValue(instance, value);
+			}
+		}
+
+		public void Merge(Dictionary<string, object> properties)
+		{
+			MergeProperties(this, properties);
 		}
 
 		public static implicit operator JObject(DataEntity entity)

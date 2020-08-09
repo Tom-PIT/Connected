@@ -1218,4 +1218,7 @@
   <data name="ErrSettingPropertyNull" xml:space="preserve">
     <value>Settings middleware does not contain requested property</value>
   </data>
+  <data name="ErrPropertyReadOnly" xml:space="preserve">
+    <value>Property is read only.</value>
+  </data>
 </root>

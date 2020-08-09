@@ -62,14 +62,17 @@ namespace TomPIT.Middleware
 				TryAdd(context, items);
 			}
 
-			items.Add(new DataConnectionDescriptor
+			lock (items)
 			{
-				Connection = connection,
-				ConnectionString = connectionString,
-				DataProvider = provider,
-				Arguments = arguments == null ? string.Empty : Serializer.Serialize(arguments),
-				Id = Identity++
-			});
+				items.Add(new DataConnectionDescriptor
+				{
+					Connection = connection,
+					ConnectionString = connectionString,
+					DataProvider = provider,
+					Arguments = arguments == null ? string.Empty : Serializer.Serialize(arguments),
+					Id = Identity++
+				});
+			}
 		}
 
 		private DataConnectionDescriptor TryExisting(MiddlewareContext context, IConnectionString connectionString, object arguments)
@@ -79,9 +82,14 @@ namespace TomPIT.Middleware
 
 			var args = arguments == null ? string.Empty : Serializer.Serialize(arguments);
 
-			return this[context].FirstOrDefault(f => f.DataProvider.Id == connectionString.DataProvider
-				&& string.Compare(f.ConnectionString, connectionString.Value, true) == 0
-				&& string.Compare(f.Arguments, args, true) == 0);
+			var items = this[context];
+
+			lock (items)
+			{
+				return items.FirstOrDefault(f => f.DataProvider.Id == connectionString.DataProvider
+					&& string.Compare(f.ConnectionString, connectionString.Value, true) == 0
+					&& string.Compare(f.Arguments, args, true) == 0);
+			}
 		}
 
 		/// <summary>
