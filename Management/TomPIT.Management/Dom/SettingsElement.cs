@@ -8,7 +8,6 @@ using TomPIT.Ide;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Dom;
 using TomPIT.Ide.Dom.ComponentModel;
-using TomPIT.Management.Configuration;
 using TomPIT.Management.Designers;
 using TomPIT.Management.Items;
 
@@ -100,7 +99,7 @@ namespace TomPIT.Management.Dom
 		{
 			var s = component as ISetting;
 
-			Environment.Context.Tenant.GetService<ISettingManagementService>().Update(s.Name, null, null, s.Value);
+			Environment.Context.Tenant.GetService<ISettingService>().Update(s.Name, null, null, null, s.Value);
 
 			return true;
 		}

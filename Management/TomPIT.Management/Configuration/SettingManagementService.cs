@@ -12,30 +12,13 @@ namespace TomPIT.Management.Configuration
 
 		}
 
-		public void Update(string name, string type, string primaryKey, string value)
-		{
-			var d = new JObject
-			{
-				{"name",name },
-				{"type",type},
-				{"primaryKey",primaryKey },
-				{"value", value }
-			};
-
-			var u = Tenant.CreateUrl("SettingManagement", "Update");
-
-			Tenant.Post(u, d);
-
-			if (Tenant.GetService<ISettingService>() is ISettingNotification n)
-				n.NotifyChanged(this, new SettingEventArgs(name, type, primaryKey));
-		}
-
-		public void Delete(string name, string type, string primaryKey)
+		public void Delete(string name, string nameSpace, string type, string primaryKey)
 		{
 			var d = new JObject
 			{
 				{"name", name },
 				{"type", type },
+				{"nameSpace", nameSpace },
 				{"primaryKey", primaryKey }
 			};
 
@@ -44,7 +27,7 @@ namespace TomPIT.Management.Configuration
 			Tenant.Post(u, d);
 
 			if (Tenant.GetService<ISettingService>() is ISettingNotification n)
-				n.NotifyChanged(this, new SettingEventArgs(name, type, primaryKey));
+				n.NotifyChanged(this, new SettingEventArgs(name, nameSpace, type, primaryKey));
 		}
 	}
 }

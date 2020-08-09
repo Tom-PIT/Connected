@@ -2,7 +2,6 @@
 {
 	public interface ISettingManagementService
 	{
-		void Update(string name, string type, string primaryKey, string value);
-		void Delete(string name, string type, string primaryKey);
+		void Delete(string name, string nameSpace, string type, string primaryKey);
 	}
 }

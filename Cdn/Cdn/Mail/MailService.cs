@@ -37,7 +37,7 @@ namespace TomPIT.Cdn.Mail
 		}
 		private void SetInterval()
 		{
-			var interval = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<int>("MailServiceTimer", null, null);
+			var interval = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<int>("MailServiceTimer", null, null, null);
 
 			if (interval == 0)
 				interval = 5000;

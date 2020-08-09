@@ -53,7 +53,7 @@ namespace TomPIT.Search.Catalogs
 			{
 				if (_searchDirectory == null)
 				{
-					_searchDirectory = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>("SearchPath", null, null);
+					_searchDirectory = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>("SearchPath", null, null, null);
 
 					if (string.IsNullOrWhiteSpace(_searchDirectory))
 					{

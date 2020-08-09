@@ -29,7 +29,7 @@ namespace TomPIT.Management.Designers
 				throw IdeException.ExpectedParameter(this, IdeEvents.DesignerAction, "id");
 
 			var setting = Owner.Existing.FirstOrDefault(f => string.Compare(f.Name, id, true) == 0);
-			Environment.Context.Tenant.GetService<ISettingManagementService>().Delete(setting.Name, null, null);
+			Environment.Context.Tenant.GetService<ISettingManagementService>().Delete(setting.Name, null, null, null);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer);
 		}
@@ -38,8 +38,8 @@ namespace TomPIT.Management.Designers
 		{
 			var s = component as ISetting;
 			IdeExtensions.ProcessComponentCreated(Environment.Context, component);
-			Environment.Context.Tenant.GetService<ISettingManagementService>().Update(s.Name, null, null, s.Value);
-			s = Environment.Context.Tenant.GetService<ISettingService>().Select(s.Name, null, null);
+			Environment.Context.Tenant.GetService<ISettingService>().Update(s.Name, null, null, null, s.Value);
+			s = Environment.Context.Tenant.GetService<ISettingService>().Select(s.Name, null, null, null);
 
 
 			var r = Result.SectionResult(this, EnvironmentSection.Designer);
@@ -75,7 +75,7 @@ namespace TomPIT.Management.Designers
 					if (string.IsNullOrWhiteSpace(SelectionId))
 						return null;
 
-					_setting = Environment.Context.Tenant.GetService<ISettingService>().Select(SelectionId, null, null);
+					_setting = Environment.Context.Tenant.GetService<ISettingService>().Select(SelectionId, null, null, null);
 				}
 
 				return _setting;
