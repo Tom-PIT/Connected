@@ -2202,7 +2202,8 @@ CREATE TABLE [tompit].[setting]
 [name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [value] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [type] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+[primary_key] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[namespace] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
 ) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -2256,13 +2257,14 @@ CREATE PROCEDURE [tompit].[setting_ins]
 	@name nvarchar(128),
 	@type nvarchar(128) = NULL,
 	@primary_key nvarchar(128) = NULL,
-	@value nvarchar(1024) = null
+	@value nvarchar(1024) = null,
+	@namespace nvarchar(128) = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	INSERT tompit.setting (name, type, primary_key, value)
-	VALUES (@name, @type, @primary_key, @value);
+	INSERT tompit.setting (name, type, primary_key, value, namespace)
+	VALUES (@name, @type, @primary_key, @value, @namespace);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -5557,7 +5559,8 @@ GO
 CREATE PROCEDURE [tompit].[setting_sel]
 	@name nvarchar(128),
 	@type nvarchar(128) = NULL,
-	@primary_key nvarchar(128) = NULL
+	@primary_key nvarchar(128) = NULL,
+	@namespace nvarchar(128) = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -5565,8 +5568,9 @@ BEGIN
 	select top 1 *
 	from setting
 	where (name = @name)
-	AND ((@type IS NULL AND type IS NULL) OR (@type = @type))
-	AND ((@primary_key IS NULL AND primary_key IS NULL) OR (@primary_key = @primary_key));
+	AND ((@type IS NULL AND type IS NULL) OR (type = @type))
+	AND ((@namespace IS NULL AND namespace IS NULL) OR (namespace = @namespace))
+	AND ((@primary_key IS NULL AND primary_key IS NULL) OR (primary_key = @primary_key));
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -6395,7 +6399,8 @@ GO
 CREATE PROCEDURE [tompit].[setting_del]
 	@name nvarchar(128),
 	@type nvarchar(128) = NULL,
-	@primary_key nvarchar(128) = NULL
+	@primary_key nvarchar(128) = NULL,
+	@namespace nvarchar(128) = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -6403,6 +6408,7 @@ BEGIN
 	delete setting
 	where (name = @name)
 	AND ((@type IS NULL AND type IS NULL) OR (type = @type))
+	AND ((@namespace IS NULL AND namespace IS NULL) OR (namespace = @namespace))
 	AND ((@primary_key IS NULL AND primary_key IS NULL) OR (primary_key = @primary_key));
 END
 GO
