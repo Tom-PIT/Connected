@@ -1,8 +1,12 @@
-﻿using TomPIT.Connectivity;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using TomPIT.Annotations;
+using TomPIT.Connectivity;
 using TomPIT.Exceptions;
 using TomPIT.Middleware.Services;
 using TomPIT.Reflection;
 using TomPIT.Security;
+using TomPIT.Serialization;
 
 namespace TomPIT.Middleware
 {
@@ -65,6 +69,39 @@ namespace TomPIT.Middleware
 		{
 			if (context.Services.Identity is MiddlewareIdentityService mc)
 				mc.ImpersonatedUser = null;
+		}
+
+		public static T Patch<T>(this T component, Dictionary<string, object> properties) where T : IMiddlewareComponent
+		{
+			return Patch(component, properties, null);
+		}
+		public static T Patch<T>(this T component, Dictionary<string, object> properties, object initializer) where T : IMiddlewareComponent
+		{
+			if (initializer != null)
+				Serializer.Populate(initializer, component);
+
+			if (properties == null || properties.Count == 0)
+				return component;
+
+			foreach (var property in properties)
+			{
+				var reflected = component.GetType().GetProperty(property.Key, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+				if (reflected == null)
+					throw new RuntimeException($"{SR.ErrPropertyNotFound} ({property.Key})");
+
+				if (!reflected.CanWrite)
+					throw new RuntimeException($"SR.ErrPropertyReadOnly ({property.Key})");
+
+				if (reflected.FindAttribute<PatchReadOnlyAttribute>() != null)
+					throw new RuntimeException($"{SR.ErrPatchForbidden} ({property.Key})");
+
+				var value = Types.Convert(property.Value, reflected.PropertyType);
+
+				reflected.SetValue(component, value);
+			}
+
+			return component;
 		}
 	}
 }

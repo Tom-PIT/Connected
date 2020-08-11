@@ -1221,4 +1221,7 @@
   <data name="ErrPropertyReadOnly" xml:space="preserve">
     <value>Property is read only.</value>
   </data>
+  <data name="ErrPatchForbidden" xml:space="preserve">
+    <value>Property is not allowed in patch operation</value>
+  </data>
 </root>

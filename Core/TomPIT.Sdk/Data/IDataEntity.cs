@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 
 namespace TomPIT.Data
 {
@@ -10,6 +9,5 @@ namespace TomPIT.Data
 		void DataSource(JObject state);
 
 		T Evolve<T>() where T : class, IDataEntity;
-		void Merge(Dictionary<string, object> properties);
 	}
 }

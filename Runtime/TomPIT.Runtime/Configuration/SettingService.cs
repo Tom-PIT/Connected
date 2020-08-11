@@ -58,13 +58,13 @@ namespace TomPIT.Configuration
 
 		public void NotifyChanged(object sender, SettingEventArgs e)
 		{
-			Refresh(GenerateKey(e.Name, e.Type, e.PrimaryKey));
+			Refresh(GenerateKey(e.Name, e.NameSpace, e.Type, e.PrimaryKey));
 			SettingChanged?.Invoke(sender, e);
 		}
 
 		public void NotifyRemoved(object sender, SettingEventArgs e)
 		{
-			Remove(GenerateKey(e.Name, e.Type, e.PrimaryKey));
+			Remove(GenerateKey(e.Name, e.NameSpace, e.Type, e.PrimaryKey));
 			SettingChanged?.Invoke(sender, e);
 		}
 

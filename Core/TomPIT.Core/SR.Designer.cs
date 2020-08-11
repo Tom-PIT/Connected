@@ -2167,6 +2167,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Property is not allowed in patch operation.
+        /// </summary>
+        public static string ErrPatchForbidden {
+            get {
+                return ResourceManager.GetString("ErrPatchForbidden", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Path parameter not set..
         /// </summary>
         public static string ErrPathNotSet {
