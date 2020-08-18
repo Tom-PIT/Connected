@@ -40,6 +40,7 @@
 		public static string UIDependencyInjection => "UIDependencyInjection";
 		public static string Report => "Report";
 		public static string SmtpConnection => "SmtpConnection";
+		public static string UnitTest => "UnitTest";
 
 		public static string NameSpacePublicScript => "PublicScript";
 		public static string NameSpaceInternalScript => "InternalScript";
@@ -49,6 +50,7 @@
 		public static string NameSpaceResource => "Resource";
 		public static string NameSpaceMiddleware => "Middleware";
 		public static string NameSpaceDeployment => "Deployment";
+		public static string NameSpaceQuality => "Quality";
 
 		public static string[] ScriptCategories => new string[] { Script, IoCContainer };
 		public static string ResolveNamespace(string category)
@@ -90,6 +92,8 @@
 				return NameSpaceMiddleware;
 			else if (string.Compare(category, Installer, true) == 0)
 				return NameSpaceDeployment;
+			else if (string.Compare(category, UnitTest, true) == 0)
+				return NameSpaceQuality;
 			else
 				return "Default";
 		}

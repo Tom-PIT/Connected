@@ -65,7 +65,7 @@ namespace TomPIT.Security
 
 		private static IAuthorizationResult AuthorizeDefaultUrl(IMiddlewareContext context)
 		{
-			var args = new AuthorizationArgs(context.Services.Identity.IsAuthenticated ? context.Services.Identity.User.Token : Guid.Empty, Claims.DefaultAccessUrl, 0.ToString(), "Url");
+			var args = new AuthorizationArgs(context.Services.Identity.IsAuthenticated ? context.Services.Identity.User.Token : Guid.Empty, Claims.DefaultAccessUrl, 0.ToString(), "Default Url");
 
 			args.Schema.Empty = EmptyBehavior.Alow;
 			args.Schema.Level = AuthorizationLevel.Pessimistic;

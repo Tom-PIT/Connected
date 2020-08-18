@@ -37,8 +37,6 @@
 		public const string DataProviderItems = "TomPIT.MicroServices.Design.Items.DataProviderItems, " + DesignAssembly;
 		public const string EventBindingsItems = "TomPIT.MicroServices.Design.Items.EventBindingsCollection, " + DesignAssembly;
 		public const string FeaturesItems = "TomPIT.MicroServices.Design.Items.FeaturesCollection, " + DesignAssembly;
-		public const string ScenariosItems = "TomPIT.MicroServices.Design.Items.TestScenariosCollection, " + DesignAssembly;
-		public const string TestCasesItems = "TomPIT.MicroServices.Design.Items.TestCasesCollection, " + DesignAssembly;
 		public const string ScriptSourceItems = "TomPIT.MicroServices.Design.Items.ScriptSourceCollection, " + DesignAssembly;
 		public const string StylesheetItems = "TomPIT.MicroServices.Design.Items.StylesheetCollection, " + DesignAssembly;
 		public const string ScriptItems = "TomPIT.MicroServices.Design.Items.ScriptCollection, " + DesignAssembly;

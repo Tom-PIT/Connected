@@ -39,7 +39,7 @@ namespace TomPIT.Connectivity
 					if (instanceProvider != null)
 						r.DefaultRequestHeaders.Add("TomPITInstanceId", instanceProvider.InstanceId.ToString());
 
-					r.Timeout = TimeSpan.FromSeconds(120);
+					r.Timeout = TimeSpan.FromSeconds(300);
 
 					return r;
 				});
@@ -68,7 +68,7 @@ namespace TomPIT.Connectivity
 					if (instanceProvider != null)
 						r.DefaultRequestHeaders.Add("TomPITInstanceId", instanceProvider.InstanceId.ToString());
 
-					r.Timeout = TimeSpan.FromSeconds(120);
+					r.Timeout = TimeSpan.FromSeconds(300);
 
 					return r;
 				});

@@ -56,9 +56,6 @@
     <Content Update="Views\Ide\Designers\Upload.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-    <Content Update="Views\VersionControl\VersionControl.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\QA\ApiTest.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

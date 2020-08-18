@@ -20,6 +20,7 @@ using TomPIT.MicroServices.IoC;
 using TomPIT.MicroServices.Management;
 using TomPIT.MicroServices.Messaging;
 using TomPIT.MicroServices.Navigation;
+using TomPIT.MicroServices.Quality;
 using TomPIT.MicroServices.Resources;
 using TomPIT.MicroServices.Runtime;
 using TomPIT.MicroServices.Search;
@@ -77,6 +78,8 @@ namespace TomPIT.MicroServices.Design
 				{ ComponentCategories.Installer,       new ItemDescriptor("Installer",        ComponentCategories.Installer,         typeof(Installer))                           { Glyph = "fal fa-inbox-in",           Category = "Infrastructure" ,      Ordinal=510} },
 				{ ComponentCategories.Runtime,       new ItemDescriptor("Runtime",        ComponentCategories.Runtime,         typeof(RuntimeConfiguration))                           { Glyph = "fal fa-cogs",           Category = "Infrastructure" ,      Ordinal=520} },
 				{ ComponentCategories.Management,     new ItemDescriptor("Management",   ComponentCategories.Management,       typeof(ManagementConfiguration))                       { Glyph = "fal fa-cogs",   Category = "Infrastructure" ,     Ordinal=530} },
+
+				{ ComponentCategories.UnitTest,     new ItemDescriptor("Unit Test",   ComponentCategories.UnitTest,       typeof(UnitTest))                       { Glyph = "fal fa-file-code",   Category = "Quality" ,     Ordinal=610} },
 			});
 		}
 

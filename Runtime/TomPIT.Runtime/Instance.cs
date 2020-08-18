@@ -192,7 +192,7 @@ namespace TomPIT
 				/*
 				 * https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-2.2
 				 */
-				o.RequestCultureProviders.Insert(0, new IdentityCultureProvider());
+				o.RequestCultureProviders.Insert(1, new IdentityCultureProvider());
 			});
 
 			app.UseAjaxExceptionMiddleware();

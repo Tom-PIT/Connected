@@ -27,6 +27,10 @@ namespace TomPIT.Data
 
 		public int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
 		{
+			return Execute(operation, e, null);
+		}
+		public int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e, [CIP(CIP.ModelOperationParametersProvider)] object staticArguments)
+		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
 			var descriptor = CreateDescriptor(op, con);
@@ -35,7 +39,8 @@ namespace TomPIT.Data
 
 			w.CommandType = descriptor.Type == CommandTextType.Procedure ? CommandType.StoredProcedure : CommandType.Text;
 
-			BindParameters(w, e, descriptor);
+			BindParameters(w, staticArguments, descriptor, true);
+			BindParameters(w, e, descriptor, false);
 
 			var recordsAffected = w.Execute();
 
@@ -59,10 +64,18 @@ namespace TomPIT.Data
 
 		public List<T> Query([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
 		{
-			return Query<T>(operation, e);
+			return Query(operation, e, null);
+		}
+		public List<T> Query([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e, [CIP(CIP.ModelOperationParametersProvider)] object staticArguments)
+		{
+			return Query<T>(operation, e, staticArguments);
 		}
 
 		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
+		{
+			return Query<R>(operation, e, null);
+		}
+		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e, [CIP(CIP.ModelOperationParametersProvider)] object staticArguments)
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
@@ -72,7 +85,8 @@ namespace TomPIT.Data
 
 			r.CommandType = descriptor.Type == CommandTextType.Procedure ? CommandType.StoredProcedure : CommandType.Text;
 
-			BindParameters(r, e, descriptor);
+			BindParameters(r, staticArguments, descriptor, true);
+			BindParameters(r, e, descriptor, false);
 
 			return r.Query();
 		}
@@ -89,10 +103,18 @@ namespace TomPIT.Data
 
 		public T Select([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
 		{
-			return Select<T>(operation, e);
+			return Select(operation, e, null);
+		}
+		public T Select([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e, [CIP(CIP.ModelOperationParametersProvider)] object staticArguments)
+		{
+			return Select<T>(operation, e, staticArguments);
 		}
 
 		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
+		{
+			return Select<R>(operation, e, null);
+		}
+		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e, [CIP(CIP.ModelOperationParametersProvider)] object staticArguments)
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
@@ -102,7 +124,8 @@ namespace TomPIT.Data
 
 			r.CommandType = descriptor.Type == CommandTextType.Procedure ? CommandType.StoredProcedure : CommandType.Text;
 
-			BindParameters(r, e, descriptor);
+			BindParameters(r, staticArguments, descriptor, true);
+			BindParameters(r, e, descriptor, false);
 
 			return r.Select();
 		}
@@ -169,10 +192,13 @@ namespace TomPIT.Data
 			return parser.Parse(text);
 		}
 
-		private void BindParameters(IDataCommand command, object e, ICommandTextDescriptor descriptor)
+		private void BindParameters(IDataCommand command, object e, ICommandTextDescriptor descriptor, bool reset)
 		{
-			foreach (var parameter in command.Parameters)
-				command.SetParameter(parameter.Name, null);
+			if (reset)
+			{
+				foreach (var parameter in command.Parameters)
+					command.SetParameter(parameter.Name, null);
+			}
 
 			if (e == null)
 				return;
