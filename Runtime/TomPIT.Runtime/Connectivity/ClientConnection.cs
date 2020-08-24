@@ -67,6 +67,9 @@ namespace TomPIT.Connectivity
 			{
 				try
 				{
+					if (Hub.State != HubConnectionState.Disconnected)
+						return false;
+
 					await Hub.StartAsync();
 
 					Connected?.Invoke(this, EventArgs.Empty);

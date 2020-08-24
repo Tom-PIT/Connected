@@ -21,6 +21,10 @@ namespace TomPIT.Distributed
 				Worker.CancelAsync();
 			});
 
+		}
+
+		public void Run()
+		{
 			Worker.RunWorkerAsync();
 		}
 

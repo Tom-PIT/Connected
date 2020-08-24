@@ -32,6 +32,9 @@ namespace TomPIT.Cdn.Events
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
+				if (f.Available <= 0)
+					return;
+
 				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Dequeue");
 
 				var e = new JObject

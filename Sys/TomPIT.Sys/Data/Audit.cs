@@ -14,7 +14,7 @@ namespace TomPIT.Sys.Data
 			if (values.Count == 0)
 				return;
 
-			var items = Query(category, @event, primaryKey);
+			var items = Query(category, null, primaryKey);
 			var newItems = new Dictionary<string, string>();
 
 			if (items.Count > 0)

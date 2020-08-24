@@ -196,7 +196,7 @@ namespace TomPIT.BigData.Transactions
 			{
 				var files = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().QueryFiles(Provider.Block.Partition, PartitionKey, min, max);
 				var target = files.FirstOrDefault(f =>
-					((f.Status == PartitionFileStatus.Open) || f.StartTimestamp <= timestamp)
+					(f.Status == PartitionFileStatus.Open || f.StartTimestamp <= timestamp)
 					&& (f.EndTimestamp == DateTime.MinValue || f.EndTimestamp >= timestamp));
 
 				if (target != null)
@@ -209,6 +209,8 @@ namespace TomPIT.BigData.Transactions
 
 					if (result.Lock == Guid.Empty)
 						return null;
+
+					return result;
 				}
 
 				var fileId = FileManager.CreateFile(Provider.Block.Partition, PartitionKey, timestamp);

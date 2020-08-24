@@ -50,9 +50,9 @@ public class [ENTITY] : DataEntity
 	[ReturnValue]
 	[CacheKey]
     [AuthorizationProperty(AuthorizationKey)]
-	public int Id { get; set; }
+	public long Id { get; set; }
 
-    public RecordState State {get; private set;}
+    public RecordState State {get; set;}
 }
 
 /*
@@ -93,5 +93,5 @@ public sealed class [POLICYATTRIBUTE] : AuthorizationPolicyAttribute
  */
 public class [AUTHMODEL] : AuthorizationModel
 {
-    public int [AUTHKEY] => GetValueFromTarget<int>([ENTITY].AuthorizationKey);
+    public long [AUTHKEY] => GetValueFromTarget<long>([ENTITY].AuthorizationKey);
 }

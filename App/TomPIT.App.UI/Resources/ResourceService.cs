@@ -64,7 +64,12 @@ namespace TomPIT.App.Resources
 			if (c == null || e.Component != c.Token)
 				return;
 
-			foreach (var key in Keys())
+			var keys = Keys();
+
+			if (keys == null)
+				return;
+
+			foreach (var key in keys)
 			{
 				var tokens = key.Split('.', 3);
 

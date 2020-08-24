@@ -22,7 +22,7 @@ namespace TomPIT.Distributed
 
 		protected abstract DispatcherJob<T> CreateWorker(CancellationToken cancel);
 
-		public int Available { get { return Math.Max(0, (WorkerSize * 4) - Queue.Count); } }
+		public int Available { get { return Math.Max(0, WorkerSize * 4) - Queue.Count; } }
 
 		public bool Dequeue(out T item)
 		{
@@ -39,8 +39,9 @@ namespace TomPIT.Distributed
 
 				worker.Completed += OnCompleted;
 
-				if (worker.IsRunning)
-					Jobs.Add(worker);
+				Jobs.Add(worker);
+
+				worker.Run();
 			}
 		}
 
@@ -48,7 +49,13 @@ namespace TomPIT.Distributed
 		{
 			try
 			{
-				Jobs.Remove(sender as DispatcherJob<T>);
+				if (!(sender is DispatcherJob<T> job))
+					return;
+
+				Jobs.Remove(job);
+
+				job.Dispose();
+				job = null;
 			}
 			catch { }
 		}

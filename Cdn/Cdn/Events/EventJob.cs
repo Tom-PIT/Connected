@@ -57,13 +57,14 @@ namespace TomPIT.Cdn.Events
 			if (ms == null)
 				return;
 
+			var ctx = new MicroServiceContext(ms, MiddlewareDescriptor.Current.Tenant.Url);
 			var responses = new List<IOperationResponse>();
 			IDistributedEventMiddleware eventInstance = null;
 
 			if (string.Compare(ed.Name, "$", true) != 0)
 			{
 				var eventName = $"{ms.Name}/{ed.Name}";
-				eventInstance = CreateEventInstance(ed);
+				eventInstance = CreateEventInstance(ctx, ed);
 
 				if (eventInstance != null)
 				{
@@ -87,7 +88,7 @@ namespace TomPIT.Cdn.Events
 							{
 								if (string.Compare(eventName, i.Event, true) == 0)
 								{
-									var result = Invoke(ed, i);
+									var result = Invoke(ctx, ed, i);
 
 									if (result != null && result.Count > 0)
 									{
@@ -157,23 +158,22 @@ namespace TomPIT.Cdn.Events
 			instance.Invoke();
 		}
 
-		private List<IOperationResponse> Invoke(EventDescriptor ed, IEventBinding i)
+		private List<IOperationResponse> Invoke(IMicroServiceContext context, EventDescriptor ed, IEventBinding i)
 		{
 			if (string.IsNullOrEmpty(i.Name))
 				return null;
 
-			var ctx = new MicroServiceContext(i.Configuration().MicroService());
-			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ctx.MicroService.Token, i, i.Name, false);
+			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(i.Configuration().MicroService(), i, i.Name, false);
 
 			if (type == null)
 			{
-				ctx.Services.Diagnostic.Warning(nameof(EventJob), $"{SR.ErrTypeExpected} ({i.Name})", nameof(Invoke));
+				context.Services.Diagnostic.Warning(nameof(EventJob), $"{SR.ErrTypeExpected} ({i.Name})", nameof(Invoke));
 				return null;
 			}
 
 			try
 			{
-				var handler = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IEventMiddleware>(ctx, type, ed.Arguments);
+				var handler = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IEventMiddleware>(context, type, ed.Arguments);
 
 				Invoke(handler, ed.Name);
 
@@ -181,7 +181,7 @@ namespace TomPIT.Cdn.Events
 			}
 			catch (Exception ex)
 			{
-				ctx.Services.Diagnostic.Error(nameof(EventJob), ex.Message, nameof(Invoke));
+				context.Services.Diagnostic.Error(nameof(EventJob), ex.Message, nameof(Invoke));
 			}
 
 			return null;
@@ -234,10 +234,9 @@ namespace TomPIT.Cdn.Events
 			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 		}
 
-		private IDistributedEventMiddleware CreateEventInstance(EventDescriptor eventDescriptor)
+		private IDistributedEventMiddleware CreateEventInstance(IMicroServiceContext context, EventDescriptor eventDescriptor)
 		{
 			var compiler = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>();
-			var context = new MicroServiceContext(eventDescriptor.MicroService, MiddlewareDescriptor.Current.Tenant.Url);
 			var descriptor = ComponentDescriptor.DistributedEvent(context, $"{context.MicroService.Name}/{eventDescriptor.Name}");
 
 			descriptor.Validate();
