@@ -29,20 +29,14 @@ namespace TomPIT.BigData.Transactions
 
 			return true;
 		}
-		private bool _ran = false;
 		protected override Task Process(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				if (_ran)
-					return;
-				_ran = true;
 				var available = f.Available;
 
 				if (available == 0)
 					return;
-				//TODO
-				available = 1;
 
 				var jobs = MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Dequeue(available);
 

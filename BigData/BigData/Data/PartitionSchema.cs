@@ -111,6 +111,8 @@ namespace TomPIT.BigData.Data
 
 				if (field.Key)
 					KeyField = property.Name;
+
+				field.Initialize();
 			}
 
 			if (Fields.FirstOrDefault(f => string.Compare(f.Name, Merger.TimestampColumn, true) == 0) == null)

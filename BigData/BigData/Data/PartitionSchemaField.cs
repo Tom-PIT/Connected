@@ -49,5 +49,10 @@ namespace TomPIT.BigData.Data
 
 			return 0;
 		}
+
+		public virtual void Initialize()
+		{
+
+		}
 	}
 }

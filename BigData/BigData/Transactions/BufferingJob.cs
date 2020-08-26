@@ -64,7 +64,7 @@ namespace TomPIT.BigData.Transactions
 					MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().CreateTransaction(config, array);
 			}
 
-			Complete(item.Partition, middleware.BufferTimeout, items.Max(f => f.Id));
+			Complete(item.Partition, middleware.BufferTimeout, items == null || items.Count == 0 ? 0 : items.Max(f => f.Id));
 		}
 
 		private void Complete(Guid partition, TimeSpan nextVisible, long id)
