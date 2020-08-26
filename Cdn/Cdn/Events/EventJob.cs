@@ -88,7 +88,7 @@ namespace TomPIT.Cdn.Events
 							{
 								if (string.Compare(eventName, i.Event, true) == 0)
 								{
-									var result = Invoke(ctx, ed, i);
+									var result = Invoke(ed, i);
 
 									if (result != null && result.Count > 0)
 									{
@@ -158,11 +158,12 @@ namespace TomPIT.Cdn.Events
 			instance.Invoke();
 		}
 
-		private List<IOperationResponse> Invoke(IMicroServiceContext context, EventDescriptor ed, IEventBinding i)
+		private List<IOperationResponse> Invoke(EventDescriptor ed, IEventBinding i)
 		{
 			if (string.IsNullOrEmpty(i.Name))
 				return null;
 
+			var context = new MicroServiceContext(i.Configuration().MicroService(), MiddlewareDescriptor.Current.Tenant.Url);
 			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(i.Configuration().MicroService(), i, i.Name, false);
 
 			if (type == null)
@@ -175,7 +176,7 @@ namespace TomPIT.Cdn.Events
 			{
 				var handler = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IEventMiddleware>(context, type, ed.Arguments);
 
-				Invoke(handler, ed.Name);
+				handler.Invoke(ed.Name);
 
 				return handler.Responses;
 			}
@@ -185,28 +186,6 @@ namespace TomPIT.Cdn.Events
 			}
 
 			return null;
-		}
-
-		private void Invoke(IEventMiddleware handler, string eventName)
-		{
-			Exception lastError = null;
-
-			for (var i = 0; i < 10; i++)
-			{
-				try
-				{
-					handler.Invoke(eventName);
-					break;
-				}
-				catch (Exception ex)
-				{
-					lastError = ex;
-					Thread.Sleep((i + 1) * 250);
-				}
-			}
-
-			if (lastError != null)
-				throw lastError;
 		}
 
 		protected override void OnError(IQueueMessage item, Exception ex)
