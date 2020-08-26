@@ -39,7 +39,10 @@ namespace TomPIT.Distributed
 
 				worker.Completed += OnCompleted;
 
-				Jobs.Add(worker);
+				lock (Jobs)
+				{
+					Jobs.Add(worker);
+				}
 
 				worker.Run();
 			}
@@ -52,7 +55,10 @@ namespace TomPIT.Distributed
 				if (!(sender is DispatcherJob<T> job))
 					return;
 
-				Jobs.Remove(job);
+				lock (Jobs)
+				{
+					Jobs.Remove(job);
+				}
 
 				job.Dispose();
 				job = null;

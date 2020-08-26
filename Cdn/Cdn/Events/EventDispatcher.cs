@@ -6,7 +6,7 @@ namespace TomPIT.Cdn.Events
 {
 	internal class EventDispatcher : Dispatcher<IQueueMessage>
 	{
-		public EventDispatcher(string resourceGroup, CancellationToken cancel) : base(cancel, 128)
+		public EventDispatcher(string resourceGroup, CancellationToken cancel) : base(cancel, 256)
 		{
 			ResourceGroup = resourceGroup;
 		}
