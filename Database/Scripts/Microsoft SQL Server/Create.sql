@@ -3503,6 +3503,38 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[big_data_buffer_data]'
+GO
+CREATE TABLE [tompit].[big_data_buffer_data]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[buffer] [int] NOT NULL,
+[data] [varbinary] (max) NOT NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_big_data_buffer_data] on [tompit].[big_data_buffer_data]'
+GO
+ALTER TABLE [tompit].[big_data_buffer_data] ADD CONSTRAINT [PK_big_data_buffer_data] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[big_data_buffer_data_que]'
+GO
+CREATE PROCEDURE [tompit].[big_data_buffer_data_que]
+	@buffer bigint
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT * 
+	FROM tompit.big_data_buffer_data WITH (readpast)
+	WHERE buffer = @buffer;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[message_topic_que]'
 GO
 CREATE PROCEDURE [tompit].[message_topic_que]
@@ -3513,6 +3545,21 @@ BEGIN
 	SELECT *
 	FROM tompit.view_message_topic;
 
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[big_data_buffer_data_clr]'
+GO
+CREATE PROCEDURE [tompit].[big_data_buffer_data_clr]
+	@buffer bigint,
+	@id bigint
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.big_data_buffer_data
+	WHERE buffer = @buffer AND id <= @id;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3550,6 +3597,21 @@ BEGIN
 
 	RETURN scope_identity();
 
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[big_data_buffer_data_ins]'
+GO
+CREATE PROCEDURE [tompit].[big_data_buffer_data_ins]
+	@buffer bigint,
+	@data varbinary(max)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.big_data_buffer_data (buffer, data)
+	VALUES (@buffer, @data);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3788,6 +3850,57 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[big_data_buffer]'
+GO
+CREATE TABLE [tompit].[big_data_buffer]
+(
+[id] [int] NOT NULL IDENTITY(1, 1),
+[partition] [uniqueidentifier] NOT NULL,
+[next_visible] [datetime2] NOT NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_big_data_buffer] on [tompit].[big_data_buffer]'
+GO
+ALTER TABLE [tompit].[big_data_buffer] ADD CONSTRAINT [PK_big_data_buffer] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding constraints to [tompit].[big_data_buffer]'
+GO
+ALTER TABLE [tompit].[big_data_buffer] ADD CONSTRAINT [IX_big_data_buffer] UNIQUE NONCLUSTERED  ([partition]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[big_data_buffer_dequeue]'
+GO
+CREATE PROCEDURE [tompit].[big_data_buffer_dequeue]
+	@next_visible datetime,
+	@count int = 32,
+	@date datetime
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	declare @ct table(num bigint);
+
+	with q as
+		(
+			select top (@count) *
+			from tompit.big_data_buffer with (readpast)
+			where next_visible < @date
+			order by next_visible, id
+		)
+	 update  q with (UPDLOCK, READPAST) set
+		next_visible = @next_visible
+	output inserted.id into @ct;
+
+	select * from tompit.big_data_buffer where id IN (select num from @ct);	
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[component_state_analyzer_que]'
 GO
 CREATE PROCEDURE [tompit].[component_state_analyzer_que]
@@ -3824,6 +3937,21 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[big_data_buffer_sel]'
+GO
+CREATE PROCEDURE [tompit].[big_data_buffer_sel]
+	@partition uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 *
+	FROM tompit.big_data_buffer
+	WHERE partition = @partition;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[component_state_index_que]'
 GO
 CREATE PROCEDURE [tompit].[component_state_index_que]
@@ -3849,6 +3977,22 @@ BEGIN
 
 	SELECT *
 	FROM tompit.view_big_data_partition;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[big_data_buffer_upd]'
+GO
+CREATE PROCEDURE [tompit].[big_data_buffer_upd]
+	@id int,
+	@next_visible datetime2(7)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	UPDATE tompit.big_data_buffer SET
+		next_visible = @next_visible
+	WHERE id = @id;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3943,6 +4087,22 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[big_data_buffer_ins]'
+GO
+CREATE PROCEDURE [tompit].[big_data_buffer_ins]
+	@partition uniqueidentifier,
+	@next_visible datetime2(7)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.big_data_buffer (partition, next_visible) 
+	VALUES (@partition, @next_visible);
+
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[blob_commit]'
 GO
 CREATE PROCEDURE [tompit].[blob_commit]
@@ -4002,6 +4162,19 @@ BEGIN
 	FROM tompit.api_test
 	WHERE identifier = @identifier;
 
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[big_data_buffer_que]'
+GO
+CREATE PROCEDURE [tompit].[big_data_buffer_que]
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT * 
+	FROM tompit.big_data_buffer;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -6849,6 +7022,12 @@ GO
 ALTER TABLE [tompit].[auth_token] ADD CONSTRAINT [FK_auth_token_resource_group] FOREIGN KEY ([resource_group]) REFERENCES [tompit].[resource_group] ([id]) ON DELETE CASCADE
 GO
 ALTER TABLE [tompit].[auth_token] ADD CONSTRAINT [FK_auth_token_user] FOREIGN KEY ([user]) REFERENCES [tompit].[user] ([id])
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding foreign keys to [tompit].[big_data_buffer_data]'
+GO
+ALTER TABLE [tompit].[big_data_buffer_data] ADD CONSTRAINT [FK_big_data_buffer_data_big_data_buffer] FOREIGN KEY ([buffer]) REFERENCES [tompit].[big_data_buffer] ([id]) ON DELETE CASCADE
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
