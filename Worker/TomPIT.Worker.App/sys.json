@@ -3,7 +3,7 @@
     {
       "name": "localhost",
       //"url": "http://localhost:44001",
-      "url": "http://sys-app/mpt/sys",
+      "url": "http://sys-app/common/sys",
       "authenticationToken": "defaultAuthenticationToken"
     }
   ],

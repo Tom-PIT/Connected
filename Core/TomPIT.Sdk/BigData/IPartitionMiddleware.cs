@@ -11,5 +11,6 @@ namespace TomPIT.BigData
 	public interface IPartitionMiddleware<T> : IPartitionComponent
 	{
 		List<T> Invoke(List<T> items);
+
 	}
 }

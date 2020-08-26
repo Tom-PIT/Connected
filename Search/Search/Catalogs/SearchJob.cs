@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using System.Collections.Generic;
+using System.Web;
 using Lucene.Net.QueryParsers;
 using Lucene.Net.Search;
 using Newtonsoft.Json.Linq;
@@ -9,6 +10,7 @@ namespace TomPIT.Search.Catalogs
 {
 	internal abstract class SearchJob
 	{
+		private static readonly List<string> SpecialCharacters = new List<string> { @"\", "+", "-", "&&", "||", "!", "(", ")", "{", "}", "[", "]", "^", "\"", "~", "?", ":" };
 		protected SearchJob(ISearchCatalogConfiguration catalog, ISearchOptions options)
 		{
 			Catalog = catalog;
@@ -33,7 +35,7 @@ namespace TomPIT.Search.Catalogs
 			if (string.IsNullOrWhiteSpace(Options.CommandText))
 				return;
 
-			CommandText = PrepareCommandText(HttpUtility.HtmlDecode(Options.CommandText));
+			CommandText = PrepareCommandText(EscapeCommandText(HttpUtility.HtmlDecode(Options.CommandText)));
 
 			searcher.Reader.IncRef();
 
@@ -103,5 +105,16 @@ namespace TomPIT.Search.Catalogs
 		}
 
 		protected ISearchCatalogConfiguration Catalog { get; }
+
+		private string EscapeCommandText(string value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+				return value;
+
+			foreach (var item in SpecialCharacters)
+				value = value.Replace(item, $@"\{item}");
+
+			return value;
+		}
 	}
 }

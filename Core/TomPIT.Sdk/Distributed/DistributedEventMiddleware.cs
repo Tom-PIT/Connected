@@ -15,7 +15,6 @@ namespace TomPIT.Distributed
 				Context.Grant();
 				Validate();
 				OnInvoke();
-				Invoked();
 			}
 			catch (System.ComponentModel.DataAnnotations.ValidationException)
 			{

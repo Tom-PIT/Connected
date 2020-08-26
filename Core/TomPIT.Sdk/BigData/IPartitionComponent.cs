@@ -1,4 +1,5 @@
-﻿using TomPIT.Middleware;
+﻿using System;
+using TomPIT.Middleware;
 
 namespace TomPIT.BigData
 {
@@ -20,5 +21,7 @@ namespace TomPIT.BigData
 	public interface IPartitionComponent : IMiddlewareComponent
 	{
 		TimestampBehavior Timestamp { get; }
+		bool Buffered { get; }
+		TimeSpan BufferTimeout { get; }
 	}
 }

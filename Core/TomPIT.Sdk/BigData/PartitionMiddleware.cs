@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using TomPIT.Annotations.BigData;
@@ -10,6 +11,8 @@ namespace TomPIT.BigData
 	public abstract class PartitionMiddleware<T> : MiddlewareComponent, IPartitionMiddleware<T>
 	{
 		public TimestampBehavior Timestamp { get; protected set; } = TimestampBehavior.Static;
+		public bool Buffered { get; protected set; } = true;
+		public TimeSpan BufferTimeout { get; protected set; } = TimeSpan.FromSeconds(5);
 
 		public List<T> Invoke(List<T> items)
 		{

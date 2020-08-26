@@ -85,6 +85,29 @@ namespace TomPIT.BigData.Transactions
 
 		public void Prepare(IPartitionConfiguration partition, JArray items)
 		{
+			var ctx = new MicroServiceContext(partition.MicroService(), Tenant.Url);
+			var middleware = partition.Middleware(ctx);
+
+			if (middleware == null)
+				CreateTransaction(partition, items);
+			else
+			{
+				var instance = ctx.CreateMiddleware<IPartitionComponent>(middleware);
+
+				if (instance == null || !instance.Buffered)
+					CreateTransaction(partition, items);
+				else
+					BufferItems(instance, partition, items);
+			}
+		}
+
+		private void BufferItems(IPartitionComponent middleware, IPartitionConfiguration configuration, JArray items)
+		{
+			Tenant.GetService<IBufferingService>().Enqueue(configuration.Component, middleware.BufferTimeout, items);
+		}
+
+		public void CreateTransaction(IPartitionConfiguration partition, JArray items)
+		{
 			var parser = new TransactionParser(partition, items);
 
 			parser.Execute();
