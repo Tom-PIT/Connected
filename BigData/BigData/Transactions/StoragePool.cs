@@ -8,7 +8,7 @@ namespace TomPIT.BigData.Transactions
 	internal static class StoragePool
 	{
 		private static Lazy<ConcurrentDictionary<Guid, ConcurrentQueue<StorageWorkerItem>>> _items = new Lazy<ConcurrentDictionary<Guid, ConcurrentQueue<StorageWorkerItem>>>();
-		private static Lazy<Dictionary<Guid, StorageWorker>> _workers = new Lazy<Dictionary<Guid, StorageWorker>>();
+		private static Lazy<ConcurrentDictionary<Guid, StorageWorker>> _workers = new Lazy<ConcurrentDictionary<Guid, StorageWorker>>();
 		public static void Enqueue(StorageWorkerItem item)
 		{
 			var queue = EnsureQueue(item.Block.Partition);
@@ -24,7 +24,7 @@ namespace TomPIT.BigData.Transactions
 		public static CancellationToken Cancel { get; set; }
 
 		private static ConcurrentDictionary<Guid, ConcurrentQueue<StorageWorkerItem>> Items => _items.Value;
-		private static Dictionary<Guid, StorageWorker> Workers => _workers.Value;
+		private static ConcurrentDictionary<Guid, StorageWorker> Workers => _workers.Value;
 
 		public static bool Dequeue(Guid partition, out StorageWorkerItem item)
 		{
@@ -73,7 +73,7 @@ namespace TomPIT.BigData.Transactions
 			try
 			{
 				if (Workers.ContainsKey(worker.Partition))
-					Workers.Remove(worker.Partition);
+					Workers.TryRemove(worker.Partition, out StorageWorker _);
 
 				worker.Dispose();
 				worker = null;

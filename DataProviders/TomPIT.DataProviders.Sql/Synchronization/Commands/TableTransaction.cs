@@ -68,7 +68,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 			return column.DataType switch
 			{
 				DbType.AnsiString => $"[varchar]({ResolveColumnLength(column)}",
-				DbType.Binary => column.IsVersion ? "[timestamp]" : $"[binary]({ResolveColumnLength(column)}",
+				DbType.Binary => column.IsVersion ? "[timestamp]" : $"[binary]({ResolveColumnLength(column)})",
 				DbType.Byte => "[tinyint]",
 				DbType.Boolean => "[bit]",
 				DbType.Currency => "[money]",

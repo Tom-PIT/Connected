@@ -18,7 +18,7 @@ namespace TomPIT.BigData.Transactions
 
 			if (block == null)
 			{
-				MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Complete(item.PopReceipt, block.Token);
+				MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Complete(item.PopReceipt, new Guid(item.Message));
 				return;
 			}
 

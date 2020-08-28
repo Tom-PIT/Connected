@@ -7,8 +7,6 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoC;
 using TomPIT.Connectivity;
-using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Middleware;
 using TomPIT.Serialization;
 using TomPIT.Services;
@@ -51,31 +49,15 @@ namespace TomPIT.IoC
 				if (string.IsNullOrWhiteSpace(endpoint.Name) || string.IsNullOrWhiteSpace(endpoint.Container))
 					continue;
 
-				Type type = null;
-
-				try
+				var descriptor = new IoCEndpointDescriptor(Tenant)
 				{
-					type = Tenant.GetService<ICompilerService>().ResolveType(microService, endpoint, endpoint.Name, false);
-				}
-				catch (Exception ex)
-				{
-					Tenant.LogError($"{ms.Name}/{endpoint.Configuration().ComponentName()}/{endpoint.Name}", ex.Message, LogCategories.IoC);
-				}
-
-				if (type == null)
-					continue;
-
-				var descriptor = new IoCEndpointDescriptor
-				{
+					Endpoint = endpoint,
 					Component = configuration.Component,
-					Element = endpoint.Id,
-					Type = type
+					MicroService = ms.Token
 				};
 
-				if (Endpoints.ContainsKey(endpoint.Container))
+				if (Endpoints.TryGetValue(endpoint.Container, out List<IoCEndpointDescriptor> list))
 				{
-					var list = Endpoints[endpoint.Container];
-
 					lock (list)
 					{
 						list.Add(descriptor);
@@ -100,10 +82,7 @@ namespace TomPIT.IoC
 					var target = endpoint.Value.FirstOrDefault(f => f.Component == component);
 
 					if (target != null)
-					{
 						endpoint.Value.Remove(target);
-						break;
-					}
 				}
 			}
 		}
@@ -144,18 +123,22 @@ namespace TomPIT.IoC
 
 			var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
 
-			foreach (var endpoint in endpoints)
-			{
-				var endpointInstance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCEndpointMiddleware>(ctx, endpoint.Type, Serializer.Serialize(e));
+			lock (endpoints)
+				foreach (var endpoint in endpoints)
+				{
+					if (endpoint.Type == null)
+						continue;
 
-				if (endpointInstance == null)
-					continue;
+					var endpointInstance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCEndpointMiddleware>(ctx, endpoint.Type, Serializer.Serialize(e));
 
-				if (!endpointInstance.CanHandleRequest())
-					continue;
+					if (endpointInstance == null)
+						continue;
 
-				result.Add(endpointInstance);
-			}
+					if (!endpointInstance.CanHandleRequest())
+						continue;
+
+					result.Add(endpointInstance);
+				}
 
 			return result;
 		}
@@ -171,15 +154,21 @@ namespace TomPIT.IoC
 
 			var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
 
-			foreach (var endpoint in endpoints)
+			lock (endpoints)
 			{
-				var endpointInstance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCEndpointMiddleware>(ctx, endpoint.Type, Serializer.Serialize(e));
+				foreach (var endpoint in endpoints)
+				{
+					if (endpoint.Type == null)
+						continue;
 
-				if (endpointInstance == null)
-					continue;
+					var endpointInstance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCEndpointMiddleware>(ctx, endpoint.Type, Serializer.Serialize(e));
 
-				if (endpointInstance.CanHandleRequest())
-					return true;
+					if (endpointInstance == null)
+						continue;
+
+					if (endpointInstance.CanHandleRequest())
+						return true;
+				}
 			}
 
 			return false;
@@ -200,10 +189,10 @@ namespace TomPIT.IoC
 
 			var key = $"{ms.Name}/{component.Name}/{name}";
 
-			if (!Endpoints.ContainsKey(key))
-				return null;
+			if (Endpoints.TryGetValue(key, out List<IoCEndpointDescriptor> result))
+				return result;
 
-			return Endpoints[key];
+			return null;
 		}
 	}
 }
