@@ -1753,6 +1753,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot obtain lock.
+        /// </summary>
+        public static string ErrLockFail {
+            get {
+                return ResourceManager.GetString("ErrLockFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Login failed. Please try again..
         /// </summary>
         public static string ErrLoginFailed {

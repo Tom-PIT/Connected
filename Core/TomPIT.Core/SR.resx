@@ -1224,4 +1224,7 @@
   <data name="ErrPatchForbidden" xml:space="preserve">
     <value>Property is not allowed in patch operation</value>
   </data>
+  <data name="ErrLockFail" xml:space="preserve">
+    <value>Cannot obtain lock</value>
+  </data>
 </root>
