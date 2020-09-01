@@ -43,8 +43,14 @@ namespace TomPIT.DataProviders.Sql
 			if (Transaction == null || Transaction.Connection == null)
 				return;
 
-			Transaction.Commit();
-			Transaction = null;
+			lock (Transaction)
+			{
+				if (Transaction == null || Transaction.Connection == null)
+					return;
+
+				Transaction.Commit();
+				Transaction = null;
+			}
 		}
 
 		public void Dispose()
@@ -57,29 +63,49 @@ namespace TomPIT.DataProviders.Sql
 			if (Transaction == null || Transaction.Connection == null)
 				return;
 
-			Transaction.Rollback();
-			Transaction = null;
+			lock (Transaction)
+			{
+				if (Transaction == null || Transaction.Connection == null)
+					return;
+
+				Transaction.Rollback();
+				Transaction = null;
+			}
 		}
 
 		public void Open()
 		{
-			if (Connection.State == ConnectionState.Closed)
+			if (Connection.State == ConnectionState.Open)
+				return;
+
+			lock (Connection)
+			{
+				if (Connection.State != ConnectionState.Closed)
+					return;
+
 				Connection.Open();
 
-			if (Transaction?.Connection != null)
-			{
-				return;
-			}
+				if (Transaction?.Connection != null)
+				{
+					return;
+				}
 
-			Transaction = Connection.BeginTransaction(IsolationLevel.Unspecified) as SqlTransaction;
+				Transaction = Connection.BeginTransaction(IsolationLevel.Unspecified) as SqlTransaction;
+			}
 		}
 
 		public void Close()
 		{
 			if (Connection != null && Connection.State == ConnectionState.Open)
 			{
-				Rollback();
-				Connection.Close();
+				lock (Connection)
+				{
+					if (Connection != null && Connection.State == ConnectionState.Open)
+					{
+						Rollback();
+						Connection.Close();
+					}
+				}
 			}
 		}
 

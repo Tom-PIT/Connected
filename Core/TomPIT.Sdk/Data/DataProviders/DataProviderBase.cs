@@ -31,7 +31,10 @@ namespace TomPIT.Data.DataProviders
 			}
 
 			if (c == null)
+			{
+				//TODO: this is probably wrong because it doesn't run in the context scope (it's withour transaction attached)
 				return CreateConnection(command.ConnectionString);
+			}
 
 			return c.Connection;
 		}
@@ -93,10 +96,10 @@ namespace TomPIT.Data.DataProviders
 
 		public virtual int Execute(IDataCommandDescriptor command, IDataConnection connection)
 		{
-			if (connection.Connection.State == ConnectionState.Closed)
-				connection.Open();
-
 			var con = ResolveConnection(command, connection);
+
+			EnsureOpen(connection);
+
 			var com = ResolveCommand(command, con, connection);
 
 			SetupParameters(command, com);
@@ -131,9 +134,6 @@ namespace TomPIT.Data.DataProviders
 
 		protected virtual int Execute(IDataCommandDescriptor command, IDbConnection connection, IDbCommand cmd)
 		{
-			if (connection.State == ConnectionState.Closed)
-				connection.Open();
-
 			return cmd.ExecuteNonQuery();
 		}
 
@@ -145,10 +145,10 @@ namespace TomPIT.Data.DataProviders
 		public virtual JObject Query(IDataCommandDescriptor command, DataTable schema, IDataConnection connection)
 		{
 			var con = ResolveConnection(command, connection);
-			var com = ResolveCommand(command, con, connection);
 
-			if (con.State == ConnectionState.Closed)
-				con.Open();
+			EnsureOpen(connection);
+
+			var com = ResolveCommand(command, con, connection);
 
 			IDataReader rdr = null;
 
@@ -218,6 +218,17 @@ namespace TomPIT.Data.DataProviders
 			}
 
 			return r;
+		}
+
+		private void EnsureOpen(IDataConnection connection)
+		{
+			if (connection == null || connection.Connection == null)
+				return;
+
+			if (connection.Connection.State == ConnectionState.Open)
+				return;
+
+			connection.Open();
 		}
 	}
 }
