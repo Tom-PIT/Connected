@@ -4567,6 +4567,67 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[lock]'
+GO
+CREATE TABLE [tompit].[lock]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[entity] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[lock_timeout] [datetime2] NULL,
+[unlock_key] [uniqueidentifier] NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_lock] on [tompit].[lock]'
+GO
+ALTER TABLE [tompit].[lock] ADD CONSTRAINT [PK_lock] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding constraints to [tompit].[lock]'
+GO
+ALTER TABLE [tompit].[lock] ADD CONSTRAINT [IX_lock] UNIQUE NONCLUSTERED  ([entity]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[lock_lock]'
+GO
+CREATE PROCEDURE [tompit].[lock_lock]
+	@entity nvarchar(128),
+	@timeout datetime2(7),
+	@date datetime2(7)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	IF NOT EXISTS (SELECT * FROM tompit.lock WHERE entity = @entity)
+		INSERT tompit.lock(entity) VALUES (@entity);
+
+	DECLARE @ct TABLE
+	(
+		[unlock_key] [uniqueidentifier] NOT NULL
+	);
+
+	WITH idx AS
+	(
+		SELECT	TOP 1 *
+		FROM	tompit.lock
+		WHERE	entity = @entity
+		AND		(lock_timeout IS NULL OR lock_timeout <= @date)
+	)
+	UPDATE idx SET
+		lock_timeout = @timeout,
+		unlock_key = newid()
+	OUTPUT inserted.unlock_key INTO @ct;
+
+	SELECT TOP 1 *
+	FROM tompit.lock
+	WHERE unlock_key = (SELECT unlock_key FROM @ct);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[blob_que_draft_orphaned]'
 GO
 CREATE PROCEDURE [tompit].[blob_que_draft_orphaned]
@@ -4666,6 +4727,22 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[lock_unlock]'
+GO
+CREATE PROCEDURE [tompit].[lock_unlock]
+	@unlock_key uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	UPDATE tompit.lock SET
+		lock_timeout = NULL,
+		unlock_key = NULL
+	WHERE unlock_key = @unlock_key;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[dev_tool_state_mdf]'
 GO
 CREATE PROCEDURE [tompit].[dev_tool_state_mdf]
@@ -4718,6 +4795,22 @@ SELECT      s.id, s.connection, s.topic, s.created, s.alive, s.instance, t.name 
 FROM        tompit.message_subscriber AS s
 INNER JOIN	tompit.message_topic t on s.topic = t.id
 
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[lock_ping]'
+GO
+CREATE PROCEDURE [tompit].[lock_ping]
+	@unlock_key uniqueidentifier,
+	@timeout datetime2(7)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	UPDATE tompit.lock SET
+		lock_timeout = @timeout
+	WHERE unlock_key = @unlock_key;
+END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
