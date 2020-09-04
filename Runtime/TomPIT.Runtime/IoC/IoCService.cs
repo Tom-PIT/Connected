@@ -65,10 +65,13 @@ namespace TomPIT.IoC
 				}
 				else
 				{
-					Endpoints.TryAdd(endpoint.Container, new List<IoCEndpointDescriptor>
+					lock (Endpoints)
 					{
-						descriptor
-					});
+						Endpoints.TryAdd(endpoint.Container, new List<IoCEndpointDescriptor>
+						{
+							descriptor
+						});
+					}
 				}
 			}
 		}
