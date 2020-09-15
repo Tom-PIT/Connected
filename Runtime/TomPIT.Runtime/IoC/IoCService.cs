@@ -7,6 +7,7 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoC;
 using TomPIT.Connectivity;
+using TomPIT.Diagostics;
 using TomPIT.Middleware;
 using TomPIT.Serialization;
 using TomPIT.Services;
@@ -59,35 +60,41 @@ namespace TomPIT.IoC
 				if (Endpoints.TryGetValue(endpoint.Container, out List<IoCEndpointDescriptor> list))
 				{
 					lock (list)
-					{
 						list.Add(descriptor);
-					}
 				}
 				else
 				{
 					lock (Endpoints)
-					{
-						Endpoints.TryAdd(endpoint.Container, new List<IoCEndpointDescriptor>
+						if (!Endpoints.TryAdd(endpoint.Container, new List<IoCEndpointDescriptor>
 						{
 							descriptor
-						});
-					}
+						}))
+						{
+							if (!Endpoints.TryGetValue(endpoint.Container, out List<IoCEndpointDescriptor> items))
+								Tenant.LogWarning(nameof(IoCService), $"Cannot register endpoint {configuration.ComponentName()}");
+							else
+							{
+								lock (items)
+									items.Add(descriptor);
+							}
+						}
 				}
 			}
 		}
 
 		protected override void OnRemoved(Guid microService, Guid component)
 		{
-			lock (_endpoints)
-			{
+			lock (Endpoints)
 				foreach (var endpoint in Endpoints)
 				{
 					var target = endpoint.Value.FirstOrDefault(f => f.Component == component);
 
 					if (target != null)
-						endpoint.Value.Remove(target);
+					{
+						lock (endpoint.Value)
+							endpoint.Value.Remove(target);
+					}
 				}
-			}
 		}
 
 		public void Invoke(IMiddlewareContext context, IIoCOperation operation, object e = null)
@@ -158,7 +165,6 @@ namespace TomPIT.IoC
 			var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
 
 			lock (endpoints)
-			{
 				foreach (var endpoint in endpoints)
 				{
 					if (endpoint.Type == null)
@@ -172,7 +178,6 @@ namespace TomPIT.IoC
 					if (endpointInstance.CanHandleRequest())
 						return true;
 				}
-			}
 
 			return false;
 		}

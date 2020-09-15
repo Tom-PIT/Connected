@@ -453,6 +453,16 @@ namespace TomPIT.Data
 			return entity;
 		}
 
+		public List<Type> QueryEntities()
+		{
+			return OnQueryEntities();
+		}
+
+		protected virtual List<Type> OnQueryEntities()
+		{
+			return null;
+		}
+
 		public ConcurrencyMode Concurrency { get; set; } = ConcurrencyMode.Enabled;
 	}
 }

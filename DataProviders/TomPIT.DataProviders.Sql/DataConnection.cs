@@ -90,7 +90,7 @@ namespace TomPIT.DataProviders.Sql
 					return;
 				}
 
-				Transaction = Connection.BeginTransaction(IsolationLevel.Unspecified) as SqlTransaction;
+				Transaction = Connection.BeginTransaction(IsolationLevel.ReadCommitted) as SqlTransaction;
 			}
 		}
 

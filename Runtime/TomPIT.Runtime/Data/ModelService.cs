@@ -23,12 +23,15 @@ namespace TomPIT.Data
 
 		public void SynchronizeEntity(IModelConfiguration configuration)
 		{
-			var schema = CreateSchema(configuration);
+			var schemas = CreateSchemas(configuration);
 
-			if (schema.Ignore)
-				return;
+			foreach (var schema in schemas)
+			{
+				if (schema.Ignore)
+					return;
 
-			SynchronizeSchema(configuration, schema);
+				SynchronizeSchema(configuration, schema);
+			}
 		}
 
 		private void SynchronizeSchema(IModelConfiguration configuration, ModelSchema schema)
@@ -83,9 +86,29 @@ namespace TomPIT.Data
 				orm.Synchronize(cs.Value, schema, procedures);
 		}
 
-		private ModelSchema CreateSchema(IModelConfiguration configuration)
+		private List<ModelSchema> CreateSchemas(IModelConfiguration configuration)
 		{
-			var type = configuration.ModelType(new MicroServiceContext(configuration.MicroService()));
+			var ctx = new MicroServiceContext(configuration.MicroService());
+			var type = configuration.Middleware(ctx);
+			var result = new List<ModelSchema>
+			{
+				DiscoverSchema(configuration.ModelType(ctx))
+			};
+
+			var instance = ctx.CreateMiddleware<IModelComponent>(type);
+			var entities = instance.QueryEntities();
+
+			if (entities == null)
+				return result;
+
+			foreach (var entity in entities)
+				result.Add(DiscoverSchema(entity));
+
+			return result;
+		}
+
+		private ModelSchema DiscoverSchema(Type type)
+		{
 			var properties = ConfigurationExtensions.GetMiddlewareProperties(type, true);
 			var result = new ModelSchema();
 

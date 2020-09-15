@@ -140,7 +140,7 @@ namespace TomPIT.Cdn.Events
 			}
 			catch (RuntimeException ex)
 			{
-				ctx.Services.Diagnostic.Error(nameof(EventJob), ex.Message, LogCategories.Worker);
+				ctx.Services.Diagnostic.Error(ed.Name, ex.Message, LogCategories.Cdn);
 			}
 
 			var op = descriptor.Configuration.Operations.FirstOrDefault(f => f.Id == new Guid(descriptor.Element));
@@ -168,7 +168,7 @@ namespace TomPIT.Cdn.Events
 
 			if (type == null)
 			{
-				context.Services.Diagnostic.Warning(nameof(EventJob), $"{SR.ErrTypeExpected} ({i.Name})", nameof(Invoke));
+				context.Services.Diagnostic.Warning(ed.Name, $"{SR.ErrTypeExpected} ({i.Name})", nameof(Invoke));
 				return null;
 			}
 
@@ -182,7 +182,7 @@ namespace TomPIT.Cdn.Events
 			}
 			catch (Exception ex)
 			{
-				context.Services.Diagnostic.Error(nameof(EventJob), ex.Message, nameof(Invoke));
+				context.Services.Diagnostic.Error($"{i.Event}:{i.Name}", ex.Message, LogCategories.Cdn);
 			}
 
 			return null;
@@ -202,7 +202,7 @@ namespace TomPIT.Cdn.Events
 				return;
 			}
 
-			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(EventJob));
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, LogCategories.Cdn);
 
 			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Ping");
 			var d = new JObject

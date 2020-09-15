@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using TomPIT.Middleware;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
@@ -24,5 +25,7 @@ namespace TomPIT.Data
 		int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e, [CIP(CIP.ModelOperationParametersProvider)] object staticArguments);
 
 		public ConcurrencyMode Concurrency { get; }
+
+		List<Type> QueryEntities();
 	}
 }

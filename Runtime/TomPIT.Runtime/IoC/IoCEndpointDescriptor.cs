@@ -9,6 +9,7 @@ namespace TomPIT.IoC
 	{
 		private Type _type = null;
 		private bool _typeInitialized = false;
+		private object _sync = new object();
 		public IoCEndpointDescriptor(ITenant tenant)
 		{
 			Tenant = tenant;
@@ -27,8 +28,12 @@ namespace TomPIT.IoC
 			{
 				if (_type == null && !_typeInitialized)
 				{
-					_typeInitialized = true;
-					_type = Tenant.GetService<ICompilerService>().ResolveType(MicroService, Endpoint, Endpoint.Name, false);
+					lock (_sync)
+						if (_type == null && !_typeInitialized)
+						{
+							_typeInitialized = true;
+							_type = Tenant.GetService<ICompilerService>().ResolveType(MicroService, Endpoint, Endpoint.Name, false);
+						}
 				}
 
 				return _type;
