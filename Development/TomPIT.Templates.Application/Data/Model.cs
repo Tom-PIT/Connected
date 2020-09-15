@@ -15,6 +15,7 @@ namespace TomPIT.MicroServices.Data
 	public class Model : SourceCodeConfiguration, IModelConfiguration
 	{
 		private ListItems<IModelOperation> _operations = null;
+		private ListItems<IModelOperation> _views = null;
 
 		[Items(DesignUtils.ModelOperationItems)]
 		public ListItems<IModelOperation> Operations
@@ -25,6 +26,18 @@ namespace TomPIT.MicroServices.Data
 					_operations = new ListItems<IModelOperation> { Parent = this };
 
 				return _operations;
+			}
+		}
+
+		[Items(DesignUtils.ModelViewItems)]
+		public ListItems<IModelOperation> Views
+		{
+			get
+			{
+				if (_views == null)
+					_views = new ListItems<IModelOperation> { Parent = this };
+
+				return _views;
 			}
 		}
 

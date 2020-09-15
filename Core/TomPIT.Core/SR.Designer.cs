@@ -907,6 +907,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot resolve view name.
+        /// </summary>
+        public static string ErrCannotResolveViewName {
+            get {
+                return ResourceManager.GetString("ErrCannotResolveViewName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot retrieve IControllerProvider.
         /// </summary>
         public static string ErrCannotRetrieveControllerProvider {

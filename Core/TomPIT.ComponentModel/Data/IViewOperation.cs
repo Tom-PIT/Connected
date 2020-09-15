@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel.Data
 {
-	public interface IModelOperation : IText
+	public interface IViewOperation : IText
 	{
 		string Name { get; }
 	}

@@ -13,7 +13,7 @@ namespace TomPIT.Data.DataProviders
 	}
 	public interface IOrmProvider
 	{
-		void Synchronize(string connectionString, IModelSchema model, List<IModelOperationSchema> procedures);
+		void Synchronize(string connectionString, List<IModelSchema> models, List<IModelOperationSchema> views, List<IModelOperationSchema> procedures);
 		ICommandTextDescriptor Parse(string connectionString, IModelOperationSchema operation);
 	}
 }

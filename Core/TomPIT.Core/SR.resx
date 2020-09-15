@@ -1227,4 +1227,7 @@
   <data name="ErrLockFail" xml:space="preserve">
     <value>Cannot obtain lock</value>
   </data>
+  <data name="ErrCannotResolveViewName" xml:space="preserve">
+    <value>Cannot resolve view name</value>
+  </data>
 </root>

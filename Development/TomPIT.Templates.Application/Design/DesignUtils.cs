@@ -51,6 +51,7 @@
 		public const string QueueWorkerItems = "TomPIT.MicroServices.Design.Items.QueueWorkersCollection, " + DesignAssembly;
 		public const string IoCEndpointItems = "TomPIT.MicroServices.Design.Items.IoCEndpointCollection, " + DesignAssembly;
 		public const string ModelOperationItems = "TomPIT.MicroServices.Design.Items.ModelOperationsCollection, " + DesignAssembly;
+		public const string ModelViewItems = "TomPIT.MicroServices.Design.Items.ModelViewsCollection, " + DesignAssembly;
 		public const string ApiOperationListItems = "TomPIT.MicroServices.Design.Items.ApiOperationsItems, " + DesignAssembly;
 		public const string ApiElement = "TomPIT.MicroServices.Design.Dom.ApiElement, " + DesignAssembly;
 		public const string ApiOperationElement = "TomPIT.MicroServices.Design.Dom.ApiOperationElement, " + DesignAssembly;

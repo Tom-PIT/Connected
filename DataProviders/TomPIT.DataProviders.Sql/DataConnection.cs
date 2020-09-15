@@ -128,7 +128,7 @@ namespace TomPIT.DataProviders.Sql
 			get
 			{
 				if (_parser == null)
-					_parser = new CommandTextParser();
+					_parser = new ProcedureTextParser();
 
 				return _parser;
 			}

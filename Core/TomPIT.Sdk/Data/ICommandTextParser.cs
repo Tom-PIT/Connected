@@ -3,7 +3,8 @@
 	public enum CommandTextType
 	{
 		Procedure = 1,
-		Text = 2
+		Text = 2,
+		View = 3
 	}
 
 	public interface ICommandTextParser

@@ -16,16 +16,20 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 		private Dictionary<ConstraintNameType, List<string>> _constraintNames = null;
 		private ExistingModel _existingModel = null;
 
-		public Synchronizer(string connectionString, IModelSchema model, List<IModelOperationSchema> procedures)
+		public Synchronizer(string connectionString, List<IModelSchema> models, List<IModelOperationSchema> views, List<IModelOperationSchema> procedures)
 		{
 			ConnectionString = connectionString;
-			Model = model;
+			Models = models;
 			Procedures = procedures;
+			Views = views;
 		}
+
+		private List<IModelOperationSchema> Views { get; }
 
 		private List<IModelOperationSchema> Procedures { get; }
 		private string ConnectionString { get; }
-		public IModelSchema Model { get; }
+		private List<IModelSchema> Models { get; }
+		public IModelSchema Model { get; set; }
 
 		public ExistingModel ExistingModel
 		{
@@ -77,14 +81,24 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 
 		private void Synchronize()
 		{
-			new SchemaSynchronize(this).Execute();
+			foreach (var model in Models)
+			{
+				if (model.Ignore)
+					continue;
 
-			if (string.IsNullOrWhiteSpace(Model.Type) || string.Compare(Model.Type, SchemaAttribute.SchemaTypeTable, true) == 0)
-				new TableSynchronize(this).Execute();
-			else if (string.Compare(Model.Type, SchemaAttribute.SchemaTypeView, true) == 0)
-				new ViewSynchronize(this).Execute();
-			else
-				throw new NotSupportedException();
+				Model = model;
+
+				_existingModel = null;
+				_constraintNames = null;
+
+				new SchemaSynchronize(this).Execute();
+
+				if (string.IsNullOrWhiteSpace(Model.Type) || string.Compare(Model.Type, SchemaAttribute.SchemaTypeTable, true) == 0)
+					new TableSynchronize(this).Execute();
+			}
+
+			foreach (var view in Views)
+				new ViewSynchronize(this, view.Text).Execute();
 
 			foreach (var procedure in Procedures)
 				new ProcedureSynchronize(this, procedure.Text).Execute();

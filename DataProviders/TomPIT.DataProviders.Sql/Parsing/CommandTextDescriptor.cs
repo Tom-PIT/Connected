@@ -19,7 +19,7 @@ namespace TomPIT.DataProviders.Sql.Parsing
 		private List<ICommandTextVariable> _variables = null;
 		public CommandTextType Type { get; private set; } = CommandTextType.Text;
 		public OperationType Statement { get; private set; } = OperationType.Other;
-		public string Procedure { get; private set; }
+		public string Name { get; private set; }
 		private string Sql { get; set; }
 
 		public List<ICommandTextParameter> Parameters
@@ -44,7 +44,7 @@ namespace TomPIT.DataProviders.Sql.Parsing
 			}
 		}
 
-		public string CommandText => Type == CommandTextType.Procedure ? Procedure : Sql;
+		public string CommandText => Type == CommandTextType.Procedure ? Name : Sql;
 
 		public void Parse(string sql)
 		{
@@ -85,11 +85,18 @@ namespace TomPIT.DataProviders.Sql.Parsing
 
 		private void DiscoverChildren(SqlCodeObject sql)
 		{
-			if (sql is SqlCreateAlterProcedureStatementBase proc)
+			if (sql is SqlCreateAlterProcedureStatementBase)
 				Type = CommandTextType.Procedure;
+			else if (sql is SqlCreateAlterViewStatementBase)
+			{
+				Type = CommandTextType.View;
+				Statement = OperationType.Select;
+			}
 
 			if (sql is SqlProcedureDefinitionForCreate create)
-				Procedure = create.Name.Sql;
+				Name = create.Name.Sql;
+			else if (sql is SqlViewDefinition view)
+				Name = view.Name.Sql;
 
 			if (Statement == OperationType.Other)
 			{

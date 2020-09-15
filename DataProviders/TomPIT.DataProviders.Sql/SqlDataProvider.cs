@@ -106,16 +106,16 @@ namespace TomPIT.DataProviders.Sql
 			new SqlDeploy(context, existing).Deploy();
 		}
 
-		public void Synchronize(string connectionString, IModelSchema model, List<IModelOperationSchema> procedures)
+		public void Synchronize(string connectionString, List<IModelSchema> models, List<IModelOperationSchema> views, List<IModelOperationSchema> procedures)
 		{
-			var sync = new Synchronizer(connectionString, model, procedures);
+			var sync = new Synchronizer(connectionString, models, views, procedures);
 
 			sync.Execute();
 		}
 
 		public ICommandTextDescriptor Parse(string connectionString, IModelOperationSchema operation)
 		{
-			return new CommandTextParser().Parse(operation.Text);
+			return new ProcedureTextParser().Parse(operation.Text);
 		}
 	}
 }

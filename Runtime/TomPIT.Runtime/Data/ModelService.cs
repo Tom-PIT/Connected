@@ -23,25 +23,15 @@ namespace TomPIT.Data
 
 		public void SynchronizeEntity(IModelConfiguration configuration)
 		{
-			var schemas = CreateSchemas(configuration);
-
-			foreach (var schema in schemas)
-			{
-				if (schema.Ignore)
-					return;
-
-				SynchronizeSchema(configuration, schema);
-			}
+			SynchronizeSchema(configuration, CreateSchemas(configuration));
 		}
 
-		private void SynchronizeSchema(IModelConfiguration configuration, ModelSchema schema)
+		private void SynchronizeSchema(IModelConfiguration configuration, List<IModelSchema> schemas)
 		{
 			if (configuration.Connection == Guid.Empty)
 				throw new RuntimeException(nameof(ModelService), $"{SR.ErrModelConnectionNotSet} ({configuration.ComponentName()})", LogCategories.Middleware);
 
-			var connection = Tenant.GetService<IComponentService>().SelectConfiguration(configuration.Connection) as IConnectionConfiguration;
-
-			if (connection == null)
+			if (!(Tenant.GetService<IComponentService>().SelectConfiguration(configuration.Connection) is IConnectionConfiguration connection))
 				throw new RuntimeException(nameof(ModelService), SR.ErrConnectionNotFound, LogCategories.Middleware);
 
 			var ctx = new MicroServiceContext(configuration.MicroService());
@@ -82,15 +72,30 @@ namespace TomPIT.Data
 				}
 			}
 
+			var views = new List<IModelOperationSchema>();
+
+			foreach (var operation in configuration.Views)
+			{
+				var text = Tenant.GetService<IComponentService>().SelectText(ctx.MicroService.Token, operation);
+
+				if (!string.IsNullOrWhiteSpace(text))
+				{
+					views.Add(new ModelOperationSchema
+					{
+						Text = text
+					});
+				}
+			}
+
 			if (provider is IOrmProvider orm)
-				orm.Synchronize(cs.Value, schema, procedures);
+				orm.Synchronize(cs.Value, schemas, views, procedures);
 		}
 
-		private List<ModelSchema> CreateSchemas(IModelConfiguration configuration)
+		private List<IModelSchema> CreateSchemas(IModelConfiguration configuration)
 		{
 			var ctx = new MicroServiceContext(configuration.MicroService());
 			var type = configuration.Middleware(ctx);
-			var result = new List<ModelSchema>
+			var result = new List<IModelSchema>
 			{
 				DiscoverSchema(configuration.ModelType(ctx))
 			};
@@ -129,6 +134,9 @@ namespace TomPIT.Data
 
 				if (!string.IsNullOrWhiteSpace(schema.Type))
 					result.Type = schema.Type;
+
+				if (string.Compare(result.Type, SchemaAttribute.SchemaTypeView, true) == 0)
+					result.Ignore = true;
 			}
 
 			var dependency = type.FindAttribute<DependencyAttribute>();

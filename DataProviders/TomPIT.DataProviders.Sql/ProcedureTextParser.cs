@@ -4,7 +4,7 @@ using TomPIT.DataProviders.Sql.Parsing;
 
 namespace TomPIT.DataProviders.Sql
 {
-	internal class CommandTextParser : ICommandTextParser
+	internal class ProcedureTextParser : ICommandTextParser
 	{
 		public ICommandTextDescriptor Parse(string text)
 		{

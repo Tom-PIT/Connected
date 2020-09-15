@@ -7,7 +7,7 @@ namespace TomPIT.Data
 	{
 		CommandTextType Type { get; }
 		OperationType Statement { get; }
-		string Procedure { get; }
+		string Name { get; }
 
 		List<ICommandTextParameter> Parameters { get; }
 		List<ICommandTextVariable> Variables { get; }

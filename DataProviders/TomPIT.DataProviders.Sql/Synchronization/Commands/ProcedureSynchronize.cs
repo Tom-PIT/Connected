@@ -16,24 +16,24 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 
 		protected override void OnExecute()
 		{
-			var descriptor = new CommandTextParser().Parse(Text);
+			var descriptor = new ProcedureTextParser().Parse(Text);
 
 			if (descriptor.Type == Data.CommandTextType.Text)
 				return;
 
-			if (string.IsNullOrWhiteSpace(descriptor.Procedure))
+			if (string.IsNullOrWhiteSpace(descriptor.Name))
 				throw new RuntimeException(nameof(ProcedureSynchronize), SR.ErrCannotResolveProcedureName, LogCategories.Middleware);
 
 			try
 			{
-				if (new ProcedureExists(Owner, descriptor.Procedure).Execute())
+				if (new ProcedureExists(Owner, descriptor.Name).Execute())
 					AlterProcedure();
 				else
 					CreateProcedure();
 			}
 			catch (Exception ex)
 			{
-				throw new RuntimeException(descriptor.Procedure, ex.Message);
+				throw new RuntimeException(descriptor.Name, ex.Message);
 			}
 		}
 
@@ -41,7 +41,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 		{
 			var command = Owner.CreateCommand();
 
-			command.CommandText = CommandTextParser.ProcedureStatement.Replace(Text, SetCreateProcedureStatement);
+			command.CommandText = ProcedureTextParser.ProcedureStatement.Replace(Text, SetCreateProcedureStatement);
 			command.ExecuteNonQuery();
 		}
 
@@ -49,7 +49,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 		{
 			var command = Owner.CreateCommand();
 
-			command.CommandText = CommandTextParser.ProcedureStatement.Replace(Text, SetAlterProcedureStatement);
+			command.CommandText = ProcedureTextParser.ProcedureStatement.Replace(Text, SetAlterProcedureStatement);
 			command.ExecuteNonQuery();
 		}
 
