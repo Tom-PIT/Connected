@@ -87,6 +87,19 @@ namespace TomPIT.Security
 			return DefaultAuthenticationProvider.Authenticate(authenticationToken);
 		}
 
+		public IClientAuthenticationResult Authenticate(Guid authenticationToken)
+		{
+			foreach (var i in AuthenticationProviders)
+			{
+				var r = i.Authenticate(authenticationToken);
+
+				if (r != null)
+					return r;
+			}
+
+			return DefaultAuthenticationProvider.Authenticate(authenticationToken);
+		}
+
 		public IAuthorizationResult Authorize(IMiddlewareContext context, AuthorizationArgs e)
 		{
 			if (context is IElevationContext ec && ec.State == ElevationContextState.Granted)

@@ -82,7 +82,7 @@ namespace TomPIT.Search
 			{
 				if (string.Compare(prop.Name, name, false) == 0)
 				{
-					if (Types.TryConvert(property.GetValue(this), out T result))
+					if (Types.TryConvert(prop.Value, out T result))
 						return result;
 
 					return default;

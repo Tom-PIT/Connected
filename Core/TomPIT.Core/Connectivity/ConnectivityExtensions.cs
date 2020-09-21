@@ -1,4 +1,6 @@
-﻿namespace TomPIT.Connectivity
+﻿using System;
+
+namespace TomPIT.Connectivity
 {
 	public static class ConnectivityExtensions
 	{
@@ -18,6 +20,16 @@
 			e.Credentials = new BearerCredentials
 			{
 				Token = token
+			};
+
+			return e;
+		}
+
+		public static HttpRequestArgs WithCurrentCredentials(this HttpRequestArgs e, Guid authenticationToken)
+		{
+			e.Credentials = new CurrentCredentials
+			{
+				Token = authenticationToken
 			};
 
 			return e;
