@@ -31,7 +31,7 @@ namespace TomPIT.Search.Catalogs
 		private Scorer Scorer { get; set; }
 		public override void Collect(int doc)
 		{
-			if (!Authorize(doc))
+			if (!Authorize(doc + BaseId))
 				return;
 
 			var score = Scorer.Score();
