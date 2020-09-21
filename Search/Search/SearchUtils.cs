@@ -17,6 +17,7 @@ namespace TomPIT.Search
 		public const string FieldTitle = "title";
 		public const string FieldText = "text";
 		public const string FieldTags = "tags";
+		public const string FieldType = "type";
 		public const string FieldAuthor = "author";
 		public const string FieldDate = "date";
 
@@ -27,7 +28,8 @@ namespace TomPIT.Search
 				 || string.Compare(fieldName, FieldTitle, true) == 0
 				 || string.Compare(fieldName, FieldAuthor, true) == 0
 				 || string.Compare(fieldName, FieldDate, true) == 0
-				 || string.Compare(fieldName, FieldTags, true) == 0;
+				 || string.Compare(fieldName, FieldTags, true) == 0
+				 || string.Compare(fieldName, FieldType, true) == 0;
 		}
 		public static bool IsStaticField(string fieldName)
 		{

@@ -10,5 +10,6 @@ namespace TomPIT.IoC
 		ISearchEntity Search(ISearchEntity searchResult, string content);
 
 		List<string> Properties { get; }
+		bool Authorize(ISearchEntity item);
 	}
 }

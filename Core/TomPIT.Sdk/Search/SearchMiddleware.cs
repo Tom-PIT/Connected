@@ -162,5 +162,29 @@ namespace TomPIT.Search
 		{
 			return new List<T>();
 		}
+
+		public bool Authorize(T item)
+		{
+			var result = OnAuthorize(item);
+
+			if (!result)
+				return false;
+
+			if (item is ISearchEntity entity)
+			{
+				foreach (var dependency in DependencyInjections)
+				{
+					if (!dependency.Authorize(entity))
+						return false;
+				}
+			}
+
+			return true;
+		}
+
+		protected virtual bool OnAuthorize(T item)
+		{
+			return true;
+		}
 	}
 }

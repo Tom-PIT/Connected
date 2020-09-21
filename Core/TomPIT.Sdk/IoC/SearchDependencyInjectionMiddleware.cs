@@ -47,5 +47,15 @@ namespace TomPIT.IoC
 		{
 			return new List<string>();
 		}
+
+		public bool Authorize(ISearchEntity item)
+		{
+			return OnAuthorize(item);
+		}
+
+		protected virtual bool OnAuthorize(ISearchEntity item)
+		{
+			return true;
+		}
 	}
 }

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Web;
 using Lucene.Net.QueryParsers;
-using Lucene.Net.Search;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel.Search;
 using TomPIT.Serialization;
@@ -46,7 +45,7 @@ namespace TomPIT.Search.Catalogs
 				if (Options.Paging.Index > 0)
 					calculatedMax = Options.Paging.Size + (Options.Paging.Index * Options.Paging.Size);
 
-				var collector = TopScoreDocCollector.Create(calculatedMax, true);
+				var collector = new SearchCollector(calculatedMax, searcher.Searcher, Catalog);
 				var parser = CreateParser();
 
 				parser.AllowLeadingWildcard = Options.Parser.AllowLeadingWildcard;
