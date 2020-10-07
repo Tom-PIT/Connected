@@ -1230,4 +1230,7 @@
   <data name="ErrCannotResolveViewName" xml:space="preserve">
     <value>Cannot resolve view name</value>
   </data>
+  <data name="ErrCreateSearchCatalog" xml:space="preserve">
+    <value>Cannot create search catalog middleware</value>
+  </data>
 </root>

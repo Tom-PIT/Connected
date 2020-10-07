@@ -7,9 +7,11 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.ComponentModel.Data;
 using TomPIT.ComponentModel.IoT;
+using TomPIT.ComponentModel.Search;
 using TomPIT.Data;
 using TomPIT.IoT;
 using TomPIT.Middleware;
+using TomPIT.Search;
 using TomPIT.Serialization;
 
 namespace TomPIT.ComponentModel
@@ -64,6 +66,21 @@ namespace TomPIT.ComponentModel
 			var handler = type.GetInterface(middlewareType.FullName);
 
 			return handler.GetGenericArguments()[0];
+		}
+
+		public static Type CatalogType(this ISearchCatalogConfiguration catalog)
+		{
+			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(), catalog, catalog.ComponentName());
+
+			if (type == null)
+				return null;
+
+			var searchHandler = type.GetInterface(typeof(ISearchMiddleware<>).FullName);
+
+			if (searchHandler == null)
+				return null;
+
+			return searchHandler.GetGenericArguments()[0];
 		}
 	}
 }

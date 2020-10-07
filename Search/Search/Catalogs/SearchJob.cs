@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Web;
-using Lucene.Net.QueryParsers;
+﻿using Lucene.Net.QueryParsers;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel.Search;
 using TomPIT.Serialization;
@@ -9,7 +7,6 @@ namespace TomPIT.Search.Catalogs
 {
 	internal abstract class SearchJob
 	{
-		private static readonly List<string> SpecialCharacters = new List<string> { @"\", "+", "-", "&&", "||", "!", "(", ")", "{", "}", "[", "]", "^", "\"", "~", "?", ":" };
 		protected SearchJob(ISearchCatalogConfiguration catalog, ISearchOptions options)
 		{
 			Catalog = catalog;
@@ -24,7 +21,7 @@ namespace TomPIT.Search.Catalogs
 		protected abstract string ParseCommandText();
 
 		protected abstract string PrepareCommandText(string commandText);
-		protected abstract MultiFieldQueryParser CreateParser();
+		protected abstract QueryParser CreateParser();
 
 		public void Search(CatalogSearcher searcher)
 		{
@@ -33,8 +30,6 @@ namespace TomPIT.Search.Catalogs
 
 			if (string.IsNullOrWhiteSpace(Options.CommandText))
 				return;
-
-			CommandText = PrepareCommandText(EscapeCommandText(HttpUtility.HtmlDecode(Options.CommandText)));
 
 			searcher.Reader.IncRef();
 
@@ -48,6 +43,7 @@ namespace TomPIT.Search.Catalogs
 				var collector = new SearchCollector(calculatedMax, searcher.Searcher, Catalog);
 				var parser = CreateParser();
 
+				CommandText = Options.CommandText;
 				parser.AllowLeadingWildcard = Options.Parser.AllowLeadingWildcard;
 
 				var query = parser.Parse(ParseCommandText());
@@ -104,16 +100,5 @@ namespace TomPIT.Search.Catalogs
 		}
 
 		protected ISearchCatalogConfiguration Catalog { get; }
-
-		private string EscapeCommandText(string value)
-		{
-			if (string.IsNullOrWhiteSpace(value))
-				return value;
-
-			foreach (var item in SpecialCharacters)
-				value = value.Replace(item, $@"\{item}");
-
-			return value;
-		}
 	}
 }

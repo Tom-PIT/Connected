@@ -64,6 +64,8 @@ namespace TomPIT.Cdn.Events
 			if (string.Compare(ed.Name, "$", true) != 0)
 			{
 				var eventName = $"{ms.Name}/{ed.Name}";
+				var targets = EventHandlers.Query(eventName);
+
 				eventInstance = CreateEventInstance(ctx, ed);
 
 				if (eventInstance != null)
@@ -73,8 +75,6 @@ namespace TomPIT.Cdn.Events
 
 					eventInstance.Invoke();
 				}
-
-				var targets = EventHandlers.Query(eventName);
 
 				if (targets != null)
 				{

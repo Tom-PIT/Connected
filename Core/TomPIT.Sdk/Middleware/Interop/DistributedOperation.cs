@@ -17,7 +17,7 @@ namespace TomPIT.Middleware.Interop
 		private IMiddlewareCallback _callback = null;
 		private List<IOperationResponse> _responses = null;
 		[Obsolete("Please use parameterless constructor")]
-		protected DistributedOperation([CIP(CIP.ApiOperationProvider)]string callbackPath)
+		protected DistributedOperation([CIP(CIP.ApiOperationProvider)] string callbackPath)
 		{
 			CallbackPath = callbackPath;
 		}
@@ -115,9 +115,6 @@ namespace TomPIT.Middleware.Interop
 					OnAuthorizing();
 					OnAuthorize();
 					OnBeginInvoke();
-
-					if (!((MiddlewareCallback)Callback).Attached)
-						Context.Services.Cdn.Events.TriggerEvent("$", this, Callback);
 				}
 				else
 				{
@@ -126,6 +123,9 @@ namespace TomPIT.Middleware.Interop
 				}
 
 				Invoked();
+
+				if (OperationTarget == DistributedOperationTarget.Distributed && !((MiddlewareCallback)Callback).Attached)
+					Context.Services.Cdn.Events.TriggerEvent("$", this, Callback);
 			}
 			catch (System.ComponentModel.DataAnnotations.ValidationException)
 			{

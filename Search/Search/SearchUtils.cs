@@ -49,24 +49,9 @@ namespace TomPIT.Search
 			return type.CreateInstance<ISearchMiddleware<T>>();
 		}
 
-		public static Type CatalogType(this ISearchCatalogConfiguration catalog)
-		{
-			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(), catalog, catalog.ComponentName());
-
-			if (type == null)
-				return null;
-
-			var searchHandler = type.GetInterface(typeof(ISearchMiddleware<>).FullName);
-
-			if (searchHandler == null)
-				return null;
-
-			return searchHandler.GetGenericArguments()[0];
-		}
-
 		public static List<PropertyInfo> CatalogProperties(this ISearchCatalogConfiguration catalog)
 		{
-			var type = CatalogType(catalog);
+			var type = catalog.CatalogType();
 
 			if (type == null)
 				return null;

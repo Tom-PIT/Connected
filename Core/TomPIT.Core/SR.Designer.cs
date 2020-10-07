@@ -1105,6 +1105,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot create search catalog middleware.
+        /// </summary>
+        public static string ErrCreateSearchCatalog {
+            get {
+                return ResourceManager.GetString("ErrCreateSearchCatalog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cyclic reference detected with another Micro service.
         /// </summary>
         public static string ErrCyclicReference {

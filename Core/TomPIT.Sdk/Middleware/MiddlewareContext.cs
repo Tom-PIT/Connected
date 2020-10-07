@@ -259,7 +259,7 @@ namespace TomPIT.Middleware
 
 		void IElevationContext.Revoke()
 		{
-			_elevationState = ElevationContextState.Granted;
+			_elevationState = ElevationContextState.Revoked;
 		}
 
 		public T OpenModel<T>() where T : IModelComponent
