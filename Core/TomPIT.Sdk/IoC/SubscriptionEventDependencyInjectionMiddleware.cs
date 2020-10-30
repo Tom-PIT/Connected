@@ -6,12 +6,22 @@ namespace TomPIT.IoC
 {
 	public abstract class SubscriptionEventDependencyInjectionMiddleware : MiddlewareObject, ISubscriptionEventDependencyInjectionMiddleware
 	{
-		public List<IRecipient> Invoke(List<IRecipient> recipients)
+		public void Invoke(List<IRecipient> recipients)
 		{
-			return OnInvoke(recipients);
+			OnInvoke(recipients);
 		}
 
 		protected virtual List<IRecipient> OnInvoke(List<IRecipient> recipients)
+		{
+			return recipients;
+		}
+
+		public List<IRecipient> QueryRecipients(List<IRecipient> recipients)
+		{
+			return OnQueryRecipients(recipients);
+		}
+
+		protected virtual List<IRecipient> OnQueryRecipients(List<IRecipient> recipients)
 		{
 			return recipients;
 		}

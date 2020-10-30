@@ -112,7 +112,8 @@ namespace TomPIT.Sys.Data
 		public IComponent SelectByNameSpace(Guid microService, string nameSpace, string name)
 		{
 			var r = Where(f => f.MicroService == microService && string.Compare(f.Name, name, true) == 0
-				 && string.Compare(f.NameSpace, nameSpace, true) == 0);
+				 && string.Compare(f.NameSpace, nameSpace, true) == 0
+				 && f.LockVerb != LockVerb.Delete);
 
 			if (r != null && r.Count > 0)
 			{

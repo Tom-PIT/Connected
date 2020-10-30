@@ -12,18 +12,22 @@ namespace TomPIT.Security
 
 		IClientAuthenticationResult Authenticate(string user, string password);
 		IClientAuthenticationResult Authenticate(string authenticationToken);
+		IClientAuthenticationResult Authenticate(Guid authenticationToken);
 		bool IsInRole(Guid user, string role);
 		void RegisterProvider(IAuthorizationProvider provider);
 		List<IAuthorizationProvider> QueryProviders();
 		void RegisterDescriptor(IPermissionDescriptor descriptor);
 		List<IPermissionDescriptor> QueryDescriptors();
 
-		PermissionValue GetPermissionValue(Guid evidence, string schema, string claim);
-		PermissionValue GetPermissionValue(Guid evidence, string schema, string claim, string descriptor, string primaryKey);
+		PermissionValue GetPermissionValue(string evidence, string schema, string claim, string descriptor);
+		PermissionValue GetPermissionValue(string evidence, string schema, string claim, string descriptor, string primaryKey);
 		void RegisterAuthenticationProvider(IAuthenticationProvider provider);
 		void Authorize(ISiteMapContainer container);
 
 		List<IMembership> QueryMembership(Guid user);
 		List<IMembership> QueryMembershipForRole(Guid role);
+
+		void AuthorizePolicies(IMiddlewareContext context, object instance);
+		void AuthorizePolicies(IMiddlewareContext context, object instance, string method);
 	}
 }

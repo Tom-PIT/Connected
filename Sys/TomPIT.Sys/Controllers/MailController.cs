@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using TomPIT.Cdn;
 using TomPIT.Sys.Data;
 
@@ -30,7 +30,7 @@ namespace TomPIT.Sys.Controllers
 				{
 					var property = header.First as JProperty;
 
-					sb.AppendLine(string.Format("{0}={1}", property.Name, property.Value<string>()));
+					sb.AppendLine(string.Format("{0}={1}", property.Name, property.Value));
 				}
 
 				headers = sb.ToString();

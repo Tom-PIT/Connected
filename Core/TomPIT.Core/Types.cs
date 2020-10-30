@@ -2,8 +2,11 @@
 using System.Collections;
 using System.Data;
 using System.Globalization;
+using System.Reflection;
 using System.Text;
+using TomPIT.Annotations.Models;
 using TomPIT.Converters;
+using TomPIT.Reflection;
 
 namespace TomPIT
 {
@@ -141,6 +144,194 @@ namespace TomPIT
 				default:
 					throw new NotSupportedException();
 			}
+		}
+
+		public static Type ToType(DbType type)
+		{
+			switch (type)
+			{
+				case DbType.AnsiString:
+				case DbType.AnsiStringFixedLength:
+				case DbType.String:
+				case DbType.StringFixedLength:
+				case DbType.Xml:
+					return typeof(string);
+				case DbType.Binary:
+				case DbType.Object:
+					return typeof(object);
+				case DbType.Boolean:
+					return typeof(bool);
+				case DbType.Byte:
+					return typeof(byte);
+				case DbType.Int16:
+					return typeof(short);
+				case DbType.Int32:
+					return typeof(int);
+				case DbType.SByte:
+					return typeof(sbyte);
+				case DbType.UInt16:
+					return typeof(ushort);
+				case DbType.UInt32:
+					return typeof(uint);
+				case DbType.Int64:
+					return typeof(long);
+				case DbType.UInt64:
+					return typeof(ulong);
+				case DbType.Currency:
+				case DbType.Decimal:
+					return typeof(decimal);
+				case DbType.Double:
+					return typeof(double);
+				case DbType.Single:
+					return typeof(float);
+				case DbType.VarNumeric:
+					return typeof(decimal);
+				case DbType.Date:
+				case DbType.DateTime:
+				case DbType.DateTime2:
+				case DbType.Time:
+					return typeof(DateTime);
+				case DbType.DateTimeOffset:
+					return typeof(DateTimeOffset);
+				case DbType.Guid:
+					return typeof(Guid);
+				default:
+					throw new NotSupportedException();
+			}
+		}
+
+		public static DbType ToDbType(PropertyInfo property)
+		{
+			var type = property.PropertyType;
+
+			if (type.IsEnum)
+				type = Enum.GetUnderlyingType(type);
+
+			if (type == typeof(char) || type == typeof(string))
+			{
+				if (property.FindAttribute<VersionAttribute>() != null)
+					return DbType.Binary;
+
+				return DbType.String;
+			}
+			else if (type == typeof(byte))
+				return DbType.Byte;
+			else if (type == typeof(bool))
+				return DbType.Boolean;
+			else if (type == typeof(DateTime))
+			{
+				var att = property.FindAttribute<DateAttribute>();
+
+				if (att == null)
+					return DbType.DateTime2;
+
+				switch (att.Kind)
+				{
+					case DateKind.Date:
+						return DbType.Date;
+					case DateKind.DateTime:
+						return DbType.DateTime;
+					case DateKind.DateTime2:
+						return DbType.DateTime2;
+					case DateKind.SmallDateTime:
+						return DbType.DateTime;
+					case DateKind.Time:
+						return DbType.Time;
+					default:
+						return DbType.DateTime2;
+				}
+			}
+			else if (type == typeof(DateTimeOffset))
+				return DbType.DateTimeOffset;
+			else if (type == typeof(decimal))
+				return DbType.Decimal;
+			else if (type == typeof(double))
+				return DbType.Double;
+			else if (type == typeof(Guid))
+				return DbType.Guid;
+			else if (type == typeof(short))
+				return DbType.Int16;
+			else if (type == typeof(int))
+				return DbType.Int32;
+			else if (type == typeof(long))
+				return DbType.Int64;
+			else if (type == typeof(sbyte))
+				return DbType.SByte;
+			else if (type == typeof(float))
+				return DbType.Single;
+			else if (type == typeof(TimeSpan))
+				return DbType.Time;
+			else if (type == typeof(ushort))
+				return DbType.UInt16;
+			else if (type == typeof(uint))
+				return DbType.UInt32;
+			else if (type == typeof(ulong))
+				return DbType.UInt64;
+			else if (type == typeof(byte[]))
+				return DbType.Binary;
+			else
+				return DbType.Binary;
+		}
+		public static DbType ToDbType(Type type)
+		{
+			var underlyingType = type;
+
+			if (underlyingType.IsEnum)
+				underlyingType = Enum.GetUnderlyingType(underlyingType);
+
+			if (underlyingType == typeof(char) || underlyingType == typeof(string))
+				return DbType.String;
+			else if (underlyingType == typeof(byte))
+				return DbType.Byte;
+			else if (underlyingType == typeof(bool))
+				return DbType.Boolean;
+			else if (underlyingType == typeof(DateTime))
+				return DbType.DateTime2;
+			else if (underlyingType == typeof(DateTimeOffset))
+				return DbType.DateTimeOffset;
+			else if (underlyingType == typeof(decimal))
+				return DbType.Decimal;
+			else if (underlyingType == typeof(double))
+				return DbType.Double;
+			else if (underlyingType == typeof(Guid))
+				return DbType.Guid;
+			else if (underlyingType == typeof(short))
+				return DbType.Int16;
+			else if (underlyingType == typeof(int))
+				return DbType.Int32;
+			else if (underlyingType == typeof(long))
+				return DbType.Int64;
+			else if (underlyingType == typeof(sbyte))
+				return DbType.SByte;
+			else if (underlyingType == typeof(float))
+				return DbType.Single;
+			else if (underlyingType == typeof(TimeSpan))
+				return DbType.Time;
+			else if (underlyingType == typeof(ushort))
+				return DbType.UInt16;
+			else if (underlyingType == typeof(uint))
+				return DbType.UInt32;
+			else if (underlyingType == typeof(ulong))
+				return DbType.UInt64;
+			else if (underlyingType == typeof(byte[]))
+				return DbType.Binary;
+			else
+				return DbType.Binary;
+		}
+		public static DbType ToDbType(DataType type)
+		{
+			return type switch
+			{
+				DataType.String => DbType.String,
+				DataType.Integer => DbType.Int32,
+				DataType.Float => DbType.Single,
+				DataType.Date => DbType.DateTime2,
+				DataType.Bool => DbType.Boolean,
+				DataType.Guid => DbType.Guid,
+				DataType.Binary => DbType.Binary,
+				DataType.Long => DbType.Int64,
+				_ => DbType.String
+			};
 		}
 
 		public static DataType ToDataType(Type type)

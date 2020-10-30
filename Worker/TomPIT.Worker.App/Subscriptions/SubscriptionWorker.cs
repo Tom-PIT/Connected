@@ -10,7 +10,6 @@ namespace TomPIT.Worker.Subscriptions
 {
 	internal class SubscriptionWorker : HostedService
 	{
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
 		private Lazy<List<SubscriptionDispatcher>> _dispatchers = new Lazy<List<SubscriptionDispatcher>>();
 
 		public SubscriptionWorker()
@@ -18,27 +17,35 @@ namespace TomPIT.Worker.Subscriptions
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
 		}
 
-		protected override bool Initialize()
+		protected override bool Initialize(CancellationToken cancel)
 		{
 			if (Instance.State == InstanceState.Initialining)
 				return false;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new SubscriptionDispatcher(i, _cancel));
+				Dispatchers.Add(new SubscriptionDispatcher(i, cancel));
 
 			return true;
 		}
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
 				var jobs = MiddlewareDescriptor.Current.Tenant.GetService<ISubscriptionWorkerService>().DequeueSubscriptions(f.ResourceGroup, f.Available);
 
+				if (cancel.IsCancellationRequested)
+					return;
+
 				if (jobs == null)
 					return;
 
 				foreach (var i in jobs)
+				{
+					if (cancel.IsCancellationRequested)
+						return;
+
 					f.Enqueue(i);
+				}
 			});
 
 			return Task.CompletedTask;

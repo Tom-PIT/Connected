@@ -17,7 +17,7 @@ namespace TomPIT.Search.Services
 	internal class IndexingJob : DispatcherJob<IQueueMessage>
 	{
 		private TimeoutTask _timeout = null;
-		public IndexingJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public IndexingJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -33,7 +33,7 @@ namespace TomPIT.Search.Services
 			{
 				MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Ping(Message.PopReceipt, 300);
 				return Task.CompletedTask;
-			}, TimeSpan.FromMinutes(4));
+			}, TimeSpan.FromMinutes(4), Cancel);
 
 			_timeout.Start();
 
@@ -73,11 +73,11 @@ namespace TomPIT.Search.Services
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(IndexingJob), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(IndexingJob), ex.Message, "Search");
 				return;
 			}
 
-			indexer.Index();
+			indexer.Index(Cancel);
 
 			if (!indexer.Success)
 				MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Ping(queue.PopReceipt, 15);
@@ -86,7 +86,7 @@ namespace TomPIT.Search.Services
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.LogError(nameof(IndexingJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(IndexingJob));
 
 			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "Ping");
 			var d = new JObject

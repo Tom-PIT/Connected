@@ -7,11 +7,11 @@ namespace TomPIT.Rest.Routing
 {
 	internal static class RestRouting
 	{
-		public static void Register(IRouteBuilder routes)
+		public static void Register(IEndpointRouteBuilder routes)
 		{
-			routes.MapRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+			routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
 
-			routes.MapRoute("{microservice}/{api}/{operation}", (t) =>
+			routes.Map("{microservice}/{api}/{operation}", (t) =>
 			{
 				new ApiHandler(t).Invoke();
 

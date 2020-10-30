@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Threading;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -47,9 +48,12 @@ namespace TomPIT
 		public static IMvcBuilder Mvc { get; private set; }
 		private static List<IPlugin> _plugins = null;
 		internal static RequestLocalizationOptions RequestLocalizationOptions { get; private set; }
-
 		public static Guid Id { get; } = Guid.NewGuid();
 		public static InstanceState State { get; private set; } = InstanceState.Initialining;
+		public static CancellationToken Stopping { get; private set; }
+		public static CancellationToken Stopped { get; private set; }
+
+		private static bool CorsEnabled { get; set; }
 		public static void Initialize(IServiceCollection services, ServicesConfigurationArgs e)
 		{
 			Shell.RegisterConfigurationType(typeof(ClientSys));
@@ -87,9 +91,7 @@ namespace TomPIT
 
 			Mvc = services.AddMvc((o) =>
 			{
-				o.EnableEndpointRouting = false;
 				e.ConfigureMvc?.Invoke(o);
-
 			}).AddNewtonsoftJson()
 			.ConfigureApplicationPartManager((m) =>
 			{
@@ -122,7 +124,28 @@ namespace TomPIT
 				}
 			});
 
-			Mvc.AddControllersAsServices();
+			if (e.CorsEnabled)
+			{
+				CorsEnabled = true;
+
+				services.AddCors(options => options.AddPolicy("TomPITPolicy",
+					builder =>
+					{
+						var setting = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().Select("Cors Origins", null, null, null);
+						var origin = new string[] { "http://localhost" };
+
+						if (setting != null && !string.IsNullOrWhiteSpace(setting.Value))
+							origin = setting.Value.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+
+						builder.AllowAnyMethod()
+						.AllowAnyHeader()
+						.WithOrigins(origin)
+						.AllowCredentials();
+					}));
+			}
+
+			services.AddControllersWithViews();
+			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
 			services.AddAuthorization(options =>
 			{
@@ -130,11 +153,9 @@ namespace TomPIT
 				policy.Requirements.Add(new ClaimRequirement(Claims.ImplementMicroservice)));
 			});
 
-			services.AddSingleton<IAuthorizationHandler, ClaimHandler>();
-			services.AddTransient<IActionContextAccessor, ActionContextAccessor>();
-			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-			services.ConfigureOptions(typeof(EmbeddedResourcesConfiguration));
 
+			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+			services.AddSingleton<IAuthorizationHandler, ClaimHandler>();
 			services.AddSingleton<IHostedService, FlushingService>();
 
 			foreach (var plugin in Plugins)
@@ -142,7 +163,23 @@ namespace TomPIT
 		}
 		public static void Configure(InstanceType type, IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler)
 		{
+			RuntimeService._host = app;
 			app.UseMiddleware<AuthenticationCookieMiddleware>();
+
+			var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
+
+			if (lifetime != null)
+			{
+				Stopping = lifetime.ApplicationStopping;
+				Stopped = lifetime.ApplicationStopped;
+			}
+			ConfigureStaticFiles(app, env);
+
+			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
+			app.UseRouting();
+
+			if (CorsEnabled)
+				app.UseCors("TomPITPolicy");
 
 			app.UseAuthentication();
 			app.UseAuthorization();
@@ -155,43 +192,16 @@ namespace TomPIT
 				/*
 				 * https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-2.2
 				 */
-				o.RequestCultureProviders.Insert(0, new IdentityCultureProvider());
+				o.RequestCultureProviders.Insert(1, new IdentityCultureProvider());
 			});
 
 			app.UseAjaxExceptionMiddleware();
-			//var assetsDirectors = $"{env.WebRootPath}\\Assets";
-
-			//if (Directory.Exists(assetsDirectors))
-			//{
-			//	app.UseStaticFiles(new StaticFileOptions(new SharedOptions
-			//	{
-			//		RequestPath = "/sys/assets",
-			//		FileProvider = new PhysicalFileProvider($"{env.WebRootPath}\\Assets")
-			//	}));
-			//}
-			var cachePeriod = env.IsDevelopment() ? "600" : "604800";
-
-			var contentTypeProvider = new FileExtensionContentTypeProvider();
-
-			contentTypeProvider.Mappings[".webmanifest"] = "application/manifest+json";
-
-			app.UseStaticFiles(new StaticFileOptions
-			{
-				OnPrepareResponse = ctx =>
-				{
-					ctx.Context.Response.Headers.Append("Cache-Control", $"public, max-age={cachePeriod}");
-				},
-				ContentTypeProvider = contentTypeProvider
-			});
-
-			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
 
 			RuntimeBootstrapper.Run();
 
-			Shell.GetService<IRuntimeService>().Initialize(type, env);
+			Shell.GetService<IRuntimeService>().Initialize(type, Shell.GetConfiguration<IClientSys>().Platform, env);
 			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
-
-			app.UseMvc(routes =>
+			app.UseEndpoints(routes =>
 			{
 				foreach (var i in Plugins)
 					i.RegisterRoutes(routes);
@@ -204,6 +214,27 @@ namespace TomPIT
 
 			foreach (var plugin in Plugins)
 				plugin.Initialize(app, env);
+		}
+
+		private static void ConfigureStaticFiles(IApplicationBuilder app, IWebHostEnvironment env)
+		{
+			var cachePeriod = env.IsDevelopment() ? "600" : "604800";
+			var contentTypeProvider = new FileExtensionContentTypeProvider();
+
+			contentTypeProvider.Mappings[".webmanifest"] = "application/manifest+json";
+
+			var staticOptions = new StaticFileOptions
+			{
+				OnPrepareResponse = ctx =>
+				{
+					ctx.Context.Response.Headers.Append("Cache-Control", $"public, max-age={cachePeriod}");
+				},
+				ContentTypeProvider = contentTypeProvider,
+			};
+
+			EmbeddedResourcesConfiguration.Configure(env, staticOptions);
+
+			app.UseStaticFiles(staticOptions);
 		}
 		private static void OnTenantInitialized(object sender, TenantArgs e)
 		{

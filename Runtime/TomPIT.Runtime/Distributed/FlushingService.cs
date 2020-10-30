@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Analytics;
 using TomPIT.Connectivity;
@@ -13,7 +14,11 @@ namespace TomPIT.Distributed
 			IntervalTimeout = TimeSpan.FromSeconds(3);
 		}
 
-		protected override Task Process()
+		protected override bool Initialize(CancellationToken cancel)
+		{
+			return Instance.State == InstanceState.Running;
+		}
+		protected override Task Process(CancellationToken token)
 		{
 			try
 			{
@@ -22,6 +27,9 @@ namespace TomPIT.Distributed
 				Parallel.ForEach(connections,
 					(i) =>
 					{
+						if (token.IsCancellationRequested)
+							return;
+
 						var connection = Shell.GetService<IConnectivityService>().SelectTenant(i.Url);
 
 						if (connection.GetService<ILoggingService>() is LoggingService l)

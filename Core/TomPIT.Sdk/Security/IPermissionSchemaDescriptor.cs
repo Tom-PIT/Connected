@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace TomPIT.Security
+﻿namespace TomPIT.Security
 {
 	public interface IPermissionSchemaDescriptor
 	{
-		Guid Id { get; }
+		string Id { get; }
 		string Title { get; }
 		string Avatar { get; }
 		string Description { get; }

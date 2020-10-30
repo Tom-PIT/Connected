@@ -24,30 +24,35 @@
        text = JavaScriptEncoder.Default.Encode(Environment.NewLine);
    }
 }
+
 <script>
-    var modelUri = new monaco.Uri({
-        scheme: 'inmemory',
-        authority: '@ms.Name',
-        path:'@uriPath'
-    });
+    initTextEditor(() => {
+        var modelUri = new monaco.Uri({
+            scheme: 'inmemory',
+            authority: '@ms.Name',
+            path:'@uriPath'
+        });
 
-    var model = monaco.editor.getModel(modelUri);
+        var model = monaco.editor.getModel(modelUri);
 
-    if (model == null) {
-        model = monaco.editor.createModel('@text', '@Model.Language', modelUri);
+        if (model == null) {
+            model = monaco.editor.createModel('@text', '@Model.Language', modelUri);
+            model.fileName = '@Model.Element.Title';
+            model.microService = '@Model.Environment.Context.MicroService.Name';
 
-        if (!textEditorState.isLanguageInitialized('@Model.Language')) {
-            textEditorState.initializeLanguage('@Model.Language', {
-                'codeAction': @Html.TP().JavaScript.Bool((features & LanguageFeature.CodeAction) == LanguageFeature.CodeAction),
-                'completionItem': @Html.TP().JavaScript.Bool((features & LanguageFeature.CompletionItem) == LanguageFeature.CompletionItem),
-                'declaration': @Html.TP().JavaScript.Bool((features & LanguageFeature.Declaration) == LanguageFeature.Declaration),
-                'signatureHelp': @Html.TP().JavaScript.Bool((features & LanguageFeature.SignatureHelp) == LanguageFeature.SignatureHelp),
-                'documentSymbol': @Html.TP().JavaScript.Bool((features & LanguageFeature.DocumentSymbol) == LanguageFeature.DocumentSymbol)
-            });
+            textEditorWidget.activateModel(model.id, model.fileName, model.microService);
+
+            if (!textEditorState.isLanguageInitialized('@Model.Language')) {
+                textEditorState.initializeLanguage('@Model.Language', {
+                    'codeAction': @Html.TP().JavaScript.Bool((features & LanguageFeature.CodeAction) == LanguageFeature.CodeAction),
+                    'completionItem': @Html.TP().JavaScript.Bool((features & LanguageFeature.CompletionItem) == LanguageFeature.CompletionItem),
+                    'declaration': @Html.TP().JavaScript.Bool((features & LanguageFeature.Declaration) == LanguageFeature.Declaration),
+                    'definition': @Html.TP().JavaScript.Bool((features & LanguageFeature.Definition) == LanguageFeature.Definition),
+                    'signatureHelp': @Html.TP().JavaScript.Bool((features & LanguageFeature.SignatureHelp) == LanguageFeature.SignatureHelp),
+                    'documentSymbol': @Html.TP().JavaScript.Bool((features & LanguageFeature.DocumentSymbol) == LanguageFeature.DocumentSymbol)
+                });
+            }
         }
-    }
-    else
-        model.setValue('@text');
 
     textEditorState.setTargetProperty('@Model.PropertyName');
 
@@ -56,6 +61,16 @@
         debug: {
             url: '@url'
         },
+        @if (Model.AmbientProvider != null && Model.AmbientProvider.ToolbarActions.Count > 0) {
+            <text>
+        actions: [
+          @foreach (var action in Model.AmbientProvider.ToolbarActions)
+          {
+                  @:{text: '@action.Text', glyph: '@action.Glyph', action: '@action.Action'},
+              }
+        ],
+        </text>
+            }
         language:'@Model.Language'
     });
 
@@ -173,4 +188,6 @@
     }
     </text>
     }
+    });
+
 </script>

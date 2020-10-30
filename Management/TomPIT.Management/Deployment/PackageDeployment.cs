@@ -10,6 +10,7 @@ using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
 using TomPIT.Deployment;
+using TomPIT.Design;
 using TomPIT.Design.Serialization;
 using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
@@ -129,7 +130,7 @@ namespace TomPIT.Management.Deployment
 			DeployBlobs();
 			//DeployStrings();
 
-			Tenant.GetService<IComponentDevelopmentService>().DropRuntimeState(Package.MicroService.Token);
+			Tenant.GetService<IDesignService>().Components.DropRuntimeState(Package.MicroService.Token);
 
 			var ms = Tenant.GetService<IMicroServiceService>().Select(m.Token);
 
@@ -146,7 +147,7 @@ namespace TomPIT.Management.Deployment
 
 		private void DeployFolders(FolderModel model)
 		{
-			Tenant.GetService<IComponentDevelopmentService>().RestoreFolder(model.Folder.MicroService, model.Folder.Token, model.Folder.Name, model.Folder.Parent);
+			Tenant.GetService<IDesignService>().Components.RestoreFolder(model.Folder.MicroService, model.Folder.Token, model.Folder.Name, model.Folder.Parent);
 
 			foreach (var i in model.Items)
 				DeployFolders(i);
@@ -177,10 +178,16 @@ namespace TomPIT.Management.Deployment
 					}
 
 					if (isStringTable && runtimeConfiguration != null)
-						MergeTranslations(i, runtimeConfiguration, state);
+					{
+						try
+						{
+							MergeTranslations(i, runtimeConfiguration, state);
+						}
+						catch { }
+					}
 				}
 
-				Tenant.GetService<IComponentDevelopmentService>().Restore(Package.MicroService.Token, i, configuration, runtimeConfiguration);
+				Tenant.GetService<IDesignService>().Components.Restore(Package.MicroService.Token, i, configuration, runtimeConfiguration);
 			}
 
 			var connections = Tenant.GetService<IComponentService>().QueryComponents(Package.MicroService.Token, ComponentCategories.Connection);
@@ -199,7 +206,7 @@ namespace TomPIT.Management.Deployment
 						if (pi != null && pi.CanWrite)
 							pi.SetValue(config, cs);
 
-						Tenant.GetService<IComponentDevelopmentService>().Update(config, new ComponentUpdateArgs(EnvironmentMode.Design, false));
+						Tenant.GetService<IDesignService>().Components.Update(config, new ComponentUpdateArgs(EnvironmentMode.Design, false));
 					}
 				}
 			}
@@ -246,7 +253,7 @@ namespace TomPIT.Management.Deployment
 					if (dp == null)
 						throw new RuntimeException(string.Format("{0} ({1})", SR.ErrDataProviderNotFound, config.DataProvider));
 
-					if (dp.SupportsDeploy)
+					if (dp is IDeployDataProvider deploy)
 					{
 						var cs = config.ConnectionString;
 
@@ -255,7 +262,7 @@ namespace TomPIT.Management.Deployment
 
 						cs = Tenant.GetService<ICryptographyService>().Decrypt(cs);
 
-						dp.Deploy(new DatabaseDeploymentContext(Tenant, Package, cs, i));
+						deploy.Deploy(new DatabaseDeploymentContext(Tenant, Package, cs, i));
 					}
 				}
 			}
@@ -270,7 +277,7 @@ namespace TomPIT.Management.Deployment
 		 * first, load existing state. if existing state is available it means we have an invalid installation state
 		 * and we won't create another state
 		 */
-			LastKnownState = Tenant.GetService<IComponentDevelopmentService>().SelectRuntimeState(Package.MicroService.Token);
+			LastKnownState = Tenant.GetService<IDesignService>().Components.SelectRuntimeState(Package.MicroService.Token);
 
 			var existing = Tenant.GetService<IMicroServiceService>().Select(Package.MicroService.Token);
 			/*
@@ -289,8 +296,8 @@ namespace TomPIT.Management.Deployment
 		 */
 			if (LastKnownState == null)
 			{
-				Tenant.GetService<IComponentDevelopmentService>().SaveRuntimeState(existing.Token);
-				LastKnownState = Tenant.GetService<IComponentDevelopmentService>().SelectRuntimeState(Package.MicroService.Token);
+				Tenant.GetService<IDesignService>().Components.SaveRuntimeState(existing.Token);
+				LastKnownState = Tenant.GetService<IDesignService>().Components.SelectRuntimeState(Package.MicroService.Token);
 			}
 			/*
 		 * now drop the microservice and all dependent objects. note that permissions and settings are not dropped because they 

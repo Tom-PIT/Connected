@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TomPIT.Data.Sql;
 using TomPIT.IoT;
 using TomPIT.SysDb.IoT;
@@ -29,7 +29,8 @@ namespace TomPIT.SysDb.Sql.IoT
 				var o = new JObject
 				{
 					{ "hub", hub },
-					{ "field", i.Field }
+					{ "field", i.Field },
+					{ "device", i.Device }
 				};
 
 				if (!string.IsNullOrWhiteSpace(i.Value))

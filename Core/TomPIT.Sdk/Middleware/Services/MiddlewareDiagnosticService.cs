@@ -4,6 +4,7 @@ using System.Net;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Diagnostics;
 using TomPIT.Diagnostics;
+using TomPIT.Diagostics;
 using TomPIT.Exceptions;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
@@ -144,18 +145,26 @@ namespace TomPIT.Middleware.Services
 
 		public RuntimeException Exception(string message, int eventId)
 		{
-			return new RuntimeException(Context.GetType().ShortName(), message)
+			var result = new RuntimeException(Context.GetType().ShortName(), message)
 			{
 				Event = eventId
 			};
+
+			result.WithMetrics(Context);
+
+			return result;
 		}
 
 		public RuntimeException Exception(string format, string message, int eventId)
 		{
-			return new RuntimeException(Context.GetType().ShortName(), string.Format("{0}", message))
+			var result = new RuntimeException(Context.GetType().ShortName(), string.Format("{0}", message))
 			{
 				Event = eventId
 			};
+
+			result.WithMetrics(Context);
+
+			return result;
 		}
 	}
 }

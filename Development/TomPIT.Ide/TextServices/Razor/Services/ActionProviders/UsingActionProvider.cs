@@ -101,15 +101,16 @@ namespace TomPIT.Ide.TextServices.Razor.Services.ActionProviders
 
 			var textEdit = new ResourceTextEdit
 			{
-				Resource = Editor.Model.Uri
+				Resource = Editor.Model.Uri,
+				ModelVersionId = Editor.Model.Version
 			};
 
-			textEdit.Edits.Add(new TextEdit
+			textEdit.Edit = new TextEdit
 			{
 				Text = $"@{title};\n",
 				Eol = EndOfLineSequence.CRLF,
 				Range = ResolveUsingRange()
-			});
+			};
 
 			edits.Edits.Add(textEdit);
 
@@ -122,7 +123,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services.ActionProviders
 
 			var rte = result.Edit.Edits[0] as ResourceTextEdit;
 
-			rte.Edits.Add(new TextEdit
+			rte.Edit = new TextEdit
 			{
 				Text = type.Name,
 				Range = new Range
@@ -132,7 +133,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services.ActionProviders
 					EndLineNumber = marker.EndLineNumber,
 					StartLineNumber = marker.StartLineNumber
 				}
-			});
+			};
 
 			return result;
 		}

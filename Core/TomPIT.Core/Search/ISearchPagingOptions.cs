@@ -2,7 +2,7 @@
 {
 	public interface ISearchPagingOptions
 	{
-		int Index { get; }
-		int Size { get; }
+		int Index { get; set; }
+		int Size { get; set; }
 	}
 }

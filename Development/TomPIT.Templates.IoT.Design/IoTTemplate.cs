@@ -18,9 +18,8 @@ namespace TomPIT.MicroServices.IoT.Design
 		static IoTTemplate()
 		{
 			_items = new ConcurrentDictionary<string, IItemDescriptor>(new Dictionary<string, IItemDescriptor>{
-				{"IoTView", new ItemDescriptor("IoT View", "View", typeof(IoTView)) { Category ="UI", Glyph="fal fa-browser"} },
-				{ "Hub", new ItemDescriptor("IoT Hub", "IoTHub", typeof(Hub)) { Category ="IoT", Glyph="fal fa-wifi"} },
-				{ "Schema", new ItemDescriptor("IoT Schema", "IoTSchema", typeof(Schema)) { Category ="IoT", Glyph="fal fa-list-ol"} }
+				{"IoTView", new ItemDescriptor("IoT View", "View", typeof(IoTView)) { Category ="UI", Glyph="fal fa-browser", Ordinal=245} },
+				{ "Hub", new ItemDescriptor("IoT Hub", "IoTHub", typeof(Hub)) { Category ="IoT", Glyph="fal fa-wifi",  Ordinal=710} }
 		});
 		}
 

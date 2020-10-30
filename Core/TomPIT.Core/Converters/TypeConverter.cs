@@ -24,7 +24,7 @@ namespace TomPIT.Converters
 		EnhancedTypicalValues = 1,
 		AllowDefaultValueIfNull = 2,
 		AllowDefaultValueIfWhitespace = 4,
-		Default = EnhancedTypicalValues
+		Default = ConversionOptions.EnhancedTypicalValues | AllowDefaultValueIfNull | ConversionOptions.AllowDefaultValueIfWhitespace
 	}
 
 	internal static class TypeConverter

@@ -1,12 +1,15 @@
-﻿using TomPIT.Annotations;
-using TomPIT.Exceptions;
-using TomPIT.UI;
+﻿using System.ComponentModel;
+using Newtonsoft.Json;
+using TomPIT.Annotations;
+using TomPIT.Security;
 
 namespace TomPIT.Middleware
 {
 	public abstract class MiddlewareOperation : MiddlewareComponent, IMiddlewareOperation, IMiddlewareTransactionClient
 	{
 		[SkipValidation]
+		[EditorBrowsable(EditorBrowsableState.Advanced)]
+		[JsonIgnore]
 		public IMiddlewareTransaction Transaction
 		{
 			get
@@ -31,17 +34,6 @@ namespace TomPIT.Middleware
 				if (value is MiddlewareTransaction transaction)
 					transaction.Notify(this);
 			}
-		}
-
-		protected void RenderPartial(string partialName)
-		{
-			if (Shell.HttpContext == null)
-				throw new RuntimeException(SR.ErrHttpContextNull);
-
-			var engine = Shell.HttpContext.RequestServices.GetService(typeof(IViewEngine)) as IViewEngine;
-
-			engine.Context = Shell.HttpContext;
-			engine.RenderPartial(Context as IMicroServiceContext, partialName);
 		}
 
 		protected void Rollback()
@@ -88,7 +80,7 @@ namespace TomPIT.Middleware
 		protected internal virtual void OnCommitting()
 		{
 		}
-
+		[EditorBrowsable(EditorBrowsableState.Advanced)]
 		protected internal virtual void OnRollbacking()
 		{
 		}
@@ -99,6 +91,11 @@ namespace TomPIT.Middleware
 
 		protected internal virtual void OnValidating()
 		{
+		}
+
+		protected internal virtual void AuthorizePolicies()
+		{
+			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, this);
 		}
 	}
 }

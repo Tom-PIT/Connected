@@ -12,5 +12,13 @@ namespace TomPIT.Middleware.Interop
 
 			return item;
 		}
+
+		protected TReturnValue Validate(TReturnValue item)
+		{
+			if (item == null && ValidateResult)
+				throw new ValidationException($"{typeof(TReturnValue).Name} {SR.EntityNotFound}", new Exceptions.NotFoundException($"{typeof(TReturnValue).Name} {SR.EntityNotFound}"));
+
+			return item;
+		}
 	}
 }

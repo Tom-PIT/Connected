@@ -96,10 +96,11 @@ namespace TomPIT.App.UI
 
 			try
 			{
-				if (string.Compare(model.ViewConfiguration.Url, "login", true) != 0 && !SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url))
+				if (model.ViewConfiguration.AuthorizationEnabled && string.Compare(model.ViewConfiguration.Url, "login", true) != 0 && !SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url))
 					return;
 
-				model.ActionContext.RouteData.Values.Add("Action", name);
+				if (!model.ActionContext.RouteData.Values.ContainsKey("Action"))
+					model.ActionContext.RouteData.Values.Add("Action", name);
 
 				try
 				{

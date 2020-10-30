@@ -4,9 +4,21 @@
 	{
 		private IMiddlewareDataAudit _audit = null;
 		private IMiddlewareUserDataService _userData = null;
+		private IMiddlewareLockingService _locking = null;
 
 		public MiddlewareDataService(IMiddlewareContext context) : base(context)
 		{
+		}
+
+		public IMiddlewareLockingService Locking
+		{
+			get
+			{
+				if (_locking == null)
+					_locking = new MiddlewareLockingService(Context);
+
+				return _locking;
+			}
 		}
 
 		public IMiddlewareDataAudit Audit

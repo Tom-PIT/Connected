@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TomPIT.Distributed;
@@ -14,7 +15,12 @@ namespace TomPIT.Sys.Services
 		{
 			IntervalTimeout = TimeSpan.FromSeconds(1);
 		}
-		protected override Task Process()
+
+		protected override bool Initialize(CancellationToken cancel)
+		{
+			return DataModel.Initialized;
+		}
+		protected override Task Process(CancellationToken cancel)
 		{
 			try
 			{

@@ -49,7 +49,7 @@ namespace TomPIT.Management
 		{
 			Instance.Configure(InstanceType.Management, app, env, (f) =>
 		 {
-			 IdeRouting.Register(f.Builder, "Home", null);
+			 IdeRouting.Register(f.Builder, "Home", string.Empty);
 		 });
 
 			IdeBootstrapper.Run();

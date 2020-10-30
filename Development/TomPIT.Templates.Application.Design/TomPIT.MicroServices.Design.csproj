@@ -3,9 +3,12 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>TomPIT.MicroServices.Design</RootNamespace>
     <AssemblyName>TomPIT.MicroServices.Design</AssemblyName>
-    <AssemblyVersion>2.1.403.3</AssemblyVersion>
-    <FileVersion>2.1.403.3</FileVersion>
-    <Version>2.1.403.3</Version>
+    <AssemblyVersion>2.1.1030.1</AssemblyVersion>
+    <FileVersion>2.1.1030.1</FileVersion>
+    <Version>2.1.1030.1</Version>
+    <Authors>Tom PIT</Authors>
+    <Company>Tom PIT</Company>
+    <Product>Tom PIT.connected</Product>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Designers\Security\**" />
@@ -15,6 +18,28 @@
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="CreateHandlers\Connection.csx" />
+    <None Remove="CreateHandlers\Templates\ApiOperation.txt" />
+    <None Remove="CreateHandlers\Templates\DistributedEvent.txt" />
+    <None Remove="CreateHandlers\Templates\Model.txt" />
+    <None Remove="CreateHandlers\Templates\Partial.txt" />
+    <None Remove="CreateHandlers\Templates\ScriptBundle.txt" />
+    <None Remove="CreateHandlers\Templates\ScriptBundlePartial.txt" />
+    <None Remove="CreateHandlers\Templates\ScriptBundleView.txt" />
+    <None Remove="CreateHandlers\Templates\View.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CreateHandlers\Templates\ScriptBundlePartial.txt" />
+    <EmbeddedResource Include="CreateHandlers\Templates\ScriptBundle.txt" />
+    <EmbeddedResource Include="CreateHandlers\Templates\Partial.txt" />
+    <EmbeddedResource Include="CreateHandlers\Templates\View.txt" />
+    <EmbeddedResource Include="CreateHandlers\Templates\ScriptBundleView.txt" />
+    <EmbeddedResource Include="CreateHandlers\Templates\DistributedEvent.txt" />
+    <EmbeddedResource Include="CreateHandlers\Templates\ApiOperation.txt" />
+    <EmbeddedResource Include="CreateHandlers\Templates\Model.txt" />
+    <EmbeddedResource Include="CreateHandlers\Templates\Connection.txt" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.2" />

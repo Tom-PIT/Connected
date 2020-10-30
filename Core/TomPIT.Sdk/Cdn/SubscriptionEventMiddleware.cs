@@ -42,10 +42,14 @@ namespace TomPIT.Cdn
 		public void Invoke()
 		{
 			Validate();
+
+			foreach (var dependency in DependencyInjections)
+				Recipients = dependency.QueryRecipients(Recipients);
+
 			OnInvoke();
 
 			foreach (var dependency in DependencyInjections)
-				Recipients = dependency.Invoke(Recipients);
+				dependency.Invoke(Recipients);
 
 			Commit();
 		}

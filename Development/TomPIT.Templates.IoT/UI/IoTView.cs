@@ -62,5 +62,7 @@ namespace TomPIT.MicroServices.IoT.UI
 				return _metric;
 			}
 		}
+		[Browsable(false)]
+		public bool AuthorizationEnabled => false;
 	}
 }

@@ -28,7 +28,7 @@ namespace TomPIT.Runtime.UI
 			}
 		}
 
-		protected string GetString([CIP(CIP.StringTableProvider)]string stringTable, [CIP(CIP.StringTableStringProvider)]string key)
+		protected string GetString([CIP(CIP.StringTableProvider)] string stringTable, [CIP(CIP.StringTableStringProvider)] string key)
 		{
 			return ViewModel.Services.Globalization.GetString(stringTable, key);
 		}
@@ -36,7 +36,7 @@ namespace TomPIT.Runtime.UI
 		protected string ToJsonString(object content)
 		{
 			if (content == null)
-				return null;
+				return "null";
 
 			return Serializer.Serialize(content);
 		}

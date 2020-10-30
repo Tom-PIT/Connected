@@ -282,7 +282,7 @@ namespace TomPIT.ComponentModel
 					Tenant.LogError(GetType().ShortName(), ex.Message, LogCategories.Services);
 			}
 
-			if (blob == null && Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
+			if (/*blob == null && */Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
 			{
 				var rtContent = runtime == null
 					? Tenant.GetService<IStorageService>().Download(component.RuntimeConfiguration)
@@ -622,6 +622,21 @@ namespace TomPIT.ComponentModel
 				Set(component.Token, component);
 
 			return components;
+		}
+
+		public List<IComponent> QueryComponents(List<string> resourceGroups, string categories)
+		{
+			var r = new List<IConfiguration>();
+			var sb = new StringBuilder();
+
+			foreach (var i in resourceGroups)
+				sb.AppendFormat("{0},", i.ToString());
+
+			var u = Tenant.CreateUrl("Component", "QueryByResourceGroups")
+				.AddParameter("resourceGroups", sb.ToString().TrimEnd(','))
+				.AddParameter("categories", categories);
+
+			return Tenant.Get<List<Component>>(u).ToList<IComponent>();
 		}
 	}
 }

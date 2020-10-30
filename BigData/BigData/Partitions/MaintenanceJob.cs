@@ -13,7 +13,7 @@ namespace TomPIT.BigData.Partitions
 	internal class MaintenanceJob : DispatcherJob<IQueueMessage>
 	{
 		private TimeoutTask _timeout = null;
-		public MaintenanceJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public MaintenanceJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -29,7 +29,7 @@ namespace TomPIT.BigData.Partitions
 			{
 				MiddlewareDescriptor.Current.Tenant.GetService<IPartitionMaintenanceService>().Ping(Message.PopReceipt);
 				return Task.CompletedTask;
-			}, TimeSpan.FromMinutes(15));
+			}, TimeSpan.FromMinutes(15), Cancel);
 
 			_timeout.Start();
 
@@ -55,7 +55,7 @@ namespace TomPIT.BigData.Partitions
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.LogError(nameof(MaintenanceJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(MaintenanceJob));
 			MiddlewareDescriptor.Current.Tenant.GetService<IPartitionMaintenanceService>().Ping(item.PopReceipt);
 		}
 	}

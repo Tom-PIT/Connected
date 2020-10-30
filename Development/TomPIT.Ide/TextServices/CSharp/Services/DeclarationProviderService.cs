@@ -1,4 +1,5 @@
-﻿using TomPIT.Ide.Analysis;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using TomPIT.Ide.TextServices.Services;
 using ILocation = TomPIT.Ide.TextServices.Languages.ILocation;
 
@@ -15,21 +16,34 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 			var caret = Editor.Document.GetCaret(position);
 			var model = Editor.Document.GetSemanticModelAsync().Result;
 			var nodeToken = model.SyntaxTree.GetRoot().FindToken(caret);
-			var enclosingIdentifier = CSharpQuery.EnclosingIdentifier(nodeToken);
-			var scope = enclosingIdentifier.Parent.DeclarationScope();
+			var symbol = model.GetSymbolInfo(nodeToken.Parent);
 
-			//var declaration = model.GetDeclaredSymbol(node);
-			return new Languages.Location
+			if (symbol.Symbol != null)
 			{
-				Range = new Range
+				if (symbol.Symbol.DeclaringSyntaxReferences.Length == 0)
+					return null;
+
+				var refs = symbol.Symbol.DeclaringSyntaxReferences[0];
+
+				if (!string.IsNullOrWhiteSpace(refs.SyntaxTree.FilePath))
+					return null;
+
+				var span = symbol.Symbol.Locations[0].GetLineSpan();
+
+				return new Languages.Location
 				{
-					EndColumn = 10,
-					EndLineNumber = 1,
-					StartColumn = 1,
-					StartLineNumber = 1
-				},
-				Uri = Editor.Model.Uri
-			};
+					Range = new Range
+					{
+						EndColumn = span.EndLinePosition.Character + 1,
+						EndLineNumber = span.EndLinePosition.Line + 1,
+						StartColumn = span.StartLinePosition.Character + 1,
+						StartLineNumber = span.StartLinePosition.Line + 1
+					},
+					Uri = Editor.Model.Uri
+				};
+			}
+
+			return null;
 		}
 	}
 }

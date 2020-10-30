@@ -4,6 +4,10 @@ namespace TomPIT.Middleware.Interop
 {
 	public interface IOperation<TReturnValue> : IMiddlewareOperation
 	{
+		TReturnValue Invoke(IMiddlewareContext context);
+
+		T Invoke<T>(IMiddlewareContext context);
+
 		TReturnValue Invoke();
 
 		T Invoke<T>();
@@ -15,5 +19,6 @@ namespace TomPIT.Middleware.Interop
 	public interface IOperation : IMiddlewareOperation
 	{
 		void Invoke();
+		void Invoke(IMiddlewareContext context);
 	}
 }

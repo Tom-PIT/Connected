@@ -1,6 +1,6 @@
 ﻿using TomPIT.ComponentModel;
+using TomPIT.Design;
 using TomPIT.Exceptions;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Verbs;
 using TomPIT.Middleware;
@@ -21,9 +21,9 @@ namespace TomPIT.Ide.Dom.ComponentModel
 			Glyph = component.Glyph(Environment.Context.Tenant);
 
 			if (_loaded && Configuration == null)
-				Title = string.Format("(!){0}", Target.Name);
+				Title = WithFileExtension(string.Format("(!){0}", Target.Name));
 			else
-				Title = Target.Name;
+				Title = WithFileExtension(Target.Name);
 
 			((Behavior)Behavior).AutoExpand = false;
 			((Behavior)Behavior).Static = false;
@@ -91,9 +91,9 @@ namespace TomPIT.Ide.Dom.ComponentModel
 		public override bool Commit(object component, string property, string attribute)
 		{
 			if (component == Target)
-				Tenant.GetService<IComponentDevelopmentService>().Update(Target.Token, Target.Name, Target.Folder);
+				Tenant.GetService<IDesignService>().Components.Update(Target.Token, Target.Name, Target.Folder);
 			else
-				Tenant.GetService<IComponentDevelopmentService>().Update(Configuration);
+				Tenant.GetService<IDesignService>().Components.Update(Configuration);
 
 			return true;
 		}

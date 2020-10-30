@@ -50,7 +50,9 @@ namespace TomPIT.Search
 				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceType.Search}, {InstanceVerbs.Post})");
 
 			var u = ServerUrl.Create(url, "Search", "Search");
-			var results = Tenant.Post<SearchResults>(u, options);
+
+			var args = new HttpRequestArgs().WithCurrentCredentials(MiddlewareDescriptor.Current.User == null ? Guid.Empty : MiddlewareDescriptor.Current.User.AuthenticationToken);
+			var results = Tenant.Post<SearchResults>(u, options, args);
 			var clientResults = new ClientSearchResults();
 			var handlers = new Dictionary<Guid, dynamic>();
 
@@ -85,7 +87,7 @@ namespace TomPIT.Search
 				{
 					Catalog = result.Catalog,
 					Content = result.Content,
-					Entity = entity,
+					Entity = entity == null ? null : Serializer.Serialize(entity),
 					Score = result.Score,
 					Text = result.Text,
 					Title = result.Title

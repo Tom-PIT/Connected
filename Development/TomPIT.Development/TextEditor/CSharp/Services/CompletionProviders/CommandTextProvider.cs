@@ -32,12 +32,17 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			if (connection == null)
 				return null;
 
+			return ConnectionItems(connection);
+		}
+
+		private List<ICompletionItem> ConnectionItems(IConnectionConfiguration connection)
+		{
+			var r = new List<ICompletionItem>();
 			var browser = connection.ResolveSchemaBrowser(Editor.Context);
 
 			if (browser == null)
 				return null;
 
-			var r = new List<ICompletionItem>();
 			var objects = browser.QueryGroupObjects(connection);
 
 			if (objects == null)

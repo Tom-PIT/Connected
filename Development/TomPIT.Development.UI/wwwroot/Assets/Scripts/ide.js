@@ -1057,6 +1057,7 @@ $.widget('tompit.tpIde', {
 
                 if (isText) {
                     $('#devTextDesigner').collapse('show');
+                    //textEditor.layout();
                     $('#devDesigner').collapse('hide');
                 }
                 else {

@@ -21,6 +21,8 @@ namespace TomPIT.SysDb.Messaging
 		List<IMessage> QueryMessages();
 		IMessage SelectMessage(Guid message);
 		void DeleteMessage(IMessage message);
+
+		void Clean(List<IMessage> messages, List<IRecipient> recipients);
 		List<IRecipient> QueryRecipients(IMessage message);
 		IRecipient SelectRecipient(IMessage message, ISubscriber subscriber);
 		void DeleteRecipient(IMessage message, ISubscriber subscriber);

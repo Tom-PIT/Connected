@@ -5,6 +5,7 @@ using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
+using TomPIT.Runtime;
 using TomPIT.Serialization;
 using TomPIT.Storage;
 
@@ -13,7 +14,7 @@ namespace TomPIT.Cdn.Printing
 	internal class PrintJob : DispatcherJob<IQueueMessage>
 	{
 		private TimeoutTask _timeout = null;
-		public PrintJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public PrintJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -34,7 +35,7 @@ namespace TomPIT.Cdn.Printing
 				MiddlewareDescriptor.Current.Tenant.GetService<IPrintingManagementService>().Ping(item.PopReceipt);
 
 				return Task.CompletedTask;
-			}, TimeSpan.FromMinutes(4));
+			}, TimeSpan.FromMinutes(4), Cancel);
 
 			_timeout.Start();
 
@@ -58,7 +59,17 @@ namespace TomPIT.Cdn.Printing
 				if (provider == null)
 					throw new RuntimeException($"{SR.ErrPrintingProviderResolve} ({job.Provider})");
 
-				provider.Print(job);
+				if (Shell.GetService<IRuntimeService>().Platform == Platform.OnPrem)
+					provider.Print(job);
+				else
+				{
+					var report = provider.Export(job);
+
+					if (report != null)
+					{
+						//save to spooler
+					}
+				}
 			}
 			catch (Exception ex)
 			{

@@ -1,7 +1,12 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using TomPIT.Annotations;
 using TomPIT.Connectivity;
-using TomPIT.Data;
+using TomPIT.Exceptions;
+using TomPIT.Middleware.Services;
 using TomPIT.Reflection;
+using TomPIT.Security;
+using TomPIT.Serialization;
 
 namespace TomPIT.Middleware
 {
@@ -12,22 +17,13 @@ namespace TomPIT.Middleware
 			return ServerUrl.Create(tenant.Url, controller, action);
 		}
 
-		[Obsolete("Use WithContext extension method.")]
-		public static T WithConnection<T>(this T operation, IDataConnection connection) where T : IMiddlewareOperation
-		{
-			return operation;
-		}
-
-		[Obsolete("Use WithContext extension method.")]
-		public static T WithConnection<T>(this T operation, IMiddlewareContext context) where T : IMiddlewareOperation
-		{
-			return WithContext(operation, context);
-		}
-
 		public static T WithContext<T>(this T operation, IMiddlewareContext context) where T : IMiddlewareOperation
 		{
 			if (operation.Context is MiddlewareContext op && context is MiddlewareContext mc)
 			{
+				if (op.Owner == mc)
+					return operation;
+
 				op.Owner = mc;
 
 				if (operation is MiddlewareOperation mop && mc.Transaction != null)
@@ -36,18 +32,76 @@ namespace TomPIT.Middleware
 
 			return operation;
 		}
-		[Obsolete]
-		public static T WithTransaction<T>(this T operation, IMiddlewareOperation middleware) where T : IMiddlewareOperation
-		{
-			//if (operation is MiddlewareOperation o)
-			//	o.AttachTransaction(middleware);
 
-			return operation;
+		public static void Grant(this IMiddlewareContext context)
+		{
+			if (!(context is IElevationContext ctx))
+				return;
+
+			ctx.Grant();
+		}
+
+		public static void Revoke(this IMiddlewareContext context)
+		{
+			if (!(context is IElevationContext ctx))
+				return;
+
+			ctx.Revoke();
 		}
 
 		internal static void SetContext(this IMiddlewareObject target, IMiddlewareContext context)
 		{
 			ReflectionExtensions.SetPropertyValue(target, nameof(target.Context), context);
+		}
+
+		public static void Impersonate(this IMiddlewareContext context, string user)
+		{
+			var u = context.Services.Identity.GetUser(user);
+
+			if (u == null)
+				throw new RuntimeException(SR.ErrUserNotFound);
+
+			if (context.Services.Identity is MiddlewareIdentityService mc)
+				mc.ImpersonatedUser = u.Token.ToString();
+		}
+
+		public static void RevokeImpersonation(this IMiddlewareContext context)
+		{
+			if (context.Services.Identity is MiddlewareIdentityService mc)
+				mc.ImpersonatedUser = null;
+		}
+
+		public static T Patch<T>(this T component, Dictionary<string, object> properties) where T : IMiddlewareComponent
+		{
+			return Patch(component, properties, null);
+		}
+		public static T Patch<T>(this T component, Dictionary<string, object> properties, object initializer) where T : IMiddlewareComponent
+		{
+			if (initializer != null)
+				Serializer.Populate(initializer, component);
+
+			if (properties == null || properties.Count == 0)
+				return component;
+
+			foreach (var property in properties)
+			{
+				var reflected = component.GetType().GetProperty(property.Key, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+				if (reflected == null)
+					throw new RuntimeException($"{SR.ErrPropertyNotFound} ({property.Key})");
+
+				if (!reflected.CanWrite)
+					throw new RuntimeException($"SR.ErrPropertyReadOnly ({property.Key})");
+
+				if (reflected.FindAttribute<PatchReadOnlyAttribute>() != null)
+					throw new RuntimeException($"{SR.ErrPatchForbidden} ({property.Key})");
+
+				var value = Types.Convert(property.Value, reflected.PropertyType);
+
+				reflected.SetValue(component, value);
+			}
+
+			return component;
 		}
 	}
 }

@@ -132,6 +132,12 @@ namespace TomPIT.Sys.Data
 			string pin, Guid language, string timezone, bool notificationEnabled, string mobile, string phone,
 			DateTime passwordChange)
 		{
+			if (!string.IsNullOrWhiteSpace(email) && SelectByEmail(email) != null)
+				throw new SysException(SR.ErrEmailInUse);
+
+			if (!string.IsNullOrWhiteSpace(loginName) && SelectByLoginName(loginName) != null)
+				throw new SysException(SR.ErrLoginInUse);
+
 			ILanguage l = null;
 
 			if (language != Guid.Empty)
@@ -163,6 +169,12 @@ namespace TomPIT.Sys.Data
 			if (u == null)
 				throw new SysException(SR.ErrUserNotFound);
 
+			if (!string.IsNullOrWhiteSpace(email) && string.Compare(email, u.Email, true) != 0 && SelectByEmail(email) != null)
+				throw new SysException(SR.ErrEmailInUse);
+
+			if (!string.IsNullOrWhiteSpace(loginName) && string.Compare(loginName, u.LoginName, true) != 0 && SelectByLoginName(loginName) != null)
+				throw new SysException(SR.ErrLoginInUse);
+
 			Update(u, loginName, email, status, firstName, lastName, description, pin, language, timezone, notificationEnabled, mobile,
 				phone, u.Avatar, passwordChange);
 		}
@@ -186,6 +198,12 @@ namespace TomPIT.Sys.Data
 
 			if (string.Compare(dn, pn, true) != 0)
 				url = Url(user.Token, pn);
+
+			if (!string.IsNullOrWhiteSpace(email) && string.Compare(email, user.Email, true) != 0 && SelectByEmail(email) != null)
+				throw new SysException(SR.ErrEmailInUse);
+
+			if (!string.IsNullOrWhiteSpace(loginName) && string.Compare(loginName, user.LoginName, true) != 0 && SelectByLoginName(loginName) != null)
+				throw new SysException(SR.ErrLoginInUse);
 
 			Shell.GetService<IDatabaseService>().Proxy.Security.Users.Update(user, loginName, url, email, status, firstName, lastName, description,
 				pin, l, timezone, notificationEnabled, mobile, phone, avatar, passwordChange);
@@ -301,7 +319,7 @@ namespace TomPIT.Sys.Data
 				return AuthenticationResult.Fail(AuthenticationResultReason.NotFound);
 			}
 		}
-	
+
 
 		public void ResetPassword(string user, string newPassword)
 		{

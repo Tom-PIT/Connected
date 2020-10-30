@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Net;
+using System.Reflection;
+using TomPIT.Annotations;
+using TomPIT.Exceptions;
 using TomPIT.Middleware;
+using TomPIT.Reflection;
 
 namespace TomPIT.Security
 {
@@ -40,7 +44,7 @@ namespace TomPIT.Security
 
 				var empty = i == tokens.Length - 1 ? EmptyBehavior.Deny : EmptyBehavior.Alow;
 				var token = context.Services.Identity.IsAuthenticated ? context.Services.Identity.User.Token : Guid.Empty;
-				var ar = AuthorizeUrl(context, new AuthorizationArgs(token, Claims.AccessUrl, path), empty);
+				var ar = AuthorizeUrl(context, new AuthorizationArgs(token, Claims.AccessUrl, path, "Url"), empty);
 
 				if (ar.Success)
 					permissionCounter += ar.PermissionCount;
@@ -61,7 +65,7 @@ namespace TomPIT.Security
 
 		private static IAuthorizationResult AuthorizeDefaultUrl(IMiddlewareContext context)
 		{
-			var args = new AuthorizationArgs(context.Services.Identity.IsAuthenticated ? context.Services.Identity.User.Token : Guid.Empty, Claims.DefaultAccessUrl, 0.ToString(), Guid.Empty);
+			var args = new AuthorizationArgs(context.Services.Identity.IsAuthenticated ? context.Services.Identity.User.Token : Guid.Empty, Claims.DefaultAccessUrl, 0.ToString(), "Default Url");
 
 			args.Schema.Empty = EmptyBehavior.Alow;
 			args.Schema.Level = AuthorizationLevel.Pessimistic;
@@ -71,7 +75,7 @@ namespace TomPIT.Security
 
 		private static IAuthorizationResult AuthorizeUrl(IMiddlewareContext context, AuthorizationArgs e, EmptyBehavior empty)
 		{
-			var args = new AuthorizationArgs(e.User, Claims.AccessUrl, e.PrimaryKey, Guid.Empty);
+			var args = new AuthorizationArgs(e.User, Claims.AccessUrl, e.PrimaryKey, "Url");
 
 			args.Schema.Empty = empty;
 			args.Schema.Level = AuthorizationLevel.Pessimistic;
@@ -85,6 +89,35 @@ namespace TomPIT.Security
 				Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
 			else
 				Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+		}
+
+		public static T GetValueFromTarget<T>(this IAuthorizationModel model, string propertyName)
+		{
+			var properties = model.AuthorizationTarget.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
+			/*
+			 * First check if attribute is defined on any of the properties. 
+			 * This have a higher priority than a property name
+			 */
+			foreach (var property in properties)
+			{
+				var attribute = property.FindAttribute<AuthorizationPropertyAttribute>();
+
+				if (attribute != null && string.Compare(attribute.PropertyName, propertyName, true) == 0)
+					return Types.Convert<T>(property.GetValue(model.AuthorizationTarget));
+			}
+			/*
+			 * Attribute not defined let's find a property
+			 */
+			foreach (var property in properties)
+			{
+
+				if (string.Compare(property.Name, propertyName, true) == 0)
+					return Types.Convert<T>(property.GetValue(model.AuthorizationTarget));
+			}
+			/*
+			 * Property must be defined so we're gonna throw exception
+			 */
+			throw new ForbiddenException($"{SR.AuthorizationPropertyNotFound} ({propertyName})");
 		}
 	}
 }

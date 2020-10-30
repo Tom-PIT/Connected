@@ -5,10 +5,10 @@ namespace TomPIT.Search.Routing
 {
 	internal static class SearchRouting
 	{
-		public static void Register(IRouteBuilder routes)
+		public static void Register(IEndpointRouteBuilder routes)
 		{
-			routes.MapRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
-			routes.MapRoute("default", "{controller}/{action}");
+			routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+			routes.MapControllerRoute("default", "{controller}/{action}");
 		}
 	}
 }

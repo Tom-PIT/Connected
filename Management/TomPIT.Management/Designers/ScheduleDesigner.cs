@@ -66,8 +66,48 @@ namespace TomPIT.Management.Designers
 				return SaveConfiguration(data);
 			else if (action.Equals("changeStatus", StringComparison.OrdinalIgnoreCase))
 				return ChangeStatus(data);
+			else if (action.Equals("reset", StringComparison.OrdinalIgnoreCase))
+				return Reset(data);
+			else if (action.Equals("run", StringComparison.OrdinalIgnoreCase))
+				return Run(data);
 
 			return base.OnAction(data, action);
+		}
+
+		private IDesignerActionResult Reset(JObject data)
+		{
+			var d = (ViewModel as ScheduledJobDescriptor).Job as ScheduledJob;
+
+			var url = Environment.Context.Tenant.CreateUrl("WorkerManagement", "Reset");
+
+			var p = new JObject
+			{
+				{ "worker" , d.Worker }
+			};
+
+			Environment.Context.Tenant.Post(url, p);
+
+			_job = null;
+
+			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
+		}
+
+		private IDesignerActionResult Run(JObject data)
+		{
+			var d = (ViewModel as ScheduledJobDescriptor).Job as ScheduledJob;
+
+			var url = Environment.Context.Tenant.CreateUrl("WorkerManagement", "Run");
+
+			var p = new JObject
+			{
+				{ "worker" , d.Worker }
+			};
+
+			Environment.Context.Tenant.Post(url, p);
+
+			_job = null;
+
+			return Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 		}
 
 		private IDesignerActionResult ChangeStatus(JObject data)

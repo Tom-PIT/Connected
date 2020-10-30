@@ -17,11 +17,11 @@ namespace TomPIT.Cdn.Mail
 
 		private void OnSettingChanged(object sender, SettingEventArgs e)
 		{
-			if (e.ResourceGroup == Guid.Empty && string.Compare(e.Name, "MailServiceTimer", true) == 0)
+			if (string.Compare(e.Name, "MailServiceTimer", true) == 0 && string.IsNullOrWhiteSpace(e.Type) && string.IsNullOrWhiteSpace(e.PrimaryKey))
 				SetInterval();
 		}
 
-		protected override bool Initialize()
+		protected override bool Initialize(CancellationToken cancel)
 		{
 			if (Instance.State == InstanceState.Initialining)
 				return false;
@@ -31,13 +31,13 @@ namespace TomPIT.Cdn.Mail
 			MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().SettingChanged += OnSettingChanged;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new MailDispatcher(i, _cancel));
+				Dispatchers.Add(new MailDispatcher(i, cancel));
 
 			return true;
 		}
 		private void SetInterval()
 		{
-			var interval = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<int>(Guid.Empty, "MailServiceTimer");
+			var interval = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<int>("MailServiceTimer", null, null, null);
 
 			if (interval == 0)
 				interval = 5000;
@@ -45,7 +45,7 @@ namespace TomPIT.Cdn.Mail
 			IntervalTimeout = TimeSpan.FromMilliseconds(interval);
 		}
 
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -58,11 +58,19 @@ namespace TomPIT.Cdn.Mail
 
 				var messages = MiddlewareDescriptor.Current.Tenant.Post<List<MailMessage>>(url, e);
 
+				if (cancel.IsCancellationRequested)
+					return;
+
 				if (messages == null)
 					return;
 
 				foreach (var i in messages)
+				{
+					if (cancel.IsCancellationRequested)
+						return;
+
 					f.Enqueue(i);
+				}
 			});
 
 			return Task.CompletedTask;

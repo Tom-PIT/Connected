@@ -4,25 +4,31 @@ using System.Threading.Tasks;
 
 namespace TomPIT.Distributed
 {
-	public sealed class TimeoutTask
+	public sealed class TimeoutTask : IDisposable
 	{
 		private readonly Func<Task> _action;
 		private Task _task;
 		private readonly TimeSpan _interval;
-		private CancellationTokenSource _cancellationSource;
 
-		public TimeoutTask(Func<Task> scheduledAction, TimeSpan interval)
+		public TimeoutTask(Func<Task> scheduledAction, TimeSpan interval, CancellationToken cancel)
 		{
 			_action = scheduledAction;
 			_interval = interval;
+			CancelSource = new CancellationTokenSource();
+
+			cancel.Register(() =>
+			{
+				CancelSource.Cancel();
+			});
 		}
+
+		private CancellationTokenSource CancelSource { get; }
 
 		public void Start()
 		{
 			if (IsRunning)
 				return;
 
-			_cancellationSource = new CancellationTokenSource();
 			_task = Timeout();
 
 			IsRunning = true;
@@ -32,14 +38,18 @@ namespace TomPIT.Distributed
 
 		public void Stop()
 		{
+			if (CancelSource.IsCancellationRequested)
+				return;
+
 			try
 			{
-				if (!IsRunning)
-					return;
+				CancelSource.Cancel();
 
-				_cancellationSource.Cancel();
 			}
-			catch (OperationCanceledException) { }
+			catch (OperationCanceledException)
+			{
+
+			}
 			finally
 			{
 				IsRunning = false;
@@ -52,17 +62,32 @@ namespace TomPIT.Distributed
 			{
 				try
 				{
-					while (true)
+					while (!CancelSource.IsCancellationRequested || IsRunning)
 					{
-						await Task.Delay(_interval, _cancellationSource.Token).ConfigureAwait(false);
-						await _action().ConfigureAwait(false);
+						if (_task != null)
+						{
+							await Task.Delay(_interval, CancelSource.Token).ConfigureAwait(false);
+							await _action().ConfigureAwait(false);
+						}
 					}
 				}
 				finally
 				{
 					IsRunning = false;
 				}
-			}, _cancellationSource.Token);
+			}, CancelSource.Token);
+		}
+
+		public void Dispose()
+		{
+			Stop();
+			CancelSource.Dispose();
+
+			if (_task != null)
+			{
+				_task.Dispose();
+				_task = null;
+			}
 		}
 	}
 }

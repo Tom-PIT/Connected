@@ -20,7 +20,7 @@ namespace TomPIT.MicroServices.Reporting.Design
 		static ReportTemplate()
 		{
 			_items = new ConcurrentDictionary<string, IItemDescriptor>(new Dictionary<string, IItemDescriptor>{
-				{"Report", new ItemDescriptor("Report", "Report", typeof(Report)) { Category ="UI", Glyph="fal fa-browser", Ordinal = 101} }
+				{"Report", new ItemDescriptor("Report", "Report", typeof(Report)) { Category ="UI", Glyph="fal fa-browser", Ordinal = 242} }
 		});
 		}
 

@@ -37,7 +37,7 @@ namespace TomPIT.Search.Catalogs
 					var config = new ConfigurationDescriptor<ISearchCatalogConfiguration>(f, "SearchCatalog");
 					var catalog = IndexCache.Ensure(config.Component.Token);
 
-					if (catalog == null || !catalog.IsValid)
+					if (catalog == null)
 						return;
 
 					var sr = Search(catalog);

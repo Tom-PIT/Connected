@@ -18,7 +18,7 @@ namespace TomPIT.SysDb.Sql.BigData
 			base.OnCreate();
 
 			BlockCount = GetInt("block_count");
-			BlockRemaining = GetInt("block_count");
+			BlockRemaining = GetInt("block_remaining");
 			Partition = GetGuid("partition_token");
 			Created = GetDate("created");
 			Token = GetGuid("token");

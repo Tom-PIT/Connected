@@ -6,12 +6,12 @@ namespace TomPIT.BigData.Transactions
 {
 	internal class StorageDispatcher : Dispatcher<IQueueMessage>
 	{
-		public StorageDispatcher(string resourceGroup, CancellationTokenSource cancel) : base(cancel, 128)
+		public StorageDispatcher(string resourceGroup, CancellationToken cancel) : base(cancel, 32)
 		{
 			ResourceGroup = resourceGroup;
 		}
 
-		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationTokenSource cancel)
+		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationToken cancel)
 		{
 			return new StorageJob(this, cancel);
 		}

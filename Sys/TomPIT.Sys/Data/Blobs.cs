@@ -122,13 +122,28 @@ namespace TomPIT.Sys.Data
 					throw new SysException(SR.ErrMicroServiceNotFound);
 			}
 
-			Shell.GetService<IDatabaseService>().Proxy.Storage.Insert(r, token, type, primaryKey, microService, topic, fileName,
-				contentType, content == null ? 0 : content.Length, version, DateTime.UtcNow, string.Empty);
+			var existing = Select(token);
 
-			DataModel.BlobsContents.Update(resourceGroup, token, content);
+			if (existing != null)
+			{
+				Shell.GetService<IDatabaseService>().Proxy.Storage.Update(existing, primaryKey, fileName,
+					contentType, content == null ? 0 : content.Length, version, DateTime.UtcNow, string.Empty);
 
-			if (SupportsNotification(type))
-				CachingNotifications.BlobAdded(microService, token, type, primaryKey);
+				DataModel.BlobsContents.Update(resourceGroup, token, content);
+
+				if (SupportsNotification(type))
+					CachingNotifications.BlobChanged(microService, token, type, primaryKey);
+			}
+			else
+			{
+				Shell.GetService<IDatabaseService>().Proxy.Storage.Insert(r, token, type, primaryKey, microService, topic, fileName,
+					contentType, content == null ? 0 : content.Length, version, DateTime.UtcNow, string.Empty);
+
+				DataModel.BlobsContents.Update(resourceGroup, token, content);
+
+				if (SupportsNotification(type))
+					CachingNotifications.BlobAdded(microService, token, type, primaryKey);
+			}
 		}
 
 		public void Clean(Guid microService)

@@ -50,6 +50,7 @@ namespace TomPIT.BigData
 		{
 			services.AddSingleton<IHostedService, StorageService>();
 			services.AddSingleton<IHostedService, MaintenanceService>();
+			services.AddSingleton<IHostedService, BufferingWorker>();
 		}
 
 		private void OnTenantInitialize(object sender, TenantArgs e)
@@ -59,6 +60,7 @@ namespace TomPIT.BigData
 			e.Tenant.RegisterService(typeof(IPartitionService), typeof(PartitionService));
 			e.Tenant.RegisterService(typeof(IPersistenceService), typeof(SqlPersistenceService));
 			e.Tenant.RegisterService(typeof(IPartitionMaintenanceService), typeof(PartitionMaintenanceService));
+			e.Tenant.RegisterService(typeof(IBufferingService), typeof(BufferingService));
 
 			e.Tenant.Items.TryAdd("bigdataClient", new BigDataClient(e.Tenant, e.Tenant.AuthenticationToken));
 		}

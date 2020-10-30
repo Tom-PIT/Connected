@@ -10,5 +10,6 @@ namespace TomPIT.ComponentModel.UI
 		string Layout { get; }
 		bool Enabled { get; }
 		IMetricOptions Metrics { get; }
+		bool AuthorizationEnabled { get; }
 	}
 }

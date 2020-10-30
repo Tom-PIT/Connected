@@ -7,6 +7,18 @@ namespace TomPIT.SysDb.Sql.BigData
 		private INodeHandler _nodes = null;
 		private IPartitionHandler _partitions = null;
 		private ITransactionHandler _transactions = null;
+		private IPartitionBufferHandler _buffer = null;
+
+		public IPartitionBufferHandler Buffer
+		{
+			get
+			{
+				if (_buffer == null)
+					_buffer = new PartitionBufferHandler();
+
+				return _buffer;
+			}
+		}
 
 		public INodeHandler Nodes
 		{

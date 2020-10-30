@@ -1,4 +1,6 @@
-﻿namespace TomPIT.ComponentModel.BigData
+﻿using TomPIT.Collections;
+
+namespace TomPIT.ComponentModel.BigData
 {
 	public enum SchemaSynchronizationMode
 	{
@@ -8,5 +10,7 @@
 	public interface IPartitionConfiguration : IConfiguration, IText
 	{
 		SchemaSynchronizationMode SchemaSynchronization { get; }
+
+		ListItems<IBigDataQuery> Queries { get; }
 	}
 }

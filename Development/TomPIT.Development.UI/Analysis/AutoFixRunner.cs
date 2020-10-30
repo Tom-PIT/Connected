@@ -9,28 +9,27 @@ namespace TomPIT.Development.Analysis
 {
 	internal class AutoFixRunner : HostedService
 	{
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
-		private Lazy<List<AutoFixDispatcher>> _dispatchers = new Lazy<List<AutoFixDispatcher>>();
+		private readonly Lazy<List<AutoFixDispatcher>> _dispatchers = new Lazy<List<AutoFixDispatcher>>();
 
 		public AutoFixRunner()
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(5000);
 		}
 
-		protected override bool Initialize()
+		protected override bool Initialize(CancellationToken cancel)
 		{
 			var tenants = Shell.GetService<IConnectivityService>()?.QueryTenants();
 
 			if (tenants != null)
 			{
 				foreach (var tenant in tenants)
-					Dispatchers.Add(new AutoFixDispatcher(Shell.GetService<IConnectivityService>().SelectTenant(tenant.Url), _cancel));
+					Dispatchers.Add(new AutoFixDispatcher(Shell.GetService<IConnectivityService>().SelectTenant(tenant.Url), cancel));
 			}
 
 			return tenants != null;
 		}
 
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{

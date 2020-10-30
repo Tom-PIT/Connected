@@ -10,13 +10,22 @@
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.MicroServices.IoT.Design</RootNamespace>
     <AssemblyName>TomPIT.MicroServices.IoT.Design</AssemblyName>
-    <AssemblyVersion>2.1.403.3</AssemblyVersion>
-    <FileVersion>2.1.403.3</FileVersion>
-    <Version>2.1.403.3</Version>
+    <AssemblyVersion>2.1.1030.1</AssemblyVersion>
+    <FileVersion>2.1.1030.1</FileVersion>
+    <Version>2.1.1030.1</Version>
+    <Authors>Tom PIT</Authors>
+    <Company>Tom PIT</Company>
+    <Product>Tom PIT.connected</Product>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="CreateHandlers\Templates\IoTHub.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CreateHandlers\Templates\IoTHub.txt" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.2" />
   </ItemGroup>

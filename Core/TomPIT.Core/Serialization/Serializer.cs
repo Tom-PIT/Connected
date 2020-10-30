@@ -97,6 +97,9 @@ namespace TomPIT.Serialization
 
 		public static string Serialize(object instance)
 		{
+			if (instance == null)
+				return null;
+
 			return JsonConvert.SerializeObject(instance, SerializerSettings);
 		}
 

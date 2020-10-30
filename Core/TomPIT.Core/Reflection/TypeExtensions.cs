@@ -94,6 +94,9 @@ namespace TomPIT.Reflection
 
 		public static bool IsCollection(this Type type)
 		{
+			if (type == typeof(string))
+				return false;
+
 			var interfaces = type.GetInterfaces();
 
 			if (interfaces == null || interfaces.Length == 0)

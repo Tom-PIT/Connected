@@ -22,7 +22,7 @@ namespace TomPIT.Navigation
 			if (cd.Configuration == null)
 				return false;
 
-			var args = new AuthorizationArgs(user, Claims.AccessUrl, cd.Configuration.Url);
+			var args = new AuthorizationArgs(user, Claims.AccessUrl, cd.Configuration.Url, "Url");
 
 			args.Schema.Empty = EmptyBehavior.Deny;
 			args.Schema.Level = AuthorizationLevel.Pessimistic;

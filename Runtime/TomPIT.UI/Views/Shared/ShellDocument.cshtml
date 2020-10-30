@@ -18,7 +18,7 @@
                         <h3 class="text-truncate">@ViewBag.Title</h3>
                         <div class="breadcrumbs">
                             <ul class="list-inline">
-                                <li class="list-inline-item"><a href="/"><i class="fal fa-home"></i></a></li>
+                                <li class="list-inline-item"><a href="@Model.Services.Routing.RootUrl"><i class="fal fa-home"></i></a></li>
                                 @foreach (var item in Model.Navigation.Breadcrumbs)
                                 {
                                     <li class="list-inline-item"><i class="fal fa-angle-right"></i></li>

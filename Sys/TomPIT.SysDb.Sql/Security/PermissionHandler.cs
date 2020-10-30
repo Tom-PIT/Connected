@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Data.Sql;
 using TomPIT.Environment;
@@ -19,7 +18,7 @@ namespace TomPIT.SysDb.Sql.Security
 			w.Execute();
 		}
 
-		public void Insert(IResourceGroup resourceGroup, Guid evidence, string schema, string claim, string descriptor, string primaryKey, PermissionValue value, string component)
+		public void Insert(IResourceGroup resourceGroup, string evidence, string schema, string claim, string descriptor, string primaryKey, PermissionValue value, string component)
 		{
 			var w = new Writer("tompit.permission_ins");
 
@@ -50,7 +49,7 @@ namespace TomPIT.SysDb.Sql.Security
 			return new Reader<Permission>("tompit.permission_que").Execute().ToList<IPermission>();
 		}
 
-		public IPermission Select(Guid evidence, string schema, string claim, string primaryKey)
+		public IPermission Select(string evidence, string schema, string claim, string primaryKey, string descriptor)
 		{
 			var r = new Reader<Permission>("tompit.permission_sel");
 
@@ -58,6 +57,7 @@ namespace TomPIT.SysDb.Sql.Security
 			r.CreateParameter("@schema", schema, true);
 			r.CreateParameter("@claim", claim, true);
 			r.CreateParameter("@primary_key", primaryKey);
+			r.CreateParameter("@descriptor", descriptor);
 
 			return r.ExecuteSingleRow();
 		}

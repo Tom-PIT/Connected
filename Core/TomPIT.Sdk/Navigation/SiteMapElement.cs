@@ -11,5 +11,11 @@ namespace TomPIT.Navigation
 		public ISiteMapElement Parent { get; set; }
 
 		public bool Visible { get; set; } = true;
+
+		public string Category { get; set; }
+
+		public string Glyph { get; set; }
+
+		public string Css { get; set; }
 	}
 }

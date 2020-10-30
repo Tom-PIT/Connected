@@ -132,7 +132,7 @@ namespace TomPIT.Ide.Environment.Providers
 				return;
 
 			var element = instance as IElement;
-			var props = DomQuery.Properties(instance, false, true);
+			var props = Element.Environment.Context.Tenant.GetService<IDiscoveryService>().Properties(instance, false, true);
 
 			if (props == null)
 				return;

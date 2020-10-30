@@ -2,7 +2,6 @@
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Scripting;
 using TomPIT.Design;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Middleware;
 
 namespace TomPIT.Development.Handlers
@@ -20,7 +19,7 @@ namespace TomPIT.Development.Handlers
 				sb.AppendLine("");
 				sb.AppendLine("}");
 
-				context.Tenant.GetService<IComponentDevelopmentService>().Update(script, sb.ToString());
+				context.Tenant.GetService<IDesignService>().Components.Update(script, sb.ToString());
 			}
 		}
 	}

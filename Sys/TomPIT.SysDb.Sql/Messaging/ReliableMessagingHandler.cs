@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.Data.Sql;
+using TomPIT.Serialization;
 using TomPIT.SysDb.Environment;
 using TomPIT.SysDb.Messaging;
 
@@ -207,6 +209,34 @@ namespace TomPIT.SysDb.Sql.Messaging
 				dt.Rows.Add(i.Id, i.RetryCount, i.NextVisible);
 
 			w.CreateParameter("@items", dt);
+
+			w.Execute();
+		}
+
+		public void Clean(List<IMessage> messages, List<IRecipient> recipients)
+		{
+			var w = new Writer("tompit.message_clean");
+
+			var m = new JArray();
+
+			foreach (var message in messages)
+			{
+				m.Add(new JObject
+				{
+					{ "id", new JValue( message.GetId()) }
+				});
+			}
+			var r = new JArray();
+
+			foreach (var recipient in recipients)
+			{
+				r.Add(new JObject
+				{
+					{ "id", new JValue(recipient.GetId()) }
+				});
+			}
+			w.CreateParameter("@messages", Serializer.Serialize(m));
+			w.CreateParameter("@recipients", Serializer.Serialize(r));
 
 			w.Execute();
 		}

@@ -11,11 +11,13 @@ namespace TomPIT.MicroServices.Resources
 	[Create(DesignUtils.ScriptBundle)]
 	[ComponentCreatedHandler(DesignUtils.ScriptBundleHandler)]
 	[DomElement(DesignUtils.ScriptBundleElement)]
+	[FileNameExtension("jsm")]
 	public class ScriptBundle : ComponentConfiguration, IScriptBundleConfiguration, IScriptBundleInitializer
 	{
 		private ListItems<IScriptSource> _scripts = null;
 
 		[Items(DesignUtils.ScriptSourceItems)]
+		[CollectionDesigner(Sort = false)]
 		public ListItems<IScriptSource> Scripts
 		{
 			get
@@ -31,11 +33,11 @@ namespace TomPIT.MicroServices.Resources
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
 		public bool Minify { get; set; } = true;
 
-		public IScriptSource CreateDefaultFile()
+		public IScriptSource CreateDefaultFile(IScriptBundleConfiguration configuration)
 		{
 			return new ScriptCodeSource
 			{
-				Name = "Default"
+				Name = configuration.ComponentName()
 			};
 		}
 	}

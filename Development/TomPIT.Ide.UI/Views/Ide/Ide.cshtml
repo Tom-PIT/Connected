@@ -109,6 +109,9 @@
         onCreated: function (sender, instance) {
             textEditorState = sender;
             textEditor = instance;
+            textEditorWidget = sender;
+
+            initTextEditor();
         }
     });
 
@@ -167,4 +170,34 @@
     }
 
     refreshErrorList();
+
+    function initTextEditor(callback){
+        if (window._textEditorInitialized) {
+            if (callback)
+                callback();
+
+            return;
+        }
+
+        if (textEditor)
+            window._textEditorInitialized = true;
+
+        if (callback && textEditor) {
+            callback();
+            return;
+        }
+
+        if (callback)
+            window._textEditorCallback = callback;
+
+        if (!textEditor)
+            return;
+
+        if (!callback && window._textEditorCallback) {
+            window._textEditorCallback();
+            window._textEditorCallback = 'undefined';
+        }
+        else if(callback)
+            callback();
+    }
 </script>

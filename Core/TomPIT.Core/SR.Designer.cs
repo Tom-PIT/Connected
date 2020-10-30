@@ -61,6 +61,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Method not allowed..
+        /// </summary>
+        public static string ApiOperationInvalidVerb {
+            get {
+                return ResourceManager.GetString("ApiOperationInvalidVerb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The specified argument {0} cannot be greater than its ceiling value of {1}..
         /// </summary>
         public static string ArgumentCannotBeGreaterThanBaseline {
@@ -120,6 +129,24 @@ namespace TomPIT {
         public static string AttPassword {
             get {
                 return ResourceManager.GetString("AttPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Authorization policy not supported.
+        /// </summary>
+        public static string AuthorizationPolicyNotSupported {
+            get {
+                return ResourceManager.GetString("AuthorizationPolicyNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Authorization policy property not found. You should define a property with a required name or define an AuthorizationPropertyAttribute on one property..
+        /// </summary>
+        public static string AuthorizationPropertyNotFound {
+            get {
+                return ResourceManager.GetString("AuthorizationPropertyNotFound", resourceCulture);
             }
         }
         
@@ -264,6 +291,15 @@ namespace TomPIT {
         public static string CmdLogIn {
             get {
                 return ResourceManager.GetString("CmdLogIn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Data provider does not support parsing text.
+        /// </summary>
+        public static string DataProviderParserNull {
+            get {
+                return ResourceManager.GetString("DataProviderParserNull", resourceCulture);
             }
         }
         
@@ -556,6 +592,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to not found.
+        /// </summary>
+        public static string EntityNotFound {
+            get {
+                return ResourceManager.GetString("EntityNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Designer action not supported..
         /// </summary>
         public static string ErrActionNotSupported {
@@ -633,6 +678,15 @@ namespace TomPIT {
         public static string ErrAsyncPathExpected {
             get {
                 return ResourceManager.GetString("ErrAsyncPathExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This action requires an authenticated user..
+        /// </summary>
+        public static string ErrAuthenticatedUserRequired {
+            get {
+                return ResourceManager.GetString("ErrAuthenticatedUserRequired", resourceCulture);
             }
         }
         
@@ -790,6 +844,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot obtain Entity state.
+        /// </summary>
+        public static string ErrCannotGetEntityState {
+            get {
+                return ResourceManager.GetString("ErrCannotGetEntityState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot resolve component type.
         /// </summary>
         public static string ErrCannotResolveComponentType {
@@ -826,11 +889,29 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot resolve stored procedure name.
+        /// </summary>
+        public static string ErrCannotResolveProcedureName {
+            get {
+                return ResourceManager.GetString("ErrCannotResolveProcedureName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot resolve tenant in multi tenant environment.
         /// </summary>
         public static string ErrCannotResolveTenant {
             get {
                 return ResourceManager.GetString("ErrCannotResolveTenant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot resolve view name.
+        /// </summary>
+        public static string ErrCannotResolveViewName {
+            get {
+                return ResourceManager.GetString("ErrCannotResolveViewName", resourceCulture);
             }
         }
         
@@ -853,11 +934,47 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Claim is null.
+        /// </summary>
+        public static string ErrClaimNull {
+            get {
+                return ResourceManager.GetString("ErrClaimNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Command text not set.
+        /// </summary>
+        public static string ErrCommandTextNotSet {
+            get {
+                return ResourceManager.GetString("ErrCommandTextNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Command text not set..
+        /// </summary>
+        public static string ErrCommandTextNull {
+            get {
+                return ResourceManager.GetString("ErrCommandTextNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot commit components from different microservices..
         /// </summary>
         public static string ErrCommitMultipleMicroservice {
             get {
                 return ResourceManager.GetString("ErrCommitMultipleMicroservice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No files are selected for commit..
+        /// </summary>
+        public static string ErrCommitNoFiles {
+            get {
+                return ResourceManager.GetString("ErrCommitNoFiles", resourceCulture);
             }
         }
         
@@ -916,6 +1033,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Data concurrency issue occured. Please retry the operation.
+        /// </summary>
+        public static string ErrConcurrencyMessage {
+            get {
+                return ResourceManager.GetString("ErrConcurrencyMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Concurrency.
+        /// </summary>
+        public static string ErrConcurrencySource {
+            get {
+                return ResourceManager.GetString("ErrConcurrencySource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Data provider not found.
         /// </summary>
         public static string ErrConnectionDataProviderNotFound {
@@ -966,6 +1101,15 @@ namespace TomPIT {
         public static string ErrConversion {
             get {
                 return ResourceManager.GetString("ErrConversion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot create search catalog middleware.
+        /// </summary>
+        public static string ErrCreateSearchCatalog {
+            get {
+                return ResourceManager.GetString("ErrCreateSearchCatalog", resourceCulture);
             }
         }
         
@@ -1101,6 +1245,24 @@ namespace TomPIT {
         public static string ErrElementClosestNull {
             get {
                 return ResourceManager.GetString("ErrElementClosestNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email is already in use.
+        /// </summary>
+        public static string ErrEmailInUse {
+            get {
+                return ResourceManager.GetString("ErrEmailInUse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Entity state not found.
+        /// </summary>
+        public static string ErrEntityStateNotFound {
+            get {
+                return ResourceManager.GetString("ErrEntityStateNotFound", resourceCulture);
             }
         }
         
@@ -1272,6 +1434,15 @@ namespace TomPIT {
         public static string ErrInstanceNull {
             get {
                 return ResourceManager.GetString("ErrInstanceNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Authorization model.
+        /// </summary>
+        public static string ErrInvalidAuthorizationModel {
+            get {
+                return ResourceManager.GetString("ErrInvalidAuthorizationModel", resourceCulture);
             }
         }
         
@@ -1600,11 +1771,29 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot obtain lock.
+        /// </summary>
+        public static string ErrLockFail {
+            get {
+                return ResourceManager.GetString("ErrLockFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Login failed. Please try again..
         /// </summary>
         public static string ErrLoginFailed {
             get {
                 return ResourceManager.GetString("ErrLoginFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Login name is already in use.
+        /// </summary>
+        public static string ErrLoginInUse {
+            get {
+                return ResourceManager.GetString("ErrLoginInUse", resourceCulture);
             }
         }
         
@@ -1623,6 +1812,24 @@ namespace TomPIT {
         public static string ErrMailTemplateNotFound {
             get {
                 return ResourceManager.GetString("ErrMailTemplateNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manifest not found.
+        /// </summary>
+        public static string ErrManifestNull {
+            get {
+                return ResourceManager.GetString("ErrManifestNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manifest property not found.
+        /// </summary>
+        public static string ErrManifestPropertyNull {
+            get {
+                return ResourceManager.GetString("ErrManifestPropertyNull", resourceCulture);
             }
         }
         
@@ -1717,6 +1924,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot create middleware.
+        /// </summary>
+        public static string ErrMiddlewareNull {
+            get {
+                return ResourceManager.GetString("ErrMiddlewareNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Missing Add method..
         /// </summary>
         public static string ErrMissingAddMethod {
@@ -1758,6 +1974,24 @@ namespace TomPIT {
         public static string ErrMissingRemoveMethod {
             get {
                 return ResourceManager.GetString("ErrMissingRemoveMethod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Model connection not set.
+        /// </summary>
+        public static string ErrModelConnectionNotSet {
+            get {
+                return ResourceManager.GetString("ErrModelConnectionNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Model operation not found.
+        /// </summary>
+        public static string ErrModelOperationNotFound {
+            get {
+                return ResourceManager.GetString("ErrModelOperationNotFound", resourceCulture);
             }
         }
         
@@ -1821,6 +2055,15 @@ namespace TomPIT {
         public static string ErrNoPropertyDesigner {
             get {
                 return ResourceManager.GetString("ErrNoPropertyDesigner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No queries in big data partition.
+        /// </summary>
+        public static string ErrNoQuery {
+            get {
+                return ResourceManager.GetString("ErrNoQuery", resourceCulture);
             }
         }
         
@@ -1951,6 +2194,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Property is not allowed in patch operation.
+        /// </summary>
+        public static string ErrPatchForbidden {
+            get {
+                return ResourceManager.GetString("ErrPatchForbidden", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Path parameter not set..
         /// </summary>
         public static string ErrPathNotSet {
@@ -1965,6 +2217,15 @@ namespace TomPIT {
         public static string ErrPermissionNotFound {
             get {
                 return ResourceManager.GetString("ErrPermissionNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to primaryKey argument is null.
+        /// </summary>
+        public static string ErrPrimaryKeyNull {
+            get {
+                return ResourceManager.GetString("ErrPrimaryKeyNull", resourceCulture);
             }
         }
         
@@ -1996,6 +2257,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Property is read only..
+        /// </summary>
+        public static string ErrPropertyReadOnly {
+            get {
+                return ResourceManager.GetString("ErrPropertyReadOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Property value null.
         /// </summary>
         public static string ErrPropertyValueNull {
@@ -2005,11 +2275,38 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Query not found.
+        /// </summary>
+        public static string ErrQueryNotFound {
+            get {
+                return ResourceManager.GetString("ErrQueryNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Queue worker not found.
         /// </summary>
         public static string ErrQueueWorkerNotFound {
             get {
                 return ResourceManager.GetString("ErrQueueWorkerNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot obtain record lock.
+        /// </summary>
+        public static string ErrRecordLock {
+            get {
+                return ResourceManager.GetString("ErrRecordLock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Record unlock failed. The most common reason is that a lock has expired. This could mean your transaction has written inconsistent data..
+        /// </summary>
+        public static string ErrRecordUnlock {
+            get {
+                return ResourceManager.GetString("ErrRecordUnlock", resourceCulture);
             }
         }
         
@@ -2037,6 +2334,15 @@ namespace TomPIT {
         public static string ErrRemoveFullControl {
             get {
                 return ResourceManager.GetString("ErrRemoveFullControl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Repository not found.
+        /// </summary>
+        public static string ErrRepositoryNotFound {
+            get {
+                return ResourceManager.GetString("ErrRepositoryNotFound", resourceCulture);
             }
         }
         
@@ -2109,6 +2415,15 @@ namespace TomPIT {
         public static string ErrServiceOperationNotFound {
             get {
                 return ResourceManager.GetString("ErrServiceOperationNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings middleware does not contain requested property.
+        /// </summary>
+        public static string ErrSettingPropertyNull {
+            get {
+                return ResourceManager.GetString("ErrSettingPropertyNull", resourceCulture);
             }
         }
         
@@ -2608,6 +2923,33 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Smtp endpoint not set. Smtp listener disabled..
+        /// </summary>
+        public static string NoSmtpEndpoint {
+            get {
+                return ResourceManager.GetString("NoSmtpEndpoint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Smtp host name not set. Smtp listener disabled..
+        /// </summary>
+        public static string NoSmtpHostName {
+            get {
+                return ResourceManager.GetString("NoSmtpHostName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Policy authorization failed..
+        /// </summary>
+        public static string PolicyAuthorizationFailed {
+            get {
+                return ResourceManager.GetString("PolicyAuthorizationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Try again.
         /// </summary>
         public static string ReloadView {
@@ -2869,6 +3211,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enum value not defined.
+        /// </summary>
+        public static string ValEnumValueNotDefined {
+            get {
+                return ResourceManager.GetString("ValEnumValueNotDefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Please enter an existing passsword..
         /// </summary>
         public static string ValExistingPassword {
@@ -3000,6 +3351,15 @@ namespace TomPIT {
         public static string ValReservedValue {
             get {
                 return ResourceManager.GetString("ValReservedValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Script tag is not allowed.
+        /// </summary>
+        public static string ValScriptTagNotAllowed {
+            get {
+                return ResourceManager.GetString("ValScriptTagNotAllowed", resourceCulture);
             }
         }
         

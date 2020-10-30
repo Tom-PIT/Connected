@@ -38,14 +38,14 @@ namespace TomPIT.Management.BigData
 			Tenant.Post(u, e);
 		}
 
-		public Guid InsertNode(string name, string TenantString, string adminTenantString)
+		public Guid InsertNode(string name, string connectionString, string adminConnectionString)
 		{
 			var u = Tenant.CreateUrl("BigDataManagement", "InsertNode");
 			var e = new JObject
 			{
 				{"name", name },
-				{"TenantString", TenantString },
-				{"adminTenantString", adminTenantString },
+				{"connectionString", connectionString },
+				{"adminConnectionString", adminConnectionString },
 				{"status", NodeStatus.Inactive.ToString() }
 			};
 
@@ -99,15 +99,15 @@ namespace TomPIT.Management.BigData
 			return Tenant.Post<Partition>(u, e);
 		}
 
-		public void UpdateNode(Guid token, string name, string TenantString, string adminTenantString, NodeStatus status, long size)
+		public void UpdateNode(Guid token, string name, string connectionString, string adminConnectionString, NodeStatus status, long size)
 		{
 			var u = Tenant.CreateUrl("BigDataManagement", "UpdateNode");
 			var e = new JObject
 			{
 				{"token", token },
 				{ "name", name },
-				{"TenantString", TenantString },
-				{"adminTenantString", adminTenantString },
+				{"connectionString", connectionString },
+				{"adminConnectionString", adminConnectionString },
 				{"status", NodeStatus.Inactive.ToString() },
 				{"size", size }
 			};

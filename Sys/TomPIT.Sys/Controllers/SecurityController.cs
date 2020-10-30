@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using TomPIT.Security;
 using TomPIT.Sys.Data;
 using TomPIT.Sys.Security;
@@ -39,9 +39,9 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpGet]
-		public IPermission SelectPermission(Guid evidence, string schema, string claim, string primaryKey)
+		public IPermission SelectPermission(string evidence, string schema, string claim, string primaryKey, string descriptor)
 		{
-			return DataModel.Permissions.Select(evidence, schema, claim, primaryKey);
+			return DataModel.Permissions.Select(evidence, schema, claim, primaryKey, descriptor);
 		}
 
 		[HttpGet]

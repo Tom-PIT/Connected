@@ -48,6 +48,11 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 		protected virtual void OnProvideItems(List<ICompletionItem> items, IMicroService microService, IComponent component)
 		{
+			AddItem(items, microService, component);
+		}
+
+		protected void AddItem(List<ICompletionItem> items, IMicroService microService, IComponent component)
+		{
 			var text = $"{microService.Name}/{component.Name}";
 
 			items.Add(new CompletionItem

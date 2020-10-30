@@ -82,7 +82,7 @@ namespace TomPIT.Development
 			e.Tenant.RegisterService(typeof(IAutoFixService), typeof(AutoFixService));
 		}
 
-		private void RegisterDesignersRouting(IRouteBuilder builder)
+		private void RegisterDesignersRouting(IEndpointRouteBuilder builder)
 		{
 			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
 			{

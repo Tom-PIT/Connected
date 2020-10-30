@@ -1,17 +1,32 @@
-﻿using TomPIT.Data.Sql;
+﻿using System.Collections.Generic;
+using TomPIT.Data.Sql;
 
 namespace TomPIT.BigData.Providers.Sql
 {
 	internal class MergeResultRecord : DatabaseRecord
 	{
-		public object[] ItemArray { get; private set; }
+		private List<MergeResultField> _fields = null;
+		public List<MergeResultField> Fields
+		{
+			get
+			{
+				if (_fields == null)
+					_fields = new List<MergeResultField>();
+
+				return _fields;
+			}
+		}
 
 		protected override void OnCreate()
 		{
-			ItemArray = new object[Reader.FieldCount - 1];
-
-			for (int i = 1; i < ItemArray.Length; i++)
-				ItemArray[i - 1] = Reader[i];
+			for (var i = 1; i < Reader.FieldCount; i++)
+			{
+				Fields.Add(new MergeResultField
+				{
+					Name = Reader.GetName(i),
+					Value = Reader.GetValue(i)
+				});
+			}
 		}
 	}
 }

@@ -35,7 +35,7 @@ namespace TomPIT.MicroServices.Runtime.Configuration
 
 		}
 
-		public void RegisterRoutes(IRouteBuilder builder)
+		public void RegisterRoutes(IEndpointRouteBuilder builder)
 		{
 		}
 	}

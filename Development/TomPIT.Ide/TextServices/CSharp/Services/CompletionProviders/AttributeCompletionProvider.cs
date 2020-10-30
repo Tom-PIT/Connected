@@ -67,7 +67,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 
 		private void ProvideItemsFromParameter(List<ICompletionItem> items, TextSpan span, SyntaxNode node)
 		{
-			if (node is AttributeArgumentListSyntax)
+			if (node is AttributeArgumentListSyntax || node is AttributeArgumentSyntax)
 				ProvideItemsFromConstructor(items, span, node);
 			else
 				ProvideItemsFromMethod(items, span, node);

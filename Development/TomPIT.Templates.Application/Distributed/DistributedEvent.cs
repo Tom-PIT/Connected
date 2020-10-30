@@ -9,6 +9,7 @@ namespace TomPIT.MicroServices.Distributed
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
 	[Create("Event", nameof(Name))]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.DistributedEvent, TomPIT.MicroServices.Design")]
 	public class DistributedEvent : SourceCodeElement, IDistributedEvent
 	{
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]

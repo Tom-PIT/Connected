@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System.ComponentModel;
+using Newtonsoft.Json;
 using TomPIT.Annotations;
+using TomPIT.Reflection;
 
 namespace TomPIT.Middleware
 {
@@ -18,19 +20,42 @@ namespace TomPIT.Middleware
 
 		[JsonIgnore]
 		[SkipValidation]
+		[Browsable(false)]
 		public IMiddlewareContext Context
 		{
 			get
 			{
 				if (_context == null)
+				{
 					_context = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant?.Url);
+
+					OnContextChanged();
+				}
 
 				return _context;
 			}
+			/*
+			 * this setter must be present because of reflection
+			 */
 			private set
 			{
-				_context = value;
+				if (_context != value)
+				{
+					_context = value;
+
+					OnContextChanged();
+				}
 			}
+		}
+
+		protected virtual void OnContextChanged()
+		{
+
+		}
+
+		public override string ToString()
+		{
+			return GetType().ShortName();
 		}
 	}
 }

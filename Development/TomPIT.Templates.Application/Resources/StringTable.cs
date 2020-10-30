@@ -8,6 +8,7 @@ using TomPIT.MicroServices.Design;
 namespace TomPIT.MicroServices.Resources
 {
 	[DomDesigner(DesignUtils.StringTableDesigner)]
+	[FileNameExtension("txt")]
 	public class StringTable : ComponentConfiguration, IStringTableConfiguration
 	{
 		private ListItems<IStringResource> _strings = null;

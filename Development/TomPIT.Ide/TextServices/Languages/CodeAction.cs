@@ -26,5 +26,6 @@ namespace TomPIT.Ide.TextServices.Languages
 		public string Kind { get; set; }
 
 		public string Title { get; set; }
+		public bool Disabled { get; set; }
 	}
 }

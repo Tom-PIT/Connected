@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using TomPIT.Analytics;
-using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Cdn;
 using TomPIT.Compilation;
@@ -87,13 +86,19 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IGraphicsService), typeof(GraphicsService));
 			e.Tenant.RegisterService(typeof(ISearchService), typeof(SearchService));
 			e.Tenant.RegisterService(typeof(ILocalizationService), typeof(LocalizationService));
-			e.Tenant.RegisterService(typeof(IBigDataService), typeof(BigDataService));
 			e.Tenant.RegisterService(typeof(INavigationService), typeof(NavigationService));
 			e.Tenant.RegisterService(typeof(IIoCService), typeof(IoCService));
 			e.Tenant.RegisterService(typeof(IPrintingService), typeof(PrintingService));
 			e.Tenant.RegisterService(typeof(IUIDependencyInjectionService), typeof(UIDependencyInjectionService));
 			e.Tenant.RegisterService(typeof(IDependencyInjectionService), typeof(DependencyInjectionService));
 			e.Tenant.RegisterService(typeof(IAnalyticsService), typeof(AnalyticsService));
+			e.Tenant.RegisterService(typeof(IModelService), typeof(ModelService));
+			e.Tenant.RegisterService(typeof(IDesignService), typeof(DesignService));
+			e.Tenant.RegisterService(typeof(ICdnService), typeof(CdnService));
+			e.Tenant.RegisterService(typeof(ILockingService), typeof(LockingService));
+
+			if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
+				e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 			{

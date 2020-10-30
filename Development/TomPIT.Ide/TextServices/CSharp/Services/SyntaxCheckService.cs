@@ -51,8 +51,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 
 				if (diagnostic.Source == null)
 					external = true;
-
-				if (diagnostic.Source.Contains("/"))
+				else if (diagnostic.Source.Contains("/"))
 				{
 					if (string.Compare(fileName, diagnostic.Source, true) != 0)
 						external = true;

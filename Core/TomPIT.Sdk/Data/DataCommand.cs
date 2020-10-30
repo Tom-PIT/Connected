@@ -40,15 +40,26 @@ namespace TomPIT.Data
 
 		public TomPIT.Data.IDataParameter SetParameter(string name, object value, bool nullMapping)
 		{
+			return ResolveParameter(name, value, nullMapping, null);
+		}
+		public TomPIT.Data.IDataParameter SetParameter(string name, object value, bool nullMapping, DbType type)
+		{
+			return ResolveParameter(name, value, nullMapping, type);
+		}
+
+		private TomPIT.Data.IDataParameter ResolveParameter(string name, object value, bool nullMapping, DbType? type)
+		{
 			var parameter = Parameters.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0);
 			var mappedValue = nullMapping ? MapNullValue(value) : MapValue(value);
+			var dbType = type != null ? (DbType)type : mappedValue == null || mappedValue == DBNull.Value ? DbType.String : Types.ToDbType(mappedValue.GetType());
 
 			if (parameter == null)
 			{
 				parameter = new DataParameter
 				{
 					Name = name,
-					Value = mappedValue
+					Value = mappedValue,
+					Type = dbType
 				};
 
 				Parameters.Add(parameter);
@@ -59,12 +70,27 @@ namespace TomPIT.Data
 			return parameter;
 		}
 
+		private Type ResolveType(object value)
+		{
+			if (value == null || value == DBNull.Value)
+				return typeof(string);
+
+			return value.GetType();
+		}
+
 		private object MapValue(object value)
 		{
 			if (value == null || value == DBNull.Value)
 				return value;
 
 			if (value.GetType().IsTypePrimitive())
+			{
+				if (value.GetType().IsEnum)
+					return Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()));
+
+				return value;
+			}
+			else if (value is byte[])
 				return value;
 
 			return Serializer.Serialize(value);
@@ -140,7 +166,8 @@ namespace TomPIT.Data
 				{
 					Direction = parameter.Direction,
 					Name = parameter.Name,
-					Value = parameter.Value
+					Value = parameter.Value,
+					DataType = parameter.Type
 				});
 			}
 

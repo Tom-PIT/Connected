@@ -1,28 +1,28 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace TomPIT.Distributed
 {
-	public abstract class Dispatcher<T>
+	public abstract class Dispatcher<T> : IDisposable
 	{
 		private ConcurrentQueue<T> _items = null;
-		private ConcurrentBag<DispatcherJob<T>> _workers = null;
-		private CancellationTokenSource _cancel = null;
+		private List<DispatcherJob<T>> _workers = null;
+		private readonly CancellationToken _cancel;
+		private bool _disposed = false;
 
-		public event EventHandler Enqueued;
-
-		protected Dispatcher(CancellationTokenSource cancel, int workerSize)
+		protected Dispatcher(CancellationToken cancel, int workerSize)
 		{
 			_cancel = cancel;
-
-			for (int i = 0; i < workerSize; i++)
-				Jobs.Add(CreateWorker(_cancel));
+			WorkerSize = workerSize;
 		}
 
-		protected abstract DispatcherJob<T> CreateWorker(CancellationTokenSource cancel);
+		private int WorkerSize { get; }
 
-		public int Available { get { return Jobs.Count - Queue.Count; } }
+		protected abstract DispatcherJob<T> CreateWorker(CancellationToken cancel);
+
+		public int Available { get { return Math.Max(0, WorkerSize * 4) - Queue.Count; } }
 
 		public bool Dequeue(out T item)
 		{
@@ -33,7 +33,37 @@ namespace TomPIT.Distributed
 		{
 			Queue.Enqueue(item);
 
-			Enqueued?.Invoke(this, EventArgs.Empty);
+			if (Jobs.Count < WorkerSize)
+			{
+				var worker = CreateWorker(_cancel);
+
+				worker.Completed += OnCompleted;
+
+				lock (Jobs)
+				{
+					Jobs.Add(worker);
+				}
+
+				worker.Run();
+			}
+		}
+
+		private void OnCompleted(object sender, EventArgs e)
+		{
+			try
+			{
+				if (!(sender is DispatcherJob<T> job))
+					return;
+
+				lock (Jobs)
+				{
+					Jobs.Remove(job);
+				}
+
+				job.Dispose();
+				job = null;
+			}
+			catch { }
 		}
 
 		private ConcurrentQueue<T> Queue
@@ -47,15 +77,39 @@ namespace TomPIT.Distributed
 			}
 		}
 
-		private ConcurrentBag<DispatcherJob<T>> Jobs
+		private List<DispatcherJob<T>> Jobs
 		{
 			get
 			{
 				if (_workers == null)
-					_workers = new ConcurrentBag<DispatcherJob<T>>();
+					_workers = new List<DispatcherJob<T>>();
 
 				return _workers;
 			}
 		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposed)
+			{
+				if (disposing)
+				{
+
+					try
+					{
+						Jobs.Clear();
+					}
+					catch { }
+				}
+
+				_disposed = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+		}
 	}
 }
+

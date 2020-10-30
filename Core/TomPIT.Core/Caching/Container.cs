@@ -47,6 +47,14 @@ namespace TomPIT.Caching
 			return Items[key].Count > 0;
 		}
 
+		public IEnumerator<T> GetEnumerator<T>(string key)
+		{
+			if (!Items.ContainsKey(key))
+				return null;
+
+			return Items[key].GetEnumerator<T>();
+		}
+
 		public List<T> All<T>(string key) where T : class
 		{
 			if (!Items.ContainsKey(key))

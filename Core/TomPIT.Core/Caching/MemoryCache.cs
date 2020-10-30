@@ -54,6 +54,10 @@ namespace TomPIT.Caching
 			Container.CreateKey(key);
 		}
 
+		public IEnumerator<T> GetEnumerator<T>(string key) where T : class
+		{
+			return Container.GetEnumerator<T>(key);
+		}
 		public List<T> All<T>(string key) where T : class
 		{
 			List<T> r = Container.All<T>(key);
@@ -308,6 +312,11 @@ namespace TomPIT.Caching
 				sb.Append(chars[r.Next(chars.Length - 1)]);
 
 			return sb.ToString();
+		}
+
+		public ICollection<string> Keys(string key)
+		{
+			return Container.Keys(key);
 		}
 
 		public static MemoryCache Default { get { return _default.Value; } }

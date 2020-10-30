@@ -1,84 +1,121 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading;
-using System.Threading.Tasks;
 using TomPIT.Data;
 
 namespace TomPIT.Distributed
 {
-	public abstract class DispatcherJob<T>
+	public abstract class DispatcherJob<T> : IDisposable
 	{
-		private bool _isRunning = false;
+		private bool _disposed = false;
+		private BackgroundWorker _worker = null;
 
-		public DispatcherJob(Dispatcher<T> owner, CancellationTokenSource cancel)
+		public event EventHandler Completed;
+		public DispatcherJob(Dispatcher<T> owner, CancellationToken cancel)
 		{
 			Owner = owner;
 			Cancel = cancel;
 
-			owner.Enqueued += OnEnqueued;
+			cancel.Register(() =>
+			{
+				Worker.CancelAsync();
+			});
 
-			OnEnqueued(this, EventArgs.Empty);
 		}
 
-		private async void OnEnqueued(object sender, EventArgs e)
+		public void Run()
 		{
-			if (_isRunning)
-			{
-				await Task.CompletedTask;
-				return;
-			}
+			Worker.RunWorkerAsync();
+		}
 
-			await Task.Run(async () => await Dequeue(), Cancel.Token);
+		public Guid Id => Guid.NewGuid();
+		public bool IsRunning => Worker.IsBusy;
+
+		private BackgroundWorker Worker
+		{
+			get
+			{
+				if (_worker == null)
+				{
+					_worker = new BackgroundWorker();
+					_worker.RunWorkerCompleted += OnCompleted;
+					_worker.DoWork += Dequeue;
+				}
+
+				return _worker;
+			}
+		}
+
+		private void OnCompleted(object sender, RunWorkerCompletedEventArgs e)
+		{
+			Completed?.Invoke(this, EventArgs.Empty);
 		}
 
 		protected Dispatcher<T> Owner { get; }
-		protected CancellationTokenSource Cancel { get; }
+		protected CancellationToken Cancel { get; }
 
-		private Task Dequeue()
+		private void Dequeue(object sender, DoWorkEventArgs e)
 		{
-			_isRunning = true;
+			T item = default;
 
-			var token = Cancel.Token;
-
-			while (!token.IsCancellationRequested)
+			try
 			{
-				T item = default;
-
-				try
+				while (Owner.Dequeue(out item))
 				{
-					if (!Owner.Dequeue(out item))
-						break;
-
-					if (item is IPopReceiptRecord)
-					{
-						var pa = item as IPopReceiptRecord;
-
-						if (pa.NextVisible <= DateTime.UtcNow)
-							continue;
-					}
+					if (item is IPopReceiptRecord pr && pr.NextVisible <= DateTime.UtcNow)
+						continue;
 
 					DoWork(item);
 				}
-				catch (Exception ex)
-				{
-					try
-					{
-						OnError(item, ex);
-					}
-					catch
-					{
-						//eat exception to avoid process crash
-					}
-				}
-
-				token.WaitHandle.WaitOne(TimeSpan.FromMilliseconds(1));
 			}
-
-			_isRunning = false;
-
-			return Task.CompletedTask;
+			catch (Exception ex)
+			{
+				try
+				{
+					OnError(item, ex);
+				}
+				catch
+				{
+				}
+			}
 		}
 
 		protected abstract void DoWork(T item);
 		protected abstract void OnError(T item, Exception ex);
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_disposed)
+				return;
+
+			if (_worker != null)
+			{
+				try
+				{
+					_worker.Dispose();
+					_worker = null;
+				}
+				catch
+				{
+
+				}
+			}
+
+			if (disposing)
+				OnDisposing();
+
+			_disposed = true;
+		}
+
+		protected virtual void OnDisposing()
+		{
+
+		}
 	}
 }

@@ -149,7 +149,8 @@ namespace TomPIT.Management.Designers
 		{
 			var dp = ResolveDataProvider(data);
 
-			dp.CreateDatabase(data.Required<string>("value"));
+			if (dp is IDeployDataProvider deploy)
+				deploy.CreateDatabase(data.Required<string>("value"));
 
 			var r = Result.EmptyResult(ViewModel);
 

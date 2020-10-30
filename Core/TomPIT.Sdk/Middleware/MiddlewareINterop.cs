@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Reflection;
 using TomPIT.ComponentModel;
+using TomPIT.Configuration;
+using TomPIT.Exceptions;
 using TomPIT.Middleware.Interop;
 using TomPIT.Serialization;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
@@ -41,6 +44,31 @@ namespace TomPIT.Middleware
 		public dynamic Invoke([CIP(CIP.ApiOperationProvider)]string api)
 		{
 			return Invoke<dynamic>(api);
+		}
+
+		public R Setting<R>(string middleware, string property)
+		{
+			return (R)Setting(middleware, property);
+		}
+
+		public dynamic Setting(string middleware, string property)
+		{
+			var descriptor = ComponentDescriptor.Settings(Context, middleware);
+
+			descriptor.Validate();
+			descriptor.ValidateConfiguration();
+
+			var settings = descriptor.Context.CreateMiddleware<ISettingsMiddleware>(descriptor.Configuration.Middleware(descriptor.Context));
+
+			if (settings == null)
+				throw new RuntimeException($"{SR.ErrMiddlewareNull} ({middleware})");
+
+			var prop = settings.GetType().GetProperty(property, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+
+			if (prop == null)
+				throw new RuntimeException($"{SR.ErrSettingPropertyNull} ({property})");
+
+			return prop.GetValue(settings);
 		}
 	}
 }

@@ -4,21 +4,22 @@ using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Exceptions;
 using TomPIT.Middleware.Services;
+using TomPIT.Reflection;
+using TomPIT.Security;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware
 {
-	public class MiddlewareContext : IMiddlewareContext
+	public class MiddlewareContext : IMiddlewareContext, IElevationContext
 	{
 		#region Members
-
+		private ElevationContextState _elevationState = ElevationContextState.Revoked;
 		private IMiddlewareServices _services = null;
 		private ITenant _tenant = null;
 		private IMiddlewareInterop _interop = null;
 		private IMiddlewareEnvironment _environment = null;
 		private MiddlewareConnectionPool _connections = null;
 		private IMiddlewareTransaction _transaction = null;
-
 		#endregion
 
 		#region Constructors
@@ -54,11 +55,8 @@ namespace TomPIT.Middleware
 		#endregion
 
 		#region Properties
-
-#if DEBUG
-		public Guid Id { get; private set; }
-#endif
-
+		[JsonIgnore]
+		ElevationContextState IElevationContext.State => Owner == null ? _elevationState : Owner._elevationState;
 		[JsonIgnore]
 		public virtual IMiddlewareServices Services
 		{
@@ -154,7 +152,7 @@ namespace TomPIT.Middleware
 
 		#region Methods
 
-		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
+		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText)
 		{
 			if (Transaction.State == MiddlewareTransactionState.Active)
 				return OpenReader<T>(connection, commandText, ConnectionBehavior.Shared);
@@ -162,7 +160,7 @@ namespace TomPIT.Middleware
 				return OpenReader<T>(connection, commandText, ConnectionBehavior.Isolated);
 		}
 
-		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText, ConnectionBehavior behavior)
+		public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText, ConnectionBehavior behavior)
 		{
 			return new DataReader<T>(this)
 			{
@@ -171,7 +169,16 @@ namespace TomPIT.Middleware
 			};
 		}
 
-		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText)
+		public IDataReader<T> OpenReader<T>(IDataConnection connection, [CIP(CIP.CommandTextProvider)] string commandText)
+		{
+			return new DataReader<T>(this)
+			{
+				Connection = connection,
+				CommandText = commandText
+			};
+		}
+
+		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText)
 		{
 			if (Transaction.State == MiddlewareTransactionState.Active)
 				return OpenWriter(connection, commandText, ConnectionBehavior.Shared);
@@ -179,7 +186,16 @@ namespace TomPIT.Middleware
 				return OpenWriter(connection, commandText, ConnectionBehavior.Isolated);
 		}
 
-		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)]string connection, [CIP(CIP.CommandTextProvider)]string commandText, ConnectionBehavior behavior)
+		public IDataWriter OpenWriter(IDataConnection connection, [CIP(CIP.CommandTextProvider)] string commandText)
+		{
+			return new DataWriter(this)
+			{
+				Connection = connection,
+				CommandText = commandText
+			};
+		}
+
+		public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText, ConnectionBehavior behavior)
 		{
 			return new DataWriter(this)
 			{
@@ -190,23 +206,29 @@ namespace TomPIT.Middleware
 
 		#endregion
 
-		#region Helpers
-
 		protected void Initialize(string endpoint)
 		{
-#if DEBUG
-			Id = Guid.NewGuid();
-#endif
-
 			Endpoint = endpoint;
 
 			if (string.IsNullOrWhiteSpace(endpoint))
 				Endpoint = Tenant?.Url;
 		}
 
-		internal IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)]string connection, ConnectionBehavior behavior)
+		internal IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)] string connection, ConnectionBehavior behavior)
 		{
-			return Connections.OpenConnection(this, connection, behavior);
+			return OpenConnection(connection, behavior, null);
+		}
+
+		public IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)] string connection, ConnectionBehavior behavior, object arguments)
+		{
+			try
+			{
+				return Connections.OpenConnection(this, connection, behavior, arguments);
+			}
+			catch
+			{
+				throw;
+			}
 		}
 
 		private IMiddlewareTransaction BeginTransaction()
@@ -230,6 +252,23 @@ namespace TomPIT.Middleware
 			Connections.CloseConnections();
 		}
 
-		#endregion
+		void IElevationContext.Grant()
+		{
+			_elevationState = ElevationContextState.Granted;
+		}
+
+		void IElevationContext.Revoke()
+		{
+			_elevationState = ElevationContextState.Revoked;
+		}
+
+		public T OpenModel<T>() where T : IModelComponent
+		{
+			var result = TypeExtensions.CreateInstance<IModelComponent>(typeof(T));
+
+			ReflectionExtensions.SetPropertyValue(result, nameof(result.Context), this);
+
+			return (T)result;
+		}
 	}
 }

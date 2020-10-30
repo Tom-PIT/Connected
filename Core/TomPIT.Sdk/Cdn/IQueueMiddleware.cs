@@ -10,6 +10,7 @@ namespace TomPIT.Cdn
 	public interface IQueueMiddleware : IMiddlewareComponent
 	{
 		void Invoke();
+		void Invoke(IMiddlewareContext context);
 
 		QueueValidationBehavior ValidationFailed { get; }
 	}

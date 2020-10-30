@@ -39,7 +39,7 @@ $.widget('tompit.tpIde', {
         this.setErrors();
 
         var instance = this;
-           
+
         $(document).keyup(function (e) {
             if (e.ctrlKey && e.altKey && e.keyCode === 37)
                 instance._previousView();
@@ -136,7 +136,7 @@ $.widget('tompit.tpIde', {
 
         instance._syncNavigationButtons();
     },
-    _previousView : function () {
+    _previousView: function () {
         if (this.options.navigation.index <= 0)
             return;
 
@@ -150,18 +150,18 @@ $.widget('tompit.tpIde', {
         this._syncNavigationButtons();
 
     },
-    _nextView : function () {
-            if (this.options.navigation.index >= this.options.navigation.views.length - 1)
-                return;
+    _nextView: function () {
+        if (this.options.navigation.index >= this.options.navigation.views.length - 1)
+            return;
 
-            this.options.navigation.index++;
-            this.selectNode({
-                path: this.options.navigation.views[this.options.navigation.index].path,
-                reorderNavigation: false,
-                stateIndex: this.options.navigation.index - 1
-            });
+        this.options.navigation.index++;
+        this.selectNode({
+            path: this.options.navigation.views[this.options.navigation.index].path,
+            reorderNavigation: false,
+            stateIndex: this.options.navigation.index - 1
+        });
 
-            this._syncNavigationButtons();
+        this._syncNavigationButtons();
     },
     _initializeExplorerNodes: function (e) {
         e = $.extend({
@@ -915,7 +915,7 @@ $.widget('tompit.tpIde', {
             $('#devStatusErrors').addClass('clickable');
 
             var list = $('<ul class="list-unstyled">');
-            
+
             $.each(errors, function (i, v) {
                 list.append($('<li>')
                     .append('<div class ="row">'
@@ -1057,6 +1057,7 @@ $.widget('tompit.tpIde', {
 
                 if (isText) {
                     $('#devTextDesigner').collapse('show');
+                    textEditor.layout();
                     $('#devDesigner').collapse('hide');
                 }
                 else {

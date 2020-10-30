@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
 using TomPIT.Runtime;
@@ -33,6 +34,29 @@ namespace TomPIT.Security.Authentication
 			return r;
 		}
 
+		public IClientAuthenticationResult Authenticate(Guid authenticationToken)
+		{
+			var user = Tenant.GetService<IUserService>().SelectByAuthenticationToken(authenticationToken);
+
+			if (user == null)
+			{
+				return new AuthenticationResult
+				{
+					Success = false,
+					Reason = AuthenticationResultReason.Other
+				};
+			}
+			else
+			{
+				return new AuthenticationResult
+				{
+					Identity = new Identity(user),
+					Reason = AuthenticationResultReason.OK,
+					Success = true,
+					Token = user.AuthenticationToken.ToString()
+				};
+			}
+		}
 		public IClientAuthenticationResult Authenticate(string authenticationToken)
 		{
 			var svc = Tenant.GetService<IAuthorizationService>() as AuthorizationService;

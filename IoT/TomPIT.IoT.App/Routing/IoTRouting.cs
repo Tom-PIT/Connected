@@ -5,9 +5,9 @@ namespace TomPIT.IoT.Routing
 {
 	internal static class IoTRouting
 	{
-		public static void Register(IRouteBuilder routes)
+		public static void Register(IEndpointRouteBuilder routes)
 		{
-			routes.MapRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+			routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
 		}
 	}
 }

@@ -9,10 +9,13 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.Management</RootNamespace>
-    <AssemblyName>TomPIT.Experience.Management</AssemblyName>
-    <AssemblyVersion>2.1.403.3</AssemblyVersion>
-    <FileVersion>2.1.403.3</FileVersion>
-    <Version>2.1.403.3</Version>
+    <AssemblyName>TomPIT.Connected.Management</AssemblyName>
+    <AssemblyVersion>2.1.1030.1</AssemblyVersion>
+    <FileVersion>2.1.1030.1</FileVersion>
+    <Version>2.1.1030.1</Version>
+    <Authors>Tom PIT</Authors>
+    <Company>Tom PIT</Company>
+    <Product>Tom PIT.connected</Product>
   </PropertyGroup>
   <PropertyGroup>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>

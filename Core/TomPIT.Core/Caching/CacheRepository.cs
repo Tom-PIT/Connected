@@ -33,6 +33,11 @@ namespace TomPIT.Caching
 
 		public int Count { get { return Container.Count(Key); } }
 
+		protected virtual ICollection<string> Keys()
+		{
+			return Container.Keys(Key);
+		}
+
 		protected virtual List<T> All()
 		{
 			return Container.All<T>(Key);

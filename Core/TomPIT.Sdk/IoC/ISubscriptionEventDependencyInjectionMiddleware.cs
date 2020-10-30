@@ -6,6 +6,7 @@ namespace TomPIT.IoC
 {
 	public interface ISubscriptionEventDependencyInjectionMiddleware : IMiddlewareObject
 	{
-		List<IRecipient> Invoke(List<IRecipient> recipients);
+		void Invoke(List<IRecipient> recipients);
+		List<IRecipient> QueryRecipients(List<IRecipient> recipients);
 	}
 }

@@ -1,20 +1,23 @@
 ﻿{
-	"connections": [
+  "connections": [
     {
       "name": "localhost",
       "url": "http://sys-app/common/sys",
       //"url": "http://localhost:44001",
-      //"url": "http://sys-app/inel/sys",
-      "authenticationToken": "defaultAuthenticationToken"
+      //"url": "http://sys-app/skaza/sys",
+      //"authenticationToken": "207ec2a0bac1457bb9649798191398cf"
       //"authenticationToken": "8354505c-19f9-4ecb-bc0f-108204c78555"
+      "authenticationToken": "defaultAuthenticationToken"
     }
-	],
+  ],
+  "platform":  "onPrem",
 	"resourceGroups": [
 		"Default"
 	],
-	"dataProviders": [
-		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
-	],
+  "dataProviders": [
+    "TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql",
+    "TomPIT.DataProviders.BigData.BigDataProvider, TomPIT.DataProviders.BigData"
+  ],
 	"plugins": {
 		"location": "c:\\Deploy\\Plugins",
 		"shadowCopy": true,

@@ -18,5 +18,9 @@
   {
     "outputFile": "wwwroot/Assets/Styles/designers.css",
     "inputFile": "wwwroot/Assets/Styles/designers.less"
+  },
+  {
+    "outputFile": "wwwroot/Assets/Styles/versionControl.css",
+    "inputFile": "wwwroot/Assets/Styles/versionControl.less"
   }
 ]

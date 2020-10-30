@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.Exceptions;
 using TomPIT.Reflection;
+using TomPIT.Security;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Interop
@@ -22,6 +25,13 @@ namespace TomPIT.Middleware.Interop
 
 		public T Invoke<T>()
 		{
+			return Invoke<T>(null);
+		}
+		public T Invoke<T>(IMiddlewareContext context)
+		{
+			if (context != null)
+				this.WithContext(context);
+
 			var r = Invoke();
 
 			if (r == null)
@@ -44,6 +54,13 @@ namespace TomPIT.Middleware.Interop
 
 		public TReturnValue Invoke()
 		{
+			return Invoke(null);
+		}
+		public TReturnValue Invoke(IMiddlewareContext context)
+		{
+			if (context != null)
+				this.WithContext(context);
+
 			ValidateExtender();
 			Validate();
 			OnValidating();
@@ -52,6 +69,7 @@ namespace TomPIT.Middleware.Interop
 			{
 				if (Context.Environment.IsInteractive)
 				{
+					AuthorizePolicies();
 					OnAuthorize();
 					OnAuthorizing();
 				}
@@ -88,7 +106,7 @@ namespace TomPIT.Middleware.Interop
 						listResult.Add(i);
 
 					if (Context.Environment.IsInteractive)
-						return DependencyInjections.Authorize(OnAuthorize(result));
+						return DependencyInjections.Authorize(OnAuthorize(AuthorizePolicies(result)));
 					else
 						return result;
 				}
@@ -101,20 +119,36 @@ namespace TomPIT.Middleware.Interop
 					var listResult = method.Invoke(extenderInstance, new object[] { listInstance }) as IList;
 
 					if (Context.Environment.IsInteractive)
-						return DependencyInjections.Authorize(OnAuthorize(((TReturnValue)listResult[0])));
+						return DependencyInjections.Authorize(OnAuthorize(AuthorizePolicies((TReturnValue)listResult[0])));
 					else
 						return (TReturnValue)listResult[0];
 				}
 			}
-			catch (System.ComponentModel.DataAnnotations.ValidationException)
+			catch (ValidationException)
 			{
+				Rollback();
+
 				throw;
 			}
 			catch (Exception ex)
 			{
 				Rollback();
 
-				throw TomPITException.Unwrap(this, ex);
+				var unwrapped = TomPITException.Unwrap(this, ex);
+
+				if (unwrapped is ValidationException)
+				{
+					ExceptionDispatchInfo.Capture(unwrapped).Throw();
+					throw;
+				}
+				else
+				{
+					var se = new ScriptException(this, unwrapped);
+
+					ExceptionDispatchInfo.Capture(se).Throw();
+
+					throw;
+				}
 			}
 		}
 
@@ -166,6 +200,91 @@ namespace TomPIT.Middleware.Interop
 				throw new RuntimeException($"{SR.ErrExtenderNotSupported} ({Extender})");
 
 			return extender.Extender;
+		}
+
+		private TReturnValue AuthorizePolicies(TReturnValue e)
+		{
+			if (e == null)
+				return e;
+
+			var attributes = GetType().GetCustomAttributes(true);
+			var targets = new List<AuthorizationPolicyAttribute>();
+
+			foreach (var attribute in attributes)
+			{
+				if (!(attribute is AuthorizationPolicyAttribute policy) || policy.MiddlewareStage != AuthorizationMiddlewareStage.Result)
+					continue;
+
+				targets.Add(policy);
+			}
+
+			if (typeof(TReturnValue).IsCollection())
+			{
+				var items = (IList)e;
+				var result = typeof(TReturnValue).CreateInstance<IList>();
+
+				foreach (var item in items)
+				{
+					var authorized = AuthorizePoliciesItem(item, targets);
+
+					if (authorized != default)
+						result.Add(authorized);
+				}
+
+				return (TReturnValue)result;
+			}
+			else
+				return (TReturnValue)AuthorizePoliciesItem(e, targets);
+		}
+
+		private object AuthorizePoliciesItem(object e, List<AuthorizationPolicyAttribute> attributes)
+		{
+			if (attributes.Count == 0)
+				return e;
+
+			var restore = false;
+
+			if (Context is IElevationContext c && c.State == ElevationContextState.Granted)
+			{
+				restore = true;
+				Context.Revoke();
+			}
+
+			Exception firstFail = null;
+			bool onePassed = false;
+
+			try
+			{
+				foreach (var attribute in attributes.OrderByDescending(f => f.Priority))
+				{
+					try
+					{
+						if (attribute.Behavior == AuthorizationPolicyBehavior.Optional && onePassed)
+							continue;
+
+						attribute.Authorize(Context, e);
+
+						onePassed = true;
+					}
+					catch (Exception ex)
+					{
+						if (attribute.Behavior == AuthorizationPolicyBehavior.Mandatory)
+							throw ex;
+
+						firstFail = ex;
+					}
+				}
+
+				if (!onePassed && firstFail != null)
+					throw firstFail;
+
+				return e;
+			}
+			finally
+			{
+				if (restore)
+					Context.Grant();
+			}
 		}
 	}
 }

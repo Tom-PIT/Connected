@@ -19,7 +19,7 @@ namespace TomPIT.MicroServices.BigData.Design
 		{
 			_items = new ConcurrentDictionary<string, IItemDescriptor>(new Dictionary<string, IItemDescriptor>
 			{
-				{ ComponentCategories.BigDataPartition,      new ItemDescriptor("Partition",     ComponentCategories.BigDataPartition,     typeof(Partition)) { Category ="Big Data",   Glyph="fal fa-broadcast-tower",  Ordinal=100}}
+				{ ComponentCategories.BigDataPartition,      new ItemDescriptor("Partition",     ComponentCategories.BigDataPartition,     typeof(Partition)) { Category ="Big Data",   Glyph="fal fa-broadcast-tower",  Ordinal=610}}
 			});
 		}
 

@@ -10,6 +10,7 @@ namespace TomPIT.Middleware.Services
 		bool IsEmpty(string key);
 		void CreateKey(string key);
 		List<T> All<T>(string key) where T : class;
+		T Get<T>(string key, Func<T, bool> matchEvaluator, CacheRetrieveHandler<T> retrieve) where T : class;
 		T Get<T>(string key, string id, CacheRetrieveHandler<T> retrieve) where T : class;
 		void Clear(string key);
 		T Get<T>(string key, string id) where T : class;

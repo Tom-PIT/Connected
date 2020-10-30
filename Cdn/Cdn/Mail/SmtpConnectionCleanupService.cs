@@ -8,7 +8,6 @@ namespace TomPIT.Cdn.Mail
 {
 	internal class SmtpConnectionCleanupService : HostedService
 	{
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
 		private Lazy<List<MailDispatcher>> _dispatchers = new Lazy<List<MailDispatcher>>();
 
 		public SmtpConnectionCleanupService()
@@ -16,7 +15,7 @@ namespace TomPIT.Cdn.Mail
 			IntervalTimeout = TimeSpan.FromMinutes(1);
 		}
 
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			SmtpConnectionPool.CleanUp();
 

@@ -101,7 +101,7 @@ namespace TomPIT.Design.Designers
 
 		public PermissionValue GetPermissionValue(IPermissionSchemaDescriptor d)
 		{
-			return Environment.Context.Tenant.GetService<IAuthorizationService>().GetPermissionValue(d.Id, SelectedSchema, SelectedClaim);
+			return Environment.Context.Tenant.GetService<IAuthorizationService>().GetPermissionValue(d.Id, SelectedSchema, SelectedClaim, Owner.PermissionDescriptor.Id);
 		}
 
 		private List<IPermission> Permissions
@@ -144,7 +144,7 @@ namespace TomPIT.Design.Designers
 							{"avatar" ,i.Avatar}
 						};
 
-						var value = Permissions.FirstOrDefault(f => f.Evidence == i.Id);
+						var value = Permissions.FirstOrDefault(f => string.Compare(f.Evidence, i.Id, true) == 0);
 
 						d.Add("value", value == null ? PermissionValue.NotSet.ToString() : value.Value.ToString());
 

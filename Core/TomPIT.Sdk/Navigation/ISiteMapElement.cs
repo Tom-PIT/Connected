@@ -7,5 +7,8 @@ namespace TomPIT.Navigation
 		ISiteMapElement Parent { get; }
 		string Text { get; }
 		bool Visible { get; }
+		string Category { get; }
+		string Glyph { get; }
+		string Css { get; }
 	}
 }

@@ -133,43 +133,9 @@
     <value>IF NOT EXISTS(SELECT * FROM sys.indexes WHERE object_id = object_id('{0}') AND NAME ='IX_{0}_{1}')
   CREATE INDEX IX_{0}_{1} ON {0} ({1});</value>
   </data>
-  <data name="CreateMergeProcedure" xml:space="preserve">
-    <value>CREATE PROCEDURE merge_{0}
-	@rows nvarchar(max)
-AS
-
-MERGE {0} AS t
-USING (SELECT * FROM OPENJSON(@rows) WITH ({5})) AS s ({1})
-ON ({2})
-	WHEN matched THEN
-		UPDATE SET {3}
-	WHEN not matched THEN
-		INSERT ({1}) values ({4})
-  OUTPUT $action, inserted.*;</value>
-  </data>
-  <data name="CreateUpdateProcedure" xml:space="preserve">
-    <value>CREATE PROCEDURE merge_{0}
-	@rows nvarchar(max)
-AS
-
-MERGE {1} AS t
-USING (SELECT * FROM OPENJSON(@rows) WITH ({5})) AS s ({2})
-ON ({3})
-	WHEN matched THEN
-		UPDATE SET {4}
-	OUTPUT inserted.*;</value>
-  </data>
   <data name="DropIndex" xml:space="preserve">
     <value>IF EXISTS(SELECT * FROM sys.indexes WHERE object_id = object_id('{0}') AND NAME ='IX_{0}_{1}')
 	DROP INDEX IX_{0}_{1} ON {0}</value>
-  </data>
-  <data name="DropProcedure" xml:space="preserve">
-    <value>IF EXISTS ( SELECT  * FROM    sys.objects WHERE   object_id = OBJECT_ID(N'merge_{0}') AND type IN (N'P', N'PC')) 
-DROP PROCEDURE merge_{0}</value>
-  </data>
-  <data name="DropProcedureUpdate" xml:space="preserve">
-    <value>IF EXISTS ( SELECT  * FROM    sys.objects WHERE   object_id = OBJECT_ID(N'merge_{0}') AND type IN (N'P', N'PC')) 
-DROP PROCEDURE merge_{0}</value>
   </data>
   <data name="DropTable" xml:space="preserve">
     <value>IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'{0}') AND type IN (N'U')) 

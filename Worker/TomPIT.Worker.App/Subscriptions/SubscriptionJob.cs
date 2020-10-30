@@ -15,7 +15,7 @@ namespace TomPIT.Worker.Subscriptions
 {
 	internal class SubscriptionJob : DispatcherJob<IQueueMessage>
 	{
-		public SubscriptionJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public SubscriptionJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -46,7 +46,7 @@ namespace TomPIT.Worker.Subscriptions
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.LogError(nameof(SubscriptionEventJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(SubscriptionEventJob));
 			MiddlewareDescriptor.Current.Tenant.GetService<ISubscriptionWorkerService>().PingSubscription(item.PopReceipt);
 		}
 	}

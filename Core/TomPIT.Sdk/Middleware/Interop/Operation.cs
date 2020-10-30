@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.Runtime.ExceptionServices;
 using TomPIT.Exceptions;
 
 namespace TomPIT.Middleware.Interop
@@ -7,27 +9,55 @@ namespace TomPIT.Middleware.Interop
 	{
 		public void Invoke()
 		{
-			Validate();
-			OnValidating();
+			Invoke(null);
+		}
+		public void Invoke(IMiddlewareContext context)
+		{
+			if (context != null)
+				this.WithContext(context);
 
 			try
 			{
-				OnAuthorize();
-				OnAuthorizing();
+				Validate();
+				OnValidating();
+
+				if (Context.Environment.IsInteractive)
+				{
+					AuthorizePolicies();
+					OnAuthorize();
+					OnAuthorizing();
+				}
 
 				OnInvoke();
 				DependencyInjections.Invoke<object>(null);
 
 				Invoked();
 			}
-			catch (System.ComponentModel.DataAnnotations.ValidationException)
+			catch (ValidationException)
 			{
+				Rollback();
 				throw;
 			}
 			catch (Exception ex)
 			{
 				Rollback();
-				throw new ScriptException(this, ex);
+
+				var unwrapped = TomPITException.Unwrap(this, ex);
+
+				if (unwrapped is ValidationException)
+				{
+					ExceptionDispatchInfo.Capture(unwrapped).Throw();
+					throw;
+				}
+				else
+				{
+					var se = new ScriptException(this, unwrapped);
+
+					ExceptionDispatchInfo.Capture(se).Throw();
+
+					throw;
+				}
+
 			}
 		}
 

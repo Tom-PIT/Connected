@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
@@ -16,9 +15,9 @@ namespace TomPIT.Configuration
 
 		}
 
-		public T GetValue<T>(Guid resourceGroup, string name)
+		public T GetValue<T>(string name, string nameSpace, string type, string primaryKey)
 		{
-			var s = Select(resourceGroup, name);
+			var s = Select(name, nameSpace, type, primaryKey);
 
 			if (Types.TryConvert(s.Value, out T vr))
 				return vr;
@@ -26,27 +25,28 @@ namespace TomPIT.Configuration
 			return default(T);
 		}
 
-		public List<ISetting> Query(Guid resourceGroup)
+		public List<ISetting> Query()
 		{
-			var u = Tenant.CreateUrl("Setting", "Query")
-				.AddParameter("resourceGroup", resourceGroup);
+			var u = Tenant.CreateUrl("Setting", "Query");
 
 			return Tenant.Get<List<Setting>>(u).ToList<ISetting>();
 		}
 
-		public ISetting Select(Guid resourceGroup, string name)
+		public ISetting Select(string name, string nameSpace, string type, string primaryKey)
 		{
-			var key = GenerateKey(resourceGroup, name);
+			var key = GenerateKey(name, nameSpace, type, primaryKey);
 			var r = Get(key);
 
 			if (r != null)
 				return r;
 
-			var u = Tenant.CreateUrl("Setting", "Select")
-				.AddParameter("resourceGroup", resourceGroup)
-				.AddParameter("name", name);
-
-			r = Tenant.Get<Setting>(u);
+			r = Tenant.Post<Setting>(Tenant.CreateUrl("Setting", "Select"), new
+			{
+				Name = name,
+				Type = type,
+				NameSpace = nameSpace,
+				PrimaryKey = primaryKey
+			});
 
 			if (r == null)
 				r = new Setting();
@@ -58,14 +58,28 @@ namespace TomPIT.Configuration
 
 		public void NotifyChanged(object sender, SettingEventArgs e)
 		{
-			Refresh(GenerateKey(e.ResourceGroup, e.Name));
+			Refresh(GenerateKey(e.Name, e.NameSpace, e.Type, e.PrimaryKey));
 			SettingChanged?.Invoke(sender, e);
 		}
 
 		public void NotifyRemoved(object sender, SettingEventArgs e)
 		{
-			Remove(GenerateKey(e.ResourceGroup, e.Name));
+			Remove(GenerateKey(e.Name, e.NameSpace, e.Type, e.PrimaryKey));
 			SettingChanged?.Invoke(sender, e);
+		}
+
+		public void Update(string name, string nameSpace, string type, string primaryKey, object value)
+		{
+			Tenant.Post(Tenant.CreateUrl("SettingManagement", "Update"), new
+			{
+				Name = name,
+				Type = type,
+				PrimaryKey = primaryKey,
+				Value = value,
+				NameSpace = nameSpace
+			});
+
+			NotifyChanged(this, new SettingEventArgs(name, nameSpace, type, primaryKey));
 		}
 	}
 }

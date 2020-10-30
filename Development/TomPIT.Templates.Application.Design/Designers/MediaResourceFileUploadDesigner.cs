@@ -4,8 +4,8 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.Design;
 using TomPIT.Ide;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom.ComponentModel;
@@ -71,7 +71,7 @@ namespace TomPIT.MicroServices.Design.Designers
 				Resource.Blob = id;
 				Resource.FileName = b.FileName;
 
-				Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(Resource.Configuration());
+				Environment.Context.Tenant.GetService<IDesignService>().Components.Update(Resource.Configuration());
 			};
 
 			return Result.SectionResult(ViewModel, EnvironmentSection.Designer | EnvironmentSection.Explorer);

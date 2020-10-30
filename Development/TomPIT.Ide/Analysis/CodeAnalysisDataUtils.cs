@@ -1,8 +1,8 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
+using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.DataProviders.Design;
 using TomPIT.Middleware;
@@ -32,70 +32,100 @@ namespace TomPIT.Ide.Analysis
 
 		public static IConnectionConfiguration ResolveConnection(this VariableDeclaratorSyntax syntax, IMiddlewareContext context)
 		{
+			return ResolveComponent<IConnectionConfiguration>(syntax, context, ComponentCategories.Connection);
+		}
+
+		public static IModelConfiguration ResolveModel(this VariableDeclaratorSyntax syntax, IMiddlewareContext context)
+		{
+			return ResolveComponent<IModelConfiguration>(syntax, context, ComponentCategories.Model);
+		}
+
+		private static T ResolveComponent<T>(this VariableDeclaratorSyntax syntax, IMiddlewareContext context, string componentCategory)
+		{
 			var invocations = syntax.DescendantNodes().OfType<InvocationExpressionSyntax>();
 
 			if (invocations.Count() == 0)
-				return null;
+				return default;
 
 			var invocation = invocations.First();
 
 			if (invocation.ArgumentList.Arguments.Count == 0)
-				return null;
+				return default;
 
 			if (invocation.ArgumentList.Arguments[0].Expression is LiteralExpressionSyntax le)
-				return le.ResolveConnection(context);
+				return le.ResolveComponent<T>(context, componentCategory);
 			else if (invocation.ArgumentList.Arguments[0].Expression is IdentifierNameSyntax identifier)
-				return identifier.ResolveConnection(context);
+				return identifier.ResolveComponent<T>(context, componentCategory);
 			else
-				return null;
+				return default;
 		}
 
 		public static IConnectionConfiguration ResolveConnection(this IdentifierNameSyntax ins, IMiddlewareContext context)
 		{
+			return ResolveComponent<IConnectionConfiguration>(ins, context, ComponentCategories.Connection);
+		}
+		public static IModelConfiguration ResolveModel(this IdentifierNameSyntax ins, IMiddlewareContext context)
+		{
+			return ResolveComponent<IModelConfiguration>(ins, context, ComponentCategories.Model);
+		}
+
+		private static T ResolveComponent<T>(this IdentifierNameSyntax ins, IMiddlewareContext context, string componentCategory)
+		{
 			var identifierName = ins.Identifier.Text;
 
 			if (string.IsNullOrWhiteSpace(identifierName))
-				return null;
+				return default;
 
 			var declaration = ins.DeclarationScope();
 
 			if (declaration == null)
-				return null;
+				return default;
 
 			var variable = declaration.VariableDeclaration(identifierName);
 
 			if (variable == null)
-				return null;
+				return default;
 
-			return variable.ResolveConnection(context);
+			return variable.ResolveComponent<T>(context, componentCategory);
 		}
 
 		public static IConnectionConfiguration ResolveConnection(this LiteralExpressionSyntax le, IMiddlewareContext context)
 		{
+			return ResolveComponent<IConnectionConfiguration>(le, context, ComponentCategories.Connection);
+		}
+
+		public static IModelConfiguration ResolveModel(this LiteralExpressionSyntax le, IMiddlewareContext context)
+		{
+			return ResolveComponent<IModelConfiguration>(le, context, ComponentCategories.Model);
+		}
+
+		public static T ResolveComponent<T>(this LiteralExpressionSyntax le, IMiddlewareContext context, string componentCategory)
+		{
 			var text = le.Token.ValueText;
 
 			if (string.IsNullOrWhiteSpace(text))
-				return null;
+				return default;
 
 			var tokens = text.Split('/');
 
 			if (tokens.Length != 2)
-				return null;
+				return default;
 
 			var ms = context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
 			if (ms == null)
-				return null;
+				return default;
 
-			return context.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, ComponentCategories.Connection, tokens[1]) as IConnectionConfiguration;
+			return (T)context.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, componentCategory, tokens[1]);
 		}
 
 		public static ISchemaBrowser ResolveSchemaBrowser(this IConnectionConfiguration connection, IMiddlewareContext context)
 		{
-			if (connection == null || connection.DataProvider == Guid.Empty)
+			if (connection == null)
 				return null;
 
-			var dataProvider = context.Tenant.GetService<IDataProviderService>().Select(connection.DataProvider);
+			var cs = connection.ResolveConnectionString(context, ConnectionStringContext.Elevated);
+			var dataProvider = context.Tenant.GetService<IDataProviderService>().Select(cs.DataProvider);
 
 			if (dataProvider == null)
 				return null;
@@ -105,9 +135,14 @@ namespace TomPIT.Ide.Analysis
 			if (att == null)
 				return null;
 
-			return att.Type == null
+			var result = att.Type == null
 				? Reflection.TypeExtensions.GetType(att.TypeName).CreateInstance<ISchemaBrowser>()
 				: att.Type.CreateInstance<ISchemaBrowser>();
+
+			if (result != null)
+				ReflectionExtensions.SetPropertyValue(result, nameof(result.Context), context);
+
+			return result;
 		}
 
 		public static IConnectionConfiguration DefaultConnection(this IMicroServiceContext context)

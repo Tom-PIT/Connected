@@ -7,7 +7,7 @@ namespace TomPIT.MicroServices.Apis
 {
 	internal class ApiProtocolOptions : ConfigurationElement, IApiProtocolOptions
 	{
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public bool Rest { get; set; }
 	}
 }

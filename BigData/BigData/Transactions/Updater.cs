@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -21,7 +22,7 @@ namespace TomPIT.BigData.Transactions
 		private IPartitionConfiguration _configuration = null;
 		private IMicroService _microService = null;
 		private IPartition _partition = null;
-		private object _sync = new object();
+		private readonly object _sync = new object();
 
 		public Updater(ITransactionBlock block)
 		{
@@ -97,24 +98,22 @@ namespace TomPIT.BigData.Transactions
 
 					merger.Merge();
 
-					if (merger.Locked != null && merger.Locked.Rows.Count > 0)
+					if (merger.Locked)
 					{
 						lock (_sync)
 						{
 							if (LockedItems == null)
 								LockedItems = new JArray();
 
-							foreach (DataRow row in merger.Locked.Rows)
+							foreach (var d in Data)
 							{
-								var lockedItem = new JObject();
+								var items = CreateArray(d.Key, d.Value);
 
-								foreach (DataColumn column in row.Table.Columns)
-									lockedItem.Add(new JProperty(column.ColumnName, row[column]));
-
-								if (!string.IsNullOrWhiteSpace(f.Key))
-									lockedItem.Add(new JProperty(Schema.PartitionKeyField, f.Key));
-
-								LockedItems.Add(lockedItem);
+								if (items != null)
+								{
+									foreach (JObject item in items)
+										LockedItems.Add(item);
+								}
 							}
 						}
 					}
@@ -139,8 +138,36 @@ namespace TomPIT.BigData.Transactions
 				return;
 
 			CreateSchema();
+			TearOff();
 		}
 
+		private JArray CreateArray(string key, DataTable data)
+		{
+			var result = new JArray();
+
+			foreach (DataRow row in data.Rows)
+			{
+				var record = new JObject();
+
+				if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(Schema.PartitionKeyField))
+					record.Add(new JProperty(Schema.PartitionKeyField, key));
+
+				foreach (DataColumn column in data.Columns)
+				{
+					var value = row[column];
+
+					if (value == null || value == DBNull.Value)
+						continue;
+
+					record.Add(new JProperty(column.ColumnName, value));
+				}
+
+				if (record.Count > 0)
+					result.Add(record);
+			}
+
+			return result;
+		}
 		private void CreateSchema()
 		{
 			Data = new Dictionary<string, DataTable>(StringComparer.OrdinalIgnoreCase);
@@ -154,9 +181,9 @@ namespace TomPIT.BigData.Transactions
 			foreach (JObject item in Items)
 			{
 				var partitionKeyProperty = item.Property(Schema.PartitionKeyField, StringComparison.OrdinalIgnoreCase);
-				var partitionKeyValue = partitionKeyProperty == null ? string.Empty : partitionKeyProperty.Value<string>();
+				var partitionKeyValue = partitionKeyProperty == null ? string.Empty : Types.Convert<string>(partitionKeyProperty.Value);
 
-				DataTable table = null;
+				DataTable table;
 
 				if (Data.ContainsKey(partitionKeyValue))
 					table = Data[partitionKeyValue];
@@ -186,6 +213,126 @@ namespace TomPIT.BigData.Transactions
 				}
 
 				table.Rows.Add(row);
+			}
+		}
+
+		private void TearOff()
+		{
+			var keyFields = KeyFields();
+
+			if (keyFields.Count == 0)
+				return;
+
+			var aggregations = HasAggregations;
+
+			foreach (var table in Data.Values)
+			{
+				var removables = new List<DataRow>();
+
+				foreach (DataRow row in table.Rows)
+				{
+					var duplicates = Duplicates(table, row, keyFields);
+
+					if (duplicates == null)
+						continue;
+
+					if (HasAggregations)
+						Aggregate(row, duplicates.Select(f => f.Row).ToList());
+
+					removables.AddRange(duplicates.Select(f => f.Row));
+				}
+				foreach (var row in removables)
+					table.Rows.Remove(row);
+			}
+		}
+
+		private List<DataRowDuplicate> Duplicates(DataTable table, DataRow row, List<string> keyFields)
+		{
+			var result = new List<DataRowDuplicate>();
+
+			foreach (DataRow dr in table.Rows)
+			{
+				var match = true;
+
+				foreach (var field in keyFields)
+				{
+					if (!Types.Compare(row[field], dr[field]))
+					{
+						match = false;
+						break;
+					}
+				}
+
+				if (match)
+				{
+					result.Add(new DataRowDuplicate
+					{
+						Index = table.Rows.IndexOf(dr),
+						Row = dr,
+						Timestamp = Types.Convert<DateTime>(dr[Merger.TimestampColumn])
+					});
+				}
+			}
+
+			if (result.Count == 1)
+				return null;
+
+			result = result.OrderBy(f => f.Timestamp).ThenBy(f => f.Index).ToList();
+
+			if (result[^1].Row != row)
+				return null;
+
+			result.RemoveAt(result.Count - 1);
+
+			return result;
+		}
+
+		private void Aggregate(DataRow row, List<DataRow> duplicates)
+		{
+			foreach (DataRow dr in duplicates)
+			{
+				foreach (var field in Schema.Fields)
+				{
+					if (field is PartitionSchemaNumberField number && number.Aggregate == AggregateMode.Sum)
+					{
+						var value = Types.Convert(dr[field.Name], field.Type);
+						var existingValue = Types.Convert(row[field.Name], field.Type);
+
+						var calculated = Types.Convert<decimal>(value) + Types.Convert<decimal>(existingValue);
+
+						row[field.Name] = Types.Convert(calculated, field.Type);
+					}
+				}
+			}
+		}
+
+		private List<string> KeyFields()
+		{
+			var result = new List<string>();
+
+			foreach (var field in Schema.Fields)
+			{
+				if (field.Key || string.Compare(Merger.TimestampColumn, field.Name, true) == 0)
+					result.Add(field.Name);
+			}
+
+			return result;
+		}
+
+		private bool HasAggregations
+		{
+			get
+			{
+				foreach (var field in Schema.Fields)
+				{
+					if (field is PartitionSchemaNumberField number)
+					{
+						if (number.Aggregate != AggregateMode.None)
+							return true;
+					}
+				}
+
+				return false;
 			}
 		}
 	}

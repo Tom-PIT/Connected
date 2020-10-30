@@ -13,17 +13,17 @@ namespace TomPIT.Development.Models
 			Navigation.Links.Add(new Route
 			{
 				Category = "Quality Assurance",
-				Text = "Test suites",
+				Text = "APIs",
 
-				Url = MiddlewareDescriptor.Current.RouteUrl(this, "sys.testsuites", null)
+				Url = MiddlewareDescriptor.Current.RouteUrl(this, "sys.apitest", null)
 			});
 
 			Navigation.Links.Add(new Route
 			{
-				Category = "Quality Assurance",
-				Text = "APIs",
+				Category = "Version Control",
+				Text = "Version Control",
 
-				Url = MiddlewareDescriptor.Current.RouteUrl(this, "sys.apitest", null)
+				Url = MiddlewareDescriptor.Current.RouteUrl(this, "sys.vc", null)
 			});
 		}
 	}

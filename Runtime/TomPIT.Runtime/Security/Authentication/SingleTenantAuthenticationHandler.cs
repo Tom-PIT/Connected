@@ -34,7 +34,12 @@ namespace TomPIT.Security.Authentication
 					principal = ValidateBasic();
 
 					if (principal == null)
-						return AuthenticateResult.NoResult();
+					{
+						principal = ValidateSSO();
+
+						if (principal == null)
+							return AuthenticateResult.NoResult();
+					}
 				}
 			}
 

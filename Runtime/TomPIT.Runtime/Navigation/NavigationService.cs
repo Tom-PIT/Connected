@@ -52,6 +52,24 @@ namespace TomPIT.Navigation
 		{
 			return QuerySiteMap(keys, null);
 		}
+
+		public List<ISiteMapContainer> QueryContainers()
+		{
+			Initialize();
+
+			var containers = new List<ISiteMapContainer>();
+			var keys = QueryKeys();
+
+			foreach (var key in keys)
+			{
+				var items = LoadSiteMap(key, null);
+
+				if (items != null && items.Count > 0)
+					containers.AddRange(items);
+			}
+
+			return containers;
+		}
 		public ISiteMapContainer QuerySiteMap(List<string> keys, List<string> tags)
 		{
 			Initialize();
@@ -73,6 +91,9 @@ namespace TomPIT.Navigation
 
 			foreach (var container in containers)
 			{
+				if (string.IsNullOrWhiteSpace(r.Text))
+					r.Text = container.Text;
+
 				if (container.Routes != null && container.Routes.Count > 0)
 					r.Routes.AddRange(container.Routes);
 			}
@@ -192,32 +213,27 @@ namespace TomPIT.Navigation
 				if (string.IsNullOrWhiteSpace(container.Key))
 					continue;
 
-				if (Handlers.ContainsKey(container.Key))
+				if (!Handlers.ContainsKey(container.Key))
 				{
-					if (Handlers[container.Key].FirstOrDefault(f => f.Component == configuration.Component) != null)
-						continue;
-
-					var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
-
-					FillDescriptor(descriptor, container);
-
-					var list = Handlers[container.Key];
-
-					lock (list)
+					lock (Handlers)
 					{
-						list.Add(descriptor);
+						if (!Handlers.ContainsKey(container.Key))
+							Handlers.TryAdd(container.Key, new List<NavigationHandlerDescriptor>());
 					}
 				}
-				else
+
+				if (Handlers[container.Key].FirstOrDefault(f => f.Component == configuration.Component) != null)
+					continue;
+
+				var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
+
+				FillDescriptor(descriptor, container);
+
+				var list = Handlers[container.Key];
+
+				lock (list)
 				{
-					var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
-
-					FillDescriptor(descriptor, container);
-
-					Handlers.TryAdd(container.Key, new List<NavigationHandlerDescriptor>
-						{
-							descriptor
-						});
+					list.Add(descriptor);
 				}
 			}
 		}
@@ -338,7 +354,8 @@ namespace TomPIT.Navigation
 					breadCrumb.Url = ParseUrl(routeContainer.Template, parameters);
 			}
 
-			items.Insert(0, breadCrumb);
+			if (item.Visible)
+				items.Insert(0, breadCrumb);
 
 			ISiteMapElement parent = null;
 

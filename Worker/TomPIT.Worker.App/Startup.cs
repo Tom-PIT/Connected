@@ -45,12 +45,12 @@ namespace TomPIT.Worker
 		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
 			e.Tenant.RegisterService(typeof(ISubscriptionWorkerService), typeof(SubscriptionWorkerService));
+			e.Tenant.RegisterService(typeof(IWorkerProxyService), typeof(WorkerProxyService));
 		}
 
 		private void RegisterTasks(IServiceCollection services)
 		{
 			services.AddSingleton<IHostedService, WorkerService>();
-			services.AddSingleton<IHostedService, EventService>();
 			services.AddSingleton<IHostedService, SubscriptionWorker>();
 			services.AddSingleton<IHostedService, SubscriptionEventWorker>();
 			services.AddSingleton<IHostedService, QueueWorkerService>();

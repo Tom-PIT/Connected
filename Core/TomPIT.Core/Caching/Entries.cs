@@ -54,12 +54,16 @@ namespace TomPIT.Caching
 				v.Dispose();
 		}
 
-		public ICollection<String> Keys { get { return Items.Keys; } }
+		public ICollection<string> Keys { get { return Items.Keys; } }
 		public void Set(string key, object instance, TimeSpan duration, bool slidingExpiration)
 		{
 			Items[key] = new Entry(key, instance, duration, slidingExpiration);
 		}
 
+		public IEnumerator<T> GetEnumerator<T>()
+		{
+			return new EntryEnumerator<T>(Items);
+		}
 		public Entry Get(string key)
 		{
 			return Find(key);

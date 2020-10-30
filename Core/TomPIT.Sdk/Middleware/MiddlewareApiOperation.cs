@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -45,7 +46,7 @@ namespace TomPIT.Middleware
 			foreach (var dependency in DependencyInjections)
 				dependency.Commit();
 		}
-
+		[EditorBrowsable(EditorBrowsableState.Advanced)]
 		protected internal override void OnRollbacking()
 		{
 			foreach (var dependency in DependencyInjections)

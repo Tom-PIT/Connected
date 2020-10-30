@@ -61,5 +61,7 @@ namespace TomPIT.Runtime.Configuration
 
 		[JsonProperty(PropertyName = "plugins")]
 		public PluginSet Plugins { get; set; }
+		[JsonProperty(PropertyName = "platform")]
+		public Platform Platform { get; set; } = Platform.Cloud;
 	}
 }

@@ -8,7 +8,7 @@ namespace TomPIT.Caching
 {
 	public abstract class SynchronizedRepository<T, K> : CacheRepository<T, K> where T : class
 	{
-		private object _sync = new object();
+		protected object SyncRoot = new object();
 		public event CacheInvalidateHandler Invalidate;
 
 		protected SynchronizedRepository(IMemoryCache container, string key) : base(container, key)
@@ -48,7 +48,7 @@ namespace TomPIT.Caching
 			if (Initialized)
 				return;
 
-			lock (_sync)
+			lock (SyncRoot)
 			{
 				if (Initialized)
 					return;

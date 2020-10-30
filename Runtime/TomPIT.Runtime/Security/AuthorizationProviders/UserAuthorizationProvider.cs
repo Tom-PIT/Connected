@@ -11,7 +11,7 @@ namespace TomPIT.Security.AuthorizationProviders
 
 		public AuthorizationProviderResult Authorize(IMiddlewareContext context, IPermission permission, AuthorizationArgs e, Dictionary<string, object> state)
 		{
-			if (e.User != permission.Evidence)
+			if (string.Compare(e.User.ToString(), permission.Evidence, true) != 0)
 				return AuthorizationProviderResult.NotHandled;
 
 			switch (permission.Value)
@@ -41,7 +41,7 @@ namespace TomPIT.Security.AuthorizationProviders
 			{
 				r.Add(new SchemaDescriptor
 				{
-					Id = i.Token,
+					Id = i.Token.ToString(),
 					Title = i.DisplayName(),
 					Description = i.Email
 				});

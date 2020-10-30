@@ -73,6 +73,22 @@ $.widget('tompit.tpScheduleDesigner', {
 			});
 		});
 
+        $('#btnReset').click(function () {
+            ide.designerAction({
+                data: {
+                    action: 'reset'
+                }
+            });
+        });
+
+        $('#btnRun').click(function () {
+            ide.designerAction({
+                data: {
+                    action: 'run'
+                }
+            });
+        });
+
         $('#editSecondCount').dxNumberBox({
             value: this.options.data.intervalValue,
             width: '100%',

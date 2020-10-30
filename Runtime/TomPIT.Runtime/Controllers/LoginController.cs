@@ -103,7 +103,7 @@ namespace TomPIT.Controllers
 							if (relative.Trim('/').StartsWith("sys/", StringComparison.OrdinalIgnoreCase) || relative.Trim('/').StartsWith("login", StringComparison.OrdinalIgnoreCase))
 								returnUrl = m.Services.Routing.RootUrl;
 							else
-								returnUrl = m.Services.Routing.Absolute(loc);
+								returnUrl = loc;
 						}
 					}
 

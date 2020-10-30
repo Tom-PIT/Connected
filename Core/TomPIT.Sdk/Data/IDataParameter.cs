@@ -7,6 +7,6 @@ namespace TomPIT.Data
 		string Name { get; set; }
 		object Value { get; set; }
 		ParameterDirection Direction { get; set; }
-
+		DbType Type { get; set; }
 	}
 }

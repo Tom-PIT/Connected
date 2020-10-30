@@ -124,6 +124,7 @@ namespace TomPIT.Connectivity
 			}
 			catch
 			{
+
 				throw new Exception(response.ReasonPhrase);
 			}
 

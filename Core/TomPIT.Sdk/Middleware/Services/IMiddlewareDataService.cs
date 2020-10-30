@@ -4,5 +4,6 @@
 	{
 		IMiddlewareDataAudit Audit { get; }
 		IMiddlewareUserDataService User { get; }
+		IMiddlewareLockingService Locking { get; }
 	}
 }

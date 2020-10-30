@@ -183,22 +183,28 @@ namespace TomPIT.Ide.Dom
 				return;
 
 			var enm = en.GetEnumerator();
-			int idx = 0;
+			var idx = 0;
+			var sorted = new List<IDomElement>();
 
 			while (enm.MoveNext())
 			{
 				var element = CreatePropertyElement(enm.Current, null, idx);
 
 				if (element != null)
-					properties.Add(element);
+					sorted.Add(element);
 				else
-					properties.Add(new ReflectionElement(this, enm.Current, null, idx)
+					sorted.Add(new ReflectionElement(this, enm.Current, null, idx)
 					{
 						SortChildren = false
 					});
 
 				idx++;
 			}
+
+			if (SortChildren)
+				sorted = sorted.OrderBy(f => f.Title).ToList();
+
+			properties.AddRange(sorted);
 		}
 
 		public virtual IDomDesigner PropertyDesigner(string propertyName)
@@ -227,7 +233,7 @@ namespace TomPIT.Ide.Dom
 
 		private void FillObjectProperties(object instance, List<IDomElement> properties)
 		{
-			var props = DomQuery.Properties(instance, false, true);
+			var props = Tenant.GetService<IDiscoveryService>().Properties(instance, false, true);
 			var filtered = new List<PropertyInfo>();
 			var suppressed = instance.GetType().FindAttribute<SuppressPropertiesAttribute>();
 			string[] suppressedProps = null;
@@ -324,5 +330,43 @@ namespace TomPIT.Ide.Dom
 		}
 
 		protected IDesignerService DesignerService { get { return Tenant.GetService<IDesignerService>(); } }
+
+		protected string WithFileExtension(string value)
+		{
+			object target = Property;
+
+			if (target == null)
+				target = Component;
+
+			if (target == null)
+				return value;
+
+			var extension = target.GetType().FindAttribute<FileNameExtensionAttribute>();
+
+			if (extension != null)
+				return $"{value}.{extension.Extension}";
+
+			var syntax = target.GetType().FindAttribute<SyntaxAttribute>();
+
+			if (syntax == null)
+				return value;
+
+			if (string.Compare(syntax.Syntax, SyntaxAttribute.CSharp, true) == 0)
+				return $"{value}.csx";
+			else if (string.Compare(syntax.Syntax, SyntaxAttribute.Css, true) == 0)
+				return $"{value}.css";
+			else if (string.Compare(syntax.Syntax, SyntaxAttribute.Javascript, true) == 0)
+				return $"{value}.jsm";
+			else if (string.Compare(syntax.Syntax, SyntaxAttribute.Json, true) == 0)
+				return $"{value}.json";
+			else if (string.Compare(syntax.Syntax, SyntaxAttribute.Less, true) == 0)
+				return $"{value}.less";
+			else if (string.Compare(syntax.Syntax, SyntaxAttribute.Razor, true) == 0)
+				return $"{value}.cshtml";
+			else if (string.Compare(syntax.Syntax, SyntaxAttribute.Sql, true) == 0)
+				return $"{value}.sql";
+			else
+				return value;
+		}
 	}
 }

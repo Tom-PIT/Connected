@@ -4,12 +4,12 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.Design;
 using TomPIT.Development;
 using TomPIT.Ide.Analysis;
 using TomPIT.Ide.Analysis.Analyzers;
 using TomPIT.Ide.Analysis.Diagnostics;
 using TomPIT.Ide.Analysis.Lenses;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
 using TomPIT.Ide.TextServices;
@@ -26,6 +26,7 @@ namespace TomPIT.Ide.Designers
 		private ICodeAnalyzer _analyzer = null;
 		private ICodeDiagnosticProvider _diagnostic = null;
 		private Type _argumentType = null;
+		private IAmbientProvider _ambientProvider = null;
 
 		private string _text = null;
 
@@ -45,7 +46,7 @@ namespace TomPIT.Ide.Designers
 				var att = Content.GetType().FindAttribute<SyntaxAttribute>();
 
 				if (att == null)
-					return "razor";
+					return "csharp";
 
 				return att.Syntax;
 			}
@@ -121,6 +122,18 @@ namespace TomPIT.Ide.Designers
 
 		protected override IDesignerActionResult OnAction(JObject data, string action)
 		{
+			if (AmbientProvider != null)
+			{
+				foreach (var a in AmbientProvider.ToolbarActions)
+				{
+					if (string.Compare(a.Action, action, true) == 0)
+					{
+						a.Invoke(Environment.Context, Content);
+						return Result.EmptyResult(this);
+					}
+				}
+			}
+
 			if (string.Compare(action, "provideCompletionItems", true) == 0)
 			{
 				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
@@ -205,6 +218,49 @@ namespace TomPIT.Ide.Designers
 					return Result.JsonResult(this, editor.GetService<IDeclarationProviderService>().ProvideDeclaration(position));
 				}
 			}
+			else if (string.Compare(action, "provideDefinition", true) == 0)
+			{
+				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
+				using (var editor = GetTextEditor(model, data.Optional<string>("text", null)))
+				{
+
+					if (editor == null)
+						return Result.JsonResult(this, null);
+
+					var position = DeserializePosition(data.Optional<JObject>("position", null));
+
+					return Result.JsonResult(this, editor.GetService<IDefinitionProviderService>().ProvideDefinition(position));
+				}
+			}
+			else if (string.Compare(action, "loadModel", true) == 0)
+			{
+				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
+				var tokens = model.Uri.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+				var ms = tokens[1];
+				var category = tokens[2];
+				var component = tokens[3];
+				var microService = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(ms);
+				var c = Environment.Context.Tenant.GetService<IComponentService>().SelectComponent(microService.Token, category, component);
+				var target = Environment.Context.Tenant.GetService<IDiscoveryService>().Find(c.Token, new Guid(tokens[^1]));
+				var text = Environment.Context.Tenant.GetService<IComponentService>().SelectText(Environment.Context.MicroService.Token, target as IText);
+				using var editor = GetTextEditor(model, text);
+				var syntax = Content.GetType().FindAttribute<SyntaxAttribute>();
+
+				return Result.JsonResult(this, new ModelDescriptor
+				{
+					CodeAction = (editor.Features & LanguageFeature.CodeAction) == LanguageFeature.CodeAction,
+					CodeCompletion = (editor.Features & LanguageFeature.CompletionItem) == LanguageFeature.CompletionItem,
+					Declaration = (editor.Features & LanguageFeature.Declaration) == LanguageFeature.Declaration,
+					Definition = (editor.Features & LanguageFeature.Definition) == LanguageFeature.Definition,
+					DocumentSymbol = (editor.Features & LanguageFeature.DocumentSymbol) == LanguageFeature.DocumentSymbol,
+					SignatureHelp = (editor.Features & LanguageFeature.SignatureHelp) == LanguageFeature.SignatureHelp,
+					FileName = text == null ? string.Empty : ((IText)target).FileName(),
+					Language = syntax == null ? "csharp" : syntax.Syntax,
+					MicroService = microService.Name,
+					Text = text
+				});
+			}
+
 
 			return base.OnAction(data, action);
 		}
@@ -216,6 +272,7 @@ namespace TomPIT.Ide.Designers
 			if (editor == null)
 				return null;
 
+			editor.Script = Content;
 			editor.Text = text;
 			editor.Model = model;
 			editor.HostType = ArgumentType;
@@ -315,7 +372,7 @@ namespace TomPIT.Ide.Designers
 			if (sc == null)
 				return Result.EmptyResult(this);
 
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(sc, data.Optional<string>("text", null));
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(sc, data.Optional<string>("text", null));
 			Environment.Context.Tenant.GetService<ICompilerService>().Invalidate(Environment.Context, sc.Configuration().MicroService(), sc.Configuration().Component, sc);
 
 			var r = Result.SectionResult(ViewModel, EnvironmentSection.Events);
@@ -459,6 +516,32 @@ namespace TomPIT.Ide.Designers
 				return $"/{component.Category}/{component.Name}";
 
 			return $"/{component.Category}/{component.Name}/{text.Id}";
+		}
+
+		public IAmbientProvider AmbientProvider
+		{
+			get
+			{
+				if (_ambientProvider == null)
+				{
+					var designer = Content.Configuration().GetType().FindAttribute<DomDesignerAttribute>();
+
+					if (designer == null)
+						return null;
+
+					if (string.IsNullOrWhiteSpace(designer.AmbientProvider))
+						return null;
+
+					var ambientType = Type.GetType(designer.AmbientProvider, false);
+
+					if (ambientType == null)
+						return null;
+
+					_ambientProvider = ambientType.CreateInstance<IAmbientProvider>();
+				}
+
+				return _ambientProvider;
+			}
 		}
 	}
 }

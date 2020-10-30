@@ -19,6 +19,7 @@ namespace TomPIT.Compilation
 		IMicroService ResolveMicroService(Type type);
 		IMicroService ResolveMicroService(object instance);
 		IComponent ResolveComponent(object instance);
+		IComponent ResolveComponent(Type type);
 		string CompileView(ITenant tenant, IText sourceCode);
 
 		Type ResolveType(Guid microService, IText sourceCode, string typeName);
@@ -39,5 +40,8 @@ namespace TomPIT.Compilation
 		T CreateInstance<T>(IMicroServiceContext context, IText sourceCode, string arguments) where T : class;
 
 		Microsoft.CodeAnalysis.Compilation GetCompilation(IText sourceCode);
+
+		public IText ResolveText(Guid microService, string path);
+		public string ResolveReference(Guid microService, string path);
 	}
 }

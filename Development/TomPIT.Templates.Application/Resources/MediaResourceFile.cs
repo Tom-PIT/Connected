@@ -13,7 +13,7 @@ namespace TomPIT.MicroServices.Resources
 {
 	[Create(DesignUtils.MediaFile)]
 	[DomDesigner(DesignUtils.MediaResourceFileUploadDesigner)]
-	public class MediaResourceFile : ConfigurationElement, IMediaResourceFile
+	public class MediaResourceFile : ConfigurationElement, IMediaResourceFile, IExternalResourceElement
 	{
 		[Browsable(false)]
 		public Guid Blob { get; set; }
@@ -44,6 +44,15 @@ namespace TomPIT.MicroServices.Resources
 			return string.IsNullOrWhiteSpace(FileName)
 				? base.ToString()
 				: FileName;
+		}
+
+		public void Clean(Guid resource)
+		{
+			if (Blob != Guid.Empty)
+				MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Delete(Blob);
+
+			if (Thumb != Guid.Empty)
+				MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Delete(Thumb);
 		}
 	}
 }

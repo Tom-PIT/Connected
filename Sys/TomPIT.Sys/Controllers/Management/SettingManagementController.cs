@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
 using TomPIT.Sys.Data;
 
 namespace TomPIT.Sys.Controllers.Management
@@ -11,14 +10,13 @@ namespace TomPIT.Sys.Controllers.Management
 		{
 			var body = FromBody();
 
-			var resourceGroup = body.Optional("resourceGroup", Guid.Empty);
 			var name = body.Required<string>("name");
 			var value = body.Optional("value", string.Empty);
-			var visible = body.Required<bool>("visible");
-			var dataType = body.Required<DataType>("dataType");
-			var tags = body.Optional("tags", string.Empty);
+			var type = body.Optional("type", string.Empty);
+			var primaryKey = body.Optional("type", string.Empty);
+			var nameSpace = body.Optional("nameSpace", string.Empty);
 
-			DataModel.Settings.Update(resourceGroup, name, value, visible, dataType, tags);
+			DataModel.Settings.Update(name, nameSpace, type, primaryKey, value);
 		}
 
 		[HttpPost]
@@ -26,10 +24,12 @@ namespace TomPIT.Sys.Controllers.Management
 		{
 			var body = FromBody();
 
-			var resourceGroup = body.Optional("resourceGroup", Guid.Empty);
 			var name = body.Required<string>("name");
+			var type = body.Optional("type", string.Empty);
+			var primaryKey = body.Optional("type", string.Empty);
+			var nameSpace = body.Optional("nameSpace", string.Empty);
 
-			DataModel.Settings.Delete(resourceGroup, name);
+			DataModel.Settings.Delete(name, nameSpace, type, primaryKey);
 		}
 	}
 }

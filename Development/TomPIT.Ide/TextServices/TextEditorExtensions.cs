@@ -48,6 +48,19 @@ namespace TomPIT.Ide.TextServices
 			return new TextLine();
 		}
 
+		public static TextLine GetLine(string sourceCode, int position)
+		{
+			var text = SourceText.From(sourceCode);
+
+			foreach (var line in text.Lines)
+			{
+				if (line.Span.IntersectsWith(position))
+					return line;
+			}
+
+			return new TextLine();
+		}
+
 		public static TextLine GetLine(this Document document, int position)
 		{
 			var text = document.GetTextAsync().Result;

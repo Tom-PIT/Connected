@@ -8,6 +8,11 @@ namespace TomPIT.DataProviders.Sql.Deployment
 {
 	internal static class Package
 	{
+		private static readonly List<string> IgnoredTables = new List<string>
+		{
+			"dbo.sysdiagrams"
+		};
+
 		public static IDatabase Create(string connectionString)
 		{
 			var r = new Database();
@@ -39,6 +44,12 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 			while (rdr.Read())
 			{
+				var tableName = rdr.GetValue("TABLE_NAME", string.Empty);
+				var schema = rdr.GetValue("TABLE_SCHEMA", string.Empty);
+
+				if (IgnoredTables.Contains($"{schema}.{tableName}"))
+					continue;
+
 				var t = new Table();
 
 				var type = rdr.GetValue("TABLE_TYPE", string.Empty);
@@ -46,8 +57,8 @@ namespace TomPIT.DataProviders.Sql.Deployment
 				if (string.Compare(type, "BASE TABLE", true) != 0)
 					continue;
 
-				t.Schema = rdr.GetValue("TABLE_SCHEMA", string.Empty);
-				t.Name = rdr.GetValue("TABLE_NAME", string.Empty);
+				t.Schema = schema;
+				t.Name = tableName;
 
 				db.Tables.Add(t);
 			}

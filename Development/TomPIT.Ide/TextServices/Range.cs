@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.Ide.TextServices
 {
-	internal class Range : IRange
+	public class Range : IRange
 	{
 		public int EndColumn { get; set; }
 

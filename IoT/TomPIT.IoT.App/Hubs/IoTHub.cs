@@ -1,27 +1,20 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.IoT;
-using TomPIT.Diagostics;
 using TomPIT.Exceptions;
-using TomPIT.IoT.Security;
 using TomPIT.Middleware;
-using TomPIT.Reflection;
-using TomPIT.Serialization;
 
 namespace TomPIT.IoT.Hubs
 {
-	[Authorize(AuthenticationSchemes = "TomPIT")]
-	public class IoTServerHub : Microsoft.AspNetCore.SignalR.Hub
+	//[Authorize(AuthenticationSchemes = "TomPIT")]
+	public class IoTServerHub : Hub
 	{
-		private static readonly string[] SpecialTransactionParameters = { "microService", Hub, Device, "transaction" };
-
 		private const string Device = "device";
 		private const string Hub = "hub";
 
@@ -30,201 +23,141 @@ namespace TomPIT.IoT.Hubs
 			IoTHubs.IoT = context;
 		}
 
-		public override Task OnConnectedAsync()
+		public async Task Register(List<IoTHubDevice> devices)
 		{
-			var qs = Context.GetHttpContext().Request.Query;
+			try
+			{
+				foreach (var device in devices)
+					AuthorizeHub($"{device.MicroService}/{device.Hub}", IoTConnectionMethod.Device);
 
-			var ms = string.Empty;
-			var hub = string.Empty;
+				foreach (var device in devices)
+					await Groups.AddToGroupAsync(Context.ConnectionId, device.ToString().ToLowerInvariant());
 
-			if (qs.ContainsKey("microService"))
-				ms = qs["microService"];
+				await Task.CompletedTask;
+			}
+			catch (Exception ex)
+			{
+				await Clients.Caller.SendAsync("exception", ex.Message);
+			}
+		}
 
-			if (qs.ContainsKey("hub"))
-				hub = qs["hub"];
+		public async Task Unregister(List<IoTHubDevice> devices)
+		{
+			try
+			{
+				foreach (var device in devices)
+					await Groups.RemoveFromGroupAsync(Context.ConnectionId, device.ToString().ToLowerInvariant());
 
-			if (!string.IsNullOrWhiteSpace(ms) && !string.IsNullOrWhiteSpace(hub))
-				Groups.AddToGroupAsync(Context.ConnectionId, string.Format("{0}/{1}", ms.ToLowerInvariant(), hub.ToLowerInvariant()));
+				await Task.CompletedTask;
+			}
+			catch (Exception ex)
+			{
+				await Clients.Caller.SendAsync("exception", ex.Message);
+			}
+		}
 
-			return Task.CompletedTask;
+		public async Task Add(List<HubSubscription> subscriptions)
+		{
+			try
+			{
+				foreach (var subscription in subscriptions)
+					AuthorizeHub(subscription.ToString(), IoTConnectionMethod.Client);
+
+				foreach (var subscription in subscriptions)
+					await Groups.AddToGroupAsync(Context.ConnectionId, subscription.ToString().ToLowerInvariant());
+
+				await Task.CompletedTask;
+			}
+			catch (Exception ex)
+			{
+				await Clients.Caller.SendAsync("exception", ex.Message);
+			}
+		}
+
+		public async Task Remove(List<HubSubscription> subscriptions)
+		{
+			try
+			{
+				foreach (var subscription in subscriptions)
+					await Groups.RemoveFromGroupAsync(Context.ConnectionId, subscription.ToString().ToLowerInvariant());
+
+				await Task.CompletedTask;
+			}
+			catch (Exception ex)
+			{
+				await Clients.Caller.SendAsync("exception", ex.Message);
+			}
+		}
+
+		private void AuthorizeHub(string identifier, IoTConnectionMethod method)
+		{
+			var ctx = new MiddlewareContext();
+			var descriptor = ComponentDescriptor.IoTHub(ctx, identifier);
+
+			descriptor.Validate();
+
+			if (descriptor.Configuration == null)
+				throw new NotFoundException($"{SR.ErrCannotFindConfiguration} ({identifier})");
+
+			var type = ctx.Tenant.GetService<ICompilerService>().ResolveType(descriptor.MicroService.Token, descriptor.Configuration, descriptor.ComponentName);
+			var instance = ctx.Tenant.GetService<ICompilerService>().CreateInstance<IMiddlewareComponent>(descriptor.Context, type);
+			var itf = instance.GetType().GetInterface(typeof(IIoTHubMiddleware<>).FullName);
+			var args = new IoTConnectionArgs(Context.ConnectionId, method);
+
+			itf.InvokeMember("Authorize", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, instance, new object[] { args });
 		}
 
 		public async void Data(JObject e)
 		{
-			var device = Context.User.Identity as DeviceIdentity;
-
 			try
 			{
-				var hub = device.Device.Configuration();
-				var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(hub.Component);
-				var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
-				var groupName = string.Format("{0}/{1}", ms.Name.ToLowerInvariant(), component.Name.ToLowerInvariant());
+				var sw = new Stopwatch();
+				sw.Start();
+				var processor = new DataProcessor(e);
+				var schema = processor.Process();
 
-				try
-				{
-					var ctx = new MicroServiceContext(ms);
-					var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ms.Token, device.Device, device.Device.Name, false);
-
-					if (type != null)
-					{
-						var handler = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IIoTDeviceMiddleware>(ctx, type);
-
-						handler.Arguments = e;
-						handler.Invoke();
-
-						if (e != null)
-							Serializer.Populate(JsonConvert.SerializeObject(e), handler);
-
-						handler.Invoke();
-
-						if (e == null)
-							e = new JObject();
-
-						Merge(hub as IIoTHubConfiguration, handler, e);
-					}
-				}
-				catch (Exception ex)
-				{
-					MiddlewareDescriptor.Current.Tenant.LogError("IoT", ex.Source, ex.Message);
-				}
-
-				var changes = MiddlewareDescriptor.Current.Tenant.GetService<IIoTHubService>().SetData(device.Device, e);
+				var changes = MiddlewareDescriptor.Current.Tenant.GetService<IIoTHubService>().SetData(processor.DeviceName, schema);
 
 				if (changes == null || changes.Count == 0)
 					return;
 
-				if (changes.ContainsKey(Device))
-					changes[Device] = device.Device.Name;
-				else
-					changes.Add(Device, device.Device.Name);
+				var data = new JObject
+				{
+					{Hub.ToLowerInvariant(), $"{processor.Descriptor.MicroServiceName}/{processor.Descriptor.ComponentName}" },
+					{Device.ToLowerInvariant(), processor.Descriptor.Element },
+					{"data", changes }
+				};
 
-				if (changes.ContainsKey(Hub))
-					changes[Hub] = hub.ComponentName();
-				else
-					changes.Add(Hub, hub.ComponentName());
-
-				await Clients.Group(groupName).SendAsync("data", changes);
+				await Clients.Group(processor.Group.ToLowerInvariant()).SendAsync("data", data);
+				sw.Stop();
+				Console.WriteLine(sw.ElapsedMilliseconds);
 			}
 			catch (Exception ex)
 			{
-				throw new HubException(ex.Message);
+				await Clients.Caller.SendAsync("exception", ex.Message);
 			}
 		}
 
-		private void Merge(IIoTHubConfiguration hub, IIoTDeviceMiddleware handler, JObject arguments)
-		{
-			var schema = MiddlewareDescriptor.Current.Tenant.GetService<IIoTHubService>().SelectSchema(hub);
-			var serializedHandler = Serializer.Deserialize<JObject>(handler);
-
-			foreach (var property in serializedHandler.Children())
-			{
-				if (!(property is JProperty p))
-					continue;
-
-				var field = schema.Fields.FirstOrDefault(f => string.Compare(f.Name, p.Name, true) == 0);
-
-				if (field == null)
-					continue;
-
-				var existingProperty = arguments.Property(field.Name, StringComparison.OrdinalIgnoreCase);
-
-				if (existingProperty == null)
-					arguments.Add(new JObject { field.Name, p.Value });
-				else
-					existingProperty.Value = p.Value;
-			}
-		}
-
-		public async void Transaction(JObject e)
+		public async void Invoke(JObject e)
 		{
 			try
 			{
-				var microService = e.Required<string>("microService");
-				var hub = e.Required<string>(Hub);
-				var transaction = e.Required<string>("transaction");
-				var device = e.Required<string>(Device);
+				var processor = new TransactionProcessor(e);
 
-				var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(microService);
-
-				if (ms == null)
-					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
-
-				if (hub.Contains('/'))
+				processor.Process();
+				var args = new JObject
 				{
-					var tokens = hub.Split('/');
-					hub = tokens[1].Trim();
-
-					if (string.Compare(tokens[0], microService, true) == 0)
-						hub = tokens[1];
-
-					ms.ValidateMicroServiceReference(tokens[0]);
-					ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
-				}
-
-				if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "IoTHub", hub) is IIoTHubConfiguration config))
-					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrIoTHubNotFound, hub));
-
-				var hubDevice = config.Devices.FirstOrDefault(f => string.Compare(f.Name, device, true) == 0);
-
-				if (hubDevice == null)
-					throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrIoTHubDeviceNotFound, hub, device));
-
-				var schema = MiddlewareDescriptor.Current.Tenant.GetService<IIoTHubService>().SelectSchema(hubDevice.Closest<IIoTHubConfiguration>());
-				var t = hubDevice.Transactions.FirstOrDefault(f => string.Compare(f.Name, transaction, true) == 0);
-
-				if (t == null)
-					t = schema.Transactions.FirstOrDefault(f => string.Compare(f.Name, transaction, true) == 0);
-
-				if (t == null)
-					throw new RuntimeException(string.Format("{0} ({1}/{2}/{3})", SR.ErrIoTTransactionNotAllowed, hub, device, transaction));
-
-				var parameters = new JObject
-				{
-					{"transaction",transaction }
+					{"device", processor.DeviceName },
+					{"transaction", processor.Transaction },
+					{"arguments",  processor.TransactionArguments}
 				};
 
-				var ctx = new MicroServiceContext(ms.Token);
-				var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ms.Token, t, t.Name, false);
-
-				if (type != null)
-				{
-					var handler = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IIoTTransactionMiddleware>(ctx, type, Serializer.Serialize(e));
-
-					handler.Invoke();
-
-					Serializer.Merge(e, handler);
-				}
-				else
-				{
-					foreach (var i in e.Children())
-					{
-						if (!(i is JProperty property))
-							continue;
-
-						if (IsSpecialName(property.Name))
-							continue;
-
-						parameters.Add(property);
-					}
-				}
-
-				await Clients.User(hubDevice.Id.ToString()).SendAsync("transaction", parameters);
+				await Clients.Group(processor.DeviceName.ToLowerInvariant()).SendAsync("transaction", args);
 			}
 			catch (Exception ex)
 			{
-				throw new HubException(ex.Message);
+				await Clients.Caller.SendAsync("exception", ex.Message);
 			}
-		}
-
-		private bool IsSpecialName(string parameterName)
-		{
-			foreach (var i in SpecialTransactionParameters)
-			{
-				if (string.Compare(i.ToLowerInvariant(), parameterName.ToLowerInvariant(), true) == 0)
-					return true;
-			}
-
-			return false;
 		}
 	}
 }

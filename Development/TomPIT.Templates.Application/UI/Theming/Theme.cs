@@ -13,6 +13,7 @@ namespace TomPIT.MicroServices.UI.Theming
 		public const string ComponentCategory = "Theme";
 
 		[Items(DesignUtils.StylesheetItems)]
+		[CollectionDesigner(Sort = false)]
 		public ListItems<IThemeFile> Stylesheets
 		{
 			get

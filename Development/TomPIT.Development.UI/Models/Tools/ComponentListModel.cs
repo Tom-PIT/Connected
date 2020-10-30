@@ -3,10 +3,10 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Analysis;
 using TomPIT.ComponentModel;
+using TomPIT.Design;
 using TomPIT.Design.Tools;
 using TomPIT.Development.Reflection;
 using TomPIT.Ide.Analysis;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Middleware;
 
@@ -31,7 +31,7 @@ namespace TomPIT.Development.Models.Tools
 			get
 			{
 				if (_components == null)
-					_components = Context.Tenant.GetService<IComponentDevelopmentService>().Query(Discovery.Services.Select(f => f.Token).ToArray());
+					_components = Context.Tenant.GetService<IDesignService>().Components.Query(Discovery.Services.Select(f => f.Token).ToArray());
 
 				return _components;
 			}

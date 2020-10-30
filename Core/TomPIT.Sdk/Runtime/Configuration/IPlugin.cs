@@ -16,6 +16,6 @@ namespace TomPIT.Runtime.Configuration
 		List<string> GetApplicationParts(ApplicationPartManager manager);
 		List<string> GetEmbeddedResources();
 		List<IPrintingProvider> GetPrintingProviders();
-		void RegisterRoutes(IRouteBuilder builder);
+		void RegisterRoutes(IEndpointRouteBuilder builder);
 	}
 }

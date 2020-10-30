@@ -18,8 +18,9 @@ namespace TomPIT.Development
 
 	public interface ICommit
 	{
+		Guid Token { get; }
 		DateTime Created { get; }
-		Guid User { get; }
+		int User { get; }
 		string Comment { get; }
 		Guid Service { get; }
 	}

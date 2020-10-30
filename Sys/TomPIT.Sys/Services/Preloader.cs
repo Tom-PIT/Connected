@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Connectivity;
 using TomPIT.Distributed;
@@ -15,8 +16,12 @@ namespace TomPIT.Sys.Services
 		{
 			IntervalTimeout = TimeSpan.FromSeconds(45);
 		}
+		protected override bool Initialize(CancellationToken cancel)
+		{
+			return DataModel.Initialized;
+		}
 
-		protected override Task Process()
+		protected override Task Process(CancellationToken cancel)
 		{
 			try
 			{
@@ -33,10 +38,6 @@ namespace TomPIT.Sys.Services
 			return Task.CompletedTask;
 		}
 
-		protected override bool Initialize()
-		{
-			return DataModel.Initialized;
-		}
 		private void Load(IInstanceEndpoint endpoint)
 		{
 			if (string.IsNullOrWhiteSpace(endpoint.Url) || endpoint.Status == InstanceStatus.Disabled)

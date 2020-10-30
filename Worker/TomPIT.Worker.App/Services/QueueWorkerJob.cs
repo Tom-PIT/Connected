@@ -17,7 +17,7 @@ namespace TomPIT.Worker.Services
 {
 	public class QueueWorkerJob : DispatcherJob<IQueueMessage>
 	{
-		public QueueWorkerJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public QueueWorkerJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -44,7 +44,7 @@ namespace TomPIT.Worker.Services
 
 			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) is IQueueConfiguration configuration))
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError(nameof(QueueWorkerJob), nameof(Invoke), $"{SR.ErrCannotFindConfiguration} ({component})");
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), $"{SR.ErrCannotFindConfiguration} ({component})", nameof(QueueWorkerJob));
 				return;
 			}
 
@@ -52,7 +52,7 @@ namespace TomPIT.Worker.Services
 
 			if (w == null)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError(nameof(QueueWorkerJob), nameof(Invoke), $"{SR.ErrQueueWorkerNotFound} ({component})");
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), $"{SR.ErrQueueWorkerNotFound} ({component})", nameof(QueueWorkerJob));
 				return;
 			}
 
@@ -88,7 +88,7 @@ namespace TomPIT.Worker.Services
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.LogError(nameof(QueueWorkerJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(QueueWorkerJob));
 
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
 

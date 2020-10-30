@@ -133,7 +133,7 @@ namespace TomPIT.SysDb.Sql.BigData
 			var w = new Writer("tompit.big_data_index_field_mdf");
 
 			w.CreateParameter("@index", file.GetId());
-			w.CreateParameter("@fieldName", fieldName);
+			w.CreateParameter("@field_name", fieldName);
 			w.CreateParameter("@start_string", startString, true);
 			w.CreateParameter("@end_string", endString, true);
 			w.CreateParameter("@start_number", startNumber, true);

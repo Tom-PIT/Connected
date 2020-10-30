@@ -38,7 +38,7 @@ namespace TomPIT.Reflection.Manifests.Providers
 		{
 			var type = model.GetTypeInfo(attribute);
 
-			if (type.Type == null || !type.Type.IsInheritedFrom(typeof(ValidationAttribute).FullTypeName()))
+			if (type.Type == null)
 				return null;
 
 			var result = new Entities.ManifestAttribute();
@@ -48,6 +48,7 @@ namespace TomPIT.Reflection.Manifests.Providers
 				name = name[0..^9];
 
 			result.Name = name;
+			result.IsValidation = type.Type.IsInheritedFrom(typeof(ValidationAttribute).FullTypeName());
 
 			if (attribute.ArgumentList == null)
 				return result;

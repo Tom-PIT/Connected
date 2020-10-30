@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 using DevExpress.XtraReports.UI;
-using TomPIT.Ide.ComponentModel;
+using TomPIT.Design;
 using TomPIT.MicroServices.Reporting.Storage;
 using TomPIT.Middleware;
 
@@ -35,7 +35,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Storage
 				report.SaveLayoutToXml(ms);
 				ms.Seek(0, SeekOrigin.Begin);
 
-				tenant.GetService<IComponentDevelopmentService>().Update(rep, Encoding.UTF8.GetString(ms.ToArray()));
+				tenant.GetService<IDesignService>().Components.Update(rep, Encoding.UTF8.GetString(ms.ToArray()));
 			}
 		}
 

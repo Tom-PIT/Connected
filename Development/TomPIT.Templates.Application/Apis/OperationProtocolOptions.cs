@@ -6,7 +6,7 @@ namespace TomPIT.MicroServices.Apis
 {
 	internal class OperationProtocolOptions : ApiProtocolOptions, IOperationProtocolOptions
 	{
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public ApiOperationVerbs RestVerbs { get; set; } = ApiOperationVerbs.All;
 	}
 }

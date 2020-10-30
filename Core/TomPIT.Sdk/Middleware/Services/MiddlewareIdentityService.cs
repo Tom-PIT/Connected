@@ -8,6 +8,7 @@ namespace TomPIT.Middleware.Services
 	{
 		private IUser _user = null;
 		private string _jwToken = string.Empty;
+		private string _impersonatedUser = null;
 
 		public MiddlewareIdentityService(IMiddlewareContext context) : base(context)
 		{
@@ -17,6 +18,9 @@ namespace TomPIT.Middleware.Services
 		{
 			get
 			{
+				if (Context is MiddlewareContext mc && mc.Owner != null)
+					return mc.Owner.Services.Identity.IsAuthenticated;
+
 				if (!string.IsNullOrWhiteSpace(ImpersonatedUser))
 					return true;
 
@@ -33,7 +37,23 @@ namespace TomPIT.Middleware.Services
 			}
 		}
 
-		internal string ImpersonatedUser { get; set; }
+		internal string ImpersonatedUser
+		{
+			get
+			{
+				if (Context is MiddlewareContext mc && mc.Owner != null)
+					return ((MiddlewareIdentityService)mc.Owner.Services.Identity).ImpersonatedUser;
+
+				return _impersonatedUser;
+			}
+			set
+			{
+				if (Context is MiddlewareContext mc && mc.Owner != null)
+					((MiddlewareIdentityService)mc.Owner.Services.Identity).ImpersonatedUser = value;
+				else
+					_impersonatedUser = value;
+			}
+		}
 
 		public IUser User
 		{
@@ -41,6 +61,9 @@ namespace TomPIT.Middleware.Services
 			{
 				if (!IsAuthenticated)
 					return null;
+
+				if (Context is MiddlewareContext mc && mc.Owner != null)
+					return mc.Owner.Services.Identity.User;
 
 				if (_user == null)
 				{

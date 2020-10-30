@@ -24,7 +24,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@name", name);
-			w.CreateParameter("@connection_string", connectionString);
+			w.CreateParameter("@connection_string", connectionString, true);
 			w.CreateParameter("@admin_connection_string", adminConnectionString, true);
 			w.CreateParameter("@status", status);
 
@@ -51,7 +51,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 			w.CreateParameter("@id", node.GetId());
 			w.CreateParameter("@name", name);
-			w.CreateParameter("@connection_string", connectionString);
+			w.CreateParameter("@connection_string", connectionString, true);
 			w.CreateParameter("@admin_connection_string", adminConnectionString, true);
 			w.CreateParameter("@status", status);
 			w.CreateParameter("@size", size);

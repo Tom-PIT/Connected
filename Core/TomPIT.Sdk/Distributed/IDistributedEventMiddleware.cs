@@ -7,5 +7,7 @@ namespace TomPIT.Distributed
 		bool Invoking();
 		void Invoke();
 		void Invoked();
+
+		void Authorize(EventConnectionArgs e);
 	}
 }

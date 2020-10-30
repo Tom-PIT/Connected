@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Text;
+using TomPIT.ComponentModel;
 using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Middleware;
 
@@ -58,5 +59,7 @@ namespace TomPIT.Ide.TextServices
 		protected Dictionary<Type, IWorkspaceService> Services => _services.Value;
 
 		public virtual LanguageFeature Features => LanguageFeature.None;
+
+		public IText Script { get; set; }
 	}
 }

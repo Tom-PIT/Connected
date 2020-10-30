@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using HtmlAgilityPack;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
@@ -121,34 +122,34 @@ namespace TomPIT.Search.Indexing
 			}
 		}
 
-		public void Index()
+		public void Index(CancellationToken cancel)
 		{
 			if (Verb == SearchVerb.Rebuild && MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().SelectState(Catalog.Component) == null)
 				return;
 
 			try
 			{
-				OnIndex();
+				OnIndex(cancel);
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Indexer), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Indexer), ex.Message, "Search");
 
 				Success = false;
 			}
 		}
 
-		private void OnIndex()
+		private void OnIndex(CancellationToken cancel)
 		{
 			try
 			{
 				switch (Verb)
 				{
 					case SearchVerb.Add:
-						Success = Insert();
+						Success = Insert(cancel);
 						break;
 					case SearchVerb.Remove:
-						Success = Delete();
+						Success = Delete(cancel);
 						break;
 					case SearchVerb.Rebuild:
 						var ci = MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().SelectState(Catalog.Component);
@@ -161,7 +162,7 @@ namespace TomPIT.Search.Indexing
 
 						MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Ping(Queue.PopReceipt, 3600);
 
-						if (Rebuild())
+						if (Rebuild(cancel))
 						{
 							MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().CompleteRebuilding(Catalog.Component);
 							Success = true;
@@ -170,7 +171,7 @@ namespace TomPIT.Search.Indexing
 							Success = false;
 						break;
 					case SearchVerb.Update:
-						Success = Update();
+						Success = Update(cancel);
 						break;
 					default:
 						Success = false;
@@ -189,7 +190,7 @@ namespace TomPIT.Search.Indexing
 					if (Verb == SearchVerb.Rebuild)
 						MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Ping(Queue.PopReceipt, 60);
 
-					MiddlewareDescriptor.Current.Tenant.LogError("Search", valEx.Source, valEx.Message);
+					MiddlewareDescriptor.Current.Tenant.LogError(valEx.Source, valEx.Message, "Search");
 				}
 			}
 			catch (Exception ex)
@@ -197,7 +198,7 @@ namespace TomPIT.Search.Indexing
 				if (Verb == SearchVerb.Rebuild)
 					MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Ping(Queue.PopReceipt, 60);
 
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", ex.Source, ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, "Search");
 			}
 		}
 
@@ -283,13 +284,13 @@ namespace TomPIT.Search.Indexing
 			doc.Add(field);
 		}
 
-		protected bool Rebuild()
+		protected bool Rebuild(CancellationToken cancel)
 		{
 			MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().MarkRebuilding(Catalog.Component);
 
 			try
 			{
-				if (Reset())
+				if (Reset(cancel))
 				{
 					//TODO: implement rebuild logic (catalog rebuild property etc.)
 					return true;
@@ -326,16 +327,24 @@ namespace TomPIT.Search.Indexing
 			AddValue(doc, property, value);
 		}
 
-		protected bool Insert()
+		protected bool Insert(CancellationToken cancel)
 		{
-			var items = Items;
-
-			if (items == null || items.Count == 0)
-				return true;
-
 			try
 			{
 				var catalog = GetCatalogHost();
+
+				var items = Items;
+
+				if (cancel.IsCancellationRequested)
+					return false;
+
+				if (items == null || items.Count == 0)
+				{
+					catalog.SaveMessage(Queue);
+					return true;
+				}
+
+				var documents = new List<Document>();
 
 				foreach (var i in items)
 				{
@@ -355,8 +364,14 @@ namespace TomPIT.Search.Indexing
 
 					EnsureLocale(doc);
 
-					catalog.Add(doc);
+					documents.Add(doc);
 				}
+
+				if (cancel.IsCancellationRequested)
+					return false;
+
+				foreach (var document in documents)
+					catalog.Add(document);
 
 				catalog.SaveMessage(Queue);
 
@@ -364,22 +379,30 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Insert), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Insert), ex.Message, "Search");
 
 				return false;
 			}
 		}
 
-		private bool Update()
+		private bool Update(CancellationToken cancel)
 		{
-			var items = Items;
-
-			if (items == null || items.Count == 0)
-				return true;
-
 			try
 			{
 				var catalog = GetCatalogHost();
+
+				var items = Items;
+
+				if (cancel.IsCancellationRequested)
+					return false;
+
+				if (items == null || items.Count == 0)
+				{
+					catalog.SaveMessage(Queue);
+					return true;
+				}
+
+				var documents = new Dictionary<Term, Document>();
 
 				foreach (var i in items)
 				{
@@ -399,8 +422,8 @@ namespace TomPIT.Search.Indexing
 
 					var locale = 0;
 					var pk = string.Empty;
-					var lcidProperty = Properties.FirstOrDefault(f => string.Compare(f.Name, SearchUtils.FieldLcid, false) == 0);
-					var idProperty = Properties.FirstOrDefault(f => string.Compare(f.Name, SearchUtils.FieldKey, false) == 0);
+					var lcidProperty = Properties.FirstOrDefault(f => string.Compare(f.Name, SearchUtils.FieldLcid, true) == 0);
+					var idProperty = Properties.FirstOrDefault(f => string.Compare(f.Name, SearchUtils.FieldKey, true) == 0);
 
 					if (lcidProperty != null)
 					{
@@ -419,9 +442,14 @@ namespace TomPIT.Search.Indexing
 					}
 
 					EnsureLocale(doc);
-
-					catalog.Update(new Term(SearchUtils.FieldKey, pk), doc);
+					documents.Add(new Term(SearchUtils.FieldKey, pk), doc);
 				}
+
+				if (cancel.IsCancellationRequested)
+					return false;
+
+				foreach (var entry in documents)
+					catalog.Update(entry.Key, entry.Value);
 
 				catalog.SaveMessage(Queue);
 
@@ -429,62 +457,68 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Update), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Update), ex.Message, "Search");
 
 				return false;
 			}
 		}
 
-		private bool Drop()
+		private bool Drop(CancellationToken cancel)
 		{
 			try
 			{
 				var c = IndexCache.Ensure(Catalog.Component);
 
+				if (cancel.IsCancellationRequested)
+					return false;
+
 				if (c == null)
 					return true;
 
-				c.Drop();
+				c.Drop(cancel);
 
 				return true;
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Update), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Update), ex.Message, "Search");
 
 				return false;
 			}
 		}
 
-		private bool Reset()
+		private bool Reset(CancellationToken cancel)
 		{
 			try
 			{
 				var c = GetCatalogHost();
 
-				c.Reset();
+				c.Reset(cancel);
 
 				return true;
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Update), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Update), ex.Message, "Search");
 
 				return false;
 			}
 		}
 
-		protected bool Delete()
+		protected bool Delete(CancellationToken cancel)
 		{
-			var items = Items;
-
-			if (items == null || items.Count == 0)
-				return true;
-
 			try
 			{
 				var catalog = GetCatalogHost();
-				var idProperty = Properties.FirstOrDefault(f => string.Compare(f.Name, SearchUtils.FieldKey, false) == 0);
+				var items = Items;
+
+				if (items == null || items.Count == 0)
+				{
+					catalog.SaveMessage(Queue);
+					return true;
+				}
+
+				var idProperty = Properties.FirstOrDefault(f => string.Compare(f.Name, SearchUtils.FieldKey, true) == 0);
 
 				foreach (var i in items)
 				{
@@ -510,7 +544,7 @@ namespace TomPIT.Search.Indexing
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("Search", nameof(Delete), ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Delete), ex.Message, "Search");
 
 				return false;
 			}

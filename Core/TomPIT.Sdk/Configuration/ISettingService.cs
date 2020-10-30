@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace TomPIT.Configuration
 {
@@ -9,8 +8,9 @@ namespace TomPIT.Configuration
 	{
 		event SettingChangedHandler SettingChanged;
 
-		T GetValue<T>(Guid resourceGroup, string name);
-		List<ISetting> Query(Guid resourceGroup);
-		ISetting Select(Guid resourceGroup, string name);
+		T GetValue<T>(string name, string nameSpace, string type, string primaryKey);
+		List<ISetting> Query();
+		ISetting Select(string name, string nameSpace, string type, string primaryKey);
+		void Update(string name, string nameSpace, string type, string primaryKey, object value);
 	}
 }

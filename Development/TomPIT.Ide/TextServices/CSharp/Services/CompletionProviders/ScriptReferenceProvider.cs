@@ -3,6 +3,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.ComponentModel.Configuration;
+using TomPIT.ComponentModel.Data;
 using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Reflection;
 
@@ -57,6 +59,30 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 
 				foreach (var operation in configuration.Operations)
 					items.Add(CreateScriptItem($"{msName}{apiName}/{operation.Name}"));
+			}
+
+			var models = Editor.Context.Tenant.GetService<IComponentService>().QueryConfigurations(microService.Token, ComponentCategories.Model);
+
+			foreach (IConfiguration model in models)
+			{
+				if (!(model is IModelConfiguration mc))
+					continue;
+
+				var modelName = mc.ComponentName();
+
+				items.Add(CreateScriptItem($"{microService.Name}/{modelName}"));
+			}
+
+			var settings = Editor.Context.Tenant.GetService<IComponentService>().QueryConfigurations(microService.Token, ComponentCategories.Settings);
+
+			foreach (IConfiguration setting in settings)
+			{
+				if (!(setting is ISettingsConfiguration sc))
+					continue;
+
+				var modelName = sc.ComponentName();
+
+				items.Add(CreateScriptItem($"{microService.Name}/{modelName}"));
 			}
 		}
 

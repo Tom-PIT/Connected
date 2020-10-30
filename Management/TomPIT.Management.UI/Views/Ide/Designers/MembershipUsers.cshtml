@@ -12,7 +12,7 @@
 
 <table id="tableUsers" class="table table-sm">
     <tbody>
-        @foreach (var i in Model.Users)
+        @foreach (var i in Model.Users.OrderBy(f => f.DisplayName()))
         {
             <tr>
                 <td data-value="@i.Token" class="membership-cell">

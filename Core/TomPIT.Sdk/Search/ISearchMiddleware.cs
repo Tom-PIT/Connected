@@ -6,5 +6,6 @@ namespace TomPIT.Search
 	{
 		List<T> Index();
 		T Search(string searchResult);
+		bool Authorize(T item);
 	}
 }

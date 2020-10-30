@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 using TomPIT.Annotations;
 using TomPIT.Data;
 
@@ -8,12 +10,12 @@ namespace TomPIT.Middleware
 	public abstract class MiddlewareComponent : MiddlewareObject, IMiddlewareComponent
 	{
 		private MiddlewareValidator _validator = null;
-		public MiddlewareComponent()
+		protected MiddlewareComponent()
 		{
 
 		}
 
-		public MiddlewareComponent(IMiddlewareContext context) : base(context)
+		protected MiddlewareComponent(IMiddlewareContext context) : base(context)
 		{
 		}
 
@@ -31,7 +33,7 @@ namespace TomPIT.Middleware
 		{
 			return IsValueUnique(propertyName);
 		}
-
+		[EditorBrowsable(EditorBrowsableState.Advanced)]
 		protected virtual bool IsValueUnique(string propertyName)
 		{
 			return true;
@@ -48,6 +50,7 @@ namespace TomPIT.Middleware
 		}
 
 		[SkipValidation]
+		[JsonIgnore]
 		private MiddlewareValidator Validator
 		{
 			get

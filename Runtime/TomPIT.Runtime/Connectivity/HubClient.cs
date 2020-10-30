@@ -1,67 +1,33 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace TomPIT.Connectivity
 {
-	public abstract class HubClient : TenantObject
+	public abstract class HubClient : ClientConnection
 	{
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
-
 		public HubClient(ITenant tenant, string authenticationToken) : base(tenant)
 		{
 			AuthenticationToken = authenticationToken;
 		}
-		protected HubConnection Hub { get; private set; }
 		protected string AuthenticationToken { get; }
-		protected abstract string HubName { get; }
 
-		public async void Connect()
+		protected override Action<HttpConnectionOptions> Options => (f) =>
 		{
-			if (Hub != null)
-				Disconnect();
-
-			_cancel = new CancellationTokenSource();
-			Hub = new HubConnectionBuilder().WithUrl(string.Format("{0}/{1}", Tenant.Url, HubName), f =>
+			f.AccessTokenProvider = () =>
 			{
-				f.AccessTokenProvider = () =>
-				{
-					return Task.FromResult(AuthenticationToken);
-				};
+				return Task.FromResult(AuthenticationToken);
+			};
 
-				f.Headers.Add("TomPITInstanceId", Instance.Id.ToString());
+			f.Headers.Add("TomPITInstanceId", Instance.Id.ToString());
+		};
 
-			}).Build();
-
-			//.ConfigureLogging((o) =>
-			// {
-			//	 o.AddDebug();
-			//	 o.SetMinimumLevel(LogLevel.Debug);
-			// })
-			Initialize();
-
-			Hub.Closed += OnClosed;
-
-			await ConnectAsync();
-		}
-
-		private Task OnClosed(Exception arg)
-		{
-			_cancel.Cancel();
-
-			Connect();
-
-			return Task.CompletedTask;
-		}
-
-		protected virtual void Initialize()
-		{
-		}
+		protected override string Url => string.Format("{0}/{1}", Tenant.Url, HubName);
 
 		private void Heartbeat()
 		{
-			while (!_cancel.IsCancellationRequested)
+			while (!Cancel.IsCancellationRequested)
 			{
 				try
 				{
@@ -72,40 +38,14 @@ namespace TomPIT.Connectivity
 				}
 				finally
 				{
-					_cancel.Token.WaitHandle.WaitOne(TimeSpan.FromSeconds(30));
+					Cancel.Token.WaitHandle.WaitOne(TimeSpan.FromSeconds(30));
 				}
 			}
 		}
 
-		public void Disconnect()
+		protected override void OnConnected()
 		{
-			if (Hub == null)
-				return;
-
-			Task.FromResult(Hub.DisposeAsync()).GetAwaiter().GetResult();
-		}
-
-		private async Task<bool> ConnectAsync()
-		{
-			while (true)
-			{
-				try
-				{
-					await Hub.StartAsync();
-
-					new Task(Heartbeat, _cancel.Token, TaskCreationOptions.LongRunning).Start();
-
-					return true;
-				}
-				catch (ObjectDisposedException)
-				{
-					return false;
-				}
-				catch
-				{
-					await Task.Delay(250);
-				}
-			}
+			new Task(Heartbeat, Cancel.Token, TaskCreationOptions.LongRunning).Start();
 		}
 	}
 }

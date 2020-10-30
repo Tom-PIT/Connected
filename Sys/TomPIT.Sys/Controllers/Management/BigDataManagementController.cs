@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.BigData;
 using TomPIT.Storage;
 using TomPIT.Sys.Data;
@@ -32,7 +32,7 @@ namespace TomPIT.Sys.Controllers.Management
 		{
 			var body = FromBody();
 			var name = body.Required<string>("name");
-			var connectionString = body.Required<string>("connectionString");
+			var connectionString = body.Optional("connectionString", string.Empty);
 			var adminConnectionString = body.Optional("adminConnectionString", string.Empty);
 			var status = body.Required<NodeStatus>("status");
 
@@ -328,6 +328,46 @@ namespace TomPIT.Sys.Controllers.Management
 			var popReceipt = body.Required<Guid>("popReceipt");
 
 			DataModel.BigDataPartitions.Complete(popReceipt);
+		}
+		/*
+		 * Buffering
+		 */
+		[HttpPost]
+		public List<IPartitionBuffer> DequeueBuffers()
+		{
+			var body = FromBody();
+			var count = body.Required<int>("count");
+			var ts = body.Required<TimeSpan>("timeSpan");
+
+			return DataModel.BigDataPartitionBuffering.Dequeue(count, ts);
+		}
+		[HttpPost]
+		public void EnqueueBuffer()
+		{
+			var body = FromBody();
+			var partition = body.Required<Guid>("partition");
+			var duration = body.Required<TimeSpan>("duration");
+			var data = body.Required<string>("data");
+
+			DataModel.BigDataPartitionBuffering.Enqueue(partition, duration, Convert.FromBase64String(data));
+		}
+		[HttpPost]
+		public List<IPartitionBufferData> QueryBufferData()
+		{
+			var body = FromBody();
+			var partition = body.Required<Guid>("partition");
+
+			return DataModel.BigDataPartitionBuffering.QueryData(partition);
+		}
+		[HttpPost]
+		public void ClearBufferData()
+		{
+			var body = FromBody();
+			var partition = body.Required<Guid>("partition");
+			var nextVisible = body.Required<TimeSpan>("nextVisible");
+			var id = body.Required<long>("id");
+
+			DataModel.BigDataPartitionBuffering.Clear(partition, nextVisible, id);
 		}
 	}
 }
