@@ -19,12 +19,14 @@ namespace TomPIT.Runtime
 
 		public IApplicationBuilder Host => _host;
 
-		public void Initialize(InstanceType type, IWebHostEnvironment environment)
-		{
+		public Platform Platform { get; private set; } = Platform.Cloud;
 
+		public void Initialize(InstanceType type, Platform platform, IWebHostEnvironment environment)
+		{
 			Type = type;
 			ContentRoot = environment.ContentRootPath;
 			WebRoot = environment.WebRootPath;
+			Platform = platform;
 
 			switch (Type)
 			{

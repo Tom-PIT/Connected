@@ -1,5 +1,5 @@
 ﻿{
-	"connections": [
+  "connections": [
     {
       "name": "localhost",
       "url": "http://sys-app/common/sys",
@@ -9,7 +9,8 @@
       //"authenticationToken": "8354505c-19f9-4ecb-bc0f-108204c78555"
       "authenticationToken": "defaultAuthenticationToken"
     }
-	],
+  ],
+  "platform":  "onPrem",
 	"resourceGroups": [
 		"Default"
 	],

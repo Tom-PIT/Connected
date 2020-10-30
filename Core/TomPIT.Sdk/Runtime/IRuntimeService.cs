@@ -25,9 +25,14 @@ namespace TomPIT.Runtime
 		Any = 3
 	}
 
+	public enum Platform
+	{
+		OnPrem = 1,
+		Cloud = 2
+	}
 	public interface IRuntimeService
 	{
-		void Initialize(InstanceType type, IWebHostEnvironment environment);
+		void Initialize(InstanceType type, Platform platform, IWebHostEnvironment environment);
 		string ContentRoot { get; }
 		string WebRoot { get; }
 		RuntimeEnvironment Environment { get; }
@@ -35,6 +40,7 @@ namespace TomPIT.Runtime
 		InstanceType Type { get; }
 		EnvironmentStage Stage { get; }
 		EnvironmentMode Mode { get; }
+		Platform Platform { get; }
 
 		IApplicationBuilder Host { get; }
 	}

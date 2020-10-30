@@ -199,7 +199,7 @@ namespace TomPIT
 
 			RuntimeBootstrapper.Run();
 
-			Shell.GetService<IRuntimeService>().Initialize(type, env);
+			Shell.GetService<IRuntimeService>().Initialize(type, Shell.GetConfiguration<IClientSys>().Platform, env);
 			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
 			app.UseEndpoints(routes =>
 			{

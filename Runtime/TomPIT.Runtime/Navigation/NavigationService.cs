@@ -52,6 +52,24 @@ namespace TomPIT.Navigation
 		{
 			return QuerySiteMap(keys, null);
 		}
+
+		public List<ISiteMapContainer> QueryContainers()
+		{
+			Initialize();
+
+			var containers = new List<ISiteMapContainer>();
+			var keys = QueryKeys();
+
+			foreach (var key in keys)
+			{
+				var items = LoadSiteMap(key, null);
+
+				if (items != null && items.Count > 0)
+					containers.AddRange(items);
+			}
+
+			return containers;
+		}
 		public ISiteMapContainer QuerySiteMap(List<string> keys, List<string> tags)
 		{
 			Initialize();
@@ -73,6 +91,9 @@ namespace TomPIT.Navigation
 
 			foreach (var container in containers)
 			{
+				if (string.IsNullOrWhiteSpace(r.Text))
+					r.Text = container.Text;
+
 				if (container.Routes != null && container.Routes.Count > 0)
 					r.Routes.AddRange(container.Routes);
 			}
