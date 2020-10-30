@@ -67,7 +67,7 @@ namespace TomPIT.SysDb.Sql.Storage
 			r.CreateParameter("@type", type);
 			r.CreateParameter("@primary_key", primaryKey);
 			r.CreateParameter("@service", microService, true);
-			r.CreateParameter("@topic", topic);
+			r.CreateParameter("@topic", topic, true);
 
 			return r.Execute().ToList<IBlob>();
 		}
