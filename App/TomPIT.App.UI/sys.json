@@ -10,7 +10,8 @@
       "authenticationToken": "defaultAuthenticationToken"
     }
   ],
-  "platform":  "onPrem",
+  "platform": "onPrem",
+  "stage":  "development",
 	"resourceGroups": [
 		"Default"
 	],

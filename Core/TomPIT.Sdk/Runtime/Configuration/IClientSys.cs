@@ -9,5 +9,6 @@ namespace TomPIT.Runtime.Configuration
 		List<string> Designers { get; }
 		List<string> ResourceGroups { get; }
 		Platform Platform { get; }
+		EnvironmentStage Stage { get; }
 	}
 }

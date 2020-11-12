@@ -65,6 +65,9 @@ namespace TomPIT.Middleware.Interop
 			Validate();
 			OnValidating();
 
+			var metrics = StartMetrics();
+			var success = true;
+
 			try
 			{
 				if (Context.Environment.IsInteractive)
@@ -126,12 +129,14 @@ namespace TomPIT.Middleware.Interop
 			}
 			catch (ValidationException)
 			{
+				success = false;
 				Rollback();
 
 				throw;
 			}
 			catch (Exception ex)
 			{
+				success = false;
 				Rollback();
 
 				var unwrapped = TomPITException.Unwrap(this, ex);
@@ -149,6 +154,10 @@ namespace TomPIT.Middleware.Interop
 
 					throw;
 				}
+			}
+			finally
+			{
+				StopMetrics(metrics, success, null);
 			}
 		}
 

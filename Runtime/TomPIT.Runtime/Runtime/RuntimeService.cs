@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
 using TomPIT.Environment;
+using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Runtime
 {
@@ -60,12 +60,9 @@ namespace TomPIT.Runtime
 					break;
 			}
 
-			if (environment.IsEnvironment(Environments.Development))
-				Stage = EnvironmentStage.Development;
-			else if (environment.IsEnvironment(Environments.Staging))
-				Stage = EnvironmentStage.Staging;
-			else
-				Stage = EnvironmentStage.Production;
+			var sys = Shell.GetConfiguration<IClientSys>();
+
+			Stage = sys.Stage;
 		}
 	}
 }

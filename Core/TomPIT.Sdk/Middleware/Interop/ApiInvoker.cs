@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
-using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
@@ -72,9 +71,9 @@ namespace TomPIT.Middleware.Interop
 					break;
 			}
 
-			var metric = ctx.Services.Diagnostic.StartMetric(op.Metrics, op.Id, arguments);
-			var success = true;
-			JObject result = null;
+			//var metric = ctx.Services.Diagnostic.StartMetric(op.Metrics, op.Id, arguments);
+			//var success = true;
+			//JObject result = null;
 			IMiddlewareComponent opInstance = null;
 
 			try
@@ -114,21 +113,21 @@ namespace TomPIT.Middleware.Interop
 			catch (Exception ex)
 			{
 				var resolvedException = TomPITException.Unwrap(opInstance, ex);
-				success = false;
+				//success = false;
 
-				ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Fail, new JObject
-				{
-					{"exception", $"{resolvedException.Source}/{resolvedException.Message}" }
-				});
+				//ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Fail, new JObject
+				//{
+				//	{"exception", $"{resolvedException.Source}/{resolvedException.Message}" }
+				//});
 
 				ExceptionDispatchInfo.Capture(resolvedException).Throw();
 				throw;
 			}
-			finally
-			{
-				if (success)
-					ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Success, result);
-			}
+			//finally
+			//{
+			//	if (success)
+			//		ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Success, result);
+			//}
 		}
 
 		private MethodInfo GetInvoke(Type type)
