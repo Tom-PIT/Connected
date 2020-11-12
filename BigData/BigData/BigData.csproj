@@ -4,9 +4,9 @@
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <AssemblyName>TomPIT.Connected.BigData</AssemblyName>
     <RootNamespace>TomPIT.BigData</RootNamespace>
-    <AssemblyVersion>2.1.1030.2</AssemblyVersion>
-    <FileVersion>2.1.1030.2</FileVersion>
-    <Version>2.1.1030.2</Version>
+    <AssemblyVersion>2.1.1112.1</AssemblyVersion>
+    <FileVersion>2.1.1112.1</FileVersion>
+    <Version>2.1.1112.1</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>

@@ -4482,7 +4482,7 @@ BEGIN
 	and (@type is null or type = @type)
 	and (@primary_key is null or primary_key = @primary_key)
 	and (@service is null or service = @service)
-	and (@resource_group is null or resource_group = @resource_group);
+	and (@topic is null or topic = @topic);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
