@@ -23,7 +23,7 @@ namespace TomPIT.Cdn.Mail
 
 		protected override bool Initialize(CancellationToken cancel)
 		{
-			if (Instance.State == InstanceState.Initialining)
+			if (Instance.State == InstanceState.Initializing)
 				return false;
 
 			SetInterval();

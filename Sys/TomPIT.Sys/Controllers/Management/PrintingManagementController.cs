@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+using TomPIT.Cdn;
 using TomPIT.Storage;
 using TomPIT.Sys.Data;
 
@@ -48,6 +49,65 @@ namespace TomPIT.Sys.Controllers.Management
 			var error = body.Optional<string>("error", null);
 
 			DataModel.Printing.Error(popReceipt, error);
+		}
+
+		[HttpPost]
+		public List<IQueueMessage> DequeueSpooler()
+		{
+			var body = FromBody();
+
+			var count = body.Required<int>("count");
+
+			return DataModel.PrintingSpooler.Dequeue(count);
+		}
+
+		[HttpPost]
+		public void PingSpooler()
+		{
+			var body = FromBody();
+
+			var popReceipt = body.Required<Guid>("popReceipt");
+			var nextVisible = body.Optional("nextVisible", TimeSpan.FromMinutes(4));
+
+			DataModel.PrintingSpooler.Ping(popReceipt, nextVisible);
+		}
+
+		[HttpPost]
+		public void CompleteSpooler()
+		{
+			var body = FromBody();
+
+			var popReceipt = body.Required<Guid>("popReceipt");
+
+			DataModel.PrintingSpooler.Complete(popReceipt);
+		}
+		[HttpPost]
+		public Guid InsertSpooler()
+		{
+			var body = FromBody();
+			var content = body.Required<string>("content");
+			var printer = body.Required<string>("printer");
+			var mime = body.Required<string>("mime");
+
+			return DataModel.PrintingSpooler.Insert(mime, printer, content);
+		}
+
+		[HttpPost]
+		public IPrintSpoolerJob SelectSpooler()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			return DataModel.PrintingSpooler.Select(token);
+		}
+
+		[HttpPost]
+		public void DeleteSpooler()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			DataModel.PrintingSpooler.Delete(token);
 		}
 	}
 }

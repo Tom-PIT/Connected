@@ -14,7 +14,7 @@ namespace TomPIT.Cdn.Printing
 
 		protected override bool Initialize(CancellationToken cancel)
 		{
-			if (Instance.State == InstanceState.Initialining)
+			if (Instance.State == InstanceState.Initializing)
 				return false;
 
 			IntervalTimeout = TimeSpan.FromSeconds(5);
