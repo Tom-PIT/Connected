@@ -74,6 +74,7 @@ namespace TomPIT.Cdn.Printing
 			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("PrintingManagement", "Ping");
 			var e = new JObject
 			{
+				{ "popReceipt", popReceipt },
 				{ "nextVisible", TimeSpan.FromMinutes(4) }
 			};
 

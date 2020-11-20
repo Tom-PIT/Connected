@@ -20,7 +20,7 @@ namespace TomPIT.Cdn.Events
 
 		protected override bool Initialize(CancellationToken cancel)
 		{
-			if (Instance.State == InstanceState.Initialining)
+			if (Instance.State == InstanceState.Initializing)
 				return false;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)

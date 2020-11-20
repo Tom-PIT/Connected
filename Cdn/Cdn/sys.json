@@ -2,12 +2,13 @@
   "connections": [
     {
       "name": "localhost",
-      //"url": "http://localhost:44001",
-      "url": "http://sys-app/common/sys",
+      "url": "http://localhost:44001",
+      //"url": "http://sys-app/common/sys",
       "authenticationToken": "defaultAuthenticationToken"
       //"authenticationToken": "8354505c-19f9-4ecb-bc0f-108204c78555"
     }
   ],
+  //"platform":  "onPrem",
   "resourceGroups": [
     "Default"
   ],

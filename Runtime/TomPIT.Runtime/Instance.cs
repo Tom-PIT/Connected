@@ -40,7 +40,7 @@ namespace TomPIT
 
 	public enum InstanceState
 	{
-		Initialining = 1,
+		Initializing = 1,
 		Running = 2
 	}
 	public static class Instance
@@ -49,7 +49,7 @@ namespace TomPIT
 		private static List<IPlugin> _plugins = null;
 		internal static RequestLocalizationOptions RequestLocalizationOptions { get; private set; }
 		public static Guid Id { get; } = Guid.NewGuid();
-		public static InstanceState State { get; private set; } = InstanceState.Initialining;
+		public static InstanceState State { get; private set; } = InstanceState.Initializing;
 		public static CancellationToken Stopping { get; private set; }
 		public static CancellationToken Stopped { get; private set; }
 

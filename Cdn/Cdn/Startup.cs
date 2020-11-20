@@ -45,7 +45,9 @@ namespace TomPIT.Cdn
 			Instance.Configure(InstanceType.Cdn, app, env, (f) =>
 			{
 				CdnRouting.Register(f.Builder);
+
 				f.Builder.MapHub<EventHub>("/events");
+				f.Builder.MapHub<PrintingHub>("/printing");
 			});
 
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
@@ -56,6 +58,7 @@ namespace TomPIT.Cdn
 		{
 			e.Tenant.RegisterService(typeof(IEventHubService), typeof(EventHubService));
 			e.Tenant.RegisterService(typeof(IPrintingManagementService), typeof(PrintingManagementService));
+			e.Tenant.RegisterService(typeof(IPrintingSpoolerManagementService), typeof(PrintingSpoolerManagementService));
 			e.Tenant.RegisterService(typeof(IInboxService), typeof(InboxService));
 		}
 
@@ -66,6 +69,7 @@ namespace TomPIT.Cdn
 			services.AddSingleton<IHostedService, PrintingService>();
 			services.AddSingleton<IHostedService, SmtpService>();
 			services.AddSingleton<IHostedService, EventService>();
+			services.AddSingleton<IHostedService, PrintingSpoolerService>();
 		}
 	}
 }

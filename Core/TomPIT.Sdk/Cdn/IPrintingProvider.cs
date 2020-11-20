@@ -4,6 +4,6 @@
 	{
 		string Name { get; }
 		void Print(IPrintJob job);
-		byte[] Export(IPrintJob job);
+		IPrintExportDescriptor Export(IPrintJob job);
 	}
 }

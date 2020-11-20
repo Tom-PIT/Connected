@@ -59,6 +59,7 @@ namespace TomPIT.Sys.Data
 		private static readonly Lazy<Mrus> _mrus = new Lazy<Mrus>(() => { return new Mrus(); });
 		private static readonly Lazy<PartitionBuffering> _partitionBuffering = new Lazy<PartitionBuffering>(() => { return new PartitionBuffering(Container); });
 		private static readonly Lazy<Locking> _locking = new Lazy<Locking>(() => { return new Locking(); });
+		private static readonly Lazy<PrintingSpooler> _printingSpooler = new Lazy<PrintingSpooler>(() => { return new PrintingSpooler(); });
 
 		public static MicroServicesMeta MicroServicesMeta { get { return _meta.Value; } }
 		public static MicroServices MicroServices { get { return _microServices.Value; } }
@@ -109,6 +110,7 @@ namespace TomPIT.Sys.Data
 		public static Mrus Mrus { get { return _mrus.Value; } }
 		public static PartitionBuffering BigDataPartitionBuffering { get { return _partitionBuffering.Value; } }
 		public static Locking Locking { get { return _locking.Value; } }
+		public static PrintingSpooler PrintingSpooler { get { return _printingSpooler.Value; } }
 		internal static MemoryCache Container
 		{
 			get { return _cache.Value; }

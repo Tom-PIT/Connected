@@ -12,7 +12,7 @@ namespace TomPIT.Sys.Controllers
 		{
 			var body = FromBody();
 			var component = body.Required<Guid>("component");
-			var provider = body.Required<string>("provider");
+			var provider = body.Optional("provider", string.Empty);
 			var arguments = body.Optional<string>("arguments", null);
 
 			return DataModel.Printing.Insert(component, provider, arguments);
@@ -46,5 +46,6 @@ namespace TomPIT.Sys.Controllers
 
 			return DataModel.Printing.Select(token);
 		}
+
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Exceptions;
@@ -63,12 +64,19 @@ namespace TomPIT.Cdn.Printing
 					provider.Print(job);
 				else
 				{
+					if (string.IsNullOrWhiteSpace(job.Arguments))
+						return;
+
+					var args = Serializer.Deserialize<JObject>(job.Arguments);
+					var printer = Serializer.Deserialize<Printer>(args.Required<string>("printer"));
+
+					if (printer == null)
+						return;
+
 					var report = provider.Export(job);
 
 					if (report != null)
-					{
-						//save to spooler
-					}
+						MiddlewareDescriptor.Current.Tenant.GetService<IPrintingSpoolerManagementService>().Insert(report.MimeType, printer.Name, Convert.ToBase64String(report.Content));
 				}
 			}
 			catch (Exception ex)

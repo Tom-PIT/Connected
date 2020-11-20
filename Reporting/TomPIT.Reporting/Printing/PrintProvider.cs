@@ -15,7 +15,7 @@ namespace TomPIT.MicroServices.Reporting.Printing
 	{
 		public string Name => "DevEx";
 
-		public byte[] Export(IPrintJob job)
+		public IPrintExportDescriptor Export(IPrintJob job)
 		{
 			var report = CreateReport(job);
 
@@ -24,11 +24,15 @@ namespace TomPIT.MicroServices.Reporting.Printing
 
 			using var ms = new MemoryStream();
 
-			report.SaveLayout(ms);
+			report.SaveLayoutToXml(ms);
 
 			ms.Seek(0, SeekOrigin.Begin);
 
-			return ms.ToArray();
+			return new PrintExportDescriptor
+			{
+				Content = ms.ToArray(),
+				MimeType = "devexpress/report"
+			};
 		}
 
 		public void Print(IPrintJob job)
