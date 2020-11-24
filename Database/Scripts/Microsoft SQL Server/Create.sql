@@ -4898,6 +4898,46 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[print_spooler]'
+GO
+CREATE TABLE [tompit].[print_spooler]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[created] [datetime] NOT NULL,
+[content] [varbinary] (max) NOT NULL,
+[mime] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[printer] [nvarchar] (256) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[token] [uniqueidentifier] NOT NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_print_spooler] on [tompit].[print_spooler]'
+GO
+ALTER TABLE [tompit].[print_spooler] ADD CONSTRAINT [PK_print_spooler] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[print_spooler_ins]'
+GO
+CREATE PROCEDURE [tompit].[print_spooler_ins]
+	@created datetime,
+	@content varbinary(max),
+	@mime nvarchar(128),
+	@printer nvarchar(256),
+	@token uniqueidentifier
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.print_spooler (created, content, mime, printer, token)
+	VALUES (@created, @content, @mime, @printer, @token);
+
+	RETURN scope_identity();
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[message_subscriber_sel]'
 GO
 CREATE PROCEDURE [tompit].[message_subscriber_sel]
@@ -4917,6 +4957,23 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[print_spooler_sel]'
+GO
+CREATE PROCEDURE [tompit].[print_spooler_sel]
+	@id bigint = NULL,
+	@token uniqueidentifier = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 * 
+	FROM tompit.print_spooler 
+	WHERE (@id IS NULL OR id = @id)
+	AND (@token IS NULL OR token = @token);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[queue_sel]'
 GO
 CREATE PROCEDURE [tompit].[queue_sel]
@@ -4928,6 +4985,20 @@ BEGIN
 	SELECT TOP 1 *
 	FROM tompit.queue
 	WHERE pop_receipt = @pop_receipt;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[print_spooler_del]'
+GO
+CREATE PROCEDURE [tompit].[print_spooler_del]
+	@id bigint
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.print_spooler 
+	WHERE id = @id;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON

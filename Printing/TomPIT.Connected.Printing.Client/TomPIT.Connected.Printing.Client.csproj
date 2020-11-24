@@ -3,9 +3,9 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Configurations>Debug;Release;Development</Configurations>
-    <AssemblyVersion>2.1.1124.1</AssemblyVersion>
-    <FileVersion>2.1.1124.1</FileVersion>
-    <Version>2.1.1124.1</Version>
+    <AssemblyVersion>2.1.1124.2</AssemblyVersion>
+    <FileVersion>2.1.1124.2</FileVersion>
+    <Version>2.1.1124.2</Version>
   </PropertyGroup>
   <PropertyGroup>
     <AppConfig>App.$(Configuration).config</AppConfig>
