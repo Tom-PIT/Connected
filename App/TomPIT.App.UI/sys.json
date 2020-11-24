@@ -2,8 +2,8 @@
   "connections": [
     {
       "name": "localhost",
-      //"url": "http://sys-app/common/sys",
-      "url": "http://localhost:44001",
+      "url": "http://sys-app/common/sys",
+      //"url": "http://localhost:44001",
       //"url": "http://sys-app/skaza/sys",
       //"authenticationToken": "207ec2a0bac1457bb9649798191398cf"
       //"authenticationToken": "8354505c-19f9-4ecb-bc0f-108204c78555"
