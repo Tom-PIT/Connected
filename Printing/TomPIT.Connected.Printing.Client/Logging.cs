@@ -1,7 +1,15 @@
-﻿using System;
+﻿/*
+ * Copyright (c) 2020 Tom PIT. All rights reserved.
+ * Licensed under GNU Affero General Public License version 3.
+ * Read about Tom PIT licensing here: https://www.tompit.net/legal/open-release-license
+ */
+
+using System;
 using System.IO;
 using System.Text;
+#if CONSOLE
 using TomPIT.Connected.Printing.Client.Handlers;
+#endif
 using static System.Environment;
 
 namespace TomPIT.Connected.Printing.Client
@@ -48,13 +56,11 @@ namespace TomPIT.Connected.Printing.Client
 
             var fileName = Path.Combine(logFolder, $"{DateTime.Now:yyyy_MM_dd}{(isErrorFile ? ".error" : "")}.log");
 
-            string message = $"{DateTime.Now:HH:mm:ss} {text}";
-
             try
             {
                 using (StreamWriter streamWriter = new StreamWriter(fileName, true))
                 {
-                    streamWriter.WriteLine(message);
+                    streamWriter.WriteLine(text);
                     streamWriter.Flush();
                     streamWriter.Close();
                 }
@@ -62,12 +68,12 @@ namespace TomPIT.Connected.Printing.Client
             catch { }
         }
 
-        private static void Log(string text, LoggingLevel level)
+        private static void Log(string text, LoggingLevel severity)
         { 
-            if (level >= Level)
+            if (severity <= Level)
             {
-                var sb = new StringBuilder().Append(DateTime.Now.ToString("hh:MM:ss.fff")).Append("|").Append(level.ToString().ToUpper()).Append("|").Append(text);
-                WriteFile(sb.ToString(), (level == LoggingLevel.Error) || (level == LoggingLevel.Fatal));
+                var sb = new StringBuilder().Append(DateTime.Now.ToString("HH:mm:ss.fff")).Append("|").Append(severity.ToString().ToUpper()).Append("|").Append(text);
+                WriteFile(sb.ToString(), (severity == LoggingLevel.Error) || (severity == LoggingLevel.Fatal));
             }
         }
 

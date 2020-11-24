@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*
+ * Copyright (c) 2020 Tom PIT. All rights reserved.
+ * Licensed under GNU Affero General Public License version 3.
+ * Read about Tom PIT licensing here: https://www.tompit.net/legal/open-release-license
+ */
+
+using System;
 using System.Diagnostics;
 
 namespace TomPIT.Connected.Printing.Client.Handlers
@@ -9,9 +15,11 @@ namespace TomPIT.Connected.Printing.Client.Handlers
         {
             if (text.Length > maxLength)
             {
-                var lastPart = text.Substring(text.Length - 10, 10);
+                var trimmed = text.Trim();
 
-                var firstPart = text.Substring(0, Math.Min(maxLength, text.Length - 10));
+                var lastPart = trimmed.Substring(trimmed.Length - 10, 10);
+
+                var firstPart = trimmed.Substring(0, Math.Min(maxLength, trimmed.Length - 10));
 
                 return $"{firstPart}...{lastPart}";
             }

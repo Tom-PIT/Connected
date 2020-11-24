@@ -1,4 +1,10 @@
-﻿using DevExpress.XtraPrinting;
+﻿/*
+ * Copyright (c) 2020 Tom PIT. All rights reserved.
+ * Licensed under GNU Affero General Public License version 3.
+ * Read about Tom PIT licensing here: https://www.tompit.net/legal/open-release-license
+ */
+
+using DevExpress.XtraPrinting;
 using DevExpress.XtraReports.UI;
 using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
@@ -9,6 +15,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using TomPIT.Connected.Printing.Client.Configuration;
 using TomPIT.Connected.Printing.Client.Printing;
 
 namespace TomPIT.Connected.Printing.Client.Handlers
@@ -17,78 +24,170 @@ namespace TomPIT.Connected.Printing.Client.Handlers
     {
         private HubConnection _connection;
 
+        private bool _keepAlive;
+
+        private Uri _baseCdnUri;
+
         private void CreateConnection()
         {
-            _connection = new HubConnectionBuilder().WithUrl(new Uri(Settings.CdnUrl), (o) =>
+            var printingUri = new Uri(_baseCdnUri, "printing");
+
+            Logging.Debug($"Creating connection to {printingUri}");
+
+            _connection = new HubConnectionBuilder().WithUrl(printingUri, (o) =>
             {
                 o.AccessTokenProvider = () =>
                 {
-                    return Task.FromResult("Token");
+                    return Task.FromResult(Settings.Token);
                 };
             }).WithAutomaticReconnect().Build();
 
             _connection.Closed += async (error) =>
             {
+                Logging.Debug("Connection closed");
+
+                if (!_keepAlive) 
+                    return;
+
                 await Task.Delay(1000);
                 await _connection.StartAsync();
+
+                Logging.Debug("Connection reestablished");
             };
 
 
             _connection.On<Guid>(Constants.RequestPrint, (id) =>
             {
-                var job = SelectJob(id);
+                Logging.Debug($"Print request {id}");
 
-                if (job != null)
-                    Print(job);
+                try
+                {
+                    var job = SelectJob(id);
 
-                Complete(id);
+                    if (job != null)
+                        Print(job);
+
+                    Complete(id);
+                }
+                catch (Exception ex)
+                {
+                    Logging.Exception(ex, LoggingLevel.Fatal);
+                }
             });
         }
 
         public void Start()
         {
-            Logging.Info("Starting print spooler...");
+            Logging.Debug("Starting print spooler...");
 
-            if (_connection is null)
-                CreateConnection();
+            Settings.ResetSettings();
+            _baseCdnUri = new Uri(Settings.CdnUrl);
 
-            _connection.StartAsync().Wait();
-
-            AddPrinters(new List<string>
+            try
             {
-                "HPE9367C (HP Officejet Pro 8620)"
-            });
+                if (_connection is null)
+                    CreateConnection();
+
+                _connection.StartAsync().Wait();
+
+                Logging.Debug("Print spooler started");
+
+                RegisterPrinters();
+
+                _keepAlive = true;
+            }
+            catch (Exception ex)
+            {
+                Logging.Exception(ex, LoggingLevel.Fatal);
+            }
         }
 
         public void Stop()
         {
-            Logging.Info("Stopping print spooler...");
+            Logging.Debug("Stopping print spooler...");
+
+            try
+            {
+                _keepAlive = false;
+
+                _connection.StopAsync().Wait();
+
+                Logging.Debug("Print spooler stopped");
+            }
+            catch (Exception ex)
+            {
+                Logging.Exception(ex, LoggingLevel.Fatal);
+            }
+        }
+
+        private void RegisterPrinters()
+        {
+            Logging.Debug("Registering printers...");
+
+            var printerList = EnvironmentHandler.GetPrinters(Settings.AvailablePrinters);
+
+            try
+            {
+                AddPrinters(printerList);
+                Logging.Trace($"Registered Printers: {string.Join(",", printerList)}");
+            }
+            catch (Exception ex)
+            {
+                Logging.Exception(ex);
+            }
         }
 
         private void Print(SpoolerJob job)
         {
-            if (string.Compare(job.Mime, Constants.MimeTypeReport, true) == 0)
+            Logging.Trace($"Printing requested");
+
+            try
             {
-                var report = new XtraReport();
-                using var ms = new MemoryStream(Convert.FromBase64String(job.Content));
+                if (string.Compare(job.Mime, Constants.MimeTypeReport, true) == 0)
+                {
+                    Logging.Debug($"Printing Job {job}");
 
-                report.LoadLayoutFromXml(ms);
+                    var report = new XtraReport();
+                    using (var ms = new MemoryStream(Convert.FromBase64String(job.Content)))
+                    {
+                        report.LoadLayoutFromXml(ms);
 
-                report.PrinterName = job.Printer;
-                report.CreateDocument();
+                        report.PrinterName = job.Printer;
+                        report.CreateDocument();
 
-                var print = new PrintToolBase(report.PrintingSystem);
+                        var print = new PrintToolBase(report.PrintingSystem);
 
-                print.Print();
+                        Logging.Trace("Starting printing...");
+                        print.Print();
+                        Logging.Trace("Printing done...");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logging.Exception(ex, LoggingLevel.Fatal);
+                throw;
             }
         }
 
         private void Complete(Guid id)
         {
-            if (_connection.State != HubConnectionState.Connected)
-                return;
+            Logging.Debug($"Completing Job {id}");
 
-            _connection.SendAsync(Constants.ServerMethodNameComplete, id).Wait();
+            try
+            {
+                if (_connection.State != HubConnectionState.Connected)
+                    return;
+
+                _connection.SendAsync(Constants.ServerMethodNameComplete, id).Wait();
+
+                Logging.Trace($"Job {id} Completed");
+            }
+            catch (Exception ex)
+            {
+                Logging.Exception(ex, LoggingLevel.Fatal);
+                throw;
+            }
         }
 
         private void Ping(Guid id)
@@ -116,23 +215,43 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 
         private SpoolerJob SelectJob(Guid id)
         {
-            var client = new HttpClient();
+            Logging.Debug($"Getting Job {id} from Server");
 
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Constants.HttpHeaderBearer, "Token");
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(Constants.MimeTypeJson));
+            var spollerUri = new Uri(_baseCdnUri, "sys/printing-spooler");
 
-            var result = client.PostAsync($"Cdn/sys/printing-spooler", new StringContent(JsonConvert.SerializeObject(new
+            Logging.Trace($"HTTP Request to {spollerUri}");
+            Logging.Trace($"Header: {Constants.HttpHeaderBearer} = {Settings.Token}");
+            Logging.Trace($"Mime Type: {Constants.MimeTypeJson}");
+
+            try
             {
-                Id = id
-            }), Encoding.UTF8, Constants.MimeTypeJson)).Result;
+                var client = new HttpClient();
 
-            var content = result.Content.ReadAsStringAsync().Result;
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Constants.HttpHeaderBearer, Settings.Token);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(Constants.MimeTypeJson));
 
-            if (string.Compare(content, "null", true) == 0
-                || string.IsNullOrWhiteSpace(content))
-                return null;
+                var result = client.PostAsync(spollerUri, new StringContent(JsonConvert.SerializeObject(new
+                {
+                    Id = id
+                }), Encoding.UTF8, Constants.MimeTypeJson)).Result;
 
-            return JsonConvert.DeserializeObject<SpoolerJob>(content);
+                var content = result.Content.ReadAsStringAsync().Result;
+
+                if (string.Compare(content, "null", true) == 0
+                    || string.IsNullOrWhiteSpace(content))
+                    return null;
+
+                var spoolerJob = JsonConvert.DeserializeObject<SpoolerJob>(content);
+
+                Logging.Trace($"Returned Info: {spoolerJob}");
+
+                return spoolerJob;
+            }
+            catch (Exception ex)
+            {
+                Logging.Exception(ex, LoggingLevel.Fatal);
+                throw;
+            }
         }
     }
 

@@ -1,6 +1,11 @@
-﻿using System;
-using System.Text;
+﻿/*
+ * Copyright (c) 2020 Tom PIT. All rights reserved.
+ * Licensed under GNU Affero General Public License version 3.
+ * Read about Tom PIT licensing here: https://www.tompit.net/legal/open-release-license
+ */
+
 #if CONSOLE
+using System;
 using TomPIT.Connected.Printing.Client.Handlers;
 #else
 using System.ServiceProcess;
@@ -10,9 +15,6 @@ namespace TomPIT.Connected.Printing.Client
 {
     class Program
 	{
-		private static readonly string Token = Convert.ToBase64String(Encoding.UTF8.GetBytes("c00588c4-a3e8-4ed4-95e8-e995ba18ab5f"));
-		private static readonly string Cdn = "http://localhost:44018";
-
 		static void Main(string[] args)
 		{
 #if CONSOLE
