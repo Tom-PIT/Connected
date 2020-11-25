@@ -28,7 +28,11 @@ namespace TomPIT.Data
 			finally
 			{
 				if (Connection.Behavior == ConnectionBehavior.Isolated)
+				{
 					Connection.Close();
+					Connection.Dispose();
+					Connection = null;
+				}
 			}
 		}
 
@@ -57,7 +61,11 @@ namespace TomPIT.Data
 			finally
 			{
 				if (Connection.Behavior == ConnectionBehavior.Isolated)
+				{
 					Connection.Close();
+					Connection.Dispose();
+					Connection = null;
+				}
 			}
 		}
 
