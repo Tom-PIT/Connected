@@ -307,7 +307,23 @@ namespace TomPIT.Compilation
 				diagnostic.EndLine = position.EndLinePosition.Line;
 				diagnostic.EndColumn = position.EndLinePosition.Character;
 				diagnostic.Code = error.Id;
-				diagnostic.Source = error.Location.SourceTree?.FilePath;
+
+				var filePath = error.Location.SourceTree?.FilePath;
+
+				if (!string.IsNullOrWhiteSpace(filePath) && !filePath.Contains('/'))
+				{
+					var ms = compiler.Tenant.GetService<IMicroServiceService>().Select(script.MicroService);
+
+					if (ms != null)
+					{
+						var component = compiler.Tenant.GetService<IComponentService>().SelectComponent(script.Component);
+
+						if (component != null)
+							filePath = $"{ms.Name}/{component.Name}/{filePath}";
+					}
+				}
+
+				diagnostic.Source = filePath;
 				diagnostics.Add(diagnostic);
 			}
 

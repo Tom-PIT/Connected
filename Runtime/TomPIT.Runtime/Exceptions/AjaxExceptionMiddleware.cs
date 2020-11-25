@@ -40,7 +40,7 @@ namespace TomPIT.Exceptions
 
 					if (ex is ScriptException script)
 					{
-						source = $"{script.MicroService}/{script.Path} ({script.Line})";
+						source = $"{script.Path} ({script.Line})";
 					}
 				}
 			}
