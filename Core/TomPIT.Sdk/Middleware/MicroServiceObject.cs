@@ -21,17 +21,42 @@ namespace TomPIT.Middleware
 			_context = context;
 		}
 
+		private bool Disposed { get; set; }
+
 		[JsonIgnore]
 		[SkipValidation]
 		public IMicroServiceContext Context
 		{
 			get
 			{
-				if (_context == null)
+				if (_context == null && !Disposed)
 					_context = new MicroServiceContext(_microService, MiddlewareDescriptor.Current.Tenant?.Url);
 
 				return _context;
 			}
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!Disposed)
+			{
+				if (disposing)
+				{
+					if (_context != null)
+					{
+						_context.Dispose();
+						_context = null;
+					}
+				}
+
+				Disposed = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			System.GC.SuppressFinalize(this);
 		}
 	}
 }

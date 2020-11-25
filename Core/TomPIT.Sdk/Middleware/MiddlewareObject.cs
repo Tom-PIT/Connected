@@ -8,6 +8,7 @@ namespace TomPIT.Middleware
 	public abstract class MiddlewareObject : IMiddlewareObject
 	{
 		private IMiddlewareContext _context = null;
+
 		protected MiddlewareObject()
 		{
 
@@ -18,6 +19,9 @@ namespace TomPIT.Middleware
 			Context = context;
 		}
 
+		private bool Disposed { get; set; }
+		private bool HasOwnContext { get; set; }
+
 		[JsonIgnore]
 		[SkipValidation]
 		[Browsable(false)]
@@ -25,9 +29,11 @@ namespace TomPIT.Middleware
 		{
 			get
 			{
-				if (_context == null)
+				if (_context == null && !Disposed)
 				{
 					_context = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant?.Url);
+
+					HasOwnContext = true;
 
 					OnContextChanged();
 				}
@@ -41,7 +47,15 @@ namespace TomPIT.Middleware
 			{
 				if (_context != value)
 				{
+					if (_context != null && HasOwnContext)
+					{
+						_context.Dispose();
+						_context = null;
+					}
+
 					_context = value;
+
+					HasOwnContext = false;
 
 					OnContextChanged();
 				}
@@ -56,6 +70,29 @@ namespace TomPIT.Middleware
 		public override string ToString()
 		{
 			return GetType().ShortName();
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!Disposed)
+			{
+				if (disposing)
+				{
+					if (HasOwnContext && _context != null)
+						_context.Dispose();
+
+					_context = null;
+
+				}
+
+				Disposed = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			System.GC.SuppressFinalize(this);
 		}
 	}
 }

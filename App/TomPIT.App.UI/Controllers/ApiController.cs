@@ -13,7 +13,7 @@ namespace TomPIT.App.Controllers
 		[HttpPost]
 		public IActionResult Invoke()
 		{
-			var m = CreateModel();
+			using var m = CreateModel();
 
 			return Json(Serializer.Serialize(m.Interop.Invoke<object, JObject>(m.QualifierName, m.Body)));
 		}
@@ -21,13 +21,15 @@ namespace TomPIT.App.Controllers
 		[HttpPost]
 		public IActionResult UIInjection()
 		{
-			return PartialView("~/Views/UIInjectionView.cshtml", CreateUIInjectionModel());
+			using var model = CreateUIInjectionModel();
+
+			return PartialView("~/Views/UIInjectionView.cshtml", model);
 		}
 
 		[HttpPost]
 		public IActionResult Partial()
 		{
-			var model = CreatePartialModel();
+			using var model = CreatePartialModel();
 
 			return PartialView(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", model.QualifierName), model);
 		}
@@ -35,7 +37,7 @@ namespace TomPIT.App.Controllers
 		[HttpPost]
 		public IActionResult Search()
 		{
-			var model = CreateSearchModel();
+			using var model = CreateSearchModel();
 
 			return Json(model.Search());
 		}
@@ -43,7 +45,7 @@ namespace TomPIT.App.Controllers
 		[HttpPost]
 		public IActionResult SetUserData()
 		{
-			var model = CreateUserDataModel();
+			using var model = CreateUserDataModel();
 
 			model.SetData();
 
@@ -53,7 +55,7 @@ namespace TomPIT.App.Controllers
 		[HttpPost]
 		public IActionResult GetUserData()
 		{
-			var model = CreateUserDataModel();
+			using var model = CreateUserDataModel();
 
 			return Json(model.GetData());
 		}
@@ -61,7 +63,7 @@ namespace TomPIT.App.Controllers
 		[HttpPost]
 		public IActionResult QueryUserData()
 		{
-			var model = CreateUserDataModel();
+			using var model = CreateUserDataModel();
 
 			return Json(model.QueryData());
 		}

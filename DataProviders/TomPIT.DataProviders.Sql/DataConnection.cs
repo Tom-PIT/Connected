@@ -23,11 +23,12 @@ namespace TomPIT.DataProviders.Sql
 		private IDataProvider Provider { get; }
 		private string ConnectionString { get; }
 
+		private bool Disposed { get; set; }
 		public IDbConnection Connection
 		{
 			get
 			{
-				if (_connection == null)
+				if (_connection == null && !Disposed)
 				{
 					_connection = new ReliableSqlConnection(ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
 
@@ -55,6 +56,7 @@ namespace TomPIT.DataProviders.Sql
 
 		public void Dispose()
 		{
+			Disposed = true;
 			Close();
 		}
 
@@ -96,6 +98,9 @@ namespace TomPIT.DataProviders.Sql
 
 		public void Close()
 		{
+			if (_connection == null)
+				return;
+
 			if (Connection != null && Connection.State == ConnectionState.Open)
 			{
 				lock (Connection)
@@ -106,6 +111,12 @@ namespace TomPIT.DataProviders.Sql
 						Connection.Close();
 					}
 				}
+			}
+
+			if (_connection != null)
+			{
+				_connection.Dispose();
+				_connection = null;
 			}
 		}
 
