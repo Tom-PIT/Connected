@@ -323,7 +323,8 @@ namespace TomPIT.Compilation
 					}
 				}
 
-				diagnostic.Source = filePath;
+				diagnostic.Source = error.Location.SourceTree?.FilePath;
+				diagnostic.SourcePath = filePath;
 				diagnostics.Add(diagnostic);
 			}
 

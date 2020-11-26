@@ -74,10 +74,10 @@ namespace TomPIT.Compilation
 		public override string Message => _message;
 		private void ResolveComponent(ITenant tenant, IText sourceCode, IDiagnostic diagnostic)
 		{
-			Path = diagnostic.Source;
+			Path = diagnostic.SourcePath;
 			Line = (diagnostic.StartLine + 1).ToString();
 
-			var tokens = diagnostic.Source.Split('/');
+			var tokens = diagnostic.SourcePath.Split('/');
 
 			if (tokens.Length == 1)
 			{
