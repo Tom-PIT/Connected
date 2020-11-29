@@ -31,6 +31,7 @@
 		public static string EventBinder => "EventBinder";
 		public static string Management => "Management";
 		public static string Settings => "Settings";
+		public static string MicroServiceInfo => "MicroServiceInfo";
 		public static string IoTHub => "IoTHub";
 		public static string IoTSchema => "IoTSchema";
 		public static string IoCContainer => "IoCContainer";

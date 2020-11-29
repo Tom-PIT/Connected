@@ -1,0 +1,15 @@
+﻿using System;
+using TomPIT.Configuration;
+
+
+public class [NAME] : MicroServiceInfoMiddleware
+{
+	private Version _version = null;
+	
+	public override string Author => "Author";
+
+	public override Version Version
+	{
+		get { return _version ??= new Version(0, 1, [VERSION], 0); }
+	}
+}

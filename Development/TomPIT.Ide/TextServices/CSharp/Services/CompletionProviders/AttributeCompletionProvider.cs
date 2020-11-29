@@ -152,10 +152,15 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 			if (pars.Length > 0 && methodInfo.GetCustomAttribute<ExtensionAttribute>() != null)
 				pars = pars.Skip(1).ToArray();
 
-			if (index >= pars.Length)
-				return;
+			CompletionItemProviderAttribute att = null;
 
-			var att = pars[index].GetCustomAttribute<CompletionItemProviderAttribute>();
+			if (index >= pars.Length)
+			{
+				if (pars[^1].GetCustomAttribute<ParamArrayAttribute>() != null)
+					att = pars[^1].GetCustomAttribute<CompletionItemProviderAttribute>();
+			}
+			else
+				att = pars[index].GetCustomAttribute<CompletionItemProviderAttribute>();
 
 			if (att == null)
 				return;

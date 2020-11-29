@@ -22,6 +22,7 @@
     <None Remove="CreateHandlers\Connection.csx" />
     <None Remove="CreateHandlers\Templates\ApiOperation.txt" />
     <None Remove="CreateHandlers\Templates\DistributedEvent.txt" />
+    <None Remove="CreateHandlers\Templates\MicroServiceInfo.txt" />
     <None Remove="CreateHandlers\Templates\Model.txt" />
     <None Remove="CreateHandlers\Templates\Partial.txt" />
     <None Remove="CreateHandlers\Templates\ScriptBundle.txt" />
@@ -30,6 +31,7 @@
     <None Remove="CreateHandlers\Templates\View.txt" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="CreateHandlers\Templates\MicroServiceInfo.txt" />
     <EmbeddedResource Include="CreateHandlers\Templates\ScriptBundlePartial.txt" />
     <EmbeddedResource Include="CreateHandlers\Templates\ScriptBundle.txt" />
     <EmbeddedResource Include="CreateHandlers\Templates\Partial.txt" />
