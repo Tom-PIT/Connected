@@ -92,6 +92,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 						|| column.Precision != existing.Precision
 						|| column.Scale != existing.Scale
 						|| column.DateKind != existing.DateKind
+						|| column.BinaryKind != existing.BinaryKind
 						|| column.DatePrecision != existing.DatePrecision)
 						return true;
 				}

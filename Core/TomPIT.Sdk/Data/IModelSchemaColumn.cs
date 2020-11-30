@@ -19,9 +19,10 @@ namespace TomPIT.Data
 		string DependencyType { get; }
 		string DependencyProperty { get; }
 		string IndexGroup { get; }
-		public int Scale { get; }
-		public int Precision { get; }
-		public DateKind DateKind { get; }
-		public int DatePrecision { get; }
+		int Scale { get; }
+		int Precision { get; }
+		DateKind DateKind { get; }
+		BinaryKind BinaryKind { get; }
+		int DatePrecision { get; }
 	}
 }

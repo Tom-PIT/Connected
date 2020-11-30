@@ -212,7 +212,24 @@ namespace TomPIT
 				if (property.FindAttribute<VersionAttribute>() != null)
 					return DbType.Binary;
 
-				return DbType.String;
+				var str = property.FindAttribute<StringAttribute>();
+
+				if (str == null)
+					return DbType.String;
+
+				switch (str.Kind)
+				{
+					case StringKind.NVarChar:
+						return DbType.String;
+					case StringKind.VarChar:
+						return DbType.AnsiString;
+					case StringKind.Char:
+						return DbType.AnsiStringFixedLength;
+					case StringKind.NChar:
+						return DbType.StringFixedLength;
+					default:
+						return DbType.String;
+				}
 			}
 			else if (type == typeof(byte))
 				return DbType.Byte;

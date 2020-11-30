@@ -43,7 +43,8 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 		public int Precision { get; set; }
 		public int Scale { get; set; }
 
-		public DateKind DateKind { get; set; }
+		public DateKind DateKind { get; set; } = DateKind.DateTime;
+		public BinaryKind BinaryKind { get; set; } = BinaryKind.VarBinary;
 
 		public int DatePrecision { get; set; }
 

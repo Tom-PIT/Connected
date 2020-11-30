@@ -194,8 +194,7 @@ namespace TomPIT.Data
 					}
 
 				}
-
-				if (column.DataType == DbType.Date
+				else if (column.DataType == DbType.Date
 					|| column.DataType == DbType.DateTime
 					|| column.DataType == DbType.DateTime2
 					|| column.DataType == DbType.DateTimeOffset
@@ -213,6 +212,13 @@ namespace TomPIT.Data
 						column.DateKind = DateKind.DateTime2;
 						column.DatePrecision = 7;
 					}
+				}
+				else if (column.DataType == DbType.Binary)
+				{
+					var bin = property.FindAttribute<BinaryAttribute>();
+
+					if (bin != null)
+						column.BinaryKind = bin.Kind;
 				}
 
 				var def = property.FindAttribute<DefaultAttribute>();

@@ -50,6 +50,13 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 					column.DateKind = Annotations.Models.DateKind.DateTime2;
 				else if (column.DataType == System.Data.DbType.Time)
 					column.DateKind = Annotations.Models.DateKind.Time;
+				else if (column.DataType == System.Data.DbType.Binary)
+				{
+					if (string.Compare(rdr.GetValue("DATA_TYPE", string.Empty), "varbinary", true) == 0)
+						column.BinaryKind = Annotations.Models.BinaryKind.VarBinary;
+					else if (string.Compare(rdr.GetValue("DATA_TYPE", string.Empty), "binary", true) == 0)
+						column.BinaryKind = Annotations.Models.BinaryKind.Binary;
+				}
 
 				column.IsVersion = string.Compare(rdr.GetValue("DATA_TYPE", string.Empty), "timestamp", true) == 0;
 
