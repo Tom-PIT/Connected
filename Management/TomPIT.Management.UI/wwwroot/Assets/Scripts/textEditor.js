@@ -78,7 +78,7 @@
                     glyphMargin: true,
                     lineNumbersMinChars: 4,
                     layoutInfo: {
-                        heigth: '100%'
+                        heigth:'100%'
                     },
                     parameterHints: {
                         enabled: true
@@ -108,7 +108,7 @@
                     editorOpts,
                     {
                         textModelService: {
-                            createModelReference: (uri) => {
+                            createModelReference: (uri)=>{
                                 return new Promise((resolve, reject) => {
                                     var result = {
                                         uri: uri,
@@ -148,7 +148,7 @@
                                                     });
                                                 }
 
-
+                                                
                                                 resolve({
                                                     object: result,
                                                     dispose: () => { }
@@ -255,8 +255,10 @@
             var result = [];
 
             $.each(this.options.state, function (i, v) {
-                if (v.dirty)
+                if (v.dirty) {
                     result.push(v);
+                    v.dirty = false;
+                }
             });
 
             return result;
@@ -365,7 +367,7 @@
                                                     var textEdit = edit.edits[j];
 
                                                     if (textEdit.resource) {
-                                                        textEdit.resource = monaco.Uri.parse(textEdit.resource);
+                                                            textEdit.resource = monaco.Uri.parse(textEdit.resource);
                                                     }
                                                 }
                                             }
@@ -472,7 +474,7 @@
 
             monaco.languages.registerDefinitionProvider(language, {
                 provideDefinition: function (model, position) {
-                    return new Promise(function (resolve, reject) {
+                    return  new Promise(function (resolve, reject) {
                         try {
                             ide.designerAction({
                                 data: {
@@ -488,6 +490,11 @@
                                     text: model.getValue()
                                 },
                                 onComplete: function (data) {
+                                    if (!data || !data.uri) {
+                                        reject();
+                                        return;
+                                    }
+
                                     var uri = monaco.Uri.parse(data.uri);
                                     var model = monaco.editor.getModel(uri);
 
@@ -686,7 +693,7 @@
                     if (i === 0)
                         this.activateModel(models[1].id);
                     else
-                        this.activateModel(models[i - 1].id);
+                        this.activateModel(models[i-1].id);
 
                     break;
                 }

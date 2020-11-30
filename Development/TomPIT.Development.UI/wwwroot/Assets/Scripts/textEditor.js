@@ -255,8 +255,10 @@
             var result = [];
 
             $.each(this.options.state, function (i, v) {
-                if (v.dirty)
+                if (v.dirty) {
                     result.push(v);
+                    v.dirty = false;
+                }
             });
 
             return result;
