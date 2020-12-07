@@ -339,7 +339,7 @@ namespace TomPIT.Navigation
 			 * because it points to a currently displayed ui
 			 */
 			if (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template))
-				breadCrumb.Url = ParseUrl(route.Template, parameters);
+				breadCrumb.Url = ParseUrl(route.Template, parameters.Merge(item));
 
 			if (item is ISiteMapContainer container)
 			{
@@ -348,10 +348,10 @@ namespace TomPIT.Navigation
 					var speculativeRoute = SelectRoute(container.SpeculativeRouteKey);
 
 					if (speculativeRoute != null)
-						breadCrumb.Url = ParseUrl(speculativeRoute.Template, parameters);
+						breadCrumb.Url = ParseUrl(speculativeRoute.Template, parameters.Merge(item));
 				}
 				else if (container is ISiteMapRouteContainer routeContainer && !string.IsNullOrWhiteSpace(routeContainer.Template))
-					breadCrumb.Url = ParseUrl(routeContainer.Template, parameters);
+					breadCrumb.Url = ParseUrl(routeContainer.Template, parameters.Merge(item));
 			}
 
 			if (item.Visible)

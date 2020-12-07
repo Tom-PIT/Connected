@@ -9,6 +9,7 @@ namespace TomPIT.Navigation
 		private string _template = null;
 
 		public bool BeginGroup { get; set; }
+		public object Parameters { get; set; }
 		string ISiteMapRoute.Template
 		{
 			get

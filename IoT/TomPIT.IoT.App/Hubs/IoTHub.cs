@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -111,8 +110,6 @@ namespace TomPIT.IoT.Hubs
 		{
 			try
 			{
-				var sw = new Stopwatch();
-				sw.Start();
 				var processor = new DataProcessor(e);
 				var schema = processor.Process();
 
@@ -129,8 +126,6 @@ namespace TomPIT.IoT.Hubs
 				};
 
 				await Clients.Group(processor.Group.ToLowerInvariant()).SendAsync("data", data);
-				sw.Stop();
-				Console.WriteLine(sw.ElapsedMilliseconds);
 			}
 			catch (Exception ex)
 			{

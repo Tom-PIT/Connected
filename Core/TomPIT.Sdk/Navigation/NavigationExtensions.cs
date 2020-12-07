@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
@@ -69,7 +70,34 @@ namespace TomPIT.Navigation
 
 			var routeData = Shell.HttpContext == null ? new RouteData() : Shell.HttpContext.GetRouteData();
 
-			return context.Services.Routing.ParseUrl(link.Template, routeData.Values);
+			return context.Services.Routing.ParseUrl(link.Template, routeData.Values.Merge(link.Parameters));
+		}
+
+		public static RouteValueDictionary Merge(this RouteValueDictionary existing, ISiteMapElement element)
+		{
+			if (element is ISiteMapRoute route)
+				return existing.Merge(route.Parameters);
+
+			return existing;
+		}
+		public static RouteValueDictionary Merge(this RouteValueDictionary existing, object parameters)
+		{
+			var result = new RouteValueDictionary(existing);
+
+			if (parameters == null)
+				return result;
+
+			var props = parameters.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+			foreach (var prop in props)
+			{
+				if (result.ContainsKey(prop.Name))
+					result[prop.Name] = prop.GetValue(parameters);
+				else
+					result.Add(prop.Name, prop.GetValue(parameters));
+			}
+
+			return result;
 		}
 
 		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)] string routeKey, Dictionary<string, object> parameters)

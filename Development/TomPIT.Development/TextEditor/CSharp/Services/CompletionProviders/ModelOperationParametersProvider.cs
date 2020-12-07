@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Data;
+using TomPIT.Ide.Analysis;
 using TomPIT.Ide.TextServices.CSharp;
 using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
 using TomPIT.Ide.TextServices.Languages;
@@ -187,18 +188,33 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			if (invocation == null)
 				return null;
 
-			if (!(invocation.Expression is MemberAccessExpressionSyntax memberAccess))
+			ExpressionSyntax syntax = null;
+
+			if (invocation.Expression is MemberAccessExpressionSyntax
+				|| invocation.Expression is IdentifierNameSyntax)
+				syntax = invocation.Expression;
+
+			if (syntax == null)
 				return null;
 
 			var type = new TypeInfo();
 
-			if (memberAccess.Expression is IdentifierNameSyntax ins)
+			if (syntax is IdentifierNameSyntax ins)
 				type = Arguments.Model.GetTypeInfo(ins.GetFirstToken().Parent);
-			else if (memberAccess.Expression is InvocationExpressionSyntax ies)
-				type = Arguments.Model.GetTypeInfo(memberAccess.Expression);
+			else if (syntax is InvocationExpressionSyntax)
+				type = Arguments.Model.GetTypeInfo(syntax);
 
 			if (type.Type == null || type.Type.DeclaringSyntaxReferences.Length == 0)
-				return null;
+			{
+				var scope = syntax.ClassDeclaration();
+
+				if (scope == null)
+					return null;
+
+				var name = scope.Identifier.ToString();
+
+				return ComponentDescriptor.Model(Arguments.Editor.Context, name);
+			}
 
 			var sourceFile = type.Type.DeclaringSyntaxReferences[0].SyntaxTree.FilePath;
 

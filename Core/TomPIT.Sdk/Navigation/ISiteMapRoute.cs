@@ -12,5 +12,7 @@ namespace TomPIT.Navigation
 
 		ConnectedList<ISiteMapRoute, ISiteMapRoute> Routes { get; }
 		bool BeginGroup { get; }
+
+		object Parameters { get; set; }
 	}
 }

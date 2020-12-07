@@ -78,7 +78,7 @@
                     glyphMargin: true,
                     lineNumbersMinChars: 4,
                     layoutInfo: {
-                        heigth:'100%'
+                        heigth: '100%'
                     },
                     parameterHints: {
                         enabled: true
@@ -108,7 +108,7 @@
                     editorOpts,
                     {
                         textModelService: {
-                            createModelReference: (uri)=>{
+                            createModelReference: (uri) => {
                                 return new Promise((resolve, reject) => {
                                     var result = {
                                         uri: uri,
@@ -148,7 +148,7 @@
                                                     });
                                                 }
 
-                                                
+
                                                 resolve({
                                                     object: result,
                                                     dispose: () => { }
@@ -269,11 +269,6 @@
 
             $.each(this.options.state, function (i, v) {
                 if (v.model === state.model) {
-                    if (!state.dirty) {
-                        if (state.timestamp < v.timestamp)
-                            return false;
-                    }
-
                     existingState = v;
                     existingStateIndex = i;
                     return false;
@@ -284,13 +279,10 @@
                 if (!state.dirty)
                     return;
 
-                if (typeof state.timestamp === 'undefined')
-                    state.timestamp = Date.now();
-
                 this.options.state.push(state);
             }
             else {
-                if (!state.dirty && state.timestamp >= existingState.timestamp)
+                if (!existingState.dirty)
                     this.options.state.splice(existingStateIndex, 1);
                 else
                     existingState.dirty = true;
@@ -367,7 +359,7 @@
                                                     var textEdit = edit.edits[j];
 
                                                     if (textEdit.resource) {
-                                                            textEdit.resource = monaco.Uri.parse(textEdit.resource);
+                                                        textEdit.resource = monaco.Uri.parse(textEdit.resource);
                                                     }
                                                 }
                                             }
@@ -474,7 +466,7 @@
 
             monaco.languages.registerDefinitionProvider(language, {
                 provideDefinition: function (model, position) {
-                    return  new Promise(function (resolve, reject) {
+                    return new Promise(function (resolve, reject) {
                         try {
                             ide.designerAction({
                                 data: {
@@ -693,7 +685,31 @@
                     if (i === 0)
                         this.activateModel(models[1].id);
                     else
-                        this.activateModel(models[i-1].id);
+                        this.activateModel(models[i - 1].id);
+
+                    break;
+                }
+            }
+        }
+    });
+})(jQuery);
+        closeModel: function (id) {
+            let models = monaco.editor.getModels();
+
+            if (models.length < 2)
+                return;
+
+            for (let i = 0; i < models.length; i++) {
+                let model = models[i];
+
+                if (model.id === id) {
+                    model.dispose();
+                    $(`span[data-model="${id}"]`).remove();
+
+                    if (i === 0)
+                        this.activateModel(models[1].id);
+                    else
+                        this.activateModel(models[i - 1].id);
 
                     break;
                 }
