@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations.Models;
@@ -167,6 +169,16 @@ namespace TomPIT.Data
 			if (e == null)
 				return;
 
+			if (Reflection.TypeExtensions.IsDictionary(e))
+				BindDictionaryParameters(command, e, descriptor);
+			else if (e is ExpandoObject)
+				BindExpandoObjectParameters(command, e, descriptor);
+			else
+				BindObjectParameters(command, e, descriptor);
+		}
+
+		private void BindObjectParameters(IDataCommand command, object e, ICommandTextDescriptor descriptor)
+		{
 			var properties = e.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
 			foreach (var parameter in descriptor.Parameters)
@@ -240,6 +252,23 @@ namespace TomPIT.Data
 					}
 				}
 			}
+		}
+
+		private void BindExpandoObjectParameters(IDataCommand command, object e, ICommandTextDescriptor descriptor)
+		{
+			var en = e as ExpandoObject;
+
+			foreach (var property in en)
+				command.SetParameter(property.Key, property.Value);
+		}
+
+		private void BindDictionaryParameters(IDataCommand command, object e, ICommandTextDescriptor descriptor)
+		{
+			var en = e as IEnumerable;
+			var enumerator = en.GetEnumerator() as IDictionaryEnumerator;
+
+			while (enumerator.MoveNext())
+				command.SetParameter(enumerator.Key as string, enumerator.Value);
 		}
 
 		public T CreateEntity(object instance)

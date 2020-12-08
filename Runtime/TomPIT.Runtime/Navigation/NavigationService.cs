@@ -339,7 +339,7 @@ namespace TomPIT.Navigation
 			 * because it points to a currently displayed ui
 			 */
 			if (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template))
-				breadCrumb.Url = ParseUrl(route.Template, parameters.Merge(item));
+				breadCrumb.Url = ParseUrl(route.Template, MergeParameters(parameters, item));
 
 			if (item is ISiteMapContainer container)
 			{
@@ -348,10 +348,10 @@ namespace TomPIT.Navigation
 					var speculativeRoute = SelectRoute(container.SpeculativeRouteKey);
 
 					if (speculativeRoute != null)
-						breadCrumb.Url = ParseUrl(speculativeRoute.Template, parameters.Merge(item));
+						breadCrumb.Url = ParseUrl(speculativeRoute.Template, MergeParameters(parameters, item));
 				}
 				else if (container is ISiteMapRouteContainer routeContainer && !string.IsNullOrWhiteSpace(routeContainer.Template))
-					breadCrumb.Url = ParseUrl(routeContainer.Template, parameters.Merge(item));
+					breadCrumb.Url = ParseUrl(routeContainer.Template, MergeParameters(parameters, item));
 			}
 
 			if (item.Visible)
@@ -374,6 +374,22 @@ namespace TomPIT.Navigation
 				ProcessBreadcrumb(parent, items, parameters);
 		}
 
+		private RouteValueDictionary MergeParameters(RouteValueDictionary parameters, ISiteMapElement element)
+		{
+			var origin = parameters;
+
+			if (origin == null)
+			{
+				if (Shell.HttpContext != null)
+					origin = Shell.HttpContext.GetRouteData().Values;
+				else
+					origin = new RouteValueDictionary();
+			}
+
+			origin.Merge(element);
+
+			return origin;
+		}
 		public string ParseUrl(string template, RouteValueDictionary parameters)
 		{
 			if (parameters == null)

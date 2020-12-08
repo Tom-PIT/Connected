@@ -450,5 +450,18 @@ namespace TomPIT.Reflection
 
 			return Closest<T>(e.Parent);
 		}
+
+		public static bool IsDictionary(object instance)
+		{
+			if (instance == null)
+				return false;
+
+			return IsDictionary(instance.GetType());
+		}
+
+		public static bool IsDictionary(Type type)
+		{
+			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
+		}
 	}
 }

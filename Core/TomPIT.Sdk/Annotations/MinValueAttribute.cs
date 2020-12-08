@@ -8,7 +8,7 @@ namespace TomPIT.Annotations
 
 		public MinValueAttribute(double value)
 		{
-			Value = Value;
+			Value = value;
 		}
 
 		public override bool IsValid(object value)
