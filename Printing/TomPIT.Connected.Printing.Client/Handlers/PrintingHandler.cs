@@ -56,7 +56,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             };
 
 
-            _connection.On<Guid>(Constants.RequestPrint, (id) =>
+            _connection.On<Guid, Guid>(Constants.RequestPrint, (id, receipt) =>
             {
                 Logging.Debug($"Print request {id}");
 
@@ -67,7 +67,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                     if (job != null)
                         Print(job);
 
-                    Complete(id);
+                    Complete(receipt);
                 }
                 catch (Exception ex)
                 {
