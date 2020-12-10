@@ -54,7 +54,7 @@ namespace TomPIT.Cdn.Printing
 					continue;
 				}
 
-				PrintingHubs.Printing.Clients.Group(printer.ToLowerInvariant()).SendCoreAsync("print", new object[] { id }, cancel).Wait();
+				PrintingHubs.Printing.Clients.Group(printer.ToLowerInvariant()).SendCoreAsync("print", new object[] { id, job.PopReceipt }, cancel).Wait();
 			}
 
 			return Task.CompletedTask;

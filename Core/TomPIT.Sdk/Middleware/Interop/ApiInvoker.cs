@@ -87,7 +87,7 @@ namespace TomPIT.Middleware.Interop
 					opInstance.SetContext(ctx);
 
 					if (arguments != null)
-						Serializer.Populate(arguments, opInstance);
+						Serializer.Populate(arguments, opInstance, false);
 
 					var method = GetInvoke(opInstance.GetType());
 

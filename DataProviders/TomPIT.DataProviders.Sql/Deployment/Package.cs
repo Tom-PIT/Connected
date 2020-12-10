@@ -47,7 +47,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 				var tableName = rdr.GetValue("TABLE_NAME", string.Empty);
 				var schema = rdr.GetValue("TABLE_SCHEMA", string.Empty);
 
-				if (IgnoredTables.Contains($"{schema}.{tableName}"))
+				if (IgnoredTables.Contains($"[{schema}].[{tableName}]"))
 					continue;
 
 				var t = new Table();
