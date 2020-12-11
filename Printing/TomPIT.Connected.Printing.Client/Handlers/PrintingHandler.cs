@@ -24,6 +24,8 @@ namespace TomPIT.Connected.Printing.Client.Handlers
     {
         private HubConnection _connection;
 
+        private PrinterHandler _printerHandler = new PrinterHandler();
+
         private bool _keepAlive;
 
         private Uri _baseCdnUri;
@@ -81,6 +83,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             Logging.Debug("Starting print spooler...");
 
             Settings.ResetSettings();
+
             _baseCdnUri = new Uri(Settings.CdnUrl);
 
             try
@@ -124,7 +127,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
         {
             Logging.Debug("Registering printers...");
 
-            var printerList = EnvironmentHandler.GetPrinters(Settings.AvailablePrinters);
+            var printerList = _printerHandler.GetPrinters(Settings.AvailablePrinters, Settings.PrinterNameMappings);
 
             try
             {
@@ -143,7 +146,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 
             try
             {
-                if (string.Compare(job.Mime, Constants.MimeTypeReport, true) == 0)
+                if (job.Mime.Equals(Constants.MimeTypeReport, StringComparison.OrdinalIgnoreCase))
                 {
                     Logging.Debug($"Printing Job {job}");
 
@@ -152,7 +155,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                     {
                         report.LoadLayoutFromXml(ms);
 
-                        report.PrinterName = job.Printer;
+                        report.PrinterName = _printerHandler.MapToSystemName(job.Printer);
                         report.CreateDocument();
 
                         var print = new PrintToolBase(report.PrintingSystem);

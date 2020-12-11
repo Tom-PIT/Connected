@@ -52,6 +52,7 @@ From command line (```cmd``` or ```PowerShell```) run the following command:
     <add key="availablePrinters" value="HPE9367C (HP Officejet Pro 8620)" />
     <add key="loggingLevel" value="error" />
     <add key="exceptionLoggingLevel" value="errorMessage" />
+    <add key="printerNameMappings" value="Beautiful printer=HPE9367C (HP Officejet Pro 8620)" />
 </appSettings>
 ```
 
@@ -61,7 +62,7 @@ From command line (```cmd``` or ```PowerShell```) run the following command:
 - ```token``` - token from CDN App registration
 - ```availablePrinters``` - list of available printers; this value can be:
   - ```default``` - will register default locally installed printer
-  - ```istalled``` - will register all locally installed printers
+  - ```installed``` - will register all locally installed printers
   - semi-colon separated list of printer names (e.g. ```Printer 1;Printer 2;Some network Printer```)
 - ```loggingLevel``` - level of information, that will be logged to log file; available values are:
   - ```off``` - no logging will be done
@@ -75,7 +76,8 @@ From command line (```cmd``` or ```PowerShell```) run the following command:
 - ```exceptionLoggingLevel``` - level of information, that will be logged to log file when exception is thrown; available values are:
   - ```off``` - no exception logging will be done
   - ```errorMessage``` - log only error messages
-  - ```stackTrace``` - with error message log also stacktrace
+  - ```stackTrace``` - with error message log also stack-trace
+- ```printerNameMappings``` - semi-colon separated list of key-value paired printer names in form of ```friendlyName=printerName``` (e.g. ```Beautiful printer=HPE9367C (HP Officejet Pro 8620)``` which redirects all requests to printer named ```Beautiful printer``` (which is **only** a friendly name) to actual system printer by name ```HPE9367C (HP Officejet Pro 8620)```; this way the user does not have to know all installed printers because we can map some obscure system printer name to e.g. ```Printer in main office```)
 
 
 
