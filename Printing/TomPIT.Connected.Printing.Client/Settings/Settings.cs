@@ -18,10 +18,13 @@ namespace TomPIT.Connected.Printing.Client.Configuration
 
         public static string AvailablePrinters { get; private set; }
 
+        public static string PrinterNameMappings { get; private set; }
+
         public static void ResetSettings()
         {
             CdnUrl = ConfigurationManager.AppSettings["cdnUrl"];
             AvailablePrinters = ConfigurationManager.AppSettings["availablePrinters"];
+            PrinterNameMappings = ConfigurationManager.AppSettings["printerNameMappings"];
 
             string tokenString = ConfigurationManager.AppSettings["token"];
             Token = Convert.ToBase64String(Encoding.UTF8.GetBytes(tokenString));
