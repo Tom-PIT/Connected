@@ -3,9 +3,9 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>TomPIT.MicroServices.Design</RootNamespace>
     <AssemblyName>TomPIT.MicroServices.Design</AssemblyName>
-    <AssemblyVersion>2.1.1215.2</AssemblyVersion>
-    <FileVersion>2.1.1215.2</FileVersion>
-    <Version>2.1.1215.2</Version>
+    <AssemblyVersion>2.1.1215.3</AssemblyVersion>
+    <FileVersion>2.1.1215.3</FileVersion>
+    <Version>2.1.1215.3</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>

@@ -5994,6 +5994,50 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[client]'
+GO
+CREATE TABLE [tompit].[client]
+(
+[id] [bigint] NOT NULL IDENTITY(1, 1),
+[token] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[name] [nvarchar] (128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[created] [smalldatetime] NOT NULL,
+[status] [int] NOT NULL,
+[type] [nvarchar] (64) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating primary key [PK_client] on [tompit].[client]'
+GO
+ALTER TABLE [tompit].[client] ADD CONSTRAINT [PK_client] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Adding constraints to [tompit].[client]'
+GO
+ALTER TABLE [tompit].[client] ADD CONSTRAINT [IX_client] UNIQUE NONCLUSTERED  ([token]) ON [PRIMARY]
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[client_ins]'
+GO
+CREATE PROCEDURE [tompit].[client_ins]
+	@token nvarchar(128),
+	@name nvarchar(128),
+	@created smalldatetime,
+	@status int,
+	@type nvarchar(64) = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT tompit.client (token, name, created, status, type)
+	VALUES (@token, @name, @created, @status, @type);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[resource_group_del]'
 GO
 CREATE PROCEDURE [tompit].[resource_group_del]
@@ -6060,6 +6104,26 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[client_upd]'
+GO
+CREATE PROCEDURE [tompit].[client_upd]
+	@id bigint,
+	@name nvarchar(128),
+	@status int,
+	@type nvarchar(64) = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	UPDATE tompit.client SET
+		name = @name,
+		status = @status,
+		type = @type
+	WHERE id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[version_control_commit_que]'
 GO
 CREATE PROCEDURE [tompit].[version_control_commit_que]
@@ -6082,6 +6146,20 @@ BEGIN
 		INNER JOIN tompit.component cmp ON h.component = cmp.token
 		WHERE (cmp.token = @component)
 		AND (@user IS NULL OR c.[user] = @user);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[client_del]'
+GO
+CREATE PROCEDURE [tompit].[client_del]
+	@id bigint
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DELETE tompit.client
+	WHERE id = @id;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -6109,6 +6187,23 @@ BEGIN
 	FROM tompit.version_control_commit
 	WHERE token = @token;
 
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[client_sel]'
+GO
+CREATE PROCEDURE [tompit].[client_sel]
+	@id bigint = NULL,
+	@token nvarchar(128) = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 1 *
+	FROM tompit.client
+	WHERE (@id IS NULL OR id = @id)
+	AND (@token IS NULL OR token = @token);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -6173,6 +6268,19 @@ BEGIN
 
 	DELETE tompit.role
 	WHERE id = @id;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[client_que]'
+GO
+CREATE PROCEDURE [tompit].[client_que]
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT *
+	FROM tompit.client;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
