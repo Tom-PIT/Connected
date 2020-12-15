@@ -4,6 +4,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
+using TomPIT.Environment;
 using TomPIT.Middleware;
 using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
@@ -61,6 +62,57 @@ namespace TomPIT.Security.Authentication
 		public List<IAuthenticationToken> Query(Guid resourceGroup)
 		{
 			return Where(f => f.ResourceGroup == resourceGroup);
+		}
+
+		public IAuthenticationToken Select(InstanceType type)
+		{
+			var claim = AuthenticationTokenClaim.None;
+
+			switch (type)
+			{
+				case InstanceType.Application:
+					claim = AuthenticationTokenClaim.Application;
+					break;
+				case InstanceType.Worker:
+					claim = AuthenticationTokenClaim.Worker;
+					break;
+				case InstanceType.Cdn:
+					claim = AuthenticationTokenClaim.Cdn;
+					break;
+				case InstanceType.IoT:
+					claim = AuthenticationTokenClaim.IoT;
+					break;
+				case InstanceType.BigData:
+					claim = AuthenticationTokenClaim.BigData;
+					break;
+				case InstanceType.Search:
+					claim = AuthenticationTokenClaim.Search;
+					break;
+				case InstanceType.Rest:
+					claim = AuthenticationTokenClaim.Rest;
+					break;
+			}
+
+			if (claim == AuthenticationTokenClaim.None)
+				return null;
+
+			var candidates = Where(f => (f.Claims & claim) == claim);
+
+			if (candidates.Count == 0)
+				return null;
+
+			foreach (var candidate in candidates)
+			{
+				if (candidate.Status == AuthenticationTokenStatus.Disabled)
+					continue;
+
+				if (!candidate.IsValid(Shell.HttpContext.Request, claim))
+					continue;
+
+				return candidate;
+			}
+
+			return null;
 		}
 
 		public IAuthenticationToken Select(string key)

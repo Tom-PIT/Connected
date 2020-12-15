@@ -943,6 +943,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Client not found.
+        /// </summary>
+        public static string ErrClientNotFound {
+            get {
+                return ResourceManager.GetString("ErrClientNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Command text not set.
         /// </summary>
         public static string ErrCommandTextNotSet {
@@ -3292,7 +3301,7 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Minimun allowed value is {0}..
+        ///   Looks up a localized string similar to Minimum allowed value is {0}..
         /// </summary>
         public static string ValMinValue {
             get {

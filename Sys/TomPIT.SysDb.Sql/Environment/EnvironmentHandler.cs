@@ -9,6 +9,15 @@ namespace TomPIT.SysDb.Sql.Environment
 {
 	internal class EnvironmentHandler : IEnvironmentHandler
 	{
+		private IClientHandler _clients = null;
+
+		public IClientHandler Clients
+		{
+			get
+			{
+				return _clients ??= new ClientHandler();
+			}
+		}
 		/*
 		 * Instance endpoints
 		 */

@@ -1,4 +1,5 @@
 ﻿using System;
+using TomPIT.Environment;
 
 namespace TomPIT.Security
 {
@@ -7,5 +8,7 @@ namespace TomPIT.Security
 		IClientAuthenticationResult Authenticate(string userName, string password);
 		IClientAuthenticationResult Authenticate(string authenticationToken);
 		IClientAuthenticationResult Authenticate(Guid authenticationToken);
+
+		string RequestToken(InstanceType type);
 	}
 }

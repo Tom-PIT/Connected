@@ -93,11 +93,8 @@ namespace TomPIT
 			}
 		}
 
-		public static bool IsValid(this IAuthenticationToken token, HttpRequest request, IUser user, AuthenticationTokenClaim claim)
+		public static bool IsValid(this IAuthenticationToken token, HttpRequest request, AuthenticationTokenClaim claim)
 		{
-			if (user == null || user.Status != UserStatus.Active)
-				return false;
-
 			if (token.Status == AuthenticationTokenStatus.Disabled)
 				return false;
 

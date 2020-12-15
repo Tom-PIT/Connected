@@ -415,7 +415,7 @@
     <value>Maximum allowed value is {0}.</value>
   </data>
   <data name="ValMinValue" xml:space="preserve">
-    <value>Minimun allowed value is {0}.</value>
+    <value>Minimum allowed value is {0}.</value>
   </data>
   <data name="ValReservedValue" xml:space="preserve">
     <value>The following values are reserved by the system:</value>
@@ -1232,5 +1232,8 @@
   </data>
   <data name="ErrCreateSearchCatalog" xml:space="preserve">
     <value>Cannot create search catalog middleware</value>
+  </data>
+  <data name="ErrClientNotFound" xml:space="preserve">
+    <value>Client not found</value>
   </data>
 </root>

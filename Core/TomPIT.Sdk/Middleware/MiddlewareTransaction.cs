@@ -76,7 +76,12 @@ namespace TomPIT.Middleware
 			while (Operations.Count > 0)
 			{
 				Operations.TryPop(out IMiddlewareTransactionClient op);
-				op?.CommitTransaction();
+
+				try
+				{
+					op?.CommitTransaction();
+				}
+				catch { }
 			}
 
 			// The end
@@ -102,7 +107,12 @@ namespace TomPIT.Middleware
 			while (Operations.Count > 0)
 			{
 				Operations.TryPop(out IMiddlewareTransactionClient op);
-				op?.RollbackTransaction();
+
+				try
+				{
+					op?.RollbackTransaction();
+				}
+				catch { }
 			}
 
 			// The end

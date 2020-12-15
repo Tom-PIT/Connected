@@ -9,6 +9,7 @@ namespace TomPIT.Cdn.Routing
 		{
 			routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
 			routes.MapControllerRoute("sys.printingSpooler", "sys/printing-spooler", new { controller = "PrintingSpooler", action = "SelectJob" });
+			routes.MapControllerRoute("sys.client.notify", "sys/clients/notify", new { controller = "Client", action = "Notify" });
 		}
 	}
 }

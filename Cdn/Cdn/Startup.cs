@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TomPIT.Cdn.Clients;
 using TomPIT.Cdn.Events;
 using TomPIT.Cdn.Mail;
 using TomPIT.Cdn.Printing;
@@ -48,6 +49,7 @@ namespace TomPIT.Cdn
 
 				f.Builder.MapHub<EventHub>("/events");
 				f.Builder.MapHub<PrintingHub>("/printing");
+				f.Builder.MapHub<ClientHub>("/clients");
 			});
 
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;

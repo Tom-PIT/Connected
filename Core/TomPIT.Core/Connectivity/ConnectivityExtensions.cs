@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace TomPIT.Connectivity
 {
@@ -19,7 +20,7 @@ namespace TomPIT.Connectivity
 		{
 			e.Credentials = new BearerCredentials
 			{
-				Token = token
+				Token = Convert.ToBase64String(Encoding.UTF8.GetBytes(token))
 			};
 
 			return e;

@@ -8,7 +8,7 @@ namespace TomPIT.Annotations
 
 		public MaxValueAttribute(double value)
 		{
-			Value = Value;
+			Value = value;
 		}
 
 		public override bool IsValid(object value)
@@ -21,12 +21,12 @@ namespace TomPIT.Annotations
 
 		public override string FormatErrorMessage(string name)
 		{
-			return FormatMessage(Value.ToString());
+			return FormatMessage(name, Value.ToString());
 		}
 
-		public static string FormatMessage(string name)
+		public static string FormatMessage(string name, object value)
 		{
-			return string.Format(SR.ValMaxValue, name);
+			return $"{string.Format(SR.ValMaxValue, value)} ({name})";
 		}
 	}
 }

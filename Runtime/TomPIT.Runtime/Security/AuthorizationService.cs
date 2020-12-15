@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
+using TomPIT.Environment;
 using TomPIT.Middleware;
 using TomPIT.Navigation;
 using TomPIT.Runtime;
@@ -15,7 +16,7 @@ using TomPIT.Security.AuthorizationProviders;
 namespace TomPIT.Security
 {
 	internal class AuthorizationService : SynchronizedClientRepository<IPermission, string>,
-		IAuthorizationService, IAuthorizationNotification, IMembershipProvider, IAuthenticationTokenNotification, IPermissionService
+		IAuthorizationService, IAuthorizationNotification, IMembershipProvider, IAuthenticationTokenNotification, IPermissionService, IAuthenticationTokenProvider
 	{
 		private List<IAuthorizationProvider> _providers = null;
 		private Lazy<List<IPermissionDescriptor>> _descriptors = new Lazy<List<IPermissionDescriptor>>();
@@ -500,6 +501,11 @@ namespace TomPIT.Security
 
 			if (!onePassed && firstFail != null)
 				throw firstFail;
+		}
+
+		public string RequestToken(InstanceType type)
+		{
+			return DefaultAuthenticationProvider.RequestToken(type);
 		}
 	}
 }

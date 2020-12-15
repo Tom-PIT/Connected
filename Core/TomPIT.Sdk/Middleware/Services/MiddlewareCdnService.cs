@@ -7,6 +7,7 @@
 		private IMiddlewareEvents _events = null;
 		private IMiddlewareQueue _queue = null;
 		private IMiddlewarePrinting _printing = null;
+		private IMiddlewareClient _clients = null;
 		public MiddlewareCdnService(IMiddlewareContext context) : base(context)
 		{
 		}
@@ -65,5 +66,7 @@
 				return _printing;
 			}
 		}
+
+		public IMiddlewareClient Clients { get { return _clients ??= new MiddlewareClient(); } }
 	}
 }
