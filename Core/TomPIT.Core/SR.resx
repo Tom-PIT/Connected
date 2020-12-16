@@ -1236,4 +1236,7 @@
   <data name="ErrClientNotFound" xml:space="preserve">
     <value>Client not found</value>
   </data>
+  <data name="ErrContentTypeNotSupported" xml:space="preserve">
+    <value>Content type not supported</value>
+  </data>
 </root>

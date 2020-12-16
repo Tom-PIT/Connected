@@ -26,6 +26,8 @@ namespace TomPIT.Cdn.Events
 		{
 		}
 
+		private string MicroService { get; set; }
+		private string Event { get; set; }
 		protected override void DoWork(IQueueMessage item)
 		{
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
@@ -56,6 +58,9 @@ namespace TomPIT.Cdn.Events
 
 			if (ms == null)
 				return;
+
+			MicroService = ms.Name;
+			Event = ed.Name;
 
 			var ctx = new MicroServiceContext(ms, MiddlewareDescriptor.Current.Tenant.Url);
 			var responses = new List<IOperationResponse>();
@@ -182,7 +187,7 @@ namespace TomPIT.Cdn.Events
 			}
 			catch (Exception ex)
 			{
-				context.Services.Diagnostic.Error($"{i.Event}:{i.Name}", ex.Message, LogCategories.Cdn);
+				context.Services.Diagnostic.Error($"{i.Event}/{i.Name}", ex.Message, LogCategories.Cdn);
 			}
 
 			return null;
@@ -190,7 +195,7 @@ namespace TomPIT.Cdn.Events
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			if (ex is ValidationException val)
+			if (ex is ValidationException)
 			{
 				var urlComplete = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Complete");
 				var descriptorComplete = new JObject
@@ -198,11 +203,12 @@ namespace TomPIT.Cdn.Events
 					{"popReceipt", item.PopReceipt }
 				};
 
+				MiddlewareDescriptor.Current.Tenant.LogWarning($"{MicroService}/{Event}", ex.Message, LogCategories.Cdn);
 				MiddlewareDescriptor.Current.Tenant.Post(urlComplete, descriptorComplete);
 				return;
 			}
 
-			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, LogCategories.Cdn);
+			MiddlewareDescriptor.Current.Tenant.LogError($"{MicroService}/{Event}", ex.Message, LogCategories.Cdn);
 
 			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Ping");
 			var d = new JObject

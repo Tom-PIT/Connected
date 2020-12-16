@@ -2,13 +2,14 @@
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Security;
@@ -17,6 +18,7 @@ namespace TomPIT.Rest.Controllers
 {
 	public class ApiHandler : MicroServiceContext
 	{
+		private ApiFormatter _formatter = null;
 		public ApiHandler(HttpContext context)
 		{
 			var routeData = Shell.HttpContext.GetRouteData();
@@ -30,16 +32,16 @@ namespace TomPIT.Rest.Controllers
 		private string Api { get; set; }
 		private string Operation { get; set; }
 
-		public void Invoke()
+		public async Task Invoke()
 		{
-			var config = GetConfiguration();
+			var config = await GetConfiguration();
 
 			if (config == null)
 				return;
 
-			var op = GetOperation(config);
+			var op = await GetOperation(config);
 
-			if (!Authorize(config, op))
+			if (!await Authorize(config, op))
 				return;
 
 			var r = Interop.Invoke<object, JObject>(string.Format("{0}/{1}", Api, Operation), ParseArguments());
@@ -51,11 +53,11 @@ namespace TomPIT.Rest.Controllers
 				if (type != null && type.ImplementsInterface(typeof(IDistributedOperation)))
 					Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.Accepted;
 				else
-					RenderResult(JsonConvert.SerializeObject(r));
+					await RenderResult(r);
 			}
 		}
 
-		private bool Authorize(IApiConfiguration api, IApiOperation operation)
+		private async Task<bool> Authorize(IApiConfiguration api, IApiOperation operation)
 		{
 			var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(api.Component);
 			var e = new AuthorizationArgs(MiddlewareDescriptor.Current.UserToken, Claims.Invoke, api.Component.ToString(), "Api");
@@ -68,9 +70,9 @@ namespace TomPIT.Rest.Controllers
 			if (!r.Success)
 			{
 				if (e.User != Guid.Empty)
-					RenderError((int)HttpStatusCode.Forbidden, SR.StatusForbiddenMessage);
+					await RenderError((int)HttpStatusCode.Forbidden, SR.StatusForbiddenMessage);
 				else
-					RenderError((int)HttpStatusCode.Unauthorized, SR.StatusForbiddenMessage);
+					await RenderError((int)HttpStatusCode.Unauthorized, SR.StatusForbiddenMessage);
 
 				return false;
 			}
@@ -88,9 +90,9 @@ namespace TomPIT.Rest.Controllers
 					return true;
 
 				if (e.User != Guid.Empty)
-					RenderError((int)HttpStatusCode.Forbidden, SR.StatusForbiddenMessage);
+					await RenderError((int)HttpStatusCode.Forbidden, SR.StatusForbiddenMessage);
 				else
-					RenderError((int)HttpStatusCode.Unauthorized, SR.StatusForbiddenMessage);
+					await RenderError((int)HttpStatusCode.Unauthorized, SR.StatusForbiddenMessage);
 
 				return false;
 			}
@@ -101,7 +103,7 @@ namespace TomPIT.Rest.Controllers
 		private JObject ParseArguments()
 		{
 			if (Shell.HttpContext.Request.Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
-				return Shell.HttpContext.Request.Body.ToJObject();
+				return Formatter.ParseArguments();
 			else
 			{
 				var r = new JObject();
@@ -113,46 +115,50 @@ namespace TomPIT.Rest.Controllers
 			}
 		}
 
-		private void RenderError(int statusCode, string content)
+		private ApiFormatter Formatter
 		{
-			Shell.HttpContext.Response.ContentType = "application/json";
-			Shell.HttpContext.Response.StatusCode = statusCode;
-
-			var json = new JObject
+			get
 			{
-				{ "message", content }
-			};
+				if (_formatter == null)
+				{
+					var contentType = Shell.HttpContext.Request.ContentType;
 
-			var buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(json));
-			Shell.HttpContext.Response.ContentLength = buffer.Length;
+					if (string.Compare(contentType, JsonApiFormatter.ContentType, true) == 0)
+						_formatter = new JsonApiFormatter();
+					else if (string.Compare(contentType, FormApiFormatter.ContentType, true) == 0)
+						_formatter = new FormApiFormatter();
+					else
+						throw new BadRequestException($"{SR.ErrContentTypeNotSupported} ({contentType})");
 
-			Shell.HttpContext.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+					_formatter.Context = Shell.HttpContext;
+				}
+
+				return _formatter;
+			}
 		}
 
-		private void RenderResult(string content)
+		private async Task RenderError(int statusCode, string content)
 		{
-			var buffer = Encoding.UTF8.GetBytes(content);
-
-			Shell.HttpContext.Response.Clear();
-			Shell.HttpContext.Response.ContentLength = buffer.Length;
-			Shell.HttpContext.Response.ContentType = "application/json";
-			Shell.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
-
-			Shell.HttpContext.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+			await Formatter.RenderError(statusCode, content);
 		}
 
-		private IApiConfiguration GetConfiguration()
+		private async Task RenderResult(object content)
+		{
+			await Formatter.RenderResult(content);
+		}
+
+		private async Task<IApiConfiguration> GetConfiguration()
 		{
 			MicroService = Tenant.GetService<IMicroServiceService>().Select(MicroServiceName);
 
 			if (MicroService == null)
-				RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, MicroServiceName));
+				await RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, MicroServiceName));
 
 			var component = Tenant.GetService<IComponentService>().SelectComponent(MicroService.Token, "Api", Api);
 
 			if (component == null)
 			{
-				RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1})", SR.ErrComponentNotFound, Api));
+				await RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1})", SR.ErrComponentNotFound, Api));
 				return null;
 			}
 
@@ -162,26 +168,26 @@ namespace TomPIT.Rest.Controllers
 
 			if (!(Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IApiConfiguration config))
 			{
-				RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1})", SR.ErrCannotFindConfiguration, Api));
+				await RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1})", SR.ErrCannotFindConfiguration, Api));
 				return null;
 			}
 
 			if (!config.Protocols.Rest)
 			{
-				RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1})", SR.ErrApiProtocolRestDisabled, Api));
+				await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1})", SR.ErrApiProtocolRestDisabled, Api));
 				return null;
 			}
 
 			if (config.Scope != ElementScope.Public)
 			{
-				RenderError((int)HttpStatusCode.MethodNotAllowed, SR.ErrScopeError);
+				await RenderError((int)HttpStatusCode.MethodNotAllowed, SR.ErrScopeError);
 				return null;
 			}
 
 			return config;
 		}
 
-		private IApiOperation GetOperation(IApiConfiguration config)
+		private async Task<IApiOperation> GetOperation(IApiConfiguration config)
 		{
 			var routeData = Shell.HttpContext.GetRouteData();
 			var operation = routeData.Values["operation"].ToString();
@@ -190,7 +196,7 @@ namespace TomPIT.Rest.Controllers
 
 			if (op == null)
 			{
-				RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1}/{2})", SR.ErrServiceOperationNotFound, Api, Operation));
+				await RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1}/{2})", SR.ErrServiceOperationNotFound, Api, Operation));
 				return null;
 			}
 
@@ -198,7 +204,7 @@ namespace TomPIT.Rest.Controllers
 
 			if (!op.Protocols.Rest)
 			{
-				RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1}/{2})", SR.ErrApiOperationProtocolRestDisabled, Api, Operation));
+				await RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1}/{2})", SR.ErrApiOperationProtocolRestDisabled, Api, Operation));
 				return null;
 			}
 
@@ -210,7 +216,7 @@ namespace TomPIT.Rest.Controllers
 						if (!Shell.HttpContext.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
 						{
 							SetAllowHeader(op.Protocols.RestVerbs);
-							RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
+							await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
 							return null;
 						}
 
@@ -219,7 +225,7 @@ namespace TomPIT.Rest.Controllers
 						if (!Shell.HttpContext.Request.Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
 						{
 							SetAllowHeader(op.Protocols.RestVerbs);
-							RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
+							await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
 							return null;
 						}
 						break;
@@ -227,7 +233,7 @@ namespace TomPIT.Rest.Controllers
 						if (!Shell.HttpContext.Request.Method.Equals("PATCH", StringComparison.OrdinalIgnoreCase))
 						{
 							SetAllowHeader(op.Protocols.RestVerbs);
-							RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
+							await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
 							return null;
 						}
 
@@ -236,7 +242,7 @@ namespace TomPIT.Rest.Controllers
 						if (!Shell.HttpContext.Request.Method.Equals("DELETE", StringComparison.OrdinalIgnoreCase))
 						{
 							SetAllowHeader(op.Protocols.RestVerbs);
-							RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
+							await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
 							return null;
 						}
 
@@ -245,7 +251,7 @@ namespace TomPIT.Rest.Controllers
 						if (!Shell.HttpContext.Request.Method.Equals("PUT", StringComparison.OrdinalIgnoreCase))
 						{
 							SetAllowHeader(op.Protocols.RestVerbs);
-							RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
+							await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
 							return null;
 						}
 
@@ -254,7 +260,7 @@ namespace TomPIT.Rest.Controllers
 						if (!Shell.HttpContext.Request.Method.Equals("HEAD", StringComparison.OrdinalIgnoreCase))
 						{
 							SetAllowHeader(op.Protocols.RestVerbs);
-							RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
+							await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
 							return null;
 						}
 
@@ -264,7 +270,7 @@ namespace TomPIT.Rest.Controllers
 
 			if (op.Scope != ElementScope.Public)
 			{
-				RenderError((int)HttpStatusCode.NotFound, SR.ErrScopeError);
+				await RenderError((int)HttpStatusCode.NotFound, SR.ErrScopeError);
 				return null;
 			}
 

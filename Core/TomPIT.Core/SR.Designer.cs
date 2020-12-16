@@ -1105,6 +1105,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Content type not supported.
+        /// </summary>
+        public static string ErrContentTypeNotSupported {
+            get {
+                return ResourceManager.GetString("ErrContentTypeNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot convert value to the destination type..
         /// </summary>
         public static string ErrConversion {
