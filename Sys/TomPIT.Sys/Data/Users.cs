@@ -250,7 +250,7 @@ namespace TomPIT.Sys.Data
 			if (!string.IsNullOrWhiteSpace(loginName) && string.Compare(loginName, user.LoginName, true) != 0 && SelectByLoginName(loginName) != null)
 				throw new SysException(SR.ErrLoginInUse);
 
-			ValidateSecurityCode(u.Token, securityCode);
+			ValidateSecurityCode(user.Token, securityCode);
 
 			Shell.GetService<IDatabaseService>().Proxy.Security.Users.Update(user, loginName, url, email, status, firstName, lastName, description,
 				pin, l, timezone, notificationEnabled, mobile, phone, avatar, passwordChange, EncryptSecurityCode(securityCode));

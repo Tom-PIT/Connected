@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using TomPIT.Security;
 using TomPIT.Sys.Data;
 
@@ -30,7 +30,7 @@ namespace TomPIT.Sys.Controllers.Management
 			var phone = body.Optional("phone", string.Empty);
 
 			var id = DataModel.Users.Insert(un, email, UserStatus.Active, firstName, lastName,
-				description, pin, Guid.Empty, null, true, mobile, phone, DateTime.MinValue);
+				description, pin, Guid.Empty, null, true, mobile, phone, DateTime.MinValue, string.Empty);
 
 			DataModel.Users.UpdatePassword(id.ToString(), null, pw);
 
