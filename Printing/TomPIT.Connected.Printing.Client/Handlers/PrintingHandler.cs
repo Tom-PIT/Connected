@@ -67,9 +67,14 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                     var job = SelectJob(id);
 
                     if (job != null)
+                    {
                         Print(job);
-
-                    Complete(receipt);
+                        Complete(receipt);
+                    }
+                    else
+                    {
+                        Logging.Error($"Print Job {id} not found.");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -155,8 +160,12 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                     {
                         report.LoadLayoutFromXml(ms);
 
-                        report.PrinterName = _printerHandler.MapToSystemName(job.Printer);
-                        report.CreateDocument();
+                        var printerName = _printerHandler.MapToSystemName(job.Printer);
+                        Logging.Debug($"Printing to '{printerName}' (mapped as '{job.Printer}')");
+
+                        report.PrinterName = printerName;
+                        report.CreateDocument(false);
+                        report.PrintingSystem.Document.Name = $"TomPIT Printing Doc {job.Token}";
 
                         var print = new PrintToolBase(report.PrintingSystem);
 
