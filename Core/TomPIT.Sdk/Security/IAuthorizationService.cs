@@ -11,6 +11,7 @@ namespace TomPIT.Security
 		bool Demand(Guid user, Guid role);
 
 		IClientAuthenticationResult Authenticate(string user, string password);
+		IClientAuthenticationResult AuthenticateByPin(string user, string pin);
 		IClientAuthenticationResult Authenticate(string authenticationToken);
 		IClientAuthenticationResult Authenticate(Guid authenticationToken);
 		bool IsInRole(Guid user, string role);

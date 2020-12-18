@@ -12,6 +12,7 @@ namespace TomPIT.DataProviders.Sql
 	{
 		private ReliableSqlConnection _connection = null;
 		private ICommandTextParser _parser = null;
+		private object _sync = new object();
 
 		public DataConnection(IDataProvider provider, string connectionString, ConnectionBehavior behavior)
 		{
@@ -30,9 +31,15 @@ namespace TomPIT.DataProviders.Sql
 			{
 				if (_connection == null && !Disposed)
 				{
-					_connection = new ReliableSqlConnection(ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
+					lock (_sync)
+					{
+						if (_connection == null && !Disposed)
+						{
+							_connection = new ReliableSqlConnection(ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
 
-					Open();
+							Open();
+						}
+					}
 				}
 
 				return _connection;
@@ -44,7 +51,7 @@ namespace TomPIT.DataProviders.Sql
 			if (Transaction == null || Transaction.Connection == null)
 				return;
 
-			lock (Transaction)
+			lock (_sync)
 			{
 				if (Transaction == null || Transaction.Connection == null)
 					return;
@@ -65,7 +72,7 @@ namespace TomPIT.DataProviders.Sql
 			if (Transaction == null || Transaction.Connection == null)
 				return;
 
-			lock (Transaction)
+			lock (_sync)
 			{
 				if (Transaction == null || Transaction.Connection == null)
 					return;
@@ -80,7 +87,7 @@ namespace TomPIT.DataProviders.Sql
 			if (Connection.State == ConnectionState.Open)
 				return;
 
-			lock (Connection)
+			lock (_sync)
 			{
 				if (Connection.State != ConnectionState.Closed)
 					return;
@@ -103,7 +110,7 @@ namespace TomPIT.DataProviders.Sql
 
 			if (Connection != null && Connection.State == ConnectionState.Open)
 			{
-				lock (Connection)
+				lock (_sync)
 				{
 					if (Connection != null && Connection.State == ConnectionState.Open)
 					{

@@ -58,6 +58,38 @@ namespace TomPIT.Security.Authentication
 				};
 			}
 		}
+		public IClientAuthenticationResult AuthenticateByPin(string user, string pin)
+		{
+			var u = Tenant.GetService<IUserService>().Select(user);
+
+			if (user == null)
+			{
+				return new AuthenticationResult
+				{
+					Success = false,
+					Reason = AuthenticationResultReason.Other
+				};
+			}
+			else
+			{
+				if (string.IsNullOrWhiteSpace(pin) || string.Compare(u.Pin, pin, false) != 0)
+				{
+					return new AuthenticationResult
+					{
+						Success = false,
+						Reason = AuthenticationResultReason.InvalidCredentials
+					};
+				}
+
+				return new AuthenticationResult
+				{
+					Identity = new Identity(u),
+					Reason = AuthenticationResultReason.OK,
+					Success = true,
+					Token = u.AuthenticationToken.ToString()
+				};
+			}
+		}
 		public IClientAuthenticationResult Authenticate(string authenticationToken)
 		{
 			var svc = Tenant.GetService<IAuthorizationService>() as AuthorizationService;

@@ -4,6 +4,7 @@ using System.DirectoryServices.AccountManagement;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using TomPIT.Caching;
+using TomPIT.Exceptions;
 using TomPIT.Globalization;
 using TomPIT.Routing;
 using TomPIT.Security;
@@ -24,7 +25,11 @@ namespace TomPIT.Sys.Data
 			var ds = Shell.GetService<IDatabaseService>().Proxy.Security.Users.Query();
 
 			foreach (var i in ds)
+			{
+				DecryptSecurityCode(i);
+
 				Set(i.Token, i, TimeSpan.Zero);
+			}
 		}
 
 		protected override void OnInvalidate(Guid id)
@@ -36,6 +41,8 @@ namespace TomPIT.Sys.Data
 				Remove(id);
 				return;
 			}
+
+			DecryptSecurityCode(r);
 
 			Set(id, r, TimeSpan.Zero);
 		}
@@ -50,7 +57,29 @@ namespace TomPIT.Sys.Data
 			r = Shell.GetService<IDatabaseService>().Proxy.Security.Users.SelectByAuthenticationToken(token);
 
 			if (r != null)
+			{
+				DecryptSecurityCode(r);
+
 				Set(r.Token, r, TimeSpan.Zero);
+			}
+
+			return r;
+		}
+
+		public IUser SelectBySecurityCode(string code)
+		{
+			var r = Get(f => string.Compare(f.SecurityCode, code, false) == 0);
+
+			if (r != null)
+				return r;
+
+			r = Shell.GetService<IDatabaseService>().Proxy.Security.Users.SelectBySecurityCode(code);
+
+			if (r != null)
+			{
+				DecryptSecurityCode(r);
+				Set(r.Token, r, TimeSpan.Zero);
+			}
 
 			return r;
 		}
@@ -60,7 +89,12 @@ namespace TomPIT.Sys.Data
 			return Get(token,
 				(f) =>
 				{
-					return Shell.GetService<IDatabaseService>().Proxy.Security.Users.Select(token);
+					var r = Shell.GetService<IDatabaseService>().Proxy.Security.Users.Select(token);
+
+					if (r != null)
+						DecryptSecurityCode(r);
+
+					return r;
 				});
 		}
 
@@ -74,7 +108,10 @@ namespace TomPIT.Sys.Data
 			r = Shell.GetService<IDatabaseService>().Proxy.Security.Users.SelectByEmail(email);
 
 			if (r != null)
+			{
+				DecryptSecurityCode(r);
 				Set(r.Token, r, TimeSpan.Zero);
+			}
 
 			return r;
 		}
@@ -96,7 +133,11 @@ namespace TomPIT.Sys.Data
 			r = Shell.GetService<IDatabaseService>().Proxy.Security.Users.Select(loginName);
 
 			if (r != null)
+			{
+				DecryptSecurityCode(r);
+
 				Set(r.Token, r, TimeSpan.Zero);
+			}
 
 			return r;
 		}
@@ -130,8 +171,10 @@ namespace TomPIT.Sys.Data
 
 		public Guid Insert(string loginName, string email, UserStatus status, string firstName, string lastName, string description,
 			string pin, Guid language, string timezone, bool notificationEnabled, string mobile, string phone,
-			DateTime passwordChange)
+			DateTime passwordChange, string securityCode)
 		{
+			ValidateSecurityCode(Guid.Empty, securityCode);
+
 			if (!string.IsNullOrWhiteSpace(email) && SelectByEmail(email) != null)
 				throw new SysException(SR.ErrEmailInUse);
 
@@ -153,7 +196,7 @@ namespace TomPIT.Sys.Data
 			var url = Url(token, pn);
 
 			Shell.GetService<IDatabaseService>().Proxy.Security.Users.Insert(token, loginName, url, email, status, firstName, lastName, description,
-				pin, l, timezone, notificationEnabled, mobile, phone, Guid.Empty, Guid.NewGuid(), passwordChange);
+				pin, l, timezone, notificationEnabled, mobile, phone, Guid.Empty, Guid.NewGuid(), passwordChange, EncryptSecurityCode(securityCode));
 
 			Select(token);
 			CachingNotifications.UserChanged(token);
@@ -162,7 +205,7 @@ namespace TomPIT.Sys.Data
 		}
 
 		public void Update(Guid token, string loginName, string email, UserStatus status, string firstName, string lastName, string description,
-			string pin, Guid language, string timezone, bool notificationEnabled, string mobile, string phone, DateTime passwordChange)
+			string pin, Guid language, string timezone, bool notificationEnabled, string mobile, string phone, DateTime passwordChange, string securityCode)
 		{
 			var u = Select(token);
 
@@ -175,12 +218,14 @@ namespace TomPIT.Sys.Data
 			if (!string.IsNullOrWhiteSpace(loginName) && string.Compare(loginName, u.LoginName, true) != 0 && SelectByLoginName(loginName) != null)
 				throw new SysException(SR.ErrLoginInUse);
 
+			ValidateSecurityCode(u.Token, securityCode);
+
 			Update(u, loginName, email, status, firstName, lastName, description, pin, language, timezone, notificationEnabled, mobile,
-				phone, u.Avatar, passwordChange);
+				phone, u.Avatar, passwordChange, EncryptSecurityCode(securityCode));
 		}
 
 		private void Update(IUser user, string loginName, string email, UserStatus status, string firstName, string lastName, string description,
-			string pin, Guid language, string timezone, bool notificationEnabled, string mobile, string phone, Guid avatar, DateTime passwordChange)
+			string pin, Guid language, string timezone, bool notificationEnabled, string mobile, string phone, Guid avatar, DateTime passwordChange, string securityCode)
 		{
 			ILanguage l = null;
 
@@ -205,8 +250,10 @@ namespace TomPIT.Sys.Data
 			if (!string.IsNullOrWhiteSpace(loginName) && string.Compare(loginName, user.LoginName, true) != 0 && SelectByLoginName(loginName) != null)
 				throw new SysException(SR.ErrLoginInUse);
 
+			ValidateSecurityCode(u.Token, securityCode);
+
 			Shell.GetService<IDatabaseService>().Proxy.Security.Users.Update(user, loginName, url, email, status, firstName, lastName, description,
-				pin, l, timezone, notificationEnabled, mobile, phone, avatar, passwordChange);
+				pin, l, timezone, notificationEnabled, mobile, phone, avatar, passwordChange, EncryptSecurityCode(securityCode));
 
 			Refresh(user.Token);
 			CachingNotifications.UserChanged(user.Token);
@@ -220,7 +267,7 @@ namespace TomPIT.Sys.Data
 				throw new SysException(SR.ErrUserNotFound);
 
 			Update(u, u.LoginName, u.Email, u.Status, u.FirstName, u.LastName, u.Description, u.Pin, u.Language,
-				u.TimeZone, u.NotificationEnabled, u.Mobile, u.Phone, blob, u.PasswordChange);
+				u.TimeZone, u.NotificationEnabled, u.Mobile, u.Phone, blob, u.PasswordChange, u.SecurityCode);
 		}
 
 		public List<IUser> Query()
@@ -331,7 +378,7 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Security.Users.UpdatePassword(u, Shell.GetService<ICryptographyService>().Hash(newPassword));
 
 			Update(u.Token, u.LoginName, u.Email, u.Status, u.FirstName, u.LastName, u.Description, u.Pin, u.Language,
-				 u.TimeZone, u.NotificationEnabled, u.Mobile, u.Phone, DateTime.UtcNow);
+				 u.TimeZone, u.NotificationEnabled, u.Mobile, u.Phone, DateTime.UtcNow, u.SecurityCode);
 		}
 
 		public void UpdatePassword(string user, string existingPassword, string newPassword)
@@ -357,13 +404,49 @@ namespace TomPIT.Sys.Data
 			if (string.IsNullOrWhiteSpace(newPassword))
 			{
 				Update(u.Token, u.LoginName, u.Email, u.Status, u.FirstName, u.LastName, u.Description, u.Pin, u.Language,
-					 u.TimeZone, u.NotificationEnabled, u.Mobile, u.Phone, DateTime.UtcNow);
+					 u.TimeZone, u.NotificationEnabled, u.Mobile, u.Phone, DateTime.UtcNow, u.SecurityCode);
 			}
 			else
 			{
 				Update(u.Token, u.LoginName, u.Email, u.Status, u.FirstName, u.LastName, u.Description, u.Pin, u.Language,
-					 u.TimeZone, u.NotificationEnabled, u.Mobile, u.Phone, DateTime.MinValue);
+					 u.TimeZone, u.NotificationEnabled, u.Mobile, u.Phone, DateTime.MinValue, u.SecurityCode);
 			}
+		}
+
+		private string EncryptSecurityCode(string code)
+		{
+			if (string.IsNullOrWhiteSpace(code))
+				return code;
+
+			return Shell.GetService<ICryptographyService>().Encrypt(this, code);
+		}
+
+		private void DecryptSecurityCode(IUser user)
+		{
+			var property = user.GetType().GetProperty(nameof(user.SecurityCode));
+
+			if (!property.CanWrite)
+				return;
+
+			var value = property.GetValue(user) as string;
+
+			if (string.IsNullOrEmpty(value))
+				return;
+
+			property.SetValue(user, Shell.GetService<ICryptographyService>().Decrypt(this, value));
+		}
+
+		private void ValidateSecurityCode(Guid user, string code)
+		{
+			if (string.IsNullOrEmpty(code))
+				return;
+
+			var u = SelectBySecurityCode(code);
+
+			if (u == null || u.Token == user)
+				return;
+
+			throw new BadRequestException(SR.ValSecurityCodeExists);
 		}
 	}
 }

@@ -206,7 +206,7 @@ namespace TomPIT.Navigation
 			{
 				if (string.IsNullOrWhiteSpace(container.Key))
 				{
-					MiddlewareDescriptor.Current.Tenant.LogWarning(nameof(NavigationService), $"{SR.WrnContainerKeyNull} ({container.Text})", LogCategories.Navigation);
+					MiddlewareDescriptor.Current.Tenant.LogWarning(nameof(NavigationService), $"{SR.WrnContainerKeyNull} ({container.GetType().ShortName()})", LogCategories.Navigation);
 					continue;
 				}
 

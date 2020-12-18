@@ -27,7 +27,7 @@ namespace TomPIT.Management.Dom
 		public override bool Commit(object component, string property, string attribute)
 		{
 			Environment.Context.Tenant.GetService<IUserManagementService>().Update(User.Token, User.LoginName, User.Email, User.Status, User.FirstName, User.LastName, User.Description, User.Pin,
-				User.Language, User.TimeZone, User.NotificationEnabled, User.Mobile, User.Phone);
+				User.Language, User.TimeZone, User.NotificationEnabled, User.Mobile, User.Phone, User.SecurityCode);
 
 			return true;
 		}

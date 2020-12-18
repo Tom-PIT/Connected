@@ -69,6 +69,27 @@ namespace TomPIT.Security
 			return r;
 		}
 
+		public IUser SelectBySecurityCode(string securityCode)
+		{
+			if (string.IsNullOrWhiteSpace(securityCode))
+				return null;
+
+			var r = Get(f => string.Compare(f.SecurityCode, securityCode, false) == 0);
+
+			if (r != null)
+				return r;
+
+			r = Tenant.Post<User>(Tenant.CreateUrl("User", "SelectBySecurityCode"), new
+			{
+				securityCode
+			});
+
+			if (r != null)
+				Set(r.Token, r);
+
+			return r;
+		}
+
 		public void ChangePassword(Guid user, string existingPassword, string password)
 		{
 			var u = Tenant.CreateUrl("UserManagement", "ChangePassword");

@@ -29,5 +29,6 @@ namespace TomPIT.Security
 		Guid Avatar { get; }
 		DateTime PasswordChange { get; }
 		bool HasPassword { get; }
+		string SecurityCode { get; }
 	}
 }

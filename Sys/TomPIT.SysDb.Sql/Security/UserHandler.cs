@@ -21,7 +21,7 @@ namespace TomPIT.SysDb.Sql.Security
 
 		public void Insert(Guid token, string loginName, string url, string email, UserStatus status, string firstName, string lastName, string description,
 			string pin, ILanguage language, string timezone, bool notificationEnabled, string mobile, string phone, Guid avatar, Guid authenticationToken,
-			DateTime passwordChange)
+			DateTime passwordChange, string securityCode)
 		{
 			var w = new Writer("tompit.user_ins");
 
@@ -42,6 +42,7 @@ namespace TomPIT.SysDb.Sql.Security
 			w.CreateParameter("@phone", phone, true);
 			w.CreateParameter("@avatar", avatar, true);
 			w.CreateParameter("@auth_token", authenticationToken);
+			w.CreateParameter("@security_code", securityCode, true);
 
 			w.Execute();
 		}
@@ -89,6 +90,16 @@ namespace TomPIT.SysDb.Sql.Security
 
 		}
 
+		public IUser SelectBySecurityCode(string code)
+		{
+			var r = new Reader<User>("tompit.user_sel");
+
+			r.CreateParameter("@security_code", code);
+
+			return r.ExecuteSingleRow();
+
+		}
+
 		public IUser SelectByUrl(string url)
 		{
 			var r = new Reader<User>("tompit.user_sel");
@@ -119,7 +130,7 @@ namespace TomPIT.SysDb.Sql.Security
 
 		public void Update(IUser user, string loginName, string url, string email, UserStatus status, string firstName, string lastName,
 			string description, string pin, ILanguage language, string timezone, bool notificationEnabled, string mobile, string phone, Guid avatar,
-			DateTime passwordChange)
+			DateTime passwordChange, string securityCode)
 		{
 			var w = new Writer("tompit.user_upd");
 
@@ -139,6 +150,7 @@ namespace TomPIT.SysDb.Sql.Security
 			w.CreateParameter("@mobile", mobile, true);
 			w.CreateParameter("@phone", phone, true);
 			w.CreateParameter("@avatar", avatar, true);
+			w.CreateParameter("@security_code", securityCode, true);
 
 			w.Execute();
 		}

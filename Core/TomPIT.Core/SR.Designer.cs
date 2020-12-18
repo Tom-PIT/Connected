@@ -3382,6 +3382,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Security code already exists.
+        /// </summary>
+        public static string ValSecurityCodeExists {
+            get {
+                return ResourceManager.GetString("ValSecurityCodeExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Value for the field {0} already exists.
         /// </summary>
         public static string ValUnique {

@@ -9,6 +9,8 @@ namespace TomPIT.Security
 		IClientAuthenticationResult Authenticate(string authenticationToken);
 		IClientAuthenticationResult Authenticate(Guid authenticationToken);
 
+		IClientAuthenticationResult AuthenticateByPin(string user, string pin);
+
 		string RequestToken(InstanceType type);
 	}
 }

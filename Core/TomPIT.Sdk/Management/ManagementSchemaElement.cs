@@ -9,5 +9,9 @@
 		public string Id { get; set; }
 
 		public SchemaElementType Type { get; set; } = SchemaElementType.Descriptor;
+
+		public string Kind { get; set; }
+
+		public string PolicyType { get; set; }
 	}
 }

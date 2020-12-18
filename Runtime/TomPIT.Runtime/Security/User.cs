@@ -96,6 +96,11 @@ namespace TomPIT.Security
 		[Browsable(false)]
 		public bool HasPassword { get; set; }
 
+		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
+		[MaxLength(128)]
+		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		public string SecurityCode { get; set; }
+
 		public override string ToString()
 		{
 			return this.DisplayName();

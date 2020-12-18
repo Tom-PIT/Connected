@@ -100,7 +100,7 @@ namespace TomPIT.Middleware.Services
 		}
 
 		public Guid InsertUser(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language,
-			string timezone, bool notificationsEnabled, string mobile, string phone, string password)
+			string timezone, bool notificationsEnabled, string mobile, string phone, string password, string securityCode = null)
 		{
 			var u = Context.Tenant.CreateUrl("UserManagement", "Insert");
 			var e = new JObject
@@ -117,7 +117,8 @@ namespace TomPIT.Middleware.Services
 				{"timezone", timezone},
 				{"notificationEnabled", notificationsEnabled},
 				{"mobile", mobile},
-				{"phone", phone}
+				{"phone", phone},
+				{"securityCode", securityCode }
 			};
 
 			var id = Context.Tenant.Post<Guid>(u, e);
@@ -135,7 +136,7 @@ namespace TomPIT.Middleware.Services
 		}
 
 		public void UpdateUser(Guid token, string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language,
-			string timezone, bool notificationsEnabled, string mobile, string phone)
+			string timezone, bool notificationsEnabled, string mobile, string phone, string securityCode = null)
 		{
 			var u = Context.Tenant.CreateUrl("UserManagement", "Update");
 			var e = new JObject
@@ -152,7 +153,8 @@ namespace TomPIT.Middleware.Services
 				{"timezone", timezone},
 				{"notificationEnabled", notificationsEnabled},
 				{"mobile", mobile},
-				{"phone", phone}
+				{"phone", phone},
+				{"securityCode", securityCode }
 			};
 
 			Context.Tenant.Post(u, e);

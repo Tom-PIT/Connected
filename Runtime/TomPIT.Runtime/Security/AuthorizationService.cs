@@ -75,6 +75,19 @@ namespace TomPIT.Security
 			return DefaultAuthenticationProvider.Authenticate(user, password);
 		}
 
+		public IClientAuthenticationResult AuthenticateByPin(string user, string pin)
+		{
+			foreach (var i in AuthenticationProviders)
+			{
+				var r = i.AuthenticateByPin(user, pin);
+
+				if (r != null)
+					return r;
+			}
+
+			return DefaultAuthenticationProvider.AuthenticateByPin(user, pin);
+		}
+
 		public IClientAuthenticationResult Authenticate(string authenticationToken)
 		{
 			foreach (var i in AuthenticationProviders)

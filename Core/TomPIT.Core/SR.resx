@@ -1239,4 +1239,7 @@
   <data name="ErrContentTypeNotSupported" xml:space="preserve">
     <value>Content type not supported</value>
   </data>
+  <data name="ValSecurityCodeExists" xml:space="preserve">
+    <value>Security code already exists</value>
+  </data>
 </root>

@@ -27,6 +27,15 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpPost]
+		public IUser SelectBySecurityCode()
+		{
+			var body = FromBody();
+			var code = body.Required<string>("securityCode");
+
+			return DataModel.Users.SelectBySecurityCode(code);
+		}
+
+		[HttpPost]
 		public void SignOut()
 		{
 			//DataModel.Users.SelectByAuthenticationToken()
