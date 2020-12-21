@@ -221,7 +221,7 @@ namespace TomPIT.Sys.Data
 			ValidateSecurityCode(u.Token, securityCode);
 
 			Update(u, loginName, email, status, firstName, lastName, description, pin, language, timezone, notificationEnabled, mobile,
-				phone, u.Avatar, passwordChange, EncryptSecurityCode(securityCode));
+				phone, u.Avatar, passwordChange, securityCode);
 		}
 
 		private void Update(IUser user, string loginName, string email, UserStatus status, string firstName, string lastName, string description,
