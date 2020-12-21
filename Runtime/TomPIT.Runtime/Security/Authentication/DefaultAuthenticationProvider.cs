@@ -35,6 +35,25 @@ namespace TomPIT.Security.Authentication
 			return r;
 		}
 
+		public IClientAuthenticationResult AuthenticateByPin(string user, string pin)
+		{
+			var r = Tenant.Post<AuthenticationResult>(Tenant.CreateUrl("Authentication", "AuthenticateByPin"), new
+			{
+				user,
+				pin
+			});
+
+			if (r.Success)
+			{
+				var u = Tenant.GetService<IUserService>().Select(user);
+
+				if (user != null)
+					r.Identity = new Identity(u, r.Token, Tenant.Url);
+			}
+
+			return r;
+		}
+
 		public IClientAuthenticationResult Authenticate(Guid authenticationToken)
 		{
 			var user = Tenant.GetService<IUserService>().SelectByAuthenticationToken(authenticationToken);
@@ -55,38 +74,6 @@ namespace TomPIT.Security.Authentication
 					Reason = AuthenticationResultReason.OK,
 					Success = true,
 					Token = user.AuthenticationToken.ToString()
-				};
-			}
-		}
-		public IClientAuthenticationResult AuthenticateByPin(string user, string pin)
-		{
-			var u = Tenant.GetService<IUserService>().Select(user);
-
-			if (user == null)
-			{
-				return new AuthenticationResult
-				{
-					Success = false,
-					Reason = AuthenticationResultReason.Other
-				};
-			}
-			else
-			{
-				if (string.IsNullOrWhiteSpace(pin) || string.Compare(u.Pin, pin, false) != 0)
-				{
-					return new AuthenticationResult
-					{
-						Success = false,
-						Reason = AuthenticationResultReason.InvalidCredentials
-					};
-				}
-
-				return new AuthenticationResult
-				{
-					Identity = new Identity(u),
-					Reason = AuthenticationResultReason.OK,
-					Success = true,
-					Token = u.AuthenticationToken.ToString()
 				};
 			}
 		}

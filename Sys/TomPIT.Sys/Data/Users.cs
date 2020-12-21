@@ -338,7 +338,25 @@ namespace TomPIT.Sys.Data
 			CachingNotifications.UserChanged(u.Token);
 
 			return AuthenticationResult.OK(new JwtSecurityTokenHandler().WriteToken(TomPITAuthenticationHandler.CreateToken(u.AuthenticationToken)));
+		}
 
+		public IAuthenticationResult AuthenticateByPin(string user, string pin)
+		{
+			var u = Resolve(user);
+
+			if (u == null)
+				return AuthenticationResult.Fail(AuthenticationResultReason.NotFound);
+
+			if (u.Status == UserStatus.Inactive)
+				return AuthenticationResult.Fail(AuthenticationResultReason.Inactive);
+
+			if (u.Status == UserStatus.Locked)
+				return AuthenticationResult.Fail(AuthenticationResultReason.Locked);
+
+			if (string.IsNullOrWhiteSpace(u.Pin) || string.Compare(u.Pin, pin, false) != 0)
+				return AuthenticationResult.Fail(AuthenticationResultReason.InvalidCredentials);
+
+			return AuthenticationResult.OK(new JwtSecurityTokenHandler().WriteToken(TomPITAuthenticationHandler.CreateToken(u.AuthenticationToken)));
 		}
 
 		private IAuthenticationResult AuthenticateLdap(string loginName, string password)
