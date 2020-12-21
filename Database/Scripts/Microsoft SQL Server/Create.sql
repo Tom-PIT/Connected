@@ -327,7 +327,8 @@ CREATE TABLE [tompit].[user]
 [mobile] [varchar] (48) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [phone] [varchar] (48) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [avatar] [uniqueidentifier] NULL,
-[password_change] [smalldatetime] NULL
+[password_change] [smalldatetime] NULL,
+[security_code] [nvarchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
 ) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -2605,15 +2606,16 @@ CREATE PROCEDURE [tompit].[user_ins]
 	@phone varchar(48) = null,
 	@avatar uniqueidentifier = null,
 	@auth_token uniqueidentifier,
-	@password_change smalldatetime = null
+	@password_change smalldatetime = null,
+	@security_code nvarchar(1024) = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	insert [user] (token, url, email, status, first_name, last_name, description, language, timezone, notification_enabled, login_name,
-		pin, mobile, phone, avatar, auth_token, password_change)
+		pin, mobile, phone, avatar, auth_token, password_change, security_code)
 	values (@token, @url, @email, @status, @first_name, @last_name, @description, @language, @timezone, @notification_enabled, @login_name,
-		@pin, @mobile, @phone, @avatar, @auth_token, @password_change);
+		@pin, @mobile, @phone, @avatar, @auth_token, @password_change, @security_code);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -2691,7 +2693,8 @@ CREATE PROCEDURE [tompit].[user_upd]
 	@mobile varchar(48) = null,
 	@phone varchar(48) = null,
 	@avatar uniqueidentifier = null,
-	@password_change smalldatetime = null
+	@password_change smalldatetime = null,
+	@security_code nvarchar(1024) = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -2711,7 +2714,8 @@ BEGIN
 		mobile = @mobile, 
 		phone = @phone, 
 		avatar = @avatar,
-		password_change = @password_change
+		password_change = @password_change,
+		security_code = @security_code
 	where id = @id;
 END
 GO
@@ -3317,9 +3321,12 @@ GO
 
 
 
+
 CREATE VIEW [tompit].[view_user]
 AS
-SELECT        u.*, l.token AS language_token
+SELECT			u.id, u.token, u.auth_token, u.url, u.email, u.status, u.first_name, u.last_name, u.description,
+				u.password, u.language, u.last_login, u.timezone, u.notification_enabled, u.login_name, u.pin, 
+				u.mobile, u.phone, u.avatar, u.password_change, u.security_code, l.token AS language_token
 FROM            tompit.[user] AS u LEFT OUTER JOIN
                          tompit.language AS l ON u.language = l.id
 
@@ -3407,7 +3414,8 @@ CREATE PROCEDURE [tompit].[user_sel]
 	@email nvarchar(256) = null,
 	@url nvarchar(136) = null,
 	@login_name nvarchar(128)=null,
-	@auth_token uniqueidentifier = null
+	@auth_token uniqueidentifier = null,
+	@security_code nvarchar(1024) = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -3420,6 +3428,7 @@ BEGIN
 	and (@url is null or url = @url)
 	and (@login_name is null or login_name = @login_name)
 	and (@auth_token is null or auth_token = @auth_token)
+	AND (@security_code IS NULL OR security_code = @security_code);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
