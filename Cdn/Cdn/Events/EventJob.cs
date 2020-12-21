@@ -22,6 +22,7 @@ namespace TomPIT.Cdn.Events
 {
 	internal class EventJob : DispatcherJob<IQueueMessage>
 	{
+		private TimeoutTask _timeout = null;
 		public EventJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
@@ -32,15 +33,34 @@ namespace TomPIT.Cdn.Events
 		{
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
 
-			Invoke(item, m);
-
-			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Complete");
-			var d = new JObject
+			_timeout = new TimeoutTask(() =>
 			{
-				{"popReceipt", item.PopReceipt }
-			};
+				MiddlewareDescriptor.Current.Tenant.Post(MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Ping"), new
+				{
+					item.PopReceipt,
+					NextVisible = TimeSpan.FromMinutes(5)
+				});
 
-			MiddlewareDescriptor.Current.Tenant.Post(url, d);
+				return Task.CompletedTask;
+			}, TimeSpan.FromMinutes(4), Cancel);
+
+
+			_timeout.Start();
+
+			try
+			{
+				Invoke(item, m);
+			}
+			finally
+			{
+				_timeout.Stop();
+				_timeout = null;
+			}
+
+			MiddlewareDescriptor.Current.Tenant.Post(MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Complete"), new
+			{
+				item.PopReceipt
+			});
 		}
 
 		private void Invoke(IQueueMessage queue, JObject data)

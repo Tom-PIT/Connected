@@ -5,7 +5,6 @@ using System.Data.SqlClient;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.DataProviders.Design;
-using TomPIT.Data.Sql;
 using TomPIT.DataProviders.Sql.Deployment;
 using TomPIT.DataProviders.Sql.Synchronization;
 using TomPIT.Deployment;
@@ -71,10 +70,6 @@ namespace TomPIT.DataProviders.Sql
 			return new DataConnection(this, connectionString, behavior);
 		}
 
-		protected override IDbConnection CreateConnection(string connectionString)
-		{
-			return new ReliableSqlConnection(connectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
-		}
 		public IDatabase CreateSchema(string connectionString)
 		{
 			return Package.Create(connectionString);

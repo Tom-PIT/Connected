@@ -13,13 +13,6 @@ namespace TomPIT.DataProviders.BigData
 		{
 
 		}
-		protected override IDbConnection CreateConnection(string connectionString)
-		{
-			return new BigDataConnection
-			{
-				ConnectionString = connectionString
-			};
-		}
 
 		public override IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior)
 		{

@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.Storage;
 using TomPIT.Sys.Data;
 using TomPIT.SysDb.Events;
@@ -38,8 +38,9 @@ namespace TomPIT.Sys.Controllers.Management
 		{
 			var body = FromBody();
 			var popReceipt = body.Required<Guid>("popReceipt");
+			var nextVisible = body.Optional("nextVisible", TimeSpan.FromSeconds(5));
 
-			DataModel.Events.Ping(popReceipt);
+			DataModel.Events.Ping(popReceipt, nextVisible);
 		}
 	}
 }

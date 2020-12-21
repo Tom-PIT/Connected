@@ -25,7 +25,18 @@ namespace TomPIT.DataProviders.Sql
 		private string ConnectionString { get; }
 
 		private bool Disposed { get; set; }
-		public IDbConnection Connection
+
+		public ConnectionState State
+		{
+			get
+			{
+				lock (_sync)
+				{
+					return Connection == null ? ConnectionState.Closed : Connection.State;
+				}
+			}
+		}
+		private IDbConnection Connection
 		{
 			get
 			{
@@ -135,6 +146,11 @@ namespace TomPIT.DataProviders.Sql
 		public JObject Query(IDataCommandDescriptor command)
 		{
 			return Provider.Query(command, null, this);
+		}
+
+		public IDbCommand CreateCommand()
+		{
+			return Connection?.CreateCommand();
 		}
 
 		public IDbTransaction Transaction { get; set; }

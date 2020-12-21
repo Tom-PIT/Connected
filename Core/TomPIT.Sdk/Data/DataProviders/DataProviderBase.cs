@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Data;
 using Newtonsoft.Json.Linq;
-using TomPIT.Exceptions;
-using TomPIT.Reflection;
 
 namespace TomPIT.Data.DataProviders
 {
@@ -18,26 +16,6 @@ namespace TomPIT.Data.DataProviders
 		}
 
 		public abstract IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior);
-		protected virtual IDbConnection ResolveConnection(IDataCommandDescriptor command, IDataConnection connection)
-		{
-			T c = null;
-
-			if (connection != null)
-			{
-				c = connection as T;
-
-				if (c == null)
-					throw new RuntimeException(string.Format(SR.ErrInvalidConnectionType, typeof(T).ShortName()));
-			}
-
-			if (c == null)
-			{
-				//TODO: this is probably wrong because it doesn't run in the context scope (it's withour transaction attached)
-				return CreateConnection(command.ConnectionString);
-			}
-
-			return c.Connection;
-		}
 
 		protected JObject CreateDataRow(IDataReader rdr)
 		{
@@ -89,25 +67,18 @@ namespace TomPIT.Data.DataProviders
 			return value;
 		}
 
-		public virtual int Execute(IDataCommandDescriptor command)
-		{
-			return Execute(command, null);
-		}
-
 		public virtual int Execute(IDataCommandDescriptor command, IDataConnection connection)
 		{
-			var con = ResolveConnection(command, connection);
-
 			EnsureOpen(connection);
 
-			var com = ResolveCommand(command, con, connection);
+			var com = ResolveCommand(command, connection);
 
 			SetupParameters(command, com);
 
 			foreach (var i in command.Parameters)
 				SetParameterValue(com, i.Name, i.Value);
 
-			var recordsAffected = Execute(command, con, com);
+			var recordsAffected = Execute(command, com);
 
 			foreach (var i in command.Parameters)
 			{
@@ -132,7 +103,7 @@ namespace TomPIT.Data.DataProviders
 		{
 		}
 
-		protected virtual int Execute(IDataCommandDescriptor command, IDbConnection connection, IDbCommand cmd)
+		protected virtual int Execute(IDataCommandDescriptor command, IDbCommand cmd)
 		{
 			return cmd.ExecuteNonQuery();
 		}
@@ -144,11 +115,9 @@ namespace TomPIT.Data.DataProviders
 
 		public virtual JObject Query(IDataCommandDescriptor command, DataTable schema, IDataConnection connection)
 		{
-			var con = ResolveConnection(command, connection);
-
 			EnsureOpen(connection);
 
-			var com = ResolveCommand(command, con, connection);
+			var com = ResolveCommand(command, connection);
 
 			IDataReader rdr = null;
 
@@ -185,47 +154,32 @@ namespace TomPIT.Data.DataProviders
 
 		public virtual void TestConnection(string connectionString)
 		{
-			var con = CreateConnection(connectionString);
+			var con = OpenConnection(connectionString, ConnectionBehavior.Isolated);
 
 			con.Open();
 			con.Close();
 		}
 
-		protected abstract IDbConnection CreateConnection(string connectionString);
-
-		protected virtual IDbCommand ResolveCommand(IDataCommandDescriptor command, IDbConnection connection, IDataConnection dataConnection)
+		protected virtual IDbCommand ResolveCommand(IDataCommandDescriptor command, IDataConnection connection)
 		{
-			T dc = default;
-
-			if (dataConnection != null)
-			{
-				if (!(dataConnection is T))
-					throw new RuntimeException(string.Format(SR.ErrInvalidConnectionType, typeof(T).ShortName()));
-
-				dc = dataConnection as T;
-			}
-
 			var r = connection.CreateCommand();
 
 			r.CommandText = command.CommandText;
 			r.CommandType = command.CommandType;
 			r.CommandTimeout = command.CommandTimeout;
 
-			if (dc != default)
-			{
-				if (dc.Transaction != null)
-					r.Transaction = dc.Transaction;
-			}
+			if (connection.Transaction != null)
+				r.Transaction = connection.Transaction;
 
 			return r;
 		}
 
 		private void EnsureOpen(IDataConnection connection)
 		{
-			if (connection == null || connection.Connection == null)
+			if (connection == null)
 				return;
 
-			if (connection.Connection.State == ConnectionState.Open)
+			if (connection.State == ConnectionState.Open)
 				return;
 
 			connection.Open();

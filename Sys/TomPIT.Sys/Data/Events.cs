@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
 using TomPIT.SysDb.Events;
@@ -42,14 +42,14 @@ namespace TomPIT.Sys.Data
 			return Shell.GetService<IDatabaseService>().Proxy.Events.Select(id);
 		}
 
-		public void Ping(Guid popReceipt)
+		public void Ping(Guid popReceipt, TimeSpan nextVisible)
 		{
 			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(popReceipt, TimeSpan.FromSeconds(5));
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(popReceipt, nextVisible);
 		}
 
 		public void Complete(Guid popReceipt)

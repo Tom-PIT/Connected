@@ -16,10 +16,13 @@ namespace TomPIT.Data
 		int Execute(IDataCommandDescriptor command);
 		JObject Query(IDataCommandDescriptor command);
 
+		IDbCommand CreateCommand();
 		ConnectionBehavior Behavior { get; }
 
-		IDbConnection Connection { get; }
+		//IDbConnection Connection { get; }
 		IDbTransaction Transaction { get; set; }
 		ICommandTextParser Parser { get; }
+
+		ConnectionState State { get; }
 	}
 }

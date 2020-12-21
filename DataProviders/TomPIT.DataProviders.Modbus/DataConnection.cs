@@ -74,8 +74,15 @@ namespace TomPIT.DataProviders.Modbus
 			return Provider.Query(command, null, this);
 		}
 
+		public IDbCommand CreateCommand()
+		{
+			return Connection.CreateCommand();
+		}
+
 		public ConnectionBehavior Behavior { get; private set; }
 
 		public ICommandTextParser Parser => null;
+
+		public ConnectionState State => Connection.State;
 	}
 }

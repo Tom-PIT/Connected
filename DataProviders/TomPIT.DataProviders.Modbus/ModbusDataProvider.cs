@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 
@@ -14,14 +13,6 @@ namespace TomPIT.DataProviders.Modbus
 		public override IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior)
 		{
 			return new DataConnection(this, connectionString, behavior);
-		}
-
-		protected override IDbConnection CreateConnection(string connectionString)
-		{
-			return new ModbusConnection
-			{
-				ConnectionString = connectionString
-			};
 		}
 	}
 }
