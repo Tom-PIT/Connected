@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using TomPIT.Data.DataProviders;
 using TomPIT.Middleware;
 
 namespace TomPIT.Data
@@ -15,13 +14,13 @@ namespace TomPIT.Data
 		{
 			try
 			{
-				var command = CreateCommand();
-				var recordsAffected = Connection.Execute(command);
+				EnsureCommand();
+				var recordsAffected = Connection.Execute(Command);
 
 				if (Connection.Behavior == ConnectionBehavior.Isolated)
 					Connection.Commit();
 
-				BindReturnValues(command);
+				BindReturnValues();
 
 				return recordsAffected;
 			}
@@ -40,14 +39,13 @@ namespace TomPIT.Data
 		{
 			try
 			{
-				var command = CreateCommand();
-
-				Connection.Execute(command);
+				EnsureCommand();
+				Connection.Execute(Command);
 
 				if (Connection.Behavior == ConnectionBehavior.Isolated)
 					Connection.Commit();
 
-				BindReturnValues(command);
+				BindReturnValues();
 
 				foreach (var parameter in Parameters)
 				{
@@ -69,9 +67,9 @@ namespace TomPIT.Data
 			}
 		}
 
-		private void BindReturnValues(IDataCommandDescriptor command)
+		private void BindReturnValues()
 		{
-			foreach (var parameter in command.Parameters)
+			foreach (var parameter in Command.Parameters)
 			{
 				if (parameter.Direction == System.Data.ParameterDirection.ReturnValue)
 				{

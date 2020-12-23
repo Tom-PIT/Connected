@@ -73,6 +73,7 @@ namespace TomPIT.MicroServices.Design
 				{ ComponentCategories.Media,           new ItemDescriptor("Media",            ComponentCategories.Media,             typeof(MediaResources))                      { Glyph = "fal fa-images",             Category = "Resources" ,      Ordinal=401} } ,
 				{ ComponentCategories.EmbeddedAssembly,new ItemDescriptor("Embedded assembly",ComponentCategories.EmbeddedAssembly,  typeof(AssemblyEmbeddedResource))            { Glyph = "fal fa-file-code",          Category = "Resources" ,      Ordinal=402 }  } ,
 				{ ComponentCategories.FileAssembly,    new ItemDescriptor("File assembly",    ComponentCategories.FileAssembly,      typeof(AssemblyFileSystemResource))          { Glyph = "fal fa-file-code",          Category = "Resources" ,      Ordinal=403} },
+				{ ComponentCategories.Text,    new ItemDescriptor("Text",    ComponentCategories.Text,      typeof(Resources.Text))          { Glyph = "fal fa-file-alt",          Category = "Resources" ,      Ordinal=404} },
 
 				{ ComponentCategories.MicroServiceInfo,     new ItemDescriptor("Microservice info",   ComponentCategories.MicroServiceInfo,       typeof(MicroServiceInfoConfiguration))                       { Glyph = "fal fa-cogs",   Category = "Infrastructure" ,     Ordinal=504} },
 				{ ComponentCategories.Settings,     new ItemDescriptor("Settings",   ComponentCategories.Settings,       typeof(SettingsConfiguration))                       { Glyph = "fal fa-cogs",   Category = "Infrastructure" ,     Ordinal=505} },

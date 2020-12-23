@@ -11,12 +11,15 @@ namespace TomPIT.Data
 {
 	internal abstract class DataCommand : MiddlewareObject, IDataCommand
 	{
+		private object _sync = new object();
 		private List<TomPIT.Data.IDataParameter> _parameters = null;
 
 		public string CommandText { get; set; }
 		public CommandType CommandType { get; set; } = CommandType.StoredProcedure;
 		public int CommandTimeout { get; set; } = 30;
 		public IDataConnection Connection { get; set; }
+
+		protected IDataCommandDescriptor Command { get; private set; }
 
 		protected DataCommand(IMiddlewareContext context) : base(context)
 		{
@@ -151,7 +154,19 @@ namespace TomPIT.Data
 			return value.Trim();
 		}
 
-		protected IDataCommandDescriptor CreateCommand()
+		protected void EnsureCommand()
+		{
+			if (Command == null)
+			{
+				lock (_sync)
+				{
+					if (Command == null)
+						Command = CreateCommand();
+				}
+			}
+		}
+
+		private IDataCommandDescriptor CreateCommand()
 		{
 			var r = new DataCommandDescriptor
 			{
@@ -173,7 +188,6 @@ namespace TomPIT.Data
 
 			return r;
 		}
-
 
 		#region IDisposable
 

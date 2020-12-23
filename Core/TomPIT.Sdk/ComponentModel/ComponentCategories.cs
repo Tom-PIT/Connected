@@ -23,6 +23,7 @@
 		public static string Media => "Media";
 		public static string EmbeddedAssembly => "EmbeddedAssembly";
 		public static string FileAssembly => "FileAssembly";
+		public static string Text => "Text";
 		public static string MailTemplate => "MailTemplate";
 		public static string Inbox => "Inbox";
 		public static string SearchCatalog => "SearchCatalog";

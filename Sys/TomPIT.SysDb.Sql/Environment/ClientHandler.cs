@@ -38,7 +38,7 @@ namespace TomPIT.SysDb.Sql.Environment
 
 		public IClient Select(string token)
 		{
-			var r = new Reader<Client>("tompit.client_que");
+			var r = new Reader<Client>("tompit.client_sel");
 
 			r.CreateParameter("token", token);
 

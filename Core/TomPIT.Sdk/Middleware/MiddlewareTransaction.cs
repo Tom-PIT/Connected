@@ -44,14 +44,7 @@ namespace TomPIT.Middleware
 		public void Notify(IMiddlewareTransactionClient operation)
 		{
 			if (operation == null || Operations.Contains(operation))
-			{
 				return;
-			}
-
-			if (State != MiddlewareTransactionState.Active)
-			{
-				return;
-			}
 
 			Operations.Push(operation);
 		}

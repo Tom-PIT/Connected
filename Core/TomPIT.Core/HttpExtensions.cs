@@ -10,6 +10,7 @@ namespace TomPIT
 {
 	public static class HttpExtensions
 	{
+		private const string RequestArgumentsKey = "TP-REQUEST-ARGUMENTS";
 		public static bool IsAjaxRequest(this HttpRequest request)
 		{
 			if (request == null)
@@ -48,15 +49,17 @@ namespace TomPIT
 
 		public static JObject ToJObject(this Stream s)
 		{
-			using (var reader = new StreamReader(s, Encoding.UTF8))
-			{
-				var body = reader.ReadToEndAsync().Result;
+			using var reader = new StreamReader(s, Encoding.UTF8);
+			var body = reader.ReadToEndAsync().Result;
 
-				if (string.IsNullOrWhiteSpace(body))
-					return new JObject();
+			if (string.IsNullOrWhiteSpace(body))
+				return new JObject();
 
-				return Serializer.Deserialize<JObject>(body);
-			}
+			var result = Serializer.Deserialize<JObject>(body);
+
+			SetRequestArguments(Shell.HttpContext, result);
+
+			return result;
 		}
 
 		public static T ToType<T>(this Stream s)
@@ -64,6 +67,21 @@ namespace TomPIT
 			var body = new StreamReader(s, Encoding.UTF8).ReadToEndAsync().Result;
 
 			return Serializer.Deserialize<T>(body);
+		}
+
+		public static JObject GetRequestArguments(this HttpContext context)
+		{
+			var result = context.Items[RequestArgumentsKey];
+
+			return result == null ? null : (JObject)result;
+		}
+
+		public static void SetRequestArguments(this HttpContext context, JObject arguments)
+		{
+			if (context == null)
+				return;
+
+			context.Items[RequestArgumentsKey] = arguments;
 		}
 	}
 }

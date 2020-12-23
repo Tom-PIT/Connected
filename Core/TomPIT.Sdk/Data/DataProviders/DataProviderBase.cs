@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Data;
 using Newtonsoft.Json.Linq;
 
@@ -6,6 +7,8 @@ namespace TomPIT.Data.DataProviders
 {
 	public abstract class DataProviderBase<T> : IDataProvider where T : class, IDataConnection
 	{
+		private object _sync = new object();
+		private ConcurrentDictionary<IDataCommandDescriptor, IDbCommand> _commands = null;
 		public Guid Id { get; }
 		public string Name { get; }
 
@@ -16,6 +19,23 @@ namespace TomPIT.Data.DataProviders
 		}
 
 		public abstract IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior);
+
+		private ConcurrentDictionary<IDataCommandDescriptor, IDbCommand> Commands
+		{
+			get
+			{
+				if (_commands == null)
+				{
+					lock (_sync)
+					{
+						if (_commands == null)
+							_commands = new ConcurrentDictionary<IDataCommandDescriptor, IDbCommand>();
+					}
+				}
+
+				return _commands;
+			}
+		}
 
 		protected JObject CreateDataRow(IDataReader rdr)
 		{
@@ -162,16 +182,27 @@ namespace TomPIT.Data.DataProviders
 
 		protected virtual IDbCommand ResolveCommand(IDataCommandDescriptor command, IDataConnection connection)
 		{
-			var r = connection.CreateCommand();
+			if (Commands.TryGetValue(command, out IDbCommand existing))
+				return existing;
 
-			r.CommandText = command.CommandText;
-			r.CommandType = command.CommandType;
-			r.CommandTimeout = command.CommandTimeout;
+			lock (_sync)
+			{
+				if (Commands.TryGetValue(command, out IDbCommand existing2))
+					return existing2;
 
-			if (connection.Transaction != null)
-				r.Transaction = connection.Transaction;
+				var r = connection.CreateCommand();
 
-			return r;
+				r.CommandText = command.CommandText;
+				r.CommandType = command.CommandType;
+				r.CommandTimeout = command.CommandTimeout;
+
+				if (connection.Transaction != null)
+					r.Transaction = connection.Transaction;
+
+				Commands.TryAdd(command, r);
+
+				return r;
+			}
 		}
 
 		private void EnsureOpen(IDataConnection connection)

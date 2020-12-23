@@ -21,6 +21,8 @@ namespace TomPIT.Rest.Controllers
 			foreach (var q in qs)
 				result.Add(new JProperty(q.Key, q.Value.ToString()));
 
+			Context.SetRequestArguments(result);
+
 			return result;
 		}
 

@@ -20,7 +20,8 @@ namespace TomPIT.Data
 		{
 			try
 			{
-				var ds = Connection.Query(CreateCommand());
+				EnsureCommand();
+				var ds = Connection.Query(Command);
 				var r = new List<T>();
 
 				if (ds == null || ds.Count == 0)
@@ -73,7 +74,8 @@ namespace TomPIT.Data
 		{
 			try
 			{
-				var ds = Connection.Query(CreateCommand());
+				EnsureCommand();
+				var ds = Connection.Query(Command);
 
 				if (ds == null || ds.Count == 0)
 					return default;
