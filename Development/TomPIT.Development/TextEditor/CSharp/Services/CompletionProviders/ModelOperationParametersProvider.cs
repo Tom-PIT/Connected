@@ -203,6 +203,8 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 				type = Arguments.Model.GetTypeInfo(ins.GetFirstToken().Parent);
 			else if (syntax is InvocationExpressionSyntax)
 				type = Arguments.Model.GetTypeInfo(syntax);
+			else if (syntax is MemberAccessExpressionSyntax member)
+				type = Arguments.Model.GetTypeInfo(member.Expression);
 
 			if (type.Type == null || type.Type.DeclaringSyntaxReferences.Length == 0)
 			{
@@ -213,7 +215,12 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 				var name = scope.Identifier.ToString();
 
-				return ComponentDescriptor.Model(Arguments.Editor.Context, name);
+				var model = ComponentDescriptor.Model(Arguments.Editor.Context, name);
+
+				if (model.Component == null)
+					return null;
+
+				return model;
 			}
 
 			var sourceFile = type.Type.DeclaringSyntaxReferences[0].SyntaxTree.FilePath;

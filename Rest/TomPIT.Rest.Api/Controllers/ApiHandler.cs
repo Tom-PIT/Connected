@@ -123,6 +123,9 @@ namespace TomPIT.Rest.Controllers
 				{
 					var contentType = Shell.HttpContext.Request.ContentType;
 
+					if (contentType.Contains(';'))
+						contentType = contentType.Split(';')[0].Trim();
+
 					if (string.Compare(contentType, JsonApiFormatter.ContentType, true) == 0)
 						_formatter = new JsonApiFormatter();
 					else if (string.Compare(contentType, FormApiFormatter.ContentType, true) == 0)
