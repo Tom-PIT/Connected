@@ -51,7 +51,7 @@ namespace TomPIT.Development.Models
 
 		protected override void OnDatabinding()
 		{
-			Title = MicroService.Name;
+			Title = MicroService?.Name;
 		}
 
 		protected override IDesignerActionResult CreateItem(JObject data)
@@ -233,6 +233,27 @@ namespace TomPIT.Development.Models
 		private void MoveFolder(IFolder f, Guid folder)
 		{
 			Tenant.GetService<IDesignService>().Components.UpdateFolder(f.MicroService, f.Token, f.Name, folder);
+		}
+
+		public override IDesignerActionResult Action(JObject data)
+		{
+			var action = data.Optional("action", string.Empty);
+
+			if (string.IsNullOrWhiteSpace(action))
+				throw IdeException.ExpectedParameter(this, 0, "action");
+
+			if (string.Compare(action, "clone", true) == 0)
+				CloneComponent(data);
+
+			return base.Action(data);
+		}
+
+		private void CloneComponent(JObject data)
+		{
+			var folder = data.Optional("folder", Guid.Empty);
+			var component = data.Required<Guid>("component");
+
+			Context.Tenant.GetService<IDesignService>().Components.Clone(component, MicroService.Token, folder);
 		}
 	}
 }

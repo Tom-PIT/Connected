@@ -142,7 +142,7 @@
     <value>Default retry strategy for technology {0}, named '{1}', is not defined.</value>
   </data>
   <data name="DefaultRetryStrategyNotFound" xml:space="preserve">
-    <value>Default retry strategy for technology {0} was not not defined, and there is no overall default strategy.</value>
+    <value>Default retry strategy for technology {0} was not defined, and there is no overall default strategy.</value>
   </data>
   <data name="DevelopmentEnvironment" xml:space="preserve">
     <value>Integrated development environment</value>

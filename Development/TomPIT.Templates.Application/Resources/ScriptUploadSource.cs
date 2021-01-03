@@ -29,5 +29,10 @@ namespace TomPIT.MicroServices.Resources
 			if (resource != Guid.Empty)
 				MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Delete(Blob);
 		}
+
+		public void Reset(Guid existingValue, Guid newValue)
+		{
+			Blob = newValue;
+		}
 	}
 }

@@ -23,6 +23,8 @@ namespace TomPIT.Development.Configuration
 			routes.MapControllerRoute("sys.apitest.body", "sys/apitest/selectbody", new { controller = "ApiTest", action = "SelectBody" });
 			routes.MapControllerRoute("sys.apitest.delete", "sys/apitest/delete", new { controller = "ApiTest", action = "Delete" });
 			routes.MapControllerRoute("sys.apitest.provideitems", "sys/apitest/provideitems", new { controller = "ApiTest", action = "ProvideItems" });
+			routes.MapControllerRoute("sys.selectuserstate", "sys/select-user-state", new { controller = "Ide", action = "SelectUserState" });
+			routes.MapControllerRoute("sys.updateuserstate", "sys/update-user-state", new { controller = "Ide", action = "UpdateUserState" });
 
 			routes.Map("sys/source-code/{microService}/{component}/{template}", (t) =>
 			{

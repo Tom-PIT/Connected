@@ -384,6 +384,11 @@ $.widget('tompit.tpIde', {
 
             this._syncNavigationButtons();
         }
+
+        let ce = new CustomEvent('selectionChanged');
+
+        this.element[0].dispatchEvent(ce);
+
     },
     _syncNode: function (s, e) {
         var element = s._findElement(e.target);

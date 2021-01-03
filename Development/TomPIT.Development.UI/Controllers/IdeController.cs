@@ -1,5 +1,6 @@
-﻿using System;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Development.Models;
 using TomPIT.Ide.Controllers;
@@ -18,9 +19,6 @@ namespace TomPIT.Development.Controllers
 
 			r.Initialize(this, r.Tenant.GetService<IMicroServiceService>().SelectByUrl(microService));
 
-			if (r.MicroService == null)
-				throw new NullReferenceException();
-
 			if (string.IsNullOrWhiteSpace(Request.ContentType)
 				|| Request.ContentType.Contains("application/json"))
 				r.RequestBody = FromBody();
@@ -28,6 +26,26 @@ namespace TomPIT.Development.Controllers
 			r.Databind();
 
 			return r;
+		}
+
+		[HttpPost]
+		public ActionResult SelectUserState()
+		{
+			var body = FromBody();
+			var model = CreateModel();
+
+			return Json(model.Services.Data.User.Select<JObject, string>(body.Required<string>("primaryKey"), body.Required<string>("topic")));
+		}
+
+		[HttpPost]
+		public ActionResult UpdateUserState()
+		{
+			var body = FromBody();
+			var model = CreateModel();
+
+			model.Services.Data.User.Update(body.Required<string>("primaryKey"), body.Required<JObject>("value"), body.Required<string>("topic"));
+
+			return new EmptyResult();
 		}
 	}
 }

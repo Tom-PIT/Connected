@@ -11,6 +11,7 @@ namespace TomPIT.Design
 		List<IComponent> Query(Guid[] microServices);
 		Guid Insert(Guid microService, Guid folder, string category, string name, string type);
 		void Restore(Guid microService, IPackageComponent component, IPackageBlob configuration, IPackageBlob runtimeConfiguration);
+		void Clone(Guid component, Guid microService, Guid folder);
 		void Update(Guid component, string name, Guid folder);
 		void Update(IConfiguration configuration);
 		void Update(IConfiguration configuration, ComponentUpdateArgs e);

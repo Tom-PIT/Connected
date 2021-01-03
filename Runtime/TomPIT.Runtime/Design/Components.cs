@@ -132,7 +132,7 @@ namespace TomPIT.Design
 						ResourceGroup = ms.ResourceGroup,
 						MicroService = microService,
 						Type = runtimeConfiguration.Type,
-						Token = runtimeConfiguration.Token,
+						Token = runtimeConfigurationId,
 						PrimaryKey = runtimeConfiguration.PrimaryKey
 					};
 
@@ -188,6 +188,74 @@ namespace TomPIT.Design
 			InvalidateIndexState(component.Token);
 		}
 
+		public void Clone(Guid component, Guid microService, Guid folder)
+		{
+			var existing = Tenant.GetService<IComponentService>().SelectComponent(component);
+
+			if (existing == null)
+				throw new RuntimeException(SR.ErrComponentNotFound);
+
+			var ds = Tenant.GetService<IDiscoveryService>();
+
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+			var existingConfiguration = Tenant.GetService<IComponentService>().SelectConfiguration(component);
+			var blobs = ds.Children<IText>(existingConfiguration);
+			var elements = ds.Children<IElement>(existingConfiguration);
+			var externals = ds.Children<IExternalResourceElement>(existingConfiguration);
+			var newId = Insert(microService, folder, existing.Category, CreateName(microService, existing.Category, existing.Name), existing.Type);
+
+			foreach (var element in elements)
+				element.Reset();
+
+			existingConfiguration.Component = newId;
+
+			foreach (var blob in blobs)
+			{
+				if (blob.TextBlob == Guid.Empty)
+					continue;
+
+				var content = Tenant.GetService<IStorageService>().Download(blob.TextBlob);
+				var text = content == null || content.Content == null || content.Content.Length == 0 ? string.Empty : Encoding.UTF8.GetString(content.Content);
+
+				blob.TextBlob = Guid.Empty;
+
+				Update(blob, text);
+			}
+
+			foreach (var external in externals)
+			{
+				var resources = external.QueryResources();
+
+				if (resources == null || resources.Count == 0)
+					continue;
+
+				foreach (var resource in resources)
+				{
+					var resourceBlob = Tenant.GetService<IStorageService>().Select(resource);
+
+					if (resourceBlob == null)
+						continue;
+
+					var resourceBlobContent = Tenant.GetService<IStorageService>().Download(resourceBlob.Token);
+					var newBlob = new Blob
+					{
+						ContentType = resourceBlob.ContentType,
+						FileName = resourceBlob.FileName,
+						MicroService = microService,
+						PrimaryKey = external.Id.ToString(),
+						ResourceGroup = ms.ResourceGroup,
+						Type = resourceBlob.Type,
+						Topic = resourceBlob.Topic
+					};
+
+					var token = Tenant.GetService<IStorageService>().Upload(newBlob, resourceBlobContent.Content, StoragePolicy.Singleton);
+
+					external.Reset(resource, token);
+				}
+			}
+
+			Update(existingConfiguration);
+		}
 		public Guid Insert(Guid microService, Guid folder, string category, string name, string type)
 		{
 			var s = Tenant.GetService<IMicroServiceService>().Select(microService);

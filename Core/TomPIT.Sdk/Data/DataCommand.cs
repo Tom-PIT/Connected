@@ -164,6 +164,24 @@ namespace TomPIT.Data
 						Command = CreateCommand();
 				}
 			}
+
+			SynchronizeParameters();
+		}
+
+		private void SynchronizeParameters()
+		{
+			Command.Parameters.Clear();
+
+			foreach (var parameter in Parameters)
+			{
+				Command.Parameters.Add(new CommandParameter
+				{
+					Direction = parameter.Direction,
+					Name = parameter.Name,
+					Value = parameter.Value,
+					DataType = parameter.Type
+				});
+			}
 		}
 
 		private IDataCommandDescriptor CreateCommand()
@@ -174,17 +192,6 @@ namespace TomPIT.Data
 				CommandType = CommandType,
 				CommandTimeout = CommandTimeout
 			};
-
-			foreach (var parameter in Parameters)
-			{
-				r.Parameters.Add(new CommandParameter
-				{
-					Direction = parameter.Direction,
-					Name = parameter.Name,
-					Value = parameter.Value,
-					DataType = parameter.Type
-				});
-			}
 
 			return r;
 		}

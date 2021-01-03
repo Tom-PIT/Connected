@@ -149,8 +149,7 @@ namespace TomPIT
 
 			services.AddAuthorization(options =>
 			{
-				options.AddPolicy(Claims.ImplementMicroservice, policy =>
-				policy.Requirements.Add(new ClaimRequirement(Claims.ImplementMicroservice)));
+				options.AddPolicy(Claims.ImplementMicroservice, policy => policy.RequireClaim(Claims.ImplementMicroservice));
 			});
 
 

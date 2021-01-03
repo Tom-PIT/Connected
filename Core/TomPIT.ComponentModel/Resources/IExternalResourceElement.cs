@@ -7,5 +7,6 @@ namespace TomPIT.ComponentModel.Resources
 	{
 		List<Guid> QueryResources();
 		void Clean(Guid resource);
+		void Reset(Guid existingValue, Guid newValue);
 	}
 }
