@@ -1,6 +1,4 @@
-﻿'use strict';
-
-class environment{
+﻿class environment{
     initialize() {
 
         this.loadState();
@@ -47,7 +45,7 @@ class environment{
 
         this.pasteButton = paste;
 
-        ide.element[0].addEventListener('selectionChanged', async (e) => {
+        ide.element[0].addEventListener('selectionChanged', (e) => {
             this.syncButtons();
         });
 
@@ -171,6 +169,6 @@ class environment{
     set state(value) {
         this._state = value;
     }
-}
+};
 
 window.env = window.env || new environment();

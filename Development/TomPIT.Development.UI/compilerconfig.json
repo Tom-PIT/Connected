@@ -22,5 +22,9 @@
   {
     "outputFile": "wwwroot/Assets/Styles/versionControl.css",
     "inputFile": "wwwroot/Assets/Styles/versionControl.less"
+  },
+  {
+    "outputFile": "wwwroot/Assets/Scripts/environment.es5.js",
+    "inputFile": "wwwroot/Assets/Scripts/environment.js"
   }
 ]

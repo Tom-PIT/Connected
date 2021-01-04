@@ -40,17 +40,17 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Claims.resx</DependentUpon>
     </Compile>
-    <Compile Update="SR.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SR.resx</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Claims.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Claims.Designer.cs</LastGenOutput>
       <CustomToolNamespace>TomPIT</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Update="SR.sl-SI.resx">
+      <CustomToolNamespace>TomPIT</CustomToolNamespace>
+      <LastGenOutput>SR.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="SR.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
