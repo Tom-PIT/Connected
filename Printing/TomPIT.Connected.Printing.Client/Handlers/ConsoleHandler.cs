@@ -17,9 +17,11 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             {
                 var trimmed = text.Trim();
 
-                var lastPart = trimmed.Substring(trimmed.Length - 10, 10);
+                var trimmedLength = trimmed.Length;
 
-                var firstPart = trimmed.Substring(0, Math.Min(maxLength, trimmed.Length - 10));
+                var lastPart = trimmed.Substring(trimmedLength - 10, 10);
+
+                var firstPart = trimmed.Substring(0, Math.Min(maxLength, trimmedLength - 10));
 
                 return $"{firstPart}...{lastPart}";
             }
