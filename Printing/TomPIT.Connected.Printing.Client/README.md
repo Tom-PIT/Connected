@@ -63,7 +63,7 @@ From command line (```cmd``` or ```PowerShell```) run the following command:
 - ```availablePrinters``` - list of available printers; this value can be:
   - ```default``` - will register default locally installed printer
   - ```installed``` - will register all locally installed printers
-  - semi-colon separated list of printer names (e.g. ```Printer 1;Printer 2;Some network Printer```)
+  - semi-colon separated list of printer names [^1] (e.g. ```Printer 1;Printer 2;Some network Printer```)
 - ```loggingLevel``` - level of information, that will be logged to log file; available values are:
   - ```off``` - no logging will be done
   - ```fatal``` - only fatal errors will be logged
@@ -78,6 +78,8 @@ From command line (```cmd``` or ```PowerShell```) run the following command:
   - ```errorMessage``` - log only error messages
   - ```stackTrace``` - with error message log also stack-trace
 - ```printerNameMappings``` - semi-colon separated list of key-value paired printer names in form of ```friendlyName=printerName``` (e.g. ```Beautiful printer=HPE9367C (HP Officejet Pro 8620)``` which redirects all requests to printer named ```Beautiful printer``` (which is **only** a friendly name) to actual system printer by name ```HPE9367C (HP Officejet Pro 8620)```; this way the user does not have to know all installed printers because we can map some obscure system printer name to e.g. ```Printer in main office```)
+
+[^1]: In case of shared printers the fully qualified name must be used, not just share name (e.g. for shared printer named ```SharedPrinter``` which is shared on computer ```SharePC``` the name provided **must** be ```\\SharePC\SharedPrinter``` and not only ```SharedPrinter```)
 
 
 

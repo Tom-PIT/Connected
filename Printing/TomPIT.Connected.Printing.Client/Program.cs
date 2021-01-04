@@ -6,6 +6,7 @@
 
 #if CONSOLE
 using System;
+using System.Threading;
 using TomPIT.Connected.Printing.Client.Handlers;
 #else
 using System.ServiceProcess;

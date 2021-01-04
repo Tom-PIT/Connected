@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -44,19 +45,46 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                 };
             }).WithAutomaticReconnect().Build();
 
+            _connection.Reconnecting += async (error) =>
+            {
+                if (error is null)
+                {
+                    Logging.Debug("Connection closed, no error. Reconnecting.");
+                }
+                else
+                {
+                    Logging.Debug($"Connection closed due to error. Reconnecting. Error = {error}");
+                }
+            };
+
+            _connection.Reconnected += async (arg) =>
+            {
+                Logging.Debug($"Reconnected, Connection Id = {arg}");
+                RegisterPrinters();
+            };
+
+            _connection.KeepAliveInterval = TimeSpan.FromSeconds(20);
+
             _connection.Closed += async (error) =>
             {
-                Logging.Debug("Connection closed");
+                if (error is null)
+                {
+                    Logging.Debug("Connection closed normally.");
+                }
+                else
+                {
+                    Logging.Debug($"Connection closed due to error: {error}");
+                }
 
                 if (!_keepAlive) 
                     return;
 
                 await Task.Delay(1000);
                 await _connection.StartAsync();
+                RegisterPrinters();
 
-                Logging.Debug("Connection reestablished");
+                Logging.Debug("Connection re-established.");
             };
-
 
             _connection.On<Guid, Guid>(Constants.RequestPrint, (id, receipt) =>
             {
@@ -170,7 +198,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                         var print = new PrintToolBase(report.PrintingSystem);
 
                         Logging.Trace("Starting printing...");
-                        print.Print();
+                        print.Print(printerName);
                         Logging.Trace("Printing done...");
                     }
                 }
