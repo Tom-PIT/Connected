@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2020 Tom PIT. All rights reserved.
+ * Copyright (c) 2020-2021 Tom PIT. All rights reserved.
  * Licensed under GNU Affero General Public License version 3.
  * Read about Tom PIT licensing here: https://www.tompit.net/legal/open-release-license
  */
@@ -43,7 +43,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                 {
                     return Task.FromResult(Settings.Token);
                 };
-            }).WithAutomaticReconnect().Build();
+            }).WithAutomaticReconnect(new ConnectionRetryPolicy()).Build();
 
             _connection.Reconnecting += async (error) =>
             {
@@ -165,7 +165,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             try
             {
                 AddPrinters(printerList);
-                Logging.Trace($"Registered Printers: {string.Join(",", printerList)}");
+                Logging.Trace($"Registered Printers: {string.Join(", ", printerList)}");
             }
             catch (Exception ex)
             {
