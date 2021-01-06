@@ -1,4 +1,5 @@
 ﻿@using DevExpress.AspNetCore
+@using TomPIT.MicroServices.Reporting.Storage
 
 @model TomPIT.MicroServices.Reporting.Models.ReportRuntimeModel
 
@@ -12,5 +13,7 @@
    }
 
    var handler = $"{Model.Services.Routing.RootUrl}/DXXRDV";
+
+   var report = new ReportRuntimeStorage().CreateReport(fullUrl);
 }
-@Html.DevExpress().WebDocumentViewer("DocumentViewer").HandlerUri(handler).Height("1000px").Bind(fullUrl)
+@Html.DevExpress().WebDocumentViewer("DocumentViewer").HandlerUri(handler).Height("1000px").Bind(report)

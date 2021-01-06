@@ -188,7 +188,7 @@ namespace TomPIT.Design
 			InvalidateIndexState(component.Token);
 		}
 
-		public void Clone(Guid component, Guid microService, Guid folder)
+		public Guid Clone(Guid component, Guid microService, Guid folder)
 		{
 			var existing = Tenant.GetService<IComponentService>().SelectComponent(component);
 
@@ -255,6 +255,8 @@ namespace TomPIT.Design
 			}
 
 			Update(existingConfiguration);
+
+			return newId;
 		}
 		public Guid Insert(Guid microService, Guid folder, string category, string name, string type)
 		{

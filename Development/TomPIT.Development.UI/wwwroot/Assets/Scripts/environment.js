@@ -77,6 +77,13 @@
                 'folder': folder
             },
             onComplete: (e) => {
+                let path = ide._resolvePath(ide.selectedElement());//`${ide._resolvePath(ide.selectedElement())}/${e.component}`;
+
+                ide.refreshSections({
+                    sections:'explorer',
+                    path: path
+                });
+
                 tompit.success('Component pasted from the clipboard.', 'Paste component');
             }
         });
@@ -107,7 +114,7 @@
 
         var url = `${tompit.DEVDEFAULTS.rootUrl}/sys/update-user-state`;
 
-        this._state = tompit.post({
+        tompit.post({
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             data: {

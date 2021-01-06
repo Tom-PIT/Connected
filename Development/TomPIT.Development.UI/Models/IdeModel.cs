@@ -243,17 +243,22 @@ namespace TomPIT.Development.Models
 				throw IdeException.ExpectedParameter(this, 0, "action");
 
 			if (string.Compare(action, "clone", true) == 0)
-				CloneComponent(data);
+			{
+				return Result.JsonResult(this, new
+				{
+					Component = CloneComponent(data)
+				});
+			}
 
 			return base.Action(data);
 		}
 
-		private void CloneComponent(JObject data)
+		private Guid CloneComponent(JObject data)
 		{
 			var folder = data.Optional("folder", Guid.Empty);
 			var component = data.Required<Guid>("component");
 
-			Context.Tenant.GetService<IDesignService>().Components.Clone(component, MicroService.Token, folder);
+			return Context.Tenant.GetService<IDesignService>().Components.Clone(component, MicroService.Token, folder);
 		}
 	}
 }

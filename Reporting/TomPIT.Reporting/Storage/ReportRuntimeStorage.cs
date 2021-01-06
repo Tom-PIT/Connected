@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using DevExpress.DataAccess.Json;
 using DevExpress.XtraReports.UI;
 using DevExpress.XtraReports.Web.Extensions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Reports;
@@ -78,7 +80,7 @@ namespace TomPIT.MicroServices.Reporting.Storage
 						r.LoadLayoutFromXml(loadStream);
 					}
 
-					BindDataSources(ms, r, url);
+					//BindDataSources(r, url);
 				}
 			}
 
@@ -87,24 +89,25 @@ namespace TomPIT.MicroServices.Reporting.Storage
 
 			using (MemoryStream stream = new MemoryStream())
 			{
-				r.RequestParameters = false;
-
-				foreach (var parameter in r.Parameters)
-					parameter.Visible = false;
-
 				r.SaveLayoutToXml(stream);
 
 				return stream.ToArray();
 			}
 		}
 
-		public XtraReport CreateReport(Guid component, object arguments)
+		public XtraReport CreateReport(string url)
 		{
-			var config = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) as IReportConfiguration;
+			var report = SelectReport(url);
+			JObject arguments = null;
 
-			if (config == null)
-				return null;
+			if (url.Contains("?"))
+				arguments = ParseArguments(url.Split("?")[^1]);
 
+			return CreateReport(report, arguments);
+		}
+
+		private XtraReport CreateReport(IReportConfiguration config, object arguments)
+		{
 			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(config.MicroService());
 
 			XtraReport r = null;
@@ -124,7 +127,7 @@ namespace TomPIT.MicroServices.Reporting.Storage
 
 				r.LoadLayoutFromXml(loadStream);
 
-				BindDataSources(ms, r, url);
+				BindDataSources(r, url, null);
 			}
 
 			if (r == null)
@@ -135,16 +138,134 @@ namespace TomPIT.MicroServices.Reporting.Storage
 			foreach (var parameter in r.Parameters)
 				parameter.Visible = false;
 
+			var subreports = r.AllControls<XRSubreport>();
+
+			foreach (var subreport in subreports)
+				subreport.BeforePrint += OnBindSubreportDataSources;
+
 			return r;
 		}
 
-		private void BindDataSources(IMicroService microService, XtraReport report, string url)
+		private void OnBindSubreportDataSources(object sender, System.Drawing.Printing.PrintEventArgs e)
+		{
+			var subReport = sender as XRSubreport;
+
+			subReport.ApplyParameterBindings();
+			/*
+			 * this is workaround for the issue related to parameter bindings.
+			 * it seems devexpress doesn't know how to bind parameters from json data source
+			 * so we're gonna do it manually.
+			 */
+			var bindings = subReport.ParameterBindings;
+			var newBindings = new List<ParameterBinding>();
+
+			foreach (var binding in bindings)
+			{
+				ReportParameterTag tag = null;
+
+				if (binding.Parameter != null && !(binding.Parameter.Tag is ReportParameterTag))
+				{
+					newBindings.Add(binding);
+					continue;
+				}
+
+				tag = binding.Parameter?.Tag as ReportParameterTag;
+
+				if (subReport.ReportSource.DataSource == null)
+					continue;
+
+				if (tag == null)
+				{
+					tag = new ReportParameterTag
+					{
+						DataSource = binding.DataSource as JsonDataSource,
+						DataMember = binding.DataMember
+					};
+				}
+
+				var entity = tag.DataMember.Split('.')[0];
+				var property = tag.DataMember.Split('.')[1];
+				var index = subReport.Report.CurrentRowIndex;
+				var en = tag.DataSource.GetEnumerator();
+
+				if (!en.MoveNext())
+					continue;
+
+				var pi = en.Current.GetType().GetProperty(entity);
+
+				if (pi == null)
+					continue;
+
+				if (!(pi.GetValue(en.Current) is IList list))
+					continue;
+
+				if (list.Count - 1 < index)
+					continue;
+
+				var item = list[index];
+				pi = item.GetType().GetProperty(property);
+
+				if (pi == null)
+					continue;
+
+				newBindings.Add(new ParameterBinding(binding.ParameterName, new DevExpress.XtraReports.Parameters.Parameter
+				{
+					Tag = tag,
+					Name = binding.ParameterName,
+					Type = pi.PropertyType,
+					Value = pi.GetValue(item),
+				}));
+			}
+
+			subReport.ParameterBindings.Clear();
+
+			foreach (var binding in newBindings)
+				subReport.ParameterBindings.Add(binding);
+
+			BindDataSources(subReport.ReportSource, subReport.ReportSourceUrl, subReport.ParameterBindings);
+		}
+		public XtraReport CreateReport(Guid component, object arguments)
+		{
+			var config = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) as IReportConfiguration;
+
+			if (config == null)
+				return null;
+
+			return CreateReport(config, arguments);
+		}
+
+		private void BindDataSources(XtraReport report, string url, ParameterBindingCollection bindings)
 		{
 			var tokens = url.Split(new char[] { '?' }, 2);
 			JObject arguments = null;
 
 			if (tokens.Length == 2)
 				arguments = ParseArguments(tokens[1]);
+
+			foreach (var parameter in report.Parameters)
+			{
+				if (arguments == null)
+					arguments = new JObject();
+
+				if (arguments.ContainsKey(parameter.Name))
+					arguments[parameter.Name] = new JValue(parameter.Value);
+				else
+					arguments.Add(parameter.Name, new JValue(parameter.Value));
+			}
+
+			if (bindings != null)
+			{
+				foreach (var binding in bindings)
+				{
+					if (arguments == null)
+						arguments = new JObject();
+
+					if (arguments.ContainsKey(binding.ParameterName))
+						arguments[binding.ParameterName] = new JValue(binding.Parameter?.Value);
+					else
+						arguments.Add(binding.ParameterName, new JValue(binding.Parameter?.Value));
+				}
+			}
 
 			var connection = Shell.GetService<IConnectivityService>().SelectDefaultTenant();
 
@@ -173,20 +294,34 @@ namespace TomPIT.MicroServices.Reporting.Storage
 			return Serializer.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(queryString)));
 
 		}
-		private JsonDataSource CreateDataSource(JsonDataSource dataSource, string dataMember, ITenant tenant, JObject arguments)
+		private RuntimeDataSource CreateDataSource(JsonDataSource dataSource, string dataMember, ITenant tenant, JObject arguments)
 		{
-			if (dataSource == null || string.IsNullOrWhiteSpace(dataSource.ConnectionName))
+			if (dataSource == null || string.IsNullOrWhiteSpace(dataMember))
 				return null;
 
-			var descriptor = ComponentDescriptor.Api(MicroServiceContext.FromIdentifier(dataSource.ConnectionName, tenant), dataSource.ConnectionName);
+			var result = dataSource as RuntimeDataSource;
+
+			if (result == null)
+			{
+				result = new RuntimeDataSource
+				{
+					Url = dataSource.ConnectionName,
+					Schema = dataSource.Schema,
+					Name = dataSource.Name,
+					RootElement = dataSource.RootElement
+				};
+			}
+
+			var descriptor = ComponentDescriptor.Api(MicroServiceContext.FromIdentifier(result.Url, tenant), result.Url);
 
 			descriptor.Validate();
 
-			var ds = descriptor.Context.Interop.Invoke<object, JObject>(dataSource.ConnectionName, arguments);
+			var ds = descriptor.Context.Interop.Invoke<object, JObject>(result.Url, arguments);
 
 			if (ds == null)
 				return null;
-			string serializedDs = string.Empty;
+
+			var serializedDs = string.Empty;
 
 			if (!ds.GetType().IsCollection())
 			{
@@ -195,17 +330,12 @@ namespace TomPIT.MicroServices.Reporting.Storage
 					ds
 				};
 
-				serializedDs = $"{{{dataMember}:{Serializer.Serialize(list)}}}";
+				serializedDs = $"{{{dataMember}:{JsonConvert.SerializeObject(list)}}}";
 			}
 			else
-				serializedDs = $"{{{dataMember}:{Serializer.Serialize(ds)}}}";
+				serializedDs = $"{{{dataMember}:{JsonConvert.SerializeObject(ds)}}}";
 
-			var result = new JsonDataSource
-			{
-				JsonSource = new CustomJsonSource(serializedDs)
-			};
-
-			var y = result;
+			result.JsonSource = new CustomJsonSource(serializedDs);
 
 			result.Fill();
 
