@@ -4,7 +4,7 @@
 
 ## Legal
 
-Copyright (c) 2020 Tom PIT. All rights reserved.
+Copyright (c) 2020-2021 Tom PIT. All rights reserved.
 
 Licensed under GNU Affero General Public License version 3.
 
@@ -54,15 +54,29 @@ From command line (```cmd``` or ```PowerShell```) run the following command:
     <add key="exceptionLoggingLevel" value="errorMessage" />
     <add key="printerNameMappings" value="Beautiful printer=HPE9367C (HP Officejet Pro 8620)" />
 </appSettings>
+
+<printers>
+    <printer name="PrinterName 1" />
+    <printer name="PrinterName 2" />
+    <printer name="PrinterName 3" />
+</printers>
+
+<printerMappings>
+    <mapping resourceName="Printer in Office" printerName="PrinterName 1" />
+    <mapping resourceName="Printer in Warehouse" printerName="PrinterName 2" />
+</printerMappings>
 ```
 
 ### Keys
+
+#### Section ```appSettings```
 
 - ```cdnUrl``` - URL to TomPIT.Connected CDN server
 - ```token``` - token from CDN App registration
 - ```availablePrinters``` - list of available printers; this value can be:
   - ```default``` - will register default locally installed printer
   - ```installed``` - will register all locally installed printers
+  - ```list``` - will register printers from list supplied in ```<printers>``` section
   - semi-colon separated list of printer names [^1] (e.g. ```Printer 1;Printer 2;Some network Printer```)
 - ```loggingLevel``` - level of information, that will be logged to log file; available values are:
   - ```off``` - no logging will be done
@@ -82,6 +96,17 @@ From command line (```cmd``` or ```PowerShell```) run the following command:
 [^1]: In case of shared printers the fully qualified name must be used, not just share name (e.g. for shared printer named ```SharedPrinter``` which is shared on computer ```SharePC``` the name provided **must** be ```\\SharePC\SharedPrinter``` and not only ```SharedPrinter```)
 
 
+
+#### Section ```printers```
+
+* ```name``` - name of the printer [^1], similar to ```availablePrinters``` in ```appSettings``` section, but it must contain the name of the printer
+
+
+
+#### Section ```printerMappings```
+
+* ```resourceName``` - name of the printer in resource management in Tom PIT platform
+* ```printerName``` - name of the printer to be mapped; must be in available printers list (```availablePrinters``` setting in ```appSettings``` section or in list in ```printers``` section)
 
 ## Logging
 
