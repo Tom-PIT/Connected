@@ -11,7 +11,7 @@ namespace TomPIT.SysDb.Sql.BigData
 	{
 		public void Delete(INode node)
 		{
-			var w = new Writer("tompit.big_data_node_del");
+			using var w = new Writer("tompit.big_data_node_del");
 
 			w.CreateParameter("@id", node.GetId());
 
@@ -20,7 +20,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public void Insert(Guid token, string name, string connectionString, string adminConnectionString, NodeStatus status)
 		{
-			var w = new Writer("tompit.big_data_node_ins");
+			using var w = new Writer("tompit.big_data_node_ins");
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@name", name);
@@ -33,12 +33,14 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public List<INode> Query()
 		{
-			return new Reader<Node>("tompit.big_data_node_que").Execute().ToList<INode>();
+			using var r = new Reader<Node>("tompit.big_data_node_que");
+
+			return r.Execute().ToList<INode>();
 		}
 
 		public INode Select(Guid token)
 		{
-			var r = new Reader<Node>("tompit.big_data_node_sel");
+			using var r = new Reader<Node>("tompit.big_data_node_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -47,7 +49,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public void Update(INode node, string name, string connectionString, string adminConnectionString, NodeStatus status, long size)
 		{
-			var w = new Writer("tompit.big_data_node_upd");
+			using var w = new Writer("tompit.big_data_node_upd");
 
 			w.CreateParameter("@id", node.GetId());
 			w.CreateParameter("@name", name);

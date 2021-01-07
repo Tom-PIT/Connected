@@ -11,7 +11,7 @@ namespace TomPIT.SysDb.Sql.Environment
 	{
 		public void Delete(IClient client)
 		{
-			var w = new Writer("tompit.client_del");
+			using var w = new Writer("tompit.client_del");
 
 			w.CreateParameter("@id", client.GetId());
 
@@ -20,7 +20,7 @@ namespace TomPIT.SysDb.Sql.Environment
 
 		public void Insert(string token, string name, DateTime created, ClientStatus status, string type)
 		{
-			var w = new Writer("tompit.client_ins");
+			using var w = new Writer("tompit.client_ins");
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@name", name);
@@ -33,12 +33,14 @@ namespace TomPIT.SysDb.Sql.Environment
 
 		public List<IClient> Query()
 		{
-			return new Reader<Client>("tompit.client_que").Execute().ToList<IClient>();
+			using var r = new Reader<Client>("tompit.client_que");
+
+			return r.Execute().ToList<IClient>();
 		}
 
 		public IClient Select(string token)
 		{
-			var r = new Reader<Client>("tompit.client_sel");
+			using var r = new Reader<Client>("tompit.client_sel");
 
 			r.CreateParameter("token", token);
 
@@ -47,7 +49,7 @@ namespace TomPIT.SysDb.Sql.Environment
 
 		public void Update(IClient client, string name, ClientStatus status, string type)
 		{
-			var w = new Writer("tompit.client_upd");
+			using var w = new Writer("tompit.client_upd");
 
 			w.CreateParameter("@id", client.GetId());
 			w.CreateParameter("@name", name);

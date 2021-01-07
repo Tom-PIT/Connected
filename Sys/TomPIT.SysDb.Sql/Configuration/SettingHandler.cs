@@ -10,7 +10,7 @@ namespace TomPIT.SysDb.Sql.Configuration
 	{
 		public void Delete(ISetting setting)
 		{
-			var p = new Writer("tompit.setting_del");
+			using var p = new Writer("tompit.setting_del");
 
 			p.CreateParameter("@id", setting.GetId());
 
@@ -19,12 +19,14 @@ namespace TomPIT.SysDb.Sql.Configuration
 
 		public List<ISetting> Query()
 		{
-			return new Reader<Setting>("tompit.setting_que").Execute().ToList<ISetting>();
+			using var r = new Reader<Setting>("tompit.setting_que");
+
+			return r.Execute().ToList<ISetting>();
 		}
 
 		public ISetting Select(string name, string nameSpace, string type, string primaryKey)
 		{
-			var p = new Reader<Setting>("tompit.setting_sel");
+			using var p = new Reader<Setting>("tompit.setting_sel");
 
 			p.CreateParameter("@name", name);
 			p.CreateParameter("@type", type, true);
@@ -36,7 +38,7 @@ namespace TomPIT.SysDb.Sql.Configuration
 
 		public void Insert(string name, string nameSpace, string type, string primaryKey, string value)
 		{
-			var w = new Writer("tompit.setting_ins");
+			using var w = new Writer("tompit.setting_ins");
 
 			w.CreateParameter("@name", name);
 			w.CreateParameter("@type", type, true);
@@ -49,7 +51,7 @@ namespace TomPIT.SysDb.Sql.Configuration
 
 		public void Update(ISetting setting, string value)
 		{
-			var w = new Writer("tompit.setting_upd");
+			using var w = new Writer("tompit.setting_upd");
 
 			w.CreateParameter("@id", setting.GetId());
 			w.CreateParameter("@value", value, true);

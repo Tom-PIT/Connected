@@ -1,9 +1,12 @@
-﻿namespace TomPIT.Data.Sql
+﻿using System;
+
+namespace TomPIT.Data.Sql
 {
-	public abstract class DatabaseConnection : ConnectionBase
+	public abstract class DatabaseConnection : ConnectionBase, IDisposable
 	{
 		private ReliableSqlConnection _connection = null;
 		private IDataTransaction _transaction = null;
+		private bool disposedValue;
 
 		protected void SetConnection(IDataTransaction transaction)
 		{
@@ -29,6 +32,29 @@
 					return _connection;
 				}
 			}
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					if (_connection != null)
+					{
+						_connection.Dispose();
+						_connection = null;
+					}
+				}
+
+				disposedValue = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }

@@ -23,7 +23,7 @@ namespace TomPIT.SysDb.Sql.Environment
 		 */
 		public void DeleteInstanceEndpoint(IInstanceEndpoint d)
 		{
-			var w = new Writer("tompit.instance_endpoint_del");
+			using var w = new Writer("tompit.instance_endpoint_del");
 
 			w.CreateParameter("@id", d.GetId());
 
@@ -32,7 +32,7 @@ namespace TomPIT.SysDb.Sql.Environment
 
 		public void InsertInstanceEndpoint(Guid token, InstanceType type, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
 		{
-			var w = new Writer("tompit.instance_endpoint_ins");
+			using var w = new Writer("tompit.instance_endpoint_ins");
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@type", type);
@@ -47,12 +47,14 @@ namespace TomPIT.SysDb.Sql.Environment
 
 		public List<IInstanceEndpoint> QueryInstanceEndpoints()
 		{
-			return new Reader<InstanceEndpoint>("tompit.instance_endpoint_que").Execute().ToList<IInstanceEndpoint>();
+			using var r = new Reader<InstanceEndpoint>("tompit.instance_endpoint_que");
+
+			return r.Execute().ToList<IInstanceEndpoint>();
 		}
 
 		public IInstanceEndpoint SelectInstanceEndpoint(Guid token)
 		{
-			var r = new Reader<InstanceEndpoint>("tompit.instance_endpoint_sel");
+			using var r = new Reader<InstanceEndpoint>("tompit.instance_endpoint_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -61,7 +63,7 @@ namespace TomPIT.SysDb.Sql.Environment
 
 		public void UpdateInstanceEndpoint(IInstanceEndpoint target, InstanceType type, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
 		{
-			var w = new Writer("tompit.instance_endpoint_upd");
+			using var w = new Writer("tompit.instance_endpoint_upd");
 
 			w.CreateParameter("@id", target.GetId());
 			w.CreateParameter("@url", url, true);
@@ -79,7 +81,7 @@ namespace TomPIT.SysDb.Sql.Environment
 		 */
 		public void DeleteResourceGroup(IResourceGroup d)
 		{
-			var w = new Writer("tompit.resource_group_del");
+			using var w = new Writer("tompit.resource_group_del");
 
 			w.CreateParameter("@id", d.GetId());
 
@@ -88,7 +90,7 @@ namespace TomPIT.SysDb.Sql.Environment
 
 		public void InsertResourceGroup(Guid token, string name, Guid storageProvider, string connectionString)
 		{
-			var w = new Writer("tompit.resource_group_ins");
+			using var w = new Writer("tompit.resource_group_ins");
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@name", name);
@@ -100,12 +102,14 @@ namespace TomPIT.SysDb.Sql.Environment
 
 		public List<IServerResourceGroup> QueryResourceGroups()
 		{
-			return new Reader<ResourceGroup>("tompit.resource_group_que").Execute().ToList<IServerResourceGroup>();
+			using var r = new Reader<ResourceGroup>("tompit.resource_group_que");
+
+			return r.Execute().ToList<IServerResourceGroup>();
 		}
 
 		public IServerResourceGroup SelectResourceGroup(Guid token)
 		{
-			var r = new Reader<ResourceGroup>("tompit.resource_group_sel");
+			using var r = new Reader<ResourceGroup>("tompit.resource_group_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -114,7 +118,7 @@ namespace TomPIT.SysDb.Sql.Environment
 
 		public void UpdateResourceGroup(IResourceGroup target, string name, Guid storageProvider, string connectionString)
 		{
-			var w = new Writer("tompit.resource_group_upd");
+			using var w = new Writer("tompit.resource_group_upd");
 
 			w.CreateParameter("@id", target.GetId());
 			w.CreateParameter("@name", name);
@@ -128,7 +132,7 @@ namespace TomPIT.SysDb.Sql.Environment
 		 */
 		public void UpdateEnvironmentVariable(string name, string value)
 		{
-			var w = new Writer("tompit.environment_var_mdf");
+			using var w = new Writer("tompit.environment_var_mdf");
 
 			w.CreateParameter("@name", name);
 			w.CreateParameter("@value", value, true);
@@ -138,7 +142,7 @@ namespace TomPIT.SysDb.Sql.Environment
 
 		public IEnvironmentVariable SelectEnvironmentVariable(string name)
 		{
-			var r = new Reader<EnvironmentVariable>("tompit.environment_var_sel");
+			using var r = new Reader<EnvironmentVariable>("tompit.environment_var_sel");
 
 			r.CreateParameter("@name", name);
 
@@ -147,12 +151,14 @@ namespace TomPIT.SysDb.Sql.Environment
 
 		public List<IEnvironmentVariable> QueryEnvironmentVariables()
 		{
-			return new Reader<EnvironmentVariable>("tompit.environment_var_que").Execute().ToList<IEnvironmentVariable>();
+			using var r = new Reader<EnvironmentVariable>("tompit.environment_var_que");
+
+			return r.Execute().ToList<IEnvironmentVariable>();
 		}
 
 		public void DeleteEnvironmentVariable(string name)
 		{
-			var w = new Writer("tompit.environment_var_del");
+			using var w = new Writer("tompit.environment_var_del");
 
 			w.CreateParameter("@name", name);
 

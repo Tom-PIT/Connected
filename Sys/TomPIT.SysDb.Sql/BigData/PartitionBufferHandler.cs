@@ -11,7 +11,7 @@ namespace TomPIT.SysDb.Sql.BigData
 	{
 		public List<IPartitionBuffer> Dequeue(int count, DateTime date, DateTime nextVisible)
 		{
-			var r = new Reader<PartitionBuffer>("tompit.big_data_buffer_dequeue");
+			using var r = new Reader<PartitionBuffer>("tompit.big_data_buffer_dequeue");
 
 			r.CreateParameter("@next_visible", nextVisible);
 			r.CreateParameter("@count", count);
@@ -22,12 +22,14 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public List<IPartitionBuffer> Query()
 		{
-			return new Reader<PartitionBuffer>("tompit.big_data_buffer_que").Execute().ToList<IPartitionBuffer>();
+			using var r = new Reader<PartitionBuffer>("tompit.big_data_buffer_que");
+
+			return r.Execute().ToList<IPartitionBuffer>();
 		}
 
 		public IPartitionBuffer Select(Guid partition)
 		{
-			var r = new Reader<PartitionBuffer>("tompit.big_data_buffer_sel");
+			using var r = new Reader<PartitionBuffer>("tompit.big_data_buffer_sel");
 
 			r.CreateParameter("@partition", partition);
 
@@ -36,7 +38,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public void Insert(Guid partition, DateTime nextVisible)
 		{
-			var w = new Writer("tompit.big_data_buffer_ins");
+			using var w = new Writer("tompit.big_data_buffer_ins");
 
 			w.CreateParameter("@partition", partition);
 			w.CreateParameter("@next_visible", nextVisible);
@@ -46,7 +48,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public void Update(IPartitionBuffer buffer, DateTime nextVisibe)
 		{
-			var w = new Writer("tompit.big_data_buffer_upd");
+			using var w = new Writer("tompit.big_data_buffer_upd");
 
 			w.CreateParameter("@id", buffer.GetId());
 			w.CreateParameter("@next_visible", nextVisibe);
@@ -56,7 +58,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public List<IPartitionBufferData> QueryData(IPartitionBuffer buffer)
 		{
-			var r = new Reader<PartitionBufferData>("tompit.big_data_buffer_data_que");
+			using var r = new Reader<PartitionBufferData>("tompit.big_data_buffer_data_que");
 
 			r.CreateParameter("@buffer", buffer.GetId());
 
@@ -65,7 +67,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public void Clear(IPartitionBuffer buffer, long id)
 		{
-			var w = new Writer("tompit.big_data_buffer_data_clr");
+			using var w = new Writer("tompit.big_data_buffer_data_clr");
 
 			w.CreateParameter("@buffer", buffer.GetId());
 			w.CreateParameter("@id", id);
@@ -75,7 +77,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public void InsertData(IPartitionBuffer buffer, byte[] data)
 		{
-			var w = new Writer("tompit.big_data_buffer_data_ins");
+			using var w = new Writer("tompit.big_data_buffer_data_ins");
 
 			w.CreateParameter("@buffer", buffer.GetId());
 			w.CreateParameter("@data", data);

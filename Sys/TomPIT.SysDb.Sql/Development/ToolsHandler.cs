@@ -11,12 +11,14 @@ namespace TomPIT.SysDb.Sql.Development
 	{
 		public List<ITool> Query()
 		{
-			return new Reader<Tool>("tompit.dev_tool_state_que").Execute().ToList<ITool>();
+			using var r = new Reader<Tool>("tompit.dev_tool_state_que");
+
+			return r.Execute().ToList<ITool>();
 		}
 
 		public ITool Select(string name)
 		{
-			var r = new Reader<Tool>("tompit.dev_tool_state_sel");
+			using var r = new Reader<Tool>("tompit.dev_tool_state_sel");
 
 			r.CreateParameter("@name", name);
 
@@ -25,7 +27,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void Update(string name, ToolStatus status, DateTime lastRun)
 		{
-			var w = new Writer("tompit.dev_tool_state_mdf");
+			using var w = new Writer("tompit.dev_tool_state_mdf");
 
 			w.CreateParameter("@name", name);
 			w.CreateParameter("@status", status);

@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.Data.Sql;
 using TomPIT.Security;
 using TomPIT.SysDb.Data;
@@ -11,7 +11,7 @@ namespace TomPIT.SysDb.Sql.Data
 	{
 		public List<IUserData> Query(IUser user)
 		{
-			var r = new Reader<UserData>("tompit.user_data_que");
+			using var r = new Reader<UserData>("tompit.user_data_que");
 
 			r.CreateParameter("@user", user.GetId());
 
@@ -40,7 +40,7 @@ namespace TomPIT.SysDb.Sql.Data
 				a.Add(item);
 			}
 
-			var w = new Writer("tompit.user_data_mdf");
+			using var w = new Writer("tompit.user_data_mdf");
 
 			w.CreateParameter("@items", a);
 

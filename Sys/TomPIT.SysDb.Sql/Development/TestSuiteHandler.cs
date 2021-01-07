@@ -11,7 +11,7 @@ namespace TomPIT.SysDb.Sql.Development
 	{
 		public void DeleteSuite(ITestSuite suite)
 		{
-			var w = new Writer("tompit.test_suite_del");
+			using var w = new Writer("tompit.test_suite_del");
 
 			w.CreateParameter("@suite", suite.GetId());
 
@@ -20,7 +20,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void InsertSession(ITestSuite suite, Guid token, DateTime start)
 		{
-			var w = new Writer("tompit.test_session_ins");
+			using var w = new Writer("tompit.test_session_ins");
 
 			w.CreateParameter("@suite", suite.GetId());
 			w.CreateParameter("@start", start);
@@ -31,7 +31,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void InsertSessionScenario(ITestSession session, Guid scenario, DateTime start)
 		{
-			var w = new Writer("tompit.test_session_scenario_ins");
+			using var w = new Writer("tompit.test_session_scenario_ins");
 
 			w.CreateParameter("@session", session.GetId());
 			w.CreateParameter("@start", start);
@@ -42,7 +42,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void InsertSessionTestCase(ITestSessionScenario scenario, Guid testCase, DateTime start)
 		{
-			var w = new Writer("tompit.test_session_case_ins");
+			using var w = new Writer("tompit.test_session_case_ins");
 
 			w.CreateParameter("@scenario", scenario.GetId());
 			w.CreateParameter("@start", start);
@@ -53,7 +53,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<ITestSessionScenario> QueryScenarios(ITestSession session)
 		{
-			var r = new Reader<TestSessionScenario>("tompit.test_session_scenario_que");
+			using var r = new Reader<TestSessionScenario>("tompit.test_session_scenario_que");
 
 			r.CreateParameter("@session", session.GetId());
 
@@ -62,7 +62,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<ITestSession> QuerySessions(ITestSuite suite, bool includeCompleted)
 		{
-			var r = new Reader<TestSession>("tompit.test_session_que");
+			using var r = new Reader<TestSession>("tompit.test_session_que");
 
 			r.CreateParameter("@suite", suite.GetId());
 
@@ -71,7 +71,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<ITestSessionTestCase> QueryTestCases(ITestSessionScenario scenario)
 		{
-			var r = new Reader<TestSessionTestCase>("tompit.test_session_case_que");
+			using var r = new Reader<TestSessionTestCase>("tompit.test_session_case_que");
 
 			r.CreateParameter("@scenario", scenario.GetId());
 
@@ -80,7 +80,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public ITestSession SelectLastSession(ITestSuite suite)
 		{
-			var r = new Reader<TestSession>("tompit.test_session_sel_last");
+			using var r = new Reader<TestSession>("tompit.test_session_sel_last");
 
 			r.CreateParameter("@suite", suite.GetId());
 
@@ -89,7 +89,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public ITestSessionScenario SelectScenario(ITestSession session, Guid scenario)
 		{
-			var r = new Reader<TestSessionScenario>("tompit.test_session_scenario_sel");
+			using var r = new Reader<TestSessionScenario>("tompit.test_session_scenario_sel");
 
 			r.CreateParameter("@session", session.GetId());
 			r.CreateParameter("@scenario", scenario);
@@ -99,7 +99,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public ITestSession SelectSession(Guid token)
 		{
-			var r = new Reader<TestSession>("tompit.test_session_sel");
+			using var r = new Reader<TestSession>("tompit.test_session_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -108,7 +108,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public ITestSuite SelectSuite(Guid suite)
 		{
-			var r = new Reader<TestSuite>("tompit.test_suite_sel");
+			using var r = new Reader<TestSuite>("tompit.test_suite_sel");
 
 			r.CreateParameter("@suite", suite);
 
@@ -117,7 +117,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public ITestSessionTestCase SelectTestCase(ITestSessionScenario scenario, Guid testCase)
 		{
-			var r = new Reader<TestSessionTestCase>("tompit.test_session_case_sel");
+			using var r = new Reader<TestSessionTestCase>("tompit.test_session_case_sel");
 
 			r.CreateParameter("@scenario", scenario.GetId());
 			r.CreateParameter("@test_case", testCase);
@@ -127,7 +127,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void UpdateSession(ITestSession session, TestRunStatus status, TestRunResult result, DateTime complete, string error)
 		{
-			var w = new Reader<TestSessionTestCase>("tompit.test_session_upd");
+			using var w = new Reader<TestSessionTestCase>("tompit.test_session_upd");
 
 			w.CreateParameter("@id", session.GetId());
 			w.CreateParameter("@status", status);
@@ -140,7 +140,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void UpdateSessionScenario(ITestSessionScenario scenario, TestRunStatus status, TestRunResult result, DateTime complete, string error)
 		{
-			var w = new Reader<TestSessionTestCase>("tompit.test_session_scenario_upd");
+			using var w = new Reader<TestSessionTestCase>("tompit.test_session_scenario_upd");
 
 			w.CreateParameter("@id", scenario.GetId());
 			w.CreateParameter("@status", status);
@@ -153,7 +153,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void UpdateSessionTestCase(ITestSessionTestCase testCase, TestRunStatus status, TestRunResult result, DateTime complete, string error)
 		{
-			var w = new Reader<TestSessionTestCase>("tompit.test_session_case_upd");
+			using var w = new Reader<TestSessionTestCase>("tompit.test_session_case_upd");
 
 			w.CreateParameter("@id", testCase.GetId());
 			w.CreateParameter("@status", status);

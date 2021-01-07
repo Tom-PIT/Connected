@@ -13,7 +13,7 @@ namespace TomPIT.SysDb.Sql.Development
 	{
 		public void Clear(IComponent component, Guid element, ErrorCategory category)
 		{
-			var w = new Writer("tompit.dev_error_clr");
+			using var w = new Writer("tompit.dev_error_clr");
 
 			w.CreateParameter("@component", component.GetId());
 			w.CreateParameter("@element", element, true);
@@ -24,7 +24,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void Delete(Guid identifier)
 		{
-			var w = new Writer("tompit.dev_error_del");
+			using var w = new Writer("tompit.dev_error_del");
 
 			w.CreateParameter("@identifier", identifier);
 
@@ -33,7 +33,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void Insert(IMicroService microService, IComponent component, List<IDevelopmentError> errors)
 		{
-			var w = new Writer("tompit.dev_error_ins");
+			using var w = new Writer("tompit.dev_error_ins");
 			var a = new JArray();
 
 			foreach (var error in errors)
@@ -64,7 +64,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<IDevelopmentComponentError> Query(IMicroService microService, ErrorCategory category)
 		{
-			var r = new Reader<DevelopmentError>("tompit.dev_error_que");
+			using var r = new Reader<DevelopmentError>("tompit.dev_error_que");
 
 			r.CreateParameter("@service", microService == null ? 0 : microService.GetId(), true);
 			r.CreateParameter("@category", (int)category, true);
@@ -74,7 +74,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public IDevelopmentComponentError Select(Guid identifier)
 		{
-			var r = new Reader<DevelopmentError>("tompit.dev_error_sel");
+			using var r = new Reader<DevelopmentError>("tompit.dev_error_sel");
 
 			r.CreateParameter("@identifier", identifier);
 

@@ -14,7 +14,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 	{
 		public void InsertSubscriber(ITopic topic, string connection, Guid instance)
 		{
-			var w = new Writer("tompit.message_subscriber_ins");
+			using var w = new Writer("tompit.message_subscriber_ins");
 
 			w.CreateParameter("@topic", topic.Id);
 			w.CreateParameter("@connection", connection);
@@ -27,7 +27,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public void DeleteSubscriber(ITopic topic, string connection)
 		{
-			var w = new Writer("tompit.message_subscriber_del");
+			using var w = new Writer("tompit.message_subscriber_del");
 
 			w.CreateParameter("@topic", topic.Id);
 			w.CreateParameter("@connection", connection);
@@ -37,7 +37,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public void InsertMessage(ITopic topic, Guid token, string content, DateTime expire, TimeSpan retryInterval, Guid senderInstance)
 		{
-			var w = new Writer("tompit.message_ins");
+			using var w = new Writer("tompit.message_ins");
 
 			w.CreateParameter("@topic", topic.Id);
 			w.CreateParameter("@message", content, true);
@@ -52,7 +52,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public void RemoveRecipient(ITopic topic, Guid message, string connection)
 		{
-			var w = new Writer("tompit.message_recipient_del");
+			using var w = new Writer("tompit.message_recipient_del");
 
 			w.CreateParameter("@topic", topic.Id);
 			w.CreateParameter("@message", message);
@@ -63,12 +63,14 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public List<IRecipient> QueryRecipients()
 		{
-			return new Reader<Recipient>("tompit.message_recipient_que").Execute().ToList<IRecipient>();
+			using var r = new Reader<Recipient>("tompit.message_recipient_que");
+
+			return r.Execute().ToList<IRecipient>();
 		}
 
 		public void UpdateSubscriber(ISubscriber subscriber, DateTime heartbeat)
 		{
-			var w = new Writer("tompit.message_subscriber_upd");
+			using var w = new Writer("tompit.message_subscriber_upd");
 
 			w.CreateParameter("@id", subscriber.Id);
 			w.CreateParameter("@alive", heartbeat);
@@ -78,12 +80,14 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public List<ITopic> QueryTopics()
 		{
-			return new Reader<Topic>("tompit.message_topic_que").Execute().ToList<ITopic>();
+			using var r = new Reader<Topic>("tompit.message_topic_que");
+
+			return r.Execute().ToList<ITopic>();
 		}
 
 		public ITopic SelectTopic(string name)
 		{
-			var r = new Reader<Topic>("tompit.message_topic_sel");
+			using var r = new Reader<Topic>("tompit.message_topic_sel");
 
 			r.CreateParameter("@name", name);
 
@@ -92,7 +96,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public void InsertTopic(IServerResourceGroup resourceGroup, string name)
 		{
-			var w = new Writer("tompit.message_topic_ins");
+			using var w = new Writer("tompit.message_topic_ins");
 
 			w.CreateParameter("@name", name);
 			w.CreateParameter("@resource_group", resourceGroup.GetId());
@@ -102,7 +106,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public void DeleteTopic(ITopic topic)
 		{
-			var w = new Writer("tompit.message_topic_del");
+			using var w = new Writer("tompit.message_topic_del");
 
 			w.CreateParameter("@id", topic.Id);
 
@@ -111,12 +115,14 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public List<ISubscriber> QuerySubscribers()
 		{
-			return new Reader<Subscriber>("tompit.message_subscriber_que").Execute().ToList<ISubscriber>();
+			using var r = new Reader<Subscriber>("tompit.message_subscriber_que");
+
+			return r.Execute().ToList<ISubscriber>();
 		}
 
 		public ISubscriber SelectSubscriber(ITopic topic, string connection)
 		{
-			var r = new Reader<Subscriber>("tompit.message_subscriber_sel");
+			using var r = new Reader<Subscriber>("tompit.message_subscriber_sel");
 
 			r.CreateParameter("@topic", topic.Id);
 			r.CreateParameter("@connection", connection);
@@ -126,12 +132,14 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public List<IMessage> QueryMessages()
 		{
-			return new Reader<Message>("tompit.message_que").Execute().ToList<IMessage>();
+			using var r = new Reader<Message>("tompit.message_que");
+
+			return r.Execute().ToList<IMessage>();
 		}
 
 		public IMessage SelectMessage(Guid message)
 		{
-			var r = new Reader<Message>("tompit.message_sel");
+			using var r = new Reader<Message>("tompit.message_sel");
 
 			r.CreateParameter("@message", message);
 
@@ -140,7 +148,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public void DeleteMessage(IMessage message)
 		{
-			var w = new Writer("tompit.message_del");
+			using var w = new Writer("tompit.message_del");
 
 			w.CreateParameter("@message", message.Id);
 
@@ -149,7 +157,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public List<IRecipient> QueryRecipients(IMessage message)
 		{
-			var r = new Reader<Recipient>("tompit.message_recipient_que");
+			using var r = new Reader<Recipient>("tompit.message_recipient_que");
 
 			r.CreateParameter("@message", message.Id);
 
@@ -158,7 +166,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public IRecipient SelectRecipient(IMessage message, ISubscriber subscriber)
 		{
-			var r = new Reader<Recipient>("tompit.message_recipient_sel");
+			using var r = new Reader<Recipient>("tompit.message_recipient_sel");
 
 			r.CreateParameter("@message", message.Id);
 			r.CreateParameter("@subscriber", subscriber.Id);
@@ -168,7 +176,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public void DeleteRecipient(IMessage message)
 		{
-			var w = new Writer("tompit.message_recipient_del");
+			using var w = new Writer("tompit.message_recipient_del");
 
 			w.CreateParameter("@message", message.Id);
 
@@ -177,7 +185,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public void DeleteRecipient(IMessage message, ISubscriber subscriber)
 		{
-			var w = new Writer("tompit.message_recipient_del");
+			using var w = new Writer("tompit.message_recipient_del");
 
 			w.CreateParameter("@message", message.Id);
 			w.CreateParameter("@subscriber", subscriber.Id);
@@ -187,7 +195,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public void DeleteRecipient(ITopic topic, ISubscriber subscriber)
 		{
-			var w = new Writer("tompit.message_recipient_clr");
+			using var w = new Writer("tompit.message_recipient_clr");
 
 			w.CreateParameter("@topic", topic.Id);
 			w.CreateParameter("@subscriber", subscriber.Id);
@@ -197,7 +205,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public void UpdateRecipients(List<IRecipient> recipients)
 		{
-			var w = new Writer("tompit.message_recipient_upd");
+			using var w = new Writer("tompit.message_recipient_upd");
 
 			var dt = new DataTable();
 
@@ -215,7 +223,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public void Clean(List<IMessage> messages, List<IRecipient> recipients)
 		{
-			var w = new Writer("tompit.message_clean");
+			using var w = new Writer("tompit.message_clean");
 
 			var m = new JArray();
 

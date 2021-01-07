@@ -14,7 +14,7 @@ namespace TomPIT.SysDb.Sql.Development
 	{
 		public void Delete(IComponent component)
 		{
-			var w = new Writer("tompit.component_del");
+			using var w = new Writer("tompit.component_del");
 
 			w.CreateParameter("@id", component.GetId());
 
@@ -23,7 +23,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void Insert(IMicroService service, DateTime modified, IFolder folder, string category, string nameSpace, string name, Guid token, string type, Guid runtimeConfiguration)
 		{
-			var w = new Writer("tompit.component_ins");
+			using var w = new Writer("tompit.component_ins");
 
 			w.CreateParameter("@folder", folder == null ? 0 : folder.GetId(), true);
 			w.CreateParameter("@name", name);
@@ -40,12 +40,14 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<IComponent> Query()
 		{
-			return new Reader<Component>("tompit.component_que").Execute().ToList<IComponent>();
+			using var r = new Reader<Component>("tompit.component_que");
+
+			return r.Execute().ToList<IComponent>();
 		}
 
 		public IComponent Select(Guid component)
 		{
-			var r = new Reader<Component>("tompit.component_sel");
+			using var r = new Reader<Component>("tompit.component_sel");
 
 			r.CreateParameter("@component", component);
 
@@ -54,7 +56,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<IComponent> Query(string category, string name)
 		{
-			var r = new Reader<Component>("tompit.component_que");
+			using var r = new Reader<Component>("tompit.component_que");
 
 			r.CreateParameter("@name", name);
 			r.CreateParameter("@category", category);
@@ -64,7 +66,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public IComponent Select(IMicroService microService, string category, string name)
 		{
-			var r = new Reader<Component>("tompit.component_sel");
+			using var r = new Reader<Component>("tompit.component_sel");
 
 			r.CreateParameter("@service", microService.GetId());
 			r.CreateParameter("@name", name);
@@ -75,7 +77,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void Update(IComponent component, DateTime modified, string name, IFolder folder, Guid runtimeConfiguration)
 		{
-			var w = new Writer("tompit.component_upd");
+			using var w = new Writer("tompit.component_upd");
 
 			w.CreateParameter("@id", component.GetId());
 			w.CreateParameter("@name", name);
@@ -88,7 +90,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void Update(IComponent component, IUser user, LockStatus status, LockVerb verb, DateTime date)
 		{
-			var w = new Writer("tompit.component_lock_upd");
+			using var w = new Writer("tompit.component_lock_upd");
 
 			w.CreateParameter("@id", component.GetId());
 			w.CreateParameter("@lock_status", status);
@@ -118,7 +120,7 @@ namespace TomPIT.SysDb.Sql.Development
 				itemsParameter.Add(parameter);
 			}
 
-			var w = new Writer("tompit.component_upd_index_state");
+			using var w = new Writer("tompit.component_upd_index_state");
 
 			w.CreateParameter("@items", itemsParameter);
 
@@ -144,7 +146,7 @@ namespace TomPIT.SysDb.Sql.Development
 				itemsParameter.Add(parameter);
 			}
 
-			var w = new Writer("tompit.component_upd_analyzer_state");
+			using var w = new Writer("tompit.component_upd_analyzer_state");
 
 			w.CreateParameter("@items", itemsParameter);
 
@@ -153,7 +155,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<IComponentDevelopmentState> QueryActiveAnalyzerStates(DateTime timeStamp)
 		{
-			var r = new Reader<ComponentState>("tompit.component_state_analyzer_que");
+			using var r = new Reader<ComponentState>("tompit.component_state_analyzer_que");
 
 			r.CreateParameter("@timestamp", timeStamp, true);
 
@@ -162,12 +164,14 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<IComponentDevelopmentState> QueryStates()
 		{
-			return new Reader<ComponentState>("tompit.component_state_que").Execute().ToList<IComponentDevelopmentState>();
+			using var r = new Reader<ComponentState>("tompit.component_state_que");
+
+			return r.Execute().ToList<IComponentDevelopmentState>();
 		}
 
 		public List<IComponentDevelopmentState> QueryStates(IMicroService microService)
 		{
-			var r = new Reader<ComponentState>("tompit.component_state_que");
+			using var r = new Reader<ComponentState>("tompit.component_state_que");
 
 			r.CreateParameter("@microService", microService.GetId());
 
@@ -176,7 +180,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<IComponentDevelopmentState> QueryStates(IComponent component)
 		{
-			var r = new Reader<ComponentState>("tompit.component_state_que");
+			using var r = new Reader<ComponentState>("tompit.component_state_que");
 
 			r.CreateParameter("@component", component.GetId());
 
@@ -185,7 +189,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<IComponentDevelopmentState> QueryStates(IComponent component, Guid element)
 		{
-			var r = new Reader<ComponentState>("tompit.component_state_que");
+			using var r = new Reader<ComponentState>("tompit.component_state_que");
 
 			r.CreateParameter("@component", component.GetId());
 			r.CreateParameter("@element", element);
@@ -195,7 +199,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<IComponentDevelopmentState> QueryActiveIndexStates(DateTime timeStamp)
 		{
-			var r = new Reader<ComponentState>("tompit.component_state_index_que");
+			using var r = new Reader<ComponentState>("tompit.component_state_index_que");
 
 			r.CreateParameter("@timestamp", timeStamp, true);
 

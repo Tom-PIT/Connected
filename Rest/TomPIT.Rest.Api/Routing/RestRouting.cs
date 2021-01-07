@@ -12,7 +12,9 @@ namespace TomPIT.Rest.Routing
 
 			routes.Map("{microservice}/{api}/{operation}", async (t) =>
 			{
-				await new ApiHandler(t).Invoke();
+				using var handler = new ApiHandler(t);
+
+				await handler.Invoke();
 			});
 		}
 	}

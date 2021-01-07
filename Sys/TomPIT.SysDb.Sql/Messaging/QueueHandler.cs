@@ -16,7 +16,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public void Delete(Guid popReceipt)
 		{
-			var w = new Writer("tompit.queue_del");
+			using var w = new Writer("tompit.queue_del");
 
 			w.CreateParameter("@pop_receipt", popReceipt);
 
@@ -25,7 +25,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public IQueueMessage Select(Guid popReceipt)
 		{
-			var r = new Reader<QueueMessage>("tompit.queue_sel");
+			using var r = new Reader<QueueMessage>("tompit.queue_sel");
 
 			r.CreateParameter("@pop_receipt", popReceipt);
 
@@ -54,7 +54,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public List<IQueueMessage> DequeueSystem(string queue, int count, TimeSpan nextVisible)
 		{
-			var r = new Reader<QueueMessage>("tompit.queue_dequeue");
+			using var r = new Reader<QueueMessage>("tompit.queue_dequeue");
 
 			r.CreateParameter("@queue", queue);
 			r.CreateParameter("@next_visible", DateTime.UtcNow.Add(nextVisible));
@@ -86,7 +86,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public List<IQueueMessage> DequeueContent(int count, TimeSpan nextVisible)
 		{
-			var r = new Reader<QueueMessage>("tompit.queue_dequeue_content");
+			using var r = new Reader<QueueMessage>("tompit.queue_dequeue_content");
 
 			r.CreateParameter("@next_visible", DateTime.UtcNow.Add(nextVisible));
 			r.CreateParameter("@count", @count);
@@ -97,7 +97,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public void Enqueue(string queue, string message, TimeSpan expire, TimeSpan nextVisible, QueueScope scope)
 		{
-			var w = new Writer("tompit.queue_enqueue");
+			using var w = new Writer("tompit.queue_enqueue");
 
 			w.CreateParameter("@message", message);
 			w.CreateParameter("@queue", queue);
@@ -116,7 +116,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public void Ping(Guid popReceipt, TimeSpan nextVisible)
 		{
-			var w = new Writer("tompit.queue_upd");
+			using var w = new Writer("tompit.queue_upd");
 
 			w.CreateParameter("@pop_receipt", popReceipt);
 			w.CreateParameter("@next_visible", DateTime.UtcNow.Add(nextVisible));

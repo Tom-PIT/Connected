@@ -9,7 +9,7 @@ namespace TomPIT.SysDb.Sql.Printing
 	{
 		public void Delete(Guid token)
 		{
-			var w = new Writer("tompit.print_job_del");
+			using var w = new Writer("tompit.print_job_del");
 
 			w.CreateParameter("@token", token);
 
@@ -18,7 +18,7 @@ namespace TomPIT.SysDb.Sql.Printing
 
 		public void DeleteSpooler(IPrintSpoolerJob job)
 		{
-			var w = new Writer("tompit.print_spooler_del");
+			using var w = new Writer("tompit.print_spooler_del");
 
 			w.CreateParameter("@id", job.GetId());
 
@@ -27,7 +27,7 @@ namespace TomPIT.SysDb.Sql.Printing
 
 		public void Insert(Guid token, DateTime created, Guid component, PrintJobStatus status, string provider, string arguments)
 		{
-			var w = new Writer("tompit.print_job_ins");
+			using var w = new Writer("tompit.print_job_ins");
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@created", created);
@@ -41,7 +41,7 @@ namespace TomPIT.SysDb.Sql.Printing
 
 		public void InsertSpooler(Guid token, DateTime created, string mime, string printer, string content)
 		{
-			var w = new Writer("tompit.print_spooler_ins");
+			using var w = new Writer("tompit.print_spooler_ins");
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@created", created);
@@ -54,7 +54,7 @@ namespace TomPIT.SysDb.Sql.Printing
 
 		public IPrintJob Select(Guid token)
 		{
-			var r = new Reader<PrintJob>("tompit.print_job_sel");
+			using var r = new Reader<PrintJob>("tompit.print_job_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -63,7 +63,7 @@ namespace TomPIT.SysDb.Sql.Printing
 
 		public IPrintSpoolerJob SelectSpooler(Guid token)
 		{
-			var r = new Reader<PrintSpoolerJob>("tompit.print_spooler_sel");
+			using var r = new Reader<PrintSpoolerJob>("tompit.print_spooler_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -72,7 +72,7 @@ namespace TomPIT.SysDb.Sql.Printing
 
 		public void Update(Guid token, PrintJobStatus status, string error)
 		{
-			var w = new Writer("tompit.print_job_upd");
+			using var w = new Writer("tompit.print_job_upd");
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@status", status);

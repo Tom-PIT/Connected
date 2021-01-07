@@ -11,7 +11,7 @@ namespace TomPIT.SysDb.Sql.Events
 	{
 		public void Delete(IEventDescriptor d)
 		{
-			var w = new Writer("tompit.event_del");
+			using var w = new Writer("tompit.event_del");
 
 			w.CreateParameter("@id", d.GetId());
 
@@ -20,14 +20,14 @@ namespace TomPIT.SysDb.Sql.Events
 
 		public List<IEventDescriptor> Query()
 		{
-			var r = new Reader<EventDescriptor>("tompit.event_que");
+			using var r = new Reader<EventDescriptor>("tompit.event_que");
 
 			return r.Execute().ToList<IEventDescriptor>();
 		}
 
 		public IEventDescriptor Select(Guid identifier)
 		{
-			var r = new Reader<EventDescriptor>("tompit.event_sel");
+			using var r = new Reader<EventDescriptor>("tompit.event_sel");
 
 			r.CreateParameter("@identifier", identifier);
 
@@ -36,7 +36,7 @@ namespace TomPIT.SysDb.Sql.Events
 
 		public void Insert(IMicroService microService, string name, Guid identifier, DateTime created, string arguments, string callback)
 		{
-			var w = new Writer("tompit.event_ins");
+			using var w = new Writer("tompit.event_ins");
 
 			w.CreateParameter("@name", name);
 			w.CreateParameter("@identifier", identifier);

@@ -12,7 +12,7 @@ namespace TomPIT.SysDb.Sql.Data
 	{
 		public void Insert(IUser user, DateTime created, string category, string @event, string primaryKey, string ip, Dictionary<string, string> values, string description)
 		{
-			var w = new Writer("tompit.audit_ins");
+			using var w = new Writer("tompit.audit_ins");
 
 			w.CreateParameter("@user", user == null ? Guid.Empty : user.Token);
 			w.CreateParameter("@created", created);
@@ -46,7 +46,7 @@ namespace TomPIT.SysDb.Sql.Data
 
 		public List<IAuditDescriptor> Query(string category)
 		{
-			var r = new Reader<AuditDescriptor>("tompit.audit_que");
+			using var r = new Reader<AuditDescriptor>("tompit.audit_que");
 
 			r.CreateParameter("@category", category);
 
@@ -55,7 +55,7 @@ namespace TomPIT.SysDb.Sql.Data
 
 		public List<IAuditDescriptor> Query(string category, string @event)
 		{
-			var r = new Reader<AuditDescriptor>("tompit.audit_que");
+			using var r = new Reader<AuditDescriptor>("tompit.audit_que");
 
 			r.CreateParameter("@category", category);
 			r.CreateParameter("@event", @event);
@@ -65,7 +65,7 @@ namespace TomPIT.SysDb.Sql.Data
 
 		public List<IAuditDescriptor> Query(string category, string @event, string primaryKey)
 		{
-			var r = new Reader<AuditDescriptor>("tompit.audit_que");
+			using var r = new Reader<AuditDescriptor>("tompit.audit_que");
 
 			r.CreateParameter("@category", category);
 			r.CreateParameter("@event", @event, true);

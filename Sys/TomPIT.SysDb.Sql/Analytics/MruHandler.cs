@@ -12,7 +12,7 @@ namespace TomPIT.SysDb.Sql.Analytics
 	{
 		public void Delete(IMru item)
 		{
-			var w = new Writer("tompit.mru_del");
+			using var w = new Writer("tompit.mru_del");
 
 			w.CreateParameter("@token", item.Token);
 
@@ -31,7 +31,7 @@ namespace TomPIT.SysDb.Sql.Analytics
 				});
 			}
 
-			var w = new Writer("tompit.mru_mdf");
+			using var w = new Writer("tompit.mru_mdf");
 
 			w.CreateParameter("@type", type);
 			w.CreateParameter("@primary_key", primaryKey);
@@ -58,7 +58,7 @@ namespace TomPIT.SysDb.Sql.Analytics
 				});
 			}
 
-			var r = new Reader<Mru>("tompit.mru_que");
+			using var r = new Reader<Mru>("tompit.mru_que");
 
 			r.CreateParameter("@entity_type", entity);
 			r.CreateParameter("@entity_primary_key", entityPrimaryKey);

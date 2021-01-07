@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Razor;
 using TomPIT.ComponentModel;
 using TomPIT.Middleware;
@@ -31,6 +32,11 @@ namespace TomPIT.Runtime.UI
 		protected string GetString([CIP(CIP.StringTableProvider)] string stringTable, [CIP(CIP.StringTableStringProvider)] string key)
 		{
 			return ViewModel.Services.Globalization.GetString(stringTable, key);
+		}
+
+		protected HtmlString GetHtmlString([CIP(CIP.StringTableProvider)] string stringTable, [CIP(CIP.StringTableStringProvider)] string key)
+		{
+			return new HtmlString(ViewModel.Services.Globalization.GetString(stringTable, key));
 		}
 
 		protected string ToJsonString(object content)
