@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing.Printing;
 using System.Linq;
+using TomPIT.Connected.Printing.Client.Configuration;
 
 namespace TomPIT.Connected.Printing.Client.Handlers
 {
@@ -20,14 +21,17 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             _printerMapping = new Dictionary<string, string>();
         }
 
-        private void SetMappings(List<string> printers, string mappings)
+        private void SetMappings(List<string> printers, Dictionary<string, string> mappings)
         {
             //add mappings to dictionary
-            if (!string.IsNullOrWhiteSpace(mappings))
+            if (mappings != null)
             {
-                _printerMapping = mappings.Split(';')
-                    .Select(value => value.Split('='))
-                    .ToDictionary(keyValuePair => keyValuePair[0], keyValuePair => keyValuePair[1]);
+                foreach(var mapping in mappings)
+                {
+                    if (_printerMapping.ContainsKey(mapping.Key))
+                        continue;
+                    _printerMapping[mapping.Key] = mapping.Value;
+                }
             }
             //add the rest of printers to mapping
             foreach (var printer in printers)
@@ -64,7 +68,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             return $"{printerName} ({systemName})";
         }
 
-        public List<string> GetPrinters(string printers, string printerMappings)
+        public List<string> GetPrinters(string printers, Dictionary<string, string> printerMappings)
         {
             var printerList = new List<string>();
 
@@ -81,6 +85,10 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                 {
                     printerList.Add(printerName);
                 }
+            }
+            else if (printers.Equals(Constants.PrintersSetList, StringComparison.OrdinalIgnoreCase))
+            {
+                printerList.AddRange(Settings.PrinterList);
             }
             else
             {

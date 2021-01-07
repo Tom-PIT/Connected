@@ -21,6 +21,7 @@ namespace TomPIT.Connected.Printing.Client
 
         public const string PrintersSetDefaultPrinter = "default";
         public const string PrintersSetInstalledPrinters = "installed";
+        public const string PrintersSetList = "list";
 
         public const int MaxReconnectionTimeInSeconds = 600; //10 minutes
         public const int MaxReconnectionRetries = 100;
