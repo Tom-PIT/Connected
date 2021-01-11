@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TomPIT.Caching;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -75,13 +76,19 @@ namespace TomPIT.Runtime
 			if (type == null)
 				return;
 
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IRuntimeMiddleware>(new MicroServiceContext(config.MicroService(), Tenant.Url), type);
+			using var ctx = new MicroServiceContext(config.MicroService(), Tenant.Url);
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IRuntimeMiddleware>(ctx, type);
 
 			if (instance != null)
 			{
 				instance.Initialize(new RuntimeInitializeArgs(RuntimeService._host));
 				Set(config.Component, instance, TimeSpan.Zero);
 			}
+		}
+
+		public List<IRuntimeMiddleware> QueryRuntimes()
+		{
+			return All();
 		}
 	}
 }

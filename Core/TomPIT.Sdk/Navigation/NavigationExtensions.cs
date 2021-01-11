@@ -69,8 +69,12 @@ namespace TomPIT.Navigation
 				return null;
 
 			var routeData = Shell.HttpContext == null ? new RouteData() : Shell.HttpContext.GetRouteData();
+			var url = context.Services.Routing.ParseUrl(link.Template, routeData.Values.Merge(link.Parameters));
 
-			return context.Services.Routing.ParseUrl(link.Template, routeData.Values.Merge(link.Parameters));
+			if (!string.IsNullOrWhiteSpace(link.QueryString))
+				url = $"{url}?{link.QueryString}";
+
+			return url;
 		}
 
 		public static RouteValueDictionary Merge(this RouteValueDictionary existing, ISiteMapElement element)

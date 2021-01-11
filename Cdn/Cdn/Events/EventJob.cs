@@ -82,7 +82,7 @@ namespace TomPIT.Cdn.Events
 			MicroService = ms.Name;
 			Event = ed.Name;
 
-			var ctx = new MicroServiceContext(ms, MiddlewareDescriptor.Current.Tenant.Url);
+			using var ctx = new MicroServiceContext(ms, MiddlewareDescriptor.Current.Tenant.Url);
 			var responses = new List<IOperationResponse>();
 			IDistributedEventMiddleware eventInstance = null;
 
@@ -156,7 +156,7 @@ namespace TomPIT.Cdn.Events
 
 		private void Callback(EventDescriptor ed, List<IOperationResponse> responses)
 		{
-			var ctx = new MicroServiceContext(new Guid(ed.Callback.Split('/')[0]));
+			using var ctx = new MicroServiceContext(new Guid(ed.Callback.Split('/')[0]));
 			var descriptor = ComponentDescriptor.Api(ctx, ed.Callback);
 
 			try
@@ -188,7 +188,7 @@ namespace TomPIT.Cdn.Events
 			if (string.IsNullOrEmpty(i.Name))
 				return null;
 
-			var context = new MicroServiceContext(i.Configuration().MicroService(), MiddlewareDescriptor.Current.Tenant.Url);
+			using var context = new MicroServiceContext(i.Configuration().MicroService(), MiddlewareDescriptor.Current.Tenant.Url);
 			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(i.Configuration().MicroService(), i, i.Name, false);
 
 			if (type == null)

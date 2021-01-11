@@ -68,7 +68,8 @@ namespace TomPIT.IoT.Services
 
 		public JObject SetData(string device, object data)
 		{
-			var descriptor = ComponentDescriptor.IoTHub(new MiddlewareContext(), device);
+			using var ctx = new MiddlewareContext();
+			var descriptor = ComponentDescriptor.IoTHub(ctx, device);
 			var state = Tenant.GetService<IIoTService>().SelectState(descriptor.Component.Token);
 			var changed = new List<IIoTFieldStateModifier>();
 

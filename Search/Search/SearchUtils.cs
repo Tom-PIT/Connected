@@ -83,7 +83,8 @@ namespace TomPIT.Search
 			if (type == null)
 				return null;
 
-			var instance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<ISearchComponent>(new MicroServiceContext(catalog.MicroService()), type);
+			using var ctx = new MicroServiceContext(catalog.MicroService());
+			var instance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<ISearchComponent>(ctx, type);
 
 			if (instance != null)
 				return instance.Properties;

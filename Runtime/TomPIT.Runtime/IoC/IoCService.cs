@@ -99,7 +99,8 @@ namespace TomPIT.IoC
 
 		public void Invoke(IMiddlewareContext context, IIoCOperation operation, object e = null)
 		{
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCOperationMiddleware>(new MicroServiceContext(operation.Configuration().MicroService(), context), operation, Serializer.Serialize(e), operation.Name);
+			using var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCOperationMiddleware>(ctx, operation, Serializer.Serialize(e), operation.Name);
 
 			if (instance is IIoCOperationContext iocContext)
 				iocContext.Operation = operation;
@@ -109,7 +110,8 @@ namespace TomPIT.IoC
 
 		public R Invoke<R>(IMiddlewareContext context, IIoCOperation operation, object e = null)
 		{
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<object>(new MicroServiceContext(operation.Configuration().MicroService(), context), operation, Serializer.Serialize(e), operation.Name);
+			using var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, operation, Serializer.Serialize(e), operation.Name);
 
 			if (instance is IIoCOperationContext iocContext)
 				iocContext.Operation = operation;
@@ -162,7 +164,7 @@ namespace TomPIT.IoC
 			if (endpoints == null)
 				return false;
 
-			var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
+			using var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
 
 			lock (endpoints)
 				foreach (var endpoint in endpoints)

@@ -54,7 +54,7 @@ namespace TomPIT.Data
 		{
 			var parameter = Parameters.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0);
 			var mappedValue = nullMapping ? MapNullValue(value) : MapValue(value);
-			var dbType = type != null ? (DbType)type : mappedValue == null || mappedValue == DBNull.Value ? DbType.String : Types.ToDbType(mappedValue.GetType());
+			var dbType = type != null ? (DbType)type : value == null || value == DBNull.Value ? DbType.String : Types.ToDbType(value.GetType());
 
 			if (parameter == null)
 			{

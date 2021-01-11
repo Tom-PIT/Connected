@@ -13,6 +13,7 @@ namespace TomPIT.Navigation
 		public string RouteKey { get; set; }
 		public bool BeginGroup { get; set; }
 		public object Parameters { get; set; }
+		public string QueryString { get; set; }
 		public ConnectedList<ISiteMapRoute, ISiteMapRoute> Routes
 		{
 			get

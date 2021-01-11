@@ -23,7 +23,7 @@ namespace TomPIT.Worker.Workers
 			var ms = Worker.Configuration().MicroService();
 
 			var queueType = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ms, Worker, Worker.Name);
-			var dataCtx = new MicroServiceContext(ms);
+			using var dataCtx = new MicroServiceContext(ms);
 			HandlerInstance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IQueueMiddleware>(dataCtx, queueType, Args);
 
 			HandlerInstance.Invoke();

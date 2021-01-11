@@ -76,7 +76,7 @@ namespace TomPIT.Worker.Services
 				return;
 			}
 
-			var ctx = new MicroServiceContext(configuration.MicroService());
+			using var ctx = new MicroServiceContext(configuration.MicroService());
 			var metricId = ctx.Services.Diagnostic.StartMetric(configuration.Metrics, null);
 			Queue q = null;
 

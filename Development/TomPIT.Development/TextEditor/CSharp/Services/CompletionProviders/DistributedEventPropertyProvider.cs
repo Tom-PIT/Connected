@@ -33,7 +33,8 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 			try
 			{
-				var descriptor = ComponentDescriptor.DistributedEvent(new MicroServiceContext(Arguments.Editor.Context.MicroService.Token, Arguments.Editor.Context.Tenant.Url), ev);
+				using var ctx = new MicroServiceContext(Arguments.Editor.Context.MicroService.Token, Arguments.Editor.Context.Tenant.Url);
+				var descriptor = ComponentDescriptor.DistributedEvent(ctx, ev);
 
 				descriptor.Validate();
 				descriptor.ValidateConfiguration();

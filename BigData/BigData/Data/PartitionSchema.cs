@@ -60,7 +60,7 @@ namespace TomPIT.BigData.Data
 
 		private void Discover()
 		{
-			var ctx = new MicroServiceContext(Configuration.MicroService());
+			using var ctx = new MicroServiceContext(Configuration.MicroService());
 			var type = Configuration.Middleware(ctx);
 
 			if (type == null)

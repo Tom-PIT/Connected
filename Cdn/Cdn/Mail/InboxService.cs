@@ -85,7 +85,8 @@ namespace TomPIT.Cdn.Mail
 			foreach (var type in All())
 			{
 				var ms = Tenant.GetService<ICompilerService>().ResolveMicroService(type);
-				var inbox = Tenant.GetService<ICompilerService>().CreateInstance<IInboxMiddleware>(new MicroServiceContext(ms.Token, Tenant.Url), type);
+				using var ctx = new MicroServiceContext(ms.Token, Tenant.Url);
+				var inbox = Tenant.GetService<ICompilerService>().CreateInstance<IInboxMiddleware>(ctx, type);
 
 				if (inbox.Addresses == null)
 					continue;

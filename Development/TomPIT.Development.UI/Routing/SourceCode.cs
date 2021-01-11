@@ -28,8 +28,9 @@ namespace TomPIT.Development.Routing
 
 			aa.Schema.Empty = EmptyBehavior.Deny;
 			aa.Schema.Level = AuthorizationLevel.Pessimistic;
+			using var ctx = new MicroServiceContext(Tenant.GetService<IMicroServiceService>().Select(microService), Tenant.Url);
 
-			if (!Tenant.GetService<IAuthorizationService>().Authorize(new MicroServiceContext(Tenant.GetService<IMicroServiceService>().Select(microService), Tenant.Url), aa).Success)
+			if (!Tenant.GetService<IAuthorizationService>().Authorize(ctx, aa).Success)
 			{
 				Context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
 				return;

@@ -15,7 +15,7 @@ namespace TomPIT.MicroServices.IoT.Controllers
 		public IActionResult Partial()
 		{
 			var body = Request.Body.ToType<JObject>();
-			var model = new IoTPartialModel();
+			using var model = new IoTPartialModel();
 
 			var ms = RouteData.Values["microService"].ToString();
 			var view = RouteData.Values["view"].ToString();

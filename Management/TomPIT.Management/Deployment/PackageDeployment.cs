@@ -100,7 +100,7 @@ namespace TomPIT.Management.Deployment
 
 			try
 			{
-				var context = new MicroServiceContext(Package.MicroService.Token, Tenant.Url);
+				using var context = new MicroServiceContext(Package.MicroService.Token, Tenant.Url);
 				var instance = Tenant.GetService<ICompilerService>().CreateInstance<IInstallerMiddleware>(context, type);
 
 				instance.Invoke();

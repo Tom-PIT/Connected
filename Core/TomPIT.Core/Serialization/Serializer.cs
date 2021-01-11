@@ -8,36 +8,30 @@ namespace TomPIT.Serialization
 	public static class Serializer
 	{
 		private static JsonSerializerSettings _jsonSettings = null;
-		private static JsonSerializerSettings _jsonCultureSettings = null;
 		private static JsonMergeSettings _mergeSettings = null;
 
 		private static JsonSerializerSettings CultureSerializerSettings
 		{
 			get
 			{
-				if (_jsonCultureSettings == null)
+				return new JsonSerializerSettings
 				{
-					_jsonCultureSettings = new JsonSerializerSettings
-					{
-						Culture = CultureInfo.CurrentCulture,
-						DateFormatHandling = DateFormatHandling.IsoDateFormat,
-						DateParseHandling = DateParseHandling.DateTime,
-						DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
-						FloatFormatHandling = FloatFormatHandling.DefaultValue,
-						FloatParseHandling = FloatParseHandling.Double,
-						MissingMemberHandling = MissingMemberHandling.Ignore,
-						Formatting = Formatting.Indented,
-						DefaultValueHandling = DefaultValueHandling.Include,
-						TypeNameHandling = TypeNameHandling.None,
-						ContractResolver = new SerializationResolver(),
-						NullValueHandling = NullValueHandling.Ignore,
-						ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-						MetadataPropertyHandling = MetadataPropertyHandling.Default,
-						ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-					};
-				}
-
-				return _jsonSettings;
+					Culture = CultureInfo.CurrentCulture,
+					DateFormatHandling = DateFormatHandling.IsoDateFormat,
+					DateParseHandling = DateParseHandling.DateTime,
+					DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
+					FloatFormatHandling = FloatFormatHandling.DefaultValue,
+					FloatParseHandling = FloatParseHandling.Double,
+					MissingMemberHandling = MissingMemberHandling.Ignore,
+					Formatting = Formatting.Indented,
+					DefaultValueHandling = DefaultValueHandling.Include,
+					TypeNameHandling = TypeNameHandling.None,
+					ContractResolver = new SerializationResolver(),
+					NullValueHandling = NullValueHandling.Ignore,
+					ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
+					MetadataPropertyHandling = MetadataPropertyHandling.Default,
+					ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+				};
 			}
 		}
 
@@ -103,6 +97,14 @@ namespace TomPIT.Serialization
 				return null;
 
 			return JsonConvert.SerializeObject(instance, SerializerSettings);
+		}
+
+		public static string Serialize(object instance, bool invariantCulture)
+		{
+			if (instance == null)
+				return null;
+
+			return JsonConvert.SerializeObject(instance, invariantCulture ? SerializerSettings : CultureSerializerSettings);
 		}
 
 		public static void Populate(string value, object instance)

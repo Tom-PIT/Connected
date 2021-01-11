@@ -211,7 +211,8 @@ namespace TomPIT.BigData.Providers.Sql
 
 		private void ResolveSchemaType()
 		{
-			SchemaType = Configuration.BigDataPartitionType(new MicroServiceContext(Configuration.MicroService()));
+			using var ctx = new MicroServiceContext(Configuration.MicroService());
+			SchemaType = Configuration.BigDataPartitionType(ctx);
 
 			if (SchemaType == null)
 				throw new RuntimeException(nameof(SqlPersistenceService), $"{SR.ErrCannotResolveComponentType} ({Configuration.ComponentName()})", LogCategories.BigData);

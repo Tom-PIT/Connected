@@ -114,7 +114,8 @@ namespace TomPIT.Navigation
 			foreach (var handler in handlers)
 			{
 				var ms = Tenant.GetService<IMicroServiceService>().Select(handler.MicroService);
-				var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), handler.Handler);
+				var ctx = new MicroServiceContext(ms, Tenant.Url);
+				var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(ctx, handler.Handler);
 				var containers = instance.Invoke(key);
 
 				if (containers == null || containers.Count == 0)
@@ -433,7 +434,7 @@ namespace TomPIT.Navigation
 					break;
 			}
 
-			var ctx = new MiddlewareContext();
+			using var ctx = new MiddlewareContext();
 
 			return $"{ctx.Services.Routing.RootUrl}/{string.Join('/', processedSegments)}";
 		}

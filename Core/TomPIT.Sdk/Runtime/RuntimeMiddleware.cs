@@ -9,6 +9,16 @@ namespace TomPIT.Runtime
 			OnInitialize(e);
 		}
 
+		public IRuntimeUrl ResolveUrl(RuntimeUrlKind kind)
+		{
+			return OnResolveUrl(kind);
+		}
+
+		protected virtual IRuntimeUrl OnResolveUrl(RuntimeUrlKind kind)
+		{
+			return null;
+		}
+
 		protected virtual void OnInitialize(RuntimeInitializeArgs e)
 		{
 

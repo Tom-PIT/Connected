@@ -48,7 +48,7 @@ namespace TomPIT.App.UI
 			if (partialView == null)
 				return null;
 
-			var vm = CreatePartialModel(name);
+			using var vm = CreatePartialModel(name);
 			var viewEngineResult = Engine.FindView(vm.ActionContext, name, false);
 			var view = viewEngineResult.View;
 
@@ -62,7 +62,7 @@ namespace TomPIT.App.UI
 			if (partialView == null)
 				return;
 
-			var vm = CreatePartialModel(name);
+			using var vm = CreatePartialModel(name);
 			var viewEngineResult = Engine.FindView(vm.ActionContext, name, false);
 			var view = viewEngineResult.View;
 			var content = CreateContent(view, vm);
@@ -80,7 +80,7 @@ namespace TomPIT.App.UI
 		{
 			name = name.Trim('/');
 
-			var model = CreateModel();
+			using var model = CreateModel();
 
 			if (model == null)
 			{

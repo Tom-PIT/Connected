@@ -29,7 +29,7 @@ namespace TomPIT.App.UI
 			if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
 				return;
 
-			var model = CreateModel(token);
+			using var model = CreateModel(token);
 			var actionContext = CreateActionContext(Context);
 			var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(token);
 

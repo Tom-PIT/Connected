@@ -12,8 +12,8 @@ namespace TomPIT.TagHelpers
 		{
 			var microService = string.Empty;
 			var name = Name;
-
 			var ctx = ViewContext.ViewData.Model as IMicroServiceContext;
+			//var etag = "0";
 
 			if (Name.Contains("/"))
 			{
@@ -38,10 +38,12 @@ namespace TomPIT.TagHelpers
 				{
 					ctx.MicroService.ValidateMicroServiceReference(reference.Name);
 				}
+
+				//etag = ctx.Tenant.GetService<IComponentService>().SelectComponent(reference.Token, ComponentCategories.Theme, name).Modified.Ticks.ToString();
 			}
 			else
 			{
-				var theme = ctx.Tenant.GetService<IComponentService>().SelectComponent(ctx.MicroService.Token, "Theme", Name);
+				var theme = ctx.Tenant.GetService<IComponentService>().SelectComponent(ctx.MicroService.Token, ComponentCategories.Theme, Name);
 
 				if (theme == null)
 					microService = ResolveMicroservice(ViewContext.ExecutingFilePath).Name;
@@ -54,7 +56,8 @@ namespace TomPIT.TagHelpers
 
 			output.Attributes.SetAttribute("rel", "stylesheet");
 			output.Attributes.SetAttribute("type", "text/css");
-			output.Attributes.SetAttribute("href", string.Format("{0}/sys/themes/{1}/{2}", ctx.Services.Routing.RootUrl, microService, name));
+			//output.Attributes.SetAttribute("href", $"{ctx.Services.Routing.RootUrl}/sys/themes/{microService}/{name}?{etag}");
+			output.Attributes.SetAttribute("href", $"{ctx.Services.Routing.RootUrl}/sys/themes/{microService}/{name}");
 		}
 	}
 }

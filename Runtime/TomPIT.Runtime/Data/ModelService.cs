@@ -78,7 +78,7 @@ namespace TomPIT.Data
 
 		private List<IModelSchema> CreateSchemas(IModelConfiguration configuration)
 		{
-			var ctx = new MicroServiceContext(configuration.MicroService());
+			using var ctx = new MicroServiceContext(configuration.MicroService());
 			var type = configuration.Middleware(ctx);
 			var result = new List<IModelSchema>
 			{

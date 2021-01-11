@@ -57,7 +57,7 @@ namespace TomPIT.Security
 
 		private List<Claim> CreateClaims()
 		{
-			var ctx = new MiddlewareContext(string.IsNullOrWhiteSpace(Endpoint) ? MiddlewareDescriptor.Current.Tenant.Url : Endpoint);
+			using var ctx = new MiddlewareContext(string.IsNullOrWhiteSpace(Endpoint) ? MiddlewareDescriptor.Current.Tenant.Url : Endpoint);
 			var service = ctx.Tenant.GetService<IAuthorizationService>();
 			var isAdmin = User != null ? service.IsInRole(User.Token, "Full control") : false;
 

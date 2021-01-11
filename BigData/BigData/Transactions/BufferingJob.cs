@@ -29,7 +29,7 @@ namespace TomPIT.BigData.Transactions
 				return;
 			}
 
-			var ctx = new MicroServiceContext(config.MicroService(), MiddlewareDescriptor.Current.Tenant.Url);
+			using var ctx = new MicroServiceContext(config.MicroService(), MiddlewareDescriptor.Current.Tenant.Url);
 			var middlewareType = config.Middleware(ctx);
 
 			if (middlewareType == null)

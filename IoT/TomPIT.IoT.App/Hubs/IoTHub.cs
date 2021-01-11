@@ -90,7 +90,7 @@ namespace TomPIT.IoT.Hubs
 
 		private void AuthorizeHub(string identifier, IoTConnectionMethod method)
 		{
-			var ctx = new MiddlewareContext();
+			using var ctx = new MiddlewareContext();
 			var descriptor = ComponentDescriptor.IoTHub(ctx, identifier);
 
 			descriptor.Validate();

@@ -54,7 +54,8 @@ namespace TomPIT.Cdn.Events
 
 		private void AuthorizeEvent(string eventName)
 		{
-			var descriptor = ComponentDescriptor.DistributedEvent(new MiddlewareContext(), eventName);
+			using var ctx = new MiddlewareContext();
+			var descriptor = ComponentDescriptor.DistributedEvent(ctx, eventName);
 
 			descriptor.Validate();
 
