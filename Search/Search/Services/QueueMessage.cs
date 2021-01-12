@@ -14,5 +14,7 @@ namespace TomPIT.Search.Services
 		public int DequeueCount { get; set; }
 		public string Queue { get; set; }
 		public DateTime DequeueTimestamp { get; set; }
+
+		public QueueScope Scope { get; set; }
 	}
 }
