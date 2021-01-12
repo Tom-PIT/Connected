@@ -27,7 +27,7 @@ namespace TomPIT.Sys.Controllers
 			if (args != null)
 				message.Add("arguments", args);
 
-			DataModel.Queue.Enqueue(JsonConvert.SerializeObject(message), expire, nextVisible);
+			DataModel.Queue.Enqueue(Queueing.Queue, JsonConvert.SerializeObject(message), expire, nextVisible, Storage.QueueScope.Content);
 		}
 	}
 }

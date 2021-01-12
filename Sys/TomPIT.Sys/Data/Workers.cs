@@ -166,7 +166,7 @@ namespace TomPIT.Sys.Data
 				{ "state", job.State }
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, SysDb.Messaging.QueueScope.System);
+			DataModel.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
 			Update(job.Worker, WorkerStatus.Queued, job.NextRun, job.Elapsed,
 				job.FailCount, job.LastRun, job.LastComplete, job.RunCount);
@@ -174,7 +174,7 @@ namespace TomPIT.Sys.Data
 
 		public List<IQueueMessage> Dequeue(int count)
 		{
-			var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(Queue, count);
+			var r = DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(5), QueueScope.System, Queue);
 
 			if (r == null)
 				return null;
@@ -194,7 +194,7 @@ namespace TomPIT.Sys.Data
 
 		public void Error(Guid microService, Guid popReceipt)
 		{
-			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
+			var m = DataModel.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
@@ -214,17 +214,17 @@ namespace TomPIT.Sys.Data
 			Update(worker.Worker, status, worker.NextRun, worker.Elapsed, worker.FailCount + 1, worker.LastRun,
 				worker.LastComplete, worker.RunCount);
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(popReceipt);
+			DataModel.Queue.Complete(popReceipt);
 		}
 
 		public void Ping(Guid microService, Guid popReceipt)
 		{
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(popReceipt, TimeSpan.FromMinutes(5));
+			DataModel.Queue.Ping(popReceipt, TimeSpan.FromMinutes(5));
 		}
 
 		public void Complete(Guid microService, Guid popReceipt)
 		{
-			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
+			var m = DataModel.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
@@ -236,7 +236,7 @@ namespace TomPIT.Sys.Data
 			Update(worker.Worker, status, ScheduleCalculator.NextRun(worker), Convert.ToInt32(elapsed), 0,
 				worker.LastRun, DateTime.UtcNow, worker.RunCount);
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(popReceipt);
+			DataModel.Queue.Complete(popReceipt);
 		}
 
 		public ISysScheduledJob Select(Guid worker)

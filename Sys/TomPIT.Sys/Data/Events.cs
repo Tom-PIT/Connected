@@ -5,7 +5,6 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
 using TomPIT.SysDb.Events;
-using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Data
 {
@@ -27,14 +26,14 @@ namespace TomPIT.Sys.Data
 			};
 
 			Shell.GetService<IDatabaseService>().Proxy.Events.Insert(ms, name, id, DateTime.UtcNow, e, callback);
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+			DataModel.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
 			return id;
 		}
 
 		public List<IQueueMessage> Dequeue(int count)
 		{
-			return Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(Queue, count);
+			return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(5), QueueScope.System, Queue);
 		}
 
 		public IEventDescriptor Select(Guid id)
@@ -44,17 +43,17 @@ namespace TomPIT.Sys.Data
 
 		public void Ping(Guid popReceipt, TimeSpan nextVisible)
 		{
-			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
+			var m = DataModel.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(popReceipt, nextVisible);
+			DataModel.Queue.Ping(popReceipt, nextVisible);
 		}
 
 		public void Complete(Guid popReceipt)
 		{
-			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
+			var m = DataModel.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
@@ -64,7 +63,7 @@ namespace TomPIT.Sys.Data
 			if (e != null)
 				Shell.GetService<IDatabaseService>().Proxy.Events.Delete(e);
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(popReceipt);
+			DataModel.Queue.Complete(popReceipt);
 		}
 
 		private IEventDescriptor Resolve(IQueueMessage message)

@@ -79,7 +79,7 @@ namespace TomPIT.Sys.Data.BigData
 				Update(configuration, name, status, partition.FileCount);
 
 				if (maintenance)
-					Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(MaintenanceQueue, partition.Configuration.ToString(), TimeSpan.FromDays(7), TimeSpan.Zero, SysDb.Messaging.QueueScope.System);
+					DataModel.Queue.Enqueue(MaintenanceQueue, partition.Configuration.ToString(), TimeSpan.FromDays(7), TimeSpan.Zero, QueueScope.System);
 			}
 		}
 
@@ -118,22 +118,22 @@ namespace TomPIT.Sys.Data.BigData
 
 		public List<IQueueMessage> DequeueMaintenance(int count, TimeSpan nextVisible)
 		{
-			return Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(MaintenanceQueue, count, nextVisible);
+			return DataModel.Queue.Dequeue(count, nextVisible, QueueScope.System, MaintenanceQueue);
 		}
 
 		public void Ping(Guid popReceipt, TimeSpan nextVisible)
 		{
-			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
+			var m = DataModel.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(popReceipt, nextVisible);
+			DataModel.Queue.Ping(popReceipt, nextVisible);
 		}
 
 		public void Complete(Guid popReceipt)
 		{
-			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
+			var m = DataModel.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
@@ -152,7 +152,7 @@ namespace TomPIT.Sys.Data.BigData
 				}
 			}
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(popReceipt);
+			DataModel.Queue.Complete(popReceipt);
 		}
 	}
 }

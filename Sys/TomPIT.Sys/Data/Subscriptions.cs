@@ -60,7 +60,7 @@ namespace TomPIT.Sys.Data
 			};
 
 			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.Insert(id, handler, topic, primaryKey);
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, SysDb.Messaging.QueueScope.System);
+			DataModel.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 		}
 
 		public ISubscriber SelectSubscriber(Guid token)
@@ -149,7 +149,7 @@ namespace TomPIT.Sys.Data
 				throw new SysException(SR.ErrMicroServiceNotFound);
 
 			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.InsertEvent(sub, id, name, DateTime.UtcNow, arguments);
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(EventQueue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, SysDb.Messaging.QueueScope.System);
+			DataModel.Queue.Enqueue(EventQueue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
 			return id;
 		}
@@ -166,37 +166,37 @@ namespace TomPIT.Sys.Data
 
 		public List<IQueueMessage> Dequeue(int count)
 		{
-			return Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(Queue, count);
+			return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(5), QueueScope.System, Queue);
 		}
 
 		public List<IQueueMessage> DequeueEvents(int count)
 		{
-			return Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(EventQueue, count);
+			return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(5), QueueScope.System, EventQueue);
 		}
 
 		public void Ping(Guid popReceipt)
 		{
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(popReceipt, TimeSpan.FromSeconds(5));
+			DataModel.Queue.Ping(popReceipt, TimeSpan.FromSeconds(5));
 		}
 
 		public void Complete(Guid popReceipt)
 		{
-			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
+			var m = DataModel.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(popReceipt);
+			DataModel.Queue.Complete(popReceipt);
 		}
 
 		public void CompleteEvent(Guid popReceipt)
 		{
-			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
+			var m = DataModel.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(popReceipt);
+			DataModel.Queue.Complete(popReceipt);
 			var ev = ResolveEvent(m);
 
 			if (ev != null)

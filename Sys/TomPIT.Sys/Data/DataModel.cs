@@ -51,7 +51,7 @@ namespace TomPIT.Sys.Data
 		private static readonly Lazy<BigDataPartitionFiles> _bigDataPartitionFiles = new Lazy<BigDataPartitionFiles>(() => { return new BigDataPartitionFiles(Container); });
 		private static readonly Lazy<BigDataPartitionFieldStatistics> _bigDataPartitionFieldStatistics = new Lazy<BigDataPartitionFieldStatistics>(() => { return new BigDataPartitionFieldStatistics(Container); });
 		private static readonly Lazy<DevelopmentErrors> _devErrors = new Lazy<DevelopmentErrors>(() => { return new DevelopmentErrors(); });
-		private static readonly Lazy<Queueing> _queue = new Lazy<Queueing>(() => { return new Queueing(); });
+		private static readonly Lazy<Queueing> _queue = new Lazy<Queueing>(() => { return new Queueing(Container); });
 		private static readonly Lazy<Search> _search = new Lazy<Search>(() => { return new Search(); });
 		private static readonly Lazy<SysSearch> _sysSearch = new Lazy<SysSearch>(() => { return new SysSearch(); });
 		private static readonly Lazy<Tools> _tools = new Lazy<Tools>(() => { return new Tools(); });

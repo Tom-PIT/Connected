@@ -1,8 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
 using TomPIT.Serialization;
-using TomPIT.Sys.Api.Database;
-using TomPIT.SysDb.Messaging;
+using TomPIT.Storage;
 
 namespace TomPIT.Sys.Data
 {
@@ -17,7 +16,7 @@ namespace TomPIT.Sys.Data
 				{ "component",component}
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, Serializer.Serialize(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 		}
 
 		public void Enqueue(Guid component, Guid element)
@@ -29,7 +28,7 @@ namespace TomPIT.Sys.Data
 				{ "element",element}
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, Serializer.Serialize(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 		}
 	}
 }

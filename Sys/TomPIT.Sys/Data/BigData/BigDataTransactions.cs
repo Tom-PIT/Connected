@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using TomPIT.BigData;
 using TomPIT.Caching;
+using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
-using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Data.BigData
 {
@@ -47,7 +47,7 @@ namespace TomPIT.Sys.Data.BigData
 			var blocks = DataModel.BigDataTransactionBlocks.Query(transaction.Token);
 
 			foreach (var block in blocks)
-				Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(BigDataTransactionBlocks.Queue, block.Token.ToString(), TimeSpan.FromDays(14), TimeSpan.Zero, QueueScope.System);
+				DataModel.Queue.Enqueue(BigDataTransactionBlocks.Queue, block.Token.ToString(), TimeSpan.FromDays(14), TimeSpan.Zero, QueueScope.System);
 
 			Update(transaction.Token, transaction.BlockRemaining, TransactionStatus.Running);
 		}

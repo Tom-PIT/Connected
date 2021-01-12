@@ -96,6 +96,7 @@ namespace TomPIT.Sys
 			services.AddSingleton<IHostedService, MessageDisposer>();
 			services.AddSingleton<IHostedService, Scheduler>();
 			services.AddSingleton<IHostedService, Preloader>();
+			services.AddSingleton<IHostedService, QueueRecycler>();
 		}
 	}
 }

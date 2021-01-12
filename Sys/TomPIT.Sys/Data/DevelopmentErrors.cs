@@ -20,8 +20,8 @@ namespace TomPIT.Sys.Data
 				{"error", error }
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Enqueue(Queue, Serializer.Serialize(message),
-				TimeSpan.FromDays(2), TimeSpan.Zero, SysDb.Messaging.QueueScope.System);
+			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message),
+				TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 		}
 		public List<IDevelopmentComponentError> Query(Guid microService, ErrorCategory category)
 		{
@@ -75,22 +75,22 @@ namespace TomPIT.Sys.Data
 
 		public List<IQueueMessage> Dequeue(int count)
 		{
-			return Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.DequeueSystem(Queue, count, TimeSpan.FromMinutes(5));
+			return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(5), QueueScope.System, Queue);
 		}
 
 		public void Ping(Guid popReceipt, TimeSpan nextVisible)
 		{
-			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
+			var m = DataModel.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Ping(popReceipt, nextVisible);
+			DataModel.Queue.Ping(popReceipt, nextVisible);
 		}
 
 		public void Complete(Guid popReceipt)
 		{
-			var m = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(popReceipt);
+			var m = DataModel.Queue.Select(popReceipt);
 
 			if (m == null)
 				return;
@@ -100,7 +100,7 @@ namespace TomPIT.Sys.Data
 			if (e != null)
 				Delete(e.Identifier);
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(popReceipt);
+			DataModel.Queue.Complete(popReceipt);
 		}
 
 		private IDevelopmentError Resolve(IQueueMessage message)

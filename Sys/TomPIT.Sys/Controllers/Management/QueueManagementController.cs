@@ -15,7 +15,7 @@ namespace TomPIT.Sys.Controllers.Management
 
 			var count = body.Required<int>("count");
 
-			return DataModel.Queue.Dequeue(count);
+			return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(5), QueueScope.Content, null);
 		}
 
 		[HttpPost]
