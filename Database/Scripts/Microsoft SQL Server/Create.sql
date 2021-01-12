@@ -3488,7 +3488,7 @@ IF @@ERROR <> 0 SET NOEXEC ON
 GO
 PRINT N'Creating primary key [PK_queue] on [tompit].[queue]'
 GO
-ALTER TABLE [tompit].[queue] ADD CONSTRAINT [PK_queue] PRIMARY KEY NONCLUSTERED  ([id]) ON [PRIMARY]
+ALTER TABLE [tompit].[queue] ADD CONSTRAINT [PK_queue] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
