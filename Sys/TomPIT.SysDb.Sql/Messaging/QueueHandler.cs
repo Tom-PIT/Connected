@@ -119,7 +119,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 		public string Insert(string queue, string message, TimeSpan expire, TimeSpan nextVisible, QueueScope scope)
 		{
-			using var w = new LongWriter("tompit.queue_enqueue");
+			using var w = new LongWriter("tompit.queue_ins");
 
 			w.CreateParameter("@message", message);
 			w.CreateParameter("@queue", queue);
