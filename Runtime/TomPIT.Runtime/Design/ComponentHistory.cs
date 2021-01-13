@@ -11,5 +11,6 @@ namespace TomPIT.Design
 		public Guid User { get; set; }
 		public Guid Commit { get; set; }
 		public Guid Component { get; set; }
+		public LockVerb Verb { get; set; }
 	}
 }
