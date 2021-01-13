@@ -477,7 +477,6 @@ namespace TomPIT.Sys.Data
 			if (permanent)
 			{
 				Shell.GetService<IDatabaseService>().Proxy.Development.Components.Delete(c);
-				DataModel.VersionControl.DeleteHistory(component);
 
 				Remove(component);
 			}

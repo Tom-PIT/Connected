@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.Development;
 using TomPIT.Exceptions;
-using TomPIT.Security;
 using TomPIT.Sys.Api.Database;
 
 namespace TomPIT.Sys.Data
@@ -97,6 +95,16 @@ namespace TomPIT.Sys.Data
 				throw new RuntimeException(SR.ErrComponentNotFound);
 
 			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryHistory(c);
+		}
+
+		public List<IComponentHistory> QueryMicroServiceHistory(Guid microService)
+		{
+			var ms = DataModel.MicroServices.Select(microService);
+
+			if (ms == null)
+				throw new RuntimeException(SR.ErrMicroServiceNotFound);
+
+			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryMicroServiceHistory(ms);
 		}
 
 		public List<IComponentHistory> QueryCommitDetails(Guid commit)
@@ -205,97 +213,6 @@ namespace TomPIT.Sys.Data
 			Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.UndoComponentHistory(c);
 
 			DataModel.Components.NotifyChanged(c);
-		}
-
-		public List<IRepositoriesEndpoint> QueryRepositories()
-		{
-			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryRepositories();
-		}
-		public List<IServiceBinding> QueryActiveBindings()
-		{
-			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryActiveBindings();
-		}
-		public IServiceBinding SelectBinding(Guid service, string repository)
-		{
-			var ms = DataModel.MicroServices.Select(service);
-
-			if (ms == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
-
-			var repo = SelectRepository(repository);
-
-			if (repo == null)
-				throw new SysException(SR.ErrRepositoryNotFound);
-
-			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.SelectBinding(ms, repo);
-		}
-		public List<IServiceBinding> QueryBindings(Guid service)
-		{
-			var ms = DataModel.MicroServices.Select(service);
-
-			if (ms == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
-
-			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryBindings(ms);
-		}
-		public void UpdateBinding(Guid service, string repository, long commit, DateTime date, bool active)
-		{
-			var ms = DataModel.MicroServices.Select(service);
-
-			if (ms == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
-
-			var repo = SelectRepository(repository);
-
-			if (repo == null)
-				throw new SysException(SR.ErrRepositoryNotFound);
-
-			Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.UpdateBinding(ms, repo, commit, date, active);
-		}
-		public void DeleteBinding(Guid service, string repository)
-		{
-			var ms = DataModel.MicroServices.Select(service);
-
-			if (ms == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
-
-			var repo = SelectRepository(repository);
-
-			if (repo == null)
-				throw new SysException(SR.ErrRepositoryNotFound);
-
-			Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.DeleteBinding(ms, repo);
-		}
-		public void InsertRepository(string name, string url, string userName, string password)
-		{
-			var encrypted = Shell.GetService<ICryptographyService>().Encrypt(this, password);
-
-			Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.InsertRepository(name, url, userName, Encoding.UTF8.GetBytes(encrypted));
-		}
-		public void UpdateRepository(string repository, string name, string url, string userName, string password)
-		{
-			var repo = SelectRepository(repository);
-
-			if (repo == null)
-				throw new SysException(SR.ErrRepositoryNotFound);
-
-			var encrypted = Shell.GetService<ICryptographyService>().Encrypt(this, password);
-
-			Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.UpdateRepository(repo, name, url, userName, Encoding.UTF8.GetBytes(encrypted));
-
-		}
-		public void DeleteRepository(string repository)
-		{
-			var repo = SelectRepository(repository);
-
-			if (repo == null)
-				throw new SysException(SR.ErrRepositoryNotFound);
-
-			Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.DeleteRepository(repo);
-		}
-		public IRepositoriesEndpoint SelectRepository(string name)
-		{
-			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.SelectRepository(name);
 		}
 	}
 }

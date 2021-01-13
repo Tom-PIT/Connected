@@ -9,7 +9,6 @@ namespace TomPIT.SysDb.Sql.Development
 		private IComponentHandler _components = null;
 		private IQaHandler _qa = null;
 		private IVersionControlHandler _versionControl = null;
-		private ITestSuiteHandler _testSuite = null;
 		private IDevelopmentErrorHandler _errors = null;
 		private IToolsHandler _tools = null;
 
@@ -32,17 +31,6 @@ namespace TomPIT.SysDb.Sql.Development
 					_qa = new QaHandler();
 
 				return _qa;
-			}
-		}
-
-		public ITestSuiteHandler TestSuite
-		{
-			get
-			{
-				if (_testSuite == null)
-					_testSuite = new TestSuiteHandler();
-
-				return _testSuite;
 			}
 		}
 

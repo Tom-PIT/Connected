@@ -206,7 +206,15 @@ namespace TomPIT.Design
 		{
 			return Tenant.Post<List<ComponentHistory>>(CreateUrl("QueryHistory"), new
 			{
-				Component = component
+				component
+			}).ToList<IComponentHistory>();
+		}
+
+		public List<IComponentHistory> QueryMicroServiceHistory(Guid microService)
+		{
+			return Tenant.Post<List<ComponentHistory>>(CreateUrl("QueryMicroServiceHistory"), new
+			{
+				microService
 			}).ToList<IComponentHistory>();
 		}
 
