@@ -3501,13 +3501,13 @@ GO
 PRINT N'Creating [tompit].[queue_del]'
 GO
 CREATE PROCEDURE [tompit].[queue_del]
-	@pop_receipt uniqueidentifier
+	@id bigint = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	DELETE tompit.queue
-	WHERE pop_receipt = @pop_receipt;
+	WHERE (id = @id);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -3820,41 +3820,6 @@ BEGIN
 
 	INSERT tompit.big_data_partition (configuration, file_count, status, name, created, resource_group)
 	VALUES (@configuration, 0, @status, @name, @created, @resource_group);
-END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
-PRINT N'Creating [tompit].[queue_dequeue]'
-GO
-CREATE PROCEDURE [tompit].[queue_dequeue]
-	@queue varchar(32),
-	@next_visible datetime,
-	@count int = 32,
-	@date datetime
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	declare @ct table(num bigint);
-
-	with q as
-		(
-			select top (@count) *
-			from tompit.queue with (readpast)
-			where next_visible < @date
-			and expire > @date
-			and queue = @queue
-			and scope = 0
-			order by next_visible, id
-		)
-	 update  q with (UPDLOCK, READPAST) set
-		next_visible = @next_visible,
-		dequeue_count = dequeue_count + 1,
-		dequeue_timestamp = @date,
-		pop_receipt = newid()
-	output inserted.id into @ct;
-
-	select * from tompit.queue where id IN (select num from @ct);	
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -4703,39 +4668,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[queue_dequeue_content]'
-GO
-CREATE PROCEDURE [tompit].[queue_dequeue_content]
-	@next_visible datetime,
-	@count int = 32,
-	@date datetime
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	declare @ct table(num bigint);
-
-	with q as
-		(
-			select top (@count) *
-			from tompit.queue with (readpast)
-			where next_visible < @date
-			and expire > @date
-			and scope = 1
-			order by next_visible, id
-		)
-	 update  q with (UPDLOCK, READPAST) set
-		next_visible = @next_visible,
-		dequeue_count = dequeue_count + 1,
-		dequeue_timestamp = @date,
-		pop_receipt = newid()
-	output inserted.id into @ct;
-
-	select * from tompit.queue where id IN (select num from @ct);	
-END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[lock_unlock]'
 GO
 CREATE PROCEDURE [tompit].[lock_unlock]
@@ -4823,29 +4755,6 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
-PRINT N'Creating [tompit].[queue_enqueue]'
-GO
-CREATE PROCEDURE [tompit].[queue_enqueue]
-	@queue varchar(32),
-	@message nvarchar(256),
-	@expire datetime = NULL,
-	@next_visible datetime,
-	@scope int,
-	@created datetime
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	IF (@expire IS NULL)
-		SET @expire = DATEADD(day, 2, GETUTCDATE());
-
-	INSERT tompit.queue (message, created, expire, next_visible, queue, pop_receipt, dequeue_count, scope)
-	VALUES (@message, @created, @expire, @next_visible, @queue, NULL, 0, @scope);
-
-END
-GO
-IF @@ERROR <> 0 SET NOEXEC ON
-GO
 PRINT N'Creating [tompit].[blob_content_sel]'
 GO
 CREATE PROCEDURE [tompit].[blob_content_sel]
@@ -4894,15 +4803,21 @@ GO
 PRINT N'Creating [tompit].[queue_upd]'
 GO
 CREATE PROCEDURE [tompit].[queue_upd]
-	@pop_receipt uniqueidentifier,
-	@next_visible datetime
+	@items nvarchar(MAX)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	UPDATE tompit.queue SET
-		next_visible = @next_visible
-	WHERE pop_receipt = @pop_receipt;
+	WITH items AS (SELECT id, next_visible, dequeue_count, dequeue_timestamp, pop_receipt FROM OPENJSON(@items) 
+		WITH(id bigint, next_visible datetime2(7), dequeue_count int, dequeue_timestamp datetime2(7), pop_receipt uniqueidentifier))
+
+	UPDATE q SET
+		next_visible = items.next_visible,
+		dequeue_count = items.dequeue_count,
+		dequeue_timestamp = items.dequeue_timestamp,
+		pop_receipt = items.pop_receipt
+	FROM tompit.queue q 
+	INNER JOIN  items ON q.id = items.id;
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -4986,14 +4901,16 @@ GO
 PRINT N'Creating [tompit].[queue_sel]'
 GO
 CREATE PROCEDURE [tompit].[queue_sel]
-	@pop_receipt uniqueidentifier
+	@pop_receipt uniqueidentifier = NULL,
+	@id bigint = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SELECT TOP 1 *
 	FROM tompit.queue
-	WHERE pop_receipt = @pop_receipt;
+	WHERE (@pop_receipt IS NULL OR pop_receipt = @pop_receipt)
+	AND (@id IS NULL OR id = @id);
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
@@ -6309,6 +6226,20 @@ END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
 GO
+PRINT N'Creating [tompit].[queue_que]'
+GO
+CREATE PROCEDURE [tompit].[queue_que]
+	
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT *
+	FROM tompit.queue;
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
 PRINT N'Creating [tompit].[big_data_transaction_ins]'
 GO
 CREATE PROCEDURE [tompit].[big_data_transaction_ins]
@@ -6405,6 +6336,30 @@ BEGIN
 
 	INSERT tompit.[audit] ([user], created, primary_key, category, event, description, ip, property, value, identifier)
 	VALUES (@user, @created, @primary_key, @category, @event, @description, @ip, @property, @value, @identifier);
+END
+GO
+IF @@ERROR <> 0 SET NOEXEC ON
+GO
+PRINT N'Creating [tompit].[queue_ins]'
+GO
+CREATE PROCEDURE [tompit].[queue_ins]
+	@queue varchar(32),
+	@message nvarchar(256),
+	@expire datetime = NULL,
+	@next_visible datetime,
+	@scope int,
+	@created datetime
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	IF (@expire IS NULL)
+		SET @expire = DATEADD(day, 2, GETUTCDATE());
+
+	INSERT tompit.queue (message, created, expire, next_visible, queue, pop_receipt, dequeue_count, scope)
+	VALUES (@message, @created, @expire, @next_visible, @queue, NULL, 0, @scope);
+
+	RETURN scope_identity();
 END
 GO
 IF @@ERROR <> 0 SET NOEXEC ON
