@@ -1,4 +1,4 @@
-﻿using System.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using TomPIT.Data;
 
 namespace TomPIT.DataProviders.Sql.Synchronization

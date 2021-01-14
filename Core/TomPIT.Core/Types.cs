@@ -333,7 +333,7 @@ namespace TomPIT
 			else if (underlyingType == typeof(byte[]))
 				return DbType.Binary;
 			else
-				return DbType.Binary;
+				return DbType.String;
 		}
 		public static DbType ToDbType(DataType type)
 		{

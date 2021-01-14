@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Data;
-using System.Data.SqlClient;
 using System.Globalization;
 using System.Xml;
+using Microsoft.Data.SqlClient;
 
 namespace TomPIT.Data.Sql
 {
@@ -493,12 +493,12 @@ namespace TomPIT.Data.Sql
 				{
 					switch (sqlException.Number)
 					{
-					// SQL Error Code: 11001
-					// A network-related or instance-specific error occurred while establishing a connection to SQL Server. 
-					// The server was not found or was not accessible. Verify that the instance name is correct and that SQL 
-					// Server is configured to allow remote connections. (provider: TCP Provider, error: 0 - No such host is known.)
-					case 11001:
-						return true;
+						// SQL Error Code: 11001
+						// A network-related or instance-specific error occurred while establishing a connection to SQL Server. 
+						// The server was not found or was not accessible. Verify that the instance name is correct and that SQL 
+						// Server is configured to allow remote connections. (provider: TCP Provider, error: 0 - No such host is known.)
+						case 11001:
+							return true;
 					}
 				}
 

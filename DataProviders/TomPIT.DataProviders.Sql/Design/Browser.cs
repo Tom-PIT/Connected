@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Data.SqlClient;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.DataProviders.Design;
@@ -108,7 +108,7 @@ namespace TomPIT.DataProviders.Sql.Design
 		private List<ISchemaParameter> QueryProcedureParameters(IConnectionConfiguration configuration, string groupObject)
 		{
 			using var con = new SqlConnection(ResolveConnectionString(configuration).Value);
-			var command = new System.Data.SqlClient.SqlCommand(groupObject, con);
+			var command = new SqlCommand(groupObject, con);
 
 			try
 			{
