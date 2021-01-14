@@ -10,9 +10,9 @@
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.MicroServices.IoT</RootNamespace>
     <AssemblyName>TomPIT.MicroServices.IoT</AssemblyName>
-    <AssemblyVersion>2.2.114.3</AssemblyVersion>
-    <FileVersion>2.2.114.3</FileVersion>
-    <Version>2.2.114.3</Version>
+    <AssemblyVersion>2.2.114.4</AssemblyVersion>
+    <FileVersion>2.2.114.4</FileVersion>
+    <Version>2.2.114.4</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
