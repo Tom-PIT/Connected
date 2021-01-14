@@ -23,5 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Printing" />
   </ItemGroup>
 </Project>

@@ -15,6 +15,7 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Connected.Printing.Client.Configuration;
 using TomPIT.Connected.Printing.Client.Printing;
@@ -191,15 +192,24 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                         var printerName = _printerHandler.MapToSystemName(job.Printer);
                         Logging.Debug($"Printing to '{printerName}' (mapped as '{job.Printer}')");
 
-                        report.PrinterName = printerName;
-                        report.CreateDocument(false);
-                        report.PrintingSystem.Document.Name = $"TomPIT Printing Doc {job.Token}";
+                        if (_printerHandler.IsPrinterOnline(printerName, out string queueStatus))
+                        {
+                            report.PrinterName = printerName;
+                            report.CreateDocument(false);
+                            report.PrintingSystem.Document.Name = $"TomPIT Printing Doc {job.Token}";
 
-                        var print = new PrintToolBase(report.PrintingSystem);
+                            var print = new PrintToolBase(report.PrintingSystem);
 
-                        Logging.Trace("Starting printing...");
-                        print.Print(printerName);
-                        Logging.Trace("Printing done...");
+                            Logging.Trace("Starting printing...");
+                            print.Print(printerName);
+                            Logging.Trace("Printing done...");
+                        }
+                        else
+                        {
+                            var message = $"Printer not available. Status: {queueStatus}";
+                            Logging.Debug("Printer not available. See error log for detailed status.");
+                            Logging.Error(message);
+                        }
                     }
                 }
             }
