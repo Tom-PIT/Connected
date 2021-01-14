@@ -375,12 +375,13 @@ GO
 
 
 
+
 CREATE VIEW [tompit].[component_history_view]
 AS
 
 SELECT h.id, h.created, h.configuration, h.name, h.[user], h.[commit], h.component, h.verb, 
 		c.token commit_token, c.service,
-		u.token
+		u.token user_token
 FROM tompit.component_history h
 INNER JOIN tompit.[user] u ON h.[user] = u.id
 LEFT JOIN tompit.version_control_commit c ON h.[commit] = c.id;
