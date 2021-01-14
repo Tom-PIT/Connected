@@ -3,6 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using DevExpress.DataAccess.Json;
+using DevExpress.XtraReports.UI;
+using DevExpress.XtraReports.Web.Extensions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Reports;
+using TomPIT.Connectivity;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
+using TomPIT.Serialization;
 
 namespace TomPIT.MicroServices.Reporting.Storage
 {
