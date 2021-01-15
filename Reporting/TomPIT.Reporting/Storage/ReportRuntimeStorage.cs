@@ -294,29 +294,24 @@ namespace TomPIT.MicroServices.Reporting.Storage
 			return Serializer.Deserialize<JObject>(Encoding.UTF8.GetString(Convert.FromBase64String(queryString)));
 
 		}
-		private RuntimeDataSource CreateDataSource(JsonDataSource dataSource, string dataMember, ITenant tenant, JObject arguments)
+		private JsonDataSource CreateDataSource(JsonDataSource dataSource, string dataMember, ITenant tenant, JObject arguments)
 		{
-			if (dataSource == null || string.IsNullOrWhiteSpace(dataMember))
-				return null;
-
-			var result = dataSource as RuntimeDataSource;
-
-			if (result == null)
+			if (dataSource.Site == null)
 			{
-				result = new RuntimeDataSource
-				{
-					Url = dataSource.ConnectionName,
-					//Schema = dataSource.Schema,
-					Name = dataSource.Name,
-					RootElement = dataSource.RootElement
-				};
+				dataSource.Site = new DataSourceSite(dataSource.ConnectionName);
+				dataSource.ConnectionName = null;
 			}
 
-			var descriptor = ComponentDescriptor.Api(MicroServiceContext.FromIdentifier(result.Url, tenant), result.Url);
+			var connection = (dataSource.Site as DataSourceSite).Connection;
+
+			if (dataSource == null || string.IsNullOrWhiteSpace(dataMember))
+				return dataSource;
+
+			var descriptor = ComponentDescriptor.Api(MicroServiceContext.FromIdentifier(connection, tenant), connection);
 
 			descriptor.Validate();
 
-			var ds = descriptor.Context.Interop.Invoke<object, JObject>(result.Url, arguments);
+			var ds = descriptor.Context.Interop.Invoke<object, JObject>(connection, arguments);
 
 			if (ds == null)
 				return null;
@@ -335,11 +330,12 @@ namespace TomPIT.MicroServices.Reporting.Storage
 			else
 				serializedDs = $"{{{dataMember}:{JsonConvert.SerializeObject(ds)}}}";
 
-			result.JsonSource = new CustomJsonSource(serializedDs);
+			dataSource.Schema = null;
+			dataSource.JsonSource = new CustomJsonSource(serializedDs);
 
-			result.Fill();
+			dataSource.Fill();
 
-			return result;
+			return dataSource;
 		}
 
 		public override Dictionary<string, string> GetUrls()

@@ -1,15 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using TomPIT.Middleware;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace TomPIT.UI
 {
 	public interface IViewEngine
 	{
 		HttpContext Context { get; set; }
-		void Render(string name);
-		void RenderPartial(IMicroServiceContext context, string name);
-		string CompilePartial(IMicroServiceContext context, string name);
-		string SnippetPath(ViewContext context, string snippetname);
+		Task Render(string name);
+		//Task RenderPartial(IMicroServiceContext context, string name);
+		//Task<string> CompilePartial(IMicroServiceContext context, string name);
 	}
 }

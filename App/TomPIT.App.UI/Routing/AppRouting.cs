@@ -59,15 +59,13 @@ namespace TomPIT.App.Routing
 				return Task.CompletedTask;
 			});
 
-			routes.Map("sys/mail-template/{token}", (t) =>
+			routes.Map("sys/mail-template/{token}", async (t) =>
 			{
 				var ve = t.RequestServices.GetService(typeof(IMailTemplateViewEngine)) as MailTemplateViewEngine;
 
 				ve.Context = t;
 
-				ve.Render(new Guid(t.GetRouteValue("token").ToString()));
-
-				return Task.CompletedTask;
+				await ve.Render(new Guid(t.GetRouteValue("token").ToString()));
 			});
 
 			routes.Map("{*.}", async (t) =>
@@ -99,18 +97,13 @@ namespace TomPIT.App.Routing
 				context.Request.Path = "/home";
 
 			if (Redirect(context))
-			{
-				await Task.CompletedTask;
 				return;
-			}
 
 			var ve = context.RequestServices.GetService(typeof(IViewEngine)) as ViewEngine;
 
 			ve.Context = context;
 
-			ve.Render(context.Request.Path);
-
-			await Task.CompletedTask;
+			await ve.Render(context.Request.Path);
 		}
 
 		private static bool Redirect(HttpContext context)

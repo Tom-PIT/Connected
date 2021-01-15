@@ -74,8 +74,13 @@ namespace TomPIT.DataProviders.Sql
 
 		public void Dispose()
 		{
+			if (Disposed)
+				return;
+
 			Disposed = true;
 			Close();
+
+			GC.SuppressFinalize(this);
 		}
 
 		public void Rollback()

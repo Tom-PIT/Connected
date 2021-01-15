@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -30,7 +31,7 @@ namespace TomPIT.App.UI
 			return new ActionContext(context, context?.GetRouteData(), new ActionDescriptor());
 		}
 
-		protected string CreateContent(Microsoft.AspNetCore.Mvc.ViewEngines.IView view, IViewModel model)
+		protected static async Task<string> CreateContent(Microsoft.AspNetCore.Mvc.ViewEngines.IView view, IViewModel model)
 		{
 			var temp = new TempDataDictionary(model.ActionContext.HttpContext, model.TempData);
 			var viewData = new ViewDataDictionary<IRuntimeModel>(metadataProvider: new EmptyModelMetadataProvider(), modelState: new ModelStateDictionary())
@@ -38,14 +39,12 @@ namespace TomPIT.App.UI
 				Model = model
 			};
 
-			using (var output = new StringWriter())
-			{
-				var viewContext = new ViewContext(model.ActionContext, view, viewData, temp, output, new HtmlHelperOptions());
+			using var output = new StringWriter();
+			var viewContext = new ViewContext(model.ActionContext, view, viewData, temp, output, new HtmlHelperOptions());
 
-				view.RenderAsync(viewContext).GetAwaiter().GetResult();
+			await view.RenderAsync(viewContext);
 
-				return output.ToString();
-			}
+			return output.ToString();
 		}
 	}
 }

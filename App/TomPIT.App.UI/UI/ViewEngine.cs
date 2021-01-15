@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using TomPIT.App.Models;
 using TomPIT.Compilation;
@@ -24,24 +24,7 @@ namespace TomPIT.App.UI
 		{
 		}
 
-		public string SnippetPath(ViewContext context, string snippetName)
-		{
-			var vi = new ViewInfo(context.ExecutingFilePath, null);
-
-			switch (vi.Kind)
-			{
-				case ViewKind.Master:
-					return string.Format("~/Views/Dynamic/Snippet/Master/{0}.{1}.cshtml", vi.Path, snippetName);
-				case ViewKind.View:
-					return string.Format("~/Views/Dynamic/Snippet/View/{0}.{1}.cshtml", vi.Path, snippetName);
-				case ViewKind.Partial:
-					return string.Format("~/Views/Dynamic/Snippet/Partial/{0}.{1}.cshtml", vi.Path, snippetName);
-				default:
-					throw new NotSupportedException();
-			}
-		}
-
-		public string CompilePartial(IMicroServiceContext context, string name)
+		public async Task<string> CompilePartial(IMicroServiceContext context, string name)
 		{
 			var partialView = ResolveView(context, name);
 
@@ -52,10 +35,10 @@ namespace TomPIT.App.UI
 			var viewEngineResult = Engine.FindView(vm.ActionContext, name, false);
 			var view = viewEngineResult.View;
 
-			return CreateContent(view, vm);
+			return await CreateContent(view, vm);
 		}
 
-		public void RenderPartial(IMicroServiceContext context, string name)
+		public async Task RenderPartial(IMicroServiceContext context, string name)
 		{
 			var partialView = ResolveView(context, name);
 
@@ -65,18 +48,18 @@ namespace TomPIT.App.UI
 			using var vm = CreatePartialModel(name);
 			var viewEngineResult = Engine.FindView(vm.ActionContext, name, false);
 			var view = viewEngineResult.View;
-			var content = CreateContent(view, vm);
+			var content = await CreateContent(view, vm);
 
 			var buffer = Encoding.UTF8.GetBytes(content);
 
 			if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
 			{
 				Context.Response.Headers.Add("X-TP-VIEW", name);
-				Context.Response.Body.Write(buffer, 0, buffer.Length);
+				await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
 			}
 		}
 
-		public void Render(string name)
+		public async Task Render(string name)
 		{
 			name = name.Trim('/');
 
@@ -122,12 +105,12 @@ namespace TomPIT.App.UI
 					if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
 						return;
 
-					content = CreateContent(view, model);
+					content = await CreateContent(view, model);
 
 					var buffer = Encoding.UTF8.GetBytes(content);
 
 					if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
-						Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
+						await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
 				}
 				catch (CompilerException)
 				{

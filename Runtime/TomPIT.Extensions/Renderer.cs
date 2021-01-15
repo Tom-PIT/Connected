@@ -10,7 +10,6 @@ namespace TomPIT
 	{
 		private AttributesHelper _attributes = null;
 		private IdeHelper _ide = null;
-		private SnippetsHelper _snippets = null;
 		private PartialHelper _partial = null;
 		private UrlHelper _url = null;
 		private JavascriptHelper _js = null;
@@ -82,17 +81,6 @@ namespace TomPIT
 			}
 		}
 
-		public SnippetsHelper Snippets
-		{
-			get
-			{
-				if (_snippets == null)
-					_snippets = new SnippetsHelper(Html);
-
-				return _snippets;
-			}
-		}
-
 		public SystemHelper Sys
 		{
 			get
@@ -149,12 +137,12 @@ namespace TomPIT
 		}
 
 		[Obsolete("Please use Api Property instead.")]
-		public IHtmlContent Property([CIP(CIP.ApiOperationProvider)]string api, [CIP(CIP.ApiOperationParameterProvider)]string property)
+		public IHtmlContent Property([CIP(CIP.ApiOperationProvider)] string api, [CIP(CIP.ApiOperationParameterProvider)] string property)
 		{
 			return ApiProperty(api, property);
 		}
 
-		public IHtmlContent ApiProperty([CIP(CIP.ApiOperationProvider)]string api, [CIP(CIP.ApiOperationParameterProvider)]string property)
+		public IHtmlContent ApiProperty([CIP(CIP.ApiOperationProvider)] string api, [CIP(CIP.ApiOperationParameterProvider)] string property)
 		{
 			var result = new ApiPropertyRenderer(Html.ViewData.Model as IMiddlewareContext, api, property).Result;
 
@@ -164,7 +152,7 @@ namespace TomPIT
 			return Html.Raw(result);
 		}
 
-		public IHtmlContent SettingProperty([CIP(CIP.SettingMiddlewareProvider)]string middleware, [CIP(CIP.SettingMiddlewareParameterProvider)]string property)
+		public IHtmlContent SettingProperty([CIP(CIP.SettingMiddlewareProvider)] string middleware, [CIP(CIP.SettingMiddlewareParameterProvider)] string property)
 		{
 			var result = new SettingPropertyRenderer(Html.ViewData.Model as IMiddlewareContext, middleware, property).Result;
 
