@@ -2,7 +2,6 @@
 using System.Data;
 using System.Text;
 using Microsoft.Data.SqlClient;
-using TomPIT.Data.Sql;
 using TomPIT.Deployment.Database;
 
 namespace TomPIT.DataProviders.Sql.Deployment
@@ -10,7 +9,7 @@ namespace TomPIT.DataProviders.Sql.Deployment
 	internal class DeployCommand
 	{
 		private SqlCommand _command = null;
-		private ReliableSqlConnection _con = null;
+		private SqlConnection _con = null;
 		private IDbTransaction _transaction = null;
 
 		public DeployCommand(string connectionString)
@@ -19,12 +18,12 @@ namespace TomPIT.DataProviders.Sql.Deployment
 		}
 
 		private string ConnectionString { get; }
-		private ReliableSqlConnection Connection
+		private SqlConnection Connection
 		{
 			get
 			{
 				if (_con == null)
-					_con = new ReliableSqlConnection(ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
+					_con = new SqlConnection(ConnectionString);
 
 				return _con;
 			}
