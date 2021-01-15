@@ -1,4 +1,6 @@
-﻿namespace TomPIT.Data.Sql
+﻿using Microsoft.Data.SqlClient;
+
+namespace TomPIT.Data.Sql
 {
 	public interface IDataTransaction
 	{
@@ -6,7 +8,7 @@
 		void Commit();
 		void Rollback();
 
-		ReliableSqlConnection Connection { get; }
+		SqlConnection Connection { get; }
 		System.Data.IDbTransaction ActiveTransaction { get; }
 	}
 }

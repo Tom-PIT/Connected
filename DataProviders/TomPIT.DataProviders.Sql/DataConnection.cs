@@ -4,13 +4,12 @@ using Microsoft.Data.SqlClient;
 using Newtonsoft.Json.Linq;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
-using TomPIT.Data.Sql;
 
 namespace TomPIT.DataProviders.Sql
 {
 	public sealed class DataConnection : IDataConnection, IDisposable
 	{
-		private ReliableSqlConnection _connection = null;
+		private SqlConnection _connection = null;
 		private ICommandTextParser _parser = null;
 		private object _sync = new object();
 
@@ -23,6 +22,7 @@ namespace TomPIT.DataProviders.Sql
 
 		private IDataProvider Provider { get; }
 		private string ConnectionString { get; }
+		private bool OwnsTransaction { get; set; }
 
 		private bool Disposed { get; set; }
 
@@ -46,7 +46,7 @@ namespace TomPIT.DataProviders.Sql
 					{
 						if (_connection == null && !Disposed)
 						{
-							_connection = new ReliableSqlConnection(ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
+							_connection = new SqlConnection(ConnectionString);
 
 							Open();
 						}
@@ -94,6 +94,7 @@ namespace TomPIT.DataProviders.Sql
 					return;
 
 				Transaction.Rollback();
+				Transaction.Dispose();
 				Transaction = null;
 			}
 		}
@@ -115,6 +116,7 @@ namespace TomPIT.DataProviders.Sql
 					return;
 				}
 
+				OwnsTransaction = true;
 				Transaction = Connection.BeginTransaction(IsolationLevel.ReadCommitted) as SqlTransaction;
 			}
 		}

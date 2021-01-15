@@ -1,10 +1,11 @@
 ﻿using System;
+using Microsoft.Data.SqlClient;
 
 namespace TomPIT.Data.Sql
 {
 	public abstract class DatabaseConnection : ConnectionBase, IDisposable
 	{
-		private ReliableSqlConnection _connection = null;
+		private SqlConnection _connection = null;
 		private IDataTransaction _transaction = null;
 		private bool disposedValue;
 
@@ -18,7 +19,7 @@ namespace TomPIT.Data.Sql
 
 		protected virtual IDataTransaction CurrentTransaction { get { return _transaction; } }
 
-		public override ReliableSqlConnection Connection
+		public override SqlConnection Connection
 		{
 			get
 			{
@@ -27,7 +28,7 @@ namespace TomPIT.Data.Sql
 				else
 				{
 					if (_connection == null)
-						_connection = new ReliableSqlConnection(ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.NoRetry);
+						_connection = new SqlConnection(ConnectionString);
 
 					return _connection;
 				}

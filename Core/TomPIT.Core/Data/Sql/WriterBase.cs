@@ -174,7 +174,7 @@ namespace TomPIT.Data.Sql
 						Connection.Open();
 				}
 
-				RowsAffected = Connection.ExecuteCommand(command);
+				RowsAffected = command.ExecuteNonQuery();
 
 				if (command.Parameters.Contains("@RETURN_VALUE"))
 				{

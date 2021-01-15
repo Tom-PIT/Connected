@@ -46,7 +46,7 @@ namespace TomPIT.Data.Sql
 			{
 				prepareConnection();
 
-				object res = Connection.ExecuteCommand<object>(command);
+				object res = command.ExecuteScalar();
 
 				if (res == null || res == DBNull.Value)
 					return defaultValue;
@@ -74,7 +74,7 @@ namespace TomPIT.Data.Sql
 			try
 			{
 				prepareConnection();
-				rdr = Connection.ExecuteCommand<SqlDataReader>(command, CommandBehavior.SingleRow);
+				rdr = command.ExecuteReader(CommandBehavior.SingleRow);
 
 				if (rdr.Read())
 				{
@@ -105,7 +105,7 @@ namespace TomPIT.Data.Sql
 				//		RequestDiagnostics.NotifyRead();
 
 				prepareConnection();
-				rdr = Connection.ExecuteCommand<SqlDataReader>(command);
+				rdr = command.ExecuteReader();
 
 				int counter = 0;
 
@@ -139,7 +139,7 @@ namespace TomPIT.Data.Sql
 			try
 			{
 				prepareConnection();
-				rdr = Connection.ExecuteCommand<SqlDataReader>(command, CommandBehavior.SingleRow);
+				rdr = command.ExecuteReader(CommandBehavior.SingleRow);
 
 				if (rdr.Read())
 				{
