@@ -26,16 +26,8 @@ namespace TomPIT.DataProviders.Sql
 
 		private bool Disposed { get; set; }
 
-		public ConnectionState State
-		{
-			get
-			{
-				lock (_sync)
-				{
-					return _connection == null ? ConnectionState.Closed : _connection.State;
-				}
-			}
-		}
+		public ConnectionState State => _connection == null ? ConnectionState.Closed : _connection.State;
+
 		private IDbConnection Connection
 		{
 			get
@@ -45,11 +37,7 @@ namespace TomPIT.DataProviders.Sql
 					lock (_sync)
 					{
 						if (_connection == null && !Disposed)
-						{
 							_connection = new SqlConnection(ConnectionString);
-
-							Open();
-						}
 					}
 				}
 
@@ -98,7 +86,6 @@ namespace TomPIT.DataProviders.Sql
 				_connection = null;
 			}
 
-
 			GC.SuppressFinalize(this);
 		}
 
@@ -115,7 +102,11 @@ namespace TomPIT.DataProviders.Sql
 				if (Transaction == null || Transaction.Connection == null)
 					return;
 
-				Transaction.Rollback();
+				try
+				{
+					Transaction.Rollback();
+				}
+				catch { }
 			}
 		}
 
@@ -132,9 +123,7 @@ namespace TomPIT.DataProviders.Sql
 				Connection.Open();
 
 				if (Transaction?.Connection != null)
-				{
 					return;
-				}
 
 				OwnsTransaction = true;
 				Transaction = Connection.BeginTransaction(IsolationLevel.ReadCommitted) as SqlTransaction;
@@ -152,7 +141,15 @@ namespace TomPIT.DataProviders.Sql
 				{
 					if (_connection != null && _connection.State == ConnectionState.Open)
 					{
-						Rollback();
+						if (Transaction != null && Transaction.Connection != null)
+						{
+							try
+							{
+								Transaction.Rollback();
+							}
+							catch { }
+
+						}
 						_connection.Close();
 					}
 				}
