@@ -4,9 +4,9 @@
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
-    <AssemblyVersion>2.2.115.4</AssemblyVersion>
-    <FileVersion>2.2.115.4</FileVersion>
-    <Version>2.2.115.4</Version>
+    <AssemblyVersion>2.2.118.1</AssemblyVersion>
+    <FileVersion>2.2.118.1</FileVersion>
+    <Version>2.2.118.1</Version>
   </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.DataProviders.BigData&quot;" />
