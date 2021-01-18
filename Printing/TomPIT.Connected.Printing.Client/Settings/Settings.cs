@@ -24,6 +24,11 @@ namespace TomPIT.Connected.Printing.Client.Configuration
 
         public static Dictionary<string, string> PrinterNameMappings { get; private set; } = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Print job timeout in seconds
+        /// </summary>
+        public static int PrintJobTimeout { get; private set; } = 30;
+
         public static void ResetSettings()
         {
             PrinterNameMappings.Clear();
@@ -68,6 +73,9 @@ namespace TomPIT.Connected.Printing.Client.Configuration
 
             tmpString = ConfigurationManager.AppSettings["exceptionLoggingLevel"];
             Logging.ExceptionLogging = Enum.TryParse<ExceptionLoggingLevel>(tmpString, true, out ExceptionLoggingLevel resultExcLogging) ? resultExcLogging : ExceptionLoggingLevel.ErrorMessage;
+
+            var timeoutString = ConfigurationManager.AppSettings["printJobTimeout"];
+            PrintJobTimeout = int.TryParse(timeoutString, out var tmp) ? tmp : PrintJobTimeout;
         }
 
         static Settings()

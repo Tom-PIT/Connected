@@ -195,22 +195,35 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                         if (_printerHandler.IsPrinterOnline(printerName, out string queueStatus))
                         {
                             report.PrinterName = printerName;
-                            report.CreateDocument(false);
-                            report.PrintingSystem.Document.Name = $"TomPIT Printing Doc {job.Token}";
+                            var printTask = RunWithTimeout(() => {
+                                report.CreateDocument(false);
+                                report.PrintingSystem.Document.Name = $"TomPIT Printing Doc {job.Token}";
 
-                            var print = new PrintToolBase(report.PrintingSystem);
+                                var print = new PrintToolBase(report.PrintingSystem);
 
-                            Logging.Trace("Starting printing...");
-                            print.Print(printerName);
-                            Logging.Trace("Printing done...");
-                        }
-                        else
-                        {
-                            var message = $"Printer not available. Status: {queueStatus}";
-                            Logging.Debug("Printer not available. See error log for detailed status.");
-                            Logging.Error(message);
-                        }
+                                Logging.Trace("Starting printing...");
+                                print.Print(printerName);
+                                Logging.Trace("Printing done...");
+                            }, TimeSpan.FromSeconds(Settings.PrintJobTimeout));
+
+                            try
+                            {
+                                printTask.Wait();
+                            }
+                            catch (Exception ex) 
+                            {
+                                Logging.Error("There was and error printing the document.");
+                                Logging.Debug(ex.ToString());
+                                throw ex;
+                            }
                     }
+                        else
+                    {
+                        var message = $"Printer not available. Status: {queueStatus}";
+                        Logging.Debug("Printer not available. See error log for detailed status.");
+                        Logging.Error(message);
+                    }
+                }
                 }
             }
             catch (Exception ex)
@@ -261,6 +274,29 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             }
 
             _connection.SendAsync(Constants.ServerMethodNameAddPrinters, args).Wait();
+        }
+
+        private Task RunWithTimeout(Action action, TimeSpan timeout) 
+        {
+            Task task = null;
+            task = Task.Factory.StartNew(() =>
+            {
+                var thread = new Thread(new ThreadStart(action));
+                Task.Factory.StartNew(() => {
+                    Thread.Sleep(timeout);
+                    if (!task.IsCompleted)
+                    {
+                        thread.Abort();
+                    }
+                });
+                thread.Start();
+                thread.Join();
+                if (thread.ThreadState == System.Threading.ThreadState.Aborted) 
+                {
+                    throw new TimeoutException();   
+                }
+            });
+            return task;
         }
 
         private SpoolerJob SelectJob(Guid id)

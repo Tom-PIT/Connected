@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <AssemblyVersion>2.2.115.2</AssemblyVersion>
-    <FileVersion>2.2.115.2</FileVersion>
-    <Version>2.2.115.2</Version>
+    <AssemblyVersion>2.2.115.4</AssemblyVersion>
+    <FileVersion>2.2.115.4</FileVersion>
+    <Version>2.2.115.4</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
