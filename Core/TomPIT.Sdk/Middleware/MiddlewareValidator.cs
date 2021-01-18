@@ -17,6 +17,7 @@ namespace TomPIT.Middleware
 	{
 		public event ValidatingHandler Validating;
 		public MiddlewareValidator(IMiddlewareComponent instance)
+			: base(instance.Context)
 		{
 			Instance = instance;
 		}

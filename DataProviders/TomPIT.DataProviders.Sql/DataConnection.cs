@@ -32,7 +32,7 @@ namespace TomPIT.DataProviders.Sql
 			{
 				lock (_sync)
 				{
-					return Connection == null ? ConnectionState.Closed : Connection.State;
+					return _connection == null ? ConnectionState.Closed : _connection.State;
 				}
 			}
 		}
@@ -68,6 +68,7 @@ namespace TomPIT.DataProviders.Sql
 					return;
 
 				Transaction.Commit();
+				Transaction.Dispose();
 				Transaction = null;
 			}
 		}
@@ -80,11 +81,32 @@ namespace TomPIT.DataProviders.Sql
 			Disposed = true;
 			Close();
 
+			if (Transaction != null)
+			{
+				try
+				{
+					Transaction.Dispose();
+				}
+				catch { }
+
+				Transaction = null;
+			}
+
+			if (_connection != null)
+			{
+				_connection.Dispose();
+				_connection = null;
+			}
+
+
 			GC.SuppressFinalize(this);
 		}
 
 		public void Rollback()
 		{
+			if (!OwnsTransaction)
+				return;
+
 			if (Transaction == null || Transaction.Connection == null)
 				return;
 
@@ -94,8 +116,6 @@ namespace TomPIT.DataProviders.Sql
 					return;
 
 				Transaction.Rollback();
-				Transaction.Dispose();
-				Transaction = null;
 			}
 		}
 
@@ -126,22 +146,16 @@ namespace TomPIT.DataProviders.Sql
 			if (_connection == null)
 				return;
 
-			if (Connection != null && Connection.State == ConnectionState.Open)
+			if (_connection != null && _connection.State == ConnectionState.Open)
 			{
 				lock (_sync)
 				{
-					if (Connection != null && Connection.State == ConnectionState.Open)
+					if (_connection != null && _connection.State == ConnectionState.Open)
 					{
 						Rollback();
-						Connection.Close();
+						_connection.Close();
 					}
 				}
-			}
-
-			if (_connection != null)
-			{
-				_connection.Dispose();
-				_connection = null;
 			}
 		}
 

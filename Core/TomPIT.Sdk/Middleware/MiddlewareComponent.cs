@@ -58,7 +58,6 @@ namespace TomPIT.Middleware
 				if (_validator == null)
 				{
 					_validator = new MiddlewareValidator(this);
-					_validator.SetContext(Context);
 
 					_validator.Validating += OnValidating;
 				}
@@ -70,6 +69,17 @@ namespace TomPIT.Middleware
 		private void OnValidating(object sender, List<ValidationResult> results)
 		{
 			OnValidate(results);
+		}
+
+		protected override void OnDisposing()
+		{
+			if (_validator != null)
+			{
+				_validator.Validating -= OnValidating;
+				_validator.Dispose();
+				_validator = null;
+			}
+			base.OnDisposing();
 		}
 	}
 }

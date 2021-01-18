@@ -16,7 +16,8 @@ namespace TomPIT.Middleware
 
 		protected MiddlewareObject(IMiddlewareContext context)
 		{
-			Context = context;
+			HasOwnContext = false;
+			_context = context;
 		}
 
 		private bool Disposed { get; set; }
@@ -78,6 +79,8 @@ namespace TomPIT.Middleware
 			{
 				if (disposing)
 				{
+					OnDisposing();
+
 					if (HasOwnContext && _context != null)
 						_context.Dispose();
 
@@ -87,6 +90,11 @@ namespace TomPIT.Middleware
 
 				Disposed = true;
 			}
+		}
+
+		protected virtual void OnDisposing()
+		{
+
 		}
 
 		public void Dispose()

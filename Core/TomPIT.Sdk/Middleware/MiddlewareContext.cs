@@ -282,8 +282,11 @@ namespace TomPIT.Middleware
 					if (Owner == null)
 						Connections.Dispose();
 
-					Interop.Dispose();
-					_interop = null;
+					if (_interop != null)
+					{
+						_interop.Dispose();
+						_interop = null;
+					}
 
 					_connections = null;
 				}
