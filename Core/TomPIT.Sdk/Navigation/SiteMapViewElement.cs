@@ -23,6 +23,9 @@ namespace TomPIT.Navigation
 			if (cd.Configuration == null)
 				return false;
 
+			if (!cd.Configuration.AuthorizationEnabled)
+				return true;
+
 			var args = new AuthorizationArgs(user, Claims.AccessUrl, cd.Configuration.Url, "Url");
 
 			args.Schema.Empty = EmptyBehavior.Deny;

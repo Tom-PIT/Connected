@@ -197,8 +197,7 @@ namespace TomPIT.Data
 		}
 
 		#region IDisposable
-
-		public void Dispose()
+		protected override void OnDisposing()
 		{
 			if (_parameters != null)
 			{
@@ -207,14 +206,9 @@ namespace TomPIT.Data
 			}
 
 			CommandText = null;
-
 			Connection = null;
 
-			OnDispose();
-		}
-
-		protected virtual void OnDispose()
-		{
+			base.OnDisposing();
 		}
 
 		#endregion

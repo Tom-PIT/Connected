@@ -312,7 +312,7 @@ namespace TomPIT.Navigation
 		{
 			Initialize();
 
-			var item = SelectRoute(routeKey);
+			using var item = SelectRoute(routeKey);
 
 			if (item == null)
 				return null;
@@ -476,7 +476,8 @@ namespace TomPIT.Navigation
 		private ISiteMapRoute SelectRouteByTemplate(NavigationHandlerDescriptor descriptor, string template)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
-			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), descriptor.Handler);
+			var ctx = new MicroServiceContext(ms, Tenant.Url);
+			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(ctx, descriptor.Handler);
 
 			if (handler == null)
 				return null;
@@ -513,7 +514,8 @@ namespace TomPIT.Navigation
 		private ISiteMapRoute SelectRoute(NavigationHandlerDescriptor descriptor, string routeKey)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
-			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), descriptor.Handler);
+			var ctx = new MicroServiceContext(ms, Tenant.Url);
+			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(ctx, descriptor.Handler);
 
 			if (handler == null)
 				return null;

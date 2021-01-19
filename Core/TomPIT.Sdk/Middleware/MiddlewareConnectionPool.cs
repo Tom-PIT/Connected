@@ -16,6 +16,9 @@ namespace TomPIT.Middleware
 		private int Identity { get; set; }
 		public IDataConnection OpenConnection(MiddlewareContext sender, string connection, ConnectionBehavior behavior, object arguments)
 		{
+			if (sender.Transaction.State == MiddlewareTransactionState.Completed)
+				behavior = ConnectionBehavior.Isolated;
+
 			var descriptor = ComponentDescriptor.Connection(sender, connection);
 
 			descriptor.Validate();
@@ -134,8 +137,8 @@ namespace TomPIT.Middleware
 		{
 			foreach (var context in this)
 			{
-				foreach (var connection in context.Value)
-					connection.Connection.Dispose();
+				foreach (var connection in DataConnections)
+					connection.Dispose();
 			}
 
 			Clear();

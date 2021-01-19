@@ -158,7 +158,7 @@ namespace TomPIT.Navigation
 
 		public static void FromSiteMap(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteSiteMapsProvider)] string routeKey)
 		{
-			var sitemap = context.Services.Routing.QuerySiteMap(new List<string> { routeKey });
+			using var sitemap = context.Services.Routing.QuerySiteMap(new List<string> { routeKey });
 
 			if (sitemap == null)
 				return;
@@ -168,7 +168,7 @@ namespace TomPIT.Navigation
 
 		public static void FromSiteMap(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteSiteMapsProvider)] string routeKey, string tag)
 		{
-			var sitemap = context.Services.Routing.QuerySiteMap(new List<string> { routeKey }, true, new List<string> { tag });
+			using var sitemap = context.Services.Routing.QuerySiteMap(new List<string> { routeKey }, true, new List<string> { tag });
 
 			if (sitemap == null)
 				return;

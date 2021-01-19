@@ -86,6 +86,8 @@ namespace TomPIT.DataProviders.Sql
 				_connection = null;
 			}
 
+			Provider.Dispose();
+
 			GC.SuppressFinalize(this);
 		}
 

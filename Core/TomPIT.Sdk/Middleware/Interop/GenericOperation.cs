@@ -79,53 +79,12 @@ namespace TomPIT.Middleware.Interop
 
 				var result = DependencyInjections.Invoke(OnInvoke());
 
+				if (result != null && !string.IsNullOrWhiteSpace(Extender))
+					result = Extend(result);
+
 				Invoked();
 
-				if (result == null)
-					return result;
-
-				if (string.IsNullOrWhiteSpace(Extender))
-					return result;
-
-				var ext = ResolveExtenderType();
-				using var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this), Context);
-				var extenderInstance = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, ext);
-				var inputType = GetExtendingType(extenderInstance);
-				var list = typeof(List<>);
-				var genericList = list.MakeGenericType(new Type[] { inputType });
-				var method = extenderInstance.GetType().GetMethod("ExtendAsync", new Type[] { genericList });
-
-				if (method == null)
-					method = extenderInstance.GetType().GetMethod("Extend", new Type[] { genericList });
-
-				if (result.GetType().IsCollection())
-				{
-					var listResult = (IList)result;
-					var extenderResult = method.Invoke(extenderInstance, new object[] { result }) as IList;
-
-					listResult.Clear();
-
-					foreach (var i in extenderResult)
-						listResult.Add(i);
-
-					if (Context.Environment.IsInteractive)
-						return DependencyInjections.Authorize(OnAuthorize(AuthorizePolicies(result)));
-					else
-						return result;
-				}
-				else
-				{
-					var listInstance = (IList)genericList.CreateInstance();
-
-					listInstance.Add(result);
-
-					var listResult = method.Invoke(extenderInstance, new object[] { listInstance }) as IList;
-
-					if (Context.Environment.IsInteractive)
-						return DependencyInjections.Authorize(OnAuthorize(AuthorizePolicies((TReturnValue)listResult[0])));
-					else
-						return (TReturnValue)listResult[0];
-				}
+				return result;
 			}
 			catch (ValidationException)
 			{
@@ -158,6 +117,49 @@ namespace TomPIT.Middleware.Interop
 			finally
 			{
 				StopMetrics(metrics, success, null);
+			}
+		}
+
+		private TReturnValue Extend(TReturnValue items)
+		{
+			var ext = ResolveExtenderType();
+			using var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this), Context);
+			var extenderInstance = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, ext);
+			var inputType = GetExtendingType(extenderInstance);
+			var list = typeof(List<>);
+			var genericList = list.MakeGenericType(new Type[] { inputType });
+			var method = extenderInstance.GetType().GetMethod("ExtendAsync", new Type[] { genericList });
+
+			if (method == null)
+				method = extenderInstance.GetType().GetMethod("Extend", new Type[] { genericList });
+
+			if (items.GetType().IsCollection())
+			{
+				var listResult = (IList)items;
+				var extenderResult = method.Invoke(extenderInstance, new object[] { items }) as IList;
+
+				listResult.Clear();
+
+				foreach (var i in extenderResult)
+					listResult.Add(i);
+
+				if (Context.Environment.IsInteractive)
+					return DependencyInjections.Authorize(OnAuthorize(AuthorizePolicies(items)));
+				else
+					return items;
+			}
+			else
+			{
+				var listInstance = (IList)genericList.CreateInstance();
+
+				listInstance.Add(items);
+
+				var listResult = method.Invoke(extenderInstance, new object[] { listInstance }) as IList;
+
+				if (Context.Environment.IsInteractive)
+					return DependencyInjections.Authorize(OnAuthorize(AuthorizePolicies((TReturnValue)listResult[0])));
+				else
+					return (TReturnValue)listResult[0];
 			}
 		}
 

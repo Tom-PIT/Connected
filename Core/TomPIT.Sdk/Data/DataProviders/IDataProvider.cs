@@ -8,7 +8,7 @@ namespace TomPIT.Data.DataProviders
 	/// Defines contract for implementing DataProvider which interacts with physical
 	/// data storages.
 	/// </summary>
-	public interface IDataProvider
+	public interface IDataProvider : IDisposable
 	{
 		/// <summary>
 		/// Returns records based on specified criteria.

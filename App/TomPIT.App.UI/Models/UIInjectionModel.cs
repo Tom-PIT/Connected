@@ -93,7 +93,7 @@ namespace TomPIT.App.Models
 			if (string.IsNullOrWhiteSpace(ViewUrl))
 				return;
 
-			MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(ViewUrl).LocalPath), Controller.Request.RouteValues);
+			using var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(ViewUrl).LocalPath), Controller.Request.RouteValues);
 
 			foreach (var i in Controller.Request.RouteValues)
 			{

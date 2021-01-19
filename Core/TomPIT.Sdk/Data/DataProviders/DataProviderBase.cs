@@ -9,6 +9,7 @@ namespace TomPIT.Data.DataProviders
 	{
 		private object _sync = new object();
 		private ConcurrentDictionary<IDataCommandDescriptor, IDbCommand> _commands = null;
+
 		public Guid Id { get; }
 		public string Name { get; }
 
@@ -214,6 +215,23 @@ namespace TomPIT.Data.DataProviders
 				return;
 
 			connection.Open();
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				foreach (var command in Commands)
+					command.Value.Dispose();
+
+				Commands.Clear();
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }

@@ -116,7 +116,9 @@ namespace TomPIT.App.Routing
 
 			var routes = new RouteValueDictionary();
 
-			if (MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes) is ISiteMapRedirectRoute redirect)
+			using var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes);
+
+			if (route is ISiteMapRedirectRoute redirect)
 			{
 				context.Response.StatusCode = (int)HttpStatusCode.Redirect;
 				context.Response.Redirect(redirect.RedirectUrl(routes));

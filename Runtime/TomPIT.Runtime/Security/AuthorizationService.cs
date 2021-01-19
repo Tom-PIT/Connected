@@ -4,6 +4,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.Caching;
+using TomPIT.Collections;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
 using TomPIT.Middleware;
@@ -353,12 +354,12 @@ namespace TomPIT.Security
 			if (container == null)
 				return;
 
-			Authorize(container.Routes.ToList(), container.Context.Services.Identity.IsAuthenticated
+			Authorize(container.Routes, container.Context.Services.Identity.IsAuthenticated
 				? container.Context.Services.Identity.User.Token
 				: Guid.Empty);
 		}
 
-		private void Authorize(List<ISiteMapRoute> routes, Guid user)
+		private void Authorize(ConnectedList<ISiteMapRoute, ISiteMapContainer> routes, Guid user)
 		{
 			for (var i = routes.Count - 1; i >= 0; i--)
 			{
@@ -369,7 +370,23 @@ namespace TomPIT.Security
 					if (!ae.Authorize(user))
 						routes.RemoveAt(i);
 					else
-						Authorize(route.Routes.ToList(), user);
+						Authorize(route.Routes, user);
+				}
+			}
+		}
+
+		private void Authorize(ConnectedList<ISiteMapRoute, ISiteMapRoute> routes, Guid user)
+		{
+			for (var i = routes.Count - 1; i >= 0; i--)
+			{
+				var route = routes[i];
+
+				if (route is ISiteMapAuthorizationElement ae)
+				{
+					if (!ae.Authorize(user))
+						routes.RemoveAt(i);
+					else
+						Authorize(route.Routes, user);
 				}
 			}
 		}
