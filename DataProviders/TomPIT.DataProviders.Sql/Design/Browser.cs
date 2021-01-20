@@ -36,7 +36,9 @@ namespace TomPIT.DataProviders.Sql.Design
 		public override List<IGroupObject> QueryGroupObjects(IConnectionConfiguration configuration, string schemaGroup)
 		{
 			using var c = new SqlConnection(ResolveConnectionString(configuration).Value);
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			var command = new SqlCommand(string.Format("select o.object_id, o.name, o.type, s.name from sys.objects o inner join sys.schemas s on o.schema_id = s.schema_id where type in ({0})", ResolveSchemaGroup(schemaGroup)), c);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			var results = new List<IGroupObject>();
 			SqlDataReader rdr = null;
 
@@ -108,7 +110,9 @@ namespace TomPIT.DataProviders.Sql.Design
 		private List<ISchemaParameter> QueryProcedureParameters(IConnectionConfiguration configuration, string groupObject)
 		{
 			using var con = new SqlConnection(ResolveConnectionString(configuration).Value);
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			var command = new SqlCommand(groupObject, con);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
 			try
 			{
@@ -193,7 +197,9 @@ namespace TomPIT.DataProviders.Sql.Design
 		private List<ISchemaField> QueryTableSchema(IConnectionConfiguration configuration, string groupObject)
 		{
 			using var con = new SqlConnection(ResolveConnectionString(configuration).Value);
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			var com = new SqlCommand(string.Format("SELECT * FROM {0}", groupObject), con);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			SqlDataReader rdr = null;
 
 			try
@@ -217,7 +223,9 @@ namespace TomPIT.DataProviders.Sql.Design
 		private List<ISchemaField> QueryProcedureSchema(IConnectionConfiguration configuration, string groupObject)
 		{
 			using var con = new SqlConnection(ResolveConnectionString(configuration).Value);
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			var com = new SqlCommand(groupObject, con);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
 			com.CommandType = CommandType.StoredProcedure;
 

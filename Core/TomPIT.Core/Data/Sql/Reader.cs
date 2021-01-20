@@ -190,7 +190,9 @@ namespace TomPIT.Data.Sql
 
 			command = Connection.CreateCommand();
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			command.CommandText = CommandText;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
 			if (CurrentTransaction != null)
 				command.Transaction = CurrentTransaction.ActiveTransaction as SqlTransaction;

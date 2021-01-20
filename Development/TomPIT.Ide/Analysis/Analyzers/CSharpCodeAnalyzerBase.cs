@@ -17,7 +17,7 @@ using TomPIT.Reflection;
 
 namespace TomPIT.Ide.Analysis.Analyzers
 {
-	public abstract class CSharpCodeAnalyzerBase : MicroServiceObject, IDisposable
+	public abstract class CSharpCodeAnalyzerBase : MicroServiceObject
 	{
 		private CompletionService _service = null;
 		private DocumentInfo _docInfo = null;
@@ -109,13 +109,15 @@ namespace TomPIT.Ide.Analysis.Analyzers
 			return additionalReferences;
 		}
 
-		public void Dispose()
+		protected override void OnDisposing()
 		{
 			if (_workSpace != null)
 				_workSpace.Dispose();
 
 			_workSpace = null;
 			_host = null;
+
+			base.OnDisposing();
 		}
 
 		protected AdhocWorkspace Workspace

@@ -47,8 +47,9 @@ namespace TomPIT.MicroServices.IoT.Controllers
 			}
 
 			model.Initialize(this, ms, view);
+			var user = model.Services.Identity.IsAuthenticated ? model.Services.Identity.User.Token : Guid.Empty;
 
-			if (!SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url))
+			if (!SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url, user))
 				return Unauthorized();
 
 			return PartialView("~/Views/IoT/IoTPartialView.cshtml", model);

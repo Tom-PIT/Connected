@@ -15,7 +15,7 @@ namespace TomPIT.BigData.Transactions
 	{
 		private bool _disposed = false;
 		private BackgroundWorker _worker = null;
-		private TimeoutTask _timeout = null;
+		//private TimeoutTask _timeout = null;
 
 		public event EventHandler Completed;
 		public StorageWorker(Guid partition, CancellationToken cancel)

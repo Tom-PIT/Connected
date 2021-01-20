@@ -114,7 +114,9 @@ namespace TomPIT.Data.Sql
 		{
 			Prepared = Connection.CreateCommand();
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Prepared.CommandText = CommandText;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Prepared.CommandType = CommandType;
 			Prepared.CommandTimeout = 300;
 
@@ -151,7 +153,9 @@ namespace TomPIT.Data.Sql
 			{
 				if (Prepared == null)
 				{
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 					command.CommandText = CommandText;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 					command.CommandType = CommandType;
 					command.CommandTimeout = 300;
 

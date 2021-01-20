@@ -14,6 +14,7 @@ namespace TomPIT.Compilation
 
 		public override void Initialize(AnalysisContext context)
 		{
+			context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 			context.EnableConcurrentExecution();
 			context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.ClassDeclaration);
 		}

@@ -47,6 +47,8 @@ namespace TomPIT.Middleware
 						_context.Dispose();
 						_context = null;
 					}
+
+					OnDisposing();
 				}
 
 				Disposed = true;
@@ -57,6 +59,11 @@ namespace TomPIT.Middleware
 		{
 			Dispose(true);
 			System.GC.SuppressFinalize(this);
+		}
+
+		protected virtual void OnDisposing()
+		{
+
 		}
 	}
 }

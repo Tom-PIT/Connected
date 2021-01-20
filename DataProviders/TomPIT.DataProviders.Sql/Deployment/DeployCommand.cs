@@ -69,7 +69,9 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 		public bool SchemaExists(string schema)
 		{
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = string.Format("SELECT * FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '{0}'", schema);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			var rdr = Command.ExecuteReader();
 
 			var r = rdr.HasRows;
@@ -94,7 +96,9 @@ namespace TomPIT.DataProviders.Sql.Deployment
 			if (!string.IsNullOrEmpty(detail.Reference.DeleteRule))
 				builder.AppendLine(string.Format("ON DELETE {0}", detail.Reference.DeleteRule));
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = builder.ToString();
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandType = CommandType.Text;
 			Command.Transaction = Transaction;
 
@@ -104,7 +108,9 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 			builder.AppendFormat("ALTER TABLE [{0}].[{1}] CHECK CONSTRAINT [{2}]", detailTable.Schema, detailTable.Name, detail.Reference.Name);
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = builder.ToString();
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 
@@ -127,67 +133,89 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 			builder.AppendLine(")");
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = builder.ToString();
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 
 		public void DropProcedure(IRoutine routine)
 		{
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = string.Format("DROP PROCEDURE [{0}].[{1}]", routine.Schema, routine.Name);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 
 		public void DropView(IView view)
 		{
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = string.Format("DROP VIEW [{0}].[{1}]", view.Schema, view.Name);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 
 		public void DropDefault(ITable table, ITableColumn column)
 		{
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = string.Format("ALTER TABLE [{0}].[{1}] DROP CONSTRAINT [DF_{2}_{3}]", table.Schema, table.Name, ToValidName(table.Name), ToValidName(column.Name));
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 
 		public void DropConstraint(ITable table, IReferentialConstraint constraint)
 		{
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = string.Format("ALTER TABLE [{0}].[{1}] DROP CONSTRAINT [{2}]", table.Schema, table.Name, constraint.Name);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 
 		public void DropConstraint(ITable table, ITableConstraint constraint)
 		{
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = string.Format("ALTER TABLE [{0}].[{1}] DROP CONSTRAINT [{2}]", table.Schema, table.Name, constraint.Name);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 
 		public void DropTable(ITable table)
 		{
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = string.Format("DROP TABLE [{0}].[{1}]", table.Schema, table.Name);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 
 		public void DropColumn(ITable table, ITableColumn column)
 		{
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = string.Format("ALTER TABLE [{0}].[{1}] DROP COLUMN [{2}]", table.Schema, table.Name, column.Name);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 
 		public void AddDefault(ITable table, ITableColumn column)
 		{
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = string.Format("ALTER TABLE [{0}].[{1}] ADD CONSTRAINT [DF_{1}_{2}] DEFAULT {3} FOR [{2}]", table.Schema, ToValidName(table.Name), ToValidName(column.Name), column.DefaultValue);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 
 		public void CreateSchema(string name)
 		{
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = string.Format("CREATE SCHEMA {0}", name);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 
 		public void Exec(string definition)
 		{
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = definition;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 
@@ -201,7 +229,9 @@ namespace TomPIT.DataProviders.Sql.Deployment
 			builder.AppendLine(string.Format("[{0}] ASC", column.Name));
 			builder.AppendLine(")");
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = builder.ToString();
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 
@@ -223,7 +253,9 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 			builder.AppendLine(")");
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = builder.ToString();
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 
@@ -239,7 +271,9 @@ namespace TomPIT.DataProviders.Sql.Deployment
 
 			builder.AppendLine(";");
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Command.CommandText = builder.ToString();
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Command.ExecuteNonQuery();
 		}
 

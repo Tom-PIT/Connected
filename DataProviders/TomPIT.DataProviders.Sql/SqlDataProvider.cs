@@ -87,7 +87,9 @@ namespace TomPIT.DataProviders.Sql
 
 			c.Open();
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			var com = new SqlCommand(string.Format("CREATE DATABASE {0}", ic), c);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
 			com.ExecuteNonQuery();
 

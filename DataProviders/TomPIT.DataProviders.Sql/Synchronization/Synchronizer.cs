@@ -111,7 +111,9 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 			result.Transaction = Transaction;
 
 			if (!string.IsNullOrWhiteSpace(commandText))
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 				result.CommandText = commandText;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
 			return result;
 		}
