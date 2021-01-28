@@ -77,7 +77,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                     Logging.Debug($"Connection closed due to error: {error}");
                 }
 
-                if (!_keepAlive) 
+                if (!_keepAlive)
                     return;
 
                 await Task.Delay(1000);
@@ -90,25 +90,35 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             _connection.On<Guid, Guid>(Constants.RequestPrint, (id, receipt) =>
             {
                 Logging.Debug($"Print request {id}");
-
                 try
                 {
-                    var job = SelectJob(id);
+                    RunWithTimeout(() =>
+                    {
+                        try
+                        {
+                            var job = SelectJob(id);
 
-                    if (job != null)
-                    {
-                        Print(job);
-                        Complete(receipt);
-                    }
-                    else
-                    {
-                        Logging.Error($"Print Job {id} not found.");
-                    }
+                            if (job != null)
+                            {
+                                Print(job);
+                                Complete(receipt);
+                            }
+                            else
+                            {
+                                Logging.Error($"Print Job {id} not found.");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Logging.Exception(ex, LoggingLevel.Error);
+                        }
+                    }, TimeSpan.FromMinutes(10)); //Should the worst happen and it gets stuck
                 }
                 catch (Exception ex)
                 {
                     Logging.Exception(ex, LoggingLevel.Fatal);
                 }
+
             });
         }
 
@@ -124,6 +134,8 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             {
                 if (_connection is null)
                     CreateConnection();
+
+                Logging.Debug("Connection to server");
 
                 _connection.StartAsync().Wait();
 
@@ -195,7 +207,8 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                         if (_printerHandler.IsPrinterOnline(printerName, out string queueStatus))
                         {
                             report.PrinterName = printerName;
-                            var printTask = RunWithTimeout(() => {
+                            var printTask = RunWithTimeout(() =>
+                            {
                                 report.CreateDocument(false);
                                 report.PrintingSystem.Document.Name = $"TomPIT Printing Doc {job.Token}";
 
@@ -210,26 +223,26 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                             {
                                 printTask.Wait();
                             }
-                            catch (Exception ex) 
+                            catch (Exception ex)
                             {
                                 Logging.Error("There was and error printing the document.");
                                 Logging.Debug(ex.ToString());
                                 throw ex;
                             }
-                    }
+                        }
                         else
-                    {
-                        var message = $"Printer not available. Status: {queueStatus}";
-                        Logging.Debug("Printer not available. See error log for detailed status.");
-                        Logging.Error(message);
+                        {
+                            var message = $"Printer not available. Status: {queueStatus}";
+                            Logging.Debug("Printer not available. See error log for detailed status.");
+                            Logging.Error(message);
+                        }
                     }
-                }
                 }
             }
             catch (Exception ex)
             {
-                Logging.Exception(ex, LoggingLevel.Fatal);
-                throw;
+                Logging.Exception(ex, LoggingLevel.Error);
+                throw ex;
             }
         }
 
@@ -276,13 +289,14 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             _connection.SendAsync(Constants.ServerMethodNameAddPrinters, args).Wait();
         }
 
-        private Task RunWithTimeout(Action action, TimeSpan timeout) 
+        private Task RunWithTimeout(Action action, TimeSpan timeout)
         {
             Task task = null;
             task = Task.Factory.StartNew(() =>
             {
                 var thread = new Thread(new ThreadStart(action));
-                Task.Factory.StartNew(() => {
+                Task.Factory.StartNew(() =>
+                {
                     Thread.Sleep(timeout);
                     if (!task.IsCompleted)
                     {
@@ -291,11 +305,12 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                 });
                 thread.Start();
                 thread.Join();
-                if (thread.ThreadState == System.Threading.ThreadState.Aborted) 
+                if (thread.ThreadState == System.Threading.ThreadState.Aborted)
                 {
-                    throw new TimeoutException();   
+                    throw new TimeoutException();
                 }
             });
+            task.Wait();
             return task;
         }
 
