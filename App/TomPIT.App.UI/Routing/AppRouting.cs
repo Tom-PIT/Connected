@@ -30,6 +30,7 @@ namespace TomPIT.App.Routing
 			routes.MapControllerRoute("sys.getuserdata", "sys/api/getuserdata", new { controller = "Api", action = "GetUserData" });
 			routes.MapControllerRoute("sys.queryuserdata", "sys/api/queryuserdata", new { controller = "Api", action = "QueryUserData" });
 			routes.MapControllerRoute("sys.uiinjection", "sys/api/uiinjection", new { controller = "Api", action = "UIInjection" });
+			//routes.MapControllerRoute("catchall", "{*.}", new { controller = "View", action = "Invoke" });
 
 			routes.Map("sys/themes/{microService}/{theme}", (t) =>
 			{
@@ -37,7 +38,7 @@ namespace TomPIT.App.Routing
 
 				return Task.CompletedTask;
 			});
-
+			
 			routes.Map("sys/globalize/{locale}/{segments}", (t) =>
 			{
 				new GlobalizationHandler().ProcessRequest(t);
@@ -68,10 +69,12 @@ namespace TomPIT.App.Routing
 				await ve.Render(new Guid(t.GetRouteValue("token").ToString()));
 			});
 
-			routes.Map("{*.}", async (t) =>
+			var builder = routes.Map("{*.}", async (t) =>
 			{
 				await RenderView(t);
 			});
+
+			builder.Add(b => ((RouteEndpointBuilder)b).Order = int.MaxValue);
 
 			app.Use(async (context, next) =>
 			{

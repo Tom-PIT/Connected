@@ -24,7 +24,6 @@ namespace TomPIT.Middleware.Services
 				if (!string.IsNullOrWhiteSpace(ImpersonatedUser))
 					return true;
 
-
 				if (Shell.HttpContext != null)
 				{
 					if (Shell.HttpContext.User == null || Shell.HttpContext.User.Identity == null)
@@ -51,7 +50,10 @@ namespace TomPIT.Middleware.Services
 				if (Context is MiddlewareContext mc && mc.Owner != null)
 					((MiddlewareIdentityService)mc.Owner.Services.Identity).ImpersonatedUser = value;
 				else
+				{
 					_impersonatedUser = value;
+					_user = null;
+				}
 			}
 		}
 

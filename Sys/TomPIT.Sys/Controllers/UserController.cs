@@ -35,11 +35,11 @@ namespace TomPIT.Sys.Controllers
 			return DataModel.Users.SelectBySecurityCode(code);
 		}
 
-		[HttpPost]
-		public void SignOut()
-		{
+		//[HttpPost]
+		//public void SignOut()
+		//{
 			//DataModel.Users.SelectByAuthenticationToken()
-		}
+		//}
 
 		[HttpGet]
 		public List<IMembership> QueryMembership(Guid user)

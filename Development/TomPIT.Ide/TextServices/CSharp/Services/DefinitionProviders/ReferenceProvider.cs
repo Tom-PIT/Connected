@@ -14,7 +14,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.DefinitionProviders
 			var nodeToken = e.Model.SyntaxTree.GetRoot().FindToken(caret);
 			var trivia = e.Model.SyntaxTree.GetRoot().FindTrivia(caret);
 
-			if (trivia == null || !trivia.IsKind(SyntaxKind.LoadDirectiveTrivia))
+			if (!trivia.IsKind(SyntaxKind.LoadDirectiveTrivia))
 				return null;
 
 			var structure = trivia.GetStructure() as LoadDirectiveTriviaSyntax;

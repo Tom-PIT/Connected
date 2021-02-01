@@ -1,7 +1,5 @@
 ﻿using TomPIT.Connectivity;
 using TomPIT.Ide.Analysis;
-using TomPIT.Ide.Analysis.Analyzers;
-using TomPIT.Ide.Analysis.Diagnostics;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.TextServices;
@@ -22,9 +20,9 @@ namespace TomPIT.Ide
 			e.Tenant.RegisterService(typeof(IDesignerService), typeof(DesignerService));
 			e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
 			e.Tenant.RegisterService(typeof(IMicroServiceDevelopmentService), typeof(MicroServiceDevelopmentService));
-			e.Tenant.RegisterService(typeof(ICodeAnalyzerService), typeof(CodeAnalyzerService));
-			e.Tenant.RegisterService(typeof(ICodeDiagnosticService), typeof(CodeDiagnosticService));
-			e.Tenant.RegisterService(typeof(ICodeAnalysisService), typeof(CodeAnalysisService));
+			//e.Tenant.RegisterService(typeof(ICodeAnalyzerService), typeof(CodeAnalyzerService));
+			//e.Tenant.RegisterService(typeof(ICodeDiagnosticService), typeof(CodeDiagnosticService));
+			//e.Tenant.RegisterService(typeof(ICodeAnalysisService), typeof(CodeAnalysisService));
 			e.Tenant.RegisterService(typeof(IToolsService), typeof(ToolsService));
 			e.Tenant.RegisterService(typeof(ITextService), typeof(TextService));
 			e.Tenant.RegisterService(typeof(IStylesheetService), typeof(StylesheetService));

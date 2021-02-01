@@ -8,6 +8,7 @@ namespace TomPIT.Annotations.Design
 		public const string ConnectionProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.ConnectionCompletionProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string SiteMapViewProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.SiteMapViewCompletionProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string PartialProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.PartialCompletionProvider, " + SystemAssemblies.DevelopmentAssembly;
+		public const string MailTemplateProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.MailTemplateCompletionProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string BundleProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.BundleCompletionProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string StringTableStringProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.StringTableStringProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string StringTableProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.StringTableProvider, " + SystemAssemblies.DevelopmentAssembly;
@@ -36,6 +37,7 @@ namespace TomPIT.Annotations.Design
 		public const string ModelOperationParametersProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.ModelOperationParametersProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string SettingMiddlewareProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.SettingMiddlewareProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string SettingMiddlewareParameterProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.SettingMiddlewareParameterProvider, " + SystemAssemblies.DevelopmentAssembly;
+
 		public CompletionItemProviderAttribute() { }
 
 		public CompletionItemProviderAttribute(string type)

@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
-using TomPIT.Compilation;
-using TomPIT.ComponentModel;
-using TomPIT.Distributed;
-using TomPIT.Exceptions;
 using TomPIT.Middleware;
+using TomPIT.Security;
 
 namespace TomPIT.Cdn.Events
 {
@@ -23,11 +19,24 @@ namespace TomPIT.Cdn.Events
 		{
 			try
 			{
-				foreach (var e in events)
-					AuthorizeEvent(e.Name);
+				var user = Guid.Empty;
+
+				if (Context.User?.Identity is Identity identity && identity.User != null)
+					user = identity.User.Token;
 
 				foreach (var e in events)
-					await Groups.AddToGroupAsync(Context.ConnectionId, e.Name.ToLowerInvariant());
+					MiddlewareDescriptor.Current.Tenant.GetService<IEventHubService>().Authorize(Context.ConnectionId, e.Name, user, e.Authorization);
+
+				foreach (var e in events)
+				{
+					EventClients.Add(new EventClient
+					{
+						ConnectionId = Context.ConnectionId,
+						User = user,
+						EventName = e.Name,
+						Arguments = e.Arguments
+					});
+				}
 
 				await Task.CompletedTask;
 			}
@@ -42,7 +51,7 @@ namespace TomPIT.Cdn.Events
 			try
 			{
 				foreach (var e in events)
-					await Groups.RemoveFromGroupAsync(Context.ConnectionId, e.Name.ToLowerInvariant());
+					EventClients.Remove(Context.ConnectionId, e.Name);
 
 				await Task.CompletedTask;
 			}
@@ -52,29 +61,11 @@ namespace TomPIT.Cdn.Events
 			}
 		}
 
-		private void AuthorizeEvent(string eventName)
+		public override Task OnDisconnectedAsync(Exception exception)
 		{
-			using var ctx = new MiddlewareContext();
-			var descriptor = ComponentDescriptor.DistributedEvent(ctx, eventName);
+			EventClients.Remove(Context.ConnectionId);
 
-			descriptor.Validate();
-
-			if (descriptor.Configuration == null)
-				throw new NotFoundException($"{SR.ErrCannotFindConfiguration} ({eventName})");
-
-			var target = descriptor.Configuration.Events.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
-
-			if (target == null)
-				throw new NotFoundException($"{SR.ErrDistributedEventNotFound} ({eventName})");
-
-			var type = descriptor.Context.Tenant.GetService<ICompilerService>().ResolveType(descriptor.MicroService.Token, target, target.Name, false);
-
-			if (type != null)
-			{
-				var instance = descriptor.Context.CreateMiddleware<IDistributedEventMiddleware>(type);
-
-				instance.Authorize(new EventConnectionArgs(Context.ConnectionId));
-			}
+			return base.OnDisconnectedAsync(exception);
 		}
 	}
 }

@@ -58,11 +58,8 @@ namespace TomPIT.Middleware
 		{
 			var u = context.Services.Identity.GetUser(user);
 
-			if (u == null)
-				throw new RuntimeException(SR.ErrUserNotFound);
-
 			if (context.Services.Identity is MiddlewareIdentityService mc)
-				mc.ImpersonatedUser = u.Token.ToString();
+				mc.ImpersonatedUser = u?.Token.ToString();
 		}
 
 		public static void RevokeImpersonation(this IMiddlewareContext context)

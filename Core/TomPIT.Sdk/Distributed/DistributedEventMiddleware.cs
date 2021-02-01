@@ -60,7 +60,7 @@ namespace TomPIT.Distributed
 
 		public void Authorize(EventConnectionArgs e)
 		{
-			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, this);
+			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, e.Proxy ?? this);
 		}
 	}
 }

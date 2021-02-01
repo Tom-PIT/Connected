@@ -80,7 +80,7 @@ namespace TomPIT.App.UI
 			try
 			{
 				var user = model.Services.Identity.IsAuthenticated ? model.Services.Identity.User.Token : Guid.Empty;
-				if (model.ViewConfiguration.AuthorizationEnabled && string.Compare(model.ViewConfiguration.Url, "login", true) != 0 && !SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url, user))
+					if (model.ViewConfiguration.AuthorizationEnabled && string.Compare(model.ViewConfiguration.Url, "login", true) != 0 && !SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url, user))
 					return;
 
 				if (!model.ActionContext.RouteData.Values.ContainsKey("Action"))

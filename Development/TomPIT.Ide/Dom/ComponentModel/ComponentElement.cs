@@ -58,7 +58,7 @@ namespace TomPIT.Ide.Dom.ComponentModel
 					catch (RuntimeException ex)
 					{
 						if (ex.EventId != MiddlewareEvents.Deserialize)
-							throw ex;
+							throw;
 					}
 				}
 

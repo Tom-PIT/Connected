@@ -90,7 +90,7 @@ namespace TomPIT.Cdn.Printing
 					EventId = MiddlewareEvents.Printing
 				});
 
-				throw ex;
+				throw;
 			}
 		}
 

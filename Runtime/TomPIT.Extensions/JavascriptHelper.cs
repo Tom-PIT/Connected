@@ -25,8 +25,8 @@ namespace TomPIT
 
 			if (value is string || value is char)
 				return String(value);
-			else if (value is DateTime)
-				return Date((DateTime)value);
+			else if (value is DateTime time)
+				return Date(time);
 			else if (value is Guid)
 				return Guid(value);
 			else if (value is bool)
@@ -91,6 +91,17 @@ namespace TomPIT
 			return Html.Raw(string.Format("'{0}'", HttpUtility.JavaScriptStringEncode(value.ToString()))) as HtmlString;
 		}
 
+		public IHtmlContent Bool(object value)
+		{
+			if (value == null)
+				return Html.Raw("null") as HtmlString;
+
+			if (!bool.TryParse(value.ToString(), out bool result))
+				return Html.Raw("null") as HtmlString;
+
+			return Bool(result);
+		}
+
 		public IHtmlContent Bool(bool value)
 		{
 			if (value)
@@ -99,6 +110,16 @@ namespace TomPIT
 				return Html.Raw("false") as HtmlString;
 		}
 
+		public IHtmlContent Date(object value)
+		{
+			if(value == null)
+				return Html.Raw("null") as HtmlString;
+
+			if(!DateTime.TryParse(value.ToString(), out DateTime result))
+				return Html.Raw("null") as HtmlString;
+
+			return Date(result);
+		}
 		public IHtmlContent Date(DateTime date)
 		{
 			if (date == DateTime.MinValue)

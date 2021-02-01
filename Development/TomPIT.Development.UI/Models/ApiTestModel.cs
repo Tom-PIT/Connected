@@ -8,7 +8,6 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Development.Quality;
 using TomPIT.Exceptions;
-using TomPIT.Ide.Analysis.Suggestions;
 using TomPIT.Models;
 using TomPIT.Serialization;
 
@@ -251,8 +250,8 @@ namespace TomPIT.Development.Models
 			}
 		}
 
-		public List<ISuggestion> ProvideItems()
-		{
+		//public List<ISuggestion> ProvideItems()
+		//{
 			//-----------------------------------------------
 			//TODO: implement parameters from manifest
 			//-----------------------------------------------
@@ -260,13 +259,13 @@ namespace TomPIT.Development.Models
 			//var api = Body.Optional("api", string.Empty);
 
 			//if (string.IsNullOrWhiteSpace(api))
-			return null;
+			//return null;
 
 			//var descriptor = ComponentDescriptor.Api(this, api);
 
 			//descriptor.Validate();
 
 			//return descriptor.Configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0)?.DiscoverParameters(this);
-		}
+		//}
 	}
 }

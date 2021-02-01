@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>TomPIT.Design</RootNamespace>
     <AssemblyVersion>2.2.119.1</AssemblyVersion>
     <FileVersion>2.2.119.1</FileVersion>

@@ -92,7 +92,7 @@ namespace TomPIT.Compilation
 				catch (RuntimeException ex)
 				{
 					if (string.IsNullOrWhiteSpace(basePath))
-						throw ex;
+						throw;
 
 					throw new RuntimeException($"{ex.Message} ({basePath})");
 				}

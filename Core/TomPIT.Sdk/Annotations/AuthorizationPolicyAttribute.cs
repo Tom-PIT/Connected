@@ -36,6 +36,7 @@ namespace TomPIT.Annotations
 		public int Priority { get; set; }
 		public string Method { get; set; }
 		protected IMiddlewareContext Context => Model.Context;
+
 		public AuthorizationMiddlewareStage MiddlewareStage { get; set; } = AuthorizationMiddlewareStage.Before;
 
 		protected virtual string PermissionDescriptor => GetType().Name;

@@ -25,12 +25,12 @@ namespace TomPIT.Runtime
 			routes.MapControllerRoute("login.authenticate", "login/authenticate", new { controller = loginController, action = "Authenticate" });
 			routes.MapControllerRoute("login.changepassword", "login/change-password", new { controller = loginController, action = "ChangePassword" });
 			routes.MapControllerRoute("logoff", "logoff", new { controller = loginController, action = "Logoff" });
-
-			routes.Map("sys/avatar/{token}/{version}", (t) =>
+			
+			routes.Map("sys/avatar/{token}/{version}", async (t) =>
 			{
 				new AvatarRouteHandler().ProcessRequest(t);
 
-				return Task.CompletedTask;
+				await Task.CompletedTask;
 			});
 		}
 	}

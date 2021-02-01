@@ -277,7 +277,7 @@ namespace TomPIT.ComponentModel
 			catch (Exception ex)
 			{
 				if (throwException)
-					throw ex;
+					throw;
 				else
 					Tenant.LogError(GetType().ShortName(), ex.Message, LogCategories.Services);
 			}

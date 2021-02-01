@@ -6,6 +6,7 @@ using LZ4;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
+using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 using TomPIT.Serialization;
@@ -59,9 +60,17 @@ namespace TomPIT.BigData.Transactions
 
 			if (array.Count > 0)
 			{
-
 				if (config != null)
-					MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().CreateTransaction(config, array);
+				{
+					try
+					{
+						MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().CreateTransaction(config, array);
+					}
+					catch(Exception ex)
+					{
+						ctx.Services.Diagnostic.Error(nameof(BufferingJob), ex.Message, LogCategories.BigData);
+					}
+				}
 			}
 
 			Complete(item.Partition, middleware.BufferTimeout, items == null || items.Count == 0 ? 0 : items.Max(f => f.Id));

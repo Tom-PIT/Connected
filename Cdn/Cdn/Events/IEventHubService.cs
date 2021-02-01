@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace TomPIT.Cdn.Events
 {
@@ -8,5 +9,6 @@ namespace TomPIT.Cdn.Events
 	internal interface IEventHubService
 	{
 		Task NotifyAsync(EventHubNotificationArgs e);
+		void Authorize(string connectionId, string eventName, Guid user, object arguments);
 	}
 }
