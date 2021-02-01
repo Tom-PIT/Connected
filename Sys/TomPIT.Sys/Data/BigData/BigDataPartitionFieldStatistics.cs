@@ -54,7 +54,7 @@ namespace TomPIT.Sys.Data.BigData
 		{
 			var f = DataModel.BigDataPartitionFiles.Select(file);
 
-			if (file == null)
+			if (f == null)
 				throw new SysException(SR.ErrBigDataFileNotFound);
 
 			Shell.GetService<IDatabaseService>().Proxy.BigData.Partitions.UpdateFieldStatistics(f, fieldName, startString, endString, startNumber, endNumber, startDate, endDate);

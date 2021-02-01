@@ -62,7 +62,7 @@ namespace TomPIT.Data.Sql
 				if (ex.Number == 547)
 					return false;
 				else
-					throw ex;
+					throw;
 			}
 		}
 
@@ -97,7 +97,7 @@ namespace TomPIT.Data.Sql
 				if (ex.Number == 547)
 					return false;
 				else
-					throw ex;
+					throw;
 			}
 		}
 

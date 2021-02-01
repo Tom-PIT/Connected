@@ -129,7 +129,7 @@ namespace TomPIT.Middleware.Services
 
 		private string GetUrl(Guid blob)
 		{
-			if (blob == null)
+			if (blob == Guid.Empty)
 				return null;
 
 			var b = Context.Tenant.GetService<IStorageService>().Select(blob);

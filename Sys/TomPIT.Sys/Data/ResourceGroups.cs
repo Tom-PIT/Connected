@@ -52,7 +52,7 @@ namespace TomPIT.Sys.Data
 		{
 			var r = Shell.GetService<IDatabaseService>().Proxy.Environment.SelectResourceGroup(id);
 
-			if (id == null)
+			if (r == null)
 			{
 				Remove(id);
 				return;

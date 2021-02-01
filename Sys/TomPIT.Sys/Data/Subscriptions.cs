@@ -102,7 +102,7 @@ namespace TomPIT.Sys.Data
 		{
 			var sub = Select(subscription);
 
-			if (subscription == null)
+			if (sub== null)
 				throw new SysException(SR.ErrSubscriptionNotFound);
 
 			var id = Guid.NewGuid();

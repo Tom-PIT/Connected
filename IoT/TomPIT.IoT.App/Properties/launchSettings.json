@@ -1,11 +1,11 @@
-﻿{
+{
   "iisSettings": {
-    "windowsAuthentication": false, 
+    "windowsAuthentication": false,
     "anonymousAuthentication": true,
-	"iisExpress": {
-		"applicationUrl": "http://localhost:44007",
-		"sslPort": 0
-	}
+    "iisExpress": {
+      "applicationUrl": "http://localhost:53184/",
+      "sslPort": 44391
+    }
   },
   "profiles": {
     "IIS Express": {
@@ -15,13 +15,13 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-	"TomPIT.Servers.IoT": {
-		"commandName": "Project",
-		"launchBrowser": true,
-		"applicationUrl": "http://localhost:44006",
-		"environmentVariables": {
-			"ASPNETCORE_ENVIRONMENT": "Development"
-		}
-	}
+    "TomPIT.Servers.IoT": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:44006"
+    }
   }
 }

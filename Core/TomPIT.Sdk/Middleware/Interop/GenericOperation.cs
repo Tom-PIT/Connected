@@ -280,7 +280,7 @@ namespace TomPIT.Middleware.Interop
 					catch (Exception ex)
 					{
 						if (attribute.Behavior == AuthorizationPolicyBehavior.Mandatory)
-							throw ex;
+							throw;
 
 						firstFail = ex;
 					}

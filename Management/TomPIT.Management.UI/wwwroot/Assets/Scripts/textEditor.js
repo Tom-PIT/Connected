@@ -693,27 +693,3 @@
         }
     });
 })(jQuery);
-        closeModel: function (id) {
-            let models = monaco.editor.getModels();
-
-            if (models.length < 2)
-                return;
-
-            for (let i = 0; i < models.length; i++) {
-                let model = models[i];
-
-                if (model.id === id) {
-                    model.dispose();
-                    $(`span[data-model="${id}"]`).remove();
-
-                    if (i === 0)
-                        this.activateModel(models[1].id);
-                    else
-                        this.activateModel(models[i - 1].id);
-
-                    break;
-                }
-            }
-        }
-    });
-})(jQuery);

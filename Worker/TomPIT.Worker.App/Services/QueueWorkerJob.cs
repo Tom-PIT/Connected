@@ -96,7 +96,7 @@ namespace TomPIT.Worker.Services
 					return;
 				}
 				else
-					throw ex;
+					throw;
 			}
 			catch
 			{

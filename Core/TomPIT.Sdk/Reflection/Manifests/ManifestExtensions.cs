@@ -81,7 +81,7 @@ namespace TomPIT.Reflection.Manifests
 				if (!(member is PropertyDeclarationSyntax pdx))
 					continue;
 
-				if (pdx.Modifiers.FirstOrDefault(f => string.Compare(f.ValueText, "public", false) == 0) == null)
+				if (pdx.Modifiers.Count(f => string.Compare(f.ValueText, "public", false) == 0) == 0)
 					continue;
 
 				var p = new ManifestProperty
@@ -203,7 +203,7 @@ namespace TomPIT.Reflection.Manifests
 		{
 			var trivias = node.GetLeadingTrivia();
 
-			if (trivias == null || trivias.Count == 0)
+			if (trivias.Count == 0)
 				return null;
 
 			var enumerator = trivias.GetEnumerator();
