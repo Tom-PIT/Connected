@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <AssemblyVersion>2.2.120.1</AssemblyVersion>
-    <FileVersion>2.2.120.1</FileVersion>
-    <Version>2.2.120.1</Version>
+    <AssemblyVersion>2.2.201.1</AssemblyVersion>
+    <FileVersion>2.2.201.1</FileVersion>
+    <Version>2.2.201.1</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
