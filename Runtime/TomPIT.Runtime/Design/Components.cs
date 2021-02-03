@@ -188,6 +188,115 @@ namespace TomPIT.Design
 			InvalidateIndexState(component.Token);
 		}
 
+		public void Restore(Guid microService, IPullRequestComponent component)
+		{
+			Delete(component.Token, true);
+
+			var runtimeConfigurationId = component.RuntimeConfiguration;
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+			var configuration = component.Files.FirstOrDefault(f => f.Type == BlobTypes.Configuration);
+			var runtimeConfiguration = component.RuntimeConfiguration == Guid.Empty ? null : component.Files.FirstOrDefault(f => f.Type == BlobTypes.RuntimeConfiguration);
+
+			var blob = new Blob
+			{
+				ContentType = configuration.ContentType,
+				FileName = component.Name,
+				ResourceGroup = ms.ResourceGroup,
+				MicroService = microService,
+				Type = configuration.Type,
+				Token = component.Token,
+				PrimaryKey = component.Token.ToString()
+			};
+
+			Tenant.GetService<IStorageService>().Upload(blob, Convert.FromBase64String(configuration.Content), StoragePolicy.Singleton, component.Token);
+
+			if (runtimeConfigurationId != Guid.Empty)
+			{
+				if (runtimeConfiguration != null)
+				{
+					blob = new Blob
+					{
+						ContentType = runtimeConfiguration.ContentType,
+						FileName = component.Name,
+						ResourceGroup = ms.ResourceGroup,
+						MicroService = microService,
+						Type = runtimeConfiguration.Type,
+						Token = runtimeConfigurationId,
+						PrimaryKey = runtimeConfigurationId.ToString()
+					};
+
+					Tenant.GetService<IStorageService>().Upload(blob, Convert.FromBase64String(runtimeConfiguration.Content), StoragePolicy.Singleton, runtimeConfigurationId);
+				}
+				else
+				{
+					var stateBlob = Tenant.GetService<IStorageService>().Select(runtimeConfigurationId);
+
+					if (stateBlob != null)
+					{
+						var state = Tenant.GetService<IStorageService>().Download(runtimeConfigurationId);
+						runtimeConfigurationId = Guid.NewGuid();
+
+						if (state != null)
+						{
+							blob = new Blob
+							{
+								ContentType = stateBlob.ContentType,
+								FileName = stateBlob.FileName,
+								ResourceGroup = ms.ResourceGroup,
+								MicroService = microService,
+								Type = BlobTypes.RuntimeConfiguration,
+								PrimaryKey = runtimeConfigurationId.ToString(),
+								Token = runtimeConfigurationId
+							};
+
+							Tenant.GetService<IStorageService>().Restore(blob, state.Content);
+						}
+					}
+				}
+			}
+
+			foreach(var file in component.Files)
+			{
+				if (file.Type == BlobTypes.Configuration || file.Type == BlobTypes.RuntimeConfiguration)
+					continue;
+
+				Tenant.GetService<IStorageService>().Restore(new Blob
+				{
+					ContentType = file.ContentType,
+					FileName = file.FileName,
+					MicroService = microService,
+					ResourceGroup = ms.ResourceGroup,
+					Token = file.Token,
+					PrimaryKey = file.PrimaryKey,
+					Topic = file.Topic,
+					Type = file.Type,
+					Version = file.BlobVersion
+				}, Convert.FromBase64String(file.Content));
+
+			}
+
+			DeleteManifest(microService, component.Token);
+
+			var u = Tenant.CreateUrl("ComponentDevelopment", "Insert");
+
+			var args = new JObject
+				{
+					 {"microService", microService },
+					 {"folder", component.Folder },
+					 {"name", component.Name },
+					 {"type", component.Type },
+					 {"category", component.Category },
+					 {"component", component.Token },
+					 {"nameSpace", ComponentCategories.ResolveNamespace( component.Category) }
+				};
+
+			if (runtimeConfigurationId != Guid.Empty)
+				args.Add("runtimeConfiguration", runtimeConfigurationId);
+
+			Tenant.Post(u, args);
+			InvalidateIndexState(component.Token);
+		}
+
 		public Guid Clone(Guid component, Guid microService, Guid folder)
 		{
 			var existing = Tenant.GetService<IComponentService>().SelectComponent(component);

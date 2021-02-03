@@ -7,9 +7,21 @@ namespace TomPIT.Design
 		private IVersionControl _versionControl = null;
 		private IComponentModel _components = null;
 		private IDesignSearch _search = null;
+		private IDeployment _deployment = null;
 
 		public DesignService(ITenant tenant) : base(tenant)
 		{
+		}
+
+		public IDeployment Deployment
+		{
+			get
+			{
+				if (_deployment == null)
+					_deployment = new Deployment(Tenant);
+
+				return _deployment;
+			}
 		}
 
 		public IDesignSearch Search
