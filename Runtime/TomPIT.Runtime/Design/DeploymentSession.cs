@@ -71,7 +71,7 @@ namespace TomPIT.Design
 		{
 			foreach(var component in Request.Components)
 			{
-				if (component.Verb == ComponentVerb.Remove)
+				if (component.Verb == ComponentVerb.Delete)
 					ComponentModel.Delete(component.Token, true);
 			}
 		}
@@ -80,7 +80,7 @@ namespace TomPIT.Design
 		{
 			foreach(var component in Request.Components)
 			{
-				if (component.Verb == ComponentVerb.Remove)
+				if (component.Verb == ComponentVerb.Delete)
 					continue;
 
 				ComponentModel.Restore(Request.Token, component);

@@ -5,8 +5,9 @@ namespace TomPIT.Design
 {
 	public enum ComponentVerb
 	{
-		Modify = 1,
-		Remove=2
+		Add = 1,
+		Edit = 2,
+		Delete=3
 	}
 	public interface IPullRequestComponent
 	{
