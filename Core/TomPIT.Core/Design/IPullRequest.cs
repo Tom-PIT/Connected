@@ -6,7 +6,7 @@ namespace TomPIT.Design
 	public interface IPullRequest
 	{
 		Guid Token { get; }
-		string Name { get; }
+		string Name { get ; }
 		Guid Template { get; }
 
 		List<IPullRequestFolder> Folders { get; }
