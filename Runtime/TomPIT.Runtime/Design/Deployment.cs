@@ -11,7 +11,7 @@ namespace TomPIT.Design
 
 		public void Deploy(string remote, Guid repository)
 		{
-			throw new NotImplementedException();
+			//Tenant.Post<PullRequest>()
 		}
 
 		public void Deploy(IPullRequest request)

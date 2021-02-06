@@ -4,7 +4,6 @@ namespace TomPIT.Design
 {
 	public interface IPullRequestFile
 	{
-      string Name { get; }
       int Type { get;  }
       string ContentType { get;  }
       string Content { get;  }

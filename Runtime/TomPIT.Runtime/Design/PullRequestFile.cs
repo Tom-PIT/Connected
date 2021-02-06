@@ -4,7 +4,6 @@ namespace TomPIT.Design
 {
 	public class PullRequestFile : IPullRequestFile
 	{
-		public string Name {get;set;}
 
 		public int Type {get;set;}
 

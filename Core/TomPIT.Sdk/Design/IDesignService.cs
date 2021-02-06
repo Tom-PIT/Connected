@@ -7,5 +7,6 @@
 		IVersionControl VersionControl { get; }
 		IComponentModel Components { get; }
 		IDesignSearch Search { get; }
+		ITextDiff TextDiff { get; }
 	}
 }

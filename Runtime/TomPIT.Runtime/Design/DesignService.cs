@@ -8,9 +8,21 @@ namespace TomPIT.Design
 		private IComponentModel _components = null;
 		private IDesignSearch _search = null;
 		private IDeployment _deployment = null;
+		private ITextDiff _diff = null;
 
 		public DesignService(ITenant tenant) : base(tenant)
 		{
+		}
+
+		public ITextDiff TextDiff
+		{
+			get
+			{
+				if (_diff == null)
+					_diff = new TextDiff();
+
+				return _diff;
+			}
 		}
 
 		public IDeployment Deployment
