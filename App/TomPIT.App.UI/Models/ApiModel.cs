@@ -8,8 +8,6 @@ namespace TomPIT.App.Models
 {
 	public class ApiModel : AjaxModel
 	{
-		private const string HeaderParamPrefix = "X-TP-PARAM-";
-
 		public ApiModel()
 		{
 			Shell.HttpContext.Items["RootModel"] = this;
@@ -80,10 +78,10 @@ namespace TomPIT.App.Models
 
 				foreach (var header in Controller.Request.Headers)
 				{
-					if (!header.Key.StartsWith(HeaderParamPrefix, StringComparison.OrdinalIgnoreCase))
+					if (!header.Key.StartsWith(HttpExtensions.HeaderParamPrefix, StringComparison.OrdinalIgnoreCase))
 						continue;
 
-					var key = header.Key.Substring(HeaderParamPrefix.Length);
+					var key = header.Key.Substring(HttpExtensions.HeaderParamPrefix.Length);
 
 					Body.Add(new JProperty(key, header.Value.ToString()));
 				}

@@ -196,7 +196,8 @@ namespace TomPIT.Navigation
 			if (handlerInstance == null)
 				return;
 
-			handlerInstance.SetContext(configuration.CreateContext());
+			using var ctx = configuration.CreateContext();
+			handlerInstance.SetContext(ctx);
 
 			var containers = handlerInstance.Invoke();
 

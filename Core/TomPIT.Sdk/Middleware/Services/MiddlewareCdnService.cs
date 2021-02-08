@@ -8,6 +8,7 @@
 		private IMiddlewareQueue _queue = null;
 		private IMiddlewarePrinting _printing = null;
 		private IMiddlewareClient _clients = null;
+		private IMiddlewareDocuments _documents = null;
 		public MiddlewareCdnService(IMiddlewareContext context) : base(context)
 		{
 		}
@@ -68,5 +69,7 @@
 		}
 
 		public IMiddlewareClient Clients { get { return _clients ??= new MiddlewareClient(); } }
+
+		public IMiddlewareDocuments Documents { get { return _documents ??= new MiddlewareDocuments(Context); } }
 	}
 }

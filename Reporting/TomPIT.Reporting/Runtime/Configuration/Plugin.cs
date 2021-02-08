@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using TomPIT.Cdn;
+using TomPIT.Cdn.Documents;
 using TomPIT.MicroServices.Reporting.Printing;
 using TomPIT.MicroServices.Reporting.Storage;
 using TomPIT.Runtime;
@@ -58,11 +58,11 @@ namespace TomPIT.MicroServices.Reporting.Runtime.Configuration
 			};
 		}
 
-		public List<IPrintingProvider> GetPrintingProviders()
+		public List<IDocumentProvider> GetDocumentProviders()
 		{
-			return new List<IPrintingProvider>
+			return new List<IDocumentProvider>
 			{
-				new PrintProvider()
+				new DocumentProvider()
 			};
 		}
 

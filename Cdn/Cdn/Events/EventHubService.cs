@@ -63,7 +63,7 @@ namespace TomPIT.Cdn.Events
 			if (client.Arguments == null)
 				return true;
 			/*
-			 * currently, only top level roperties and equal operator is supported.
+			 * currently, only equal operator is supported.
 			 */
 			foreach(var item in client.Arguments.Properties())
 			{

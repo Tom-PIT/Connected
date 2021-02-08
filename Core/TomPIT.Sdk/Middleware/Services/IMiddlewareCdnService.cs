@@ -8,5 +8,6 @@
 		IMiddlewarePrinting Printing { get; }
 		IMiddlewareQueue Queue { get; }
 		IMiddlewareClient Clients { get; }
+		IMiddlewareDocuments Documents { get; }
 	}
 }

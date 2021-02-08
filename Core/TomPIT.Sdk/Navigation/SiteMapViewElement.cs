@@ -10,8 +10,6 @@ namespace TomPIT.Navigation
 		[CIP(CIP.SiteMapViewProvider)]
 
 		public string View { get; set; }
-
-		//public object Parameters { get; set; }
 		public string RouteKey { get; set; }
 		public bool Authorize(Guid user)
 		{

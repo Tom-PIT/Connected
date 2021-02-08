@@ -123,15 +123,20 @@ namespace TomPIT.Rest.Controllers
 				{
 					var contentType = Shell.HttpContext.Request.ContentType;
 
-					if (contentType.Contains(';'))
-						contentType = contentType.Split(';')[0].Trim();
-
-					if (string.Compare(contentType, JsonApiFormatter.ContentType, true) == 0)
+					if (string.IsNullOrWhiteSpace(contentType))
 						_formatter = new JsonApiFormatter();
-					else if (string.Compare(contentType, FormApiFormatter.ContentType, true) == 0)
-						_formatter = new FormApiFormatter();
 					else
-						throw new BadRequestException($"{SR.ErrContentTypeNotSupported} ({contentType})");
+					{
+						if (contentType.Contains(';'))
+							contentType = contentType.Split(';')[0].Trim();
+
+						if (string.Compare(contentType, JsonApiFormatter.ContentType, true) == 0)
+							_formatter = new JsonApiFormatter();
+						else if (string.Compare(contentType, FormApiFormatter.ContentType, true) == 0)
+							_formatter = new FormApiFormatter();
+						else
+							throw new BadRequestException($"{SR.ErrContentTypeNotSupported} ({contentType})");
+					}
 
 					_formatter.Context = Shell.HttpContext;
 				}
@@ -155,7 +160,10 @@ namespace TomPIT.Rest.Controllers
 			MicroService = Tenant.GetService<IMicroServiceService>().Select(MicroServiceName);
 
 			if (MicroService == null)
+			{
 				await RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, MicroServiceName));
+				return null;
+			}
 
 			var component = Tenant.GetService<IComponentService>().SelectComponent(MicroService.Token, "Api", Api);
 

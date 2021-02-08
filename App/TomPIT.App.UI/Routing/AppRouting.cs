@@ -30,7 +30,6 @@ namespace TomPIT.App.Routing
 			routes.MapControllerRoute("sys.getuserdata", "sys/api/getuserdata", new { controller = "Api", action = "GetUserData" });
 			routes.MapControllerRoute("sys.queryuserdata", "sys/api/queryuserdata", new { controller = "Api", action = "QueryUserData" });
 			routes.MapControllerRoute("sys.uiinjection", "sys/api/uiinjection", new { controller = "Api", action = "UIInjection" });
-			//routes.MapControllerRoute("catchall", "{*.}", new { controller = "View", action = "Invoke" });
 
 			routes.Map("sys/themes/{microService}/{theme}", (t) =>
 			{
@@ -101,6 +100,8 @@ namespace TomPIT.App.Routing
 
 			if (Redirect(context))
 				return;
+			else if (Download(context))
+				return;
 
 			var ve = context.RequestServices.GetService(typeof(IViewEngine)) as ViewEngine;
 
@@ -126,6 +127,21 @@ namespace TomPIT.App.Routing
 				context.Response.StatusCode = (int)HttpStatusCode.Redirect;
 				context.Response.Redirect(redirect.RedirectUrl(routes));
 
+				return true;
+			}
+
+			return false;
+		}
+
+		private static bool Download(HttpContext context)
+		{
+			var routes = new RouteValueDictionary();
+
+			using var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes);
+			
+			if (route is ISiteMapStreamRoute stream)
+			{
+				route.Context.Interop.Invoke(stream.Api, stream.Parameters);
 				return true;
 			}
 

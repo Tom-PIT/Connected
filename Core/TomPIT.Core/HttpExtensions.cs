@@ -3,6 +3,8 @@ using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
 using TomPIT.Serialization;
 
@@ -10,6 +12,7 @@ namespace TomPIT
 {
 	public static class HttpExtensions
 	{
+		public const string HeaderParamPrefix = "X-TP-PARAM-";
 		private const string RequestArgumentsKey = "TP-REQUEST-ARGUMENTS";
 		public static bool IsAjaxRequest(this HttpRequest request)
 		{
@@ -82,6 +85,55 @@ namespace TomPIT
 				return;
 
 			context.Items[RequestArgumentsKey] = arguments;
+		}
+
+		public static JObject ParseArguments(this HttpContext context, object staticArguments)
+		{
+			return context.ParseArguments(staticArguments, context?.Request.Query.ToString());
+		}
+		public static JObject ParseArguments(this HttpContext context, object staticArguments, string queryString)
+		{
+			var result = staticArguments == null
+				? new JObject()
+				: staticArguments is JObject ? staticArguments as JObject : Serializer.Deserialize<JObject>(Serializer.Serialize(staticArguments));
+
+			if (!string.IsNullOrWhiteSpace(queryString))
+			{
+				var query = QueryHelpers.ParseQuery(queryString);
+
+				foreach (var key in query)
+				{
+					if (!result.ContainsKey(key.Key))
+						result.Add(new JProperty(key.Key, key.Value.ToString()));
+				}
+			}
+
+			if (Shell.HttpContext is not null)
+			{
+				foreach (var header in Shell.HttpContext.Request.Headers)
+				{
+					if (!header.Key.StartsWith(HeaderParamPrefix, StringComparison.OrdinalIgnoreCase))
+						continue;
+
+					var key = header.Key[HeaderParamPrefix.Length..];
+
+					if (!result.ContainsKey(key))
+						result.Add(new JProperty(key, header.Value.ToString()));
+				}
+
+				var routeData = Shell.HttpContext.GetRouteData();
+
+				if (routeData != null)
+				{
+					foreach(var value in routeData.Values)
+					{
+						if(!result.ContainsKey(value.Key))
+							result.Add(new JProperty(value.Key, value));
+					}
+				}
+			}
+
+			return result;
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using TomPIT.Analytics;
 using TomPIT.Caching;
 using TomPIT.Cdn;
+using TomPIT.Cdn.Documents;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Configuration;
@@ -97,6 +98,7 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(ICdnService), typeof(CdnService));
 			e.Tenant.RegisterService(typeof(ILockingService), typeof(LockingService));
 			e.Tenant.RegisterService(typeof(IClientService), typeof(ClientService));
+			e.Tenant.RegisterService(typeof(IDocumentService), typeof(DocumentService));
 
 			if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 				e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
