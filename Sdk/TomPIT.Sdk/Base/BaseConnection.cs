@@ -7,13 +7,16 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
+using TomPIT.Sdk.HealthMonitoring;
 
 namespace TomPIT.Sdk.Base
 {
-    public abstract class BaseConnection
+    public abstract partial class BaseConnection : IEndPointHealthMonitoring
     {
         private string _serverUrl = string.Empty;
         private string _authToken = string.Empty;
+        private string _name = string.Empty;
+
         private IRetryPolicy _connectionRetryPolicy = null;
 
         protected HubConnection Connection;
@@ -32,13 +35,21 @@ namespace TomPIT.Sdk.Base
             return this;
         }
 
-        public BaseConnection SetRetryPolicy(IRetryPolicy retryPolicy)
+        public BaseConnection SetName(string name)
         {
+            _name = name;
 
             return this;
         }
 
-        public void Build(string url)
+        public BaseConnection SetRetryPolicy(IRetryPolicy retryPolicy)
+        {
+            _connectionRetryPolicy = retryPolicy;
+
+            return this;
+        }
+
+        public void Create()
         {
             Connection = new HubConnectionBuilder().WithUrl(_serverUrl, o =>
             {
@@ -49,6 +60,16 @@ namespace TomPIT.Sdk.Base
             }).WithAutomaticReconnect(_connectionRetryPolicy ?? new DefaultConnectionRetryPolicy())
                 .AddNewtonsoftJsonProtocol()
                 .Build();
+
+            Connection.Reconnected += async (arg) =>
+            {
+                await OnReconnected(arg);
+            };
+        }
+
+        async protected virtual Task OnReconnected(string connectionId)
+        {
+            await Task.CompletedTask;
         }
     }
 }

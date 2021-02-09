@@ -9,17 +9,19 @@ using System;
 
 namespace TomPIT.Sdk.Base
 {
+    /// <summary>
+    /// Default Connection Retry Policy to try reconnecting for 2 days (48 hours or 2880 retries with 1 minute delay)
+    /// </summary>
     internal class DefaultConnectionRetryPolicy : IRetryPolicy
     {
         public TimeSpan? NextRetryDelay(RetryContext retryContext)
         {
-            //if maximum retry time or count has been reached stop reconnecting
             if (retryContext.ElapsedTime >= TimeSpan.FromHours(48))
             {
                 return null;
             }
 
-            if (retryContext.PreviousRetryCount >= 1000)
+            if (retryContext.PreviousRetryCount >= 2880)
             {
                 return null;
             }

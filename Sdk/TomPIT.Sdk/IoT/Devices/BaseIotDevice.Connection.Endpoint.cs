@@ -4,11 +4,12 @@
  * Read about Tom PIT licensing here: https://www.tompit.net/legal/open-release-license
  */
 
-using TomPIT.Sdk.Base;
+using TomPIT.Sdk.HealthMonitoring;
 
-namespace TomPIT.Sdk.IoT
+namespace TomPIT.Sdk.IoT.Devices
 {
-    public class IotConnection : BaseConnection
+    public abstract partial class BaseIotDevice : IEndPointHealthMonitoring
     {
+        public abstract bool ClientConnected { get; }
     }
 }
