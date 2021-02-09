@@ -20,7 +20,7 @@ namespace TomPIT.Sdk.IoT.Devices
         private bool _threadActive = false;
         private readonly object _lockObject = new object();
 
-        public event Queue QueueDataForSending;
+        //public event Queue QueueDataForSending;
 
         private void ReadDeviceData()
         {
@@ -55,10 +55,10 @@ namespace TomPIT.Sdk.IoT.Devices
         {
             lock (_lockObject)
             {
-                var args = new IotDataEventArgs();
-                args.Data = JObject.FromObject(data);
+                //var args = new IotDataEventArgs();
+                //args.Data = JObject.FromObject(data);
 
-                QueueDataForSending?.Invoke(this, args);
+                //QueueDataForSending?.Invoke(this, args);
             }
         }
 

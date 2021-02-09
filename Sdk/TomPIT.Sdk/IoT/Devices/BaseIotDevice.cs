@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Threading;
 using TomPIT.Sdk.HealthMonitoring;
 
 namespace TomPIT.Sdk.IoT.Devices
