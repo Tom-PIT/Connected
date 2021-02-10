@@ -5,7 +5,7 @@ namespace TomPIT.SysDb.Printing
 {
 	public interface IPrintingHandler
 	{
-		void Insert(Guid token, DateTime created, Guid component, PrintJobStatus status, string provider, string arguments);
+		void Insert(Guid token, DateTime created, Guid component, PrintJobStatus status, string provider, string arguments, string user);
 		IPrintJob Select(Guid token);
 
 		void Delete(Guid token);

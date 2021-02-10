@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Services
@@ -11,6 +12,7 @@ namespace TomPIT.Middleware.Services
 		TimeZoneInfo Timezone { get; }
 
 		Guid Language { get; }
+		CultureInfo Culture { get; }
 		string GetString([CIP(CIP.StringTableProvider)]string stringTable, [CIP(CIP.StringTableStringProvider)]string key);
 		string GetString([CIP(CIP.StringTableProvider)]string stringTable, [CIP(CIP.StringTableStringProvider)]string key, int lcid);
 		string TryGetString([CIP(CIP.StringTableProvider)]string stringTable, [CIP(CIP.StringTableStringProvider)]string key);

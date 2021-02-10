@@ -9,6 +9,7 @@ using TomPIT.DataProviders.Sql.Deployment;
 using TomPIT.DataProviders.Sql.Synchronization;
 using TomPIT.Deployment;
 using TomPIT.Deployment.Database;
+using TomPIT.Middleware;
 
 namespace TomPIT.DataProviders.Sql
 {
@@ -59,15 +60,18 @@ namespace TomPIT.DataProviders.Sql
 			return cmd.Parameters[parameterName].Value;
 		}
 
-		protected override void SetParameterValue(IDbCommand command, string parameterName, object value)
+		protected override void SetParameterValue(IDataConnection connection, IDbCommand command, string parameterName, object value)
 		{
 			var cmd = command as SqlCommand;
 
+			if (value is DateTime date)
+				value = connection.Context.Services.Globalization.ToUtc(date);
+
 			cmd.Parameters[parameterName].Value = value;
 		}
-		public override IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior)
+		public override IDataConnection OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior)
 		{
-			return new DataConnection(this, connectionString, behavior);
+			return new DataConnection(context, this, connectionString, behavior);
 		}
 
 		public IDatabase CreateSchema(string connectionString)

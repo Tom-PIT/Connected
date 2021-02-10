@@ -8,7 +8,7 @@
 		}
 	},
 	"storageProviders": [
-		"TomPIT.StorageProvider.Sql.SqlStorageProvider, TomPIT.StorageProvider.Sql",
+		"TomPIT.StorageProvider.Sql.SqlStorageProvider, TomPIT.StorageProvider.Sql"
 		//"TomPIT.StorageProvider.Azure.AzureStorageProvider, TomPIT.StorageProvider.Azure"
 	],
 	"connectionStrings": {

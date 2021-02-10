@@ -2,6 +2,7 @@
 using System.Data;
 using Newtonsoft.Json.Linq;
 using TomPIT.Data.DataProviders;
+using TomPIT.Middleware;
 
 namespace TomPIT.Data
 {
@@ -24,5 +25,6 @@ namespace TomPIT.Data
 		ICommandTextParser Parser { get; }
 
 		ConnectionState State { get; }
+		IMiddlewareContext Context { get; }
 	}
 }

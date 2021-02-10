@@ -58,7 +58,7 @@ namespace TomPIT.MicroServices.Reporting.Printing
 			var args = Serializer.Deserialize<JObject>(job.Arguments);
 			var arguments = Serializer.Deserialize<JObject>(args.Optional("arguments", string.Empty));
 
-			var report = CreateReport(job.Component, arguments);
+			var report = CreateReport(job.Component, arguments, job.User);
 
 			if (report == null)
 				return report;
@@ -71,19 +71,24 @@ namespace TomPIT.MicroServices.Reporting.Printing
 			return report;
 		}
 
-		private static XtraReport CreateReport(Guid component, object e)
+		private static XtraReport CreateReport(Guid component, object e, string user)
 		{
 			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) is IReportConfiguration descriptor))
 				return null;
 
-			var report = new ReportRuntimeStorage().CreateReport(component, e);
+			var report = new ReportCreateSession
+			{
+				Component = component,
+				User = user,
+				Arguments = e
+			}.CreateReport();
 
 			return report;
 		}
 
 		public IDocumentDescriptor Create(Guid report, DocumentCreateArgs e)
 		{
-			var rep = CreateReport(report, e.Arguments);
+			var rep = CreateReport(report, e.Arguments, e.User);
 
 			if (rep == null)
 				return null;

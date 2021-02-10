@@ -1,6 +1,7 @@
 ﻿using System;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
+using TomPIT.Middleware;
 
 namespace TomPIT.DataProviders.Modbus
 {
@@ -10,9 +11,9 @@ namespace TomPIT.DataProviders.Modbus
 		{
 
 		}
-		public override IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior)
+		public override IDataConnection OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior)
 		{
-			return new DataConnection(this, connectionString, behavior);
+			return new DataConnection(context, this, connectionString, behavior);
 		}
 	}
 }

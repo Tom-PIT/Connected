@@ -11,7 +11,7 @@ namespace TomPIT.Sys.Data
 	internal class Printing
 	{
 		private const string Queue = "printing";
-		public Guid Insert(Guid component, string provider, string arguments)
+		public Guid Insert(Guid component, string provider, string arguments, string user)
 		{
 			var token = Guid.NewGuid();
 
@@ -20,7 +20,7 @@ namespace TomPIT.Sys.Data
 				{ "id",token}
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Printing.Insert(token, DateTime.UtcNow, component, PrintJobStatus.Pending, provider, arguments);
+			Shell.GetService<IDatabaseService>().Proxy.Printing.Insert(token, DateTime.UtcNow, component, PrintJobStatus.Pending, provider, arguments, user);
 			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
 			return token;

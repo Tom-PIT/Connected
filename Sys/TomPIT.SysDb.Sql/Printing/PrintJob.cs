@@ -18,6 +18,8 @@ namespace TomPIT.SysDb.Sql.Printing
 		public string Arguments { get; set; }
 		public Guid Component { get; set; }
 
+		public string User {get;set;}
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();

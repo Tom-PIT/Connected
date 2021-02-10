@@ -37,7 +37,7 @@ namespace TomPIT.Middleware
 				return sender.Owner.OpenConnection(connection, behavior, arguments);
 
 			var dataProvider = CreateDataProvider(sender, connectionConfiguration, connectionString.DataProvider);
-			var con = dataProvider.OpenConnection(connectionString.Value, behavior);
+			var con = dataProvider.OpenConnection(sender, connectionString.Value, behavior);
 
 			if (behavior == ConnectionBehavior.Shared)
 				AddConnection(sender, dataProvider, connectionString.Value, arguments, con);

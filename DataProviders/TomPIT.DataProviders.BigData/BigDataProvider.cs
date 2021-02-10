@@ -3,6 +3,7 @@ using System.Data;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.DataProviders.Design;
+using TomPIT.Middleware;
 
 namespace TomPIT.DataProviders.BigData
 {
@@ -14,9 +15,9 @@ namespace TomPIT.DataProviders.BigData
 
 		}
 
-		public override IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior)
+		public override IDataConnection OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior)
 		{
-			return new DataConnection(this, connectionString, behavior);
+			return new DataConnection(context, this, connectionString, behavior);
 		}
 
 		protected override void SetupParameters(IDataCommandDescriptor command, IDbCommand cmd)
@@ -56,7 +57,7 @@ namespace TomPIT.DataProviders.BigData
 			return cmd.Parameters[parameterName].Value;
 		}
 
-		protected override void SetParameterValue(IDbCommand command, string parameterName, object value)
+		protected override void SetParameterValue(IDataConnection connection, IDbCommand command, string parameterName, object value)
 		{
 			var cmd = command as BigDataCommand;
 

@@ -13,9 +13,10 @@ namespace TomPIT.Sys.Controllers
 			var body = FromBody();
 			var component = body.Required<Guid>("component");
 			var provider = body.Optional("provider", string.Empty);
+			var user = body.Optional("user", string.Empty);
 			var arguments = body.Optional<string>("arguments", null);
 
-			return DataModel.Printing.Insert(component, provider, arguments);
+			return DataModel.Printing.Insert(component, provider, arguments, user);
 		}
 
 		[HttpPost]

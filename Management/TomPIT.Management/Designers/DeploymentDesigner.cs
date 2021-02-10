@@ -165,7 +165,7 @@ namespace TomPIT.Management.Designers
 		{
 			var dp = ResolveDataProvider(data);
 
-			dp.TestConnection(data.Required<string>("value"));
+			dp.TestConnection(Environment.Context, data.Required<string>("value"));
 
 			var r = Result.EmptyResult(ViewModel);
 

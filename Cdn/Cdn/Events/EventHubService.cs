@@ -58,6 +58,9 @@ namespace TomPIT.Cdn.Events
 
 		private bool IsCandidateInterested(IDistributedEventMiddleware middleware, EventClient client)
 		{
+			if (middleware == null)
+				return true;
+
 			middleware.Context.RevokeImpersonation();
 
 			if (client.Arguments == null)
@@ -114,7 +117,7 @@ namespace TomPIT.Cdn.Events
 			var instance = CreateMiddleware(ctx, candidates[0].EventName, arguments);
 
 			if (instance == null)
-				return (result, null);
+				return (candidates, null);
 
 			lock (candidates)
 			{

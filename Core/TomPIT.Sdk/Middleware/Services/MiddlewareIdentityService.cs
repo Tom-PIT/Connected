@@ -7,7 +7,6 @@ namespace TomPIT.Middleware.Services
 	internal class MiddlewareIdentityService : MiddlewareObject, IMiddlewareIdentityService
 	{
 		private IUser _user = null;
-		private string _jwToken = string.Empty;
 		private string _impersonatedUser = null;
 
 		public MiddlewareIdentityService(IMiddlewareContext context) : base(context)
@@ -51,8 +50,12 @@ namespace TomPIT.Middleware.Services
 					((MiddlewareIdentityService)mc.Owner.Services.Identity).ImpersonatedUser = value;
 				else
 				{
-					_impersonatedUser = value;
-					_user = null;
+					_user = Context.Tenant.GetService<IUserService>().Select(value);
+
+					if (_user != null)
+						_impersonatedUser = value;
+					else
+						_impersonatedUser = null;
 				}
 			}
 		}

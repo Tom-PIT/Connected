@@ -8,23 +8,48 @@ namespace TomPIT.Middleware.Services
 	{
 		public Guid PrintReport(string report, IPrinter printer)
 		{
-			return PrintReport(report, printer, null);
+			return Print(report, printer, null);
 		}
 
 		public Guid PrintReport(string report, IPrinter printer, object arguments)
 		{
-			return PrintReport(report, printer, arguments, null);
+			return Print(report, printer, arguments, null);
 		}
 
 		public Guid PrintReport(string report, IPrinter printer, object arguments, string provider)
+		{
+			return Print(report, printer, arguments, provider);
+		}
+
+		public Guid Print(string report, IPrinter printer)
+		{
+			return PrintReport(report, printer, null);
+		}
+
+		public Guid Print(string report, IPrinter printer, object arguments)
+		{
+			return PrintReport(report, printer, arguments, null);
+		}
+
+		public Guid Print(string report, IPrinter printer, object arguments, string provider)
+		{
+			return Print(report, printer, arguments, provider, null);
+		}
+
+		public Guid Print(string report, IPrinter printer, object arguments, string provider, string user)
 		{
 			var descriptor = ComponentDescriptor.Report(Context, report);
 
 			descriptor.Validate();
 
-			return Context.Tenant.GetService<IPrintingService>().Insert(provider, printer, descriptor.Component.Token, arguments);
-		}
+			if (string.IsNullOrWhiteSpace(user))
+			{
+				if (Context.Services.Identity.IsAuthenticated)
+					user = Context.Services.Identity.User.Token.ToString();
+			}
 
+			return Context.Tenant.GetService<IPrintingService>().Insert(provider, printer, descriptor.Component.Token, arguments, user);
+		}
 		public IPrintJob SelectPrintJob(Guid job)
 		{
 			return Context.Tenant.GetService<IPrintingService>().Select(job);

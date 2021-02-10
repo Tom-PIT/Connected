@@ -2,6 +2,7 @@
 using System.Linq;
 using DevExpress.AspNetCore;
 using DevExpress.AspNetCore.Reporting;
+using DevExpress.XtraReports.Expressions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -74,15 +75,12 @@ namespace TomPIT.MicroServices.Reporting.Runtime.Configuration
 			DevExpress.XtraReports.Configuration.Settings.Default.UserDesignerOptions.DataBindingMode = DevExpress.XtraReports.UI.DataBindingMode.ExpressionsAdvanced;
 
 			app.UseDevExpressControls();
+
+			CustomFunctions.Register(new LocalizeFunction());
 		}
 
 		public void RegisterRoutes(IEndpointRouteBuilder builder)
 		{
-			//builder.MapRoute("sys/plugins/iot/partial/{id}", (t) =>
-			//{
-			//	return Task.CompletedTask;
-			//});
-
 			builder.MapControllerRoute("sys.reporting.viewer", "DXXRDV", new { controller = "ReportViewer", action = "Invoke" }, null, new { Namespace = "TomPIT.MicroServices.Reporting.Controllers" });
 			builder.MapControllerRoute("sys.reporting.querybuilder", "DXXQB", new { controller = "ReportQueryBuilder", action = "Invoke" }, null, new { Namespace = "TomPIT.MicroServices.Reporting.Controllers" });
 			builder.MapControllerRoute("sys.reporting.designer", "DXXRD", new { controller = "Designer", action = "Invoke" }, null, new { Namespace = "TomPIT.MicroServices.Reporting.Controllers" });

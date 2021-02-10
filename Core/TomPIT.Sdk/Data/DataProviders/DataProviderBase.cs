@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Data;
 using Newtonsoft.Json.Linq;
+using TomPIT.Middleware;
 
 namespace TomPIT.Data.DataProviders
 {
@@ -19,7 +20,7 @@ namespace TomPIT.Data.DataProviders
 			Name = name;
 		}
 
-		public abstract IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior);
+		public abstract IDataConnection OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior);
 
 		private ConcurrentDictionary<IDataCommandDescriptor, IDbCommand> Commands
 		{
@@ -38,17 +39,17 @@ namespace TomPIT.Data.DataProviders
 			}
 		}
 
-		protected JObject CreateDataRow(IDataReader rdr)
+		protected JObject CreateDataRow(IDataConnection connection, IDataReader rdr)
 		{
 			var row = new JObject();
 
 			for (var i = 0; i < rdr.FieldCount; i++)
-				row.Add(rdr.GetName(i), new JValue(GetValue(rdr, i)));
+				row.Add(rdr.GetName(i), new JValue(GetValue(connection, rdr, i)));
 
 			return row;
 		}
 
-		protected JObject CreateDataRow(IDataReader rdr, DataTable schema)
+		protected JObject CreateDataRow(IDataConnection connection, IDataReader rdr, DataTable schema)
 		{
 			var row = new JObject();
 
@@ -67,7 +68,7 @@ namespace TomPIT.Data.DataProviders
 					mapping = (string)i.ExtendedProperties["mapping"];
 
 				int ord = rdr.GetOrdinal(mapping);
-				var value = GetValue(rdr, ord);
+				var value = GetValue(connection, rdr, ord);
 
 				row.Add(i.ColumnName, new JValue(value == DBNull.Value ? null : value));
 			}
@@ -75,7 +76,7 @@ namespace TomPIT.Data.DataProviders
 			return row;
 		}
 
-		protected object GetValue(IDataReader reader, int index)
+		protected object GetValue(IDataConnection connection, IDataReader reader, int index)
 		{
 			var value = reader.GetValue(index);
 
@@ -83,7 +84,7 @@ namespace TomPIT.Data.DataProviders
 				return null;
 
 			if (value is DateTime date)
-				return DateTime.SpecifyKind(date, DateTimeKind.Utc);
+				return connection.Context.Services.Globalization.FromUtc(DateTime.SpecifyKind(date, DateTimeKind.Utc));
 
 			return value;
 		}
@@ -97,7 +98,7 @@ namespace TomPIT.Data.DataProviders
 			SetupParameters(command, com);
 
 			foreach (var i in command.Parameters)
-				SetParameterValue(com, i.Name, i.Value);
+				SetParameterValue(connection, com, i.Name, i.Value);
 
 			var recordsAffected = Execute(command, com);
 
@@ -110,7 +111,7 @@ namespace TomPIT.Data.DataProviders
 			return recordsAffected;
 		}
 
-		protected virtual void SetParameterValue(IDbCommand command, string parameterName, object value)
+		protected virtual void SetParameterValue(IDataConnection connection, IDbCommand command, string parameterName, object value)
 		{
 
 		}
@@ -147,7 +148,7 @@ namespace TomPIT.Data.DataProviders
 				SetupParameters(command, com);
 
 				foreach (var i in command.Parameters)
-					SetParameterValue(com, i.Name, i.Value);
+					SetParameterValue(connection, com, i.Name, i.Value);
 
 				rdr = com.ExecuteReader();
 				var r = new JObject();
@@ -158,8 +159,8 @@ namespace TomPIT.Data.DataProviders
 				while (rdr.Read())
 				{
 					var row = schema == null
-						? CreateDataRow(rdr)
-						: CreateDataRow(rdr, schema);
+						? CreateDataRow(connection, rdr)
+						: CreateDataRow(connection, rdr, schema);
 
 					a.Add(row);
 				}
@@ -173,9 +174,9 @@ namespace TomPIT.Data.DataProviders
 			}
 		}
 
-		public virtual void TestConnection(string connectionString)
+		public virtual void TestConnection(IMiddlewareContext context, string connectionString)
 		{
-			var con = OpenConnection(connectionString, ConnectionBehavior.Isolated);
+			var con = OpenConnection(context, connectionString, ConnectionBehavior.Isolated);
 
 			con.Open();
 			con.Close();

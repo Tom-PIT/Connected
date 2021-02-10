@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using Newtonsoft.Json.Linq;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
+using TomPIT.Middleware;
 
 namespace TomPIT.DataProviders.Sql
 {
@@ -13,13 +14,15 @@ namespace TomPIT.DataProviders.Sql
 		private ICommandTextParser _parser = null;
 		private object _sync = new object();
 
-		public DataConnection(IDataProvider provider, string connectionString, ConnectionBehavior behavior)
+		public DataConnection(IMiddlewareContext context, IDataProvider provider, string connectionString, ConnectionBehavior behavior)
 		{
+			Context = context;
 			Provider = provider;
 			ConnectionString = connectionString;
 			Behavior = behavior;
 		}
 
+		public IMiddlewareContext Context { get; }
 		private IDataProvider Provider { get; }
 		private string ConnectionString { get; }
 		private bool OwnsTransaction { get; set; }
