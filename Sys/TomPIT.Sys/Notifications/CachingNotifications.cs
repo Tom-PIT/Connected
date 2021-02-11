@@ -9,7 +9,7 @@ using TomPIT.Messaging;
 using TomPIT.Reflection;
 using TomPIT.Security;
 using TomPIT.Storage;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Notifications
 {

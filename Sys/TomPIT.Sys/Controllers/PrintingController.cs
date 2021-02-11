@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Cdn;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers
 {
@@ -15,8 +15,9 @@ namespace TomPIT.Sys.Controllers
 			var provider = body.Optional("provider", string.Empty);
 			var user = body.Optional("user", string.Empty);
 			var arguments = body.Optional<string>("arguments", null);
+			var category = body.Optional("category", string.Empty);
 
-			return DataModel.Printing.Insert(component, provider, arguments, user);
+			return DataModel.Printing.Insert(component, provider, arguments, user, category);
 		}
 
 		[HttpPost]
@@ -48,5 +49,13 @@ namespace TomPIT.Sys.Controllers
 			return DataModel.Printing.Select(token);
 		}
 
+		[HttpPost]
+		public long NextSerialNumber()
+		{
+			var body = FromBody();
+			var category = body.Required<string>("category");
+
+			return DataModel.Printing.NextSerialNumber(category);
+		}
 	}
 }

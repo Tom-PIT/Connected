@@ -11,9 +11,9 @@ namespace TomPIT.Cdn.Printing
 			ResourceGroup = resourceGroup;
 		}
 
-		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationToken cancel)
+		public override DispatcherJob<IQueueMessage> CreateWorker(IDispatcher<IQueueMessage> owner, CancellationToken cancel)
 		{
-			return new PrintJob(this, cancel);
+			return new PrintJob(owner, cancel);
 		}
 
 		public string ResourceGroup { get; }

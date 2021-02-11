@@ -1242,4 +1242,7 @@
   <data name="ValSecurityCodeExists" xml:space="preserve">
     <value>Security code already exists</value>
   </data>
+  <data name="ErrCannotCreateStackedDispatcher" xml:space="preserve">
+    <value>Cannot create stacked dispatcher</value>
+  </data>
 </root>

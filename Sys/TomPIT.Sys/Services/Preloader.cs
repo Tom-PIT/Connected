@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using TomPIT.Connectivity;
 using TomPIT.Distributed;
 using TomPIT.Environment;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Services
 {

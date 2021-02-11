@@ -12,9 +12,9 @@ namespace TomPIT.Development.Analysis
 			Tenant = tenant;
 		}
 
-		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationToken cancel)
+		public override DispatcherJob<IQueueMessage> CreateWorker(IDispatcher<IQueueMessage> owner, CancellationToken cancel)
 		{
-			return new AutoFixJob(this, cancel);
+			return new AutoFixJob(owner, cancel);
 		}
 
 		public ITenant Tenant { get; }

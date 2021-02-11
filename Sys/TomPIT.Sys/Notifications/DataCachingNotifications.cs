@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using TomPIT.Caching;
 using TomPIT.Messaging;
 using TomPIT.Reflection;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Notifications
 {

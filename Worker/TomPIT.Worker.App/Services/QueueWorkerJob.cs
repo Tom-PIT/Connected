@@ -19,7 +19,7 @@ namespace TomPIT.Worker.Services
 	public class QueueWorkerJob : DispatcherJob<IQueueMessage>
 	{
 		private TimeoutTask _timeout = null;
-		public QueueWorkerJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
+		public QueueWorkerJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -42,7 +42,8 @@ namespace TomPIT.Worker.Services
 
 			try
 			{
-				Invoke(item, m);
+				if (!Invoke(item, m))
+					return;
 			}
 			finally
 			{
@@ -56,7 +57,7 @@ namespace TomPIT.Worker.Services
 			});
 		}
 
-		private void Invoke(IQueueMessage queue, JObject data)
+		private bool Invoke(IQueueMessage queue, JObject data)
 		{
 			var component = data.Required<Guid>("component");
 			var worker = data.Required<string>("worker");
@@ -65,7 +66,7 @@ namespace TomPIT.Worker.Services
 			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) is IQueueConfiguration configuration))
 			{
 				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), $"{SR.ErrCannotFindConfiguration} ({component})", nameof(QueueWorkerJob));
-				return;
+				return true;
 			}
 
 			var w = configuration.Workers.FirstOrDefault(f => string.Compare(f.Name, worker, true) == 0);
@@ -73,7 +74,7 @@ namespace TomPIT.Worker.Services
 			if (w == null)
 			{
 				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), $"{SR.ErrQueueWorkerNotFound} ({component})", nameof(QueueWorkerJob));
-				return;
+				return true;
 			}
 
 			using var ctx = new MicroServiceContext(configuration.MicroService());
@@ -84,23 +85,29 @@ namespace TomPIT.Worker.Services
 			{
 				q = new Queue(arguments, w);
 
-				q.Invoke();
+				if (!q.Invoke(Owner.Behavior))
+				{
+					Owner.Enqueue(q.QueueName, queue);
+					return false;
+				}
 
-				ctx.Services.Diagnostic.StopMetric(metricId, Diagnostics.SessionResult.Success, null);
+				ctx.Services.Diagnostic.StopMetric(metricId, SessionResult.Success, null);
+
+				return true;
 			}
 			catch (ValidationException ex)
 			{
 				if (q.HandlerInstance.ValidationFailed == Cdn.QueueValidationBehavior.Complete)
 				{
 					MiddlewareDescriptor.Current.Tenant.LogWarning(ex.Source, ex.Message, LogCategories.Worker);
-					return;
+					return true;
 				}
 				else
 					throw;
 			}
 			catch
 			{
-				ctx.Services.Diagnostic.StopMetric(metricId, Diagnostics.SessionResult.Fail, null);
+				ctx.Services.Diagnostic.StopMetric(metricId, SessionResult.Fail, null);
 
 				throw;
 			}

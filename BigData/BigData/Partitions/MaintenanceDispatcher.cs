@@ -11,9 +11,9 @@ namespace TomPIT.BigData.Partitions
 			ResourceGroup = resourceGroup;
 		}
 
-		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationToken cancel)
+		public override DispatcherJob<IQueueMessage> CreateWorker(IDispatcher<IQueueMessage> owner, CancellationToken cancel)
 		{
-			return new MaintenanceJob(this, cancel);
+			return new MaintenanceJob(owner, cancel);
 		}
 
 		public string ResourceGroup { get; }

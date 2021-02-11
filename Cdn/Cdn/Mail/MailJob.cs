@@ -11,7 +11,7 @@ namespace TomPIT.Cdn.Mail
 {
 	internal class MailJob : DispatcherJob<IMailMessage>
 	{
-		public MailJob(Dispatcher<IMailMessage> owner, CancellationToken cancel) : base(owner, cancel)
+		public MailJob(IDispatcher<IMailMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 

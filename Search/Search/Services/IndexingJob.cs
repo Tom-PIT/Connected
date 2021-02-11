@@ -17,7 +17,7 @@ namespace TomPIT.Search.Services
 	internal class IndexingJob : DispatcherJob<IQueueMessage>
 	{
 		private TimeoutTask _timeout = null;
-		public IndexingJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
+		public IndexingJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 

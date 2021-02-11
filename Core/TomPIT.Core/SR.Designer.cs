@@ -313,7 +313,7 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Default retry strategy for technology {0} was not not defined, and there is no overall default strategy..
+        ///   Looks up a localized string similar to Default retry strategy for technology {0} was not defined, and there is no overall default strategy..
         /// </summary>
         public static string DefaultRetryStrategyNotFound {
             get {
@@ -831,6 +831,15 @@ namespace TomPIT {
         public static string ErrCannotCreateInstance {
             get {
                 return ResourceManager.GetString("ErrCannotCreateInstance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot create stacked dispatcher.
+        /// </summary>
+        public static string ErrCannotCreateStackedDispatcher {
+            get {
+                return ResourceManager.GetString("ErrCannotCreateStackedDispatcher", resourceCulture);
             }
         }
         

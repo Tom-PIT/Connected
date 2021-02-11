@@ -1,41 +1,77 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using TomPIT.Exceptions;
 
 namespace TomPIT.Distributed
 {
-	public abstract class Dispatcher<T> : IDisposable
+	public abstract class Dispatcher<T> : IDispatcher<T>
 	{
 		private ConcurrentQueue<T> _items = null;
 		private List<DispatcherJob<T>> _workers = null;
 		private readonly CancellationToken _cancel;
+		private Lazy<ConcurrentDictionary<string, QueuedDispatcher<T>>> _queuedDispatchers = new Lazy<ConcurrentDictionary<string, QueuedDispatcher<T>>>();
 		private bool _disposed = false;
 
 		protected Dispatcher(CancellationToken cancel, int workerSize)
 		{
 			_cancel = cancel;
 			WorkerSize = workerSize;
+
+			new Task(() => OnScaveging(), _cancel, TaskCreationOptions.LongRunning).Start();
+		}
+
+		private void OnScaveging()
+		{
+			while (!_cancel.IsCancellationRequested)
+			{
+				try
+				{
+					var disposed = QueuedDispatchers.Where(f => f.Value.Disposed);
+
+					foreach (var disposedDispatcher in disposed)
+						QueuedDispatchers.Remove(disposedDispatcher.Key, out QueuedDispatcher<T> _);
+
+					_cancel.WaitHandle.WaitOne(TimeSpan.FromMinutes(1));
+				}
+				catch { }
+			}
 		}
 
 		private int WorkerSize { get; }
 
-		protected abstract DispatcherJob<T> CreateWorker(CancellationToken cancel);
+		public abstract DispatcherJob<T> CreateWorker(IDispatcher<T> owner, CancellationToken cancel);
 
-		public int Available { get { return Math.Max(0, WorkerSize * 4) - Queue.Count; } }
+		public int Available => Math.Max(0, WorkerSize * 4) - Queue.Count - QueuedDispatchers.Sum(f => f.Value.Count);
 
 		public bool Dequeue(out T item)
 		{
 			return Queue.TryDequeue(out item);
 		}
 
-		public void Enqueue(T item)
+		public bool Enqueue(string queue, T item)
+		{
+			var dispatcher = EnsureDispatcher(queue);
+
+			if (dispatcher == null)
+				throw new RuntimeException($"{SR.ErrCannotCreateStackedDispatcher} ({queue})");
+
+			if (dispatcher.Disposed)
+				return Enqueue(queue, item);
+			else
+				return dispatcher.Enqueue(item);
+		}
+
+		public bool Enqueue(T item)
 		{
 			Queue.Enqueue(item);
 
 			if (Jobs.Count < WorkerSize)
 			{
-				var worker = CreateWorker(_cancel);
+				var worker = CreateWorker(this, _cancel);
 
 				worker.Completed += OnCompleted;
 
@@ -46,13 +82,15 @@ namespace TomPIT.Distributed
 
 				worker.Run();
 			}
+
+			return true;
 		}
 
 		private void OnCompleted(object sender, EventArgs e)
 		{
 			try
 			{
-				if (!(sender is DispatcherJob<T> job))
+				if (sender is not DispatcherJob<T> job)
 					return;
 
 				lock (Jobs)
@@ -110,6 +148,44 @@ namespace TomPIT.Distributed
 		{
 			Dispose(true);
 		}
+
+		private QueuedDispatcher<T> EnsureDispatcher(string stack)
+		{
+			if (QueuedDispatchers.TryGetValue(stack, out QueuedDispatcher<T> result))
+			{
+				if (result.Disposed)
+				{
+					QueuedDispatchers.Remove(stack, out QueuedDispatcher<T> _);
+
+					return EnsureDispatcher(stack);
+				}
+
+				return result;
+			}
+
+			result = new QueuedDispatcher<T>(this, _cancel);
+
+			if (!QueuedDispatchers.TryAdd(stack, result))
+			{
+				if (QueuedDispatchers.TryGetValue(stack, out QueuedDispatcher<T> retryResult))
+				{
+					if (retryResult.Disposed)
+					{
+						QueuedDispatchers.Remove(stack, out QueuedDispatcher<T> _);
+
+						return EnsureDispatcher(stack);
+					}
+				}
+
+				return retryResult;
+			}
+
+			return result;
+		}
+
+		private ConcurrentDictionary<string, QueuedDispatcher<T>> QueuedDispatchers => _queuedDispatchers.Value;
+
+		public ProcessBehavior Behavior => ProcessBehavior.Parallel;
 	}
 }
 

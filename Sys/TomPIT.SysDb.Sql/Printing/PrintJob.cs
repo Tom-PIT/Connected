@@ -17,6 +17,8 @@ namespace TomPIT.SysDb.Sql.Printing
 		public string Provider { get; set; }
 		public string Arguments { get; set; }
 		public Guid Component { get; set; }
+		public long SerialNumber { get; set; }
+		public string Category { get; set; }
 
 		public string User {get;set;}
 
@@ -31,6 +33,9 @@ namespace TomPIT.SysDb.Sql.Printing
 			Provider = GetString("provider");
 			Arguments = GetString("arguments");
 			Component = GetGuid("component");
+			User = GetString("user");
+			SerialNumber = GetLong("serial_number");
+			Category = GetString("category");
 		}
 	}
 }

@@ -11,9 +11,9 @@ namespace TomPIT.Cdn.Events
 			ResourceGroup = resourceGroup;
 		}
 
-		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationToken cancel)
+		public override DispatcherJob<IQueueMessage> CreateWorker(IDispatcher<IQueueMessage> owner, CancellationToken cancel)
 		{
-			return new EventJob(this, cancel);
+			return new EventJob(owner, cancel);
 		}
 
 		public string ResourceGroup { get; }

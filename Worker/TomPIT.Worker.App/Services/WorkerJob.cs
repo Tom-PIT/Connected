@@ -19,7 +19,7 @@ namespace TomPIT.Worker.Services
 	{
 		private TimeoutTask _timeout = null;
 
-		public WorkerJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
+		public WorkerJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 

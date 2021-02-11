@@ -15,7 +15,7 @@ namespace TomPIT.BigData.Transactions
 {
 	internal class BufferingJob : DispatcherJob<IPartitionBuffer>
 	{
-		public BufferingJob(Dispatcher<IPartitionBuffer> owner, CancellationToken cancel) : base(owner, cancel)
+		public BufferingJob(IDispatcher<IPartitionBuffer> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 

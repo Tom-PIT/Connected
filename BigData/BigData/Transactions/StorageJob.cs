@@ -8,7 +8,7 @@ namespace TomPIT.BigData.Transactions
 {
 	internal class StorageJob : DispatcherJob<IQueueMessage>
 	{
-		public StorageJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
+		public StorageJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 

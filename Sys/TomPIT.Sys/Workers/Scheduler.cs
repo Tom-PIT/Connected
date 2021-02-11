@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 using TomPIT.SysDb.Workers;
 
 namespace TomPIT.Sys.Workers

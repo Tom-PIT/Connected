@@ -12,10 +12,7 @@ namespace TomPIT.Middleware.Services
 		Guid PrintReport([CIP(CIP.ReportProvider)]string report, IPrinter printer, object arguments);
 		[Obsolete("Use Print method instead.")]
 		Guid PrintReport([CIP(CIP.ReportProvider)]string report, IPrinter printer, object arguments, string provider);
-		Guid Print([CIP(CIP.ReportProvider)] string report, IPrinter printer);
-		Guid Print([CIP(CIP.ReportProvider)] string report, IPrinter printer, object arguments);
-		Guid Print([CIP(CIP.ReportProvider)] string report, IPrinter printer, object arguments, string provider);
-		Guid Print([CIP(CIP.ReportProvider)] string report, IPrinter printer, object arguments, string provider, string user);
+		Guid Print(MiddlewarePrintArgs e);
 
 		IPrintJob SelectPrintJob(Guid job);
 	}

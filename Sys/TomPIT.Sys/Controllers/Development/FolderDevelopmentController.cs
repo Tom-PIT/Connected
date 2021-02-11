@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using TomPIT.Sys.Data;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers.Development
 {

@@ -10,8 +10,9 @@ using Lucene.Net.Store;
 using TomPIT.Diagnostics;
 using TomPIT.Reflection;
 using TomPIT.Search;
-using TomPIT.Sys.Data;
 using TomPIT.Sys.Diagnostics;
+using TomPIT.Sys.Model;
+using TomPIT.Sys.Model.Diagnostics;
 
 namespace TomPIT.Sys.Search
 {

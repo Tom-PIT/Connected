@@ -11,9 +11,9 @@ namespace TomPIT.Worker.Services
 			ResourceGroup = resourceGroup;
 		}
 
-		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationToken cancel)
+		public override DispatcherJob<IQueueMessage> CreateWorker(IDispatcher<IQueueMessage> owner, CancellationToken cancel)
 		{
-			return new WorkerJob(this, cancel);
+			return new WorkerJob(owner, cancel);
 		}
 
 		public string ResourceGroup { get; }

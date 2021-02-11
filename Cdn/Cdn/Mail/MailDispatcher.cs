@@ -10,9 +10,9 @@ namespace TomPIT.Cdn.Mail
 			ResourceGroup = resourceGroup;
 		}
 
-		protected override DispatcherJob<IMailMessage> CreateWorker(CancellationToken cancel)
+		public override DispatcherJob<IMailMessage> CreateWorker(IDispatcher<IMailMessage> owner, CancellationToken cancel)
 		{
-			return new MailJob(this, cancel);
+			return new MailJob(owner, cancel);
 		}
 
 		public string ResourceGroup { get; }

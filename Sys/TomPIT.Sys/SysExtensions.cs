@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using TomPIT.ComponentModel;
-using TomPIT.Sys.Data;
 using TomPIT.Sys.Exceptions;
+using TomPIT.Sys.Model;
 using TomPIT.Sys.Security;
 
 namespace TomPIT.Sys

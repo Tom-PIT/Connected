@@ -15,7 +15,7 @@ namespace TomPIT.Cdn.Printing
 	internal class PrintJob : DispatcherJob<IQueueMessage>
 	{
 		private TimeoutTask _timeout = null;
-		public PrintJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
+		public PrintJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -76,7 +76,7 @@ namespace TomPIT.Cdn.Printing
 					var report = provider.Create(job);
 
 					if (report != null)
-						MiddlewareDescriptor.Current.Tenant.GetService<IPrintingSpoolerManagementService>().Insert(report.MimeType, printer.Name, Convert.ToBase64String(report.Content));
+						MiddlewareDescriptor.Current.Tenant.GetService<IPrintingSpoolerManagementService>().Insert(report.MimeType, printer.Name, Convert.ToBase64String(report.Content), job.SerialNumber);
 				}
 			}
 			catch (Exception ex)

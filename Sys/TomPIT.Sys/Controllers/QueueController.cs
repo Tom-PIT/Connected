@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
+using TomPIT.Sys.Model.Cdn;
 
 namespace TomPIT.Sys.Controllers
 {
@@ -27,7 +28,7 @@ namespace TomPIT.Sys.Controllers
 			if (args != null)
 				message.Add("arguments", args);
 
-			DataModel.Queue.Enqueue(Queueing.Queue, JsonConvert.SerializeObject(message), expire, nextVisible, Storage.QueueScope.Content);
+			DataModel.Queue.Enqueue(QueueingModel.Queue, JsonConvert.SerializeObject(message), expire, nextVisible, Storage.QueueScope.Content);
 		}
 	}
 }

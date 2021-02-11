@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TomPIT.Distributed;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 using TomPIT.Sys.Notifications;
 using TomPIT.SysDb.Messaging;
 

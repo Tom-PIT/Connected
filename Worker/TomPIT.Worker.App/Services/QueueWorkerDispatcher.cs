@@ -10,9 +10,9 @@ namespace TomPIT.Worker.Services
 		{
 		}
 
-		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationToken cancel)
+		public override DispatcherJob<IQueueMessage> CreateWorker(IDispatcher<IQueueMessage> owner, CancellationToken cancel)
 		{
-			return new QueueWorkerJob(this, cancel);
+			return new QueueWorkerJob(owner, cancel);
 		}
 	}
 }

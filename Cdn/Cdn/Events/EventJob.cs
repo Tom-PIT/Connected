@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Messaging;
@@ -23,7 +24,7 @@ namespace TomPIT.Cdn.Events
 	internal class EventJob : DispatcherJob<IQueueMessage>
 	{
 		private TimeoutTask _timeout = null;
-		public EventJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
+		public EventJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -49,7 +50,8 @@ namespace TomPIT.Cdn.Events
 
 			try
 			{
-				Invoke(item, m);
+				if (!Invoke(item, m))
+					return;
 			}
 			finally
 			{
@@ -63,7 +65,7 @@ namespace TomPIT.Cdn.Events
 			});
 		}
 
-		private void Invoke(IQueueMessage queue, JObject data)
+		private bool Invoke(IQueueMessage queue, JObject data)
 		{
 			var id = data.Required<Guid>("id");
 			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Select")
@@ -72,12 +74,12 @@ namespace TomPIT.Cdn.Events
 			var ed = MiddlewareDescriptor.Current.Tenant.Get<EventDescriptor>(url);
 
 			if (ed == null)
-				return;
+				return true;
 
 			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(ed.MicroService);
 
 			if (ms == null)
-				return;
+				return true;
 
 			MicroService = ms.Name;
 			Event = ed.Name;
@@ -89,24 +91,35 @@ namespace TomPIT.Cdn.Events
 			if (string.Compare(ed.Name, "$", true) != 0)
 			{
 				var eventName = $"{ms.Name}/{ed.Name}";
-				var targets = EventHandlers.Query(eventName);
-
 				eventInstance = CreateEventInstance(ctx, ed);
 
 				if (eventInstance != null)
 				{
+					if (Owner.Behavior == ProcessBehavior.Queued)
+					{
+						var att = eventInstance.GetType().FindAttribute<ProcessBehaviorAttribute>();
+
+						if (att.Behavior == ProcessBehavior.Queued)
+						{
+							Owner.Enqueue(att.QueueName, queue);
+							return false;
+						}
+					}
+
 					if (!eventInstance.Invoking())
-						return;
+						return true;
 
 					eventInstance.Invoke();
 				}
+
+				var targets = EventHandlers.Query(eventName);
 
 				if (targets != null)
 				{
 					foreach (var target in targets)
 					{
 						if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(target.Item2) is IEventBindingConfiguration configuration))
-							return;
+							continue;
 
 						Parallel.ForEach(configuration.Events,
 							(i) =>
@@ -135,6 +148,8 @@ namespace TomPIT.Cdn.Events
 				eventInstance.Invoked();
 
 			Notify(ms, ed, responses);
+
+			return true;
 		}
 
 		private void Notify(IMicroService microService, EventDescriptor descriptor, List<IOperationResponse> responses)

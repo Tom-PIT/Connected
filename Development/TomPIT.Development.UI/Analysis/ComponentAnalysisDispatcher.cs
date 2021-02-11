@@ -12,9 +12,9 @@ namespace TomPIT.Development.Analysis
 			Tenant = tenant;
 		}
 
-		protected override DispatcherJob<IComponentDevelopmentState> CreateWorker(CancellationToken cancel)
+		public override DispatcherJob<IComponentDevelopmentState> CreateWorker(IDispatcher<IComponentDevelopmentState> owner, CancellationToken cancel)
 		{
-			return new ComponentAnalysisJob(this, cancel);
+			return new ComponentAnalysisJob(owner, cancel);
 		}
 
 		public ITenant Tenant { get; }
