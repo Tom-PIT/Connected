@@ -61,7 +61,7 @@ namespace TomPIT.Worker.Services
 				return false;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new WorkerDispatcher(i, cancel));
+				Dispatchers.Add(new WorkerDispatcher(i));
 
 			return true;
 		}

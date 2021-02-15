@@ -6,7 +6,7 @@ namespace TomPIT.Worker.Services
 {
 	internal class QueueWorkerDispatcher : Dispatcher<IQueueMessage>
 	{
-		public QueueWorkerDispatcher(CancellationToken cancel) : base(cancel, 128)
+		public QueueWorkerDispatcher() : base(128)
 		{
 		}
 

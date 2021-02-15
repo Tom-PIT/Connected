@@ -6,7 +6,7 @@ namespace TomPIT.Cdn.Printing
 {
 	internal class PrintingDispatcher : Dispatcher<IQueueMessage>
 	{
-		public PrintingDispatcher(string resourceGroup, CancellationToken cancel) : base(cancel, 16)
+		public PrintingDispatcher(string resourceGroup) : base(16)
 		{
 			ResourceGroup = resourceGroup;
 		}

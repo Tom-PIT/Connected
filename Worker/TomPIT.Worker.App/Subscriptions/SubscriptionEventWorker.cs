@@ -23,7 +23,7 @@ namespace TomPIT.Worker.Subscriptions
 				return false;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new SubscriptionEventDispatcher(i, cancel));
+				Dispatchers.Add(new SubscriptionEventDispatcher(i));
 
 			return true;
 		}

@@ -22,7 +22,7 @@ namespace TomPIT.Worker.Services
 			if (Instance.State == InstanceState.Initializing)
 				return false;
 
-			Dispatchers.Add(new QueueWorkerDispatcher(cancel));
+			Dispatchers.Add(new QueueWorkerDispatcher());
 
 			return true;
 		}

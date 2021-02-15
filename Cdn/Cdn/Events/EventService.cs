@@ -24,7 +24,7 @@ namespace TomPIT.Cdn.Events
 				return false;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new EventDispatcher(i, cancel));
+				Dispatchers.Add(new EventDispatcher(i));
 
 			return true;
 		}

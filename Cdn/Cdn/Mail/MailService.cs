@@ -30,7 +30,7 @@ namespace TomPIT.Cdn.Mail
 			MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().SettingChanged += OnSettingChanged;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new MailDispatcher(i, cancel));
+				Dispatchers.Add(new MailDispatcher(i));
 
 			return true;
 		}

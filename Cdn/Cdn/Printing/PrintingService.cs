@@ -20,7 +20,7 @@ namespace TomPIT.Cdn.Printing
 			IntervalTimeout = TimeSpan.FromSeconds(5);
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new PrintingDispatcher(i, cancel));
+				Dispatchers.Add(new PrintingDispatcher(i));
 
 			return true;
 		}

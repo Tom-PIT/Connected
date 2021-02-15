@@ -6,7 +6,7 @@ namespace TomPIT.Search.Services
 {
 	internal class IndexingDispatcher : Dispatcher<IQueueMessage>
 	{
-		public IndexingDispatcher(string resourceGroup, CancellationToken cancel) : base(cancel, 128)
+		public IndexingDispatcher(string resourceGroup) : base(128)
 		{
 			ResourceGroup = resourceGroup;
 		}

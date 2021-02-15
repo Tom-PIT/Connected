@@ -5,7 +5,7 @@ namespace TomPIT.Cdn.Mail
 {
 	internal class MailDispatcher : Dispatcher<IMailMessage>
 	{
-		public MailDispatcher(string resourceGroup, CancellationToken cancel) : base(cancel, 128)
+		public MailDispatcher(string resourceGroup) : base(128)
 		{
 			ResourceGroup = resourceGroup;
 		}
