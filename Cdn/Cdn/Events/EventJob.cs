@@ -95,7 +95,7 @@ namespace TomPIT.Cdn.Events
 
 				if (eventInstance != null)
 				{
-					if (Owner.Behavior == ProcessBehavior.Queued)
+					if (Owner.Behavior == ProcessBehavior.Parallel)
 					{
 						var att = eventInstance.GetType().FindAttribute<ProcessBehaviorAttribute>();
 

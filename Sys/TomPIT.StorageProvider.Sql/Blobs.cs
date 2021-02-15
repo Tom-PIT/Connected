@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.Api.Storage;
 using TomPIT.Storage;
 using TomPIT.SysDb.Environment;
@@ -19,6 +20,25 @@ namespace TomPIT.StorageProvider.Sql
 			r.Execute();
 		}
 
+		public List<IBlobContent> Download(IServerResourceGroup resourceGroup, List<int> types)
+		{
+			using var r = new ResourceGroupReader<BlobContent>(resourceGroup, "tompit.blob_content_que_by_type");
+
+			var ja = new JArray();
+
+			foreach (var type in types)
+			{
+				ja.Add(new JObject
+				{
+					{ "type", type }
+				});
+			}
+
+			r.CreateParameter("@resource_group", resourceGroup.GetId());
+			r.CreateParameter("@types", ja);
+
+			return r.Execute().ToList<IBlobContent>();
+		}
 		public IBlobContent Download(IServerResourceGroup resourceGroup, Guid blob)
 		{
 			var r = new ResourceGroupReader<BlobContent>(resourceGroup, "tompit.blob_content_sel");

@@ -15,7 +15,7 @@ namespace TomPIT.Development.Analysis
 		{
 			IntervalTimeout = TimeSpan.FromSeconds(1);
 		}
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			var tenants = Shell.GetService<IConnectivityService>()?.QueryTenants();
 

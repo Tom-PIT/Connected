@@ -67,7 +67,7 @@ namespace TomPIT.BigData.Transactions
 
 		private static void OnWorkerCompleted(object sender, EventArgs e)
 		{
-			if (!(sender is StorageWorker worker))
+			if (sender is not StorageWorker worker)
 				return;
 
 			try

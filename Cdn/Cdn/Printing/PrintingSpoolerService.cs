@@ -12,7 +12,7 @@ namespace TomPIT.Cdn.Printing
 {
 	internal class PrintingSpoolerService : HostedService
 	{
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			if (Instance.State == InstanceState.Initializing)
 				return false;
@@ -22,7 +22,7 @@ namespace TomPIT.Cdn.Printing
 			return true;
 		}
 
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			if (PrintingHubs.Printing == null)
 			{

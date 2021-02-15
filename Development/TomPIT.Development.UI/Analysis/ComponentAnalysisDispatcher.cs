@@ -7,7 +7,7 @@ namespace TomPIT.Development.Analysis
 {
 	internal class ComponentAnalysisDispatcher : Dispatcher<IComponentDevelopmentState>
 	{
-		public ComponentAnalysisDispatcher(ITenant tenant, CancellationToken cancel) : base(cancel, 128)
+		public ComponentAnalysisDispatcher(ITenant tenant) : base(128)
 		{
 			Tenant = tenant;
 		}

@@ -12,21 +12,24 @@ namespace TomPIT.Distributed
 	{
 		private ConcurrentQueue<T> _items = null;
 		private List<DispatcherJob<T>> _workers = null;
-		private readonly CancellationToken _cancel;
 		private Lazy<ConcurrentDictionary<string, QueuedDispatcher<T>>> _queuedDispatchers = new Lazy<ConcurrentDictionary<string, QueuedDispatcher<T>>>();
 		private bool _disposed = false;
+		private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
 
-		protected Dispatcher(CancellationToken cancel, int workerSize)
+		protected Dispatcher(int workerSize)
 		{
-			_cancel = cancel;
 			WorkerSize = workerSize;
 
-			new Task(() => OnScaveging(), _cancel, TaskCreationOptions.LongRunning).Start();
+			new Task(() => OnScaveging(), Cancel.Token, TaskCreationOptions.LongRunning).Start();
 		}
+
+		private CancellationTokenSource Cancel => _cancel;
 
 		private void OnScaveging()
 		{
-			while (!_cancel.IsCancellationRequested)
+			var token = Cancel.Token;
+
+			while (!Cancel.IsCancellationRequested)
 			{
 				try
 				{
@@ -35,7 +38,7 @@ namespace TomPIT.Distributed
 					foreach (var disposedDispatcher in disposed)
 						QueuedDispatchers.Remove(disposedDispatcher.Key, out QueuedDispatcher<T> _);
 
-					_cancel.WaitHandle.WaitOne(TimeSpan.FromMinutes(1));
+					token.WaitHandle.WaitOne(TimeSpan.FromMinutes(1));
 				}
 				catch { }
 			}
@@ -71,7 +74,7 @@ namespace TomPIT.Distributed
 
 			if (Jobs.Count < WorkerSize)
 			{
-				var worker = CreateWorker(this, _cancel);
+				var worker = CreateWorker(this, Cancel.Token);
 
 				worker.Completed += OnCompleted;
 
@@ -135,7 +138,19 @@ namespace TomPIT.Distributed
 
 					try
 					{
+						Cancel.Cancel();
+						Queue.Clear();
+
+						foreach (var job in Jobs)
+							job.Dispose();
+
 						Jobs.Clear();
+
+						foreach (var dispatcher in QueuedDispatchers)
+							dispatcher.Value.Dispose();
+
+						QueuedDispatchers.Clear();
+						Cancel.Dispose();
 					}
 					catch { }
 				}
@@ -163,7 +178,7 @@ namespace TomPIT.Distributed
 				return result;
 			}
 
-			result = new QueuedDispatcher<T>(this, _cancel);
+			result = new QueuedDispatcher<T>(this);
 
 			if (!QueuedDispatchers.TryAdd(stack, result))
 			{

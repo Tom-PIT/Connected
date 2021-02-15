@@ -18,7 +18,7 @@ namespace TomPIT.Cdn.Events
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
 		}
 
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			if (Instance.State == InstanceState.Initializing)
 				return false;
@@ -28,7 +28,7 @@ namespace TomPIT.Cdn.Events
 
 			return true;
 		}
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -64,5 +64,15 @@ namespace TomPIT.Cdn.Events
 		}
 
 		private List<EventDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+
+		public override void Dispose()
+		{
+			foreach (var dispatcher in Dispatchers)
+				dispatcher.Dispose();
+
+			Dispatchers.Clear();
+
+			base.Dispose();
+		}
 	}
 }

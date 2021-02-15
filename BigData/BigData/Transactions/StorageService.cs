@@ -14,10 +14,10 @@ namespace TomPIT.BigData.Transactions
 
 		public StorageService()
 		{
-			IntervalTimeout = TimeSpan.FromMilliseconds(100);
+			IntervalTimeout = TimeSpan.FromMilliseconds(490);
 		}
 
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			if (Instance.State == InstanceState.Initializing)
 				return false;
@@ -25,11 +25,11 @@ namespace TomPIT.BigData.Transactions
 			StoragePool.Cancel = cancel;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new StorageDispatcher(i, cancel));
+				Dispatchers.Add(new StorageDispatcher(i));
 
 			return true;
 		}
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -59,5 +59,15 @@ namespace TomPIT.BigData.Transactions
 		}
 
 		private List<StorageDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+
+		public override void Dispose()
+		{
+			foreach (var dispatcher in Dispatchers)
+				dispatcher.Dispose();
+
+			Dispatchers.Clear();
+
+			base.Dispose();
+		}
 	}
 }

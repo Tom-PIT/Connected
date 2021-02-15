@@ -14,11 +14,11 @@ namespace TomPIT.Distributed
 			IntervalTimeout = TimeSpan.FromSeconds(3);
 		}
 
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			return Instance.State == InstanceState.Running;
 		}
-		protected override Task Process(CancellationToken token)
+		protected override Task OnExecute(CancellationToken token)
 		{
 			try
 			{

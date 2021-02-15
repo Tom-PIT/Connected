@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TomPIT.Api.Storage;
 using TomPIT.Caching;
 using TomPIT.Storage;
@@ -11,6 +12,33 @@ namespace TomPIT.Sys.Model.Blobs
 		public BlobsContentsModel(IMemoryCache container) : base(container, "blobcontent")
 		{
 
+		}
+
+		public List<IBlobContent> Query(List<Guid> resourceGroups, List<int> types)
+		{
+			var result = new List<IBlobContent>();
+
+			Parallel.ForEach(resourceGroups,
+				(i) =>
+				{
+					var sp = Shell.GetService<IStorageProviderService>().Resolve(i);
+					var rg = DataModel.ResourceGroups.Select(i);
+
+					if (rg == null)
+						return;
+
+					var data = sp.Blobs.Download(rg, types);
+
+					if(data!=null&&data.Count>0)
+					{
+						lock (result)
+						{
+							result.AddRange(data);
+						}
+					}
+				});
+
+			return result;
 		}
 
 		public List<IBlobContent> Query(List<Guid> blobs)

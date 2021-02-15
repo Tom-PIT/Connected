@@ -74,7 +74,7 @@ namespace TomPIT.Sys.Model.Components
 					else
 					{
 						Refresh(component.Token);
-						CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.Category);
+						CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token,  component.NameSpace, component.Category, component.Name);
 					}
 				}
 
@@ -91,7 +91,7 @@ namespace TomPIT.Sys.Model.Components
 		public void NotifyChanged(IComponent component)
 		{
 			Refresh(component.Token);
-			CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.Category);
+			CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token,  component.NameSpace, component.Category, component.Name);
 		}
 
 		public IComponent Select(Guid token)
@@ -270,8 +270,8 @@ namespace TomPIT.Sys.Model.Components
 
 		public List<IComponent> Query(string resourceGroups, string categories)
 		{
-			var tokens = string.IsNullOrWhiteSpace(resourceGroups) ? new string[] { } : resourceGroups.Split(',');
-			var cats = categories.Split(',');
+			var tokens = string.IsNullOrWhiteSpace(resourceGroups) ? Array.Empty<string>() : resourceGroups.Split(',', StringSplitOptions.RemoveEmptyEntries);
+			var cats = string.IsNullOrWhiteSpace(categories) ? Array.Empty<string>() : categories.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
 			var r = new List<IComponent>();
 			var microServices = new List<IMicroService>();
@@ -301,15 +301,25 @@ namespace TomPIT.Sys.Model.Components
 
 			foreach (var i in microServices)
 			{
-				foreach (var j in cats)
+				if (cats.Length == 0)
 				{
-					if (string.IsNullOrWhiteSpace(j))
-						continue;
-
-					var ds = Query(i.Token, j.Trim());
+					var ds = Query(i.Token, false);
 
 					if (ds.Count > 0)
 						r.AddRange(ds);
+				}
+				else
+				{
+					foreach (var j in cats)
+					{
+						if (string.IsNullOrWhiteSpace(j))
+							continue;
+
+						var ds = Query(i.Token, j.Trim());
+
+						if (ds.Count > 0)
+							r.AddRange(ds);
+					}
 				}
 			}
 
@@ -389,7 +399,7 @@ namespace TomPIT.Sys.Model.Components
 			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Insert(s, DateTime.UtcNow, f, category, nameSpace, name, component, type, runtimeConfiguration);
 
 			Refresh(component);
-			CachingNotifications.ComponentAdded(microService, folder, component, category);
+			CachingNotifications.ComponentAdded(microService, folder, component, nameSpace, category, name);
 		}
 
 		public void UpdateModified(Guid microService, string category, string name)
@@ -462,7 +472,7 @@ namespace TomPIT.Sys.Model.Components
 			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, DateTime.UtcNow, name, f, runtimeConfiguration);
 
 			Refresh(component);
-			CachingNotifications.ComponentChanged(c.MicroService, c.Folder, component, c.Category);
+			CachingNotifications.ComponentChanged(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name);
 		}
 
 		public void Delete(Guid component, Guid user, bool permanent)
@@ -492,7 +502,7 @@ namespace TomPIT.Sys.Model.Components
 				Refresh(component);
 			}
 
-			CachingNotifications.ComponentRemoved(c.MicroService, c.Folder, component, c.Category);
+			CachingNotifications.ComponentRemoved(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name);
 		}
 
 		public string CreateComponentName(Guid microService, string prefix, string nameSpace)

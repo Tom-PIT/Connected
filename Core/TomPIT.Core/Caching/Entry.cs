@@ -4,45 +4,35 @@ namespace TomPIT.Caching
 {
 	internal class Entry : IDisposable
 	{
-		private DateTime _expirationDate = DateTime.MinValue;
-		private bool _slidingExpiration = false;
-		private TimeSpan _duration;
-
 		public Entry(string id, object instance, TimeSpan duration, bool slidingExpiration)
 		{
 			Id = id;
-			_duration = duration;
 			Instance = instance;
-			_slidingExpiration = slidingExpiration;
+			SlidingExpiration = slidingExpiration;
+			Duration = duration;
 
-			if (duration > TimeSpan.Zero)
-				_expirationDate = DateTime.UtcNow.AddTicks(duration.Ticks);
+			if (Duration > TimeSpan.Zero)
+				ExpirationDate = DateTime.UtcNow.AddTicks(duration.Ticks);
 		}
+
+		private bool SlidingExpiration { get; }
+		private DateTime ExpirationDate { get; set; }
+		private TimeSpan Duration { get; set; }
 
 		public object Instance { get; }
 		public string Id { get; }
+		public bool Expired => ExpirationDate != DateTime.MinValue && ExpirationDate < DateTime.UtcNow;
 
 		public void Hit()
 		{
-			if (_slidingExpiration && _duration > TimeSpan.Zero)
-				_expirationDate = DateTime.UtcNow.AddTicks(_duration.Ticks);
-		}
-
-		public bool Expired
-		{
-			get
-			{
-				if (_expirationDate == DateTime.MinValue)
-					return false;
-
-				return _expirationDate < DateTime.UtcNow;
-			}
+			if (SlidingExpiration && Duration > TimeSpan.Zero)
+				ExpirationDate = DateTime.UtcNow.AddTicks(Duration.Ticks);
 		}
 
 		public void Dispose()
 		{
-			if (Instance != null && Instance is IDisposable)
-				((IDisposable)Instance).Dispose();
+			if (Instance is IDisposable disposable)
+				disposable.Dispose();
 		}
 	}
 }

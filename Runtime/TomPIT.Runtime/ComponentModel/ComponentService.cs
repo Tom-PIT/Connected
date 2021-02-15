@@ -12,6 +12,7 @@ using TomPIT.Connectivity;
 using TomPIT.Design.Serialization;
 using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
+using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
@@ -20,7 +21,7 @@ using TomPIT.Storage;
 
 namespace TomPIT.ComponentModel
 {
-	internal class ComponentService : ClientRepository<IComponent, Guid>, IComponentService, IComponentNotification
+	internal class ComponentService : SynchronizedClientRepository<IComponent, Guid>, IComponentService, IComponentNotification
 	{
 		private Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>> _configurationCache = new Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>>();
 		public event ComponentChangedHandler ComponentChanged;
@@ -30,11 +31,33 @@ namespace TomPIT.ComponentModel
 		public event ConfigurationChangedHandler ConfigurationAdded;
 		public event ConfigurationChangedHandler ConfigurationRemoved;
 		public event FolderChangedHandler FolderChanged;
+		private Lazy<ConcurrentDictionary<string, bool>> _namespaceReferences = new Lazy<ConcurrentDictionary<string, bool>>();
 
 		public ComponentService(ITenant tenant) : base(tenant, "component")
 		{
 			Tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
 			Folders = new FolderCache(Tenant);
+		}
+
+		protected override void OnInitialized()
+		{
+			var resourceGroups = Tenant.GetService<IResourceGroupService>().Query();
+			var sb = new StringBuilder();
+
+			foreach (var rg in resourceGroups)
+				sb.Append($"{rg.Name},");
+
+			var u = Tenant.CreateUrl("Component", "QueryByResourceGroups");
+			var args = new
+			{
+				resourceGroups = sb.ToString()
+			};
+
+			var components = Tenant.Post<List<Component>>(u, args).ToList<IComponent>();
+
+			foreach (var component in components)
+				Set(component.Token, component, TimeSpan.Zero);
+
 		}
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
@@ -109,6 +132,11 @@ namespace TomPIT.ComponentModel
 			if (r != null)
 				return r;
 
+			var key = $"{microService.ToString().ToLowerInvariant()}.{nameSpace.ToLowerInvariant()}.{name.ToLowerInvariant()}";
+
+			if (NamespaceReferences.TryGetValue(key, out bool exists) && !exists)
+				return null;
+
 			var u = Tenant.CreateUrl("Component", "SelectByNameSpace")
 				.AddParameter("microService", microService)
 				.AddParameter("nameSpace", nameSpace)
@@ -118,6 +146,8 @@ namespace TomPIT.ComponentModel
 
 			if (r != null)
 				Set(r.Token, r);
+			else
+				NamespaceReferences.TryAdd(key, false);
 
 			return r;
 		}
@@ -136,6 +166,7 @@ namespace TomPIT.ComponentModel
 
 		public void NotifyAdded(object sender, ComponentEventArgs e)
 		{
+			NamespaceReferences.TryRemove($"{e.MicroService.ToString().ToLowerInvariant()}.{e.NameSpace.ToLowerInvariant()}.{e.Name.ToLowerInvariant()}", out bool _);
 			ComponentAdded?.Invoke(Tenant, e);
 		}
 
@@ -213,11 +244,14 @@ namespace TomPIT.ComponentModel
 			foreach (var i in resourceGroups)
 				sb.AppendFormat("{0},", i.ToString());
 
-			var u = Tenant.CreateUrl("Component", "QueryByResourceGroups")
-				.AddParameter("resourceGroups", sb.ToString().TrimEnd(','))
-				.AddParameter("categories", categories);
-
-			return QueryConfigurations(Tenant.Get<List<Component>>(u).ToList<IComponent>());
+			var u = Tenant.CreateUrl("Component", "QueryByResourceGroups");
+			var args = new
+			{
+				resourceGroups = sb.ToString().TrimEnd(','),
+				categories = categories
+			};
+			
+			return QueryConfigurations(Tenant.Post<List<Component>>(u, args).ToList<IComponent>());
 		}
 
 		public IConfiguration SelectConfiguration(Guid microService, string category, string name)
@@ -249,6 +283,7 @@ namespace TomPIT.ComponentModel
 			{
 				var state = ConfigurationCache[component.Token];
 
+				//return state.Instance;
 				return Tenant.GetService<ISerializationService>().Deserialize(state.State, state.Type) as IConfiguration;
 			}
 
@@ -307,7 +342,8 @@ namespace TomPIT.ComponentModel
 				ConfigurationCache.TryAdd(component.Token, new ConfigurationSerializationState
 				{
 					Type = r.GetType(),
-					State = Tenant.GetService<ISerializationService>().Serialize(r)
+					State = Tenant.GetService<ISerializationService>().Serialize(r),
+					//Instance = r
 				});
 			}
 
@@ -638,5 +674,7 @@ namespace TomPIT.ComponentModel
 
 			return Tenant.Get<List<Component>>(u).ToList<IComponent>();
 		}
+
+		private ConcurrentDictionary<string, bool> NamespaceReferences => _namespaceReferences.Value;
 	}
 }

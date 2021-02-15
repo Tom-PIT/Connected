@@ -9,16 +9,7 @@ namespace TomPIT.Caching
 	{
 		private ConcurrentDictionary<string, Entries> _items = null;
 
-		private ConcurrentDictionary<string, Entries> Items
-		{
-			get
-			{
-				if (_items == null)
-					_items = new ConcurrentDictionary<string, Entries>();
-
-				return _items;
-			}
-		}
+		private ConcurrentDictionary<string, Entries> Items => _items ??= new ConcurrentDictionary<string, Entries>();
 
 		public void Clear()
 		{
@@ -36,7 +27,7 @@ namespace TomPIT.Caching
 			var empties = Items.Where(f => f.Value.Count == 0).Select(f => f.Key);
 
 			foreach (var i in empties)
-				Items.TryRemove(i, out Entries d);
+				Items.TryRemove(i, out _);
 		}
 
 		public bool IsEmpty(string key)
@@ -127,80 +118,42 @@ namespace TomPIT.Caching
 
 		public bool Exists(string key, string id)
 		{
-			if (!Items.ContainsKey(key))
-				return false;
-
-			return Items[key].Exists(id);
+			return Items.ContainsKey(key) && Items[key].Exists(id);
 		}
 
 		public Entry Get(string key, string id)
 		{
-			if (!Items.ContainsKey(key))
-				return null;
-
-			var d = Items[key];
-
-			return d.Get(id);
+			return Items.ContainsKey(key) ? Items[key].Get(id) : null;
 		}
 
 		public Entry First(string key)
 		{
-			if (!Items.ContainsKey(key))
-				return null;
-
-			var d = Items[key];
-
-			return d.First();
+			return Items.ContainsKey(key) ? Items[key].First() : null;
 		}
 
 		public Entry Get<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			if (!Items.ContainsKey(key))
-				return null;
-
-			var d = Items[key];
-
-			return d.Get<T>(predicate);
+			return Items.ContainsKey(key) ? Items[key].Get(predicate) : null;
 		}
 
 		public Entry Get<T>(string key, Func<dynamic, bool> predicate) where T : class
 		{
-			if (!Items.ContainsKey(key))
-				return null;
-
-			var d = Items[key];
-
-			return d.Get<T>(predicate);
+			return Items.ContainsKey(key) ? Items[key].Get<T>(predicate) : null;
 		}
 
 		public List<T> Where<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			if (!Items.ContainsKey(key))
-				return null;
-
-			var d = Items[key];
-
-			return d.Where<T>(predicate);
+			return Items.ContainsKey(key) ? Items[key].Where(predicate) : null;
 		}
 
 		public List<string> Remove<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			if (!Items.ContainsKey(key))
-				return null;
-
-			var d = Items[key];
-
-			return d.Remove(predicate);
+			return Items.ContainsKey(key) ? Items[key].Remove(predicate) : null;
 		}
 
 		public ICollection<string> Keys(string key)
 		{
-			if (!Items.ContainsKey(key))
-				return null;
-
-			var d = Items[key];
-
-			return d.Keys;
+			return Items.ContainsKey(key) ? Items[key].Keys : null;
 		}
 	}
 }

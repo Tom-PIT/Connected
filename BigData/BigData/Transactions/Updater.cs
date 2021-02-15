@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -228,9 +229,12 @@ namespace TomPIT.BigData.Transactions
 			foreach (var table in Data.Values)
 			{
 				var removables = new List<DataRow>();
+				
+				Console.WriteLine($"Tearing off: {table.Rows.Count}");
 
-				foreach (DataRow row in table.Rows)
+				for(var i = 0; i < table.Rows.Count; i++)
 				{
+					var row = table.Rows[i];
 					var duplicates = Duplicates(table, row, keyFields);
 
 					if (duplicates == null)
@@ -241,6 +245,7 @@ namespace TomPIT.BigData.Transactions
 
 					removables.AddRange(duplicates.Select(f => f.Row));
 				}
+
 				foreach (var row in removables)
 					table.Rows.Remove(row);
 			}
@@ -250,13 +255,14 @@ namespace TomPIT.BigData.Transactions
 		{
 			var result = new List<DataRowDuplicate>();
 
-			foreach (DataRow dr in table.Rows)
+			for(var i = 0; i < table.Rows.Count; i++)
 			{
+				var dr = table.Rows[i];
 				var match = true;
 
 				foreach (var field in keyFields)
 				{
-					if (!Types.Compare(row[field], dr[field]))
+					if (Comparer.Default.Compare(row[field], dr[field]) != 0)
 					{
 						match = false;
 						break;
@@ -267,7 +273,7 @@ namespace TomPIT.BigData.Transactions
 				{
 					result.Add(new DataRowDuplicate
 					{
-						Index = table.Rows.IndexOf(dr),
+						Index = i,
 						Row = dr,
 						Timestamp = Types.Convert<DateTime>(dr[Merger.TimestampColumn])
 					});

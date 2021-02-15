@@ -33,9 +33,13 @@ namespace TomPIT.Sys.Controllers
 			return DataModel.Components.Query(microService, folder);
 		}
 
-		[HttpGet]
-		public List<IComponent> QueryByResourceGroups(string resourceGroups, string categories)
+		[HttpPost]
+		public List<IComponent> QueryByResourceGroups()
 		{
+			var body = FromBody();
+			var resourceGroups = body.Required<string>("resourceGroups");
+			var categories = body.Optional("categories", string.Empty);
+
 			return DataModel.Components.Query(resourceGroups, categories);
 		}
 

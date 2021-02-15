@@ -66,7 +66,7 @@ namespace TomPIT.Compilation
 			foreach (var i in scripts)
 			{
 				if (i.MicroService == e.MicroService)
-					Remove(i.Id);
+					RemoveScript(i.Id);
 			}
 		}
 
@@ -119,7 +119,26 @@ namespace TomPIT.Compilation
 			var d = GetCachedScript(sourceCode.Id);
 
 			if (d == null)
-				d = CreateScript(microService, sourceCode);
+			{
+				var re = new ManualResetEvent(false);
+
+				if (!ScriptCreateState.TryAdd(sourceCode.Id, re))
+				{
+					re = ScriptCreateState[sourceCode.Id];
+
+					re.WaitOne();
+
+					d = GetCachedScript(sourceCode.Id);
+				}
+				else
+				{
+					d = CreateScript(microService, sourceCode);
+
+					re.Set();
+
+					ScriptCreateState.TryRemove(sourceCode.Id, out _);
+				}
+			}
 
 			return d;
 		}
@@ -374,7 +393,7 @@ namespace TomPIT.Compilation
 			};
 
 			Tenant.Post(u, args);
-			Remove(sourceCode.Id);
+			RemoveScript(sourceCode.Id);
 			InvalidateReferences(component, id);
 		}
 
@@ -400,7 +419,7 @@ namespace TomPIT.Compilation
 
 		public void NotifyChanged(object sender, ScriptChangedEventArgs e)
 		{
-			Remove(e.SourceCode);
+			RemoveScript(e.SourceCode);
 			InvalidateReferences(e.Container, e.SourceCode);
 		}
 
@@ -410,7 +429,7 @@ namespace TomPIT.Compilation
 			{
 				if (reference.Value.Contains(container) || reference.Value.Contains(script))
 				{
-					Remove(reference.Key);
+					RemoveScript(reference.Key);
 					References.Remove(reference.Key, out _);
 				}
 			}
@@ -716,6 +735,12 @@ namespace TomPIT.Compilation
 
 				return _analyzers;
 			}
+		}
+
+		private void RemoveScript(Guid id)
+		{
+			Remove(id);
+			ScriptContext.RemoveContext(id);
 		}
 	}
 }

@@ -15,6 +15,7 @@ namespace TomPIT.BigData.Transactions
 	{
 		private bool _disposed = false;
 		private BackgroundWorker _worker = null;
+		private readonly Guid _id = Guid.NewGuid();
 		//private TimeoutTask _timeout = null;
 
 		public event EventHandler Completed;
@@ -35,7 +36,7 @@ namespace TomPIT.BigData.Transactions
 			Worker.RunWorkerAsync();
 		}
 
-		public Guid Id => Guid.NewGuid();
+		public Guid Id => _id;
 		public bool IsRunning => Worker.IsBusy;
 
 		private BackgroundWorker Worker
@@ -55,6 +56,7 @@ namespace TomPIT.BigData.Transactions
 
 		private void OnCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
+			Console.WriteLine($"Completing: {Partition}");
 			Completed?.Invoke(this, EventArgs.Empty);
 		}
 
@@ -91,9 +93,9 @@ namespace TomPIT.BigData.Transactions
 		{
 			var timeout = new TimeoutTask(() =>
 			{
-				MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromMinutes(1));
+				MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromMinutes(10));
 				return Task.CompletedTask;
-			}, TimeSpan.FromSeconds(45), Cancel);
+			}, TimeSpan.FromMinutes(5), Cancel);
 
 			timeout.Start();
 
@@ -108,7 +110,7 @@ namespace TomPIT.BigData.Transactions
 			}
 
 		}
-		private void OnError(StorageWorkerItem item, Exception ex)
+		private static void OnError(StorageWorkerItem item, Exception ex)
 		{
 			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(StorageJob));
 			MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromSeconds(5));

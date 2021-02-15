@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading;
+using TomPIT.Diagnostics;
+using TomPIT.Diagostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 using TomPIT.Storage;
@@ -27,7 +29,7 @@ namespace TomPIT.BigData.Transactions
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-
+			MiddlewareDescriptor.Current.Tenant.LogError(nameof(StorageJob), ex.Message, LogCategories.BigData);
 		}
 	}
 }

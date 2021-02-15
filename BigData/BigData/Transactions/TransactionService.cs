@@ -54,7 +54,7 @@ namespace TomPIT.BigData.Transactions
 			var e = new JObject
 			{
 				{"count", count },
-				{"nextVisible", 60 }
+				{"nextVisible", 600 }
 			};
 
 			return Tenant.Post<List<QueueMessage>>(u, e).ToList<IQueueMessage>();

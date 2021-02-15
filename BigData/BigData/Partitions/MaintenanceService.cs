@@ -17,18 +17,18 @@ namespace TomPIT.BigData.Partitions
 			IntervalTimeout = TimeSpan.FromMilliseconds(4900);
 		}
 
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			if (Instance.State == InstanceState.Initializing)
 				return false;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new MaintenanceDispatcher(i, cancel));
+				Dispatchers.Add(new MaintenanceDispatcher(i));
 
 			return true;
 		}
 
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -53,5 +53,15 @@ namespace TomPIT.BigData.Partitions
 		}
 
 		private List<MaintenanceDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+
+		public override void Dispose()
+		{
+			foreach (var dispatcher in Dispatchers)
+				dispatcher.Dispose();
+
+			Dispatchers.Clear();
+
+			base.Dispose();
+		}
 	}
 }

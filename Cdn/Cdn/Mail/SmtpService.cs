@@ -14,24 +14,27 @@ namespace TomPIT.Cdn.Mail
 	{
 		private Socket _listener;
 		private ManualResetEvent _allDone = new ManualResetEvent(false);
+		private CancellationTokenSource _cancel = new CancellationTokenSource();
 
 		public SmtpService()
 		{
 			IntervalTimeout = TimeSpan.Zero;
 		}
-		protected override Task Process(CancellationToken cancel)
+
+		private CancellationTokenSource Cancel => _cancel;
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			return Task.CompletedTask;
 		}
 
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			if (Instance.State == InstanceState.Initializing)
 				return false;
 
 			Task.Run(() =>
 			{
-				Run(cancel);
+				Run();
 			});
 
 			return true;
@@ -40,9 +43,10 @@ namespace TomPIT.Cdn.Mail
 		public static string HostName { get; private set; }
 		public static string Greeting { get; private set; }
 		public static string Endpoint { get; private set; }
-		private void Run(CancellationToken token)
+		private void Run()
 		{
 			var tenant = MiddlewareDescriptor.Current.Tenant;
+			var token = Cancel.Token;
 			Endpoint = tenant.GetService<ISettingService>().GetValue<string>("SmtpEndpoint", null, null, null);
 
 			if (string.IsNullOrWhiteSpace(Endpoint))
@@ -91,11 +95,15 @@ namespace TomPIT.Cdn.Mail
 			{
 				try
 				{
+					Cancel.Cancel();
+
 					if (_listener != null)
 					{
 						_listener.Disconnect(true);
 						_listener = null;
 					}
+
+					Cancel.Dispose();
 				}
 				catch
 				{

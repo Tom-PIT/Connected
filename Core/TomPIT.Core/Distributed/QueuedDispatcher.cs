@@ -8,13 +8,16 @@ namespace TomPIT.Distributed
 	{
 		private ConcurrentQueue<T> _items = null;
 		private bool _disposed = false;
+		private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
 
-		public QueuedDispatcher(IDispatcher<T> owner, CancellationToken cancel)
+		public QueuedDispatcher(IDispatcher<T> owner)
 		{
-			Worker = owner.CreateWorker(this, cancel);
+			Worker = owner.CreateWorker(this, Cancel.Token);
 
 			Worker.Completed += OnCompleted;
 		}
+
+		private CancellationTokenSource Cancel => _cancel;
 
 		private DispatcherJob<T> Worker { get; set; }
 		private IDispatcher<T> Owner { get; set; }
@@ -76,11 +79,9 @@ namespace TomPIT.Distributed
 
 					try
 					{
-						if (Worker != null)
-						{
-							Worker.Dispose();
-							Worker = null;
-						}
+						Cancel.Cancel();
+						Worker.Dispose();
+						Cancel.Dispose();
 					}
 					catch { }
 				}

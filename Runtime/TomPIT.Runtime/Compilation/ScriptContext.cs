@@ -19,6 +19,7 @@ namespace TomPIT.Compilation
 		private AssemblyResolver _assemblyResolver = null;
 		private ConcurrentDictionary<string, IText> _sources = null;
 		private StringBuilder _sourceText = null;
+		private static Lazy<ConcurrentDictionary<Guid, ScriptContextDescriptor>> _contexts = new Lazy<ConcurrentDictionary<Guid, ScriptContextDescriptor>>();
 		public ScriptContext(ITenant tenant, IText sourceCode) : base(tenant)
 		{
 			MicroService = Tenant.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService());
@@ -39,10 +40,10 @@ namespace TomPIT.Compilation
 		}
 		private void LoadScript(IText sourceCode)
 		{
-			ProcessScript(Tenant.GetService<IComponentService>().SelectText(MicroService.Token, sourceCode), sourceCode.ResolvePath(Tenant));
+			ProcessScript(sourceCode.Id, Tenant.GetService<IComponentService>().SelectText(MicroService.Token, sourceCode), sourceCode.ResolvePath(Tenant));
 		}
 
-		private void ProcessScript(string sourceCode, string basePath)
+		private void ProcessScript(Guid id, string sourceCode, string basePath)
 		{
 			if (string.IsNullOrWhiteSpace(sourceCode))
 				return;
@@ -50,35 +51,48 @@ namespace TomPIT.Compilation
 			string currentLine = null;
 			var references = new List<string>();
 
-			using (var reader = new StringReader(sourceCode))
+			if (Contexts.TryGetValue(id, out ScriptContextDescriptor existing))
+				references = existing.References;
+			else
 			{
-				while ((currentLine = reader.ReadLine()) != null)
+				using (var reader = new StringReader(sourceCode))
 				{
-					if (!currentLine.Trim().StartsWith('#'))
-						SourceText.AppendLine(currentLine);
-					else
+					while ((currentLine = reader.ReadLine()) != null)
 					{
-						var line = currentLine.Trim();
-						var tokens = line.Split(" ".ToCharArray(), 2);
-
-						if (tokens.Length < 2 || tokens[1].Length < 3)
-							continue;
-
-						var token = tokens[1].Substring(1, tokens[1].Length - 2);
-
-						if (line.StartsWith("#load"))
-							references.Add(token);
-						else if (line.StartsWith("#r "))
+						if (!currentLine.Trim().StartsWith('#'))
+							SourceText.AppendLine(currentLine);
+						else
 						{
-							var path = AssemblyResolver.ResolvePath(token, basePath);
+							var line = currentLine.Trim();
+							var tokens = line.Split(" ".ToCharArray(), 2);
 
-							if (References.ContainsKey(path))
+							if (tokens.Length < 2 || tokens[1].Length < 3)
 								continue;
 
-							References.Add(path, AssemblyResolver.ResolveReference(token, basePath, MetadataReferenceProperties.Assembly));
+							var token = tokens[1].Substring(1, tokens[1].Length - 2);
+
+							if (line.StartsWith("#load"))
+								references.Add(token);
+							else if (line.StartsWith("#r "))
+							{
+								var path = AssemblyResolver.ResolvePath(token, basePath);
+
+								if (References.ContainsKey(path))
+									continue;
+
+								References.Add(path, AssemblyResolver.ResolveReference(token, basePath, MetadataReferenceProperties.Assembly));
+							}
 						}
 					}
 				}
+
+				var descriptor = new ScriptContextDescriptor();
+
+				if (references.Count > 0)
+					descriptor.References.AddRange(references);
+
+				if (!Contexts.TryAdd(id, descriptor))
+					Contexts.TryGetValue(id, out descriptor);
 			}
 
 			Parallel.ForEach(references, (i) =>
@@ -113,10 +127,11 @@ namespace TomPIT.Compilation
 
 				SourceFiles.TryAdd(resolvedReference, sourceFile);
 
-				var text = ScriptResolver.ReadText(resolvedReference);
+				var text = Tenant.GetService<IComponentService>().SelectText(sourceFile.Configuration().MicroService(), sourceFile);
 
 				if (text != null)
-					ProcessScript(text.ToString(), resolvedReference);
+					ProcessScript(sourceFile.Id, text.ToString(), resolvedReference);
+
 			});
 		}
 
@@ -165,5 +180,11 @@ namespace TomPIT.Compilation
 				return _assemblyResolver;
 			}
 		}
+
+		public static void RemoveContext(Guid script)
+		{
+			Contexts.TryRemove(script, out ScriptContextDescriptor _);
+		}
+		private static ConcurrentDictionary<Guid, ScriptContextDescriptor> Contexts => _contexts.Value;
 	}
 }

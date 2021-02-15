@@ -12,12 +12,12 @@ namespace TomPIT.Sys.Services
 		{
 			IntervalTimeout = TimeSpan.FromHours(12);
 		}
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			return DataModel.Initialized;
 		}
 
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			try
 			{

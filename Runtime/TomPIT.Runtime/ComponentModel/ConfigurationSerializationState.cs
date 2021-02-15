@@ -6,5 +6,6 @@ namespace TomPIT.ComponentModel
 	{
 		public byte[] State { get; set; }
 		public Type Type { get; set; }
+		//public IConfiguration Instance {get; set;}
 	}
 }

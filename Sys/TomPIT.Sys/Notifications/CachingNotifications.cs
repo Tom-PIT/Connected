@@ -81,9 +81,9 @@ namespace TomPIT.Sys.Notifications
 		public static void PermissionAdded(Guid resourceGroup, string evidence, string schema, string claim, string primaryKey, string descriptor) { Notify(nameof(PermissionAdded), new PermissionEventArgs(resourceGroup, evidence, schema, claim, primaryKey, descriptor)); }
 		public static void PermissionChanged(Guid resourceGroup, string evidence, string schema, string claim, string primaryKey, string descriptor) { Notify(nameof(PermissionChanged), new PermissionEventArgs(resourceGroup, evidence, schema, claim, primaryKey, descriptor)); }
 		public static void PermissionRemoved(Guid resourceGroup, string evidence, string schema, string claim, string primaryKey, string descriptor) { Notify(nameof(PermissionRemoved), new PermissionEventArgs(resourceGroup, evidence, schema, claim, primaryKey, descriptor)); }
-		public static void ComponentChanged(Guid microService, Guid folder, Guid component, string category) { Notify(nameof(ComponentChanged), new ComponentEventArgs(microService, folder, component, category)); }
-		public static void ComponentRemoved(Guid microService, Guid folder, Guid component, string category) { Notify(nameof(ComponentRemoved), new ComponentEventArgs(microService, folder, component, category)); }
-		public static void ComponentAdded(Guid microService, Guid folder, Guid component, string category) { Notify(nameof(ComponentAdded), new ComponentEventArgs(microService, folder, component, category)); }
+		public static void ComponentChanged(Guid microService, Guid folder, Guid component, string nameSpace, string category, string name) { Notify(nameof(ComponentChanged), new ComponentEventArgs(microService, folder, component, nameSpace, category, name)); }
+		public static void ComponentRemoved(Guid microService, Guid folder, Guid component, string nameSpace, string category, string name) { Notify(nameof(ComponentRemoved), new ComponentEventArgs(microService, folder, component, nameSpace, category, name)); }
+		public static void ComponentAdded(Guid microService, Guid folder, Guid component, string nameSpace, string category, string name) { Notify(nameof(ComponentAdded), new ComponentEventArgs(microService, folder, component, nameSpace, category, name)); }
 		/*
 		 * Configuration
 		 */

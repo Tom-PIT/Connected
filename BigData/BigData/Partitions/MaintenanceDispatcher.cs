@@ -6,7 +6,7 @@ namespace TomPIT.BigData.Partitions
 {
 	internal class MaintenanceDispatcher : Dispatcher<IQueueMessage>
 	{
-		public MaintenanceDispatcher(string resourceGroup, CancellationToken cancel) : base(cancel, 4)
+		public MaintenanceDispatcher(string resourceGroup) : base(4)
 		{
 			ResourceGroup = resourceGroup;
 		}

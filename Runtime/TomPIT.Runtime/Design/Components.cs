@@ -75,7 +75,7 @@ namespace TomPIT.Design
 			Tenant.Post(u, args);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification svc)
-				svc.NotifyRemoved(this, new ComponentEventArgs(c.MicroService, c.Folder, component, c.Category));
+				svc.NotifyRemoved(this, new ComponentEventArgs(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name));
 
 			/*
 		 * remove configuration file

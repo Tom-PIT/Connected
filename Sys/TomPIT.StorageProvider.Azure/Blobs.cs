@@ -68,6 +68,11 @@ namespace TomPIT.StorageProvider.Azure
 			return result;
 		}
 
+		public List<IBlobContent> Download(IServerResourceGroup resourceGroup, List<int> types)
+		{
+			throw new NotImplementedException();
+		}
+
 		public void Upload(IServerResourceGroup resourceGroup, Guid blob, byte[] content)
 		{
 			var b = AzureUtils.GetBlobReference(resourceGroup, AzureUtils.StorageContainer, blob.ToString());

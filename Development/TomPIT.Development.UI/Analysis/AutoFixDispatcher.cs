@@ -7,7 +7,7 @@ namespace TomPIT.Development.Analysis
 {
 	internal class AutoFixDispatcher : Dispatcher<IQueueMessage>
 	{
-		public AutoFixDispatcher(ITenant tenant, CancellationToken cancel) : base(cancel, 128)
+		public AutoFixDispatcher(ITenant tenant) : base(128)
 		{
 			Tenant = tenant;
 		}
