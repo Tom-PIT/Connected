@@ -163,6 +163,12 @@ namespace TomPIT.Data
 
 		private void DeserializeCollection(object instance, PropertyInfo property, JToken token)
 		{
+			if (property.PropertyType == typeof(byte[]))
+			{
+				SetValue(instance, property, token);
+				return;
+			}
+
 			var currentValue = EnsureInstance(instance, property) as IList;
 
 			if (currentValue == null)

@@ -99,7 +99,7 @@ namespace TomPIT.Cdn.Events
 					{
 						var att = eventInstance.GetType().FindAttribute<ProcessBehaviorAttribute>();
 
-						if (att.Behavior == ProcessBehavior.Queued)
+						if (att?.Behavior == ProcessBehavior.Queued)
 						{
 							Owner.Enqueue(att.QueueName, queue);
 							return false;

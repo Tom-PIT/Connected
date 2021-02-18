@@ -95,6 +95,7 @@ namespace TomPIT.Compilation
 
 				if (!ScriptCreateState.TryAdd(sourceCode.Id, re))
 				{
+					re.Dispose();
 					re = ScriptCreateState[sourceCode.Id];
 
 					re.WaitOne();
@@ -103,11 +104,17 @@ namespace TomPIT.Compilation
 				}
 				else
 				{
-					d = CreateScript<T>(microService, sourceCode);
+					try
+					{
+						d = CreateScript<T>(microService, sourceCode);
+					}
+					finally
+					{
+						re.Set();
 
-					re.Set();
-
-					ScriptCreateState.TryRemove(sourceCode.Id, out _);
+						if (ScriptCreateState.TryRemove(sourceCode.Id, out ManualResetEvent e))
+							e.Dispose();
+					}
 				}
 			}
 
@@ -124,6 +131,7 @@ namespace TomPIT.Compilation
 
 				if (!ScriptCreateState.TryAdd(sourceCode.Id, re))
 				{
+					re.Dispose();
 					re = ScriptCreateState[sourceCode.Id];
 
 					re.WaitOne();
@@ -132,11 +140,17 @@ namespace TomPIT.Compilation
 				}
 				else
 				{
-					d = CreateScript(microService, sourceCode);
+					try
+					{
+						d = CreateScript(microService, sourceCode);
+					}
+					finally
+					{
+						re.Set();
 
-					re.Set();
-
-					ScriptCreateState.TryRemove(sourceCode.Id, out _);
+						if (ScriptCreateState.TryRemove(sourceCode.Id, out ManualResetEvent e))
+							e.Dispose();
+					}
 				}
 			}
 

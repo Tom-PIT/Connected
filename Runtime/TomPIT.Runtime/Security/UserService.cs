@@ -28,6 +28,9 @@ namespace TomPIT.Security
 
 		public IUser Select(string qualifier)
 		{
+			if (string.IsNullOrWhiteSpace(qualifier))
+				return null;
+
 			IUser r = null;
 
 			if (Guid.TryParse(qualifier, out Guid g))

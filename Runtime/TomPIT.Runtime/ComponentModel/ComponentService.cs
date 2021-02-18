@@ -10,6 +10,7 @@ using TomPIT.Annotations.Design;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Design.Serialization;
+using TomPIT.Development;
 using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
 using TomPIT.Environment;
@@ -23,7 +24,7 @@ namespace TomPIT.ComponentModel
 {
 	internal class ComponentService : SynchronizedClientRepository<IComponent, Guid>, IComponentService, IComponentNotification
 	{
-		private Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>> _configurationCache = new Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>>();
+		private readonly Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>> _configurationCache = new Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>>();
 		public event ComponentChangedHandler ComponentChanged;
 		public event ComponentChangedHandler ComponentAdded;
 		public event ComponentChangedHandler ComponentRemoved;
@@ -31,7 +32,6 @@ namespace TomPIT.ComponentModel
 		public event ConfigurationChangedHandler ConfigurationAdded;
 		public event ConfigurationChangedHandler ConfigurationRemoved;
 		public event FolderChangedHandler FolderChanged;
-		private Lazy<ConcurrentDictionary<string, bool>> _namespaceReferences = new Lazy<ConcurrentDictionary<string, bool>>();
 
 		public ComponentService(ITenant tenant) : base(tenant, "component")
 		{
@@ -57,7 +57,17 @@ namespace TomPIT.ComponentModel
 
 			foreach (var component in components)
 				Set(component.Token, component, TimeSpan.Zero);
+		}
 
+		protected override void OnInvalidate(Guid id)
+		{
+			var u = Tenant.CreateUrl("Component", "SelectByToken")
+				.AddParameter("component", id);
+
+			var component = Tenant.Get<Component>(u);
+
+			if (component != null)
+				Set(component.Token, component, TimeSpan.Zero);
 		}
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
@@ -77,102 +87,47 @@ namespace TomPIT.ComponentModel
 
 		public List<IComponent> QueryComponents(Guid microService, string category)
 		{
-			var u = Tenant.CreateUrl("Component", "QueryByCategory")
-				.AddParameter("microService", microService)
-				.AddParameter("category", category);
-
-			return CacheComponents(Tenant.Get<List<Component>>(u).ToList<IComponent>());
+			return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0);
 		}
 
 		public List<IComponent> QueryComponents(Guid microService, Guid folder)
 		{
-			var u = Tenant.CreateUrl("Component", "QueryByFolder")
-				.AddParameter("microService", microService)
-				.AddParameter("folder", folder);
-
-			return CacheComponents(Tenant.Get<List<Component>>(u).ToList<IComponent>());
+			return Where(f => f.MicroService == microService && f.Folder == folder);
 		}
 
 		public List<IComponent> QueryComponents(Guid microService)
 		{
-			var u = Tenant.CreateUrl("Component", "Query")
-				.AddParameter("microService", microService);
-
-			return CacheComponents(Tenant.Get<List<Component>>(u).ToList<IComponent>());
+			return Where(f => f.MicroService == microService);
 		}
 
 		public IComponent SelectComponent(Guid microService, string category, string name)
 		{
-			var r = Get(f => f.MicroService == microService
+			return Get(f => f.MicroService == microService
 				&& string.Compare(f.Category, category, true) == 0
 				&& string.Compare(f.Name, name, true) == 0);
-
-			if (r != null)
-				return r;
-
-			var u = Tenant.CreateUrl("Component", "Select")
-				.AddParameter("microService", microService)
-				.AddParameter("category", category)
-				.AddParameter("name", name);
-
-			r = Tenant.Get<Component>(u);
-
-			if (r != null)
-				Set(r.Token, r);
-
-			return r;
 		}
 
 		public IComponent SelectComponentByNameSpace(Guid microService, string nameSpace, string name)
 		{
-			var r = Get(f => f.MicroService == microService
+			return Get(f => f.MicroService == microService
 				&& string.Compare(f.NameSpace, nameSpace, true) == 0
 				&& string.Compare(f.Name, name, true) == 0);
-
-			if (r != null)
-				return r;
-
-			var key = $"{microService.ToString().ToLowerInvariant()}.{nameSpace.ToLowerInvariant()}.{name.ToLowerInvariant()}";
-
-			if (NamespaceReferences.TryGetValue(key, out bool exists) && !exists)
-				return null;
-
-			var u = Tenant.CreateUrl("Component", "SelectByNameSpace")
-				.AddParameter("microService", microService)
-				.AddParameter("nameSpace", nameSpace)
-				.AddParameter("name", name);
-
-			r = Tenant.Get<Component>(u);
-
-			if (r != null)
-				Set(r.Token, r);
-			else
-				NamespaceReferences.TryAdd(key, false);
-
-			return r;
 		}
 
 		public IComponent SelectComponent(Guid component)
 		{
-			return Get(component,
-				(f) =>
-				{
-					var u = Tenant.CreateUrl("Component", "SelectByToken")
-						.AddParameter("component", component);
-
-					return Tenant.Get<Component>(u);
-				});
+			return Get(component);
 		}
 
 		public void NotifyAdded(object sender, ComponentEventArgs e)
 		{
-			NamespaceReferences.TryRemove($"{e.MicroService.ToString().ToLowerInvariant()}.{e.NameSpace.ToLowerInvariant()}.{e.Name.ToLowerInvariant()}", out bool _);
+			Refresh(e.Component);
 			ComponentAdded?.Invoke(Tenant, e);
 		}
 
 		public void NotifyChanged(object sender, ComponentEventArgs e)
 		{
-			Remove(e.Component);
+			Refresh(e.Component);
 			ComponentChanged?.Invoke(Tenant, e);
 		}
 
@@ -224,34 +179,77 @@ namespace TomPIT.ComponentModel
 
 		public List<IConfiguration> QueryConfigurations(Guid microService, string categories)
 		{
-			var r = new List<IConfiguration>();
+			var cats = categories.Split(',');
+			var r = new List<IComponent>();
 
-			var sb = new StringBuilder();
+			foreach (var j in cats)
+			{
+				if (string.IsNullOrWhiteSpace(j))
+					continue;
 
-			var u = Tenant.CreateUrl("Component", "QueryByMicroService")
-				.AddParameter("microService", microService)
-				.AddParameter("categories", categories);
+				var ds = QueryComponents(microService, j.Trim());
 
-			return QueryConfigurations(Tenant.Get<List<Component>>(u).ToList<IComponent>());
+				if (ds.Count > 0)
+					r.AddRange(ds);
+			}
+
+			return QueryConfigurations(r);
 		}
 
 		public List<IConfiguration> QueryConfigurations(List<string> resourceGroups, string categories)
 		{
-			var r = new List<IConfiguration>();
+			var cats = string.IsNullOrWhiteSpace(categories) ? Array.Empty<string>() : categories.Split(',', StringSplitOptions.RemoveEmptyEntries);
+			var r = new List<IComponent>();
+			var microServices = new List<IMicroService>();
 
-			var sb = new StringBuilder();
-
-			foreach (var i in resourceGroups)
-				sb.AppendFormat("{0},", i.ToString());
-
-			var u = Tenant.CreateUrl("Component", "QueryByResourceGroups");
-			var args = new
+			if (resourceGroups.Count == 0)
 			{
-				resourceGroups = sb.ToString().TrimEnd(','),
-				categories = categories
-			};
-			
-			return QueryConfigurations(Tenant.Post<List<Component>>(u, args).ToList<IComponent>());
+				var ms = Tenant.GetService<IMicroServiceService>().Query();
+
+				if (ms != null && ms.Count > 0)
+					microServices.AddRange(ms);
+			}
+			else
+			{
+				foreach (var i in resourceGroups)
+				{
+					var rs = Tenant.GetService<IResourceGroupService>().Select(i);
+
+					if (rs == null)
+						throw new RuntimeException($"{SR.ErrResourceGroupNotFound} ({i})");
+
+					var sols = Tenant.GetService<IMicroServiceService>().Query().Where(f=>f.ResourceGroup==rs.Token).ToList();
+
+					if (sols.Count > 0)
+						microServices.AddRange(sols);
+				}
+			}
+
+			foreach (var i in microServices)
+			{
+				if (cats.Length == 0)
+				{
+					var ds = QueryComponents(i.Token);
+
+					if (ds.Count > 0)
+						r.AddRange(ds);
+				}
+				else
+				{
+					foreach (var j in cats)
+					{
+						if (string.IsNullOrWhiteSpace(j))
+							continue;
+
+						var ds = QueryComponents(i.Token, j.Trim());
+
+						if (ds.Count > 0)
+							r.AddRange(ds);
+					}
+				}
+			}
+
+			return QueryConfigurations(r.Where(f => f.LockVerb != LockVerb.Delete).ToList());
 		}
 
 		public IConfiguration SelectConfiguration(Guid microService, string category, string name)
@@ -295,12 +293,7 @@ namespace TomPIT.ComponentModel
 			var type = Reflection.TypeExtensions.GetType(component.Type);
 
 			if (type == null)
-			{
-				if (throwException)
-					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrCannotCreateComponentInstance, component.Type));
-				else
-					return null;
-			}
+				return throwException ? throw new RuntimeException(string.Format("{0} ({1})", SR.ErrCannotCreateComponentInstance, component.Type)) : (IConfiguration)null;
 
 			var t = Reflection.TypeExtensions.GetType(component.Type);
 			IConfiguration r = null;
@@ -317,35 +310,25 @@ namespace TomPIT.ComponentModel
 					Tenant.LogError(GetType().ShortName(), ex.Message, LogCategories.Services);
 			}
 
-			if (/*blob == null && */Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
+			if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
 			{
-				var rtContent = runtime == null
-					? Tenant.GetService<IStorageService>().Download(component.RuntimeConfiguration)
-					: runtime;
+				var rtContent = runtime ?? Tenant.GetService<IStorageService>().Download(component.RuntimeConfiguration);
 
 				if (rtContent != null)
-				{
-					try
+				try
 					{
 						if (Tenant.GetService<ISerializationService>().Deserialize(rtContent.Content, t) is IConfiguration rtInstance)
 							MergeWithRuntime(r, rtInstance);
 					}
-					catch (Exception ex)
-					{
-						Tenant.LogWarning(GetType().ShortName(), ex.Message, LogCategories.Services);
-					}
-				}
+					catch (Exception ex) { Tenant.LogWarning(GetType().ShortName(), ex.Message, LogCategories.Services); }
 			}
 
 			if (r != null)
-			{
 				ConfigurationCache.TryAdd(component.Token, new ConfigurationSerializationState
 				{
 					Type = r.GetType(),
-					State = Tenant.GetService<ISerializationService>().Serialize(r),
-					//Instance = r
+					State = Tenant.GetService<ISerializationService>().Serialize(r)
 				});
-			}
 
 			return r;
 		}
@@ -373,7 +356,7 @@ namespace TomPIT.ComponentModel
 			var existing = Get(e.Component);
 
 			if (existing != null)
-				Remove(existing.Token);
+				Refresh(e.Component);
 
 			ConfigurationCache.Remove(e.Component, out _);
 			ConfigurationChanged?.Invoke(Tenant, e);
@@ -414,7 +397,7 @@ namespace TomPIT.ComponentModel
 				return;
 
 			if (property.IsPrimitive())
-				SetProperty(design, property, runtime, references, force);
+				SetProperty(design, property, runtime, force);
 			else if (property.PropertyType.IsCollection())
 				MergeCollection(design, property, runtime, references, force);
 			else
@@ -442,12 +425,7 @@ namespace TomPIT.ComponentModel
 			var att = property.FindAttribute<EnvironmentVisibilityAttribute>();
 
 			if (att != null)
-			{
-				if (att.Visibility == EnvironmentMode.Runtime)
-					force = true;
-				else
-					force = false;
-			}
+				force = att.Visibility == EnvironmentMode.Runtime;
 
 			var refValue = runtime.GetType().GetProperty(property.Name).GetValue(runtime);
 
@@ -457,7 +435,7 @@ namespace TomPIT.ComponentModel
 			MergeProperties(value, refValue, references, force);
 		}
 
-		private void SetProperty(object design, PropertyInfo property, object runtime, List<object> references, bool force)
+		private static void SetProperty(object design, PropertyInfo property, object runtime, bool force)
 		{
 			if (!property.CanWrite)
 				return;
@@ -493,10 +471,10 @@ namespace TomPIT.ComponentModel
 					MergeCollectionSynchronize(design, property, runtime, references, force);
 					break;
 				case CollectionRuntimeMerge.Override:
-					MergeCollectionOverride(design, property, runtime, references, force);
+					MergeCollectionOverride(design, property, runtime);
 					break;
 				case CollectionRuntimeMerge.Append:
-					MergeCollectionAppend(design, property, runtime, references, force);
+					MergeCollectionAppend(design, property, runtime);
 					break;
 				default:
 					throw new NotSupportedException();
@@ -515,10 +493,8 @@ namespace TomPIT.ComponentModel
 				return;
 			}
 
-			if (!(val is IEnumerable denum) || !(rtVal is IEnumerable renum))
-			{
+			if (val is not IEnumerable denum || rtVal is not IEnumerable renum)
 				return;
-			}
 
 			// Note: the code below assumes that lists contain items with the same
 			//			order. This might not be the case!!!
@@ -528,27 +504,22 @@ namespace TomPIT.ComponentModel
 			while (de.MoveNext())
 			{
 				if (!re.MoveNext())
-				{
 					break;
-				}
 
 				var dinstance = de.Current;
+				
 				if (dinstance == null)
-				{
 					return;
-				}
 
 				var rinstance = re.Current;
+				
 				if (rinstance == null)
-				{
 					return;
-				}
 
 				var props = dinstance.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+				
 				foreach (var i in props)
-				{
 					MergeProperty(dinstance, i, rinstance, references, force);
-				}
 			}
 		}
 
@@ -558,35 +529,31 @@ namespace TomPIT.ComponentModel
 			while (de.MoveNext())
 			{
 				var dinstance = de.Current;
+			
 				if (dinstance == null)
-				{
 					return;
-				}
 
 				var rinstance = rEltEnum.FirstOrDefault(x => x.Id == dinstance.Id);
+
 				if (rinstance == null)
-				{
 					continue;
-				}
 
 				var props = dinstance.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+				
 				foreach (var i in props)
-				{
 					MergeProperty(dinstance, i, rinstance, references, force);
-				}
 			}
 		}
 
-		private void MergeCollectionAppend(object design, PropertyInfo property, object runtime, List<object> references, bool force)
+		private static void MergeCollectionAppend(object design, PropertyInfo property, object runtime)
 		{
 			var rtProperty = runtime.GetType().GetProperty(property.Name);
 			var val = property.GetValue(design);
 			var rtVal = rtProperty.GetValue(runtime);
-
-			if (!(val is IEnumerable denum) || !(rtVal is IEnumerable renum))
+			
+			if (val is not IEnumerable || rtVal is not IEnumerable renum)
 				return;
 
-			var de = denum.GetEnumerator();
 			var re = renum.GetEnumerator();
 
 			while (re.MoveNext())
@@ -605,19 +572,19 @@ namespace TomPIT.ComponentModel
 			}
 		}
 
-		private void MergeCollectionOverride(object design, PropertyInfo property, object runtime, List<object> references, bool force)
+		private static void MergeCollectionOverride(object design, PropertyInfo property, object runtime)
 		{
 			var val = property.GetValue(design);
 
 			if (val == null)
 				return;
 
-			var clear = val.GetType().GetRuntimeMethod("Clear", new Type[0]);
+			var clear = val.GetType().GetRuntimeMethod("Clear", Array.Empty<Type>());
 
 			if (clear != null)
 				clear.Invoke(val, null);
 
-			MergeCollectionAppend(design, property, runtime, references, force);
+			MergeCollectionAppend(design, property, runtime);
 		}
 
 		public IFolder SelectFolder(Guid folder)
@@ -649,32 +616,20 @@ namespace TomPIT.ComponentModel
 
 		private ConcurrentDictionary<Guid, ConfigurationSerializationState> ConfigurationCache => _configurationCache.Value;
 
-		private List<IComponent> CacheComponents(List<IComponent> components)
-		{
-			if (components == null)
-				return components;
-
-			foreach (var component in components)
-				Set(component.Token, component);
-
-			return components;
-		}
-
 		public List<IComponent> QueryComponents(List<string> resourceGroups, string categories)
 		{
-			var r = new List<IConfiguration>();
 			var sb = new StringBuilder();
 
 			foreach (var i in resourceGroups)
 				sb.AppendFormat("{0},", i.ToString());
 
-			var u = Tenant.CreateUrl("Component", "QueryByResourceGroups")
-				.AddParameter("resourceGroups", sb.ToString().TrimEnd(','))
-				.AddParameter("categories", categories);
+			var u = Tenant.CreateUrl("Component", "QueryByResourceGroups");
 
-			return Tenant.Get<List<Component>>(u).ToList<IComponent>();
+			return Tenant.Post<List<Component>>(u, new
+			{
+				resourceGroups = sb.ToString().TrimEnd(','),
+				categories
+			}).ToList<IComponent>();
 		}
-
-		private ConcurrentDictionary<string, bool> NamespaceReferences => _namespaceReferences.Value;
 	}
 }

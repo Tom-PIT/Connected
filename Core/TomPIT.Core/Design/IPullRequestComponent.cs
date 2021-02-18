@@ -5,6 +5,7 @@ namespace TomPIT.Design
 {
 	public enum ComponentVerb
 	{
+		NotModified = 0,
 		Add = 1,
 		Edit = 2,
 		Delete=3

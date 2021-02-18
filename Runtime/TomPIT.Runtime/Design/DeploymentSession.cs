@@ -69,6 +69,9 @@ namespace TomPIT.Design
 
 		private void Drop()
 		{
+			if (Request.Components == null)
+				return;
+
 			foreach(var component in Request.Components)
 			{
 				if (component.Verb == ComponentVerb.Delete)
@@ -78,9 +81,12 @@ namespace TomPIT.Design
 
 		private void DeployComponents()
 		{
-			foreach(var component in Request.Components)
+			if (Request.Components == null)
+				return;
+
+			foreach (var component in Request.Components)
 			{
-				if (component.Verb == ComponentVerb.Delete)
+				if (component.Verb == ComponentVerb.Delete || component.Verb == ComponentVerb.NotModified)
 					continue;
 
 				ComponentModel.Restore(Request.Token, component);
@@ -95,7 +101,7 @@ namespace TomPIT.Design
 			 */
 			foreach(var folder in folders)
 			{
-				if (Request.Folders.FirstOrDefault(f => f.Id == folder.Token) != null)
+				if (Request.Folders?.FirstOrDefault(f => f.Id == folder.Token) != null)
 					continue;
 				/*
 				 * if no components are in the folder we can remove it
@@ -113,6 +119,9 @@ namespace TomPIT.Design
 
 		private void DeployFolders(Guid parent, List<IFolder> existing)
 		{
+			if (Request.Folders == null)
+				return;
+
 			var folders = Request.Folders.Where(f => f.Parent == parent);
 
 			foreach(var folder in folders)

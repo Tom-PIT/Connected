@@ -35,7 +35,7 @@ namespace TomPIT.Worker.Workers
 			{
 				var att = HandlerInstance.GetType().FindAttribute<ProcessBehaviorAttribute>();
 
-				if (att.Behavior == ProcessBehavior.Queued)
+				if (att?.Behavior == ProcessBehavior.Queued)
 				{
 					QueueName = att.QueueName;
 					return false;
