@@ -146,5 +146,13 @@ namespace TomPIT.Sys.Controllers.Development
 
 			DataModel.VersionControl.Undo(component);
 		}
+		[HttpPost]
+		public void DeleteHistory()
+		{
+			var body = FromBody();
+			var component = body.Required<Guid>("component");
+
+			DataModel.VersionControl.DeleteHistory(component);
+		}
 	}
 }

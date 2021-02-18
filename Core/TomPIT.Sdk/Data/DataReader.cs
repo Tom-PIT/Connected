@@ -223,7 +223,7 @@ namespace TomPIT.Data
 			if (!(token is JValue jv))
 				return;
 
-			object converted = null;
+			object converted;
 
 			if (property.PropertyType == typeof(string) && jv.Value is byte[])
 				converted = ((Version)(byte[])jv.Value).ToString();
@@ -232,6 +232,26 @@ namespace TomPIT.Data
 
 			if (converted == null)
 				return;
+
+			if (property.PropertyType == typeof(DateTime))
+			{
+				converted = DateTime.SpecifyKind((DateTime)converted, DateTimeKind.Utc);
+				var att = property.FindAttribute<DateAttribute>();
+				var kind = DateKind.DateTime;
+
+				if (att != null)
+					kind = att.Kind;
+
+				switch (kind)
+				{
+					case DateKind.DateTime:
+					case DateKind.DateTime2:
+					case DateKind.SmallDateTime:
+					case DateKind.Time:
+						converted = Context.Services.Globalization.FromUtc((DateTime)converted);
+						break;
+				}
+			}
 
 			property.SetValue(instance, converted);
 		}

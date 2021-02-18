@@ -185,6 +185,20 @@ namespace TomPIT.Design
 				args.Add("runtimeConfiguration", runtimeConfigurationId);
 
 			Tenant.Post(u, args);
+
+			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
+			{
+				notification.NotifyChanged(this, new ComponentEventArgs
+				{
+					Category = component.Category,
+					Component = component.Token,
+					Folder = component.Folder,
+					MicroService = microService,
+					Name = component.Name,
+					NameSpace = ComponentCategories.ResolveNamespace(component.Category)
+				});
+			}
+
 			InvalidateIndexState(component.Token);
 		}
 
@@ -294,6 +308,20 @@ namespace TomPIT.Design
 				args.Add("runtimeConfiguration", runtimeConfigurationId);
 
 			Tenant.Post(u, args);
+
+			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
+			{
+				notification.NotifyChanged(this, new ComponentEventArgs
+				{
+					Category = component.Category,
+					Component = component.Token,
+					Folder = component.Folder,
+					MicroService = microService,
+					Name = component.Name,
+					NameSpace = ComponentCategories.ResolveNamespace(component.Category)
+				});
+			}
+
 			InvalidateIndexState(component.Token);
 		}
 
@@ -417,6 +445,20 @@ namespace TomPIT.Design
 
 			Tenant.Post(u, args);
 			Tenant.GetService<IStorageService>().Commit(blob.Draft, instance.Component.ToString());
+
+			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
+			{
+				notification.NotifyAdded(this, new ComponentEventArgs
+				{
+					Category = category,
+					Folder = folder,
+					Component = instance.Component,
+					MicroService = microService,
+					Name = name,
+					NameSpace = ComponentCategories.ResolveNamespace(category)
+				});
+			}
+
 			InvalidateIndexState(instance.Component);
 
 			u = Tenant.CreateUrl("NotificationDevelopment", "ConfigurationAdded");
@@ -901,6 +943,19 @@ namespace TomPIT.Design
 
 			foreach (var source in sources)
 				InvalidateIndexState(source);
+
+			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
+			{
+				notification.NotifyChanged(this, new ComponentEventArgs
+				{
+					Category = component.Category,
+					Component = component.Token,
+					Folder = component.Folder,
+					MicroService = component.MicroService,
+					Name = component.Name,
+					NameSpace = ComponentCategories.ResolveNamespace(component.Category)
+				});
+			}
 
 			DeleteManifest(image.Token);
 		}

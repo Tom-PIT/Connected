@@ -27,6 +27,14 @@ namespace TomPIT.Design
 			return Tenant.Post<List<Component>>(CreateUrl("QueryChanges")).ToList<IComponent>();
 		}
 
+		public void DeleteHistory(Guid component)
+		{
+			Tenant.Post(CreateUrl("DeleteHistory"), new
+			{
+				component
+			});
+		}
+
 		public IComponentHistory SelectNonCommited(Guid component)
 		{
 			return Tenant.Post<ComponentHistory>(CreateUrl("SelectNonCommited"), new

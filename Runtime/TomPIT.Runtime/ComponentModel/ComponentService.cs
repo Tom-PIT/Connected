@@ -36,6 +36,7 @@ namespace TomPIT.ComponentModel
 		public ComponentService(ITenant tenant) : base(tenant, "component")
 		{
 			Tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+			Tenant.GetService<IMicroServiceService>().MicroServiceRemoved += OnMicroServiceRemoved;
 			Folders = new FolderCache(Tenant);
 		}
 
@@ -70,7 +71,7 @@ namespace TomPIT.ComponentModel
 				Set(component.Token, component, TimeSpan.Zero);
 		}
 
-		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
+		private void OnMicroServiceRemoved(object sender, MicroServiceEventArgs e)
 		{
 			var components = All();
 
@@ -79,7 +80,10 @@ namespace TomPIT.ComponentModel
 				if (i.MicroService == e.MicroService)
 					Remove(i.Token);
 			}
+		}
 
+		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
+		{
 			Folders.RefreshMicroService(e.MicroService);
 		}
 

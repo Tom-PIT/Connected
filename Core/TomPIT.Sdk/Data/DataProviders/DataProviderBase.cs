@@ -80,11 +80,8 @@ namespace TomPIT.Data.DataProviders
 		{
 			var value = reader.GetValue(index);
 
-			if (value == DBNull.Value || value == null)
+			if (value == DBNull.Value)
 				return null;
-
-			if (value is DateTime date)
-				return connection.Context.Services.Globalization.FromUtc(DateTime.SpecifyKind(date, DateTimeKind.Utc));
 
 			return value;
 		}

@@ -650,24 +650,24 @@ namespace TomPIT
 
 		public static DateTime FromUtc(DateTime value, TimeZoneInfo timeZone)
 		{
-			if (value == DateTime.MinValue)
+			if (value == DateTime.MinValue || value.Kind != DateTimeKind.Utc)
 				return value;
 
 			if (timeZone == null || timeZone == TimeZoneInfo.Utc)
 				return value;
 			else
-				return TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(value, DateTimeKind.Unspecified), timeZone);
+				return TimeZoneInfo.ConvertTimeFromUtc(value, timeZone);
 		}
 
 		public static DateTime ToUtc(DateTime value, TimeZoneInfo timeZone)
 		{
-			if (value == DateTime.MinValue)
+			if (value == DateTime.MinValue || value.Kind == DateTimeKind.Utc)
 				return value;
 
 			if (timeZone == null || timeZone == TimeZoneInfo.Utc)
 				return value;
 			else
-				return TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(value, DateTimeKind.Unspecified), timeZone);
+				return TimeZoneInfo.ConvertTimeToUtc(value, timeZone);
 		}
 	}
 }
