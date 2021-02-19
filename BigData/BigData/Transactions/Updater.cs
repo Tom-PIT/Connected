@@ -15,6 +15,7 @@ using TomPIT.ComponentModel.BigData;
 using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
+using TomPIT.Runtime.Configuration;
 using TomPIT.Serialization;
 using TomPIT.Storage;
 
@@ -370,6 +371,9 @@ namespace TomPIT.BigData.Transactions
 
 		internal static string ToCsv(DataTable table)
 		{
+			if (!Shell.GetConfiguration<IClientSys>().Diagnostics.DumpEnabled)
+				return string.Empty;
+
 			using var ms = new MemoryStream();
 			using var sw = new StreamWriter(ms, Encoding.UTF8);
 
@@ -377,7 +381,7 @@ namespace TomPIT.BigData.Transactions
 
 			for (var i = 0; i < table.Columns.Count; i++)
 			{
-				sw.Write(table.Columns[i]);
+				sw.Write(table.Columns[i].ColumnName);
 
 				if (i < table.Columns.Count - 1)
 					sw.Write(",");
@@ -391,7 +395,7 @@ namespace TomPIT.BigData.Transactions
 				{
 					var value = string.Empty;
 
-					if (row[i] == DBNull.Value || string.IsNullOrEmpty(row[i] as string))
+					if (row[i] == DBNull.Value || row[i] == null)
 						value = "null";
 					else
 					{
@@ -399,10 +403,10 @@ namespace TomPIT.BigData.Transactions
 
 						if (value.Contains(','))
 							value = string.Format("\"{0}\"", value);
-
-						sw.Write(value);
 					}
-					
+
+					sw.Write(value);
+
 					if (i < table.Columns.Count - 1)
 						sw.Write(",");
 				}
@@ -410,8 +414,7 @@ namespace TomPIT.BigData.Transactions
 				sw.Write(sw.NewLine);
 			}
 
-			sw.Close();
-
+			sw.Flush();
 			ms.Seek(0, SeekOrigin.Begin);
 
 			return Encoding.UTF8.GetString(ms.ToArray());

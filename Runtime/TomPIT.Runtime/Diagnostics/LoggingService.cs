@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json.Linq;
@@ -56,7 +57,14 @@ namespace TomPIT.Diagnostics
 			if (!Directory.Exists(directory))
 				Directory.CreateDirectory(directory);
 
-			File.WriteAllText(path, sb.ToString());
+			using var ms = new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
+			using var reader = new StreamReader(ms);
+			var lines = new List<string>();
+
+			while(reader.Peek() != -1)
+				lines.Add(reader.ReadLine());
+
+			File.AppendAllLines(path, lines);
 		}
 
 		private void FlushLog()
