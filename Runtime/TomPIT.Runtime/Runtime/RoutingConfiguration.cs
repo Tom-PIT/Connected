@@ -32,6 +32,13 @@ namespace TomPIT.Runtime
 
 				await Task.CompletedTask;
 			});
+
+			routes.Map("sys/deploy", async (t) =>
+			{
+				new DeployRouteHandler().ProcessRequest(t);
+
+				await Task.CompletedTask;
+			});
 		}
 	}
 }

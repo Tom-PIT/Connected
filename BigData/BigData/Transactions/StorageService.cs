@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 using TomPIT.Runtime.Configuration;
@@ -46,6 +47,8 @@ namespace TomPIT.BigData.Transactions
 				if (jobs == null)
 					return;
 
+				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"StorageService, {jobs.Count} jobs dequeued.");
+				
 				foreach (var i in jobs)
 				{
 					if (cancel.IsCancellationRequested)

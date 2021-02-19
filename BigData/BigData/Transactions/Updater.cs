@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using TomPIT.BigData.Partitions;
 using TomPIT.BigData.Persistence;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
+using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Serialization;
@@ -85,7 +87,10 @@ namespace TomPIT.BigData.Transactions
 		public void Execute()
 		{
 			if (Partition.Status != PartitionStatus.Active)
+			{
+				Dump(SR.ErrBigDataPartitionNotActive);
 				throw new RuntimeException(SR.ErrBigDataPartitionNotActive);
+			}
 
 			LoadData();
 
@@ -126,20 +131,36 @@ namespace TomPIT.BigData.Transactions
 			var blobs = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Query(MicroService.Token, BlobTypes.BigDataTransactionBlock, MicroService.ResourceGroup, Block.Token.ToString());
 
 			if (blobs.Count == 0)
+			{
+				Dump("no blobs");
 				return;
+			}
 
 			var content = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Download(blobs[0].Token);
 
 			if (content == null || content.Content == null)
+			{
+				Dump("blob content null or empty");
 				return;
+			}
 
 			Items = Serializer.Deserialize<JArray>(Encoding.UTF8.GetString(content.Content));
 
 			if (Items == null || Items.Count == 0)
+			{
+				Dump("no items deserialized");
 				return;
+			}
 
 			CreateSchema();
+
+			foreach(var table in Data)
+				Dump($"table: {table.Key}, {ToCsv(table.Value)}");
+
 			TearOff();
+
+			foreach (var table in Data)
+				Dump($"tearoff table: {table.Key}, {ToCsv(table.Value)}");
 		}
 
 		private JArray CreateArray(string key, DataTable data)
@@ -340,6 +361,60 @@ namespace TomPIT.BigData.Transactions
 
 				return false;
 			}
+		}
+
+		private void Dump(string text)
+		{
+			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"Updater, Partition:{Partition.Configuration}, Transaction: {Block.Transaction}, Block: {Block.Token}, {text}.");
+		}
+
+		internal static string ToCsv(DataTable table)
+		{
+			using var ms = new MemoryStream();
+			using var sw = new StreamWriter(ms, Encoding.UTF8);
+
+			sw.Write(sw.NewLine);
+
+			for (var i = 0; i < table.Columns.Count; i++)
+			{
+				sw.Write(table.Columns[i]);
+
+				if (i < table.Columns.Count - 1)
+					sw.Write(",");
+			}
+
+			sw.Write(sw.NewLine);
+
+			foreach (DataRow row in table.Rows)
+			{
+				for (var i = 0; i < table.Columns.Count; i++)
+				{
+					var value = string.Empty;
+
+					if (row[i] == DBNull.Value || string.IsNullOrEmpty(row[i] as string))
+						value = "null";
+					else
+					{
+						value = row[i].ToString();
+
+						if (value.Contains(','))
+							value = string.Format("\"{0}\"", value);
+
+						sw.Write(value);
+					}
+					
+					if (i < table.Columns.Count - 1)
+						sw.Write(",");
+				}
+
+				sw.Write(sw.NewLine);
+			}
+
+			sw.Close();
+
+			ms.Seek(0, SeekOrigin.Begin);
+
+			return Encoding.UTF8.GetString(ms.ToArray());
 		}
 	}
 }

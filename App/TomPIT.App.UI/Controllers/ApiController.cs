@@ -13,7 +13,9 @@ namespace TomPIT.App.Controllers
 		[HttpPost]
 		public IActionResult Invoke()
 		{
-			using var m = CreateModel();
+			var m = CreateModel();
+
+			HttpContext.Response.RegisterForDispose(m);
 
 			return Json(Serializer.Serialize(m.Interop.Invoke<object, JObject>(m.QualifierName, m.Body)));
 		}
@@ -21,7 +23,9 @@ namespace TomPIT.App.Controllers
 		[HttpPost]
 		public IActionResult UIInjection()
 		{
-			using var model = CreateUIInjectionModel();
+			var model = CreateUIInjectionModel();
+
+			HttpContext.Response.RegisterForDispose(model);
 
 			return PartialView("~/Views/UIInjectionView.cshtml", model);
 		}
@@ -29,7 +33,9 @@ namespace TomPIT.App.Controllers
 		[HttpPost]
 		public IActionResult Partial()
 		{
-			using var model = CreatePartialModel();
+			var model = CreatePartialModel();
+
+			HttpContext.Response.RegisterForDispose(model);
 
 			return PartialView(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", model.QualifierName), model);
 		}
@@ -37,7 +43,9 @@ namespace TomPIT.App.Controllers
 		[HttpPost]
 		public IActionResult Search()
 		{
-			using var model = CreateSearchModel();
+			var model = CreateSearchModel();
+
+			HttpContext.Response.RegisterForDispose(model);
 
 			return Json(model.Search());
 		}
@@ -45,8 +53,9 @@ namespace TomPIT.App.Controllers
 		[HttpPost]
 		public IActionResult SetUserData()
 		{
-			using var model = CreateUserDataModel();
+			var model = CreateUserDataModel();
 
+			HttpContext.Response.RegisterForDispose(model);
 			model.SetData();
 
 			return new EmptyResult();
@@ -55,7 +64,9 @@ namespace TomPIT.App.Controllers
 		[HttpPost]
 		public IActionResult GetUserData()
 		{
-			using var model = CreateUserDataModel();
+			var model = CreateUserDataModel();
+
+			HttpContext.Response.RegisterForDispose(model);
 
 			return Json(model.GetData());
 		}
@@ -63,7 +74,9 @@ namespace TomPIT.App.Controllers
 		[HttpPost]
 		public IActionResult QueryUserData()
 		{
-			using var model = CreateUserDataModel();
+			var model = CreateUserDataModel();
+
+			HttpContext.Response.RegisterForDispose(model);
 
 			return Json(model.QueryData());
 		}

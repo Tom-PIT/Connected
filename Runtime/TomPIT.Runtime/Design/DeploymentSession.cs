@@ -7,7 +7,9 @@ using TomPIT.ComponentModel.Deployment;
 using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Deployment;
+using TomPIT.Environment;
 using TomPIT.Middleware;
+using TomPIT.Runtime;
 
 namespace TomPIT.Design
 {
@@ -22,12 +24,61 @@ namespace TomPIT.Design
 
 		public void Deploy()
 		{
+			SynchronizeMicroService();
 			Drop();
 			DeployFolders();
 			DeployComponents();
 
 			SynchronizeEntities();
 			RunInstallers();
+
+			CommitMicroService();
+		}
+
+		private void CommitMicroService()
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
+
+			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, ms.ResourceGroup, Request.Template, ResolveStatus(),  UpdateStatus.UpToDate, CommitStatus.Synchronized);
+		}
+
+		private void SynchronizeMicroService()
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
+
+			if (ms == null)
+				InsertMicroService();
+			else
+				UpdateMicroService(ms);
+		}
+
+		private void UpdateMicroService(IMicroService microService)
+		{
+			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, microService.ResourceGroup, Request.Template, ResolveStatus(), microService.UpdateStatus, microService.CommitStatus);
+		}
+
+		private void InsertMicroService()
+		{
+			var resourceGroup = Tenant.GetService<IResourceGroupService>().Default.Token;
+
+			Tenant.GetService<IDesignService>().MicroServices.Insert(Request.Token, Request.Name, resourceGroup, Request.Template, ResolveStatus());
+		}
+
+		private MicroServiceStatus ResolveStatus()
+		{
+			var stage = Tenant.GetService<IRuntimeService>().Stage;
+
+			switch (stage)
+			{
+				case EnvironmentStage.Development:
+					return MicroServiceStatus.Development;
+				case EnvironmentStage.Staging:
+					return MicroServiceStatus.Staging;
+				case EnvironmentStage.Production:
+					return MicroServiceStatus.Production;
+				default:
+					throw new NotSupportedException();
+			}
 		}
 
 		private void SynchronizeEntities()

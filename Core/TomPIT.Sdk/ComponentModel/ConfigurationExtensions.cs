@@ -18,6 +18,12 @@ namespace TomPIT.ComponentModel
 {
 	public static class ConfigurationExtensions
 	{
+		public static T WithIdentity<T>(this T context, IMiddlewareContext identityContext) where T : IMiddlewareContext
+		{
+			context.Impersonate(identityContext.Services.Identity.User?.Token.ToString());
+
+			return context;
+		}
 		public static T CreateMiddleware<T>(this IMicroServiceContext context, Type type) where T : class
 		{
 			return CreateMiddleware<T>(context, type, null);

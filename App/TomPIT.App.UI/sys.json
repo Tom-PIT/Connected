@@ -8,9 +8,12 @@
   ],
   "platform": "onPrem",
   "stage":  "development",
-	"resourceGroups": [
-		"Default"
-	],
+  "resourceGroups": [
+    "Default"
+  ],
+  "diagnostics": {
+    "dumpEnabled":  false
+  },
   "dataProviders": [
     "TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql",
     "TomPIT.DataProviders.BigData.BigDataProvider, TomPIT.DataProviders.BigData"

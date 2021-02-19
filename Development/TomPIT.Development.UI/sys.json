@@ -17,6 +17,9 @@
     "TomPIT.MicroServices.BigData.Design.BigDataTemplate, TomPIT.MicroServices.BigData.Design",
     "TomPIT.MicroServices.Reporting.Design.ReportTemplate, TomPIT.MicroServices.Reporting.Design"
   ],
+  "diagnostics": {
+    "dumpEnabled":  true
+  },
 	"plugins": {
 		"location": "c:\\Deploy\\Plugins",
 		"shadowCopy": true,

@@ -9,9 +9,21 @@ namespace TomPIT.Design
 		private IDesignSearch _search = null;
 		private IDeployment _deployment = null;
 		private ITextDiff _diff = null;
+		private IMicroServiceDesign _microServices = null;
 
 		public DesignService(ITenant tenant) : base(tenant)
 		{
+		}
+
+		public IMicroServiceDesign MicroServices
+		{
+			get
+			{
+				if (_microServices == null)
+					_microServices = new MicroServiceDesign(Tenant);
+
+				return _microServices;
+			}
 		}
 
 		public ITextDiff TextDiff

@@ -10,6 +10,7 @@ namespace TomPIT.Runtime.Configuration
 		private List<string> _dataProviders = null;
 		private List<string> _designers = null;
 		private List<string> _resourceGroups = null;
+		private IDiagnosticsConfiguration _diagnosticsConfiguration = null;
 
 		[JsonProperty(PropertyName = "connections")]
 		[JsonConverter(typeof(ClientConnectionConverter))]
@@ -21,6 +22,18 @@ namespace TomPIT.Runtime.Configuration
 					_connections = new List<IClientSysConnection>();
 
 				return _connections;
+			}
+		}
+		[JsonProperty(PropertyName = "diagnostics")]
+		[JsonConverter(typeof(DiagnosticsConfigurationConverter))]
+		public IDiagnosticsConfiguration Diagnostics
+		{
+			get
+			{
+				if (_diagnosticsConfiguration == null)
+					_diagnosticsConfiguration = new DiagnosticsConfiguration();
+
+				return _diagnosticsConfiguration;
 			}
 		}
 		[JsonProperty(PropertyName = "resourceGroups")]

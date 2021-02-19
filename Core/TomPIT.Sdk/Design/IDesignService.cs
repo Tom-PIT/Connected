@@ -8,5 +8,6 @@
 		IComponentModel Components { get; }
 		IDesignSearch Search { get; }
 		ITextDiff TextDiff { get; }
+		IMicroServiceDesign MicroServices { get; }
 	}
 }

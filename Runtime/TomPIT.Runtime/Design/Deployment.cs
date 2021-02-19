@@ -9,9 +9,14 @@ namespace TomPIT.Design
 		{
 		}
 
-		public void Deploy(string remote, Guid repository)
+		public void Deploy(string remote, Guid repository, string userName, string password)
 		{
-			//Tenant.Post<PullRequest>()
+			var url = $"{remote}/Repositories/IBranches/Pull";
+
+			Deploy(Tenant.Post<PullRequest>(url, new
+			{
+				repository
+			}, new HttpRequestArgs().WithBasicCredentials(userName, password)));
 		}
 
 		public void Deploy(IPullRequest request)

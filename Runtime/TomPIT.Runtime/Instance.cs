@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.StaticFiles;
@@ -145,10 +144,7 @@ namespace TomPIT
 					}));
 			}
 
-			services.AddControllersWithViews(o=>
-			{
-				o.Conventions.Add(new NamespaceRoutingConvention());
-			});
+			services.AddControllersWithViews();
 			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
 			services.AddAuthorization(options =>
@@ -208,7 +204,7 @@ namespace TomPIT
 			{
 				foreach (var i in Plugins)
 					i.RegisterRoutes(routes);
-				
+
 				RoutingConfiguration.Register(routes);
 				routingHandler?.Invoke(new ConfigureRoutingArgs(routes));
 			});
@@ -329,18 +325,6 @@ namespace TomPIT
 
 			foreach (var i in partFactory.GetApplicationParts(assembly))
 				manager.ApplicationParts.Add(i);
-		}
-	}
-
-	public class NamespaceRoutingConvention : IActionModelConvention
-	{
-		public NamespaceRoutingConvention()
-		{
-		}
-
-		public void Apply(ActionModel action)
-		{
-			
 		}
 	}
 }

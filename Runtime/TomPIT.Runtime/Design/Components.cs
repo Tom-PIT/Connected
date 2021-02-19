@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json.Linq;
@@ -44,7 +46,7 @@ namespace TomPIT.Design
 			var c = Tenant.GetService<IComponentService>().SelectComponent(component);
 
 			if (c == null)
-				throw new NotFoundException(SR.ErrComponentNotFound);
+				return;
 
 			if (!permanent)
 				Tenant.GetService<IDesignService>().VersionControl.Lock(component, Development.LockVerb.Delete);
@@ -222,7 +224,7 @@ namespace TomPIT.Design
 				PrimaryKey = component.Token.ToString()
 			};
 
-			Tenant.GetService<IStorageService>().Upload(blob, Convert.FromBase64String(configuration.Content), StoragePolicy.Singleton, component.Token);
+			Tenant.GetService<IStorageService>().Upload(blob, Unpack(configuration.Content), StoragePolicy.Singleton, component.Token);
 
 			if (runtimeConfigurationId != Guid.Empty)
 			{
@@ -239,7 +241,7 @@ namespace TomPIT.Design
 						PrimaryKey = runtimeConfigurationId.ToString()
 					};
 
-					Tenant.GetService<IStorageService>().Upload(blob, Convert.FromBase64String(runtimeConfiguration.Content), StoragePolicy.Singleton, runtimeConfigurationId);
+					Tenant.GetService<IStorageService>().Upload(blob, Unpack(runtimeConfiguration.Content), StoragePolicy.Singleton, runtimeConfigurationId);
 				}
 				else
 				{
@@ -285,7 +287,7 @@ namespace TomPIT.Design
 					Topic = file.Topic,
 					Type = file.Type,
 					Version = file.BlobVersion
-				}, Convert.FromBase64String(file.Content));
+				}, Unpack(file.Content));
 
 			}
 
@@ -323,6 +325,17 @@ namespace TomPIT.Design
 			}
 
 			InvalidateIndexState(component.Token);
+		}
+
+		private static byte[] Unpack(string packed)
+		{
+			using var input = new MemoryStream(Convert.FromBase64String(packed));
+			using var zip = new GZipStream(input, CompressionMode.Decompress);
+			using var output = new MemoryStream();
+
+			zip.CopyTo(output);
+
+			return output.ToArray();
 		}
 
 		public Guid Clone(Guid component, Guid microService, Guid folder)

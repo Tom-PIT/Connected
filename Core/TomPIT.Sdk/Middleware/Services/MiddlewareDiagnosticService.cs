@@ -22,6 +22,7 @@ namespace TomPIT.Middleware.Services
 
 		public Guid MetricParent { get; set; }
 
+
 		public void Console(string message)
 		{
 			Write(new LogEntry
@@ -165,6 +166,11 @@ namespace TomPIT.Middleware.Services
 			result.WithMetrics(Context);
 
 			return result;
+		}
+
+		public void Dump(string text)
+		{
+			Context.Tenant.GetService<ILoggingService>().Dump(text);
 		}
 	}
 }
