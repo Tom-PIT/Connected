@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -250,86 +248,98 @@ namespace TomPIT.BigData.Transactions
 
 			foreach (var table in Data.Values)
 			{
-				var removables = new List<DataRow>();
-				
+				var keys = new Dictionary<string, DataRow>();
+
 				Console.WriteLine($"Tearing off: {table.Rows.Count}");
 
-				for(var i = 0; i < table.Rows.Count; i++)
+				for (var i = 0; i < table.Rows.Count; i++)
 				{
 					var row = table.Rows[i];
-					var duplicates = Duplicates(table, row, keyFields);
+					var hash = ComputeHash(row, keyFields);
 
-					if (duplicates == null)
-						continue;
+					if (keys.ContainsKey(hash))
+					{
+						if (aggregations)
+							Aggregate(keys[hash], row);
 
-					if (HasAggregations)
-						Aggregate(row, duplicates.Select(f => f.Row).ToList());
-
-					removables.AddRange(duplicates.Select(f => f.Row));
+						table.Rows.RemoveAt(i);
+					}
+					else
+						keys.Add(hash, row);
 				}
-
-				foreach (var row in removables)
-					table.Rows.Remove(row);
 			}
 		}
 
-		private List<DataRowDuplicate> Duplicates(DataTable table, DataRow row, List<string> keyFields)
+		private static string ComputeHash(DataRow row, List<string> keyFields)
 		{
-			var result = new List<DataRowDuplicate>();
+			var sb = new StringBuilder();
 
-			for(var i = 0; i < table.Rows.Count; i++)
+			foreach(var field in keyFields)
 			{
-				var dr = table.Rows[i];
-				var match = true;
+				var value = row[field];
+				var text = value == null || value == DBNull.Value ? "_" : value.ToString();
 
-				foreach (var field in keyFields)
-				{
-					if (Comparer.Default.Compare(row[field], dr[field]) != 0)
-					{
-						match = false;
-						break;
-					}
-				}
-
-				if (match)
-				{
-					result.Add(new DataRowDuplicate
-					{
-						Index = i,
-						Row = dr,
-						Timestamp = Types.Convert<DateTime>(dr[Merger.TimestampColumn])
-					});
-				}
+				sb.Append(text);
 			}
 
-			if (result.Count == 1)
-				return null;
-
-			result = result.OrderBy(f => f.Timestamp).ThenBy(f => f.Index).ToList();
-
-			if (result[^1].Row != row)
-				return null;
-
-			result.RemoveAt(result.Count - 1);
-
-			return result;
+			return sb.ToString().ToLowerInvariant();
 		}
 
-		private void Aggregate(DataRow row, List<DataRow> duplicates)
+		//private List<DataRowDuplicate> Duplicates(DataTable table, DataRow row, List<string> keyFields)
+		//{
+		//	var result = new List<DataRowDuplicate>();
+
+		//	for(var i = 0; i < table.Rows.Count; i++)
+		//	{
+		//		var dr = table.Rows[i];
+		//		var match = true;
+
+		//		foreach (var field in keyFields)
+		//		{
+		//			if (Comparer.Default.Compare(row[field], dr[field]) != 0)
+		//			{
+		//				match = false;
+		//				break;
+		//			}
+		//		}
+
+		//		if (match)
+		//		{
+		//			result.Add(new DataRowDuplicate
+		//			{
+		//				Index = i,
+		//				Row = dr,
+		//				Timestamp = Types.Convert<DateTime>(dr[Merger.TimestampColumn])
+		//			});
+		//		}
+		//	}
+
+		//	if (result.Count == 1)
+		//		return null;
+
+		//	result = result.OrderBy(f => f.Timestamp).ThenBy(f => f.Index).ToList();
+
+		//	if (result[^1].Row != row)
+		//		return null;
+
+		//	result.RemoveAt(result.Count - 1);
+
+		//	return result;
+		//}
+
+		private void Aggregate(DataRow row, DataRow duplicate)
 		{
-			foreach (DataRow dr in duplicates)
+			foreach (var field in Schema.Fields)
 			{
-				foreach (var field in Schema.Fields)
+				//TODO: we could probably optimize those conversions
+				if (field is PartitionSchemaNumberField number && number.Aggregate == AggregateMode.Sum)
 				{
-					if (field is PartitionSchemaNumberField number && number.Aggregate == AggregateMode.Sum)
-					{
-						var value = Types.Convert(dr[field.Name], field.Type);
-						var existingValue = Types.Convert(row[field.Name], field.Type);
+					var value = Types.Convert(duplicate[field.Name], field.Type);
+					var existingValue = Types.Convert(row[field.Name], field.Type);
 
-						var calculated = Types.Convert<decimal>(value) + Types.Convert<decimal>(existingValue);
+					var calculated = Types.Convert<decimal>(value) + Types.Convert<decimal>(existingValue);
 
-						row[field.Name] = Types.Convert(calculated, field.Type);
-					}
+					row[field.Name] = Types.Convert(calculated, field.Type);
 				}
 			}
 		}
