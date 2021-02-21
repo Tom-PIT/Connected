@@ -220,7 +220,7 @@ namespace TomPIT.Data
 			if (!property.CanWrite)
 				return;
 
-			if (!(token is JValue jv))
+			if (token is not JValue jv)
 				return;
 
 			object converted;
@@ -233,9 +233,8 @@ namespace TomPIT.Data
 			if (converted == null)
 				return;
 
-			if (property.PropertyType == typeof(DateTime))
+			if (property.PropertyType == typeof(DateTimeOffset))
 			{
-				converted = DateTime.SpecifyKind((DateTime)converted, DateTimeKind.Utc);
 				var att = property.FindAttribute<DateAttribute>();
 				var kind = DateKind.DateTime;
 
@@ -248,7 +247,7 @@ namespace TomPIT.Data
 					case DateKind.DateTime2:
 					case DateKind.SmallDateTime:
 					case DateKind.Time:
-						converted = Context.Services.Globalization.FromUtc((DateTime)converted);
+						converted = Context.Services.Globalization.FromUtc((DateTimeOffset)converted);
 						break;
 				}
 			}
@@ -256,7 +255,7 @@ namespace TomPIT.Data
 			property.SetValue(instance, converted);
 		}
 
-		private object EnsureInstance(object instance, PropertyInfo property)
+		private static object EnsureInstance(object instance, PropertyInfo property)
 		{
 			var currentValue = property.GetValue(instance);
 
@@ -271,7 +270,7 @@ namespace TomPIT.Data
 			return property.GetValue(instance);
 		}
 
-		private object ConvertValue(Type propertyType, object value)
+		private static object ConvertValue(Type propertyType, object value)
 		{
 			if (value == null)
 				return value;

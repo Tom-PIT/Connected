@@ -44,17 +44,21 @@ namespace TomPIT.Middleware.Services
 
 		public DateTime FromUtc(DateTime value)
 		{
-			if (value == DateTime.MinValue)
-				return value;
-
 			return Types.FromUtc(value, Timezone);
 		}
 
 		public DateTime ToUtc(DateTime value)
 		{
-			if (value == DateTime.MinValue)
-				return value;
+			return Types.ToUtc(value, Timezone);
+		}
 
+		public DateTimeOffset FromUtc(DateTimeOffset value)
+		{
+			return Types.FromUtc(value, Timezone);
+		}
+
+		public DateTimeOffset ToUtc(DateTimeOffset value)
+		{
 			return Types.ToUtc(value, Timezone);
 		}
 
@@ -107,6 +111,9 @@ namespace TomPIT.Middleware.Services
 				}
 			}
 		}
+
+		public DateTimeOffset Now => FromUtc(DateTimeOffset.UtcNow);
+
 		public string GetString(string stringTable, string key, int lcid)
 		{
 			return GetString(stringTable, key, lcid, true);

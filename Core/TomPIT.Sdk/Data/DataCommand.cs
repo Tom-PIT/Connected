@@ -12,7 +12,7 @@ namespace TomPIT.Data
 	internal abstract class DataCommand : MiddlewareObject, IDataCommand
 	{
 		private object _sync = new object();
-		private List<TomPIT.Data.IDataParameter> _parameters = null;
+		private List<IDataParameter> _parameters = null;
 
 		public string CommandText { get; set; }
 		public CommandType CommandType { get; set; } = CommandType.StoredProcedure;
@@ -25,32 +25,32 @@ namespace TomPIT.Data
 		{
 		}
 
-		public List<TomPIT.Data.IDataParameter> Parameters
+		public List<IDataParameter> Parameters
 		{
 			get
 			{
 				if (_parameters == null)
-					_parameters = new List<TomPIT.Data.IDataParameter>();
+					_parameters = new List<IDataParameter>();
 
 				return _parameters;
 			}
 		}
 
-		public TomPIT.Data.IDataParameter SetParameter(string name, object value)
+		public IDataParameter SetParameter(string name, object value)
 		{
 			return SetParameter(name, value, false);
 		}
 
-		public TomPIT.Data.IDataParameter SetParameter(string name, object value, bool nullMapping)
+		public IDataParameter SetParameter(string name, object value, bool nullMapping)
 		{
 			return ResolveParameter(name, value, nullMapping, null);
 		}
-		public TomPIT.Data.IDataParameter SetParameter(string name, object value, bool nullMapping, DbType type)
+		public IDataParameter SetParameter(string name, object value, bool nullMapping, DbType type)
 		{
 			return ResolveParameter(name, value, nullMapping, type);
 		}
 
-		private TomPIT.Data.IDataParameter ResolveParameter(string name, object value, bool nullMapping, DbType? type)
+		private IDataParameter ResolveParameter(string name, object value, bool nullMapping, DbType? type)
 		{
 			var parameter = Parameters.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0);
 			var mappedValue = nullMapping ? MapNullValue(value) : MapValue(value);
@@ -73,14 +73,6 @@ namespace TomPIT.Data
 			return parameter;
 		}
 
-		private Type ResolveType(object value)
-		{
-			if (value == null || value == DBNull.Value)
-				return typeof(string);
-
-			return value.GetType();
-		}
-
 		private object MapValue(object value)
 		{
 			if (value == null || value == DBNull.Value)
@@ -90,6 +82,8 @@ namespace TomPIT.Data
 			{
 				if (value.GetType().IsEnum)
 					return Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()));
+				else if (value is DateTimeOffset date)
+					return Context.Services.Globalization.ToUtc(date);
 
 				return value;
 			}
@@ -113,6 +107,11 @@ namespace TomPIT.Data
 			else if (value is DateTime)
 			{
 				if ((DateTime)value == DateTime.MinValue)
+					return DBNull.Value;
+			}
+			else if (value is DateTimeOffset offset)
+			{
+				if (offset == DateTimeOffset.MinValue)
 					return DBNull.Value;
 			}
 			else if (value is int || value is float || value is double || value is short || value is byte || value is long || value is decimal)

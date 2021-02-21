@@ -235,7 +235,7 @@ namespace TomPIT
 				return DbType.Byte;
 			else if (type == typeof(bool))
 				return DbType.Boolean;
-			else if (type == typeof(DateTime))
+			else if (type == typeof(DateTime) || type == typeof(DateTimeOffset))
 			{
 				var att = property.FindAttribute<DateAttribute>();
 
@@ -258,8 +258,6 @@ namespace TomPIT
 						return DbType.DateTime2;
 				}
 			}
-			else if (type == typeof(DateTimeOffset))
-				return DbType.DateTimeOffset;
 			else if (type == typeof(decimal))
 				return DbType.Decimal;
 			else if (type == typeof(double))
@@ -302,10 +300,8 @@ namespace TomPIT
 				return DbType.Byte;
 			else if (underlyingType == typeof(bool))
 				return DbType.Boolean;
-			else if (underlyingType == typeof(DateTime))
+			else if (underlyingType == typeof(DateTime) || underlyingType == typeof(DateTimeOffset))
 				return DbType.DateTime2;
-			else if (underlyingType == typeof(DateTimeOffset))
-				return DbType.DateTimeOffset;
 			else if (underlyingType == typeof(decimal))
 				return DbType.Decimal;
 			else if (underlyingType == typeof(double))
@@ -668,6 +664,28 @@ namespace TomPIT
 				return value;
 			else
 				return TimeZoneInfo.ConvertTimeToUtc(value, timeZone);
+		}
+
+		public static DateTimeOffset FromUtc(DateTimeOffset value, TimeZoneInfo timeZone)
+		{
+			if (value == DateTimeOffset.MinValue || value.Offset != TimeSpan.Zero)
+				return value;
+
+			if (timeZone == null || timeZone == TimeZoneInfo.Utc)
+				return value;
+			else
+				return new DateTimeOffset(value.UtcDateTime, timeZone.BaseUtcOffset);
+		}
+
+		public static DateTimeOffset ToUtc(DateTimeOffset value, TimeZoneInfo timeZone)
+		{
+			if (value == DateTimeOffset.MinValue || value.Offset == TimeSpan.Zero)
+				return value;
+
+			if (timeZone == null || timeZone == TimeZoneInfo.Utc)
+				return value;
+			else
+				return new DateTimeOffset(value.UtcDateTime);
 		}
 	}
 }

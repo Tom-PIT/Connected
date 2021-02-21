@@ -2,7 +2,7 @@
 	"connections": [
     {
       "name": "localhost",
-      "url": "http://sys-app/mpt/sys",
+      "url": "http://sys-app/common/sys",
       "authenticationToken": "defaultAuthenticationToken"
     }
 	],

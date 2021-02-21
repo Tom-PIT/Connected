@@ -64,9 +64,6 @@ namespace TomPIT.DataProviders.Sql
 		{
 			var cmd = command as SqlCommand;
 
-			if (value is DateTime date)
-				value = connection.Context.Services.Globalization.ToUtc(date);
-
 			cmd.Parameters[parameterName].Value = value;
 		}
 		public override IDataConnection OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior)
