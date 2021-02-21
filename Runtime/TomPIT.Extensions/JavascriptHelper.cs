@@ -27,6 +27,8 @@ namespace TomPIT
 				return String(value);
 			else if (value is DateTime time)
 				return Date(time);
+			else if (value is DateTimeOffset offset)
+				return Date(offset);
 			else if (value is Guid)
 				return Guid(value);
 			else if (value is bool)
@@ -125,6 +127,14 @@ namespace TomPIT
 			if (date == DateTime.MinValue)
 				return Html.Raw("null") as HtmlString;
 			
+			return Html.Raw($"new Date('{date:o}')");
+		}
+
+		public IHtmlContent Date(DateTimeOffset date)
+		{
+			if (date == DateTimeOffset.MinValue)
+				return Html.Raw("null") as HtmlString;
+
 			return Html.Raw($"new Date('{date:o}')");
 		}
 
