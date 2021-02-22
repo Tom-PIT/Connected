@@ -151,7 +151,7 @@ namespace TomPIT.Development.Models
 				return Result.EmptyResult(this);
 
 			var path = DomQuery.Path(Selection.Element);
-			Tenant.GetService<IDesignService>().Components.DeleteFolder(DomQuery.Closest<IMicroServiceScope>(Selection.Element).MicroService.Token, folder.Token);
+			Tenant.GetService<IDesignService>().Components.DeleteFolder(DomQuery.Closest<IMicroServiceScope>(Selection.Element).MicroService.Token, folder.Token, true);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 
