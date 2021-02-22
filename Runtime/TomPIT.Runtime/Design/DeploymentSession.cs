@@ -150,17 +150,12 @@ namespace TomPIT.Design
 			/*
 			 * remove
 			 */
-			foreach(var folder in folders)
+			foreach (var folder in folders)
 			{
 				if (Request.Folders?.FirstOrDefault(f => f.Id == folder.Token) != null)
 					continue;
-				/*
-				 * if no components are in the folder we can remove it
-				 */
-				var components = Tenant.GetService<IComponentService>().QueryComponents(Request.Token, folder.Token);
-
-				if (components.Count == 0)
-					ComponentModel.DeleteFolder(Request.Token, folder.Token);
+				
+				ComponentModel.DeleteFolder(Request.Token, folder.Token, false);
 			}
 			/*
 			 * add and modify
@@ -190,7 +185,7 @@ namespace TomPIT.Design
 					/*
 					 * insert
 					 */
-					ComponentModel.InsertFolder(Request.Token, folder.Name, folder.Parent);
+					ComponentModel.RestoreFolder(Request.Token, folder.Id, folder.Name, folder.Parent);
 
 					existing.Add(Tenant.GetService<IComponentService>().SelectFolder(folder.Id));
 				}

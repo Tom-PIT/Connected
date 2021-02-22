@@ -83,7 +83,7 @@ namespace TomPIT.Data
 				if (value.GetType().IsEnum)
 					return Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()));
 				else if (value is DateTimeOffset date)
-					return Context.Services.Globalization.ToUtc(date);
+					return date.UtcDateTime;
 
 				return value;
 			}
@@ -113,6 +113,8 @@ namespace TomPIT.Data
 			{
 				if (offset == DateTimeOffset.MinValue)
 					return DBNull.Value;
+
+				return offset.UtcDateTime;
 			}
 			else if (value is int || value is float || value is double || value is short || value is byte || value is long || value is decimal)
 			{
@@ -131,8 +133,10 @@ namespace TomPIT.Data
 			}
 			else if (value is Enum)
 			{
-				if ((int)value == 0)
+				if (Convert.ToDouble(value) == 0d)
 					return DBNull.Value;
+
+				return Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()));
 			}
 			else if (value is TimeSpan)
 			{

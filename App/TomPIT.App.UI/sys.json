@@ -2,7 +2,7 @@
   "connections": [
     {
       "name": "localhost",
-      "url": "http://sys-app/common/sys",
+      "url": "http://sys-app/repoclient2/sys",
       "authenticationToken": "defaultAuthenticationToken"
     }
   ],

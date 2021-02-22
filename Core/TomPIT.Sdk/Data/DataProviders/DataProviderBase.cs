@@ -83,6 +83,9 @@ namespace TomPIT.Data.DataProviders
 			if (value == DBNull.Value)
 				return null;
 
+			if (value is DateTime date)
+				value = DateTime.SpecifyKind(date, DateTimeKind.Utc);
+
 			return value;
 		}
 

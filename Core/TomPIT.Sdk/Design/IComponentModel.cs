@@ -24,7 +24,7 @@ namespace TomPIT.Design
 
 		Guid InsertFolder(Guid microService, string name, Guid parent);
 		void UpdateFolder(Guid microService, Guid folder, string name, Guid parent);
-		void DeleteFolder(Guid microService, Guid folder);
+		void DeleteFolder(Guid microService, Guid folder, bool deleteComponents);
 		void RestoreFolder(Guid microService, Guid token, string name, Guid parent);
 
 		void SaveRuntimeState(Guid microService);

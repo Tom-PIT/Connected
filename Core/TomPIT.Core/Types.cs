@@ -668,13 +668,17 @@ namespace TomPIT
 
 		public static DateTimeOffset FromUtc(DateTimeOffset value, TimeZoneInfo timeZone)
 		{
-			if (value == DateTimeOffset.MinValue || value.Offset != TimeSpan.Zero)
+			if (value == DateTimeOffset.MinValue)
 				return value;
 
 			if (timeZone == null || timeZone == TimeZoneInfo.Utc)
-				return value;
+				return new DateTimeOffset(new DateTime(value.UtcDateTime.Ticks, DateTimeKind.Utc));
 			else
-				return new DateTimeOffset(value.UtcDateTime, timeZone.BaseUtcOffset);
+			{
+				var offset = FromUtc(value.UtcDateTime, timeZone);
+
+				return new DateTimeOffset(offset, timeZone.GetUtcOffset(value.UtcDateTime));
+			}
 		}
 
 		public static DateTimeOffset ToUtc(DateTimeOffset value, TimeZoneInfo timeZone)

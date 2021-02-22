@@ -672,17 +672,25 @@ namespace TomPIT.Design
 			}
 		}
 
-		public void DeleteFolder(Guid microService, Guid folder)
+		public void DeleteFolder(Guid microService, Guid folder, bool deleteComponents)
 		{
 			var folders = Tenant.GetService<IComponentService>().QueryFolders(microService, folder);
 
 			foreach (var i in folders)
-				DeleteFolder(microService, i.Token);
+				DeleteFolder(microService, i.Token, deleteComponents);
 
 			var components = Tenant.GetService<IComponentService>().QueryComponents(microService, folder);
 
-			foreach (var i in components)
-				Delete(i.Token);
+			if (deleteComponents)
+			{
+				foreach (var i in components)
+					Delete(i.Token);
+			}
+			else
+			{
+				foreach (var component in components)
+					Update(component.Token, component.Name, Guid.Empty);
+			}
 
 			var u = Tenant.CreateUrl("FolderDevelopment", "Delete");
 			var args = new JObject
@@ -709,6 +717,9 @@ namespace TomPIT.Design
 				};
 
 			Tenant.Post(u, args);
+
+			if (Tenant.GetService<IComponentService>() is IComponentNotification svc)
+				svc.NotifyFolderChanged(this, new FolderEventArgs(microService, token));
 		}
 
 		public Guid InsertFolder(Guid microService, string name, Guid parent)
