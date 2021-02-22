@@ -279,53 +279,11 @@ namespace TomPIT.BigData.Transactions
 				var value = row[field];
 				var text = value == null || value == DBNull.Value ? "_" : value.ToString();
 
-				sb.Append(text);
+				sb.Append($"{text}.");
 			}
 
 			return sb.ToString().ToLowerInvariant();
 		}
-
-		//private List<DataRowDuplicate> Duplicates(DataTable table, DataRow row, List<string> keyFields)
-		//{
-		//	var result = new List<DataRowDuplicate>();
-
-		//	for(var i = 0; i < table.Rows.Count; i++)
-		//	{
-		//		var dr = table.Rows[i];
-		//		var match = true;
-
-		//		foreach (var field in keyFields)
-		//		{
-		//			if (Comparer.Default.Compare(row[field], dr[field]) != 0)
-		//			{
-		//				match = false;
-		//				break;
-		//			}
-		//		}
-
-		//		if (match)
-		//		{
-		//			result.Add(new DataRowDuplicate
-		//			{
-		//				Index = i,
-		//				Row = dr,
-		//				Timestamp = Types.Convert<DateTime>(dr[Merger.TimestampColumn])
-		//			});
-		//		}
-		//	}
-
-		//	if (result.Count == 1)
-		//		return null;
-
-		//	result = result.OrderBy(f => f.Timestamp).ThenBy(f => f.Index).ToList();
-
-		//	if (result[^1].Row != row)
-		//		return null;
-
-		//	result.RemoveAt(result.Count - 1);
-
-		//	return result;
-		//}
 
 		private void Aggregate(DataRow row, DataRow duplicate)
 		{
