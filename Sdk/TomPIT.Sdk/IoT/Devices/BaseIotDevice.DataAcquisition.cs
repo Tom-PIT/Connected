@@ -5,6 +5,7 @@
  */
 
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TomPIT.Sdk.HealthMonitoring;
@@ -21,6 +22,11 @@ namespace TomPIT.Sdk.IoT.Devices
         private readonly object _lockObject = new object();
 
         //public event Queue QueueDataForSending;
+
+        private void RegisterQueueMethod(Func<int> methodName)
+        {
+
+        }
 
         private void ReadDeviceData()
         {
@@ -64,12 +70,16 @@ namespace TomPIT.Sdk.IoT.Devices
 
         private async Task StartDataTransfer()
         {
+            _logging?.Info("Starting Data Transfer");
+
             _intervalTimer.Start();
             _threadActive = true;
         }
 
         private void StopDataTransfer()
         {
+            _logging?.Info("Stopping Data Transfer");
+
             _intervalTimer.Stop();
             _threadActive = false;
         }

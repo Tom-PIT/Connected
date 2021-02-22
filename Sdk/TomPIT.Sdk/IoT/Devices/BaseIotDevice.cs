@@ -7,6 +7,7 @@
 using System;
 using System.Threading;
 using TomPIT.Sdk.HealthMonitoring;
+using TomPIT.Sdk.Logging;
 
 namespace TomPIT.Sdk.IoT.Devices
 {
@@ -14,6 +15,7 @@ namespace TomPIT.Sdk.IoT.Devices
     {
         private readonly DateTime _startTime = DateTime.Now;
         private int _readPeriod = 30000; //default 30 seconds
+        private ILogging _logging = null;
 
         #region [Properties]
         protected long ElapsedSeconds => (long)((DateTime.Now - _startTime).TotalSeconds);
@@ -43,6 +45,12 @@ namespace TomPIT.Sdk.IoT.Devices
         public BaseIotDevice SetId(long id)
         {
             Id = id;
+            return this;
+        }
+
+        public BaseIotDevice WithLogging(ILogging logging)
+        {
+            _logging = logging;
             return this;
         }
 

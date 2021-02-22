@@ -4,6 +4,7 @@
  * Read about Tom PIT licensing here: https://www.tompit.net/legal/open-release-license
  */
 
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using TomPIT.Sdk.Base;
@@ -14,6 +15,8 @@ namespace TomPIT.Sdk.IoT
     public class IotHub : BaseConnection
     {
         private readonly Collection<BaseIotDevice> _iotDevices = new Collection<BaseIotDevice>();
+
+        private readonly ConcurrentQueue<int> _dataQueue = new ConcurrentQueue<int>();
 
         public IotHub()
         { 
