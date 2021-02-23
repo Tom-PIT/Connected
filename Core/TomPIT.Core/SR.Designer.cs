@@ -2023,6 +2023,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NewPath not set.
+        /// </summary>
+        public static string ErrNewPathNotSet {
+            get {
+                return ResourceManager.GetString("ErrNewPathNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No application server is registered. To manage Instances go to the Management console and search for the Environment/Instances node..
         /// </summary>
         public static string ErrNoAppServer {

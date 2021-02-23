@@ -1245,4 +1245,7 @@
   <data name="ErrCannotCreateStackedDispatcher" xml:space="preserve">
     <value>Cannot create stacked dispatcher</value>
   </data>
+  <data name="ErrNewPathNotSet" xml:space="preserve">
+    <value>NewPath not set</value>
+  </data>
 </root>
