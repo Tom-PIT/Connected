@@ -2,9 +2,9 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <AssemblyVersion>2.2.223.2</AssemblyVersion>
-    <FileVersion>2.2.223.2</FileVersion>
-    <Version>2.2.223.2</Version>
+    <AssemblyVersion>2.2.223.3</AssemblyVersion>
+    <FileVersion>2.2.223.3</FileVersion>
+    <Version>2.2.223.3</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\TomPIT.Sdk\TomPIT.Sdk.csproj" />
