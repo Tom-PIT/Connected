@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
+using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.MicroServices.Design;
@@ -10,6 +11,7 @@ namespace TomPIT.MicroServices.Cdn
 	[Create(DesignUtils.ComponentEvent, nameof(Name))]
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
+	[ClassRequired]
 	public class SubscriptionEvent : SourceCodeElement, ISubscriptionEvent
 	{
 		[Required]

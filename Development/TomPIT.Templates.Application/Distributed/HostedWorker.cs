@@ -1,4 +1,5 @@
 ﻿using TomPIT.Annotations.Design;
+using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Diagnostics;
 using TomPIT.ComponentModel.Distributed;
@@ -11,6 +12,7 @@ namespace TomPIT.MicroServices.Distributed
 	[DomDesigner(DesignUtils.ScheduleDesigner, Mode = EnvironmentMode.Runtime)]
 	[DomDesigner(DomDesignerAttribute.TextDesigner, Mode = EnvironmentMode.Design)]
 	[Syntax(SyntaxAttribute.CSharp)]
+	[ClassRequired]
 	public class HostedWorker : SourceCodeConfiguration, IHostedWorkerConfiguration
 	{
 		private IMetricOptions _metric = null;

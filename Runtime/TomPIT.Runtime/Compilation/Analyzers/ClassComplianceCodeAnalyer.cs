@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using TomPIT.Annotations.Design;
+using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Reflection;
@@ -35,7 +35,7 @@ namespace TomPIT.Compilation.Analyzers
 
 		private void AnalyzeNode(SyntaxNodeAnalysisContext context)
 		{
-			if (context.Node is not CompilationUnitSyntax compilationUnit)
+			if (context.Node is not CompilationUnitSyntax)
 				return;
 
 			CheckClassDeclaration(context);
@@ -51,21 +51,16 @@ namespace TomPIT.Compilation.Analyzers
 			var declarations = context.Node.ChildNodes();
 			ClassDeclarationSyntax firstClass = null;
 
-			foreach(var declaration in declarations)
+			foreach (var declaration in declarations)
 			{
-				if(declaration.IsKind(SyntaxKind.ClassDeclaration))
+				if (declaration.IsKind(SyntaxKind.ClassDeclaration))
 				{
 					var cs = declaration as ClassDeclarationSyntax;
 
 					if (string.Compare(cs.Identifier.ToString(), expectedClassName, false) == 0)
 					{
-						if(!cs.IsPublic())
-						{
-							var descriptor = new DiagnosticDescriptor("ComponentClass", "Invalid class modifier", "Script class should have public modifier.", "Naming", DiagnosticSeverity.Warning, true);
-							var diagnostic = Microsoft.CodeAnalysis.Diagnostic.Create(descriptor, cs.Identifier.GetLocation());
-							
-							context.ReportDiagnostic(diagnostic);
-						}
+						if (!cs.IsPublic())
+							context.ReportDiagnostic(Microsoft.CodeAnalysis.Diagnostic.Create(Descriptors[0], cs.Identifier.GetLocation()));
 
 						return;
 					}
@@ -75,10 +70,8 @@ namespace TomPIT.Compilation.Analyzers
 				}
 			}
 
-			var descriptor1 = new DiagnosticDescriptor("ComponentClass", "Class not present", $"Script class should have class name '{expectedClassName}' with public modifier.", "Naming", DiagnosticSeverity.Warning, true);
-			var diagnostic1 = Microsoft.CodeAnalysis.Diagnostic.Create(descriptor1, firstClass == null ? context.Node.GetLocation() : firstClass.Identifier.GetLocation());
-
-			context.ReportDiagnostic(diagnostic1);
+			var location = firstClass == null ? context.Node.GetLocation() : firstClass.Identifier.GetLocation();
+			context.ReportDiagnostic(Microsoft.CodeAnalysis.Diagnostic.Create(Descriptors[1], location, expectedClassName));
 		}
 
 		private string ResolveExpectedClassName()
@@ -93,14 +86,17 @@ namespace TomPIT.Compilation.Analyzers
 			if (component.Token == Script.Id)
 				return component.Name;
 
-			var target = Tenant.GetService<Reflection.IDiscoveryService>().Find(configuration, Script.Id);
+			var target = Tenant.GetService<IDiscoveryService>().Find(configuration, Script.Id);
 
 			if (target == null)
 				return null;
 
-			var att = target.GetType().FindAttribute<SyntaxAttribute>();
+			var att = target.GetType().FindAttribute<ClassRequiredAttribute>();
 
-			if (att == null || string.IsNullOrWhiteSpace(att.ClassNameProperty))
+			if (att == null)
+				return null;
+
+			if (string.IsNullOrWhiteSpace(att.ClassNameProperty))
 				return target.ToString();
 
 			var property = target.GetType().GetProperty(att.ClassNameProperty);
@@ -119,7 +115,8 @@ namespace TomPIT.Compilation.Analyzers
 				{
 					_descriptors = new List<DiagnosticDescriptor>
 					{
-						new DiagnosticDescriptor("ComponentClass", "Script should contain class with the same name as Component", null, "Naming", DiagnosticSeverity.Error, true)
+						new DiagnosticDescriptor("ComponentClass", "Invalid class modifier", "Script class should have public modifier.", "Naming", DiagnosticSeverity.Warning, true),
+						new DiagnosticDescriptor("ComponentClass", "Class not present", "Script should have class name '{0}' with public modifier.", "Naming", DiagnosticSeverity.Warning, true),
 					};
 				}
 

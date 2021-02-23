@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
+using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
@@ -12,6 +13,7 @@ namespace TomPIT.MicroServices.BigData
 	[DomDesigner(DomDesignerAttribute.TextDesigner, Mode = EnvironmentMode.Design)]
 	[DomDesigner(DesignUtils.BigDataPartitionDesigner, Mode = EnvironmentMode.Runtime)]
 	[Syntax(SyntaxAttribute.CSharp)]
+	[ClassRequired]
 	public class Partition : SourceCodeConfiguration, IPartitionConfiguration
 	{
 		private ListItems<IBigDataQuery> _queries = null;

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
+using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.MicroServices.Design;
@@ -13,6 +14,7 @@ namespace TomPIT.MicroServices.Data
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.Connection, TomPIT.MicroServices.Design")]
 	[Syntax(SyntaxAttribute.CSharp)]
+	[ClassRequired]
 	public class Connection : SourceCodeConfiguration, IConnectionConfiguration
 	{
 		[PropertyEditor(PropertyEditorAttribute.TextArea)]
