@@ -16,7 +16,7 @@ namespace TomPIT.MicroServices.Apis
 	[DomElement(DesignUtils.ApiOperationElement)]
 	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = EnvironmentMode.Runtime)]
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
-	[Syntax(SyntaxAttribute.CSharp)]
+	[Syntax(SyntaxAttribute.CSharp, nameof(Name))]
 	[Create("Operation", nameof(Name))]
 	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.ApiOperation, TomPIT.MicroServices.Design")]
 	public class Operation : ConfigurationElement, IApiOperation

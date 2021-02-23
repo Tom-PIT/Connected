@@ -100,10 +100,7 @@ namespace TomPIT.Compilation
 					 CompilerService.LoadSystemAssembly("TomPIT.Runtime"),
 					 CompilerService.LoadSystemAssembly("Newtonsoft.Json")
 				};
-		protected virtual string[] Usings
-		{
-			get { return CompilerService.CombineUsings(null); }
-		}
+		protected virtual string[] Usings => Array.Empty<string>();
 
 		public void Dispose()
 		{

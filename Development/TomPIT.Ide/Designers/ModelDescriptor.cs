@@ -11,6 +11,7 @@
 		public bool Definition { get; set; }
 		public bool SignatureHelp { get; set; }
 		public bool DocumentSymbol { get; set; }
+		public bool DocumentFormatting { get; set; }
 		public string MicroService { get; set; }
 	}
 }

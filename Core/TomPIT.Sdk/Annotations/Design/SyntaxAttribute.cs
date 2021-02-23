@@ -18,6 +18,13 @@ namespace TomPIT.Annotations.Design
 			Syntax = syntax;
 		}
 
+		public SyntaxAttribute(string syntax, string classNameProperty)
+		{
+			Syntax = syntax;
+			ClassNameProperty = classNameProperty;
+		}
+
 		public string Syntax { get; }
+		public string ClassNameProperty { get; }
 	}
 }

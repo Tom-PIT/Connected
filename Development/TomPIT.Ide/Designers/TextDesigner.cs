@@ -229,6 +229,16 @@ namespace TomPIT.Ide.Designers
 					return Result.JsonResult(this, editor.GetService<IDefinitionProviderService>().ProvideDefinition(position));
 				}
 			}
+			else if (string.Compare(action, "provideDocumentFormattingEdits", true) == 0)
+			{
+				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
+				using var editor = GetTextEditor(model, data.Optional<string>("text", null));
+
+				if (editor == null)
+					return Result.JsonResult(this, null);
+
+				return Result.JsonResult(this, editor.GetService<IDocumentFormattingEditService>().ProvideDocumentFormattingEdits());
+			}
 			else if (string.Compare(action, "loadModel", true) == 0)
 			{
 				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
@@ -251,6 +261,7 @@ namespace TomPIT.Ide.Designers
 					Definition = (editor.Features & LanguageFeature.Definition) == LanguageFeature.Definition,
 					DocumentSymbol = (editor.Features & LanguageFeature.DocumentSymbol) == LanguageFeature.DocumentSymbol,
 					SignatureHelp = (editor.Features & LanguageFeature.SignatureHelp) == LanguageFeature.SignatureHelp,
+					DocumentFormatting = (editor.Features & LanguageFeature.DocumentFormatting) == LanguageFeature.DocumentFormatting,
 					FileName = text == null ? string.Empty : ((IText)target).FileName(),
 					Language = syntax == null ? "csharp" : syntax.Syntax,
 					MicroService = microService.Name,

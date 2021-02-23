@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.Caching;
+using TomPIT.Compilation.Analyzers;
 using TomPIT.Compilation.Views;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
@@ -36,21 +37,8 @@ namespace TomPIT.Compilation
 
 		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _references = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
 		private static Lazy<ConcurrentDictionary<Guid, ManualResetEvent>> _scriptCreateState = new Lazy<ConcurrentDictionary<Guid, ManualResetEvent>>();
-		private static List<DiagnosticAnalyzer> _analyzers = null;
+		//private static List<DiagnosticAnalyzer> _analyzers = null;
 		private static object _sync = new object();
-
-		private static readonly string[] Usings = new string[]
-		{
-				//"System",
-				//"System.Data",
-				//"System.Text",
-				//"System.Linq",
-				//"System.Collections.Generic",
-				//"Newtonsoft.Json",
-				//"Newtonsoft.Json.Linq",
-				//"TomPIT",
-				//"TomPIT.Middleware"
-		};
 
 		public CompilerService(ITenant tenant) : base(tenant, "script")
 		{
@@ -68,16 +56,6 @@ namespace TomPIT.Compilation
 				if (i.MicroService == e.MicroService)
 					RemoveScript(i.Id);
 			}
-		}
-
-		internal static string[] CombineUsings(List<string> additionalUsings)
-		{
-			if (additionalUsings == null || additionalUsings.Count == 0)
-				return Usings.ToArray();
-
-			additionalUsings.AddRange(Usings);
-
-			return additionalUsings.ToArray();
 		}
 
 		private IScriptDescriptor GetCachedScript(Guid sourceCodeId)
@@ -315,12 +293,7 @@ namespace TomPIT.Compilation
 			var errors = ImmutableArray<Microsoft.CodeAnalysis.Diagnostic>.Empty;
 
 			if (compiler.Script != null)
-			{
-				if (Analyzers.Count > 0)
-					errors = compiler.Script.GetCompilation().WithAnalyzers(Analyzers.ToImmutableArray()).GetAllDiagnosticsAsync().Result;
-				else
-					errors = compiler.Script.GetCompilation().GetDiagnostics();
-			}
+				errors = compiler.Script.GetCompilation().WithAnalyzers(CreateAnalyzers(compiler.Tenant, script)).GetAllDiagnosticsAsync().Result;
 
 			var diagnostics = new List<IDiagnostic>();
 
@@ -729,26 +702,12 @@ namespace TomPIT.Compilation
 		private static ConcurrentDictionary<Guid, ManualResetEvent> ScriptCreateState { get { return _scriptCreateState.Value; } }
 		private ScriptCache Scripts { get; }
 
-		private static List<DiagnosticAnalyzer> Analyzers
+		private static ImmutableArray<DiagnosticAnalyzer> CreateAnalyzers(ITenant tenant, IScriptDescriptor script)
 		{
-			get
+			return new List<DiagnosticAnalyzer>
 			{
-				if (_analyzers == null)
-				{
-					lock (_sync)
-					{
-						if (_analyzers == null)
-						{
-							_analyzers = new List<DiagnosticAnalyzer>
-							{
-								//								new TestCodeAnalyer()
-							};
-						}
-					}
-				}
-
-				return _analyzers;
-			}
+				new ClassComplianceCodeAnalyer(tenant, script)
+			}.ToImmutableArray();
 		}
 
 		private void RemoveScript(Guid id)
