@@ -145,7 +145,7 @@ namespace TomPIT.Caching
 			Cache.CreateKey(key);
 		}
 
-		public List<T> All<T>(string key) where T : class
+		public List<T> All<T>(IMiddlewareContext context, string key) where T : class
 		{
 			Initialize(key);
 
@@ -153,12 +153,12 @@ namespace TomPIT.Caching
 			var result = new List<T>();
 
 			foreach (var item in items)
-				result.Add(Serializer.Deserialize<T>(item.Value));
+				result.Add(Deserialize<T>(context, item.Value));
 
 			return result;
 		}
 
-		public T Get<T>(string key, string id, CacheRetrieveHandler<T> retrieve) where T : class
+		public T Get<T>(IMiddlewareContext context, string key, string id, CacheRetrieveHandler<T> retrieve) where T : class
 		{
 			Initialize(key);
 
@@ -181,10 +181,10 @@ namespace TomPIT.Caching
 				return result;
 			}
 
-			return Serializer.Deserialize<T>(item.Value);
+			return Deserialize<T>(context, item.Value);
 		}
 
-		public T Get<T>(string key, Func<dynamic, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
+		public T Get<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
 		{
 			Initialize(key);
 
@@ -195,7 +195,7 @@ namespace TomPIT.Caching
 				var target = all.FirstOrDefault(f => predicate(f.Key));
 
 				if (target != null)
-					return Serializer.Deserialize<T>(target.Value);
+					return Deserialize<T>(context, target.Value);
 			}
 
 			var options = new EntryOptions
@@ -221,7 +221,7 @@ namespace TomPIT.Caching
 			return result;
 		}
 
-		public T Get<T>(string key, Func<T, bool> evaluator, CacheRetrieveHandler<T> retrieve) where T : class
+		public T Get<T>(IMiddlewareContext context, string key, Func<T, bool> evaluator, CacheRetrieveHandler<T> retrieve) where T : class
 		{
 			Initialize(key);
 
@@ -231,7 +231,7 @@ namespace TomPIT.Caching
 			{
 				while (enumerator.MoveNext())
 				{
-					var instance = Serializer.Deserialize<T>(enumerator.Current.Value);
+					var instance = Deserialize<T>(context, enumerator.Current.Value);
 
 					if (evaluator(instance))
 						return instance;
@@ -287,7 +287,7 @@ namespace TomPIT.Caching
 			return key.ToString();
 		}
 
-		public T Get<T>(string key, string id) where T : class
+		public T Get<T>(IMiddlewareContext context, string key, string id) where T : class
 		{
 			Initialize(key);
 
@@ -296,14 +296,14 @@ namespace TomPIT.Caching
 			if (item == null)
 				return default;
 
-			return Serializer.Deserialize<T>(item.Value);
+			return Deserialize<T>(context, item.Value);
 		}
 
-		public T Get<T>(string key, Func<dynamic, bool> predicate) where T : class
+		public T Get<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate) where T : class
 		{
 			Initialize(key);
 
-			var items = Where<T>(key, predicate);
+			var items = Where<T>(context, key, predicate);
 
 			if (items == null || items.Count == 0)
 				return default;
@@ -311,7 +311,7 @@ namespace TomPIT.Caching
 			return items.FirstOrDefault(predicate);
 		}
 
-		public T First<T>(string key) where T : class
+		public T First<T>(IMiddlewareContext context, string key) where T : class
 		{
 			Initialize(key);
 
@@ -320,14 +320,14 @@ namespace TomPIT.Caching
 			if (first == null)
 				return default;
 
-			return Serializer.Deserialize<T>(first.Value);
+			return Deserialize<T>(context, first.Value);
 		}
 
-		public List<T> Where<T>(string key, Func<dynamic, bool> predicate) where T : class
+		public List<T> Where<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate) where T : class
 		{
 			Initialize(key);
 
-			var items = All<CacheValue>(key);
+			var items = All<CacheValue>(context, key);
 
 			if (items == null || items.Count == 0)
 				return new List<T>();
@@ -340,7 +340,7 @@ namespace TomPIT.Caching
 			var r = new List<T>();
 
 			foreach (var result in results)
-				r.Add(Serializer.Deserialize<T>(result));
+				r.Add(Deserialize<T>(context, result));
 
 			return r;
 		}
@@ -488,8 +488,37 @@ namespace TomPIT.Caching
 								value = value.ToString().Substring(0, 128);
 						}
 
-						result.TryAdd(property.Name, property.GetValue(instance));
+						result.TryAdd(property.Name, value);
 					}
+				}
+			}
+
+			return result;
+		}
+
+		private static T Deserialize<T>(IMiddlewareContext context, CacheValue value)
+		{
+			if (value == null || string.IsNullOrEmpty(value.Value))
+				return default;
+
+			return Deserialize<T>(context, value.Value);
+		}
+		private static T Deserialize<T>(IMiddlewareContext context, string value)
+		{
+			var result =  Serializer.Deserialize<T>(value);
+
+			if (result == null || result.GetType().IsPrimitive || result.GetType().IsCollection())
+				return result;
+
+			var props = result.GetType().GetProperties(BindingFlags.Instance| BindingFlags.Public);
+			
+			foreach(var property in props)
+			{
+				if(property.PropertyType == typeof(DateTimeOffset) && property.CanWrite)
+				{
+					var utc = (DateTimeOffset)property.GetValue(result);
+					
+					property.SetValue(result, context.Services.Globalization.FromUtc(utc));
 				}
 			}
 
