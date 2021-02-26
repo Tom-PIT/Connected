@@ -34,6 +34,8 @@ namespace TomPIT.Data
 		public BinaryKind BinaryKind { get; set; } = BinaryKind.VarBinary;
 		public int DatePrecision { get; set; }
 
+		public int Ordinal { get; set; }
+
 		public bool Equals([AllowNull] IModelSchemaColumn other)
 		{
 			if (other == null)

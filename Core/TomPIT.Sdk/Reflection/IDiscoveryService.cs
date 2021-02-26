@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Reflection;
 using TomPIT.ComponentModel;
+using TomPIT.Configuration;
+using TomPIT.Middleware;
 using TomPIT.Reflection.Manifests;
 
 namespace TomPIT.Reflection
@@ -10,6 +12,8 @@ namespace TomPIT.Reflection
 	{
 		IServiceReferencesConfiguration References(string microService);
 		IServiceReferencesConfiguration References(Guid microService);
+
+		IMicroServiceInfoMiddleware MicroServiceInfo(IMicroServiceContext context, Guid microService);
 		IElement Find(Guid component, Guid id);
 		IElement Find(IConfiguration configuration, Guid id);
 

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel.IoC;
 using TomPIT.Exceptions;
@@ -18,12 +19,29 @@ namespace TomPIT.IoC
 
 		protected List<IIoCEndpointMiddleware> CreateEndpoints(object e)
 		{
-			return Context.Tenant.GetService<IIoCService>().CreateEndpoints(Context, ((IIoCOperationContext)this).Operation, e);
+			return SortEndpoints(Context.Tenant.GetService<IIoCService>().CreateEndpoints(Context, ((IIoCOperationContext)this).Operation, e));
 		}
 
 		protected List<IIoCEndpointMiddleware> CreateEndpoints()
 		{
-			return Context.Tenant.GetService<IIoCService>().CreateEndpoints(Context, ((IIoCOperationContext)this).Operation, this);
+			return SortEndpoints(Context.Tenant.GetService<IIoCService>().CreateEndpoints(Context, ((IIoCOperationContext)this).Operation, this));
+		}
+
+		private static List<IIoCEndpointMiddleware> SortEndpoints(List<IIoCEndpointMiddleware> items)
+		{
+			if (items == null || items.Count == 0)
+				return items;
+
+			var result = new List<KeyValuePair<int, IIoCEndpointMiddleware>>();
+
+			foreach(var endpoint in items)
+			{
+				var priority = endpoint.GetType().FindAttribute<PriorityAttribute>();
+
+				result.Add(new KeyValuePair<int, IIoCEndpointMiddleware>(priority == null ? 0 : priority.Priority, endpoint));
+			}
+
+			return result.OrderByDescending(f=>f.Key).Select(f=>f.Value).ToList();
 		}
 
 		protected IIoCEndpointMiddleware FirstEndpoint()

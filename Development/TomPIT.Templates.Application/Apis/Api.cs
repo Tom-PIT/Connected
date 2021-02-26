@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
+using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
@@ -13,7 +14,11 @@ namespace TomPIT.MicroServices.Apis
 	[DomElement(DesignUtils.ApiElement)]
 	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = EnvironmentMode.Runtime)]
 	[Manifest(DesignUtils.ApiManifest)]
-	public class Api : ComponentConfiguration, IApiConfiguration
+	[DomDesigner(DomDesignerAttribute.TextDesigner, Mode = EnvironmentMode.Design)]
+	[Syntax(SyntaxAttribute.CSharp)]
+	[ClassRequired]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.Api, TomPIT.MicroServices.Design")]
+	public class Api : SourceCodeConfiguration, IApiConfiguration
 	{
 		private ListItems<IApiOperation> _ops = null;
 		private ApiProtocolOptions _protocols = null;

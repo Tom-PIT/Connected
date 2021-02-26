@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Models;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
@@ -129,6 +131,8 @@ namespace TomPIT.Data
 			if (dependency != null)
 				result.Dependency = dependency.Model.Name;
 
+			var columns = new List<ModelSchemaColumn>();
+
 			foreach (var property in properties)
 			{
 				if (!property.CanWrite)
@@ -161,6 +165,11 @@ namespace TomPIT.Data
 					column.IsUnique = idx.Unique;
 					column.IndexGroup = idx.Group;
 				}
+
+				var ordinal = property.FindAttribute<OrdinalAttribute>();
+
+				if (ordinal != null)
+					column.Ordinal = ordinal.Ordinal;
 
 				if (column.DataType == DbType.Decimal
 					|| column.DataType == DbType.VarNumeric)
@@ -233,8 +242,11 @@ namespace TomPIT.Data
 					column.DependencyProperty = dep.Property;
 				}
 
-				result.Columns.Add(column);
+				columns.Add(column);
 			}
+
+			if (columns.Count > 0)
+				result.Columns.AddRange(columns.OrderBy(f => f.Ordinal).ThenBy(f => f.Name));
 
 			return result;
 		}

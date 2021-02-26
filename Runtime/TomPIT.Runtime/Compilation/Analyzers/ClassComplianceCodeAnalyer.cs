@@ -83,9 +83,6 @@ namespace TomPIT.Compilation.Analyzers
 
 			var configuration = Tenant.GetService<IComponentService>().SelectConfiguration(Script.Component);
 
-			if (component.Token == Script.Id)
-				return component.Name;
-
 			var target = Tenant.GetService<IDiscoveryService>().Find(configuration, Script.Id);
 
 			if (target == null)
@@ -95,6 +92,9 @@ namespace TomPIT.Compilation.Analyzers
 
 			if (att == null)
 				return null;
+
+			if (component.Token == Script.Id)
+				return component.Name;
 
 			if (string.IsNullOrWhiteSpace(att.ClassNameProperty))
 				return target.ToString();

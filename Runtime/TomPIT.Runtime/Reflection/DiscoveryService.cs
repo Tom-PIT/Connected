@@ -7,9 +7,12 @@ using Newtonsoft.Json;
 using TomPIT.Annotations.Design;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Configuration;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Design.Serialization;
+using TomPIT.Middleware;
 using TomPIT.Reflection.Manifests;
 using TomPIT.Reflection.Manifests.Entities;
 using TomPIT.Runtime;
@@ -441,6 +444,24 @@ namespace TomPIT.Reflection
 			}
 
 			return r.ToArray();
+		}
+
+		public IMicroServiceInfoMiddleware MicroServiceInfo(IMicroServiceContext context, Guid microService)
+		{
+			var components = Tenant.GetService<IComponentService>().QueryComponents(microService, ComponentCategories.MicroServiceInfo);
+
+			if (components.Count == 0)
+				return null;
+
+			if (Tenant.GetService<IComponentService>().SelectConfiguration(components[0].Token) is not IMicroServiceInfoConfiguration config)
+				return null;
+
+			var type = config.Middleware(context);
+
+			if (type == null)
+				return null;
+
+			return context.CreateMiddleware<IMicroServiceInfoMiddleware>(type);
 		}
 	}
 }

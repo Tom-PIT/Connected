@@ -14,9 +14,11 @@ namespace TomPIT.Data
 		[PrimaryKey]
 		[CacheKey]
 		[ReturnValue]
+		[Ordinal(-1)]
 		public virtual T Id { get; set; }
 
 		[Version]
+		[Ordinal(1024)]
 		public string Version { get; set; }
 	}
 }
