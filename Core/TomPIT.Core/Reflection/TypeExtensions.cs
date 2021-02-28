@@ -105,6 +105,17 @@ namespace TomPIT.Reflection
 			return interfaces.Contains(typeof(IEnumerable));
 		}
 
+		public static bool IsEmpty(this IEnumerable value)
+		{
+			if (!IsCollection(value.GetType()))
+				return true;
+
+			foreach (var _ in value)
+				return false;
+
+			return true;
+		}
+
 		public static bool IsCollection(this PropertyInfo pi)
 		{
 			if (pi == null)

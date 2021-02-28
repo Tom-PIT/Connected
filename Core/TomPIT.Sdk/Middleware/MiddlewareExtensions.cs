@@ -82,7 +82,7 @@ namespace TomPIT.Middleware
 
 			foreach (var property in properties)
 			{
-				var reflected = component.GetType().GetProperty(property.Key, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+				var reflected = component.GetType().GetProperty(property.Key, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance| BindingFlags.IgnoreCase);
 
 				if (reflected == null)
 					throw new RuntimeException($"{SR.ErrPropertyNotFound} ({property.Key})");
