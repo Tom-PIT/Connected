@@ -43,7 +43,7 @@ namespace TomPIT.Worker.Subscriptions
 
 			if (eventConfig == null)
 				return;
-
+			
 			using var ctx = new MicroServiceContext(config.MicroService());
 			var middleware = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<ISubscriptionEventMiddleware>(ctx, eventConfig, subscriptionEvent.Arguments, eventConfig.Name);
 

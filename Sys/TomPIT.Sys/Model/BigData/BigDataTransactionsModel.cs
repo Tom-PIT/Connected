@@ -4,10 +4,11 @@ using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
+using TomPIT.SysDb.BigData;
 
 namespace TomPIT.Sys.Model.BigData
 {
-	internal class BigDataTransactionsModel : SynchronizedRepository<ITransaction, Guid>
+	internal class BigDataTransactionsModel : SynchronizedRepository<IServerTransaction, Guid>
 	{
 		public BigDataTransactionsModel(IMemoryCache container) : base(container, "bigdatatransactions")
 		{
@@ -52,12 +53,12 @@ namespace TomPIT.Sys.Model.BigData
 			Update(transaction.Token, transaction.BlockRemaining, TransactionStatus.Running);
 		}
 
-		public ITransaction Select(Guid token)
+		public IServerTransaction Select(Guid token)
 		{
 			return Get(token);
 		}
 
-		public List<ITransaction> Query()
+		public List<IServerTransaction> Query()
 		{
 			return All();
 		}
@@ -75,6 +76,27 @@ namespace TomPIT.Sys.Model.BigData
 			Refresh(token);
 
 			return token;
+		}
+
+		public void DecreaseBlock(Guid transaction)
+		{
+			var tran = Select(transaction);
+
+			if (tran == null)
+				return;
+
+			lock (tran)
+			{
+				tran.DecrementBlock();
+
+				if (tran.BlockRemaining > 0)
+					Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.Update(tran, tran.BlockRemaining, TransactionStatus.Running);
+				else
+				{
+					Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.Delete(tran);
+					Remove(transaction);
+				}
+			}
 		}
 
 		public void Update(Guid transaction, int blockRemaining, TransactionStatus status)

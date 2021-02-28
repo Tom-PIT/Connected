@@ -56,16 +56,7 @@ namespace TomPIT.Sys.Model.BigData
 			if (e != null)
 			{
 				Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.DeleteBlock(e);
-
-				var transaction = DataModel.BigDataTransactions.Select(e.Transaction);
-
-				lock (transaction)
-				{
-					if (transaction.BlockRemaining < 2)
-						DataModel.BigDataTransactions.Delete(e.Transaction);
-					else
-						DataModel.BigDataTransactions.Update(transaction.Token, transaction.BlockRemaining - 1, TransactionStatus.Running);
-				}
+				DataModel.BigDataTransactions.DecreaseBlock(e.Transaction);
 			}
 
 			DataModel.Queue.Complete(popReceipt);

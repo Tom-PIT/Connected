@@ -49,14 +49,14 @@ namespace TomPIT.SysDb.Sql.BigData
 			w.Execute();
 		}
 
-		public List<ITransaction> Query()
+		public List<IServerTransaction> Query()
 		{
 			using var r = new Reader<Transaction>("tompit.big_data_transaction_que");
 
-			return r.Execute().ToList<ITransaction>();
+			return r.Execute().ToList<IServerTransaction>();
 		}
 
-		public ITransaction Select(Guid token)
+		public IServerTransaction Select(Guid token)
 		{
 			using var r = new Reader<Transaction>("tompit.big_data_transaction_sel");
 

@@ -246,13 +246,16 @@ namespace TomPIT.BigData.Transactions
 
 			var aggregations = HasAggregations;
 
-			foreach (var table in Data.Values)
+			foreach (var item in Data)
 			{
+				var table = item.Value;
 				var keys = new Dictionary<string, DataRow>();
 
 				Console.WriteLine($"Tearing off: {table.Rows.Count}");
 
-				for (var i = 0; i < table.Rows.Count; i++)
+				var sanitized = table.Clone();
+
+				for (var i = table.Rows.Count - 1; i >= 0; i--)
 				{
 					var row = table.Rows[i];
 					var hash = ComputeHash(row, keyFields);
@@ -261,12 +264,12 @@ namespace TomPIT.BigData.Transactions
 					{
 						if (aggregations)
 							Aggregate(keys[hash], row);
-
-						table.Rows.RemoveAt(i);
 					}
 					else
-						keys.Add(hash, row);
+						keys.Add(hash, sanitized.Rows.Add(row.ItemArray));
 				}
+
+				Data[item.Key] = sanitized;
 			}
 		}
 

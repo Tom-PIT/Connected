@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using TomPIT.BigData;
-using TomPIT.Environment;
 
 namespace TomPIT.SysDb.BigData
 {
@@ -11,8 +10,8 @@ namespace TomPIT.SysDb.BigData
 		void Update(ITransaction transaction, int blockRemaining, TransactionStatus status);
 		void Delete(ITransaction transaction);
 
-		List<ITransaction> Query();
-		ITransaction Select(Guid token);
+		List<IServerTransaction> Query();
+		IServerTransaction Select(Guid token);
 
 		void InsertBlock(ITransaction transaction, Guid token);
 		void DeleteBlock(ITransactionBlock block);
