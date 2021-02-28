@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace TomPIT.Cdn.Events
 {
@@ -44,12 +45,12 @@ namespace TomPIT.Cdn.Events
 			}
 		}
 
-		public static List<EventClient> Query(string eventName)
+		public static ImmutableList<EventClient> Query(string eventName)
 		{
 			if (!Clients.TryGetValue(eventName.ToLowerInvariant(), out List<EventClient> result))
 				return null;
 
-			return result;
+			return result.ToImmutableList();
 		}
 
 		public static void Remove(string connectionId, string eventName)

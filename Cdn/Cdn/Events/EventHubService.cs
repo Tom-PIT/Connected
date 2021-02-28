@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
@@ -87,7 +89,7 @@ namespace TomPIT.Cdn.Events
 			if (property is null)
 				return false;
 
-			if (prop.Value is JObject jo)
+			if (prop.Value is JObject)
 			{
 				var newInstance = property.GetValue(instance);
 
@@ -107,34 +109,33 @@ namespace TomPIT.Cdn.Events
 				return false;
 		}
 
-		private (List<EventClient>, IDistributedEventMiddleware) AuthorizeCandidates(List<EventClient> candidates, string arguments)
+		private (List<EventClient>, IDistributedEventMiddleware) AuthorizeCandidates(ImmutableList<EventClient> candidates, string arguments)
 		{
 			if (candidates == null || candidates.Count == 0)
-				return (candidates, null);
+				return (candidates.ToList(), null);
 
 			var result = new List<EventClient>();
-			using var ctx = new MiddlewareContext();
+			using var ctx = MicroServiceContext.FromIdentifier(candidates[0].EventName, Tenant);
 			var instance = CreateMiddleware(ctx, candidates[0].EventName, arguments);
 
 			if (instance == null)
-				return (candidates, null);
+				return (candidates.ToList(), null);
 
-			lock (candidates)
+			foreach (var candidate in candidates)
 			{
-				foreach (var candidate in candidates)
-				{
-					ctx.Impersonate(candidate.User.ToString());
+				instance.Context.Revoke();
+				instance.Context.Impersonate(candidate.User.ToString());
 
-					try
-					{
-						Authorize(instance, candidate.ConnectionId, null);
-						result.Add(candidate);
-					}
-					catch
-					{
-						//authorization failed. nothing to do.
-						continue;
-					}
+				try
+				{
+					Authorize(instance, candidate.ConnectionId, null);
+					result.Add(candidate);
+				}
+				catch (Exception ex)
+				{
+					instance.Context.Services.Diagnostic.Error(nameof(AuthorizeCandidates), ex.Message, LogCategories.Cdn);
+					//authorization failed. nothing to do.
+					continue;
 				}
 			}
 
@@ -143,7 +144,7 @@ namespace TomPIT.Cdn.Events
 
 		public void Authorize(string connectionId, string eventName, Guid user, object arguments)
 		{
-			using var ctx = new MiddlewareContext();
+			using var ctx = MicroServiceContext.FromIdentifier(eventName, Tenant);
 
 			ctx.Impersonate(user.ToString());
 
@@ -175,7 +176,7 @@ namespace TomPIT.Cdn.Events
 			return type.CreateInstance();
 		}
 
-		private IDistributedEventMiddleware CreateMiddleware(MiddlewareContext context, string eventName, string arguments)
+		private IDistributedEventMiddleware CreateMiddleware(IMicroServiceContext context, string eventName, string arguments)
 		{
 			var descriptor = ComponentDescriptor.DistributedEvent(context, eventName);
 
