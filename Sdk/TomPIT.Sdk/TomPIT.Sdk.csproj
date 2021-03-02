@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <AssemblyVersion>2.2.228.2</AssemblyVersion>
-    <FileVersion>2.2.228.2</FileVersion>
-    <Version>2.2.228.2</Version>
+    <AssemblyVersion>2.2.302.1</AssemblyVersion>
+    <FileVersion>2.2.302.1</FileVersion>
+    <Version>2.2.302.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.3" />
