@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.DirectoryServices.AccountManagement;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -270,7 +271,7 @@ namespace TomPIT.Sys.Model.Security
 				u.TimeZone, u.NotificationEnabled, u.Mobile, u.Phone, blob, u.PasswordChange, u.SecurityCode);
 		}
 
-		public List<IUser> Query()
+		public ImmutableList<IUser> Query()
 		{
 			return All();
 		}

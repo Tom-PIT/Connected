@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.Cdn;
@@ -60,7 +61,7 @@ namespace TomPIT.Sys.Model.Cdn
 			};
 
 			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.Insert(id, handler, topic, primaryKey);
-			DataModel.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+			DataModel.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 		}
 
 		public ISubscriber SelectSubscriber(Guid token)
@@ -149,7 +150,7 @@ namespace TomPIT.Sys.Model.Cdn
 				throw new SysException(SR.ErrMicroServiceNotFound);
 
 			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.InsertEvent(sub, id, name, DateTime.UtcNow, arguments);
-			DataModel.Queue.Enqueue(EventQueue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+			DataModel.Queue.Enqueue(EventQueue, JsonConvert.SerializeObject(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
 			return id;
 		}
@@ -164,12 +165,12 @@ namespace TomPIT.Sys.Model.Cdn
 			return Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.SelectEvent(token);
 		}
 
-		public List<IQueueMessage> Dequeue(int count)
+		public ImmutableList<IQueueMessage> Dequeue(int count)
 		{
 			return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(5), QueueScope.System, Queue);
 		}
 
-		public List<IQueueMessage> DequeueEvents(int count)
+		public ImmutableList<IQueueMessage> DequeueEvents(int count)
 		{
 			return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(5), QueueScope.System, EventQueue);
 		}

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using TomPIT.Development;
@@ -77,7 +78,7 @@ namespace TomPIT.Sys.Controllers.Development
 		}
 
 		[HttpPost]
-		public List<IQueueMessage> Dequeue()
+		public ImmutableList<IQueueMessage> Dequeue()
 		{
 			var body = FromBody();
 			var count = body.Required<int>("count");

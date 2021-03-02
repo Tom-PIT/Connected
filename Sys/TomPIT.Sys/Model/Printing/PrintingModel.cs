@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
@@ -57,7 +57,7 @@ namespace TomPIT.Sys.Model.Printing
 
 			Refresh(token);
 
-			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
 			return token;
 		}
@@ -75,7 +75,7 @@ namespace TomPIT.Sys.Model.Printing
 			return ordered.First().SerialNumber;
 		}
 
-		public List<IQueueMessage> Dequeue(int count)
+		public ImmutableList<IQueueMessage> Dequeue(int count)
 		{
 			return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(4), QueueScope.System, Queue);
 		}

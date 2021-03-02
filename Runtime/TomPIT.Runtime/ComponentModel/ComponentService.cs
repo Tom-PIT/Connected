@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -89,17 +90,17 @@ namespace TomPIT.ComponentModel
 
 		private FolderCache Folders { get; }
 
-		public List<IComponent> QueryComponents(Guid microService, string category)
+		public ImmutableList<IComponent> QueryComponents(Guid microService, string category)
 		{
 			return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0);
 		}
 
-		public List<IComponent> QueryComponents(Guid microService, Guid folder)
+		public ImmutableList<IComponent> QueryComponents(Guid microService, Guid folder)
 		{
 			return Where(f => f.MicroService == microService && f.Folder == folder);
 		}
 
-		public List<IComponent> QueryComponents(Guid microService)
+		public ImmutableList<IComponent> QueryComponents(Guid microService)
 		{
 			return Where(f => f.MicroService == microService);
 		}
@@ -151,7 +152,7 @@ namespace TomPIT.ComponentModel
 			ComponentRemoved?.Invoke(Tenant, e);
 		}
 
-		public List<IConfiguration> QueryConfigurations(List<IComponent> components)
+		public ImmutableList<IConfiguration> QueryConfigurations(ImmutableList<IComponent> components)
 		{
 			var r = new ConcurrentBag<IConfiguration>();
 			var ids = components.Select(f => f.Token).Distinct().ToList();
@@ -178,10 +179,10 @@ namespace TomPIT.ComponentModel
 				r.Add(config);
 			});
 
-			return r.ToList();
+			return r.ToImmutableList();
 		}
 
-		public List<IConfiguration> QueryConfigurations(Guid microService, string categories)
+		public ImmutableList<IConfiguration> QueryConfigurations(Guid microService, string categories)
 		{
 			var cats = categories.Split(',');
 			var r = new List<IComponent>();
@@ -197,10 +198,10 @@ namespace TomPIT.ComponentModel
 					r.AddRange(ds);
 			}
 
-			return QueryConfigurations(r);
+			return QueryConfigurations(r.ToImmutableList());
 		}
 
-		public List<IConfiguration> QueryConfigurations(List<string> resourceGroups, string categories)
+		public ImmutableList<IConfiguration> QueryConfigurations(List<string> resourceGroups, string categories)
 		{
 			var cats = string.IsNullOrWhiteSpace(categories) ? Array.Empty<string>() : categories.Split(',', StringSplitOptions.RemoveEmptyEntries);
 			var r = new List<IComponent>();
@@ -253,7 +254,7 @@ namespace TomPIT.ComponentModel
 				}
 			}
 
-			return QueryConfigurations(r.Where(f => f.LockVerb != LockVerb.Delete).ToList());
+			return QueryConfigurations(r.Where(f => f.LockVerb != LockVerb.Delete).ToImmutableList());
 		}
 
 		public IConfiguration SelectConfiguration(Guid microService, string category, string name)
@@ -596,12 +597,12 @@ namespace TomPIT.ComponentModel
 			return Folders.Select(folder);
 		}
 
-		public List<IFolder> QueryFolders(Guid microService, Guid parent)
+		public ImmutableList<IFolder> QueryFolders(Guid microService, Guid parent)
 		{
 			return Folders.Query(microService, parent);
 		}
 
-		public List<IFolder> QueryFolders(Guid microService)
+		public ImmutableList<IFolder> QueryFolders(Guid microService)
 		{
 			return Folders.Query(microService);
 		}
@@ -620,7 +621,7 @@ namespace TomPIT.ComponentModel
 
 		private ConcurrentDictionary<Guid, ConfigurationSerializationState> ConfigurationCache => _configurationCache.Value;
 
-		public List<IComponent> QueryComponents(List<string> resourceGroups, string categories)
+		public ImmutableList<IComponent> QueryComponents(List<string> resourceGroups, string categories)
 		{
 			var sb = new StringBuilder();
 
@@ -629,11 +630,11 @@ namespace TomPIT.ComponentModel
 
 			var u = Tenant.CreateUrl("Component", "QueryByResourceGroups");
 
-			return Tenant.Post<List<Component>>(u, new
+			return Tenant.Post<ImmutableList<Component>>(u, new
 			{
 				resourceGroups = sb.ToString().TrimEnd(','),
 				categories
-			}).ToList<IComponent>();
+			}).ToImmutableList<IComponent>();
 		}
 	}
 }

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Globalization;
 using TomPIT.Sys.Model;
@@ -9,7 +9,7 @@ namespace TomPIT.Sys.Controllers
 	public class LanguageController : SysController
 	{
 		[HttpGet]
-		public List<ILanguage> Query()
+		public ImmutableList<ILanguage> Query()
 		{
 			return DataModel.Languages.Query();
 		}

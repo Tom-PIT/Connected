@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.ComponentModel;
 using TomPIT.Sys.Model;
@@ -53,7 +53,7 @@ namespace TomPIT.Sys.Controllers.Management
 		}
 
 		[HttpGet]
-		public List<IMicroService> Query(Guid resourceGroup)
+		public ImmutableList<IMicroService> Query(Guid resourceGroup)
 		{
 			return DataModel.MicroServices.Query(resourceGroup);
 		}
@@ -71,7 +71,7 @@ namespace TomPIT.Sys.Controllers.Management
 		//}
 
 		[HttpGet]
-		public List<IMicroServiceString> QueryStrings(Guid microService)
+		public ImmutableList<IMicroServiceString> QueryStrings(Guid microService)
 		{
 			return DataModel.MicroServiceStrings.Query(microService);
 		}

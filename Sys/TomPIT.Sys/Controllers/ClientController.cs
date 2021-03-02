@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Environment;
 using TomPIT.Sys.Model;
@@ -8,7 +8,7 @@ namespace TomPIT.Sys.Controllers
 	public class ClientController : SysController
 	{
 		[HttpGet]
-		public List<IClient> Query()
+		public ImmutableList<IClient> Query()
 		{
 			return DataModel.Clients.Query();
 		}

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace TomPIT.Security
 {
@@ -8,7 +8,7 @@ namespace TomPIT.Security
 		PermissionValue Toggle(string claim, string schema, string evidence, string primaryKey, string permissionDescriptor);
 		void Reset(string claim, string schema, string primaryKey, string descriptor);
 		void Reset(string primaryKey);
-		List<IPermission> Query(string descriptor, string primaryKey);
-		List<IPermission> Query(string descriptor, Guid user);
+		ImmutableList<IPermission> Query(string descriptor, string primaryKey);
+		ImmutableList<IPermission> Query(string descriptor, Guid user);
 	}
 }

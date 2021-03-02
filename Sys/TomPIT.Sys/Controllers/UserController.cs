@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Security;
 using TomPIT.Sys.Model;
@@ -9,7 +9,7 @@ namespace TomPIT.Sys.Controllers
 	public class UserController : SysController
 	{
 		[HttpGet]
-		public List<IUser> Query()
+		public ImmutableList<IUser> Query()
 		{
 			return DataModel.Users.Query();
 		}
@@ -42,7 +42,7 @@ namespace TomPIT.Sys.Controllers
 		//}
 
 		[HttpGet]
-		public List<IMembership> QueryMembership(Guid user)
+		public ImmutableList<IMembership> QueryMembership(Guid user)
 		{
 			return DataModel.Membership.Query(user);
 		}

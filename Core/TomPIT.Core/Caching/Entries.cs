@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace TomPIT.Caching
@@ -10,7 +11,7 @@ namespace TomPIT.Caching
 		private readonly Lazy<ConcurrentDictionary<string, Entry>> _items = new Lazy<ConcurrentDictionary<string, Entry>>();
 
 		private ConcurrentDictionary<string, Entry> Items => _items.Value;
-		public ICollection<string> Keys => Items.Keys;
+		public ImmutableList<string> Keys => Items.Keys.ToImmutableList();
 		public int Count => Items.Count;
 
 		public void Scave()
@@ -29,7 +30,7 @@ namespace TomPIT.Caching
 				Remove(i);
 		}
 
-		public List<T> All<T>() where T : class
+		public ImmutableList<T> All<T>() where T : class
 		{
 			var r = new List<T>();
 
@@ -43,7 +44,7 @@ namespace TomPIT.Caching
 			foreach (var i in instances)
 				r.Add(i as T);
 
-			return r;
+			return r.ToImmutableList();
 		}
 
 		public void Remove(string key)
@@ -108,7 +109,7 @@ namespace TomPIT.Caching
 			return result;
 		}
 
-		public List<T> Where<T>(Func<T, bool> predicate) where T : class
+		public ImmutableList<T> Where<T>(Func<T, bool> predicate) where T : class
 		{
 			var values = Items.Select(f => f.Value.Instance).Cast<T>();
 
@@ -139,7 +140,7 @@ namespace TomPIT.Caching
 				r.Add(i);
 			}
 
-			return r;
+			return r.ToImmutableList();
 		}
 
 		private void RemoveInternal(string key)

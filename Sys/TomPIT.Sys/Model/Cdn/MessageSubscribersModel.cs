@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Sys.Api.Database;
 using TomPIT.SysDb.Messaging;
@@ -58,12 +58,12 @@ namespace TomPIT.Sys.Model.Cdn
 		{
 			return Where(f => string.Compare(f.Topic, topic, true) == 0).Count > 0;
 		}
-		public List<ISubscriber> Query()
+		public ImmutableList<ISubscriber> Query()
 		{
 			return All();
 		}
 
-		public List<ISubscriber> Query(string topic)
+		public ImmutableList<ISubscriber> Query(string topic)
 		{
 			return Where(f => string.Compare(topic, f.Topic, true) == 0);
 		}

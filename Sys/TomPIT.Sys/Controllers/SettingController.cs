@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Configuration;
 using TomPIT.Sys.Model;
@@ -8,7 +8,7 @@ namespace TomPIT.Sys.Controllers
 	public class SettingController : SysController
 	{
 		[HttpGet]
-		public List<ISetting> Query()
+		public ImmutableList<ISetting> Query()
 		{
 			return DataModel.Settings.Query();
 		}

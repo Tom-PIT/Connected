@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
@@ -89,7 +89,7 @@ namespace TomPIT.Caching
 		private bool Initializing { get; set; }
 		private bool Initialized { get; set; }
 
-		protected override List<T> All()
+		protected override ImmutableList<T> All()
 		{
 			WaitForInitialization();
 
@@ -139,7 +139,7 @@ namespace TomPIT.Caching
 			return base.Get(id, retrieve);
 		}
 
-		protected override List<T> Where(Func<T, bool> predicate)
+		protected override ImmutableList<T> Where(Func<T, bool> predicate)
 		{
 			WaitForInitialization();
 

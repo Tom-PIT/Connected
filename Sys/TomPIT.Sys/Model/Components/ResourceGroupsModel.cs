@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Api.Storage;
 using TomPIT.Caching;
 using TomPIT.Sys.Api.Database;
@@ -32,7 +32,7 @@ namespace TomPIT.Sys.Model.Components
 				});
 		}
 
-		public List<IServerResourceGroup> Query()
+		public ImmutableList<IServerResourceGroup> Query()
 		{
 			return All();
 		}

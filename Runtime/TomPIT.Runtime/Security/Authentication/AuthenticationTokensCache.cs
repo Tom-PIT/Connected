@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
@@ -59,7 +60,7 @@ namespace TomPIT.Security.Authentication
 				Set(d.Token, d, TimeSpan.Zero);
 		}
 
-		public List<IAuthenticationToken> Query(Guid resourceGroup)
+		public ImmutableList<IAuthenticationToken> Query(Guid resourceGroup)
 		{
 			return Where(f => f.ResourceGroup == resourceGroup);
 		}

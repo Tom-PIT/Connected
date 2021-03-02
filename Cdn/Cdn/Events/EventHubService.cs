@@ -50,7 +50,7 @@ namespace TomPIT.Cdn.Events
 					if (IsCandidateInterested(passedCandidates.Item2, candidate))
 						targets.Add(candidate.ConnectionId);
 				}
-
+				
 				if (targets.Count == 0)
 					return;
 

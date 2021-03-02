@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Globalization;
 using TomPIT.Sys.Api.Database;
@@ -50,7 +50,7 @@ namespace TomPIT.Sys.Model.Globalization
 				});
 		}
 
-		public List<ILanguage> Query()
+		public ImmutableList<ILanguage> Query()
 		{
 			return All();
 		}

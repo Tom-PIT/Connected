@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Sys.Api.Database;
@@ -45,7 +45,7 @@ namespace TomPIT.Sys.Model.BigData
 			return Get(GenerateKey(file, fileName));
 		}
 
-		public List<IPartitionFieldStatistics> Query()
+		public ImmutableList<IPartitionFieldStatistics> Query()
 		{
 			return All();
 		}

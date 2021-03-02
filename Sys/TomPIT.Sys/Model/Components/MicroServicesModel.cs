@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
@@ -72,17 +73,17 @@ namespace TomPIT.Sys.Model.Components
 				 });
 		}
 
-		public List<IMicroService> Query(Guid resourceGroup)
+		public ImmutableList<IMicroService> Query(Guid resourceGroup)
 		{
 			return Where(f => f.ResourceGroup == resourceGroup);
 		}
 
-		public List<IMicroService> Query(List<Guid> resourceGroups)
+		public ImmutableList<IMicroService> Query(List<Guid> resourceGroups)
 		{
 			return Where(f => resourceGroups.Any(t => t == f.ResourceGroup));
 		}
 
-		public List<IMicroService> Query()
+		public ImmutableList<IMicroService> Query()
 		{
 			return All();
 		}

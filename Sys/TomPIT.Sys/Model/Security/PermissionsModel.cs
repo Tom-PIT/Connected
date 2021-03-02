@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Environment;
@@ -47,12 +48,12 @@ namespace TomPIT.Sys.Model.Security
 				});
 		}
 
-		public List<IPermission> Query(List<string> resourceGroups)
+		public ImmutableList<IPermission> Query(List<string> resourceGroups)
 		{
 			return Query(resourceGroups.ToResourceGroupList());
 		}
 
-		public List<IPermission> Query(List<Guid> resourceGroups)
+		public ImmutableList<IPermission> Query(List<Guid> resourceGroups)
 		{
 			if (!resourceGroups.Contains(Guid.Empty))
 				resourceGroups.Add(Guid.Empty);
@@ -60,12 +61,12 @@ namespace TomPIT.Sys.Model.Security
 			return Where(f => resourceGroups.Any(t => t == f.ResourceGroup));
 		}
 
-		public List<IPermission> Query(string primaryKey)
+		public ImmutableList<IPermission> Query(string primaryKey)
 		{
 			return Where(f => string.Compare(f.PrimaryKey, primaryKey, true) == 0);
 		}
 
-		public List<IPermission> Query() { return All(); }
+		public ImmutableList<IPermission> Query() { return All(); }
 
 		public void Insert(Guid resourceGroup, string evidence, string schema, string claim, string descriptor, string primaryKey, PermissionValue value, string component)
 		{

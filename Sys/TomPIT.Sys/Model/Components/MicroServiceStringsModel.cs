@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.Sys.Api.Database;
@@ -15,12 +16,12 @@ namespace TomPIT.Sys.Model.Components
 
 		}
 
-		public List<IMicroServiceString> Query(Guid microService)
+		public ImmutableList<IMicroServiceString> Query(Guid microService)
 		{
 			return Where(f => f.MicroService == microService);
 		}
 
-		public List<IMicroServiceString> Query(Guid microService, Guid language)
+		public ImmutableList<IMicroServiceString> Query(Guid microService, Guid language)
 		{
 			return Where(f => f.MicroService == microService && f.Language == language);
 		}

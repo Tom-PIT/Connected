@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
@@ -11,7 +12,7 @@ namespace TomPIT.Sys.Controllers.Development
 	public class VersionControlController : SysController
 	{
 		[HttpPost]
-		public List<IComponent> QueryChanges()
+		public ImmutableList<IComponent> QueryChanges()
 		{
 			var body = FromBody();
 			var ms = body.Optional("microService", Guid.Empty);

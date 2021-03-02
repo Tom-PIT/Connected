@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Globalization;
 using TomPIT.Security;
@@ -100,7 +100,7 @@ namespace TomPIT.Sys.Model.Security
 			CachingNotifications.AlienChanged(alien.Token);
 		}
 
-		public List<IAlien> Query()
+		public ImmutableList<IAlien> Query()
 		{
 			return All();
 		}

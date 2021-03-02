@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Environment;
 using TomPIT.Sys.Api.Database;
@@ -64,7 +64,7 @@ namespace TomPIT.Sys.Model.Environment
 			CachingNotifications.ClientChanged(client.Token);
 		}
 
-		public List<IClient> Query()
+		public ImmutableList<IClient> Query()
 		{
 			return All();
 		}

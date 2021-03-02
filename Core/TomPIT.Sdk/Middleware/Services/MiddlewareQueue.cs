@@ -11,12 +11,22 @@ namespace TomPIT.Middleware.Services
 	{
 		public void Enqueue([CIP(CIP.QueueWorkersProvider)]string queue, object arguments)
 		{
-			Context.Tenant.GetService<IQueueService>().Enqueue(ResolveQueue(queue), arguments);
+			Enqueue(queue, arguments, null);
+		}
+
+		public void Enqueue([CIP(CIP.QueueWorkersProvider)] string queue, object arguments, string bufferKey)
+		{
+			Context.Tenant.GetService<IQueueService>().Enqueue(ResolveQueue(queue), bufferKey, arguments);
 		}
 
 		public void Enqueue([CIP(CIP.QueueWorkersProvider)]string queue, object arguments, TimeSpan expire, TimeSpan nextVisible)
 		{
-			Context.Tenant.GetService<IQueueService>().Enqueue(ResolveQueue(queue), arguments, expire, nextVisible);
+			Enqueue(queue, arguments, null, expire, nextVisible);
+		}
+
+		public void Enqueue([CIP(CIP.QueueWorkersProvider)] string queue, object arguments, string bufferKey, TimeSpan expire, TimeSpan nextVisible)
+		{
+			Context.Tenant.GetService<IQueueService>().Enqueue(ResolveQueue(queue), bufferKey, arguments, expire, nextVisible);
 		}
 
 		private IQueueWorker ResolveQueue(string qualifier)

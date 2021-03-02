@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
@@ -163,7 +163,7 @@ namespace TomPIT.Design
 			DeployFolders(Guid.Empty, folders);
 		}
 
-		private void DeployFolders(Guid parent, List<IFolder> existing)
+		private void DeployFolders(Guid parent, ImmutableList<IFolder> existing)
 		{
 			if (Request.Folders == null)
 				return;

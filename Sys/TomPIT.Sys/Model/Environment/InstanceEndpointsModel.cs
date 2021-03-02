@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Distributed;
 using TomPIT.Environment;
@@ -48,7 +48,7 @@ namespace TomPIT.Sys.Model.Environment
 				Register(r.Type, r.Verbs, r.Token);
 		}
 
-		public List<IInstanceEndpoint> Query()
+		public ImmutableList<IInstanceEndpoint> Query()
 		{
 			return All();
 		}

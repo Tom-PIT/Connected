@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
@@ -8,12 +9,10 @@ namespace TomPIT.Sys.Model
 	{
 		private List<ValidationResult> _results = null;
 
-		public void Unique<T>(T existing, string value, string propertyName, List<T> items)
+		public void Unique<T>(T existing, string value, string propertyName, ImmutableList<T> items)
 		{
 			if (string.IsNullOrWhiteSpace(value))
 				return;
-
-			var col = items;
 
 			foreach (var i in items)
 			{

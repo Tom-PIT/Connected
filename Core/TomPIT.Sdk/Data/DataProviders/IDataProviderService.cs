@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace TomPIT.Data.DataProviders
 
 {
 	public interface IDataProviderService
 	{
-		List<IDataProvider> Query();
+		ImmutableList<IDataProvider> Query();
 		void Register(IDataProvider d);
 		IDataProvider Select(Guid id);
 	}

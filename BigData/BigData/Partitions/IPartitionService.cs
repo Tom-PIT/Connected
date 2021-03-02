@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.BigData.Persistence;
 using TomPIT.ComponentModel.BigData;
 
@@ -7,12 +8,12 @@ namespace TomPIT.BigData.Partitions
 {
 	public interface IPartitionService
 	{
-		List<IPartition> Query();
+		ImmutableList<IPartition> Query();
 		IPartition Select(IPartitionConfiguration configuration);
 		IPartitionFile SelectFile(Guid fileName);
-		List<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp, List<IndexParameter> parameters);
-		List<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp);
-		List<IPartitionFile> QueryFiles(Guid partition);
+		ImmutableList<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp, List<IndexParameter> parameters);
+		ImmutableList<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp);
+		ImmutableList<IPartitionFile> QueryFiles(Guid partition);
 		Guid InsertFile(Guid partition, Guid node, string key, DateTime timeStamp);
 		void UpdateFile(Guid file, DateTime startTimeStamp, DateTime endTimeStamp, int count, PartitionFileStatus status);
 		void UpdatePartition(Guid token, string name, PartitionStatus status);

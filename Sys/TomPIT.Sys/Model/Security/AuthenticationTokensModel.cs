@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Security;
@@ -45,7 +46,7 @@ namespace TomPIT.Sys.Model.Security
 			return Get(token);
 		}
 
-		public List<IAuthenticationToken> Query(List<string> resourceGroups)
+		public ImmutableList<IAuthenticationToken> Query(List<string> resourceGroups)
 		{
 			var items = new List<Guid>();
 
@@ -62,12 +63,12 @@ namespace TomPIT.Sys.Model.Security
 			return Query(items);
 		}
 
-		public List<IAuthenticationToken> Query(List<Guid> resourceGroups)
+		public ImmutableList<IAuthenticationToken> Query(List<Guid> resourceGroups)
 		{
 			return Where(f => resourceGroups.Any(t => t == f.ResourceGroup));
 		}
 
-		public List<IAuthenticationToken> Query()
+		public ImmutableList<IAuthenticationToken> Query()
 		{
 			return All();
 		}

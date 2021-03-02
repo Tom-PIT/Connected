@@ -155,7 +155,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_languages == null)
-					_languages = Environment.Context.Tenant.GetService<ILanguageService>().Query();
+					_languages = Environment.Context.Tenant.GetService<ILanguageService>().Query().ToList();
 
 				return _languages;
 			}

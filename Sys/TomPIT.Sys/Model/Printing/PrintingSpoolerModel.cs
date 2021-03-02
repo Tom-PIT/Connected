@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using Newtonsoft.Json.Linq;
 using TomPIT.Cdn;
 using TomPIT.Serialization;
@@ -23,12 +23,12 @@ namespace TomPIT.Sys.Model.Printing
 			};
 
 			Shell.GetService<IDatabaseService>().Proxy.Printing.InsertSpooler(token, DateTime.UtcNow, mime, printer, content);
-			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
 			return token;
 		}
 
-		public List<IQueueMessage> Dequeue(int count)
+		public ImmutableList<IQueueMessage> Dequeue(int count)
 		{
 			return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(30), QueueScope.System, Queue);
 		}

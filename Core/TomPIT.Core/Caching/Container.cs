@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace TomPIT.Caching
@@ -46,7 +47,7 @@ namespace TomPIT.Caching
 			return Items[key].GetEnumerator<T>();
 		}
 
-		public List<T> All<T>(string key) where T : class
+		public ImmutableList<T> All<T>(string key) where T : class
 		{
 			if (!Items.ContainsKey(key))
 				return null;
@@ -141,7 +142,7 @@ namespace TomPIT.Caching
 			return Items.ContainsKey(key) ? Items[key].Get<T>(predicate) : null;
 		}
 
-		public List<T> Where<T>(string key, Func<T, bool> predicate) where T : class
+		public ImmutableList<T> Where<T>(string key, Func<T, bool> predicate) where T : class
 		{
 			return Items.ContainsKey(key) ? Items[key].Where(predicate) : null;
 		}

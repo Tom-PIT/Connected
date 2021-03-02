@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
@@ -10,13 +11,13 @@ namespace TomPIT.Sys.Controllers
 	public class FolderController : SysController
 	{
 		[HttpGet]
-		public List<IFolder> Query()
+		public ImmutableList<IFolder> Query()
 		{
 			return DataModel.Folders.Query();
 		}
 
 		[HttpPost]
-		public List<IFolder> QueryForResourceGroups()
+		public ImmutableList<IFolder> QueryForResourceGroups()
 		{
 			var body = FromBody<JArray>();
 
@@ -32,7 +33,7 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpPost]
-		public List<IFolder> QueryForMicroService()
+		public ImmutableList<IFolder> QueryForMicroService()
 		{
 			var body = FromBody();
 			var ms = body.Required<Guid>("microService");

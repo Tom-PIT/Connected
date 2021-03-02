@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
@@ -41,7 +42,7 @@ namespace TomPIT.Sys.Model.Workers
 			Set(id, d, TimeSpan.Zero);
 		}
 
-		public List<ISysScheduledJob> QueryScheduled()
+		public ImmutableList<ISysScheduledJob> QueryScheduled()
 		{
 			return Where(f => f.Status == WorkerStatus.Enabled && f.NextRun != DateTime.MinValue && f.NextRun <= DateTime.UtcNow);
 		}
@@ -167,13 +168,13 @@ namespace TomPIT.Sys.Model.Workers
 				{ "state", job.State }
 			};
 
-			DataModel.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+			DataModel.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
 			Update(job.Worker, WorkerStatus.Queued, job.NextRun, job.Elapsed,
 				job.FailCount, job.LastRun, job.LastComplete, job.RunCount);
 		}
 
-		public List<IQueueMessage> Dequeue(int count)
+		public ImmutableList<IQueueMessage> Dequeue(int count)
 		{
 			var r = DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(5), QueueScope.System, Queue);
 

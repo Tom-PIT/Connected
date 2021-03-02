@@ -23,6 +23,11 @@ namespace TomPIT.Data
 			new ConcurrencyManager(invoke, reload);
 		}
 
+		public static void Invoke(Action invoke, Action reload, int retryCount)
+		{
+			new ConcurrencyManager(invoke, reload, retryCount);
+		}
+
 		private Action InvokeAction { get; }
 		private Action ReloadAction { get; }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,12 +60,12 @@ namespace TomPIT.Caching
 		{
 			return Container.GetEnumerator<T>(key);
 		}
-		public List<T> All<T>(string key) where T : class
+		public ImmutableList<T> All<T>(string key) where T : class
 		{
 			var r = Container.All<T>(key);
 
 			if (r == null)
-				return new List<T>();
+				return ImmutableList<T>.Empty;
 
 			return r;
 		}
@@ -166,12 +167,12 @@ namespace TomPIT.Caching
 			return ce == null || ce.Instance == null ? default : (T)ce.Instance;
 		}
 
-		public List<T> Where<T>(string key, Func<T, bool> predicate) where T : class
+		public ImmutableList<T> Where<T>(string key, Func<T, bool> predicate) where T : class
 		{
 			var r = Container.Where(key, predicate);
 
 			if (r == null)
-				return new List<T>();
+				return ImmutableList<T>.Empty;
 
 			return r;
 		}
@@ -303,9 +304,9 @@ namespace TomPIT.Caching
 			return sb.ToString();
 		}
 
-		public ICollection<string> Keys(string key)
+		public ImmutableList<string> Keys(string key)
 		{
-			return Container.Keys(key);
+			return Container.Keys(key).ToImmutableList();
 		}
 
 		public static MemoryCache Default => _default.Value;

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Storage;
@@ -48,7 +48,7 @@ namespace TomPIT.Sys.Model.BigData
 			var blocks = DataModel.BigDataTransactionBlocks.Query(transaction.Token);
 
 			foreach (var block in blocks)
-				DataModel.Queue.Enqueue(BigDataTransactionBlocksModel.Queue, block.Token.ToString(), TimeSpan.FromDays(14), TimeSpan.Zero, QueueScope.System);
+				DataModel.Queue.Enqueue(BigDataTransactionBlocksModel.Queue, block.Token.ToString(), null, TimeSpan.FromDays(14), TimeSpan.Zero, QueueScope.System);
 
 			Update(transaction.Token, transaction.BlockRemaining, TransactionStatus.Running);
 		}
@@ -58,7 +58,7 @@ namespace TomPIT.Sys.Model.BigData
 			return Get(token);
 		}
 
-		public List<IServerTransaction> Query()
+		public ImmutableList<IServerTransaction> Query()
 		{
 			return All();
 		}

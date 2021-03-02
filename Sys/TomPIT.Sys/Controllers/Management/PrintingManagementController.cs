@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Cdn;
 using TomPIT.Storage;
@@ -10,7 +10,7 @@ namespace TomPIT.Sys.Controllers.Management
 	public class PrintingManagementController : SysController
 	{
 		[HttpPost]
-		public List<IQueueMessage> Dequeue()
+		public ImmutableList<IQueueMessage> Dequeue()
 		{
 			var body = FromBody();
 
@@ -52,7 +52,7 @@ namespace TomPIT.Sys.Controllers.Management
 		}
 
 		[HttpPost]
-		public List<IQueueMessage> DequeueSpooler()
+		public ImmutableList<IQueueMessage> DequeueSpooler()
 		{
 			var body = FromBody();
 

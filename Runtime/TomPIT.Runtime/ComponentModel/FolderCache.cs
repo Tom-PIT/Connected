@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
@@ -57,12 +58,12 @@ namespace TomPIT.ComponentModel
 			return Get(token);
 		}
 
-		public List<IFolder> Query(Guid microService)
+		public ImmutableList<IFolder> Query(Guid microService)
 		{
 			return Where(f => f.MicroService == microService);
 		}
 
-		public List<IFolder> Query(Guid microService, Guid parent)
+		public ImmutableList<IFolder> Query(Guid microService, Guid parent)
 		{
 			return Where(f => f.MicroService == microService && f.Parent == parent);
 		}

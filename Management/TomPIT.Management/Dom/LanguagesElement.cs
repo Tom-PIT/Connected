@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -97,7 +98,7 @@ namespace TomPIT.Management.Dom
 					var items = Environment.Context.Tenant.GetService<ILanguageService>().Query();
 
 					if (items != null)
-						items = items.OrderBy(f => f.Name).ToList();
+						items = items.OrderBy(f => f.Name).ToImmutableList();
 
 					foreach (var i in items)
 						_ds.Items.Add(i);

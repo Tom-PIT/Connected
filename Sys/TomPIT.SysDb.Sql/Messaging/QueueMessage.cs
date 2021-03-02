@@ -17,6 +17,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 		public string Queue { get; set; }
 		public DateTime DequeueTimestamp { get; set; }
 		public QueueScope Scope { get; set; }
+		public string BufferKey { get; set; }
 		public void Modify(DateTime nextVisible, DateTime dequeueTimestamp, int dequeueCount, Guid popReceipt)
 		{
 			NextVisible = nextVisible;
@@ -39,6 +40,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 			Queue = GetString("queue");
 			DequeueTimestamp = GetDate("dequeue_timestamp");
 			Scope = GetValue("scope", QueueScope.System);
+			BufferKey = GetString("buffer_key");
 		}
 	}
 }

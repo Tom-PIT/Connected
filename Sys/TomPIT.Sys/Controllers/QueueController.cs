@@ -18,7 +18,7 @@ namespace TomPIT.Sys.Controllers
 			var args = body.Optional("arguments", string.Empty);
 			var expire = body.Optional("expire", TimeSpan.FromDays(2));
 			var nextVisible = body.Optional("nextVisible", TimeSpan.Zero);
-
+			var bufferKey = body.Required<string>("bufferKey");
 			var message = new JObject
 			{
 				{"component", component },
@@ -28,7 +28,7 @@ namespace TomPIT.Sys.Controllers
 			if (args != null)
 				message.Add("arguments", args);
 
-			DataModel.Queue.Enqueue(QueueingModel.Queue, JsonConvert.SerializeObject(message), expire, nextVisible, Storage.QueueScope.Content);
+			DataModel.Queue.Enqueue(QueueingModel.Queue, JsonConvert.SerializeObject(message), bufferKey, expire, nextVisible, Storage.QueueScope.Content);
 		}
 	}
 }

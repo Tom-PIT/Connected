@@ -16,7 +16,7 @@ namespace TomPIT.Sys.Model.Search
 				{ "component",component}
 			};
 
-			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 		}
 
 		public void Enqueue(Guid component, Guid element)
@@ -28,7 +28,7 @@ namespace TomPIT.Sys.Model.Search
 				{ "element",element}
 			};
 
-			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 		}
 	}
 }

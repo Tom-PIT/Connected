@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
@@ -65,12 +66,12 @@ namespace TomPIT.Sys.Model.Components
 				});
 		}
 
-		public List<IFolder> Query()
+		public ImmutableList<IFolder> Query()
 		{
 			return All();
 		}
 
-		public List<IFolder> Query(List<string> resourceGroups)
+		public ImmutableList<IFolder> Query(List<string> resourceGroups)
 		{
 			var rgs = resourceGroups.ToResourceGroupList();
 			var ms = DataModel.MicroServices.Query(rgs);
@@ -78,12 +79,12 @@ namespace TomPIT.Sys.Model.Components
 			return Where(f => ms.Any(t => t.Token == f.MicroService));
 		}
 
-		public List<IFolder> Query(Guid microService)
+		public ImmutableList<IFolder> Query(Guid microService)
 		{
 			return Where(f => f.MicroService == microService);
 		}
 
-		public List<IFolder> Query(Guid microService, Guid parent)
+		public ImmutableList<IFolder> Query(Guid microService, Guid parent)
 		{
 			return Where(f => f.MicroService == microService && f.Parent == parent);
 		}

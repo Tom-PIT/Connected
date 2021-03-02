@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
@@ -139,7 +140,7 @@ namespace TomPIT.Sys.Model.Components
 				return r[0];
 			}
 
-			r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Query(category, name);
+			r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Query(category, name).ToImmutableList();
 
 			if (r != null)
 			{
@@ -249,7 +250,7 @@ namespace TomPIT.Sys.Model.Components
 			return JsonConvert.DeserializeObject<JArray>(Encoding.UTF8.GetString(LZ4.LZ4Codec.Unwrap(content.Content)));
 		}
 
-		public List<IComponent> QueryCategories(Guid microService, string categories)
+		public ImmutableList<IComponent> QueryCategories(Guid microService, string categories)
 		{
 			var cats = categories.Split(',');
 			var r = new List<IComponent>();
@@ -265,10 +266,10 @@ namespace TomPIT.Sys.Model.Components
 					r.AddRange(ds);
 			}
 
-			return r;
+			return r.ToImmutableList();
 		}
 
-		public List<IComponent> Query(string resourceGroups, string categories)
+		public ImmutableList<IComponent> Query(string resourceGroups, string categories)
 		{
 			var tokens = string.IsNullOrWhiteSpace(resourceGroups) ? Array.Empty<string>() : resourceGroups.Split(',', StringSplitOptions.RemoveEmptyEntries);
 			var cats = string.IsNullOrWhiteSpace(categories) ? Array.Empty<string>() : categories.Split(',', StringSplitOptions.RemoveEmptyEntries);
@@ -323,10 +324,10 @@ namespace TomPIT.Sys.Model.Components
 				}
 			}
 
-			return r.Where(f => f.LockVerb != LockVerb.Delete).ToList();
+			return r.Where(f => f.LockVerb != LockVerb.Delete).ToImmutableList();
 		}
 
-		public List<IComponent> Query(Guid[] microService, bool includeDeleted)
+		public ImmutableList<IComponent> Query(Guid[] microService, bool includeDeleted)
 		{
 			if (includeDeleted)
 				return Where(f => microService.Any(g => g == f.MicroService));
@@ -334,7 +335,7 @@ namespace TomPIT.Sys.Model.Components
 				return Where(f => microService.Any(g => g == f.MicroService) && f.LockVerb != LockVerb.Delete);
 		}
 
-		public List<IComponent> Query(Guid microService, bool includeDeleted)
+		public ImmutableList<IComponent> Query(Guid microService, bool includeDeleted)
 		{
 			if (includeDeleted)
 				return Where(f => f.MicroService == microService);
@@ -342,22 +343,22 @@ namespace TomPIT.Sys.Model.Components
 				return Where(f => f.MicroService == microService && f.LockVerb != LockVerb.Delete);
 		}
 
-		public List<IComponent> Query(Guid microService, Guid folder)
+		public ImmutableList<IComponent> Query(Guid microService, Guid folder)
 		{
 			return Where(f => f.MicroService == microService && f.Folder == folder && f.LockVerb != LockVerb.Delete);
 		}
 
-		public List<IComponent> QueryByNameSpace(Guid microService, string nameSpace)
+		public ImmutableList<IComponent> QueryByNameSpace(Guid microService, string nameSpace)
 		{
 			return Where(f => f.MicroService == microService && string.Compare(f.NameSpace, nameSpace, true) == 0 && f.LockVerb != LockVerb.Delete);
 		}
 
-		public List<IComponent> Query(Guid microService, string category)
+		public ImmutableList<IComponent> Query(Guid microService, string category)
 		{
 			return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0 && f.LockVerb != LockVerb.Delete);
 		}
 
-		public List<IComponent> QueryByNameSpace(Guid microService, string nameSpace, bool includeDeleted)
+		public ImmutableList<IComponent> QueryByNameSpace(Guid microService, string nameSpace, bool includeDeleted)
 		{
 			if (includeDeleted)
 				return Where(f => f.MicroService == microService && string.Compare(f.NameSpace, nameSpace, true) == 0 && f.LockVerb != LockVerb.Delete);
@@ -365,7 +366,7 @@ namespace TomPIT.Sys.Model.Components
 				return Where(f => f.MicroService == microService && string.Compare(f.NameSpace, nameSpace, true) == 0);
 		}
 
-		public List<IComponent> Query(Guid microService, string category, bool includeDeleted)
+		public ImmutableList<IComponent> Query(Guid microService, string category, bool includeDeleted)
 		{
 			if (includeDeleted)
 				return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0 && f.LockVerb != LockVerb.Delete);
@@ -512,7 +513,7 @@ namespace TomPIT.Sys.Model.Components
 			return Shell.GetService<INamingService>().Create(prefix, existing.Select(f => f.Name), true);
 		}
 
-		public List<IComponent> QueryLocks(Guid microService)
+		public ImmutableList<IComponent> QueryLocks(Guid microService)
 		{
 			if (microService == Guid.Empty)
 				return Where(f => f.LockStatus == LockStatus.Lock);
@@ -520,7 +521,7 @@ namespace TomPIT.Sys.Model.Components
 				return Where(f => f.LockStatus == LockStatus.Lock && f.MicroService == microService);
 		}
 
-		public List<IComponent> QueryLocks(Guid microService, Guid user)
+		public ImmutableList<IComponent> QueryLocks(Guid microService, Guid user)
 		{
 			if (microService == Guid.Empty)
 				return Where(f => f.LockStatus == LockStatus.Lock && f.LockUser == user);

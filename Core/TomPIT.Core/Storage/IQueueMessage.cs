@@ -20,5 +20,6 @@ namespace TomPIT.Storage
 		string Queue { get; }
 		QueueScope Scope { get; }
 		DateTime DequeueTimestamp { get; }
+		string BufferKey { get; }
 	}
 }

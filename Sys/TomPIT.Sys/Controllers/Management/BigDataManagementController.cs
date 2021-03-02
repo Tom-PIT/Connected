@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.BigData;
 using TomPIT.Storage;
@@ -13,7 +14,7 @@ namespace TomPIT.Sys.Controllers.Management
 		 * Nodes
 		 */
 		[HttpGet]
-		public List<INode> QueryNodes()
+		public ImmutableList<INode> QueryNodes()
 		{
 			return DataModel.BigDataNodes.Query();
 		}
@@ -65,7 +66,7 @@ namespace TomPIT.Sys.Controllers.Management
 		 * Partitions
 		 */
 		[HttpGet]
-		public List<IPartition> QueryPartitions()
+		public ImmutableList<IPartition> QueryPartitions()
 		{
 			return DataModel.BigDataPartitions.Query();
 		}
@@ -161,7 +162,7 @@ namespace TomPIT.Sys.Controllers.Management
 		}
 
 		[HttpPost]
-		public List<IQueueMessage> DequeueTransactionBlocks()
+		public ImmutableList<IQueueMessage> DequeueTransactionBlocks()
 		{
 			var body = FromBody();
 			var count = body.Required<int>("count");
@@ -217,13 +218,13 @@ namespace TomPIT.Sys.Controllers.Management
 		}
 
 		[HttpGet]
-		public List<IPartitionFile> QueryFiles()
+		public ImmutableList<IPartitionFile> QueryFiles()
 		{
 			return DataModel.BigDataPartitionFiles.Query();
 		}
 
 		[HttpPost]
-		public List<IPartitionFile> QueryFilesForPartition()
+		public ImmutableList<IPartitionFile> QueryFilesForPartition()
 		{
 			var body = FromBody();
 			var partition = body.Required<Guid>("partition");
@@ -270,7 +271,7 @@ namespace TomPIT.Sys.Controllers.Management
   		 * Field statistics
 		 */
 		[HttpGet]
-		public List<IPartitionFieldStatistics> QueryFieldStatistics()
+		public ImmutableList<IPartitionFieldStatistics> QueryFieldStatistics()
 		{
 			return DataModel.BigDataPartitionFieldStatistics.Query();
 		}
@@ -302,7 +303,7 @@ namespace TomPIT.Sys.Controllers.Management
 		 * Maintenance
 		 */
 		[HttpPost]
-		public List<IQueueMessage> DequeueMaintenance()
+		public ImmutableList<IQueueMessage> DequeueMaintenance()
 		{
 			var body = FromBody();
 			var count = body.Required<int>("count");

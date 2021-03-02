@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Sys.Api.Database;
 using TomPIT.SysDb.Messaging;
@@ -61,7 +61,7 @@ namespace TomPIT.Sys.Model.Cdn
 				});
 		}
 
-		public List<ITopic> Query()
+		public ImmutableList<ITopic> Query()
 		{
 			return All();
 		}

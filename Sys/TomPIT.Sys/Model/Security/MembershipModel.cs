@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Security;
 using TomPIT.Sys.Api.Database;
@@ -65,13 +65,13 @@ namespace TomPIT.Sys.Model.Security
 				});
 		}
 
-		public List<IMembership> Query() { return All(); }
-		public List<IMembership> QueryForRole(Guid role)
+		public ImmutableList<IMembership> Query() { return All(); }
+		public ImmutableList<IMembership> QueryForRole(Guid role)
 		{
 			return Where(f => f.Role == role);
 		}
 
-		public List<IMembership> Query(Guid user)
+		public ImmutableList<IMembership> Query(Guid user)
 		{
 			return Where(f => f.User == user);
 		}

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -86,7 +86,7 @@ namespace TomPIT.Runtime
 			}
 		}
 
-		public List<IRuntimeMiddleware> QueryRuntimes()
+		public ImmutableList<IRuntimeMiddleware> QueryRuntimes()
 		{
 			return All();
 		}

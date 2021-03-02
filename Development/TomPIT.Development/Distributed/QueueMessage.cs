@@ -23,5 +23,7 @@ namespace TomPIT.Development.Distributed
 
 		public DateTime DequeueTimestamp { get; set; }
 		public QueueScope Scope { get; set; }
+
+		public string BufferKey {get;set;}
 	}
 }

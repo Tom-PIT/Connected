@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Security;
 using TomPIT.Sys.Api.Database;
@@ -64,7 +64,7 @@ namespace TomPIT.Sys.Model.Security
 			CachingNotifications.RoleChanged(role.Token);
 		}
 
-		public List<IRole> Query()
+		public ImmutableList<IRole> Query()
 		{
 			return All();
 		}

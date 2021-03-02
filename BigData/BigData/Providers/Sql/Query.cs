@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -35,7 +36,7 @@ namespace TomPIT.BigData.Providers.Sql
 		private Type SchemaType { get; set; }
 		private List<IndexParameter> IndexParameters { get; set; }
 		private string Key { get; set; }
-		private List<IPartitionFile> Files { get; set; }
+		private ImmutableList<IPartitionFile> Files { get; set; }
 		private DateTime StartTimestamp { get; set; }
 		private DateTime EndTimestamp { get; set; }
 		public string CommandText { get; set; }

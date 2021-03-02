@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using TomPIT.Caching;
@@ -43,7 +44,7 @@ namespace TomPIT.Globalization
 			}
 		}
 
-		public List<ILanguage> Query()
+		public ImmutableList<ILanguage> Query()
 		{
 			return All();
 		}

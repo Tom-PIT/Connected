@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.BigData;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
@@ -19,7 +20,7 @@ namespace TomPIT.Sys.Model.BigData
 			return Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.SelectBlock(token);
 		}
 
-		public List<IQueueMessage> Dequeue(int count, TimeSpan nextVisible)
+		public ImmutableList<IQueueMessage> Dequeue(int count, TimeSpan nextVisible)
 		{
 			return DataModel.Queue.Dequeue(count, nextVisible, QueueScope.System, Queue);
 		}

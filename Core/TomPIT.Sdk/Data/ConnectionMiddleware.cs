@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.Data.DataProviders;
 using TomPIT.Middleware;
@@ -21,7 +21,7 @@ namespace TomPIT.Data
 			return null;
 		}
 
-		protected List<IDataProvider> DataProviders => Context.Tenant.GetService<IDataProviderService>().Query();
+		protected ImmutableList<IDataProvider> DataProviders => Context.Tenant.GetService<IDataProviderService>().Query();
 
 		public ConnectionStringContext ConnectionContext { get; private set; } = ConnectionStringContext.User;
 

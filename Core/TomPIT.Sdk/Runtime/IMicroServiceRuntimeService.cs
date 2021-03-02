@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 
 namespace TomPIT.Runtime
 {
 	public interface IMicroServiceRuntimeService
 	{
-		List<IRuntimeMiddleware> QueryRuntimes();
+		ImmutableList<IRuntimeMiddleware> QueryRuntimes();
 	}
 }

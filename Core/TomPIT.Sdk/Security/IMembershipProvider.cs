@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace TomPIT.Security
 {
 	public interface IMembershipProvider
 	{
-		List<IMembership> QueryMembership(Guid user);
+		ImmutableList<IMembership> QueryMembership(Guid user);
 	}
 }

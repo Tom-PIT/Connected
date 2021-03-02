@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Ide.Collections;
@@ -37,7 +38,7 @@ namespace TomPIT.Design.Designers
 			get
 			{
 				if (_providers == null)
-					_providers = Environment.Context.Tenant.GetService<IAuthorizationService>().QueryProviders();
+					_providers = Environment.Context.Tenant.GetService<IAuthorizationService>().QueryProviders().ToList();
 
 				return _providers;
 			}

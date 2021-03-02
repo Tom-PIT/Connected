@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using TomPIT.Caching;
 using TomPIT.Sys.Api.Database;
@@ -120,12 +121,12 @@ namespace TomPIT.Sys.Model.Cdn
 				Remove(GenerateKey(i.Message, i.Connection));
 		}
 
-		public List<IRecipient> Query(Guid message)
+		public ImmutableList<IRecipient> Query(Guid message)
 		{
 			return Where(f => f.Message == message);
 		}
 
-		public List<IRecipient> QueryScheduled()
+		public ImmutableList<IRecipient> QueryScheduled()
 		{
 			var ds = Where(f => f.NextVisible < DateTime.UtcNow);
 			var batches = new Dictionary<Guid, List<IRecipient>>();

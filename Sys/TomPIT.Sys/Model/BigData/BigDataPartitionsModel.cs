@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Storage;
@@ -44,7 +44,7 @@ namespace TomPIT.Sys.Model.BigData
 			return Get(token);
 		}
 
-		public List<IPartition> Query()
+		public ImmutableList<IPartition> Query()
 		{
 			return All();
 		}
@@ -79,7 +79,7 @@ namespace TomPIT.Sys.Model.BigData
 				Update(configuration, name, status, partition.FileCount);
 
 				if (maintenance)
-					DataModel.Queue.Enqueue(MaintenanceQueue, partition.Configuration.ToString(), TimeSpan.FromDays(7), TimeSpan.Zero, QueueScope.System);
+					DataModel.Queue.Enqueue(MaintenanceQueue, partition.Configuration.ToString(), configuration.ToString(), TimeSpan.FromDays(7), TimeSpan.Zero, QueueScope.System);
 			}
 		}
 
@@ -116,7 +116,7 @@ namespace TomPIT.Sys.Model.BigData
 			return Locker.Request(partition.Configuration);
 		}
 
-		public List<IQueueMessage> DequeueMaintenance(int count, TimeSpan nextVisible)
+		public ImmutableList<IQueueMessage> DequeueMaintenance(int count, TimeSpan nextVisible)
 		{
 			return DataModel.Queue.Dequeue(count, nextVisible, QueueScope.System, MaintenanceQueue);
 		}

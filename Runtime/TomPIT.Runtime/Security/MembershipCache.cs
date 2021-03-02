@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
@@ -15,18 +14,17 @@ namespace TomPIT.Security
 
 		protected override void OnInitializing()
 		{
-			var u = Tenant.CreateUrl("Security", "QueryMembership");
-			var ds = Tenant.Get<List<Membership>>(u).ToList<IMembership>();
+			var ds = Tenant.Get<ImmutableList<Membership>>(CreateUrl("QueryMembership"));
 
 			foreach (var i in ds)
 				Set(GenerateRandomKey(), i, TimeSpan.Zero);
 		}
 
-		public List<IMembership> QueryForRole(Guid role)
+		public ImmutableList<IMembership> QueryForRole(Guid role)
 		{
 			return Where(f => f.Role == role);
 		}
-		public List<IMembership> Query(Guid user)
+		public ImmutableList<IMembership> Query(Guid user)
 		{
 			return Where(f => f.User == user);
 		}
@@ -51,6 +49,11 @@ namespace TomPIT.Security
 		public IMembership Select(Guid user, Guid role)
 		{
 			return Get(f => f.User == user && f.Role == role);
+		}
+
+		private ServerUrl CreateUrl(string action)
+		{
+			return Tenant.CreateUrl("Security", action);
 		}
 	}
 }

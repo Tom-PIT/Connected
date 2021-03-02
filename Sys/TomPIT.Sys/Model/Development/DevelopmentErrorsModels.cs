@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Development;
@@ -20,8 +21,7 @@ namespace TomPIT.Sys.Model.Development
 				{"error", error }
 			};
 
-			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message),
-				TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 		}
 		public List<IDevelopmentComponentError> Query(Guid microService, ErrorCategory category)
 		{
@@ -73,7 +73,7 @@ namespace TomPIT.Sys.Model.Development
 			Shell.GetService<IDatabaseService>().Proxy.Development.Errors.Insert(ms, c, errors);
 		}
 
-		public List<IQueueMessage> Dequeue(int count)
+		public ImmutableList<IQueueMessage> Dequeue(int count)
 		{
 			return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(5), QueueScope.System, Queue);
 		}

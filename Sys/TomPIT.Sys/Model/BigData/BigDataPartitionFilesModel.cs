@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Immutable;
 using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Sys.Api.Database;
@@ -55,12 +54,12 @@ namespace TomPIT.Sys.Model.BigData
 			Shell.GetService<IDatabaseService>().Proxy.BigData.Partitions.UnlockFile(unlockKey);
 		}
 
-		public List<IPartitionFile> Query(Guid partition)
+		public ImmutableList<IPartitionFile> Query(Guid partition)
 		{
 			return Where(f => f.Partition == partition);
 		}
 
-		public List<IPartitionFile> Query()
+		public ImmutableList<IPartitionFile> Query()
 		{
 			return All();
 		}
