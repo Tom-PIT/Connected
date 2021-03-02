@@ -44,17 +44,38 @@ namespace TomPIT.Cdn.Events
 				var targets = new List<string>();
 
 				var passedCandidates = AuthorizeCandidates(candidates, e.Arguments);
+				var reliableClients = new List<EventClient>();
 
 				foreach (var candidate in passedCandidates.Item1)
 				{
 					if (IsCandidateInterested(passedCandidates.Item2, candidate))
+					{
 						targets.Add(candidate.ConnectionId);
+
+						if (candidate.Behavior == EventSubscriptionBehavior.Reliable && !string.IsNullOrEmpty(candidate.Client))
+							reliableClients.Add(candidate);
+					}
 				}
 				
 				if (targets.Count == 0)
 					return;
 
+				CacheMessages(reliableClients, e.Name, args);
+
 				await EventHubs.Events.Clients.Clients(targets.AsReadOnly()).SendCoreAsync("event", new object[] { args });
+			}
+		}
+
+		private static void CacheMessages(List<EventClient> targets, string eventName, JObject arguments)
+		{
+			foreach(var client in targets)
+			{
+				EventMessagingCache.Add(client.Client, new EventMessage
+				{
+					Arguments = arguments,
+					Connection = client.ConnectionId,
+					Event = eventName
+				});
 			}
 		}
 

@@ -111,9 +111,13 @@ namespace TomPIT.Middleware.Interop
 			{
 				if (OperationTarget == DistributedOperationTarget.Distributed)
 				{
-					AuthorizePolicies();
-					OnAuthorizing();
-					OnAuthorize();
+					if (Context.Environment.IsInteractive)
+					{
+						AuthorizePolicies();
+						OnAuthorizing();
+						OnAuthorize();
+					}
+
 					OnBeginInvoke();
 				}
 				else

@@ -18,7 +18,7 @@ namespace TomPIT.Sys.Controllers
 			var args = body.Optional("arguments", string.Empty);
 			var expire = body.Optional("expire", TimeSpan.FromDays(2));
 			var nextVisible = body.Optional("nextVisible", TimeSpan.Zero);
-			var bufferKey = body.Required<string>("bufferKey");
+			var bufferKey = body.Optional("bufferKey", string.Empty);
 			var message = new JObject
 			{
 				{"component", component },

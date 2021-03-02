@@ -29,12 +29,14 @@ namespace TomPIT.Cdn.Events
 
 				foreach (var e in events)
 				{
-					EventClients.Add(new EventClient
+					EventClients.AddOrUpdate(new EventClient
 					{
 						ConnectionId = Context.ConnectionId,
 						User = user,
 						EventName = e.Name,
-						Arguments = e.Arguments
+						Arguments = e.Arguments,
+						Client = e.Client,
+						Behavior = e.Behavior
 					});
 				}
 
@@ -51,7 +53,10 @@ namespace TomPIT.Cdn.Events
 			try
 			{
 				foreach (var e in events)
+				{
 					EventClients.Remove(Context.ConnectionId, e.Name);
+					EventMessagingCache.Remove(e.Client, e.Name);
+				}
 
 				await Task.CompletedTask;
 			}
@@ -59,6 +64,13 @@ namespace TomPIT.Cdn.Events
 			{
 				await Clients.Caller.SendAsync("exception", ex.Message);
 			}
+		}
+
+		public async Task Acknowledge(EventAcknowledgeArgs e)
+		{
+			EventMessagingCache.Remove(e);
+
+			await Task.CompletedTask;
 		}
 
 		public override Task OnDisconnectedAsync(Exception exception)

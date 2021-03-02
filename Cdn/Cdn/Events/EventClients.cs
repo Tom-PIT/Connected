@@ -1,12 +1,15 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace TomPIT.Cdn.Events
 {
 	internal static class EventClients
 	{
 		private static ConcurrentDictionary<string, List<EventClient>> _clients = null;
+		private static object _sync = new object();
 
 		static EventClients()
 		{
@@ -14,34 +17,67 @@ namespace TomPIT.Cdn.Events
 		}
 
 		private static ConcurrentDictionary<string, List<EventClient>> Clients => _clients;
-		public static void Add(EventClient client)
+
+		public static void AddOrUpdate(EventClient client)
 		{
-			if(!Clients.TryGetValue(client.EventName.ToLowerInvariant(), out List<EventClient> clients))
+			if (!Clients.TryGetValue(client.EventName.ToLowerInvariant(), out List<EventClient> clients))
 			{
 				clients = new List<EventClient>();
 
-				if (!Clients.TryAdd(client.EventName.ToLowerInvariant(), clients))
-					Clients.TryGetValue(client.EventName.ToLowerInvariant(), out clients);
+				lock (_sync)
+					if (!Clients.TryAdd(client.EventName.ToLowerInvariant(), clients))
+						Clients.TryGetValue(client.EventName.ToLowerInvariant(), out clients);
+			}
+
+			var existing = clients.ToImmutableList();
+
+			foreach (var c in existing)
+			{
+				if (c.CompareTo(client) == 0)
+				{
+					c.ConnectionId = client.ConnectionId;
+					c.RetentionDeadline = DateTime.MinValue;
+
+					return;
+				}
 			}
 
 			lock (clients)
-			{
 				clients.Add(client);
-			}
 		}
 
+		public static void Clean()
+		{
+			foreach(var client in Clients)
+			{
+				var items = client.Value.Where(f => f.RetentionDeadline != DateTime.MinValue && f.RetentionDeadline <= DateTime.UtcNow).ToImmutableList();
+
+				foreach (var item in items)
+					client.Value.Remove(item);
+
+				if (!client.Value.Any())
+					RemoveClient(client.Key);
+			}
+		}
 		public static void Remove(string connectionId)
 		{
-			foreach(var eventList in Clients)
+			foreach (var eventList in Clients)
 			{
-				lock (eventList.Value)
+				var items = eventList.Value.ToImmutableArray();
+
+				foreach (var item in items)
 				{
-					for(var i = eventList.Value.Count - 1; i>=0; i--)
+					if (string.Compare(item.ConnectionId, connectionId, true) == 0)
 					{
-						if (string.Compare(eventList.Value[i].ConnectionId, connectionId, true) == 0)
-							eventList.Value.RemoveAt(i);
+						if (item.Behavior == EventSubscriptionBehavior.FireForget)
+							eventList.Value.Remove(item);
+						else
+							item.RetentionDeadline = DateTime.UtcNow.AddMinutes(5);
 					}
 				}
+
+				if (!eventList.Value.Any())
+					RemoveClient(eventList.Key);
 			}
 		}
 
@@ -57,14 +93,31 @@ namespace TomPIT.Cdn.Events
 		{
 			foreach (var eventList in Clients)
 			{
-				lock (eventList.Value)
+				var items = eventList.Value.ToImmutableList();
+
+				foreach (var item in items)
 				{
-					for (var i = eventList.Value.Count - 1; i >= 0; i--)
-					{
-						if (string.Compare(eventList.Value[i].ConnectionId, connectionId, true) == 0
-							&& string.Compare(eventList.Value[i].EventName, eventName, true) == 0)
-							eventList.Value.RemoveAt(i);
-					}
+					if (string.Compare(item.ConnectionId, connectionId, true) == 0
+						&& string.Compare(item.EventName, eventName, true) == 0)
+						eventList.Value.Remove(item);
+				}
+
+				if (!eventList.Value.Any())
+					RemoveClient(eventList.Key);
+			}
+		}
+
+		private static void RemoveClient(string key)
+		{
+			lock (_sync)
+			{
+				if (Clients.Values.Count > 0)
+					return;
+
+				if(Clients.TryRemove(key, out List<EventClient> value))
+				{
+					if (value.Count > 0)
+						Clients.TryAdd(key, value);
 				}
 			}
 		}
