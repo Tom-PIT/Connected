@@ -46,6 +46,8 @@ namespace TomPIT.DataProviders.Sql.Parsing
 
 		public string CommandText => Type == CommandTextType.Procedure ? Name : Sql;
 
+		public bool SupportsConcurrency { get; set; }
+
 		public void Parse(string sql)
 		{
 			Sql = sql;

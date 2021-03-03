@@ -12,6 +12,7 @@ namespace TomPIT.Data
 		List<ICommandTextParameter> Parameters { get; }
 		List<ICommandTextVariable> Variables { get; }
 
-		public string CommandText { get; }
+		string CommandText { get; }
+		bool SupportsConcurrency { get; set; }
 	}
 }

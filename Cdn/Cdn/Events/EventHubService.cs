@@ -9,7 +9,6 @@ using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
-using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
@@ -41,41 +40,56 @@ namespace TomPIT.Cdn.Events
 				if (candidates == null || candidates.Count == 0)
 					return;
 
-				var targets = new List<string>();
-
 				var passedCandidates = AuthorizeCandidates(candidates, e.Arguments);
-				var reliableClients = new List<EventClient>();
+				var interestedCandidates = new Dictionary<EventClient, EventMessage>();
 
 				foreach (var candidate in passedCandidates.Item1)
 				{
 					if (IsCandidateInterested(passedCandidates.Item2, candidate))
 					{
-						targets.Add(candidate.ConnectionId);
-
-						if (candidate.Behavior == EventSubscriptionBehavior.Reliable && !string.IsNullOrEmpty(candidate.Client))
-							reliableClients.Add(candidate);
+						interestedCandidates.Add(candidate, null);
 					}
 				}
 				
-				if (targets.Count == 0)
+				if (interestedCandidates.Count == 0)
 					return;
 
-				CacheMessages(reliableClients, e.Name, args);
+				CacheMessages(interestedCandidates, e.Name, args);
 
-				await EventHubs.Events.Clients.Clients(targets.AsReadOnly()).SendCoreAsync("event", new object[] { args });
+				foreach(var candidate in interestedCandidates)
+				{
+					dynamic message = null;
+
+					if (candidate.Value != null)
+					{
+						message = new
+						{
+							MessageId = candidate.Value.Id
+						};
+					}
+
+					await EventHubs.Events.Clients.Client(candidate.Key.ConnectionId).SendCoreAsync("event", new object[] { args, message });
+				}
 			}
 		}
 
-		private static void CacheMessages(List<EventClient> targets, string eventName, JObject arguments)
+		private static void CacheMessages(Dictionary<EventClient,EventMessage>  targets, string eventName, JObject arguments)
 		{
 			foreach(var client in targets)
 			{
-				EventMessagingCache.Add(client.Client, new EventMessage
+				if (client.Key.Behavior != EventSubscriptionBehavior.Reliable || string.IsNullOrEmpty(client.Key.Client))
+					continue;
+
+				var message = new EventMessage
 				{
 					Arguments = arguments,
-					Connection = client.ConnectionId,
+					Connection = client.Key.ConnectionId,
 					Event = eventName
-				});
+				};
+
+				EventMessagingCache.Add(client.Key.Client, message);
+				
+				targets[client.Key] = message;
 			}
 		}
 
@@ -152,9 +166,8 @@ namespace TomPIT.Cdn.Events
 					Authorize(instance, candidate.ConnectionId, null);
 					result.Add(candidate);
 				}
-				catch (Exception ex)
+				catch (ForbiddenException)
 				{
-					instance.Context.Services.Diagnostic.Error(nameof(AuthorizeCandidates), ex.Message, LogCategories.Cdn);
 					//authorization failed. nothing to do.
 					continue;
 				}

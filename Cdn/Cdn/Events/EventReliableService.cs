@@ -17,7 +17,14 @@ namespace TomPIT.Cdn.Events
 			var items = EventMessagingCache.Dequeue();
 
 			foreach (var item in items)
-				await EventHubs.Events.Clients.Client(item.Connection).SendCoreAsync("event", new object[] { item.Arguments }, cancel);
+			{
+				var message = new
+				{
+					MessageId = item.Id
+				};
+
+				await EventHubs.Events.Clients.Client(item.Connection).SendCoreAsync("event", new object[] { item.Arguments, message }, cancel);
+			}
 		}
 	}
 }

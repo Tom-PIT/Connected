@@ -40,7 +40,7 @@ namespace TomPIT.Data
 
 			var recordsAffected = w.Execute();
 
-			if (recordsAffected == 0 && Concurrency == ConcurrencyMode.Enabled)
+			if (recordsAffected == 0 && Concurrency == ConcurrencyMode.Enabled && descriptor.SupportsConcurrency)
 				throw new ConcurrencyException(GetType(), operation);
 
 			foreach (var arg in e)
@@ -235,6 +235,7 @@ namespace TomPIT.Data
 						value = (byte[])Version.Parse(value);
 
 					command.SetParameter(parameter.Name, value, nullable);
+					descriptor.SupportsConcurrency = true;
 				}
 			}
 

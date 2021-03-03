@@ -87,11 +87,20 @@ namespace TomPIT
 			context.Items[RequestArgumentsKey] = arguments;
 		}
 
+		public static JObject ParseArguments(this HttpContext context, object staticArguments, Action<string> refererRouteMatcher)
+		{
+			return ParseArguments(context, staticArguments, null, refererRouteMatcher);
+		}
+		
 		public static JObject ParseArguments(this HttpContext context, object staticArguments)
 		{
-			return context.ParseArguments(staticArguments, context?.Request.Query.ToString());
+			return ParseArguments(context, staticArguments, null, null);
 		}
 		public static JObject ParseArguments(this HttpContext context, object staticArguments, string queryString)
+		{
+			return ParseArguments(context, staticArguments, queryString, null);
+		}
+		public static JObject ParseArguments(this HttpContext context, object staticArguments, string queryString, Action<string> refererRouteMatcher)
 		{
 			var result = staticArguments == null
 				? new JObject()
@@ -112,6 +121,25 @@ namespace TomPIT
 			{
 				foreach (var header in Shell.HttpContext.Request.Headers)
 				{
+					if (string.Compare(header.Key, "Referer", true) == 0 && Shell.HttpContext.Request.IsAjaxRequest())
+					{
+						var value = header.Value.ToString();
+
+						if (value.Contains("?"))
+						{
+							var qs = QueryHelpers.ParseQuery(value.Split(new char[] { '?' }, 2)[1]);
+
+							foreach (var k in qs)
+							{
+								if (!result.ContainsKey(k.Key))
+									result.Add(new JProperty(k.Key, k.Value.ToString()));
+							}
+						}
+
+						if (refererRouteMatcher != null)
+							refererRouteMatcher(value);
+					}
+
 					if (!header.Key.StartsWith(HeaderParamPrefix, StringComparison.OrdinalIgnoreCase))
 						continue;
 
@@ -125,10 +153,10 @@ namespace TomPIT
 
 				if (routeData != null)
 				{
-					foreach(var value in routeData.Values)
+					foreach (var value in routeData.Values)
 					{
-						if(!result.ContainsKey(value.Key))
-							result.Add(new JProperty(value.Key, value));
+						if (!result.ContainsKey(value.Key))
+							result.Add(new JProperty(value.Key, value.Value));
 					}
 				}
 			}

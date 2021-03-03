@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Threading;
 using TomPIT.Exceptions;
 
 namespace TomPIT.Data
 {
 	public class ConcurrencyManager
 	{
-		public ConcurrencyManager(Action invokeAction, Action reloadAction) : this(invokeAction, reloadAction, 3)
+		public ConcurrencyManager(Action invokeAction, Action reloadAction) : this(invokeAction, reloadAction, 5)
 		{
 		}
 
@@ -31,7 +32,7 @@ namespace TomPIT.Data
 		private Action InvokeAction { get; }
 		private Action ReloadAction { get; }
 
-		public int RetryCount { get; } = 3;
+		public int RetryCount { get; } = 5;
 
 		private void Execute()
 		{
@@ -47,6 +48,9 @@ namespace TomPIT.Data
 				catch (ConcurrencyException ex)
 				{
 					lastException = ex;
+
+					Thread.Sleep(i * i * 50);
+					
 					ReloadAction();
 				}
 			}
