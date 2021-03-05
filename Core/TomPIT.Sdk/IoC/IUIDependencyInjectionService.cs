@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using TomPIT.ComponentModel.IoC;
 
 namespace TomPIT.IoC
@@ -7,6 +8,6 @@ namespace TomPIT.IoC
 	{
 		List<IUIDependencyDescriptor> QueryViewDependencies(string view, object arguments);
 		List<IUIDependencyDescriptor> QueryPartialDependencies(string partial, object arguments);
-		List<IUIDependencyDescriptor> QueryMasterDependencies(string master, object arguments, MasterDependencyKind kind);
+		List<IUIDependencyDescriptor> QueryMasterDependencies(Guid microService, string master, object arguments, MasterDependencyKind kind);
 	}
 }

@@ -1,15 +1,18 @@
-﻿@model TomPIT.Middleware.IMiddlewareContext
+﻿@using TomPIT.ComponentModel;
 
-@{ 
-   var model = Model as IViewModel;
+@model TomPIT.Middleware.IMiddlewareContext
 
-   if (model == null || model.ViewConfiguration == null)
-   {
-       return;
-   }
+@{
+    var model = Model as IViewModel;
 
-   var layout = model.ViewConfiguration.Layout;
-   var dependencies = Model.Tenant.GetService<TomPIT.IoC.IUIDependencyInjectionService>().QueryMasterDependencies(layout, model.Arguments, TomPIT.ComponentModel.IoC.MasterDependencyKind.Server);
+    if (model == null || model.ViewConfiguration == null)
+    {
+        return;
+    }
+
+    var layout = model.ViewConfiguration.Layout;
+
+    var dependencies = Model.Tenant.GetService<TomPIT.IoC.IUIDependencyInjectionService>().QueryMasterDependencies(model.ViewConfiguration.MicroService(), layout, model.Arguments, TomPIT.ComponentModel.IoC.MasterDependencyKind.Server);
 }
 
 @if (dependencies == null || dependencies.Count == 0)
@@ -17,9 +20,9 @@
     return;
 }
 
-@foreach(var dependency in dependencies)
+@foreach (var dependency in dependencies)
 {
-    if(string.IsNullOrWhiteSpace(dependency.Partial))
+    if (string.IsNullOrWhiteSpace(dependency.Partial))
     {
         continue;
     }

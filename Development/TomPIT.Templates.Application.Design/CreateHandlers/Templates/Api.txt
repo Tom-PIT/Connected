@@ -7,10 +7,8 @@ using TomPIT.Middleware.Interop;
 /// <remarks>
 /// Write here description of a [NAME] API.
 /// </remarks>
-public class [NAME] : TomPIT.Middleware.Interop.Api
+public class [NAME] : Api
 {
-	private Version _version;
-	
-	public override Version Version => _version ??= new Version(0, 0, 0, 0);
+
 }
 

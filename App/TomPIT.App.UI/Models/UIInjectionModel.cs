@@ -63,7 +63,7 @@ namespace TomPIT.App.Models
 
 							layout = $"{ms.Name}/{layout}";
 						}
-						var masterViews = Tenant.GetService<IUIDependencyInjectionService>().QueryMasterDependencies(layout, null, ComponentModel.IoC.MasterDependencyKind.Client);
+						var masterViews = Tenant.GetService<IUIDependencyInjectionService>().QueryMasterDependencies(ViewConfiguration.MicroService(), layout, null, ComponentModel.IoC.MasterDependencyKind.Client); ;
 
 						if (masterViews != null && masterViews.Count > 0)
 						{

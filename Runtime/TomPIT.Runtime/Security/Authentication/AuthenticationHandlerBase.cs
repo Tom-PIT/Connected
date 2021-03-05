@@ -45,7 +45,7 @@ namespace TomPIT.Security.Authentication
 
 			try
 			{
-				pars = Shell.GetService<IConnectivityService>().SelectTenant(endpoint).ValidationParameters;
+				pars = Shell.GetService<IConnectivityService>().SelectTenant(endpoint)?.ValidationParameters;
 			}
 			catch { }
 
