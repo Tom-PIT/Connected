@@ -217,6 +217,9 @@ namespace TomPIT.Reflection
 
 		public static bool ImplementsInterface(this Type type, Type itf)
 		{
+			if (string.IsNullOrWhiteSpace(itf.FullName))
+				return false;
+
 			return type.GetInterface(itf.FullName) != null;
 		}
 

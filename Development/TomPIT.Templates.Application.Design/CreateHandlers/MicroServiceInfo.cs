@@ -21,5 +21,3 @@ namespace TomPIT.MicroServices.Design.CreateHandlers
 		protected override string Template => "TomPIT.MicroServices.Design.CreateHandlers.Templates.MicroServiceInfo.txt";
 	}
 }
-
-

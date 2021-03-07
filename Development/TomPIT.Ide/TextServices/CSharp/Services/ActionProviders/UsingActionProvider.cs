@@ -70,6 +70,11 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 				StartLineNumber = marker.StartLineNumber - 1
 			});
 
+			var result = new List<ICodeAction>();
+
+			if (Arguments.Model.SyntaxTree.Length < span.End)
+				return result;
+
 			var node = Arguments.Model.SyntaxTree.GetRoot().FindNode(span);
 			var type = CSharpQuery.ResolveTypeInfo(Arguments.Model, node);
 			var typeNames = new List<string>();
@@ -89,7 +94,6 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 			}
 
 			var references = AssemblyReferenceResolver.ResolveReferences(Arguments.Model.Compilation);
-			var result = new List<ICodeAction>();
 
 			foreach (var typeName in typeNames)
 			{
