@@ -16,10 +16,6 @@ namespace TomPIT.ComponentModel.Apis
 		/// </summary>
 		ListItems<IApiOperation> Operations { get; }
 		/// <summary>
-		/// Protocol settings used by each <code>IApi</code> component.
-		/// </summary>
-		IApiProtocolOptions Protocols { get; }
-		/// <summary>
 		/// Defines access modifiers for restricting calls by a context.
 		/// </summary>
 		ElementScope Scope { get; }

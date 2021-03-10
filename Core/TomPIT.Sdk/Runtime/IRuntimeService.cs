@@ -30,6 +30,12 @@ namespace TomPIT.Runtime
 		OnPrem = 1,
 		Cloud = 2
 	}
+
+	public enum EnvironmentConnectivity
+	{
+		Online = 1,
+		Offline = 2
+	}
 	public interface IRuntimeService
 	{
 		void Initialize(InstanceType type, Platform platform, IWebHostEnvironment environment);
@@ -41,6 +47,7 @@ namespace TomPIT.Runtime
 		EnvironmentStage Stage { get; }
 		EnvironmentMode Mode { get; }
 		Platform Platform { get; }
+		EnvironmentConnectivity Connectivity { get; }
 
 		IApplicationBuilder Host { get; }
 	}

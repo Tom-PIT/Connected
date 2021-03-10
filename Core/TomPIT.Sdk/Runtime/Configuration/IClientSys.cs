@@ -11,5 +11,6 @@ namespace TomPIT.Runtime.Configuration
 		Platform Platform { get; }
 		EnvironmentStage Stage { get; }
 		IDiagnosticsConfiguration Diagnostics { get; }
+		EnvironmentConnectivity Connectivity { get; }
 	}
 }

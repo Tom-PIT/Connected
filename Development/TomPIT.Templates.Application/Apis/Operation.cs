@@ -23,7 +23,6 @@ namespace TomPIT.MicroServices.Apis
 	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.ApiOperation, TomPIT.MicroServices.Design")]
 	public class Operation : ConfigurationElement, IApiOperation
 	{
-		private OperationProtocolOptions _protocols = null;
 		private IMetricOptions _metric = null;
 
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
@@ -34,18 +33,6 @@ namespace TomPIT.MicroServices.Apis
 		public override string ToString()
 		{
 			return string.IsNullOrWhiteSpace(Name) ? GetType().ShortName() : Name;
-		}
-
-		[EnvironmentVisibility(EnvironmentMode.Any)]
-		public IOperationProtocolOptions Protocols
-		{
-			get
-			{
-				if (_protocols == null)
-					_protocols = new OperationProtocolOptions { Parent = this };
-
-				return _protocols;
-			}
 		}
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]

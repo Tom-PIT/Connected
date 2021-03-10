@@ -93,7 +93,81 @@ namespace TomPIT
 			}
 
 			return null;
+			//var packages = Path.Combine(Path.GetDirectoryName(appPath), "Packages");
+
+			//if (!Directory.Exists(packages))
+			//	return null;
+
+			//if (string.IsNullOrWhiteSpace(version))
+			//	return null;
+
+			//var packageTarget = Path.Combine(packages, assemblyName);
+
+			//if (!Directory.Exists(packageTarget))
+			//	return null;
+
+			//var packageFiles = Directory.GetFiles(packageTarget, $"{assemblyName}.dll", SearchOption.AllDirectories);
+
+			//if (packageFiles.Length == 0)
+			//	return null;
+			//else if (packageFiles.Length == 1)
+			//	return packageFiles[0];
+			//else
+			//	return NearestFile(packageFiles, version);
 		}
+
+		//private static string NearestFile(string[] files, string version)
+		//{
+		//	var v = System.Version.Parse(version);
+		//	var versions = new Dictionary<Version, string>();
+
+		//	foreach (var file in files)
+		//	{
+		//		var fileVersion = FileVersionInfo.GetVersionInfo(file);
+
+		//		if (string.IsNullOrWhiteSpace(fileVersion.FileVersion))
+		//			continue;
+
+		//		var fv = Version.Parse(fileVersion.FileVersion);
+
+		//		if (fv == v)
+		//			return file;
+
+		//		versions.Add(fv, file);
+		//	}
+
+		//	v = new Version(v.Major, v.Minor, v.Build);
+
+		//	foreach(var fv in versions)
+		//	{
+		//		var fvv = new Version(fv.Key.Major, fv.Key.Minor, fv.Key.Build);
+
+		//		if (v == fvv)
+		//			return fv.Value;
+		//	}
+
+		//	v = new Version(v.Major, v.Minor);
+
+		//	foreach (var fv in versions)
+		//	{
+		//		var fvv = new Version(fv.Key.Major, fv.Key.Minor);
+
+		//		if (v == fvv)
+		//			return fv.Value;
+		//	}
+
+		//	v = new Version(v.Major, 0);
+
+		//	foreach (var fv in versions)
+		//	{
+		//		var fvv = new Version(fv.Key.Major, 0);
+
+		//		if (v == fvv)
+		//			return fv.Value;
+		//	}
+
+		//	return files[0];
+		//}
 
 		private static Assembly OnResolvingAssembly(AssemblyLoadContext ctx, AssemblyName asm)
 		{
@@ -135,6 +209,7 @@ namespace TomPIT
 
 				path = targetPath;
 			}
+
 
 			return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
 		}

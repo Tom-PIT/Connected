@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Loader;
 using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
@@ -39,6 +38,7 @@ namespace TomPIT.Compilation
 		private static Lazy<ConcurrentDictionary<Guid, ManualResetEvent>> _scriptCreateState = new Lazy<ConcurrentDictionary<Guid, ManualResetEvent>>();
 		//private static List<DiagnosticAnalyzer> _analyzers = null;
 		private static object _sync = new object();
+		private NuGetPackages _nuGet;
 
 		public CompilerService(ITenant tenant) : base(tenant, "script")
 		{
@@ -57,6 +57,8 @@ namespace TomPIT.Compilation
 					RemoveScript(i.Id);
 			}
 		}
+
+		public NuGetPackages Nuget => _nuGet ??= new NuGetPackages(Tenant);
 
 		private IScriptDescriptor GetCachedScript(Guid sourceCodeId)
 		{
@@ -292,8 +294,13 @@ namespace TomPIT.Compilation
 
 			var errors = ImmutableArray<Microsoft.CodeAnalysis.Diagnostic>.Empty;
 
+			/*
+			 * It seems analyzers with references are currently not supported.
+			 * see: https://github.com/dotnet/roslyn/blob/0902d19aaba441d98fe5432274e5a2554353cc8d/src/Compilers/Core/Portable/ReferenceManager/CommonReferenceManager.Resolution.cs#L868
+			 */
 			if (compiler.Script != null)
 				errors = compiler.Script.GetCompilation().WithAnalyzers(CreateAnalyzers(compiler.Tenant, script)).GetAllDiagnosticsAsync().Result;
+				//errors = compiler.Script.GetCompilation().GetDiagnostics();
 
 			var diagnostics = new List<IDiagnostic>();
 
@@ -342,15 +349,6 @@ namespace TomPIT.Compilation
 				((ScriptDescriptor)script).Script = compiler.Script.CreateDelegate();
 				result = compiler.Script.GetCompilation();
 				((ScriptDescriptor)script).Assembly = result.AssemblyName;
-				var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => f.FullName == result.Assembly.Identity.GetDisplayName());
-
-				if (asm != null)
-				{
-					var loadContext = AssemblyLoadContext.GetLoadContext(asm);
-
-					if (loadContext != null)
-						loadContext.Resolving += OnResolving;
-				}
 			}
 
 			if (compiler.ScriptReferences != null && compiler.ScriptReferences.Count > 0)
@@ -360,11 +358,6 @@ namespace TomPIT.Compilation
 				Set(script.Id, script, TimeSpan.Zero);
 
 			return result;
-		}
-
-		private Assembly OnResolving(AssemblyLoadContext arg1, AssemblyName arg2)
-		{
-			return null;
 		}
 
 		public void Invalidate(IMicroServiceContext context, Guid microService, Guid component, IText sourceCode)
@@ -484,7 +477,7 @@ namespace TomPIT.Compilation
 					throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
 				else
 					return null;
-			}
+			}	
 
 			if (script != null && script.Assembly == null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
 				throw new CompilerException(Tenant, script, sourceCode);

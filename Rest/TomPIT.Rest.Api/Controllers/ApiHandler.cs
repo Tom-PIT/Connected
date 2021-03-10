@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json.Linq;
+using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
-using TomPIT.Security;
 
 namespace TomPIT.Rest.Controllers
 {
@@ -41,8 +41,11 @@ namespace TomPIT.Rest.Controllers
 
 			var op = await GetOperation(config);
 
-			if (!await Authorize(config, op))
+			if (op == null)
+			{
+				await RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1}/{2})", SR.ErrServiceOperationNotFound, Api, Operation));
 				return;
+			}
 
 			var r = Interop.Invoke<object, JObject>(string.Format("{0}/{1}", Api, Operation), ParseArguments());
 
@@ -55,49 +58,6 @@ namespace TomPIT.Rest.Controllers
 				else
 					await RenderResult(r);
 			}
-		}
-
-		private async Task<bool> Authorize(IApiConfiguration api, IApiOperation operation)
-		{
-			var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(api.Component);
-			var e = new AuthorizationArgs(MiddlewareDescriptor.Current.UserToken, Claims.Invoke, api.Component.ToString(), "Api");
-
-			e.Schema.Empty = EmptyBehavior.Deny;
-			e.Schema.Level = AuthorizationLevel.Pessimistic;
-
-			var r = Tenant.GetService<IAuthorizationService>().Authorize(this, e);
-
-			if (!r.Success)
-			{
-				if (e.User != Guid.Empty)
-					await RenderError((int)HttpStatusCode.Forbidden, SR.StatusForbiddenMessage);
-				else
-					await RenderError((int)HttpStatusCode.Unauthorized, SR.StatusForbiddenMessage);
-
-				return false;
-			}
-
-			e = new AuthorizationArgs(MiddlewareDescriptor.Current.UserToken, Claims.Invoke, operation.Id.ToString(), "Api operation");
-
-			e.Schema.Empty = EmptyBehavior.Deny;
-			e.Schema.Level = AuthorizationLevel.Pessimistic;
-
-			r = Tenant.GetService<IAuthorizationService>().Authorize(this, e);
-
-			if (!r.Success)
-			{
-				if (r.Reason == AuthorizationResultReason.Empty)
-					return true;
-
-				if (e.User != Guid.Empty)
-					await RenderError((int)HttpStatusCode.Forbidden, SR.StatusForbiddenMessage);
-				else
-					await RenderError((int)HttpStatusCode.Unauthorized, SR.StatusForbiddenMessage);
-
-				return false;
-			}
-
-			return true;
 		}
 
 		private JObject ParseArguments()
@@ -183,12 +143,6 @@ namespace TomPIT.Rest.Controllers
 				return null;
 			}
 
-			if (!config.Protocols.Rest)
-			{
-				await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1})", SR.ErrApiProtocolRestDisabled, Api));
-				return null;
-			}
-
 			if (config.Scope != ElementScope.Public)
 			{
 				await RenderError((int)HttpStatusCode.MethodNotAllowed, SR.ErrScopeError);
@@ -201,9 +155,8 @@ namespace TomPIT.Rest.Controllers
 		private async Task<IApiOperation> GetOperation(IApiConfiguration config)
 		{
 			var routeData = Shell.HttpContext.GetRouteData();
-			var operation = routeData.Values["operation"].ToString();
 
-			var op = config.Operations.FirstOrDefault(f => string.Equals(f.Name, operation, System.StringComparison.OrdinalIgnoreCase));
+			var op = config.Operations.FirstOrDefault(f => string.Equals(f.Name, Operation, StringComparison.OrdinalIgnoreCase));
 
 			if (op == null)
 			{
@@ -213,102 +166,76 @@ namespace TomPIT.Rest.Controllers
 
 			Operation = op.Name;
 
-			if (!op.Protocols.Rest)
-			{
-				await RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1}/{2})", SR.ErrApiOperationProtocolRestDisabled, Api, Operation));
-				return null;
-			}
-
-			if (op.Protocols.RestVerbs != ApiOperationVerbs.All)
-			{
-				switch (op.Protocols.RestVerbs)
-				{
-					case ApiOperationVerbs.Get:
-						if (!Shell.HttpContext.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
-						{
-							SetAllowHeader(op.Protocols.RestVerbs);
-							await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
-							return null;
-						}
-
-						break;
-					case ApiOperationVerbs.Post:
-						if (!Shell.HttpContext.Request.Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
-						{
-							SetAllowHeader(op.Protocols.RestVerbs);
-							await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
-							return null;
-						}
-						break;
-					case ApiOperationVerbs.Patch:
-						if (!Shell.HttpContext.Request.Method.Equals("PATCH", StringComparison.OrdinalIgnoreCase))
-						{
-							SetAllowHeader(op.Protocols.RestVerbs);
-							await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
-							return null;
-						}
-
-						break;
-					case ApiOperationVerbs.Delete:
-						if (!Shell.HttpContext.Request.Method.Equals("DELETE", StringComparison.OrdinalIgnoreCase))
-						{
-							SetAllowHeader(op.Protocols.RestVerbs);
-							await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
-							return null;
-						}
-
-						break;
-					case ApiOperationVerbs.Put:
-						if (!Shell.HttpContext.Request.Method.Equals("PUT", StringComparison.OrdinalIgnoreCase))
-						{
-							SetAllowHeader(op.Protocols.RestVerbs);
-							await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
-							return null;
-						}
-
-						break;
-					case ApiOperationVerbs.Head:
-						if (!Shell.HttpContext.Request.Method.Equals("HEAD", StringComparison.OrdinalIgnoreCase))
-						{
-							SetAllowHeader(op.Protocols.RestVerbs);
-							await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
-							return null;
-						}
-
-						break;
-				}
-			}
-
 			if (op.Scope != ElementScope.Public)
 			{
-				await RenderError((int)HttpStatusCode.NotFound, SR.ErrScopeError);
+				await RenderError((int)HttpStatusCode.MethodNotAllowed, SR.ErrScopeError);
 				return null;
 			}
+
+			var type = config.Middleware(this);
+
+			if (type == null)
+			{
+				await RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1}/{2})", SR.ErrServiceOperationNotFound, Api, Operation));
+				return null;
+			}
+
+			if (Shell.HttpContext.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase) && !await ValidateVerb<HttpGetAttribute>(type))
+				return null;
+			else if (Shell.HttpContext.Request.Method.Equals("POST", StringComparison.OrdinalIgnoreCase) && !await ValidateVerb<HttpPostAttribute>(type))
+				return null;
+			else if (Shell.HttpContext.Request.Method.Equals("PATCH", StringComparison.OrdinalIgnoreCase) && !await ValidateVerb<HttpPatchAttribute>(type))
+				return null;
+			else if (Shell.HttpContext.Request.Method.Equals("DELETE", StringComparison.OrdinalIgnoreCase) && !await ValidateVerb<HttpDeleteAttribute>(type))
+				return null;
+			else if (Shell.HttpContext.Request.Method.Equals("PUT", StringComparison.OrdinalIgnoreCase) && !await ValidateVerb<HttpPutAttribute>(type))
+				return null;
+			else if (Shell.HttpContext.Request.Method.Equals("HEAD", StringComparison.OrdinalIgnoreCase) && !await ValidateVerb<HttpHeadAttribute>(type))
+				return null;
+			else if (Shell.HttpContext.Request.Method.Equals("TRACE", StringComparison.OrdinalIgnoreCase) && !await ValidateVerb<HttpTraceAttribute>(type))
+				return null;
 
 			return op;
 		}
 
-		private void SetAllowHeader(ApiOperationVerbs verbs)
+		private async Task<bool> ValidateVerb<T>(Type type) where T : Attribute
+		{
+			var att = type.FindAttribute<T>();
+
+			if (att == null)
+			{
+				SetAllowHeader(type);
+				await RenderError(StatusCodes.Status405MethodNotAllowed, string.Format("{0} ({1}/{2})", SR.ApiOperationInvalidVerb, Api, Operation));
+				return false;
+			}
+
+			return true;
+		}
+
+		private static void SetAllowHeader(Type type)
 		{
 			var sb = new StringBuilder();
 
-			if ((verbs & ApiOperationVerbs.Get) == ApiOperationVerbs.Get)
+			if (type.FindAttribute<HttpGetAttribute>() != null)
 				sb.Append($"GET,");
 
-			if ((verbs & ApiOperationVerbs.Head) == ApiOperationVerbs.Head)
+			if (type.FindAttribute<HttpHeadAttribute>() != null)
 				sb.Append($"HEAD,");
 
-			if ((verbs & ApiOperationVerbs.Post) == ApiOperationVerbs.Post)
+			if (type.FindAttribute<HttpPostAttribute>() != null)
 				sb.Append($"POST,");
 
-			if ((verbs & ApiOperationVerbs.Put) == ApiOperationVerbs.Put)
+			if (type.FindAttribute<HttpPutAttribute>() != null)
 				sb.Append($"PUT,");
 
-			if ((verbs & ApiOperationVerbs.Delete) == ApiOperationVerbs.Delete)
+			if (type.FindAttribute<HttpDeleteAttribute>() != null)
 				sb.Append($"DELETE,");
 
-			if ((verbs & ApiOperationVerbs.Patch) == ApiOperationVerbs.Patch)
+			if (type.FindAttribute<HttpPatchAttribute>() != null)
 				sb.Append($"PATCH,");
+
+			if (type.FindAttribute<HttpTraceAttribute>() != null)
+				sb.Append($"TRACE,");
 
 			Shell.HttpContext.Response.Headers.Add(Enum.GetName(typeof(HttpResponseHeader), HttpResponseHeader.Allow), sb.ToString().TrimEnd(','));
 		}

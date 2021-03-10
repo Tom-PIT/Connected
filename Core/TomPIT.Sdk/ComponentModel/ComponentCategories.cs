@@ -22,6 +22,8 @@
 		public static string StringTable => "StringTable";
 		public static string Media => "Media";
 		public static string EmbeddedAssembly => "EmbeddedAssembly";
+		public static string NuGetPackage => "NuGetPackage";
+		public static string EmbeddedNuGetPackage => "EmbeddedNuGetPackage";
 		public static string FileAssembly => "FileAssembly";
 		public static string Text => "Text";
 		public static string MailTemplate => "MailTemplate";
@@ -53,6 +55,7 @@
 		public static string NameSpaceMiddleware => "Middleware";
 		public static string NameSpaceDeployment => "Deployment";
 		public static string NameSpaceQuality => "Quality";
+		public static string NameSpaceNuGet=> "NuGetPackage";
 
 		public static string[] ScriptCategories => new string[] { Script, IoCContainer };
 		public static string ResolveNamespace(string category)
@@ -96,6 +99,9 @@
 				return NameSpaceDeployment;
 			else if (string.Compare(category, UnitTest, true) == 0)
 				return NameSpaceQuality;
+			else if (string.Compare(category, NuGetPackage, true) == 0
+				|| string.Compare(category, EmbeddedNuGetPackage, true) == 0)
+				return NameSpaceNuGet;
 			else
 				return "Default";
 		}

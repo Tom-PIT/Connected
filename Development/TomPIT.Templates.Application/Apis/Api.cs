@@ -21,7 +21,6 @@ namespace TomPIT.MicroServices.Apis
 	public class Api : SourceCodeConfiguration, IApiConfiguration
 	{
 		private ListItems<IApiOperation> _ops = null;
-		private ApiProtocolOptions _protocols = null;
 
 		[Items(DesignUtils.ApiOperationItems)]
 		[EnvironmentVisibility(EnvironmentMode.Any)]
@@ -34,21 +33,6 @@ namespace TomPIT.MicroServices.Apis
 					_ops = new ListItems<IApiOperation> { Parent = this };
 
 				return _ops;
-			}
-		}
-
-		[EnvironmentVisibility(EnvironmentMode.Any)]
-		public IApiProtocolOptions Protocols
-		{
-			get
-			{
-				if (_protocols == null)
-					_protocols = new ApiProtocolOptions
-					{
-						Parent = this
-					};
-
-				return _protocols;
 			}
 		}
 

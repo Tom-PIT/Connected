@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
@@ -46,7 +47,7 @@ namespace TomPIT.Compilation
 				 .WithImports(Usings)
 				 .WithReferences(References)
 				 .WithSourceResolver(new ScriptResolver(Tenant, MicroService))
-				 .WithMetadataResolver(new AssemblyResolver(Tenant, MicroService))
+				 .WithMetadataResolver(new AssemblyResolver(Tenant, MicroService, true))
 				 .WithEmitDebugInformation(msv.Status != MicroServiceStatus.Production)
 				 .WithFilePath(SourceCode.ScriptName(Tenant))
 				 .WithFileEncoding(Encoding.UTF8);
@@ -76,10 +77,18 @@ namespace TomPIT.Compilation
 						var asm = AssemblyResolver.LoadDependency(Tenant, ms, name);
 
 						if (asm != null)
-						{
-							var identity = AssemblyIdentity.FromAssemblyDefinition(asm);
+							loader.RegisterDependency(asm);
+					}
+					else
+					{
+						var name = AssemblyLoadContext.GetAssemblyName(executable.FilePath);
 
-							loader.RegisterDependency(identity, "c:\\bin");
+						if (name != null)
+						{
+							var asm = AssemblyLoadContext.Default.LoadFromAssemblyName(name);
+
+							if (asm != null)
+								loader.RegisterDependency(asm);
 						}
 					}
 				}

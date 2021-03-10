@@ -79,5 +79,7 @@ namespace TomPIT.Runtime.Configuration
 
 		[JsonProperty(PropertyName = "stage")]
 		public EnvironmentStage Stage { get; set; } = EnvironmentStage.Production;
+		[JsonProperty(PropertyName = "connectivity")]
+		public EnvironmentConnectivity Connectivity { get; set; } = EnvironmentConnectivity.Online;
 	}
 }

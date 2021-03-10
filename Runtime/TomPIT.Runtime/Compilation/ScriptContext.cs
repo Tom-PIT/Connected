@@ -175,7 +175,7 @@ namespace TomPIT.Compilation
 			get
 			{
 				if (_assemblyResolver == null)
-					_assemblyResolver = new AssemblyResolver(Tenant, MicroService.Token);
+					_assemblyResolver = new AssemblyResolver(Tenant, MicroService.Token, false);
 
 				return _assemblyResolver;
 			}

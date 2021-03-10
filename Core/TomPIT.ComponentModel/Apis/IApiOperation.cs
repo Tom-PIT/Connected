@@ -18,10 +18,6 @@ namespace TomPIT.ComponentModel.Apis
 		/// behind <code>IApi.Scope</code> property.
 		/// </summary>
 		ElementScope Scope { get; }
-		/// <summary>
-		/// Protocol settings used by the <code>IApiOperation</code>.
-		/// </summary>
-		IOperationProtocolOptions Protocols { get; }
 		IMetricOptions Metrics { get; }
 	}
 }

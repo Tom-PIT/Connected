@@ -13,12 +13,14 @@ namespace TomPIT.Compilation
 {
 	public class AssemblyResolver : MetadataReferenceResolver
 	{
-		public AssemblyResolver(ITenant tenant, Guid microService)
+		public AssemblyResolver(ITenant tenant, Guid microService, bool reflectionOnly)
 		{
 			Tenant = tenant;
 			MicroService = microService;
+			ReflectionOnly = reflectionOnly;
 		}
 
+		private bool ReflectionOnly { get; }
 		private ITenant Tenant { get; }
 		private Guid MicroService { get; }
 
@@ -55,7 +57,82 @@ namespace TomPIT.Compilation
 			}
 		}
 
-		public static ImmutableArray<PortableExecutableReference> Resolve(ITenant tenant, Guid microService, string reference)
+		public ImmutableArray<PortableExecutableReference> Resolve(ITenant tenant, Guid microService, string reference)
+		{
+			var result = ResolvePackage(tenant, microService, reference);
+
+			if (!result.IsDefaultOrEmpty)
+				return result;
+
+			return ResolveAssembly(tenant, microService, reference);
+		}
+
+		private ImmutableArray<PortableExecutableReference> ResolvePackage(ITenant tenant, Guid microService, string reference)
+		{
+			var tokens = reference.Split("/");
+
+			if (tokens.Length != 2)
+				return ImmutableArray<PortableExecutableReference>.Empty;
+
+			var ms = tenant.GetService<IMicroServiceService>().Select(tokens[0]);
+
+			if (ms == null)
+				return ImmutableArray<PortableExecutableReference>.Empty;
+
+			var component = tenant.GetService<IComponentService>().SelectComponentByNameSpace(ms.Token, ComponentCategories.NameSpaceNuGet, tokens[1]);
+
+			if (component == null)
+				return ImmutableArray<PortableExecutableReference>.Empty;
+
+			var configuration = tenant.GetService<IComponentService>().SelectConfiguration(component.Token);
+
+			if (configuration is INuGetPackageEmbeddedResource embedded)
+			{
+				var nuget = ((CompilerService)tenant.GetService<ICompilerService>()).Nuget;
+				var asms = nuget.Resolve(embedded.Blob, ReflectionOnly);
+
+				if (asms.IsEmpty)
+					return ImmutableArray<PortableExecutableReference>.Empty;
+
+				ImmutableArray<PortableExecutableReference> result = ImmutableArray<PortableExecutableReference>.Empty;
+
+				foreach (var asm in asms)
+				{
+					try
+					{
+						result = result.Add(MetadataReference.CreateFromFile(asm.Location));
+					}
+					catch { }
+				}
+
+				return result;
+			}
+			else if (configuration is INuGetPackageResource resource)
+			{
+				var nuget = ((CompilerService)tenant.GetService<ICompilerService>()).Nuget;
+				var asms = nuget.Resolve(resource.Id, resource.Version, ReflectionOnly);
+
+				if (asms.IsEmpty)
+					return ImmutableArray<PortableExecutableReference>.Empty;
+
+				ImmutableArray<PortableExecutableReference> result = ImmutableArray<PortableExecutableReference>.Empty;
+
+				foreach (var asm in asms)
+				{
+					try
+					{
+						result = result.Add(MetadataReference.CreateFromFile(asm.Location));
+					}
+					catch { }
+				}
+
+				return result;
+			}
+			else
+				return ImmutableArray<PortableExecutableReference>.Empty;
+		}
+
+		private static ImmutableArray<PortableExecutableReference> ResolveAssembly(ITenant tenant, Guid microService, string reference)
 		{
 			var component = tenant.GetService<IComponentService>().SelectComponent(microService, ComponentCategories.EmbeddedAssembly, reference);
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
@@ -28,7 +27,8 @@ namespace TomPIT.Ide.TextServices.CSharp
 				//}
 
 				//return AssemblyResolver.LoadDependency(Tenant, ms, name);
-				throw new NotImplementedException();
+				//throw new NotImplementedException();
+				return null;
 			}
 			else
 			{
