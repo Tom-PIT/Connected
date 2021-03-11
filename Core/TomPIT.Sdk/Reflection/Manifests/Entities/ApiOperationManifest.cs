@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using TomPIT.Annotations;
 using TomPIT.ComponentModel;
 
 namespace TomPIT.Reflection.Manifests.Entities
@@ -11,6 +13,8 @@ namespace TomPIT.Reflection.Manifests.Entities
 
 		public bool Distributed { get; set; }
 		public bool SupportsTransaction { get; set; }
+		public HttpVerbs Verbs { get; set; }
+		public Guid Id { get; set; }
 		public List<ManifestType> Extenders
 		{
 			get

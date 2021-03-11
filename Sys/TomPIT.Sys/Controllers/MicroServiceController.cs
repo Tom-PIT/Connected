@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.Collections.Immutable;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.ComponentModel;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers
 {
 	public class MicroServiceController : SysController
 	{
 		[HttpGet]
-		public List<IMicroService> Query()
+		public ImmutableList<IMicroService> Query()
 		{
 			return DataModel.MicroServices.Query();
 		}
@@ -39,7 +39,7 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpGet]
-		public List<IMicroServiceString> QueryStrings(Guid microService, Guid language)
+		public ImmutableList<IMicroServiceString> QueryStrings(Guid microService, Guid language)
 		{
 			return DataModel.MicroServiceStrings.Query(microService, language);
 		}

@@ -1,20 +1,51 @@
-﻿using System;
-using System.Collections.Generic;
-using TomPIT.Connectivity;
-using TomPIT.Development;
+﻿using TomPIT.Connectivity;
 
 namespace TomPIT.Design
 {
 	internal class DesignService : TenantObject, IDesignService
 	{
-		private IRepositories _repos = null;
-		private IServiceBindings _bindings = null;
 		private IVersionControl _versionControl = null;
 		private IComponentModel _components = null;
 		private IDesignSearch _search = null;
+		private IDeployment _deployment = null;
+		private ITextDiff _diff = null;
+		private IMicroServiceDesign _microServices = null;
 
 		public DesignService(ITenant tenant) : base(tenant)
 		{
+		}
+
+		public IMicroServiceDesign MicroServices
+		{
+			get
+			{
+				if (_microServices == null)
+					_microServices = new MicroServiceDesign(Tenant);
+
+				return _microServices;
+			}
+		}
+
+		public ITextDiff TextDiff
+		{
+			get
+			{
+				if (_diff == null)
+					_diff = new TextDiff();
+
+				return _diff;
+			}
+		}
+
+		public IDeployment Deployment
+		{
+			get
+			{
+				if (_deployment == null)
+					_deployment = new Deployment(Tenant);
+
+				return _deployment;
+			}
 		}
 
 		public IDesignSearch Search
@@ -39,28 +70,6 @@ namespace TomPIT.Design
 			}
 		}
 
-		public IRepositories Repositories
-		{
-			get
-			{
-				if (_repos == null)
-					_repos = new Repositories(Tenant);
-
-				return _repos;
-			}
-		}
-
-		public IServiceBindings Bindings
-		{
-			get
-			{
-				if (_bindings == null)
-					_bindings = new Bindings(Tenant);
-
-				return _bindings;
-			}
-		}
-
 		public IVersionControl VersionControl
 		{
 			get
@@ -70,26 +79,6 @@ namespace TomPIT.Design
 
 				return _versionControl;
 			}
-		}
-
-		public void Pull(IServiceBinding binding)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void Pull(IServiceBinding binding, List<Guid> components)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void Push(IServiceBinding binding)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void Push(IServiceBinding binding, List<Guid> components)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

@@ -13,11 +13,11 @@ namespace TomPIT.IoT.Hubs
 			IntervalTimeout = TimeSpan.FromMilliseconds(1000);
 		}
 
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			return Instance.State == InstanceState.Running;
 		}
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			try
 			{

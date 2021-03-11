@@ -17,14 +17,6 @@ namespace TomPIT.Development.Models
 
 				Url = MiddlewareDescriptor.Current.RouteUrl(this, "sys.apitest", null)
 			});
-
-			Navigation.Links.Add(new Route
-			{
-				Category = "Version Control",
-				Text = "Version Control",
-
-				Url = MiddlewareDescriptor.Current.RouteUrl(this, "sys.vc", null)
-			});
 		}
 	}
 }

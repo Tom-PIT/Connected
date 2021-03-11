@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
@@ -19,12 +20,12 @@ namespace TomPIT.BigData.Partitions
 			return Get(fileName);
 		}
 
-		public List<IPartitionFile> Query(Guid partition)
+		public ImmutableList<IPartitionFile> Query(Guid partition)
 		{
 			return Where(f => f.Partition == partition);
 		}
 
-		public List<IPartitionFile> Query(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp)
+		public ImmutableList<IPartitionFile> Query(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp)
 		{
 			if (key == null)
 				key = string.Empty;
@@ -42,7 +43,7 @@ namespace TomPIT.BigData.Partitions
 					result.Add(candidate);
 			}
 
-			return result;
+			return result.ToImmutableList();
 		}
 
 		private bool IntersectsWith(DateTime startValue, DateTime endValue, DateTime start, DateTime end)
@@ -60,7 +61,7 @@ namespace TomPIT.BigData.Partitions
 			return true;
 		}
 
-		public List<IPartitionFile> Where(List<Guid> files)
+		public ImmutableList<IPartitionFile> Where(List<Guid> files)
 		{
 			return Where(f => files.Any(g => g == f.FileName));
 		}

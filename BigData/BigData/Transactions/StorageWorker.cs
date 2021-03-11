@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using TomPIT.BigData.Partitions;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
+using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
@@ -15,7 +16,8 @@ namespace TomPIT.BigData.Transactions
 	{
 		private bool _disposed = false;
 		private BackgroundWorker _worker = null;
-		private TimeoutTask _timeout = null;
+		private readonly Guid _id = Guid.NewGuid();
+		//private TimeoutTask _timeout = null;
 
 		public event EventHandler Completed;
 		public StorageWorker(Guid partition, CancellationToken cancel)
@@ -35,7 +37,7 @@ namespace TomPIT.BigData.Transactions
 			Worker.RunWorkerAsync();
 		}
 
-		public Guid Id => Guid.NewGuid();
+		public Guid Id => _id;
 		public bool IsRunning => Worker.IsBusy;
 
 		private BackgroundWorker Worker
@@ -55,6 +57,7 @@ namespace TomPIT.BigData.Transactions
 
 		private void OnCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
+			Dump(null, "completed");
 			Completed?.Invoke(this, EventArgs.Empty);
 		}
 
@@ -70,7 +73,10 @@ namespace TomPIT.BigData.Transactions
 				while (StoragePool.Dequeue(Partition, out item))
 				{
 					if (item.Message.NextVisible <= DateTime.UtcNow)
+					{
+						Dump(item, "expired");
 						continue;
+					}
 
 					DoWork(item);
 				}
@@ -91,9 +97,10 @@ namespace TomPIT.BigData.Transactions
 		{
 			var timeout = new TimeoutTask(() =>
 			{
-				MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromMinutes(1));
+				Dump(item, "timeout");
+				MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromMinutes(10));
 				return Task.CompletedTask;
-			}, TimeSpan.FromSeconds(45), Cancel);
+			}, TimeSpan.FromMinutes(5), Cancel);
 
 			timeout.Start();
 
@@ -110,6 +117,7 @@ namespace TomPIT.BigData.Transactions
 		}
 		private void OnError(StorageWorkerItem item, Exception ex)
 		{
+			Dump(item, $"ex: {ex.Message}");
 			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(StorageJob));
 			MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromSeconds(5));
 		}
@@ -126,13 +134,17 @@ namespace TomPIT.BigData.Transactions
 
 				if (updater.LockedItems != null && updater.LockedItems.Count > 0)
 				{
+					Dump(item, $"{updater.LockedItems} locked items");
+
 					if (updater.UpdateRowCount == 0)
 					{
+						Dump(item, "no  rows to update");
 						MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromSeconds(1));
 						return;
 					}
 					else
 					{
+						Dump(item, $"{updater.UpdateRowCount} rows to update");
 						var config = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(item.Block.Partition) as IPartitionConfiguration;
 
 						MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Prepare(config, updater.LockedItems);
@@ -185,6 +197,14 @@ namespace TomPIT.BigData.Transactions
 		protected virtual void OnDisposing()
 		{
 
+		}
+
+		private void Dump(StorageWorkerItem item, string text)
+		{
+			if (item == null)
+				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"StorageWorker, Partition:{Partition}, {text}.");
+			else
+				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"StorageWorker, Partition:{Partition}, Transaction:{item.Block.Transaction}, Block:{item.Block.Token},  {text}.");
 		}
 	}
 }

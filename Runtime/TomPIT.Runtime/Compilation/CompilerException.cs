@@ -45,7 +45,10 @@ namespace TomPIT.Compilation
 			var sb = new StringBuilder();
 
 			foreach (var error in script.Errors)
-				sb.AppendLine(error.Message);
+			{
+				if (error.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error)
+					sb.AppendLine(error.Message);
+			}
 
 			var lastError = LastScriptError(script.Errors);
 
@@ -71,10 +74,10 @@ namespace TomPIT.Compilation
 		public override string Message => _message;
 		private void ResolveComponent(ITenant tenant, IText sourceCode, IDiagnostic diagnostic)
 		{
-			Path = diagnostic.Source;
+			Path = diagnostic.SourcePath;
 			Line = (diagnostic.StartLine + 1).ToString();
 
-			var tokens = diagnostic.Source.Split('/');
+			var tokens = diagnostic.SourcePath.Split('/');
 
 			if (tokens.Length == 1)
 			{
@@ -144,6 +147,9 @@ namespace TomPIT.Compilation
 			for (var i = items.Count - 1; i >= 0; i--)
 			{
 				var diagnostic = items[i];
+
+				if (diagnostic.Severity != Microsoft.CodeAnalysis.DiagnosticSeverity.Error)
+					continue;
 
 				if (!string.IsNullOrWhiteSpace(diagnostic.Source))
 					return diagnostic;

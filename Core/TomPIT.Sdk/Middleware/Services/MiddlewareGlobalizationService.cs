@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading;
 using TomPIT.ComponentModel;
 using TomPIT.Globalization;
@@ -7,17 +8,8 @@ namespace TomPIT.Middleware.Services
 {
 	internal class MiddlewareGlobalizationService : MiddlewareObject, IMiddlewareGlobalizationService
 	{
-		private TimeZoneInfo _tz = null;
-
 		public MiddlewareGlobalizationService(IMiddlewareContext context) : base(context)
 		{
-			if (!context.Services.Identity.IsAuthenticated)
-				return;
-
-			var language = Context.Tenant.GetService<ILanguageService>().Select(Thread.CurrentThread.CurrentUICulture.LCID);
-
-			if (language != null && language.Status == LanguageStatus.Visible)
-				Language = language.Token;
 		}
 
 		public TimeZoneInfo Timezone
@@ -28,9 +20,6 @@ namespace TomPIT.Middleware.Services
 					return TimeZoneInfo.Utc;
 				else
 				{
-					if (_tz != null)
-						return _tz;
-
 					var user = Context.Services.Identity.User;
 
 					if (user == null)
@@ -38,39 +27,92 @@ namespace TomPIT.Middleware.Services
 
 					try
 					{
-						_tz = TimeZoneInfo.FindSystemTimeZoneById(user.TimeZone);
+						var result = TimeZoneInfo.FindSystemTimeZoneById(user.TimeZone);
 
-						if (_tz == null)
+						if (result == null)
 							return TimeZoneInfo.Utc;
 						else
-							return _tz;
+							return result;
 					}
 					catch
 					{
 						return TimeZoneInfo.Utc;
 					}
 				}
-
 			}
 		}
 
 		public DateTime FromUtc(DateTime value)
 		{
-			if (value == DateTime.MinValue)
-				return value;
-
 			return Types.FromUtc(value, Timezone);
 		}
 
 		public DateTime ToUtc(DateTime value)
 		{
-			if (value == DateTime.MinValue)
-				return value;
-
 			return Types.ToUtc(value, Timezone);
 		}
 
-		public Guid Language { get; }
+		public DateTimeOffset FromUtc(DateTimeOffset value)
+		{
+			return Types.FromUtc(value, Timezone);
+		}
+
+		public DateTimeOffset ToUtc(DateTimeOffset value)
+		{
+			return Types.ToUtc(value, Timezone);
+		}
+
+		public Guid Language
+		{
+			get
+			{
+				if (!Context.Services.Identity.IsAuthenticated)
+					return Guid.Empty;
+
+				var candidate = Context.Services.Identity.User.Language;
+
+				if (candidate != Guid.Empty)
+				{
+					var result = Context.Tenant.GetService<ILanguageService>().Select(candidate);
+
+					if (result != null && result.Status == LanguageStatus.Visible)
+						return result.Token;
+				}
+
+				var language = Context.Tenant.GetService<ILanguageService>().Select(Thread.CurrentThread.CurrentUICulture.LCID);
+
+				if (language != null && language.Status == LanguageStatus.Visible)
+					return language.Token;
+
+				return Guid.Empty;
+			}
+		}
+		public CultureInfo Culture
+		{
+			get
+			{
+				if (Language == Guid.Empty)
+					return Thread.CurrentThread.CurrentUICulture;
+
+				var language = Context.Tenant.GetService<ILanguageService>().Select(Language);
+
+				try
+				{
+					var result = CultureInfo.GetCultureInfo(language.Lcid);
+
+					if (result == null)
+						return Thread.CurrentThread.CurrentUICulture;
+
+					return result;
+				}
+				catch
+				{
+					return Thread.CurrentThread.CurrentUICulture;
+				}
+			}
+		}
+
+		public DateTimeOffset Now => FromUtc(DateTimeOffset.UtcNow);
 
 		public string GetString(string stringTable, string key, int lcid)
 		{
@@ -83,7 +125,7 @@ namespace TomPIT.Middleware.Services
 			descriptor.Validate();
 
 			if (lcid == 0)
-				lcid = Thread.CurrentThread.CurrentUICulture.LCID;
+				lcid = Culture.LCID;
 
 			return Context.Tenant.GetService<ILocalizationService>().GetString(descriptor.MicroService.Name, descriptor.ComponentName, key, lcid, throwException);
 		}

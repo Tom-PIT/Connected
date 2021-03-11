@@ -28,7 +28,7 @@ namespace TomPIT.Ide.TextServices
 		{
 			var text = document.GetTextAsync().Result;
 
-			if (text.Lines.Count < range.StartLineNumber || text.Lines.Count < range.EndLineNumber)
+			if (text.Lines.Count <= range.StartLineNumber || text.Lines.Count <= range.EndLineNumber)
 				return default;
 
 			var spanStart = text.Lines[range.StartLineNumber].Span;

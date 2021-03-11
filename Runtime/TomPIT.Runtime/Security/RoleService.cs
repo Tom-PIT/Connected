@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
@@ -16,8 +15,7 @@ namespace TomPIT.Security
 
 		protected override void OnInitializing()
 		{
-			var u = Tenant.CreateUrl("Role", "Query");
-			var ds = Tenant.Get<List<Role>>(u).ToList<IRole>();
+			var ds = Tenant.Get<ImmutableList<Role>>(CreateUrl("Query"));
 
 			Set(SecurityUtils.FullControlRole, new SystemRole(SecurityUtils.FullControlRole, "Full control", RoleBehavior.Explicit, RoleVisibility.Hidden), TimeSpan.Zero);
 			Set(SecurityUtils.AuthenticatedRole, new SystemRole(SecurityUtils.AuthenticatedRole, "Authenticated", RoleBehavior.Implicit, RoleVisibility.Hidden), TimeSpan.Zero);
@@ -32,7 +30,7 @@ namespace TomPIT.Security
 				Set(i.Token, i, TimeSpan.Zero);
 		}
 
-		public List<IRole> Query()
+		public ImmutableList<IRole> Query()
 		{
 			return All();
 		}
@@ -58,6 +56,11 @@ namespace TomPIT.Security
 		public IRole Select(string name)
 		{
 			return Get(f => string.Compare(f.Name, name, true) == 0);
+		}
+
+		private ServerUrl CreateUrl(string action)
+		{
+			return Tenant.CreateUrl("Role", action);
 		}
 	}
 }

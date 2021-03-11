@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,31 +10,32 @@ namespace TomPIT.Caching
 {
 	public sealed class MemoryCache : IMemoryCache, IDisposable
 	{
-		private static Lazy<MemoryCache> _default = new Lazy<MemoryCache>();
-
 		public event CacheInvalidateHandler Invalidating;
 		public event CacheInvalidateHandler Invalidate;
 		public event CacheInvalidateHandler Invalidated;
 
-		private Lazy<Container> _container = new Lazy<Container>();
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
-
-		private Container Container { get { return _container.Value; } }
+		private static readonly Lazy<MemoryCache> _default = new Lazy<MemoryCache>();
+		private readonly Lazy<Container> _container = new Lazy<Container>();
+		private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
 
 		public MemoryCache()
 		{
 			new Task(() => OnScaveging(), _cancel.Token, TaskCreationOptions.LongRunning).Start();
 		}
 
+		private Container Container => _container.Value;
+		private CancellationTokenSource Cancel => _cancel;
 		private void OnScaveging()
 		{
-			while (!_cancel.Token.IsCancellationRequested)
+			var token = Cancel.Token;
+
+			while (!token.IsCancellationRequested)
 			{
 				try
 				{
 					Container.Scave();
 
-					_cancel.Token.WaitHandle.WaitOne(TimeSpan.FromMinutes(1));
+					token.WaitHandle.WaitOne(TimeSpan.FromMinutes(1));
 				}
 				catch { }
 			}
@@ -58,12 +60,12 @@ namespace TomPIT.Caching
 		{
 			return Container.GetEnumerator<T>(key);
 		}
-		public List<T> All<T>(string key) where T : class
+		public ImmutableList<T> All<T>(string key) where T : class
 		{
-			List<T> r = Container.All<T>(key);
+			var r = Container.All<T>(key);
 
 			if (r == null)
-				return new List<T>();
+				return ImmutableList<T>.Empty;
 
 			return r;
 		}
@@ -118,7 +120,7 @@ namespace TomPIT.Caching
 
 				T instance = retrieve(options);
 
-				if (EqualityComparer<T>.Default.Equals(instance, default(T)))
+				if (EqualityComparer<T>.Default.Equals(instance, default))
 				{
 					if (!options.AllowNull)
 						return null;
@@ -139,50 +141,38 @@ namespace TomPIT.Caching
 
 		public T Get<T>(string key, string id) where T : class
 		{
-			Entry ce = Container.Get(key, id);
+			var ce = Container.Get(key, id);
 
-			if (ce == null || ce.Instance == null)
-				return default(T);
-
-			return (T)ce.Instance;
+			return ce == null || ce.Instance == null ? default : (T)ce.Instance;
 		}
 
 		public T Get<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			Entry ce = Container.Get<T>(key, predicate);
+			var ce = Container.Get(key, predicate);
 
-			if (ce == null || ce.Instance == null)
-				return default(T);
-
-			return (T)ce.Instance;
+			return ce == null || ce.Instance == null ? default : (T)ce.Instance;
 		}
 
 		public T Get<T>(string key, Func<dynamic, bool> predicate) where T : class
 		{
-			Entry ce = Container.Get<T>(key, predicate);
+			var ce = Container.Get<T>(key, predicate);
 
-			if (ce == null || ce.Instance == null)
-				return default(T);
-
-			return (T)ce.Instance;
+			return ce == null || ce.Instance == null ? default : (T)ce.Instance;
 		}
 
 		public T First<T>(string key) where T : class
 		{
-			Entry ce = Container.First(key);
+			var ce = Container.First(key);
 
-			if (ce == null || ce.Instance == null)
-				return default(T);
-
-			return (T)ce.Instance;
+			return ce == null || ce.Instance == null ? default : (T)ce.Instance;
 		}
 
-		public List<T> Where<T>(string key, Func<T, bool> predicate) where T : class
+		public ImmutableList<T> Where<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			var r = Container.Where<T>(key, predicate);
+			var r = Container.Where(key, predicate);
 
 			if (r == null)
-				return new List<T>();
+				return ImmutableList<T>.Empty;
 
 			return r;
 		}
@@ -302,7 +292,7 @@ namespace TomPIT.Caching
 			return result;
 		}
 
-		private string Generate()
+		private static string Generate()
 		{
 			string chars = "abcdefghijklmnopqrstuvzxyw0123456789";
 			var r = new Random();
@@ -314,11 +304,11 @@ namespace TomPIT.Caching
 			return sb.ToString();
 		}
 
-		public ICollection<string> Keys(string key)
+		public ImmutableList<string> Keys(string key)
 		{
-			return Container.Keys(key);
+			return Container.Keys(key).ToImmutableList();
 		}
 
-		public static MemoryCache Default { get { return _default.Value; } }
+		public static MemoryCache Default => _default.Value;
 	}
 }

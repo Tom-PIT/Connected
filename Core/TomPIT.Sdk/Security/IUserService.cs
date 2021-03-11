@@ -14,6 +14,7 @@ namespace TomPIT.Security
 		IUser Select(string qualifier);
 
 		IUser SelectByAuthenticationToken(Guid token);
+		IUser SelectBySecurityCode(string securityCode);
 
 		void Logout(int user);
 		void ChangePassword(Guid user, string existingPassword, string password);

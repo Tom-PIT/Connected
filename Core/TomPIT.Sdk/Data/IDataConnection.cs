@@ -2,6 +2,7 @@
 using System.Data;
 using Newtonsoft.Json.Linq;
 using TomPIT.Data.DataProviders;
+using TomPIT.Middleware;
 
 namespace TomPIT.Data
 {
@@ -16,10 +17,14 @@ namespace TomPIT.Data
 		int Execute(IDataCommandDescriptor command);
 		JObject Query(IDataCommandDescriptor command);
 
+		IDbCommand CreateCommand();
 		ConnectionBehavior Behavior { get; }
 
-		IDbConnection Connection { get; }
+		//IDbConnection Connection { get; }
 		IDbTransaction Transaction { get; set; }
 		ICommandTextParser Parser { get; }
+
+		ConnectionState State { get; }
+		IMiddlewareContext Context { get; }
 	}
 }

@@ -114,7 +114,8 @@ namespace TomPIT.Navigation
 			foreach (var handler in handlers)
 			{
 				var ms = Tenant.GetService<IMicroServiceService>().Select(handler.MicroService);
-				var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), handler.Handler);
+				var ctx = new MicroServiceContext(ms, Tenant.Url);
+				var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(ctx, handler.Handler);
 				var containers = instance.Invoke(key);
 
 				if (containers == null || containers.Count == 0)
@@ -195,7 +196,8 @@ namespace TomPIT.Navigation
 			if (handlerInstance == null)
 				return;
 
-			handlerInstance.SetContext(configuration.CreateContext());
+			using var ctx = configuration.CreateContext();
+			handlerInstance.SetContext(ctx);
 
 			var containers = handlerInstance.Invoke();
 
@@ -206,7 +208,7 @@ namespace TomPIT.Navigation
 			{
 				if (string.IsNullOrWhiteSpace(container.Key))
 				{
-					MiddlewareDescriptor.Current.Tenant.LogWarning(nameof(NavigationService), $"{SR.WrnContainerKeyNull} ({container.Text})", LogCategories.Navigation);
+					MiddlewareDescriptor.Current.Tenant.LogWarning(nameof(NavigationService), $"{SR.WrnContainerKeyNull} ({container.GetType().ShortName()})", LogCategories.Navigation);
 					continue;
 				}
 
@@ -311,7 +313,7 @@ namespace TomPIT.Navigation
 		{
 			Initialize();
 
-			var item = SelectRoute(routeKey);
+			using var item = SelectRoute(routeKey);
 
 			if (item == null)
 				return null;
@@ -339,7 +341,7 @@ namespace TomPIT.Navigation
 			 * because it points to a currently displayed ui
 			 */
 			if (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template))
-				breadCrumb.Url = ParseUrl(route.Template, parameters);
+				breadCrumb.Url = ParseUrl(route.Template, MergeParameters(parameters, item));
 
 			if (item is ISiteMapContainer container)
 			{
@@ -348,10 +350,10 @@ namespace TomPIT.Navigation
 					var speculativeRoute = SelectRoute(container.SpeculativeRouteKey);
 
 					if (speculativeRoute != null)
-						breadCrumb.Url = ParseUrl(speculativeRoute.Template, parameters);
+						breadCrumb.Url = ParseUrl(speculativeRoute.Template, MergeParameters(parameters, item));
 				}
 				else if (container is ISiteMapRouteContainer routeContainer && !string.IsNullOrWhiteSpace(routeContainer.Template))
-					breadCrumb.Url = ParseUrl(routeContainer.Template, parameters);
+					breadCrumb.Url = ParseUrl(routeContainer.Template, MergeParameters(parameters, item));
 			}
 
 			if (item.Visible)
@@ -374,6 +376,22 @@ namespace TomPIT.Navigation
 				ProcessBreadcrumb(parent, items, parameters);
 		}
 
+		private RouteValueDictionary MergeParameters(RouteValueDictionary parameters, ISiteMapElement element)
+		{
+			var origin = parameters;
+
+			if (origin == null)
+			{
+				if (Shell.HttpContext != null)
+					origin = Shell.HttpContext.GetRouteData().Values;
+				else
+					origin = new RouteValueDictionary();
+			}
+
+			origin.Merge(element);
+
+			return origin;
+		}
 		public string ParseUrl(string template, RouteValueDictionary parameters)
 		{
 			if (parameters == null)
@@ -417,7 +435,7 @@ namespace TomPIT.Navigation
 					break;
 			}
 
-			var ctx = new MiddlewareContext();
+			using var ctx = new MiddlewareContext();
 
 			return $"{ctx.Services.Routing.RootUrl}/{string.Join('/', processedSegments)}";
 		}
@@ -459,7 +477,8 @@ namespace TomPIT.Navigation
 		private ISiteMapRoute SelectRouteByTemplate(NavigationHandlerDescriptor descriptor, string template)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
-			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), descriptor.Handler);
+			var ctx = new MicroServiceContext(ms, Tenant.Url);
+			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(ctx, descriptor.Handler);
 
 			if (handler == null)
 				return null;
@@ -496,7 +515,8 @@ namespace TomPIT.Navigation
 		private ISiteMapRoute SelectRoute(NavigationHandlerDescriptor descriptor, string routeKey)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
-			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), descriptor.Handler);
+			var ctx = new MicroServiceContext(ms, Tenant.Url);
+			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(ctx, descriptor.Handler);
 
 			if (handler == null)
 				return null;

@@ -1,4 +1,5 @@
-﻿using TomPIT.Middleware;
+﻿using System;
+using TomPIT.Middleware;
 
 namespace TomPIT.Security
 {
@@ -6,9 +7,25 @@ namespace TomPIT.Security
 	{
 		public object AuthorizationTarget { get; set; }
 
+		[Obsolete("Please use GetValue().")]
 		public T GetValueFromTarget<T>(string propertyName)
 		{
-			return SecurityExtensions.GetValueFromTarget<T>(this, propertyName);
+			return GetValue<T>(propertyName);
+		}
+
+		public T GetValue<T>(string propertyName)
+		{
+			return SecurityExtensions.GetProxyValue<T>(this, propertyName);
+		}
+
+		public bool IsDefined(string propertyName)
+		{
+			return SecurityExtensions.IsProxyPropertyDefined(this, propertyName);
+		}
+
+		public bool ContainsValue<T>(string propertyName)
+		{
+			return SecurityExtensions.ContainsProxyValue<T>(this, propertyName);
 		}
 	}
 }

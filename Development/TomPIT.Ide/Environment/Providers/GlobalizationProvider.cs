@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.Globalization;
 
@@ -7,7 +8,7 @@ namespace TomPIT.Ide.Environment.Providers
 {
 	internal class GlobalizationProvider : EnvironmentObject, IGlobalizationProvider
 	{
-		private List<ILanguage> _languages = null;
+		private ImmutableList<ILanguage> _languages = null;
 		private const string Default = "Default";
 
 		public GlobalizationProvider(IEnvironment environment) : base(environment)
@@ -37,7 +38,7 @@ namespace TomPIT.Ide.Environment.Providers
 
 		public string Language { get; }
 
-		private List<ILanguage> LanguageList
+		private ImmutableList<ILanguage> LanguageList
 		{
 			get
 			{

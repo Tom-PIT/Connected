@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -11,6 +13,7 @@ using TomPIT.App.UI.Theming;
 using TomPIT.Middleware;
 using TomPIT.Navigation;
 using TomPIT.Routing;
+using TomPIT.Runtime;
 using TomPIT.UI;
 
 namespace TomPIT.App.Routing
@@ -34,7 +37,7 @@ namespace TomPIT.App.Routing
 
 				return Task.CompletedTask;
 			});
-
+			
 			routes.Map("sys/globalize/{locale}/{segments}", (t) =>
 			{
 				new GlobalizationHandler().ProcessRequest(t);
@@ -56,21 +59,21 @@ namespace TomPIT.App.Routing
 				return Task.CompletedTask;
 			});
 
-			routes.Map("sys/mail-template/{token}", (t) =>
+			routes.Map("sys/mail-template/{token}", async (t) =>
 			{
 				var ve = t.RequestServices.GetService(typeof(IMailTemplateViewEngine)) as MailTemplateViewEngine;
 
 				ve.Context = t;
 
-				ve.Render(new Guid(t.GetRouteValue("token").ToString()));
-
-				return Task.CompletedTask;
+				await ve.Render(new Guid(t.GetRouteValue("token").ToString()));
 			});
 
-			routes.Map("{*.}", async (t) =>
+			var builder = routes.Map("{*.}", async (t) =>
 			{
 				await RenderView(t);
 			});
+
+			builder.Add(b => ((RouteEndpointBuilder)b).Order = int.MaxValue);
 
 			app.Use(async (context, next) =>
 			{
@@ -96,25 +99,30 @@ namespace TomPIT.App.Routing
 				context.Request.Path = "/home";
 
 			if (Redirect(context))
-			{
-				await Task.CompletedTask;
 				return;
-			}
+			else if (Download(context))
+				return;
 
 			var ve = context.RequestServices.GetService(typeof(IViewEngine)) as ViewEngine;
 
 			ve.Context = context;
 
-			ve.Render(context.Request.Path);
-
-			await Task.CompletedTask;
+			await ve.Render(context.Request.Path);
 		}
 
 		private static bool Redirect(HttpContext context)
 		{
+			if (context.Request.Path.ToString().StartsWith("/home"))
+			{
+				if (HomeResolved(context))
+					return true;
+			}
+
 			var routes = new RouteValueDictionary();
 
-			if (MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes) is ISiteMapRedirectRoute redirect)
+			using var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes);
+
+			if (route is ISiteMapRedirectRoute redirect)
 			{
 				context.Response.StatusCode = (int)HttpStatusCode.Redirect;
 				context.Response.Redirect(redirect.RedirectUrl(routes));
@@ -123,6 +131,45 @@ namespace TomPIT.App.Routing
 			}
 
 			return false;
+		}
+
+		private static bool Download(HttpContext context)
+		{
+			var routes = new RouteValueDictionary();
+
+			using var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes);
+			
+			if (route is ISiteMapStreamRoute stream)
+			{
+				route.Context.Interop.Invoke(stream.Api, stream.Parameters);
+				return true;
+			}
+
+			return false;
+		}
+
+		private static bool HomeResolved(HttpContext context)
+		{
+			var runtimes = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes();
+			var resolvedHomeUrls = new List<IRuntimeUrl>();
+
+			foreach (var middleware in runtimes)
+			{
+				var homeUrl = middleware.ResolveUrl(RuntimeUrlKind.Default);
+
+				if (homeUrl != null)
+					resolvedHomeUrls.Add(homeUrl);
+			}
+
+			if (resolvedHomeUrls.Count == 0)
+				return false;
+
+			var winner = resolvedHomeUrls.OrderByDescending(f => f.Weight).First();
+
+			context.Response.StatusCode = (int)HttpStatusCode.Redirect;
+			context.Response.Redirect(winner.Url);
+
+			return true;
 		}
 	}
 }

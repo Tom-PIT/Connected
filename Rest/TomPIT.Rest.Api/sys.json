@@ -1,24 +1,27 @@
 ﻿{
 	"connections": [
-    {
-      "name": "localhost",
-      //"url": "http://localhost:44001",
-      "url": "http://sys-app/common/sys",
-      "authenticationToken": "defaultAuthenticationToken"
-    }
+		{
+			"name": "localhost",
+			"url": "http://sys-app/common/sys",
+			"authenticationToken": "defaultAuthenticationToken"
+		}
 	],
+	"platform": "onPrem",
+	"stage": "development",
 	"resourceGroups": [
 		"Default"
 	],
 	"dataProviders": [
-		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
+		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql",
+		"TomPIT.DataProviders.BigData.BigDataProvider, TomPIT.DataProviders.BigData"
 	],
 	"plugins": {
 		"location": "c:\\Deploy\\Plugins",
 		"shadowCopy": true,
 		"items": [
-			"TomPIT.Application.Plugin, TomPIT.Application",
-			"TomPIT.IoT.Plugin, TomPIT.IoT"
+			"TomPIT.MicroServices.Configuration.Runtime.Plugin, TomPIT.MicroServices",
+			"TomPIT.MicroServices.IoT.Configuration.Runtime.Plugin, TomPIT.MicroServices.IoT",
+			"TomPIT.MicroServices.Reporting.Runtime.Configuration.Plugin, TomPIT.MicroServices.Reporting"
 		]
 	}
 }

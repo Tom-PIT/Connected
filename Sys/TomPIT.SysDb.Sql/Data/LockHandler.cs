@@ -9,7 +9,7 @@ namespace TomPIT.SysDb.Sql.Data
 	{
 		public ILock Lock(string entity, DateTime timeout, DateTime date)
 		{
-			var r = new Reader<Lock>("tompit.lock_lock");
+			using var r = new Reader<Lock>("tompit.lock_lock");
 
 			r.CreateParameter("@entity", entity);
 			r.CreateParameter("@timeout", timeout);
@@ -20,7 +20,7 @@ namespace TomPIT.SysDb.Sql.Data
 
 		public void Ping(Guid unlockKey, DateTime timeout)
 		{
-			var w = new Writer("tompit.lock_ping");
+			using var w = new Writer("tompit.lock_ping");
 
 			w.CreateParameter("@unlock_key", unlockKey);
 			w.CreateParameter("@timeout", timeout);
@@ -30,7 +30,7 @@ namespace TomPIT.SysDb.Sql.Data
 
 		public void Unlock(Guid unlockKey)
 		{
-			var w = new Writer("tompit.lock_unlock");
+			using var w = new Writer("tompit.lock_unlock");
 
 			w.CreateParameter("@unlock_key", unlockKey);
 

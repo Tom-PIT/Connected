@@ -1,14 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Runtime.ExceptionServices;
 using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.Exceptions;
 using TomPIT.IoC;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
+using TomPIT.Security;
 
 namespace TomPIT.Cdn
 {
-	public abstract class SubscriptionEventMiddleware : MiddlewareComponent, ISubscriptionEventMiddleware
+	public abstract class SubscriptionEventMiddleware : MiddlewareOperation, ISubscriptionEventMiddleware
 	{
 		private List<ISubscriptionEventDependencyInjectionMiddleware> _dependencies = null;
 
@@ -41,17 +46,47 @@ namespace TomPIT.Cdn
 
 		public void Invoke()
 		{
-			Validate();
+			try
+			{
+				Validate();
+				OnValidating();
 
-			foreach (var dependency in DependencyInjections)
-				Recipients = dependency.QueryRecipients(Recipients);
+				foreach (var dependency in DependencyInjections)
+					Recipients = dependency.QueryRecipients(Recipients);
 
-			OnInvoke();
+				OnInvoke();
 
-			foreach (var dependency in DependencyInjections)
-				dependency.Invoke(Recipients);
+				foreach (var dependency in DependencyInjections)
+					dependency.Invoke(Recipients);
 
-			Commit();
+				Invoked();
+			}
+			catch (ValidationException)
+			{
+				Rollback();
+				throw;
+			}
+			catch (Exception ex)
+			{
+				Rollback();
+
+				var unwrapped = TomPITException.Unwrap(this, ex);
+
+				if (unwrapped is ValidationException)
+				{
+					ExceptionDispatchInfo.Capture(unwrapped).Throw();
+					throw;
+				}
+				else
+				{
+					var se = new ScriptException(this, unwrapped);
+
+					ExceptionDispatchInfo.Capture(se).Throw();
+
+					throw;
+				}
+
+			}
 		}
 
 		protected virtual void OnInvoke()
@@ -64,10 +99,24 @@ namespace TomPIT.Cdn
 			OnCommit();
 		}
 
-		protected virtual void OnCommit()
+		protected internal override void OnCommitting()
 		{
-
+			foreach (var dependency in DependencyInjections)
+				dependency.Commit();
 		}
+		
+		protected internal override void OnRollbacking()
+		{
+			foreach (var dependency in DependencyInjections)
+				dependency.Rollback();
+		}
+
+		protected internal override void OnValidating()
+		{
+			foreach (var dependency in DependencyInjections)
+				dependency.Validate();
+		}
+
 
 		protected IRecipient CreateUserRecipient(string identifier)
 		{
@@ -82,6 +131,22 @@ namespace TomPIT.Cdn
 		protected IRecipient CreateAlienRecipient(string email)
 		{
 			return CdnUtils.CreateAlienRecipient(Context, email);
+		}
+
+		protected List<IUser> ResolveUsers(Guid role)
+		{
+			var membership = Context.Tenant.GetService<IAuthorizationService>().QueryMembershipForRole(role);
+			var result = new List<IUser>();
+
+			foreach(var m in membership)
+			{
+				var user = Context.Services.Identity.GetUser(m.User);
+
+				if (user != null)
+					result.Add(user);
+			}
+
+			return result;
 		}
 	}
 }

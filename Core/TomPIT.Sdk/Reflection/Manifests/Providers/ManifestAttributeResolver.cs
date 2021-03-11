@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -8,7 +9,22 @@ namespace TomPIT.Reflection.Manifests.Providers
 {
 	internal static class ManifestAttributeResolver
 	{
-		public static Entities.ManifestAttribute Resolve(SemanticModel model, AttributeData attribute)
+		public static bool IsBrowsable(SemanticModel model, ImmutableArray<AttributeData> attributes)
+		{
+			foreach(var attribute in attributes)
+			{
+				if (attribute.AttributeClass == null || !attribute.AttributeClass.IsOfType(typeof(System.ComponentModel.BrowsableAttribute)))
+					continue;
+
+				if (attribute.ConstructorArguments.Length == 0)
+					return true;
+
+				return Types.Convert<bool>(attribute.ConstructorArguments[0].Value);
+			}
+
+			return true;
+		}
+		public static Entities.ManifestAttribute ResolveValidationAttribute(SemanticModel model, AttributeData attribute)
 		{
 			if (attribute.AttributeClass == null || !attribute.AttributeClass.IsInheritedFrom(typeof(ValidationAttribute).FullTypeName()))
 				return null;
@@ -34,7 +50,7 @@ namespace TomPIT.Reflection.Manifests.Providers
 			return result;
 		}
 
-		public static Entities.ManifestAttribute Resolve(SemanticModel model, AttributeSyntax attribute)
+		public static Entities.ManifestAttribute ResolveValidationAttribute(SemanticModel model, AttributeSyntax attribute)
 		{
 			var type = model.GetTypeInfo(attribute);
 

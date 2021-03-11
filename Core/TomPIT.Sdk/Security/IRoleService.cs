@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace TomPIT.Security
 {
 	public interface IRoleService
 	{
-		List<IRole> Query();
+		ImmutableList<IRole> Query();
 		IRole Select(Guid token);
 		IRole Select(string name);
 	}

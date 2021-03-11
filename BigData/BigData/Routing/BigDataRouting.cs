@@ -13,7 +13,7 @@ namespace TomPIT.BigData.Configuration
 
 			builder.Map("data/{microService}/{partition}", (t) =>
 			{
-				var handler = new DataHandler(t);
+				using var handler = new DataHandler(t);
 
 				handler.ProcessRequest();
 
@@ -22,7 +22,7 @@ namespace TomPIT.BigData.Configuration
 
 			builder.Map("query/{microService}/{partition}", (t) =>
 			{
-				var handler = new QueryHandler(t);
+				using var handler = new QueryHandler(t);
 
 				handler.ProcessRequest();
 

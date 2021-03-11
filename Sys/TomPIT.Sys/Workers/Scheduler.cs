@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 using TomPIT.SysDb.Workers;
 
 namespace TomPIT.Sys.Workers
@@ -13,12 +13,12 @@ namespace TomPIT.Sys.Workers
 		{
 			IntervalTimeout = TimeSpan.FromSeconds(1);
 		}
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			return DataModel.Initialized;
 		}
 
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			try
 			{

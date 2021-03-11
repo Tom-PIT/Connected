@@ -46,7 +46,7 @@ namespace TomPIT
 			catch (Exception ex)
 			{
 				if (ex is TomPITException)
-					throw ex;
+					throw;
 
 				throw new TomPITException(string.Format("{0} ({1}, {2}).", SR.ErrInvalidPropertyType, propertyName, typeof(T)));
 			}

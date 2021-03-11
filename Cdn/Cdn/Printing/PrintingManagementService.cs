@@ -10,20 +10,6 @@ namespace TomPIT.Cdn.Printing
 {
 	internal class PrintingManagementService : IPrintingManagementService
 	{
-		private List<IPrintingProvider> _providers = null;
-
-		public PrintingManagementService()
-		{
-			foreach (var plugin in Instance.Plugins)
-			{
-				var providers = plugin.GetPrintingProviders();
-
-				if (providers == null)
-					continue;
-
-				Providers.AddRange(providers);
-			}
-		}
 		public void Complete(Guid popReceipt)
 		{
 			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("PrintingManagement", "Complete");
@@ -58,17 +44,6 @@ namespace TomPIT.Cdn.Printing
 			MiddlewareDescriptor.Current.Tenant.Post(u, e);
 		}
 
-		public IPrintingProvider GetProvider(string name)
-		{
-			if (Providers.Count == 0)
-				return null;
-
-			if (string.IsNullOrWhiteSpace(name))
-				return Providers[0];
-
-			return Providers.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0);
-		}
-
 		public void Ping(Guid popReceipt)
 		{
 			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("PrintingManagement", "Ping");
@@ -79,17 +54,6 @@ namespace TomPIT.Cdn.Printing
 			};
 
 			MiddlewareDescriptor.Current.Tenant.Post(u, e);
-		}
-
-		private List<IPrintingProvider> Providers
-		{
-			get
-			{
-				if (_providers == null)
-					_providers = new List<IPrintingProvider>();
-
-				return _providers;
-			}
 		}
 	}
 }

@@ -13,6 +13,8 @@ namespace TomPIT.SysDb.Sql.Development
 		public Guid Commit { get; set; }
 		public Guid Component { get; set; }
 
+		public LockVerb Verb { get; set; }
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -23,6 +25,7 @@ namespace TomPIT.SysDb.Sql.Development
 			User = GetGuid("user_token");
 			Commit = GetGuid("commit_token");
 			Component = GetGuid("component");
+			Verb = GetValue("verb", LockVerb.None);
 		}
 	}
 }

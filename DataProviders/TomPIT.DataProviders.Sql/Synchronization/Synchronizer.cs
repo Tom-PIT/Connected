@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using TomPIT.Annotations.Models;
 using TomPIT.Data;
-using TomPIT.Data.Sql;
 using TomPIT.DataProviders.Sql.Synchronization.Commands;
 
 namespace TomPIT.DataProviders.Sql.Synchronization
 {
 	internal class Synchronizer : ISynchronizer
 	{
-		private ReliableSqlConnection _con = null;
+		private SqlConnection _con = null;
 		private IDbTransaction _transaction = null;
 		private Dictionary<ConstraintNameType, List<string>> _constraintNames = null;
 		private ExistingModel _existingModel = null;
@@ -112,7 +111,9 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 			result.Transaction = Transaction;
 
 			if (!string.IsNullOrWhiteSpace(commandText))
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 				result.CommandText = commandText;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
 			return result;
 		}
@@ -123,12 +124,12 @@ namespace TomPIT.DataProviders.Sql.Synchronization
 
 		private SqlTransaction Transaction => _transaction as SqlTransaction;
 
-		private ReliableSqlConnection Connection
+		private SqlConnection Connection
 		{
 			get
 			{
 				if (_con == null)
-					_con = new ReliableSqlConnection(ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
+					_con = new SqlConnection(ConnectionString);
 
 				return _con;
 			}

@@ -15,6 +15,7 @@ namespace TomPIT.Ide.TextServices.CSharp
 			Services.TryAdd(typeof(ISignatureHelpService), new SignatureHelpService(this));
 			Services.TryAdd(typeof(IDocumentSymbolProviderService), new DocumentSymbolProviderService(this));
 			Services.TryAdd(typeof(IDefinitionProviderService), new DefinitionProviderService(this));
+			Services.TryAdd(typeof(IDocumentFormattingEditService), new DocumentFormattingEditService(this));
 		}
 
 		public override LanguageFeature Features =>
@@ -24,6 +25,7 @@ namespace TomPIT.Ide.TextServices.CSharp
 			| LanguageFeature.Declaration
 			| LanguageFeature.SignatureHelp
 			| LanguageFeature.DocumentSymbol
-			| LanguageFeature.Definition;
+			| LanguageFeature.Definition
+			| LanguageFeature.DocumentFormatting;
 	}
 }

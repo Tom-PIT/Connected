@@ -58,7 +58,7 @@ namespace TomPIT.Management.Designers
 			var name = Environment.Context.Tenant.GetService<INamingService>().Create("User", existing.Select(f => f.LoginName), true);
 
 			var id = Environment.Context.Tenant.GetService<IUserManagementService>().Insert(name, string.Empty, UserStatus.Inactive, string.Empty, string.Empty, string.Empty, null, string.Empty,
-				Guid.Empty, string.Empty, true, string.Empty, string.Empty);
+				Guid.Empty, string.Empty, true, string.Empty, string.Empty, string.Empty);
 
 			var user = Environment.Context.Tenant.GetService<IUserService>().Select(id.ToString());
 

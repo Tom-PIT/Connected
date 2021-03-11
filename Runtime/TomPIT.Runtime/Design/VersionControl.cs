@@ -27,6 +27,14 @@ namespace TomPIT.Design
 			return Tenant.Post<List<Component>>(CreateUrl("QueryChanges")).ToList<IComponent>();
 		}
 
+		public void DeleteHistory(Guid component)
+		{
+			Tenant.Post(CreateUrl("DeleteHistory"), new
+			{
+				component
+			});
+		}
+
 		public IComponentHistory SelectNonCommited(Guid component)
 		{
 			return Tenant.Post<ComponentHistory>(CreateUrl("SelectNonCommited"), new
@@ -206,7 +214,15 @@ namespace TomPIT.Design
 		{
 			return Tenant.Post<List<ComponentHistory>>(CreateUrl("QueryHistory"), new
 			{
-				Component = component
+				component
+			}).ToList<IComponentHistory>();
+		}
+
+		public List<IComponentHistory> QueryMicroServiceHistory(Guid microService)
+		{
+			return Tenant.Post<List<ComponentHistory>>(CreateUrl("QueryMicroServiceHistory"), new
+			{
+				microService
 			}).ToList<IComponentHistory>();
 		}
 

@@ -17,16 +17,16 @@ namespace TomPIT.Worker.Services
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
 		}
 
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
-			if (Instance.State == InstanceState.Initialining)
+			if (Instance.State == InstanceState.Initializing)
 				return false;
 
-			Dispatchers.Add(new QueueWorkerDispatcher(cancel));
+			Dispatchers.Add(new QueueWorkerDispatcher());
 
 			return true;
 		}
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -58,5 +58,15 @@ namespace TomPIT.Worker.Services
 		}
 
 		private List<QueueWorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+
+		public override void Dispose()
+		{
+			foreach (var dispatcher in Dispatchers)
+				dispatcher.Dispose();
+
+			Dispatchers.Clear();
+
+			base.Dispose();
+		}
 	}
 }

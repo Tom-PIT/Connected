@@ -1,0 +1,624 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CmdLogIn" xml:space="preserve">
+    <value>Vpis</value>
+  </data>
+  <data name="DurationDays" xml:space="preserve">
+    <value>d</value>
+  </data>
+  <data name="DurationHours" xml:space="preserve">
+    <value>u</value>
+  </data>
+  <data name="DurationMilliseconds" xml:space="preserve">
+    <value>ms</value>
+  </data>
+  <data name="DurationMinutes" xml:space="preserve">
+    <value>m</value>
+  </data>
+  <data name="DurationSeconds" xml:space="preserve">
+    <value>s</value>
+  </data>
+  <data name="AttEmailOrLoginName" xml:space="preserve">
+    <value>Elektronski naslov ali prijavno ime</value>
+  </data>
+  <data name="AttPassword" xml:space="preserve">
+    <value>Geslo</value>
+  </data>
+  <data name="CatMisc" xml:space="preserve">
+    <value>Razno</value>
+  </data>
+  <data name="DevelopmentEnvironment" xml:space="preserve">
+    <value>Razvojno okolje</value>
+  </data>
+  <data name="DevSelect" xml:space="preserve">
+    <value>Izberi</value>
+  </data>
+  <data name="ErrAuthenticationFailed" xml:space="preserve">
+    <value>Napačno geslo</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Vpis</value>
+  </data>
+  <data name="ErrEmailInUse" xml:space="preserve">
+    <value>Elektronski naslov je že v uporabi</value>
+  </data>
+  <data name="ErrLoginInUse" xml:space="preserve">
+    <value>Vpisno ime je že v uporabi</value>
+  </data>
+  <data name="ValSecurityCodeExists" xml:space="preserve">
+    <value>Varnostna šifra že obstaja</value>
+  </data>
+  <data name="StatusNotFound" xml:space="preserve">
+    <value>Ni najden</value>
+  </data>
+  <data name="StatusNotFoundMessage" xml:space="preserve">
+    <value>Vir, ki ga iščete, ni najden.</value>
+  </data>
+  <data name="ArgumentCannotBeGreaterThanBaseline" xml:space="preserve">
+    <value>Podan argument {0} ne more biti večji od njegove navzgor zaokrožene vrednosti {1}.</value>
+  </data>
+  <data name="ArgumentCannotBeNegative" xml:space="preserve">
+    <value>Podan argument {0} ne more biti inicializiran z negativno vrednostjo.</value>
+  </data>
+  <data name="AttEndpoint" xml:space="preserve">
+    <value>Končna točka</value>
+  </data>
+  <data name="DefaultRetryStrategyMappingNotFound" xml:space="preserve">
+    <value>Privzeta strategija ponovnega poizkušanja za tehnologijo {0}, imenovana '{1}', ni nastavljena.</value>
+  </data>
+  <data name="DefaultRetryStrategyNotFound" xml:space="preserve">
+    <value>Privzeta strategija ponovnega poizkušanja za tehnologijo {0} ni nastavljena, prav tako pa ni nastavljena privzeta strategija.</value>
+  </data>
+  <data name="ErrActionNotSupported" xml:space="preserve">
+    <value>Ukaz urejevalnika ni podprt.</value>
+  </data>
+  <data name="ErrActivatorCreateInstance" xml:space="preserve">
+    <value>Activator.CreateInstance metoda ne more ustvariti privzete instance podanega vrednostnega tipa</value>
+  </data>
+  <data name="ErrBlobNotFound" xml:space="preserve">
+    <value>Blob objekt ni najden</value>
+  </data>
+  <data name="ErrCannotCreateInstance" xml:space="preserve">
+    <value>Instance tipa ni bilo mogoče ustvariti.</value>
+  </data>
+  <data name="ErrCannotFindConfiguration" xml:space="preserve">
+    <value>Konfiguracije ni bio mogoče najti.</value>
+  </data>
+  <data name="ErrCannotResolveMicroService" xml:space="preserve">
+    <value>Mikrostoritve ni bilo mogoče razrešiti</value>
+  </data>
+  <data name="ErrCannotRetrieveControllerProvider" xml:space="preserve">
+    <value>IControllerProvider ni bilo mogoče pridobiti</value>
+  </data>
+  <data name="ErrClaimNotFound" xml:space="preserve">
+    <value>Zahtevek ni najden</value>
+  </data>
+  <data name="ErrConnectionDataProviderNotFound" xml:space="preserve">
+    <value>Podatkovni ponudnik ni najden</value>
+  </data>
+  <data name="ErrConnectionDataProviderNotSet" xml:space="preserve">
+    <value>Podatkovni ponudnik na povezavi ni nastavljen</value>
+  </data>
+  <data name="ErrConnectionNotFound" xml:space="preserve">
+    <value>Povezava ni najdena</value>
+  </data>
+  <data name="ErrConnectionNotSet" xml:space="preserve">
+    <value>Povezava ni nastavljena</value>
+  </data>
+  <data name="ErrConversion" xml:space="preserve">
+    <value>Vrednosti ni mogoče pretvoriti v ciljni tip.</value>
+  </data>
+  <data name="ErrDataParameterExpected" xml:space="preserve">
+    <value>Vrednost parametra pričakovana.</value>
+  </data>
+  <data name="ErrDataProviderNotFound" xml:space="preserve">
+    <value>Podatkovni ponudnik ni najden.</value>
+  </data>
+  <data name="ErrDefaultGeneric" xml:space="preserve">
+    <value>Podana vrednostni tip vsebuje generične parametre. Privzete vrednosti ni mogoče pridobiti</value>
+  </data>
+  <data name="ErrDefaultStorageProviderNotSet" xml:space="preserve">
+    <value>Ni privzetega ponudnika shranjevanja</value>
+  </data>
+  <data name="ErrEnvironmentUnitNotFound" xml:space="preserve">
+    <value>Organizacijska enota ni najdena</value>
+  </data>
+  <data name="ErrExpectedParameter" xml:space="preserve">
+    <value>Pričakovan parameter.</value>
+  </data>
+  <data name="ErrFolderNotFound" xml:space="preserve">
+    <value>Mapa ni najdena</value>
+  </data>
+  <data name="ErrInstanceEndpointNotFound" xml:space="preserve">
+    <value>Končna točka instance ni najdena</value>
+  </data>
+  <data name="ErrInvalidInterface" xml:space="preserve">
+    <value>Neveljaven vmesnik</value>
+  </data>
+  <data name="ErrInvalidParameterDataType" xml:space="preserve">
+    <value>Neveljaven tip parametra.</value>
+  </data>
+  <data name="ErrInvalidPath" xml:space="preserve">
+    <value>Neveljavna pot.</value>
+  </data>
+  <data name="ErrInvalidPropertyDesigner" xml:space="preserve">
+    <value>Neveljaven urejevalnik lastnosti.</value>
+  </data>
+  <data name="ErrInvalidQualifier" xml:space="preserve">
+    <value>Neveljaven kvalifikator.</value>
+  </data>
+  <data name="ErrInvalidQualifierExpected" xml:space="preserve">
+    <value>Pričakovane vrednosti</value>
+  </data>
+  <data name="ErrInvalidSection" xml:space="preserve">
+    <value>Neveljaven odsek</value>
+  </data>
+  <data name="ErrInvalidMicroServiceQualifier" xml:space="preserve">
+    <value>Neveljaven kvalifikator mikrostoritve</value>
+  </data>
+  <data name="ErrJsEnvironmentUrlNotSet" xml:space="preserve">
+    <value>URL okolja ni nastavljen</value>
+  </data>
+  <data name="ErrLanguageNotFound" xml:space="preserve">
+    <value>Jezik ni najden</value>
+  </data>
+  <data name="ErrMissingAddMethod" xml:space="preserve">
+    <value>Manjka Add metoda.</value>
+  </data>
+  <data name="ErrMissingClearMethod" xml:space="preserve">
+    <value>Manjka Clear metoda.</value>
+  </data>
+  <data name="ErrMissingIndexer" xml:space="preserve">
+    <value>Manjka indexer.</value>
+  </data>
+  <data name="ErrMissingInsertMethod" xml:space="preserve">
+    <value>Manjka Insert metoda.</value>
+  </data>
+  <data name="ErrMissingRemoveMethod" xml:space="preserve">
+    <value>Manjka Remove metoda.</value>
+  </data>
+  <data name="ErrNoDesigner" xml:space="preserve">
+    <value>Ni urejevalnika.</value>
+  </data>
+  <data name="ErrNoPropertyDesigner" xml:space="preserve">
+    <value>Ni urejevalnika lastnosti.</value>
+  </data>
+  <data name="ErrNoTransactionHandler" xml:space="preserve">
+    <value>Ni lovilca transakcij.</value>
+  </data>
+  <data name="ErrParameterNameNotSet" xml:space="preserve">
+    <value>Ime parametra ni nastavljeno</value>
+  </data>
+  <data name="ErrParameterNotDefined" xml:space="preserve">
+    <value>Parameter ni definiran</value>
+  </data>
+  <data name="ErrParameterValueConversion" xml:space="preserve">
+    <value>Pretvorba vrednosti parametra ni uspela.</value>
+  </data>
+  <data name="ErrParameterValueNotSet" xml:space="preserve">
+    <value>Vrednost parametra ni nastavljena</value>
+  </data>
+  <data name="ErrPathNotSet" xml:space="preserve">
+    <value>Pot parameter ni nastavljen.</value>
+  </data>
+  <data name="ErrPermissionNotFound" xml:space="preserve">
+    <value>Dovoljenje ni najdeno</value>
+  </data>
+  <data name="ErrPropertyNotFound" xml:space="preserve">
+    <value>Lastnost ni najdena.</value>
+  </data>
+  <data name="ErrResourceGroupNotFound" xml:space="preserve">
+    <value>Skupina virov ni najdena</value>
+  </data>
+  <data name="ErrServerExpectedArgument" xml:space="preserve">
+    <value>Pričakovan argument.</value>
+  </data>
+  <data name="ErrServerInvalidArgumentType" xml:space="preserve">
+    <value>Argumenta ni mogoče pretvoriti v ciljni tip</value>
+  </data>
+  <data name="ErrMicroServiceNotFound" xml:space="preserve">
+    <value>Mikrostoritev ni najdena</value>
+  </data>
+  <data name="ErrStorageProviderNotRegistered" xml:space="preserve">
+    <value>Podan ponudnik shranjevanja ni registriran</value>
+  </data>
+  <data name="ErrTimezoneParametersSupportedOnDatesOnly" xml:space="preserve">
+    <value>Nastavitev časovnega pasa se lahko nastavlja samo na datumskih podatkovnih tipih.</value>
+  </data>
+  <data name="ErrTransactionNotCommited" xml:space="preserve">
+    <value>Transakcija ni potrjena.</value>
+  </data>
+  <data name="ErrTypeInternal" xml:space="preserve">
+    <value>Podani vrednostni tip ni javno viden tip. Privzete vrednosti ni mogoče pridobiti</value>
+  </data>
+  <data name="ErrTypeNull" xml:space="preserve">
+    <value>Tipa ni mogoče razrešiti</value>
+  </data>
+  <data name="ErrUserInactive" xml:space="preserve">
+    <value>Uporabnik ni aktiven</value>
+  </data>
+  <data name="ErrUserLocked" xml:space="preserve">
+    <value>Uporabnik je zaklenjen</value>
+  </data>
+  <data name="ErrUserNotFound" xml:space="preserve">
+    <value>Uporabnik ni najden</value>
+  </data>
+  <data name="ErrValidationFailed" xml:space="preserve">
+    <value>Validacija neuspešna.</value>
+  </data>
+  <data name="ExceptionRetryManagerAlreadySet" xml:space="preserve">
+    <value>RetryManager je že nastavljen.</value>
+  </data>
+  <data name="LoginAuthenticating" xml:space="preserve">
+    <value>Poteka avtentikacij. Samo še trenutek...</value>
+  </data>
+  <data name="LoginSuccess" xml:space="preserve">
+    <value>Vpis uspešen. Začenjamo...</value>
+  </data>
+  <data name="MenuAboutMe" xml:space="preserve">
+    <value>O meni</value>
+  </data>
+  <data name="MenuLogin" xml:space="preserve">
+    <value>Vpis</value>
+  </data>
+  <data name="MenuLogoff" xml:space="preserve">
+    <value>Izpis</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>Zapomni si me</value>
+  </data>
+  <data name="ValLoginPassword" xml:space="preserve">
+    <value>Prosimo vpišite geslo.</value>
+  </data>
+  <data name="ValLoginUser" xml:space="preserve">
+    <value>Prosimo vpišite elektronski naslov ali vpisno ime.</value>
+  </data>
+  <data name="ValMaxValue" xml:space="preserve">
+    <value>Največja dovoljena vrednost je {0}.</value>
+  </data>
+  <data name="ValMinValue" xml:space="preserve">
+    <value>Najmanjša dovoljena vrednost je {0}.</value>
+  </data>
+  <data name="ValReservedValue" xml:space="preserve">
+    <value>Naslednje vrednosti so sistemsko rezervirane:</value>
+  </data>
+  <data name="DevAddFolder" xml:space="preserve">
+    <value>Dodaj mapo</value>
+  </data>
+  <data name="DevColCreateSuccessful" xml:space="preserve">
+    <value>{0} uspešno ustvarjen(a). Kliknite tukaj za urejanje.</value>
+  </data>
+  <data name="DomFolders" xml:space="preserve">
+    <value>Mape</value>
+  </data>
+  <data name="ErrCannotResolveHttpRequest" xml:space="preserve">
+    <value>HttpRequest-a ni mogoče razrešiti</value>
+  </data>
+  <data name="ErrNoUrlHelper" xml:space="preserve">
+    <value>IUrlHelperFactory storitev ni na voljo</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>iskanje</value>
+  </data>
+  <data name="ValExists" xml:space="preserve">
+    <value>Vrednost že obstaja</value>
+  </data>
+  <data name="ErrComponentNotFound" xml:space="preserve">
+    <value>Komponenta ni najdena</value>
+  </data>
+  <data name="ErrCannotCreateComponentInstance" xml:space="preserve">
+    <value>Instance komponente ni mogoče ustvariti</value>
+  </data>
+  <data name="ErrComponentCorrupted" xml:space="preserve">
+    <value>Komponenta nima konfiguracije ali pa so v konfiguraciji najdene napake</value>
+  </data>
+  <data name="ErrTopicNotFound" xml:space="preserve">
+    <value>Tema ni najdena</value>
+  </data>
+  <data name="ErrMasterViewNotFound" xml:space="preserve">
+    <value>Master view ni najden</value>
+  </data>
+  <data name="MasterDefault" xml:space="preserve">
+    <value>Privzet</value>
+  </data>
+  <data name="ErrDuplicateComponentFound" xml:space="preserve">
+    <value>Več kot ena komponenta je bila najdena za podano ime</value>
+  </data>
+  <data name="ErrThemeNotFound" xml:space="preserve">
+    <value>Tema ni najdena</value>
+  </data>
+  <data name="ErrConnectionDisabled" xml:space="preserve">
+    <value>Povezava je onemogočena</value>
+  </data>
+  <data name="ErrDataSourceNotFound" xml:space="preserve">
+    <value>Podatkovni vir ni najden</value>
+  </data>
+  <data name="JsAppUrlNotSet" xml:space="preserve">
+    <value>Aplikativni URL ni nastavljen</value>
+  </data>
+  <data name="JsRestUrlNotSet" xml:space="preserve">
+    <value>REST URL ni nastavljen</value>
+  </data>
+  <data name="UserCreateSuccess" xml:space="preserve">
+    <value>Uporabnik {0} uspešno ustvarjen</value>
+  </data>
+  <data name="ErrInvalidServiceQualifier" xml:space="preserve">
+    <value>Napačen kvalifikator storitve</value>
+  </data>
+  <data name="ErrServiceOperationNotFound" xml:space="preserve">
+    <value>API operacija ni najdena</value>
+  </data>
+  <data name="ErrInvalidStorageProviderType" xml:space="preserve">
+    <value>Napačen tip ponudnika shranjevanja</value>
+  </data>
+  <data name="ErrWorkerNotFound" xml:space="preserve">
+    <value>Worker ni najden</value>
+  </data>
+  <data name="ErrApiProtocolRestDisabled" xml:space="preserve">
+    <value>Api ne dovoljuje REST klicev.</value>
+  </data>
+  <data name="ErrApiOperationProtocolGetOnly" xml:space="preserve">
+    <value>Api operacija sprejema samo GET zahteve.</value>
+  </data>
+  <data name="ErrApiOperationProtocolPostOnly" xml:space="preserve">
+    <value>Api operacija sprejema samo POST zahteve.</value>
+  </data>
+  <data name="ErrApiOperationProtocolRestDisabled" xml:space="preserve">
+    <value>Api operacija ne dovoljuje REST klicev.</value>
+  </data>
+  <data name="DomPermissions" xml:space="preserve">
+    <value>Dovoljenja</value>
+  </data>
+  <data name="DomWorkers" xml:space="preserve">
+    <value>Workerji</value>
+  </data>
+  <data name="DomResourceGroups" xml:space="preserve">
+    <value>Skupine virov</value>
+  </data>
+  <data name="ValMaxLength" xml:space="preserve">
+    <value>Največja dolžina prekoračena ({0}). ({1})</value>
+  </data>
+  <data name="ValMinLength" xml:space="preserve">
+    <value>Najmanjša dolžina ni dosežena ({0}). ({1})</value>
+  </data>
+  <data name="ValRange" xml:space="preserve">
+    <value>Vrednost mora biti med {0} in {1}. ({2})</value>
+  </data>
+  <data name="ValRequired" xml:space="preserve">
+    <value>Vrednost pričakovana. ({0})</value>
+  </data>
+  <data name="InvalidServiceReference" xml:space="preserve">
+    <value>(Napačna referenca)</value>
+  </data>
+  <data name="ErrCyclicReference" xml:space="preserve">
+    <value>Zaznana je ciklična referenca z drugo mikrostoritvijo</value>
+  </data>
+  <data name="ErrReferenceMissing" xml:space="preserve">
+    <value>Referenca mikrostoritve je zahtevana</value>
+  </data>
+  <data name="ErrReferenceMissingSource" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="ServiceReferenceNotSet" xml:space="preserve">
+    <value>(ni nastavljen)</value>
+  </data>
+  <data name="ValNotExists" xml:space="preserve">
+    <value>Vrednost ni na seznamu dovoljenih vrednosti ({0}. ({1})</value>
+  </data>
+  <data name="ErrDefaultViewNotSet" xml:space="preserve">
+    <value>Privzet uporabniški vmesnik ni nastavljen. Privzet uporabniški vmesnik lahko nastavite tako, da vpišete 'home' v Url atribut kateregakoli View-a.</value>
+  </data>
+  <data name="ErrViewNotFound" xml:space="preserve">
+    <value>View ni najden</value>
+  </data>
+  <data name="NavigateBack" xml:space="preserve">
+    <value>Nazaj</value>
+  </data>
+  <data name="ReloadView" xml:space="preserve">
+    <value>Poskusite znova</value>
+  </data>
+  <data name="ViewErrorTitle" xml:space="preserve">
+    <value>Nekaj ni v redu</value>
+  </data>
+  <data name="ViewHome" xml:space="preserve">
+    <value>Domov</value>
+  </data>
+  <data name="ErrRoleNotFound" xml:space="preserve">
+    <value>Aplikacijska vloga ni najdena</value>
+  </data>
+  <data name="AttConfirmPassword" xml:space="preserve">
+    <value>Potrditev gesla</value>
+  </data>
+  <data name="ChangePassword" xml:space="preserve">
+    <value>Sprememba gesla</value>
+  </data>
+  <data name="CmdChangePassword" xml:space="preserve">
+    <value>Spremeni</value>
+  </data>
+  <data name="ErrNoPassword" xml:space="preserve">
+    <value>Geslo ni nastavljeno</value>
+  </data>
+  <data name="ErrPasswordExpired" xml:space="preserve">
+    <value>Geslo je poteklo</value>
+  </data>
+  <data name="ErrUserPasswordChange" xml:space="preserve">
+    <value>Geslo mora biti spremenjeno</value>
+  </data>
+  <data name="ValChangePasswordConfirm" xml:space="preserve">
+    <value>Prosimo potrdite geslo.</value>
+  </data>
+  <data name="ValChangePasswordPassword" xml:space="preserve">
+    <value>Prosimo vpišite geslo.</value>
+  </data>
+  <data name="AttExistingPassword" xml:space="preserve">
+    <value>Obstoječe geslo</value>
+  </data>
+  <data name="ChangePasswordSuccess" xml:space="preserve">
+    <value>Geslo spremenjeno. Začenjamo...</value>
+  </data>
+  <data name="ChangingPassword" xml:space="preserve">
+    <value>Sprememba gesla. Samo trenutek...</value>
+  </data>
+  <data name="ValExistingPassword" xml:space="preserve">
+    <value>Prosimo vpišite obstoječe geslo.</value>
+  </data>
+  <data name="ValPasswordMatch" xml:space="preserve">
+    <value>Gesli se ne ujemata.</value>
+  </data>
+  <data name="StatusForbidden" xml:space="preserve">
+    <value>Zavrnjeno</value>
+  </data>
+  <data name="StatusForbiddenDescription" xml:space="preserve">
+    <value>Za dostop do željenega vira nimate ustreznih privilegijev.</value>
+  </data>
+  <data name="StatusForbiddenMessage" xml:space="preserve">
+    <value>Dostop zavrnjen.</value>
+  </data>
+  <data name="ErrSingleTenantOnly" xml:space="preserve">
+    <value>Kontekst ni na voljo v več najemniških okoljih.</value>
+  </data>
+  <data name="ErrAuthTokenNotFound" xml:space="preserve">
+    <value>Avtektikacijski žeton ni najden.</value>
+  </data>
+  <data name="ErrInvalidToken" xml:space="preserve">
+    <value>Neveljaven avtentikacijski žeton</value>
+  </data>
+  <data name="ValEmailFormat" xml:space="preserve">
+    <value>Elektronski naslov ni v veljavni obliki</value>
+  </data>
+  <data name="ErrLoginFailed" xml:space="preserve">
+    <value>Vpis neuspešen. Poskusite znova.</value>
+  </data>
+  <data name="EnterCredentials" xml:space="preserve">
+    <value>Poverilnica</value>
+  </data>
+  <data name="ValNonDefault" xml:space="preserve">
+    <value>ne sme vsebovati privzete vrednosti</value>
+  </data>
+  <data name="PolicyAuthorizationFailed" xml:space="preserve">
+    <value>Avtorizacija neuspešna.</value>
+  </data>
+  <data name="ErrConcurrencyMessage" xml:space="preserve">
+    <value>Sočasnen prepis podatkov zavrnjen. Prosimo, ponovite operacijo.</value>
+  </data>
+  <data name="ErrConcurrencySource" xml:space="preserve">
+    <value>Sočasen prepis podatkov</value>
+  </data>
+</root>

@@ -11,7 +11,7 @@ namespace TomPIT.Distributed
 		private BackgroundWorker _worker = null;
 
 		public event EventHandler Completed;
-		public DispatcherJob(Dispatcher<T> owner, CancellationToken cancel)
+		public DispatcherJob(IDispatcher<T> owner, CancellationToken cancel)
 		{
 			Owner = owner;
 			Cancel = cancel;
@@ -30,7 +30,7 @@ namespace TomPIT.Distributed
 
 		public Guid Id => Guid.NewGuid();
 		public bool IsRunning => Worker.IsBusy;
-
+		public string Stack { get; set; }
 		private BackgroundWorker Worker
 		{
 			get
@@ -51,7 +51,7 @@ namespace TomPIT.Distributed
 			Completed?.Invoke(this, EventArgs.Empty);
 		}
 
-		protected Dispatcher<T> Owner { get; }
+		protected IDispatcher<T> Owner { get; }
 		protected CancellationToken Cancel { get; }
 
 		private void Dequeue(object sender, DoWorkEventArgs e)

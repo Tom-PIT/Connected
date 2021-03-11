@@ -6,13 +6,13 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.Management</RootNamespace>
     <AssemblyName>TomPIT.Connected.Management</AssemblyName>
-    <AssemblyVersion>2.1.1112.1</AssemblyVersion>
-    <FileVersion>2.1.1112.1</FileVersion>
-    <Version>2.1.1112.1</Version>
+    <AssemblyVersion>2.2.311.3</AssemblyVersion>
+    <FileVersion>2.2.311.3</FileVersion>
+    <Version>2.2.311.3</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
@@ -82,11 +82,11 @@
     <None Include="wwwroot\Assets\Styles\bootstrap\vendor\_rfs.scss" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="BuildBundlerMinifier" Version="3.2.435" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="3.4.0" />
+    <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="3.8.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
-    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Views\Ide\Designers\Scheduler.cshtml">

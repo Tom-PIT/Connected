@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.DataProviders.Design;
-using TomPIT.Data.Sql;
 using TomPIT.DataProviders.Sql.Deployment;
 using TomPIT.DataProviders.Sql.Synchronization;
 using TomPIT.Deployment;
 using TomPIT.Deployment.Database;
+using TomPIT.Middleware;
 
 namespace TomPIT.DataProviders.Sql
 {
@@ -60,21 +60,17 @@ namespace TomPIT.DataProviders.Sql
 			return cmd.Parameters[parameterName].Value;
 		}
 
-		protected override void SetParameterValue(IDbCommand command, string parameterName, object value)
+		protected override void SetParameterValue(IDataConnection connection, IDbCommand command, string parameterName, object value)
 		{
 			var cmd = command as SqlCommand;
 
 			cmd.Parameters[parameterName].Value = value;
 		}
-		public override IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior)
+		public override IDataConnection OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior)
 		{
-			return new DataConnection(this, connectionString, behavior);
+			return new DataConnection(context, this, connectionString, behavior);
 		}
 
-		protected override IDbConnection CreateConnection(string connectionString)
-		{
-			return new ReliableSqlConnection(connectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
-		}
 		public IDatabase CreateSchema(string connectionString)
 		{
 			return Package.Create(connectionString);
@@ -92,7 +88,9 @@ namespace TomPIT.DataProviders.Sql
 
 			c.Open();
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			var com = new SqlCommand(string.Format("CREATE DATABASE {0}", ic), c);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 
 			com.ExecuteNonQuery();
 

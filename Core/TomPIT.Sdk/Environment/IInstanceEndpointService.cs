@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace TomPIT.Environment
 {
@@ -7,8 +7,8 @@ namespace TomPIT.Environment
 	{
 		IInstanceEndpoint Select(Guid endpoint);
 		IInstanceEndpoint Select(InstanceType type);
-		List<IInstanceEndpoint> Query();
-		List<IInstanceEndpoint> Query(InstanceType type);
+		ImmutableList<IInstanceEndpoint> Query();
+		ImmutableList<IInstanceEndpoint> Query(InstanceType type);
 
 		string Url(InstanceType type, InstanceVerbs verb);
 	}

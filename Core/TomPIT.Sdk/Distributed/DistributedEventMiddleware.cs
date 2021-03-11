@@ -6,8 +6,15 @@ using TomPIT.Security;
 
 namespace TomPIT.Distributed
 {
+	public enum EventStage
+	{
+		Broadcasting = 1,
+		Completing = 2
+	}
 	public abstract class DistributedEventMiddleware : MiddlewareOperation, IDistributedEventMiddleware
 	{
+		protected EventStage EventStage { get; private set; } = EventStage.Broadcasting;
+
 		public void Invoke()
 		{
 			try
@@ -39,8 +46,10 @@ namespace TomPIT.Distributed
 
 		public new void Invoked()
 		{
-			base.Invoked();
+			EventStage = EventStage.Completing;
+
 			OnInvoked();
+			base.Invoked();
 		}
 
 		protected virtual void OnInvoked()
@@ -60,7 +69,7 @@ namespace TomPIT.Distributed
 
 		public void Authorize(EventConnectionArgs e)
 		{
-			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, this);
+			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, e.Proxy ?? this);
 		}
 	}
 }

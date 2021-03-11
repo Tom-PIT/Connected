@@ -22,5 +22,7 @@ namespace TomPIT.Middleware.Services
 		byte[] Download(Guid blob);
 		byte[] Download(string primaryKey, string topic);
 		byte[] Download(string primaryKey);
+
+		IMiddlewareStorageFileSystem FileSystem { get; }
 	}
 }

@@ -19,7 +19,7 @@ using System;
 
 namespace Lucene.Net.Index
 {
-	
+
 	sealed class CharBlockPool
 	{
 		private void  InitBlock()
@@ -28,7 +28,7 @@ namespace Lucene.Net.Index
 		}
 		
 		public char[][] buffers = new char[10][];
-		internal int numBuffer;
+		//internal int numBuffer;
 		
 		internal int bufferUpto = - 1; // Which buffer we are upto
 		public int charUpto; // Where we are in head buffer

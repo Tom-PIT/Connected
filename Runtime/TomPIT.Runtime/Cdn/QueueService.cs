@@ -1,5 +1,4 @@
 ﻿using System;
-using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
 using TomPIT.Connectivity;
@@ -14,26 +13,21 @@ namespace TomPIT.Cdn
 		{
 		}
 
-		public void Enqueue<T>(IQueueWorker worker, T arguments)
+		public void Enqueue<T>(IQueueWorker worker, string bufferKey, T arguments)
 		{
-			Enqueue(worker, arguments, TimeSpan.FromDays(2), TimeSpan.Zero);
+			Enqueue(worker, bufferKey, arguments, TimeSpan.FromDays(2), TimeSpan.Zero);
 		}
 
-		public void Enqueue<T>(IQueueWorker worker, T arguments, TimeSpan expire, TimeSpan nextVisible)
+		public void Enqueue<T>(IQueueWorker worker, string bufferKey, T arguments, TimeSpan expire, TimeSpan nextVisible)
 		{
-			var url = Tenant.CreateUrl("Queue", "Enqueue");
-			var e = new JObject
+			Tenant.Post(Tenant.CreateUrl("Queue", "Enqueue"), new
 			{
-				{"component", worker.Configuration().Component },
-				{"worker", worker.Name },
-				{"expire", expire  },
-				{"nextVisible", nextVisible  }
-			};
-
-			if (arguments != null)
-				e.Add("arguments", Serializer.Serialize(arguments));
-
-			Tenant.Post(url, e);
+				worker.Configuration().Component,
+				Worker = worker.Name,
+				expire,
+				nextVisible,
+				arguments = arguments == null ? null : Serializer.Serialize(arguments)
+			});
 		}
 	}
 }

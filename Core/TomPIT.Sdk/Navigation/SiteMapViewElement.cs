@@ -10,7 +10,6 @@ namespace TomPIT.Navigation
 		[CIP(CIP.SiteMapViewProvider)]
 
 		public string View { get; set; }
-
 		public string RouteKey { get; set; }
 		public bool Authorize(Guid user)
 		{
@@ -22,14 +21,10 @@ namespace TomPIT.Navigation
 			if (cd.Configuration == null)
 				return false;
 
-			var args = new AuthorizationArgs(user, Claims.AccessUrl, cd.Configuration.Url, "Url");
+			if (!cd.Configuration.AuthorizationEnabled)
+				return true;
 
-			args.Schema.Empty = EmptyBehavior.Deny;
-			args.Schema.Level = AuthorizationLevel.Pessimistic;
-
-			var ar = Context.Tenant.GetService<IAuthorizationService>().Authorize(Context, args);
-
-			return ar.Success;
+			return SecurityExtensions.AuthorizeUrl(Context, cd.Configuration.Url, user, false);
 		}
 	}
 }

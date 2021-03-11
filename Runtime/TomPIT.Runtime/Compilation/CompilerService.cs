@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Loader;
 using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
@@ -13,6 +12,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.Caching;
+using TomPIT.Compilation.Analyzers;
 using TomPIT.Compilation.Views;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
@@ -36,21 +36,9 @@ namespace TomPIT.Compilation
 
 		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _references = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
 		private static Lazy<ConcurrentDictionary<Guid, ManualResetEvent>> _scriptCreateState = new Lazy<ConcurrentDictionary<Guid, ManualResetEvent>>();
-		private static List<DiagnosticAnalyzer> _analyzers = null;
+		//private static List<DiagnosticAnalyzer> _analyzers = null;
 		private static object _sync = new object();
-
-		private static readonly string[] Usings = new string[]
-		{
-				//"System",
-				//"System.Data",
-				//"System.Text",
-				//"System.Linq",
-				//"System.Collections.Generic",
-				//"Newtonsoft.Json",
-				//"Newtonsoft.Json.Linq",
-				//"TomPIT",
-				//"TomPIT.Middleware"
-		};
+		private NuGetPackages _nuGet;
 
 		public CompilerService(ITenant tenant) : base(tenant, "script")
 		{
@@ -66,19 +54,11 @@ namespace TomPIT.Compilation
 			foreach (var i in scripts)
 			{
 				if (i.MicroService == e.MicroService)
-					Remove(i.Id);
+					RemoveScript(i.Id);
 			}
 		}
 
-		internal static string[] CombineUsings(List<string> additionalUsings)
-		{
-			if (additionalUsings == null || additionalUsings.Count == 0)
-				return Usings.ToArray();
-
-			additionalUsings.AddRange(Usings);
-
-			return additionalUsings.ToArray();
-		}
+		public NuGetPackages Nuget => _nuGet ??= new NuGetPackages(Tenant);
 
 		private IScriptDescriptor GetCachedScript(Guid sourceCodeId)
 		{
@@ -95,6 +75,7 @@ namespace TomPIT.Compilation
 
 				if (!ScriptCreateState.TryAdd(sourceCode.Id, re))
 				{
+					re.Dispose();
 					re = ScriptCreateState[sourceCode.Id];
 
 					re.WaitOne();
@@ -103,11 +84,17 @@ namespace TomPIT.Compilation
 				}
 				else
 				{
-					d = CreateScript<T>(microService, sourceCode);
+					try
+					{
+						d = CreateScript<T>(microService, sourceCode);
+					}
+					finally
+					{
+						re.Set();
 
-					re.Set();
-
-					ScriptCreateState.TryRemove(sourceCode.Id, out _);
+						if (ScriptCreateState.TryRemove(sourceCode.Id, out ManualResetEvent e))
+							e.Dispose();
+					}
 				}
 			}
 
@@ -119,7 +106,33 @@ namespace TomPIT.Compilation
 			var d = GetCachedScript(sourceCode.Id);
 
 			if (d == null)
-				d = CreateScript(microService, sourceCode);
+			{
+				var re = new ManualResetEvent(false);
+
+				if (!ScriptCreateState.TryAdd(sourceCode.Id, re))
+				{
+					re.Dispose();
+					re = ScriptCreateState[sourceCode.Id];
+
+					re.WaitOne();
+
+					d = GetCachedScript(sourceCode.Id);
+				}
+				else
+				{
+					try
+					{
+						d = CreateScript(microService, sourceCode);
+					}
+					finally
+					{
+						re.Set();
+
+						if (ScriptCreateState.TryRemove(sourceCode.Id, out ManualResetEvent e))
+							e.Dispose();
+					}
+				}
+			}
 
 			return d;
 		}
@@ -281,13 +294,13 @@ namespace TomPIT.Compilation
 
 			var errors = ImmutableArray<Microsoft.CodeAnalysis.Diagnostic>.Empty;
 
+			/*
+			 * It seems analyzers with references are currently not supported.
+			 * see: https://github.com/dotnet/roslyn/blob/0902d19aaba441d98fe5432274e5a2554353cc8d/src/Compilers/Core/Portable/ReferenceManager/CommonReferenceManager.Resolution.cs#L868
+			 */
 			if (compiler.Script != null)
-			{
-				if (Analyzers.Count > 0)
-					errors = compiler.Script.GetCompilation().WithAnalyzers(Analyzers.ToImmutableArray()).GetAllDiagnosticsAsync().Result;
-				else
-					errors = compiler.Script.GetCompilation().GetDiagnostics();
-			}
+				errors = compiler.Script.GetCompilation().WithAnalyzers(CreateAnalyzers(compiler.Tenant, script)).GetAllDiagnosticsAsync().Result;
+				//errors = compiler.Script.GetCompilation().GetDiagnostics();
 
 			var diagnostics = new List<IDiagnostic>();
 
@@ -307,7 +320,24 @@ namespace TomPIT.Compilation
 				diagnostic.EndLine = position.EndLinePosition.Line;
 				diagnostic.EndColumn = position.EndLinePosition.Character;
 				diagnostic.Code = error.Id;
+
+				var filePath = error.Location.SourceTree?.FilePath;
+
+				if (!string.IsNullOrWhiteSpace(filePath) && !filePath.Contains('/'))
+				{
+					var ms = compiler.Tenant.GetService<IMicroServiceService>().Select(script.MicroService);
+
+					if (ms != null)
+					{
+						var component = compiler.Tenant.GetService<IComponentService>().SelectComponent(script.Component);
+
+						if (component != null)
+							filePath = $"{ms.Name}/{component.Name}/{filePath}";
+					}
+				}
+
 				diagnostic.Source = error.Location.SourceTree?.FilePath;
+				diagnostic.SourcePath = filePath;
 				diagnostics.Add(diagnostic);
 			}
 
@@ -319,15 +349,6 @@ namespace TomPIT.Compilation
 				((ScriptDescriptor)script).Script = compiler.Script.CreateDelegate();
 				result = compiler.Script.GetCompilation();
 				((ScriptDescriptor)script).Assembly = result.AssemblyName;
-				var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => f.FullName == result.Assembly.Identity.GetDisplayName());
-
-				if (asm != null)
-				{
-					var loadContext = AssemblyLoadContext.GetLoadContext(asm);
-
-					if (loadContext != null)
-						loadContext.Resolving += OnResolving;
-				}
 			}
 
 			if (compiler.ScriptReferences != null && compiler.ScriptReferences.Count > 0)
@@ -337,11 +358,6 @@ namespace TomPIT.Compilation
 				Set(script.Id, script, TimeSpan.Zero);
 
 			return result;
-		}
-
-		private Assembly OnResolving(AssemblyLoadContext arg1, AssemblyName arg2)
-		{
-			return null;
 		}
 
 		public void Invalidate(IMicroServiceContext context, Guid microService, Guid component, IText sourceCode)
@@ -357,7 +373,7 @@ namespace TomPIT.Compilation
 			};
 
 			Tenant.Post(u, args);
-			Remove(sourceCode.Id);
+			RemoveScript(sourceCode.Id);
 			InvalidateReferences(component, id);
 		}
 
@@ -383,7 +399,7 @@ namespace TomPIT.Compilation
 
 		public void NotifyChanged(object sender, ScriptChangedEventArgs e)
 		{
-			Remove(e.SourceCode);
+			RemoveScript(e.SourceCode);
 			InvalidateReferences(e.Container, e.SourceCode);
 		}
 
@@ -393,7 +409,7 @@ namespace TomPIT.Compilation
 			{
 				if (reference.Value.Contains(container) || reference.Value.Contains(script))
 				{
-					Remove(reference.Key);
+					RemoveScript(reference.Key);
 					References.Remove(reference.Key, out _);
 				}
 			}
@@ -461,7 +477,7 @@ namespace TomPIT.Compilation
 					throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
 				else
 					return null;
-			}
+			}	
 
 			if (script != null && script.Assembly == null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
 				throw new CompilerException(Tenant, script, sourceCode);
@@ -679,26 +695,18 @@ namespace TomPIT.Compilation
 		private static ConcurrentDictionary<Guid, ManualResetEvent> ScriptCreateState { get { return _scriptCreateState.Value; } }
 		private ScriptCache Scripts { get; }
 
-		private static List<DiagnosticAnalyzer> Analyzers
+		private static ImmutableArray<DiagnosticAnalyzer> CreateAnalyzers(ITenant tenant, IScriptDescriptor script)
 		{
-			get
+			return new List<DiagnosticAnalyzer>
 			{
-				if (_analyzers == null)
-				{
-					lock (_sync)
-					{
-						if (_analyzers == null)
-						{
-							_analyzers = new List<DiagnosticAnalyzer>
-							{
-								//								new TestCodeAnalyer()
-							};
-						}
-					}
-				}
+				new ClassComplianceCodeAnalyer(tenant, script)
+			}.ToImmutableArray();
+		}
 
-				return _analyzers;
-			}
+		private void RemoveScript(Guid id)
+		{
+			Remove(id);
+			ScriptContext.RemoveContext(id);
 		}
 	}
 }

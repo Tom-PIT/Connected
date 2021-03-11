@@ -12,17 +12,11 @@ namespace TomPIT.Data
 	}
 	public interface IModelComponent : IMiddlewareComponent
 	{
-		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)] string operation);
-		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e);
-		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e, [CIP(CIP.ModelOperationParametersProvider)] object staticArguments);
+		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e);
 
-		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e);
-		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e, [CIP(CIP.ModelOperationParametersProvider)] object staticArguments);
-		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)] string operation);
+		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e);
 
-		int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation);
-		int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e);
-		int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e, [CIP(CIP.ModelOperationParametersProvider)] object staticArguments);
+		int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e);
 
 		public ConcurrencyMode Concurrency { get; }
 

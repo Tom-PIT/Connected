@@ -6,13 +6,13 @@ namespace TomPIT.Worker.Services
 {
 	internal class QueueWorkerDispatcher : Dispatcher<IQueueMessage>
 	{
-		public QueueWorkerDispatcher(CancellationToken cancel) : base(cancel, 128)
+		public QueueWorkerDispatcher() : base(128)
 		{
 		}
 
-		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationToken cancel)
+		public override DispatcherJob<IQueueMessage> CreateWorker(IDispatcher<IQueueMessage> owner, CancellationToken cancel)
 		{
-			return new QueueWorkerJob(this, cancel);
+			return new QueueWorkerJob(owner, cancel);
 		}
 	}
 }

@@ -30,8 +30,11 @@ namespace TomPIT.Data
 		public string IndexGroup { get; set; }
 		public int Precision { get; set; }
 		public int Scale { get; set; }
-		public DateKind DateKind { get; set; }
+		public DateKind DateKind { get; set; } = DateKind.DateTime;
+		public BinaryKind BinaryKind { get; set; } = BinaryKind.VarBinary;
 		public int DatePrecision { get; set; }
+
+		public int Ordinal { get; set; }
 
 		public bool Equals([AllowNull] IModelSchemaColumn other)
 		{
@@ -78,6 +81,9 @@ namespace TomPIT.Data
 				return false;
 
 			if (DatePrecision != other.DatePrecision)
+				return false;
+
+			if (BinaryKind != other.BinaryKind)
 				return false;
 
 			if (other is IExistingModelSchemaColumn existing)

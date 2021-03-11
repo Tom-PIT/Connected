@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TomPIT.Sys.Configuration;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 using TomPIT.Sys.Notifications;
 using TomPIT.Sys.Services;
 using TomPIT.Sys.Workers;
@@ -96,6 +96,7 @@ namespace TomPIT.Sys
 			services.AddSingleton<IHostedService, MessageDisposer>();
 			services.AddSingleton<IHostedService, Scheduler>();
 			services.AddSingleton<IHostedService, Preloader>();
+			services.AddSingleton<IHostedService, QueueRecycler>();
 		}
 	}
 }

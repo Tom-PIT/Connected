@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Data.DataProviders;
+using TomPIT.Ide.Analysis;
 using TomPIT.Ide.TextServices.CSharp;
 using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
 using TomPIT.Ide.TextServices.Languages;
@@ -46,7 +47,16 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 				foreach (var operation in descriptor.Configuration.Operations)
 				{
 					var text = Arguments.Editor.Context.Tenant.GetService<IComponentService>().SelectText(descriptor.MicroService.Token, operation);
-					var type = provider.Item1.Parse(provider.Item2, new ModelOperationSchema { Text = text }).Statement;
+					var type = OperationType.Other;
+
+					try
+					{
+						type = provider.Item1.Parse(provider.Item2, new ModelOperationSchema { Text = text }).Statement;
+					}
+					catch
+					{
+						continue;
+					}
 
 					if ((Query && (type == OperationType.Query || type == OperationType.Select))
 						|| (!Query && (type == OperationType.Delete || type == OperationType.Insert || type == OperationType.Update))
@@ -79,18 +89,40 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			if (invocation == null)
 				return null;
 
-			if (!(invocation.Expression is MemberAccessExpressionSyntax memberAccess))
+			ExpressionSyntax syntax = null;
+
+			if (invocation.Expression is MemberAccessExpressionSyntax
+				|| invocation.Expression is IdentifierNameSyntax)
+				syntax = invocation.Expression;
+
+			if (syntax == null)
 				return null;
 
 			var type = new TypeInfo();
 
-			if (memberAccess.Expression is IdentifierNameSyntax ins)
+			if (syntax is IdentifierNameSyntax ins)
 				type = Arguments.Model.GetTypeInfo(ins.GetFirstToken().Parent);
-			else if (memberAccess.Expression is InvocationExpressionSyntax ies)
-				type = Arguments.Model.GetTypeInfo(memberAccess.Expression);
+			else if (syntax is InvocationExpressionSyntax)
+				type = Arguments.Model.GetTypeInfo(syntax);
+			else if (syntax is MemberAccessExpressionSyntax member)
+				type = Arguments.Model.GetTypeInfo(member.Expression);
 
 			if (type.Type == null || type.Type.DeclaringSyntaxReferences.Length == 0)
-				return null;
+			{
+				var scope = syntax.ClassDeclaration();
+
+				if (scope == null)
+					return null;
+
+				var name = scope.Identifier.ToString();
+
+				var model = ComponentDescriptor.Model(Arguments.Editor.Context, name);
+
+				if (model.Component == null)
+					return null;
+
+				return model;
+			}
 
 			var sourceFile = type.Type.DeclaringSyntaxReferences[0].SyntaxTree.FilePath;
 

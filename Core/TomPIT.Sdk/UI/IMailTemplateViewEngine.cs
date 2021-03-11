@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace TomPIT.UI
 {
 	public interface IMailTemplateViewEngine
 	{
-		void Render(Guid token);
+		Task Render(Guid token);
 	}
 }

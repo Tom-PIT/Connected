@@ -14,6 +14,7 @@ namespace TomPIT.TagHelpers
 			var microService = string.Empty;
 			var name = Name;
 			var ctx = ViewContext.ViewData.Model as IMicroServiceContext;
+			//var etag = "0";
 
 			if (Name.Contains("/"))
 			{
@@ -38,10 +39,12 @@ namespace TomPIT.TagHelpers
 				{
 					ctx.MicroService.ValidateMicroServiceReference(reference.Name);
 				}
+
+				//etag = ctx.Tenant.GetService<IComponentService>().SelectComponent(reference.Token, ComponentCategories.ScriptBundle, name).Modified.Ticks.ToString();
 			}
 			else
 			{
-				var bundle = ctx.Tenant.GetService<IComponentService>().SelectComponent(ctx.MicroService.Token, "Bundle", Name);
+				var bundle = ctx.Tenant.GetService<IComponentService>().SelectComponent(ctx.MicroService.Token, ComponentCategories.ScriptBundle, Name);
 
 				if (bundle == null)
 					microService = ResolveMicroservice(ViewContext.ExecutingFilePath).Name;
@@ -50,7 +53,8 @@ namespace TomPIT.TagHelpers
 			}
 
 			output.TagName = "script";
-			output.Attributes.SetAttribute("src", string.Format("{0}/sys/bundles/{1}/{2}", ctx.Services.Routing.RootUrl, microService, name));
+			//output.Attributes.SetAttribute("src", $"{ctx.Services.Routing.RootUrl}/sys/bundles/{microService}/{name}?{etag}");
+			output.Attributes.SetAttribute("src", $"{ctx.Services.Routing.RootUrl}/sys/bundles/{microService}/{name}");
 		}
 	}
 }

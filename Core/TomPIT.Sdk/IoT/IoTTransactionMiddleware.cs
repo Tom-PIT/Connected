@@ -17,7 +17,6 @@ namespace TomPIT.IoT
 		{
 			try
 			{
-
 				Validate();
 				AuthorizePolicies();
 				OnAuthorize();

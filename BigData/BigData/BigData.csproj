@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <AssemblyName>TomPIT.Connected.BigData</AssemblyName>
     <RootNamespace>TomPIT.BigData</RootNamespace>
-    <AssemblyVersion>2.1.1112.1</AssemblyVersion>
-    <FileVersion>2.1.1112.1</FileVersion>
-    <Version>2.1.1112.1</Version>
+    <AssemblyVersion>2.2.311.3</AssemblyVersion>
+    <FileVersion>2.2.311.3</FileVersion>
+    <Version>2.2.311.3</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
@@ -18,7 +18,7 @@
     <None Remove="Security\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="protobuf-net" Version="2.4.4" />
+    <PackageReference Include="protobuf-net" Version="3.0.73" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />

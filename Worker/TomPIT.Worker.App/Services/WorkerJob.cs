@@ -19,7 +19,7 @@ namespace TomPIT.Worker.Services
 	{
 		private TimeoutTask _timeout = null;
 
-		public WorkerJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
+		public WorkerJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -98,7 +98,7 @@ namespace TomPIT.Worker.Services
 			}
 
 			Invoker i = null;
-			var ctx = new MicroServiceContext(Configuration.MicroService());
+			using var ctx = new MicroServiceContext(Configuration.MicroService());
 			var metricId = ctx.Services.Diagnostic.StartMetric(Configuration.Metrics, null);
 
 			try

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.Caching;
+using TomPIT.Collections;
 using TomPIT.Connectivity;
+using TomPIT.Environment;
 using TomPIT.Middleware;
 using TomPIT.Navigation;
 using TomPIT.Runtime;
@@ -15,7 +17,7 @@ using TomPIT.Security.AuthorizationProviders;
 namespace TomPIT.Security
 {
 	internal class AuthorizationService : SynchronizedClientRepository<IPermission, string>,
-		IAuthorizationService, IAuthorizationNotification, IMembershipProvider, IAuthenticationTokenNotification, IPermissionService
+		IAuthorizationService, IAuthorizationNotification, IMembershipProvider, IAuthenticationTokenNotification, IPermissionService, IAuthenticationTokenProvider
 	{
 		private List<IAuthorizationProvider> _providers = null;
 		private Lazy<List<IPermissionDescriptor>> _descriptors = new Lazy<List<IPermissionDescriptor>>();
@@ -36,25 +38,17 @@ namespace TomPIT.Security
 		{
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
 			{
-				var u = Tenant.CreateUrl("Security", "QueryPermissions");
-				var ds = Tenant.Get<List<Permission>>(u).ToList<IPermission>();
+				var ds = Tenant.Get<ImmutableList<Permission>>(CreateUrl("QueryPermissions")).ToList<IPermission>();
 
 				foreach (var i in ds)
 					Set(GenerateRandomKey(), i, TimeSpan.Zero);
 			}
 			else
 			{
-				var u = Tenant.CreateUrl("Security", "QueryPermissionsForResourceGroup");
-				var a = new JArray();
-				var e = new JObject
+				var ds = Tenant.Post<ImmutableList<Permission>>(CreateUrl("QueryPermissionsForResourceGroup"), new
 				{
-					{"data", a }
-				};
-
-				foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-					a.Add(i);
-
-				var ds = Tenant.Post<List<Permission>>(u, e).ToList<IPermission>();
+					Data = Shell.GetConfiguration<IClientSys>().ResourceGroups
+				}).ToList<IPermission>();
 
 				foreach (var i in ds)
 					Set(GenerateRandomKey(), i, TimeSpan.Zero);
@@ -72,6 +66,19 @@ namespace TomPIT.Security
 			}
 
 			return DefaultAuthenticationProvider.Authenticate(user, password);
+		}
+
+		public IClientAuthenticationResult AuthenticateByPin(string user, string pin)
+		{
+			foreach (var i in AuthenticationProviders)
+			{
+				var r = i.AuthenticateByPin(user, pin);
+
+				if (r != null)
+					return r;
+			}
+
+			return DefaultAuthenticationProvider.AuthenticateByPin(user, pin);
 		}
 
 		public IClientAuthenticationResult Authenticate(string authenticationToken)
@@ -243,9 +250,9 @@ namespace TomPIT.Security
 			Providers.Add(provider);
 		}
 
-		public List<IAuthorizationProvider> QueryProviders()
+		public ImmutableList<IAuthorizationProvider> QueryProviders()
 		{
-			return Providers;
+			return Providers.ToImmutableList();
 		}
 
 		public void RegisterDescriptor(IPermissionDescriptor descriptor)
@@ -253,9 +260,9 @@ namespace TomPIT.Security
 			Descriptors.Add(descriptor);
 		}
 
-		public List<IPermissionDescriptor> QueryDescriptors()
+		public ImmutableList<IPermissionDescriptor> QueryDescriptors()
 		{
-			return Descriptors;
+			return Descriptors.ToImmutableList();
 		}
 
 		public PermissionValue GetPermissionValue(string evidence, string schema, string claim, string descriptor)
@@ -311,7 +318,7 @@ namespace TomPIT.Security
 				Set(GenerateRandomKey(), d, TimeSpan.Zero);
 		}
 
-		public List<IMembership> QueryMembership(Guid user)
+		public ImmutableList<IMembership> QueryMembership(Guid user)
 		{
 			return Membership.Query(user);
 		}
@@ -339,12 +346,12 @@ namespace TomPIT.Security
 			if (container == null)
 				return;
 
-			Authorize(container.Routes.ToList(), container.Context.Services.Identity.IsAuthenticated
+			Authorize(container.Routes, container.Context.Services.Identity.IsAuthenticated
 				? container.Context.Services.Identity.User.Token
 				: Guid.Empty);
 		}
 
-		private void Authorize(List<ISiteMapRoute> routes, Guid user)
+		private void Authorize(ConnectedList<ISiteMapRoute, ISiteMapContainer> routes, Guid user)
 		{
 			for (var i = routes.Count - 1; i >= 0; i--)
 			{
@@ -355,24 +362,37 @@ namespace TomPIT.Security
 					if (!ae.Authorize(user))
 						routes.RemoveAt(i);
 					else
-						Authorize(route.Routes.ToList(), user);
+						Authorize(route.Routes, user);
+				}
+			}
+		}
+
+		private void Authorize(ConnectedList<ISiteMapRoute, ISiteMapRoute> routes, Guid user)
+		{
+			for (var i = routes.Count - 1; i >= 0; i--)
+			{
+				var route = routes[i];
+
+				if (route is ISiteMapAuthorizationElement ae)
+				{
+					if (!ae.Authorize(user))
+						routes.RemoveAt(i);
+					else
+						Authorize(route.Routes, user);
 				}
 			}
 		}
 
 		PermissionValue IPermissionService.Toggle(string claim, string schema, string evidence, string primaryKey, string permissionDescriptor)
 		{
-			var u = Tenant.CreateUrl("SecurityManagement", "SetPermission");
-			var args = new JObject
+			var value = Tenant.Post<PermissionValue>(CreateManagementUrl("SetPermission"), new
 			{
-				{ "claim", claim },
-				{ "schema", schema },
-				{ "descriptor", permissionDescriptor },
-				{ "primaryKey", primaryKey },
-				{ "evidence", evidence }
-			};
-
-			var value = Tenant.Post<PermissionValue>(u, args);
+				claim,
+				schema,
+				Descriptor = permissionDescriptor,
+				primaryKey,
+				evidence
+			});
 
 			NotifyPermissionChanged(this, new PermissionEventArgs(Guid.Empty, evidence, schema, claim, primaryKey, permissionDescriptor));
 
@@ -381,16 +401,13 @@ namespace TomPIT.Security
 
 		void IPermissionService.Reset(string claim, string schema, string primaryKey, string descriptor)
 		{
-			var u = Tenant.CreateUrl("SecurityManagement", "Reset");
-			var args = new JObject
+			Tenant.Post(CreateManagementUrl("Reset"), new
 			{
-				{ "claim", claim },
-				{ "schema", schema },
-				{ "primaryKey", primaryKey },
-				{ "descriptor", descriptor }
-			};
-
-			Tenant.Post(u, args);
+				claim,
+				schema,
+				primaryKey,
+				descriptor
+			});
 
 			var permissions = Where(f => string.Compare(f.Claim, claim, true) == 0
 				&& string.Compare(f.Schema, schema, true) == 0
@@ -403,13 +420,10 @@ namespace TomPIT.Security
 
 		void IPermissionService.Reset(string primaryKey)
 		{
-			var u = Tenant.CreateUrl("SecurityManagement", "Reset");
-			var args = new JObject
+			Tenant.Post(CreateManagementUrl("Reset"), new
 			{
-				{ "primaryKey", primaryKey }
-			};
-
-			Tenant.Post(u, args);
+				primaryKey
+			});
 
 			var permissions = Where(f => string.Compare(f.PrimaryKey, primaryKey, true) == 0);
 
@@ -417,12 +431,12 @@ namespace TomPIT.Security
 				NotifyPermissionRemoved(this, new PermissionEventArgs(Guid.Empty, permission.Evidence, permission.Schema, permission.Claim, permission.PrimaryKey, permission.Descriptor));
 		}
 
-		List<IPermission> IPermissionService.Query(string permissionDescriptor, string primaryKey)
+		ImmutableList<IPermission> IPermissionService.Query(string permissionDescriptor, string primaryKey)
 		{
-			return Where(f => string.Compare(f.PrimaryKey, primaryKey, true) == 0 && string.Compare(f.Descriptor, permissionDescriptor, true) == 0).ToList();
+			return Where(f => string.Compare(f.PrimaryKey, primaryKey, true) == 0 && string.Compare(f.Descriptor, permissionDescriptor, true) == 0);
 		}
 
-		List<IPermission> IPermissionService.Query(string permissionDescriptor, Guid user)
+		ImmutableList<IPermission> IPermissionService.Query(string permissionDescriptor, Guid user)
 		{
 			var membership = QueryMembership(user);
 			var result = new List<IPermission>();
@@ -432,13 +446,13 @@ namespace TomPIT.Security
 
 			result.AddRange(Where(f => string.Compare(f.Evidence, user.ToString(), true) == 0 && string.Compare(f.Descriptor, permissionDescriptor, true) == 0));
 
-			return result;
+			return result.ToImmutableList();
 		}
 
 		private MembershipCache Membership { get; }
 		internal AuthenticationTokensCache AuthenticationTokens { get; }
 		private List<IPermissionDescriptor> Descriptors => _descriptors.Value;
-		private List<IAuthenticationProvider> AuthenticationProviders { get { return _authProviders.Value; } }
+		private List<IAuthenticationProvider> AuthenticationProviders => _authProviders.Value;
 		private IAuthenticationProvider DefaultAuthenticationProvider
 		{
 			get
@@ -450,7 +464,7 @@ namespace TomPIT.Security
 			}
 		}
 
-		public List<IMembership> QueryMembershipForRole(Guid role)
+		public ImmutableList<IMembership> QueryMembershipForRole(Guid role)
 		{
 			return Membership.QueryForRole(role);
 		}
@@ -467,8 +481,7 @@ namespace TomPIT.Security
 
 			foreach (var attribute in attributes)
 			{
-				if (!(attribute is AuthorizationPolicyAttribute policy)
-					|| policy.MiddlewareStage == AuthorizationMiddlewareStage.Result)
+				if (attribute is not AuthorizationPolicyAttribute policy || policy.MiddlewareStage == AuthorizationMiddlewareStage.Result)
 					continue;
 
 				if (string.Compare(method, policy.Method, true) == 0)
@@ -492,7 +505,7 @@ namespace TomPIT.Security
 				catch (Exception ex)
 				{
 					if (attribute.Behavior == AuthorizationPolicyBehavior.Mandatory)
-						throw ex;
+						throw;
 
 					firstFail = ex;
 				}
@@ -500,6 +513,21 @@ namespace TomPIT.Security
 
 			if (!onePassed && firstFail != null)
 				throw firstFail;
+		}
+
+		public string RequestToken(InstanceType type)
+		{
+			return DefaultAuthenticationProvider.RequestToken(type);
+		}
+
+		private ServerUrl CreateUrl(string action)
+		{
+			return Tenant.CreateUrl("Security", action);
+		}
+
+		private ServerUrl CreateManagementUrl(string action)
+		{
+			return Tenant.CreateUrl("SecurityManagement", action);
 		}
 	}
 }

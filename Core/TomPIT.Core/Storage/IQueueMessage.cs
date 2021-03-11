@@ -2,6 +2,12 @@
 
 namespace TomPIT.Storage
 {
+	public enum QueueScope
+	{
+		System = 0,
+		Content = 1
+	}
+
 	public interface IQueueMessage
 	{
 		string Id { get; }
@@ -12,6 +18,8 @@ namespace TomPIT.Storage
 		Guid PopReceipt { get; }
 		int DequeueCount { get; }
 		string Queue { get; }
+		QueueScope Scope { get; }
 		DateTime DequeueTimestamp { get; }
+		string BufferKey { get; }
 	}
 }

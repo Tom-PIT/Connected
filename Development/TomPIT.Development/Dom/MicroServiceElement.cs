@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Ide;
@@ -11,8 +11,8 @@ namespace TomPIT.Dom
 {
 	public class MicroServiceElement : DomElement, IMicroServiceScope
 	{
-		private List<IFolder> _folders = null;
-		private List<IComponent> _components = null;
+		private ImmutableList<IFolder> _folders = null;
+		private ImmutableList<IComponent> _components = null;
 
 		public MicroServiceElement(IEnvironment environment, Guid microService) : base(environment, null)
 		{
@@ -81,7 +81,7 @@ namespace TomPIT.Dom
 			}
 		}
 
-		private List<IFolder> Folders
+		private ImmutableList<IFolder> Folders
 		{
 			get
 			{
@@ -92,7 +92,7 @@ namespace TomPIT.Dom
 			}
 		}
 
-		private List<IComponent> Components
+		private ImmutableList<IComponent> Components
 		{
 			get
 			{

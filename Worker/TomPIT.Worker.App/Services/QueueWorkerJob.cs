@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
@@ -17,7 +18,8 @@ namespace TomPIT.Worker.Services
 {
 	public class QueueWorkerJob : DispatcherJob<IQueueMessage>
 	{
-		public QueueWorkerJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
+		private TimeoutTask _timeout = null;
+		public QueueWorkerJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -25,18 +27,37 @@ namespace TomPIT.Worker.Services
 		{
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
 
-			Invoke(item, m);
-
-			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Complete");
-			var d = new JObject
+			_timeout = new TimeoutTask(() =>
 			{
-				{"popReceipt", item.PopReceipt }
-			};
+				MiddlewareDescriptor.Current.Tenant.Post(MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Ping"), new
+				{
+					item.PopReceipt
+				});
 
-			MiddlewareDescriptor.Current.Tenant.Post(url, d);
+				return Task.CompletedTask;
+			}, TimeSpan.FromSeconds(90), Cancel);
+
+
+			_timeout.Start();
+
+			try
+			{
+				if (!Invoke(item, m))
+					return;
+			}
+			finally
+			{
+				_timeout.Stop();
+				_timeout = null;
+			}
+
+			MiddlewareDescriptor.Current.Tenant.Post(MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Complete"), new
+			{
+				item.PopReceipt
+			});
 		}
 
-		private void Invoke(IQueueMessage queue, JObject data)
+		private bool Invoke(IQueueMessage queue, JObject data)
 		{
 			var component = data.Required<Guid>("component");
 			var worker = data.Required<string>("worker");
@@ -45,7 +66,7 @@ namespace TomPIT.Worker.Services
 			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) is IQueueConfiguration configuration))
 			{
 				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), $"{SR.ErrCannotFindConfiguration} ({component})", nameof(QueueWorkerJob));
-				return;
+				return true;
 			}
 
 			var w = configuration.Workers.FirstOrDefault(f => string.Compare(f.Name, worker, true) == 0);
@@ -53,10 +74,10 @@ namespace TomPIT.Worker.Services
 			if (w == null)
 			{
 				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), $"{SR.ErrQueueWorkerNotFound} ({component})", nameof(QueueWorkerJob));
-				return;
+				return true;
 			}
 
-			var ctx = new MicroServiceContext(configuration.MicroService());
+			using var ctx = new MicroServiceContext(configuration.MicroService());
 			var metricId = ctx.Services.Diagnostic.StartMetric(configuration.Metrics, null);
 			Queue q = null;
 
@@ -64,23 +85,29 @@ namespace TomPIT.Worker.Services
 			{
 				q = new Queue(arguments, w);
 
-				q.Invoke();
+				if (!q.Invoke(Owner.Behavior))
+				{
+					Owner.Enqueue(q.QueueName, queue);
+					return false;
+				}
 
-				ctx.Services.Diagnostic.StopMetric(metricId, Diagnostics.SessionResult.Success, null);
+				ctx.Services.Diagnostic.StopMetric(metricId, SessionResult.Success, null);
+
+				return true;
 			}
 			catch (ValidationException ex)
 			{
 				if (q.HandlerInstance.ValidationFailed == Cdn.QueueValidationBehavior.Complete)
 				{
 					MiddlewareDescriptor.Current.Tenant.LogWarning(ex.Source, ex.Message, LogCategories.Worker);
-					return;
+					return true;
 				}
 				else
-					throw ex;
+					throw;
 			}
 			catch
 			{
-				ctx.Services.Diagnostic.StopMetric(metricId, Diagnostics.SessionResult.Fail, null);
+				ctx.Services.Diagnostic.StopMetric(metricId, SessionResult.Fail, null);
 
 				throw;
 			}

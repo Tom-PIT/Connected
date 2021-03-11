@@ -63,7 +63,7 @@ namespace TomPIT.App.Models
 
 							layout = $"{ms.Name}/{layout}";
 						}
-						var masterViews = Tenant.GetService<IUIDependencyInjectionService>().QueryMasterDependencies(layout, null, ComponentModel.IoC.MasterDependencyKind.Client);
+						var masterViews = Tenant.GetService<IUIDependencyInjectionService>().QueryMasterDependencies(ViewConfiguration.MicroService(), layout, null, ComponentModel.IoC.MasterDependencyKind.Client); ;
 
 						if (masterViews != null && masterViews.Count > 0)
 						{
@@ -93,21 +93,12 @@ namespace TomPIT.App.Models
 			if (string.IsNullOrWhiteSpace(ViewUrl))
 				return;
 
-			MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(ViewUrl).LocalPath), Controller.Request.RouteValues);
+			using var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(ViewUrl).LocalPath), Controller.Request.RouteValues);
 
-			foreach (var i in Controller.Request.RouteValues)
+			Shell.HttpContext.ParseArguments(Arguments, null, (url)=>
 			{
-				if (!Arguments.ContainsKey(i.Key))
-					Arguments.Add(i.Key, Types.Convert<string>(i.Value));
-			}
-
-			foreach (var i in ActionContext.HttpContext.Request.Query)
-			{
-				if (Arguments.ContainsKey(i.Key))
-					continue;
-
-				Arguments.Add(i.Key, i.Value.ToString());
-			}
+				using var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(url).LocalPath), Controller.Request.RouteValues);
+			});
 		}
 	}
 }

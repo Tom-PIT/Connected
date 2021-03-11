@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
@@ -207,7 +208,7 @@ namespace TomPIT.BigData.Partitions
 			return false;
 		}
 
-		private List<IPartitionFieldStatistics> QueryCandidates(List<Guid> files, Guid partition, string key, string index)
+		private ImmutableList<IPartitionFieldStatistics> QueryCandidates(List<Guid> files, Guid partition, string key, string index)
 		{
 			return Where(f => (files.Count == 0 || files.Any(g => g == f.File)) && f.Partition == partition && string.Compare(f.Key, key, true) == 0 && string.Compare(f.FieldName, index, true) == 0);
 		}

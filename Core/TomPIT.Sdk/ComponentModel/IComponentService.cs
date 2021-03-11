@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Connectivity;
 
 namespace TomPIT.ComponentModel
@@ -19,12 +20,12 @@ namespace TomPIT.ComponentModel
 		event FolderChangedHandler FolderChanged;
 
 		IFolder SelectFolder(Guid folder);
-		List<IFolder> QueryFolders(Guid microService, Guid parent);
-		List<IFolder> QueryFolders(Guid microService);
+		ImmutableList<IFolder> QueryFolders(Guid microService, Guid parent);
+		ImmutableList<IFolder> QueryFolders(Guid microService);
 
-		List<IConfiguration> QueryConfigurations(List<IComponent> components);
-		List<IConfiguration> QueryConfigurations(List<string> resourceGroups, string categories);
-		List<IConfiguration> QueryConfigurations(Guid microService, string categories);
+		ImmutableList<IConfiguration> QueryConfigurations(ImmutableList<IComponent> components);
+		ImmutableList<IConfiguration> QueryConfigurations(List<string> resourceGroups, string categories);
+		ImmutableList<IConfiguration> QueryConfigurations(Guid microService, string categories);
 		IComponent SelectComponent(Guid microService, string category, string name);
 		IComponent SelectComponentByNameSpace(Guid microService, string nameSpace, string name);
 		//IComponent SelectComponent(string category, string name);
@@ -34,10 +35,10 @@ namespace TomPIT.ComponentModel
 
 		string SelectText(Guid microService, IText text);
 
-		List<IComponent> QueryComponents(Guid microService, string category);
-		List<IComponent> QueryComponents(Guid microService, Guid folder);
-		List<IComponent> QueryComponents(Guid microService);
-		List<IComponent> QueryComponents(List<string> resourceGroups, string categories);
+		ImmutableList<IComponent> QueryComponents(Guid microService, string category);
+		ImmutableList<IComponent> QueryComponents(Guid microService, Guid folder);
+		ImmutableList<IComponent> QueryComponents(Guid microService);
+		ImmutableList<IComponent> QueryComponents(List<string> resourceGroups, string categories);
 
 
 		string CreateName(Guid microService, string category, string prefix);

@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.Security;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers.Management
 {
@@ -25,9 +25,10 @@ namespace TomPIT.Sys.Controllers.Management
 			var mobile = body.Optional("mobile", string.Empty);
 			var phone = body.Optional("phone", string.Empty);
 			var passwordChange = body.Optional("passwordChange", DateTime.MinValue);
+			var securityCode = body.Optional("securityCode", string.Empty);
 
 			return DataModel.Users.Insert(loginName, email, status, firstName, lastName, description, pin, language, timezone,
-				notificationEnabled, mobile, phone, passwordChange);
+				notificationEnabled, mobile, phone, passwordChange, securityCode);
 		}
 
 		[HttpPost]
@@ -49,9 +50,10 @@ namespace TomPIT.Sys.Controllers.Management
 			var mobile = body.Optional("mobile", string.Empty);
 			var phone = body.Optional("phone", string.Empty);
 			var passwordChange = body.Optional("passwordChange", DateTime.MinValue);
+			var securityCode = body.Optional("securityCode", string.Empty);
 
 			DataModel.Users.Update(token, loginName, email, status, firstName, lastName, description, pin, language, timezone,
-				notificationEnabled, mobile, phone, passwordChange);
+				notificationEnabled, mobile, phone, passwordChange, securityCode);
 		}
 
 		[HttpPost]

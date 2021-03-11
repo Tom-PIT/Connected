@@ -6,20 +6,20 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>TomPIT.Api</RootNamespace>
-    <AssemblyVersion>2.1.1112.1</AssemblyVersion>
-    <FileVersion>2.1.1112.1</FileVersion>
-    <Version>2.1.1112.1</Version>
+    <AssemblyVersion>2.2.311.3</AssemblyVersion>
+    <FileVersion>2.2.311.3</FileVersion>
+    <Version>2.2.311.3</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
-    <ProjectReference Include="..\TomPIT.SysDb\TomPIT.SysDb.csproj" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+    <ProjectReference Include="..\TomPIT.SysDb\TomPIT.SysDb.csproj" />
   </ItemGroup>
 </Project>

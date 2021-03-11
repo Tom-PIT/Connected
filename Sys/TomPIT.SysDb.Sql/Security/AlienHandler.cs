@@ -12,7 +12,7 @@ namespace TomPIT.SysDb.Sql.Security
 	{
 		public void Delete(IAlien alien)
 		{
-			var w = new Writer("tompit.alien_del");
+			using var w = new Writer("tompit.alien_del");
 
 			w.CreateParameter("@id", alien.GetId());
 
@@ -21,7 +21,7 @@ namespace TomPIT.SysDb.Sql.Security
 
 		public void Insert(Guid token, string firstName, string lastName, string email, string mobile, string phone, ILanguage language, string timezone)
 		{
-			var w = new Writer("tompit.alien_ins");
+			using var w = new Writer("tompit.alien_ins");
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@first_name", firstName, true);
@@ -37,12 +37,14 @@ namespace TomPIT.SysDb.Sql.Security
 
 		public List<IAlien> Query()
 		{
-			return new Reader<Alien>("tompit.alien_que").Execute().ToList<IAlien>();
+			using var r = new Reader<Alien>("tompit.alien_que");
+
+			return r.Execute().ToList<IAlien>();
 		}
 
 		public IAlien Select(Guid token)
 		{
-			var r = new Reader<Alien>("tompit.alien_sel");
+			using var r = new Reader<Alien>("tompit.alien_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -51,7 +53,7 @@ namespace TomPIT.SysDb.Sql.Security
 
 		public void Update(IAlien alien, string firstName, string lastName, string email, string mobile, string phone, ILanguage language, string timezone)
 		{
-			var w = new Writer("tompit.alien_ud");
+			using var w = new Writer("tompit.alien_ud");
 
 			w.CreateParameter("@id", alien.GetId());
 			w.CreateParameter("@first_name", firstName, true);

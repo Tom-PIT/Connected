@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Search;
 using TomPIT.Storage;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers.Management
 {
 	public class SearchManagementController : SysController
 	{
 		[HttpPost]
-		public List<IQueueMessage> Dequeue()
+		public ImmutableList<IQueueMessage> Dequeue()
 		{
 			var body = FromBody();
 			var count = body.Required<int>("count");

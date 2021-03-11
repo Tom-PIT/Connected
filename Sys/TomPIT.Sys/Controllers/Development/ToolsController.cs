@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Analysis;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers.Development
 {

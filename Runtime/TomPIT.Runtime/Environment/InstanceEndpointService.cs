@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Distributed;
@@ -49,12 +50,12 @@ namespace TomPIT.Environment
 			Set(id, d, TimeSpan.Zero);
 		}
 
-		public List<IInstanceEndpoint> Query()
+		public ImmutableList<IInstanceEndpoint> Query()
 		{
 			return All();
 		}
 
-		public List<IInstanceEndpoint> Query(InstanceType type)
+		public ImmutableList<IInstanceEndpoint> Query(InstanceType type)
 		{
 			return Where(f => f.Type == type);
 		}

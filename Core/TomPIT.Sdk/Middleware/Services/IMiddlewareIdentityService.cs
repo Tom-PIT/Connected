@@ -14,10 +14,10 @@ namespace TomPIT.Middleware.Services
 		IAuthenticationResult Authenticate(string authenticationToken);
 
 		Guid InsertUser(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language, string timezone, bool notificationsEnabled,
-			string mobile, string phone, string password);
+			string mobile, string phone, string password, string securityCode = null);
 
 		void UpdateUser(Guid token, string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language, string timezone, bool notificationsEnabled,
-			string mobile, string phone);
+			string mobile, string phone, string securityCode = null);
 
 		Guid InsertAlien(string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone);
 

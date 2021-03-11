@@ -17,5 +17,13 @@ namespace TomPIT.Navigation
 		public string Glyph { get; set; }
 
 		public string Css { get; set; }
+
+		protected override void OnDisposing()
+		{
+			if (Context != null)
+				Context.Dispose();
+
+			base.OnDisposing();
+		}
 	}
 }

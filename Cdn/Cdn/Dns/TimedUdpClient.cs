@@ -33,7 +33,7 @@ namespace TomPIT.Cdn.Dns
 			if (_errorOccurs == true)
 			{
 				_mutexErrorOccurs.ReleaseMutex();
-				_threadReceive.Abort();
+				//_threadReceive.Abort();
 
 				throw new Exception("Connection timed out");
 			}

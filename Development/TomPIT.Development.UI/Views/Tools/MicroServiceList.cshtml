@@ -20,12 +20,9 @@
             <span data-search="true">@i.Name</span>
             @if (i.CommitStatus != TomPIT.ComponentModel.CommitStatus.Synchronized)
             {
+                <br/>
                 <span class="badge badge-warning">not synchronized</span>
             }
-
-            <div>
-                <small>@Model.ResolveTemplate(i)</small>
-            </div>
         </li>
     }
 </ul>

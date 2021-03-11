@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 using TomPIT.Runtime.Configuration;
@@ -14,22 +15,22 @@ namespace TomPIT.BigData.Transactions
 
 		public StorageService()
 		{
-			IntervalTimeout = TimeSpan.FromMilliseconds(100);
+			IntervalTimeout = TimeSpan.FromMilliseconds(490);
 		}
 
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
-			if (Instance.State == InstanceState.Initialining)
+			if (Instance.State == InstanceState.Initializing)
 				return false;
 
 			StoragePool.Cancel = cancel;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new StorageDispatcher(i, cancel));
+				Dispatchers.Add(new StorageDispatcher(i));
 
 			return true;
 		}
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -46,6 +47,8 @@ namespace TomPIT.BigData.Transactions
 				if (jobs == null)
 					return;
 
+				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"StorageService, {jobs.Count} jobs dequeued.");
+				
 				foreach (var i in jobs)
 				{
 					if (cancel.IsCancellationRequested)
@@ -59,5 +62,15 @@ namespace TomPIT.BigData.Transactions
 		}
 
 		private List<StorageDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+
+		public override void Dispose()
+		{
+			foreach (var dispatcher in Dispatchers)
+				dispatcher.Dispose();
+
+			Dispatchers.Clear();
+
+			base.Dispose();
+		}
 	}
 }

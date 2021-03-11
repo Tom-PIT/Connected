@@ -19,12 +19,12 @@ namespace TomPIT.Management.Deployment
 			IntervalTimeout = TimeSpan.FromSeconds(30);
 		}
 
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			return Instance.State == InstanceState.Running;
 		}
 
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			var tenants = Shell.GetService<IConnectivityService>().QueryTenants();
 

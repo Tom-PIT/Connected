@@ -119,7 +119,7 @@ namespace TomPIT.Reflection.Manifests.Providers
 				{
 					foreach (var attribute in attributeList.Attributes)
 					{
-						var att = ManifestAttributeResolver.Resolve(model, attribute);
+						var att = ManifestAttributeResolver.ResolveValidationAttribute(model, attribute);
 
 						if (att != null)
 							p.Attributes.Add(att);
@@ -136,7 +136,7 @@ namespace TomPIT.Reflection.Manifests.Providers
 				var type = model.GetTypeInfo(baseType.Type);
 
 				if (type.Type != null)
-					BindProperties(model, type.Type, properties, types);
+					BindProperties(model, type.Type, properties, null);
 			}
 		}
 

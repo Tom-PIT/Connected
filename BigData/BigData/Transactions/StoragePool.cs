@@ -2,6 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using TomPIT.Diagnostics;
+using TomPIT.Middleware;
 
 namespace TomPIT.BigData.Transactions
 {
@@ -67,11 +69,13 @@ namespace TomPIT.BigData.Transactions
 
 		private static void OnWorkerCompleted(object sender, EventArgs e)
 		{
-			if (!(sender is StorageWorker worker))
+			if (sender is not StorageWorker worker)
 				return;
 
 			try
 			{
+				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"StoragePool, {worker.Partition} partition worker completed.");
+
 				if (Workers.ContainsKey(worker.Partition))
 					Workers.TryRemove(worker.Partition, out StorageWorker _);
 

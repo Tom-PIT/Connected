@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 
@@ -12,7 +12,7 @@ namespace TomPIT.Ide.ComponentModel
 
 		}
 
-		public List<IMicroServiceTemplate> Query()
+		public ImmutableList<IMicroServiceTemplate> Query()
 		{
 			return All();
 		}

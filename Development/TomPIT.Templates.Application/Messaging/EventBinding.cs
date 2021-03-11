@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
+using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Messaging;
 using TomPIT.MicroServices.Design;
@@ -11,6 +12,7 @@ namespace TomPIT.MicroServices.Messaging
 	[Create(DesignUtils.EventBinding)]
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
+	[ClassRequired]
 	public class EventBinding : SourceCodeElement, IEventBinding
 	{
 		[Required]

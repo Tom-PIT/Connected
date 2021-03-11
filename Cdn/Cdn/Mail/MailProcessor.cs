@@ -31,10 +31,10 @@ namespace TomPIT.Cdn.Mail
 
 		private void CreateMeta()
 		{
-			Message.From.Add(new MailboxAddress(Configuration.From));
-			Message.To.Add(new MailboxAddress(Configuration.To));
+			Message.From.Add(MailboxAddress.Parse(Configuration.From));
+			Message.To.Add(MailboxAddress.Parse(Configuration.To));
 			Message.Subject = Configuration.Subject;
-			Message.Sender = new MailboxAddress(Configuration.From);
+			Message.Sender = MailboxAddress.Parse(Configuration.From);
 		}
 
 		private void CreateHeaders()
@@ -64,7 +64,7 @@ namespace TomPIT.Cdn.Mail
 		private void CreateBody()
 		{
 			var builder = new BodyBuilder();
-			var ctx = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
+			using var ctx = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
 
 			if (Configuration.Format == MailFormat.Html)
 			{

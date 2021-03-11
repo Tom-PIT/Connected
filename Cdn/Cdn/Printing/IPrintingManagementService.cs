@@ -11,7 +11,5 @@ namespace TomPIT.Cdn.Printing
 		void Error(Guid popReceipt, string error);
 
 		List<IQueueMessage> Dequeue(int count);
-
-		IPrintingProvider GetProvider(string name);
 	}
 }

@@ -113,5 +113,17 @@
       "renameLocals": false
     },
     "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/assets/environment.min.js",
+    "inputFiles": [
+      "wwwroot/assets/scripts/environment.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    },
+    "sourceMap": false
   }
+
 ]

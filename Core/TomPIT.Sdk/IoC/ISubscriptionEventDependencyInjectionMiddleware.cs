@@ -8,5 +8,8 @@ namespace TomPIT.IoC
 	{
 		void Invoke(List<IRecipient> recipients);
 		List<IRecipient> QueryRecipients(List<IRecipient> recipients);
+		void Validate();
+		void Commit();
+		void Rollback();
 	}
 }

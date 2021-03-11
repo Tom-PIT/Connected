@@ -11,6 +11,7 @@ namespace TomPIT.Annotations.Design
 		public const string Less = "less";
 		public const string Json = "json";
 		public const string Sql = "sql";
+		public const string Text = "plaintext";
 
 		public SyntaxAttribute(string syntax)
 		{

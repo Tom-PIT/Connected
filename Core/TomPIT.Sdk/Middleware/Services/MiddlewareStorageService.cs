@@ -8,9 +8,12 @@ namespace TomPIT.Middleware.Services
 {
 	internal class MiddlewareStorageService : MiddlewareObject, IMiddlewareStorageService
 	{
+		private IMiddlewareStorageFileSystem _fileSystem;
 		public MiddlewareStorageService(IMiddlewareContext context) : base(context)
 		{
 		}
+
+		public IMiddlewareStorageFileSystem FileSystem => _fileSystem ??= new MiddlewareStorageFileSystem(Context);
 
 		public void CommitDrafts(string draft, string primaryKey)
 		{

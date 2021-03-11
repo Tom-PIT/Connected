@@ -13,7 +13,7 @@ namespace TomPIT.SysDb.Sql.IoT
 	{
 		public List<IIoTFieldState> SelectState(Guid hub)
 		{
-			var r = new Reader<IoTFieldState>("tompit.iot_state_sel");
+			using var r = new Reader<IoTFieldState>("tompit.iot_state_sel");
 
 			r.CreateParameter("@hub", hub);
 
@@ -39,7 +39,7 @@ namespace TomPIT.SysDb.Sql.IoT
 				a.Add(o);
 			}
 
-			var w = new Writer("tompit.iot_state_upd");
+			using var w = new Writer("tompit.iot_state_upd");
 
 			w.CreateParameter("@items", JsonConvert.SerializeObject(a));
 

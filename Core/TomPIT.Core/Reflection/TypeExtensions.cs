@@ -105,6 +105,17 @@ namespace TomPIT.Reflection
 			return interfaces.Contains(typeof(IEnumerable));
 		}
 
+		public static bool IsEmpty(this IEnumerable value)
+		{
+			if (!IsCollection(value.GetType()))
+				return true;
+
+			foreach (var _ in value)
+				return false;
+
+			return true;
+		}
+
 		public static bool IsCollection(this PropertyInfo pi)
 		{
 			if (pi == null)
@@ -206,6 +217,9 @@ namespace TomPIT.Reflection
 
 		public static bool ImplementsInterface(this Type type, Type itf)
 		{
+			if (string.IsNullOrWhiteSpace(itf.FullName))
+				return false;
+
 			return type.GetInterface(itf.FullName) != null;
 		}
 
@@ -449,6 +463,19 @@ namespace TomPIT.Reflection
 				return default;
 
 			return Closest<T>(e.Parent);
+		}
+
+		public static bool IsDictionary(object instance)
+		{
+			if (instance == null)
+				return false;
+
+			return IsDictionary(instance.GetType());
+		}
+
+		public static bool IsDictionary(Type type)
+		{
+			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
 		}
 	}
 }

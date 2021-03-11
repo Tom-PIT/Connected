@@ -12,7 +12,6 @@ namespace TomPIT.Cdn.Mail
 {
 	internal class MailService : HostedService
 	{
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
 		private Lazy<List<MailDispatcher>> _dispatchers = new Lazy<List<MailDispatcher>>();
 
 		private void OnSettingChanged(object sender, SettingEventArgs e)
@@ -21,7 +20,7 @@ namespace TomPIT.Cdn.Mail
 				SetInterval();
 		}
 
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			if (Instance.State == InstanceState.Initializing)
 				return false;
@@ -31,7 +30,7 @@ namespace TomPIT.Cdn.Mail
 			MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().SettingChanged += OnSettingChanged;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new MailDispatcher(i, cancel));
+				Dispatchers.Add(new MailDispatcher(i));
 
 			return true;
 		}
@@ -45,7 +44,7 @@ namespace TomPIT.Cdn.Mail
 			IntervalTimeout = TimeSpan.FromMilliseconds(interval);
 		}
 
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -77,5 +76,15 @@ namespace TomPIT.Cdn.Mail
 		}
 
 		private List<MailDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+
+		public override void Dispose()
+		{
+			foreach (var dispatcher in Dispatchers)
+				dispatcher.Dispose();
+
+			Dispatchers.Clear();
+
+			base.Dispose();
+		}
 	}
 }

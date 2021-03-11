@@ -142,7 +142,7 @@
     <value>Default retry strategy for technology {0}, named '{1}', is not defined.</value>
   </data>
   <data name="DefaultRetryStrategyNotFound" xml:space="preserve">
-    <value>Default retry strategy for technology {0} was not not defined, and there is no overall default strategy.</value>
+    <value>Default retry strategy for technology {0} was not defined, and there is no overall default strategy.</value>
   </data>
   <data name="DevelopmentEnvironment" xml:space="preserve">
     <value>Integrated development environment</value>
@@ -415,7 +415,7 @@
     <value>Maximum allowed value is {0}.</value>
   </data>
   <data name="ValMinValue" xml:space="preserve">
-    <value>Minimun allowed value is {0}.</value>
+    <value>Minimum allowed value is {0}.</value>
   </data>
   <data name="ValReservedValue" xml:space="preserve">
     <value>The following values are reserved by the system:</value>
@@ -1232,5 +1232,20 @@
   </data>
   <data name="ErrCreateSearchCatalog" xml:space="preserve">
     <value>Cannot create search catalog middleware</value>
+  </data>
+  <data name="ErrClientNotFound" xml:space="preserve">
+    <value>Client not found</value>
+  </data>
+  <data name="ErrContentTypeNotSupported" xml:space="preserve">
+    <value>Content type not supported</value>
+  </data>
+  <data name="ValSecurityCodeExists" xml:space="preserve">
+    <value>Security code already exists</value>
+  </data>
+  <data name="ErrCannotCreateStackedDispatcher" xml:space="preserve">
+    <value>Cannot create stacked dispatcher</value>
+  </data>
+  <data name="ErrNewPathNotSet" xml:space="preserve">
+    <value>NewPath not set</value>
   </data>
 </root>

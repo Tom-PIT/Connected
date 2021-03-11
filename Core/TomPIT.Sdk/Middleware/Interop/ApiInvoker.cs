@@ -24,7 +24,7 @@ namespace TomPIT.Middleware.Interop
 
 			ValidateReference(sender, descriptor);
 
-			var ctx = new MicroServiceContext(descriptor.MicroService, Context.Tenant.Url);
+			using var ctx = new MicroServiceContext(descriptor.MicroService, Context.Tenant.Url).WithIdentity(Context);
 			var contextMs = Context as IMicroServiceContext;
 
 			switch (descriptor.Configuration.Scope)
@@ -71,63 +71,57 @@ namespace TomPIT.Middleware.Interop
 					break;
 			}
 
-			//var metric = ctx.Services.Diagnostic.StartMetric(op.Metrics, op.Id, arguments);
-			//var success = true;
-			//JObject result = null;
-			IMiddlewareComponent opInstance = null;
+			var operationType = Context.Tenant.GetService<ICompilerService>().ResolveType(descriptor.MicroService.Token, op, op.Name);
 
-			try
+			if (HasReturnValue(operationType))
 			{
-				var operationType = Context.Tenant.GetService<ICompilerService>().ResolveType(descriptor.MicroService.Token, op, op.Name);
+				using var opInstance = operationType.CreateInstance<IMiddlewareOperation>();
 
-				if (HasReturnValue(operationType))
+				opInstance.SetContext(ctx);
+
+				if (arguments != null)
+					Serializer.Populate(arguments, opInstance, false);
+
+				var method = GetInvoke(opInstance.GetType());
+
+				try
 				{
-					opInstance = operationType.CreateInstance<IMiddlewareOperation>();
-
-					opInstance.SetContext(ctx);
-
-					if (arguments != null)
-						Serializer.Populate(arguments, opInstance);
-
-					var method = GetInvoke(opInstance.GetType());
-
 					return method.Invoke(opInstance, null);
 				}
-				else
+				catch (Exception ex)
 				{
-					opInstance = operationType.CreateInstance<IOperation>();
+					var resolvedException = TomPITException.Unwrap(opInstance, ex);
 
-					if (operationType is IDistributedOperation)
-						ReflectionExtensions.SetPropertyValue(opInstance, nameof(IDistributedOperation.OperationTarget), synchronous ? DistributedOperationTarget.InProcess : DistributedOperationTarget.Distributed);
-
-					opInstance.SetContext(ctx);
-
-					if (arguments != null)
-						Serializer.Populate(arguments, opInstance);
-
-					((IOperation)opInstance).Invoke();
-
-					return null;
+					ExceptionDispatchInfo.Capture(resolvedException).Throw();
+					throw;
 				}
 			}
-			catch (Exception ex)
+			else
 			{
-				var resolvedException = TomPITException.Unwrap(opInstance, ex);
-				//success = false;
+				using var opInstance = operationType.CreateInstance<IOperation>();
 
-				//ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Fail, new JObject
-				//{
-				//	{"exception", $"{resolvedException.Source}/{resolvedException.Message}" }
-				//});
+				if (operationType is IDistributedOperation)
+					ReflectionExtensions.SetPropertyValue(opInstance, nameof(IDistributedOperation.OperationTarget), synchronous ? DistributedOperationTarget.InProcess : DistributedOperationTarget.Distributed);
 
-				ExceptionDispatchInfo.Capture(resolvedException).Throw();
-				throw;
+				opInstance.SetContext(ctx);
+
+				if (arguments != null)
+					Serializer.Populate(arguments, opInstance);
+
+				try
+				{
+					opInstance.Invoke();
+				}
+				catch (Exception ex)
+				{
+					var resolvedException = TomPITException.Unwrap(opInstance, ex);
+
+					ExceptionDispatchInfo.Capture(resolvedException).Throw();
+					throw;
+				}
+
+				return null;
 			}
-			//finally
-			//{
-			//	if (success)
-			//		ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Success, result);
-			//}
 		}
 
 		private MethodInfo GetInvoke(Type type)

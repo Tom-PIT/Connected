@@ -255,5 +255,10 @@ namespace TomPIT.ComponentModel
 		{
 			return new ConfigurationDescriptor<IModelConfiguration>(context, identifier, ComponentCategories.Model);
 		}
+
+		public static ConfigurationDescriptor<IMasterViewConfiguration> Master(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IMasterViewConfiguration>(context, identifier, ComponentCategories.MasterView);
+		}
 	}
 }

@@ -6,12 +6,12 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>TomPIT.MicroServices</RootNamespace>
     <AssemblyName>TomPIT.MicroServices</AssemblyName>
-    <AssemblyVersion>2.1.1112.1</AssemblyVersion>
-    <FileVersion>2.1.1112.1</FileVersion>
-    <Version>2.1.1112.1</Version>
+    <AssemblyVersion>2.2.311.3</AssemblyVersion>
+    <FileVersion>2.2.311.3</FileVersion>
+    <Version>2.2.311.3</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
@@ -20,7 +20,12 @@
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.2" />
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="5.0.2" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.MicroServices&quot;" />
@@ -29,8 +34,5 @@
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>

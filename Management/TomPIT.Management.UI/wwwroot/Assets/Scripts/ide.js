@@ -89,9 +89,9 @@ $.widget('tompit.tpIde', {
 
         return r;
     },
-	/*
-	 * explorer
-	 */
+    /*
+     * explorer
+     */
     initializeExplorer: function (e) {
         var instance = this;
 
@@ -384,6 +384,11 @@ $.widget('tompit.tpIde', {
 
             this._syncNavigationButtons();
         }
+
+        let ce = new CustomEvent('selectionChanged');
+
+        this.element[0].dispatchEvent(ce);
+
     },
     _syncNode: function (s, e) {
         var element = s._findElement(e.target);
@@ -689,9 +694,9 @@ $.widget('tompit.tpIde', {
         });
     },
 
-	/*
-	 * End Explorer
-	 */
+    /*
+     * End Explorer
+     */
     draw: function () {
         $('.dev-explorer-node-content.active', this.element).removeClass('active');
 
@@ -881,9 +886,9 @@ $.widget('tompit.tpIde', {
             }
         }
     },
-	/*
-	 * property grid
-	 */
+    /*
+     * property grid
+     */
     clearDescription: function (title, description) {
         $('#devPropertyDescription').empty();
     },
@@ -897,9 +902,9 @@ $.widget('tompit.tpIde', {
     setDesignerSelectionId: function (id) {
         this.options.selection.designerId = id;
     },
-	/*
-	 * status bar
-	 */
+    /*
+     * status bar
+     */
     statusText: function (html) {
         $('#devStatusText').html(html);
     },
@@ -1057,7 +1062,7 @@ $.widget('tompit.tpIde', {
 
                 if (isText) {
                     $('#devTextDesigner').collapse('show');
-                    textEditor.layout();
+                    //textEditor.layout();
                     $('#devDesigner').collapse('hide');
                 }
                 else {
@@ -1239,9 +1244,9 @@ $.widget('tompit.tpIde', {
         $('#exBtnPreviousView').prop('disabled', this.options.navigation.index === 0);
         $('#exBtnNextView').prop('disabled', this.options.navigation.index >= this.options.navigation.views.length - 1);
     },
-	/*
-	 * toolbar
-	 */
+    /*
+     * toolbar
+     */
     hideToolbar: function () {
         $('#devToolbar').addClass('collapse');
     },
@@ -1249,9 +1254,9 @@ $.widget('tompit.tpIde', {
     showToolbar: function () {
         $('#devToolbar').removeClass('collapse');
     },
-	/*
-	 * selections
-	 */
+    /*
+     * selections
+     */
     setSelectionView: function (value) {
         this.options.selection.view = value;
     },
@@ -1259,9 +1264,9 @@ $.widget('tompit.tpIde', {
     getSelectionView: function () {
         return this.options.selection.view;
     },
-	/*
-	 * documents
-	 */
+    /*
+     * documents
+     */
     newWindow: function (microService, component, element) {
 
     }

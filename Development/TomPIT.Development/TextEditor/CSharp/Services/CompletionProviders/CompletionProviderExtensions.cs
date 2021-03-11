@@ -19,7 +19,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			if (!(e.Editor.Context.Tenant.GetService<IComponentService>().SelectConfiguration(configuration.Connection) is IConnectionConfiguration connection))
 				throw new RuntimeException(nameof(CompletionProviderExtensions), SR.ErrConnectionNotFound, LogCategories.Development);
 
-			var ctx = new MicroServiceContext(configuration.MicroService());
+			using var ctx = new MicroServiceContext(configuration.MicroService());
 			var cs = connection.ResolveConnectionString(ctx, ConnectionStringContext.User);
 
 			if (cs.DataProvider == Guid.Empty)

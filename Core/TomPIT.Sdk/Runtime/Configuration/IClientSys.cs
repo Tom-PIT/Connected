@@ -10,5 +10,7 @@ namespace TomPIT.Runtime.Configuration
 		List<string> ResourceGroups { get; }
 		Platform Platform { get; }
 		EnvironmentStage Stage { get; }
+		IDiagnosticsConfiguration Diagnostics { get; }
+		EnvironmentConnectivity Connectivity { get; }
 	}
 }

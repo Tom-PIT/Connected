@@ -14,6 +14,21 @@ namespace TomPIT.Ide.Analysis
 {
 	public static class CodeAnalysisExtensions
 	{
+		public static ClassDeclarationSyntax ClassDeclaration(this SyntaxNode node)
+		{
+			var current = node;
+
+			while (current != null)
+			{
+				if (current is ClassDeclarationSyntax cd)
+					return cd;
+
+				current = current.Parent;
+			}
+
+			return null;
+		}
+
 		public static MemberDeclarationSyntax DeclarationScope(this SyntaxNode node)
 		{
 			var current = node;

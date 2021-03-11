@@ -11,12 +11,14 @@ namespace TomPIT.SysDb.Sql.Cdn
 	{
 		public void Clear()
 		{
-			new Writer("tompit.mail_clr").Execute();
+			using var w = new Writer("tompit.mail_clr");
+
+			w.Execute();
 		}
 
 		public void Delete(IMailMessage message)
 		{
-			var w = new Writer("tompit.mail_del");
+			using var w = new Writer("tompit.mail_del");
 
 			w.CreateParameter("@id", message.GetId());
 
@@ -25,7 +27,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public void Delete(Guid popReceipt)
 		{
-			var w = new Writer("tompit.mail_queue_del");
+			using var w = new Writer("tompit.mail_queue_del");
 
 			w.CreateParameter("@pop_receipt", popReceipt);
 
@@ -34,7 +36,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public List<IMailMessage> Dequeue(DateTime date, DateTime nextVisible, int count)
 		{
-			var r = new Reader<MailMessage>("tompit.mail_dequeue");
+			using var r = new Reader<MailMessage>("tompit.mail_dequeue");
 
 			r.CreateParameter("@date", date);
 			r.CreateParameter("@next_visible", nextVisible);
@@ -46,7 +48,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 		public void Insert(Guid token, DateTime created, string from, string to, DateTime nextVisible, DateTime expire, string subject, string body, string headers,
 			int attachmentCount, MailFormat format)
 		{
-			var w = new Writer("tompit.mail_ins");
+			using var w = new Writer("tompit.mail_ins");
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@created", created);
@@ -64,12 +66,14 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public List<IMailMessage> Query()
 		{
-			return new Reader<MailMessage>("tompit.mail_dequeue").Execute().ToList<IMailMessage>();
+			using var r = new Reader<MailMessage>("tompit.mail_dequeue");
+
+			return r.Execute().ToList<IMailMessage>();
 		}
 
 		public void Reset(IMailMessage message)
 		{
-			var w = new Writer("tompit.mail_reset");
+			using var w = new Writer("tompit.mail_reset");
 
 			w.CreateParameter("@id", message.GetId());
 
@@ -78,7 +82,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public IMailMessage Select(Guid token)
 		{
-			var r = new Reader<MailMessage>("tompit.mail_sel");
+			using var r = new Reader<MailMessage>("tompit.mail_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -87,7 +91,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public IMailMessage SelectByPopReceipt(Guid popReceipt)
 		{
-			var r = new Reader<MailMessage>("tompit.mail_sel");
+			using var r = new Reader<MailMessage>("tompit.mail_sel");
 
 			r.CreateParameter("@pop_receipt", popReceipt);
 
@@ -96,7 +100,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public void Update(Guid popReceipt, string error, DateTime nextVisible)
 		{
-			var w = new Writer("tompit.mail_upd");
+			using var w = new Writer("tompit.mail_upd");
 
 			w.CreateParameter("@pop_receipt", popReceipt);
 			w.CreateParameter("@error", error, true);

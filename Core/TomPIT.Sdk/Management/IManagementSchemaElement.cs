@@ -12,5 +12,7 @@
 		int ChildrenCount { get; }
 		string Id { get; }
 		SchemaElementType Type { get; }
+		string Kind { get; }
+		string PolicyType { get; }
 	}
 }

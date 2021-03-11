@@ -67,8 +67,8 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 		{
 			return column.DataType switch
 			{
-				DbType.AnsiString => $"[varchar]({ResolveColumnLength(column)}",
-				DbType.Binary => column.IsVersion ? "[timestamp]" : $"[binary]({ResolveColumnLength(column)})",
+				DbType.AnsiString => $"[varchar]({ResolveColumnLength(column)})",
+				DbType.Binary => column.IsVersion ? "[timestamp]" : column.BinaryKind == BinaryKind.Binary ? $"[binary]({ResolveColumnLength(column)})" : $"[varbinary]({ResolveColumnLength(column)})",
 				DbType.Byte => "[tinyint]",
 				DbType.Boolean => "[bit]",
 				DbType.Currency => "[money]",
@@ -90,7 +90,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 				DbType.UInt64 => "[float]",
 				DbType.VarNumeric => $"[numeric]({ResolveColumnLength(column)})",
 				DbType.AnsiStringFixedLength => $"[char]({ResolveColumnLength(column)})",
-				DbType.StringFixedLength => $"[char]({ResolveColumnLength(column)})",
+				DbType.StringFixedLength => $"[nchar]({ResolveColumnLength(column)})",
 				DbType.Xml => "[xml]",
 				DbType.DateTime2 => $"[datetime2]({ResolveColumnLength(column)})",
 				DbType.DateTimeOffset => $"[datetimeoffset]({ResolveColumnLength(column)})",

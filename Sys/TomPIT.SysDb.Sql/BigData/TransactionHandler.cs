@@ -1,10 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.BigData;
 using TomPIT.Data.Sql;
-using TomPIT.Environment;
 using TomPIT.SysDb.BigData;
 
 namespace TomPIT.SysDb.Sql.BigData
@@ -13,7 +11,7 @@ namespace TomPIT.SysDb.Sql.BigData
 	{
 		public void Delete(ITransaction transaction)
 		{
-			var w = new Writer("tompit.big_data_transaction_del");
+			using var w = new Writer("tompit.big_data_transaction_del");
 
 			w.CreateParameter("@id", transaction.GetId());
 
@@ -22,7 +20,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public void DeleteBlock(ITransactionBlock block)
 		{
-			var w = new Writer("tompit.big_data_transaction_block_del");
+			using var w = new Writer("tompit.big_data_transaction_block_del");
 
 			w.CreateParameter("@id", block.GetId());
 
@@ -31,7 +29,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public void Insert(IPartition partition, Guid token, int blockCount, DateTime created)
 		{
-			var w = new Writer("tompit.big_data_transaction_ins");
+			using var w = new Writer("tompit.big_data_transaction_ins");
 
 			w.CreateParameter("@partition", partition.GetId());
 			w.CreateParameter("@token", token);
@@ -43,7 +41,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public void InsertBlock(ITransaction transaction, Guid token)
 		{
-			var w = new Writer("tompit.big_data_transaction_block_ins");
+			using var w = new Writer("tompit.big_data_transaction_block_ins");
 
 			w.CreateParameter("@transaction", transaction.GetId());
 			w.CreateParameter("@token", token);
@@ -51,14 +49,16 @@ namespace TomPIT.SysDb.Sql.BigData
 			w.Execute();
 		}
 
-		public List<ITransaction> Query()
+		public List<IServerTransaction> Query()
 		{
-			return new Reader<Transaction>("tompit.big_data_transaction_que").Execute().ToList<ITransaction>();
+			using var r = new Reader<Transaction>("tompit.big_data_transaction_que");
+
+			return r.Execute().ToList<IServerTransaction>();
 		}
 
-		public ITransaction Select(Guid token)
+		public IServerTransaction Select(Guid token)
 		{
-			var r = new Reader<Transaction>("tompit.big_data_transaction_sel");
+			using var r = new Reader<Transaction>("tompit.big_data_transaction_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -67,7 +67,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public void Update(ITransaction transaction, int blockRemaining, TransactionStatus status)
 		{
-			var w = new Writer("tompit.big_data_transaction_upd");
+			using var w = new Writer("tompit.big_data_transaction_upd");
 
 			w.CreateParameter("@id", transaction.GetId());
 			w.CreateParameter("@block_remaining", blockRemaining);
@@ -78,7 +78,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public ITransactionBlock SelectBlock(Guid token)
 		{
-			var r = new Reader<TransactionBlock>("tompit.big_data_transaction_block_sel");
+			using var r = new Reader<TransactionBlock>("tompit.big_data_transaction_block_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -87,7 +87,7 @@ namespace TomPIT.SysDb.Sql.BigData
 
 		public List<ITransactionBlock> QueryBlocks(ITransaction transaction)
 		{
-			var r = new Reader<TransactionBlock>("tompit.big_data_transaction_block_que");
+			using var r = new Reader<TransactionBlock>("tompit.big_data_transaction_block_que");
 
 			r.CreateParameter("@transaction", transaction.GetId());
 

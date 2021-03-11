@@ -44,14 +44,7 @@ namespace TomPIT.Middleware
 		public void Notify(IMiddlewareTransactionClient operation)
 		{
 			if (operation == null || Operations.Contains(operation))
-			{
 				return;
-			}
-
-			if (State != MiddlewareTransactionState.Active)
-			{
-				return;
-			}
 
 			Operations.Push(operation);
 		}
@@ -76,7 +69,12 @@ namespace TomPIT.Middleware
 			while (Operations.Count > 0)
 			{
 				Operations.TryPop(out IMiddlewareTransactionClient op);
-				op?.CommitTransaction();
+
+				try
+				{
+					op?.CommitTransaction();
+				}
+				catch { }
 			}
 
 			// The end
@@ -102,7 +100,12 @@ namespace TomPIT.Middleware
 			while (Operations.Count > 0)
 			{
 				Operations.TryPop(out IMiddlewareTransactionClient op);
-				op?.RollbackTransaction();
+
+				try
+				{
+					op?.RollbackTransaction();
+				}
+				catch { }
 			}
 
 			// The end

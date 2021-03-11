@@ -27,17 +27,17 @@ namespace TomPIT.Middleware.Services
 
 		public List<T> All<T>(string key) where T : class
 		{
-			return Context.Tenant.GetService<IDataCachingService>().All<T>(key);
+			return Context.Tenant.GetService<IDataCachingService>().All<T>(Context, key);
 		}
 
 		public T Get<T>(string key, Func<T, bool> matchEvaluator, CacheRetrieveHandler<T> retrieve) where T : class
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Get<T>(key, matchEvaluator, retrieve);
+			return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, matchEvaluator, retrieve);
 		}
 
 		public T Get<T>(string key, string id, CacheRetrieveHandler<T> retrieve) where T : class
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Get<T>(key, id, retrieve);
+			return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, id, retrieve);
 		}
 
 		public void Clear(string key)
@@ -47,27 +47,27 @@ namespace TomPIT.Middleware.Services
 
 		public T Get<T>(string key, string id) where T : class
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Get<T>(key, id);
+			return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, id);
 		}
 
 		public T Get<T>(string key, Func<dynamic, bool> predicate) where T : class
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Get<T>(key, predicate);
+			return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, predicate);
 		}
 
 		public T Get<T>(string key, Func<dynamic, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Get(key, predicate, retrieve);
+			return Context.Tenant.GetService<IDataCachingService>().Get(Context, key, predicate, retrieve);
 		}
 
 		public T First<T>(string key) where T : class
 		{
-			return Context.Tenant.GetService<IDataCachingService>().First<T>(key);
+			return Context.Tenant.GetService<IDataCachingService>().First<T>(Context, key);
 		}
 
 		public List<T> Where<T>(string key, Func<dynamic, bool> predicate) where T : class
 		{
-			return Context.Tenant.GetService<IDataCachingService>().Where<T>(key, predicate);
+			return Context.Tenant.GetService<IDataCachingService>().Where<T>(Context, key, predicate);
 		}
 
 		public T Set<T>(string key, string id, T instance) where T : class

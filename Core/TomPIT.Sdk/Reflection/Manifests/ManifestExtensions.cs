@@ -81,7 +81,7 @@ namespace TomPIT.Reflection.Manifests
 				if (!(member is PropertyDeclarationSyntax pdx))
 					continue;
 
-				if (pdx.Modifiers.FirstOrDefault(f => string.Compare(f.ValueText, "public", false) == 0) == null)
+				if (pdx.Modifiers.Count(f => string.Compare(f.ValueText, "public", false) == 0) == 0)
 					continue;
 
 				var p = new ManifestProperty
@@ -102,7 +102,7 @@ namespace TomPIT.Reflection.Manifests
 				{
 					foreach (var attribute in attributeList.Attributes)
 					{
-						var att = ManifestAttributeResolver.Resolve(model, attribute);
+						var att = ManifestAttributeResolver.ResolveValidationAttribute(model, attribute);
 
 						if (att != null)
 							p.Attributes.Add(att);
@@ -132,17 +132,26 @@ namespace TomPIT.Reflection.Manifests
 
 			var name = current.Name;
 
-			var existing = types.FirstOrDefault(f => string.Compare(f.Type, name, true) == 0);
-
-			if (existing != null)
-				return existing;
-
 			var manifestMember = new ManifestMember
 			{
 				Type = name
 			};
 
-			types.Add(manifestMember);
+			if (types != null)
+			{
+				if (symbol.SpecialType == SpecialType.None)
+				{
+					var existing = types.FirstOrDefault(f => string.Compare(f.Type, name, true) == 0);
+
+					if (existing != null)
+						return existing;
+
+					types.Add(manifestMember);
+				}
+			}
+
+			if (symbol.SpecialType != SpecialType.None)
+				return manifestMember;
 
 			while (current != null)
 			{
@@ -166,10 +175,15 @@ namespace TomPIT.Reflection.Manifests
 
 		public static ManifestProperty CreateProperty(SemanticModel model, ISymbol symbol, List<ManifestMember> types)
 		{
-			if (!(symbol is IPropertySymbol property))
+			if (symbol is not IPropertySymbol property)
 				return null;
 
 			if (property.DeclaredAccessibility != Accessibility.Public)
+				return null;
+
+			var attributes = property.GetAttributes();
+
+			if (!ManifestAttributeResolver.IsBrowsable(model, attributes))
 				return null;
 
 			var p = new ManifestProperty
@@ -178,32 +192,62 @@ namespace TomPIT.Reflection.Manifests
 				Type = CodeAnalysisExtentions.ToManifestTypeName(property.Type)
 			};
 
+			ResolveTypeArguments(model, property, p);
+
 			if (property.GetMethod != null && property.GetMethod.DeclaredAccessibility == Accessibility.Public)
 				p.CanRead = true;
 
 			if (property.SetMethod != null && property.SetMethod.DeclaredAccessibility == Accessibility.Public)
 				p.CanWrite = true;
 
-			foreach (var attribute in property.GetAttributes())
+			foreach (var attribute in attributes)
 			{
-				var att = ManifestAttributeResolver.Resolve(model, attribute);
+				var att = ManifestAttributeResolver.ResolveValidationAttribute(model, attribute);
 
 				if (att != null)
 					p.Attributes.Add(att);
 			}
 
-			//p.Documentation = ExtractDocumentation(property);
+			//p.Documentation = ExtractDocumentation(symbol.ContainingType);
 
 			BindType(model, property.Type, types);
 
 			return p;
 		}
 
+		private static void ResolveTypeArguments(SemanticModel model, IPropertySymbol symbol, ManifestTypeDescriptor descriptor)
+		{
+			var type = symbol.Type as INamedTypeSymbol;
+
+			if (type == null)
+				return;
+
+			descriptor.IsScriptClass = type.IsScriptClass;
+
+			if (type != null && type.IsArray(model) && type.SpecialType == SpecialType.None)
+			{
+				descriptor.IsArray = true;
+
+				if (type.TypeArguments.IsEmpty)
+					return;
+
+				foreach (var argument in type.TypeArguments)
+				{
+					var typeDescriptor = new ManifestTypeDescriptor
+					{
+						Type = CodeAnalysisExtentions.ToManifestTypeName(argument),
+					};
+
+					descriptor.TypeArguments.Add(typeDescriptor);
+				}
+			}
+		}
+
 		public static string ExtractDocumentation(CSharpSyntaxNode node)
 		{
 			var trivias = node.GetLeadingTrivia();
 
-			if (trivias == null || trivias.Count == 0)
+			if (trivias.Count == 0)
 				return null;
 
 			var enumerator = trivias.GetEnumerator();
@@ -241,6 +285,43 @@ namespace TomPIT.Reflection.Manifests
 			}
 
 			return null;
+		}
+
+		public static bool IsOfType(this INamedTypeSymbol symbol, Type type)
+		{
+			return string.Compare(symbol.ToDisplayName(), type.FullTypeName(), false) == 0;
+		}
+
+		public static bool IsOfType(this TypeInfo symbol, Type type)
+		{
+			if (symbol.ConvertedType == null)
+				return false;
+
+			return string.Compare(symbol.ConvertedType.ToDisplayName(), type.FullTypeName(), false) == 0;
+		}
+
+		public static TypeInfo GetAttribute<T>(this SyntaxList<AttributeListSyntax> attributes, SemanticModel model)
+		{
+			foreach (var list in attributes)
+			{
+				if (list is AttributeListSyntax listSyntax)
+				{
+					foreach (var attribute in listSyntax.Attributes)
+					{
+						var typeInfo = model.GetTypeInfo(attribute);
+
+						if (typeInfo.IsOfType(typeof(T)))
+							return typeInfo;
+					}
+				}
+			}
+
+			return default;
+		}
+
+		public static bool ContainsAttribute<T>(this SyntaxList<AttributeListSyntax> attributes, SemanticModel model)
+		{
+			return attributes.GetAttribute<T>(model).ConvertedType != null;
 		}
 	}
 }

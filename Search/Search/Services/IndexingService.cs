@@ -18,15 +18,15 @@ namespace TomPIT.Search.Services
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new IndexingDispatcher(i, Instance.Stopping));
+				Dispatchers.Add(new IndexingDispatcher(i));
 		}
 
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			return Instance.State == InstanceState.Running;
 		}
 
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -56,5 +56,15 @@ namespace TomPIT.Search.Services
 		}
 
 		private List<IndexingDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+
+		public override void Dispose()
+		{
+			foreach (var dispatcher in Dispatchers)
+				dispatcher.Dispose();
+
+			Dispatchers.Clear();
+
+			base.Dispose();
+		}
 	}
 }

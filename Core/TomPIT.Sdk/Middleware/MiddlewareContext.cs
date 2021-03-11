@@ -10,7 +10,7 @@ using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware
 {
-	public class MiddlewareContext : IMiddlewareContext, IElevationContext
+	public class MiddlewareContext : IMiddlewareContext, IElevationContext, IDisposable
 	{
 		#region Members
 		private ElevationContextState _elevationState = ElevationContextState.Revoked;
@@ -55,6 +55,8 @@ namespace TomPIT.Middleware
 		#endregion
 
 		#region Properties
+		private bool Disposed { get; set; }
+
 		[JsonIgnore]
 		ElevationContextState IElevationContext.State => Owner == null ? _elevationState : Owner._elevationState;
 		[JsonIgnore]
@@ -123,7 +125,7 @@ namespace TomPIT.Middleware
 				if (Owner != null)
 					return Owner.Connections;
 
-				if (_connections == null)
+				if (_connections == null && !Disposed)
 					_connections = new MiddlewareConnectionPool();
 
 				return _connections;
@@ -269,6 +271,39 @@ namespace TomPIT.Middleware
 			ReflectionExtensions.SetPropertyValue(result, nameof(result.Context), this);
 
 			return (T)result;
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!Disposed)
+			{
+				if (disposing)
+				{
+					if (Owner == null)
+						Connections.Dispose();
+
+					if (_interop != null)
+					{
+						_interop.Dispose();
+						_interop = null;
+					}
+
+					_connections = null;
+				}
+
+				Disposed = true;
+			}
+		}
+
+		~MiddlewareContext()
+		{
+			Dispose(false);
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }

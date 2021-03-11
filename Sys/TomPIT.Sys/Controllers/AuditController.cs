@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using TomPIT.Data;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers
 {
@@ -14,12 +14,12 @@ namespace TomPIT.Sys.Controllers
 		{
 			var body = FromBody();
 
-			var user = body.Optional<Guid>("user", Guid.Empty);
+			var user = body.Optional("user", Guid.Empty);
 			var primaryKey = body.Required<string>("primaryKey");
 			var category = body.Required<string>("category");
 			var @event = body.Required<string>("event");
-			var description = body.Optional<string>("description", string.Empty);
-			var ip = body.Optional<string>("ip", string.Empty);
+			var description = body.Optional("description", string.Empty);
+			var ip = body.Optional("ip", string.Empty);
 			var values = (JArray)body["values"];
 			var d = new Dictionary<string, string>();
 

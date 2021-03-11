@@ -21,6 +21,8 @@ namespace TomPIT.Runtime
 
 		public Platform Platform { get; private set; } = Platform.Cloud;
 
+		public EnvironmentConnectivity Connectivity { get; private set; }
+
 		public void Initialize(InstanceType type, Platform platform, IWebHostEnvironment environment)
 		{
 			Type = type;
@@ -63,6 +65,7 @@ namespace TomPIT.Runtime
 			var sys = Shell.GetConfiguration<IClientSys>();
 
 			Stage = sys.Stage;
+			Connectivity = sys.Connectivity;
 		}
 	}
 }

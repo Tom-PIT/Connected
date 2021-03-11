@@ -3,6 +3,7 @@ using System.Data;
 using Newtonsoft.Json.Linq;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
+using TomPIT.Middleware;
 
 namespace TomPIT.DataProviders.Modbus
 {
@@ -10,13 +11,15 @@ namespace TomPIT.DataProviders.Modbus
 	{
 		private ModbusConnection _connection = null;
 
-		public DataConnection(IDataProvider provider, string connectionString, ConnectionBehavior behavior)
+		public DataConnection(IMiddlewareContext context, IDataProvider provider, string connectionString, ConnectionBehavior behavior)
 		{
+			Context = context;
 			Provider = provider;
 			ConnectionString = connectionString;
 			Behavior = behavior;
 		}
 
+		public IMiddlewareContext Context { get; }
 		private IDataProvider Provider { get; }
 		private string ConnectionString { get; }
 
@@ -74,8 +77,15 @@ namespace TomPIT.DataProviders.Modbus
 			return Provider.Query(command, null, this);
 		}
 
+		public IDbCommand CreateCommand()
+		{
+			return Connection.CreateCommand();
+		}
+
 		public ConnectionBehavior Behavior { get; private set; }
 
 		public ICommandTextParser Parser => null;
+
+		public ConnectionState State => Connection.State;
 	}
 }

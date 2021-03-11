@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.SignalR;
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using TomPIT.Sys.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Notifications
 {

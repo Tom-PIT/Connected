@@ -17,6 +17,7 @@
 		public const string TestScenario = "Scenario";
 		public const string TestCase = "TestCase";
 		public const string EmbeddedAssembly = "EmbeddedAssembly";
+		public const string Package = "Package";
 		public const string Assembly = "Assembly";
 		public const string MediaFile = "MediaFile";
 		public const string Folder = "Folder";
@@ -75,6 +76,7 @@
 
 		public const string ScheduleDesigner = "TomPIT.Management.Designers.ScheduleDesigner, " + ManagementAssembly;
 		public const string AssemblyEmbeddedDesigner = "TomPIT.MicroServices.Design.Designers.AssemblyEmbeddedDesigner, " + DesignAssembly;
+		public const string NuGetPackageEmbeddedDesigner = "TomPIT.MicroServices.Design.Designers.NuGetPackageEmbeddedDesigner, " + DesignAssembly;
 		public const string MediaResourceFileUploadDesigner = "TomPIT.MicroServices.Design.Designers.MediaResourceFileUploadDesigner, " + DesignAssembly;
 		public const string MediaDesigner = "TomPIT.MicroServices.Design.Designers.MediaDesigner, " + DesignAssembly;
 		public const string ScriptUploadDesigner = "TomPIT.MicroServices.Design.Designers.ScriptUploadDesigner, " + DesignAssembly;

@@ -32,9 +32,10 @@ namespace TomPIT.Ide.TextServices
 		{
 			return new List<ICodeAction>();
 		}
-		public void Dispose()
+		protected override void OnDisposing()
 		{
 			OnDispose();
+			base.OnDisposing();
 		}
 
 		protected virtual void OnDispose()

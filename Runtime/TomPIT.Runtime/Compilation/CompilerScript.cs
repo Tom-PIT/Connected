@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
@@ -31,75 +32,71 @@ namespace TomPIT.Compilation
 				return;
 			var msv = Tenant.GetService<IMicroServiceService>().Select(MicroService);
 
-			using (var loader = new InteractiveAssemblyLoader())
+			using var loader = new InteractiveAssemblyLoader();
+			ScriptContext = Tenant.GetService<ICompilerService>().CreateScriptContext(SourceCode);
+
+			var refs = new List<Guid>();
+
+			foreach (var reference in ScriptContext.SourceFiles)
+				refs.Add(reference.Value.Id);
+
+			if (refs.Count > 0)
+				ScriptReferences = refs;
+
+			var options = ScriptOptions.Default
+				 .WithImports(Usings)
+				 .WithReferences(References)
+				 .WithSourceResolver(new ScriptResolver(Tenant, MicroService))
+				 .WithMetadataResolver(new AssemblyResolver(Tenant, MicroService, true))
+				 .WithEmitDebugInformation(msv.Status != MicroServiceStatus.Production)
+				 .WithFilePath(SourceCode.ScriptName(Tenant))
+				 .WithFileEncoding(Encoding.UTF8);
+
+			foreach (var reference in ScriptContext.References)
 			{
-				ScriptContext = Tenant.GetService<ICompilerService>().CreateScriptContext(SourceCode);
+				if (reference.Value == ImmutableArray<PortableExecutableReference>.Empty)
+					continue;
 
-				var refs = new List<Guid>();
-
-				foreach (var reference in ScriptContext.SourceFiles)
-					refs.Add(reference.Value.Id);
-
-				if (refs.Count > 0)
-					ScriptReferences = refs;
-
-				var options = ScriptOptions.Default
-					 .WithImports(Usings)
-					 .WithReferences(References)
-					 .WithSourceResolver(new ScriptResolver(Tenant, MicroService))
-					 .WithMetadataResolver(new AssemblyResolver(Tenant, MicroService))
-					 .WithEmitDebugInformation(true)
-					 .WithFilePath(SourceCode.ScriptName(Tenant))
-					 .WithFileEncoding(Encoding.UTF8);
-
-				foreach (var reference in ScriptContext.References)
+				foreach (var executable in reference.Value)
 				{
-					if (reference.Value == ImmutableArray<PortableExecutableReference>.Empty)
-						continue;
-
-					foreach (var executable in reference.Value)
+					/*
+					 * in memory assembly
+					 */
+					if (string.IsNullOrEmpty(executable.FilePath))
 					{
-						/*
-						 * in memory assembly
-						 */
-						if (string.IsNullOrEmpty(executable.FilePath))
+						var tokens = reference.Key.Split('/');
+						var ms = MicroService;
+						var name = reference.Key;
+
+						if (tokens.Length > 1)
 						{
-							var tokens = reference.Key.Split('/');
-							var ms = MicroService;
-							var name = reference.Key;
+							ms = Tenant.GetService<IMicroServiceService>().Select(tokens[0]).Token;
+							name = tokens[1];
+						}
 
-							if (tokens.Length > 1)
-							{
-								ms = Tenant.GetService<IMicroServiceService>().Select(tokens[0]).Token;
-								name = tokens[1];
-							}
+						var asm = AssemblyResolver.LoadDependency(Tenant, ms, name);
 
-							var asm = AssemblyResolver.LoadDependency(Tenant, ms, name);
+						if (asm != null)
+							loader.RegisterDependency(asm);
+					}
+					else
+					{
+						var name = AssemblyLoadContext.GetAssemblyName(executable.FilePath);
+
+						if (name != null)
+						{
+							var asm = AssemblyLoadContext.Default.LoadFromAssemblyName(name);
 
 							if (asm != null)
-							{
-								var identity = AssemblyIdentity.FromAssemblyDefinition(asm);
-
-								loader.RegisterDependency(identity, "c:\\bin");
-							}
+								loader.RegisterDependency(asm);
 						}
 					}
 				}
-
-				Script = CreateScript($"{code};{System.Environment.NewLine}{GenerateStaticCode()}", options, loader);
 			}
+
+			Script = CreateScript($"{code};{System.Environment.NewLine}{GenerateStaticCode()}", options, loader);
 		}
 
-		//private object CreateInMemoryAssemblyMetadata(Assembly assembly)
-		//{
-		//	var modulePtr = Marshal.GetHINSTANCE(assembly.ManifestModule);
-
-		//	var peReader = new PEReader((byte*)modulePtr, bytes.Length));
-		//	var metadataBlock = peReader.GetMetadata();
-		//	var moduleMetadata = ModuleMetadata.CreateFromMetadata((IntPtr)metadataBlock.Pointer, metadataBlock.Length);
-		//	var assemblyMetadata = AssemblyMetadata.Create(moduleMetadata);
-		//	var reference = assemblyMetadata.GetReference();
-		//}
 		protected virtual Script<object> CreateScript(string sourceCode, ScriptOptions options, InteractiveAssemblyLoader loader)
 		{
 			return CSharpScript.Create(sourceCode, options: options, assemblyLoader: loader);
@@ -112,27 +109,18 @@ namespace TomPIT.Compilation
 					 CompilerService.LoadSystemAssembly("TomPIT.Runtime"),
 					 CompilerService.LoadSystemAssembly("Newtonsoft.Json")
 				};
-		protected virtual string[] Usings
-		{
-			get { return CompilerService.CombineUsings(null); }
-		}
+		protected virtual string[] Usings => Array.Empty<string>();
 
 		public void Dispose()
 		{
 			Script = null;
 		}
 
-		//public IScriptDescriptor Result { get; private set; }
 		public Script<object> Script { get; private set; }
 
 		private string GenerateStaticCode()
 		{
 			var sb = new StringBuilder();
-
-			new List<SourceFileDescriptor>
-			{
-				new SourceFileDescriptor{FileName="", Category="ee" }
-			};
 
 			sb.AppendLine($"public static class {CompilerService.ScriptInfoClassName}");
 			sb.AppendLine("{");

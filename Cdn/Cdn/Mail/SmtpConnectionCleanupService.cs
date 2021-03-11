@@ -15,7 +15,7 @@ namespace TomPIT.Cdn.Mail
 			IntervalTimeout = TimeSpan.FromMinutes(1);
 		}
 
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			SmtpConnectionPool.CleanUp();
 

@@ -23,7 +23,8 @@ namespace TomPIT.Data
 				return StaticConnectionConfiguration(connection);
 
 			var e = arguments == null ? string.Empty : Serializer.Serialize(arguments);
-			var middleware = context.Tenant.GetService<ICompilerService>().CreateInstance<ConnectionMiddleware>(new MicroServiceContext(ms, context), type, e);
+			using var ctx = new MicroServiceContext(ms, context);
+			var middleware = context.Tenant.GetService<ICompilerService>().CreateInstance<ConnectionMiddleware>(ctx, type, e);
 
 			var result = middleware.Invoke(new ConnectionMiddlewareArgs(connectionContext));
 

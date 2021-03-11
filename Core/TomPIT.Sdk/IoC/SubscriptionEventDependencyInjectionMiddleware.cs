@@ -40,5 +40,34 @@ namespace TomPIT.IoC
 		{
 			return CdnUtils.CreateAlienRecipient(Context, email);
 		}
+
+		public void Validate()
+		{
+			OnValidate();
+		}
+
+		protected virtual void OnValidate()
+		{
+
+		}
+
+		public void Commit()
+		{
+			OnCommit();
+		}
+
+		protected virtual void OnCommit()
+		{
+
+		}
+		public void Rollback()
+		{
+			
+		}
+
+		protected virtual void OnRollback()
+		{
+
+		}
 	}
 }

@@ -54,5 +54,13 @@ namespace TomPIT.MicroServices.Resources
 			if (Thumb != Guid.Empty)
 				MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Delete(Thumb);
 		}
+
+		public void Reset(Guid existingValue, Guid newValue)
+		{
+			if (existingValue == Blob)
+				Blob = newValue;
+			else if (existingValue == Thumb)
+				Thumb = newValue;
+		}
 	}
 }

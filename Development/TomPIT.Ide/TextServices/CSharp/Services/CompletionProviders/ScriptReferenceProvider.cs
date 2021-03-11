@@ -20,7 +20,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 			var span = service.GetDefaultCompletionListSpan(Editor.SourceText, Editor.Document.GetCaret(Arguments.Position));
 			var trivia = Arguments.Model.SyntaxTree.GetRoot().FindTrivia(span.Start);
 
-			if (trivia != null && trivia.IsKind(SyntaxKind.LoadDirectiveTrivia))
+			if (trivia.IsKind(SyntaxKind.LoadDirectiveTrivia))
 			{
 				FillItems(result, Editor.Context.MicroService);
 

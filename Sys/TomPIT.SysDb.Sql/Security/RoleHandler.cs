@@ -11,7 +11,7 @@ namespace TomPIT.SysDb.Sql.Security
 	{
 		public void Delete(IRole role)
 		{
-			var w = new Writer("tompit.role_del");
+			using var w = new Writer("tompit.role_del");
 
 			w.CreateParameter("@id", role.GetId());
 
@@ -20,7 +20,7 @@ namespace TomPIT.SysDb.Sql.Security
 
 		public void Insert(Guid token, string name)
 		{
-			var w = new Writer("tompit.role_ins");
+			using var w = new Writer("tompit.role_ins");
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@name", name);
@@ -30,12 +30,14 @@ namespace TomPIT.SysDb.Sql.Security
 
 		public List<IRole> Query()
 		{
-			return new Reader<Role>("tompit.role_que").Execute().ToList<IRole>();
+			using var r = new Reader<Role>("tompit.role_que");
+
+			return r.Execute().ToList<IRole>();
 		}
 
 		public IRole Select(Guid token)
 		{
-			var r = new Reader<Role>("tompit.role_sel");
+			using var r = new Reader<Role>("tompit.role_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -44,7 +46,7 @@ namespace TomPIT.SysDb.Sql.Security
 
 		public void Update(IRole role, string name)
 		{
-			var w = new Writer("tompit.role_upd");
+			using var w = new Writer("tompit.role_upd");
 
 			w.CreateParameter("@id", role.GetId());
 			w.CreateParameter("@name", name);

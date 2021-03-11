@@ -17,6 +17,7 @@ namespace TomPIT.Middleware
 	{
 		public event ValidatingHandler Validating;
 		public MiddlewareValidator(IMiddlewareComponent instance)
+			: base(instance.Context)
 		{
 			Instance = instance;
 		}
@@ -301,9 +302,9 @@ namespace TomPIT.Middleware
 
 				return null;
 			}
-			catch (ValidationException vex)
+			catch (ValidationException)
 			{
-				throw vex;
+				throw;
 			}
 			catch
 			{

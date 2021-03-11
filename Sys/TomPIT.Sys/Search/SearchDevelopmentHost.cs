@@ -1,5 +1,5 @@
-﻿using TomPIT.Sys.Data;
-using TomPIT.Sys.Diagnostics;
+﻿using TomPIT.Sys.Diagnostics;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Search
 {

@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
+using TomPIT.Sys.Model.Components;
 
 namespace TomPIT.Sys.Controllers.Development
 {

@@ -7,11 +7,11 @@
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>TomPIT.Sys</RootNamespace>
-    <AssemblyVersion>2.1.1112.1</AssemblyVersion>
-    <FileVersion>2.1.1112.1</FileVersion>
-    <Version>2.1.1112.1</Version>
+    <AssemblyVersion>2.2.311.3</AssemblyVersion>
+    <FileVersion>2.2.311.3</FileVersion>
+    <Version>2.2.311.3</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
@@ -22,9 +22,12 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.MsgPack" Version="1.0.0-preview2-final" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="System.DirectoryServices.AccountManagement" Version="4.7.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.6.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.2" />
+    <PackageReference Include="System.DirectoryServices.AccountManagement" Version="5.0.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.8.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
@@ -32,9 +35,7 @@
     <ProjectReference Include="..\..\Search\Lucene.Highlighter\Contrib.Highlighter.csproj" />
     <ProjectReference Include="..\..\Search\Lucene.Memory\Contrib.Memory.csproj" />
     <ProjectReference Include="..\TomPIT.Sys.Api\TomPIT.Sys.Api.csproj" />
+    <ProjectReference Include="..\TomPIT.SysDb.Sql\TomPIT.SysDb.Sql.csproj" />
     <ProjectReference Include="..\TomPIT.SysDb\TomPIT.SysDb.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 </Project>

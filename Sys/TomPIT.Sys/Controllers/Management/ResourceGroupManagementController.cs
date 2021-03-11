@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 using TomPIT.SysDb.Environment;
 
 namespace TomPIT.Sys.Controllers.Management
@@ -44,7 +44,7 @@ namespace TomPIT.Sys.Controllers.Management
 		}
 
 		[HttpGet]
-		public List<IServerResourceGroup> Query()
+		public ImmutableList<IServerResourceGroup> Query()
 		{
 			return DataModel.ResourceGroups.Query();
 		}

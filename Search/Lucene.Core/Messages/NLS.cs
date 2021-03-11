@@ -21,7 +21,7 @@ using Lucene.Net.Support;
 
 namespace Lucene.Net.Messages
 {
-	
+
 	/// <summary> MessageBundles classes extend this class, to implement a bundle.
 	/// 
 	/// For Native Language Support (NLS), system of software internationalization.
@@ -241,14 +241,14 @@ namespace Lucene.Net.Messages
 		//@SuppressWarnings("unchecked")
 		private static void  MakeAccessible(System.Reflection.FieldInfo field)
 		{
-			if (System.Security.SecurityManager.SecurityEnabled)
-			{
-				//field.setAccessible(true);   // {{Aroush-2.9}} java.lang.reflect.AccessibleObject.setAccessible
-			}
-			else
-			{
-                //AccessController.doPrivileged(new AnonymousClassPrivilegedAction(field));     // {{Aroush-2.9}} java.security.AccessController.doPrivileged
-			}
+			//if (System.Security.SecurityManager.SecurityEnabled)
+			//{
+			//	//field.setAccessible(true);   // {{Aroush-2.9}} java.lang.reflect.AccessibleObject.setAccessible
+			//}
+			//else
+			//{
+   //             //AccessController.doPrivileged(new AnonymousClassPrivilegedAction(field));     // {{Aroush-2.9}} java.security.AccessController.doPrivileged
+			//}
 		}
 	}
 }

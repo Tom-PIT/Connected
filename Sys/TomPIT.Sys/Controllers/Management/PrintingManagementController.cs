@@ -1,16 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Cdn;
 using TomPIT.Storage;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers.Management
 {
 	public class PrintingManagementController : SysController
 	{
 		[HttpPost]
-		public List<IQueueMessage> Dequeue()
+		public ImmutableList<IQueueMessage> Dequeue()
 		{
 			var body = FromBody();
 
@@ -52,7 +52,7 @@ namespace TomPIT.Sys.Controllers.Management
 		}
 
 		[HttpPost]
-		public List<IQueueMessage> DequeueSpooler()
+		public ImmutableList<IQueueMessage> DequeueSpooler()
 		{
 			var body = FromBody();
 
@@ -88,8 +88,9 @@ namespace TomPIT.Sys.Controllers.Management
 			var content = body.Required<string>("content");
 			var printer = body.Required<string>("printer");
 			var mime = body.Required<string>("mime");
+			var serialNumber = body.Optional("serialNumber", 0L);
 
-			return DataModel.PrintingSpooler.Insert(mime, printer, content);
+			return DataModel.PrintingSpooler.Insert(mime, printer, content, serialNumber);
 		}
 
 		[HttpPost]

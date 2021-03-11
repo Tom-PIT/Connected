@@ -6,10 +6,7 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
 using TomPIT.Development;
-using TomPIT.Ide.Analysis;
-using TomPIT.Ide.Analysis.Analyzers;
 using TomPIT.Ide.Analysis.Diagnostics;
-using TomPIT.Ide.Analysis.Lenses;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
 using TomPIT.Ide.TextServices;
@@ -23,8 +20,8 @@ namespace TomPIT.Ide.Designers
 {
 	public class TextDesigner : DomDesigner<IDomElement>
 	{
-		private ICodeAnalyzer _analyzer = null;
-		private ICodeDiagnosticProvider _diagnostic = null;
+		//private ICodeAnalyzer _analyzer = null;
+		//private ICodeDiagnosticProvider _diagnostic = null;
 		private Type _argumentType = null;
 		private IAmbientProvider _ambientProvider = null;
 
@@ -98,27 +95,27 @@ namespace TomPIT.Ide.Designers
 			}
 		}
 
-		public ICodeAnalyzer CodeAnalyzer
-		{
-			get
-			{
-				if (_analyzer == null)
-					_analyzer = Environment.Context.Tenant.GetService<ICodeAnalyzerService>().GetAnalyzer(Language);
+		//public ICodeAnalyzer CodeAnalyzer
+		//{
+		//	get
+		//	{
+		//		if (_analyzer == null)
+		//			_analyzer = Environment.Context.Tenant.GetService<ICodeAnalyzerService>().GetAnalyzer(Language);
 
-				return _analyzer;
-			}
-		}
+		//		return _analyzer;
+		//	}
+		//}
 
-		public ICodeDiagnosticProvider CodeDiagnostic
-		{
-			get
-			{
-				if (_diagnostic == null)
-					_diagnostic = Environment.Context.Tenant.GetService<ICodeDiagnosticService>().GetProvider(Language);
+		//public ICodeDiagnosticProvider CodeDiagnostic
+		//{
+		//	get
+		//	{
+		//		if (_diagnostic == null)
+		//			_diagnostic = Environment.Context.Tenant.GetService<ICodeDiagnosticService>().GetProvider(Language);
 
-				return _diagnostic;
-			}
-		}
+		//		return _diagnostic;
+		//	}
+		//}
 
 		protected override IDesignerActionResult OnAction(JObject data, string action)
 		{
@@ -161,8 +158,8 @@ namespace TomPIT.Ide.Designers
 				return SaveText(data);
 			else if (string.Compare(action, "checkSyntax", true) == 0)
 				return CheckSyntax(data);
-			else if (string.Compare(action, "hover", true) == 0)
-				return Result.JsonResult(this, CodeAnalyzer.Hover(Environment.Context, CreateSuggestionArgs(data)));
+			//else if (string.Compare(action, "hover", true) == 0)
+			//	return Result.JsonResult(this, CodeAnalyzer.Hover(Environment.Context, CreateSuggestionArgs(data)));
 			else if (string.Compare(action, "provideSignatureHelp", true) == 0)
 			{
 				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
@@ -176,8 +173,8 @@ namespace TomPIT.Ide.Designers
 
 				return Result.JsonResult(this, editor.GetService<ISignatureHelpService>().ProvideSignatureHelp(position, context));
 			}
-			else if (string.Compare(action, "codeLens", true) == 0)
-				return Result.JsonResult(this, CodeAnalyzer.CodeLens(Environment.Context, CreateCodeLensArgs(data)));
+			//else if (string.Compare(action, "codeLens", true) == 0)
+			//	return Result.JsonResult(this, CodeAnalyzer.CodeLens(Environment.Context, CreateCodeLensArgs(data)));
 			else if (string.Compare(action, "resolvePath", true) == 0)
 			{
 				var path = Environment.ResolvePath(data.Required<Guid>("component"), data.Required<Guid>("element"), out _);
@@ -187,8 +184,8 @@ namespace TomPIT.Ide.Designers
 					{"path",  path}
 				});
 			}
-			else if (string.Compare(action, "definition", true) == 0)
-				return Result.JsonResult(this, CodeAnalyzer.Definition(Environment.Context, CreateSuggestionArgs(data)));
+			//else if (string.Compare(action, "definition", true) == 0)
+			//	return Result.JsonResult(this, CodeAnalyzer.Definition(Environment.Context, CreateSuggestionArgs(data)));
 			else if (string.Compare(action, "provideCodeActions", true) == 0)
 			{
 				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
@@ -232,6 +229,16 @@ namespace TomPIT.Ide.Designers
 					return Result.JsonResult(this, editor.GetService<IDefinitionProviderService>().ProvideDefinition(position));
 				}
 			}
+			else if (string.Compare(action, "provideDocumentFormattingEdits", true) == 0)
+			{
+				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
+				using var editor = GetTextEditor(model, data.Optional<string>("text", null));
+
+				if (editor == null)
+					return Result.JsonResult(this, null);
+
+				return Result.JsonResult(this, editor.GetService<IDocumentFormattingEditService>().ProvideDocumentFormattingEdits());
+			}
 			else if (string.Compare(action, "loadModel", true) == 0)
 			{
 				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
@@ -254,6 +261,7 @@ namespace TomPIT.Ide.Designers
 					Definition = (editor.Features & LanguageFeature.Definition) == LanguageFeature.Definition,
 					DocumentSymbol = (editor.Features & LanguageFeature.DocumentSymbol) == LanguageFeature.DocumentSymbol,
 					SignatureHelp = (editor.Features & LanguageFeature.SignatureHelp) == LanguageFeature.SignatureHelp,
+					DocumentFormatting = (editor.Features & LanguageFeature.DocumentFormatting) == LanguageFeature.DocumentFormatting,
 					FileName = text == null ? string.Empty : ((IText)target).FileName(),
 					Language = syntax == null ? "csharp" : syntax.Syntax,
 					MicroService = microService.Name,
@@ -342,28 +350,28 @@ namespace TomPIT.Ide.Designers
 			return r;
 		}
 
-		private CodeLensArgs CreateCodeLensArgs(JObject data)
-		{
-			var component = Environment.Context.Tenant.GetService<IComponentService>().SelectComponent(Content.Configuration().Component);
+		//private CodeLensArgs CreateCodeLensArgs(JObject data)
+		//{
+		//	var component = Environment.Context.Tenant.GetService<IComponentService>().SelectComponent(Content.Configuration().Component);
 
-			return new CodeLensArgs(component,
-				Content,
-				ArgumentType,
-				data.Optional("content", string.Empty));
-		}
+		//	return new CodeLensArgs(component,
+		//		Content,
+		//		ArgumentType,
+		//		data.Optional("content", string.Empty));
+		//}
 
-		private CodeStateArgs CreateSuggestionArgs(JObject data)
-		{
-			var component = Environment.Context.Tenant.GetService<IComponentService>().SelectComponent(Content.Configuration().Component);
+		//private CodeStateArgs CreateSuggestionArgs(JObject data)
+		//{
+		//	var component = Environment.Context.Tenant.GetService<IComponentService>().SelectComponent(Content.Configuration().Component);
 
-			return new CodeStateArgs(component,
-				Content,
-				ArgumentType,
-				data.Optional("content", string.Empty),
-				data.Optional("position", 0),
-				data.Optional("triggerCharacter", string.Empty),
-				data.Optional("triggerKind", string.Empty));
-		}
+		//	return new CodeStateArgs(component,
+		//		Content,
+		//		ArgumentType,
+		//		data.Optional("content", string.Empty),
+		//		data.Optional("position", 0),
+		//		data.Optional("triggerCharacter", string.Empty),
+		//		data.Optional("triggerKind", string.Empty));
+		//}
 
 		private IDesignerActionResult SaveText(JObject data)
 		{

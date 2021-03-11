@@ -1,37 +1,47 @@
 ﻿using System;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Newtonsoft.Json.Linq;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
-using TomPIT.Data.Sql;
+using TomPIT.Middleware;
 
 namespace TomPIT.DataProviders.Sql
 {
 	public sealed class DataConnection : IDataConnection, IDisposable
 	{
-		private ReliableSqlConnection _connection = null;
+		private SqlConnection _connection = null;
 		private ICommandTextParser _parser = null;
+		private object _sync = new object();
 
-		public DataConnection(IDataProvider provider, string connectionString, ConnectionBehavior behavior)
+		public DataConnection(IMiddlewareContext context, IDataProvider provider, string connectionString, ConnectionBehavior behavior)
 		{
+			Context = context;
 			Provider = provider;
 			ConnectionString = connectionString;
 			Behavior = behavior;
 		}
 
+		public IMiddlewareContext Context { get; }
 		private IDataProvider Provider { get; }
 		private string ConnectionString { get; }
+		private bool OwnsTransaction { get; set; }
 
-		public IDbConnection Connection
+		private bool Disposed { get; set; }
+
+		public ConnectionState State => _connection == null ? ConnectionState.Closed : _connection.State;
+
+		private IDbConnection Connection
 		{
 			get
 			{
-				if (_connection == null)
+				if (_connection == null && !Disposed)
 				{
-					_connection = new ReliableSqlConnection(ConnectionString, RetryPolicy.DefaultFixed, RetryPolicy.DefaultFixed);
-
-					Open();
+					lock (_sync)
+					{
+						if (_connection == null && !Disposed)
+							_connection = new SqlConnection(ConnectionString);
+					}
 				}
 
 				return _connection;
@@ -43,33 +53,65 @@ namespace TomPIT.DataProviders.Sql
 			if (Transaction == null || Transaction.Connection == null)
 				return;
 
-			lock (Transaction)
+			lock (_sync)
 			{
 				if (Transaction == null || Transaction.Connection == null)
 					return;
 
 				Transaction.Commit();
+				Transaction.Dispose();
 				Transaction = null;
 			}
 		}
 
 		public void Dispose()
 		{
+			if (Disposed)
+				return;
+
+			Disposed = true;
 			Close();
+
+			if (Transaction != null)
+			{
+				try
+				{
+					Transaction.Dispose();
+				}
+				catch { }
+
+				Transaction = null;
+			}
+
+			if (_connection != null)
+			{
+				_connection.Dispose();
+				_connection = null;
+			}
+
+			Provider.Dispose();
+
+			GC.SuppressFinalize(this);
 		}
 
 		public void Rollback()
 		{
+			if (!OwnsTransaction)
+				return;
+
 			if (Transaction == null || Transaction.Connection == null)
 				return;
 
-			lock (Transaction)
+			lock (_sync)
 			{
 				if (Transaction == null || Transaction.Connection == null)
 					return;
 
-				Transaction.Rollback();
-				Transaction = null;
+				try
+				{
+					Transaction.Rollback();
+				}
+				catch { }
 			}
 		}
 
@@ -78,7 +120,7 @@ namespace TomPIT.DataProviders.Sql
 			if (Connection.State == ConnectionState.Open)
 				return;
 
-			lock (Connection)
+			lock (_sync)
 			{
 				if (Connection.State != ConnectionState.Closed)
 					return;
@@ -86,24 +128,34 @@ namespace TomPIT.DataProviders.Sql
 				Connection.Open();
 
 				if (Transaction?.Connection != null)
-				{
 					return;
-				}
 
+				OwnsTransaction = true;
 				Transaction = Connection.BeginTransaction(IsolationLevel.ReadCommitted) as SqlTransaction;
 			}
 		}
 
 		public void Close()
 		{
-			if (Connection != null && Connection.State == ConnectionState.Open)
+			if (_connection == null)
+				return;
+
+			if (_connection != null && _connection.State == ConnectionState.Open)
 			{
-				lock (Connection)
+				lock (_sync)
 				{
-					if (Connection != null && Connection.State == ConnectionState.Open)
+					if (_connection != null && _connection.State == ConnectionState.Open)
 					{
-						Rollback();
-						Connection.Close();
+						if (Transaction != null && Transaction.Connection != null)
+						{
+							try
+							{
+								Transaction.Rollback();
+							}
+							catch { }
+
+						}
+						_connection.Close();
 					}
 				}
 			}
@@ -117,6 +169,11 @@ namespace TomPIT.DataProviders.Sql
 		public JObject Query(IDataCommandDescriptor command)
 		{
 			return Provider.Query(command, null, this);
+		}
+
+		public IDbCommand CreateCommand()
+		{
+			return Connection?.CreateCommand();
 		}
 
 		public IDbTransaction Transaction { get; set; }

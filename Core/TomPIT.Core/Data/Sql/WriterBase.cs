@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace TomPIT.Data.Sql
 {
@@ -62,7 +62,7 @@ namespace TomPIT.Data.Sql
 				if (ex.Number == 547)
 					return false;
 				else
-					throw ex;
+					throw;
 			}
 		}
 
@@ -97,7 +97,7 @@ namespace TomPIT.Data.Sql
 				if (ex.Number == 547)
 					return false;
 				else
-					throw ex;
+					throw;
 			}
 		}
 
@@ -114,7 +114,9 @@ namespace TomPIT.Data.Sql
 		{
 			Prepared = Connection.CreateCommand();
 
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			Prepared.CommandText = CommandText;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 			Prepared.CommandType = CommandType;
 			Prepared.CommandTimeout = 300;
 
@@ -151,7 +153,9 @@ namespace TomPIT.Data.Sql
 			{
 				if (Prepared == null)
 				{
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 					command.CommandText = CommandText;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
 					command.CommandType = CommandType;
 					command.CommandTimeout = 300;
 
@@ -174,7 +178,7 @@ namespace TomPIT.Data.Sql
 						Connection.Open();
 				}
 
-				RowsAffected = Connection.ExecuteCommand(command);
+				RowsAffected = command.ExecuteNonQuery();
 
 				if (command.Parameters.Contains("@RETURN_VALUE"))
 				{

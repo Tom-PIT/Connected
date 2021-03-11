@@ -41,7 +41,7 @@ namespace TomPIT.IoT
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			Instance.Configure(InstanceType.Rest, app, env, (f) =>
+			Instance.Configure(InstanceType.IoT, app, env, (f) =>
 			{
 				IoTRouting.Register(f.Builder);
 				f.Builder.MapHub<IoTServerHub>("/iot");

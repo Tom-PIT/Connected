@@ -23,6 +23,7 @@ namespace TomPIT.Design
 		List<ICommit> QueryCommits(Guid microService, Guid user);
 		List<ICommit> QueryCommitsForComponent(Guid microService, Guid component);
 		List<IComponentHistory> QueryHistory(Guid component);
+		List<IComponentHistory> QueryMicroServiceHistory(Guid microService);
 		List<IComponent> QueryCommitComponents(Guid commit);
 		List<IComponentHistory> QueryCommitDetails(Guid commit);
 		IComponentHistory SelectCommitDetail(Guid commit, Guid component);
@@ -34,5 +35,7 @@ namespace TomPIT.Design
 		IChangeDescriptor GetChanges(ChangeQueryMode mode);
 		IChangeDescriptor GetChanges(ChangeQueryMode mode, Guid user);
 		IDiffDescriptor GetDiff(Guid component, Guid id);
+
+		void DeleteHistory(Guid component);
 	}
 }

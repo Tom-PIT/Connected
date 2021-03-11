@@ -20,7 +20,8 @@ namespace TomPIT.Data
 		{
 			try
 			{
-				var ds = Connection.Query(CreateCommand());
+				EnsureCommand();
+				var ds = Connection.Query(Command);
 				var r = new List<T>();
 
 				if (ds == null || ds.Count == 0)
@@ -61,7 +62,11 @@ namespace TomPIT.Data
 			finally
 			{
 				if (Connection.Behavior == ConnectionBehavior.Isolated)
+				{
 					Connection.Close();
+					Connection.Dispose();
+					Connection = null;
+				}
 			}
 		}
 
@@ -69,7 +74,8 @@ namespace TomPIT.Data
 		{
 			try
 			{
-				var ds = Connection.Query(CreateCommand());
+				EnsureCommand();
+				var ds = Connection.Query(Command);
 
 				if (ds == null || ds.Count == 0)
 					return default;
@@ -102,7 +108,11 @@ namespace TomPIT.Data
 			finally
 			{
 				if (Connection.Behavior == ConnectionBehavior.Isolated)
+				{
 					Connection.Close();
+					Connection.Dispose();
+					Connection = null;
+				}
 			}
 		}
 
@@ -153,6 +163,12 @@ namespace TomPIT.Data
 
 		private void DeserializeCollection(object instance, PropertyInfo property, JToken token)
 		{
+			if (property.PropertyType == typeof(byte[]))
+			{
+				SetValue(instance, property, token);
+				return;
+			}
+
 			var currentValue = EnsureInstance(instance, property) as IList;
 
 			if (currentValue == null)
@@ -204,10 +220,10 @@ namespace TomPIT.Data
 			if (!property.CanWrite)
 				return;
 
-			if (!(token is JValue jv))
+			if (token is not JValue jv)
 				return;
 
-			object converted = null;
+			object converted;
 
 			if (property.PropertyType == typeof(string) && jv.Value is byte[])
 				converted = ((Version)(byte[])jv.Value).ToString();
@@ -217,10 +233,29 @@ namespace TomPIT.Data
 			if (converted == null)
 				return;
 
+			if (property.PropertyType == typeof(DateTimeOffset))
+			{
+				var att = property.FindAttribute<DateAttribute>();
+				var kind = DateKind.DateTime;
+
+				if (att != null)
+					kind = att.Kind;
+
+				switch (kind)
+				{
+					case DateKind.DateTime:
+					case DateKind.DateTime2:
+					case DateKind.SmallDateTime:
+					case DateKind.Time:
+						converted = Context.Services.Globalization.FromUtc((DateTimeOffset)converted);
+						break;
+				}
+			}
+
 			property.SetValue(instance, converted);
 		}
 
-		private object EnsureInstance(object instance, PropertyInfo property)
+		private static object EnsureInstance(object instance, PropertyInfo property)
 		{
 			var currentValue = property.GetValue(instance);
 
@@ -235,7 +270,7 @@ namespace TomPIT.Data
 			return property.GetValue(instance);
 		}
 
-		private object ConvertValue(Type propertyType, object value)
+		private static object ConvertValue(Type propertyType, object value)
 		{
 			if (value == null)
 				return value;

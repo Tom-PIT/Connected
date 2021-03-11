@@ -1,236 +1,159 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Development;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers.Development
 {
-   public class VersionControlController : SysController
-   {
-      [HttpPost]
-      public List<IComponent> QueryChanges()
-      {
-         var body = FromBody();
-         var ms = body.Optional("microService", Guid.Empty);
-         var u = body.Optional("user", Guid.Empty);
+	public class VersionControlController : SysController
+	{
+		[HttpPost]
+		public ImmutableList<IComponent> QueryChanges()
+		{
+			var body = FromBody();
+			var ms = body.Optional("microService", Guid.Empty);
+			var u = body.Optional("user", Guid.Empty);
 
-         if (u != Guid.Empty)
-            return DataModel.Components.QueryLocks(ms, u);
-         else
-            return DataModel.Components.QueryLocks(ms);
-      }
+			if (u != Guid.Empty)
+				return DataModel.Components.QueryLocks(ms, u);
+			else
+				return DataModel.Components.QueryLocks(ms);
+		}
 
-      [HttpPost]
-      public List<ICommit> QueryCommits()
-      {
-         var body = FromBody();
-         var ms = body.Required<Guid>("microService");
-         var u = body.Optional("user", Guid.Empty);
+		[HttpPost]
+		public List<ICommit> QueryCommits()
+		{
+			var body = FromBody();
+			var ms = body.Required<Guid>("microService");
+			var u = body.Optional("user", Guid.Empty);
 
-         if (u != Guid.Empty)
-            return DataModel.VersionControl.QueryCommits(ms, u);
-         else
-            return DataModel.VersionControl.QueryCommits(ms);
-      }
+			if (u != Guid.Empty)
+				return DataModel.VersionControl.QueryCommits(ms, u);
+			else
+				return DataModel.VersionControl.QueryCommits(ms);
+		}
 
-      [HttpPost]
-      public List<ICommit> QueryCommitsForComponent()
-      {
-         var body = FromBody();
-         var ms = body.Required<Guid>("microService");
-         var c = body.Optional("component", Guid.Empty);
+		[HttpPost]
+		public List<ICommit> QueryCommitsForComponent()
+		{
+			var body = FromBody();
+			var ms = body.Required<Guid>("microService");
+			var c = body.Optional("component", Guid.Empty);
 
-         return DataModel.VersionControl.QueryCommitsForComponent(ms, c);
-      }
+			return DataModel.VersionControl.QueryCommitsForComponent(ms, c);
+		}
 
-      [HttpPost]
-      public IComponentHistory SelectNonCommited()
-      {
-         var body = FromBody();
-         var c = body.Required<Guid>("component");
+		[HttpPost]
+		public IComponentHistory SelectNonCommited()
+		{
+			var body = FromBody();
+			var c = body.Required<Guid>("component");
 
-         return DataModel.VersionControl.SelectNonCommited(c);
-      }
+			return DataModel.VersionControl.SelectNonCommited(c);
+		}
 
-      [HttpPost]
-      public List<IComponentHistory> QueryHistory()
-      {
-         var body = FromBody();
-         var c = body.Required<Guid>("component");
+		[HttpPost]
+		public List<IComponentHistory> QueryHistory()
+		{
+			var body = FromBody();
+			var c = body.Required<Guid>("component");
 
-         return DataModel.VersionControl.QueryHistory(c);
-      }
+			return DataModel.VersionControl.QueryHistory(c);
+		}
 
-      [HttpPost]
-      public List<IComponentHistory> QueryCommitDetails()
-      {
-         var body = FromBody();
-         var c = body.Required<Guid>("commit");
+		[HttpPost]
+		public List<IComponentHistory> QueryMicroServiceHistory()
+		{
+			var body = FromBody();
+			var ms = body.Required<Guid>("microService");
 
-         return DataModel.VersionControl.QueryCommitDetails(c);
-      }
+			return DataModel.VersionControl.QueryMicroServiceHistory(ms);
+		}
 
-      [HttpPost]
-      public IComponentHistory SelectCommitDetail()
-      {
-         var body = FromBody();
-         var commit = body.Required<Guid>("commit");
-         var component = body.Required<Guid>("component");
+		[HttpPost]
+		public List<IComponentHistory> QueryCommitDetails()
+		{
+			var body = FromBody();
+			var c = body.Required<Guid>("commit");
 
-         return DataModel.VersionControl.SelectCommitDetail(commit, component);
-      }
+			return DataModel.VersionControl.QueryCommitDetails(c);
+		}
 
-      [HttpPost]
-      public List<IComponent> QueryCommitComponents()
-      {
-         var body = FromBody();
-         var commit = body.Required<Guid>("commit");
+		[HttpPost]
+		public IComponentHistory SelectCommitDetail()
+		{
+			var body = FromBody();
+			var commit = body.Required<Guid>("commit");
+			var component = body.Required<Guid>("component");
 
-         return DataModel.VersionControl.QueryCommitComponents(commit);
-      }
+			return DataModel.VersionControl.SelectCommitDetail(commit, component);
+		}
 
-      [HttpPost]
-      public void Commit()
-      {
-         var body = FromBody();
-         var comment = body.Required<string>("comment");
-         var u = body.Required<Guid>("user");
-         var a = body.Required<JArray>("components");
-         var components = new List<Guid>();
+		[HttpPost]
+		public List<IComponent> QueryCommitComponents()
+		{
+			var body = FromBody();
+			var commit = body.Required<Guid>("commit");
 
-         foreach (JValue i in a)
-            components.Add(Types.Convert<Guid>(i.Value));
+			return DataModel.VersionControl.QueryCommitComponents(commit);
+		}
 
-         DataModel.Components.Commit(components, u, comment);
-      }
+		[HttpPost]
+		public void Commit()
+		{
+			var body = FromBody();
+			var comment = body.Required<string>("comment");
+			var u = body.Required<Guid>("user");
+			var a = body.Required<JArray>("components");
+			var components = new List<Guid>();
 
-      [HttpPost]
-      public ILockInfo SelectLockInfo()
-      {
-         var body = FromBody();
-         var component = body.Required<Guid>("component");
-         var user = body.Required<Guid>("user");
+			foreach (JValue i in a)
+				components.Add(Types.Convert<Guid>(i.Value));
 
-         return DataModel.VersionControl.SelectLockInfo(component, user);
-      }
+			DataModel.Components.Commit(components, u, comment);
+		}
 
-      [HttpPost]
-      public void Lock()
-      {
-         var body = FromBody();
-         var component = body.Required<Guid>("component");
-         var user = body.Required<Guid>("user");
-         var blob = body.Required<Guid>("blob");
-         var verb = body.Required<LockVerb>("verb");
+		[HttpPost]
+		public ILockInfo SelectLockInfo()
+		{
+			var body = FromBody();
+			var component = body.Required<Guid>("component");
+			var user = body.Required<Guid>("user");
 
-         DataModel.VersionControl.Lock(component, user, verb, blob);
-      }
+			return DataModel.VersionControl.SelectLockInfo(component, user);
+		}
 
-      [HttpPost]
-      public void Undo()
-      {
-         var body = FromBody();
-         var component = body.Required<Guid>("component");
+		[HttpPost]
+		public void Lock()
+		{
+			var body = FromBody();
+			var component = body.Required<Guid>("component");
+			var user = body.Required<Guid>("user");
+			var blob = body.Required<Guid>("blob");
+			var verb = body.Required<LockVerb>("verb");
 
-         DataModel.VersionControl.Undo(component);
-      }
+			DataModel.VersionControl.Lock(component, user, verb, blob);
+		}
 
-      [HttpGet]
-      public List<IRepositoriesEndpoint> QueryRepositories()
-      {
-         return DataModel.VersionControl.QueryRepositories();
-      }
-      [HttpGet]
-      public List<IServiceBinding> QueryActiveBindings()
-      {
-         return DataModel.VersionControl.QueryActiveBindings();
-      }
-      [HttpPost]
-      public IServiceBinding SelectBinding()
-      {
-         var body = FromBody();
-         var service = body.Required<Guid>("service");
-         var repo = body.Required<string>("repository");
+		[HttpPost]
+		public void Undo()
+		{
+			var body = FromBody();
+			var component = body.Required<Guid>("component");
 
-         return DataModel.VersionControl.SelectBinding(service, repo);
-      }
-      [HttpPost]
-      public List<IServiceBinding> QueryBindings()
-      {
-         var body = FromBody();
-         var service = body.Required<Guid>("service");
+			DataModel.VersionControl.Undo(component);
+		}
+		[HttpPost]
+		public void DeleteHistory()
+		{
+			var body = FromBody();
+			var component = body.Required<Guid>("component");
 
-         return DataModel.VersionControl.QueryBindings(service);
-      }
-      [HttpPost]
-      public void UpdateBinding()
-      {
-         var body = FromBody();
-         var service = body.Required<Guid>("service");
-         var repository = body.Required<string>("repository");
-         var commit = body.Required<long>("commit");
-         var date = body.Required<DateTime>("date");
-         var active = body.Required<bool>("active");
-
-         DataModel.VersionControl.UpdateBinding(service, repository, commit, date, active);
-      }
-      [HttpPost]
-      public void DeleteBinding()
-      {
-         var body = FromBody();
-         var service = body.Required<Guid>("service");
-         var repository = body.Required<string>("repository");
-
-         DataModel.VersionControl.DeleteBinding(service, repository);
-      }
-      [HttpPost]
-      public void InsertRepository()
-      {
-         var body = FromBody();
-         var name = body.Required<string>("name");
-         var url = body.Required<string>("url");
-         var userName = body.Required<string>("userName");
-         var password = body.Required<string>("password");
-
-         DataModel.VersionControl.InsertRepository(name, url, userName, password);
-      }
-      [HttpPost]
-      public void UpdateRepository()
-      {
-         var body = FromBody();
-
-         var existingName = body.Required<string>("existingName");
-         var name = body.Required<string>("name");
-         var url = body.Required<string>("url");
-         var userName = body.Required<string>("userName");
-         var password = body.Required<string>("password");
-
-         DataModel.VersionControl.UpdateRepository(existingName, name, url, userName, password);
-      }
-      [HttpPost]
-      public void DeleteRepository()
-      {
-         var body = FromBody();
-
-         var existingName = body.Required<string>("existingName");
-         var name = body.Required<string>("name");
-         var url = body.Required<string>("url");
-         var userName = body.Required<string>("userName");
-         var password = body.Required<string>("password");
-
-         DataModel.VersionControl.UpdateRepository(existingName, name, url, userName, password);
-      }
-      [HttpPost]
-      public IRepositoriesEndpoint SelectRepository()
-      {
-         var body = FromBody();
-
-         var name = body.Required<string>("name");
-
-         return DataModel.VersionControl.SelectRepository(name);
-      }
-   }
+			DataModel.VersionControl.DeleteHistory(component);
+		}
+	}
 }

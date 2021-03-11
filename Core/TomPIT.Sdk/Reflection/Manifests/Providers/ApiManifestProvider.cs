@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TomPIT.Annotations;
 using TomPIT.Compilation;
+using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Design.CodeAnalysis;
 using TomPIT.Middleware;
@@ -29,6 +29,42 @@ namespace TomPIT.Reflection.Manifests.Providers
 		private void BindApi(ApiManifest manifest)
 		{
 			manifest.Scope = Configuration.Scope;
+
+			var script = ManifestExtensions.GetScript(Tenant, Configuration, null);
+
+			if(script != null)
+			{
+				var compilation = Tenant.GetService<ICompilerService>().GetCompilation(Configuration);
+
+				if (compilation != null)
+				{
+					var tree = compilation.SyntaxTrees.FirstOrDefault(f => string.Compare(f.FilePath, $"{manifest.Name}.csx", true) == 0);
+					var declaration = tree.FindClass(manifest.Name);
+
+					if (declaration != null)
+					{
+						var model = compilation.GetSemanticModel(tree);
+
+						manifest.Documentation = ManifestExtensions.ExtractDocumentation(declaration);
+					}
+				}
+			}
+
+			using var ctx = new MicroServiceContext(Configuration.MicroService(), Tenant.Url);
+			var info = Tenant.GetService<IDiscoveryService>().MicroServiceInfo(ctx, ctx.MicroService.Token);
+
+			if (info != null)
+			{
+				manifest.Version = info.Version;
+				manifest.TermsOfService = info.TermsOfService;
+				
+				manifest.License.Name = info.License.Name;
+				manifest.License.Url = info.License.Url;
+
+				manifest.Contact.Email = info.Contact.Email;
+				manifest.Contact.Name = info.Contact.Name;
+				manifest.Contact.Url = info.Contact.Url;
+			}
 		}
 
 		private void BindOperations(ApiManifest manifest)
@@ -47,9 +83,10 @@ namespace TomPIT.Reflection.Manifests.Providers
 			var om = new ApiOperationManifest
 			{
 				Name = operation.Name,
-				Scope = operation.Scope
+				Scope = operation.Scope,
+				Id = operation.Id
 			};
-
+			
 			manifest.Operations.Add(om);
 
 			var script = ManifestExtensions.GetScript(Tenant, operation, null);
@@ -71,8 +108,6 @@ namespace TomPIT.Reflection.Manifests.Providers
 			if (operationType.FindAttribute<SupportsTransactionAttribute>() != null)
 				om.SupportsTransaction = true;
 
-			var sw = new Stopwatch();
-			sw.Start();
 			var compilation = Tenant.GetService<ICompilerService>().GetCompilation(operation);
 
 			if (compilation == null)
@@ -81,11 +116,10 @@ namespace TomPIT.Reflection.Manifests.Providers
 				return;
 			}
 
-			sw.Stop();
 			var tree = compilation.SyntaxTrees.FirstOrDefault(f => string.Compare(f.FilePath, $"{operation.Name}.csx", true) == 0);
 			var declaration = tree.FindClass(operation.Name);
 			var model = compilation.GetSemanticModel(tree);
-
+			
 			BindType(model, declaration, om, manifest.Types);
 			BindExtenders(model, declaration, om);
 
@@ -109,11 +143,28 @@ namespace TomPIT.Reflection.Manifests.Providers
 
 			if (distributed != null)
 				om.Distributed = true;
+
+			if (declaration.AttributeLists.ContainsAttribute<HttpGetAttribute>(model))
+				om.Verbs |= HttpVerbs.Get;
+			else if (declaration.AttributeLists.ContainsAttribute<HttpPostAttribute>(model))
+				om.Verbs |= HttpVerbs.Post;
+			else if (declaration.AttributeLists.ContainsAttribute<HttpDeleteAttribute>(model))
+				om.Verbs |= HttpVerbs.Delete;
+			else if (declaration.AttributeLists.ContainsAttribute<HttpHeadAttribute>(model))
+				om.Verbs |= HttpVerbs.Head;
+			else if (declaration.AttributeLists.ContainsAttribute<HttpOptionsAttribute>(model))
+				om.Verbs |= HttpVerbs.Options;
+			else if (declaration.AttributeLists.ContainsAttribute<HttpPatchAttribute>(model))
+				om.Verbs |= HttpVerbs.Patch;
+			else if (declaration.AttributeLists.ContainsAttribute<HttpPutAttribute>(model))
+				om.Verbs |= HttpVerbs.Put;
+			else if (declaration.AttributeLists.ContainsAttribute<HttpTraceAttribute>(model))
+				om.Verbs |= HttpVerbs.Trace;
 		}
 
 		private void BindExtenders(SemanticModel model, ClassDeclarationSyntax syntax, ApiOperationManifest manifest)
 		{
-			if (syntax == null || syntax.AttributeLists == null)
+			if (syntax == null || syntax.AttributeLists.Count == 0)
 				return;
 
 			foreach (var attributeList in syntax.AttributeLists)

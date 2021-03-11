@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Security;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers.Management
 {
@@ -69,7 +69,7 @@ namespace TomPIT.Sys.Controllers.Management
 		}
 
 		[HttpGet]
-		public List<IMembership> QueryMembership(Guid role)
+		public ImmutableList<IMembership> QueryMembership(Guid role)
 		{
 			return DataModel.Membership.QueryForRole(role);
 		}

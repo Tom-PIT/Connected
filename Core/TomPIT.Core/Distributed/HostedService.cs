@@ -5,43 +5,43 @@ using Microsoft.Extensions.Hosting;
 
 namespace TomPIT.Distributed
 {
-	public abstract class HostedService : IHostedService
+	public abstract class HostedService : BackgroundService
 	{
-		private Task _executingTask = null;
+		//private Task _executingTask = null;
 
 		protected bool Initialized { get; private set; }
-		public virtual Task StartAsync(CancellationToken cancel)
-		{
-			if (cancel.IsCancellationRequested)
-				return Task.CompletedTask;
+		//public virtual Task StartAsync(CancellationToken cancel)
+		//{
+			//if (cancel.IsCancellationRequested)
+			//	return Task.CompletedTask;
 
-			_executingTask = ExecuteAsync(cancel);
+			//_executingTask = ExecuteAsync(cancel);
 
-			if (_executingTask.IsCompleted)
-				return _executingTask;
+			//if (_executingTask.IsCompleted)
+			//	return _executingTask;
 
-			return Task.CompletedTask;
-		}
+			//return Task.CompletedTask;
+		//}
 
-		public virtual async Task StopAsync(CancellationToken cancel)
-		{
-			if (_executingTask == null)
-				return;
+		//public virtual async Task StopAsync(CancellationToken cancel)
+		//{
+		//	if (_executingTask == null)
+		//		return;
 
-			await Task.WhenAny(_executingTask, Task.Delay(Timeout.Infinite, cancel));
-		}
+		//	await Task.WhenAny(_executingTask, Task.Delay(Timeout.Infinite, cancel));
+		//}
 
-		protected virtual async Task ExecuteAsync(CancellationToken cancel)
+		protected override async Task ExecuteAsync(CancellationToken cancel)
 		{
 			do
 			{
 				try
 				{
 					if (!Initialized)
-						Initialized = Initialize(cancel);
+						Initialized = OnInitialize(cancel);
 
 					if (Initialized)
-						await Process(cancel);
+						await OnExecute(cancel);
 				}
 				catch
 				{
@@ -59,12 +59,12 @@ namespace TomPIT.Distributed
 			while (!cancel.IsCancellationRequested);
 		}
 
-		protected virtual bool Initialize(CancellationToken cancel)
+		protected virtual bool OnInitialize(CancellationToken cancel)
 		{
 			return true;
 		}
 
-		protected abstract Task Process(CancellationToken cancel);
+		protected abstract Task OnExecute(CancellationToken cancel);
 
 		protected TimeSpan IntervalTimeout { get; set; } = TimeSpan.FromSeconds(5);
 	}

@@ -144,7 +144,8 @@
                                                         declaration: e.declaration,
                                                         definition: e.definition,
                                                         signatureHelp: e.signatureHelp,
-                                                        documentSymbol: e.documentSymbol
+                                                        documentSymbol: e.documentSymbol,
+                                                        documentFormatting: e.documentFormatting
                                                     });
                                                 }
 
@@ -255,8 +256,10 @@
             var result = [];
 
             $.each(this.options.state, function (i, v) {
-                if (v.dirty)
+                if (v.dirty) {
                     result.push(v);
+                    v.dirty = false;
+                }
             });
 
             return result;
@@ -267,11 +270,6 @@
 
             $.each(this.options.state, function (i, v) {
                 if (v.model === state.model) {
-                    if (!state.dirty) {
-                        if (state.timestamp < v.timestamp)
-                            return false;
-                    }
-
                     existingState = v;
                     existingStateIndex = i;
                     return false;
@@ -282,13 +280,10 @@
                 if (!state.dirty)
                     return;
 
-                if (typeof state.timestamp === 'undefined')
-                    state.timestamp = Date.now();
-
                 this.options.state.push(state);
             }
             else {
-                if (!state.dirty && state.timestamp >= existingState.timestamp)
+                if (!existingState.dirty)
                     this.options.state.splice(existingStateIndex, 1);
                 else
                     existingState.dirty = true;
@@ -329,6 +324,9 @@
 
             if (features.documentSymbol)
                 this._documentSymbol(language);
+
+            if (features.documentFormatting)
+                this._documentFormatting(language);
 
         },
         setTargetProperty: function (property) {
@@ -601,6 +599,42 @@
                             ide.designerAction({
                                 data: {
                                     action: 'provideDocumentSymbols',
+                                    section: 'designer',
+                                    property: instance.options.property,
+                                    model: {
+                                        'id': model.id,
+                                        'uri': model.uri.toString(),
+                                        'version': model._versionId
+                                    },
+                                    text: model.getValue()
+                                },
+                                onComplete: function (data) {
+                                    if (data)
+                                        resolve(data);
+                                    else
+                                        reject();
+                                }
+
+                            }, false);
+                        }
+                        catch (e) {
+                            reject();
+                            console.log(e);
+                        }
+                    });
+                }
+            });
+        },
+        _documentFormatting: function (language) {
+            var instance = this;
+
+            monaco.languages.registerDocumentFormattingEditProvider(language, {
+                provideDocumentFormattingEdits: function (model, options) {
+                    return new Promise(function (resolve, reject) {
+                        try {
+                            ide.designerAction({
+                                data: {
+                                    action: 'provideDocumentFormattingEdits',
                                     section: 'designer',
                                     property: instance.options.property,
                                     model: {

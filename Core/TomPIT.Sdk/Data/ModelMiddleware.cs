@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations.Models;
@@ -20,16 +22,8 @@ namespace TomPIT.Data
 	{
 		private IComponent _component = null;
 		private IModelConfiguration _configuration = null;
-		public int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation)
-		{
-			return Execute(operation, null);
-		}
 
-		public int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
-		{
-			return Execute(operation, e, null);
-		}
-		public int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e, [CIP(CIP.ModelOperationParametersProvider)] object staticArguments)
+		public int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
@@ -39,43 +33,28 @@ namespace TomPIT.Data
 
 			w.CommandType = descriptor.Type == CommandTextType.Procedure ? CommandType.StoredProcedure : CommandType.Text;
 
-			BindParameters(w, staticArguments, descriptor, true);
-			BindParameters(w, e, descriptor, false);
+			ResetParameters(w);
+
+			foreach (var arg in e)
+				BindParameters(w, arg, descriptor);
 
 			var recordsAffected = w.Execute();
 
-			if (recordsAffected == 0 && Concurrency == ConcurrencyMode.Enabled)
+			if (recordsAffected == 0 && Concurrency == ConcurrencyMode.Enabled && descriptor.SupportsConcurrency)
 				throw new ConcurrencyException(GetType(), operation);
 
-			BindReturnValues(w, e);
+			foreach (var arg in e)
+				BindReturnValues(w, arg);
 
 			return recordsAffected;
 		}
 
-		public List<T> Query([CIP(CIP.ModelQueryOperationProvider)] string operation)
+		public List<T> Query([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
 		{
-			return Query(operation, null);
+			return Query<T>(operation, e);
 		}
 
-		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)] string operation)
-		{
-			return Query<R>(operation, null);
-		}
-
-		public List<T> Query([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
-		{
-			return Query(operation, e, null);
-		}
-		public List<T> Query([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e, [CIP(CIP.ModelOperationParametersProvider)] object staticArguments)
-		{
-			return Query<T>(operation, e, staticArguments);
-		}
-
-		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
-		{
-			return Query<R>(operation, e, null);
-		}
-		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e, [CIP(CIP.ModelOperationParametersProvider)] object staticArguments)
+		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
@@ -85,36 +64,19 @@ namespace TomPIT.Data
 
 			r.CommandType = descriptor.Type == CommandTextType.Procedure ? CommandType.StoredProcedure : CommandType.Text;
 
-			BindParameters(r, staticArguments, descriptor, true);
-			BindParameters(r, e, descriptor, false);
+			ResetParameters(r);
+
+			foreach (var arg in e)
+				BindParameters(r, arg, descriptor);
 
 			return r.Query();
 		}
 
-		public T Select([CIP(CIP.ModelQueryOperationProvider)] string operation)
+		public T Select([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
 		{
-			return Select(operation, null);
+			return Select<T>(operation, e);
 		}
-
-		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)] string operation)
-		{
-			return Select<R>(operation, null);
-		}
-
-		public T Select([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
-		{
-			return Select(operation, e, null);
-		}
-		public T Select([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e, [CIP(CIP.ModelOperationParametersProvider)] object staticArguments)
-		{
-			return Select<T>(operation, e, staticArguments);
-		}
-
-		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e)
-		{
-			return Select<R>(operation, e, null);
-		}
-		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] object e, [CIP(CIP.ModelOperationParametersProvider)] object staticArguments)
+		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
@@ -124,8 +86,10 @@ namespace TomPIT.Data
 
 			r.CommandType = descriptor.Type == CommandTextType.Procedure ? CommandType.StoredProcedure : CommandType.Text;
 
-			BindParameters(r, staticArguments, descriptor, true);
-			BindParameters(r, e, descriptor, false);
+			ResetParameters(r);
+
+			foreach (var arg in e)
+				BindParameters(r, arg, descriptor);
 
 			return r.Select();
 		}
@@ -173,9 +137,12 @@ namespace TomPIT.Data
 				throw new RuntimeException(nameof(ModelMiddleware<T>), SR.ErrConnectionNotFound, LogCategories.Middleware);
 
 			var ms = Context.Tenant.GetService<IMicroServiceService>().Select(Configuration.MicroService());
-			//TODO: implement option to set ConnectionBehavior
-			return Context.OpenConnection($"{ms.Name}/{connection.Name}", ConnectionBehavior.Shared, null);
+
+			return Context.OpenConnection($"{ms.Name}/{connection.Name}", ConnectionBehavior, ConnectionArguments);
 		}
+
+		public virtual ConnectionBehavior ConnectionBehavior { get; set; } = ConnectionBehavior.Shared;
+		protected virtual object ConnectionArguments { get; }
 
 		private ICommandTextDescriptor CreateDescriptor(IModelOperation operation, IDataConnection connection)
 		{
@@ -192,17 +159,26 @@ namespace TomPIT.Data
 			return parser.Parse(text);
 		}
 
-		private void BindParameters(IDataCommand command, object e, ICommandTextDescriptor descriptor, bool reset)
+		private void ResetParameters(IDataCommand command)
 		{
-			if (reset)
-			{
-				foreach (var parameter in command.Parameters)
-					command.SetParameter(parameter.Name, null);
-			}
-
+			foreach (var parameter in command.Parameters)
+				command.SetParameter(parameter.Name, null);
+		}
+		private void BindParameters(IDataCommand command, object e, ICommandTextDescriptor descriptor)
+		{
 			if (e == null)
 				return;
 
+			if (Reflection.TypeExtensions.IsDictionary(e))
+				BindDictionaryParameters(command, e, descriptor);
+			else if (e is ExpandoObject)
+				BindExpandoObjectParameters(command, e, descriptor);
+			else
+				BindObjectParameters(command, e, descriptor);
+		}
+
+		private void BindObjectParameters(IDataCommand command, object e, ICommandTextDescriptor descriptor)
+		{
 			var properties = e.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
 			foreach (var parameter in descriptor.Parameters)
@@ -259,6 +235,7 @@ namespace TomPIT.Data
 						value = (byte[])Version.Parse(value);
 
 					command.SetParameter(parameter.Name, value, nullable);
+					descriptor.SupportsConcurrency = true;
 				}
 			}
 
@@ -276,6 +253,23 @@ namespace TomPIT.Data
 					}
 				}
 			}
+		}
+
+		private void BindExpandoObjectParameters(IDataCommand command, object e, ICommandTextDescriptor descriptor)
+		{
+			var en = e as ExpandoObject;
+
+			foreach (var property in en)
+				command.SetParameter(property.Key, property.Value);
+		}
+
+		private void BindDictionaryParameters(IDataCommand command, object e, ICommandTextDescriptor descriptor)
+		{
+			var en = e as IEnumerable;
+			var enumerator = en.GetEnumerator() as IDictionaryEnumerator;
+
+			while (enumerator.MoveNext())
+				command.SetParameter(enumerator.Key as string, enumerator.Value);
 		}
 
 		public T CreateEntity(object instance)

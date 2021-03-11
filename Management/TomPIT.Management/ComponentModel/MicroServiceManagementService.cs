@@ -53,7 +53,7 @@ namespace TomPIT.Management.ComponentModel
 			foreach (var i in model.Items)
 				DeleteFolder(i);
 
-			Tenant.GetService<IDesignService>().Components.DeleteFolder(model.Folder.MicroService, model.Folder.Token);
+			Tenant.GetService<IDesignService>().Components.DeleteFolder(model.Folder.MicroService, model.Folder.Token, true);
 		}
 
 		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status, IPackage package, string version)

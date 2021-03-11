@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.Rest.Controllers;
 
@@ -11,11 +10,11 @@ namespace TomPIT.Rest.Routing
 		{
 			routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
 
-			routes.Map("{microservice}/{api}/{operation}", (t) =>
+			routes.Map("{microservice}/{api}/{operation}", async (t) =>
 			{
-				new ApiHandler(t).Invoke();
+				using var handler = new ApiHandler(t);
 
-				return Task.CompletedTask;
+				await handler.Invoke();
 			});
 		}
 	}

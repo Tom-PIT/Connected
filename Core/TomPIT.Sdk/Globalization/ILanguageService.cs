@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace TomPIT.Globalization
 {
@@ -7,6 +7,6 @@ namespace TomPIT.Globalization
 	{
 		ILanguage Select(Guid language);
 		ILanguage Select(int lcid);
-		List<ILanguage> Query();
+		ImmutableList<ILanguage> Query();
 	}
 }

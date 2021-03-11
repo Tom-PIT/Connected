@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.Collections.Immutable;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.Security;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers
 {
 	public class AlienController : SysController
 	{
 		[HttpGet]
-		public List<IAlien> Query()
+		public ImmutableList<IAlien> Query()
 		{
 			return DataModel.Aliens.Query();
 		}

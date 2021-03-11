@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using DevExpress.XtraReports.UI;
+using TomPIT.ComponentModel;
 using TomPIT.Design;
+using TomPIT.Environment;
 using TomPIT.MicroServices.Reporting.Storage;
 using TomPIT.Middleware;
 
@@ -22,7 +25,18 @@ namespace TomPIT.MicroServices.Reporting.Design.Storage
 
 		public override Dictionary<string, string> GetUrls()
 		{
-			return new Dictionary<string, string>();
+			var resourceGroups = MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>().Query();
+			var reports = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().QueryComponents(resourceGroups.Select(f => f.Name).ToList(), ComponentCategories.Report);
+			var r = new Dictionary<string, string>();
+
+			foreach (var report in reports)
+			{
+				var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(report.MicroService);
+
+				r.Add($"{ms.Name}/{report.Name}", $"{report.Name} ({ms.Name})");
+			}
+
+			return r;
 		}
 
 		public override void SetData(XtraReport report, string url)

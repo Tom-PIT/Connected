@@ -105,10 +105,10 @@ namespace TomPIT.Cdn.Mail
 		{
 			get
 			{
-				if (_to == null)
-					_to = new List<IInboxAddress>();
+				if (_cc == null)
+					_cc = new List<IInboxAddress>();
 
-				return _to;
+				return _cc;
 			}
 		}
 

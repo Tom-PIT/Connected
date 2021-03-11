@@ -11,47 +11,50 @@ namespace TomPIT.Data
 {
 	internal abstract class DataCommand : MiddlewareObject, IDataCommand
 	{
-		private List<TomPIT.Data.IDataParameter> _parameters = null;
+		private object _sync = new object();
+		private List<IDataParameter> _parameters = null;
 
 		public string CommandText { get; set; }
 		public CommandType CommandType { get; set; } = CommandType.StoredProcedure;
 		public int CommandTimeout { get; set; } = 30;
 		public IDataConnection Connection { get; set; }
 
+		protected IDataCommandDescriptor Command { get; private set; }
+
 		protected DataCommand(IMiddlewareContext context) : base(context)
 		{
 		}
 
-		public List<TomPIT.Data.IDataParameter> Parameters
+		public List<IDataParameter> Parameters
 		{
 			get
 			{
 				if (_parameters == null)
-					_parameters = new List<TomPIT.Data.IDataParameter>();
+					_parameters = new List<IDataParameter>();
 
 				return _parameters;
 			}
 		}
 
-		public TomPIT.Data.IDataParameter SetParameter(string name, object value)
+		public IDataParameter SetParameter(string name, object value)
 		{
 			return SetParameter(name, value, false);
 		}
 
-		public TomPIT.Data.IDataParameter SetParameter(string name, object value, bool nullMapping)
+		public IDataParameter SetParameter(string name, object value, bool nullMapping)
 		{
 			return ResolveParameter(name, value, nullMapping, null);
 		}
-		public TomPIT.Data.IDataParameter SetParameter(string name, object value, bool nullMapping, DbType type)
+		public IDataParameter SetParameter(string name, object value, bool nullMapping, DbType type)
 		{
 			return ResolveParameter(name, value, nullMapping, type);
 		}
 
-		private TomPIT.Data.IDataParameter ResolveParameter(string name, object value, bool nullMapping, DbType? type)
+		private IDataParameter ResolveParameter(string name, object value, bool nullMapping, DbType? type)
 		{
 			var parameter = Parameters.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0);
 			var mappedValue = nullMapping ? MapNullValue(value) : MapValue(value);
-			var dbType = type != null ? (DbType)type : mappedValue == null || mappedValue == DBNull.Value ? DbType.String : Types.ToDbType(mappedValue.GetType());
+			var dbType = type != null ? (DbType)type : value == null || value == DBNull.Value ? DbType.String : Types.ToDbType(value.GetType());
 
 			if (parameter == null)
 			{
@@ -70,14 +73,6 @@ namespace TomPIT.Data
 			return parameter;
 		}
 
-		private Type ResolveType(object value)
-		{
-			if (value == null || value == DBNull.Value)
-				return typeof(string);
-
-			return value.GetType();
-		}
-
 		private object MapValue(object value)
 		{
 			if (value == null || value == DBNull.Value)
@@ -87,6 +82,8 @@ namespace TomPIT.Data
 			{
 				if (value.GetType().IsEnum)
 					return Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()));
+				else if (value is DateTimeOffset date)
+					return date.UtcDateTime;
 
 				return value;
 			}
@@ -112,6 +109,13 @@ namespace TomPIT.Data
 				if ((DateTime)value == DateTime.MinValue)
 					return DBNull.Value;
 			}
+			else if (value is DateTimeOffset offset)
+			{
+				if (offset == DateTimeOffset.MinValue)
+					return DBNull.Value;
+
+				return offset.UtcDateTime;
+			}
 			else if (value is int || value is float || value is double || value is short || value is byte || value is long || value is decimal)
 			{
 				if (Convert.ToDecimal(value) == decimal.Zero)
@@ -129,8 +133,10 @@ namespace TomPIT.Data
 			}
 			else if (value is Enum)
 			{
-				if ((int)value == 0)
+				if (Convert.ToDouble(value) == 0d)
 					return DBNull.Value;
+
+				return Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()));
 			}
 			else if (value is TimeSpan)
 			{
@@ -151,7 +157,37 @@ namespace TomPIT.Data
 			return value.Trim();
 		}
 
-		protected IDataCommandDescriptor CreateCommand()
+		protected void EnsureCommand()
+		{
+			if (Command == null)
+			{
+				lock (_sync)
+				{
+					if (Command == null)
+						Command = CreateCommand();
+				}
+			}
+
+			SynchronizeParameters();
+		}
+
+		private void SynchronizeParameters()
+		{
+			Command.Parameters.Clear();
+
+			foreach (var parameter in Parameters)
+			{
+				Command.Parameters.Add(new CommandParameter
+				{
+					Direction = parameter.Direction,
+					Name = parameter.Name,
+					Value = parameter.Value,
+					DataType = parameter.Type
+				});
+			}
+		}
+
+		private IDataCommandDescriptor CreateCommand()
 		{
 			var r = new DataCommandDescriptor
 			{
@@ -160,24 +196,11 @@ namespace TomPIT.Data
 				CommandTimeout = CommandTimeout
 			};
 
-			foreach (var parameter in Parameters)
-			{
-				r.Parameters.Add(new CommandParameter
-				{
-					Direction = parameter.Direction,
-					Name = parameter.Name,
-					Value = parameter.Value,
-					DataType = parameter.Type
-				});
-			}
-
 			return r;
 		}
 
-
 		#region IDisposable
-
-		public void Dispose()
+		protected override void OnDisposing()
 		{
 			if (_parameters != null)
 			{
@@ -186,14 +209,9 @@ namespace TomPIT.Data
 			}
 
 			CommandText = null;
-
 			Connection = null;
 
-			OnDispose();
-		}
-
-		protected virtual void OnDispose()
-		{
+			base.OnDisposing();
 		}
 
 		#endregion

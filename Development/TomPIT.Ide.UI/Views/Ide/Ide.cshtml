@@ -60,16 +60,18 @@
         }
     }
 
-    <environment names="Staging,Production">
-        <link rel="stylesheet" type="text/css" href="~/Assets/ide.min.css" />
-        <script src="~/Assets/ide.min.js"></script>
-    </environment>
+<environment names="Staging,Production">
+    <link rel="stylesheet" type="text/css" href="~/Assets/ide.min.css" />
+    <script src="~/Assets/ide.min.js"></script>
+    <script src="~/Assets/environment.min.js"></script>
+</environment>
 
-    <environment names="Development">
-        <link rel="stylesheet" type="text/css" href="~/Assets/Styles/ide.css" />
-        <script src="~/Assets/Scripts/ide.js"></script>
-        <script src="~/Assets/Scripts/textEditor.js"></script>
-    </environment>
+<environment names="Development">
+    <link rel="stylesheet" type="text/css" href="~/Assets/Styles/ide.css" />
+    <script src="~/Assets/Scripts/ide.js"></script>
+    <script src="~/Assets/Scripts/textEditor.js"></script>
+    <script src="~/Assets/Scripts/environment.js"></script>
+</environment>
 }
 
 <script src="~/Assets/Libraries/monaco/vs/loader.js"></script>
@@ -91,6 +93,7 @@
 
     tompit.DEVDEFAULTS = {
         environmentUrl: '@Model.IdeUrl',
+        rootUrl: '@Model.Context.Services.Routing.RootUrl'
     };
 
     tompit.DEVGLOBALIZE = {
@@ -200,4 +203,7 @@
         else if(callback)
             callback();
     }
+
+    if (env)
+        env.initialize();
 </script>

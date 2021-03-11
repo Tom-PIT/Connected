@@ -13,7 +13,7 @@ namespace TomPIT.BigData.Partitions
 	internal class MaintenanceJob : DispatcherJob<IQueueMessage>
 	{
 		private TimeoutTask _timeout = null;
-		public MaintenanceJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
+		public MaintenanceJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 

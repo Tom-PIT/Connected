@@ -16,20 +16,20 @@ namespace TomPIT.Development.Analysis
 			IntervalTimeout = TimeSpan.FromMilliseconds(5000);
 		}
 
-		protected override bool Initialize(CancellationToken cancel)
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			var tenants = Shell.GetService<IConnectivityService>()?.QueryTenants();
 
 			if (tenants != null)
 			{
 				foreach (var tenant in tenants)
-					Dispatchers.Add(new ComponentAnalysisDispatcher(Shell.GetService<IConnectivityService>().SelectTenant(tenant.Url), cancel));
+					Dispatchers.Add(new ComponentAnalysisDispatcher(Shell.GetService<IConnectivityService>().SelectTenant(tenant.Url)));
 			}
 
 			return tenants != null;
 		}
 
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -46,5 +46,15 @@ namespace TomPIT.Development.Analysis
 		}
 
 		private List<ComponentAnalysisDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+
+		public override void Dispose()
+		{
+			foreach (var dispatcher in Dispatchers)
+				dispatcher.Dispose();
+
+			Dispatchers.Clear();
+
+			base.Dispose();
+		}
 	}
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using TomPIT.BigData.Nodes;
 using TomPIT.BigData.Partitions;
 using TomPIT.BigData.Persistence;
+using TomPIT.Diagnostics;
 using TomPIT.Diagostics;
 using TomPIT.Middleware;
 
@@ -46,6 +47,7 @@ namespace TomPIT.BigData.Transactions
 			}
 			catch (Exception ex)
 			{
+				Dump(ex.Message);
 				MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, "BigData");
 
 				throw;
@@ -96,6 +98,7 @@ namespace TomPIT.BigData.Transactions
 					{
 						ReleaseLocks(r);
 						Locked = true;
+						Dump($"{dfc.File.FileName} locked");
 						return null;
 					}
 
@@ -113,12 +116,14 @@ namespace TomPIT.BigData.Transactions
 
 				if (targetFiles.Count() == 0)
 				{
+					Dump($"no target files");
 					var dfc = CreateDataFileContext(timestampValue, min, max);
 
 					if (dfc == null)
 					{
 						ReleaseLocks(r);
 						Locked = true;
+						Dump($"{dfc.File.FileName} locked (in target files)");
 						return null;
 					}
 
@@ -143,6 +148,7 @@ namespace TomPIT.BigData.Transactions
 						{
 							ReleaseLocks(r);
 							Locked = true;
+							Dump($"{j.File.FileName} locked");
 							return null;
 						}
 					}
@@ -177,6 +183,7 @@ namespace TomPIT.BigData.Transactions
 					{
 						ReleaseLocks(r);
 						Locked = true;
+						Dump($"cannot obtain lock");
 						return null;
 					}
 
@@ -213,10 +220,14 @@ namespace TomPIT.BigData.Transactions
 					return result;
 				}
 
+				Dump($"creating new file");
 				var fileId = FileManager.CreateFile(Provider.Block.Partition, PartitionKey, timestamp);
 
 				if (fileId == Guid.Empty)
+				{
+					Dump($"create new file rejected");
 					return null;
+				}
 				else
 				{
 					var dfc = new DataFileContext
@@ -226,7 +237,10 @@ namespace TomPIT.BigData.Transactions
 					};
 
 					if (dfc.Lock == Guid.Empty)
+					{
+						Dump($"cannot obtain lock on a new file");
 						return null;
+					}
 
 					dfc.File = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().SelectFile(fileId);
 
@@ -240,15 +254,28 @@ namespace TomPIT.BigData.Transactions
 			for (var i = 0; i < transactions.Count; i++)
 			{
 				var transaction = transactions[i];
+				
+				Dump($"merging transaction on file {transaction.File.FileName}");
 
 				if (transaction.File.Status == PartitionFileStatus.Closed)
-					RemoveUpdated(transactions, PartialMerge(transaction));
+				{
+					Dump($"partial merge on file {transaction.File.FileName}");
+
+					var dt = PartialMerge(transaction);
+
+					Dump($"partial merge updates {Updater.ToCsv(dt)}");
+
+					RemoveUpdated(transactions, dt);
+				}
 				else
 				{
 					if (i > 0)
 						MergeRemainingRows(transaction, transactions);
 
 					var dt = FullMerge(transaction);
+
+					Dump($"full merge on file {transaction.File.FileName}");
+					Dump($"full merge updates {Updater.ToCsv(dt)}");
 
 					if (i < transactions.Count - 1)
 						RemoveUpdated(transactions, dt);
@@ -377,6 +404,11 @@ namespace TomPIT.BigData.Transactions
 			}
 
 			return false;
+		}
+
+		private void Dump(string text)
+		{
+			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"Merger, PartitionKey:{PartitionKey}, {text}.");
 		}
 	}
 }

@@ -159,14 +159,21 @@ namespace TomPIT.Design.CodeAnalysis
 		internal static string ToDisplayName(this ITypeSymbol symbol)
 		{
 			var sb = new StringBuilder();
+			var targetSymbol = symbol;
 
-			if (!string.IsNullOrWhiteSpace(symbol.ContainingNamespace.Name))
-				sb.Append($"{symbol.ContainingNamespace.ToDisplayString()}.");
+			if (symbol is IArrayTypeSymbol array)
+				targetSymbol = array.ElementType;
 
-			sb.Append(symbol.MetadataName);
+			if (!string.IsNullOrWhiteSpace(targetSymbol.ContainingNamespace.Name))
+				sb.Append($"{targetSymbol.ContainingNamespace.ToDisplayString()}.");
 
-			if (!string.IsNullOrWhiteSpace(symbol.ContainingAssembly.Name))
-				sb.Append($", {symbol.ContainingAssembly.ToDisplayString()}");
+			sb.Append(targetSymbol.MetadataName);
+
+			if (symbol is IArrayTypeSymbol)
+				sb.Append("[]");
+
+			if (!string.IsNullOrWhiteSpace(targetSymbol.ContainingAssembly.Name))
+				sb.Append($", {targetSymbol.ContainingAssembly.ToDisplayString()}");
 
 			return sb.ToString();
 		}

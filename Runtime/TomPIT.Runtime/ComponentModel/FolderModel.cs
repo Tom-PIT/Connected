@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.Deployment;
 
@@ -44,7 +45,7 @@ namespace TomPIT.ComponentModel
 			return r;
 		}
 
-		public static List<FolderModel> Create(List<IFolder> folders)
+		public static List<FolderModel> Create(ImmutableList<IFolder> folders)
 		{
 			var r = new List<FolderModel>();
 			var root = folders.Where(f => f.Parent == Guid.Empty);

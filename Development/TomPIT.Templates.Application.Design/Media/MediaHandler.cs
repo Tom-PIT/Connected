@@ -512,7 +512,7 @@ namespace TomPIT.MicroServices.Design.Media
 
 				if (blob != null)
 				{
-					var ctx = new MicroServiceContext(Tenant.GetService<IMicroServiceService>().Select(blob.MicroService), Tenant.Url);
+					using var ctx = new MicroServiceContext(Tenant.GetService<IMicroServiceService>().Select(blob.MicroService), Tenant.Url);
 
 					descriptor.Icon = $"{ctx.Services.Routing.RootUrl}/sys/media/{blob.Token}/{blob.Version}";
 				}

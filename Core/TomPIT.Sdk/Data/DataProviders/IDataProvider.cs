@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using Newtonsoft.Json.Linq;
+using TomPIT.Middleware;
 
 namespace TomPIT.Data.DataProviders
 {
@@ -8,7 +9,7 @@ namespace TomPIT.Data.DataProviders
 	/// Defines contract for implementing DataProvider which interacts with physical
 	/// data storages.
 	/// </summary>
-	public interface IDataProvider
+	public interface IDataProvider : IDisposable
 	{
 		/// <summary>
 		/// Returns records based on specified criteria.
@@ -47,7 +48,7 @@ namespace TomPIT.Data.DataProviders
 		/// <param name="connectionString">The actual connection string of the data source 
 		/// to connect to.</param>
 		/// <returns></returns>
-		IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior);
-		void TestConnection(string connectionString);
+		IDataConnection OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior);
+		void TestConnection(IMiddlewareContext context, string connectionString);
 	}
 }

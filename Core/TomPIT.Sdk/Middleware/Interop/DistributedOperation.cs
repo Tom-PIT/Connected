@@ -111,9 +111,13 @@ namespace TomPIT.Middleware.Interop
 			{
 				if (OperationTarget == DistributedOperationTarget.Distributed)
 				{
-					AuthorizePolicies();
-					OnAuthorizing();
-					OnAuthorize();
+					if (Context.Environment.IsInteractive)
+					{
+						AuthorizePolicies();
+						OnAuthorizing();
+						OnAuthorize();
+					}
+
 					OnBeginInvoke();
 				}
 				else
@@ -123,9 +127,6 @@ namespace TomPIT.Middleware.Interop
 				}
 
 				Invoked();
-
-				if (OperationTarget == DistributedOperationTarget.Distributed && !((MiddlewareCallback)Callback).Attached)
-					Context.Services.Cdn.Events.TriggerEvent("$", this, Callback);
 			}
 			catch (System.ComponentModel.DataAnnotations.ValidationException)
 			{
@@ -139,6 +140,14 @@ namespace TomPIT.Middleware.Interop
 
 				ExceptionDispatchInfo.Capture(se).Throw();
 			}
+		}
+
+		protected internal override void OnCommitting()
+		{
+			base.OnCommitting();
+
+			if (OperationTarget == DistributedOperationTarget.Distributed && !((MiddlewareCallback)Callback).Attached)
+				Context.Services.Cdn.Events.TriggerEvent("$", this, Callback);
 		}
 
 		protected virtual void OnInvoke()

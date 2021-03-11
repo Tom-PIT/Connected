@@ -1,30 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Cdn;
 using TomPIT.Storage;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers.Management
 {
 	public class SubscriptionManagementController : SysController
 	{
 		[HttpPost]
-		public List<IQueueMessage> Dequeue()
+		public ImmutableList<IQueueMessage> Dequeue()
 		{
 			var body = FromBody();
 			var count = body.Required<int>("count");
-			var r = new List<IQueueMessage>();
 
 			return DataModel.Subscriptions.Dequeue(count);
 		}
 
 		[HttpPost]
-		public List<IQueueMessage> DequeueEvents()
+		public ImmutableList<IQueueMessage> DequeueEvents()
 		{
 			var body = FromBody();
 			var count = body.Required<int>("count");
-			var r = new List<IQueueMessage>();
 
 			return DataModel.Subscriptions.DequeueEvents(count);
 		}

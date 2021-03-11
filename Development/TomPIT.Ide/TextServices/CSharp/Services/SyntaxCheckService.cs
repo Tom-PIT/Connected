@@ -23,7 +23,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 			else
 			{
 				var methods = service.GetType().GetMethods().Where(f => string.Compare(f.Name, nameof(ICompilerService.GetScript), false) == 0);
-
+				
 				foreach (var method in methods)
 				{
 					if (method.IsGenericMethod)

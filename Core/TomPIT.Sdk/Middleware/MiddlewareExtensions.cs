@@ -58,11 +58,8 @@ namespace TomPIT.Middleware
 		{
 			var u = context.Services.Identity.GetUser(user);
 
-			if (u == null)
-				throw new RuntimeException(SR.ErrUserNotFound);
-
 			if (context.Services.Identity is MiddlewareIdentityService mc)
-				mc.ImpersonatedUser = u.Token.ToString();
+				mc.ImpersonatedUser = u?.Token.ToString();
 		}
 
 		public static void RevokeImpersonation(this IMiddlewareContext context)
@@ -85,7 +82,7 @@ namespace TomPIT.Middleware
 
 			foreach (var property in properties)
 			{
-				var reflected = component.GetType().GetProperty(property.Key, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+				var reflected = component.GetType().GetProperty(property.Key, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance| BindingFlags.IgnoreCase);
 
 				if (reflected == null)
 					throw new RuntimeException($"{SR.ErrPropertyNotFound} ({property.Key})");

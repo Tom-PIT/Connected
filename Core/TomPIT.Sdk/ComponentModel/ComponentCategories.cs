@@ -22,7 +22,10 @@
 		public static string StringTable => "StringTable";
 		public static string Media => "Media";
 		public static string EmbeddedAssembly => "EmbeddedAssembly";
+		public static string NuGetPackage => "NuGetPackage";
+		public static string EmbeddedNuGetPackage => "EmbeddedNuGetPackage";
 		public static string FileAssembly => "FileAssembly";
+		public static string Text => "Text";
 		public static string MailTemplate => "MailTemplate";
 		public static string Inbox => "Inbox";
 		public static string SearchCatalog => "SearchCatalog";
@@ -31,6 +34,7 @@
 		public static string EventBinder => "EventBinder";
 		public static string Management => "Management";
 		public static string Settings => "Settings";
+		public static string MicroServiceInfo => "MicroServiceInfo";
 		public static string IoTHub => "IoTHub";
 		public static string IoTSchema => "IoTSchema";
 		public static string IoCContainer => "IoCContainer";
@@ -51,6 +55,7 @@
 		public static string NameSpaceMiddleware => "Middleware";
 		public static string NameSpaceDeployment => "Deployment";
 		public static string NameSpaceQuality => "Quality";
+		public static string NameSpaceNuGet=> "NuGetPackage";
 
 		public static string[] ScriptCategories => new string[] { Script, IoCContainer };
 		public static string ResolveNamespace(string category)
@@ -94,6 +99,9 @@
 				return NameSpaceDeployment;
 			else if (string.Compare(category, UnitTest, true) == 0)
 				return NameSpaceQuality;
+			else if (string.Compare(category, NuGetPackage, true) == 0
+				|| string.Compare(category, EmbeddedNuGetPackage, true) == 0)
+				return NameSpaceNuGet;
 			else
 				return "Default";
 		}

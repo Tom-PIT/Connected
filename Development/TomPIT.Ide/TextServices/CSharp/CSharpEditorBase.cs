@@ -137,7 +137,7 @@ namespace TomPIT.Ide.TextServices.CSharp
 
 					_options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
 						usings: usings,
-						metadataReferenceResolver: new AssemblyResolver(Context.Tenant, Context.MicroService.Token),
+						metadataReferenceResolver: new AssemblyResolver(Context.Tenant, Context.MicroService.Token, true),
 						sourceReferenceResolver: new ScriptResolver(Context.Tenant, Context.MicroService.Token));
 				}
 

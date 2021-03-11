@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -10,8 +10,10 @@ using TomPIT.BigData.Partitions;
 using TomPIT.BigData.Persistence;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
+using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
+using TomPIT.Runtime.Configuration;
 using TomPIT.Serialization;
 using TomPIT.Storage;
 
@@ -84,7 +86,10 @@ namespace TomPIT.BigData.Transactions
 		public void Execute()
 		{
 			if (Partition.Status != PartitionStatus.Active)
+			{
+				Dump(SR.ErrBigDataPartitionNotActive);
 				throw new RuntimeException(SR.ErrBigDataPartitionNotActive);
+			}
 
 			LoadData();
 
@@ -125,20 +130,36 @@ namespace TomPIT.BigData.Transactions
 			var blobs = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Query(MicroService.Token, BlobTypes.BigDataTransactionBlock, MicroService.ResourceGroup, Block.Token.ToString());
 
 			if (blobs.Count == 0)
+			{
+				Dump("no blobs");
 				return;
+			}
 
 			var content = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Download(blobs[0].Token);
 
 			if (content == null || content.Content == null)
+			{
+				Dump("blob content null or empty");
 				return;
+			}
 
 			Items = Serializer.Deserialize<JArray>(Encoding.UTF8.GetString(content.Content));
 
 			if (Items == null || Items.Count == 0)
+			{
+				Dump("no items deserialized");
 				return;
+			}
 
 			CreateSchema();
+
+			foreach(var table in Data)
+				Dump($"table: {table.Key}, {ToCsv(table.Value)}");
+
 			TearOff();
+
+			foreach (var table in Data)
+				Dump($"tearoff table: {table.Key}, {ToCsv(table.Value)}");
 		}
 
 		private JArray CreateArray(string key, DataTable data)
@@ -225,83 +246,61 @@ namespace TomPIT.BigData.Transactions
 
 			var aggregations = HasAggregations;
 
-			foreach (var table in Data.Values)
+			foreach (var item in Data)
 			{
-				var removables = new List<DataRow>();
+				var table = item.Value;
+				var keys = new Dictionary<string, DataRow>();
 
-				foreach (DataRow row in table.Rows)
+				Console.WriteLine($"Tearing off: {table.Rows.Count}");
+
+				var sanitized = table.Clone();
+
+				for (var i = table.Rows.Count - 1; i >= 0; i--)
 				{
-					var duplicates = Duplicates(table, row, keyFields);
+					var row = table.Rows[i];
+					var hash = ComputeHash(row, keyFields);
 
-					if (duplicates == null)
-						continue;
-
-					if (HasAggregations)
-						Aggregate(row, duplicates.Select(f => f.Row).ToList());
-
-					removables.AddRange(duplicates.Select(f => f.Row));
+					if (keys.ContainsKey(hash))
+					{
+						if (aggregations)
+							Aggregate(keys[hash], row);
+					}
+					else
+						keys.Add(hash, sanitized.Rows.Add(row.ItemArray));
 				}
-				foreach (var row in removables)
-					table.Rows.Remove(row);
+
+				Data[item.Key] = sanitized;
 			}
 		}
 
-		private List<DataRowDuplicate> Duplicates(DataTable table, DataRow row, List<string> keyFields)
+		private static string ComputeHash(DataRow row, List<string> keyFields)
 		{
-			var result = new List<DataRowDuplicate>();
+			var sb = new StringBuilder();
 
-			foreach (DataRow dr in table.Rows)
+			foreach(var field in keyFields)
 			{
-				var match = true;
+				var value = row[field];
+				var text = value == null || value == DBNull.Value ? "_" : value.ToString();
 
-				foreach (var field in keyFields)
-				{
-					if (!Types.Compare(row[field], dr[field]))
-					{
-						match = false;
-						break;
-					}
-				}
-
-				if (match)
-				{
-					result.Add(new DataRowDuplicate
-					{
-						Index = table.Rows.IndexOf(dr),
-						Row = dr,
-						Timestamp = Types.Convert<DateTime>(dr[Merger.TimestampColumn])
-					});
-				}
+				sb.Append($"{text}.");
 			}
 
-			if (result.Count == 1)
-				return null;
-
-			result = result.OrderBy(f => f.Timestamp).ThenBy(f => f.Index).ToList();
-
-			if (result[^1].Row != row)
-				return null;
-
-			result.RemoveAt(result.Count - 1);
-
-			return result;
+			return sb.ToString().ToLowerInvariant();
 		}
 
-		private void Aggregate(DataRow row, List<DataRow> duplicates)
+		private void Aggregate(DataRow row, DataRow duplicate)
 		{
-			foreach (DataRow dr in duplicates)
+			foreach (var field in Schema.Fields)
 			{
-				foreach (var field in Schema.Fields)
+				//TODO: we could probably optimize those conversions
+				if (field is PartitionSchemaNumberField number && number.Aggregate == AggregateMode.Sum)
 				{
-					if (field is PartitionSchemaNumberField number && number.Aggregate == AggregateMode.Sum)
-					{
-						var value = Types.Convert(dr[field.Name], field.Type);
-						var existingValue = Types.Convert(row[field.Name], field.Type);
+					var value = Types.Convert(duplicate[field.Name], field.Type);
+					var existingValue = Types.Convert(row[field.Name], field.Type);
 
-						var calculated = Types.Convert<decimal>(value) + Types.Convert<decimal>(existingValue);
+					var calculated = Types.Convert<decimal>(value) + Types.Convert<decimal>(existingValue);
 
-						row[field.Name] = Types.Convert(calculated, field.Type);
-					}
+					row[field.Name] = Types.Convert(calculated, field.Type);
 				}
 			}
 		}
@@ -334,6 +333,62 @@ namespace TomPIT.BigData.Transactions
 
 				return false;
 			}
+		}
+
+		private void Dump(string text)
+		{
+			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"Updater, Partition:{Partition.Configuration}, Transaction: {Block.Transaction}, Block: {Block.Token}, {text}.");
+		}
+
+		internal static string ToCsv(DataTable table)
+		{
+			if (!Shell.GetConfiguration<IClientSys>().Diagnostics.DumpEnabled)
+				return string.Empty;
+
+			using var ms = new MemoryStream();
+			using var sw = new StreamWriter(ms, Encoding.UTF8);
+
+			sw.Write(sw.NewLine);
+
+			for (var i = 0; i < table.Columns.Count; i++)
+			{
+				sw.Write(table.Columns[i].ColumnName);
+
+				if (i < table.Columns.Count - 1)
+					sw.Write(",");
+			}
+
+			sw.Write(sw.NewLine);
+
+			foreach (DataRow row in table.Rows)
+			{
+				for (var i = 0; i < table.Columns.Count; i++)
+				{
+					var value = string.Empty;
+
+					if (row[i] == DBNull.Value || row[i] == null)
+						value = "null";
+					else
+					{
+						value = row[i].ToString();
+
+						if (value.Contains(','))
+							value = string.Format("\"{0}\"", value);
+					}
+
+					sw.Write(value);
+
+					if (i < table.Columns.Count - 1)
+						sw.Write(",");
+				}
+
+				sw.Write(sw.NewLine);
+			}
+
+			sw.Flush();
+			ms.Seek(0, SeekOrigin.Begin);
+
+			return Encoding.UTF8.GetString(ms.ToArray());
 		}
 	}
 }

@@ -313,7 +313,7 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Default retry strategy for technology {0} was not not defined, and there is no overall default strategy..
+        ///   Looks up a localized string similar to Default retry strategy for technology {0} was not defined, and there is no overall default strategy..
         /// </summary>
         public static string DefaultRetryStrategyNotFound {
             get {
@@ -835,6 +835,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot create stacked dispatcher.
+        /// </summary>
+        public static string ErrCannotCreateStackedDispatcher {
+            get {
+                return ResourceManager.GetString("ErrCannotCreateStackedDispatcher", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot find configuration..
         /// </summary>
         public static string ErrCannotFindConfiguration {
@@ -939,6 +948,15 @@ namespace TomPIT {
         public static string ErrClaimNull {
             get {
                 return ResourceManager.GetString("ErrClaimNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client not found.
+        /// </summary>
+        public static string ErrClientNotFound {
+            get {
+                return ResourceManager.GetString("ErrClientNotFound", resourceCulture);
             }
         }
         
@@ -1092,6 +1110,15 @@ namespace TomPIT {
         public static string ErrConnectionNotSet {
             get {
                 return ResourceManager.GetString("ErrConnectionNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Content type not supported.
+        /// </summary>
+        public static string ErrContentTypeNotSupported {
+            get {
+                return ResourceManager.GetString("ErrContentTypeNotSupported", resourceCulture);
             }
         }
         
@@ -1992,6 +2019,15 @@ namespace TomPIT {
         public static string ErrModelOperationNotFound {
             get {
                 return ResourceManager.GetString("ErrModelOperationNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NewPath not set.
+        /// </summary>
+        public static string ErrNewPathNotSet {
+            get {
+                return ResourceManager.GetString("ErrNewPathNotSet", resourceCulture);
             }
         }
         
@@ -3292,7 +3328,7 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Minimun allowed value is {0}..
+        ///   Looks up a localized string similar to Minimum allowed value is {0}..
         /// </summary>
         public static string ValMinValue {
             get {
@@ -3360,6 +3396,15 @@ namespace TomPIT {
         public static string ValScriptTagNotAllowed {
             get {
                 return ResourceManager.GetString("ValScriptTagNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Security code already exists.
+        /// </summary>
+        public static string ValSecurityCodeExists {
+            get {
+                return ResourceManager.GetString("ValSecurityCodeExists", resourceCulture);
             }
         }
         

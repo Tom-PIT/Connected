@@ -14,5 +14,8 @@ namespace TomPIT.Worker.Services
 		public int DequeueCount { get; set; }
 		public string Queue { get; set; }
 		public DateTime DequeueTimestamp { get; set; }
+		public QueueScope Scope { get; set; }
+
+		public string BufferKey {get;set;}
 	}
 }

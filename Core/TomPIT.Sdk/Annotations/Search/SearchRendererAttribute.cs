@@ -1,12 +1,12 @@
 ﻿using System;
-using TomPIT.Annotations.Design;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Annotations.Search
 {
 	[AttributeUsage(AttributeTargets.Class)]
 	public class SearchRendererAttribute : Attribute
 	{
-		public SearchRendererAttribute([CodeAnalysisProvider(CodeAnalysisProviderAttribute.PartialProvider)]string partial)
+		public SearchRendererAttribute([CIP(CIP.PartialProvider)]string partial)
 		{
 			Partial = partial;
 		}

@@ -12,7 +12,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 	{
 		public void DeleteEvent(ISubscriptionEvent d)
 		{
-			var w = new Writer("tompit.subscription_event_del");
+			using var w = new Writer("tompit.subscription_event_del");
 
 			w.CreateParameter("@id", d.GetId());
 
@@ -21,7 +21,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public void DeleteSubscriber(ISubscriber subscriber)
 		{
-			var w = new Writer("tompit.subscriber_del");
+			using var w = new Writer("tompit.subscriber_del");
 
 			w.CreateParameter("@id", subscriber.GetId());
 
@@ -30,7 +30,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public void Delete(ISubscription subscription)
 		{
-			var w = new Writer("tompit.subscription_del");
+			using var w = new Writer("tompit.subscription_del");
 
 			w.CreateParameter("@id", subscription.GetId());
 
@@ -39,7 +39,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public void Delete(Guid handler)
 		{
-			var w = new Writer("tompit.subscription_clr");
+			using var w = new Writer("tompit.subscription_clr");
 
 			w.CreateParameter("@handler", handler);
 
@@ -48,7 +48,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public void InsertEvent(ISubscription subscription, Guid token, string name, DateTime created, string arguments)
 		{
-			var w = new Writer("tompit.subscription_event_ins");
+			using var w = new Writer("tompit.subscription_event_ins");
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@subscription", subscription.GetId());
@@ -61,7 +61,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public void InsertSubscriber(ISubscription subscription, Guid token, SubscriptionResourceType type, string resourcePrimaryKey)
 		{
-			var w = new Writer("tompit.subscriber_ins");
+			using var w = new Writer("tompit.subscriber_ins");
 
 			w.CreateParameter("@subscription", subscription.GetId());
 			w.CreateParameter("@token", token);
@@ -73,7 +73,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public void InsertSubscribers(ISubscription subscription, List<IRecipient> subscribers)
 		{
-			var w = new Writer("tompit.subscriber_ins_batch");
+			using var w = new Writer("tompit.subscriber_ins_batch");
 			var a = new JArray();
 
 			foreach (var i in subscribers)
@@ -95,12 +95,14 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public List<ISubscriptionEvent> QueryEvents()
 		{
-			return new Reader<SubscriptionEvent>("tompit.subscription_event_que").Execute().ToList<ISubscriptionEvent>();
+			using var r = new Reader<SubscriptionEvent>("tompit.subscription_event_que");
+
+			return r.Execute().ToList<ISubscriptionEvent>();
 		}
 
 		public List<ISubscriber> QuerySubscribers(ISubscription subscription)
 		{
-			var r = new Reader<Subscriber>("tompit.subscriber_que");
+			using var r = new Reader<Subscriber>("tompit.subscriber_que");
 
 			r.CreateParameter("@subscription", subscription.GetId());
 
@@ -109,7 +111,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public ISubscriptionEvent SelectEvent(Guid token)
 		{
-			var r = new Reader<SubscriptionEvent>("tompit.subscription_event_sel");
+			using var r = new Reader<SubscriptionEvent>("tompit.subscription_event_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -118,7 +120,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public ISubscriber SelectSubscriber(Guid token)
 		{
-			var r = new Reader<Subscriber>("tompit.subscriber_sel");
+			using var r = new Reader<Subscriber>("tompit.subscriber_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -127,7 +129,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public ISubscriber SelectSubscriber(ISubscription subscription, SubscriptionResourceType type, string resourcePrimaryKey)
 		{
-			var r = new Reader<Subscriber>("tompit.subscriber_sel");
+			using var r = new Reader<Subscriber>("tompit.subscriber_sel");
 
 			r.CreateParameter("@subscription", subscription.GetId());
 			r.CreateParameter("@resource_type", type);
@@ -138,7 +140,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public void Insert(Guid token, Guid handler, string topic, string primaryKey)
 		{
-			var w = new Writer("tompit.subscription_ins");
+			using var w = new Writer("tompit.subscription_ins");
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@handler", handler);
@@ -150,7 +152,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public ISubscription Select(Guid token)
 		{
-			var r = new Reader<Subscription>("tompit.subscription_sel");
+			using var r = new Reader<Subscription>("tompit.subscription_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -159,7 +161,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 		public ISubscription Select(Guid handler, string topic, string primaryKey)
 		{
-			var r = new Reader<Subscription>("tompit.subscription_sel");
+			using var r = new Reader<Subscription>("tompit.subscription_sel");
 
 			r.CreateParameter("@handler", handler);
 			r.CreateParameter("@topic", topic, true);

@@ -3,5 +3,6 @@
 	public interface ILoggingService
 	{
 		void Write(ILogEntry d);
+		void Dump(string text);
 	}
 }

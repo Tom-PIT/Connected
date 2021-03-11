@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json.Linq;
@@ -44,7 +46,7 @@ namespace TomPIT.Design
 			var c = Tenant.GetService<IComponentService>().SelectComponent(component);
 
 			if (c == null)
-				throw new NotFoundException(SR.ErrComponentNotFound);
+				return;
 
 			if (!permanent)
 				Tenant.GetService<IDesignService>().VersionControl.Lock(component, Development.LockVerb.Delete);
@@ -75,7 +77,7 @@ namespace TomPIT.Design
 			Tenant.Post(u, args);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification svc)
-				svc.NotifyRemoved(this, new ComponentEventArgs(c.MicroService, c.Folder, component, c.Category));
+				svc.NotifyRemoved(this, new ComponentEventArgs(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name));
 
 			/*
 		 * remove configuration file
@@ -132,7 +134,7 @@ namespace TomPIT.Design
 						ResourceGroup = ms.ResourceGroup,
 						MicroService = microService,
 						Type = runtimeConfiguration.Type,
-						Token = runtimeConfiguration.Token,
+						Token = runtimeConfigurationId,
 						PrimaryKey = runtimeConfiguration.PrimaryKey
 					};
 
@@ -185,9 +187,227 @@ namespace TomPIT.Design
 				args.Add("runtimeConfiguration", runtimeConfigurationId);
 
 			Tenant.Post(u, args);
+
+			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
+			{
+				notification.NotifyChanged(this, new ComponentEventArgs
+				{
+					Category = component.Category,
+					Component = component.Token,
+					Folder = component.Folder,
+					MicroService = microService,
+					Name = component.Name,
+					NameSpace = ComponentCategories.ResolveNamespace(component.Category)
+				});
+			}
+
 			InvalidateIndexState(component.Token);
 		}
 
+		public void Restore(Guid microService, IPullRequestComponent component)
+		{
+			Delete(component.Token, true);
+
+			var runtimeConfigurationId = component.RuntimeConfiguration;
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+			var configuration = component.Files.FirstOrDefault(f => f.Type == BlobTypes.Configuration);
+			var runtimeConfiguration = component.RuntimeConfiguration == Guid.Empty ? null : component.Files.FirstOrDefault(f => f.Type == BlobTypes.RuntimeConfiguration);
+
+			var blob = new Blob
+			{
+				ContentType = configuration.ContentType,
+				FileName = component.Name,
+				ResourceGroup = ms.ResourceGroup,
+				MicroService = microService,
+				Type = configuration.Type,
+				Token = component.Token,
+				PrimaryKey = component.Token.ToString()
+			};
+
+			Tenant.GetService<IStorageService>().Upload(blob, Unpack(configuration.Content), StoragePolicy.Singleton, component.Token);
+
+			if (runtimeConfigurationId != Guid.Empty)
+			{
+				if (runtimeConfiguration != null)
+				{
+					blob = new Blob
+					{
+						ContentType = runtimeConfiguration.ContentType,
+						FileName = component.Name,
+						ResourceGroup = ms.ResourceGroup,
+						MicroService = microService,
+						Type = runtimeConfiguration.Type,
+						Token = runtimeConfigurationId,
+						PrimaryKey = runtimeConfigurationId.ToString()
+					};
+
+					Tenant.GetService<IStorageService>().Upload(blob, Unpack(runtimeConfiguration.Content), StoragePolicy.Singleton, runtimeConfigurationId);
+				}
+				else
+				{
+					var stateBlob = Tenant.GetService<IStorageService>().Select(runtimeConfigurationId);
+
+					if (stateBlob != null)
+					{
+						var state = Tenant.GetService<IStorageService>().Download(runtimeConfigurationId);
+						runtimeConfigurationId = Guid.NewGuid();
+
+						if (state != null)
+						{
+							blob = new Blob
+							{
+								ContentType = stateBlob.ContentType,
+								FileName = stateBlob.FileName,
+								ResourceGroup = ms.ResourceGroup,
+								MicroService = microService,
+								Type = BlobTypes.RuntimeConfiguration,
+								PrimaryKey = runtimeConfigurationId.ToString(),
+								Token = runtimeConfigurationId
+							};
+
+							Tenant.GetService<IStorageService>().Restore(blob, state.Content);
+						}
+					}
+				}
+			}
+
+			foreach(var file in component.Files)
+			{
+				if (file.Type == BlobTypes.Configuration || file.Type == BlobTypes.RuntimeConfiguration)
+					continue;
+
+				Tenant.GetService<IStorageService>().Restore(new Blob
+				{
+					ContentType = file.ContentType,
+					FileName = file.FileName,
+					MicroService = microService,
+					ResourceGroup = ms.ResourceGroup,
+					Token = file.Token,
+					PrimaryKey = file.PrimaryKey,
+					Topic = file.Topic,
+					Type = file.Type,
+					Version = file.BlobVersion
+				}, Unpack(file.Content));
+
+			}
+
+			DeleteManifest(microService, component.Token);
+
+			var u = Tenant.CreateUrl("ComponentDevelopment", "Insert");
+
+			var args = new JObject
+				{
+					 {"microService", microService },
+					 {"folder", component.Folder },
+					 {"name", component.Name },
+					 {"type", component.Type },
+					 {"category", component.Category },
+					 {"component", component.Token },
+					 {"nameSpace", ComponentCategories.ResolveNamespace( component.Category) }
+				};
+
+			if (runtimeConfigurationId != Guid.Empty)
+				args.Add("runtimeConfiguration", runtimeConfigurationId);
+
+			Tenant.Post(u, args);
+
+			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
+			{
+				notification.NotifyChanged(this, new ComponentEventArgs
+				{
+					Category = component.Category,
+					Component = component.Token,
+					Folder = component.Folder,
+					MicroService = microService,
+					Name = component.Name,
+					NameSpace = ComponentCategories.ResolveNamespace(component.Category)
+				});
+			}
+
+			InvalidateIndexState(component.Token);
+		}
+
+		private static byte[] Unpack(string packed)
+		{
+			using var input = new MemoryStream(Convert.FromBase64String(packed));
+			using var zip = new GZipStream(input, CompressionMode.Decompress);
+			using var output = new MemoryStream();
+
+			zip.CopyTo(output);
+
+			return output.ToArray();
+		}
+
+		public Guid Clone(Guid component, Guid microService, Guid folder)
+		{
+			var existing = Tenant.GetService<IComponentService>().SelectComponent(component);
+
+			if (existing == null)
+				throw new RuntimeException(SR.ErrComponentNotFound);
+
+			var ds = Tenant.GetService<IDiscoveryService>();
+
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+			var existingConfiguration = Tenant.GetService<IComponentService>().SelectConfiguration(component);
+			var blobs = ds.Children<IText>(existingConfiguration);
+			var elements = ds.Children<IElement>(existingConfiguration);
+			var externals = ds.Children<IExternalResourceElement>(existingConfiguration);
+			var newId = Insert(microService, folder, existing.Category, CreateName(microService, existing.Category, existing.Name), existing.Type);
+
+			foreach (var element in elements)
+				element.Reset();
+
+			existingConfiguration.Component = newId;
+
+			foreach (var blob in blobs)
+			{
+				if (blob.TextBlob == Guid.Empty)
+					continue;
+
+				var content = Tenant.GetService<IStorageService>().Download(blob.TextBlob);
+				var text = content == null || content.Content == null || content.Content.Length == 0 ? string.Empty : Encoding.UTF8.GetString(content.Content);
+
+				blob.TextBlob = Guid.Empty;
+
+				Update(blob, text);
+			}
+
+			foreach (var external in externals)
+			{
+				var resources = external.QueryResources();
+
+				if (resources == null || resources.Count == 0)
+					continue;
+
+				foreach (var resource in resources)
+				{
+					var resourceBlob = Tenant.GetService<IStorageService>().Select(resource);
+
+					if (resourceBlob == null)
+						continue;
+
+					var resourceBlobContent = Tenant.GetService<IStorageService>().Download(resourceBlob.Token);
+					var newBlob = new Blob
+					{
+						ContentType = resourceBlob.ContentType,
+						FileName = resourceBlob.FileName,
+						MicroService = microService,
+						PrimaryKey = external.Id.ToString(),
+						ResourceGroup = ms.ResourceGroup,
+						Type = resourceBlob.Type,
+						Topic = resourceBlob.Topic
+					};
+
+					var token = Tenant.GetService<IStorageService>().Upload(newBlob, resourceBlobContent.Content, StoragePolicy.Singleton);
+
+					external.Reset(resource, token);
+				}
+			}
+
+			Update(existingConfiguration);
+
+			return newId;
+		}
 		public Guid Insert(Guid microService, Guid folder, string category, string name, string type)
 		{
 			var s = Tenant.GetService<IMicroServiceService>().Select(microService);
@@ -238,6 +458,20 @@ namespace TomPIT.Design
 
 			Tenant.Post(u, args);
 			Tenant.GetService<IStorageService>().Commit(blob.Draft, instance.Component.ToString());
+
+			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
+			{
+				notification.NotifyAdded(this, new ComponentEventArgs
+				{
+					Category = category,
+					Folder = folder,
+					Component = instance.Component,
+					MicroService = microService,
+					Name = name,
+					NameSpace = ComponentCategories.ResolveNamespace(category)
+				});
+			}
+
 			InvalidateIndexState(instance.Component);
 
 			u = Tenant.CreateUrl("NotificationDevelopment", "ConfigurationAdded");
@@ -438,17 +672,25 @@ namespace TomPIT.Design
 			}
 		}
 
-		public void DeleteFolder(Guid microService, Guid folder)
+		public void DeleteFolder(Guid microService, Guid folder, bool deleteComponents)
 		{
 			var folders = Tenant.GetService<IComponentService>().QueryFolders(microService, folder);
 
 			foreach (var i in folders)
-				DeleteFolder(microService, i.Token);
+				DeleteFolder(microService, i.Token, deleteComponents);
 
 			var components = Tenant.GetService<IComponentService>().QueryComponents(microService, folder);
 
-			foreach (var i in components)
-				Delete(i.Token);
+			if (deleteComponents)
+			{
+				foreach (var i in components)
+					Delete(i.Token);
+			}
+			else
+			{
+				foreach (var component in components)
+					Update(component.Token, component.Name, Guid.Empty);
+			}
 
 			var u = Tenant.CreateUrl("FolderDevelopment", "Delete");
 			var args = new JObject
@@ -475,6 +717,9 @@ namespace TomPIT.Design
 				};
 
 			Tenant.Post(u, args);
+
+			if (Tenant.GetService<IComponentService>() is IComponentNotification svc)
+				svc.NotifyFolderChanged(this, new FolderEventArgs(microService, token));
 		}
 
 		public Guid InsertFolder(Guid microService, string name, Guid parent)
@@ -722,6 +967,19 @@ namespace TomPIT.Design
 
 			foreach (var source in sources)
 				InvalidateIndexState(source);
+
+			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
+			{
+				notification.NotifyChanged(this, new ComponentEventArgs
+				{
+					Category = component.Category,
+					Component = component.Token,
+					Folder = component.Folder,
+					MicroService = component.MicroService,
+					Name = component.Name,
+					NameSpace = ComponentCategories.ResolveNamespace(component.Category)
+				});
+			}
 
 			DeleteManifest(image.Token);
 		}

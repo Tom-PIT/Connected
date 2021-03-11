@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json.Linq;
@@ -46,7 +47,7 @@ namespace TomPIT.BigData.Partitions
 			if (partition != null)
 				Set(id, partition, TimeSpan.Zero);
 		}
-		public List<IPartition> Query()
+		public ImmutableList<IPartition> Query()
 		{
 			return All();
 		}
@@ -123,7 +124,7 @@ namespace TomPIT.BigData.Partitions
 			Fields.Notify(file, fieldName);
 		}
 
-		public List<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp)
+		public ImmutableList<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp)
 		{
 			return Files.Query(partition, key, startTimestamp, endTimestamp);
 		}
@@ -269,12 +270,12 @@ namespace TomPIT.BigData.Partitions
 			Refresh(token);
 		}
 
-		public List<IPartitionFile> QueryFiles(Guid partition)
+		public ImmutableList<IPartitionFile> QueryFiles(Guid partition)
 		{
 			return Files.Query(partition);
 		}
 
-		public List<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp, List<IndexParameter> parameters)
+		public ImmutableList<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp, List<IndexParameter> parameters)
 		{
 			var candidates = Files.Query(partition, key, startTimestamp, endTimestamp);
 			var result = candidates.GroupBy(f => f.FileName).Select(f => f.First()).Select(f => f.FileName).ToList();
@@ -302,7 +303,7 @@ namespace TomPIT.BigData.Partitions
 			}
 
 			if (fieldHits.Count == 0)
-				return new List<IPartitionFile>();
+				return ImmutableList<IPartitionFile>.Empty;
 
 			return Files.Where(fieldHits);
 		}

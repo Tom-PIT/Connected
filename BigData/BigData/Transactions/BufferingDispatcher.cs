@@ -5,14 +5,14 @@ namespace TomPIT.BigData.Transactions
 {
 	internal class BufferingDispatcher : Dispatcher<IPartitionBuffer>
 	{
-		public BufferingDispatcher(string resourceGroup, CancellationToken cancel) : base(cancel, 32)
+		public BufferingDispatcher(string resourceGroup) : base(32)
 		{
 			ResourceGroup = resourceGroup;
 		}
 
-		protected override DispatcherJob<IPartitionBuffer> CreateWorker(CancellationToken cancel)
+		public override DispatcherJob<IPartitionBuffer> CreateWorker(IDispatcher<IPartitionBuffer> owner, CancellationToken cancel)
 		{
-			return new BufferingJob(this, cancel);
+			return new BufferingJob(owner, cancel);
 		}
 
 		public string ResourceGroup { get; }

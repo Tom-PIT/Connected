@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Data.Sql;
 using TomPIT.Environment;
@@ -17,7 +17,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void Delete(IMicroService service)
 		{
-			var w = new Writer("tompit.service_del");
+			using var w = new Writer("tompit.service_del");
 
 			w.CreateParameter("@id", service.GetId());
 
@@ -26,7 +26,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void DeleteString(IMicroService microService, Guid element, string property)
 		{
-			var p = new Writer("tomit.service_string_del");
+			using var p = new Writer("tomit.service_string_del");
 
 			p.CreateParameter("@service", microService.GetId());
 			p.CreateParameter("@element", element);
@@ -37,12 +37,14 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<IMicroServiceString> QueryStrings()
 		{
-			return new Reader<MicroServiceString>("tompit.service_string_que").Execute().ToList<IMicroServiceString>();
+			using var r = new Reader<MicroServiceString>("tompit.service_string_que");
+
+			return r.Execute().ToList<IMicroServiceString>();
 		}
 
 		public IMicroServiceString SelectString(IMicroService microService, ILanguage language, Guid element, string property)
 		{
-			var p = new Reader<MicroServiceString>("tompit.service_string_sel");
+			using var p = new Reader<MicroServiceString>("tompit.service_string_sel");
 
 			p.CreateParameter("@service", microService.GetId());
 			p.CreateParameter("@language", language.GetId());
@@ -54,7 +56,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void Insert(Guid token, string name, string url, MicroServiceStatus status, IResourceGroup resourceGroup, Guid template, string meta, string version)
 		{
-			var p = new Writer("tompit.service_ins");
+			using var p = new Writer("tompit.service_ins");
 
 			p.CreateParameter("@name", name);
 			p.CreateParameter("@url", url);
@@ -70,12 +72,14 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<IMicroService> Query()
 		{
-			return new Reader<MicroService>("tompit.service_que").Execute().ToList<IMicroService>();
+			using var r = new Reader<MicroService>("tompit.service_que");
+
+			return r.Execute().ToList<IMicroService>();
 		}
 
 		public void UpdateString(IMicroService microService, ILanguage language, Guid element, string property, string value)
 		{
-			var p = new Writer("tomit.service_string_mdf");
+			using var p = new Writer("tomit.service_string_mdf");
 
 			p.CreateParameter("@service", microService.GetId());
 			p.CreateParameter("@language", language.GetId());
@@ -88,7 +92,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public IMicroService Select(int id)
 		{
-			var p = new Reader<MicroService>(SelectProcedure);
+			using var p = new Reader<MicroService>(SelectProcedure);
 
 			p.CreateParameter("@id", id);
 
@@ -97,7 +101,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public IMicroService SelectByUrl(string url)
 		{
-			var p = new Reader<MicroService>(SelectProcedure);
+			using var p = new Reader<MicroService>(SelectProcedure);
 
 			p.CreateParameter("@url", url);
 
@@ -107,7 +111,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public IMicroService Select(Guid token)
 		{
-			var p = new Reader<MicroService>(SelectProcedure);
+			using var p = new Reader<MicroService>(SelectProcedure);
 
 			p.CreateParameter("@token", token);
 
@@ -116,7 +120,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public IMicroService Select(string name)
 		{
-			var p = new Reader<MicroService>(SelectProcedure);
+			using var p = new Reader<MicroService>(SelectProcedure);
 
 			p.CreateParameter("@name", name);
 
@@ -126,7 +130,7 @@ namespace TomPIT.SysDb.Sql.Development
 		public void Update(IMicroService microService, string name, string url, MicroServiceStatus status, Guid template,
 			 IResourceGroup resourceGroup, Guid package, Guid plan, UpdateStatus updateStatus, CommitStatus commitStatus)
 		{
-			var p = new Writer("tompit.service_upd");
+			using var p = new Writer("tompit.service_upd");
 
 			p.CreateParameter("@name", name);
 			p.CreateParameter("@url", url);
@@ -144,7 +148,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void UpdateMeta(IMicroService microService, byte[] meta)
 		{
-			var w = new Writer("tompit.service_meta_upd");
+			using var w = new Writer("tompit.service_meta_upd");
 
 			w.CreateParameter("@id", microService.GetId());
 			w.CreateParameter("@meta", meta);
@@ -154,7 +158,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public string SelectMeta(IMicroService microService)
 		{
-			var r = new Reader<MicroServiceMeta>("tompit.service_meta_sel");
+			using var r = new Reader<MicroServiceMeta>("tompit.service_meta_sel");
 
 			r.CreateParameter("@id", microService.GetId());
 
@@ -181,7 +185,7 @@ namespace TomPIT.SysDb.Sql.Development
 				e.Add(o);
 			}
 
-			var w = new Writer("tompit.service_string_restore");
+			using var w = new Writer("tompit.service_string_restore");
 
 			w.CreateParameter("@items", JsonConvert.SerializeObject(e));
 

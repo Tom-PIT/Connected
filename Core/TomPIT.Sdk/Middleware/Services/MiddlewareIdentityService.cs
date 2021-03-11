@@ -7,7 +7,6 @@ namespace TomPIT.Middleware.Services
 	internal class MiddlewareIdentityService : MiddlewareObject, IMiddlewareIdentityService
 	{
 		private IUser _user = null;
-		private string _jwToken = string.Empty;
 		private string _impersonatedUser = null;
 
 		public MiddlewareIdentityService(IMiddlewareContext context) : base(context)
@@ -23,7 +22,6 @@ namespace TomPIT.Middleware.Services
 
 				if (!string.IsNullOrWhiteSpace(ImpersonatedUser))
 					return true;
-
 
 				if (Shell.HttpContext != null)
 				{
@@ -51,7 +49,14 @@ namespace TomPIT.Middleware.Services
 				if (Context is MiddlewareContext mc && mc.Owner != null)
 					((MiddlewareIdentityService)mc.Owner.Services.Identity).ImpersonatedUser = value;
 				else
-					_impersonatedUser = value;
+				{
+					_user = Context.Tenant.GetService<IUserService>().Select(value);
+
+					if (_user != null)
+						_impersonatedUser = value;
+					else
+						_impersonatedUser = null;
+				}
 			}
 		}
 
@@ -100,7 +105,7 @@ namespace TomPIT.Middleware.Services
 		}
 
 		public Guid InsertUser(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language,
-			string timezone, bool notificationsEnabled, string mobile, string phone, string password)
+			string timezone, bool notificationsEnabled, string mobile, string phone, string password, string securityCode = null)
 		{
 			var u = Context.Tenant.CreateUrl("UserManagement", "Insert");
 			var e = new JObject
@@ -117,7 +122,8 @@ namespace TomPIT.Middleware.Services
 				{"timezone", timezone},
 				{"notificationEnabled", notificationsEnabled},
 				{"mobile", mobile},
-				{"phone", phone}
+				{"phone", phone},
+				{"securityCode", securityCode }
 			};
 
 			var id = Context.Tenant.Post<Guid>(u, e);
@@ -135,7 +141,7 @@ namespace TomPIT.Middleware.Services
 		}
 
 		public void UpdateUser(Guid token, string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language,
-			string timezone, bool notificationsEnabled, string mobile, string phone)
+			string timezone, bool notificationsEnabled, string mobile, string phone, string securityCode = null)
 		{
 			var u = Context.Tenant.CreateUrl("UserManagement", "Update");
 			var e = new JObject
@@ -152,7 +158,8 @@ namespace TomPIT.Middleware.Services
 				{"timezone", timezone},
 				{"notificationEnabled", notificationsEnabled},
 				{"mobile", mobile},
-				{"phone", phone}
+				{"phone", phone},
+				{"securityCode", securityCode }
 			};
 
 			Context.Tenant.Post(u, e);

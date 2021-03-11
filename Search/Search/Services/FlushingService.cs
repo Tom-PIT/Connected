@@ -13,7 +13,7 @@ namespace TomPIT.Search.Services
 			IntervalTimeout = TimeSpan.FromSeconds(15);
 		}
 
-		protected override Task Process(CancellationToken cancel)
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			MiddlewareDescriptor.Current.Tenant.GetService<IIndexingService>().Flush();
 

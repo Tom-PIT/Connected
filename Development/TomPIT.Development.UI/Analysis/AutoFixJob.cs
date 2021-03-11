@@ -17,7 +17,7 @@ namespace TomPIT.Development.Analysis
 	internal class AutoFixJob : DispatcherJob<IQueueMessage>
 	{
 		private TimeoutTask _timeout = null;
-		public AutoFixJob(Dispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
+		public AutoFixJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -60,8 +60,8 @@ namespace TomPIT.Development.Analysis
 			if (fixProvider != null)
 			{
 				var ms = Dispatcher.Tenant.GetService<IMicroServiceService>().Select(error.MicroService);
-
-				fixProvider.Fix(this, new AutoFixArgs(new MicroServiceContext(ms, Dispatcher.Tenant.Url), error));
+				using var ctx = new MicroServiceContext(ms, Dispatcher.Tenant.Url);
+				fixProvider.Fix(this, new AutoFixArgs(ctx, error));
 			}
 
 			Dispatcher.Tenant.GetService<IAutoFixService>().Complete(queue.PopReceipt);
