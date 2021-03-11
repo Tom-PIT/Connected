@@ -205,22 +205,7 @@ namespace TomPIT.Compilation
 		{
 			try
 			{
-				try
-				{
-
-					return AssemblyLoadContext.Default.LoadFromAssemblyPath(descriptor.FileName);
-				}
-				catch
-				{
-
-				}
-
-				var folder = Path.GetDirectoryName(descriptor.FileName);
-				var parent = Directory.GetParent(folder);
-
-				folder = @$"{parent}\{Path.GetFileName(descriptor.FileName)}";
-
-				return AssemblyLoadContext.Default.LoadFromAssemblyPath(folder);
+				return AssemblyLoadContext.Default.LoadFromAssemblyPath(descriptor.FileName);
 			}
 			catch
 			{
@@ -268,7 +253,7 @@ namespace TomPIT.Compilation
 				{
 					if (ReadOnly)
 						continue;
-
+					
 					var downloadResource = await installer.Source.GetResourceAsync<DownloadResource>(CancellationToken.None);
 					var downloadResult = await downloadResource.GetDownloadResourceResultAsync(installer, new PackageDownloadContext(CacheContext), RootDirectory, Logger, CancellationToken.None);
 
@@ -287,8 +272,16 @@ namespace TomPIT.Compilation
 
 				if (lib == null)
 					continue;
-
+				
+				/*
+				 * This is due to the strange behavior when installing packages locally. I couldn't figure out why
+				 * extractor doesn't install local package in the version folder. It is installed directly in the
+				 * package's root folder
+				 */
 				var folder = Path.Combine(PathResolver.GetInstallPath(installer), installer.Version.ToString());
+
+				if (!Directory.Exists(folder))
+					folder = PathResolver.GetInstallPath(installer);
 
 				foreach (var item in lib.Items)
 				{
@@ -296,9 +289,14 @@ namespace TomPIT.Compilation
 
 					if (string.Compare(Path.GetExtension(item), ".dll", true) == 0)
 					{
+						var fullPath = Path.GetFullPath(Path.Combine(folder, item));
+
+						if (!File.Exists(fullPath))
+							continue;
+
 						files.Add(new PackageFileDescriptor
 						{
-							FileName = Path.GetFullPath(Path.Combine(folder, item)),
+							FileName = fullPath,
 							Version = installer.Version.ToString(),
 							Name = installer.Id,
 							Entry = entry
@@ -315,7 +313,7 @@ namespace TomPIT.Compilation
 
 		private async Task<IEnumerable<SourcePackageDependencyInfo>> CreateRestoreSet(Guid blob, PackageArchiveReader reader)
 		{
-			var identity = new LocalPackageIdentity(reader.NuspecReader.GetId(), reader.NuspecReader.GetVersion(), blob, Tenant);
+			var identity = reader.GetIdentity();
 			var candidates = new HashSet<SourcePackageDependencyInfo>(PackageIdentityComparer.Default);
 
 			await ResolveDependencies(blob, identity, candidates, reader);
@@ -368,17 +366,17 @@ namespace TomPIT.Compilation
 				return;
 
 			var dependencies = new List<PackageDependency>();
-			
-			foreach (var group in reader.GetPackageDependencies())
-			{
-				if (group.TargetFramework != Framework)
-					continue;
+			var frameworkReducer = new FrameworkReducer();
+			var framework = frameworkReducer.GetNearest(Framework, reader.GetSupportedFrameworks());
+			var group = reader.GetPackageDependencies().FirstOrDefault(f => f.TargetFramework == framework);
 
+			if(group != null)
+			{
 				foreach (var dependency in group.Packages)
 					dependencies.Add(dependency);
 			}
 
-			var dependencyInfo = new SourcePackageDependencyInfo(package, dependencies, false, new LocalRepository(Tenant, blob), null, null);
+			var dependencyInfo = new LocalPackageIdentity(reader, blob, Tenant, dependencies);
 
 			if (dependencyInfo == null)
 				return;
