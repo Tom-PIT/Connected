@@ -48,6 +48,11 @@ namespace TomPIT.Compilation.Analyzers
 			if (string.IsNullOrWhiteSpace(expectedClassName))
 				return;
 
+			var path = context.Node.GetLocation()?.GetLineSpan().Path;
+
+			if (string.IsNullOrWhiteSpace(path) || path.Contains("/"))
+				return;
+
 			var declarations = context.Node.ChildNodes();
 			ClassDeclarationSyntax firstClass = null;
 

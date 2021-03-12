@@ -314,8 +314,10 @@ namespace TomPIT.ComponentModel
 				else
 					Tenant.LogError(GetType().ShortName(), ex.Message, LogCategories.Services);
 			}
-
-			if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
+			/*
+			 * this is temporary because we'll remove runtime support in the future
+			 */
+			if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty && string.Compare(component.Category, ComponentCategories.StringTable, true)==0)
 			{
 				var rtContent = runtime ?? Tenant.GetService<IStorageService>().Download(component.RuntimeConfiguration);
 

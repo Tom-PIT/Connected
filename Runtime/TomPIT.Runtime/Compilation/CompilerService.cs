@@ -294,13 +294,8 @@ namespace TomPIT.Compilation
 
 			var errors = ImmutableArray<Microsoft.CodeAnalysis.Diagnostic>.Empty;
 
-			/*
-			 * It seems analyzers with references are currently not supported.
-			 * see: https://github.com/dotnet/roslyn/blob/0902d19aaba441d98fe5432274e5a2554353cc8d/src/Compilers/Core/Portable/ReferenceManager/CommonReferenceManager.Resolution.cs#L868
-			 */
 			if (compiler.Script != null)
 				errors = compiler.Script.GetCompilation().WithAnalyzers(CreateAnalyzers(compiler.Tenant, script)).GetAllDiagnosticsAsync().Result;
-				//errors = compiler.Script.GetCompilation().GetDiagnostics();
 
 			var diagnostics = new List<IDiagnostic>();
 

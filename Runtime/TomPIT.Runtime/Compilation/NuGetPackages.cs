@@ -45,6 +45,7 @@ namespace TomPIT.Compilation
 			var rt = Tenant.GetService<IRuntimeService>();
 
 			ReadOnly = rt.Connectivity == EnvironmentConnectivity.Offline;
+			System.Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile), "AppData", "Local", "Temp", "TomPITPackageCache"));
 		}
 
 		private bool ReadOnly { get; }
@@ -57,7 +58,21 @@ namespace TomPIT.Compilation
 		private SourceCacheContext CacheContext => _cacheContext ??= new SourceCacheContext();
 		private ILogger Logger => _logger ??= new NuGetLogger(Tenant);
 		private NuGetFramework Framework => _framework ??= NuGetFramework.ParseFolder(FrameworkVersion);
-		private SourceRepository Repository => _repository ??= NuGet.Protocol.Core.Types.Repository.Factory.GetCoreV3(RepositoryUrl);
+		private SourceRepository Repository
+		{
+			get
+			{
+				if(_repository == null)
+				{
+					_repository = NuGet.Protocol.Core.Types.Repository.Factory.GetCoreV3(RepositoryUrl);
+
+					_repository.PackageSource.IsMachineWide = false;
+				}
+
+				return _repository;
+			}
+		}
+		
 		private string RootDirectory => _root ??= Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile), ".tompit", "packages");
 		private PackagePathResolver PathResolver => _pathResolver ??= new PackagePathResolver(RootDirectory, false);
 

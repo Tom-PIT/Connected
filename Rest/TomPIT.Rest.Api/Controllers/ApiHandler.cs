@@ -172,7 +172,7 @@ namespace TomPIT.Rest.Controllers
 				return null;
 			}
 
-			var type = config.Middleware(this);
+			var type = op.Middleware(this);
 
 			if (type == null)
 			{

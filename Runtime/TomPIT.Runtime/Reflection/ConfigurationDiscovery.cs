@@ -90,7 +90,7 @@ namespace TomPIT.Reflection
 		}
 		public ImmutableList<T> Query<T>(IConfiguration configuration) where T : IElement
 		{
-			var r = ImmutableList<T>.Empty;
+			var r = new List<T>();
 
 			if (configuration is T t)
 				r.Add(t);
@@ -104,10 +104,10 @@ namespace TomPIT.Reflection
 			foreach (var i in props)
 				Query(configuration, i, r, refs);
 
-			return r;
+			return r.ToImmutableList();
 		}
 
-		private void Query<T>(object instance, ImmutableList<T> items, List<object> refs) where T : IElement
+		private void Query<T>(object instance, List<T> items, List<object> refs) where T : IElement
 		{
 			var props = ReflectionExtensions.Properties(instance, false, false);
 
@@ -115,7 +115,7 @@ namespace TomPIT.Reflection
 				Query(instance, i, items, refs);
 		}
 
-		private void Query<T>(object configuration, PropertyInfo property, ImmutableList<T> items, List<object> refs) where T : IElement
+		private void Query<T>(object configuration, PropertyInfo property, List<T> items, List<object> refs) where T : IElement
 		{
 			if (property.IsIndexer() || property.IsPrimitive())
 				return;
@@ -132,26 +132,26 @@ namespace TomPIT.Reflection
 
 			if (property.IsCollection())
 			{
-				if (!(value is IEnumerable en))
+				if (value is not IEnumerable en)
 					return;
 
 				var enm = en.GetEnumerator();
 
 				while (enm.MoveNext())
 				{
-					if (enm.Current == null)
+					if (enm.Current is null)
 						continue;
 
-					if (enm.Current is T)
-						items.Add((T)enm.Current);
+					if (enm.Current is T t)
+						items.Add(t);
 
 					Query(enm.Current, items, refs);
 				}
 			}
 			else if (!property.IsPrimitive())
 			{
-				if (value is T && !items.Contains((T)value))
-					items.Add((T)value);
+				if (value is T t && !items.Contains(t))
+					items.Add(t);
 
 				Query(value, items, refs);
 			}
