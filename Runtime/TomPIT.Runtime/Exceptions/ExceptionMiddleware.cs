@@ -167,12 +167,17 @@ namespace TomPIT.Exceptions
 
 		private void SetResponseStatus(HttpContext context, Exception ex)
 		{
-			if (ex is ForbiddenException)
-				context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-			else if (ex is NotFoundException)
-				context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-			else if (ex is UnauthorizedException)
-				context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+			if (ex is ScriptException script && script.InnerException != null)
+				SetResponseStatus(context, script.InnerException);
+			else
+			{
+				if (ex is ForbiddenException)
+					context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+				else if (ex is NotFoundException)
+					context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+				else if (ex is UnauthorizedException)
+					context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+			}
 		}
 	}
 }

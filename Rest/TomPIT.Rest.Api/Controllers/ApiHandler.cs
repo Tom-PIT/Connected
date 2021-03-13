@@ -172,7 +172,7 @@ namespace TomPIT.Rest.Controllers
 				return null;
 			}
 
-			var type = op.Middleware(this);
+			var type = Tenant.GetService<ICompilerService>().ResolveType(MicroService.Token, op, op.Name);
 
 			if (type == null)
 			{

@@ -87,7 +87,10 @@ namespace TomPIT.Annotations
 				foreach (var message in messages)
 					sb.AppendLine(message.Message);
 
-				throw new ForbiddenException(sb.ToString());
+				if (Model.Context.Services.Identity.IsAuthenticated)
+					throw new ForbiddenException(sb.ToString());
+				else
+					throw new UnauthorizedException(sb.ToString());
 			}
 
 			Context.Grant();

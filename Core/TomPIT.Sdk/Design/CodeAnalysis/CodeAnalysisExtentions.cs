@@ -164,7 +164,7 @@ namespace TomPIT.Design.CodeAnalysis
 			if (symbol is IArrayTypeSymbol array)
 				targetSymbol = array.ElementType;
 
-			if (!string.IsNullOrWhiteSpace(targetSymbol.ContainingNamespace.Name))
+			if (!string.IsNullOrWhiteSpace(targetSymbol?.ContainingNamespace?.Name))
 				sb.Append($"{targetSymbol.ContainingNamespace.ToDisplayString()}.");
 
 			sb.Append(targetSymbol.MetadataName);
@@ -172,7 +172,7 @@ namespace TomPIT.Design.CodeAnalysis
 			if (symbol is IArrayTypeSymbol)
 				sb.Append("[]");
 
-			if (!string.IsNullOrWhiteSpace(targetSymbol.ContainingAssembly.Name))
+			if (!string.IsNullOrWhiteSpace(targetSymbol?.ContainingAssembly?.Name))
 				sb.Append($", {targetSymbol.ContainingAssembly.ToDisplayString()}");
 
 			return sb.ToString();

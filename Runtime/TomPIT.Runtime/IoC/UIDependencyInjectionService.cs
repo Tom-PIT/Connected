@@ -73,6 +73,12 @@ namespace TomPIT.IoC
 		{
 			var targets = new List<IMasterDependency>();
 
+			QueryMasterDependencies(microService, master, arguments, kind, targets);
+
+			return CreateDependencies(targets.ToList<IUIDependency>(), arguments);
+		}
+		private void QueryMasterDependencies(Guid microService, string master, object arguments, MasterDependencyKind kind, List<IMasterDependency> targets)
+		{
 			foreach (var config in All())
 			{
 				foreach (var dependency in config.Injections)
@@ -103,8 +109,6 @@ namespace TomPIT.IoC
 			};
 
 			ResolveInherits(identifier, arguments, kind, targets, references);
-
-			return CreateDependencies(targets.ToList<IUIDependency>(), arguments);
 		}
 
 		private void ResolveInherits(string master, object arguments, MasterDependencyKind kind, List<IMasterDependency> dependencies, List<string> references)
@@ -125,22 +129,18 @@ namespace TomPIT.IoC
 
 			references.Add(identifier);
 
-			foreach (var config in All())
+			using var dependencyContext = MicroServiceContext.FromIdentifier(identifier, Tenant);
+			var dependencyDescriptor = ComponentDescriptor.Master(dependencyContext, identifier);
+
+			try
 			{
-				foreach (var dependency in config.Injections)
-				{
-					if (string.IsNullOrWhiteSpace(dependency.Name))
-						continue;
-
-					if (dependency is IMasterDependency masterDependency && masterDependency.Kind == kind)
-					{
-						if (string.IsNullOrWhiteSpace(descriptor.Configuration.Inherits) || string.Compare(masterDependency.Master, master, true) == 0 && !dependencies.Contains(masterDependency))
-							dependencies.Add(masterDependency);
-					}
-				}
+				dependencyDescriptor.Validate();
+		
+				QueryMasterDependencies(dependencyDescriptor.MicroService.Token, identifier, arguments, kind, dependencies);
 			}
-
-			ResolveInherits(identifier, arguments, kind, dependencies, references);
+			catch
+			{
+			}
 		}
 
 		private List<IUIDependencyDescriptor> CreateDependencies(List<IUIDependency> dependencies, object arguments)
