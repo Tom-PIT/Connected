@@ -493,16 +493,22 @@ namespace TomPIT.Design
 
 			DeleteManifest(component);
 
-			var u = Tenant.CreateUrl("ComponentDevelopment", "Update");
-			var args = new JObject
-				{
-					 {"name", name },
-					 {"component", component },
-					 {"folder", folder }
-				};
+			var c = Tenant.GetService<IComponentService>().SelectComponent(component);
 
-			Tenant.Post(u, args);
+			if (c == null)
+				throw new TomPITException(SR.ErrComponentNotFound);
+
+			Tenant.Post(CreateUrl("Update"), new
+			{
+				name,
+				component,
+				folder
+			});
+
 			InvalidateIndexState(component);
+
+			if (Tenant.GetService<IComponentService>() is IComponentNotification n)
+				n.NotifyChanged(this, new ConfigurationEventArgs(c.MicroService, component, c.Category));
 		}
 
 		public void Update(Guid component, string name, Guid folder)
@@ -1119,6 +1125,11 @@ namespace TomPIT.Design
 
 			foreach (var blob in blobs)
 				Tenant.GetService<IStorageService>().Delete(blob.Token);
+		}
+
+		private ServerUrl CreateUrl(string action)
+		{
+			return Tenant.CreateUrl("ComponentDevelopment", action);
 		}
 	}
 }
