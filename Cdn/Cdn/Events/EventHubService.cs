@@ -13,6 +13,7 @@ using TomPIT.Distributed;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
+using TomPIT.Security;
 using TomPIT.Serialization;
 
 namespace TomPIT.Cdn.Events
@@ -156,9 +157,13 @@ namespace TomPIT.Cdn.Events
 			if (instance == null)
 				return (candidates.ToList(), null);
 
+			var elevation = instance.Context as IElevationContext;
+
 			foreach (var candidate in candidates)
 			{
-				instance.Context.Revoke();
+				if (elevation != null)
+					elevation.State = ElevationContextState.Revoked;
+
 				instance.Context.Impersonate(candidate.User.ToString());
 
 				try
