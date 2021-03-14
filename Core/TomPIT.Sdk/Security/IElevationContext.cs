@@ -9,9 +9,7 @@
 	}
 	public interface IElevationContext
 	{
-		ElevationContextState State { get; }
-		void Grant();
-		void Revoke();
-		void Pending();
+		ElevationContextState State { get; set; }
+		object AuthorizationOwner { get; set; }
 	}
 }

@@ -14,6 +14,7 @@ namespace TomPIT.Middleware
 	{
 		#region Members
 		private ElevationContextState _elevationState = ElevationContextState.Revoked;
+		private object _authorizationOwner = null;
 		private IMiddlewareServices _services = null;
 		private ITenant _tenant = null;
 		private IMiddlewareInterop _interop = null;
@@ -70,6 +71,36 @@ namespace TomPIT.Middleware
 					return elevationContext.State;
 
 				return _elevationState;
+			}
+			set
+			{
+				if (Owner == null || Owner is not IElevationContext elevationOwner)
+					_elevationState = value;
+				else
+					elevationOwner.State = value;
+			}
+		}
+
+		[JsonIgnore]
+		object IElevationContext.AuthorizationOwner
+		{
+			get
+			{
+
+				if (Owner == null)
+					return _authorizationOwner;
+
+				if (Owner is IElevationContext elevationContext)
+					return elevationContext.AuthorizationOwner;
+
+				return _authorizationOwner;
+			}
+			set
+			{
+				if (Owner == null || Owner is not IElevationContext elevationOwner)
+					_authorizationOwner = value;
+				else
+					elevationOwner.AuthorizationOwner = value;
 			}
 		}
 
@@ -268,21 +299,6 @@ namespace TomPIT.Middleware
 			Connections.CloseConnections();
 		}
 
-		void IElevationContext.Grant()
-		{
-			_elevationState = ElevationContextState.Granted;
-		}
-
-		void IElevationContext.Pending()
-		{
-			_elevationState = ElevationContextState.Pending;
-		}
-
-		void IElevationContext.Revoke()
-		{
-			_elevationState = ElevationContextState.Revoked;
-		}
-
 		public T OpenModel<T>() where T : IModelComponent
 		{
 			var result = TypeExtensions.CreateInstance<IModelComponent>(typeof(T));
@@ -308,6 +324,7 @@ namespace TomPIT.Middleware
 					}
 
 					_connections = null;
+					_authorizationOwner = null;
 				}
 
 				Disposed = true;

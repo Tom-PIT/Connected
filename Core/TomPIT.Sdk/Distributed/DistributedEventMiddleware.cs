@@ -19,7 +19,6 @@ namespace TomPIT.Distributed
 		{
 			try
 			{
-				Context.Grant();
 				Validate();
 				OnInvoke();
 				base.Invoked();

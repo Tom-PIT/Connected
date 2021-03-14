@@ -93,7 +93,8 @@ namespace TomPIT.Annotations
 					throw new UnauthorizedException(sb.ToString());
 			}
 
-			Context.Grant();
+			if (context is IElevationContext elevationContext)
+				elevationContext.State = ElevationContextState.Granted;
 		}
 
 		protected virtual void OnAuthorize(List<PolicyAuthorizationResult> results)

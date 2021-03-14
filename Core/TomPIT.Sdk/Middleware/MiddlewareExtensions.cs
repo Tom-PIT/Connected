@@ -5,7 +5,6 @@ using TomPIT.Connectivity;
 using TomPIT.Exceptions;
 using TomPIT.Middleware.Services;
 using TomPIT.Reflection;
-using TomPIT.Security;
 using TomPIT.Serialization;
 
 namespace TomPIT.Middleware
@@ -31,24 +30,6 @@ namespace TomPIT.Middleware
 			}
 
 			return operation;
-		}
-
-		public static void Grant(this IMiddlewareContext context)
-		{
-			if (context is IElevationContext ctx)
-				ctx.Grant();
-		}
-
-		public static void Pending(this IMiddlewareContext context)
-		{
-			if (context is IElevationContext ctx)
-				ctx.Pending();
-		}
-
-		public static void Revoke(this IMiddlewareContext context)
-		{
-			if (context is IElevationContext ctx)
-				ctx.Revoke();
 		}
 
 		internal static void SetContext(this IMiddlewareObject target, IMiddlewareContext context)

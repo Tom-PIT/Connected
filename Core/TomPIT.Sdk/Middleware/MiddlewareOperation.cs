@@ -95,10 +95,13 @@ namespace TomPIT.Middleware
 
 		protected internal virtual void AuthorizePolicies()
 		{
-			if (Context is IElevationContext elevationContext && (elevationContext.State == ElevationContextState.Granted || elevationContext.State == ElevationContextState.Pending))
+			if (Context is not IElevationContext elevationContext || elevationContext.AuthorizationOwner != this)
 				return;
 
 			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, this);
+
+			if (Context is IElevationContext postElevationContext && postElevationContext.State == ElevationContextState.Revoked)
+				postElevationContext.State = ElevationContextState.Granted;
 		}
 	}
 }

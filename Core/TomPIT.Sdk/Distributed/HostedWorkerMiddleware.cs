@@ -16,7 +16,6 @@ namespace TomPIT.Distributed
 			if (context != null)
 				this.WithContext(context);
 
-			Context.Grant();
 			Validate();
 
 			try

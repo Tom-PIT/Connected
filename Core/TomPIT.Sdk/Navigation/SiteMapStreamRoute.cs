@@ -51,7 +51,9 @@ namespace TomPIT.Navigation
 				using var msContext = new MicroServiceContext(descriptor.MicroService, Context);
 				var middleware = msContext.CreateMiddleware<IOperation>(type, Shell.HttpContext.ParseArguments(Parameters, QueryString));
 
-				msContext.Revoke();
+				if (msContext is IElevationContext elevation)
+					elevation.State = ElevationContextState.Revoked;
+
 				Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(msContext, this);
 
 				return true;

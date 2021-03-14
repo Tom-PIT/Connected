@@ -18,7 +18,6 @@ namespace TomPIT.Cdn
 			if (context != null)
 				this.WithContext(context);
 
-			context.Grant();
 			Validate();
 
 			try

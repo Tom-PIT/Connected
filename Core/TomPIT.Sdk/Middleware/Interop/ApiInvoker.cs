@@ -8,6 +8,7 @@ using TomPIT.ComponentModel.Apis;
 using TomPIT.Diagostics;
 using TomPIT.Exceptions;
 using TomPIT.Reflection;
+using TomPIT.Security;
 using TomPIT.Serialization;
 
 namespace TomPIT.Middleware.Interop
@@ -72,12 +73,16 @@ namespace TomPIT.Middleware.Interop
 			}
 
 			var operationType = Context.Tenant.GetService<ICompilerService>().ResolveType(descriptor.MicroService.Token, op, op.Name);
+			var elevation = ctx as IElevationContext;
 
 			if (HasReturnValue(operationType))
 			{
 				using var opInstance = operationType.CreateInstance<IMiddlewareOperation>();
 
 				opInstance.SetContext(ctx);
+
+				if (elevation != null)
+					elevation.AuthorizationOwner = opInstance;
 
 				if (arguments != null)
 					Serializer.Populate(arguments, opInstance, false);
@@ -104,6 +109,9 @@ namespace TomPIT.Middleware.Interop
 					ReflectionExtensions.SetPropertyValue(opInstance, nameof(IDistributedOperation.OperationTarget), synchronous ? DistributedOperationTarget.InProcess : DistributedOperationTarget.Distributed);
 
 				opInstance.SetContext(ctx);
+
+				if (elevation != null)
+					elevation.AuthorizationOwner = opInstance;
 
 				if (arguments != null)
 					Serializer.Populate(arguments, opInstance);
