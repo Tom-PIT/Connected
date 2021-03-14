@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using TomPIT.Compilation;
@@ -87,12 +88,15 @@ namespace TomPIT.IoC
 			lock (Endpoints)
 				foreach (var endpoint in Endpoints)
 				{
-					var target = endpoint.Value.FirstOrDefault(f => f.Component == component);
+					var targets = endpoint.Value.Where(f => f.Component == component).ToImmutableArray();
 
-					if (target != null)
+					if(targets.Any())
 					{
 						lock (endpoint.Value)
-							endpoint.Value.Remove(target);
+						{
+							foreach (var target in targets)
+								endpoint.Value.Remove(target);
+						}
 					}
 				}
 		}

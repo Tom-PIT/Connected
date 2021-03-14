@@ -95,6 +95,9 @@ namespace TomPIT.Middleware
 
 		protected internal virtual void AuthorizePolicies()
 		{
+			if (Context is IElevationContext elevationContext && (elevationContext.State == ElevationContextState.Granted || elevationContext.State == ElevationContextState.Pending))
+				return;
+
 			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, this);
 		}
 	}

@@ -75,7 +75,10 @@ namespace TomPIT.Compilation
 								references.Add(token);
 							else if (line.StartsWith("#r "))
 							{
-								var path = AssemblyResolver.ResolvePath(token, basePath);
+								/*
+								 * This is only for backwards compatibillity and will be removed in the future. #r directives should always be defined in format microService/reference.
+								 */
+								var path = token.Contains("/") ? token : AssemblyResolver.ResolvePath(token, basePath);
 
 								if (References.ContainsKey(path))
 									continue;

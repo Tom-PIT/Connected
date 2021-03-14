@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
+using TomPIT.Collections;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Navigation;
@@ -96,60 +97,152 @@ namespace TomPIT.Navigation
 
 				if (container.Routes != null && container.Routes.Count > 0)
 					r.Routes.AddRange(container.Routes);
+
+				container.Dispose();
 			}
+
+			BindContext(r, r.Context);
 
 			return r;
 		}
 
 		private List<ISiteMapContainer> LoadSiteMap(string key, List<string> tags)
 		{
-			if (!Handlers.ContainsKey(key))
-				return null;
-
 			var r = new List<ISiteMapContainer>();
 
-			if (!Handlers.TryGetValue(key, out List<NavigationHandlerDescriptor> handlers))
-				return r;
-
-			foreach (var handler in handlers)
+			foreach (var handler in Handlers)
 			{
-				var ms = Tenant.GetService<IMicroServiceService>().Select(handler.MicroService);
-				var ctx = new MicroServiceContext(ms, Tenant.Url);
-				var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(ctx, handler.Handler);
-				var containers = instance.Invoke(key);
-
-				if (containers == null || containers.Count == 0)
-					continue;
-
-				if (tags != null && tags.Count > 0)
+				if (string.Compare(handler.Key, key, true) == 0)
 				{
-					for (var i = containers.Count - 1; i >= 0; i--)
+					var items = LoadContainerRoutes(handler.Value, key, tags);
+
+					if (items != null && items.Count > 0)
+						r.AddRange(items);
+				}
+				else
+				{
+					foreach(var descriptor in handler.Value)
 					{
-						var containerTags = containers[i].Tags;
-
-						if (containerTags == null || containerTags.Length == 0)
-						{
-							containers.RemoveAt(i);
+						if (!descriptor.RouteKeys.Contains(key.ToLowerInvariant()))
 							continue;
-						}
 
-						var containerTagTokens = containerTags.Split(',', ';');
+						var items = new List<ISiteMapContainer>();
 
-						foreach (var token in containerTagTokens)
+						LoadDescriptorRoutes(descriptor, handler.Key, null, items);
+
+						foreach(var item in items)
 						{
-							if (!tags.Any(f => string.Compare(f, token, true) == 0))
-								containers.RemoveAt(i);
+							FilterContainer(item, key);
+
+							r.Add(item);
 						}
 					}
 				}
-
-				foreach (var container in containers)
-					BindContext(container, instance.Context);
-
-				r.AddRange(containers);
 			}
 
+			if (r.Count < 2)
+				return r;
+
+			var first = r[0];
+
+			for (var i = 1; i < r.Count; i++)
+			{
+				first.Routes.AddRange(r[i].Routes);
+
+				r[i].Dispose();
+			}
+
+			return new List<ISiteMapContainer> { first };
+		}
+
+		private void FilterContainer(ISiteMapContainer container, string routeKey)
+		{
+			var targetRoute = FindRoute(container.Routes, routeKey);
+
+			container.Routes.Clear();
+
+			if (targetRoute != null)
+				container.Routes.AddRange(targetRoute.Routes);
+		}
+
+		private ISiteMapRoute FindRoute(ConnectedList<ISiteMapRoute, ISiteMapContainer> routes,  string routeKey)
+		{
+			foreach (var route in routes)
+			{
+				if (string.Compare(route.RouteKey, routeKey, true) == 0)
+					return route;
+
+				var childTarget = FindRoute(route.Routes, routeKey);
+
+				if (childTarget != null)
+					return childTarget;
+			}
+
+			return null;
+		}
+
+		private ISiteMapRoute FindRoute(ConnectedList<ISiteMapRoute, ISiteMapRoute> routes, string routeKey)
+		{
+			foreach (var route in routes)
+			{
+				if (string.Compare(route.RouteKey, routeKey, true) == 0)
+					return route;
+
+				var childTarget = FindRoute(route.Routes, routeKey);
+
+				if (childTarget != null)
+					return childTarget;
+			}
+
+			return null;
+		}
+
+		private List<ISiteMapContainer> LoadContainerRoutes(List<NavigationHandlerDescriptor> handlers, string key, List<string> tags)
+		{
+			var r = new List<ISiteMapContainer>();
+
+			foreach (var descriptor in handlers)
+				LoadDescriptorRoutes(descriptor, key, tags, r);
+
 			return r;
+		}
+
+		private void LoadDescriptorRoutes(NavigationHandlerDescriptor handler, string key, List<string> tags, List<ISiteMapContainer> items)
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(handler.MicroService);
+			var ctx = new MicroServiceContext(ms, Tenant.Url);
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(ctx, handler.Handler);
+			var containers = instance.Invoke(key);
+
+			if (containers == null || containers.Count == 0)
+				return;
+
+			if (tags != null && tags.Count > 0)
+			{
+				for (var i = containers.Count - 1; i >= 0; i--)
+				{
+					var containerTags = containers[i].Tags;
+
+					if (containerTags == null || containerTags.Length == 0)
+					{
+						containers.RemoveAt(i);
+						continue;
+					}
+
+					var containerTagTokens = containerTags.Split(',', ';');
+
+					foreach (var token in containerTagTokens)
+					{
+						if (!tags.Any(f => string.Compare(f, token, true) == 0))
+							containers.RemoveAt(i);
+					}
+				}
+			}
+
+			foreach (var container in containers)
+				BindContext(container, instance.Context);
+
+			items.AddRange(containers);
 		}
 
 		private void BindContext(ISiteMapContainer container, IMiddlewareContext context)

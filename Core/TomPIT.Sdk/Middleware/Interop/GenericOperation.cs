@@ -297,5 +297,44 @@ namespace TomPIT.Middleware.Interop
 					Context.Grant();
 			}
 		}
+
+		protected internal override void AuthorizePolicies()
+		{
+			if (Context is not IElevationContext elevationContext || (elevationContext.State == ElevationContextState.Pending || elevationContext.State == ElevationContextState.Pending))
+			{
+				base.AuthorizePolicies();
+				return;
+			}
+
+			var attributes = GetType().GetCustomAttributes(true);
+
+			var hasResults = false;
+			var hasPre = false;
+
+			foreach (var attribute in attributes)
+			{
+				if (attribute is AuthorizationPolicyAttribute authorization)
+				{
+					if (authorization.Behavior == AuthorizationPolicyBehavior.Mandatory)
+					{
+						if (authorization.MiddlewareStage == AuthorizationMiddlewareStage.Before)
+							hasPre = true;
+						else if (authorization.MiddlewareStage == AuthorizationMiddlewareStage.Result)
+							hasResults = true;
+					}
+
+					if (hasPre && hasResults)
+						break;
+				}
+			}
+
+			if (hasPre)
+				base.AuthorizePolicies();
+			else if (hasResults)
+			{
+				elevationContext.Pending();
+				base.AuthorizePolicies();
+			}
+		}
 	}
 }

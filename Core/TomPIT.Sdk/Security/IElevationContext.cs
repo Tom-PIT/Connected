@@ -2,13 +2,16 @@
 {
 	public enum ElevationContextState
 	{
+		NotSet = 0,
 		Granted = 1,
-		Revoked = 2
+		Revoked = 2,
+		Pending = 3
 	}
 	public interface IElevationContext
 	{
 		ElevationContextState State { get; }
 		void Grant();
 		void Revoke();
+		void Pending();
 	}
 }

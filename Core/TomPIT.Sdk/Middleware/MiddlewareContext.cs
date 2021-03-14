@@ -58,7 +58,21 @@ namespace TomPIT.Middleware
 		private bool Disposed { get; set; }
 
 		[JsonIgnore]
-		ElevationContextState IElevationContext.State => Owner == null ? _elevationState : Owner._elevationState;
+		ElevationContextState IElevationContext.State
+		{
+			get
+			{
+
+				if (Owner == null)
+					return _elevationState;
+
+				if (Owner is IElevationContext elevationContext)
+					return elevationContext.State;
+
+				return _elevationState;
+			}
+		}
+
 		[JsonIgnore]
 		public virtual IMiddlewareServices Services
 		{
@@ -257,6 +271,11 @@ namespace TomPIT.Middleware
 		void IElevationContext.Grant()
 		{
 			_elevationState = ElevationContextState.Granted;
+		}
+
+		void IElevationContext.Pending()
+		{
+			_elevationState = ElevationContextState.Pending;
 		}
 
 		void IElevationContext.Revoke()

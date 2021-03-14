@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
+using TomPIT.Collections;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Navigation;
@@ -17,10 +19,10 @@ namespace TomPIT.Development.Navigation
 		{
 
 		}
-		public List<INavigationRouteDescriptor> QueryRouteKeys(Guid microService)
+		public ImmutableList<INavigationRouteDescriptor> QueryRouteKeys(Guid microService)
 		{
 			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(microService, ComponentCategories.SiteMap);
-			var r = new List<INavigationRouteDescriptor>();
+			var r = new HashSet<INavigationRouteDescriptor>(new NavigationRouteComparer());
 
 			foreach (var configuration in configurations)
 			{
@@ -33,10 +35,10 @@ namespace TomPIT.Development.Navigation
 					FillKeys(container, r);
 			}
 
-			return r;
+			return r.ToImmutableList();
 		}
 
-		private void FillKeys(ISiteMapContainer container, List<INavigationRouteDescriptor> items)
+		private void FillKeys(ISiteMapContainer container, HashSet<INavigationRouteDescriptor> items)
 		{
 			foreach (var item in container.Routes)
 			{
@@ -47,7 +49,7 @@ namespace TomPIT.Development.Navigation
 			}
 		}
 
-		private void FillKeys(ISiteMapRoute route, List<INavigationRouteDescriptor> items)
+		private void FillKeys(ISiteMapRoute route, HashSet<INavigationRouteDescriptor> items)
 		{
 			if (!string.IsNullOrWhiteSpace(route.RouteKey) && items.FirstOrDefault(f => string.Compare(f.RouteKey, route.RouteKey, true) == 0) == null)
 				items.Add(new NavigationRouteDescriptor { RouteKey = route.RouteKey, Template = route.Template, Text = route.Text });
@@ -56,10 +58,10 @@ namespace TomPIT.Development.Navigation
 				FillKeys(item, items);
 		}
 
-		public List<string> QuerySiteMapKeys(Guid microService)
+		public ImmutableList<string> QuerySiteMapKeys(Guid microService)
 		{
 			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(microService, "SiteMap");
-			var r = new List<string>();
+			var r = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
 			foreach (var configuration in configurations)
 			{
@@ -73,14 +75,45 @@ namespace TomPIT.Development.Navigation
 					if (string.IsNullOrEmpty(container.Key))
 						continue;
 
-					if (r.Contains(container.Key))
-						continue;
-
 					r.Add(container.Key);
+
+					QuerySiteMapKeys(container.Routes, r);
 				}
 			}
 
-			return r;
+			return r.ToImmutableList();
+		}
+
+		private void QuerySiteMapKeys(ConnectedList<ISiteMapRoute, ISiteMapContainer> routes, HashSet<string> items)
+		{
+			if (routes == null)
+				return;
+
+			foreach(var route in routes)
+			{
+				if (string.IsNullOrWhiteSpace(route.RouteKey))
+					continue;
+
+				items.Add(route.RouteKey);
+
+				QuerySiteMapKeys(route.Routes, items);
+			}
+		}
+
+		private void QuerySiteMapKeys(ConnectedList<ISiteMapRoute, ISiteMapRoute> routes, HashSet<string> items)
+		{
+			if (routes == null)
+				return;
+
+			foreach (var route in routes)
+			{
+				if (string.IsNullOrWhiteSpace(route.RouteKey))
+					continue;
+
+				items.Add(route.RouteKey);
+
+				QuerySiteMapKeys(route.Routes, items);
+			}
 		}
 
 		private List<ISiteMapContainer> QueryContainers(Guid microService, IConfiguration configuration)

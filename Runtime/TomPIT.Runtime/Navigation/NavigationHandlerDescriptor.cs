@@ -7,8 +7,8 @@ namespace TomPIT.Navigation
 {
 	internal class NavigationHandlerDescriptor
 	{
-		private List<string> _keys = null;
-		private List<string> _templates = null;
+		private HashSet<string> _keys = null;
+		private HashSet<string> _templates = null;
 		public NavigationHandlerDescriptor(Guid microService, Guid component, Type handler)
 		{
 			Component = component;
@@ -20,23 +20,23 @@ namespace TomPIT.Navigation
 		public Type Handler { get; }
 		public Guid Component { get; }
 
-		public List<string> RouteKeys
+		public HashSet<string> RouteKeys
 		{
 			get
 			{
 				if (_keys == null)
-					_keys = new List<string>();
+					_keys = new HashSet<string>();
 
 				return _keys;
 			}
 		}
 
-		public List<string> Templates
+		public HashSet<string> Templates
 		{
 			get
 			{
 				if (_templates == null)
-					_templates = new List<string>();
+					_templates = new HashSet<string>();
 
 				return _templates;
 			}

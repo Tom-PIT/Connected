@@ -35,18 +35,20 @@ namespace TomPIT.Middleware
 
 		public static void Grant(this IMiddlewareContext context)
 		{
-			if (!(context is IElevationContext ctx))
-				return;
+			if (context is IElevationContext ctx)
+				ctx.Grant();
+		}
 
-			ctx.Grant();
+		public static void Pending(this IMiddlewareContext context)
+		{
+			if (context is IElevationContext ctx)
+				ctx.Pending();
 		}
 
 		public static void Revoke(this IMiddlewareContext context)
 		{
-			if (!(context is IElevationContext ctx))
-				return;
-
-			ctx.Revoke();
+			if (context is IElevationContext ctx)
+				ctx.Revoke();
 		}
 
 		internal static void SetContext(this IMiddlewareObject target, IMiddlewareContext context)

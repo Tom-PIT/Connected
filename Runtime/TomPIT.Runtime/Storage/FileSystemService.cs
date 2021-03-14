@@ -15,7 +15,7 @@ namespace TomPIT.Storage
 			if (string.IsNullOrWhiteSpace(e.NewPath))
 				throw new RuntimeException(SR.ErrNewPathNotSet);
 
-			using var connection = new NetworkConnection(e.Path, new NetworkCredential(e.UserName, e.Path));
+			using var connection = new NetworkConnection(e.Path, new NetworkCredential(e.UserName, e.Password));
 			
 			File.Copy(e.Path, e.NewPath);
 		}
@@ -25,7 +25,7 @@ namespace TomPIT.Storage
 			if (string.IsNullOrWhiteSpace(e.Path))
 				throw new RuntimeException(SR.ErrPathNotSet);
 
-			using var connection = new NetworkConnection(e.Path, new NetworkCredential(e.UserName, e.Path));
+			using var connection = new NetworkConnection(e.Path, new NetworkCredential(e.UserName, e.Password));
 
 			File.Delete(e.Path);
 		}
@@ -38,7 +38,7 @@ namespace TomPIT.Storage
 			if (string.IsNullOrWhiteSpace(e.NewPath))
 				throw new RuntimeException(SR.ErrNewPathNotSet);
 
-			using var connection = new NetworkConnection(e.Path, new NetworkCredential(e.UserName, e.Path));
+			using var connection = new NetworkConnection(e.Path, new NetworkCredential(e.UserName, e.Password));
 
 			File.Move(e.Path, e.NewPath);
 		}
@@ -48,7 +48,7 @@ namespace TomPIT.Storage
 			if (string.IsNullOrWhiteSpace(e.Path))
 				throw new RuntimeException(SR.ErrPathNotSet);
 
-			using var connection = new NetworkConnection(e.Path, new NetworkCredential(e.UserName, e.Path));
+			using var connection = new NetworkConnection(e.Path, new NetworkCredential(e.UserName, e.Password));
 
 			return File.ReadAllBytes(e.Path);
 		}
