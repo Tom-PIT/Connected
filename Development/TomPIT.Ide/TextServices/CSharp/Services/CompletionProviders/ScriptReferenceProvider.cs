@@ -42,7 +42,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 
 		private void FillItems(List<ICompletionItem> items, IMicroService microService)
 		{
-			var msName = microService.Token == Editor.Context.MicroService.Token ? string.Empty : $"{microService.Name}/";
+			var msName = $"{microService.Name}/";
 			var scripts = Editor.Context.Tenant.GetService<IComponentService>().QueryComponents(microService.Token, ComponentCategories.Script);
 
 			foreach (var script in scripts)
@@ -52,7 +52,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 
 			foreach (IConfiguration api in apis)
 			{
-				if (!(api is IApiConfiguration configuration))
+				if (api is not IApiConfiguration configuration)
 					continue;
 
 				var apiName = api.ComponentName();
@@ -65,7 +65,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 
 			foreach (IConfiguration model in models)
 			{
-				if (!(model is IModelConfiguration mc))
+				if (model is not IModelConfiguration mc)
 					continue;
 
 				var modelName = mc.ComponentName();
@@ -77,7 +77,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 
 			foreach (IConfiguration setting in settings)
 			{
-				if (!(setting is ISettingsConfiguration sc))
+				if (setting is not ISettingsConfiguration sc)
 					continue;
 
 				var modelName = sc.ComponentName();
@@ -86,7 +86,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 			}
 		}
 
-		private ICompletionItem CreateScriptItem(string name)
+		private static ICompletionItem CreateScriptItem(string name)
 		{
 			var result = new CompletionItem
 			{
