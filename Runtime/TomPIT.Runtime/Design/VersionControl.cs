@@ -287,6 +287,70 @@ namespace TomPIT.Design
 			return result;
 		}
 
+		public IDiffDescriptor GetDiff(Guid component, Guid id, Guid commit)
+		{
+			if (commit == Guid.Empty)
+				return GetDiff(component, id);
+
+			var history = QueryHistory(component).OrderByDescending(f => f.Created);
+			var target = history.FirstOrDefault(f => f.Commit == commit);
+
+			if (target == null)
+				return null;
+
+			var previous = history.FirstOrDefault(f => f.Created < target.Created);
+			var targetImage = Tenant.GetService<IDesignService>().Components.SelectComponentImage(target.Blob);
+
+			if (targetImage == null)
+				return null;
+
+			IComponentImageBlob targetBlob = null;
+			IComponentImageBlob previousBlob = null;
+
+			if (id == Guid.Empty)
+				targetBlob = targetImage.Configuration;
+			else
+				targetBlob = targetImage.Dependencies.FirstOrDefault(f => f.Token == id);
+
+			if (previous != null)
+			{
+				var previousImage = Tenant.GetService<IDesignService>().Components.SelectComponentImage(previous.Blob);
+
+				if (previousImage != null)
+				{
+					if (id == Guid.Empty)
+						previousBlob = previousImage.Configuration;
+					else
+						previousBlob = previousImage.Dependencies.FirstOrDefault(f => f.Token == id);
+				}
+			}
+
+			var syntax = "json";
+
+			if (id != Guid.Empty)
+			{
+				var config = Tenant.GetService<IComponentService>().SelectConfiguration(component);
+
+				if (config != null)
+				{
+					var element = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config).FirstOrDefault(f=>f.TextBlob == id);
+
+					if (element != null)
+					{
+						var stx = element.GetType().FindAttribute<SyntaxAttribute>();
+						syntax = stx == null ? SyntaxAttribute.CSharp : stx.Syntax;
+					}
+				}
+			}
+
+			return new DiffDescriptor
+			{
+				Original = previousBlob == null || previousBlob.Content == null || previousBlob.Content.Length == 0 ? string.Empty : Encoding.UTF8.GetString(previousBlob.Content),
+				Modified = targetBlob == null || targetBlob.Content == null || targetBlob.Content.Length == 0 ? string.Empty : Encoding.UTF8.GetString(targetBlob.Content),
+				Syntax = syntax
+			};
+		}
+
 		public IDiffDescriptor GetDiff(Guid component, Guid id)
 		{
 			if (id == Guid.Empty)

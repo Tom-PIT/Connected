@@ -159,7 +159,7 @@ namespace TomPIT.Reflection
 
 		public ImmutableList<Guid> QueryDependencies(IConfiguration configuration)
 		{
-			var r = ImmutableList<Guid>.Empty;
+			var r = new HashSet<Guid>();
 			var texts = Query<IText>(configuration);
 
 			foreach (var j in texts)
@@ -183,7 +183,7 @@ namespace TomPIT.Reflection
 					r.Add(k);
 			}
 
-			return r;
+			return r.ToImmutableList();
 		}
 	}
 }

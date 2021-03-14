@@ -35,6 +35,7 @@ namespace TomPIT.Design
 		IChangeDescriptor GetChanges(ChangeQueryMode mode);
 		IChangeDescriptor GetChanges(ChangeQueryMode mode, Guid user);
 		IDiffDescriptor GetDiff(Guid component, Guid id);
+		IDiffDescriptor GetDiff(Guid component, Guid id, Guid commit);
 
 		void DeleteHistory(Guid component);
 	}

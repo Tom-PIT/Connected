@@ -10,7 +10,8 @@ namespace TomPIT.Design
 		public Guid Id { get; set; }
 
 		public string Name { get; set; }
-
+		public ComponentVerb Verb { get; set; }
+		public bool HasChanged { get; set; }
 		public List<IChangeElement> Elements
 		{
 			get

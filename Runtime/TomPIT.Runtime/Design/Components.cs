@@ -882,7 +882,7 @@ namespace TomPIT.Design
 		public IComponentImage SelectComponentImage(Guid blob)
 		{
 			var content = Tenant.GetService<IStorageService>().Download(blob);
-
+			
 			if (content == null)
 				return null;
 

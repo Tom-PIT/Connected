@@ -60,6 +60,24 @@ namespace TomPIT.Design
 			Result.Id = Component.Token;
 			Result.Microservice = Component.MicroService;
 			Result.Name = Component.Name;
+			Result.HasChanged = HasChanged(Component.Token, Guid.Empty);
+			Result.Category = Component.Category;
+
+			switch (Component.LockVerb)
+			{
+				case Development.LockVerb.Add:
+					Result.Verb = ComponentVerb.Add;
+					break;
+				case Development.LockVerb.Edit:
+					Result.Verb = ComponentVerb.Edit;
+					break;
+				case Development.LockVerb.Delete:
+					Result.Verb = ComponentVerb.Delete;
+					break;
+			}
+
+			if (Result.Verb == ComponentVerb.Delete)
+				return Result;
 
 			ParseConfiguration();
 			ParseElements();
@@ -77,6 +95,9 @@ namespace TomPIT.Design
 				Result.Blob.Token = text.TextBlob;
 				Result.Blob.Syntax = ResolveSyntax(text);
 				Result.Blob.FileName = ResolveFileName(text);
+
+				if (text.TextBlob != Guid.Empty)
+					Result.Blob.HasChanged = HasChanged(Configuration.Component, text.Id);
 
 				if (Mode == ChangeQueryMode.Full)
 				{
@@ -109,6 +130,17 @@ namespace TomPIT.Design
 			}
 		}
 
+		private bool HasChanged(Guid component, Guid blob)
+		{
+			var diff = Tenant.GetService<IDesignService>().VersionControl.GetDiff(component, blob);
+
+			if (diff == null)
+				return false;
+
+			return string.Compare(diff.Original, diff.Modified, StringComparison.Ordinal) != 0;
+		}
+
+		[Obsolete]
 		private bool IncludeRuntimeConfiguration => string.Compare(Component.Category, ComponentCategories.StringTable, true) == 0;
 
 		private string ResolveSyntax(object text)
@@ -210,6 +242,8 @@ namespace TomPIT.Design
 			child.Blob.Syntax = ResolveSyntax(text);
 			child.Blob.FileName = ResolveFileName(text);
 			child.Blob.Token = text.TextBlob;
+			child.HasChanged = HasChanged(text.Configuration().Component, text.Id);
+			child.Blob.HasChanged = child.HasChanged;
 
 			if (Mode == ChangeQueryMode.Full)
 			{

@@ -9,5 +9,6 @@ namespace TomPIT.Design
 		byte[] Configuration { get; }
 		byte[] RuntimeConfiguration { get; }
 		string Error { get; }
+		string Category { get; }
 	}
 }

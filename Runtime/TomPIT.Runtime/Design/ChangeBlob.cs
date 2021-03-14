@@ -9,5 +9,6 @@ namespace TomPIT.Design
 		public string ContentType { get; set; }
 		public string Syntax { get; set; }
 		public string FileName { get; set; }
+		public bool HasChanged {get;set;}
 	}
 }

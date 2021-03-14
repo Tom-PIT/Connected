@@ -9,5 +9,6 @@ namespace TomPIT.Design
 		byte[] Content { get; set; }
 		string Syntax { get; set; }
 		string FileName { get; set; }
+		bool HasChanged { get; set; }
 	}
 }

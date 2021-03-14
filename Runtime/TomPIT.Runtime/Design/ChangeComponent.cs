@@ -10,5 +10,7 @@ namespace TomPIT.Design
 		public byte[] Configuration { get; set; }
 		public byte[] RuntimeConfiguration { get; set; }
 		public string Error { get; set; }
+		public string Category { get; set; }
+
 	}
 }

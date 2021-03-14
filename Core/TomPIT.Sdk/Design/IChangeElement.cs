@@ -9,5 +9,7 @@ namespace TomPIT.Design
 		string Name { get; }
 		List<IChangeElement> Elements { get; }
 		IChangeBlob Blob { get; }
+		ComponentVerb Verb { get; }
+		bool HasChanged { get; }
 	}
 }

@@ -98,6 +98,7 @@ namespace TomPIT.Navigation
 				if (container.Routes != null && container.Routes.Count > 0)
 					r.Routes.AddRange(container.Routes);
 
+				container.Routes.Clear();
 				container.Dispose();
 			}
 
@@ -149,6 +150,7 @@ namespace TomPIT.Navigation
 			{
 				first.Routes.AddRange(r[i].Routes);
 
+				r[i].Routes.Clear();
 				r[i].Dispose();
 			}
 
