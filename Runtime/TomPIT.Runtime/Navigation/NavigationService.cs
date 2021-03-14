@@ -129,7 +129,7 @@ namespace TomPIT.Navigation
 
 						var items = new List<ISiteMapContainer>();
 
-						LoadDescriptorRoutes(descriptor, handler.Key, null, items);
+						LoadDescriptorRoutes(descriptor, key, null, items);
 
 						foreach(var item in items)
 						{
@@ -164,7 +164,12 @@ namespace TomPIT.Navigation
 			container.Routes.Clear();
 
 			if (targetRoute != null)
+			{
 				container.Routes.AddRange(targetRoute.Routes);
+				
+				targetRoute.Routes.Clear();
+				targetRoute.Dispose();
+			}
 		}
 
 		private ISiteMapRoute FindRoute(ConnectedList<ISiteMapRoute, ISiteMapContainer> routes,  string routeKey)
