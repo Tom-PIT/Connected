@@ -5,6 +5,7 @@ using System.Text;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Development;
 using TomPIT.Reflection;
 using TomPIT.Storage;
 
@@ -14,14 +15,54 @@ namespace TomPIT.Design
 	{
 		private ChangeComponent _result = null;
 		private IConfiguration _configuration = null;
-		public ComponentParser(ITenant tenant, IComponent component, ChangeQueryMode mode) : base(tenant)
+		private IComponentImage _image = null;
+		private ICommit _commit = null;
+		private IComponentHistory _componentHistory = null;
+		public ComponentParser(ITenant tenant, IComponent component, ChangeQueryMode mode, Guid commit) : base(tenant)
 		{
 			Component = component;
 			Mode = mode;
+			CommitToken = commit;
 		}
 
+		private Guid CommitToken { get; }
 		private ChangeQueryMode Mode { get; }
 		private IComponent Component { get; }
+
+		private ICommit Commit
+		{
+			get
+			{
+				if (_commit == null && CommitToken != Guid.Empty)
+					_commit = Tenant.GetService<IDesignService>().VersionControl.SelectCommit(CommitToken);
+
+				return _commit;
+			}
+		}
+
+		private IComponentHistory ComponentHistory
+		{
+			get
+			{
+				if(_componentHistory == null && Commit != null)
+					_componentHistory = Tenant.GetService<IDesignService>().VersionControl.SelectCommitDetail(Commit.Token, Component.Token);
+
+				return _componentHistory;
+			}
+		}
+		private IComponentImage Image
+		{
+			get
+			{
+				if(_image == null)
+				{
+					if (ComponentHistory != null)
+						_image = Tenant.GetService<IDesignService>().Components.SelectComponentImage(ComponentHistory.Blob);
+				}
+
+				return _image;
+			}
+		}
 		private ChangeComponent Result
 		{
 			get
@@ -65,13 +106,13 @@ namespace TomPIT.Design
 
 			switch (Component.LockVerb)
 			{
-				case Development.LockVerb.Add:
+				case LockVerb.Add:
 					Result.Verb = ComponentVerb.Add;
 					break;
-				case Development.LockVerb.Edit:
+				case LockVerb.Edit:
 					Result.Verb = ComponentVerb.Edit;
 					break;
-				case Development.LockVerb.Delete:
+				case LockVerb.Delete:
 					Result.Verb = ComponentVerb.Delete;
 					break;
 			}
@@ -97,7 +138,7 @@ namespace TomPIT.Design
 				Result.Blob.FileName = ResolveFileName(text);
 
 				if (text.TextBlob != Guid.Empty)
-					Result.Blob.HasChanged = HasChanged(Configuration.Component, text.Id);
+					Result.Blob.HasChanged = HasChanged(Configuration.Component, text.TextBlob);
 
 				if (Mode == ChangeQueryMode.Full)
 				{
@@ -132,7 +173,7 @@ namespace TomPIT.Design
 
 		private bool HasChanged(Guid component, Guid blob)
 		{
-			var diff = Tenant.GetService<IDesignService>().VersionControl.GetDiff(component, blob);
+			var diff = Tenant.GetService<IDesignService>().VersionControl.GetDiff(component, blob, CommitToken);
 
 			if (diff == null)
 				return false;
@@ -242,7 +283,7 @@ namespace TomPIT.Design
 			child.Blob.Syntax = ResolveSyntax(text);
 			child.Blob.FileName = ResolveFileName(text);
 			child.Blob.Token = text.TextBlob;
-			child.HasChanged = HasChanged(text.Configuration().Component, text.Id);
+			child.HasChanged = HasChanged(text.Configuration().Component, text.TextBlob);
 			child.Blob.HasChanged = child.HasChanged;
 
 			if (Mode == ChangeQueryMode.Full)

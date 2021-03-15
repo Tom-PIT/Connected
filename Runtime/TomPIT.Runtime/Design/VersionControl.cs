@@ -35,6 +35,14 @@ namespace TomPIT.Design
 			});
 		}
 
+		public ICommit SelectCommit(Guid token)
+		{
+			return Tenant.Post<Commit>(CreateUrl("SelectCommit"), new
+			{
+				token
+			});
+		}
+
 		public IComponentHistory SelectNonCommited(Guid component)
 		{
 			return Tenant.Post<ComponentHistory>(CreateUrl("SelectNonCommited"), new
@@ -217,10 +225,22 @@ namespace TomPIT.Design
 
 		public List<IComponentHistory> QueryHistory(Guid component)
 		{
-			return Tenant.Post<List<ComponentHistory>>(CreateUrl("QueryHistory"), new
+			/*
+			 * this call will throw exception if component doesn't exist. when called
+			 * from version control this might be a common case so we'll eat up
+			 * an exception
+			 */
+			try
 			{
-				component
-			}).ToList<IComponentHistory>();
+				return Tenant.Post<List<ComponentHistory>>(CreateUrl("QueryHistory"), new
+				{
+					component
+				}).ToList<IComponentHistory>();
+			}
+			catch
+			{
+				return new List<IComponentHistory>();
+			}
 		}
 
 		public List<IComponentHistory> QueryMicroServiceHistory(Guid microService)
@@ -254,18 +274,54 @@ namespace TomPIT.Design
 		}
 		public IChangeDescriptor GetChanges(ChangeQueryMode mode, Guid user)
 		{
+			return GetChanges(mode, user, Guid.Empty);
+		}
+		public IChangeDescriptor GetChanges(ChangeQueryMode mode, Guid user, Guid commit)
+		{
 			var result = new ChangeDescriptor();
-			var changes = Changes(Guid.Empty, user);
+			List<IComponent> changes = commit == Guid.Empty ? Changes(Guid.Empty, user) : ResolveCommitChanges(commit);
 
 			var groups = changes.GroupBy(f => f.MicroService);
 
 			foreach (var group in groups)
-				result.MicroServices.Add(CreateMicroserviceChanges(group, mode));
+				result.MicroServices.Add(CreateMicroserviceChanges(group, mode, commit));
 
 			return result;
 		}
 
-		private IChangeMicroService CreateMicroserviceChanges(IGrouping<Guid, IComponent> group, ChangeQueryMode mode)
+		private List<IComponent> ResolveCommitChanges(Guid commit)
+		{
+			var components = QueryCommitDetails(commit);
+			var descriptor = SelectCommit(commit);
+			var result = new List<IComponent>();
+
+			foreach(var component in components)
+			{
+				var image = Tenant.GetService<IDesignService>().Components.SelectComponentImage(component.Blob);
+
+				var c = new Component
+				{
+					LockVerb = component.Verb,
+					LockUser = component.User,
+					MicroService = descriptor.Service,
+					Name = component.Name,
+					Token = component.Component
+				};
+
+				if(image != null)
+				{
+					c.Folder = image.Folder;
+					c.Category = image.Category;
+					c.Type = image.Type;
+				}
+
+				result.Add(c);
+			}
+
+			return result;
+		}
+
+		private IChangeMicroService CreateMicroserviceChanges(IGrouping<Guid, IComponent> group, ChangeQueryMode mode, Guid commit)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(group.Key);
 			var result = new ChangeMicroService
@@ -274,20 +330,23 @@ namespace TomPIT.Design
 				Id = ms.Token
 			};
 
-			var folders = Tenant.GetService<IComponentService>().QueryFolders(ms.Token);
-
-			foreach (var folder in folders)
+			if (commit == Guid.Empty)
 			{
-				result.Folders.Add(new ChangeFolder
+				var folders = Tenant.GetService<IComponentService>().QueryFolders(ms.Token);
+
+				foreach (var folder in folders)
 				{
-					Name = folder.Name,
-					Parent = folder.Parent,
-					Id = folder.Token
-				});
+					result.Folders.Add(new ChangeFolder
+					{
+						Name = folder.Name,
+						Parent = folder.Parent,
+						Id = folder.Token
+					});
+				}
 			}
 
 			foreach (var component in group)
-				result.Components.Add(new ComponentParser(Tenant, component, mode).Parse());
+				result.Components.Add(new ComponentParser(Tenant, component, mode, commit).Parse());
 
 			return result;
 		}
@@ -303,42 +362,52 @@ namespace TomPIT.Design
 			if (target == null)
 				return null;
 
-			var previous = history.FirstOrDefault(f => f.Created < target.Created);
+			var next = history.OrderBy(f => f.Created).FirstOrDefault(f => f.Commit != commit && f.Created > target.Created);
 			var targetImage = Tenant.GetService<IDesignService>().Components.SelectComponentImage(target.Blob);
 
 			if (targetImage == null)
 				return null;
 
 			IComponentImageBlob targetBlob = null;
-			IComponentImageBlob previousBlob = null;
+			IComponentImageBlob nextBlob = null;
 
 			if (id == Guid.Empty)
 				targetBlob = targetImage.Configuration;
 			else
 				targetBlob = targetImage.Dependencies.FirstOrDefault(f => f.Token == id);
 
-			if (previous != null)
+			if (next != null)
 			{
-				var previousImage = Tenant.GetService<IDesignService>().Components.SelectComponentImage(previous.Blob);
+				var nextImage = Tenant.GetService<IDesignService>().Components.SelectComponentImage(next.Blob);
 
-				if (previousImage != null)
+				if (nextImage != null)
 				{
 					if (id == Guid.Empty)
-						previousBlob = previousImage.Configuration;
+						nextBlob = nextImage.Configuration;
 					else
-						previousBlob = previousImage.Dependencies.FirstOrDefault(f => f.Token == id);
+						nextBlob = nextImage.Dependencies.FirstOrDefault(f => f.Token == id);
 				}
+			}
+			else
+			{
+				/*
+				 * current
+				 */
+				nextBlob = new ComponentImageBlob
+				{
+					Content = Tenant.GetService<IStorageService>().Download(id)?.Content
+				};
 			}
 
 			var syntax = "json";
 
 			if (id != Guid.Empty)
 			{
-				var config = Tenant.GetService<IComponentService>().SelectConfiguration(component);
+				var type = TypeExtensions.GetType(targetImage.Type);
 
-				if (config != null)
+				if (type != null && Tenant.GetService<ISerializationService>().Deserialize(targetImage.Configuration.Content, type) is IConfiguration config)
 				{
-					var element = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config).FirstOrDefault(f=>f.TextBlob == id);
+					var element = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config).FirstOrDefault(f => f.TextBlob == id);
 
 					if (element != null)
 					{
@@ -350,8 +419,8 @@ namespace TomPIT.Design
 
 			return new DiffDescriptor
 			{
-				Original = previousBlob == null || previousBlob.Content == null || previousBlob.Content.Length == 0 ? string.Empty : Encoding.UTF8.GetString(previousBlob.Content),
-				Modified = targetBlob == null || targetBlob.Content == null || targetBlob.Content.Length == 0 ? string.Empty : Encoding.UTF8.GetString(targetBlob.Content),
+				Modified = nextBlob == null || nextBlob.Content == null || nextBlob.Content.Length	 == 0 ? string.Empty : Encoding.UTF8.GetString(nextBlob.Content),
+				Original = targetBlob == null || targetBlob.Content == null || targetBlob.Content.Length == 0 ? string.Empty : Encoding.UTF8.GetString(targetBlob.Content),
 				Syntax = syntax
 			};
 		}
@@ -399,7 +468,7 @@ namespace TomPIT.Design
 			if (config == null)
 				return null;
 
-			var target = Tenant.GetService<IDiscoveryService>().Children<IText>(config).FirstOrDefault(f => f.Id == id);
+			var target = Tenant.GetService<IDiscoveryService>().Children<IText>(config).FirstOrDefault(f => f.TextBlob == id);
 
 			if (target == null)
 				return null;
@@ -425,7 +494,7 @@ namespace TomPIT.Design
 			if (image == null)
 				return null;
 
-			var dep = image.Dependencies.FirstOrDefault(f => string.Compare(f.PrimaryKey, id.ToString(), true) == 0);
+			var dep = image.Dependencies.FirstOrDefault(f => f.Token == id);
 
 			if (dep == null)
 				return null;

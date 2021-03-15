@@ -86,6 +86,15 @@ namespace TomPIT.Sys.Controllers.Development
 		}
 
 		[HttpPost]
+		public ICommit SelectCommit()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			return DataModel.VersionControl.SelectCommit(token);
+		}
+
+		[HttpPost]
 		public IComponentHistory SelectCommitDetail()
 		{
 			var body = FromBody();

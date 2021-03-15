@@ -4,7 +4,7 @@
     ViewBag.Title = "";
     
     Model.Navigation.Breadcrumbs.FromBreadcrumbs(Model, "");
-    Model.Navigation.Links.FromSiteMap(Model, "");
+    Model.Navigation.Menu.FromSiteMap(Model, "");
 }
 
 <tp-view>
