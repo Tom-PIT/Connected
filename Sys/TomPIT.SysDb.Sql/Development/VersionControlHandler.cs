@@ -78,6 +78,13 @@ namespace TomPIT.SysDb.Sql.Development
 			return r.Execute().ToList<IComponent>();
 		}
 
+		public List<ICommit> QueryCommits()
+		{
+			using var r = new Reader<Commit>("tompit.version_control_commit_que");
+
+			return r.Execute().ToList<ICommit>();
+		}
+
 		public List<ICommit> QueryCommits(IMicroService service)
 		{
 			using var r = new Reader<Commit>("tompit.version_control_commit_que");

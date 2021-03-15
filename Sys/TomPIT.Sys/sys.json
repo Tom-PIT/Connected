@@ -12,7 +12,7 @@
 		//"TomPIT.StorageProvider.Azure.AzureStorageProvider, TomPIT.StorageProvider.Azure"
 	],
 	"connectionStrings": {
-		"sys": "data source=PIT-ZBOOK\\sqlexpress; initial catalog=tp1;integrated security = true;"
+		"sys": "data source=sys-db\\sql2017; initial catalog=repoclientsys;user id=tompit;password=tompit;"
 	},
 	"plugins": {
 		"location": "c:\\Deploy\\Plugins",

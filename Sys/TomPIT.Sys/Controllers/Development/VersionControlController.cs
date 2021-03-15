@@ -28,10 +28,12 @@ namespace TomPIT.Sys.Controllers.Development
 		public List<ICommit> QueryCommits()
 		{
 			var body = FromBody();
-			var ms = body.Required<Guid>("microService");
+			var ms = body.Optional("microService", Guid.Empty);
 			var u = body.Optional("user", Guid.Empty);
 
-			if (u != Guid.Empty)
+			if (ms == Guid.Empty)
+				return DataModel.VersionControl.QueryCommits();
+			else if (u != Guid.Empty)
 				return DataModel.VersionControl.QueryCommits(ms, u);
 			else
 				return DataModel.VersionControl.QueryCommits(ms);

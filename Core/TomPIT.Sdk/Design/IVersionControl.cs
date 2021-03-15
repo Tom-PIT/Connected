@@ -19,6 +19,7 @@ namespace TomPIT.Design
 		List<IComponent> Changes(Guid microService);
 		List<IComponent> Changes();
 		List<IComponent> Changes(Guid microService, Guid user);
+		List<ICommit> QueryCommits();
 		List<ICommit> QueryCommits(Guid microService);
 		List<ICommit> QueryCommits(Guid microService, Guid user);
 		List<ICommit> QueryCommitsForComponent(Guid microService, Guid component);

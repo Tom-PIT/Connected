@@ -12,6 +12,7 @@ namespace TomPIT.SysDb.Development
 
 		ICommit SelectCommit(Guid token);
 
+		List<ICommit> QueryCommits(); 
 		List<ICommit> QueryCommits(IMicroService service);
 		List<ICommit> QueryCommits(IMicroService service, IComponent component);
 		List<ICommit> QueryCommits(IMicroService service, IUser user);

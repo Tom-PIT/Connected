@@ -7,7 +7,7 @@ namespace TomPIT.SysDb.Sql.Development
 	internal class Commit : PrimaryKeyRecord, ICommit
 	{
 		public DateTime Created { get; set; }
-		public int User { get; set; }
+		public Guid User { get; set; }
 		public string Comment { get; set; }
 		public Guid Service { get; set; }
 		public Guid Token { get; set; }
@@ -17,7 +17,7 @@ namespace TomPIT.SysDb.Sql.Development
 			base.OnCreate();
 
 			Created = GetDate("created");
-			User = GetInt("user");
+			User = GetGuid("user_token");
 			Comment = GetString("comment");
 			Service = GetGuid("service");
 			Token = GetGuid("token");

@@ -87,6 +87,11 @@ namespace TomPIT.Design
 			}).ToList<IComponent>();
 		}
 
+		public List<ICommit> QueryCommits()
+		{
+			return Tenant.Post<List<Commit>>(CreateUrl("QueryCommits")).ToList<ICommit>();
+		}
+
 		public List<ICommit> QueryCommits(Guid microService)
 		{
 			return Tenant.Post<List<Commit>>(CreateUrl("QueryCommits"), new

@@ -20,7 +20,7 @@ namespace TomPIT.Development
 	{
 		Guid Token { get; }
 		DateTime Created { get; }
-		int User { get; }
+		Guid User { get; }
 		string Comment { get; }
 		Guid Service { get; }
 	}
