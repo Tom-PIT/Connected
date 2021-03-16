@@ -1248,4 +1248,7 @@
   <data name="ErrNewPathNotSet" xml:space="preserve">
     <value>NewPath not set</value>
   </data>
+  <data name="ErrCannotResolveDatabaseType" xml:space="preserve">
+    <value>Cannot resolve database type</value>
+  </data>
 </root>

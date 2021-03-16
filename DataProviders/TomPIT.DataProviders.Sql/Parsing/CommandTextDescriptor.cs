@@ -61,7 +61,7 @@ namespace TomPIT.DataProviders.Sql.Parsing
 				foreach (var error in result.Errors)
 					sb.AppendLine(error.Message);
 
-				throw new RuntimeException(nameof(CommandTextDescriptor), sb.ToString(), LogCategories.Deployment);
+				throw new RuntimeException(Name, sb.ToString(), LogCategories.Deployment);
 			}
 
 			foreach (var batch in result.Script.Batches)
@@ -220,7 +220,18 @@ namespace TomPIT.DataProviders.Sql.Parsing
 			if (type == null)
 				return DbType.String;
 
-			switch (type.GetTypeSpec().SqlDataType)
+			Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType dbType;
+
+			try
+			{
+				dbType = type.GetTypeSpec().SqlDataType;
+			}
+			catch
+			{
+				throw new RuntimeException(Name, $"{SR.ErrCannotResolveDatabaseType} ({type.ObjectIdentifier})", LogCategories.Deployment);
+			}
+
+			switch (dbType)
 			{
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.None:
 					return DbType.Object;

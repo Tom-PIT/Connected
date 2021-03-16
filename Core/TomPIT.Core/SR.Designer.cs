@@ -871,6 +871,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot resolve database type.
+        /// </summary>
+        public static string ErrCannotResolveDatabaseType {
+            get {
+                return ResourceManager.GetString("ErrCannotResolveDatabaseType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot resolve extender.
         /// </summary>
         public static string ErrCannotResolveExtender {
