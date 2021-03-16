@@ -81,7 +81,7 @@ namespace TomPIT.ComponentModel
 			if (ms == null)
 				return;
 
-			var refs = _tenant.GetService<IDiscoveryService>().References(microService);
+			var refs = _tenant.GetService<IDiscoveryService>().MicroServices.References.Select(microService);
 
 			if (refs == null)
 				return;

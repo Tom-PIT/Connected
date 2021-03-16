@@ -48,7 +48,7 @@ namespace TomPIT.MicroServices.IoT.Design.Designers
 						if (id == Guid.Empty)
 							return _value;
 
-						var target = Environment.Context.Tenant.GetService<IDiscoveryService>().Find(IoTView, id);
+						var target = Environment.Context.Tenant.GetService<IDiscoveryService>().Configuration.Find(IoTView, id);
 
 						if (target != null)
 						{

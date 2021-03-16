@@ -93,11 +93,11 @@ namespace TomPIT.App.Models
 			if (string.IsNullOrWhiteSpace(ViewUrl))
 				return;
 
-			using var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(ViewUrl).LocalPath), Controller.Request.RouteValues);
+			var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(ViewUrl).LocalPath), Controller.Request.RouteValues);
 
 			Shell.HttpContext.ParseArguments(Arguments, null, (url)=>
 			{
-				using var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(url).LocalPath), Controller.Request.RouteValues);
+				var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(url).LocalPath), Controller.Request.RouteValues);
 			});
 		}
 	}

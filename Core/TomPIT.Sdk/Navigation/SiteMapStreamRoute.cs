@@ -34,12 +34,12 @@ namespace TomPIT.Navigation
 			}
 		}
 
-		public bool Authorize(Guid user)
+		public bool Authorize(IMiddlewareContext context, Guid user)
 		{
 			if (string.IsNullOrWhiteSpace(Api))
 				return false;
 
-			var descriptor = ComponentDescriptor.Api(Context, Api);
+			var descriptor = ComponentDescriptor.Api(context, Api);
 
 			try
 			{
@@ -47,14 +47,14 @@ namespace TomPIT.Navigation
 				descriptor.ValidateConfiguration();
 
 				var op = descriptor.Configuration.Operations.FirstOrDefault(f => string.Compare(descriptor.Element, f.Name, true) == 0);
-				var type = op.Middleware(Context);
-				using var msContext = new MicroServiceContext(descriptor.MicroService, Context);
+				var type = op.Middleware(context);
+				using var msContext = new MicroServiceContext(descriptor.MicroService, context);
 				var middleware = msContext.CreateMiddleware<IOperation>(type, Shell.HttpContext.ParseArguments(Parameters, QueryString));
 
 				if (msContext is IElevationContext elevation)
 					elevation.State = ElevationContextState.Revoked;
 
-				Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(msContext, this);
+				context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(msContext, this);
 
 				return true;
 			}

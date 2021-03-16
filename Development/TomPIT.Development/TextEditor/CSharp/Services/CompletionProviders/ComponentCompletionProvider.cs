@@ -19,7 +19,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 			if (IncludeReferences)
 			{
-				var references = Editor.Context.Tenant.GetService<IDiscoveryService>().References(Editor.Context.MicroService.Token);
+				var references = Editor.Context.Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(Editor.Context.MicroService.Token);
 
 				if (references == null || references.MicroServices.Count == 0)
 					return items;

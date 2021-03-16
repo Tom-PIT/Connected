@@ -18,13 +18,5 @@ namespace TomPIT.Navigation
 				return _items;
 			}
 		}
-
-		protected override void OnDisposing()
-		{
-			foreach (var route in Routes)
-				route.Dispose();
-
-			base.OnDisposing();
-		}
 	}
 }

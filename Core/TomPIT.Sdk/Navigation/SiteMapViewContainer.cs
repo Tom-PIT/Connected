@@ -1,4 +1,5 @@
 ﻿using TomPIT.Collections;
+using TomPIT.Middleware;
 
 namespace TomPIT.Navigation
 {
@@ -26,18 +27,14 @@ namespace TomPIT.Navigation
 			get
 			{
 				if (_template == null)
-					_template = NavigationExtensions.ResolveRouteTemplate(Context, View);
+				{
+					using var context = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
+
+					_template = NavigationExtensions.ResolveRouteTemplate(context, View);
+				}
 
 				return _template;
 			}
-		}
-
-		protected override void OnDisposing()
-		{
-			foreach (var route in Routes)
-				route.Dispose();
-
-			base.OnDisposing();
 		}
 	}
 }

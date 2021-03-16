@@ -156,7 +156,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 		private ManifestType QueryParameters(ISettingsConfiguration configuration)
 		{
-			var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifest(configuration.Component) as SettingsManifest;
+			var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(configuration.Component) as SettingsManifest;
 
 			if (manifest == null)
 				return null;

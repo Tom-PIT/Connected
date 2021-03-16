@@ -468,7 +468,7 @@ namespace TomPIT.Design
 			if (config == null)
 				return null;
 
-			var target = Tenant.GetService<IDiscoveryService>().Children<IText>(config).FirstOrDefault(f => f.TextBlob == id);
+			var target = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config).FirstOrDefault(f => f.TextBlob == id);
 
 			if (target == null)
 				return null;

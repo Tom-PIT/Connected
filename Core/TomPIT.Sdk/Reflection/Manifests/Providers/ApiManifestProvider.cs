@@ -51,7 +51,7 @@ namespace TomPIT.Reflection.Manifests.Providers
 			}
 
 			using var ctx = new MicroServiceContext(Configuration.MicroService(), Tenant.Url);
-			var info = Tenant.GetService<IDiscoveryService>().MicroServiceInfo(ctx, ctx.MicroService.Token);
+			var info = Tenant.GetService<IDiscoveryService>().MicroServices.Info.SelectMiddleware(ctx, ctx.MicroService.Token);
 
 			if (info != null)
 			{

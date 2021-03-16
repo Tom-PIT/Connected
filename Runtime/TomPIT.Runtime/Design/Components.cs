@@ -57,7 +57,7 @@ namespace TomPIT.Design
 
 				if (config != null)
 				{
-					var texts = Tenant.GetService<IDiscoveryService>().Children<IText>(config);
+					var texts = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config);
 
 					foreach (var text in texts)
 						Delete(text);
@@ -349,9 +349,9 @@ namespace TomPIT.Design
 
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 			var existingConfiguration = Tenant.GetService<IComponentService>().SelectConfiguration(component);
-			var blobs = ds.Children<IText>(existingConfiguration);
-			var elements = ds.Children<IElement>(existingConfiguration);
-			var externals = ds.Children<IExternalResourceElement>(existingConfiguration);
+			var blobs = ds.Configuration.Query<IText>(existingConfiguration);
+			var elements = ds.Configuration.Query<IElement>(existingConfiguration);
+			var externals = ds.Configuration.Query<IExternalResourceElement>(existingConfiguration);
 			var newId = Insert(microService, folder, existing.Category, CreateName(microService, existing.Category, existing.Name), existing.Type);
 
 			foreach (var element in elements)
@@ -662,12 +662,12 @@ namespace TomPIT.Design
 				if (config == null)
 					return;
 
-				var txt = Tenant.GetService<IDiscoveryService>().Children<IText>(config);
+				var txt = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config);
 
 				foreach (var i in txt)
 					Delete(i);
 
-				var external = Tenant.GetService<IDiscoveryService>().Children<IExternalResourceElement>(config);
+				var external = Tenant.GetService<IDiscoveryService>().Configuration.Query<IExternalResourceElement>(config);
 
 				foreach (var i in external)
 					i.Clean(i.Id);
@@ -850,7 +850,7 @@ namespace TomPIT.Design
 
 			if (config != null)
 			{
-				var deps = Tenant.GetService<IDiscoveryService>().Dependencies(config);
+				var deps = Tenant.GetService<IDiscoveryService>().Configuration.QueryDependencies(config);
 
 				foreach (var j in deps)
 					r.Dependencies.Add(CreateImageBlob(j));
@@ -938,7 +938,7 @@ namespace TomPIT.Design
 		 * are performing undo or rollback.
 		 */
 			var config = Tenant.GetService<IComponentService>().SelectConfiguration(image.Token);
-			var deps = Tenant.GetService<IDiscoveryService>().Dependencies(config);
+			var deps = Tenant.GetService<IDiscoveryService>().Configuration.QueryDependencies(config);
 
 			foreach (var i in deps)
 			{
@@ -969,7 +969,7 @@ namespace TomPIT.Design
 				}, i.Content, StoragePolicy.Singleton);
 			}
 
-			var sources = Tenant.GetService<IDiscoveryService>().Children<IText>(imageConfig);
+			var sources = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(imageConfig);
 
 			foreach (var source in sources)
 				InvalidateIndexState(source);

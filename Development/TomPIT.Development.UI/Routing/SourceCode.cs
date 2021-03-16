@@ -54,7 +54,7 @@ namespace TomPIT.Development.Routing
 				return;
 			}
 
-			var element = Tenant.GetService<IDiscoveryService>().Find(component.Token, new Guid(Context.GetRouteValue("template").ToString()));
+			var element = Tenant.GetService<IDiscoveryService>().Configuration.Find(component.Token, new Guid(Context.GetRouteValue("template").ToString()));
 
 			if (element == null || !(element is IText text))
 			{

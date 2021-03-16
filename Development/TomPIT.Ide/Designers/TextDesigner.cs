@@ -248,7 +248,7 @@ namespace TomPIT.Ide.Designers
 				var component = tokens[3];
 				var microService = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(ms);
 				var c = Environment.Context.Tenant.GetService<IComponentService>().SelectComponent(microService.Token, category, component);
-				var target = Environment.Context.Tenant.GetService<IDiscoveryService>().Find(c.Token, new Guid(tokens[^1]));
+				var target = Environment.Context.Tenant.GetService<IDiscoveryService>().Configuration.Find(c.Token, new Guid(tokens[^1]));
 				var text = Environment.Context.Tenant.GetService<IComponentService>().SelectText(Environment.Context.MicroService.Token, target as IText);
 				using var editor = GetTextEditor(model, text);
 				var syntax = Content.GetType().FindAttribute<SyntaxAttribute>();
@@ -501,7 +501,7 @@ namespace TomPIT.Ide.Designers
 			if (element == Guid.Empty || cmp.Token == element)
 				return config as IText;
 
-			return Environment.Context.Tenant.GetService<IDiscoveryService>().Find(config, element) as IText;
+			return Environment.Context.Tenant.GetService<IDiscoveryService>().Configuration.Find(config, element) as IText;
 		}
 
 		public LanguageFeature SupportedFeatures(string language, IMicroService microService)

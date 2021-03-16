@@ -21,7 +21,7 @@ namespace TomPIT.MicroServices.Design.Items
 
 			BindMicroService(element, items, ms.Name);
 
-			var refs = element.Environment.Context.Tenant.GetService<IDiscoveryService>().References(ms.Token);
+			var refs = element.Environment.Context.Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(ms.Token);
 
 			if (refs == null || refs.MicroServices.Count == 0)
 				return;

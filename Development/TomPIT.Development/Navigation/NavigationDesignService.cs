@@ -7,7 +7,6 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Navigation;
 using TomPIT.Connectivity;
-using TomPIT.Ide;
 using TomPIT.Middleware;
 using TomPIT.Navigation;
 
@@ -137,24 +136,7 @@ namespace TomPIT.Development.Navigation
 			if (containers == null)
 				return containers;
 
-			foreach (var container in containers)
-				BindContainer(container, instance.Context);
-
 			return containers;
-		}
-
-		private void BindContainer(ISiteMapContainer container, IMiddlewareContext context)
-		{
-			foreach (var item in container.Routes)
-				BindRoute(item, context);
-		}
-
-		private void BindRoute(ISiteMapRoute route, IMiddlewareContext context)
-		{
-			route.SetContext(context);
-
-			foreach (var item in route.Routes)
-				BindRoute(item, context);
 		}
 	}
 }

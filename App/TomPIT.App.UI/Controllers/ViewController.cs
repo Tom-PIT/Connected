@@ -44,8 +44,7 @@ namespace TomPIT.App.Controllers
 			}
 
 			var routes = new RouteValueDictionary();
-
-			using var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes);
+			var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes);
 
 			if (route is ISiteMapRedirectRoute redirect)
 			{

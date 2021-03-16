@@ -190,7 +190,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 		private ApiOperationManifest QueryParameters(IApiOperation operation)
 		{
-			var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifest(operation.Configuration().Component) as ApiManifest;
+			var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(operation.Configuration().Component) as ApiManifest;
 
 			if (manifest == null)
 				return null;

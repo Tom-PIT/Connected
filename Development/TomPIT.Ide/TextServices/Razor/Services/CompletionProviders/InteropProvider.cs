@@ -35,7 +35,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 			if (op == null)
 				return result;
 
-			var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifest(descriptor.Component.Token) as ApiManifest;
+			var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(descriptor.Component.Token) as ApiManifest;
 
 			if (manifest == null)
 				return result;

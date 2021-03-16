@@ -19,18 +19,24 @@ using TomPIT.Middleware;
 
 namespace TomPIT.ComponentModel
 {
-	public class ComponentDescriptor
+	public class ComponentDescriptor : IDisposable
 	{
 		private IMicroService _microService = null;
 		private IComponent _component = null;
+		private bool _disposed;
+		private bool _sited = false;
 
-		public ComponentDescriptor(string identifier, string componentCategory) : this(null, identifier, componentCategory)
-		{
+		//public ComponentDescriptor(string identifier, string componentCategory) : this(null, identifier, componentCategory)
+		//{
 
-		}
+		//}
 		public ComponentDescriptor(IMiddlewareContext context, string identifier, string componentCategory)
 		{
 			Context = context as IMicroServiceContext;
+
+			if (context is IMicroServiceContext)
+				_sited = true;
+
 			Category = componentCategory;
 
 			if (string.IsNullOrWhiteSpace(identifier))
@@ -58,7 +64,7 @@ namespace TomPIT.ComponentModel
 
 			if (Context == null)
 			{
-				var tenant = MiddlewareDescriptor.Current.Tenant;
+				var tenant = context == null ? MiddlewareDescriptor.Current.Tenant : context.Tenant;
 
 				_microService = tenant.GetService<IMicroServiceService>().Select(MicroServiceName);
 
@@ -76,7 +82,7 @@ namespace TomPIT.ComponentModel
 						throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({MicroServiceName})");
 				}
 
-				Context = new MicroServiceContext(_microService, tenant.Url);
+				Context = context == null ? new MicroServiceContext(_microService, tenant.Url) : new MicroServiceContext(_microService, context);
 			}
 		}
 
@@ -259,6 +265,26 @@ namespace TomPIT.ComponentModel
 		public static ConfigurationDescriptor<IMasterViewConfiguration> Master(IMiddlewareContext context, string identifier)
 		{
 			return new ConfigurationDescriptor<IMasterViewConfiguration>(context, identifier, ComponentCategories.MasterView);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposed)
+			{
+				if (disposing)
+				{
+					if (_sited)
+						Context.Dispose();
+				}
+
+				_disposed = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }

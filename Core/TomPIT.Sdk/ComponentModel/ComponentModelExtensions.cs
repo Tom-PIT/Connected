@@ -45,7 +45,7 @@ namespace TomPIT.ComponentModel
 			if (string.Compare(service.Name, reference, true) == 0)
 				return;
 
-			var refs = MiddlewareDescriptor.Current.Tenant.GetService<IDiscoveryService>().References(service.Name);
+			var refs = MiddlewareDescriptor.Current.Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(service.Name);
 
 			if (refs == null || refs.MicroServices.FirstOrDefault(f => string.Compare(f.MicroService, reference, true) == 0) == null)
 				throw new RuntimeException(SR.ErrReferenceMissingSource, string.Format("{0} ({1}->{2})", SR.ErrReferenceMissing, service.Name, reference));

@@ -190,7 +190,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 		private IoCOperationManifest QueryParameters(IIoCOperation operation)
 		{
-			var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifest(operation.Configuration().Component) as IoCContainerManifest;
+			var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(operation.Configuration().Component) as IoCContainerManifest;
 
 			if (manifest == null)
 				return null;

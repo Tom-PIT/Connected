@@ -87,8 +87,7 @@ namespace TomPIT.Compilation.Analyzers
 				return null;
 
 			var configuration = Tenant.GetService<IComponentService>().SelectConfiguration(Script.Component);
-
-			var target = Tenant.GetService<IDiscoveryService>().Find(configuration, Script.Id);
+			var target = Tenant.GetService<IDiscoveryService>().Configuration.Find(configuration, Script.Id);
 
 			if (target == null)
 				return null;

@@ -1,8 +1,6 @@
-﻿using TomPIT.Middleware;
-
-namespace TomPIT.Navigation
+﻿namespace TomPIT.Navigation
 {
-	public interface ISiteMapElement : IMiddlewareObject
+	public interface ISiteMapElement
 	{
 		ISiteMapElement Parent { get; }
 		string Text { get; }

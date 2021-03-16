@@ -120,7 +120,7 @@ namespace TomPIT.App.Routing
 
 			var routes = new RouteValueDictionary();
 
-			using var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes);
+			var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes);
 
 			if (route is ISiteMapRedirectRoute redirect)
 			{
@@ -137,11 +137,14 @@ namespace TomPIT.App.Routing
 		{
 			var routes = new RouteValueDictionary();
 
-			using var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes);
+			var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes);
 			
 			if (route is ISiteMapStreamRoute stream)
 			{
-				route.Context.Interop.Invoke(stream.Api, stream.Parameters);
+				using var ctx = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
+
+				ctx.Interop.Invoke(stream.Api, stream.Parameters);
+
 				return true;
 			}
 

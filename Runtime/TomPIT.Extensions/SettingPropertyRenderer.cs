@@ -26,7 +26,7 @@ namespace TomPIT
 
 					descriptor.Validate();
 
-					if (!(Context.Tenant.GetService<IDiscoveryService>().Manifest(descriptor.MicroService.Name, ComponentCategories.Settings, descriptor.Component.Name) is SettingsManifest manifest))
+					if (!(Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(descriptor.MicroService.Name, ComponentCategories.Settings, descriptor.Component.Name) is SettingsManifest manifest))
 						throw new NullReferenceException($"{SR.ErrManifestNull} ({Setting})");
 
 					_manifest = manifest;

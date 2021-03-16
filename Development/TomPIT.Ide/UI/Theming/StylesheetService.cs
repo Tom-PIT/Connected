@@ -61,7 +61,7 @@ namespace TomPIT.Ide.UI.Theming
 
 			if (includeDependencies)
 			{
-				var references = Tenant.GetService<IDiscoveryService>().References(microService);
+				var references = Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(microService);
 
 				if (references != null)
 				{

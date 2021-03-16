@@ -27,7 +27,7 @@ namespace TomPIT
 
 					descriptor.Validate();
 
-					if (!(Context.Tenant.GetService<IDiscoveryService>().Manifest(descriptor.MicroService.Name, ComponentCategories.Api, descriptor.Component.Name) is ApiManifest manifest))
+					if (!(Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(descriptor.MicroService.Name, ComponentCategories.Api, descriptor.Component.Name) is ApiManifest manifest))
 						throw new NullReferenceException($"{SR.ErrManifestNull} ({Api})");
 
 					_manifest = manifest.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);

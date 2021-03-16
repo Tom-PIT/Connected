@@ -225,7 +225,7 @@ namespace TomPIT.Design
 			if (Configuration == null)
 				return;
 
-			var texts = Tenant.GetService<IDiscoveryService>().Children<IText>(Configuration);
+			var texts = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(Configuration);
 
 			foreach (var txt in texts)
 			{

@@ -99,10 +99,9 @@ namespace TomPIT.Navigation
 					r.Routes.AddRange(container.Routes);
 
 				container.Routes.Clear();
-				container.Dispose();
 			}
 
-			BindContext(r, r.Context);
+			Site(r);
 
 			return r;
 		}
@@ -151,7 +150,6 @@ namespace TomPIT.Navigation
 				first.Routes.AddRange(r[i].Routes);
 
 				r[i].Routes.Clear();
-				r[i].Dispose();
 			}
 
 			return new List<ISiteMapContainer> { first };
@@ -168,7 +166,6 @@ namespace TomPIT.Navigation
 				container.Routes.AddRange(targetRoute.Routes);
 				
 				targetRoute.Routes.Clear();
-				targetRoute.Dispose();
 			}
 		}
 
@@ -247,32 +244,29 @@ namespace TomPIT.Navigation
 			}
 
 			foreach (var container in containers)
-				BindContext(container, instance.Context);
+				Site(container);
 
 			items.AddRange(containers);
 		}
 
-		private void BindContext(ISiteMapContainer container, IMiddlewareContext context)
+		private void Site(ISiteMapContainer container)
 		{
 			foreach (var item in container.Routes)
 			{
 				ReflectionExtensions.SetPropertyValue(item, nameof(item.Parent), container);
-				item.SetContext(context);
 
-				BindContext(item, context);
+				Site(item);
 			}
 		}
 
-		private void BindContext(ISiteMapRoute route, IMiddlewareContext context)
+		private void Site(ISiteMapRoute route)
 		{
 			foreach (var item in route.Routes)
 			{
 				if (item.Parent == null)
 					ReflectionExtensions.SetPropertyValue(item, nameof(item.Parent), route);
 
-				item.SetContext(context);
-
-				BindContext(item, context);
+				Site(item);
 			}
 		}
 
@@ -413,7 +407,7 @@ namespace TomPIT.Navigation
 		{
 			Initialize();
 
-			using var item = SelectRoute(routeKey);
+			var item = SelectRoute(routeKey);
 
 			if (item == null)
 				return null;
@@ -589,7 +583,7 @@ namespace TomPIT.Navigation
 				return null;
 
 			foreach (var container in containers)
-				BindContext(container, handler.Context);
+				Site(container);
 
 			foreach (var container in containers)
 			{
@@ -627,7 +621,7 @@ namespace TomPIT.Navigation
 				return null;
 
 			foreach (var container in containers)
-				BindContext(container, handler.Context);
+				Site(container);
 
 			foreach (var container in containers)
 			{

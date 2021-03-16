@@ -346,12 +346,14 @@ namespace TomPIT.Security
 			if (container == null)
 				return;
 
-			Authorize(container.Routes, container.Context.Services.Identity.IsAuthenticated
-				? container.Context.Services.Identity.User.Token
+			using var context = new MiddlewareContext(Tenant.Url);
+
+			Authorize(context, container.Routes, context.Services.Identity.IsAuthenticated
+				? context.Services.Identity.User.Token
 				: Guid.Empty);
 		}
 
-		private void Authorize(ConnectedList<ISiteMapRoute, ISiteMapContainer> routes, Guid user)
+		private void Authorize(IMiddlewareContext context, ConnectedList<ISiteMapRoute, ISiteMapContainer> routes, Guid user)
 		{
 			for (var i = routes.Count - 1; i >= 0; i--)
 			{
@@ -359,15 +361,15 @@ namespace TomPIT.Security
 
 				if (route is ISiteMapAuthorizationElement ae)
 				{
-					if (!ae.Authorize(user))
+					if (!ae.Authorize(context, user))
 						routes.RemoveAt(i);
 					else
-						Authorize(route.Routes, user);
+						Authorize(context, route.Routes, user);
 				}
 			}
 		}
 
-		private void Authorize(ConnectedList<ISiteMapRoute, ISiteMapRoute> routes, Guid user)
+		private void Authorize(IMiddlewareContext context, ConnectedList<ISiteMapRoute, ISiteMapRoute> routes, Guid user)
 		{
 			for (var i = routes.Count - 1; i >= 0; i--)
 			{
@@ -375,10 +377,10 @@ namespace TomPIT.Security
 
 				if (route is ISiteMapAuthorizationElement ae)
 				{
-					if (!ae.Authorize(user))
+					if (!ae.Authorize(context, user))
 						routes.RemoveAt(i);
 					else
-						Authorize(route.Routes, user);
+						Authorize(context, route.Routes, user);
 				}
 			}
 		}

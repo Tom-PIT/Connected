@@ -11,7 +11,6 @@ using TomPIT.Ide.Designers;
 using TomPIT.Ide.Dom;
 using TomPIT.Ide.Environment.Providers;
 using TomPIT.Ide.Properties;
-using TomPIT.Middleware;
 using TomPIT.Reflection;
 
 namespace TomPIT.Ide
@@ -57,7 +56,7 @@ namespace TomPIT.Ide
 			if (instance == null)
 				return null;
 
-			var props = MiddlewareDescriptor.Current.Tenant.GetService<IDiscoveryService>().Properties(instance, false, false);
+			var props = ReflectionExtensions.Properties(instance, false, false);
 
 			foreach (var i in props)
 			{

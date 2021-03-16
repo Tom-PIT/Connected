@@ -6,9 +6,7 @@ namespace TomPIT.Middleware.Services
 {
 	public interface IMiddlewareGlobalizationService
 	{
-		[Obsolete]
 		DateTime FromUtc(DateTime value);
-		[Obsolete]
 		DateTime ToUtc(DateTime value);
 
 		DateTimeOffset FromUtc(DateTimeOffset value);

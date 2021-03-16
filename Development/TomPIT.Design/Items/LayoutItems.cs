@@ -22,7 +22,7 @@ namespace TomPIT.Design.Items
 			foreach (var i in ds)
 				items.Add(new ItemDescriptor(i.Name, i.Name));
 
-			var refs = tenant.GetService<IDiscoveryService>().References(element.MicroService());
+			var refs = tenant.GetService<IDiscoveryService>().MicroServices.References.Select(element.MicroService());
 
 			var external = new List<ItemDescriptor>();
 

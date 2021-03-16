@@ -24,7 +24,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 			{
 				FillItems(result, Editor.Context.MicroService);
 
-				var refs = Editor.Context.Tenant.GetService<IDiscoveryService>().References(Editor.Context.MicroService.Token);
+				var refs = Editor.Context.Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(Editor.Context.MicroService.Token);
 
 				foreach (var reference in refs.MicroServices)
 				{
