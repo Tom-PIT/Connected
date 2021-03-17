@@ -8,6 +8,7 @@ using System.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using TomPIT.Annotations;
 using TomPIT.Data;
+using TomPIT.Exceptions;
 using TomPIT.Reflection;
 
 namespace TomPIT.Middleware
@@ -49,9 +50,9 @@ namespace TomPIT.Middleware
 			}).Result)
 				return;
 
-			throw new ValidationException(SR.ValAntiForgery)
+			throw new MiddlewareValidationException(Instance, SR.ValAntiForgery)
 			{
-				Source = GetType().ScriptTypeName()
+				Source = Instance.GetType().ScriptTypeName()
 			};
 		}
 
@@ -75,9 +76,9 @@ namespace TomPIT.Middleware
 
 			if (sb.Length > 0)
 			{
-				throw new ValidationException(sb.ToString())
+				throw new MiddlewareValidationException(instance, sb.ToString())
 				{
-					Source = GetType().ScriptTypeName()
+					Source = instance.GetType().ScriptTypeName()
 				};
 			}
 		}
@@ -300,15 +301,11 @@ namespace TomPIT.Middleware
 				if (tex.InnerException is ValidationException)
 					throw tex.InnerException;
 
-				return null;
+				throw TomPITException.Unwrap(component, tex);
 			}
 			catch (ValidationException)
 			{
 				throw;
-			}
-			catch
-			{
-				return null;
 			}
 		}
 	}

@@ -29,6 +29,8 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			if (descriptor == null)
 				return null;
 
+			var result = new List<ICompletionItem>();
+
 			try
 			{
 				descriptor.Validate();
@@ -41,8 +43,6 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 				if (provider.Item1 == null)
 					return descriptor.Configuration.NoOp();
-
-				var result = new List<ICompletionItem>();
 
 				foreach (var operation in descriptor.Configuration.Operations)
 				{
@@ -73,13 +73,18 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 						});
 					}
 				}
-
-				return result;
 			}
-			catch
+			catch(Exception ex)
 			{
-				return null;
+				result.Add(new CompletionItem
+				{
+					Detail = ex.Message,
+					Kind = CompletionItemKind.Text,
+					Label = ex.Source
+				});
 			}
+
+			return result;
 		}
 
 		private ConfigurationDescriptor<IModelConfiguration> ResolveModel(SyntaxNode node)

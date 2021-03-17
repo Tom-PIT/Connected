@@ -314,6 +314,16 @@ namespace TomPIT.Reflection
 			return string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().FullName);
 		}
 
+		public static string TryScriptTypeName(this Type type)
+		{
+			if (!type.FullName.Contains("+"))
+				return null;
+
+			var tokens = type.FullName.Split('+');
+
+			return tokens[^1];
+		}
+
 		public static string ScriptTypeName(this Type type)
 		{
 			if (!type.FullName.Contains("+"))
@@ -321,7 +331,7 @@ namespace TomPIT.Reflection
 
 			var tokens = type.FullName.Split('+');
 
-			return tokens[tokens.Length - 1];
+			return tokens[^1];
 		}
 
 		public static Assembly LoadAssembly(string type)

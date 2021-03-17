@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using TomPIT.ComponentModel;
@@ -9,7 +10,8 @@ namespace TomPIT.Exceptions
 	public class TomPITException : Exception
 	{
 		private string _message = string.Empty;
-		//private static readonly string[] ReplaceSources = new string[] { "tompit.", "system.", "middlewarevalidator" };
+		private string _stackTrace = null;
+		private bool _initialized = false;
 		public TomPITException() { }
 
 		public TomPITException(string source, string message)
@@ -39,16 +41,27 @@ namespace TomPIT.Exceptions
 
 		public object Sender { get; set; }
 
+		public string Script { get; set; }
+		public string ScriptPath
+		{
+			get
+			{
+				if (Data.Contains("MicroService"))
+					return $"{((IMicroService)Data["MicroService"]).Name}/{Script}";
+				else
+					return Script;
+			}
+		}
 		public override string Source
 		{
 			get
 			{
+				Initialize();
+
 				if (string.IsNullOrWhiteSpace(base.Source))
 				{
 					if (Sender != null)
-					{
-						return Sender.GetType().Name;
-					}
+						return Sender.GetType().ScriptTypeName();
 				}
 
 				return base.Source;
@@ -56,12 +69,10 @@ namespace TomPIT.Exceptions
 			set { base.Source = value; }
 		}
 
-		private string ParseMessage(string message, params string[] args)
+		private static string ParseMessage(string message, params string[] args)
 		{
 			if (args == null || args.Length == 0)
-			{
 				return message;
-			}
 
 			var sb = new StringBuilder();
 
@@ -81,26 +92,38 @@ namespace TomPIT.Exceptions
 
 		public int Event { get; set; }
 
-		public static Exception Unwrap(object sender, Exception ex)
+		public static TomPITException Unwrap(Exception ex)
 		{
-			if (ex is TargetInvocationException)
-				return UnwrapWithData(sender, ex.InnerException);
-			else
-				return UnwrapWithData(sender, ex);
+			return UnwrapWithData(null, ex);
 		}
 
-		private static Exception UnwrapWithData(object sender, Exception ex)
+		public static TomPITException Unwrap(object sender, Exception ex)
 		{
+			return UnwrapWithData(sender, ex);
+		}
+
+		private static TomPITException UnwrapWithData(object sender, Exception ex)
+		{
+			if (ex is TomPITException tp)
+				return tp;
+
+			if (ex is TargetInvocationException target && target.InnerException != null)
+				return UnwrapWithData(sender, ex.InnerException);
+			
+			var result = new TomPITException(ex.Message, ex);
+
 			if (sender != null)
 			{
 				var script = ResolveScript(sender);
 
 				if (script != null)
 				{
-					if (ex.Data.Contains("Script"))
-						ex.Data["Script"] = script;
+					result.Script = script;
+
+					if (result.Data.Contains("Script"))
+						result.Data["Script"] = script;
 					else
-						ex.Data.Add("Script", script);
+						result.Data.Add("Script", script);
 				}
 
 				var resolutionService = Shell.GetService<IMicroServiceResolutionService>();
@@ -111,23 +134,98 @@ namespace TomPIT.Exceptions
 
 					if (ms != null)
 					{
-						if (ex.Data.Contains("MicroService"))
-							ex.Data["MicroService"] = ms;
+						if (result.Data.Contains("MicroService"))
+							result.Data["MicroService"] = ms;
 						else
-							ex.Data.Add("MicroService", ms);
+							result.Data.Add("MicroService", ms);
 					}
 				}
 			}
 
-			return ex;
+			return result;
 		}
 
+		public override string StackTrace
+		{
+			get
+			{
+				if(_stackTrace == null)
+					Initialize();
+
+				return _stackTrace;
+			}
+		}
+		
+		private void Initialize()
+		{
+			if (_initialized)
+				return;
+
+			_initialized = true;
+
+			var sb = new StringBuilder();
+			var st = new StackTrace(InnerException ?? this, true);
+
+			if (st.FrameCount == 0)
+				_stackTrace = base.StackTrace;
+
+			foreach (var frame in st.GetFrames())
+			{
+				var method = frame.GetMethod();
+
+				if (method == null || method.DeclaringType == null)
+					continue;
+
+				if (!method.DeclaringType.FullName.StartsWith("Submission#"))
+					continue;
+
+				var line = frame.GetFileLineNumber();
+				var fileName = frame.GetFileName();
+
+				if (string.IsNullOrEmpty(fileName))
+					fileName = "?";
+
+				sb.AppendLine($"{method.Name} in {fileName} at line {line}");
+
+				Source = fileName;
+
+				if (!string.IsNullOrWhiteSpace(Source))
+				{
+					if (Data.Contains("Script"))
+						Data["Script"] = Script;
+					else
+						Data.Add("Script", Script);
+
+					var resolutionService = Shell.GetService<IMicroServiceResolutionService>();
+
+					if (resolutionService != null)
+					{
+						var ms = resolutionService.ResolveMicroService(method.DeclaringType);
+
+						if (ms != null)
+						{
+							if (Data.Contains("MicroService"))
+								Data["MicroService"] = ms;
+							else
+								Data.Add("MicroService", ms);
+						}
+					}
+				}
+			}
+
+			_stackTrace = sb.ToString();
+		}
 		private static string ResolveScript(object sender)
 		{
 			if (sender == null)
 				return null;
 
-			return sender.GetType().ShortName();
+			return sender.GetType().TryScriptTypeName();
+		}
+
+		public override string ToString()
+		{
+			return $"{Message}{System.Environment.NewLine}{StackTrace}";
 		}
 	}
 }

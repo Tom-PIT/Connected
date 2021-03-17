@@ -62,6 +62,18 @@ namespace TomPIT.Annotations
 
 		protected abstract IAuthorizationModel OnCreateModel();
 
+		protected void Attach(IAuthorizationModel model)
+		{
+			if (model == null)
+				return;
+
+			if (Model == model)
+				return;
+
+			ReflectionExtensions.SetPropertyValue(Model, nameof(Model.Context), model.Context);
+			Model.AuthorizationTarget = model.AuthorizationTarget;
+		}
+
 		public void Authorize(IMiddlewareContext context, object instance)
 		{
 			ReflectionExtensions.SetPropertyValue(Model, nameof(Model.Context), context);
@@ -102,7 +114,7 @@ namespace TomPIT.Annotations
 
 		}
 
-		protected bool AuthorizeAny(object primaryKey, params object[] claims)
+		protected bool AuthorizeAny(object primaryKey, Guid user, params object[] claims)
 		{
 			if (primaryKey == null || string.IsNullOrWhiteSpace(primaryKey.ToString()))
 				throw new RuntimeException(GetType().Name, SR.ErrPrimaryKeyNull);
@@ -114,14 +126,24 @@ namespace TomPIT.Annotations
 
 				var criteria = ResolveClaim(claim);
 
-				if (Context.Services.Authorization.Authorize(criteria, primaryKey.ToString(), PermissionDescriptor))
+				if (Context.Services.Authorization.Authorize(criteria, primaryKey.ToString(), PermissionDescriptor, user))
 					return true;
 			}
 
 			return false;
+
+		}
+		protected bool AuthorizeAny(object primaryKey, params object[] claims)
+		{
+			var user = Guid.Empty;
+
+			if (Context.Services.Identity.IsAuthenticated)
+				user = Context.Services.Identity.User.Token;
+
+			return AuthorizeAny(primaryKey, user, claims);
 		}
 
-		protected bool AuthorizeAll(object primaryKey, params object[] claims)
+		protected bool AuthorizeAll(object primaryKey, Guid user, params object[] claims)
 		{
 			if (primaryKey == null || string.IsNullOrWhiteSpace(primaryKey.ToString()))
 				throw new RuntimeException(GetType().Name, SR.ErrPrimaryKeyNull);
@@ -133,11 +155,21 @@ namespace TomPIT.Annotations
 
 				var criteria = ResolveClaim(claim);
 
-				if (!Context.Services.Authorization.Authorize(criteria, primaryKey.ToString(), PermissionDescriptor))
+				if (!Context.Services.Authorization.Authorize(criteria, primaryKey.ToString(), PermissionDescriptor, user))
 					return false;
 			}
 
 			return true;
+		}
+
+		protected bool AuthorizeAll(object primaryKey, params object[] claims)
+		{
+			var user = Guid.Empty;
+
+			if (Context.Services.Identity.IsAuthenticated)
+				user = Context.Services.Identity.User.Token;
+
+			return AuthorizeAll(primaryKey, user, claims);
 		}
 
 		private string ResolveClaim(object value)

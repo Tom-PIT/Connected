@@ -83,5 +83,29 @@ namespace TomPIT.Middleware
 
 			return component;
 		}
+
+		public static void LogError(this TomPITException exception, string category)
+		{
+			using var ctx = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
+
+			LogError(exception, ctx, category);
+		}
+
+		public static void LogError(this TomPITException exception, IMiddlewareContext context, string category)
+		{
+			context.Services.Diagnostic.Error(exception.ScriptPath, exception.ToString(), category);
+		}
+
+		public static void LogWarning(this MiddlewareValidationException exception, string category)
+		{
+			using var ctx = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
+
+			LogWarning(exception, ctx, category);
+		}
+
+		public static void LogWarning(this MiddlewareValidationException exception, IMiddlewareContext context, string category)
+		{
+			context.Services.Diagnostic.Warning(exception.Source, exception.ToString(), category);
+		}
 	}
 }
