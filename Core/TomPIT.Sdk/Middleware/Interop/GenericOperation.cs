@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.Exceptions;
@@ -98,21 +97,7 @@ namespace TomPIT.Middleware.Interop
 				success = false;
 				Rollback();
 
-				var unwrapped = TomPITException.Unwrap(this, ex);
-
-				if (unwrapped is ValidationException)
-				{
-					ExceptionDispatchInfo.Capture(unwrapped).Throw();
-					throw;
-				}
-				else
-				{
-					var se = new ScriptException(this, unwrapped);
-
-					ExceptionDispatchInfo.Capture(se).Throw();
-
-					throw;
-				}
+				throw TomPITException.Unwrap(this, ex);
 			}
 			finally
 			{

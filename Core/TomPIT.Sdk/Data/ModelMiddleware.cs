@@ -22,12 +22,11 @@ namespace TomPIT.Data
 	{
 		private IComponent _component = null;
 		private IModelConfiguration _configuration = null;
-
 		public int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
-			var descriptor = CreateDescriptor(op, con);
+			var descriptor = Context.Tenant.GetService<IModelService>().CreateDescriptor(op, con);
 
 			var w = Context.OpenWriter(con, descriptor.CommandText);
 
@@ -58,7 +57,7 @@ namespace TomPIT.Data
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
-			var descriptor = CreateDescriptor(op, con);
+			var descriptor = Context.Tenant.GetService<IModelService>().CreateDescriptor(op, con);
 
 			var r = Context.OpenReader<R>(con, descriptor.CommandText);
 
@@ -80,7 +79,7 @@ namespace TomPIT.Data
 		{
 			var op = ResolveOperation(operation);
 			var con = OpenConnection();
-			var descriptor = CreateDescriptor(op, con);
+			var descriptor = Context.Tenant.GetService<IModelService>().CreateDescriptor(op, con);
 
 			var r = Context.OpenReader<R>(con, descriptor.CommandText);
 
@@ -143,21 +142,6 @@ namespace TomPIT.Data
 
 		public virtual ConnectionBehavior ConnectionBehavior { get; set; } = ConnectionBehavior.Shared;
 		protected virtual object ConnectionArguments { get; }
-
-		private ICommandTextDescriptor CreateDescriptor(IModelOperation operation, IDataConnection connection)
-		{
-			var text = Context.Tenant.GetService<IComponentService>().SelectText(Configuration.MicroService(), operation);
-
-			if (string.IsNullOrWhiteSpace(text))
-				throw new RuntimeException(nameof(ModelMiddleware<T>), $"{SR.ErrCommandTextNotSet} ({Configuration.ComponentName()}/{operation.Name})", LogCategories.Middleware);
-
-			var parser = connection.Parser;
-
-			if (parser == null)
-				throw new RuntimeException(nameof(ModelMiddleware<T>), $"{SR.DataProviderParserNull} ({Configuration.ComponentName()}/{operation.Name})", LogCategories.Middleware);
-
-			return parser.Parse(text);
-		}
 
 		private void ResetParameters(IDataCommand command)
 		{
@@ -235,7 +219,6 @@ namespace TomPIT.Data
 						value = (byte[])Version.Parse(value);
 
 					command.SetParameter(parameter.Name, value, nullable);
-					descriptor.SupportsConcurrency = true;
 				}
 			}
 

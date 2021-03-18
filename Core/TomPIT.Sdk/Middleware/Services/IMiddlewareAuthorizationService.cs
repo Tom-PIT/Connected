@@ -1,4 +1,5 @@
 ﻿using System;
+using TomPIT.Annotations;
 
 namespace TomPIT.Middleware.Services
 {
@@ -12,5 +13,7 @@ namespace TomPIT.Middleware.Services
 
 		void Deny(object claim, object primaryKey, string permissionDescriptor);
 		void Deny(object claim, object primaryKey, string permissionDescriptor, string schema, string evidence);
+
+		T CreatePolicy<T>() where T : AuthorizationPolicyAttribute;
 	}
 }

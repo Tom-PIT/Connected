@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using TomPIT.Data.DataProviders;
 
 namespace TomPIT.Data
@@ -9,10 +9,10 @@ namespace TomPIT.Data
 		OperationType Statement { get; }
 		string Name { get; }
 
-		List<ICommandTextParameter> Parameters { get; }
-		List<ICommandTextVariable> Variables { get; }
+		ImmutableArray<ICommandTextParameter> Parameters { get; }
+		ImmutableArray<ICommandTextVariable> Variables { get; }
 
 		string CommandText { get; }
-		bool SupportsConcurrency { get; set; }
+		bool SupportsConcurrency { get; }
 	}
 }

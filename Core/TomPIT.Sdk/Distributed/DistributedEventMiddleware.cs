@@ -55,6 +55,7 @@ namespace TomPIT.Distributed
 		{
 
 		}
+		[Obsolete("Please use Invoking(e) instead.")]
 		public bool Invoking()
 		{
 			Validate();
@@ -69,6 +70,16 @@ namespace TomPIT.Distributed
 		public void Authorize(EventConnectionArgs e)
 		{
 			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, e.Proxy ?? this);
+		}
+
+		public void Invoking(DistributedEventInvokingArgs e)
+		{
+			OnInvoking();
+		}
+
+		protected virtual void OnInvoking(DistributedEventInvokingArgs e)
+		{
+
 		}
 	}
 }

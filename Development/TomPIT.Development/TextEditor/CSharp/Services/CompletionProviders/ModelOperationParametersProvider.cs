@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -59,7 +60,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 				var text = Arguments.Editor.Context.Tenant.GetService<IComponentService>().SelectText(descriptor.MicroService.Token, op);
 				var commandDescriptor = provider.Item1.Parse(provider.Item2, new ModelOperationSchema { Text = text });
 
-				if (commandDescriptor.Parameters.Count == 0)
+				if (!commandDescriptor.Parameters.Any())
 					return NoParameters();
 
 				var result = new List<ICompletionItem>();
@@ -113,7 +114,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			return result.ToPascalCase();
 		}
 
-		private ICompletionItem BindParameters(List<ICommandTextParameter> parameters, List<string> existing)
+		private ICompletionItem BindParameters(ImmutableArray<ICommandTextParameter> parameters, List<string> existing)
 		{
 			var text = new StringBuilder();
 

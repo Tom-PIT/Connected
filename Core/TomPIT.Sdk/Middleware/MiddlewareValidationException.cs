@@ -16,7 +16,8 @@ namespace TomPIT.Middleware
 		}
 
 		public override string Source { get => _source ??= base.Source; set => _source = value; }
-
+		
+		public bool Logged { get; set; }
 		public override string StackTrace
 		{
 			get

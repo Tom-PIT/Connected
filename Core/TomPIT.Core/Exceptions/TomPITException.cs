@@ -42,6 +42,7 @@ namespace TomPIT.Exceptions
 		public object Sender { get; set; }
 
 		public string Script { get; set; }
+		public bool Logged { get; set; }
 		public string ScriptPath
 		{
 			get

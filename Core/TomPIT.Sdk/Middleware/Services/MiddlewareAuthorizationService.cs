@@ -1,5 +1,7 @@
 ﻿using System;
+using TomPIT.Annotations;
 using TomPIT.Exceptions;
+using TomPIT.Reflection;
 using TomPIT.Security;
 
 namespace TomPIT.Middleware.Services
@@ -56,6 +58,15 @@ namespace TomPIT.Middleware.Services
 
 			while (result != value)
 				result = svc.Toggle(claim.ToString(), schema, evidence, primaryKey.ToString(), permissionDescriptor);
+		}
+
+		public T CreatePolicy<T>() where T : AuthorizationPolicyAttribute
+		{
+			var result = TypeExtensions.CreateInstance<T>(typeof(T));
+
+			ReflectionExtensions.SetPropertyValue(result, nameof(Context), Context);
+			
+			return result;
 		}
 	}
 }

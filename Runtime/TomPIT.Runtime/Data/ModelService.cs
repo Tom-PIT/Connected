@@ -19,6 +19,8 @@ namespace TomPIT.Data
 {
 	internal class ModelService : TenantObject, IModelService
 	{
+		private CommandTextParserCache _commandTextCache;
+
 		public ModelService(ITenant tenant) : base(tenant)
 		{
 		}
@@ -298,5 +300,12 @@ namespace TomPIT.Data
 
 			return result;
 		}
+
+		public ICommandTextDescriptor CreateDescriptor(IModelOperation operation, IDataConnection connection)
+		{
+			return ParserCache.CreateDescriptor(operation, connection);
+		}
+
+		private CommandTextParserCache ParserCache => _commandTextCache ??= new CommandTextParserCache(Tenant);
 	}
 }

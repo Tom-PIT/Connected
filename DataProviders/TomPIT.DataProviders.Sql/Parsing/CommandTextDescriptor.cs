@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Data;
 using System.Linq;
 using System.Text;
@@ -22,7 +23,7 @@ namespace TomPIT.DataProviders.Sql.Parsing
 		public string Name { get; private set; }
 		private string Sql { get; set; }
 
-		public List<ICommandTextParameter> Parameters
+		private List<ICommandTextParameter> CommandParameters
 		{
 			get
 			{
@@ -31,9 +32,13 @@ namespace TomPIT.DataProviders.Sql.Parsing
 
 				return _parameters;
 			}
+
 		}
 
-		public List<ICommandTextVariable> Variables
+		public ImmutableArray<ICommandTextParameter> Parameters => CommandParameters.ToImmutableArray();
+
+		public ImmutableArray<ICommandTextVariable> Variables => CommandVariables.ToImmutableArray();
+		private List<ICommandTextVariable> CommandVariables
 		{
 			get
 			{
@@ -46,7 +51,7 @@ namespace TomPIT.DataProviders.Sql.Parsing
 
 		public string CommandText => Type == CommandTextType.Procedure ? Name : Sql;
 
-		public bool SupportsConcurrency { get; set; }
+		public bool SupportsConcurrency { get; private set; }
 
 		public void Parse(string sql)
 		{
@@ -78,7 +83,7 @@ namespace TomPIT.DataProviders.Sql.Parsing
 			if (Type == CommandTextType.Procedure)
 				return;
 
-			foreach (var variable in Variables)
+			foreach (var variable in CommandVariables)
 			{
 				if (!variable.Bound)
 					AddParameter(variable.Name, null, null);
@@ -139,20 +144,20 @@ namespace TomPIT.DataProviders.Sql.Parsing
 
 		private void BindVariable(string name)
 		{
-			if (Variables.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0) == null)
+			if (CommandVariables.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0) == null)
 				AddVariable(name);
 
-			var variable = Variables.First(f => string.Compare(f.Name, name, true) == 0) as CommandTextVariable;
+			var variable = CommandVariables.First(f => string.Compare(f.Name, name, true) == 0) as CommandTextVariable;
 
 			variable.Bound = true;
 		}
 
 		private void AddVariable(string name)
 		{
-			if (Variables.FirstOrDefault(f => string.Compare(name, f.Name, true) == 0) != null)
+			if (CommandVariables.FirstOrDefault(f => string.Compare(name, f.Name, true) == 0) != null)
 				return;
 
-			Variables.Add(new CommandTextVariable
+			CommandVariables.Add(new CommandTextVariable
 			{
 				Name = name
 			});
@@ -160,7 +165,7 @@ namespace TomPIT.DataProviders.Sql.Parsing
 
 		private void AddParameter(string name, SqlDataType type, SqlScalarExpression value)
 		{
-			if (Parameters.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0) != null)
+			if (CommandParameters.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0) != null)
 				return;
 
 			object v = null;
@@ -207,18 +212,23 @@ namespace TomPIT.DataProviders.Sql.Parsing
 				}
 			}
 
-			Parameters.Add(new CommandTextParameter
+			var resolvedType = ResolveDataType(type);
+
+			CommandParameters.Add(new CommandTextParameter
 			{
 				Name = name,
-				Type = ResolveDataType(type),
+				Type = resolvedType.Item1,
 				Value = v
 			});
+
+			if (resolvedType.Item2)
+				SupportsConcurrency = true;
 		}
 
-		private DbType ResolveDataType(SqlDataType type)
+		private (DbType, bool) ResolveDataType(SqlDataType type)
 		{
 			if (type == null)
-				return DbType.String;
+				return (DbType.String, false);
 
 			Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType dbType;
 
@@ -234,85 +244,85 @@ namespace TomPIT.DataProviders.Sql.Parsing
 			switch (dbType)
 			{
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.None:
-					return DbType.Object;
+					return (DbType.Object, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.BigInt:
-					return DbType.Int64;
+					return (DbType.Int64, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Binary:
-					return DbType.Binary;
+					return (DbType.Binary, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Bit:
-					return DbType.Boolean;
+					return (DbType.Boolean, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Char:
-					return DbType.StringFixedLength;
+					return (DbType.StringFixedLength, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Date:
-					return DbType.Date;
+					return (DbType.Date, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.DateTime:
-					return DbType.DateTime;
+					return (DbType.DateTime, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.DateTime2:
-					return DbType.DateTime2;
+					return (DbType.DateTime2, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.DateTimeOffset:
-					return DbType.DateTimeOffset;
+					return (DbType.DateTimeOffset, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Decimal:
-					return DbType.Decimal;
+					return (DbType.Decimal, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Float:
-					return DbType.Single;
+					return (DbType.Single, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Geography:
-					return DbType.Object;
+					return (DbType.Object, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Geometry:
-					return DbType.Object;
+					return (DbType.Object, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.HierarchyId:
-					return DbType.Object;
+					return (DbType.Object, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Image:
-					return DbType.Binary;
+					return (DbType.Binary, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Int:
-					return DbType.Int32;
+					return (DbType.Int32, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Money:
-					return DbType.Decimal;
+					return (DbType.Decimal, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.NChar:
-					return DbType.StringFixedLength;
+					return (DbType.StringFixedLength, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.NText:
-					return DbType.String;
+					return (DbType.String, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Numeric:
-					return DbType.Double;
+					return (DbType.Double, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.NVarChar:
-					return DbType.String;
+					return (DbType.String, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.NVarCharMax:
-					return DbType.String;
+					return (DbType.String, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Real:
-					return DbType.Decimal;
+					return (DbType.Decimal, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.SmallDateTime:
-					return DbType.DateTime;
+					return (DbType.DateTime, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.SmallInt:
-					return DbType.Int16;
+					return (DbType.Int16, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.SmallMoney:
-					return DbType.Decimal;
+					return (DbType.Decimal, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.SysName:
-					return DbType.String;
+					return (DbType.String, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Text:
-					return DbType.String;
+					return (DbType.String, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Time:
-					return DbType.Time;
+					return (DbType.Time, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Timestamp:
-					return DbType.Int64;
+					return (DbType.Int64, true);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.TinyInt:
-					return DbType.Byte;
+					return (DbType.Byte, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.UniqueIdentifier:
-					return DbType.Guid;
+					return (DbType.Guid, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.VarBinary:
-					return DbType.Binary;
+					return (DbType.Binary, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.VarBinaryMax:
-					return DbType.Binary;
+					return (DbType.Binary, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.VarChar:
-					return DbType.String;
+					return (DbType.String, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.VarCharMax:
-					return DbType.String;
+					return (DbType.String, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Variant:
-					return DbType.Object;
+					return (DbType.Object, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.Xml:
-					return DbType.Xml;
+					return (DbType.Xml, false);
 				case Microsoft.SqlServer.Management.SqlParser.Metadata.SqlDataType.XmlNode:
-					return DbType.String;
+					return (DbType.String, false);
 				default:
-					return DbType.String;
+					return (DbType.String, false);
 			}
 		}
 	}

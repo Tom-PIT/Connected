@@ -48,6 +48,12 @@ namespace TomPIT.Annotations
 
 			return (T)Model;
 		}
+
+		public void Revoke()
+		{
+			if (Context is IElevationContext elevation)
+				elevation.State = ElevationContextState.Revoked;
+		}
 		protected IAuthorizationModel Model
 		{
 			get
@@ -62,16 +68,29 @@ namespace TomPIT.Annotations
 
 		protected abstract IAuthorizationModel OnCreateModel();
 
-		protected void Attach(IAuthorizationModel model)
+		protected T CreatePolicy<T>() where T : AuthorizationPolicyAttribute
 		{
-			if (model == null)
-				return;
+			var instance = TypeExtensions.CreateInstance<T>(typeof(T));
 
-			if (Model == model)
-				return;
+			ReflectionExtensions.SetPropertyValue(Model, nameof(Model.Context), Context);
 
-			ReflectionExtensions.SetPropertyValue(Model, nameof(Model.Context), model.Context);
-			Model.AuthorizationTarget = model.AuthorizationTarget;
+			if (instance.Model != null)
+				instance.Model.AuthorizationTarget = Model.AuthorizationTarget;
+
+			return instance;
+		}
+
+		public bool TryAuthorize(IMiddlewareContext context, object instance)
+		{
+			try
+			{
+				Authorize(context, instance);
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 
 		public void Authorize(IMiddlewareContext context, object instance)

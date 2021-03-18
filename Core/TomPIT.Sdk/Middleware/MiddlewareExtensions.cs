@@ -86,18 +86,31 @@ namespace TomPIT.Middleware
 
 		public static void LogError(this TomPITException exception, string category)
 		{
-			using var ctx = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
+			if (exception.Logged)
+				return;
 
+			using var ctx = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
+			
 			LogError(exception, ctx, category);
 		}
 
 		public static void LogError(this TomPITException exception, IMiddlewareContext context, string category)
 		{
-			context.Services.Diagnostic.Error(exception.ScriptPath, exception.ToString(), category);
+			if (exception.Logged)
+				return;
+
+			exception.Logged = true;
+
+			var source = string.IsNullOrWhiteSpace(exception.ScriptPath) ? exception.Source : exception.ScriptPath;
+
+			context.Services.Diagnostic.Error(source, exception.ToString(), category);
 		}
 
 		public static void LogWarning(this MiddlewareValidationException exception, string category)
 		{
+			if (exception.Logged)
+				return;
+
 			using var ctx = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
 
 			LogWarning(exception, ctx, category);
@@ -105,6 +118,11 @@ namespace TomPIT.Middleware
 
 		public static void LogWarning(this MiddlewareValidationException exception, IMiddlewareContext context, string category)
 		{
+			if (exception.Logged)
+				return;
+
+			exception.Logged = true;
+
 			context.Services.Diagnostic.Warning(exception.Source, exception.ToString(), category);
 		}
 	}

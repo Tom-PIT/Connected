@@ -51,6 +51,21 @@ namespace TomPIT.Exceptions
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
 				return;
 
+			if (ex is TomPITException tp)
+			{
+				var type = Shell.GetService<IRuntimeService>().Type;
+
+				tp.LogError($"{LogCategories.Unhandled} - {type}");
+				return;
+			}
+			else if (ex is MiddlewareValidationException validation)
+			{
+				var type = Shell.GetService<IRuntimeService>().Type;
+
+				validation.LogWarning($"{LogCategories.Unhandled} - {type}");
+				return;
+			}
+
 			var e = new LogEntry
 			{
 				Category = "Unhandled",

@@ -5,7 +5,26 @@ namespace TomPIT.Security
 {
 	public abstract class AuthorizationModel : MiddlewareObject, IAuthorizationModel
 	{
-		public object AuthorizationTarget { get; set; }
+		private object _target = null;
+
+		public object AuthorizationTarget
+		{
+			get => _target;
+			set
+			{
+				if (_target == value)
+					return;
+
+				_target = value;
+				
+				OnTargetChanged();
+			}
+		}
+
+		protected virtual void OnTargetChanged()
+		{
+
+		}
 
 		[Obsolete("Please use GetValue().")]
 		public T GetValueFromTarget<T>(string propertyName)

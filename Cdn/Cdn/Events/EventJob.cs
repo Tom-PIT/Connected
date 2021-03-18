@@ -35,11 +35,7 @@ namespace TomPIT.Cdn.Events
 
 			_timeout = new TimeoutTask(() =>
 			{
-				MiddlewareDescriptor.Current.Tenant.Post(MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Ping"), new
-				{
-					item.PopReceipt,
-					NextVisible = TimeSpan.FromMinutes(5)
-				});
+				Delay(item.PopReceipt, TimeSpan.FromMinutes(5));
 
 				return Task.CompletedTask;
 			}, TimeSpan.FromMinutes(4), Cancel);
@@ -61,6 +57,15 @@ namespace TomPIT.Cdn.Events
 			MiddlewareDescriptor.Current.Tenant.Post(MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Complete"), new
 			{
 				item.PopReceipt
+			});
+		}
+
+		private static void Delay(Guid popReceipt, TimeSpan delay)
+		{
+			MiddlewareDescriptor.Current.Tenant.Post(MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Ping"), new
+			{
+				popReceipt,
+				NextVisible = delay
 			});
 		}
 
@@ -107,6 +112,19 @@ namespace TomPIT.Cdn.Events
 
 					if (!eventInstance.Invoking())
 						return true;
+
+					var args = new DistributedEventInvokingArgs();
+
+					eventInstance.Invoking(args);
+
+					switch (args.Result)
+					{
+						case EventInvokingResult.Cancel:
+							return true;
+						case EventInvokingResult.Delay:
+							Delay(queue.PopReceipt, args.Delay == TimeSpan.Zero ? TimeSpan.FromMinutes(1) : args.Delay);
+							return false;
+					}
 
 					eventInstance.Invoke();
 				}
@@ -230,27 +248,17 @@ namespace TomPIT.Cdn.Events
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
 			if (ex is MiddlewareValidationException mw)
-			{
-				var urlComplete = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Complete");
-				var descriptorComplete = new JObject
+				mw.LogWarning(LogCategories.Cdn);
+
+			TomPITException.Unwrap(this, ex).LogError(LogCategories.Cdn);
+
+			var urlComplete = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Complete");
+			var descriptorComplete = new JObject
 				{
 					{"popReceipt", item.PopReceipt }
 				};
 
-				mw.LogWarning(LogCategories.Cdn);
-				MiddlewareDescriptor.Current.Tenant.Post(urlComplete, descriptorComplete);
-				return;
-			}
-
-			TomPITException.Unwrap(this, ex).LogError(LogCategories.Cdn);
-
-			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Ping");
-			var d = new JObject
-			{
-				{"popReceipt", item.PopReceipt }
-			};
-
-			MiddlewareDescriptor.Current.Tenant.Post(url, d);
+			MiddlewareDescriptor.Current.Tenant.Post(urlComplete, descriptorComplete);
 		}
 
 		private IDistributedEventMiddleware CreateEventInstance(IMicroServiceContext context, EventDescriptor eventDescriptor)

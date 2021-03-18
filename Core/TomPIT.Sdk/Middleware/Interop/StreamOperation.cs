@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Net.Mime;
-using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Http;
 using TomPIT.Exceptions;
 
@@ -45,21 +44,7 @@ namespace TomPIT.Middleware.Interop
 			{
 				Rollback();
 
-				var unwrapped = TomPITException.Unwrap(this, ex);
-
-				if (unwrapped is ValidationException)
-				{
-					ExceptionDispatchInfo.Capture(unwrapped).Throw();
-					throw;
-				}
-				else
-				{
-					var se = new ScriptException(this, unwrapped);
-
-					ExceptionDispatchInfo.Capture(se).Throw();
-
-					throw;
-				}
+				throw TomPITException.Unwrap(this, ex);
 			}
 		}
 

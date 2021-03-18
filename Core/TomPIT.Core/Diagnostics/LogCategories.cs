@@ -16,5 +16,6 @@
 		public const string IoC = "IoC";
 		public const string IoT = "IoT";
 		public const string BigData = "BigData";
+		public const string Unhandled = "Unhandled";
 	}
 }
