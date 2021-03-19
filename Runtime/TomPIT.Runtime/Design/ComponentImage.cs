@@ -26,5 +26,7 @@ namespace TomPIT.Design
 				return _dependencies;
 			}
 		}
+
+		public string NameSpace {get;set;}
 	}
 }

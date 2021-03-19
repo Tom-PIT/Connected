@@ -9,14 +9,8 @@ namespace TomPIT.Data
 	{
 	}
 
-	public abstract class VersionedEntity<T> : DataEntity
+	public abstract class VersionedEntity<T> : DataEntity<T>
 	{
-		[PrimaryKey]
-		[CacheKey]
-		[ReturnValue]
-		[Ordinal(-1)]
-		public virtual T Id { get; set; }
-
 		[Version]
 		[Ordinal(1024)]
 		public string Version { get; set; }

@@ -843,6 +843,7 @@ namespace TomPIT.Design
 				RuntimeConfiguration = c.RuntimeConfiguration,
 				Token = c.Token,
 				Type = c.Type,
+				NameSpace = c.NameSpace,
 				Configuration = CreateImageBlob(component)
 			};
 

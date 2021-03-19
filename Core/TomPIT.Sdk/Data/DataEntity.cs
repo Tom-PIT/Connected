@@ -1,6 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Models;
 using TomPIT.Reflection;
 using TomPIT.Serialization;
@@ -93,5 +94,14 @@ namespace TomPIT.Data
 		{
 			return Serializer.Deserialize<JObject>(entity.Serialize());
 		}
+	}
+
+	public abstract class DataEntity<T> : DataEntity
+	{
+		[PrimaryKey]
+		[CacheKey]
+		[ReturnValue]
+		[Ordinal(-1)]
+		public virtual T Id { get; set; }
 	}
 }

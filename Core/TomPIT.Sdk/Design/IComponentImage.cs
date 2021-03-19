@@ -11,6 +11,7 @@ namespace TomPIT.Design
 		Guid Folder { get; }
 		Guid MicroService { get; }
 		Guid RuntimeConfiguration { get; }
+		string NameSpace { get; }
 		string Type { get; }
 		IComponentImageBlob Configuration { get; set; }
 
