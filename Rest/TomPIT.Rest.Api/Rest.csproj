@@ -9,9 +9,9 @@
     <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>TomPIT.Connected.Rest</AssemblyName>
     <RootNamespace>TomPIT.Rest</RootNamespace>
-    <AssemblyVersion>2.2.319.1</AssemblyVersion>
-    <FileVersion>2.2.319.1</FileVersion>
-    <Version>2.2.319.1</Version>
+    <AssemblyVersion>2.2.321.1</AssemblyVersion>
+    <FileVersion>2.2.321.1</FileVersion>
+    <Version>2.2.321.1</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
