@@ -61,6 +61,11 @@ namespace TomPIT.Sys.Model.Development
 			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommits();
 		}
 
+		public List<ICommit> LookupCommits(List<Guid> tokens)
+		{
+			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.LookupCommits(tokens);
+		}
+
 		public List<ICommit> QueryCommits(Guid microService)
 		{
 			var ms = DataModel.MicroServices.Select(microService);

@@ -8,6 +8,7 @@ namespace TomPIT.Caching
 	{
 		void Clear(string cacheKey);
 		void Remove(string cacheKey, List<string> ids);
+		void Remove<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate) where T : class;
 		void Invalidate(string cacheKey, List<string> ids);
 
 		void RegisterHandler(string cacheKey, IDataCachingHandler handler);

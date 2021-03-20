@@ -24,6 +24,7 @@ namespace TomPIT.Middleware.Services
 		T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration) where T : class;
 		void Remove(string key, string id);
 		void Remove(string key, List<string> ids);
+		void Remove<T>(string key, Func<dynamic, bool> predicate) where T : class;
 		int Count(string key);
 		void Reset(string key);
 		string GenerateKey(params object[] parameters);

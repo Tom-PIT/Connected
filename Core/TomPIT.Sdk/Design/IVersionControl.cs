@@ -21,6 +21,7 @@ namespace TomPIT.Design
 		List<IComponent> Changes(Guid microService, Guid user);
 		ICommit SelectCommit(Guid token); 
 		List<ICommit> QueryCommits();
+		List<ICommit> LookupCommits(List<Guid> tokens);
 		List<ICommit> QueryCommits(Guid microService);
 		List<ICommit> QueryCommits(Guid microService, Guid user);
 		List<ICommit> QueryCommitsForComponent(Guid microService, Guid component);
@@ -35,7 +36,7 @@ namespace TomPIT.Design
 		void Rollback(Guid commit);
 
 		IChangeDescriptor GetChanges(ChangeQueryMode mode);
-		IChangeDescriptor GetChanges(ChangeQueryMode mode, Guid user, Guid commit);
+		IChangeDescriptor GetCommitChanges(ChangeQueryMode mode, Guid commit);
 		IChangeDescriptor GetChanges(ChangeQueryMode mode, Guid user);
 		IDiffDescriptor GetDiff(Guid component, Guid id);
 		IDiffDescriptor GetDiff(Guid component, Guid id, Guid commit);

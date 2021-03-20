@@ -84,7 +84,6 @@ namespace TomPIT.Sys
 				routes.MapRoute("default", "{controller}/{action}");
 			});
 
-
 			ServerConfiguration.Initialize();
 			Shell.Configure(app);
 			DataModel.Initialized = true;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Runtime;
 
@@ -27,6 +28,32 @@ namespace TomPIT.Reflection
 				return;
 
 			property.SetMethod.Invoke(instance, new object[] { value });
+		}
+
+
+		public static PropertyInfo CacheKeyProperty(object instance)
+		{
+			return PropertyAttribute<CacheKeyAttribute>(instance);
+		}
+
+		public static PropertyInfo AuthorizationProperty(object instance)
+		{
+			return PropertyAttribute<AuthorizationPropertyAttribute>(instance);
+		}
+		public static PropertyInfo PropertyAttribute<T>(object instance) where T :Attribute
+		{
+			var props = Properties(instance, false, false);
+
+			if (props == null || props.Length == 0)
+				return null;
+
+			foreach(var property in props)
+			{
+				if (property.FindAttribute<T>() != null)
+					return property;
+			}
+
+			return null;
 		}
 
 		public static PropertyInfo[] Properties(object instance, bool writableOnly, bool filterByEnvironment)

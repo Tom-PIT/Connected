@@ -100,6 +100,14 @@ namespace TomPIT.Design
 			return Tenant.Post<List<Commit>>(CreateUrl("QueryCommits")).ToList<ICommit>();
 		}
 
+		public List<ICommit> LookupCommits(List<Guid> tokens)
+		{
+			return Tenant.Post<List<Commit>>(CreateUrl("QueryCommits"), new
+			{
+				Tokens = tokens
+			}).ToList<ICommit>();
+		}
+
 		public List<ICommit> QueryCommits(Guid microService)
 		{
 			return Tenant.Post<List<Commit>>(CreateUrl("QueryCommits"), new
@@ -274,12 +282,12 @@ namespace TomPIT.Design
 		}
 		public IChangeDescriptor GetChanges(ChangeQueryMode mode, Guid user)
 		{
-			return GetChanges(mode, user, Guid.Empty);
+			return GetChanges(mode, user);
 		}
-		public IChangeDescriptor GetChanges(ChangeQueryMode mode, Guid user, Guid commit)
+		public IChangeDescriptor GetCommitChanges(ChangeQueryMode mode, Guid commit)
 		{
 			var result = new ChangeDescriptor();
-			List<IComponent> changes = commit == Guid.Empty ? Changes(Guid.Empty, user) : ResolveCommitChanges(commit);
+			var changes = ResolveCommitChanges(commit);
 
 			var groups = changes.GroupBy(f => f.MicroService);
 

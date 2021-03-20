@@ -78,6 +78,25 @@ namespace TomPIT.SysDb.Sql.Development
 			return r.Execute().ToList<IComponent>();
 		}
 
+		public List<ICommit> LookupCommits(List<Guid> tokens)
+		{
+			using var r = new Reader<Commit>("tompit.version_control_commit_lookup");
+
+			var a = new JArray();
+
+			foreach (var token in tokens)
+			{
+				a.Add(new JObject
+				{
+					{"token", token },
+				});
+			};
+
+			r.CreateParameter("tokens", a);
+
+			return r.Execute().ToList<ICommit>();
+		}
+
 		public List<ICommit> QueryCommits()
 		{
 			using var r = new Reader<Commit>("tompit.version_control_commit_que");

@@ -39,6 +39,15 @@ namespace TomPIT.Sys.Controllers.Development
 				return DataModel.VersionControl.QueryCommits(ms);
 		}
 
+
+		[HttpPost]
+		public List<ICommit> LookupCommits()
+		{
+			var body = FromBody();
+			var tokens = body.Required<List<Guid>>("tokens");
+
+			return DataModel.VersionControl.LookupCommits(tokens);
+		}
 		[HttpPost]
 		public List<ICommit> QueryCommitsForComponent()
 		{

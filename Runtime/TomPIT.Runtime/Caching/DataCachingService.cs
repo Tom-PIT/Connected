@@ -105,6 +105,32 @@ namespace TomPIT.Caching
 			}
 		}
 
+		public void Remove<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate) where T : class
+		{
+			var items = Where<T>(context, key, predicate);
+
+			if (items == null || items.IsEmpty())
+				return;
+
+			var ids = new List<string>();
+			var cacheProperty = ReflectionExtensions.CacheKeyProperty(items[0]);
+
+			if (cacheProperty == null)
+				return;
+
+			foreach (var i in items)
+			{
+				if (!Types.TryConvertInvariant<string>(cacheProperty.GetValue(i), out string id))
+					continue;
+
+				ids.Add(id);
+				Cache.Remove(key, id);
+			}
+
+			if (!ids.IsEmpty())
+				PublishRemove(key, ids);
+		}
+
 		public void Remove(string cacheKey, List<string> ids)
 		{
 			foreach (var i in ids)
@@ -327,12 +353,7 @@ namespace TomPIT.Caching
 		{
 			Initialize(key);
 
-			var items = All<CacheValue>(context, key);
-
-			if (items == null || items.Count == 0)
-				return new List<T>();
-
-			var results = items.Where(f => predicate(f.Key)).ToList();
+			var results = Cache.Where<CacheValue>(key, f => predicate(f.Key));
 
 			if (results == null || results.Count == 0)
 				return new List<T>();
