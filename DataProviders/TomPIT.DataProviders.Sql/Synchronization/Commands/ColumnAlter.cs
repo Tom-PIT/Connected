@@ -36,7 +36,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 			var ed = SqlDataProviderExtensions.ParseDefaultValue(ExistingColumn.DefaultValue);
 			var nd = SqlDataProviderExtensions.ParseDefaultValue(Column.DefaultValue);
 
-			if (string.Compare(ed, nd, false) != 0)
+			if (string.Compare(ed, nd, false) != 0 && nd != null)
 				new DefaultAdd(Owner, Column, Model.Name).Execute();
 
 			if (!ExistingColumn.IsPrimaryKey && Column.IsPrimaryKey)

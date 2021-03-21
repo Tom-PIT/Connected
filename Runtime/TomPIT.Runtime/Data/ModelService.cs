@@ -217,10 +217,7 @@ namespace TomPIT.Data
 						column.BinaryKind = bin.Kind;
 				}
 
-				var def = property.FindAttribute<DefaultAttribute>();
-
-				if (def != null)
-					column.DefaultValue = Types.Convert<string>(def.Value, CultureInfo.InvariantCulture);
+				ParseDefaultValue(column, property);
 
 				if (property.FindAttribute<VersionAttribute>() != null)
 					column.IsVersion = true;
@@ -251,6 +248,21 @@ namespace TomPIT.Data
 				result.Columns.AddRange(columns.OrderBy(f => f.Ordinal).ThenBy(f => f.Name));
 
 			return result;
+		}
+
+		private static void ParseDefaultValue(ModelSchemaColumn column, PropertyInfo property)
+		{
+			var def = property.FindAttribute<DefaultAttribute>();
+
+			if (def == null)
+				return;
+
+			var value = def.Value;
+
+			if (def.Value != null && def.Value.GetType().IsEnum)
+				value = Types.Convert(def.Value, def.Value.GetType().GetEnumUnderlyingType());
+
+			column.DefaultValue = Types.Convert<string>(value, CultureInfo.InvariantCulture);
 		}
 
 		private string ResolveColumnName(PropertyInfo property)

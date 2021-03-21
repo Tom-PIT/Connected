@@ -20,7 +20,7 @@ namespace TomPIT.Security
 				OnTargetChanged();
 			}
 		}
-
+		 
 		protected virtual void OnTargetChanged()
 		{
 
