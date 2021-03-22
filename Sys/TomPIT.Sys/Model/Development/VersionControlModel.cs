@@ -10,6 +10,16 @@ namespace TomPIT.Sys.Model.Development
 {
 	internal class VersionControlModel
 	{
+		public void DeleteCommit(Guid token)
+		{
+			var commit = SelectCommit(token);
+
+			if (commit == null)
+				throw new SysException(SR.ErrCommitNotFound);
+
+			Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.DeleteCommit(commit);
+		}
+
 		public Guid InsertCommit(Guid microService, Guid user, string comment, List<IComponent> components)
 		{
 			var ms = DataModel.MicroServices.Select(microService);

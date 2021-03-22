@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
@@ -95,10 +94,7 @@ namespace TomPIT.Middleware.Interop
 				}
 				catch (Exception ex)
 				{
-					var resolvedException = TomPITException.Unwrap(opInstance, ex);
-
-					ExceptionDispatchInfo.Capture(resolvedException).Throw();
-					throw;
+					throw TomPITException.Unwrap(opInstance, ex);
 				}
 			}
 			else
@@ -122,10 +118,7 @@ namespace TomPIT.Middleware.Interop
 				}
 				catch (Exception ex)
 				{
-					var resolvedException = TomPITException.Unwrap(opInstance, ex);
-
-					ExceptionDispatchInfo.Capture(resolvedException).Throw();
-					throw;
+					throw TomPITException.Unwrap(opInstance, ex);
 				}
 
 				return null;

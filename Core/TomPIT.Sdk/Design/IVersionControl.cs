@@ -13,6 +13,7 @@ namespace TomPIT.Design
 	public interface IVersionControl
 	{
 		void Lock(Guid component, LockVerb verb);
+		void DeleteCommit(Guid token);
 		void Commit(List<Guid> components, string comment);
 		void Undo(List<Guid> components);
 

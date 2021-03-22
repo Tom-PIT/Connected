@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Antiforgery;
@@ -50,10 +50,7 @@ namespace TomPIT.Middleware
 			}).Result)
 				return;
 
-			throw new MiddlewareValidationException(Instance, SR.ValAntiForgery)
-			{
-				Source = Instance.GetType().ScriptTypeName()
-			};
+			throw new MiddlewareValidationException(Instance, SR.ValAntiForgery);
 		}
 
 		public void Validate(object instance, bool triggerValidating)
@@ -63,24 +60,11 @@ namespace TomPIT.Middleware
 
 			ValidateProperties(results, instance, refs);
 
-			if (results.Count == 0 && triggerValidating)
+			if (!results.Any() && triggerValidating)
 				Validating?.Invoke(this, results);
 
-			var sb = new StringBuilder();
-
-			foreach (var result in results)
-			{
-				if (result != null)
-					sb.AppendLine(result.ErrorMessage);
-			}
-
-			if (sb.Length > 0)
-			{
-				throw new MiddlewareValidationException(instance, sb.ToString())
-				{
-					Source = instance.GetType().ScriptTypeName()
-				};
-			}
+			if (results.Any())
+				throw new MiddlewareValidationException(instance, results);
 		}
 		private void ValidateProperties(List<ValidationResult> results, object instance, List<object> references)
 		{
@@ -187,7 +171,7 @@ namespace TomPIT.Middleware
 				return;
 
 			if (property.PropertyType.IsEnum && !property.PropertyType.IsEnumDefined(proposedValue))
-				results.Add(new ValidationResult($"{SR.ValEnumValueNotDefined} ({property.PropertyType.ShortName()}, {property.GetValue(instance)})"));
+				results.Add(new MiddlewareValidationResult(instance, $"{SR.ValEnumValueNotDefined} ({property.PropertyType.ShortName()}, {property.GetValue(instance)})"));
 
 			foreach (var attribute in attributes)
 			{
@@ -213,7 +197,7 @@ namespace TomPIT.Middleware
 					}
 					catch (ValidationException ex)
 					{
-						results.Add(new ValidationResult(ex.Message, new List<string> { property.Name }));
+						results.Add(new MiddlewareValidationResult(instance, ex.Message, new List<string> { property.Name }));
 					}
 				}
 			}
@@ -227,7 +211,7 @@ namespace TomPIT.Middleware
 				return;
 
 			if (property.PropertyType.IsEnum && !property.PropertyType.IsEnumDefined(property.GetValue(instance)))
-				results.Add(new ValidationResult($"{SR.ValEnumValueNotDefined} ({property.PropertyType.ShortName()}, {property.GetValue(instance)})"));
+				results.Add(new MiddlewareValidationResult(instance, $"{SR.ValEnumValueNotDefined} ({property.PropertyType.ShortName()}, {property.GetValue(instance)})"));
 
 			foreach (var attribute in attributes)
 			{
@@ -253,7 +237,10 @@ namespace TomPIT.Middleware
 					}
 					catch (ValidationException ex)
 					{
-						results.Add(new ValidationResult(ex.Message, new List<string> { property.Name }));
+						if (ex is MiddlewareValidationException mve)
+							throw new MiddlewareValidationException(instance, ex.Message, mve);
+						else
+							throw new MiddlewareValidationException(instance, ex.Message);
 					}
 				}
 			}
@@ -273,7 +260,7 @@ namespace TomPIT.Middleware
 
 			if (decoded.Replace(" ", string.Empty).Contains("<script>"))
 			{
-				results.Add(new ValidationResult(SR.ValScriptTagNotAllowed));
+				results.Add(new MiddlewareValidationResult(instance, SR.ValScriptTagNotAllowed));
 				return false;
 			}
 

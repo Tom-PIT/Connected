@@ -41,6 +41,10 @@ namespace TomPIT.Sys.Model.Components
 			Set(id, r, TimeSpan.Zero);
 		}
 
+		public void DeleteCommit(Guid token)
+		{
+			DataModel.VersionControl.DeleteCommit(token);
+		}
 		public void Commit(List<Guid> components, Guid user, string comment)
 		{
 			var changes = new Dictionary<Guid, List<IComponent>>();

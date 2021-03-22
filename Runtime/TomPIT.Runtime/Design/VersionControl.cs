@@ -78,6 +78,33 @@ namespace TomPIT.Design
 			});
 		}
 
+		public void DeleteCommit(Guid token)
+		{
+			var commit = SelectCommit(token);
+
+			if (commit == null)
+				throw new RuntimeException(SR.ErrCommitNotFound);
+
+			var history = QueryMicroServiceHistory(commit.Service);
+
+			foreach(var h in history)
+			{
+				if(h.Commit == commit.Token)
+				{
+					try
+					{
+						Tenant.GetService<IStorageService>().Delete(h.Blob);
+					}
+					catch { }
+				}
+			}
+			
+			Tenant.Post(CreateUrl("DeleteCommit"), new
+			{
+				token
+			});
+		}
+
 		public ILockInfo SelectLockInfo(Guid component)
 		{
 			return Tenant.Post<LockInfo>(CreateUrl("SelectLockInfo"), new
@@ -282,19 +309,23 @@ namespace TomPIT.Design
 		}
 		public IChangeDescriptor GetChanges(ChangeQueryMode mode, Guid user)
 		{
-			return GetChanges(mode, user);
+			return ResolveChanges(Changes(Guid.Empty, user), mode, Guid.Empty);
 		}
 		public IChangeDescriptor GetCommitChanges(ChangeQueryMode mode, Guid commit)
 		{
-			var result = new ChangeDescriptor();
-			var changes = ResolveCommitChanges(commit);
+			return ResolveChanges(ResolveCommitChanges(commit), mode, commit);
+		}
 
+		private IChangeDescriptor ResolveChanges(List<IComponent > changes, ChangeQueryMode mode, Guid commit)
+		{
+			var result = new ChangeDescriptor();
 			var groups = changes.GroupBy(f => f.MicroService);
 
 			foreach (var group in groups)
 				result.MicroServices.Add(CreateMicroserviceChanges(group, mode, commit));
 
 			return result;
+
 		}
 
 		private List<IComponent> ResolveCommitChanges(Guid commit)

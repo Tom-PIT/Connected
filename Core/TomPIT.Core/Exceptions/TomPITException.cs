@@ -47,10 +47,15 @@ namespace TomPIT.Exceptions
 		{
 			get
 			{
+				var script = Script;
+
+				if (string.IsNullOrWhiteSpace(script))
+					script = Source;
+
 				if (Data.Contains("MicroService"))
-					return $"{((IMicroService)Data["MicroService"]).Name}/{Script}";
+					return $"{((IMicroService)Data["MicroService"]).Name}/{script}";
 				else
-					return Script;
+					return script;
 			}
 		}
 		public override string Source

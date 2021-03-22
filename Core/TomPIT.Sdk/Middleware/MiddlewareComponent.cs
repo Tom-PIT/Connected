@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 using TomPIT.Annotations;
 using TomPIT.Data;
+using TomPIT.Exceptions;
 
 namespace TomPIT.Middleware
 {
@@ -68,7 +70,14 @@ namespace TomPIT.Middleware
 
 		private void OnValidating(object sender, List<ValidationResult> results)
 		{
-			OnValidate(results);
+			try
+			{
+				OnValidate(results);
+			}
+			catch(Exception ex)
+			{
+				throw TomPITException.Unwrap(this, ex);
+			}
 		}
 
 		protected override void OnDisposing()

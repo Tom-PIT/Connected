@@ -138,6 +138,15 @@ namespace TomPIT.Sys.Controllers.Development
 		}
 
 		[HttpPost]
+		public void DeleteCommit()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			DataModel.Components.DeleteCommit(token);
+		}
+
+		[HttpPost]
 		public ILockInfo SelectLockInfo()
 		{
 			var body = FromBody();

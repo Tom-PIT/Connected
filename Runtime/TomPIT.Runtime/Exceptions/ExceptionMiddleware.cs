@@ -53,6 +53,15 @@ namespace TomPIT.Exceptions
 
 			if (ex is TomPITException tp)
 			{
+				if (tp.InnerException is MiddlewareValidationException val)
+				{
+					var valType = Shell.GetService<IRuntimeService>().Type;
+
+					val.LogWarning($"{LogCategories.Unhandled} - {valType}");
+					return;
+
+				}
+
 				var type = Shell.GetService<IRuntimeService>().Type;
 
 				tp.LogError($"{LogCategories.Unhandled} - {type}");
