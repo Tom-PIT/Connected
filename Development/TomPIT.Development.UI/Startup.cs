@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using TomPIT.Connectivity;
+using TomPIT.Design;
 using TomPIT.Development.Analysis;
 using TomPIT.Environment;
 using TomPIT.Ide;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
@@ -60,7 +60,6 @@ namespace TomPIT.Development
 			IdeBootstrapper.Run();
 
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
 
 			Instance.Run(app);
 
@@ -94,22 +93,6 @@ namespace TomPIT.Development
 				var template = t.CreateInstance<IMicroServiceTemplate>();
 
 				template.RegisterRoutes(builder);
-			}
-		}
-
-		private static void OnTenantInitialized(object sender, TenantArgs e)
-		{
-			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-			{
-				var t = TypeExtensions.GetType(i);
-
-				if (t == null)
-					continue;
-
-				var template = t.CreateInstance<IMicroServiceTemplate>();
-
-				if (template != null)
-					e.Tenant.GetService<IMicroServiceTemplateService>().Register(template);
 			}
 		}
 	}

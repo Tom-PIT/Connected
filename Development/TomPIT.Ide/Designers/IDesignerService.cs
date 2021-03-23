@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using TomPIT.Design.Ide.Properties;
 using TomPIT.Design.Tools;
 using TomPIT.Development;
-using TomPIT.Ide.Properties;
 
 namespace TomPIT.Ide.Designers
 {

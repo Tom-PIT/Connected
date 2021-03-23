@@ -3,6 +3,8 @@ using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Dom;

@@ -2,8 +2,9 @@
 using System.Reflection;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Dom.ComponentModel;
-using TomPIT.Ide.Environment;
 using TomPIT.Reflection;
 
 namespace TomPIT.Ide.Dom

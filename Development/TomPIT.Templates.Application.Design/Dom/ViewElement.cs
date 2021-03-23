@@ -1,5 +1,5 @@
 ﻿using TomPIT.ComponentModel;
-using TomPIT.Ide.Dom;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Dom.ComponentModel;
 
 namespace TomPIT.MicroServices.Design.Dom

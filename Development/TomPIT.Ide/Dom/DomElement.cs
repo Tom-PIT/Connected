@@ -5,11 +5,12 @@ using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations.Design;
 using TomPIT.Connectivity;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
+using TomPIT.Design.Ide.Properties;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Dom.ComponentModel;
-using TomPIT.Ide.Environment;
-using TomPIT.Ide.Properties;
-using TomPIT.Ide.Verbs;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
 

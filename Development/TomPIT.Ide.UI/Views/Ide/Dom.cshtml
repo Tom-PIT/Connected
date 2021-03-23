@@ -1,4 +1,4 @@
-﻿@model TomPIT.Ide.Environment.IEnvironment
+﻿@model TomPIT.Design.Ide.IEnvironment
 
 @{
     var path = Model.Selection.Path;
@@ -14,7 +14,7 @@
         }
     }
 
-    List<TomPIT.Ide.Dom.IDomElement> nodes = null;
+    List<TomPIT.Design.Ide.Dom.IDomElement> nodes = null;
 
     if (string.Compare(mode, "children", true) == 0)
     { nodes = Model.Dom.Query(path, depth); }
@@ -23,7 +23,7 @@
         var node = Model.Dom.Select(path, depth);
 
         if (node != null)
-        { nodes = new List<TomPIT.Ide.Dom.IDomElement>() { { node } }; }
+        { nodes = new List<TomPIT.Design.Ide.Dom.IDomElement>() { { node } }; }
     }
 }
 

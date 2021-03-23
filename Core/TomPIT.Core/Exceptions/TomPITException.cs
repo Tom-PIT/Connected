@@ -11,68 +11,51 @@ namespace TomPIT.Exceptions
 	{
 		private string _message = string.Empty;
 		private string _stackTrace = null;
-		private bool _initialized = false;
+		private string _source = null;
+		private string _scriptPath = string.Empty;
 		public TomPITException() { }
 
 		public TomPITException(string source, string message)
 		{
 			Source = source;
 			_message = message;
+			Initialize();
 		}
 
 		public TomPITException(string message)
 		{
 			_message = message;
+			Initialize();
 		}
 
 		public TomPITException(string message, params string[] args)
 			 : base(message)
 		{
 			_message = ParseMessage(message, args);
+			Initialize();
 		}
 
 		public TomPITException(string message, Exception inner)
 			 : base(message, inner)
 		{
 			_message = message;
+			Initialize();
 		}
 
 		public override string Message { get { return _message; } }
 
 		public object Sender { get; set; }
+		public override string StackTrace => _stackTrace;
 
 		public string Script { get; set; }
 		public bool Logged { get; set; }
-		public string ScriptPath
-		{
-			get
-			{
-				var script = Script;
+		public string ScriptPath => _scriptPath;
+		public int Event { get; set; }
 
-				if (string.IsNullOrWhiteSpace(script))
-					script = Source;
-
-				if (Data.Contains("MicroService"))
-					return $"{((IMicroService)Data["MicroService"]).Name}/{script}";
-				else
-					return script;
-			}
-		}
 		public override string Source
 		{
-			get
-			{
-				Initialize();
-
-				if (string.IsNullOrWhiteSpace(base.Source))
-				{
-					if (Sender != null)
-						return Sender.GetType().ScriptTypeName();
-				}
-
-				return base.Source;
-			}
-			set { base.Source = value; }
+			get => _source;
+			set => base.Source = value;
 		}
 
 		private static string ParseMessage(string message, params string[] args)
@@ -91,12 +74,10 @@ namespace TomPIT.Exceptions
 			}
 
 			sb.Remove(sb.Length - 2, 2);
-			sb.Append(")");
+			sb.Append(')');
 
 			return sb.ToString();
 		}
-
-		public int Event { get; set; }
 
 		public static TomPITException Unwrap(Exception ex)
 		{
@@ -151,75 +132,123 @@ namespace TomPIT.Exceptions
 			return result;
 		}
 
-		public override string StackTrace
-		{
-			get
-			{
-				if(_stackTrace == null)
-					Initialize();
-
-				return _stackTrace;
-			}
-		}
-		
 		private void Initialize()
 		{
-			if (_initialized)
-				return;
+			var stackTrace = ParseStackTrace(this, InnerException == null
+				? new StackTrace(true)
+				: new StackTrace(InnerException, true));
 
-			_initialized = true;
+			_stackTrace = stackTrace.Item1;
+			_source = stackTrace.Item2;
 
-			var sb = new StringBuilder();
-			var st = new StackTrace(InnerException ?? this, true);
-
-			if (st.FrameCount == 0)
-				_stackTrace = base.StackTrace;
-
-			foreach (var frame in st.GetFrames())
+			if (string.IsNullOrWhiteSpace(_source))
 			{
+				if (Sender != null)
+					_source = Sender.GetType().ScriptTypeName();
+				else
+					_source = base.Source;
+			}
+
+			if (!string.IsNullOrWhiteSpace(Script))
+				_scriptPath = Script;
+			else
+			{
+				_scriptPath = Source;
+
+				if (Data.Contains("MicroService"))
+					_scriptPath = $"{((IMicroService)Data["MicroService"]).Name}/{_scriptPath}";
+			}
+		}
+
+		public static (string, string) ParseStackTrace(Exception ex, StackTrace stackTrace)
+		{
+			var stackTraceString = new StringBuilder();
+			var source = string.Empty;
+
+			if (stackTrace.FrameCount == 0)
+			{
+				stackTraceString = stackTraceString.Append(ex.StackTrace);
+
+				return (stackTraceString.ToString(), source);
+			}
+
+			foreach (var frame in stackTrace.GetFrames())
+			{
+				if (!IsScript(frame) && !IsView(frame))
+					continue;
+
 				var method = frame.GetMethod();
-
-				if (method == null || method.DeclaringType == null)
-					continue;
-
-				if (!method.DeclaringType.FullName.StartsWith("Submission#"))
-					continue;
-
 				var line = frame.GetFileLineNumber();
 				var fileName = frame.GetFileName();
 
 				if (string.IsNullOrEmpty(fileName))
 					fileName = "?";
-
-				sb.AppendLine($"{method.Name} in {fileName} at line {line}");
-
-				Source = fileName;
-
-				if (!string.IsNullOrWhiteSpace(Source))
+				else if (fileName.EndsWith("cshtml"))
 				{
-					if (Data.Contains("Script"))
-						Data["Script"] = Script;
+					var tokens = fileName.Split('/');
+
+					fileName = $"{tokens[^2]}/{tokens[^1]}";
+				}
+
+				var methodName = method == null ? "?" : method.Name;
+
+				stackTraceString.AppendLine($"{methodName} in {fileName} at line {line}");
+
+				source = fileName;
+
+				if (!string.IsNullOrWhiteSpace(source))
+				{
+					if (ex.Data.Contains("Script"))
+						ex.Data["Script"] = source;
 					else
-						Data.Add("Script", Script);
+						ex.Data.Add("Script", source);
+
+					var type = method.DeclaringType;
+
+					if (type == null)
+						continue;
 
 					var resolutionService = Shell.GetService<IMicroServiceResolutionService>();
 
 					if (resolutionService != null)
 					{
-						var ms = resolutionService.ResolveMicroService(method.DeclaringType);
+						var ms = resolutionService.ResolveMicroService(type);
 
 						if (ms != null)
 						{
-							if (Data.Contains("MicroService"))
-								Data["MicroService"] = ms;
+							if (ex.Data.Contains("MicroService"))
+								ex.Data["MicroService"] = ms;
 							else
-								Data.Add("MicroService", ms);
+								ex.Data.Add("MicroService", ms);
 						}
 					}
 				}
 			}
 
-			_stackTrace = sb.ToString();
+			if (stackTraceString.Length == 0 && ex.InnerException != null)
+				stackTraceString.Append(ex.InnerException.StackTrace);
+
+			return (stackTraceString.ToString(), source);
+		}
+
+		private static bool IsScript(StackFrame frame)
+		{
+			var method = frame.GetMethod();
+
+			if (method == null || method.DeclaringType == null)
+				return false;
+
+			return method.DeclaringType.FullName.StartsWith("Submission#");
+		}
+
+		private static bool IsView(StackFrame frame)
+		{
+			var fileName = frame.GetFileName();
+
+			if (string.IsNullOrWhiteSpace(fileName))
+				return false;
+
+			return fileName.EndsWith("cshtml");
 		}
 		private static string ResolveScript(object sender)
 		{

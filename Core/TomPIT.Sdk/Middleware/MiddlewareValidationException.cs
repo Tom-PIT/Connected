@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using TomPIT.Exceptions;
 using TomPIT.Reflection;
 
 namespace TomPIT.Middleware
@@ -27,11 +28,10 @@ namespace TomPIT.Middleware
 			Message = sb.ToString();
 
 			_source = instance?.GetType().ScriptTypeName();
+
+			Initialize();
 		}
 
-		public object Instance { get; }
-		public override string Message { get; }
-		public List<ValidationResult> Results { get; }
 		public MiddlewareValidationException(object instance, string message) : this(instance, message, null)
 		{
 		}
@@ -51,47 +51,26 @@ namespace TomPIT.Middleware
 				else
 					Results.Add(new MiddlewareValidationResult(inner.Instance, inner.Message));
 			}
+
+			Initialize();
 		}
 
+		public object Instance { get; }
+		public override string Message { get; }
+		public List<ValidationResult> Results { get; }
 		public override string Source { get => _source ??= base.Source; set => _source = value; }
 		
 		public bool Logged { get; set; }
-		public override string StackTrace
+		public override string StackTrace => _stackTrace;
+
+		public void Initialize()
 		{
-			get
-			{
-				if(_stackTrace == null)
-				{
-					var sb = new StringBuilder();
-					var st = new StackTrace(this, true);
+			var stackTrace = TomPITException.ParseStackTrace(this, InnerException == null
+				? new StackTrace(true)
+				: new StackTrace(InnerException, true));
 
-					if (st.FrameCount == 0)
-						return base.StackTrace;
-
-					foreach(var frame in st.GetFrames())
-					{
-						var method = frame.GetMethod();
-
-						if(method == null || method.DeclaringType==null)
-							continue;
-
-						if (!method.DeclaringType.FullName.StartsWith("Submission#"))
-							continue;
-
-						var line = frame.GetFileLineNumber();
-						var fileName = frame.GetFileName();
-
-						if (string.IsNullOrEmpty(fileName))
-							fileName = "?";
-
-						sb.AppendLine($"{method.Name} in {fileName} at line {line}");
-					}
-
-					_stackTrace = sb.ToString();
-				}
-
-				return _stackTrace;
-			}
+			_stackTrace = stackTrace.Item1;
+			_source = stackTrace.Item2;
 		}
 
 		public override string ToString()

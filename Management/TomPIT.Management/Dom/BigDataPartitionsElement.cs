@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using TomPIT.BigData;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Dom;
 using TomPIT.Management.BigData;
 

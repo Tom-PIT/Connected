@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.Ide.Dom;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Dom.ComponentModel;
 using TomPIT.MicroServices.Security;
 using TomPIT.Reflection;

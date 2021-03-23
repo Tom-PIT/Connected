@@ -1,5 +1,6 @@
 ﻿using System;
 using TomPIT.ComponentModel;
+using TomPIT.Design.Ide;
 
 namespace TomPIT.Ide.Collections
 {

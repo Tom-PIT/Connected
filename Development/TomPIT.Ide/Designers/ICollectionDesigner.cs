@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Ide.Collections;
-using TomPIT.Ide.Dom;
-using TomPIT.Ide.Environment;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 
 namespace TomPIT.Ide.Designers
 {

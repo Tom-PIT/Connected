@@ -1,9 +1,9 @@
 ﻿@using TomPIT;
 
-@model TomPIT.Ide.Environment.IEnvironment
+@model TomPIT.Design.Ide.IEnvironment
 
 @{
-	var node = ViewBag.CurrentNode as TomPIT.Ide.Dom.IDomElement;
+	var node = ViewBag.CurrentNode as TomPIT.Design.Ide.Dom.IDomElement;
 
 	if (node == null)
 	{ return; }

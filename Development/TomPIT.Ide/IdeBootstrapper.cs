@@ -18,7 +18,6 @@ namespace TomPIT.Ide
 		private static void OnTenantInitialize(object sender, TenantArgs e)
 		{
 			e.Tenant.RegisterService(typeof(IDesignerService), typeof(DesignerService));
-			e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
 			e.Tenant.RegisterService(typeof(IMicroServiceDevelopmentService), typeof(MicroServiceDevelopmentService));
 			//e.Tenant.RegisterService(typeof(ICodeAnalyzerService), typeof(CodeAnalyzerService));
 			//e.Tenant.RegisterService(typeof(ICodeDiagnosticService), typeof(CodeDiagnosticService));

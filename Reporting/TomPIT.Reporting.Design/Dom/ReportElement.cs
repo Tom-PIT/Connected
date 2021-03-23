@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using TomPIT.ComponentModel;
-using TomPIT.Ide.Dom;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Dom.ComponentModel;
 using TomPIT.MicroServices.Reporting.Security;
 using TomPIT.Security;

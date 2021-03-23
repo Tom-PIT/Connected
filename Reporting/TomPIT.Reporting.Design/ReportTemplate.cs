@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using TomPIT.Design;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Collections;
 using TomPIT.Ide.ComponentModel;
-using TomPIT.Ide.Dom;
 using TomPIT.MicroServices.Reporting.Design.Storage;
 
 namespace TomPIT.MicroServices.Reporting.Design

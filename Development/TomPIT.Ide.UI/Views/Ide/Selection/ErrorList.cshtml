@@ -1,4 +1,4 @@
-﻿@model TomPIT.Ide.Environment.IEnvironment
+﻿@model TomPIT.Design.Ide.IEnvironment
 
 @{
    var items = Model.Context.MicroService == null ? null : Model.Context.Tenant.GetService<TomPIT.Ide.Designers.IDesignerService>().QueryErrors(Model.Context.MicroService.Token);

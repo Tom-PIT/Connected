@@ -1,5 +1,5 @@
-﻿using TomPIT.Ide.Designers;
-using TomPIT.Ide.Dom;
+﻿using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Dom.ComponentModel;
 using TomPIT.Management.Designers;
 

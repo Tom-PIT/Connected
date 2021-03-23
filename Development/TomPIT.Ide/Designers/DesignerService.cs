@@ -7,6 +7,7 @@ using System.Reflection;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Design.Ide.Properties;
 using TomPIT.Design.Tools;
 using TomPIT.Development;
 using TomPIT.Diagnostics;

@@ -2,9 +2,8 @@
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
-using TomPIT.Ide.Collections;
+using TomPIT.Design.Ide;
 using TomPIT.Ide.ComponentModel;
-using TomPIT.Ide.Environment;
 using TomPIT.Reflection;
 
 namespace TomPIT.Ide.Models

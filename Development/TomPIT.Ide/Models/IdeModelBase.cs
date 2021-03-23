@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
+using TomPIT.Design.Ide.Globalization;
+using TomPIT.Design.Ide.Selection;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
-using TomPIT.Ide.Dom;
-using TomPIT.Ide.Environment;
 using TomPIT.Ide.Environment.Providers;
 using TomPIT.Middleware;
 using TomPIT.Models;

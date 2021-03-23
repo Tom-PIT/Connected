@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
-using TomPIT.Ide.Environment;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 
 namespace TomPIT.Ide.Dom.ComponentModel
 {

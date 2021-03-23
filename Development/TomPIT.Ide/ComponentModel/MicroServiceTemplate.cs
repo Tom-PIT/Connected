@@ -5,9 +5,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
-using TomPIT.Ide.Collections;
-using TomPIT.Ide.Dom;
-using TomPIT.Ide.Environment;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Reflection;
 
 namespace TomPIT.Ide.ComponentModel

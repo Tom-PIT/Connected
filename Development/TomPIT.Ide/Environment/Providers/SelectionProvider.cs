@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using TomPIT.Annotations.Design;
-using TomPIT.Ide.Collections;
-using TomPIT.Ide.Designers;
-using TomPIT.Ide.Dom;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
+using TomPIT.Design.Ide.Events;
+using TomPIT.Design.Ide.Properties;
+using TomPIT.Design.Ide.Selection;
 
 namespace TomPIT.Ide.Environment.Providers
 {

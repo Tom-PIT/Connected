@@ -2,6 +2,7 @@
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Design;
+using TomPIT.Design.Ide.Designers;
 using TomPIT.Development.Designers;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;

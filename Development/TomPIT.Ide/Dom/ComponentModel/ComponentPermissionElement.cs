@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TomPIT.ComponentModel;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Security;
 

@@ -1,7 +1,8 @@
 ﻿using TomPIT.ComponentModel;
 using TomPIT.Design;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Exceptions;
-using TomPIT.Ide.Designers;
 using TomPIT.Ide.Verbs;
 using TomPIT.Middleware;
 using TomPIT.Reflection;

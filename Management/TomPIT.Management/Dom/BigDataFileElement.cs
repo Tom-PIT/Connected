@@ -1,4 +1,5 @@
 ﻿using TomPIT.BigData;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Dom;
 
 namespace TomPIT.Management.Dom

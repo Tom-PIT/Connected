@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Globalization;
 using TomPIT.Globalization;
 
 namespace TomPIT.Ide.Environment.Providers

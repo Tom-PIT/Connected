@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using TomPIT.Design.Ide.Dom;
 
 namespace TomPIT.Ide.Dom
 {

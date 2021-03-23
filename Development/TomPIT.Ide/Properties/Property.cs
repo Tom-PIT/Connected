@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Reflection;
 using TomPIT.ComponentModel;
-using TomPIT.Ide.Dom;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
+using TomPIT.Design.Ide.Properties;
+using TomPIT.Design.Ide.Validation;
 using TomPIT.Ide.Environment;
 using TomPIT.Ide.Properties.Validation;
 

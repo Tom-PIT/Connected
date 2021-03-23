@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Collections;
-using TomPIT.Ide.Dom;
 using TomPIT.Reflection;
 
 namespace TomPIT.MicroServices.Design.Items

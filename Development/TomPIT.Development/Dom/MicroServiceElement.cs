@@ -2,10 +2,11 @@
 using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.Design;
+using TomPIT.Design.Ide;
 using TomPIT.Ide;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Dom;
-using TomPIT.Ide.Environment;
 
 namespace TomPIT.Dom
 {

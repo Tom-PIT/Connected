@@ -5,6 +5,7 @@ using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Design;
+using TomPIT.Design.Ide.Designers;
 using TomPIT.Ide;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;

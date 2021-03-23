@@ -1,6 +1,6 @@
 ﻿using System;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Environment;
-using TomPIT.Ide.Dom;
 using TomPIT.Ide.Dom.ComponentModel;
 using TomPIT.Management.Environment;
 

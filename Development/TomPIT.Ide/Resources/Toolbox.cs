@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Ide.Collections;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Toolbox;
 using TomPIT.Ide.Environment;
 
 namespace TomPIT.Ide.Resources

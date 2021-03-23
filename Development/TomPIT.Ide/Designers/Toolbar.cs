@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Designers;
 using TomPIT.Ide.Environment;
 
 namespace TomPIT.Ide.Designers

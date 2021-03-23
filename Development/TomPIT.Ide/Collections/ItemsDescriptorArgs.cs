@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using TomPIT.Ide.Dom;
+using TomPIT.Design.Ide.Dom;
 
 namespace TomPIT.Ide.Collections
 {

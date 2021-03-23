@@ -1,4 +1,5 @@
-﻿using TomPIT.Ide.Environment.Providers;
+﻿using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Properties;
 
 namespace TomPIT.Ide.Designers
 {

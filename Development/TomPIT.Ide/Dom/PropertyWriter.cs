@@ -7,6 +7,8 @@ using System.Text;
 using TomPIT.Annotations.Design;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Exceptions;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;

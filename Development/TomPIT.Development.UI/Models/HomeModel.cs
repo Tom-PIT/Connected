@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.Design;
 using TomPIT.Development.Models.Tools;
 using TomPIT.Development.Reflection;
 using TomPIT.Ide.Analysis;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Models;
 

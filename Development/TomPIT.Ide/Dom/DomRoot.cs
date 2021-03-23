@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomPIT.Ide.Collections;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Environment;
 
 namespace TomPIT.Ide.Dom

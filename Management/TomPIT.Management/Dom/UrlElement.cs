@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Design.Designers;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Environment;
 using TomPIT.Ide;
-using TomPIT.Ide.Designers;
 using TomPIT.Ide.Dom;
 using TomPIT.Security;
 using TomPIT.Security.PermissionDescriptors;

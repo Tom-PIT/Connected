@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using TomPIT.Design;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Dom;
 using TomPIT.Ide;
 using TomPIT.Ide.Collections;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Dom;
-using TomPIT.Ide.Environment;
 
 namespace TomPIT.Development.Ide
 {

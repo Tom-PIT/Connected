@@ -1,4 +1,6 @@
-﻿namespace TomPIT.Ide.Verbs
+﻿using TomPIT.Design.Ide.Designers;
+
+namespace TomPIT.Ide.Verbs
 {
 	public class Verb : IVerb
 	{

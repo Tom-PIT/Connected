@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.Controllers;
-using TomPIT.Ide.Designers.ActionResults;
-using TomPIT.Ide.Environment;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Designers;
 using TomPIT.Ide.Models;
 using TomPIT.Serialization;
 

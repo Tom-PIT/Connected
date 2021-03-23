@@ -21,6 +21,7 @@ using TomPIT.IoT;
 using TomPIT.Messaging;
 using TomPIT.Navigation;
 using TomPIT.Reflection;
+using TomPIT.Runtime.Configuration;
 using TomPIT.Search;
 using TomPIT.Security;
 using TomPIT.Storage;
@@ -52,6 +53,23 @@ namespace TomPIT.Runtime
 			Shell.RegisterService(typeof(IMicroServiceResolutionService), typeof(MicroServiceResolutionService));
 
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
+			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
+		}
+
+		private static void OnTenantInitialized(object sender, TenantArgs e)
+		{
+			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+			{
+				var t = TypeExtensions.GetType(i);
+
+				if (t == null)
+					continue;
+
+				var template = t.CreateInstance<IMicroServiceTemplate>();
+
+				if (template != null)
+					e.Tenant.GetService<IMicroServiceTemplateService>().Register(template);
+			}
 		}
 
 		private static void OnTenantInitialize(object sender, TenantArgs e)
@@ -100,6 +118,7 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IClientService), typeof(ClientService));
 			e.Tenant.RegisterService(typeof(IDocumentService), typeof(DocumentService));
 			e.Tenant.RegisterService(typeof(IFileSystemService), typeof(FileSystemService));
+			e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
 
 			if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 				e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));

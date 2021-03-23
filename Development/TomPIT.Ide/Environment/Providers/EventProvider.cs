@@ -2,9 +2,11 @@
 using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations.Design;
-using TomPIT.Ide.Dom;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
+using TomPIT.Design.Ide.Events;
+using TomPIT.Design.Ide.Properties;
 using TomPIT.Ide.Messaging;
-using TomPIT.Ide.Properties;
 using TomPIT.Reflection;
 
 namespace TomPIT.Ide.Environment.Providers

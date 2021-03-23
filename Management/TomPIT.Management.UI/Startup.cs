@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using TomPIT.Connectivity;
+using TomPIT.Design;
 using TomPIT.Environment;
 using TomPIT.Ide;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Management.Deployment;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
@@ -54,24 +53,7 @@ namespace TomPIT.Management
 
 			IdeBootstrapper.Run();
 			ManagementBootstrapper.Run();
-			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
 			Instance.Run(app);
-		}
-
-		private static void OnTenantInitialized(object sender, TenantArgs e)
-		{
-			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-			{
-				var t = Reflection.TypeExtensions.GetType(i);
-
-				if (t == null)
-					continue;
-
-				var template = t.CreateInstance<IMicroServiceTemplate>();
-
-				if (template != null)
-					e.Tenant.GetService<IMicroServiceTemplateService>().Register(template);
-			}
 		}
 	}
 }

@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Design;
+using TomPIT.Design.Ide.Designers;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Globalization;

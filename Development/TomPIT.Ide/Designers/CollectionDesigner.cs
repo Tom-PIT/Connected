@@ -6,10 +6,12 @@ using System.Reflection;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.Design;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Collections;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Designers.Toolbar;
-using TomPIT.Ide.Dom;
 using TomPIT.Reflection;
 
 namespace TomPIT.Ide.Designers

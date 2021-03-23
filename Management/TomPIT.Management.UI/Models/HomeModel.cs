@@ -1,4 +1,4 @@
-﻿using TomPIT.Ide.Dom;
+﻿using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Models;
 
 namespace TomPIT.Management.Models

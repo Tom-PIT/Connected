@@ -4,8 +4,9 @@ using System.Reflection;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
-using TomPIT.Ide.Designers;
-using TomPIT.Ide.Properties;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
+using TomPIT.Design.Ide.Properties;
 using TomPIT.Reflection;
 
 namespace TomPIT.Ide.Dom.ComponentModel
