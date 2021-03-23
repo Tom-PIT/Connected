@@ -17,6 +17,7 @@ using Microsoft.Extensions.Hosting;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
+using TomPIT.Design;
 using TomPIT.Distributed;
 using TomPIT.Environment;
 using TomPIT.Globalization;
@@ -96,6 +97,21 @@ namespace TomPIT
 			.ConfigureApplicationPartManager((m) =>
 			{
 				var pa = new ApplicationPartsArgs();
+
+				foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+				{
+					var t = Reflection.TypeExtensions.GetType(i);
+
+					if (t == null)
+						continue;
+
+					var template = t.CreateInstance<IMicroServiceTemplate>();
+
+					var ds = template.GetApplicationParts();
+
+					if (ds != null && ds.Count > 0)
+						pa.Parts.AddRange(ds);
+				}
 
 				e.ProvideApplicationParts?.Invoke(pa);
 
@@ -251,12 +267,24 @@ namespace TomPIT
 			}
 		}
 
-		public static void Run(IApplicationBuilder app)
+		public static void Run(IApplicationBuilder app, IWebHostEnvironment environment)
 		{
 			foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
 				Shell.GetService<IConnectivityService>().InsertTenant(i.Name, i.Url, i.AuthenticationToken);
 
 			State = InstanceState.Running;
+
+			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+			{
+				var t = Reflection.TypeExtensions.GetType(i);
+
+				if (t == null)
+					continue;
+
+				var template = t.CreateInstance<IMicroServiceTemplate>();
+
+				template.Initialize(app, environment);
+			}
 		}
 
 		public static bool ResourceGroupExists(Guid resourceGroup)

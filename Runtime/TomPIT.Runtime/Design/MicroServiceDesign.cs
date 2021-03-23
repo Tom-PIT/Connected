@@ -27,6 +27,41 @@ namespace TomPIT.Design
 			});
 		}
 
+		public void Delete(Guid token)
+		{
+			var components = Tenant.GetService<IDesignService>().Components.Query(token);
+
+			foreach (var i in components)
+				Tenant.GetService<IDesignService>().Components.Delete(i.Token, true);
+
+			var folders = FolderModel.Create(Tenant.GetService<IComponentService>().QueryFolders(token));
+
+			foreach (var i in folders)
+				DeleteFolder(i);
+
+			Tenant.Post(CreateUrl("Delete"), new
+			{
+				microService = token,
+			});
+
+			Tenant.Post(Tenant.CreateUrl("Storage", "Clean"), new
+			{
+				microService = token
+			});
+
+
+			if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification notification)
+				notification.NotifyRemoved(this, new MicroServiceEventArgs(token));
+		}
+
+		private void DeleteFolder(FolderModel model)
+		{
+			foreach (var i in model.Items)
+				DeleteFolder(i);
+
+			Tenant.GetService<IDesignService>().Components.DeleteFolder(model.Folder.MicroService, model.Folder.Token, true);
+		}
+
 		public void Update(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status, UpdateStatus updateStatus, CommitStatus commitStatus)
 		{
 			Tenant.Post(CreateUrl("Update"), new
@@ -39,6 +74,9 @@ namespace TomPIT.Design
 				updateStatus,
 				commitStatus
 			});
+
+			if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification notification)
+				notification.NotifyChanged(this, new MicroServiceEventArgs(token));
 		}
 
 		/*

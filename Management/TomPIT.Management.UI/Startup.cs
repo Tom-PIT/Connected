@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using TomPIT.Design;
 using TomPIT.Environment;
 using TomPIT.Ide;
 using TomPIT.Management.Deployment;
-using TomPIT.Reflection;
 using TomPIT.Runtime;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Management
 {
@@ -17,24 +14,7 @@ namespace TomPIT.Management
 		{
 			var e = new ServicesConfigurationArgs
 			{
-				Authentication = AuthenticationType.MultiTenant,
-				ProvideApplicationParts = (args) =>
-				{
-					foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-					{
-						var t = Reflection.TypeExtensions.GetType(i);
-
-						if (t == null)
-							continue;
-
-						var template = t.CreateInstance<IMicroServiceTemplate>();
-
-						var ds = template.GetApplicationParts();
-
-						if (ds != null && ds.Count > 0)
-							args.Parts.AddRange(ds);
-					}
-				}
+				Authentication = AuthenticationType.MultiTenant
 			};
 
 			Instance.Initialize(services, e);
@@ -53,7 +33,7 @@ namespace TomPIT.Management
 
 			IdeBootstrapper.Run();
 			ManagementBootstrapper.Run();
-			Instance.Run(app);
+			Instance.Run(app, env);
 		}
 	}
 }

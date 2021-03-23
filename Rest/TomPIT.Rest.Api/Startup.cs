@@ -26,7 +26,7 @@ namespace TomPIT.Rest
 			  RestRouting.Register(f.Builder);
 		  });
 
-			Instance.Run(app);
+			Instance.Run(app, env);
 		}
 	}
 }

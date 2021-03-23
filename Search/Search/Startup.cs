@@ -39,7 +39,7 @@ namespace TomPIT.Search
 			});
 
 			InitializeConfiguration();
-			Instance.Run(app);
+			Instance.Run(app, env);
 		}
 
 		private void RegisterTasks(IServiceCollection services)

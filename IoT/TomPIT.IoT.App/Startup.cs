@@ -48,7 +48,7 @@ namespace TomPIT.IoT
 			});
 
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-			Instance.Run(app);
+			Instance.Run(app, env);
 		}
 
 		private void OnTenantInitialize(object sender, TenantArgs e)

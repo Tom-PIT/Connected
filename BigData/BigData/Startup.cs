@@ -43,7 +43,7 @@ namespace TomPIT.BigData
 			});
 
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-			Instance.Run(app);
+			Instance.Run(app, env);
 		}
 
 		private void RegisterTasks(IServiceCollection services)

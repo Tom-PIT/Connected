@@ -19,24 +19,7 @@ namespace TomPIT.Development
 		{
 			var e = new ServicesConfigurationArgs
 			{
-				Authentication = AuthenticationType.MultiTenant,
-				ProvideApplicationParts = (args) =>
-				{
-					foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-					{
-						var t = TypeExtensions.GetType(i);
-
-						if (t == null)
-							continue;
-
-						var template = t.CreateInstance<IMicroServiceTemplate>();
-
-						var ds = template.GetApplicationParts();
-
-						if (ds != null && ds.Count > 0)
-							args.Parts.AddRange(ds);
-					}
-				}
+				Authentication = AuthenticationType.MultiTenant
 			};
 
 			Instance.Initialize(services, e);
@@ -61,19 +44,7 @@ namespace TomPIT.Development
 
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 
-			Instance.Run(app);
-
-			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-			{
-				var t = TypeExtensions.GetType(i);
-
-				if (t == null)
-					continue;
-
-				var template = t.CreateInstance<IMicroServiceTemplate>();
-
-				template.Initialize(app, env);
-			}
+			Instance.Run(app, env);
 		}
 
 		private void OnTenantInitialize(object sender, TenantArgs e)

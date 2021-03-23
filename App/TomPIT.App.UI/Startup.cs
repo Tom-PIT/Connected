@@ -74,7 +74,7 @@ namespace TomPIT.App
 			});
 
 			InitializeConfiguration();
-			Instance.Run(app);
+			Instance.Run(app, env);
 		}
 
 		private void InitializeConfiguration()
