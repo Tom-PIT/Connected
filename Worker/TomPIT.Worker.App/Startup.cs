@@ -27,13 +27,13 @@ namespace TomPIT.Worker
 				Authentication = AuthenticationType.SingleTenant
 			};
 
-			Instance.Initialize(services, e);
+			Instance.Initialize(InstanceType.Worker, services, e);
 			RegisterTasks(services);
 		}
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			Instance.Configure(InstanceType.Worker, app, env, (f) =>
+			Instance.Configure(app, env, (f) =>
 			{
 				Worker.Configuration.Routing.Register(f.Builder);
 			});

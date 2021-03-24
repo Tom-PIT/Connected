@@ -22,7 +22,7 @@ namespace TomPIT.Development
 				Authentication = AuthenticationType.MultiTenant
 			};
 
-			Instance.Initialize(services, e);
+			Instance.Initialize(InstanceType.Development, services, e);
 
 			services.AddHostedService<ToolsRunner>();
 			services.AddHostedService<AutoFixRunner>();
@@ -31,7 +31,7 @@ namespace TomPIT.Development
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			Instance.Configure(InstanceType.Development, app, env, (f) =>
+			Instance.Configure(app, env, (f) =>
 		  {
 			  RegisterDesignersRouting(f.Builder);
 

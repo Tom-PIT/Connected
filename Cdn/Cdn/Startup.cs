@@ -31,7 +31,7 @@ namespace TomPIT.Cdn
 				CorsEnabled = true
 			};
 
-			Instance.Initialize(services, e);
+			Instance.Initialize(InstanceType.Cdn, services, e);
 
 			services.AddSignalR(o =>
 			{
@@ -43,7 +43,7 @@ namespace TomPIT.Cdn
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			Instance.Configure(InstanceType.Cdn, app, env, (f) =>
+			Instance.Configure(app, env, (f) =>
 			{
 				CdnRouting.Register(f.Builder);
 

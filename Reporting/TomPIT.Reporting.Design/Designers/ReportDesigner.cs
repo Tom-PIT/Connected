@@ -70,7 +70,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 					ResolveDataSources(MicroService.Name);
 
-					var references = Environment.Context.Tenant.GetService<IDiscoveryService>().References(MicroService.Token);
+					var references = Environment.Context.Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(MicroService.Token);
 
 					if (references != null)
 					{
@@ -124,7 +124,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 			foreach (var api in apis)
 			{
-				var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifest(api.Token) as ApiManifest;
+				var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(api.Token) as ApiManifest;
 				var config = Environment.Context.Tenant.GetService<IComponentService>().SelectConfiguration(api.Token) as IApiConfiguration;
 
 				_dataSources.Add(new ReportDataSource
@@ -219,7 +219,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 			result.Name = op.Name;
 
-			var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifest(descriptor.Component.Token) as ApiManifest;
+			var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(descriptor.Component.Token) as ApiManifest;
 
 			if (manifest == null)
 				return null;

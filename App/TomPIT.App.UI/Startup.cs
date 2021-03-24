@@ -42,7 +42,7 @@ namespace TomPIT.App
 					 new[] { "image/svg+xml", "image/png", "image/jpg", "image/jpeg" });
 			});
 
-			Instance.Initialize(services, e);
+			Instance.Initialize(InstanceType.Application, services, e);
 
 			services.AddScoped<IViewEngine, ViewEngine>();
 			services.AddScoped<IMailTemplateViewEngine, MailTemplateViewEngine>();
@@ -65,7 +65,7 @@ namespace TomPIT.App
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			app.UseResponseCompression();
-			Instance.Configure(InstanceType.Application, app, env, (f) =>
+			Instance.Configure(app, env, (f) =>
 			{
 				app.UseMiddleware<IgnoreRouteMiddleware>();
 

@@ -55,8 +55,13 @@ namespace TomPIT
 		public static CancellationToken Stopped { get; private set; }
 
 		private static bool CorsEnabled { get; set; }
-		public static void Initialize(IServiceCollection services, ServicesConfigurationArgs e)
+
+		private static InstanceType InstanceType { get; set; }
+
+		public static bool SupportsDesign => InstanceType == InstanceType.Management || InstanceType == InstanceType.Development || InstanceType == InstanceType.Application;
+		public static void Initialize(InstanceType type, IServiceCollection services, ServicesConfigurationArgs e)
 		{
+			InstanceType = type;
 			Shell.RegisterConfigurationType(typeof(ClientSys));
 
 			InitializeServices(services, e);
@@ -98,19 +103,22 @@ namespace TomPIT
 			{
 				var pa = new ApplicationPartsArgs();
 
-				foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+				if (SupportsDesign)
 				{
-					var t = Reflection.TypeExtensions.GetType(i);
+					foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+					{
+						var t = Reflection.TypeExtensions.GetType(i);
 
-					if (t == null)
-						continue;
+						if (t == null)
+							continue;
 
-					var template = t.CreateInstance<IMicroServiceTemplate>();
+						var template = t.CreateInstance<IMicroServiceTemplate>();
 
-					var ds = template.GetApplicationParts();
+						var ds = template.GetApplicationParts();
 
-					if (ds != null && ds.Count > 0)
-						pa.Parts.AddRange(ds);
+						if (ds != null && ds.Count > 0)
+							pa.Parts.AddRange(ds);
+					}
 				}
 
 				e.ProvideApplicationParts?.Invoke(pa);
@@ -176,7 +184,7 @@ namespace TomPIT
 			foreach (var plugin in Plugins)
 				plugin.ConfigureServices(services);
 		}
-		public static void Configure(InstanceType type, IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler)
+		public static void Configure(IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler)
 		{
 			RuntimeService._host = app;
 			app.UseMiddleware<AuthenticationCookieMiddleware>();
@@ -214,7 +222,7 @@ namespace TomPIT
 
 			RuntimeBootstrapper.Run();
 
-			Shell.GetService<IRuntimeService>().Initialize(type, Shell.GetConfiguration<IClientSys>().Platform, env);
+			Shell.GetService<IRuntimeService>().Initialize(InstanceType, Shell.GetConfiguration<IClientSys>().Platform, env);
 			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
 			app.UseEndpoints(routes =>
 			{
@@ -274,16 +282,19 @@ namespace TomPIT
 
 			State = InstanceState.Running;
 
-			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+			if (SupportsDesign)
 			{
-				var t = Reflection.TypeExtensions.GetType(i);
+				foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+				{
+					var t = Reflection.TypeExtensions.GetType(i);
 
-				if (t == null)
-					continue;
+					if (t == null)
+						continue;
 
-				var template = t.CreateInstance<IMicroServiceTemplate>();
+					var template = t.CreateInstance<IMicroServiceTemplate>();
 
-				template.Initialize(app, environment);
+					template.Initialize(app, environment);
+				}
 			}
 		}
 

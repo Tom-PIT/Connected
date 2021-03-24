@@ -177,7 +177,7 @@ namespace TomPIT.Management.Deployment.Packages
 
 		private void CreateDependencies(ITenant tenant)
 		{
-			var references = tenant.GetService<IDiscoveryService>().References(MicroService.Token);
+			var references = tenant.GetService<IDiscoveryService>().MicroServices.References.Select(MicroService.Token);
 
 			if (references == null)
 				return;
@@ -223,18 +223,18 @@ namespace TomPIT.Management.Deployment.Packages
 
 				CreateBlob(tenant, i.Token);
 
-				var texts = tenant.GetService<IDiscoveryService>().Children<IText>(config);
+				var texts = tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config);
 
 				foreach (var j in texts)
 					CreateBlob(tenant, j.TextBlob);
 
-				var er = tenant.GetService<IDiscoveryService>().Children<IExternalResourceElement>(config);
+				var er = tenant.GetService<IDiscoveryService>().Configuration.Query<IExternalResourceElement>(config);
 
 				foreach (var j in er)
 				{
 					var items = j.QueryResources();
 
-					if (items == null || items.Count == 0)
+					if (items == null || !items.Any())
 						continue;
 
 					foreach (var k in items)
@@ -310,7 +310,7 @@ namespace TomPIT.Management.Deployment.Packages
 
 			foreach (var i in Configurations)
 			{
-				if (svc.Find(i.Component, element) != null)
+				if (svc.Configuration.Find(i.Component, element) != null)
 					return true;
 			}
 

@@ -34,7 +34,7 @@ namespace TomPIT.DataProviders.BigData.Design
 
 			FillPartitions(result, ms);
 
-			var references = Context.Tenant.GetService<IDiscoveryService>().References(ms);
+			var references = Context.Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(ms);
 
 			if (references == null)
 				return result;

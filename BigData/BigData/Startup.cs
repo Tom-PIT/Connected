@@ -31,13 +31,13 @@ namespace TomPIT.BigData
 				Authentication = AuthenticationType.SingleTenant
 			};
 
-			Instance.Initialize(services, e);
+			Instance.Initialize(InstanceType.BigData, services, e);
 			RegisterTasks(services);
 		}
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			Instance.Configure(InstanceType.BigData, app, env, (f) =>
+			Instance.Configure(app, env, (f) =>
 			{
 				BigData.Configuration.Routing.Register(f.Builder);
 			});

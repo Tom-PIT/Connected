@@ -17,7 +17,7 @@ namespace TomPIT.Management
 				Authentication = AuthenticationType.MultiTenant
 			};
 
-			Instance.Initialize(services, e);
+			Instance.Initialize(InstanceType.Management, services, e);
 
 			services.AddHostedService<InstallerService>();
 			services.AddHostedService<UpdateService>();
@@ -26,7 +26,7 @@ namespace TomPIT.Management
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			Instance.Configure(InstanceType.Management, app, env, (f) =>
+			Instance.Configure(app, env, (f) =>
 		 {
 			 IdeRouting.Register(f.Builder, "Home", string.Empty);
 		 });

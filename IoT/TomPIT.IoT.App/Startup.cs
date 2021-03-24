@@ -29,7 +29,7 @@ namespace TomPIT.IoT
 				CorsEnabled = true
 			};
 
-			Instance.Initialize(services, e);
+			Instance.Initialize(InstanceType.IoT, services, e);
 
 			services.AddSignalR((o) =>
 			{
@@ -41,7 +41,7 @@ namespace TomPIT.IoT
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			Instance.Configure(InstanceType.IoT, app, env, (f) =>
+			Instance.Configure(app, env, (f) =>
 			{
 				IoTRouting.Register(f.Builder);
 				f.Builder.MapHub<IoTServerHub>("/iot");

@@ -9,7 +9,6 @@
 	},
 	"storageProviders": [
 		"TomPIT.StorageProvider.Sql.SqlStorageProvider, TomPIT.StorageProvider.Sql"
-		//"TomPIT.StorageProvider.Azure.AzureStorageProvider, TomPIT.StorageProvider.Azure"
 	],
 	"connectionStrings": {
 		"sys": "data source=sys-db\\sql2017; initial catalog=repoclientsys;user id=tompit;password=tompit;"

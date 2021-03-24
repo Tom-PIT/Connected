@@ -16,12 +16,12 @@ namespace TomPIT.Rest
 				Authentication = AuthenticationType.SingleTenant
 			};
 
-			Instance.Initialize(services, e);
+			Instance.Initialize(InstanceType.Rest, services, e);
 		}
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			Instance.Configure(InstanceType.Rest, app, env, (f) =>
+			Instance.Configure(app, env, (f) =>
 		  {
 			  RestRouting.Register(f.Builder);
 		  });

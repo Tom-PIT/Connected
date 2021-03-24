@@ -27,13 +27,13 @@ namespace TomPIT.Search
 				Authentication = AuthenticationType.SingleTenant
 			};
 
-			Instance.Initialize(services, e);
+			Instance.Initialize(InstanceType.Search, services, e);
 			RegisterTasks(services);
 		}
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			Instance.Configure(InstanceType.Search, app, env, (f) =>
+			Instance.Configure(app, env, (f) =>
 			{
 				SearchRouting.Register(f.Builder);
 			});
