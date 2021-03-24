@@ -29,6 +29,11 @@ namespace TomPIT.Design
 
 		public void Delete(Guid token)
 		{
+			var commits = Tenant.GetService<IDesignService>().VersionControl.QueryCommits(token);
+
+			foreach (var commit in commits)
+				Tenant.GetService<IDesignService>().VersionControl.DeleteCommit(commit.Token);
+
 			var components = Tenant.GetService<IDesignService>().Components.Query(token);
 
 			foreach (var i in components)
@@ -48,7 +53,6 @@ namespace TomPIT.Design
 			{
 				microService = token
 			});
-
 
 			if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification notification)
 				notification.NotifyRemoved(this, new MicroServiceEventArgs(token));

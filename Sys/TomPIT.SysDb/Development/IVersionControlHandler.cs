@@ -26,6 +26,7 @@ namespace TomPIT.SysDb.Development
 		void UndoComponentHistory(IComponent component);
 		List<IComponentHistory> QueryHistory(IComponent component);
 		List<IComponentHistory> QueryMicroServiceHistory(IMicroService microService);
+		List<IComponentHistory> QueryCheckout(IMicroService microService);
 		List<IComponentHistory> QueryCommitDetails(ICommit commit);
 		IComponentHistory SelectCommitDetail(ICommit commit, Guid component);
 		IComponentHistory SelectNonCommited(Guid component);

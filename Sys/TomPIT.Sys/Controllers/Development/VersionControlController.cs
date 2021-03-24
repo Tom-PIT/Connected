@@ -86,6 +86,15 @@ namespace TomPIT.Sys.Controllers.Development
 		}
 
 		[HttpPost]
+		public List<IComponentHistory> QueryCheckout()
+		{
+			var body = FromBody();
+			var ms = body.Required<Guid>("microService");
+
+			return DataModel.VersionControl.QueryCheckout(ms);
+		}
+
+		[HttpPost]
 		public List<IComponentHistory> QueryCommitDetails()
 		{
 			var body = FromBody();

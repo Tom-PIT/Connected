@@ -280,10 +280,25 @@ namespace TomPIT.Design
 
 		public List<IComponentHistory> QueryMicroServiceHistory(Guid microService)
 		{
-			return Tenant.Post<List<ComponentHistory>>(CreateUrl("QueryMicroServiceHistory"), new
+			var history = Tenant.Post<List<ComponentHistory>>(CreateUrl("QueryMicroServiceHistory"), new
 			{
 				microService
 			}).ToList<IComponentHistory>();
+
+			var checkout = Tenant.Post<List<ComponentHistory>>(CreateUrl("QueryCheckout"), new
+			{
+				microService
+			}).ToList<IComponentHistory>();
+
+			var result = new List<IComponentHistory>();
+
+			if (history.Any())
+				result.AddRange(history);
+
+			if (checkout.Any())
+				result.AddRange(checkout);
+
+			return result;
 		}
 
 		public List<IComponentHistory> QueryCommitDetails(Guid commit)
@@ -484,7 +499,7 @@ namespace TomPIT.Design
 
 			var unCommited = SelectNonCommited(component);
 
-			if (unCommited != null)
+			if (unCommited != null && unCommited.Verb == LockVerb.Edit)
 			{
 				var originalImage = Tenant.GetService<IDesignService>().Components.SelectComponentImage(unCommited.Blob);
 

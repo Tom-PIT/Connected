@@ -101,7 +101,6 @@ namespace TomPIT.Design
 			Result.Id = Component.Token;
 			Result.Microservice = Component.MicroService;
 			Result.Name = Component.Name;
-			Result.HasChanged = HasChanged(Component.Token, Guid.Empty);
 			Result.Category = Component.Category;
 
 			switch (Component.LockVerb)
@@ -119,6 +118,8 @@ namespace TomPIT.Design
 
 			if (Result.Verb == ComponentVerb.Delete)
 				return Result;
+
+			Result.HasChanged = Component.LockVerb == LockVerb.Add || HasChanged(Component.Token, Guid.Empty);
 
 			ParseConfiguration();
 			ParseElements();

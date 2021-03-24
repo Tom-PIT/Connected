@@ -64,6 +64,8 @@ namespace TomPIT.Design
 				}
 
 				RemoveDependencies(c.Token);
+
+				Tenant.GetService<IDesignService>().VersionControl.DeleteHistory(component);
 			}
 
 			var u = Tenant.CreateUrl("ComponentDevelopment", "Delete");

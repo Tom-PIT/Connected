@@ -128,6 +128,16 @@ namespace TomPIT.Sys.Model.Development
 			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryMicroServiceHistory(ms);
 		}
 
+		public List<IComponentHistory> QueryCheckout(Guid microService)
+		{
+			var ms = DataModel.MicroServices.Select(microService);
+
+			if (ms == null)
+				throw new RuntimeException(SR.ErrMicroServiceNotFound);
+
+			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCheckout(ms);
+		}
+
 		public List<IComponentHistory> QueryCommitDetails(Guid commit)
 		{
 			var c = SelectCommit(commit);

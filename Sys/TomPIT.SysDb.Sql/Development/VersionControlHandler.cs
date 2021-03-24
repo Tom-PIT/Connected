@@ -169,6 +169,15 @@ namespace TomPIT.SysDb.Sql.Development
 			return r.Execute().ToList<IComponentHistory>();
 		}
 
+		public List<IComponentHistory> QueryCheckout(IMicroService microService)
+		{
+			using var r = new Reader<ComponentHistory>("tompit.component_checkout_que");
+
+			r.CreateParameter("@service", microService.Token);
+
+			return r.Execute().ToList<IComponentHistory>();
+		}
+
 		public List<IComponentHistory> QueryCommitDetails(ICommit commit)
 		{
 			using var r = new Reader<ComponentHistory>("tompit.component_history_que");
