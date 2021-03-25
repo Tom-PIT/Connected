@@ -29,24 +29,12 @@ namespace TomPIT.Middleware.Interop
 
 			switch (descriptor.Configuration.Scope)
 			{
-				// must be inside the same microservice
 				case ElementScope.Internal:
-					if (contextMs != null && descriptor.MicroService.Token != contextMs.MicroService.Token)
-						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element))
-						{
-							Component = descriptor.Component.Token
-						}.WithMetrics(ctx);
-
-					break;
 				case ElementScope.Private:
-					// must be inside the same api
-					if (sender == null || sender.Api.Component != descriptor.Component.Token)
-						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element))
-						{
-							Component = descriptor.Component.Token
-						}.WithMetrics(ctx);
-
-					break;
+					throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element))
+					{
+						Component = descriptor.Component.Token
+					}.WithMetrics(ctx);
 			}
 
 			var op = descriptor.Configuration.Operations.FirstOrDefault(f => string.Equals(f.Name, descriptor.Element, StringComparison.OrdinalIgnoreCase));
@@ -62,13 +50,8 @@ namespace TomPIT.Middleware.Interop
 			switch (op.Scope)
 			{
 				case ElementScope.Internal:
-					if (contextMs != null && descriptor.MicroService.Token != contextMs.MicroService.Token)
-						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element));
-					break;
 				case ElementScope.Private:
-					if (sender == null || sender.Api.Component != descriptor.Component.Token)
-						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element));
-					break;
+					throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element));
 			}
 
 			var operationType = Context.Tenant.GetService<ICompilerService>().ResolveType(descriptor.MicroService.Token, op, op.Name);

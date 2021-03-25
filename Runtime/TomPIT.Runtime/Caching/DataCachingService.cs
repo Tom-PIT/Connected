@@ -374,7 +374,7 @@ namespace TomPIT.Caching
 			{
 				Key = CreateKey(instance),
 				Value = Serializer.Serialize(instance)
-			});
+			}, TimeSpan.FromMinutes(1), true);
 
 			return instance;
 		}
