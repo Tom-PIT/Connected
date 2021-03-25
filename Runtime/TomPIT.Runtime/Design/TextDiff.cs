@@ -4,9 +4,9 @@ namespace TomPIT.Design
 {
 	internal class TextDiff : ITextDiff
 	{
-		public ITextPatchResult Apply(List<ITextPatchDescriptor> descriptors, string original)
+		public ITextPatchResult Apply(List<ITextPatchDescriptor> descriptors, string baseText)
 		{
-			return TextDiffProcessor.Apply(descriptors, original);
+			return TextDiffProcessor.Apply(descriptors, baseText);
 		}
 
 		public List<ITextDiffDescriptor> Diff(string original, string modified)

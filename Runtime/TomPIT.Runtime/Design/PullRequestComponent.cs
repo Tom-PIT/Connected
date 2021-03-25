@@ -24,5 +24,7 @@ namespace TomPIT.Design
 
 		[JsonConverter(typeof(PullRequestFileConverter))]
 		public List<IPullRequestFile> Files {get;set;}
+
+		public Guid MergeToken {get;set;}
 	}
 }

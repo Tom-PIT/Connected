@@ -13,6 +13,7 @@ namespace TomPIT.Design
 	public interface IPullRequestComponent
 	{
 		Guid Token { get; }
+		Guid MergeToken { get; }
 		string Name { get; }
 		string Type { get; }
 		Guid Folder { get; }

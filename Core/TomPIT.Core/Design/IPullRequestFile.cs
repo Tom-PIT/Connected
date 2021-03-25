@@ -12,5 +12,6 @@ namespace TomPIT.Design
       string PrimaryKey { get; }
       int BlobVersion { get; }
       Guid Token { get; }
+      string BaseContent { get; }
    }
 }

@@ -20,5 +20,6 @@ namespace TomPIT.Design
 		public int BlobVersion {get;set;}
 
 		public Guid Token {get;set;}
+		public string BaseContent { get; set; }
 	}
 }
