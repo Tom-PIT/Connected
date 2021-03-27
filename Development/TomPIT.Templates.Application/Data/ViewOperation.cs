@@ -1,4 +1,5 @@
-﻿using TomPIT.Annotations.Design;
+﻿using System.ComponentModel;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel.Data;
 
 namespace TomPIT.MicroServices.Data
@@ -7,5 +8,7 @@ namespace TomPIT.MicroServices.Data
 	[Syntax(SyntaxAttribute.Sql)]
 	public class ViewOperation : ModelOperation, IViewOperation
 	{
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.sql";
 	}
 }

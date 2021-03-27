@@ -15,5 +15,8 @@ namespace TomPIT.MicroServices.Resources
 	{
 		[Browsable(false)]
 		public Guid TextBlob { get; set; }
+		[Browsable(false)]
+		public string FileName => $"{ToString()}.js";
+
 	}
 }

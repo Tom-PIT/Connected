@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Annotations.Design.CodeAnalysis;
@@ -12,7 +13,7 @@ namespace TomPIT.MicroServices.Cdn
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
 	[ClassRequired]
-	public class SubscriptionEvent : SourceCodeElement, ISubscriptionEvent
+	public class SubscriptionEvent : TextElement, ISubscriptionEvent
 	{
 		[Required]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
@@ -22,5 +23,8 @@ namespace TomPIT.MicroServices.Cdn
 		{
 			return string.IsNullOrWhiteSpace(Name) ? base.ToString() : Name;
 		}
+
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 	}
 }

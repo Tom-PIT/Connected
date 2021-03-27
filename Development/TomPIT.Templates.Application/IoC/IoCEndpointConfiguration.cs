@@ -1,4 +1,5 @@
-﻿using TomPIT.Annotations.Design;
+﻿using System.ComponentModel;
+using TomPIT.Annotations.Design;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoC;
@@ -6,7 +7,7 @@ using TomPIT.MicroServices.Design;
 
 namespace TomPIT.MicroServices.IoC
 {
-	public class IoCEndpointConfiguration : SourceCodeConfiguration, IIoCEndpointConfiguration
+	public class IoCEndpointConfiguration : TextConfiguration, IIoCEndpointConfiguration
 	{
 		private ListItems<IIoCEndpoint> _endpoints = null;
 
@@ -21,5 +22,7 @@ namespace TomPIT.MicroServices.IoC
 				return _endpoints;
 			}
 		}
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 	}
 }

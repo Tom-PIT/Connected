@@ -49,7 +49,7 @@ namespace TomPIT.Compilation
 				 .WithSourceResolver(new ScriptResolver(Tenant, MicroService))
 				 .WithMetadataResolver(new AssemblyResolver(Tenant, MicroService, true))
 				 .WithEmitDebugInformation(msv.Status != MicroServiceStatus.Production)
-				 .WithFilePath(SourceCode.ScriptName(Tenant))
+				 .WithFilePath(SourceCode.FileName)
 				 .WithFileEncoding(Encoding.UTF8);
 
 			foreach (var reference in ScriptContext.References)

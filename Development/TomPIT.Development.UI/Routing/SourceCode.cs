@@ -63,7 +63,7 @@ namespace TomPIT.Development.Routing
 				return;
 			}
 
-			var fileName = text.ScriptName(Tenant);
+			var fileName = text.FileName;
 			var source = LoadSource(ms.Token, text);
 
 			Context.Response.ContentType = "text/plain";

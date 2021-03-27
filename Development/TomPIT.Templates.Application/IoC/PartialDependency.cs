@@ -1,4 +1,5 @@
-﻿using TomPIT.Annotations.Design;
+﻿using System.ComponentModel;
+using TomPIT.Annotations.Design;
 using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.ComponentModel.IoC;
 using TomPIT.MicroServices.Design;
@@ -11,5 +12,7 @@ namespace TomPIT.MicroServices.IoC
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		[Items(DesignUtils.PartialsItems)]
 		public string Partial { get; set; }
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 	}
 }

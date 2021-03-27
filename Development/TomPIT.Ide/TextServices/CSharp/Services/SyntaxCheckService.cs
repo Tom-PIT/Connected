@@ -42,7 +42,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 			var result = new List<IMarkerData>();
 
 			var ms = Editor.Context.Tenant.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService());
-			var scriptName = sourceCode.ScriptName(Editor.Context.Tenant);
+			var scriptName = sourceCode.FileName;
 			var fileName = $"{ms.Name}/{scriptName}";
 
 			foreach (var diagnostic in script.Errors)

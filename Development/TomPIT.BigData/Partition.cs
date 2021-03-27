@@ -14,7 +14,7 @@ namespace TomPIT.MicroServices.BigData
 	[DomDesigner(DesignUtils.BigDataPartitionDesigner, Mode = EnvironmentMode.Runtime)]
 	[Syntax(SyntaxAttribute.CSharp)]
 	[ClassRequired]
-	public class Partition : SourceCodeConfiguration, IPartitionConfiguration
+	public class Partition : TextConfiguration, IPartitionConfiguration
 	{
 		private ListItems<IBigDataQuery> _queries = null;
 
@@ -34,5 +34,7 @@ namespace TomPIT.MicroServices.BigData
 				return _queries;
 			}
 		}
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
@@ -22,5 +23,7 @@ namespace TomPIT.MicroServices.BigData
 
 			return Name;
 		}
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.sql";
 	}
 }

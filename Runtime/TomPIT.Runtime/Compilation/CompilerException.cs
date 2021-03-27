@@ -61,7 +61,7 @@ namespace TomPIT.Compilation
 
 				var ms = tenant.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService());
 
-				Source = sourceCode.ScriptName(tenant);
+				Source = sourceCode.FileName;
 				Path = sourceCode.ResolvePath(tenant);
 				MicroService = ms.Name;
 				Component = sourceCode.Configuration().Component;
@@ -114,7 +114,7 @@ namespace TomPIT.Compilation
 
 			if (tokens.Length == 2)
 			{
-				Source = (config as IText).ScriptName(tenant);
+				Source = (config as IText).FileName;
 				Element = component.Token;
 			}
 			else
@@ -125,7 +125,7 @@ namespace TomPIT.Compilation
 
 					if (operation != null)
 					{
-						Source = operation.ScriptName(tenant);
+						Source = operation.FileName;
 						Element = operation.Id;
 					}
 				}
@@ -135,7 +135,7 @@ namespace TomPIT.Compilation
 
 					if (operation != null)
 					{
-						Source = operation.ScriptName(tenant);
+						Source = operation.FileName;
 						Element = operation.Id;
 					}
 				}

@@ -18,7 +18,7 @@ namespace TomPIT.MicroServices.Apis
 	[Syntax(SyntaxAttribute.CSharp)]
 	[ClassRequired]
 	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.Api, TomPIT.MicroServices.Design")]
-	public class Api : SourceCodeConfiguration, IApiConfiguration
+	public class Api : TextConfiguration, IApiConfiguration
 	{
 		private ListItems<IApiOperation> _ops = null;
 
@@ -39,6 +39,7 @@ namespace TomPIT.MicroServices.Apis
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[DefaultValue(ElementScope.Public)]
 		public ElementScope Scope { get; set; } = ElementScope.Public;
-
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 	}
 }

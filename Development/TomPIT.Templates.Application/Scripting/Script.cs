@@ -22,5 +22,8 @@ namespace TomPIT.MicroServices.Scripting
 
 		[Browsable(false)]
 		public Guid TextBlob { get; set; }
+		[Browsable(false)]
+		public string FileName => $"{ToString()}.csx";
+
 	}
 }

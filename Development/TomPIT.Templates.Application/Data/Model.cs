@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Annotations.Design.CodeAnalysis;
@@ -14,7 +15,7 @@ namespace TomPIT.MicroServices.Data
 	[DomDesigner(DomDesignerAttribute.TextDesigner, AmbientProvider = "TomPIT.MicroServices.Design.Designers.ModelAmbientProvider, TomPIT.MicroServices.Design")]
 	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.Model, TomPIT.MicroServices.Design")]
 	[ClassRequired]
-	public class Model : SourceCodeConfiguration, IModelConfiguration
+	public class Model : TextConfiguration, IModelConfiguration
 	{
 		private ListItems<IModelOperation> _operations = null;
 		private ListItems<IModelOperation> _views = null;
@@ -46,5 +47,7 @@ namespace TomPIT.MicroServices.Data
 		[Items(DesignUtils.ConnectionListItems)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		public Guid Connection { get; set; }
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 	}
 }

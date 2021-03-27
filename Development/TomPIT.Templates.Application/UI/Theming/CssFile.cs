@@ -1,4 +1,5 @@
-﻿using TomPIT.Annotations;
+﻿using System.ComponentModel;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel.UI.Theming;
 using TomPIT.MicroServices.Design;
@@ -10,5 +11,7 @@ namespace TomPIT.MicroServices.UI.Theming
 	[Syntax(SyntaxAttribute.Css)]
 	public class CssFile : ThemeFile, ICssFile
 	{
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.css";
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.MicroServices.Design;
@@ -11,5 +12,7 @@ namespace TomPIT.MicroServices.UI.Theming
 		[Required]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		public string VirtualPath { get; set; }
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.css";
 	}
 }

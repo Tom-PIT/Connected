@@ -620,7 +620,7 @@ namespace TomPIT.Design
 				var b = new Blob
 				{
 					ContentType = "application/json",
-					FileName = string.Format("{0}.json", text.Id.ToString()),
+					FileName = text.FileName,
 					PrimaryKey = text.Id.ToString(),
 					Size = content.Length,
 					MicroService = s.Token,

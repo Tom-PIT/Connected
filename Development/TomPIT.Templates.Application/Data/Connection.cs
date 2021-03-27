@@ -15,7 +15,7 @@ namespace TomPIT.MicroServices.Data
 	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.Connection, TomPIT.MicroServices.Design")]
 	[Syntax(SyntaxAttribute.CSharp)]
 	[ClassRequired]
-	public class Connection : SourceCodeConfiguration, IConnectionConfiguration
+	public class Connection : TextConfiguration, IConnectionConfiguration
 	{
 		[PropertyEditor(PropertyEditorAttribute.TextArea)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
@@ -29,5 +29,7 @@ namespace TomPIT.MicroServices.Data
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		public Guid DataProvider { get; set; }
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 	}
 }

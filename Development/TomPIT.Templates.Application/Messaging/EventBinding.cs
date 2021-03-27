@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Annotations.Design.CodeAnalysis;
@@ -13,7 +14,7 @@ namespace TomPIT.MicroServices.Messaging
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
 	[ClassRequired]
-	public class EventBinding : SourceCodeElement, IEventBinding
+	public class EventBinding : TextElement, IEventBinding
 	{
 		[Required]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
@@ -32,5 +33,7 @@ namespace TomPIT.MicroServices.Messaging
 				? GetType().ShortName()
 				: Name;
 		}
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 	}
 }

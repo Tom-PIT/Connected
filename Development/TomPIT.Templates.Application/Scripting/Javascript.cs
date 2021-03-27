@@ -1,8 +1,8 @@
-﻿using TomPIT.Annotations;
+﻿using System.ComponentModel;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.MicroServices.Design;
-using TomPIT.Reflection;
 
 namespace TomPIT.MicroServices.Scripting
 {
@@ -14,12 +14,7 @@ namespace TomPIT.MicroServices.Scripting
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		public string Name { get; set; }
 
-		public override string ToString()
-		{
-			if (string.IsNullOrWhiteSpace(Name))
-				return string.Format("{0}.js", GetType().ShortName());
-
-			return string.Format("{0}.js", Name);
-		}
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.js";
 	}
 }

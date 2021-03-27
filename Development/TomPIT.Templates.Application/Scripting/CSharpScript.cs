@@ -1,7 +1,7 @@
-﻿using TomPIT.Annotations;
+﻿using System.ComponentModel;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Scripting;
 using TomPIT.MicroServices.Design;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
@@ -12,7 +12,7 @@ namespace TomPIT.MicroServices.Scripting
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
 	[EventArguments(typeof(IMiddlewareContext))]
-	public class CSharpScript : Text, IPartialSourceCode
+	public class CSharpScript : Text
 	{
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		public string Name { get; set; }
@@ -20,9 +20,11 @@ namespace TomPIT.MicroServices.Scripting
 		public override string ToString()
 		{
 			if (string.IsNullOrWhiteSpace(Name))
-				return string.Format("{0}.csx", GetType().ShortName());
+				return GetType().ShortName();
 
-			return string.Format("{0}.csx", Name);
+			return Name;
 		}
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 	}
 }

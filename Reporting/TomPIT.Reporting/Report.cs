@@ -29,5 +29,8 @@ namespace TomPIT.MicroServices.Reporting
 				return _apis;
 			}
 		}
+
+		[Browsable(false)]
+		public string FileName => $"{ToString()}.csx";
 	}
 }

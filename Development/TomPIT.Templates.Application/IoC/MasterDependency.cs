@@ -19,5 +19,7 @@ namespace TomPIT.MicroServices.IoC
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
 		[DefaultValue(MasterDependencyKind.Server)]
 		public MasterDependencyKind Kind { get; set; } = MasterDependencyKind.Server;
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 	}
 }

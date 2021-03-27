@@ -13,6 +13,8 @@ namespace TomPIT.MicroServices.IoT.UI
 		public IElement Parent => null;
 		[Browsable(false)]
 		public Guid TextBlob { get; set; }
+		[Browsable(false)]
+		public string FileName => $"{ToString()}.cshtml";
 
 		public void Reset()
 		{

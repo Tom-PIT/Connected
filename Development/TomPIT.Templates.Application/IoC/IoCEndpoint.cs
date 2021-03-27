@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Annotations.Design.CodeAnalysis;
@@ -11,7 +12,7 @@ namespace TomPIT.MicroServices.IoC
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
 	[ClassRequired]
-	public class IoCEndpoint : SourceCodeElement, IIoCEndpoint
+	public class IoCEndpoint : TextElement, IIoCEndpoint
 	{
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		[Required]
@@ -27,5 +28,7 @@ namespace TomPIT.MicroServices.IoC
 		{
 			return string.IsNullOrWhiteSpace(Name) ? GetType().ShortName() : Name;
 		}
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 	}
 }

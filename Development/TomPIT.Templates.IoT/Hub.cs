@@ -1,4 +1,5 @@
-﻿using TomPIT.Annotations.Design;
+﻿using System.ComponentModel;
+using TomPIT.Annotations.Design;
 using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
@@ -10,8 +11,11 @@ namespace TomPIT.MicroServices.IoT
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[ComponentCreatedHandler(DesignUtils.IoTHubCreateHandler)]
 	[ClassRequired]
-	public class Hub : SourceCodeConfiguration, IIoTHubConfiguration
+	public class Hub : TextConfiguration, IIoTHubConfiguration
 	{
 		public ElementScope Scope { get; set; } = ElementScope.Internal;
+
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 	}
 }
