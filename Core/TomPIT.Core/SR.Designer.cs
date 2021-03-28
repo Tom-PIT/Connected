@@ -142,15 +142,6 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Authorization policy property not found. You should define a property with a required name or define an AuthorizationPropertyAttribute on one property..
-        /// </summary>
-        public static string AuthorizationPropertyNotFound {
-            get {
-                return ResourceManager.GetString("AuthorizationPropertyNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Big data node successfully created.
         /// </summary>
         public static string BigDataNodeCreateSuccess {
@@ -2991,6 +2982,15 @@ namespace TomPIT {
         public static string PolicyAuthorizationFailed {
             get {
                 return ResourceManager.GetString("PolicyAuthorizationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Proxy property not found. You should define a property with a required name or define an ProxyPropertyAttribute on one property..
+        /// </summary>
+        public static string ProxyPropertyNotFound {
+            get {
+                return ResourceManager.GetString("ProxyPropertyNotFound", resourceCulture);
             }
         }
         

@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Net;
-using System.Reflection;
-using TomPIT.Annotations;
-using TomPIT.Exceptions;
 using TomPIT.Middleware;
-using TomPIT.Reflection;
 
 namespace TomPIT.Security
 {
@@ -94,70 +89,6 @@ namespace TomPIT.Security
 				Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
 			else
 				Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-		}
-
-		public static bool IsProxyPropertyDefined(this IAuthorizationModel model, string propertyName)
-		{
-			return GetProxyProperty(model, propertyName) != null;
-		}
-
-		public static bool ContainsProxyValue<T>(this IAuthorizationModel model, string propertyName)
-		{
-			try
-			{
-				var value = GetProxyValue<T>(model, propertyName);
-
-				if (value == null)
-					return true;
-
-				if (value.GetType().IsCollection() && ((IEnumerable)value).IsEmpty())
-					return false;
-
-				return Types.Compare(value, default);
-			}
-			catch
-			{
-				return false;
-			}
-		}
-		public static T GetProxyValue<T>(this IAuthorizationModel model, string propertyName)
-		{
-			var property = GetProxyProperty(model, propertyName);
-
-			/*
-			 * Property must be defined so we're gonna throw exception
-			 */
-			if (property == null)
-				throw new ForbiddenException($"{SR.AuthorizationPropertyNotFound} ({propertyName})");
-
-			return Types.Convert<T>(property.GetValue(model.AuthorizationTarget));
-		}
-
-		private static PropertyInfo GetProxyProperty(this IAuthorizationModel model, string propertyName)
-		{
-			var properties = model.AuthorizationTarget.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
-			/*
-			 * First check if attribute is defined on any of the properties. 
-			 * This have a higher priority than a property name
-			 */
-			foreach (var property in properties)
-			{
-				var attribute = property.FindAttribute<AuthorizationPropertyAttribute>();
-
-				if (attribute != null && string.Compare(attribute.PropertyName, propertyName, true) == 0)
-					return property;
-			}
-			/*
-			 * Attribute not defined let's find a property
-			 */
-			foreach (var property in properties)
-			{
-
-				if (string.Compare(property.Name, propertyName, true) == 0)
-					return property;
-			}
-
-			return null;
 		}
 	}
 }

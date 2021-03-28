@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using TomPIT.Data.DataProviders;
+using TomPIT.Data.Sql;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Serialization;
@@ -53,7 +54,7 @@ namespace TomPIT.Data
 		private IDataParameter ResolveParameter(string name, object value, bool nullMapping, DbType? type)
 		{
 			var parameter = Parameters.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0);
-			var mappedValue = nullMapping ? MapNullValue(value) : MapValue(value);
+			var mappedValue = nullMapping ? DatabaseCommand.MapNullValue(value) : MapValue(value);
 			var dbType = type != null ? (DbType)type : value == null || value == DBNull.Value ? DbType.String : Types.ToDbType(value.GetType());
 
 			if (parameter == null)
@@ -91,70 +92,6 @@ namespace TomPIT.Data
 				return value;
 
 			return Serializer.Serialize(value);
-		}
-
-		private object MapNullValue(object value)
-		{
-			if (value == null || value == DBNull.Value)
-				return DBNull.Value;
-			else if (value is string)
-			{
-				string v = TrimValue(value as string);
-
-				if (string.IsNullOrWhiteSpace(v))
-					return DBNull.Value;
-			}
-			else if (value is DateTime)
-			{
-				if ((DateTime)value == DateTime.MinValue)
-					return DBNull.Value;
-			}
-			else if (value is DateTimeOffset offset)
-			{
-				if (offset == DateTimeOffset.MinValue)
-					return DBNull.Value;
-
-				return offset.UtcDateTime;
-			}
-			else if (value is int || value is float || value is double || value is short || value is byte || value is long || value is decimal)
-			{
-				if (Convert.ToDecimal(value) == decimal.Zero)
-					return DBNull.Value;
-			}
-			else if (value is byte[])
-			{
-				if (value == null || ((byte[])value).Length == 0)
-					return DBNull.Value;
-			}
-			else if (value is Guid)
-			{
-				if ((Guid)value == Guid.Empty)
-					return DBNull.Value;
-			}
-			else if (value is Enum)
-			{
-				if (Convert.ToDouble(value) == 0d)
-					return DBNull.Value;
-
-				return Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()));
-			}
-			else if (value is TimeSpan)
-			{
-				if ((TimeSpan)value == TimeSpan.Zero)
-					return DBNull.Value;
-			}
-			else
-				return Serializer.Serialize(value);
-
-			return value;
-		}
-
-		private string TrimValue(string value)
-		{
-			if (string.IsNullOrWhiteSpace(value))
-				return string.Empty;
-
-			return value.Trim();
 		}
 
 		protected void EnsureCommand()

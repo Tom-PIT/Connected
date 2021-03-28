@@ -1,9 +1,9 @@
 ﻿using System;
-using TomPIT.Middleware;
+using TomPIT.Middleware.Interop;
 
 namespace TomPIT.Security
 {
-	public abstract class AuthorizationModel : MiddlewareObject, IAuthorizationModel
+	public abstract class AuthorizationModel : MiddlewareProxy, IAuthorizationModel
 	{
 		private object _target = null;
 
@@ -32,19 +32,6 @@ namespace TomPIT.Security
 			return GetValue<T>(propertyName);
 		}
 
-		public T GetValue<T>(string propertyName)
-		{
-			return SecurityExtensions.GetProxyValue<T>(this, propertyName);
-		}
-
-		public bool IsDefined(string propertyName)
-		{
-			return SecurityExtensions.IsProxyPropertyDefined(this, propertyName);
-		}
-
-		public bool ContainsValue<T>(string propertyName)
-		{
-			return SecurityExtensions.ContainsProxyValue<T>(this, propertyName);
-		}
+		protected override object ProxyTarget => AuthorizationTarget;
 	}
 }

@@ -1125,8 +1125,8 @@
   <data name="AuthorizationPolicyNotSupported" xml:space="preserve">
     <value>Authorization policy not supported</value>
   </data>
-  <data name="AuthorizationPropertyNotFound" xml:space="preserve">
-    <value>Authorization policy property not found. You should define a property with a required name or define an AuthorizationPropertyAttribute on one property.</value>
+  <data name="ProxyPropertyNotFound" xml:space="preserve">
+    <value>Proxy property not found. You should define a property with a required name or define an ProxyPropertyAttribute on one property.</value>
   </data>
   <data name="EntityNotFound" xml:space="preserve">
     <value>not found</value>

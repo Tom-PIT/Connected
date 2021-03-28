@@ -5,6 +5,7 @@ using System.Data;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Models;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -212,7 +213,7 @@ namespace TomPIT.Data
 				if (property != null)
 				{
 					var value = property.GetValue(e);
-					var nullable = property.FindAttribute<NullableAttribute>() != null;
+					var nullable = property.PropertyType.ImplementsInterface<INullableProperty>() || property.FindAttribute<NullableAttribute>() != null;
 					var version = property.FindAttribute<VersionAttribute>();
 
 					if (version != null)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.SqlClient;
 using Newtonsoft.Json.Linq;
+using TomPIT.Annotations;
 using TomPIT.Serialization;
 
 namespace TomPIT.Data.Sql
@@ -66,11 +67,10 @@ namespace TomPIT.Data.Sql
 			}
 		}
 
-		private object MapNullValue(object value)
+		public static object MapNullValue(object value)
 		{
 			if (value == null || value == DBNull.Value)
 				return DBNull.Value;
-
 			else if (value is string)
 			{
 				string v = TrimValue(value as string);
@@ -82,6 +82,13 @@ namespace TomPIT.Data.Sql
 			{
 				if ((DateTime)value == DateTime.MinValue)
 					return DBNull.Value;
+			}
+			else if (value is DateTimeOffset offset)
+			{
+				if (offset == DateTimeOffset.MinValue)
+					return DBNull.Value;
+
+				return offset.UtcDateTime;
 			}
 			else if (value is int || value is float || value is double || value is short || value is byte || value is long || value is decimal)
 			{
@@ -100,14 +107,22 @@ namespace TomPIT.Data.Sql
 			}
 			else if (value is Enum)
 			{
-				if ((int)value == 0)
+				if (Convert.ToDouble(value) == 0d)
 					return DBNull.Value;
+
+				return Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()));
 			}
 			else if (value is TimeSpan)
 			{
 				if ((TimeSpan)value == TimeSpan.Zero)
 					return DBNull.Value;
 			}
+			else if (value is INullableProperty na)
+			{
+				return na.MappedValue;
+			}
+			else
+				return Serializer.Serialize(value);
 
 			return value;
 		}
@@ -157,7 +172,7 @@ namespace TomPIT.Data.Sql
 			CreateParameter(parameterName, value);
 		}
 
-		private string TrimValue(string value)
+		private static string TrimValue(string value)
 		{
 			if (string.IsNullOrWhiteSpace(value))
 				return string.Empty;
