@@ -8,6 +8,8 @@ namespace TomPIT.Middleware.Interop
 {
 	public abstract class MiddlewareProxy : MiddlewareObject, IMiddlewareProxy
 	{
+		private object _proxy = null;
+		
 		public bool ContainsValue<T>(string propertyName)
 		{
 			try
@@ -39,7 +41,7 @@ namespace TomPIT.Middleware.Interop
 			if (property == null)
 				throw new ForbiddenException($"{SR.ProxyPropertyNotFound} ({propertyName})");
 
-			return Types.Convert<T>(property.GetValue(ProxyTarget));
+			return Types.Convert<T>(property.GetValue(Proxy));
 		}
 
 		public bool IsDefined(string propertyName)
@@ -49,7 +51,7 @@ namespace TomPIT.Middleware.Interop
 
 		private PropertyInfo GetProxyProperty(string propertyName)
 		{
-			var properties = ProxyTarget.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
+			var properties = Proxy.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
 			/*
 			 * First check if attribute is defined on any of the properties. 
 			 * This have a higher priority than a property name
@@ -92,6 +94,23 @@ namespace TomPIT.Middleware.Interop
 			return false;
 		}
 
-		protected virtual object ProxyTarget => this;
+		public object Proxy
+		{
+			get => _proxy;
+			set
+			{
+				if (_proxy == value)
+					return;
+
+				_proxy = value;
+
+				OnProxyChanged();
+			}
+		}
+
+		protected virtual void OnProxyChanged()
+		{
+
+		}
 	}
 }

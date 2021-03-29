@@ -11,6 +11,7 @@ namespace TomPIT.Navigation
 		ISiteMapContainer QuerySiteMap(List<string> keys, List<string> tags);
 		List<IBreadcrumb> QueryBreadcrumbs(string routeKey, RouteValueDictionary parameters);
 		string ParseUrl(string template, RouteValueDictionary parameters);
+		string ParseUrl(string template, RouteValueDictionary parameters, bool allowQueryString);
 		ISiteMapRoute SelectRoute(string routeKey);
 		ISiteMapRoute MatchRoute(string url, RouteValueDictionary parameters);
 	}

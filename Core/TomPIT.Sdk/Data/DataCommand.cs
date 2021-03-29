@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using TomPIT.Data.DataProviders;
-using TomPIT.Data.Sql;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Serialization;
@@ -54,7 +53,7 @@ namespace TomPIT.Data
 		private IDataParameter ResolveParameter(string name, object value, bool nullMapping, DbType? type)
 		{
 			var parameter = Parameters.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0);
-			var mappedValue = nullMapping ? DatabaseCommand.MapNullValue(value) : MapValue(value);
+			var mappedValue = nullMapping ? NullMapper.Map(value, MappingMode.Database) : MapValue(value);
 			var dbType = type != null ? (DbType)type : value == null || value == DBNull.Value ? DbType.String : Types.ToDbType(value.GetType());
 
 			if (parameter == null)

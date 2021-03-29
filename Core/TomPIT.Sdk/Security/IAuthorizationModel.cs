@@ -1,10 +1,11 @@
-﻿using TomPIT.Middleware;
+﻿using System;
+using TomPIT.Middleware.Interop;
 
 namespace TomPIT.Security
 {
-	public interface IAuthorizationModel : IMiddlewareObject
+	public interface IAuthorizationModel : IMiddlewareProxy
 	{
-		object AuthorizationTarget { get; set; }
+		[Obsolete("Please use GetValue instead.")]
 		T GetValueFromTarget<T>(string propertyName);
 	}
 }

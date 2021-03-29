@@ -110,13 +110,14 @@ namespace TomPIT.Middleware.Interop
 			var ext = ResolveExtenderType();
 			using var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this), Context);
 			var extenderInstance = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, ext);
+
+			if (extenderInstance is IMiddlewareProxy proxy)
+				proxy.Proxy = this;
+
 			var inputType = GetExtendingType(extenderInstance);
 			var list = typeof(List<>);
 			var genericList = list.MakeGenericType(new Type[] { inputType });
-			var method = extenderInstance.GetType().GetMethod("ExtendAsync", new Type[] { genericList });
-
-			if (method == null)
-				method = extenderInstance.GetType().GetMethod("Extend", new Type[] { genericList });
+			var method = extenderInstance.GetType().GetMethod("Invoke", new Type[] { genericList });
 
 			if (items.GetType().IsCollection())
 			{

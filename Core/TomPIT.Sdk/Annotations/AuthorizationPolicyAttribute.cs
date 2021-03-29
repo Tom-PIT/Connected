@@ -75,7 +75,7 @@ namespace TomPIT.Annotations
 			ReflectionExtensions.SetPropertyValue(Model, nameof(Model.Context), Context);
 
 			if (instance.Model != null)
-				instance.Model.AuthorizationTarget = Model.AuthorizationTarget;
+				instance.Model.Proxy = Model.Proxy;
 
 			return instance;
 		}
@@ -97,7 +97,7 @@ namespace TomPIT.Annotations
 		{
 			ReflectionExtensions.SetPropertyValue(Model, nameof(Model.Context), context);
 
-			Model.AuthorizationTarget = instance;
+			Model.Proxy = instance;
 
 			var grantAttributes = ResolveGrantAttributes();
 
@@ -230,7 +230,7 @@ namespace TomPIT.Annotations
 				try
 				{
 					target.Model = Model;
-					target.Authorize(Context, Model.AuthorizationTarget);
+					target.Authorize(Context, Model.Proxy);
 					return true;
 				}
 				catch (ForbiddenException)

@@ -2,9 +2,12 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
+using TomPIT.Annotations;
 using TomPIT.Collections;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -22,6 +25,12 @@ namespace TomPIT.Navigation
 	internal class NavigationService : ConfigurationRepository<ISiteMapConfiguration>, INavigationService
 	{
 		private static Lazy<ConcurrentDictionary<string, List<NavigationHandlerDescriptor>>> _handlers = new Lazy<ConcurrentDictionary<string, List<NavigationHandlerDescriptor>>>(() => { return new ConcurrentDictionary<string, List<NavigationHandlerDescriptor>>(StringComparer.OrdinalIgnoreCase); });
+		private static readonly HashSet<string> ReservedParameters = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+		{
+			".",
+			"action",
+			"controller"
+		};
 		public NavigationService(ITenant tenant) : base(tenant, "sitemap")
 		{
 		}
@@ -484,9 +493,15 @@ namespace TomPIT.Navigation
 
 			origin.Merge(element);
 
+			CleanParameters(origin);
+
 			return origin;
 		}
 		public string ParseUrl(string template, RouteValueDictionary parameters)
+		{
+			return ParseUrl(template, parameters, false);
+		}
+		public string ParseUrl(string template, RouteValueDictionary parameters, bool allowQueryString)
 		{
 			if (parameters == null)
 			{
@@ -496,9 +511,11 @@ namespace TomPIT.Navigation
 					parameters = new RouteValueDictionary();
 			}
 
-			var parsedTemplate = TemplateParser.Parse(template);
+			CleanParameters(parameters);
 
+			var parsedTemplate = TemplateParser.Parse(template);
 			var processedSegments = new List<string>();
+			var usedParameters = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
 			foreach (var segment in parsedTemplate.Segments)
 			{
@@ -521,7 +538,10 @@ namespace TomPIT.Navigation
 								return null;
 						}
 						else
+						{
+							usedParameters.Add(part.Name);
 							processedSegments.Add(Types.Convert<string>(parameters[part.Name]));
+						}
 					}
 				}
 
@@ -531,12 +551,44 @@ namespace TomPIT.Navigation
 
 			using var ctx = new MiddlewareContext();
 
-			return $"{ctx.Services.Routing.RootUrl}/{string.Join('/', processedSegments)}";
+			if (allowQueryString)
+				return $"{ctx.Services.Routing.RootUrl}/{string.Join('/', processedSegments)}{ParseQueryString(parameters, usedParameters)}";
+			else
+				return $"{ctx.Services.Routing.RootUrl}/{string.Join('/', processedSegments)}";
+		}
+
+		private static string ParseQueryString(RouteValueDictionary parameters, HashSet<string> usedParameters)
+		{
+			if (!parameters.Any() || usedParameters.Count >= parameters.Count)
+				return string.Empty;
+
+			var queryBuilder = new StringBuilder();
+
+			foreach (var parameter in parameters)
+			{
+				if (ReservedParameters.Contains(parameter.Key))
+					continue;
+
+				if (!usedParameters.Contains(parameter.Key))
+				{
+					if (queryBuilder.Length > 0)
+						queryBuilder.Append('&');
+
+					queryBuilder.Append($"{HttpUtility.UrlEncode(parameter.Key.ToLowerInvariant())}={HttpUtility.UrlEncode(Types.Convert<string>(parameter.Value))}");
+				}
+			}
+
+			if (queryBuilder.Length > 0)
+				queryBuilder.Insert(0, '?');
+
+			return queryBuilder.ToString();
 		}
 
 		public ISiteMapRoute MatchRoute(string url, RouteValueDictionary parameters)
 		{
 			Initialize();
+
+			CleanParameters(parameters);
 
 			foreach (var handler in Handlers)
 			{
@@ -729,6 +781,35 @@ namespace TomPIT.Navigation
 			}
 
 			return r;
+		}
+
+		private static void CleanParameters(RouteValueDictionary parameters)
+		{
+			if (parameters == null || !parameters.Any())
+				return;
+
+			var toRemove = new List<KeyValuePair<string,object>>();
+			var toChange = new List<KeyValuePair<string, object>>();
+
+			foreach (var parameter in parameters)
+			{
+				if(parameter.Value is INullableProperty nullable)
+				{
+					if (nullable.IsNull)
+						toRemove.Add(parameter);
+					else
+						toChange.Add(parameter);
+				}
+			}
+
+			foreach (var parameter in toRemove)
+				parameters.Remove(parameter.Key);
+
+			foreach(var parameter in toChange)
+			{
+				parameters.Remove(parameter.Key);
+				parameters.Add(parameter.Key, ((INullableProperty)parameter.Value).MappedValue);
+			}
 		}
 	}
 }

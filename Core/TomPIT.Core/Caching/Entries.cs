@@ -14,9 +14,13 @@ namespace TomPIT.Caching
 		public ImmutableList<string> Keys => Items.Keys.ToImmutableList();
 		public int Count => Items.Count;
 
+		public bool Any()
+		{
+			return Items.Any();
+		}
 		public void Scave()
 		{
-			var expired = new List<string>();
+			var expired = new HashSet<string>();
 
 			foreach (var i in Items)
 			{
@@ -95,7 +99,7 @@ namespace TomPIT.Caching
 			if (ds == null)
 				return null;
 
-			var result = new List<string>();
+			var result = new HashSet<string>();
 
 			foreach (var i in ds)
 			{
@@ -106,7 +110,7 @@ namespace TomPIT.Caching
 				result.Add(key);
 			}
 
-			return result;
+			return result.ToList();
 		}
 
 		public ImmutableList<T> Where<T>(Func<T, bool> predicate) where T : class

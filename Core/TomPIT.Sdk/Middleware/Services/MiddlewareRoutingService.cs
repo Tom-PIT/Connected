@@ -267,7 +267,7 @@ namespace TomPIT.Middleware.Services
 			if (route == null)
 				return null;
 
-			return Context.Tenant.GetService<INavigationService>().ParseUrl(route.Template, parameters);
+			return Context.Tenant.GetService<INavigationService>().ParseUrl(route.Template, parameters, true);
 		}
 		public string ParseRoute([CIP(CIP.RouteKeyProvider)]string routeKey, object parameters)
 		{

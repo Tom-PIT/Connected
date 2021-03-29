@@ -33,45 +33,40 @@ namespace TomPIT.Caching
 
 		public bool IsEmpty(string key)
 		{
-			if (!Items.ContainsKey(key))
-				return false;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Any();
 
-			return Items[key].Count > 0;
+			return true;
 		}
 
 		public IEnumerator<T> GetEnumerator<T>(string key)
 		{
-			if (!Items.ContainsKey(key))
-				return null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.GetEnumerator<T>();
 
-			return Items[key].GetEnumerator<T>();
+			return null;
 		}
 
 		public ImmutableList<T> All<T>(string key) where T : class
 		{
-			if (!Items.ContainsKey(key))
-				return null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.All<T>();
 
-			return Items[key].All<T>();
+			return ImmutableList<T>.Empty;
 		}
 
 		public int Count(string key)
 		{
-			if (!Items.ContainsKey(key))
-				return 0;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Count;
 
-			return Items[key].Count;
+			return 0;
 		}
 
 		public void Remove(string key)
 		{
-			if (!Items.ContainsKey(key))
-				return;
-
-			var d = Items[key];
-
-			if (d != null)
-				d.Clear();
+			if (Items.TryGetValue(key, out Entries value))
+				value.Clear();
 		}
 
 		public void CreateKey(string key)
@@ -84,31 +79,21 @@ namespace TomPIT.Caching
 
 		public void Remove(string key, string id)
 		{
-			if (!Items.ContainsKey(key))
-				return;
-
-			var d = Items[key];
-
-			if (d != null)
-				d.Remove(id);
+			if (Items.TryGetValue(key, out Entries value))
+				value.Remove(id);
 		}
 
 		public void Set(string key, string id, object instance, TimeSpan duration, bool slidingExpiration)
 		{
-			Entries d = null;
-
-			if (Items.ContainsKey(key))
-				d = Items[key];
-
-			if (d == null)
+			if (!Items.TryGetValue(key, out Entries value))
 			{
-				d = new Entries();
+				value = new Entries();
 
-				if (!Items.TryAdd(key, d))
+				if (!Items.TryAdd(key, value))
 					return;
 			}
 
-			d.Set(id, instance, duration, slidingExpiration);
+			value.Set(id, instance, duration, slidingExpiration);
 		}
 
 
@@ -119,42 +104,66 @@ namespace TomPIT.Caching
 
 		public bool Exists(string key, string id)
 		{
-			return Items.ContainsKey(key) && Items[key].Exists(id);
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Exists(id);
+
+			return false;
 		}
 
 		public Entry Get(string key, string id)
 		{
-			return Items.ContainsKey(key) ? Items[key].Get(id) : null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Get(id);
+
+			return null;
 		}
 
 		public Entry First(string key)
 		{
-			return Items.ContainsKey(key) ? Items[key].First() : null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.First();
+
+			return null;
 		}
 
 		public Entry Get<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			return Items.ContainsKey(key) ? Items[key].Get(predicate) : null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Get(predicate);
+
+			return null;
 		}
 
 		public Entry Get<T>(string key, Func<dynamic, bool> predicate) where T : class
 		{
-			return Items.ContainsKey(key) ? Items[key].Get<T>(predicate) : null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Get(predicate);
+
+			return null;
 		}
 
 		public ImmutableList<T> Where<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			return Items.ContainsKey(key) ? Items[key].Where(predicate) : null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Where(predicate);
+
+			return null;
 		}
 
 		public List<string> Remove<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			return Items.ContainsKey(key) ? Items[key].Remove(predicate) : null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Remove(predicate);
+
+			return null;
 		}
 
-		public ICollection<string> Keys(string key)
+		public ImmutableList<string> Keys(string key)
 		{
-			return Items.ContainsKey(key) ? Items[key].Keys : null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Keys;
+
+			return ImmutableList<string>.Empty;
 		}
 	}
 }
