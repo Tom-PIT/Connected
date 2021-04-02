@@ -15,8 +15,7 @@ using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.MicroServices.Reporting.Design.Dom;
 using TomPIT.Reflection;
-using TomPIT.Reflection.Manifests.Entities;
-using TomPIT.Reflection.Manifests.Entities.Api;
+using TomPIT.Reflection.Api;
 
 namespace TomPIT.MicroServices.Reporting.Design.Designers
 {
@@ -230,7 +229,8 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			if (opManifest == null)
 				return null;
 
-			var schemaType = manifest.Types.FirstOrDefault(f => string.Compare(f.Name, opManifest.ReturnType, false) == 0);
+			using var typeResolver = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.SelectTypeResolver(opManifest);
+			var schemaType = typeResolver.Resolve(opManifest.ReturnType);
 
 			if (schemaType == null)
 				return null;
@@ -244,27 +244,14 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 			var fields = new List<JsonSchemaNode>();
 
-			foreach (var property in schemaType.Properties)
+			foreach (var property in schemaType.Members)
 			{
-				var type = Type.GetType(property.Type, false);
+				var type = typeResolver.Resolve(property.Value.Name);
 
-				if (type == null)
+				fields.Add(new JsonSchemaNode(new JsonNode(property.Key, true, JsonNodeType.Property)
 				{
-					var manifestType = manifest.Types.FirstOrDefault(f => string.Compare(f.Name, property.Type, false) == 0);
-
-					if (manifestType != null)
-					{
-						fields.Add(CreateObjectNode(manifest, property, manifestType));
-
-						continue;
-					}
-					else
-						type = TypeExtensions.FromFriendlyName(property.Type);
-				}
-
-				fields.Add(new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
-				{
-					Type = type
+					//TODO:resolve type
+					//Type = type.
 				}));
 			}
 
@@ -273,38 +260,38 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			return result;
 		}
 
-		private JsonSchemaNode CreateObjectNode(ApiManifest manifest, IManifestProperty property, IManifestType member)
-		{
-			var objectNode = new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
-			{
+		//private JsonSchemaNode CreateObjectNode(ApiManifest manifest, IManifestProperty property, IManifestType member)
+		//{
+		//	var objectNode = new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
+		//	{
 
-			});
+		//	});
 
-			foreach (var memberProperty in member.Properties)
-				objectNode.AddChildren(new DevExpress.DataAccess.Node<JsonNode>[] { CreatePropertyNode(manifest, memberProperty, member) });
+		//	foreach (var memberProperty in member.Members)
+		//		objectNode.AddChildren(new DevExpress.DataAccess.Node<JsonNode>[] { CreatePropertyNode(manifest, memberProperty, member) });
 
-			return objectNode;
-		}
+		//	return objectNode;
+		//}
 
-		private JsonSchemaNode CreatePropertyNode(ApiManifest manifest, IManifestProperty property, IManifestType member)
-		{
-			var type = Type.GetType(property.Type, false);
+		//private JsonSchemaNode CreatePropertyNode(ApiManifest manifest, IManifestMember property, IManifestType member)
+		//{
+		//	var type = Type.GetType(property.Type, false);
 
-			if (type == null)
-			{
-				var manifestType = manifest.Types.FirstOrDefault(f => string.Compare(f.Name, property.Type, false) == 0);
+		//	if (type == null)
+		//	{
+		//		var manifestType = manifest.Types.FirstOrDefault(f => string.Compare(f.Name, property.Type, false) == 0);
 
-				if (manifestType != null)
-					return CreateObjectNode(manifest, property, manifestType);
-				else
-					type = TypeExtensions.FromFriendlyName(property.Type);
-			}
+		//		if (manifestType != null)
+		//			return CreateObjectNode(manifest, property, manifestType);
+		//		else
+		//			type = TypeExtensions.FromFriendlyName(property.Type);
+		//	}
 
-			return new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
-			{
-				Type = type
-			});
-		}
+		//	return new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
+		//	{
+		//		Type = type
+		//	});
+		//}
 
 		private void CreateRoot(JsonDataSource ds)
 		{
