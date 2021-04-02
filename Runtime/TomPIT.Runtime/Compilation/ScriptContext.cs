@@ -2,10 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
@@ -18,7 +17,6 @@ namespace TomPIT.Compilation
 		private ScriptResolver _sourceResolver = null;
 		private AssemblyResolver _assemblyResolver = null;
 		private ConcurrentDictionary<string, IText> _sources = null;
-		private StringBuilder _sourceText = null;
 		private static Lazy<ConcurrentDictionary<Guid, ScriptContextDescriptor>> _contexts = new Lazy<ConcurrentDictionary<Guid, ScriptContextDescriptor>>();
 		public ScriptContext(ITenant tenant, IText sourceCode) : base(tenant)
 		{
@@ -28,16 +26,6 @@ namespace TomPIT.Compilation
 
 		private IMicroService MicroService { get; }
 
-		private StringBuilder SourceText
-		{
-			get
-			{
-				if (_sourceText == null)
-					_sourceText = new StringBuilder();
-
-				return _sourceText;
-			}
-		}
 		private void LoadScript(IText sourceCode)
 		{
 			ProcessScript(sourceCode.Id, Tenant.GetService<IComponentService>().SelectText(MicroService.Token, sourceCode), sourceCode.ResolvePath(Tenant));
@@ -48,57 +36,54 @@ namespace TomPIT.Compilation
 			if (string.IsNullOrWhiteSpace(sourceCode))
 				return;
 
-			string currentLine = null;
-			var references = new List<string>();
+			var loadReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
 			if (Contexts.TryGetValue(id, out ScriptContextDescriptor existing))
-				references = existing.References;
+				loadReferences = existing.LoadReferences;
 			else
 			{
-				using (var reader = new StringReader(sourceCode))
+				var tree = CSharpSyntaxTree.ParseText(sourceCode);
+
+				if (tree == null || !tree.HasCompilationUnitRoot)
+					return;
+
+				var root = tree.GetCompilationUnitRoot();
+				var loadDirectives = root.GetLoadDirectives();
+				var refDirectives = root.GetReferenceDirectives();
+
+				foreach (var load in loadDirectives)
 				{
-					while ((currentLine = reader.ReadLine()) != null)
-					{
-						if (!currentLine.Trim().StartsWith('#'))
-							SourceText.AppendLine(currentLine);
-						else
-						{
-							var line = currentLine.Trim();
-							var tokens = line.Split(" ".ToCharArray(), 2);
+					if (!string.IsNullOrWhiteSpace(load.File.ValueText))
+						loadReferences.Add(load.File.ValueText);
+				}
 
-							if (tokens.Length < 2 || tokens[1].Length < 3)
-								continue;
+				foreach (var reference in refDirectives)
+				{
+					var file = reference.File.ValueText;
 
-							var token = tokens[1].Substring(1, tokens[1].Length - 2);
+					if (string.IsNullOrWhiteSpace(file))
+						continue;
+					/*
+					 * This is only for backwards compatibillity and will be removed in the future. #r directives should always be defined in format microService/reference.
+					 */
+					var path = file.Contains("/") ? file : AssemblyResolver.ResolvePath(file, basePath);
 
-							if (line.StartsWith("#load"))
-								references.Add(token);
-							else if (line.StartsWith("#r "))
-							{
-								/*
-								 * This is only for backwards compatibillity and will be removed in the future. #r directives should always be defined in format microService/reference.
-								 */
-								var path = token.Contains("/") ? token : AssemblyResolver.ResolvePath(token, basePath);
+					if (References.ContainsKey(path))
+						continue;
 
-								if (References.ContainsKey(path))
-									continue;
-
-								References.Add(path, AssemblyResolver.ResolveReference(token, basePath, MetadataReferenceProperties.Assembly));
-							}
-						}
-					}
+					References.Add(path, AssemblyResolver.ResolveReference(path, basePath, MetadataReferenceProperties.Assembly));
 				}
 
 				var descriptor = new ScriptContextDescriptor();
 
-				if (references.Count > 0)
-					descriptor.References.AddRange(references);
+				foreach (var reference in loadReferences)
+					descriptor.LoadReferences.Add(reference);
 
 				if (!Contexts.TryAdd(id, descriptor))
 					Contexts.TryGetValue(id, out descriptor);
 			}
 
-			Parallel.ForEach(references, (i) =>
+			Parallel.ForEach(loadReferences, (i) =>
 			{
 				var resolvedReference = string.Empty;
 
@@ -137,8 +122,6 @@ namespace TomPIT.Compilation
 
 			});
 		}
-
-		public string SourceCode => SourceText.ToString();
 
 		public ConcurrentDictionary<string, IText> SourceFiles
 		{

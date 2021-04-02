@@ -1,19 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace TomPIT.Compilation
 {
 	internal class ScriptContextDescriptor
 	{
-		private List<string> _references = null;
+		private HashSet<string> _loadReferences = null;
 
-		public List<string> References
+		public HashSet<string> LoadReferences
 		{
 			get
 			{
-				if (_references == null)
-					_references = new List<string>();
-
-				return _references;
+				if (_loadReferences == null)
+					_loadReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+				
+				return _loadReferences;
 			}
 		}
 	}

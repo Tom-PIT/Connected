@@ -64,9 +64,9 @@
 		public const string SubscriptionEventListItems = "TomPIT.MicroServices.Design.Items.SubscriptionEventItems, " + DesignAssembly;
 		public const string ConnectionListItems = "TomPIT.MicroServices.Design.Items.ConnectionItems, " + DesignAssembly;
 
-		public const string ApiManifest = "TomPIT.Reflection.Manifests.Providers.ApiManifestProvider, " + SdkAssembly;
-		public const string IoCManifest = "TomPIT.Reflection.Manifests.Providers.IoCManifestProvider, " + SdkAssembly;
-		public const string SettingsManifest = "TomPIT.Reflection.Manifests.Providers.SettingsManifestProvider, " + SdkAssembly;
+		public const string ApiManifest = "TomPIT.Reflection.Providers.ApiManifestProvider, " + SdkAssembly;
+		public const string IoCManifest = "TomPIT.Reflection.Providers.IoCManifestProvider, " + SdkAssembly;
+		public const string SettingsManifest = "TomPIT.Reflection.Providers.SettingsManifestProvider, " + SdkAssembly;
 
 		public const string MasterCreateHandler = "TomPIT.Handlers.MasterCreateHandler, " + DevelopmentAssembly;
 		public const string ScriptCreateHandler = "TomPIT.Handlers.ScriptCreateHandler, " + DevelopmentAssembly;

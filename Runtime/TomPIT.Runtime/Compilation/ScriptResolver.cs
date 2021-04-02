@@ -84,7 +84,7 @@ namespace TomPIT.Compilation
 			 * --------------------
 			 * - Microservice/PublicScript (2)
 			 * - Microservice/Api/Operation (3)
-			 * - Microservice/AuthorizationPOlicy
+			 * - Microservice/AuthorizationPolicy
 			 */
 
 			if (tokens.Length == 2)
@@ -141,7 +141,7 @@ namespace TomPIT.Compilation
 			if (component == null || component.LockVerb == Development.LockVerb.Delete)
 				return null;
 
-			if (!(Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IText text))
+			if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is not IText text)
 				throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrComponentNotFound, microService, scriptName));
 
 			return text;

@@ -74,6 +74,11 @@ namespace TomPIT.Sys.Model.Blobs
 			return Shell.GetService<IDatabaseService>().Proxy.Storage.Query(r, type, primaryKey);
 		}
 
+		public List<IBlob> Query(Guid microService, int type)
+		{
+			return Shell.GetService<IDatabaseService>().Proxy.Storage.Query(microService, type);
+		}
+
 		public List<IBlob> Query(Guid resourceGroup, int type, string primaryKey, Guid microService, string topic)
 		{
 			var r = resourceGroup == Guid.Empty

@@ -16,7 +16,9 @@
 		public const int Avatar = 511;
 		public const int HtmlImage = 521;
 		public const int BigDataPartitionSchema = 531;
-		public const int Manifest = 541;
+		//public const int Manifest = 541;
+		public const int ScriptManifest = 542;
+		public const int ScriptManifestMetaData = 543;
 		/*
 		 * Blobs over 1000 are not notified by backplane by default
 		 */

@@ -286,21 +286,60 @@ namespace TomPIT.Compilation
 			return Compile(result, script, false);
 		}
 
-
-
 		private Microsoft.CodeAnalysis.Compilation Compile(IScriptDescriptor script, CompilerScript compiler, bool cache)
 		{
-			Microsoft.CodeAnalysis.Compilation result = null;
+			if (compiler.Script == null)
+				return null;
 
-			var errors = ImmutableArray<Microsoft.CodeAnalysis.Diagnostic>.Empty;
+			Microsoft.CodeAnalysis.Compilation result;
 
-			if (compiler.Script != null)
-				errors = compiler.Script.GetCompilation().WithAnalyzers(CreateAnalyzers(compiler.Tenant, script)).GetAllDiagnosticsAsync().Result;
+			var stage = Tenant.GetService<IRuntimeService>().Stage;
+			var scriptDescriptor = script as ScriptDescriptor;
 
+			if (stage == EnvironmentStage.Production)
+			{
+				result = compiler.Script.GetCompilation();
+
+				scriptDescriptor.Errors = ProcessDiagnostics(script, compiler, result.GetDiagnostics(), stage);
+			}
+			else
+			{
+				var c = compiler.Script.GetCompilation().WithAnalyzers(CreateAnalyzers(compiler.Tenant, script));
+
+				result = c.Compilation;
+				
+				scriptDescriptor.Errors = ProcessDiagnostics(script, compiler, c.GetAllDiagnosticsAsync().Result, stage);
+			}
+
+			if (IsValid(script, compiler))
+			{
+				scriptDescriptor.Script = compiler.Script.CreateDelegate();
+				scriptDescriptor.Assembly = result.AssemblyName;
+			}
+
+			if (compiler.ScriptReferences != null && compiler.ScriptReferences.Count > 0)
+				References.AddOrUpdate(compiler.SourceCode.Id, compiler.ScriptReferences, (key, oldValue) => oldValue = compiler.ScriptReferences);
+
+			if (cache)
+				Set(script.Id, script, TimeSpan.Zero);
+
+			return result;
+		}
+
+		private static bool IsValid(IScriptDescriptor descriptor, CompilerScript script)
+		{
+			return script.Script != null && !descriptor.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Any();
+		}
+
+		private List<IDiagnostic> ProcessDiagnostics(IScriptDescriptor script, CompilerScript compiler, ImmutableArray<Microsoft.CodeAnalysis.Diagnostic> errors, EnvironmentStage stage)
+		{
 			var diagnostics = new List<IDiagnostic>();
 
 			foreach (var error in errors)
 			{
+				if (stage == EnvironmentStage.Production && error.Severity != DiagnosticSeverity.Error)
+					continue;
+
 				var diagnostic = new Diagnostic
 				{
 					Message = error.GetMessage(),
@@ -336,23 +375,7 @@ namespace TomPIT.Compilation
 				diagnostics.Add(diagnostic);
 			}
 
-
-			((ScriptDescriptor)script).Errors = diagnostics;
-
-			if (compiler.Script != null && script.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Count() == 0)
-			{
-				((ScriptDescriptor)script).Script = compiler.Script.CreateDelegate();
-				result = compiler.Script.GetCompilation();
-				((ScriptDescriptor)script).Assembly = result.AssemblyName;
-			}
-
-			if (compiler.ScriptReferences != null && compiler.ScriptReferences.Count > 0)
-				References.AddOrUpdate(compiler.SourceCode.Id, compiler.ScriptReferences, (key, oldValue) => oldValue = compiler.ScriptReferences);
-
-			if (cache)
-				Set(script.Id, script, TimeSpan.Zero);
-
-			return result;
+			return diagnostics;
 		}
 
 		public void Invalidate(IMicroServiceContext context, Guid microService, Guid component, IText sourceCode)
@@ -370,6 +393,9 @@ namespace TomPIT.Compilation
 			Tenant.Post(u, args);
 			RemoveScript(sourceCode.Id);
 			InvalidateReferences(component, id);
+
+			if (Tenant.GetService<IDiscoveryService>().Manifests is IManifestDiscoveryNotification notification)
+				notification.Invalidate(microService, component, sourceCode.Id);
 		}
 
 		internal static Assembly LoadSystemAssembly(string fileName)
@@ -396,6 +422,9 @@ namespace TomPIT.Compilation
 		{
 			RemoveScript(e.SourceCode);
 			InvalidateReferences(e.Container, e.SourceCode);
+
+			if (Tenant.GetService<IDiscoveryService>().Manifests is IManifestDiscoveryNotification notification)
+				notification.NotifyChanged(e.MicroService, e.Container, e.SourceCode);
 		}
 
 		private void InvalidateReferences(Guid container, Guid script)
@@ -472,9 +501,9 @@ namespace TomPIT.Compilation
 					throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
 				else
 					return null;
-			}	
+			}
 
-			if (script != null && script.Assembly == null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
+			if (script != null && script.Assembly == null && script.Errors != null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
 				throw new CompilerException(Tenant, script, sourceCode);
 
 			var target = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), script.Assembly, true) == 0);

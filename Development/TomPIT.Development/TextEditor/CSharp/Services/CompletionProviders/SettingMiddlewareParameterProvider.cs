@@ -11,7 +11,7 @@ using TomPIT.Ide.TextServices.CSharp;
 using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
 using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Reflection;
-using TomPIT.Reflection.Manifests.Entities;
+using TomPIT.Reflection.Settings;
 
 namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 {
@@ -28,8 +28,9 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			var parameters = QueryParameters(descriptor.Configuration);
 			var existing = QueryExisting(node);
 			var r = new List<ICompletionItem>();
+			var members = parameters.DeclaredType?.Members;
 
-			if (parameters.Properties.Count == 0)
+			if (members == null || !members.Any())
 			{
 				r.Add(new CompletionItem
 				{
@@ -39,7 +40,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			}
 			else
 			{
-				foreach (var parameter in parameters.Properties)
+				foreach (var parameter in members)
 				{
 					if (existing != null && existing.FirstOrDefault(f => string.Compare(f, parameter.Name, true) == 0) != null)
 						continue;
@@ -154,14 +155,9 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			return true;
 		}
 
-		private ManifestType QueryParameters(ISettingsConfiguration configuration)
+		private IManifestMiddleware QueryParameters(ISettingsConfiguration configuration)
 		{
-			var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(configuration.Component) as SettingsManifest;
-
-			if (manifest == null)
-				return null;
-
-			return manifest.Type;
+			return Editor.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(configuration.Component) as SettingsManifest;
 		}
 
 		private string RemoveTrailingComma(StringBuilder sb)

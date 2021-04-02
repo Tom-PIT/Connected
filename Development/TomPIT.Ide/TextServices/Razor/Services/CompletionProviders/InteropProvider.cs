@@ -11,7 +11,7 @@ using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
 using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
-using TomPIT.Reflection.Manifests.Entities;
+using TomPIT.Reflection.Api;
 
 namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 {
@@ -42,7 +42,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 
 			var operation = manifest.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
 
-			if (operation == null || operation.ReturnType == null)
+			if (operation == null || string.IsNullOrWhiteSpace(operation.ReturnType))
 				return result;
 
 			var model = Editor.Document.GetSemanticModelAsync().Result;
@@ -57,7 +57,14 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 				node = node.Parent;
 
 			CreatePropertyStack(model, node, stack);
-			var properties = FindProperty(stack, operation.ReturnType.Properties, manifest.Types);
+			using var resolver = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifests.SelectTypeResolver(operation);
+			var manifestType = resolver.Resolve(operation.ReturnType);
+
+			if (manifestType == null)
+				return result;
+
+			//TODO: parse types
+			List<IManifestMember> properties = null;// FindProperty(stack, manifestType.Members, manifest.Types);
 
 			if (properties == null)
 				return result;
@@ -78,7 +85,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 			return result;
 		}
 
-		private List<ManifestProperty> FindProperty(Stack<string> stack, List<ManifestProperty> properties, List<ManifestMember> types)
+		private List<IManifestMember> FindProperty(Stack<string> stack, List<IManifestMember> properties, List<IManifestType> types)
 		{
 			if (stack.Count < 2)
 				return properties;
@@ -94,7 +101,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 				if (property == null)
 					return result;
 
-				var type = types.FirstOrDefault(f => string.Compare(property.Type, f.Type, false) == 0);
+				var type = types.FirstOrDefault(f => string.Compare(property.Type, f.Name, false) == 0);
 
 				if (type == null)
 				{
@@ -104,7 +111,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 					return result;
 				}
 
-				result = type.Properties;
+				result = type.Members;
 			}
 
 			return result;

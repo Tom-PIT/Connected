@@ -36,6 +36,16 @@ namespace TomPIT.Sys.Controllers
 			return DataModel.Blobs.Query(resourceGroup, type, primaryKey);
 		}
 
+		[HttpPost]
+		public List<IBlob> QueryByType()
+		{
+			var body = FromBody();
+			var microService = body.Optional("microService", Guid.Empty);
+			var type = body.Required<int>("type");
+
+			return DataModel.Blobs.Query(microService, type);
+		}
+
 		[HttpGet]
 		public List<IBlob> QueryByTopic(Guid resourceGroup, int type, string primaryKey, Guid microService, string topic)
 		{

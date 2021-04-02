@@ -4,7 +4,6 @@ using System.Reflection;
 using TomPIT.ComponentModel;
 using TomPIT.Configuration;
 using TomPIT.Middleware;
-using TomPIT.Reflection.Manifests;
 
 namespace TomPIT.Reflection
 {

@@ -27,5 +27,8 @@ namespace TomPIT.Storage
 		IBlobContent Download(Guid microService, int kind, Guid resourceGroup, string primaryKey);
 		IBlobContent Download(Guid microService, int kind, Guid resourceGroup, string primaryKey, string topic);
 		List<IBlobContent> Download(List<Guid> blobs);
+
+		void Preload(int kind, Guid microService);
+		void Preload(int kind);
 	}
 }

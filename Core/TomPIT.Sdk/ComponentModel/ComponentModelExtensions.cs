@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Linq;
-using TomPIT.Annotations.Design;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
-using TomPIT.Reflection.Manifests;
 
 namespace TomPIT.ComponentModel
 {
@@ -75,7 +73,7 @@ namespace TomPIT.ComponentModel
 			if (config == null)
 				return null;
 
-			var att = config.GetType().FindAttribute<ManifestAttribute>();
+			var att = config.GetType().FindAttribute<Annotations.Design.ManifestAttribute>();
 
 			if (att == null)
 				return null;
@@ -86,6 +84,5 @@ namespace TomPIT.ComponentModel
 
 			return provider.CreateManifest(MiddlewareDescriptor.Current.Tenant, component.Token, element);
 		}
-
 	}
 }

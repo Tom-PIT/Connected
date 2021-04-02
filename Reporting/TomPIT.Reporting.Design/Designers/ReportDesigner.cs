@@ -16,6 +16,7 @@ using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.MicroServices.Reporting.Design.Dom;
 using TomPIT.Reflection;
 using TomPIT.Reflection.Manifests.Entities;
+using TomPIT.Reflection.Manifests.Entities.Api;
 
 namespace TomPIT.MicroServices.Reporting.Design.Designers
 {
@@ -141,7 +142,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 					if (op == null)
 						continue;
 
-					if (operation.ReturnType == null || string.IsNullOrWhiteSpace(operation.ReturnType.Name))
+					if (string.IsNullOrWhiteSpace(operation.ReturnType))
 						continue;
 
 					_dataSources.Add(new ReportDataSource
@@ -229,14 +230,14 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			if (opManifest == null)
 				return null;
 
-			var schemaType = manifest.Types.FirstOrDefault(f => string.Compare(f.Type, opManifest.ReturnType.Name, false) == 0);
+			var schemaType = manifest.Types.FirstOrDefault(f => string.Compare(f.Name, opManifest.ReturnType, false) == 0);
 
 			if (schemaType == null)
 				return null;
 
-			var schema = new JsonSchemaNode(schemaType.Type, true, JsonNodeType.Array)
+			var schema = new JsonSchemaNode(schemaType.Name, true, JsonNodeType.Array)
 			{
-				DisplayName = schemaType.Type
+				DisplayName = schemaType.Name
 			};
 
 			result.Schema.AddChildren(schema);
@@ -249,7 +250,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 				if (type == null)
 				{
-					var manifestType = manifest.Types.FirstOrDefault(f => string.Compare(f.Type, property.Type, false) == 0);
+					var manifestType = manifest.Types.FirstOrDefault(f => string.Compare(f.Name, property.Type, false) == 0);
 
 					if (manifestType != null)
 					{
@@ -272,7 +273,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			return result;
 		}
 
-		private JsonSchemaNode CreateObjectNode(ApiManifest manifest, ManifestProperty property, ManifestMember member)
+		private JsonSchemaNode CreateObjectNode(ApiManifest manifest, IManifestProperty property, IManifestType member)
 		{
 			var objectNode = new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
 			{
@@ -285,13 +286,13 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			return objectNode;
 		}
 
-		private JsonSchemaNode CreatePropertyNode(ApiManifest manifest, ManifestProperty property, ManifestMember member)
+		private JsonSchemaNode CreatePropertyNode(ApiManifest manifest, IManifestProperty property, IManifestType member)
 		{
 			var type = Type.GetType(property.Type, false);
 
 			if (type == null)
 			{
-				var manifestType = manifest.Types.FirstOrDefault(f => string.Compare(f.Type, property.Type, false) == 0);
+				var manifestType = manifest.Types.FirstOrDefault(f => string.Compare(f.Name, property.Type, false) == 0);
 
 				if (manifestType != null)
 					return CreateObjectNode(manifest, property, manifestType);

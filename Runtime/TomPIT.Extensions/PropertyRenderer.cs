@@ -2,14 +2,14 @@
 using System.Linq;
 using System.Text;
 using TomPIT.Middleware;
-using TomPIT.Reflection.Manifests.Entities;
+using TomPIT.Reflection;
 
 namespace TomPIT
 {
 	internal abstract class PropertyRenderer
 	{
 		private StringBuilder _builder = null;
-		private ManifestProperty _property = null;
+		private IManifestMember _property = null;
 		public PropertyRenderer(IMiddlewareContext context, string propertyName)
 		{
 			Context = context;
@@ -21,15 +21,15 @@ namespace TomPIT
 
 		protected IMiddlewareContext Context { get; }
 
-		protected abstract ManifestType Manifest { get; }
+		protected abstract IManifestMiddleware Manifest { get; }
 
-		private ManifestProperty Property
+		private IManifestMember Property
 		{
 			get
 			{
 				if (_property == null)
 				{
-					_property = Manifest.Properties.FirstOrDefault(f => string.Compare(f.Name, PropertyName, true) == 0);
+					_property = Manifest.DeclaredType?.Members.FirstOrDefault(f => string.Compare(f.Name, PropertyName, true) == 0);
 
 					if (_property == null)
 						throw new NullReferenceException($"{SR.ErrManifestPropertyNull} ({PropertyName})");
@@ -72,45 +72,54 @@ namespace TomPIT
 
 			Builder.Append(">");
 
-			var validationAttributes = Property.Attributes.Where(f => f.IsValidation);
+			var attributes = Property is IManifestAttributeMember member ? member.Attributes : null;
 
-			if (validationAttributes.Count() > 0)
+			if (attributes != null)
 			{
-				Builder.AppendLine("<tp-validation>");
+				var validationAttributes = attributes.Where(f => f.IsValidation);
 
-				foreach (var attribute in validationAttributes)
+				if (validationAttributes.Count() > 0)
 				{
-					Builder.Append($"<tp-validation-attribute type=\"{attribute.Name}\" ");
+					Builder.AppendLine("<tp-validation>");
 
-					if (!string.IsNullOrWhiteSpace(attribute.Description))
-						Builder.Append($"description =\"{attribute.Description}\"");
+					foreach (var attribute in validationAttributes)
+					{
+						Builder.Append($"<tp-validation-attribute type=\"{attribute.Name}\" ");
 
-					Builder.Append(">");
-					Builder.AppendLine("</tp-validation-attribute>");
+						if (!string.IsNullOrWhiteSpace(attribute.Description))
+							Builder.Append($"description =\"{attribute.Description}\"");
+
+						Builder.Append(">");
+						Builder.AppendLine("</tp-validation-attribute>");
+					}
+
+					Builder.AppendLine("</tp-validation>");
 				}
-
-				Builder.AppendLine("</tp-validation>");
 			}
-
 			Builder.AppendLine("</tp-property>");
 		}
 
 		private void ResolveLocalizationString(string attributeName, string propertyName)
 		{
-			var display = Property.Attributes.FirstOrDefault(f => string.Compare(f.Name, attributeName, true) == 0);
+			var attributes = Property is IManifestAttributeMember member ? member.Attributes : null;
 
-			if (display == null)
-				return;
+			if (attributes != null)
+			{
+				var display = attributes.FirstOrDefault(f => string.Compare(f.Name, attributeName, true) == 0);
 
-			var description = display.Description.Split(',');
+				if (display == null)
+					return;
 
-			if (description.Length < 2)
-				return;
+				var description = display.Description.Split(',');
 
-			var loc = Context.Services.Globalization.GetString(description[0].Trim().Trim('"'), description[1].Trim().Trim('"'));
+				if (description.Length < 2)
+					return;
 
-			if (!string.IsNullOrWhiteSpace(loc))
-				Builder.Append($" {propertyName}=\"{loc}\" ");
+				var loc = Context.Services.Globalization.GetString(description[0].Trim().Trim('"'), description[1].Trim().Trim('"'));
+
+				if (!string.IsNullOrWhiteSpace(loc))
+					Builder.Append($" {propertyName}=\"{loc}\" ");
+			}
 		}
 	}
 }

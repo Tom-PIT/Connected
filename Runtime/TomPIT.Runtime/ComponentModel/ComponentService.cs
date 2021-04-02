@@ -286,8 +286,8 @@ namespace TomPIT.ComponentModel
 			{
 				var state = ConfigurationCache[component.Token];
 
-				//return state.Instance;
-				return Tenant.GetService<ISerializationService>().Deserialize(state.State, state.Type) as IConfiguration;
+				return state.Instance;
+				//return Tenant.GetService<ISerializationService>().Deserialize(state.State, state.Type) as IConfiguration;
 			}
 
 			var content = blob ?? Tenant.GetService<IStorageService>().Download(component.Token);
@@ -317,25 +317,28 @@ namespace TomPIT.ComponentModel
 			/*
 			 * this is temporary because we'll remove runtime support in the future
 			 */
-			if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty && string.Compare(component.Category, ComponentCategories.StringTable, true)==0)
-			{
-				var rtContent = runtime ?? Tenant.GetService<IStorageService>().Download(component.RuntimeConfiguration);
+			//if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty && string.Compare(component.Category, ComponentCategories.StringTable, true)==0)
+			//{
+			//	var rtContent = runtime ?? Tenant.GetService<IStorageService>().Download(component.RuntimeConfiguration);
 
-				if (rtContent != null)
-				try
-					{
-						if (Tenant.GetService<ISerializationService>().Deserialize(rtContent.Content, t) is IConfiguration rtInstance)
-							MergeWithRuntime(r, rtInstance);
-					}
-					catch (Exception ex) { Tenant.LogWarning(GetType().ShortName(), ex.Message, LogCategories.Services); }
-			}
+			//	if (rtContent != null)
+			//	try
+			//		{
+			//			if (Tenant.GetService<ISerializationService>().Deserialize(rtContent.Content, t) is IConfiguration rtInstance)
+			//				MergeWithRuntime(r, rtInstance);
+			//		}
+			//		catch (Exception ex) { Tenant.LogWarning(GetType().ShortName(), ex.Message, LogCategories.Services); }
+			//}
 
 			if (r != null)
+			{
 				ConfigurationCache.TryAdd(component.Token, new ConfigurationSerializationState
 				{
 					Type = r.GetType(),
+					Instance = r,
 					State = Tenant.GetService<ISerializationService>().Serialize(r)
 				});
+			}
 
 			return r;
 		}

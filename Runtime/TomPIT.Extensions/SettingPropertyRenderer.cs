@@ -2,13 +2,13 @@
 using TomPIT.ComponentModel;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
-using TomPIT.Reflection.Manifests.Entities;
+using TomPIT.Reflection.Settings;
 
 namespace TomPIT
 {
 	internal class SettingPropertyRenderer : PropertyRenderer
 	{
-		private SettingsManifest _manifest = null;
+		private IManifestMiddleware _middleware = null;
 		public SettingPropertyRenderer(IMiddlewareContext context, string setting, string propertyName) : base(context, propertyName)
 		{
 			Setting = setting;
@@ -16,11 +16,11 @@ namespace TomPIT
 
 
 		private string Setting { get; }
-		protected override ManifestType Manifest
+		protected override IManifestMiddleware Manifest
 		{
 			get
 			{
-				if (_manifest == null)
+				if (_middleware == null)
 				{
 					var descriptor = ComponentDescriptor.Settings(Context, Setting);
 
@@ -29,13 +29,13 @@ namespace TomPIT
 					if (!(Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(descriptor.MicroService.Name, ComponentCategories.Settings, descriptor.Component.Name) is SettingsManifest manifest))
 						throw new NullReferenceException($"{SR.ErrManifestNull} ({Setting})");
 
-					_manifest = manifest;
-
-					if (_manifest == null)
+					if (manifest == null)
 						throw new NullReferenceException($"{SR.ErrManifestNull} ({Setting})");
+
+					_middleware = manifest;
 				}
 
-				return _manifest.Type;
+				return _middleware;
 			}
 		}
 	}

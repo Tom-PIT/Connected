@@ -94,7 +94,7 @@ namespace TomPIT.Design
 				Tenant.GetService<IDesignService>().Search.Delete(c.Token);
 			}
 
-			DeleteManifest(c);
+			//DeleteManifest(c);
 
 			u = Tenant.CreateUrl("NotificationDevelopment", "ConfigurationRemoved");
 			args = new JObject
@@ -170,7 +170,7 @@ namespace TomPIT.Design
 				}
 			}
 
-			DeleteManifest(microService, component.Token);
+			//DeleteManifest(microService, component.Token);
 
 			var u = Tenant.CreateUrl("ComponentDevelopment", "Insert");
 
@@ -293,7 +293,7 @@ namespace TomPIT.Design
 
 			}
 
-			DeleteManifest(microService, component.Token);
+			//DeleteManifest(microService, component.Token);
 
 			var u = Tenant.CreateUrl("ComponentDevelopment", "Insert");
 
@@ -493,7 +493,7 @@ namespace TomPIT.Design
 			if (performLock)
 				Tenant.GetService<IDesignService>().VersionControl.Lock(component, Development.LockVerb.Edit);
 
-			DeleteManifest(component);
+			//DeleteManifest(component);
 
 			var c = Tenant.GetService<IComponentService>().SelectComponent(component);
 
@@ -584,7 +584,7 @@ namespace TomPIT.Design
 			if (Tenant.GetService<IComponentService>() is IComponentNotification n)
 				n.NotifyChanged(this, new ConfigurationEventArgs(c.MicroService, configuration.Component, c.Category));
 
-			DeleteManifest(c);
+			//DeleteManifest(c);
 
 			var u = Tenant.CreateUrl("NotificationDevelopment", "ConfigurationChanged");
 			var args = new JObject
@@ -990,7 +990,7 @@ namespace TomPIT.Design
 				});
 			}
 
-			DeleteManifest(image.Token);
+			//DeleteManifest(image.Token);
 		}
 
 		public void RestoreComponent(Guid blob)
@@ -1099,36 +1099,36 @@ namespace TomPIT.Design
 			Tenant.Post(u, e);
 		}
 
-		private void DeleteManifest(Guid component)
-		{
-			var c = Tenant.GetService<IComponentService>().SelectComponent(component);
+		//private void DeleteManifest(Guid component)
+		//{
+		//	var c = Tenant.GetService<IComponentService>().SelectComponent(component);
 
-			if (c == null)
-				return;
+		//	if (c == null)
+		//		return;
 
-			DeleteManifest(c);
-		}
+		//	DeleteManifest(c);
+		//}
 
-		private void DeleteManifest(IComponent component)
-		{
-			DeleteManifest(component.MicroService, component.Token);
-		}
+		//private void DeleteManifest(IComponent component)
+		//{
+		//	DeleteManifest(component.MicroService, component.Token);
+		//}
 
-		private void DeleteManifest(Guid microService, Guid component)
-		{
-			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+		//private void DeleteManifest(Guid microService, Guid component)
+		//{
+		//	var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
-			if (ms == null)
-				return;
+		//	if (ms == null)
+		//		return;
 
-			var blobs = Tenant.GetService<IStorageService>().Query(ms.Token, BlobTypes.Manifest, ms.ResourceGroup, $"manifest{component}");
+		//	var blobs = Tenant.GetService<IStorageService>().Query(ms.Token, BlobTypes.Manifest, ms.ResourceGroup, $"manifest{component}");
 
-			if (blobs == null || blobs.Count == 0)
-				return;
+		//	if (blobs == null || blobs.Count == 0)
+		//		return;
 
-			foreach (var blob in blobs)
-				Tenant.GetService<IStorageService>().Delete(blob.Token);
-		}
+		//	foreach (var blob in blobs)
+		//		Tenant.GetService<IStorageService>().Delete(blob.Token);
+		//}
 
 		private ServerUrl CreateUrl(string action)
 		{

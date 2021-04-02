@@ -9,6 +9,9 @@ namespace TomPIT.TagHelpers
 	{
 		public override void Process(TagHelperContext context, TagHelperOutput output)
 		{
+			if (string.IsNullOrWhiteSpace(Name))
+				return;
+
 			string microService;
 			string name;
 			var ctx = ViewContext.ViewData.Model as IMicroServiceContext;

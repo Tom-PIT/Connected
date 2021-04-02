@@ -3,21 +3,20 @@ using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
-using TomPIT.Design.Serialization;
-using TomPIT.Reflection.Manifests;
-using TomPIT.Reflection.Manifests.Entities;
-using TomPIT.Storage;
 
 namespace TomPIT.Reflection
 {
-	internal class ManifestDiscovery : ClientRepository<IComponentManifest, Guid>, IManifestDiscovery
+	internal class ManifestDiscovery : ClientRepository<IComponentManifest, Guid>, IManifestDiscovery, IManifestDiscoveryNotification
 	{
+		private ScriptManifestCache _cache;
 		public ManifestDiscovery(ITenant tenant) : base(tenant, "manifest")
 		{
 			Tenant.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
 			Tenant.GetService<IComponentService>().ComponentRemoved += OnComponentRemoved;
 			Tenant.GetService<IComponentService>().ComponentAdded += OnComponentAdded;
 			Tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
+
+			_cache = new ScriptManifestCache(Tenant);
 		}
 
 		private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
@@ -42,44 +41,24 @@ namespace TomPIT.Reflection
 
 		public IComponentManifest Select(Guid component)
 		{
-			return Get(component,
-	(f) =>
-	{
-		var c = Tenant.GetService<IComponentService>().SelectComponent(component);
+			return Get(component, (f) =>
+				{
+					var c = Tenant.GetService<IComponentService>().SelectComponent(component);
 
-		if (c == null)
-			return null;
+					if (c == null)
+						return null;
 
-		var ms = Tenant.GetService<IMicroServiceService>().Select(c.MicroService);
+					var ms = Tenant.GetService<IMicroServiceService>().Select(c.MicroService);
 
-		if (ms == null)
-			return null;
+					if (ms == null)
+						return null;
 
-		var existing = Tenant.GetService<IStorageService>().Download(ms.Token, BlobTypes.Manifest, ms.ResourceGroup, $"manifest{component}");
-		IComponentManifest result = null;
+					var result = c.Manifest();
+					
+					Set(component, result, TimeSpan.Zero);
 
-		if (existing == null)
-		{
-			result = c.Manifest();
-			SaveManifest(c, result);
-		}
-		else
-		{
-			try
-			{
-				result = Tenant.GetService<ISerializationService>().Deserialize(existing.Content, typeof(ComponentManifest)) as IComponentManifest;
-			}
-			catch
-			{
-				result = c.Manifest();
-				SaveManifest(c, result);
-			}
-		}
-
-		Set(component, result, TimeSpan.Zero);
-
-		return result;
-	});
+					return result;
+				});
 		}
 
 		public IComponentManifest Select(string microService, string category, string componentName)
@@ -95,7 +74,6 @@ namespace TomPIT.Reflection
 				return null;
 
 			return Select(component.Token);
-
 		}
 
 		public ImmutableList<IComponentManifest> Query(Guid microService)
@@ -114,17 +92,33 @@ namespace TomPIT.Reflection
 			return result;
 		}
 
-		private void SaveManifest(IComponent component, IComponentManifest manifest)
+		public void Invalidate(Guid microService, Guid component, Guid script)
 		{
-			Tenant.GetService<IStorageService>().Upload(new Blob
-			{
-				ContentType = Blob.ContentTypeJson,
-				FileName = $"{manifest.Name}.json",
-				MicroService = component.MicroService,
-				PrimaryKey = $"manifest{component.Token}",
-				Type = BlobTypes.Manifest,
-				ResourceGroup = component.ResourceGroup()
-			}, Tenant.GetService<ISerializationService>().Serialize(manifest), StoragePolicy.Singleton);
+			ManifestCache.Rebuild(microService, component, script);
 		}
+
+		public void NotifyChanged(Guid microService, Guid component, Guid script)
+		{
+			ManifestCache.RemoveManifest(script);
+		}
+
+		public IScriptManifest SelectScript(Guid microService, Guid component, Guid id)
+		{
+			return ManifestCache.Select(microService, component, id);
+		}
+
+		public IManifestTypeResolver SelectTypeResolver(IManifestMiddleware manifest)
+		{
+			if (manifest.Address == null)
+				return null;
+
+			return SelectTypeResolver(manifest.Address.MicroService, manifest.Address.Component, manifest.Address.Element);
+		}
+
+		public IManifestTypeResolver SelectTypeResolver(Guid microService, Guid component, Guid script)
+		{
+			return new ManifestTypeResolver(Tenant, microService, component, script);
+		}
+		private ScriptManifestCache ManifestCache => _cache;
 	}
 }

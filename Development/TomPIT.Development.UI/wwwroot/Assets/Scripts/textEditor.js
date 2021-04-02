@@ -257,8 +257,15 @@
 
             $.each(this.options.state, function (i, v) {
                 if (v.dirty) {
-                    result.push(v);
-                    v.dirty = false;
+                    var elapsed = Date.now() - v.timestamp;
+                    var isTyping = elapsed < 1000;
+
+                    if (!isTyping) {
+                        result.push(v);
+
+                        v.timestamp = Date.now();
+                        v.dirty = false;
+                    }
                 }
             });
 
@@ -285,8 +292,10 @@
             else {
                 if (!existingState.dirty)
                     this.options.state.splice(existingStateIndex, 1);
-                else
+                else {
                     existingState.dirty = true;
+                    existingState.timestamp = Date.now();
+                }
             }
         },
         getInstance: function () {

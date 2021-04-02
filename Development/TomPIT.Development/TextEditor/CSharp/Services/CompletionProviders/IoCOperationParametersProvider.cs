@@ -11,7 +11,7 @@ using TomPIT.Ide.TextServices.CSharp;
 using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
 using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Reflection;
-using TomPIT.Reflection.Manifests.Entities;
+using TomPIT.Reflection.IoC;
 
 namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 {
@@ -33,8 +33,9 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			var parameters = QueryParameters(op);
 			var existing = QueryExisting(node);
 			var r = new List<ICompletionItem>();
+			var members = parameters.DeclaredType?.Members;
 
-			if (parameters.Properties.Count == 0)
+			if (members == null|| !members.Any())
 			{
 				r.Add(new CompletionItem
 				{
@@ -44,7 +45,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			}
 			else
 			{
-				foreach (var parameter in parameters.Properties)
+				foreach (var parameter in members)
 				{
 					if (existing != null && existing.FirstOrDefault(f => string.Compare(f, parameter.Name, true) == 0) != null)
 						continue;
@@ -146,16 +147,20 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 		private ICompletionItem AllParametersSnippet(IoCOperationManifest config)
 		{
 			var sb = new StringBuilder();
+			var members = config.DeclaredType?.Members;
 
-			foreach (var i in config.Properties.OrderBy(f => f.Name))
+			if (members != null)
 			{
-				var t = TypeExtensions.GetType(i.Type);
-				object value = "null";
+				foreach (var i in members.OrderBy(f => f.Name))
+				{
+					var t = TypeExtensions.GetType(i.Type);
+					object value = "null";
 
-				if (t != null)
-					value = t.DefaultValue();
+					if (t != null)
+						value = t.DefaultValue();
 
-				sb.AppendLine($"{i.Name} = {value},");
+					sb.AppendLine($"{i.Name} = {value},");
+				}
 			}
 
 			return new CompletionItem

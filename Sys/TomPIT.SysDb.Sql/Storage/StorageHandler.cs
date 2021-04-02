@@ -81,6 +81,16 @@ namespace TomPIT.SysDb.Sql.Storage
 			return r.Execute().ToList<IBlob>();
 		}
 
+		public List<IBlob> Query(Guid microService, int type)
+		{
+			using var r = new Reader<Blob>("tompit.blob_que");
+
+			r.CreateParameter("@service", microService, true);
+			r.CreateParameter("@type", type);
+
+			return r.Execute().ToList<IBlob>();
+		}
+
 		public List<IBlob> QueryDrafts(string draft)
 		{
 			using var r = new Reader<Blob>("tompit.blob_que_draft");

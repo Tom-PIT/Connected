@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using LZ4;
@@ -17,10 +18,13 @@ namespace TomPIT.Storage
 		public event BlobChangedHandler BlobAdded;
 		public event BlobChangedHandler BlobCommitted;
 
+		private ConcurrentDictionary<Guid, HashSet<int>> _preloadCache;
+
 		public StorageService(ITenant tenant) : base(tenant, "blob")
 		{
 			BlobContent = new BlobContentCache(Tenant);
 			Tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+			_preloadCache = new ConcurrentDictionary<Guid, HashSet<int>>();
 		}
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
@@ -251,6 +255,53 @@ namespace TomPIT.Storage
 			BlobCommitted?.Invoke(Tenant, e);
 		}
 
+		public void Preload(int type, Guid microService)
+		{
+			lock (PreloadCache)
+			{
+				if (PreloadCache.TryGetValue(microService, out HashSet<int> items))
+				{
+					if (items.Contains(type))
+						return;
+				}
+				
+				if (microService != Guid.Empty && PreloadCache.TryGetValue(microService, out items))
+				{
+					if (items.Contains(type))
+						return;
+				}
+
+				if (items == null)
+				{
+					items = new HashSet<int>();
+
+					PreloadCache.TryAdd(microService, items);
+				}
+
+				var blobs = Tenant.Post<List<Blob>>(Tenant.CreateUrl("Storage", "QueryByType"), new
+				{
+					microService,
+					type
+				});
+
+				foreach (var blob in blobs)
+					Set(blob.Token, blob, TimeSpan.Zero);
+
+				var contents = Download(blobs.Select(f => f.Token).ToList());
+
+				foreach (var content in contents)
+					BlobContent.Cache(content);
+
+				items.Add(type);
+			}
+		}
+
+		public void Preload(int type)
+		{
+			Preload(type, Guid.Empty);
+		}
+
 		private BlobContentCache BlobContent { get; } = null;
+		private ConcurrentDictionary<Guid, HashSet<int>> PreloadCache => _preloadCache;
 	}
 }

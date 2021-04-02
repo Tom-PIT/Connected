@@ -45,6 +45,9 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 			var scriptName = sourceCode.FileName;
 			var fileName = $"{ms.Name}/{scriptName}";
 
+			if (script.Errors == null)
+				return result;
+
 			foreach (var diagnostic in script.Errors)
 			{
 				var external = false;

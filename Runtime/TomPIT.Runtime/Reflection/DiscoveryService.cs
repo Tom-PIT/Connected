@@ -6,7 +6,6 @@ using TomPIT.ComponentModel;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
-using TomPIT.Reflection.Manifests;
 
 namespace TomPIT.Reflection
 {
