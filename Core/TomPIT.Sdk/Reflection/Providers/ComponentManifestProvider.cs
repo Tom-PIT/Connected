@@ -79,6 +79,9 @@ namespace TomPIT.Reflection.Providers
 
 		protected void BindDocumentation(IManifestType manifestType, List<IManifestType> scriptTypes)
 		{
+			if (manifestType is null)
+				return;
+
 			if (scriptTypes.FirstOrDefault(f => string.Compare(f.Name, manifestType.Name, false) == 0) is not IManifestType scriptType)
 				return;
 

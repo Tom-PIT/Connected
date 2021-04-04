@@ -16,9 +16,5 @@ namespace TomPIT.Reflection
 
 		public bool IsArray { get; set; }
 
-		public bool IsDictionary { get; set; }
-
-		public bool IsTuple { get; set; }
-
 	}
 }

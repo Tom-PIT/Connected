@@ -287,11 +287,6 @@ namespace TomPIT.Storage
 				foreach (var blob in blobs)
 					Set(blob.Token, blob, TimeSpan.Zero);
 
-				var contents = Download(blobs.Select(f => f.Token).ToList());
-
-				foreach (var content in contents)
-					BlobContent.Cache(content);
-
 				items.Add(type);
 			}
 		}

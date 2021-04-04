@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.IO;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -111,6 +112,22 @@ namespace TomPIT.Reflection.CodeAnalysis
 			}
 
 			return null;
+		}
+
+		public static bool IsBrowsable(this ImmutableArray<AttributeData> attributes)
+		{
+			foreach (var attribute in attributes)
+			{
+				if (attribute.AttributeClass == null || !attribute.AttributeClass.IsOfType(typeof(System.ComponentModel.BrowsableAttribute)))
+					continue;
+
+				if (attribute.ConstructorArguments.Length == 0)
+					return true;
+
+				return Types.Convert<bool>(attribute.ConstructorArguments[0].Value);
+			}
+
+			return true;
 		}
 	}
 }

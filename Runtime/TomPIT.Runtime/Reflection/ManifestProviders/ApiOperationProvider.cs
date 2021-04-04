@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TomPIT.Annotations;
 using TomPIT.Design.CodeAnalysis;
@@ -28,10 +29,13 @@ namespace TomPIT.Reflection.ManifestProviders
 
 				if (returnType != null)
 				{
-					return new GenericOperationType
+					if (returnType is Microsoft.CodeAnalysis.INamedTypeSymbol namedType && !namedType.TypeArguments.IsDefaultOrEmpty)
 					{
-						ReturnType = returnType.Name
-					};
+						return new GenericOperationType
+						{
+							ReturnType = namedType.TypeArguments.First().ToDisplayString()
+						};
+					}
 				}
 			}
 			else if (TypeParser.LookupBaseType(descriptor.Symbol, descriptor.Model, typeof(IOperation).FullTypeName()) is not null)
@@ -40,9 +44,9 @@ namespace TomPIT.Reflection.ManifestProviders
 
 				if (returnType != null)
 				{
-					return new GenericOperationType
+					return new OperationType
 					{
-						ReturnType = returnType.Name
+						
 					};
 				}
 			}

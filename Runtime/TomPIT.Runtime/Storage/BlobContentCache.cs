@@ -28,7 +28,7 @@ namespace TomPIT.Storage
 			{
 				BlobTypes.Template,
 				BlobTypes.Configuration,
-				BlobTypes.RuntimeConfiguration
+				BlobTypes.ScriptManifest
 			};
 
 			foreach (var rg in resourceGroups)

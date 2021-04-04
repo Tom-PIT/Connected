@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Reflection.CodeAnalysis;
 
 namespace TomPIT.Reflection
 {
@@ -35,16 +35,16 @@ namespace TomPIT.Reflection
 		private Guid Script { get; }
 		private IScriptManifest Manifest { get; set; }
 		private IText SourceCode { get; set; }
-		private SemanticModel Model { get; set; }
-		private ClassDeclarationSyntax ClassDeclaration { get; set; }
 		private Dictionary<string, IManifestTypeDescriptor> Cache => _cache ??= new Dictionary<string, IManifestTypeDescriptor>();
+		private Microsoft.CodeAnalysis.Compilation Compilation { get; set; }
+
 		public IManifestTypeDescriptor Resolve(string name)
 		{
 			if (Manifest is null)
 				Prepare();
 
-			if (ClassDeclaration is null)
-				return null;
+			if (Cache.TryGetValue(name, out IManifestTypeDescriptor existing))
+				return existing;
 
 			return CreateType(name);
 		}
@@ -60,28 +60,64 @@ namespace TomPIT.Reflection
 				return;
 
 			SourceCode = text;
-			var compilation = Tenant.GetService<ICompilerService>().GetCompilation(text);
 
-			if (compilation is null)
-				return;
-
-			var tree = compilation.SyntaxTrees.FirstOrDefault(f => string.Compare(f.FilePath, text.FileName, true) == 0);
-			var root = tree.GetCompilationUnitRoot();
-			Model = compilation.GetSemanticModel(tree);
-
-			if (root.Members.First(f => f is ClassDeclarationSyntax c && string.Compare(c.Identifier.ValueText, Path.GetFileNameWithoutExtension(SourceCode.FileName), false) == 0) is not ClassDeclarationSyntax declaration)
-				return;
-
-			ClassDeclaration = declaration;
+			Compilation = Tenant.GetService<ICompilerService>().GetCompilation(text);
 		}
 
 		private IManifestTypeDescriptor CreateType(string name)
 		{
-			foreach (var n in ClassDeclaration.DescendantNodesAndSelf())
+			var symbols = Compilation.GetSymbolsWithName(name);
+
+			if (!symbols.Any())
+				return CreateFromDefault(name);
+
+			foreach (var symbol in symbols)
 			{
-				if (n.IsKind(SyntaxKind.PredefinedType) || n.IsKind(SyntaxKind.GenericName) || n.IsKind(SyntaxKind.QualifiedName) || n.IsKind(SyntaxKind.IdentifierName))
+				if (symbol.Kind == SymbolKind.NamedType)
 				{
-					var typeInfo = Model.GetTypeInfo(n);
+					var type = symbol as INamedTypeSymbol;
+
+					if (type is not null && string.Compare(type.ToDisplayString(), name, false) == 0)
+						return CreateDescriptor(type);
+				}
+			}
+
+			return null;
+		}
+
+		private IManifestTypeDescriptor CreateFromDefault(string name)
+		{
+			var tree = Compilation.SyntaxTrees.FirstOrDefault(f => string.Compare(f.FilePath, SourceCode.FileName, true) == 0);
+
+			if (tree is null)
+				return null;
+
+			var model = Compilation.GetSemanticModel(tree);
+
+			if (ProcessTree(tree, model, name) is IManifestTypeDescriptor result)
+				return result;
+
+			foreach(var other in Compilation.SyntaxTrees)
+			{
+				if (other == tree)
+					continue;
+
+				model = Compilation.GetSemanticModel(other);
+
+				if (ProcessTree(other, model, name) is IManifestTypeDescriptor otherResult)
+					return otherResult;
+			}
+
+			return null;
+		}
+
+		private IManifestTypeDescriptor ProcessTree(SyntaxTree tree, SemanticModel model, string name)
+		{
+			foreach (var node in tree.GetRoot().DescendantNodesAndSelf())
+			{
+				if (node.IsKind(SyntaxKind.PredefinedType) || node.IsKind(SyntaxKind.GenericName) || node.IsKind(SyntaxKind.QualifiedName) || node.IsKind(SyntaxKind.IdentifierName))
+				{
+					var typeInfo = model.GetTypeInfo(node);
 
 					if (typeInfo.Type is not null && string.Compare(typeInfo.Type.ToDisplayString(), name, false) == 0)
 						return CreateDescriptor(typeInfo.Type);
@@ -103,22 +139,34 @@ namespace TomPIT.Reflection
 			{
 				Name = symbol.ToDisplayString(),
 				IsPrimitive = ResolvePrimitive(symbol),
-				IsTuple = symbol.IsTupleType
 			};
 
 			Cache.TryAdd(symbol.ToDisplayString(), result);
 
-			ResolveMetaData(result, symbol);
+			if (!result.IsPrimitive)
+				ResolveMetaData(result, symbol);
 
 			if (result.IsPrimitive)
 				return result;
 
 			ResolveTypeArguments(result, symbol);
 
-			if(!result.IsArray && !result.IsDictionary)
+			if (DiscoverMembers(result, symbol))
 				ResolveMembers(result, symbol);
-
+			
 			return result;
+		}
+
+		private static bool DiscoverMembers(IManifestTypeDescriptor descriptor, ITypeSymbol symbol)
+		{
+			if (descriptor.IsArray)
+				return false;
+
+			if (symbol.AllInterfaces.Any(f => string.Compare(f.ToDisplayString(), typeof(IDictionary).FullName, false) == 0
+				|| string.Compare(f.ToDisplayString(), typeof(ITuple).FullName, false) == 0))
+				return false;
+
+			return true;
 		}
 
 		private void ResolveMembers(IManifestTypeDescriptor descriptor, ITypeSymbol symbol)
@@ -127,33 +175,46 @@ namespace TomPIT.Reflection
 
 			foreach (var member in members)
 			{
-				if (member.DeclaredAccessibility != Accessibility.Public || member.Kind != SymbolKind.Field || member.Kind != SymbolKind.Property)
+				if (member.DeclaredAccessibility != Accessibility.Public || (member.Kind != SymbolKind.Field && member.Kind != SymbolKind.Property))
 					continue;
 
-				descriptor.Members.TryAdd(member.Name, CreateDescriptor(member.ContainingType));
+				if (!member.GetAttributes().IsBrowsable())
+					continue;
+
+				if (member is IPropertySymbol property)
+					descriptor.Members.TryAdd(member.Name, CreateDescriptor(property.Type));
+				else if (member is IFieldSymbol field)
+					descriptor.Members.TryAdd(member.Name, CreateDescriptor(field.Type));
+				else
+					throw new NotSupportedException();
 			}
 		}
 
 		private void ResolveTypeArguments(IManifestTypeDescriptor descriptor, ITypeSymbol symbol)
 		{
-			if (symbol is not INamedTypeSymbol namedType || namedType.TypeArguments.IsDefaultOrEmpty)
-				return;
+			if (symbol is IArrayTypeSymbol array)
+				descriptor.TypeArguments.Add(array.ElementType.ToDisplayString(), CreateDescriptor(array.ElementType));
+			else
+			{
+				if (symbol is not INamedTypeSymbol namedType || namedType.TypeArguments.IsDefaultOrEmpty)
+					return;
 
-			foreach (var argument in namedType.TypeArguments)
-				descriptor.TypeArguments.Add(argument.Name, CreateDescriptor(argument));
+				foreach (var argument in namedType.TypeArguments)
+					descriptor.TypeArguments.Add(argument.Name, CreateDescriptor(argument));
+			}
 		}
 
-		private void ResolveMetaData(ManifestTypeDescriptor descriptor, ITypeSymbol symbol)
+		private static void ResolveMetaData(ManifestTypeDescriptor descriptor, ITypeSymbol symbol)
 		{
 			foreach (var i in symbol.AllInterfaces)
 			{
 				if (string.Compare(i.ToDisplayString(), typeof(IEnumerable).FullName, false) == 0)
 					descriptor.IsArray = true;
-				else if (string.Compare(i.ToDisplayString(), typeof(IDictionary).FullName, false) == 0)
-					descriptor.IsDictionary = true;
-
-				if (descriptor.IsArray && descriptor.IsDictionary)
+				else if(string.Compare(i.ToDisplayString(), typeof(IDictionary).FullName, false) == 0)
+				{
+					descriptor.IsArray = false;
 					break;
+				}
 			}
 		}
 
@@ -161,6 +222,7 @@ namespace TomPIT.Reflection
 		{
 			if (symbol.SpecialType == SpecialType.System_Boolean
 				|| symbol.SpecialType == SpecialType.System_Byte
+				|| symbol.SpecialType == SpecialType.System_SByte
 				|| symbol.SpecialType == SpecialType.System_Char
 				|| symbol.SpecialType == SpecialType.System_DateTime
 				|| symbol.SpecialType == SpecialType.System_Decimal
@@ -186,8 +248,6 @@ namespace TomPIT.Reflection
 				if (disposing)
 				{
 					Manifest = null;
-					Model = null;
-					ClassDeclaration = null;
 					Cache.Clear();
 				}
 

@@ -106,6 +106,9 @@ namespace TomPIT.Reflection.Providers
 
 			if (om.DeclaredType is IManifestExtenderSupportedType extender && extender.Extenders.Any())
 				om.Extenders.AddRange(extender.Extenders);
+
+			if (om.DeclaredType is IManifestReturnType returnType)
+				om.ReturnType = returnType.ReturnType;
 		}
 	}
 }

@@ -32,7 +32,7 @@ namespace TomPIT.Compilation
 {
 	internal class CompilerService : ClientRepository<IScriptDescriptor, Guid>, ICompilerService, ICompilerNotification
 	{
-		internal const string ScriptInfoClassName = "__ScriptInfo";
+		public const string ScriptInfoClassName = "__ScriptInfo";
 
 		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _references = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
 		private static Lazy<ConcurrentDictionary<Guid, ManualResetEvent>> _scriptCreateState = new Lazy<ConcurrentDictionary<Guid, ManualResetEvent>>();
