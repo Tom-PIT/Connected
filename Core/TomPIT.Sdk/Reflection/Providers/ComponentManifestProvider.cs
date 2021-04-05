@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Design.Serialization;
 using TomPIT.Exceptions;
 
 namespace TomPIT.Reflection.Providers
@@ -92,6 +93,33 @@ namespace TomPIT.Reflection.Providers
 				if (scriptType.Members.FirstOrDefault(f => string.Compare(f.Name, member.Name, true) == 0) is IManifestMember scriptMember)
 					member.Documentation = scriptMember.Documentation;
 			}
+		}
+
+		protected IManifestType CloneType(IManifestType type)
+		{
+			if (type is null)
+				return null;
+
+			var serialization = Tenant.GetService<ISerializationService>();
+			var result = serialization.Deserialize(serialization.Serialize(type), type.GetType()) as IManifestType;
+
+			for (var i = result.Members.Count - 1; i >= 0; i--)
+			{
+				var member = result.Members[i];
+
+				if (member is IManifestProperty property)
+				{
+					if (!property.IsPublic)
+						result.Members.Remove(property);
+				}
+				else if (member is IManifestField field)
+				{
+					if (!field.IsPublic)
+						result.Members.Remove(field);
+				}
+			}
+
+			return result;
 		}
 	}
 }

@@ -258,7 +258,7 @@
             $.each(this.options.state, function (i, v) {
                 if (v.dirty) {
                     var elapsed = Date.now() - v.timestamp;
-                    var isTyping = elapsed < 1000;
+                    var isTyping = elapsed < 750;
 
                     if (!isTyping) {
                         result.push(v);

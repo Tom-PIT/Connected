@@ -4,5 +4,6 @@
 	{
 		bool CanRead { get; }
 		bool CanWrite { get; }
+		bool IsPublic { get; }
 	}
 }

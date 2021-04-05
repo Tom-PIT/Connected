@@ -144,6 +144,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 				Name = symbol.Name,
 				Type = symbol.Type.ToDisplayString(),
 				IsConstant = symbol.IsConst,
+				IsPublic = symbol.DeclaredAccessibility == Accessibility.Public,
 				Documentation = node is not null ? node.ParseDocumentation() : null
 			};
 			
@@ -155,7 +156,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 		{
 			ParseSourceReferences(symbol, symbol.Type);
 
-			if (symbol.IsIndexer || symbol.DeclaredAccessibility != Accessibility.Public)
+			if (symbol.IsIndexer)
 				return;
 
 			var node = ResolveNode(symbol) as CSharpSyntaxNode;
@@ -166,6 +167,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 				CanRead = symbol.GetMethod != null,
 				CanWrite = symbol.SetMethod != null,
 				Type = symbol.Type.ToDisplayString(),
+				IsPublic = symbol.DeclaredAccessibility == Accessibility.Public,
 				Documentation = node is not null ? node.ParseDocumentation() : null
 			};
 

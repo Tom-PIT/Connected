@@ -9,5 +9,7 @@ namespace TomPIT.Reflection
 		public bool CanWrite { get; set; }
 		
 		public List<IManifestAttribute> Attributes => _attributes ??= new List<IManifestAttribute>();
+
+		public bool IsPublic {get;set;}
 	}
 }

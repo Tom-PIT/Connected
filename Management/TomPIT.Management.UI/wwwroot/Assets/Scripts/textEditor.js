@@ -78,7 +78,7 @@
                     glyphMargin: true,
                     lineNumbersMinChars: 4,
                     layoutInfo: {
-                        heigth:'100%'
+                        heigth: '100%'
                     },
                     parameterHints: {
                         enabled: true
@@ -108,7 +108,7 @@
                     editorOpts,
                     {
                         textModelService: {
-                            createModelReference: (uri)=>{
+                            createModelReference: (uri) => {
                                 return new Promise((resolve, reject) => {
                                     var result = {
                                         uri: uri,
@@ -149,7 +149,7 @@
                                                     });
                                                 }
 
-                                                
+
                                                 resolve({
                                                     object: result,
                                                     dispose: () => { }
@@ -257,8 +257,15 @@
 
             $.each(this.options.state, function (i, v) {
                 if (v.dirty) {
-                    result.push(v);
-                    v.dirty = false;
+                    var elapsed = Date.now() - v.timestamp;
+                    var isTyping = elapsed < 750;
+
+                    if (!isTyping) {
+                        result.push(v);
+
+                        v.timestamp = Date.now();
+                        v.dirty = false;
+                    }
                 }
             });
 
@@ -285,8 +292,10 @@
             else {
                 if (!existingState.dirty)
                     this.options.state.splice(existingStateIndex, 1);
-                else
+                else {
                     existingState.dirty = true;
+                    existingState.timestamp = Date.now();
+                }
             }
         },
         getInstance: function () {
@@ -363,7 +372,7 @@
                                                     var textEdit = edit.edits[j];
 
                                                     if (textEdit.resource) {
-                                                            textEdit.resource = monaco.Uri.parse(textEdit.resource);
+                                                        textEdit.resource = monaco.Uri.parse(textEdit.resource);
                                                     }
                                                 }
                                             }
@@ -470,7 +479,7 @@
 
             monaco.languages.registerDefinitionProvider(language, {
                 provideDefinition: function (model, position) {
-                    return  new Promise(function (resolve, reject) {
+                    return new Promise(function (resolve, reject) {
                         try {
                             ide.designerAction({
                                 data: {
@@ -725,7 +734,7 @@
                     if (i === 0)
                         this.activateModel(models[1].id);
                     else
-                        this.activateModel(models[i-1].id);
+                        this.activateModel(models[i - 1].id);
 
                     break;
                 }
