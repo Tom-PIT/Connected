@@ -63,8 +63,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 			if (manifestType == null)
 				return result;
 
-			//TODO: parse types
-			List<IManifestMember> properties = null;// FindProperty(stack, manifestType.Members, manifest.Types);
+			Dictionary<string, IManifestTypeDescriptor> properties = FindProperty(stack, manifestType.Members, resolver);
 
 			if (properties == null)
 				return result;
@@ -73,19 +72,19 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 			{
 				result.Add(new CompletionItem
 				{
-					Label = i.Name,
-					Detail = i.Type,
-					FilterText = i.Name,
+					Label = i.Key,
+					Detail = i.Value.Name,
+					FilterText = i.Key,
 					Kind = CompletionItemKind.Property,
-					SortText = i.Name,
-					InsertText = i.Name
+					SortText = i.Key,
+					InsertText = i.Key
 				});
 			}
 
 			return result;
 		}
 
-		private List<IManifestMember> FindProperty(Stack<string> stack, List<IManifestMember> properties, List<IManifestType> types)
+		private Dictionary<string, IManifestTypeDescriptor> FindProperty(Stack<string> stack, Dictionary<string, IManifestTypeDescriptor> properties, IManifestTypeResolver resolver)
 		{
 			if (stack.Count < 2)
 				return properties;
@@ -96,12 +95,10 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 			{
 				var current = stack.Pop();
 
-				var property = properties.FirstOrDefault(f => string.Compare(f.Name, current, true) == 0);
-
-				if (property == null)
+				if (properties.FirstOrDefault(f => string.Compare(f.Key, current, true) == 0).Value is not IManifestTypeDescriptor property)
 					return result;
 
-				var type = types.FirstOrDefault(f => string.Compare(property.Type, f.Name, false) == 0);
+				var type = resolver.Resolve(property.Name);
 
 				if (type == null)
 				{

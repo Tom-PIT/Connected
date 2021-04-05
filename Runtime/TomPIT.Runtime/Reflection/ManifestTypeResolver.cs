@@ -193,14 +193,14 @@ namespace TomPIT.Reflection
 		private void ResolveTypeArguments(IManifestTypeDescriptor descriptor, ITypeSymbol symbol)
 		{
 			if (symbol is IArrayTypeSymbol array)
-				descriptor.TypeArguments.Add(array.ElementType.ToDisplayString(), CreateDescriptor(array.ElementType));
+				descriptor.TypeArguments.Add(CreateDescriptor(array.ElementType));
 			else
 			{
 				if (symbol is not INamedTypeSymbol namedType || namedType.TypeArguments.IsDefaultOrEmpty)
 					return;
 
 				foreach (var argument in namedType.TypeArguments)
-					descriptor.TypeArguments.Add(argument.Name, CreateDescriptor(argument));
+					descriptor.TypeArguments.Add(CreateDescriptor(argument));
 			}
 		}
 

@@ -6,7 +6,7 @@ namespace TomPIT.Reflection
 	{
 		string Name { get; }
 		Dictionary<string, IManifestTypeDescriptor> Members { get; }
-		Dictionary<string, IManifestTypeDescriptor> TypeArguments { get; }
+		List<IManifestTypeDescriptor> TypeArguments { get; }
 
 		bool IsPrimitive { get; }
 		bool IsArray { get; }

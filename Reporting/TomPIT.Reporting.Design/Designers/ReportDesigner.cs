@@ -155,11 +155,6 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			}
 		}
 
-		private Type ResolvePropertyType(JToken value)
-		{
-			return TypeExtensions.GetType(value.Value<string>());
-		}
-
 		protected override IDesignerActionResult OnAction(JObject data, string action)
 		{
 			if (string.Compare(action, "loadApis", true) == 0)
@@ -235,29 +230,45 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			if (schemaType == null)
 				return null;
 
-			var schema = new JsonSchemaNode(schemaType.Name, true, JsonNodeType.Array)
+			var schema = new JsonSchemaNode(ResolveSchemaName(schemaType), true, JsonNodeType.Array)
 			{
-				DisplayName = schemaType.Name
+				DisplayName = ResolveSchemaName(schemaType)
 			};
 
 			result.Schema.AddChildren(schema);
 
 			var fields = new List<JsonSchemaNode>();
+			var members = schemaType.IsArray ? schemaType.TypeArguments[0].Members : schemaType.Members;
 
-			foreach (var property in schemaType.Members)
+			foreach (var property in members)
 			{
 				var type = typeResolver.Resolve(property.Value.Name);
 
 				fields.Add(new JsonSchemaNode(new JsonNode(property.Key, true, JsonNodeType.Property)
 				{
-					//TODO:resolve type
-					//Type = type.
+					Type = ResolveType(type)
 				}));
 			}
 
 			schema.AddChildren(fields.ToArray());
 
 			return result;
+		}
+
+		private static string ResolveSchemaName(IManifestTypeDescriptor descriptor)
+		{
+			if (!descriptor.IsArray)
+				return descriptor.Name;
+
+			return descriptor.TypeArguments[0].Name;
+		}
+
+		private static Type ResolveType(IManifestTypeDescriptor descriptor)
+		{
+			if (TypeExtensions.GetType(descriptor.Name) is Type resolved)
+				return resolved;
+
+			return typeof(string);
 		}
 
 		//private JsonSchemaNode CreateObjectNode(ApiManifest manifest, IManifestProperty property, IManifestType member)
