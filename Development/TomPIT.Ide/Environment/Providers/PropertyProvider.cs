@@ -133,7 +133,7 @@ namespace TomPIT.Ide.Environment.Providers
 				return;
 
 			var element = instance as IElement;
-			var props = ReflectionExtensions.Properties(instance, false, true);
+			var props = ReflectionExtensions.Properties(instance, false);
 
 			if (props == null)
 				return;

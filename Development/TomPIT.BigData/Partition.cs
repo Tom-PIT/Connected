@@ -18,7 +18,6 @@ namespace TomPIT.MicroServices.BigData
 	{
 		private ListItems<IBigDataQuery> _queries = null;
 
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
 		[DefaultValue(SchemaSynchronizationMode.Manual)]
 		public SchemaSynchronizationMode SchemaSynchronization { get; set; } = SchemaSynchronizationMode.Manual;

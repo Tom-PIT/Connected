@@ -95,7 +95,7 @@ namespace TomPIT.Reflection
 			if (configuration is T t)
 				r.Add(t);
 
-			var props = ReflectionExtensions.Properties(configuration, false, false);
+			var props = ReflectionExtensions.Properties(configuration, false);
 			var refs = new List<object>
 			{
 				configuration
@@ -109,7 +109,7 @@ namespace TomPIT.Reflection
 
 		private void Query<T>(object instance, List<T> items, List<object> refs) where T : IElement
 		{
-			var props = ReflectionExtensions.Properties(instance, false, false);
+			var props = ReflectionExtensions.Properties(instance, false);
 
 			foreach (var i in props)
 				Query(instance, i, items, refs);

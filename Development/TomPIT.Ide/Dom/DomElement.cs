@@ -234,7 +234,7 @@ namespace TomPIT.Ide.Dom
 
 		private void FillObjectProperties(object instance, List<IDomElement> properties)
 		{
-			var props = ReflectionExtensions.Properties(instance, false, true);
+			var props = ReflectionExtensions.Properties(instance, false);
 			var filtered = new List<PropertyInfo>();
 			var suppressed = instance.GetType().FindAttribute<SuppressPropertiesAttribute>();
 			string[] suppressedProps = null;

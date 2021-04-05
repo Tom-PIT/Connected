@@ -79,9 +79,10 @@ namespace TomPIT.Reflection
 			return MicroServices.Info.SelectMiddleware(context, microService);
 		}
 
+		[Obsolete("Use ReflectionExtensions instead.")]
 		public PropertyInfo[] Properties(object instance, bool writableOnly, bool filterByEnvironment)
 		{
-			return ReflectionExtensions.Properties(instance, writableOnly, filterByEnvironment);
+			return ReflectionExtensions.Properties(instance, writableOnly);
 		}
 	}
 }

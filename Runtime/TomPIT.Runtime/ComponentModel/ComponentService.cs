@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
-using TomPIT.Annotations.Design;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Design.Serialization;
@@ -18,7 +14,6 @@ using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
-using TomPIT.Runtime;
 using TomPIT.Storage;
 
 namespace TomPIT.ComponentModel
@@ -154,30 +149,21 @@ namespace TomPIT.ComponentModel
 
 		public ImmutableList<IConfiguration> QueryConfigurations(ImmutableList<IComponent> components)
 		{
-			var r = new ConcurrentBag<IConfiguration>();
+			var r = new List<IConfiguration>();
 			var ids = components.Select(f => f.Token).Distinct().ToList();
-			var rtIds = components.Select(f => f.RuntimeConfiguration).Distinct().Where(f => f != Guid.Empty).ToList();
-
-			var mode = Shell.GetService<IRuntimeService>().Mode;
 			var contents = Tenant.GetService<IStorageService>().Download(ids);
-			var runtimeContents = mode == EnvironmentMode.Design ? null : Tenant.GetService<IStorageService>().Download(rtIds);
 
-			Parallel.ForEach(contents, (i) =>
+			foreach(var content in contents)
 			{
-				var component = components.FirstOrDefault(f => f.Token == i.Blob);
+				var component = components.FirstOrDefault(f => f.Token == content.Blob);
 
 				if (component == null)
-					return;
+					continue;
 
-				IBlobContent runtime = null;
-
-				if (mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty)
-					runtime = runtimeContents.FirstOrDefault(f => f.Blob == component.RuntimeConfiguration);
-
-				var config = SelectConfiguration(component, i, runtime, false);
+				var config = SelectConfiguration(component, content, false);
 
 				r.Add(config);
-			});
+			};
 
 			return r.ToImmutableList();
 		}
@@ -264,7 +250,7 @@ namespace TomPIT.ComponentModel
 			if (cmp == null)
 				return null;
 
-			return SelectConfiguration(cmp, null, null, true);
+			return SelectConfiguration(cmp, null, true);
 		}
 
 		public IConfiguration SelectConfiguration(Guid component)
@@ -274,10 +260,10 @@ namespace TomPIT.ComponentModel
 			if (cmp == null)
 				return null;
 
-			return SelectConfiguration(cmp, null, null, true);
+			return SelectConfiguration(cmp, null, true);
 		}
 
-		private IConfiguration SelectConfiguration(IComponent component, IBlobContent blob, IBlobContent runtime, bool throwException)
+		private IConfiguration SelectConfiguration(IComponent component, IBlobContent blob, bool throwException)
 		{
 			if (component == null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
@@ -314,21 +300,6 @@ namespace TomPIT.ComponentModel
 				else
 					Tenant.LogError(GetType().ShortName(), ex.Message, LogCategories.Services);
 			}
-			/*
-			 * this is temporary because we'll remove runtime support in the future
-			 */
-			//if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && component.RuntimeConfiguration != Guid.Empty && string.Compare(component.Category, ComponentCategories.StringTable, true)==0)
-			//{
-			//	var rtContent = runtime ?? Tenant.GetService<IStorageService>().Download(component.RuntimeConfiguration);
-
-			//	if (rtContent != null)
-			//	try
-			//		{
-			//			if (Tenant.GetService<ISerializationService>().Deserialize(rtContent.Content, t) is IConfiguration rtInstance)
-			//				MergeWithRuntime(r, rtInstance);
-			//		}
-			//		catch (Exception ex) { Tenant.LogWarning(GetType().ShortName(), ex.Message, LogCategories.Services); }
-			//}
 
 			if (r != null)
 			{
@@ -380,221 +351,6 @@ namespace TomPIT.ComponentModel
 		public void NotifyRemoved(object sender, ConfigurationEventArgs e)
 		{
 			ConfigurationRemoved?.Invoke(Tenant, e);
-		}
-
-		private void MergeWithRuntime(IConfiguration design, IConfiguration runtime)
-		{
-			if (design == null || runtime == null)
-				return;
-
-			MergeProperties(design, runtime, new List<object>(), false);
-		}
-
-		private void MergeProperties(object design, object runtime, List<object> references, bool force)
-		{
-			var props = design.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-			foreach (var i in props)
-				MergeProperty(design, i, runtime, references, force);
-		}
-
-		private void MergeProperty(object design, PropertyInfo property, object runtime, List<object> references, bool force)
-		{
-			if (design == null)
-				return;
-
-			if (runtime == null)
-				return;
-
-			if (property.IsPrimitive())
-				SetProperty(design, property, runtime, force);
-			else if (property.PropertyType.IsCollection())
-				MergeCollection(design, property, runtime, references, force);
-			else
-				MergeObject(design, property, runtime, references, force);
-		}
-
-		private void MergeObject(object design, PropertyInfo property, object runtime, List<object> references, bool force)
-		{
-			if (property.IsIndexer())
-				return;
-
-			var value = property.GetValue(design);
-
-			if (value == null || runtime == null)
-				return;
-
-			if (!property.IsPrimitive())
-			{
-				if (references.Contains(value))
-					return;
-
-				references.Add(value);
-			}
-
-			var att = property.FindAttribute<EnvironmentVisibilityAttribute>();
-
-			if (att != null)
-				force = att.Visibility == EnvironmentMode.Runtime;
-
-			var refValue = runtime.GetType().GetProperty(property.Name).GetValue(runtime);
-
-			if (refValue == null)
-				return;
-
-			MergeProperties(value, refValue, references, force);
-		}
-
-		private static void SetProperty(object design, PropertyInfo property, object runtime, bool force)
-		{
-			if (!property.CanWrite)
-				return;
-
-			var att = property.FindAttribute<EnvironmentVisibilityAttribute>();
-
-			if (att == null && !force)
-				return;
-
-			if (force && att != null && ((att.Visibility & EnvironmentMode.Design) == EnvironmentMode.Design))
-				return;
-
-			if (att == null || force || ((att.Visibility & EnvironmentMode.Runtime) == EnvironmentMode.Runtime))
-			{
-				var rtValue = runtime.GetType().GetProperty(property.Name).GetValue(runtime);
-
-				property.SetValue(design, rtValue);
-			}
-		}
-
-		private void MergeCollection(object design, PropertyInfo property, object runtime, List<object> references, bool force)
-		{
-			CollectionRuntimeMerge mode = CollectionRuntimeMerge.Synchronize;
-
-			var att = property.FindAttribute<CollectionRuntimeMergeAttribute>();
-
-			if (att != null)
-				mode = att.Mode;
-
-			switch (mode)
-			{
-				case CollectionRuntimeMerge.Synchronize:
-					MergeCollectionSynchronize(design, property, runtime, references, force);
-					break;
-				case CollectionRuntimeMerge.Override:
-					MergeCollectionOverride(design, property, runtime);
-					break;
-				case CollectionRuntimeMerge.Append:
-					MergeCollectionAppend(design, property, runtime);
-					break;
-				default:
-					throw new NotSupportedException();
-			}
-		}
-
-		private void MergeCollectionSynchronize(object design, PropertyInfo property, object runtime, List<object> references, bool force)
-		{
-			var rtProperty = runtime.GetType().GetProperty(property.Name);
-			var val = property.GetValue(design);
-			var rtVal = rtProperty.GetValue(runtime);
-
-			if (val is IEnumerable<IElement> dEltEnum && rtVal is IEnumerable<IElement> rEltEnum)
-			{
-				MergeCollectionSynchronizeElements(dEltEnum, rEltEnum, references, force);
-				return;
-			}
-
-			if (val is not IEnumerable denum || rtVal is not IEnumerable renum)
-				return;
-
-			// Note: the code below assumes that lists contain items with the same
-			//			order. This might not be the case!!!
-			var de = denum.GetEnumerator();
-			var re = renum.GetEnumerator();
-
-			while (de.MoveNext())
-			{
-				if (!re.MoveNext())
-					break;
-
-				var dinstance = de.Current;
-				
-				if (dinstance == null)
-					return;
-
-				var rinstance = re.Current;
-				
-				if (rinstance == null)
-					return;
-
-				var props = dinstance.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-				
-				foreach (var i in props)
-					MergeProperty(dinstance, i, rinstance, references, force);
-			}
-		}
-
-		private void MergeCollectionSynchronizeElements(IEnumerable<IElement> dEltEnum, IEnumerable<IElement> rEltEnum, List<object> references, bool force)
-		{
-			var de = dEltEnum.GetEnumerator();
-			while (de.MoveNext())
-			{
-				var dinstance = de.Current;
-			
-				if (dinstance == null)
-					return;
-
-				var rinstance = rEltEnum.FirstOrDefault(x => x.Id == dinstance.Id);
-
-				if (rinstance == null)
-					continue;
-
-				var props = dinstance.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-				
-				foreach (var i in props)
-					MergeProperty(dinstance, i, rinstance, references, force);
-			}
-		}
-
-		private static void MergeCollectionAppend(object design, PropertyInfo property, object runtime)
-		{
-			var rtProperty = runtime.GetType().GetProperty(property.Name);
-			var val = property.GetValue(design);
-			var rtVal = rtProperty.GetValue(runtime);
-			
-			if (val is not IEnumerable || rtVal is not IEnumerable renum)
-				return;
-
-			var re = renum.GetEnumerator();
-
-			while (re.MoveNext())
-			{
-				var rinstance = re.Current;
-
-				if (rinstance == null)
-					return;
-
-				var method = val.GetType().GetRuntimeMethod("Add", new Type[] { rinstance.GetType() });
-
-				if (method == null)
-					return;
-
-				method.Invoke(val, new object[] { rinstance });
-			}
-		}
-
-		private static void MergeCollectionOverride(object design, PropertyInfo property, object runtime)
-		{
-			var val = property.GetValue(design);
-
-			if (val == null)
-				return;
-
-			var clear = val.GetType().GetRuntimeMethod("Clear", Array.Empty<Type>());
-
-			if (clear != null)
-				clear.Invoke(val, null);
-
-			MergeCollectionAppend(design, property, runtime);
 		}
 
 		public IFolder SelectFolder(Guid folder)

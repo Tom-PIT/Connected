@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
-using TomPIT.Runtime;
 
 namespace TomPIT.Configuration
 {
@@ -11,7 +10,6 @@ namespace TomPIT.Configuration
 		[KeyProperty]
 		[Browsable(false)]
 		public string Name { get; set; }
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		[MaxLength(1024)]
 		[InvalidateEnvironment(EnvironmentSection.Designer)]

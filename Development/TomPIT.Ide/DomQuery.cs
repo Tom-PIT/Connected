@@ -58,7 +58,7 @@ namespace TomPIT.Ide
 			if (instance == null)
 				return null;
 
-			var props = ReflectionExtensions.Properties(instance, false, false);
+			var props = ReflectionExtensions.Properties(instance, false);
 
 			foreach (var i in props)
 			{

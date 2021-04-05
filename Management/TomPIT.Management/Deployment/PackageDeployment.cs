@@ -18,7 +18,6 @@ using TomPIT.Ide.ComponentModel;
 using TomPIT.Management.ComponentModel;
 using TomPIT.Management.Deployment.Packages;
 using TomPIT.Middleware;
-using TomPIT.Runtime;
 using TomPIT.Security;
 using TomPIT.Storage;
 
@@ -187,7 +186,7 @@ namespace TomPIT.Management.Deployment
 					}
 				}
 
-				Tenant.GetService<IDesignService>().Components.Restore(Package.MicroService.Token, i, configuration, runtimeConfiguration);
+				Tenant.GetService<IDesignService>().Components.Restore(Package.MicroService.Token, i, configuration);
 			}
 
 			var connections = Tenant.GetService<IComponentService>().QueryComponents(Package.MicroService.Token, ComponentCategories.Connection);
@@ -206,7 +205,7 @@ namespace TomPIT.Management.Deployment
 						if (pi != null && pi.CanWrite)
 							pi.SetValue(config, cs);
 
-						Tenant.GetService<IDesignService>().Components.Update(config, new ComponentUpdateArgs(EnvironmentMode.Design, false));
+						Tenant.GetService<IDesignService>().Components.Update(config, new ComponentUpdateArgs(false));
 					}
 				}
 			}

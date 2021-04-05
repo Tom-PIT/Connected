@@ -5,7 +5,6 @@ using TomPIT.ComponentModel.Diagnostics;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Diagnostics;
 using TomPIT.MicroServices.Design;
-using TomPIT.Runtime;
 
 namespace TomPIT.MicroServices.UI
 {
@@ -27,7 +26,7 @@ namespace TomPIT.MicroServices.UI
 		[DefaultValue(true)]
 		public bool Enabled { get; set; } = true;
 
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[Browsable(false)]
 		public IMetricOptions Metrics
 		{
 			get

@@ -1,4 +1,6 @@
-﻿namespace TomPIT.Storage
+﻿using System;
+
+namespace TomPIT.Storage
 {
 	public class BlobTypes
 	{
@@ -7,6 +9,7 @@
 		 */
 		public const int Configuration = 1;
 		public const int Template = 2;
+		[Obsolete("Runtime configuration is obsolete and will be removed in the next release.")]
 		public const int RuntimeConfiguration = 3;
 		public const int ComponentHistory = 4;
 

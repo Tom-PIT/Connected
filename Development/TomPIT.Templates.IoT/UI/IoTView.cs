@@ -51,7 +51,7 @@ namespace TomPIT.MicroServices.IoT.UI
 		[Items(ItemsAttribute.LayoutItems)]
 		public string Layout { get; set; }
 
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[Browsable(false)]
 		public IMetricOptions Metrics
 		{
 			get

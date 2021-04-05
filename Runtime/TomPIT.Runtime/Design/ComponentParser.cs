@@ -161,14 +161,6 @@ namespace TomPIT.Design
 
 				if (configuration != null)
 					Result.Configuration = configuration.Content;
-
-				if (IncludeRuntimeConfiguration && Component.RuntimeConfiguration != Guid.Empty)
-				{
-					var runtimeConfiguration = Tenant.GetService<IStorageService>().Download(Component.RuntimeConfiguration);
-
-					if (runtimeConfiguration != null)
-						Result.RuntimeConfiguration = runtimeConfiguration.Content;
-				}
 			}
 		}
 

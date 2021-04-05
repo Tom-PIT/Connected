@@ -18,7 +18,7 @@ namespace TomPIT.MicroServices.Distributed
 	{
 		private IMetricOptions _metric = null;
 
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[Browsable(false)]
 		public IMetricOptions Metrics
 		{
 			get

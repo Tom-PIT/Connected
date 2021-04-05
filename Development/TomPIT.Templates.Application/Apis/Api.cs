@@ -23,7 +23,6 @@ namespace TomPIT.MicroServices.Apis
 		private ListItems<IApiOperation> _ops = null;
 
 		[Items(DesignUtils.ApiOperationItems)]
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		[DomDesigner(DomDesignerAttribute.EmptyDesigner, Mode = EnvironmentMode.Runtime)]
 		public ListItems<IApiOperation> Operations
 		{

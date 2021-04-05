@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using TomPIT.Annotations;
-using TomPIT.Annotations.Design;
-using TomPIT.Runtime;
 
 namespace TomPIT.Reflection
 {
@@ -42,7 +40,7 @@ namespace TomPIT.Reflection
 		}
 		public static PropertyInfo PropertyAttribute<T>(object instance) where T :Attribute
 		{
-			var props = Properties(instance, false, false);
+			var props = Properties(instance, false);
 
 			if (props == null || props.Length == 0)
 				return null;
@@ -56,14 +54,9 @@ namespace TomPIT.Reflection
 			return null;
 		}
 
-		public static PropertyInfo[] Properties(object instance, bool writableOnly, bool filterByEnvironment)
+		public static PropertyInfo[] Properties(object instance, bool writableOnly)
 		{
-			var mode = Shell.GetService<IRuntimeService>().Mode;
-			PropertyInfo[] properties = null;
-
-			properties = instance.GetType().GetProperties();
-
-			if (properties == null)
+			if( instance.GetType().GetProperties() is not PropertyInfo[] properties)
 				return null;
 
 			var temp = new List<PropertyInfo>();
@@ -88,52 +81,7 @@ namespace TomPIT.Reflection
 				temp.Add(i);
 			}
 
-			properties = temp.ToArray();
-
-			if (filterByEnvironment)
-			{
-				switch (mode)
-				{
-					case EnvironmentMode.Design:
-						return FilterDesignProperties(properties);
-					case EnvironmentMode.Runtime:
-						return FilterRuntimeProperties(properties);
-					default:
-						throw new NotSupportedException();
-				}
-			}
-
-			return properties;
-		}
-
-		private static PropertyInfo[] FilterDesignProperties(PropertyInfo[] properties)
-		{
-			var r = new List<PropertyInfo>();
-
-			foreach (var i in properties)
-			{
-				var env = i.FindAttribute<EnvironmentVisibilityAttribute>();
-
-				if (env == null || ((env.Visibility & EnvironmentMode.Design) == EnvironmentMode.Design))
-					r.Add(i);
-			}
-
-			return r.ToArray();
-		}
-
-		private static PropertyInfo[] FilterRuntimeProperties(PropertyInfo[] properties)
-		{
-			var r = new List<PropertyInfo>();
-
-			foreach (var i in properties)
-			{
-				var env = i.FindAttribute<EnvironmentVisibilityAttribute>();
-
-				if (env != null && ((env.Visibility & EnvironmentMode.Runtime) == EnvironmentMode.Runtime))
-					r.Add(i);
-			}
-
-			return r.ToArray();
+			return temp.ToArray();
 		}
 	}
 }

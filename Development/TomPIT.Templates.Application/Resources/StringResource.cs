@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
@@ -6,7 +7,6 @@ using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.MicroServices.Design;
-using TomPIT.Runtime;
 
 namespace TomPIT.MicroServices.Resources
 {
@@ -25,7 +25,7 @@ namespace TomPIT.MicroServices.Resources
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
 		public bool IsLocalizable { get; set; } = true;
 
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[Browsable(false)]
 		[CollectionRuntimeMerge(CollectionRuntimeMerge.Override)]
 		public ListItems<IStringTranslation> Translations
 		{

@@ -15,7 +15,6 @@ using TomPIT.Diagostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
-using TomPIT.Runtime;
 using TomPIT.Storage;
 
 namespace TomPIT.Design
@@ -107,7 +106,7 @@ namespace TomPIT.Design
 			Tenant.Post(u, args);
 		}
 
-		public void Restore(Guid microService, IPackageComponent component, IPackageBlob configuration, IPackageBlob runtimeConfiguration)
+		public void Restore(Guid microService, IPackageComponent component, IPackageBlob configuration)
 		{
 			var runtimeConfigurationId = component.RuntimeConfiguration;
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
@@ -124,53 +123,6 @@ namespace TomPIT.Design
 			};
 
 			Tenant.GetService<IStorageService>().Upload(blob, Convert.FromBase64String(configuration.Content), StoragePolicy.Singleton, component.Token);
-
-			if (runtimeConfigurationId != Guid.Empty)
-			{
-				if (runtimeConfiguration != null)
-				{
-					blob = new Blob
-					{
-						ContentType = runtimeConfiguration.ContentType,
-						FileName = runtimeConfiguration.FileName,
-						ResourceGroup = ms.ResourceGroup,
-						MicroService = microService,
-						Type = runtimeConfiguration.Type,
-						Token = runtimeConfigurationId,
-						PrimaryKey = runtimeConfiguration.PrimaryKey
-					};
-
-					Tenant.GetService<IStorageService>().Upload(blob, Convert.FromBase64String(runtimeConfiguration.Content), StoragePolicy.Singleton, runtimeConfigurationId);
-				}
-				else
-				{
-					var stateBlob = Tenant.GetService<IStorageService>().Select(runtimeConfigurationId);
-
-					if (stateBlob != null)
-					{
-						var state = Tenant.GetService<IStorageService>().Download(runtimeConfigurationId);
-						runtimeConfigurationId = Guid.NewGuid();
-
-						if (state != null)
-						{
-							blob = new Blob
-							{
-								ContentType = stateBlob.ContentType,
-								FileName = stateBlob.FileName,
-								ResourceGroup = ms.ResourceGroup,
-								MicroService = microService,
-								Type = BlobTypes.RuntimeConfiguration,
-								PrimaryKey = runtimeConfigurationId.ToString(),
-								Token = runtimeConfigurationId
-							};
-
-							Tenant.GetService<IStorageService>().Restore(blob, state.Content);
-						}
-					}
-				}
-			}
-
-			//DeleteManifest(microService, component.Token);
 
 			var u = Tenant.CreateUrl("ComponentDevelopment", "Insert");
 
@@ -213,7 +165,6 @@ namespace TomPIT.Design
 			var runtimeConfigurationId = component.RuntimeConfiguration;
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 			var configuration = component.Files.FirstOrDefault(f => f.Type == BlobTypes.Configuration);
-			var runtimeConfiguration = component.RuntimeConfiguration == Guid.Empty ? null : component.Files.FirstOrDefault(f => f.Type == BlobTypes.RuntimeConfiguration);
 
 			var blob = new Blob
 			{
@@ -227,51 +178,6 @@ namespace TomPIT.Design
 			};
 
 			Tenant.GetService<IStorageService>().Upload(blob, Unpack(configuration.Content), StoragePolicy.Singleton, component.Token);
-
-			if (runtimeConfigurationId != Guid.Empty)
-			{
-				if (runtimeConfiguration != null)
-				{
-					blob = new Blob
-					{
-						ContentType = runtimeConfiguration.ContentType,
-						FileName = component.Name,
-						ResourceGroup = ms.ResourceGroup,
-						MicroService = microService,
-						Type = runtimeConfiguration.Type,
-						Token = runtimeConfigurationId,
-						PrimaryKey = runtimeConfigurationId.ToString()
-					};
-
-					Tenant.GetService<IStorageService>().Upload(blob, Unpack(runtimeConfiguration.Content), StoragePolicy.Singleton, runtimeConfigurationId);
-				}
-				else
-				{
-					var stateBlob = Tenant.GetService<IStorageService>().Select(runtimeConfigurationId);
-
-					if (stateBlob != null)
-					{
-						var state = Tenant.GetService<IStorageService>().Download(runtimeConfigurationId);
-						runtimeConfigurationId = Guid.NewGuid();
-
-						if (state != null)
-						{
-							blob = new Blob
-							{
-								ContentType = stateBlob.ContentType,
-								FileName = stateBlob.FileName,
-								ResourceGroup = ms.ResourceGroup,
-								MicroService = microService,
-								Type = BlobTypes.RuntimeConfiguration,
-								PrimaryKey = runtimeConfigurationId.ToString(),
-								Token = runtimeConfigurationId
-							};
-
-							Tenant.GetService<IStorageService>().Restore(blob, state.Content);
-						}
-					}
-				}
-			}
 
 			foreach(var file in component.Files)
 			{
@@ -292,8 +198,6 @@ namespace TomPIT.Design
 				}, Unpack(file.Content));
 
 			}
-
-			//DeleteManifest(microService, component.Token);
 
 			var u = Tenant.CreateUrl("ComponentDevelopment", "Insert");
 
@@ -520,7 +424,7 @@ namespace TomPIT.Design
 
 		public void Update(IConfiguration configuration)
 		{
-			UpdateConfiguration(configuration, new ComponentUpdateArgs(Shell.GetService<IRuntimeService>().Mode, true));
+			UpdateConfiguration(configuration, new ComponentUpdateArgs(true));
 		}
 
 		public void Update(IConfiguration configuration, ComponentUpdateArgs e)
@@ -542,7 +446,7 @@ namespace TomPIT.Design
 			/*
 		 * version control lock needs to be obtained only for design time
 		 */
-			if (e.Mode == EnvironmentMode.Design && e.PerformLock)
+			if (e.PerformLock)
 				Tenant.GetService<IDesignService>().VersionControl.Lock(c.Token, Development.LockVerb.Edit);
 
 			var content = Tenant.GetService<ISerializationService>().Serialize(configuration);
@@ -558,49 +462,16 @@ namespace TomPIT.Design
 				PrimaryKey = configuration.Component.ToString()
 			};
 
-			if (e.Mode == EnvironmentMode.Runtime)
-			{
-				var rt = c.RuntimeConfiguration;
-
-				if (rt == Guid.Empty)
-				{
-					rt = Guid.NewGuid();
-
-					UpdateRuntimeConfiguration(c.Token, rt);
-				}
-
-				blob.PrimaryKey = rt.ToString();
-				blob.Type = BlobTypes.RuntimeConfiguration;
-				blob.Token = rt;
-
-				Tenant.GetService<IStorageService>().Upload(blob, content, StoragePolicy.Singleton, rt);
-			}
-			else
-			{
-				Tenant.GetService<IStorageService>().Upload(blob, content, StoragePolicy.Singleton);
-				InvalidateIndexState(configuration.Component);
-			}
+			Tenant.GetService<IStorageService>().Upload(blob, content, StoragePolicy.Singleton);
+			InvalidateIndexState(configuration.Component);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification n)
 				n.NotifyChanged(this, new ConfigurationEventArgs(c.MicroService, configuration.Component, c.Category));
-
-			//DeleteManifest(c);
 
 			var u = Tenant.CreateUrl("NotificationDevelopment", "ConfigurationChanged");
 			var args = new JObject
 				{
 					 { "configuration", c.Token }
-				};
-
-			Tenant.Post(u, args);
-		}
-		private void UpdateRuntimeConfiguration(Guid component, Guid runtimeConfiguration)
-		{
-			var u = Tenant.CreateUrl("ComponentDevelopment", "UpdateRuntimeConfiguration");
-			var args = new JObject
-				{
-					 {"runtimeConfiguration", runtimeConfiguration },
-					 {"component", component }
 				};
 
 			Tenant.Post(u, args);
@@ -765,74 +636,6 @@ namespace TomPIT.Design
 				svc.NotifyFolderChanged(this, new FolderEventArgs(microService, folder));
 		}
 
-		public void SaveRuntimeState(Guid microService)
-		{
-			var state = new JObject
-				{
-					 {"microService", microService }
-				};
-
-			var rt = new JArray();
-
-			state.Add("runtimeConfigurations", rt);
-
-			var components = Tenant.GetService<IComponentService>().QueryComponents(microService);
-
-			foreach (var i in components)
-			{
-				if (i.RuntimeConfiguration != Guid.Empty)
-				{
-					rt.Add(new JObject
-								{
-									 {i.Token.ToString(), i.RuntimeConfiguration.ToString() }
-								});
-				}
-			}
-
-			if (rt.Count == 0)
-				return;
-
-			var u = Tenant.CreateUrl("ComponentDevelopment", "SaveRuntimeState");
-
-			Tenant.Post(u, state);
-		}
-
-		public Dictionary<Guid, Guid> SelectRuntimeState(Guid microService)
-		{
-			var u = Tenant.CreateUrl("ComponentDevelopment", "SelectRuntimeState");
-			var e = new JObject
-				{
-					 {"microService", microService }
-				};
-
-			var a = Tenant.Post<JArray>(u, e);
-
-			if (a == null)
-				return null;
-
-			var r = new Dictionary<Guid, Guid>();
-
-			foreach (JObject i in a)
-			{
-				var prop = i.First as JProperty;
-
-				r.Add(new Guid(prop.Name), new Guid(prop.Value.ToString()));
-			}
-
-			return r;
-		}
-
-		public void DropRuntimeState(Guid microService)
-		{
-			var u = Tenant.CreateUrl("ComponentDevelopment", "DropRuntimeState");
-			var e = new JObject
-				{
-					 {"microService", microService }
-				};
-
-			Tenant.Post(u, e);
-		}
-
 		public IComponentImage CreateComponentImage(Guid component)
 		{
 			var c = Tenant.GetService<IComponentService>().SelectComponent(component);
@@ -954,7 +757,7 @@ namespace TomPIT.Design
 		 */
 			var imageConfig = Tenant.GetService<ISerializationService>().Deserialize(image.Configuration.Content, Type.GetType(image.Type)) as IConfiguration;
 
-			Update(imageConfig, new ComponentUpdateArgs(Shell.GetService<IRuntimeService>().Mode, false));
+			Update(imageConfig, new ComponentUpdateArgs(false));
 
 			foreach (var i in image.Dependencies)
 			{
@@ -989,21 +792,11 @@ namespace TomPIT.Design
 					NameSpace = ComponentCategories.ResolveNamespace(component.Category)
 				});
 			}
-
-			//DeleteManifest(image.Token);
 		}
 
 		public void RestoreComponent(Guid blob)
 		{
 			RestoreComponent(SelectComponentImage(blob));
-		}
-
-		public void Import(Guid microService, Guid blob)
-		{
-			throw new NotImplementedException();
-
-			//var image = await DownloadImageAsync(blob);
-			//var imageConfig = Tenant.GetService<ISerializationService>().Deserialize(image.Configuration.Content, Type.GetType(image.Type)) as IConfiguration;
 		}
 
 		public List<IComponent> Query(Guid microService)
@@ -1099,40 +892,77 @@ namespace TomPIT.Design
 			Tenant.Post(u, e);
 		}
 
-		//private void DeleteManifest(Guid component)
-		//{
-		//	var c = Tenant.GetService<IComponentService>().SelectComponent(component);
-
-		//	if (c == null)
-		//		return;
-
-		//	DeleteManifest(c);
-		//}
-
-		//private void DeleteManifest(IComponent component)
-		//{
-		//	DeleteManifest(component.MicroService, component.Token);
-		//}
-
-		//private void DeleteManifest(Guid microService, Guid component)
-		//{
-		//	var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
-
-		//	if (ms == null)
-		//		return;
-
-		//	var blobs = Tenant.GetService<IStorageService>().Query(ms.Token, BlobTypes.Manifest, ms.ResourceGroup, $"manifest{component}");
-
-		//	if (blobs == null || blobs.Count == 0)
-		//		return;
-
-		//	foreach (var blob in blobs)
-		//		Tenant.GetService<IStorageService>().Delete(blob.Token);
-		//}
-
 		private ServerUrl CreateUrl(string action)
 		{
 			return Tenant.CreateUrl("ComponentDevelopment", action);
+		}
+
+		public void SaveRuntimeState(Guid microService)
+		{
+			var state = new JObject
+				{
+					 {"microService", microService }
+				};
+
+			var rt = new JArray();
+
+			state.Add("runtimeConfigurations", rt);
+
+			var components = Tenant.GetService<IComponentService>().QueryComponents(microService);
+
+			foreach (var i in components)
+			{
+				if (i.RuntimeConfiguration != Guid.Empty)
+				{
+					rt.Add(new JObject
+								{
+									 {i.Token.ToString(), i.RuntimeConfiguration.ToString() }
+								});
+				}
+			}
+
+			if (rt.Count == 0)
+				return;
+
+			var u = Tenant.CreateUrl("ComponentDevelopment", "SaveRuntimeState");
+
+			Tenant.Post(u, state);
+		}
+
+		public Dictionary<Guid, Guid> SelectRuntimeState(Guid microService)
+		{
+			var u = Tenant.CreateUrl("ComponentDevelopment", "SelectRuntimeState");
+			var e = new JObject
+				{
+					 {"microService", microService }
+				};
+
+			var a = Tenant.Post<JArray>(u, e);
+
+			if (a == null)
+				return null;
+
+			var r = new Dictionary<Guid, Guid>();
+
+			foreach (JObject i in a)
+			{
+				var prop = i.First as JProperty;
+
+				r.Add(new Guid(prop.Name), new Guid(prop.Value.ToString()));
+			}
+
+			return r;
+		}
+
+		public void DropRuntimeState(Guid microService)
+		{
+			var u = Tenant.CreateUrl("ComponentDevelopment", "DropRuntimeState");
+			var e = new JObject
+				{
+					 {"microService", microService }
+				};
+
+			Tenant.Post(u, e);
 		}
 	}
 }

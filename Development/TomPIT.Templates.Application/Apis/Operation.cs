@@ -40,7 +40,7 @@ namespace TomPIT.MicroServices.Apis
 		[InvalidateEnvironment(EnvironmentSection.Explorer)]
 		public ElementScope Scope { get; set; } = ElementScope.Public;
 
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[Browsable(false)]
 		public IMetricOptions Metrics
 		{
 			get
