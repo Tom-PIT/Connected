@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
@@ -11,6 +13,8 @@ namespace TomPIT.Reflection
 {
 	internal class ScriptManifestCache : ClientRepository<IScriptManifest, Guid>
 	{
+		private SingletonProcessor<int> _preloadProcessor = new SingletonProcessor<int>();
+		private bool _initialized = false;
 		public ScriptManifestCache(ITenant tenant) : base(tenant, nameof(ScriptManifestCache))
 		{
 		}
@@ -34,6 +38,8 @@ namespace TomPIT.Reflection
 		{
 			return Get(id, (f) =>
 			{
+				f.Duration = TimeSpan.Zero;
+
 				return Load(microService, component, id);
 			});
 		}
@@ -80,28 +86,9 @@ namespace TomPIT.Reflection
 			Preload(component);
 
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
-			var content = Tenant.GetService<IStorageService>().Download(microService, BlobTypes.ScriptManifest, ms.ResourceGroup, id.ToString());
-
-			if (content?.Content != null && content.Content.Length > 0)
-			{
-				try
-				{
-					var serializer = new ScriptManifestDeserializer();
-
-					serializer.Deserialize(content.Content);
-					/*
-					 * couldn't deserialize. possibly breaking change.
-					 */
-					if (serializer.IsEmpty)
-						Tenant.GetService<IStorageService>().Delete(content.Blob);
-					else
-						return serializer.Manifest;
-				}
-				catch
-				{
-
-				}
-			}
+			
+			if (Load(Tenant.GetService<IStorageService>().Download(microService, BlobTypes.ScriptManifest, ms.ResourceGroup, id.ToString())) is IScriptManifest result)
+				return result;
 
 			var element = Tenant.GetService<IDiscoveryService>().Configuration.Find(component, id);
 
@@ -110,14 +97,85 @@ namespace TomPIT.Reflection
 			return Get(id);
 		}
 
+		private IScriptManifest Load(IBlobContent content)
+		{
+			if (content?.Content is null || content.Content.Length == 0)
+				return null;
+
+			try
+			{
+				var serializer = new ScriptManifestDeserializer();
+
+				serializer.Deserialize(content.Content);
+
+				/*
+				 * couldn't deserialize. possibly breaking change.
+				 */
+				if (serializer.IsEmpty)
+					return null;
+
+				return serializer.Manifest;
+			}
+			catch
+			{
+
+			}
+			finally
+			{
+				Tenant.GetService<IStorageService>().Release(content.Blob);
+			}
+
+			return null;
+		}
+
 		private void Preload(Guid component)
 		{
-			if (Tenant.GetService<IRuntimeService>().Stage == EnvironmentStage.Development)
-				Tenant.GetService<IStorageService>().Preload(BlobTypes.ScriptManifest);
-			else
+			if (_initialized)
+				return;
+
+			PreloadProcessor.Start(0,
+				() =>
+				{
+					if (_initialized)
+						return;
+
+					_initialized = true;
+
+					if (Tenant.GetService<IRuntimeService>().Stage == EnvironmentStage.Development)
+						CreateImages(Tenant.GetService<IStorageService>().Preload(BlobTypes.ScriptManifest));
+					else
+					{
+						if (Tenant.GetService<IComponentService>().SelectComponent(component) is IComponent c)
+							CreateImages(Tenant.GetService<IStorageService>().Preload(BlobTypes.ScriptManifest, c.MicroService));
+					}
+				});
+		}
+
+		public IImmutableList<IScriptManifest> QueryReferences(IScriptManifest e)
+		{
+			var result = new List<IScriptManifest>();
+			var address = e.GetPointer(e.Address);
+
+			foreach(var manifest in All())
 			{
-				if (Tenant.GetService<IComponentService>().SelectComponent(component) is IComponent c)
-					Tenant.GetService<IStorageService>().Preload(BlobTypes.ScriptManifest, c.MicroService);
+				if (manifest == e)
+					continue;
+
+				if (manifest.Pointers.Contains(address))
+					result.Add(manifest);
+			}
+
+			return result.ToImmutableList();
+		}
+
+		private SingletonProcessor<int> PreloadProcessor => _preloadProcessor;
+
+		private void CreateImages(ImmutableList<Guid> blobs)
+		{
+			foreach (var blob in blobs)
+			{
+				if (Load(Tenant.GetService<IStorageService>().Download(blob)) is IScriptManifest manifest)
+					Set(manifest.GetPointer(manifest.Address).Element, manifest, TimeSpan.Zero);
 			}
 		}
 	}

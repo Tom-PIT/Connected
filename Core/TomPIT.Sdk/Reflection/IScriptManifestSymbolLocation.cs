@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.Reflection
 {
-	public interface IManifestSymbolLocation
+	public interface IScriptManifestSymbolLocation
 	{
 		int StartLine { get; set; }
 		int StartCharacter { get; set; }

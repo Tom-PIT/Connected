@@ -1251,4 +1251,7 @@
   <data name="ErrCannotResolveDatabaseType" xml:space="preserve">
     <value>Cannot resolve database type</value>
   </data>
+  <data name="ErrDependencyGraph" xml:space="preserve">
+    <value>Cannot set entry into dependency graph</value>
+  </data>
 </root>

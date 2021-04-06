@@ -2,7 +2,7 @@
 
 namespace TomPIT.Reflection
 {
-	public class ManifestProperty : ManifestMember, IManifestProperty
+	internal class ManifestProperty : ManifestMember, IManifestProperty
 	{
 		private List<IManifestAttribute> _attributes = null;
 		public bool CanRead { get; set; }

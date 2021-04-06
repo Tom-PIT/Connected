@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Immutable;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 
@@ -8,17 +7,21 @@ namespace TomPIT.Reflection
 {
 	internal class MicroServiceReferencesDiscovery : TenantObject, IMicroServiceReferencesDiscovery
 	{
+		private readonly MicroServiceDependencyGraph _dependencyGraph;
+
 		public MicroServiceReferencesDiscovery(ITenant tenant) : base(tenant)
 		{
+			_dependencyGraph = new MicroServiceDependencyGraph(Tenant);
 		}
 
-		public List<IMicroService> Flatten(Guid microService)
+		public ImmutableArray<IMicroService> References(Guid microService, bool recursive)
 		{
-			var r = new List<IMicroService>();
+			return DependencyGraph.References(microService, recursive);
+		}
 
-			Flatten(microService, r);
-
-			return r;
+		public ImmutableArray<IMicroService> Flatten(Guid microService)
+		{
+			return References(microService, true);
 		}
 
 		public IServiceReferencesConfiguration Select(string microService)
@@ -46,29 +49,11 @@ namespace TomPIT.Reflection
 			return Select(ms.Name);
 		}
 
-		private void Flatten(Guid microService, List<IMicroService> existing)
+		public ImmutableArray<IMicroService> ReferencedBy(Guid microService, bool recursive)
 		{
-			var refs = Select(microService);
-
-			if (refs == null)
-				return;
-
-			foreach (var reference in refs.MicroServices)
-			{
-				if (string.IsNullOrWhiteSpace(reference.MicroService))
-					continue;
-
-				if (existing.FirstOrDefault(f => string.Compare(f.Name, reference.MicroService, true) == 0) != null)
-					continue;
-
-				var ms = Tenant.GetService<IMicroServiceService>().Select(reference.MicroService);
-
-				if (ms != null)
-				{
-					existing.Add(ms);
-					Flatten(ms.Token, existing);
-				}
-			}
+			return DependencyGraph.ReferencedBy(microService, recursive);
 		}
+
+		private MicroServiceDependencyGraph DependencyGraph => _dependencyGraph;
 	}
 }

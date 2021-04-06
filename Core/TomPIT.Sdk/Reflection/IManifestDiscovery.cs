@@ -12,5 +12,7 @@ namespace TomPIT.Reflection
 
 		IManifestTypeResolver SelectTypeResolver(IManifestMiddleware manifest);
 		IManifestTypeResolver SelectTypeResolver(Guid microService, Guid component, Guid script);
+
+		IImmutableList<IScriptManifest> QueryReferences(IScriptManifest manifest);
 	}
 }

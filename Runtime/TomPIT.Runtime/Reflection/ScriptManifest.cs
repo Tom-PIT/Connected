@@ -12,9 +12,9 @@ namespace TomPIT.Reflection
 	{
 		private List<short> _scriptReferences;
 		private List<short> _resourceReferences;
-		private List<IManifestType> _declaredTypes;
-		private HashSet<IManifestPointer> _pointers;
-		private Dictionary<IManifestSymbolReference, HashSet<IManifestSymbolLocation>> _sourceReferences;
+		private List<IScriptManifestType> _declaredTypes;
+		private HashSet<IScriptManifestPointer> _pointers;
+		private Dictionary<IScriptManifestSymbolReference, HashSet<IScriptManifestSymbolLocation>> _sourceReferences;
 		private short _identity = 0;
 		private bool _metaDataLoaded = false;
 
@@ -29,25 +29,25 @@ namespace TomPIT.Reflection
 		}
 		public List<short> ScriptReferences => _scriptReferences ??= new List<short>();
 		public List<short> ResourceReferences => _resourceReferences ??= new List<short>();
-		[JsonConverter(typeof(ManifestSymbolReferenceConverter))]
-		public Dictionary<IManifestSymbolReference, HashSet<IManifestSymbolLocation>> SymbolReferences => _sourceReferences ??= new Dictionary<IManifestSymbolReference, HashSet<IManifestSymbolLocation>>(new ManifestSymbolReferenceComparer());
+		[JsonConverter(typeof(ScriptManifestSymbolReferenceConverter))]
+		public Dictionary<IScriptManifestSymbolReference, HashSet<IScriptManifestSymbolLocation>> SymbolReferences => _sourceReferences ??= new Dictionary<IScriptManifestSymbolReference, HashSet<IScriptManifestSymbolLocation>>(new ScriptManifestSymbolReferenceComparer());
 
-		public List<IManifestType> DeclaredTypes => _declaredTypes ??= new List<IManifestType>();
+		public List<IScriptManifestType> DeclaredTypes => _declaredTypes ??= new List<IScriptManifestType>();
 
-		public HashSet<IManifestPointer> Pointers => _pointers ??= new HashSet<IManifestPointer>(new ManifestPointerComparer());
+		public HashSet<IScriptManifestPointer> Pointers => _pointers ??= new HashSet<IScriptManifestPointer>(new ScriptManifestPointerComparer());
 
 		public short Address { get; set; }
 
 		public short GetId(Guid microService, Guid component, Guid element)
 		{
-			var pointer = new ManifestPointer
+			var pointer = new ScriptManifestPointer
 			{
 				MicroService = microService,
 				Component = component,
 				Element = element
 			};
 
-			if (Pointers.TryGetValue(pointer, out IManifestPointer existing))
+			if (Pointers.TryGetValue(pointer, out IScriptManifestPointer existing))
 				return existing.Id;
 
 			pointer.Id = _identity++;
@@ -57,7 +57,7 @@ namespace TomPIT.Reflection
 			return pointer.Id;
 		}
 
-		public IManifestPointer GetPointer(short id)
+		public IScriptManifestPointer GetPointer(short id)
 		{
 			return Pointers.FirstOrDefault(f => f.Id == id);
 		}

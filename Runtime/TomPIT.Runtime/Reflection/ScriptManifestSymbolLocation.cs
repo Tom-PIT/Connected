@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.Reflection
 {
-	internal class ManifestSymbolLocation : IManifestSymbolLocation
+	internal class ScriptManifestSymbolLocation : IScriptManifestSymbolLocation
 	{
 		public int StartLine {get;set;}
 

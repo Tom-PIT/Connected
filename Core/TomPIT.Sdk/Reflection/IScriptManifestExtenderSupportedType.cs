@@ -2,7 +2,7 @@
 
 namespace TomPIT.Reflection
 {
-	public interface IManifestExtenderSupportedType : IManifestReturnType
+	public interface IScriptManifestExtenderSupportedType : IScriptManifestReturnType
 	{
 		List<string> Extenders { get; }
 	}

@@ -30,6 +30,9 @@ namespace TomPIT.MicroServices.Apis
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		public string Name { get; set; }
 
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
+
 		public override string ToString()
 		{
 			return string.IsNullOrWhiteSpace(Name) ? GetType().ShortName() : Name;

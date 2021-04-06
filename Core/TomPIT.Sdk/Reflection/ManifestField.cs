@@ -2,7 +2,7 @@
 
 namespace TomPIT.Reflection
 {
-	public class ManifestField : ManifestMember, IManifestField
+	internal class ManifestField : ManifestMember, IManifestField
 	{
 		private List<IManifestAttribute> _attributes = null;
 		public bool IsConstant { get; set; }

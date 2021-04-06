@@ -60,7 +60,7 @@ namespace TomPIT.Reflection
 
 		public List<IMicroService> FlattenReferences(Guid microService)
 		{
-			return MicroServices.References.Flatten(microService);
+			return MicroServices.References.Flatten(microService).ToList();
 		}
 
 		public List<T> Children<T>(IConfiguration configuration) where T : IElement

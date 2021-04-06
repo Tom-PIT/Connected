@@ -68,6 +68,30 @@ namespace TomPIT.Design.CodeAnalysis
 			return type.Type.LookupBaseType(model, baseTypeName);
 		}
 
+		public static ITypeSymbol LookupBaseType(INamedTypeSymbol type, SemanticModel model, string baseTypeName)
+		{
+			if (type == null)
+				return null;
+
+			var displayName = type.ToDisplayString();
+
+			if (string.Compare(displayName, baseTypeName, false) == 0)
+				return type;
+
+			foreach (var itf in type.AllInterfaces)
+			{
+				displayName = itf.ToDisplayString();
+
+				if (string.Compare(displayName, baseTypeName, false) == 0)
+					return itf;
+			}
+
+			if (type.BaseType == null)
+				return null;
+
+			return LookupBaseType(type.BaseType, model, baseTypeName);
+		}
+
 		public static bool IsArray(this ITypeSymbol type, SemanticModel model)
 		{
 			return type.LookupBaseType(model, typeof(IEnumerable).FullTypeName()) != default;
@@ -77,14 +101,14 @@ namespace TomPIT.Design.CodeAnalysis
 			if (type == null)
 				return null;
 
-			var displayName = type.ToDisplayName();
+			var displayName = type.ToDisplayString();
 
 			if (string.Compare(displayName, baseTypeName, false) == 0)
 				return type;
 
 			foreach (var itf in type.AllInterfaces)
 			{
-				displayName = itf.ToDisplayName();
+				displayName = itf.ToDisplayString();
 
 				if (string.Compare(displayName, baseTypeName, false) == 0)
 					return itf;
@@ -101,7 +125,7 @@ namespace TomPIT.Design.CodeAnalysis
 
 			while (current != null)
 			{
-				if (string.Compare(current.ToDisplayName(), type, false) == 0)
+				if (string.Compare(current.ToDisplayString(), type, false) == 0)
 					return true;
 
 				current = current.BaseType;

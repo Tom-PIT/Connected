@@ -3,9 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace TomPIT.Reflection
 {
-	internal class ManifestSymbolReferenceComparer : IEqualityComparer<IManifestSymbolReference>
+	internal class ScriptManifestSymbolReferenceComparer : IEqualityComparer<IScriptManifestSymbolReference>
 	{
-		public bool Equals(IManifestSymbolReference x, IManifestSymbolReference y)
+		public bool Equals(IScriptManifestSymbolReference x, IScriptManifestSymbolReference y)
 		{
 			if (ReferenceEquals(x, y))
 				return true;
@@ -20,7 +20,7 @@ namespace TomPIT.Reflection
 				&& x.Address == y.Address;
 		}
 
-		public int GetHashCode([DisallowNull] IManifestSymbolReference obj)
+		public int GetHashCode([DisallowNull] IScriptManifestSymbolReference obj)
 		{
 			return GetHashCode();
 		}

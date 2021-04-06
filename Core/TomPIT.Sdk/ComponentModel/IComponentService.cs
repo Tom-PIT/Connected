@@ -25,6 +25,8 @@ namespace TomPIT.ComponentModel
 
 		ImmutableList<IConfiguration> QueryConfigurations(ImmutableList<IComponent> components);
 		ImmutableList<IConfiguration> QueryConfigurations(List<string> resourceGroups, string categories);
+		ImmutableList<IConfiguration> QueryConfigurations(List<Guid> microServices, string categories);
+		ImmutableList<IConfiguration> QueryConfigurations(string categories);
 		ImmutableList<IConfiguration> QueryConfigurations(Guid microService, string categories);
 		IComponent SelectComponent(Guid microService, string category, string name);
 		IComponent SelectComponentByNameSpace(Guid microService, string nameSpace, string name);

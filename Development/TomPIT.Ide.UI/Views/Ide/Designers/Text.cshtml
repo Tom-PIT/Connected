@@ -50,7 +50,8 @@
                     'definition': @Html.TP().JavaScript.Bool((features & LanguageFeature.Definition) == LanguageFeature.Definition),
                     'signatureHelp': @Html.TP().JavaScript.Bool((features & LanguageFeature.SignatureHelp) == LanguageFeature.SignatureHelp),
                     'documentSymbol': @Html.TP().JavaScript.Bool((features & LanguageFeature.DocumentSymbol) == LanguageFeature.DocumentSymbol),
-                    'documentFormatting': @Html.TP().JavaScript.Bool((features & LanguageFeature.DocumentFormatting) == LanguageFeature.DocumentFormatting)
+                    'documentFormatting': @Html.TP().JavaScript.Bool((features & LanguageFeature.DocumentFormatting) == LanguageFeature.DocumentFormatting),
+                    'codeLens': @Html.TP().JavaScript.Bool((features & LanguageFeature.CodeLens) == LanguageFeature.CodeLens)
                 });
             }
         }

@@ -2,7 +2,7 @@
 
 namespace TomPIT.Reflection
 {
-	public interface IManifestHttpType : IManifestType
+	public interface IScriptManifestHttpType : IScriptManifestType
 	{
 		HttpVerbs Verbs { get; }
 	}

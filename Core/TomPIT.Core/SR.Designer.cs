@@ -1240,6 +1240,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot set entry into dependency graph.
+        /// </summary>
+        public static string ErrDependencyGraph {
+            get {
+                return ResourceManager.GetString("ErrDependencyGraph", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot deserialize type.
         /// </summary>
         public static string ErrDeserialize {

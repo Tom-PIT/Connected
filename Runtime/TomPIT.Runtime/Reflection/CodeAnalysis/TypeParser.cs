@@ -39,7 +39,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 			return result;
 		}
 
-		public IManifestType Parse(ITypeSymbolDescriptor descriptor)
+		public IScriptManifestType Parse(ITypeSymbolDescriptor descriptor)
 		{
 			var result = CreateTypeInstance(descriptor);
 
@@ -59,9 +59,9 @@ namespace TomPIT.Reflection.CodeAnalysis
 			return result.Item2;
 		}
 
-		private (IScriptManifestProvider, IManifestType) CreateTypeInstance(ITypeSymbolDescriptor descriptor)
+		private (IScriptManifestProvider, IScriptManifestType) CreateTypeInstance(ITypeSymbolDescriptor descriptor)
 		{
-			IManifestType type = null;
+			IScriptManifestType type = null;
 			IScriptManifestProvider scriptProvider = null;
 
 			foreach (var provider in Compiler.Providers)
@@ -76,10 +76,12 @@ namespace TomPIT.Reflection.CodeAnalysis
 			}
 
 			if (type == null)
-				type = new ManifestType();
+				type = new ScriptManifestType();
 
 			type.Name = descriptor.Symbol.Name;
 			type.Documentation = ((CSharpSyntaxNode)descriptor.Node).ParseDocumentation();
+
+			SetLocation(type, descriptor.Node);
 
 			return (scriptProvider, type);
 		}
@@ -130,7 +132,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 				ParseSourceReferences(symbol, method);
 		}
 
-		private void ParseSymbol(IManifestType type, IFieldSymbol symbol)
+		private void ParseSymbol(IScriptManifestType type, IFieldSymbol symbol)
 		{
 			if (symbol.IsImplicitlyDeclared)
 				return;
@@ -139,7 +141,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 
 			var node = ResolveNode(symbol) as CSharpSyntaxNode;
 
-			var member = new ManifestField
+			var member = new ScriptManifestField
 			{
 				Name = symbol.Name,
 				Type = symbol.Type.ToDisplayString(),
@@ -147,12 +149,13 @@ namespace TomPIT.Reflection.CodeAnalysis
 				IsPublic = symbol.DeclaredAccessibility == Accessibility.Public,
 				Documentation = node is not null ? node.ParseDocumentation() : null
 			};
-			
+
+			SetLocation(member, node);
 			ParseAttributes(symbol, member.Attributes);
 
 			type.Members.Add(member);
 		}
-		private void ParseSymbol(IManifestType type, IPropertySymbol symbol)
+		private void ParseSymbol(IScriptManifestType type, IPropertySymbol symbol)
 		{
 			ParseSourceReferences(symbol, symbol.Type);
 
@@ -161,7 +164,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 
 			var node = ResolveNode(symbol) as CSharpSyntaxNode;
 
-			var member = new ManifestProperty
+			var member = new ScriptManifestProperty
 			{
 				Name = symbol.Name,
 				CanRead = symbol.GetMethod != null,
@@ -171,6 +174,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 				Documentation = node is not null ? node.ParseDocumentation() : null
 			};
 
+			SetLocation(member, node);
 			ParseAttributes(symbol, member.Attributes);
 
 			type.Members.Add(member);
@@ -205,7 +209,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 
 			var mappedLocation = declared.Locations[0].GetMappedLineSpan();
 
-			var refLocation = new ManifestSymbolLocation
+			var refLocation = new ScriptManifestSymbolLocation
 			{
 				StartCharacter = mappedLocation.StartLinePosition.Character,
 				StartLine = mappedLocation.StartLinePosition.Line,
@@ -222,7 +226,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 
 				var location = symbol.Locations[0].GetMappedLineSpan();
 
-				var source = new ManifestSymbolReference
+				var source = new ScriptManifestSymbolReference
 				{
 					Address = Compiler.Manifest.GetId(script.Configuration().MicroService(), script.Configuration().Component, script.Id),
 					Identifier = symbol.ToDisplayString(),
@@ -234,9 +238,9 @@ namespace TomPIT.Reflection.CodeAnalysis
 				source.Location.EndCharacter = location.EndLinePosition.Character;
 				source.Location.EndLine = location.EndLinePosition.Line;
 
-				if(!Compiler.Manifest.SymbolReferences.TryGetValue(source, out HashSet<IManifestSymbolLocation> items))
+				if(!Compiler.Manifest.SymbolReferences.TryGetValue(source, out HashSet<IScriptManifestSymbolLocation> items))
 				{
-					items = new HashSet<IManifestSymbolLocation>(new ManifestLocationComparer());
+					items = new HashSet<IScriptManifestSymbolLocation>(new ScriptManifestLocationComparer());
 
 					Compiler.Manifest.SymbolReferences.Add(source, items);
 				}
@@ -245,27 +249,27 @@ namespace TomPIT.Reflection.CodeAnalysis
 			}
 		}
 
-		private ManifestSourceReferenceType ResolveReferenceType(SymbolKind kind)
+		private ScriptManifestSourceReferenceType ResolveReferenceType(SymbolKind kind)
 		{
 			switch (kind)
 			{
 				case SymbolKind.Event:
-					return ManifestSourceReferenceType.Event;
+					return ScriptManifestSourceReferenceType.Event;
 				case SymbolKind.Field:
-					return ManifestSourceReferenceType.Field;
+					return ScriptManifestSourceReferenceType.Field;
 				case SymbolKind.Local:
-					return ManifestSourceReferenceType.Local;
+					return ScriptManifestSourceReferenceType.Local;
 				case SymbolKind.Method:
-					return ManifestSourceReferenceType.Method;
+					return ScriptManifestSourceReferenceType.Method;
 				case SymbolKind.NamedType:
-					return ManifestSourceReferenceType.Type;
+					return ScriptManifestSourceReferenceType.Type;
 				case SymbolKind.Property:
-					return ManifestSourceReferenceType.Property;
+					return ScriptManifestSourceReferenceType.Property;
 				default:
-					return ManifestSourceReferenceType.Other;
+					return ScriptManifestSourceReferenceType.Other;
 			}
 		}
-		private void ParseAttributes(ISymbol symbol, List<IManifestAttribute> items)
+		private void ParseAttributes(ISymbol symbol, List<IScriptManifestAttribute> items)
 		{
 			var attributes = symbol.GetAttributes();
 
@@ -283,28 +287,14 @@ namespace TomPIT.Reflection.CodeAnalysis
 			return string.Compare(name, "__ScriptInfo", false) == 0;
 		}
 
-		public static ITypeSymbol LookupBaseType(INamedTypeSymbol type, SemanticModel model, string baseTypeName)
+		private static void SetLocation(IScriptManifestMember member, SyntaxNode node)
 		{
-			if (type == null)
-				return null;
+			var span = node.GetLocation().GetLineSpan();
 
-			var displayName = type.ToDisplayName();
-
-			if (string.Compare(displayName, baseTypeName, false) == 0)
-				return type;
-
-			foreach (var itf in type.AllInterfaces)
-			{
-				displayName = itf.ToDisplayName();
-
-				if (string.Compare(displayName, baseTypeName, false) == 0)
-					return itf;
-			}
-
-			if (type.BaseType == null)
-				return null;
-
-			return LookupBaseType(type.BaseType, model, baseTypeName);
+			member.Location.EndCharacter = span.EndLinePosition.Character;
+			member.Location.EndLine = span.EndLinePosition.Line;
+			member.Location.StartCharacter = span.StartLinePosition.Character;
+			member.Location.StartLine = span.StartLinePosition.Line;
 		}
 	}
 }

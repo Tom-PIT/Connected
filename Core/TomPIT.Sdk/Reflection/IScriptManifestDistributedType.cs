@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.Reflection
 {
-	public interface IManifestDistributedType: IManifestType
+	public interface IScriptManifestDistributedType: IScriptManifestType
 	{
 		bool IsDistributed { get; }
 	}

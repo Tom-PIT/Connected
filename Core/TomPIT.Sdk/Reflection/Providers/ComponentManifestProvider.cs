@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
-using TomPIT.Design.Serialization;
 using TomPIT.Exceptions;
 
 namespace TomPIT.Reflection.Providers
@@ -72,13 +71,13 @@ namespace TomPIT.Reflection.Providers
 
 		}
 
-		protected void BindDocumentation(List<IManifestType> manifestTypes, List<IManifestType> scriptTypes)
+		protected void BindDocumentation(List<IManifestType> manifestTypes, List<IScriptManifestType> scriptTypes)
 		{
 			foreach (var type in manifestTypes)
 				BindDocumentation(type, scriptTypes);
 		}
 
-		protected void BindDocumentation(IManifestType manifestType, List<IManifestType> scriptTypes)
+		protected void BindDocumentation(IManifestType manifestType, List<IScriptManifestType> scriptTypes)
 		{
 			if (manifestType is null)
 				return;
@@ -95,31 +94,12 @@ namespace TomPIT.Reflection.Providers
 			}
 		}
 
-		protected IManifestType CloneType(IManifestType type)
+		protected IManifestType CloneType(IScriptManifestType type)
 		{
 			if (type is null)
 				return null;
-
-			var serialization = Tenant.GetService<ISerializationService>();
-			var result = serialization.Deserialize(serialization.Serialize(type), type.GetType()) as IManifestType;
-
-			for (var i = result.Members.Count - 1; i >= 0; i--)
-			{
-				var member = result.Members[i];
-
-				if (member is IManifestProperty property)
-				{
-					if (!property.IsPublic)
-						result.Members.Remove(property);
-				}
-				else if (member is IManifestField field)
-				{
-					if (!field.IsPublic)
-						result.Members.Remove(field);
-				}
-			}
-
-			return result;
+			
+			return ManifestType.FromScript(type);
 		}
 	}
 }

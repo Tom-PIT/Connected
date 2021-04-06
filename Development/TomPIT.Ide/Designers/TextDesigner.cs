@@ -230,6 +230,17 @@ namespace TomPIT.Ide.Designers
 					return Result.JsonResult(this, editor.GetService<IDefinitionProviderService>().ProvideDefinition(position));
 				}
 			}
+			else if (string.Compare(action, "provideCodeLens", true) == 0)
+			{
+				var model = DeserializeTextModel(data.Optional<JObject>("model", null));
+				using var editor = GetTextEditor(model, data.Optional<string>("text", null));
+
+				if (editor is null)
+					return Result.JsonResult(this, null);
+
+				return Result.JsonResult(this, editor.GetService<ICodeLensService>().ProvideCodeLens());
+
+			}
 			else if (string.Compare(action, "provideDocumentFormattingEdits", true) == 0)
 			{
 				var model = DeserializeTextModel(data.Optional<JObject>("model", null));

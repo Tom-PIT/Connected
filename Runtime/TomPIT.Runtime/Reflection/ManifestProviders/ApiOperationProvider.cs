@@ -11,21 +11,21 @@ namespace TomPIT.Reflection.ManifestProviders
 {
 	internal class ApiOperationProvider : IScriptManifestProvider
 	{
-		public IManifestType CreateTypeInstance(ITypeSymbolDescriptor descriptor)
+		public IScriptManifestType CreateTypeInstance(ITypeSymbolDescriptor descriptor)
 		{
 			if (descriptor.Symbol.TypeKind != Microsoft.CodeAnalysis.TypeKind.Class)
 				return null;
 
-			if (TypeParser.LookupBaseType(descriptor.Symbol, descriptor.Model, typeof(IDistributedOperation).FullTypeName()) is not null)
+			if (descriptor.Symbol.LookupBaseType(descriptor.Model, typeof(IDistributedOperation).FullTypeName()) is not null)
 			{
 				return new DistributedOperationType
 				{
 					IsDistributed = true
 				};
 			}
-			else if (TypeParser.LookupBaseType(descriptor.Symbol, descriptor.Model, typeof(IOperation<>).FullTypeName()) is not null)
+			else if (descriptor.Symbol.LookupBaseType(descriptor.Model, typeof(IOperation<>).FullTypeName()) is not null)
 			{
-				var returnType = TypeParser.LookupBaseType(descriptor.Symbol, descriptor.Model, typeof(IOperation<>).FullTypeName());
+				var returnType = descriptor.Symbol.LookupBaseType(descriptor.Model, typeof(IOperation<>).FullTypeName());
 
 				if (returnType != null)
 				{
@@ -38,9 +38,9 @@ namespace TomPIT.Reflection.ManifestProviders
 					}
 				}
 			}
-			else if (TypeParser.LookupBaseType(descriptor.Symbol, descriptor.Model, typeof(IOperation).FullTypeName()) is not null)
+			else if (descriptor.Symbol.LookupBaseType(descriptor.Model, typeof(IOperation).FullTypeName()) is not null)
 			{
-				var returnType = TypeParser.LookupBaseType(descriptor.Symbol, descriptor.Model, typeof(IOperation).FullTypeName());
+				var returnType = descriptor.Symbol.LookupBaseType(descriptor.Model, typeof(IOperation).FullTypeName());
 
 				if (returnType != null)
 				{
@@ -54,7 +54,7 @@ namespace TomPIT.Reflection.ManifestProviders
 			return null;
 		}
 
-		public void ProcessManifestType(ITypeSymbolDescriptor descriptor, IManifestType type)
+		public void ProcessManifestType(ITypeSymbolDescriptor descriptor, IScriptManifestType type)
 		{
 			if (type is not OperationType operation)
 				return;

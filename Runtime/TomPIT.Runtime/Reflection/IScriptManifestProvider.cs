@@ -2,8 +2,8 @@
 {
 	public interface IScriptManifestProvider
 	{
-		IManifestType CreateTypeInstance(ITypeSymbolDescriptor descriptor);
+		IScriptManifestType CreateTypeInstance(ITypeSymbolDescriptor descriptor);
 
-		void ProcessManifestType(ITypeSymbolDescriptor descriptor, IManifestType type);
+		void ProcessManifestType(ITypeSymbolDescriptor descriptor, IScriptManifestType type);
 	}
 }

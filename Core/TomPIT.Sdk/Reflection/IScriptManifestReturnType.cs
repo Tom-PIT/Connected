@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.Reflection
 {
-	public interface IManifestReturnType : IManifestType
+	public interface IScriptManifestReturnType : IScriptManifestType
 	{
 		string ReturnType { get; set; }
 	}

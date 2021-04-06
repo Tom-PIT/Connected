@@ -119,6 +119,12 @@ namespace TomPIT.Reflection
 		{
 			return new ManifestTypeResolver(Tenant, microService, component, script);
 		}
+
+		public IImmutableList<IScriptManifest> QueryReferences(IScriptManifest e)
+		{
+			return ManifestCache.QueryReferences(e);
+		}
+
 		private ScriptManifestCache ManifestCache => _cache;
 	}
 }

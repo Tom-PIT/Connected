@@ -115,7 +115,7 @@ namespace TomPIT.Reflection
 			Documentation.Add(SerializationOptions.MetaDataDeclaredTypes, dtypes);
 		}
 
-		private static void SerializeDocumentaton(IManifestMember member, JObject container)
+		private static void SerializeDocumentaton(IScriptManifestMember member, JObject container)
 		{
 			if (string.IsNullOrWhiteSpace(member.Documentation))
 				return;
@@ -124,7 +124,7 @@ namespace TomPIT.Reflection
 			container.Add(SerializationOptions.MetaDataDoc, member.Documentation);
 		}
 
-		private static void SerializeMembers(IManifestType type, JObject container, JObject doc)
+		private static void SerializeMembers(IScriptManifestType type, JObject container, JObject doc)
 		{
 			if (!type.Members.Any())
 				return;
@@ -147,7 +147,7 @@ namespace TomPIT.Reflection
 			doc.Add(SerializationOptions.MetaDataMembers, dmembers);
 		}
 
-		private static void SerializeMember(IManifestMember member, JObject container, JObject doc)
+		private static void SerializeMember(IScriptManifestMember member, JObject container, JObject doc)
 		{
 			var props = member.GetType().GetProperties(BindingFlags.Public| BindingFlags.Instance);
 
@@ -164,11 +164,13 @@ namespace TomPIT.Reflection
 					AddNullableProperty(container, property.Name, property.GetValue(member));
 			}
 
-			if (member is IManifestAttributeMember attributeMember)
+			SerializeLocation(container, member.Location);
+
+			if (member is IScriptManifestAttributeMember attributeMember)
 				SerializeAttributes(container, attributeMember);
 		}
 
-		private static void SerializeAttributes(JObject container, IManifestAttributeMember member)
+		private static void SerializeAttributes(JObject container, IScriptManifestAttributeMember member)
 		{
 			if (!member.Attributes.Any())
 				return;
@@ -185,6 +187,8 @@ namespace TomPIT.Reflection
 
 				AddNullableProperty(jatt, SerializationOptions.Description, attribute.Description);
 				AddNullableProperty(jatt, SerializationOptions.IsValidation, attribute.IsValidation);
+
+				SerializeLocation(jatt, attribute.Location);
 
 				jatts.Add(jatt);
 			}
@@ -221,12 +225,12 @@ namespace TomPIT.Reflection
 			Container.Add(SerializationOptions.Pointers, pointers);
 		}
 
-		private static void SerializeLocation(JObject container, IManifestSymbolLocation location)
+		private static void SerializeLocation(JObject container, IScriptManifestSymbolLocation location)
 		{
 			container.Add(SerializationOptions.Location, SerializeLocation(location));
 		}
 
-		private static JObject SerializeLocation(IManifestSymbolLocation location)
+		private static JObject SerializeLocation(IScriptManifestSymbolLocation location)
 		{
 			var jlocation = new JObject();
 

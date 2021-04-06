@@ -37,7 +37,7 @@ namespace TomPIT.Reflection
 				if (type is not JObject jtype)
 					continue;
 
-				var instance = CreateInstance(jtype) as IManifestType;
+				var instance = CreateInstance(jtype) as IScriptManifestType;
 
 				if (instance == null)
 					continue;
@@ -49,7 +49,7 @@ namespace TomPIT.Reflection
 			}
 		}
 
-		private void DeserializeMembers(JObject container, IManifestType instance)
+		private void DeserializeMembers(JObject container, IScriptManifestType instance)
 		{
 			var members = container.Optional(SerializationOptions.Members, (JArray)null);
 
@@ -66,18 +66,19 @@ namespace TomPIT.Reflection
 				if (property == null)
 					continue;
 
-				DeserializeAttributes(jmember, property);
+				DeserializeLocation(jmember, property.Location);
+
+				if (property is IScriptManifestAttributeMember attributeMember)
+					DeserializeAttributes(jmember, attributeMember);
+
 				DeserializeProperties(jmember, property);
 
 				instance.Members.Add(property);
 			}
 		}
 
-		private void DeserializeAttributes(JObject container, IManifestMember instance)
+		private void DeserializeAttributes(JObject container, IScriptManifestAttributeMember instance)
 		{
-			if (instance is not IManifestAttributeMember attributeMember)
-				return;
-
 			if (container.Optional(SerializationOptions.Attributes, (JArray)null) is not JArray jattributes)
 				return;
 
@@ -86,7 +87,7 @@ namespace TomPIT.Reflection
 				if (jattribute is not JObject jatt)
 					continue;
 
-				var attribute = new ManifestAttribute
+				var attribute = new ScriptManifestAttribute
 				{
 					Description = jatt.Optional(SerializationOptions.Description, string.Empty),
 					Name = jatt.Optional(SerializationOptions.Name, string.Empty),
@@ -94,11 +95,13 @@ namespace TomPIT.Reflection
 					Type = jatt.Optional(SerializationOptions.Type, string.Empty)
 				};
 
-				attributeMember.Attributes.Add(attribute);
+				DeserializeLocation(jatt, attribute.Location);
+
+				instance.Attributes.Add(attribute);
 			}
 		}
 
-		private void DeserializeProperties(JObject container, IManifestMember instance)
+		private void DeserializeProperties(JObject container, IScriptManifestMember instance)
 		{
 			var properties = instance.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
@@ -115,7 +118,7 @@ namespace TomPIT.Reflection
 			}
 		}
 
-		private IManifestMember CreateInstance(JObject type)
+		private IScriptManifestMember CreateInstance(JObject type)
 		{
 			var activator = type.Optional(SerializationOptions.Activator, string.Empty);
 
@@ -127,7 +130,7 @@ namespace TomPIT.Reflection
 			if (typeDefinition is null)
 				return null;
 
-			return TypeExtensions.CreateInstance(typeDefinition) as IManifestMember;
+			return TypeExtensions.CreateInstance(typeDefinition) as IScriptManifestMember;
 		}
 
 		private void DeserializeSymbolReferences(JObject container)
@@ -142,14 +145,14 @@ namespace TomPIT.Reflection
 				if (reference is not JObject jreference)
 					continue;
 
-				var symbolReference = new ManifestSymbolReference
+				var symbolReference = new ScriptManifestSymbolReference
 				{
 					Address = jreference.Optional(SerializationOptions.Address, (short)0),
 					Identifier = jreference.Optional(SerializationOptions.Identifier, string.Empty),
-					Type = jreference.Optional(SerializationOptions.Type, ManifestSourceReferenceType.Other),
+					Type = jreference.Optional(SerializationOptions.Type, ScriptManifestSourceReferenceType.Other),
 				};
 
-				var values = new HashSet<IManifestSymbolLocation>(new ManifestLocationComparer());
+				var values = new HashSet<IScriptManifestSymbolLocation>(new ScriptManifestLocationComparer());
 
 				if (jreference.Optional(SerializationOptions.Location, (JObject)null) is JObject jloc)
 					DeserializeLocation(jloc, symbolReference.Location);
@@ -159,7 +162,7 @@ namespace TomPIT.Reflection
 				Manifest.SymbolReferences.Add(symbolReference, values);
 			}
 		}
-		private void DeserializeLocations(JObject container, HashSet<IManifestSymbolLocation> locations)
+		private void DeserializeLocations(JObject container, HashSet<IScriptManifestSymbolLocation> locations)
 		{
 			var jvalues = container.Optional(SerializationOptions.Values, (JArray)null);
 
@@ -171,7 +174,7 @@ namespace TomPIT.Reflection
 				if (value is not JObject jvalue)
 					continue;
 
-				var loc = new ManifestSymbolLocation();
+				var loc = new ScriptManifestSymbolLocation();
 
 				DeserializeLocation(jvalue, loc);
 
@@ -179,7 +182,7 @@ namespace TomPIT.Reflection
 			}
 		}
 
-		private void DeserializeLocation(JObject container, IManifestSymbolLocation location)
+		private void DeserializeLocation(JObject container, IScriptManifestSymbolLocation location)
 		{
 			location.StartCharacter = container.Optional(SerializationOptions.StartCharacter, 0);
 			location.StartLine = container.Optional(SerializationOptions.StartLine, 0);
@@ -231,7 +234,7 @@ namespace TomPIT.Reflection
 				if (pointer is not JObject jpointer)
 					continue;
 
-				Manifest.Pointers.Add(new ManifestPointer
+				Manifest.Pointers.Add(new ScriptManifestPointer
 				{
 					MicroService = jpointer.Optional(SerializationOptions.MicroService, Guid.Empty),
 					Component = jpointer.Optional(SerializationOptions.Component, Guid.Empty),

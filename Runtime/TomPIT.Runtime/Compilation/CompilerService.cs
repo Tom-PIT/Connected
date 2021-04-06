@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Newtonsoft.Json.Linq;
@@ -35,7 +34,7 @@ namespace TomPIT.Compilation
 		public const string ScriptInfoClassName = "__ScriptInfo";
 
 		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _references = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
-		private static Lazy<ConcurrentDictionary<Guid, ManualResetEvent>> _scriptCreateState = new Lazy<ConcurrentDictionary<Guid, ManualResetEvent>>();
+		private static SingletonProcessor<Guid> _scriptProcessor = new SingletonProcessor<Guid>();
 		//private static List<DiagnosticAnalyzer> _analyzers = null;
 		private static object _sync = new object();
 		private NuGetPackages _nuGet;
@@ -69,34 +68,18 @@ namespace TomPIT.Compilation
 		{
 			var d = GetCachedScript(sourceCode.Id);
 
-			if (d == null)
-			{
-				var re = new ManualResetEvent(false);
+			if (d is not null)
+				return d;
 
-				if (!ScriptCreateState.TryAdd(sourceCode.Id, re))
+			ScriptProcessor.Start(sourceCode.Id,
+				() =>
 				{
-					re.Dispose();
-					re = ScriptCreateState[sourceCode.Id];
-
-					re.WaitOne();
-
+					d = CreateScript<T>(microService, sourceCode);
+				},
+				() =>
+				{
 					d = GetCachedScript(sourceCode.Id);
-				}
-				else
-				{
-					try
-					{
-						d = CreateScript<T>(microService, sourceCode);
-					}
-					finally
-					{
-						re.Set();
-
-						if (ScriptCreateState.TryRemove(sourceCode.Id, out ManualResetEvent e))
-							e.Dispose();
-					}
-				}
-			}
+				});
 
 			return d;
 		}
@@ -105,34 +88,18 @@ namespace TomPIT.Compilation
 		{
 			var d = GetCachedScript(sourceCode.Id);
 
-			if (d == null)
-			{
-				var re = new ManualResetEvent(false);
+			if (d is not null)
+				return d;
 
-				if (!ScriptCreateState.TryAdd(sourceCode.Id, re))
+			ScriptProcessor.Start(sourceCode.Id,
+				() =>
 				{
-					re.Dispose();
-					re = ScriptCreateState[sourceCode.Id];
-
-					re.WaitOne();
-
+					d = CreateScript(microService, sourceCode);
+				},
+				() =>
+				{
 					d = GetCachedScript(sourceCode.Id);
-				}
-				else
-				{
-					try
-					{
-						d = CreateScript(microService, sourceCode);
-					}
-					finally
-					{
-						re.Set();
-
-						if (ScriptCreateState.TryRemove(sourceCode.Id, out ManualResetEvent e))
-							e.Dispose();
-					}
-				}
-			}
+				});
 
 			return d;
 		}
@@ -506,10 +473,9 @@ namespace TomPIT.Compilation
 			if (script != null && script.Assembly == null && script.Errors != null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
 				throw new CompilerException(Tenant, script, sourceCode);
 
-			var target = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), script.Assembly, true) == 0);
-			var result = target?.GetTypes().FirstOrDefault(f => string.Compare(f.Name, typeName, true) == 0);
+			var result = GetType(script.Assembly, typeName);
 
-			if (result == null)
+			if (result is null)
 			{
 				if (throwException)
 					throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
@@ -520,6 +486,26 @@ namespace TomPIT.Compilation
 			return result;
 		}
 
+		private Type GetType( string assembly, string typeName)
+		{
+				var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), assembly, true) == 0);
+
+			if (asm is null)
+				return null;
+
+			if(!typeName.Contains("."))
+				return asm.GetTypes().FirstOrDefault(f => string.Compare(f.Name, typeName, true) == 0);
+
+			var tokens = typeName.Split('.');
+			var fullTypeName = new StringBuilder();
+
+			fullTypeName.Append("Submission#0");
+
+			foreach (var token in tokens)
+				fullTypeName.Append($"+{token}");
+
+			return asm.GetTypes().FirstOrDefault(f => string.Compare(f.FullName, fullTypeName.ToString(), true) == 0);
+		}
 		public IScriptContext CreateScriptContext(IText sourceCode)
 		{
 			return new ScriptContext(Tenant, sourceCode);
@@ -716,7 +702,7 @@ namespace TomPIT.Compilation
 		}
 
 		private static ConcurrentDictionary<Guid, List<Guid>> References { get { return _references.Value; } }
-		private static ConcurrentDictionary<Guid, ManualResetEvent> ScriptCreateState { get { return _scriptCreateState.Value; } }
+		private static SingletonProcessor<Guid> ScriptProcessor => _scriptProcessor;
 		private ScriptCache Scripts { get; }
 
 		private static ImmutableArray<DiagnosticAnalyzer> CreateAnalyzers(ITenant tenant, IScriptDescriptor script)

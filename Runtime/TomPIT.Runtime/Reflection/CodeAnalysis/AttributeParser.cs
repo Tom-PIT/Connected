@@ -11,14 +11,14 @@ namespace TomPIT.Reflection.CodeAnalysis
 		{
 		}
 
-		public ManifestAttribute Parse(AttributeData attribute)
+		public IScriptManifestAttribute Parse(AttributeData attribute)
 		{
 			var type = Compiler.Model.GetTypeInfo(attribute.ApplicationSyntaxReference.GetSyntax());
 
 			if (type.Type == null)
 				return null;
 
-			var result = new ManifestAttribute();
+			var result = new ScriptManifestAttribute();
 			var name = attribute.AttributeClass.Name;
 
 			if (name.EndsWith("Attribute"))

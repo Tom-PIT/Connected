@@ -1,11 +1,7 @@
-﻿using TomPIT.Annotations;
-
-namespace TomPIT.Reflection.ManifestProviders
+﻿namespace TomPIT.Reflection.ManifestProviders
 {
-	internal class DistributedOperationType : ManifestType, IManifestHttpType, IManifestDistributedType
+	internal class DistributedOperationType : OperationType, IScriptManifestDistributedType
 	{
 		public bool IsDistributed {get;set;}
-
-		public HttpVerbs Verbs {get;set;}
 	}
 }

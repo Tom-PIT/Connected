@@ -13,6 +13,7 @@ namespace TomPIT.ComponentModel.Apis
 		/// in the form of <code>MicroService/Api/Operation</code>.
 		/// </summary>
 		string Name { get; }
+		string Namespace { get; }
 		/// <summary>
 		/// Access modifier for this operation. This is a second level modifier and stands
 		/// behind <code>IApi.Scope</code> property.

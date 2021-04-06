@@ -54,7 +54,8 @@ namespace TomPIT.Middleware.Interop
 					throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element));
 			}
 
-			var operationType = Context.Tenant.GetService<ICompilerService>().ResolveType(descriptor.MicroService.Token, op, op.Name);
+			var fullName = string.IsNullOrWhiteSpace(op.Namespace) ? op.Name : $"{op.Namespace}.{op.Name}";
+			var operationType = Context.Tenant.GetService<ICompilerService>().ResolveType(descriptor.MicroService.Token, op, fullName);
 			var elevation = ctx as IElevationContext;
 
 			if (HasReturnValue(operationType))

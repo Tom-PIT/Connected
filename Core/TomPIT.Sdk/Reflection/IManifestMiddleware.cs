@@ -5,6 +5,6 @@
 		string Name { get; }
 		//string Documentation { get; }
 		IManifestType DeclaredType { get; }
-		IManifestPointer Address { get; }
+		IScriptManifestPointer Address { get; }
 	}
 }

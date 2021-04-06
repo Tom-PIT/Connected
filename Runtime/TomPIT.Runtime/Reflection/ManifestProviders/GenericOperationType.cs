@@ -2,7 +2,7 @@
 
 namespace TomPIT.Reflection.ManifestProviders
 {
-	internal class GenericOperationType : OperationType, IManifestReturnType, IManifestExtenderSupportedType
+	internal class GenericOperationType : OperationType, IScriptManifestReturnType, IScriptManifestExtenderSupportedType
 	{
 		private List<string> _extenders;
 		public List<string> Extenders => _extenders ??= new List<string>();

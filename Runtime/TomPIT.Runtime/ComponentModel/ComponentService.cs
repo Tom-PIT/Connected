@@ -168,6 +168,15 @@ namespace TomPIT.ComponentModel
 			return r.ToImmutableList();
 		}
 
+		public ImmutableList<IConfiguration> QueryConfigurations(string category)
+		{
+			return QueryConfigurations(Where(f => string.Compare(f.Category, category, true) == 0));
+		}
+
+		public ImmutableList<IConfiguration> QueryConfigurations(List<Guid> microServices, string category)
+		{
+			return QueryConfigurations(Where(f => microServices.Any(g => g == f.Token) && string.Compare(f.Category, category, true) == 0));
+		}
 		public ImmutableList<IConfiguration> QueryConfigurations(Guid microService, string categories)
 		{
 			var cats = categories.Split(',');

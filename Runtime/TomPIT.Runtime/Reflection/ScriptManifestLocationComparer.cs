@@ -3,9 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace TomPIT.Reflection
 {
-	internal class ManifestLocationComparer : IEqualityComparer<IManifestSymbolLocation>
+	internal class ScriptManifestLocationComparer : IEqualityComparer<IScriptManifestSymbolLocation>
 	{
-		public bool Equals(IManifestSymbolLocation x, IManifestSymbolLocation y)
+		public bool Equals(IScriptManifestSymbolLocation x, IScriptManifestSymbolLocation y)
 		{
 			if (ReferenceEquals(x, y))
 				return true;
@@ -19,7 +19,7 @@ namespace TomPIT.Reflection
 				&& x.StartLine == y.StartLine;
 		}
 
-		public int GetHashCode([DisallowNull] IManifestSymbolLocation obj)
+		public int GetHashCode([DisallowNull] IScriptManifestSymbolLocation obj)
 		{
 			return GetHashCode();
 		}

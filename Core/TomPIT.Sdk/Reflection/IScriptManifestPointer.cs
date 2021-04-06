@@ -2,7 +2,7 @@
 
 namespace TomPIT.Reflection
 {
-	public interface IManifestPointer
+	public interface IScriptManifestPointer : IEquatable<IScriptManifestPointer>
 	{
 		short Id { get; }
 		Guid MicroService { get;  }

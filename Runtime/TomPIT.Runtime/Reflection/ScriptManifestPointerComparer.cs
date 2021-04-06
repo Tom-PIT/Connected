@@ -3,9 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace TomPIT.Reflection
 {
-	internal class ManifestPointerComparer : IEqualityComparer<IManifestPointer>
+	internal class ScriptManifestPointerComparer : IEqualityComparer<IScriptManifestPointer>
 	{
-		public bool Equals(IManifestPointer x, IManifestPointer y)
+		public bool Equals(IScriptManifestPointer x, IScriptManifestPointer y)
 		{
 			if (ReferenceEquals(x, y))
 				return true;
@@ -18,7 +18,7 @@ namespace TomPIT.Reflection
 				&& x.Element == y.Element;
 		}
 
-		public int GetHashCode([DisallowNull] IManifestPointer obj)
+		public int GetHashCode([DisallowNull] IScriptManifestPointer obj)
 		{
 			return GetHashCode();
 		}

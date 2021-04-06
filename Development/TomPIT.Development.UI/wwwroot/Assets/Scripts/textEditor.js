@@ -337,6 +337,9 @@
             if (features.documentFormatting)
                 this._documentFormatting(language);
 
+            if (features.codeLens)
+                this._codeLens(language);
+
         },
         setTargetProperty: function (property) {
             this.options.property = property;
@@ -656,6 +659,46 @@
                                 onComplete: function (data) {
                                     if (data)
                                         resolve(data);
+                                    else
+                                        reject();
+                                }
+
+                            }, false);
+                        }
+                        catch (e) {
+                            reject();
+                            console.log(e);
+                        }
+                    });
+                }
+            });
+        },
+        _codeLens: function (language) {
+            var instance = this;
+
+            monaco.languages.registerCodeLensProvider(language, {
+                provideCodeLenses: function (model, cancel) {
+                    return new Promise(function (resolve, reject) {
+                        try {
+                            ide.designerAction({
+                                data: {
+                                    action: 'provideCodeLens',
+                                    section: 'designer',
+                                    property: instance.options.property,
+                                    model: {
+                                        'id': model.id,
+                                        'uri': model.uri.toString(),
+                                        'version': model._versionId
+                                    },
+                                    text: model.getValue()
+                                },
+                                onComplete: function (data) {
+                                    if (data)
+                                        resolve({
+                                            lenses: data,
+                                            dispose: () => {
+                                            }
+                                        });
                                     else
                                         reject();
                                 }

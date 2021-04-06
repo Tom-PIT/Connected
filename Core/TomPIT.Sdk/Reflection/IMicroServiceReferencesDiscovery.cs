@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.ComponentModel;
 
 namespace TomPIT.Reflection
@@ -8,6 +8,9 @@ namespace TomPIT.Reflection
 	{
 		IServiceReferencesConfiguration Select(string microService);
 		IServiceReferencesConfiguration Select(Guid microService);
-		List<IMicroService> Flatten(Guid microService);
+		[Obsolete("Please use References instead.")]
+		ImmutableArray<IMicroService> Flatten(Guid microService);
+		ImmutableArray<IMicroService> ReferencedBy(Guid microService, bool recursive);
+		ImmutableArray<IMicroService> References(Guid microService, bool recursive);
 	}
 }
