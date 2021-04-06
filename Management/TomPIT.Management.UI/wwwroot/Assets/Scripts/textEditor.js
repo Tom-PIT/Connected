@@ -66,6 +66,7 @@
                     lineNumbers: true,
                     scrollBeyondLastLine: true,
                     automaticLayout: true,
+                    fontSize: '12.75px',
                     autoClosingBrackets: 'beforeWhitespace',
                     autoClosingOvertype: 'always',
                     autoClosingQuotes: 'beforeWhitespace',
@@ -78,7 +79,7 @@
                     glyphMargin: true,
                     lineNumbersMinChars: 4,
                     layoutInfo: {
-                        heigth: '100%'
+                        heigth:'100%'
                     },
                     parameterHints: {
                         enabled: true
@@ -108,7 +109,7 @@
                     editorOpts,
                     {
                         textModelService: {
-                            createModelReference: (uri) => {
+                            createModelReference: (uri)=>{
                                 return new Promise((resolve, reject) => {
                                     var result = {
                                         uri: uri,
@@ -149,7 +150,7 @@
                                                     });
                                                 }
 
-
+                                                
                                                 resolve({
                                                     object: result,
                                                     dispose: () => { }
@@ -337,6 +338,9 @@
             if (features.documentFormatting)
                 this._documentFormatting(language);
 
+            if (features.codeLens)
+                this._codeLens(language);
+
         },
         setTargetProperty: function (property) {
             this.options.property = property;
@@ -372,7 +376,7 @@
                                                     var textEdit = edit.edits[j];
 
                                                     if (textEdit.resource) {
-                                                        textEdit.resource = monaco.Uri.parse(textEdit.resource);
+                                                            textEdit.resource = monaco.Uri.parse(textEdit.resource);
                                                     }
                                                 }
                                             }
@@ -479,7 +483,7 @@
 
             monaco.languages.registerDefinitionProvider(language, {
                 provideDefinition: function (model, position) {
-                    return new Promise(function (resolve, reject) {
+                    return  new Promise(function (resolve, reject) {
                         try {
                             ide.designerAction({
                                 data: {
@@ -670,6 +674,46 @@
                 }
             });
         },
+        _codeLens: function (language) {
+            var instance = this;
+
+            monaco.languages.registerCodeLensProvider(language, {
+                provideCodeLenses: function (model, cancel) {
+                    return new Promise(function (resolve, reject) {
+                        try {
+                            ide.designerAction({
+                                data: {
+                                    action: 'provideCodeLens',
+                                    section: 'designer',
+                                    property: instance.options.property,
+                                    model: {
+                                        'id': model.id,
+                                        'uri': model.uri.toString(),
+                                        'version': model._versionId
+                                    },
+                                    text: model.getValue()
+                                },
+                                onComplete: function (data) {
+                                    if (data)
+                                        resolve({
+                                            lenses: data,
+                                            dispose: () => {
+                                            }
+                                        });
+                                    else
+                                        reject();
+                                }
+
+                            }, false);
+                        }
+                        catch (e) {
+                            reject();
+                            console.log(e);
+                        }
+                    });
+                }
+            });
+        },
         activateModel: function (id, fileName, ms) {
             let models = monaco.editor.getModels();
 
@@ -734,7 +778,7 @@
                     if (i === 0)
                         this.activateModel(models[1].id);
                     else
-                        this.activateModel(models[i - 1].id);
+                        this.activateModel(models[i-1].id);
 
                     break;
                 }

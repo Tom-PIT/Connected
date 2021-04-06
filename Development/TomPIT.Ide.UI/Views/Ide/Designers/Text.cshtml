@@ -40,6 +40,10 @@
             model.fileName = '@Model.Element.Title';
             model.microService = '@Model.Environment.Context.MicroService.Name';
 
+            model.updateOptions({
+                tabSize: 2
+            });
+
             textEditorWidget.activateModel(model.id, model.fileName, model.microService);
 
             if (!textEditorState.isLanguageInitialized('@Model.Language')) {
