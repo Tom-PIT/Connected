@@ -22,6 +22,10 @@ namespace TomPIT.Navigation
 			}
 		}
 
+		public object Parameters { get; set; }
+
+		public string QueryString { get; set; }
+
 		string ISiteMapRouteContainer.Template
 		{
 			get

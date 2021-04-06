@@ -31,7 +31,16 @@ namespace TomPIT.Reflection
 
 		public void RemoveManifest(Guid id)
 		{
+			var existing = Get(id);
+
 			Remove(id);
+
+			if (existing is not null)
+			{
+				var address = existing.GetPointer(existing.Address);
+
+				Load(address.MicroService, address.Component, address.Element);
+			}
 		}
 
 		public IScriptManifest Select(Guid microService, Guid component, Guid id)

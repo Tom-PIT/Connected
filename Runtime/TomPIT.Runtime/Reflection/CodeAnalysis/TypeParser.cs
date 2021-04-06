@@ -119,7 +119,8 @@ namespace TomPIT.Reflection.CodeAnalysis
 				return;
 			}
 
-			var symbol = Compiler.Model.GetSymbolInfo(identifier).Symbol;
+			var model = Compiler.Compilation.GetSemanticModel(identifier.SyntaxTree);
+			var symbol = model.GetSymbolInfo(identifier).Symbol;
 
 			if (symbol == null || symbol.IsImplicitlyDeclared)
 				return;

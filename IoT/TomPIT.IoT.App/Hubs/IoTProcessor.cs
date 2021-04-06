@@ -11,7 +11,7 @@ using TomPIT.Serialization;
 
 namespace TomPIT.IoT.Hubs
 {
-	internal abstract class IoTProcessor
+	internal abstract class IoTProcessor : IDisposable
 	{
 		private ConfigurationDescriptor<IIoTHubConfiguration> _descriptor = null;
 		private IMiddlewareComponent _middleware = null;
@@ -20,12 +20,15 @@ namespace TomPIT.IoT.Hubs
 		private IIoTDeviceMiddleware _device = null;
 		public string DeviceName { get; protected set; }
 		protected JObject Arguments { get; set; }
+		private IMicroServiceContext _context;
+
+		private IMicroServiceContext Context => _context ??= MicroServiceContext.FromIdentifier(DeviceName, MiddlewareDescriptor.Current.Tenant);
 		public ConfigurationDescriptor<IIoTHubConfiguration> Descriptor
 		{
 			get
 			{
 				if (_descriptor == null)
-					_descriptor = ComponentDescriptor.IoTHub(new MiddlewareContext(), DeviceName);
+					_descriptor = ComponentDescriptor.IoTHub(Context, DeviceName);
 
 				return _descriptor;
 			}
@@ -37,8 +40,8 @@ namespace TomPIT.IoT.Hubs
 			{
 				if (_middleware == null)
 				{
-					var type = Descriptor.Context.Tenant.GetService<ICompilerService>().ResolveType(Descriptor.MicroService.Token, Descriptor.Configuration, Descriptor.ComponentName);
-					_middleware = Descriptor.Context.CreateMiddleware<IMiddlewareComponent>(type, Arguments);
+					var type = Context.Tenant.GetService<ICompilerService>().ResolveType(Descriptor.MicroService.Token, Descriptor.Configuration, Descriptor.ComponentName);
+					_middleware = Context.CreateMiddleware<IMiddlewareComponent>(type, Arguments);
 				}
 
 				return _middleware;
@@ -51,7 +54,7 @@ namespace TomPIT.IoT.Hubs
 			{
 				if (_schemaType == null)
 				{
-					_schemaType = Descriptor.Configuration.IoTHubSchemaType(Descriptor.Context);
+					_schemaType = Descriptor.Configuration.IoTHubSchemaType(Context);
 
 					if (_schemaType == null)
 						throw new RuntimeException(nameof(IoTServerHub), $"{SR.ErrTypeExpected} ({Device})", LogCategories.IoT);
@@ -127,6 +130,12 @@ namespace TomPIT.IoT.Hubs
 			}
 
 			throw new NotFoundException($"{SR.ErrIoTTransactionNotAllowed} ({name})");
+		}
+
+		public void Dispose()
+		{
+			Middleware.Dispose();
+			Context.Dispose();
 		}
 	}
 }

@@ -430,21 +430,14 @@ namespace TomPIT.Navigation
 
 		private void ProcessBreadcrumb(ISiteMapElement item, List<IBreadcrumb> items, RouteValueDictionary parameters)
 		{
-			var route = item as ISiteMapRoute;
+			Breadcrumb breadCrumb = null;
 
-			var breadCrumb = new Breadcrumb
-			{
-				Text = item.Text
-			};
-
-			if (route != null)
-				breadCrumb.Key = route.Template;
-			/*
-			 * Last breadcrumb should be without a link 
-			 * because it points to a currently displayed ui
-			 */
-			if (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template))
-				breadCrumb.Url = ParseUrl(route.Template, MergeParameters(parameters, item));
+			if (item is ISiteMapRoute route)
+				breadCrumb = ProcessRouteBreadcrumb(route, item, items, parameters);
+			else if (item is ISiteMapRouteContainer routeContainer)
+				breadCrumb = ProcessContainerBreadcrumb(routeContainer, item, items, parameters);
+			else
+				return;
 
 			if (item is ISiteMapContainer container)
 			{
@@ -479,6 +472,46 @@ namespace TomPIT.Navigation
 				ProcessBreadcrumb(parent, items, parameters);
 		}
 
+		private Breadcrumb ProcessRouteBreadcrumb(ISiteMapRoute route, ISiteMapElement item, List<IBreadcrumb> items, RouteValueDictionary parameters)
+		{
+			var breadCrumb = new Breadcrumb
+			{
+				Text = item.Text
+			};
+
+			if (route != null)
+				breadCrumb.Key = route.Template;
+
+			/*
+			 * Last breadcrumb should be without a link 
+			 * because it points to a currently displayed ui
+			 */
+			if (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template))
+				breadCrumb.Url = ParseUrl(route.Template, MergeParameters(parameters, item));
+
+			return breadCrumb;
+		}
+
+		private Breadcrumb ProcessContainerBreadcrumb(ISiteMapRouteContainer route, ISiteMapElement item, List<IBreadcrumb> items, RouteValueDictionary parameters)
+		{
+			var breadCrumb = new Breadcrumb
+			{
+				Text = item.Text
+			};
+
+			if (route != null)
+				breadCrumb.Key = route.Template;
+
+			/*
+			 * Last breadcrumb should be without a link 
+			 * because it points to a currently displayed ui
+			 */
+			if (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template))
+				breadCrumb.Url = ParseUrl(route.Template, MergeParameters(parameters, item));
+
+			return breadCrumb;
+		}
+
 		private RouteValueDictionary MergeParameters(RouteValueDictionary parameters, ISiteMapElement element)
 		{
 			var origin = parameters;
@@ -491,7 +524,7 @@ namespace TomPIT.Navigation
 					origin = new RouteValueDictionary();
 			}
 
-			origin.Merge(element);
+			origin = origin.Merge(element);
 
 			CleanParameters(origin);
 

@@ -110,7 +110,7 @@ namespace TomPIT.IoT.Hubs
 		{
 			try
 			{
-				var processor = new DataProcessor(e);
+				using var processor = new DataProcessor(e);
 				var schema = processor.Process();
 
 				var changes = MiddlewareDescriptor.Current.Tenant.GetService<IIoTHubService>().SetData(processor.DeviceName, schema);
@@ -137,7 +137,7 @@ namespace TomPIT.IoT.Hubs
 		{
 			try
 			{
-				var processor = new TransactionProcessor(e);
+				using var processor = new TransactionProcessor(e);
 
 				processor.Process();
 				var args = new JObject

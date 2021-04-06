@@ -81,6 +81,8 @@ namespace TomPIT.Navigation
 		{
 			if (element is ISiteMapRoute route)
 				return existing.Merge(route.Parameters);
+			else if (element is ISiteMapRouteContainer container)
+				return existing.Merge(container.Parameters);
 
 			return existing;
 		}
