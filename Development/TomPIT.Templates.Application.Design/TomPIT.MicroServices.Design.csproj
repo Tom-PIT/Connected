@@ -3,9 +3,9 @@
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>TomPIT.MicroServices.Design</RootNamespace>
     <AssemblyName>TomPIT.MicroServices.Design</AssemblyName>
-    <AssemblyVersion>2.2.406.3</AssemblyVersion>
-    <FileVersion>2.2.406.3</FileVersion>
-    <Version>2.2.406.3</Version>
+    <AssemblyVersion>2.2.406.4</AssemblyVersion>
+    <FileVersion>2.2.406.4</FileVersion>
+    <Version>2.2.406.4</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
