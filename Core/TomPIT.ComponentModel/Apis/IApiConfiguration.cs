@@ -19,5 +19,6 @@ namespace TomPIT.ComponentModel.Apis
 		/// Defines access modifiers for restricting calls by a context.
 		/// </summary>
 		ElementScope Scope { get; }
+		string Namespace { get; }
 	}
 }

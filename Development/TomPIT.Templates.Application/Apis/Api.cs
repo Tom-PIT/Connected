@@ -40,5 +40,8 @@ namespace TomPIT.MicroServices.Apis
 		public ElementScope Scope { get; set; } = ElementScope.Public;
 		[Browsable(false)]
 		public override string FileName => $"{ToString()}.csx";
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
 	}
 }
