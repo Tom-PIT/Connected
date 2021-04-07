@@ -473,6 +473,10 @@ namespace TomPIT.Ide.Designers
 				element = new Guid(tokens[2]);
 
 			var cmp = Environment.Context.Tenant.GetService<IComponentService>().SelectComponent(ms.Token, category, component);
+
+			if (cmp is null)
+				return null;
+
 			var config = Environment.Context.Tenant.GetService<IComponentService>().SelectConfiguration(cmp.Token);
 
 			if (config == null)

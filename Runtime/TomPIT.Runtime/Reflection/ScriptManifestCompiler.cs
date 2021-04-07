@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
@@ -120,8 +121,11 @@ namespace TomPIT.Reflection
 			var root = SyntaxTree.GetCompilationUnitRoot();
 			var resolver = new MemberParser(this);
 
-			foreach (var member in root.Members)
-				resolver.Resolve(member);
+			foreach (var member in root.DescendantNodesAndSelf())
+			{
+				if (member is MemberDeclarationSyntax declaration)
+					resolver.Resolve(declaration);
+			}
 		}
 
 		private static CSharpParseOptions CreateParserOptions()

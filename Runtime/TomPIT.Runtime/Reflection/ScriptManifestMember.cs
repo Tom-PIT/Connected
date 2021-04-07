@@ -8,5 +8,7 @@
 		public string Type {get;set;}
 
 		public IScriptManifestSymbolLocation Location => _location ??= new ScriptManifestSymbolLocation();
+
+		public string ContainingType {get;set;}
 	}
 }

@@ -50,8 +50,6 @@ namespace TomPIT.Reflection
 					{SerializationOptions.Type, (int)symbol.Key.Type },
 				};
 
-				SerializeLocation(jsymbol, symbol.Key.Location);
-
 				var values = new JArray();
 
 				foreach (var value in symbol.Value)
@@ -234,10 +232,8 @@ namespace TomPIT.Reflection
 		{
 			var jlocation = new JObject();
 
-			AddNullableProperty(jlocation, SerializationOptions.StartLine, location.StartLine);
-			AddNullableProperty(jlocation, SerializationOptions.StartCharacter, location.StartCharacter);
-			AddNullableProperty(jlocation, SerializationOptions.EndLine, location.EndLine);
-			AddNullableProperty(jlocation, SerializationOptions.EndCharacter, location.EndCharacter);
+			AddNullableProperty(jlocation, SerializationOptions.StartCharacter, location.Start);
+			AddNullableProperty(jlocation, SerializationOptions.EndCharacter, location.End);
 
 			return jlocation;
 		}

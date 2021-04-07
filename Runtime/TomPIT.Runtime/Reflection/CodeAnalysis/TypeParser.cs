@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 using TomPIT.ComponentModel;
 
 namespace TomPIT.Reflection.CodeAnalysis
@@ -33,7 +33,8 @@ namespace TomPIT.Reflection.CodeAnalysis
 				Name = type.Name,
 				Symbol = type,
 				Node = node,
-				Model = Compiler.Model
+				Model = Compiler.Model,
+				ContainingType = type.ContainingType?.ToDisplayString()
 			};
 
 			return result;
@@ -49,6 +50,8 @@ namespace TomPIT.Reflection.CodeAnalysis
 					ParseSymbol(result.Item2, property);
 				else if (member is IFieldSymbol field)
 					ParseSymbol(result.Item2, field);
+				else if (member is BaseTypeDeclarationSyntax)
+					continue;
 				else
 					ParseNode(member);
 			}
@@ -80,6 +83,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 
 			type.Name = descriptor.Symbol.Name;
 			type.Documentation = ((CSharpSyntaxNode)descriptor.Node).ParseDocumentation();
+			type.ContainingType = descriptor.ContainingType;
 
 			SetLocation(type, descriptor.Node);
 
@@ -125,12 +129,8 @@ namespace TomPIT.Reflection.CodeAnalysis
 			if (symbol == null || symbol.IsImplicitlyDeclared)
 				return;
 
-			if (symbol is ITypeSymbol type)
-				ParseSourceReferences(symbol, type);
-			else if (symbol is IPropertySymbol property)
-				ParseSourceReferences(symbol, property);
-			else if (symbol is IMethodSymbol method)
-				ParseSourceReferences(symbol, method);
+			if (symbol is ITypeSymbol || symbol is IPropertySymbol || symbol is IFieldSymbol || symbol is IMethodSymbol)
+				ParseSourceReferences(symbol, identifier.Span);
 		}
 
 		private void ParseSymbol(IScriptManifestType type, IFieldSymbol symbol)
@@ -181,21 +181,13 @@ namespace TomPIT.Reflection.CodeAnalysis
 			type.Members.Add(member);
 		}
 
-		private void ParseSourceReferences(ISymbol declared, IMethodSymbol symbol)
-		{
-			ParseSourceReferences(declared, symbol, symbol.DeclaringSyntaxReferences);
-		}
-
-		private void ParseSourceReferences(ISymbol declared,  IPropertySymbol symbol)
-		{
-			ParseSourceReferences(declared, symbol, symbol.DeclaringSyntaxReferences);
-		}
 		private void ParseSourceReferences(ISymbol declared, ITypeSymbol symbol)
 		{
 			if (symbol is not INamedTypeSymbol namedType)
 				return;
 
-			ParseSourceReferences(declared, symbol, symbol.DeclaringSyntaxReferences);
+			if (!symbol.Locations.IsDefaultOrEmpty)
+				ParseSourceReferences(symbol, symbol.Locations[0].SourceSpan);
 
 			var arguments = namedType.TypeArguments;
 
@@ -203,50 +195,37 @@ namespace TomPIT.Reflection.CodeAnalysis
 				ParseSourceReferences(declared, argument);
 		}
 
-		private void ParseSourceReferences(ISymbol declared, ISymbol symbol, ImmutableArray<SyntaxReference> references)
+		private void ParseSourceReferences(ISymbol symbol, TextSpan span)
 		{
-			if (declared.Locations.IsDefaultOrEmpty || references.IsDefaultOrEmpty)
+			if (symbol.Locations.IsDefaultOrEmpty || symbol.DeclaringSyntaxReferences.IsDefaultOrEmpty)
 				return;
 
-			var mappedLocation = declared.Locations[0].GetMappedLineSpan();
-
-			var refLocation = new ScriptManifestSymbolLocation
-			{
-				StartCharacter = mappedLocation.StartLinePosition.Character,
-				StartLine = mappedLocation.StartLinePosition.Line,
-				EndCharacter = mappedLocation.EndLinePosition.Character,
-				EndLine = mappedLocation.EndLinePosition.Line
-			};
-
-			foreach (var reference in references)
+			foreach (var reference in symbol.DeclaringSyntaxReferences)
 			{
 				var script = Compiler.ResolveScript(reference.SyntaxTree.FilePath);
 
 				if (script == null || symbol.Locations.IsDefaultOrEmpty)
 					continue;
 
-				var location = symbol.Locations[0].GetMappedLineSpan();
-
 				var source = new ScriptManifestSymbolReference
 				{
 					Address = Compiler.Manifest.GetId(script.Configuration().MicroService(), script.Configuration().Component, script.Id),
 					Identifier = symbol.ToDisplayString(),
-					Type = ResolveReferenceType(declared.Kind)
+					Type = ResolveReferenceType(symbol.Kind)
 				};
 
-				source.Location.StartCharacter = location.StartLinePosition.Character;
-				source.Location.StartLine = location.StartLinePosition.Line;
-				source.Location.EndCharacter = location.EndLinePosition.Character;
-				source.Location.EndLine = location.EndLinePosition.Line;
-
-				if(!Compiler.Manifest.SymbolReferences.TryGetValue(source, out HashSet<IScriptManifestSymbolLocation> items))
+				if (!Compiler.Manifest.SymbolReferences.TryGetValue(source, out HashSet<IScriptManifestSymbolLocation> items))
 				{
 					items = new HashSet<IScriptManifestSymbolLocation>(new ScriptManifestLocationComparer());
 
 					Compiler.Manifest.SymbolReferences.Add(source, items);
 				}
 
-				items.Add(refLocation);
+				items.Add(new ScriptManifestSymbolLocation
+				{
+					Start =span.Start,
+					End = span.End
+				});
 			}
 		}
 
@@ -290,12 +269,8 @@ namespace TomPIT.Reflection.CodeAnalysis
 
 		private static void SetLocation(IScriptManifestMember member, SyntaxNode node)
 		{
-			var span = node.GetLocation().GetLineSpan();
-
-			member.Location.EndCharacter = span.EndLinePosition.Character;
-			member.Location.EndLine = span.EndLinePosition.Line;
-			member.Location.StartCharacter = span.StartLinePosition.Character;
-			member.Location.StartLine = span.StartLinePosition.Line;
+			member.Location.Start = node.Span.Start;
+			member.Location.End = node.Span.End;
 		}
 	}
 }

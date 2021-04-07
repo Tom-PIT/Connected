@@ -13,10 +13,7 @@ namespace TomPIT.Reflection
 			if (x is null || y is null)
 				return false;
 
-			return x.Location.EndCharacter == y.Location.EndCharacter
-				&& x.Location.EndLine == y.Location.EndLine
-				&& x.Location.StartCharacter == y.Location.StartCharacter
-				&& x.Location.StartLine == y.Location.StartLine
+			return string.Compare(x.Identifier, y.Identifier, true) == 0 
 				&& x.Address == y.Address;
 		}
 

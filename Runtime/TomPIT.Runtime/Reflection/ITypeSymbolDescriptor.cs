@@ -9,5 +9,6 @@ namespace TomPIT.Reflection
 
 		SyntaxNode Node { get; }
 		SemanticModel Model { get; }
+		string ContainingType { get; }
 	}
 }

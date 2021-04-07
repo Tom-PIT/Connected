@@ -9,5 +9,6 @@ namespace TomPIT.Reflection.CodeAnalysis
 		
 		public SyntaxNode Node { get; set; }
 		public SemanticModel Model { get; set; }
+		public string ContainingType { get; set; }
 	}
 }

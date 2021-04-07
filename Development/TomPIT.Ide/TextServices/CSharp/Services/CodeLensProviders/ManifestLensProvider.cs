@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TomPIT.ComponentModel;
 using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Reflection;
@@ -9,26 +10,13 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CodeLensProviders
 {
 	internal class ManifestLensProvider : CodeLensProvider
 	{
-		internal class ScriptManifestLocationComparer : IEqualityComparer<IScriptManifestSymbolLocation>
+		private class ManifestSymbolDescriptor
 		{
-			public bool Equals(IScriptManifestSymbolLocation x, IScriptManifestSymbolLocation y)
-			{
-				if (ReferenceEquals(x, y))
-					return true;
-
-				if (x is null || y is null)
-					return false;
-
-				return x.EndCharacter == y.EndCharacter
-					&& x.EndLine == y.EndLine
-					&& x.StartCharacter == y.StartCharacter
-					&& x.StartLine == y.StartLine;
-			}
-
-			public int GetHashCode([DisallowNull] IScriptManifestSymbolLocation obj)
-			{
-				return GetHashCode();
-			}
+			public int StartLine { get; set; }
+			public int StartColumn { get; set; }
+			public int EndLine { get; set; }
+			public int EndColumn { get; set; }
+			public int Count { get; set; }
 		}
 
 		protected override List<ICodeLens> OnProvideCodeLens()
@@ -47,27 +35,27 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CodeLensProviders
 			if (references.IsEmpty())
 				return result;
 
-			var items = new Dictionary<IScriptManifestSymbolLocation, int>(new ScriptManifestLocationComparer());
+			var items = new Dictionary<string, ManifestSymbolDescriptor>();
 
 			foreach (var type in manifest.DeclaredTypes)
 				ProvideLenses(manifest, type, references, items, manifest.GetPointer(manifest.Address));
-			
-			foreach(var item in items)
+
+			foreach (var item in items)
 			{
 				result.Add(new CodeLens
 				{
 					Id = "1",
 					Range = new Range
 					{
-						EndColumn = item.Key.EndCharacter+1,
-						EndLineNumber = item.Key.EndLine+1,
-						StartColumn = item.Key.StartCharacter+1,
-						StartLineNumber = item.Key.StartLine+1
+						EndColumn = item.Value.EndColumn + 1,
+						EndLineNumber = item.Value.EndLine + 1,
+						StartColumn = item.Value.StartColumn + 1,
+						StartLineNumber = item.Value.StartLine + 1
 					},
 					Command = new Command
 					{
-						Id="1",
-						Title = $"{item.Value} reference(s)"
+						Id = "1",
+						Title = $"{item.Value.Count} reference(s)"
 					}
 				});
 			}
@@ -75,21 +63,87 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CodeLensProviders
 			return result;
 		}
 
-		private void ProvideLenses(IScriptManifest manifest, IScriptManifestType type, IImmutableList<IScriptManifest> references, Dictionary<IScriptManifestSymbolLocation, int> items, IScriptManifestPointer address)
+		private void ProvideLenses(IScriptManifest manifest, IScriptManifestType type, IImmutableList<IScriptManifest> references, Dictionary<string, ManifestSymbolDescriptor> items, IScriptManifestPointer address)
 		{
-			foreach(var reference in references)
+			foreach (var reference in references)
 			{
-				foreach(var symbol in reference.SymbolReferences)
+				foreach (var symbol in reference.SymbolReferences)
 				{
 					if (!reference.GetPointer(symbol.Key.Address).Equals(address))
 						continue;
 
-					if (items.ContainsKey(symbol.Key.Location))
-						items[symbol.Key.Location]++;
+					if (items.ContainsKey(symbol.Key.Identifier))
+						items[symbol.Key.Identifier].Count+= symbol.Value.Count;
 					else
-						items.Add(symbol.Key.Location, 1);
+					{
+						var identifierStack = new Queue<string>(symbol.Key.Identifier.Split('.'));
+
+						var target = FindSymbol(Arguments.Model.SyntaxTree.GetRoot(), identifierStack);
+
+						if (target is null)
+							continue;
+
+						target.Count = symbol.Value.Count;
+
+						items.Add(symbol.Key.Identifier, target);
+					}
 				}
 			}
+		}
+
+		private ManifestSymbolDescriptor FindSymbol(SyntaxNode node, Queue<string> stack)
+		{
+			var currentIdentifier = stack.Dequeue();
+
+			foreach (var child in node.DescendantNodes())
+			{
+				if (child is MemberDeclarationSyntax member)
+				{
+					var name = ResolveName(member);
+
+					if (string.IsNullOrWhiteSpace(name))
+						continue;
+
+					if (string.Compare(name, currentIdentifier, false) == 0)
+					{
+						if (stack.IsEmpty())
+						{
+							var loc = child.GetLocation().GetLineSpan();
+
+							return new ManifestSymbolDescriptor
+							{
+								StartLine = loc.StartLinePosition.Line,
+								EndColumn = loc.EndLinePosition.Character,
+								EndLine = loc.EndLinePosition.Line,
+								StartColumn = loc.StartLinePosition.Character
+							};
+						}
+
+						if (FindSymbol(child, stack) is ManifestSymbolDescriptor result)
+							return result;
+					}
+
+					break;
+				}
+			}
+
+			return null;
+		}
+
+		private string ResolveName(MemberDeclarationSyntax syntax)
+		{
+			if (syntax is BaseTypeDeclarationSyntax bt)
+				return bt.Identifier.ToString();
+			else if (syntax is PropertyDeclarationSyntax pd)
+				return pd.Identifier.ToString();
+			else if (syntax is FieldDeclarationSyntax fd)
+				return fd.Declaration.Variables.First().Identifier.ToString();
+			else
+				return null;
+		}
+		private ManifestSymbolDescriptor FindSymbol()
+		{
+			return null;
 		}
 	}
 }

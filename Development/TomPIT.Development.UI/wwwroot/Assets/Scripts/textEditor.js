@@ -547,7 +547,7 @@
                                 },
                                 onComplete: function (data) {
                                     if (!data || !data.uri) {
-                                        reject();
+                                        resolve();
                                         return;
                                     }
 
@@ -723,7 +723,7 @@
         },
         _codeLens: function (language) {
             var instance = this;
-
+            
             monaco.languages.registerCodeLensProvider(language, {
                 provideCodeLenses: function (model, cancel) {
                     return new Promise(function (resolve, reject) {
@@ -748,7 +748,7 @@
                                             }
                                         });
                                     else
-                                        reject();
+                                        resolve();
                                 }
 
                             }, false);

@@ -154,9 +154,6 @@ namespace TomPIT.Reflection
 
 				var values = new HashSet<IScriptManifestSymbolLocation>(new ScriptManifestLocationComparer());
 
-				if (jreference.Optional(SerializationOptions.Location, (JObject)null) is JObject jloc)
-					DeserializeLocation(jloc, symbolReference.Location);
-
 				DeserializeLocations(jreference, values);
 
 				Manifest.SymbolReferences.Add(symbolReference, values);
@@ -184,10 +181,8 @@ namespace TomPIT.Reflection
 
 		private void DeserializeLocation(JObject container, IScriptManifestSymbolLocation location)
 		{
-			location.StartCharacter = container.Optional(SerializationOptions.StartCharacter, 0);
-			location.StartLine = container.Optional(SerializationOptions.StartLine, 0);
-			location.EndCharacter = container.Optional(SerializationOptions.EndCharacter, 0);
-			location.EndLine = container.Optional(SerializationOptions.EndLine, 0);
+			location.Start = container.Optional(SerializationOptions.StartCharacter, 0);
+			location.End = container.Optional(SerializationOptions.EndCharacter, 0);
 		}
 
 		private void DeserializeScriptReferences(JObject container)

@@ -13,10 +13,8 @@ namespace TomPIT.Reflection
 			if (x is null || y is null)
 				return false;
 
-			return x.EndCharacter == y.EndCharacter
-				&& x.EndLine == y.EndLine
-				&& x.StartCharacter == y.StartCharacter
-				&& x.StartLine == y.StartLine;
+			return x.Start == y.Start
+				&& x.End == y.End;
 		}
 
 		public int GetHashCode([DisallowNull] IScriptManifestSymbolLocation obj)

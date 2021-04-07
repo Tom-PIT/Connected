@@ -14,7 +14,6 @@
 	{
 		short Address { get; }
 		string Identifier { get; }
-		IScriptManifestSymbolLocation Location { get; }
 		ScriptManifestSourceReferenceType Type { get; }
 	}
 }

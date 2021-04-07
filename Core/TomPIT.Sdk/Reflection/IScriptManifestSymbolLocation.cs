@@ -2,10 +2,7 @@
 {
 	public interface IScriptManifestSymbolLocation
 	{
-		int StartLine { get; set; }
-		int StartCharacter { get; set; }
-
-		int EndLine { get; set; }
-		int EndCharacter { get; set; }
+		int Start { get; set; }
+		int End { get; set; }
 	}
 }
