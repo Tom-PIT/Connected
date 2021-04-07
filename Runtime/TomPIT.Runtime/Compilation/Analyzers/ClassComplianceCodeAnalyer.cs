@@ -52,26 +52,23 @@ namespace TomPIT.Compilation.Analyzers
 
 			if (string.IsNullOrWhiteSpace(path) || path.Contains("/"))
 				return;
-
-			var declarations = context.Node.ChildNodes();
+			
 			ClassDeclarationSyntax firstClass = null;
 
-			foreach (var declaration in declarations)
+			foreach(var node in context.Node.DescendantNodes())
 			{
-				if (declaration.IsKind(SyntaxKind.ClassDeclaration))
+				if (node is ClassDeclarationSyntax declaration)
 				{
-					var cs = declaration as ClassDeclarationSyntax;
+					if (firstClass is null)
+						firstClass = declaration;
 
-					if (string.Compare(cs.Identifier.ToString(), expectedClassName, false) == 0)
+					if (string.Compare(declaration.Identifier.ValueText, expectedClassName, true) == 0)
 					{
-						if (!cs.IsPublic())
-							context.ReportDiagnostic(Microsoft.CodeAnalysis.Diagnostic.Create(Descriptors[0], cs.Identifier.GetLocation()));
+						if (!declaration.IsPublic())
+							context.ReportDiagnostic(Microsoft.CodeAnalysis.Diagnostic.Create(Descriptors[0], declaration.Identifier.GetLocation()));
 
 						return;
 					}
-
-					if (firstClass == null)
-						firstClass = cs;
 				}
 			}
 

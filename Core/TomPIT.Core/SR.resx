@@ -1254,4 +1254,7 @@
   <data name="ErrDependencyGraph" xml:space="preserve">
     <value>Cannot set entry into dependency graph</value>
   </data>
+  <data name="NamespaceClass" xml:space="preserve">
+    <value>This class acts as a namespace class</value>
+  </data>
 </root>

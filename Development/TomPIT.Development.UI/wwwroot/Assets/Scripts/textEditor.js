@@ -18,7 +18,8 @@
                 { ms: null, color: '#fce4ec' },
                 { ms: null, color: '#e0f7fa' },
                 { ms: null, color: '#fffde7' }
-            ]
+            ],
+            decorations:[]
         },
         _create: function () {
             var target = this;
@@ -271,6 +272,52 @@
             });
 
             return result;
+        },
+        loadDecorations:function(e) {
+            ide.designerAction({
+                'data': {
+                    'action': 'deltaDecorations',
+                    'model': {
+                        'uri': e.model.uri.toString(),
+                        'id': e.model.id
+                    },
+                    'text': e.model.getValue(),
+                },
+                onComplete: (d) => {
+                    this.setDecorations({
+                        model: e.model,
+                        decorations: d
+                    });
+                }
+            });
+        },
+        setDecorations:function(e) {
+            var existing = null;
+            var decorations = this.options.decorations;
+
+            if (decorations) {
+                for (let i = 0; i < decorations.length; i++) {
+                    let decoration = decorations[i];
+
+                    if (decoration.id === e.model.id) {
+                        existing = decoration;
+                        break;
+                    }
+                }
+            }
+
+            var existingDecorations = existing && existing.decorations || [];
+            var newDecorations = e.decorations || [];
+            var result = e.model.deltaDecorations(existingDecorations, newDecorations);
+
+            if (!existing) {
+                decorations.push({
+                    id: e.model.id,
+                    decorations: result
+                });
+            }
+            else
+                existing.decorations = result;
         },
         setState: function (state) {
             var existingState = null;

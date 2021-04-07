@@ -39,7 +39,7 @@
             model = monaco.editor.createModel('@text', '@Model.Language', modelUri);
             model.fileName = '@Model.Element.Title';
             model.microService = '@Model.Environment.Context.MicroService.Name';
-            
+
             model.updateOptions({
                 tabSize: 3
             });
@@ -60,25 +60,35 @@
             }
         }
 
-    textEditorState.setTargetProperty('@Model.PropertyName');
+        textEditorState.setTargetProperty('@Model.PropertyName');
 
-    textEditor.setModel(model);
-    textEditor.setup({
-        debug: {
-            url: '@url'
-        },
-        @if (Model.AmbientProvider != null && Model.AmbientProvider.ToolbarActions.Count > 0) {
+        textEditor.setModel(model);
+        textEditor.setup({
+            debug: {
+                url: '@url'
+            },
+            @if (Model.AmbientProvider != null && Model.AmbientProvider.ToolbarActions.Count > 0) {
+                <text>
+            actions: [
+              @foreach (var action in Model.AmbientProvider.ToolbarActions)
+              {
+                      @:{text: '@action.Text', glyph: '@action.Glyph', action: '@action.Action'},
+                  }
+            ],
+            </text>
+                }
+            language:'@Model.Language'
+        });
+
+        @if (features.HasFlag(LanguageFeature.DeltaDecorations))
+        {
             <text>
-        actions: [
-          @foreach (var action in Model.AmbientProvider.ToolbarActions)
-          {
-                  @:{text: '@action.Text', glyph: '@action.Glyph', action: '@action.Action'},
-              }
-        ],
+        textEditorState.loadDecorations({
+            model: model
+        });
+
         </text>
-            }
-        language:'@Model.Language'
-    });
+        }
 
     ide.setActiveDesigner({
         onUnload: function () {
@@ -140,7 +150,18 @@
                         },
                         'text': model.getValue(),
                     },
-                    onComplete: function () {
+                    onComplete: function (e) {
+                        @if (features.HasFlag(LanguageFeature.DeltaDecorations))
+                        {
+                            <text>
+                        textEditorState.setDecorations({
+                            model: model,
+                            decorations: e
+                        });
+
+                        </text>
+                        }
+
                         resolve();
 
                         @if ((features & LanguageFeature.CheckSyntax)== LanguageFeature.CheckSyntax)

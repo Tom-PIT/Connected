@@ -2959,6 +2959,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This class acts as a namespace class.
+        /// </summary>
+        public static string NamespaceClass {
+            get {
+                return ResourceManager.GetString("NamespaceClass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Back.
         /// </summary>
         public static string NavigateBack {

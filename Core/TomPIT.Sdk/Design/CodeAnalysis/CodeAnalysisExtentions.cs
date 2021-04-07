@@ -217,5 +217,15 @@ namespace TomPIT.Design.CodeAnalysis
 			else
 				return syntax.GetText().ToString();
 		}
+
+		public static bool IsPartial(this ClassDeclarationSyntax declaration)
+		{
+			return declaration.Modifiers.Any(f => f.IsKind(SyntaxKind.PartialKeyword));
+		}
+
+		public static bool IsPublic(this ClassDeclarationSyntax declaration)
+		{
+			return declaration.Modifiers.Any(f => f.IsKind(SyntaxKind.PublicKeyword));
+		}
 	}
 }

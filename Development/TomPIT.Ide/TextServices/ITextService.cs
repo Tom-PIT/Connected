@@ -28,6 +28,7 @@ namespace TomPIT.Ide.TextServices
 		SelectionRange = 262144,
 		SignatureHelp = 524288,
 		TypeDefinition = 1048576,
+		DeltaDecorations = 2097152,
 		All = 2097151
 	}
 
