@@ -150,6 +150,9 @@
                         },
                         'text': model.getValue(),
                     },
+                    onError(e) {
+                        reject();
+                    },
                     onComplete: function (e) {
                         @if (features.HasFlag(LanguageFeature.DeltaDecorations))
                         {
@@ -178,7 +181,7 @@
 
         Promise.all(promises).then(function () {
             if (saveTimeout !== -1)
-                saveTimeout = setTimeout(saveModels, 1000);
+                saveTimeout = setTimeout(saveModels, 250);
         });
     }
 
