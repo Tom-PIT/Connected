@@ -20,7 +20,7 @@ namespace TomPIT.Reflection
 			if (string.Compare(e.Category, ComponentCategories.Reference, true) != 0)
 				return;
 
-			Remove(e.Component);
+			Remove(e.MicroService);
 		}
 
 		private void OnConfigurationAdded(ITenant sender, ConfigurationEventArgs e)
@@ -28,7 +28,7 @@ namespace TomPIT.Reflection
 			if (string.Compare(e.Category, ComponentCategories.Reference, true) != 0)
 				return;
 
-			Set(e.Component);
+			Set(e.MicroService);
 		}
 
 		private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
@@ -36,7 +36,7 @@ namespace TomPIT.Reflection
 			if (string.Compare(e.Category, ComponentCategories.Reference, true) != 0)
 				return;
 
-			Set(e.Component);
+			Set(e.MicroService);
 		}
 
 		protected override void OnInitialize()
@@ -57,7 +57,7 @@ namespace TomPIT.Reflection
 
 		private void Set(Guid microService)
 		{
-			var configuration = Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(microService);
+			var configuration = Tenant.GetService<IComponentService>().SelectConfiguration(microService, ComponentCategories.Reference, "References") as IServiceReferencesConfiguration;
 
 			if (configuration is null)
 			{

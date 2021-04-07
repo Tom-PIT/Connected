@@ -3,8 +3,10 @@ using TomPIT.Middleware;
 
 namespace TomPIT.Navigation
 {
-	public interface ISiteMapHandler : IMiddlewareComponent
+	public interface ISiteMapMiddleware : IMiddlewareComponent
 	{
 		List<ISiteMapContainer> Invoke(params string[] key);
+
+		List<INavigationContext> QueryContexts();
 	}
 }

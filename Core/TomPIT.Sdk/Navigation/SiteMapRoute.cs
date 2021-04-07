@@ -24,5 +24,8 @@ namespace TomPIT.Navigation
 				return _items;
 			}
 		}
+
+		[CIP(CIP.NavigationContextProvider)]
+		public string NavigationContext {get;set;}
 	}
 }

@@ -4,7 +4,7 @@ using TomPIT.Middleware;
 
 namespace TomPIT.Navigation
 {
-	public abstract class SiteMapMiddleware : MiddlewareComponent, ISiteMapHandler
+	public abstract class SiteMapMiddleware : MiddlewareComponent, ISiteMapMiddleware
 	{
 		public List<ISiteMapContainer> Invoke(params string[] keys)
 		{
@@ -97,6 +97,16 @@ namespace TomPIT.Navigation
 					return result;
 			}
 
+			return null;
+		}
+
+		public List<INavigationContext> QueryContexts()
+		{
+			return OnQueryContexts();
+		}
+
+		protected virtual List<INavigationContext> OnQueryContexts()
+		{
 			return null;
 		}
 	}

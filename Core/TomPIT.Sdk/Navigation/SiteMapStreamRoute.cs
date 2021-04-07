@@ -34,6 +34,9 @@ namespace TomPIT.Navigation
 			}
 		}
 
+		[CIP(CIP.NavigationContextProvider)]
+		public string NavigationContext {get;set;}
+
 		public bool Authorize(IMiddlewareContext context, Guid user)
 		{
 			if (string.IsNullOrWhiteSpace(Api))

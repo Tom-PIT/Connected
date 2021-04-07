@@ -117,26 +117,50 @@ namespace TomPIT.Development.Navigation
 
 		private List<ISiteMapContainer> QueryContainers(Guid microService, IConfiguration configuration)
 		{
-			if (!(configuration is ISiteMapConfiguration siteMap))
+			if (configuration is not ISiteMapConfiguration siteMap)
 				return null;
 
-			var type = Tenant.GetService<ICompilerService>().ResolveType(microService, siteMap, siteMap.ComponentName());
-
-			if (type == null)
+			if (Tenant.GetService<ICompilerService>().ResolveType(microService, siteMap, siteMap.ComponentName()) is not Type type)
 				return null;
 
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(new MicroServiceContext(ms, Tenant.Url), type);
-
-			if (instance == null)
+			
+			if( Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapMiddleware>(new MicroServiceContext(ms, Tenant.Url), type) is not ISiteMapMiddleware middleware)
 				return null;
 
-			var containers = instance.Invoke();
+			return middleware.Invoke();
+		}
 
-			if (containers == null)
-				return containers;
+		private List<INavigationContext> QueryContexts(Guid microService, IConfiguration configuration)
+		{
+			if (configuration is not ISiteMapConfiguration siteMap)
+				return null;
 
-			return containers;
+			if (Tenant.GetService<ICompilerService>().ResolveType(microService, siteMap, siteMap.ComponentName()) is not Type type)
+				return null;
+
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+
+			if (Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapMiddleware>(new MicroServiceContext(ms, Tenant.Url), type) is not ISiteMapMiddleware middleware)
+				return null;
+
+			return middleware.QueryContexts();
+		}
+
+		public ImmutableList<string> QueryNavigationContexts(Guid microService)
+		{
+			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(microService, ComponentCategories.SiteMap);
+			var r = new List<INavigationContext>();
+
+			foreach (var configuration in configurations)
+			{
+				if (QueryContexts(microService, configuration) is not List<INavigationContext> items)
+					continue;
+
+				r.AddRange(items);
+			}
+
+			return r.Select(f => f.Key).ToImmutableList();
 		}
 	}
 }

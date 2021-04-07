@@ -14,5 +14,6 @@ namespace TomPIT.Navigation
 		string ParseUrl(string template, RouteValueDictionary parameters, bool allowQueryString);
 		ISiteMapRoute SelectRoute(string routeKey);
 		ISiteMapRoute MatchRoute(string url, RouteValueDictionary parameters);
+		INavigationContext SelectNavigationContext(string key);
 	}
 }

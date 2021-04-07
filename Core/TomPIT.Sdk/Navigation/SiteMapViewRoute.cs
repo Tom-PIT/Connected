@@ -1,5 +1,6 @@
 ﻿using TomPIT.Collections;
 using TomPIT.Middleware;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Navigation
 {
@@ -36,5 +37,9 @@ namespace TomPIT.Navigation
 				return _items;
 			}
 		}
+
+		[CIP(CIP.NavigationContextProvider)]
+
+		public string NavigationContext {get;set;}
 	}
 }

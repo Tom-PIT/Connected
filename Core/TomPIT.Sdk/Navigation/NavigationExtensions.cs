@@ -3,6 +3,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.WebUtilities;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.Exceptions;
@@ -74,7 +75,41 @@ namespace TomPIT.Navigation
 			if (!string.IsNullOrWhiteSpace(link.QueryString))
 				url = $"{url}?{link.QueryString}";
 
-			return url;
+			return link.WithNavigationContext(url);
+		}
+
+		public static string WithNavigationContext(this ISiteMapRouteContainer route, string parsedUrl)
+		{
+			if (string.IsNullOrWhiteSpace(parsedUrl) || string.IsNullOrWhiteSpace(route.NavigationContext))
+				return parsedUrl;
+
+			return WithNavigationContext(route.NavigationContext, parsedUrl);
+		}
+
+		public static string WithNavigationContext(this ISiteMapRoute route, string parsedUrl)
+		{
+			if (string.IsNullOrWhiteSpace(parsedUrl) || string.IsNullOrWhiteSpace(route.NavigationContext))
+				return parsedUrl;
+
+			return WithNavigationContext(route.NavigationContext, parsedUrl);
+		}
+
+		private static string WithNavigationContext(string key, string parsedUrl)
+		{
+			if (parsedUrl.Contains("?"))
+			{
+				var tokens = parsedUrl.Split("?".ToCharArray(), 2);
+
+				if (tokens.Length > 1)
+				{
+					if (QueryHelpers.ParseQuery(tokens[1]).ContainsKey("navigationContext"))
+						return parsedUrl;
+				}
+
+				return $"{parsedUrl}&navigationContext={key}";
+			}
+			else
+				return $"{parsedUrl}?navigationContext={key}";
 		}
 
 		public static RouteValueDictionary Merge(this RouteValueDictionary existing, ISiteMapElement element)

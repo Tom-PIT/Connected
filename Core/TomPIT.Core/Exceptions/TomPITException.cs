@@ -185,7 +185,7 @@ namespace TomPIT.Exceptions
 					fileName = "?";
 				else if (fileName.EndsWith("cshtml"))
 				{
-					var tokens = fileName.Split('/');
+					var tokens = fileName.Replace('\\','/').Split('/');
 
 					fileName = $"{tokens[^2]}/{tokens[^1]}";
 				}

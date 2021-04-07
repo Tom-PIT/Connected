@@ -15,5 +15,8 @@ namespace TomPIT.Navigation
 
 		object Parameters { get; }
 		string QueryString { get; }
+
+		[CIP(CIP.NavigationContextProvider)]
+		string NavigationContext { get; }
 	}
 }

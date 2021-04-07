@@ -71,8 +71,11 @@ namespace TomPIT.IoC
 
 		public List<IUIDependencyDescriptor> QueryMasterDependencies(Guid microService, string master, object arguments, MasterDependencyKind kind)
 		{
-			var targets = new List<IMasterDependency>();
+			if (string.IsNullOrWhiteSpace(master))
+				return null;
 
+			var targets = new List<IMasterDependency>();
+			
 			QueryMasterDependencies(microService, master, arguments, kind, targets);
 
 			return CreateDependencies(targets.ToList<IUIDependency>(), arguments);

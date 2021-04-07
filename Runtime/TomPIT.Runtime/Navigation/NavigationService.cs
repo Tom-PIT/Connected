@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,6 +26,8 @@ namespace TomPIT.Navigation
 	internal class NavigationService : ConfigurationRepository<ISiteMapConfiguration>, INavigationService
 	{
 		private static Lazy<ConcurrentDictionary<string, List<NavigationHandlerDescriptor>>> _handlers = new Lazy<ConcurrentDictionary<string, List<NavigationHandlerDescriptor>>>(() => { return new ConcurrentDictionary<string, List<NavigationHandlerDescriptor>>(StringComparer.OrdinalIgnoreCase); });
+		private static Lazy<ConcurrentDictionary<string, Guid>> _contextPointers = new Lazy<ConcurrentDictionary<string, Guid>>();
+
 		private static readonly HashSet<string> ReservedParameters = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
 		{
 			".",
@@ -130,7 +133,7 @@ namespace TomPIT.Navigation
 				}
 				else
 				{
-					foreach(var descriptor in handler.Value)
+					foreach (var descriptor in handler.Value)
 					{
 						if (!descriptor.RouteKeys.Contains(key.ToLowerInvariant()))
 							continue;
@@ -139,7 +142,7 @@ namespace TomPIT.Navigation
 
 						LoadDescriptorRoutes(descriptor, key, null, items);
 
-						foreach(var item in items)
+						foreach (var item in items)
 						{
 							FilterContainer(item, key);
 
@@ -173,12 +176,12 @@ namespace TomPIT.Navigation
 			if (targetRoute != null)
 			{
 				container.Routes.AddRange(targetRoute.Routes);
-				
+
 				targetRoute.Routes.Clear();
 			}
 		}
 
-		private ISiteMapRoute FindRoute(ConnectedList<ISiteMapRoute, ISiteMapContainer> routes,  string routeKey)
+		private ISiteMapRoute FindRoute(ConnectedList<ISiteMapRoute, ISiteMapContainer> routes, string routeKey)
 		{
 			foreach (var route in routes)
 			{
@@ -224,7 +227,7 @@ namespace TomPIT.Navigation
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(handler.MicroService);
 			var ctx = new MicroServiceContext(ms, Tenant.Url);
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(ctx, handler.Handler);
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapMiddleware>(ctx, handler.Handler);
 			var containers = instance.Invoke(key);
 
 			if (containers == null || containers.Count == 0)
@@ -289,14 +292,11 @@ namespace TomPIT.Navigation
 		private void RefreshNavigation(ISiteMapConfiguration configuration, bool removeOny = false)
 		{
 			var ms = ((IConfiguration)configuration).MicroService();
-			var type = Tenant.GetService<ICompilerService>().ResolveType(ms, configuration, configuration.ComponentName(), false);
 
-			if (type == null)
+			if (Tenant.GetService<ICompilerService>().ResolveType(ms, configuration, configuration.ComponentName(), false) is not Type type)
 				return;
 
-			var handlerInstance = type.CreateInstance<ISiteMapHandler>();
-
-			if (handlerInstance == null)
+			if (type.CreateInstance<ISiteMapMiddleware>() is not ISiteMapMiddleware handlerInstance)
 				return;
 
 			using var ctx = configuration.CreateContext();
@@ -304,7 +304,13 @@ namespace TomPIT.Navigation
 
 			var containers = handlerInstance.Invoke();
 
-			if (containers == null)
+			RegisterHandlers(ms, type, configuration, containers);
+			RegisterNavigationContexts(configuration.Component, handlerInstance.QueryContexts());
+		}
+
+		private void RegisterHandlers(Guid microService, Type handlerType, ISiteMapConfiguration configuration, List<ISiteMapContainer> containers)
+		{
+			if (containers is null)
 				return;
 
 			foreach (var container in containers)
@@ -315,31 +321,31 @@ namespace TomPIT.Navigation
 					continue;
 				}
 
-				if (string.IsNullOrWhiteSpace(container.Key))
+				Handlers.TryAdd(container.Key, new List<NavigationHandlerDescriptor>());
+
+				if (!Handlers.TryGetValue(container.Key, out List<NavigationHandlerDescriptor> items) || items.ToImmutableList().FirstOrDefault(f => f.Component == configuration.Component) is not null)
 					continue;
 
-				if (!Handlers.ContainsKey(container.Key))
-				{
-					lock (Handlers)
-					{
-						if (!Handlers.ContainsKey(container.Key))
-							Handlers.TryAdd(container.Key, new List<NavigationHandlerDescriptor>());
-					}
-				}
-
-				if (Handlers[container.Key].FirstOrDefault(f => f.Component == configuration.Component) != null)
-					continue;
-
-				var descriptor = new NavigationHandlerDescriptor(ms, configuration.Component, type);
+				var descriptor = new NavigationHandlerDescriptor(microService, configuration.Component, handlerType);
 
 				FillDescriptor(descriptor, container);
 
-				var list = Handlers[container.Key];
-
-				lock (list)
+				if (Handlers.TryGetValue(container.Key, out items))
 				{
-					list.Add(descriptor);
+					lock (items)
+						items.Add(descriptor);
 				}
+			}
+		}
+
+		private void RegisterNavigationContexts(Guid component, List<INavigationContext> items)
+		{
+			foreach (var context in items)
+			{
+				if (string.IsNullOrWhiteSpace(context.Key))
+					continue;
+
+				ContextPointers.TryAdd(context.Key, component);
 			}
 		}
 
@@ -354,6 +360,12 @@ namespace TomPIT.Navigation
 					for (var i = handlers.Count() - 1; i >= 0; i--)
 						key.Value.Remove(handlers.ElementAt(i));
 				}
+			}
+
+			foreach (var pointer in ContextPointers.ToImmutableDictionary())
+			{
+				if (pointer.Value == component)
+					ContextPointers.TryRemove(pointer.Key, out _);
 			}
 
 			if (removeOny)
@@ -443,13 +455,11 @@ namespace TomPIT.Navigation
 			{
 				if (!string.IsNullOrWhiteSpace(container.SpeculativeRouteKey))
 				{
-					var speculativeRoute = SelectRoute(container.SpeculativeRouteKey);
-
-					if (speculativeRoute != null)
-						breadCrumb.Url = ParseUrl(speculativeRoute.Template, MergeParameters(parameters, item));
+					if (SelectRoute(container.SpeculativeRouteKey) is ISiteMapRoute speculativeRoute)
+						breadCrumb.Url = speculativeRoute.WithNavigationContext(ParseUrl(speculativeRoute.Template, MergeParameters(parameters, item)));
 				}
 				else if (container is ISiteMapRouteContainer routeContainer && !string.IsNullOrWhiteSpace(routeContainer.Template))
-					breadCrumb.Url = ParseUrl(routeContainer.Template, MergeParameters(parameters, item));
+					breadCrumb.Url = routeContainer.WithNavigationContext(ParseUrl(routeContainer.Template, MergeParameters(parameters, item)));
 			}
 
 			if (item.Visible)
@@ -487,7 +497,7 @@ namespace TomPIT.Navigation
 			 * because it points to a currently displayed ui
 			 */
 			if (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template))
-				breadCrumb.Url = ParseUrl(route.Template, MergeParameters(parameters, item));
+				breadCrumb.Url = route.WithNavigationContext(ParseUrl(route.Template, MergeParameters(parameters, item)));
 
 			return breadCrumb;
 		}
@@ -507,7 +517,7 @@ namespace TomPIT.Navigation
 			 * because it points to a currently displayed ui
 			 */
 			if (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template))
-				breadCrumb.Url = ParseUrl(route.Template, MergeParameters(parameters, item));
+				breadCrumb.Url = route.WithNavigationContext(ParseUrl(route.Template, MergeParameters(parameters, item)));
 
 			return breadCrumb;
 		}
@@ -657,7 +667,7 @@ namespace TomPIT.Navigation
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
 			var ctx = new MicroServiceContext(ms, Tenant.Url);
-			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(ctx, descriptor.Handler);
+			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapMiddleware>(ctx, descriptor.Handler);
 
 			if (handler == null)
 				return null;
@@ -695,7 +705,7 @@ namespace TomPIT.Navigation
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
 			var ctx = new MicroServiceContext(ms, Tenant.Url);
-			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapHandler>(ctx, descriptor.Handler);
+			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapMiddleware>(ctx, descriptor.Handler);
 
 			if (handler == null)
 				return null;
@@ -821,12 +831,12 @@ namespace TomPIT.Navigation
 			if (parameters == null || !parameters.Any())
 				return;
 
-			var toRemove = new List<KeyValuePair<string,object>>();
+			var toRemove = new List<KeyValuePair<string, object>>();
 			var toChange = new List<KeyValuePair<string, object>>();
 
 			foreach (var parameter in parameters)
 			{
-				if(parameter.Value is INullableProperty nullable)
+				if (parameter.Value is INullableProperty nullable)
 				{
 					if (nullable.IsNull)
 						toRemove.Add(parameter);
@@ -838,11 +848,32 @@ namespace TomPIT.Navigation
 			foreach (var parameter in toRemove)
 				parameters.Remove(parameter.Key);
 
-			foreach(var parameter in toChange)
+			foreach (var parameter in toChange)
 			{
 				parameters.Remove(parameter.Key);
 				parameters.Add(parameter.Key, ((INullableProperty)parameter.Value).MappedValue);
 			}
 		}
+
+		public INavigationContext SelectNavigationContext(string key)
+		{
+			if (!ContextPointers.TryGetValue(key, out Guid component))
+				return null;
+
+			if (Tenant.GetService<IComponentService>().SelectConfiguration(component) is not ISiteMapConfiguration configuration)
+				return null;
+
+			using var context = new MicroServiceContext(configuration.MicroService());
+
+			if (configuration.Middleware(context) is not Type middlewareType)
+				return null;
+
+			if (context.CreateMiddleware<ISiteMapMiddleware>(middlewareType) is not ISiteMapMiddleware middleware)
+				return null;
+
+			return middleware.QueryContexts().First(f => string.Compare(f.Key, key, true) == 0);
+		}
+
+		private ConcurrentDictionary<string, Guid> ContextPointers => _contextPointers.Value;
 	}
 }

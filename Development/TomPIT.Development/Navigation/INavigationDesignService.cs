@@ -7,5 +7,6 @@ namespace TomPIT.Development.Navigation
 	{
 		ImmutableList<INavigationRouteDescriptor> QueryRouteKeys(Guid microservice);
 		ImmutableList<string> QuerySiteMapKeys(Guid microService);
+		ImmutableList<string> QueryNavigationContexts(Guid microService);
 	}
 }

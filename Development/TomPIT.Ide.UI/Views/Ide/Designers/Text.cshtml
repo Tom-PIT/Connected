@@ -39,9 +39,9 @@
             model = monaco.editor.createModel('@text', '@Model.Language', modelUri);
             model.fileName = '@Model.Element.Title';
             model.microService = '@Model.Environment.Context.MicroService.Name';
-
+            
             model.updateOptions({
-                tabSize: 2
+                tabSize: 3
             });
 
             textEditorWidget.activateModel(model.id, model.fileName, model.microService);
