@@ -547,7 +547,7 @@
                                 },
                                 onComplete: function (data) {
                                     if (!data || !data.uri) {
-                                        reject();
+                                        resolve();
                                         return;
                                     }
 
@@ -748,7 +748,7 @@
                                             }
                                         });
                                     else
-                                        reject();
+                                        resolve();
                                 }
 
                             }, false);
