@@ -18,7 +18,8 @@
                 { ms: null, color: '#fce4ec' },
                 { ms: null, color: '#e0f7fa' },
                 { ms: null, color: '#fffde7' }
-            ]
+            ],
+            decorations: []
         },
         _create: function () {
             var target = this;
@@ -79,7 +80,7 @@
                     glyphMargin: true,
                     lineNumbersMinChars: 4,
                     layoutInfo: {
-                        heigth:'100%'
+                        heigth: '100%'
                     },
                     parameterHints: {
                         enabled: true
@@ -109,7 +110,7 @@
                     editorOpts,
                     {
                         textModelService: {
-                            createModelReference: (uri)=>{
+                            createModelReference: (uri) => {
                                 return new Promise((resolve, reject) => {
                                     var result = {
                                         uri: uri,
@@ -150,7 +151,7 @@
                                                     });
                                                 }
 
-                                                
+
                                                 resolve({
                                                     object: result,
                                                     dispose: () => { }
@@ -272,6 +273,52 @@
 
             return result;
         },
+        loadDecorations: function (e) {
+            ide.designerAction({
+                'data': {
+                    'action': 'deltaDecorations',
+                    'model': {
+                        'uri': e.model.uri.toString(),
+                        'id': e.model.id
+                    },
+                    'text': e.model.getValue(),
+                },
+                onComplete: (d) => {
+                    this.setDecorations({
+                        model: e.model,
+                        decorations: d
+                    });
+                }
+            });
+        },
+        setDecorations: function (e) {
+            var existing = null;
+            var decorations = this.options.decorations;
+
+            if (decorations) {
+                for (let i = 0; i < decorations.length; i++) {
+                    let decoration = decorations[i];
+
+                    if (decoration.id === e.model.id) {
+                        existing = decoration;
+                        break;
+                    }
+                }
+            }
+
+            var existingDecorations = existing && existing.decorations || [];
+            var newDecorations = e.decorations || [];
+            var result = e.model.deltaDecorations(existingDecorations, newDecorations);
+
+            if (!existing) {
+                decorations.push({
+                    id: e.model.id,
+                    decorations: result
+                });
+            }
+            else
+                existing.decorations = result;
+        },
         setState: function (state) {
             var existingState = null;
             var existingStateIndex = -1;
@@ -376,7 +423,7 @@
                                                     var textEdit = edit.edits[j];
 
                                                     if (textEdit.resource) {
-                                                            textEdit.resource = monaco.Uri.parse(textEdit.resource);
+                                                        textEdit.resource = monaco.Uri.parse(textEdit.resource);
                                                     }
                                                 }
                                             }
@@ -483,7 +530,7 @@
 
             monaco.languages.registerDefinitionProvider(language, {
                 provideDefinition: function (model, position) {
-                    return  new Promise(function (resolve, reject) {
+                    return new Promise(function (resolve, reject) {
                         try {
                             ide.designerAction({
                                 data: {
@@ -778,7 +825,7 @@
                     if (i === 0)
                         this.activateModel(models[1].id);
                     else
-                        this.activateModel(models[i-1].id);
+                        this.activateModel(models[i - 1].id);
 
                     break;
                 }

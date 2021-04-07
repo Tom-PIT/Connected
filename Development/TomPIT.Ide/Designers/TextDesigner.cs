@@ -362,10 +362,10 @@ namespace TomPIT.Ide.Designers
 
 			using var editor = GetTextEditor(model, text);
 
-			if (editor.Features.HasFlag(LanguageFeature.DeltaDecorations))
-				return Result.JsonResult(this, editor.GetService<IDeltaDecorationsService>().ProvideDecorations());
-			else
+			if (editor is null || !editor.Features.HasFlag(LanguageFeature.DeltaDecorations))
 				return Result.SectionResult(ViewModel, EnvironmentSection.Events);
+
+			return Result.JsonResult(this, editor.GetService<IDeltaDecorationsService>().ProvideDecorations());
 		}
 
 		private IDesignerActionResult CheckSyntax(JObject data)
