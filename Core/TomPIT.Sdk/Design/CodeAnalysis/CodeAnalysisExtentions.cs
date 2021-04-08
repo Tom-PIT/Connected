@@ -101,14 +101,14 @@ namespace TomPIT.Design.CodeAnalysis
 			if (type == null)
 				return null;
 
-			var displayName = type.ToDisplayString();
+			var displayName = type.ToDisplayName();
 
 			if (string.Compare(displayName, baseTypeName, false) == 0)
 				return type;
 
 			foreach (var itf in type.AllInterfaces)
 			{
-				displayName = itf.ToDisplayString();
+				displayName = itf.ToDisplayName();
 
 				if (string.Compare(displayName, baseTypeName, false) == 0)
 					return itf;

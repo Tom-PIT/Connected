@@ -99,15 +99,16 @@ namespace TomPIT.Reflection.Providers
 				return;
 
 			om.Address = script.GetPointer(script.Address);
-			om.DeclaredType = CloneType(script.DeclaredTypes.FirstOrDefault(f => string.Compare(f.Name, operation.Name, false) == 0));
+			var declaredType = script.DeclaredTypes.FirstOrDefault(f => string.Compare(f.Name, operation.Name, false) == 0);
+			om.DeclaredType = CloneType(declaredType);
 
-			if (om.DeclaredType is IScriptManifestHttpType http)
+			if (declaredType is IScriptManifestHttpType http)
 				om.Verbs = http.Verbs;
 
-			if (om.DeclaredType is IScriptManifestExtenderSupportedType extender && extender.Extenders.Any())
+			if (declaredType is IScriptManifestExtenderSupportedType extender && extender.Extenders.Any())
 				om.Extenders.AddRange(extender.Extenders);
 
-			if (om.DeclaredType is IScriptManifestReturnType returnType)
+			if (declaredType is IScriptManifestReturnType returnType)
 				om.ReturnType = returnType.ReturnType;
 		}
 	}

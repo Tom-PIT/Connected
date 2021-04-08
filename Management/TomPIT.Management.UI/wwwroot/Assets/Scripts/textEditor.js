@@ -67,7 +67,7 @@
                     lineNumbers: true,
                     scrollBeyondLastLine: true,
                     automaticLayout: true,
-                    fontSize: '12.75px',
+                    fontSize: '13px',
                     autoClosingBrackets: 'beforeWhitespace',
                     autoClosingOvertype: 'always',
                     autoClosingQuotes: 'beforeWhitespace',

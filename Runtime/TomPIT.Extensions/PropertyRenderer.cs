@@ -72,7 +72,7 @@ namespace TomPIT
 
 			Builder.Append(">");
 
-			var attributes = Property is IScriptManifestAttributeMember member ? member.Attributes : null;
+			var attributes = Property is IManifestAttributeMember member ? member.Attributes : null;
 
 			if (attributes != null)
 			{
@@ -101,7 +101,7 @@ namespace TomPIT
 
 		private void ResolveLocalizationString(string attributeName, string propertyName)
 		{
-			var attributes = Property is IScriptManifestAttributeMember member ? member.Attributes : null;
+			var attributes = Property is IManifestAttributeMember member ? member.Attributes : null;
 
 			if (attributes != null)
 			{
