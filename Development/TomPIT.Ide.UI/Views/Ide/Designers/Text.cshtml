@@ -151,7 +151,7 @@
                         'text': model.getValue(),
                     },
                     onError(e) {
-                        reject();
+                        resolve();
                     },
                     onComplete: function (e) {
                         @if (features.HasFlag(LanguageFeature.DeltaDecorations))

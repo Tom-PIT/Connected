@@ -91,7 +91,7 @@ namespace TomPIT.Compilation.Analyzers
 
 			var att = target.GetType().FindAttribute<ClassRequiredAttribute>();
 
-			if (att == null)
+			if (att is null)
 				return null;
 
 			if (component.Token == Script.Id)
@@ -102,7 +102,7 @@ namespace TomPIT.Compilation.Analyzers
 
 			var property = target.GetType().GetProperty(att.ClassNameProperty);
 
-			if (property == null)
+			if (property is null)
 				return null;
 
 			return Types.Convert<string>(property.GetValue(target));

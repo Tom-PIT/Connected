@@ -38,7 +38,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CodeLensProviders
 			var items = new Dictionary<string, ManifestSymbolDescriptor>();
 
 			foreach (var type in manifest.DeclaredTypes)
-				ProvideLenses(manifest, type, references, items, manifest.GetPointer(manifest.Address));
+				ProvideLenses(manifest, type, references.Add(manifest), items, manifest.GetPointer(manifest.Address));
 
 			foreach (var item in items)
 			{
@@ -119,11 +119,8 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CodeLensProviders
 							};
 						}
 
-						if (FindSymbol(child, stack) is ManifestSymbolDescriptor result)
-							return result;
+						return FindSymbol(child, stack);
 					}
-
-					break;
 				}
 			}
 
