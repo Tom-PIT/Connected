@@ -245,7 +245,7 @@ namespace TomPIT.Caching
 				 */
 				if (newInstance == null)
 					Container.Remove(key, id);
-				else if (existing.Equals(newInstance))
+				else if (existing.Equals(newInstance) && args.InvalidateBehavior == InvalidateBehavior.RemoveSameInstance)
 					Container.Remove(key, id);
 			}
 

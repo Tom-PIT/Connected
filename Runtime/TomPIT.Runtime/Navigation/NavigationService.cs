@@ -424,7 +424,7 @@ namespace TomPIT.Navigation
 				FillDescriptor(descriptor, item);
 			}
 		}
-		public List<IBreadcrumb> QueryBreadcrumbs(string routeKey, RouteValueDictionary parameters)
+		public List<IBreadcrumb> QueryBreadcrumbs(string routeKey, RouteValueDictionary parameters, BreadcrumbLinkBehavior linkBehavior)
 		{
 			Initialize();
 
@@ -435,19 +435,23 @@ namespace TomPIT.Navigation
 
 			var result = new List<IBreadcrumb>();
 
-			ProcessBreadcrumb(item, result, parameters);
+			ProcessBreadcrumb(item, result, parameters, linkBehavior);
 
 			return result;
 		}
+		public List<IBreadcrumb> QueryBreadcrumbs(string routeKey, RouteValueDictionary parameters)
+		{
+			return QueryBreadcrumbs(routeKey, parameters, BreadcrumbLinkBehavior.IgnoreLastRoute);
+		}
 
-		private void ProcessBreadcrumb(ISiteMapElement item, List<IBreadcrumb> items, RouteValueDictionary parameters)
+		private void ProcessBreadcrumb(ISiteMapElement item, List<IBreadcrumb> items, RouteValueDictionary parameters, BreadcrumbLinkBehavior linkBehavior)
 		{
 			Breadcrumb breadCrumb = null;
 
 			if (item is ISiteMapRoute route)
-				breadCrumb = ProcessRouteBreadcrumb(route, item, items, parameters);
+				breadCrumb = ProcessRouteBreadcrumb(route, item, items, parameters, linkBehavior);
 			else if (item is ISiteMapRouteContainer routeContainer)
-				breadCrumb = ProcessContainerBreadcrumb(routeContainer, item, items, parameters);
+				breadCrumb = ProcessContainerBreadcrumb(routeContainer, item, items, parameters, linkBehavior);
 			else
 				return;
 
@@ -479,10 +483,10 @@ namespace TomPIT.Navigation
 			}
 
 			if (parent != null)
-				ProcessBreadcrumb(parent, items, parameters);
+				ProcessBreadcrumb(parent, items, parameters, linkBehavior);
 		}
 
-		private Breadcrumb ProcessRouteBreadcrumb(ISiteMapRoute route, ISiteMapElement item, List<IBreadcrumb> items, RouteValueDictionary parameters)
+		private Breadcrumb ProcessRouteBreadcrumb(ISiteMapRoute route, ISiteMapElement item, List<IBreadcrumb> items, RouteValueDictionary parameters, BreadcrumbLinkBehavior linkBehavior)
 		{
 			var breadCrumb = new Breadcrumb
 			{
@@ -496,13 +500,13 @@ namespace TomPIT.Navigation
 			 * Last breadcrumb should be without a link 
 			 * because it points to a currently displayed ui
 			 */
-			if (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template))
+			if (linkBehavior == BreadcrumbLinkBehavior.All||( items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template)))
 				breadCrumb.Url = route.WithNavigationContext(ParseUrl(route.Template, MergeParameters(parameters, item)));
 
 			return breadCrumb;
 		}
 
-		private Breadcrumb ProcessContainerBreadcrumb(ISiteMapRouteContainer route, ISiteMapElement item, List<IBreadcrumb> items, RouteValueDictionary parameters)
+		private Breadcrumb ProcessContainerBreadcrumb(ISiteMapRouteContainer route, ISiteMapElement item, List<IBreadcrumb> items, RouteValueDictionary parameters, BreadcrumbLinkBehavior linkBehavior)
 		{
 			var breadCrumb = new Breadcrumb
 			{
@@ -516,7 +520,7 @@ namespace TomPIT.Navigation
 			 * Last breadcrumb should be without a link 
 			 * because it points to a currently displayed ui
 			 */
-			if (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template))
+			if (linkBehavior == BreadcrumbLinkBehavior.All || (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template)))
 				breadCrumb.Url = route.WithNavigationContext(ParseUrl(route.Template, MergeParameters(parameters, item)));
 
 			return breadCrumb;

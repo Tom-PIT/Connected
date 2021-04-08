@@ -33,8 +33,6 @@ namespace TomPIT.App.UI
 			tenant.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
 
 			tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
-
-			//			ReplaceLogin();
 		}
 
 		private void OnComponentChanged(ITenant sender, ComponentEventArgs e)

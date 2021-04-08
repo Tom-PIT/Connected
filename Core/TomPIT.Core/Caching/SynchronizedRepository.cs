@@ -22,6 +22,8 @@ namespace TomPIT.Caching
 			Container.Invalidate += OnInvalidate;
 		}
 
+		protected virtual InvalidateBehavior InvalidateBehavior { get; } = InvalidateBehavior.KeepSameInstance;
+
 		private void OnInvalidate(CacheEventArgs e)
 		{
 			if (string.Compare(e.Key, Key, false) == 0)
@@ -30,6 +32,8 @@ namespace TomPIT.Caching
 					OnInvalidate(Types.Convert<K>(e.Id, CultureInfo.InvariantCulture));
 
 				Invalidate?.Invoke(e);
+
+				e.InvalidateBehavior = InvalidateBehavior;
 			}
 		}
 

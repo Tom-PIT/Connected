@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -143,27 +145,17 @@ namespace TomPIT.Navigation
 
 		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)] string routeKey, Dictionary<string, object> parameters)
 		{
-			var breadcrumbs = context.Services.Routing.QueryBreadcrumbs(routeKey, parameters);
-
-			if (breadcrumbs == null)
-				return;
-
-			foreach (var breadcrumb in breadcrumbs)
-			{
-				routes.Add(new Route
-				{
-					Text = breadcrumb.Text,
-					Url = breadcrumb.Url
-				});
-			}
+			FromBreadcrumbs(routes, context, routeKey, parameters == null ? null as RouteValueDictionary : new RouteValueDictionary(parameters));
 		}
 
 		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)] string routeKey, RouteValueDictionary parameters)
 		{
-			var breadcrumbs = context.Services.Routing.QueryBreadcrumbs(routeKey, parameters);
-
-			if (breadcrumbs == null)
+			if (context.Tenant.GetService<INavigationService>().QueryBreadcrumbs(routeKey, parameters, routes.Any() ? BreadcrumbLinkBehavior.All : BreadcrumbLinkBehavior.IgnoreLastRoute) is not List<IBreadcrumb> breadcrumbs)
 				return;
+
+			var existing = routes.ToImmutableArray();
+
+			routes.Clear();
 
 			foreach (var breadcrumb in breadcrumbs)
 			{
@@ -173,24 +165,14 @@ namespace TomPIT.Navigation
 					Url = breadcrumb.Url
 				});
 			}
+
+			foreach (var route in existing)
+				routes.Add(route);
 		}
 
 		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)] string routeKey)
 		{
-			var breadcrumbs = context.Services.Routing.QueryBreadcrumbs(routeKey);
-
-			if (breadcrumbs == null)
-				return;
-
-			foreach (var breadcrumb in breadcrumbs)
-			{
-				routes.Add(new Route
-				{
-					Text = breadcrumb.Text,
-					Url = breadcrumb.Url
-				});
-			}
-
+			FromBreadcrumbs(routes, context, routeKey, null as RouteValueDictionary);
 		}
 
 		public static void FromSiteMap(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteSiteMapsProvider)] string routeKey)
