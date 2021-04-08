@@ -173,9 +173,9 @@ namespace TomPIT.Ide.TextServices.CSharp
 				{
 					_document = ((AdhocWorkspace)Workspace).AddDocument(DocumentInfo);
 
-					Workspace.TryApplyChanges(Workspace.CurrentSolution.WithOptions(Workspace.Options.WithChangedOption(FormattingOptions.UseTabs, "C#", true)));
-					Workspace.TryApplyChanges(Workspace.CurrentSolution.WithOptions(Workspace.Options.WithChangedOption(FormattingOptions.TabSize, "C#", 4)));
-					Workspace.TryApplyChanges(Workspace.CurrentSolution.WithOptions(Workspace.Options.WithChangedOption(FormattingOptions.IndentationSize, "C#", 4)));
+					//Workspace.TryApplyChanges(Workspace.CurrentSolution.WithOptions(Workspace.Options.WithChangedOption(FormattingOptions.UseTabs, "C#", true)));
+					//Workspace.TryApplyChanges(Workspace.CurrentSolution.WithOptions(Workspace.Options.WithChangedOption(FormattingOptions.TabSize, "C#", 4)));
+					Workspace.TryApplyChanges(Workspace.CurrentSolution.WithOptions(Workspace.Options.WithChangedOption(FormattingOptions.IndentationSize, "C#", 3)));
 				}
 
 				return _document;

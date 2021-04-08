@@ -46,7 +46,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 			var scripts = Editor.Context.Tenant.GetService<IComponentService>().QueryComponents(microService.Token, ComponentCategories.Script);
 
 			foreach (var script in scripts)
-				items.Add(CreateScriptItem($"{msName}{script.Name}"));
+				items.Add(CreateScriptItem(script.Name, $"{msName}{script.Name}"));
 
 			var apis = Editor.Context.Tenant.GetService<IComponentService>().QueryConfigurations(microService.Token, ComponentCategories.Api);
 
@@ -58,7 +58,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 				var apiName = api.ComponentName();
 
 				foreach (var operation in configuration.Operations)
-					items.Add(CreateScriptItem($"{msName}{apiName}/{operation.Name}"));
+					items.Add(CreateScriptItem($"{apiName}/{operation.Name}", $"{msName}{apiName}/{operation.Name}"));
 			}
 
 			var models = Editor.Context.Tenant.GetService<IComponentService>().QueryConfigurations(microService.Token, ComponentCategories.Model);
@@ -70,7 +70,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 
 				var modelName = mc.ComponentName();
 
-				items.Add(CreateScriptItem($"{microService.Name}/{modelName}"));
+				items.Add(CreateScriptItem(modelName, $"{microService.Name}/{modelName}"));
 			}
 
 			var settings = Editor.Context.Tenant.GetService<IComponentService>().QueryConfigurations(microService.Token, ComponentCategories.Settings);
@@ -82,19 +82,20 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 
 				var modelName = sc.ComponentName();
 
-				items.Add(CreateScriptItem($"{microService.Name}/{modelName}"));
+				items.Add(CreateScriptItem(modelName, $"{microService.Name}/{modelName}"));
 			}
 		}
 
-		private static ICompletionItem CreateScriptItem(string name)
+		private static ICompletionItem CreateScriptItem(string text, string name)
 		{
 			var result = new CompletionItem
 			{
-				FilterText = name,
+				FilterText = name.Replace("/", string.Empty),
 				InsertText = $"\"{name}\"",
 				Kind = CompletionItemKind.Reference,
-				Label = name,
-				SortText = name
+				Label = text,
+				SortText = text,
+				Detail = name
 			};
 
 			result.CommitCharacters.AddRange(new List<string> { "\t", "\"", "\r" });

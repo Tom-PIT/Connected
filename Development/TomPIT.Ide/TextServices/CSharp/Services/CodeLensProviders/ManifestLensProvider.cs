@@ -37,8 +37,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CodeLensProviders
 
 			var items = new Dictionary<string, ManifestSymbolDescriptor>();
 
-			foreach (var type in manifest.DeclaredTypes)
-				ProvideLenses(manifest, type, references.Add(manifest), items, manifest.GetPointer(manifest.Address));
+			ProvideLenses(references.Add(manifest), items, manifest.GetPointer(manifest.Address));
 
 			foreach (var item in items)
 			{
@@ -63,7 +62,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CodeLensProviders
 			return result;
 		}
 
-		private void ProvideLenses(IScriptManifest manifest, IScriptManifestType type, IImmutableList<IScriptManifest> references, Dictionary<string, ManifestSymbolDescriptor> items, IScriptManifestPointer address)
+		private void ProvideLenses(IImmutableList<IScriptManifest> references, Dictionary<string, ManifestSymbolDescriptor> items, IScriptManifestPointer address)
 		{
 			foreach (var reference in references)
 			{
