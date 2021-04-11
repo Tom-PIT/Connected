@@ -3,9 +3,9 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net4.7.2</TargetFramework>
     <Configurations>Debug;Release;Development</Configurations>
-    <AssemblyVersion>2.2.411.1</AssemblyVersion>
-    <FileVersion>2.2.411.1</FileVersion>
-    <Version>2.2.411.1</Version>
+    <AssemblyVersion>2.2.412.1</AssemblyVersion>
+    <FileVersion>2.2.412.1</FileVersion>
+    <Version>2.2.412.1</Version>
   </PropertyGroup>
   <PropertyGroup>
     <AppConfig>App.$(Configuration).config</AppConfig>
