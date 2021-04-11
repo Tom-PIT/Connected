@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.Connectivity;
 using TomPIT.Ide.TextServices.CSharp;
 using TomPIT.Ide.TextServices.Services;
 
@@ -14,11 +18,11 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 
 		public List<IMarkerData> CheckSyntax(IText sourceCode)
 		{
-			var model = Editor.Document.GetSemanticModelAsync().Result;
+			var model = Editor.SemanticModel;// Editor.Document.GetSemanticModelAsync().Result;
 			var compilation = model.Compilation;
 
 			var result = new List<IMarkerData>();
-			var diagnostics = compilation.GetDiagnostics();
+			var diagnostics = compilation.WithAnalyzers(CreateAnalyzers(Editor.Context.Tenant, sourceCode)). GetAllDiagnosticsAsync().Result;
 
 			foreach (var diagnostic in diagnostics)
 			{
@@ -61,6 +65,11 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 				return true;
 
 			return false;
+		}
+
+		private static ImmutableArray<DiagnosticAnalyzer> CreateAnalyzers(ITenant tenant, IText text)
+		{
+			return tenant.GetService<ICompilerService>().GetAnalyzers(CompilerLanguage.Razor, text.Configuration().MicroService(), text.Configuration().Component, text.Id);
 		}
 	}
 }

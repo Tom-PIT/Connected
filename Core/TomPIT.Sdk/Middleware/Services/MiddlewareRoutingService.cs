@@ -12,6 +12,7 @@ using TomPIT.Routing;
 using TomPIT.Security;
 using TomPIT.Storage;
 using TomPIT.UI;
+using AA = TomPIT.Annotations.Design.AnalyzerAttribute;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Services
@@ -255,12 +256,12 @@ namespace TomPIT.Middleware.Services
 			return ParseUrl(template, values);
 		}
 
-		public string ParseRoute([CIP(CIP.RouteKeyProvider)]string routeKey)
+		public string ParseRoute([CIP(CIP.RouteKeyProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey)
 		{
 			return ParseRoute(routeKey, null);
 		}
 
-		public string ParseRoute([CIP(CIP.RouteKeyProvider)]string routeKey, RouteValueDictionary parameters)
+		public string ParseRoute([CIP(CIP.RouteKeyProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey, RouteValueDictionary parameters)
 		{
 			var route = SelectRoute(routeKey);
 
@@ -269,7 +270,7 @@ namespace TomPIT.Middleware.Services
 
 			return Context.Tenant.GetService<INavigationService>().ParseUrl(route.Template, parameters, true);
 		}
-		public string ParseRoute([CIP(CIP.RouteKeyProvider)]string routeKey, object parameters)
+		public string ParseRoute([CIP(CIP.RouteKeyProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey, object parameters)
 		{
 			return ParseRoute(routeKey, new RouteValueDictionary(parameters));
 		}
@@ -301,22 +302,22 @@ namespace TomPIT.Middleware.Services
 			return Context.Tenant.GetService<INavigationService>().QuerySiteMap(keys, tags).WithAuthorization(Context);
 		}
 
-		public List<IBreadcrumb> QueryBreadcrumbs([CIP(CIP.RouteKeyProvider)]string routeKey)
+		public List<IBreadcrumb> QueryBreadcrumbs([CIP(CIP.RouteKeyProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey)
 		{
 			return QueryBreadcrumbs(routeKey, null);
 		}
 
-		public List<IBreadcrumb> QueryBreadcrumbs([CIP(CIP.RouteKeyProvider)]string routeKey, object parameters)
+		public List<IBreadcrumb> QueryBreadcrumbs([CIP(CIP.RouteKeyProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey, object parameters)
 		{
 			return QueryBreadcrumbs(routeKey, new RouteValueDictionary(parameters));
 		}
 
-		public List<IBreadcrumb> QueryBreadcrumbs([CIP(CIP.RouteKeyProvider)]string routeKey, RouteValueDictionary parameters)
+		public List<IBreadcrumb> QueryBreadcrumbs([CIP(CIP.RouteKeyProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey, RouteValueDictionary parameters)
 		{
 			return Context.Tenant.GetService<INavigationService>().QueryBreadcrumbs(routeKey, parameters);
 		}
 
-		public ISiteMapRoute SelectRoute([CIP(CIP.RouteKeyProvider)]string routeKey)
+		public ISiteMapRoute SelectRoute([CIP(CIP.RouteKeyProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey)
 		{
 			return Context.Tenant.GetService<INavigationService>().SelectRoute(routeKey);
 		}

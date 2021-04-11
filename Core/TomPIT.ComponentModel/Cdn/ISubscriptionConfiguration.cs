@@ -2,7 +2,7 @@
 
 namespace TomPIT.ComponentModel.Cdn
 {
-	public interface ISubscriptionConfiguration : IConfiguration, IText
+	public interface ISubscriptionConfiguration : IConfiguration, IText, INamespaceElement
 	{
 		ListItems<ISubscriptionEvent> Events { get; }
 	}

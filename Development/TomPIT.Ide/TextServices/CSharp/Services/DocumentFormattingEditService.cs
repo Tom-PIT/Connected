@@ -13,6 +13,9 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 
 		public List<ITextEdit> ProvideDocumentFormattingEdits()
 		{
+			if (Editor.SemanticModel is null)
+				return null;
+
 			var root = Editor.SemanticModel.SyntaxTree.GetRoot();
 			var result = Formatter.Format(root, Editor.Workspace);
 			var end = Editor.Document.GetLine(root.FullSpan.End);

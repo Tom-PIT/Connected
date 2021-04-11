@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
@@ -13,6 +14,9 @@ namespace TomPIT.MicroServices.Distributed
 	{
 		private ListItems<IQueueWorker> _ops = null;
 		private IMetricOptions _metric = null;
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
 
 		[Items(DesignUtils.QueueWorkerItems)]
 		public ListItems<IQueueWorker> Workers

@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel.Search
 {
-	public interface ISearchCatalogConfiguration : IConfiguration, IText
+	public interface ISearchCatalogConfiguration : IConfiguration, IText, INamespaceElement
 	{
 	}
 }

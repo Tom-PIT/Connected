@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TomPIT.ComponentModel;
+using TomPIT.Design.CodeAnalysis;
 using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Reflection;
 
@@ -36,8 +37,9 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CodeLensProviders
 				return result;
 
 			var items = new Dictionary<string, ManifestSymbolDescriptor>();
+			var ignoredItems = new HashSet<string>();
 
-			ProvideLenses(references.Add(manifest), items, manifest.GetPointer(manifest.Address));
+			ProvideLenses(references.Add(manifest), items, manifest.GetPointer(manifest.Address), ignoredItems);
 
 			foreach (var item in items)
 			{
@@ -62,7 +64,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CodeLensProviders
 			return result;
 		}
 
-		private void ProvideLenses(IImmutableList<IScriptManifest> references, Dictionary<string, ManifestSymbolDescriptor> items, IScriptManifestPointer address)
+		private void ProvideLenses(IImmutableList<IScriptManifest> references, Dictionary<string, ManifestSymbolDescriptor> items, IScriptManifestPointer address, HashSet<string> ignoredItems)
 		{
 			foreach (var reference in references)
 			{
@@ -77,10 +79,16 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CodeLensProviders
 					{
 						var identifierStack = new Queue<string>(symbol.Key.Identifier.Split('.'));
 
+						if (ignoredItems.Contains(symbol.Key.Identifier))
+							continue;
+
 						var target = FindSymbol(Arguments.Model.SyntaxTree.GetRoot(), identifierStack);
 
 						if (target is null)
+						{
+							ignoredItems.Add(symbol.Key.Identifier);
 							continue;
+						}
 
 						target.Count = symbol.Value.Count;
 
@@ -107,6 +115,8 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CodeLensProviders
 					{
 						if (stack.IsEmpty())
 						{
+							if (child is ClassDeclarationSyntax declaration && declaration.IsPartial())
+								return null; 
 							var loc = child.GetLocation().GetLineSpan();
 
 							return new ManifestSymbolDescriptor
@@ -136,10 +146,6 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CodeLensProviders
 				return fd.Declaration.Variables.First().Identifier.ToString();
 			else
 				return null;
-		}
-		private ManifestSymbolDescriptor FindSymbol()
-		{
-			return null;
 		}
 	}
 }

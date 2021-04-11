@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TomPIT.Design.CodeAnalysis;
 using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
 using TomPIT.Ide.TextServices.CSharp.Services.DefinitionProviders;
 using TomPIT.Reflection;
@@ -84,21 +85,6 @@ namespace TomPIT.Ide.Analysis
 			}
 
 			return default;
-		}
-
-		public static string ToDisplayName(this INamedTypeSymbol symbol)
-		{
-			var sb = new StringBuilder();
-
-			if (!string.IsNullOrWhiteSpace(symbol.ContainingNamespace.Name))
-				sb.Append($"{symbol.ContainingNamespace.ToDisplayString()}.");
-
-			sb.Append(symbol.MetadataName);
-
-			if (!string.IsNullOrWhiteSpace(symbol.ContainingAssembly.Name))
-				sb.Append($", {symbol.ContainingAssembly.ToDisplayString()}");
-
-			return sb.ToString();
 		}
 
 		public static ISymbol ResolvePropertyInfo(this AssignmentExpressionSyntax assignment, SemanticModel model)

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.ComponentModel;
@@ -11,6 +12,9 @@ namespace TomPIT.MicroServices.Navigation
 	[ClassRequired]
 	public class SiteMap : TextConfiguration, ISiteMapConfiguration
 	{
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
+
 		[Browsable(false)]
 		public override string FileName => $"{ToString()}.csx";
 	}

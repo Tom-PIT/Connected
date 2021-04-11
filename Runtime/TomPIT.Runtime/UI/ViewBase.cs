@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Razor;
 using TomPIT.Models;
 using TomPIT.Serialization;
+using AA = TomPIT.Annotations.Design.AnalyzerAttribute;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Runtime.UI
@@ -15,12 +16,12 @@ namespace TomPIT.Runtime.UI
 
 		private IViewModel ViewModel => Model as IViewModel;
 
-		protected string GetString([CIP(CIP.StringTableProvider)] string stringTable, [CIP(CIP.StringTableStringProvider)] string key)
+		protected string GetString([CIP(CIP.StringTableProvider)][AA(AA.StringTableAnalyzer)]string stringTable, [CIP(CIP.StringTableStringProvider)][AA(AA.StringAnalyzer)] string key)
 		{
 			return ViewModel.Services.Globalization.GetString(stringTable, key);
 		}
 
-		protected HtmlString GetHtmlString([CIP(CIP.StringTableProvider)] string stringTable, [CIP(CIP.StringTableStringProvider)] string key)
+		protected HtmlString GetHtmlString([CIP(CIP.StringTableProvider)][AA(AA.StringTableAnalyzer)] string stringTable, [CIP(CIP.StringTableStringProvider)][AA(AA.StringAnalyzer)] string key)
 		{
 			return new HtmlString(ViewModel.Services.Globalization.GetString(stringTable, key));
 		}

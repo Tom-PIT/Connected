@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel.Quality
 {
-	public interface IUnitTestConfiguration : IConfiguration, IText
+	public interface IUnitTestConfiguration : IConfiguration, IText, INamespaceElement
 	{
 	}
 }

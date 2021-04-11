@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 
@@ -57,8 +56,6 @@ namespace TomPIT.Caching
 				if (Initialized)
 					return;
 
-				Debug.WriteLine($"Initializing {GetType().Name}");
-
 				InitializeSignal = new ManualResetEvent(false);
 				Initializing = true;
 
@@ -78,8 +75,6 @@ namespace TomPIT.Caching
 					InitializeSignal.Dispose();
 					InitializeSignal = null;
 				}
-
-				Debug.WriteLine($"Initialized {GetType().Name}");
 			}
 
 			OnInitialized();

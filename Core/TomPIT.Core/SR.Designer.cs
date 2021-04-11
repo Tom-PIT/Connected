@@ -2671,6 +2671,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Multiple types match the specified type name. Consider use namespace property on the component if available and use partial classes to scope types..
+        /// </summary>
+        public static string ErrTypeMultipleMatch {
+            get {
+                return ResourceManager.GetString("ErrTypeMultipleMatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Type not found.
         /// </summary>
         public static string ErrTypeNotFound {

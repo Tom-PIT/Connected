@@ -1257,4 +1257,7 @@
   <data name="NamespaceClass" xml:space="preserve">
     <value>This class acts as a namespace class</value>
   </data>
+  <data name="ErrTypeMultipleMatch" xml:space="preserve">
+    <value>Multiple types match the specified type name. Consider use namespace property on the component if available and use partial classes to scope types.</value>
+  </data>
 </root>

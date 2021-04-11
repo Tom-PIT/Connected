@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using TomPIT.ComponentModel;
+using TomPIT.Design.CodeAnalysis;
 
 namespace TomPIT.Reflection.CodeAnalysis
 {
@@ -25,7 +26,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 			if (symbol == null || symbol is not INamedTypeSymbol type)
 				return null;
 
-			if (IsPlatformClass(type.Name))
+			if (ClassExtensions.IsPlatformClass(type.Name))
 				return null;
 
 			var result = new TypeSymbolDescriptor
@@ -260,11 +261,6 @@ namespace TomPIT.Reflection.CodeAnalysis
 				if (att != null)
 					items.Add(att);
 			}
-		}
-
-		public static bool IsPlatformClass(string name)
-		{
-			return string.Compare(name, "__ScriptInfo", false) == 0;
 		}
 
 		private static void SetLocation(IScriptManifestMember member, SyntaxNode node)

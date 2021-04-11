@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
@@ -10,6 +11,9 @@ namespace TomPIT.MicroServices.IoC
 	public class IoCEndpointConfiguration : TextConfiguration, IIoCEndpointConfiguration
 	{
 		private ListItems<IIoCEndpoint> _endpoints = null;
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
 
 		[Items(DesignUtils.IoCEndpointItems)]
 		public ListItems<IIoCEndpoint> Endpoints

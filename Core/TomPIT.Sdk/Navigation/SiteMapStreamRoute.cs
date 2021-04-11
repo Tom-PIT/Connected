@@ -5,16 +5,17 @@ using TomPIT.ComponentModel;
 using TomPIT.Middleware;
 using TomPIT.Middleware.Interop;
 using TomPIT.Security;
+using AA = TomPIT.Annotations.Design.AnalyzerAttribute;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Navigation
 {
-	public class SiteMapStreamRoute : SiteMapElement, ISiteMapStreamRoute
+	public class SiteMapStreamRoute : SiteMapElement, ISiteMapStreamRoute, ISitemapNavigationContextElement
 	{
 		private ConnectedList<ISiteMapRoute, ISiteMapRoute> _items = null;
 
 		[CIP(CIP.ApiOperationProvider)]
-
+		[AA(AA.ApiOperationAnalyzer)]
 		public string Api { get; set; }
 		public string RouteKey { get; set; }
 
@@ -35,6 +36,7 @@ namespace TomPIT.Navigation
 		}
 
 		[CIP(CIP.NavigationContextProvider)]
+		[AA(AA.NavigationContextAnalyzer)]
 		public string NavigationContext {get;set;}
 
 		public bool Authorize(IMiddlewareContext context, Guid user)

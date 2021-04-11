@@ -31,5 +31,8 @@ namespace TomPIT.MicroServices.Data
 		public Guid DataProvider { get; set; }
 		[Browsable(false)]
 		public override string FileName => $"{ToString()}.csx";
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
 	}
 }

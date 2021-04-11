@@ -105,7 +105,7 @@ namespace TomPIT.Ide.TextServices.Razor
 			{
 				builder.SetBaseType($"TomPIT.Runtime.Design.UI.DesignViewBase");
 			});
-
+			
 			var document = RazorSourceDocument.Create(Text, Encoding.UTF8, new RazorSourceDocumentProperties($"{Model.Id}.cshtml", $"{Model.Id}.cshtml"));
 			var imports = ImmutableArray.Create(RazorSourceDocument.Create(ImportUsings, "ImportUsings.cshtml"));
 			var tagHelpers = ImmutableArray.Create<TagHelperDescriptor>();

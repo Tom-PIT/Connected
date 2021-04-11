@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
@@ -22,6 +23,10 @@ namespace TomPIT.MicroServices.Messaging
 				return _bindings;
 			}
 		}
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
+
 		[Browsable(false)]
 		public override string FileName => $"{ToString()}.csx";
 	}

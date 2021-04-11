@@ -1,4 +1,5 @@
-﻿using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
+﻿using AA = TomPIT.Annotations.Design.AnalyzerAttribute;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Navigation
 {
@@ -8,10 +9,12 @@ namespace TomPIT.Navigation
 
 		public bool Enabled { get; set; } = true;
 
-		[CIP(CIP.RouteKeyProvider)] 
+		[CIP(CIP.RouteKeyProvider)]
+		[AA(AA.RouteKeyAnalyzer)]
 		public string BreadcrumbKey {get;set;}
 
-		[CIP(CIP.RouteKeyProvider)] 
+		[CIP(CIP.RouteKeyProvider)]
+		[AA(AA.RouteKeyAnalyzer)]
 		public string MenuKey {get;set;}
 	}
 }

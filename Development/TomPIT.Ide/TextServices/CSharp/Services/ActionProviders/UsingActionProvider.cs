@@ -86,11 +86,14 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 			{
 				var attributeName = node.EnclosingAttributeName();
 
-				if (!attributeName.EndsWith("Attribute"))
-					attributeName += "Attribute";
+				if (!string.IsNullOrWhiteSpace(attributeName))
+				{
+					if (!attributeName.EndsWith("Attribute"))
+						attributeName += "Attribute";
 
-				if (!typeNames.Contains(attributeName))
-					typeNames.Add(attributeName);
+					if (!typeNames.Contains(attributeName))
+						typeNames.Add(attributeName);
+				}
 			}
 
 			var references = AssemblyReferenceResolver.ResolveReferences(Arguments.Model.Compilation);

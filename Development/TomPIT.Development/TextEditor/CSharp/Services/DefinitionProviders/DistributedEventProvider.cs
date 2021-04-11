@@ -17,7 +17,10 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.DefinitionProviders
 			var nodeToken = e.Model.SyntaxTree.GetRoot().FindToken(caret);
 
 			var tokens = nodeToken.ValueText.Split('/');
-			var ms = e.Editor.Context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
+			
+			if (e.Editor.Context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]) is not IMicroService ms)
+				return null;
+
 			var component = e.Editor.Context.Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategory, tokens[1]);
 			var config = e.Editor.Context.Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) as IDistributedEventsConfiguration;
 			var ev = config.Events.FirstOrDefault(f => string.Compare(f.Name, tokens[2], true) == 0);

@@ -12,8 +12,8 @@ using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Models;
 using TomPIT.Security;
+using AA = TomPIT.Annotations.Design.AnalyzerAttribute;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
-
 namespace TomPIT.Navigation
 {
 	public static class NavigationExtensions
@@ -143,12 +143,12 @@ namespace TomPIT.Navigation
 			return result;
 		}
 
-		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)] string routeKey, Dictionary<string, object> parameters)
+		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey, Dictionary<string, object> parameters)
 		{
 			FromBreadcrumbs(routes, context, routeKey, parameters == null ? null as RouteValueDictionary : new RouteValueDictionary(parameters));
 		}
 
-		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)] string routeKey, RouteValueDictionary parameters)
+		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey, RouteValueDictionary parameters)
 		{
 			if (context.Tenant.GetService<INavigationService>().QueryBreadcrumbs(routeKey, parameters, routes.Any() ? BreadcrumbLinkBehavior.All : BreadcrumbLinkBehavior.IgnoreLastRoute) is not List<IBreadcrumb> breadcrumbs)
 				return;
@@ -170,12 +170,12 @@ namespace TomPIT.Navigation
 				routes.Add(route);
 		}
 
-		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)] string routeKey)
+		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey)
 		{
 			FromBreadcrumbs(routes, context, routeKey, null as RouteValueDictionary);
 		}
 
-		public static void FromSiteMap(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteSiteMapsProvider)] string routeKey)
+		public static void FromSiteMap(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteSiteMapsProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey)
 		{
 			var sitemap = context.Services.Routing.QuerySiteMap(new List<string> { routeKey });
 
@@ -185,7 +185,7 @@ namespace TomPIT.Navigation
 			LoadRoutes(context, routes, sitemap.Routes);
 		}
 
-		public static void FromSiteMap(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteSiteMapsProvider)] string routeKey, string tag)
+		public static void FromSiteMap(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteSiteMapsProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey, string tag)
 		{
 			var sitemap = context.Services.Routing.QuerySiteMap(new List<string> { routeKey }, true, new List<string> { tag });
 

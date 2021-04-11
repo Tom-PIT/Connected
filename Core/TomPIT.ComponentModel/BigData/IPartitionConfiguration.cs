@@ -7,7 +7,7 @@ namespace TomPIT.ComponentModel.BigData
 		Manual = 1,
 		Auto = 2
 	}
-	public interface IPartitionConfiguration : IConfiguration, IText
+	public interface IPartitionConfiguration : IConfiguration, IText, INamespaceElement
 	{
 		SchemaSynchronizationMode SchemaSynchronization { get; }
 

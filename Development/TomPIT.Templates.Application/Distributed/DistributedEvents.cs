@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
@@ -24,5 +25,8 @@ namespace TomPIT.MicroServices.Distributed
 		}
 		[Browsable(false)]
 		public override string FileName => $"{ToString()}.csx";
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
 	}
 }

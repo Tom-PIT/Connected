@@ -3,6 +3,7 @@ using TomPIT.Middleware.Interop;
 
 namespace TomPIT.Security
 {
+	[Obsolete("Please use ProxyAuthorizationModel instead.")]
 	public abstract class AuthorizationModel : MiddlewareProxy, IAuthorizationModel
 	{
 		[Obsolete("Please use GetValue().")]
@@ -10,5 +11,9 @@ namespace TomPIT.Security
 		{
 			return GetValue<T>(propertyName);
 		}
+	}
+
+	public abstract class ProxyAuthorizationModel : MiddlewareProxy, IAuthorizationModel
+	{
 	}
 }

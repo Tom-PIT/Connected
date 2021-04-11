@@ -2,6 +2,8 @@
 using TomPIT.ComponentModel;
 using TomPIT.Middleware;
 using TomPIT.Security;
+using AA = TomPIT.Annotations.Design.AnalyzerAttribute;
+
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Navigation
@@ -9,6 +11,7 @@ namespace TomPIT.Navigation
 	public abstract class SiteMapViewElement : SiteMapElement, ISiteMapAuthorizationElement
 	{
 		[CIP(CIP.SiteMapViewProvider)]
+		[AA(AA.ViewAnalyzer)]
 
 		public string View { get; set; }
 		public string RouteKey { get; set; }

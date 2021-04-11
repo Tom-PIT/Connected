@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
@@ -55,10 +54,8 @@ namespace TomPIT.Navigation
 
 		protected override void OnInitialized()
 		{
-			Parallel.ForEach(All(), (i) =>
-			{
-				OnAdded(i.MicroService(), i.Component);
-			});
+			foreach (var navigation in All())
+				OnAdded(navigation.MicroService(), navigation.Component);
 		}
 		protected override string[] Categories => new string[] { ComponentCategories.SiteMap };
 		public ISiteMapContainer QuerySiteMap(List<string> keys)
@@ -340,6 +337,9 @@ namespace TomPIT.Navigation
 
 		private void RegisterNavigationContexts(Guid component, List<INavigationContext> items)
 		{
+			if (items is null)
+				return;
+
 			foreach (var context in items)
 			{
 				if (string.IsNullOrWhiteSpace(context.Key))
@@ -351,15 +351,10 @@ namespace TomPIT.Navigation
 
 		private void RefreshNavigation(Guid component, bool removeOny = false)
 		{
-			foreach (var key in Handlers)
+			foreach (var handler in Handlers)
 			{
-				lock (key.Value)
-				{
-					var handlers = key.Value.Where(f => f.Component == component);
-
-					for (var i = handlers.Count() - 1; i >= 0; i--)
-						key.Value.Remove(handlers.ElementAt(i));
-				}
+				foreach (var item in handler.Value.Where(f => f.Component == component).ToImmutableArray())
+					handler.Value.Remove(item);
 			}
 
 			foreach (var pointer in ContextPointers.ToImmutableDictionary())
@@ -500,7 +495,7 @@ namespace TomPIT.Navigation
 			 * Last breadcrumb should be without a link 
 			 * because it points to a currently displayed ui
 			 */
-			if (linkBehavior == BreadcrumbLinkBehavior.All||( items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template)))
+			if (linkBehavior == BreadcrumbLinkBehavior.All || (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template)))
 				breadCrumb.Url = route.WithNavigationContext(ParseUrl(route.Template, MergeParameters(parameters, item)));
 
 			return breadCrumb;
@@ -861,6 +856,8 @@ namespace TomPIT.Navigation
 
 		public INavigationContext SelectNavigationContext(string key)
 		{
+			Initialize();
+
 			if (!ContextPointers.TryGetValue(key, out Guid component))
 				return null;
 

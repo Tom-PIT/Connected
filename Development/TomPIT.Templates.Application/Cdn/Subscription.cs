@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.Collections;
@@ -14,6 +15,9 @@ namespace TomPIT.MicroServices.Cdn
 	public class Subscription : TextConfiguration, ISubscriptionConfiguration
 	{
 		private ListItems<ISubscriptionEvent> _events = null;
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
 
 		[Items(DesignUtils.SubscriptionEventsItems)]
 		public ListItems<ISubscriptionEvent> Events

@@ -1,13 +1,12 @@
 ﻿using TomPIT.Collections;
+using AA = TomPIT.Annotations.Design.AnalyzerAttribute;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
-
 namespace TomPIT.Navigation
 {
-	public class SiteMapRoute : SiteMapElement, ISiteMapRoute
+	public class SiteMapRoute : SiteMapElement, ISiteMapRoute, ISitemapNavigationContextElement
 	{
 		private ConnectedList<ISiteMapRoute, ISiteMapRoute> _items = null;
 
-		[CIP(CIP.SiteMapViewProvider)]
 		public string Template { get; set; }
 
 		public string RouteKey { get; set; }
@@ -26,6 +25,7 @@ namespace TomPIT.Navigation
 		}
 
 		[CIP(CIP.NavigationContextProvider)]
+		[AA(AA.NavigationContextAnalyzer)]
 		public string NavigationContext {get;set;}
 	}
 }

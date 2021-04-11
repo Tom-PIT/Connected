@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel.Cdn
 {
-	public interface ISmtpConnectionConfiguration : IConfiguration, IText
+	public interface ISmtpConnectionConfiguration : IConfiguration, IText, INamespaceElement
 	{
 	}
 }

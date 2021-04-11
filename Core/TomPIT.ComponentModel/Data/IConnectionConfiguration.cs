@@ -5,7 +5,7 @@ namespace TomPIT.ComponentModel.Data
 	/// <summary>
 	/// Defines connection parameters to the physical data source
 	/// </summary>
-	public interface IConnectionConfiguration : IConfiguration, IText
+	public interface IConnectionConfiguration : IConfiguration, IText, INamespaceElement
 	{
 		/// <summary>
 		/// This is mostly connection string. Its value depends on the provider used.

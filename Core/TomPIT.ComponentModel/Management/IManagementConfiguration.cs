@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel.Management
 {
-	public interface IManagementConfiguration : IConfiguration, IText
+	public interface IManagementConfiguration : IConfiguration, IText, INamespaceElement
 	{
 
 	}

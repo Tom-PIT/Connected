@@ -11,7 +11,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 		public SnippetCompletionProvider()
 		{
 			Providers.Add(new DataCommandParametersSnippetProvider());
-			Providers.Add(new EntityImportSnippetProvider());
+			//Providers.Add(new EntityImportSnippetProvider());
 		}
 
 		protected override List<ICompletionItem> OnProvideItems()
