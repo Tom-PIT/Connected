@@ -422,9 +422,15 @@ li[data-kind="error-item"]:hover {
   font-weight: 700;
   color: #424242;
 }
+#modelTabs {
+  padding: 1px 0;
+}
 .model-tab {
-  padding: 0 3px;
+  padding: 3px;
   cursor: pointer;
+  border-radius: 2px;
+  border: 1px solid #e0e0e0;
+  margin: 0 1px;
 }
 .model-tab.active {
   font-weight: 700;
@@ -434,4 +440,10 @@ li[data-kind="error-item"]:hover {
 }
 .model-tab .close-model:hover {
   display: inline;
+}
+span[data-kind="empty"] {
+  padding: 0 1px;
+}
+.tp-namespace {
+  color: #b39ddb !important;
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -45,7 +46,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 					EndLineNumber = location.EndLinePosition.Line + 1,
 					Message = diagnostic.GetMessage(),
 					Severity = diagnostic.Severity.ToMarkerSeverity(),
-					Source = source,
+					Source = $"{source}.cshtml",
 					Code = diagnostic.Id,
 					StartColumn = location.StartLinePosition.Character + 1,
 					StartLineNumber = location.StartLinePosition.Line + 1
@@ -63,6 +64,25 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 			if (string.Compare(diagnostic.Id, "CS0103", true) == 0
 				&& diagnostic.GetMessage().Contains("The name 'section'"))
 				return true;
+
+			if(string.Compare(diagnostic.Id, "CS8019", true) == 0)
+			{
+				if( diagnostic.Location.SourceTree.GetRoot().FindNode(diagnostic.Location.SourceSpan) is UsingDirectiveSyntax syntax)
+				{
+					if(syntax.Name is IdentifierNameSyntax name)
+					{
+						if(string.Compare(name.ToFullString(), "TomPIT", false) == 0
+							|| string.Compare(name.ToFullString(), "System", false) == 0)
+							return true;
+					}
+					else if (syntax.Name is QualifiedNameSyntax qualified)
+					{
+						if (string.Compare(qualified.ToFullString(), "Microsoft.AspNetCore.Mvc.Rendering", false) == 0
+							|| string.Compare(qualified.ToFullString(), "System.Linq", false) == 0)
+							return true;
+					}
+				}
+			}
 
 			return false;
 		}

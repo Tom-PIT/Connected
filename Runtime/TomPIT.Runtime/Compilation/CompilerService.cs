@@ -468,6 +468,10 @@ namespace TomPIT.Compilation
 
 				throw new RuntimeException($"{SR.ErrTypeMultipleMatch} ({ms.Name}/{sourceCode.Configuration().ComponentName()}/{typeName})");
 			}
+			else if (results.Count() == 0)
+			{
+				throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
+			}
 
 			return results.First();
 		}
