@@ -85,7 +85,7 @@ namespace TomPIT.Design.CodeAnalysis
 
 			while (current != null)
 			{
-				if (string.Compare(current.ToDisplayString(), type, false) == 0)
+				if (string.Compare(current.ToDisplayName(), type, false) == 0)
 					return true;
 
 				current = current.BaseType;
