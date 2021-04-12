@@ -59,7 +59,7 @@ namespace TomPIT.Design
 					var texts = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config);
 
 					foreach (var text in texts)
-						Delete(text);
+						Delete(text, false);
 				}
 
 				RemoveDependencies(c.Token);
@@ -482,7 +482,7 @@ namespace TomPIT.Design
 			Tenant.GetService<IDesignService>().VersionControl.Lock(text.Configuration().Component, Development.LockVerb.Edit);
 
 			if (string.IsNullOrWhiteSpace(content))
-				Delete(text);
+				Delete(text, true);
 			else
 			{
 				var s = Tenant.GetService<IMicroServiceService>().Select(text.Configuration().MicroService());
@@ -509,7 +509,7 @@ namespace TomPIT.Design
 			}
 		}
 
-		private void Delete(IText text)
+		private void Delete(IText text, bool updateConfig)
 		{
 			if (text.TextBlob == Guid.Empty)
 				return;
@@ -523,7 +523,8 @@ namespace TomPIT.Design
 
 			text.TextBlob = Guid.Empty;
 
-			Update(text.Configuration());
+			if (updateConfig)
+				Update(text.Configuration());
 		}
 
 		private void RemoveDependencies(Guid component)
@@ -538,7 +539,7 @@ namespace TomPIT.Design
 				var txt = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config);
 
 				foreach (var i in txt)
-					Delete(i);
+					Delete(i, false);
 
 				var external = Tenant.GetService<IDiscoveryService>().Configuration.Query<IExternalResourceElement>(config);
 
