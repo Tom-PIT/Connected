@@ -7,6 +7,12 @@ namespace TomPIT.Caching
 	public delegate void CacheInvalidateHandler(CacheEventArgs e);
 	public delegate T CacheRetrieveHandler<T>(EntryOptions options);
 
+	public enum CacheScope : byte
+	{
+		Shared = 1,
+		Context = 2
+	}
+
 	public interface IMemoryCache
 	{
 		event CacheInvalidateHandler Invalidating;
@@ -39,5 +45,7 @@ namespace TomPIT.Caching
 		int Count(string key);
 		ImmutableList<string> Keys(string key);
 		ImmutableList<string> Keys();
+
+		CacheScope GetScope(string key, string id);
 	}
 }

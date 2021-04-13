@@ -60,9 +60,9 @@ namespace TomPIT.Caching
 				v.Dispose();
 		}
 
-		public void Set(string key, object instance, TimeSpan duration, bool slidingExpiration)
+		public void Set(string key, object instance, TimeSpan duration, bool slidingExpiration, CacheScope scope)
 		{
-			Items[key] = new Entry(key, instance, duration, slidingExpiration);
+			Items[key] = new Entry(key, instance, duration, slidingExpiration, scope);
 		}
 
 		public IEnumerator<T> GetEnumerator<T>()

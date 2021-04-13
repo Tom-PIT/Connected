@@ -5,12 +5,6 @@ using TomPIT.Middleware;
 
 namespace TomPIT.Caching
 {
-	public enum DataCacheMode
-	{
-		Shared = 1,
-		Context = 2
-	}
-
 	public interface IDataCachingService
 	{
 		void Clear(string cacheKey);
@@ -37,7 +31,7 @@ namespace TomPIT.Caching
 
 		void Reset(string cacheKey);
 
-		IDataCachingService CreateService(ITenant tenant, DataCacheMode mode);
+		IDataCachingService CreateService(ITenant tenant);
 		void Merge(IMiddlewareContext context, IDataCachingService service);
 	}
 }

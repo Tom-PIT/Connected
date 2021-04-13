@@ -16,25 +16,25 @@ namespace TomPIT.Caching
 	internal class DataCachingService : TenantObject, IDataCachingService, IDataCachingNotification
 	{
 		private const string DataCacheController = "DataCache";
-		private Lazy<MemoryCache> _cache = new Lazy<MemoryCache>();
-		private MemoryCache Cache => _cache.Value;
+		private MemoryCache _cache;
 
-		public DataCachingService(ITenant tenant) : this(tenant, DataCacheMode.Shared)
+		public DataCachingService(ITenant tenant) : this(tenant, CacheScope.Shared)
 		{
 		}
 
-		public DataCachingService(ITenant tenant, DataCacheMode mode) : base(tenant)
+		public DataCachingService(ITenant tenant, CacheScope scope) : base(tenant)
 		{
-			Mode = mode;
+			Scope = scope;
+			_cache = new MemoryCache(scope);
 		}
 
-		private DataCacheMode Mode { get; set; }
+		private CacheScope Scope { get; set; }
 
 		public void Clear(string cacheKey)
 		{
 			Cache.Clear(cacheKey);
 
-			if (Mode == DataCacheMode.Shared)
+			if (Scope == CacheScope.Shared)
 			{
 				Tenant.Post(CreateUrl("Clear"), new
 				{
@@ -48,7 +48,7 @@ namespace TomPIT.Caching
 			foreach (var i in ids)
 				Cache.Refresh(cacheKey, i);
 
-			if (Mode == DataCacheMode.Shared)
+			if (Scope == CacheScope.Shared)
 			{
 				Tenant.Post(CreateUrl("Invalidate"), new
 				{
@@ -93,7 +93,7 @@ namespace TomPIT.Caching
 
 		private void PublishRemove(string key, List<string> ids)
 		{
-			if (Mode == DataCacheMode.Shared)
+			if (Scope == CacheScope.Shared)
 			{
 				Tenant.Post(CreateUrl("Remove"), new
 				{
@@ -135,6 +135,9 @@ namespace TomPIT.Caching
 
 			if (item is null)
 			{
+				if (retrieve is null)
+					return default;
+
 				var options = new EntryOptions
 				{
 					AllowNull = false,
@@ -160,6 +163,9 @@ namespace TomPIT.Caching
 				if (all.FirstOrDefault(f => predicate(f.Key)) is CacheValue target)
 					return Deserialize<T>(context, target.Value);
 			}
+
+			if (retrieve is null)
+				return default;
 
 			var options = new EntryOptions
 			{
@@ -199,6 +205,9 @@ namespace TomPIT.Caching
 				}
 			}
 
+			if (retrieve is null)
+				return default;
+
 			var options = new EntryOptions
 			{
 				AllowNull = false,
@@ -208,7 +217,7 @@ namespace TomPIT.Caching
 
 			var result = retrieve(options);
 
-			if (!options.Passenger && result is not null || options.AllowNull)
+			if (CanStore(options) && result is not null || options.AllowNull)
 			{
 				if (string.IsNullOrWhiteSpace(options.Key))
 					options.Key = ReflectionExtensions.ResolveCacheKey(result);
@@ -407,9 +416,9 @@ namespace TomPIT.Caching
 			return Tenant.CreateUrl(DataCacheController, action);
 		}
 
-		public IDataCachingService CreateService(ITenant tenant, DataCacheMode mode)
+		public IDataCachingService CreateService(ITenant tenant)
 		{
-			return new DataCachingService(tenant, mode);
+			return new DataCachingService(tenant, CacheScope.Context);
 		}
 
 		public void Merge(IMiddlewareContext context, IDataCachingService service)
@@ -419,9 +428,22 @@ namespace TomPIT.Caching
 
 			foreach (var key in ctx.Cache.Keys())
 			{
-				foreach(var entryKey in ctx.Cache.Keys(key))
-					Set(key, entryKey, ctx.Get<object>(context, key, entryKey));
+				foreach (var entryKey in ctx.Cache.Keys(key))
+				{
+					if (ctx.Cache.GetScope(key, entryKey) == CacheScope.Shared)
+						Set(key, entryKey, ctx.Get<object>(context, key, entryKey));
+				}
 			}
 		}
+
+		private bool CanStore(EntryOptions options)
+		{
+			if (Scope == CacheScope.Context)
+				return true;
+
+			return options.Scope != CacheScope.Context;
+		}
+
+		private MemoryCache Cache => _cache;
 	}
 }

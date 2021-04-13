@@ -4,12 +4,13 @@ namespace TomPIT.Caching
 {
 	internal class Entry : IDisposable
 	{
-		public Entry(string id, object instance, TimeSpan duration, bool slidingExpiration)
+		public Entry(string id, object instance, TimeSpan duration, bool slidingExpiration, CacheScope scope)
 		{
 			Id = id;
 			Instance = instance;
 			SlidingExpiration = slidingExpiration;
 			Duration = duration;
+			Scope = scope;
 
 			if (Duration > TimeSpan.Zero)
 				ExpirationDate = DateTime.UtcNow.AddTicks(duration.Ticks);
@@ -19,6 +20,7 @@ namespace TomPIT.Caching
 		private DateTime ExpirationDate { get; set; }
 		private TimeSpan Duration { get; set; }
 
+		public CacheScope Scope { get; }
 		public object Instance { get; }
 		public string Id { get; }
 		public bool Expired => ExpirationDate != DateTime.MinValue && ExpirationDate < DateTime.UtcNow;

@@ -18,10 +18,14 @@ namespace TomPIT.Caching
 		private readonly Lazy<Container> _container = new Lazy<Container>();
 		private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
 
-		public MemoryCache()
+		public MemoryCache(CacheScope scope)
 		{
+			Scope = scope;
+
 			new Task(() => OnScaveging(), _cancel.Token, TaskCreationOptions.LongRunning).Start();
 		}
+
+		private CacheScope Scope { get; }
 
 		private Container Container => _container.Value;
 		private CancellationTokenSource Cancel => _cancel;
@@ -97,12 +101,12 @@ namespace TomPIT.Caching
 						return null;
 				}
 
-				if (!options.Passenger)
+				if (CanStore(options))
 				{
 					if (string.IsNullOrWhiteSpace(options.Key))
 						throw new TomPITException(SR.ErrCacheKeyNull);
 
-					Set(key, options.Key, instance, options.Duration, options.SlidingExpiration);
+					Set(key, options.Key, instance, options.Duration, options.SlidingExpiration, options.Scope);
 				}
 
 				return instance;
@@ -133,8 +137,8 @@ namespace TomPIT.Caching
 						return null;
 				}
 
-				if (!options.Passenger)
-					Set(key, options.Key, instance, options.Duration, options.SlidingExpiration);
+				if (CanStore(options))
+					Set(key, options.Key, instance, options.Duration, options.SlidingExpiration, options.Scope);
 
 				return instance;
 			}
@@ -190,7 +194,12 @@ namespace TomPIT.Caching
 
 		public T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration)
 		{
-			Container.Set(key, id, instance, duration, slidingExpiration);
+			return Set(key, id, instance, duration, slidingExpiration, CacheScope.Shared);
+		}
+
+		public T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration, CacheScope scope)
+		{
+			Container.Set(key, id, instance, duration, slidingExpiration, scope);
 
 			return instance;
 		}
@@ -316,5 +325,20 @@ namespace TomPIT.Caching
 		}
 
 		public static MemoryCache Default => _default.Value;
+
+		private bool CanStore(EntryOptions options)
+		{
+			if (Scope == CacheScope.Context)
+				return true;
+
+			return options.Scope != CacheScope.Context;
+		}
+
+		public CacheScope GetScope(string key, string id)
+		{
+			var ce = Container.Get(key, id);
+
+			return ce is null ? CacheScope.Shared : ce.Scope;
+		}
 	}
 }

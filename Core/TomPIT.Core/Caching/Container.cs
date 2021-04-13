@@ -83,7 +83,7 @@ namespace TomPIT.Caching
 				value.Remove(id);
 		}
 
-		public void Set(string key, string id, object instance, TimeSpan duration, bool slidingExpiration)
+		public void Set(string key, string id, object instance, TimeSpan duration, bool slidingExpiration, CacheScope scope)
 		{
 			if (!Items.TryGetValue(key, out Entries value))
 			{
@@ -93,7 +93,7 @@ namespace TomPIT.Caching
 					return;
 			}
 
-			value.Set(id, instance, duration, slidingExpiration);
+			value.Set(id, instance, duration, slidingExpiration, scope);
 		}
 
 

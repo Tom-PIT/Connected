@@ -37,8 +37,6 @@ namespace TomPIT.Middleware.Services
 		{
 			return ContextCache.Get(Context, key, matchEvaluator, (f)=>
 			{
-				f.Passenger = true;
-
 				var shared = Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, matchEvaluator, null);
 
 				if (shared is not null)
@@ -52,8 +50,6 @@ namespace TomPIT.Middleware.Services
 		{
 			return ContextCache.Get(Context, key, id, (f) =>
 			{
-				f.Passenger = true;
-
 				var shared = Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, id);
 
 				if (shared is not null)
@@ -67,8 +63,6 @@ namespace TomPIT.Middleware.Services
 		{
 			return ContextCache.Get(Context, key, predicate, (f) =>
 			{
-				f.Passenger = true;
-
 				var shared = Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, predicate);
 
 				if (shared is not null)
@@ -221,6 +215,6 @@ namespace TomPIT.Middleware.Services
 			return default;
 		}
 
-		protected IDataCachingService ContextCache => _contextCache ??= Context.Tenant.GetService<IDataCachingService>().CreateService(Context.Tenant, DataCacheMode.Context);
+		protected IDataCachingService ContextCache => _contextCache ??= Context.Tenant.GetService<IDataCachingService>().CreateService(Context.Tenant);
 	}
 }
