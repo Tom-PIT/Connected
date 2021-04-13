@@ -61,7 +61,7 @@ namespace TomPIT.Caching
 
 		protected virtual T Get(Func<T, bool> predicate)
 		{
-			return Container.Get(Key, predicate);
+			return Container.Get(Key, predicate, null);
 		}
 
 		protected virtual ImmutableList<T> Where(Func<T, bool> predicate)

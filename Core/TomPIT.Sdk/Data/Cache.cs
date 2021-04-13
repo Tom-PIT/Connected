@@ -4,13 +4,12 @@ using TomPIT.Caching;
 
 namespace TomPIT.Data
 {
+	[Obsolete("Please use data caching directly.")]
 	public abstract class Cache<T, K> : DataModel, IDataCachingHandler where T : class
 	{
 		protected Cache(string cacheKey)
 		{
 			CacheKey = cacheKey;
-
-			Context.Tenant.GetService<IDataCachingService>().RegisterHandler(CacheKey, this);
 		}
 
 		private string CacheKey { get; }

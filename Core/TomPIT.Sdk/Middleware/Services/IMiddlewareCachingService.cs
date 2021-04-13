@@ -29,5 +29,7 @@ namespace TomPIT.Middleware.Services
 		void Reset(string key);
 		string GenerateKey(params object[] parameters);
 		string GenerateRandomKey(string key);
+
+		void Flush();
 	}
 }

@@ -21,7 +21,6 @@ namespace TomPIT.Caching
 		void Clear(string key);
 		IEnumerator<T> GetEnumerator<T>(string key) where T : class;
 		T Get<T>(string key, string id) where T : class;
-		T Get<T>(string key, Func<T, bool> predicate) where T : class;
 		T Get<T>(string key, Func<T, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class;
 		T Get<T>(string key, Func<dynamic, bool> predicate) where T : class;
 		T First<T>(string key) where T : class;
@@ -39,5 +38,6 @@ namespace TomPIT.Caching
 
 		int Count(string key);
 		ImmutableList<string> Keys(string key);
+		ImmutableList<string> Keys();
 	}
 }

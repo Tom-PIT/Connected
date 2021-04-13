@@ -75,13 +75,17 @@ namespace TomPIT.Caching
 			return Container.Count(key);
 		}
 
+		public T Get<T>(string key, Func<T, bool> predicate) where T : class
+		{
+			return Get(key, predicate, null);
+		}
 		public T Get<T>(string key, Func<T, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
 		{
 			var r = Container.Get(key, predicate);
 
 			if (r == null)
 			{
-				if (retrieve == null)
+				if (retrieve is null)
 					return null;
 
 				var options = new EntryOptions();
@@ -93,10 +97,13 @@ namespace TomPIT.Caching
 						return null;
 				}
 
-				if (string.IsNullOrWhiteSpace(options.Key))
-					throw new TomPITException(SR.ErrCacheKeyNull);
+				if (!options.Passenger)
+				{
+					if (string.IsNullOrWhiteSpace(options.Key))
+						throw new TomPITException(SR.ErrCacheKeyNull);
 
-				Set(key, options.Key, instance, options.Duration, options.SlidingExpiration);
+					Set(key, options.Key, instance, options.Duration, options.SlidingExpiration);
+				}
 
 				return instance;
 			}
@@ -126,7 +133,8 @@ namespace TomPIT.Caching
 						return null;
 				}
 
-				Set(key, options.Key, instance, options.Duration, options.SlidingExpiration);
+				if (!options.Passenger)
+					Set(key, options.Key, instance, options.Duration, options.SlidingExpiration);
 
 				return instance;
 			}
@@ -142,13 +150,6 @@ namespace TomPIT.Caching
 		public T Get<T>(string key, string id) where T : class
 		{
 			var ce = Container.Get(key, id);
-
-			return ce == null || ce.Instance == null ? default : (T)ce.Instance;
-		}
-
-		public T Get<T>(string key, Func<T, bool> predicate) where T : class
-		{
-			var ce = Container.Get(key, predicate);
 
 			return ce == null || ce.Instance == null ? default : (T)ce.Instance;
 		}
@@ -307,6 +308,11 @@ namespace TomPIT.Caching
 		public ImmutableList<string> Keys(string key)
 		{
 			return Container.Keys(key).ToImmutableList();
+		}
+
+		public ImmutableList<string> Keys()
+		{
+			return Container.Keys().ToImmutableList();
 		}
 
 		public static MemoryCache Default => _default.Value;

@@ -280,16 +280,13 @@ namespace TomPIT.Middleware
 
 		private IMiddlewareTransaction BeginTransaction()
 		{
-			if (_transaction != null)
+			if (_transaction is not null)
 				return _transaction;
 
-			if (Owner != null)
+			if (Owner is not null)
 				return Owner.BeginTransaction();
 
-			_transaction = new MiddlewareTransaction(this)
-			{
-				Id = Guid.NewGuid()
-			};
+			_transaction = new MiddlewareTransaction(this);
 
 			return _transaction;
 		}

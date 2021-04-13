@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TomPIT.Middleware
+﻿namespace TomPIT.Middleware
 {
 	public enum MiddlewareTransactionState
 	{
@@ -11,7 +9,6 @@ namespace TomPIT.Middleware
 	}
 	public interface IMiddlewareTransaction
 	{
-		Guid Id { get; }
 		MiddlewareTransactionState State { get; }
 	}
 }

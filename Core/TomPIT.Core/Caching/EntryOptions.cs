@@ -9,6 +9,7 @@ namespace TomPIT.Caching
 		public TimeSpan Duration { get; set; }
 		public bool SlidingExpiration { get; set; }
 		public bool AllowNull { get; set; }
+		public bool Passenger { get; set; }
 
 		public EntryOptions()
 		{

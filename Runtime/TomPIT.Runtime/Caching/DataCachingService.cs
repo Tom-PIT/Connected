@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Dynamic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
@@ -18,58 +15,32 @@ namespace TomPIT.Caching
 {
 	internal class DataCachingService : TenantObject, IDataCachingService, IDataCachingNotification
 	{
-		private static Lazy<MemoryCache> _cache = new Lazy<MemoryCache>();
-		private static readonly Lazy<ConcurrentDictionary<string, CachingHandlerState>> _states = new Lazy<ConcurrentDictionary<string, CachingHandlerState>>();
+		private const string DataCacheController = "DataCache";
+		private Lazy<MemoryCache> _cache = new Lazy<MemoryCache>();
+		private MemoryCache Cache => _cache.Value;
 
-		private static MemoryCache Cache { get { return _cache.Value; } }
-		private static ConcurrentDictionary<string, CachingHandlerState> States { get { return _states.Value; } }
-
-		public DataCachingService(ITenant tenant) : base(tenant)
+		public DataCachingService(ITenant tenant) : this(tenant, DataCacheMode.Shared)
 		{
-			Cache.Invalidate += OnInvalidate;
 		}
 
-		private void OnInvalidate(CacheEventArgs e)
+		public DataCachingService(ITenant tenant, DataCacheMode mode) : base(tenant)
 		{
-			if (!States.ContainsKey(e.Key))
-				return;
-
-			var handler = States[e.Key];
-
-			if (!handler.Initialized)
-			{
-				lock (handler.Handler)
-				{
-					if (handler.Initialized)
-						return;
-
-					try
-					{
-						handler.Initialized = true;
-						handler.Handler.Initialize();
-					}
-					catch
-					{
-						handler.Initialized = false;
-						throw;
-					}
-				}
-			}
-			else
-				handler.Handler.Invalidate(e.Id);
+			Mode = mode;
 		}
+
+		private DataCacheMode Mode { get; set; }
 
 		public void Clear(string cacheKey)
 		{
 			Cache.Clear(cacheKey);
 
-			var u = Tenant.CreateUrl("DataCache", "Clear");
-			var e = new JObject
+			if (Mode == DataCacheMode.Shared)
 			{
-				{"key", cacheKey }
-			};
-
-			Tenant.Post(u, e);
+				Tenant.Post(CreateUrl("Clear"), new
+				{
+					key = cacheKey
+				});
+			}
 		}
 
 		public void Invalidate(string cacheKey, List<string> ids)
@@ -77,30 +48,12 @@ namespace TomPIT.Caching
 			foreach (var i in ids)
 				Cache.Refresh(cacheKey, i);
 
-			var u = Tenant.CreateUrl("DataCache", "Invalidate");
-			var e = new JObject
+			if (Mode == DataCacheMode.Shared)
 			{
-				{"key", cacheKey }
-			};
-			var a = new JArray();
-
-			e.Add("ids", a);
-
-			foreach (var i in ids)
-				a.Add(i);
-
-			Tenant.Post(u, e);
-		}
-
-		public void RegisterHandler(string cacheKey, IDataCachingHandler handler)
-		{
-			if (States.ContainsKey(cacheKey))
-				States[cacheKey].Handler = handler;
-			else
-			{
-				States.TryAdd(cacheKey, new CachingHandlerState
+				Tenant.Post(CreateUrl("Invalidate"), new
 				{
-					Handler = handler
+					key = cacheKey,
+					ids
 				});
 			}
 		}
@@ -109,18 +62,17 @@ namespace TomPIT.Caching
 		{
 			var items = Where<T>(context, key, predicate);
 
-			if (items == null || items.IsEmpty())
+			if (items is null || items.IsEmpty())
 				return;
 
 			var ids = new List<string>();
-			var cacheProperty = ReflectionExtensions.CacheKeyProperty(items[0]);
 
-			if (cacheProperty == null)
+			if (ReflectionExtensions.CacheKeyProperty(items[0]) is not PropertyInfo cacheProperty)
 				return;
 
 			foreach (var i in items)
 			{
-				if (!Types.TryConvertInvariant<string>(cacheProperty.GetValue(i), out string id))
+				if (!Types.TryConvertInvariant(cacheProperty.GetValue(i), out string id))
 					continue;
 
 				ids.Add(id);
@@ -139,21 +91,16 @@ namespace TomPIT.Caching
 			PublishRemove(cacheKey, ids);
 		}
 
-		private void PublishRemove(string cacheKey, List<string> ids)
+		private void PublishRemove(string key, List<string> ids)
 		{
-			var u = Tenant.CreateUrl("DataCache", "Remove");
-			var e = new JObject
+			if (Mode == DataCacheMode.Shared)
 			{
-				{"key", cacheKey }
-			};
-			var a = new JArray();
-
-			e.Add("ids", a);
-
-			foreach (var i in ids)
-				a.Add(i);
-
-			Tenant.Post(u, e);
+				Tenant.Post(CreateUrl("Remove"), new
+				{
+					key,
+					ids
+				});
+			}
 		}
 
 		public bool Exists(string key)
@@ -173,8 +120,6 @@ namespace TomPIT.Caching
 
 		public List<T> All<T>(IMiddlewareContext context, string key) where T : class
 		{
-			Initialize(key);
-
 			var items = Cache.All<CacheValue>(key);
 			var result = new List<T>();
 
@@ -186,11 +131,9 @@ namespace TomPIT.Caching
 
 		public T Get<T>(IMiddlewareContext context, string key, string id, CacheRetrieveHandler<T> retrieve) where T : class
 		{
-			Initialize(key);
-
 			var item = Cache.Get<CacheValue>(key, id);
 
-			if (item == null)
+			if (item is null)
 			{
 				var options = new EntryOptions
 				{
@@ -201,7 +144,7 @@ namespace TomPIT.Caching
 
 				var result = retrieve(options);
 
-				if (result != null || options.AllowNull)
+				if (result is not null || options.AllowNull)
 					Set(key, id, result, options.Duration, options.SlidingExpiration);
 
 				return result;
@@ -212,31 +155,25 @@ namespace TomPIT.Caching
 
 		public T Get<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
 		{
-			Initialize(key);
-
-			var all = Cache.All<CacheValue>(key);
-
-			if (all != null && all.Count > 0)
+			if (Cache.All<CacheValue>(key) is ImmutableList<CacheValue> all && all.Any())
 			{
-				var target = all.FirstOrDefault(f => predicate(f.Key));
-
-				if (target != null)
+				if (all.FirstOrDefault(f => predicate(f.Key)) is CacheValue target)
 					return Deserialize<T>(context, target.Value);
 			}
 
 			var options = new EntryOptions
 			{
 				AllowNull = false,
-				Duration = TimeSpan.Zero,
+				Duration = TimeSpan.FromMinutes(2),
 				SlidingExpiration = true
 			};
 
 			var result = retrieve(options);
 
-			if (result != null || options.AllowNull)
+			if (result is not null || options.AllowNull)
 			{
 				if (string.IsNullOrWhiteSpace(options.Key))
-					options.Key = CreateKeyFromAttributes(result);
+					options.Key = ReflectionExtensions.ResolveCacheKey(result);
 
 				if (string.IsNullOrWhiteSpace(key))
 					throw new RuntimeException(SR.ErrCacheKeyNull);
@@ -249,11 +186,9 @@ namespace TomPIT.Caching
 
 		public T Get<T>(IMiddlewareContext context, string key, Func<T, bool> evaluator, CacheRetrieveHandler<T> retrieve) where T : class
 		{
-			Initialize(key);
-
 			var enumerator = Cache.GetEnumerator<CacheValue>(key);
 
-			if (enumerator != null)
+			if (enumerator is not null)
 			{
 				while (enumerator.MoveNext())
 				{
@@ -273,10 +208,10 @@ namespace TomPIT.Caching
 
 			var result = retrieve(options);
 
-			if (result != null || options.AllowNull)
+			if (!options.Passenger && result is not null || options.AllowNull)
 			{
 				if (string.IsNullOrWhiteSpace(options.Key))
-					options.Key = CreateKeyFromAttributes(result);
+					options.Key = ReflectionExtensions.ResolveCacheKey(result);
 
 				if (string.IsNullOrWhiteSpace(key))
 					throw new RuntimeException(SR.ErrCacheKeyNull);
@@ -287,36 +222,8 @@ namespace TomPIT.Caching
 			return result;
 		}
 
-		private string CreateKeyFromAttributes(object instance)
-		{
-			var properties = instance.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-			var key = new StringBuilder();
-
-			foreach (var property in properties)
-			{
-				var att = property.FindAttribute<CacheKeyAttribute>();
-
-				if (att == null)
-					continue;
-
-				var value = property.GetValue(instance);
-
-				if (key.Length > 0)
-					key.Append('/');
-
-				if (value == null)
-					continue;
-
-				key.Append(Types.Convert<string>(value, CultureInfo.InvariantCulture));
-			}
-
-			return key.ToString();
-		}
-
 		public T Get<T>(IMiddlewareContext context, string key, string id) where T : class
 		{
-			Initialize(key);
-
 			var item = Cache.Get<CacheValue>(key, id);
 
 			if (item == null)
@@ -327,8 +234,6 @@ namespace TomPIT.Caching
 
 		public T Get<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate) where T : class
 		{
-			Initialize(key);
-
 			var items = Where<T>(context, key, predicate);
 
 			if (items == null || items.Count == 0)
@@ -339,8 +244,6 @@ namespace TomPIT.Caching
 
 		public T First<T>(IMiddlewareContext context, string key) where T : class
 		{
-			Initialize(key);
-
 			var first = Cache.First<CacheValue>(key);
 
 			if (first == null)
@@ -351,8 +254,6 @@ namespace TomPIT.Caching
 
 		public List<T> Where<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate) where T : class
 		{
-			Initialize(key);
-
 			var results = Cache.Where<CacheValue>(key, f => predicate(f.Key));
 
 			if (results == null || results.Count == 0)
@@ -368,8 +269,6 @@ namespace TomPIT.Caching
 
 		public T Set<T>(string key, string id, T instance) where T : class
 		{
-			Initialize(key);
-
 			Cache.Set(key, id, new CacheValue
 			{
 				Key = CreateKey(instance),
@@ -381,8 +280,6 @@ namespace TomPIT.Caching
 
 		public T Set<T>(string key, string id, T instance, TimeSpan duration) where T : class
 		{
-			Initialize(key);
-
 			Cache.Set(key, id, new CacheValue
 			{
 				Key = CreateKey(instance),
@@ -394,8 +291,6 @@ namespace TomPIT.Caching
 
 		public T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration) where T : class
 		{
-			Initialize(key);
-
 			Cache.Set(key, id, new CacheValue
 			{
 				Key = CreateKey(instance),
@@ -407,8 +302,6 @@ namespace TomPIT.Caching
 
 		public int Count(string key)
 		{
-			Initialize(key);
-
 			return Cache.Count(key);
 		}
 
@@ -419,8 +312,6 @@ namespace TomPIT.Caching
 
 		public string GenerateRandomKey(string key)
 		{
-			Initialize(key);
-
 			return Cache.GenerateRandomKey(key);
 		}
 
@@ -441,43 +332,8 @@ namespace TomPIT.Caching
 				Cache.Remove(e.Key, i);
 		}
 
-		private void Initialize(string key)
-		{
-			if (!States.ContainsKey(key))
-				return;
-
-			var handler = States[key];
-
-			if (!handler.Initialized)
-			{
-				lock (handler.Handler)
-				{
-					if (handler.Initialized)
-						return;
-
-					try
-					{
-						handler.Initialized = true;
-						handler.Handler.Initialize();
-					}
-					catch
-					{
-						handler.Initialized = false;
-
-						throw;
-					}
-				}
-
-			}
-		}
-
 		public void Reset(string cacheKey)
 		{
-			if (!States.ContainsKey(cacheKey))
-				return;
-
-			States[cacheKey].Initialized = false;
-
 			Cache.Clear(cacheKey);
 		}
 
@@ -526,24 +382,46 @@ namespace TomPIT.Caching
 		}
 		private static T Deserialize<T>(IMiddlewareContext context, string value)
 		{
-			var result =  Serializer.Deserialize<T>(value);
+			var result = Serializer.Deserialize<T>(value);
 
 			if (result == null || result.GetType().IsPrimitive || result.GetType().IsCollection())
 				return result;
 
-			var props = result.GetType().GetProperties(BindingFlags.Instance| BindingFlags.Public);
-			
-			foreach(var property in props)
+			var props = result.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+			foreach (var property in props)
 			{
-				if(property.PropertyType == typeof(DateTimeOffset) && property.CanWrite)
+				if (property.PropertyType == typeof(DateTimeOffset) && property.CanWrite)
 				{
 					var utc = (DateTimeOffset)property.GetValue(result);
-					
+
 					property.SetValue(result, context.Services.Globalization.FromUtc(utc));
 				}
 			}
 
 			return result;
+		}
+
+		private ServerUrl CreateUrl(string action)
+		{
+			return Tenant.CreateUrl(DataCacheController, action);
+		}
+
+		public IDataCachingService CreateService(ITenant tenant, DataCacheMode mode)
+		{
+			return new DataCachingService(tenant, mode);
+		}
+
+		public void Merge(IMiddlewareContext context, IDataCachingService service)
+		{
+			if (service is not DataCachingService ctx)
+				throw new ArgumentException(null, nameof(service));
+
+			foreach (var key in ctx.Cache.Keys())
+			{
+				foreach(var entryKey in ctx.Cache.Keys(key))
+					Set(key, entryKey, ctx.Get<object>(context, key, entryKey));
+			}
 		}
 	}
 }

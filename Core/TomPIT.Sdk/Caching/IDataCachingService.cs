@@ -1,18 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using TomPIT.Connectivity;
 using TomPIT.Middleware;
 
 namespace TomPIT.Caching
 {
+	public enum DataCacheMode
+	{
+		Shared = 1,
+		Context = 2
+	}
+
 	public interface IDataCachingService
 	{
 		void Clear(string cacheKey);
 		void Remove(string cacheKey, List<string> ids);
 		void Remove<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate) where T : class;
 		void Invalidate(string cacheKey, List<string> ids);
-
-		void RegisterHandler(string cacheKey, IDataCachingHandler handler);
-
 		bool Exists(string key);
 		bool IsEmpty(string key);
 		void CreateKey(string key);
@@ -32,5 +36,8 @@ namespace TomPIT.Caching
 		string GenerateRandomKey(string key);
 
 		void Reset(string cacheKey);
+
+		IDataCachingService CreateService(ITenant tenant, DataCacheMode mode);
+		void Merge(IMiddlewareContext context, IDataCachingService service);
 	}
 }

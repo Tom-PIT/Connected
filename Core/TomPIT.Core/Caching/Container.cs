@@ -165,5 +165,10 @@ namespace TomPIT.Caching
 
 			return ImmutableList<string>.Empty;
 		}
+
+		public ImmutableList<string> Keys()
+		{
+			return Items.Keys.ToImmutableList();
+		}
 	}
 }
