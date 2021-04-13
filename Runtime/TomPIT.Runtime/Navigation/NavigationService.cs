@@ -155,11 +155,7 @@ namespace TomPIT.Navigation
 			var first = r[0];
 
 			for (var i = 1; i < r.Count; i++)
-			{
 				first.Routes.AddRange(r[i].Routes);
-
-				r[i].Routes.Clear();
-			}
 
 			return new List<ISiteMapContainer> { first };
 		}

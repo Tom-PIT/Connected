@@ -61,8 +61,6 @@ namespace TomPIT.Navigation
 						container.Routes.Add(route);
 					}
 				}
-
-				return result;
 			}
 
 			return result;

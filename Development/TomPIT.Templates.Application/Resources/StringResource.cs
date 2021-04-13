@@ -26,7 +26,6 @@ namespace TomPIT.MicroServices.Resources
 		public bool IsLocalizable { get; set; } = true;
 
 		[Browsable(false)]
-		[CollectionRuntimeMerge(CollectionRuntimeMerge.Override)]
 		public ListItems<IStringTranslation> Translations
 		{
 			get
@@ -45,20 +44,16 @@ namespace TomPIT.MicroServices.Resources
 				: Key;
 		}
 
-		public void UpdateTranslation(int lcid, string value, bool auditChange)
+		public void UpdateTranslation(int lcid, string value)
 		{
 			if (Translations.FirstOrDefault(f => f.Lcid == lcid) is StringTranslation existing)
-			{
 				existing.Value = value;
-				existing.Changed = auditChange;
-			}
 			else
 			{
 				Translations.Add(new StringTranslation
 				{
 					Lcid = lcid,
-					Value = value,
-					Changed = auditChange
+					Value = value
 				});
 			}
 		}

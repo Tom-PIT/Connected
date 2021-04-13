@@ -23,12 +23,12 @@ namespace TomPIT.Rest.Controllers
 		{
 			var routeData = Shell.HttpContext.GetRouteData();
 
-			MicroServiceName = routeData.Values["microService"].ToString();
+			MicroServiceUrl = routeData.Values["microService"].ToString();
 			Api = routeData.Values["api"].ToString();
 			Operation = routeData.Values["operation"].ToString();
 		}
 
-		private string MicroServiceName { get; set; }
+		private string MicroServiceUrl { get; set; }
 		private string Api { get; set; }
 		private string Operation { get; set; }
 
@@ -117,12 +117,17 @@ namespace TomPIT.Rest.Controllers
 
 		private async Task<IApiConfiguration> GetConfiguration()
 		{
-			MicroService = Tenant.GetService<IMicroServiceService>().Select(MicroServiceName);
+			MicroService = Tenant.GetService<IMicroServiceService>().SelectByUrl(MicroServiceUrl);
 
-			if (MicroService == null)
+			if (MicroService is null)
 			{
-				await RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, MicroServiceName));
-				return null;
+				MicroService = Tenant.GetService<IMicroServiceService>().Select(MicroServiceUrl);
+
+				if (MicroService is null)
+				{
+					await RenderError(StatusCodes.Status404NotFound, string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, MicroServiceUrl));
+					return null;
+				}
 			}
 
 			var component = Tenant.GetService<IComponentService>().SelectComponent(MicroService.Token, "Api", Api);
