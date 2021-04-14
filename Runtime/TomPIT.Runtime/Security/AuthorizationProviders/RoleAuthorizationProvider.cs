@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Security.PermissionDescriptors;

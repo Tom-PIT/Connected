@@ -4,7 +4,6 @@ using System.Net;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Diagnostics;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Exceptions;
 using TomPIT.Reflection;
 using TomPIT.Runtime;

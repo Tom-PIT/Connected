@@ -1,10 +1,21 @@
 ﻿using System;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using TomPIT.ComponentModel;
 using TomPIT.Diagnostics;
+using TomPIT.Environment;
 using TomPIT.Middleware;
+using TomPIT.Models;
 using TomPIT.Runtime;
 
 namespace TomPIT.Exceptions
@@ -93,9 +104,94 @@ namespace TomPIT.Exceptions
 
 		protected virtual async Task OnHandleException(HttpContext context, Exception ex)
 		{
-			context.Response.Redirect($"/sys/status/{context.Response.StatusCode}");
+			if(context.Response.StatusCode == (int)HttpStatusCode.InternalServerError)
+			{
+				await ErrorResult(context, ex);
+				return;
+			}
+
+			context.Response.Redirect($"{RuntimeExtensions.RootUrl}/sys/status/{context.Response.StatusCode}");
 
 			await Task.CompletedTask;
+		}
+
+		private async Task ErrorResult(HttpContext context, Exception ex)
+		{
+			var r = new ViewResult
+			{
+				ViewName = "~/Views/Shell/Error.cshtml",
+				StatusCode = 500,
+				ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+			};
+
+			r.ViewData.Model = new ExceptionModel(context, ex);
+			r.ViewData.Add("exSource", ex.Source);
+
+			if (Shell.GetService<IRuntimeService>().Stage != EnvironmentStage.Production)
+				r.ViewData.Add("exStack", ex.StackTrace);
+
+			var sb = new StringBuilder();
+			var tenant = MiddlewareDescriptor.Current.Tenant;
+			var devUrl = tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Development, InstanceVerbs.All);
+
+			if (ex is ScriptException script)
+			{
+				r.ViewData.Add("exPath", script.Path);
+
+				if (!string.IsNullOrWhiteSpace(script.MicroService))
+				{
+
+					var ms = tenant.GetService<IMicroServiceService>().Select(script.MicroService);
+
+					if (ms != null && ms.Status != MicroServiceStatus.Production)
+					{
+						if (tenant != null && !string.IsNullOrWhiteSpace(devUrl))
+						{
+							r.ViewData.Add("exUrl", $"{devUrl}/ide/{ms.Url}?component={script.Component}&element={script.Element}");
+						}
+					}
+				}
+
+				r.ViewData.Add("exLine", script.Line);
+			}
+
+			if (ex.Data != null && ex.Data.Count > 0)
+			{
+				if (ex.Data.Contains("Script"))
+					r.ViewData.Add("exScript", ex.Data["Script"]);
+
+				if (ex.Data.Contains("MicroService") && !string.IsNullOrWhiteSpace(devUrl))
+				{
+					var scriptMs = ex.Data["MicroService"] as IMicroService;
+					//TODO: resolve fully qualified component to be able to parse edit url
+
+					if (scriptMs != null)
+						r.ViewData.Add("exScriptMicroService", scriptMs.Name);
+					//	r.ViewData.Add("exScriptUrl", $"{devUrl}/ide/{scriptMs.Name}?component={script.Component}&element={script.Element}");
+				}
+			}
+
+			sb.AppendLine(ex.Message);
+
+			if (Shell.GetService<IRuntimeService>().Stage != EnvironmentStage.Production)
+				sb.Append(ex.StackTrace);
+
+			r.ViewData.Add("exMessage", sb.ToString());
+
+			if (ex is TomPITException tp)
+				r.ViewData.Add("exDiagnosticTrace", tp.DiagnosticsTrace);
+			else if (ex is MiddlewareValidationException mw)
+				r.ViewData.Add("exDiagnosticTrace", mw.DiagnosticsTrace);
+
+			var exec = context.RequestServices.GetRequiredService<IActionResultExecutor<ViewResult>>();
+			var desc = new ActionDescriptor
+			{
+
+			};
+			var action = new ActionContext(context, context.GetRouteData(), desc);
+
+			await exec.ExecuteAsync(action, r);
+
 		}
 
 		protected virtual async Task HandleException(HttpContext context, Exception ex)
@@ -130,6 +226,10 @@ namespace TomPIT.Exceptions
 					context.Response.StatusCode = (int)HttpStatusCode.NotFound;
 				else if (ex is UnauthorizedException)
 					context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+				else if (ex is MiddlewareValidationException)
+					context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+				else
+					context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 			}
 		}
 	}

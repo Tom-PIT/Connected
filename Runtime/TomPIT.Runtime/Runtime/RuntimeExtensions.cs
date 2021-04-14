@@ -61,5 +61,22 @@ namespace TomPIT.Runtime
 		{
 			ReflectionExtensions.SetPropertyValue(target, nameof(target.Context), context);
 		}
+
+		public static string RootUrl
+		{
+			get
+			{
+				if (Shell.HttpContext?.Request is not HttpRequest request)
+					return null;
+
+				var forwardedScheme = request.Headers["X-Forwarded-Proto"].ToString();
+				var scheme = request.Scheme;
+
+				if (!string.IsNullOrWhiteSpace(forwardedScheme))
+					scheme = forwardedScheme;
+
+				return string.Format("{0}://{1}/{2}", scheme, request.Host, request.PathBase.ToString().Trim('/')).TrimEnd('/');
+			}
+		}
 	}
 }

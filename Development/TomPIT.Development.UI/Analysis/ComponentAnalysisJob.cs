@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using TomPIT.ComponentModel;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 
 namespace TomPIT.Development.Analysis

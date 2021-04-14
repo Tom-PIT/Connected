@@ -2,7 +2,7 @@
 using System.Threading;
 using TomPIT.BigData.Nodes;
 using TomPIT.BigData.Persistence;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 

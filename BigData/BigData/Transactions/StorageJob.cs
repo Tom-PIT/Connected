@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 using TomPIT.Storage;

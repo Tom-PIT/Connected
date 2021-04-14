@@ -8,7 +8,7 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoC;
 using TomPIT.Connectivity;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Middleware;
 using TomPIT.Serialization;
 using TomPIT.Services;

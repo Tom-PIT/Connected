@@ -9,7 +9,7 @@ using Lucene.Net.Store;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
 using TomPIT.Configuration;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Middleware;
 using TomPIT.Search.Analyzers;
 using TomPIT.Storage;

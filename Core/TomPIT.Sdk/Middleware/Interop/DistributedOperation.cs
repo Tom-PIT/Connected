@@ -5,7 +5,7 @@ using System.Runtime.ExceptionServices;
 using Newtonsoft.Json;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Reflection;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;

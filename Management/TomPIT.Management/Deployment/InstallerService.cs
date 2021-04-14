@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using TomPIT.Connectivity;
 using TomPIT.Deployment;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 

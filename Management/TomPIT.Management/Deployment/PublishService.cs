@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Distributed;
 using TomPIT.Management.ComponentModel;
 using TomPIT.Management.Designers;

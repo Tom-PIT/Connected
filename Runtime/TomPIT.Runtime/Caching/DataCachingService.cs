@@ -178,10 +178,10 @@ namespace TomPIT.Caching
 
 			if (result is not null || options.AllowNull)
 			{
-				if (string.IsNullOrWhiteSpace(options.Key))
+				if (string.IsNullOrWhiteSpace(options.Key) && result is not null)
 					options.Key = ReflectionExtensions.ResolveCacheKey(result);
 
-				if (string.IsNullOrWhiteSpace(key))
+				if (string.IsNullOrWhiteSpace(options.Key))
 					throw new RuntimeException(SR.ErrCacheKeyNull);
 
 				Set(key, options.Key, result, options.Duration, options.SlidingExpiration);
@@ -219,10 +219,10 @@ namespace TomPIT.Caching
 
 			if (CanStore(options) && result is not null || options.AllowNull)
 			{
-				if (string.IsNullOrWhiteSpace(options.Key))
+				if (string.IsNullOrWhiteSpace(options.Key) && result is not null)
 					options.Key = ReflectionExtensions.ResolveCacheKey(result);
 
-				if (string.IsNullOrWhiteSpace(key))
+				if (string.IsNullOrWhiteSpace(options.Key))
 					throw new RuntimeException(SR.ErrCacheKeyNull);
 
 				Set(key, options.Key, result, options.Duration, options.SlidingExpiration);

@@ -15,14 +15,14 @@ namespace TomPIT.Security
 		IClientAuthenticationResult Authenticate(string authenticationToken);
 		IClientAuthenticationResult Authenticate(Guid authenticationToken);
 		bool IsInRole(Guid user, string role);
-		void RegisterProvider(IAuthorizationProvider provider);
+		void RegisterAuthorizationProvider(IAuthorizationProvider provider);
 		ImmutableList<IAuthorizationProvider> QueryProviders();
 		void RegisterDescriptor(IPermissionDescriptor descriptor);
 		ImmutableList<IPermissionDescriptor> QueryDescriptors();
 
 		PermissionValue GetPermissionValue(string evidence, string schema, string claim, string descriptor);
 		PermissionValue GetPermissionValue(string evidence, string schema, string claim, string descriptor, string primaryKey);
-		void RegisterAuthenticationProvider(IAuthenticationProvider provider);
+		void RegisterAuthenticationProvider(string id, IAuthenticationProvider provider);
 		void Authorize(ISiteMapContainer container);
 
 		ImmutableList<IMembership> QueryMembership(Guid user);

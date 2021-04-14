@@ -14,7 +14,6 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Navigation;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Runtime;

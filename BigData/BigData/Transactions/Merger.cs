@@ -7,7 +7,6 @@ using TomPIT.BigData.Nodes;
 using TomPIT.BigData.Partitions;
 using TomPIT.BigData.Persistence;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Middleware;
 
 namespace TomPIT.BigData.Transactions

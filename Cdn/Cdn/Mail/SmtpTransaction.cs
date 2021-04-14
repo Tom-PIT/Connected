@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Sockets;
 using MimeKit;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Middleware;
 
 namespace TomPIT.Cdn.Mail

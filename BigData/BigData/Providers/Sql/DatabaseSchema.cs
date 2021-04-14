@@ -6,7 +6,7 @@ using TomPIT.BigData.Data;
 using TomPIT.BigData.Transactions;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Middleware;
 
 namespace TomPIT.BigData.Providers.Sql

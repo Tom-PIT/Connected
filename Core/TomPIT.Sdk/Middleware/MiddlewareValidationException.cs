@@ -12,6 +12,7 @@ namespace TomPIT.Middleware
 	{
 		private string _source = null;
 		private string _stackTrace = null;
+		private List<DiagnosticDescriptor> _diagnosticTrace;
 
 		public MiddlewareValidationException(object instance, List<ValidationResult> results)
 		{
@@ -59,7 +60,7 @@ namespace TomPIT.Middleware
 		public override string Message { get; }
 		public List<ValidationResult> Results { get; }
 		public override string Source { get => _source ??= base.Source; set => _source = value; }
-		
+		public List<DiagnosticDescriptor> DiagnosticsTrace => _diagnosticTrace ??= new List<DiagnosticDescriptor>();
 		public bool Logged { get; set; }
 		public override string StackTrace => _stackTrace;
 
@@ -67,7 +68,7 @@ namespace TomPIT.Middleware
 		{
 			var stackTrace = TomPITException.ParseStackTrace(this, InnerException == null
 				? new StackTrace(true)
-				: new StackTrace(InnerException, true));
+				: new StackTrace(InnerException, true), DiagnosticsTrace);
 
 			_stackTrace = stackTrace.Item1;
 			_source = stackTrace.Item2;

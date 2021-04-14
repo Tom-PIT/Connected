@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.BigData.Nodes;
 using TomPIT.BigData.Persistence;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 using TomPIT.Storage;

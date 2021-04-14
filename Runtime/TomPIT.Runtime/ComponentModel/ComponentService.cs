@@ -9,7 +9,6 @@ using TomPIT.Connectivity;
 using TomPIT.Design.Serialization;
 using TomPIT.Development;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;

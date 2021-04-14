@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
@@ -13,6 +14,7 @@ namespace TomPIT.Exceptions
 		private string _stackTrace = null;
 		private string _source = null;
 		private string _scriptPath = string.Empty;
+		private List<DiagnosticDescriptor> _diagnostics;
 		public TomPITException() { }
 
 		public TomPITException(string source, string message)
@@ -44,6 +46,7 @@ namespace TomPIT.Exceptions
 
 		public override string Message { get { return _message; } }
 
+		public List<DiagnosticDescriptor> DiagnosticsTrace => _diagnostics ??= new List<DiagnosticDescriptor>();
 		public object Sender { get; set; }
 		public override string StackTrace => _stackTrace;
 
@@ -136,7 +139,10 @@ namespace TomPIT.Exceptions
 		{
 			var stackTrace = ParseStackTrace(this, InnerException == null
 				? new StackTrace(true)
-				: new StackTrace(InnerException, true));
+				: new StackTrace(InnerException, true), DiagnosticsTrace);
+
+			if (InnerException is TomPITException tp)
+				DiagnosticsTrace.AddRange(tp.DiagnosticsTrace);
 
 			_stackTrace = stackTrace.Item1;
 			_source = stackTrace.Item2;
@@ -160,7 +166,7 @@ namespace TomPIT.Exceptions
 			}
 		}
 
-		public static (string, string) ParseStackTrace(Exception ex, StackTrace stackTrace)
+		public static (string, string) ParseStackTrace(Exception ex, StackTrace stackTrace, List<DiagnosticDescriptor> diagnosticTrace)
 		{
 			var stackTraceString = new StringBuilder();
 			var source = string.Empty;
@@ -193,6 +199,15 @@ namespace TomPIT.Exceptions
 				var methodName = method == null ? "?" : method.Name;
 
 				stackTraceString.AppendLine($"{methodName} in {fileName} at line {line}");
+
+				if (method is not null)
+				{
+					diagnosticTrace.Add(new DiagnosticDescriptor
+					{
+						Method = method,
+						Line = line
+					});
+				}
 
 				source = fileName;
 

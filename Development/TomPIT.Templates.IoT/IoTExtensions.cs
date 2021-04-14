@@ -1,6 +1,6 @@
 ﻿using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.MicroServices.IoT.Annotations;
 using TomPIT.MicroServices.IoT.Models;

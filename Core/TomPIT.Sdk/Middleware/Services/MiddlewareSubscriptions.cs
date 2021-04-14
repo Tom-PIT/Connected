@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Cdn;
 using TomPIT.ComponentModel;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Security;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;

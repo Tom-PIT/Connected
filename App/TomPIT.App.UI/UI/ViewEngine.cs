@@ -9,7 +9,6 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Models;

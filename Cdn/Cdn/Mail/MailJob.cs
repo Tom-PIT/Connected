@@ -3,7 +3,6 @@ using System.Threading;
 using MimeKit;
 using Newtonsoft.Json.Linq;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 

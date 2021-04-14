@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -21,7 +22,7 @@ namespace TomPIT.Security
 	{
 		private List<IAuthorizationProvider> _providers = null;
 		private Lazy<List<IPermissionDescriptor>> _descriptors = new Lazy<List<IPermissionDescriptor>>();
-		private Lazy<List<IAuthenticationProvider>> _authProviders = new Lazy<List<IAuthenticationProvider>>();
+		private Lazy<ConcurrentDictionary<string, IAuthenticationProvider>> _authProviders = new Lazy<ConcurrentDictionary<string, IAuthenticationProvider>>();
 		private IAuthenticationProvider _defaultAuthenticationProvider = null;
 
 		public AuthorizationService(ITenant tenant) : base(tenant, "permissions")
@@ -59,7 +60,7 @@ namespace TomPIT.Security
 		{
 			foreach (var i in AuthenticationProviders)
 			{
-				var r = i.Authenticate(user, password);
+				var r = i.Value.Authenticate(user, password);
 
 				if (r != null)
 					return r;
@@ -72,7 +73,7 @@ namespace TomPIT.Security
 		{
 			foreach (var i in AuthenticationProviders)
 			{
-				var r = i.AuthenticateByPin(user, pin);
+				var r = i.Value.AuthenticateByPin(user, pin);
 
 				if (r != null)
 					return r;
@@ -85,7 +86,7 @@ namespace TomPIT.Security
 		{
 			foreach (var i in AuthenticationProviders)
 			{
-				var r = i.Authenticate(authenticationToken);
+				var r = i.Value.Authenticate(authenticationToken);
 
 				if (r != null)
 					return r;
@@ -98,7 +99,7 @@ namespace TomPIT.Security
 		{
 			foreach (var i in AuthenticationProviders)
 			{
-				var r = i.Authenticate(authenticationToken);
+				var r = i.Value.Authenticate(authenticationToken);
 
 				if (r != null)
 					return r;
@@ -245,7 +246,7 @@ namespace TomPIT.Security
 			LoadPermission(e);
 		}
 
-		public void RegisterProvider(IAuthorizationProvider provider)
+		public void RegisterAuthorizationProvider(IAuthorizationProvider provider)
 		{
 			Providers.Add(provider);
 		}
@@ -336,9 +337,12 @@ namespace TomPIT.Security
 			return Membership.Select(user, r.Token) != null;
 		}
 
-		public void RegisterAuthenticationProvider(IAuthenticationProvider provider)
+		public void RegisterAuthenticationProvider(string id, IAuthenticationProvider provider)
 		{
-			AuthenticationProviders.Add(provider);
+			AuthenticationProviders.AddOrUpdate(id, provider, (s, p)=>
+			{
+				return provider;
+			});
 		}
 
 		public void Authorize(ISiteMapContainer container)
@@ -454,7 +458,7 @@ namespace TomPIT.Security
 		private MembershipCache Membership { get; }
 		internal AuthenticationTokensCache AuthenticationTokens { get; }
 		private List<IPermissionDescriptor> Descriptors => _descriptors.Value;
-		private List<IAuthenticationProvider> AuthenticationProviders => _authProviders.Value;
+		private ConcurrentDictionary<string, IAuthenticationProvider> AuthenticationProviders => _authProviders.Value;
 		private IAuthenticationProvider DefaultAuthenticationProvider
 		{
 			get

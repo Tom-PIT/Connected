@@ -19,7 +19,20 @@ namespace TomPIT.Controllers
 
 			var code = RouteData.Values["code"] as string;
 
-			if (string.Compare(code, "401", true) == 0)
+			if (string.Compare(code, "400", true) == 0)
+			{
+				if (!supportsUI)
+					return BadRequest();
+				else
+				{
+					var m = CreateModel(SR.StatusBadRequest, SR.StatusBadRequestMessage, null);
+
+					m.TryAgainEnabled = false;
+
+					return View("~/Views/Shell/Status.cshtml", m);
+				}
+			}
+			else if (string.Compare(code, "401", true) == 0)
 			{
 				if (!supportsUI)
 					return Unauthorized();

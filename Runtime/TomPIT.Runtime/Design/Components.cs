@@ -11,7 +11,6 @@ using TomPIT.Connectivity;
 using TomPIT.Deployment;
 using TomPIT.Design.Serialization;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;

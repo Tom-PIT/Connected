@@ -4,6 +4,7 @@ using System.Linq;
 using TomPIT.Data;
 using TomPIT.Diagnostics;
 using TomPIT.Reflection;
+using TomPIT.Serialization;
 
 namespace TomPIT.Middleware.Interop
 {
@@ -72,6 +73,8 @@ namespace TomPIT.Middleware.Interop
 
 			if (r == null)
 				return;
+
+			Serializer.Populate(item, r);
 
 			if (r is DataEntity entity && item is DataEntity itemEntity)
 				entity.Deserialize(itemEntity);
