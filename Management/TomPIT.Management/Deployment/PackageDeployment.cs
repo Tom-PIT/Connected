@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
@@ -46,7 +45,7 @@ namespace TomPIT.Management.Deployment
 			}
 		}
 
-		private Dictionary<Guid, Guid> LastKnownState { get; set; }
+		//private Dictionary<Guid, Guid> LastKnownState { get; set; }
 
 		public void Deploy()
 		{
@@ -129,7 +128,7 @@ namespace TomPIT.Management.Deployment
 			DeployBlobs();
 			//DeployStrings();
 
-			Tenant.GetService<IDesignService>().Components.DropRuntimeState(Package.MicroService.Token);
+			//Tenant.GetService<IDesignService>().Components.DropRuntimeState(Package.MicroService.Token);
 
 			var ms = Tenant.GetService<IMicroServiceService>().Select(m.Token);
 
@@ -249,7 +248,7 @@ namespace TomPIT.Management.Deployment
 		 * first, load existing state. if existing state is available it means we have an invalid installation state
 		 * and we won't create another state
 		 */
-			LastKnownState = Tenant.GetService<IDesignService>().Components.SelectRuntimeState(Package.MicroService.Token);
+			//LastKnownState = Tenant.GetService<IDesignService>().Components.SelectRuntimeState(Package.MicroService.Token);
 
 			var existing = Tenant.GetService<IMicroServiceService>().Select(Package.MicroService.Token);
 			/*
@@ -266,11 +265,11 @@ namespace TomPIT.Management.Deployment
 			/*
 		 * now, if last known state is null we must save state. this state will be merged with the installation
 		 */
-			if (LastKnownState == null)
-			{
-				Tenant.GetService<IDesignService>().Components.SaveRuntimeState(existing.Token);
-				LastKnownState = Tenant.GetService<IDesignService>().Components.SelectRuntimeState(Package.MicroService.Token);
-			}
+			//if (LastKnownState == null)
+			//{
+			//	Tenant.GetService<IDesignService>().Components.SaveRuntimeState(existing.Token);
+			//	LastKnownState = Tenant.GetService<IDesignService>().Components.SelectRuntimeState(Package.MicroService.Token);
+			//}
 			/*
 		 * now drop the microservice and all dependent objects. note that permissions and settings are not dropped because they 
 		 * are not part of microservice configuration.

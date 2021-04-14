@@ -344,5 +344,25 @@ namespace TomPIT.Caching
 
 			return ce is null ? CacheScope.Shared : ce.Scope;
 		}
+
+		public void Merge(IMemoryCache cache)
+		{
+			if (cache is not MemoryCache mc)
+				throw new ArgumentException(null, nameof(cache));
+
+			foreach (var key in mc.Keys())
+			{
+				foreach (var entryKey in mc.Keys(key))
+				{
+					if (mc.GetScope(key, entryKey) == CacheScope.Shared)
+						Move(key, entryKey, mc.Container.Get(key, entryKey));
+				}
+			}
+		}
+
+		private void Move(string key, string id, Entry value)
+		{
+			Container.Set(key, id, value);
+		}
 	}
 }

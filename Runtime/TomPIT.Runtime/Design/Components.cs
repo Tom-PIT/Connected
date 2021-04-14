@@ -86,8 +86,8 @@ namespace TomPIT.Design
 			{
 				Tenant.GetService<IStorageService>().Delete(c.Token);
 
-				if (c.RuntimeConfiguration != Guid.Empty)
-					Tenant.GetService<IStorageService>().Delete(c.RuntimeConfiguration);
+				//if (c.RuntimeConfiguration != Guid.Empty)
+				//	Tenant.GetService<IStorageService>().Delete(c.RuntimeConfiguration);
 
 				Tenant.GetService<IDesignService>().Search.Delete(c.Token);
 			}

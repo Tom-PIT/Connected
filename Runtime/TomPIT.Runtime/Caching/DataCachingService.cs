@@ -426,14 +426,7 @@ namespace TomPIT.Caching
 			if (service is not DataCachingService ctx)
 				throw new ArgumentException(null, nameof(service));
 
-			foreach (var key in ctx.Cache.Keys())
-			{
-				foreach (var entryKey in ctx.Cache.Keys(key))
-				{
-					if (ctx.Cache.GetScope(key, entryKey) == CacheScope.Shared)
-						Set(key, entryKey, ctx.Get<object>(context, key, entryKey));
-				}
-			}
+			Cache.Merge(ctx.Cache);
 		}
 
 		private bool CanStore(EntryOptions options)

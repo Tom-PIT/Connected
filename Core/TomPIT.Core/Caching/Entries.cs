@@ -60,6 +60,11 @@ namespace TomPIT.Caching
 				v.Dispose();
 		}
 
+		public void Set(string key, object instance, Entry value)
+		{
+			Items[key] = value;
+		}
+
 		public void Set(string key, object instance, TimeSpan duration, bool slidingExpiration, CacheScope scope)
 		{
 			Items[key] = new Entry(key, instance, duration, slidingExpiration, scope);

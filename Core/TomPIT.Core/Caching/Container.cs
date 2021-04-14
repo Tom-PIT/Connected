@@ -83,6 +83,18 @@ namespace TomPIT.Caching
 				value.Remove(id);
 		}
 
+		public void Set(string key, string id, Entry instance)
+		{
+			if (!Items.TryGetValue(key, out Entries value))
+			{
+				value = new Entries();
+
+				if (!Items.TryAdd(key, value))
+					return;
+			}
+
+			value.Set(id, instance, instance);
+		}
 		public void Set(string key, string id, object instance, TimeSpan duration, bool slidingExpiration, CacheScope scope)
 		{
 			if (!Items.TryGetValue(key, out Entries value))

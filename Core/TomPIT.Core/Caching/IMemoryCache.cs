@@ -44,8 +44,7 @@ namespace TomPIT.Caching
 
 		int Count(string key);
 		ImmutableList<string> Keys(string key);
-		ImmutableList<string> Keys();
 
-		CacheScope GetScope(string key, string id);
+		void Merge(IMemoryCache cache);
 	}
 }
