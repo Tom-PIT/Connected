@@ -1,22 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using TomPIT.Runtime.Configuration;
 
-namespace TomPIT.Reflection
+namespace TomPIT.Serialization.Converters
 {
-	internal class DiagnosticsConfigurationConverter : JsonConverter
+	internal class ClientConnectionConverter : JsonConverter
 	{
 		public override bool CanConvert(Type objectType)
 		{
-			return objectType == typeof(IDiagnosticsConfiguration);
+			return objectType == typeof(List<IClientSysConnection>);
 		}
 
 		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
-			var r = serializer.Deserialize<DiagnosticsConfiguration>(reader);
-			var existing = existingValue as DiagnosticsConfiguration;
+			var r = serializer.Deserialize<List<ClientSysConnection>>(reader);
+			var list = existingValue as List<IClientSysConnection>;
 
-			existing.DumpEnabled = r.DumpEnabled;
+			foreach (var i in r)
+				list.Add(i);
 
 			return null;
 		}

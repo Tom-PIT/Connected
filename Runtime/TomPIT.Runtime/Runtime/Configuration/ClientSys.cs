@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 using TomPIT.Reflection;
+using TomPIT.Serialization.Converters;
 
 namespace TomPIT.Runtime.Configuration
 {
@@ -81,5 +82,9 @@ namespace TomPIT.Runtime.Configuration
 		public EnvironmentStage Stage { get; set; } = EnvironmentStage.Production;
 		[JsonProperty(PropertyName = "connectivity")]
 		public EnvironmentConnectivity Connectivity { get; set; } = EnvironmentConnectivity.Online;
+
+		[JsonProperty(PropertyName = "deployment")]
+		[JsonConverter(typeof(DeploymentConverter))]
+		public IClientSysDeployment Deployment { get; set; }
 	}
 }

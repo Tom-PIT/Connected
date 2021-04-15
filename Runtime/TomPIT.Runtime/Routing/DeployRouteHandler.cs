@@ -22,10 +22,9 @@ namespace TomPIT.Routing
 			var body = Context.Request.Body.ToJObject();
 
 			var repository = body.Required<Guid>("repository");
-			var userName = body.Required<string>("userName");
-			var password = body.Required<string>("password");
+			var key = body.Required<string>("authenticationKey");
 
-			ctx.GetService<IDesignService>().Deployment.Deploy(Remote, repository, userName, password);
+			ctx.GetService<IDesignService>().Deployment.Deploy(Remote, repository, key);
 		}
 	}
 }

@@ -11,6 +11,12 @@
   "resourceGroups": [
     "Default"
   ],
+  "deployment": {
+    "fileSystem": {
+      "enabled": true,
+      "path": "C:\\temp"
+    }
+  },
   "diagnostics": {
     "dumpEnabled": false
   },

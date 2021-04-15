@@ -9,5 +9,7 @@
 		IDesignSearch Search { get; }
 		ITextDiff TextDiff { get; }
 		IMicroServiceDesign MicroServices { get; }
+
+		void Initialize();
 	}
 }

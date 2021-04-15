@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.Connectivity;
-using TomPIT.Exceptions;
+using TomPIT.Diagnostics;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Serialization;
@@ -182,9 +182,9 @@ namespace TomPIT.Caching
 					options.Key = ReflectionExtensions.ResolveCacheKey(result);
 
 				if (string.IsNullOrWhiteSpace(options.Key))
-					throw new RuntimeException(SR.ErrCacheKeyNull);
-
-				Set(key, options.Key, result, options.Duration, options.SlidingExpiration);
+					context.Tenant.LogWarning(nameof(DataCachingService), $"{SR.ErrCacheKeyNull} ({result?.GetType().Name})", LogCategories.Middleware);
+				else
+					Set(key, options.Key, result, options.Duration, options.SlidingExpiration);
 			}
 
 			return result;
@@ -223,9 +223,9 @@ namespace TomPIT.Caching
 					options.Key = ReflectionExtensions.ResolveCacheKey(result);
 
 				if (string.IsNullOrWhiteSpace(options.Key))
-					throw new RuntimeException(SR.ErrCacheKeyNull);
-
-				Set(key, options.Key, result, options.Duration, options.SlidingExpiration);
+					context.Tenant.LogWarning(nameof(DataCachingService), $"{SR.ErrCacheKeyNull} ({result?.GetType().Name})", LogCategories.Middleware);
+				else
+					Set(key, options.Key, result, options.Duration, options.SlidingExpiration);
 			}
 
 			return result;

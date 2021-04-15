@@ -137,6 +137,8 @@ namespace TomPIT.Runtime
 
 				dataCache.Connect();
 			}
+
+			e.Tenant.GetService<IDesignService>().Initialize();
 		}
 	}
 }

@@ -80,5 +80,10 @@ namespace TomPIT.Design
 				return _versionControl;
 			}
 		}
+
+		public void Initialize()
+		{
+			((Deployment)Deployment).Initialize();
+		}
 	}
 }
