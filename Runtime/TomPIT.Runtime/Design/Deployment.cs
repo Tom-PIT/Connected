@@ -22,34 +22,46 @@ namespace TomPIT.Design
 			Deploy(Tenant.Post<PullRequest>(url, new
 			{
 				repository
-			}, new HttpRequestArgs().WithBearerCredentials(authenticationToken)));
+			}, new HttpRequestArgs().WithBearerCredentials(authenticationToken)), new DeployArgs
+			{
+				ResetMicroService = true
+			});
 		}
 
-		public void Deploy(IPullRequest request)
+		public void Deploy(IPullRequest request, DeployArgs e)
 		{
-			new DeploymentSession(Tenant, request).Deploy();
+			new DeploymentSession(Tenant, request).Deploy(e);
 		}
 
 		private void Deploy(string fileName)
 		{
+			IPullRequest request;
+
 			try
 			{
-				var request = Serializer.Deserialize<PullRequest>(File.ReadAllText(fileName));
+				request = Serializer.Deserialize<PullRequest>(File.ReadAllText(fileName));
 			}
 			catch (Exception ex)
 			{
 				Tenant.LogError(ex.Source, ex.Message, LogCategories.Deployment);
+				return;
 			}
-		}
 
+			Deploy(request, new DeployArgs
+			{
+				ResetMicroService = true
+			});
+		}
+		
 		public void Initialize()
 		{
 			var config = Shell.GetConfiguration<IClientSys>();
+			var path = config.Deployment?.FileSystem?.Path;
 
-			if (config.Deployment?.FileSystem?.Enabled != true || string.IsNullOrWhiteSpace(config.Deployment.FileSystem.Path) || !Directory.Exists(config.Deployment.FileSystem.Path))
+			if (config.Deployment?.FileSystem?.Enabled != true || string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
 				return;
 
-			_watcher = new FileSystemWatcher(config.Deployment.FileSystem.Path)
+			_watcher = new FileSystemWatcher(path)
 			{
 				IncludeSubdirectories = false,
 				EnableRaisingEvents = true
@@ -60,6 +72,11 @@ namespace TomPIT.Design
 			_watcher.NotifyFilter = NotifyFilters.FileName;
 
 			_watcher.Created += OnPullRequest;
+
+			var files = Directory.GetFiles(path, "*.json");
+
+			foreach(var file in files)
+				OnPullRequest(this, new FileSystemEventArgs(WatcherChangeTypes.Created, Path.GetDirectoryName(file), file));
 		}
 
 		private void OnPullRequest(object sender, FileSystemEventArgs e)

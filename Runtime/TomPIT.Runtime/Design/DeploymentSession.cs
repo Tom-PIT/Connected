@@ -22,8 +22,11 @@ namespace TomPIT.Design
 
 		private IPullRequest Request { get; }
 
-		public void Deploy()
+		public void Deploy(DeployArgs e)
 		{
+			if (e.ResetMicroService)
+				DropMicroService();
+
 			SynchronizeMicroService();
 			Drop();
 			DeployFolders();
@@ -33,6 +36,19 @@ namespace TomPIT.Design
 			RunInstallers();
 
 			CommitMicroService();
+		}
+
+		private void DropMicroService()
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
+
+			if (ms is null)
+				return;
+
+			if (ms.Status != MicroServiceStatus.Development)
+				UpdateMicroService(ms);
+
+			Tenant.GetService<IDesignService>().MicroServices.Delete(ms.Token);
 		}
 
 		private void CommitMicroService()
@@ -54,14 +70,14 @@ namespace TomPIT.Design
 
 		private void UpdateMicroService(IMicroService microService)
 		{
-			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, microService.ResourceGroup, Request.Template, ResolveStatus(), microService.UpdateStatus, microService.CommitStatus);
+			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, microService.ResourceGroup, Request.Template, MicroServiceStatus.Development, microService.UpdateStatus, microService.CommitStatus);
 		}
 
 		private void InsertMicroService()
 		{
 			var resourceGroup = Tenant.GetService<IResourceGroupService>().Default.Token;
 
-			Tenant.GetService<IDesignService>().MicroServices.Insert(Request.Token, Request.Name, resourceGroup, Request.Template, ResolveStatus());
+			Tenant.GetService<IDesignService>().MicroServices.Insert(Request.Token, Request.Name, resourceGroup, Request.Template, MicroServiceStatus.Development);
 		}
 
 		private MicroServiceStatus ResolveStatus()
