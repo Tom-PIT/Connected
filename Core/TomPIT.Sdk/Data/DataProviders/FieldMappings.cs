@@ -31,7 +31,7 @@ namespace TomPIT.Data.DataProviders
 
 			var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-			for (var i = 0; i < reader.FieldCount - 1; i++)
+			for (var i = 0; i < reader.FieldCount; i++)
 			{
 				if (ResolveProperty(properties, reader.GetName(i)) is PropertyInfo property)
 					_properties.Add(i, property);
