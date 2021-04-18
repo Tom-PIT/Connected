@@ -10,15 +10,15 @@
     </SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
-    <Product>Tom PIT Micro service platform</Product>
+    <Product>Tom PIT.connected</Product>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>2.1.403.3</AssemblyVersion>
-    <FileVersion>2.1.403.3</FileVersion>
-    <Version>2.1.403.3</Version>
+    <AssemblyVersion>2.2.415.2</AssemblyVersion>
+    <FileVersion>2.2.415.2</FileVersion>
+    <Version>2.2.415.2</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>
@@ -27,9 +27,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
@@ -40,17 +40,17 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Claims.resx</DependentUpon>
     </Compile>
-    <Compile Update="SR.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SR.resx</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Claims.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Claims.Designer.cs</LastGenOutput>
       <CustomToolNamespace>TomPIT</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Update="SR.sl-SI.resx">
+      <CustomToolNamespace>TomPIT</CustomToolNamespace>
+      <LastGenOutput>SR.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="SR.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
