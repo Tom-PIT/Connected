@@ -4,6 +4,7 @@ using TomPIT.Runtime;
 namespace TomPIT.Annotations.Design
 {
 	[AttributeUsage(AttributeTargets.Property)]
+	[Obsolete("This feature is obsolete now and will be removed in the next release.")]
 	public class EnvironmentVisibilityAttribute : Attribute
 	{
 		public EnvironmentVisibilityAttribute()

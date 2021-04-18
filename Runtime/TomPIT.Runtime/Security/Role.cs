@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Reflection;
-using TomPIT.Runtime;
 
 namespace TomPIT.Security
 {
@@ -17,7 +16,6 @@ namespace TomPIT.Security
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[MaxLength(128)]
 		[Required]
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public string Name { get; set; }
 		[Browsable(false)]
 		public RoleBehavior Behavior { get; set; }

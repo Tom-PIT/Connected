@@ -1,23 +1,12 @@
-﻿using System.Collections.Generic;
-
-namespace TomPIT.Ide.TextServices.Languages
+﻿namespace TomPIT.Ide.TextServices.Languages
 {
 	public class ResourceTextEdit : ResourceEdit, IResourceTextEdit
 	{
-		private List<ITextEdit> _edits = null;
-		public List<ITextEdit> Edits
-		{
-			get
-			{
-				if (_edits == null)
-					_edits = new List<ITextEdit>();
-
-				return _edits;
-			}
-		}
+		public ITextEdit Edit { get; set; }
 
 		public int ModelVersionId { get; set; }
 
 		public string Resource { get; set; }
+		public IWorkspaceEditMetadata Metadata { get; set; }
 	}
 }

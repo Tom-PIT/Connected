@@ -1,8 +1,8 @@
-﻿using TomPIT.Annotations;
+﻿using System.ComponentModel;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel.UI.Theming;
 using TomPIT.MicroServices.Design;
-using TomPIT.Reflection;
 
 namespace TomPIT.MicroServices.UI.Theming
 {
@@ -11,12 +11,7 @@ namespace TomPIT.MicroServices.UI.Theming
 	[Syntax(SyntaxAttribute.Less)]
 	public class LessFile : ThemeFile, ILessFile
 	{
-		public override string ToString()
-		{
-			if (string.IsNullOrWhiteSpace(Name))
-				return string.Format("{0}.less", GetType().ShortName());
-
-			return string.Format("{0}.less", Name);
-		}
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.less";
 	}
 }

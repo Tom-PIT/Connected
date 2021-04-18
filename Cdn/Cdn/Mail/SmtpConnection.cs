@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System.Threading;
 using MailKit.Net.Smtp;
+using MailKit.Security;
 using MimeKit;
 using TomPIT.Cdn.Dns;
 using TomPIT.Configuration;
@@ -28,6 +29,7 @@ namespace TomPIT.Cdn.Mail
 		}
 
 		private string Domain { get; }
+		private string SecondaryDomain { get; set; }
 		public ConnectionState State
 		{
 			get { return _state; }
@@ -93,19 +95,32 @@ namespace TomPIT.Cdn.Mail
 				}
 
 				if (string.IsNullOrWhiteSpace(server))
-					server = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "SmtpServer");
+					server = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>("SmtpServer", null, null, null);
 
 				if (string.IsNullOrWhiteSpace(server))
-					server = DnsResolve.Resolve(Domain);
+				{
+					var descriptor = DnsResolve.Resolve(Domain);
+
+					server = descriptor.Primary;
+					SecondaryDomain = descriptor.Secondary;
+				}
 
 				if (string.IsNullOrWhiteSpace(server))
 					throw new SmtpException(SmtpExceptionType.CannotResolveDomain, Domain);
 
-				if (string.IsNullOrWhiteSpace(localDomain))
-					localDomain = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<string>(Guid.Empty, "SmtpLocalDomain");
+				_client.LocalDomain = SmtpService.HostName;
 
-				_client.LocalDomain = localDomain;
-				_client.Connect(new Uri(string.Format("smtp://{0}", server)), token);
+				try
+				{
+					_client.Connect(new Uri($"smtp://{server}"), token);
+				}
+				catch (SslHandshakeException)
+				{
+					if (string.IsNullOrWhiteSpace(SecondaryDomain) || string.Compare(server, SecondaryDomain, true) == 0)
+						throw;
+
+					_client.Connect(new Uri($"smtp://{SecondaryDomain}"), token);
+				}
 
 				foreach (var middleware in ConfigurationCache.Handlers)
 				{

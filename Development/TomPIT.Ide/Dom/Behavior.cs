@@ -1,4 +1,6 @@
-﻿using TomPIT.Ide.Environment;
+﻿using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
+using TomPIT.Ide.Environment;
 
 namespace TomPIT.Ide.Dom
 {

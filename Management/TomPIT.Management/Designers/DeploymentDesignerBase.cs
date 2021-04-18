@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using TomPIT.Deployment;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
-using TomPIT.Ide.Dom;
 using TomPIT.Management.Deployment;
 
 namespace TomPIT.Management.Designers

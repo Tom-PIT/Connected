@@ -2,6 +2,6 @@
 {
 	public interface ISearchParserOptions
 	{
-		bool AllowLeadingWildcard { get; }
+		bool AllowLeadingWildcard { get; set; }
 	}
 }

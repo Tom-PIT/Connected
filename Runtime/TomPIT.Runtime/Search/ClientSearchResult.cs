@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TomPIT.Search
+﻿namespace TomPIT.Search
 {
 	internal class ClientSearchResult : SearchResult, IClientSearchResult
 	{
-		public object Entity { get; set; }
+		public string Entity { get; set; }
 	}
 }

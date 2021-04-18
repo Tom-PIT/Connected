@@ -136,6 +136,7 @@ namespace TomPIT
 				path = targetPath;
 			}
 
+
 			return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
 		}
 

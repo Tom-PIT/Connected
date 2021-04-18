@@ -1,11 +1,12 @@
-﻿using TomPIT.Annotations.Design;
+﻿using System.ComponentModel;
+using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Diagnostics;
 using TomPIT.ComponentModel.Distributed;
 using TomPIT.Diagnostics;
 using TomPIT.MicroServices.Design;
-using TomPIT.Runtime;
 
 namespace TomPIT.MicroServices.Distributed
 {
@@ -13,6 +14,9 @@ namespace TomPIT.MicroServices.Distributed
 	{
 		private ListItems<IQueueWorker> _ops = null;
 		private IMetricOptions _metric = null;
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
 
 		[Items(DesignUtils.QueueWorkerItems)]
 		public ListItems<IQueueWorker> Workers
@@ -26,7 +30,7 @@ namespace TomPIT.MicroServices.Distributed
 			}
 		}
 
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[Browsable(false)]
 		public IMetricOptions Metrics
 		{
 			get

@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-
-namespace TomPIT.Ide.TextServices.Languages
+﻿namespace TomPIT.Ide.TextServices.Languages
 {
 	public interface IResourceTextEdit : IResourceEdit
 	{
-		List<ITextEdit> Edits { get; }
+		ITextEdit Edit { get; }
 		int ModelVersionId { get; }
 		string Resource { get; }
+		IWorkspaceEditMetadata Metadata { get; }
 	}
 }

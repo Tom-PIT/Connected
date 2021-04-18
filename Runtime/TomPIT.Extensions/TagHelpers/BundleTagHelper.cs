@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using TomPIT.ComponentModel;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 
@@ -14,6 +14,7 @@ namespace TomPIT.TagHelpers
 			var microService = string.Empty;
 			var name = Name;
 			var ctx = ViewContext.ViewData.Model as IMicroServiceContext;
+			//var etag = "0";
 
 			if (Name.Contains("/"))
 			{
@@ -22,7 +23,8 @@ namespace TomPIT.TagHelpers
 				microService = tokens[0];
 				name = tokens[1];
 
-				var ms = ctx.Tenant.GetService<IMicroServiceService>().Select(ResolveMicroservice(ViewContext.ExecutingFilePath).Token);
+				var resolved = ResolveMicroservice(ViewContext.ExecutingFilePath);
+				var ms = resolved == null ? null : ctx.Tenant.GetService<IMicroServiceService>().Select(resolved.Token);
 				var reference = ctx.Tenant.GetService<IMicroServiceService>().Select(microService);
 
 				if (reference == null)
@@ -30,16 +32,19 @@ namespace TomPIT.TagHelpers
 
 				try
 				{
-					ms.ValidateMicroServiceReference(reference.Name);
+					if (ms != null)
+						ms.ValidateMicroServiceReference(reference.Name);
 				}
 				catch
 				{
 					ctx.MicroService.ValidateMicroServiceReference(reference.Name);
 				}
+
+				//etag = ctx.Tenant.GetService<IComponentService>().SelectComponent(reference.Token, ComponentCategories.ScriptBundle, name).Modified.Ticks.ToString();
 			}
 			else
 			{
-				var bundle = ctx.Tenant.GetService<IComponentService>().SelectComponent(ctx.MicroService.Token, "Bundle", Name);
+				var bundle = ctx.Tenant.GetService<IComponentService>().SelectComponent(ctx.MicroService.Token, ComponentCategories.ScriptBundle, Name);
 
 				if (bundle == null)
 					microService = ResolveMicroservice(ViewContext.ExecutingFilePath).Name;
@@ -48,7 +53,8 @@ namespace TomPIT.TagHelpers
 			}
 
 			output.TagName = "script";
-			output.Attributes.SetAttribute("src", string.Format("{0}/sys/bundles/{1}/{2}", ctx.Services.Routing.RootUrl, microService, name));
+			//output.Attributes.SetAttribute("src", $"{ctx.Services.Routing.RootUrl}/sys/bundles/{microService}/{name}?{etag}");
+			output.Attributes.SetAttribute("src", $"{ctx.Services.Routing.RootUrl}/sys/bundles/{microService}/{name}");
 		}
 	}
 }

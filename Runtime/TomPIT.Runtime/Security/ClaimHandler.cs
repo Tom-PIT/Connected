@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
@@ -9,18 +9,18 @@ namespace TomPIT.Security
 {
 	public class ClaimHandler : AuthorizationHandler<ClaimRequirement>
 	{
-		public ClaimHandler(IActionContextAccessor accessor)
+		public ClaimHandler(IHttpContextAccessor context)
 		{
-			Accessor = accessor;
+			Context = context;
 		}
 
-		private IActionContextAccessor Accessor { get; }
+		private IHttpContextAccessor Context { get; }
 
 		protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, ClaimRequirement requirement)
 		{
-			var ms = Accessor.ActionContext.RouteData.Values["microService"];
+			var ms = Context.HttpContext.Request.RouteValues["microService"] as string;
 
-			if (string.IsNullOrWhiteSpace(ms.ToString()))
+			if (string.IsNullOrWhiteSpace(ms))
 			{
 				context.Fail();
 				return Task.CompletedTask;
@@ -47,8 +47,9 @@ namespace TomPIT.Security
 				return Task.CompletedTask;
 			}
 
-			var e = new AuthorizationArgs(identity.User.Token, requirement.Claim, microService.Token.ToString());
-			var r = connection.GetService<TomPIT.Security.IAuthorizationService>().Authorize(new MicroServiceContext(microService), e);
+			var e = new AuthorizationArgs(identity.User.Token, requirement.Claim, microService.Token.ToString(), "Micro service");
+			using var ctx = new MicroServiceContext(microService);
+			var r = connection.GetService<TomPIT.Security.IAuthorizationService>().Authorize(ctx, e);
 
 			if (!r.Success)
 			{

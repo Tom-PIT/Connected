@@ -10,8 +10,9 @@ using Lucene.Net.Store;
 using TomPIT.Diagnostics;
 using TomPIT.Reflection;
 using TomPIT.Search;
-using TomPIT.Sys.Data;
 using TomPIT.Sys.Diagnostics;
+using TomPIT.Sys.Model;
+using TomPIT.Sys.Model.Diagnostics;
 
 namespace TomPIT.Sys.Search
 {
@@ -22,7 +23,7 @@ namespace TomPIT.Sys.Search
 
 		private IndexWriter _writer = null;
 		private FSDirectory _directory = null;
-		private bool _isValid = true;
+		//private bool _isValid = true;
 		private int _activeOperations = 0;
 		private Searcher _searcher = null;
 		private ConcurrentBag<T> _messageBuffer = null;
@@ -103,7 +104,7 @@ namespace TomPIT.Sys.Search
 			}
 			catch (Exception ex)
 			{
-				_isValid = false;
+				//_isValid = false;
 				OperationEnd();
 				KillAll();
 
@@ -130,13 +131,13 @@ namespace TomPIT.Sys.Search
 				OperationStart();
 				Writer.AddDocument(doc);
 
-				_isValid = true;
+				//_isValid = true;
 				OperationEnd();
 			}
 			catch
 			{
 				OperationEnd();
-				_isValid = false;
+				//_isValid = false;
 				KillAll();
 
 				throw;
@@ -150,13 +151,13 @@ namespace TomPIT.Sys.Search
 				OperationStart();
 				Writer.UpdateDocument(term, doc);
 
-				_isValid = true;
+				//_isValid = true;
 				OperationEnd();
 			}
 			catch
 			{
 				OperationEnd();
-				_isValid = false;
+				//_isValid = false;
 
 				KillAll();
 
@@ -201,7 +202,7 @@ namespace TomPIT.Sys.Search
 				}
 				catch
 				{
-					_isValid = false;
+					//_isValid = false;
 					OperationEnd();
 					KillAll();
 
@@ -217,13 +218,13 @@ namespace TomPIT.Sys.Search
 				OperationStart();
 				Writer.DeleteDocuments(term);
 
-				_isValid = true;
+				//_isValid = true;
 				OperationEnd();
 			}
 			catch
 			{
 				OperationEnd();
-				_isValid = false;
+				//_isValid = false;
 
 				KillAll();
 
@@ -355,7 +356,7 @@ namespace TomPIT.Sys.Search
 			{
 				LogError(SysLogEvents.Search, ex.Message);
 
-				_isValid = false;
+				//_isValid = false;
 
 				KillAll();
 			}

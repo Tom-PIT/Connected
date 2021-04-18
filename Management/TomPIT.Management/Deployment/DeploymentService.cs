@@ -6,7 +6,7 @@ using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Deployment;
 using TomPIT.Design.Serialization;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Management.ComponentModel;
@@ -181,7 +181,7 @@ namespace TomPIT.Management.Deployment
 			}
 			catch (Exception ex)
 			{
-				Tenant.LogError(nameof(DeploymentService), ex.Source, ex.Message);
+				Tenant.LogError(ex.Source, ex.Message, nameof(DeploymentService));
 				return null;
 			}
 		}

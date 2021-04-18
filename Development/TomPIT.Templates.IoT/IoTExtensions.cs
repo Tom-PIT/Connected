@@ -1,6 +1,6 @@
 ﻿using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.MicroServices.IoT.Annotations;
 using TomPIT.MicroServices.IoT.Models;
@@ -64,33 +64,6 @@ namespace TomPIT.MicroServices.IoT
 			}
 
 			return context.Tenant.GetService<IComponentService>().SelectConfiguration(ms, ComponentCategories.IoTHub, hub) as IIoTHubConfiguration;
-		}
-
-		public static IIoTSchemaConfiguration ResolveSchema(this IIoTHubConfiguration hub, IMiddlewareContext context)
-		{
-			if (string.IsNullOrWhiteSpace(hub.Schema))
-				return null;
-
-			var ms = hub.MicroService();
-			var schema = hub.Schema;
-
-			if (schema.Contains('/'))
-			{
-				var tokens = schema.Split('/');
-				var originMicroService = context.Tenant.GetService<IMicroServiceService>().Select(ms);
-				schema = tokens[1];
-
-				originMicroService.ValidateMicroServiceReference(tokens[0]);
-
-				var microService = context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
-
-				if (microService == null)
-					throw new RuntimeException(SR.ErrMicroServiceNotFound).WithMetrics(context);
-
-				ms = microService.Token;
-			}
-
-			return context.Tenant.GetService<IComponentService>().SelectConfiguration(ms, ComponentCategories.IoTSchema, schema) as IIoTSchemaConfiguration;
 		}
 	}
 }

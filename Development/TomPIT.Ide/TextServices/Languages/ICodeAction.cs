@@ -10,5 +10,6 @@ namespace TomPIT.Ide.TextServices.Languages
 		bool IsPreferred { get; }
 		string Kind { get; }
 		string Title { get; }
+		bool Disabled { get; }
 	}
 }

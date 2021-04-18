@@ -19,7 +19,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 			if (IncludeReferences)
 			{
-				var references = Editor.Context.Tenant.GetService<IDiscoveryService>().References(Editor.Context.MicroService.Token);
+				var references = Editor.Context.Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(Editor.Context.MicroService.Token);
 
 				if (references == null || references.MicroServices.Count == 0)
 					return items;
@@ -47,6 +47,11 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 		}
 
 		protected virtual void OnProvideItems(List<ICompletionItem> items, IMicroService microService, IComponent component)
+		{
+			AddItem(items, microService, component);
+		}
+
+		protected void AddItem(List<ICompletionItem> items, IMicroService microService, IComponent component)
 		{
 			var text = $"{microService.Name}/{component.Name}";
 

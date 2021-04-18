@@ -1,6 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
+using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
 
@@ -9,7 +11,9 @@ namespace TomPIT.MicroServices.Distributed
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
 	[Create("Event", nameof(Name))]
-	public class DistributedEvent : SourceCodeElement, IDistributedEvent
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.DistributedEvent, TomPIT.MicroServices.Design")]
+	[ClassRequired]
+	public class DistributedEvent : TextElement, IDistributedEvent
 	{
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[Required]
@@ -22,5 +26,7 @@ namespace TomPIT.MicroServices.Distributed
 				? base.ToString()
 				: Name;
 		}
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 	}
 }

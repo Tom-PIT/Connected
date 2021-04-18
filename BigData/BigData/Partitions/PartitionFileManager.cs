@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Threading;
 using TomPIT.BigData.Nodes;
 using TomPIT.BigData.Persistence;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 
@@ -34,7 +35,7 @@ namespace TomPIT.BigData.Partitions
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("BigData", ex.Source, ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, "BigData");
 
 				if (file != null)
 					TryRollbackFileCreate(file.FileName);
@@ -51,13 +52,23 @@ namespace TomPIT.BigData.Partitions
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("BigData", ex.Source, ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, "BigData");
 			}
 		}
 
 		public Guid Lock(Guid file)
 		{
-			return MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().LockFile(file);
+			for (var i = 1; i < 10; i++)
+			{
+				var result = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().LockFile(file);
+
+				if (result != Guid.Empty)
+					return result;
+
+				Thread.Sleep(i * 50);
+			}
+
+			return Guid.Empty;
 		}
 
 		public void Release(Guid file)

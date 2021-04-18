@@ -11,7 +11,7 @@ namespace TomPIT.Compilation
 	{
 		public static string ResolvePath(this IText sourceCode, ITenant tenant)
 		{
-			var name = ScriptName(sourceCode, tenant);
+			var name = sourceCode.FileName;
 			var ms = sourceCode.Configuration().MicroService();
 			var microService = tenant.GetService<IMicroServiceService>().Select(ms);
 
@@ -24,6 +24,8 @@ namespace TomPIT.Compilation
 				return $"{microService.Name}/{componentName}/{name}";
 			}
 		}
+
+		[Obsolete("Please use IText.FileName instead.")]
 		public static string ScriptName(this IText sourceCode, ITenant tenant)
 		{
 			if (sourceCode is IServerEvent)

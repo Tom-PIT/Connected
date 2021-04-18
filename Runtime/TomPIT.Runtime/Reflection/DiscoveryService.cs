@@ -1,264 +1,88 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json;
-using TomPIT.Caching;
 using TomPIT.ComponentModel;
+using TomPIT.Configuration;
 using TomPIT.Connectivity;
-using TomPIT.Design.Serialization;
-using TomPIT.Reflection.Manifests;
-using TomPIT.Reflection.Manifests.Entities;
-using TomPIT.Storage;
+using TomPIT.Middleware;
 
 namespace TomPIT.Reflection
 {
-	internal class DiscoveryService : ClientRepository<IComponentManifest, Guid>, IDiscoveryService
+	internal class DiscoveryService : TenantObject, IDiscoveryService
 	{
-		public DiscoveryService(ITenant tenant) : base(tenant, "manifest")
+		private IManifestDiscovery _manifests;
+		private IConfigurationDiscovery _configuration;
+		private IMicroServiceDiscovery _microServices;
+
+		public DiscoveryService (ITenant tenant) : base(tenant)
 		{
-			Tenant.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
-			Tenant.GetService<IComponentService>().ComponentRemoved += OnComponentRemoved;
-			Tenant.GetService<IComponentService>().ComponentAdded += OnComponentAdded;
-			Tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
+
 		}
 
-		private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
-		{
-			Remove(e.Component);
-		}
+		public IManifestDiscovery Manifests => _manifests ??= new ManifestDiscovery(Tenant);
+		public IConfigurationDiscovery Configuration => _configuration ??= new ConfigurationDiscovery(Tenant);
+		public IMicroServiceDiscovery MicroServices => _microServices ??= new MicroServiceDiscovery(Tenant);
 
-		private void OnComponentAdded(ITenant sender, ComponentEventArgs e)
-		{
-			Remove(e.Component);
-		}
-
-		private void OnComponentRemoved(ITenant sender, ComponentEventArgs e)
-		{
-			Remove(e.Component);
-		}
-
-		private void OnComponentChanged(ITenant sender, ComponentEventArgs e)
-		{
-			Remove(e.Component);
-		}
 
 		public IElement Find(IConfiguration configuration, Guid id)
 		{
-			return Find(configuration, id, new List<object>());
+			return Configuration.Find(configuration, id);
 		}
 
 		public IElement Find(Guid component, Guid id)
 		{
-			var config = Tenant.GetService<IComponentService>().SelectConfiguration(component);
-
-			if (config == null)
-				return null;
-
-			return Find(config, id, new List<object>());
-		}
-
-		private IElement Find(object instance, Guid id, List<object> referenceTrail)
-		{
-			if (instance == null)
-				return null;
-
-			if (referenceTrail.Contains(instance))
-				return null;
-
-			referenceTrail.Add(instance);
-
-			if (instance is IElement el && el.Id == id)
-				return el;
-
-			if (instance.GetType().IsCollection())
-			{
-				if (!(instance is IEnumerable en))
-					return null;
-
-				var enm = en.GetEnumerator();
-
-				while (enm.MoveNext())
-				{
-					if (enm.Current is IElement element && element.Id == id)
-						return element;
-					else
-					{
-						var r = Find(enm.Current, id, referenceTrail);
-
-						if (r != null)
-							return r;
-					}
-				}
-			}
-			else
-			{
-				var properties = instance.GetType().GetProperties(BindingFlags.Public
-					| BindingFlags.Instance);
-
-				foreach (var i in properties)
-				{
-					var value = i.GetValue(instance);
-
-					if (value == null || value.GetType().IsTypePrimitive())
-						continue;
-
-					if (i.FindAttribute<JsonIgnoreAttribute>() != null)
-						continue;
-
-					var r = Find(value, id, referenceTrail);
-
-					if (r != null)
-						return r;
-				}
-			}
-
-			return null;
+			return Configuration.Find(component, id);
 		}
 
 		public IServiceReferencesConfiguration References(Guid microService)
 		{
-			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
-
-			if (ms == null)
-				return null;
-
-			return References(ms.Name);
+			return MicroServices.References.Select(microService);
 		}
 		public IServiceReferencesConfiguration References(string microService)
 		{
-			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
-
-			if (ms == null)
-				return null;
-
-			var component = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategories.Reference, "References");
-
-			if (component == null)
-				return null;
-
-			return Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) as IServiceReferencesConfiguration;
+			return MicroServices.References.Select(microService);
 		}
 
 		public IComponentManifest Manifest(Guid component)
 		{
-			return Get(component,
-				(f) =>
-				{
-					var c = Tenant.GetService<IComponentService>().SelectComponent(component);
-
-					if (c == null)
-						return null;
-
-					var ms = Tenant.GetService<IMicroServiceService>().Select(c.MicroService);
-
-					if (ms == null)
-						return null;
-
-					var existing = Tenant.GetService<IStorageService>().Download(ms.Token, BlobTypes.Manifest, ms.ResourceGroup, $"manifest{component}");
-					IComponentManifest result = null;
-
-					if (existing == null)
-					{
-						result = c.Manifest();
-						SaveManifest(c, result);
-					}
-					else
-					{
-						try
-						{
-							result = Tenant.GetService<ISerializationService>().Deserialize(existing.Content, typeof(ComponentManifest)) as IComponentManifest;
-						}
-						catch
-						{
-							result = c.Manifest();
-							SaveManifest(c, result);
-						}
-					}
-
-					Set(component, result, TimeSpan.Zero);
-
-					return result;
-				});
-		}
-
-		private void SaveManifest(IComponent component, IComponentManifest manifest)
-		{
-			Tenant.GetService<IStorageService>().Upload(new Blob
-			{
-				ContentType = Blob.ContentTypeJson,
-				FileName = $"{manifest.Name}.json",
-				MicroService = component.MicroService,
-				PrimaryKey = $"manifest{component.Token}",
-				Type = BlobTypes.Manifest,
-				ResourceGroup = component.ResourceGroup()
-			}, Tenant.GetService<ISerializationService>().Serialize(manifest), StoragePolicy.Singleton);
+			return Manifests.Select(component);
 		}
 
 		public IComponentManifest Manifest(string microService, string category, string componentName)
 		{
-			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
-
-			if (ms == null)
-				return null;
-
-			var component = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, category, componentName);
-
-			if (component == null)
-				return null;
-
-			return Manifest(component.Token);
+			return Manifests.Select(microService, category, componentName);
 		}
 
-		public List<IComponentManifest> Manifests(Guid microService)
-		{
-			var components = Tenant.GetService<IComponentService>().QueryComponents(microService);
-			var result = new List<IComponentManifest>();
-
-			foreach (var component in components)
-			{
-				var manifest = Manifest(component.Token);
-
-				if (manifest != null)
-					result.Add(manifest);
-			}
-
-			return result;
-		}
+		//public List<IComponentManifest> Manifests(Guid microService)
+		//{
+		//}
 
 		public List<IMicroService> FlattenReferences(Guid microService)
 		{
-			var r = new List<IMicroService>();
-
-			FlattenReferences(microService, r);
-
-			return r;
+			return MicroServices.References.Flatten(microService).ToList();
 		}
 
-		private void FlattenReferences(Guid microService, List<IMicroService> existing)
+		public List<T> Children<T>(IConfiguration configuration) where T : IElement
 		{
-			var refs = References(microService);
+			return Configuration.Query<T>(configuration).ToList();
+		}
 
-			if (refs == null)
-				return;
 
-			foreach (var reference in refs.MicroServices)
-			{
-				if (string.IsNullOrWhiteSpace(reference.MicroService))
-					continue;
+		public List<Guid> Dependencies(IConfiguration configuration)
+		{
+			return Configuration.QueryDependencies(configuration).ToList();
+		}
 
-				if (existing.FirstOrDefault(f => string.Compare(f.Name, reference.MicroService, true) == 0) != null)
-					continue;
+		public IMicroServiceInfoMiddleware MicroServiceInfo(IMicroServiceContext context, Guid microService)
+		{
+			return MicroServices.Info.SelectMiddleware(context, microService);
+		}
 
-				var ms = Tenant.GetService<IMicroServiceService>().Select(reference.MicroService);
-
-				if (ms != null)
-				{
-					existing.Add(ms);
-					FlattenReferences(ms.Token, existing);
-				}
-			}
+		[Obsolete("Use ReflectionExtensions instead.")]
+		public PropertyInfo[] Properties(object instance, bool writableOnly, bool filterByEnvironment)
+		{
+			return ReflectionExtensions.Properties(instance, writableOnly);
 		}
 	}
 }

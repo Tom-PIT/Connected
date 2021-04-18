@@ -20,6 +20,7 @@ namespace TomPIT.SysDb.Storage
 		List<IBlob> Query(IResourceGroup resourceGroup, int type, string primaryKey);
 		List<IBlob> Query(IResourceGroup resourceGroup, int type, string primaryKey, Guid microService, string topic);
 		List<IBlob> Query(Guid microService);
+		List<IBlob> Query(Guid microService, int type);
 		List<IBlob> QueryDrafts(string draft);
 		void Insert(IResourceGroup resourceGroup, Guid token, int type, string primaryKey, Guid microService, string topic, string fileName, string contentType, int size, int version, DateTime modified, string draft);
 		void Update(IBlob blob, string primaryKey, string fileName, string contentType, int size, int version, DateTime modified, string draft);

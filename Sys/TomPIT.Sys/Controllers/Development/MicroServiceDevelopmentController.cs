@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using TomPIT.ComponentModel;
-using TomPIT.Sys.Data;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+using TomPIT.Sys.Model;
+using TomPIT.Sys.Model.Components;
 using TomPIT.SysDb.Development;
 
 namespace TomPIT.Sys.Controllers.Development

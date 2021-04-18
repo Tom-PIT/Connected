@@ -1,4 +1,4 @@
-﻿using TomPIT.Ide.Dom;
+﻿using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Dom.ComponentModel;
 using TomPIT.Management.Security;
 using TomPIT.Security;

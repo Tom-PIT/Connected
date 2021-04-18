@@ -5,68 +5,66 @@ using Microsoft.Extensions.Hosting;
 
 namespace TomPIT.Distributed
 {
-	public abstract class HostedService : IHostedService
+	public abstract class HostedService : BackgroundService
 	{
-		private Task _executingTask = null;
-		private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
+		//private Task _executingTask = null;
 
 		protected bool Initialized { get; private set; }
-		public virtual Task StartAsync(CancellationToken cancellationToken)
-		{
-			_executingTask = ExecuteAsync(_cancel.Token);
+		//public virtual Task StartAsync(CancellationToken cancel)
+		//{
+			//if (cancel.IsCancellationRequested)
+			//	return Task.CompletedTask;
 
-			if (_executingTask.IsCompleted)
-				return _executingTask;
+			//_executingTask = ExecuteAsync(cancel);
 
-			return Task.CompletedTask;
-		}
+			//if (_executingTask.IsCompleted)
+			//	return _executingTask;
 
-		public virtual async Task StopAsync(CancellationToken cancellationToken)
-		{
-			if (_executingTask == null)
-				return;
+			//return Task.CompletedTask;
+		//}
 
-			try
-			{
-				_cancel.Cancel();
-			}
-			finally
-			{
-				await Task.WhenAny(_executingTask, Task.Delay(Timeout.Infinite, cancellationToken));
-			}
-		}
+		//public virtual async Task StopAsync(CancellationToken cancel)
+		//{
+		//	if (_executingTask == null)
+		//		return;
 
-		protected virtual async Task ExecuteAsync(CancellationToken stoppingToken)
+		//	await Task.WhenAny(_executingTask, Task.Delay(Timeout.Infinite, cancel));
+		//}
+
+		protected override async Task ExecuteAsync(CancellationToken cancel)
 		{
 			do
 			{
 				try
 				{
 					if (!Initialized)
-						Initialized = Initialize();
+						Initialized = OnInitialize(cancel);
 
 					if (Initialized)
-						await Process();
+						await OnExecute(cancel);
 				}
 				catch
 				{
 					//TODO: handle exception
 				}
 
+				if (Initialized && IntervalTimeout == TimeSpan.Zero)
+					break;
+
 				if (Initialized)
-					await Task.Delay(IntervalTimeout, stoppingToken);
+					await Task.Delay(IntervalTimeout, cancel);
 				else
-					await Task.Delay(1000, stoppingToken);
+					await Task.Delay(1000, cancel);
 			}
-			while (!stoppingToken.IsCancellationRequested);
+			while (!cancel.IsCancellationRequested);
 		}
 
-		protected virtual bool Initialize()
+		protected virtual bool OnInitialize(CancellationToken cancel)
 		{
 			return true;
 		}
 
-		protected abstract Task Process();
+		protected abstract Task OnExecute(CancellationToken cancel);
 
 		protected TimeSpan IntervalTimeout { get; set; } = TimeSpan.FromSeconds(5);
 	}

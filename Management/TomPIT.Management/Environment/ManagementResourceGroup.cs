@@ -5,7 +5,6 @@ using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Environment;
 using TomPIT.Management.Items;
-using TomPIT.Runtime;
 
 namespace TomPIT.Management.Environment
 {
@@ -15,7 +14,6 @@ namespace TomPIT.Management.Environment
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[MaxLength(128)]
 		[Required]
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public string Name { get; set; }
 		[Browsable(false)]
 		[KeyProperty]
@@ -23,10 +21,8 @@ namespace TomPIT.Management.Environment
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		[Items(ManagementItems.StorageProvider)]
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public Guid StorageProvider { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public string ConnectionString { get; set; }
 
 		public override string ToString()

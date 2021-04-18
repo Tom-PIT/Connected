@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Linq;
-using TomPIT.Annotations.Design;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
-using TomPIT.Reflection.Manifests;
 
 namespace TomPIT.ComponentModel
 {
@@ -45,7 +43,7 @@ namespace TomPIT.ComponentModel
 			if (string.Compare(service.Name, reference, true) == 0)
 				return;
 
-			var refs = MiddlewareDescriptor.Current.Tenant.GetService<IDiscoveryService>().References(service.Name);
+			var refs = MiddlewareDescriptor.Current.Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(service.Name);
 
 			if (refs == null || refs.MicroServices.FirstOrDefault(f => string.Compare(f.MicroService, reference, true) == 0) == null)
 				throw new RuntimeException(SR.ErrReferenceMissingSource, string.Format("{0} ({1}->{2})", SR.ErrReferenceMissing, service.Name, reference));
@@ -75,7 +73,7 @@ namespace TomPIT.ComponentModel
 			if (config == null)
 				return null;
 
-			var att = config.GetType().FindAttribute<ManifestAttribute>();
+			var att = config.GetType().FindAttribute<Annotations.Design.ManifestAttribute>();
 
 			if (att == null)
 				return null;

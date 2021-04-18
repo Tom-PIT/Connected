@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Security;
 
 namespace TomPIT.Ide.Dom

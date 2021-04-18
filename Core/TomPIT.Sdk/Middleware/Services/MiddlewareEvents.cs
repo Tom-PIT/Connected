@@ -10,7 +10,7 @@ namespace TomPIT.Middleware.Services
 {
 	internal class MiddlewareEvents : MiddlewareObject, IMiddlewareEvents
 	{
-		public Guid TriggerEvent([CIP(CIP.DistributedEventProvider)]string name, object e)
+		public Guid TriggerEvent([CIP(CIP.DistributedEventProvider)]string name, [CIP(CIP.DistributedEventPropertyProvider)]object e)
 		{
 			return TriggerEvent(name, e, null);
 		}
@@ -20,7 +20,7 @@ namespace TomPIT.Middleware.Services
 			return TriggerEvent(name, null);
 		}
 
-		public Guid TriggerEvent([CIP(CIP.DistributedEventProvider)]string name, object e, IMiddlewareCallback callback)
+		public Guid TriggerEvent([CIP(CIP.DistributedEventProvider)]string name, [CIP(CIP.DistributedEventPropertyProvider)]object e, IMiddlewareCallback callback)
 		{
 			if (callback is MiddlewareCallback ec)
 				ec.Attached = true;

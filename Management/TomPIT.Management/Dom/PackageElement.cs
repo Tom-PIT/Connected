@@ -1,6 +1,7 @@
-﻿using TomPIT.Ide.Designers;
+﻿using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Dom;
-using TomPIT.Ide.Environment;
 using TomPIT.Management.Designers;
 
 namespace TomPIT.Management.Dom

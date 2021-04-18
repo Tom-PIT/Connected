@@ -384,6 +384,11 @@ $.widget('tompit.tpIde', {
 
             this._syncNavigationButtons();
         }
+
+        let ce = new CustomEvent('selectionChanged');
+
+        this.element[0].dispatchEvent(ce);
+
     },
     _syncNode: function (s, e) {
         var element = s._findElement(e.target);
@@ -1057,6 +1062,7 @@ $.widget('tompit.tpIde', {
 
                 if (isText) {
                     $('#devTextDesigner').collapse('show');
+                    //textEditor.layout();
                     $('#devDesigner').collapse('hide');
                 }
                 else {
@@ -1123,6 +1129,7 @@ $.widget('tompit.tpIde', {
                 language: instance.options.globalization.language
             }),
             progress: typeof progress === 'undefined' || progress ? tompit.findProgress(this.element) : null,
+            onError:d.onError,
             onSuccess: function (data, status, request) {
                 var type = request.getResponseHeader('designerResult');
 

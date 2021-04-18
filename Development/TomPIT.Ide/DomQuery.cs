@@ -4,15 +4,16 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using TomPIT.Annotations.Design;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
+using TomPIT.Design.Ide.Properties;
+using TomPIT.Design.Ide.Selection;
 using TomPIT.Exceptions;
 using TomPIT.Ide;
 using TomPIT.Ide.Collections;
-using TomPIT.Ide.Designers;
-using TomPIT.Ide.Dom;
 using TomPIT.Ide.Environment.Providers;
-using TomPIT.Ide.Properties;
 using TomPIT.Reflection;
-using TomPIT.Runtime;
 
 namespace TomPIT.Ide
 {
@@ -57,7 +58,7 @@ namespace TomPIT.Ide
 			if (instance == null)
 				return null;
 
-			var props = Properties(instance, false, false);
+			var props = ReflectionExtensions.Properties(instance, false);
 
 			foreach (var i in props)
 			{
@@ -283,86 +284,6 @@ namespace TomPIT.Ide
 				return false;
 
 			return interfaces.FirstOrDefault(f => f == typeof(T)) != null;
-		}
-
-		public static PropertyInfo[] Properties(object instance, bool writableOnly, bool filterByEnvironment)
-		{
-			var mode = Shell.GetService<IRuntimeService>().Mode;
-			PropertyInfo[] properties = null;
-
-			properties = instance.GetType().GetProperties();
-
-			if (properties == null)
-				return null;
-
-			var temp = new List<PropertyInfo>();
-
-			foreach (var i in properties)
-			{
-				var getMethod = i.GetGetMethod();
-				var setMethod = i.GetSetMethod();
-
-				if (writableOnly && setMethod == null)
-					continue;
-
-				if (getMethod == null)
-					continue;
-
-				if ((getMethod != null && getMethod.IsStatic) || (setMethod != null && setMethod.IsStatic))
-					continue;
-
-				if (setMethod != null && !setMethod.IsPublic)
-					continue;
-
-				temp.Add(i);
-			}
-
-			properties = temp.ToArray();
-
-			if (filterByEnvironment)
-			{
-				switch (mode)
-				{
-					case EnvironmentMode.Design:
-						return FilterDesignProperties(properties);
-					case EnvironmentMode.Runtime:
-						return FilterRuntimeProperties(properties);
-					default:
-						throw new NotSupportedException();
-				}
-			}
-
-			return properties;
-		}
-
-		private static PropertyInfo[] FilterDesignProperties(PropertyInfo[] properties)
-		{
-			var r = new List<PropertyInfo>();
-
-			foreach (var i in properties)
-			{
-				var env = i.FindAttribute<EnvironmentVisibilityAttribute>();
-
-				if (env == null || ((env.Visibility & EnvironmentMode.Design) == EnvironmentMode.Design))
-					r.Add(i);
-			}
-
-			return r.ToArray();
-		}
-
-		private static PropertyInfo[] FilterRuntimeProperties(PropertyInfo[] properties)
-		{
-			var r = new List<PropertyInfo>();
-
-			foreach (var i in properties)
-			{
-				var env = i.FindAttribute<EnvironmentVisibilityAttribute>();
-
-				if (env != null && ((env.Visibility & EnvironmentMode.Runtime) == EnvironmentMode.Runtime))
-					r.Add(i);
-			}
-
-			return r.ToArray();
 		}
 
 		public static string Path(IDomElement element)

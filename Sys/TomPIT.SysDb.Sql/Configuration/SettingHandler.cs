@@ -2,52 +2,58 @@
 using System.Linq;
 using TomPIT.Configuration;
 using TomPIT.Data.Sql;
-using TomPIT.Environment;
 using TomPIT.SysDb.Management;
 
 namespace TomPIT.SysDb.Sql.Configuration
 {
 	internal class SettingHandler : ISettingHandler
 	{
-		public void Delete(IResourceGroup resourceGroup, string name)
+		public void Delete(ISetting setting)
 		{
-			var d = Select(resourceGroup, name);
+			using var p = new Writer("tompit.setting_del");
 
-			if (d == null)
-				return;
-
-			var p = new Writer("tompit.setting_del");
-
-			p.CreateParameter("@resource_group", resourceGroup == null ? 0 : resourceGroup.GetId(), true);
-			p.CreateParameter("@name", name);
+			p.CreateParameter("@id", setting.GetId());
 
 			p.Execute();
 		}
 
 		public List<ISetting> Query()
 		{
-			return new Reader<Setting>("tompit.setting_que").Execute().ToList<ISetting>();
+			using var r = new Reader<Setting>("tompit.setting_que");
+
+			return r.Execute().ToList<ISetting>();
 		}
 
-		public ISetting Select(IResourceGroup resourceGroup, string name)
+		public ISetting Select(string name, string nameSpace, string type, string primaryKey)
 		{
-			var p = new Reader<Setting>("tompit.setting_sel");
+			using var p = new Reader<Setting>("tompit.setting_sel");
 
-			p.CreateParameter("@resource_group", resourceGroup == null ? 0 : resourceGroup.GetId(), true);
 			p.CreateParameter("@name", name);
+			p.CreateParameter("@type", type, true);
+			p.CreateParameter("@primary_key", primaryKey, true);
+			p.CreateParameter("@namespace", nameSpace, true);
 
 			return p.ExecuteSingleRow();
 		}
 
-		public void Update(IResourceGroup resourceGroup, string name, string value, bool visible, DataType dataType, string tags)
+		public void Insert(string name, string nameSpace, string type, string primaryKey, string value)
 		{
-			var w = new Writer("tompit.setting_mdf");
+			using var w = new Writer("tompit.setting_ins");
 
-			w.CreateParameter("@resource_group", resourceGroup == null ? 0 : resourceGroup.GetId(), true);
 			w.CreateParameter("@name", name);
-			w.CreateParameter("@visible", visible);
-			w.CreateParameter("@data_type", dataType);
-			w.CreateParameter("@tags", tags, true);
+			w.CreateParameter("@type", type, true);
+			w.CreateParameter("@primary_key", primaryKey, true);
+			w.CreateParameter("@value", value, true);
+			w.CreateParameter("@namespace", nameSpace, true);
+
+			w.Execute();
+		}
+
+		public void Update(ISetting setting, string value)
+		{
+			using var w = new Writer("tompit.setting_upd");
+
+			w.CreateParameter("@id", setting.GetId());
 			w.CreateParameter("@value", value, true);
 
 			w.Execute();

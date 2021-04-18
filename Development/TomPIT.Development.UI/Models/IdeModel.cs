@@ -3,11 +3,13 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
+using TomPIT.Design;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide;
-using TomPIT.Ide.Collections;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers.ActionResults;
-using TomPIT.Ide.Dom;
 using TomPIT.Ide.Models;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
@@ -50,7 +52,7 @@ namespace TomPIT.Development.Models
 
 		protected override void OnDatabinding()
 		{
-			Title = MicroService.Name;
+			Title = MicroService?.Name;
 		}
 
 		protected override IDesignerActionResult CreateItem(JObject data)
@@ -89,12 +91,12 @@ namespace TomPIT.Development.Models
 
 			var ms = DomQuery.Closest<IMicroServiceScope>(selection);
 			var category = descriptor.Value == null ? descriptor.Id.ToString() : descriptor.Value.ToString();
-			var id = Tenant.GetService<IComponentDevelopmentService>().Insert(ms.MicroService.Token, fs == null ? Guid.Empty : fs.Token, category, name, descriptor.Type.TypeName());
+			var id = Tenant.GetService<IDesignService>().Components.Insert(ms.MicroService.Token, fs == null ? Guid.Empty : fs.Token, category, name, descriptor.Type.TypeName());
 
 			config.Component = id;
 
 			IdeExtensions.ProcessComponentCreated(this, config);
-			Tenant.GetService<IComponentDevelopmentService>().Update(config);
+			Tenant.GetService<IDesignService>().Components.Update(config);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 			var target = fs == null ? selection.Root() : selection.Closest<IFolderScope>() as IDomElement;
@@ -121,7 +123,7 @@ namespace TomPIT.Development.Models
 				parent = fs.Token;
 
 			var ms = DomQuery.Closest<IMicroServiceScope>(selection);
-			var id = Tenant.GetService<IComponentDevelopmentService>().InsertFolder(ms.MicroService.Token, name, parent);
+			var id = Tenant.GetService<IDesignService>().Components.InsertFolder(ms.MicroService.Token, name, parent);
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 
 			var target = fs == null ? selection.Root() : selection.Closest<IFolderScope>() as IDomElement;
@@ -150,7 +152,7 @@ namespace TomPIT.Development.Models
 				return Result.EmptyResult(this);
 
 			var path = DomQuery.Path(Selection.Element);
-			Tenant.GetService<IComponentDevelopmentService>().DeleteFolder(DomQuery.Closest<IMicroServiceScope>(Selection.Element).MicroService.Token, folder.Token);
+			Tenant.GetService<IDesignService>().Components.DeleteFolder(DomQuery.Closest<IMicroServiceScope>(Selection.Element).MicroService.Token, folder.Token, true);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 
@@ -174,7 +176,7 @@ namespace TomPIT.Development.Models
 				return Result.EmptyResult(this);
 
 			var path = DomQuery.Path(Selection.Element);
-			Tenant.GetService<IComponentDevelopmentService>().Delete(component);
+			Tenant.GetService<IDesignService>().Components.Delete(component);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Explorer);
 
@@ -226,12 +228,38 @@ namespace TomPIT.Development.Models
 
 		private void MoveComponent(IComponent component, Guid folder)
 		{
-			Tenant.GetService<IComponentDevelopmentService>().Update(component.Token, component.Name, folder);
+			Tenant.GetService<IDesignService>().Components.Update(component.Token, component.Name, folder);
 		}
 
 		private void MoveFolder(IFolder f, Guid folder)
 		{
-			Tenant.GetService<IComponentDevelopmentService>().UpdateFolder(f.MicroService, f.Token, f.Name, folder);
+			Tenant.GetService<IDesignService>().Components.UpdateFolder(f.MicroService, f.Token, f.Name, folder);
+		}
+
+		public override IDesignerActionResult Action(JObject data)
+		{
+			var action = data.Optional("action", string.Empty);
+
+			if (string.IsNullOrWhiteSpace(action))
+				throw IdeException.ExpectedParameter(this, 0, "action");
+
+			if (string.Compare(action, "clone", true) == 0)
+			{
+				return Result.JsonResult(this, new
+				{
+					Component = CloneComponent(data)
+				});
+			}
+
+			return base.Action(data);
+		}
+
+		private Guid CloneComponent(JObject data)
+		{
+			var folder = data.Optional("folder", Guid.Empty);
+			var component = data.Required<Guid>("component");
+
+			return Context.Tenant.GetService<IDesignService>().Components.Clone(component, MicroService.Token, folder);
 		}
 	}
 }

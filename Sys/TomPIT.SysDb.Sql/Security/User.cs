@@ -25,6 +25,7 @@ namespace TomPIT.SysDb.Sql.Security
 		public Guid Avatar { get; set; }
 		public DateTime PasswordChange { get; set; }
 		public bool HasPassword { get; set; }
+		public string SecurityCode { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -49,6 +50,7 @@ namespace TomPIT.SysDb.Sql.Security
 			Avatar = GetGuid("avatar");
 			PasswordChange = GetDate("password_change");
 			HasPassword = !string.IsNullOrWhiteSpace(GetString("password"));
+			SecurityCode = GetString("security_code");
 		}
 	}
 }

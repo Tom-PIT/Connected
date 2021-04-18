@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
+using TomPIT.Design;
+using TomPIT.Design.Ide.Designers;
 using TomPIT.Ide;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
-using TomPIT.Ide.VersionControl;
 using TomPIT.Security;
 
 namespace TomPIT.Development.Designers
@@ -30,7 +31,7 @@ namespace TomPIT.Development.Designers
 			get
 			{
 				if (_changes == null)
-					_changes = Environment.Context.Tenant.GetService<IVersionControlService>().Changes();
+					_changes = Environment.Context.Tenant.GetService<IDesignService>().VersionControl.Changes();
 
 				return _changes;
 			}
@@ -65,7 +66,7 @@ namespace TomPIT.Development.Designers
 			foreach (JValue i in a)
 				r.Add(Types.Convert<Guid>(i.Value));
 
-			Environment.Context.Tenant.GetService<IVersionControlService>().Commit(r, comment);
+			Environment.Context.Tenant.GetService<IDesignService>().VersionControl.Commit(r, comment);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer);
 		}
@@ -78,7 +79,7 @@ namespace TomPIT.Development.Designers
 			foreach (JValue i in a)
 				r.Add(Types.Convert<Guid>(i.Value));
 
-			Environment.Context.Tenant.GetService<IVersionControlService>().Undo(r);
+			Environment.Context.Tenant.GetService<IDesignService>().VersionControl.Undo(r);
 
 			return Result.SectionResult(this, EnvironmentSection.Designer);
 		}

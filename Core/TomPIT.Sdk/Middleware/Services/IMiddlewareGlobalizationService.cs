@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using AA = TomPIT.Annotations.Design.AnalyzerAttribute;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Services
@@ -8,12 +10,18 @@ namespace TomPIT.Middleware.Services
 		DateTime FromUtc(DateTime value);
 		DateTime ToUtc(DateTime value);
 
+		DateTimeOffset FromUtc(DateTimeOffset value);
+		DateTimeOffset ToUtc(DateTimeOffset value);
+
 		TimeZoneInfo Timezone { get; }
 
 		Guid Language { get; }
-		string GetString([CIP(CIP.StringTableProvider)]string stringTable, [CIP(CIP.StringTableStringProvider)]string key);
-		string GetString([CIP(CIP.StringTableProvider)]string stringTable, [CIP(CIP.StringTableStringProvider)]string key, int lcid);
-		string TryGetString([CIP(CIP.StringTableProvider)]string stringTable, [CIP(CIP.StringTableStringProvider)]string key);
-		string TryGetString([CIP(CIP.StringTableProvider)]string stringTable, [CIP(CIP.StringTableStringProvider)]string key, int lcid);
+		CultureInfo Culture { get; }
+		string GetString([CIP(CIP.StringTableProvider)][AA(AA.StringTableAnalyzer)] string stringTable, [CIP(CIP.StringTableStringProvider)][AA(AA.StringAnalyzer)] string key);
+		string GetString([CIP(CIP.StringTableProvider)][AA(AA.StringTableAnalyzer)] string stringTable, [CIP(CIP.StringTableStringProvider)][AA(AA.StringAnalyzer)] string key, int lcid);
+		string TryGetString([CIP(CIP.StringTableProvider)][AA(AA.StringTableAnalyzer)] string stringTable, [CIP(CIP.StringTableStringProvider)][AA(AA.StringAnalyzer)] string key);
+		string TryGetString([CIP(CIP.StringTableProvider)][AA(AA.StringTableAnalyzer)] string stringTable, [CIP(CIP.StringTableStringProvider)][AA(AA.StringAnalyzer)] string key, int lcid);
+
+		DateTimeOffset Now { get; }
 	}
 }

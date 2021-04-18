@@ -7,33 +7,40 @@ using TomPIT.ComponentModel.Data;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Exceptions;
+using TomPIT.Serialization;
 
 namespace TomPIT.Middleware
 {
 	internal class MiddlewareConnectionPool : ConcurrentDictionary<MiddlewareContext, List<DataConnectionDescriptor>>, IDisposable
 	{
 		private int Identity { get; set; }
-		public IDataConnection OpenConnection(MiddlewareContext sender, string connection, ConnectionBehavior behavior)
+		public IDataConnection OpenConnection(MiddlewareContext sender, string connection, ConnectionBehavior behavior, object arguments)
 		{
+			if (sender.Transaction.State == MiddlewareTransactionState.Completed)
+				behavior = ConnectionBehavior.Isolated;
+
 			var descriptor = ComponentDescriptor.Connection(sender, connection);
 
 			descriptor.Validate();
 
+			var connectionConfiguration = descriptor.Configuration;
+			var connectionString = connectionConfiguration.ResolveConnectionString(sender, ConnectionStringContext.User, arguments);
+
 			var existing = behavior == ConnectionBehavior.Shared
-				? TryExisting(sender, connection, descriptor.Configuration)
+				? TryExisting(sender, connectionString, arguments)
 				: null;
 
 			if (existing != null)
 				return existing.Connection;
 
 			if (sender.Owner != null)
-				return sender.Owner.OpenConnection(connection, behavior);
+				return sender.Owner.OpenConnection(connection, behavior, arguments);
 
-			var dataProvider = CreateDataProvider(sender, descriptor.Configuration);
-			var con = dataProvider.OpenConnection(descriptor.Configuration.Value, behavior);
+			var dataProvider = CreateDataProvider(sender, connectionConfiguration, connectionString.DataProvider);
+			var con = dataProvider.OpenConnection(sender, connectionString.Value, behavior);
 
 			if (behavior == ConnectionBehavior.Shared)
-				AddConnection(sender, dataProvider, descriptor.Configuration.Value, con);
+				AddConnection(sender, dataProvider, connectionString.Value, arguments, con);
 
 			return con;
 		}
@@ -46,7 +53,7 @@ namespace TomPIT.Middleware
 					connection.Connection.Close();
 			}
 		}
-		private void AddConnection(MiddlewareContext context, IDataProvider provider, string connectionString, IDataConnection connection)
+		private void AddConnection(MiddlewareContext context, IDataProvider provider, string connectionString, object arguments, IDataConnection connection)
 		{
 			List<DataConnectionDescriptor> items = null;
 
@@ -58,21 +65,34 @@ namespace TomPIT.Middleware
 				TryAdd(context, items);
 			}
 
-			items.Add(new DataConnectionDescriptor
+			lock (items)
 			{
-				Connection = connection,
-				ConnectionString = connectionString,
-				DataProvider = provider,
-				Id = Identity++
-			});
+				items.Add(new DataConnectionDescriptor
+				{
+					Connection = connection,
+					ConnectionString = connectionString,
+					DataProvider = provider,
+					Arguments = arguments == null ? string.Empty : Serializer.Serialize(arguments),
+					Id = Identity++
+				});
+			}
 		}
 
-		private DataConnectionDescriptor TryExisting(MiddlewareContext context, string connection, IConnectionConfiguration configuration)
+		private DataConnectionDescriptor TryExisting(MiddlewareContext context, IConnectionString connectionString, object arguments)
 		{
 			if (!ContainsKey(context))
 				return null;
 
-			return this[context].FirstOrDefault(f => f.DataProvider.Id == configuration.DataProvider && string.Compare(f.ConnectionString, configuration.Value, true) == 0);
+			var args = arguments == null ? string.Empty : Serializer.Serialize(arguments);
+
+			var items = this[context];
+
+			lock (items)
+			{
+				return items.FirstOrDefault(f => f.DataProvider.Id == connectionString.DataProvider
+					&& string.Compare(f.ConnectionString, connectionString.Value, true) == 0
+					&& string.Compare(f.Arguments, args, true) == 0);
+			}
 		}
 
 		/// <summary>
@@ -80,12 +100,12 @@ namespace TomPIT.Middleware
 		/// </summary>
 		/// <param name="connection">A connection instance which holds the information about its data provider</param>
 		/// <returns>IDataProvider instance is a valid one is found.</returns>
-		protected IDataProvider CreateDataProvider(IMiddlewareContext context, IConnectionConfiguration connection)
+		protected IDataProvider CreateDataProvider(IMiddlewareContext context, IConnectionConfiguration connection, Guid dataProvider)
 		{
 			/*
 			 * Connection is not properly configured. We just notify the user about the issue.
 			 */
-			if (connection.DataProvider == Guid.Empty)
+			if (dataProvider == Guid.Empty)
 			{
 				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionDataProviderNotSet, connection.ComponentName()))
 				{
@@ -94,7 +114,7 @@ namespace TomPIT.Middleware
 				};
 			}
 
-			var provider = context.Tenant.GetService<IDataProviderService>().Select(connection.DataProvider);
+			var provider = context.Tenant.GetService<IDataProviderService>().Select(dataProvider);
 			/*
 			 * Connection has invalid data provider set. This can be for various reasons:
 			 * --------------------------------------------------------------------------
@@ -103,7 +123,7 @@ namespace TomPIT.Middleware
 			 */
 			if (provider == null)
 			{
-				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionDataProviderNotFound, provider.Name))
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrConnectionDataProviderNotFound, connection.ComponentName()))
 				{
 					Component = connection.Component,
 					EventId = MiddlewareEvents.OpenConnection
@@ -117,8 +137,8 @@ namespace TomPIT.Middleware
 		{
 			foreach (var context in this)
 			{
-				foreach (var connection in context.Value)
-					connection.Connection.Dispose();
+				foreach (var connection in DataConnections)
+					connection.Dispose();
 			}
 
 			Clear();

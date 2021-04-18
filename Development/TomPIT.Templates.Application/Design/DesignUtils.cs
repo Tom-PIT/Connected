@@ -8,6 +8,7 @@
 		private const string DevelopmentAssembly = "TomPIT.Development";
 
 		public const string ComponentApi = "Api";
+		public const string ComponentModel = "Model";
 		public const string ComponentEvent = "Event";
 		public const string ComponentConnection = "Connection";
 		public const string ComponentFeature = "Feature";
@@ -16,6 +17,7 @@
 		public const string TestScenario = "Scenario";
 		public const string TestCase = "TestCase";
 		public const string EmbeddedAssembly = "EmbeddedAssembly";
+		public const string Package = "Package";
 		public const string Assembly = "Assembly";
 		public const string MediaFile = "MediaFile";
 		public const string Folder = "Folder";
@@ -36,14 +38,10 @@
 		public const string DataProviderItems = "TomPIT.MicroServices.Design.Items.DataProviderItems, " + DesignAssembly;
 		public const string EventBindingsItems = "TomPIT.MicroServices.Design.Items.EventBindingsCollection, " + DesignAssembly;
 		public const string FeaturesItems = "TomPIT.MicroServices.Design.Items.FeaturesCollection, " + DesignAssembly;
-		public const string ScenariosItems = "TomPIT.MicroServices.Design.Items.TestScenariosCollection, " + DesignAssembly;
-		public const string TestCasesItems = "TomPIT.MicroServices.Design.Items.TestCasesCollection, " + DesignAssembly;
 		public const string ScriptSourceItems = "TomPIT.MicroServices.Design.Items.ScriptSourceCollection, " + DesignAssembly;
 		public const string StylesheetItems = "TomPIT.MicroServices.Design.Items.StylesheetCollection, " + DesignAssembly;
 		public const string ScriptItems = "TomPIT.MicroServices.Design.Items.ScriptCollection, " + DesignAssembly;
 		public const string EventItems = "TomPIT.MicroServices.Design.Items.EventItems, " + DesignAssembly;
-		public const string DataHubEndpointItems = "TomPIT.MicroServices.Design.Items.DataHubEndpointCollection, " + DesignAssembly;
-		public const string DataHubEndpointPolicyItems = "TomPIT.MicroServices.Design.Items.DataHubEndpointPolicyCollection, " + DesignAssembly;
 		public const string DistributedEventItems = "TomPIT.MicroServices.Design.Items.DistributedEventCollection, " + DesignAssembly;
 		public const string IoCOperationItems = "TomPIT.MicroServices.Design.Items.IoCOperationCollection, " + DesignAssembly;
 		public const string DependencyInjectionsItems = "TomPIT.MicroServices.Design.Items.DependencyInjectionsCollection, " + DesignAssembly;
@@ -53,6 +51,8 @@
 		public const string MasterItems = "TomPIT.MicroServices.Design.Items.MasterItems, " + DesignAssembly;
 		public const string QueueWorkerItems = "TomPIT.MicroServices.Design.Items.QueueWorkersCollection, " + DesignAssembly;
 		public const string IoCEndpointItems = "TomPIT.MicroServices.Design.Items.IoCEndpointCollection, " + DesignAssembly;
+		public const string ModelOperationItems = "TomPIT.MicroServices.Design.Items.ModelOperationsCollection, " + DesignAssembly;
+		public const string ModelViewItems = "TomPIT.MicroServices.Design.Items.ModelViewsCollection, " + DesignAssembly;
 		public const string ApiOperationListItems = "TomPIT.MicroServices.Design.Items.ApiOperationsItems, " + DesignAssembly;
 		public const string ApiElement = "TomPIT.MicroServices.Design.Dom.ApiElement, " + DesignAssembly;
 		public const string ApiOperationElement = "TomPIT.MicroServices.Design.Dom.ApiOperationElement, " + DesignAssembly;
@@ -62,17 +62,21 @@
 		public const string SearchCatalogListItems = "TomPIT.MicroServices.Design.Items.SearchCatalogItems, " + DesignAssembly;
 		public const string SubscriptionListItems = "TomPIT.MicroServices.Design.Items.SubscriptionItems, " + DesignAssembly;
 		public const string SubscriptionEventListItems = "TomPIT.MicroServices.Design.Items.SubscriptionEventItems, " + DesignAssembly;
+		public const string ConnectionListItems = "TomPIT.MicroServices.Design.Items.ConnectionItems, " + DesignAssembly;
 
-		public const string ApiManifest = "TomPIT.Reflection.Manifests.Providers.ApiManifestProvider, " + SdkAssembly;
-		public const string IoCManifest = "TomPIT.Reflection.Manifests.Providers.IoCManifestProvider, " + SdkAssembly;
+		public const string ApiManifest = "TomPIT.Reflection.Providers.ApiManifestProvider, " + SdkAssembly;
+		public const string IoCManifest = "TomPIT.Reflection.Providers.IoCManifestProvider, " + SdkAssembly;
+		public const string SettingsManifest = "TomPIT.Reflection.Providers.SettingsManifestProvider, " + SdkAssembly;
 
-		public const string ApiOperationCreateHandler = "TomPIT.Development.Handlers.ApiOperationCreateHandler, " + SdkAssembly;
 		public const string MasterCreateHandler = "TomPIT.Handlers.MasterCreateHandler, " + DevelopmentAssembly;
 		public const string ScriptCreateHandler = "TomPIT.Handlers.ScriptCreateHandler, " + DevelopmentAssembly;
-		public const string ScriptBundleHandler = "TomPIT.Development.Handlers.ScriptBundleCreateHandler, " + DevelopmentAssembly;
+		public const string ScriptBundleHandler = "TomPIT.MicroServices.Design.CreateHandlers.ScriptBundle, " + DesignAssembly;
+		public const string ViewCreateHandler = "TomPIT.MicroServices.Design.CreateHandlers.View, " + DesignAssembly;
+		public const string PartialCreateHandler = "TomPIT.MicroServices.Design.CreateHandlers.Partial, " + DesignAssembly;
 
 		public const string ScheduleDesigner = "TomPIT.Management.Designers.ScheduleDesigner, " + ManagementAssembly;
 		public const string AssemblyEmbeddedDesigner = "TomPIT.MicroServices.Design.Designers.AssemblyEmbeddedDesigner, " + DesignAssembly;
+		public const string NuGetPackageEmbeddedDesigner = "TomPIT.MicroServices.Design.Designers.NuGetPackageEmbeddedDesigner, " + DesignAssembly;
 		public const string MediaResourceFileUploadDesigner = "TomPIT.MicroServices.Design.Designers.MediaResourceFileUploadDesigner, " + DesignAssembly;
 		public const string MediaDesigner = "TomPIT.MicroServices.Design.Designers.MediaDesigner, " + DesignAssembly;
 		public const string ScriptUploadDesigner = "TomPIT.MicroServices.Design.Designers.ScriptUploadDesigner, " + DesignAssembly;

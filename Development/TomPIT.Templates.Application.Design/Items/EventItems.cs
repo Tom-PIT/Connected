@@ -2,9 +2,10 @@
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide;
 using TomPIT.Ide.Collections;
-using TomPIT.Ide.Dom;
 using TomPIT.Reflection;
 
 namespace TomPIT.MicroServices.Design.Items
@@ -21,7 +22,7 @@ namespace TomPIT.MicroServices.Design.Items
 
 			BindMicroService(element, items, ms.Name);
 
-			var refs = element.Environment.Context.Tenant.GetService<IDiscoveryService>().References(ms.Token);
+			var refs = element.Environment.Context.Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(ms.Token);
 
 			if (refs == null || refs.MicroServices.Count == 0)
 				return;

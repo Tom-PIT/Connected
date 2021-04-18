@@ -12,7 +12,7 @@ namespace TomPIT.Security
 				&& (result.Reason == AuthenticationResultReason.PasswordExpired || result.Reason == AuthenticationResultReason.NoPassword);
 		}
 
-		public static bool AuthorizeUrl(IMiddlewareContext context, string url)
+		public static bool AuthorizeUrl(IMiddlewareContext context, string url, Guid user, bool setResponse = true)
 		{
 			if (string.IsNullOrWhiteSpace(url))
 				return false;
@@ -21,11 +21,13 @@ namespace TomPIT.Security
 			var path = string.Empty;
 			var permissionCounter = 0;
 
-			var defaultAr = AuthorizeDefaultUrl(context);
+			var defaultAr = AuthorizeDefaultUrl(context, user);
 
 			if (!defaultAr.Success)
 			{
-				Reject(context);
+				if (setResponse)
+					Reject(context);
+
 				return false;
 			}
 
@@ -39,8 +41,8 @@ namespace TomPIT.Security
 				path += tokens[i];
 
 				var empty = i == tokens.Length - 1 ? EmptyBehavior.Deny : EmptyBehavior.Alow;
-				var token = context.Services.Identity.IsAuthenticated ? context.Services.Identity.User.Token : Guid.Empty;
-				var ar = AuthorizeUrl(context, new AuthorizationArgs(token, Claims.AccessUrl, path), empty);
+				var token = user;
+				var ar = AuthorizeUrl(context, new AuthorizationArgs(token, Claims.AccessUrl, path, "Url"), empty);
 
 				if (ar.Success)
 					permissionCounter += ar.PermissionCount;
@@ -50,7 +52,9 @@ namespace TomPIT.Security
 						return true;
 					else
 					{
-						Reject(context);
+						if (setResponse)
+							Reject(context);
+
 						return false;
 					}
 				}
@@ -59,9 +63,9 @@ namespace TomPIT.Security
 			return true;
 		}
 
-		private static IAuthorizationResult AuthorizeDefaultUrl(IMiddlewareContext context)
+		private static IAuthorizationResult AuthorizeDefaultUrl(IMiddlewareContext context, Guid user)
 		{
-			var args = new AuthorizationArgs(context.Services.Identity.IsAuthenticated ? context.Services.Identity.User.Token : Guid.Empty, Claims.DefaultAccessUrl, 0.ToString(), Guid.Empty);
+			var args = new AuthorizationArgs(user, Claims.DefaultAccessUrl, 0.ToString(), "Default Url");
 
 			args.Schema.Empty = EmptyBehavior.Alow;
 			args.Schema.Level = AuthorizationLevel.Pessimistic;
@@ -71,7 +75,7 @@ namespace TomPIT.Security
 
 		private static IAuthorizationResult AuthorizeUrl(IMiddlewareContext context, AuthorizationArgs e, EmptyBehavior empty)
 		{
-			var args = new AuthorizationArgs(e.User, Claims.AccessUrl, e.PrimaryKey, Guid.Empty);
+			var args = new AuthorizationArgs(e.User, Claims.AccessUrl, e.PrimaryKey, "Url");
 
 			args.Schema.Empty = empty;
 			args.Schema.Level = AuthorizationLevel.Pessimistic;

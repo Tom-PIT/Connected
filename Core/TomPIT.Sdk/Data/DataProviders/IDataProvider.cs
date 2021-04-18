@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Data;
-using Newtonsoft.Json.Linq;
-using TomPIT.Deployment;
-using TomPIT.Deployment.Database;
+using System.Collections.Generic;
+using TomPIT.Middleware;
 
 namespace TomPIT.Data.DataProviders
 {
@@ -10,19 +8,18 @@ namespace TomPIT.Data.DataProviders
 	/// Defines contract for implementing DataProvider which interacts with physical
 	/// data storages.
 	/// </summary>
-	public interface IDataProvider
+	public interface IDataProvider : IDisposable
 	{
 		/// <summary>
 		/// Returns records based on specified criteria.
 		/// </summary>
 		/// <param name="command">This parameter contains data needed for connecting
 		/// and querying physical data source.</param>
-		/// <param name="schema">Preferred schema that should be used when returning
-		/// results. Implementators should use this parameter for resolving
-		/// which data fields they should return as part of the result set.</param>
 		/// <returns></returns>
-		JObject Query(IDataCommandDescriptor command, DataTable schema);
-		JObject Query(IDataCommandDescriptor command, DataTable schema, IDataConnection connection);
+		List<R> Query<R>(IMiddlewareContext context, IDataCommandDescriptor command);
+		List<R> Query<R>(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection);
+		R Select<R>(IMiddlewareContext context, IDataCommandDescriptor command);
+		R Select<R>(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection);
 		/// <summary>
 		/// Executes transaction command on the physical data storage.
 		/// </summary>
@@ -31,7 +28,7 @@ namespace TomPIT.Data.DataProviders
 		/// <param name="connection">This parameter can be null. If passed non null
 		/// reference implementators should use this connection instead of opening 
 		/// a new one.</param>
-		void Execute(IDataCommandDescriptor command, IDataConnection connection);
+		int Execute(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection);
 		/// <summary>
 		/// Id of the DataProvider which is used by data source and transaction
 		/// components to referring to the specific provider.
@@ -49,15 +46,7 @@ namespace TomPIT.Data.DataProviders
 		/// <param name="connectionString">The actual connection string of the data source 
 		/// to connect to.</param>
 		/// <returns></returns>
-		IDataConnection OpenConnection(string connectionString, ConnectionBehavior behavior);
-
-		//IDeploymentDatabase CreateDatabasePackage(string connectionString);
-		//void DeployPackage(string connectionString, IDeploymentDatabase package);
-
-		bool SupportsDeploy { get; }
-		IDatabase CreateSchema(string connectionString);
-		void Deploy(IDatabaseDeploymentContext context);
-		void TestConnection(string connectionString);
-		void CreateDatabase(string connectionString);
+		IDataConnection OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior);
+		void TestConnection(IMiddlewareContext context, string connectionString);
 	}
 }

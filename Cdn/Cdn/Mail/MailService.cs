@@ -12,18 +12,17 @@ namespace TomPIT.Cdn.Mail
 {
 	internal class MailService : HostedService
 	{
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
 		private Lazy<List<MailDispatcher>> _dispatchers = new Lazy<List<MailDispatcher>>();
 
 		private void OnSettingChanged(object sender, SettingEventArgs e)
 		{
-			if (e.ResourceGroup == Guid.Empty && string.Compare(e.Name, "MailServiceTimer", true) == 0)
+			if (string.Compare(e.Name, "MailServiceTimer", true) == 0 && string.IsNullOrWhiteSpace(e.Type) && string.IsNullOrWhiteSpace(e.PrimaryKey))
 				SetInterval();
 		}
 
-		protected override bool Initialize()
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
-			if (Instance.State == InstanceState.Initialining)
+			if (Instance.State == InstanceState.Initializing)
 				return false;
 
 			SetInterval();
@@ -31,13 +30,13 @@ namespace TomPIT.Cdn.Mail
 			MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().SettingChanged += OnSettingChanged;
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new MailDispatcher(i, _cancel));
+				Dispatchers.Add(new MailDispatcher(i));
 
 			return true;
 		}
 		private void SetInterval()
 		{
-			var interval = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<int>(Guid.Empty, "MailServiceTimer");
+			var interval = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<int>("MailServiceTimer", null, null, null);
 
 			if (interval == 0)
 				interval = 5000;
@@ -45,7 +44,7 @@ namespace TomPIT.Cdn.Mail
 			IntervalTimeout = TimeSpan.FromMilliseconds(interval);
 		}
 
-		protected override Task Process()
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -58,16 +57,34 @@ namespace TomPIT.Cdn.Mail
 
 				var messages = MiddlewareDescriptor.Current.Tenant.Post<List<MailMessage>>(url, e);
 
+				if (cancel.IsCancellationRequested)
+					return;
+
 				if (messages == null)
 					return;
 
 				foreach (var i in messages)
+				{
+					if (cancel.IsCancellationRequested)
+						return;
+
 					f.Enqueue(i);
+				}
 			});
 
 			return Task.CompletedTask;
 		}
 
 		private List<MailDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+
+		public override void Dispose()
+		{
+			foreach (var dispatcher in Dispatchers)
+				dispatcher.Dispose();
+
+			Dispatchers.Clear();
+
+			base.Dispose();
+		}
 	}
 }

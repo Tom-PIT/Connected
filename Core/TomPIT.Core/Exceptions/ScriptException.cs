@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using TomPIT.ComponentModel;
 using TomPIT.Reflection;
 
 namespace TomPIT.Exceptions
@@ -15,6 +16,21 @@ namespace TomPIT.Exceptions
 			ExceptionSender = sender;
 			Source = ResolveSource();
 			Line = ResolveLine(inner);
+
+			if (inner != null)
+			{
+				if (inner.Data.Contains("MicroService"))
+					MicroService = ((IMicroService)inner.Data["MicroService"]).Name;
+
+				if (string.IsNullOrWhiteSpace(Source))
+				{
+					if (inner.Data.Contains("Script"))
+						Source = inner.Data["Script"].ToString();
+				}
+			}
+
+			if (string.IsNullOrWhiteSpace(Path))
+				Path = Source;
 		}
 
 		public ScriptException(string source, string message, string line, string path, string microService, Guid component, Guid element) : base(source, message)
@@ -86,7 +102,7 @@ namespace TomPIT.Exceptions
 
 					var fileToken = tokens[tokens.Length - 2];
 
-					if (!fileToken.Trim().EndsWith("csx") && fileToken.Trim().EndsWith("cshtml"))
+					if (!fileToken.Trim().EndsWith("csx") && !fileToken.Trim().EndsWith("cshtml"))
 						continue;
 
 					var lineToken = tokens[^1].Split(' ');

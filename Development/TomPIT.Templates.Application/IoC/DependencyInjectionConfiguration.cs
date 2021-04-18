@@ -1,4 +1,5 @@
-﻿using TomPIT.Annotations.Design;
+﻿using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoC;
@@ -21,5 +22,8 @@ namespace TomPIT.MicroServices.IoC
 				return _injections;
 			}
 		}
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
 	}
 }

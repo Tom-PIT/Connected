@@ -6,7 +6,7 @@ using System.Linq;
 using TomPIT.BigData.Nodes;
 using TomPIT.BigData.Partitions;
 using TomPIT.BigData.Persistence;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Middleware;
 
 namespace TomPIT.BigData.Transactions
@@ -28,7 +28,7 @@ namespace TomPIT.BigData.Transactions
 		private string PartitionKey { get; }
 		private IUpdateProvider Provider { get; }
 		private DataTable Data { get; }
-		public DataTable Locked { get; set; }
+		public bool Locked { get; set; }
 		private static PartitionFileManager FileManager => _fileManager.Value;
 
 		public void Merge()
@@ -46,7 +46,8 @@ namespace TomPIT.BigData.Transactions
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("BigData", ex.Source, ex.Message);
+				Dump(ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, "BigData");
 
 				throw;
 			}
@@ -59,12 +60,10 @@ namespace TomPIT.BigData.Transactions
 		private List<DataFileContext> CreateDataFileContext()
 		{
 			var r = new List<DataFileContext>();
-
 			var minValue = Data.Compute(string.Format("Min({0})", TimestampColumn), string.Empty);
 			var maxValue = Data.Compute(string.Format("Max({0})", TimestampColumn), string.Empty);
-
-			DateTime min = minValue == null || minValue == DBNull.Value ? DateTime.UtcNow : (DateTime)minValue;
-			DateTime max = maxValue == null || maxValue == DBNull.Value ? DateTime.UtcNow : (DateTime)maxValue;
+			var min = minValue == null || minValue == DBNull.Value ? DateTime.UtcNow : (DateTime)minValue;
+			var max = maxValue == null || maxValue == DBNull.Value ? DateTime.UtcNow : (DateTime)maxValue;
 			/*
 			 * performance gain
 			 * we'll select all rows at once which targets our data and then
@@ -89,7 +88,7 @@ namespace TomPIT.BigData.Transactions
 
 				if (r.Count == 0)
 				{
-					var dfc = CreateDataFileContext(timestampValue);
+					var dfc = CreateDataFileContext(timestampValue, min, max);
 					/*
 					 * if context can't be acquired it is possible that we have a locking 
 					 * issue. transaction will probably be postponed
@@ -97,6 +96,8 @@ namespace TomPIT.BigData.Transactions
 					if (dfc == null)
 					{
 						ReleaseLocks(r);
+						Locked = true;
+						Dump($"{dfc.File.FileName} locked");
 						return null;
 					}
 
@@ -114,11 +115,14 @@ namespace TomPIT.BigData.Transactions
 
 				if (targetFiles.Count() == 0)
 				{
-					var dfc = CreateDataFileContext(timestampValue);
+					Dump($"no target files");
+					var dfc = CreateDataFileContext(timestampValue, min, max);
 
 					if (dfc == null)
 					{
 						ReleaseLocks(r);
+						Locked = true;
+						Dump($"{dfc.File.FileName} locked (in target files)");
 						return null;
 					}
 
@@ -142,6 +146,8 @@ namespace TomPIT.BigData.Transactions
 						if (j.Lock == Guid.Empty)
 						{
 							ReleaseLocks(r);
+							Locked = true;
+							Dump($"{j.File.FileName} locked");
 							return null;
 						}
 					}
@@ -157,7 +163,7 @@ namespace TomPIT.BigData.Transactions
 				 * we'll create a new empty bock instead and this will allow us to
 				 * safely complete the last merge on empty block.
 				 */
-				bool full = true;
+				var full = true;
 
 				foreach (var j in targetFiles)
 				{
@@ -170,11 +176,13 @@ namespace TomPIT.BigData.Transactions
 
 				if (full)
 				{
-					var file = CreateDataFileContext(timestampValue);
+					var file = CreateDataFileContext(timestampValue, min, max);
 
 					if (file == null)
 					{
 						ReleaseLocks(r);
+						Locked = true;
+						Dump($"cannot obtain lock");
 						return null;
 					}
 
@@ -188,29 +196,55 @@ namespace TomPIT.BigData.Transactions
 			return r.OrderBy(f => f.File.Status).ThenBy(f => f.File.StartTimestamp).ToList();
 		}
 
-		private DataFileContext CreateDataFileContext(DateTime timestamp)
+		private DataFileContext CreateDataFileContext(DateTime timestamp, DateTime min, DateTime max)
 		{
-			var fileId = FileManager.CreateFile(Provider.Block.Partition, PartitionKey, timestamp);
+			lock (FileManager)
+			{
+				var files = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().QueryFiles(Provider.Block.Partition, PartitionKey, min, max);
+				var target = files.FirstOrDefault(f =>
+					(f.Status == PartitionFileStatus.Open || f.StartTimestamp <= timestamp)
+					&& (f.EndTimestamp == DateTime.MinValue || f.EndTimestamp >= timestamp));
 
-			if (fileId == Guid.Empty)
-			{
-				SetLocked(Data.Rows);
-				return null;
-			}
-			else
-			{
-				var dfc = new DataFileContext
+				if (target != null)
 				{
-					Data = Data.Clone(),
-					Lock = FileManager.Lock(fileId),
-				};
+					var result = new DataFileContext
+					{
+						Data = Data.Clone(),
+						Lock = FileManager.Lock(target.FileName)
+					};
 
-				if (dfc.Lock == Guid.Empty)
+					if (result.Lock == Guid.Empty)
+						return null;
+
+					return result;
+				}
+
+				Dump($"creating new file");
+				var fileId = FileManager.CreateFile(Provider.Block.Partition, PartitionKey, timestamp);
+
+				if (fileId == Guid.Empty)
+				{
+					Dump($"create new file rejected");
 					return null;
+				}
+				else
+				{
+					var dfc = new DataFileContext
+					{
+						Data = Data.Clone(),
+						Lock = FileManager.Lock(fileId),
+					};
 
-				dfc.File = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().SelectFile(fileId);
+					if (dfc.Lock == Guid.Empty)
+					{
+						Dump($"cannot obtain lock on a new file");
+						return null;
+					}
 
-				return dfc;
+					dfc.File = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().SelectFile(fileId);
+
+					return dfc;
+				}
 			}
 		}
 
@@ -219,15 +253,28 @@ namespace TomPIT.BigData.Transactions
 			for (var i = 0; i < transactions.Count; i++)
 			{
 				var transaction = transactions[i];
+				
+				Dump($"merging transaction on file {transaction.File.FileName}");
 
 				if (transaction.File.Status == PartitionFileStatus.Closed)
-					RemoveUpdated(transactions, PartialMerge(transaction));
+				{
+					Dump($"partial merge on file {transaction.File.FileName}");
+
+					var dt = PartialMerge(transaction);
+
+					Dump($"partial merge updates {Updater.ToCsv(dt)}");
+
+					RemoveUpdated(transactions, dt);
+				}
 				else
 				{
 					if (i > 0)
 						MergeRemainingRows(transaction, transactions);
 
 					var dt = FullMerge(transaction);
+
+					Dump($"full merge on file {transaction.File.FileName}");
+					Dump($"full merge updates {Updater.ToCsv(dt)}");
 
 					if (i < transactions.Count - 1)
 						RemoveUpdated(transactions, dt);
@@ -298,18 +345,6 @@ namespace TomPIT.BigData.Transactions
 			}
 		}
 
-		private void SetLocked(DataRowCollection rows)
-		{
-			if (rows == null || rows.Count == 0)
-				return;
-
-			if (Locked == null)
-				Locked = Data.Clone();
-
-			foreach (DataRow i in rows)
-				Locked.Rows.Add(i.ItemArray);
-		}
-
 		private void RemoveUpdated(IEnumerable<DataFileContext> transactions, DataTable records)
 		{
 			if (records == null || records.Rows.Count == 0)
@@ -368,6 +403,11 @@ namespace TomPIT.BigData.Transactions
 			}
 
 			return false;
+		}
+
+		private void Dump(string text)
+		{
+			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"Merger, PartitionKey:{PartitionKey}, {text}.");
 		}
 	}
 }

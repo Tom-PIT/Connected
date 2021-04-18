@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.Design;
 using TomPIT.Design.Designers;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Dom;
 using TomPIT.Ide;
 using TomPIT.Ide.ComponentModel;
-using TomPIT.Ide.Designers;
 using TomPIT.Ide.Dom;
 using TomPIT.Ide.Dom.ComponentModel;
 using TomPIT.Management.ComponentModel;
@@ -17,8 +20,8 @@ namespace TomPIT.Management.Dom
 {
 	internal class MicroServiceManagementElement : TransactionElement, IMicroServiceScope, IPermissionElement
 	{
-		private List<IFolder> _folders = null;
-		private List<IComponent> _components = null;
+		private ImmutableList<IFolder> _folders = null;
+		private ImmutableList<IComponent> _components = null;
 		private IDomDesigner _designer = null;
 		private List<string> _claims = null;
 		private IPermissionDescriptor _descriptor = null;
@@ -134,7 +137,7 @@ namespace TomPIT.Management.Dom
 
 		public string PermissionComponent => null;
 
-		private List<IFolder> Folders
+		private ImmutableList<IFolder> Folders
 		{
 			get
 			{
@@ -145,7 +148,7 @@ namespace TomPIT.Management.Dom
 			}
 		}
 
-		private List<IComponent> Components
+		private ImmutableList<IComponent> Components
 		{
 			get
 			{

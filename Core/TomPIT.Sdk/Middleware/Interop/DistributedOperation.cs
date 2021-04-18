@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using Newtonsoft.Json;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
+using TomPIT.Reflection;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Interop
@@ -13,9 +16,18 @@ namespace TomPIT.Middleware.Interop
 	{
 		private IMiddlewareCallback _callback = null;
 		private List<IOperationResponse> _responses = null;
-		protected DistributedOperation([CIP(CIP.ApiOperationProvider)]string callbackPath)
+		[Obsolete("Please use parameterless constructor")]
+		protected DistributedOperation([CIP(CIP.ApiOperationProvider)] string callbackPath)
 		{
 			CallbackPath = callbackPath;
+		}
+
+		protected DistributedOperation()
+		{
+			var component = Context.Tenant.GetService<ICompilerService>().ResolveComponent(this);
+			var ms = Context.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
+
+			CallbackPath = $"{ms.Name}/{component.Name}/{GetType().ShortName()}";
 		}
 
 		[JsonIgnore]
@@ -85,6 +97,13 @@ namespace TomPIT.Middleware.Interop
 
 		public void Invoke()
 		{
+			Invoke(null);
+		}
+		public void Invoke(IMiddlewareContext context)
+		{
+			if (context != null)
+				this.WithContext(context);
+
 			Validate();
 			OnValidating();
 
@@ -92,10 +111,14 @@ namespace TomPIT.Middleware.Interop
 			{
 				if (OperationTarget == DistributedOperationTarget.Distributed)
 				{
-					OnBeginInvoke();
+					if (Context.Environment.IsInteractive)
+					{
+						AuthorizePolicies();
+						OnAuthorizing();
+						OnAuthorize();
+					}
 
-					if (!((MiddlewareCallback)Callback).Attached)
-						Context.Services.Cdn.Events.TriggerEvent("$", this, Callback);
+					OnBeginInvoke();
 				}
 				else
 				{
@@ -107,18 +130,32 @@ namespace TomPIT.Middleware.Interop
 			}
 			catch (System.ComponentModel.DataAnnotations.ValidationException)
 			{
+				Rollback();
 				throw;
 			}
 			catch (Exception ex)
 			{
 				Rollback();
-				throw new ScriptException(this, ex);
+				var se = new ScriptException(this, TomPITException.Unwrap(this, ex));
+
+				ExceptionDispatchInfo.Capture(se).Throw();
 			}
+		}
+
+		protected internal override void OnCommitting()
+		{
+			base.OnCommitting();
+
+			if (OperationTarget == DistributedOperationTarget.Distributed && !((MiddlewareCallback)Callback).Attached)
+				Context.Services.Cdn.Events.TriggerEvent("$", this, Callback);
 		}
 
 		protected virtual void OnInvoke()
 		{
+		}
 
+		protected virtual void OnAuthorize()
+		{
 		}
 	}
 }

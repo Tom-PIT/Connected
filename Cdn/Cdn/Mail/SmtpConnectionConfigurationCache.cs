@@ -6,7 +6,6 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Services;
 
 namespace TomPIT.Cdn.Mail

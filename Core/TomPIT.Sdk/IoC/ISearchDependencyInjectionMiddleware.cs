@@ -7,8 +7,9 @@ namespace TomPIT.IoC
 	public interface ISearchDependencyInjectionMiddleware : IMiddlewareObject
 	{
 		List<ISearchEntity> Index(List<ISearchEntity> items);
-		ISearchEntity Search(ISearchEntity searchResult);
+		ISearchEntity Search(ISearchEntity searchResult, string content);
 
 		List<string> Properties { get; }
+		bool Authorize(ISearchEntity item);
 	}
 }

@@ -64,12 +64,12 @@ namespace TomPIT.Compilation
 			var sourceCode = LoadScript(resolvedPath);
 
 			if (sourceCode == null)
-				return null;
+				return new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
 
 			var content = Tenant.GetService<IComponentService>().SelectText(sourceCode.Configuration().MicroService(), sourceCode);
 
 			if (string.IsNullOrWhiteSpace(content))
-				return null;
+				return new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
 
 			return new MemoryStream(Encoding.UTF8.GetBytes(content));
 		}
@@ -84,6 +84,7 @@ namespace TomPIT.Compilation
 			 * --------------------
 			 * - Microservice/PublicScript (2)
 			 * - Microservice/Api/Operation (3)
+			 * - Microservice/AuthorizationPolicy
 			 */
 
 			if (tokens.Length == 2)
@@ -140,7 +141,7 @@ namespace TomPIT.Compilation
 			if (component == null || component.LockVerb == Development.LockVerb.Delete)
 				return null;
 
-			if (!(Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IText text))
+			if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is not IText text)
 				throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrComponentNotFound, microService, scriptName));
 
 			return text;

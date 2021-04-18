@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Ide.Dom;
-using TomPIT.Ide.Environment;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Management.Dom;
 
 namespace TomPIT.Management.Ide

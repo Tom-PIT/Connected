@@ -1,19 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 using TomPIT.Annotations;
 using TomPIT.Data;
+using TomPIT.Exceptions;
 
 namespace TomPIT.Middleware
 {
 	public abstract class MiddlewareComponent : MiddlewareObject, IMiddlewareComponent
 	{
 		private MiddlewareValidator _validator = null;
-		public MiddlewareComponent()
+		protected MiddlewareComponent()
 		{
 
 		}
 
-		public MiddlewareComponent(IMiddlewareContext context) : base(context)
+		protected MiddlewareComponent(IMiddlewareContext context) : base(context)
 		{
 		}
 
@@ -31,7 +35,7 @@ namespace TomPIT.Middleware
 		{
 			return IsValueUnique(propertyName);
 		}
-
+		[EditorBrowsable(EditorBrowsableState.Advanced)]
 		protected virtual bool IsValueUnique(string propertyName)
 		{
 			return true;
@@ -48,6 +52,7 @@ namespace TomPIT.Middleware
 		}
 
 		[SkipValidation]
+		[JsonIgnore]
 		private MiddlewareValidator Validator
 		{
 			get
@@ -55,7 +60,6 @@ namespace TomPIT.Middleware
 				if (_validator == null)
 				{
 					_validator = new MiddlewareValidator(this);
-					_validator.SetContext(Context);
 
 					_validator.Validating += OnValidating;
 				}
@@ -66,7 +70,25 @@ namespace TomPIT.Middleware
 
 		private void OnValidating(object sender, List<ValidationResult> results)
 		{
-			OnValidate(results);
+			try
+			{
+				OnValidate(results);
+			}
+			catch(Exception ex)
+			{
+				throw TomPITException.Unwrap(this, ex);
+			}
+		}
+
+		protected override void OnDisposing()
+		{
+			if (_validator != null)
+			{
+				_validator.Validating -= OnValidating;
+				_validator.Dispose();
+				_validator = null;
+			}
+			base.OnDisposing();
 		}
 	}
 }

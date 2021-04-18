@@ -10,6 +10,6 @@ namespace TomPIT.ComponentModel.Resources
 
 		ListItems<IStringTranslation> Translations { get; }
 
-		void UpdateTranslation(int lcid, string value, bool auditChange);
+		void UpdateTranslation(int lcid, string value);
 	}
 }

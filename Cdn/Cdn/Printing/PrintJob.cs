@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
+using TomPIT.Runtime;
 using TomPIT.Serialization;
 using TomPIT.Storage;
 
@@ -13,7 +15,7 @@ namespace TomPIT.Cdn.Printing
 	internal class PrintJob : DispatcherJob<IQueueMessage>
 	{
 		private TimeoutTask _timeout = null;
-		public PrintJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public PrintJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -34,7 +36,7 @@ namespace TomPIT.Cdn.Printing
 				MiddlewareDescriptor.Current.Tenant.GetService<IPrintingManagementService>().Ping(item.PopReceipt);
 
 				return Task.CompletedTask;
-			}, TimeSpan.FromMinutes(4));
+			}, TimeSpan.FromMinutes(4), Cancel);
 
 			_timeout.Start();
 
@@ -53,12 +55,29 @@ namespace TomPIT.Cdn.Printing
 		{
 			try
 			{
-				var provider = MiddlewareDescriptor.Current.Tenant.GetService<IPrintingManagementService>().GetProvider(job.Provider);
+				var provider = MiddlewareDescriptor.Current.Tenant.GetService<IDocumentService>().GetProvider(job.Provider);
 
 				if (provider == null)
 					throw new RuntimeException($"{SR.ErrPrintingProviderResolve} ({job.Provider})");
 
-				provider.Print(job);
+				if (Shell.GetService<IRuntimeService>().Platform == Platform.OnPrem)
+					provider.Print(job);
+				else
+				{
+					if (string.IsNullOrWhiteSpace(job.Arguments))
+						return;
+
+					var args = Serializer.Deserialize<JObject>(job.Arguments);
+					var printer = Serializer.Deserialize<Printer>(args.Required<string>("printer"));
+
+					if (printer == null)
+						return;
+
+					var report = provider.Create(job);
+
+					if (report != null)
+						MiddlewareDescriptor.Current.Tenant.GetService<IPrintingSpoolerManagementService>().Insert(report.MimeType, printer.Name, Convert.ToBase64String(report.Content), job.SerialNumber);
+				}
 			}
 			catch (Exception ex)
 			{
@@ -71,7 +90,7 @@ namespace TomPIT.Cdn.Printing
 					EventId = MiddlewareEvents.Printing
 				});
 
-				throw ex;
+				throw;
 			}
 		}
 

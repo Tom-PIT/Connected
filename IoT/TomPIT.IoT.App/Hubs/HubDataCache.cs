@@ -23,38 +23,53 @@ namespace TomPIT.IoT.Hubs
 
 		public JObject Update(Guid hub, List<IIoTFieldStateModifier> fields)
 		{
-			var e = new JObject
+			var pending = new JObject
 			{
 				{"hub", hub }
 			};
-			var r = new JObject();
-			var a = new JArray();
 
-			r.Add("$timestamp", DateTime.UtcNow);
-			e.Add("fields", a);
+			var result = new JObject();
+			var pendingFieldsArray = new JArray();
+
+			pending.Add("fields", pendingFieldsArray);
 
 			var schema = Tenant.GetService<IIoTService>().SelectState(hub);
+			var resultProps = new Dictionary<string, JObject>(StringComparer.OrdinalIgnoreCase);
 
-			foreach (var i in fields)
+			lock (schema)
 			{
-				SynchronizeField(schema, i);
+				foreach (var i in fields)
+				{
+					SynchronizeField(schema, i);
 
-				a.Add(new JObject
+					pendingFieldsArray.Add(new JObject
 				{
 					{"field", i.Field },
-					{"value", i.Value }
+					{"value", i.Value },
+					{"device", i.Device }
 				});
 
-				r.Add(i.Field, i.Value);
+					var deviceName = i.Device.Split('/')[^1];
+
+					if (!resultProps.TryGetValue(i.Device, out JObject props))
+					{
+						props = new JObject();
+
+						result.Add(deviceName, props);
+						resultProps.Add(i.Device, props);
+					}
+
+					props.Add(i.Field.ToCamelCase(), new JValue(i.RawValue));
+				}
 			}
+			Buffer.Enqueue(pending);
 
-			Buffer.Enqueue(e);
+			var hash = JsonConvert.SerializeObject(result);
 
-			var hash = JsonConvert.SerializeObject(r);
+			result.Add("$timestamp", DateTime.UtcNow);
+			result.Add("$checkSum", Convert.ToBase64String(LZ4.LZ4Codec.Wrap(Hash(hash))));
 
-			r.Add("$checkSum", Convert.ToBase64String(LZ4.LZ4Codec.Wrap(Hash(hash))));
-
-			return r;
+			return result;
 		}
 
 		public byte[] Hash(string value)
@@ -96,13 +111,14 @@ namespace TomPIT.IoT.Hubs
 
 		private void SynchronizeField(List<IIoTFieldState> schema, IIoTFieldStateModifier modifier)
 		{
-			if (!(schema.FirstOrDefault(f => string.Compare(f.Field, modifier.Field, true) == 0) is TomPIT.IoT.IoTFieldState field))
+			if (!(schema.FirstOrDefault(f => string.Compare(f.Device, modifier.Device, true) == 0 && string.Compare(f.Field, modifier.Field, true) == 0) is TomPIT.IoT.IoTFieldState field))
 			{
 				schema.Add(new IoTFieldState
 				{
 					Field = modifier.Field,
 					Modified = DateTime.UtcNow,
-					Value = modifier.Value
+					Value = modifier.Value,
+					Device = modifier.Device
 				});
 			}
 			else

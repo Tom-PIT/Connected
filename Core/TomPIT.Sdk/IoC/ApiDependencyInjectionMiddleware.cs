@@ -1,7 +1,8 @@
-﻿using TomPIT.Middleware;
+﻿using System.Reflection;
+using TomPIT.Annotations;
+using TomPIT.Middleware;
 using TomPIT.Models;
 using TomPIT.Reflection;
-using TomPIT.Serialization;
 
 namespace TomPIT.IoC
 {
@@ -15,7 +16,33 @@ namespace TomPIT.IoC
 				return;
 
 			if (Shell.HttpContext.Items["RootModel"] is IRuntimeModel model)
-				Serializer.Populate(model.Arguments, this);
+				BindRequestValues(model);
+		}
+
+		private void BindRequestValues(IRuntimeModel model)
+		{
+			if (model.Arguments == null)
+				return;
+
+			var properties = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+			foreach (var property in properties)
+			{
+				if (!property.CanWrite)
+					continue;
+
+				var att = property.FindAttribute<RequestArgumentAttribute>();
+
+				if (att == null || string.IsNullOrWhiteSpace(att.PropertyName))
+					continue;
+
+				var value = model.Arguments.Optional<object>(att.PropertyName, null);
+
+				if (value == null)
+					continue;
+
+				property.SetValue(this, Types.Convert(value, property.PropertyType));
+			}
 		}
 
 		public IMiddlewareOperation Operation

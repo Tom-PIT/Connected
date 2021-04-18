@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Collections;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
@@ -37,7 +41,7 @@ namespace TomPIT.Design.Designers
 			get
 			{
 				if (_providers == null)
-					_providers = Environment.Context.Tenant.GetService<IAuthorizationService>().QueryProviders();
+					_providers = Environment.Context.Tenant.GetService<IAuthorizationService>().QueryProviders().ToList();
 
 				return _providers;
 			}
@@ -101,7 +105,7 @@ namespace TomPIT.Design.Designers
 
 		public PermissionValue GetPermissionValue(IPermissionSchemaDescriptor d)
 		{
-			return Environment.Context.Tenant.GetService<IAuthorizationService>().GetPermissionValue(d.Id, SelectedSchema, SelectedClaim);
+			return Environment.Context.Tenant.GetService<IAuthorizationService>().GetPermissionValue(d.Id, SelectedSchema, SelectedClaim, Owner.PermissionDescriptor.Id);
 		}
 
 		private List<IPermission> Permissions
@@ -144,7 +148,7 @@ namespace TomPIT.Design.Designers
 							{"avatar" ,i.Avatar}
 						};
 
-						var value = Permissions.FirstOrDefault(f => f.Evidence == i.Id);
+						var value = Permissions.FirstOrDefault(f => string.Compare(f.Evidence, i.Id, true) == 0);
 
 						d.Add("value", value == null ? PermissionValue.NotSet.ToString() : value.Value.ToString());
 

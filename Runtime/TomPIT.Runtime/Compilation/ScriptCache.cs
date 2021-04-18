@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Scripting;
 using TomPIT.Connectivity;
@@ -14,6 +14,6 @@ namespace TomPIT.Compilation
 
 		protected override string[] Categories => ComponentCategories.ScriptCategories;
 
-		public List<IScriptConfiguration> Items => All();
+		public ImmutableList<IScriptConfiguration> Items => All();
 	}
 }

@@ -23,7 +23,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 			else
 			{
 				var methods = service.GetType().GetMethods().Where(f => string.Compare(f.Name, nameof(ICompilerService.GetScript), false) == 0);
-
+				
 				foreach (var method in methods)
 				{
 					if (method.IsGenericMethod)
@@ -42,8 +42,11 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 			var result = new List<IMarkerData>();
 
 			var ms = Editor.Context.Tenant.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService());
-			var scriptName = sourceCode.ScriptName(Editor.Context.Tenant);
+			var scriptName = sourceCode.FileName;
 			var fileName = $"{ms.Name}/{scriptName}";
+
+			if (script.Errors == null)
+				return result;
 
 			foreach (var diagnostic in script.Errors)
 			{
@@ -51,8 +54,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 
 				if (diagnostic.Source == null)
 					external = true;
-
-				if (diagnostic.Source.Contains("/"))
+				else if (diagnostic.Source.Contains("/"))
 				{
 					if (string.Compare(fileName, diagnostic.Source, true) != 0)
 						external = true;

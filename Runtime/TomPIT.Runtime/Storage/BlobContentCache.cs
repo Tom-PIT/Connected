@@ -5,15 +5,47 @@ using LZ4;
 using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
+using TomPIT.Environment;
 using TomPIT.Middleware;
 
 namespace TomPIT.Storage
 {
-	internal class BlobContentCache : ClientRepository<IBlobContent, Guid>
+	internal class BlobContentCache : SynchronizedClientRepository<IBlobContent, Guid>
 	{
 		public BlobContentCache(ITenant tenant) : base(tenant, "blobcontent")
 		{
 
+		}
+
+		protected override void OnInitializing()
+		{
+			var u = Tenant.CreateUrl("Storage", "DownloadByTypes");
+			var args = new JObject();
+
+			var resourceGroups = Tenant.GetService<IResourceGroupService>().Query();
+			var ja = new JArray();
+			var types = new JArray
+			{
+				BlobTypes.Template,
+				BlobTypes.Configuration,
+				BlobTypes.ScriptManifest
+			};
+
+			foreach (var rg in resourceGroups)
+				ja.Add(rg.Token);
+
+			args.Add("resourceGroups", ja);
+			args.Add("types", types);
+
+			var contents = Tenant.Post<List<BlobContent>>(u, args);
+
+			foreach (var content in contents)
+			{
+				if (content.Content != null && content.Content.Length > 0)
+					content.Content = LZ4Codec.Unwrap(content.Content);
+
+				Set(content.Blob, content, TimeSpan.Zero);
+			}
 		}
 
 		public List<IBlobContent> Query(List<Guid> blobs)
@@ -38,6 +70,10 @@ namespace TomPIT.Storage
 			return ds.ToList<IBlobContent>();
 		}
 
+		public void Cache(IBlobContent content)
+		{
+			Set(content.Blob, content, TimeSpan.Zero);
+		}
 		public IBlobContent Select(IBlob blob)
 		{
 			return Get(blob.Token,

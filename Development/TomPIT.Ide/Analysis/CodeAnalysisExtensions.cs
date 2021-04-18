@@ -6,13 +6,30 @@ using System.Reflection;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TomPIT.Design.CodeAnalysis;
 using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
+using TomPIT.Ide.TextServices.CSharp.Services.DefinitionProviders;
 using TomPIT.Reflection;
 
 namespace TomPIT.Ide.Analysis
 {
 	public static class CodeAnalysisExtensions
 	{
+		public static ClassDeclarationSyntax ClassDeclaration(this SyntaxNode node)
+		{
+			var current = node;
+
+			while (current != null)
+			{
+				if (current is ClassDeclarationSyntax cd)
+					return cd;
+
+				current = current.Parent;
+			}
+
+			return null;
+		}
+
 		public static MemberDeclarationSyntax DeclarationScope(this SyntaxNode node)
 		{
 			var current = node;
@@ -68,21 +85,6 @@ namespace TomPIT.Ide.Analysis
 			}
 
 			return default;
-		}
-
-		public static string ToDisplayName(this INamedTypeSymbol symbol)
-		{
-			var sb = new StringBuilder();
-
-			if (!string.IsNullOrWhiteSpace(symbol.ContainingNamespace.Name))
-				sb.Append($"{symbol.ContainingNamespace.ToDisplayString()}.");
-
-			sb.Append(symbol.MetadataName);
-
-			if (!string.IsNullOrWhiteSpace(symbol.ContainingAssembly.Name))
-				sb.Append($", {symbol.ContainingAssembly.ToDisplayString()}");
-
-			return sb.ToString();
 		}
 
 		public static ISymbol ResolvePropertyInfo(this AssignmentExpressionSyntax assignment, SemanticModel model)
@@ -197,6 +199,25 @@ namespace TomPIT.Ide.Analysis
 				return null;
 
 			return completionType.CreateInstance<ICompletionProvider>();
+		}
+
+		internal static IDefinitionProvider ResolveDefinitionProvider(AttributeData data)
+		{
+			if (data == null || data.ConstructorArguments.Length == 0)
+				return null;
+
+			var constant = data.ConstructorArguments[0];
+			Type completionType = null;
+
+			if (constant.Value is INamedTypeSymbol name)
+				completionType = Reflection.TypeExtensions.GetType(name.ToDisplayName());
+			else if (constant.Value is string cv)
+				completionType = Reflection.TypeExtensions.GetType(cv);
+
+			if (completionType == null)
+				return null;
+
+			return completionType.CreateInstance<IDefinitionProvider>();
 		}
 	}
 }

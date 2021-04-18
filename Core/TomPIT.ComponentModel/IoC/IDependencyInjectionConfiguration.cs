@@ -2,7 +2,7 @@
 
 namespace TomPIT.ComponentModel.IoC
 {
-	public interface IDependencyInjectionConfiguration : IConfiguration
+	public interface IDependencyInjectionConfiguration : IConfiguration, INamespaceElement
 	{
 		ListItems<IDependency> Injections { get; }
 	}

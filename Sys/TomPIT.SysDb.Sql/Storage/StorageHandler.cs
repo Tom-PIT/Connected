@@ -13,7 +13,7 @@ namespace TomPIT.SysDb.Sql.Storage
 	{
 		public List<IBlob> QueryOrphaned(DateTime modified)
 		{
-			var r = new Reader<Blob>("tompit.blob_que_draft_orphaned");
+			using var r = new Reader<Blob>("tompit.blob_que_draft_orphaned");
 
 			r.CreateParameter("@modified", modified);
 
@@ -22,7 +22,7 @@ namespace TomPIT.SysDb.Sql.Storage
 
 		public void Commit(string draft, string primaryKey)
 		{
-			var w = new Writer("tompit.blob_commit");
+			using var w = new Writer("tompit.blob_commit");
 
 			w.CreateParameter("@primary_key", primaryKey);
 			w.CreateParameter("@draft", draft);
@@ -32,7 +32,7 @@ namespace TomPIT.SysDb.Sql.Storage
 
 		public void Delete(IBlob blob)
 		{
-			var w = new Writer("tompit.blob_del");
+			using var w = new Writer("tompit.blob_del");
 
 			w.CreateParameter("@id", blob.GetId());
 
@@ -41,7 +41,7 @@ namespace TomPIT.SysDb.Sql.Storage
 
 		public IBlob Select(Guid token)
 		{
-			var r = new Reader<Blob>("tompit.blob_sel");
+			using var r = new Reader<Blob>("tompit.blob_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -50,7 +50,7 @@ namespace TomPIT.SysDb.Sql.Storage
 
 		public List<IBlob> Query(IResourceGroup resourceGroup, int type, string primaryKey)
 		{
-			var r = new Reader<Blob>("tompit.blob_que");
+			using var r = new Reader<Blob>("tompit.blob_que");
 
 			r.CreateParameter("@resource_group", resourceGroup.GetId());
 			r.CreateParameter("@type", type);
@@ -61,29 +61,39 @@ namespace TomPIT.SysDb.Sql.Storage
 
 		public List<IBlob> Query(IResourceGroup resourceGroup, int type, string primaryKey, Guid microService, string topic)
 		{
-			var r = new Reader<Blob>("tompit.blob_que");
+			using var r = new Reader<Blob>("tompit.blob_que");
 
 			r.CreateParameter("@resource_group", resourceGroup.GetId());
 			r.CreateParameter("@type", type);
 			r.CreateParameter("@primary_key", primaryKey);
 			r.CreateParameter("@service", microService, true);
-			r.CreateParameter("@topic", topic);
+			r.CreateParameter("@topic", topic, true);
 
 			return r.Execute().ToList<IBlob>();
 		}
 
 		public List<IBlob> Query(Guid microService)
 		{
-			var r = new Reader<Blob>("tompit.blob_que");
+			using var r = new Reader<Blob>("tompit.blob_que");
 
 			r.CreateParameter("@service", microService);
 
 			return r.Execute().ToList<IBlob>();
 		}
 
+		public List<IBlob> Query(Guid microService, int type)
+		{
+			using var r = new Reader<Blob>("tompit.blob_que");
+
+			r.CreateParameter("@service", microService, true);
+			r.CreateParameter("@type", type);
+
+			return r.Execute().ToList<IBlob>();
+		}
+
 		public List<IBlob> QueryDrafts(string draft)
 		{
-			var r = new Reader<Blob>("tompit.blob_que_draft");
+			using var r = new Reader<Blob>("tompit.blob_que_draft");
 
 			r.CreateParameter("@draft", draft);
 
@@ -93,7 +103,7 @@ namespace TomPIT.SysDb.Sql.Storage
 		public void Insert(IResourceGroup resourceGroup, Guid token, int type, string primaryKey,
 			Guid microService, string topic, string fileName, string contentType, int size, int version, DateTime modified, string draft)
 		{
-			var w = new Writer("tompit.blob_ins");
+			using var w = new Writer("tompit.blob_ins");
 
 			w.CreateParameter("@resource_group", resourceGroup.GetId());
 			w.CreateParameter("@file_name", fileName, true);
@@ -113,7 +123,7 @@ namespace TomPIT.SysDb.Sql.Storage
 
 		public void Update(IBlob blob, string primaryKey, string fileName, string contentType, int size, int version, DateTime modified, string draft)
 		{
-			var w = new Writer("tompit.blob_upd");
+			using var w = new Writer("tompit.blob_upd");
 
 			w.CreateParameter("@file_name", fileName, true);
 			w.CreateParameter("@id", blob.GetId());
@@ -129,7 +139,7 @@ namespace TomPIT.SysDb.Sql.Storage
 
 		public List<IBlob> Query(List<Guid> blobs)
 		{
-			var r = new Reader<Blob>("tompit.blob_list");
+			using var r = new Reader<Blob>("tompit.blob_list");
 			var dt = new DataTable();
 
 			dt.Columns.Add("token", typeof(Guid));
@@ -144,7 +154,7 @@ namespace TomPIT.SysDb.Sql.Storage
 
 		public List<IBlob> QueryByLevel(Guid microService, int level)
 		{
-			var r = new Reader<Blob>("tompit.blob_level_que");
+			using var r = new Reader<Blob>("tompit.blob_level_que");
 
 			r.CreateParameter("@service", microService);
 			r.CreateParameter("@level", level);

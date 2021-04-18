@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 
 namespace TomPIT.Caching
@@ -33,7 +34,12 @@ namespace TomPIT.Caching
 
 		public int Count { get { return Container.Count(Key); } }
 
-		protected virtual List<T> All()
+		protected virtual ICollection<string> Keys()
+		{
+			return Container.Keys(Key);
+		}
+
+		protected virtual ImmutableList<T> All()
 		{
 			return Container.All<T>(Key);
 		}
@@ -55,10 +61,10 @@ namespace TomPIT.Caching
 
 		protected virtual T Get(Func<T, bool> predicate)
 		{
-			return Container.Get(Key, predicate);
+			return Container.Get(Key, predicate, null);
 		}
 
-		protected virtual List<T> Where(Func<T, bool> predicate)
+		protected virtual ImmutableList<T> Where(Func<T, bool> predicate)
 		{
 			return Container.Where(Key, predicate);
 		}

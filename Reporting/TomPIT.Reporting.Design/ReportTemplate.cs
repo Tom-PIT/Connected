@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using TomPIT.Design;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Collections;
 using TomPIT.Ide.ComponentModel;
-using TomPIT.Ide.Dom;
 using TomPIT.MicroServices.Reporting.Design.Storage;
 
 namespace TomPIT.MicroServices.Reporting.Design
@@ -20,7 +22,7 @@ namespace TomPIT.MicroServices.Reporting.Design
 		static ReportTemplate()
 		{
 			_items = new ConcurrentDictionary<string, IItemDescriptor>(new Dictionary<string, IItemDescriptor>{
-				{"Report", new ItemDescriptor("Report", "Report", typeof(Report)) { Category ="UI", Glyph="fal fa-browser", Ordinal = 101} }
+				{"Report", new ItemDescriptor("Report", "Report", typeof(Report)) { Category ="UI", Glyph="fal fa-browser", Ordinal = 242} }
 		});
 		}
 

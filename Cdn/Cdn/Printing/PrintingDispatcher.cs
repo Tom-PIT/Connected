@@ -6,14 +6,14 @@ namespace TomPIT.Cdn.Printing
 {
 	internal class PrintingDispatcher : Dispatcher<IQueueMessage>
 	{
-		public PrintingDispatcher(string resourceGroup, CancellationTokenSource cancel) : base(cancel, 16)
+		public PrintingDispatcher(string resourceGroup) : base(16)
 		{
 			ResourceGroup = resourceGroup;
 		}
 
-		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationTokenSource cancel)
+		public override DispatcherJob<IQueueMessage> CreateWorker(IDispatcher<IQueueMessage> owner, CancellationToken cancel)
 		{
-			return new PrintJob(this, cancel);
+			return new PrintJob(owner, cancel);
 		}
 
 		public string ResourceGroup { get; }

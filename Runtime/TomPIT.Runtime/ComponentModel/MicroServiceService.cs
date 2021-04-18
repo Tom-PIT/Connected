@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
@@ -45,12 +46,12 @@ namespace TomPIT.ComponentModel
 			Set(id, r);
 		}
 
-		public List<IMicroService> Query()
+		public ImmutableList<IMicroService> Query()
 		{
 			return All();
 		}
 
-		public List<IMicroService> Query(Guid user)
+		public ImmutableList<IMicroService> Query(Guid user)
 		{
 			//TODO: perform micro service authorization
 			return All();

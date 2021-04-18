@@ -28,6 +28,9 @@ namespace TomPIT.Security
 
 		public IUser Select(string qualifier)
 		{
+			if (string.IsNullOrWhiteSpace(qualifier))
+				return null;
+
 			IUser r = null;
 
 			if (Guid.TryParse(qualifier, out Guid g))
@@ -62,6 +65,27 @@ namespace TomPIT.Security
 				.AddParameter("token", token);
 
 			r = Tenant.Get<User>(u);
+
+			if (r != null)
+				Set(r.Token, r);
+
+			return r;
+		}
+
+		public IUser SelectBySecurityCode(string securityCode)
+		{
+			if (string.IsNullOrWhiteSpace(securityCode))
+				return null;
+
+			var r = Get(f => string.Compare(f.SecurityCode, securityCode, false) == 0);
+
+			if (r != null)
+				return r;
+
+			r = Tenant.Post<User>(Tenant.CreateUrl("User", "SelectBySecurityCode"), new
+			{
+				securityCode
+			});
 
 			if (r != null)
 				Set(r.Token, r);

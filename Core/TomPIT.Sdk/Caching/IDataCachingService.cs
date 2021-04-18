@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using TomPIT.Connectivity;
+using TomPIT.Middleware;
 
 namespace TomPIT.Caching
 {
@@ -7,20 +9,19 @@ namespace TomPIT.Caching
 	{
 		void Clear(string cacheKey);
 		void Remove(string cacheKey, List<string> ids);
+		void Remove<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate) where T : class;
 		void Invalidate(string cacheKey, List<string> ids);
-
-		void RegisterHandler(string cacheKey, IDataCachingHandler handler);
-
 		bool Exists(string key);
 		bool IsEmpty(string key);
 		void CreateKey(string key);
-		List<T> All<T>(string key) where T : class;
-		T Get<T>(string key, string id, CacheRetrieveHandler<T> retrieve) where T : class;
-		T Get<T>(string key, Func<dynamic, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class;
-		T Get<T>(string key, string id) where T : class;
-		T Get<T>(string key, Func<dynamic, bool> predicate) where T : class;
-		T First<T>(string key) where T : class;
-		List<T> Where<T>(string key, Func<dynamic, bool> predicate) where T : class;
+		List<T> All<T>(IMiddlewareContext context, string key) where T : class;
+		T Get<T>(IMiddlewareContext context, string key, Func<T, bool> matchEvaluator, CacheRetrieveHandler<T> retrieve) where T : class;
+		T Get<T>(IMiddlewareContext context, string key, string id, CacheRetrieveHandler<T> retrieve) where T : class;
+		T Get<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class;
+		T Get<T>(IMiddlewareContext context, string key, string id) where T : class;
+		T Get<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate) where T : class;
+		T First<T>(IMiddlewareContext context, string key) where T : class;
+		List<T> Where<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate) where T : class;
 		T Set<T>(string key, string id, T instance) where T : class;
 		T Set<T>(string key, string id, T instance, TimeSpan duration) where T : class;
 		T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration) where T : class;
@@ -29,5 +30,8 @@ namespace TomPIT.Caching
 		string GenerateRandomKey(string key);
 
 		void Reset(string cacheKey);
+
+		IDataCachingService CreateService(ITenant tenant);
+		void Merge(IMiddlewareContext context, IDataCachingService service);
 	}
 }

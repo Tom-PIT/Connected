@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using TomPIT.ComponentModel;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Collections;
-using TomPIT.Ide.Dom;
 
 namespace TomPIT.Design.Items
 {

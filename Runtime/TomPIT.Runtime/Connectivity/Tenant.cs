@@ -34,7 +34,7 @@ namespace TomPIT.Connectivity
 			get
 			{
 				if (_cache == null)
-					_cache = new MemoryCache();
+					_cache = new MemoryCache(CacheScope.Shared);
 
 				return _cache;
 			}

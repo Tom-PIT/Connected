@@ -5,7 +5,11 @@ using System.Text;
 using System.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using TomPIT.Middleware;
 using TomPIT.Reflection;
+using TomPIT.Serialization;
+using AA = TomPIT.Annotations.Design.AnalyzerAttribute;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT
 {
@@ -22,8 +26,10 @@ namespace TomPIT
 
 			if (value is string || value is char)
 				return String(value);
-			else if (value is DateTime)
-				return Date((DateTime)value);
+			else if (value is DateTime time)
+				return Date(time);
+			else if (value is DateTimeOffset offset)
+				return Date(offset);
 			else if (value is Guid)
 				return Guid(value);
 			else if (value is bool)
@@ -88,6 +94,17 @@ namespace TomPIT
 			return Html.Raw(string.Format("'{0}'", HttpUtility.JavaScriptStringEncode(value.ToString()))) as HtmlString;
 		}
 
+		public IHtmlContent Bool(object value)
+		{
+			if (value == null)
+				return Html.Raw("null") as HtmlString;
+
+			if (!bool.TryParse(value.ToString(), out bool result))
+				return Html.Raw("null") as HtmlString;
+
+			return Bool(result);
+		}
+
 		public IHtmlContent Bool(bool value)
 		{
 			if (value)
@@ -96,12 +113,30 @@ namespace TomPIT
 				return Html.Raw("false") as HtmlString;
 		}
 
+		public IHtmlContent Date(object value)
+		{
+			if(value == null)
+				return Html.Raw("null") as HtmlString;
+
+			if(!DateTime.TryParse(value.ToString(), out DateTime result))
+				return Html.Raw("null") as HtmlString;
+
+			return Date(result);
+		}
 		public IHtmlContent Date(DateTime date)
 		{
 			if (date == DateTime.MinValue)
 				return Html.Raw("null") as HtmlString;
+			
+			return Html.Raw($"new Date('{date:o}')");
+		}
 
-			return Html.Raw($"new Date(Date.UTC({date.Year}, {date.Month - 1}, {date.Day}, {date.Hour}, {date.Minute}, {date.Second}))");
+		public IHtmlContent Date(DateTimeOffset date)
+		{
+			if (date == DateTimeOffset.MinValue)
+				return Html.Raw("null") as HtmlString;
+
+			return Html.Raw($"new Date('{date:o}')");
 		}
 
 		public IHtmlContent Array(IEnumerable<string> items)
@@ -116,6 +151,20 @@ namespace TomPIT
 			sb.Append("]");
 
 			return Html.Raw(sb.ToString());
+		}
+
+		public IHtmlContent Object(object value)
+		{
+			if (value == null)
+				return Html.Raw("{}");
+
+			return Html.Raw(Serializer.Serialize(value));
+		}
+		public IHtmlContent BundlePath([CIP(CIP.BundleProvider)][AA(AA.BundleAnalyzer)]string name)
+		{
+			var model = Html.ViewData.Model as IMiddlewareContext;
+
+			return Html.Raw($"{model.Services.Routing.RootUrl}/sys/bundles/{name}".ToLowerInvariant());
 		}
 	}
 }

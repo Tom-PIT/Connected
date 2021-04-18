@@ -1,15 +1,19 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.WebUtilities;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Models;
 using TomPIT.Security;
+using AA = TomPIT.Annotations.Design.AnalyzerAttribute;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
-
 namespace TomPIT.Navigation
 {
 	public static class NavigationExtensions
@@ -68,16 +72,90 @@ namespace TomPIT.Navigation
 				return null;
 
 			var routeData = Shell.HttpContext == null ? new RouteData() : Shell.HttpContext.GetRouteData();
+			var url = context.Services.Routing.ParseUrl(link.Template, routeData.Values.Merge(link.Parameters));
 
-			return context.Services.Routing.ParseUrl(link.Template, routeData.Values);
+			if (!string.IsNullOrWhiteSpace(link.QueryString))
+				url = $"{url}?{link.QueryString}";
+
+			return link.WithNavigationContext(url);
 		}
 
-		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)]string routeKey, Dictionary<string, object> parameters)
+		public static string WithNavigationContext(this ISiteMapRouteContainer route, string parsedUrl)
 		{
-			var breadcrumbs = context.Services.Routing.QueryBreadcrumbs(routeKey, parameters);
+			if (string.IsNullOrWhiteSpace(parsedUrl) || string.IsNullOrWhiteSpace(route.NavigationContext))
+				return parsedUrl;
 
-			if (breadcrumbs == null)
+			return WithNavigationContext(route.NavigationContext, parsedUrl);
+		}
+
+		public static string WithNavigationContext(this ISiteMapRoute route, string parsedUrl)
+		{
+			if (string.IsNullOrWhiteSpace(parsedUrl) || string.IsNullOrWhiteSpace(route.NavigationContext))
+				return parsedUrl;
+
+			return WithNavigationContext(route.NavigationContext, parsedUrl);
+		}
+
+		private static string WithNavigationContext(string key, string parsedUrl)
+		{
+			if (parsedUrl.Contains("?"))
+			{
+				var tokens = parsedUrl.Split("?".ToCharArray(), 2);
+
+				if (tokens.Length > 1)
+				{
+					if (QueryHelpers.ParseQuery(tokens[1]).ContainsKey("navigationContext"))
+						return parsedUrl;
+				}
+
+				return $"{parsedUrl}&navigationContext={key}";
+			}
+			else
+				return $"{parsedUrl}?navigationContext={key}";
+		}
+
+		public static RouteValueDictionary Merge(this RouteValueDictionary existing, ISiteMapElement element)
+		{
+			if (element is ISiteMapRoute route)
+				return existing.Merge(route.Parameters);
+			else if (element is ISiteMapRouteContainer container)
+				return existing.Merge(container.Parameters);
+
+			return existing;
+		}
+		public static RouteValueDictionary Merge(this RouteValueDictionary existing, object parameters)
+		{
+			var result = new RouteValueDictionary(existing);
+
+			if (parameters == null)
+				return result;
+
+			var props = parameters.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+			foreach (var prop in props)
+			{
+				if (result.ContainsKey(prop.Name))
+					result[prop.Name] = prop.GetValue(parameters);
+				else
+					result.Add(prop.Name, prop.GetValue(parameters));
+			}
+
+			return result;
+		}
+
+		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey, Dictionary<string, object> parameters)
+		{
+			FromBreadcrumbs(routes, context, routeKey, parameters == null ? null as RouteValueDictionary : new RouteValueDictionary(parameters));
+		}
+
+		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey, RouteValueDictionary parameters)
+		{
+			if (context.Tenant.GetService<INavigationService>().QueryBreadcrumbs(routeKey, parameters, routes.Any() ? BreadcrumbLinkBehavior.All : BreadcrumbLinkBehavior.IgnoreLastRoute) is not List<IBreadcrumb> breadcrumbs)
 				return;
+
+			var existing = routes.ToImmutableArray();
+
+			routes.Clear();
 
 			foreach (var breadcrumb in breadcrumbs)
 			{
@@ -87,44 +165,17 @@ namespace TomPIT.Navigation
 					Url = breadcrumb.Url
 				});
 			}
+
+			foreach (var route in existing)
+				routes.Add(route);
 		}
 
-		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)]string routeKey, RouteValueDictionary parameters)
+		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey)
 		{
-			var breadcrumbs = context.Services.Routing.QueryBreadcrumbs(routeKey, parameters);
-
-			if (breadcrumbs == null)
-				return;
-
-			foreach (var breadcrumb in breadcrumbs)
-			{
-				routes.Add(new Route
-				{
-					Text = breadcrumb.Text,
-					Url = breadcrumb.Url
-				});
-			}
+			FromBreadcrumbs(routes, context, routeKey, null as RouteValueDictionary);
 		}
 
-		public static void FromBreadcrumbs(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteKeyProvider)]string routeKey)
-		{
-			var breadcrumbs = context.Services.Routing.QueryBreadcrumbs(routeKey);
-
-			if (breadcrumbs == null)
-				return;
-
-			foreach (var breadcrumb in breadcrumbs)
-			{
-				routes.Add(new Route
-				{
-					Text = breadcrumb.Text,
-					Url = breadcrumb.Url
-				});
-			}
-
-		}
-
-		public static void FromSiteMap(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteSiteMapsProvider)]string routeKey)
+		public static void FromSiteMap(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteSiteMapsProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey)
 		{
 			var sitemap = context.Services.Routing.QuerySiteMap(new List<string> { routeKey });
 
@@ -134,7 +185,7 @@ namespace TomPIT.Navigation
 			LoadRoutes(context, routes, sitemap.Routes);
 		}
 
-		public static void FromSiteMap(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteSiteMapsProvider)]string routeKey, string tag)
+		public static void FromSiteMap(this List<IRoute> routes, IMiddlewareContext context, [CIP(CIP.RouteSiteMapsProvider)][AA(AA.RouteKeyAnalyzer)] string routeKey, string tag)
 		{
 			var sitemap = context.Services.Routing.QuerySiteMap(new List<string> { routeKey }, true, new List<string> { tag });
 
@@ -148,12 +199,7 @@ namespace TomPIT.Navigation
 		{
 			foreach (var route in items)
 			{
-				var url = new Route
-				{
-					Text = route.Text,
-					Url = route.ParseUrl(context),
-					BeginGroup = route.BeginGroup
-				};
+				var url = CreateRoute(context, route);
 
 				routes.Add(url);
 
@@ -165,19 +211,29 @@ namespace TomPIT.Navigation
 		{
 			foreach (var route in items)
 			{
-				var url = new Route
-				{
-					Text = route.Text,
-					Url = route.ParseUrl(context),
-					BeginGroup = route.BeginGroup
-				};
-
+				var url = CreateRoute(context, route);
+				
 				routes.Add(url);
 
 				LoadRoutes(context, url.Items, route.Routes);
 			}
 		}
 
+		private static Route CreateRoute(IMiddlewareContext context, ISiteMapRoute route)
+		{
+			return new Route
+			{
+				Text = route.Text,
+				Url = route.ParseUrl(context),
+				BeginGroup = route.BeginGroup,
+				Visible = route.Visible,
+				Glyph = route.Glyph,
+				Css = route.Css,
+				Category = route.Category,
+				Ordinal = route.Ordinal,
+				Id = route.RouteKey
+			};
+		}
 		public static ISiteMapContainer WithAuthorization(this ISiteMapContainer container, IMiddlewareContext context)
 		{
 			context.Tenant.GetService<IAuthorizationService>().Authorize(container);

@@ -1,4 +1,5 @@
-﻿using TomPIT.Annotations.Design;
+﻿using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoC;
@@ -10,6 +11,9 @@ namespace TomPIT.MicroServices.IoC
 	public class IoCContainerConfiguration : ComponentConfiguration, IIoCContainerConfiguration
 	{
 		private ListItems<IIoCOperation> _ops = null;
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
 
 		[Items(DesignUtils.IoCOperationItems)]
 		public ListItems<IIoCOperation> Operations

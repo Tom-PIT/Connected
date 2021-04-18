@@ -17,12 +17,12 @@ namespace TomPIT.IoC
 			return items;
 		}
 
-		public ISearchEntity Search(ISearchEntity searchResult)
+		public ISearchEntity Search(ISearchEntity searchResult, string content)
 		{
-			return OnSearch(searchResult);
+			return OnSearch(searchResult, content);
 		}
 
-		protected virtual ISearchEntity OnSearch(ISearchEntity searchResult)
+		protected virtual ISearchEntity OnSearch(ISearchEntity searchResult, string content)
 		{
 			return searchResult;
 		}
@@ -46,6 +46,16 @@ namespace TomPIT.IoC
 		protected virtual List<string> OnCreateProperties()
 		{
 			return new List<string>();
+		}
+
+		public bool Authorize(ISearchEntity item)
+		{
+			return OnAuthorize(item);
+		}
+
+		protected virtual bool OnAuthorize(ISearchEntity item)
+		{
+			return true;
 		}
 	}
 }

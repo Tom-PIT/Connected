@@ -1,6 +1,9 @@
 ﻿using System.Linq;
 using Newtonsoft.Json.Linq;
-using TomPIT.Ide.Collections;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
+using TomPIT.Design.Ide.Properties;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
 using TomPIT.Ide.Environment.Providers;

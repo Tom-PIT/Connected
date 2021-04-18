@@ -1,52 +1,57 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers
 {
 	public class ComponentController : SysController
 	{
 		[HttpGet]
-		public List<IComponent> Query(Guid microService)
+		public ImmutableList<IComponent> Query(Guid microService)
 		{
 			return DataModel.Components.Query(microService, false);
 		}
 
 		[HttpGet]
-		public List<IComponent> QueryAll(Guid microService)
+		public ImmutableList<IComponent> QueryAll(Guid microService)
 		{
 			return DataModel.Components.Query(microService, true);
 		}
 
 		[HttpGet]
-		public List<IComponent> QueryByCategory(Guid microService, string category)
+		public ImmutableList<IComponent> QueryByCategory(Guid microService, string category)
 		{
 			return DataModel.Components.Query(microService, category);
 		}
 
 		[HttpGet]
-		public List<IComponent> QueryByFolder(Guid microService, Guid folder)
+		public ImmutableList<IComponent> QueryByFolder(Guid microService, Guid folder)
 		{
 			return DataModel.Components.Query(microService, folder);
 		}
 
-		[HttpGet]
-		public List<IComponent> QueryByResourceGroups(string resourceGroups, string categories)
+		[HttpPost]
+		public ImmutableList<IComponent> QueryByResourceGroups()
 		{
+			var body = FromBody();
+			var resourceGroups = body.Required<string>("resourceGroups");
+			var categories = body.Optional("categories", string.Empty);
+
 			return DataModel.Components.Query(resourceGroups, categories);
 		}
 
 		[HttpGet]
-		public List<IComponent> QueryByMicroService(Guid microService, string categories)
+		public ImmutableList<IComponent> QueryByMicroService(Guid microService, string categories)
 		{
 			return DataModel.Components.QueryCategories(microService, categories);
 		}
 
 		[HttpPost]
-		public List<IComponent> QueryForMicroServices()
+		public ImmutableList<IComponent> QueryForMicroServices()
 		{
 			var body = FromBody();
 			var list = body.Required<JArray>("microServices");

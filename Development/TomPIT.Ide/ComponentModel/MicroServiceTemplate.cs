@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.ComponentModel;
-using TomPIT.Ide.Collections;
-using TomPIT.Ide.Dom;
-using TomPIT.Ide.Environment;
+using TomPIT.Design;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Reflection;
 
 namespace TomPIT.Ide.ComponentModel
@@ -40,14 +40,14 @@ namespace TomPIT.Ide.ComponentModel
 		public IComponent References(IEnvironment environment, Guid microService)
 		{
 			var cs = environment.Context.Tenant.GetService<IComponentService>();
-			var cds = environment.Context.Tenant.GetService<IComponentDevelopmentService>();
+			var cds = environment.Context.Tenant.GetService<IDesignService>().Components;
 
-			var items = cs.QueryComponents(microService, "Reference");
+			var items = cs.QueryComponents(microService, ComponentCategories.Reference);
 
 			if (items != null && items.Count > 0)
 				return items[0];
 
-			var id = cds.Insert(microService, Guid.Empty, "Reference", "References", typeof(References).TypeName());
+			var id = cds.Insert(microService, Guid.Empty, ComponentCategories.Reference, ComponentCategories.ReferenceComponentName, typeof(References).TypeName());
 			var config = new References
 			{
 				Component = id
@@ -58,7 +58,7 @@ namespace TomPIT.Ide.ComponentModel
 			return cs.SelectComponent(id);
 		}
 
-		public virtual void RegisterRoutes(IRouteBuilder builder)
+		public virtual void RegisterRoutes(IEndpointRouteBuilder builder)
 		{
 
 		}

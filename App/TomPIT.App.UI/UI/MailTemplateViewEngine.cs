@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Newtonsoft.Json.Linq;
@@ -22,14 +23,14 @@ namespace TomPIT.App.UI
 		{
 		}
 
-		public void Render(Guid token)
+		public async Task Render(Guid token)
 		{
 			Authenticate();
 
 			if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
 				return;
 
-			var model = CreateModel(token);
+			using var model = CreateModel(token);
 			var actionContext = CreateActionContext(Context);
 			var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(token);
 
@@ -48,11 +49,11 @@ namespace TomPIT.App.UI
 			}
 
 			var view = viewEngineResult.View;
-			var content = CreateContent(view, model);
+			var content = await CreateContent(view, model);
 			var buffer = Encoding.UTF8.GetBytes(content);
 
 			if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
-				Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
+				await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
 		}
 
 		private JObject Body { get; set; }

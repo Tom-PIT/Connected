@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.ExceptionServices;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 
@@ -8,6 +9,13 @@ namespace TomPIT.Distributed
 	{
 		public void Invoke()
 		{
+			Invoke(null);
+		}
+		public void Invoke(IMiddlewareContext context)
+		{
+			if (context != null)
+				this.WithContext(context);
+
 			Validate();
 
 			try
@@ -19,7 +27,10 @@ namespace TomPIT.Distributed
 			catch (Exception ex)
 			{
 				Rollback();
-				throw new ScriptException(this, ex);
+
+				var se = new ScriptException(this, TomPITException.Unwrap(this, ex));
+
+				ExceptionDispatchInfo.Capture(se).Throw();
 			}
 		}
 

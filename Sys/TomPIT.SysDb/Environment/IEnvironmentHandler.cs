@@ -6,6 +6,8 @@ namespace TomPIT.SysDb.Environment
 {
 	public interface IEnvironmentHandler
 	{
+		IClientHandler Clients { get; }
+
 		/*
 		 * Instance endpoints
 		 */

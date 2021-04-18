@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
@@ -15,7 +16,9 @@ namespace TomPIT.Exceptions
 
 		protected override async Task OnHandleAjaxException(HttpContext context, Exception ex)
 		{
-			context.Response.StatusCode = 500;
+			if (context.Response.StatusCode == (int)HttpStatusCode.OK)
+				context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
 			context.Response.ContentType = "application/json";
 
 			var severity = ExceptionSeverity.Critical;
@@ -24,11 +27,21 @@ namespace TomPIT.Exceptions
 
 			if (ex is RuntimeException)
 			{
-				severity = ((RuntimeException)ex).Severity;
-
-				if (ex is ScriptException script)
+				if (ex.InnerException != null && ex.InnerException is UnauthorizedException)
 				{
-					source = $"{script.MicroService}/{script.Path} ({script.Line})";
+					severity = ExceptionSeverity.Warning;
+					context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+
+					message = ex.InnerException.Message;
+				}
+				else
+				{
+					severity = ((RuntimeException)ex).Severity;
+
+					if (ex is ScriptException script)
+					{
+						source = $"{script.Path} ({script.Line})";
+					}
 				}
 			}
 			else if (ex.Data != null && ex.Data.Count > 0)
@@ -41,7 +54,7 @@ namespace TomPIT.Exceptions
 					source = $"{msName}/{script}";
 			}
 
-			if (ex is ValidationException || ex is System.ComponentModel.DataAnnotations.ValidationException)
+			if (ex is ValidationAggregateException || ex is System.ComponentModel.DataAnnotations.ValidationException)
 			{
 				var ms = ex.Data.Contains("MicroService") ? ex.Data["MicroService"] as IMicroService : null;
 

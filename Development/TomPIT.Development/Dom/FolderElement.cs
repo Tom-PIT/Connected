@@ -1,7 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.Design;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Dom;
@@ -12,8 +15,8 @@ namespace TomPIT.Dom
 {
 	public class FolderElement : TransactionElement, IFolderScope
 	{
-		private List<IFolder> _folders = null;
-		private List<IComponent> _components = null;
+		private ImmutableList<IFolder> _folders = null;
+		private ImmutableList<IComponent> _components = null;
 
 		public FolderElement(IDomElement parent, IFolder folder) : base(parent)
 		{
@@ -66,7 +69,7 @@ namespace TomPIT.Dom
 				Items.Add(component.GetDomElement(this));
 		}
 
-		private List<IFolder> Folders
+		private ImmutableList<IFolder> Folders
 		{
 			get
 			{
@@ -77,7 +80,7 @@ namespace TomPIT.Dom
 			}
 		}
 
-		private List<IComponent> Components
+		private ImmutableList<IComponent> Components
 		{
 			get
 			{
@@ -90,7 +93,7 @@ namespace TomPIT.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().UpdateFolder(Folder.MicroService, Folder.Token, Folder.Name, Folder.Parent);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.UpdateFolder(Folder.MicroService, Folder.Token, Folder.Name, Folder.Parent);
 
 			return true;
 		}

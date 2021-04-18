@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Analysis;
 using TomPIT.Connectivity;
@@ -14,7 +15,7 @@ namespace TomPIT.Development.Analysis
 		{
 			IntervalTimeout = TimeSpan.FromSeconds(1);
 		}
-		protected override Task Process()
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			var tenants = Shell.GetService<IConnectivityService>()?.QueryTenants();
 
@@ -24,7 +25,7 @@ namespace TomPIT.Development.Analysis
 			Parallel.ForEach(tenants,
 				 (i) =>
 				 {
-					 RunTools(Shell.GetService<IConnectivityService>().SelectTenant(i.Url));
+					 RunTools(cancel, Shell.GetService<IConnectivityService>().SelectTenant(i.Url));
 				 });
 
 
@@ -32,9 +33,12 @@ namespace TomPIT.Development.Analysis
 
 		}
 
-		private void RunTools(ITenant tenant)
+		private void RunTools(CancellationToken cancel, ITenant tenant)
 		{
 			var tools = tenant.GetService<IToolsService>().Query().Where(f => f.Status == TomPIT.Analysis.ToolStatus.Pending);
+
+			if (cancel.IsCancellationRequested)
+				return;
 
 			if (tools.Count() == 0)
 				return;
@@ -42,6 +46,9 @@ namespace TomPIT.Development.Analysis
 			Parallel.ForEach(tools,
 				(f) =>
 				{
+					if (cancel.IsCancellationRequested)
+						return;
+
 					RunTool(tenant, f);
 				});
 		}

@@ -1,5 +1,5 @@
-﻿using TomPIT.Ide.Designers;
-using TomPIT.Ide.Dom;
+﻿using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Dom.ComponentModel;
 using TomPIT.Management.Designers;
 using TomPIT.Management.Security;
@@ -27,7 +27,7 @@ namespace TomPIT.Management.Dom
 		public override bool Commit(object component, string property, string attribute)
 		{
 			Environment.Context.Tenant.GetService<IUserManagementService>().Update(User.Token, User.LoginName, User.Email, User.Status, User.FirstName, User.LastName, User.Description, User.Pin,
-				User.Language, User.TimeZone, User.NotificationEnabled, User.Mobile, User.Phone);
+				User.Language, User.TimeZone, User.NotificationEnabled, User.Mobile, User.Phone, User.SecurityCode);
 
 			return true;
 		}

@@ -1,14 +1,19 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
+using TomPIT.Compilation;
+using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Diagnostics;
 using TomPIT.Connectivity;
-using TomPIT.Diagnostics;
+using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Middleware.Services;
+using TomPIT.Reflection;
 
-namespace TomPIT.Diagostics
+namespace TomPIT.Diagnostics
 {
 	public static class DiagnosticExtensions
 	{
@@ -197,6 +202,77 @@ namespace TomPIT.Diagostics
 				r.Add("body", body);
 
 			return r;
+		}
+
+		public static ExceptionTraceDescriptor ParseDescriptor(this DiagnosticDescriptor descriptor, IMiddlewareContext context)
+		{
+			if (context is null || descriptor is null || descriptor.Method is null)
+				return null;
+
+			if (descriptor.Method.DeclaringType is not Type type)
+				return null;
+
+			var component = context.Tenant.GetService<ICompilerService>().ResolveComponent(type);
+
+			if (component is null)
+				return null;
+
+			var ms = context.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
+			var config = context.Tenant.GetService<IComponentService>().SelectConfiguration(component.Token);
+			var types = context.Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config);
+
+			var result = new ExceptionTraceDescriptor
+			{
+				Component = component.Name,
+				MicroService = ms.Name,
+				Line = descriptor.Line
+			};
+
+			foreach (var script in types)
+			{
+				if (string.Compare(Path.GetFileNameWithoutExtension(script.FileName), type.Name, false) == 0)
+				{
+					result.FileName = script.FileName;
+
+					var devUrl = context.Tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Development, InstanceVerbs.All);
+
+					if (!string.IsNullOrWhiteSpace(devUrl))
+						result.Url = $"{devUrl}/ide/{ms.Url}?component={component.Token}&element={script.Id}";
+
+					var text = context.Tenant.GetService<IComponentService>().SelectText(ms.Token, script);
+
+					if (!string.IsNullOrWhiteSpace(text))
+					{
+						using var reader = new StringReader(text);
+						var index = 1;
+
+						while (reader.Peek() != -1)
+						{
+							var line = reader.ReadLine();
+
+							if (IsInScope(descriptor.Line, index))
+								result.SourceCodeLines.Add(index, line);
+
+							index++;
+							
+							if (result.SourceCodeLines.Count == 7)
+								break;
+						}
+					}
+
+					break;
+				}
+			}
+
+			return result;
+		}
+
+		private static bool IsInScope(int lineNumber, int index)
+		{
+			if (lineNumber < 7)
+				return index <= 7;
+
+			return index >= lineNumber - 3 && index <= lineNumber + 3;
 		}
 	}
 }

@@ -1,11 +1,13 @@
-﻿using TomPIT.Middleware;
-
-namespace TomPIT.Navigation
+﻿namespace TomPIT.Navigation
 {
-	public interface ISiteMapElement : IMiddlewareObject
+	public interface ISiteMapElement
 	{
 		ISiteMapElement Parent { get; }
 		string Text { get; }
 		bool Visible { get; }
+		string Category { get; }
+		string Glyph { get; }
+		string Css { get; }
+		int Ordinal { get; }
 	}
 }

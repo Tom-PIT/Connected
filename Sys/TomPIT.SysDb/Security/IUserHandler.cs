@@ -15,14 +15,15 @@ namespace TomPIT.SysDb.Security
 		IUser SelectByUrl(string url);
 		IUser SelectByEmail(string email);
 		IUser SelectByAuthenticationToken(Guid token);
+		IUser SelectBySecurityCode(string code);
 
 		void Insert(Guid token, string loginName, string url, string email, UserStatus status, string firstName, string lastName, string description,
 			string pin, ILanguage language, string timezone, bool notificationEnabled, string mobile, string phone, Guid avatar, Guid authenticationToken,
-			DateTime passwordChange);
+			DateTime passwordChange, string securityCode);
 
 		void Update(IUser user, string loginName, string url, string email, UserStatus status, string firstName, string lastName, string description,
 			string pin, ILanguage language, string timezone, bool notificationEnabled, string mobile, string phone, Guid avatar,
-			DateTime passwordChange);
+			DateTime passwordChange, string securityCode);
 
 		void UpdateLoginInformation(IUser user, Guid authenticationToken, DateTime lastLogin);
 

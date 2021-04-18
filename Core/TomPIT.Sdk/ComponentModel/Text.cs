@@ -7,5 +7,7 @@ namespace TomPIT.ComponentModel
 	{
 		[Browsable(false)]
 		public Guid TextBlob { get; set; }
+		[Browsable(false)]
+		public abstract string FileName { get; }
 	}
 }

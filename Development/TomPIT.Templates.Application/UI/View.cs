@@ -5,13 +5,13 @@ using TomPIT.ComponentModel.Diagnostics;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Diagnostics;
 using TomPIT.MicroServices.Design;
-using TomPIT.Runtime;
 
 namespace TomPIT.MicroServices.UI
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[DomElement(DesignUtils.ViewElement)]
 	[Syntax(SyntaxAttribute.Razor)]
+	[ComponentCreatedHandler(DesignUtils.ViewCreateHandler)]
 	public class View : ViewBase, IViewConfiguration
 	{
 		private IMetricOptions _metric = null;
@@ -26,7 +26,7 @@ namespace TomPIT.MicroServices.UI
 		[DefaultValue(true)]
 		public bool Enabled { get; set; } = true;
 
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[Browsable(false)]
 		public IMetricOptions Metrics
 		{
 			get
@@ -37,5 +37,8 @@ namespace TomPIT.MicroServices.UI
 				return _metric;
 			}
 		}
+
+		[DefaultValue(true)]
+		public bool AuthorizationEnabled { get; set; } = true;
 	}
 }

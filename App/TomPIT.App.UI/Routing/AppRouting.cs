@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -11,85 +13,116 @@ using TomPIT.App.UI.Theming;
 using TomPIT.Middleware;
 using TomPIT.Navigation;
 using TomPIT.Routing;
+using TomPIT.Runtime;
 using TomPIT.UI;
 
 namespace TomPIT.App.Routing
 {
 	internal static class AppRouting
 	{
-		public static void Register(IRouteBuilder routes)
+		public static void Register(IApplicationBuilder app, IEndpointRouteBuilder routes)
 		{
-			routes.MapRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
-			routes.MapRoute("sys.api", "sys/api/invoke", new { controller = "Api", action = "Invoke" });
-			routes.MapRoute("sys.search", "sys/api/search", new { controller = "Api", action = "Search" });
-			routes.MapRoute("sys.partial", "sys/api/partial", new { controller = "Api", action = "Partial" });
-			routes.MapRoute("sys.setuserdata", "sys/api/setuserdata", new { controller = "Api", action = "SetUserData" });
-			routes.MapRoute("sys.getuserdata", "sys/api/getuserdata", new { controller = "Api", action = "GetUserData" });
-			routes.MapRoute("sys.queryuserdata", "sys/api/queryuserdata", new { controller = "Api", action = "QueryUserData" });
-			routes.MapRoute("sys.uiinjection", "sys/api/uiinjection", new { controller = "Api", action = "UIInjection" });
+			routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+			routes.MapControllerRoute("sys.api", "sys/api/invoke", new { controller = "Api", action = "Invoke" });
+			routes.MapControllerRoute("sys.search", "sys/api/search", new { controller = "Api", action = "Search" });
+			routes.MapControllerRoute("sys.partial", "sys/api/partial", new { controller = "Api", action = "Partial" });
+			routes.MapControllerRoute("sys.setuserdata", "sys/api/setuserdata", new { controller = "Api", action = "SetUserData" });
+			routes.MapControllerRoute("sys.getuserdata", "sys/api/getuserdata", new { controller = "Api", action = "GetUserData" });
+			routes.MapControllerRoute("sys.queryuserdata", "sys/api/queryuserdata", new { controller = "Api", action = "QueryUserData" });
+			routes.MapControllerRoute("sys.uiinjection", "sys/api/uiinjection", new { controller = "Api", action = "UIInjection" });
 
-			routes.MapRoute("sys/themes/{microService}/{theme}", (t) =>
+			routes.Map("sys/themes/{microService}/{theme}", (t) =>
 			{
 				new ThemeHandler().ProcessRequest(t);
 
 				return Task.CompletedTask;
 			});
-
-			routes.MapRoute("sys/globalize/{locale}/{segments}", (t) =>
+			
+			routes.Map("sys/globalize/{locale}/{segments}", (t) =>
 			{
 				new GlobalizationHandler().ProcessRequest(t);
 
 				return Task.CompletedTask;
 			});
 
-			routes.MapRoute("sys/bundles/{microService}/{bundle}", (t) =>
+			routes.Map("sys/bundles/{microService}/{bundle}", (t) =>
 			{
 				new BundleHandler().ProcessRequest(t);
 
 				return Task.CompletedTask;
 			});
 
-			routes.MapRoute("sys/media/{id}/{version}", (t) =>
+			routes.Map("sys/media/{id}/{version}", (t) =>
 			{
 				new MediaHandler().ProcessRequest(t);
 
 				return Task.CompletedTask;
 			});
 
-			routes.MapRoute("sys/mail-template/{token}", (t) =>
+			routes.Map("sys/mail-template/{token}", async (t) =>
 			{
 				var ve = t.RequestServices.GetService(typeof(IMailTemplateViewEngine)) as MailTemplateViewEngine;
 
 				ve.Context = t;
 
-				ve.Render(new Guid(t.GetRouteValue("token").ToString()));
-
-				return Task.CompletedTask;
+				await ve.Render(new Guid(t.GetRouteValue("token").ToString()));
 			});
 
-			routes.MapRoute("{*.}", (t) =>
+			var builder = routes.Map("{*.}", async (t) =>
 			{
-				if (string.IsNullOrWhiteSpace(t.Request.Path.ToString().Trim('/')))
-					t.Request.Path = "/home";
-
-				if (Redirect(t))
-					return Task.CompletedTask;
-
-				var ve = t.RequestServices.GetService(typeof(IViewEngine)) as ViewEngine;
-
-				ve.Context = t;
-
-				ve.Render(t.Request.Path);
-
-				return Task.CompletedTask;
+				await RenderView(t);
 			});
+
+			builder.Add(b => ((RouteEndpointBuilder)b).Order = int.MaxValue);
+
+			app.Use(async (context, next) =>
+			{
+				if (string.Compare(context.Request.Path.Value, "/login", true) == 0)
+				{
+					var view = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().Select(context.Request.Path.Value, null);
+
+					if (view != null && view.Enabled)
+					{
+						await RenderView(context);
+						return;
+					}
+
+				}
+
+				await next();
+			});
+		}
+
+		private static async Task RenderView(HttpContext context)
+		{
+			if (string.IsNullOrWhiteSpace(context.Request.Path.ToString().Trim('/')))
+				context.Request.Path = "/home";
+
+			if (Redirect(context))
+				return;
+			else if (Download(context))
+				return;
+
+			var ve = context.RequestServices.GetService(typeof(IViewEngine)) as ViewEngine;
+
+			ve.Context = context;
+
+			await ve.Render(context.Request.Path);
 		}
 
 		private static bool Redirect(HttpContext context)
 		{
+			if (context.Request.Path.ToString().StartsWith("/home"))
+			{
+				if (HomeResolved(context))
+					return true;
+			}
+
 			var routes = new RouteValueDictionary();
 
-			if (MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes) is ISiteMapRedirectRoute redirect)
+			var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes);
+
+			if (route is ISiteMapRedirectRoute redirect)
 			{
 				context.Response.StatusCode = (int)HttpStatusCode.Redirect;
 				context.Response.Redirect(redirect.RedirectUrl(routes));
@@ -98,6 +131,48 @@ namespace TomPIT.App.Routing
 			}
 
 			return false;
+		}
+
+		private static bool Download(HttpContext context)
+		{
+			var routes = new RouteValueDictionary();
+
+			var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes);
+			
+			if (route is ISiteMapStreamRoute stream)
+			{
+				using var ctx = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
+
+				ctx.Interop.Invoke(stream.Api, stream.Parameters);
+
+				return true;
+			}
+
+			return false;
+		}
+
+		private static bool HomeResolved(HttpContext context)
+		{
+			var runtimes = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes();
+			var resolvedHomeUrls = new List<IRuntimeUrl>();
+
+			foreach (var middleware in runtimes)
+			{
+				var homeUrl = middleware.ResolveUrl(RuntimeUrlKind.Default);
+
+				if (homeUrl != null)
+					resolvedHomeUrls.Add(homeUrl);
+			}
+
+			if (resolvedHomeUrls.Count == 0)
+				return false;
+
+			var winner = resolvedHomeUrls.OrderByDescending(f => f.Weight).First();
+
+			context.Response.StatusCode = (int)HttpStatusCode.Redirect;
+			context.Response.Redirect(winner.Url);
+
+			return true;
 		}
 	}
 }

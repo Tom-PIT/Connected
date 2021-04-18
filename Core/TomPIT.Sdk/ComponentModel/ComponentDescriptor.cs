@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.ComponentModel.Cdn;
+using TomPIT.ComponentModel.Configuration;
 using TomPIT.ComponentModel.Data;
 using TomPIT.ComponentModel.Distributed;
 using TomPIT.ComponentModel.IoC;
@@ -18,18 +19,24 @@ using TomPIT.Middleware;
 
 namespace TomPIT.ComponentModel
 {
-	public class ComponentDescriptor
+	public class ComponentDescriptor : IDisposable
 	{
 		private IMicroService _microService = null;
 		private IComponent _component = null;
+		private bool _disposed;
+		private bool _sited = false;
 
-		public ComponentDescriptor(string identifier, string componentCategory) : this(null, identifier, componentCategory)
-		{
+		//public ComponentDescriptor(string identifier, string componentCategory) : this(null, identifier, componentCategory)
+		//{
 
-		}
+		//}
 		public ComponentDescriptor(IMiddlewareContext context, string identifier, string componentCategory)
 		{
 			Context = context as IMicroServiceContext;
+
+			if (context is IMicroServiceContext)
+				_sited = true;
+
 			Category = componentCategory;
 
 			if (string.IsNullOrWhiteSpace(identifier))
@@ -57,7 +64,7 @@ namespace TomPIT.ComponentModel
 
 			if (Context == null)
 			{
-				var tenant = MiddlewareDescriptor.Current.Tenant;
+				var tenant = context == null ? MiddlewareDescriptor.Current.Tenant : context.Tenant;
 
 				_microService = tenant.GetService<IMicroServiceService>().Select(MicroServiceName);
 
@@ -75,7 +82,7 @@ namespace TomPIT.ComponentModel
 						throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({MicroServiceName})");
 				}
 
-				Context = new MicroServiceContext(_microService, tenant.Url);
+				Context = context == null ? new MicroServiceContext(_microService, tenant.Url) : new MicroServiceContext(_microService, context);
 			}
 		}
 
@@ -131,13 +138,13 @@ namespace TomPIT.ComponentModel
 		public void Validate()
 		{
 			if (MicroService == null)
-				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({MicroServiceName})");
+				throw new NotFoundException($"{SR.ErrMicroServiceNotFound} ({MicroServiceName})");
 
 			//if (Context != null)
 			//	Context.MicroService.ValidateMicroServiceReference(MicroServiceName);
 
 			if (Component == null)
-				throw new RuntimeException($"{SR.ErrComponentNotFound} ({ComponentName})");
+				throw new NotFoundException($"{SR.ErrComponentNotFound} ({ComponentName})");
 
 			OnValidate();
 		}
@@ -195,14 +202,14 @@ namespace TomPIT.ComponentModel
 			return new ConfigurationDescriptor<IApiConfiguration>(context, identifier, ComponentCategories.Api);
 		}
 
-		public static ConfigurationDescriptor<IDataHubConfiguration> DataHub(IMiddlewareContext context, string identifier)
-		{
-			return new ConfigurationDescriptor<IDataHubConfiguration>(context, identifier, ComponentCategories.DataHub);
-		}
-
 		public static ConfigurationDescriptor<IConnectionConfiguration> Connection(IMiddlewareContext context, string identifier)
 		{
 			return new ConfigurationDescriptor<IConnectionConfiguration>(context, identifier, ComponentCategories.Connection);
+		}
+
+		public static ConfigurationDescriptor<ISettingsConfiguration> Settings(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<ISettingsConfiguration>(context, identifier, ComponentCategories.Settings);
 		}
 
 		public static ConfigurationDescriptor<IIoTHubConfiguration> IoTHub(IMiddlewareContext context, string identifier)
@@ -248,6 +255,36 @@ namespace TomPIT.ComponentModel
 		public static ConfigurationDescriptor<IReportConfiguration> Report(IMiddlewareContext context, string identifier)
 		{
 			return new ConfigurationDescriptor<IReportConfiguration>(context, identifier, ComponentCategories.Report);
+		}
+
+		public static ConfigurationDescriptor<IModelConfiguration> Model(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IModelConfiguration>(context, identifier, ComponentCategories.Model);
+		}
+
+		public static ConfigurationDescriptor<IMasterViewConfiguration> Master(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IMasterViewConfiguration>(context, identifier, ComponentCategories.MasterView);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposed)
+			{
+				if (disposing)
+				{
+					if (_sited)
+						Context.Dispose();
+				}
+
+				_disposed = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }

@@ -19,5 +19,8 @@ namespace TomPIT.Cdn
 		string Provider { get; set; }
 		string Arguments { get; set; }
 		Guid Component { get; set; }
+		string User { get;  }
+		long SerialNumber { get; }
+		string Category { get; }
 	}
 }

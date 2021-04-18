@@ -28,7 +28,7 @@ namespace TomPIT.Ide.TextServices
 		{
 			var text = document.GetTextAsync().Result;
 
-			if (text.Lines.Count < range.StartLineNumber || text.Lines.Count < range.EndLineNumber)
+			if (text.Lines.Count <= range.StartLineNumber || text.Lines.Count <= range.EndLineNumber)
 				return default;
 
 			var spanStart = text.Lines[range.StartLineNumber].Span;
@@ -39,6 +39,19 @@ namespace TomPIT.Ide.TextServices
 
 		public static TextLine GetLine(this SourceText text, int position)
 		{
+			foreach (var line in text.Lines)
+			{
+				if (line.Span.IntersectsWith(position))
+					return line;
+			}
+
+			return new TextLine();
+		}
+
+		public static TextLine GetLine(string sourceCode, int position)
+		{
+			var text = SourceText.From(sourceCode);
+
 			foreach (var line in text.Lines)
 			{
 				if (line.Span.IntersectsWith(position))

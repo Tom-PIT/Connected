@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
 using Newtonsoft.Json.Linq;
@@ -137,7 +138,7 @@ namespace TomPIT.Ide.TextServices.CSharp
 
 					_options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
 						usings: usings,
-						metadataReferenceResolver: new AssemblyResolver(Context.Tenant, Context.MicroService.Token),
+						metadataReferenceResolver: new AssemblyResolver(Context.Tenant, Context.MicroService.Token, true),
 						sourceReferenceResolver: new ScriptResolver(Context.Tenant, Context.MicroService.Token));
 				}
 
@@ -169,7 +170,13 @@ namespace TomPIT.Ide.TextServices.CSharp
 			get
 			{
 				if (_document == null)
+				{
 					_document = ((AdhocWorkspace)Workspace).AddDocument(DocumentInfo);
+
+					//Workspace.TryApplyChanges(Workspace.CurrentSolution.WithOptions(Workspace.Options.WithChangedOption(FormattingOptions.UseTabs, "C#", true)));
+					//Workspace.TryApplyChanges(Workspace.CurrentSolution.WithOptions(Workspace.Options.WithChangedOption(FormattingOptions.TabSize, "C#", 4)));
+					Workspace.TryApplyChanges(Workspace.CurrentSolution.WithOptions(Workspace.Options.WithChangedOption(FormattingOptions.IndentationSize, "C#", 3)));
+				}
 
 				return _document;
 			}

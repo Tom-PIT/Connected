@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TomPIT.Data.Sql;
 using TomPIT.Diagnostics;
 using TomPIT.SysDb.Diagnostics;
@@ -13,12 +13,14 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 	{
 		public void Clear()
 		{
-			new Writer("tompit.metric_clr").Execute();
+			using var w = new Writer("tompit.metric_clr");
+
+			w.Execute();
 		}
 
 		public void Clear(Guid component)
 		{
-			var w = new Writer("tompit.metric_clr");
+			using var w = new Writer("tompit.metric_clr");
 
 			w.CreateParameter("@component", component, true);
 
@@ -27,7 +29,7 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 
 		public void Clear(Guid component, Guid element)
 		{
-			var w = new Writer("tompit.metric_clr");
+			using var w = new Writer("tompit.metric_clr");
 
 			w.CreateParameter("@component", component, true);
 			w.CreateParameter("@element", element, true);
@@ -37,7 +39,7 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 
 		public void Insert(List<IMetric> items)
 		{
-			var w = new Writer("tompit.metric_ins");
+			using var w = new Writer("tompit.metric_ins");
 
 			var a = new JArray();
 
@@ -83,7 +85,7 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 
 		public List<IMetric> Query(DateTime date, Guid component)
 		{
-			var r = new Reader<Metric>("tompit.metric_que");
+			using var r = new Reader<Metric>("tompit.metric_que");
 
 			r.CreateParameter("@date", date);
 			r.CreateParameter("@component", component);
@@ -93,7 +95,7 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 
 		public List<IMetric> Query(DateTime date, Guid component, Guid element)
 		{
-			var r = new Reader<Metric>("tompit.metric_que");
+			using var r = new Reader<Metric>("tompit.metric_que");
 
 			r.CreateParameter("@date", date);
 			r.CreateParameter("@component", component);

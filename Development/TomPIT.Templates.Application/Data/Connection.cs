@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
+using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.MicroServices.Design;
@@ -9,7 +10,12 @@ using TomPIT.MicroServices.Design;
 namespace TomPIT.MicroServices.Data
 {
 	[Create(DesignUtils.ComponentConnection)]
-	public class Connection : ComponentConfiguration, IConnectionConfiguration
+	[FileNameExtension("ds")]
+	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.Connection, TomPIT.MicroServices.Design")]
+	[Syntax(SyntaxAttribute.CSharp)]
+	[ClassRequired]
+	public class Connection : TextConfiguration, IConnectionConfiguration
 	{
 		[PropertyEditor(PropertyEditorAttribute.TextArea)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
@@ -23,5 +29,10 @@ namespace TomPIT.MicroServices.Data
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		public Guid DataProvider { get; set; }
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
 	}
 }

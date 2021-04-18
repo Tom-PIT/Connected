@@ -1,23 +1,28 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Immutable;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.Configuration;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers
 {
 	public class SettingController : SysController
 	{
 		[HttpGet]
-		public List<ISetting> Query(Guid resourceGroup)
+		public ImmutableList<ISetting> Query()
 		{
-			return DataModel.Settings.Where(resourceGroup);
+			return DataModel.Settings.Query();
 		}
 
-		[HttpGet]
-		public ISetting Select(Guid resourceGroup, string name)
+		[HttpPost]
+		public ISetting Select()
 		{
-			return DataModel.Settings.Select(resourceGroup, name);
+			var body = FromBody();
+			var name = body.Required<string>("name");
+			var type = body.Optional("type", string.Empty);
+			var primaryKey = body.Optional("type", string.Empty);
+			var nameSpace = body.Optional("nameSpace", string.Empty);
+
+			return DataModel.Settings.Select(name, nameSpace, type, primaryKey);
 		}
 	}
 }

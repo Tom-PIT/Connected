@@ -15,7 +15,7 @@ namespace TomPIT.Compilation
 		{
 		}
 
-		protected override string[] Usings => CompilerService.CombineUsings(new List<string> { typeof(T).Namespace });
+		protected override string[] Usings => new string[] { typeof(T).Namespace };
 		protected override List<Assembly> References => new List<Assembly>
 				{
 					 typeof(T).Assembly,

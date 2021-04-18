@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using TomPIT.Analytics;
-using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Cdn;
+using TomPIT.Cdn.Documents;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Configuration;
@@ -21,6 +21,7 @@ using TomPIT.IoT;
 using TomPIT.Messaging;
 using TomPIT.Navigation;
 using TomPIT.Reflection;
+using TomPIT.Runtime.Configuration;
 using TomPIT.Search;
 using TomPIT.Security;
 using TomPIT.Storage;
@@ -52,6 +53,23 @@ namespace TomPIT.Runtime
 			Shell.RegisterService(typeof(IMicroServiceResolutionService), typeof(MicroServiceResolutionService));
 
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
+			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
+		}
+
+		private static void OnTenantInitialized(object sender, TenantArgs e)
+		{
+			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+			{
+				var t = TypeExtensions.GetType(i);
+
+				if (t == null)
+					continue;
+
+				var template = t.CreateInstance<IMicroServiceTemplate>();
+
+				if (template != null)
+					e.Tenant.GetService<IMicroServiceTemplateService>().Register(template);
+			}
 		}
 
 		private static void OnTenantInitialize(object sender, TenantArgs e)
@@ -87,13 +105,23 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IGraphicsService), typeof(GraphicsService));
 			e.Tenant.RegisterService(typeof(ISearchService), typeof(SearchService));
 			e.Tenant.RegisterService(typeof(ILocalizationService), typeof(LocalizationService));
-			e.Tenant.RegisterService(typeof(IBigDataService), typeof(BigDataService));
 			e.Tenant.RegisterService(typeof(INavigationService), typeof(NavigationService));
 			e.Tenant.RegisterService(typeof(IIoCService), typeof(IoCService));
 			e.Tenant.RegisterService(typeof(IPrintingService), typeof(PrintingService));
 			e.Tenant.RegisterService(typeof(IUIDependencyInjectionService), typeof(UIDependencyInjectionService));
 			e.Tenant.RegisterService(typeof(IDependencyInjectionService), typeof(DependencyInjectionService));
 			e.Tenant.RegisterService(typeof(IAnalyticsService), typeof(AnalyticsService));
+			e.Tenant.RegisterService(typeof(IModelService), typeof(ModelService));
+			e.Tenant.RegisterService(typeof(IDesignService), typeof(DesignService));
+			e.Tenant.RegisterService(typeof(ICdnService), typeof(CdnService));
+			e.Tenant.RegisterService(typeof(ILockingService), typeof(LockingService));
+			e.Tenant.RegisterService(typeof(IClientService), typeof(ClientService));
+			e.Tenant.RegisterService(typeof(IDocumentService), typeof(DocumentService));
+			e.Tenant.RegisterService(typeof(IFileSystemService), typeof(FileSystemService));
+			e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
+
+			if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
+				e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
 
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 			{
@@ -109,6 +137,8 @@ namespace TomPIT.Runtime
 
 				dataCache.Connect();
 			}
+
+			e.Tenant.GetService<IDesignService>().Initialize();
 		}
 	}
 }

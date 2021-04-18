@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.Rest.Controllers;
 
@@ -7,15 +6,15 @@ namespace TomPIT.Rest.Routing
 {
 	internal static class RestRouting
 	{
-		public static void Register(IRouteBuilder routes)
+		public static void Register(IEndpointRouteBuilder routes)
 		{
-			routes.MapRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+			routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
 
-			routes.MapRoute("{microservice}/{api}/{operation}", (t) =>
+			routes.Map("{microservice}/{api}/{operation}", async (t) =>
 			{
-				new ApiHandler(t).Invoke();
+				using var handler = new ApiHandler(t);
 
-				return Task.CompletedTask;
+				await handler.Invoke();
 			});
 		}
 	}

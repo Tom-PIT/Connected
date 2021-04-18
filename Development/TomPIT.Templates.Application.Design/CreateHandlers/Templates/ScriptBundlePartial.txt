@@ -1,0 +1,8 @@
+﻿import { PartialContext, Error } from '@:ui/core';
+
+export class [NAME] extends PartialContext{
+    constructor(e) {
+        super(e);
+    }
+    
+}

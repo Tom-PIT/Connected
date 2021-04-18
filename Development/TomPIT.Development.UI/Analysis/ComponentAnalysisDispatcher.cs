@@ -7,14 +7,14 @@ namespace TomPIT.Development.Analysis
 {
 	internal class ComponentAnalysisDispatcher : Dispatcher<IComponentDevelopmentState>
 	{
-		public ComponentAnalysisDispatcher(ITenant tenant, CancellationTokenSource cancel) : base(cancel, 128)
+		public ComponentAnalysisDispatcher(ITenant tenant) : base(128)
 		{
 			Tenant = tenant;
 		}
 
-		protected override DispatcherJob<IComponentDevelopmentState> CreateWorker(CancellationTokenSource cancel)
+		public override DispatcherJob<IComponentDevelopmentState> CreateWorker(IDispatcher<IComponentDevelopmentState> owner, CancellationToken cancel)
 		{
-			return new ComponentAnalysisJob(this, cancel);
+			return new ComponentAnalysisJob(owner, cancel);
 		}
 
 		public ITenant Tenant { get; }

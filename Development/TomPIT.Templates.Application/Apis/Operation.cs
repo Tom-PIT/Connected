@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
+using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.Diagnostics;
@@ -17,10 +18,11 @@ namespace TomPIT.MicroServices.Apis
 	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = EnvironmentMode.Runtime)]
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
-	[ComponentCreatedHandler(DesignUtils.ApiOperationCreateHandler)]
+	[Create("Operation", nameof(Name))]
+	[ClassRequired]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.ApiOperation, TomPIT.MicroServices.Design")]
 	public class Operation : ConfigurationElement, IApiOperation
 	{
-		private OperationProtocolOptions _protocols = null;
 		private IMetricOptions _metric = null;
 
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
@@ -33,24 +35,12 @@ namespace TomPIT.MicroServices.Apis
 			return string.IsNullOrWhiteSpace(Name) ? GetType().ShortName() : Name;
 		}
 
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
-		public IOperationProtocolOptions Protocols
-		{
-			get
-			{
-				if (_protocols == null)
-					_protocols = new OperationProtocolOptions { Parent = this };
-
-				return _protocols;
-			}
-		}
-
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[DefaultValue(ElementScope.Public)]
 		[InvalidateEnvironment(EnvironmentSection.Explorer)]
 		public ElementScope Scope { get; set; } = ElementScope.Public;
 
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[Browsable(false)]
 		public IMetricOptions Metrics
 		{
 			get
@@ -64,5 +54,7 @@ namespace TomPIT.MicroServices.Apis
 
 		[Browsable(false)]
 		public Guid TextBlob { get; set; }
+		[Browsable(false)]
+		public string FileName => $"{ToString()}.csx";
 	}
 }

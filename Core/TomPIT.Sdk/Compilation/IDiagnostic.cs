@@ -13,5 +13,6 @@ namespace TomPIT.Compilation
 		int EndColumn { get; }
 		string Code { get; }
 		string Source { get; }
+		string SourcePath { get; }
 	}
 }

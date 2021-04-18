@@ -7,14 +7,14 @@ namespace TomPIT.Development.Analysis
 {
 	internal class AutoFixDispatcher : Dispatcher<IQueueMessage>
 	{
-		public AutoFixDispatcher(ITenant tenant, CancellationTokenSource cancel) : base(cancel, 128)
+		public AutoFixDispatcher(ITenant tenant) : base(128)
 		{
 			Tenant = tenant;
 		}
 
-		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationTokenSource cancel)
+		public override DispatcherJob<IQueueMessage> CreateWorker(IDispatcher<IQueueMessage> owner, CancellationToken cancel)
 		{
-			return new AutoFixJob(this, cancel);
+			return new AutoFixJob(owner, cancel);
 		}
 
 		public ITenant Tenant { get; }

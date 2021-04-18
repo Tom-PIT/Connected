@@ -2,7 +2,7 @@
 
 namespace TomPIT.ComponentModel.Distributed
 {
-	public interface IDistributedEventsConfiguration : IConfiguration
+	public interface IDistributedEventsConfiguration : IConfiguration, IText, INamespaceElement
 	{
 		ListItems<IDistributedEvent> Events { get; }
 	}

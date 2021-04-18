@@ -9,7 +9,7 @@ namespace TomPIT.Api.Storage
 	{
 		IBlobContent Download(IServerResourceGroup resourceGroup, Guid blob);
 		List<IBlobContent> Download(IServerResourceGroup resourceGroup, List<Guid> blobs);
-
+		List<IBlobContent> Download(IServerResourceGroup resourceGroup, List<int> types);
 		void Upload(IServerResourceGroup resourceGroup, Guid blob, byte[] content);
 		void Delete(IServerResourceGroup resourceGroup, Guid blob);
 	}

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using TomPIT.Design.Ide;
 
 namespace TomPIT.Ide.Collections
 {

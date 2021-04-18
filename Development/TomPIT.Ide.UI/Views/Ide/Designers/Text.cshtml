@@ -24,40 +24,71 @@
         text = JavaScriptEncoder.Default.Encode(Environment.NewLine);
     }
 }
+
 <script>
-    var modelUri = new monaco.Uri({
-        scheme: 'inmemory',
-        authority: '@ms.Name',
-        path:'@uriPath'
-    });
+    initTextEditor(() => {
+        var modelUri = new monaco.Uri({
+            scheme: 'inmemory',
+            authority: '@ms.Name',
+            path:'@uriPath'
+        });
 
-    var model = monaco.editor.getModel(modelUri);
+        var model = monaco.editor.getModel(modelUri);
 
-    if (model == null) {
-        model = monaco.editor.createModel('@text', '@Model.Language', modelUri);
+        if (model == null) {
+            model = monaco.editor.createModel('@text', '@Model.Language', modelUri);
+            model.fileName = '@Model.Element.Title';
+            model.microService = '@Model.Environment.Context.MicroService.Name';
 
-        if (!textEditorState.isLanguageInitialized('@Model.Language')) {
-            textEditorState.initializeLanguage('@Model.Language', {
-                'codeAction': @Html.TP().JavaScript.Bool((features & LanguageFeature.CodeAction) == LanguageFeature.CodeAction),
-                'completionItem': @Html.TP().JavaScript.Bool((features & LanguageFeature.CompletionItem) == LanguageFeature.CompletionItem),
-                'declaration': @Html.TP().JavaScript.Bool((features & LanguageFeature.Declaration) == LanguageFeature.Declaration),
-                'signatureHelp': @Html.TP().JavaScript.Bool((features & LanguageFeature.SignatureHelp) == LanguageFeature.SignatureHelp),
-                'documentSymbol': @Html.TP().JavaScript.Bool((features & LanguageFeature.DocumentSymbol) == LanguageFeature.DocumentSymbol)
+            model.updateOptions({
+                tabSize: 3
             });
+
+            textEditorWidget.activateModel(model.id, model.fileName, model.microService);
+
+            if (!textEditorState.isLanguageInitialized('@Model.Language')) {
+                textEditorState.initializeLanguage('@Model.Language', {
+                    'codeAction': @Html.TP().JavaScript.Bool((features & LanguageFeature.CodeAction) == LanguageFeature.CodeAction),
+                    'completionItem': @Html.TP().JavaScript.Bool((features & LanguageFeature.CompletionItem) == LanguageFeature.CompletionItem),
+                    'declaration': @Html.TP().JavaScript.Bool((features & LanguageFeature.Declaration) == LanguageFeature.Declaration),
+                    'definition': @Html.TP().JavaScript.Bool((features & LanguageFeature.Definition) == LanguageFeature.Definition),
+                    'signatureHelp': @Html.TP().JavaScript.Bool((features & LanguageFeature.SignatureHelp) == LanguageFeature.SignatureHelp),
+                    'documentSymbol': @Html.TP().JavaScript.Bool((features & LanguageFeature.DocumentSymbol) == LanguageFeature.DocumentSymbol),
+                    'documentFormatting': @Html.TP().JavaScript.Bool((features & LanguageFeature.DocumentFormatting) == LanguageFeature.DocumentFormatting),
+                    'codeLens': @Html.TP().JavaScript.Bool((features & LanguageFeature.CodeLens) == LanguageFeature.CodeLens)
+                });
+            }
         }
-    }
-    else
-        model.setValue('@text');
 
-    textEditorState.setTargetProperty('@Model.PropertyName');
+        textEditorState.setTargetProperty('@Model.PropertyName');
 
-    textEditor.setModel(model);
-    textEditor.setup({
-        debug: {
-            url: '@url'
-        },
-        language:'@Model.Language'
-    });
+        textEditor.setModel(model);
+        textEditor.setup({
+            debug: {
+                url: '@url'
+            },
+            @if (Model.AmbientProvider != null && Model.AmbientProvider.ToolbarActions.Count > 0) {
+                <text>
+            actions: [
+              @foreach (var action in Model.AmbientProvider.ToolbarActions)
+              {
+                      @:{text: '@action.Text', glyph: '@action.Glyph', action: '@action.Action'},
+                  }
+            ],
+            </text>
+                }
+            language:'@Model.Language'
+        });
+
+        @if (features.HasFlag(LanguageFeature.DeltaDecorations))
+        {
+            <text>
+        textEditorState.loadDecorations({
+            model: model
+        });
+
+        </text>
+        }
 
     ide.setActiveDesigner({
         onUnload: function () {
@@ -82,14 +113,14 @@
         }
     });
 
-    var saveTimeout = setTimeout(saveModels, 1000);
+    var saveTimeout = setTimeout(saveModels, 250);
 
     function saveModels() {
         var dirty = textEditorState.getDirtyModels();
 
         if (dirty.length === 0) {
             if (saveTimeout !== -1)
-                saveTimeout = setTimeout(saveModels, 1000);
+                saveTimeout = setTimeout(saveModels, 250);
 
             return;
         }
@@ -104,7 +135,6 @@
 
             textEditorState.setState({
                 'model': v.model,
-                'dirty': false,
                 'timestamp': v.timestamp
             });
 
@@ -120,7 +150,21 @@
                         },
                         'text': model.getValue(),
                     },
-                    onComplete: function () {
+                    onError(e) {
+                        resolve();
+                    },
+                    onComplete: function (e) {
+                        @if (features.HasFlag(LanguageFeature.DeltaDecorations))
+                        {
+                            <text>
+                        textEditorState.setDecorations({
+                            model: model,
+                            decorations: e
+                        });
+
+                        </text>
+                        }
+
                         resolve();
 
                         @if ((features & LanguageFeature.CheckSyntax)== LanguageFeature.CheckSyntax)
@@ -137,7 +181,7 @@
 
         Promise.all(promises).then(function () {
             if (saveTimeout !== -1)
-                saveTimeout = setTimeout(saveModels, 1000);
+                saveTimeout = setTimeout(saveModels, 250);
         });
     }
 
@@ -173,4 +217,6 @@
     }
     </text>
     }
+    });
+
 </script>

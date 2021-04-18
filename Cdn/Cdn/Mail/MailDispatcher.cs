@@ -5,14 +5,14 @@ namespace TomPIT.Cdn.Mail
 {
 	internal class MailDispatcher : Dispatcher<IMailMessage>
 	{
-		public MailDispatcher(string resourceGroup, CancellationTokenSource cancel) : base(cancel, 128)
+		public MailDispatcher(string resourceGroup) : base(128)
 		{
 			ResourceGroup = resourceGroup;
 		}
 
-		protected override DispatcherJob<IMailMessage> CreateWorker(CancellationTokenSource cancel)
+		public override DispatcherJob<IMailMessage> CreateWorker(IDispatcher<IMailMessage> owner, CancellationToken cancel)
 		{
-			return new MailJob(this, cancel);
+			return new MailJob(owner, cancel);
 		}
 
 		public string ResourceGroup { get; }

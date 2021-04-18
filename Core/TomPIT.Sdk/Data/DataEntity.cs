@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
+using TomPIT.Annotations.Models;
+using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Serialization;
 
@@ -9,6 +12,16 @@ namespace TomPIT.Data
 {
 	public abstract class DataEntity : IDataEntity
 	{
+		private static readonly JsonSerializerSettings _deserializeSettings;
+
+		static DataEntity()
+		{
+			_deserializeSettings = new JsonSerializerSettings
+			{
+				NullValueHandling = NullValueHandling.Ignore,
+				ContractResolver = new PrivateContractResolver()
+			};
+		}
 		public string Serialize()
 		{
 			return OnSerialize();
@@ -26,12 +39,7 @@ namespace TomPIT.Data
 
 		protected virtual void OnDeserialize(JObject state)
 		{
-			var settings = new JsonSerializerSettings
-			{
-				NullValueHandling = NullValueHandling.Ignore
-			};
-
-			JsonConvert.PopulateObject(Serializer.Serialize(state), this, settings);
+			JsonConvert.PopulateObject(Serializer.Serialize(state), this, _deserializeSettings);
 		}
 
 		protected virtual void OnDeserialized()
@@ -39,6 +47,7 @@ namespace TomPIT.Data
 
 		}
 
+		[Obsolete]
 		public void DataSource(JObject state)
 		{
 			var properties = GetType().GetProperties();
@@ -48,17 +57,17 @@ namespace TomPIT.Data
 				if (!property.CanWrite)
 					continue;
 
-				var atts = property.FindAttributes<MappingAttribute>();
+				var atts = property.FindAttributes<NameAttribute>();
 
 				if (atts == null || atts.Count == 0)
 					continue;
 
 				foreach (var att in atts)
 				{
-					if (string.IsNullOrWhiteSpace(att.DataSourceField))
+					if (string.IsNullOrWhiteSpace(att.ColumnName))
 						continue;
 
-					var prop = state.Property(att.DataSourceField, StringComparison.OrdinalIgnoreCase);
+					var prop = state.Property(att.ColumnName, StringComparison.OrdinalIgnoreCase);
 
 					if (prop == null)
 						continue;
@@ -69,8 +78,18 @@ namespace TomPIT.Data
 
 			OnDataSource(state);
 		}
-
+		[Obsolete]
 		protected virtual void OnDataSource(JObject state)
+		{
+
+		}
+
+		public void Deserialize(IMiddlewareContext context, IDataReader reader)
+		{
+			OnDeserialize(context, reader);
+		}
+
+		protected virtual void OnDeserialize(IMiddlewareContext context, IDataReader reader)
 		{
 
 		}
@@ -88,5 +107,14 @@ namespace TomPIT.Data
 		{
 			return Serializer.Deserialize<JObject>(entity.Serialize());
 		}
+	}
+
+	public abstract class DataEntity<T> : DataEntity
+	{
+		[PrimaryKey]
+		[CacheKey]
+		[ReturnValue]
+		[Ordinal(-1)]
+		public virtual T Id { get; set; }
 	}
 }

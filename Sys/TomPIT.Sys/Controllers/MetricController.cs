@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Net;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
+using TomPIT.Sys.Model.Diagnostics;
 
 namespace TomPIT.Sys.Controllers
 {

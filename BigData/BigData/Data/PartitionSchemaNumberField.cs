@@ -1,13 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
+using TomPIT.Annotations.BigData;
 
 namespace TomPIT.BigData.Data
 {
-	internal class PartitionSchemaNumberField:PartitionSchemaField
+	internal class PartitionSchemaNumberField : PartitionSchemaField
 	{
 		public AggregateMode Aggregate { get; set; } = AggregateMode.None;
+
+		public override void Initialize()
+		{
+			if (Attributes.Count == 0)
+				return;
+
+			if (!(Attributes.FirstOrDefault(f => f is BigDataAggregateAttribute) is BigDataAggregateAttribute aggregate))
+				return;
+
+			Aggregate = aggregate.Mode;
+		}
 
 		public override int CompareTo(object obj)
 		{

@@ -1,7 +1,8 @@
-﻿@using TomPIT.Ide;
-@using TomPIT.Ide.ComponentModel;
+﻿@using TomPIT.Design.Ide;
+@using TomPIT.Design;
+@using TomPIT.Ide;
 
-@model TomPIT.Ide.Environment.IEnvironment
+@model TomPIT.Design.Ide.IEnvironment
 
 @{
     Layout = "~/Views/Shared/Shell.cshtml";
@@ -60,16 +61,18 @@
         }
     }
 
-    <environment names="Staging,Production">
-        <link rel="stylesheet" type="text/css" href="~/Assets/ide.min.css" />
-        <script src="~/Assets/ide.min.js"></script>
-    </environment>
+<environment names="Staging,Production">
+    <link rel="stylesheet" type="text/css" href="~/Assets/ide.min.css" />
+    <script src="~/Assets/ide.min.js"></script>
+    <script src="~/Assets/environment.min.js"></script>
+</environment>
 
-    <environment names="Development">
-        <link rel="stylesheet" type="text/css" href="~/Assets/Styles/ide.css" />
-        <script src="~/Assets/Scripts/ide.js"></script>
-        <script src="~/Assets/Scripts/textEditor.js"></script>
-    </environment>
+<environment names="Development">
+    <link rel="stylesheet" type="text/css" href="~/Assets/Styles/ide.css" />
+    <script src="~/Assets/Scripts/ide.js"></script>
+    <script src="~/Assets/Scripts/textEditor.js"></script>
+    <script src="~/Assets/Scripts/environment.js"></script>
+</environment>
 }
 
 <script src="~/Assets/Libraries/monaco/vs/loader.js"></script>
@@ -91,6 +94,7 @@
 
     tompit.DEVDEFAULTS = {
         environmentUrl: '@Model.IdeUrl',
+        rootUrl: '@Model.Context.Services.Routing.RootUrl'
     };
 
     tompit.DEVGLOBALIZE = {
@@ -109,6 +113,9 @@
         onCreated: function (sender, instance) {
             textEditorState = sender;
             textEditor = instance;
+            textEditorWidget = sender;
+
+            initTextEditor();
         }
     });
 
@@ -167,4 +174,37 @@
     }
 
     refreshErrorList();
+
+    function initTextEditor(callback){
+        if (window._textEditorInitialized) {
+            if (callback)
+                callback();
+
+            return;
+        }
+
+        if (textEditor)
+            window._textEditorInitialized = true;
+
+        if (callback && textEditor) {
+            callback();
+            return;
+        }
+
+        if (callback)
+            window._textEditorCallback = callback;
+
+        if (!textEditor)
+            return;
+
+        if (!callback && window._textEditorCallback) {
+            window._textEditorCallback();
+            window._textEditorCallback = 'undefined';
+        }
+        else if(callback)
+            callback();
+    }
+
+    if (env)
+        env.initialize();
 </script>

@@ -2,7 +2,7 @@
 {
 	public interface IDataWriter : IDataCommand
 	{
-		void Execute();
+		int Execute();
 		T Execute<T>();
 
 		IDataParameter SetReturnValueParameter(string name);

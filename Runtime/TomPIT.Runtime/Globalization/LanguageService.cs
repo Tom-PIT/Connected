@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using TomPIT.Caching;
@@ -43,7 +44,7 @@ namespace TomPIT.Globalization
 			}
 		}
 
-		public List<ILanguage> Query()
+		public ImmutableList<ILanguage> Query()
 		{
 			return All();
 		}
@@ -93,11 +94,11 @@ namespace TomPIT.Globalization
 			if (culture == null)
 				return;
 
-			if (Instance.RequestLocalizationOptions.SupportedCultures.Contains(culture))
-				return;
+			if (!Instance.RequestLocalizationOptions.SupportedCultures.Contains(culture))
+				Instance.RequestLocalizationOptions.SupportedCultures.Add(culture);
 
-			Instance.RequestLocalizationOptions.SupportedCultures.Add(culture);
-			Instance.RequestLocalizationOptions.SupportedUICultures.Add(culture);
+			if (!Instance.RequestLocalizationOptions.SupportedUICultures.Contains(culture))
+				Instance.RequestLocalizationOptions.SupportedUICultures.Add(culture);
 		}
 
 		private CultureInfo GetCulture(ILanguage language)

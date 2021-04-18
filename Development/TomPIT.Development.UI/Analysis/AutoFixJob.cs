@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Design.Tools;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Ide.Designers;
 using TomPIT.Middleware;
@@ -17,7 +17,7 @@ namespace TomPIT.Development.Analysis
 	internal class AutoFixJob : DispatcherJob<IQueueMessage>
 	{
 		private TimeoutTask _timeout = null;
-		public AutoFixJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public AutoFixJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -34,7 +34,7 @@ namespace TomPIT.Development.Analysis
 			{
 				Dispatcher.Tenant.GetService<IAutoFixService>().Ping(Message.PopReceipt);
 				return Task.CompletedTask;
-			}, TimeSpan.FromMinutes(4));
+			}, TimeSpan.FromMinutes(4), Cancel);
 
 			_timeout.Start();
 
@@ -60,8 +60,8 @@ namespace TomPIT.Development.Analysis
 			if (fixProvider != null)
 			{
 				var ms = Dispatcher.Tenant.GetService<IMicroServiceService>().Select(error.MicroService);
-
-				fixProvider.Fix(this, new AutoFixArgs(new MicroServiceContext(ms, Dispatcher.Tenant.Url), error));
+				using var ctx = new MicroServiceContext(ms, Dispatcher.Tenant.Url);
+				fixProvider.Fix(this, new AutoFixArgs(ctx, error));
 			}
 
 			Dispatcher.Tenant.GetService<IAutoFixService>().Complete(queue.PopReceipt);
@@ -70,7 +70,7 @@ namespace TomPIT.Development.Analysis
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			Dispatcher.Tenant.LogError(nameof(AutoFixJob), ex.Source, ex.Message);
+			Dispatcher.Tenant.LogError(ex.Source, ex.Message, nameof(AutoFixJob));
 			Dispatcher.Tenant.GetService<IAutoFixService>().Complete(item.PopReceipt);
 		}
 	}

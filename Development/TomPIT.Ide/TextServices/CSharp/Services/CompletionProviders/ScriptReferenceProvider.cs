@@ -3,6 +3,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.ComponentModel.Configuration;
+using TomPIT.ComponentModel.Data;
 using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Reflection;
 
@@ -18,11 +20,11 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 			var span = service.GetDefaultCompletionListSpan(Editor.SourceText, Editor.Document.GetCaret(Arguments.Position));
 			var trivia = Arguments.Model.SyntaxTree.GetRoot().FindTrivia(span.Start);
 
-			if (trivia != null && trivia.IsKind(SyntaxKind.LoadDirectiveTrivia))
+			if (trivia.IsKind(SyntaxKind.LoadDirectiveTrivia))
 			{
 				FillItems(result, Editor.Context.MicroService);
 
-				var refs = Editor.Context.Tenant.GetService<IDiscoveryService>().References(Editor.Context.MicroService.Token);
+				var refs = Editor.Context.Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(Editor.Context.MicroService.Token);
 
 				foreach (var reference in refs.MicroServices)
 				{
@@ -40,35 +42,60 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 
 		private void FillItems(List<ICompletionItem> items, IMicroService microService)
 		{
-			var msName = microService.Token == Editor.Context.MicroService.Token ? string.Empty : $"{microService.Name}/";
+			var msName = $"{microService.Name}/";
 			var scripts = Editor.Context.Tenant.GetService<IComponentService>().QueryComponents(microService.Token, ComponentCategories.Script);
 
 			foreach (var script in scripts)
-				items.Add(CreateScriptItem($"{msName}{script.Name}"));
+				items.Add(CreateScriptItem(script.Name, $"{msName}{script.Name}"));
 
 			var apis = Editor.Context.Tenant.GetService<IComponentService>().QueryConfigurations(microService.Token, ComponentCategories.Api);
 
 			foreach (IConfiguration api in apis)
 			{
-				if (!(api is IApiConfiguration configuration))
+				if (api is not IApiConfiguration configuration)
 					continue;
 
 				var apiName = api.ComponentName();
 
 				foreach (var operation in configuration.Operations)
-					items.Add(CreateScriptItem($"{msName}{apiName}/{operation.Name}"));
+					items.Add(CreateScriptItem($"{apiName}/{operation.Name}", $"{msName}{apiName}/{operation.Name}"));
+			}
+
+			var models = Editor.Context.Tenant.GetService<IComponentService>().QueryConfigurations(microService.Token, ComponentCategories.Model);
+
+			foreach (IConfiguration model in models)
+			{
+				if (model is not IModelConfiguration mc)
+					continue;
+
+				var modelName = mc.ComponentName();
+
+				items.Add(CreateScriptItem(modelName, $"{microService.Name}/{modelName}"));
+			}
+
+			var settings = Editor.Context.Tenant.GetService<IComponentService>().QueryConfigurations(microService.Token, ComponentCategories.Settings);
+
+			foreach (IConfiguration setting in settings)
+			{
+				if (setting is not ISettingsConfiguration sc)
+					continue;
+
+				var modelName = sc.ComponentName();
+
+				items.Add(CreateScriptItem(modelName, $"{microService.Name}/{modelName}"));
 			}
 		}
 
-		private ICompletionItem CreateScriptItem(string name)
+		private static ICompletionItem CreateScriptItem(string text, string name)
 		{
 			var result = new CompletionItem
 			{
-				FilterText = name,
+				FilterText = name.Replace("/", string.Empty),
 				InsertText = $"\"{name}\"",
 				Kind = CompletionItemKind.Reference,
-				Label = name,
-				SortText = name
+				Label = text,
+				SortText = text,
+				Detail = name
 			};
 
 			result.CommitCharacters.AddRange(new List<string> { "\t", "\"", "\r" });

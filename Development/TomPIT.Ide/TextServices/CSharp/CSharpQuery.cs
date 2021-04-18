@@ -261,7 +261,7 @@ namespace TomPIT.Ide.TextServices.CSharp
 			if (si.CandidateSymbols.Length == 0)
 				return null;
 
-			if (syntax.Arguments != null && syntax.Arguments.Count > 0)
+			if (syntax.Arguments.Count > 0)
 			{
 				foreach (var candidate in si.CandidateSymbols)
 				{
@@ -310,6 +310,9 @@ namespace TomPIT.Ide.TextServices.CSharp
 
 			if (ms.IsExtensionMethod)
 				ms = ms.GetConstructedReducedFrom();
+
+			if (ms == null)
+				return null;
 
 			var declaringTypeName = string.Format(
 				"{0}.{1}, {2}",

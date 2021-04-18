@@ -12,6 +12,8 @@ namespace TomPIT.Connectivity
 		{
 			if (credentials is IBearerCredentials)
 				return Get(((IBearerCredentials)credentials).Token, instanceProvider);
+			else if (credentials is ICurrentCredentials)
+				return Get(((ICurrentCredentials)credentials).Token, instanceProvider);
 
 			var basic = credentials as IBasicCredentials;
 			var token = string.IsNullOrWhiteSpace(basic.UserName) && string.IsNullOrWhiteSpace(basic.Password)
@@ -39,7 +41,7 @@ namespace TomPIT.Connectivity
 					if (instanceProvider != null)
 						r.DefaultRequestHeaders.Add("TomPITInstanceId", instanceProvider.InstanceId.ToString());
 
-					r.Timeout = TimeSpan.FromSeconds(120);
+					r.Timeout = TimeSpan.FromSeconds(300);
 
 					return r;
 				});
@@ -68,7 +70,31 @@ namespace TomPIT.Connectivity
 					if (instanceProvider != null)
 						r.DefaultRequestHeaders.Add("TomPITInstanceId", instanceProvider.InstanceId.ToString());
 
-					r.Timeout = TimeSpan.FromSeconds(120);
+					r.Timeout = TimeSpan.FromSeconds(300);
+
+					return r;
+				});
+		}
+
+		public static HttpClient Get(Guid authenticationToken, IInstanceMetadataProvider instanceProvider)
+		{
+			return MemoryCache.Default.Get("httpclient", authenticationToken.ToString(),
+				(f) =>
+				{
+					f.SlidingExpiration = true;
+					f.Duration = TimeSpan.FromMinutes(15);
+
+					var r = new HttpClient();
+
+					if (authenticationToken != Guid.Empty)
+						r.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("SSO", Convert.ToBase64String(Encoding.UTF8.GetBytes(authenticationToken.ToString())));
+
+					r.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+					if (instanceProvider != null)
+						r.DefaultRequestHeaders.Add("TomPITInstanceId", instanceProvider.InstanceId.ToString());
+
+					r.Timeout = TimeSpan.FromSeconds(300);
 
 					return r;
 				});

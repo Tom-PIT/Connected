@@ -70,6 +70,11 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 				StartLineNumber = marker.StartLineNumber - 1
 			});
 
+			var result = new List<ICodeAction>();
+
+			if (Arguments.Model.SyntaxTree.Length < span.End)
+				return result;
+
 			var node = Arguments.Model.SyntaxTree.GetRoot().FindNode(span);
 			var type = CSharpQuery.ResolveTypeInfo(Arguments.Model, node);
 			var typeNames = new List<string>();
@@ -81,15 +86,17 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 			{
 				var attributeName = node.EnclosingAttributeName();
 
-				if (!attributeName.EndsWith("Attribute"))
-					attributeName += "Attribute";
+				if (!string.IsNullOrWhiteSpace(attributeName))
+				{
+					if (!attributeName.EndsWith("Attribute"))
+						attributeName += "Attribute";
 
-				if (!typeNames.Contains(attributeName))
-					typeNames.Add(attributeName);
+					if (!typeNames.Contains(attributeName))
+						typeNames.Add(attributeName);
+				}
 			}
 
 			var references = AssemblyReferenceResolver.ResolveReferences(Arguments.Model.Compilation);
-			var result = new List<ICodeAction>();
 
 			foreach (var typeName in typeNames)
 			{
@@ -119,11 +126,6 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 			var edits = new WorkspaceEdit();
 			var action = new CodeAction
 			{
-				Command = new Command
-				{
-					Title = title,
-					Id = "AddUsing"
-				},
 				Title = title,
 				IsPreferred = true,
 				Edit = edits,
@@ -134,15 +136,16 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 
 			var textEdit = new ResourceTextEdit
 			{
-				Resource = Editor.Model.Uri
+				Resource = Editor.Model.Uri,
+				ModelVersionId = Editor.Model.Version
 			};
 
-			textEdit.Edits.Add(new TextEdit
+			textEdit.Edit = new TextEdit
 			{
 				Text = $"{title};\n",
 				Eol = EndOfLineSequence.CRLF,
 				Range = ResolveUsingRange()
-			});
+			};
 
 			edits.Edits.Add(textEdit);
 
@@ -153,9 +156,12 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 		{
 			var result = CreateUsing(marker, type.Namespace);
 
-			var rte = result.Edit.Edits[0] as ResourceTextEdit;
+			var rte = result.Edit as ResourceTextEdit;
 
-			rte.Edits.Add(new TextEdit
+			if (rte == null && result.Edit is WorkspaceEdit wsEdit && wsEdit.Edits != null && wsEdit.Edits.Count > 0)
+				rte = wsEdit.Edits[0] as ResourceTextEdit;
+
+			rte.Edit = new TextEdit
 			{
 				Text = type.Name,
 				Range = new Range
@@ -165,7 +171,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 					EndLineNumber = marker.EndLineNumber,
 					StartLineNumber = marker.StartLineNumber
 				}
-			});
+			};
 
 			return result;
 		}

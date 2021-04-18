@@ -7,7 +7,7 @@ using TomPIT.Cdn;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 using TomPIT.Storage;
@@ -16,7 +16,7 @@ namespace TomPIT.Worker.Subscriptions
 {
 	internal class SubscriptionEventJob : DispatcherJob<IQueueMessage>
 	{
-		public SubscriptionEventJob(Dispatcher<IQueueMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public SubscriptionEventJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -43,8 +43,8 @@ namespace TomPIT.Worker.Subscriptions
 
 			if (eventConfig == null)
 				return;
-
-			var ctx = new MicroServiceContext(config.MicroService());
+			
+			using var ctx = new MicroServiceContext(config.MicroService());
 			var middleware = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<ISubscriptionEventMiddleware>(ctx, eventConfig, subscriptionEvent.Arguments, eventConfig.Name);
 
 			middleware.Event = subscriptionEvent;
@@ -55,7 +55,7 @@ namespace TomPIT.Worker.Subscriptions
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.LogError(nameof(SubscriptionEventJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(SubscriptionEventJob));
 			MiddlewareDescriptor.Current.Tenant.GetService<ISubscriptionWorkerService>().PingSubscriptionEvent(item.PopReceipt);
 		}
 	}

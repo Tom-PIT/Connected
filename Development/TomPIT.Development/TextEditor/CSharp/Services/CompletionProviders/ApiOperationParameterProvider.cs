@@ -11,7 +11,7 @@ using TomPIT.Ide.TextServices.CSharp;
 using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
 using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Reflection;
-using TomPIT.Reflection.Manifests.Entities;
+using TomPIT.Reflection.Api;
 
 namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 {
@@ -34,7 +34,9 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			var existing = QueryExisting(node);
 			var r = new List<ICompletionItem>();
 
-			if (parameters.Properties.Count == 0)
+			var members = parameters.DeclaredType?.Members;
+
+			if (members==null||!members.Any())
 			{
 				r.Add(new CompletionItem
 				{
@@ -44,7 +46,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			}
 			else
 			{
-				foreach (var parameter in parameters.Properties)
+				foreach (var parameter in members)
 				{
 					if (existing != null && existing.FirstOrDefault(f => string.Compare(f, parameter.Name, true) == 0) != null)
 						continue;
@@ -147,15 +149,20 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 		{
 			var sb = new StringBuilder();
 
-			foreach (var i in config.Properties.OrderBy(f => f.Name))
+			var members = config.DeclaredType?.Members.OrderBy(f => f.Name);
+
+			if (members != null)
 			{
-				var t = TypeExtensions.GetType(i.Type);
-				object value = "null";
+				foreach (var i in members)
+				{
+					var t = TypeExtensions.GetType(i.Type);
+					object value = "null";
 
-				if (t != null)
-					value = t.DefaultValue();
+					if (t != null)
+						value = t.DefaultValue();
 
-				sb.AppendLine($"{i.Name} = {value},");
+					sb.AppendLine($"{i.Name} = {value},");
+				}
 			}
 
 			return new CompletionItem
@@ -190,7 +197,7 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 		private ApiOperationManifest QueryParameters(IApiOperation operation)
 		{
-			var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifest(operation.Configuration().Component) as ApiManifest;
+			var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(operation.Configuration().Component) as ApiManifest;
 
 			if (manifest == null)
 				return null;

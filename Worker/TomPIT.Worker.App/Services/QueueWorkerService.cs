@@ -10,7 +10,6 @@ namespace TomPIT.Worker.Services
 {
 	internal class QueueWorkerService : HostedService
 	{
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
 		private Lazy<List<QueueWorkerDispatcher>> _dispatchers = new Lazy<List<QueueWorkerDispatcher>>();
 
 		public QueueWorkerService()
@@ -18,16 +17,16 @@ namespace TomPIT.Worker.Services
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
 		}
 
-		protected override bool Initialize()
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
-			if (Instance.State == InstanceState.Initialining)
+			if (Instance.State == InstanceState.Initializing)
 				return false;
 
-			Dispatchers.Add(new QueueWorkerDispatcher(_cancel));
+			Dispatchers.Add(new QueueWorkerDispatcher());
 
 			return true;
 		}
-		protected override Task Process()
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -40,11 +39,17 @@ namespace TomPIT.Worker.Services
 
 				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
 
+				if (cancel.IsCancellationRequested)
+					return;
+
 				if (jobs == null)
 					return;
 
 				foreach (var i in jobs)
 				{
+					if (cancel.IsCancellationRequested)
+						return;
+
 					f.Enqueue(i);
 				}
 			});
@@ -53,5 +58,15 @@ namespace TomPIT.Worker.Services
 		}
 
 		private List<QueueWorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+
+		public override void Dispose()
+		{
+			foreach (var dispatcher in Dispatchers)
+				dispatcher.Dispose();
+
+			Dispatchers.Clear();
+
+			base.Dispose();
+		}
 	}
 }

@@ -1,4 +1,6 @@
-﻿namespace TomPIT.Ide.ComponentModel
+﻿using TomPIT.Design.Ide;
+
+namespace TomPIT.Ide.ComponentModel
 {
 	public class IdeResource : IIdeResource
 	{

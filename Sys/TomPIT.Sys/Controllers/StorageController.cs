@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using TomPIT.Storage;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers
 {
@@ -34,6 +34,16 @@ namespace TomPIT.Sys.Controllers
 		public List<IBlob> Query(Guid resourceGroup, int type, string primaryKey)
 		{
 			return DataModel.Blobs.Query(resourceGroup, type, primaryKey);
+		}
+
+		[HttpPost]
+		public List<IBlob> QueryByType()
+		{
+			var body = FromBody();
+			var microService = body.Optional("microService", Guid.Empty);
+			var type = body.Required<int>("type");
+
+			return DataModel.Blobs.Query(microService, type);
 		}
 
 		[HttpGet]
@@ -116,6 +126,24 @@ namespace TomPIT.Sys.Controllers
 				blobs.Add(Types.Convert<Guid>(i.Value<string>()));
 
 			return DataModel.BlobsContents.Query(blobs);
+		}
+
+		[HttpPost]
+		public List<IBlobContent> DownloadByTypes()
+		{
+			var body = FromBody();
+			var resourceGroups = new List<Guid>();
+			var types = new List<int>();
+			var ja = body.Required<JArray>("resourceGroups");
+			var ja2 = body.Required<JArray>("types");
+
+			foreach (JValue i in ja)
+				resourceGroups.Add(Types.Convert<Guid>(i.Value));
+
+			foreach (JValue i in ja2)
+				types.Add(Types.Convert<int>(i.Value));
+			
+			return DataModel.BlobsContents.Query(resourceGroups, types);
 		}
 
 		[HttpPost]

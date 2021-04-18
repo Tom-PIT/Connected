@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
-using TomPIT.Runtime;
 using TomPIT.Security;
 
 namespace TomPIT.Management.Security
@@ -17,37 +16,29 @@ namespace TomPIT.Management.Security
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
 		[Required]
 		[MaxLength(128)]
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public string Key { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public AuthenticationTokenClaim Claims { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public AuthenticationTokenStatus Status { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		[DateEditorFormat(DateEditorFormat.DateTime)]
 		public DateTime ValidFrom { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		[DateEditorFormat(DateEditorFormat.DateTime)]
 		public DateTime ValidTo { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public TimeSpan StartTime { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public TimeSpan EndTime { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		[PropertyEditor(PropertyEditorAttribute.Tag)]
 		[MaxLength(2048)]
 		[TagEditor(AllowCustomValues = true)]
@@ -57,7 +48,6 @@ namespace TomPIT.Management.Security
 		public Guid ResourceGroup { get; set; }
 
 		[PropertyCategory(PropertyCategoryAttribute.CategorySecurity)]
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		[Items("TomPIT.Management.Items.UserItems, TomPIT.Management")]
 		[Required]
@@ -67,13 +57,11 @@ namespace TomPIT.Management.Security
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[MaxLength(128)]
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public string Name { get; set; }
 
 		[MaxLength(1024)]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		[PropertyEditor(PropertyEditorAttribute.TextArea)]
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		public string Description { get; set; }
 
 		public override string ToString()

@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoC;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 using TomPIT.Serialization;
 using TomPIT.Services;
 
@@ -67,10 +69,19 @@ namespace TomPIT.IoC
 			return CreateDependencies(targets.ToList<IUIDependency>(), arguments);
 		}
 
-		public List<IUIDependencyDescriptor> QueryMasterDependencies(string master, object arguments, MasterDependencyKind kind)
+		public List<IUIDependencyDescriptor> QueryMasterDependencies(Guid microService, string master, object arguments, MasterDependencyKind kind)
 		{
-			var targets = new List<IMasterDependency>();
+			if (string.IsNullOrWhiteSpace(master))
+				return null;
 
+			var targets = new List<IMasterDependency>();
+			
+			QueryMasterDependencies(microService, master, arguments, kind, targets);
+
+			return CreateDependencies(targets.ToList<IUIDependency>(), arguments);
+		}
+		private void QueryMasterDependencies(Guid microService, string master, object arguments, MasterDependencyKind kind, List<IMasterDependency> targets)
+		{
 			foreach (var config in All())
 			{
 				foreach (var dependency in config.Injections)
@@ -86,7 +97,53 @@ namespace TomPIT.IoC
 				}
 			}
 
-			return CreateDependencies(targets.ToList<IUIDependency>(), arguments);
+			var identifier = master;
+
+			if (!identifier.Contains("/"))
+			{
+				var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+
+				identifier = $"{ms.Name}/{master}";
+			}
+			
+			var references = new List<string>
+			{
+				identifier
+			};
+
+			ResolveInherits(identifier, arguments, kind, targets, references);
+		}
+
+		private void ResolveInherits(string master, object arguments, MasterDependencyKind kind, List<IMasterDependency> dependencies, List<string> references)
+		{
+			using var ctx = MicroServiceContext.FromIdentifier(master, Tenant);
+			var descriptor = ComponentDescriptor.Master(ctx, master);
+
+			if (descriptor.Configuration == null)
+				return;
+
+			if (string.IsNullOrWhiteSpace(descriptor.Configuration.Inherits))
+				return;
+
+			var identifier = descriptor.Configuration.Inherits.Contains("/") ? descriptor.Configuration.Inherits : $"{ctx.MicroService.Name}/{descriptor.Configuration.Inherits}";
+
+			if (references.Contains(identifier, StringComparer.OrdinalIgnoreCase))
+				return;
+
+			references.Add(identifier);
+
+			using var dependencyContext = MicroServiceContext.FromIdentifier(identifier, Tenant);
+			var dependencyDescriptor = ComponentDescriptor.Master(dependencyContext, identifier);
+
+			try
+			{
+				dependencyDescriptor.Validate();
+		
+				QueryMasterDependencies(dependencyDescriptor.MicroService.Token, identifier, arguments, kind, dependencies);
+			}
+			catch
+			{
+			}
 		}
 
 		private List<IUIDependencyDescriptor> CreateDependencies(List<IUIDependency> dependencies, object arguments)

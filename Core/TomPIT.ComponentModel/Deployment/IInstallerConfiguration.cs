@@ -1,6 +1,6 @@
 ﻿namespace TomPIT.ComponentModel.Deployment
 {
-	public interface IInstallerConfiguration : IConfiguration, IText
+	public interface IInstallerConfiguration : IConfiguration, IText, INamespaceElement
 	{
 	}
 }

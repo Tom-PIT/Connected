@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 
@@ -12,7 +12,7 @@ namespace TomPIT.Data.DataProviders
 
 		}
 
-		public List<IDataProvider> Query()
+		public ImmutableList<IDataProvider> Query()
 		{
 			return All();
 		}

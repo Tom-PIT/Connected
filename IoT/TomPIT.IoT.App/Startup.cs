@@ -1,77 +1,64 @@
-﻿using System;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
 using TomPIT.IoT.Hubs;
 using TomPIT.IoT.Routing;
-using TomPIT.IoT.Security;
 using TomPIT.IoT.Services;
-using TomPIT.Middleware;
 using TomPIT.Runtime;
-using TomPIT.Security;
 
 namespace TomPIT.IoT
 {
 	public class Startup
 	{
+		public Startup(IConfiguration configuration)
+		{
+			Configuration = configuration;
+		}
+
+		public IConfiguration Configuration { get; }
+
 		public void ConfigureServices(IServiceCollection services)
 		{
 			var e = new ServicesConfigurationArgs
 			{
-				Authentication = AuthenticationType.SingleTenant
+				Authentication = AuthenticationType.SingleTenant,
+				CorsEnabled = true
 			};
 
-			Instance.Initialize(services, e);
-
-			services.AddCors(options => options.AddPolicy("TomPITPolicy",
-				builder =>
-				{
-					var setting = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().Select(Guid.Empty, "Cors Origins");
-					var origin = new string[] { "http://localhost" };
-
-					if (setting != null && !string.IsNullOrWhiteSpace(setting.Value))
-						origin = setting.Value.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-
-					builder.AllowAnyMethod()
-					.AllowAnyHeader()
-					.WithOrigins(origin)
-					.AllowCredentials();
-				}));
+			Instance.Initialize(InstanceType.IoT, services, e);
 
 			services.AddSignalR((o) =>
 			{
 				o.EnableDetailedErrors = true;
-			});
+			}).AddNewtonsoftJsonProtocol();
 
-			services.AddSingleton<IHostedService, FlushingService>();
+			RegisterTasks(services);
 		}
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			Instance.Configure(InstanceType.Rest, app, env, (f) =>
+			Instance.Configure(app, env, (f) =>
 			{
 				IoTRouting.Register(f.Builder);
+				f.Builder.MapHub<IoTServerHub>("/iot");
 			});
 
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-			Instance.Run(app);
-
-			app.UseCors("TomPITPolicy");
-			app.UseSignalR(routes =>
-			{
-				routes.MapHub<IoTServerHub>("/iot");
-			});
-
-			MiddlewareDescriptor.Current.Tenant.GetService<IAuthorizationService>().RegisterAuthenticationProvider(new IoTAuthenticationProvider());
+			Instance.Run(app, env);
 		}
 
 		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
 			e.Tenant.RegisterService(typeof(IIoTHubService), typeof(IoTHubService));
+		}
+
+		private void RegisterTasks(IServiceCollection services)
+		{
+			services.AddSingleton<IHostedService, FlushingService>();
 		}
 	}
 }

@@ -1,0 +1,8 @@
+﻿import { ViewContext, Error } from '@:ui/core';
+
+export class [NAME] extends ViewContext{
+    constructor(e) {
+        super(e);
+    }
+    
+}

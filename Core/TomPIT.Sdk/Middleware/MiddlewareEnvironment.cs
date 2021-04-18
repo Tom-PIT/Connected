@@ -10,7 +10,7 @@ namespace TomPIT.Middleware
 			{
 				var service = Shell.GetService<IRuntimeService>();
 
-				return service.Mode == EnvironmentMode.Runtime && service.SupportsUI;
+				return service.Mode == EnvironmentMode.Runtime && (service.SupportsUI || service.Type == Environment.InstanceType.Rest);
 			}
 		}
 	}

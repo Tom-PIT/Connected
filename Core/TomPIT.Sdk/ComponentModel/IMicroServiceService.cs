@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace TomPIT.ComponentModel
 {
@@ -15,8 +15,8 @@ namespace TomPIT.ComponentModel
 		IMicroService Select(Guid microService);
 		IMicroService Select(string name);
 
-		List<IMicroService> Query();
-		List<IMicroService> Query(Guid user);
+		ImmutableList<IMicroService> Query();
+		ImmutableList<IMicroService> Query(Guid user);
 
 		string SelectString(Guid microService, Guid language, Guid element, string property);
 		string SelectMeta(Guid microService);

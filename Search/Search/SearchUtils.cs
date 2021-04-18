@@ -17,6 +17,7 @@ namespace TomPIT.Search
 		public const string FieldTitle = "title";
 		public const string FieldText = "text";
 		public const string FieldTags = "tags";
+		public const string FieldType = "type";
 		public const string FieldAuthor = "author";
 		public const string FieldDate = "date";
 
@@ -27,7 +28,8 @@ namespace TomPIT.Search
 				 || string.Compare(fieldName, FieldTitle, true) == 0
 				 || string.Compare(fieldName, FieldAuthor, true) == 0
 				 || string.Compare(fieldName, FieldDate, true) == 0
-				 || string.Compare(fieldName, FieldTags, true) == 0;
+				 || string.Compare(fieldName, FieldTags, true) == 0
+				 || string.Compare(fieldName, FieldType, true) == 0;
 		}
 		public static bool IsStaticField(string fieldName)
 		{
@@ -47,24 +49,9 @@ namespace TomPIT.Search
 			return type.CreateInstance<ISearchMiddleware<T>>();
 		}
 
-		public static Type CatalogType(this ISearchCatalogConfiguration catalog)
-		{
-			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(((IConfiguration)catalog).MicroService(), catalog, catalog.ComponentName());
-
-			if (type == null)
-				return null;
-
-			var searchHandler = type.GetInterface(typeof(ISearchMiddleware<>).FullName);
-
-			if (searchHandler == null)
-				return null;
-
-			return searchHandler.GetGenericArguments()[0];
-		}
-
 		public static List<PropertyInfo> CatalogProperties(this ISearchCatalogConfiguration catalog)
 		{
-			var type = CatalogType(catalog);
+			var type = catalog.CatalogType();
 
 			if (type == null)
 				return null;
@@ -96,7 +83,8 @@ namespace TomPIT.Search
 			if (type == null)
 				return null;
 
-			var instance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<ISearchComponent>(new MicroServiceContext(catalog.MicroService()), type);
+			using var ctx = new MicroServiceContext(catalog.MicroService());
+			var instance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<ISearchComponent>(ctx, type);
 
 			if (instance != null)
 				return instance.Properties;

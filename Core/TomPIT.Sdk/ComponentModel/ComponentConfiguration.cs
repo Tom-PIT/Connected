@@ -23,5 +23,10 @@ namespace TomPIT.ComponentModel
 		{
 
 		}
+
+		public override string ToString()
+		{
+			return this.ComponentName();
+		}
 	}
 }

@@ -21,5 +21,7 @@ namespace TomPIT.Middleware.Services
 		RuntimeException Exception(string format, string message);
 		RuntimeException Exception(string message, int eventId);
 		RuntimeException Exception(string format, string message, int eventId);
+
+		void Dump(string text);
 	}
 }

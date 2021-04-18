@@ -21,6 +21,7 @@ namespace TomPIT.Middleware.Services
 
 		public Guid MetricParent { get; set; }
 
+
 		public void Console(string message)
 		{
 			Write(new LogEntry
@@ -144,18 +145,31 @@ namespace TomPIT.Middleware.Services
 
 		public RuntimeException Exception(string message, int eventId)
 		{
-			return new RuntimeException(Context.GetType().ShortName(), message)
+			var result = new RuntimeException(Context.GetType().ShortName(), message)
 			{
 				Event = eventId
 			};
+
+			result.WithMetrics(Context);
+
+			return result;
 		}
 
 		public RuntimeException Exception(string format, string message, int eventId)
 		{
-			return new RuntimeException(Context.GetType().ShortName(), string.Format("{0}", message))
+			var result = new RuntimeException(Context.GetType().ShortName(), string.Format("{0}", message))
 			{
 				Event = eventId
 			};
+
+			result.WithMetrics(Context);
+
+			return result;
+		}
+
+		public void Dump(string text)
+		{
+			Context.Tenant.GetService<ILoggingService>().Dump(text);
 		}
 	}
 }

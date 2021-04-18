@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using TomPIT.Middleware;
 
 namespace TomPIT.Navigation
 {
 	public interface ISiteMapAuthorizationElement
 	{
-		bool Authorize(Guid user);
+		bool Authorize(IMiddlewareContext context, Guid user);
 	}
 }

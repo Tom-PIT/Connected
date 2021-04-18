@@ -1,5 +1,6 @@
 ﻿using System;
-using TomPIT.Ide.Dom;
+using TomPIT.Design.Ide.Dom;
+using TomPIT.Design.Ide.Events;
 using TomPIT.Ide.Environment;
 
 namespace TomPIT.Ide.Messaging

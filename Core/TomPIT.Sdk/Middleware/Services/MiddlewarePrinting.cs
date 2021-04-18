@@ -18,13 +18,29 @@ namespace TomPIT.Middleware.Services
 
 		public Guid PrintReport(string report, IPrinter printer, object arguments, string provider)
 		{
-			var descriptor = ComponentDescriptor.Report(Context, report);
+			return Print(new MiddlewarePrintArgs
+			{
+				Report = report,
+				Printer = printer,
+				Arguments = arguments,
+				Provider = provider
+			});
+		}
+
+		public Guid Print(MiddlewarePrintArgs e)
+		{
+			var descriptor = ComponentDescriptor.Report(Context, e.Report);
 
 			descriptor.Validate();
 
-			return Context.Tenant.GetService<IPrintingService>().Insert(provider, printer, descriptor.Component.Token, arguments);
-		}
+			if (string.IsNullOrWhiteSpace(e.User))
+			{
+				if (Context.Services.Identity.IsAuthenticated)
+					e.User = Context.Services.Identity.User.Token.ToString();
+			}
 
+			return Context.Tenant.GetService<IPrintingService>().Insert(e.Provider, e.Printer, descriptor.Component.Token, e.Arguments, e.User, e.Category);
+		}
 		public IPrintJob SelectPrintJob(Guid job)
 		{
 			return Context.Tenant.GetService<IPrintingService>().Select(job);

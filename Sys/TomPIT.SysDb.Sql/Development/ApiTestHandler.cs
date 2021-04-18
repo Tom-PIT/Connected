@@ -10,7 +10,7 @@ namespace TomPIT.SysDb.Sql.Development
 	{
 		public void Delete(Guid identifier)
 		{
-			var w = new Writer("tompit.api_test_del");
+			using var w = new Writer("tompit.api_test_del");
 
 			w.CreateParameter("@identifier", identifier);
 
@@ -19,7 +19,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void Insert(Guid identifier, string title, string description, string api, string body, string tags)
 		{
-			var w = new Writer("tompit.api_test_ins");
+			using var w = new Writer("tompit.api_test_ins");
 
 			w.CreateParameter("@title", title);
 			w.CreateParameter("@description", description, true);
@@ -33,12 +33,14 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<IApiTest> Query()
 		{
-			return new Reader<ApiTest>("tompit.api_test_que").Execute().ToList<IApiTest>();
+			using var r = new Reader<ApiTest>("tompit.api_test_que");
+
+			return r.Execute().ToList<IApiTest>();
 		}
 
 		public string SelectBody(Guid identifier)
 		{
-			var r = new Reader<ApiTestBody>("tompit.api_test_sel");
+			using var r = new Reader<ApiTestBody>("tompit.api_test_sel");
 
 			r.CreateParameter("@identifier", identifier);
 
@@ -49,7 +51,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void Update(Guid identifier, string title, string description, string api, string body, string tags)
 		{
-			var w = new Writer("tompit.api_test_upd");
+			using var w = new Writer("tompit.api_test_upd");
 
 			w.CreateParameter("@title", title);
 			w.CreateParameter("@description", description, true);

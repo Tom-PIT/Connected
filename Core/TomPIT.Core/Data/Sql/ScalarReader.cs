@@ -1,6 +1,5 @@
-﻿using System;
-using System.Data;
-using System.Data.SqlClient;
+﻿using System.Data;
+using Microsoft.Data.SqlClient;
 
 namespace TomPIT.Data.Sql
 {
@@ -37,13 +36,16 @@ namespace TomPIT.Data.Sql
 
 		public T ExecuteScalar(T defaultValue)
 		{
-			SqlCommand command = createCommand();
+			var command = createCommand();
 
 			try
 			{
 				prepareConnection();
 
-				return Connection.ExecuteCommand<T>(command);
+				if (Types.TryConvert(command.ExecuteScalar(), out T result))
+					return result;
+
+				return defaultValue;
 			}
 			finally
 			{

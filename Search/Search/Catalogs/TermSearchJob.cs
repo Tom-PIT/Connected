@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using Lucene.Net.QueryParsers;
 using TomPIT.Annotations.Search;
 using TomPIT.ComponentModel.Search;
@@ -11,6 +12,7 @@ namespace TomPIT.Search.Catalogs
 {
 	internal class TermSearchJob : SearchJob
 	{
+		private static readonly List<string> SpecialCharacters = new List<string> { @"\", "+", "-", "&&", "||", "!", "(", ")", "{", "}", "[", "]", "^", "\"", "~", "?", ":" };
 		private static Regex _rx = null;
 
 		public TermSearchJob(ISearchCatalogConfiguration catalog, ISearchOptions options) : base(catalog, options)
@@ -19,6 +21,8 @@ namespace TomPIT.Search.Catalogs
 
 		protected override string ParseCommandText()
 		{
+			var commandText = PrepareCommandText(EscapeCommandText(HttpUtility.HtmlDecode(Options.CommandText)));
+
 			var sb = new StringBuilder();
 
 			sb.AppendFormat("(");
@@ -59,7 +63,7 @@ namespace TomPIT.Search.Catalogs
 					if (!first)
 						sb.Append(" OR ");
 
-					sb.Append($" {property.ToLowerInvariant()}:{CommandText}");
+					sb.Append($" {property.ToLowerInvariant()}:{commandText}");
 
 					first = false;
 				}
@@ -72,7 +76,7 @@ namespace TomPIT.Search.Catalogs
 			return sb.ToString();
 		}
 
-		protected override MultiFieldQueryParser CreateParser()
+		protected override QueryParser CreateParser()
 		{
 			var fields = new List<string>
 			{
@@ -100,7 +104,7 @@ namespace TomPIT.Search.Catalogs
 					fields.Add(property.ToLowerInvariant());
 			}
 
-			return new MultiFieldQueryParser(Lucene.Net.Util.Version.LUCENE_30, fields.ToArray(), new ReadAnalyzer());
+			return new MultiFieldQueryParser(Lucene.Net.Util.Version.LUCENE_30, fields.ToArray(), new ReadAnalyzer(AnalyzerContext.Term));
 		}
 
 		protected override string PrepareCommandText(string commandText)
@@ -117,6 +121,17 @@ namespace TomPIT.Search.Catalogs
 
 				return _rx;
 			}
+		}
+
+		private string EscapeCommandText(string value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+				return value;
+
+			foreach (var item in SpecialCharacters)
+				value = value.Replace(item, $@"\{item}");
+
+			return value;
 		}
 
 	}

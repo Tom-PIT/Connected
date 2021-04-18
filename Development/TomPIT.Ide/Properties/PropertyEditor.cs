@@ -1,4 +1,6 @@
-﻿namespace TomPIT.Ide.Properties
+﻿using TomPIT.Design.Ide.Properties;
+
+namespace TomPIT.Ide.Properties
 {
 	public class PropertyEditor : IPropertyEditor
 	{

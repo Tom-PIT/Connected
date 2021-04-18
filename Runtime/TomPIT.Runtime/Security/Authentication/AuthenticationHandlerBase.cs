@@ -45,7 +45,7 @@ namespace TomPIT.Security.Authentication
 
 			try
 			{
-				pars = Shell.GetService<IConnectivityService>().SelectTenant(endpoint).ValidationParameters;
+				pars = Shell.GetService<IConnectivityService>().SelectTenant(endpoint)?.ValidationParameters;
 			}
 			catch { }
 
@@ -144,13 +144,57 @@ namespace TomPIT.Security.Authentication
 				if (string.Compare(tokens[0], "bearer", true) != 0)
 					return null;
 
-				key = tokens[1];
+				try
+				{
+					key = Encoding.UTF8.GetString(Convert.FromBase64String(tokens[1]));
+				}
+				catch
+				{
+					return null;
+				}
 			}
 
 			if (string.IsNullOrWhiteSpace(key))
 				return null;
 
 			var r = MiddlewareDescriptor.Current.Tenant.GetService<IAuthorizationService>().Authenticate(key);
+
+			if (!r.Success)
+				return null;
+
+			return new Principal(r.Identity);
+		}
+
+		protected ClaimsPrincipal ValidateSSO()
+		{
+			var header = Request.Headers["Authorization"];
+			var token = Guid.Empty;
+
+			if (header.Count == 0)
+				return null;
+
+			var content = header[0];
+			var tokens = content.Split(' ');
+
+			if (tokens.Length != 2)
+				return null;
+
+			if (string.Compare(tokens[0], "sso", true) != 0)
+				return null;
+
+			try
+			{
+				token = Types.Convert<Guid>(Encoding.UTF8.GetString(Convert.FromBase64String(tokens[1])));
+			}
+			catch
+			{
+				return null;
+			}
+
+			if (token == Guid.Empty)
+				return null;
+
+			var r = MiddlewareDescriptor.Current.Tenant.GetService<IAuthorizationService>().Authenticate(token);
 
 			if (!r.Success)
 				return null;

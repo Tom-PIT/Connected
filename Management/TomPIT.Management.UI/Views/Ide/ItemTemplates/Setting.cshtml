@@ -2,15 +2,10 @@
 
 @{
 	var setting = (ViewBag.CollectionItem as TomPIT.Ide.Collections.ItemDescriptor).Value as TomPIT.Configuration.ISetting;
-	var tokens = setting.Tags.Split(',');
 }
 <div data-component="list-item">
 	<div>
 		<strong>@setting.Name</strong>
 	</div>
-	@foreach (var i in tokens)
-	{
-		<span class="badge badge-light">@i</span>
-	}
 	<div>@setting.Value</div>
 </div>

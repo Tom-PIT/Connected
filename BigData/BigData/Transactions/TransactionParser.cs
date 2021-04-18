@@ -54,7 +54,8 @@ namespace TomPIT.BigData.Transactions
 		{
 			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(MicroService.Token, Partition, Partition.ComponentName());
 			var argument = type.GetInterface(typeof(IPartitionMiddleware<>).FullName).GetGenericArguments()[0];
-			var middleware = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<MiddlewareComponent>(new MicroServiceContext(MicroService), type);
+			using var ctx = new MicroServiceContext(MicroService);
+			var middleware = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<MiddlewareComponent>(ctx, type);
 			var items = (IList)typeof(List<>).MakeGenericType(argument).CreateInstance();
 
 			foreach (var item in Items)

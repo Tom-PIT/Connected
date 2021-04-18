@@ -10,6 +10,31 @@ namespace TomPIT.Serialization
 		private static JsonSerializerSettings _jsonSettings = null;
 		private static JsonMergeSettings _mergeSettings = null;
 
+		private static JsonSerializerSettings CultureSerializerSettings
+		{
+			get
+			{
+				return new JsonSerializerSettings
+				{
+					Culture = CultureInfo.CurrentCulture,
+					DateFormatHandling = DateFormatHandling.IsoDateFormat,
+					DateParseHandling = DateParseHandling.DateTime,
+					DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
+					FloatFormatHandling = FloatFormatHandling.DefaultValue,
+					FloatParseHandling = FloatParseHandling.Double,
+					MissingMemberHandling = MissingMemberHandling.Ignore,
+					Formatting = Formatting.Indented,
+					DefaultValueHandling = DefaultValueHandling.Include,
+					TypeNameHandling = TypeNameHandling.None,
+					ContractResolver = new SerializationResolver(),
+					NullValueHandling = NullValueHandling.Ignore,
+					ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
+					MetadataPropertyHandling = MetadataPropertyHandling.Default,
+					ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+				};
+			}
+		}
+
 		private static JsonSerializerSettings SerializerSettings
 		{
 			get
@@ -40,35 +65,6 @@ namespace TomPIT.Serialization
 			}
 		}
 
-		//private static JsonSerializerSettings IgnoreMetaDataSerializerSettings
-		//{
-		//	get
-		//	{
-		//		if (_ignoreMetaDataJsonSettings == null)
-		//		{
-		//			_ignoreMetaDataJsonSettings = new JsonSerializerSettings
-		//			{
-		//				Culture = CultureInfo.InvariantCulture,
-		//				DateFormatHandling = DateFormatHandling.IsoDateFormat,
-		//				DateParseHandling = DateParseHandling.DateTime,
-		//				DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
-		//				FloatFormatHandling = FloatFormatHandling.DefaultValue,
-		//				FloatParseHandling = FloatParseHandling.Double,
-		//				MissingMemberHandling = MissingMemberHandling.Ignore,
-		//				Formatting = Formatting.Indented,
-		//				DefaultValueHandling = DefaultValueHandling.Include,
-		//				TypeNameHandling = TypeNameHandling.Auto,
-		//				ContractResolver = new SerializationResolver(),
-		//				NullValueHandling = NullValueHandling.Ignore,
-		//				ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-		//				MetadataPropertyHandling = MetadataPropertyHandling.Ignore
-		//			};
-		//		}
-
-		//		return _ignoreMetaDataJsonSettings;
-		//	}
-		//}
-
 		private static JsonMergeSettings MergeSettings
 		{
 			get
@@ -97,7 +93,18 @@ namespace TomPIT.Serialization
 
 		public static string Serialize(object instance)
 		{
+			if (instance == null)
+				return null;
+
 			return JsonConvert.SerializeObject(instance, SerializerSettings);
+		}
+
+		public static string Serialize(object instance, bool invariantCulture)
+		{
+			if (instance == null)
+				return null;
+
+			return JsonConvert.SerializeObject(instance, invariantCulture ? SerializerSettings : CultureSerializerSettings);
 		}
 
 		public static void Populate(string value, object instance)
@@ -110,10 +117,15 @@ namespace TomPIT.Serialization
 
 		public static void Populate(object value, object instance)
 		{
+			Populate(value, instance, true);
+		}
+
+		public static void Populate(object value, object instance, bool invariantCulture)
+		{
 			if (value == null)
 				return;
 
-			JsonConvert.PopulateObject(Serialize(value), instance, SerializerSettings);
+			JsonConvert.PopulateObject(Serialize(value), instance, invariantCulture ? SerializerSettings : CultureSerializerSettings);
 		}
 
 		public static object Deserialize(string json, Type type)

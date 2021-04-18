@@ -142,7 +142,7 @@
     <value>Default retry strategy for technology {0}, named '{1}', is not defined.</value>
   </data>
   <data name="DefaultRetryStrategyNotFound" xml:space="preserve">
-    <value>Default retry strategy for technology {0} was not not defined, and there is no overall default strategy.</value>
+    <value>Default retry strategy for technology {0} was not defined, and there is no overall default strategy.</value>
   </data>
   <data name="DevelopmentEnvironment" xml:space="preserve">
     <value>Integrated development environment</value>
@@ -415,7 +415,7 @@
     <value>Maximum allowed value is {0}.</value>
   </data>
   <data name="ValMinValue" xml:space="preserve">
-    <value>Minimun allowed value is {0}.</value>
+    <value>Minimum allowed value is {0}.</value>
   </data>
   <data name="ValReservedValue" xml:space="preserve">
     <value>The following values are reserved by the system:</value>
@@ -1112,5 +1112,152 @@
   </data>
   <data name="ErrTransactionNotNull" xml:space="preserve">
     <value>Transaction already attached.</value>
+  </data>
+  <data name="ApiOperationInvalidVerb" xml:space="preserve">
+    <value>Method not allowed.</value>
+  </data>
+  <data name="ErrManifestNull" xml:space="preserve">
+    <value>Manifest not found</value>
+  </data>
+  <data name="ErrManifestPropertyNull" xml:space="preserve">
+    <value>Manifest property not found</value>
+  </data>
+  <data name="AuthorizationPolicyNotSupported" xml:space="preserve">
+    <value>Authorization policy not supported</value>
+  </data>
+  <data name="ProxyPropertyNotFound" xml:space="preserve">
+    <value>Proxy property not found. You should define a property with a required name or define an ProxyPropertyAttribute on one property.</value>
+  </data>
+  <data name="EntityNotFound" xml:space="preserve">
+    <value>not found</value>
+  </data>
+  <data name="PolicyAuthorizationFailed" xml:space="preserve">
+    <value>Policy authorization failed.</value>
+  </data>
+  <data name="ErrInvalidAuthorizationModel" xml:space="preserve">
+    <value>Invalid Authorization model</value>
+  </data>
+  <data name="ErrClaimNull" xml:space="preserve">
+    <value>Claim is null</value>
+  </data>
+  <data name="ErrAuthenticatedUserRequired" xml:space="preserve">
+    <value>This action requires an authenticated user.</value>
+  </data>
+  <data name="ErrPrimaryKeyNull" xml:space="preserve">
+    <value>primaryKey argument is null</value>
+  </data>
+  <data name="ErrCommitNoFiles" xml:space="preserve">
+    <value>No files are selected for commit.</value>
+  </data>
+  <data name="ErrRepositoryNotFound" xml:space="preserve">
+    <value>Repository not found</value>
+  </data>
+  <data name="NoSmtpEndpoint" xml:space="preserve">
+    <value>Smtp endpoint not set. Smtp listener disabled.</value>
+  </data>
+  <data name="NoSmtpHostName" xml:space="preserve">
+    <value>Smtp host name not set. Smtp listener disabled.</value>
+  </data>
+  <data name="ErrCommandTextNull" xml:space="preserve">
+    <value>Command text not set.</value>
+  </data>
+  <data name="ErrNoQuery" xml:space="preserve">
+    <value>No queries in big data partition</value>
+  </data>
+  <data name="ErrQueryNotFound" xml:space="preserve">
+    <value>Query not found</value>
+  </data>
+  <data name="ErrModelConnectionNotSet" xml:space="preserve">
+    <value>Model connection not set</value>
+  </data>
+  <data name="ErrModelOperationNotFound" xml:space="preserve">
+    <value>Model operation not found</value>
+  </data>
+  <data name="ErrCannotGetEntityState" xml:space="preserve">
+    <value>Cannot obtain Entity state</value>
+  </data>
+  <data name="ErrCannotResolveProcedureName" xml:space="preserve">
+    <value>Cannot resolve stored procedure name</value>
+  </data>
+  <data name="ErrCommandTextNotSet" xml:space="preserve">
+    <value>Command text not set</value>
+  </data>
+  <data name="DataProviderParserNull" xml:space="preserve">
+    <value>Data provider does not support parsing text</value>
+  </data>
+  <data name="ValScriptTagNotAllowed" xml:space="preserve">
+    <value>Script tag is not allowed</value>
+  </data>
+  <data name="ValEnumValueNotDefined" xml:space="preserve">
+    <value>Enum value not defined</value>
+  </data>
+  <data name="ErrConcurrencyMessage" xml:space="preserve">
+    <value>Data concurrency issue occured. Please retry the operation</value>
+  </data>
+  <data name="ErrConcurrencySource" xml:space="preserve">
+    <value>Concurrency</value>
+  </data>
+  <data name="ErrRecordLock" xml:space="preserve">
+    <value>Cannot obtain record lock</value>
+  </data>
+  <data name="ErrRecordUnlock" xml:space="preserve">
+    <value>Record unlock failed. The most common reason is that a lock has expired. This could mean your transaction has written inconsistent data.</value>
+  </data>
+  <data name="ErrEntityStateNotFound" xml:space="preserve">
+    <value>Entity state not found</value>
+  </data>
+  <data name="ErrEmailInUse" xml:space="preserve">
+    <value>Email is already in use</value>
+  </data>
+  <data name="ErrLoginInUse" xml:space="preserve">
+    <value>Login name is already in use</value>
+  </data>
+  <data name="ErrMiddlewareNull" xml:space="preserve">
+    <value>Cannot create middleware</value>
+  </data>
+  <data name="ErrSettingPropertyNull" xml:space="preserve">
+    <value>Settings middleware does not contain requested property</value>
+  </data>
+  <data name="ErrPropertyReadOnly" xml:space="preserve">
+    <value>Property is read only.</value>
+  </data>
+  <data name="ErrPatchForbidden" xml:space="preserve">
+    <value>Property is not allowed in patch operation</value>
+  </data>
+  <data name="ErrLockFail" xml:space="preserve">
+    <value>Cannot obtain lock</value>
+  </data>
+  <data name="ErrCannotResolveViewName" xml:space="preserve">
+    <value>Cannot resolve view name</value>
+  </data>
+  <data name="ErrCreateSearchCatalog" xml:space="preserve">
+    <value>Cannot create search catalog middleware</value>
+  </data>
+  <data name="ErrClientNotFound" xml:space="preserve">
+    <value>Client not found</value>
+  </data>
+  <data name="ErrContentTypeNotSupported" xml:space="preserve">
+    <value>Content type not supported</value>
+  </data>
+  <data name="ValSecurityCodeExists" xml:space="preserve">
+    <value>Security code already exists</value>
+  </data>
+  <data name="ErrCannotCreateStackedDispatcher" xml:space="preserve">
+    <value>Cannot create stacked dispatcher</value>
+  </data>
+  <data name="ErrNewPathNotSet" xml:space="preserve">
+    <value>NewPath not set</value>
+  </data>
+  <data name="ErrCannotResolveDatabaseType" xml:space="preserve">
+    <value>Cannot resolve database type</value>
+  </data>
+  <data name="ErrDependencyGraph" xml:space="preserve">
+    <value>Cannot set entry into dependency graph</value>
+  </data>
+  <data name="NamespaceClass" xml:space="preserve">
+    <value>This class acts as a namespace class</value>
+  </data>
+  <data name="ErrTypeMultipleMatch" xml:space="preserve">
+    <value>Multiple types match the specified type name. Consider use namespace property on the component if available and use partial classes to scope types.</value>
   </data>
 </root>

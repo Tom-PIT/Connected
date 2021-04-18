@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using TomPIT.Caching;
 using TomPIT.Messaging;
 using TomPIT.Reflection;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Notifications
 {
@@ -24,7 +24,7 @@ namespace TomPIT.Sys.Notifications
 				Content = JsonConvert.SerializeObject(args)
 			};
 
-			DataModel.Messages.Insert("datacache", args.Message, JsonConvert.SerializeObject(state), DateTime.UtcNow.AddMinutes(5), TimeSpan.FromSeconds(5), SysExtensions.RequestInstanceId);
+			DataModel.Messages.Insert("datacache", args.Message, JsonConvert.SerializeObject(state), DateTime.UtcNow.AddMinutes(1), TimeSpan.FromSeconds(3), SysExtensions.RequestInstanceId);
 
 			if (Cache != null)
 			{

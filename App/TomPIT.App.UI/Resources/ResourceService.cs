@@ -1,11 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
+using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
 using TomPIT.Storage;
@@ -14,6 +16,8 @@ namespace TomPIT.App.Resources
 {
 	internal class ResourceService : ClientRepository<CompiledBundle, string>, IResourceService
 	{
+		private const string FromPreprocessorPattern = "\"(.*?)\"";
+		private const string FromPreprocessorPatternSingle = "\'(.*?)\'";
 		public ResourceService(ITenant tenant) : base(tenant, "bundle")
 		{
 			tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
@@ -57,10 +61,21 @@ namespace TomPIT.App.Resources
 
 			var c = Tenant.GetService<IComponentService>().SelectComponent(e.Component);
 
-			if (c == null)
+			if (c == null || e.Component != c.Token)
 				return;
 
-			Remove(GenerateKey(e.MicroService, c.Name.ToLowerInvariant()));
+			var keys = Keys();
+
+			if (keys == null)
+				return;
+
+			foreach (var key in keys)
+			{
+				var tokens = key.Split('.', 3);
+
+				if (new Guid(tokens[0]) == e.MicroService && string.Compare(tokens[1], c.Name.ToLowerInvariant(), true) == 0)
+					Remove(key);
+			}
 		}
 
 		public string Bundle(string microService, string name)
@@ -70,7 +85,9 @@ namespace TomPIT.App.Resources
 			if (ms == null)
 				throw new RuntimeException(GetType().ShortName(), string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
 
-			var r = Get(GenerateKey(ms.Token, name.ToLowerInvariant()));
+			using var ctx = new MicroServiceContext(ms.Token, Tenant.Url);
+			var key = GenerateKey(ms.Token, name.ToLowerInvariant(), ctx.Services.Routing.RootUrl);
+			var r = Get(key);
 
 			if (r != null)
 				return r.Content;
@@ -97,10 +114,11 @@ namespace TomPIT.App.Resources
 				: sb.ToString(),
 
 				Name = name,
-				MicroService = ms.Token
+				MicroService = ms.Token,
+				Url = ctx.Services.Routing.RootUrl
 			};
 
-			Set(GenerateKey(ms.Token, name.ToLowerInvariant()), r);
+			Set(key, r);
 
 			return r.Content;
 		}
@@ -108,13 +126,55 @@ namespace TomPIT.App.Resources
 		private string GetSource(IScriptSource source)
 		{
 			if (source is IScriptFileSystemSource)
-				return GetFileSystemSource(source as IScriptFileSystemSource);
+				return Preprocessor(GetFileSystemSource(source as IScriptFileSystemSource));
 			else if (source is IScriptCodeSource)
-				return GetCodeSource(source as IScriptCodeSource);
+				return Preprocessor(GetCodeSource(source as IScriptCodeSource));
 			else if (source is IScriptUploadSource)
-				return GetUploadSource(source as IScriptUploadSource);
+				return Preprocessor(GetUploadSource(source as IScriptUploadSource));
 			else
 				throw new NotSupportedException();
+		}
+
+		private string Preprocessor(string source)
+		{
+			if (string.IsNullOrWhiteSpace(source))
+				return source;
+
+			var result = new StringBuilder();
+			using var reader = new StringReader(source);
+
+			while (reader.Peek() != -1)
+			{
+				var line = reader.ReadLine();
+
+				if (line.Trim().StartsWith("import", StringComparison.OrdinalIgnoreCase))
+				{
+					if (line.Contains('"'))
+						line = Regex.Replace(line, FromPreprocessorPattern, new MatchEvaluator(ProcessPath));
+					else
+						line = Regex.Replace(line, FromPreprocessorPatternSingle, new MatchEvaluator(ProcessPath));
+				}
+
+				result.AppendLine(line);
+			}
+
+			return result.ToString();
+		}
+
+		private string ProcessPath(Match match)
+		{
+			if (!match.Value.StartsWith("\"@:") && !match.Value.StartsWith("\'@:"))
+				return match.Value;
+
+			var path = match.Value[3..^1];
+			var tokens = path.Split('/');
+
+			using var ctx = new MiddlewareContext(Tenant.Url);
+			//var ms = ctx.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
+			//var component = ctx.Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategories.ScriptBundle, tokens[1]);
+
+			//return $"\"{ctx.Services.Routing.RootUrl}/sys/bundles/{path}?{component.Modified.Ticks}\"";
+			return $"\"{ctx.Services.Routing.RootUrl}/sys/bundles/{path}\"";
 		}
 
 		private string GetUploadSource(IScriptUploadSource d)
@@ -157,8 +217,8 @@ namespace TomPIT.App.Resources
 
 		private string Minify(string source)
 		{
-			//TODO: implement minifier
 			return source;
+			//	return new BundleMinifier().Minify(source);
 		}
 	}
 }

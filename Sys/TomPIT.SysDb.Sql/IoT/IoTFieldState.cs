@@ -9,6 +9,9 @@ namespace TomPIT.SysDb.Sql.IoT
 		public string Field { get; set; }
 		public string Value { get; set; }
 		public DateTime Modified { get; set; }
+		public string Device { get; set; }
+
+		public object RawValue => null;
 
 		protected override void OnCreate()
 		{
@@ -17,6 +20,7 @@ namespace TomPIT.SysDb.Sql.IoT
 			Field = GetString("field");
 			Value = GetString("value");
 			Modified = GetDate("modified");
+			Device = GetString("device");
 		}
 	}
 }

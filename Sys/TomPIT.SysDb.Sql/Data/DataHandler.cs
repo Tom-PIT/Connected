@@ -6,6 +6,18 @@ namespace TomPIT.SysDb.Sql.Data
 	{
 		private IAuditHandler _audit = null;
 		private IUserDataHandler _userData = null;
+		private ILockHandler _lock = null;
+
+		public ILockHandler Locking
+		{
+			get
+			{
+				if (_lock == null)
+					_lock = new LockHandler();
+
+				return _lock;
+			}
+		}
 
 		public IAuditHandler Audit
 		{

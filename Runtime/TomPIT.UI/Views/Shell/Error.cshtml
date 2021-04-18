@@ -36,14 +36,24 @@
 
                 @if (ViewData["exScript"] != null)
                 {
-                   @if (ViewData["exScriptMicroService"] != null)
-                   {
+                    @if (ViewData["exScriptMicroService"] != null)
+                    {
                         <span>@ViewData["exScriptMicroService"]/</span>
-                   }
-                   @Html.Raw(ViewData["exScript"])
-                   <br/>
+                    }
+                    @Html.Raw(ViewData["exScript"])
+                    <br />
                 }
                 @ViewData["exMessage"]
+                <br />
+
+                @if (ViewData["exDiagnosticTrace"] is not null)
+                {
+                    @await Html.PartialAsync("~/Views/Shell/DiagnosticTrace.cshtml")
+                }
+                else
+                {
+                    @ViewData["exStack"]
+                }
             </code>
         </div>
         <div class="footer text-center">

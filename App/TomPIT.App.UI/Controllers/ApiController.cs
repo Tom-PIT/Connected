@@ -15,19 +15,27 @@ namespace TomPIT.App.Controllers
 		{
 			var m = CreateModel();
 
+			HttpContext.Response.RegisterForDispose(m);
+
 			return Json(Serializer.Serialize(m.Interop.Invoke<object, JObject>(m.QualifierName, m.Body)));
 		}
 
 		[HttpPost]
 		public IActionResult UIInjection()
 		{
-			return PartialView("~/Views/UIInjectionView.cshtml", CreateUIInjectionModel());
+			var model = CreateUIInjectionModel();
+
+			HttpContext.Response.RegisterForDispose(model);
+
+			return PartialView("~/Views/UIInjectionView.cshtml", model);
 		}
 
 		[HttpPost]
 		public IActionResult Partial()
 		{
 			var model = CreatePartialModel();
+
+			HttpContext.Response.RegisterForDispose(model);
 
 			return PartialView(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", model.QualifierName), model);
 		}
@@ -37,6 +45,8 @@ namespace TomPIT.App.Controllers
 		{
 			var model = CreateSearchModel();
 
+			HttpContext.Response.RegisterForDispose(model);
+
 			return Json(model.Search());
 		}
 
@@ -45,6 +55,7 @@ namespace TomPIT.App.Controllers
 		{
 			var model = CreateUserDataModel();
 
+			HttpContext.Response.RegisterForDispose(model);
 			model.SetData();
 
 			return new EmptyResult();
@@ -55,6 +66,8 @@ namespace TomPIT.App.Controllers
 		{
 			var model = CreateUserDataModel();
 
+			HttpContext.Response.RegisterForDispose(model);
+
 			return Json(model.GetData());
 		}
 
@@ -62,6 +75,8 @@ namespace TomPIT.App.Controllers
 		public IActionResult QueryUserData()
 		{
 			var model = CreateUserDataModel();
+
+			HttpContext.Response.RegisterForDispose(model);
 
 			return Json(model.QueryData());
 		}

@@ -1,45 +1,46 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <AssemblyVersion>2.1.403.3</AssemblyVersion>
-    <FileVersion>2.1.403.3</FileVersion>
-    <Version>2.1.403.3</Version>
+    <AssemblyVersion>2.2.415.2</AssemblyVersion>
+    <FileVersion>2.2.415.2</FileVersion>
+    <Version>2.2.415.2</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <AssemblyName>TomPIT.MicroServices.Reporting</AssemblyName>
     <RootNamespace>TomPIT.MicroServices.Reporting</RootNamespace>
+    <Authors>Tom PIT</Authors>
+    <Company>Tom PIT</Company>
+    <Product>Tom PIT.connected</Product>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="bundleconfig.json" />
-    <None Remove="wwwroot\assets\reporting.design.min.css" />
-    <None Remove="wwwroot\assets\reporting.design.min.js" />
-    <None Remove="wwwroot\assets\reporting.min.css" />
-    <None Remove="wwwroot\assets\reporting.min.js" />
+    <Content Remove="wwwroot\Assets\reporting.design.min.css" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="wwwroot\assets\reporting.design.min.css" />
-    <EmbeddedResource Include="wwwroot\assets\reporting.design.min.js" />
-    <EmbeddedResource Include="wwwroot\assets\reporting.min.css" />
-    <EmbeddedResource Include="wwwroot\assets\reporting.min.js" />
-    <EmbeddedResource Include="wwwroot\assets\ko.min.js" />
+    <None Remove="bundleconfig.json" />
+    <None Remove="wwwroot\Assets\reporting.design.min.css" />
+    <None Remove="wwwroot\Assets\reporting.design.min.js" />
+    <None Remove="wwwroot\Assets\reporting.min.css" />
+    <None Remove="wwwroot\Assets\reporting.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\Assets\reporting.design.min.css" />
+    <EmbeddedResource Include="wwwroot\Assets\reporting.design.min.js" />
+    <EmbeddedResource Include="wwwroot\Assets\reporting.min.css" />
+    <EmbeddedResource Include="wwwroot\Assets\reporting.min.js" />
+    <EmbeddedResource Include="wwwroot\Assets\ko.min.js" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DevExpress.AspNetCore.Reporting" Version="19.2.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.2" />
-    <PackageReference Include="System.CodeDom" Version="4.7.0" />
-    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="5.0.4" />
+    <PackageReference Include="System.CodeDom" Version="5.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System">
-      <HintPath>System</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Update="package.json">

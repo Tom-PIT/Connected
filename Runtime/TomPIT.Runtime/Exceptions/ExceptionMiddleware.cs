@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,6 +51,30 @@ namespace TomPIT.Exceptions
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
 				return;
 
+			if (ex is TomPITException tp)
+			{
+				if (tp.InnerException is MiddlewareValidationException val)
+				{
+					var valType = Shell.GetService<IRuntimeService>().Type;
+
+					val.LogWarning($"{LogCategories.Unhandled} - {valType}");
+					return;
+
+				}
+
+				var type = Shell.GetService<IRuntimeService>().Type;
+
+				tp.LogError($"{LogCategories.Unhandled} - {type}");
+				return;
+			}
+			else if (ex is MiddlewareValidationException validation)
+			{
+				var type = Shell.GetService<IRuntimeService>().Type;
+
+				validation.LogWarning($"{LogCategories.Unhandled} - {type}");
+				return;
+			}
+
 			var e = new LogEntry
 			{
 				Category = "Unhandled",
@@ -79,6 +104,19 @@ namespace TomPIT.Exceptions
 
 		protected virtual async Task OnHandleException(HttpContext context, Exception ex)
 		{
+			if(context.Response.StatusCode == (int)HttpStatusCode.InternalServerError)
+			{
+				await ErrorResult(context, ex);
+				return;
+			}
+
+			context.Response.Redirect($"{RuntimeExtensions.RootUrl}/sys/status/{context.Response.StatusCode}");
+
+			await Task.CompletedTask;
+		}
+
+		private async Task ErrorResult(HttpContext context, Exception ex)
+		{
 			var r = new ViewResult
 			{
 				ViewName = "~/Views/Shell/Error.cshtml",
@@ -88,6 +126,10 @@ namespace TomPIT.Exceptions
 
 			r.ViewData.Model = new ExceptionModel(context, ex);
 			r.ViewData.Add("exSource", ex.Source);
+
+			if (Shell.GetService<IRuntimeService>().Stage != EnvironmentStage.Production)
+				r.ViewData.Add("exStack", ex.StackTrace);
+
 			var sb = new StringBuilder();
 			var tenant = MiddlewareDescriptor.Current.Tenant;
 			var devUrl = tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Development, InstanceVerbs.All);
@@ -104,7 +146,9 @@ namespace TomPIT.Exceptions
 					if (ms != null && ms.Status != MicroServiceStatus.Production)
 					{
 						if (tenant != null && !string.IsNullOrWhiteSpace(devUrl))
-							r.ViewData.Add("exUrl", $"{devUrl}/ide/{script.MicroService}?component={script.Component}&element={script.Element}");
+						{
+							r.ViewData.Add("exUrl", $"{devUrl}/ide/{ms.Url}?component={script.Component}&element={script.Element}");
+						}
 					}
 				}
 
@@ -134,6 +178,11 @@ namespace TomPIT.Exceptions
 
 			r.ViewData.Add("exMessage", sb.ToString());
 
+			if (ex is TomPITException tp)
+				r.ViewData.Add("exDiagnosticTrace", tp.DiagnosticsTrace);
+			else if (ex is MiddlewareValidationException mw)
+				r.ViewData.Add("exDiagnosticTrace", mw.DiagnosticsTrace);
+
 			var exec = context.RequestServices.GetRequiredService<IActionResultExecutor<ViewResult>>();
 			var desc = new ActionDescriptor
 			{
@@ -142,14 +191,19 @@ namespace TomPIT.Exceptions
 			var action = new ActionContext(context, context.GetRouteData(), desc);
 
 			await exec.ExecuteAsync(action, r);
+
 		}
 
 		protected virtual async Task HandleException(HttpContext context, Exception ex)
 		{
+			var resolvedException = ResolveException(ex);
+
+			SetResponseStatus(context, resolvedException);
+
 			if (context.Request.IsAjaxRequest() || !Shell.GetService<IRuntimeService>().SupportsUI)
-				await OnHandleAjaxException(context, ResolveException(ex));
+				await OnHandleAjaxException(context, resolvedException);
 			else
-				await OnHandleException(context, ResolveException(ex));
+				await OnHandleException(context, resolvedException);
 		}
 
 		private Exception ResolveException(Exception ex)
@@ -158,6 +212,25 @@ namespace TomPIT.Exceptions
 				return ex.InnerException;
 
 			return ex;
+		}
+
+		private void SetResponseStatus(HttpContext context, Exception ex)
+		{
+			if (ex is ScriptException script && script.InnerException != null)
+				SetResponseStatus(context, script.InnerException);
+			else
+			{
+				if (ex is ForbiddenException)
+					context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+				else if (ex is NotFoundException)
+					context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+				else if (ex is UnauthorizedException)
+					context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+				else if (ex is MiddlewareValidationException)
+					context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+				else
+					context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+			}
 		}
 	}
 }

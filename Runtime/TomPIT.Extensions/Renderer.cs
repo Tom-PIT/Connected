@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using System;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using TomPIT.Middleware;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT
 {
@@ -6,7 +10,6 @@ namespace TomPIT
 	{
 		private AttributesHelper _attributes = null;
 		private IdeHelper _ide = null;
-		private SnippetsHelper _snippets = null;
 		private PartialHelper _partial = null;
 		private UrlHelper _url = null;
 		private JavascriptHelper _js = null;
@@ -78,17 +81,6 @@ namespace TomPIT
 			}
 		}
 
-		public SnippetsHelper Snippets
-		{
-			get
-			{
-				if (_snippets == null)
-					_snippets = new SnippetsHelper(Html);
-
-				return _snippets;
-			}
-		}
-
 		public SystemHelper Sys
 		{
 			get
@@ -142,6 +134,32 @@ namespace TomPIT
 
 				return _shared;
 			}
+		}
+
+		[Obsolete("Please use Api Property instead.")]
+		public IHtmlContent Property([CIP(CIP.ApiOperationProvider)] string api, [CIP(CIP.ApiOperationParameterProvider)] string property)
+		{
+			return ApiProperty(api, property);
+		}
+
+		public IHtmlContent ApiProperty([CIP(CIP.ApiOperationProvider)] string api, [CIP(CIP.ApiOperationParameterProvider)] string property)
+		{
+			var result = new ApiPropertyRenderer(Html.ViewData.Model as IMiddlewareContext, api, property).Result;
+
+			if (result == null)
+				return null;
+
+			return Html.Raw(result);
+		}
+
+		public IHtmlContent SettingProperty([CIP(CIP.SettingMiddlewareProvider)] string middleware, [CIP(CIP.SettingMiddlewareParameterProvider)] string property)
+		{
+			var result = new SettingPropertyRenderer(Html.ViewData.Model as IMiddlewareContext, middleware, property).Result;
+
+			if (result == null)
+				return null;
+
+			return Html.Raw(result);
 		}
 	}
 }

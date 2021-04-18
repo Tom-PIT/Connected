@@ -8,8 +8,9 @@ using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
+using TomPIT.Design.Ide.Dom;
+using TomPIT.Design.Ide.Properties;
 using TomPIT.Ide.Designers;
-using TomPIT.Ide.Dom;
 using TomPIT.Ide.Properties;
 using TomPIT.Ide.Properties.Validation;
 using TomPIT.Reflection;
@@ -132,7 +133,7 @@ namespace TomPIT.Ide.Environment.Providers
 				return;
 
 			var element = instance as IElement;
-			var props = DomQuery.Properties(instance, false, true);
+			var props = ReflectionExtensions.Properties(instance, false);
 
 			if (props == null)
 				return;

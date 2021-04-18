@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using TomPIT.Cdn;
 using TomPIT.ComponentModel;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Runtime;
@@ -18,7 +19,7 @@ namespace TomPIT.Middleware.Services
 			return Send(from, to, subject, body, null, 0);
 		}
 
-		public Guid Send(string from, string to, string subject, string body, JArray headers, int attachmentCount)
+		public Guid Send(string from, string to, string subject, string body, Dictionary<string, object> headers, int attachmentCount)
 		{
 			return Context.Tenant.GetService<IMailService>().Enqueue(from, to, subject, body, headers, attachmentCount, MailFormat.Html, DateTime.UtcNow, DateTime.UtcNow.AddHours(24));
 		}

@@ -1,11 +1,7 @@
-﻿using TomPIT.Collections;
-
-namespace TomPIT.ComponentModel.IoT
+﻿namespace TomPIT.ComponentModel.IoT
 {
-	public interface IIoTHubConfiguration : IConfiguration
+	public interface IIoTHubConfiguration : IConfiguration, IText, INamespaceElement
 	{
-		ListItems<IIoTDevice> Devices { get; }
-		string Schema { get; }
 		ElementScope Scope { get; }
 	}
 }

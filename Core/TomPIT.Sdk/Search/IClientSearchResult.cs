@@ -2,6 +2,6 @@
 {
 	public interface IClientSearchResult : ISearchResult
 	{
-		object Entity { get; }
+		string Entity { get; }
 	}
 }

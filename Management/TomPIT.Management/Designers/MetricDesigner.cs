@@ -4,6 +4,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Diagnostics;
+using TomPIT.Design.Ide.Designers;
 using TomPIT.Diagnostics;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;

@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using TomPIT.Environment;
+using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Runtime
 {
 	internal class RuntimeService : IRuntimeService
 	{
+		internal static IApplicationBuilder _host;
+
 		public string ContentRoot { get; set; }
 		public string WebRoot { get; set; }
 		public RuntimeEnvironment Environment { get; set; } = RuntimeEnvironment.SingleTenant;
@@ -14,11 +17,18 @@ namespace TomPIT.Runtime
 		public EnvironmentStage Stage { get; set; }
 		public EnvironmentMode Mode { get; set; } = EnvironmentMode.Runtime;
 
-		public void Initialize(InstanceType type, IWebHostEnvironment environment)
+		public IApplicationBuilder Host => _host;
+
+		public Platform Platform { get; private set; } = Platform.Cloud;
+
+		public EnvironmentConnectivity Connectivity { get; private set; }
+
+		public void Initialize(InstanceType type, Platform platform, IWebHostEnvironment environment)
 		{
 			Type = type;
 			ContentRoot = environment.ContentRootPath;
 			WebRoot = environment.WebRootPath;
+			Platform = platform;
 
 			switch (Type)
 			{
@@ -52,12 +62,10 @@ namespace TomPIT.Runtime
 					break;
 			}
 
-			if (environment.IsEnvironment(Environments.Development))
-				Stage = EnvironmentStage.Development;
-			else if (environment.IsEnvironment(Environments.Staging))
-				Stage = EnvironmentStage.Staging;
-			else
-				Stage = EnvironmentStage.Production;
+			var sys = Shell.GetConfiguration<IClientSys>();
+
+			Stage = sys.Stage;
+			Connectivity = sys.Connectivity;
 		}
 	}
 }

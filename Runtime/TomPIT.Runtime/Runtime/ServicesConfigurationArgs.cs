@@ -11,5 +11,7 @@ namespace TomPIT.Runtime
 		public AuthenticationType Authentication { get; set; } = AuthenticationType.MultiTenant;
 		public ConfigureMvcHandler ConfigureMvc { get; set; }
 		public ApplicationPartsHandler ProvideApplicationParts { get; set; }
+
+		public bool CorsEnabled { get; set; }
 	}
 }

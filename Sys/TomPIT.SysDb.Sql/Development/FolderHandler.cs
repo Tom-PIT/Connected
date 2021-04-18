@@ -11,7 +11,7 @@ namespace TomPIT.SysDb.Sql.Development
 	{
 		public void Delete(IFolder folder)
 		{
-			var w = new Writer("tompit.folder_del");
+			using var w = new Writer("tompit.folder_del");
 
 			w.CreateParameter("@id", folder.GetId());
 
@@ -20,7 +20,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void Insert(IMicroService service, string name, Guid token, IFolder parent)
 		{
-			var w = new Writer("tompit.folder_ins");
+			using var w = new Writer("tompit.folder_ins");
 
 			w.CreateParameter("@service", service.GetId());
 			w.CreateParameter("@name", name);
@@ -32,12 +32,14 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<IFolder> Query()
 		{
-			return new Reader<Folder>("tompit.folder_que").Execute().ToList<IFolder>();
+			using var r = new Reader<Folder>("tompit.folder_que");
+
+			return r.Execute().ToList<IFolder>();
 		}
 
 		public IFolder Select(Guid token)
 		{
-			var r = new Reader<Folder>("tompit.folder_sel");
+			using var r = new Reader<Folder>("tompit.folder_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -46,7 +48,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public IFolder Select(IMicroService microService, string name)
 		{
-			var r = new Reader<Folder>("tompit.folder_sel");
+			using var r = new Reader<Folder>("tompit.folder_sel");
 
 			r.CreateParameter("@service", microService.GetId());
 			r.CreateParameter("@name", name);
@@ -56,7 +58,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public void Update(IFolder folder, string name, IFolder parent)
 		{
-			var w = new Writer("tompit.folder_upd");
+			using var w = new Writer("tompit.folder_upd");
 
 			w.CreateParameter("@id", folder.GetId());
 			w.CreateParameter("@name", name);

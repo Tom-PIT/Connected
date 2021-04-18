@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Collections.Immutable;
 
 namespace TomPIT.Development.Navigation
 {
 	public interface INavigationDesignService
 	{
-		List<INavigationRouteDescriptor> QueryRouteKeys(Guid microservice);
-		List<string> QuerySiteMapKeys(Guid microService);
+		ImmutableList<INavigationRouteDescriptor> QueryRouteKeys(Guid microservice);
+		ImmutableList<string> QuerySiteMapKeys(Guid microService);
+		ImmutableList<string> QueryNavigationContexts(Guid microService);
 	}
 }

@@ -1,4 +1,5 @@
-﻿using TomPIT.Annotations.Design;
+﻿using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoC;
@@ -9,6 +10,9 @@ namespace TomPIT.MicroServices.IoC
 	public class UIDependencyInjectionConfiguration : ComponentConfiguration, IUIDependencyInjectionConfiguration
 	{
 		private ListItems<IUIDependency> _injections = null;
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
 
 		[Items(DesignUtils.UIDependencyInjectionsItems)]
 		public ListItems<IUIDependency> Injections

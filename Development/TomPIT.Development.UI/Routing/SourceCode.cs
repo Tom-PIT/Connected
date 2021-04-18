@@ -24,12 +24,13 @@ namespace TomPIT.Development.Routing
 				return;
 			}
 
-			var aa = new AuthorizationArgs(User.Token, Claims.ImplementMicroservice, microService.ToString());
+			var aa = new AuthorizationArgs(User.Token, Claims.ImplementMicroservice, microService.ToString(), "Micro service");
 
 			aa.Schema.Empty = EmptyBehavior.Deny;
 			aa.Schema.Level = AuthorizationLevel.Pessimistic;
+			using var ctx = new MicroServiceContext(Tenant.GetService<IMicroServiceService>().Select(microService), Tenant.Url);
 
-			if (!Tenant.GetService<IAuthorizationService>().Authorize(new MicroServiceContext(Tenant.GetService<IMicroServiceService>().Select(microService), Tenant.Url), aa).Success)
+			if (!Tenant.GetService<IAuthorizationService>().Authorize(ctx, aa).Success)
 			{
 				Context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
 				return;
@@ -53,7 +54,7 @@ namespace TomPIT.Development.Routing
 				return;
 			}
 
-			var element = Tenant.GetService<IDiscoveryService>().Find(component.Token, new Guid(Context.GetRouteValue("template").ToString()));
+			var element = Tenant.GetService<IDiscoveryService>().Configuration.Find(component.Token, new Guid(Context.GetRouteValue("template").ToString()));
 
 			if (element == null || !(element is IText text))
 			{
@@ -62,7 +63,7 @@ namespace TomPIT.Development.Routing
 				return;
 			}
 
-			var fileName = text.ScriptName(Tenant);
+			var fileName = text.FileName;
 			var source = LoadSource(ms.Token, text);
 
 			Context.Response.ContentType = "text/plain";

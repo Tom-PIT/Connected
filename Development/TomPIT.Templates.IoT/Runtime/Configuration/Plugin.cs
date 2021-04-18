@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using TomPIT.Cdn;
+using TomPIT.Cdn.Documents;
 using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.MicroServices.IoT.Runtime.Configuration
@@ -32,7 +32,7 @@ namespace TomPIT.MicroServices.IoT.Runtime.Configuration
 			};
 		}
 
-		public List<IPrintingProvider> GetPrintingProviders()
+		public List<IDocumentProvider> GetDocumentProviders()
 		{
 			return null;
 		}
@@ -42,14 +42,14 @@ namespace TomPIT.MicroServices.IoT.Runtime.Configuration
 
 		}
 
-		public void RegisterRoutes(IRouteBuilder builder)
+		public void RegisterRoutes(IEndpointRouteBuilder builder)
 		{
 			//builder.MapRoute("sys/plugins/iot/partial/{id}", (t) =>
 			//{
 			//	return Task.CompletedTask;
 			//});
 
-			builder.MapRoute("sys.plugins.iot.partial", "sys/plugins/iot/partial/{microService}/{view}", new { controller = "IoT", action = "Partial" }, null, new { Namespace = "TomPIT.MicroServices.IoT.Controllers" });
+			builder.MapControllerRoute("sys.plugins.iot.partial", "sys/plugins/iot/partial/{microService}/{view}", new { controller = "IoT", action = "Partial" }, null, new { Namespace = "TomPIT.MicroServices.IoT.Controllers" });
 		}
 	}
 }

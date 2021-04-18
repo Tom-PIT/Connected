@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TomPIT.Data.Sql;
 using TomPIT.Deployment;
 using TomPIT.SysDb.Deployment;
@@ -13,7 +13,7 @@ namespace TomPIT.SysDb.Sql.Deployment
 	{
 		public void Delete(IInstallState state)
 		{
-			var w = new Writer("tompit.installer_del");
+			using var w = new Writer("tompit.installer_del");
 
 			w.CreateParameter("@package", state.Package);
 
@@ -37,7 +37,7 @@ namespace TomPIT.SysDb.Sql.Deployment
 				a.Add(o);
 			};
 
-			var w = new Writer("tompit.installer_ins");
+			using var w = new Writer("tompit.installer_ins");
 
 			w.CreateParameter("@items", JsonConvert.SerializeObject(a));
 
@@ -46,7 +46,7 @@ namespace TomPIT.SysDb.Sql.Deployment
 
 		public void InsertInstallAudit(InstallAuditType type, Guid package, DateTime created, string message, string version)
 		{
-			var w = new Writer("tompit.install_audit_ins");
+			using var w = new Writer("tompit.install_audit_ins");
 
 			w.CreateParameter("@type", type);
 			w.CreateParameter("@package", package);
@@ -59,7 +59,7 @@ namespace TomPIT.SysDb.Sql.Deployment
 
 		public void InsertInstallerConfiguration(Guid package, Guid configuration)
 		{
-			var w = new Writer("tompit.installer_configuration_ins");
+			using var w = new Writer("tompit.installer_configuration_ins");
 
 			w.CreateParameter("@package", package);
 			w.CreateParameter("@configuration", configuration);
@@ -69,7 +69,7 @@ namespace TomPIT.SysDb.Sql.Deployment
 
 		public List<IInstallAudit> QueryInstallAudit(Guid package)
 		{
-			var r = new Reader<InstallAudit>("tompit.install_audit_que");
+			using var r = new Reader<InstallAudit>("tompit.install_audit_que");
 
 			r.CreateParameter("@package", package);
 
@@ -78,7 +78,7 @@ namespace TomPIT.SysDb.Sql.Deployment
 
 		public List<IInstallAudit> QueryInstallAudit(DateTime from)
 		{
-			var r = new Reader<InstallAudit>("tompit.install_audit_que");
+			using var r = new Reader<InstallAudit>("tompit.install_audit_que");
 
 			r.CreateParameter("@created", from);
 
@@ -87,12 +87,14 @@ namespace TomPIT.SysDb.Sql.Deployment
 
 		public List<IInstallState> QueryInstallers()
 		{
-			return new Reader<InstallState>("tompit.installer_que").Execute().ToList<IInstallState>();
+			using var r = new Reader<InstallState>("tompit.installer_que");
+
+			return r.Execute().ToList<IInstallState>();
 		}
 
 		public IInstallState SelectInstaller(Guid package)
 		{
-			var r = new Reader<InstallState>("tompit.installer_sel");
+			using var r = new Reader<InstallState>("tompit.installer_sel");
 
 			r.CreateParameter("@package", package);
 
@@ -101,7 +103,7 @@ namespace TomPIT.SysDb.Sql.Deployment
 
 		public Guid SelectInstallerConfiguration(Guid package)
 		{
-			var r = new ScalarReader<Guid>("tompit.installer_configuration_sel");
+			using var r = new ScalarReader<Guid>("tompit.installer_configuration_sel");
 
 			r.CreateParameter("@package", package);
 
@@ -110,7 +112,7 @@ namespace TomPIT.SysDb.Sql.Deployment
 
 		public void Update(IInstallState state, InstallStateStatus status, string error)
 		{
-			var w = new Writer("tompit.installer_upd");
+			using var w = new Writer("tompit.installer_upd");
 
 			w.CreateParameter("@id", state.GetId());
 			w.CreateParameter("@status", status);

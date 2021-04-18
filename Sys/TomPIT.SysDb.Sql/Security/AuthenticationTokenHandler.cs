@@ -12,7 +12,7 @@ namespace TomPIT.SysDb.Sql.Security
 	{
 		public void Delete(IAuthenticationToken token)
 		{
-			var w = new Writer("tompit.auth_token_del");
+			using var w = new Writer("tompit.auth_token_del");
 
 			w.CreateParameter("@id", token.GetId());
 
@@ -22,7 +22,7 @@ namespace TomPIT.SysDb.Sql.Security
 		public void Insert(IResourceGroup resourceGroup, IUser user, Guid token, string name, string description, string key, AuthenticationTokenClaim claims, AuthenticationTokenStatus status,
 			DateTime validFrom, DateTime validTo, TimeSpan startTime, TimeSpan endTime, string ipRestrictions)
 		{
-			var w = new Writer("tompit.auth_token_ins");
+			using var w = new Writer("tompit.auth_token_ins");
 
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@user", user.GetId());
@@ -43,12 +43,14 @@ namespace TomPIT.SysDb.Sql.Security
 
 		public List<IAuthenticationToken> Query()
 		{
-			return new Reader<AuthenticationToken>("tompit.auth_token_que").Execute().ToList<IAuthenticationToken>();
+			using var r = new Reader<AuthenticationToken>("tompit.auth_token_que");
+
+			return r.Execute().ToList<IAuthenticationToken>();
 		}
 
 		public IAuthenticationToken Select(Guid token)
 		{
-			var r = new Reader<AuthenticationToken>("tompit.auth_token_sel");
+			using var r = new Reader<AuthenticationToken>("tompit.auth_token_sel");
 
 			r.CreateParameter("@token", token);
 
@@ -58,7 +60,7 @@ namespace TomPIT.SysDb.Sql.Security
 		public void Update(IAuthenticationToken authToken, IUser user, string name, string description, string key, AuthenticationTokenClaim claims, AuthenticationTokenStatus status, DateTime validFrom, DateTime validTo,
 			TimeSpan startTime, TimeSpan endTime, string ipRestrictions)
 		{
-			var w = new Writer("tompit.auth_token_upd");
+			using var w = new Writer("tompit.auth_token_upd");
 
 			w.CreateParameter("@id", authToken.GetId());
 			w.CreateParameter("@user", user.GetId());

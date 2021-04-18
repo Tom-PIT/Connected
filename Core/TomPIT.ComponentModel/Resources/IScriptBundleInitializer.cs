@@ -2,6 +2,6 @@
 {
 	public interface IScriptBundleInitializer
 	{
-		IScriptSource CreateDefaultFile();
+		IScriptSource CreateDefaultFile(IScriptBundleConfiguration configuration);
 	}
 }

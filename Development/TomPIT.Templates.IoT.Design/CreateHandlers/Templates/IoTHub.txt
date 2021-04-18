@@ -1,0 +1,72 @@
+﻿using TomPIT.IoT;
+using System.Collections.Generic;
+
+/*
+ * Attach separate Authorization Policies for devices and clients.
+ */
+//[Policy(Policy = , Method = "Client")]
+//[Policy(Policy = , Method = "Device")]
+public class [NAME] : IoTHubMiddleware<[NAME]Schema>
+{
+    /*
+     * Load hub devices here. Only registered devices are
+     * able to participate in the IoT hub.
+     */
+    protected override List<IIoTDeviceMiddleware> OnCreateDevices()
+    {
+        return new List<IIoTDeviceMiddleware>
+        {
+            new [NAME]Device
+            {
+                Name = "[NAME]Device"
+            }
+        };
+    }
+    /*
+     * Load hub transactions here. Only registered transactions are allowed to
+     * be called from the clients.
+     */
+    protected override List<IIoTTransactionMiddleware> OnCreateTransactions()
+    {
+        return new List<IIoTTransactionMiddleware>()
+        {
+            new [NAME]Transaction
+            {
+                Name = "[NAME]Transaction"
+            }
+        };
+    }
+}
+
+public class [NAME]Schema
+{
+    public decimal Value {get; set;}
+}
+
+private class [NAME]Device : IoTDeviceMiddleware
+{
+    /*
+     * Define device properties. Properties will be validated
+     * when sent from the device via Data method.
+     */
+    public decimal Value {get; set;}
+
+    protected override void OnInvoke()
+    {
+
+    }
+}
+
+private class [NAME]Transaction : IoTTransactionMiddleware
+{
+    /*
+     * Define transaction properties. Properties act as transaction parameters and
+     * are validated before the call is broadcasted to the device(s).
+     */
+    public decimal Value {get; set;}
+
+    protected override void OnInvoke(IIoTDeviceMiddleware device)
+    {
+
+    }
+}

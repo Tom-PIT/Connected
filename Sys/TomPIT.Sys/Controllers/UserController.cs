@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Security;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers
 {
 	public class UserController : SysController
 	{
 		[HttpGet]
-		public List<IUser> Query()
+		public ImmutableList<IUser> Query()
 		{
 			return DataModel.Users.Query();
 		}
@@ -27,13 +27,22 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpPost]
-		public void SignOut()
+		public IUser SelectBySecurityCode()
 		{
-			//DataModel.Users.SelectByAuthenticationToken()
+			var body = FromBody();
+			var code = body.Required<string>("securityCode");
+
+			return DataModel.Users.SelectBySecurityCode(code);
 		}
 
+		//[HttpPost]
+		//public void SignOut()
+		//{
+			//DataModel.Users.SelectByAuthenticationToken()
+		//}
+
 		[HttpGet]
-		public List<IMembership> QueryMembership(Guid user)
+		public ImmutableList<IMembership> QueryMembership(Guid user)
 		{
 			return DataModel.Membership.Query(user);
 		}

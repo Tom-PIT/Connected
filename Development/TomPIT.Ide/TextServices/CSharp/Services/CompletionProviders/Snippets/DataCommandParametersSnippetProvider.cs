@@ -2,6 +2,8 @@
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TomPIT.Data;
+using TomPIT.Data.DataProviders.Design;
 using TomPIT.Ide.Analysis;
 using TomPIT.Ide.TextServices.Languages;
 
@@ -33,6 +35,11 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders.Snippets
 			if (variable == null)
 				return default;
 
+			return ConnectionSnippet(variable);
+		}
+
+		private List<ICompletionItem> ConnectionSnippet(VariableDeclaratorSyntax variable)
+		{
 			var connection = variable.ResolveConnection(Editor.Context);
 
 			if (connection == null)
@@ -51,7 +58,32 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders.Snippets
 			if (schemaBrowser == null)
 				return default;
 
-			var parameters = schemaBrowser.QueryParameters(connection, commandText);
+			var operation = DataOperation.NotSet;
+
+			if (variable.Parent is VariableDeclarationSyntax vd)
+			{
+				var variableType = Editor.SemanticModel.GetSymbolInfo(vd.Type);
+
+				if (variableType.Symbol != null && variableType.Symbol is ITypeSymbol ts)
+				{
+					var typeIdentifier = ts.TypeIdentifier();
+
+					if (!string.IsNullOrWhiteSpace(typeIdentifier))
+					{
+						var t = TomPIT.Reflection.TypeExtensions.GetType(typeIdentifier);
+
+						if (t != null)
+						{
+							if (t.IsSubclassOf(typeof(IDataWriter)) || t == typeof(IDataWriter))
+								operation = DataOperation.Write;
+							else
+								operation = DataOperation.Read;
+						}
+					}
+				}
+			}
+
+			var parameters = schemaBrowser.QueryParameters(connection, commandText, operation);
 
 			if (parameters == null || parameters.Count == 0)
 				return default;
@@ -63,7 +95,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders.Snippets
 			foreach (var parameter in parameters)
 			{
 				if (!isFirst)
-					insertText.Append($"{variableName}.");
+					insertText.Append($"{variable.Identifier.ValueText}.");
 
 				var mapping = parameter.IsNullable ? ", true" : string.Empty;
 

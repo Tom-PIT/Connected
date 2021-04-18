@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 using TomPIT.SysDb.Workers;
 
 namespace TomPIT.Sys.Workers
@@ -12,14 +13,24 @@ namespace TomPIT.Sys.Workers
 		{
 			IntervalTimeout = TimeSpan.FromSeconds(1);
 		}
-		protected override Task Process()
+		protected override bool OnInitialize(CancellationToken cancel)
+		{
+			return DataModel.Initialized;
+		}
+
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			try
 			{
 				var ds = DataModel.Workers.QueryScheduled();
 
 				foreach (var i in ds)
+				{
+					if (cancel.IsCancellationRequested)
+						break;
+
 					Enqueue(i);
+				}
 			}
 			catch (Exception ex)
 			{

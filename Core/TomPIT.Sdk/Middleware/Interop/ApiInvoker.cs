@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Reflection;
+using TomPIT.Security;
 using TomPIT.Serialization;
 
 namespace TomPIT.Middleware.Interop
@@ -24,29 +24,17 @@ namespace TomPIT.Middleware.Interop
 
 			ValidateReference(sender, descriptor);
 
-			var ctx = new MicroServiceContext(descriptor.MicroService, Context.Tenant.Url);
+			using var ctx = new MicroServiceContext(descriptor.MicroService, Context.Tenant.Url).WithIdentity(Context);
 			var contextMs = Context as IMicroServiceContext;
 
 			switch (descriptor.Configuration.Scope)
 			{
-				// must be inside the same microservice
 				case ElementScope.Internal:
-					if (contextMs != null && descriptor.MicroService.Token != contextMs.MicroService.Token)
-						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element))
-						{
-							Component = descriptor.Component.Token
-						}.WithMetrics(ctx);
-
-					break;
 				case ElementScope.Private:
-					// must be inside the same api
-					if (sender == null || sender.Api.Component != descriptor.Component.Token)
-						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element))
-						{
-							Component = descriptor.Component.Token
-						}.WithMetrics(ctx);
-
-					break;
+					throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element))
+					{
+						Component = descriptor.Component.Token
+					}.WithMetrics(ctx);
 			}
 
 			var op = descriptor.Configuration.Operations.FirstOrDefault(f => string.Equals(f.Name, descriptor.Element, StringComparison.OrdinalIgnoreCase));
@@ -62,70 +50,61 @@ namespace TomPIT.Middleware.Interop
 			switch (op.Scope)
 			{
 				case ElementScope.Internal:
-					if (contextMs != null && descriptor.MicroService.Token != contextMs.MicroService.Token)
-						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element));
-					break;
 				case ElementScope.Private:
-					if (sender == null || sender.Api.Component != descriptor.Component.Token)
-						throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element));
-					break;
+					throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, descriptor.ComponentName, descriptor.Element));
 			}
 
-			var metric = ctx.Services.Diagnostic.StartMetric(op.Metrics, op.Id, arguments);
-			var success = true;
-			JObject result = null;
-			IMiddlewareComponent opInstance = null;
+			var operationType = Context.Tenant.GetService<ICompilerService>().ResolveType(descriptor.MicroService.Token, op, op.Name);
+			var elevation = ctx as IElevationContext;
 
-			try
+			if (HasReturnValue(operationType))
 			{
-				var operationType = Context.Tenant.GetService<ICompilerService>().ResolveType(descriptor.MicroService.Token, op, op.Name);
+				using var opInstance = operationType.CreateInstance<IMiddlewareOperation>();
 
-				if (HasReturnValue(operationType))
+				opInstance.SetContext(ctx);
+
+				if (elevation != null)
+					elevation.AuthorizationOwner = opInstance;
+
+				if (arguments != null)
+					Serializer.Populate(arguments, opInstance, false);
+
+				var method = GetInvoke(opInstance.GetType());
+
+				try
 				{
-					opInstance = operationType.CreateInstance<IMiddlewareOperation>();
-
-					opInstance.SetContext(ctx);
-
-					if (arguments != null)
-						Serializer.Populate(arguments, opInstance);
-
-					var method = GetInvoke(opInstance.GetType());
-
 					return method.Invoke(opInstance, null);
 				}
-				else
+				catch (Exception ex)
 				{
-					opInstance = operationType.CreateInstance<IOperation>();
-
-					if (operationType is IDistributedOperation)
-						ReflectionExtensions.SetPropertyValue(opInstance, nameof(IDistributedOperation.OperationTarget), synchronous ? DistributedOperationTarget.InProcess : DistributedOperationTarget.Distributed);
-
-					opInstance.SetContext(ctx);
-
-					if (arguments != null)
-						Serializer.Populate(arguments, opInstance);
-
-					((IOperation)opInstance).Invoke();
-
-					return null;
+					throw TomPITException.Unwrap(opInstance, ex);
 				}
 			}
-			catch (Exception ex)
+			else
 			{
-				var resolvedException = TomPITException.Unwrap(opInstance, ex);
-				success = false;
+				using var opInstance = operationType.CreateInstance<IOperation>();
 
-				ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Fail, new JObject
+				if (operationType is IDistributedOperation)
+					ReflectionExtensions.SetPropertyValue(opInstance, nameof(IDistributedOperation.OperationTarget), synchronous ? DistributedOperationTarget.InProcess : DistributedOperationTarget.Distributed);
+
+				opInstance.SetContext(ctx);
+
+				if (elevation != null)
+					elevation.AuthorizationOwner = opInstance;
+
+				if (arguments != null)
+					Serializer.Populate(arguments, opInstance);
+
+				try
 				{
-					{"exception", $"{resolvedException.Source}/{resolvedException.Message}" }
-				});
+					opInstance.Invoke();
+				}
+				catch (Exception ex)
+				{
+					throw TomPITException.Unwrap(opInstance, ex);
+				}
 
-				throw resolvedException;
-			}
-			finally
-			{
-				if (success)
-					ctx.Services.Diagnostic.StopMetric(metric, Diagnostics.SessionResult.Success, result);
+				return null;
 			}
 		}
 

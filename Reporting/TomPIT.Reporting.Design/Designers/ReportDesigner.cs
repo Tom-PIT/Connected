@@ -7,14 +7,15 @@ using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.Reports;
+using TomPIT.Design;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
-using TomPIT.Ide.Dom;
 using TomPIT.MicroServices.Reporting.Design.Dom;
 using TomPIT.Reflection;
-using TomPIT.Reflection.Manifests.Entities;
+using TomPIT.Reflection.Api;
 
 namespace TomPIT.MicroServices.Reporting.Design.Designers
 {
@@ -69,7 +70,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 					ResolveDataSources(MicroService.Name);
 
-					var references = Environment.Context.Tenant.GetService<IDiscoveryService>().References(MicroService.Token);
+					var references = Environment.Context.Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(MicroService.Token);
 
 					if (references != null)
 					{
@@ -123,7 +124,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 			foreach (var api in apis)
 			{
-				var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifest(api.Token) as ApiManifest;
+				var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(api.Token) as ApiManifest;
 				var config = Environment.Context.Tenant.GetService<IComponentService>().SelectConfiguration(api.Token) as IApiConfiguration;
 
 				_dataSources.Add(new ReportDataSource
@@ -140,7 +141,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 					if (op == null)
 						continue;
 
-					if (operation.ReturnType == null || string.IsNullOrWhiteSpace(operation.ReturnType.Name))
+					if (string.IsNullOrWhiteSpace(operation.ReturnType))
 						continue;
 
 					_dataSources.Add(new ReportDataSource
@@ -152,11 +153,6 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 					});
 				}
 			}
-		}
-
-		private Type ResolvePropertyType(JToken value)
-		{
-			return TypeExtensions.GetType(value.Value<string>());
 		}
 
 		protected override IDesignerActionResult OnAction(JObject data, string action)
@@ -190,7 +186,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 			Report.Apis.Add(url);
 
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(Report);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(Report);
 
 			return Result.SectionResult(ViewModel, EnvironmentSection.Designer);
 		}
@@ -218,7 +214,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 			result.Name = op.Name;
 
-			var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifest(descriptor.Component.Token) as ApiManifest;
+			var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(descriptor.Component.Token) as ApiManifest;
 
 			if (manifest == null)
 				return null;
@@ -228,41 +224,29 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			if (opManifest == null)
 				return null;
 
-			var schemaType = manifest.Types.FirstOrDefault(f => string.Compare(f.Type, opManifest.ReturnType.Name, false) == 0);
+			using var typeResolver = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.SelectTypeResolver(opManifest);
+			var schemaType = typeResolver.Resolve(opManifest.ReturnType);
 
 			if (schemaType == null)
 				return null;
 
-			var schema = new JsonSchemaNode(schemaType.Type, true, JsonNodeType.Array)
+			var schema = new JsonSchemaNode(ResolveSchemaName(schemaType), true, JsonNodeType.Array)
 			{
-				DisplayName = schemaType.Type
+				DisplayName = ResolveSchemaName(schemaType)
 			};
 
 			result.Schema.AddChildren(schema);
 
 			var fields = new List<JsonSchemaNode>();
+			var members = schemaType.IsArray ? schemaType.TypeArguments[0].Members : schemaType.Members;
 
-			foreach (var property in schemaType.Properties)
+			foreach (var property in members)
 			{
-				var type = Type.GetType(property.Type, false);
+				var type = typeResolver.Resolve(property.Value.Name);
 
-				if (type == null)
+				fields.Add(new JsonSchemaNode(new JsonNode(property.Key, true, JsonNodeType.Property)
 				{
-					var manifestType = manifest.Types.FirstOrDefault(f => string.Compare(f.Type, property.Type, false) == 0);
-
-					if (manifestType != null)
-					{
-						fields.Add(CreateObjectNode(manifest, property, manifestType));
-
-						continue;
-					}
-					else
-						type = TypeExtensions.FromFriendlyName(property.Type);
-				}
-
-				fields.Add(new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
-				{
-					Type = type
+					Type = ResolveType(type)
 				}));
 			}
 
@@ -271,38 +255,54 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 			return result;
 		}
 
-		private JsonSchemaNode CreateObjectNode(ApiManifest manifest, ManifestProperty property, ManifestMember member)
+		private static string ResolveSchemaName(IManifestTypeDescriptor descriptor)
 		{
-			var objectNode = new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
-			{
+			if (!descriptor.IsArray)
+				return descriptor.Name;
 
-			});
-
-			foreach (var memberProperty in member.Properties)
-				objectNode.AddChildren(new DevExpress.DataAccess.Node<JsonNode>[] { CreatePropertyNode(manifest, memberProperty, member) });
-
-			return objectNode;
+			return descriptor.TypeArguments[0].Name;
 		}
 
-		private JsonSchemaNode CreatePropertyNode(ApiManifest manifest, ManifestProperty property, ManifestMember member)
+		private static Type ResolveType(IManifestTypeDescriptor descriptor)
 		{
-			var type = Type.GetType(property.Type, false);
+			if (TypeExtensions.GetType(descriptor.Name) is Type resolved)
+				return resolved;
 
-			if (type == null)
-			{
-				var manifestType = manifest.Types.FirstOrDefault(f => string.Compare(f.Type, property.Type, false) == 0);
-
-				if (manifestType != null)
-					return CreateObjectNode(manifest, property, manifestType);
-				else
-					type = TypeExtensions.FromFriendlyName(property.Type);
-			}
-
-			return new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
-			{
-				Type = type
-			});
+			return typeof(string);
 		}
+
+		//private JsonSchemaNode CreateObjectNode(ApiManifest manifest, IManifestProperty property, IManifestType member)
+		//{
+		//	var objectNode = new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
+		//	{
+
+		//	});
+
+		//	foreach (var memberProperty in member.Members)
+		//		objectNode.AddChildren(new DevExpress.DataAccess.Node<JsonNode>[] { CreatePropertyNode(manifest, memberProperty, member) });
+
+		//	return objectNode;
+		//}
+
+		//private JsonSchemaNode CreatePropertyNode(ApiManifest manifest, IManifestMember property, IManifestType member)
+		//{
+		//	var type = Type.GetType(property.Type, false);
+
+		//	if (type == null)
+		//	{
+		//		var manifestType = manifest.Types.FirstOrDefault(f => string.Compare(f.Name, property.Type, false) == 0);
+
+		//		if (manifestType != null)
+		//			return CreateObjectNode(manifest, property, manifestType);
+		//		else
+		//			type = TypeExtensions.FromFriendlyName(property.Type);
+		//	}
+
+		//	return new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
+		//	{
+		//		Type = type
+		//	});
+		//}
 
 		private void CreateRoot(JsonDataSource ds)
 		{

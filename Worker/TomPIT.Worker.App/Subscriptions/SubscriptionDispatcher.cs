@@ -6,14 +6,14 @@ namespace TomPIT.Worker.Subscriptions
 {
 	internal class SubscriptionDispatcher : Dispatcher<IQueueMessage>
 	{
-		public SubscriptionDispatcher(string resourceGroup, CancellationTokenSource cancel) : base(cancel, 128)
+		public SubscriptionDispatcher(string resourceGroup) : base(128)
 		{
 			ResourceGroup = resourceGroup;
 		}
 
-		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationTokenSource cancel)
+		public override DispatcherJob<IQueueMessage> CreateWorker(IDispatcher<IQueueMessage> owner, CancellationToken cancel)
 		{
-			return new SubscriptionJob(this, cancel);
+			return new SubscriptionJob(owner, cancel);
 		}
 
 		public string ResourceGroup { get; }

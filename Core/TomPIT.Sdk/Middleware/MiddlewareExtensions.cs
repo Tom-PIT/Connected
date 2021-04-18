@@ -1,7 +1,11 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using TomPIT.Annotations;
 using TomPIT.Connectivity;
-using TomPIT.Data;
+using TomPIT.Exceptions;
+using TomPIT.Middleware.Services;
 using TomPIT.Reflection;
+using TomPIT.Serialization;
 
 namespace TomPIT.Middleware
 {
@@ -12,22 +16,13 @@ namespace TomPIT.Middleware
 			return ServerUrl.Create(tenant.Url, controller, action);
 		}
 
-		[Obsolete("Use WithContext extension method.")]
-		public static T WithConnection<T>(this T operation, IDataConnection connection) where T : IMiddlewareOperation
-		{
-			return operation;
-		}
-
-		[Obsolete("Use WithContext extension method.")]
-		public static T WithConnection<T>(this T operation, IMiddlewareContext context) where T : IMiddlewareOperation
-		{
-			return WithContext(operation, context);
-		}
-
 		public static T WithContext<T>(this T operation, IMiddlewareContext context) where T : IMiddlewareOperation
 		{
 			if (operation.Context is MiddlewareContext op && context is MiddlewareContext mc)
 			{
+				if (op.Owner == mc)
+					return operation;
+
 				op.Owner = mc;
 
 				if (operation is MiddlewareOperation mop && mc.Transaction != null)
@@ -36,18 +31,99 @@ namespace TomPIT.Middleware
 
 			return operation;
 		}
-		[Obsolete]
-		public static T WithTransaction<T>(this T operation, IMiddlewareOperation middleware) where T : IMiddlewareOperation
-		{
-			//if (operation is MiddlewareOperation o)
-			//	o.AttachTransaction(middleware);
-
-			return operation;
-		}
 
 		internal static void SetContext(this IMiddlewareObject target, IMiddlewareContext context)
 		{
 			ReflectionExtensions.SetPropertyValue(target, nameof(target.Context), context);
+		}
+
+		public static void Impersonate(this IMiddlewareContext context, string user)
+		{
+			var u = context.Services.Identity.GetUser(user);
+
+			if (context.Services.Identity is MiddlewareIdentityService mc)
+				mc.ImpersonatedUser = u?.Token.ToString();
+		}
+
+		public static void RevokeImpersonation(this IMiddlewareContext context)
+		{
+			if (context.Services.Identity is MiddlewareIdentityService mc)
+				mc.ImpersonatedUser = null;
+		}
+
+		public static T Patch<T>(this T component, Dictionary<string, object> properties) where T : IMiddlewareComponent
+		{
+			return Patch(component, properties, null);
+		}
+		public static T Patch<T>(this T component, Dictionary<string, object> properties, object initializer) where T : IMiddlewareComponent
+		{
+			if (initializer != null)
+				Serializer.Populate(initializer, component);
+
+			if (properties == null || properties.Count == 0)
+				return component;
+
+			foreach (var property in properties)
+			{
+				var reflected = component.GetType().GetProperty(property.Key, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance| BindingFlags.IgnoreCase);
+
+				if (reflected == null)
+					throw new RuntimeException($"{SR.ErrPropertyNotFound} ({property.Key})");
+
+				if (!reflected.CanWrite)
+					throw new RuntimeException($"SR.ErrPropertyReadOnly ({property.Key})");
+
+				if (reflected.FindAttribute<PatchReadOnlyAttribute>() != null)
+					throw new RuntimeException($"{SR.ErrPatchForbidden} ({property.Key})");
+
+				var value = Types.Convert(property.Value, reflected.PropertyType);
+
+				reflected.SetValue(component, value);
+			}
+
+			return component;
+		}
+
+		public static void LogError(this TomPITException exception, string category)
+		{
+			if (exception.Logged)
+				return;
+
+			using var ctx = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
+			
+			LogError(exception, ctx, category);
+		}
+
+		public static void LogError(this TomPITException exception, IMiddlewareContext context, string category)
+		{
+			if (exception.Logged)
+				return;
+
+			exception.Logged = true;
+
+			var source = string.IsNullOrWhiteSpace(exception.ScriptPath) ? exception.Source : exception.ScriptPath;
+
+			context.Services.Diagnostic.Error(source, exception.ToString(), category);
+		}
+
+		public static void LogWarning(this MiddlewareValidationException exception, string category)
+		{
+			if (exception.Logged)
+				return;
+
+			using var ctx = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
+
+			LogWarning(exception, ctx, category);
+		}
+
+		public static void LogWarning(this MiddlewareValidationException exception, IMiddlewareContext context, string category)
+		{
+			if (exception.Logged)
+				return;
+
+			exception.Logged = true;
+
+			context.Services.Diagnostic.Warning(exception.Source, exception.ToString(), category);
 		}
 	}
 }

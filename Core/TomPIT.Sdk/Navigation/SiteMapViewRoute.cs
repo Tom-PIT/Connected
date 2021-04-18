@@ -1,4 +1,7 @@
 ﻿using TomPIT.Collections;
+using TomPIT.Middleware;
+using AA = TomPIT.Annotations.Design.AnalyzerAttribute;
+using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Navigation
 {
@@ -9,13 +12,18 @@ namespace TomPIT.Navigation
 		private string _template = null;
 
 		public bool BeginGroup { get; set; }
+		public object Parameters { get; set; }
+		public string QueryString { get; set; }
 		string ISiteMapRoute.Template
 		{
 			get
 			{
 				if (_template == null)
-					_template = NavigationExtensions.ResolveRouteTemplate(Context, View);
-
+				{
+					using var context = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
+					
+					_template = NavigationExtensions.ResolveRouteTemplate(context, View);
+				}
 				return _template;
 			}
 		}
@@ -30,5 +38,9 @@ namespace TomPIT.Navigation
 				return _items;
 			}
 		}
+
+		[CIP(CIP.NavigationContextProvider)]
+		[AA(AA.NavigationContextAnalyzer)]
+		public string NavigationContext {get;set;}
 	}
 }

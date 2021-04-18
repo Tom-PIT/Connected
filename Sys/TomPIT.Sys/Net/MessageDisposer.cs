@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
+using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Services
 {
@@ -12,31 +15,47 @@ namespace TomPIT.Sys.Services
 			IntervalTimeout = TimeSpan.FromSeconds(15);
 		}
 
-		protected override Task Process()
+		protected override bool OnInitialize(CancellationToken cancel)
+		{
+			return DataModel.Initialized;
+		}
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			try
 			{
 				var ds = DataModel.Messages.Query();
 
+				var deleted = new List<IMessage>();
+				var deletedRecps = new List<IRecipient>();
+
 				foreach (var i in ds)
 				{
 					if (i.Expire < DateTime.UtcNow)
 					{
-						DataModel.Messages.Delete(i.Token);
+						deleted.Add(i);
+
+						var recps = DataModel.MessageRecipients.Query(i.Token);
+
+						if (recps.Count > 0)
+							deletedRecps.AddRange(recps);
+
 						continue;
 					}
 
 					var recipients = DataModel.MessageRecipients.Query(i.Token);
 
 					if (recipients.Count == 0)
-						DataModel.Messages.Delete(i.Token);
+						deleted.Add(i);
 				}
+
+				if (deleted.Count > 0)
+					DataModel.Messages.Clean(deleted, deletedRecps);
 
 				var subscribers = DataModel.MessageSubscribers.Query();
 
 				foreach (var i in subscribers)
 				{
-					if (i.Alive.AddMinutes(5) < DateTime.UtcNow)
+					if (i.Alive.AddSeconds(90) < DateTime.UtcNow)
 						DataModel.MessageSubscribers.Delete(i.Topic, i.Connection);
 				}
 			}

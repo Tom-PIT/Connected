@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using TomPIT.Security;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 using TomPIT.Sys.Security;
 
 namespace TomPIT.Sys.Controllers
@@ -11,13 +12,13 @@ namespace TomPIT.Sys.Controllers
 	public class SecurityController : SysController
 	{
 		[HttpGet]
-		public List<IPermission> QueryPermissions()
+		public ImmutableList<IPermission> QueryPermissions()
 		{
 			return DataModel.Permissions.Query();
 		}
 
 		[HttpPost]
-		public List<IPermission> QueryPermissionsForResourceGroup()
+		public ImmutableList<IPermission> QueryPermissionsForResourceGroup()
 		{
 			var body = FromBody().ToResults();
 
@@ -33,19 +34,19 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpGet]
-		public List<IPermission> SelectPermissions(string primaryKey)
+		public ImmutableList<IPermission> SelectPermissions(string primaryKey)
 		{
 			return DataModel.Permissions.Query(primaryKey);
 		}
 
 		[HttpGet]
-		public IPermission SelectPermission(Guid evidence, string schema, string claim, string primaryKey)
+		public IPermission SelectPermission(string evidence, string schema, string claim, string primaryKey, string descriptor)
 		{
-			return DataModel.Permissions.Select(evidence, schema, claim, primaryKey);
+			return DataModel.Permissions.Select(evidence, schema, claim, primaryKey, descriptor);
 		}
 
 		[HttpGet]
-		public List<IMembership> QueryMembership()
+		public ImmutableList<IMembership> QueryMembership()
 		{
 			return DataModel.Membership.Query();
 		}
@@ -62,13 +63,13 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpPost]
-		public List<IAuthenticationToken> QueryAllAuthenticationTokens()
+		public ImmutableList<IAuthenticationToken> QueryAllAuthenticationTokens()
 		{
 			return DataModel.AuthenticationTokens.Query();
 		}
 
 		[HttpPost]
-		public List<IAuthenticationToken> QueryAuthenticationTokens()
+		public ImmutableList<IAuthenticationToken> QueryAuthenticationTokens()
 		{
 			var body = FromBody().ToResults();
 

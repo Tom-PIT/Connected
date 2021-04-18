@@ -67,7 +67,7 @@ namespace TomPIT.Development.Controllers
 		{
 			var m = ApiTestModel.Create(this, false);
 
-			return Json(m.ProvideItems());
+			return new EmptyResult();// Json(m.ProvideItems());
 		}
 	}
 }

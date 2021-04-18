@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Data.SqlClient;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.DataProviders.Design;
 
 namespace TomPIT.DataProviders.Sql.Design
 {
-	internal class Browser : ISchemaBrowser
+	internal class Browser : SchemaBrowser
 	{
 		private const string Tables = "'U'";
-		public const string Views = "'V'";
-		public const string Procedures = "'P'";
+		private const string Views = "'V'";
+		private const string Procedures = "'P'";
 
 		private string ResolveSchemaGroup(string schemaGroup)
 		{
@@ -29,52 +29,52 @@ namespace TomPIT.DataProviders.Sql.Design
 				throw new NotSupportedException();
 		}
 
-		public List<IGroupObject> QueryGroupObjects(IConnectionConfiguration connection)
+		public override List<IGroupObject> QueryGroupObjects(IConnectionConfiguration configuration)
 		{
-			return QueryGroupObjects(connection, "Stored procedures");
+			return QueryGroupObjects(configuration, "Stored procedures");
 		}
-		public List<IGroupObject> QueryGroupObjects(IConnectionConfiguration connection, string schemaGroup)
+		public override List<IGroupObject> QueryGroupObjects(IConnectionConfiguration configuration, string schemaGroup)
 		{
-			using (var c = new SqlConnection(connection.Value))
+			using var c = new SqlConnection(ResolveConnectionString(configuration).Value);
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+			var command = new SqlCommand(string.Format("select o.object_id, o.name, o.type, s.name from sys.objects o inner join sys.schemas s on o.schema_id = s.schema_id where type in ({0})", ResolveSchemaGroup(schemaGroup)), c);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+			var results = new List<IGroupObject>();
+			SqlDataReader rdr = null;
+
+			try
 			{
-				var command = new SqlCommand(string.Format("select o.object_id, o.name, o.type, s.name from sys.objects o inner join sys.schemas s on o.schema_id = s.schema_id where type in ({0})", ResolveSchemaGroup(schemaGroup)), c);
-				var results = new List<IGroupObject>();
-				SqlDataReader rdr = null;
 
-				try
+				c.Open();
+				rdr = command.ExecuteReader();
+
+				while (rdr.Read())
 				{
+					var name = rdr.IsDBNull(1) ? string.Empty : rdr.GetString(1);
+					var schema = rdr.IsDBNull(3) ? string.Empty : rdr.GetString(3);
 
-					c.Open();
-					rdr = command.ExecuteReader();
-
-					while (rdr.Read())
+					results.Add(new GroupObject
 					{
-						string name = rdr.IsDBNull(1) ? string.Empty : rdr.GetString(1);
-						string schema = rdr.IsDBNull(3) ? string.Empty : rdr.GetString(3);
-
-						results.Add(new GroupObject
-						{
-							Text = $"{name} ({schema})",
-							Value = $"[{schema}].[{name}]"
-						});
-					}
-
-					return results;
+						Text = $"{name} ({schema})",
+						Value = $"[{schema}].[{name}]"
+					});
 				}
-				finally
-				{
-					if (rdr != null && !rdr.IsClosed)
-						rdr.Close();
 
-					if (c != null && c.State != ConnectionState.Closed)
-						c.Close();
-				}
+				return results;
+			}
+			finally
+			{
+				if (rdr != null && !rdr.IsClosed)
+					rdr.Close();
+
+				if (c != null && c.State != ConnectionState.Closed)
+					c.Close();
 			}
 		}
 
-		public List<string> QuerySchemaGroups(IConnectionConfiguration connection)
+		public override List<string> QuerySchemaGroups(IConnectionConfiguration configuration)
 		{
-			List<string> r = new List<string>
+			var r = new List<string>
 			{
 				"Tables",
 				"Views",
@@ -84,71 +84,71 @@ namespace TomPIT.DataProviders.Sql.Design
 			return r;
 		}
 
-		public List<ISchemaField> QuerySchema(IConnectionConfiguration connection, string schemaGroup, string groupObject)
+		public override List<ISchemaField> QuerySchema(IConnectionConfiguration configuration, string schemaGroup, string groupObject)
 		{
-			string sg = ResolveSchemaGroup(schemaGroup);
+			var sg = ResolveSchemaGroup(schemaGroup);
 
 			if (string.Compare(sg, Tables, true) == 0
 				|| string.Compare(sg, Views, true) == 0)
-				return QueryTableSchema(connection, groupObject);
+				return QueryTableSchema(configuration, groupObject);
 			else if (string.Compare(sg, Procedures, true) == 0)
-				return QueryProcedureSchema(connection, groupObject);
+				return QueryProcedureSchema(configuration, groupObject);
 			else
 				throw new NotSupportedException();
 		}
 
-		public List<ISchemaParameter> QueryParameters(IConnectionConfiguration connection, string schemaGroup, string groupObject)
+		public override List<ISchemaParameter> QueryParameters(IConnectionConfiguration configuration, string schemaGroup, string groupObject, DataOperation operation)
 		{
-			string sg = ResolveSchemaGroup(schemaGroup);
+			var sg = ResolveSchemaGroup(schemaGroup);
 
 			if (string.Compare(sg, Procedures, true) == 0)
-				return QueryProcedureParameters(connection, groupObject);
+				return QueryProcedureParameters(configuration, groupObject);
 			else
 				return new List<ISchemaParameter>();
 		}
 
-		private List<ISchemaParameter> QueryProcedureParameters(IConnectionConfiguration connection, string groupObject)
+		private List<ISchemaParameter> QueryProcedureParameters(IConnectionConfiguration configuration, string groupObject)
 		{
-			using (SqlConnection con = new SqlConnection(connection.Value))
+			using var con = new SqlConnection(ResolveConnectionString(configuration).Value);
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+			var command = new SqlCommand(groupObject, con);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+
+			try
 			{
-				SqlCommand command = new System.Data.SqlClient.SqlCommand(groupObject, con);
+				command.CommandType = CommandType.StoredProcedure;
+				con.Open();
 
-				try
+				SqlCommandBuilder.DeriveParameters(command);
+
+				var results = new List<ISchemaParameter>();
+
+				foreach (SqlParameter p in command.Parameters)
 				{
-					command.CommandType = CommandType.StoredProcedure;
-					con.Open();
+					if (string.Compare(p.ParameterName, "@return_value", true) == 0)
+						continue;
 
-					SqlCommandBuilder.DeriveParameters(command);
+					if (p.Direction != ParameterDirection.Input && p.Direction != ParameterDirection.InputOutput)
+						continue;
 
-					List<ISchemaParameter> results = new List<ISchemaParameter>();
-
-					foreach (SqlParameter p in command.Parameters)
+					var item = new SchemaParameter
 					{
-						if (string.Compare(p.ParameterName, "@return_value", true) == 0)
-							continue;
+						Name = p.ParameterName,
+						DataType = Types.ToDataType(p.DbType),
+						IsNullable = p.IsNullable
+					};
 
-						if (p.Direction != ParameterDirection.Input && p.Direction != ParameterDirection.InputOutput)
-							continue;
-
-						var item = new SchemaParameter
-						{
-							Name = p.ParameterName,
-							DataType = Types.ToDataType(p.DbType),
-							IsNullable = p.IsNullable
-						};
-
-						results.Add(item);
-					}
-
-					ResolveNullableColumns(con, groupObject, results);
-
-					return results;
+					results.Add(item);
 				}
-				finally
-				{
-					if (con != null && con.State != ConnectionState.Closed)
-						con.Close();
-				}
+
+				ResolveNullableColumns(con, groupObject, results);
+
+				return results;
+			}
+			finally
+			{
+				if (con != null && con.State != ConnectionState.Closed)
+					con.Close();
 			}
 		}
 
@@ -163,7 +163,6 @@ namespace TomPIT.DataProviders.Sql.Design
 
 			var r = com.ExecuteReader();
 			var declarations = new List<string>();
-
 			var sb = new StringBuilder();
 
 			while (r.Read())
@@ -172,7 +171,6 @@ namespace TomPIT.DataProviders.Sql.Design
 			r.Close();
 
 			var definition = Regex.Replace(sb.ToString(), @"\t|\n|\r", " ");
-
 			var header = definition.ToString().Substring(0, definition.IndexOf(" AS "));
 
 			if (!header.Contains("@"))
@@ -196,61 +194,60 @@ namespace TomPIT.DataProviders.Sql.Design
 			}
 		}
 
-		private List<ISchemaField> QueryTableSchema(IConnectionConfiguration connection, string groupObject)
+		private List<ISchemaField> QueryTableSchema(IConnectionConfiguration configuration, string groupObject)
 		{
-			using (var con = new SqlConnection(connection.Value))
+			using var con = new SqlConnection(ResolveConnectionString(configuration).Value);
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+			var com = new SqlCommand(string.Format("SELECT * FROM {0}", groupObject), con);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+			SqlDataReader rdr = null;
+
+			try
 			{
-				var com = new SqlCommand(string.Format("SELECT * FROM {0}", groupObject), con);
-				SqlDataReader rdr = null;
+				con.Open();
 
-				try
-				{
-					con.Open();
+				rdr = com.ExecuteReader(CommandBehavior.SchemaOnly);
 
-					rdr = com.ExecuteReader(CommandBehavior.SchemaOnly);
+				return ExtractFields(rdr.GetSchemaTable());
+			}
+			finally
+			{
+				if (rdr != null && !rdr.IsClosed)
+					rdr.Close();
 
-					return ExtractFields(rdr.GetSchemaTable());
-				}
-				finally
-				{
-					if (rdr != null && !rdr.IsClosed)
-						rdr.Close();
-
-					if (con.State == ConnectionState.Open)
-						con.Close();
-				}
+				if (con.State == ConnectionState.Open)
+					con.Close();
 			}
 		}
 
-		private List<ISchemaField> QueryProcedureSchema(IConnectionConfiguration connection, string groupObject)
+		private List<ISchemaField> QueryProcedureSchema(IConnectionConfiguration configuration, string groupObject)
 		{
-			using (var con = new SqlConnection(connection.Value))
+			using var con = new SqlConnection(ResolveConnectionString(configuration).Value);
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+			var com = new SqlCommand(groupObject, con);
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+
+			com.CommandType = CommandType.StoredProcedure;
+
+			SqlDataReader rdr = null;
+
+			try
 			{
-				var com = new SqlCommand(groupObject, con);
+				con.Open();
+				SqlCommandBuilder.DeriveParameters(com);
 
-				com.CommandType = CommandType.StoredProcedure;
+				rdr = com.ExecuteReader(CommandBehavior.SchemaOnly);
 
-				SqlDataReader rdr = null;
-
-				try
-				{
-					con.Open();
-					SqlCommandBuilder.DeriveParameters(com);
-
-					rdr = com.ExecuteReader(CommandBehavior.SchemaOnly);
-
-					return ExtractFields(rdr.GetSchemaTable());
-				}
-				finally
-				{
-					if (rdr != null && !rdr.IsClosed)
-						rdr.Close();
-
-					if (con.State == ConnectionState.Open)
-						con.Close();
-				}
+				return ExtractFields(rdr.GetSchemaTable());
 			}
+			finally
+			{
+				if (rdr != null && !rdr.IsClosed)
+					rdr.Close();
 
+				if (con.State == ConnectionState.Open)
+					con.Close();
+			}
 		}
 
 		private static List<ISchemaField> ExtractFields(DataTable schema)
@@ -271,11 +268,10 @@ namespace TomPIT.DataProviders.Sql.Design
 			return items;
 		}
 
-		public ICommandDescriptor CreateCommandDescriptor(string schemaGroup, string groupObject)
+		public override ICommandDescriptor CreateCommandDescriptor(string schemaGroup, string groupObject)
 		{
 			var r = new CommandDescriptor();
-
-			string group = ResolveSchemaGroup(schemaGroup);
+			var group = ResolveSchemaGroup(schemaGroup);
 
 			if (string.Compare(group, Tables, true) == 0
 				|| string.Compare(group, Views, true) == 0)
@@ -294,9 +290,9 @@ namespace TomPIT.DataProviders.Sql.Design
 			return r;
 		}
 
-		public List<ISchemaParameter> QueryParameters(IConnectionConfiguration repository, string groupObject)
+		public override List<ISchemaParameter> QueryParameters(IConnectionConfiguration configuration, string groupObject, DataOperation operation)
 		{
-			return QueryParameters(repository, "Stored procedures", groupObject);
+			return QueryParameters(configuration, "Stored procedures", groupObject, DataOperation.NotSet);
 		}
 	}
 }

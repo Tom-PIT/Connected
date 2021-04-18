@@ -3,9 +3,10 @@ using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
-using TomPIT.Ide.ComponentModel;
-using TomPIT.Ide.Designers;
-using TomPIT.Ide.Properties;
+using TomPIT.Design;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
+using TomPIT.Design.Ide.Properties;
 using TomPIT.Reflection;
 
 namespace TomPIT.Ide.Dom.ComponentModel
@@ -33,7 +34,8 @@ namespace TomPIT.Ide.Dom.ComponentModel
 			Index = index;
 
 			Id = DomQuery.Key(Value, string.Empty);
-			Title = property == null ? instance.ToString() : property.Name;
+
+			Title = WithFileExtension(property == null ? instance.ToString() : property.Name);
 
 			Initialize();
 
@@ -45,7 +47,15 @@ namespace TomPIT.Ide.Dom.ComponentModel
 					Glyph = "fal fa-wrench";
 			}
 
-			SortChildren = Value == null || !Value.GetType().IsCollection();
+			if (property != null && IsCollection)
+			{
+				var vd = property.FindAttribute<CollectionDesignerAttribute>();
+
+				if (vd != null && !vd.Sort)
+					SortChildren = false;
+			}
+			else
+				SortChildren = Value == null || !Value.GetType().IsCollection();
 		}
 
 		/// <summary>
@@ -184,7 +194,7 @@ namespace TomPIT.Ide.Dom.ComponentModel
 
 			if (config != null)
 			{
-				Tenant.GetService<IComponentDevelopmentService>().Update(config);
+				Tenant.GetService<IDesignService>().Components.Update(config);
 
 				return true;
 			}

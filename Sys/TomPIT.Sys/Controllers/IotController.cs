@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using TomPIT.IoT;
-using TomPIT.Sys.Data;
-using TomPIT.Sys.Data.IoT;
+using TomPIT.Sys.Model;
+using TomPIT.Sys.Model.IoT;
 
 namespace TomPIT.Sys.Controllers
 {
@@ -23,7 +23,8 @@ namespace TomPIT.Sys.Controllers
 				fields.Add(new IoTFieldState
 				{
 					Field = i.Required<string>("field"),
-					Value = i.Optional("value", string.Empty)
+					Value = i.Optional("value", string.Empty),
+					Device = i.Optional("device", string.Empty)
 				});
 			}
 

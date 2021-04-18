@@ -3,13 +3,13 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.Design;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Exceptions;
 using TomPIT.Ide;
 using TomPIT.Ide.Collections;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
-using TomPIT.Ide.Dom;
 using TomPIT.Ide.Environment.Providers;
 using TomPIT.MicroServices.IoT.UI;
 using TomPIT.MicroServices.IoT.UI.Stencils;
@@ -49,7 +49,7 @@ namespace TomPIT.MicroServices.IoT.Design.Designers
 						if (id == Guid.Empty)
 							return _value;
 
-						var target = Environment.Context.Tenant.GetService<IDiscoveryService>().Find(IoTView, id);
+						var target = Environment.Context.Tenant.GetService<IDiscoveryService>().Configuration.Find(IoTView, id);
 
 						if (target != null)
 						{
@@ -103,7 +103,7 @@ namespace TomPIT.MicroServices.IoT.Design.Designers
 			}
 
 			ResizeView();
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(IoTView);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(IoTView);
 
 			return Result.SectionResult(ViewModel, EnvironmentSection.Properties);
 		}
@@ -134,7 +134,7 @@ namespace TomPIT.MicroServices.IoT.Design.Designers
 			}
 
 			ResizeView();
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(IoTView);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(IoTView);
 
 			return Result.SectionResult(ViewModel, EnvironmentSection.Properties);
 		}
@@ -174,7 +174,7 @@ namespace TomPIT.MicroServices.IoT.Design.Designers
 					handler.InitializeNewComponent(Environment.Context, stencil);
 			}
 
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(IoTView);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(IoTView);
 
 			return Result.ViewResult(stencil.CreateModel(Environment.Context), "~/Views/Ide/Designers/IoT/Stencil.cshtml");
 		}

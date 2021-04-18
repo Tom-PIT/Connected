@@ -19,7 +19,7 @@
    {
        view = $"{uiModel.MicroService.Name}/{uiModel.ViewConfiguration.ComponentName()}";
         var layout = uiModel.ViewConfiguration.Layout;
-        var masterDependencies = uiModel.Tenant.GetService<IUIDependencyInjectionService>().QueryMasterDependencies(layout, uiModel.Arguments, MasterDependencyKind.Client);
+        var masterDependencies = uiModel.Tenant.GetService<IUIDependencyInjectionService>().QueryMasterDependencies(uiModel.ViewConfiguration.MicroService(), layout, uiModel.Arguments, MasterDependencyKind.Client);
         var viewDependencies = uiModel.Tenant.GetService<IUIDependencyInjectionService>().QueryViewDependencies(view, uiModel.Arguments);
 
         injections = Convert.ToInt32(masterDependencies?.Count) + Convert.ToInt32(viewDependencies?.Count);

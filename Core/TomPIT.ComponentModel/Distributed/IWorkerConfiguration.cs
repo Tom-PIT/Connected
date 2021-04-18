@@ -2,7 +2,7 @@
 
 namespace TomPIT.ComponentModel.Distributed
 {
-	public interface IWorkerConfiguration : IConfiguration
+	public interface IWorkerConfiguration : IConfiguration, INamespaceElement
 	{
 		IMetricOptions Metrics { get; }
 	}

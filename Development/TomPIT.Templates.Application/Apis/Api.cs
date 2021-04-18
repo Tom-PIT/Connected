@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
+using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
@@ -13,13 +14,15 @@ namespace TomPIT.MicroServices.Apis
 	[DomElement(DesignUtils.ApiElement)]
 	[DomDesigner(DomDesignerAttribute.PermissionsDesigner, Mode = EnvironmentMode.Runtime)]
 	[Manifest(DesignUtils.ApiManifest)]
-	public class Api : ComponentConfiguration, IApiConfiguration
+	[DomDesigner(DomDesignerAttribute.TextDesigner, Mode = EnvironmentMode.Design)]
+	[Syntax(SyntaxAttribute.CSharp)]
+	[ClassRequired]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.Api, TomPIT.MicroServices.Design")]
+	public class Api : TextConfiguration, IApiConfiguration
 	{
 		private ListItems<IApiOperation> _ops = null;
-		private ApiProtocolOptions _protocols = null;
 
 		[Items(DesignUtils.ApiOperationItems)]
-		[EnvironmentVisibility(EnvironmentMode.Any)]
 		[DomDesigner(DomDesignerAttribute.EmptyDesigner, Mode = EnvironmentMode.Runtime)]
 		public ListItems<IApiOperation> Operations
 		{
@@ -32,24 +35,13 @@ namespace TomPIT.MicroServices.Apis
 			}
 		}
 
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
-		public IApiProtocolOptions Protocols
-		{
-			get
-			{
-				if (_protocols == null)
-					_protocols = new ApiProtocolOptions
-					{
-						Parent = this
-					};
-
-				return _protocols;
-			}
-		}
-
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
 		[DefaultValue(ElementScope.Public)]
 		public ElementScope Scope { get; set; } = ElementScope.Public;
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
 	}
 }

@@ -15,17 +15,30 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 		protected override List<ICompletionItem> OnProvideItems()
 		{
 			var node = Arguments.Model.SyntaxTree.GetRoot().FindNode(Editor.GetMappedSpan(Arguments.Position));
+			var stringTable = string.Empty;
 
-			if (!(node.Parent is ArgumentListSyntax arg))
+			if (node.Parent is ArgumentListSyntax arg)
+			{
+				if (!(arg.Parent is InvocationExpressionSyntax invoke))
+					return null;
+
+				if (invoke.ArgumentList.Arguments.Count < 1)
+					return null;
+
+				stringTable = invoke.ArgumentList.Arguments[0].GetText().ToString().Trim().Trim('"');
+			}
+			else if (node.Parent is AttributeArgumentListSyntax aarg)
+			{
+				if (!(aarg.Parent is AttributeSyntax invoke))
+					return null;
+
+				if (invoke.ArgumentList.Arguments.Count < 1)
+					return null;
+
+				stringTable = invoke.ArgumentList.Arguments[0].GetText().ToString().Trim().Trim('"');
+			}
+			else
 				return null;
-
-			if (!(arg.Parent is InvocationExpressionSyntax invoke))
-				return null;
-
-			if (invoke.ArgumentList.Arguments.Count < 1)
-				return null;
-
-			var stringTable = invoke.ArgumentList.Arguments[0].GetText().ToString().Trim().Trim('"');
 
 			if (string.IsNullOrWhiteSpace(stringTable))
 				return null;

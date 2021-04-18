@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Collections;
-using TomPIT.Ide.Dom;
 using TomPIT.Middleware;
 
 namespace TomPIT.Management.Items

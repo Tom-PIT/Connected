@@ -1,18 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.Design;
+using TomPIT.Design.Ide;
 using TomPIT.Ide;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Dom;
-using TomPIT.Ide.Environment;
 
 namespace TomPIT.Dom
 {
 	public class MicroServiceElement : DomElement, IMicroServiceScope
 	{
-		private List<IFolder> _folders = null;
-		private List<IComponent> _components = null;
+		private ImmutableList<IFolder> _folders = null;
+		private ImmutableList<IComponent> _components = null;
 
 		public MicroServiceElement(IEnvironment environment, Guid microService) : base(environment, null)
 		{
@@ -47,7 +48,7 @@ namespace TomPIT.Dom
 
 			foreach (var i in Components.OrderBy(f => f.Name))
 			{
-				if (string.Compare(i.Category, "Reference", true) == 0)
+				if (string.Compare(i.Category, ComponentCategories.Reference, true) == 0)
 					continue;
 
 				Items.Add(i.GetDomElement(this));
@@ -74,14 +75,14 @@ namespace TomPIT.Dom
 
 			if (component != null)
 			{
-				if (string.Compare(component.Category, "Reference", true) == 0)
+				if (string.Compare(component.Category, ComponentCategories.Reference, true) == 0)
 					Items.Add(new ReferencesElement(this, component));
 				else
 					Items.Add(component.GetDomElement(this));
 			}
 		}
 
-		private List<IFolder> Folders
+		private ImmutableList<IFolder> Folders
 		{
 			get
 			{
@@ -92,7 +93,7 @@ namespace TomPIT.Dom
 			}
 		}
 
-		private List<IComponent> Components
+		private ImmutableList<IComponent> Components
 		{
 			get
 			{

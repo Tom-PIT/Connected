@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Threading;
 using TomPIT.ComponentModel;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 
 namespace TomPIT.Development.Analysis
 {
 	internal class ComponentAnalysisJob : DispatcherJob<IComponentDevelopmentState>
 	{
-		public ComponentAnalysisJob(Dispatcher<IComponentDevelopmentState> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public ComponentAnalysisJob(IDispatcher<IComponentDevelopmentState> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -21,7 +21,7 @@ namespace TomPIT.Development.Analysis
 
 		protected override void OnError(IComponentDevelopmentState item, Exception ex)
 		{
-			Dispatcher.Tenant.LogError(nameof(AutoFixJob), ex.Source, ex.Message);
+			Dispatcher.Tenant.LogError(ex.Source, ex.Message, nameof(AutoFixJob));
 		}
 	}
 }

@@ -47,23 +47,26 @@ namespace TomPIT.BigData.Transactions
 
 		public List<IQueueMessage> Dequeue(int count)
 		{
+			if (count == 0)
+				return new List<IQueueMessage>();
+
 			var u = Tenant.CreateUrl("BigDataManagement", "DequeueTransactionBlocks");
 			var e = new JObject
 			{
 				{"count", count },
-				{"nextVisible", 60 }
+				{"nextVisible", 600 }
 			};
 
 			return Tenant.Post<List<QueueMessage>>(u, e).ToList<IQueueMessage>();
 		}
 
-		public void Ping(Guid popReceipt)
+		public void Ping(Guid popReceipt, TimeSpan delay)
 		{
 			var u = Tenant.CreateUrl("BigDataManagement", "PingTransactionBlock");
 			var e = new JObject
 			{
 				{"popReceipt", popReceipt },
-				{"nextVisible", 60 }
+				{"nextVisible", Convert.ToInt32(delay.TotalSeconds) }
 			};
 
 			Tenant.Post(u, e);
@@ -81,6 +84,29 @@ namespace TomPIT.BigData.Transactions
 		}
 
 		public void Prepare(IPartitionConfiguration partition, JArray items)
+		{
+			using var ctx = new MicroServiceContext(partition.MicroService(), Tenant.Url);
+			var middleware = partition.Middleware(ctx);
+
+			if (middleware == null)
+				CreateTransaction(partition, items);
+			else
+			{
+				var instance = ctx.CreateMiddleware<IPartitionComponent>(middleware);
+
+				if (instance == null || !instance.Buffered)
+					CreateTransaction(partition, items);
+				else
+					BufferItems(instance, partition, items);
+			}
+		}
+
+		private void BufferItems(IPartitionComponent middleware, IPartitionConfiguration configuration, JArray items)
+		{
+			Tenant.GetService<IBufferingService>().Enqueue(configuration.Component, middleware.BufferTimeout, items);
+		}
+
+		public void CreateTransaction(IPartitionConfiguration partition, JArray items)
 		{
 			var parser = new TransactionParser(partition, items);
 

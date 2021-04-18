@@ -1,5 +1,5 @@
-﻿using TomPIT.Globalization;
-using TomPIT.Ide.Dom;
+﻿using TomPIT.Design.Ide.Dom;
+using TomPIT.Globalization;
 using TomPIT.Ide.Dom.ComponentModel;
 using TomPIT.Management.Globalization;
 

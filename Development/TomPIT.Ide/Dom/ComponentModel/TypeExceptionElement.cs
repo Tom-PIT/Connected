@@ -1,4 +1,6 @@
 ﻿using TomPIT.ComponentModel;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Verbs;
 
 namespace TomPIT.Ide.Dom.ComponentModel

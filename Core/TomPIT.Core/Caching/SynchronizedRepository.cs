@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Threading;
 
@@ -8,7 +7,7 @@ namespace TomPIT.Caching
 {
 	public abstract class SynchronizedRepository<T, K> : CacheRepository<T, K> where T : class
 	{
-		private object _sync = new object();
+		protected object SyncRoot = new object();
 		public event CacheInvalidateHandler Invalidate;
 
 		protected SynchronizedRepository(IMemoryCache container, string key) : base(container, key)
@@ -22,6 +21,8 @@ namespace TomPIT.Caching
 			Container.Invalidate += OnInvalidate;
 		}
 
+		protected virtual InvalidateBehavior InvalidateBehavior { get; } = InvalidateBehavior.KeepSameInstance;
+
 		private void OnInvalidate(CacheEventArgs e)
 		{
 			if (string.Compare(e.Key, Key, false) == 0)
@@ -30,6 +31,8 @@ namespace TomPIT.Caching
 					OnInvalidate(Types.Convert<K>(e.Id, CultureInfo.InvariantCulture));
 
 				Invalidate?.Invoke(e);
+
+				e.InvalidateBehavior = InvalidateBehavior;
 			}
 		}
 
@@ -48,12 +51,10 @@ namespace TomPIT.Caching
 			if (Initialized)
 				return;
 
-			lock (_sync)
+			lock (SyncRoot)
 			{
 				if (Initialized)
 					return;
-
-				Debug.WriteLine($"Initializing {GetType().Name}");
 
 				InitializeSignal = new ManualResetEvent(false);
 				Initializing = true;
@@ -74,8 +75,6 @@ namespace TomPIT.Caching
 					InitializeSignal.Dispose();
 					InitializeSignal = null;
 				}
-
-				Debug.WriteLine($"Initialized {GetType().Name}");
 			}
 
 			OnInitialized();
@@ -89,7 +88,7 @@ namespace TomPIT.Caching
 		private bool Initializing { get; set; }
 		private bool Initialized { get; set; }
 
-		protected override List<T> All()
+		protected override ImmutableList<T> All()
 		{
 			WaitForInitialization();
 
@@ -139,7 +138,7 @@ namespace TomPIT.Caching
 			return base.Get(id, retrieve);
 		}
 
-		protected override List<T> Where(Func<T, bool> predicate)
+		protected override ImmutableList<T> Where(Func<T, bool> predicate)
 		{
 			WaitForInitialization();
 

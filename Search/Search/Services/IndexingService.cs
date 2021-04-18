@@ -11,7 +11,6 @@ namespace TomPIT.Search.Services
 {
 	internal class IndexingService : HostedService
 	{
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
 		private Lazy<List<IndexingDispatcher>> _dispatchers = new Lazy<List<IndexingDispatcher>>();
 
 		public IndexingService()
@@ -19,15 +18,15 @@ namespace TomPIT.Search.Services
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
 
 			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new IndexingDispatcher(i, _cancel));
+				Dispatchers.Add(new IndexingDispatcher(i));
 		}
 
-		protected override bool Initialize()
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			return Instance.State == InstanceState.Running;
 		}
 
-		protected override Task Process()
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
@@ -46,6 +45,9 @@ namespace TomPIT.Search.Services
 
 				foreach (var i in jobs)
 				{
+					if (cancel.IsCancellationRequested)
+						return;
+
 					f.Enqueue(i);
 				}
 			});
@@ -54,5 +56,15 @@ namespace TomPIT.Search.Services
 		}
 
 		private List<IndexingDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+
+		public override void Dispose()
+		{
+			foreach (var dispatcher in Dispatchers)
+				dispatcher.Dispose();
+
+			Dispatchers.Clear();
+
+			base.Dispose();
+		}
 	}
 }

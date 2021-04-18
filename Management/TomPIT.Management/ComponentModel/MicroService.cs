@@ -5,7 +5,6 @@ using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.Management.Items;
-using TomPIT.Runtime;
 
 namespace TomPIT.Management.ComponentModel
 {
@@ -15,7 +14,6 @@ namespace TomPIT.Management.ComponentModel
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[MaxLength(128)]
 		[Required]
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public string Name { get; set; }
 		[Browsable(false)]
 		public string Url { get; set; }
@@ -23,14 +21,12 @@ namespace TomPIT.Management.ComponentModel
 		[KeyProperty]
 		public Guid Token { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public MicroServiceStatus Status { get; set; }
 		[Browsable(false)]
 		public Guid ResourceGroup { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
 		[PropertyEditor(PropertyEditorAttribute.Select)]
 		[Items(ManagementItems.MicroServiceTemplates)]
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
 		public Guid Template { get; set; }
 		[Browsable(false)]
 		public Guid Package { get; set; }

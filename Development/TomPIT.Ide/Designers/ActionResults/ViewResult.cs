@@ -1,4 +1,6 @@
-﻿namespace TomPIT.Ide.Designers.ActionResults
+﻿using TomPIT.Design.Ide.Designers;
+
+namespace TomPIT.Ide.Designers.ActionResults
 {
 	public class ViewResult : Result, IDesignerActionResultView
 	{

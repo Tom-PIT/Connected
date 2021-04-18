@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.Collections.Immutable;
+using Microsoft.AspNetCore.Mvc;
 using TomPIT.Environment;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers
 {
@@ -15,7 +15,7 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpGet]
-		public List<IInstanceEndpoint> Query()
+		public ImmutableList<IInstanceEndpoint> Query()
 		{
 			return DataModel.InstanceEndpoints.Query();
 		}

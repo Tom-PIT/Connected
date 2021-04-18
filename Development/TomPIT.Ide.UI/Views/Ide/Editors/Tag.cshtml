@@ -1,7 +1,8 @@
 ﻿@using TomPIT;
 @using TomPIT.Reflection;
+@using TomPIT.Design.Ide; 
 
-@model TomPIT.Ide.Properties.IProperty
+@model TomPIT.Design.Ide.Properties.IProperty
 
 @{
 	var value = Types.Convert<string>(Model.Value);
@@ -14,7 +15,7 @@
 	var values = new List<string>();
 
 	if (items == null)
-	{ items = new List<TomPIT.Ide.Collections.IItemDescriptor>(); }
+	{ items = new List<IItemDescriptor>(); }
 
 	if (Model.PropertyInfo.PropertyType.IsEnum && Model.PropertyInfo.PropertyType.FindAttribute<FlagsAttribute>() != null)
 	{

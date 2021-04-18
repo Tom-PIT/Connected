@@ -6,14 +6,14 @@ namespace TomPIT.BigData.Partitions
 {
 	internal class MaintenanceDispatcher : Dispatcher<IQueueMessage>
 	{
-		public MaintenanceDispatcher(string resourceGroup, CancellationTokenSource cancel) : base(cancel, 4)
+		public MaintenanceDispatcher(string resourceGroup) : base(4)
 		{
 			ResourceGroup = resourceGroup;
 		}
 
-		protected override DispatcherJob<IQueueMessage> CreateWorker(CancellationTokenSource cancel)
+		public override DispatcherJob<IQueueMessage> CreateWorker(IDispatcher<IQueueMessage> owner, CancellationToken cancel)
 		{
-			return new MaintenanceJob(this, cancel);
+			return new MaintenanceJob(owner, cancel);
 		}
 
 		public string ResourceGroup { get; }

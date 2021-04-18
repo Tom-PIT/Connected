@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TomPIT.Data.Sql;
 using TomPIT.IoT;
 using TomPIT.SysDb.IoT;
@@ -13,7 +13,7 @@ namespace TomPIT.SysDb.Sql.IoT
 	{
 		public List<IIoTFieldState> SelectState(Guid hub)
 		{
-			var r = new Reader<IoTFieldState>("tompit.iot_state_sel");
+			using var r = new Reader<IoTFieldState>("tompit.iot_state_sel");
 
 			r.CreateParameter("@hub", hub);
 
@@ -29,7 +29,8 @@ namespace TomPIT.SysDb.Sql.IoT
 				var o = new JObject
 				{
 					{ "hub", hub },
-					{ "field", i.Field }
+					{ "field", i.Field },
+					{ "device", i.Device }
 				};
 
 				if (!string.IsNullOrWhiteSpace(i.Value))
@@ -38,7 +39,7 @@ namespace TomPIT.SysDb.Sql.IoT
 				a.Add(o);
 			}
 
-			var w = new Writer("tompit.iot_state_upd");
+			using var w = new Writer("tompit.iot_state_upd");
 
 			w.CreateParameter("@items", JsonConvert.SerializeObject(a));
 

@@ -1,0 +1,46 @@
+﻿[name="diff"],
+[name="designer"] {
+  display: none;
+}
+#versionControl [name="explorer"] {
+  font-size: 0.8rem;
+}
+[name="diff"].tp-active,
+[name="designer"].tp-active {
+  display: block;
+}
+[name="diff"] {
+  min-height: 500px;
+  height: 100%;
+}
+.tp-change-item {
+  cursor: pointer;
+  font-weight: normal;
+}
+.tp-change-item.tp-active {
+  font-weight: bold;
+}
+ul.tp-vc-list {
+  padding-left: 17px;
+  list-style: none;
+}
+ul.tp-vc-list li {
+  padding: 2px 0;
+  white-space: nowrap;
+}
+.tp-vc-item-text:hover {
+  color: #2196f3;
+}
+ul.tp-vc-list.tp-top-level {
+  padding-left: 0px;
+}
+ul.tp-vc-list.tp-hidden {
+  display: none;
+}
+[name="designerToolbar"] .btn-group a.btn-link.active {
+  font-weight: 700;
+}
+.tp-vc-explorer-toolbar {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 5px;
+}

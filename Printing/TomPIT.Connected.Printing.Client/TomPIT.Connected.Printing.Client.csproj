@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net4.7.2</TargetFramework>
+    <Configurations>Debug;Release;Development</Configurations>
+    <AssemblyVersion>2.2.415.2</AssemblyVersion>
+    <FileVersion>2.2.415.2</FileVersion>
+    <Version>2.2.415.2</Version>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AppConfig>App.$(Configuration).config</AppConfig>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Development|AnyCPU'">
+    <Optimize>false</Optimize>
+    <DefineConstants>TRACE;TESTING;SIMULATION;CONSOLE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="DevExpress.AspNetCore.Reporting" Version="19.2.3" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="5.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="5.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Printing" />
+  </ItemGroup>
+</Project>

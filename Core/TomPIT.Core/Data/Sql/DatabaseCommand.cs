@@ -1,9 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
+using Newtonsoft.Json.Linq;
 using TomPIT.Serialization;
 
 namespace TomPIT.Data.Sql
@@ -56,62 +55,17 @@ namespace TomPIT.Data.Sql
 			if (ex != null)
 			{
 				if (mapNull)
-					ex.Value = MapNullValue(value);
+					ex.Value = NullMapper.Map(value, MappingMode.Database);
 				else
 				{
 					if (value is string)
-						ex.Value = TrimValue(value as string);
+						ex.Value = NullMapper.Trim(value as string);
 					else
 						ex.Value = value;
 				}
 			}
 		}
 
-		private object MapNullValue(object value)
-		{
-			if (value == null || value == DBNull.Value)
-				return DBNull.Value;
-
-			else if (value is string)
-			{
-				string v = TrimValue(value as string);
-
-				if (string.IsNullOrWhiteSpace(v))
-					return DBNull.Value;
-			}
-			else if (value is DateTime)
-			{
-				if ((DateTime)value == DateTime.MinValue)
-					return DBNull.Value;
-			}
-			else if (value is int || value is float || value is double || value is short || value is byte || value is long || value is decimal)
-			{
-				if (Convert.ToDecimal(value) == decimal.Zero)
-					return DBNull.Value;
-			}
-			else if (value is byte[])
-			{
-				if (value == null || ((byte[])value).Length == 0)
-					return DBNull.Value;
-			}
-			else if (value is Guid)
-			{
-				if ((Guid)value == Guid.Empty)
-					return DBNull.Value;
-			}
-			else if (value is Enum)
-			{
-				if ((int)value == 0)
-					return DBNull.Value;
-			}
-			else if (value is TimeSpan)
-			{
-				if ((TimeSpan)value == TimeSpan.Zero)
-					return DBNull.Value;
-			}
-
-			return value;
-		}
 
 		public SqlParameter CreateParameter(string parameterName, object value)
 		{
@@ -121,7 +75,7 @@ namespace TomPIT.Data.Sql
 			};
 
 			if (value is string)
-				p.Value = TrimValue(value as string);
+				p.Value = NullMapper.Trim(value as string);
 			else if (value is DataTable)
 			{
 				p.SqlDbType = SqlDbType.Structured;
@@ -149,21 +103,13 @@ namespace TomPIT.Data.Sql
 		{
 			if (nullMapping)
 			{
-				object v = MapNullValue(value);
+				object v = NullMapper.Map(value, MappingMode.Database);
 
 				if (v == DBNull.Value)
 					return;
 			}
 
 			CreateParameter(parameterName, value);
-		}
-
-		private string TrimValue(string value)
-		{
-			if (string.IsNullOrWhiteSpace(value))
-				return string.Empty;
-
-			return value.Trim();
 		}
 	}
 }

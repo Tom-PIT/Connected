@@ -31,11 +31,12 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 				items.Add(new CompletionItem
 				{
-					FilterText = text,
+					FilterText = text.Replace("/", string.Empty),
 					InsertText = text,
 					Kind = CompletionItemKind.Reference,
-					Label = text,
-					SortText = text
+					Label = $"{component.Name}/{operation.Name}",
+					SortText = $"{component.Name}/{operation.Name}",
+					Detail = text
 				});
 			}
 		}

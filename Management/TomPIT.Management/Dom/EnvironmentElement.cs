@@ -1,5 +1,5 @@
-﻿using TomPIT.Ide.Dom;
-using TomPIT.Ide.Environment;
+﻿using TomPIT.Design.Ide;
+using TomPIT.Ide.Dom;
 
 namespace TomPIT.Management.Dom
 {

@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
 using TomPIT.BigData.Data;
 using TomPIT.BigData.Transactions;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Middleware;
 
 namespace TomPIT.BigData.Providers.Sql
@@ -32,7 +31,6 @@ namespace TomPIT.BigData.Providers.Sql
 				CreateTable();
 
 			AlterTable();
-			RecreateHelpers();
 		}
 
 		public string TableName { get { return string.Format("t_{0}", File.TableName()); } }
@@ -138,13 +136,11 @@ namespace TomPIT.BigData.Providers.Sql
 		{
 			try
 			{
-				new NodeAdminWriter(Node, string.Format(SqlStrings.DropProcedure, TableName), CommandType.Text).Execute();
-				new NodeAdminWriter(Node, string.Format(SqlStrings.DropProcedureUpdate, PartialTableName), CommandType.Text).Execute();
 				new NodeAdminWriter(Node, string.Format(SqlStrings.DropTable, TableName), CommandType.Text).Execute();
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError("BigData", ex.Source, ex.Message);
+				MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, "BigData");
 			}
 		}
 
@@ -194,136 +190,6 @@ namespace TomPIT.BigData.Providers.Sql
 		private string ParseDateColumnMetaData(PartitionSchemaDateField field)
 		{
 			return "datetime2(7) NULL";
-		}
-
-		private void RecreateHelpers()
-		{
-			new NodeAdminWriter(Node, string.Format(SqlStrings.DropProcedure, TableName), CommandType.Text).Execute();
-			new NodeAdminWriter(Node, string.Format(SqlStrings.DropProcedureUpdate, PartialTableName), CommandType.Text).Execute();
-
-			var commandText = string.Format(SqlStrings.CreateMergeProcedure, TableName, CreateProcedureColumns(), CreateMergeOn(), CreateSetStatement(), CreateInsertFields(), CreateRowFields());
-
-			new NodeAdminWriter(Node, commandText, CommandType.Text).Execute();
-
-			commandText = string.Format(SqlStrings.CreateUpdateProcedure, PartialTableName, TableName, CreateProcedureColumns(), CreateMergeOn(), CreateSetStatement(), CreateInsertFields(), CreateRowFields());
-
-			new NodeAdminWriter(Node, commandText, CommandType.Text).Execute();
-		}
-
-		private string CreateRowFields()
-		{
-			var result = new StringBuilder();
-
-			foreach (var field in Schema.Fields)
-			{
-				result.Append($"{field.Name} {GetSqlType(field)},");
-			}
-
-			return result.ToString().TrimEnd(',');
-		}
-
-		private string CreateProcedureColumns()
-		{
-			var sb = new StringBuilder();
-
-			sb.Append($"{Merger.TimestampColumn},");
-
-			foreach (var i in Schema.Fields)
-			{
-				if (IsSystemColumn(i.Name))
-					continue;
-
-				sb.AppendFormat("{0},", i.Name);
-			}
-
-			return sb.ToString().TrimEnd(',');
-		}
-
-		private string CreateMergeOn()
-		{
-			var sb = new StringBuilder();
-
-			sb.Append($"t.{Merger.TimestampColumn} = s.{Merger.TimestampColumn}");
-
-			foreach (var i in Schema.Fields)
-			{
-				if (IsSystemColumn(i.Name))
-					continue;
-
-				if (i.Key)
-					sb.AppendFormat(" AND t.{0} = s.{0}", i.Name);
-			}
-
-			return sb.ToString();
-		}
-
-		private string CreateSetStatement()
-		{
-			var sb = new StringBuilder();
-
-			foreach (var i in Schema.Fields)
-			{
-				if (IsSystemColumn(i.Name))
-					continue;
-
-				if (i is PartitionSchemaNumberField)
-				{
-					if (((PartitionSchemaNumberField)i).Aggregate == AggregateMode.Sum)
-						sb.AppendFormat("t.{0} = t.{0} + s.{0},", i.Name);
-					else
-						sb.AppendFormat("t.{0} = s.{0},", i.Name);
-				}
-				else
-					sb.AppendFormat("t.{0} = s.{0},", i.Name);
-			}
-
-			return sb.ToString().TrimEnd(',');
-		}
-
-		private string CreateInsertFields()
-		{
-			var sb = new StringBuilder();
-
-			sb.AppendFormat($"s.{Merger.TimestampColumn},");
-
-			foreach (var i in Schema.Fields)
-			{
-				if (IsSystemColumn(i.Name))
-					continue;
-
-				sb.AppendFormat("s.{0},", i.Name);
-			}
-
-			return sb.ToString().TrimEnd(',');
-		}
-
-		private string GetSqlType(PartitionSchemaField field)
-		{
-			if (field is PartitionSchemaStringField sf)
-				return string.Format("nvarchar ({0})", sf.Length);
-			else if (field is PartitionSchemaNumberField nf)
-			{
-				if (nf.Type == typeof(byte))
-					return "tinyint";
-				else if (nf.Type == typeof(short))
-					return "smallint";
-				else if (nf.Type == typeof(int))
-					return "int";
-				else if (nf.Type == typeof(long))
-					return "bigint";
-				else if (nf.Type == typeof(float)
-					|| nf.Type == typeof(double)
-					|| nf.Type == typeof(decimal))
-					return "float";
-				else
-					throw new NotSupportedException();
-			}
-			else if (field is PartitionSchemaBoolField)
-				return "bit";
-			else if (field is PartitionSchemaDateField)
-				return "datetime2";
-			else
-				throw new NotSupportedException();
 		}
 
 		private bool IsSystemColumn(string name)

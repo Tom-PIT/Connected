@@ -1,4 +1,7 @@
-﻿using TomPIT.Annotations.Design;
+﻿using System.ComponentModel;
+using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
+using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Diagnostics;
 using TomPIT.ComponentModel.Distributed;
@@ -11,11 +14,12 @@ namespace TomPIT.MicroServices.Distributed
 	[DomDesigner(DesignUtils.ScheduleDesigner, Mode = EnvironmentMode.Runtime)]
 	[DomDesigner(DomDesignerAttribute.TextDesigner, Mode = EnvironmentMode.Design)]
 	[Syntax(SyntaxAttribute.CSharp)]
-	public class HostedWorker : SourceCodeConfiguration, IHostedWorkerConfiguration
+	[ClassRequired]
+	public class HostedWorker : TextConfiguration, IHostedWorkerConfiguration
 	{
 		private IMetricOptions _metric = null;
 
-		[EnvironmentVisibility(EnvironmentMode.Runtime)]
+		[Browsable(false)]
 		public IMetricOptions Metrics
 		{
 			get
@@ -26,5 +30,10 @@ namespace TomPIT.MicroServices.Distributed
 				return _metric;
 			}
 		}
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
 	}
 }

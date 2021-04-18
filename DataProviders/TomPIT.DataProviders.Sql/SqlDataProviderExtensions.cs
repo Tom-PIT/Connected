@@ -1,11 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using TomPIT.Data;
+using TomPIT.DataProviders.Sql.Synchronization;
 using TomPIT.Deployment.Database;
 
 namespace TomPIT.DataProviders.Sql
 {
 	internal static class SqlDataProviderExtensions
 	{
+		#region Deployment
 		public static ITable Find(this List<ITable> tables, string schema, string name)
 		{
 			return tables.FirstOrDefault(f => string.Compare(schema, f.Schema, true) == 0 && string.Compare(name, f.Name, true) == 0);
@@ -135,7 +140,51 @@ namespace TomPIT.DataProviders.Sql
 
 			return null;
 		}
+		#endregion
 
+		public static T GetValue<T>(this IDataReader r, string fieldName, T defaultValue)
+		{
+			var idx = r.GetOrdinal(fieldName);
 
+			if (idx == -1)
+				return defaultValue;
+
+			if (r.IsDBNull(idx))
+				return defaultValue;
+
+			return (T)Convert.ChangeType(r.GetValue(idx), typeof(T));
+		}
+
+		public static string SchemaName(this IModelSchema model)
+		{
+			return string.IsNullOrWhiteSpace(model.Schema) ? "dbo" : model.Schema;
+		}
+
+		public static string FileGroup(this ISynchronizer synchronizer)
+		{
+			return "PRIMARY";
+		}
+
+		public static string ParseDefaultValue(string value)
+		{
+			if (string.IsNullOrEmpty(value))
+				return value;
+
+			if (value.StartsWith("N'"))
+				return value;
+
+			var defValue = $"N'{value}'";
+
+			if (value.Length > 1)
+			{
+				var last = value.Trim()[^1];
+				var prev = value.Trim()[0..^1].Trim()[^1];
+
+				if (last == ')' && prev == '(')
+					defValue = value;
+			}
+
+			return defValue;
+		}
 	}
 }

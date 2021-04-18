@@ -11,7 +11,6 @@ using TomPIT.Deployment;
 using TomPIT.Deployment.Database;
 using TomPIT.Exceptions;
 using TomPIT.Globalization;
-using TomPIT.Ide;
 using TomPIT.Management.ComponentModel;
 using TomPIT.Management.Deployment.Packages.Database;
 using TomPIT.Reflection;
@@ -178,7 +177,7 @@ namespace TomPIT.Management.Deployment.Packages
 
 		private void CreateDependencies(ITenant tenant)
 		{
-			var references = tenant.GetService<IDiscoveryService>().References(MicroService.Token);
+			var references = tenant.GetService<IDiscoveryService>().MicroServices.References.Select(MicroService.Token);
 
 			if (references == null)
 				return;
@@ -224,18 +223,18 @@ namespace TomPIT.Management.Deployment.Packages
 
 				CreateBlob(tenant, i.Token);
 
-				var texts = config.Children<IText>();
+				var texts = tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config);
 
 				foreach (var j in texts)
 					CreateBlob(tenant, j.TextBlob);
 
-				var er = config.Children<IExternalResourceElement>();
+				var er = tenant.GetService<IDiscoveryService>().Configuration.Query<IExternalResourceElement>(config);
 
 				foreach (var j in er)
 				{
 					var items = j.QueryResources();
 
-					if (items == null || items.Count == 0)
+					if (items == null || !items.Any())
 						continue;
 
 					foreach (var k in items)
@@ -311,7 +310,7 @@ namespace TomPIT.Management.Deployment.Packages
 
 			foreach (var i in Configurations)
 			{
-				if (svc.Find(i.Component, element) != null)
+				if (svc.Configuration.Find(i.Component, element) != null)
 					return true;
 			}
 
@@ -358,10 +357,10 @@ namespace TomPIT.Management.Deployment.Packages
 
 				Databases.Add(database);
 
-				if (!dp.SupportsDeploy)
+				if (!(dp is IDeployDataProvider deploy))
 					continue;
 
-				var db = dp.CreateSchema(i.Value);
+				var db = deploy.CreateSchema(i.Value);
 
 				CreateTables(database, db);
 				CreateViews(database, db);

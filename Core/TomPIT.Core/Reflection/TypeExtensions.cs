@@ -94,12 +94,26 @@ namespace TomPIT.Reflection
 
 		public static bool IsCollection(this Type type)
 		{
+			if (type == typeof(string))
+				return false;
+
 			var interfaces = type.GetInterfaces();
 
 			if (interfaces == null || interfaces.Length == 0)
 				return false;
 
 			return interfaces.Contains(typeof(IEnumerable));
+		}
+
+		public static bool IsEmpty(this IEnumerable value)
+		{
+			if (!IsCollection(value.GetType()))
+				return true;
+
+			foreach (var _ in value)
+				return false;
+
+			return true;
 		}
 
 		public static bool IsCollection(this PropertyInfo pi)
@@ -203,6 +217,9 @@ namespace TomPIT.Reflection
 
 		public static bool ImplementsInterface(this Type type, Type itf)
 		{
+			if (string.IsNullOrWhiteSpace(itf.FullName))
+				return false;
+
 			return type.GetInterface(itf.FullName) != null;
 		}
 
@@ -297,6 +314,16 @@ namespace TomPIT.Reflection
 			return string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().FullName);
 		}
 
+		public static string TryScriptTypeName(this Type type)
+		{
+			if (!type.FullName.Contains("+"))
+				return null;
+
+			var tokens = type.FullName.Split('+');
+
+			return tokens[^1];
+		}
+
 		public static string ScriptTypeName(this Type type)
 		{
 			if (!type.FullName.Contains("+"))
@@ -304,7 +331,7 @@ namespace TomPIT.Reflection
 
 			var tokens = type.FullName.Split('+');
 
-			return tokens[tokens.Length - 1];
+			return tokens[^1];
 		}
 
 		public static Assembly LoadAssembly(string type)
@@ -446,6 +473,19 @@ namespace TomPIT.Reflection
 				return default;
 
 			return Closest<T>(e.Parent);
+		}
+
+		public static bool IsDictionary(object instance)
+		{
+			if (instance == null)
+				return false;
+
+			return IsDictionary(instance.GetType());
+		}
+
+		public static bool IsDictionary(Type type)
+		{
+			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
 		}
 	}
 }

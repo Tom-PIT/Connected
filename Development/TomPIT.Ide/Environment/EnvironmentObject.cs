@@ -1,4 +1,6 @@
-﻿namespace TomPIT.Ide.Environment
+﻿using TomPIT.Design.Ide;
+
+namespace TomPIT.Ide.Environment
 {
 	public class EnvironmentObject : IEnvironmentObject
 	{

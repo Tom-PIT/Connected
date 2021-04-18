@@ -27,30 +27,30 @@ namespace TomPIT.Worker
 				Authentication = AuthenticationType.SingleTenant
 			};
 
-			Instance.Initialize(services, e);
+			Instance.Initialize(InstanceType.Worker, services, e);
 			RegisterTasks(services);
 		}
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			Instance.Configure(InstanceType.Worker, app, env, (f) =>
+			Instance.Configure(app, env, (f) =>
 			{
 				Worker.Configuration.Routing.Register(f.Builder);
 			});
 
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-			Instance.Run(app);
+			Instance.Run(app, env);
 		}
 
 		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
 			e.Tenant.RegisterService(typeof(ISubscriptionWorkerService), typeof(SubscriptionWorkerService));
+			e.Tenant.RegisterService(typeof(IWorkerProxyService), typeof(WorkerProxyService));
 		}
 
 		private void RegisterTasks(IServiceCollection services)
 		{
 			services.AddSingleton<IHostedService, WorkerService>();
-			services.AddSingleton<IHostedService, EventService>();
 			services.AddSingleton<IHostedService, SubscriptionWorker>();
 			services.AddSingleton<IHostedService, SubscriptionEventWorker>();
 			services.AddSingleton<IHostedService, QueueWorkerService>();

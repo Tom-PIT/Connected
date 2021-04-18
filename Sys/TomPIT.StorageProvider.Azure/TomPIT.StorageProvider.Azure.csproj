@@ -1,12 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyVersion>2.1.403.3</AssemblyVersion>
-    <FileVersion>2.1.403.3</FileVersion>
-    <Version>2.1.403.3</Version>
+    <TargetFramework>net5.0</TargetFramework>
+    <AssemblyVersion>2.2.415.2</AssemblyVersion>
+    <FileVersion>2.2.415.2</FileVersion>
+    <Version>2.2.415.2</Version>
+    <Authors>Tom PIT</Authors>
+    <Company>Tom PIT</Company>
+    <Product>Tom PIT.connected</Product>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.1.3" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.8.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />

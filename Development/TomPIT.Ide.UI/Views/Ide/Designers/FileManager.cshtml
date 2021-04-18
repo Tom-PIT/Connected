@@ -26,6 +26,7 @@
         itemView: {
             mode: "thumbnails"
         },
+        allowedFileExtensions:@Html.Raw(Html.TP().JavaScript.Array(Model.AllowedFileExtensions)) ,
         permissions: {
             copy: true,
             create: true,

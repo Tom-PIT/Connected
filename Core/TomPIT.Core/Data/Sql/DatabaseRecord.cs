@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace TomPIT.Data.Sql
 {
@@ -32,17 +32,17 @@ namespace TomPIT.Data.Sql
 		}
 
 		protected T GetValue<T>(string fieldName, T defaultValue) { return GetReaderValue<T>(Reader, fieldName, defaultValue); }
-		protected int GetInt(string fieldName) { return GetReaderValue<int>(Reader, fieldName, 0); }
+		protected int GetInt(string fieldName) { return GetReaderValue(Reader, fieldName, 0); }
 		protected short GetShort(string fieldName) { return GetReaderValue<short>(Reader, fieldName, 0); }
-		protected long GetLong(string fieldName) { return GetReaderValue<long>(Reader, fieldName, 0); }
-		protected bool GetBool(string fieldName) { return GetReaderValue<bool>(Reader, fieldName, false); }
-		protected bool GetBool(string fieldName, bool defaultValue) { return GetReaderValue<bool>(Reader, fieldName, defaultValue); }
-		protected Guid GetGuid(string fieldName) { return GetReaderValue<Guid>(Reader, fieldName, Guid.Empty); }
-		protected DateTime GetDate(string fieldName) { return GetReaderValue<DateTime>(Reader, fieldName, DateTime.MinValue); }
-		protected TimeSpan GetTimeSpan(string fieldName) { return GetReaderValue<TimeSpan>(Reader, fieldName, TimeSpan.Zero); }
-		protected decimal GetDecimal(string fieldName) { return GetReaderValue<decimal>(Reader, fieldName, 0m); }
-		protected double GetDouble(string fieldName) { return GetReaderValue<double>(Reader, fieldName, 0d); }
-		protected string GetString(string fieldName) { return GetReaderValue<string>(Reader, fieldName, string.Empty); }
+		protected long GetLong(string fieldName) { return GetReaderValue(Reader, fieldName, 0L); }
+		protected bool GetBool(string fieldName) { return GetReaderValue(Reader, fieldName, false); }
+		protected bool GetBool(string fieldName, bool defaultValue) { return GetReaderValue(Reader, fieldName, defaultValue); }
+		protected Guid GetGuid(string fieldName) { return GetReaderValue(Reader, fieldName, Guid.Empty); }
+		protected DateTime GetDate(string fieldName) { return GetReaderValue(Reader, fieldName, DateTime.MinValue); }
+		protected TimeSpan GetTimeSpan(string fieldName) { return GetReaderValue(Reader, fieldName, TimeSpan.Zero); }
+		protected decimal GetDecimal(string fieldName) { return GetReaderValue(Reader, fieldName, 0m); }
+		protected double GetDouble(string fieldName) { return GetReaderValue(Reader, fieldName, 0d); }
+		protected string GetString(string fieldName) { return GetReaderValue(Reader, fieldName, string.Empty); }
 		protected byte GetByte(string fieldName) { return GetReaderValue<byte>(Reader, fieldName, 0); }
 
 		public bool IsDefined(string fieldName)

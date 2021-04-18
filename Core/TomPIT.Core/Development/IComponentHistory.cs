@@ -10,5 +10,6 @@ namespace TomPIT.Development
 		Guid User { get; }
 		Guid Commit { get; }
 		Guid Component { get; }
+		LockVerb Verb { get; }
 	}
 }

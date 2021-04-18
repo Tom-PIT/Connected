@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
@@ -10,6 +9,7 @@ using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
 using TomPIT.Deployment;
+using TomPIT.Design;
 using TomPIT.Design.Serialization;
 using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
@@ -17,7 +17,6 @@ using TomPIT.Ide.ComponentModel;
 using TomPIT.Management.ComponentModel;
 using TomPIT.Management.Deployment.Packages;
 using TomPIT.Middleware;
-using TomPIT.Runtime;
 using TomPIT.Security;
 using TomPIT.Storage;
 
@@ -46,7 +45,7 @@ namespace TomPIT.Management.Deployment
 			}
 		}
 
-		private Dictionary<Guid, Guid> LastKnownState { get; set; }
+		//private Dictionary<Guid, Guid> LastKnownState { get; set; }
 
 		public void Deploy()
 		{
@@ -99,7 +98,7 @@ namespace TomPIT.Management.Deployment
 
 			try
 			{
-				var context = new MicroServiceContext(Package.MicroService.Token, Tenant.Url);
+				using var context = new MicroServiceContext(Package.MicroService.Token, Tenant.Url);
 				var instance = Tenant.GetService<ICompilerService>().CreateInstance<IInstallerMiddleware>(context, type);
 
 				instance.Invoke();
@@ -129,7 +128,7 @@ namespace TomPIT.Management.Deployment
 			DeployBlobs();
 			//DeployStrings();
 
-			Tenant.GetService<IComponentDevelopmentService>().DropRuntimeState(Package.MicroService.Token);
+			//Tenant.GetService<IDesignService>().Components.DropRuntimeState(Package.MicroService.Token);
 
 			var ms = Tenant.GetService<IMicroServiceService>().Select(m.Token);
 
@@ -146,7 +145,7 @@ namespace TomPIT.Management.Deployment
 
 		private void DeployFolders(FolderModel model)
 		{
-			Tenant.GetService<IComponentDevelopmentService>().RestoreFolder(model.Folder.MicroService, model.Folder.Token, model.Folder.Name, model.Folder.Parent);
+			Tenant.GetService<IDesignService>().Components.RestoreFolder(model.Folder.MicroService, model.Folder.Token, model.Folder.Name, model.Folder.Parent);
 
 			foreach (var i in model.Items)
 				DeployFolders(i);
@@ -158,29 +157,8 @@ namespace TomPIT.Management.Deployment
 			{
 				var isStringTable = string.Compare(i.Category, ComponentCategories.StringTable, true) == 0;
 				var configuration = Package.Blobs.FirstOrDefault(f => f.Type == BlobTypes.Configuration && f.PrimaryKey == i.Token.ToString());
-				var runtimeConfiguration = isStringTable || (Configuration.RuntimeConfigurationSupported && Configuration.RuntimeConfiguration) ? Package.Blobs.FirstOrDefault(f => f.Type == BlobTypes.RuntimeConfiguration
-						  && string.Compare(f.PrimaryKey, i.RuntimeConfiguration.ToString(), true) == 0) : null;
 
-				if (!Configuration.RuntimeConfiguration || isStringTable)
-				{
-					var state = LastKnownState == null ? Guid.Empty : LastKnownState.FirstOrDefault(f => f.Key == configuration.Token).Value;
-					/*
-					* if existing runtime configuration found override component's runtime configuration
-					* set to no runtime configuration otherwise
-					*/
-					if (state != Guid.Empty)
-						((PackageComponent)i).RuntimeConfiguration = state;
-					else
-					{
-						if (!isStringTable)
-							((PackageComponent)i).RuntimeConfiguration = Guid.Empty;
-					}
-
-					if (isStringTable && runtimeConfiguration != null)
-						MergeTranslations(i, runtimeConfiguration, state);
-				}
-
-				Tenant.GetService<IComponentDevelopmentService>().Restore(Package.MicroService.Token, i, configuration, runtimeConfiguration);
+				Tenant.GetService<IDesignService>().Components.Restore(Package.MicroService.Token, i, configuration);
 			}
 
 			var connections = Tenant.GetService<IComponentService>().QueryComponents(Package.MicroService.Token, ComponentCategories.Connection);
@@ -199,7 +177,7 @@ namespace TomPIT.Management.Deployment
 						if (pi != null && pi.CanWrite)
 							pi.SetValue(config, cs);
 
-						Tenant.GetService<IComponentDevelopmentService>().Update(config, new ComponentUpdateArgs(EnvironmentMode.Design, false));
+						Tenant.GetService<IDesignService>().Components.Update(config, new ComponentUpdateArgs(false));
 					}
 				}
 			}
@@ -246,7 +224,7 @@ namespace TomPIT.Management.Deployment
 					if (dp == null)
 						throw new RuntimeException(string.Format("{0} ({1})", SR.ErrDataProviderNotFound, config.DataProvider));
 
-					if (dp.SupportsDeploy)
+					if (dp is IDeployDataProvider deploy)
 					{
 						var cs = config.ConnectionString;
 
@@ -255,7 +233,7 @@ namespace TomPIT.Management.Deployment
 
 						cs = Tenant.GetService<ICryptographyService>().Decrypt(cs);
 
-						dp.Deploy(new DatabaseDeploymentContext(Tenant, Package, cs, i));
+						deploy.Deploy(new DatabaseDeploymentContext(Tenant, Package, cs, i));
 					}
 				}
 			}
@@ -270,7 +248,7 @@ namespace TomPIT.Management.Deployment
 		 * first, load existing state. if existing state is available it means we have an invalid installation state
 		 * and we won't create another state
 		 */
-			LastKnownState = Tenant.GetService<IComponentDevelopmentService>().SelectRuntimeState(Package.MicroService.Token);
+			//LastKnownState = Tenant.GetService<IDesignService>().Components.SelectRuntimeState(Package.MicroService.Token);
 
 			var existing = Tenant.GetService<IMicroServiceService>().Select(Package.MicroService.Token);
 			/*
@@ -287,11 +265,11 @@ namespace TomPIT.Management.Deployment
 			/*
 		 * now, if last known state is null we must save state. this state will be merged with the installation
 		 */
-			if (LastKnownState == null)
-			{
-				Tenant.GetService<IComponentDevelopmentService>().SaveRuntimeState(existing.Token);
-				LastKnownState = Tenant.GetService<IComponentDevelopmentService>().SelectRuntimeState(Package.MicroService.Token);
-			}
+			//if (LastKnownState == null)
+			//{
+			//	Tenant.GetService<IDesignService>().Components.SaveRuntimeState(existing.Token);
+			//	LastKnownState = Tenant.GetService<IDesignService>().Components.SelectRuntimeState(Package.MicroService.Token);
+			//}
 			/*
 		 * now drop the microservice and all dependent objects. note that permissions and settings are not dropped because they 
 		 * are not part of microservice configuration.
@@ -305,69 +283,69 @@ namespace TomPIT.Management.Deployment
 		/// <param name="component">Deploying component.</param>
 		/// <param name="runtimeConfiguration">Deploying runtime configuration.</param>
 		/// <param name="state">Existing state id.</param>
-		private void MergeTranslations(IPackageComponent component, IPackageBlob runtimeConfiguration, Guid state)
-		{
-			var type = Type.GetType(component.Type);
-			var config = Tenant.GetService<ISerializationService>().Deserialize(Convert.FromBase64String(runtimeConfiguration.Content), type) as IStringTableConfiguration;
-			var existingConfigBlob = state == Guid.Empty ? null : Tenant.GetService<IStorageService>().Download(state);
+		//private void MergeTranslations(IPackageComponent component, IPackageBlob runtimeConfiguration, Guid state)
+		//{
+		//	var type = Type.GetType(component.Type);
+		//	var config = Tenant.GetService<ISerializationService>().Deserialize(Convert.FromBase64String(runtimeConfiguration.Content), type) as IStringTableConfiguration;
+		//	var existingConfigBlob = state == Guid.Empty ? null : Tenant.GetService<IStorageService>().Download(state);
 
-			ResetAuditFlag(config);
+		//	ResetAuditFlag(config);
 
-			if (existingConfigBlob == null)
-			{
-				OverrideStringTableConfiguration(config, runtimeConfiguration);
-				return;
-			}
+		//	if (existingConfigBlob == null)
+		//	{
+		//		OverrideStringTableConfiguration(config, runtimeConfiguration);
+		//		return;
+		//	}
 
-			if (!(Tenant.GetService<ISerializationService>().Deserialize(existingConfigBlob.Content, type) is IStringTableConfiguration existingConfig))
-			{
-				OverrideStringTableConfiguration(config, runtimeConfiguration);
-				return;
-			}
+		//	if (!(Tenant.GetService<ISerializationService>().Deserialize(existingConfigBlob.Content, type) is IStringTableConfiguration existingConfig))
+		//	{
+		//		OverrideStringTableConfiguration(config, runtimeConfiguration);
+		//		return;
+		//	}
 
-			foreach (var s in config.Strings)
-			{
-				var existingString = existingConfig.Strings.FirstOrDefault(f => string.Compare(f.Key, s.Key, true) == 0);
+		//	foreach (var s in config.Strings)
+		//	{
+		//		var existingString = existingConfig.Strings.FirstOrDefault(f => string.Compare(f.Key, s.Key, true) == 0);
 
-				/*
-				 * override changed translations
-				 */
-				foreach (var translation in s.Translations)
-				{
-					if (existingString == null)
-						continue;
+		//		/*
+		//		 * override changed translations
+		//		 */
+		//		foreach (var translation in s.Translations)
+		//		{
+		//			if (existingString == null)
+		//				continue;
 
-					var existingTranslation = existingString.Translations.FirstOrDefault(f => f.Lcid == translation.Lcid);
+		//			var existingTranslation = existingString.Translations.FirstOrDefault(f => f.Lcid == translation.Lcid);
 
-					if (existingTranslation != null && existingTranslation.Changed)
-						s.UpdateTranslation(translation.Lcid, existingTranslation.Value, true);
-				}
-				/*
-				 * add existing translations
-				 */
-				foreach (var existingTranslation in existingString.Translations)
-				{
-					var translation = s.Translations.FirstOrDefault(f => f.Lcid == existingTranslation.Lcid);
+		//			if (existingTranslation != null && existingTranslation.Changed)
+		//				s.UpdateTranslation(translation.Lcid, existingTranslation.Value, true);
+		//		}
+		//		/*
+		//		 * add existing translations
+		//		 */
+		//		foreach (var existingTranslation in existingString.Translations)
+		//		{
+		//			var translation = s.Translations.FirstOrDefault(f => f.Lcid == existingTranslation.Lcid);
 
-					if (translation == null)
-						s.UpdateTranslation(translation.Lcid, existingTranslation.Value, true);
-				}
-			}
+		//			if (translation == null)
+		//				s.UpdateTranslation(translation.Lcid, existingTranslation.Value, true);
+		//		}
+		//	}
 
-			OverrideStringTableConfiguration(config, runtimeConfiguration);
-		}
+		//	OverrideStringTableConfiguration(config, runtimeConfiguration);
+		//}
 
-		private void ResetAuditFlag(IStringTableConfiguration stringTable)
-		{
-			foreach (var s in stringTable.Strings)
-			{
-				foreach (var translation in s.Translations)
-				{
-					if (translation.Changed)
-						s.UpdateTranslation(translation.Lcid, translation.Value, false);
-				}
-			}
-		}
+		//private void ResetAuditFlag(IStringTableConfiguration stringTable)
+		//{
+		//	foreach (var s in stringTable.Strings)
+		//	{
+		//		foreach (var translation in s.Translations)
+		//		{
+		//			if (translation.Changed)
+		//				s.UpdateTranslation(translation.Lcid, translation.Value, false);
+		//		}
+		//	}
+		//}
 
 		private void OverrideStringTableConfiguration(IStringTableConfiguration config, IPackageBlob blob)
 		{

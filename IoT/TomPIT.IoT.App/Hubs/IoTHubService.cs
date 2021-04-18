@@ -7,8 +7,8 @@ using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
 using TomPIT.Connectivity;
-using TomPIT.Exceptions;
 using TomPIT.IoT.Hubs;
+using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Runtime.Configuration;
 
@@ -23,7 +23,7 @@ namespace TomPIT.IoT.Services
 			Tenant.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
 			Tenant.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
 
-			var configurations = tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, "IoTHub");
+			var configurations = tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, ComponentCategories.IoTHub);
 
 			foreach (var i in configurations)
 			{
@@ -36,25 +36,25 @@ namespace TomPIT.IoT.Services
 
 		private void OnConfigurationAdded(ITenant sender, ConfigurationEventArgs e)
 		{
-			if (string.Compare(e.Category, "IoTHub", true) == 0)
+			if (string.Compare(e.Category, ComponentCategories.IoTHub, true) == 0)
 				Reload(e.Component);
 		}
 
 		private void OnConfigurationRemoved(ITenant sender, ConfigurationEventArgs e)
 		{
-			if (string.Compare(e.Category, "IoTHub", true) == 0)
+			if (string.Compare(e.Category, ComponentCategories.IoTHub, true) == 0)
 				Remove(e.Component);
 		}
 
 		private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
 		{
-			if (string.Compare(e.Category, "IoTHub", true) == 0)
+			if (string.Compare(e.Category, ComponentCategories.IoTHub, true) == 0)
 				Reload(e.Component);
 		}
 
 		private void OnComponentChanged(ITenant sender, ComponentEventArgs e)
 		{
-			if (string.Compare(e.Category, "IoTHub", true) == 0)
+			if (string.Compare(e.Category, ComponentCategories.IoTHub, true) == 0)
 				Reload(e.Component);
 		}
 
@@ -66,111 +66,55 @@ namespace TomPIT.IoT.Services
 				Set(hub.Component, hub, TimeSpan.Zero);
 		}
 
-		public IIoTDevice SelectDevice(string authenticationToken)
+		public JObject SetData(string device, object data)
 		{
-			foreach (var i in All())
-			{
-				var d = i.Devices.FirstOrDefault(f => string.Compare(f.AuthenticationToken, authenticationToken, true) == 0);
-
-				if (d != null)
-					return d;
-			}
-
-			return null;
-		}
-
-		public JObject SetData(IIoTDevice device, JObject data)
-		{
-			var schema = SelectSchema(device.Closest<IIoTHubConfiguration>());
-			var hub = device.Configuration().Component;
-			ValidateData(data, schema);
-			var state = Tenant.GetService<IIoTService>().SelectState(hub);
+			using var ctx = new MiddlewareContext();
+			var descriptor = ComponentDescriptor.IoTHub(ctx, device);
+			var state = Tenant.GetService<IIoTService>().SelectState(descriptor.Component.Token);
 			var changed = new List<IIoTFieldStateModifier>();
 
-			foreach (var i in data)
+			var properties = ConfigurationExtensions.GetMiddlewareProperties(data.GetType(), false);
+
+			lock (state)
 			{
-				var value = i.Value as JValue;
-				var field = state.FirstOrDefault(f => string.Compare(f.Field, i.Key, true) == 0);
-				var schemaField = schema.Fields.FirstOrDefault(f => string.Compare(f.Name, i.Key, true) == 0);
-				var type = Types.ToType(schemaField.DataType);
-
-				if (!Types.TryConvertInvariant(value.Value, out object v, type))
-					throw new RuntimeException(string.Format("{0} ({1}, {2})", SR.ErrIoTConversionError, schemaField.Name, type.ToFriendlyName()));
-
-				if (field != null)
+				foreach (var property in properties)
 				{
-					object existingValue = null;
+					if (!property.PropertyType.IsTypePrimitive() || property.PropertyType.IsCollection())
+						continue;
 
-					if (string.IsNullOrWhiteSpace(field.Value))
-						existingValue = TypeExtensions.DefaultValue(type);
-					else
+					var value = property.GetValue(data);
+					var field = state.FirstOrDefault(f => string.Compare(f.Device, device, true) == 0 && string.Compare(f.Field, property.Name, true) == 0);
+
+					if (field != null)
 					{
-						if (!Types.TryConvertInvariant(field.Value, out existingValue, type))
-							existingValue = null;
+						object existingValue = null;
+
+						if (string.IsNullOrWhiteSpace(field.Value))
+							existingValue = TypeExtensions.DefaultValue(property.PropertyType);
+						else
+						{
+							if (!Types.TryConvertInvariant(field.Value, out existingValue, property.PropertyType))
+								existingValue = null;
+						}
+
+						if (Types.Compare(value, existingValue))
+							continue;
 					}
 
-					if (Types.Compare(v, existingValue))
-						continue;
+					changed.Add(new IoTFieldStateModifier
+					{
+						Field = property.Name,
+						Value = Types.Convert<string>(value, CultureInfo.InvariantCulture),
+						RawValue = value,
+						Device = device
+					});
 				}
-
-				changed.Add(new IoTFieldStateModifier
-				{
-					Field = schemaField.Name,
-					Value = Types.Convert<string>(v, CultureInfo.InvariantCulture)
-				});
 			}
 
 			if (changed.Count == 0)
 				return null;
 
-			return Data.Update(hub, changed);
-		}
-
-		private void ValidateData(JObject data, IIoTSchemaConfiguration schema)
-		{
-			foreach (var i in data)
-			{
-				var field = schema.Fields.FirstOrDefault(f => string.Compare(f.Name, i.Key, true) == 0);
-
-				if (field == null)
-					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrIoTSchemaFieldNotDefined, i.Key));
-
-				if (!(i.Value is JValue))
-					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrIoTExpectedValue, i.Key));
-			}
-		}
-
-		public IIoTSchemaConfiguration SelectSchema(IIoTHubConfiguration hub)
-		{
-			if (string.IsNullOrWhiteSpace(hub.Schema))
-				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrIoTHubSchemaNotSet, hub.ComponentName()));
-
-			var ms = hub.MicroService();
-			var schema = hub.Schema;
-
-			if (hub.Schema.Contains('/'))
-			{
-				var tokens = hub.Schema.Split('/');
-				var hubMs = Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
-				schema = tokens[1];
-
-				if (hubMs == null)
-					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, tokens[0]));
-
-				if (hubMs.Token != ms)
-				{
-					var targetMs = Tenant.GetService<IMicroServiceService>().Select(ms);
-
-					targetMs.ValidateMicroServiceReference(hubMs.Name);
-
-					ms = hubMs.Token;
-				}
-			}
-
-			if (!(Tenant.GetService<IComponentService>().SelectConfiguration(ms, "IoTSchema", schema) is IIoTSchemaConfiguration config))
-				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrIoTSchemaNotFound, schema));
-
-			return config;
+			return Data.Update(descriptor.Component.Token, changed);
 		}
 
 		private HubDataCache Data { get; }

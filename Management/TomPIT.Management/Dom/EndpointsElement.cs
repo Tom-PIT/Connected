@@ -3,8 +3,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations.Design;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Environment;
-using TomPIT.Ide.Designers;
 using TomPIT.Ide.Dom;
 using TomPIT.Management.Designers;
 

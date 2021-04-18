@@ -1,4 +1,6 @@
-﻿using TomPIT.Annotations.Design;
+﻿using System.ComponentModel;
+using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
@@ -6,7 +8,7 @@ using TomPIT.MicroServices.Design;
 
 namespace TomPIT.MicroServices.Distributed
 {
-	public class DistributedEvents : SourceCodeConfiguration, IDistributedEventsConfiguration
+	public class DistributedEvents : TextConfiguration, IDistributedEventsConfiguration
 	{
 		private ListItems<IDistributedEvent> _events = null;
 
@@ -21,5 +23,10 @@ namespace TomPIT.MicroServices.Distributed
 				return _events;
 			}
 		}
+		[Browsable(false)]
+		public override string FileName => $"{ToString()}.csx";
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
+		public string Namespace { get; set; }
 	}
 }

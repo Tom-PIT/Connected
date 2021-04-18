@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Connectivity;
-using TomPIT.Diagostics;
+using TomPIT.Diagnostics;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Security.PermissionDescriptors;
@@ -17,7 +17,7 @@ namespace TomPIT.Security.AuthorizationProviders
 		{
 			var roles = state["roles"] as List<Guid>;
 
-			if (roles.Contains(permission.Evidence))
+			if (roles.Contains(new Guid(permission.Evidence)))
 			{
 				switch (permission.Value)
 				{
@@ -39,6 +39,8 @@ namespace TomPIT.Security.AuthorizationProviders
 		{
 			var roles = ResolveImplicitRoles(context, e);
 
+			state.Add("roles", roles);
+
 			if (e.User != Guid.Empty)
 			{
 				var membership = context.Tenant.GetService<IAuthorizationService>() as IMembershipProvider;
@@ -55,8 +57,6 @@ namespace TomPIT.Security.AuthorizationProviders
 			if (roles.Contains(SecurityUtils.FullControlRole))
 				return AuthorizationProviderResult.Success;
 
-			state.Add("roles", roles);
-
 			return AuthorizationProviderResult.NotHandled;
 		}
 
@@ -70,7 +70,7 @@ namespace TomPIT.Security.AuthorizationProviders
 				r.Add(new SchemaDescriptor
 				{
 					Title = i.Name,
-					Id = i.Token
+					Id = i.Token.ToString()
 				});
 			}
 
@@ -92,7 +92,7 @@ namespace TomPIT.Security.AuthorizationProviders
 
 				if (u == null)
 				{
-					context.Tenant.LogWarning(null, GetType().ShortName(), "Authenticated user not found. Request will be treated as anonymous.");
+					context.Tenant.LogWarning(GetType().ShortName(), "Authenticated user not found. Request will be treated as anonymous.", LogCategories.Security);
 					return r;
 				}
 

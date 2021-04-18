@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Data.DataProviders;
 using TomPIT.Deployment;
+using TomPIT.Design.Ide.Designers;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Ide.Designers.ActionResults;
@@ -59,7 +60,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_plans == null)
-					_plans = Environment.Context.Tenant.GetService<IDeploymentService>().QuerySubscribedPlans();
+					_plans = Environment.Context.Tenant.GetService<IDeploymentService>().QuerySubscribedPlans().ToList();
 
 				return _plans;
 			}
@@ -149,7 +150,8 @@ namespace TomPIT.Management.Designers
 		{
 			var dp = ResolveDataProvider(data);
 
-			dp.CreateDatabase(data.Required<string>("value"));
+			if (dp is IDeployDataProvider deploy)
+				deploy.CreateDatabase(data.Required<string>("value"));
 
 			var r = Result.EmptyResult(ViewModel);
 
@@ -164,7 +166,7 @@ namespace TomPIT.Management.Designers
 		{
 			var dp = ResolveDataProvider(data);
 
-			dp.TestConnection(data.Required<string>("value"));
+			dp.TestConnection(Environment.Context, data.Required<string>("value"));
 
 			var r = Result.EmptyResult(ViewModel);
 
@@ -311,7 +313,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_microServices == null)
-					_microServices = Environment.Context.Tenant.GetService<IMicroServiceService>().Query();
+					_microServices = Environment.Context.Tenant.GetService<IMicroServiceService>().Query().ToList();
 
 				return _microServices;
 			}
@@ -333,7 +335,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_resourceGroups == null)
-					_resourceGroups = Environment.Context.Tenant.GetService<IResourceGroupService>().Query();
+					_resourceGroups = Environment.Context.Tenant.GetService<IResourceGroupService>().Query().ToList();
 
 				return _resourceGroups;
 			}
@@ -431,7 +433,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_myPlans == null)
-					_myPlans = Environment.Context.Tenant.GetService<IDeploymentService>().QueryMyPlans();
+					_myPlans = Environment.Context.Tenant.GetService<IDeploymentService>().QueryMyPlans().ToList();
 
 				return _myPlans;
 			}
@@ -441,7 +443,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_subscriptions == null)
-					_subscriptions = Environment.Context.Tenant.GetService<IDeploymentService>().QuerySubscriptions();
+					_subscriptions = Environment.Context.Tenant.GetService<IDeploymentService>().QuerySubscriptions().ToList().ToList();
 
 				return _subscriptions;
 			}

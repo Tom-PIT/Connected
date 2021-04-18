@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace TomPIT.Caching
@@ -9,16 +10,7 @@ namespace TomPIT.Caching
 	{
 		private ConcurrentDictionary<string, Entries> _items = null;
 
-		private ConcurrentDictionary<string, Entries> Items
-		{
-			get
-			{
-				if (_items == null)
-					_items = new ConcurrentDictionary<string, Entries>();
-
-				return _items;
-			}
-		}
+		private ConcurrentDictionary<string, Entries> Items => _items ??= new ConcurrentDictionary<string, Entries>();
 
 		public void Clear()
 		{
@@ -36,42 +28,45 @@ namespace TomPIT.Caching
 			var empties = Items.Where(f => f.Value.Count == 0).Select(f => f.Key);
 
 			foreach (var i in empties)
-				Items.TryRemove(i, out Entries d);
+				Items.TryRemove(i, out _);
 		}
 
 		public bool IsEmpty(string key)
 		{
-			if (!Items.ContainsKey(key))
-				return false;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Any();
 
-			return Items[key].Count > 0;
+			return true;
 		}
 
-		public List<T> All<T>(string key) where T : class
+		public IEnumerator<T> GetEnumerator<T>(string key)
 		{
-			if (!Items.ContainsKey(key))
-				return null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.GetEnumerator<T>();
 
-			return Items[key].All<T>();
+			return null;
+		}
+
+		public ImmutableList<T> All<T>(string key) where T : class
+		{
+			if (Items.TryGetValue(key, out Entries value))
+				return value.All<T>();
+
+			return ImmutableList<T>.Empty;
 		}
 
 		public int Count(string key)
 		{
-			if (!Items.ContainsKey(key))
-				return 0;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Count;
 
-			return Items[key].Count;
+			return 0;
 		}
 
 		public void Remove(string key)
 		{
-			if (!Items.ContainsKey(key))
-				return;
-
-			var d = Items[key];
-
-			if (d != null)
-				d.Clear();
+			if (Items.TryGetValue(key, out Entries value))
+				value.Clear();
 		}
 
 		public void CreateKey(string key)
@@ -84,31 +79,33 @@ namespace TomPIT.Caching
 
 		public void Remove(string key, string id)
 		{
-			if (!Items.ContainsKey(key))
-				return;
-
-			var d = Items[key];
-
-			if (d != null)
-				d.Remove(id);
+			if (Items.TryGetValue(key, out Entries value))
+				value.Remove(id);
 		}
 
-		public void Set(string key, string id, object instance, TimeSpan duration, bool slidingExpiration)
+		public void Set(string key, string id, Entry instance)
 		{
-			Entries d = null;
-
-			if (Items.ContainsKey(key))
-				d = Items[key];
-
-			if (d == null)
+			if (!Items.TryGetValue(key, out Entries value))
 			{
-				d = new Entries();
+				value = new Entries();
 
-				if (!Items.TryAdd(key, d))
+				if (!Items.TryAdd(key, value))
 					return;
 			}
 
-			d.Set(id, instance, duration, slidingExpiration);
+			value.Set(id, instance, instance);
+		}
+		public void Set(string key, string id, object instance, TimeSpan duration, bool slidingExpiration, CacheScope scope)
+		{
+			if (!Items.TryGetValue(key, out Entries value))
+			{
+				value = new Entries();
+
+				if (!Items.TryAdd(key, value))
+					return;
+			}
+
+			value.Set(id, instance, duration, slidingExpiration, scope);
 		}
 
 
@@ -119,80 +116,71 @@ namespace TomPIT.Caching
 
 		public bool Exists(string key, string id)
 		{
-			if (!Items.ContainsKey(key))
-				return false;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Exists(id);
 
-			return Items[key].Exists(id);
+			return false;
 		}
 
 		public Entry Get(string key, string id)
 		{
-			if (!Items.ContainsKey(key))
-				return null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Get(id);
 
-			var d = Items[key];
-
-			return d.Get(id);
+			return null;
 		}
 
 		public Entry First(string key)
 		{
-			if (!Items.ContainsKey(key))
-				return null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.First();
 
-			var d = Items[key];
-
-			return d.First();
+			return null;
 		}
 
 		public Entry Get<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			if (!Items.ContainsKey(key))
-				return null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Get(predicate);
 
-			var d = Items[key];
-
-			return d.Get<T>(predicate);
+			return null;
 		}
 
 		public Entry Get<T>(string key, Func<dynamic, bool> predicate) where T : class
 		{
-			if (!Items.ContainsKey(key))
-				return null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Get(predicate);
 
-			var d = Items[key];
-
-			return d.Get<T>(predicate);
+			return null;
 		}
 
-		public List<T> Where<T>(string key, Func<T, bool> predicate) where T : class
+		public ImmutableList<T> Where<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			if (!Items.ContainsKey(key))
-				return null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Where(predicate);
 
-			var d = Items[key];
-
-			return d.Where<T>(predicate);
+			return null;
 		}
 
 		public List<string> Remove<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			if (!Items.ContainsKey(key))
-				return null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Remove(predicate);
 
-			var d = Items[key];
-
-			return d.Remove(predicate);
+			return null;
 		}
 
-		public ICollection<string> Keys(string key)
+		public ImmutableList<string> Keys(string key)
 		{
-			if (!Items.ContainsKey(key))
-				return null;
+			if (Items.TryGetValue(key, out Entries value))
+				return value.Keys;
 
-			var d = Items[key];
+			return ImmutableList<string>.Empty;
+		}
 
-			return d.Keys;
+		public ImmutableList<string> Keys()
+		{
+			return Items.Keys.ToImmutableList();
 		}
 	}
 }

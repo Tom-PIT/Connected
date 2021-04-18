@@ -107,7 +107,10 @@ namespace TomPIT.Middleware
 							if (!string.IsNullOrWhiteSpace(Endpoint))
 								_tenant = Shell.GetService<IConnectivityService>().SelectTenant(Endpoint);
 							else
-								return null;
+								/*
+								 * do it anyway because we're gonna remove the mutitenant feature soon
+								 */
+								_tenant = Shell.GetService<IConnectivityService>().SelectDefaultTenant(); 
 						}
 					}
 					else

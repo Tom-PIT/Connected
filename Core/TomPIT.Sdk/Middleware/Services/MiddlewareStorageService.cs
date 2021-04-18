@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Storage;
 
 namespace TomPIT.Middleware.Services
 {
 	internal class MiddlewareStorageService : MiddlewareObject, IMiddlewareStorageService
 	{
+		private IMiddlewareStorageFileSystem _fileSystem;
 		public MiddlewareStorageService(IMiddlewareContext context) : base(context)
 		{
 		}
+
+		public IMiddlewareStorageFileSystem FileSystem => _fileSystem ??= new MiddlewareStorageFileSystem(Context);
 
 		public void CommitDrafts(string draft, string primaryKey)
 		{
@@ -53,7 +55,7 @@ namespace TomPIT.Middleware.Services
 			}
 			catch (Exception ex)
 			{
-				Context.Tenant.LogWarning(nameof(MiddlewareStorageService), ex.Message, LogCategories.Middleware);
+				Context.Tenant.LogWarning(ex.Message, LogCategories.Middleware, nameof(MiddlewareStorageService));
 			}
 		}
 

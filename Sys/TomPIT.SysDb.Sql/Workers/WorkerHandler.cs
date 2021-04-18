@@ -11,7 +11,7 @@ namespace TomPIT.SysDb.Sql.Workers
 	{
 		public void Delete(IScheduledJob job)
 		{
-			var w = new Writer("tompit.worker_del");
+			using var w = new Writer("tompit.worker_del");
 
 			w.CreateParameter("@id", job.Id);
 
@@ -20,7 +20,7 @@ namespace TomPIT.SysDb.Sql.Workers
 
 		public void Dequeued(List<IScheduledJob> workers)
 		{
-			var w = new Writer("tompit.worker_upd_stats");
+			using var w = new Writer("tompit.worker_upd_stats");
 
 			w.CreateParameter("@id", 0);
 			w.CreateParameter("@last_run", DateTime.UtcNow);
@@ -44,7 +44,7 @@ namespace TomPIT.SysDb.Sql.Workers
 			WorkerMonthPart monthPart, WorkerWeekDays weekdays, WorkerStatus status, DateTime nextRun, int elapsed, int failCount, bool logging, DateTime lastRun, DateTime lastComplete,
 			long runCount, WorkerKind kind)
 		{
-			var w = new Writer("tompit.worker_ins");
+			using var w = new Writer("tompit.worker_ins");
 
 			w.CreateParameter("@worker", worker);
 			w.CreateParameter("@start_time", startTime, true);
@@ -78,12 +78,14 @@ namespace TomPIT.SysDb.Sql.Workers
 
 		public List<ISysScheduledJob> Query()
 		{
-			return new Reader<ScheduledJob>("tompit.worker_que").Execute().ToList<ISysScheduledJob>();
+			using var r = new Reader<ScheduledJob>("tompit.worker_que");
+
+			return r.Execute().ToList<ISysScheduledJob>();
 		}
 
 		public ISysScheduledJob Select(Guid worker)
 		{
-			var r = new Reader<ScheduledJob>("tompit.worker_sel");
+			using var r = new Reader<ScheduledJob>("tompit.worker_sel");
 
 			r.CreateParameter("@worker", worker);
 
@@ -95,7 +97,7 @@ namespace TomPIT.SysDb.Sql.Workers
 			WorkerMonthPart monthPart, WorkerWeekDays weekdays, WorkerStatus status, DateTime nextRun, int elapsed, int failCount, bool logging, DateTime lastRun, DateTime lastComplete,
 			long runCount, Guid state)
 		{
-			var w = new Writer("tompit.worker_upd");
+			using var w = new Writer("tompit.worker_upd");
 
 			w.CreateParameter("@id", job.Id);
 			w.CreateParameter("@start_time", startTime, true);

@@ -9,14 +9,14 @@ namespace TomPIT.Cdn.Dns
 	public static class DnsResolve
 	{
 		private static DnsServers _dnsServers = null;
-		private static ConcurrentDictionary<string, string> _cache = null;
+		private static ConcurrentDictionary<string, DomainDescriptor> _cache = null;
 
-		private static ConcurrentDictionary<string, string> cache
+		private static ConcurrentDictionary<string, DomainDescriptor> cache
 		{
 			get
 			{
 				if (_cache == null)
-					_cache = new ConcurrentDictionary<string, string>();
+					_cache = new ConcurrentDictionary<string, DomainDescriptor>();
 
 				return _cache;
 			}
@@ -38,14 +38,9 @@ namespace TomPIT.Cdn.Dns
 
 		public static void Reset(string address)
 		{
-			if (cache.ContainsKey(address.Trim().ToLower()))
-			{
-				string v;
-
-				cache.TryRemove(address.Trim().ToLower(), out v);
-			}
+			cache.TryRemove(address.Trim().ToLower(), out _);
 		}
-		public static string Resolve(string address)
+		public static DomainDescriptor Resolve(string address)
 		{
 			if (string.IsNullOrWhiteSpace(address))
 				return null;
@@ -54,8 +49,8 @@ namespace TomPIT.Cdn.Dns
 
 			if (cache.ContainsKey(key))
 			{
-				if (cache.TryGetValue(key, out string r))
-					return r;
+				if (cache.TryGetValue(key, out DomainDescriptor descriptor))
+					return descriptor;
 			}
 
 			if (DnsServers.Count == 0)
@@ -69,9 +64,15 @@ namespace TomPIT.Cdn.Dns
 
 					if (records != null && records.Count > 0)
 					{
-						cache[key] = records.GetPrefered().Domain;
+						var descriptor = new DomainDescriptor
+						{
+							Primary = records.GetPrefered().Domain,
+							Secondary = ResolveHost(records.GetPrefered().Domain)
+						};
 
-						return records.GetPrefered().Domain;
+						cache[key] = descriptor;
+
+						return descriptor;
 					}
 				}
 				catch { }
@@ -82,15 +83,39 @@ namespace TomPIT.Cdn.Dns
 				{
 					if (cn != null && cn.Count > 0)
 					{
-						cache[key] = cn[0];
+						var descriptor = new DomainDescriptor
+						{
+							Primary = cn[0]
+						};
 
-						return cn[0];
+						cache[key] = descriptor;
+
+						return descriptor;
 					}
 				}
 				catch { }
 			}
 
 			return null;
+		}
+
+		private static string ResolveHost(string domain)
+		{
+			try
+			{
+				var entry = System.Net.Dns.GetHostEntry(domain);
+
+				if (entry.AddressList.Length == 0)
+					return domain;
+
+				var host = System.Net.Dns.GetHostEntry(entry.AddressList[0]);
+
+				return host.HostName;
+			}
+			catch
+			{
+				return domain;
+			}
 		}
 
 		private static MxRecords GetMxRecords(string address, string host, int port, int timeout)

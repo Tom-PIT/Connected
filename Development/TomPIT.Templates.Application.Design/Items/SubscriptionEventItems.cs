@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Collections;
-using TomPIT.Ide.Dom;
 using TomPIT.Reflection;
 
 namespace TomPIT.MicroServices.Design.Items
@@ -16,7 +17,7 @@ namespace TomPIT.MicroServices.Design.Items
 
 			FillItems(element, items, element.Environment.Context.MicroService.Name);
 
-			var references = element.Environment.Context.Tenant.GetService<IDiscoveryService>().References(element.Environment.Context.MicroService.Token);
+			var references = element.Environment.Context.Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(element.Environment.Context.MicroService.Token);
 
 			if (references == null)
 				return;

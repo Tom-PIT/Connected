@@ -1,23 +1,26 @@
 ﻿{
-	"connections": [
+  "connections": [
     {
       "name": "localhost",
-      //"url": "http://sys-app/common/sys",
-      //"url": "http://localhost:44001",
-      "url": "http://sys-app/inel/sys",
-      //"authenticationToken": "defaultAuthenticationToken"
-      "authenticationToken": "8354505c-19f9-4ecb-bc0f-108204c78555"
+      "url": "http://sys-app/reposerver/sys",
+      "authenticationToken": "defaultAuthenticationToken"
     }
-	],
-	"dataProviders": [
-		"TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
-	],
+  ],
+  "stage":  "development",
+  "dataProviders": [
+    "TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql",
+    "TomPIT.DataProviders.Modbus.ModbusDataProvider, TomPIT.DataProviders.Modbus",
+    "TomPIT.DataProviders.BigData.BigDataProvider, TomPIT.DataProviders.BigData"
+  ],
   "designers": [
     "TomPIT.MicroServices.Design.MicroServicesTemplate, TomPIT.MicroServices.Design",
     "TomPIT.MicroServices.IoT.Design.IoTTemplate, TomPIT.MicroServices.IoT.Design",
     "TomPIT.MicroServices.BigData.Design.BigDataTemplate, TomPIT.MicroServices.BigData.Design",
     "TomPIT.MicroServices.Reporting.Design.ReportTemplate, TomPIT.MicroServices.Reporting.Design"
   ],
+  "diagnostics": {
+    "dumpEnabled":  true
+  },
 	"plugins": {
 		"location": "c:\\Deploy\\Plugins",
 		"shadowCopy": true,

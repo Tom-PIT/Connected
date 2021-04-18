@@ -24,18 +24,25 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 			if (model == null)
 				return result;
 
-			var node = model.SyntaxTree.GetRoot().FindNode(span);
-			var args = new CodeActionProviderArgs(Editor, context, model, node);
-
-			foreach (var provider in Providers)
+			try
 			{
-				var results = provider.GetActions(args);
+				var node = model.SyntaxTree.GetRoot().FindNode(span);
+				var args = new CodeActionProviderArgs(Editor, context, model, node);
 
-				if (results != null && results.Count > 0)
-					result.AddRange(results);
+				foreach (var provider in Providers)
+				{
+					var results = provider.GetActions(args);
+
+					if (results != null && results.Count > 0)
+						result.AddRange(results);
+				}
+
+				return result.GroupBy(f => f.Title).Select(f => f.First()).ToList();
 			}
-
-			return result.GroupBy(f => f.Title).Select(f => f.First()).ToList();
+			catch
+			{
+				return result;
+			}
 		}
 
 		private List<IActionProvider> Providers

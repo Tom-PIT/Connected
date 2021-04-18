@@ -25,13 +25,14 @@ namespace TomPIT.Design.Serialization
 
 			try
 			{
-
-				return JsonConvert.DeserializeObject(content, type, new JsonSerializerSettings
+				var r =  JsonConvert.DeserializeObject(content, type, new JsonSerializerSettings
 				{
 					TypeNameHandling = TypeNameHandling.Auto,
 					ContractResolver = SupportInitializeContractResolver.Instance,
 					Context = new StreamingContext(StreamingContextStates.Other, Tenant)
 				});
+
+				return r;
 			}
 			catch (Exception ex)
 			{
@@ -44,7 +45,7 @@ namespace TomPIT.Design.Serialization
 
 		public byte[] Serialize(object component)
 		{
-			var data = JsonConvert.SerializeObject(component, Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings
+			var data = JsonConvert.SerializeObject(component, Formatting.Indented, new JsonSerializerSettings
 			{
 				TypeNameHandling = TypeNameHandling.All,
 				TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,

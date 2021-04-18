@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Runtime.Configuration
 {
@@ -9,5 +8,10 @@ namespace TomPIT.Runtime.Configuration
 		List<string> DataProviders { get; }
 		List<string> Designers { get; }
 		List<string> ResourceGroups { get; }
+		Platform Platform { get; }
+		EnvironmentStage Stage { get; }
+		IDiagnosticsConfiguration Diagnostics { get; }
+		EnvironmentConnectivity Connectivity { get; }
+		IClientSysDeployment Deployment { get; }
 	}
 }

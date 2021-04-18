@@ -3,7 +3,6 @@ using System.Threading;
 using MimeKit;
 using Newtonsoft.Json.Linq;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 
@@ -11,7 +10,7 @@ namespace TomPIT.Cdn.Mail
 {
 	internal class MailJob : DispatcherJob<IMailMessage>
 	{
-		public MailJob(Dispatcher<IMailMessage> owner, CancellationTokenSource cancel) : base(owner, cancel)
+		public MailJob(IDispatcher<IMailMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
 
@@ -55,8 +54,8 @@ namespace TomPIT.Cdn.Mail
 
 				message.Create();
 
-				connection.Connect(Cancel.Token);
-				connection.Send(Cancel.Token, message.Message, address.Address);
+				connection.Connect(Cancel);
+				connection.Send(Cancel, message.Message, address.Address);
 
 				Success(item);
 			}
@@ -111,7 +110,7 @@ namespace TomPIT.Cdn.Mail
 
 		protected override void OnError(IMailMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.LogError(nameof(MailJob), ex.Source, ex.Message);
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(MailJob));
 		}
 	}
 }

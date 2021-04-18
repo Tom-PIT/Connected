@@ -14,6 +14,10 @@ namespace TomPIT.Ide.TextServices.CSharp
 			Services.TryAdd(typeof(IDeclarationProviderService), new DeclarationProviderService(this));
 			Services.TryAdd(typeof(ISignatureHelpService), new SignatureHelpService(this));
 			Services.TryAdd(typeof(IDocumentSymbolProviderService), new DocumentSymbolProviderService(this));
+			Services.TryAdd(typeof(IDefinitionProviderService), new DefinitionProviderService(this));
+			Services.TryAdd(typeof(IDocumentFormattingEditService), new DocumentFormattingEditService(this));
+			Services.TryAdd(typeof(ICodeLensService), new CodeLensService(this));
+			Services.TryAdd(typeof(IDeltaDecorationsService), new DeltaDecorationsService(this));
 		}
 
 		public override LanguageFeature Features =>
@@ -22,6 +26,10 @@ namespace TomPIT.Ide.TextServices.CSharp
 			| LanguageFeature.CompletionItem
 			| LanguageFeature.Declaration
 			| LanguageFeature.SignatureHelp
-			| LanguageFeature.DocumentSymbol;
+			| LanguageFeature.DocumentSymbol
+			| LanguageFeature.Definition
+			| LanguageFeature.DocumentFormatting
+			| LanguageFeature.CodeLens
+			| LanguageFeature.DeltaDecorations;
 	}
 }

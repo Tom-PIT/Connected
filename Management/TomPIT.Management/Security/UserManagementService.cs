@@ -14,7 +14,7 @@ namespace TomPIT.Management.Security
 		}
 
 		public Guid Insert(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string password, string pin, Guid language, string timezone,
-			bool notificationEnabled, string mobile, string phone)
+			bool notificationEnabled, string mobile, string phone, string securityCode)
 		{
 			var u = Tenant.CreateUrl("UserManagement", "Insert");
 			var e = new JObject
@@ -30,7 +30,8 @@ namespace TomPIT.Management.Security
 				{"timezone", timezone},
 				{"notificationEnabled", notificationEnabled},
 				{"mobile", mobile},
-				{"phone", phone}
+				{"phone", phone},
+				{"securityCode", securityCode }
 			};
 
 			return Tenant.Post<Guid>(u, e);
@@ -61,7 +62,8 @@ namespace TomPIT.Management.Security
 				n.NotifyChanged(this, new UserEventArgs(user));
 		}
 
-		public void Update(Guid user, string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language, string timezone, bool notificationEnabled, string mobile, string phone)
+		public void Update(Guid user, string loginName, string email, UserStatus status, string firstName, string lastName,
+			string description, string pin, Guid language, string timezone, bool notificationEnabled, string mobile, string phone, string securityCode)
 		{
 			var u = Tenant.CreateUrl("UserManagement", "Update");
 			var e = new JObject
@@ -78,7 +80,8 @@ namespace TomPIT.Management.Security
 				{"timezone", timezone},
 				{"notificationEnabled", notificationEnabled},
 				{"mobile", mobile},
-				{"phone", phone}
+				{"phone", phone},
+				{"securityCode", securityCode }
 			};
 
 			Tenant.Post<Guid>(u, e);

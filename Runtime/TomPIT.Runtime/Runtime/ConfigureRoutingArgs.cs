@@ -5,11 +5,11 @@ namespace TomPIT.Runtime
 {
 	public class ConfigureRoutingArgs : EventArgs
 	{
-		public ConfigureRoutingArgs(IRouteBuilder builder)
+		public ConfigureRoutingArgs(IEndpointRouteBuilder builder)
 		{
 			Builder = builder;
 		}
 
-		public IRouteBuilder Builder { get; }
+		public IEndpointRouteBuilder Builder { get; }
 	}
 }

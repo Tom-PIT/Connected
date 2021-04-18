@@ -2,6 +2,6 @@
 {
 	public interface ISearchResultsOptions
 	{
-		int TextMaxLength { get; }
+		int TextMaxLength { get; set; }
 	}
 }

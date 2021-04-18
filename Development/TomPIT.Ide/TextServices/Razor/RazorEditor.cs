@@ -20,7 +20,7 @@ namespace TomPIT.Ide.TextServices.Razor
 {
 	public class RazorEditor : CSharpEditorBase
 	{
-		private const string ImportUsings = "@using System;@using System.Linq;\r\n@using TomPIT;\r\n@using Microsoft.AspNetCore.Mvc.Rendering;";
+		private const string ImportUsings = "@using System;\r\n@using System.Linq;\r\n@using TomPIT;\r\n@using Microsoft.AspNetCore.Mvc.Rendering;\r\n";
 		private SourceText _sourceText = null;
 		private ProjectInfo _projectInfo = null;
 		private DocumentInfo _documentInfo = null;
@@ -105,13 +105,13 @@ namespace TomPIT.Ide.TextServices.Razor
 			{
 				builder.SetBaseType($"TomPIT.Runtime.Design.UI.DesignViewBase");
 			});
-
+			
 			var document = RazorSourceDocument.Create(Text, Encoding.UTF8, new RazorSourceDocumentProperties($"{Model.Id}.cshtml", $"{Model.Id}.cshtml"));
 			var imports = ImmutableArray.Create(RazorSourceDocument.Create(ImportUsings, "ImportUsings.cshtml"));
 			var tagHelpers = ImmutableArray.Create<TagHelperDescriptor>();
 
 			var sourceResult = engine.ProcessDesignTime(document, "view", imports, tagHelpers);
-
+			
 			_sourceText = SourceText.From(sourceResult.GetCSharpDocument().GeneratedCode);
 		}
 

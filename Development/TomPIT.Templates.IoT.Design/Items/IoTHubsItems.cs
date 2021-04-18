@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide;
 using TomPIT.Ide.Collections;
-using TomPIT.Ide.Dom;
 using TomPIT.Reflection;
 
 namespace TomPIT.MicroServices.IoT.Design.Items
@@ -22,7 +23,7 @@ namespace TomPIT.MicroServices.IoT.Design.Items
 			foreach (var i in ds)
 				items.Add(new ItemDescriptor(i.Name, i.Name));
 
-			var refs = tenant.GetService<IDiscoveryService>().References(element.MicroService());
+			var refs = tenant.GetService<IDiscoveryService>().MicroServices.References.Select(element.MicroService());
 
 			var external = new List<ItemDescriptor>();
 

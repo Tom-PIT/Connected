@@ -126,7 +126,7 @@ namespace TomPIT.Cdn.Dns
 			catch (Exception ex)
 			{
 				Data = new ExceptionRecord(ex.Message);
-				throw ex;
+				throw;
 			}
 
 		}

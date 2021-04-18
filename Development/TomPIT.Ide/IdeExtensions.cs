@@ -1,23 +1,21 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
 using TomPIT.Design;
+using TomPIT.Design.Ide;
+using TomPIT.Design.Ide.Designers;
+using TomPIT.Design.Ide.Dom;
 using TomPIT.Exceptions;
 using TomPIT.Ide;
-using TomPIT.Ide.Collections;
 using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Dom;
 using TomPIT.Ide.Dom.ComponentModel;
-using TomPIT.Ide.Environment;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
@@ -269,104 +267,6 @@ namespace TomPIT.Ide
 			}
 
 			return false;
-		}
-
-		public static List<Guid> Dependencies(this IConfiguration configuration)
-		{
-			var r = new List<Guid>();
-			var texts = configuration.Children<IText>();
-
-			foreach (var j in texts)
-			{
-				if (j.TextBlob == Guid.Empty)
-					continue;
-
-				r.Add(j.TextBlob);
-			}
-
-			var er = configuration.Children<IExternalResourceElement>();
-
-			foreach (var j in er)
-			{
-				var items = j.QueryResources();
-
-				if (items == null || items.Count == 0)
-					continue;
-
-				foreach (var k in items)
-					r.Add(k);
-			}
-
-			return r;
-		}
-
-		public static List<T> Children<T>(this IConfiguration configuration) where T : IElement
-		{
-			var r = new List<T>();
-
-			if (configuration is T)
-				r.Add((T)configuration);
-
-			var props = DomQuery.Properties(configuration, false, false);
-			var refs = new List<object>
-			{
-				configuration
-			};
-
-			foreach (var i in props)
-				Children(configuration, i, r, refs);
-
-			return r;
-		}
-
-		private static void Children<T>(object instance, List<T> items, List<object> refs) where T : IElement
-		{
-			var props = DomQuery.Properties(instance, false, false);
-
-			foreach (var i in props)
-				Children(instance, i, items, refs);
-		}
-
-		private static void Children<T>(object configuration, PropertyInfo property, List<T> items, List<object> refs) where T : IElement
-		{
-			if (property.IsIndexer() || property.IsPrimitive())
-				return;
-
-			var value = property.GetValue(configuration);
-
-			if (value == null)
-				return;
-
-			if (refs.Contains(value))
-				return;
-
-			refs.Add(value);
-
-			if (property.IsCollection())
-			{
-				if (!(value is IEnumerable en))
-					return;
-
-				var enm = en.GetEnumerator();
-
-				while (enm.MoveNext())
-				{
-					if (enm.Current == null)
-						continue;
-
-					if (enm.Current is T)
-						items.Add((T)enm.Current);
-
-					Children(enm.Current, items, refs);
-				}
-			}
-			else if (!property.IsPrimitive())
-			{
-				if (value is T && !items.Contains((T)value))
-					items.Add((T)value);
-
-				Children(value, items, refs);
-			}
 		}
 
 		public static ITransactionResult WithData(this ITransactionResult result, JObject data)

@@ -1,9 +1,8 @@
 ﻿using Newtonsoft.Json;
-using TomPIT.Middleware;
 
 namespace TomPIT.Navigation
 {
-	public abstract class SiteMapElement : MiddlewareObject, ISiteMapElement
+	public abstract class SiteMapElement : ISiteMapElement
 	{
 		public string Text { get; set; }
 
@@ -11,5 +10,13 @@ namespace TomPIT.Navigation
 		public ISiteMapElement Parent { get; set; }
 
 		public bool Visible { get; set; } = true;
+
+		public string Category { get; set; }
+
+		public string Glyph { get; set; }
+
+		public string Css { get; set; }
+
+		public int Ordinal { get; set; }
 	}
 }

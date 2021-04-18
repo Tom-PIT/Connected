@@ -26,5 +26,7 @@ namespace TomPIT.Annotations.Design
 		public Type Type { get; }
 
 		public EnvironmentMode Mode { get; set; } = EnvironmentMode.Design;
+
+		public string AmbientProvider { get; set; }
 	}
 }

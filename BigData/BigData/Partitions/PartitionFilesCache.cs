@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
@@ -18,17 +20,50 @@ namespace TomPIT.BigData.Partitions
 			return Get(fileName);
 		}
 
-		public List<IPartitionFile> Query(Guid partition)
+		public ImmutableList<IPartitionFile> Query(Guid partition)
 		{
 			return Where(f => f.Partition == partition);
 		}
 
-		public List<IPartitionFile> Query(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp)
+		public ImmutableList<IPartitionFile> Query(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp)
 		{
-			return Where(f => f.Partition == partition
-				&& (string.IsNullOrWhiteSpace(key) || string.Compare(f.Key, key, true) == 0)
-				&& (startTimestamp == DateTime.MinValue || f.StartTimestamp <= startTimestamp)
-				&& (endTimestamp == DateTime.MinValue || f.Status == PartitionFileStatus.Open || endTimestamp <= f.EndTimestamp));
+			if (key == null)
+				key = string.Empty;
+
+			var candidates = Where(f => f.Partition == partition && (string.Compare(f.Key, key, true) == 0));
+
+			if (candidates.Count == 0 || (startTimestamp == DateTime.MinValue && endTimestamp == DateTime.MinValue))
+				return candidates;
+
+			var result = new List<IPartitionFile>();
+
+			foreach (var candidate in candidates)
+			{
+				if (IntersectsWith(startTimestamp, endTimestamp, candidate.StartTimestamp, candidate.EndTimestamp))
+					result.Add(candidate);
+			}
+
+			return result.ToImmutableList();
+		}
+
+		private bool IntersectsWith(DateTime startValue, DateTime endValue, DateTime start, DateTime end)
+		{
+			if (end == DateTime.MinValue)
+				end = DateTime.MaxValue;
+
+			if (endValue == DateTime.MinValue)
+				endValue = DateTime.MaxValue;
+
+			if ((startValue < start && endValue < start)
+				|| (startValue > end))
+				return false;
+
+			return true;
+		}
+
+		public ImmutableList<IPartitionFile> Where(List<Guid> files)
+		{
+			return Where(f => files.Any(g => g == f.FileName));
 		}
 		protected override void OnInitializing()
 		{

@@ -31,25 +31,26 @@ namespace TomPIT.BigData
 				Authentication = AuthenticationType.SingleTenant
 			};
 
-			Instance.Initialize(services, e);
+			Instance.Initialize(InstanceType.BigData, services, e);
 			RegisterTasks(services);
 		}
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			Instance.Configure(InstanceType.BigData, app, env, (f) =>
+			Instance.Configure(app, env, (f) =>
 			{
 				BigData.Configuration.Routing.Register(f.Builder);
 			});
 
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-			Instance.Run(app);
+			Instance.Run(app, env);
 		}
 
 		private void RegisterTasks(IServiceCollection services)
 		{
 			services.AddSingleton<IHostedService, StorageService>();
 			services.AddSingleton<IHostedService, MaintenanceService>();
+			services.AddSingleton<IHostedService, BufferingWorker>();
 		}
 
 		private void OnTenantInitialize(object sender, TenantArgs e)
@@ -59,6 +60,7 @@ namespace TomPIT.BigData
 			e.Tenant.RegisterService(typeof(IPartitionService), typeof(PartitionService));
 			e.Tenant.RegisterService(typeof(IPersistenceService), typeof(SqlPersistenceService));
 			e.Tenant.RegisterService(typeof(IPartitionMaintenanceService), typeof(PartitionMaintenanceService));
+			e.Tenant.RegisterService(typeof(IBufferingService), typeof(BufferingService));
 
 			e.Tenant.Items.TryAdd("bigdataClient", new BigDataClient(e.Tenant, e.Tenant.AuthenticationToken));
 		}

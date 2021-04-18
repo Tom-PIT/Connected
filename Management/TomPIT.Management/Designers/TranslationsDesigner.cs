@@ -4,10 +4,11 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
+using TomPIT.Design;
+using TomPIT.Design.Ide.Designers;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Globalization;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.Ide.Dom;
@@ -134,9 +135,9 @@ namespace TomPIT.Management.Designers
 			if (str == null)
 				throw new RuntimeException(SR.ErrStringResourceNotFound);
 
-			str.UpdateTranslation(lang.Lcid, value, true);
+			str.UpdateTranslation(lang.Lcid, value);
 
-			Environment.Context.Tenant.GetService<IComponentDevelopmentService>().Update(config);
+			Environment.Context.Tenant.GetService<IDesignService>().Components.Update(config);
 
 			return Result.EmptyResult(ViewModel);
 		}
@@ -155,7 +156,7 @@ namespace TomPIT.Management.Designers
 			get
 			{
 				if (_languages == null)
-					_languages = Environment.Context.Tenant.GetService<ILanguageService>().Query();
+					_languages = Environment.Context.Tenant.GetService<ILanguageService>().Query().ToList();
 
 				return _languages;
 			}

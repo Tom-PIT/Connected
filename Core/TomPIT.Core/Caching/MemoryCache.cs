@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,31 +10,40 @@ namespace TomPIT.Caching
 {
 	public sealed class MemoryCache : IMemoryCache, IDisposable
 	{
-		private static Lazy<MemoryCache> _default = new Lazy<MemoryCache>();
-
 		public event CacheInvalidateHandler Invalidating;
 		public event CacheInvalidateHandler Invalidate;
 		public event CacheInvalidateHandler Invalidated;
 
-		private Lazy<Container> _container = new Lazy<Container>();
-		private CancellationTokenSource _cancel = new CancellationTokenSource();
+		private static readonly Lazy<MemoryCache> _default = new Lazy<MemoryCache>();
+		private readonly Lazy<Container> _container = new Lazy<Container>();
+		private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
 
-		private Container Container { get { return _container.Value; } }
-
-		public MemoryCache()
+		public MemoryCache():this( CacheScope.Shared)
 		{
+
+		}
+		public MemoryCache(CacheScope scope)
+		{
+			Scope = scope;
+
 			new Task(() => OnScaveging(), _cancel.Token, TaskCreationOptions.LongRunning).Start();
 		}
 
+		private CacheScope Scope { get; }
+
+		private Container Container => _container.Value;
+		private CancellationTokenSource Cancel => _cancel;
 		private void OnScaveging()
 		{
-			while (!_cancel.Token.IsCancellationRequested)
+			var token = Cancel.Token;
+
+			while (!token.IsCancellationRequested)
 			{
 				try
 				{
 					Container.Scave();
 
-					_cancel.Token.WaitHandle.WaitOne(TimeSpan.FromMinutes(1));
+					token.WaitHandle.WaitOne(TimeSpan.FromMinutes(1));
 				}
 				catch { }
 			}
@@ -54,12 +64,16 @@ namespace TomPIT.Caching
 			Container.CreateKey(key);
 		}
 
-		public List<T> All<T>(string key) where T : class
+		public IEnumerator<T> GetEnumerator<T>(string key) where T : class
 		{
-			List<T> r = Container.All<T>(key);
+			return Container.GetEnumerator<T>(key);
+		}
+		public ImmutableList<T> All<T>(string key) where T : class
+		{
+			var r = Container.All<T>(key);
 
 			if (r == null)
-				return new List<T>();
+				return ImmutableList<T>.Empty;
 
 			return r;
 		}
@@ -69,13 +83,17 @@ namespace TomPIT.Caching
 			return Container.Count(key);
 		}
 
+		public T Get<T>(string key, Func<T, bool> predicate) where T : class
+		{
+			return Get(key, predicate, null);
+		}
 		public T Get<T>(string key, Func<T, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
 		{
 			var r = Container.Get(key, predicate);
 
 			if (r == null)
 			{
-				if (retrieve == null)
+				if (retrieve is null)
 					return null;
 
 				var options = new EntryOptions();
@@ -87,10 +105,13 @@ namespace TomPIT.Caching
 						return null;
 				}
 
-				if (string.IsNullOrWhiteSpace(options.Key))
-					throw new TomPITException(SR.ErrCacheKeyNull);
+				if (CanStore(options))
+				{
+					if (string.IsNullOrWhiteSpace(options.Key))
+						throw new TomPITException(SR.ErrCacheKeyNull);
 
-				Set(key, options.Key, instance, options.Duration, options.SlidingExpiration);
+					Set(key, options.Key, instance, options.Duration, options.SlidingExpiration, options.Scope);
+				}
 
 				return instance;
 			}
@@ -114,13 +135,14 @@ namespace TomPIT.Caching
 
 				T instance = retrieve(options);
 
-				if (EqualityComparer<T>.Default.Equals(instance, default(T)))
+				if (EqualityComparer<T>.Default.Equals(instance, default))
 				{
 					if (!options.AllowNull)
 						return null;
 				}
 
-				Set(key, options.Key, instance, options.Duration, options.SlidingExpiration);
+				if (CanStore(options))
+					Set(key, options.Key, instance, options.Duration, options.SlidingExpiration, options.Scope);
 
 				return instance;
 			}
@@ -135,50 +157,31 @@ namespace TomPIT.Caching
 
 		public T Get<T>(string key, string id) where T : class
 		{
-			Entry ce = Container.Get(key, id);
+			var ce = Container.Get(key, id);
 
-			if (ce == null || ce.Instance == null)
-				return default(T);
-
-			return (T)ce.Instance;
-		}
-
-		public T Get<T>(string key, Func<T, bool> predicate) where T : class
-		{
-			Entry ce = Container.Get<T>(key, predicate);
-
-			if (ce == null || ce.Instance == null)
-				return default(T);
-
-			return (T)ce.Instance;
+			return ce == null || ce.Instance == null ? default : (T)ce.Instance;
 		}
 
 		public T Get<T>(string key, Func<dynamic, bool> predicate) where T : class
 		{
-			Entry ce = Container.Get<T>(key, predicate);
+			var ce = Container.Get<T>(key, predicate);
 
-			if (ce == null || ce.Instance == null)
-				return default(T);
-
-			return (T)ce.Instance;
+			return ce == null || ce.Instance == null ? default : (T)ce.Instance;
 		}
 
 		public T First<T>(string key) where T : class
 		{
-			Entry ce = Container.First(key);
+			var ce = Container.First(key);
 
-			if (ce == null || ce.Instance == null)
-				return default(T);
-
-			return (T)ce.Instance;
+			return ce == null || ce.Instance == null ? default : (T)ce.Instance;
 		}
 
-		public List<T> Where<T>(string key, Func<T, bool> predicate) where T : class
+		public ImmutableList<T> Where<T>(string key, Func<T, bool> predicate) where T : class
 		{
-			var r = Container.Where<T>(key, predicate);
+			var r = Container.Where(key, predicate);
 
 			if (r == null)
-				return new List<T>();
+				return ImmutableList<T>.Empty;
 
 			return r;
 		}
@@ -195,7 +198,12 @@ namespace TomPIT.Caching
 
 		public T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration)
 		{
-			Container.Set(key, id, instance, duration, slidingExpiration);
+			return Set(key, id, instance, duration, slidingExpiration, CacheScope.Shared);
+		}
+
+		public T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration, CacheScope scope)
+		{
+			Container.Set(key, id, instance, duration, slidingExpiration, scope);
 
 			return instance;
 		}
@@ -251,7 +259,7 @@ namespace TomPIT.Caching
 				 */
 				if (newInstance == null)
 					Container.Remove(key, id);
-				else if (existing.Equals(newInstance))
+				else if (existing.Equals(newInstance) && args.InvalidateBehavior == InvalidateBehavior.RemoveSameInstance)
 					Container.Remove(key, id);
 			}
 
@@ -298,7 +306,7 @@ namespace TomPIT.Caching
 			return result;
 		}
 
-		private string Generate()
+		private static string Generate()
 		{
 			string chars = "abcdefghijklmnopqrstuvzxyw0123456789";
 			var r = new Random();
@@ -310,6 +318,51 @@ namespace TomPIT.Caching
 			return sb.ToString();
 		}
 
-		public static MemoryCache Default { get { return _default.Value; } }
+		public ImmutableList<string> Keys(string key)
+		{
+			return Container.Keys(key).ToImmutableList();
+		}
+
+		public ImmutableList<string> Keys()
+		{
+			return Container.Keys().ToImmutableList();
+		}
+
+		public static MemoryCache Default => _default.Value;
+
+		private bool CanStore(EntryOptions options)
+		{
+			if (Scope == CacheScope.Context)
+				return true;
+
+			return options.Scope != CacheScope.Context;
+		}
+
+		public CacheScope GetScope(string key, string id)
+		{
+			var ce = Container.Get(key, id);
+
+			return ce is null ? CacheScope.Shared : ce.Scope;
+		}
+
+		public void Merge(IMemoryCache cache)
+		{
+			if (cache is not MemoryCache mc)
+				throw new ArgumentException(null, nameof(cache));
+
+			foreach (var key in mc.Keys())
+			{
+				foreach (var entryKey in mc.Keys(key))
+				{
+					if (mc.GetScope(key, entryKey) == CacheScope.Shared)
+						Move(key, entryKey, mc.Container.Get(key, entryKey));
+				}
+			}
+		}
+
+		private void Move(string key, string id, Entry value)
+		{
+			Container.Set(key, id, value);
+		}
 	}
 }

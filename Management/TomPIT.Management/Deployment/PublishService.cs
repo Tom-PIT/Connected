@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
-using TomPIT.Diagostics;
 using TomPIT.Distributed;
 using TomPIT.Management.ComponentModel;
 using TomPIT.Management.Designers;
@@ -18,12 +18,12 @@ namespace TomPIT.Management.Deployment
 			IntervalTimeout = TimeSpan.FromSeconds(30);
 		}
 
-		protected override bool Initialize()
+		protected override bool OnInitialize(CancellationToken cancel)
 		{
 			return Instance.State == InstanceState.Running;
 		}
 
-		protected override Task Process()
+		protected override Task OnExecute(CancellationToken cancel)
 		{
 			var tenants = Shell.GetService<IConnectivityService>().QueryTenants();
 
@@ -52,7 +52,7 @@ namespace TomPIT.Management.Deployment
 
 				if (package == null)
 				{
-					tenant.LogWarning(null, nameof(PublishService), $"{SR.WrnPackageNotFound} ({microService.Name})");
+					tenant.LogWarning(nameof(PublishService), $"{SR.WrnPackageNotFound} ({microService.Name})", LogCategories.Deployment);
 
 					tenant.GetService<IMicroServiceManagementService>().Update(microService.Token, microService.Name, microService.Status, microService.Template, microService.ResourceGroup,
 						 microService.Package, microService.Plan, microService.UpdateStatus, CommitStatus.Invalidated);

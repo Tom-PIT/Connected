@@ -7,7 +7,7 @@ using TomPIT.Reflection;
 
 namespace TomPIT.MicroServices.IoC
 {
-	public abstract class Dependency : SourceCodeElement, IDependency
+	public abstract class Dependency : TextElement, IDependency
 	{
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[Required]

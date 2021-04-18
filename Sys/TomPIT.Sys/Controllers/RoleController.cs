@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Security;
-using TomPIT.Sys.Data;
+using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Controllers
 {
 	public class RoleController : SysController
 	{
 		[HttpGet]
-		public List<IRole> Query()
+		public ImmutableList<IRole> Query()
 		{
 			return DataModel.Roles.Query();
 		}

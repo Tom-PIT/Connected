@@ -1,82 +1,95 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace TomPIT.Caching
 {
 	internal class Entries
 	{
-		private Lazy<ConcurrentDictionary<string, Entry>> _items = new Lazy<ConcurrentDictionary<string, Entry>>();
+		private readonly Lazy<ConcurrentDictionary<string, Entry>> _items = new Lazy<ConcurrentDictionary<string, Entry>>();
 
-		private ConcurrentDictionary<string, Entry> Items { get { return _items.Value; } }
+		private ConcurrentDictionary<string, Entry> Items => _items.Value;
+		public ImmutableList<string> Keys => Items.Keys.ToImmutableList();
+		public int Count => Items.Count;
 
+		public bool Any()
+		{
+			return Items.Any();
+		}
 		public void Scave()
 		{
-			var expired = new List<string>();
+			var expired = new HashSet<string>();
 
-			foreach (var i in Items.Keys)
+			foreach (var i in Items)
 			{
-				var r = Items[i];
+				var r = i.Value;
 
 				if (r == null || r.Expired)
-					expired.Add(i);
+					expired.Add(i.Key);
 			}
 
 			foreach (var i in expired)
-			{
-				if (Items.TryRemove(i, out Entry d))
-					d.Dispose();
-			}
+				Remove(i);
 		}
 
-		public List<T> All<T>() where T : class
+		public ImmutableList<T> All<T>() where T : class
 		{
 			var r = new List<T>();
 
-			foreach (var i in Items.Values)
-			{
-				if (i.Expired)
-					Remove(i.Id);
-				else
-					r.Add(i.Instance as T);
-			}
+			var expired = Items.Where(f => f.Value.Expired);
 
-			return r;
+			foreach (var e in expired)
+				Remove(e.Value.Id);
+
+			var instances = Items.Select(f => f.Value.Instance);
+
+			foreach (var i in instances)
+				r.Add(i as T);
+
+			return r.ToImmutableList();
 		}
 
 		public void Remove(string key)
 		{
-			if (Items.Count == 0)
+			if (Items.IsEmpty)
 				return;
 
 			if (Items.TryRemove(key, out Entry v))
 				v.Dispose();
 		}
 
-		public ICollection<String> Keys { get { return Items.Keys; } }
-		public void Set(string key, object instance, TimeSpan duration, bool slidingExpiration)
+		public void Set(string key, object instance, Entry value)
 		{
-			Items[key] = new Entry(key, instance, duration, slidingExpiration);
+			Items[key] = value;
 		}
 
+		public void Set(string key, object instance, TimeSpan duration, bool slidingExpiration, CacheScope scope)
+		{
+			Items[key] = new Entry(key, instance, duration, slidingExpiration, scope);
+		}
+
+		public IEnumerator<T> GetEnumerator<T>()
+		{
+			return new EntryEnumerator<T>(Items);
+		}
 		public Entry Get(string key)
 		{
 			return Find(key);
 		}
-
 
 		public Entry First()
 		{
 			if (Count == 0)
 				return null;
 
-			return Items.ElementAt(0).Value;
+			return Items.First().Value;
 		}
 
 		public Entry Get<T>(Func<T, bool> predicate) where T : class
 		{
-			return Find<T>(predicate);
+			return Find(predicate);
 		}
 
 		public Entry Get<T>(Func<dynamic, bool> predicate) where T : class
@@ -91,37 +104,37 @@ namespace TomPIT.Caching
 			if (ds == null)
 				return null;
 
-			var result = new List<string>();
+			var result = new HashSet<string>();
 
 			foreach (var i in ds)
 			{
-				var key = Items.FirstOrDefault(f => f.Value != null && f.Value.Instance == i).Key;
+				var key = Items.FirstOrDefault(f => f.Value?.Instance == i).Key;
 
 				RemoveInternal(key);
 
 				result.Add(key);
 			}
 
-			return result;
+			return result.ToList();
 		}
 
-		public List<T> Where<T>(Func<T, bool> predicate) where T : class
+		public ImmutableList<T> Where<T>(Func<T, bool> predicate) where T : class
 		{
-			var values = Items.Values.Select(f => f.Instance).Cast<T>();
+			var values = Items.Select(f => f.Value.Instance).Cast<T>();
 
-			if (values == null || values.Count() == 0)
+			if (values == null || !values.Any())
 				return null;
 
 			var filtered = values.Where(predicate);
 
-			if (filtered == null || filtered.Count() == 0)
+			if (filtered == null || !filtered.Any())
 				return null;
 
 			var r = new List<T>();
 
 			foreach (var i in filtered)
 			{
-				var ce = Items.FirstOrDefault(f => f.Value.Instance == i);
+				var ce = Items.FirstOrDefault(f => f.Value?.Instance == i);
 
 				if (ce.Value == null)
 					continue;
@@ -136,7 +149,7 @@ namespace TomPIT.Caching
 				r.Add(i);
 			}
 
-			return r;
+			return r.ToImmutableList();
 		}
 
 		private void RemoveInternal(string key)
@@ -147,9 +160,9 @@ namespace TomPIT.Caching
 
 		private Entry Find<T>(Func<T, bool> predicate) where T : class
 		{
-			var instances = Items.Values.Select(f => f.Instance).Cast<T>();
+			var instances = Items.Select(f => f.Value?.Instance).Cast<T>();
 
-			if (instances == null || instances.Count() == 0)
+			if (instances == null || !instances.Any())
 				return null;
 
 			T instance = instances.FirstOrDefault(predicate);
@@ -175,9 +188,9 @@ namespace TomPIT.Caching
 
 		private Entry Find<T>(Func<dynamic, bool> predicate) where T : class
 		{
-			var instances = Items.Values.Select(f => f.Instance).Cast<dynamic>();
+			var instances = Items.Select(f => f.Value?.Instance).Cast<dynamic>();
 
-			if (instances == null || instances.Count() == 0)
+			if (instances == null || !instances.Any())
 				return null;
 
 			T instance = instances.FirstOrDefault(predicate);
@@ -236,7 +249,5 @@ namespace TomPIT.Caching
 			foreach (var i in Items)
 				Remove(i.Key);
 		}
-
-		public int Count { get { return Items.Count; } }
 	}
 }

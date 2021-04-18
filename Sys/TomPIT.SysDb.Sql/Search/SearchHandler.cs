@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.Data.Sql;
 using TomPIT.Search;
@@ -13,7 +12,7 @@ namespace TomPIT.SysDb.Sql.Search
 	{
 		public void Delete(IIndexRequest d)
 		{
-			var w = new Writer("tompit.search_del");
+			using var w = new Writer("tompit.search_del");
 
 			w.CreateParameter("@id", d.GetId());
 
@@ -22,7 +21,7 @@ namespace TomPIT.SysDb.Sql.Search
 
 		public void DeleteState(Guid catalog)
 		{
-			var w = new Writer("tompit.search_catalog_state_del");
+			using var w = new Writer("tompit.search_catalog_state_del");
 
 			w.CreateParameter("@catalog", catalog);
 
@@ -31,7 +30,7 @@ namespace TomPIT.SysDb.Sql.Search
 
 		public void Insert(IMicroService microService, string catalog, Guid identifier, DateTime created, string arguments)
 		{
-			var w = new Writer("tompit.search_ins");
+			using var w = new Writer("tompit.search_ins");
 
 			w.CreateParameter("@service", microService.Token);
 			w.CreateParameter("@catalog", catalog);
@@ -44,7 +43,7 @@ namespace TomPIT.SysDb.Sql.Search
 
 		public void InvalidateState(Guid catalog)
 		{
-			var w = new Writer("tompit.search_catalog_state_ins");
+			using var w = new Writer("tompit.search_catalog_state_ins");
 
 			w.CreateParameter("@catalog", catalog);
 			w.CreateParameter("@status", CatalogStateStatus.Pending);
@@ -54,12 +53,14 @@ namespace TomPIT.SysDb.Sql.Search
 
 		public List<IIndexRequest> Query()
 		{
-			return new Reader<IndexRequest>("tompit.search_que").Execute().ToList<IIndexRequest>();
+			using var r = new Reader<IndexRequest>("tompit.search_que");
+
+			return r.Execute().ToList<IIndexRequest>();
 		}
 
 		public IIndexRequest Select(Guid identifier)
 		{
-			var r = new Reader<IndexRequest>("tompit.search_sel");
+			using var r = new Reader<IndexRequest>("tompit.search_sel");
 
 			r.CreateParameter("@identifier", identifier);
 
@@ -68,7 +69,7 @@ namespace TomPIT.SysDb.Sql.Search
 
 		public ICatalogState SelectState(Guid catalog)
 		{
-			var r = new Reader<CatalogState>("tompit.search_catalog_state_sel");
+			using var r = new Reader<CatalogState>("tompit.search_catalog_state_sel");
 
 			r.CreateParameter("@catalog", catalog);
 
@@ -77,7 +78,7 @@ namespace TomPIT.SysDb.Sql.Search
 
 		public void UpdateState(Guid catalog, CatalogStateStatus status)
 		{
-			var w = new Writer("tompit.search_catalog_state_upd");
+			using var w = new Writer("tompit.search_catalog_state_upd");
 
 			w.CreateParameter("@catalog", catalog);
 			w.CreateParameter("@status", status);

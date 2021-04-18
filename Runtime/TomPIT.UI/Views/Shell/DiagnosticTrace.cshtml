@@ -1,0 +1,51 @@
+﻿@using TomPIT.Diagnostics;
+
+@using TomPIT.Middleware;
+
+@{
+    var trace = ViewData["exDiagnosticTrace"] as List<TomPIT.Exceptions.DiagnosticDescriptor>;
+
+    if (trace is null)
+    {
+        return;
+    }
+}
+
+<ul class="list-unstyled tp-error-diagnostics">
+    @foreach (var t in trace)
+    {
+        var descriptor = t.ParseDescriptor(Model as IMiddlewareContext);
+
+        if (descriptor is null)
+        {
+            continue;
+        }
+
+
+        <li>
+            <div class="tp-error-diagnostics-title">
+                @if (!string.IsNullOrWhiteSpace(descriptor.Url))
+                {
+                    <a href="@descriptor.Url" target="_blank">@descriptor.ToString()</a>
+                }
+                else
+                {
+                    @descriptor.ToString()
+                }
+            </div>
+            <div class="tp-error-diagnostics-code">
+                @foreach (var line in descriptor.SourceCodeLines)
+                {
+                    @if (line.Key == descriptor.Line)
+                    {
+                        <pre class="tp-error-line">@Html.Raw($"{line.Key}: {line.Value}\r\n")</pre>
+                    }
+                    else
+                    {
+                        <pre>@Html.Raw($"{line.Key}: {line.Value}\r\n")</pre>
+                    }
+                }
+            </div>
+        </li>
+    }
+</ul>

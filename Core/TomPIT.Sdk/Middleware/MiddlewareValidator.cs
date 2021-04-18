@@ -1,12 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using TomPIT.Annotations;
 using TomPIT.Data;
+using TomPIT.Exceptions;
 using TomPIT.Reflection;
 
 namespace TomPIT.Middleware
@@ -16,6 +18,7 @@ namespace TomPIT.Middleware
 	{
 		public event ValidatingHandler Validating;
 		public MiddlewareValidator(IMiddlewareComponent instance)
+			: base(instance.Context)
 		{
 			Instance = instance;
 		}
@@ -47,10 +50,7 @@ namespace TomPIT.Middleware
 			}).Result)
 				return;
 
-			throw new ValidationException(SR.ValAntiForgery)
-			{
-				Source = GetType().ScriptTypeName()
-			};
+			throw new MiddlewareValidationException(Instance, SR.ValAntiForgery);
 		}
 
 		public void Validate(object instance, bool triggerValidating)
@@ -60,28 +60,20 @@ namespace TomPIT.Middleware
 
 			ValidateProperties(results, instance, refs);
 
-			if (results.Count == 0 && triggerValidating)
+			if (!results.Any() && triggerValidating)
 				Validating?.Invoke(this, results);
 
-			var sb = new StringBuilder();
-
-			foreach (var result in results)
-			{
-				if (result != null)
-					sb.AppendLine(result.ErrorMessage);
-			}
-
-			if (sb.Length > 0)
-			{
-				throw new ValidationException(sb.ToString())
-				{
-					Source = GetType().ScriptTypeName()
-				};
-			}
-
+			if (results.Any())
+				throw new MiddlewareValidationException(instance, results);
 		}
 		private void ValidateProperties(List<ValidationResult> results, object instance, List<object> references)
 		{
+			if (instance == null)
+				return;
+
+			if (instance.GetType().IsTypePrimitive())
+				return;
+
 			if (instance == null || references.Contains(instance))
 				return;
 
@@ -166,9 +158,60 @@ namespace TomPIT.Middleware
 				ValidateProperty(results, instance, property);
 		}
 
+		public static void ValidatePropertyValue(IMiddlewareContext context, List<ValidationResult> results, object instance, string propertyName, object proposedValue)
+		{
+			var property = instance.GetType().GetProperty(propertyName);
+
+			if (property == null)
+				return;
+
+			var attributes = property.GetCustomAttributes(false);
+
+			if (!ValidateRequestValue(results, instance, property, proposedValue))
+				return;
+
+			if (property.PropertyType.IsEnum && !property.PropertyType.IsEnumDefined(proposedValue))
+				results.Add(new MiddlewareValidationResult(instance, $"{SR.ValEnumValueNotDefined} ({property.PropertyType.ShortName()}, {property.GetValue(instance)})"));
+
+			foreach (var attribute in attributes)
+			{
+				if (attribute is ValidationAttribute val)
+				{
+					try
+					{
+						var serviceProvider = new ValidationServiceProvider();
+
+						serviceProvider.AddService(typeof(IMiddlewareContext), context);
+						serviceProvider.AddService(typeof(IUniqueValueProvider), instance);
+
+						var ctx = new ValidationContext(instance, serviceProvider, new Dictionary<object, object>
+						{
+							{ "entity", instance }
+						})
+						{
+							DisplayName = property.Name,
+							MemberName = property.Name
+						};
+
+						val.Validate(proposedValue, ctx);
+					}
+					catch (ValidationException ex)
+					{
+						results.Add(new MiddlewareValidationResult(instance, ex.Message, new List<string> { property.Name }));
+					}
+				}
+			}
+		}
+
 		private void ValidateProperty(List<ValidationResult> results, object instance, PropertyInfo property)
 		{
 			var attributes = property.GetCustomAttributes(false);
+
+			if (!ValidateRequestValue(results, instance, property))
+				return;
+
+			if (property.PropertyType.IsEnum && !property.PropertyType.IsEnumDefined(property.GetValue(instance)))
+				results.Add(new MiddlewareValidationResult(instance, $"{SR.ValEnumValueNotDefined} ({property.PropertyType.ShortName()}, {property.GetValue(instance)})"));
 
 			foreach (var attribute in attributes)
 			{
@@ -194,13 +237,47 @@ namespace TomPIT.Middleware
 					}
 					catch (ValidationException ex)
 					{
-						results.Add(new ValidationResult(ex.Message, new List<string> { property.Name }));
+						if (ex is MiddlewareValidationException mve)
+							throw new MiddlewareValidationException(instance, ex.Message, mve);
+						else
+							throw new MiddlewareValidationException(instance, ex.Message);
 					}
 				}
 			}
 		}
 
-		private object GetValue(object component, PropertyInfo property)
+		private static bool ValidateRequestValue(List<ValidationResult> results, object instance, PropertyInfo property, object value)
+		{
+			if (value == null)
+				return true;
+
+			var att = property.FindAttribute<ValidateRequestAttribute>();
+
+			if (att != null && !att.ValidateRequest)
+				return true;
+
+			var decoded = HttpUtility.HtmlDecode(value.ToString());
+
+			if (decoded.Replace(" ", string.Empty).Contains("<script>"))
+			{
+				results.Add(new MiddlewareValidationResult(instance, SR.ValScriptTagNotAllowed));
+				return false;
+			}
+
+			return true;
+		}
+		private static bool ValidateRequestValue(List<ValidationResult> results, object instance, PropertyInfo property)
+		{
+			if (property.PropertyType != typeof(string))
+				return true;
+
+			if (!property.CanWrite)
+				return true;
+
+			return ValidateRequestValue(results, instance, property, GetValue(instance, property));
+		}
+
+		private static object GetValue(object component, PropertyInfo property)
 		{
 			try
 			{
@@ -211,15 +288,11 @@ namespace TomPIT.Middleware
 				if (tex.InnerException is ValidationException)
 					throw tex.InnerException;
 
-				return null;
+				throw TomPITException.Unwrap(component, tex);
 			}
-			catch (ValidationException vex)
+			catch (ValidationException)
 			{
-				throw vex;
-			}
-			catch
-			{
-				return null;
+				throw;
 			}
 		}
 	}
