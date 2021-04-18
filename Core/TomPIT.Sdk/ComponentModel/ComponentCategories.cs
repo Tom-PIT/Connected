@@ -2,6 +2,7 @@
 {
 	public static class ComponentCategories
 	{
+		public static string ReferenceComponentName => "References";
 		public static string Api => "Api";
 		public static string Model => "Model";
 		public static string View => "View";

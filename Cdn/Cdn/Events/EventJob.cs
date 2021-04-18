@@ -109,9 +109,6 @@ namespace TomPIT.Cdn.Events
 						}
 					}
 
-					if (!eventInstance.Invoking())
-						return true;
-
 					var args = new DistributedEventInvokingArgs();
 
 					eventInstance.Invoking(args);

@@ -76,7 +76,7 @@ namespace TomPIT.Design
 			var files = Directory.GetFiles(path, "*.json");
 
 			foreach(var file in files)
-				OnPullRequest(this, new FileSystemEventArgs(WatcherChangeTypes.Created, Path.GetDirectoryName(file), file));
+				OnPullRequest(this, new FileSystemEventArgs(WatcherChangeTypes.Created, Path.GetDirectoryName(file), Path.GetFileName(file)));
 		}
 
 		private void OnPullRequest(object sender, FileSystemEventArgs e)

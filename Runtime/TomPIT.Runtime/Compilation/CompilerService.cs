@@ -314,7 +314,10 @@ namespace TomPIT.Compilation
 			InvalidateReferences(component, id);
 
 			if (Tenant.GetService<IDiscoveryService>().Manifests is IManifestDiscoveryNotification notification)
-				notification.Invalidate(microService, component, sourceCode.Id);
+			{
+				if (sourceCode.GetType().FindAttribute<SyntaxAttribute>() is not SyntaxAttribute sa || string.Compare(sa.Syntax, SyntaxAttribute.CSharp, true) == 0)
+					notification.Invalidate(microService, component, sourceCode.Id);
+			}
 		}
 
 		internal static Assembly LoadSystemAssembly(string fileName)

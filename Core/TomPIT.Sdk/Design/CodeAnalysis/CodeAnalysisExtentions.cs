@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -81,6 +82,11 @@ namespace TomPIT.Design.CodeAnalysis
 			}
 
 			return false;
+		}
+
+		public static bool IsScriptSymbol(this ISymbol symbol)
+		{
+			return symbol.Locations.Any(f => f.IsInSource);
 		}
 	}
 }

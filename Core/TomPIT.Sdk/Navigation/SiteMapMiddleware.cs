@@ -1,102 +1,88 @@
-﻿using System.Collections.Generic;
-using TomPIT.Collections;
+﻿using System;
+using System.Collections.Generic;
 using TomPIT.Middleware;
 
 namespace TomPIT.Navigation
 {
 	public abstract class SiteMapMiddleware : MiddlewareComponent, ISiteMapMiddleware
 	{
-		public List<ISiteMapContainer> Invoke(params string[] keys)
+		public List<ISiteMapContainer> Invoke()
 		{
-			var r = new List<ISiteMapContainer>();
-
-			if (keys.Length == 0)
-			{
-				var items = OnInvoke(null);
-
-				if (items != null && items.Count > 0)
-					r.AddRange(items);
-			}
-			else
-			{
-				foreach (var key in keys)
-				{
-					var items = OnInvoke(key);
-
-					if (items != null && items.Count > 0)
-						r.AddRange(items);
-				}
-			}
-
-			return r;
+			return OnInvoke();
 		}
 
+		protected virtual List<ISiteMapContainer> OnInvoke()
+		{
+			return OnInvoke(null);
+		}
+
+		[Obsolete("Please use OnInvoke without arguments.")]
 		protected virtual List<ISiteMapContainer> OnInvoke(string key)
 		{
 			return null;
 		}
 
-		protected List<ISiteMapContainer> Filter(List<ISiteMapContainer> containers, string key)
-		{
-			if (containers == null || containers.Count == 0)
-				return containers;
+		//protected List<ISiteMapContainer> Filter(List<ISiteMapContainer> containers, string key)
+		//{
+		//	if (containers == null || containers.Count == 0)
+		//		return containers;
 
-			if (string.IsNullOrWhiteSpace(key))
-				return containers;
+		//	if (string.IsNullOrWhiteSpace(key))
+		//		return containers;
 
-			var result = new List<ISiteMapContainer>();
+		//	var result = new List<ISiteMapContainer>();
 
-			foreach (var container in containers)
-			{
-				if (string.Compare(container.Key, key, true) == 0)
-					result.Add(container);
-				else
-				{
-					var route = Filter(container.Routes, key);
-					container.Routes.Clear();
+		//	foreach (var container in containers)
+		//	{
+		//		if (string.Compare(container.Key, key, true) == 0)
+		//			result.Add(container);
+		//		else
+		//		{
+		//			var route = Filter(container.Routes, key);
+		//			container.Routes.Clear();
 
-					if (route != null)
-					{
-						result.Add(container);
-						container.Routes.Add(route);
-					}
-				}
-			}
+		//			if (route != null)
+		//			{
+		//				result.Add(container);
+		//				container.Routes.Add(route);
+		//			}
+		//		}
+		//	}
 
-			return result;
-		}
+		//	return result;
+		//}
 
-		private ISiteMapRoute Filter(ConnectedList<ISiteMapRoute, ISiteMapContainer> routes, string key)
-		{
-			foreach(var route in routes)
-			{
-				if (string.Compare(route.RouteKey, key, true) == 0)
-					return route;
+		//private ISiteMapRoute Filter(ConnectedList<ISiteMapRoute, ISiteMapContainer> routes, string key)
+		//{
+		//	foreach(var route in routes)
+		//	{
+		//		if (string.Compare(route.RouteKey, key, true) == 0)
+		//			return route;
 
-				var result = Filter(route.Routes, key);
+		//		var result = Filter(route.Routes, key);
 
-				if (result != null)
-					return result;
-			}
+		//		if (result != null)
+		//			return result;
+		//	}
 
-			return null;
-		}
+		//	return null;
+		//}
 
-		private ISiteMapRoute Filter(ConnectedList<ISiteMapRoute, ISiteMapRoute> routes, string key)
-		{
-			foreach (var route in routes)
-			{
-				if (string.Compare(route.RouteKey, key, true) == 0)
-					return route;
+		//private ISiteMapRoute Filter(ConnectedList<ISiteMapRoute, ISiteMapRoute> routes, string key)
+		//{
+		//	foreach (var route in routes)
+		//	{
+		//		if (string.Compare(route.RouteKey, key, true) == 0)
+		//			return route;
 
-				var result = Filter(route.Routes, key);
+		//		var result = Filter(route.Routes, key);
 
-				if (result != null)
-					return result;
-			}
+		//		if (result != null)
+		//			return result;
+		//	}
 
-			return null;
-		}
+		//	return null;
+		//}
 
 		public List<INavigationContext> QueryContexts()
 		{

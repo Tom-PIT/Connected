@@ -100,7 +100,7 @@ namespace TomPIT.Reflection.Providers
 
 			om.Address = script.GetPointer(script.Address);
 			var declaredType = script.DeclaredTypes.FirstOrDefault(f => string.Compare(f.Name, operation.Name, false) == 0);
-			om.DeclaredType = CloneType(declaredType);
+			om.DeclaredType = CloneType(Tenant, declaredType, script);
 
 			if (declaredType is IScriptManifestHttpType http)
 				om.Verbs = http.Verbs;

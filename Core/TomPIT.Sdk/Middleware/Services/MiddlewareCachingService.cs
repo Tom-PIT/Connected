@@ -35,7 +35,7 @@ namespace TomPIT.Middleware.Services
 
 		public T Get<T>(string key, Func<T, bool> matchEvaluator, CacheRetrieveHandler<T> retrieve) where T : class
 		{
-			return ContextCache.Get(Context, key, matchEvaluator, (f)=>
+			return ContextCache.Get(Context, key, matchEvaluator, (f) =>
 			{
 				var shared = Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, matchEvaluator, null);
 
@@ -177,7 +177,7 @@ namespace TomPIT.Middleware.Services
 
 			var result = new List<T>(contextItems);
 
-			foreach(var sharedItem in sharedItems)
+			foreach (var sharedItem in sharedItems)
 			{
 				if (sharedItem is null)
 					continue;
@@ -215,6 +215,20 @@ namespace TomPIT.Middleware.Services
 			return default;
 		}
 
-		protected IDataCachingService ContextCache => _contextCache ??= Context.Tenant.GetService<IDataCachingService>().CreateService(Context.Tenant);
+		protected IDataCachingService ContextCache
+		{
+			get
+			{
+				if (_contextCache is null)
+				{
+					if (Context is MiddlewareContext mc && mc.Owner is not null && mc.Owner.Services.Cache is MiddlewareCachingService cache)
+						return cache.ContextCache;
+					else
+						_contextCache = Context.Tenant.GetService<IDataCachingService>().CreateService(Context.Tenant);
+				}
+
+				return _contextCache;
+			}
+		}
 	}
 }

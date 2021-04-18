@@ -31,7 +31,7 @@ namespace TomPIT.Reflection
 			if (ms == null)
 				return null;
 
-			var component = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategories.Reference, "References");
+			var component = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategories.Reference, ComponentCategories.ReferenceComponentName);
 
 			if (component == null)
 				return null;

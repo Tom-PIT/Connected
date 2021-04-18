@@ -199,16 +199,7 @@ namespace TomPIT.Navigation
 		{
 			foreach (var route in items)
 			{
-				var url = new Route
-				{
-					Text = route.Text,
-					Url = route.ParseUrl(context),
-					BeginGroup = route.BeginGroup,
-					Visible = route.Visible,
-					Glyph = route.Glyph,
-					Css = route.Css,
-					Category = route.Category
-				};
+				var url = CreateRoute(context, route);
 
 				routes.Add(url);
 
@@ -220,23 +211,29 @@ namespace TomPIT.Navigation
 		{
 			foreach (var route in items)
 			{
-				var url = new Route
-				{
-					Text = route.Text,
-					Url = route.ParseUrl(context),
-					BeginGroup = route.BeginGroup,
-					Visible = route.Visible,
-					Glyph = route.Glyph,
-					Css = route.Css,
-					Category = route.Category
-				};
-
+				var url = CreateRoute(context, route);
+				
 				routes.Add(url);
 
 				LoadRoutes(context, url.Items, route.Routes);
 			}
 		}
 
+		private static Route CreateRoute(IMiddlewareContext context, ISiteMapRoute route)
+		{
+			return new Route
+			{
+				Text = route.Text,
+				Url = route.ParseUrl(context),
+				BeginGroup = route.BeginGroup,
+				Visible = route.Visible,
+				Glyph = route.Glyph,
+				Css = route.Css,
+				Category = route.Category,
+				Ordinal = route.Ordinal,
+				Id = route.RouteKey
+			};
+		}
 		public static ISiteMapContainer WithAuthorization(this ISiteMapContainer container, IMiddlewareContext context)
 		{
 			context.Tenant.GetService<IAuthorizationService>().Authorize(container);

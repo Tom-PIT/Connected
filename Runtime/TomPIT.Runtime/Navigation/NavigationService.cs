@@ -122,7 +122,7 @@ namespace TomPIT.Navigation
 			{
 				if (string.Compare(handler.Key, key, true) == 0)
 				{
-					var items = LoadContainerRoutes(handler.Value, key, tags);
+					var items = LoadContainerRoutes(handler.Value, tags);
 
 					if (items != null && items.Count > 0)
 						r.AddRange(items);
@@ -136,7 +136,7 @@ namespace TomPIT.Navigation
 
 						var items = new List<ISiteMapContainer>();
 
-						LoadDescriptorRoutes(descriptor, key, null, items);
+						LoadDescriptorRoutes(descriptor, null, items);
 
 						foreach (var item in items)
 						{
@@ -205,22 +205,22 @@ namespace TomPIT.Navigation
 			return null;
 		}
 
-		private List<ISiteMapContainer> LoadContainerRoutes(List<NavigationHandlerDescriptor> handlers, string key, List<string> tags)
+		private List<ISiteMapContainer> LoadContainerRoutes(List<NavigationHandlerDescriptor> handlers, List<string> tags)
 		{
 			var r = new List<ISiteMapContainer>();
 
 			foreach (var descriptor in handlers)
-				LoadDescriptorRoutes(descriptor, key, tags, r);
+				LoadDescriptorRoutes(descriptor, tags, r);
 
 			return r;
 		}
 
-		private void LoadDescriptorRoutes(NavigationHandlerDescriptor handler, string key, List<string> tags, List<ISiteMapContainer> items)
+		private void LoadDescriptorRoutes(NavigationHandlerDescriptor handler, List<string> tags, List<ISiteMapContainer> items)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(handler.MicroService);
 			var ctx = new MicroServiceContext(ms, Tenant.Url);
 			var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapMiddleware>(ctx, handler.Handler);
-			var containers = instance.Invoke(key);
+			var containers = instance.Invoke();
 
 			if (containers == null || containers.Count == 0)
 				return;
@@ -279,7 +279,7 @@ namespace TomPIT.Navigation
 			return Handlers.Keys.ToList();
 		}
 
-		private ConcurrentDictionary<string, List<NavigationHandlerDescriptor>> Handlers => _handlers.Value;
+		private static ConcurrentDictionary<string, List<NavigationHandlerDescriptor>> Handlers => _handlers.Value;
 
 		private void RefreshNavigation(ISiteMapConfiguration configuration, bool removeOny = false)
 		{

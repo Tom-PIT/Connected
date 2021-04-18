@@ -49,7 +49,7 @@ namespace TomPIT.Reflection.Providers
 			if (script == null)
 				return;
 
-			om.DeclaredType = CloneType(script.DeclaredTypes.FirstOrDefault(f => string.Compare(f.Name, om.Name, false) == 0));
+			om.DeclaredType = CloneType(Tenant, script.DeclaredTypes.FirstOrDefault(f => string.Compare(f.Name, om.Name, false) == 0), script);
 		}
 	}
 }

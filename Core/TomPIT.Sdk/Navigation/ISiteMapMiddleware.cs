@@ -5,7 +5,7 @@ namespace TomPIT.Navigation
 {
 	public interface ISiteMapMiddleware : IMiddlewareComponent
 	{
-		List<ISiteMapContainer> Invoke(params string[] key);
+		List<ISiteMapContainer> Invoke();
 
 		List<INavigationContext> QueryContexts();
 	}

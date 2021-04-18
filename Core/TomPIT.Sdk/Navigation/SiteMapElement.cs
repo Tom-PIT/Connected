@@ -2,7 +2,7 @@
 
 namespace TomPIT.Navigation
 {
-	public abstract class SiteMapElement
+	public abstract class SiteMapElement : ISiteMapElement
 	{
 		public string Text { get; set; }
 
@@ -16,5 +16,7 @@ namespace TomPIT.Navigation
 		public string Glyph { get; set; }
 
 		public string Css { get; set; }
+
+		public int Ordinal { get; set; }
 	}
 }

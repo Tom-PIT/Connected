@@ -42,12 +42,12 @@ namespace TomPIT.Ide.ComponentModel
 			var cs = environment.Context.Tenant.GetService<IComponentService>();
 			var cds = environment.Context.Tenant.GetService<IDesignService>().Components;
 
-			var items = cs.QueryComponents(microService, "Reference");
+			var items = cs.QueryComponents(microService, ComponentCategories.Reference);
 
 			if (items != null && items.Count > 0)
 				return items[0];
 
-			var id = cds.Insert(microService, Guid.Empty, "Reference", "References", typeof(References).TypeName());
+			var id = cds.Insert(microService, Guid.Empty, ComponentCategories.Reference, ComponentCategories.ReferenceComponentName, typeof(References).TypeName());
 			var config = new References
 			{
 				Component = id

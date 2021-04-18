@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Models;
+using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Serialization;
 
@@ -45,6 +47,7 @@ namespace TomPIT.Data
 
 		}
 
+		[Obsolete]
 		public void DataSource(JObject state)
 		{
 			var properties = GetType().GetProperties();
@@ -75,8 +78,18 @@ namespace TomPIT.Data
 
 			OnDataSource(state);
 		}
-
+		[Obsolete]
 		protected virtual void OnDataSource(JObject state)
+		{
+
+		}
+
+		public void Deserialize(IMiddlewareContext context, IDataReader reader)
+		{
+			OnDeserialize(context, reader);
+		}
+
+		protected virtual void OnDeserialize(IMiddlewareContext context, IDataReader reader)
 		{
 
 		}

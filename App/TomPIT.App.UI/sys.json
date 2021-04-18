@@ -2,7 +2,7 @@
   "connections": [
     {
       "name": "localhost",
-      "url": "http://sys-app/repoclient2/sys",
+      "url": "http://sys-app/repoclient/sys",
       "authenticationToken": "defaultAuthenticationToken"
     }
   ],
@@ -14,7 +14,7 @@
   "deployment": {
     "fileSystem": {
       "enabled": true,
-      "path": "C:\\temp"
+      "path": "C:\\temp\\deploy"
     }
   },
   "diagnostics": {

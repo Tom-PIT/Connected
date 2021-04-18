@@ -1,108 +1,22 @@
-﻿using System;
-using System.Data;
-using Newtonsoft.Json.Linq;
+﻿using System.Data;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Middleware;
 
 namespace TomPIT.DataProviders.BigData
 {
-	public sealed class DataConnection : IDataConnection, IDisposable
+	public sealed class DataConnection : DataConnectionBase
 	{
-		private BigDataConnection _connection = null;
-
-		public DataConnection(IMiddlewareContext context, IDataProvider provider, string connectionString, ConnectionBehavior behavior)
+		public DataConnection(IMiddlewareContext context, IDataProvider provider, string connectionString, ConnectionBehavior behavior):base(context, provider, connectionString, behavior)
 		{
-			Context = context;
-			Provider = provider;
-			ConnectionString = connectionString;
-			Behavior = behavior;
 		}
 
-		public IMiddlewareContext Context { get; }
-		private IDataProvider Provider { get; }
-		private string ConnectionString { get; }
-
-		public IDbConnection Connection
+		protected override IDbConnection OnCreateConnection()
 		{
-			get
+			return new BigDataConnection
 			{
-				if (_connection == null)
-				{
-					_connection = new BigDataConnection
-					{
-						ConnectionString = ConnectionString
-					};
-
-					Open();
-				}
-
-				return _connection;
-			}
+				ConnectionString = ConnectionString
+			};
 		}
-
-		public void Commit()
-		{
-			if (Transaction == null || Transaction.Connection == null)
-				return;
-
-			Transaction.Commit();
-			Transaction = null;
-		}
-
-		public void Dispose()
-		{
-			Close();
-		}
-
-		public void Rollback()
-		{
-			if (Transaction == null || Transaction.Connection == null)
-				return;
-
-			Transaction.Rollback();
-			Transaction = null;
-		}
-
-		public void Open()
-		{
-			if (Connection.State == ConnectionState.Closed)
-				Connection.Open();
-
-			if (Transaction?.Connection != null)
-			{
-				return;
-			}
-
-			Transaction = Connection.BeginTransaction(IsolationLevel.Unspecified) as BigDataTransaction;
-		}
-
-		public void Close()
-		{
-			if (Connection != null && Connection.State == ConnectionState.Open)
-				Connection.Close();
-		}
-
-		public int Execute(IDataCommandDescriptor command)
-		{
-			return Provider.Execute(command, this);
-		}
-
-		public JObject Query(IDataCommandDescriptor command)
-		{
-			return Provider.Query(command, null, this);
-		}
-
-		public IDbCommand CreateCommand()
-		{
-			return Connection.CreateCommand();
-		}
-
-		public ConnectionBehavior Behavior { get; private set; }
-		public IDbTransaction Transaction { get; set; }
-
-		public ICommandTextParser Parser => null;
-
-		public ConnectionState State => Connection.State;
 	}
 }

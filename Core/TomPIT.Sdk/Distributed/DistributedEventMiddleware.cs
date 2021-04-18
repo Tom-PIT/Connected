@@ -55,13 +55,13 @@ namespace TomPIT.Distributed
 		{
 
 		}
+		
+		//public bool Invoking()
+		//{
+		//	Validate();
+		//	return OnInvoking();
+		//}
 		[Obsolete("Please use Invoking(e) instead.")]
-		public bool Invoking()
-		{
-			Validate();
-			return OnInvoking();
-		}
-
 		protected virtual bool OnInvoking()
 		{
 			return true;
@@ -74,12 +74,14 @@ namespace TomPIT.Distributed
 
 		public void Invoking(DistributedEventInvokingArgs e)
 		{
-			OnInvoking();
+			Validate();
+
+			OnInvoking(e);
 		}
 
 		protected virtual void OnInvoking(DistributedEventInvokingArgs e)
 		{
-
+			OnInvoking();
 		}
 	}
 }

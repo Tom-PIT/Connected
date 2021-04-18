@@ -48,7 +48,7 @@ namespace TomPIT.Dom
 
 			foreach (var i in Components.OrderBy(f => f.Name))
 			{
-				if (string.Compare(i.Category, "Reference", true) == 0)
+				if (string.Compare(i.Category, ComponentCategories.Reference, true) == 0)
 					continue;
 
 				Items.Add(i.GetDomElement(this));
@@ -75,7 +75,7 @@ namespace TomPIT.Dom
 
 			if (component != null)
 			{
-				if (string.Compare(component.Category, "Reference", true) == 0)
+				if (string.Compare(component.Category, ComponentCategories.Reference, true) == 0)
 					Items.Add(new ReferencesElement(this, component));
 				else
 					Items.Add(component.GetDomElement(this));

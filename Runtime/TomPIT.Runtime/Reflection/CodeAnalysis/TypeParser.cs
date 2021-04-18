@@ -35,8 +35,13 @@ namespace TomPIT.Reflection.CodeAnalysis
 				Symbol = type,
 				Node = node,
 				Model = Compiler.Model,
-				ContainingType = type.ContainingType?.ToDisplayString()
+				ContainingType = type.ContainingType?.ToDisplayString(),
+				BaseType = type.BaseType?.ToDisplayString(),
+				BaseTypeMetaDataName = type.BaseType?.MetadataName,
+				MetaDataName = type.MetadataName
 			};
+
+			ParseSourceReferences(type.BaseType, type.BaseType);
 
 			return result;
 		}
@@ -85,15 +90,24 @@ namespace TomPIT.Reflection.CodeAnalysis
 			type.Name = descriptor.Symbol.Name;
 			type.Documentation = ((CSharpSyntaxNode)descriptor.Node).ParseDocumentation();
 			type.ContainingType = descriptor.ContainingType;
+			type.BaseType = descriptor.BaseType;
+			type.BaseTypeMetaDataName = descriptor.BaseTypeMetaDataName;
+			type.MetaDataName = descriptor.MetaDataName;
 
 			SetLocation(type, descriptor.Node);
 
 			return (scriptProvider, type);
 		}
 
-		private SyntaxNode ResolveNode(ISymbol symbol)
+		private SyntaxNode ResolveNode(ISymbol symbol, bool sourceFileOnly)
 		{
 			if (!symbol.Locations.Any())
+				return null;
+
+			if (symbol.Locations.FirstOrDefault(f => f.SourceTree == Compiler.SyntaxTree) is Location local)
+				return local.SourceTree?.GetRoot()?.FindNode(local.SourceSpan);
+
+			if (sourceFileOnly)
 				return null;
 
 			foreach (var location in symbol.Locations)
@@ -108,7 +122,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 		}
 		private void ParseNode(ISymbol symbol)
 		{
-			ParseNode(ResolveNode(symbol));
+			ParseNode(ResolveNode(symbol, true));
 		}
 
 		private void ParseNode(SyntaxNode node)
@@ -127,7 +141,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 			var model = Compiler.Compilation.GetSemanticModel(identifier.SyntaxTree);
 			var symbol = model.GetSymbolInfo(identifier).Symbol;
 
-			if (symbol == null || symbol.IsImplicitlyDeclared)
+			if (symbol == null || symbol.IsImplicitlyDeclared || !symbol.IsScriptSymbol())
 				return;
 
 			if (symbol is ITypeSymbol || symbol is IPropertySymbol || symbol is IFieldSymbol || symbol is IMethodSymbol)
@@ -141,7 +155,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 
 			ParseSourceReferences(symbol, symbol.Type);
 
-			var node = ResolveNode(symbol) as CSharpSyntaxNode;
+			var node = ResolveNode(symbol, false) as CSharpSyntaxNode;
 
 			var member = new ScriptManifestField
 			{
@@ -164,7 +178,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 			if (symbol.IsIndexer)
 				return;
 
-			var node = ResolveNode(symbol) as CSharpSyntaxNode;
+			var node = ResolveNode(symbol, false) as CSharpSyntaxNode;
 
 			var member = new ScriptManifestProperty
 			{
@@ -188,7 +202,10 @@ namespace TomPIT.Reflection.CodeAnalysis
 				return;
 
 			if (!symbol.Locations.IsDefaultOrEmpty)
-				ParseSourceReferences(symbol, symbol.Locations[0].SourceSpan);
+			{
+				if (symbol.IsScriptSymbol())
+					ParseSourceReferences(symbol, symbol.Locations[0].SourceSpan);
+			}
 
 			var arguments = namedType.TypeArguments;
 
@@ -211,7 +228,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 				var source = new ScriptManifestSymbolReference
 				{
 					Address = Compiler.Manifest.GetId(script.Configuration().MicroService(), script.Configuration().Component, script.Id),
-					Identifier = symbol.ToDisplayString(),
+					Identifier = symbol.MetadataName,
 					Type = ResolveReferenceType(symbol.Kind)
 				};
 

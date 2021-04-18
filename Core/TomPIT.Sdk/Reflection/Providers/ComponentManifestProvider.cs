@@ -94,12 +94,12 @@ namespace TomPIT.Reflection.Providers
 			}
 		}
 
-		protected IManifestType CloneType(IScriptManifestType type)
+		protected IManifestType CloneType(ITenant tenant, IScriptManifestType type, IScriptManifest manifest)
 		{
 			if (type is null)
 				return null;
 			
-			return ManifestType.FromScript(type);
+			return ManifestType.FromScript(tenant, type, manifest);
 		}
 	}
 }

@@ -24,7 +24,7 @@ namespace TomPIT.Reflection.Providers
 			if (script == null)
 				return;
 
-			manifest.DeclaredType = CloneType(script.DeclaredTypes.FirstOrDefault(f => string.Compare(f.Name, Configuration.ComponentName(), false) == 0));
+			manifest.DeclaredType = CloneType(Tenant, script.DeclaredTypes.FirstOrDefault(f => string.Compare(f.Name, Configuration.ComponentName(), false) == 0), script);
 		}
 	}
 }

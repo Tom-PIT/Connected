@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
-using Newtonsoft.Json.Linq;
 using TomPIT.Data.DataProviders;
 using TomPIT.Middleware;
 
@@ -15,7 +15,8 @@ namespace TomPIT.Data
 		void Close();
 
 		int Execute(IDataCommandDescriptor command);
-		JObject Query(IDataCommandDescriptor command);
+		List<T> Query<T>(IDataCommandDescriptor command);
+		T Select<T>(IDataCommandDescriptor command);
 
 		IDbCommand CreateCommand();
 		ConnectionBehavior Behavior { get; }

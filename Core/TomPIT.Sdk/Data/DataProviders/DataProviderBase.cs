@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Data;
-using Newtonsoft.Json.Linq;
 using TomPIT.Middleware;
 
 namespace TomPIT.Data.DataProviders
@@ -39,57 +39,7 @@ namespace TomPIT.Data.DataProviders
 			}
 		}
 
-		protected JObject CreateDataRow(IDataConnection connection, IDataReader rdr)
-		{
-			var row = new JObject();
-
-			for (var i = 0; i < rdr.FieldCount; i++)
-				row.Add(rdr.GetName(i), new JValue(GetValue(connection, rdr, i)));
-
-			return row;
-		}
-
-		protected JObject CreateDataRow(IDataConnection connection, IDataReader rdr, DataTable schema)
-		{
-			var row = new JObject();
-
-			foreach (DataColumn i in schema.Columns)
-			{
-				if (i.ExtendedProperties.Contains("unbound"))
-				{
-					row.Add(i.ColumnName, string.Empty);
-
-					continue;
-				}
-
-				var mapping = i.ColumnName;
-
-				if (i.ExtendedProperties.Contains("mapping"))
-					mapping = (string)i.ExtendedProperties["mapping"];
-
-				int ord = rdr.GetOrdinal(mapping);
-				var value = GetValue(connection, rdr, ord);
-
-				row.Add(i.ColumnName, new JValue(value == DBNull.Value ? null : value));
-			}
-
-			return row;
-		}
-
-		protected object GetValue(IDataConnection connection, IDataReader reader, int index)
-		{
-			var value = reader.GetValue(index);
-
-			if (value == DBNull.Value)
-				return null;
-
-			if (value is DateTime date)
-				value = DateTime.SpecifyKind(date, DateTimeKind.Utc);
-
-			return value;
-		}
-
-		public virtual int Execute(IDataCommandDescriptor command, IDataConnection connection)
+		public virtual int Execute(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
 		{
 			EnsureOpen(connection);
 
@@ -130,12 +80,17 @@ namespace TomPIT.Data.DataProviders
 			return cmd.ExecuteNonQuery();
 		}
 
-		public virtual JObject Query(IDataCommandDescriptor command, DataTable schema)
+		public virtual List<R> Query<R>(IMiddlewareContext context, IDataCommandDescriptor command)
 		{
-			return Query(command, schema, null);
+			return Query<R>(context, command, null);
 		}
 
-		public virtual JObject Query(IDataCommandDescriptor command, DataTable schema, IDataConnection connection)
+		public virtual R Select<R>(IMiddlewareContext context, IDataCommandDescriptor command)
+		{
+			return Select<R>(context, command, null);
+		}
+
+		public virtual List<R> Query<R>(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
 		{
 			EnsureOpen(connection);
 
@@ -151,21 +106,43 @@ namespace TomPIT.Data.DataProviders
 					SetParameterValue(connection, com, i.Name, i.Value);
 
 				rdr = com.ExecuteReader();
-				var r = new JObject();
-				var a = new JArray();
-
-				r.Add("data", a);
+				var result = new List<R>();
+				var mappings = new FieldMappings<R>(context, rdr);
 
 				while (rdr.Read())
-				{
-					var row = schema == null
-						? CreateDataRow(connection, rdr)
-						: CreateDataRow(connection, rdr, schema);
+					result.Add(mappings.CreateInstance(rdr));
 
-					a.Add(row);
-				}
+				return result;
+			}
+			finally
+			{
+				if (rdr != null && !rdr.IsClosed)
+					rdr.Close();
+			}
+		}
 
-				return r;
+		public virtual R Select<R>(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
+		{
+			EnsureOpen(connection);
+
+			var com = ResolveCommand(command, connection);
+
+			IDataReader rdr = null;
+
+			try
+			{
+				SetupParameters(command, com);
+
+				foreach (var i in command.Parameters)
+					SetParameterValue(connection, com, i.Name, i.Value);
+
+				rdr = com.ExecuteReader(CommandBehavior.SingleRow);
+				var mappings = new FieldMappings<R>(context, rdr);
+
+				if (rdr.Read())
+					return mappings.CreateInstance(rdr);
+
+				return default;
 			}
 			finally
 			{
@@ -207,7 +184,7 @@ namespace TomPIT.Data.DataProviders
 			}
 		}
 
-		private void EnsureOpen(IDataConnection connection)
+		private static void EnsureOpen(IDataConnection connection)
 		{
 			if (connection == null)
 				return;
