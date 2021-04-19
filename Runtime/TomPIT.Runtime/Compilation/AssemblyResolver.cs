@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.IO;
 using System.Reflection;
@@ -13,12 +14,21 @@ namespace TomPIT.Compilation
 {
 	public class AssemblyResolver : MetadataReferenceResolver
 	{
+		private static ConcurrentDictionary<string, PortableExecutableReference> _metaReferenceCache;
+
+		static AssemblyResolver()
+		{
+			_metaReferenceCache = new ConcurrentDictionary<string, PortableExecutableReference>();
+		}
+
 		public AssemblyResolver(ITenant tenant, Guid microService, bool reflectionOnly)
 		{
 			Tenant = tenant;
 			MicroService = microService;
 			ReflectionOnly = reflectionOnly;
 		}
+
+		private static ConcurrentDictionary<string, PortableExecutableReference> MetaReferenceCache => _metaReferenceCache;
 
 		private bool ReflectionOnly { get; }
 		private ITenant Tenant { get; }
@@ -214,11 +224,17 @@ namespace TomPIT.Compilation
 		public override PortableExecutableReference ResolveMissingAssembly(MetadataReference definition, AssemblyIdentity referenceIdentity)
 		{
 			var d = referenceIdentity.GetDisplayName();
+
+			if (MetaReferenceCache.TryGetValue(d, out PortableExecutableReference existing))
+				return existing;
+
 			try
 			{
 				var asm = AppDomain.CurrentDomain.Load(d);
 
 				var r = MetadataReference.CreateFromFile(asm.Location);
+
+				MetaReferenceCache.TryAdd(d, r);
 
 				return r;
 			}

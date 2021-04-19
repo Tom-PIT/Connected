@@ -218,7 +218,7 @@ namespace TomPIT.Compilation
 			if (stage == EnvironmentStage.Production)
 			{
 				result = compiler.Script.GetCompilation();
-
+				
 				scriptDescriptor.Errors = ProcessDiagnostics(script, compiler, result.GetDiagnostics(), stage);
 			}
 			else
