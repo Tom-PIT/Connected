@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using LZ4;
 using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
@@ -27,8 +26,8 @@ namespace TomPIT.Storage
 			var types = new JArray
 			{
 				BlobTypes.Template,
-				BlobTypes.Configuration,
-				BlobTypes.ScriptManifest
+				BlobTypes.Configuration
+				//BlobTypes.ScriptManifest
 			};
 
 			foreach (var rg in resourceGroups)
@@ -40,12 +39,7 @@ namespace TomPIT.Storage
 			var contents = Tenant.Post<List<BlobContent>>(u, args);
 
 			foreach (var content in contents)
-			{
-				if (content.Content != null && content.Content.Length > 0)
-					content.Content = LZ4Codec.Unwrap(content.Content);
-
 				Set(content.Blob, content, TimeSpan.Zero);
-			}
 		}
 
 		public List<IBlobContent> Query(List<Guid> blobs)
@@ -62,10 +56,7 @@ namespace TomPIT.Storage
 			var ds = Tenant.Post<List<BlobContent>>(u, args);
 
 			foreach (var i in ds)
-			{
-				i.Content = LZ4Codec.Unwrap(i.Content);
 				Set(i.Blob, i);
-			}
 
 			return ds.ToList<IBlobContent>();
 		}
@@ -84,12 +75,7 @@ namespace TomPIT.Storage
 					.AddParameter("microService", blob.MicroService)
 					.AddParameter("blob", blob.Token);
 
-					var r = Tenant.Get<BlobContent>(u);
-
-					if (r != null)
-						r.Content = LZ4Codec.Unwrap(r.Content);
-
-					return r;
+					return Tenant.Get<BlobContent>(u);
 				});
 		}
 

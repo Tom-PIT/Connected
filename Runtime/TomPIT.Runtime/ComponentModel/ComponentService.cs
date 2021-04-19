@@ -273,7 +273,7 @@ namespace TomPIT.ComponentModel
 
 		private IConfiguration SelectConfiguration(IComponent component, IBlobContent blob, bool throwException)
 		{
-			if (component == null)
+			if (component is null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
 
 			if (ConfigurationCache.ContainsKey(component.Token))
@@ -281,17 +281,16 @@ namespace TomPIT.ComponentModel
 				var state = ConfigurationCache[component.Token];
 
 				return state.Instance;
-				//return Tenant.GetService<ISerializationService>().Deserialize(state.State, state.Type) as IConfiguration;
 			}
 
 			var content = blob ?? Tenant.GetService<IStorageService>().Download(component.Token);
 
-			if (content == null)
+			if (content is null)
 				return null;
 
 			var type = Reflection.TypeExtensions.GetType(component.Type);
 
-			if (type == null)
+			if (type is null)
 				return throwException ? throw new RuntimeException(string.Format("{0} ({1})", SR.ErrCannotCreateComponentInstance, component.Type)) : (IConfiguration)null;
 
 			var t = Reflection.TypeExtensions.GetType(component.Type);
@@ -309,7 +308,7 @@ namespace TomPIT.ComponentModel
 					Tenant.LogError(GetType().ShortName(), ex.Message, LogCategories.Services);
 			}
 
-			if (r != null)
+			if (r is not null)
 			{
 				ConfigurationCache.TryAdd(component.Token, new ConfigurationSerializationState
 				{
@@ -317,6 +316,8 @@ namespace TomPIT.ComponentModel
 					Instance = r,
 					State = Tenant.GetService<ISerializationService>().Serialize(r)
 				});
+
+				Tenant.GetService<IStorageService>().Release(component.Token);
 			}
 
 			return r;

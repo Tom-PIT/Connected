@@ -13,7 +13,7 @@ namespace TomPIT.Reflection
 {
 	internal class ScriptManifestCache : ClientRepository<IScriptManifest, Guid>
 	{
-		private SingletonProcessor<int> _preloadProcessor = new SingletonProcessor<int>();
+		private SingletonProcessor<Guid> _preloadProcessor = new SingletonProcessor<Guid>();
 		private bool _initialized = false;
 		public ScriptManifestCache(ITenant tenant) : base(tenant, nameof(ScriptManifestCache))
 		{
@@ -93,17 +93,26 @@ namespace TomPIT.Reflection
 		private IScriptManifest Load(Guid microService, Guid component, Guid id)
 		{
 			Preload(component);
+			IScriptManifest manifest = null;
 
-			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
-			
-			if (Load(Tenant.GetService<IStorageService>().Download(microService, BlobTypes.ScriptManifest, ms.ResourceGroup, id.ToString())) is IScriptManifest result)
-				return result;
+			PreloadProcessor.Start(id,
+				() =>
+				{
+					var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
-			var element = Tenant.GetService<IDiscoveryService>().Configuration.Find(component, id);
+					if (Load(Tenant.GetService<IStorageService>().Download(microService, BlobTypes.ScriptManifest, ms.ResourceGroup, id.ToString())) is IScriptManifest result)
+						manifest = result;
 
-			Rebuild(element.Configuration().MicroService(), component, id);
+					var element = Tenant.GetService<IDiscoveryService>().Configuration.Find(component, id);
 
-			return Get(id);
+					Rebuild(element.Configuration().MicroService(), component, id);
+				},
+				() =>
+				{
+					manifest = Get(id);
+				});
+
+			return manifest;
 		}
 
 		private IScriptManifest Load(IBlobContent content)
@@ -142,7 +151,7 @@ namespace TomPIT.Reflection
 			if (_initialized)
 				return;
 
-			PreloadProcessor.Start(0,
+			PreloadProcessor.Start(Guid.Empty,
 				() =>
 				{
 					if (_initialized)
@@ -151,11 +160,11 @@ namespace TomPIT.Reflection
 					_initialized = true;
 
 					if (Tenant.GetService<IRuntimeService>().Stage == EnvironmentStage.Development)
-						CreateImages(Tenant.GetService<IStorageService>().Preload(BlobTypes.ScriptManifest));
+						Tenant.GetService<IStorageService>().Preload(BlobTypes.ScriptManifest);
 					else
 					{
 						if (Tenant.GetService<IComponentService>().SelectComponent(component) is IComponent c)
-							CreateImages(Tenant.GetService<IStorageService>().Preload(BlobTypes.ScriptManifest, c.MicroService));
+							Tenant.GetService<IStorageService>().Preload(BlobTypes.ScriptManifest, c.MicroService);
 					}
 				});
 		}
@@ -177,15 +186,15 @@ namespace TomPIT.Reflection
 			return result.ToImmutableList();
 		}
 
-		private SingletonProcessor<int> PreloadProcessor => _preloadProcessor;
+		private SingletonProcessor<Guid> PreloadProcessor => _preloadProcessor;
 
-		private void CreateImages(ImmutableList<Guid> blobs)
-		{
-			foreach (var blob in blobs)
-			{
-				if (Load(Tenant.GetService<IStorageService>().Download(blob)) is IScriptManifest manifest)
-					Set(manifest.GetPointer(manifest.Address).Element, manifest, TimeSpan.Zero);
-			}
-		}
+		//private void CreateImages(ImmutableList<Guid> blobs)
+		//{
+		//	foreach (var blob in blobs)
+		//	{
+		//		if (Load(Tenant.GetService<IStorageService>().Download(blob)) is IScriptManifest manifest)
+		//			Set(manifest.GetPointer(manifest.Address).Element, manifest, TimeSpan.Zero);
+		//	}
+		//}
 	}
 }
