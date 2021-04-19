@@ -8,6 +8,6 @@
 		string Category { get; }
 		string Glyph { get; }
 		string Css { get; }
-		int Ordinal { get; }
+		int Priority { get; }
 	}
 }

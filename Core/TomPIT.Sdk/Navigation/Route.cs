@@ -9,7 +9,9 @@ namespace TomPIT.Navigation
 		public string Text { get; set; }
 		public string Url { get; set; }
 		public bool Enabled { get; set; }
+		[Obsolete("Please use Priority instead.")]
 		public int Ordinal { get; set; }
+		public int Priority { get; set; }
 		public string Glyph { get; set; }
 		public string Css { get; set; }
 		public bool IsActive { get; set; }

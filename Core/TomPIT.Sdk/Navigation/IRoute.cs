@@ -8,7 +8,9 @@ namespace TomPIT.Navigation
 		string Text { get; }
 		string Url { get; }
 		bool Enabled { get; }
+		[Obsolete("Please use Priority instead.")]
 		int Ordinal { get; }
+		int Priority { get; }
 		string Glyph { get; }
 		string Css { get; }
 		bool IsActive { get; }

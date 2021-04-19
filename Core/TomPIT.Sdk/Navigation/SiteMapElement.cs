@@ -17,6 +17,6 @@ namespace TomPIT.Navigation
 
 		public string Css { get; set; }
 
-		public int Ordinal { get; set; }
+		public int Priority { get; set; }
 	}
 }

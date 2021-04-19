@@ -236,7 +236,8 @@ namespace TomPIT.Navigation
 				Glyph = route.Glyph,
 				Css = route.Css,
 				Category = route.Category,
-				Ordinal = route.Ordinal,
+				Ordinal = route.Priority,
+				Priority = route.Priority,
 				Id = route.RouteKey
 			};
 		}
