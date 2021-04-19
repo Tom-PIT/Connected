@@ -102,6 +102,8 @@ namespace TomPIT.Data.DataProviders
 			}
 			else if (property.Value.PropertyType == typeof(DateTime))
 				value = DateTime.SpecifyKind((DateTime)value, DateTimeKind.Utc);
+			else
+				value = Types.Convert(value, property.Value.PropertyType);
 
 			property.Value.SetValue(instance, value);
 		}

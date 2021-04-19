@@ -82,7 +82,7 @@ namespace TomPIT.Navigation
 
 		public static string WithNavigationContext(this ISiteMapRouteContainer route, string parsedUrl)
 		{
-			if (string.IsNullOrWhiteSpace(parsedUrl) || string.IsNullOrWhiteSpace(route.NavigationContext))
+			if (string.IsNullOrWhiteSpace(parsedUrl))
 				return parsedUrl;
 
 			return WithNavigationContext(route.NavigationContext, parsedUrl);
@@ -90,7 +90,7 @@ namespace TomPIT.Navigation
 
 		public static string WithNavigationContext(this ISiteMapRoute route, string parsedUrl)
 		{
-			if (string.IsNullOrWhiteSpace(parsedUrl) || string.IsNullOrWhiteSpace(route.NavigationContext))
+			if (string.IsNullOrWhiteSpace(parsedUrl))
 				return parsedUrl;
 
 			return WithNavigationContext(route.NavigationContext, parsedUrl);
@@ -98,6 +98,12 @@ namespace TomPIT.Navigation
 
 		private static string WithNavigationContext(string key, string parsedUrl)
 		{
+			if (Shell.HttpContext?.Request.Query.ContainsKey("navigationContext") == true)
+				key = Shell.HttpContext?.Request.Query["navigationContext"];
+
+			if (string.IsNullOrWhiteSpace(key))
+				return parsedUrl;
+
 			if (parsedUrl.Contains("?"))
 			{
 				var tokens = parsedUrl.Split("?".ToCharArray(), 2);
