@@ -22,9 +22,9 @@ namespace TomPIT.Storage
 					lock (_sync)
 						if (!Unpacked)
 						{
-							Unpacked = true;
-
 							_content = LZ4Codec.Unwrap(_content);
+
+							Unpacked = true;
 						}
 				}
 
