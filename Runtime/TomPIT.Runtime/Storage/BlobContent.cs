@@ -7,6 +7,7 @@ namespace TomPIT.Storage
 	{
 		private byte[] _content;
 		public Guid Blob { get; set; }
+		private object _sync = new object();
 
 		private bool Unpacked { get; set; }
 		public byte[] Content
@@ -18,7 +19,7 @@ namespace TomPIT.Storage
 
 				if (!Unpacked)
 				{
-					lock (_content)
+					lock (_sync)
 						if (!Unpacked)
 						{
 							Unpacked = true;

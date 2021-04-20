@@ -13,6 +13,7 @@ using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
+using TomPIT.Runtime;
 using TomPIT.Storage;
 
 namespace TomPIT.ComponentModel
@@ -20,6 +21,7 @@ namespace TomPIT.ComponentModel
 	internal class ComponentService : SynchronizedClientRepository<IComponent, Guid>, IComponentService, IComponentNotification
 	{
 		private readonly Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>> _configurationCache = new Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>>();
+		private Lazy<SingletonProcessor<Guid>> _configurationProcessor = new Lazy<SingletonProcessor<Guid>>();
 		public event ComponentChangedHandler ComponentChanged;
 		public event ComponentChangedHandler ComponentAdded;
 		public event ComponentChangedHandler ComponentRemoved;
@@ -276,13 +278,27 @@ namespace TomPIT.ComponentModel
 			if (component is null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
 
-			if (ConfigurationCache.ContainsKey(component.Token))
-			{
-				var state = ConfigurationCache[component.Token];
-
+			if (ConfigurationCache.TryGetValue(component.Token, out ConfigurationSerializationState state))
 				return state.Instance;
-			}
 
+			IConfiguration result = null;
+
+			ConfigurationProcessor.Start(component.Token,
+				() =>
+				{
+					result = LoadConfiguration(component, blob, throwException);
+				},
+				() =>
+				{
+					if (ConfigurationCache.TryGetValue(component.Token, out ConfigurationSerializationState state))
+						result = state.Instance;
+				});
+
+			return result;
+		}
+
+		private IConfiguration LoadConfiguration(IComponent component, IBlobContent blob, bool throwException)
+		{
 			var content = blob ?? Tenant.GetService<IStorageService>().Download(component.Token);
 
 			if (content is null)
@@ -390,6 +406,7 @@ namespace TomPIT.ComponentModel
 		}
 
 		private ConcurrentDictionary<Guid, ConfigurationSerializationState> ConfigurationCache => _configurationCache.Value;
+		private SingletonProcessor<Guid> ConfigurationProcessor => _configurationProcessor.Value;
 
 		public ImmutableList<IComponent> QueryComponents(List<string> resourceGroups, string categories)
 		{
