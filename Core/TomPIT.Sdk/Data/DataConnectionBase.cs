@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Middleware;
+using TomPIT.Runtime;
 
 namespace TomPIT.Data
 {
-	public abstract class DataConnectionBase: IDataConnection, IDisposable
+	public abstract class DataConnectionBase : IDataConnection, IDisposable
 	{
 		private ICommandTextParser _parser = null;
 		private IDbConnection _connection;
-		private object _sync = new object();
+		private Lazy<SingletonProcessor<int>> _connectionProcessor = new Lazy<SingletonProcessor<int>>();
 
 		protected DataConnectionBase(IMiddlewareContext context, IDataProvider provider, string connectionString, ConnectionBehavior behavior)
 		{
@@ -27,19 +28,20 @@ namespace TomPIT.Data
 
 		private bool Disposed { get; set; }
 
-		public ConnectionState State => _connection == null ? ConnectionState.Closed : _connection.State;
-
+		public ConnectionState State => _connection is null || IsOpening ? ConnectionState.Closed : _connection.State;
+		private bool IsOpening { get; set; }
 		private IDbConnection Connection
 		{
 			get
 			{
-				if (_connection == null && !Disposed)
+				if (_connection is null && !Disposed)
 				{
-					lock (_sync)
-					{
-						if (_connection == null && !Disposed)
-							_connection = OnCreateConnection();
-					}
+					ConnectionProcessor.Start(2,
+						() =>
+						{
+							if (_connection is null && !Disposed)
+								_connection = OnCreateConnection();
+						});
 				}
 
 				return _connection;
@@ -50,18 +52,19 @@ namespace TomPIT.Data
 
 		public void Commit()
 		{
-			if (Transaction == null || Transaction.Connection == null)
+			if (Transaction is null || Transaction.Connection is null)
 				return;
 
-			lock (_sync)
-			{
-				if (Transaction == null || Transaction.Connection == null)
-					return;
+			ConnectionProcessor.Start(1,
+				() =>
+				{
+					if (Transaction is null || Transaction.Connection is null)
+						return;
 
-				Transaction.Commit();
-				Transaction.Dispose();
-				Transaction = null;
-			}
+					Transaction.Commit();
+					Transaction.Dispose();
+					Transaction = null;
+				});
 		}
 
 		public void Dispose()
@@ -72,7 +75,7 @@ namespace TomPIT.Data
 			Disposed = true;
 			Close();
 
-			if (Transaction != null)
+			if (Transaction is not null)
 			{
 				try
 				{
@@ -83,7 +86,7 @@ namespace TomPIT.Data
 				Transaction = null;
 			}
 
-			if (_connection != null)
+			if (_connection is not null)
 			{
 				_connection.Dispose();
 				_connection = null;
@@ -99,65 +102,70 @@ namespace TomPIT.Data
 			if (!OwnsTransaction)
 				return;
 
-			if (Transaction == null || Transaction.Connection == null)
+			if (Transaction is null || Transaction.Connection is null)
 				return;
 
-			lock (_sync)
-			{
-				if (Transaction == null || Transaction.Connection == null)
-					return;
-
-				try
+			ConnectionProcessor.Start(3,
+				() =>
 				{
-					Transaction.Rollback();
-				}
-				catch { }
-			}
+					if (Transaction is null || Transaction.Connection is null)
+						return;
+
+					try
+					{
+						Transaction.Rollback();
+					}
+					catch { }
+				});
 		}
 
 		public void Open()
 		{
-			if (Connection.State == ConnectionState.Open)
+			if (Connection.State == ConnectionState.Open && Transaction is not null)
 				return;
 
-			lock (_sync)
-			{
-				if (Connection.State != ConnectionState.Closed)
-					return;
+			ConnectionProcessor.Start(0,
+				() =>
+				{
+					if (Connection.State != ConnectionState.Closed)
+						return;
 
-				Connection.Open();
+					IsOpening = true;
+					Connection.Open();
 
-				if (Transaction?.Connection != null)
-					return;
+					if (Transaction?.Connection is not null)
+						return;
 
-				OwnsTransaction = true;
-				Transaction = Connection.BeginTransaction(IsolationLevel.ReadCommitted);
-			}
+					OwnsTransaction = true;
+					Transaction = Connection.BeginTransaction(IsolationLevel.ReadCommitted);
+					IsOpening = false;
+				});
 		}
 
 		public void Close()
 		{
-			if (_connection == null)
+			if (_connection is null)
 				return;
 
-			if (_connection != null && _connection.State == ConnectionState.Open)
+			if (_connection is not null && _connection.State == ConnectionState.Open)
 			{
-				lock (_sync)
-				{
-					if (_connection != null && _connection.State == ConnectionState.Open)
+				ConnectionProcessor.Start(4,
+					() =>
 					{
-						if (Transaction != null && Transaction.Connection != null)
+						if (_connection is not null && _connection.State == ConnectionState.Open)
 						{
-							try
+							if (Transaction is not null && Transaction.Connection is not null)
 							{
-								Transaction.Rollback();
-							}
-							catch { }
+								try
+								{
+									Transaction.Rollback();
+								}
+								catch { }
 
+							}
+							_connection.Close();
 						}
-						_connection.Close();
-					}
-				}
+					});
 			}
 		}
 
@@ -189,7 +197,7 @@ namespace TomPIT.Data
 		{
 			get
 			{
-				if (_parser == null)
+				if (_parser is null)
 					_parser = OnCreateTextParser();
 
 				return _parser;
@@ -197,5 +205,6 @@ namespace TomPIT.Data
 		}
 
 		protected virtual ICommandTextParser OnCreateTextParser() => null;
+		private SingletonProcessor<int> ConnectionProcessor => _connectionProcessor.Value;
 	}
 }

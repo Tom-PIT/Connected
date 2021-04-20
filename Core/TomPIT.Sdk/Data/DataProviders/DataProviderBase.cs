@@ -177,7 +177,10 @@ namespace TomPIT.Data.DataProviders
 
 				if (connection.Transaction != null)
 					r.Transaction = connection.Transaction;
-
+				else
+				{
+					Console.WriteLine("Null");
+				}
 				Commands.TryAdd(command, r);
 
 				return r;
@@ -192,7 +195,13 @@ namespace TomPIT.Data.DataProviders
 			if (connection.State == ConnectionState.Open)
 				return;
 
-			connection.Open();
+			lock (connection)
+			{
+				if (connection.State == ConnectionState.Open)
+					return;
+			
+				connection.Open();
+			}
 		}
 
 		protected virtual void Dispose(bool disposing)
