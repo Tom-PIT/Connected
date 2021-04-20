@@ -26,7 +26,8 @@ namespace TomPIT.Caching
 		{
 			Scope = scope;
 
-			new Task(() => OnScaveging(), _cancel.Token, TaskCreationOptions.LongRunning).Start();
+			if (scope == CacheScope.Shared)
+				new Task(() => OnScaveging(), _cancel.Token, TaskCreationOptions.LongRunning).Start();
 		}
 
 		private CacheScope Scope { get; }
@@ -268,6 +269,7 @@ namespace TomPIT.Caching
 
 		public void Dispose()
 		{
+			Cancel.Cancel();
 			Container.Clear();
 		}
 

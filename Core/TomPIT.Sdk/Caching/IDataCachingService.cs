@@ -5,7 +5,7 @@ using TomPIT.Middleware;
 
 namespace TomPIT.Caching
 {
-	public interface IDataCachingService
+	public interface IDataCachingService : IDisposable
 	{
 		void Clear(string cacheKey);
 		void Remove(string cacheKey, List<string> ids);

@@ -230,5 +230,16 @@ namespace TomPIT.Middleware.Services
 				return _contextCache;
 			}
 		}
+
+		protected override void OnDisposing()
+		{
+			if(_contextCache is not null)
+			{
+				_contextCache.Dispose();
+				_contextCache = null;
+			}
+
+			base.OnDisposing();
+		}
 	}
 }

@@ -200,5 +200,16 @@ namespace TomPIT.Middleware
 				return _analytics;
 			}
 		}
+
+		protected override void OnDisposing()
+		{
+			if(_cache is not null)
+			{
+				_cache.Dispose();
+				_cache = null;
+			}
+
+			base.OnDisposing();
+		}
 	}
 }

@@ -320,6 +320,12 @@ namespace TomPIT.Middleware
 						_interop = null;
 					}
 
+					if(_services is not null)
+					{
+						_services.Dispose();
+						_services = null;
+					}
+
 					_connections = null;
 					_authorizationOwner = null;
 				}

@@ -437,6 +437,15 @@ namespace TomPIT.Caching
 			return options.Scope != CacheScope.Context;
 		}
 
+		public void Dispose()
+		{
+			if(_cache is not null)
+			{
+				_cache.Dispose();
+				_cache = null;
+			}
+		}
+
 		private MemoryCache Cache => _cache;
 	}
 }
