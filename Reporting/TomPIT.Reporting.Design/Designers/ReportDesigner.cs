@@ -124,7 +124,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 			foreach (var api in apis)
 			{
-				var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(api.Token) as ApiManifest;
+				//var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(api.Token) as ApiManifest;
 				var config = Environment.Context.Tenant.GetService<IComponentService>().SelectConfiguration(api.Token) as IApiConfiguration;
 
 				_dataSources.Add(new ReportDataSource
@@ -134,20 +134,12 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 					Text = api.Name
 				});
 
-				foreach (var operation in manifest.Operations)
+				foreach (var operation in config.Operations)
 				{
-					var op = config.Operations.FirstOrDefault(f => string.Compare(f.Name, operation.Name, true) == 0);
-
-					if (op == null)
-						continue;
-
-					if (string.IsNullOrWhiteSpace(operation.ReturnType))
-						continue;
-
 					_dataSources.Add(new ReportDataSource
 					{
 						Parent = api.Token.ToString(),
-						Id = op.Id.ToString(),
+						Id = operation.Id.ToString(),
 						Text = operation.Name,
 						IsDataSource = true
 					});

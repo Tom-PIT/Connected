@@ -19,7 +19,7 @@ namespace TomPIT.Reflection
 		{
 		}
 
-		public void Rebuild(Guid microService, Guid component, Guid id)
+		public IScriptManifest Rebuild(Guid microService, Guid component, Guid id)
 		{
 			RemoveManifest(id);
 
@@ -27,6 +27,8 @@ namespace TomPIT.Reflection
 
 			compiler.Compile();
 			Save(microService, compiler.Script, compiler.Manifest);
+
+			return compiler.Manifest;
 		}
 
 		public void RemoveManifest(Guid id)
@@ -105,7 +107,7 @@ namespace TomPIT.Reflection
 
 					var element = Tenant.GetService<IDiscoveryService>().Configuration.Find(component, id);
 
-					Rebuild(element.Configuration().MicroService(), component, id);
+					manifest = Rebuild(element.Configuration().MicroService(), component, id);
 				},
 				() =>
 				{
