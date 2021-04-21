@@ -177,10 +177,7 @@ namespace TomPIT.Data.DataProviders
 
 				if (connection.Transaction != null)
 					r.Transaction = connection.Transaction;
-				else
-				{
-					Console.WriteLine("Null");
-				}
+				
 				Commands.TryAdd(command, r);
 
 				return r;

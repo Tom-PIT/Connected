@@ -273,6 +273,8 @@ namespace TomPIT
 				if (provider != null)
 					e.Tenant.GetService<IDataProviderService>().Register(provider);
 			}
+
+			e.Tenant.GetService<IDesignService>().Initialize();
 		}
 
 		public static void Run(IApplicationBuilder app, IWebHostEnvironment environment)

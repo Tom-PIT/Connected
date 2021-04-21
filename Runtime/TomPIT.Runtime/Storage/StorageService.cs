@@ -224,7 +224,13 @@ namespace TomPIT.Storage
 
 			var r = Tenant.Post<Guid>(u, args);
 
-			BlobContent.Delete(r);
+			NotifyChanged(this, new BlobEventArgs
+			{
+				Blob = r,
+				MicroService = blob.MicroService,
+				PrimaryKey = blob.PrimaryKey,
+				Type = blob.Type
+			});
 		}
 
 		public void NotifyChanged(object sender, BlobEventArgs e)

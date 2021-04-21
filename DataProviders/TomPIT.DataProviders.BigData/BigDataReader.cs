@@ -48,7 +48,7 @@ namespace TomPIT.DataProviders.BigData
 		private JObject Current => ReadIndex == -1 || ReadIndex > _data.Count ? null : _data[ReadIndex] as JObject;
 		public override object this[int ordinal] => ((JValue)Current.Properties().ElementAt(ordinal).Value).Value;
 		public override object this[string name] => ((JValue)Current.Property(name, StringComparison.OrdinalIgnoreCase).Value).Value;
-
+		private JObject First => _data is null || _data.Count == 0 ? null : _data[0] as JObject;
 		public override int Depth => 1;
 
 		public override int FieldCount
@@ -152,14 +152,17 @@ namespace TomPIT.DataProviders.BigData
 
 		public override string GetName(int ordinal)
 		{
-			return Current.Properties().ElementAt(ordinal).Name;
+			return First?.Properties().ElementAt(ordinal).Name;
 		}
 
 		public override int GetOrdinal(string name)
 		{
+			if (First is null)
+				return -1;
+
 			var index = 0;
 
-			foreach (JProperty property in Current.Properties())
+			foreach (JProperty property in First.Properties())
 			{
 				if (string.Compare(property.Name, name, true) == 0)
 					return index;
