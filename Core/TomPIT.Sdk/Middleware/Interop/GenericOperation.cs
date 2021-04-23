@@ -36,7 +36,7 @@ namespace TomPIT.Middleware.Interop
 			if (r == null)
 				return default;
 
-			if (r.GetType().IsCollection())
+			if (r.GetType().IsCollection() && !r.GetType().IsArray)
 			{
 				var listResult = (IList)r;
 				var genericArguments = typeof(T).GenericTypeArguments;

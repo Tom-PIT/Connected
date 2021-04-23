@@ -65,6 +65,13 @@ namespace TomPIT.Storage
 		{
 			Set(content.Blob, content, TimeSpan.Zero);
 		}
+
+		public bool TrySelect(Guid blob, out IBlobContent content)
+		{
+			content = Get(blob);
+
+			return content is not null;
+		}
 		public IBlobContent Select(IBlob blob)
 		{
 			return Get(blob.Token,

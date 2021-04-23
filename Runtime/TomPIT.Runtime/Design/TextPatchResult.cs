@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace TomPIT.Design
 {
@@ -7,12 +8,8 @@ namespace TomPIT.Design
 		private List<bool> _patches = null;
 		public string Text { get; set; }
 
-		public List<bool> Patches
-		{
-			get
-			{
-				return _patches ??= new List<bool>();
-			}
-		}
+		public List<bool> Patches => _patches ??= new List<bool>();
+
+		public bool Success => !Patches.Any(f => !f);
 	}
 }

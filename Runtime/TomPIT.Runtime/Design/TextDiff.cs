@@ -9,6 +9,13 @@ namespace TomPIT.Design
 			return TextDiffProcessor.Apply(descriptors, baseText);
 		}
 
+		public ITextPatchResult Apply(string original, string modified, string baseText)
+		{
+			var diffs = Diff(original, modified);
+			var patch = Patch(diffs);
+			
+			return Apply(patch, baseText);
+		}
 		public List<ITextDiffDescriptor> Diff(string original, string modified)
 		{
 			return TextDiffProcessor.Diff(new TextDiffArgs

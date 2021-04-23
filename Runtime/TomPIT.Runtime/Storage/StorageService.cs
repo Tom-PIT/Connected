@@ -69,6 +69,9 @@ namespace TomPIT.Storage
 
 		public IBlobContent Download(Guid blob)
 		{
+			if (BlobContent.TrySelect(blob, out IBlobContent result))
+				return result;
+
 			var b = Select(blob);
 
 			if (b == null)

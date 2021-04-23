@@ -2,48 +2,42 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace TomPIT.Cdn.Events
 {
 	internal static class EventMessagingCache
 	{
-		private static readonly ConcurrentDictionary<string, List<EventMessage>> _clients;
+		private static readonly ConcurrentDictionary<string, EventMessages> _clients;
 
 		static EventMessagingCache()
 		{
-			_clients = new ConcurrentDictionary<string, List<EventMessage>>();
+			_clients = new ConcurrentDictionary<string, EventMessages>(StringComparer.OrdinalIgnoreCase);
 		}
 
-		private static ConcurrentDictionary<string, List<EventMessage>> Clients => _clients;
+		private static ConcurrentDictionary<string, EventMessages> Clients => _clients;
 
 		public static void Clean()
 		{
-			foreach(var client in Clients)
+			foreach (var client in Clients)
 			{
-				var items = client.Value.Where(f => f.Expire <= DateTime.UtcNow).ToImmutableList();
+				client.Value.Scave();
 
-				foreach (var item in items)
-					client.Value.Remove(item);
-
-				if (client.Value.Count == 0)
+				if (client.Value.IsEmpty)
 					Clients.TryRemove(client.Key, out _);
 			}
 		}
+
 		public static ImmutableList<EventMessage> Dequeue()
 		{
 			var result = ImmutableList<EventMessage>.Empty;
 
 			foreach (var client in Clients)
 			{
-				var items = client.Value.Where(f => f.NextVisible <= DateTime.UtcNow);
+				var items = client.Value.Dequeue();
 
-				if (items.Any())
-					result.AddRange(items);
+				if (!items.IsDefaultOrEmpty)
+					result = result.AddRange(items);
 			}
-
-			foreach (var item in result)
-				item.NextVisible = item.NextVisible.AddSeconds(5);
 
 			return result;
 		}
@@ -52,62 +46,52 @@ namespace TomPIT.Cdn.Events
 		{
 			foreach(var client in Clients)
 			{
-				var items = client.Value.Where(f => string.Compare(f.Connection, connectionId, true) == 0).ToImmutableArray();
+				client.Value.Remove(connectionId);
 
-				foreach (var item in items)
-					client.Value.Remove(item);
-
-				if (client.Value.Count == 0)
+				if (client.Value.IsEmpty)
 					Clients.TryRemove(client.Key, out _);
 			}
 		}
 		public static void Remove(EventAcknowledgeArgs e)
 		{
-			if (!Clients.TryGetValue(e.Client.ToLowerInvariant(), out List<EventMessage> items))
+			if (!Clients.TryGetValue(e.Client, out EventMessages items))
 				return;
 
-			var item = items.FirstOrDefault(f => f.Id == e.Id);
+			items.Remove(e.Id);
 
-			if (item != null)
-				items.Remove(item);
-
-			if (items.Count == 0)
-				Clients.TryRemove(e.Client.ToLowerInvariant(), out _);
+			if (items.IsEmpty)
+				Clients.TryRemove(e.Client, out _);
 		}
 
 		public static void Remap(string client, string connection)
 		{
-			if (!Clients.TryGetValue(client.ToLowerInvariant(), out List<EventMessage> items))
+			if (!Clients.TryGetValue(client, out EventMessages items))
 				return;
 
-			foreach (var item in items)
-				item.Connection = connection;
+			items.Remap(connection);
 		}
 		public static void Remove(string client, string eventName)
 		{
 			if (string.IsNullOrEmpty(client))
 				return;
 
-			if (!Clients.TryGetValue(client.ToLowerInvariant(), out List<EventMessage> items))
+			if (!Clients.TryGetValue(client, out EventMessages items))
 				return;
 
-			var obsolete = items.Where(f => string.Compare(f.Event, eventName, true) == 0).ToImmutableList();
+			items.RemoveEvents(eventName);
 
-			foreach (var o in obsolete)
-				items.Remove(o);
-
-			if (items.Count == 0)
-				Clients.Remove(client.ToLowerInvariant(), out _);
+			if (items.IsEmpty)
+				Clients.Remove(client, out _);
 		}
 
 		public static void Add(string client, EventMessage message)
 		{
-			if(!Clients.TryGetValue(client.ToLowerInvariant(), out List<EventMessage> items))
+			if(!Clients.TryGetValue(client, out EventMessages items))
 			{
-				items = new List<EventMessage>();
+				items = new EventMessages();
 
-				if (!Clients.TryAdd(client.ToLowerInvariant(), items))
-					Clients.TryGetValue(client.ToLowerInvariant(), out items);
+				if (!Clients.TryAdd(client, items))
+					Clients.TryGetValue(client, out items);
 			}
 
 			items.Add(message);

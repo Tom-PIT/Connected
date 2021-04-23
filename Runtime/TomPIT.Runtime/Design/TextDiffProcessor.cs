@@ -30,7 +30,7 @@ namespace TomPIT.Design
 				case TextDiffCompareMode.Word:
 				case TextDiffCompareMode.Line:
 					var linesResult = LinesToChars(e);
-					var diffs = Diff(e.WithNewText(linesResult.Text2, linesResult.Text2), false);
+					var diffs = Diff(e.WithNewText(linesResult.Text1, linesResult.Text2), false);
 
 					CharsToLines(diffs, linesResult.Lines);
 
@@ -54,7 +54,7 @@ namespace TomPIT.Design
 		{
 			List<ITextDiffDescriptor> diffs;
 
-			if (string.Compare(e.Original, e.Modified, false) == 0)
+			if (string.Compare(e.Original, e.Modified, StringComparison.Ordinal) == 0)
 			{
 				diffs = new List<ITextDiffDescriptor>();
 
@@ -464,7 +464,7 @@ namespace TomPIT.Design
 
 			var textLength = Math.Min(text1Length, text2Length);
 
-			if (string.Compare(text1, text2, false) == 0)
+			if (string.Compare(text1, text2, StringComparison.Ordinal) == 0)
 				return textLength;
 
 			var best = 0;
@@ -480,7 +480,7 @@ namespace TomPIT.Design
 
 				length += found;
 
-				if (found == 0 || string.Compare(text1[(textLength - length)..], text2.Substring(0, length), false) == 0)
+				if (found == 0 || string.Compare(text1[(textLength - length)..], text2.Substring(0, length), StringComparison.Ordinal) == 0)
 				{
 					best = length;
 					length++;
@@ -1162,7 +1162,7 @@ namespace TomPIT.Design
 		{
 			loc = Math.Max(0, Math.Min(loc, text.Length));
 
-			if (string.Compare(text, pattern, false) == 0)
+			if (string.Compare(text, pattern, StringComparison.Ordinal) == 0)
 				return 0;
 			else if (text.Length == 0)
 				return -1;
@@ -1496,7 +1496,7 @@ namespace TomPIT.Design
 					else
 						text2 = text[startLoc..Math.Min(endLoc + MatchMaxBits, text.Length)];
 
-					if (string.Compare(text1, text2, false) == 0)
+					if (string.Compare(text1, text2, StringComparison.Ordinal) == 0)
 						text = text.Substring(0, startLoc) + Text2(patch.Diffs) + text[(startLoc + text1.Length)..];
 					else
 					{

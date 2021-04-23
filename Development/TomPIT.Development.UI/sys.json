@@ -2,11 +2,11 @@
   "connections": [
     {
       "name": "localhost",
-      "url": "http://sys-app/repoclient/sys",
+      "url": "http://sys-app/core/sys",
       "authenticationToken": "defaultAuthenticationToken"
     }
   ],
-  "stage":  "development",
+  "stage":  "production",
   "dataProviders": [
     "TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql",
     "TomPIT.DataProviders.Modbus.ModbusDataProvider, TomPIT.DataProviders.Modbus",
