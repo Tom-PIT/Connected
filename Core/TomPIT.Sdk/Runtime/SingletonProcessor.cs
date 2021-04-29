@@ -8,6 +8,7 @@ namespace TomPIT.Runtime
 	{
 		private Lazy<ConcurrentDictionary<T, ManualResetEventSlim>> _state = new Lazy<ConcurrentDictionary<T, ManualResetEventSlim>>();
 		private bool _isInitialized = false;
+		//private HashSet<string> _threadState = new HashSet<string>();
 
 		public void Start(T value, Action create, Action retrieve)
 		{
@@ -16,6 +17,11 @@ namespace TomPIT.Runtime
 			if (!State.TryAdd(value, resetEvent))
 			{
 				resetEvent.Dispose();
+
+				//if(_threadState.Contains($"{value}.{Thread.CurrentThread.ManagedThreadId}"))
+				//{
+				//	throw new Exception("Cycle detected.");
+				//}
 
 				if (State.TryGetValue(value, out resetEvent))
 				{
@@ -35,12 +41,18 @@ namespace TomPIT.Runtime
 			{
 				try
 				{
+					//if(!_threadState.Add($"{value}.{Thread.CurrentThread.ManagedThreadId}"))
+					//{
+					//	throw new Exception("Cycle?");
+					//}
+
 					_isInitialized = true;
 					create();
 				}
 				finally
 				{
 					resetEvent.Set();
+					//_threadState.Remove($"{value}.{Thread.CurrentThread.ManagedThreadId}");
 
 					if (State.TryRemove(value, out ManualResetEventSlim e))
 						e.Dispose();

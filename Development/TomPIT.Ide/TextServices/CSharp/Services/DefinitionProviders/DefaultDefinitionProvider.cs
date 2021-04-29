@@ -29,7 +29,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.DefinitionProviders
 					StartColumn = span.StartLinePosition.Character + 1,
 					StartLineNumber = span.StartLinePosition.Line + 1
 				},
-				Uri = e.ResolveModel(symbol.Symbol.DeclaringSyntaxReferences[0].SyntaxTree.FilePath)
+				Uri = e.ResolveModel(symbol.Symbol.Locations[0].SourceTree.FilePath)
 			};
 		}
 	}

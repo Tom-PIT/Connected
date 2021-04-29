@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -99,30 +98,9 @@ namespace TomPIT.Reflection.CodeAnalysis
 			return (scriptProvider, type);
 		}
 
-		private SyntaxNode ResolveNode(ISymbol symbol, bool sourceFileOnly)
-		{
-			if (!symbol.Locations.Any())
-				return null;
-
-			if (symbol.Locations.FirstOrDefault(f => f.SourceTree == Compiler.SyntaxTree) is Location local)
-				return local.SourceTree?.GetRoot()?.FindNode(local.SourceSpan);
-
-			if (sourceFileOnly)
-				return null;
-
-			foreach (var location in symbol.Locations)
-			{
-				if (!location.IsInSource)
-					continue;
-
-				return location.SourceTree?.GetRoot()?.FindNode(location.SourceSpan);
-			}
-
-			return null;
-		}
 		private void ParseNode(ISymbol symbol)
 		{
-			ParseNode(ResolveNode(symbol, true));
+			ParseNode(symbol.ResolveNode(Compiler.SyntaxTree , true));
 		}
 
 		private void ParseNode(SyntaxNode node)
@@ -155,7 +133,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 
 			ParseSourceReferences(symbol, symbol.Type);
 
-			var node = ResolveNode(symbol, false) as CSharpSyntaxNode;
+			var node = symbol.ResolveNode(Compiler.SyntaxTree, false) as CSharpSyntaxNode;
 
 			var member = new ScriptManifestField
 			{
@@ -178,7 +156,7 @@ namespace TomPIT.Reflection.CodeAnalysis
 			if (symbol.IsIndexer)
 				return;
 
-			var node = ResolveNode(symbol, false) as CSharpSyntaxNode;
+			var node = symbol.ResolveNode(Compiler.SyntaxTree, false) as CSharpSyntaxNode;
 
 			var member = new ScriptManifestProperty
 			{

@@ -13,7 +13,7 @@
         <ul>
             @foreach (var view in views)
             {
-                <li data-selector="@view.Selector" data-inject="@view.InjectionMode">
+                <li data-selector="@view.Selector" data-inject="@view.InjectionMode" class="@view.ContainerCss">
                     @await Html.TP().Partial.Render(view.Partial)
                 </li>
             }

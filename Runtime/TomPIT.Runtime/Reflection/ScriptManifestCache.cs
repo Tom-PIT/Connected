@@ -96,7 +96,7 @@ namespace TomPIT.Reflection
 		{
 			Preload(component);
 			IScriptManifest manifest = null;
-
+			
 			PreloadProcessor.Start(id,
 				() =>
 				{

@@ -7,7 +7,9 @@ using TomPIT.ComponentModel.Deployment;
 using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Deployment;
+using TomPIT.Diagnostics;
 using TomPIT.Environment;
+using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Runtime;
 
@@ -106,7 +108,14 @@ namespace TomPIT.Design
 				if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is not IModelConfiguration config)
 					continue;
 
-				Tenant.GetService<IModelService>().SynchronizeEntity(config);
+				try
+				{
+					Tenant.GetService<IModelService>().SynchronizeEntity(config);
+				}
+				catch(TomPITException ex)
+				{
+					ex.LogError(LogCategories.Deployment);
+				}
 			}
 		}
 

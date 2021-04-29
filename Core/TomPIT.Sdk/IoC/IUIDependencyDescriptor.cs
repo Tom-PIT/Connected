@@ -13,6 +13,7 @@
 		string Partial { get; set; }
 		string Selector { get; set; }
 		UIInjectionMode InjectionMode { get; set; }
+		string ContainerCss { get; set; }
 		int Order { get; set; }
 	}
 }

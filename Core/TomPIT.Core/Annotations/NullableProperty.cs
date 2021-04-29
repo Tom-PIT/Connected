@@ -1,4 +1,5 @@
-﻿using TomPIT.Data;
+﻿using System;
+using TomPIT.Data;
 
 namespace TomPIT.Annotations
 {
@@ -20,6 +21,25 @@ namespace TomPIT.Annotations
 		public bool IsNull => NullMapper.IsNull(Value, Mode);
 		public MappingMode Mode { get; } = MappingMode.Application;
 
-		object INullableProperty.MappedValue => NullMapper.Map(Value, Mode);
+		object INullableProperty.MappedValue
+		{
+			get
+			{
+				if (Value is null || Convert.IsDBNull(Value))
+					return null;
+
+				//if (Value.GetType().IsCollection())
+				//{
+				//	if(Value.GetType().IsArray)
+				//	{
+				//		IEnumerable en;
+
+				//		en.Any();
+				//	}
+				//}
+
+				return NullMapper.Map(Value, Mode);
+			}
+		}
 	}
 }

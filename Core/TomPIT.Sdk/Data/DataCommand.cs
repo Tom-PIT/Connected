@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using TomPIT.Annotations;
 using TomPIT.Data.DataProviders;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
@@ -54,7 +55,8 @@ namespace TomPIT.Data
 		{
 			var parameter = Parameters.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0);
 			var mappedValue = nullMapping ? NullMapper.Map(value, MappingMode.Database) : MapValue(value);
-			var dbType = type != null ? (DbType)type : value == null || value == DBNull.Value ? DbType.String : Types.ToDbType(value.GetType());
+			var rawValue = value is INullableProperty np ? np.MappedValue : value;
+			var dbType = type != null ? (DbType)type : rawValue == null || rawValue == DBNull.Value ? DbType.String : Types.ToDbType(rawValue.GetType());
 
 			if (parameter == null)
 			{

@@ -7,6 +7,7 @@ namespace TomPIT.Reflection
 		private Dictionary<string, IManifestTypeDescriptor> _members;
 		private List<IManifestTypeDescriptor> _typeArguments;
 		public string Name { get; set; }
+		public string Documentation { get; set; }
 
 		public Dictionary<string, IManifestTypeDescriptor> Members => _members ??= new Dictionary<string, IManifestTypeDescriptor>();
 

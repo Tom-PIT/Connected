@@ -6,22 +6,22 @@ namespace TomPIT.Design
 	{
 		public ITextPatchResult Apply(List<ITextPatchDescriptor> descriptors, string baseText)
 		{
-			return TextDiffProcessor.Apply(descriptors, baseText);
+			return TextDiffProcessor.Apply(descriptors, baseText is null ? string.Empty: baseText);
 		}
 
 		public ITextPatchResult Apply(string original, string modified, string baseText)
 		{
-			var diffs = Diff(original, modified);
+			var diffs = Diff(original is null ? string.Empty : original, modified is null ? string.Empty: modified);
 			var patch = Patch(diffs);
 			
-			return Apply(patch, baseText);
+			return Apply(patch, baseText is null ? string.Empty: baseText);
 		}
 		public List<ITextDiffDescriptor> Diff(string original, string modified)
 		{
 			return TextDiffProcessor.Diff(new TextDiffArgs
 			{
-				Original = original,
-				Modified = modified,
+				Original = original is null ? string.Empty: original,
+				Modified = modified is null ? string.Empty: modified,
 				Timeout = 0,
 				Mode =  TextDiffCompareMode.Line
 			});
@@ -31,8 +31,8 @@ namespace TomPIT.Design
 		{
 			return TextDiffProcessor.Diff(new TextDiffArgs
 			{
-				Original = original,
-				Modified = modified,
+				Original = original is null ? string.Empty : original,
+				Modified = modified is null ? string.Empty : modified,
 				Timeout = 0,
 				Mode = mode
 			});

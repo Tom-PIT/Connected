@@ -180,7 +180,10 @@ namespace TomPIT.Reflection
 					continue;
 
 				foreach (var k in items)
-					r.Add(k);
+				{
+					if (k != Guid.Empty)
+						r.Add(k);
+				}
 			}
 
 			return r.ToImmutableList();

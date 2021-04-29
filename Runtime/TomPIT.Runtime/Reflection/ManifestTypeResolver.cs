@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Design.CodeAnalysis;
 using TomPIT.Reflection.CodeAnalysis;
 
 namespace TomPIT.Reflection
@@ -78,7 +79,7 @@ namespace TomPIT.Reflection
 					var type = symbol as INamedTypeSymbol;
 
 					if (type is not null && string.Compare(type.ToDisplayString(), name, false) == 0)
-						return CreateDescriptor(type);
+						return CreateDescriptor(symbol, type);
 				}
 			}
 
@@ -120,14 +121,14 @@ namespace TomPIT.Reflection
 					var typeInfo = model.GetTypeInfo(node);
 
 					if (typeInfo.Type is not null && string.Compare(typeInfo.Type.ToDisplayString(), name, false) == 0)
-						return CreateDescriptor(typeInfo.Type);
+						return CreateDescriptor(typeInfo.Type, typeInfo.Type);
 				}
 			}
 
 			return null;
 		}
 
-		private IManifestTypeDescriptor CreateDescriptor(ITypeSymbol symbol)
+		private IManifestTypeDescriptor CreateDescriptor(ISymbol containingSymbol, ITypeSymbol symbol)
 		{
 			if (symbol == null)
 				return null;
@@ -135,10 +136,13 @@ namespace TomPIT.Reflection
 			if (Cache.TryGetValue(symbol.ToDisplayString(), out IManifestTypeDescriptor existing))
 				return existing;
 
+			var node = containingSymbol.ResolveNode() as CSharpSyntaxNode;
+
 			var result = new ManifestTypeDescriptor
 			{
 				Name = symbol.ToDisplayString(),
 				IsPrimitive = ResolvePrimitive(symbol),
+				Documentation = node?.ParseDocumentation()
 			};
 
 			Cache.TryAdd(symbol.ToDisplayString(), result);
@@ -182,9 +186,9 @@ namespace TomPIT.Reflection
 					continue;
 
 				if (member is IPropertySymbol property)
-					descriptor.Members.TryAdd(member.Name, CreateDescriptor(property.Type));
+					descriptor.Members.TryAdd(member.Name, CreateDescriptor(member, property.Type));
 				else if (member is IFieldSymbol field)
-					descriptor.Members.TryAdd(member.Name, CreateDescriptor(field.Type));
+					descriptor.Members.TryAdd(member.Name, CreateDescriptor(member, field.Type));
 				else
 					throw new NotSupportedException();
 			}
@@ -193,14 +197,14 @@ namespace TomPIT.Reflection
 		private void ResolveTypeArguments(IManifestTypeDescriptor descriptor, ITypeSymbol symbol)
 		{
 			if (symbol is IArrayTypeSymbol array)
-				descriptor.TypeArguments.Add(CreateDescriptor(array.ElementType));
+				descriptor.TypeArguments.Add(CreateDescriptor(symbol, array.ElementType));
 			else
 			{
 				if (symbol is not INamedTypeSymbol namedType || namedType.TypeArguments.IsDefaultOrEmpty)
 					return;
 
 				foreach (var argument in namedType.TypeArguments)
-					descriptor.TypeArguments.Add(CreateDescriptor(argument));
+					descriptor.TypeArguments.Add(CreateDescriptor(argument, argument));
 			}
 		}
 
