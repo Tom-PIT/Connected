@@ -159,48 +159,64 @@ namespace TomPIT.Design
 
 		public void Restore(Guid microService, IPullRequestComponent component)
 		{
-			Delete(component.Token, true);
+			if (component.Verb == ComponentVerb.Delete)
+			{
+				Delete(component.Token, true);
+				NotifyRemoted(microService, component);
 
-			var runtimeConfigurationId = component.RuntimeConfiguration;
+				return;
+			}
+
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 			var configuration = component.Files.FirstOrDefault(f => f.Type == BlobTypes.Configuration);
 
-			var blob = new Blob
+			if (configuration.Verb == ComponentVerb.Add || configuration.Verb == ComponentVerb.Edit)
 			{
-				ContentType = configuration.ContentType,
-				FileName = component.Name,
-				ResourceGroup = ms.ResourceGroup,
-				MicroService = microService,
-				Type = configuration.Type,
-				Token = component.Token,
-				PrimaryKey = component.Token.ToString()
-			};
+				var blob = new Blob
+				{
+					ContentType = configuration.ContentType,
+					FileName = component.Name,
+					ResourceGroup = ms.ResourceGroup,
+					MicroService = microService,
+					Type = configuration.Type,
+					Token = component.Token,
+					PrimaryKey = component.Token.ToString()
+				};
 
-			Tenant.GetService<IStorageService>().Upload(blob, Unpack(configuration.Content), StoragePolicy.Singleton, component.Token);
+				Tenant.GetService<IStorageService>().Upload(blob, Unpack(configuration.Content), StoragePolicy.Singleton, component.Token);
+			}
 
-			foreach(var file in component.Files)
+			foreach (var file in component.Files)
 			{
 				if (file.Type == BlobTypes.Configuration || file.Type == BlobTypes.RuntimeConfiguration)
 					continue;
 
-				Tenant.GetService<IStorageService>().Restore(new Blob
+				if (file.Verb == ComponentVerb.NotModified)
+					continue;
+				else if (file.Verb == ComponentVerb.Delete)
+					Tenant.GetService<IStorageService>().Delete(file.Token);
+				else
 				{
-					ContentType = file.ContentType,
-					FileName = file.FileName,
-					MicroService = microService,
-					ResourceGroup = ms.ResourceGroup,
-					Token = file.Token,
-					PrimaryKey = file.PrimaryKey,
-					Topic = file.Topic,
-					Type = file.Type,
-					Version = file.BlobVersion
-				}, Unpack(file.Content));
-
+					Tenant.GetService<IStorageService>().Restore(new Blob
+					{
+						ContentType = file.ContentType,
+						FileName = file.FileName,
+						MicroService = microService,
+						ResourceGroup = ms.ResourceGroup,
+						Token = file.Token,
+						PrimaryKey = file.PrimaryKey,
+						Topic = file.Topic,
+						Type = file.Type,
+						Version = file.BlobVersion
+					}, Unpack(file.Content));
+				}
 			}
 
-			var u = Tenant.CreateUrl("ComponentDevelopment", "Insert");
+			if (component.Verb == ComponentVerb.Add)
+			{
+				var u = Tenant.CreateUrl("ComponentDevelopment", "Insert");
 
-			var args = new JObject
+				var args = new JObject
 				{
 					 {"microService", microService },
 					 {"folder", component.Folder },
@@ -211,14 +227,39 @@ namespace TomPIT.Design
 					 {"nameSpace", ComponentCategories.ResolveNamespace( component.Category) }
 				};
 
-			if (runtimeConfigurationId != Guid.Empty)
-				args.Add("runtimeConfiguration", runtimeConfigurationId);
+				Tenant.Post(u, args);
 
-			Tenant.Post(u, args);
+				if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
+				{
+					notification.NotifyChanged(this, new ComponentEventArgs
+					{
+						Category = component.Category,
+						Component = component.Token,
+						Folder = component.Folder,
+						MicroService = microService,
+						Name = component.Name,
+						NameSpace = ComponentCategories.ResolveNamespace(component.Category)
+					});
 
+					notification.NotifyChanged(this, new ConfigurationEventArgs
+					{
+						Category = component.Category,
+						Component = component.Token,
+						MicroService = microService
+					});
+				}
+			}
+			else
+				Update(component.Token, component.Name, component.Folder, false);
+
+			InvalidateIndexState(component.Token);
+		}
+
+		private void NotifyRemoted(Guid microService, IPullRequestComponent component)
+		{
 			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
 			{
-				notification.NotifyChanged(this, new ComponentEventArgs
+				notification.NotifyRemoved(this, new ComponentEventArgs
 				{
 					Category = component.Category,
 					Component = component.Token,
@@ -227,16 +268,7 @@ namespace TomPIT.Design
 					Name = component.Name,
 					NameSpace = ComponentCategories.ResolveNamespace(component.Category)
 				});
-
-				notification.NotifyChanged(this, new ConfigurationEventArgs
-				{
-					Category = component.Category,
-					Component = component.Token,
-					MicroService = microService
-				});
 			}
-
-			InvalidateIndexState(component.Token);
 		}
 
 		private static byte[] Unpack(string packed)
@@ -695,7 +727,7 @@ namespace TomPIT.Design
 		public IComponentImage SelectComponentImage(Guid blob)
 		{
 			var content = Tenant.GetService<IStorageService>().Download(blob);
-			
+
 			if (content == null)
 				return null;
 

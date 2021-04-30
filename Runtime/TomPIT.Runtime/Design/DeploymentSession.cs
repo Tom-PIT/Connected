@@ -27,7 +27,17 @@ namespace TomPIT.Design
 		public void Deploy(DeployArgs e)
 		{
 			if (e.ResetMicroService)
+			{
+				foreach(var component in Request.Components)
+				{
+					component.Verb = ComponentVerb.Add;
+
+					foreach (var file in component.Files)
+						file.Verb = ComponentVerb.Add;
+				}
+
 				DropMicroService();
+			}
 
 			SynchronizeMicroService();
 			Drop();
@@ -161,12 +171,7 @@ namespace TomPIT.Design
 				return;
 
 			foreach (var component in Request.Components)
-			{
-				if (component.Verb == ComponentVerb.Delete || component.Verb == ComponentVerb.NotModified)
-					continue;
-
 				ComponentModel.Restore(Request.Token, component);
-			}
 		}
 
 		private void DeployFolders()

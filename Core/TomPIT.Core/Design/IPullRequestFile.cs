@@ -13,5 +13,6 @@ namespace TomPIT.Design
       int BlobVersion { get; }
       Guid Token { get; }
       string BaseContent { get; }
+      ComponentVerb Verb { get; set; }
    }
 }

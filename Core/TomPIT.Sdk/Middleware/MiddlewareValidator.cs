@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -170,7 +171,7 @@ namespace TomPIT.Middleware
 			if (!ValidateRequestValue(results, instance, property, proposedValue))
 				return;
 
-			if (property.PropertyType.IsEnum && !property.PropertyType.IsEnumDefined(proposedValue))
+			if (property.PropertyType.IsEnum && !Enum.TryParse(property.PropertyType, Types.Convert<string>(proposedValue), out _))
 				results.Add(new MiddlewareValidationResult(instance, $"{SR.ValEnumValueNotDefined} ({property.PropertyType.ShortName()}, {property.GetValue(instance)})"));
 
 			foreach (var attribute in attributes)
@@ -210,7 +211,7 @@ namespace TomPIT.Middleware
 			if (!ValidateRequestValue(results, instance, property))
 				return;
 
-			if (property.PropertyType.IsEnum && !property.PropertyType.IsEnumDefined(property.GetValue(instance)))
+			if (property.PropertyType.IsEnum && !Enum.TryParse(property.PropertyType, Types.Convert<string>(property.GetValue(instance)), out _))
 				results.Add(new MiddlewareValidationResult(instance, $"{SR.ValEnumValueNotDefined} ({property.PropertyType.ShortName()}, {property.GetValue(instance)})"));
 
 			foreach (var attribute in attributes)

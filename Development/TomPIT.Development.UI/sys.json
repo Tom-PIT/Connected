@@ -6,7 +6,7 @@
       "authenticationToken": "defaultAuthenticationToken"
     }
   ],
-  "stage":  "production",
+  "stage":  "development",
   "dataProviders": [
     "TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql",
     "TomPIT.DataProviders.Modbus.ModbusDataProvider, TomPIT.DataProviders.Modbus",

@@ -104,10 +104,12 @@ namespace TomPIT.Reflection
 
 					if (Load(Tenant.GetService<IStorageService>().Download(microService, BlobTypes.ScriptManifest, ms.ResourceGroup, id.ToString())) is IScriptManifest result)
 						manifest = result;
+					else
+					{
+						var element = Tenant.GetService<IDiscoveryService>().Configuration.Find(component, id);
 
-					var element = Tenant.GetService<IDiscoveryService>().Configuration.Find(component, id);
-
-					manifest = Rebuild(element.Configuration().MicroService(), component, id);
+						manifest = Rebuild(element.Configuration().MicroService(), component, id);
+					}
 				},
 				() =>
 				{
