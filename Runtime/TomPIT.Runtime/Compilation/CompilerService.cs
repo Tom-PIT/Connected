@@ -64,9 +64,9 @@ namespace TomPIT.Compilation
 			return Get(sourceCodeId);
 		}
 
-		public IScriptDescriptor GetScript(Guid microService, IText sourceCode)
+		public IScriptDescriptor GetScript(CompilerScriptArgs e)
 		{
-			if (GetCachedScript(sourceCode.Id) is IScriptDescriptor existing)
+			if (GetCachedScript(e.SourceCode.Id) is IScriptDescriptor existing)
 				return existing;
 
 			/*
@@ -76,19 +76,19 @@ namespace TomPIT.Compilation
 			 * are compiling and that kind of scenario would cause deadlock in singleton mode.
 			 */
 
-			if (Tenant.GetService<IRuntimeService>().Stage == EnvironmentStage.Development)
-				return CreateScript(microService, sourceCode);
+			if (Tenant.GetService<IRuntimeService>().Stage == EnvironmentStage.Development || e.IncludeAnalyzers)
+				return CreateScript(e);
 
 			IScriptDescriptor script = null;
 
-			ScriptProcessor.Start(sourceCode.Id,
+			ScriptProcessor.Start(e.SourceCode.Id,
 				() =>
 				{
-					script = CreateScript(microService, sourceCode);
+					script = CreateScript(e);
 				},
 				() =>
 				{
-					script = GetCachedScript(sourceCode.Id);
+					script = GetCachedScript(e.SourceCode.Id);
 				});
 
 			return script;
@@ -151,20 +151,20 @@ namespace TomPIT.Compilation
 			return r;
 		}
 
-		private IScriptDescriptor CreateScript(Guid microService, IText d)
+		private IScriptDescriptor CreateScript(CompilerScriptArgs e)
 		{
-			using var script = new CompilerScript(Tenant, microService, d);
+			using var script = new CompilerScript(Tenant, e.MicroService, e.SourceCode);
 
 			var result = new ScriptDescriptor
 			{
-				Id = d.Id,
-				MicroService = microService,
-				Component = d.Configuration().Component
+				Id = e.SourceCode.Id,
+				MicroService = e.MicroService,
+				Component = e.SourceCode.Configuration().Component
 			};
 
 			script.Create();
 
-			Compile(result, script, true);
+			Compile(result, script, true, e);
 
 			return result;
 		}
@@ -182,7 +182,7 @@ namespace TomPIT.Compilation
 
 			script.Create();
 
-			Compile(result, script, true);
+			Compile(result, script, true, new CompilerScriptArgs(microService, d, false));
 
 			return result;
 		}
@@ -202,10 +202,10 @@ namespace TomPIT.Compilation
 
 			script.Create();
 
-			return Compile(result, script, false);
+			return Compile(result, script, false, new CompilerScriptArgs(microService, sourceCode, false));
 		}
 
-		private Microsoft.CodeAnalysis.Compilation Compile(IScriptDescriptor script, CompilerScript compiler, bool cache)
+		private Microsoft.CodeAnalysis.Compilation Compile(IScriptDescriptor script, CompilerScript compiler, bool cache, CompilerScriptArgs e)
 		{
 			if (compiler.Script == null)
 				return null;
@@ -215,14 +215,15 @@ namespace TomPIT.Compilation
 			var stage = Tenant.GetService<IRuntimeService>().Stage;
 			var scriptDescriptor = script as ScriptDescriptor;
 
-			if (stage == EnvironmentStage.Production)
+			if (stage == EnvironmentStage.Production || !e.IncludeAnalyzers)
 			{
 				result = compiler.Script.GetCompilation();
 				
 				scriptDescriptor.Errors = ProcessDiagnostics(script, compiler, result.GetDiagnostics(), stage);
 			}
 			else
-			{//if state queue and development no analyzers
+			{
+				//if state queue and development no analyzers
 				var c = compiler.Script.GetCompilation().WithAnalyzers(GetAnalyzers(CompilerLanguage.CSharp, script.MicroService, script.Component, script.Id));
 
 				result = c.Compilation;
@@ -415,7 +416,7 @@ namespace TomPIT.Compilation
 		}
 		public Type ResolveType(Guid microService, IText sourceCode, string typeName, bool throwException)
 		{
-			var script = GetScript(microService, sourceCode);
+			var script = GetScript(new CompilerScriptArgs(microService, sourceCode, false));
 
 			if (script == null)
 			{

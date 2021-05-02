@@ -14,6 +14,7 @@ namespace TomPIT.Compilation
 		CSharp = 1,
 		Razor = 2
 	}
+
 	public interface ICompilerService
 	{
 		void Invalidate(IMicroServiceContext context, Guid microService, Guid component, IText sourceCode);
@@ -21,7 +22,7 @@ namespace TomPIT.Compilation
 		//object Execute<T>(Guid microService, IText sourceCode, object sender, T e, out bool handled);
 
 		//IScriptDescriptor GetScript<T>(Guid microService, IText sourceCode);
-		IScriptDescriptor GetScript(Guid microService, IText sourceCode);
+		IScriptDescriptor GetScript(CompilerScriptArgs e);
 
 		IMicroService ResolveMicroService(Type type);
 		IMicroService ResolveMicroService(object instance);
