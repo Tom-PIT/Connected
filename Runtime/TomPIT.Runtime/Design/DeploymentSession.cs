@@ -28,7 +28,7 @@ namespace TomPIT.Design
 		{
 			if (e.ResetMicroService)
 			{
-				foreach(var component in Request.Components)
+				foreach (var component in Request.Components)
 				{
 					component.Verb = ComponentVerb.Add;
 
@@ -47,7 +47,35 @@ namespace TomPIT.Design
 			SynchronizeEntities();
 			RunInstallers();
 
+			CommitChanges(e);
 			CommitMicroService();
+		}
+
+		private void CommitChanges(DeployArgs e)
+		{
+			if (!e.Commit.Enabled)
+				return;
+
+			var design = Tenant.GetService<IDesignService>();
+			var changes = design.VersionControl.Changes(Request.Token);
+
+			if (!changes.Any())
+				return;
+
+			design.VersionControl.Commit(changes.Select(f => f.Token).ToList(), e.Commit.Comment ?? "Deploy.");
+
+			var commits = design.VersionControl.QueryCommits().Where(f => f.Service == Request.Token);
+			var latest = commits.OrderByDescending(f => f.Created).First();
+
+			foreach (var com in commits)
+			{
+				if (com.Token == latest.Token)
+					continue;
+
+				design.VersionControl.DeleteCommit(com.Token);
+			}
+
+			e.Commit.Id = latest.Token;
 		}
 
 		private void DropMicroService()
@@ -67,7 +95,7 @@ namespace TomPIT.Design
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
 
-			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, ms.ResourceGroup, Request.Template, ResolveStatus(),  UpdateStatus.UpToDate, CommitStatus.Synchronized);
+			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, ms.ResourceGroup, Request.Template, ResolveStatus(), UpdateStatus.UpToDate, CommitStatus.Synchronized);
 		}
 
 		private void SynchronizeMicroService()
@@ -122,7 +150,7 @@ namespace TomPIT.Design
 				{
 					Tenant.GetService<IModelService>().SynchronizeEntity(config);
 				}
-				catch(TomPITException ex)
+				catch (TomPITException ex)
 				{
 					ex.LogError(LogCategories.Deployment);
 				}
@@ -158,7 +186,7 @@ namespace TomPIT.Design
 			if (Request.Components == null)
 				return;
 
-			foreach(var component in Request.Components)
+			foreach (var component in Request.Components)
 			{
 				if (component.Verb == ComponentVerb.Delete)
 					ComponentModel.Delete(component.Token, true);
@@ -184,7 +212,7 @@ namespace TomPIT.Design
 			{
 				if (Request.Folders?.FirstOrDefault(f => f.Id == folder.Token) != null)
 					continue;
-				
+
 				ComponentModel.DeleteFolder(Request.Token, folder.Token, false);
 			}
 			/*
@@ -200,13 +228,13 @@ namespace TomPIT.Design
 
 			var folders = Request.Folders.Where(f => f.Parent == parent);
 
-			foreach(var folder in folders)
+			foreach (var folder in folders)
 			{
 				var existingFolder = existing.FirstOrDefault(f => f.Token == folder.Id);
 				/*
 				 * update
 				 */
-				if(existingFolder != null)
+				if (existingFolder != null)
 				{
 					ComponentModel.UpdateFolder(Request.Token, existingFolder.Token, folder.Name, folder.Parent);
 				}

@@ -25,7 +25,7 @@ namespace TomPIT.DataProviders.Sql
 			else if (string.Compare(value, "decimal", true) == 0)
 				return DbType.Decimal;
 			else if (string.Compare(value, "float", true) == 0)
-				return DbType.Single;
+				return DbType.Double;
 			else if (string.Compare(value, "geography", true) == 0)
 				return DbType.Object;
 			else if (string.Compare(value, "hierarchyid", true) == 0)
@@ -45,7 +45,7 @@ namespace TomPIT.DataProviders.Sql
 			else if (string.Compare(value, "nvarchar", true) == 0)
 				return DbType.String;
 			else if (string.Compare(value, "real", true) == 0)
-				return DbType.Double;
+				return DbType.Single;
 			else if (string.Compare(value, "smalldatetime", true) == 0)
 				return DbType.DateTime;
 			else if (string.Compare(value, "smallmoney", true) == 0)

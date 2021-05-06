@@ -175,7 +175,7 @@ namespace TomPIT.Design
 				var blob = new Blob
 				{
 					ContentType = configuration.ContentType,
-					FileName = component.Name,
+					FileName = configuration.FileName,
 					ResourceGroup = ms.ResourceGroup,
 					MicroService = microService,
 					Type = configuration.Type,

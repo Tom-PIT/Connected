@@ -47,10 +47,14 @@ namespace TomPIT.Design
 				return;
 			}
 
-			Deploy(request, new DeployArgs
+			var args = new DeployArgs
 			{
 				ResetMicroService = true
-			});
+			};
+
+			args.Commit.Enabled = false;
+
+			Deploy(request, args);
 		}
 		
 		public void Initialize()
