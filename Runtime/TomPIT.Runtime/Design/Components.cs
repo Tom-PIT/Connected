@@ -170,7 +170,7 @@ namespace TomPIT.Design
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 			var configuration = component.Files.FirstOrDefault(f => f.Type == BlobTypes.Configuration);
 
-			if (configuration.Verb == ComponentVerb.Add || configuration.Verb == ComponentVerb.Edit)
+			if (configuration is not null && (configuration.Verb == ComponentVerb.Add || configuration.Verb == ComponentVerb.Edit))
 			{
 				var blob = new Blob
 				{

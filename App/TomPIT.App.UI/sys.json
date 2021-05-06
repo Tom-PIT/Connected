@@ -2,12 +2,12 @@
   "connections": [
     {
       "name": "localhost",
-      "url": "http://sys-app/repoclient/sys",
+      "url": "http://sys-app/repoclient2/sys",
       "authenticationToken": "defaultAuthenticationToken"
     }
   ],
   "platform": "onPrem",
-  "stage": "production",
+  "stage": "development",
   "resourceGroups": [
     "Default"
   ],

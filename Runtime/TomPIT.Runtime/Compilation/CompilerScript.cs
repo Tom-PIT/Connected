@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Scripting.Hosting;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Runtime;
 
 namespace TomPIT.Compilation
 {
@@ -48,7 +49,7 @@ namespace TomPIT.Compilation
 				 .WithReferences(References)
 				 .WithSourceResolver(new ScriptResolver(Tenant, MicroService))
 				 .WithMetadataResolver(new AssemblyResolver(Tenant, MicroService, true))
-				 .WithEmitDebugInformation(msv.Status != MicroServiceStatus.Production)
+				 .WithEmitDebugInformation(Tenant.GetService<IRuntimeService>().Stage != EnvironmentStage.Production)
 				 .WithFilePath(SourceCode.FileName)
 				 .WithFileEncoding(Encoding.UTF8);
 
