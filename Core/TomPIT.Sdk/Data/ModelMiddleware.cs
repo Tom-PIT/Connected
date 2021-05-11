@@ -158,6 +158,8 @@ namespace TomPIT.Data
 				BindDictionaryParameters(command, e, descriptor);
 			else if (e is ExpandoObject)
 				BindExpandoObjectParameters(command, e, descriptor);
+			else if (e.GetType().IsCollection())
+				BindCollectionParameters(command, e, descriptor);
 			else
 				BindObjectParameters(command, e, descriptor);
 		}
@@ -254,6 +256,15 @@ namespace TomPIT.Data
 
 			while (enumerator.MoveNext())
 				command.SetParameter(enumerator.Key as string, enumerator.Value);
+		}
+
+		private void BindCollectionParameters(IDataCommand command, object e, ICommandTextDescriptor descriptor)
+		{
+			var en = e as IEnumerable;
+			var enumerator = en.GetEnumerator();
+
+			while (enumerator.MoveNext())
+				BindParameters(command, enumerator.Current, descriptor);
 		}
 
 		public T CreateEntity(object instance)
