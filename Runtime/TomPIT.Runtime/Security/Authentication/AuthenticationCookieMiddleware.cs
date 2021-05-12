@@ -38,10 +38,10 @@ namespace TomPIT.Security.Authentication
 				return;
 
 			var dt = new DateTime(expiration);
-
+			
 			if (dt < DateTime.UtcNow)
 				return;
-
+			
 			var duration = TimeSpan.FromMinutes(20);
 			var durationSetting = json.Optional("renewDuration", 0);
 

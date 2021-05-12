@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
@@ -194,7 +195,12 @@ namespace TomPIT.Design
 				if (file.Verb == ComponentVerb.NotModified)
 					continue;
 				else if (file.Verb == ComponentVerb.Delete)
+				{
 					Tenant.GetService<IStorageService>().Delete(file.Token);
+
+					if (file.Type == BlobTypes.Template && Tenant.GetService<ICompilerService>() is ICompilerNotification notification)
+						notification.NotifyChanged(this, new ScriptChangedEventArgs(ms.Token, component.Token, file.Token));
+				}
 				else
 				{
 					Tenant.GetService<IStorageService>().Restore(new Blob
@@ -209,6 +215,9 @@ namespace TomPIT.Design
 						Type = file.Type,
 						Version = file.BlobVersion
 					}, Unpack(file.Content));
+
+					if (file.Type == BlobTypes.Template && Tenant.GetService<ICompilerService>() is ICompilerNotification notification)
+						notification.NotifyChanged(this, new ScriptChangedEventArgs(ms.Token, component.Token, file.Token));
 				}
 			}
 
