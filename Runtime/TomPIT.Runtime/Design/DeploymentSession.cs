@@ -163,21 +163,28 @@ namespace TomPIT.Design
 
 			foreach (var component in components)
 			{
-				if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is not IInstallerConfiguration config)
-					continue;
+				try
+				{
+					if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is not IInstallerConfiguration config)
+						continue;
 
-				using var ctx = new MicroServiceContext(Request.Token);
-				var type = config.Middleware(ctx);
+					using var ctx = new MicroServiceContext(Request.Token);
+					var type = config.Middleware(ctx);
 
-				if (type == null)
-					continue;
+					if (type == null)
+						continue;
 
-				var middleware = ctx.CreateMiddleware<IInstallerMiddleware>(type);
+					var middleware = ctx.CreateMiddleware<IInstallerMiddleware>(type);
 
-				if (middleware == null)
-					continue;
+					if (middleware == null)
+						continue;
 
-				middleware.Invoke();
+					middleware.Invoke();
+				}
+				catch(TomPITException ex)
+				{
+					ex.LogError(LogCategories.Deployment);
+				}
 			}
 		}
 

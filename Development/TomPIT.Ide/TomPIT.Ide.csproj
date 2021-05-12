@@ -17,6 +17,11 @@
     <Product>Tom PIT.connected</Product>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Search\**" />
+    <EmbeddedResource Remove="Search\**" />
+    <None Remove="Search\**" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="AngleSharp.Css" Version="0.14.2" />
     <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="5.0.4" />
@@ -36,8 +41,5 @@
     <ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
     <ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
     <ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Search\" />
   </ItemGroup>
 </Project>

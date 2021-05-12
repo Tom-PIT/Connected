@@ -42,11 +42,20 @@ namespace TomPIT.Security.Authentication
 			if (dt < DateTime.UtcNow)
 				return;
 
-			if (dt < DateTime.UtcNow.AddMinutes(10))
+			var duration = TimeSpan.FromMinutes(20);
+			var durationSetting = json.Optional("renewDuration", 0);
+
+			if (durationSetting > 0)
+				duration = TimeSpan.FromSeconds(durationSetting);
+
+			if (dt < DateTime.UtcNow.AddSeconds(duration.TotalSeconds / 2))
 			{
-				var expires = DateTimeOffset.UtcNow.AddMinutes(20);
+				var expires = DateTimeOffset.UtcNow.Add(duration);
 
 				json["expiration"] = expires.Ticks;
+
+				if (durationSetting > 0)
+					json["renewDuration"] = durationSetting;
 
 				context.Response.Cookies.Delete(SecurityUtils.AuthenticationCookieName);
 
