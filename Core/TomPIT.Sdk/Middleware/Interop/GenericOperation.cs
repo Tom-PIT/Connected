@@ -78,8 +78,13 @@ namespace TomPIT.Middleware.Interop
 
 				var result = DependencyInjections.Invoke(OnInvoke());
 
-				if (result != null && !string.IsNullOrWhiteSpace(Extender))
-					result = Extend(result);
+				if (result != null)
+				{
+					if (!string.IsNullOrWhiteSpace(Extender))
+						result = Extend(result);
+					else
+						OnAuthorize(result);
+				}
 
 				Invoked();
 

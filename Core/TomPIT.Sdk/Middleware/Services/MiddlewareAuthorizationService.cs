@@ -62,11 +62,7 @@ namespace TomPIT.Middleware.Services
 
 		public T CreatePolicy<T>() where T : AuthorizationPolicyAttribute
 		{
-			var result = TypeExtensions.CreateInstance<T>(typeof(T));
-
-			ReflectionExtensions.SetPropertyValue(result, nameof(Context), Context);
-			
-			return result;
+			return TypeExtensions.CreateInstance<T>(typeof(T));
 		}
 	}
 }

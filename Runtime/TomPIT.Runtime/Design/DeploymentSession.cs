@@ -59,10 +59,8 @@ namespace TomPIT.Design
 			var design = Tenant.GetService<IDesignService>();
 			var changes = design.VersionControl.Changes(Request.Token);
 
-			if (!changes.Any())
-				return;
-
-			design.VersionControl.Commit(changes.Select(f => f.Token).ToList(), e.Commit.Comment ?? "Deploy.");
+			if (changes.Any())
+				design.VersionControl.Commit(changes.Select(f => f.Token).ToList(), e.Commit.Comment ?? "Deploy.");
 
 			var commits = design.VersionControl.QueryCommits().Where(f => f.Service == Request.Token);
 			var latest = commits.OrderByDescending(f => f.Created).First();

@@ -174,14 +174,16 @@ namespace TomPIT.Exceptions
 			sb.AppendLine(ex.Message);
 
 			if (Shell.GetService<IRuntimeService>().Stage != EnvironmentStage.Production)
+			{
 				sb.Append(ex.StackTrace);
 
-			r.ViewData.Add("exMessage", sb.ToString());
+				if (ex is TomPITException tp)
+					r.ViewData.Add("exDiagnosticTrace", tp.DiagnosticsTrace);
+				else if (ex is MiddlewareValidationException mw)
+					r.ViewData.Add("exDiagnosticTrace", mw.DiagnosticsTrace);
+			}
 
-			if (ex is TomPITException tp)
-				r.ViewData.Add("exDiagnosticTrace", tp.DiagnosticsTrace);
-			else if (ex is MiddlewareValidationException mw)
-				r.ViewData.Add("exDiagnosticTrace", mw.DiagnosticsTrace);
+			r.ViewData.Add("exMessage", sb.ToString());
 
 			var exec = context.RequestServices.GetRequiredService<IActionResultExecutor<ViewResult>>();
 			var desc = new ActionDescriptor
