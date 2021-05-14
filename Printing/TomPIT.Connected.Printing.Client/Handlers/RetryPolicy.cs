@@ -11,22 +11,23 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 {
     public class ConnectionRetryPolicy : IRetryPolicy
     {
-        private readonly Random _randomGenerator = new Random();
 
         public TimeSpan? NextRetryDelay(RetryContext retryContext)
         {
-            //if maximum retry time or count has been reached stop reconnecting
-            if (retryContext.ElapsedTime >= TimeSpan.FromSeconds(Constants.MaxReconnectionTimeInSeconds))
+            if (retryContext.ElapsedTime >= TimeSpan.FromHours(110))
             {
                 return null;
             }
 
-            if (retryContext.PreviousRetryCount >= Constants.MaxReconnectionRetries)
+            if (retryContext.PreviousRetryCount >= 2880)
             {
                 return null;
             }
 
-            var nextDelay = _randomGenerator.Next(1, 10) * 5; //next delay is from 1 to 50 seconds
+            var nextDelay = (retryContext.PreviousRetryCount == 0)
+                ? 0
+                : 60;
+
             return TimeSpan.FromSeconds(nextDelay);
         }
     }
