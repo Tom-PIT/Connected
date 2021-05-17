@@ -15,17 +15,19 @@ namespace TomPIT.Connected.Printing.Client.Configuration
     {
         public object Create(object parent, object configContext, XmlNode section)
         {
-            var deviceConfigList = new List<string>();
+            var deviceConfigList = new Dictionary<string, string>();
 
             foreach (XmlNode node in section.ChildNodes)
             {
                 if (node.Name.Equals("printer", StringComparison.OrdinalIgnoreCase))
                 {
+                    var resourceName = GetValue<string>(node, "resourceName");
                     var printerName = GetValue<string>(node, "name");
-                    if (string.IsNullOrWhiteSpace(printerName))
+
+                    if (string.IsNullOrWhiteSpace(resourceName) || string.IsNullOrWhiteSpace(printerName))
                         continue;
 
-                    deviceConfigList.Add(printerName);
+                    deviceConfigList[resourceName] = printerName;
                 }
             }
 
