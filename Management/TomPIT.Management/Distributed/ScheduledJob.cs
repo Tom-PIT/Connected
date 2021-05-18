@@ -32,5 +32,9 @@ namespace TomPIT.Management.Distributed
 		public bool Logging { get; set; } = false;
 		public WorkerKind Kind { get; set; } = WorkerKind.Worker;
 		public int Id { get; set; } = 0;
+
+		public int RetryInterval { get; set; } = 10;
+
+		public int DisableTreshold { get; set; } = 3;
 	}
 }

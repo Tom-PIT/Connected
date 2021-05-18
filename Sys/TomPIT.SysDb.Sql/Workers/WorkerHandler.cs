@@ -42,7 +42,7 @@ namespace TomPIT.SysDb.Sql.Workers
 		public void Insert(Guid worker, DateTime startTime, DateTime endTime, WorkerInterval interval, int intervalValue, DateTime startDate, DateTime endDate,
 			int limit, int dayOfMonth, WorkerDayMode dayMode, WorkerMonthMode monthMode, WorkerYearMode yearMode, int monthNumber, WorkerEndMode endMode, WorkerCounter intervalCounter,
 			WorkerMonthPart monthPart, WorkerWeekDays weekdays, WorkerStatus status, DateTime nextRun, int elapsed, int failCount, bool logging, DateTime lastRun, DateTime lastComplete,
-			long runCount, WorkerKind kind)
+			long runCount, WorkerKind kind, int retryInterval, int disableTreshold)
 		{
 			using var w = new Writer("tompit.worker_ins");
 
@@ -72,6 +72,8 @@ namespace TomPIT.SysDb.Sql.Workers
 			w.CreateParameter("@last_complete", lastComplete, true);
 			w.CreateParameter("@run_count", runCount);
 			w.CreateParameter("@kind", kind);
+			w.CreateParameter("@retry_interval", retryInterval);
+			w.CreateParameter("@disable_treshold", disableTreshold);
 
 			w.Execute();
 		}
@@ -95,7 +97,7 @@ namespace TomPIT.SysDb.Sql.Workers
 		public void Update(IScheduledJob job, DateTime startTime, DateTime endTime, WorkerInterval interval, int intervalValue, DateTime startDate, DateTime endDate,
 			int limit, int dayOfMonth, WorkerDayMode dayMode, WorkerMonthMode monthMode, WorkerYearMode yearMode, int monthNumber, WorkerEndMode endMode, WorkerCounter intervalCounter,
 			WorkerMonthPart monthPart, WorkerWeekDays weekdays, WorkerStatus status, DateTime nextRun, int elapsed, int failCount, bool logging, DateTime lastRun, DateTime lastComplete,
-			long runCount, Guid state)
+			long runCount, Guid state, int retryInterval, int disableTreshold)
 		{
 			using var w = new Writer("tompit.worker_upd");
 
@@ -125,6 +127,8 @@ namespace TomPIT.SysDb.Sql.Workers
 			w.CreateParameter("@last_complete", lastComplete, true);
 			w.CreateParameter("@run_count", runCount);
 			w.CreateParameter("@state", state, true);
+			w.CreateParameter("@retry_interval", retryInterval);
+			w.CreateParameter("@disable_treshold", disableTreshold);
 
 			w.Execute();
 		}

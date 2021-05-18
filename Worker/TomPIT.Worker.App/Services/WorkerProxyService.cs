@@ -29,7 +29,7 @@ namespace TomPIT.Worker.Services
 			var d = new JObject
 			{
 				{"microService", microService },
-				{"popReceipt", popReceipt }
+				{"popReceipt", popReceipt },
 			};
 
 			MiddlewareDescriptor.Current.Tenant.Post(url, d);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
 using Newtonsoft.Json.Linq;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
@@ -80,6 +81,32 @@ namespace TomPIT.DataProviders.BigData
 		}
 
 		public void Commit()
+		{
+			var interval = 0;
+
+			for (var i = 0; i < 3; i++)
+			{
+				try
+				{
+					TryCommit();
+
+					break;
+				}
+				catch
+				{
+					if (i == 2)
+						throw;
+					else
+					{
+						interval = interval == 0 ? 1 : interval *= 3;
+
+						Thread.Sleep(interval);
+					}
+				}
+			}
+		}
+
+		private void TryCommit()
 		{
 			if (PostData.Count == 0)
 				return;

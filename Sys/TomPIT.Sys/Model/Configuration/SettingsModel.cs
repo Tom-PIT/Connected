@@ -9,6 +9,7 @@ namespace TomPIT.Sys.Model.Configuration
 {
 	internal class SettingsModel : SynchronizedRepository<ISetting, string>
 	{
+		[Obsolete("Please use Worker configuration instead.")]
 		public static string TaskFailTreshold = "Task fail treshold";
 
 		public SettingsModel(IMemoryCache container) : base(container, "setting")

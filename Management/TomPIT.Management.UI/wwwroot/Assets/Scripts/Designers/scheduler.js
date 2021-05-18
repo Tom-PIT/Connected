@@ -95,6 +95,18 @@ $.widget('tompit.tpScheduleDesigner', {
             onValueChanged: function () { instance.saveConfiguration(); }
         });
 
+        $('#editRetryInterval').dxNumberBox({
+            value: this.options.data.retryInterval,
+            width: '100%',
+            onValueChanged: function () { instance.saveConfiguration(); }
+        });
+
+        $('#editDisableTreshold').dxNumberBox({
+            value: this.options.data.disableTreshold,
+            width: '100%',
+            onValueChanged: function () { instance.saveConfiguration(); }
+        });
+
         $('#editMinuteCount').dxNumberBox({
             value: this.options.data.intervalValue,
             width: '100%',
@@ -393,7 +405,9 @@ $.widget('tompit.tpScheduleDesigner', {
 		data.startTime = $('#editStartTime').dxDateBox('instance').option('value');
 		data.endTime = $('#editEndTime').dxDateBox('instance').option('value');
 		data.interval = $('#editPattern').dxRadioGroup('instance').option('value');
-		data.startDate = $('#editStartDate').dxDateBox('instance').option('value');
+        data.startDate = $('#editStartDate').dxDateBox('instance').option('value');
+        data.retryInterval = $('#editRetryInterval').dxNumberBox('instance').option('value');
+        data.disableTreshold = $('#editDisableTreshold').dxNumberBox('instance').option('value');
         data.endMode = $('#editNoEndDate').dxCheckBox('instance').option('value')
             ? 'NoEnd'
             : $('#editEndDateOccurence').dxCheckBox('instance').option('value')

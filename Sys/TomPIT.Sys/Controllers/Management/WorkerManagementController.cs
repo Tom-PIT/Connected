@@ -74,9 +74,11 @@ namespace TomPIT.Sys.Controllers.Management
 			var monthPart = body.Optional("monthPart", WorkerMonthPart.Weekday);
 			var weekdays = body.Optional("weekdays", WorkerWeekDays.None);
 			var kind = body.Optional("kind", WorkerKind.Worker);
+			var disableTreshold = body.Optional("disableTreshold", 3);
+			var retryInterval = body.Optional("retryInterval", 10);
 
 			DataModel.Workers.Update(worker, startTime, endTime, interval, intervalValue, startDate, endDate, limit, dayOfMonth,
-				dayMode, monthMode, yearMode, monthNumber, endMode, intervalCounter, monthPart, weekdays, kind);
+				dayMode, monthMode, yearMode, monthNumber, endMode, intervalCounter, monthPart, weekdays, kind, disableTreshold, retryInterval);
 		}
 
 		[HttpPost]

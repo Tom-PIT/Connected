@@ -23,7 +23,8 @@ namespace TomPIT.Deployment
 		protected void RegisterWorker([CIP(CIP.HostedWorkerProvider)]string worker, WorkerInterval interval = WorkerInterval.Hour, int intervalValue = 1, DateTime? startDate = null,
 			DateTime? endDate = null, DateTime? startTime = null, DateTime? endTime = null, int limit = 0, int dayOfMonth = 1, WorkerDayMode dayMode = WorkerDayMode.EveryNDay,
 			WorkerMonthMode monthMode = WorkerMonthMode.ExactDay, WorkerYearMode yearMode = WorkerYearMode.ExactDate, int monthNumber = 1, WorkerEndMode endMode = WorkerEndMode.NoEnd,
-			WorkerCounter intervalCounter = WorkerCounter.First, WorkerMonthPart monthPart = WorkerMonthPart.Day, WorkerWeekDays weekdays = WorkerWeekDays.All)
+			WorkerCounter intervalCounter = WorkerCounter.First, WorkerMonthPart monthPart = WorkerMonthPart.Day, WorkerWeekDays weekdays = WorkerWeekDays.All, int retryInterval = 10,
+			int disableTreshold = 3)
 		{
 			var descriptor = ComponentDescriptor.HostedWorker(Context, worker);
 
@@ -58,7 +59,9 @@ namespace TomPIT.Deployment
 				{ "intervalCounter" , intervalCounter.ToString() },
 				{ "monthPart" , monthPart.ToString() },
 				{ "weekdays" , weekdays.ToString() },
-				{ "kind" , WorkerKind.Worker.ToString() }
+				{ "kind" , WorkerKind.Worker.ToString() },
+				{ "disableTreshold" , disableTreshold },
+				{ "retryInterval" , retryInterval }
 			};
 
 			Context.Tenant.Post(url, p);

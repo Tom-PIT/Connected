@@ -152,6 +152,8 @@ namespace TomPIT.Management.Designers
 			d.IntervalCounter = data.Optional("intervalCounter", WorkerCounter.First);
 			d.MonthPart = data.Optional("monthPart", WorkerMonthPart.Day);
 			d.Weekdays = data.Optional("weekdays", WorkerWeekDays.All);
+			d.RetryInterval = data.Optional("retryInterval", 10);
+			d.DisableTreshold = data.Optional("disableTreshold", 3);
 			d.Kind = WorkerKind.Worker;
 
 			var url = Environment.Context.Tenant.CreateUrl("WorkerManagement", "UpdateConfiguration");
@@ -175,7 +177,9 @@ namespace TomPIT.Management.Designers
 				{ "intervalCounter" , d.IntervalCounter.ToString() },
 				{ "monthPart" , d.MonthPart.ToString() },
 				{ "weekdays" , d.Weekdays.ToString() },
-				{ "kind" , d.Kind.ToString() }
+				{ "kind" , d.Kind.ToString() },
+				{ "retryInterval" , d.RetryInterval },
+				{ "disableTreshold" , d.DisableTreshold }
 			};
 
 			Environment.Context.Tenant.Post(url, p);

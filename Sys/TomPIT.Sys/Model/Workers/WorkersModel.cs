@@ -7,7 +7,6 @@ using TomPIT.Caching;
 using TomPIT.Distributed;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
-using TomPIT.Sys.Model.Configuration;
 using TomPIT.Sys.Workers;
 using TomPIT.SysDb.Workers;
 
@@ -57,7 +56,7 @@ namespace TomPIT.Sys.Model.Workers
 			Shell.GetService<IDatabaseService>().Proxy.Workers.Update(j, j.StartTime, j.EndTime, j.Interval, j.IntervalValue, j.StartDate, j.EndDate, j.Limit, j.DayOfMonth,
 				j.DayMode, j.MonthMode, j.YearMode, j.MonthNumber, j.EndMode, j.IntervalCounter, j.MonthPart, j.Weekdays, WorkerStatus.Enabled,
 				ScheduleCalculator.NextRun(j, DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow), 0, 0, j.Logging, DateTime.MinValue,
-				DateTime.MinValue, 0, j.State);
+				DateTime.MinValue, 0, j.State, j.RetryInterval, j.DisableTreshold);
 
 			Refresh(worker);
 		}
@@ -85,7 +84,7 @@ namespace TomPIT.Sys.Model.Workers
 
 			Shell.GetService<IDatabaseService>().Proxy.Workers.Update(j, j.StartTime, j.EndTime, j.Interval, j.IntervalValue, j.StartDate, j.EndDate, j.Limit, j.DayOfMonth,
 				j.DayMode, j.MonthMode, j.YearMode, j.MonthNumber, j.EndMode, j.IntervalCounter, j.MonthPart, j.Weekdays, j.Status, nextRun, j.Elapsed, j.FailCount, j.Logging, j.LastRun,
-				j.LastComplete, j.RunCount, state);
+				j.LastComplete, j.RunCount, state, j.RetryInterval, j.DisableTreshold);
 
 			Refresh(worker);
 		}
@@ -109,7 +108,7 @@ namespace TomPIT.Sys.Model.Workers
 
 			Shell.GetService<IDatabaseService>().Proxy.Workers.Update(j, j.StartTime, j.EndTime, j.Interval, j.IntervalValue, j.StartDate, j.EndDate, j.Limit, j.DayOfMonth,
 				j.DayMode, j.MonthMode, j.YearMode, j.MonthNumber, j.EndMode, j.IntervalCounter, j.MonthPart, j.Weekdays, status, nextRun, j.Elapsed, j.FailCount, logging, j.LastRun,
-				j.LastComplete, j.RunCount, j.State);
+				j.LastComplete, j.RunCount, j.State, j.RetryInterval, j.DisableTreshold);
 
 			Refresh(worker);
 		}
@@ -124,26 +123,26 @@ namespace TomPIT.Sys.Model.Workers
 
 			Shell.GetService<IDatabaseService>().Proxy.Workers.Update(j, j.StartTime, j.EndTime, j.Interval, j.IntervalValue, j.StartDate, j.EndDate, j.Limit, j.DayOfMonth,
 				j.DayMode, j.MonthMode, j.YearMode, j.MonthNumber, j.EndMode, j.IntervalCounter, j.MonthPart, j.Weekdays, status, nextRun, elapsed, failCount, j.Logging, lastRun,
-				lastComplete, runCount, j.State);
+				lastComplete, runCount, j.State, j.RetryInterval, j.DisableTreshold);
 
 			Refresh(worker);
 		}
 
 		public void Update(Guid worker, DateTime startTime, DateTime endTime, WorkerInterval interval, int intervalValue, DateTime startDate, DateTime endDate, int limit,
 			int dayOfMonth, WorkerDayMode dayMode, WorkerMonthMode monthMode, WorkerYearMode yearMode,
-			int monthNumber, WorkerEndMode endMode, WorkerCounter intervalCounter, WorkerMonthPart monthPart, WorkerWeekDays weekdays, WorkerKind kind)
+			int monthNumber, WorkerEndMode endMode, WorkerCounter intervalCounter, WorkerMonthPart monthPart, WorkerWeekDays weekdays, WorkerKind kind, int disableTreshold, int retryInterval)
 		{
 			var j = Get(worker);
 
 			if (j == null)
 			{
 				Shell.GetService<IDatabaseService>().Proxy.Workers.Insert(worker, startTime, endTime, interval, intervalValue, startDate, endDate, limit, dayOfMonth, dayMode, monthMode, yearMode,
-					monthNumber, endMode, intervalCounter, monthPart, weekdays, WorkerStatus.Disabled, DateTime.MinValue, 0, 0, false, DateTime.MinValue, DateTime.MinValue, 0, kind);
+					monthNumber, endMode, intervalCounter, monthPart, weekdays, WorkerStatus.Disabled, DateTime.MinValue, 0, 0, false, DateTime.MinValue, DateTime.MinValue, 0, kind, retryInterval, disableTreshold);
 			}
 			else
 			{
 				Shell.GetService<IDatabaseService>().Proxy.Workers.Update(j, startTime, endTime, interval, intervalValue, startDate, endDate, limit, dayOfMonth, dayMode, monthMode, yearMode,
-					 monthNumber, endMode, intervalCounter, monthPart, weekdays, j.Status, j.NextRun, j.Elapsed, j.FailCount, j.Logging, j.LastRun, j.LastComplete, j.RunCount, j.State);
+					 monthNumber, endMode, intervalCounter, monthPart, weekdays, j.Status, j.NextRun, j.Elapsed, j.FailCount, j.Logging, j.LastRun, j.LastComplete, j.RunCount, j.State, retryInterval, disableTreshold);
 
 				if (j.Status != WorkerStatus.Disabled)
 				{
@@ -153,7 +152,7 @@ namespace TomPIT.Sys.Model.Workers
 
 					Shell.GetService<IDatabaseService>().Proxy.Workers.Update(j, j.StartTime, j.EndTime, j.Interval, j.IntervalValue, j.StartDate, j.EndDate, j.Limit, j.DayOfMonth, j.DayMode,
 						j.MonthMode, j.YearMode, j.MonthNumber, j.EndMode, j.IntervalCounter, j.MonthPart, j.Weekdays, j.Status, ScheduleCalculator.NextRun(j, DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow),
-						j.Elapsed, j.FailCount, j.Logging, j.LastRun, j.LastComplete, j.RunCount, j.State);
+						j.Elapsed, j.FailCount, j.Logging, j.LastRun, j.LastComplete, j.RunCount, j.State, retryInterval, disableTreshold);
 				}
 			}
 
@@ -196,25 +195,16 @@ namespace TomPIT.Sys.Model.Workers
 
 		public void Error(Guid microService, Guid popReceipt)
 		{
-			var m = DataModel.Queue.Select(popReceipt);
-
-			if (m == null)
+			if (DataModel.Queue.Select(popReceipt) is not IQueueMessage message)
 				return;
 
-			var worker = Resolve(m);
-			var setting = DataModel.Settings.Select(SettingsModel.TaskFailTreshold, null, null, null);
-			var treshold = 3;
-
-			if (setting != null)
-				treshold = Convert.ToInt32(setting.Value);
-
+			var worker = Resolve(message);
 			var status = WorkerStatus.Enabled;
 
-			if (treshold <= worker.FailCount + 1)
+			if (worker.DisableTreshold <= worker.FailCount + 1)
 				status = WorkerStatus.Disabled;
 
-			Update(worker.Worker, status, worker.NextRun, worker.Elapsed, worker.FailCount + 1, worker.LastRun,
-				worker.LastComplete, worker.RunCount);
+			Update(worker.Worker, status, DateTime.UtcNow.AddSeconds(worker.RetryInterval), worker.Elapsed, worker.FailCount + 1, worker.LastRun, worker.LastComplete, worker.RunCount);
 
 			DataModel.Queue.Complete(popReceipt);
 		}
