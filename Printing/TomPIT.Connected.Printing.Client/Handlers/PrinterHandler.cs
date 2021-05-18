@@ -123,32 +123,6 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 
         public List<string> GetPrinters(string printers, Dictionary<string, string> printerMappings)
         {
-            var printerList = new List<string>();
-
-            if (printers.Equals(Constants.PrintersSetDefaultPrinter, StringComparison.OrdinalIgnoreCase))
-            {
-                var printerSettings = new PrinterSettings();
-                printerList.Add(printerSettings.PrinterName);
-            }
-            else if (printers.Equals(Constants.PrintersSetInstalledPrinters, StringComparison.OrdinalIgnoreCase))
-            {
-                var result = new List<string>();
-
-                foreach (string printerName in PrinterSettings.InstalledPrinters)
-                {
-                    printerList.Add(printerName);
-                }
-            }
-            else if (printers.Equals(Constants.PrintersSetList, StringComparison.OrdinalIgnoreCase))
-            {
-                printerList.AddRange(Settings.PrinterList);
-            }
-            else
-            {
-                printerList.AddRange(printers.Split(';').ToList());
-            }
-
-            SetMappings(printerList, printerMappings);
             return new List<string>(_printerMapping.Keys);
         }
     }

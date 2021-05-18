@@ -47,24 +47,21 @@ From command line (```cmd``` or ```PowerShell```) run the following command:
 
 ```xml
 <appSettings>
-	<add key="cdnUrl" value="http://server/cdn/" />
+    <add key="cdnUrl" value="http://server/cdn/" />
     <add key="token" value="0f69745a-c65f-437b-a025-5ed52e5dca72" />
-    <add key="availablePrinters" value="HPE9367C (HP Officejet Pro 8620)" />
     <add key="loggingLevel" value="error" />
     <add key="exceptionLoggingLevel" value="errorMessage" />
-    <add key="printerNameMappings" value="Beautiful printer=HPE9367C (HP Officejet Pro 8620)" />
 </appSettings>
 
 <printers>
-    <printer name="PrinterName 1" />
-    <printer name="PrinterName 2" />
-    <printer name="PrinterName 3" />
+    <printer name="PrinterName 1"
+             resourceName="Friendly Printer Name 1" />
+    <printer name="PrinterName 2"
+             resourceName="Friendly Printer Name 2" />
+    <printer name="PrinterName 3"
+             resourceName="Friendly Printer Name 3" />
 </printers>
 
-<printerMappings>
-    <mapping resourceName="Printer in Office" printerName="PrinterName 1" />
-    <mapping resourceName="Printer in Warehouse" printerName="PrinterName 2" />
-</printerMappings>
 ```
 
 ### Keys
@@ -73,11 +70,6 @@ From command line (```cmd``` or ```PowerShell```) run the following command:
 
 - ```cdnUrl``` - URL to TomPIT.Connected CDN server
 - ```token``` - token from CDN App registration
-- ```availablePrinters``` - list of available printers; this value can be:
-  - ```default``` - will register default locally installed printer
-  - ```installed``` - will register all locally installed printers
-  - ```list``` - will register printers from list supplied in ```<printers>``` section
-  - semi-colon separated list of printer names [^1] (e.g. ```Printer 1;Printer 2;Some network Printer```)
 - ```loggingLevel``` - level of information, that will be logged to log file; available values are:
   - ```off``` - no logging will be done
   - ```fatal``` - only fatal errors will be logged
@@ -91,7 +83,6 @@ From command line (```cmd``` or ```PowerShell```) run the following command:
   - ```off``` - no exception logging will be done
   - ```errorMessage``` - log only error messages
   - ```stackTrace``` - with error message log also stack-trace
-- ```printerNameMappings``` - semi-colon separated list of key-value paired printer names in form of ```friendlyName=printerName``` (e.g. ```Beautiful printer=HPE9367C (HP Officejet Pro 8620)``` which redirects all requests to printer named ```Beautiful printer``` (which is **only** a friendly name) to actual system printer by name ```HPE9367C (HP Officejet Pro 8620)```; this way the user does not have to know all installed printers because we can map some obscure system printer name to e.g. ```Printer in main office```)
 
 [^1]: In case of shared printers the fully qualified name must be used, not just share name (e.g. for shared printer named ```SharedPrinter``` which is shared on computer ```SharePC``` the name provided **must** be ```\\SharePC\SharedPrinter``` and not only ```SharedPrinter```)
 
@@ -100,13 +91,8 @@ From command line (```cmd``` or ```PowerShell```) run the following command:
 #### Section ```printers```
 
 * ```name``` - name of the printer [^1], similar to ```availablePrinters``` in ```appSettings``` section, but it must contain the name of the printer
-
-
-
-#### Section ```printerMappings```
-
 * ```resourceName``` - name of the printer in resource management in Tom PIT platform
-* ```printerName``` - name of the printer to be mapped; must be in available printers list (```availablePrinters``` setting in ```appSettings``` section or in list in ```printers``` section)
+
 
 ## Logging
 
