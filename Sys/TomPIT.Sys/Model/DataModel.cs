@@ -46,7 +46,7 @@ namespace TomPIT.Sys.Model
 		private static readonly Lazy<MessagesModel> _messages = new Lazy<MessagesModel>(() => { return new MessagesModel(Container); });
 		private static readonly Lazy<LoggingModel> _logging = new Lazy<LoggingModel>(() => { return new LoggingModel(); });
 		private static readonly Lazy<WorkersModel> _workers = new Lazy<WorkersModel>(() => { return new WorkersModel(Container); });
-		private static readonly Lazy<EventsModel> _events = new Lazy<EventsModel>(() => { return new EventsModel(); });
+		private static readonly Lazy<EventsModel> _events = new Lazy<EventsModel>(() => { return new EventsModel(Container); });
 		private static readonly Lazy<AuditModel> _audit = new Lazy<AuditModel>(() => { return new AuditModel(); });
 		private static readonly Lazy<AuthenticationTokensModel> _authTokens = new Lazy<AuthenticationTokensModel>(() => { return new AuthenticationTokensModel(Container); });
 		private static readonly Lazy<MetricsModel> _metrics = new Lazy<MetricsModel>(() => { return new MetricsModel(); });

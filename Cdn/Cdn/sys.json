@@ -2,8 +2,8 @@
   "connections": [
     {
       "name": "localhost",
-      "url": "http://sys-app/core/sys",
-      "authenticationToken": "defaultAuthenticationToken"
+      "url": "http://localhost:44001",
+      "authenticationToken": "C91EB76B-83D4-4FFC-B14A-3B57C7DC1DCC"
     }
   ],
   //"platform":  "onPrem",

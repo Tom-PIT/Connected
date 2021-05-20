@@ -18,7 +18,8 @@ namespace TomPIT.Distributed
 
 			cancel.Register(() =>
 			{
-				Worker.CancelAsync();
+				if (Worker.IsBusy)
+					Worker.CancelAsync();
 			});
 
 		}
@@ -38,6 +39,7 @@ namespace TomPIT.Distributed
 				if (_worker == null)
 				{
 					_worker = new BackgroundWorker();
+					_worker.WorkerSupportsCancellation = true;
 					_worker.RunWorkerCompleted += OnCompleted;
 					_worker.DoWork += Dequeue;
 				}

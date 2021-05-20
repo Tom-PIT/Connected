@@ -84,9 +84,19 @@ namespace TomPIT.Sys.Model.Cdn
 			if (Count == 0)
 				return null;
 
-			var targets = string.IsNullOrWhiteSpace(queue)
-				? Where(f => f.Scope == scope && f.NextVisible <= DateTime.UtcNow && f.Expire > DateTime.UtcNow)
-				: Where(f => f.Scope == scope && f.NextVisible <= DateTime.UtcNow && f.Expire > DateTime.UtcNow && string.Compare(f.Queue, queue, true) == 0);
+			var targets = new List<IQueueMessage>();
+
+			foreach (var i in All())
+			{
+				if (i.Scope != scope || i.NextVisible > DateTime.UtcNow || i.Expire <= DateTime.UtcNow)
+					continue;
+
+				if (string.Compare(i.Queue, queue ?? string.Empty, true) == 0)
+					targets.Add(i);
+			}
+			//var targets = string.IsNullOrWhiteSpace(queue)
+			//	? Where(f => f.Scope == scope && f.NextVisible <= DateTime.UtcNow && f.Expire > DateTime.UtcNow)
+			//	: Where(f => f.Scope == scope && f.NextVisible <= DateTime.UtcNow && f.Expire > DateTime.UtcNow && string.Compare(f.Queue, queue, true) == 0);
 
 			if (targets.Count == 0)
 				return null;
