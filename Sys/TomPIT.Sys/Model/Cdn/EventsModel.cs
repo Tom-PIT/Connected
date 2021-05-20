@@ -24,7 +24,7 @@ namespace TomPIT.Sys.Model.Cdn
 			foreach (var j in ds)
 				Set(j.Identifier, j, TimeSpan.Zero);
 		}
-
+		
 		protected override void OnInvalidate(Guid id)
 		{
 			var r = Shell.GetService<IDatabaseService>().Proxy.Events.Select(id);

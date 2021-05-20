@@ -22,7 +22,7 @@ namespace TomPIT.Sys.Controllers.Management
 		public void Ping()
 		{
 			var body = FromBody();
-
+			
 			var popReceipt = body.Required<Guid>("popReceipt");
 			var nextVisible = body.Optional("nextVisible", TimeSpan.FromMinutes(2));
 

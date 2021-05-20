@@ -11,6 +11,7 @@ using TomPIT.Annotations;
 using TomPIT.Data;
 using TomPIT.Exceptions;
 using TomPIT.Reflection;
+using TomPIT.Runtime;
 using TomPIT.Security;
 
 namespace TomPIT.Middleware
@@ -41,7 +42,10 @@ namespace TomPIT.Middleware
 			if (Instance.GetType().FindAttribute<ValidateAntiforgeryAttribute>() is ValidateAntiforgeryAttribute attribute && !attribute.ValidateRequest)
 				return;
 
-			if (Shell.HttpContext is null || !Context.Environment.IsInteractive)
+			if (Shell.HttpContext is null || Context.Tenant.GetService<IRuntimeService>().Type != Environment.InstanceType.Application)
+				return;
+
+			if (!Shell.HttpContext.Request.IsAjaxRequest())
 				return;
 
 			if (Shell.HttpContext.RequestServices.GetService(typeof(IAntiforgery)) is not IAntiforgery service)
