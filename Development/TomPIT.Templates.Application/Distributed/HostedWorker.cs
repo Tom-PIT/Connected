@@ -35,9 +35,5 @@ namespace TomPIT.MicroServices.Distributed
 		public string Namespace { get; set; }
 		[Browsable(false)]
 		public override string FileName => $"{ToString()}.csx";
-
-		public int DisableTreshold { get; set; } = 3;
-
-		public int RetryInterval { get; set; } = 10;
 	}
 }

@@ -11,6 +11,7 @@ using TomPIT.Annotations;
 using TomPIT.Data;
 using TomPIT.Exceptions;
 using TomPIT.Reflection;
+using TomPIT.Security;
 
 namespace TomPIT.Middleware
 {
@@ -34,15 +35,16 @@ namespace TomPIT.Middleware
 
 		private void ValidateRoot()
 		{
-			var af = Instance.GetType().FindAttribute<ValidateAntiforgeryAttribute>();
-
-			if (af == null)
+			if (Instance.Context is IElevationContext elevation && elevation.State == ElevationContextState.Granted)
 				return;
 
-			if (Shell.HttpContext == null || !Context.Environment.IsInteractive)
+			if (Instance.GetType().FindAttribute<ValidateAntiforgeryAttribute>() is ValidateAntiforgeryAttribute attribute && !attribute.ValidateRequest)
 				return;
 
-			if (!(Shell.HttpContext.RequestServices.GetService(typeof(IAntiforgery)) is IAntiforgery service))
+			if (Shell.HttpContext is null || !Context.Environment.IsInteractive)
+				return;
+
+			if (Shell.HttpContext.RequestServices.GetService(typeof(IAntiforgery)) is not IAntiforgery service)
 				return;
 
 			if (Task.Run(async () =>

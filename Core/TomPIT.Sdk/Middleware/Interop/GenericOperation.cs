@@ -83,7 +83,10 @@ namespace TomPIT.Middleware.Interop
 					if (!string.IsNullOrWhiteSpace(Extender))
 						result = Extend(result);
 					else
-						OnAuthorize(result);
+					{
+						if (Context.Environment.IsInteractive)
+							OnAuthorize(result);
+					}
 				}
 
 				Invoked();
