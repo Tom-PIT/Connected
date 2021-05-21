@@ -60,7 +60,7 @@ namespace TomPIT.Sys.Model.Cdn
 				{ "id",descriptor.Identifier}
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Events.Insert(ms, name, descriptor.Identifier, DateTime.UtcNow, e, callback);
+			descriptor.Id = Shell.GetService<IDatabaseService>().Proxy.Events.Insert(ms, name, descriptor.Identifier, DateTime.UtcNow, e, callback);
 			DataModel.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
 			Set(descriptor.Identifier, descriptor, TimeSpan.Zero);

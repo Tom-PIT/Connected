@@ -1,9 +1,10 @@
 ﻿using System;
+using TomPIT.Data.Sql;
 using TomPIT.SysDb.Events;
 
 namespace TomPIT.Sys.Model.Cdn
 {
-	internal class EventDescriptor : IEventDescriptor
+	internal class EventDescriptor : LongPrimaryKeyRecord, IEventDescriptor
 	{
 		public Guid Identifier { get; set; }
 

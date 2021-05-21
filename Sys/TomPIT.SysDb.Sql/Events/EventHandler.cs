@@ -34,9 +34,9 @@ namespace TomPIT.SysDb.Sql.Events
 			return r.ExecuteSingleRow();
 		}
 
-		public void Insert(IMicroService microService, string name, Guid identifier, DateTime created, string arguments, string callback)
+		public long Insert(IMicroService microService, string name, Guid identifier, DateTime created, string arguments, string callback)
 		{
-			using var w = new Writer("tompit.event_ins");
+			using var w = new LongWriter("tompit.event_ins");
 
 			w.CreateParameter("@name", name);
 			w.CreateParameter("@identifier", identifier);
@@ -46,6 +46,8 @@ namespace TomPIT.SysDb.Sql.Events
 			w.CreateParameter("@service", microService.Token);
 
 			w.Execute();
+
+			return w.Result;
 		}
 	}
 }
