@@ -64,14 +64,20 @@ namespace TomPIT.SysDb.Sql.Messaging
 
 			foreach (var item in messages)
 			{
-				items.Add(new JObject
+				var jo = new JObject
 				{
 					{"id", item.Id },
 					{"next_visible", item.NextVisible },
-					{"dequeue_count", item.DequeueCount },
-					{"dequeue_timestamp", item.DequeueTimestamp },
-					{"pop_receipt", item.PopReceipt }
-				});
+					{"dequeue_count", item.DequeueCount }
+				};
+
+				if (item.DequeueTimestamp != DateTime.MinValue)
+					jo.Add("dequeue_timestamp", item.DequeueTimestamp);
+
+				if (item.PopReceipt != Guid.Empty)
+					jo.Add("pop_receipt", item.PopReceipt);
+
+				items.Add(jo);
 			};
 
 			using var w = new Writer("tompit.queue_upd");

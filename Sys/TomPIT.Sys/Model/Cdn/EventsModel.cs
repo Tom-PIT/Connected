@@ -24,7 +24,7 @@ namespace TomPIT.Sys.Model.Cdn
 			foreach (var j in ds)
 				Set(j.Identifier, j, TimeSpan.Zero);
 		}
-		
+
 		protected override void OnInvalidate(Guid id)
 		{
 			var r = Shell.GetService<IDatabaseService>().Proxy.Events.Select(id);
@@ -40,23 +40,32 @@ namespace TomPIT.Sys.Model.Cdn
 
 		public Guid Insert(Guid microService, string name, string e, string callback)
 		{
-			var id = Guid.NewGuid();
 			var ms = DataModel.MicroServices.Select(microService);
 
-			if (ms == null)
+			if (ms is null)
 				throw new SysException(SR.ErrMicroServiceNotFound);
+
+			var descriptor = new EventDescriptor
+			{
+				Arguments = e,
+				Callback = callback,
+				Created = DateTime.UtcNow,
+				Identifier = Guid.NewGuid(),
+				MicroService = microService,
+				Name = name
+			};
 
 			var message = new JObject
 			{
-				{ "id",id}
+				{ "id",descriptor.Identifier}
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Events.Insert(ms, name, id, DateTime.UtcNow, e, callback);
+			Shell.GetService<IDatabaseService>().Proxy.Events.Insert(ms, name, descriptor.Identifier, DateTime.UtcNow, e, callback);
 			DataModel.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
-			Refresh(id);
+			Set(descriptor.Identifier, descriptor, TimeSpan.Zero);
 
-			return id;
+			return descriptor.Identifier;
 		}
 
 		public ImmutableList<IQueueMessage> Dequeue(int count)

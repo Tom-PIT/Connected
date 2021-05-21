@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using TomPIT.Annotations;
@@ -51,13 +50,17 @@ namespace TomPIT.Middleware
 			if (Shell.HttpContext.RequestServices.GetService(typeof(IAntiforgery)) is not IAntiforgery service)
 				return;
 
-			if (Task.Run(async () =>
-			{
-				return await service.IsRequestValidAsync(Shell.HttpContext);
-			}).Result)
-				return;
+			/*
+			 * temporary disabled
+			 */
 
-			throw new MiddlewareValidationException(Instance, SR.ValAntiForgery);
+			//if (Task.Run(async () =>
+			//{
+			//	return await service.IsRequestValidAsync(Shell.HttpContext);
+			//}).Result)
+			//	return;
+
+			//throw new MiddlewareValidationException(Instance, SR.ValAntiForgery);
 		}
 
 		public void Validate(object instance, bool triggerValidating)

@@ -11,7 +11,7 @@ namespace TomPIT.Sys.Model.Cdn
 {
 	internal class QueueingModel : SynchronizedRepository<IQueueMessage, string>
 	{
-		internal const string Queue = "queueworker";
+		public const string Queue = "queueworker";
 
 		public QueueingModel(IMemoryCache container) : base(container, "queueMessage")
 		{
@@ -54,16 +54,27 @@ namespace TomPIT.Sys.Model.Cdn
 				}
 			}
 
-			Refresh(Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Insert(queue, message, bufferKey, expire, nextVisible, scope));
+			var descriptor = new QueueMessage
+			{
+				BufferKey = bufferKey,
+				Created = DateTime.UtcNow,
+				Expire = DateTime.UtcNow.Add(expire),
+				Message = message,
+				NextVisible = DateTime.UtcNow.Add(nextVisible),
+				Queue = queue,
+				Scope = scope
+			};
+
+			descriptor.Id = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Insert(queue, message, bufferKey, expire, nextVisible, scope);
+
+			Set(descriptor.Id, descriptor, TimeSpan.Zero);
 		}
 
 		public ImmutableList<IQueueMessage> Dequeue(int count, TimeSpan nextVisible, QueueScope scope, string queue)
 		{
-			ImmutableList<IQueueMessage> result = null;
+			ImmutableList<IQueueMessage> result = SelectTargets(count, scope, queue);
 
-			result = SelectTargets(count, scope, queue);
-
-			if (result == null || result.Count == 0)
+			if (result == null || result.IsEmpty)
 				return ImmutableList<IQueueMessage>.Empty;
 
 			foreach (var target in result)
@@ -91,7 +102,7 @@ namespace TomPIT.Sys.Model.Cdn
 				if (i.Scope != scope || i.NextVisible > DateTime.UtcNow || i.Expire <= DateTime.UtcNow)
 					continue;
 
-				if (string.Compare(i.Queue, queue ?? string.Empty, true) == 0)
+				if (string.Compare(i.Queue ?? string.Empty, queue ?? string.Empty, true) == 0)
 					targets.Add(i);
 			}
 			//var targets = string.IsNullOrWhiteSpace(queue)

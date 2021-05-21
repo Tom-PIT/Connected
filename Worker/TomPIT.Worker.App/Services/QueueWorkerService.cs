@@ -30,6 +30,9 @@ namespace TomPIT.Worker.Services
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
+				if (f.Available < 1)
+					return;
+
 				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Dequeue");
 
 				var e = new JObject
@@ -42,7 +45,7 @@ namespace TomPIT.Worker.Services
 				if (cancel.IsCancellationRequested)
 					return;
 
-				if (jobs == null)
+				if (jobs is null)
 					return;
 
 				foreach (var i in jobs)
