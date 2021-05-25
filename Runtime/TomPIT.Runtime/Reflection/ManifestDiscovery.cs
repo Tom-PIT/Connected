@@ -54,7 +54,7 @@ namespace TomPIT.Reflection
 						return null;
 
 					var result = c.Manifest();
-					
+
 					Set(component, result, TimeSpan.Zero);
 
 					return result;

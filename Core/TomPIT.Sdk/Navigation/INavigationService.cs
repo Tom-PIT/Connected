@@ -9,6 +9,13 @@ namespace TomPIT.Navigation
 		IgnoreLastRoute = 2
 	}
 
+	public enum NavigationContextBehavior
+	{
+		Inherit = 0,
+		Context = 1,
+		Override = 3,
+		Ignore = 4
+	}
 	public interface INavigationService
 	{
 		List<string> QueryKeys();

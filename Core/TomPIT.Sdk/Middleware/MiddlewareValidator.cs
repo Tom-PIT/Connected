@@ -54,13 +54,13 @@ namespace TomPIT.Middleware
 			 * temporary disabled
 			 */
 
-			//if (Task.Run(async () =>
-			//{
-			//	return await service.IsRequestValidAsync(Shell.HttpContext);
-			//}).Result)
-			//	return;
+			if (System.Threading.Tasks.Task.Run(async () =>
+			{
+				return await service.IsRequestValidAsync(Shell.HttpContext);
+			}).Result)
+				return;
 
-			//throw new MiddlewareValidationException(Instance, SR.ValAntiForgery);
+			throw new MiddlewareValidationException(Instance, SR.ValAntiForgery);
 		}
 
 		public void Validate(object instance, bool triggerValidating)

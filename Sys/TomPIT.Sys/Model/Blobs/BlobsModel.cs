@@ -157,6 +157,18 @@ namespace TomPIT.Sys.Model.Blobs
 
 			foreach (var i in blobs)
 				Delete(i.Token);
+
+			//Script manifest
+			blobs = Shell.GetService<IDatabaseService>().Proxy.Storage.Query(microService, 542);
+
+			foreach (var i in blobs)
+				Delete(i.Token);
+
+			//Script manifest metadata
+			blobs = Shell.GetService<IDatabaseService>().Proxy.Storage.Query(microService, 543);
+
+			foreach (var i in blobs)
+				Delete(i.Token);
 		}
 
 		public Guid Upload(Guid resourceGroup, int type, string primaryKey, Guid microService, string topic, string fileName, string contentType, string draft, byte[] content,

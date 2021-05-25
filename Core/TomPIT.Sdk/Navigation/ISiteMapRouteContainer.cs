@@ -1,14 +1,10 @@
-﻿using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
-
-namespace TomPIT.Navigation
+﻿namespace TomPIT.Navigation
 {
-	public interface ISiteMapRouteContainer : ISiteMapContainer
+	public interface ISiteMapRouteContainer : ISiteMapContainer, INavigationContextElement
 	{
 		string Template { get; }
 		string RouteKey { get; }
 		object Parameters { get; }
 		string QueryString { get; }
-		[CIP(CIP.NavigationContextProvider)]
-		string NavigationContext { get; }
 	}
 }

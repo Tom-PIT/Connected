@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
@@ -85,7 +86,7 @@ namespace TomPIT.Navigation
 			if (string.IsNullOrWhiteSpace(parsedUrl))
 				return parsedUrl;
 
-			return WithNavigationContext(route.NavigationContext, parsedUrl);
+			return WithNavigationContext(ResolveNavigationContext(route), parsedUrl);
 		}
 
 		public static string WithNavigationContext(this ISiteMapRoute route, string parsedUrl)
@@ -93,14 +94,11 @@ namespace TomPIT.Navigation
 			if (string.IsNullOrWhiteSpace(parsedUrl))
 				return parsedUrl;
 
-			return WithNavigationContext(route.NavigationContext, parsedUrl);
+			return WithNavigationContext(ResolveNavigationContext(route), parsedUrl);
 		}
 
 		private static string WithNavigationContext(string key, string parsedUrl)
 		{
-			if (Shell.HttpContext?.Request.Query.ContainsKey("navigationContext") == true)
-				key = Shell.HttpContext?.Request.Query["navigationContext"];
-
 			if (string.IsNullOrWhiteSpace(key))
 				return parsedUrl;
 
@@ -118,6 +116,36 @@ namespace TomPIT.Navigation
 			}
 			else
 				return $"{parsedUrl}?navigationContext={key}";
+		}
+
+		private static string ResolveNavigationContext(INavigationContextElement route)
+		{
+			switch (route.NavigationContextBehavior)
+			{
+				case NavigationContextBehavior.Inherit:
+					var nonInherited = route.Parent;
+
+					while (nonInherited is not null)
+					{
+						if (nonInherited is INavigationContextElement ctx && ctx.NavigationContextBehavior != NavigationContextBehavior.Inherit)
+							return ResolveNavigationContext(ctx);
+
+						nonInherited = nonInherited.Parent;
+					}
+
+					return null;
+				case NavigationContextBehavior.Context:
+					if (Shell.HttpContext?.Request.Query.ContainsKey("navigationContext") == true)
+						return Shell.HttpContext?.Request.Query["navigationContext"];
+
+					return route.NavigationContext;
+				case NavigationContextBehavior.Override:
+					return route.NavigationContext;
+				case NavigationContextBehavior.Ignore:
+					return null;
+				default:
+					throw new NotSupportedException();
+			}
 		}
 
 		public static RouteValueDictionary Merge(this RouteValueDictionary existing, ISiteMapElement element)
@@ -218,7 +246,7 @@ namespace TomPIT.Navigation
 			foreach (var route in items)
 			{
 				var url = CreateRoute(context, route);
-				
+
 				routes.Add(url);
 
 				LoadRoutes(context, url.Items, route.Routes);

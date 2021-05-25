@@ -540,6 +540,9 @@ namespace TomPIT.Navigation
 		}
 		public string ParseUrl(string template, RouteValueDictionary parameters, bool allowQueryString)
 		{
+			if (string.IsNullOrWhiteSpace(template))
+				return null;
+
 			if (parameters == null)
 			{
 				if (Shell.HttpContext != null)
