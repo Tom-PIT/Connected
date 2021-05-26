@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using MimeKit;
+using MimeKit.Cryptography;
 using TomPIT.Environment;
 using TomPIT.Middleware;
 using TomPIT.Storage;
@@ -23,6 +25,7 @@ namespace TomPIT.Cdn.Mail
 			CreateMeta();
 			CreateHeaders();
 			CreateBody();
+			Sign();
 		}
 
 		public MimeMessage Message { get; private set; }
@@ -34,7 +37,11 @@ namespace TomPIT.Cdn.Mail
 			Message.From.Add(MailboxAddress.Parse(Configuration.From));
 			Message.To.Add(MailboxAddress.Parse(Configuration.To));
 			Message.Subject = Configuration.Subject;
-			Message.Sender = MailboxAddress.Parse(Configuration.From);
+
+			if (!string.IsNullOrEmpty(SmtpService.DefaultEmailSender))
+				Message.Sender = MailboxAddress.Parse(SmtpService.DefaultEmailSender);
+			else
+				Message.Sender = MailboxAddress.Parse(Configuration.From);
 		}
 
 		private void CreateHeaders()
@@ -77,6 +84,36 @@ namespace TomPIT.Cdn.Mail
 			CreateAttachments(builder);
 
 			Message.Body = builder.ToMessageBody();
+		}
+
+		private void Sign()
+		{
+			if (SmtpService.DkimPrivateKey.IsDefaultOrEmpty)
+				return;
+
+			using var ms = new MemoryStream(SmtpService.DkimPrivateKey.ToArray());
+
+			var dkim = new DkimSigner(ms, SmtpService.DkimDomain, SmtpService.DkimSelector)
+			{
+				HeaderCanonicalizationAlgorithm = DkimCanonicalizationAlgorithm.Simple,
+				BodyCanonicalizationAlgorithm = DkimCanonicalizationAlgorithm.Simple,
+				AgentOrUserIdentifier = SmtpService.HostName,
+			};
+
+			var headers = new List<MimeKit.HeaderId>
+			{
+				MimeKit.HeaderId.From,
+				MimeKit.HeaderId.Subject,
+				MimeKit.HeaderId.To,
+				MimeKit.HeaderId.Sender
+			};
+
+			if (Message.Sender is not null)
+				headers.Add(MimeKit.HeaderId.Sender);
+
+			Message.Prepare(EncodingConstraint.SevenBit);
+
+			dkim.Sign(Message, headers);
 		}
 
 		private void CreateAttachments(BodyBuilder builder)
