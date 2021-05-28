@@ -46,7 +46,7 @@ namespace TomPIT
 			return Render(value, false);
 		}
 
-		[Obsolete("Value is obsolete, please use the Render method instead.")]
+		[Obsolete("Please use the Render method instead.")]
 		public IHtmlContent Value(object value, bool mapNull)
 		{
 			if (value == null)
@@ -68,7 +68,7 @@ namespace TomPIT
 			return Html.Raw(value);
 		}
 
-		[Obsolete("Value is obsolete, please use the Render method instead.")]
+		[Obsolete("Please use the Render method instead.")]
 		public IHtmlContent Value(object value)
 		{
 			return Value(value, false);
