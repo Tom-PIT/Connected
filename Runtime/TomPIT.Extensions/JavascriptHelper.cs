@@ -19,6 +19,34 @@ namespace TomPIT
 		{
 		}
 
+
+		public IHtmlContent Render(object value, bool mapNull) 
+		{
+			if (value == null)
+				return Html.Raw("null") as HtmlString;
+
+			if (value is string || value is char)
+				return String(value);
+			else if (value is DateTime time)
+				return Date(time);
+			else if (value is DateTimeOffset offset)
+				return Date(offset);
+			else if (value is Guid)
+				return Guid(value);
+			else if (value is bool)
+				return Bool((bool)value);
+			else if (value.GetType().IsNumericType())
+				return Number(value, mapNull);
+
+			return Html.Raw(value);
+		}
+
+		public IHtmlContent Render(object value)
+		{
+			return Render(value, false);
+		}
+
+		[Obsolete("Please use the Render method instead.")]
 		public IHtmlContent Value(object value, bool mapNull)
 		{
 			if (value == null)
@@ -39,6 +67,8 @@ namespace TomPIT
 
 			return Html.Raw(value);
 		}
+
+		[Obsolete("Please use the Render method instead.")]
 		public IHtmlContent Value(object value)
 		{
 			return Value(value, false);

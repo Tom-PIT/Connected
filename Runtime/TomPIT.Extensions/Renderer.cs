@@ -18,6 +18,7 @@ namespace TomPIT
 		private ReportHelper _reports = null;
 		private SearchResultsHelper _searchResults = null;
 		private IoCHelper _ioc = null;
+		private StringProcessorHelper _stringProcessor = null;
 
 		internal Renderer(IHtmlHelper helper)
 		{
@@ -133,6 +134,17 @@ namespace TomPIT
 					_shared = new SharedHelper(Html);
 
 				return _shared;
+			}
+		}
+
+		public StringProcessorHelper Strings 
+		{
+			get 
+			{
+				if (_stringProcessor == null) 
+					_stringProcessor = new StringProcessorHelper(Html);
+
+				return _stringProcessor;
 			}
 		}
 
