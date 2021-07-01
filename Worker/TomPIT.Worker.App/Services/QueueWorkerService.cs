@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 
@@ -52,6 +53,8 @@ namespace TomPIT.Worker.Services
 				{
 					if (cancel.IsCancellationRequested)
 						return;
+
+                    MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"Enqueue {i.Id} {i.Queue} {i.PopReceipt} {i.BufferKey}");
 
 					f.Enqueue(i);
 				}

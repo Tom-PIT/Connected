@@ -54,6 +54,8 @@ namespace TomPIT.Worker.Services
 			{
 				item.PopReceipt
 			});
+
+			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"Completed: {item.Id} {item.Queue} {item.PopReceipt} {item.BufferKey}");
 		}
 
 		private bool Invoke(IQueueMessage queue, JObject data)
@@ -125,6 +127,8 @@ namespace TomPIT.Worker.Services
 			};
 
 			MiddlewareDescriptor.Current.Tenant.Post(url, d);
+
+			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"Error: {item.Id} {item.Queue} {item.PopReceipt} {item.BufferKey}");
 		}
 	}
 }
