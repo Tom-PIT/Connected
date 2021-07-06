@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
+using TomPIT.Serialization;
 
 namespace TomPIT.Worker.Services
 {
@@ -42,7 +43,9 @@ namespace TomPIT.Worker.Services
 				};
 
 				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
-
+				
+				var batch = Guid.NewGuid();
+				
 				if (cancel.IsCancellationRequested)
 					return;
 
@@ -54,7 +57,7 @@ namespace TomPIT.Worker.Services
 					if (cancel.IsCancellationRequested)
 						return;
 
-                    MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"Enqueue {i.Id} {i.Queue} {i.PopReceipt} {i.BufferKey}");
+                    MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerService).FullName.PadRight(64)}| Batch {batch} => Enqueue {Serializer.Serialize(i)}");
 
 					f.Enqueue(i);
 				}

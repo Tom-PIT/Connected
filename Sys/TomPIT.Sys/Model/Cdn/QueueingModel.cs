@@ -3,165 +3,170 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.Caching;
+using TomPIT.Serialization;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
 using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Model.Cdn
 {
-	internal class QueueingModel : SynchronizedRepository<IQueueMessage, string>
-	{
-		public const string Queue = "queueworker";
+    internal class QueueingModel : SynchronizedRepository<IQueueMessage, string>
+    {
+        public const string Queue = "queueworker";
 
-		public QueueingModel(IMemoryCache container) : base(container, "queueMessage")
-		{
-		}
+        public QueueingModel(IMemoryCache container) : base(container, "queueMessage")
+        {
+        }
 
-		protected override void OnInitializing()
-		{
-			var ds = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Query();
+        protected override void OnInitializing()
+        {
+            var ds = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Query();
 
-			foreach (var j in ds)
-				Set(j.Id, j, TimeSpan.Zero);
-		}
+            foreach (var j in ds)
+                Set(j.Id, j, TimeSpan.Zero);
+        }
 
-		protected override void OnInvalidate(string id)
-		{
-			var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(id);
+        protected override void OnInvalidate(string id)
+        {
+            var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(id);
 
-			if (r != null)
-			{
-				Set(id, r, TimeSpan.Zero);
-				return;
-			}
+            if (r != null)
+            {
+                Set(id, r, TimeSpan.Zero);
+                return;
+            }
 
-			Remove(id);
-		}
+            Remove(id);
+        }
 
-		public void Enqueue(string queue, string message, string bufferKey, TimeSpan expire, TimeSpan nextVisible, QueueScope scope)
-		{
-			if (!string.IsNullOrWhiteSpace(bufferKey))
-			{
-				var existing = Where(f => string.Compare(f.Queue, queue, true) == 0 && string.Compare(f.BufferKey, bufferKey, true) == 0);
+        public void Enqueue(string queue, string message, string bufferKey, TimeSpan expire, TimeSpan nextVisible, QueueScope scope)
+        {
+            if (!string.IsNullOrWhiteSpace(bufferKey))
+            {
+                var existing = Where(f => string.Compare(f.Queue, queue, true) == 0 && string.Compare(f.BufferKey, bufferKey, true) == 0);
 
-				if (existing.Count > 0)
-				{
-					foreach (var ex in existing)
-					{
-						if (ex.NextVisible <= DateTime.UtcNow)
-							return;
-					}
-				}
-			}
+                if (existing.Count > 0)
+                {
+                    foreach (var ex in existing)
+                    {
+                        if (ex.NextVisible <= DateTime.UtcNow)
+                            return;
+                    }
+                }
+            }
 
-			var descriptor = new QueueMessage
-			{
-				BufferKey = bufferKey,
-				Created = DateTime.UtcNow,
-				Expire = DateTime.UtcNow.Add(expire),
-				Message = message,
-				NextVisible = DateTime.UtcNow.Add(nextVisible),
-				Queue = queue,
-				Scope = scope
-			};
+            var descriptor = new QueueMessage
+            {
+                BufferKey = bufferKey,
+                Created = DateTime.UtcNow,
+                Expire = DateTime.UtcNow.Add(expire),
+                Message = message,
+                NextVisible = DateTime.UtcNow.Add(nextVisible),
+                Queue = queue,
+                Scope = scope
+            };
 
-			descriptor.Id = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Insert(queue, message, bufferKey, expire, nextVisible, scope);
+            descriptor.Id = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Insert(queue, message, bufferKey, expire, nextVisible, scope);
 
-			Set(descriptor.Id, descriptor, TimeSpan.Zero);
-		}
+            Set(descriptor.Id, descriptor, TimeSpan.Zero);
+        }
 
-		public ImmutableList<IQueueMessage> Dequeue(int count, TimeSpan nextVisible, QueueScope scope, string queue)
-		{
-			ImmutableList<IQueueMessage> result = SelectTargets(count, scope, queue);
+        public ImmutableList<IQueueMessage> Dequeue(int count, TimeSpan nextVisible, QueueScope scope, string queue)
+        {
+            ImmutableList<IQueueMessage> targets = SelectTargets(count, scope, queue);
 
-			if (result == null || result.IsEmpty)
-				return ImmutableList<IQueueMessage>.Empty;
+            if (targets == null || targets.IsEmpty)
+                return ImmutableList<IQueueMessage>.Empty;
 
-			foreach (var target in result)
-			{
-				if (target is IQueueMessageModifier modifier)
-					modifier.Modify(DateTime.UtcNow.Add(nextVisible), DateTime.UtcNow, target.DequeueCount + 1, Guid.NewGuid());
-			}
+            var results = new List<IQueueMessage>();
+            foreach (var target in targets)
+            {
+                if (target is IQueueMessageModifier modifier && modifier.Modify(DateTime.UtcNow.Add(nextVisible), DateTime.UtcNow, target.DequeueCount + 1, Guid.NewGuid()))
+                    results.Add(target);
+            }
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Update(result.ToList());
+            Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Update(targets.ToList());
 
-			return result;
-		}
+            foreach (IQueueMessageModifier result in results)
+                result.Reset();
 
-		private ImmutableList<IQueueMessage> SelectTargets(int count, QueueScope scope, string queue)
-		{
-			Initialize();
+            return results.ToImmutableList();
+        }
 
-			if (Count == 0)
-				return null;
+        private ImmutableList<IQueueMessage> SelectTargets(int count, QueueScope scope, string queue)
+        {
+            Initialize();
 
-			var targets = new List<IQueueMessage>();
+            if (Count == 0)
+                return null;
 
-			foreach (var i in All())
-			{
-				if (i.Scope != scope || i.NextVisible > DateTime.UtcNow || i.Expire <= DateTime.UtcNow)
-					continue;
+            var targets = new List<IQueueMessage>();
 
-				if (string.Compare(i.Queue ?? string.Empty, queue ?? string.Empty, true) == 0)
-					targets.Add(i);
-			}
-			//var targets = string.IsNullOrWhiteSpace(queue)
-			//	? Where(f => f.Scope == scope && f.NextVisible <= DateTime.UtcNow && f.Expire > DateTime.UtcNow)
-			//	: Where(f => f.Scope == scope && f.NextVisible <= DateTime.UtcNow && f.Expire > DateTime.UtcNow && string.Compare(f.Queue, queue, true) == 0);
+            foreach (var i in All())
+            {
+                if (i.Scope != scope || i.NextVisible > DateTime.UtcNow || i.Expire <= DateTime.UtcNow)
+                    continue;
 
-			if (targets.Count == 0)
-				return null;
+                if (string.Compare(i.Queue ?? string.Empty, queue ?? string.Empty, true) == 0)
+                    targets.Add(i);
+            }
+            //var targets = string.IsNullOrWhiteSpace(queue)
+            //	? Where(f => f.Scope == scope && f.NextVisible <= DateTime.UtcNow && f.Expire > DateTime.UtcNow)
+            //	: Where(f => f.Scope == scope && f.NextVisible <= DateTime.UtcNow && f.Expire > DateTime.UtcNow && string.Compare(f.Queue, queue, true) == 0);
 
-			var ordered = targets.OrderBy(f => f.NextVisible).ThenBy(f => f.Id);
+            if (targets.Count == 0)
+                return null;
 
-			if (ordered.Count() <= count)
-				return ordered.ToImmutableList();
+            var ordered = targets.OrderBy(f => f.NextVisible).ThenBy(f => f.Id);
 
-			return ordered.Take(count).ToImmutableList();
-		}
+            if (ordered.Count() <= count)
+                return ordered.ToImmutableList();
 
-		public void Ping(Guid popReceipt, TimeSpan nextVisible)
-		{
-			var message = Select(popReceipt);
+            return ordered.Take(count).ToImmutableList();
+        }
 
-			if (message == null)
-				return;
+        public void Ping(Guid popReceipt, TimeSpan nextVisible)
+        {
+            var message = Select(popReceipt);
 
-			if (message is IQueueMessageModifier modifier)
-				modifier.Modify(DateTime.UtcNow.Add(nextVisible), message.DequeueTimestamp, message.DequeueCount, message.PopReceipt);
+            if (message == null)
+                return;
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Update(new List<IQueueMessage> { message });
-		}
+            if (message is IQueueMessageModifier modifier)
+                modifier.Modify(DateTime.UtcNow.Add(nextVisible), message.DequeueTimestamp, message.DequeueCount, message.PopReceipt);
 
-		public void Complete(Guid popReceipt)
-		{
-			var message = Select(popReceipt);
+            Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Update(new List<IQueueMessage> { message });
+        }
 
-			if (message == null)
-				return;
+        public void Complete(Guid popReceipt)
+        {
+            var message = Select(popReceipt);
 
-			Remove(message.Id);
+            if (message == null)
+                return;
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(message);
-		}
+            Remove(message.Id);
 
-		public IQueueMessage Select(Guid popReceipt)
-		{
-			return Get(f => f.PopReceipt == popReceipt);
-		}
+            Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(message);
+        }
 
-		public void Recycle()
-		{
-			Initialize();
+        public IQueueMessage Select(Guid popReceipt)
+        {
+            return Get(f => f.PopReceipt == popReceipt);
+        }
 
-			var orphanes = Where(f => f.Expire < DateTime.UtcNow);
+        public void Recycle()
+        {
+            Initialize();
 
-			foreach (var message in orphanes)
-			{
-				Remove(message.Id);
+            var orphanes = Where(f => f.Expire < DateTime.UtcNow);
 
-				Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(message);
-			}
-		}
-	}
+            foreach (var message in orphanes)
+            {
+                Remove(message.Id);
+
+                Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(message);
+            }
+        }
+    }
 }

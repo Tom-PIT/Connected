@@ -10,6 +10,7 @@ using TomPIT.ComponentModel.Distributed;
 using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
+using TomPIT.Serialization;
 using TomPIT.Storage;
 using TomPIT.Worker.Workers;
 
@@ -55,7 +56,7 @@ namespace TomPIT.Worker.Services
 				item.PopReceipt
 			});
 
-			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"Completed: {item.Id} {item.Queue} {item.PopReceipt} {item.BufferKey}");
+			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName.PadRight(64)}| Completed queue entry: {Serializer.Serialize(item)}");
 		}
 
 		private bool Invoke(IQueueMessage queue, JObject data)
@@ -128,7 +129,7 @@ namespace TomPIT.Worker.Services
 
 			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 
-			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"Error: {item.Id} {item.Queue} {item.PopReceipt} {item.BufferKey}");
+			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName.PadRight(64)}| Error processing entry: {Serializer.Serialize(item)} => {ex}");
 		}
 	}
 }

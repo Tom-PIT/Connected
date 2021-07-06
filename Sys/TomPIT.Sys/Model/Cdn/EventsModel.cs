@@ -57,7 +57,7 @@ namespace TomPIT.Sys.Model.Cdn
 
 			var message = new JObject
 			{
-				{ "id",descriptor.Identifier}
+				{ "id", descriptor.Identifier}
 			};
 
 			descriptor.Id = Shell.GetService<IDatabaseService>().Proxy.Events.Insert(ms, name, descriptor.Identifier, DateTime.UtcNow, e, callback);
