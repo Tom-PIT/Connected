@@ -141,7 +141,7 @@ namespace TomPIT.Caching
 				var options = new EntryOptions
 				{
 					AllowNull = false,
-					Duration = TimeSpan.Zero,
+					Duration = TimeSpan.FromMinutes(1),
 					SlidingExpiration = true
 				};
 
