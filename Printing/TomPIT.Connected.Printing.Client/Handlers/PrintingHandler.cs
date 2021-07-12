@@ -26,11 +26,16 @@ namespace TomPIT.Connected.Printing.Client.Handlers
     {
         private HubConnection _connection;
 
-        private PrinterHandler _printerHandler = new PrinterHandler();
+        private PrinterHandler _printerHandler;
 
         private bool _keepAlive;
 
         private Uri _baseCdnUri;
+
+        public PrintingHandler() 
+        {
+            _printerHandler = new PrinterHandler(Settings.PrinterNameMappings);
+        }
 
         private void CreateConnection()
         {
@@ -173,7 +178,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
         {
             Logging.Debug("Registering printers...");
 
-            var printerList = _printerHandler.GetPrinters(Settings.AvailablePrinters, Settings.PrinterNameMappings);
+            var printerList = _printerHandler.GetPrinters();
 
             try
             {

@@ -17,8 +17,6 @@ namespace TomPIT.Connected.Printing.Client.Configuration
 
         public static string Token { get; private set; }
 
-        public static string AvailablePrinters { get; private set; }
-
         public static Dictionary<string, string> PrinterNameMappings { get; private set; } = new Dictionary<string, string>();
 
         /// <summary>

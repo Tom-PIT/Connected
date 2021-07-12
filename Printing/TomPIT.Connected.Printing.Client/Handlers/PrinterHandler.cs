@@ -18,30 +18,9 @@ namespace TomPIT.Connected.Printing.Client.Handlers
     {
         private Dictionary<string, string> _printerMapping;
 
-        public PrinterHandler()
+        public PrinterHandler(Dictionary<string, string> printerMappings)
         {
-            _printerMapping = new Dictionary<string, string>();
-        }
-
-        private void SetMappings(List<string> printers, Dictionary<string, string> mappings)
-        {
-            //add mappings to dictionary
-            if (mappings != null)
-            {
-                foreach (var mapping in mappings)
-                {
-                    if (_printerMapping.ContainsKey(mapping.Key))
-                        continue;
-                    _printerMapping[mapping.Key] = mapping.Value;
-                }
-            }
-            //add the rest of printers to mapping
-            foreach (var printer in printers)
-            {
-                if (_printerMapping.ContainsValue(printer))
-                    continue;
-                _printerMapping[printer] = printer;
-            }
+            _printerMapping = printerMappings ?? new Dictionary<string, string>();
         }
 
         private string PrinterQueueStatus(PrintQueue printQueue)
@@ -95,14 +74,6 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             return !(printQueue.IsOffline || printQueue.IsInError);
         }
 
-        public string MapToFriendlyName(string printerName)
-        {
-            if (_printerMapping.ContainsValue(printerName))
-                return _printerMapping.FirstOrDefault(x => x.Value.Equals(printerName)).Key;
-
-            return printerName;
-        }
-
         public string MapToSystemName(string friendlyName)
         {
             if (_printerMapping.ContainsKey(friendlyName))
@@ -111,17 +82,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             return friendlyName;
         }
 
-        public string GetFullPrinterName(string printerName)
-        {
-            var systemName = MapToSystemName(printerName);
-
-            if (systemName.Equals(printerName, StringComparison.Ordinal))
-                return printerName;
-
-            return $"{printerName} ({systemName})";
-        }
-
-        public List<string> GetPrinters(string printers, Dictionary<string, string> printerMappings)
+        public List<string> GetPrinters()
         {
             return new List<string>(_printerMapping.Keys);
         }
