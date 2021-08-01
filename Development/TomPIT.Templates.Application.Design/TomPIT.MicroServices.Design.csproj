@@ -57,7 +57,13 @@
     <ProjectReference Include="..\TomPIT.Ide\TomPIT.Ide.csproj" />
     <ProjectReference Include="..\TomPIT.Templates.Application\TomPIT.MicroServices.csproj" />
   </ItemGroup>
+  <PropertyGroup>
+      <TPDeployPath Condition="'$(TPDeployPath)' == '' AND '$(OS)' == 'Windows_NT'">C:\Deploy\Plugins\</TPDeployPath>
+      <TPDeployPath Condition="'$(TPDeployPath)' == '' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">$(SolutionDir)Deploy/Plugins/</TPDeployPath>
+  </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.MicroServices.Design&quot;" />
+    <Message Text="Copying files to $(TPDeployPath)..."/>
+    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="copy &quot;$(TargetPath)&quot; &quot;$(TPDeployPath)TomPIT.MicroServices.Design&quot;" />
+    <Exec Condition="'$(OS)' != 'Windows_NT'" Command="mkdir -p &quot;$(TPDeployPath)TomPIT.MicroServices.Design&quot;&#xD;&#xA;cp &quot;$(TargetPath)&quot; &quot;$(TPDeployPath)TomPIT.MicroServices.Design&quot;" />
   </Target>
 </Project>

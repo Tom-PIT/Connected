@@ -21,8 +21,14 @@
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
     <ProjectReference Include="..\TomPIT.SysDb\TomPIT.SysDb.csproj" />
   </ItemGroup>
+  <PropertyGroup>
+      <TPDeployPath Condition="'$(TPDeployPath)' == '' AND '$(OS)' == 'Windows_NT'">C:\Deploy\Plugins\</TPDeployPath>
+      <TPDeployPath Condition="'$(TPDeployPath)' == '' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">$(SolutionDir)Deploy/Plugins/</TPDeployPath>
+  </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.SysDb.Sql&quot;" />
+    <Message Text="Copying files to $(TPDeployPath)..."/>
+    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="copy &quot;$(TargetPath)&quot; &quot;$(TPDeployPath)TomPIT.SysDb.Sql&quot;" />
+    <Exec Condition="'$(OS)' != 'Windows_NT'" Command="mkdir -p &quot;$(TPDeployPath)TomPIT.SysDb.Sql&quot;&#xD;&#xA;cp &quot;$(TargetPath)&quot; &quot;$(TPDeployPath)TomPIT.SysDb.Sql&quot;" />
   </Target>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
