@@ -144,8 +144,9 @@ namespace TomPIT.UI.Theming
 
 			if (!p.StartsWith("/"))
 				p = string.Format("/{0}", p);
-
+			
 			var path = string.Format("{0}{1}", Shell.GetService<IRuntimeService>().WebRoot, p.Replace('/', '\\'));
+			var test = Path.Combine(Shell.GetService<IRuntimeService>().WebRoot, p);
 
 			if (!File.Exists(path))
 				return string.Empty;
@@ -171,8 +172,10 @@ namespace TomPIT.UI.Theming
 
 		private object LoadVariablesLess()
 		{
-			var path = string.Format("{0}{1}", Shell.GetService<IRuntimeService>().WebRoot, @"\Assets\Styles\Variables.less");
+			var root = Shell.GetService<IRuntimeService>().WebRoot ?? "";
 
+			var path = Path.Combine(root, "Assets", "Styles", "Variables.less");
+						
 			if (!File.Exists(path))
 				return string.Empty;
 
