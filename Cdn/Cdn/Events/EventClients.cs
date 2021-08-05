@@ -67,6 +67,9 @@ namespace TomPIT.Cdn.Events
 
 				foreach (var item in items)
 				{
+					if (item is null)
+						continue;
+
 					if (string.Compare(item.ConnectionId, connectionId, true) == 0)
 					{
 						if (item.Behavior == EventSubscriptionBehavior.FireForget)
@@ -111,13 +114,19 @@ namespace TomPIT.Cdn.Events
 		{
 			lock (_sync)
 			{
-				if (Clients.Values.Count > 0)
+				if (!Clients.TryGetValue(key, out List<EventClient> items))
 					return;
 
-				if(Clients.TryRemove(key, out List<EventClient> value))
+				if (items.Any())
+					return;
+
+				/*
+				 * check if someone has registered in the meantime
+				 */
+				if(Clients.TryRemove(key, out items))
 				{
-					if (value.Count > 0)
-						Clients.TryAdd(key, value);
+					if (items.Any(f => f is not null))
+						Clients.TryAdd(key, items);
 				}
 			}
 		}

@@ -104,11 +104,11 @@ namespace TomPIT.Middleware.Interop
 			if (context != null)
 				this.WithContext(context);
 
-			Validate();
-			OnValidating();
-
 			try
 			{
+				Validate();
+				OnValidating();
+
 				if (OperationTarget == DistributedOperationTarget.Distributed)
 				{
 					if (Context.Environment.IsInteractive)

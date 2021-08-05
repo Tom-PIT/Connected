@@ -60,15 +60,15 @@ namespace TomPIT.Middleware.Interop
 			if (context != null)
 				this.WithContext(context);
 
-			ValidateExtender();
-			Validate();
-			OnValidating();
-
 			var metrics = StartMetrics();
 			var success = true;
 
 			try
 			{
+				ValidateExtender();
+				Validate();
+				OnValidating();
+
 				if (Context.Environment.IsInteractive)
 				{
 					AuthorizePolicies();

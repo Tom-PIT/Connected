@@ -104,8 +104,7 @@ namespace TomPIT.Cdn.Mail
 			{
 				MimeKit.HeaderId.From,
 				MimeKit.HeaderId.Subject,
-				MimeKit.HeaderId.To,
-				MimeKit.HeaderId.Sender
+				MimeKit.HeaderId.To
 			};
 
 			if (Message.Sender is not null)
