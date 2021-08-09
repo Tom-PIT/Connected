@@ -11,7 +11,7 @@
 		"TomPIT.StorageProvider.Sql.SqlStorageProvider, TomPIT.StorageProvider.Sql"
 	],
 	"connectionStrings": {
-		"sys": "data source=pit-zbook\\sqlexpress; initial catalog=tp1;integrated security=true;"
+		"sys": "data source=192.168.10.7\\SQL2017; initial catalog=coreSys;user id=tompit;password=tompit;"
 	},
 	"plugins": {
 		"location": "c:\\Deploy\\Plugins",
