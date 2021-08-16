@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TomPIT.Connectivity;
 using TomPIT.Middleware;
 
 namespace TomPIT.Distributed
 {
-    internal class WorkerService : MiddlewareObject, IWorkerService
+    internal class WorkerService : TenantObject, IWorkerService
     {
-        public WorkerService(IMiddlewareContext context) : base(context)
+        public WorkerService(ITenant tenant) : base(tenant)
         {
 
         }
 
         public void Run(Guid worker)
         {
-            Context.Tenant.Post(Context.Tenant.CreateUrl("WorkerManagement", "Run"), new
+            Tenant.Post(Tenant.CreateUrl("WorkerManagement", "Run"), new
             {
                 worker
             });

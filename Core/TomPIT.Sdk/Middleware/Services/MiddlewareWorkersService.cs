@@ -23,7 +23,7 @@ namespace TomPIT.Middleware.Services
             descriptor.Validate();
             descriptor.ValidateConfiguration();
 
-            Context.Tenant.GetService<IWorkerService>().Run(descriptor.Component.Token);
+            Context.Tenant.GetService<IWorkerService>().Run(descriptor.Configuration.Component);
         }
     }
 }
