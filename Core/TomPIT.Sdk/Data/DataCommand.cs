@@ -116,7 +116,7 @@ namespace TomPIT.Data
 
             foreach (var parameter in Parameters)
             {
-                if (parameter.Direction == ParameterDirection.Input && parameter.Value is null || parameter.Value == DBNull.Value)
+                if (parameter.Direction == ParameterDirection.Input && (parameter.Value is null || parameter.Value == DBNull.Value))
                     continue;
 
                 Command.Parameters.Add(new CommandParameter
