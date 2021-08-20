@@ -46,6 +46,8 @@ namespace TomPIT.App.Resources
 
 				Context.Response.ContentLength = buffer.Length;
 				Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
+
+				Context.Response.CompleteAsync().Wait();
 			}
 		}
 	}

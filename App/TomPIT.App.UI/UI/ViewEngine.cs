@@ -56,6 +56,9 @@ namespace TomPIT.App.UI
 				Context.Response.Headers.Add("X-TP-VIEW", name);
 				await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
 			}
+
+
+			await Context.Response.CompleteAsync();
 		}
 
 		public async Task Render(string name)
@@ -111,6 +114,8 @@ namespace TomPIT.App.UI
 
 					if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
 						await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+
+					await Context.Response.CompleteAsync();
 				}
 				catch (CompilerException)
 				{

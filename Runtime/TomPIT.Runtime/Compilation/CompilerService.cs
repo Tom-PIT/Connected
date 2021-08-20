@@ -718,7 +718,8 @@ namespace TomPIT.Compilation
 				new ClassComplianceCodeAnalyer(tenant, microService, component, script),
 				new NamespacingAnalyzer(tenant, microService, component, script),
 				new AttributeAnalyzer(tenant, microService, component, script),
-				new ScriptReferenceAnalyzer(tenant, microService, component, script)
+				new ScriptReferenceAnalyzer(tenant, microService, component, script),
+				new Analyzers.ComponentSpecific.DistributedOperationAnalyzer(tenant, microService, component, script)
 			}.ToImmutableArray();
 		}
 
