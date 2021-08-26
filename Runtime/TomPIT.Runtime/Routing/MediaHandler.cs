@@ -32,6 +32,8 @@ namespace TomPIT.Routing
 			{
 				Context.Response.ContentLength = content.Content.Length;
 				Context.Response.Body.WriteAsync(content.Content, 0, content.Content.Length).Wait();
+
+				Context.Response.CompleteAsync().Wait();
 			}
 		}
 	}

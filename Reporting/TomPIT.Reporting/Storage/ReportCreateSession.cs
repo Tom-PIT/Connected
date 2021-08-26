@@ -141,10 +141,10 @@ namespace TomPIT.MicroServices.Reporting.Storage
 					ds
 				};
 
-				serializedDs = $"{{{dataMember}:{JsonConvert.SerializeObject(list)}}}";
+				serializedDs = $"{{\"{dataMember}\":{JsonConvert.SerializeObject(list)}}}";
 			}
 			else
-				serializedDs = $"{{{dataMember}:{JsonConvert.SerializeObject(ds)}}}";
+				serializedDs = $"{{\"{dataMember}\":{JsonConvert.SerializeObject(ds)}}}";
 
 			dataSource.Schema = null;
 			dataSource.JsonSource = new CustomJsonSource(serializedDs);

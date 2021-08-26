@@ -307,6 +307,9 @@ namespace TomPIT.Design
 			var externals = ds.Configuration.Query<IExternalResourceElement>(existingConfiguration);
 			var newId = Insert(microService, folder, existing.Category, CreateName(microService, existing.Category, existing.Name), existing.Type);
 
+			if (Tenant.GetService<IComponentService>() is IComponentNotification n)
+				n.NotifyChanged(this, new ConfigurationEventArgs(existing.MicroService, existing.Token, existing.Category));
+
 			foreach (var element in elements)
 				element.Reset();
 

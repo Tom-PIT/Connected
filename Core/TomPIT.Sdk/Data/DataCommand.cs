@@ -10,148 +10,152 @@ using TomPIT.Serialization;
 
 namespace TomPIT.Data
 {
-	internal abstract class DataCommand : MiddlewareObject, IDataCommand
-	{
-		private object _sync = new object();
-		private List<IDataParameter> _parameters = null;
+    internal abstract class DataCommand : MiddlewareObject, IDataCommand
+    {
+        private object _sync = new object();
+        private List<IDataParameter> _parameters = null;
 
-		public string CommandText { get; set; }
-		public CommandType CommandType { get; set; } = CommandType.StoredProcedure;
-		public int CommandTimeout { get; set; } = 30;
-		public IDataConnection Connection { get; set; }
+        public string CommandText { get; set; }
+        public CommandType CommandType { get; set; } = CommandType.StoredProcedure;
+        public int CommandTimeout { get; set; } = 30;
+        public IDataConnection Connection { get; set; }
 
-		protected IDataCommandDescriptor Command { get; private set; }
+        protected IDataCommandDescriptor Command { get; private set; }
 
-		protected DataCommand(IMiddlewareContext context) : base(context)
-		{
-		}
+        protected DataCommand(IMiddlewareContext context) : base(context)
+        {
+        }
 
-		public List<IDataParameter> Parameters
-		{
-			get
-			{
-				if (_parameters == null)
-					_parameters = new List<IDataParameter>();
+        public List<IDataParameter> Parameters
+        {
+            get
+            {
+                if (_parameters == null)
+                    _parameters = new List<IDataParameter>();
 
-				return _parameters;
-			}
-		}
+                return _parameters;
+            }
+        }
 
-		public IDataParameter SetParameter(string name, object value)
-		{
-			return SetParameter(name, value, false);
-		}
+        public IDataParameter SetParameter(string name, object value)
+        {
+            return SetParameter(name, value, false);
+        }
 
-		public IDataParameter SetParameter(string name, object value, bool nullMapping)
-		{
-			return ResolveParameter(name, value, nullMapping, null);
-		}
-		public IDataParameter SetParameter(string name, object value, bool nullMapping, DbType type)
-		{
-			return ResolveParameter(name, value, nullMapping, type);
-		}
+        public IDataParameter SetParameter(string name, object value, bool nullMapping)
+        {
+            return ResolveParameter(name, value, nullMapping, null);
+        }
+        public IDataParameter SetParameter(string name, object value, bool nullMapping, DbType type)
+        {
+            return ResolveParameter(name, value, nullMapping, type);
+        }
 
-		private IDataParameter ResolveParameter(string name, object value, bool nullMapping, DbType? type)
-		{
-			var parameter = Parameters.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0);
-			var mappedValue = nullMapping ? NullMapper.Map(value, MappingMode.Database) : MapValue(value);
-			var rawValue = value is INullableProperty np ? np.MappedValue : value;
-			var dbType = type != null ? (DbType)type : rawValue == null || rawValue == DBNull.Value ? DbType.String : Types.ToDbType(rawValue.GetType());
+        private IDataParameter ResolveParameter(string name, object value, bool nullMapping, DbType? type)
+        {
+            var parameter = Parameters.FirstOrDefault(f => string.Compare(f.Name, name, true) == 0);
+            var mappedValue = nullMapping ? NullMapper.Map(value, MappingMode.Database) : MapValue(value);
 
-			if (parameter == null)
-			{
-				parameter = new DataParameter
-				{
-					Name = name,
-					Value = mappedValue,
-					Type = dbType
-				};
+            var rawValue = value is INullableProperty np ? np.MappedValue : value;
+            var dbType = type != null ? (DbType)type : rawValue == null || rawValue == DBNull.Value ? DbType.String : Types.ToDbType(rawValue.GetType());
 
-				Parameters.Add(parameter);
-			}
+            if (parameter == null)
+            {
+                parameter = new DataParameter
+                {
+                    Name = name,
+                    Value = mappedValue,
+                    Type = dbType
+                };
 
-			parameter.Value = mappedValue;
+                Parameters.Add(parameter);
+            }
 
-			return parameter;
-		}
+            parameter.Value = mappedValue;
 
-		private object MapValue(object value)
-		{
-			if (value == null || value == DBNull.Value)
-				return value;
+            return parameter;
+        }
 
-			if (value.GetType().IsTypePrimitive())
-			{
-				if (value.GetType().IsEnum)
-					return Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()));
-				else if (value is DateTimeOffset date)
-					return date.UtcDateTime;
+        private object MapValue(object value)
+        {
+            if (value == null || value == DBNull.Value)
+                return value;
 
-				return value;
-			}
-			else if (value is byte[])
-				return value;
+            if (value.GetType().IsTypePrimitive())
+            {
+                if (value.GetType().IsEnum)
+                    return Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()));
+                else if (value is DateTimeOffset date)
+                    return date.UtcDateTime;
 
-			return Serializer.Serialize(value);
-		}
+                return value;
+            }
+            else if (value is byte[])
+                return value;
 
-		protected void EnsureCommand()
-		{
-			if (Command == null)
-			{
-				lock (_sync)
-				{
-					if (Command == null)
-						Command = CreateCommand();
-				}
-			}
+            return Serializer.Serialize(value);
+        }
 
-			SynchronizeParameters();
-		}
+        protected void EnsureCommand()
+        {
+            if (Command == null)
+            {
+                lock (_sync)
+                {
+                    if (Command == null)
+                        Command = CreateCommand();
+                }
+            }
 
-		private void SynchronizeParameters()
-		{
-			Command.Parameters.Clear();
+            SynchronizeParameters();
+        }
 
-			foreach (var parameter in Parameters)
-			{
-				Command.Parameters.Add(new CommandParameter
-				{
-					Direction = parameter.Direction,
-					Name = parameter.Name,
-					Value = parameter.Value,
-					DataType = parameter.Type
-				});
-			}
-		}
+        private void SynchronizeParameters()
+        {
+            Command.Parameters.Clear();
 
-		private IDataCommandDescriptor CreateCommand()
-		{
-			var r = new DataCommandDescriptor
-			{
-				CommandText = CommandText,
-				CommandType = CommandType,
-				CommandTimeout = CommandTimeout
-			};
+            foreach (var parameter in Parameters)
+            {
+                if (parameter.Direction == ParameterDirection.Input && (parameter.Value is null || parameter.Value == DBNull.Value))
+                    continue;
 
-			return r;
-		}
+                Command.Parameters.Add(new CommandParameter
+                {
+                    Direction = parameter.Direction,
+                    Name = parameter.Name,
+                    Value = parameter.Value,
+                    DataType = parameter.Type
+                });
+            }
+        }
 
-		#region IDisposable
-		protected override void OnDisposing()
-		{
-			if (_parameters != null)
-			{
-				_parameters.Clear();
-				_parameters = null;
-			}
+        private IDataCommandDescriptor CreateCommand()
+        {
+            var r = new DataCommandDescriptor
+            {
+                CommandText = CommandText,
+                CommandType = CommandType,
+                CommandTimeout = CommandTimeout
+            };
 
-			CommandText = null;
-			Connection = null;
+            return r;
+        }
 
-			base.OnDisposing();
-		}
+        #region IDisposable
+        protected override void OnDisposing()
+        {
+            if (_parameters != null)
+            {
+                _parameters.Clear();
+                _parameters = null;
+            }
 
-		#endregion
-	}
+            CommandText = null;
+            Connection = null;
+
+            base.OnDisposing();
+        }
+
+        #endregion
+    }
 }

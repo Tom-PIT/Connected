@@ -76,6 +76,8 @@ namespace TomPIT.Development.Routing
 				Context.Response.ContentLength = buffer.Length;
 				Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
 			}
+
+			Context.Response.CompleteAsync().Wait();
 		}
 
 		private string LoadSource(Guid microService, IText text)

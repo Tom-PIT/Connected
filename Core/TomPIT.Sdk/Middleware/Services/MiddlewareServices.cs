@@ -20,6 +20,7 @@ namespace TomPIT.Middleware
 		private IMiddlewareIoCService _ioc = null;
 		private IMiddlewareMembershipService _membership = null;
 		private IMiddlewareAnalyticsService _analytics = null;
+		private IMiddlewareWorkersService _workers = null;
 
 		public MiddlewareServices(IMiddlewareContext context) : base(context)
 		{
@@ -198,6 +199,17 @@ namespace TomPIT.Middleware
 					_analytics = new MiddlewareAnalyticsService(Context);
 
 				return _analytics;
+			}
+		}
+
+		public IMiddlewareWorkersService Workers
+		{
+			get
+			{
+				if (_workers == null)
+					_workers = new MiddlewareWorkersService(Context);
+
+				return _workers;
 			}
 		}
 

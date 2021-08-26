@@ -621,4 +621,7 @@
   <data name="ErrConcurrencySource" xml:space="preserve">
     <value>Sočasen prepis podatkov</value>
   </data>
+  <data name="ErrTopicMismatch" xml:space="preserve">
+    <value>Tema se ne ujema s predhodno zapisano temo</value>
+  </data>
 </root>

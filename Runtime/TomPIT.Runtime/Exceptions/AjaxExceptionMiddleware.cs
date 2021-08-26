@@ -73,6 +73,8 @@ namespace TomPIT.Exceptions
 
 			await context.Response.WriteAsync(Serializer.Serialize(jsonEx));
 
+			await context.Response.CompleteAsync();
+
 			return;
 		}
 	}
