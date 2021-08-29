@@ -201,27 +201,6 @@ namespace TomPIT
                     _sys = _sysType.CreateInstance() as ISys;
 
                     config.Bind(_sys);
-                  
-                    //var sys = Path.Combine(appPath, "sys.json");
-
-                    //while (!string.IsNullOrWhiteSpace(appPath))
-                    //{
-                    //	if (File.Exists(sys))
-                    //	{
-                    //		_sys = Serializer.Deserialize(File.ReadAllText(sys), _sysType) as ISys;
-                    //		break;
-                    //	}
-
-                    //	if (!sys.Contains('\\'))
-                    //	{
-                    //		_sys = _sysType.CreateInstance() as ISys;
-                    //		break;
-                    //	}
-
-                    //	appPath = appPath.Substring(0, appPath.LastIndexOf('\\'));
-                    //	sys = Path.Combine(appPath, "sys.json");
-                    //}
-
                 }
 
                 return _sys;
