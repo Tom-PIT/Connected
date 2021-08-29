@@ -84,7 +84,7 @@ namespace TomPIT.Middleware.Interop
 			{
 				using var opInstance = operationType.CreateInstance<IOperation>();
 
-				if (operationType is IDistributedOperation)
+				if (opInstance is IDistributedOperation)
 					ReflectionExtensions.SetPropertyValue(opInstance, nameof(IDistributedOperation.OperationTarget), synchronous ? DistributedOperationTarget.InProcess : DistributedOperationTarget.Distributed);
 
 				opInstance.SetContext(ctx);

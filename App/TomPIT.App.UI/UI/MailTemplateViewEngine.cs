@@ -17,107 +17,109 @@ using TomPIT.UI;
 
 namespace TomPIT.App.UI
 {
-	public class MailTemplateViewEngine : ViewEngineBase, IMailTemplateViewEngine
-	{
-		public MailTemplateViewEngine(IRazorViewEngine viewEngine, ITempDataProvider tempDataProvider, System.IServiceProvider serviceProvider) : base(viewEngine, tempDataProvider, serviceProvider)
-		{
-		}
+    public class MailTemplateViewEngine : ViewEngineBase, IMailTemplateViewEngine
+    {
+        public MailTemplateViewEngine(IRazorViewEngine viewEngine, ITempDataProvider tempDataProvider, System.IServiceProvider serviceProvider) : base(viewEngine, tempDataProvider, serviceProvider)
+        {
+        }
 
-		public async Task Render(Guid token)
-		{
-			Authenticate();
+        public async Task Render(Guid token)
+        {
+            Authenticate();
 
-			if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
-				return;
+            if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
+                return;
 
-			using var model = CreateModel(token);
-			var actionContext = CreateActionContext(Context);
-			var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(token);
+            using var model = CreateModel(token);
+            var actionContext = CreateActionContext(Context);
+            var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(token);
 
-			if (component == null)
-			{
-				Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-				return;
-			}
+            if (component == null)
+            {
+                Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
+            }
 
-			var viewEngineResult = Engine.FindView(actionContext, $"Dynamic/MailTemplate/{component.MicroService}/{component.Name}", false);
+            var viewEngineResult = Engine.FindView(actionContext, $"Dynamic/MailTemplate/{component.MicroService}/{component.Name}", false);
 
-			if (!viewEngineResult.Success)
-			{
-				Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-				return;
-			}
+            if (!viewEngineResult.Success)
+            {
+                Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
+            }
 
-			var view = viewEngineResult.View;
-			var content = await CreateContent(view, model);
-			var buffer = Encoding.UTF8.GetBytes(content);
+            var view = viewEngineResult.View;
+            var content = await CreateContent(view, model);
+            var buffer = Encoding.UTF8.GetBytes(content);
 
-			if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
-				await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
-		}
+            if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
+                await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+            
+            await Context.Response.CompleteAsync();
+        }
 
-		private JObject Body { get; set; }
+        private JObject Body { get; set; }
 
-		private void Authenticate()
-		{
-			Body = Context.Request.Body.ToJObject();
+        private void Authenticate()
+        {
+            Body = Context.Request.Body.ToJObject();
 
-			var user = Body.Optional("user", string.Empty);
+            var user = Body.Optional("user", string.Empty);
 
-			if (!string.IsNullOrWhiteSpace(user))
-			{
-				var u = MiddlewareDescriptor.Current.Tenant.GetService<IUserService>().Select(user);
+            if (!string.IsNullOrWhiteSpace(user))
+            {
+                var u = MiddlewareDescriptor.Current.Tenant.GetService<IUserService>().Select(user);
 
-				if (u == null)
-				{
-					if (MiddlewareDescriptor.Current.Tenant.GetService<IAlienService>().Select(new Guid(user)) == null)
-					{
-						Context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-						return;
-					}
-				}
-				else
-				{
-					Context.User = new Principal(new Identity(u));
+                if (u == null)
+                {
+                    if (MiddlewareDescriptor.Current.Tenant.GetService<IAlienService>().Select(new Guid(user)) == null)
+                    {
+                        Context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                        return;
+                    }
+                }
+                else
+                {
+                    Context.User = new Principal(new Identity(u));
 
-					SetCulture(u.Language);
-				}
-			}
+                    SetCulture(u.Language);
+                }
+            }
 
-			SetCulture(Body.Optional("language", Guid.Empty));
-		}
+            SetCulture(Body.Optional("language", Guid.Empty));
+        }
 
-		private void SetCulture(Guid language)
-		{
-			if (language == Guid.Empty)
-				return;
+        private void SetCulture(Guid language)
+        {
+            if (language == Guid.Empty)
+                return;
 
-			var lang = MiddlewareDescriptor.Current.Tenant.GetService<ILanguageService>().Select(language);
+            var lang = MiddlewareDescriptor.Current.Tenant.GetService<ILanguageService>().Select(language);
 
-			var ci = CultureInfo.GetCultureInfo(lang.Lcid);
+            var ci = CultureInfo.GetCultureInfo(lang.Lcid);
 
-			if (ci == null)
-				return;
+            if (ci == null)
+                return;
 
-			Thread.CurrentThread.CurrentCulture = ci;
-			Thread.CurrentThread.CurrentUICulture = ci;
-		}
+            Thread.CurrentThread.CurrentCulture = ci;
+            Thread.CurrentThread.CurrentUICulture = ci;
+        }
 
-		private MailTemplateModel CreateModel(Guid token)
-		{
-			var ac = CreateActionContext(Context);
-			var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(token);
+        private MailTemplateModel CreateModel(Guid token)
+        {
+            var ac = CreateActionContext(Context);
+            var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(token);
 
-			if (component == null)
-				return null;
+            if (component == null)
+                return null;
 
-			var arguments = Body.Optional("arguments", string.Empty);
-			var ja = string.IsNullOrWhiteSpace(arguments) ? new JObject() : Serializer.Deserialize<JObject>(arguments);
-			var model = new MailTemplateModel(Context.Request, ac, Temp, ja);
+            var arguments = Body.Optional("arguments", string.Empty);
+            var ja = string.IsNullOrWhiteSpace(arguments) ? new JObject() : Serializer.Deserialize<JObject>(arguments);
+            var model = new MailTemplateModel(Context.Request, ac, Temp, ja);
 
-			model.Initialize(MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(component.MicroService));
+            model.Initialize(MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(component.MicroService));
 
-			return model;
-		}
-	}
+            return model;
+        }
+    }
 }

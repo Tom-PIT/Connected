@@ -2617,6 +2617,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The provided topic does not match the previously provided topic.
+        /// </summary>
+        public static string ErrTopicMismatch {
+            get {
+                return ResourceManager.GetString("ErrTopicMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Topic not found.
         /// </summary>
         public static string ErrTopicNotFound {

@@ -37,7 +37,14 @@ namespace TomPIT.App.Routing
 
 				return Task.CompletedTask;
 			});
-			
+
+			routes.Map("static/{microService}/{*path}", (t) =>
+			{
+				new StaticHandler().ProcessRequest(t);
+
+				return Task.CompletedTask;
+			});
+
 			routes.Map("sys/globalize/{locale}/{segments}", (t) =>
 			{
 				new GlobalizationHandler().ProcessRequest(t);

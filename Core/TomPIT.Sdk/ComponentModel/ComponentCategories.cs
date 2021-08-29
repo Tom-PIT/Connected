@@ -22,6 +22,7 @@
 		public static string HostedWorker => "HostedWorker";
 		public static string StringTable => "StringTable";
 		public static string Media => "Media";
+		public static string Static => "Static";
 		public static string EmbeddedAssembly => "EmbeddedAssembly";
 		public static string NuGetPackage => "NuGetPackage";
 		public static string EmbeddedNuGetPackage => "EmbeddedNuGetPackage";

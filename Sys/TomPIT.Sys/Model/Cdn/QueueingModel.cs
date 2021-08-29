@@ -85,10 +85,13 @@ namespace TomPIT.Sys.Model.Cdn
                     results.Add(target);
             }
 
-            Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Update(targets.ToList());
+            if (results.Any())
+            {
+                Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Update(results);
 
-            foreach (IQueueMessageModifier result in results)
-                result.Reset();
+                foreach (IQueueMessageModifier result in results)
+                    result.Reset();
+            }
 
             return results.ToImmutableList();
         }
@@ -132,10 +135,15 @@ namespace TomPIT.Sys.Model.Cdn
             if (message == null)
                 return;
 
-            if (message is IQueueMessageModifier modifier)
+            var modifier = message as IQueueMessageModifier;
+
+            if (modifier is not null)
                 modifier.Modify(DateTime.UtcNow.Add(nextVisible), message.DequeueTimestamp, message.DequeueCount, message.PopReceipt);
 
             Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Update(new List<IQueueMessage> { message });
+
+            if (modifier is not null)
+                modifier.Reset();
         }
 
         public void Complete(Guid popReceipt)

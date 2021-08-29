@@ -27,6 +27,8 @@ namespace TomPIT.Rest.Controllers
 
 			Context.Response.ContentLength = buffer.Length;
 			await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+
+			await Context.Response.CompleteAsync();
 		}
 
 		protected override async Task OnRenderResult(object content)
@@ -39,6 +41,8 @@ namespace TomPIT.Rest.Controllers
 			Context.Response.StatusCode = StatusCodes.Status200OK;
 
 			await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+
+			await Context.Response.CompleteAsync();
 		}
 	}
 }

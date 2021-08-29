@@ -1260,4 +1260,7 @@
   <data name="ErrTypeMultipleMatch" xml:space="preserve">
     <value>Multiple types match the specified type name. Consider use namespace property on the component if available and use partial classes to scope types.</value>
   </data>
+  <data name="ErrTopicMismatch" xml:space="preserve">
+    <value>The provided topic does not match the previously provided topic</value>
+  </data>
 </root>

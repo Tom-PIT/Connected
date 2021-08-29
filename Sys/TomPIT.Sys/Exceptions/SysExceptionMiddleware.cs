@@ -53,6 +53,7 @@ namespace TomPIT.Sys.Exceptions
 
 			await context.Response.WriteAsync(JsonConvert.SerializeObject(jsonEx));
 
+			await context.Response.CompleteAsync();
 		}
 
 		protected virtual async Task HandleException(HttpContext context, Exception ex)
