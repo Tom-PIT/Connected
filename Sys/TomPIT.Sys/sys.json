@@ -14,7 +14,7 @@
 		"sys": "data source=192.168.10.7\\SQL2017; initial catalog=coreSys;user id=tompit;password=tompit;"
 	},
 	"plugins": {
-		"location": "c:\\Deploy\\Plugins",
+		"location": "/home/jasonxtreme/code/Connected/Build/Deploy/Plugins",
 		"shadowCopy": true
 	}
 }
