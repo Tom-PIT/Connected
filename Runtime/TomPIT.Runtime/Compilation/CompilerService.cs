@@ -427,7 +427,12 @@ namespace TomPIT.Compilation
 			}
 
 			if (script != null && script.Assembly == null && script.Errors != null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
-				throw new CompilerException(Tenant, script, sourceCode);
+			{
+				if (throwException)
+					throw new CompilerException(Tenant, script, sourceCode);
+				else
+					return null;
+			}
 
 			var result = ResolveTypeName(script.Assembly, sourceCode, typeName);
 
