@@ -28,7 +28,7 @@
 }
 
 
-@foreach (var i in nodes)
+@foreach (var i in nodes.OrderBy(e=> e.Title))
 {
     ViewBag.CurrentNode = i;
 

@@ -192,11 +192,40 @@ $.widget('tompit.tpIde', {
 
         var instance = this;
 
-        $('[data-kind="toggler"]', d).click(function () {
+        $('[data-kind="toggler"]', d).click(function (event) {
+            event.stopPropagation();
             var target = $(this);
             var icon = target.find('[data-fa-i2svg]');
             var node = target.closest('[data-id]');
             var id = node.attr('data-id');
+            var path = instance._resolvePath(target);
+
+            icon.toggleClass('fa-chevron-right')
+                .toggleClass('fa-chevron-down');
+
+            var group = node.children('[data-kind="explorer-group"][data-group]');
+
+            if (icon.hasClass('fa-chevron-down')) {
+                group.removeClass('collapse');
+
+                var loaded = group.attr('data-loaded');
+
+                if (loaded !== 'true')
+                    instance._loadExplorerChildren({ path: path });
+            }
+            else
+                group.addClass('collapse');
+        });
+
+        $('[data-kind="toggler-double"]', d).dblclick(function () {
+            var target = $(this);
+            var toggle = target.find('[data-kind="toggler"]');
+            if (!toggle)
+                return;
+
+            target = toggle;
+            var icon = target.find('[data-fa-i2svg]');
+            var node = target.closest('[data-id]');
             var path = instance._resolvePath(target);
 
             icon.toggleClass('fa-chevron-right')
