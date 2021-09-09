@@ -28,7 +28,7 @@
 }
 
 
-@foreach (var i in nodes.OrderBy(e=> e.Title))
+@foreach (var i in nodes.OrderByDescending(e => e.MetaData?.Category is null).ThenBy(e => e.Title))
 {
     ViewBag.CurrentNode = i;
 
