@@ -95,7 +95,7 @@ namespace TomPIT.Ide.Designers
 				}
 
 				if (Element.SortChildren)
-					_items = _items.ToList();
+					_items = _items.OrderBy(f => f.Text).ToList();
 
 				return _items;
 			}
