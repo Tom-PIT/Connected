@@ -368,7 +368,10 @@ namespace TomPIT.App.UI
 
 		public IRuntimeModel CreateModel(IRuntimeModel owner)
 		{
-			return new RuntimeModel(owner as RuntimeModel);
+			if (owner is RuntimeModel model)
+				return new RuntimeModel(model);
+			else
+				return owner;
 		}
 	}
 }
