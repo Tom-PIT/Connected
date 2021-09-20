@@ -7,6 +7,7 @@ namespace TomPIT.Globalization
 	{
 		ILanguage Select(Guid language);
 		ILanguage Select(int lcid);
+		ILanguage Match(string languageString);
 		ImmutableList<ILanguage> Query();
 	}
 }

@@ -181,6 +181,8 @@ namespace TomPIT
 			services.AddSingleton<IAuthorizationHandler, ClaimHandler>();
 			services.AddSingleton<IHostedService, FlushingService>();
 
+			services.AddScoped<RequestLocalizationCookiesMiddleware>();
+
 			foreach (var plugin in Plugins)
 				plugin.ConfigureServices(services);
 		}
@@ -218,6 +220,7 @@ namespace TomPIT
 				o.RequestCultureProviders.Insert(1, new IdentityCultureProvider());
 			});
 
+			app.UseRequestLocalizationCookies();
 			app.UseAjaxExceptionMiddleware();
 
 			RuntimeBootstrapper.Run();

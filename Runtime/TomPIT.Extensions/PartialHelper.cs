@@ -7,6 +7,7 @@ using TomPIT.ComponentModel.UI;
 using TomPIT.Middleware;
 using TomPIT.Models;
 using TomPIT.Serialization;
+using TomPIT.UI;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT
@@ -25,20 +26,24 @@ namespace TomPIT
 
 		public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)]string name, object arguments)
 		{
-			var a = arguments == null ? null : Serializer.Deserialize<JObject>(arguments);
-
-			if (a != null && Html.ViewData.Model is IRuntimeModel rtModel)
-				rtModel.MergeArguments(a);
-
-			return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), Html.ViewData.Model);
+			return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), CreateModel(arguments));
 		}
 
 		public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)]string name, JObject arguments)
 		{
-			if (arguments != null && Html.ViewData.Model is IRuntimeModel rtModel)
-				rtModel.MergeArguments(arguments);
+			return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), CreateModel(arguments));
+		}
 
-			return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), Html.ViewData.Model);
+		private IRuntimeModel CreateModel(object arguments)
+		{
+			var a = arguments is null ? null : Serializer.Deserialize<JObject>(arguments);
+			var runtimeModel = Html.ViewData.Model as IRuntimeModel;
+			var partialModel = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().CreateModel(runtimeModel);
+
+			if (a is not null)
+				partialModel.MergeArguments(a);
+
+			return partialModel;
 		}
 
 		private IPartialViewConfiguration ResolveView(string qualifier)

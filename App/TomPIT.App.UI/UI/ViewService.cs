@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
+using TomPIT.App.Models;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
@@ -13,6 +14,7 @@ using TomPIT.ComponentModel.Reports;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
+using TomPIT.Models;
 using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
 using TomPIT.Storage;
@@ -362,6 +364,11 @@ namespace TomPIT.App.UI
 			var name = url.Trim('/').Split('/')[3];
 
 			return Tenant.GetService<IMicroServiceService>().Select(name);
+		}
+
+		public IRuntimeModel CreateModel(IRuntimeModel owner)
+		{
+			return new RuntimeModel(owner as RuntimeModel);
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
+using TomPIT.Models;
 
 namespace TomPIT.UI
 {
@@ -28,5 +29,7 @@ namespace TomPIT.UI
 
 		ViewKind ResolveViewKind(string url);
 		IMicroService ResolveMicroService(string url);
+
+		IRuntimeModel CreateModel(IRuntimeModel owner);
 	}
 }

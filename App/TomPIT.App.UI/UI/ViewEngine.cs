@@ -154,7 +154,7 @@ namespace TomPIT.App.UI
 			{
 				ViewConfiguration = view,
 			};
-
+			
 			model.Initialize(null, ms);
 
 			if (model is IComponentModel cm && vi.ViewComponent != null)

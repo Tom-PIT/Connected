@@ -20,6 +20,7 @@ using TomPIT.Globalization;
 using TomPIT.IoC;
 using TomPIT.IoT;
 using TomPIT.Messaging;
+using TomPIT.Middleware;
 using TomPIT.Navigation;
 using TomPIT.Reflection;
 using TomPIT.Runtime.Configuration;
@@ -138,6 +139,11 @@ namespace TomPIT.Runtime
 				e.Tenant.Items.TryAdd("dataCache", dataCache);
 
 				dataCache.Connect();
+
+				/*
+				 * touch the language service to register cultures
+				 */
+				MiddlewareDescriptor.Current.Tenant.GetService<ILanguageService>().Query();
 			}
 		}
 	}
