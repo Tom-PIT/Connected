@@ -7,5 +7,7 @@ namespace TomPIT.Models
 		JObject Arguments { get; }
 
 		void MergeArguments(JObject arguments);
+
+		void ReplaceArguments(JObject arguments);
 	}
 }

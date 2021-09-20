@@ -11,105 +11,117 @@ using TomPIT.Models;
 
 namespace TomPIT.App.Models
 {
-	public class RuntimeModel : MicroServiceContext, IViewModel, IComponentModel
-	{
-		private IModelNavigation _navigation = null;
-		private JObject _arguments = null;
+    public class RuntimeModel : MicroServiceContext, IViewModel, IComponentModel
+    {
+        private IModelNavigation _navigation = null;
+        private JObject _arguments = null;
 
-		public RuntimeModel(RuntimeModel context) : base(context)
-		{
-			ActionContext = context.ActionContext;
-			TempData = context.TempData;
-			MicroService = context.MicroService;
-		}
+        public RuntimeModel(RuntimeModel context) : base(context)
+        {
+            ActionContext = context.ActionContext;
+            TempData = context.TempData;
+            MicroService = context.MicroService;
+            _arguments = context.Arguments;
+        }
 
-		public RuntimeModel(HttpRequest request, ActionContext context, ITempDataProvider tempData, IMicroService microService)
-		{
-			ActionContext = context;
-			TempData = tempData;
-			MicroService = microService;
-		}
+        public RuntimeModel(HttpRequest request, ActionContext context, ITempDataProvider tempData, IMicroService microService)
+        {
+            ActionContext = context;
+            TempData = tempData;
+            MicroService = microService;
+        }
 
-		public IComponent Component { get; set; }
+        public IComponent Component { get; set; }
 
-		public IViewConfiguration ViewConfiguration { get; set; }
+        public IViewConfiguration ViewConfiguration { get; set; }
 
-		public virtual IEnumerable<ValidationResult> Validate()
-		{
-			return null;
-		}
+        public virtual IEnumerable<ValidationResult> Validate()
+        {
+            return null;
+        }
 
-		protected Controller Controller { get; private set; }
-		public ActionContext ActionContext { get; }
+        protected Controller Controller { get; private set; }
+        public ActionContext ActionContext { get; }
 
-		public void Initialize(Controller controller, IMicroService microService)
-		{
-			Controller = controller;
-			MicroService = microService;
+        public void Initialize(Controller controller, IMicroService microService)
+        {
+            Controller = controller;
+            MicroService = microService;
 
-			Initialize(null);
+            Initialize(null);
 
-			OnInitializing();
-		}
+            OnInitializing();
+        }
 
-		public void Databind()
-		{
-			OnDatabinding();
-		}
+        public void Databind()
+        {
+            OnDatabinding();
+        }
 
-		protected virtual void OnInitializing()
-		{
+        protected virtual void OnInitializing()
+        {
 
-		}
+        }
 
-		protected virtual void OnDatabinding()
-		{
+        protected virtual void OnDatabinding()
+        {
 
-		}
+        }
 
-		public void MergeArguments(JObject arguments)
-		{
-			if (arguments != null)
-				Arguments.Merge(arguments);
-		}
+        public void MergeArguments(JObject arguments)
+        {
+            if (arguments != null)
+                Arguments.Merge(arguments, new JsonMergeSettings
+                {
+                    MergeNullValueHandling = MergeNullValueHandling.Merge
+                });
+        }
 
-		public string Title { get; protected set; }
+        public void ReplaceArguments(JObject arguments)
+        {
+            if (arguments is not null)
+                _arguments = arguments;
+            else
+                _arguments = new();
+        }
 
-		public IModelNavigation Navigation
-		{
-			get
-			{
-				if (_navigation == null)
-					_navigation = new ModelNavigation();
+        public string Title { get; protected set; }
 
-				return _navigation;
-			}
-		}
+        public IModelNavigation Navigation
+        {
+            get
+            {
+                if (_navigation == null)
+                    _navigation = new ModelNavigation();
 
-		public JObject Arguments
-		{
-			get
-			{
-				if (_arguments == null)
-				{
-					_arguments = new JObject();
+                return _navigation;
+            }
+        }
 
-					foreach (var i in ActionContext.RouteData.Values)
-						_arguments.Add(i.Key, Types.Convert<string>(i.Value));
+        public JObject Arguments
+        {
+            get
+            {
+                if (_arguments == null)
+                {
+                    _arguments = new JObject();
 
-					foreach (var i in ActionContext.HttpContext.Request.Query)
-					{
-						if (_arguments.ContainsKey(i.Key))
-							continue;
+                    foreach (var i in ActionContext.RouteData.Values)
+                        _arguments.Add(i.Key, Types.Convert<string>(i.Value));
 
-						_arguments.Add(i.Key, i.Value.ToString());
-					}
-				}
+                    foreach (var i in ActionContext.HttpContext.Request.Query)
+                    {
+                        if (_arguments.ContainsKey(i.Key))
+                            continue;
 
-				return _arguments;
-			}
-		}
+                        _arguments.Add(i.Key, i.Value.ToString());
+                    }
+                }
 
-		public ITempDataProvider TempData { get; }
-	}
+                return _arguments;
+            }
+        }
+
+        public ITempDataProvider TempData { get; }
+    }
 }
