@@ -18,8 +18,30 @@ namespace TomPIT.Security
 				return false;
 
 			var tokens = url.Split('/');
-			var path = string.Empty;
-			var permissionCounter = 0;
+
+			for (var i = tokens.Length; i > 0; i--)
+			{
+				var path = string.Join('/', tokens[..i]);
+
+				var token = user;
+
+				var ar = AuthorizeUrl(context, new AuthorizationArgs(token, Claims.AccessUrl, path, "Url"), EmptyBehavior.Deny);
+
+				if (ar.Success)
+					return true;
+				else
+				{
+					if (ar.Reason == AuthorizationResultReason.Empty)
+						continue;
+					else
+					{
+						if (setResponse)
+							Reject(context);
+
+						return false;
+					}
+				}
+			}
 
 			var defaultAr = AuthorizeDefaultUrl(context, user);
 
@@ -29,35 +51,6 @@ namespace TomPIT.Security
 					Reject(context);
 
 				return false;
-			}
-
-			permissionCounter += defaultAr.PermissionCount;
-
-			for (var i = 0; i < tokens.Length; i++)
-			{
-				if (i > 0)
-					path += "/";
-
-				path += tokens[i];
-
-				var empty = i == tokens.Length - 1 ? EmptyBehavior.Deny : EmptyBehavior.Alow;
-				var token = user;
-				var ar = AuthorizeUrl(context, new AuthorizationArgs(token, Claims.AccessUrl, path, "Url"), empty);
-
-				if (ar.Success)
-					permissionCounter += ar.PermissionCount;
-				else
-				{
-					if (empty == EmptyBehavior.Deny && ar.Reason == AuthorizationResultReason.Empty && permissionCounter > 0)
-						return true;
-					else
-					{
-						if (setResponse)
-							Reject(context);
-
-						return false;
-					}
-				}
 			}
 
 			return true;
