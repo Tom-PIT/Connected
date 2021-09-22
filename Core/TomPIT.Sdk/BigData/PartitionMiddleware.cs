@@ -21,9 +21,19 @@ namespace TomPIT.BigData
 			return OnInvoke(items);
 		}
 
+		public void Invoked(List<T> items) 
+		{
+			OnInvoked(items);
+		}
+
 		protected virtual List<T> OnInvoke(List<T> items)
 		{
 			return items;
+		}
+
+		protected virtual void OnInvoked(List<T> modifiedItems) 
+		{
+			
 		}
 
 		private void Validate(List<T> items)
