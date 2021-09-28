@@ -60,7 +60,7 @@ namespace TomPIT.Security
 		{
 			var args = new AuthorizationArgs(user, Claims.DefaultAccessUrl, 0.ToString(), "Default Url");
 
-			args.Schema.Empty = EmptyBehavior.Alow;
+			args.Schema.Empty = EmptyBehavior.Deny;
 			args.Schema.Level = AuthorizationLevel.Pessimistic;
 
 			return context.Tenant.GetService<IAuthorizationService>().Authorize(context, args);
