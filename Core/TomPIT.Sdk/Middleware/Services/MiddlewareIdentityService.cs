@@ -128,14 +128,17 @@ namespace TomPIT.Middleware.Services
 
 			var id = Context.Tenant.Post<Guid>(u, e);
 
-			u = Context.Tenant.CreateUrl("UserManagement", "ChangePassword");
-			e = new JObject
+			if (password is not null)
 			{
-				{"user", id},
-				{"newPassword", password}
-			};
+				u = Context.Tenant.CreateUrl("UserManagement", "ChangePassword");
+				e = new JObject
+				{
+					{"user", id},
+					{"newPassword", password}
+				};
 
-			Context.Tenant.Post(u, e);
+				Context.Tenant.Post(u, e);
+			}
 
 			return id;
 		}
