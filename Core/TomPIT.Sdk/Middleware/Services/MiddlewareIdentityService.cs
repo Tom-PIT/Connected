@@ -105,7 +105,7 @@ namespace TomPIT.Middleware.Services
 		}
 
 		public Guid InsertUser(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language,
-			string timezone, bool notificationsEnabled, string mobile, string phone, string password, string securityCode = null)
+			string timezone, bool notificationsEnabled, string mobile, string phone, string password = null, string securityCode = null)
 		{
 			var u = Context.Tenant.CreateUrl("UserManagement", "Insert");
 			var e = new JObject
