@@ -11,6 +11,12 @@ namespace TomPIT.Sys.Controllers
 	public class ComponentController : SysController
 	{
 		[HttpGet]
+		public ImmutableList<IComponent> Query(bool includeDeleted = false)
+		{
+			return DataModel.Components.Query(includeDeleted);
+		}
+
+		[HttpGet]
 		public ImmutableList<IComponent> Query(Guid microService)
 		{
 			return DataModel.Components.Query(microService, false);
@@ -42,6 +48,15 @@ namespace TomPIT.Sys.Controllers
 			var categories = body.Optional("categories", string.Empty);
 
 			return DataModel.Components.Query(resourceGroups, categories);
+		}
+
+		[HttpPost]
+		public ImmutableList<IComponent> QueryByCategories()
+		{
+			var body = FromBody();
+			var categories = body.Optional<string>("categories", string.Empty);
+
+			return DataModel.Components.QueryByCategories(categories);
 		}
 
 		[HttpGet]

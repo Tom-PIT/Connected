@@ -98,7 +98,7 @@ namespace TomPIT.Services
 
 		protected override void OnInitializing()
 		{
-			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, string.Join(',', Categories));
+			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(Categories);
 
 			foreach (var i in configurations)
 			{

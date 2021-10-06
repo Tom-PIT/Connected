@@ -24,7 +24,7 @@ namespace TomPIT.Runtime
 
 		protected override void OnInitializing()
 		{
-			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, ComponentCategories.Runtime);
+			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(ComponentCategories.Runtime);
 
 			foreach (var i in configurations)
 				LoadRuntime(i as IRuntimeConfiguration);

@@ -52,7 +52,7 @@ namespace TomPIT.Security.AuthorizationProviders
 
 		public List<IPermissionSchemaDescriptor> QueryDescriptors(IMiddlewareContext context)
 		{
-			var descriptors = context.Tenant.GetService<IComponentService>().QueryComponents(Shell.GetConfiguration<IClientSys>().ResourceGroups, ComponentCategories.PermissionDescriptor);
+			var descriptors = context.Tenant.GetService<IComponentService>().QueryComponents(ComponentCategories.PermissionDescriptor);
 			var result = new List<IPermissionSchemaDescriptor>();
 
 			foreach (var descriptor in descriptors)

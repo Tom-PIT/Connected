@@ -273,6 +273,25 @@ namespace TomPIT.Sys.Model.Components
 			return r.ToImmutableList();
 		}
 
+		public ImmutableList<IComponent> QueryByCategories(string categories)
+		{
+			var cats = categories.Split(',');
+			var r = new List<IComponent>();
+
+			foreach (var j in cats)
+			{
+				if (string.IsNullOrWhiteSpace(j))
+					continue;
+
+				var ds = Where(f=> string.Compare(f.Category, j.Trim()) == 0);
+
+				if (ds.Any())
+					r.AddRange(ds);
+			}
+
+			return r.ToImmutableList();
+		}
+
 		public ImmutableList<IComponent> Query(string resourceGroups, string categories)
 		{
 			var tokens = string.IsNullOrWhiteSpace(resourceGroups) ? Array.Empty<string>() : resourceGroups.Split(',', StringSplitOptions.RemoveEmptyEntries);
@@ -329,6 +348,14 @@ namespace TomPIT.Sys.Model.Components
 			}
 
 			return r.Where(f => f.LockVerb != LockVerb.Delete).ToImmutableList();
+		}
+
+		public ImmutableList<IComponent> Query(bool includeDeleted = false)
+		{
+			if (includeDeleted)
+				return All();
+			else
+				return Where(f => f.LockVerb != LockVerb.Delete);
 		}
 
 		public ImmutableList<IComponent> Query(Guid[] microService, bool includeDeleted)
