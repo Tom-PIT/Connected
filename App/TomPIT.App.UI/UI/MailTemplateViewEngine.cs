@@ -54,7 +54,7 @@ namespace TomPIT.App.UI
 
             if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
                 await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
-            
+
             await Context.Response.CompleteAsync();
         }
 
@@ -70,9 +70,20 @@ namespace TomPIT.App.UI
             {
                 var u = MiddlewareDescriptor.Current.Tenant.GetService<IUserService>().Select(user);
 
-                if (u == null)
+                if (u is null)
                 {
-                    if (MiddlewareDescriptor.Current.Tenant.GetService<IAlienService>().Select(new Guid(user)) == null)
+                    IAlien alienUser;
+
+                    if (Guid.TryParse(user, out var userToken))
+                    {
+                        alienUser = MiddlewareDescriptor.Current.Tenant.GetService<IAlienService>().Select(userToken);
+                    }
+                    else
+                    {
+                        alienUser = MiddlewareDescriptor.Current.Tenant.GetService<IAlienService>().Select(user);
+                    }
+
+                    if (alienUser is null)
                     {
                         Context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                         return;
