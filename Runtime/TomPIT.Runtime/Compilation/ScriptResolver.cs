@@ -2,7 +2,9 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+
 using Microsoft.CodeAnalysis;
+
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.IoC;
@@ -92,12 +94,10 @@ namespace TomPIT.Compilation
 
         private IText Load(string callingMicroService, string microService, string componentName, string element)
         {
-            IMicroService ms = null;
+            IMicroService ms;
 
             if (!string.IsNullOrWhiteSpace(microService))
-            {
                 ms = Tenant.GetService<IMicroServiceService>().Select(microService) ?? throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})");
-            }
             else
                 ms = Tenant.GetService<IMicroServiceService>().Select(MicroService);
 
@@ -105,13 +105,15 @@ namespace TomPIT.Compilation
 
             if (IsOfCategory(component, ComponentCategories.Api))
                 return LoadApiOperation(microService, component, element);
-            else
-                return null;
+
+            return null;
         }
 
         private IText LoadApiOperation(string microService, IComponent component, string operation)
         {
-            if (!(Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IApiConfiguration config))
+            var config = GetConfiguration<IApiConfiguration>(component.Token);
+
+            if (config is null)
                 throw new RuntimeException($"{SR.ErrServiceOperationNotFound} ({microService}/{component.Name}/{operation})");
 
             return config.Operations.FirstOrDefault(f => string.Compare(f.Name, TrimExtension(operation), true) == 0);
@@ -130,10 +132,9 @@ namespace TomPIT.Compilation
             if (component is null || component.LockVerb == Development.LockVerb.Delete)
                 return null;
 
-            if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is not IText text)
-                throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrComponentNotFound, microService, scriptName));
+            var text = GetConfiguration<IText>(component.Token);
 
-            return text;
+            return text ?? throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrComponentNotFound, microService, scriptName));
         }
 
         public override string ResolveReference(string path, string baseFilePath)
@@ -188,35 +189,34 @@ namespace TomPIT.Compilation
                 case 2: //Either ms/script or api/operation
                     {
                         var microserviceToken = hasBaseFile ? baseMs.Token : MicroService;
+                        var microService = hasBaseFile ? baseMs : ms;
 
                         var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(microserviceToken, ComponentCategories.NameSpacePublicScript, tokens[0]);
 
                         //Check for exact match before returning
-                        if (IsOfCategory(component, ComponentCategories.Api)) 
+                        if (IsOfCategory(component, ComponentCategories.Api))
                         {
-                            if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IApiConfiguration apiConfiguration)
+                            var configuration = GetConfiguration<IApiConfiguration>(component.Token);
+
+                            if (configuration?.Operations.Any(e => string.Compare(e.Name, TrimExtension(tokens[1]), true) == 0) ?? false)
                             {
-                                if (apiConfiguration.Operations.Any(e => string.Compare(e.Name, TrimExtension(tokens[1]), true) == 0))
-                                {
-                                    resolvedPath = $"{ms.Name}/{tokens[0]}/{tokens[1]}";
-                                    break;
-                                }
+                                resolvedPath = $"{microService.Name}/{tokens[0]}/{tokens[1]}";
+                                break;
                             }
                         }
-                        else if(IsOfCategory(component, ComponentCategories.IoCContainer))
+                        else if (IsOfCategory(component, ComponentCategories.IoCContainer))
                         {
-                            if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IIoCContainerConfiguration ioCConfiguration)
+                            var configuration = GetConfiguration<IIoCContainerConfiguration>(component.Token);
+
+                            if (configuration?.Operations.Any(e => string.Compare(e.Name, TrimExtension(tokens[1]), true) == 0) ?? false)
                             {
-                                if (ioCConfiguration.Operations.Any(e => string.Compare(e.Name, TrimExtension(tokens[1]), true) == 0))
-                                {
-                                    resolvedPath = $"{ms.Name}/{tokens[0]}/{tokens[1]}";
-                                    break;
-                                }
-                            }                                                 
+                                resolvedPath = $"{microService.Name}/{tokens[0]}/{tokens[1]}";
+                                break;
+                            }
                         }
 
                         //No component exact match found, most likely ms/script
-                        resolvedPath = $"{tokens[0]}/{tokens[1]}";                        
+                        resolvedPath = $"{tokens[0]}/{tokens[1]}";
                         break;
                     }
                 case 1: //script
@@ -243,13 +243,12 @@ namespace TomPIT.Compilation
             return resolvedPath;
         }
 
-        private static string TrimExtension(string fileName)
-        {
-            return fileName.EndsWith(".csx") ? fileName[0..^4] : fileName;
-        }
-        private static bool IsOfCategory(IComponent component, string category)
-        {
-            return string.Compare(component?.Category, category, true) == 0;
-        }
+        private static string TrimExtension(string fileName) => fileName.EndsWith(".csx") ? fileName[0..^4] : fileName;
+
+        private static bool IsOfCategory(IComponent component, string category) => string.Compare(component?.Category, category, true) == 0;
+
+        private IConfiguration GetConfiguration(Guid token) => Tenant.GetService<IComponentService>().SelectConfiguration(token);
+
+        private T GetConfiguration<T>(Guid token) => GetConfiguration(token) is T matching ? matching : default;
     }
 }
