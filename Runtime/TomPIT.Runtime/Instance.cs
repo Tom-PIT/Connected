@@ -218,6 +218,9 @@ namespace TomPIT
 				 * https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-3.1
 				 */
 				o.RequestCultureProviders.Insert(2, new DefaultSettingsCultureProvider());
+
+				o.RequestCultureProviders.Insert(2, new DomainCultureProvider());
+
 				o.RequestCultureProviders.Insert(1, new IdentityCultureProvider());
 			});
 
