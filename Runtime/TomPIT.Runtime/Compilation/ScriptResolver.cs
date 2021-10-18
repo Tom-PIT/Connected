@@ -229,7 +229,7 @@ namespace TomPIT.Compilation
                     }
             }
 
-            return ValidatePath(baseMs, ms, resolvedPath);
+            return ValidatePath(ms, baseMs, resolvedPath);
         }
 
         private static string ValidatePath(IMicroService origin, IMicroService baseMicroService, string resolvedPath)
