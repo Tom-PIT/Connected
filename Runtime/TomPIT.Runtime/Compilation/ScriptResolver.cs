@@ -216,6 +216,16 @@ namespace TomPIT.Compilation
                         }
 
                         //No component exact match found, most likely ms/script
+
+                        //Trust, but verify
+                        if (Tenant.GetService<IMicroServiceService>().Select(tokens[0]) is null)
+                        {
+                            //Issue invalid path and let it fail silently down along the line to preserve compatibility
+                            resolvedPath = $"{microService.Name}/{tokens[0]}/{tokens[1]}";
+                            break;
+                        }
+
+                        //Microservice was found, assume ms/component combo
                         resolvedPath = $"{tokens[0]}/{tokens[1]}";
                         break;
                     }
