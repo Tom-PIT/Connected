@@ -25,7 +25,6 @@ namespace TomPIT.Compilation.Views
 			AppendViewMetaData(Builder, "Partial", component.Token);
 
 			Builder.Append(Source);
-
 			//var scripts = SelectScripts(tenant, component.MicroService, configuration as IGraphicInterface);
 
 			//if (!string.IsNullOrWhiteSpace(scripts))

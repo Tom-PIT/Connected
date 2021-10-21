@@ -1,9 +1,16 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
+using HtmlAgilityPack;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
+using TomPIT.IoC;
 using TomPIT.Middleware;
 using TomPIT.Models;
 using TomPIT.Serialization;
@@ -20,23 +27,37 @@ namespace TomPIT
 
         public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)] string name)
         {
-            return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), Html.ViewData.Model as IMiddlewareContext);
+            AppendDependenciesHeader(name, null);
+            return await InjectDependencyCount(name, Html.ViewData.Model as IMiddlewareContext);
         }
 
 
         public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)] string name, object arguments)
         {
-            return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), CreateModel(arguments));
+            var model = CreateModel(arguments);
+            AppendDependenciesHeader(name, model.Arguments);
+            return await InjectDependencyCount(name, model);
         }
 
         public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)] string name, JObject arguments)
         {
-            return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), CreateModel(arguments));
+            var model = CreateModel(arguments);
+            AppendDependenciesHeader(name, model.Arguments);
+            return await InjectDependencyCount(name, model);
         }
 
         public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)] string name, PartialRenderArguments e)
         {
-            return await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), CreateModel(e.Arguments, e.MergeArguments));
+            var model = CreateModel(e.Arguments, e.MergeArguments);
+            AppendDependenciesHeader(name, model.Arguments);
+            return await InjectDependencyCount(name, model);
+        }
+
+        private void AppendDependenciesHeader(string name, object arguments)
+        {
+            var header = GetInjectionCountHeaderForPartial(name, arguments);
+            if (!Shell.HttpContext.Response.Headers.Any(e => e.Key == header.Key))
+                Shell.HttpContext.Response.Headers.Add(header);
         }
 
         private IRuntimeModel CreateModel(object arguments, bool merge = true)
@@ -56,6 +77,48 @@ namespace TomPIT
             return partialModel;
         }
 
+        private async Task<IHtmlContent> InjectDependencyCount(string name, IMiddlewareContext model)
+        {
+            var content = await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), model);
+
+            var dependencies = MiddlewareDescriptor.Current.Tenant.GetService<IUIDependencyInjectionService>().QueryPartialDependencies(name, null);
+
+            if ((dependencies?.Count ?? 0) == 0)
+                return content;
+
+            var parsedContent = new HtmlDocument();
+
+            var stringContent = GetString(content);
+            parsedContent.LoadHtml(stringContent);
+
+            var partialNode = parsedContent.DocumentNode.SelectSingleNode("//tp-partial");
+
+            if (partialNode is null)
+                return content;
+
+            partialNode.SetAttributeValue("data-dependency-count", (dependencies?.Count ?? 0).ToString());
+            partialNode.SetAttributeValue("data-full-name", name);
+
+            using var ms = new StringWriter();
+            parsedContent.Save(ms);
+
+            return GetHtmlContent(ms.ToString());
+        }
+
+        private static string GetString(IHtmlContent content)
+        {
+            using var writer = new StringWriter();
+            content.WriteTo(writer, HtmlEncoder.Default);
+            return writer.ToString();
+        }
+
+        private static IHtmlContent GetHtmlContent(string html)
+        {
+            var builder = new HtmlContentBuilder();
+            builder.AppendHtmlLine(html);
+            return builder;
+        }
+
         private IPartialViewConfiguration ResolveView(string qualifier)
         {
             var tokens = qualifier.Split('/');
@@ -67,13 +130,19 @@ namespace TomPIT
             {
                 ms = model.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
-                if (ms == null)
+                if (ms is null)
                     return null;
 
                 name = tokens[1];
             }
 
             return model.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "Partial", name) as IPartialViewConfiguration;
+        }
+
+        public static KeyValuePair<string, StringValues> GetInjectionCountHeaderForPartial(string name, object arguments)
+        {
+            var dependencies = MiddlewareDescriptor.Current.Tenant.GetService<IUIDependencyInjectionService>().QueryPartialDependencies(name, arguments);
+            return new KeyValuePair<string, StringValues>("x-tp-partial-injection-" + name.Replace("/", "--"), (dependencies?.Count ?? 0).ToString());
         }
     }
 }
