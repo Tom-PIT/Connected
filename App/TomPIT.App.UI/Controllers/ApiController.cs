@@ -1,150 +1,156 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 using TomPIT.App.Models;
 using TomPIT.Controllers;
 using TomPIT.Serialization;
 
 namespace TomPIT.App.Controllers
 {
-	[AllowAnonymous]
-	public class ApiController : ServerController
-	{
-		[HttpPost]
-		public IActionResult Invoke()
-		{
-			var m = CreateModel();
+    [AllowAnonymous]
+    public class ApiController : ServerController
+    {
+        [HttpPost]
+        public IActionResult Invoke()
+        {
+            var m = CreateModel();
 
-			HttpContext.Response.RegisterForDispose(m);
+            HttpContext.Response.RegisterForDispose(m);
 
-			return Json(Serializer.Serialize(m.Interop.Invoke<object, JObject>(m.QualifierName, m.Body)));
-		}
+            return Json(Serializer.Serialize(m.Interop.Invoke<object, JObject>(m.QualifierName, m.Body)));
+        }
 
-		[HttpPost]
-		public IActionResult UIInjection()
-		{
-			var model = CreateUIInjectionModel();
+        [HttpPost]
+        public IActionResult UIInjection()
+        {
+            var model = CreateUIInjectionModel();
 
-			HttpContext.Response.RegisterForDispose(model);
+            HttpContext.Response.RegisterForDispose(model);
 
-			return PartialView("~/Views/UIInjectionView.cshtml", model);
-		}
+            return PartialView("~/Views/UIInjectionView.cshtml", model);
+        }
 
-		[HttpPost]
-		public IActionResult Partial()
-		{
-			var model = CreatePartialModel();
+        [HttpPost]
+        public IActionResult Partial()
+        {
+            var model = CreatePartialModel();
 
-			HttpContext.Response.RegisterForDispose(model);
+            HttpContext.Response.RegisterForDispose(model);
 
-			return PartialView(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", model.QualifierName), model);
-		}
+            var header = PartialHelper.GetInjectionCountHeaderForPartial(model.QualifierName, model.Arguments);
 
-		[HttpPost]
-		public IActionResult Search()
-		{
-			var model = CreateSearchModel();
+            if (!HttpContext.Response.Headers.Any(e => e.Key == header.Key))
+                HttpContext.Response.Headers.Add(header);
 
-			HttpContext.Response.RegisterForDispose(model);
+            return PartialView(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", model.QualifierName), model);
+        }
 
-			return Json(model.Search());
-		}
+        [HttpPost]
+        public IActionResult Search()
+        {
+            var model = CreateSearchModel();
 
-		[HttpPost]
-		public IActionResult SetUserData()
-		{
-			var model = CreateUserDataModel();
+            HttpContext.Response.RegisterForDispose(model);
 
-			HttpContext.Response.RegisterForDispose(model);
-			model.SetData();
+            return Json(model.Search());
+        }
 
-			return new EmptyResult();
-		}
+        [HttpPost]
+        public IActionResult SetUserData()
+        {
+            var model = CreateUserDataModel();
 
-		[HttpPost]
-		public IActionResult GetUserData()
-		{
-			var model = CreateUserDataModel();
+            HttpContext.Response.RegisterForDispose(model);
+            model.SetData();
 
-			HttpContext.Response.RegisterForDispose(model);
+            return new EmptyResult();
+        }
 
-			return Json(model.GetData());
-		}
+        [HttpPost]
+        public IActionResult GetUserData()
+        {
+            var model = CreateUserDataModel();
 
-		[HttpPost]
-		public IActionResult QueryUserData()
-		{
-			var model = CreateUserDataModel();
+            HttpContext.Response.RegisterForDispose(model);
 
-			HttpContext.Response.RegisterForDispose(model);
+            return Json(model.GetData());
+        }
 
-			return Json(model.QueryData());
-		}
+        [HttpPost]
+        public IActionResult QueryUserData()
+        {
+            var model = CreateUserDataModel();
 
-		private UserDataModel CreateUserDataModel()
-		{
-			var r = new UserDataModel
-			{
-				Body = FromBody()
-			};
+            HttpContext.Response.RegisterForDispose(model);
 
-			r.Databind();
-			r.Initialize(this, null);
+            return Json(model.QueryData());
+        }
 
-			return r;
-		}
+        private UserDataModel CreateUserDataModel()
+        {
+            var r = new UserDataModel
+            {
+                Body = FromBody()
+            };
 
-		private ApiModel CreateModel()
-		{
-			ApiModel r;
-			var apiHeader = Request.Headers["X-TP-API"];
-			var componentHeader = Request.Headers["X-TP-COMPONENT"];
+            r.Databind();
+            r.Initialize(this, null);
 
-			if (!string.IsNullOrWhiteSpace(apiHeader))
-				r = new ApiModel(apiHeader, componentHeader);
-			else
-				r = new ApiModel { Body = FromBody() };
+            return r;
+        }
 
-			r.Databind();
-			r.Initialize(this, r.MicroService);
+        private ApiModel CreateModel()
+        {
+            ApiModel r;
+            var apiHeader = Request.Headers["X-TP-API"];
+            var componentHeader = Request.Headers["X-TP-COMPONENT"];
 
-			return r;
-		}
+            if (!string.IsNullOrWhiteSpace(apiHeader))
+                r = new ApiModel(apiHeader, componentHeader);
+            else
+                r = new ApiModel { Body = FromBody() };
 
-		private PartialModel CreatePartialModel()
-		{
-			var r = new PartialModel
-			{
-				Body = FromBody()
-			};
+            r.Databind();
+            r.Initialize(this, r.MicroService);
 
-			r.Databind();
-			r.Initialize(this, r.MicroService);
+            return r;
+        }
 
-			return r;
-		}
+        private PartialModel CreatePartialModel()
+        {
+            var r = new PartialModel
+            {
+                Body = FromBody()
+            };
 
-		private UIInjectionModel CreateUIInjectionModel()
-		{
-			var r = new UIInjectionModel
-			{
-				Body = FromBody()
-			};
+            r.Databind();
+            r.Initialize(this, r.MicroService);
 
-			r.Databind();
-			r.Initialize(this, r.MicroService);
+            return r;
+        }
 
-			return r;
-		}
+        private UIInjectionModel CreateUIInjectionModel()
+        {
+            var r = new UIInjectionModel
+            {
+                Body = FromBody()
+            };
 
-		private SearchModel CreateSearchModel()
-		{
-			var r = new SearchModel { Body = FromBody() };
+            r.Databind();
+            r.Initialize(this, r.MicroService);
 
-			r.Databind();
-			r.Initialize(this, r.MicroService);
+            return r;
+        }
 
-			return r;
-		}
-	}
+        private SearchModel CreateSearchModel()
+        {
+            var r = new SearchModel { Body = FromBody() };
+
+            r.Databind();
+            r.Initialize(this, r.MicroService);
+
+            return r;
+        }
+    }
 }
