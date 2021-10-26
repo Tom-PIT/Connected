@@ -19,7 +19,7 @@ namespace TomPIT.UI
 	{
 		IViewConfiguration Select(string url, ActionContext context);
 		//string SelectScripts(Guid microService, Guid view);
-		IConfiguration Select(Guid view);
+		//IConfiguration Select(Guid view);
 		IMasterViewConfiguration SelectMaster(string name);
 		IPartialViewConfiguration SelectPartial(string name);
 

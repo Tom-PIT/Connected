@@ -27,7 +27,7 @@ namespace TomPIT.App.UI
 		{
 			var partialView = ResolveView(context, name);
 
-			if (partialView == null)
+			if (partialView is null)
 				return null;
 
 			using var vm = CreatePartialModel(name);
@@ -41,7 +41,7 @@ namespace TomPIT.App.UI
 		{
 			var partialView = ResolveView(context, name);
 
-			if (partialView == null)
+			if (partialView is null)
 				return;
 
 			using var vm = CreatePartialModel(name);
@@ -67,7 +67,7 @@ namespace TomPIT.App.UI
 
 			using var model = CreateModel();
 
-			if (model == null)
+			if (model is null)
 			{
 				Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
 				return;
@@ -142,13 +142,13 @@ namespace TomPIT.App.UI
 			var ac = CreateActionContext(Context);
 			var view = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().Select(path, ac);
 
-			if (view == null)
+			if (view is null)
 				return null;
 
 			ac.ActionDescriptor.Properties.Add("viewKind", ViewKind.View);
 
 			var vi = new ViewInfo(string.Format("/Views/Dynamic/View/{0}.cshtml", path), ac);
-			var ms = vi.ViewComponent == null ? null : MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
+			var ms = vi.ViewComponent is null ? null : MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
 
 			var model = new RuntimeModel(Context.Request, ac, Temp, ms)
 			{
@@ -170,7 +170,7 @@ namespace TomPIT.App.UI
 			ac.ActionDescriptor.Properties.Add("viewKind", ViewKind.Partial);
 
 			var vi = new ViewInfo(string.Format("/Views/Dynamic/Partial/{0}.cshtml", name), ac);
-			var ms = vi.ViewComponent == null ? null : MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
+			var ms = vi.ViewComponent is null ? null : MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
 
 			var model = new RuntimeModel(Context.Request, ac, Temp, ms);
 
@@ -192,7 +192,7 @@ namespace TomPIT.App.UI
 			{
 				ms = context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
-				if (ms == null)
+				if (ms is null)
 					return null;
 
 				name = tokens[1];

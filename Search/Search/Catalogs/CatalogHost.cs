@@ -344,7 +344,7 @@ namespace TomPIT.Search.Catalogs
 
                         _searcher = new CatalogSearcher(Searcher);
 
-                        old.TryDispose();
+                        old.TryDispose(); //Why is this?
                     }
                 }
             }
