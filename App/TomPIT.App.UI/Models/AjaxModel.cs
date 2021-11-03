@@ -84,5 +84,17 @@ namespace TomPIT.App.Models
             else
                 Body = new();
         }
+
+        public virtual IRuntimeModel Clone()
+        {
+            var ajaxModel = new AjaxModel
+            {
+                Body = (JObject)Body.DeepClone()
+            };
+
+            ajaxModel.Initialize(Controller, MicroService);
+
+            return ajaxModel;
+        }
     }
 }

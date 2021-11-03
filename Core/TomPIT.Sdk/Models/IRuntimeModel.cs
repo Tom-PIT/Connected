@@ -9,5 +9,7 @@ namespace TomPIT.Models
 		void MergeArguments(JObject arguments);
 
 		void ReplaceArguments(JObject arguments);
+
+		IRuntimeModel Clone();
 	}
 }

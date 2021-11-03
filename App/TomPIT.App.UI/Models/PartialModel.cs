@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Newtonsoft.Json.Linq;
+using System;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Middleware;
@@ -16,7 +18,21 @@ namespace TomPIT.App.Models
 
 		public ITempDataProvider TempData { get; }
 
-		protected override void OnDatabinding()
+		public override IRuntimeModel Clone() 
+		{
+			var model = new PartialModel() 
+			{
+				Body = (JObject)Body.DeepClone(),
+				QualifierName = QualifierName,
+				Component = Component,
+			};
+
+			model.Initialize(Controller, MicroService);
+
+			return model;
+		}
+
+        protected override void OnDatabinding()
 		{
 			var identifier = Body.Required<string>("__name");
 			var context = FromIdentifier(identifier, MiddlewareDescriptor.Current.Tenant);

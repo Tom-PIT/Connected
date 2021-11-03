@@ -21,7 +21,7 @@ namespace TomPIT.App.Models
             ActionContext = context.ActionContext;
             TempData = context.TempData;
             MicroService = context.MicroService;
-            _arguments = context.Arguments;
+            _arguments = (JObject)context.Arguments?.DeepClone();
         }
 
         public RuntimeModel(HttpRequest request, ActionContext context, ITempDataProvider tempData, IMicroService microService)
@@ -83,6 +83,21 @@ namespace TomPIT.App.Models
                 _arguments = arguments;
             else
                 _arguments = new();
+        }
+
+        public IRuntimeModel Clone()
+        {
+            var model = new RuntimeModel(this) 
+            {
+                Component = Component,
+                Controller = Controller,
+                Endpoint = Endpoint,
+                MicroService = MicroService,
+                Title = Title,
+                ViewConfiguration = ViewConfiguration                
+            };
+
+            return model;
         }
 
         public string Title { get; protected set; }

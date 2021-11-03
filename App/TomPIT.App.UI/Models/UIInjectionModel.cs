@@ -98,5 +98,10 @@ namespace TomPIT.App.Models
                 var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(url).LocalPath), Controller.Request.RouteValues);
             });
         }
+
+        public override IRuntimeModel Clone()
+        {
+            return this;
+        }
     }
 }

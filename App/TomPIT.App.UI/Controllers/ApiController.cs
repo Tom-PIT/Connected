@@ -1,16 +1,31 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using System.Linq;
+using System.Threading.Tasks;
 using TomPIT.App.Models;
+using TomPIT.App.UI;
+using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.UI;
 using TomPIT.Controllers;
+using TomPIT.Middleware;
+using TomPIT.Runtime;
 using TomPIT.Serialization;
+using TomPIT.UI;
 
 namespace TomPIT.App.Controllers
 {
     [AllowAnonymous]
     public class ApiController : ServerController
     {
+        private IViewEngine _viewEngine = null;
+
+        public ApiController(IViewEngine viewEngine)
+        {
+            this._viewEngine = viewEngine;
+        }
+
         [HttpPost]
         public IActionResult Invoke()
         {
@@ -32,18 +47,18 @@ namespace TomPIT.App.Controllers
         }
 
         [HttpPost]
-        public IActionResult Partial()
+        public async Task<IActionResult> Partial()
         {
-            var model = CreatePartialModel();
-
-            HttpContext.Response.RegisterForDispose(model);
-
-            var header = PartialHelper.GetInjectionCountHeaderForPartial(model.QualifierName, model.Arguments);
-
-            if (!HttpContext.Response.Headers.Any(e => e.Key == header.Key))
-                HttpContext.Response.Headers.Add(header);
-
-            return PartialView(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", model.QualifierName), model);
+            HttpContext.Request.EnableBuffering();
+ 
+            var context = CreatePartialModel();
+            
+            HttpContext.Response.RegisterForDispose(context);
+            
+            _viewEngine.Context = HttpContext;
+            var content = await _viewEngine.RenderPartialToStringAsync(context, context.QualifierName);
+                        
+            return Content(content, "text/html");
         }
 
         [HttpPost]

@@ -143,6 +143,11 @@ namespace TomPIT.MicroServices.IoT.Models
 			Arguments = arguments ?? new JObject();
 		}
 
+        public IRuntimeModel Clone()
+        {
+			return this;
+        }
+
         public List<IIoTFieldState> ForwardState
 		{
 			get

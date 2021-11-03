@@ -34,7 +34,13 @@ namespace TomPIT.App.Models
 
 		public ITempDataProvider TempData { get; }
 
-		public void Initialize(IMicroService microService)
+        public IRuntimeModel Clone()
+        {
+			var mailTemplateModel = new MailTemplateModel(null, ActionContext, TempData, (JObject)Arguments?.DeepClone());
+			return mailTemplateModel;
+        }
+
+        public void Initialize(IMicroService microService)
 		{
 			Initialize(null, microService);
 		}

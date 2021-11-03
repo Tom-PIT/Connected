@@ -13,6 +13,7 @@ using TomPIT.ComponentModel.UI;
 using TomPIT.IoC;
 using TomPIT.Middleware;
 using TomPIT.Models;
+using TomPIT.Runtime;
 using TomPIT.Serialization;
 using TomPIT.UI;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
@@ -21,6 +22,13 @@ namespace TomPIT
 {
     public class PartialHelper : HelperBase
     {
+        private List<IRuntimeViewModifier> ViewModifiers => MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceRuntimeService>()
+           .QueryRuntimes()
+           .Select(e => e?.ViewModifier)
+           .Where(e => e is not null)
+           .OrderBy(e => e.Priority)
+           .ToList();
+
         public PartialHelper(IHtmlHelper helper) : base(helper)
         {
         }
@@ -28,7 +36,7 @@ namespace TomPIT
         public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)] string name)
         {
             AppendDependenciesHeader(name, null);
-            return await InjectDependencyCount(name, Html.ViewData.Model as IMiddlewareContext);
+            return await RenderView(name, Html.ViewData.Model as IRuntimeModel);
         }
 
 
@@ -36,21 +44,21 @@ namespace TomPIT
         {
             var model = CreateModel(arguments);
             AppendDependenciesHeader(name, model.Arguments);
-            return await InjectDependencyCount(name, model);
+            return await RenderView(name, model);
         }
 
         public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)] string name, JObject arguments)
         {
             var model = CreateModel(arguments);
             AppendDependenciesHeader(name, model.Arguments);
-            return await InjectDependencyCount(name, model);
+            return await RenderView(name, model);
         }
 
         public async Task<IHtmlContent> Render([CIP(CIP.PartialProvider)] string name, PartialRenderArguments e)
         {
             var model = CreateModel(e.Arguments, e.MergeArguments);
             AppendDependenciesHeader(name, model.Arguments);
-            return await InjectDependencyCount(name, model);
+            return await RenderView(name, model);
         }
 
         private void AppendDependenciesHeader(string name, object arguments)
@@ -77,32 +85,64 @@ namespace TomPIT
             return partialModel;
         }
 
-        private async Task<IHtmlContent> InjectDependencyCount(string name, IMiddlewareContext model)
+        private async Task<IHtmlContent> RenderView(string name, IRuntimeModel model)
         {
-            var content = await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), model);
+            var modifiers = this.ViewModifiers;
 
-            var dependencies = MiddlewareDescriptor.Current.Tenant.GetService<IUIDependencyInjectionService>().QueryPartialDependencies(name, null);
+            IComponent component = null;
+            IConfiguration configuration = null;
+            IMicroService microService = null;
 
-            if ((dependencies?.Count ?? 0) == 0)
+            var modelClone = model.Clone();
+
+            if (modifiers.Any())
+            {
+                microService = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(name.Split('/').FirstOrDefault());
+                component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(microService.Token, "Partial", name.Split('/').LastOrDefault());
+                configuration = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component.RuntimeConfiguration);
+
+                var preRenderArgs = new PartialViewPreRenderModificationArguments
+                {
+                    Arguments = modelClone.Arguments,
+                    Component = component,
+                    MicroService = microService,
+                    Configuration = configuration as IPartialViewConfiguration,
+                    Name = name
+                };
+
+                foreach (var modifier in modifiers)
+                {
+                    preRenderArgs = modifier.PreRenderPartialView(preRenderArgs);
+                }
+
+                modelClone.ReplaceArguments(preRenderArgs.Arguments);
+            }
+
+            var content = await Html.PartialAsync(string.Format("~/Views/Dynamic/Partial/{0}.cshtml", name), modelClone);
+
+            if (!modifiers.Any())
                 return content;
-
-            var parsedContent = new HtmlDocument();
 
             var stringContent = GetString(content);
-            parsedContent.LoadHtml(stringContent);
 
-            var partialNode = parsedContent.DocumentNode.SelectSingleNode("//tp-partial");
+            var postRenderArgs = new PartialViewPostRenderModificationArguments
+            {
+                Arguments = modelClone.Arguments,
+                Component = component,
+                MicroService = microService,
+                Configuration = configuration as IPartialViewConfiguration,
+                Name = name,
+                Content = stringContent
+            };
 
-            if (partialNode is null)
-                return content;
+            foreach (var modifier in modifiers)
+            {
+                postRenderArgs.Content = modifier.PostRenderPartialView(postRenderArgs);
+            }
 
-            partialNode.SetAttributeValue("data-dependency-count", (dependencies?.Count ?? 0).ToString());
-            partialNode.SetAttributeValue("data-full-name", name);
+            stringContent = postRenderArgs.Content;
 
-            using var ms = new StringWriter();
-            parsedContent.Save(ms);
-
-            return GetHtmlContent(ms.ToString());
+            return GetHtmlContent(stringContent);
         }
 
         private static string GetString(IHtmlContent content)

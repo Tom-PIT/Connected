@@ -7,6 +7,8 @@ namespace TomPIT.Runtime
 	{
 		public virtual IRuntimeResolver Resolver => null;
 
+		public virtual IRuntimeViewModifier ViewModifier => null;
+
         public void Initialize(RuntimeInitializeArgs e)
 		{
 			OnInitialize(e);

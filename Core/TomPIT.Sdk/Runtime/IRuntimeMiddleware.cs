@@ -10,5 +10,7 @@ namespace TomPIT.Runtime
 		IRuntimeUrl ResolveUrl(RuntimeUrlKind kind);
 
 		IRuntimeResolver Resolver { get; }
+
+		IRuntimeViewModifier ViewModifier { get; }
 	}
 }
