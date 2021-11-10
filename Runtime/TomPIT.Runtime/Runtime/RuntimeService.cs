@@ -23,7 +23,9 @@ namespace TomPIT.Runtime
 
 		public EnvironmentConnectivity Connectivity { get; private set; }
 
-		public void Initialize(InstanceType type, Platform platform, IWebHostEnvironment environment)
+		public EnvironmentIOBehavior IOBehavior { get; private set; } = EnvironmentIOBehavior.ReadWrite;
+
+        public void Initialize(InstanceType type, Platform platform, IWebHostEnvironment environment)
 		{
 			Type = type;
 			ContentRoot = environment.ContentRootPath;
@@ -66,6 +68,7 @@ namespace TomPIT.Runtime
 
 			Stage = sys.Stage;
 			Connectivity = sys.Connectivity;
+			IOBehavior = sys.IOBehavior;
 		}
 	}
 }

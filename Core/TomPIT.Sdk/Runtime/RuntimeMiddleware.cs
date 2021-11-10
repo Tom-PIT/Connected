@@ -18,6 +18,7 @@ namespace TomPIT.Runtime
 		{
 			return OnResolveUrl(kind);
 		}
+
 		[Obsolete("Please use Resolver.ResolveUrl instead.")]
 		protected virtual IRuntimeUrl OnResolveUrl(RuntimeUrlKind kind)
 		{
@@ -26,7 +27,6 @@ namespace TomPIT.Runtime
 
 		protected virtual void OnInitialize(RuntimeInitializeArgs e)
 		{
-
 		}
 	}
 }

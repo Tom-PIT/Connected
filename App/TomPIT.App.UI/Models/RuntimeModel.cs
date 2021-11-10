@@ -94,7 +94,8 @@ namespace TomPIT.App.Models
                 Endpoint = Endpoint,
                 MicroService = MicroService,
                 Title = Title,
-                ViewConfiguration = ViewConfiguration                
+                ViewConfiguration = ViewConfiguration,
+                _navigation = Navigation,
             };
 
             return model;

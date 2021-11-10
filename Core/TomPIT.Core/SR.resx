@@ -1263,4 +1263,7 @@
   <data name="ErrTopicMismatch" xml:space="preserve">
     <value>The provided topic does not match the previously provided topic</value>
   </data>
+  <data name="ErrContextInReadonlyMode" xml:space="preserve">
+    <value>This part of the application is currently in readonly mode.</value>
+  </data>
 </root>

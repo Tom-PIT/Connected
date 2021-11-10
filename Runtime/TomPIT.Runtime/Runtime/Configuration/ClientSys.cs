@@ -86,5 +86,8 @@ namespace TomPIT.Runtime.Configuration
 		[JsonProperty(PropertyName = "deployment")]
 		[JsonConverter(typeof(DeploymentConverter))]
 		public IClientSysDeployment Deployment { get; set; }
+
+		[JsonProperty(PropertyName = "ioBehavior")]
+		public EnvironmentIOBehavior IOBehavior { get; set; }
 	}
 }

@@ -624,4 +624,7 @@
   <data name="ErrTopicMismatch" xml:space="preserve">
     <value>Tema se ne ujema s predhodno zapisano temo</value>
   </data>
+  <data name="ErrContextInReadonlyMode" xml:space="preserve">
+    <value>Ta del aplikacije je na voljo samo za branje.</value>
+  </data>
 </root>

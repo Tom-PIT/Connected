@@ -1123,6 +1123,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This part of the application is currently in readonly mode..
+        /// </summary>
+        public static string ErrContextInReadonlyMode {
+            get {
+                return ResourceManager.GetString("ErrContextInReadonlyMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot convert value to the destination type..
         /// </summary>
         public static string ErrConversion {

@@ -36,6 +36,14 @@ namespace TomPIT.Runtime
 		Online = 1,
 		Offline = 2
 	}
+
+	public enum EnvironmentIOBehavior
+    {
+		NotSet = 0,
+		ReadWrite = 1,
+		ReadOnly = 2
+    }
+
 	public interface IRuntimeService
 	{
 		void Initialize(InstanceType type, Platform platform, IWebHostEnvironment environment);
@@ -48,6 +56,7 @@ namespace TomPIT.Runtime
 		EnvironmentMode Mode { get; }
 		Platform Platform { get; }
 		EnvironmentConnectivity Connectivity { get; }
+		EnvironmentIOBehavior IOBehavior { get; }
 
 		IApplicationBuilder Host { get; }
 	}

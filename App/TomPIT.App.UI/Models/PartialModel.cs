@@ -24,7 +24,7 @@ namespace TomPIT.App.Models
 			{
 				Body = (JObject)Body.DeepClone(),
 				QualifierName = QualifierName,
-				Component = Component,
+				Component = Component
 			};
 
 			model.Initialize(Controller, MicroService);
