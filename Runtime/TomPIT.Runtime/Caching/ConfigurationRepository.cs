@@ -102,7 +102,7 @@ namespace TomPIT.Services
 
 			foreach (var i in configurations)
 			{
-				if (i == null)
+				if (i is null)
 					continue;
 
 				Set(i.Component, i as T, TimeSpan.Zero);
@@ -114,14 +114,11 @@ namespace TomPIT.Services
 			if (Tenant.GetService<IComponentService>().SelectConfiguration(id) is T config)
 			{
 				Set(config.Component, config, TimeSpan.Zero);
-				//				OnAdded(config.MicroService(), id);
 			}
 			else
 			{
-				var existing = Get(id);
-
+				Get(id);
 				Remove(id);
-				//			OnRemoved(existing == null ? Guid.Empty : existing.MicroService(), id);
 			}
 		}
 	}
