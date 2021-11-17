@@ -38,34 +38,37 @@ namespace TomPIT.Connected.Printing.Client
         public static LoggingLevel Level { get; set; } = LoggingLevel.Error;
         public static ExceptionLoggingLevel ExceptionLogging { get; set; } = ExceptionLoggingLevel.ErrorMessage;
 
+        private static object _fileLock = new object();
         private static void WriteFile(string text, bool isErrorFile)
         {
-#if CONSOLE
-            if (isErrorFile)
-                ConsoleHandler.Error(text);
-            else
-                ConsoleHandler.Info(text);
-#endif
-            var commonApps = Environment.GetFolderPath(SpecialFolder.CommonApplicationData);
-            var appName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-
-            var logFolder = Path.Combine(commonApps, "TomPIT", appName, "logs");
-
-            if (!Directory.Exists(logFolder))
-                Directory.CreateDirectory(logFolder);
-
-            var fileName = Path.Combine(logFolder, $"{DateTime.Now:yyyy_MM_dd}{(isErrorFile ? ".error" : "")}.log");
-
-            try
+            lock (_fileLock)
             {
-                using (StreamWriter streamWriter = new StreamWriter(fileName, true))
+#if CONSOLE
+                if (isErrorFile)
+                    ConsoleHandler.Error(text);
+                else
+                    ConsoleHandler.Info(text);
+#endif
+                var commonApps = GetFolderPath(SpecialFolder.CommonApplicationData);
+                var appName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+
+                var logFolder = Path.Combine(commonApps, "TomPIT", appName, "logs");
+
+                if (!Directory.Exists(logFolder))
+                    Directory.CreateDirectory(logFolder);
+
+                var fileName = Path.Combine(logFolder, $"{DateTime.Now:yyyy_MM_dd}{(isErrorFile ? ".error" : "")}.log");
+
+                try
                 {
+                    using StreamWriter streamWriter = new(fileName, true);
+
                     streamWriter.WriteLine(text);
                     streamWriter.Flush();
                     streamWriter.Close();
                 }
+                catch { }
             }
-            catch { }
         }
 
         private static void Log(string text, LoggingLevel severity)
@@ -96,7 +99,6 @@ namespace TomPIT.Connected.Printing.Client
                 sb.Append(" StackTrace: ").AppendLine(ex.StackTrace);
             }
 
-            string padding = " ";
             while (ex.InnerException != null)
             {
                 ex = ex.InnerException;
@@ -107,7 +109,6 @@ namespace TomPIT.Connected.Printing.Client
                 }
             }
 
-            padding += " ";
             WriteFile(sb.ToString(), true);
         }
 

@@ -11,7 +11,6 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 {
     public class ConnectionRetryPolicy : IRetryPolicy
     {
-
         public TimeSpan? NextRetryDelay(RetryContext retryContext)
         {
             if (retryContext.ElapsedTime >= TimeSpan.FromHours(110))

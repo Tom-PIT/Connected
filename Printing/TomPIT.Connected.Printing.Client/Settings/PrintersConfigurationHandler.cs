@@ -30,7 +30,6 @@ namespace TomPIT.Connected.Printing.Client.Configuration
                     deviceConfigList[resourceName] = printerName;
                 }
             }
-
             return deviceConfigList;
         }
 

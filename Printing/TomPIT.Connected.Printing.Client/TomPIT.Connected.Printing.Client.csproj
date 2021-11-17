@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net4.7.2</TargetFramework>
+    <TargetFramework>net5</TargetFramework>
     <Configurations>Debug;Release;Development</Configurations>
     <AssemblyVersion>2.2.1112.1</AssemblyVersion>
     <FileVersion>2.2.1112.1</FileVersion>
@@ -15,14 +15,12 @@
     <DefineConstants>TRACE;TESTING;SIMULATION;CONSOLE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DevExpress.AspNetCore.Reporting" Version="19.2.3" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="5.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="5.0.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Configuration.Install" />
-    <Reference Include="System.Printing" />
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="DevExpress.AspNetCore.Reporting" Version="20.2.5" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="6.0.0" />
   </ItemGroup>
 </Project>
