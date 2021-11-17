@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
+using TomPIT.Models;
 
 namespace TomPIT.UI
 {
@@ -18,7 +19,7 @@ namespace TomPIT.UI
 	{
 		IViewConfiguration Select(string url, ActionContext context);
 		//string SelectScripts(Guid microService, Guid view);
-		IConfiguration Select(Guid view);
+		//IConfiguration Select(Guid view);
 		IMasterViewConfiguration SelectMaster(string name);
 		IPartialViewConfiguration SelectPartial(string name);
 
@@ -28,5 +29,7 @@ namespace TomPIT.UI
 
 		ViewKind ResolveViewKind(string url);
 		IMicroService ResolveMicroService(string url);
+
+		IRuntimeModel CreateModel(IRuntimeModel owner);
 	}
 }

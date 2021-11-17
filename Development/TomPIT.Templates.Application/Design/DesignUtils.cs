@@ -80,6 +80,7 @@
 		public const string MediaResourceFileUploadDesigner = "TomPIT.MicroServices.Design.Designers.MediaResourceFileUploadDesigner, " + DesignAssembly;
 		public const string MediaDesigner = "TomPIT.MicroServices.Design.Designers.MediaDesigner, " + DesignAssembly;
 		public const string ScriptUploadDesigner = "TomPIT.MicroServices.Design.Designers.ScriptUploadDesigner, " + DesignAssembly;
+		public const string StaticResourceDesigner = "TomPIT.MicroServices.Design.Designers.StaticResourceDesigner, " + DesignAssembly;
 		public const string StringTableDesigner = "TomPIT.MicroServices.Design.Designers.StringTable, " + DesignAssembly;
 
 	}

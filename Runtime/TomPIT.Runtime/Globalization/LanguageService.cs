@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
@@ -11,10 +12,13 @@ namespace TomPIT.Globalization
 {
 	internal class LanguageService : SynchronizedClientRepository<ILanguage, Guid>, ILanguageService, ILanguageNotification
 	{
+		private Lazy<ConcurrentDictionary<string, ILanguage>> _mappings = new Lazy<ConcurrentDictionary<string, ILanguage>>(()=> { return new ConcurrentDictionary<string, ILanguage>(StringComparer.OrdinalIgnoreCase); });
 		public LanguageService(ITenant tenant) : base(tenant, "language")
 		{
 			Initialize();
 		}
+
+		private ConcurrentDictionary<string, ILanguage> Mappings => _mappings.Value;
 
 		protected override void OnInitializing()
 		{
@@ -26,6 +30,11 @@ namespace TomPIT.Globalization
 				Set(language.Token, language, TimeSpan.Zero);
 				AddCulture(language);
 			}
+		}
+
+		protected override void OnInitialized()
+		{
+			ResetMappings();
 		}
 
 		protected override void OnInvalidate(Guid id)
@@ -42,6 +51,8 @@ namespace TomPIT.Globalization
 				Set(r.Token, r, TimeSpan.Zero);
 				AddCulture(r);
 			}
+
+			ResetMappings();
 		}
 
 		public ImmutableList<ILanguage> Query()
@@ -52,6 +63,14 @@ namespace TomPIT.Globalization
 		public ILanguage Select(Guid language)
 		{
 			return Get(language);
+		}
+
+		public ILanguage Match(string languageString)
+		{
+			if (!Mappings.TryGetValue(languageString, out ILanguage language))
+				return null;
+
+			return language;
 		}
 
 		public ILanguage Select(int lcid)
@@ -107,6 +126,27 @@ namespace TomPIT.Globalization
 				return null;
 
 			return CultureInfo.GetCultureInfo(language.Lcid);
+		}
+
+		private void ResetMappings()
+		{
+			Mappings.Clear();
+
+			foreach(var language in All())
+			{
+				if (string.IsNullOrWhiteSpace(language.Mappings) || language.Status == LanguageStatus.Hidden)
+					continue;
+
+				var tokens = language.Mappings.Split(',');
+
+				foreach(var token in tokens)
+				{
+					if (string.IsNullOrWhiteSpace(token))
+						continue;
+
+					Mappings.TryAdd(token, language);
+				}
+			}
 		}
 	}
 }

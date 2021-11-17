@@ -20,5 +20,6 @@ namespace TomPIT.Middleware.Services
 		IMiddlewareSearchService Search { get; }
 		IMiddlewareMembershipService Membership { get; }
 		IMiddlewareAnalyticsService Analytics { get; }
+		IMiddlewareWorkersService Workers { get; }
 	}
 }

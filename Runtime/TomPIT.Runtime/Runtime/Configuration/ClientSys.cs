@@ -90,6 +90,7 @@ namespace TomPIT.Runtime.Configuration
 		[JsonConverter(typeof(DeploymentConverter))]
 		public IClientSysDeployment Deployment { get; set; }
 
-		List<IClientSysConnection> IClientSys.Connections => Connections.Cast<IClientSysConnection>().ToList();
-    }
+		[JsonProperty(PropertyName = "ioBehavior")]
+		public EnvironmentIOBehavior IOBehavior { get; set; }
+	}
 }

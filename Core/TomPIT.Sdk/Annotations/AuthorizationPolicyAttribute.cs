@@ -54,6 +54,11 @@ namespace TomPIT.Annotations
 			if (Context is IElevationContext elevation)
 				elevation.State = ElevationContextState.Revoked;
 		}
+
+		private static bool IsFullControl(IMiddlewareContext context)
+        {
+			return context.Tenant.GetService<IAuthorizationService>().IsInRole(context.Services.Identity.User?.Token ?? default, "Full Control");
+        }
 		protected IAuthorizationModel Model
 		{
 			get
@@ -99,6 +104,12 @@ namespace TomPIT.Annotations
 
 			Model.Proxy = instance;
 
+			if(IsFullControl(context))
+            {
+				Grant(context);
+				return;
+			}
+
 			var grantAttributes = ResolveGrantAttributes();
 
 			if (AuthorizeGrant(grantAttributes, AuthorizationMiddlewareStage.Before))
@@ -124,8 +135,7 @@ namespace TomPIT.Annotations
 					throw new UnauthorizedException(sb.ToString());
 			}
 
-			if (context is IElevationContext elevationContext)
-				elevationContext.State = ElevationContextState.Granted;
+			Grant(context);
 		}
 
 		protected virtual void OnAuthorize(List<PolicyAuthorizationResult> results)
@@ -280,6 +290,12 @@ namespace TomPIT.Annotations
 			}
 
 			return result.ToArray();
+		}
+
+		private void Grant(IMiddlewareContext context)
+        {
+			if (context is IElevationContext elevationContext)
+				elevationContext.State = ElevationContextState.Granted;
 		}
 
 		public override string ToString()

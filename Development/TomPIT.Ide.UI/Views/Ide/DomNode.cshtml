@@ -1,106 +1,106 @@
 ﻿@using TomPIT;
+@using TomPIT.ComponentModel;
 
 @model TomPIT.Design.Ide.IEnvironment
 
 @{
-	var node = ViewBag.CurrentNode as TomPIT.Design.Ide.Dom.IDomElement;
+    var node = ViewBag.CurrentNode as TomPIT.Design.Ide.Dom.IDomElement;
 
-	if (node == null)
-	{ return; }
+    if (node == null)
+    { return; }
 
-	var context = node.Value as TomPIT.ComponentModel.IConfigurationElement;
+    var context = node.Value as TomPIT.ComponentModel.IConfigurationElement;
 
-	var validationCss = string.Empty;
-	var tooltip = new System.Text.StringBuilder();
-	var glyph = node.Glyph;
+    var validationCss = string.Empty;
+    var tooltip = new System.Text.StringBuilder();
+    var glyph = node.Glyph;
 
-	if (!string.IsNullOrWhiteSpace(node.MetaData.Category))
-	{
-		tooltip.AppendLine(node.MetaData.Category);
-	}
+    if (!string.IsNullOrWhiteSpace(node.MetaData.Category))
+    {
+        tooltip.AppendLine(node.MetaData.Category);
+    }
 
-	if (context != null)
-	{
-		context.Validation.Validate(Model.Context);
-		var messages = context.Validation.ValidationMessages();
+    if (context != null)
+    {
+        context.Validation.Validate(Model.Context);
+        var messages = context.Validation.ValidationMessages();
 
-		if (messages.Count > 0)
-		{
-			validationCss = "dev-explorer-node-validation";
+        if (messages.Count > 0)
+        {
+            validationCss = "dev-explorer-node-validation";
 
-			if (messages.Count(f => f.Type == TomPIT.Design.Validation.ValidationMessageType.Error) > 0)
-			{
-				validationCss += string.Format(" {0}", "validation-error");
-				glyph = "fal fa-fw fa-exclamation-triangle dev-explorer-node-danger";
-			}
-			else if (messages.Count(f => f.Type == TomPIT.Design.Validation.ValidationMessageType.Warning) > 0)
-			{
-				validationCss += string.Format(" {0}", "validation-warning");
-				glyph = "fal fa-fw fa-exclamation-triangle dev-explorer-node-warning";
-			}
-			else
-			{
-				validationCss += string.Format(" {0}", "validation-suggestion");
-				glyph = "fal fa-fw fa-info-circle dev-explorer-node-suggestion";
-			}
+            if (messages.Count(f => f.Type == TomPIT.Design.Validation.ValidationMessageType.Error) > 0)
+            {
+                validationCss += string.Format(" {0}", "validation-error");
+                glyph = "fal fa-fw fa-exclamation-triangle dev-explorer-node-danger";
+            }
+            else if (messages.Count(f => f.Type == TomPIT.Design.Validation.ValidationMessageType.Warning) > 0)
+            {
+                validationCss += string.Format(" {0}", "validation-warning");
+                glyph = "fal fa-fw fa-exclamation-triangle dev-explorer-node-warning";
+            }
+            else
+            {
+                validationCss += string.Format(" {0}", "validation-suggestion");
+                glyph = "fal fa-fw fa-info-circle dev-explorer-node-suggestion";
+            }
 
-			var sb = new System.Text.StringBuilder();
+            var sb = new System.Text.StringBuilder();
 
-			foreach (var i in context.Validation.ValidationMessages())
-			{
-				sb.AppendLine(i.Message);
-			}
+            foreach (var i in context.Validation.ValidationMessages())
+            {
+                sb.AppendLine(i.Message);
+            }
 
-			tooltip.Append(sb.ToString());
-		}
-	}
+            tooltip.Append(sb.ToString());
+        }
+    }
 
-	if (!string.IsNullOrWhiteSpace(glyph) && !glyph.Contains("fa-fw"))
-	{
-		glyph = string.Format("fa-fw {0}", glyph);
-	}
+    if (!string.IsNullOrWhiteSpace(glyph) && !glyph.Contains("fa-fw"))
+    {
+        glyph = string.Format("fa-fw {0}", glyph);
+    }
 }
 
 <div data-kind="explorer-node" data-id="@node.Id" class="dev-explorer-node" data-static="@Html.TP().JavaScript.Bool(node.Behavior.Static)" data-container="@Html.TP().JavaScript.Bool(node.Behavior.Container)">
-	<div class="dev-explorer-node-content">
+    <div class="dev-explorer-node-content" data-kind="toggler-double">
         <span data-kind="toggler">
             @if (node.HasChildren)
             {
                 var css = node.Items.Count == 0 || !node.Behavior.AutoExpand ? "fa-chevron-right" : "fa-chevron-down";
-                <i class="fal @css" data-kind="toggler"></i>
+                <i class="fal @css fa-fw" data-kind="toggler"></i>
             }
             else
             {
-				<span data-kind="empty">&nbsp;</span>
+                <span data-kind="empty" class="d-inline-block fa-fw">&nbsp;</span>
             }
         </span>
 
-		<div class="dev-explorer-node-text">
-			@if (!string.IsNullOrWhiteSpace(glyph))
-			{
-				<i class="@glyph"></i>
-			}
-			<span data-kind="documentName" @Html.TP().Attributes.Class(validationCss) @Html.TP().Attributes.Title(tooltip.ToString())>@node.Title</span>
+        <div class="dev-explorer-node-text">
+            @if (!string.IsNullOrWhiteSpace(glyph))
+            {
+                <i class="@glyph"></i>
+            }
+            <span data-kind="documentName" @Html.TP().Attributes.Class(validationCss) @Html.TP().Attributes.Title(tooltip.ToString())>@node.Title</span>
 
-			@if (node.ChildrenCount > 0)
-			{
-				<span class="badge badge-light">@node.ChildrenCount.ToString("n0")</span>
-			}
-		</div>
-	</div>
+            @if (node.ChildrenCount > 0)
+            {
+                <span class="badge badge-light">@node.ChildrenCount.ToString("n0")</span>
+            }
+        </div>
+    </div>
 
-	@if (node.HasChildren)
-	{
-		var loaded = node.Items.Count > 0 ? "true" : "false";
-		var collapse = node.Items.Count == 0 || !node.Behavior.AutoExpand ? "collapse" : string.Empty;
+    @if (node.HasChildren)
+    {
+        var loaded = node.Items.Count > 0 ? "true" : "false";
+        var collapse = node.Items.Count == 0 || !node.Behavior.AutoExpand ? "collapse" : string.Empty;
 
-		<div data-kind="explorer-group" @Html.TP().Attributes.Class(collapse) data-group="@node.Id" data-loaded="@loaded">
-			@foreach (var i in node.Items)
-			{
-				ViewBag.CurrentNode = i;
-				@await Html.PartialAsync("~/Views/Ide/DomNode.cshtml", Model)
-			}
-
-		</div>
-	}
+        <div data-kind="explorer-group" @Html.TP().Attributes.Class(collapse) data-group="@node.Id" data-loaded="@loaded">
+            @foreach (var i in node.Items)
+            {
+                ViewBag.CurrentNode = i;
+                @await Html.PartialAsync("~/Views/Ide/DomNode.cshtml", Model)
+            }
+        </div>
+    }
 </div>

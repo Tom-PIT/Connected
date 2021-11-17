@@ -105,7 +105,7 @@ namespace TomPIT.Middleware.Services
 		}
 
 		public Guid InsertUser(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language,
-			string timezone, bool notificationsEnabled, string mobile, string phone, string password, string securityCode = null)
+			string timezone, bool notificationsEnabled, string mobile, string phone, string password = null, string securityCode = null)
 		{
 			var u = Context.Tenant.CreateUrl("UserManagement", "Insert");
 			var e = new JObject
@@ -128,14 +128,17 @@ namespace TomPIT.Middleware.Services
 
 			var id = Context.Tenant.Post<Guid>(u, e);
 
-			u = Context.Tenant.CreateUrl("UserManagement", "ChangePassword");
-			e = new JObject
+			if (password is not null)
 			{
-				{"user", id},
-				{"newPassword", password}
-			};
+				u = Context.Tenant.CreateUrl("UserManagement", "ChangePassword");
+				e = new JObject
+				{
+					{"user", id},
+					{"newPassword", password}
+				};
 
-			Context.Tenant.Post(u, e);
+				Context.Tenant.Post(u, e);
+			}
 
 			return id;
 		}

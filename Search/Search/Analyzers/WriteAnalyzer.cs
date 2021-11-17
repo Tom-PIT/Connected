@@ -1,6 +1,6 @@
-﻿using Lucene.Net.Analysis;
+﻿using System.IO;
+using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
-using System.IO;
 using TomPIT.Search.Filters;
 using TomPIT.Search.Tokenizers;
 
@@ -22,7 +22,7 @@ namespace TomPIT.Search.Analyzers
 			TokenStream result = new StandardFilter(tokenStream);
 
 			if (!SearchUtils.IsStaticField(fieldName))
-				result = new LengthFilter(result, 2, 255);
+				result = new LengthFilter(result, 1, 255);
 
 			result = new LowercaseFilter(result);
 			result = new StopFilter(true, result, ReadAnalyzer.StopWords);

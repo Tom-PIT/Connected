@@ -38,6 +38,7 @@ namespace TomPIT.Annotations.Design
 		public const string SettingMiddlewareProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.SettingMiddlewareProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string SettingMiddlewareParameterProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.SettingMiddlewareParameterProvider, " + SystemAssemblies.DevelopmentAssembly;
 		public const string NavigationContextProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.NavigationContextProvider, " + SystemAssemblies.DevelopmentAssembly;
+		public const string WorkersProvider = "TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders.WorkersProvider, " + SystemAssemblies.DevelopmentAssembly;
 
 		public CompletionItemProviderAttribute() { }
 

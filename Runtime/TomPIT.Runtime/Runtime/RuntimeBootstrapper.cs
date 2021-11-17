@@ -13,12 +13,14 @@ using TomPIT.Design;
 using TomPIT.Design.Serialization;
 using TomPIT.Design.Validation;
 using TomPIT.Diagnostics;
+using TomPIT.Distributed;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Globalization;
 using TomPIT.IoC;
 using TomPIT.IoT;
 using TomPIT.Messaging;
+using TomPIT.Middleware;
 using TomPIT.Navigation;
 using TomPIT.Reflection;
 using TomPIT.Runtime.Configuration;
@@ -119,6 +121,7 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IDocumentService), typeof(DocumentService));
 			e.Tenant.RegisterService(typeof(IFileSystemService), typeof(FileSystemService));
 			e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
+			e.Tenant.RegisterService(typeof(IWorkerService), typeof(WorkerService));
 
 			if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 				e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
@@ -136,6 +139,11 @@ namespace TomPIT.Runtime
 				e.Tenant.Items.TryAdd("dataCache", dataCache);
 
 				dataCache.Connect();
+
+				/*
+				 * touch the language service to register cultures
+				 */
+				MiddlewareDescriptor.Current.Tenant.GetService<ILanguageService>().Query();
 			}
 		}
 	}

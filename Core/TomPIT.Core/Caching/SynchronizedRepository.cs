@@ -5,154 +5,155 @@ using System.Threading;
 
 namespace TomPIT.Caching
 {
-	public abstract class SynchronizedRepository<T, K> : CacheRepository<T, K> where T : class
-	{
-		protected object SyncRoot = new object();
-		public event CacheInvalidateHandler Invalidate;
+    public abstract class SynchronizedRepository<T, K> : CacheRepository<T, K> where T : class
+    {
+        protected object SyncRoot = new object();
+        public event CacheInvalidateHandler Invalidate;
 
-		protected SynchronizedRepository(IMemoryCache container, string key) : base(container, key)
-		{
-			/*
+        protected SynchronizedRepository(IMemoryCache container, string key) : base(container, key)
+        {
+            /*
 			 * Hook to the second event in the invalidation process
 			 * - Invalidating
 			 * - Invalidate
 			 * - Invalidated
 			 */
-			Container.Invalidate += OnInvalidate;
-		}
+            Container.Invalidate += OnInvalidate;
+        }
 
-		protected virtual InvalidateBehavior InvalidateBehavior { get; } = InvalidateBehavior.KeepSameInstance;
+        protected virtual InvalidateBehavior InvalidateBehavior { get; } = InvalidateBehavior.KeepSameInstance;
 
-		private void OnInvalidate(CacheEventArgs e)
-		{
-			if (string.Compare(e.Key, Key, false) == 0)
-			{
-				if (Initialized)
-					OnInvalidate(Types.Convert<K>(e.Id, CultureInfo.InvariantCulture));
+        private void OnInvalidate(CacheEventArgs e)
+        {
+            if (string.Compare(e.Key, Key, false) == 0)
+            {
+                if (Initialized)
+                    OnInvalidate(Types.Convert<K>(e.Id, CultureInfo.InvariantCulture));
 
-				Invalidate?.Invoke(e);
+                Invalidate?.Invoke(e);
 
-				e.InvalidateBehavior = InvalidateBehavior;
-			}
-		}
+                e.InvalidateBehavior = InvalidateBehavior;
+            }
+        }
 
-		protected virtual void OnInvalidate(K id)
-		{
+        protected virtual void OnInvalidate(K id)
+        {
 
-		}
+        }
 
-		protected virtual void OnInitializing()
-		{
+        protected virtual void OnInitializing()
+        {
 
-		}
+        }
 
-		protected void Initialize()
-		{
-			if (Initialized)
-				return;
+        protected void Initialize()
+        {
+            if (Initialized)
+                return;
 
-			lock (SyncRoot)
-			{
-				if (Initialized)
-					return;
+            lock (SyncRoot)
+            {
+                if (Initialized)
+                    return;
 
-				InitializeSignal = new ManualResetEvent(false);
-				Initializing = true;
+                InitializeSignal = new ManualResetEvent(false);
+                Initializing = true;
 
-				try
-				{
-					OnInitializing();
-					Initialized = true;
-				}
-				catch
-				{
+                try
+                {
+                    OnInitializing();
+                    Initialized = true;
+                }
+                catch
+                {
 
-				}
-				finally
-				{
-					Initializing = false;
-					InitializeSignal.Set();
-					InitializeSignal.Dispose();
-					InitializeSignal = null;
-				}
-			}
+                }
+                finally
+                {
+                    Initializing = false;
+                    InitializeSignal.Set();
+                    InitializeSignal.Dispose();
+                    InitializeSignal = null;
+                }
+            }
 
-			OnInitialized();
-		}
+            if (Initialized)
+                OnInitialized();
+        }
 
-		protected virtual void OnInitialized()
-		{
+        protected virtual void OnInitialized()
+        {
 
-		}
+        }
 
-		private bool Initializing { get; set; }
-		private bool Initialized { get; set; }
+        private bool Initializing { get; set; }
+        private bool Initialized { get; set; }
 
-		protected override ImmutableList<T> All()
-		{
-			WaitForInitialization();
+        protected override ImmutableList<T> All()
+        {
+            WaitForInitialization();
 
-			if (!Initializing)
-				Initialize();
+            if (!Initializing)
+                Initialize();
 
-			return base.All();
-		}
+            return base.All();
+        }
 
-		protected override T First()
-		{
-			WaitForInitialization();
+        protected override T First()
+        {
+            WaitForInitialization();
 
-			if (!Initializing)
-				Initialize();
+            if (!Initializing)
+                Initialize();
 
-			return base.First();
-		}
+            return base.First();
+        }
 
-		protected override T Get(Func<T, bool> predicate)
-		{
-			WaitForInitialization();
+        protected override T Get(Func<T, bool> predicate)
+        {
+            WaitForInitialization();
 
-			if (!Initializing)
-				Initialize();
+            if (!Initializing)
+                Initialize();
 
-			return base.Get(predicate);
-		}
+            return base.Get(predicate);
+        }
 
-		protected override T Get(K id)
-		{
-			WaitForInitialization();
+        protected override T Get(K id)
+        {
+            WaitForInitialization();
 
-			if (!Initializing)
-				Initialize();
+            if (!Initializing)
+                Initialize();
 
-			return base.Get(id);
-		}
+            return base.Get(id);
+        }
 
-		protected override T Get(K id, CacheRetrieveHandler<T> retrieve)
-		{
-			WaitForInitialization();
+        protected override T Get(K id, CacheRetrieveHandler<T> retrieve)
+        {
+            WaitForInitialization();
 
-			if (!Initializing)
-				Initialize();
+            if (!Initializing)
+                Initialize();
 
-			return base.Get(id, retrieve);
-		}
+            return base.Get(id, retrieve);
+        }
 
-		protected override ImmutableList<T> Where(Func<T, bool> predicate)
-		{
-			WaitForInitialization();
+        protected override ImmutableList<T> Where(Func<T, bool> predicate)
+        {
+            WaitForInitialization();
 
-			if (!Initializing)
-				Initialize();
+            if (!Initializing)
+                Initialize();
 
-			return base.Where(predicate);
-		}
+            return base.Where(predicate);
+        }
 
-		private ManualResetEvent InitializeSignal { get; set; }
+        private ManualResetEvent InitializeSignal { get; set; }
 
-		private void WaitForInitialization()
-		{
-			InitializeSignal?.WaitOne();
-		}
-	}
+        private void WaitForInitialization()
+        {
+            InitializeSignal?.WaitOne();
+        }
+    }
 }

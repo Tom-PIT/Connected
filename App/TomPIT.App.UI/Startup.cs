@@ -87,6 +87,7 @@ namespace TomPIT.App
 			e.Tenant.RegisterService(typeof(IViewService), typeof(ViewService));
 			e.Tenant.RegisterService(typeof(IThemeService), typeof(ThemeService));
 			e.Tenant.RegisterService(typeof(IResourceService), typeof(ResourceService));
+			e.Tenant.RegisterService(typeof(IViewArgumentService), typeof(ViewArgumentService));
 			e.Tenant.RegisterService(typeof(IClientGlobalizationService), typeof(ClientGlobalizationService));
 		}
 	}

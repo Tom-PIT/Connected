@@ -24,7 +24,7 @@ namespace TomPIT.Search
 		}
 
 		[SearchStore(true)]
-		[SearchMode(SearchMode.NotAnalyzed)]
+		[SearchMode(SearchMode.Analyzed)]
 		[SearchTermVector(SearchTermVector.No)]
 		public string Type { get; set; }
 

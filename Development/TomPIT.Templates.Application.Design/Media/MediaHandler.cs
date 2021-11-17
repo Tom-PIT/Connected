@@ -872,6 +872,8 @@ namespace TomPIT.MicroServices.Design.Media
 
 			Context.Response.ContentLength = content.Length;
 			Context.Response.Body.WriteAsync(content, 0, content.Length).Wait();
+
+			Context.Response.CompleteAsync().Wait();
 		}
 
 		private void RenderResult(bool success, ExceptionKind ex = ExceptionKind.None)
@@ -893,6 +895,8 @@ namespace TomPIT.MicroServices.Design.Media
 
 			Context.Response.ContentLength = content.Length;
 			Context.Response.Body.WriteAsync(content, 0, content.Length).Wait();
+
+			Context.Response.CompleteAsync().Wait();
 		}
 
 		private void CreateThumbnail(IMediaResourceFile file)

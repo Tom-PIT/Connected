@@ -27,6 +27,8 @@ namespace TomPIT.App.Globalization
 
 				Context.Response.ContentLength = buffer.Length;
 				Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
+
+				Context.Response.CompleteAsync().Wait();
 			}
 		}
 	}

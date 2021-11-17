@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
 using TomPIT.Exceptions;
@@ -95,5 +96,5 @@ namespace TomPIT.Middleware.Services
 
 			return descriptor.Configuration;
 		}
-	}
+    }
 }
