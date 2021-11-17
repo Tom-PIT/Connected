@@ -4,63 +4,60 @@ using Lucene.Net.Search;
 
 namespace TomPIT.Search.Catalogs
 {
-	internal class CatalogSearcher : IDisposable
-	{
-		private IndexReader _reader = null;
-		private IndexSearcher _searcher = null;
+    internal class CatalogSearcher : IDisposable
+    {
+        private IndexReader _reader = null;
+        private IndexSearcher _searcher = null;
 
-		public CatalogSearcher(IndexWriter writer)
-		{
-			_reader = writer.GetReader();
-		}
+        public CatalogSearcher(IndexWriter writer)
+        {
+            _reader = writer.GetReader();
+        }
 
-		public CatalogSearcher(CatalogSearcher searcher)
-		{
-			_reader = searcher.Reader.Reopen();
-		}
+        public CatalogSearcher(CatalogSearcher searcher)
+        {
+            _reader = searcher.Reader.Reopen();
+        }
 
-		public void Dispose()
-		{
-			Kill();
-		}
+        public void Dispose()
+        {
+            Kill();
+        }
 
-		private void Kill()
-		{
-			try
-			{
-				if (_reader != null)
-					_reader.Dispose();
+        private void Kill()
+        {
+            try
+            {
+                _reader?.Dispose();
+                _searcher?.Dispose();
+            }
+            catch { }
+            finally
+            {
+                _reader = null;
+                _searcher = null;
+            }
+        }
 
-				if (_searcher != null)
-					_searcher.Dispose();
+        public IndexReader Reader { get { return _reader; } }
+        public IndexSearcher Searcher
+        {
+            get
+            {
+                if (_searcher == null && _reader != null)
+                    _searcher = new IndexSearcher(_reader);
 
-				_reader = null;
-				_searcher = null;
-			}
-			catch { }
-		}
+                return _searcher;
+            }
+        }
 
-		public IndexReader Reader { get { return _reader; } }
-		public IndexSearcher Searcher
-		{
-			get
-			{
-				if (_searcher == null && _reader != null)
-					_searcher = new IndexSearcher(_reader);
+        public bool TryDispose()
+        {
+            if (_reader is null || _reader?.RefCount < 2)
+                return false;
 
-				return _searcher;
-			}
-		}
-
-		public bool TryDispose()
-		{
-			if (_reader != null && _reader.RefCount < 2)
-			{
-				Kill();
-				return true;
-			}
-
-			return false;
-		}
-	}
+            Kill();
+            return true;
+        }
+    }
 }

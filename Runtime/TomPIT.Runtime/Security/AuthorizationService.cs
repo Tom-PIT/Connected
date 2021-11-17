@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -535,5 +536,36 @@ namespace TomPIT.Security
 		{
 			return Tenant.CreateUrl("SecurityManagement", action);
 		}
+
+		public void Delete(Guid user, Guid role)
+		{
+			var u = Tenant.CreateUrl("SecurityManagement", "DeleteMembership");
+			var e = new JObject
+			{
+				{"user", user},
+				{"role", role}
+			};
+
+			Tenant.Post(u, e);
+
+			if (Tenant.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+				n.NotifyMembershipRemoved(this, new MembershipEventArgs(user, role));
+		}
+
+		public void Insert(Guid user, Guid role)
+		{
+			var u = Tenant.CreateUrl("SecurityManagement", "InsertMembership");
+			var e = new JObject
+			{
+				{"user", user},
+				{"role", role}
+			};
+
+			Tenant.Post(u, e);
+
+			if (Tenant.GetService<IAuthorizationService>() is IAuthorizationNotification n)
+				n.NotifyMembershipAdded(this, new MembershipEventArgs(user, role));
+		}
+
 	}
 }

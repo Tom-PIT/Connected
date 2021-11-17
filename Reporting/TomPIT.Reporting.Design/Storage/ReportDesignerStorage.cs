@@ -25,8 +25,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Storage
 
 		public override Dictionary<string, string> GetUrls()
 		{
-			var resourceGroups = MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>().Query();
-			var reports = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().QueryComponents(resourceGroups.Select(f => f.Name).ToList(), ComponentCategories.Report);
+			var reports = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().QueryComponents(ComponentCategories.Report);
 			var r = new Dictionary<string, string>();
 
 			foreach (var report in reports)

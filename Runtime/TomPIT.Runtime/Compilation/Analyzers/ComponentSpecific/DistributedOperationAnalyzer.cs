@@ -114,7 +114,11 @@ namespace TomPIT.Compilation.Analyzers.ComponentSpecific
                             return invocationNode;
                         else
                         {
-                            var method = FindClassMethod(FindBaseDistributedOperation(context), GetIdentiferName(invocationNode).Identifier.Text);
+                            var identifierNameNode = GetIdentiferName(invocationNode);
+                            if (identifierNameNode is null)
+                                continue; 
+                           
+                            var method = FindClassMethod(FindBaseDistributedOperation(context), identifierNameNode.Identifier.Text);
                             if (FindFirstEventTriggerInvoke(method, context) is InvocationExpressionSyntax eventInvocation)
                                 return eventInvocation;
                         }
@@ -167,6 +171,8 @@ namespace TomPIT.Compilation.Analyzers.ComponentSpecific
 
                 if (current is MemberAccessExpressionSyntax ma)
                     current = ma.Expression;
+                else if (current is InvocationExpressionSyntax ies)
+                    current = GetIdentiferName(ies);
                 else
                     break;
             }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using TomPIT.Models;
 using TomPIT.Security;
 using TomPIT.Serialization;
 
@@ -67,6 +68,11 @@ namespace TomPIT.App.Models
 				items.Add(Services.Data.User.Create(i.Required<JToken>("primaryKey"), i.Optional<JToken>("value", null), i.Optional("topic", string.Empty)));
 
 			Services.Data.User.Update(items);
+		}
+
+		public override IRuntimeModel Clone()
+		{
+			return this;
 		}
 	}
 }

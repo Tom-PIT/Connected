@@ -940,7 +940,7 @@
     <value>No template set</value>
   </data>
   <data name="ValUnique" xml:space="preserve">
-    <value>Value for the field {0} already exists</value>
+    <value>Value for the field {0} already exists </value>
   </data>
   <data name="ErrExecutionContextExpected" xml:space="preserve">
     <value>IExecutionContext expected</value>
@@ -1262,5 +1262,29 @@
   </data>
   <data name="ErrTopicMismatch" xml:space="preserve">
     <value>The provided topic does not match the previously provided topic</value>
+  </data>
+  <data name="ErrContextInReadonlyMode" xml:space="preserve">
+    <value>This part of the application is currently in readonly mode.</value>
+  </data>
+  <data name="MaxLengthAttribute" xml:space="preserve">
+    <value />
+  </data>
+  <data name="MaxValueAttribute" xml:space="preserve">
+    <value />
+  </data>
+  <data name="MinLengthAttribute" xml:space="preserve">
+    <value />
+  </data>
+  <data name="MinValueAttribute" xml:space="preserve">
+    <value />
+  </data>
+  <data name="RangeAttribute" xml:space="preserve">
+    <value />
+  </data>
+  <data name="RequiredAttribute" xml:space="preserve">
+    <value>The property {0} is required.</value>
+  </data>
+  <data name="UniqueAttribute" xml:space="preserve">
+    <value />
   </data>
 </root>

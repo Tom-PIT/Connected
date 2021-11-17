@@ -1,10 +1,15 @@
-﻿using TomPIT.Middleware;
+﻿using System;
+using TomPIT.Middleware;
 
 namespace TomPIT.Runtime
 {
 	public abstract class RuntimeMiddleware : MiddlewareObject, IRuntimeMiddleware
 	{
-		public void Initialize(RuntimeInitializeArgs e)
+		public virtual IRuntimeResolver Resolver => null;
+
+		public virtual IRuntimeViewModifier ViewModifier => null;
+
+        public void Initialize(RuntimeInitializeArgs e)
 		{
 			OnInitialize(e);
 		}
@@ -14,6 +19,7 @@ namespace TomPIT.Runtime
 			return OnResolveUrl(kind);
 		}
 
+		[Obsolete("Please use Resolver.ResolveUrl instead.")]
 		protected virtual IRuntimeUrl OnResolveUrl(RuntimeUrlKind kind)
 		{
 			return null;
@@ -21,7 +27,6 @@ namespace TomPIT.Runtime
 
 		protected virtual void OnInitialize(RuntimeInitializeArgs e)
 		{
-
 		}
 	}
 }

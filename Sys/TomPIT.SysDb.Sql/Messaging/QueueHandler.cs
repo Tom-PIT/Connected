@@ -46,7 +46,7 @@ namespace TomPIT.SysDb.Sql.Messaging
 			w.CreateParameter("@next_visible", DateTime.UtcNow.Add(nextVisible));
 			w.CreateParameter("@scope", scope);
 			w.CreateParameter("@created", DateTime.UtcNow);
-			w.CreateParameter("@bufferKey", bufferKey, true);
+			w.CreateParameter("@buffer_key", bufferKey, true);
 
 			w.Execute();
 

@@ -1,4 +1,5 @@
-﻿using TomPIT.Search;
+﻿using TomPIT.Models;
+using TomPIT.Search;
 using TomPIT.Serialization;
 
 namespace TomPIT.App.Models
@@ -21,6 +22,11 @@ namespace TomPIT.App.Models
 
 				return _options;
 			}
+		}
+
+		public override IRuntimeModel Clone()
+		{
+			return this;
 		}
 	}
 }

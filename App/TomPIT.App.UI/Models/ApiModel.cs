@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
+using TomPIT.Models;
 
 namespace TomPIT.App.Models
 {
@@ -87,5 +88,10 @@ namespace TomPIT.App.Models
 				}
 			}
 		}
-	}
+
+        public override IRuntimeModel Clone()
+        {
+			return this;
+        }
+    }
 }

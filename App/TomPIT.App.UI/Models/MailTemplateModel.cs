@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,7 @@ namespace TomPIT.App.Models
 		}
 
 		public ActionContext ActionContext { get; }
-		public JObject Arguments { get; }
+		public JObject Arguments { get; internal set; }
 
 		public IViewConfiguration ViewConfiguration => null;
 
@@ -33,7 +34,13 @@ namespace TomPIT.App.Models
 
 		public ITempDataProvider TempData { get; }
 
-		public void Initialize(IMicroService microService)
+        public IRuntimeModel Clone()
+        {
+			var mailTemplateModel = new MailTemplateModel(null, ActionContext, TempData, (JObject)Arguments?.DeepClone());
+			return mailTemplateModel;
+        }
+
+        public void Initialize(IMicroService microService)
 		{
 			Initialize(null, microService);
 		}
@@ -49,7 +56,12 @@ namespace TomPIT.App.Models
 				Arguments.Merge(arguments);
 		}
 
-		public IEnumerable<ValidationResult> Validate()
+        public void ReplaceArguments(JObject arguments)
+        {
+			throw new NotImplementedException();
+        }
+
+        public IEnumerable<ValidationResult> Validate()
 		{
 			return null;
 		}

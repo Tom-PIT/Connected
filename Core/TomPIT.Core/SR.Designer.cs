@@ -1123,6 +1123,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This part of the application is currently in readonly mode..
+        /// </summary>
+        public static string ErrContextInReadonlyMode {
+            get {
+                return ResourceManager.GetString("ErrContextInReadonlyMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot convert value to the destination type..
         /// </summary>
         public static string ErrConversion {
@@ -2905,6 +2914,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string MaxLengthAttribute {
+            get {
+                return ResourceManager.GetString("MaxLengthAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string MaxValueAttribute {
+            get {
+                return ResourceManager.GetString("MaxValueAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to About me.
         /// </summary>
         public static string MenuAboutMe {
@@ -2977,6 +3004,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string MinLengthAttribute {
+            get {
+                return ResourceManager.GetString("MinLengthAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string MinValueAttribute {
+            get {
+                return ResourceManager.GetString("MinValueAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This class acts as a namespace class.
         /// </summary>
         public static string NamespaceClass {
@@ -3031,6 +3076,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string RangeAttribute {
+            get {
+                return ResourceManager.GetString("RangeAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Try again.
         /// </summary>
         public static string ReloadView {
@@ -3045,6 +3099,15 @@ namespace TomPIT {
         public static string RememberMe {
             get {
                 return ResourceManager.GetString("RememberMe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The property {0} is required..
+        /// </summary>
+        public static string RequiredAttribute {
+            get {
+                return ResourceManager.GetString("RequiredAttribute", resourceCulture);
             }
         }
         
@@ -3225,6 +3288,15 @@ namespace TomPIT {
         public static string ToggleDropdown {
             get {
                 return ResourceManager.GetString("ToggleDropdown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string UniqueAttribute {
+            get {
+                return ResourceManager.GetString("UniqueAttribute", resourceCulture);
             }
         }
         
@@ -3454,7 +3526,7 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Value for the field {0} already exists.
+        ///   Looks up a localized string similar to Value for the field {0} already exists .
         /// </summary>
         public static string ValUnique {
             get {

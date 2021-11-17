@@ -24,7 +24,7 @@ namespace TomPIT.Runtime
 
 		protected override void OnInitializing()
 		{
-			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, ComponentCategories.Runtime);
+			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(ComponentCategories.Runtime);
 
 			foreach (var i in configurations)
 				LoadRuntime(i as IRuntimeConfiguration);
@@ -68,18 +68,18 @@ namespace TomPIT.Runtime
 
 		private void LoadRuntime(IRuntimeConfiguration config)
 		{
-			if (config == null)
+			if (config is null)
 				return;
 
 			var type = Tenant.GetService<ICompilerService>().ResolveType(config.MicroService(), config, config.ComponentName(), false);
 
-			if (type == null)
+			if (type is null)
 				return;
 
 			using var ctx = new MicroServiceContext(config.MicroService(), Tenant.Url);
 			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IRuntimeMiddleware>(ctx, type);
 
-			if (instance != null)
+			if (instance is not null)
 			{
 				instance.Initialize(new RuntimeInitializeArgs(RuntimeService._host));
 				Set(config.Component, instance, TimeSpan.Zero);

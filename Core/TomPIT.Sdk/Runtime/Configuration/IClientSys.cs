@@ -10,6 +10,7 @@ namespace TomPIT.Runtime.Configuration
 		List<string> ResourceGroups { get; }
 		Platform Platform { get; }
 		EnvironmentStage Stage { get; }
+		EnvironmentIOBehavior IOBehavior { get; }
 		IDiagnosticsConfiguration Diagnostics { get; }
 		EnvironmentConnectivity Connectivity { get; }
 		IClientSysDeployment Deployment { get; }

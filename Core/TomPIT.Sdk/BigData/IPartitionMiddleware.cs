@@ -12,5 +12,6 @@ namespace TomPIT.BigData
 	{
 		List<T> Invoke(List<T> items);
 
+		void Invoked(List<T> modifiedItems);
 	}
 }

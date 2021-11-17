@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,193 +14,296 @@ using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Models;
+using TomPIT.Runtime;
 using TomPIT.Security;
 using TomPIT.UI;
 
 namespace TomPIT.App.UI
 {
-	internal class ViewEngine : ViewEngineBase, IViewEngine
-	{
-		public ViewEngine(IRazorViewEngine viewEngine, ITempDataProvider tempDataProvider, System.IServiceProvider serviceProvider) : base(viewEngine, tempDataProvider, serviceProvider)
-		{
-		}
+    internal class ViewEngine : ViewEngineBase, IViewEngine
+    {
+        private List<IRuntimeViewModifier> ViewModifiers => MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceRuntimeService>()
+            .QueryRuntimes()
+            .Select(e => e?.ViewModifier)
+            .Where(e => e is not null)
+            .OrderBy(e => e.Priority)
+            .ToList();
 
-		public async Task<string> CompilePartial(IMicroServiceContext context, string name)
-		{
-			var partialView = ResolveView(context, name);
+        public ViewEngine(IRazorViewEngine viewEngine, ITempDataProvider tempDataProvider, System.IServiceProvider serviceProvider) : base(viewEngine, tempDataProvider, serviceProvider)
+        {
+        }
 
-			if (partialView == null)
-				return null;
+        public async Task<string> RenderPartialToStringAsync(IMicroServiceContext context, string name)
+        {
+            var partialView = ResolveView(context, name);
 
-			using var vm = CreatePartialModel(name);
-			var viewEngineResult = Engine.FindView(vm.ActionContext, name, false);
-			var view = viewEngineResult.View;
+            if (partialView is null)
+                return null;
 
-			return await CreateContent(view, vm);
-		}
+            using var vm = CreatePartialModel(name);
+            var viewEngineResult = Engine.FindView(vm.ActionContext, name, false);
+            var view = viewEngineResult.View;
 
-		public async Task RenderPartial(IMicroServiceContext context, string name)
-		{
-			var partialView = ResolveView(context, name);
+            var content = await CreateContent(view, vm);
 
-			if (partialView == null)
-				return;
+            var modifiers = this.ViewModifiers;
 
-			using var vm = CreatePartialModel(name);
-			var viewEngineResult = Engine.FindView(vm.ActionContext, name, false);
-			var view = viewEngineResult.View;
-			var content = await CreateContent(view, vm);
+            if (!modifiers.Any())
+                return content;
 
-			var buffer = Encoding.UTF8.GetBytes(content);
+            var postRenderArgs = new PartialViewPostRenderModificationArguments
+            {
+                Arguments = vm.Arguments,
+                Component = vm.Component,
+                MicroService = vm.MicroService,
+                Configuration = vm.ViewConfiguration as IPartialViewConfiguration,
+                Name = name,
+                Content = content
+            };
 
-			if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
-			{
-				Context.Response.Headers.Add("X-TP-VIEW", name);
-				await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
-			}
+            foreach (var modifier in modifiers)
+            {
+                postRenderArgs.Content = modifier.PostRenderPartialView(postRenderArgs);
+            }
+
+            return postRenderArgs.Content;
+        }
+
+        public async Task RenderPartial(IMicroServiceContext context, string name)
+        {
+            var content = await RenderPartialToStringAsync(context, name);
+
+            var buffer = Encoding.UTF8.GetBytes(content);
+
+            if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
+            {
+                Context.Response.Headers.Add("X-TP-VIEW", name);
+                await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+            }
+
+            await Context.Response.CompleteAsync();
+        }
+
+        public async Task Render(string name)
+        {
+            name = name.Trim('/');
+
+            using var model = CreateModel();
+
+            if (model is null)
+            {
+                Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
+            }
+
+            var metric = Guid.Empty;
+            var content = string.Empty;
+
+            if (model.ViewConfiguration != null)
+                metric = model.Services.Diagnostic.StartMetric(model.ViewConfiguration.Metrics, model.ViewConfiguration.Metrics.ParseRequest(Context.Request));
+
+            try
+            {
+                var user = model.Services.Identity.IsAuthenticated ? model.Services.Identity.User.Token : Guid.Empty;
+                if (model.ViewConfiguration.AuthorizationEnabled && string.Compare(model.ViewConfiguration.Url, "login", true) != 0 && !SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url, user))
+                    return;
+
+                if (!model.ActionContext.RouteData.Values.ContainsKey("Action"))
+                    model.ActionContext.RouteData.Values.Add("Action", name);
+
+                try
+                {
+                    var viewEngineResult = Engine.FindView(model.ActionContext, name, false);
+
+                    if (!viewEngineResult.Success)
+                    {
+                        if (string.Compare(name, "home", true) == 0)
+                            throw new InvalidOperationException(SR.ErrDefaultViewNotSet);
+                        else
+                        {
+                            Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                            return;
+                        }
+                    }
+
+                    var view = viewEngineResult.View;
+
+                    if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
+                        return;
+
+                    content = await CreateContent(view, model);
+                    
+                    var modifiers = this.ViewModifiers;
+                    
+                    if (modifiers.Any())
+                    {
+                        var postRenderArgs = new ViewPostRenderModificationArguments
+                        {
+                            Arguments = model.Arguments,
+                            Component = model.Component,
+                            MicroService = model.MicroService,
+                            Configuration = model.ViewConfiguration,
+                            Name = $"{model.MicroService.Name}/{model.Component.Name}",
+                            Url = name,
+                            Content = content
+                        };
+
+                        foreach (var modifier in modifiers)
+                        {
+                            postRenderArgs.Content = modifier.PostRenderView(postRenderArgs);
+                        }
+
+                        content = postRenderArgs.Content;
+                    }
+
+                    var buffer = Encoding.UTF8.GetBytes(content);
+
+                    if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
+                        await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+
+                    await Context.Response.CompleteAsync();
+                }
+                catch (CompilerException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    if (ex is NotFoundException || ex.InnerException is NotFoundException)
+                        Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    else
+                        throw new CompilerException(model.Tenant, model.ViewConfiguration, ex);
+                }
+            }
+            finally
+            {
+                model.Services.Diagnostic.StopMetric(metric, Context.Response.StatusCode < 400 ? SessionResult.Success : SessionResult.Fail, model.ViewConfiguration.Metrics.ParseResponse(Context.Response, content));
+            }
+        }
+
+        private RuntimeModel CreateModel()
+        {
+            var path = Context.Request.Path.ToString().Trim('/');
+
+            var ac = CreateActionContext(Context);
+            var view = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().Select(path, ac);
+
+            if (view is null)
+                return null;
+
+            ac.ActionDescriptor.Properties.Add("viewKind", ViewKind.View);
+
+            var vi = new ViewInfo(string.Format("/Views/Dynamic/View/{0}.cshtml", path), ac);
+            var ms = vi.ViewComponent is null ? null : MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
+
+            var model = new RuntimeModel(Context.Request, ac, Temp, ms)
+            {
+                ViewConfiguration = view,
+            };
+
+            model.Initialize(null, ms);
+
+            if (model is IComponentModel cm && vi.ViewComponent != null)
+                cm.Component = vi.ViewComponent;
+
+            var modifiers = this.ViewModifiers;
+
+            if (modifiers.Any())
+            {
+                var preRenderArgs = new ViewPreRenderModificationArguments
+                {
+                    Arguments = model.Arguments,
+                    Component = model.Component,
+                    MicroService = model.MicroService,
+                    Configuration = model.ViewConfiguration,
+                    Name = $"{model.MicroService.Name}/{model.Component.Name}",
+                    Url = path
+                };
+
+                foreach (var modifier in modifiers)
+                {
+                    preRenderArgs = modifier.PreRenderView(preRenderArgs);
+                }
+
+                model.ReplaceArguments(preRenderArgs.Arguments);
+            }
 
 
-			await Context.Response.CompleteAsync();
-		}
+            return model;
+        }
 
-		public async Task Render(string name)
-		{
-			name = name.Trim('/');
+        private RuntimeModel CreatePartialModel(string name)
+        {
+            var ac = CreateActionContext(Context);
 
-			using var model = CreateModel();
+            ac.ActionDescriptor.Properties.Add("viewKind", ViewKind.Partial);
 
-			if (model == null)
-			{
-				Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-				return;
-			}
+            var vi = new ViewInfo(string.Format("/Views/Dynamic/Partial/{0}.cshtml", name), ac);
+            var ms = vi.ViewComponent is null ? null : MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
 
-			var metric = Guid.Empty;
-			var content = string.Empty;
+            var model = new RuntimeModel(Context.Request, ac, Temp, ms);
 
-			if (model.ViewConfiguration != null)
-				metric = model.Services.Diagnostic.StartMetric(model.ViewConfiguration.Metrics, model.ViewConfiguration.Metrics.ParseRequest(Context.Request));
+            var body = Context.Request.Body.ToJObject();
 
-			try
-			{
-				var user = model.Services.Identity.IsAuthenticated ? model.Services.Identity.User.Token : Guid.Empty;
-					if (model.ViewConfiguration.AuthorizationEnabled && string.Compare(model.ViewConfiguration.Url, "login", true) != 0 && !SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url, user))
-					return;
+            model.Arguments.Merge(body);
 
-				if (!model.ActionContext.RouteData.Values.ContainsKey("Action"))
-					model.ActionContext.RouteData.Values.Add("Action", name);
+            model.Databind();
 
-				try
-				{
-					var viewEngineResult = Engine.FindView(model.ActionContext, name, false);
+            model.Initialize(null, ms);
 
-					if (!viewEngineResult.Success)
-					{
-						if (string.Compare(name, "home", true) == 0)
-							throw new InvalidOperationException(SR.ErrDefaultViewNotSet);
-						else
-						{
-							Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-							return;
-						}
-					}
+            var modifiers = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceRuntimeService>()
+            .QueryRuntimes()
+            .Select(e => e?.ViewModifier)
+            .Where(e => e is not null)
+            .OrderBy(e => e.Priority)
+            .ToList();
 
-					var view = viewEngineResult.View;
+            if (modifiers.Any())
+            {
+                var microService = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(name.Split('/').FirstOrDefault());
+                var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(microService.Token, "Partial", name.Split('/').LastOrDefault());
+                var configuration = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component.RuntimeConfiguration);
 
-					if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
-						return;
+                var preRenderArgs = new PartialViewPreRenderModificationArguments
+                {
+                    Arguments = model.Arguments,
+                    Component = component,
+                    MicroService = microService,
+                    Configuration = configuration as IPartialViewConfiguration,
+                    Name = name
+                };
 
-					content = await CreateContent(view, model);
+                foreach (var modifier in modifiers)
+                {
+                    preRenderArgs = modifier.PreRenderPartialView(preRenderArgs);
+                }
 
-					var buffer = Encoding.UTF8.GetBytes(content);
+                model.ReplaceArguments(preRenderArgs.Arguments);
+            }
 
-					if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
-						await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+            if (model is IComponentModel cm && vi.ViewComponent != null)
+                cm.Component = vi.ViewComponent;
 
-					await Context.Response.CompleteAsync();
-				}
-				catch (CompilerException)
-				{
-					throw;
-				}
-				catch (Exception ex)
-				{
-					if (ex is NotFoundException || ex.InnerException is NotFoundException)
-						Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-					else
-						throw new CompilerException(model.Tenant, model.ViewConfiguration, ex);
-				}
-			}
-			finally
-			{
-				model.Services.Diagnostic.StopMetric(metric, Context.Response.StatusCode < 400 ? SessionResult.Success : SessionResult.Fail, model.ViewConfiguration.Metrics.ParseResponse(Context.Response, content));
-			}
-		}
+            return model;
+        }
 
-		private RuntimeModel CreateModel()
-		{
-			var path = Context.Request.Path.ToString().Trim('/');
+        private IPartialViewConfiguration ResolveView(IMicroServiceContext context, string qualifier)
+        {
+            var tokens = qualifier.Split('/');
+            var ms = context.MicroService;
+            var name = qualifier;
 
-			var ac = CreateActionContext(Context);
-			var view = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().Select(path, ac);
+            if (tokens.Length > 1)
+            {
+                ms = context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
-			if (view == null)
-				return null;
+                if (ms is null)
+                    return null;
 
-			ac.ActionDescriptor.Properties.Add("viewKind", ViewKind.View);
+                name = tokens[1];
+            }
 
-			var vi = new ViewInfo(string.Format("/Views/Dynamic/View/{0}.cshtml", path), ac);
-			var ms = vi.ViewComponent == null ? null : MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
-
-			var model = new RuntimeModel(Context.Request, ac, Temp, ms)
-			{
-				ViewConfiguration = view,
-			};
-
-			model.Initialize(null, ms);
-
-			if (model is IComponentModel cm && vi.ViewComponent != null)
-				cm.Component = vi.ViewComponent;
-
-			return model;
-		}
-
-		private RuntimeModel CreatePartialModel(string name)
-		{
-			var ac = CreateActionContext(Context);
-
-			ac.ActionDescriptor.Properties.Add("viewKind", ViewKind.Partial);
-
-			var vi = new ViewInfo(string.Format("/Views/Dynamic/Partial/{0}.cshtml", name), ac);
-			var ms = vi.ViewComponent == null ? null : MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(vi.ViewComponent.MicroService);
-
-			var model = new RuntimeModel(Context.Request, ac, Temp, ms);
-
-			model.Initialize(null, ms);
-
-			if (model is IComponentModel cm && vi.ViewComponent != null)
-				cm.Component = vi.ViewComponent;
-
-			return model;
-		}
-
-		private IPartialViewConfiguration ResolveView(IMicroServiceContext context, string qualifier)
-		{
-			var tokens = qualifier.Split('/');
-			var ms = context.MicroService;
-			var name = qualifier;
-
-			if (tokens.Length > 1)
-			{
-				ms = context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
-
-				if (ms == null)
-					return null;
-
-				name = tokens[1];
-			}
-
-			return context.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "Partial", name) as IPartialViewConfiguration;
-		}
-	}
+            return context.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "Partial", name) as IPartialViewConfiguration;
+        }
+    }
 }

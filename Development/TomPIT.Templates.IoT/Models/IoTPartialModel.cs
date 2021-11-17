@@ -138,7 +138,17 @@ namespace TomPIT.MicroServices.IoT.Models
 			Arguments.Merge(arguments);
 		}
 
-		public List<IIoTFieldState> ForwardState
+        public void ReplaceArguments(JObject arguments)
+        {
+			Arguments = arguments ?? new JObject();
+		}
+
+        public IRuntimeModel Clone()
+        {
+			return this;
+        }
+
+        public List<IIoTFieldState> ForwardState
 		{
 			get
 			{

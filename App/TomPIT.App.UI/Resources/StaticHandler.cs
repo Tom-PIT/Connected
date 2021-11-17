@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Threading;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
@@ -24,7 +25,15 @@ namespace TomPIT.App.Resources
 			}
 
 			var tokens = path.Split('/');
-			var component = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategories.Static, tokens[^1]);
+
+			var currentCulture = Thread.CurrentThread.CurrentCulture.Name;
+
+			//Attempt to find localized
+			var component = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategories.Static, $"{tokens[^1]}.{currentCulture.ToLower()}");
+
+			//If null, find default
+			if (component is null)
+				component = Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategories.Static, tokens[^1]);
 
 			if (component is null)
 			{

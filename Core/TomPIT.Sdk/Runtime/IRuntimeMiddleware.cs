@@ -1,11 +1,16 @@
-﻿using TomPIT.Middleware;
+﻿using System;
+using TomPIT.Middleware;
 
 namespace TomPIT.Runtime
 {
 	public interface IRuntimeMiddleware : IMiddlewareObject
 	{
 		void Initialize(RuntimeInitializeArgs e);
-
+		[Obsolete("Please use Resolver.ResolveUrl instead.")]
 		IRuntimeUrl ResolveUrl(RuntimeUrlKind kind);
+
+		IRuntimeResolver Resolver { get; }
+
+		IRuntimeViewModifier ViewModifier { get; }
 	}
 }
