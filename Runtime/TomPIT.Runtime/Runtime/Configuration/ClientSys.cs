@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel;
 
 using Newtonsoft.Json;
-using System.Linq;
+
 using TomPIT.Reflection;
 using TomPIT.Serialization.Converters;
 
@@ -10,7 +9,7 @@ namespace TomPIT.Runtime.Configuration
 {
 	internal class ClientSys : IClientSys
 	{
-		private List<ClientSysConnection> _connections = null;
+		private List<IClientSysConnection> _connections = null;
 		private List<string> _dataProviders = null;
 		private List<string> _designers = null;
 		private List<string> _resourceGroups = null;
@@ -18,12 +17,12 @@ namespace TomPIT.Runtime.Configuration
 
 		[JsonProperty(PropertyName = "connections")]
 		[JsonConverter(typeof(ClientConnectionConverter))]
-		public List<ClientSysConnection> Connections
+		public List<IClientSysConnection> Connections
 		{
 			get
 			{
 				if (_connections == null)
-					_connections = new List<ClientSysConnection>();
+					_connections = new List<IClientSysConnection>();
 
 				return _connections;
 			}
