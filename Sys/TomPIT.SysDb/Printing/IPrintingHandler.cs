@@ -13,7 +13,7 @@ namespace TomPIT.SysDb.Printing
 		void Delete(Guid token);
 		void Update(Guid token, PrintJobStatus status, string error);
 
-		void InsertSpooler(Guid token, DateTime created, string mime, string printer, string content);
+		void InsertSpooler(Guid token, DateTime created, string mime, string printer, string content, Guid identity);
 		IPrintSpoolerJob SelectSpooler(Guid token);
 		void DeleteSpooler(IPrintSpoolerJob job);
 

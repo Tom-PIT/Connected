@@ -16,10 +16,17 @@ namespace TomPIT.Cdn.Controllers
 			var id = body.Required<Guid>("id");
 			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("PrintingManagement", "SelectSpooler");
 
-			return MiddlewareDescriptor.Current.Tenant.Post<PrintSpoolerJob>(url, new
+			var job = MiddlewareDescriptor.Current.Tenant.Post<PrintSpoolerJob>(url, new
 			{
 				Token = id
 			});
+
+			if (job is null)
+				return null;
+
+			job.Identity ??= default;
+
+			return job;
 		}
 	}
 }

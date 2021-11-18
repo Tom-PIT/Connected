@@ -11,7 +11,7 @@ namespace TomPIT.Sys.Model.Printing
 	internal class PrintingSpoolerModel
 	{
 		private const string Queue = "printingSpooler";
-		public Guid Insert(string mime, string printer, string content, long serialNumber)
+		public Guid Insert(string mime, string printer, string content, long serialNumber, Guid identity)
 		{
 			var token = Guid.NewGuid();
 
@@ -19,10 +19,11 @@ namespace TomPIT.Sys.Model.Printing
 			{
 				{ "id",token},
 				{ "printer", printer},
-				{ "serialNumber", serialNumber}
+				{ "serialNumber", serialNumber},
+				{ "identity", identity}
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Printing.InsertSpooler(token, DateTime.UtcNow, mime, printer, content);
+			Shell.GetService<IDatabaseService>().Proxy.Printing.InsertSpooler(token, DateTime.UtcNow, mime, printer, content, identity);
 			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
 			return token;
@@ -42,13 +43,13 @@ namespace TomPIT.Sys.Model.Printing
 		{
 			var m = DataModel.Queue.Select(popReceipt);
 
-			if (m == null)
+			if (m is null)
 				return;
 
 			DataModel.Queue.Complete(popReceipt);
 			var job = ResolveJob(m);
 
-			if (job != null)
+			if (job is not null)
 				Delete(job.Token);
 		}
 
@@ -56,7 +57,7 @@ namespace TomPIT.Sys.Model.Printing
 		{
 			var job = Select(token);
 
-			if (job == null)
+			if (job is null)
 				return;
 
 			Shell.GetService<IDatabaseService>().Proxy.Printing.DeleteSpooler(job);

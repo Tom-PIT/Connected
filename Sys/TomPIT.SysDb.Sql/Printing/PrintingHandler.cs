@@ -54,7 +54,7 @@ namespace TomPIT.SysDb.Sql.Printing
 			w.Execute();
 		}
 
-		public void InsertSpooler(Guid token, DateTime created, string mime, string printer, string content)
+		public void InsertSpooler(Guid token, DateTime created, string mime, string printer, string content, Guid identity)
 		{
 			using var w = new Writer("tompit.print_spooler_ins");
 
@@ -63,6 +63,7 @@ namespace TomPIT.SysDb.Sql.Printing
 			w.CreateParameter("@mime", mime);
 			w.CreateParameter("@printer", printer);
 			w.CreateParameter("@content", Convert.FromBase64String(content));
+			w.CreateParameter("@identity", identity);
 
 			w.Execute();
 		}

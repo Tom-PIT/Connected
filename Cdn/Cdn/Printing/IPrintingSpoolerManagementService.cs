@@ -10,6 +10,6 @@ namespace TomPIT.Cdn.Printing
 		void Complete(Guid popReceipt);
 
 		List<IQueueMessage> Dequeue(int count);
-		Guid Insert(string mime, string printer, string content, long serialNumber);
+		Guid Insert(string mime, string printer, string content, long serialNumber, Guid identity);
 	}
 }

@@ -88,9 +88,10 @@ namespace TomPIT.Sys.Controllers.Management
 			var content = body.Required<string>("content");
 			var printer = body.Required<string>("printer");
 			var mime = body.Required<string>("mime");
+			var identity = body.Optional<Guid>("identity", default);
 			var serialNumber = body.Optional("serialNumber", 0L);
 
-			return DataModel.PrintingSpooler.Insert(mime, printer, content, serialNumber);
+			return DataModel.PrintingSpooler.Insert(mime, printer, content, serialNumber, identity);
 		}
 
 		[HttpPost]
