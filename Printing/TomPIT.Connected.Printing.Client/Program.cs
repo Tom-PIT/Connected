@@ -11,6 +11,8 @@ using TomPIT.Connected.Printing.Client.Handlers;
 using System.ServiceProcess;
 using System.Threading.Tasks;
 using CommandLine;
+using TomPIT.Connected.Printing.Client.Printing;
+using DevExpress.XtraReports.Expressions;
 
 namespace TomPIT.Connected.Printing.Client
 {
@@ -25,27 +27,31 @@ namespace TomPIT.Connected.Printing.Client
                     await CreateHostBuilder(args).Build().RunAsync();
                     return 0;
                 },
-                async (InstallOptions opts) => {
+                async (InstallOptions opts) =>
+                {
                     ServiceManager.Install(opts.Username, opts.Password);
                     Console.WriteLine("Service install completed. Press any key to exit.");
                     Console.ReadLine();
                     return 0;
                 },
-                async (UninstallOptions opts) => {
+                async (UninstallOptions opts) =>
+                {
                     ServiceManager.Uninstall();
                     Console.WriteLine("Service uninstall completed. Press any key to exit.");
                     Console.ReadLine();
                     return 0;
-                },                
+                },
                 errs => Task.FromResult(-1)); // Invalid arguments
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-            .ConfigureServices(config =>
+            .ConfigureServices(services =>
             {
-                config.AddHostedService<PrintingHandler>();
-            })
+                services.AddHostedService<PrintingHandler>();
+                services.AddMemoryCache();
+                services.AddSingleton<LocalizationProvider>();
+            })         
             .UseWindowsService();
 
     }

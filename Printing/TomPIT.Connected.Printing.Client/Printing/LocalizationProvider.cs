@@ -1,60 +1,91 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Connected.Printing.Client.Configuration;
 
 namespace TomPIT.Connected.Printing.Client.Printing
 {
-    public class LocalizationProvider
+    public class LocalizationProvider: IDisposable
     {
-        private static Uri _localizationUri => new Uri(new Uri(Settings.CdnUrl), "localization/localize");
-        internal async Task<string> GetLocalization(string microservice, string stringTable, string key, string userToken = null)
+        private readonly IMemoryCache _memoryCache;
+        private HttpClient _client;
+        private readonly SemaphoreSlim _semaphore;
+
+        public LocalizationProvider(IMemoryCache memoryCache) 
         {
-            try
+            _memoryCache = memoryCache;
+            _client = new HttpClient();
+
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Constants.HttpHeaderBearer, Settings.Token);
+            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(Constants.MimeTypeJson));
+            _client.Timeout = TimeSpan.FromSeconds(5);
+
+            _semaphore = new SemaphoreSlim(1, 1);
+        }
+
+        private static Uri _localizationUri => new Uri(new Uri(Settings.CdnUrl), "sys/localization/localize");
+       
+        internal async Task<string> GetLocalization(string microservice, string stringTable, string key, Guid identity)
+        {          
+            return await _memoryCache.GetOrCreateAsync<string>(LocalizedStringData.GetCacheKey(microservice, stringTable, identity, key), async (entry) =>
             {
-                var client = new HttpClient();
+                await _semaphore.WaitAsync();
 
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Constants.HttpHeaderBearer, Settings.Token);
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(Constants.MimeTypeJson));
+                entry.SlidingExpiration = TimeSpan.FromDays(1);
 
-                var result = await client.PostAsync(_localizationUri, new StringContent(JsonConvert.SerializeObject(new
+                try
                 {
-                    MicroService = microservice,
-                    StringTable = stringTable,
-                    StringKey = key,
-                    UserToken = userToken
-                }), Encoding.UTF8, Constants.MimeTypeJson));
+                    var result = await _client.PostAsync(_localizationUri, new StringContent(JsonConvert.SerializeObject(new
+                    {
+                        MicroService = microservice,
+                        StringTable = stringTable,
+                        StringKey = key,
+                        Identity = identity
+                    }), Encoding.UTF8, Constants.MimeTypeJson));
 
-                var content = await result.Content.ReadAsStringAsync();
+                    if (!result.IsSuccessStatusCode)
+                        return key;
 
-                if (string.Compare(content, "null", true) == 0
-                    || string.IsNullOrWhiteSpace(content))
+                    var content = await result.Content.ReadAsStringAsync();
+
+                    var localizationData = JsonConvert.DeserializeObject<LocalizedStringValue>(content);
+
+                    
+                    return localizationData.Value;
+                }
+                catch (Exception ex)
+                {
+                    Logging.Exception(ex, LoggingLevel.Fatal);
                     return key;
+                }
+                finally
+                {
+                    _semaphore.Release();
+                }
+            });
+        }
 
-                return content;
-            }
-            catch (Exception ex)
-            {
-                Logging.Exception(ex, LoggingLevel.Fatal);
-                return key;
-            }
+        public void Dispose()
+        {
+            _client.Dispose();
         }
 
         private class LocalizedStringData
         {
-            public string GetCacheKey => $"{MicroService}/{StringTable}/{LCID}/{Key}";
+            public static string GetCacheKey(string microservice, string stringTable, Guid identity, string key) => $"{microservice}/{stringTable}/{identity}/{key}";
+        }
 
-            public string MicroService { get; set; }
-            public string StringTable { get; set; }
-            public string Key { get; set; }
+        private class LocalizedStringValue 
+        {
             public int LCID { get; set; }
-            public List<string> AssociatedUsers { get; } = new List<string>();
-            public string LocalizedValue { get; set; }
+            public string Value { get; set; }            
         }
     }
 }

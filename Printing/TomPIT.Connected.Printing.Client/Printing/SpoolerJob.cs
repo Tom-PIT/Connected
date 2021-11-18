@@ -18,6 +18,8 @@ namespace TomPIT.Connected.Printing.Client.Printing
 
         public string Printer { get; set; }
 
+        public Guid Identity { get; set; }
+
         public override string ToString()
         {
             return $"Job = {Token}, Mime Type = {Mime}, Content Length = {Content.Length * 3 / 4}, Printer = {Printer}";

@@ -5,6 +5,7 @@
  */
 
 using DevExpress.XtraPrinting;
+using DevExpress.XtraReports.Expressions;
 using DevExpress.XtraReports.UI;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Hosting;
@@ -25,15 +26,21 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 {
     internal class PrintingHandler : BackgroundService
     {
+        private readonly LocalizationProvider _localizationProvider;
+
+        private readonly SemaphoreSlim _functionLock;
+
         private HubConnection _connection;
 
         private PrinterHandler _printerHandler;
 
         private Uri _baseCdnUri;
 
-        public PrintingHandler()
+        public PrintingHandler(LocalizationProvider localizationProvider)
         {
             _printerHandler = new PrinterHandler(Settings.PrinterNameMappings);
+            _localizationProvider = localizationProvider;
+            _functionLock = new SemaphoreSlim(1, 1);
         }
 
         private void CreateConnection()
@@ -198,16 +205,31 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 
                     report.LoadLayoutFromXml(ms, true);
 
+                    var localizeFunction = new LocalizeFunction(_localizationProvider, job.Identity);
+
                     var printerName = _printerHandler.MapToSystemName(job.Printer);
 
                     Logging.Debug($"Printing to '{printerName}' (mapped as '{job.Printer}')");
-
 
                     report.PrinterName = printerName;
 
                     try
                     {
-                        report.CreateDocument(false);
+
+                        await _functionLock.WaitAsync();
+                        try
+                        {
+                            CustomFunctions.Register(localizeFunction);
+
+                            report.CreateDocument(false);
+
+                            CustomFunctions.Unregister(localizeFunction.Name);
+                        }
+                        finally
+                        {
+                            _functionLock.Release();
+                        }
+
                         report.PrintingSystem.Document.Name = $"TomPIT Printing Doc {job.Token}";
 
                         var print = new PrintToolBase(report.PrintingSystem);
@@ -215,6 +237,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                         Logging.Trace("Starting printing...");
                         print.Print(printerName);
                         Logging.Trace("Printing done...");
+
                     }
                     catch (Exception ex)
                     {
