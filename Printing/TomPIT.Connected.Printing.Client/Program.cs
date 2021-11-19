@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using CommandLine;
 using TomPIT.Connected.Printing.Client.Printing;
 using DevExpress.XtraReports.Expressions;
+using System.Diagnostics;
+using System.Threading;
 
 namespace TomPIT.Connected.Printing.Client
 {
