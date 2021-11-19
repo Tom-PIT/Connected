@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <AssemblyVersion>2.2.1118.2</AssemblyVersion>
-    <FileVersion>2.2.1118.2</FileVersion>
-    <Version>2.2.1118.2</Version>
+    <AssemblyVersion>2.2.1118.3</AssemblyVersion>
+    <FileVersion>2.2.1118.3</FileVersion>
+    <Version>2.2.1118.3</Version>
     <AssemblyName>TomPIT.Connected.Search</AssemblyName>
     <RootNamespace>TomPIT.Search</RootNamespace>
     <Authors>Tom PIT</Authors>
