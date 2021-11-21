@@ -4,11 +4,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Threading;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using TomPIT.Reflection;
 using TomPIT.Runtime;
@@ -187,7 +191,7 @@ namespace TomPIT
 
                     var segments = new Uri(appPath).Segments;
 
-                    for (int i = 1; i < segments.Length; i++)
+                    for (int i = 1; i <= segments.Length; i++)
                     {
                         var pathBase = Path.Combine(segments[0..i]);
                         var filePath = Path.Combine(pathBase, "sys.json");
@@ -198,9 +202,10 @@ namespace TomPIT
 
                     var config = cb.Build();
 
-                    _sys = _sysType.CreateInstance() as ISys;
+                    //Workaround for the JSON interface converter cheat
+                    var serializedConfig = JsonConvert.SerializeObject(ToJObject(config));
 
-                    config.Bind(_sys);
+                    _sys = JsonConvert.DeserializeObject(serializedConfig, _sysType) as ISys;
                 }
 
                 return _sys;
@@ -213,5 +218,49 @@ namespace TomPIT
         }
 
         private static List<string> LoadedAssemblies => _loadedAssemblies.Value;
+
+        private static JToken ToJObject(IConfiguration config)
+        {
+            var obj = new JObject();
+
+            foreach (var child in config.GetChildren())
+            {
+                if (child.Path.EndsWith(":0"))
+                {
+                    var arr = new JArray();
+
+                    foreach (var arrayChild in config.GetChildren())
+                    {
+                        arr.Add(ToJObject(arrayChild));
+                    }
+
+                    return arr;
+                }
+                else
+                {
+                    obj.Add(child.Key, ToJObject(child));
+                }
+            }
+
+            if (!obj.HasValues && config is IConfigurationSection section)
+            {
+                if (bool.TryParse(section.Value, out bool boolean))
+                {
+                    return new JValue(boolean);
+                }
+                else if (decimal.TryParse(section.Value, out decimal real))
+                {
+                    return new JValue(real);
+                }
+                else if (long.TryParse(section.Value, out long integer))
+                {
+                    return new JValue(integer);
+                }
+
+                return new JValue(section.Value);
+            }
+
+            return obj;
+        }
     }
 }

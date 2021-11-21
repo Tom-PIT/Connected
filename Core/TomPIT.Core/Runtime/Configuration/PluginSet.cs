@@ -13,15 +13,6 @@ namespace TomPIT.Runtime.Configuration
 		public bool ShadowCopy { get; set; }
 
 		[JsonProperty(PropertyName = "items")]
-		public List<string> Items
-		{
-			get
-			{
-				if (_plugins == null)
-					_plugins = new List<string>();
-
-				return _plugins;
-			}
-		}
+		public List<string> Items => _plugins ??= new();
 	}
 }
