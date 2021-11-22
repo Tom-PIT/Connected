@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.IoC;
@@ -101,7 +102,21 @@ namespace TomPIT.App.Models
 
         public override IRuntimeModel Clone()
         {
-            return this;
+            var clone = new UIInjectionModel()
+            {
+                Body = (JObject)Body.DeepClone(),
+                ViewIdentifier = ViewIdentifier,
+                PartialIdentifier = PartialIdentifier,
+                ViewUrl = ViewUrl,
+                MicroService = MicroService,
+                Component = Component,
+                QualifierName = QualifierName,
+                ViewConfiguration =ViewConfiguration
+            };
+
+            clone.Initialize(this.Controller, this.MicroService);
+
+            return clone;
         }
     }
 }
