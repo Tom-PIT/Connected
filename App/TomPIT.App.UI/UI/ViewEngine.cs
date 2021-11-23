@@ -303,6 +303,17 @@ namespace TomPIT.App.UI
                 name = tokens[1];
             }
 
+            var partialResolutionArgs = new PartialViewResolutionArgs
+            {
+                Name = qualifier
+            };
+
+            foreach (var runtime in context.Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+            {
+                if (runtime?.Resolver?.ResolvePartial(partialResolutionArgs) is IPartialViewConfiguration config)
+                    return config;
+            }
+
             return context.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "Partial", name) as IPartialViewConfiguration;
         }
     }
