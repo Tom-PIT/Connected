@@ -64,5 +64,13 @@ namespace TomPIT.Middleware.Services
 
 			return default(T);
 		}
+
+		public void Transaction(IoTMiddlewareTransactionArgs e)
+		{
+			var iotServer = Context.Services.Routing.GetServer(Environment.InstanceType.IoT, Environment.InstanceVerbs.All);
+			var url = $"{iotServer}/{e.MicroService}/{e.Hub}/{e.Device}/{e.Transaction}";
+
+			Context.Tenant.Post(url, e.Arguments);
+		}
 	}
 }

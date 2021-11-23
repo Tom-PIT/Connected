@@ -133,13 +133,20 @@ namespace TomPIT.IoT.Hubs
 			}
 		}
 
-		public async void Invoke(JObject e)
+		public static async Task InvokeTransaction(JObject e)
 		{
+			/*
+			 * no clients
+			 */
+			if (IoTHubs.IoT is null)
+				return;
+
 			try
 			{
 				using var processor = new TransactionProcessor(e);
 
 				processor.Process();
+
 				var args = new JObject
 				{
 					{"device", processor.DeviceName },
@@ -147,12 +154,18 @@ namespace TomPIT.IoT.Hubs
 					{"arguments",  processor.TransactionArguments}
 				};
 
-				await Clients.Group(processor.DeviceName.ToLowerInvariant()).SendAsync("transaction", args);
+				await IoTHubs.IoT.Clients.Group(processor.DeviceName.ToLowerInvariant()).SendAsync("transaction", args);
 			}
 			catch (Exception ex)
 			{
-				await Clients.Caller.SendAsync("exception", ex.Message);
+				if (IoTHubs.IoT.Clients is IHubCallerClients clients)
+					await clients.Caller.SendAsync("exception", ex.Message);
 			}
+		}
+
+		public async void Invoke(JObject e)
+		{
+			await InvokeTransaction(e);
 		}
 	}
 }
