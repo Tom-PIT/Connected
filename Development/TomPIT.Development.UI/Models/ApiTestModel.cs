@@ -4,11 +4,16 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Development.Quality;
+using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
+using TomPIT.Middleware;
 using TomPIT.Models;
+using TomPIT.Reflection;
+using TomPIT.Security;
 using TomPIT.Serialization;
 
 namespace TomPIT.Development.Models
@@ -45,13 +50,12 @@ namespace TomPIT.Development.Models
 				url = api;
 
 			var tokens = url.Split('/');
-			var ms = string.Empty;
-
+            
 			if (tokens.Length < 3)
 				throw new RuntimeException(SR.ErrInvalidQualifier);
 
-			ms = tokens[0];
-			Api = tokens[1];
+            var ms = tokens[0];
+            Api = tokens[1];
 			Operation = tokens[2];
 
 			var svc = Tenant.GetService<IMicroServiceService>().Select(ms);
@@ -107,6 +111,67 @@ namespace TomPIT.Development.Models
 			var identifier = Body.Required<Guid>("identifier");
 
 			return Tenant.GetService<IQualityService>().SelectBody(identifier);
+		}
+
+		public object SelectDefaultOperationBody()
+		{
+			var operationName = Body.Required<string>("operation");
+
+			var tokens = operationName.Split('/');
+
+			if (tokens.Length < 3)
+				return null;
+
+			var microservice = Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
+
+			if (microservice is null)
+				return null;
+
+			var api = Tenant.GetService<IComponentService>().SelectComponent(microservice.Token, ComponentCategories.Api, tokens[1]);
+
+			if (Tenant.GetService<IComponentService>().SelectConfiguration(api.Token) is not IApiConfiguration apiConfiguration)
+				return null;
+
+			using var middlewareContext = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant?.Url);
+
+			using var ctx = new MicroServiceContext(microservice.Token, middlewareContext.Tenant.Url).WithIdentity(middlewareContext);
+
+			var contextMs = middlewareContext as IMicroServiceContext;
+
+			switch (apiConfiguration.Scope)
+			{
+				case ElementScope.Internal:
+				case ElementScope.Private:
+					throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, api.Name, operationName))
+					{
+						Component = api.Token
+					}.WithMetrics(ctx);
+			}
+
+			var operation = apiConfiguration.Operations.FirstOrDefault(e => string.Compare(tokens[2], e.Name, true) == 0);
+
+			if (operation is null)
+			{
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrServiceOperationNotFound, tokens[2]))
+				{
+					Component = api.Token
+				}.WithMetrics(ctx);
+			}
+
+			switch (operation.Scope)
+			{
+				case ElementScope.Internal:
+				case ElementScope.Private:
+					throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrScopeError, api.Name, operation.Name));
+			}
+
+			var operationType = middlewareContext.Tenant.GetService<ICompilerService>().ResolveType(microservice.Token, operation, operation.Name);
+			var elevation = ctx as IElevationContext;
+
+
+			using var opInstance = operationType.CreateInstance<IMiddlewareOperation>();
+
+			return opInstance;
 		}
 
 		public List<IApiTest> QueryTests()
