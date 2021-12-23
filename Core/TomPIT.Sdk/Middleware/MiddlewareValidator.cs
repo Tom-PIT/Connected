@@ -59,9 +59,17 @@ namespace TomPIT.Middleware
 			 * temporary disabled
 			 */
 
+            
             if (System.Threading.Tasks.Task.Run(async () =>
             {
-                return await service.IsRequestValidAsync(Shell.HttpContext);
+                try
+                {
+                    return await service.IsRequestValidAsync(Shell.HttpContext);
+                }
+                catch 
+                {
+                    return await System.Threading.Tasks.Task.FromResult(false);
+                }
             }).Result)
                 return;
 
