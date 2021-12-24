@@ -41,7 +41,7 @@ namespace TomPIT.App.Resources
 
                 entry.InjectionCount--;
 
-                if (entry.InjectionCount == 1)
+                if (entry.InjectionCount == 0)
                     Remove(key);
                 else
                     Set(key, entry);
