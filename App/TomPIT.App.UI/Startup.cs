@@ -1,5 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -12,83 +14,95 @@ using TomPIT.App.UI;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
 using TomPIT.Runtime;
+using TomPIT.Security;
 using TomPIT.UI;
 using TomPIT.UI.Theming;
 
 namespace TomPIT.App
 {
-	public class Startup
-	{
-		internal static IEndpointRouteBuilder RouteBuilder = null;
-		public void ConfigureServices(IServiceCollection services)
-		{
-			var e = new ServicesConfigurationArgs
-			{
-				Authentication = AuthenticationType.SingleTenant
-			};
+    public class Startup
+    {
+        internal static IEndpointRouteBuilder RouteBuilder = null;
+        public void ConfigureServices(IServiceCollection services)
+        {
+            var e = new ServicesConfigurationArgs
+            {
+                Authentication = AuthenticationType.SingleTenant
+            };
 
-			services.AddAntiforgery(o =>
-			{
-				o.Cookie.Name = "TomPITAntiForgery";
-				o.FormFieldName = "TomPITAntiForgery";
-				o.HeaderName = "X-TP-AF";
-				o.SuppressXFrameOptionsHeader = false;
-			});
+            services.AddResponseCompression(o =>
+            {
+                o.EnableForHttps = true;
+                o.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+                     new[] { "image/svg+xml", "image/png", "image/jpg", "image/jpeg" });
+            });
 
-			services.AddResponseCompression(o =>
-			{
-				o.EnableForHttps = true;
-				o.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-					 new[] { "image/svg+xml", "image/png", "image/jpg", "image/jpeg" });
-			});
+            Instance.Initialize(InstanceType.Application, services, e);
+            InitializeConfiguration();
+            Instance.InitializeShellServices();
 
-			Instance.Initialize(InstanceType.Application, services, e);
+            services.Configure<KeyManagementOptions>(opts =>
+            {
+                opts.XmlEncryptor = new XmlKeyEncryptor();
+                opts.XmlRepository = new XmlKeyRepository();
+            });
 
-			services.AddScoped<IViewEngine, ViewEngine>();
-			services.AddScoped<IMailTemplateViewEngine, MailTemplateViewEngine>();
-
-
-			services.Configure<RazorViewEngineOptions>(opts =>
-			{
-				opts.ViewLocationExpanders.Add(new ViewLocationExpander());
-			}
-			);
-
-			Instance.Mvc.AddRazorRuntimeCompilation(
-						(opts) =>
-						{
-							opts.FileProviders.Add(new ViewProvider());
-						});
-		}
+            services.AddDataProtection();
 
 
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-		{
-			app.UseResponseCompression();
-			Instance.Configure(app, env, (f) =>
-			{
-				app.UseMiddleware<IgnoreRouteMiddleware>();
+            services.AddAntiforgery(o =>
+            {
+                o.Cookie.Name = "TomPITAntiForgery";
+                o.FormFieldName = "TomPITAntiForgery";
+                o.HeaderName = "X-TP-AF";
+                o.SuppressXFrameOptionsHeader = false;
+            });
+            services.AddScoped<IViewEngine, ViewEngine>();
+            services.AddScoped<IMailTemplateViewEngine, MailTemplateViewEngine>();
 
-				RouteBuilder = f.Builder;
-				AppRouting.Register(app, f.Builder);
-			});
 
-			InitializeConfiguration();
-			Instance.Run(app, env);
-		}
+            services.Configure<RazorViewEngineOptions>(opts =>
+                {
+                    opts.ViewLocationExpanders.Add(new ViewLocationExpander());
+                }
+            );
 
-		private void InitializeConfiguration()
-		{
-			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-		}
+            Instance.Mvc.AddRazorRuntimeCompilation(opts =>
+                {
+                    opts.FileProviders.Add(new ViewProvider());
+                }
+            );
+        }
 
-		private void OnTenantInitialize(object sender, TenantArgs e)
-		{
-			e.Tenant.RegisterService(typeof(IViewService), typeof(ViewService));
-			e.Tenant.RegisterService(typeof(IThemeService), typeof(ThemeService));
-			e.Tenant.RegisterService(typeof(IResourceService), typeof(ResourceService));
-			e.Tenant.RegisterService(typeof(IViewArgumentService), typeof(ViewArgumentService));
-			e.Tenant.RegisterService(typeof(IClientGlobalizationService), typeof(ClientGlobalizationService));
-		}
-	}
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            app.UseResponseCompression();
+            Instance.Configure(app, env, (f) =>
+            {
+                app.UseMiddleware<IgnoreRouteMiddleware>();
+
+                RouteBuilder = f.Builder;
+                AppRouting.Register(app, f.Builder);
+            });
+
+            //InitializeConfiguration();
+            Instance.Run(app, env);
+        }
+
+        private void InitializeConfiguration()
+        {
+            Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
+        }
+
+        private void OnTenantInitialize(object sender, TenantArgs e)
+        {
+            e.Tenant.RegisterService(typeof(IXmlKeyService), typeof(XmlKeyService));
+            e.Tenant.RegisterService(typeof(IViewService), typeof(ViewService));
+            e.Tenant.RegisterService(typeof(IThemeService), typeof(ThemeService));
+            e.Tenant.RegisterService(typeof(IResourceService), typeof(ResourceService));
+            e.Tenant.RegisterService(typeof(IViewArgumentService), typeof(ViewArgumentService));
+            e.Tenant.RegisterService(typeof(IClientGlobalizationService), typeof(ClientGlobalizationService));
+        }
+    }
 }

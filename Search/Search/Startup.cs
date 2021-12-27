@@ -28,6 +28,11 @@ namespace TomPIT.Search
 			};
 
 			Instance.Initialize(InstanceType.Search, services, e);
+			
+			InitializeConfiguration();
+
+			Instance.InitializeShellServices();
+			
 			RegisterTasks(services);
 		}
 

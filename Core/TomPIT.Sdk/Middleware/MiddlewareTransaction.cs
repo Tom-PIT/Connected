@@ -18,7 +18,9 @@ namespace TomPIT.Middleware
 
 		private ConcurrentStack<IMiddlewareTransactionClient> Operations => _operations ??= new ConcurrentStack<IMiddlewareTransactionClient>();
 
-		public void Notify(IMiddlewareTransactionClient operation)
+        public bool IsDirty { get; set; }
+
+        public void Notify(IMiddlewareTransactionClient operation)
 		{
 			if (operation == null || Operations.Contains(operation))
 				return;

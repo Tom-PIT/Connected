@@ -7,5 +7,6 @@
 		IRoleHandler Roles { get; }
 		IAuthenticationTokenHandler AuthenticationTokens { get; }
 		IAlienHandler Aliens { get; }
+		IXmlKeyHandler XmlKeys { get; }
 	}
 }

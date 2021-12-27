@@ -65,8 +65,15 @@ namespace TomPIT
 			Shell.RegisterConfigurationType(typeof(ClientSys));
 
 			InitializeServices(services, e);
-		}
 
+			RuntimeBootstrapper.Run();
+        }
+
+		public static void InitializeShellServices()
+        {
+			foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
+				Shell.GetService<IConnectivityService>().InsertTenant(i.Name, i.Url, i.AuthenticationToken);
+		}
 		private static void InitializeServices(IServiceCollection services, ServicesConfigurationArgs e)
 		{
 			switch (e.Authentication)
@@ -227,7 +234,7 @@ namespace TomPIT
 			app.UseRequestLocalizationCookies();
 			app.UseAjaxExceptionMiddleware();
 
-			RuntimeBootstrapper.Run();
+			//RuntimeBootstrapper.Run();
 
 			Shell.GetService<IRuntimeService>().Initialize(InstanceType, Shell.GetConfiguration<IClientSys>().Platform, env);
 			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
@@ -286,8 +293,8 @@ namespace TomPIT
 
 		public static void Run(IApplicationBuilder app, IWebHostEnvironment environment)
 		{
-			foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
-				Shell.GetService<IConnectivityService>().InsertTenant(i.Name, i.Url, i.AuthenticationToken);
+			//foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
+			//	Shell.GetService<IConnectivityService>().InsertTenant(i.Name, i.Url, i.AuthenticationToken);
 
 			State = InstanceState.Running;
 

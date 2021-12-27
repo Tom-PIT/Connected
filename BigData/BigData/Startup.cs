@@ -32,6 +32,9 @@ namespace TomPIT.BigData
 			};
 
 			Instance.Initialize(InstanceType.BigData, services, e);
+			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
+			Instance.InitializeShellServices();
+
 			RegisterTasks(services);
 		}
 
@@ -42,7 +45,6 @@ namespace TomPIT.BigData
 				BigData.Configuration.Routing.Register(f.Builder);
 			});
 
-			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 			Instance.Run(app, env);
 		}
 

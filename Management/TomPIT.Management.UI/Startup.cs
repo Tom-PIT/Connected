@@ -8,32 +8,34 @@ using TomPIT.Runtime;
 
 namespace TomPIT.Management
 {
-	public class Startup
-	{
-		public void ConfigureServices(IServiceCollection services)
-		{
-			var e = new ServicesConfigurationArgs
-			{
-				Authentication = AuthenticationType.MultiTenant
-			};
+    public class Startup
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            var e = new ServicesConfigurationArgs
+            {
+                Authentication = AuthenticationType.MultiTenant
+            };
 
-			Instance.Initialize(InstanceType.Management, services, e);
+            Instance.Initialize(InstanceType.Management, services, e);
+            Instance.InitializeShellServices();
 
-			services.AddHostedService<InstallerService>();
-			services.AddHostedService<UpdateService>();
-			services.AddHostedService<PublishService>();
-		}
+            services.AddHostedService<InstallerService>();
+            services.AddHostedService<UpdateService>();
+            services.AddHostedService<PublishService>();
+        }
 
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-		{
-			Instance.Configure(app, env, (f) =>
-		 {
-			 IdeRouting.Register(f.Builder, "Home", string.Empty);
-		 });
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            Instance.Configure(app, env, (f) =>
+                {
+                    IdeRouting.Register(f.Builder, "Home", string.Empty);
+                }
+            );
 
-			IdeBootstrapper.Run();
-			ManagementBootstrapper.Run();
-			Instance.Run(app, env);
-		}
-	}
+            IdeBootstrapper.Run();
+            ManagementBootstrapper.Run();
+            Instance.Run(app, env);
+        }
+    }
 }

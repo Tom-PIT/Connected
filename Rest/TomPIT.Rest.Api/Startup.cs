@@ -17,14 +17,16 @@ namespace TomPIT.Rest
 			};
 
 			Instance.Initialize(InstanceType.Rest, services, e);
+			Instance.InitializeShellServices();
 		}
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			Instance.Configure(app, env, (f) =>
-		  {
-			  RestRouting.Register(f.Builder);
-		  });
+				{
+					RestRouting.Register(f.Builder);
+				}
+			);
 
 			Instance.Run(app, env);
 		}

@@ -9,6 +9,7 @@ namespace TomPIT.SysDb.Sql.Security
 		private IRoleHandler _roles = null;
 		private IAuthenticationTokenHandler _authTokens = null;
 		private IAlienHandler _aliens = null;
+		private IXmlKeyHandler _xmlKeys = null;
 
 		public IAlienHandler Aliens
 		{
@@ -62,6 +63,17 @@ namespace TomPIT.SysDb.Sql.Security
 					_authTokens = new AuthenticationTokenHandler();
 
 				return _authTokens;
+			}
+		}
+
+		public IXmlKeyHandler XmlKeys
+		{
+			get
+			{
+				if (_xmlKeys == null)
+					_xmlKeys = new XmlKeyHandler();
+
+				return _xmlKeys;
 			}
 		}
 	}
