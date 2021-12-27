@@ -24,6 +24,8 @@ namespace TomPIT.Development
 
             Instance.Initialize(InstanceType.Development, services, e);
             Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
+            DevelopmentBootstrapper.Run();
+            IdeBootstrapper.Run();
             Instance.InitializeShellServices();
 
             services.AddHostedService<ToolsRunner>();
@@ -41,9 +43,6 @@ namespace TomPIT.Development
                     IdeRouting.Register(f.Builder, "Ide", "ide/{microservice}");
                 }
             );
-
-            DevelopmentBootstrapper.Run();
-            IdeBootstrapper.Run();
 
             Instance.Run(app, env);
         }

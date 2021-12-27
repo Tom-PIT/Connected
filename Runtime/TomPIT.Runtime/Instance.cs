@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Threading;
@@ -229,7 +230,12 @@ namespace TomPIT
 				o.RequestCultureProviders.Insert(2, new DomainCultureProvider());
 
 				o.RequestCultureProviders.Insert(1, new IdentityCultureProvider());
-			});
+
+				if (MiddlewareDescriptor.Current?.Tenant is ITenant tenant)
+				{
+					tenant.GetService<ILanguageService>().ApplySupportedCultures();
+				}
+            });
 
 			app.UseRequestLocalizationCookies();
 			app.UseAjaxExceptionMiddleware();
