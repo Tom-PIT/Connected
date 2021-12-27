@@ -68,7 +68,9 @@ namespace TomPIT
 			InitializeServices(services, e);
 
 			RuntimeBootstrapper.Run();
-        }
+
+			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
+		}
 
 		public static void InitializeShellServices()
         {
@@ -243,7 +245,7 @@ namespace TomPIT
 			//RuntimeBootstrapper.Run();
 
 			Shell.GetService<IRuntimeService>().Initialize(InstanceType, Shell.GetConfiguration<IClientSys>().Platform, env);
-			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
+			//Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
 			app.UseEndpoints(routes =>
 			{
 				foreach (var i in Plugins)
