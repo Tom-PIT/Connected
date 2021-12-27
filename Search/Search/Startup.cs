@@ -43,7 +43,6 @@ namespace TomPIT.Search
 				SearchRouting.Register(f.Builder);
 			});
 
-			InitializeConfiguration();
 			Instance.Run(app, env);
 		}
 

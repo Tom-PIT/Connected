@@ -18,6 +18,10 @@ namespace TomPIT.Management
             };
 
             Instance.Initialize(InstanceType.Management, services, e);
+
+            IdeBootstrapper.Run();
+            ManagementBootstrapper.Run();
+
             Instance.InitializeShellServices();
 
             services.AddHostedService<InstallerService>();
@@ -33,8 +37,6 @@ namespace TomPIT.Management
                 }
             );
 
-            IdeBootstrapper.Run();
-            ManagementBootstrapper.Run();
             Instance.Run(app, env);
         }
     }
