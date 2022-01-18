@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Builder;
+
+using System;
 using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Compilation;
@@ -12,13 +14,19 @@ namespace TomPIT.Runtime
 {
 	internal class MicroServiceRuntimeService : SynchronizedClientRepository<IRuntimeMiddleware, Guid>, IMicroServiceRuntimeService
 	{
+		private IApplicationBuilder _host;
+
 		public MicroServiceRuntimeService(ITenant tenant) : base(tenant, "runtimeMiddleware")
 		{
 			Tenant.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
 			Tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
 			Tenant.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
 			Tenant.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
+		}
 
+		public void Configure(IApplicationBuilder app) 
+		{
+			this._host = app;
 			Initialize();
 		}
 
@@ -81,7 +89,7 @@ namespace TomPIT.Runtime
 
 			if (instance is not null)
 			{
-				instance.Initialize(new RuntimeInitializeArgs(RuntimeService._host));
+				instance.Initialize(new RuntimeInitializeArgs(_host));
 				Set(config.Component, instance, TimeSpan.Zero);
 			}
 		}

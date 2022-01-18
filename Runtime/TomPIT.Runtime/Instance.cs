@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Threading;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
@@ -31,363 +33,369 @@ using TomPIT.Security.Authentication;
 
 namespace TomPIT
 {
-	public delegate void ConfigureRoutingHandler(ConfigureRoutingArgs e);
+    public delegate void ConfigureRoutingHandler(ConfigureRoutingArgs e);
 
-	public enum AuthenticationType
-	{
-		None = 0,
-		MultiTenant = 1,
-		SingleTenant = 2
-	}
+    public enum AuthenticationType
+    {
+        None = 0,
+        MultiTenant = 1,
+        SingleTenant = 2
+    }
 
-	public enum InstanceState
-	{
-		Initializing = 1,
-		Running = 2
-	}
-	public static class Instance
-	{
-		public static IMvcBuilder Mvc { get; private set; }
-		private static List<IPlugin> _plugins = null;
-		internal static RequestLocalizationOptions RequestLocalizationOptions { get; private set; }
-		public static Guid Id { get; } = Guid.NewGuid();
-		public static InstanceState State { get; private set; } = InstanceState.Initializing;
-		public static CancellationToken Stopping { get; private set; }
-		public static CancellationToken Stopped { get; private set; }
+    public enum InstanceState
+    {
+        Initializing = 1,
+        Running = 2
+    }
+    public static class Instance
+    {
+        public static IMvcBuilder Mvc { get; private set; }
+        private static List<IPlugin> _plugins = null;
+        internal static RequestLocalizationOptions RequestLocalizationOptions { get; private set; }
+        public static Guid Id { get; } = Guid.NewGuid();
+        public static InstanceState State { get; private set; } = InstanceState.Initializing;
+        public static CancellationToken Stopping { get; private set; }
+        public static CancellationToken Stopped { get; private set; }
 
-		private static bool CorsEnabled { get; set; }
+        private static bool CorsEnabled { get; set; }
 
-		private static InstanceType InstanceType { get; set; }
+        private static InstanceType InstanceType { get; set; }
 
-		public static bool SupportsDesign => InstanceType == InstanceType.Management || InstanceType == InstanceType.Development || InstanceType == InstanceType.Application;
-		public static void Initialize(InstanceType type, IServiceCollection services, ServicesConfigurationArgs e)
-		{
-			InstanceType = type;
-			Shell.RegisterConfigurationType(typeof(ClientSys));
-
-			InitializeServices(services, e);
-
-			RuntimeBootstrapper.Run();
-
-			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
-		}
-
-		public static void InitializeShellServices()
+        public static bool SupportsDesign => InstanceType == InstanceType.Management || InstanceType == InstanceType.Development || InstanceType == InstanceType.Application;
+        public static void Initialize(InstanceType type, IServiceCollection services, ServicesConfigurationArgs e)
         {
-			foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
-				Shell.GetService<IConnectivityService>().InsertTenant(i.Name, i.Url, i.AuthenticationToken);
-		}
-		private static void InitializeServices(IServiceCollection services, ServicesConfigurationArgs e)
-		{
-			switch (e.Authentication)
-			{
-				case AuthenticationType.MultiTenant:
-					services.AddAuthentication(options =>
-					{
-						options.DefaultAuthenticateScheme = "TomPIT";
-						options.DefaultChallengeScheme = "TomPIT";
-						options.DefaultScheme = "TomPIT";
-					}).AddScheme<MultiTenantAuthenticationOptions, MultiTenantAuthenticationHandler>("TomPIT", "Tom PIT", o =>
-					{
+            InstanceType = type;
+            Shell.RegisterConfigurationType(typeof(ClientSys));
 
-					});
-					break;
-				case AuthenticationType.SingleTenant:
-					services.AddAuthentication(options =>
-					{
-						options.DefaultAuthenticateScheme = "TomPIT";
-						options.DefaultChallengeScheme = "TomPIT";
-						options.DefaultScheme = "TomPIT";
-					}).AddScheme<SingleTenantAuthenticationOptions, SingleTenantAuthenticationHandler>("TomPIT", "Tom PIT", o =>
-					{
+            InitializeServices(services, e);
 
-					});
-					break;
-			}
+            RuntimeBootstrapper.Run();
 
-			Mvc = services.AddMvc((o) =>
-			{
-				e.ConfigureMvc?.Invoke(o);
-			}).AddNewtonsoftJson()
-			.ConfigureApplicationPartManager((m) =>
-			{
-				var pa = new ApplicationPartsArgs();
+            Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
+        }
 
-				if (SupportsDesign)
-				{
-					foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-					{
-						var t = Reflection.TypeExtensions.GetType(i);
+        public static void InitializeShellServices()
+        {
+            foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
+                Shell.GetService<IConnectivityService>().InsertTenant(i.Name, i.Url, i.AuthenticationToken);
+        }
+        private static void InitializeServices(IServiceCollection services, ServicesConfigurationArgs e)
+        {
+            switch (e.Authentication)
+            {
+                case AuthenticationType.MultiTenant:
+                    services.AddAuthentication(options =>
+                    {
+                        options.DefaultAuthenticateScheme = "TomPIT";
+                        options.DefaultChallengeScheme = "TomPIT";
+                        options.DefaultScheme = "TomPIT";
+                    }).AddScheme<MultiTenantAuthenticationOptions, MultiTenantAuthenticationHandler>("TomPIT", "Tom PIT", o =>
+                    {
 
-						if (t == null)
-							continue;
+                    });
+                    break;
+                case AuthenticationType.SingleTenant:
+                    services.AddAuthentication(options =>
+                    {
+                        options.DefaultAuthenticateScheme = "TomPIT";
+                        options.DefaultChallengeScheme = "TomPIT";
+                        options.DefaultScheme = "TomPIT";
+                    }).AddScheme<SingleTenantAuthenticationOptions, SingleTenantAuthenticationHandler>("TomPIT", "Tom PIT", o =>
+                    {
 
-						var template = t.CreateInstance<IMicroServiceTemplate>();
+                    });
+                    break;
+            }
 
-						var ds = template.GetApplicationParts();
+            Mvc = services.AddMvc((o) =>
+            {
+                e.ConfigureMvc?.Invoke(o);
+            }).AddNewtonsoftJson()
+            .ConfigureApplicationPartManager((m) =>
+            {
+                var pa = new ApplicationPartsArgs();
 
-						if (ds != null && ds.Count > 0)
-							pa.Parts.AddRange(ds);
-					}
-				}
+                if (SupportsDesign)
+                {
+                    foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+                    {
+                        var t = Reflection.TypeExtensions.GetType(i);
 
-				e.ProvideApplicationParts?.Invoke(pa);
+                        if (t == null)
+                            continue;
 
-				foreach (var assembly in pa.Assemblies)
-					m.ApplicationParts.Add(new AssemblyPart(assembly));
+                        var template = t.CreateInstance<IMicroServiceTemplate>();
 
-				foreach (var i in pa.Parts)
-					ConfigurePlugins(m, i);
+                        var ds = template.GetApplicationParts();
 
-				foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)
-				{
-					var t = Reflection.TypeExtensions.GetType(i);
+                        if (ds != null && ds.Count > 0)
+                            pa.Parts.AddRange(ds);
+                    }
+                }
 
-					if (t == null)
-						continue;
+                e.ProvideApplicationParts?.Invoke(pa);
 
-					var plugin = t.CreateInstance<IPlugin>();
+                foreach (var assembly in pa.Assemblies)
+                    m.ApplicationParts.Add(new AssemblyPart(assembly));
 
-					var parts = plugin.GetApplicationParts(m);
+                foreach (var i in pa.Parts)
+                    ConfigurePlugins(m, i);
 
-					if (parts != null)
-					{
-						foreach (var j in parts)
-							ConfigurePlugins(m, j);
-					}
-				}
-			});
+                foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)
+                {
+                    var t = Reflection.TypeExtensions.GetType(i);
 
-			if (e.CorsEnabled)
-			{
-				CorsEnabled = true;
+                    if (t == null)
+                        continue;
 
-				services.AddCors(options => options.AddPolicy("TomPITPolicy",
-					builder =>
-					{
-						var setting = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().Select("Cors Origins", null, null, null);
-						var origin = new string[] { "http://localhost" };
+                    var plugin = t.CreateInstance<IPlugin>();
 
-						if (setting != null && !string.IsNullOrWhiteSpace(setting.Value))
-							origin = setting.Value.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                    var parts = plugin.GetApplicationParts(m);
 
-						builder.AllowAnyMethod()
-						.AllowAnyHeader()
-						.WithOrigins(origin)
-						.AllowCredentials();
-					}));
-			}
-
-			services.AddControllersWithViews();
-			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-
-			services.AddAuthorization(options =>
-			{
-				options.AddPolicy(Claims.ImplementMicroservice, policy => policy.RequireClaim(Claims.ImplementMicroservice));
-			});
-
-
-			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-			services.AddSingleton<IAuthorizationHandler, ClaimHandler>();
-			services.AddSingleton<IHostedService, FlushingService>();
-
-			services.AddScoped<RequestLocalizationCookiesMiddleware>();
-
-			foreach (var plugin in Plugins)
-				plugin.ConfigureServices(services);
-		}
-		public static void Configure(IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler)
-		{
-			RuntimeService._host = app;
-			app.UseMiddleware<AuthenticationCookieMiddleware>();
-
-			var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
-
-			if (lifetime != null)
-			{
-				Stopping = lifetime.ApplicationStopping;
-				Stopped = lifetime.ApplicationStopped;
-			}
-			ConfigureStaticFiles(app, env);
-
-			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
-			app.UseRouting();
-
-			if (CorsEnabled)
-				app.UseCors("TomPITPolicy");
-
-			app.UseAuthentication();
-			app.UseAuthorization();
-			app.UseRequestLocalization(o =>
-			{
-				RequestLocalizationOptions = o;
-				o.DefaultRequestCulture = new RequestCulture(CultureInfo.InvariantCulture);
-				o.FallBackToParentCultures = true;
-				o.FallBackToParentUICultures = true;
-				/*
-				 * https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-3.1
-				 */
-				o.RequestCultureProviders.Insert(2, new DefaultSettingsCultureProvider());
-
-				o.RequestCultureProviders.Insert(2, new DomainCultureProvider());
-
-				o.RequestCultureProviders.Insert(1, new IdentityCultureProvider());
-
-				if (MiddlewareDescriptor.Current?.Tenant is ITenant tenant)
-				{
-					tenant.GetService<ILanguageService>().ApplySupportedCultures();
-				}
+                    if (parts != null)
+                    {
+                        foreach (var j in parts)
+                            ConfigurePlugins(m, j);
+                    }
+                }
             });
 
-			app.UseRequestLocalizationCookies();
-			app.UseAjaxExceptionMiddleware();
+            if (e.CorsEnabled)
+            {
+                CorsEnabled = true;
 
-			//RuntimeBootstrapper.Run();
+                services.AddCors(options => options.AddPolicy("TomPITPolicy",
+                    builder =>
+                    {
+                        var setting = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().Select("Cors Origins", null, null, null);
+                        var origin = new string[] { "http://localhost" };
 
-			Shell.GetService<IRuntimeService>().Initialize(InstanceType, Shell.GetConfiguration<IClientSys>().Platform, env);
-			//Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
-			app.UseEndpoints(routes =>
-			{
-				foreach (var i in Plugins)
-					i.RegisterRoutes(routes);
+                        if (setting != null && !string.IsNullOrWhiteSpace(setting.Value))
+                            origin = setting.Value.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 
-				RoutingConfiguration.Register(routes);
-				routingHandler?.Invoke(new ConfigureRoutingArgs(routes));
-			});
+                        builder.AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .WithOrigins(origin)
+                        .AllowCredentials();
+                    }));
+            }
 
-			Shell.Configure(app);
+            services.AddControllersWithViews();
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
-			foreach (var plugin in Plugins)
-				plugin.Initialize(app, env);
-		}
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(Claims.ImplementMicroservice, policy => policy.RequireClaim(Claims.ImplementMicroservice));
+            });
 
-		private static void ConfigureStaticFiles(IApplicationBuilder app, IWebHostEnvironment env)
-		{
-			var cachePeriod = env.IsDevelopment() ? "600" : "604800";
-			var contentTypeProvider = new FileExtensionContentTypeProvider();
 
-			contentTypeProvider.Mappings[".webmanifest"] = "application/manifest+json";
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<IAuthorizationHandler, ClaimHandler>();
+            services.AddSingleton<IHostedService, FlushingService>();
 
-			var staticOptions = new StaticFileOptions
-			{
-				OnPrepareResponse = ctx =>
-				{
-					ctx.Context.Response.Headers.Append("Cache-Control", $"public, max-age={cachePeriod}");
-				},
-				ContentTypeProvider = contentTypeProvider,
-			};
+            services.AddScoped<RequestLocalizationCookiesMiddleware>();
 
-			EmbeddedResourcesConfiguration.Configure(env, staticOptions);
+            foreach (var plugin in Plugins)
+                plugin.ConfigureServices(services);
+        }
+        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler)
+        {
+            RuntimeService._host = app;
+            app.UseMiddleware<AuthenticationCookieMiddleware>();
 
-			app.UseStaticFiles(staticOptions);
-		}
-		private static void OnTenantInitialized(object sender, TenantArgs e)
-		{
-			foreach (var i in Shell.GetConfiguration<IClientSys>().DataProviders)
-			{
-				var t = Reflection.TypeExtensions.GetType(i);
+            var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
 
-				if (t == null)
-					continue;
+            if (lifetime != null)
+            {
+                Stopping = lifetime.ApplicationStopping;
+                Stopped = lifetime.ApplicationStopped;
+            }
+            ConfigureStaticFiles(app, env);
 
-				var provider = t.CreateInstance<IDataProvider>();
+            app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
+            app.UseRouting();
 
-				if (provider != null)
-					e.Tenant.GetService<IDataProviderService>().Register(provider);
-			}
+            if (CorsEnabled)
+                app.UseCors("TomPITPolicy");
 
-			e.Tenant.GetService<IDesignService>().Initialize();
-		}
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseRequestLocalization(o =>
+            {
+                RequestLocalizationOptions = o;
+                o.DefaultRequestCulture = new RequestCulture(CultureInfo.InvariantCulture);
+                o.FallBackToParentCultures = true;
+                o.FallBackToParentUICultures = true;
+                /*
+				 * https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-3.1
+				 */
+                o.RequestCultureProviders.Insert(2, new DefaultSettingsCultureProvider());
 
-		public static void Run(IApplicationBuilder app, IWebHostEnvironment environment)
-		{
-			//foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
-			//	Shell.GetService<IConnectivityService>().InsertTenant(i.Name, i.Url, i.AuthenticationToken);
+                o.RequestCultureProviders.Insert(2, new DomainCultureProvider());
 
-			State = InstanceState.Running;
+                o.RequestCultureProviders.Insert(1, new IdentityCultureProvider());
 
-			if (SupportsDesign)
-			{
-				foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-				{
-					var t = Reflection.TypeExtensions.GetType(i);
+                if (MiddlewareDescriptor.Current?.Tenant is ITenant tenant)
+                {
+                    tenant.GetService<ILanguageService>().ApplySupportedCultures();
+                }
+            });
 
-					if (t == null)
-						continue;
+            app.UseRequestLocalizationCookies();
+            app.UseAjaxExceptionMiddleware();
 
-					var template = t.CreateInstance<IMicroServiceTemplate>();
+            //RuntimeBootstrapper.Run();
 
-					template.Initialize(app, environment);
-				}
-			}
-		}
+            Shell.GetService<IRuntimeService>().Initialize(InstanceType, Shell.GetConfiguration<IClientSys>().Platform, env);
 
-		public static bool ResourceGroupExists(Guid resourceGroup)
-		{
-			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
-				return true;
+            if (MiddlewareDescriptor.Current?.Tenant?.GetService<IMicroServiceRuntimeService>() is IMicroServiceRuntimeService runtimeService)
+                runtimeService.Configure(app);
 
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-			{
-				var rg = MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>().Select(i);
+            //Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
+            app.UseEndpoints(routes =>
+            {
+                foreach (var i in Plugins)
+                    i.RegisterRoutes(routes);
 
-				if (rg != null)
-					return true;
-			}
+                RoutingConfiguration.Register(routes);
+                routingHandler?.Invoke(new ConfigureRoutingArgs(routes));
+            });
 
-			return false;
-		}
+            Shell.Configure(app);
 
-		public static List<IPlugin> Plugins
-		{
-			get
-			{
-				if (_plugins == null)
-				{
-					_plugins = new List<IPlugin>();
+            
 
-					foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)
-					{
-						var t = Reflection.TypeExtensions.GetType(i);
+            foreach (var plugin in Plugins)
+                plugin.Initialize(app, env);
+        }
 
-						if (t == null)
-							continue;
+        private static void ConfigureStaticFiles(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            var cachePeriod = env.IsDevelopment() ? "600" : "604800";
+            var contentTypeProvider = new FileExtensionContentTypeProvider();
 
-						var plugin = t.CreateInstance<IPlugin>();
+            contentTypeProvider.Mappings[".webmanifest"] = "application/manifest+json";
 
-						if (plugin != null)
-							_plugins.Add(plugin);
-					}
-				}
+            var staticOptions = new StaticFileOptions
+            {
+                OnPrepareResponse = ctx =>
+                {
+                    ctx.Context.Response.Headers.Append("Cache-Control", $"public, max-age={cachePeriod}");
+                },
+                ContentTypeProvider = contentTypeProvider,
+            };
 
-				return _plugins;
-			}
-		}
+            EmbeddedResourcesConfiguration.Configure(env, staticOptions);
 
-		private static void ConfigurePlugins(ApplicationPartManager manager, string assembly)
-		{
-			var path = Shell.ResolveAssemblyPath(assembly);
+            app.UseStaticFiles(staticOptions);
+        }
+        private static void OnTenantInitialized(object sender, TenantArgs e)
+        {
+            foreach (var i in Shell.GetConfiguration<IClientSys>().DataProviders)
+            {
+                var t = Reflection.TypeExtensions.GetType(i);
 
-			if (path == null)
-				return;
+                if (t == null)
+                    continue;
 
-			var asmName = AssemblyName.GetAssemblyName(path);
-			var asm = AssemblyLoadContext.Default.LoadFromAssemblyName(asmName);
+                var provider = t.CreateInstance<IDataProvider>();
 
-			AddApplicationPart(manager, asm);
+                if (provider != null)
+                    e.Tenant.GetService<IDataProviderService>().Register(provider);
+            }
 
-			var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(asm, false);
+            e.Tenant.GetService<IDesignService>().Initialize();
+        }
 
-			foreach (var i in relatedAssemblies)
-				AddApplicationPart(manager, i);
-		}
+        public static void Run(IApplicationBuilder app, IWebHostEnvironment environment)
+        {
+            //foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
+            //	Shell.GetService<IConnectivityService>().InsertTenant(i.Name, i.Url, i.AuthenticationToken);
 
-		private static void AddApplicationPart(ApplicationPartManager manager, Assembly assembly)
-		{
-			var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
+            State = InstanceState.Running;
 
-			foreach (var i in partFactory.GetApplicationParts(assembly))
-				manager.ApplicationParts.Add(i);
-		}
-	}
+            if (SupportsDesign)
+            {
+                foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+                {
+                    var t = Reflection.TypeExtensions.GetType(i);
+
+                    if (t == null)
+                        continue;
+
+                    var template = t.CreateInstance<IMicroServiceTemplate>();
+
+                    template.Initialize(app, environment);
+                }
+            }
+        }
+
+        public static bool ResourceGroupExists(Guid resourceGroup)
+        {
+            if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
+                return true;
+
+            foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
+            {
+                var rg = MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>().Select(i);
+
+                if (rg != null)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static List<IPlugin> Plugins
+        {
+            get
+            {
+                if (_plugins == null)
+                {
+                    _plugins = new List<IPlugin>();
+
+                    foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)
+                    {
+                        var t = Reflection.TypeExtensions.GetType(i);
+
+                        if (t == null)
+                            continue;
+
+                        var plugin = t.CreateInstance<IPlugin>();
+
+                        if (plugin != null)
+                            _plugins.Add(plugin);
+                    }
+                }
+
+                return _plugins;
+            }
+        }
+
+        private static void ConfigurePlugins(ApplicationPartManager manager, string assembly)
+        {
+            var path = Shell.ResolveAssemblyPath(assembly);
+
+            if (path == null)
+                return;
+
+            var asmName = AssemblyName.GetAssemblyName(path);
+            var asm = AssemblyLoadContext.Default.LoadFromAssemblyName(asmName);
+
+            AddApplicationPart(manager, asm);
+
+            var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(asm, false);
+
+            foreach (var i in relatedAssemblies)
+                AddApplicationPart(manager, i);
+        }
+
+        private static void AddApplicationPart(ApplicationPartManager manager, Assembly assembly)
+        {
+            var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
+
+            foreach (var i in partFactory.GetApplicationParts(assembly))
+                manager.ApplicationParts.Add(i);
+        }
+    }
 }
