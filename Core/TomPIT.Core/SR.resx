@@ -1287,4 +1287,7 @@
   <data name="UniqueAttribute" xml:space="preserve">
     <value />
   </data>
+  <data name="ErrUserDeleteUnsupported" xml:space="preserve">
+    <value>Users can not be deleted, action deprecated.</value>
+  </data>
 </root>

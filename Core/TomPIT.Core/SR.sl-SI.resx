@@ -651,4 +651,7 @@
   <data name="ValUnique" xml:space="preserve">
     <value>Vrednost polja '{0}' že obstaja.</value>
   </data>
+  <data name="ErrUserDeleteUnsupported" xml:space="preserve">
+    <value>Brisanje uporabnikov ni omogočeno.</value>
+  </data>
 </root>
