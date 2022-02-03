@@ -34,6 +34,7 @@ using TomPIT.Security.Authentication;
 namespace TomPIT
 {
     public delegate void ConfigureRoutingHandler(ConfigureRoutingArgs e);
+    public delegate void ConfigureMiddlewareHandler(ConfigureMiddlewareArgs e);
 
     public enum AuthenticationType
     {
@@ -198,10 +199,12 @@ namespace TomPIT
             foreach (var plugin in Plugins)
                 plugin.ConfigureServices(services);
         }
-        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler)
+        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler, ConfigureMiddlewareHandler middlewareHandler = null)
         {
             RuntimeService._host = app;
             app.UseMiddleware<AuthenticationCookieMiddleware>();
+
+            middlewareHandler?.Invoke(new ConfigureMiddlewareArgs(app));
 
             var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
 
@@ -262,8 +265,7 @@ namespace TomPIT
             });
 
             Shell.Configure(app);
-
-            
+                      
 
             foreach (var plugin in Plugins)
                 plugin.Initialize(app, env);

@@ -49,7 +49,6 @@ namespace TomPIT.App
 
             services.AddDataProtection();
 
-
             services.AddAntiforgery(o =>
             {
                 o.Cookie.Name = "TomPITAntiForgery";
@@ -57,9 +56,9 @@ namespace TomPIT.App
                 o.HeaderName = "X-TP-AF";
                 o.SuppressXFrameOptionsHeader = false;
             });
+
             services.AddScoped<IViewEngine, ViewEngine>();
             services.AddScoped<IMailTemplateViewEngine, MailTemplateViewEngine>();
-
 
             services.Configure<RazorViewEngineOptions>(opts =>
                 {
@@ -78,12 +77,17 @@ namespace TomPIT.App
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseResponseCompression();
-            Instance.Configure(app, env, (f) =>
+            Instance.Configure(app, env, 
+            (f) =>
             {
                 app.UseMiddleware<IgnoreRouteMiddleware>();
 
                 RouteBuilder = f.Builder;
-                AppRouting.Register(app, f.Builder);
+                AppRouting.Register(f.Builder);
+            }, 
+            (f) =>
+            {
+                AppRouting.RegisterRouteMiddleware(f.Builder);
             });
 
             //InitializeConfiguration();
