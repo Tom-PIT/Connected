@@ -62,6 +62,7 @@ namespace TomPIT.Middleware
 			State = MiddlewareTransactionState.Reverting;
 
 			var context = Context as MiddlewareContext;
+			context.MarkUnstable();
 
 			foreach (var connection in context.Connections.DataConnections)
 				connection.Rollback();
