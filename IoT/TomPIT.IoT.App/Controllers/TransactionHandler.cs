@@ -1,11 +1,14 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
 using TomPIT.IoT.Hubs;
 using TomPIT.Middleware;
+using Microsoft.Extensions.DependencyInjection;
+
 
 namespace TomPIT.IoT.Controllers
 {
@@ -47,7 +50,7 @@ namespace TomPIT.IoT.Controllers
 			Body.Add("transaction", Transaction);
 			Body.Add("device", Device);
 
-			IoTServerHub.InvokeTransaction(Body).Wait();
+			IoTServerHub.Invoke(Body, HubContext?.Clients).Wait();
 			
 			Shell.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
 			Shell.HttpContext.Response.CompleteAsync().Wait();
@@ -59,6 +62,8 @@ namespace TomPIT.IoT.Controllers
 
 		private IIoTHubConfiguration Configuration { get; }
 		private HttpContext Context { get; }
+
+		private IHubContext<IoTServerHub> HubContext => Context.RequestServices.GetService<IHubContext<IoTServerHub>>();
 		private JObject Body { get; set; }
 	}
 }

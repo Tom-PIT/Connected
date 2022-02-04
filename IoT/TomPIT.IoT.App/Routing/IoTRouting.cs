@@ -5,20 +5,20 @@ using TomPIT.IoT.Controllers;
 
 namespace TomPIT.IoT.Routing
 {
-	internal static class IoTRouting
-	{
-		public static void Register(IEndpointRouteBuilder routes)
-		{
-			routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+    internal static class IoTRouting
+    {
+        public static void Register(IEndpointRouteBuilder routes)
+        {
+            routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
 
-			routes.Map("transaction/{microService}/{hub}/{device}/{transaction}", (t) =>
-			{
-				using var handler = new TransactionHandler(t);
+            routes.Map("transaction/{microService}/{hub}/{device}/{transaction}", (t) =>
+            {                
+                using var handler = new TransactionHandler(t);
 
-				handler.ProcessRequest();
+                handler.ProcessRequest();
 
-				return Task.CompletedTask;
-			});
-		}
-	}
+                return Task.CompletedTask;
+            });
+        }
+    }
 }
