@@ -1,20 +1,26 @@
-﻿using System.Linq;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using TomPIT.App.Globalization;
 using TomPIT.App.Resources;
 using TomPIT.App.Routing;
 using TomPIT.App.UI;
 using TomPIT.Connectivity;
+using TomPIT.Diagnostics;
+using TomPIT.Diagnostics.Tracing;
 using TomPIT.Environment;
+using TomPIT.Middleware;
 using TomPIT.Runtime;
 using TomPIT.Security;
+using TomPIT.Serialization;
 using TomPIT.UI;
 using TomPIT.UI.Theming;
 
@@ -60,6 +66,11 @@ namespace TomPIT.App
             services.AddScoped<IViewEngine, ViewEngine>();
             services.AddScoped<IMailTemplateViewEngine, MailTemplateViewEngine>();
 
+            services.AddSignalR(o =>
+            {
+                o.EnableDetailedErrors = true;
+            }).AddNewtonsoftJsonProtocol();
+
             services.Configure<RazorViewEngineOptions>(opts =>
                 {
                     opts.ViewLocationExpanders.Add(new ViewLocationExpander());
@@ -77,20 +88,44 @@ namespace TomPIT.App
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseResponseCompression();
-            Instance.Configure(app, env, 
+
+            Instance.Configure(app, env,
             (f) =>
             {
                 app.UseMiddleware<IgnoreRouteMiddleware>();
 
                 RouteBuilder = f.Builder;
+
+                f.Builder.MapHub<TraceHub>("hubs/tracing");
                 AppRouting.Register(f.Builder);
-            }, 
+            },
             (f) =>
             {
+                var traceHubContext = f.Builder.ApplicationServices.GetRequiredService<IHubContext<TraceHub>>();
+                
+                var traceService = MiddlewareDescriptor.Current.Tenant.GetService<ITraceService>();
+                
+                traceService.TraceReceived += async (s, e) => await TraceHub.Trace(traceHubContext, e);
+
+                traceService.AddEndpoint("TomPIT.App.diagnostics", "IncomingRequest");
+                traceService.AddEndpoint("TomPIT.App.diagnostics", "LongLastingRequest");
+
+                f.Builder.Use(async (context, next) => {
+                    var path = context.Request.Path;
+                    var stopwatch = Stopwatch.StartNew();
+
+                    traceService.Trace("TomPIT.App.diagnostics", "IncomingRequest", path);
+
+                    if (next is not null)
+                        await next.Invoke();
+
+                    if (stopwatch.ElapsedMilliseconds > 2000)
+                        traceService.Trace("TomPIT.App.diagnostics", "LongLastingRequest", path);
+                });
+
                 AppRouting.RegisterRouteMiddleware(f.Builder);
             });
 
-            //InitializeConfiguration();
             Instance.Run(app, env);
         }
 
@@ -101,6 +136,7 @@ namespace TomPIT.App
 
         private void OnTenantInitialize(object sender, TenantArgs e)
         {
+            e.Tenant.RegisterService(typeof(ITraceService), typeof(TraceService));
             e.Tenant.RegisterService(typeof(IXmlKeyService), typeof(XmlKeyService));
             e.Tenant.RegisterService(typeof(IViewService), typeof(ViewService));
             e.Tenant.RegisterService(typeof(IThemeService), typeof(ThemeService));
