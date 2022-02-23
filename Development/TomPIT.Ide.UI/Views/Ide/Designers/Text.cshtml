@@ -40,9 +40,9 @@
             model.fileName = '@Model.Element.Title';
             model.microService = '@Model.Environment.Context.MicroService.Name';
 
-            //model.updateOptions({
-            //    tabSize: 3
-            //});
+            model.updateOptions({
+                tabSize: 3
+            });
 
             textEditorWidget.activateModel(model.id, model.fileName, model.microService);
 
