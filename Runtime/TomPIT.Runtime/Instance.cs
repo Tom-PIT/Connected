@@ -204,25 +204,6 @@ namespace TomPIT
             RuntimeService._host = app;
             app.UseMiddleware<AuthenticationCookieMiddleware>();
 
-            middlewareHandler?.Invoke(new ConfigureMiddlewareArgs(app));
-
-            var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
-
-            if (lifetime != null)
-            {
-                Stopping = lifetime.ApplicationStopping;
-                Stopped = lifetime.ApplicationStopped;
-            }
-            ConfigureStaticFiles(app, env);
-
-            app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
-            app.UseRouting();
-
-            if (CorsEnabled)
-                app.UseCors("TomPITPolicy");
-
-            app.UseAuthentication();
-            app.UseAuthorization();
             app.UseRequestLocalization(o =>
             {
                 RequestLocalizationOptions = o;
@@ -243,6 +224,27 @@ namespace TomPIT
                     tenant.GetService<ILanguageService>().ApplySupportedCultures();
                 }
             });
+
+            middlewareHandler?.Invoke(new ConfigureMiddlewareArgs(app));
+
+            var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
+
+            if (lifetime != null)
+            {
+                Stopping = lifetime.ApplicationStopping;
+                Stopped = lifetime.ApplicationStopped;
+            }
+            ConfigureStaticFiles(app, env);
+
+            app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
+            app.UseRouting();
+
+            if (CorsEnabled)
+                app.UseCors("TomPITPolicy");
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+            
 
             app.UseRequestLocalizationCookies();
             app.UseAjaxExceptionMiddleware();
