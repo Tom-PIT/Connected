@@ -207,6 +207,7 @@
         language: 'json',
         onCreated: function (sender, instance) {
             textEditorRequestBody = instance;
+            sender.registerForObservation(document.querySelector('#navRequestBody'));
         }
     });
 
@@ -217,6 +218,7 @@
         onCreated: function (sender, instance) {
             instance.updateOptions({ readOnly: true });
             textEditorResponseBody = instance;
+            sender.registerForObservation(document.querySelector('#navResponseBody'));
         }
     });
 

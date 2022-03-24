@@ -21,7 +21,7 @@
     <div class="col-lg-8 col-md-7" id="devDesignerContainer">
         <div class="dev-designer">
             <div data-tp-tag="progress-container"></div>
-            <div id="devTextDesigner" class="collapse">
+            <div id="devTextDesigner" class="collapse flex-column">
                 <div class="template-toolbar btn-toolbar justify-content-between mx-4">
                     <div class="btn-group">
                         <a id="btnDebug" href="#" target="_blank" class="btn btn-sm btn-light py-0 collapse" title="Download source code for debugging"><i class="fal fa-bug"></i></a>
@@ -33,9 +33,11 @@
                         <span class="pt-2 small collapse" title="Editor syntax" id="labelSyntaxLanguage"></span>
                     </div>
                 </div>
-                <div id="modelTabs" class="row no-gutters">
+                <div id="modelTabs" class="row no-gutters flex-nowrap overflow-auto">
                 </div>
-                <div data-role="text-editor" class="text-editor text-editor-sa"></div>
+                <div id="devDesignerSizeBox" class="flex-grow overflow-hidden">
+                    <div data-role="text-editor" class="text-editor text-editor-sa"></div>
+                </div>
             </div>
             <div id="devDesigner" class="collapse show">
                 @await Html.PartialAsync("~/Views/Ide/Designers/Empty.cshtml", Model)
