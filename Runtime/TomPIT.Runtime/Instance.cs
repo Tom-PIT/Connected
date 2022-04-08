@@ -225,7 +225,6 @@ namespace TomPIT
                 }
             });
 
-            middlewareHandler?.Invoke(new ConfigureMiddlewareArgs(app));
 
             var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
 
@@ -249,6 +248,7 @@ namespace TomPIT
             app.UseRequestLocalizationCookies();
             app.UseAjaxExceptionMiddleware();
 
+            middlewareHandler?.Invoke(new ConfigureMiddlewareArgs(app));
             //RuntimeBootstrapper.Run();
 
             Shell.GetService<IRuntimeService>().Initialize(InstanceType, Shell.GetConfiguration<IClientSys>().Platform, env);
