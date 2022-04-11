@@ -122,6 +122,7 @@ namespace TomPIT.Middleware.Services
 				throw new RuntimeException(SR.ErrHttpRequestNotAvailable);
 
 			Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.TemporaryRedirect;
+			Shell.HttpContext.Response.Headers.Add("Cache-Control", "no-store");
 			Shell.HttpContext.Response.Redirect(url, false);
 		}
 

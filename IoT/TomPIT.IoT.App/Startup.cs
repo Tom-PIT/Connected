@@ -30,6 +30,8 @@ namespace TomPIT.IoT
 			};
 
 			Instance.Initialize(InstanceType.IoT, services, e);
+			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
+			Instance.InitializeShellServices();
 
 			services.AddSignalR((o) =>
 			{
@@ -47,7 +49,6 @@ namespace TomPIT.IoT
 				f.Builder.MapHub<IoTServerHub>("/iot");
 			});
 
-			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 			Instance.Run(app, env);
 		}
 

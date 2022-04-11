@@ -50,6 +50,8 @@ namespace TomPIT.Management.Security
 
 		public void Delete(Guid user)
 		{
+			throw new Exception(SR.ErrUserDeleteUnsupported);
+
 			var u = Tenant.CreateUrl("UserManagement", "Delete");
 			var e = new JObject
 			{

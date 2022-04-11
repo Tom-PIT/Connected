@@ -28,6 +28,11 @@ namespace TomPIT.Search
 			};
 
 			Instance.Initialize(InstanceType.Search, services, e);
+			
+			InitializeConfiguration();
+
+			Instance.InitializeShellServices();
+			
 			RegisterTasks(services);
 		}
 
@@ -38,7 +43,6 @@ namespace TomPIT.Search
 				SearchRouting.Register(f.Builder);
 			});
 
-			InitializeConfiguration();
 			Instance.Run(app, env);
 		}
 

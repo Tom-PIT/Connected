@@ -75,6 +75,8 @@ namespace TomPIT.Sys.Model
 		private static readonly Lazy<PrintingSpoolerModel> _printingSpooler = new Lazy<PrintingSpoolerModel>(() => { return new PrintingSpoolerModel(); });
 		private static readonly Lazy<ClientsModel> _clients = new Lazy<ClientsModel>(() => { return new ClientsModel(Container); });
 		private static readonly Lazy<PrintingSerialNumbersModel> _printingSerialNumbers = new Lazy<PrintingSerialNumbersModel>(() => { return new PrintingSerialNumbersModel(Container); });
+		private static readonly Lazy<XmlKeysModel> _xmlKeys = new Lazy<XmlKeysModel>(() => { return new XmlKeysModel(Container); });
+
 
 		public static MicroServicesMetaModel MicroServicesMeta => _meta.Value;
 		public static MicroServicesModel MicroServices => _microServices.Value;
@@ -127,6 +129,7 @@ namespace TomPIT.Sys.Model
 		public static PrintingSpoolerModel PrintingSpooler => _printingSpooler.Value;
 		public static ClientsModel Clients => _clients.Value;
 		public static PrintingSerialNumbersModel PrintingSerialNumbers => _printingSerialNumbers.Value;
+		public static XmlKeysModel XmlKeys => _xmlKeys.Value;
 		internal static MemoryCache Container => _cache.Value;
 
 		public static bool Initialized { get; set; }

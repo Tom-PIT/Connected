@@ -20,7 +20,26 @@ namespace TomPIT.App.Routing
 {
 	internal static class AppRouting
 	{
-		public static void Register(IApplicationBuilder app, IEndpointRouteBuilder routes)
+		public static void RegisterRouteMiddleware(IApplicationBuilder app) 
+		{
+			app.Use(async (context, next) =>
+			{
+				if (string.Compare(context.Request.Path.Value, "/login", true) == 0)
+				{
+					var view = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().Select(context.Request.Path.Value, null);
+
+					if (view?.Enabled ?? false)
+					{
+						await RenderView(context);
+						return;
+					}
+
+				}
+
+				await next();
+			});
+		}
+		public static void Register(IEndpointRouteBuilder routes)
 		{
 			routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
 			routes.MapControllerRoute("sys.api", "sys/api/invoke", new { controller = "Api", action = "Invoke" });
@@ -30,6 +49,7 @@ namespace TomPIT.App.Routing
 			routes.MapControllerRoute("sys.getuserdata", "sys/api/getuserdata", new { controller = "Api", action = "GetUserData" });
 			routes.MapControllerRoute("sys.queryuserdata", "sys/api/queryuserdata", new { controller = "Api", action = "QueryUserData" });
 			routes.MapControllerRoute("sys.uiinjection", "sys/api/uiinjection", new { controller = "Api", action = "UIInjection" });
+			routes.MapControllerRoute("sys.tracing.endpoints", "sys/tracing/endpoints", new { controller = "Tracing", action = "Endpoints" });
 
 			routes.Map("sys/themes/{microService}/{theme}", (t) =>
 			{
@@ -80,24 +100,7 @@ namespace TomPIT.App.Routing
 				await RenderView(t);
 			});
 
-			builder.Add(b => ((RouteEndpointBuilder)b).Order = int.MaxValue);
-
-			app.Use(async (context, next) =>
-			{
-				if (string.Compare(context.Request.Path.Value, "/login", true) == 0)
-				{
-					var view = MiddlewareDescriptor.Current.Tenant.GetService<IViewService>().Select(context.Request.Path.Value, null);
-
-					if (view != null && view.Enabled)
-					{
-						await RenderView(context);
-						return;
-					}
-
-				}
-
-				await next();
-			});
+			builder.Add(b => ((RouteEndpointBuilder)b).Order = int.MaxValue);			
 		}
 
 		private static async Task RenderView(HttpContext context)

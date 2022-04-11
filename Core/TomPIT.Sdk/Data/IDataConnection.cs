@@ -1,31 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Threading;
 using TomPIT.Data.DataProviders;
 using TomPIT.Middleware;
 
 namespace TomPIT.Data
 {
-	public interface IDataConnection : IDisposable
-	{
-		void Commit();
-		void Rollback();
+    public interface IDataConnection : IDisposable
+    {
+        void Commit();
+        void Rollback();
 
-		void Open();
-		void Close();
+        void Open();
+        void Close();
 
-		int Execute(IDataCommandDescriptor command);
-		List<T> Query<T>(IDataCommandDescriptor command);
-		T Select<T>(IDataCommandDescriptor command);
+        int Execute(IDataCommandDescriptor command);
 
-		IDbCommand CreateCommand();
-		ConnectionBehavior Behavior { get; }
+        List<T> Query<T>(IDataCommandDescriptor command);
 
-		//IDbConnection Connection { get; }
-		IDbTransaction Transaction { get; set; }
-		ICommandTextParser Parser { get; }
+        T Select<T>(IDataCommandDescriptor command);
 
-		ConnectionState State { get; }
-		IMiddlewareContext Context { get; }
-	}
+        IDbCommand CreateCommand();
+        ConnectionBehavior Behavior { get; }
+
+        //IDbConnection Connection { get; }
+        IDbTransaction Transaction { get; set; }
+        ICommandTextParser Parser { get; }
+
+        ConnectionState State { get; }
+        IMiddlewareContext Context { get; }
+    }
 }

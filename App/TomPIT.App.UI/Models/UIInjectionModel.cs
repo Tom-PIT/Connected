@@ -94,6 +94,9 @@ namespace TomPIT.App.Models
 
             var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(ViewUrl).LocalPath), Controller.Request.RouteValues);
 
+            if (Arguments.ContainsKey("partial"))
+                return;
+
             Shell.HttpContext.ParseArguments(Arguments, null, (url) =>
             {
                 var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(url).LocalPath), Controller.Request.RouteValues);
@@ -111,7 +114,7 @@ namespace TomPIT.App.Models
                 MicroService = MicroService,
                 Component = Component,
                 QualifierName = QualifierName,
-                ViewConfiguration =ViewConfiguration
+                ViewConfiguration = ViewConfiguration
             };
 
             clone.Initialize(this.Controller, this.MicroService);

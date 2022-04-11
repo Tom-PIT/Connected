@@ -13,256 +13,270 @@ using TomPIT.Reflection.CodeAnalysis;
 
 namespace TomPIT.Reflection
 {
-	internal class ManifestTypeResolver : TenantObject, IManifestTypeResolver, IDisposable
-	{
-		private static readonly List<string> ReservedPrimitiveTypes = new List<string>
-		{
-			typeof(Guid).FullName,
-			typeof(TimeSpan).FullName
-		};
+    internal class ManifestTypeResolver : TenantObject, IManifestTypeResolver, IDisposable
+    {
+        private static readonly List<string> ReservedPrimitiveTypes = new List<string>
+        {
+            typeof(Guid).FullName,
+            typeof(TimeSpan).FullName
+        };
 
-		private Dictionary<string, IManifestTypeDescriptor> _cache;
-		private bool _disposed;
+        private Dictionary<string, IManifestTypeDescriptor> _cache;
+        private bool _disposed;
 
-		public ManifestTypeResolver(ITenant tenant, Guid microService, Guid component, Guid script) : base(tenant)
-		{
-			Component = component;
-			Script = script;
-			MicroService = microService;
-		}
+        public ManifestTypeResolver(ITenant tenant, Guid microService, Guid component, Guid script) : base(tenant)
+        {
+            Component = component;
+            Script = script;
+            MicroService = microService;
+        }
 
-		private Guid MicroService { get; set; }
-		private Guid Component { get; }
-		private Guid Script { get; }
-		private IScriptManifest Manifest { get; set; }
-		private IText SourceCode { get; set; }
-		private Dictionary<string, IManifestTypeDescriptor> Cache => _cache ??= new Dictionary<string, IManifestTypeDescriptor>();
-		private Microsoft.CodeAnalysis.Compilation Compilation { get; set; }
+        private Guid MicroService { get; set; }
+        private Guid Component { get; }
+        private Guid Script { get; }
+        private IScriptManifest Manifest { get; set; }
+        private IText SourceCode { get; set; }
+        private Dictionary<string, IManifestTypeDescriptor> Cache => _cache ??= new Dictionary<string, IManifestTypeDescriptor>();
+        private Microsoft.CodeAnalysis.Compilation Compilation { get; set; }
 
-		public IManifestTypeDescriptor Resolve(string name)
-		{
-			if (Manifest is null)
-				Prepare();
+        public IManifestTypeDescriptor Resolve(string name)
+        {
+            if (Manifest is null)
+                Prepare();
 
-			if (Cache.TryGetValue(name, out IManifestTypeDescriptor existing))
-				return existing;
+            if (Cache.TryGetValue(name, out IManifestTypeDescriptor existing))
+                return existing;
 
-			return CreateType(name);
-		}
+            return CreateType(name);
+        }
 
-		private void Prepare()
-		{
-			Manifest = Tenant.GetService<IDiscoveryService>().Manifests.SelectScript(MicroService, Component, Script);
+        private void Prepare()
+        {
+            Manifest = Tenant.GetService<IDiscoveryService>().Manifests.SelectScript(MicroService, Component, Script);
 
-			if (Manifest is null)
-				return;
+            if (Manifest is null)
+                return;
 
-			if (Tenant.GetService<IDiscoveryService>().Configuration.Find(Component, Script) is not IText text)
-				return;
+            if (Tenant.GetService<IDiscoveryService>().Configuration.Find(Component, Script) is not IText text)
+                return;
 
-			SourceCode = text;
+            SourceCode = text;
 
-			Compilation = Tenant.GetService<ICompilerService>().GetCompilation(text);
-		}
+            Compilation = Tenant.GetService<ICompilerService>().GetCompilation(text);
+        }
 
-		private IManifestTypeDescriptor CreateType(string name)
-		{
-			var symbols = Compilation.GetSymbolsWithName(name);
+        private IManifestTypeDescriptor CreateType(string name)
+        {
+            var symbols = Compilation.GetSymbolsWithName(TearOffName(name));
 
-			if (!symbols.Any())
-				return CreateFromDefault(name);
+            if (!symbols.Any())
+                return CreateFromDefault(name);
 
-			foreach (var symbol in symbols)
-			{
-				if (symbol.Kind == SymbolKind.NamedType)
-				{
-					var type = symbol as INamedTypeSymbol;
+            foreach (var symbol in symbols)
+            {
+                if (symbol.Kind == SymbolKind.NamedType)
+                {
+                    var type = symbol as INamedTypeSymbol;
 
-					if (type is not null && string.Compare(type.ToDisplayString(), name, false) == 0)
-						return CreateDescriptor(symbol, type);
-				}
-			}
+                    if (type is not null && string.Compare(type.ToDisplayString(), name, false) == 0)
+                        return CreateDescriptor(symbol, type);
+                }
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-		private IManifestTypeDescriptor CreateFromDefault(string name)
-		{
-			var tree = Compilation.SyntaxTrees.FirstOrDefault(f => string.Compare(f.FilePath, SourceCode.FileName, true) == 0);
+        private static string TearOffName(string name)
+        {
+            if (!name.Contains('.'))
+                return name;
 
-			if (tree is null)
-				return null;
+            return name[(name.LastIndexOf('.') + 1)..];
+        }
 
-			var model = Compilation.GetSemanticModel(tree);
+        private IManifestTypeDescriptor CreateFromDefault(string name)
+        {
+            var tree = Compilation.SyntaxTrees.FirstOrDefault(f => string.Compare(f.FilePath, SourceCode.FileName, true) == 0);
 
-			if (ProcessTree(tree, model, name) is IManifestTypeDescriptor result)
-				return result;
+            if (tree is null)
+                return null;
 
-			foreach(var other in Compilation.SyntaxTrees)
-			{
-				if (other == tree)
-					continue;
+            var model = Compilation.GetSemanticModel(tree);
 
-				model = Compilation.GetSemanticModel(other);
+            if (ProcessTree(tree, model, name) is IManifestTypeDescriptor result)
+                return result;
 
-				if (ProcessTree(other, model, name) is IManifestTypeDescriptor otherResult)
-					return otherResult;
-			}
+            foreach (var other in Compilation.SyntaxTrees)
+            {
+                if (other == tree)
+                    continue;
 
-			return null;
-		}
+                model = Compilation.GetSemanticModel(other);
 
-		private IManifestTypeDescriptor ProcessTree(SyntaxTree tree, SemanticModel model, string name)
-		{
-			foreach (var node in tree.GetRoot().DescendantNodesAndSelf())
-			{
-				if (node.IsKind(SyntaxKind.PredefinedType) || node.IsKind(SyntaxKind.GenericName) || node.IsKind(SyntaxKind.QualifiedName) || node.IsKind(SyntaxKind.IdentifierName))
-				{
-					var typeInfo = model.GetTypeInfo(node);
+                if (ProcessTree(other, model, name) is IManifestTypeDescriptor otherResult)
+                    return otherResult;
+            }
 
-					if (typeInfo.Type is not null && string.Compare(typeInfo.Type.ToDisplayString(), name, false) == 0)
-						return CreateDescriptor(typeInfo.Type, typeInfo.Type);
-				}
-			}
+            return null;
+        }
 
-			return null;
-		}
+        private IManifestTypeDescriptor ProcessTree(SyntaxTree tree, SemanticModel model, string name)
+        {
+            foreach (var node in tree.GetRoot().DescendantNodesAndSelf())
+            {
+                if (node.IsKind(SyntaxKind.PredefinedType) || node.IsKind(SyntaxKind.GenericName) || node.IsKind(SyntaxKind.QualifiedName) || node.IsKind(SyntaxKind.IdentifierName))
+                {
+                    var typeInfo = model.GetTypeInfo(node);
 
-		private IManifestTypeDescriptor CreateDescriptor(ISymbol containingSymbol, ITypeSymbol symbol)
-		{
-			if (symbol == null)
-				return null;
+                    if (typeInfo.Type is not null && string.Compare(typeInfo.Type.ToDisplayString(), name, false) == 0)
+                        return CreateDescriptor(typeInfo.Type, typeInfo.Type);
+                }
+            }
 
-			if (Cache.TryGetValue(symbol.ToDisplayString(), out IManifestTypeDescriptor existing))
-				return existing;
+            return null;
+        }
 
-			var node = containingSymbol.ResolveNode() as CSharpSyntaxNode;
+        private IManifestTypeDescriptor CreateDescriptor(ISymbol containingSymbol, ITypeSymbol symbol)
+        {
+            if (symbol == null)
+                return null;
 
-			var result = new ManifestTypeDescriptor
-			{
-				Name = symbol.ToDisplayString(),
-				IsPrimitive = ResolvePrimitive(symbol),
-				Documentation = node?.ParseDocumentation()
-			};
+            if (Cache.TryGetValue(symbol.ToDisplayString(), out IManifestTypeDescriptor existing))
+                return existing;
 
-			Cache.TryAdd(symbol.ToDisplayString(), result);
+            var node = containingSymbol.ResolveNode() as CSharpSyntaxNode;
 
-			if (!result.IsPrimitive)
-				ResolveMetaData(result, symbol);
+            var result = new ManifestTypeDescriptor
+            {
+                Name = symbol.ToDisplayString(),
+                IsPrimitive = ResolvePrimitive(symbol),
+                IsEnum = ResolveEnum(symbol),
+                Documentation = node?.ParseDocumentation()
+            };
 
-			if (result.IsPrimitive)
-				return result;
+            Cache.TryAdd(symbol.ToDisplayString(), result);
 
-			ResolveTypeArguments(result, symbol);
+            if (!result.IsPrimitive)
+                ResolveMetaData(result, symbol);
 
-			if (DiscoverMembers(result, symbol))
-				ResolveMembers(result, symbol);
-			
-			return result;
-		}
+            if (result.IsPrimitive)
+                return result;
 
-		private static bool DiscoverMembers(IManifestTypeDescriptor descriptor, ITypeSymbol symbol)
-		{
-			if (descriptor.IsArray)
-				return false;
+            ResolveTypeArguments(result, symbol);
 
-			if (symbol.AllInterfaces.Any(f => string.Compare(f.ToDisplayString(), typeof(IDictionary).FullName, false) == 0
-				|| string.Compare(f.ToDisplayString(), typeof(ITuple).FullName, false) == 0))
-				return false;
+            if (DiscoverMembers(result, symbol))
+                ResolveMembers(result, symbol);
 
-			return true;
-		}
+            return result;
+        }
 
-		private void ResolveMembers(IManifestTypeDescriptor descriptor, ITypeSymbol symbol)
-		{
-			var members = symbol.GetMembers();
+        private static bool DiscoverMembers(IManifestTypeDescriptor descriptor, ITypeSymbol symbol)
+        {
+            if (descriptor.IsArray)
+                return false;
 
-			foreach (var member in members)
-			{
-				if (member.DeclaredAccessibility != Accessibility.Public || (member.Kind != SymbolKind.Field && member.Kind != SymbolKind.Property))
-					continue;
+            if (symbol.AllInterfaces.Any(f => string.Compare(f.ToDisplayString(), typeof(IDictionary).FullName, false) == 0
+                || string.Compare(f.ToDisplayString(), typeof(ITuple).FullName, false) == 0))
+                return false;
 
-				if (!member.GetAttributes().IsBrowsable())
-					continue;
+            return true;
+        }
 
-				if (member is IPropertySymbol property)
-					descriptor.Members.TryAdd(member.Name, CreateDescriptor(member, property.Type));
-				else if (member is IFieldSymbol field)
-					descriptor.Members.TryAdd(member.Name, CreateDescriptor(member, field.Type));
-				else
-					throw new NotSupportedException();
-			}
-		}
+        private void ResolveMembers(IManifestTypeDescriptor descriptor, ITypeSymbol symbol)
+        {
+            var members = symbol.GetMembers();
 
-		private void ResolveTypeArguments(IManifestTypeDescriptor descriptor, ITypeSymbol symbol)
-		{
-			if (symbol is IArrayTypeSymbol array)
-				descriptor.TypeArguments.Add(CreateDescriptor(symbol, array.ElementType));
-			else
-			{
-				if (symbol is not INamedTypeSymbol namedType || namedType.TypeArguments.IsDefaultOrEmpty)
-					return;
+            foreach (var member in members)
+            {
+                if (member.DeclaredAccessibility != Accessibility.Public || (member.Kind != SymbolKind.Field && member.Kind != SymbolKind.Property))
+                    continue;
 
-				foreach (var argument in namedType.TypeArguments)
-					descriptor.TypeArguments.Add(CreateDescriptor(argument, argument));
-			}
-		}
+                if (!member.GetAttributes().IsBrowsable())
+                    continue;
 
-		private static void ResolveMetaData(ManifestTypeDescriptor descriptor, ITypeSymbol symbol)
-		{
-			foreach (var i in symbol.AllInterfaces)
-			{
-				if (string.Compare(i.ToDisplayString(), typeof(IEnumerable).FullName, false) == 0)
-					descriptor.IsArray = true;
-				else if(string.Compare(i.ToDisplayString(), typeof(IDictionary).FullName, false) == 0)
-				{
-					descriptor.IsArray = false;
-					break;
-				}
-			}
-		}
+                if (member is IPropertySymbol property)
+                    descriptor.Members.TryAdd(member.Name, CreateDescriptor(member, property.Type));
+                else if (member is IFieldSymbol field)
+                    descriptor.Members.TryAdd(member.Name, CreateDescriptor(member, field.Type));
+                else
+                    throw new NotSupportedException();
+            }
+        }
 
-		private static bool ResolvePrimitive(ITypeSymbol symbol)
-		{
-			if (symbol.SpecialType == SpecialType.System_Boolean
-				|| symbol.SpecialType == SpecialType.System_Byte
-				|| symbol.SpecialType == SpecialType.System_SByte
-				|| symbol.SpecialType == SpecialType.System_Char
-				|| symbol.SpecialType == SpecialType.System_DateTime
-				|| symbol.SpecialType == SpecialType.System_Decimal
-				|| symbol.SpecialType == SpecialType.System_Double
-				|| symbol.SpecialType == SpecialType.System_Enum
-				|| symbol.SpecialType == SpecialType.System_Int16
-				|| symbol.SpecialType == SpecialType.System_Int32
-				|| symbol.SpecialType == SpecialType.System_Int64
-				|| symbol.SpecialType == SpecialType.System_Single
-				|| symbol.SpecialType == SpecialType.System_String
-				|| symbol.SpecialType == SpecialType.System_UInt16
-				|| symbol.SpecialType == SpecialType.System_UInt32
-				|| symbol.SpecialType == SpecialType.System_UInt64)
-				return true;
+        private void ResolveTypeArguments(IManifestTypeDescriptor descriptor, ITypeSymbol symbol)
+        {
+            if (symbol is IArrayTypeSymbol array)
+                descriptor.TypeArguments.Add(CreateDescriptor(symbol, array.ElementType));
+            else
+            {
+                if (symbol is not INamedTypeSymbol namedType || namedType.TypeArguments.IsDefaultOrEmpty)
+                    return;
 
-			return ReservedPrimitiveTypes.Contains(symbol.ToDisplayString());
-		}
+                foreach (var argument in namedType.TypeArguments)
+                    descriptor.TypeArguments.Add(CreateDescriptor(argument, argument));
+            }
+        }
 
-		private void Dispose(bool disposing)
-		{
-			if (!_disposed)
-			{
-				if (disposing)
-				{
-					Manifest = null;
-					Cache.Clear();
-				}
+        private static void ResolveMetaData(ManifestTypeDescriptor descriptor, ITypeSymbol symbol)
+        {
+            foreach (var i in symbol.AllInterfaces)
+            {
+                if (string.Compare(i.ToDisplayString(), typeof(IEnumerable).FullName, false) == 0)
+                    descriptor.IsArray = true;
+                else if (string.Compare(i.ToDisplayString(), typeof(IDictionary).FullName, false) == 0)
+                {
+                    descriptor.IsArray = false;
+                    break;
+                }
+            }
+        }
 
-				_disposed = true;
-			}
-		}
+        private static bool ResolveEnum(ITypeSymbol symbol) 
+        {
+            return symbol.TypeKind == TypeKind.Enum;
+        }
 
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-	}
+        private static bool ResolvePrimitive(ITypeSymbol symbol)
+        {
+            if (symbol.SpecialType == SpecialType.System_Boolean
+                || symbol.SpecialType == SpecialType.System_Byte
+                || symbol.SpecialType == SpecialType.System_SByte
+                || symbol.SpecialType == SpecialType.System_Char
+                || symbol.SpecialType == SpecialType.System_DateTime
+                || symbol.SpecialType == SpecialType.System_Decimal
+                || symbol.SpecialType == SpecialType.System_Double
+                || symbol.SpecialType == SpecialType.System_Enum
+                || symbol.SpecialType == SpecialType.System_Int16
+                || symbol.SpecialType == SpecialType.System_Int32
+                || symbol.SpecialType == SpecialType.System_Int64
+                || symbol.SpecialType == SpecialType.System_Single
+                || symbol.SpecialType == SpecialType.System_String
+                || symbol.SpecialType == SpecialType.System_UInt16
+                || symbol.SpecialType == SpecialType.System_UInt32
+                || symbol.SpecialType == SpecialType.System_UInt64)
+                return true;
+
+            return ReservedPrimitiveTypes.Contains(symbol.ToDisplayString());
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    Manifest = null;
+                    Cache.Clear();
+                }
+
+                _disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+    }
 }

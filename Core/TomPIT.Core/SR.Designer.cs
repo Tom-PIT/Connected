@@ -2716,6 +2716,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Users can not be deleted, action deprecated..
+        /// </summary>
+        public static string ErrUserDeleteUnsupported {
+            get {
+                return ResourceManager.GetString("ErrUserDeleteUnsupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User is inactive.
         /// </summary>
         public static string ErrUserInactive {
