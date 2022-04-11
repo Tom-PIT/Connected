@@ -923,7 +923,7 @@ namespace TomPIT.MicroServices.Design.Media
 
 							if (image != null)
 							{
-								var thumbnail = Tenant.GetService<IGraphicsService>().Resize(image, 100, 100, true);
+								var thumbnail = Tenant.GetService<IGraphicsService>().Imaging.Resize(image, 100, 100, true);
 
 								file.Thumb = Tenant.GetService<IStorageService>().Upload(new Blob
 								{

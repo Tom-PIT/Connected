@@ -2842,6 +2842,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        public static string ItemNone {
+            get {
+                return ResourceManager.GetString("ItemNone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Application URL not set.
         /// </summary>
         public static string JsAppUrlNotSet {
