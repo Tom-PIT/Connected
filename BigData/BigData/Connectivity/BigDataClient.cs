@@ -99,6 +99,27 @@ namespace TomPIT.BigData.Connectivity
 
 				Tenant.GetService<IPartitionService>().NotifyFieldStatisticChanged(e.Args.File, e.Args.FieldName);
 			});
+
+			Hub.On<MessageEventArgs<TimezoneArgs>>("TimezoneChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				Tenant.GetService<ITimezoneService>().NotifyChanged(e.Args.Timezone);
+			});
+
+			Hub.On<MessageEventArgs<TimezoneArgs>>("TimezoneAdded", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				Tenant.GetService<ITimezoneService>().NotifyChanged(e.Args.Timezone);
+			});
+
+			Hub.On<MessageEventArgs<TimezoneArgs>>("TimezoneRemoved", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				Tenant.GetService<ITimezoneService>().NotifyRemoved(e.Args.Timezone);
+			});
 		}
 	}
 }

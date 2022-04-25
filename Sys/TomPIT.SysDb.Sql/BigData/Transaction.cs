@@ -15,6 +15,7 @@ namespace TomPIT.SysDb.Sql.BigData
 		public DateTime Created { get; set; }
 		public Guid Token { get; set; }
 		public TransactionStatus Status { get; set; }
+		public Guid Timezone { get; set; }
 
 		public void DecrementBlock()
 		{
@@ -31,6 +32,7 @@ namespace TomPIT.SysDb.Sql.BigData
 			Created = GetDate("created");
 			Token = GetGuid("token");
 			Status = GetValue("status", TransactionStatus.Pending);
+			Timezone = GetGuid("timezone_token");
 		}
 	}
 }

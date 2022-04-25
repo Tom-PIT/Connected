@@ -47,6 +47,7 @@ namespace TomPIT.BigData.Data
 		public string PartitionKeyField { get; set; }
 		public string KeyField { get; set; }
 		public IPartitionComponent Middleware { get; private set; }
+		public bool SupportsTimezone { get; private set; }
 		public List<PartitionSchemaField> Fields
 		{
 			get
@@ -125,6 +126,9 @@ namespace TomPIT.BigData.Data
 					Type = typeof(DateTime)
 				});
 			}
+
+			if (Configuration is not null)
+				SupportsTimezone = Configuration.SupportsTimezone();
 		}
 
 		private bool IsIndex(PropertyInfo property)

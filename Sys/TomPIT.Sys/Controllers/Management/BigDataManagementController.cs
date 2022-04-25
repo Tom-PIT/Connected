@@ -63,6 +63,53 @@ namespace TomPIT.Sys.Controllers.Management
 			DataModel.BigDataNodes.Delete(token);
 		}
 		/*
+		 * Timezones
+		 */
+		[HttpGet]
+		public ImmutableList<ITimezone> QueryTimezones()
+		{
+			return DataModel.BigDataTimezones.Query();
+		}
+
+		[HttpPost]
+		public ITimezone SelectTimezone()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			return DataModel.BigDataTimezones.Select(token);
+		}
+
+		[HttpPost]
+		public Guid InsertTimezone()
+		{
+			var body = FromBody();
+			var name = body.Required<string>("name");
+			var offset = body.Required<int>("offset");
+
+			return DataModel.BigDataTimezones.Insert(name, offset);
+		}
+
+		[HttpPost]
+		public void UpdateTimezone()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+			var name = body.Required<string>("name");
+			var offset = body.Required<int>("offset");
+
+			DataModel.BigDataTimezones.Update(token, name, offset);
+		}
+
+		[HttpPost]
+		public void DeleteTimezone()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			DataModel.BigDataTimezones.Delete(token);
+		}
+		/*
 		 * Partitions
 		 */
 		[HttpGet]
@@ -129,8 +176,9 @@ namespace TomPIT.Sys.Controllers.Management
 			var body = FromBody();
 			var partition = body.Required<Guid>("partition");
 			var blockCount = body.Required<int>("blockCount");
+			var timezone = body.Optional("timezone", Guid.Empty);
 
-			return DataModel.BigDataTransactions.Insert(partition, blockCount);
+			return DataModel.BigDataTransactions.Insert(partition, timezone, blockCount);
 		}
 		[HttpPost]
 		public void DeleteTransaction()
@@ -200,8 +248,9 @@ namespace TomPIT.Sys.Controllers.Management
 			var node = body.Required<Guid>("node");
 			var key = body.Optional("key", string.Empty);
 			var timestamp = body.Optional("timeStamp", DateTime.MinValue);
+			var timezone = body.Optional("timezone", Guid.Empty);
 
-			return DataModel.BigDataPartitionFiles.Insert(partition, node, key, timestamp);
+			return DataModel.BigDataPartitionFiles.Insert(partition, node, timezone, key, timestamp);
 		}
 
 		[HttpPost]

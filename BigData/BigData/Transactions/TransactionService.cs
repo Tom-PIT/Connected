@@ -17,6 +17,7 @@ namespace TomPIT.BigData.Transactions
 {
 	internal class TransactionService : TenantObject, ITransactionService
 	{
+		private const string DefaultController = "BigDataManagement";
 		public TransactionService(ITenant tenant) : base(tenant)
 		{
 		}
@@ -25,19 +26,12 @@ namespace TomPIT.BigData.Transactions
 		{
 			var transactionBlock = Select(block);
 
-			var u = Tenant.CreateUrl("BigDataManagement", "CompleteTransactionBlock");
-			var e = new JObject
-			{
-				{"popReceipt", popReceipt }
-			};
+			Tenant.Post(CreateUrl("CompleteTransactionBlock"), new { popReceipt });
 
-			Tenant.Post(u, e);
-
-			if (transactionBlock == null)
+			if (transactionBlock is null)
 				return;
 
 			var configuration = Tenant.GetService<IComponentService>().SelectConfiguration(transactionBlock.Partition) as IPartitionConfiguration;
-			var partition = Tenant.GetService<IPartitionService>().Select(configuration);
 			var microService = Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)configuration).MicroService());
 			var blobs = Tenant.GetService<IStorageService>().Query(microService.Token, BlobTypes.BigDataTransactionBlock, microService.ResourceGroup, block.ToString());
 
@@ -50,37 +44,25 @@ namespace TomPIT.BigData.Transactions
 			if (count == 0)
 				return new List<IQueueMessage>();
 
-			var u = Tenant.CreateUrl("BigDataManagement", "DequeueTransactionBlocks");
-			var e = new JObject
+			return Tenant.Post<List<QueueMessage>>(CreateUrl("DequeueTransactionBlocks"), new
 			{
-				{"count", count },
-				{"nextVisible", 600 }
-			};
-
-			return Tenant.Post<List<QueueMessage>>(u, e).ToList<IQueueMessage>();
+				count,
+				nextVisible = 600
+			}).ToList<IQueueMessage>();
 		}
 
 		public void Ping(Guid popReceipt, TimeSpan delay)
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "PingTransactionBlock");
-			var e = new JObject
+			Tenant.Post(CreateUrl("PingTransactionBlock"), new
 			{
-				{"popReceipt", popReceipt },
-				{"nextVisible", Convert.ToInt32(delay.TotalSeconds) }
-			};
-
-			Tenant.Post(u, e);
+				popReceipt,
+				nextVisible = Convert.ToInt32(delay.TotalSeconds)
+			});
 		}
 
 		public ITransactionBlock Select(Guid token)
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "SelectTransactionBlock");
-			var e = new JObject
-			{
-				{"token", token }
-			};
-
-			return Tenant.Post<TransactionBlock>(u, e);
+			return Tenant.Post<TransactionBlock>(CreateUrl("SelectTransactionBlock"), new { token });
 		}
 
 		public void Prepare(IPartitionConfiguration partition, JArray items)
@@ -88,14 +70,14 @@ namespace TomPIT.BigData.Transactions
 			using var ctx = new MicroServiceContext(partition.MicroService(), Tenant.Url);
 			var middleware = partition.Middleware(ctx);
 
-			if (middleware == null)
-				CreateTransaction(partition, items);
+			if (middleware is null)
+				CreateTransactions(partition, items);
 			else
 			{
 				var instance = ctx.CreateMiddleware<IPartitionComponent>(middleware);
 
-				if (instance == null || !instance.Buffered)
-					CreateTransaction(partition, items);
+				if (instance is null || !instance.Buffered)
+					CreateTransactions(partition, items);
 				else
 					BufferItems(instance, partition, items);
 			}
@@ -106,31 +88,48 @@ namespace TomPIT.BigData.Transactions
 			Tenant.GetService<IBufferingService>().Enqueue(configuration.Component, middleware.BufferTimeout, items);
 		}
 
-		public void CreateTransaction(IPartitionConfiguration partition, JArray items)
+		public void CreateTransactions(IPartitionConfiguration partition, JArray items)
 		{
 			var parser = new TransactionParser(partition, items);
 
 			parser.Execute();
-
-			var transactionId = InsertTransaction(partition, parser.BlockCount);
-			var blobs = new List<Guid>();
+			
+			var supportsTimezone = partition.SupportsTimezone();
+			var timezones = supportsTimezone ? Tenant.GetService<ITimezoneService>().Query() : null;
+			var blobs = new Dictionary<Guid, List<Guid>>();
 
 			try
 			{
-				foreach (var block in parser.Blocks)
-					blobs.Add(InsertBlock(parser.MicroService.Token, transactionId, block));
+				CreateTransaction(partition, null, parser, blobs);
 
-				ActivateTransaction(transactionId);
+				if(supportsTimezone)
+				{
+					foreach (var timezone in timezones)
+						CreateTransaction(partition, timezone, parser, blobs);
+				}
+
+				foreach (var transaction in blobs)
+					ActivateTransaction(transaction.Key);
 			}
 			catch
 			{
-				DeleteTransaction(transactionId, blobs);
-
-				throw;
+				foreach (var transaction in blobs)
+					DeleteTransaction(transaction.Key, transaction.Value);
 			}
 		}
 
-		private Guid InsertTransaction(IPartitionConfiguration configuration, int blockCount)
+		private void CreateTransaction(IPartitionConfiguration partition, ITimezone timezone, TransactionParser parser, Dictionary<Guid, List<Guid>> transactions)
+		{
+			var transactionId = InsertTransaction(partition, timezone, parser.BlockCount);
+			var blocks = new List<Guid>();
+
+			transactions.Add(transactionId, blocks);
+
+			foreach (var block in parser.Blocks)
+				blocks.Add(InsertBlock(parser.MicroService.Token, transactionId, block));
+		}
+
+		private Guid InsertTransaction(IPartitionConfiguration configuration, ITimezone timezone, int blockCount)
 		{
 			var partition = Tenant.GetService<IPartitionService>().Select(configuration);
 			var u = Tenant.CreateUrl("BigDataManagement", "InsertTransaction");
@@ -190,6 +189,11 @@ namespace TomPIT.BigData.Transactions
 
 			foreach (var blob in blobs)
 				Tenant.GetService<IStorageService>().Delete(blob);
+		}
+
+		private string CreateUrl(string action)
+		{
+			return Tenant.CreateUrl(DefaultController, action);
 		}
 	}
 }

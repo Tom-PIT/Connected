@@ -763,6 +763,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Big data timezone not found.
+        /// </summary>
+        public static string ErrBigDataTimezoneNotFound {
+            get {
+                return ResourceManager.GetString("ErrBigDataTimezoneNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Big data transaction not found.
         /// </summary>
         public static string ErrBigDataTransactionNotFound {

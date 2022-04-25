@@ -63,6 +63,7 @@ namespace TomPIT.Sys.Model
 		private static readonly Lazy<BigDataTransactionBlocksModel> _bigDataTransactionBlocks = new Lazy<BigDataTransactionBlocksModel>(() => { return new BigDataTransactionBlocksModel(); });
 		private static readonly Lazy<BigDataPartitionFilesModel> _bigDataPartitionFiles = new Lazy<BigDataPartitionFilesModel>(() => { return new BigDataPartitionFilesModel(Container); });
 		private static readonly Lazy<BigDataPartitionFieldStatisticsModel> _bigDataPartitionFieldStatistics = new Lazy<BigDataPartitionFieldStatisticsModel>(() => { return new BigDataPartitionFieldStatisticsModel(Container); });
+		private static readonly Lazy<BigDataTimezonesModel> _bigDataTimezones = new Lazy<BigDataTimezonesModel>(() => { return new BigDataTimezonesModel(Container); });
 		private static readonly Lazy<DevelopmentErrorsModels> _devErrors = new Lazy<DevelopmentErrorsModels>(() => { return new DevelopmentErrorsModels(); });
 		private static readonly Lazy<QueueingModel> _queue = new Lazy<QueueingModel>(() => { return new QueueingModel(Container); });
 		private static readonly Lazy<SearchModel> _search = new Lazy<SearchModel>(() => { return new SearchModel(); });
@@ -117,6 +118,7 @@ namespace TomPIT.Sys.Model
 		public static BigDataTransactionBlocksModel BigDataTransactionBlocks => _bigDataTransactionBlocks.Value;
 		public static BigDataPartitionFilesModel BigDataPartitionFiles => _bigDataPartitionFiles.Value;
 		public static BigDataPartitionFieldStatisticsModel BigDataPartitionFieldStatistics => _bigDataPartitionFieldStatistics.Value;
+		public static BigDataTimezonesModel BigDataTimezones => _bigDataTimezones.Value;
 		public static DevelopmentErrorsModels DevelopmentErrors => _devErrors.Value;
 		public static QueueingModel Queue => _queue.Value;
 		public static SearchModel Search => _search.Value;

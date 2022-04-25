@@ -1293,4 +1293,7 @@
   <data name="ItemNone" xml:space="preserve">
     <value>None</value>
   </data>
+  <data name="ErrBigDataTimezoneNotFound" xml:space="preserve">
+    <value>Big data timezone not found</value>
+  </data>
 </root>
