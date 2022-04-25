@@ -238,12 +238,13 @@ namespace TomPIT
                 Stopped = lifetime.ApplicationStopped;
             }
 
-            app.UseAuthorization();
 
             ConfigureStaticFiles(app, env);
 
             app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
             app.UseRouting();
+
+            app.UseAuthorization();
 
             if (CorsEnabled)
                 app.UseCors("TomPITPolicy");

@@ -20,17 +20,11 @@ namespace TomPIT.UI.Theming
 		{
 			var files = new ThemeFilesProvider(Tenant, MicroService, Name);
 			var parser = new ThemeParser(Tenant);
-			var sb = new StringBuilder();
 			var fileSet = files.CreateFileSet();
-
-			//foreach (var file in fileSet.GetFileNames())
-			//sb.Append($"{parser.Parse(fileSet.GetFiles(file))}{System.Environment.NewLine}");
-
-			parser.Parse(fileSet);
 
 			return new CompiledTheme
 			{
-				Content = Minify(sb.ToString()),
+				Content = Minify(parser.Parse(fileSet)),
 				MicroService = MicroService.Token,
 				Name = Name
 			};

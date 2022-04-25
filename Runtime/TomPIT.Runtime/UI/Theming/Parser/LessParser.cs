@@ -132,11 +132,14 @@ namespace TomPIT.UI.Theming.Parser
         public LessParser(LessConfiguration config, IStylizer stylizer, IImporter importer)
             : this(config.Optimization, stylizer, importer, config.Debug)
         {
-
+            StrictMath = config.StrictMath;
         }
 
         public Ruleset Parse(string input, string fileName)
         {
+            if (string.IsNullOrWhiteSpace(input))
+                return new Root(new(), null);
+
             Ruleset root;
             FileName = fileName;
 

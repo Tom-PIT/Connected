@@ -31,7 +31,9 @@ namespace TomPIT.UI.Theming
 
         private LessConfiguration Configuration => _configuration ??= new LessConfiguration
         {
-            ImportAllFilesAsLess = false,
+            ImportAllFilesAsLess = true,
+            InlineCssFiles = true,
+            StrictMath = true,
             MinifyOutput = true,
             Logger = typeof(LessCompileLogger),
             LogLevel = Loggers.LogLevel.Warn,
@@ -52,7 +54,8 @@ namespace TomPIT.UI.Theming
                     if (rules is null)
                         rules = rs;
                     else
-                        rules.Rules.AddRange(rs.Rules);
+                        foreach (var node in rs.Rules)
+                            SynchronizeNode(rules, node);
                 }
             }
 

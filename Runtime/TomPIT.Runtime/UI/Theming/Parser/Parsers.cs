@@ -28,7 +28,6 @@
 //  first, before parsing, that's when we use `peek()`.
 //
 
-
 using System;
 using System.Text.RegularExpressions;
 
@@ -1998,7 +1997,7 @@ namespace TomPIT.UI.Theming.Parser
         /// <summary>
         ///  A repeat entity.. such as "(0.5in * *)[2]"
         /// </summary>
-        public Node RepeatPattern(Parser parser)
+        public Node RepeatPattern(LessParser parser)
         {
             if (parser.Tokenizer.Peek(@"\([^;{}\)]+\)\[")) {
                 var index = parser.Tokenizer.Location.Index;

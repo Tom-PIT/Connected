@@ -43,13 +43,11 @@
 
 			try
 			{
-				var operable = a as IOperable;
-				if (operable != null)
-					return operable.Operate(this, b).ReducedFrom<Node>(this);
-
-				throw new ParsingException(string.Format("Cannot apply operator {0} to the left hand side: {1}", Operator, a.ToCSS(env)), Location);
-			}
-			catch (DivideByZeroException e)
+                return a is IOperable operable
+                    ? operable.Operate(this, b).ReducedFrom<Node>(this)
+                    : throw new ParsingException(string.Format("Cannot apply operator {0} to the left hand side: {1}", Operator, a.ToCSS(env)), Location);
+            }
+            catch (DivideByZeroException e)
 			{
 				throw new ParsingException(e, Location);
 			}
