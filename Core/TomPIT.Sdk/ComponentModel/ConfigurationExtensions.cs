@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using TomPIT.Annotations.BigData;
 using TomPIT.BigData;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel.BigData;
@@ -11,6 +12,7 @@ using TomPIT.ComponentModel.Search;
 using TomPIT.Data;
 using TomPIT.IoT;
 using TomPIT.Middleware;
+using TomPIT.Reflection;
 using TomPIT.Search;
 using TomPIT.Serialization;
 
@@ -44,6 +46,11 @@ namespace TomPIT.ComponentModel
 		public static Type BigDataPartitionType(this IPartitionConfiguration configuration, IMiddlewareContext context)
 		{
 			return GetMiddlewareType(configuration, context, typeof(IPartitionMiddleware<>));
+		}
+
+		public static bool SupportsTimezone(this IPartitionConfiguration configuration)
+		{
+			return configuration.GetType().FindAttribute<BigDataSupportsTimezoneAttribute>() is not null;
 		}
 
 		public static Type ModelType(this IModelConfiguration configuration, IMiddlewareContext context)

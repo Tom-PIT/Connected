@@ -64,7 +64,7 @@ namespace TomPIT.Sys.Model.BigData
 			return All();
 		}
 
-		public Guid Insert(Guid partition, Guid node, string key, DateTime timestamp)
+		public Guid Insert(Guid partition, Guid node, Guid timezone, string key, DateTime timestamp)
 		{
 			var p = DataModel.BigDataPartitions.Select(partition);
 
@@ -79,15 +79,24 @@ namespace TomPIT.Sys.Model.BigData
 			if (n == null)
 				throw new SysException(SR.ErrBigDataNodeNotFound);
 
-			var file = Guid.NewGuid();
+			ITimezone tz = null;
 
+			if (timezone != Guid.Empty)
+			{
+				tz = DataModel.BigDataTimezones.Select(timezone);
+
+				if (tz is null)
+					throw new SysException(SR.ErrBigDataTimezoneNotFound);
+			}
+
+			var file = Guid.NewGuid();
 			var locker = DataModel.BigDataPartitions.RequestLock(p);
 
 			lock (locker.Sync)
 			{
 				p = DataModel.BigDataPartitions.Select(partition);
 
-				Shell.GetService<IDatabaseService>().Proxy.BigData.Partitions.InsertFile(p, n, key, timestamp, file, PartitionFileStatus.Creating);
+				Shell.GetService<IDatabaseService>().Proxy.BigData.Partitions.InsertFile(p, n, tz, key, timestamp, file, PartitionFileStatus.Creating);
 				Refresh(file);
 
 				DataModel.BigDataPartitions.Update(p.Configuration, p.Name, p.Status, Count);

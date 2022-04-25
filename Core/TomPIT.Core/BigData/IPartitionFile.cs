@@ -19,5 +19,6 @@ namespace TomPIT.BigData
 		Guid FileName { get; }
 		Guid Partition { get; }
 		string Key { get; }
+		Guid Timezone { get; }
 	}
 }

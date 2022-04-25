@@ -9,5 +9,6 @@ namespace TomPIT.BigData.Transactions
 		public Guid Partition { get; set; }
 
 		public Guid Token { get; set; }
+		public Guid Timezone { get; set; }
 	}
 }

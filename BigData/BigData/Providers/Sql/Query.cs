@@ -16,6 +16,7 @@ using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
+using TomPIT.Security;
 
 namespace TomPIT.BigData.Providers.Sql
 {
@@ -221,7 +222,21 @@ namespace TomPIT.BigData.Providers.Sql
 
 		private void ResolveFiles()
 		{
-			Files = Context.Tenant.GetService<IPartitionService>().QueryFiles(Configuration.Component, Key, StartTimestamp, EndTimestamp, IndexParameters);
+			Files = Context.Tenant.GetService<IPartitionService>().QueryFiles(Configuration.Component, ResolveTimezone(), Key, StartTimestamp, EndTimestamp, IndexParameters);
+		}
+
+		private Guid ResolveTimezone()
+		{
+			if (!Configuration.SupportsTimezone())
+				return Guid.Empty;
+
+			if(MiddlewareDescriptor.Current.User is IUser user && !string.IsNullOrWhiteSpace(user.TimeZone))
+			{
+				if (Tenant.GetService<ITimezoneService>().Select(user.TimeZone) is ITimezone timezone)
+					return timezone.Token;
+			}
+
+			return Guid.Empty;
 		}
 	}
 }
