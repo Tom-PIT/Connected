@@ -23,8 +23,10 @@ namespace TomPIT.UI.Theming
 			var sb = new StringBuilder();
 			var fileSet = files.CreateFileSet();
 
-			foreach (var file in fileSet.GetFileNames())
-				sb.Append($"{parser.Parse(fileSet.GetFiles(file))}{System.Environment.NewLine}");
+			//foreach (var file in fileSet.GetFileNames())
+			//sb.Append($"{parser.Parse(fileSet.GetFiles(file))}{System.Environment.NewLine}");
+
+			parser.Parse(fileSet);
 
 			return new CompiledTheme
 			{
