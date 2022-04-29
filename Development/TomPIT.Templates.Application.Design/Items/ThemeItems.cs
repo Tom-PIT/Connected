@@ -45,7 +45,7 @@ namespace TomPIT.MicroServices.Design.Items
 
 				foreach (var j in ds)
 				{
-					items.Add(new ItemDescriptor($"{j.Name} ({microService.Name})", $"{microService.Name}/{j.Name}"));
+					items.Add(new ItemDescriptor($"{j.Name} ({ms.Name})", $"{ms.Name}/{j.Name}"));
 				}
 			}
 
