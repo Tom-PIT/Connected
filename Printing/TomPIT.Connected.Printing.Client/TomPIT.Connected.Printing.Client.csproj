@@ -3,9 +3,9 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5</TargetFramework>
     <Configurations>Debug;Release;Development</Configurations>
-    <AssemblyVersion>2.3.426.4</AssemblyVersion>
-    <FileVersion>2.3.426.4</FileVersion>
-    <Version>2.3.426.4</Version>
+    <AssemblyVersion>2.3.429.1</AssemblyVersion>
+    <FileVersion>2.3.429.1</FileVersion>
+    <Version>2.3.429.1</Version>
   </PropertyGroup>
   <PropertyGroup>
     <AppConfig>App.$(Configuration).config</AppConfig>
