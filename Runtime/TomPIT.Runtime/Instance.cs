@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
+using Microsoft.Extensions.Options;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
@@ -82,6 +82,29 @@ namespace TomPIT
         }
         private static void InitializeServices(IServiceCollection services, ServicesConfigurationArgs e)
         {
+            services.Configure<RequestLocalizationOptions>(o => {
+                RequestLocalizationOptions = o;
+                o.DefaultRequestCulture = new RequestCulture(CultureInfo.InvariantCulture);
+                o.FallBackToParentCultures = true;
+                o.FallBackToParentUICultures = true;
+                /*
+				 * https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-3.1
+				 */
+                o.RequestCultureProviders.Insert(2, new DefaultSettingsCultureProvider());
+
+                o.RequestCultureProviders.Insert(2, new DomainCultureProvider());
+
+                o.RequestCultureProviders.Insert(1, new IdentityCultureProvider());
+
+                var instances = o.RequestCultureProviders.Where(x => x.GetType() == typeof(AcceptLanguageHeaderRequestCultureProvider)).ToList();
+                instances.ForEach(obj => o.RequestCultureProviders.Remove(obj));
+
+                if (MiddlewareDescriptor.Current?.Tenant is ITenant tenant)
+                {
+                    tenant.GetService<ILanguageService>().ApplySupportedCultures();
+                }
+            });
+
             switch (e.Authentication)
             {
                 case AuthenticationType.MultiTenant:
@@ -202,29 +225,10 @@ namespace TomPIT
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler, ConfigureMiddlewareHandler middlewareHandler = null)
         {
             RuntimeService._host = app;
+            app.UseAuthentication();
             app.UseMiddleware<AuthenticationCookieMiddleware>();
 
-            app.UseRequestLocalization(o =>
-            {
-                RequestLocalizationOptions = o;
-                o.DefaultRequestCulture = new RequestCulture(CultureInfo.InvariantCulture);
-                o.FallBackToParentCultures = true;
-                o.FallBackToParentUICultures = true;
-                /*
-				 * https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-3.1
-				 */
-                o.RequestCultureProviders.Insert(2, new DefaultSettingsCultureProvider());
-
-                o.RequestCultureProviders.Insert(2, new DomainCultureProvider());
-
-                o.RequestCultureProviders.Insert(1, new IdentityCultureProvider());
-
-                if (MiddlewareDescriptor.Current?.Tenant is ITenant tenant)
-                {
-                    tenant.GetService<ILanguageService>().ApplySupportedCultures();
-                }
-            });
-
+            app.UseRequestLocalization(app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>()?.Value);
 
             var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
 
@@ -233,17 +237,17 @@ namespace TomPIT
                 Stopping = lifetime.ApplicationStopping;
                 Stopped = lifetime.ApplicationStopped;
             }
+
+
             ConfigureStaticFiles(app, env);
 
             app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
             app.UseRouting();
 
+            app.UseAuthorization();
+
             if (CorsEnabled)
                 app.UseCors("TomPITPolicy");
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-            
 
             app.UseRequestLocalizationCookies();
             app.UseAjaxExceptionMiddleware();

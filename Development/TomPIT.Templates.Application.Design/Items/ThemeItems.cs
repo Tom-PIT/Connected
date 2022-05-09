@@ -41,13 +41,11 @@ namespace TomPIT.MicroServices.Design.Items
 				if (ms == null)
 					continue;
 
-				ds = tenant.GetService<IComponentService>().QueryComponents(ms.Token, ComponentCategories.MasterView).OrderBy(f => f.Name);
+				ds = tenant.GetService<IComponentService>().QueryComponents(ms.Token, ComponentCategories.Theme).OrderBy(f => f.Name);
 
 				foreach (var j in ds)
 				{
-					var key = string.Format("{0}/{1}", ms.Name, j.Name);
-
-					external.Add(new ItemDescriptor($"{j.Name} ({ms.Name})", key));
+					items.Add(new ItemDescriptor($"{j.Name} ({ms.Name})", $"{ms.Name}/{j.Name}"));
 				}
 			}
 
