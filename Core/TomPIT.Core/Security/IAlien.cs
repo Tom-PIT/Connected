@@ -12,5 +12,7 @@ namespace TomPIT.Security
 		Guid Token { get; }
 		Guid Language { get; }
 		string Timezone { get; }
+		string ResourceType { get; }
+		string ResourcePrimaryKey { get; }
 	}
 }

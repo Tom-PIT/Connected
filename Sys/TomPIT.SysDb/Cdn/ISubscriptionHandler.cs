@@ -16,7 +16,7 @@ namespace TomPIT.SysDb.Cdn
 		ISubscriber SelectSubscriber(ISubscription subscription, SubscriptionResourceType type, string resourcePrimaryKey);
 		ISubscriber SelectSubscriber(Guid token);
 
-		void InsertSubscriber(ISubscription subscription, Guid token, SubscriptionResourceType type, string resourcePrimaryKey);
+		void InsertSubscriber(ISubscription subscription, Guid token, SubscriptionResourceType type, string resourcePrimaryKey, List<string> tags);
 		void DeleteSubscriber(ISubscriber subscriber);
 
 		void InsertEvent(ISubscription subscription, Guid token, string name, DateTime created, string arguments);

@@ -14,6 +14,8 @@ namespace TomPIT.SysDb.Sql.Security
 		public Guid Token { get; set; }
 		public Guid Language { get; set; }
 		public string Timezone { get; set; }
+		public string ResourceType {get;set;}
+		public string ResourcePrimaryKey {get;set;}
 
 		protected override void OnCreate()
 		{
@@ -27,6 +29,8 @@ namespace TomPIT.SysDb.Sql.Security
 			Token = GetGuid("token");
 			Language = GetGuid("language_token");
 			Timezone = GetString("timezone");
+			ResourceType = GetString("resource_type");
+			ResourcePrimaryKey = GetString("resource_primary_key");
 		}
 	}
 }
