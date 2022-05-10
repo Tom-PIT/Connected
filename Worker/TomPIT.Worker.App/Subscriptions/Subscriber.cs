@@ -11,6 +11,6 @@ namespace TomPIT.Worker.Subscriptions
 		public string ResourcePrimaryKey { get; set; }
 		public Guid Token { get; set; }
 
-		public List<string> Tags {get;set;}
+		public List<string> Tags { get; set; } = new();
 	}
 }
