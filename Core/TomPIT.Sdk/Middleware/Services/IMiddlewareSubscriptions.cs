@@ -10,6 +10,7 @@ namespace TomPIT.Middleware.Services
 	{
 		bool Exists([CIP(CIP.SubscriptionProvider)] string subscription, string primaryKey, string topic);
 		void Create([CIP(CIP.SubscriptionProvider)] string subscription, string primaryKey);
+		void Delete([CIP(CIP.SubscriptionProvider)] string subscription, string primaryKey, string topic);
 		void Create([CIP(CIP.SubscriptionProvider)] string subscription, string primaryKey, string topic);
 		void TriggerEvent([CIP(CIP.SubscriptionEventProvider)] string eventName, string primaryKey);
 		void TriggerEvent([CIP(CIP.SubscriptionEventProvider)] string eventName, string primaryKey, object arguments);

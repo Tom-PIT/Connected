@@ -47,6 +47,16 @@ namespace TomPIT.Cdn
 			Tenant.Post(u, e);
 		}
 
+		public void DeleteSubscription(ISubscriptionConfiguration configuration, string primaryKey, string topic)
+		{
+			Tenant.Post(Tenant.CreateUrl("Subscription", "Delete"), new
+			{
+				handler = configuration.Component,
+				primaryKey,
+				topic
+			});
+		}
+
 		public void TriggerEvent<T>(ISubscriptionConfiguration configuration, string eventName, string primaryKey, string topic, T arguments)
 		{
 			var u = Tenant.CreateUrl("Subscription", "EnqueueEvent");

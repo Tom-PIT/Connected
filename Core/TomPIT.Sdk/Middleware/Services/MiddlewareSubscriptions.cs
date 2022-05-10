@@ -17,6 +17,15 @@ namespace TomPIT.Middleware.Services
 			Create(subscription, primaryKey, null);
 		}
 
+		public void Delete(string subscription, string primaryKey, string topic)
+		{
+			var config = ComponentDescriptor.Subscription(Context, subscription);
+
+			config.Validate();
+
+			Context.Tenant.GetService<ISubscriptionService>().DeleteSubscription(config.Configuration, primaryKey, topic);
+		}
+
 		public void Create(string subscription, string primaryKey, string topic)
 		{
 			var config = ComponentDescriptor.Subscription(Context, subscription);

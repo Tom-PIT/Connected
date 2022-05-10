@@ -24,6 +24,18 @@ namespace TomPIT.Sys.Controllers
 		}
 
 		[HttpPost]
+		public void Delete()
+		{
+			var body = FromBody();
+
+			var handler = body.Required<Guid>("handler");
+			var primaryKey = body.Required<string>("primaryKey");
+			var topic = body.Optional("topic", string.Empty);
+			
+			DataModel.Subscriptions.Delete(handler, topic, primaryKey);
+		}
+
+		[HttpPost]
 		public bool Exists()
 		{
 			var body = FromBody();

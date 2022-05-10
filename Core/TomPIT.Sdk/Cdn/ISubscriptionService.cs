@@ -8,6 +8,7 @@ namespace TomPIT.Cdn
 	{
 		bool SubscriptionExists(ISubscriptionConfiguration configuration, string primaryKey, string topic);
 		void CreateSubscription(ISubscriptionConfiguration configuration, string primaryKey, string topic);
+		void DeleteSubscription(ISubscriptionConfiguration configuration, string primaryKey, string topic);
 		void TriggerEvent<T>(ISubscriptionConfiguration configuration, string name, string primaryKey, string topic, T arguments);
 
 		ISubscription SelectSubscription(Guid token);
