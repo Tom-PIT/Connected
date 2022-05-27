@@ -39,8 +39,11 @@ namespace TomPIT.Sys.Model.Printing
 			Set(id, r, TimeSpan.Zero);
 		}
 
-		public Guid Insert(Guid component, string provider, string arguments, string user, string category)
+		public Guid Insert(Guid component, string provider, string arguments, string user, string category, int copyCount)
 		{
+			if (copyCount < 1)
+				copyCount = 1;
+
 			var token = Guid.NewGuid();
 
 			var serialNumber = 0L;
@@ -53,7 +56,7 @@ namespace TomPIT.Sys.Model.Printing
 				{ "id",token}
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Printing.Insert(token, DateTime.UtcNow, component, PrintJobStatus.Pending, provider, arguments, user, serialNumber, category);
+			Shell.GetService<IDatabaseService>().Proxy.Printing.Insert(token, DateTime.UtcNow, component, PrintJobStatus.Pending, provider, arguments, user, serialNumber, category, copyCount);
 
 			Refresh(token);
 

@@ -24,7 +24,7 @@ namespace TomPIT.Cdn
 			Tenant.Post(u, e);
 		}
 
-		public Guid Insert(string provider, IPrinter printer, Guid component, object arguments, string user, string category)
+		public Guid Insert(string provider, IPrinter printer, Guid component, object arguments, string user, string category, int copyCount)
 		{
 			var u = Tenant.CreateUrl("Printing", "Insert");
 			var args = new JObject();
@@ -40,6 +40,7 @@ namespace TomPIT.Cdn
 				{"component", component },
 				{"user", user },
 				{"category", category },
+				{"copyCount", copyCount },
 				{"arguments",  Serializer.Serialize(args)}
 			};
 

@@ -16,8 +16,9 @@ namespace TomPIT.Sys.Controllers
 			var user = body.Optional("user", string.Empty);
 			var arguments = body.Optional<string>("arguments", null);
 			var category = body.Optional("category", string.Empty);
+			var copyCount = body.Optional("copyCount", 1);
 
-			return DataModel.Printing.Insert(component, provider, arguments, user, category);
+			return DataModel.Printing.Insert(component, provider, arguments, user, category, copyCount);
 		}
 
 		[HttpPost]

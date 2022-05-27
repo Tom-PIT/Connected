@@ -27,7 +27,7 @@ namespace TomPIT.SysDb.Sql.Printing
 			w.Execute();
 		}
 
-		public void Insert(Guid token, DateTime created, Guid component, PrintJobStatus status, string provider, string arguments, string user, long serialNumber, string category)
+		public void Insert(Guid token, DateTime created, Guid component, PrintJobStatus status, string provider, string arguments, string user, long serialNumber, string category, int copyCount)
 		{
 			using var w = new Writer("tompit.print_job_ins");
 
@@ -40,6 +40,7 @@ namespace TomPIT.SysDb.Sql.Printing
 			w.CreateParameter("@user", user, true);
 			w.CreateParameter("@serial_number", serialNumber, true);
 			w.CreateParameter("@category", category, true);
+			w.CreateParameter("@copy_count", copyCount);
 
 			w.Execute();
 		}

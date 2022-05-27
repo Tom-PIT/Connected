@@ -21,7 +21,7 @@ namespace TomPIT.SysDb.Sql.Printing
 		public string Category { get; set; }
 
 		public string User {get;set;}
-
+		public int CopyCount { get; set; }
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -36,6 +36,7 @@ namespace TomPIT.SysDb.Sql.Printing
 			User = GetString("user");
 			SerialNumber = GetLong("serial_number");
 			Category = GetString("category");
+			CopyCount = GetInt("copy_count");
 		}
 	}
 }
