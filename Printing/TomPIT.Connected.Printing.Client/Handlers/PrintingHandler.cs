@@ -250,7 +250,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                         }
                         else
                         {
-                            for (int i = 0; i < job.CopyCount)
+                            for (int i = 0; i < job.CopyCount; i++)
                             {
                                 print.Print(printerName);
                             }
