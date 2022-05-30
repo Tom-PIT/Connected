@@ -44,6 +44,43 @@ namespace TomPIT.Serialization
 			return Types.Convert<R>(value);
 		}
 
+		public static object Convert(object value, Type destinationType)
+		{
+			if (value == null)
+				return Types.Convert(value, destinationType);
+
+			if (NeedsMarshalling(value, destinationType))
+			{
+				if (value is DataEntity de && destinationType.ImplementsInterface<DataEntity>())
+				{
+					var rtype = destinationType;
+					var instance = rtype.IsValueType ? rtype.DefaultValue() as IDataEntity : rtype.CreateInstance() as IDataEntity;
+
+					instance.Deserialize(de);
+
+					return instance;
+				}
+				else
+					return Serializer.Deserialize(Serializer.Serialize(value), destinationType);
+			}
+			else if (destinationType == typeof(JArray))
+			{
+				if (value is JArray)
+					return value;
+
+				return Types.Convert(Serializer.Deserialize<JArray>(Serializer.Serialize(value)), destinationType);
+			}
+			else if (destinationType == typeof(JObject))
+			{
+				if (value is JObject)
+					return value;
+
+				return Types.Convert(Serializer.Deserialize<JObject>(Serializer.Serialize(value)), destinationType);
+			}
+
+			return Types.Convert(value, destinationType);
+		}
+
 		public static bool NeedsMarshalling(object instance, Type type)
 		{
 			if (type == null)
@@ -69,8 +106,7 @@ namespace TomPIT.Serialization
 
 		public static bool IsSubmission(object instance, Type type)
 		{
-			return (string.IsNullOrWhiteSpace(type.Namespace) && string.IsNullOrWhiteSpace(instance.GetType().Namespace))
-				&& string.Compare(type.Assembly.FullName, instance.GetType().Assembly.FullName, false) != 0;
+			return IsSubmission(instance.GetType(), type);
 		}
 
 		public static bool IsSubmission(Type instanceType, Type type)
