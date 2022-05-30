@@ -88,7 +88,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                 else
                 {
                     Logging.Debug($"Connection closed due to error: {error}. Connection will attempt to restart.");
-                    
+
                     await Task.Delay(5000);
                     await _connection.StartAsync();
                     await RegisterPrinters();
@@ -235,9 +235,28 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                         var print = new PrintToolBase(report.PrintingSystem);
 
                         Logging.Trace("Starting printing...");
-                        print.Print(printerName);
-                        Logging.Trace("Printing done...");
+                        if (OperatingSystem.IsWindows())
+                        {
+                            while (job.CopyCount > 0)
+                            {
 
+                                print.PrinterSettings.Copies = (short)Math.Min(job.CopyCount, short.MaxValue);
+
+                                print.Print(printerName);
+
+                                job.CopyCount -= short.MaxValue;
+                            }
+
+                        }
+                        else
+                        {
+                            for (int i = 0; i < job.CopyCount)
+                            {
+                                print.Print(printerName);
+                            }
+                        }
+
+                        Logging.Trace("Printing done...");
                     }
                     catch (Exception ex)
                     {
@@ -335,9 +354,9 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             await Start();
 
             var taskCompletionSource = new TaskCompletionSource<bool>();
-            
+
             stoppingToken.Register(async s =>
-            {   
+            {
                 ((TaskCompletionSource<bool>)s).SetResult(true);
             }, taskCompletionSource);
 
