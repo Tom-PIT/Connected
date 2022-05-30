@@ -32,9 +32,7 @@ namespace TomPIT.MicroServices.Design.Items
 
 			foreach (var connection in connections)
 			{
-				var key = $"{ms.Name}/{connection.Name}";
-
-				items.Add(new ItemDescriptor($"{connection.Name} ({ms.Name})", key));
+				items.Add(new ItemDescriptor($"{connection.Name} ({ms.Name})", connection.Token));
 			}
 		}
 	}

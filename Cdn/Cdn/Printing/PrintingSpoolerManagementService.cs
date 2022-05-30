@@ -35,7 +35,7 @@ namespace TomPIT.Cdn.Printing
 			});
 		}
 
-		public Guid Insert(string mime, string printer, string content, long serialNumber, Guid identity)
+		public Guid Insert(string mime, string printer, string content, long serialNumber, Guid identity, long copyCount = 1)
 		{
 			return MiddlewareDescriptor.Current.Tenant.Post<Guid>(CreateUrl("InsertSpooler"), new
 			{
@@ -43,7 +43,8 @@ namespace TomPIT.Cdn.Printing
 				printer,
 				content,
 				serialNumber,
-				identity
+				identity,
+				copyCount
 			});
 		}
 
