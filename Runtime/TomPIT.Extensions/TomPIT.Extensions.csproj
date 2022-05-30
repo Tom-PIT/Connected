@@ -8,9 +8,9 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>2.3.530.2</AssemblyVersion>
-    <FileVersion>2.3.530.2</FileVersion>
-    <Version>2.3.530.2</Version>
+    <AssemblyVersion>2.3.530.3</AssemblyVersion>
+    <FileVersion>2.3.530.3</FileVersion>
+    <Version>2.3.530.3</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
