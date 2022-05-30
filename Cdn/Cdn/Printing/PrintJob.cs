@@ -77,7 +77,7 @@ namespace TomPIT.Cdn.Printing
                     var report = provider.Create(job);
 
                     if (report is not null)
-                        MiddlewareDescriptor.Current.Tenant.GetService<IPrintingSpoolerManagementService>().Insert(report.MimeType, printer.Name, Convert.ToBase64String(report.Content), job.SerialNumber, ResolveUserToken(job.User));
+                        MiddlewareDescriptor.Current.Tenant.GetService<IPrintingSpoolerManagementService>().Insert(report.MimeType, printer.Name, Convert.ToBase64String(report.Content), job.SerialNumber, ResolveUserToken(job.User), job.CopyCount);
                 }
             }
             catch (Exception ex)
