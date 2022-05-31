@@ -41,7 +41,7 @@ namespace TomPIT.SysDb.Sql.BigData
 			w.Execute();
 		}
 
-		public void InsertFile(IPartition partition, INode node, ITimezone timezone, string key, DateTime timestamp, Guid fileToken, PartitionFileStatus status)
+		public void InsertFile(IPartition partition, INode node, ITimeZone timezone, string key, DateTime timestamp, Guid fileToken, PartitionFileStatus status)
 		{
 			using var w = new Writer("tompit.big_data_index_ins");
 

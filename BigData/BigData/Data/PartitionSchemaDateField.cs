@@ -9,10 +9,7 @@ namespace TomPIT.BigData.Data
 
 		public override void Initialize()
 		{
-			if (Attributes.Count == 0)
-				return;
-
-			if (!(Attributes.FirstOrDefault(f => f is BigDataTimestampPrecisionAttribute) is BigDataTimestampPrecisionAttribute precision))
+			if (Attributes?.FirstOrDefault(f => f is BigDataTimestampPrecisionAttribute) is not BigDataTimestampPrecisionAttribute precision)
 				return;
 
 			Precision = precision.Precision;

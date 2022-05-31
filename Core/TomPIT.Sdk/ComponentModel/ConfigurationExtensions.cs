@@ -50,7 +50,8 @@ namespace TomPIT.ComponentModel
 
 		public static bool SupportsTimezone(this IPartitionConfiguration configuration)
 		{
-			return configuration.GetType().FindAttribute<BigDataSupportsTimezoneAttribute>() is not null;
+			var type = Tenant.GetService<ICompilerService>().ResolveType(configuration.MicroService(), configuration, configuration.ComponentName());
+			return type.FindAttribute<BigDataSupportsTimeZoneAttribute>() is not null;
 		}
 
 		public static Type ModelType(this IModelConfiguration configuration, IMiddlewareContext context)

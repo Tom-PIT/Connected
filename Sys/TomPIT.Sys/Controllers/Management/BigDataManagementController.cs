@@ -66,48 +66,48 @@ namespace TomPIT.Sys.Controllers.Management
 		 * Timezones
 		 */
 		[HttpGet]
-		public ImmutableList<ITimezone> QueryTimezones()
+		public ImmutableList<ITimeZone> QueryTimeZones()
 		{
-			return DataModel.BigDataTimezones.Query();
+			return DataModel.BigDataTimeZones.Query();
 		}
 
 		[HttpPost]
-		public ITimezone SelectTimezone()
+		public ITimeZone SelectTimeZone()
 		{
 			var body = FromBody();
 			var token = body.Required<Guid>("token");
 
-			return DataModel.BigDataTimezones.Select(token);
+			return DataModel.BigDataTimeZones.Select(token);
 		}
 
 		[HttpPost]
-		public Guid InsertTimezone()
+		public Guid InsertTimeZone()
 		{
 			var body = FromBody();
 			var name = body.Required<string>("name");
 			var offset = body.Required<int>("offset");
 
-			return DataModel.BigDataTimezones.Insert(name, offset);
+			return DataModel.BigDataTimeZones.Insert(name, offset);
 		}
 
 		[HttpPost]
-		public void UpdateTimezone()
+		public void UpdateTimeZone()
 		{
 			var body = FromBody();
 			var token = body.Required<Guid>("token");
 			var name = body.Required<string>("name");
 			var offset = body.Required<int>("offset");
 
-			DataModel.BigDataTimezones.Update(token, name, offset);
+			DataModel.BigDataTimeZones.Update(token, name, offset);
 		}
 
 		[HttpPost]
-		public void DeleteTimezone()
+		public void DeleteTimeZone()
 		{
 			var body = FromBody();
 			var token = body.Required<Guid>("token");
 
-			DataModel.BigDataTimezones.Delete(token);
+			DataModel.BigDataTimeZones.Delete(token);
 		}
 		/*
 		 * Partitions

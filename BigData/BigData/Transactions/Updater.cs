@@ -267,7 +267,7 @@ namespace TomPIT.BigData.Transactions
 						{
 							if (Schema.SupportsTimezone && Block.Timezone != Guid.Empty)
 							{
-								var timezone = Tenant.GetService<ITimezoneService>().Select(Block.Timezone);
+								var timezone = Tenant.GetService<ITimeZoneService>().Select(Block.Timezone);
 
 								if (timezone is not null)
 									timeStampValue = timeStampValue.AddMinutes(timezone.Offset);

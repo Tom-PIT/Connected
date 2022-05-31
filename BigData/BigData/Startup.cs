@@ -63,7 +63,7 @@ namespace TomPIT.BigData
 			e.Tenant.RegisterService(typeof(IPersistenceService), typeof(SqlPersistenceService));
 			e.Tenant.RegisterService(typeof(IPartitionMaintenanceService), typeof(PartitionMaintenanceService));
 			e.Tenant.RegisterService(typeof(IBufferingService), typeof(BufferingService));
-			e.Tenant.RegisterService(typeof(ITimezoneService), typeof(TimezoneService));
+			e.Tenant.RegisterService(typeof(ITimeZoneService), typeof(TimeZoneService));
 
 			e.Tenant.Items.TryAdd("bigdataClient", new BigDataClient(e.Tenant, e.Tenant.AuthenticationToken));
 		}

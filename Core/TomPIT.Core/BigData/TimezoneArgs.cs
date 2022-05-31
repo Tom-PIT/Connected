@@ -2,13 +2,13 @@
 
 namespace TomPIT.BigData
 {
-	public class TimezoneArgs : EventArgs
+	public class TimeZoneArgs : EventArgs
 	{
-		public TimezoneArgs(Guid timezone)
+		public TimeZoneArgs(Guid timeZone)
 		{
-			Timezone = timezone;
+			TimeZone = timeZone;
 		}
 
-		public Guid Timezone { get; }
+		public Guid TimeZone { get; }
 	}
 }

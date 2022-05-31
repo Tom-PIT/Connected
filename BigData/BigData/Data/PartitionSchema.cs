@@ -103,10 +103,9 @@ namespace TomPIT.BigData.Data
 				field.Key = IsKey(property);
 				field.Index = IsIndex(property);
 
-				var aggregate = property.FindAttribute<BigDataAggregateAttribute>();
+				var attributes = property.GetCustomAttributes().Where(e=> e.GetType().Name.StartsWith("BigData"));
 
-				if (aggregate != null)
-					field.Attributes.Add(aggregate);
+				field.Attributes.AddRange(attributes);
 
 				Fields.Add(field);
 

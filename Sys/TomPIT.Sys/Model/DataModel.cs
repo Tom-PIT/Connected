@@ -118,7 +118,7 @@ namespace TomPIT.Sys.Model
 		public static BigDataTransactionBlocksModel BigDataTransactionBlocks => _bigDataTransactionBlocks.Value;
 		public static BigDataPartitionFilesModel BigDataPartitionFiles => _bigDataPartitionFiles.Value;
 		public static BigDataPartitionFieldStatisticsModel BigDataPartitionFieldStatistics => _bigDataPartitionFieldStatistics.Value;
-		public static BigDataTimezonesModel BigDataTimezones => _bigDataTimezones.Value;
+		public static BigDataTimezonesModel BigDataTimeZones => _bigDataTimezones.Value;
 		public static DevelopmentErrorsModels DevelopmentErrors => _devErrors.Value;
 		public static QueueingModel Queue => _queue.Value;
 		public static SearchModel Search => _search.Value;

@@ -100,25 +100,25 @@ namespace TomPIT.BigData.Connectivity
 				Tenant.GetService<IPartitionService>().NotifyFieldStatisticChanged(e.Args.File, e.Args.FieldName);
 			});
 
-			Hub.On<MessageEventArgs<TimezoneArgs>>("TimezoneChanged", (e) =>
+			Hub.On<MessageEventArgs<TimeZoneArgs>>("TimezoneChanged", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				Tenant.GetService<ITimezoneService>().NotifyChanged(e.Args.Timezone);
+				Tenant.GetService<ITimeZoneService>().NotifyChanged(e.Args.TimeZone);
 			});
 
-			Hub.On<MessageEventArgs<TimezoneArgs>>("TimezoneAdded", (e) =>
+			Hub.On<MessageEventArgs<TimeZoneArgs>>("TimezoneAdded", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				Tenant.GetService<ITimezoneService>().NotifyChanged(e.Args.Timezone);
+				Tenant.GetService<ITimeZoneService>().NotifyChanged(e.Args.TimeZone);
 			});
 
-			Hub.On<MessageEventArgs<TimezoneArgs>>("TimezoneRemoved", (e) =>
+			Hub.On<MessageEventArgs<TimeZoneArgs>>("TimezoneRemoved", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				Tenant.GetService<ITimezoneService>().NotifyRemoved(e.Args.Timezone);
+				Tenant.GetService<ITimeZoneService>().NotifyRemoved(e.Args.TimeZone);
 			});
 		}
 	}

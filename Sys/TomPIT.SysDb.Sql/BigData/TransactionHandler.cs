@@ -27,7 +27,7 @@ namespace TomPIT.SysDb.Sql.BigData
 			w.Execute();
 		}
 
-		public void Insert(IPartition partition, ITimezone timezone, Guid token, int blockCount, DateTime created)
+		public void Insert(IPartition partition, ITimeZone timezone, Guid token, int blockCount, DateTime created)
 		{
 			using var w = new Writer("tompit.big_data_transaction_ins");
 

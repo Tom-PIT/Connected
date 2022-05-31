@@ -70,11 +70,11 @@ namespace TomPIT.Sys.Model.BigData
 			if (part is null)
 				throw new SysException(SR.ErrBigDataPartitionNotFound);
 
-			ITimezone tz = null;
+			ITimeZone tz = null;
 
 			if (timezone != Guid.Empty)
 			{
-				tz = DataModel.BigDataTimezones.Select(timezone);
+				tz = DataModel.BigDataTimeZones.Select(timezone);
 
 				if (tz is null)
 					throw new SysException(SR.ErrBigDataTimezoneNotFound);

@@ -49,8 +49,8 @@ namespace TomPIT.Sys.Notifications
 		public static void PartitionFileRemoved(Guid configuration) { Notify(nameof(PartitionFileRemoved), new PartitionFileArgs(configuration)); }
 		public static void PartitionFileAdded(Guid configuration) { Notify(nameof(PartitionFileAdded), new PartitionFileArgs(configuration)); }
 		public static void PartitionFieldStatisticsChanged(Guid file, string fieldName) { Notify(nameof(PartitionFieldStatisticsChanged), new PartitionFieldStatisticArgs(file, fieldName)); }
-		public static void TimezoneChanged(Guid token) { Notify(nameof(TimezoneChanged), new TimezoneArgs(token)); }
-		public static void TimezoneRemoved(Guid token) { Notify(nameof(TimezoneRemoved), new TimezoneArgs(token)); }
-		public static void TimezoneAdded(Guid token) { Notify(nameof(TimezoneAdded), new TimezoneArgs(token)); }
+		public static void TimezoneChanged(Guid token) { Notify(nameof(TimezoneChanged), new TimeZoneArgs(token)); }
+		public static void TimezoneRemoved(Guid token) { Notify(nameof(TimezoneRemoved), new TimeZoneArgs(token)); }
+		public static void TimezoneAdded(Guid token) { Notify(nameof(TimezoneAdded), new TimeZoneArgs(token)); }
 	}
 }

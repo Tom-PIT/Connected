@@ -95,7 +95,7 @@ namespace TomPIT.BigData.Transactions
 			parser.Execute();
 			
 			var supportsTimezone = partition.SupportsTimezone();
-			var timezones = supportsTimezone ? Tenant.GetService<ITimezoneService>().Query() : null;
+			var timezones = supportsTimezone ? Tenant.GetService<ITimeZoneService>().Query() : null;
 			var blobs = new Dictionary<Guid, List<Guid>>();
 
 			try
@@ -118,7 +118,7 @@ namespace TomPIT.BigData.Transactions
 			}
 		}
 
-		private void CreateTransaction(IPartitionConfiguration partition, ITimezone timezone, TransactionParser parser, Dictionary<Guid, List<Guid>> transactions)
+		private void CreateTransaction(IPartitionConfiguration partition, ITimeZone timezone, TransactionParser parser, Dictionary<Guid, List<Guid>> transactions)
 		{
 			var transactionId = InsertTransaction(partition, timezone, parser.BlockCount);
 			var blocks = new List<Guid>();
@@ -129,7 +129,7 @@ namespace TomPIT.BigData.Transactions
 				blocks.Add(InsertBlock(parser.MicroService.Token, transactionId, block));
 		}
 
-		private Guid InsertTransaction(IPartitionConfiguration configuration, ITimezone timezone, int blockCount)
+		private Guid InsertTransaction(IPartitionConfiguration configuration, ITimeZone timezone, int blockCount)
 		{
 			var partition = Tenant.GetService<IPartitionService>().Select(configuration);
 			var u = Tenant.CreateUrl("BigDataManagement", "InsertTransaction");
@@ -138,6 +138,11 @@ namespace TomPIT.BigData.Transactions
 				{"partition", partition.Configuration},
 				{"blockCount", blockCount }
 			};
+
+			if(timezone is not null) 
+			{
+				e["timezone"] = timezone.Token;
+			}
 
 			return Tenant.Post<Guid>(u, e);
 		}

@@ -3,7 +3,7 @@
 namespace TomPIT.Annotations.BigData
 {
 	[AttributeUsage(AttributeTargets.Class)]
-	public sealed class BigDataSupportsTimezoneAttribute : Attribute
+	public sealed class BigDataSupportsTimeZoneAttribute : Attribute
 	{
 	}
 }

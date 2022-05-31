@@ -232,7 +232,7 @@ namespace TomPIT.BigData.Providers.Sql
 
 			if(MiddlewareDescriptor.Current.User is IUser user && !string.IsNullOrWhiteSpace(user.TimeZone))
 			{
-				if (Tenant.GetService<ITimezoneService>().Select(user.TimeZone) is ITimezone timezone)
+				if (Tenant.GetService<ITimeZoneService>().Select(user.TimeZone) is ITimeZone timezone)
 					return timezone.Token;
 			}
 

@@ -11,7 +11,7 @@ namespace TomPIT.Security
 		string Phone { get; }
 		Guid Token { get; }
 		Guid Language { get; }
-		string Timezone { get; }
+		string TimeZone { get; }
 		string ResourceType { get; }
 		string ResourcePrimaryKey { get; }
 	}

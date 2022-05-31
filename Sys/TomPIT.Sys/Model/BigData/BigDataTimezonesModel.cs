@@ -7,7 +7,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.BigData
 {
-	internal class BigDataTimezonesModel : SynchronizedRepository<ITimezone, Guid>
+	internal class BigDataTimezonesModel : SynchronizedRepository<ITimeZone, Guid>
 	{
 		public BigDataTimezonesModel(IMemoryCache container) : base(container, "bigdatatimezones")
 		{
@@ -15,7 +15,7 @@ namespace TomPIT.Sys.Model.BigData
 
 		protected override void OnInitializing()
 		{
-			var ds = Shell.GetService<IDatabaseService>().Proxy.BigData.Timezones.Query();
+			var ds = Shell.GetService<IDatabaseService>().Proxy.BigData.TimeZones.Query();
 
 			foreach (var i in ds)
 				Set(i.Token, i, TimeSpan.Zero);
@@ -23,7 +23,7 @@ namespace TomPIT.Sys.Model.BigData
 
 		protected override void OnInvalidate(Guid id)
 		{
-			var r = Shell.GetService<IDatabaseService>().Proxy.BigData.Timezones.Select(id);
+			var r = Shell.GetService<IDatabaseService>().Proxy.BigData.TimeZones.Select(id);
 
 			if (r == null)
 			{
@@ -34,12 +34,12 @@ namespace TomPIT.Sys.Model.BigData
 			Set(id, r, TimeSpan.Zero);
 		}
 
-		public ITimezone Select(Guid token)
+		public ITimeZone Select(Guid token)
 		{
 			return Get(token);
 		}
 
-		public ImmutableList<ITimezone> Query()
+		public ImmutableList<ITimeZone> Query()
 		{
 			return All();
 		}
@@ -48,7 +48,7 @@ namespace TomPIT.Sys.Model.BigData
 		{
 			var id = Guid.NewGuid();
 
-			Shell.GetService<IDatabaseService>().Proxy.BigData.Timezones.Insert(id, name, offset);
+			Shell.GetService<IDatabaseService>().Proxy.BigData.TimeZones.Insert(id, name, offset);
 
 			Refresh(id);
 			BigDataNotifications.TimezoneAdded(id);
@@ -63,7 +63,7 @@ namespace TomPIT.Sys.Model.BigData
 			if (timezone is null)
 				throw new SysException(SR.ErrBigDataTimezoneNotFound);
 
-			Shell.GetService<IDatabaseService>().Proxy.BigData.Timezones.Update(timezone, name, offset);
+			Shell.GetService<IDatabaseService>().Proxy.BigData.TimeZones.Update(timezone, name, offset);
 
 			Refresh(timezone.Token);
 			BigDataNotifications.TimezoneChanged(timezone.Token);
@@ -76,7 +76,7 @@ namespace TomPIT.Sys.Model.BigData
 			if (timezone is null)
 				throw new SysException(SR.ErrBigDataTimezoneNotFound);
 
-			Shell.GetService<IDatabaseService>().Proxy.BigData.Timezones.Delete(timezone);
+			Shell.GetService<IDatabaseService>().Proxy.BigData.TimeZones.Delete(timezone);
 
 			Refresh(timezone.Token);
 			BigDataNotifications.TimezoneRemoved(timezone.Token);

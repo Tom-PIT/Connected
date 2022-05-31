@@ -13,7 +13,7 @@ namespace TomPIT.SysDb.Sql.Security
 		public string Phone { get; set; }
 		public Guid Token { get; set; }
 		public Guid Language { get; set; }
-		public string Timezone { get; set; }
+		public string TimeZone { get; set; }
 		public string ResourceType {get;set;}
 		public string ResourcePrimaryKey {get;set;}
 
@@ -28,7 +28,7 @@ namespace TomPIT.SysDb.Sql.Security
 			Phone = GetString("phone");
 			Token = GetGuid("token");
 			Language = GetGuid("language_token");
-			Timezone = GetString("timezone");
+			TimeZone = GetString("timezone");
 			ResourceType = GetString("resource_type");
 			ResourcePrimaryKey = GetString("resource_primary_key");
 		}
