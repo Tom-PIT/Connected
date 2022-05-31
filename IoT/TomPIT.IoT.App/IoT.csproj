@@ -9,9 +9,9 @@
     <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>TomPIT.Connected.IoT</AssemblyName>
     <RootNamespace>TomPIT.IoT</RootNamespace>
-    <AssemblyVersion>2.3.531.1</AssemblyVersion>
-    <FileVersion>2.3.531.1</FileVersion>
-    <Version>2.3.531.1</Version>
+    <AssemblyVersion>2.3.601.1</AssemblyVersion>
+    <FileVersion>2.3.601.1</FileVersion>
+    <Version>2.3.601.1</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
