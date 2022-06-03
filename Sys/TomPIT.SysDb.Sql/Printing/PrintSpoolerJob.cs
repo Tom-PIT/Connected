@@ -16,6 +16,8 @@ namespace TomPIT.SysDb.Sql.Printing
 
 		public string Printer { get; set; }
 
+		public int CopyCount { get; set; }
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -25,6 +27,7 @@ namespace TomPIT.SysDb.Sql.Printing
 			Content = Convert.ToBase64String(GetValue<byte[]>("content", null));
 			Printer = GetString("printer");
 			Identity = GetGuid("identity");
+			CopyCount = GetInt("copy_count");
 		}
 	}
 }

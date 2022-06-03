@@ -9,5 +9,6 @@ namespace TomPIT.Cdn
 		string Mime { get; }
 		string Content { get; }
 		string Printer { get; }
+		int CopyCount { get; }		
 	}
 }

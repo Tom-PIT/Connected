@@ -14,5 +14,7 @@ namespace TomPIT.Cdn.Controllers
 
 		public string Printer { get; set; }
 
+		public int CopyCount { get; set; }
+
     }
 }
