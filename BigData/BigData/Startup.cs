@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,7 +11,10 @@ using TomPIT.BigData.Persistence;
 using TomPIT.BigData.Providers.Sql;
 using TomPIT.BigData.Transactions;
 using TomPIT.Connectivity;
+using TomPIT.Diagnostics;
+using TomPIT.Diagnostics.Tracing;
 using TomPIT.Environment;
+using TomPIT.Middleware;
 using TomPIT.Runtime;
 
 namespace TomPIT.BigData
@@ -42,7 +46,17 @@ namespace TomPIT.BigData
 		{
 			Instance.Configure(app, env, (f) =>
 			{
-				BigData.Configuration.Routing.Register(f.Builder);
+				f.Builder.MapHub<TraceHub>("hubs/tracing");
+				BigData.Configuration.Routing.Register(f.Builder);				
+			}, 
+			(f)=>
+			{
+				var traceHubContext = f.Builder.ApplicationServices.GetRequiredService<IHubContext<TraceHub>>();
+
+				var traceService = MiddlewareDescriptor.Current.Tenant.GetService<ITraceService>();
+
+				traceService.TraceReceived += async (s, e) => await TraceHub.Trace(traceHubContext, e);
+				traceService.TraceReceived += async (s, e) => Tenant.GetService<ILoggingService>().Dump($"{e.Endpoint.Identifier} {e.Content}");
 			});
 
 			Instance.Run(app, env);
@@ -57,6 +71,7 @@ namespace TomPIT.BigData
 
 		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
+			e.Tenant.RegisterService(typeof(ITraceService), typeof(TraceService));
 			e.Tenant.RegisterService(typeof(INodeService), typeof(NodeService));
 			e.Tenant.RegisterService(typeof(ITransactionService), typeof(TransactionService));
 			e.Tenant.RegisterService(typeof(IPartitionService), typeof(PartitionService));
