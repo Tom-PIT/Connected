@@ -40,7 +40,12 @@ namespace TomPIT.BigData
 			Instance.InitializeShellServices();
 
 			RegisterTasks(services);
-		}
+
+            services.AddSignalR(o =>
+            {
+                o.EnableDetailedErrors = true;
+            }).AddNewtonsoftJsonProtocol();
+        }
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{

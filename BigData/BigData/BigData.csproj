@@ -18,6 +18,7 @@
     <None Remove="Security\**" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="microsoft.aspnetcore.signalr.protocols.newtonsoftjson" Version="5.0.4" />
     <PackageReference Include="protobuf-net" Version="3.0.101" />
   </ItemGroup>
   <ItemGroup>
