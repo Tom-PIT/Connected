@@ -11,6 +11,7 @@ namespace TomPIT.MicroServices.IoC
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.IocEndpoint, TomPIT.MicroServices.Design")]
 	[ClassRequired]
 	public class IoCEndpoint : TextElement, IIoCEndpoint
 	{

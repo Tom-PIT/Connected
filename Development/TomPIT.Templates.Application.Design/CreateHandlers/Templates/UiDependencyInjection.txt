@@ -1,0 +1,18 @@
+﻿using TomPIT.IoC;
+using System.Collections.Generic;
+ 
+public class UiDependencyInjection : UIDependencyInjectionMiddleware
+{
+    protected override List<IUIDependencyDescriptor> OnInvoke()
+    {
+        return new List<IUIDependencyDescriptor>
+        {
+            new UIDependencyDescriptor
+            {
+                InjectionMode = UIInjectionMode.After,
+                Partial = "",          
+                Selector = "",
+            }
+        };
+    }
+}

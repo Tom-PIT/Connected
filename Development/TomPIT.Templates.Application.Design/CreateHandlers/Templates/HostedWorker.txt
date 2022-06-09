@@ -1,0 +1,12 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using TomPIT.Data;
+using TomPIT.Distributed;
+
+public class [NAME]: HostedWorkerMiddleware 
+{
+    protected override void OnInvoke()
+    {
+    }
+}

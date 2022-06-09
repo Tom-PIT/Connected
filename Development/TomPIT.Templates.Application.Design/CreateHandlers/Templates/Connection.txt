@@ -2,12 +2,12 @@
 
 public class [NAME] : ConnectionMiddleware
 {
-	protected override IConnectionString OnInvoke()
-	{
-		return new ConnectionString
-		{
-			DataProvider = ResolveProvider("Microsoft SQL Server"),
-			Value = "data source=; initial catalog=;user id=; password=;"
-		};
-	}
+   protected override IConnectionString OnInvoke()
+   {
+      return new ConnectionString
+      {
+         DataProvider = ResolveProvider("Microsoft SQL Server"),
+         Value = "data source=; initial catalog=;user id=; password=;"
+      };
+   }
 }

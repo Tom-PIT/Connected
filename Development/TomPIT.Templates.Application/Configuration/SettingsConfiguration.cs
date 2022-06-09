@@ -11,6 +11,7 @@ namespace TomPIT.MicroServices.Configuration
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
 	[Manifest(DesignUtils.SettingsManifest)]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.Settings, TomPIT.MicroServices.Design")]
 	[ClassRequired]
 	public class SettingsConfiguration : TextConfiguration, ISettingsConfiguration
 	{

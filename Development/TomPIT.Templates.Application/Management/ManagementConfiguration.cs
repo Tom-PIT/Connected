@@ -9,6 +9,7 @@ namespace TomPIT.MicroServices.Management
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.Management, TomPIT.MicroServices.Design")]
 	[ClassRequired]
 	public class ManagementConfiguration : TextConfiguration, IManagementConfiguration
 	{

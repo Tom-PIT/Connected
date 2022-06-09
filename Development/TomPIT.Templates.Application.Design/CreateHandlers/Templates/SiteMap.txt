@@ -1,0 +1,65 @@
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Routing;
+using TomPIT.Collections;
+using TomPIT.Navigation;
+using TomPIT.Middleware;
+using TomPIT.Serialization;
+
+public class [NAME] : SiteMapMiddleware
+{
+   public const string Key = "areaKey";
+   public const string Tag = "areaTag";
+
+   protected override List<ISiteMapContainer> OnInvoke(string key)
+   {
+      return new List<ISiteMapContainer>
+        {
+            ContainerRoutes(true)
+        };
+   }
+
+   protected override List<INavigationContext> OnQueryContexts()
+   {
+      return new List<INavigationContext>
+      {
+         new NavigationContext
+         {
+            BreadcrumbKey = $"{Key}.management",
+            MenuKey = $"{Key}.management",
+            Key = $"{Key}Management"
+         }
+      };
+   }
+
+   private ISiteMapContainer ContainerRoutes(bool includeResolverRoutes = false)
+   {
+      var container = new SiteMapViewContainer
+      {
+         Key = Key,
+         Tags = Tag,
+         SpeculativeRouteKey = Key,
+         View = "UI/Sitemap",
+         Parameters = new
+         {
+            keys = Key
+         },
+         Text = "Sitemap container",
+         Visible = true,
+         Css = "tp-bg-amber",
+         NavigationContextBehavior = NavigationContextBehavior.Ignore
+      }.WithRoutes
+      (
+          // dashboard
+          new SiteMapViewRoute
+          {
+             RouteKey = $"{Key}.subroute",
+             View = "Microservice/SomeView",
+             Text = "ViewText",
+             Css = "tp-bg-amber",
+             Glyph = "fad fa-file-chart-line",
+             Priority = 40
+          }
+      );
+   }
+}
