@@ -224,7 +224,7 @@ namespace TomPIT.BigData.Partitions
 			{
 				configuration = token,
 				name,
-				statuc = status.ToString()
+				status = status.ToString()
 			});
 
 			Refresh(token);
