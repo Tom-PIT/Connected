@@ -190,7 +190,7 @@ namespace TomPIT.BigData.Transactions
 				}
 			}
 
-			return r.OrderBy(f => f.File.Status).ThenBy(f => f.File.StartTimestamp).ToList();
+			return r.OrderBy(f => f.File.Status).ThenByDescending(f => f.File.StartTimestamp).ToList();
 		}
 
 		private DataFileContext CreateDataFileContext(DateTime timestamp, DateTime min, DateTime max)
@@ -365,6 +365,17 @@ namespace TomPIT.BigData.Transactions
 
 		private bool CompareRows(DataRow a, DataRow b)
 		{
+			foreach (var field in Provider.Schema.Fields) 
+			{
+				if (!field.Key && !field.Index)
+					continue;
+
+				if (Comparer.Default.Compare(a[field.Name], b[field.Name]) != 0)
+					return false;
+			}
+
+			return true;
+
 			for (var i = 0; i < a.ItemArray.Length; i++)
 			{
 				if (Comparer.Default.Compare(a.ItemArray[i], b.ItemArray[i]) != 0)

@@ -182,25 +182,23 @@ namespace TomPIT.BigData.Providers.Sql
 
 				hit = true;
 
-				var aggregate = field.Attributes.FirstOrDefault(f => f is BigDataAggregateAttribute) as BigDataAggregateAttribute;
-
-				if (aggregate != null)
-				{
-					switch (aggregate.Mode)
-					{
-						case AggregateMode.None:
-							result.Append($"t.{field.Name} = s.{field.Name}");
-							break;
-						case AggregateMode.Sum:
-							result.Append($"t.{field.Name} = t.{field.Name} + s.{field.Name}");
-							break;
-						default:
-							throw new NotSupportedException();
-					}
-				}
-				else
-					result.Append($"t.{field.Name} = s.{field.Name}");
-			}
+                if (field.Attributes.FirstOrDefault(f => f is BigDataAggregateAttribute) is BigDataAggregateAttribute aggregate)
+                {
+                    switch (aggregate.Mode)
+                    {
+                        case AggregateMode.None:
+                            result.Append($"t.{field.Name} = s.{field.Name}");
+                            break;
+                        case AggregateMode.Sum:
+                            result.Append($"t.{field.Name} = t.{field.Name} + s.{field.Name}");
+                            break;
+                        default:
+                            throw new NotSupportedException();
+                    }
+                }
+                else
+                    result.Append($"t.{field.Name} = s.{field.Name}");
+            }
 
 			if (fullMerge)
 			{
