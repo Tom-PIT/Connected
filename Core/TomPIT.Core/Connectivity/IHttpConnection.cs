@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 
 namespace TomPIT.Connectivity
 {
@@ -14,6 +15,15 @@ namespace TomPIT.Connectivity
 
 		T Get<T>(string url, HttpRequestArgs e = null);
 
+		HttpClient GetClient(ICredentials credentials = null);
+
+		HttpClient GetClient(Guid authenticationToken);
+
+		HttpClient GetClient(string authenticationToken);
+
+		HttpClient GetClient(string username, string password);
+
 		string AuthenticationToken { get; }
 	}
+
 }

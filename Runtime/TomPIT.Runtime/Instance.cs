@@ -218,6 +218,7 @@ namespace TomPIT
             services.AddSingleton<IHostedService, FlushingService>();
 
             services.AddScoped<RequestLocalizationCookiesMiddleware>();
+            services.AddHttpClient();
 
             foreach (var plugin in Plugins)
                 plugin.ConfigureServices(services);
