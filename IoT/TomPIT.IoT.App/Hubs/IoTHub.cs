@@ -17,11 +17,6 @@ namespace TomPIT.IoT.Hubs
 		private const string Device = "device";
 		private const string Hub = "hub";
 
-		public IoTServerHub(IHubContext<IoTServerHub> context)
-		{
-			IoTHubs.IoT = context;
-		}
-
 		public async Task Register(List<IoTHubDevice> devices)
 		{
 			try
@@ -106,7 +101,7 @@ namespace TomPIT.IoT.Hubs
 			itf.InvokeMember("Authorize", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, instance, new object[] { args });
 		}
 
-		public async void Data(JObject e)
+		public async Task Data(JObject e)
 		{
 			try
 			{
@@ -133,13 +128,14 @@ namespace TomPIT.IoT.Hubs
 			}
 		}
 
-		public async void Invoke(JObject e)
+		public static async Task Invoke(JObject e, IHubClients<IClientProxy> clients) 
 		{
 			try
 			{
 				using var processor = new TransactionProcessor(e);
 
 				processor.Process();
+
 				var args = new JObject
 				{
 					{"device", processor.DeviceName },
@@ -147,12 +143,18 @@ namespace TomPIT.IoT.Hubs
 					{"arguments",  processor.TransactionArguments}
 				};
 
-				await Clients.Group(processor.DeviceName.ToLowerInvariant()).SendAsync("transaction", args);
+				await clients?.Group(processor.DeviceName.ToLowerInvariant()).SendAsync("transaction", args);
 			}
 			catch (Exception ex)
 			{
-				await Clients.Caller.SendAsync("exception", ex.Message);
+				if (clients is IHubCallerClients callerClients)
+					await callerClients.Caller.SendAsync("exception", ex.Message);
 			}
+		}
+
+		public async Task Invoke(JObject e)
+		{
+			await Invoke(e, Clients);
 		}
 	}
 }

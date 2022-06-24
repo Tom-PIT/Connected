@@ -17,5 +17,7 @@ namespace TomPIT.Reflection
 
 		public bool IsArray { get; set; }
 
+		public bool IsEnum { get; set; }
+
 	}
 }

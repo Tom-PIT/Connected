@@ -47,11 +47,11 @@ namespace TomPIT.Connected.Printing.Client.Configuration
             string tokenString = ConfigurationManager.AppSettings["token"];
             Token = Convert.ToBase64String(Encoding.UTF8.GetBytes(tokenString));
 
-            string tmpString = ConfigurationManager.AppSettings["loggingLevel"];
-            Logging.Level = Enum.TryParse<LoggingLevel>(tmpString, true, out LoggingLevel result) ? result : LoggingLevel.Error;
+            string loggingLevelString = ConfigurationManager.AppSettings["loggingLevel"];
+            Logging.Level = Enum.TryParse(loggingLevelString, true, out LoggingLevel result) ? result : LoggingLevel.Error;
 
-            tmpString = ConfigurationManager.AppSettings["exceptionLoggingLevel"];
-            Logging.ExceptionLogging = Enum.TryParse<ExceptionLoggingLevel>(tmpString, true, out ExceptionLoggingLevel resultExcLogging) ? resultExcLogging : ExceptionLoggingLevel.ErrorMessage;
+            loggingLevelString = ConfigurationManager.AppSettings["exceptionLoggingLevel"];
+            Logging.ExceptionLogging = Enum.TryParse(loggingLevelString, true, out ExceptionLoggingLevel resultExcLogging) ? resultExcLogging : ExceptionLoggingLevel.ErrorMessage;
 
             var timeoutString = ConfigurationManager.AppSettings["printJobTimeout"];
             PrintJobTimeout = int.TryParse(timeoutString, out var tmp) ? tmp : PrintJobTimeout;

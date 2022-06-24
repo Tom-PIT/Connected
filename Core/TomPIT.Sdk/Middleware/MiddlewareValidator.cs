@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Localization;
 using TomPIT.Annotations;
 using TomPIT.Data;
+using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Globalization;
 using TomPIT.Reflection;
@@ -24,10 +26,15 @@ namespace TomPIT.Middleware
     internal class MiddlewareValidator : MiddlewareObject
     {
         public event ValidatingHandler Validating;
+
+        private ITraceService _traceService;
+        private Guid _validationId = Guid.NewGuid();
+
         public MiddlewareValidator(IMiddlewareComponent instance)
             : base(instance.Context)
         {
             Instance = instance;
+            _traceService = Context.Tenant.GetService<ITraceService>();
         }
 
         private IMiddlewareComponent Instance { get; }
@@ -40,30 +47,59 @@ namespace TomPIT.Middleware
 
         private void ValidateRoot()
         {
+            var sw = Stopwatch.StartNew();
+
+            Trace($"Validation started");
+
+            Trace($"Checking for elevation {sw.ElapsedMilliseconds}");
             if (Instance.Context is IElevationContext elevation && elevation.State == ElevationContextState.Granted)
-                return;
-
-            if (Instance.GetType().FindAttribute<ValidateAntiforgeryAttribute>() is ValidateAntiforgeryAttribute attribute && !attribute.ValidateRequest)
-                return;
-
-            if (Shell.HttpContext is null || Context.Tenant.GetService<IRuntimeService>().Type != Environment.InstanceType.Application)
-                return;
-
-            if (!Shell.HttpContext.Request.IsAjaxRequest())
-                return;
-
-            if (Shell.HttpContext.RequestServices.GetService(typeof(IAntiforgery)) is not IAntiforgery service)
-                return;
-
-            /*
-			 * temporary disabled
-			 */
-
-            if (System.Threading.Tasks.Task.Run(async () =>
             {
-                return await service.IsRequestValidAsync(Shell.HttpContext);
-            }).Result)
+                Trace($"Validation exited due to granted elevation after {sw.ElapsedMilliseconds}");
                 return;
+            }
+
+            Trace($"Checking for antiforgery ignore {sw.ElapsedMilliseconds}");
+            if (Instance.GetType().FindAttribute<ValidateAntiforgeryAttribute>() is ValidateAntiforgeryAttribute attribute && !attribute.ValidateRequest)
+            {
+                Trace($"Validation exited due to disabled antiforgery validation after {sw.ElapsedMilliseconds}");
+                return;
+            }
+
+            Trace($"Checking for null httpContext and non-app instance {sw.ElapsedMilliseconds}");
+            if (Shell.HttpContext is null || Context.Tenant.GetService<IRuntimeService>().Type != Environment.InstanceType.Application)
+            {
+                Trace($"Validation exited due to null httpContext or non-app instance after {sw.ElapsedMilliseconds}");
+                return;
+            }
+
+            Trace($"Checking for AJAX request {sw.ElapsedMilliseconds}");
+            if (!Shell.HttpContext.Request.IsAjaxRequest())
+            {
+                Trace($"Validation exited due to request not coming from AJAX after {sw.ElapsedMilliseconds}");
+                return;
+            }
+
+            Trace($"Checking for IAntiforgery service {sw.ElapsedMilliseconds}");
+            if (Shell.HttpContext.RequestServices.GetService(typeof(IAntiforgery)) is not IAntiforgery service)
+            {
+                Trace($"Validation exited due to missing antiforgery service after {sw.ElapsedMilliseconds}");
+                return;
+            }
+
+            try 
+            {
+
+                Trace($"Validating antiforgery {sw.ElapsedMilliseconds}");
+                if (AsyncUtils.RunSync(() => service.IsRequestValidAsync(Shell.HttpContext)))
+                {
+                    Trace($"Validation exited due to valid antiforgery found after {sw.ElapsedMilliseconds}");
+                    return;
+                }
+            }
+            catch (Exception ex) 
+            {
+                Trace($"Antiforgery request validation failed due to error {ex}");
+            }
 
             throw new MiddlewareValidationException(Instance, SR.ValAntiForgery);
         }
@@ -300,6 +336,14 @@ namespace TomPIT.Middleware
             attribute.ErrorMessageResourceType = typeof(SR);
 
             return attribute;
+        }
+
+        private void Trace(string message) 
+        {
+            if (Context.Tenant.GetService<IRuntimeService>().Type != Environment.InstanceType.Application)
+                return;
+
+            _traceService?.Trace(nameof(MiddlewareValidator), "RootValidation", $"[{DateTimeOffset.UtcNow}] [{_validationId}] {message}");
         }
 
         private static bool ValidateRequestValue(List<ValidationResult> results, object instance, PropertyInfo property, object value)

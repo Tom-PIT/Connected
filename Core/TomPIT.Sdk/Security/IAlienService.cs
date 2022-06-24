@@ -8,9 +8,10 @@ namespace TomPIT.Security
 		IAlien Select(string email);
 		IAlien SelectByMobile(string mobile);
 		IAlien SelectByPhone(string phone);
-
-		Guid Insert(string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone);
-		void Update(Guid token, string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone);
+		IAlien Select(string resourceType, string resourcePrimaryKey);
+		IAlien Select(string firstName = null, string lastName = null, string email = null, string mobile = null, string phone = null, string resourceType = null, string resourcePrimaryKey = null);
+		Guid Insert(string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone, string resourceType = null, string resourcePrimaryKey = null);
+		void Update(Guid token, string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone, string resourceType = null, string resourcePrimaryKey = null);
 		void Delete(Guid token);
 	}
 }

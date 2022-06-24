@@ -11,10 +11,10 @@ namespace TomPIT.BigData.Partitions
 		ImmutableList<IPartition> Query();
 		IPartition Select(IPartitionConfiguration configuration);
 		IPartitionFile SelectFile(Guid fileName);
-		ImmutableList<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp, List<IndexParameter> parameters);
-		ImmutableList<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp);
+		ImmutableList<IPartitionFile> QueryFiles(Guid partition, Guid timezone, string key, DateTime startTimestamp, DateTime endTimestamp, List<IndexParameter> parameters);
+		ImmutableList<IPartitionFile> QueryFiles(Guid partition, Guid timezone, string key, DateTime startTimestamp, DateTime endTimestamp);
 		ImmutableList<IPartitionFile> QueryFiles(Guid partition);
-		Guid InsertFile(Guid partition, Guid node, string key, DateTime timeStamp);
+		Guid InsertFile(Guid partition, Guid node, Guid timezone, string key, DateTime timeStamp);
 		void UpdateFile(Guid file, DateTime startTimeStamp, DateTime endTimeStamp, int count, PartitionFileStatus status);
 		void UpdatePartition(Guid token, string name, PartitionStatus status);
 		void UpdateFileStatistics(Guid file, string fieldName, string startString, string endString, double startNumber, double endNumber, DateTime startDate, DateTime endDate);

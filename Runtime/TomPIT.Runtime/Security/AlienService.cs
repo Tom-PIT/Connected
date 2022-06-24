@@ -24,7 +24,7 @@ namespace TomPIT.Security
 			Remove(token);
 		}
 
-		public Guid Insert(string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone)
+		public Guid Insert(string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone, string resourceType = null, string resourcePrimaryKey = null)
 		{
 			var u = Tenant.CreateUrl("Alien", "Insert");
 			var e = new JObject();
@@ -50,6 +50,12 @@ namespace TomPIT.Security
 			if (!string.IsNullOrWhiteSpace(timezone))
 				e.Add("timezone", timezone);
 
+			if (!string.IsNullOrWhiteSpace(resourceType))
+				e.Add("resourceType", resourceType);
+
+			if (!string.IsNullOrWhiteSpace(resourcePrimaryKey))
+				e.Add("resourcePrimaryKey", resourcePrimaryKey);
+
 			return Tenant.Post<Guid>(u, e);
 		}
 
@@ -73,6 +79,33 @@ namespace TomPIT.Security
 				});
 		}
 
+		public IAlien Select(string firstName = null, string lastName = null, string email = null, string mobile = null, string phone = null, string resourceType = null, string resourcePrimaryKey = null)
+		{
+			if (Get(f => string.Compare(f.Email, email, true) == 0
+				 && string.Compare(f.FirstName, firstName, true) == 0
+				 && string.Compare(f.LastName, lastName, true) == 0
+				 && string.Compare(f.Mobile, mobile, true) == 0
+				 && string.Compare(f.Phone, phone, true) == 0
+				 && string.Compare(f.ResourceType, resourceType, true) == 0
+				 && string.Compare(f.ResourcePrimaryKey, resourcePrimaryKey, true) == 0) is IAlien r)
+				return r;
+
+			r = Tenant.Post<Alien>(Tenant.CreateUrl("Alien", "Select"), new
+			{
+				email,
+				firstName,
+				lastName,
+				mobile,
+				phone,
+				resourceType,
+				resourcePrimaryKey
+			});
+
+			if (r is not null)
+				Set(r.Token, r);
+
+			return r;
+		}
 		public IAlien Select(string email)
 		{
 			var r = Get(f => string.Compare(f.Email, email, true) == 0);
@@ -89,6 +122,23 @@ namespace TomPIT.Security
 			r = Tenant.Post<Alien>(u, e);
 
 			if (r != null)
+				Set(r.Token, r);
+
+			return r;
+		}
+
+		public IAlien Select(string resourceType, string resourcePrimaryKey)
+		{
+			if (Get(f => string.Compare(f.ResourceType, resourceType, true) == 0 && string.Compare(f.ResourcePrimaryKey, resourcePrimaryKey, true) == 0) is IAlien r)
+				return r;
+
+			r = Tenant.Post<Alien>(Tenant.CreateUrl("Alien", "Select"), new
+			{
+				resourceType,
+				resourcePrimaryKey
+			});
+
+			if (r is not null)
 				Set(r.Token, r);
 
 			return r;
@@ -136,7 +186,7 @@ namespace TomPIT.Security
 			return r;
 		}
 
-		public void Update(Guid token, string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone)
+		public void Update(Guid token, string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone, string resourceType = null, string resourcePrimaryKey = null)
 		{
 			var u = Tenant.CreateUrl("Alien", "Update");
 			var e = new JObject
@@ -164,6 +214,12 @@ namespace TomPIT.Security
 
 			if (!string.IsNullOrWhiteSpace(timezone))
 				e.Add("timezone", timezone);
+
+			if (!string.IsNullOrWhiteSpace(resourceType))
+				e.Add("resourceType", resourceType);
+
+			if (!string.IsNullOrWhiteSpace(resourcePrimaryKey))
+				e.Add("resourcePrimaryKey", resourcePrimaryKey);
 
 			Tenant.Post(u, e);
 			Remove(token);

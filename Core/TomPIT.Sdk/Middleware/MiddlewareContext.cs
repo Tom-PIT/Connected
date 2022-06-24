@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
+using System.Threading;
 using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Exceptions;
@@ -23,6 +24,7 @@ namespace TomPIT.Middleware
         private MiddlewareConnectionPool _connections = null;
         private IMiddlewareTransaction _transaction = null;
         private bool _isReadonly = false;
+        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         #endregion
 
         #region Constructors
@@ -160,6 +162,7 @@ namespace TomPIT.Middleware
             }
         }
 
+        public CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
         internal MiddlewareContext Owner { get; set; }
 
@@ -265,6 +268,10 @@ namespace TomPIT.Middleware
             };
         }
 
+        public void MarkUnstable()
+        {
+            _cancellationTokenSource.Cancel(true);
+        }
         #endregion
 
         protected void Initialize(string endpoint)
@@ -286,7 +293,13 @@ namespace TomPIT.Middleware
         {
             try
             {
+                CancellationToken.ThrowIfCancellationRequested();
                 return Connections.OpenConnection(this, connection, behavior, arguments);
+            }
+            catch(OperationCanceledException ex) 
+            {
+                //TODO localize
+                throw new Exception("Cannot open new connection on unstable context", ex);
             }
             catch
             {

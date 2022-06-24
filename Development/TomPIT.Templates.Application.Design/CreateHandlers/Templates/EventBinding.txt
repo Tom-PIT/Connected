@@ -1,0 +1,11 @@
+﻿using TomPIT.Messaging;
+using TomPIT.Middleware;
+using System;
+using System.Linq;
+
+public class EventBinding : EventMiddleware
+{
+   protected override void OnInvoke()
+   {
+   }
+}

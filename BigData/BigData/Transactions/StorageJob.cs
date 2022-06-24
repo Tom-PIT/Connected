@@ -2,7 +2,6 @@
 using System.Threading;
 using TomPIT.Diagnostics;
 using TomPIT.Distributed;
-using TomPIT.Middleware;
 using TomPIT.Storage;
 
 namespace TomPIT.BigData.Transactions
@@ -18,12 +17,13 @@ namespace TomPIT.BigData.Transactions
 		{
 			Block = new Guid(item.Message);
 
-			var block = MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Select(Block);
+			var block = Tenant.GetService<ITransactionService>().Select(Block);
 
-			if (block == null)
+			if (block is null)
 			{
-				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"StorageJob, {Block} block null.");
-				MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Complete(item.PopReceipt, new Guid(item.Message));
+				Tenant.GetService<ILoggingService>().Dump($"StorageJob, {Block} block null.");
+				Tenant.GetService<ITransactionService>().Complete(item.PopReceipt, new Guid(item.Message));
+				
 				return;
 			}
 
@@ -32,8 +32,8 @@ namespace TomPIT.BigData.Transactions
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"StorageJob, {Block} block exception: {ex.Message}.");
-			MiddlewareDescriptor.Current.Tenant.LogError(nameof(StorageJob), ex.Message, LogCategories.BigData);
+			Tenant.GetService<ILoggingService>().Dump($"StorageJob, {Block} block exception: {ex.Message}.");
+			Tenant.LogError(nameof(StorageJob), ex.Message, LogCategories.BigData);
 		}
 	}
 }

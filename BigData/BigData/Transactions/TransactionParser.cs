@@ -16,7 +16,6 @@ namespace TomPIT.BigData.Transactions
 		private List<List<object>> _blocks = null;
 		public const int FileSize = 10000000;
 		private const int BlockSize = 10000;
-
 		private IMicroService _microService = null;
 
 		public TransactionParser(IPartitionConfiguration partition, JArray items)
@@ -29,33 +28,15 @@ namespace TomPIT.BigData.Transactions
 		private JArray Items { get; set; }
 		public int BlockCount { get; private set; }
 
-		public List<List<object>> Blocks
-		{
-			get
-			{
-				if (_blocks == null)
-					_blocks = new List<List<object>>();
-
-				return _blocks;
-			}
-		}
-		public IMicroService MicroService
-		{
-			get
-			{
-				if (_microService == null)
-					_microService = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)Partition).MicroService());
-
-				return _microService;
-			}
-		}
+		public List<List<object>> Blocks => _blocks ??= new List<List<object>>();
+		public IMicroService MicroService => _microService ??= Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)Partition).MicroService());
 
 		public void Execute()
 		{
-			var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(MicroService.Token, Partition, Partition.ComponentName());
+			var type = Tenant.GetService<ICompilerService>().ResolveType(MicroService.Token, Partition, Partition.ComponentName());
 			var argument = type.GetInterface(typeof(IPartitionMiddleware<>).FullName).GetGenericArguments()[0];
 			using var ctx = new MicroServiceContext(MicroService);
-			var middleware = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<MiddlewareComponent>(ctx, type);
+			var middleware = Tenant.GetService<ICompilerService>().CreateInstance<MiddlewareComponent>(ctx, type);
 			var items = (IList)typeof(List<>).MakeGenericType(argument).CreateInstance();
 
 			foreach (var item in Items)
@@ -89,7 +70,7 @@ namespace TomPIT.BigData.Transactions
 
 			items = (IList)target.Invoke(middleware, new object[] { items });
 
-			if (items == null || items.Count == 0)
+			if (items is null || items.Count == 0)
 				return;
 
 			BlockCount = CalculateBlockCount(items.Count);
@@ -98,7 +79,7 @@ namespace TomPIT.BigData.Transactions
 				Blocks.Add(CreateBlock(i));
 		}
 
-		private int CalculateBlockCount(int items)
+		private static int CalculateBlockCount(int items)
 		{
 			var remainder = items % BlockSize;
 			var blocks = items / BlockSize;

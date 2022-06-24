@@ -85,7 +85,7 @@ namespace TomPIT.Middleware.Services
 
 			if (u.Avatar == Guid.Empty)
 			{
-				var image = Context.Tenant.GetService<IGraphicsService>().CreateImage(u.DisplayName(), 512, 512);
+				var image = Context.Tenant.GetService<IGraphicsService>().Avatars.Create(u.DisplayName(), 512, 512);
 
 				Context.Tenant.GetService<IUserService>().ChangeAvatar(u.Token, image, "Image/png", $"{u.DisplayName()}.png");
 
@@ -122,6 +122,7 @@ namespace TomPIT.Middleware.Services
 				throw new RuntimeException(SR.ErrHttpRequestNotAvailable);
 
 			Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.TemporaryRedirect;
+			Shell.HttpContext.Response.Headers.Add("Cache-Control", "no-store");
 			Shell.HttpContext.Response.Redirect(url, false);
 		}
 

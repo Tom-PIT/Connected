@@ -22,6 +22,28 @@ namespace TomPIT.Connectivity
 
 		public string AuthenticationToken { get; }
 
+		public HttpClient GetClient(ICredentials credentials = null) 
+		{
+			return credentials is null
+				 ? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
+				 : HttpClientPool.Get(credentials, this as IInstanceMetadataProvider);
+		}
+
+		public HttpClient GetClient(Guid authenticationToken) => GetClient(GetCredentials(authenticationToken));
+
+		public HttpClient GetClient(string authenticationToken) => GetClient(GetCredentials(authenticationToken));
+
+		public HttpClient GetClient(string username, string password) => GetClient(GetCredentials(username, password));
+
+		protected static ICredentials GetCredentials(Guid authenticationToken) => new CurrentCredentials { Token = authenticationToken };
+		protected static ICredentials GetCredentials(string authenticationToken) => new BearerCredentials { Token = authenticationToken };
+		protected static ICredentials GetCredentials(string username, string password) => new BasicCredentials
+		{
+			UserName = username,
+			Password = password
+		};
+
+
 		public T Get<T>(string url, HttpRequestArgs e = null)
 		{
 			try
@@ -215,6 +237,5 @@ namespace TomPIT.Connectivity
 			return string.Compare(content, "null", true) == 0
 				|| string.IsNullOrWhiteSpace(content);
 		}
-
 	}
 }

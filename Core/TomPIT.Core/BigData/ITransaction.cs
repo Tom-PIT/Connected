@@ -16,5 +16,6 @@ namespace TomPIT.BigData
 		DateTime Created { get; }
 		Guid Token { get; }
 		TransactionStatus Status { get; }
+		Guid Timezone { get; }
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using TomPIT.Models;
 using TomPIT.Security;
@@ -6,73 +7,87 @@ using TomPIT.Serialization;
 
 namespace TomPIT.App.Models
 {
-	public class UserDataModel : AjaxModel
-	{
-		public object GetData()
-		{
-			var jo = Body.Required<JObject>("data");
+    public class UserDataModel : AjaxModel
+    {
+        public object GetData()
+        {
+            var jo = Body.Required<JObject>("data");
 
-			return Services.Data.User.Select<JToken, JToken>(jo.Required<JToken>("primaryKey"), jo.Optional("topic", string.Empty));
-		}
+            return Services.Data.User.Select<JToken, JToken>(jo.Required<JToken>("primaryKey"), jo.Optional("topic", string.Empty));
+        }
 
-		public object QueryData()
-		{
-			var jo = Body.Required<JObject>("data");
-			var result = Services.Data.User.Query(jo.Required<string>("topic"));
+        public object QueryData()
+        {
 
-			if (result == null)
-				return null;
+            var jo = Body.Required<JObject>("data");
+            var result = Services.Data.User.Query(jo.Required<string>("topic"));
 
-			var r = new JArray();
+            if (result == null)
+                return null;
 
-			foreach (var i in result)
-			{
-				var item = new JObject();
+            var r = new JArray();
 
-				item.Add("primaryKey", Serializer.Deserialize<JToken>(i.PrimaryKey));
+            foreach (var i in result)
+            {
+                var item = new JObject();
 
-				if (!string.IsNullOrWhiteSpace(i.Value))
-					item.Add("value", Serializer.Deserialize<JToken>(i.Value));
+                try
+                {
+                    item["value"] = Serializer.Deserialize<dynamic>(i.Value);
+                }
+                catch
+                {
+                    item["value"] = i.Value;
+                }
 
-				item.Add("topic", i.Topic);
+                try
+                {
+                    item["primaryKey"] = Serializer.Deserialize<dynamic>(i.PrimaryKey);
+                }
+                catch
+                {
+                    item["primaryKey"] = i.PrimaryKey;
+                }
 
-				r.Add(item);
-			}
+                item["topic"] = i.Topic;
 
-			return r;
-		}
+                r.Add(item);
+            }
 
-		public void SetData()
-		{
-			var data = Body.Property("data");
+            return r;
+        }
 
-			if (data.Value is JArray)
-				SetArrayData();
-			else
-				SetObjectData();
-		}
+        public void SetData()
+        {
+            var data = Body.Property("data");
 
-		private void SetObjectData()
-		{
-			var jo = Body.Property("data").Value as JObject;
+            if (data.Value is JArray)
+                SetArrayData();
+            else
+                SetObjectData();
+        }
 
-			Services.Data.User.Update(jo.Required<JToken>("primaryKey"), jo.Optional<JToken>("value", null), jo.Optional("topic", string.Empty));
-		}
+        private void SetObjectData()
+        {
+            var jo = Body.Property("data").Value as JObject;
 
-		private void SetArrayData()
-		{
-			var a = Body.Property("data").Value as JArray;
-			var items = new List<IUserData>();
+            Services.Data.User.Update(jo.Required<JToken>("primaryKey"), jo.Optional<JToken>("value", null), jo.Optional("topic", string.Empty));
+        }
 
-			foreach (JObject i in a)
-				items.Add(Services.Data.User.Create(i.Required<JToken>("primaryKey"), i.Optional<JToken>("value", null), i.Optional("topic", string.Empty)));
+        private void SetArrayData()
+        {
+            var a = Body.Property("data").Value as JArray;
+            var items = new List<IUserData>();
 
-			Services.Data.User.Update(items);
-		}
+            foreach (JObject i in a)
+                items.Add(Services.Data.User.Create(i.Required<JToken>("primaryKey"), i.Optional<JToken>("value", null), i.Optional("topic", string.Empty)));
 
-		public override IRuntimeModel Clone()
-		{
-			return this;
-		}
-	}
+            Services.Data.User.Update(items);
+        }
+
+        public override IRuntimeModel Clone()
+        {
+            return this;
+        }
+    }
 }

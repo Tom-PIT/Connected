@@ -1,53 +1,122 @@
 ﻿@model TomPIT.Design.Ide.IEnvironment
 
 <div class="row no-gutters">
-	<div class="col-lg-2 col-md-3">
-		<div id="devExplorer" tabindex="0">
-			<div id="devExplorerToolbar" class="btn-toolbar">
+    <div class="col-lg-2 col-md-3 collapse-container">
+        <div id="devExplorer" tabindex="0">
+            <div id="devExplorerToolbar" class="btn-toolbar">
                 <div class="btn-group btn-group-sm">
                     <button class="btn btn-sm btn-light" id="exBtnPreviousView" title="Previous selection"><i class="fal fa-chevron-left"></i></button>
                     <button class="btn btn-sm btn-light" id="exBtnNextView" title="Next selection"><i class="fal fa-chevron-right"></i></button>
                     <button class="btn btn-sm btn-light" id="exBtnCollapse" title="Collapse all nodes"><i class="fal fa-minus-square"></i></button>
                 </div>
-			</div>
-			<div id="devExplorerNodes">
-				@await Html.PartialAsync("~/Views/Ide/Dom.cshtml", Model)
-			</div>
-		</div>
-	</div>
-	<div class="col-lg-8  col-md-9 dev-designer">
-		<div data-tp-tag="progress-container"></div>
-        <div id="devTextDesigner" class="collapse">
-            <div class="template-toolbar btn-toolbar justify-content-between">
-				<div class="btn-group">
-					<a id="btnDebug" href="#" target="_blank" class="btn btn-sm btn-light collapse" title="Download source code for debugging"><i class="fal fa-bug"></i></a>
-					<div id="customActions">
-						
-					</div>
-				</div>
-                <div class="btn-group">
-                    <span class="pt-2 small collapse" title="Editor syntax" id="labelSyntaxLanguage"></span>
+            </div>
+            <div id="devExplorerNodes">
+                @await Html.PartialAsync("~/Views/Ide/Dom.cshtml", Model)
+            </div>
+        </div>
+        <div class="collapse-left" onclick="toggleExplorer(this)">
+            <div class="chevron-left"></div>
+        </div>
+    </div>
+    <div class="col-lg-8 col-md-7" id="devDesignerContainer">
+        <div class="dev-designer">
+            <div data-tp-tag="progress-container"></div>
+            <div id="devTextDesigner" class="collapse flex-column">
+                <div class="template-toolbar btn-toolbar justify-content-between mx-4">
+                    <div class="btn-group">
+                        <a id="btnDebug" href="#" target="_blank" class="btn btn-sm btn-light py-0 collapse" title="Download source code for debugging"><i class="fal fa-bug"></i></a>
+                        <div id="customActions">
+
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <span class="pt-2 small collapse" title="Editor syntax" id="labelSyntaxLanguage"></span>
+                    </div>
+                </div>
+                <div id="modelTabs" class="row no-gutters flex-nowrap overflow-auto">
+                </div>
+                <div id="devDesignerSizeBox" class="flex-grow overflow-hidden">
+                    <div data-role="text-editor" class="text-editor text-editor-sa"></div>
                 </div>
             </div>
-			<div id="modelTabs">
-				
-			</div>
-            <div data-role="text-editor" class="text-editor text-editor-sa"></div>
+            <div id="devDesigner" class="collapse show">
+                @await Html.PartialAsync("~/Views/Ide/Designers/Empty.cshtml", Model)
+            </div>
         </div>
-		<div id="devDesigner" class="collapse show">
-			@await Html.PartialAsync("~/Views/Ide/Designers/Empty.cshtml", Model)
-		</div>
-	</div>
-	<div class="col-lg-2">
-		<div id="devSelection">
-			@await Html.PartialAsync("~/Views/Ide/Selection/Selection.cshtml", Model)
-		</div>
-	</div>
+    </div>
+    <div class="col-lg-2 collapse-container">
+        <div id="devSelection">
+            @await Html.PartialAsync("~/Views/Ide/Selection/Selection.cshtml", Model)
+        </div>
+        <div class="collapse-right" onclick="toggleSelection(this)">
+            <div class="chevron-right"></div>
+        </div>
+    </div>
 </div>
 <div class="row no-gutters dev-footer bg-dark" id="devStatus">
     <span id="devStatusErrors" class="px-2"></span>
     <span id="devStatusText" class="px-2"></span>
 </div>
 <div class="collapse ide-errors-panel" id="ideErrors">
-    
+
 </div>
+
+<script>
+    function toggleExplorer(element) {
+        var explorer = document.querySelector('#devExplorer');
+        var parent = explorer.parentNode;
+
+        parent.classList.toggle('col-lg-2');
+        parent.classList.toggle('col-md-3');
+
+        explorer.classList.toggle('d-none');
+
+        element.querySelector('div').classList.toggle('chevron-left');
+        element.querySelector('div').classList.toggle('chevron-right');
+
+        resizeEditor();
+
+        return false;
+    }
+    function toggleSelection(element) {
+        var selection = document.querySelector('#devSelection');
+        var parent = selection.parentNode;
+
+        parent.classList.toggle('col-lg-2');
+
+        selection.classList.toggle('d-none');
+
+        element.querySelector('div').classList.toggle('chevron-left');
+        element.querySelector('div').classList.toggle('chevron-right');
+
+        resizeEditor();
+
+        return false;
+    }
+
+    function resizeEditor() {
+        var explorer = document.querySelector('#devExplorer');
+        var selection = document.querySelector('#devSelection');
+
+        var explorerVisible = !explorer.classList.contains('d-none');
+        var selectionVisible = !selection.classList.contains('d-none');
+
+        var md = 7;
+        var lg = 8;
+
+        if (!explorerVisible) {
+            md += 3;
+            lg += 2;
+        }
+
+        if (!selectionVisible) {
+            lg += 2;
+            md += 2;
+        }
+
+        var designer = document.querySelector('#devDesignerContainer');
+        designer.removeAttribute('class');
+        designer.classList.add(`col-lg-${lg}`);
+        designer.classList.add(`col-md-${md}`);
+    }
+</script>

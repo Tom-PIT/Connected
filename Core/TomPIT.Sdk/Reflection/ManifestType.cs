@@ -15,7 +15,7 @@ namespace TomPIT.Reflection
 			var result = new ManifestType
 			{
 				Documentation = type.Documentation,
-				Name = type.Name,
+				Name = QualifiedTypeName(type),
 				Type = type.Type
 			};
 
@@ -23,6 +23,14 @@ namespace TomPIT.Reflection
 
 			return result;
 		}
+
+		private static string QualifiedTypeName(IScriptManifestType type)
+        {
+			if (string.IsNullOrWhiteSpace(type.ContainingType))
+				return type.Name;
+
+			return $"{type.ContainingType}.{type.Name}";
+        }
 
 		private static void ResolveBaseProperties(ITenant tenant, ManifestType type, IScriptManifestType scriptType, IScriptManifest manifest)
 		{

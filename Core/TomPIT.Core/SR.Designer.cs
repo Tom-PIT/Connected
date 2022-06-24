@@ -763,6 +763,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Big data timezone not found.
+        /// </summary>
+        public static string ErrBigDataTimezoneNotFound {
+            get {
+                return ResourceManager.GetString("ErrBigDataTimezoneNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Big data transaction not found.
         /// </summary>
         public static string ErrBigDataTransactionNotFound {
@@ -2716,6 +2725,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Users can not be deleted, action deprecated..
+        /// </summary>
+        public static string ErrUserDeleteUnsupported {
+            get {
+                return ResourceManager.GetString("ErrUserDeleteUnsupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User is inactive.
         /// </summary>
         public static string ErrUserInactive {
@@ -2838,6 +2856,15 @@ namespace TomPIT {
         public static string InvalidServiceReference {
             get {
                 return ResourceManager.GetString("InvalidServiceReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        public static string ItemNone {
+            get {
+                return ResourceManager.GetString("ItemNone", resourceCulture);
             }
         }
         

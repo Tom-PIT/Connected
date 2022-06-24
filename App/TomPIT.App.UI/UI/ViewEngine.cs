@@ -159,8 +159,11 @@ namespace TomPIT.App.UI
                     var buffer = Encoding.UTF8.GetBytes(content);
 
                     if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
+                    {
+                        Context.Response.ContentType = "text/html; charset=UTF-8";
                         await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
-
+                    }
+                    
                     await Context.Response.CompleteAsync();
                 }
                 catch (CompilerException)
@@ -301,6 +304,17 @@ namespace TomPIT.App.UI
                     return null;
 
                 name = tokens[1];
+            }
+
+            var partialResolutionArgs = new PartialViewResolutionArgs
+            {
+                Name = qualifier
+            };
+
+            foreach (var runtime in context.Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+            {
+                if (runtime?.Resolver?.ResolvePartial(partialResolutionArgs) is IPartialViewConfiguration config)
+                    return config;
             }
 
             return context.Tenant.GetService<IComponentService>().SelectConfiguration(ms.Token, "Partial", name) as IPartialViewConfiguration;

@@ -9,6 +9,7 @@ namespace TomPIT.SysDb.Sql.BigData
 		public Guid Transaction { get; set; }
 		public Guid Partition { get; set; }
 		public Guid Token { get; set; }
+		public Guid Timezone { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -17,6 +18,7 @@ namespace TomPIT.SysDb.Sql.BigData
 			Transaction = GetGuid("transaction_token");
 			Partition = GetGuid("partition_configuration");
 			Token = GetGuid("token");
+			Timezone = GetGuid("timezone_token");
 		}
 	}
 }

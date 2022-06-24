@@ -6,5 +6,6 @@
 		IPartitionHandler Partitions { get; }
 		ITransactionHandler Transactions { get; }
 		IPartitionBufferHandler Buffer { get; }
+		ITimeZoneHandler TimeZones { get; }
 	}
 }

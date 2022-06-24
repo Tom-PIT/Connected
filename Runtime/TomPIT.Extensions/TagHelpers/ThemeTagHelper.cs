@@ -20,7 +20,12 @@ namespace TomPIT.TagHelpers
 			microService = tokens[0];
 			name = tokens[1];
 
-			ctx.MicroService.ValidateMicroServiceReference(ResolveMicroservice(ViewContext.ExecutingFilePath).Name);
+			var resolvedMs = ResolveMicroservice(ViewContext.ExecutingFilePath);
+			/*
+			 * if it's default (shell) master, resolvedMs will be null
+			 */
+			if (resolvedMs is not null)
+				ctx.MicroService.ValidateMicroServiceReference(resolvedMs.Name);
 
 			output.TagMode = TagMode.StartTagOnly;
 			output.TagName = "link";

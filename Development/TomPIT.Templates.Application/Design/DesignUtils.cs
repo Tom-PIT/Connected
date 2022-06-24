@@ -40,6 +40,7 @@
 		public const string FeaturesItems = "TomPIT.MicroServices.Design.Items.FeaturesCollection, " + DesignAssembly;
 		public const string ScriptSourceItems = "TomPIT.MicroServices.Design.Items.ScriptSourceCollection, " + DesignAssembly;
 		public const string StylesheetItems = "TomPIT.MicroServices.Design.Items.StylesheetCollection, " + DesignAssembly;
+		public const string ThemeItems = "TomPIT.MicroServices.Design.Items.ThemeItems, " + DesignAssembly;
 		public const string ScriptItems = "TomPIT.MicroServices.Design.Items.ScriptCollection, " + DesignAssembly;
 		public const string EventItems = "TomPIT.MicroServices.Design.Items.EventItems, " + DesignAssembly;
 		public const string DistributedEventItems = "TomPIT.MicroServices.Design.Items.DistributedEventCollection, " + DesignAssembly;

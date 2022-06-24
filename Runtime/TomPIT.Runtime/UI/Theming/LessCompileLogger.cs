@@ -1,6 +1,6 @@
-﻿using dotless.Core.Loggers;
-using TomPIT.Diagnostics;
+﻿using TomPIT.Diagnostics;
 using TomPIT.Middleware;
+using TomPIT.UI.Theming.Loggers;
 
 namespace TomPIT.UI.Theming
 {

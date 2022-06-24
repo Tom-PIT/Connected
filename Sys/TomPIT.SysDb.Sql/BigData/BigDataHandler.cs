@@ -8,6 +8,9 @@ namespace TomPIT.SysDb.Sql.BigData
 		private IPartitionHandler _partitions = null;
 		private ITransactionHandler _transactions = null;
 		private IPartitionBufferHandler _buffer = null;
+		private ITimeZoneHandler _timeZones = null;
+
+		public ITimeZoneHandler TimeZones => _timeZones ??= new TimeZoneHandler();
 
 		public IPartitionBufferHandler Buffer
 		{

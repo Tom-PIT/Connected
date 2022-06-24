@@ -68,7 +68,7 @@ namespace TomPIT.Middleware
 		{
 			var mc = Context as MiddlewareContext;
 
-			if (mc?.Owner == null)
+			if (mc?.Owner is null)
 			{
 				if (!(Transaction is MiddlewareTransaction transaction))
 					return;

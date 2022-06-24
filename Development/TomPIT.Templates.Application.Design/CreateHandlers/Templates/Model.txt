@@ -8,21 +8,23 @@ using TomPIT.Annotations;
 using TomPIT.Annotations.Models;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Security;
+using System.Linq;
 
 /*
  * Enum with policies supported by the Authorization policy.
  */
 public enum [POLICYENUM]
 {
-    NotSet = 0,
+   NotSet = 0,
 }
+
 /*
  * Enum with claims supported by the Authorization policy.
  */
 [Flags]
 public enum [CLAIMS]
 {
-    NotSet = 0,
+   NotSet = 0,
 }
 
 /*
@@ -31,28 +33,88 @@ public enum [CLAIMS]
  * It also represents a container for the model operations which are mostly
  * database statements.
  */
-public class [NAME] : ModelMiddleware<[ENTITY]>
+public class [MODELTYPE] : ModelMiddleware<[ENTITYTYPE]>
 {
+   public long Insert([ENTITYNAME]InsertArgs e)
+   {
+      var result = new ResultEntity<long>();
+      
+      Execute("Insert", new
+      {         
+      }, result);
+      
+      return result;
+   }
 
+   public void Update([ENTITYTYPE] entity, [ENTITYNAME]UpdateArgs e)
+   {
+      Execute("Update", entity, e);
+   }
+
+   public void Delete(long id)
+   {
+      Execute("Delete", new { Id = id });
+   }
+
+   public [ENTITYTYPE] Select(long id)
+   {
+      return Select("Select", new { Id = id });
+   }
+
+   public List<[ENTITYTYPE]> Query([ENTITYNAME]QueryArgs e)
+   {
+      return Query("Query", e);
+   }
+
+   public List<[ENTITYTYPE]> Lookup(List<long> ids)
+   {
+      if(ids?.Any() ?? false)
+        return new();
+
+      return Query("Lookup", new 
+      {
+        ids = ids.ToJsonParameterList("id")
+      });
+   }
+}
+
+public class [ENTITYNAME]InsertArgs
+{
+   public RecordState State { get; set; } = RecordState.Valid;
+}
+
+public class [ENTITYNAME]UpdateArgs
+{
+   public long Id { get; set; }
+
+   public RecordState State { get; set; } = RecordState.Valid;
+
+   public string Version { get; set; }
+}
+
+public class [ENTITYNAME]QueryArgs
+{
+   public RecordState State { get; set; } = RecordState.Valid;
 }
 
 /*
  * The entity. This class usually represents the mapping between database table
  * or database view. Properties are mapped to database columns.
  */
-[Schema(Schema = "dbo", Name = "[SCHEMANAME]", Type = SchemaAttribute.SchemaTypeTable)]
-public class [ENTITY] : DataEntity
+[Schema(Schema = "[SCHEMA]", Name = "[SCHEMANAME]", Type = SchemaAttribute.SchemaTypeTable)]
+public class [ENTITYTYPE] : VersionedEntity<long>
 {
-	public const string CacheKey = "[CACHEKEY]";
-    public const string AuthorizationKey = "[AUTHKEY]";
+   public const string EntityType = "[ENTITYKEY]";
+   public const string CacheKey = "[CACHEKEY]";
+   public const string ProxyKey = "[AUTHKEY]";
 
-	[PrimaryKey]
-	[ReturnValue]
-	[CacheKey]
-    [AuthorizationProperty(AuthorizationKey)]
-	public long Id { get; set; }
+   [PrimaryKey]
+   [ReturnValue]
+   [CacheKey]
+   [ProxyProperty(ProxyKey)]
+   public override long Id { get; set; }
 
-    public RecordState State {get; set;}
+   public RecordState State { get; set; }
 }
 
 /*
@@ -65,33 +127,33 @@ public class [ENTITY] : DataEntity
  */
 public sealed class [POLICYATTRIBUTE] : AuthorizationPolicyAttribute
 {
-    /*
-     * This property will be set by the caller (tipically API operation).
-     */
-    public [POLICYENUM] Policy {get; set;} = [POLICYENUM].NotSet;
-    /*
-     * The model (proxy) object which provides the Resource attribute for
-     * the current context
-     */
-    protected override IAuthorizationModel OnCreateModel()
-    {
-        return new [AUTHMODEL]();
-    }
-    /*
-     * The authorization logic
-     */
-    protected override void OnAuthorize(List<PolicyAuthorizationResult> results)
-    {
-        var model = Model as [AUTHMODEL];
+   /*
+    * This property will be set by the caller (tipically API operation).
+    */
+   public [POLICYENUM] Policy {get; set;} = [POLICYENUM].NotSet;
+   /*
+    * The model (proxy) object which provides the Resource attribute for
+    * the current context
+    */
+   protected override IAuthorizationModel OnCreateModel()
+   {
+      return new [AUTHMODEL]();
+   }
+   /*
+    * The authorization logic
+    */
+   protected override void OnAuthorize(List<PolicyAuthorizationResult> results)
+   {
+      var model = Model as [AUTHMODEL];
 
-        AuthorizeAll(model.[AUTHKEY], HigherThan([CLAIMS].NotSet));
-    }
+      AuthorizeAll(model.[AUTHKEY], HigherThan([CLAIMS].NotSet));
+   }
 }
 /*
  * The authorization proxy. This class tipically provides the properties used
  * by Authorization attribute when performing authorization.
  */
-public class [AUTHMODEL] : AuthorizationModel
+public class [AUTHMODEL] : ProxyAuthorizationModel
 {
-    public long [AUTHKEY] => GetValueFromTarget<long>([ENTITY].AuthorizationKey);
+   public long [AUTHKEY] => GetValue<long>([ENTITYTYPE].ProxyKey);
 }

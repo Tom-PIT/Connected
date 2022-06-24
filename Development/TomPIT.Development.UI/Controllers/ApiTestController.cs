@@ -54,6 +54,13 @@ namespace TomPIT.Development.Controllers
 			});
 		}
 
+		public IActionResult SelectDefaultOperationBody()
+		{
+			var m = ApiTestModel.Create(this, false);
+
+			return Json(m.SelectDefaultOperationBody());
+		}
+
 		public IActionResult Delete()
 		{
 			var m = ApiTestModel.Create(this, false);

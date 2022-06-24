@@ -64,7 +64,7 @@ namespace TomPIT.BigData.Transactions
 				{
 					try
 					{
-						MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().CreateTransaction(config, array);
+						MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().CreateTransactions(config, array);
 					}
 					catch(Exception ex)
 					{

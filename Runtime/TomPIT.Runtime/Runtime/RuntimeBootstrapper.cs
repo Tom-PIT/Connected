@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using System.Net.Http;
 using TomPIT.Analytics;
 using TomPIT.Caching;
 using TomPIT.Cdn;
@@ -53,7 +54,7 @@ namespace TomPIT.Runtime
 			Shell.RegisterService(typeof(IRuntimeService), typeof(RuntimeService));
 			Shell.RegisterService(typeof(IConnectivityService), typeof(ConnectivityService));
 			Shell.RegisterService(typeof(IMicroServiceResolutionService), typeof(MicroServiceResolutionService));
-
+		
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
 		}
@@ -122,7 +123,7 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IFileSystemService), typeof(FileSystemService));
 			e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
 			e.Tenant.RegisterService(typeof(IWorkerService), typeof(WorkerService));
-
+		
 			if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
 				e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
 

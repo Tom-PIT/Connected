@@ -5,8 +5,10 @@
  */
 
 using DevExpress.XtraPrinting;
+using DevExpress.XtraReports.Expressions;
 using DevExpress.XtraReports.UI;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -22,19 +24,23 @@ using TomPIT.Connected.Printing.Client.Printing;
 
 namespace TomPIT.Connected.Printing.Client.Handlers
 {
-    internal class PrintingHandler
+    internal class PrintingHandler : BackgroundService
     {
+        private readonly LocalizationProvider _localizationProvider;
+
+        private readonly SemaphoreSlim _functionLock;
+
         private HubConnection _connection;
 
         private PrinterHandler _printerHandler;
 
-        private bool _keepAlive;
-
         private Uri _baseCdnUri;
 
-        public PrintingHandler() 
+        public PrintingHandler(LocalizationProvider localizationProvider)
         {
             _printerHandler = new PrinterHandler(Settings.PrinterNameMappings);
+            _localizationProvider = localizationProvider;
+            _functionLock = new SemaphoreSlim(1, 1);
         }
 
         private void CreateConnection()
@@ -49,7 +55,9 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                 {
                     return Task.FromResult(Settings.Token);
                 };
-            }).WithAutomaticReconnect(new ConnectionRetryPolicy()).Build();
+            })
+            .WithAutomaticReconnect(new ConnectionRetryPolicy())
+            .Build();
 
             _connection.Reconnecting += async (error) =>
             {
@@ -66,7 +74,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             _connection.Reconnected += async (arg) =>
             {
                 Logging.Debug($"Reconnected, Connection Id = {arg}");
-                RegisterPrinters();
+                await RegisterPrinters();
             };
 
             _connection.KeepAliveInterval = TimeSpan.FromSeconds(20);
@@ -79,55 +87,49 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                 }
                 else
                 {
-                    Logging.Debug($"Connection closed due to error: {error}");
+                    Logging.Debug($"Connection closed due to error: {error}. Connection will attempt to restart.");
+
+                    await Task.Delay(5000);
+                    await _connection.StartAsync();
+                    await RegisterPrinters();
+
+                    Logging.Debug("Connection re-established.");
                 }
-
-                if (!_keepAlive)
-                    return;
-
-                await Task.Delay(1000);
-                await _connection.StartAsync();
-                RegisterPrinters();
-
-                Logging.Debug("Connection re-established.");
             };
 
-            _connection.On<Guid, Guid>(Constants.RequestPrint, (id, receipt) =>
+            _connection.On<Guid, Guid>(Constants.RequestPrint, async (id, receipt) =>
             {
                 Logging.Debug($"Print request {id}");
                 try
                 {
-                    RunWithTimeout(() =>
+                    try
                     {
-                        try
+                        if (await SelectJob(id) is SpoolerJob job)
                         {
-                            var job = SelectJob(id);
-
-                            if (job != null)
-                            {
-                                Print(job);
-                                Complete(receipt);
-                            }
-                            else
-                            {
-                                Logging.Error($"Print Job {id} not found.");
-                            }
+                            Logging.Debug($"Issuing request for printing request {id}.");
+                            await Print(job);
+                            Logging.Debug($"Completing job for request {id}.");
+                            await Complete(receipt);
+                            Logging.Debug($"Job for request {id} completed.");
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            Logging.Exception(ex, LoggingLevel.Error);
+                            Logging.Error($"Print Job {id} not found.");
                         }
-                    }, TimeSpan.FromMinutes(10)); //Should the worst happen and it gets stuck
+                    }
+                    catch (Exception ex)
+                    {
+                        Logging.Exception(ex, LoggingLevel.Error);
+                    }
                 }
                 catch (Exception ex)
                 {
                     Logging.Exception(ex, LoggingLevel.Fatal);
                 }
-
             });
         }
 
-        public void Start()
+        public async Task Start()
         {
             Logging.Debug("Starting print spooler...");
 
@@ -142,13 +144,11 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 
                 Logging.Debug("Connection to server");
 
-                _connection.StartAsync().Wait();
+                await _connection.StartAsync();
 
                 Logging.Debug("Print spooler started");
 
-                RegisterPrinters();
-
-                _keepAlive = true;
+                await RegisterPrinters();
             }
             catch (Exception ex)
             {
@@ -156,15 +156,13 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             }
         }
 
-        public void Stop()
+        public async Task Stop()
         {
             Logging.Debug("Stopping print spooler...");
 
             try
             {
-                _keepAlive = false;
-
-                _connection.StopAsync().Wait();
+                await _connection.StopAsync();
 
                 Logging.Debug("Print spooler stopped");
             }
@@ -174,7 +172,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             }
         }
 
-        private void RegisterPrinters()
+        private async Task RegisterPrinters()
         {
             Logging.Debug("Registering printers...");
 
@@ -182,7 +180,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 
             try
             {
-                AddPrinters(printerList);
+                await AddPrinters(printerList);
                 Logging.Trace($"Registered Printers: {string.Join(", ", printerList)}");
             }
             catch (Exception ex)
@@ -191,7 +189,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             }
         }
 
-        private void Print(SpoolerJob job)
+        private async Task Print(SpoolerJob job)
         {
             Logging.Trace($"Printing requested");
 
@@ -202,56 +200,80 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                     Logging.Debug($"Printing Job {job}");
 
                     var report = new XtraReport();
-                    using (var ms = new MemoryStream(Convert.FromBase64String(job.Content)))
+
+                    using var ms = new MemoryStream(Convert.FromBase64String(job.Content));
+
+                    report.LoadLayoutFromXml(ms, true);
+
+                    var localizeFunction = new LocalizeFunction(_localizationProvider, job.Identity);
+
+                    var printerName = _printerHandler.MapToSystemName(job.Printer);
+
+                    Logging.Debug($"Printing to '{printerName}' (mapped as '{job.Printer}')");
+
+                    report.PrinterName = printerName;
+
+                    try
                     {
-                        report.LoadLayoutFromXml(ms);
 
-                        var printerName = _printerHandler.MapToSystemName(job.Printer);
-                        Logging.Debug($"Printing to '{printerName}' (mapped as '{job.Printer}')");
-
-                        if (_printerHandler.IsPrinterOnline(printerName, out string queueStatus))
+                        await _functionLock.WaitAsync();
+                        try
                         {
-                            report.PrinterName = printerName;
-                            var printTask = RunWithTimeout(() =>
+                            CustomFunctions.Register(localizeFunction);
+
+                            report.CreateDocument(false);
+
+                            CustomFunctions.Unregister(localizeFunction.Name);
+                        }
+                        finally
+                        {
+                            _functionLock.Release();
+                        }
+
+                        report.PrintingSystem.Document.Name = $"TomPIT Printing Doc {job.Token}";
+
+                        var print = new PrintToolBase(report.PrintingSystem);
+
+                        Logging.Trace("Starting printing...");
+                        if (OperatingSystem.IsWindows())
+                        {
+                            while (job.CopyCount > 0)
                             {
-                                report.CreateDocument(false);
-                                report.PrintingSystem.Document.Name = $"TomPIT Printing Doc {job.Token}";
 
-                                var print = new PrintToolBase(report.PrintingSystem);
+                                print.PrinterSettings.Copies = (short)Math.Min(job.CopyCount, short.MaxValue);
 
-                                Logging.Trace("Starting printing...");
                                 print.Print(printerName);
-                                Logging.Trace("Printing done...");
-                            }, TimeSpan.FromSeconds(Settings.PrintJobTimeout));
 
-                            try
-                            {
-                                printTask.Wait();
+                                job.CopyCount -= short.MaxValue;
                             }
-                            catch (Exception ex)
-                            {
-                                Logging.Error("There was and error printing the document.");
-                                Logging.Debug(ex.ToString());
-                                throw ex;
-                            }
+
                         }
                         else
                         {
-                            var message = $"Printer not available. Status: {queueStatus}";
-                            Logging.Debug("Printer not available. See error log for detailed status.");
-                            Logging.Error(message);
+                            for (int i = 0; i < job.CopyCount; i++)
+                            {
+                                print.Print(printerName);
+                            }
                         }
+
+                        Logging.Trace("Printing done...");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logging.Error("There was and error printing the document.");
+                        Logging.Debug(ex.ToString());
+                        throw;
                     }
                 }
             }
             catch (Exception ex)
             {
                 Logging.Exception(ex, LoggingLevel.Error);
-                throw ex;
+                throw;
             }
         }
 
-        private void Complete(Guid id)
+        private async Task Complete(Guid id)
         {
             Logging.Debug($"Completing Job {id}");
 
@@ -260,7 +282,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                 if (_connection.State != HubConnectionState.Connected)
                     return;
 
-                _connection.SendAsync(Constants.ServerMethodNameComplete, id).Wait();
+                await _connection.SendAsync(Constants.ServerMethodNameComplete, id);
 
                 Logging.Trace($"Job {id} Completed");
             }
@@ -271,15 +293,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             }
         }
 
-        private void Ping(Guid id)
-        {
-            if (_connection.State != HubConnectionState.Connected)
-                return;
-
-            _connection.SendAsync(Constants.ServerMethodNamePing, id).Wait();
-        }
-
-        private void AddPrinters(List<string> printers)
+        private async Task AddPrinters(List<string> printers)
         {
             var args = new List<object>();
 
@@ -291,41 +305,16 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                 });
             }
 
-            _connection.SendAsync(Constants.ServerMethodNameAddPrinters, args).Wait();
+            await _connection.SendAsync(Constants.ServerMethodNameAddPrinters, args);
         }
 
-        private Task RunWithTimeout(Action action, TimeSpan timeout)
-        {
-            Task task = null;
-            task = Task.Factory.StartNew(() =>
-            {
-                var thread = new Thread(new ThreadStart(action));
-                Task.Factory.StartNew(() =>
-                {
-                    Thread.Sleep(timeout);
-                    if (!task.IsCompleted)
-                    {
-                        thread.Abort();
-                    }
-                });
-                thread.Start();
-                thread.Join();
-                if (thread.ThreadState == System.Threading.ThreadState.Aborted)
-                {
-                    throw new TimeoutException();
-                }
-            });
-            task.Wait();
-            return task;
-        }
-
-        private SpoolerJob SelectJob(Guid id)
+        private async Task<SpoolerJob> SelectJob(Guid id)
         {
             Logging.Debug($"Getting Job {id} from Server");
 
-            var spollerUri = new Uri(_baseCdnUri, "sys/printing-spooler");
+            var spoolerUrl = new Uri(_baseCdnUri, "sys/printing-spooler");
 
-            Logging.Trace($"HTTP Request to {spollerUri}");
+            Logging.Trace($"HTTP Request to {spoolerUrl}");
             Logging.Trace($"Header: {Constants.HttpHeaderBearer} = {Settings.Token}");
             Logging.Trace($"Mime Type: {Constants.MimeTypeJson}");
 
@@ -336,12 +325,12 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Constants.HttpHeaderBearer, Settings.Token);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(Constants.MimeTypeJson));
 
-                var result = client.PostAsync(spollerUri, new StringContent(JsonConvert.SerializeObject(new
+                var result = await client.PostAsync(spoolerUrl, new StringContent(JsonConvert.SerializeObject(new
                 {
                     Id = id
-                }), Encoding.UTF8, Constants.MimeTypeJson)).Result;
+                }), Encoding.UTF8, Constants.MimeTypeJson));
 
-                var content = result.Content.ReadAsStringAsync().Result;
+                var content = await result.Content.ReadAsStringAsync();
 
                 if (string.Compare(content, "null", true) == 0
                     || string.IsNullOrWhiteSpace(content))
@@ -358,6 +347,21 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                 Logging.Exception(ex, LoggingLevel.Fatal);
                 throw;
             }
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            await Start();
+
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+
+            stoppingToken.Register(async s =>
+            {
+                ((TaskCompletionSource<bool>)s).SetResult(true);
+            }, taskCompletionSource);
+
+            await taskCompletionSource.Task;
+            await Stop();
         }
     }
 

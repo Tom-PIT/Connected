@@ -23,7 +23,7 @@ namespace TomPIT.Middleware.Services
 				Report = report,
 				Printer = printer,
 				Arguments = arguments,
-				Provider = provider
+				Provider = provider,
 			});
 		}
 
@@ -39,7 +39,7 @@ namespace TomPIT.Middleware.Services
 					e.User = Context.Services.Identity.User.Token.ToString();
 			}
 
-			return Context.Tenant.GetService<IPrintingService>().Insert(e.Provider, e.Printer, descriptor.Component.Token, e.Arguments, e.User, e.Category);
+			return Context.Tenant.GetService<IPrintingService>().Insert(e.Provider, e.Printer, descriptor.Component.Token, e.Arguments, e.User, e.Category, e.CopyCount);
 		}
 		public IPrintJob SelectPrintJob(Guid job)
 		{
