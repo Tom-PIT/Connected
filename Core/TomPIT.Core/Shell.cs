@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Threading;
@@ -190,6 +191,8 @@ namespace TomPIT
                     var appPath = Path.GetFullPath(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
 
                     var segments = new Uri(appPath).Segments;
+
+                    segments = segments.Select(e=> e.Replace("%20", " ")).ToArray();
 
                     for (int i = 1; i <= segments.Length; i++)
                     {
