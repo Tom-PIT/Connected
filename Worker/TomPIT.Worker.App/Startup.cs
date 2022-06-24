@@ -28,6 +28,11 @@ namespace TomPIT.Worker
 			};
 
 			Instance.Initialize(InstanceType.Worker, services, e);
+
+			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
+
+			Instance.InitializeShellServices();
+
 			RegisterTasks(services);
 		}
 
@@ -38,7 +43,6 @@ namespace TomPIT.Worker
 				Worker.Configuration.Routing.Register(f.Builder);
 			});
 
-			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 			Instance.Run(app, env);
 		}
 

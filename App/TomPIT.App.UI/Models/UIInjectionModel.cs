@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.IoC;
@@ -93,6 +94,9 @@ namespace TomPIT.App.Models
 
             var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(ViewUrl).LocalPath), Controller.Request.RouteValues);
 
+            if (Arguments.ContainsKey("partial"))
+                return;
+
             Shell.HttpContext.ParseArguments(Arguments, null, (url) =>
             {
                 var route = MiddlewareDescriptor.Current.Tenant.GetService<INavigationService>().MatchRoute(Services.Routing.RelativePath(new Uri(url).LocalPath), Controller.Request.RouteValues);
@@ -101,7 +105,21 @@ namespace TomPIT.App.Models
 
         public override IRuntimeModel Clone()
         {
-            return this;
+            var clone = new UIInjectionModel()
+            {
+                Body = (JObject)Body.DeepClone(),
+                ViewIdentifier = ViewIdentifier,
+                PartialIdentifier = PartialIdentifier,
+                ViewUrl = ViewUrl,
+                MicroService = MicroService,
+                Component = Component,
+                QualifierName = QualifierName,
+                ViewConfiguration = ViewConfiguration
+            };
+
+            clone.Initialize(this.Controller, this.MicroService);
+
+            return clone;
         }
     }
 }

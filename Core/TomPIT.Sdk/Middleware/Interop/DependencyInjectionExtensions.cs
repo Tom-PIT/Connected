@@ -24,10 +24,12 @@ namespace TomPIT.Middleware.Interop
 
 					foreach (var m in methods)
 					{
-						if (!m.ContainsGenericParameters || m.GetParameters().Length != 1)
+						if (m.GetParameters().Length != 1)
 							continue;
 
-						result = Marshall.Convert<T>(m.Invoke(dependency, new object[] { result }));
+						var localResult = Marshall.Convert(result, m.GetParameters().FirstOrDefault().ParameterType);
+						var invokeResult = m.Invoke(dependency, new object[] { localResult });
+						result = Marshall.Convert<T>(invokeResult);
 					}
 				}
 			}

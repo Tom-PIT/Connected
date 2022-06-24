@@ -32,6 +32,8 @@ namespace TomPIT.Cdn
 			};
 
 			Instance.Initialize(InstanceType.Cdn, services, e);
+			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
+			Instance.InitializeShellServices();
 
 			services.AddSignalR(o =>
 			{
@@ -52,7 +54,6 @@ namespace TomPIT.Cdn
 				f.Builder.MapHub<ClientHub>("/clients");
 			});
 
-			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 			Instance.Run(app, env);
 		}
 

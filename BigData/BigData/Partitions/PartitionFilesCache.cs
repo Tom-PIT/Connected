@@ -25,12 +25,12 @@ namespace TomPIT.BigData.Partitions
 			return Where(f => f.Partition == partition);
 		}
 
-		public ImmutableList<IPartitionFile> Query(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp)
+		public ImmutableList<IPartitionFile> Query(Guid partition, Guid timezone, string key, DateTime startTimestamp, DateTime endTimestamp)
 		{
-			if (key == null)
+			if (key is null)
 				key = string.Empty;
 
-			var candidates = Where(f => f.Partition == partition && (string.Compare(f.Key, key, true) == 0));
+			var candidates = Where(f => f.Partition == partition && f.Timezone == timezone && (string.Compare(f.Key, key, true) == 0));
 
 			if (candidates.Count == 0 || (startTimestamp == DateTime.MinValue && endTimestamp == DateTime.MinValue))
 				return candidates;

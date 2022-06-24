@@ -18,8 +18,10 @@ namespace TomPIT.Cdn
 
 		public string User { get; set; }
 
-		public long SerialNumber {get;set;}
+		public long SerialNumber { get; set; }
 
-		public string Category {get;set;}
+		public string Category { get; set; }
+
+		public int CopyCount { get; set; }
 	}
 }

@@ -99,7 +99,7 @@ namespace TomPIT.Sys.Model.Cdn
 			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.InsertSubscribers(sub, subscribers);
 		}
 
-		public Guid InsertSubscriber(Guid subscription, SubscriptionResourceType type, string resourcePrimaryKey)
+		public Guid InsertSubscriber(Guid subscription, SubscriptionResourceType type, string resourcePrimaryKey, List<string> tags)
 		{
 			var sub = Select(subscription);
 
@@ -108,7 +108,7 @@ namespace TomPIT.Sys.Model.Cdn
 
 			var id = Guid.NewGuid();
 
-			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.InsertSubscriber(sub, id, type, resourcePrimaryKey);
+			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.InsertSubscriber(sub, id, type, resourcePrimaryKey, tags);
 
 			return id;
 		}

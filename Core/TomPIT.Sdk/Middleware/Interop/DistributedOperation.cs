@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Diagnostics;
@@ -154,7 +155,15 @@ namespace TomPIT.Middleware.Interop
             base.OnCommitting();
 
             if (OperationTarget == DistributedOperationTarget.Distributed && !((MiddlewareCallback)Callback).Attached)
+            {
+                if (Context.Services.Identity.IsAuthenticated)
+                {
+                    var args = JObject.FromObject(this);
+                    args["user$"] = Context.Services.Identity.User.Token;
+                }
+
                 Context.Services.Cdn.Events.TriggerEvent("$", this, Callback);
+            }
         }
 
         protected virtual void OnInvoke()

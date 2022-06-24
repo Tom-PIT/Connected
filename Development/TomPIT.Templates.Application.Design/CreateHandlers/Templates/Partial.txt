@@ -1,16 +1,21 @@
-﻿<tp-partial name="[NAME]">
-    <div class="container">
-        <div class="row">
-            <div class="col">
-            </div>
-        </div>
-    </div>
+﻿@{
+   var tag = Guid.NewGuid();
+}
+
+<tp-partial name="[NAME]" data-tag="@tag">
 </tp-partial>
 
 <script type="module">
-    import {[NAME]} from '@Html.TP().JavaScript.BundlePath("[MICROSERVICE]/[NAME]")';
+   import {[NAME]} from '@Html.TP().JavaScript.BundlePath("[MICROSERVICE]/[NAME]")';
 
-    new [NAME]({
-        name: '[NAME]'
-    });
+   new [NAME]({
+      name: '[NAME]',
+      tag: '@tag',
+      data: {
+      },
+      dataSources: {
+      },
+      localization: {
+      }
+   });
 </script>

@@ -22,6 +22,8 @@ namespace TomPIT.Data
 
 				BindReturnValues();
 
+				SignalDirty();
+
 				return recordsAffected;
 			}
 			finally
@@ -46,6 +48,7 @@ namespace TomPIT.Data
 					Connection.Commit();
 
 				BindReturnValues();
+				SignalDirty();
 
 				foreach (var parameter in Parameters)
 				{
@@ -95,5 +98,11 @@ namespace TomPIT.Data
 
 			return parameter;
 		}
+
+		private void SignalDirty()
+        {
+			if (Context is MiddlewareContext ctx && ctx.Transaction is MiddlewareTransaction transaction)
+				transaction.IsDirty = true;
+        }
 	}
 }

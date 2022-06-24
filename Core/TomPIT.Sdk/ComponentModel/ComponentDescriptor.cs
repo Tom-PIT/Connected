@@ -14,6 +14,7 @@ using TomPIT.ComponentModel.Resources;
 using TomPIT.ComponentModel.Scripting;
 using TomPIT.ComponentModel.Search;
 using TomPIT.ComponentModel.UI;
+using TomPIT.ComponentModel.UI.Theming;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 
@@ -265,6 +266,11 @@ namespace TomPIT.ComponentModel
 		public static ConfigurationDescriptor<IMasterViewConfiguration> Master(IMiddlewareContext context, string identifier)
 		{
 			return new ConfigurationDescriptor<IMasterViewConfiguration>(context, identifier, ComponentCategories.MasterView);
+		}
+
+		public static ConfigurationDescriptor<IThemeConfiguration> Theme(IMiddlewareContext context, string identifier)
+		{
+			return new ConfigurationDescriptor<IThemeConfiguration>(context, identifier, ComponentCategories.Theme);
 		}
 
 		protected virtual void Dispose(bool disposing)

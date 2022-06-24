@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using TomPIT.Collections;
 
 namespace TomPIT.Cdn.Events
 {
@@ -27,7 +28,7 @@ namespace TomPIT.Cdn.Events
 					Clients.TryGetValue(client.EventName.ToLowerInvariant(), out clients);
 			}
 
-			var existing = clients.ToImmutableList();
+			var existing = clients.ToImmutableList(true);
 
 			foreach (var c in existing)
 			{
@@ -51,7 +52,7 @@ namespace TomPIT.Cdn.Events
 		{
 			foreach (var client in Clients)
 			{
-				var items = client.Value.Where(f => f is not null && f.RetentionDeadline != DateTime.MinValue && f.RetentionDeadline <= DateTime.UtcNow).ToImmutableList();
+				var items = client.Value.Where(f => f is not null && f.RetentionDeadline != DateTime.MinValue && f.RetentionDeadline <= DateTime.UtcNow).ToImmutableList(true);
 
 				lock (client.Value)
 				{
@@ -67,7 +68,7 @@ namespace TomPIT.Cdn.Events
 		{
 			foreach (var eventList in Clients)
 			{
-				var items = eventList.Value.ToImmutableArray();
+				var items = eventList.Value.ToImmutableArray(true);
 
 				foreach (var item in items)
 				{
@@ -96,14 +97,14 @@ namespace TomPIT.Cdn.Events
 			if (!Clients.TryGetValue(eventName.ToLowerInvariant(), out List<EventClient> result))
 				return null;
 
-			return result.Where(f => f is not null).ToImmutableList();
+			return result.Where(f => f is not null).ToImmutableList(true);
 		}
 
 		public static void Remove(string connectionId, string eventName)
 		{
 			foreach (var eventList in Clients)
 			{
-				var items = eventList.Value.ToImmutableList();
+				var items = eventList.Value.ToImmutableList(true);
 
 				foreach (var item in items)
 				{

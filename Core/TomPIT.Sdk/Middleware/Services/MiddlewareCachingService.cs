@@ -35,6 +35,9 @@ namespace TomPIT.Middleware.Services
 
 		public T Get<T>(string key, Func<T, bool> matchEvaluator, CacheRetrieveHandler<T> retrieve) where T : class
 		{
+			if(!IsTransactionDirty)
+				return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, matchEvaluator, retrieve);
+
 			return ContextCache.Get(Context, key, matchEvaluator, (f) =>
 			{
 				var shared = Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, matchEvaluator, null);
@@ -48,6 +51,9 @@ namespace TomPIT.Middleware.Services
 
 		public T Get<T>(string key, string id, CacheRetrieveHandler<T> retrieve) where T : class
 		{
+			if (!IsTransactionDirty)
+				return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, id, retrieve);
+
 			return ContextCache.Get(Context, key, id, (f) =>
 			{
 				var shared = Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, id);
@@ -61,6 +67,9 @@ namespace TomPIT.Middleware.Services
 
 		public T Get<T>(string key, Func<dynamic, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
 		{
+			if (!IsTransactionDirty)
+				return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, predicate, retrieve);
+
 			return ContextCache.Get(Context, key, predicate, (f) =>
 			{
 				var shared = Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, predicate);
@@ -113,16 +122,25 @@ namespace TomPIT.Middleware.Services
 
 		public T Set<T>(string key, string id, T instance) where T : class
 		{
+			if (!IsTransactionDirty)
+				return Context.Tenant.GetService<IDataCachingService>().Set(key, id, instance);
+
 			return ContextCache.Set(key, id, instance);
 		}
 
 		public T Set<T>(string key, string id, T instance, TimeSpan duration) where T : class
 		{
+			if (!IsTransactionDirty)
+				return Context.Tenant.GetService<IDataCachingService>().Set(key, id, instance, duration);
+
 			return ContextCache.Set(key, id, instance, duration);
 		}
 
 		public T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration) where T : class
 		{
+			if (!IsTransactionDirty)
+				return Context.Tenant.GetService<IDataCachingService>().Set(key, id, instance, duration, slidingExpiration);
+
 			return ContextCache.Set(key, id, instance, duration, slidingExpiration);
 		}
 
@@ -241,5 +259,7 @@ namespace TomPIT.Middleware.Services
 
 			base.OnDisposing();
 		}
+
+		private bool IsTransactionDirty => Context is MiddlewareContext ctx && ctx.Transaction is MiddlewareTransaction transaction && transaction.IsDirty;
 	}
 }

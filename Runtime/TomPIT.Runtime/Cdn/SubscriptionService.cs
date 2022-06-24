@@ -47,6 +47,16 @@ namespace TomPIT.Cdn
 			Tenant.Post(u, e);
 		}
 
+		public void DeleteSubscription(ISubscriptionConfiguration configuration, string primaryKey, string topic)
+		{
+			Tenant.Post(Tenant.CreateUrl("Subscription", "Delete"), new
+			{
+				handler = configuration.Component,
+				primaryKey,
+				topic
+			});
+		}
+
 		public void TriggerEvent<T>(ISubscriptionConfiguration configuration, string eventName, string primaryKey, string topic, T arguments)
 		{
 			var u = Tenant.CreateUrl("Subscription", "EnqueueEvent");
@@ -103,17 +113,17 @@ namespace TomPIT.Cdn
 			return MiddlewareDescriptor.Current.Tenant.Post<Recipient>(u, e);
 		}
 
-		public Guid InsertSubscriber(Guid subscription, SubscriptionResourceType type, string resourcePrimaryKey)
+		public Guid InsertSubscriber(Guid subscription, SubscriptionResourceType type, string resourcePrimaryKey, List<string> tags)
 		{
 			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("Subscription", "InsertSubscriber");
-			var e = new JObject
-			{
-				{"subscription",  subscription},
-				{"type",  type.ToString()},
-				{"resourcePrimaryKey",  resourcePrimaryKey}
-			};
 
-			return MiddlewareDescriptor.Current.Tenant.Post<Guid>(u, e);
+			return MiddlewareDescriptor.Current.Tenant.Post<Guid>(u, new
+			{
+				subscription,
+				type,
+				resourcePrimaryKey,
+				tags
+			});
 		}
 
 		public void DeleteSubscriber(Guid subscription, SubscriptionResourceType type, string resourcePrimaryKey)
@@ -131,7 +141,7 @@ namespace TomPIT.Cdn
 
 		public void InsertSubscribers(Guid subscription, List<IRecipient> recipients)
 		{
-			if (recipients == null || recipients.Count == 0)
+			if (recipients is null || !recipients.Any())
 				return;
 
 			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("Subscription", "InsertSubscribers");
@@ -140,20 +150,23 @@ namespace TomPIT.Cdn
 					{"subscription", subscription }
 				};
 
-			var a = new JArray();
-
-			e.Add("items", a);
+			var items = new List<object>();
 
 			foreach (var recipient in recipients)
 			{
-				a.Add(new JObject
-					{
-						{"type", recipient.Type.ToString() },
-						{"resourcePrimaryKey", recipient.ResourcePrimaryKey }
-					});
+				items.Add(new
+				{
+					recipient.Type,
+					recipient.ResourcePrimaryKey,
+					recipient.Tags
+				});
 			}
 
-			MiddlewareDescriptor.Current.Tenant.Post(u, e);
+			MiddlewareDescriptor.Current.Tenant.Post(u, new
+			{
+				subscription,
+				items
+			});
 		}
 
 		public ISubscription SelectSubscription(Guid token)

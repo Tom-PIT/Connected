@@ -10,5 +10,6 @@
 	public interface IMiddlewareTransaction
 	{
 		MiddlewareTransactionState State { get; }
+		bool IsDirty { get; }
 	}
 }

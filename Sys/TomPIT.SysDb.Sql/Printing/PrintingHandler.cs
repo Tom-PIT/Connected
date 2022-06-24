@@ -27,7 +27,7 @@ namespace TomPIT.SysDb.Sql.Printing
 			w.Execute();
 		}
 
-		public void Insert(Guid token, DateTime created, Guid component, PrintJobStatus status, string provider, string arguments, string user, long serialNumber, string category)
+		public void Insert(Guid token, DateTime created, Guid component, PrintJobStatus status, string provider, string arguments, string user, long serialNumber, string category, int copyCount = 1)
 		{
 			using var w = new Writer("tompit.print_job_ins");
 
@@ -40,6 +40,7 @@ namespace TomPIT.SysDb.Sql.Printing
 			w.CreateParameter("@user", user, true);
 			w.CreateParameter("@serial_number", serialNumber, true);
 			w.CreateParameter("@category", category, true);
+			w.CreateParameter("@copy_count", copyCount);
 
 			w.Execute();
 		}
@@ -54,7 +55,7 @@ namespace TomPIT.SysDb.Sql.Printing
 			w.Execute();
 		}
 
-		public void InsertSpooler(Guid token, DateTime created, string mime, string printer, string content)
+		public void InsertSpooler(Guid token, DateTime created, string mime, string printer, string content, Guid identity, int copyCount = 1)
 		{
 			using var w = new Writer("tompit.print_spooler_ins");
 
@@ -63,6 +64,8 @@ namespace TomPIT.SysDb.Sql.Printing
 			w.CreateParameter("@mime", mime);
 			w.CreateParameter("@printer", printer);
 			w.CreateParameter("@content", Convert.FromBase64String(content));
+			w.CreateParameter("@identity", identity);
+			w.CreateParameter("@copy_count", copyCount);
 
 			w.Execute();
 		}

@@ -11,6 +11,7 @@ namespace TomPIT.MicroServices.IoC
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.IocContainerOperation, TomPIT.MicroServices.Design")]
 	[ClassRequired]
 	public class IoCOperation : TextElement, IIoCOperation
 	{

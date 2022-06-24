@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json.Linq;
 using TomPIT.BigData.Data;
 using TomPIT.BigData.Persistence;
 using TomPIT.Caching;
@@ -19,32 +18,25 @@ namespace TomPIT.BigData.Partitions
 {
 	internal class PartitionService : SynchronizedClientRepository<IPartition, Guid>, IPartitionService
 	{
+		private const string DefaultController = "BigDataManagement";
 		public PartitionService(ITenant tenant) : base(tenant, "partitions")
 		{
 			Files = new PartitionFilesCache(Tenant);
 			Fields = new PartitionFieldStatisticsCache(Tenant);
 		}
 
+		private PartitionFilesCache Files { get; }
+		private PartitionFieldStatisticsCache Fields { get; }
+
 		protected override void OnInitializing()
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "QueryPartitions");
-			var partitions = Tenant.Get<List<Partition>>(u);
-
-			foreach (var partition in partitions)
+			foreach (var partition in Tenant.Get<List<Partition>>(CreateUrl("QueryPartitions")))
 				Set(partition.Configuration, partition, TimeSpan.Zero);
 		}
 
 		protected override void OnInvalidate(Guid id)
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "SelectPartition");
-			var e = new JObject
-			{
-				{"configuration", id }
-			};
-
-			var partition = Tenant.Post<Partition>(u, e);
-
-			if (partition != null)
+			if (Tenant.Post<Partition>(CreateUrl("SelectPartition"), new { configuration = id }) is IPartition partition)
 				Set(id, partition, TimeSpan.Zero);
 		}
 		public ImmutableList<IPartition> Query()
@@ -56,21 +48,19 @@ namespace TomPIT.BigData.Partitions
 		{
 			var r = Get(f => f.Configuration == configuration.Component);
 
-			if (r != null)
+			if (r is not null)
 				return r;
 
 			var ms = Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)configuration).MicroService());
 
-			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("BigDataManagement", "InsertPartition");
-			var e = new JObject
-				{
-					{"name", configuration.ComponentName() },
-					{"configuration", configuration.Component },
-					{ "status", PartitionStatus.Active.ToString() },
-					{ "resourceGroup", ms.ResourceGroup }
-				};
+			Tenant.Post(CreateUrl("InsertPartition"), new
+			{
+				name = configuration.ComponentName(),
+				configuration = configuration.Component,
+				status = PartitionStatus.Active.ToString(),
+				resourceGroup = ms.ResourceGroup
+			});
 
-			Tenant.Post(u, e);
 			Refresh(configuration.Component);
 
 			return Get(f => f.Configuration == configuration.Component);
@@ -91,18 +81,16 @@ namespace TomPIT.BigData.Partitions
 			Remove(token);
 		}
 
-		public Guid InsertFile(Guid partition, Guid node, string key, DateTime timeStamp)
+		public Guid InsertFile(Guid partition, Guid node, Guid timezone, string key, DateTime timeStamp)
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "InsertFile");
-			var e = new JObject
+			var id = Tenant.Post<Guid>(CreateUrl("InsertFile"), new
 			{
-				{"partition", partition },
-				{"node", node },
-				{"key", key },
-				{"timeStamp", timeStamp }
-			};
-
-			var id = Tenant.Post<Guid>(u, e);
+				partition,
+				node,
+				key,
+				timeStamp,
+				timezone
+			});
 
 			Files.Notify(id);
 
@@ -124,79 +112,55 @@ namespace TomPIT.BigData.Partitions
 			Fields.Notify(file, fieldName);
 		}
 
-		public ImmutableList<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp)
+		public ImmutableList<IPartitionFile> QueryFiles(Guid partition, Guid timezone, string key, DateTime startTimestamp, DateTime endTimestamp)
 		{
-			return Files.Query(partition, key, startTimestamp, endTimestamp);
+			return Files.Query(partition, timezone, key, startTimestamp, endTimestamp);
 		}
 
 		public void UpdateFile(Guid file, DateTime startTimeStamp, DateTime endTimeStamp, int count, PartitionFileStatus status)
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "UpdateFile");
-			var e = new JObject
+			Tenant.Post(CreateUrl("UpdateFile"), new
 			{
-				{"token", file },
-				{"startTimestamp", startTimeStamp },
-				{"endTimestamp", endTimeStamp },
-				{"count", count },
-				{"status", status.ToString() }
-			};
-
-			Tenant.Post(u, e);
+				token = file,
+				startTimeStamp,
+				endTimeStamp,
+				count,
+				status = status.ToString()
+			});
 
 			Files.Notify(file);
 		}
 
 		public void DeleteFile(Guid file)
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "DeleteFile");
-			var e = new JObject
-			{
-				{"token", file }
-			};
-
-			Tenant.Post(u, e);
+			Tenant.Post(CreateUrl("BigDataManagement"), new { token = file });
 
 			Files.Notify(file, true);
 		}
 
 		public Guid LockFile(Guid file)
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "LockFile");
-			var e = new JObject
-			{
-				{"token", file }
-			};
-
-			return Tenant.Post<Guid>(u, e);
+			return Tenant.Post<Guid>(CreateUrl("LockFile"), new { token = file });
 		}
 
 		public void ReleaseFile(Guid unlockKey)
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "UnlockFile");
-			var e = new JObject
-			{
-				{"unlockKey", unlockKey }
-			};
-
-			Tenant.Post(u, e);
+			Tenant.Post(CreateUrl("UnlockFile"), new { unlockKey });
 		}
 
 		public void UpdateFileStatistics(Guid file, string fieldName, string startString, string endString, double startNumber, double endNumber, DateTime startDate, DateTime endDate)
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "UpdateFieldStatistics");
-			var e = new JObject
+			Tenant.Post(CreateUrl("UpdateFieldStatistics"), new
 			{
-				{"file", file },
-				{"fieldName", fieldName },
-				{"startString", startString },
-				{"endString", endString },
-				{"startNumber", startNumber },
-				{"endNumber", endNumber },
-				{"startDate", startDate },
-				{"endDate", endDate }
-			};
-
-			Tenant.Post(u, e);
+				file,
+				fieldName,
+				startString,
+				endString,
+				startNumber,
+				endNumber,
+				startDate,
+				endDate
+			});
 
 			Fields.Notify(file, fieldName);
 		}
@@ -208,29 +172,27 @@ namespace TomPIT.BigData.Partitions
 			var microService = Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)configuration).MicroService());
 			var existingConfiguration = Tenant.GetService<IStorageService>().Download(microService.Token, BlobTypes.BigDataPartitionSchema, microService.ResourceGroup, partition.ToString());
 
-			if (existingConfiguration == null || existingConfiguration.Content == null)
+			if (existingConfiguration is null || existingConfiguration.Content is null)
 			{
 				CreateValidationSchema(microService, partition, schema);
 				return;
 			}
-			else
+
+			var existingSchema = Serializer.Deserialize<PartitionSchema>(Encoding.UTF8.GetString(existingConfiguration.Content));
+
+			if (existingSchema.CompareTo(schema) != 0)
 			{
-				var existingSchema = Serializer.Deserialize<PartitionSchema>(Encoding.UTF8.GetString(existingConfiguration.Content));
+				var p = Select(configuration);
 
-				if (existingSchema.CompareTo(schema) != 0)
+				if (p.Status == PartitionStatus.Active)
 				{
-					var p = Select(configuration);
-
-					if (p.Status == PartitionStatus.Active)
-					{
-						if (configuration.SchemaSynchronization == SchemaSynchronizationMode.Auto)
-							UpdatePartition(partition, configuration.ComponentName(), PartitionStatus.Maintenance);
-						else
-							UpdatePartition(partition, configuration.ComponentName(), PartitionStatus.Invalid);
-					}
-
-					throw new RuntimeException(SR.ErrBigDataPartitionSchemaChanged);
+					if (configuration.SchemaSynchronization == SchemaSynchronizationMode.Auto)
+						UpdatePartition(partition, configuration.ComponentName(), PartitionStatus.Maintenance);
+					else
+						UpdatePartition(partition, configuration.ComponentName(), PartitionStatus.Invalid);
 				}
+
+				throw new RuntimeException(SR.ErrBigDataPartitionSchemaChanged);
 			}
 		}
 
@@ -243,7 +205,7 @@ namespace TomPIT.BigData.Partitions
 			CreateValidationSchema(microService, partition, schema);
 		}
 
-		private void CreateValidationSchema(IMicroService microService, Guid partition, PartitionSchema schema)
+		private static void CreateValidationSchema(IMicroService microService, Guid partition, PartitionSchema schema)
 		{
 			MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Upload(new Blob
 			{
@@ -258,15 +220,13 @@ namespace TomPIT.BigData.Partitions
 
 		public void UpdatePartition(Guid token, string name, PartitionStatus status)
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "UpdatePartition");
-			var e = new JObject
+			MiddlewareDescriptor.Current.Tenant.Post(CreateUrl("UpdatePartition"), new
 			{
-				{"configuration", token },
-				{"name", name },
-				{"status", status.ToString() }
-			};
+				configuration = token,
+				name,
+				status = status.ToString()
+			});
 
-			MiddlewareDescriptor.Current.Tenant.Post(u, e);
 			Refresh(token);
 		}
 
@@ -275,9 +235,9 @@ namespace TomPIT.BigData.Partitions
 			return Files.Query(partition);
 		}
 
-		public ImmutableList<IPartitionFile> QueryFiles(Guid partition, string key, DateTime startTimestamp, DateTime endTimestamp, List<IndexParameter> parameters)
+		public ImmutableList<IPartitionFile> QueryFiles(Guid partition, Guid timezone, string key, DateTime startTimestamp, DateTime endTimestamp, List<IndexParameter> parameters)
 		{
-			var candidates = Files.Query(partition, key, startTimestamp, endTimestamp);
+			var candidates = Files.Query(partition, timezone, key, startTimestamp, endTimestamp);
 			var result = candidates.GroupBy(f => f.FileName).Select(f => f.First()).Select(f => f.FileName).ToList();
 			var fieldHits = new List<Guid>();
 
@@ -308,7 +268,9 @@ namespace TomPIT.BigData.Partitions
 			return Files.Where(fieldHits);
 		}
 
-		private PartitionFilesCache Files { get; }
-		private PartitionFieldStatisticsCache Fields { get; }
+		private string CreateUrl(string action)
+		{
+			return Tenant.CreateUrl(DefaultController, action);
+		}
 	}
 }

@@ -43,26 +43,23 @@ namespace TomPIT.Worker.Subscriptions
 			if (recipients == null || recipients.Count == 0)
 				return;
 
-			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("Subscription", "InsertSubscribers");
-			var e = new JObject
-				{
-					{"subscription", token }
-				};
-
-			var a = new JArray();
-
-			e.Add("items", a);
+			var items = new List<object>();
 
 			foreach (var recipient in recipients)
 			{
-				a.Add(new JObject
-					{
-						{"type", recipient.Type.ToString() },
-						{"resourcePrimaryKey", recipient.ResourcePrimaryKey }
-					});
+				items.Add(new
+				{
+					type = recipient.Type.ToString(),
+					resourcePrimaryKey = recipient.ResourcePrimaryKey,
+					tags = recipient.Tags
+				});
 			}
 
-			MiddlewareDescriptor.Current.Tenant.Post(u, e);
+			Tenant.Post(Tenant.CreateUrl("Subscription", "InsertSubscribers"), new
+			{
+				subscription = token,
+				items
+			});
 		}
 
 		public void PingSubscription(Guid popReceipt)

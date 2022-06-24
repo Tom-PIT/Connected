@@ -22,5 +22,6 @@ namespace TomPIT.Cdn
 		string User { get;  }
 		long SerialNumber { get; }
 		string Category { get; }
+		int CopyCount { get; }
 	}
 }

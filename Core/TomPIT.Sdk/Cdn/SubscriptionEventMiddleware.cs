@@ -104,17 +104,30 @@ namespace TomPIT.Cdn
 
 		protected IRecipient CreateUserRecipient(string identifier)
 		{
-			return CdnUtils.CreateUserRecipient(Context, identifier);
+			return CreateUserRecipient(identifier, null);
 		}
 
+		protected IRecipient CreateUserRecipient(string identifier, List<string> tags)
+		{
+			return CdnUtils.CreateUserRecipient(Context, identifier, tags);
+		}
 		protected IRecipient CreateRoleRecipient(string roleName)
 		{
-			return CdnUtils.CreateRoleRecipient(Context, roleName);
+			return CreateRoleRecipient(roleName, null);
 		}
 
+		protected IRecipient CreateRoleRecipient(string roleName, List<string> tags)
+		{
+			return CdnUtils.CreateRoleRecipient(Context, roleName, tags);
+		}
 		protected IRecipient CreateAlienRecipient(string email)
 		{
-			return CdnUtils.CreateAlienRecipient(Context, email);
+			return CreateAlienRecipient(email, null);
+		}
+		protected IRecipient CreateAlienRecipient(string firstName = null, string lastName = null, string email = null, string mobile = null, string phone = null,
+			Guid language = default, string timezone = null, string resourceType = null, string resourcePrimaryKey = null, List<string> tags = null)
+		{
+			return CdnUtils.CreateAlienRecipient(Context, firstName, lastName, email, mobile, phone, language, timezone, resourceType, resourcePrimaryKey, tags);
 		}
 
 		protected List<IUser> ResolveUsers(Guid role)

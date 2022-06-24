@@ -58,6 +58,8 @@
                     'codeLens': @Html.TP().JavaScript.Bool((features & LanguageFeature.CodeLens) == LanguageFeature.CodeLens)
                 });
             }
+        } else {
+            textEditorWidget.activateModel(model.id, model.fileName, model.microService);
         }
 
         textEditorState.setTargetProperty('@Model.PropertyName');

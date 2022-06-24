@@ -114,10 +114,12 @@
             textEditorState = sender;
             textEditor = instance;
             textEditorWidget = sender;
-
+            textEditor.layout();
+            textEditorState.registerForObservation(document.querySelector('#devDesignerSizeBox'));
             initTextEditor();
         }
     });
+
 
     $('#devExplorer').keyup(function (e) {
         if (e.which === 39) {

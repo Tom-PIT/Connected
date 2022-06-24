@@ -1,4 +1,5 @@
-﻿using TomPIT.Annotations.Design;
+﻿using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI.Theming;
@@ -24,5 +25,10 @@ namespace TomPIT.MicroServices.UI.Theming
 				return _stylesheets;
 			}
 		}
+
+		[PropertyCategory(PropertyCategoryAttribute.CategoryAppearance)]
+		[PropertyEditor(PropertyEditorAttribute.Select)]
+		[Items(DesignUtils.ThemeItems)]
+		public string BaseTheme { get; set; }
 	}
 }

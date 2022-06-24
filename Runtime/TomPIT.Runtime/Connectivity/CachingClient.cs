@@ -4,6 +4,7 @@ using TomPIT.ComponentModel;
 using TomPIT.Configuration;
 using TomPIT.Data;
 using TomPIT.Environment;
+using TomPIT.Globalization;
 using TomPIT.Messaging;
 using TomPIT.Security;
 using TomPIT.Storage;
@@ -35,19 +36,19 @@ namespace TomPIT.Connectivity
 
 		private void Globalization()
 		{
-			Hub.On<MessageEventArgs<SettingEventArgs>>("SettingChanged", (e) =>
+			Hub.On<MessageEventArgs<LanguageEventArgs>>("LanguageChanged", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Tenant.GetService<ISettingService>() is ISettingNotification n)
+				if (Tenant.GetService<ILanguageService>() is ILanguageNotification n)
 					n.NotifyChanged(Tenant, e.Args);
 			});
 
-			Hub.On<MessageEventArgs<SettingEventArgs>>("SettingRemoved", (e) =>
+			Hub.On<MessageEventArgs<LanguageEventArgs>>("LanguageRemoved", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Tenant.GetService<ISettingService>() is ISettingNotification n)
+				if (Tenant.GetService<ILanguageService>() is ILanguageNotification n)
 					n.NotifyRemoved(Tenant, e.Args);
 			});
 		}
@@ -186,6 +187,14 @@ namespace TomPIT.Connectivity
 
 				if (Tenant.GetService<IAuthorizationService>() is IAuthorizationNotification n)
 					n.NotifyPermissionChanged(Tenant, e.Args);
+			});
+
+			Hub.On<MessageEventArgs<XmlKeyEventArgs>>("XmlKeyChanged", (e) =>
+			{
+				Hub.InvokeAsync("Confirm", e.Message);
+
+				if (Tenant.GetService<IXmlKeyService>() is IXmlKeyNotification n)
+					n.NotifyChanged(Tenant, e.Args);
 			});
 		}
 

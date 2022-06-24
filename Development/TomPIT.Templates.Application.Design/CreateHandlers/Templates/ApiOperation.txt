@@ -4,8 +4,8 @@ using TomPIT.Middleware.Interop;
 
 public class [NAME] : Operation
 {
-    protected override void OnInvoke()
-    {
+   protected override void OnInvoke()
+   {
 
-    }
+   }
 }

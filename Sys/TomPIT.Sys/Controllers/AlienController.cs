@@ -23,6 +23,15 @@ namespace TomPIT.Sys.Controllers
 			if (token != Guid.Empty)
 				return DataModel.Aliens.Select(token);
 
+			var resourceType = body.Optional("resourceType", string.Empty);
+
+			if (!string.IsNullOrWhiteSpace(resourceType))
+			{
+				var resourcePrimaryKey = body.Optional("resourcePrimaryKey", string.Empty);
+
+				return DataModel.Aliens.Select(resourceType, resourcePrimaryKey);
+			}
+
 			var email = body.Optional("email", string.Empty);
 
 			if (!string.IsNullOrWhiteSpace(email))
@@ -49,8 +58,10 @@ namespace TomPIT.Sys.Controllers
 			var mobile = body.Optional("mobile", string.Empty);
 			var phone = body.Optional("phone", string.Empty);
 			var timezone = body.Optional("timezone", string.Empty);
+			var resourceType = body.Optional("resourceType", string.Empty);
+			var resourcePrimaryKey = body.Optional("resourcePrimaryKey", string.Empty);
 
-			return DataModel.Aliens.Insert(firstName, lastName, email, mobile, phone, language, timezone);
+			return DataModel.Aliens.Insert(firstName, lastName, email, mobile, phone, language, timezone, resourceType, resourcePrimaryKey);
 		}
 
 		[HttpPost]
@@ -65,8 +76,10 @@ namespace TomPIT.Sys.Controllers
 			var mobile = body.Optional("mobile", string.Empty);
 			var phone = body.Optional("phone", string.Empty);
 			var timezone = body.Optional("timezone", string.Empty);
+			var resourceType = body.Optional("resourceType", string.Empty);
+			var resourcePrimaryKey = body.Optional("resourcePrimaryKey", string.Empty);
 
-			DataModel.Aliens.Update(token, firstName, lastName, email, mobile, phone, language, timezone);
+			DataModel.Aliens.Update(token, firstName, lastName, email, mobile, phone, language, timezone, resourceType, resourcePrimaryKey);
 		}
 
 		[HttpPost]

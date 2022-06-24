@@ -9,6 +9,7 @@ namespace TomPIT.MicroServices.Navigation
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.SiteMap, TomPIT.MicroServices.Design")]
 	[ClassRequired]
 	public class SiteMap : TextConfiguration, ISiteMapConfiguration
 	{

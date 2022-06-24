@@ -1,0 +1,14 @@
+﻿using System;
+using TomPIT.IoC;
+using System.Collections.Generic;
+
+public class IoCContainer : IoCOperationMiddleware<IEnumerable<T>>
+{
+   protected override IEnumerable<T> OnInvoke()
+   {
+      foreach(var endpoint in CreateEndpoints())
+      {
+         yield return Invoke<T>(endpoint);
+      }
+   }
+}

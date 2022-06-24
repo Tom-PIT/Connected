@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace TomPIT.Cdn
 {
@@ -7,5 +8,6 @@ namespace TomPIT.Cdn
 		SubscriptionResourceType Type { get; }
 		string ResourcePrimaryKey { get; }
 		Guid Token { get; }
+		List<string> Tags { get; }
 	}
 }

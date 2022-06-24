@@ -3,6 +3,7 @@ using System.Collections;
 using System.Data.Common;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
@@ -42,7 +43,14 @@ namespace TomPIT.DataProviders.BigData
 				});
 			};
 
-			_data = MiddlewareDescriptor.Current.Tenant.Post<JArray>(u, args);
+			HttpRequestArgs credentialArgs = null;
+
+            if (MiddlewareDescriptor.Current.Identity.IsAuthenticated) 
+			{
+				credentialArgs = new HttpRequestArgs().WithCurrentCredentials(MiddlewareDescriptor.Current.User.AuthenticationToken);
+			}
+
+			_data = MiddlewareDescriptor.Current.Tenant.Post<JArray>(u, args, credentialArgs);
 		}
 		private BigDataCommand Command { get; }
 		private JObject Current => ReadIndex == -1 || ReadIndex > _data.Count ? null : _data[ReadIndex] as JObject;

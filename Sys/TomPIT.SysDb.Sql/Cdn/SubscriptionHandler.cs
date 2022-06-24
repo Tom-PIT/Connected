@@ -59,7 +59,7 @@ namespace TomPIT.SysDb.Sql.Cdn
 			w.Execute();
 		}
 
-		public void InsertSubscriber(ISubscription subscription, Guid token, SubscriptionResourceType type, string resourcePrimaryKey)
+		public void InsertSubscriber(ISubscription subscription, Guid token, SubscriptionResourceType type, string resourcePrimaryKey, List<string> tags)
 		{
 			using var w = new Writer("tompit.subscriber_ins");
 
@@ -67,6 +67,9 @@ namespace TomPIT.SysDb.Sql.Cdn
 			w.CreateParameter("@token", token);
 			w.CreateParameter("@resource_type", type);
 			w.CreateParameter("@resource_primary_key", resourcePrimaryKey);
+
+			if (tags is not null && tags.Any())
+				w.CreateParameter("@tags", string.Join(',', tags));
 
 			w.Execute();
 		}
@@ -78,12 +81,17 @@ namespace TomPIT.SysDb.Sql.Cdn
 
 			foreach (var i in subscribers)
 			{
-				a.Add(new JObject
+				var subscriber = new JObject
 				{
 					{"resource_type", Convert.ToInt32(i.Type) },
 					{"resource_primary_key", i.ResourcePrimaryKey },
 					{"token", i.Token }
-				});
+				};
+
+				if (i.Tags is not null && i.Tags.Any())
+					subscriber.Add("tags", string.Join(',', i.Tags));
+
+				a.Add(subscriber);
 			};
 
 

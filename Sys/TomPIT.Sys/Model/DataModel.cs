@@ -63,6 +63,7 @@ namespace TomPIT.Sys.Model
 		private static readonly Lazy<BigDataTransactionBlocksModel> _bigDataTransactionBlocks = new Lazy<BigDataTransactionBlocksModel>(() => { return new BigDataTransactionBlocksModel(); });
 		private static readonly Lazy<BigDataPartitionFilesModel> _bigDataPartitionFiles = new Lazy<BigDataPartitionFilesModel>(() => { return new BigDataPartitionFilesModel(Container); });
 		private static readonly Lazy<BigDataPartitionFieldStatisticsModel> _bigDataPartitionFieldStatistics = new Lazy<BigDataPartitionFieldStatisticsModel>(() => { return new BigDataPartitionFieldStatisticsModel(Container); });
+		private static readonly Lazy<BigDataTimezonesModel> _bigDataTimezones = new Lazy<BigDataTimezonesModel>(() => { return new BigDataTimezonesModel(Container); });
 		private static readonly Lazy<DevelopmentErrorsModels> _devErrors = new Lazy<DevelopmentErrorsModels>(() => { return new DevelopmentErrorsModels(); });
 		private static readonly Lazy<QueueingModel> _queue = new Lazy<QueueingModel>(() => { return new QueueingModel(Container); });
 		private static readonly Lazy<SearchModel> _search = new Lazy<SearchModel>(() => { return new SearchModel(); });
@@ -75,6 +76,8 @@ namespace TomPIT.Sys.Model
 		private static readonly Lazy<PrintingSpoolerModel> _printingSpooler = new Lazy<PrintingSpoolerModel>(() => { return new PrintingSpoolerModel(); });
 		private static readonly Lazy<ClientsModel> _clients = new Lazy<ClientsModel>(() => { return new ClientsModel(Container); });
 		private static readonly Lazy<PrintingSerialNumbersModel> _printingSerialNumbers = new Lazy<PrintingSerialNumbersModel>(() => { return new PrintingSerialNumbersModel(Container); });
+		private static readonly Lazy<XmlKeysModel> _xmlKeys = new Lazy<XmlKeysModel>(() => { return new XmlKeysModel(Container); });
+
 
 		public static MicroServicesMetaModel MicroServicesMeta => _meta.Value;
 		public static MicroServicesModel MicroServices => _microServices.Value;
@@ -115,6 +118,7 @@ namespace TomPIT.Sys.Model
 		public static BigDataTransactionBlocksModel BigDataTransactionBlocks => _bigDataTransactionBlocks.Value;
 		public static BigDataPartitionFilesModel BigDataPartitionFiles => _bigDataPartitionFiles.Value;
 		public static BigDataPartitionFieldStatisticsModel BigDataPartitionFieldStatistics => _bigDataPartitionFieldStatistics.Value;
+		public static BigDataTimezonesModel BigDataTimeZones => _bigDataTimezones.Value;
 		public static DevelopmentErrorsModels DevelopmentErrors => _devErrors.Value;
 		public static QueueingModel Queue => _queue.Value;
 		public static SearchModel Search => _search.Value;
@@ -127,6 +131,7 @@ namespace TomPIT.Sys.Model
 		public static PrintingSpoolerModel PrintingSpooler => _printingSpooler.Value;
 		public static ClientsModel Clients => _clients.Value;
 		public static PrintingSerialNumbersModel PrintingSerialNumbers => _printingSerialNumbers.Value;
+		public static XmlKeysModel XmlKeys => _xmlKeys.Value;
 		internal static MemoryCache Container => _cache.Value;
 
 		public static bool Initialized { get; set; }
