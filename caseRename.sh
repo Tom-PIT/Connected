@@ -1,12 +1,16 @@
 
 #!/bin/bash
 
-echo $1
-echo $2
-
 originalDir=$1
 newDir=$2
+tmpDir="${originalDir}2"
 
-mkdir ${originalDir}2
-git mv ${originalDir}/* ${originalDir}2
-git mv ${originalDir}2/* $newDir
+echo $originalDir
+echo $newDir
+echo $tmpDir
+
+mkdir -p "${originalDir}2"
+git mv -k "${originalDir}/*" "${originalDir}2"
+git mv -k "${originalDir}2/*" "$newDir"
+
+rm $tmpDir
