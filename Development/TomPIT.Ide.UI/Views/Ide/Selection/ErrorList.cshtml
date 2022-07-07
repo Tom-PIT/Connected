@@ -35,12 +35,12 @@ else
 
     if(!loadMore)
     {
-        var itemsReplacement = items.Where(e => e.Severity == TomPIT.Development.DevelopmentSeverity.Error && showErrors).Take(100);
+        var itemsReplacement = items.Where(e => e.Severity == TomPIT.Development.DevelopmentSeverity.Error).Take(100);
 
-        if (itemsReplacement.Count() < maxPayloadItems && showWarnings)
+        if (itemsReplacement.Count() < maxPayloadItems)
             itemsReplacement = itemsReplacement.Concat(items.Where(e => e.Severity == TomPIT.Development.DevelopmentSeverity.Warning).Take(maxPayloadItems - itemsReplacement.Count()));
 
-        if (itemsReplacement.Count() < maxPayloadItems && showInfo)
+        if (itemsReplacement.Count() < maxPayloadItems)
             itemsReplacement = itemsReplacement.Concat(items.Where(e => e.Severity == TomPIT.Development.DevelopmentSeverity.Info).Take(maxPayloadItems - itemsReplacement.Count()));
 
         hasMore = items.Count > itemsReplacement.Count();
