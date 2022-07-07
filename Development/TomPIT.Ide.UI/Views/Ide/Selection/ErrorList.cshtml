@@ -21,21 +21,26 @@ else
     var warnings = items.Count(f => f.Severity == TomPIT.Development.DevelopmentSeverity.Warning);
     var info = items.Count(f => f.Severity == TomPIT.Development.DevelopmentSeverity.Info);
 
-    var errorCss = Model.RequestBody.Optional<bool>("error", true) ? "show" : "";
-    var warningCss = Model.RequestBody.Optional<bool>("warning", false) ? "show" : "";
-    var infoCss = Model.RequestBody.Optional<bool>("info", false) ? "show" : "";
+    var showErrors = Model.RequestBody.Optional<bool>("error", true);
+    var showWarnings = Model.RequestBody.Optional<bool>("warning", false);
+    var showInfo = Model.RequestBody.Optional<bool>("info", false);
     var loadMore = Model.RequestBody.Optional<bool>("loadMore", false);
+
+    var errorCss = showErrors ? "show" : "";
+    var warningCss = showWarnings ? "show" : "";
+    var infoCss = showInfo ? "show" : "";
+
     var maxPayloadItems = 100;
     var hasMore = false;
 
     if(!loadMore)
     {
-        var itemsReplacement = items.Where(e => e.Severity == TomPIT.Development.DevelopmentSeverity.Error).Take(100);
+        var itemsReplacement = items.Where(e => e.Severity == TomPIT.Development.DevelopmentSeverity.Error && showErrors).Take(100);
 
-        if (itemsReplacement.Count() < maxPayloadItems)
+        if (itemsReplacement.Count() < maxPayloadItems && showWarnings)
             itemsReplacement = itemsReplacement.Concat(items.Where(e => e.Severity == TomPIT.Development.DevelopmentSeverity.Warning).Take(maxPayloadItems - itemsReplacement.Count()));
 
-        if (itemsReplacement.Count() < maxPayloadItems)
+        if (itemsReplacement.Count() < maxPayloadItems && showInfo)
             itemsReplacement = itemsReplacement.Concat(items.Where(e => e.Severity == TomPIT.Development.DevelopmentSeverity.Info).Take(maxPayloadItems - itemsReplacement.Count()));
 
         hasMore = items.Count > itemsReplacement.Count();
