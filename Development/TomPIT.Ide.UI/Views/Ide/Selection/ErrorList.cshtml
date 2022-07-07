@@ -1,7 +1,7 @@
 ﻿@model TomPIT.Design.Ide.IEnvironment
 
 @{
-   var items = Model.Context.MicroService == null ? null : Model.Context.Tenant.GetService<TomPIT.Ide.Designers.IDesignerService>().QueryErrors(Model.Context.MicroService.Token);
+    var items = Model.Context.MicroService == null ? null : Model.Context.Tenant.GetService<TomPIT.Ide.Designers.IDesignerService>().QueryErrors(Model.Context.MicroService.Token);
 }
 
 @if (items == null || items.Count == 0)
@@ -22,8 +22,26 @@ else
     var info = items.Count(f => f.Severity == TomPIT.Development.DevelopmentSeverity.Info);
 
     var errorCss = Model.RequestBody.Optional<bool>("error", true) ? "show" : "";
-   var warningCss = Model.RequestBody.Optional<bool>("warning", true) ? "show" : "";
-   var infoCss = Model.RequestBody.Optional<bool>("info", true) ? "show" : "";
+    var warningCss = Model.RequestBody.Optional<bool>("warning", false) ? "show" : "";
+    var infoCss = Model.RequestBody.Optional<bool>("info", false) ? "show" : "";
+    var loadMore = Model.RequestBody.Optional<bool>("loadMore", false);
+    var maxPayloadItems = 100;
+    var hasMore = false;
+
+    if(!loadMore)
+    {
+        var itemsReplacement = items.Where(e => e.Severity == TomPIT.Development.DevelopmentSeverity.Error).Take(100);
+
+        if (itemsReplacement.Count() < maxPayloadItems)
+            itemsReplacement = itemsReplacement.Concat(items.Where(e => e.Severity == TomPIT.Development.DevelopmentSeverity.Warning).Take(maxPayloadItems - itemsReplacement.Count()));
+
+        if (itemsReplacement.Count() < maxPayloadItems)
+            itemsReplacement = itemsReplacement.Concat(items.Where(e => e.Severity == TomPIT.Development.DevelopmentSeverity.Info).Take(maxPayloadItems - itemsReplacement.Count()));
+
+        hasMore = items.Count > itemsReplacement.Count();
+
+        items = itemsReplacement.ToList();
+    }
 
     <script>
         $('#devErrorCount').html('&nbsp;<span class="badge badge-danger errorlist-badge">@itemsString</span>');
@@ -31,49 +49,55 @@ else
 
     <div class="error-list-buttons">
         <span class="error-list-button text-danger active" data-kind="error"><i class="fal fa-exclamation-circle"></i> @errors</span>
-        <span class="error-list-button text-warning active" data-kind="warning"><i class="fal fa-exclamation-triangle"></i> @warnings</span>
-        <span class="error-list-button active" data-kind="info"><i class="fal fa-info-circle"></i> @info</span>
+        <span class="error-list-button text-warning" data-kind="warning"><i class="fal fa-exclamation-triangle"></i> @warnings</span>
+        <span class="error-list-button" data-kind="info"><i class="fal fa-info-circle"></i> @info</span>
     </div>
 
     <ul class="list-unstyled">
-        @foreach(var error in items)
+        @foreach (var error in items)
         {
             var kind = "info";
             var css = infoCss;
 
-            if(error.Severity == TomPIT.Development.DevelopmentSeverity.Error)
+            if (error.Severity == TomPIT.Development.DevelopmentSeverity.Error)
             {
                 kind = "error";
                 css = errorCss;
             }
-            else if(error.Severity == TomPIT.Development.DevelopmentSeverity.Warning)
+            else if (error.Severity == TomPIT.Development.DevelopmentSeverity.Warning)
             {
                 kind = "warning";
                 css = warningCss;
             }
 
-           <li data-component="@error.Component" data-element="@error.Element" data-kind="error-item" data-type="@kind" class="collapse @css">
-               @{ 
-                  var glyph = "fal fa-info-circle";
+            <li data-component="@error.Component" data-element="@error.Element" data-kind="error-item" data-type="@kind" class="collapse @css">
+                @{
+                    var glyph = "fal fa-info-circle";
 
-                  switch (error.Severity)
-                  {
-                      case TomPIT.Development.DevelopmentSeverity.Warning:
-                        glyph = "fal fa-exclamation-triangle text-warning";
-                          break;
-                      case TomPIT.Development.DevelopmentSeverity.Error:
-                        glyph = "fal fa-exclamation-circle text-danger";
-                          break;
-                  }
-               }
-               <div><i class="@glyph"></i> <strong>@error.ComponentName</strong> @error.ComponentCategory</div>
-               <span title="@error.Message">@Types.EllipseString(error.Message, 128)</span>
-           </li>
+                    switch (error.Severity)
+                    {
+                        case TomPIT.Development.DevelopmentSeverity.Warning:
+                            glyph = "fal fa-exclamation-triangle text-warning";
+                            break;
+                        case TomPIT.Development.DevelopmentSeverity.Error:
+                            glyph = "fal fa-exclamation-circle text-danger";
+                            break;
+                    }
+                }
+                <div><i class="@glyph"></i> <strong>@error.ComponentName</strong> @error.ComponentCategory</div>
+                <span title="@error.Message">@Types.EllipseString(error.Message, 128)</span>
+            </li>
+        }
+        @if (hasMore)
+        {
+            <li class="load-more-button">
+                <span class="load-more-button" data-kind="loadMore"><i class="fal fa-info-circle"></i>Load more</span>
+            </li>
         }
     </ul>
 
     <script>
-        $('[data-kind="error-item"]').click(function () {
+        $('[data-kind="error-item"]').click(function() {
             var url = new tompit.devUrl();
             var component = $(this).attr('data-component');
             var element = $(this).attr('data-element');
@@ -83,13 +107,18 @@ else
                     'action': 'clearErrors',
                     'component': component,
                     'element': element,
-                }, onComplete: function (data) {
+                }, onComplete: function(data) {
                     window.open(url.environment() + '?component=' + component + '&element=' + element, '_blank');
                 }
             });
         });
 
-        $('.error-list-button').click(function () {
+        $('.load-more-button').click(function() {           
+            ide.options.designer.errorListState.loadMore = true;
+            $('li.load-more-button').remove();
+        });
+
+        $('.error-list-button').click(function() {
             $(this).toggleClass('active');
 
             var kind = $(this).attr('data-kind');
