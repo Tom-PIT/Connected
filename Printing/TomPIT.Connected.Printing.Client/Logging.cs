@@ -72,7 +72,7 @@ namespace TomPIT.Connected.Printing.Client
         }
 
         private static void Log(string text, LoggingLevel severity)
-        { 
+        {
             if (severity <= Level)
             {
                 var sb = new StringBuilder().Append(DateTime.Now.ToString("HH:mm:ss.fff")).Append("|").Append(severity.ToString().ToUpper()).Append("|").Append(text);
