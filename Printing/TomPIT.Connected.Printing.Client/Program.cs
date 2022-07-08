@@ -15,6 +15,7 @@ using TomPIT.Connected.Printing.Client.Printing;
 using DevExpress.XtraReports.Expressions;
 using System.Diagnostics;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace TomPIT.Connected.Printing.Client
 {
@@ -53,8 +54,14 @@ namespace TomPIT.Connected.Printing.Client
                 services.AddHostedService<PrintingHandler>();
                 services.AddMemoryCache();
                 services.AddSingleton<LocalizationProvider>();
-            })         
-            .UseWindowsService();
 
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    DevExpress.Printing.CrossPlatform.CustomEngineHelper.RegisterCustomDrawingEngine(
+                        typeof(DevExpress.CrossPlatform.Printing.DrawingEngine.PangoCrossPlatformEngine));
+                }
+            })
+            .UseWindowsService()
+            .UseSystemd();
     }
 }

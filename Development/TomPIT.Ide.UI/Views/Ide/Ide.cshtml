@@ -167,10 +167,11 @@
             data: {
                 'error': ide.options.designer.errorListState.error,
                 'warning': ide.options.designer.errorListState.warning,
-                'info': ide.options.designer.errorListState.info
+                'info': ide.options.designer.errorListState.info,
+                'loadMore': ide.options.designer.errorListState.loadMore
             },
             onComplete: function () {
-                setTimeout(refreshErrorList, 5000);
+                setTimeout(refreshErrorList, 10000);
             }
         });
     }

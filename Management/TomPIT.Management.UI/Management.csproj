@@ -10,9 +10,9 @@
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.Management</RootNamespace>
     <AssemblyName>TomPIT.Connected.Management</AssemblyName>
-    <AssemblyVersion>2.3.622.1</AssemblyVersion>
-    <FileVersion>2.3.622.1</FileVersion>
-    <Version>2.3.622.1</Version>
+    <AssemblyVersion>2.3.707.3</AssemblyVersion>
+    <FileVersion>2.3.707.3</FileVersion>
+    <Version>2.3.707.3</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
