@@ -10,8 +10,8 @@ $.widget('tompit.tpIde', {
             active: null,
             errorListState: {
                 error: true,
-                warning: true,
-                info: true
+                warning: false,
+                info: false
             }
         },
         globalization: {
