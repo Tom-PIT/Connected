@@ -137,8 +137,15 @@ namespace TomPIT.Management.Dom
 
 		public bool SupportsInherit => false;
 
-		public Guid ResourceGroup => Environment.Context.Tenant.GetService<IResourceGroupService>().Default.Token;
+		public Guid ResourceGroup
+        {
+			get
+			{
+				var token = Environment.Context.Tenant.GetService<IResourceGroupService>().Default.Token;
 
+				return token;
+			}
+		}
 		public string PermissionComponent => null;
 	}
 }

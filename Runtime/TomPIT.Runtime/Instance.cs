@@ -82,7 +82,8 @@ namespace TomPIT
         }
         private static void InitializeServices(IServiceCollection services, ServicesConfigurationArgs e)
         {
-            services.Configure<RequestLocalizationOptions>(o => {
+            services.Configure<RequestLocalizationOptions>(o =>
+            {
                 RequestLocalizationOptions = o;
                 o.DefaultRequestCulture = new RequestCulture(CultureInfo.InvariantCulture);
                 o.FallBackToParentCultures = true;
@@ -272,7 +273,7 @@ namespace TomPIT
             });
 
             Shell.Configure(app);
-                      
+
 
             foreach (var plugin in Plugins)
                 plugin.Initialize(app, env);
@@ -344,11 +345,15 @@ namespace TomPIT
             if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
                 return true;
 
+            var resourceGroupService = MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>();
+
+            var groupInstance = resourceGroupService.Select(resourceGroup);
+
             foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
             {
-                var rg = MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>().Select(i);
+                var rg = resourceGroupService.Select(i);
 
-                if (rg != null)
+                if (rg == groupInstance)
                     return true;
             }
 
