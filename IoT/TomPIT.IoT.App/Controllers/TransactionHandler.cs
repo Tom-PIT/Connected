@@ -47,10 +47,14 @@ namespace TomPIT.IoT.Controllers
 
 		public void ProcessRequest()
 		{
-			Body.Add("transaction", Transaction);
-			Body.Add("device", Device);
+            var payload = new JObject
+            {
+                { "arguments", Body },
+                { "transaction", Transaction },
+                { "device", $"{MicroService}/{Hub}/{Device}" }
+            };
 
-			IoTServerHub.Invoke(Body, HubContext?.Clients).Wait();
+            IoTServerHub.Invoke(payload, HubContext?.Clients).Wait();
 			
 			Shell.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
 			Shell.HttpContext.Response.CompleteAsync().Wait();
