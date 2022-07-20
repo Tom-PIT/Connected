@@ -3,9 +3,9 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <Configurations>Debug;Release;Development</Configurations>
-    <AssemblyVersion>2.3.720.2</AssemblyVersion>
-    <FileVersion>2.3.720.2</FileVersion>
-    <Version>2.3.720.2</Version>
+    <AssemblyVersion>2.3.720.3</AssemblyVersion>
+    <FileVersion>2.3.720.3</FileVersion>
+    <Version>2.3.720.3</Version>
   </PropertyGroup>
   <PropertyGroup>
     <AppConfig>App.$(Configuration).config</AppConfig>
