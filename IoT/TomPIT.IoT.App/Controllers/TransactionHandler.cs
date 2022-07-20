@@ -51,7 +51,7 @@ namespace TomPIT.IoT.Controllers
             {
                 { "arguments", Body },
                 { "transaction", Transaction },
-                { "device", $"{MicroService}/{Hub}/{Device}" }
+                { "device", $"{MicroService.Name}/{Hub}/{Device}" }
             };
 
             IoTServerHub.Invoke(payload, HubContext?.Clients).Wait();
