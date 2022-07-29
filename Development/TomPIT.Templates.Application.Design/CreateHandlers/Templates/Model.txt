@@ -35,7 +35,7 @@ public enum [CLAIMS]
  */
 public class [MODELTYPE] : ModelMiddleware<[ENTITYTYPE]>
 {
-   public long Insert([ENTITYNAME]InsertArgs e)
+   public long Insert(InsertArgs e)
    {
       var result = new ResultEntity<long>();
       
@@ -46,14 +46,19 @@ public class [MODELTYPE] : ModelMiddleware<[ENTITYTYPE]>
       return result;
    }
 
-   public void Update([ENTITYTYPE] entity, [ENTITYNAME]UpdateArgs e)
+   public void Update([ENTITYTYPE] entity, UpdateArgs e)
    {
       Execute("Update", entity, e);
    }
 
-   public void Delete(long id)
+   public void Update([ENTITYTYPE] entity, params object[] properties)
    {
-      Execute("Delete", new { Id = id });
+      Execute("Update", entity, properties);
+   }
+
+   public void Delete([ENTITYTYPE] entity)
+   {
+      Execute("Delete", new { Id = entity.Id });
    }
 
    public [ENTITYTYPE] Select(long id)
@@ -61,14 +66,14 @@ public class [MODELTYPE] : ModelMiddleware<[ENTITYTYPE]>
       return Select("Select", new { Id = id });
    }
 
-   public List<[ENTITYTYPE]> Query([ENTITYNAME]QueryArgs e)
+   public List<[ENTITYTYPE]> Query(QueryArgs e)
    {
       return Query("Query", e);
    }
 
    public List<[ENTITYTYPE]> Lookup(List<long> ids)
    {
-      if(ids?.Any() ?? false)
+      if(!ids?.Any() ?? false)
         return new();
 
       return Query("Lookup", new 
@@ -76,26 +81,26 @@ public class [MODELTYPE] : ModelMiddleware<[ENTITYTYPE]>
         ids = ids.ToJsonParameterList("id")
       });
    }
+
+   public class InsertArgs
+   {
+       public RecordState State { get; set; } = RecordState.Valid;
+   }
+   
+   public class UpdateArgs
+   {   
+       public RecordState State { get; set; } = RecordState.Valid;
+   
+       public string Version { get; set; }
+   }
+   
+   public class QueryArgs
+   {
+       public RecordState State { get; set; } = RecordState.Valid;
+   }
 }
 
-public class [ENTITYNAME]InsertArgs
-{
-   public RecordState State { get; set; } = RecordState.Valid;
-}
 
-public class [ENTITYNAME]UpdateArgs
-{
-   public long Id { get; set; }
-
-   public RecordState State { get; set; } = RecordState.Valid;
-
-   public string Version { get; set; }
-}
-
-public class [ENTITYNAME]QueryArgs
-{
-   public RecordState State { get; set; } = RecordState.Valid;
-}
 
 /*
  * The entity. This class usually represents the mapping between database table
