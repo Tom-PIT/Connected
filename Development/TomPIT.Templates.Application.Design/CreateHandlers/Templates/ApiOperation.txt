@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Middleware.Interop;
+using System.Linq;
 
 public class [NAME] : Operation
 {
