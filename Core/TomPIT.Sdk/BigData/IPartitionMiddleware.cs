@@ -15,8 +15,9 @@ namespace TomPIT.BigData
 		Minute = 2,
 		Hour = 3,
 		Day = 4,
-		Month = 5,
-		Year = 6
+		Week = 5,
+		Month = 6,
+		Year = 7,
 	}
 	public interface IPartitionMiddleware<T> : IPartitionComponent
 	{
