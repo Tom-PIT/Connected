@@ -45,7 +45,7 @@ namespace TomPIT.DataProviders.BigData
 
 			HttpRequestArgs credentialArgs = null;
 
-            if (MiddlewareDescriptor.Current.Identity.IsAuthenticated) 
+            if (MiddlewareDescriptor.Current?.Identity?.IsAuthenticated ?? false) 
 			{
 				credentialArgs = new HttpRequestArgs().WithCurrentCredentials(MiddlewareDescriptor.Current.User.AuthenticationToken);
 			}
