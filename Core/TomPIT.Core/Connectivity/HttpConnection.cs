@@ -138,19 +138,18 @@ namespace TomPIT.Connectivity
 			if (response.Content != null)
 				rt = response.Content.ReadAsStringAsync().Result;
 
-			JObject ex = null;
+            JObject ex;
 
-			try
+            try
 			{
 				ex = Serializer.Deserialize<JObject>(rt);
 			}
 			catch
 			{
-
 				throw new Exception(response.ReasonPhrase);
 			}
 
-			if (ex == null)
+			if (ex is null)
 				throw new Exception(response.ReasonPhrase);
 
 			var source = string.Empty;
