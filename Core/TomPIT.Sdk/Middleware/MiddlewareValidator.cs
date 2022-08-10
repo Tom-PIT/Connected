@@ -88,7 +88,7 @@ namespace TomPIT.Middleware
 
             try 
             {
-
+                return;
                 Trace($"Validating antiforgery {sw.ElapsedMilliseconds}");
                 if (AsyncUtils.RunSync(() => service.IsRequestValidAsync(Shell.HttpContext)))
                 {
