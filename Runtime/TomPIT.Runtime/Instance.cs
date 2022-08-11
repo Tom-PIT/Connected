@@ -345,6 +345,9 @@ namespace TomPIT
             if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
                 return true;
 
+            if (resourceGroup == Guid.Empty)
+                return true;
+
             var resourceGroupService = MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>();
 
             var groupInstance = resourceGroupService.Select(resourceGroup);
