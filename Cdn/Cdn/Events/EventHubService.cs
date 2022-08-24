@@ -65,7 +65,8 @@ namespace TomPIT.Cdn.Events
 					{
 						message = new
 						{
-							MessageId = candidate.Value.Id
+							MessageId = candidate.Value.Id,
+							candidate.Value.Recipient
 						};
 					}
 
@@ -85,7 +86,8 @@ namespace TomPIT.Cdn.Events
 				{
 					Arguments = arguments,
 					Connection = client.Key.ConnectionId,
-					Event = eventName
+					Event = eventName,
+					Recipient = client.Value.Recipient
 				};
 
 				EventMessagingCache.Add(client.Key.Client, message);

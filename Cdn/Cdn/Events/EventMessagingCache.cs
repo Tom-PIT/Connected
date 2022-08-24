@@ -63,14 +63,14 @@ namespace TomPIT.Cdn.Events
 				Clients.TryRemove(e.Client, out _);
 		}
 
-		public static void Remap(string client, string connection)
-		{
-			if (!Clients.TryGetValue(client, out EventMessages items))
-				return;
+		//public static void Remap(string client, string connection)
+		//{
+		//	if (!Clients.TryGetValue(client, out EventMessages items))
+		//		return;
 
-			items.Remap(connection);
-		}
-		public static void Remove(string client, string eventName)
+		//	items.Remap(connection);
+		//}
+		public static void Remove(string client, string eventName, string recipient)
 		{
 			if (string.IsNullOrEmpty(client))
 				return;
@@ -78,7 +78,7 @@ namespace TomPIT.Cdn.Events
 			if (!Clients.TryGetValue(client, out EventMessages items))
 				return;
 
-			items.RemoveEvents(eventName);
+			items.RemoveEvents(eventName, recipient);
 
 			if (items.IsEmpty)
 				Clients.Remove(client, out _);

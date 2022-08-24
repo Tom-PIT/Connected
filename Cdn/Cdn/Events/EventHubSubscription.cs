@@ -11,6 +11,7 @@ namespace TomPIT.Cdn.Events
 		public JObject Arguments {get;set;}
 
 		public string Client {get;set;}
+		public string Recipient { get; set; }
 
 		public EventSubscriptionBehavior Behavior { get; set; } = EventSubscriptionBehavior.Reliable;
 	}

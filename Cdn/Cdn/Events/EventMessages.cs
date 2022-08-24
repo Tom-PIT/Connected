@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using TomPIT.Collections;
 
 namespace TomPIT.Cdn.Events
 {
@@ -17,7 +18,7 @@ namespace TomPIT.Cdn.Events
 
 		public bool IsEmpty => !Items.Any();
 
-		public ImmutableArray<EventMessage> All() => Items.ToImmutableArray();
+		public ImmutableArray<EventMessage> All() => Items.ToImmutableArray(true);
 
 		public void Scave()
 		{
@@ -29,7 +30,7 @@ namespace TomPIT.Cdn.Events
 
 		public ImmutableArray<EventMessage> Dequeue()
 		{
-			var items = All().Where(f => f.NextVisible <= DateTime.UtcNow).ToImmutableArray();
+			var items = All().Where(f => f.NextVisible <= DateTime.UtcNow).ToImmutableArray(true);
 
 			if (!items.Any())
 				return ImmutableArray<EventMessage>.Empty;
@@ -50,7 +51,7 @@ namespace TomPIT.Cdn.Events
 
 		public void Remove(ulong id)
 		{
-			if(All().FirstOrDefault(f => f.Id == id) is EventMessage message)
+			if (All().FirstOrDefault(f => f.Id == id) is EventMessage message)
 				Items.Remove(message);
 		}
 
@@ -60,9 +61,10 @@ namespace TomPIT.Cdn.Events
 				item.Connection = connection;
 		}
 
-		public void RemoveEvents(string eventName)
+		public void RemoveEvents(string eventName, string recipient)
 		{
-			var obsolete = All().Where(f => string.Compare(f.Event, eventName, true) == 0);
+			var obsolete = All().Where(f => string.Compare(f.Event, eventName, true) == 0
+				&& string.Compare(f.Recipient, recipient, true) == 0);
 
 			foreach (var o in obsolete)
 				Items.Remove(o);

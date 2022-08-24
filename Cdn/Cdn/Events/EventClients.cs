@@ -100,7 +100,7 @@ namespace TomPIT.Cdn.Events
 			return result.Where(f => f is not null).ToImmutableList(true);
 		}
 
-		public static void Remove(string connectionId, string eventName)
+		public static void Remove(string connectionId, string eventName, string recipient)
 		{
 			foreach (var eventList in Clients)
 			{
@@ -112,7 +112,8 @@ namespace TomPIT.Cdn.Events
 						continue;
 
 					if (string.Compare(item.ConnectionId, connectionId, true) == 0
-						&& string.Compare(item.EventName, eventName, true) == 0)
+						&& string.Compare(item.EventName, eventName, true) == 0
+						&& string.Compare(item.Recipient, recipient, true) == 0)
 					{
 						lock (eventList.Value)
 							eventList.Value.Remove(item);
