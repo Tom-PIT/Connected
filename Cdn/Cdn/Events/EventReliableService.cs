@@ -20,7 +20,8 @@ namespace TomPIT.Cdn.Events
 			{
 				var message = new
 				{
-					MessageId = item.Id
+					MessageId = item.Id,
+					item.Recipient
 				};
 
 				await EventHubs.Events.Clients.Client(item.Connection).SendCoreAsync("event", new object[] { item.Arguments, message }, cancel);

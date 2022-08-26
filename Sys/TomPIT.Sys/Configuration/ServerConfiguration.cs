@@ -1,4 +1,5 @@
-﻿using TomPIT.Api.ComponentModel;
+﻿using Microsoft.AspNetCore.Builder;
+using TomPIT.Api.ComponentModel;
 using TomPIT.Api.Storage;
 using TomPIT.Reflection;
 using TomPIT.Security;
@@ -10,7 +11,7 @@ namespace TomPIT.Sys.Configuration
 {
 	internal static class ServerConfiguration
 	{
-		public static void Initialize()
+		public static void Initialize(IApplicationBuilder app)
 		{
 			RegisterServices();
 			InitializeAuthentication();

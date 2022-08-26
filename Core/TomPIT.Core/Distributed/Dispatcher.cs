@@ -96,13 +96,18 @@ namespace TomPIT.Distributed
 				if (sender is not DispatcherJob<T> job)
 					return;
 
-				lock (Jobs)
+				if (job.Success)
 				{
-					Jobs.Remove(job);
-				}
+					lock (Jobs)
+					{
+						Jobs.Remove(job);
+					}
 
-				job.Dispose();
-				job = null;
+					job.Dispose();
+					job = null;
+				}
+				else
+					job.Run();
 			}
 			catch { }
 		}

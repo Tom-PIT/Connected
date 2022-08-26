@@ -90,19 +90,16 @@ namespace TomPIT.Sys.Model.Cdn
 
 		public void Complete(Guid popReceipt)
 		{
-			var m = DataModel.Queue.Select(popReceipt);
+			if (DataModel.Queue.Select(popReceipt) is IQueueMessage message)
+			{
+				if (Resolve(message) is IEventDescriptor e)
+				{
+					Shell.GetService<IDatabaseService>().Proxy.Events.Delete(e);
 
-			if (m == null)
-				return;
+					Remove(e.Identifier);
+				}
+			}
 
-			var e = Resolve(m);
-
-			if (e is null)
-				return;
-
-			Shell.GetService<IDatabaseService>().Proxy.Events.Delete(e);
-
-			Remove(e.Identifier);
 			DataModel.Queue.Complete(popReceipt);
 		}
 

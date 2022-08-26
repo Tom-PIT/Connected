@@ -87,7 +87,7 @@ namespace TomPIT.Cdn.Events
 					Arguments = arguments,
 					Connection = client.Key.ConnectionId,
 					Event = eventName,
-					Recipient = client.Value.Recipient
+					Recipient = client.Key.Recipient
 				};
 
 				EventMessagingCache.Add(client.Key.Client, message);

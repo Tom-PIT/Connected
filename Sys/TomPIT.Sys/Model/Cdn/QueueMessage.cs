@@ -1,61 +1,78 @@
 ﻿using System;
-using System.Threading;
+using System.ComponentModel;
 using TomPIT.Storage;
-using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Model.Cdn
 {
-    internal class QueueMessage : IQueueMessage, IQueueMessageModifier
-    {
-        private int _isDirty;
+	public class QueueMessage : IQueueMessage, IEditableObject
+	{
+		private bool _isLocked = false;
+		private readonly object _sync = new object();
+		public QueueMessage()
+		{
 
-        public string Id { get; set; }
+		}
 
-        public string Message { get; set; }
+		public QueueMessage(IQueueMessage message)
+		{
+			Id = message.Id;
+			Message = message.Message;
+			Created = message.Created;
+			Expire = message.Expire;
+			NextVisible = message.NextVisible;
+			PopReceipt = message.PopReceipt;
+			DequeueCount = message.DequeueCount;
+			Queue = message.Queue;
+			Scope = message.Scope;
+			DequeueTimestamp = message.DequeueTimestamp;
+			BufferKey = message.BufferKey;
+		}
+		public long Id { get; set; }
 
-        public DateTime Created { get; set; }
+		public string Message { get; set; }
 
-        public DateTime Expire { get; set; }
+		public DateTime Created { get; set; }
 
-        public DateTime NextVisible { get; set; }
+		public DateTime Expire { get; set; }
 
-        public Guid PopReceipt { get; set; }
+		public DateTime NextVisible { get; set; }
 
-        public int DequeueCount { get; set; }
+		public Guid PopReceipt { get; set; }
 
-        public string Queue { get; set; }
+		public int DequeueCount { get; set; }
 
-        public QueueScope Scope { get; set; }
+		public string Queue { get; set; }
 
-        public DateTime DequeueTimestamp { get; set; }
+		public QueueScope Scope { get; set; }
 
-        public string BufferKey { get; set; }
+		public DateTime DequeueTimestamp { get; set; }
 
-        public bool Modify(DateTime nextVisible, DateTime dequeueTimestamp, int dequeueCount, Guid popReceipt)
-        {
-            if (_isDirty == 1)
-                return false;
+		public string BufferKey { get; set; }
 
-            lock (this)
-            {
-                if (_isDirty == 1)
-                    return false;
+		public bool IsLocked { get { return _isLocked; } private set { _isLocked = true; } }
 
-                Interlocked.Exchange(ref _isDirty, 1);
+		public void BeginEdit()
+		{
+			if (IsLocked)
+				throw new Exception("Locked.");
 
-                NextVisible = nextVisible;
-                DequeueTimestamp = dequeueTimestamp;
-                DequeueCount = dequeueCount;
-                PopReceipt = popReceipt;
+			lock (_sync)
+			{
+				if(IsLocked)
+					throw new Exception("Locked.");
 
-                return true;
-            }
-        }
+				IsLocked = true;
+			}
+		}
 
-        public void Reset()
-        {
-            Interlocked.Exchange(ref _isDirty, 0);
-        }
+		public void CancelEdit()
+		{
+			_isLocked = false;
+		}
 
-    }
+		public void EndEdit()
+		{
+			_isLocked = false;
+		}
+	}
 }

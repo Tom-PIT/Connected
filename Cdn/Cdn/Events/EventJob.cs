@@ -15,12 +15,11 @@ using TomPIT.Exceptions;
 using TomPIT.Messaging;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
-using TomPIT.Serialization;
 using TomPIT.Storage;
 
 namespace TomPIT.Cdn.Events
 {
-    internal class EventJob : DispatcherJob<IQueueMessage>
+	internal class EventJob : DispatcherJob<IQueueMessage>
     {
         private TimeoutTask _timeout = null;
         public EventJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)

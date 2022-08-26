@@ -60,7 +60,10 @@ namespace TomPIT.Distributed
 				if (sender is not DispatcherJob<T> job)
 					return;
 
-				Dispose();
+				if (job.Success)
+					Dispose();
+				else
+					job.Run();
 			}
 			catch { }
 		}

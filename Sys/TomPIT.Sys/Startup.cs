@@ -84,7 +84,7 @@ namespace TomPIT.Sys
 				routes.MapRoute("default", "{controller}/{action}");
 			});
 
-			ServerConfiguration.Initialize();
+			ServerConfiguration.Initialize(app);
 			Shell.Configure(app);
 			DataModel.Initialized = true;
 		}
@@ -95,7 +95,7 @@ namespace TomPIT.Sys
 			services.AddSingleton<IHostedService, MessageDisposer>();
 			services.AddSingleton<IHostedService, Scheduler>();
 			services.AddSingleton<IHostedService, Preloader>();
-			services.AddSingleton<IHostedService, QueueRecycler>();
+			services.AddSingleton<IHostedService, QueueFlusher>();
 		}
 	}
 }
