@@ -4,7 +4,7 @@ using TomPIT.SysDb.Events;
 
 namespace TomPIT.SysDb.Sql.Events
 {
-	internal class EventDescriptor : LongPrimaryKeyRecord, IEventDescriptor
+	internal class EventDescriptor : DatabaseRecord, IEventDescriptor
 	{
 		public Guid Identifier { get; set; }
 		public string Arguments { get; set; }

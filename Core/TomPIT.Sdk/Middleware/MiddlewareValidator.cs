@@ -8,9 +8,6 @@ using System.Reflection;
 using System.Threading;
 using System.Web;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Mvc.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
-using Microsoft.Extensions.Localization;
 using TomPIT.Annotations;
 using TomPIT.Data;
 using TomPIT.Diagnostics;
@@ -22,7 +19,7 @@ using TomPIT.Security;
 
 namespace TomPIT.Middleware
 {
-    internal delegate void ValidatingHandler(object sender, List<ValidationResult> results);
+	internal delegate void ValidatingHandler(object sender, List<ValidationResult> results);
     internal class MiddlewareValidator : MiddlewareObject
     {
         public event ValidatingHandler Validating;
@@ -89,18 +86,18 @@ namespace TomPIT.Middleware
             try 
             {
                 Trace($"Validating antiforgery {sw.ElapsedMilliseconds}");
-                if (AsyncUtils.RunSync(() => service.IsRequestValidAsync(Shell.HttpContext)))
-                {
-                    Trace($"Validation exited due to valid antiforgery found after {sw.ElapsedMilliseconds}");
-                    return;
-                }
+                //if (AsyncUtils.RunSync(() => service.IsRequestValidAsync(Shell.HttpContext)))
+                //{
+                //    Trace($"Validation exited due to valid antiforgery found after {sw.ElapsedMilliseconds}");
+                //    return;
+                //}
             }
             catch (Exception ex) 
             {
                 Trace($"Antiforgery request validation failed due to error {ex}");
             }
 
-            throw new MiddlewareValidationException(Instance, SR.ValAntiForgery);
+            //throw new MiddlewareValidationException(Instance, SR.ValAntiForgery);
         }
 
         public void Validate(object instance, bool triggerValidating)

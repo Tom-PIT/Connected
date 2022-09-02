@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-using TomPIT.ComponentModel;
+using Newtonsoft.Json.Linq;
 using TomPIT.Data.Sql;
 using TomPIT.SysDb.Events;
 
@@ -9,15 +9,6 @@ namespace TomPIT.SysDb.Sql.Events
 {
 	internal class EventHandler : IEventHandler
 	{
-		public void Delete(IEventDescriptor d)
-		{
-			using var w = new Writer("tompit.event_del");
-
-			w.CreateParameter("@id", d.GetId());
-
-			w.Execute();
-		}
-
 		public List<IEventDescriptor> Query()
 		{
 			using var r = new Reader<EventDescriptor>("tompit.event_que");
@@ -25,29 +16,33 @@ namespace TomPIT.SysDb.Sql.Events
 			return r.Execute().ToList<IEventDescriptor>();
 		}
 
-		public IEventDescriptor Select(Guid identifier)
+		public void Update(ImmutableList<IEventDescriptor> events)
 		{
-			using var r = new Reader<EventDescriptor>("tompit.event_sel");
+			using var w = new LongWriter("tompit.event_upd");
+			var items = new JArray();
 
-			r.CreateParameter("@identifier", identifier);
+			foreach (var item in events)
+			{
+				var jo = new JObject
+				{
+					{"name", item.Name },
+					{"created", item.Created },
+					{"identifier", item.Identifier },
+					{"service", item.MicroService }
+				};
 
-			return r.ExecuteSingleRow();
-		}
+				if (!string.IsNullOrEmpty(item.Arguments))
+					jo.Add("arguments", item.Arguments);
 
-		public long Insert(IMicroService microService, string name, Guid identifier, DateTime created, string arguments, string callback)
-		{
-			using var w = new LongWriter("tompit.event_ins");
+				if (!string.IsNullOrEmpty(item.Callback))
+					jo.Add("callback", item.Callback);
 
-			w.CreateParameter("@name", name);
-			w.CreateParameter("@identifier", identifier);
-			w.CreateParameter("@created", created);
-			w.CreateParameter("@arguments", arguments, true);
-			w.CreateParameter("@callback", callback, true);
-			w.CreateParameter("@service", microService.Token);
+				items.Add(jo);
+			};
+
+			w.CreateParameter("@items", items);
 
 			w.Execute();
-
-			return w.Result;
 		}
 	}
 }

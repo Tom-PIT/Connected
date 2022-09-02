@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
-using TomPIT.Storage;
+using TomPIT.Cdn;
 using TomPIT.Sys.Model;
 using TomPIT.SysDb.Events;
 
@@ -10,7 +10,7 @@ namespace TomPIT.Sys.Controllers.Management
 	public class EventManagementController : SysController
 	{
 		[HttpPost]
-		public ImmutableList<IQueueMessage> Dequeue()
+		public ImmutableList<IEventQueueMessage> Dequeue()
 		{
 			var body = FromBody();
 			var count = body.Required<int>("count");

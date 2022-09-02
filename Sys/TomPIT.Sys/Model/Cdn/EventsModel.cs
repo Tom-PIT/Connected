@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
+using TomPIT.Cdn;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
 using TomPIT.SysDb.Events;
@@ -12,6 +16,7 @@ namespace TomPIT.Sys.Model.Cdn
 	internal class EventsModel : SynchronizedRepository<IEventDescriptor, Guid>
 	{
 		private const string Queue = "event";
+		private bool _dirty = false;
 
 		public EventsModel(IMemoryCache container) : base(container, "events")
 		{
@@ -25,26 +30,8 @@ namespace TomPIT.Sys.Model.Cdn
 				Set(j.Identifier, j, TimeSpan.Zero);
 		}
 
-		protected override void OnInvalidate(Guid id)
-		{
-			var r = Shell.GetService<IDatabaseService>().Proxy.Events.Select(id);
-
-			if (r != null)
-			{
-				Set(id, r, TimeSpan.Zero);
-				return;
-			}
-
-			Remove(id);
-		}
-
 		public Guid Insert(Guid microService, string name, string e, string callback)
 		{
-			var ms = DataModel.MicroServices.Select(microService);
-
-			if (ms is null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
-
 			var descriptor = new EventDescriptor
 			{
 				Arguments = e,
@@ -60,17 +47,54 @@ namespace TomPIT.Sys.Model.Cdn
 				{ "id", descriptor.Identifier}
 			};
 
-			descriptor.Id = Shell.GetService<IDatabaseService>().Proxy.Events.Insert(ms, name, descriptor.Identifier, DateTime.UtcNow, e, callback);
+			Set(descriptor.Identifier, descriptor, TimeSpan.Zero);
+			
 			DataModel.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
-			Set(descriptor.Identifier, descriptor, TimeSpan.Zero);
+			_dirty = true;
 
 			return descriptor.Identifier;
 		}
 
-		public ImmutableList<IQueueMessage> Dequeue(int count)
+		public ImmutableList<IEventQueueMessage> Dequeue(int count)
 		{
-			return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(5), QueueScope.System, Queue);
+#if DEBUG
+			var sw = new Stopwatch();
+
+			sw.Start();
+#endif
+
+			var messages = DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(5), QueueScope.System, Queue);
+
+			if (!messages.Any())
+				return ImmutableList<IEventQueueMessage>.Empty;
+
+			var result = new List<IEventQueueMessage>();
+
+			foreach(var message in messages)
+			{
+				var m = JsonConvert.DeserializeObject(message.Message) as JObject;
+
+				if (m is null || m.Required<Guid>("id") == Guid.Empty)
+					continue;
+
+				var id = m.Required<Guid>("id");
+
+				if (id == Guid.Empty)
+					continue;
+
+				if (Select(id) is IEventDescriptor ev)
+					result.Add(new EventQueueMessage(message, ev));
+			}
+
+#if DEBUG
+			sw.Stop();
+
+			if (sw.ElapsedMilliseconds > 1)
+				Debug.WriteLine($"Dequeue {sw.ElapsedMilliseconds:n0} ms.", "Events");
+#endif
+
+			return result.ToImmutableList();
 		}
 
 		public IEventDescriptor Select(Guid id)
@@ -80,11 +104,6 @@ namespace TomPIT.Sys.Model.Cdn
 
 		public void Ping(Guid popReceipt, TimeSpan nextVisible)
 		{
-			var m = DataModel.Queue.Select(popReceipt);
-
-			if (m == null)
-				return;
-
 			DataModel.Queue.Ping(popReceipt, nextVisible);
 		}
 
@@ -94,9 +113,8 @@ namespace TomPIT.Sys.Model.Cdn
 			{
 				if (Resolve(message) is IEventDescriptor e)
 				{
-					Shell.GetService<IDatabaseService>().Proxy.Events.Delete(e);
-
 					Remove(e.Identifier);
+					_dirty = true;
 				}
 			}
 
@@ -107,9 +125,32 @@ namespace TomPIT.Sys.Model.Cdn
 		{
 			var d = JsonConvert.DeserializeObject(message.Message) as JObject;
 
-			var id = d.Required<Guid>("id");
+			return Select(d.Required<Guid>("id"));
+		}
 
-			return Select(id);
+		public void Flush()
+		{
+			Initialize();
+
+			var dirty = _dirty;
+			var events = All();
+
+			_dirty = false;
+
+			if (dirty || events.Any())
+			{
+#if DEBUG
+				var sw = new Stopwatch();
+
+				sw.Start();
+#endif
+				Shell.GetService<IDatabaseService>().Proxy.Events.Update(events);
+#if DEBUG
+				sw.Stop();
+
+				Debug.WriteLine($"Events update {sw.ElapsedMilliseconds:n0} ms. {events.Count} items.", "Events");
+#endif
+			}
 		}
 	}
 }

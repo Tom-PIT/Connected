@@ -1,8 +1,9 @@
 ﻿using System;
+using TomPIT.Distributed;
 
 namespace TomPIT.Cdn.Events
 {
-	internal class EventDescriptor
+	internal class EventQueueMessage : QueueMessage, IEventQueueMessage
 	{
 		public string Arguments { get; set; }
 		public string Name { get; set; }
