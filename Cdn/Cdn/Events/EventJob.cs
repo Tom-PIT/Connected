@@ -18,7 +18,7 @@ using TomPIT.Reflection;
 
 namespace TomPIT.Cdn.Events
 {
-	internal class EventJob : DispatcherJob<IEventQueueMessage>
+   internal class EventJob : DispatcherJob<IEventQueueMessage>
     {
         private TimeoutTask _timeout = null;
         public EventJob(IDispatcher<IEventQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
@@ -267,7 +267,7 @@ namespace TomPIT.Cdn.Events
             if( descriptor.Configuration.Events.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0) is not IDistributedEvent ev)
                 throw new RuntimeException($"{SR.ErrDistributedEventNotFound} ({message.Name})");
 
-            if(compiler.ResolveType(context.MicroService.Token, ev, message.Name, false) is not Type type)
+            if(compiler.ResolveType(context.MicroService.Token, ev, ev.Name, false) is not Type type)
                 return null;
 
             return compiler.CreateInstance<IDistributedEventMiddleware>(context, type, message.Arguments);
