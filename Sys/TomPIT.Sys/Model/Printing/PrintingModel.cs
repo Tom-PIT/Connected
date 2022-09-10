@@ -1,16 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Cdn;
 using TomPIT.Serialization;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
+using TomPIT.Sys.Caching;
 
 namespace TomPIT.Sys.Model.Printing
 {
-	internal class PrintingModel: SynchronizedRepository<IPrintJob, Guid>
+	internal class PrintingModel : PersistentRepository<PrintJob, Guid>
 	{
 		private const string Queue = "printing";
 
@@ -23,46 +28,41 @@ namespace TomPIT.Sys.Model.Printing
 			var ds = Shell.GetService<IDatabaseService>().Proxy.Printing.QueryJobs();
 
 			foreach (var i in ds)
-				Set(i.Token, i, TimeSpan.Zero);
-		}
-
-		protected override void OnInvalidate(Guid id)
-		{
-			var r = Shell.GetService<IDatabaseService>().Proxy.Printing.Select(id);
-
-			if (r == null)
-			{
-				Remove(id);
-				return;
-			}
-
-			Set(id, r, TimeSpan.Zero);
+				Set(i.Token, new PrintJob(i), TimeSpan.Zero);
 		}
 
 		public Guid Insert(Guid component, string provider, string arguments, string user, string category, int copyCount)
 		{
-			if (copyCount < 1)
-				copyCount = 1;
-
-			var token = Guid.NewGuid();
-
-			var serialNumber = 0L;
-
-			if (!string.IsNullOrWhiteSpace(category))
-				serialNumber = DataModel.PrintingSerialNumbers.Next(category);
+			var job = new PrintJob
+			{
+				CopyCount = Math.Max(copyCount, 1),
+				Token = Guid.NewGuid(),
+				SerialNumber = string.IsNullOrWhiteSpace(category) ? 0L : DataModel.PrintingSerialNumbers.Next(category),
+				Component = component,
+				Status = PrintJobStatus.Pending,
+				Provider = provider,
+				Arguments = arguments,
+				Category = category,
+				User = user
+			};
 
 			var message = new JObject
 			{
-				{ "id",token}
+				{ "id",job.Token}
 			};
 
-			Shell.GetService<IDatabaseService>().Proxy.Printing.Insert(token, DateTime.UtcNow, component, PrintJobStatus.Pending, provider, arguments, user, serialNumber, category, copyCount);
-
-			Refresh(token);
+			Set(job.Token, job, TimeSpan.Zero);
+			Dirty();
 
 			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
-			return token;
+			return job.Token;
+		}
+
+		public void Delete(Guid token)
+		{
+			Remove(token);
+			Dirty();
 		}
 
 		public long NextSerialNumber(string category)
@@ -78,9 +78,32 @@ namespace TomPIT.Sys.Model.Printing
 			return ordered.First().SerialNumber;
 		}
 
-		public ImmutableList<IQueueMessage> Dequeue(int count)
+		public ImmutableList<IPrintQueueMessage> Dequeue(int count)
 		{
-			return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(4), QueueScope.System, Queue);
+			var messages = DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(4), QueueScope.System, Queue);
+
+			if (!messages.Any())
+				return ImmutableList<IPrintQueueMessage>.Empty;
+
+			var result = new List<IPrintQueueMessage>();
+
+			foreach (var message in messages)
+			{
+				if (JsonConvert.DeserializeObject(message.Message) is not JObject m || m.Required<Guid>("id") == Guid.Empty)
+					continue;
+
+				var id = m.Required<Guid>("id");
+
+				if (id == Guid.Empty)
+					continue;
+
+				if (Select(id) is IPrintJob pj)
+					result.Add(new PrintQueueMessage(message, pj));
+				else
+					DataModel.Queue.Complete(message.PopReceipt);
+			}
+
+			return result.ToImmutableList();
 		}
 
 		public void Ping(Guid popReceipt, TimeSpan nextVisible)
@@ -90,42 +113,43 @@ namespace TomPIT.Sys.Model.Printing
 
 		public void Complete(Guid popReceipt)
 		{
-			var m = DataModel.Queue.Select(popReceipt);
-
-			if (m == null)
+			if (DataModel.Queue.Select(popReceipt) is not IQueueMessage message)
 				return;
 
 			DataModel.Queue.Complete(popReceipt);
-			var job = ResolveJob(m);
 
-			if (job != null)
-				Delete(job.Token);
+			if (ResolveJob(message) is PrintJob job)
+			{
+				Remove(job.Token);
+				Dirty();
+			}
 		}
 
 		public void Error(Guid popReceipt, string error)
 		{
-			var m = DataModel.Queue.Select(popReceipt);
-
-			if (m == null)
+			if (DataModel.Queue.Select(popReceipt) is not IQueueMessage message)
 				return;
 
-			DataModel.Queue.Complete(popReceipt);
-			var job = ResolveJob(m);
+			DataModel.Queue.Ping(popReceipt, TimeSpan.FromSeconds(5));
 
-			if (job != null)
-				Update(job.Token, PrintJobStatus.Error, error);
-		}
+			if (ResolveJob(message) is PrintJob job)
+			{
+				job.Status = PrintJobStatus.Error;
+				job.Error = error;
 
-		public void Delete(Guid token)
-		{
-			Remove(token);
-			Shell.GetService<IDatabaseService>().Proxy.Printing.Delete(token);
+				Dirty();
+			}
 		}
 
 		public void Update(Guid token, PrintJobStatus status, string error)
 		{
-			Shell.GetService<IDatabaseService>().Proxy.Printing.Update(token, status, error);
-			Refresh(token);
+			if (Select(token) is not PrintJob job)
+				return;
+
+			job.Status = status;
+			job.Error = error;
+
+			Dirty();
 		}
 
 		public IPrintJob Select(Guid token)
@@ -136,10 +160,27 @@ namespace TomPIT.Sys.Model.Printing
 		private IPrintJob ResolveJob(IQueueMessage message)
 		{
 			var d = Serializer.Deserialize<JObject>(message.Message);
-
 			var id = d.Required<Guid>("id");
 
 			return Select(id);
+		}
+
+		protected override async Task OnFlushing()
+		{
+			var items = All();
+
+#if DEBUG
+			var sw = new Stopwatch();
+
+			sw.Start();
+#endif
+			Shell.GetService<IDatabaseService>().Proxy.Printing.Update(items.ToList<IPrintJob>());
+			await Task.CompletedTask;
+#if DEBUG
+			sw.Stop();
+
+			Debug.WriteLine($"Print jobs update {sw.ElapsedMilliseconds:n0} ms. {items.Count} items.", "Print jobs");
+#endif
 		}
 	}
 }

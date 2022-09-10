@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Cdn;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
+using TomPIT.Sys.Caching;
 using TomPIT.SysDb.Events;
 
 namespace TomPIT.Sys.Model.Cdn
 {
-	internal class EventsModel : SynchronizedRepository<IEventDescriptor, Guid>
+	internal class EventsModel : PersistentRepository<IEventDescriptor, Guid>
 	{
 		private const string Queue = "event";
-		private bool _dirty = false;
 
 		public EventsModel(IMemoryCache container) : base(container, "events")
 		{
@@ -48,10 +49,10 @@ namespace TomPIT.Sys.Model.Cdn
 			};
 
 			Set(descriptor.Identifier, descriptor, TimeSpan.Zero);
-			
+
 			DataModel.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
-			_dirty = true;
+			Dirty();
 
 			return descriptor.Identifier;
 		}
@@ -71,7 +72,7 @@ namespace TomPIT.Sys.Model.Cdn
 
 			var result = new List<IEventQueueMessage>();
 
-			foreach(var message in messages)
+			foreach (var message in messages)
 			{
 				var m = JsonConvert.DeserializeObject(message.Message) as JObject;
 
@@ -85,6 +86,8 @@ namespace TomPIT.Sys.Model.Cdn
 
 				if (Select(id) is IEventDescriptor ev)
 					result.Add(new EventQueueMessage(message, ev));
+				else
+					DataModel.Queue.Complete(message.PopReceipt);
 			}
 
 #if DEBUG
@@ -114,7 +117,7 @@ namespace TomPIT.Sys.Model.Cdn
 				if (Resolve(message) is IEventDescriptor e)
 				{
 					Remove(e.Identifier);
-					_dirty = true;
+					Dirty();
 				}
 			}
 
@@ -128,29 +131,22 @@ namespace TomPIT.Sys.Model.Cdn
 			return Select(d.Required<Guid>("id"));
 		}
 
-		public void Flush()
+		protected override async Task OnFlushing()
 		{
-			Initialize();
-
-			var dirty = _dirty;
 			var events = All();
 
-			_dirty = false;
-
-			if (dirty || events.Any())
-			{
 #if DEBUG
-				var sw = new Stopwatch();
+			var sw = new Stopwatch();
 
-				sw.Start();
+			sw.Start();
 #endif
-				Shell.GetService<IDatabaseService>().Proxy.Events.Update(events);
+			Shell.GetService<IDatabaseService>().Proxy.Events.Update(events);
+			await Task.CompletedTask;
 #if DEBUG
-				sw.Stop();
+			sw.Stop();
 
-				Debug.WriteLine($"Events update {sw.ElapsedMilliseconds:n0} ms. {events.Count} items.", "Events");
+			Debug.WriteLine($"Events update {sw.ElapsedMilliseconds:n0} ms. {events.Count} items.", "Events");
 #endif
-			}
 		}
 	}
 }

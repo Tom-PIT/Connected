@@ -3,18 +3,17 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 using TomPIT.Caching;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
+using TomPIT.Sys.Caching;
 
 namespace TomPIT.Sys.Model.Cdn
 {
-	internal class QueueingModel : SynchronizedRepository<QueueMessage, long>
+	internal class QueueingModel : IdentityRepository<QueueMessage, long>
 	{
 		public const string Queue = "queueworker";
-		private long _identity = 0;
-		private bool _removeDirty = false;
 
 		public QueueingModel(IMemoryCache container) : base(container, "queueMessage")
 		{
@@ -24,8 +23,8 @@ namespace TomPIT.Sys.Model.Cdn
 		{
 			foreach (var j in Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Query())
 			{
-				if (j.Id > _identity)
-					_identity = j.Id;
+				if (j.Id > Identity)
+					Seed(j.Id);
 
 				Set(j.Id, new QueueMessage(j), TimeSpan.Zero);
 			}
@@ -53,7 +52,7 @@ namespace TomPIT.Sys.Model.Cdn
 
 			var descriptor = new QueueMessage
 			{
-				Id = Interlocked.Increment(ref _identity),
+				Id = Increment(),
 				Message = message,
 				Created = DateTime.UtcNow,
 				Expire = DateTime.UtcNow.Add(expire),
@@ -64,6 +63,8 @@ namespace TomPIT.Sys.Model.Cdn
 			};
 
 			Set(descriptor.Id, descriptor, TimeSpan.Zero);
+
+			Dirty();
 		}
 
 		public ImmutableList<IQueueMessage> Dequeue(int count, TimeSpan nextVisible, QueueScope scope, string queue)
@@ -101,6 +102,8 @@ namespace TomPIT.Sys.Model.Cdn
 					target.PopReceipt = Guid.NewGuid();
 
 					results.Add(target);
+
+					Dirty();
 
 					target.EndEdit();
 				}
@@ -157,6 +160,9 @@ namespace TomPIT.Sys.Model.Cdn
 			{
 				message.BeginEdit();
 				message.NextVisible = DateTime.UtcNow.Add(nextVisible);
+
+				Dirty();
+
 				message.EndEdit();
 			}
 			catch { }
@@ -167,7 +173,7 @@ namespace TomPIT.Sys.Model.Cdn
 			if (Select(popReceipt) is not QueueMessage message)
 				return;
 
-			_removeDirty = true;
+			Dirty();
 			Remove(message.Id);
 		}
 
@@ -176,15 +182,10 @@ namespace TomPIT.Sys.Model.Cdn
 			return Get(f => f.PopReceipt == popReceipt);
 		}
 
-		public void Flush()
+		protected override async Task OnFlushing()
 		{
-			Initialize();
-
-			var dirty = _removeDirty;
 			var messages = All();
 			var items = new List<IQueueMessage>();
-
-			_removeDirty = false;
 
 			foreach (var message in messages)
 			{
@@ -194,20 +195,26 @@ namespace TomPIT.Sys.Model.Cdn
 				items.Add(message);
 			}
 
-			if (dirty || items.Any())
-			{
 #if DEBUG
-				var sw = new Stopwatch();
+			var sw = new Stopwatch();
 
-				sw.Start();
+			sw.Start();
 #endif
-				Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Update(items);
+			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Update(items);
+
+			await Task.CompletedTask;
 #if DEBUG
-				sw.Stop();
+			sw.Stop();
 
-				Debug.WriteLine($"Queue update {sw.ElapsedMilliseconds:n0} ms. {messages.Count} items (with orphanes).", "Queue");
+			Debug.WriteLine($"Queue update {sw.ElapsedMilliseconds:n0} ms. {messages.Count} items (with orphanes).", "Queue");
+
+			//sw.Reset();
+			//sw.Start();
+			//await File.WriteAllTextAsync(Path.Combine(System.Environment.GetFolderPath(SpecialFolder.LocalApplicationData), "Queue.json"), JsonConvert.SerializeObject(items));
+			//sw.Stop();
+
+			//Debug.WriteLine($"Queue update file {sw.ElapsedMilliseconds:n0} ms. {messages.Count} items (with orphanes).", "Queue");
 #endif
-			}
 		}
 	}
 }

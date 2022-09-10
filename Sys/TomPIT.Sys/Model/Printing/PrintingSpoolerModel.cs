@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using TomPIT.Cdn;
 using TomPIT.Serialization;
@@ -8,7 +9,7 @@ using TomPIT.Sys.Api.Database;
 
 namespace TomPIT.Sys.Model.Printing
 {
-    internal class PrintingSpoolerModel
+	internal class PrintingSpoolerModel
     {
         private const string Queue = "printingSpooler";
         public Guid Insert(string mime, string printer, string content, long serialNumber, Guid identity, int copyCount = 1)
@@ -77,5 +78,10 @@ namespace TomPIT.Sys.Model.Printing
 
             return Select(id);
         }
-    }
+
+      public async Task Flush()
+      {
+         await Task.CompletedTask;
+      }
+   }
 }

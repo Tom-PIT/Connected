@@ -1,13 +1,11 @@
 ﻿using System;
-using System.ComponentModel;
+using TomPIT.Data;
 using TomPIT.Storage;
 
 namespace TomPIT.Sys.Model.Cdn
 {
-	public class QueueMessage : IQueueMessage, IEditableObject
+	public class QueueMessage : EditableRecord, IQueueMessage
 	{
-		private bool _isLocked = false;
-		private readonly object _sync = new object();
 		public QueueMessage()
 		{
 
@@ -49,30 +47,5 @@ namespace TomPIT.Sys.Model.Cdn
 
 		public string BufferKey { get; set; }
 
-		public bool IsLocked { get { return _isLocked; } private set { _isLocked = true; } }
-
-		public void BeginEdit()
-		{
-			if (IsLocked)
-				throw new Exception("Locked.");
-
-			lock (_sync)
-			{
-				if(IsLocked)
-					throw new Exception("Locked.");
-
-				IsLocked = true;
-			}
-		}
-
-		public void CancelEdit()
-		{
-			_isLocked = false;
-		}
-
-		public void EndEdit()
-		{
-			_isLocked = false;
-		}
 	}
 }

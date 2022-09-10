@@ -10,7 +10,7 @@ namespace TomPIT.Sys.Controllers.Management
 	public class PrintingManagementController : SysController
 	{
 		[HttpPost]
-		public ImmutableList<IQueueMessage> Dequeue()
+		public ImmutableList<IPrintQueueMessage> Dequeue()
 		{
 			var body = FromBody();
 
