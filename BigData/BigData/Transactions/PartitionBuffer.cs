@@ -1,8 +1,9 @@
 ﻿using System;
+using TomPIT.Data;
 
 namespace TomPIT.BigData.Transactions
 {
-	internal class PartitionBuffer : IPartitionBuffer
+	internal class PartitionBuffer : PrimaryKeyRecord, IPartitionBuffer
 	{
 		public Guid Partition { get; set; }
 

@@ -66,7 +66,7 @@ namespace TomPIT.BigData.Transactions
 					{
 						MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().CreateTransactions(config, array);
 					}
-					catch(Exception ex)
+					catch (Exception ex)
 					{
 						ctx.Services.Diagnostic.Error(nameof(BufferingJob), ex.Message, LogCategories.BigData);
 					}

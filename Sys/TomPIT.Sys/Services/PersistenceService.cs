@@ -6,9 +6,9 @@ using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Services
 {
-	internal class EventsFlusher : HostedService
+	internal abstract class PersistenceService : HostedService
 	{
-		public EventsFlusher()
+		protected PersistenceService()
 		{
 			IntervalTimeout = TimeSpan.FromSeconds(15);
 		}
@@ -22,18 +22,21 @@ namespace TomPIT.Sys.Services
 			await OnExecute(CancellationToken.None);
 		}
 
-		protected override Task OnExecute(CancellationToken cancel)
+		protected override async Task OnExecute(CancellationToken cancel)
 		{
 			try
 			{
-				DataModel.Events.Flush();
+				await OnPersist(cancel);
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine(ex.Message);
 			}
+		}
 
-			return Task.CompletedTask;
+		protected virtual async Task OnPersist(CancellationToken cancel)
+		{
+			await Task.CompletedTask;
 		}
 	}
 }

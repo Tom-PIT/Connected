@@ -9,29 +9,18 @@ using TomPIT.Middleware;
 using TomPIT.Runtime;
 using TomPIT.Security;
 using TomPIT.Serialization;
-using TomPIT.Storage;
 
 namespace TomPIT.Cdn.Printing
 {
-    internal class PrintJob : DispatcherJob<IQueueMessage>
+	internal class PrintJob : DispatcherJob<IPrintQueueMessage>
     {
         private TimeoutTask _timeout = null;
-        public PrintJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
+        public PrintJob(IDispatcher<IPrintQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
         {
         }
 
-        protected override void DoWork(IQueueMessage item)
+        protected override void DoWork(IPrintQueueMessage item)
         {
-            var message = Serializer.Deserialize<PrintQueueMessage>(item.Message);
-            var job = MiddlewareDescriptor.Current.Tenant.GetService<IPrintingService>().Select(message.Id);
-
-            if (job == null)
-            {
-                MiddlewareDescriptor.Current.Tenant.GetService<IPrintingManagementService>().Complete(item.PopReceipt);
-
-                return;
-            }
-
             _timeout = new TimeoutTask(() =>
             {
                 MiddlewareDescriptor.Current.Tenant.GetService<IPrintingManagementService>().Ping(item.PopReceipt);
@@ -43,7 +32,7 @@ namespace TomPIT.Cdn.Printing
 
             try
             {
-                Invoke(item, job);
+                Invoke(item);
                 MiddlewareDescriptor.Current.Tenant.GetService<IPrintingManagementService>().Complete(item.PopReceipt);
             }
             finally
@@ -52,32 +41,32 @@ namespace TomPIT.Cdn.Printing
             }
         }
 
-        private void Invoke(IQueueMessage message, IPrintJob job)
+        private void Invoke(IPrintQueueMessage message)
         {
             try
             {
-                var provider = MiddlewareDescriptor.Current.Tenant.GetService<IDocumentService>().GetProvider(job.Provider);
+                var provider = MiddlewareDescriptor.Current.Tenant.GetService<IDocumentService>().GetProvider(message.Provider);
 
                 if (provider is null)
-                    throw new RuntimeException($"{SR.ErrPrintingProviderResolve} ({job.Provider})");
+                    throw new RuntimeException($"{SR.ErrPrintingProviderResolve} ({message.Provider})");
 
                 if (Shell.GetService<IRuntimeService>().Platform == Platform.OnPrem)
-                    provider.Print(job);
+                    provider.Print(message);
                 else
                 {
-                    if (string.IsNullOrWhiteSpace(job.Arguments))
+                    if (string.IsNullOrWhiteSpace(message.Arguments))
                         return;
 
-                    var args = Serializer.Deserialize<JObject>(job.Arguments);
+                    var args = Serializer.Deserialize<JObject>(message.Arguments);
                     var printer = Serializer.Deserialize<Printer>(args.Required<string>("printer"));
 
                     if (printer is null)
                         return;
 
-                    var report = provider.Create(job);
+                    var report = provider.Create(message);
 
                     if (report is not null)
-                        MiddlewareDescriptor.Current.Tenant.GetService<IPrintingSpoolerManagementService>().Insert(report.MimeType, printer.Name, Convert.ToBase64String(report.Content), job.SerialNumber, ResolveUserToken(job.User), job.CopyCount);
+                        MiddlewareDescriptor.Current.Tenant.GetService<IPrintingSpoolerManagementService>().Insert(report.MimeType, printer.Name, Convert.ToBase64String(report.Content), message.SerialNumber, ResolveUserToken(message.User), message.CopyCount);
                 }
             }
             catch (Exception ex)
@@ -105,7 +94,7 @@ namespace TomPIT.Cdn.Printing
             return default;
         }
 
-        protected override void OnError(IQueueMessage item, Exception ex)
+        protected override void OnError(IPrintQueueMessage item, Exception ex)
         {
             MiddlewareDescriptor.Current.Tenant.GetService<IPrintingManagementService>().Error(item.PopReceipt, ex.Message);
         }

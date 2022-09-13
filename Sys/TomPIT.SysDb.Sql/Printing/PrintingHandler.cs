@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.Cdn;
 using TomPIT.Data.Sql;
 using TomPIT.SysDb.Printing;
@@ -9,15 +10,6 @@ namespace TomPIT.SysDb.Sql.Printing
 {
 	internal class PrintingHandler : IPrintingHandler
 	{
-		public void Delete(Guid token)
-		{
-			using var w = new Writer("tompit.print_job_del");
-
-			w.CreateParameter("@token", token);
-
-			w.Execute();
-		}
-
 		public void DeleteSpooler(IPrintSpoolerJob job)
 		{
 			using var w = new Writer("tompit.print_spooler_del");
@@ -27,20 +19,44 @@ namespace TomPIT.SysDb.Sql.Printing
 			w.Execute();
 		}
 
-		public void Insert(Guid token, DateTime created, Guid component, PrintJobStatus status, string provider, string arguments, string user, long serialNumber, string category, int copyCount = 1)
+		public void Update(List<IPrintJob> jobs)
 		{
-			using var w = new Writer("tompit.print_job_ins");
+			using var w = new Writer("tompit.print_job_upd");
+			var items = new JArray();
 
-			w.CreateParameter("@token", token);
-			w.CreateParameter("@created", created);
-			w.CreateParameter("@status", status);
-			w.CreateParameter("@provider", provider, true);
-			w.CreateParameter("@component", component);
-			w.CreateParameter("@arguments", arguments, true);
-			w.CreateParameter("@user", user, true);
-			w.CreateParameter("@serial_number", serialNumber, true);
-			w.CreateParameter("@category", category, true);
-			w.CreateParameter("@copy_count", copyCount);
+			foreach (var item in jobs)
+			{
+				var jo = new JObject
+				{
+					{"created", item.Created },
+					{"token", item.Token },
+					{"status", (int)item.Status },
+					{"component", item.Component },
+					{"copy_count", item.CopyCount }
+				};
+
+				if (!string.IsNullOrEmpty(item.Error))
+					jo.Add("error", item.Error);
+
+				if (!string.IsNullOrEmpty(item.Arguments))
+					jo.Add("arguments", item.Arguments);
+
+				if (!string.IsNullOrEmpty(item.Provider))
+					jo.Add("provider", item.Provider);
+
+				if (!string.IsNullOrEmpty(item.User))
+					jo.Add("user", item.User);
+
+				if (item.SerialNumber > 0)
+					jo.Add("serial_number", item.SerialNumber);
+
+				if (!string.IsNullOrEmpty(item.Category))
+					jo.Add("category", item.Category);
+
+				items.Add(jo);
+			};
+
+			w.CreateParameter("@items", items);
 
 			w.Execute();
 		}
@@ -84,15 +100,6 @@ namespace TomPIT.SysDb.Sql.Printing
 			return r.Execute().ToList<ISerialNumber>();
 		}
 
-		public IPrintJob Select(Guid token)
-		{
-			using var r = new Reader<PrintJob>("tompit.print_job_sel");
-
-			r.CreateParameter("@token", token);
-
-			return r.ExecuteSingleRow();
-		}
-
 		public ISerialNumber SelectSerialNumber(string category)
 		{
 			using var r = new Reader<SerialNumberDescriptor>("tompit.print_job_serial_number_sel");
@@ -109,17 +116,6 @@ namespace TomPIT.SysDb.Sql.Printing
 			r.CreateParameter("@token", token);
 
 			return r.ExecuteSingleRow();
-		}
-
-		public void Update(Guid token, PrintJobStatus status, string error)
-		{
-			using var w = new Writer("tompit.print_job_upd");
-
-			w.CreateParameter("@token", token);
-			w.CreateParameter("@status", status);
-			w.CreateParameter("@error", error, true);
-
-			w.Execute();
 		}
 
 		public void UpdateSerialNumber(ISerialNumber serialNumber)

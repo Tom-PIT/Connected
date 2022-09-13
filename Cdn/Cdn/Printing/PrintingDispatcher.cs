@@ -1,17 +1,16 @@
 ﻿using System.Threading;
 using TomPIT.Distributed;
-using TomPIT.Storage;
 
 namespace TomPIT.Cdn.Printing
 {
-	internal class PrintingDispatcher : Dispatcher<IQueueMessage>
+	internal class PrintingDispatcher : Dispatcher<IPrintQueueMessage>
 	{
 		public PrintingDispatcher(string resourceGroup) : base(16)
 		{
 			ResourceGroup = resourceGroup;
 		}
 
-		public override DispatcherJob<IQueueMessage> CreateWorker(IDispatcher<IQueueMessage> owner, CancellationToken cancel)
+		public override DispatcherJob<IPrintQueueMessage> CreateWorker(IDispatcher<IPrintQueueMessage> owner, CancellationToken cancel)
 		{
 			return new PrintJob(owner, cancel);
 		}

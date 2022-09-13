@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.BigData;
 using TomPIT.Storage;
@@ -389,7 +390,7 @@ namespace TomPIT.Sys.Controllers.Management
 			var count = body.Required<int>("count");
 			var ts = body.Required<TimeSpan>("timeSpan");
 
-			return DataModel.BigDataPartitionBuffering.Dequeue(count, ts);
+			return DataModel.BigDataPartitionBuffering.Dequeue(count, ts).ToList<IPartitionBuffer>();
 		}
 		[HttpPost]
 		public void EnqueueBuffer()

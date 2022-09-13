@@ -95,8 +95,11 @@ namespace TomPIT.Sys
 			services.AddSingleton<IHostedService, MessageDisposer>();
 			services.AddSingleton<IHostedService, Scheduler>();
 			services.AddSingleton<IHostedService, Preloader>();
-			services.AddSingleton<IHostedService, QueueFlusher>();
-			services.AddSingleton<IHostedService, EventsFlusher>();
+			services.AddSingleton<IHostedService, QueuePersistence>();
+			services.AddSingleton<IHostedService, EventsPersistence>();
+			services.AddSingleton<IHostedService, PrintingPersistence>();
+			services.AddSingleton<IHostedService, PrintingSpoolerPersistence>();
+			services.AddSingleton<IHostedService, BigDataBufferPersistence>();
 		}
 	}
 }

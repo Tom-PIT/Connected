@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using TomPIT.BigData;
 using TomPIT.Data.Sql;
 using TomPIT.SysDb.BigData;
@@ -9,17 +9,6 @@ namespace TomPIT.SysDb.Sql.BigData
 {
 	internal class PartitionBufferHandler : IPartitionBufferHandler
 	{
-		public List<IPartitionBuffer> Dequeue(int count, DateTime date, DateTime nextVisible)
-		{
-			using var r = new Reader<PartitionBuffer>("tompit.big_data_buffer_dequeue");
-
-			r.CreateParameter("@next_visible", nextVisible);
-			r.CreateParameter("@count", count);
-			r.CreateParameter("@date", date);
-
-			return r.Execute().ToList<IPartitionBuffer>();
-		}
-
 		public List<IPartitionBuffer> Query()
 		{
 			using var r = new Reader<PartitionBuffer>("tompit.big_data_buffer_que");
@@ -27,31 +16,22 @@ namespace TomPIT.SysDb.Sql.BigData
 			return r.Execute().ToList<IPartitionBuffer>();
 		}
 
-		public IPartitionBuffer Select(Guid partition)
+		public void Update(List<IPartitionBuffer> buffers)
 		{
-			using var r = new Reader<PartitionBuffer>("tompit.big_data_buffer_sel");
+			using var w = new Writer("tompit.big_data_buffer_mdf");
+			var a = new JArray();
 
-			r.CreateParameter("@partition", partition);
-
-			return r.ExecuteSingleRow();
-		}
-
-		public void Insert(Guid partition, DateTime nextVisible)
-		{
-			using var w = new Writer("tompit.big_data_buffer_ins");
-
-			w.CreateParameter("@partition", partition);
-			w.CreateParameter("@next_visible", nextVisible);
-
-			w.Execute();
-		}
-
-		public void Update(IPartitionBuffer buffer, DateTime nextVisibe)
-		{
-			using var w = new Writer("tompit.big_data_buffer_upd");
-
-			w.CreateParameter("@id", buffer.GetId());
-			w.CreateParameter("@next_visible", nextVisibe);
+			foreach(var item in buffers)
+			{
+				a.Add(new JObject
+				{
+					{"id", item.Id },
+					{"partition", item.Partition },
+					{"next_visible", item.NextVisible }
+				});
+			}
+			
+			w.CreateParameter("@items", a);
 
 			w.Execute();
 		}

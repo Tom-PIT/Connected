@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-using TomPIT.Distributed;
 using TomPIT.Middleware;
-using TomPIT.Storage;
 
 namespace TomPIT.Cdn.Printing
 {
@@ -21,7 +19,7 @@ namespace TomPIT.Cdn.Printing
 			MiddlewareDescriptor.Current.Tenant.Post(u, e);
 		}
 
-		public List<IQueueMessage> Dequeue(int count)
+		public List<IPrintQueueMessage> Dequeue(int count)
 		{
 			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("PrintingManagement", "Dequeue");
 			var e = new JObject
@@ -29,7 +27,7 @@ namespace TomPIT.Cdn.Printing
 				{ "count", count }
 			};
 
-			return MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(u, e).ToList<IQueueMessage>();
+			return MiddlewareDescriptor.Current.Tenant.Post<List<PrintQueueMessage>>(u, e).ToList<IPrintQueueMessage>();
 		}
 
 		public void Error(Guid popReceipt, string error)
