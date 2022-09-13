@@ -465,16 +465,6 @@ namespace TomPIT.Sys.Model.Components
 			Update(component, c.Name, c.Folder, runtimeConfiguration);
 		}
 
-		public void Update(List<IComponentIndexState> states)
-		{
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.UpdateStates(states);
-		}
-
-		public void Update(List<IComponentAnalyzerState> states)
-		{
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.UpdateStates(states);
-		}
-
 		public void Update(Guid component, string name, Guid folder, Guid runtimeConfiguration)
 		{
 			var c = Select(component);

@@ -25,7 +25,7 @@ namespace TomPIT.Runtime
 
 		public EnvironmentIOBehavior IOBehavior { get; private set; } = EnvironmentIOBehavior.ReadWrite;
 
-        public void Initialize(InstanceType type, Platform platform, IWebHostEnvironment environment)
+		public void Initialize(InstanceType type, Platform platform, IWebHostEnvironment environment)
 		{
 			Type = type;
 			ContentRoot = environment.ContentRootPath;

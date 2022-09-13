@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TomPIT.ComponentModel;
 using TomPIT.Design.Ide.Properties;
 using TomPIT.Design.Tools;
 using TomPIT.Development;
@@ -24,5 +25,6 @@ namespace TomPIT.Ide.Designers
 		void RegisterAutoFix(IAutoFixProvider provider);
 		void AutoFix(string provider, Guid error);
 		List<IAutoFixProvider> QueryAutoFixProviders();
+		List<IComponentDevelopmentState> DequeueDevelopmentStates(int count);
 	}
 }

@@ -15,12 +15,15 @@ using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
+using TomPIT.Runtime;
 using TomPIT.Storage;
 
 namespace TomPIT.Design
 {
 	internal class Components : TenantObject, IComponentModel
 	{
+		private const string Controller = "ComponentDevelopment";
+
 		public Components(ITenant tenant) : base(tenant)
 		{
 		}
@@ -155,7 +158,8 @@ namespace TomPIT.Design
 				});
 			}
 
-			InvalidateIndexState(component.Token);
+			InvalidateIndexes(component.Token);
+			InvalidateAnalyzers(component.Token);
 		}
 
 		public void Restore(Guid microService, IPullRequestComponent component)
@@ -261,7 +265,8 @@ namespace TomPIT.Design
 			else
 				Update(component.Token, component.Name, component.Folder, false);
 
-			InvalidateIndexState(component.Token);
+			InvalidateIndexes(component.Token);
+			InvalidateAnalyzers(component.Token);
 		}
 
 		private void NotifyRemoted(Guid microService, IPullRequestComponent component)
@@ -428,7 +433,8 @@ namespace TomPIT.Design
 				});
 			}
 
-			InvalidateIndexState(instance.Component);
+			InvalidateIndexes(instance.Component);
+			InvalidateAnalyzers(instance.Component);
 
 			u = Tenant.CreateUrl("NotificationDevelopment", "ConfigurationAdded");
 			args = new JObject
@@ -460,8 +466,6 @@ namespace TomPIT.Design
 				component,
 				folder
 			});
-
-			InvalidateIndexState(component);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification n)
 				n.NotifyChanged(this, new ConfigurationEventArgs(c.MicroService, component, c.Category));
@@ -513,7 +517,9 @@ namespace TomPIT.Design
 			};
 
 			Tenant.GetService<IStorageService>().Upload(blob, content, StoragePolicy.Singleton);
-			InvalidateIndexState(configuration.Component);
+			
+			InvalidateIndexes(configuration.Component);
+			InvalidateAnalyzers(configuration.Component);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification n)
 				n.NotifyChanged(this, new ConfigurationEventArgs(c.MicroService, configuration.Component, c.Category));
@@ -555,7 +561,9 @@ namespace TomPIT.Design
 					text.TextBlob = blob;
 
 				Update(text.Configuration());
-				InvalidateIndexState(text);
+				
+				InvalidateIndexes(text);
+				InvalidateAnalyzers(text);
 			}
 		}
 
@@ -829,7 +837,10 @@ namespace TomPIT.Design
 			var sources = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(imageConfig);
 
 			foreach (var source in sources)
-				InvalidateIndexState(source);
+			{
+				InvalidateIndexes(source);
+				InvalidateAnalyzers(source);
+			}
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
 			{
@@ -872,80 +883,94 @@ namespace TomPIT.Design
 			return Tenant.Post<List<Component>>(u, e).ToList<IComponent>();
 		}
 
-		private void InvalidateIndexState(Guid component)
+		private void InvalidateIndexes(Guid component)
 		{
-			UpdateIndexStates(new List<IComponentIndexState>
+			InvalidateIndexes(new List<IComponentIndexState>
 			{
 				new ComponentIndexState
 				{
-					Component = Tenant.GetService<IComponentService>().SelectComponent(component),
-					State = IndexState.Invalidated,
-					TimeStamp = DateTime.UtcNow
+					Component = Tenant.GetService<IComponentService>().SelectComponent(component)
 				}
 			});
 		}
 
-		private void InvalidateIndexState(IText element)
+		private void InvalidateAnalyzers(Guid component)
 		{
-			UpdateIndexStates(new List<IComponentIndexState>
+			InvalidateAnalyzers(new List<IComponentAnalyzerState>
+			{
+				new ComponentAnalyzerState
+				{
+					Component = Tenant.GetService<IComponentService>().SelectComponent(component)
+				}
+			});
+		}
+
+		private void InvalidateIndexes(IText element)
+		{
+			InvalidateIndexes(new List<IComponentIndexState>
 			{
 				new ComponentIndexState
 				{
 					Component = Tenant.GetService<IComponentService>().SelectComponent(element.Configuration().Component),
-					Element = element.Id,
-					State = IndexState.Invalidated,
-					TimeStamp = DateTime.UtcNow
+					Element = element.Id
 				}
 			});
 		}
 
-		public void UpdateIndexStates(List<IComponentIndexState> states)
+		private void InvalidateAnalyzers(IText element)
 		{
-			var u = Tenant.CreateUrl("ComponentDevelopment", "UpdateIndexStates");
-			var e = new JObject();
-			var a = new JArray();
-
-			e.Add("items", a);
-
-			foreach (var state in states)
+			InvalidateAnalyzers(new List<IComponentAnalyzerState>
 			{
-				a.Add(new JObject
+				new ComponentAnalyzerState
 				{
-					{"component", state.Component.Token },
-					{"element", state.Element },
-					{"state", state.State.ToString() },
-					{"timestamp", state.TimeStamp }
-				});
-			}
-
-			Tenant.Post(u, e);
+					Component = Tenant.GetService<IComponentService>().SelectComponent(element.Configuration().Component),
+					Element = element.Id
+				}
+			});
 		}
 
-		public void UpdateAnalyzerStates(List<IComponentAnalyzerState> states)
+		public void InvalidateIndexes(List<IComponentIndexState> states)
 		{
-			var u = Tenant.CreateUrl("ComponentDevelopment", "UpdateAnalyzerStates");
-			var e = new JObject();
-			var a = new JArray();
+			if (Tenant.GetService<IRuntimeService>().Stage != EnvironmentStage.Development)
+				return;
 
-			e.Add("items", a);
+			var items = new List<dynamic>();
 
 			foreach (var state in states)
 			{
-				e.Add(new JObject
+				items.Add(new
 				{
-					{"component", state.Component.Token },
-					{"element", state.Element },
-					{"state", state.State.ToString() },
-					{"timestamp", state.TimeStamp }
+					Timestamp = DateTime.UtcNow,
+					State = IndexState.Invalidated,
+					Component = state.Component.Token,
+					state.Element
 				});
 			}
 
-			Tenant.Post(u, e);
+			Tenant.Post(CreateUrl("UpdateIndexStates"), new { items });
+		}
+
+		public void InvalidateAnalyzers(List<IComponentAnalyzerState> states)
+		{
+			var items = new List<dynamic>();
+
+			foreach (var state in states)
+			{
+				items.Add(new
+				{
+					Component = state.Component.Token,
+					state.Element,
+					state = AnalyzerState.Pending,
+					timestamp = DateTime.UtcNow
+				});
+			}
+
+			Tenant.Post(CreateUrl("UpdateAnalyzerStates"), new { items });
 		}
 
 		private ServerUrl CreateUrl(string action)
 		{
-			return Tenant.CreateUrl("ComponentDevelopment", action);
+			return Tenant.CreateUrl(Controller, action);
 		}
 
 		public void SaveRuntimeState(Guid microService)

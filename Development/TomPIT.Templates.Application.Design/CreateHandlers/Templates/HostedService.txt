@@ -1,0 +1,18 @@
+﻿using System.Threading.Tasks;
+using System.Threading;
+using System;
+using TomPIT.Distributed;
+
+public partial class DomainNamespace
+{
+   public partial class MicroserviceNamespace
+   {
+      public class [NAME] : HostedServiceMiddleware
+      {
+         protected override async Task OnInvoke(CancellationToken stoppingToken)
+         {
+            await Task.CompletedTask;
+         }
+      }
+   }
+}

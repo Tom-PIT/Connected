@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
 using TomPIT.Runtime;
+using TomPIT.Worker.HostedServices;
 using TomPIT.Worker.Services;
 using TomPIT.Worker.Subscriptions;
 
@@ -44,12 +45,15 @@ namespace TomPIT.Worker
 			});
 
 			Instance.Run(app, env);
+
+			Tenant.GetService<IHostedServices>().Initialize();
 		}
 
 		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
 			e.Tenant.RegisterService(typeof(ISubscriptionWorkerService), typeof(SubscriptionWorkerService));
 			e.Tenant.RegisterService(typeof(IWorkerProxyService), typeof(WorkerProxyService));
+			e.Tenant.RegisterService(typeof(IHostedServices), typeof(HostedServicesContainer));
 		}
 
 		private void RegisterTasks(IServiceCollection services)
