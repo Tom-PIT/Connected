@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Connected.Printing.Client.Configuration;
 using TomPIT.Connected.Printing.Client.Printing;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace TomPIT.Connected.Printing.Client.Handlers
 {
@@ -34,12 +35,15 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 
         private PrinterHandler _printerHandler;
 
+        private IMemoryCache _memoryCache;
+
         private Uri _baseCdnUri;
 
-        public PrintingHandler(LocalizationProvider localizationProvider)
+        public PrintingHandler(LocalizationProvider localizationProvider, IMemoryCache memoryCache)
         {
             _printerHandler = new PrinterHandler(Settings.PrinterNameMappings);
             _localizationProvider = localizationProvider;
+            _memoryCache = memoryCache;
             _functionLock = new SemaphoreSlim(1, 1);
         }
 
@@ -100,6 +104,21 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             _connection.On<Guid, Guid>(Constants.RequestPrint, async (id, receipt) =>
             {
                 Logging.Debug($"Print request {id}");
+
+                bool exists = true;
+                _memoryCache.GetOrCreate<Guid>(id, (item) =>
+                {
+                    exists = false;
+                    item.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10);
+                    return id;
+                });
+
+                if (exists)
+                {
+                    Logging.Debug($"Print request {id} was duplicate, ignoring.");
+                    return;
+                }
+
                 try
                 {
                     try
@@ -237,16 +256,9 @@ namespace TomPIT.Connected.Printing.Client.Handlers
                         Logging.Trace("Starting printing...");
                         if (OperatingSystem.IsWindows())
                         {
-                            while (job.CopyCount > 0)
-                            {
+                            print.PrinterSettings.Copies = (short)job.CopyCount;
 
-                                print.PrinterSettings.Copies = (short)Math.Min(job.CopyCount, short.MaxValue);
-
-                                print.Print(printerName);
-
-                                job.CopyCount -= short.MaxValue;
-                            }
-
+                            print.Print(printerName);
                         }
                         else
                         {
