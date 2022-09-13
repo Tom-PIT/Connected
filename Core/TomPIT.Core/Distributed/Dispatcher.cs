@@ -8,204 +8,180 @@ using TomPIT.Exceptions;
 
 namespace TomPIT.Distributed
 {
-	public abstract class Dispatcher<T> : IDispatcher<T>
-	{
-		private ConcurrentQueue<T> _items = null;
-		private List<DispatcherJob<T>> _workers = null;
-		private Lazy<ConcurrentDictionary<string, QueuedDispatcher<T>>> _queuedDispatchers = new Lazy<ConcurrentDictionary<string, QueuedDispatcher<T>>>();
-		private bool _disposed = false;
-		private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
+    public abstract class Dispatcher<T> : IDispatcher<T>
+    {
+        private ConcurrentQueue<T> _items = null;
+        private List<DispatcherJob<T>> _workers = null;
+        private Lazy<ConcurrentDictionary<string, QueuedDispatcher<T>>> _queuedDispatchers = new Lazy<ConcurrentDictionary<string, QueuedDispatcher<T>>>();
+        private bool _disposed = false;
+        private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
 
-		protected Dispatcher(int workerSize)
-		{
-			WorkerSize = workerSize;
+        protected Dispatcher(int workerSize)
+        {
+            WorkerSize = workerSize;
+        }
 
-			new Task(() => OnScaveging(), Cancel.Token, TaskCreationOptions.LongRunning).Start();
-		}
+        private CancellationTokenSource Cancel => _cancel;
 
-		private CancellationTokenSource Cancel => _cancel;
+        private int WorkerSize { get; }
 
-		private void OnScaveging()
-		{
-			var token = Cancel.Token;
+        public abstract DispatcherJob<T> CreateWorker(IDispatcher<T> owner, CancellationToken cancel);
 
-			while (!Cancel.IsCancellationRequested)
-			{
-				try
-				{
-					var disposed = QueuedDispatchers.Where(f => f.Value.Disposed);
+        public int Available => Math.Max(0, WorkerSize * 4) - Queue.Count - QueuedDispatchers.Sum(f => f.Value.Count);
 
-					foreach (var disposedDispatcher in disposed)
-						QueuedDispatchers.Remove(disposedDispatcher.Key, out QueuedDispatcher<T> _);
+        public bool Dequeue(out T item)
+        {
+            return Queue.TryDequeue(out item);
+        }
 
-					token.WaitHandle.WaitOne(TimeSpan.FromMinutes(1));
-				}
-				catch { }
-			}
-		}
+        public bool Enqueue(string queue, T item)
+        {
+            if (EnsureDispatcher(queue) is not QueuedDispatcher<T> dispatcher)
+                throw new RuntimeException($"{SR.ErrCannotCreateStackedDispatcher} ({queue})");
 
-		private int WorkerSize { get; }
+            return dispatcher.Enqueue(item);
+        }
 
-		public abstract DispatcherJob<T> CreateWorker(IDispatcher<T> owner, CancellationToken cancel);
+        public bool Enqueue(T item)
+        {
+            Queue.Enqueue(item);
 
-		public int Available => Math.Max(0, WorkerSize * 4) - Queue.Count - QueuedDispatchers.Sum(f => f.Value.Count);
+            if (Jobs.Count < WorkerSize)
+            {
+                var worker = CreateWorker(this, Cancel.Token);
 
-		public bool Dequeue(out T item)
-		{
-			return Queue.TryDequeue(out item);
-		}
+                worker.Completed += OnCompleted;
 
-		public bool Enqueue(string queue, T item)
-		{
-			var dispatcher = EnsureDispatcher(queue);
+                lock (Jobs)
+                {
+                    Jobs.Add(worker);
+                }
 
-			if (dispatcher == null)
-				throw new RuntimeException($"{SR.ErrCannotCreateStackedDispatcher} ({queue})");
+                worker.Run();
+            }
 
-			if (dispatcher.Disposed)
-				return Enqueue(queue, item);
-			else
-				return dispatcher.Enqueue(item);
-		}
+            return true;
+        }
 
-		public bool Enqueue(T item)
-		{
-			Queue.Enqueue(item);
+        private void OnCompleted(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is not DispatcherJob<T> job)
+                    return;
 
-			if (Jobs.Count < WorkerSize)
-			{
-				var worker = CreateWorker(this, Cancel.Token);
+                if (job.Success && Queue.IsEmpty)
+                {
+                    lock (Jobs)
+                    {
+                        Jobs.Remove(job);
+                    }
 
-				worker.Completed += OnCompleted;
+                    job.Dispose();
+                    job = null;
+                }
+                else
+                    job.Run();
+            }
+            catch { }
+        }
 
-				lock (Jobs)
-				{
-					Jobs.Add(worker);
-				}
+        private ConcurrentQueue<T> Queue
+        {
+            get
+            {
+                if (_items == null)
+                    _items = new ConcurrentQueue<T>();
 
-				worker.Run();
-			}
+                return _items;
+            }
+        }
 
-			return true;
-		}
+        private List<DispatcherJob<T>> Jobs
+        {
+            get
+            {
+                if (_workers == null)
+                    _workers = new List<DispatcherJob<T>>();
 
-		private void OnCompleted(object sender, EventArgs e)
-		{
-			try
-			{
-				if (sender is not DispatcherJob<T> job)
-					return;
+                return _workers;
+            }
+        }
 
-				if (job.Success)
-				{
-					lock (Jobs)
-					{
-						Jobs.Remove(job);
-					}
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
 
-					job.Dispose();
-					job = null;
-				}
-				else
-					job.Run();
-			}
-			catch { }
-		}
+                    try
+                    {
+                        Cancel.Cancel();
+                        Queue.Clear();
 
-		private ConcurrentQueue<T> Queue
-		{
-			get
-			{
-				if (_items == null)
-					_items = new ConcurrentQueue<T>();
+                        foreach (var job in Jobs)
+                            job.Dispose();
 
-				return _items;
-			}
-		}
+                        Jobs.Clear();
 
-		private List<DispatcherJob<T>> Jobs
-		{
-			get
-			{
-				if (_workers == null)
-					_workers = new List<DispatcherJob<T>>();
+                        foreach (var dispatcher in QueuedDispatchers)
+                            dispatcher.Value.Dispose();
 
-				return _workers;
-			}
-		}
+                        QueuedDispatchers.Clear();
+                        Cancel.Dispose();
+                    }
+                    catch { }
+                }
 
-		protected virtual void Dispose(bool disposing)
-		{
-			if (!_disposed)
-			{
-				if (disposing)
-				{
+                _disposed = true;
+            }
+        }
 
-					try
-					{
-						Cancel.Cancel();
-						Queue.Clear();
+        public void Dispose()
+        {
+            Dispose(true);
+        }
 
-						foreach (var job in Jobs)
-							job.Dispose();
+        private QueuedDispatcher<T> EnsureDispatcher(string stack)
+        {
+            if (QueuedDispatchers.TryGetValue(stack, out QueuedDispatcher<T> result))
+                return result;
 
-						Jobs.Clear();
+            result = new QueuedDispatcher<T>(this, stack);
 
-						foreach (var dispatcher in QueuedDispatchers)
-							dispatcher.Value.Dispose();
+            result.Completed += OnQueuedCompleted;
 
-						QueuedDispatchers.Clear();
-						Cancel.Dispose();
-					}
-					catch { }
-				}
+            if (!QueuedDispatchers.TryAdd(stack, result))
+            {
+                if (QueuedDispatchers.TryGetValue(stack, out QueuedDispatcher<T> retryResult))
+                    return retryResult;
+                else
+                    return null;
+            }
 
-				_disposed = true;
-			}
-		}
+            return result;
+        }
 
-		public void Dispose()
-		{
-			Dispose(true);
-		}
+        private void OnQueuedCompleted(object sender, EventArgs e)
+        {
+            var dispatcher = sender as QueuedDispatcher<T>;
 
-		private QueuedDispatcher<T> EnsureDispatcher(string stack)
-		{
-			if (QueuedDispatchers.TryGetValue(stack, out QueuedDispatcher<T> result))
-			{
-				if (result.Disposed)
-				{
-					QueuedDispatchers.Remove(stack, out QueuedDispatcher<T> _);
+            if (dispatcher.Count > 0)
+                return;
 
-					return EnsureDispatcher(stack);
-				}
+            QueuedDispatchers.Remove(dispatcher.QueueName, out _);
 
-				return result;
-			}
+            try
+            {
+                dispatcher.Dispose();
+            }
+            catch { }
+        }
 
-			result = new QueuedDispatcher<T>(this);
+        private ConcurrentDictionary<string, QueuedDispatcher<T>> QueuedDispatchers => _queuedDispatchers.Value;
 
-			if (!QueuedDispatchers.TryAdd(stack, result))
-			{
-				if (QueuedDispatchers.TryGetValue(stack, out QueuedDispatcher<T> retryResult))
-				{
-					if (retryResult.Disposed)
-					{
-						QueuedDispatchers.Remove(stack, out QueuedDispatcher<T> _);
-
-						return EnsureDispatcher(stack);
-					}
-				}
-
-				return retryResult;
-			}
-
-			return result;
-		}
-
-		private ConcurrentDictionary<string, QueuedDispatcher<T>> QueuedDispatchers => _queuedDispatchers.Value;
-
-		public ProcessBehavior Behavior => ProcessBehavior.Parallel;
-	}
+        public ProcessBehavior Behavior => ProcessBehavior.Parallel;
+    }
 }
 

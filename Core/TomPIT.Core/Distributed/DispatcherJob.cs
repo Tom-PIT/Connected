@@ -5,136 +5,136 @@ using TomPIT.Data;
 
 namespace TomPIT.Distributed
 {
-	public abstract class DispatcherJob<T> : IDisposable
-	{
-		private bool _disposed = false;
-		private BackgroundWorker _worker = null;
+    public abstract class DispatcherJob<T> : IDisposable
+    {
+        private bool _disposed = false;
+        private BackgroundWorker _worker = null;
 
-		public event EventHandler Completed;
-		public DispatcherJob(IDispatcher<T> owner, CancellationToken cancel)
-		{
-			Owner = owner;
-			Cancel = cancel;
+        public event EventHandler Completed;
+        public DispatcherJob(IDispatcher<T> owner, CancellationToken cancel)
+        {
+            Owner = owner;
+            Cancel = cancel;
 
-			cancel.Register(() =>
-			{
-				if (Worker.IsBusy)
-					Worker.CancelAsync();
-			});
+            cancel.Register(() =>
+            {
+                if (Worker.IsBusy)
+                    Worker.CancelAsync();
+            });
 
-		}
+        }
 
-		public void Run()
-		{
-			if (Worker.IsBusy)
-				return;
+        public void Run()
+        {
+            if (Worker.IsBusy)
+                return;
 
-			lock (Worker)
-			{
-				if (Worker.IsBusy)
-					return;
+            lock (Worker)
+            {
+                if (Worker.IsBusy)
+                    return;
+                
+                Success = true;
 
-				Success = true;
+                Worker.RunWorkerAsync();
+            }
+        }
 
-				Worker.RunWorkerAsync();
-			}
-		}
+        public bool IsRunning => Worker.IsBusy;
+        private BackgroundWorker Worker
+        {
+            get
+            {
+                if (_worker == null)
+                {
+                    _worker = new BackgroundWorker();
+                    _worker.WorkerSupportsCancellation = true;
+                    _worker.RunWorkerCompleted += OnCompleted;
+                    _worker.DoWork += Dequeue;
+                }
 
-		public bool IsRunning => Worker.IsBusy;
-		private BackgroundWorker Worker
-		{
-			get
-			{
-				if (_worker == null)
-				{
-					_worker = new BackgroundWorker();
-					_worker.WorkerSupportsCancellation = true;
-					_worker.RunWorkerCompleted += OnCompleted;
-					_worker.DoWork += Dequeue;
-				}
+                return _worker;
+            }
+        }
 
-				return _worker;
-			}
-		}
+        private void OnCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            Completed?.Invoke(this, EventArgs.Empty);
+        }
 
-		private void OnCompleted(object sender, RunWorkerCompletedEventArgs e)
-		{
-			Completed?.Invoke(this, EventArgs.Empty);
-		}
+        protected IDispatcher<T> Owner { get; }
+        protected CancellationToken Cancel { get; }
 
-		protected IDispatcher<T> Owner { get; }
-		protected CancellationToken Cancel { get; }
+        public bool Success { get; private set; } = true;
 
-		public bool Success { get; private set; } = true;
+        private void Dequeue(object sender, DoWorkEventArgs e)
+        {
+            DoWork();
+        }
 
-		private void Dequeue(object sender, DoWorkEventArgs e)
-		{
-			DoWork();
-		}
+        private void DoWork()
+        {
+            T item = default;
 
-		private void DoWork()
-		{
-			T item = default;
+            try
+            {
+                while (Owner.Dequeue(out item))
+                {
+                    if (item is IPopReceiptRecord pr && pr.NextVisible <= DateTime.UtcNow)
+                        continue;
 
-			try
-			{
-				while (Owner.Dequeue(out item))
-				{
-					if (item is IPopReceiptRecord pr && pr.NextVisible <= DateTime.UtcNow)
-						continue;
-					
-					DoWork(item);
-				}
-			}
-			catch (Exception ex)
-			{
-				Success = false;
+                    DoWork(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                Success = false;
 
-				try
-				{
-					OnError(item, ex);
-				}
-				catch
-				{
-				}
-			}
-		}
-		protected abstract void DoWork(T item);
-		protected abstract void OnError(T item, Exception ex);
+                try
+                {
+                    OnError(item, ex);
+                }
+                catch
+                {
+                }
+            }
+        }
+        protected abstract void DoWork(T item);
+        protected abstract void OnError(T item, Exception ex);
 
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-		protected virtual void Dispose(bool disposing)
-		{
-			if (_disposed)
-				return;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
 
-			if (_worker != null)
-			{
-				try
-				{
-					_worker.Dispose();
-					_worker = null;
-				}
-				catch
-				{
+            if (_worker != null)
+            {
+                try
+                {
+                    _worker.Dispose();
+                    _worker = null;
+                }
+                catch
+                {
 
-				}
-			}
+                }
+            }
 
-			if (disposing)
-				OnDisposing();
+            if (disposing)
+                OnDisposing();
 
-			_disposed = true;
-		}
+            _disposed = true;
+        }
 
-		protected virtual void OnDisposing()
-		{
+        protected virtual void OnDisposing()
+        {
 
-		}
-	}
+        }
+    }
 }
