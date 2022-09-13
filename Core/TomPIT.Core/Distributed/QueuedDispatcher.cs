@@ -9,13 +9,18 @@ namespace TomPIT.Distributed
 		private ConcurrentQueue<T> _items = null;
 		private bool _disposed = false;
 		private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
+		public event EventHandler Completed;
 
-		public QueuedDispatcher(IDispatcher<T> owner)
+		public QueuedDispatcher(IDispatcher<T> owner, string queueName)
 		{
+			QueueName = queueName;
+
 			Worker = owner.CreateWorker(this, Cancel.Token);
 
 			Worker.Completed += OnCompleted;
 		}
+
+		public string QueueName { get; }
 
 		private CancellationTokenSource Cancel => _cancel;
 
@@ -60,8 +65,14 @@ namespace TomPIT.Distributed
 				if (sender is not DispatcherJob<T> job)
 					return;
 
+				if (!Queue.IsEmpty)
+				{
+					job.Run();
+					return;
+				}
+
 				if (job.Success)
-					Dispose();
+					Completed?.Invoke(this, EventArgs.Empty);
 				else
 					job.Run();
 			}
