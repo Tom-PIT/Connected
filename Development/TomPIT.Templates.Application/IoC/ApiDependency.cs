@@ -7,6 +7,7 @@ using TomPIT.MicroServices.Design;
 namespace TomPIT.MicroServices.IoC
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.DependencyInjection, TomPIT.MicroServices.Design")]
 	[Syntax(SyntaxAttribute.CSharp)]
 	[ClassRequired]
 	public class ApiDependency : Dependency, IApiDependency

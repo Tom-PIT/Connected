@@ -1,6 +1,7 @@
 ﻿#load "Common/Common"
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Data;
@@ -8,36 +9,12 @@ using TomPIT.Annotations;
 using TomPIT.Annotations.Models;
 using TomPIT.ComponentModel.Data;
 using TomPIT.Security;
-using System.Linq;
 
-/*
- * Enum with policies supported by the Authorization policy.
- */
-public enum [POLICYENUM]
-{
-   NotSet = 0,
-}
-
-/*
- * Enum with claims supported by the Authorization policy.
- */
-[Flags]
-public enum [CLAIMS]
-{
-   NotSet = 0,
-}
-
-/*
- * The entity model. Defines the entity which acts as an ORM entity 
- * between API operations (business model) and database (database model).
- * It also represents a container for the model operations which are mostly
- * database statements.
- */
 public class [MODELTYPE] : ModelMiddleware<[ENTITYTYPE]>
 {
-   public long Insert(InsertArgs e)
+   public int Insert(InsertArgs e)
    {
-      var result = new ResultEntity<long>();
+      var result = new ResultEntity<int>();
       
       Execute("Insert", new
       {         
@@ -61,7 +38,7 @@ public class [MODELTYPE] : ModelMiddleware<[ENTITYTYPE]>
       Execute("Delete", new { Id = entity.Id });
    }
 
-   public [ENTITYTYPE] Select(long id)
+   public [ENTITYTYPE] Select(int id)
    {
       return Select("Select", new { Id = id });
    }
@@ -71,10 +48,10 @@ public class [MODELTYPE] : ModelMiddleware<[ENTITYTYPE]>
       return Query("Query", e);
    }
 
-   public List<[ENTITYTYPE]> Lookup(List<long> ids)
+   public List<[ENTITYTYPE]> Lookup(List<int> ids)
    {
-      if(!ids?.Any() ?? false)
-        return new();
+      if(ids is null || !ids.Any())
+         return new();
 
       return Query("Lookup", new 
       {
@@ -100,14 +77,8 @@ public class [MODELTYPE] : ModelMiddleware<[ENTITYTYPE]>
    }
 }
 
-
-
-/*
- * The entity. This class usually represents the mapping between database table
- * or database view. Properties are mapped to database columns.
- */
 [Schema(Schema = "[SCHEMA]", Name = "[SCHEMANAME]", Type = SchemaAttribute.SchemaTypeTable)]
-public class [ENTITYTYPE] : VersionedEntity<long>
+public class [ENTITYTYPE] : VersionedEntity<int>
 {
    public const string EntityType = "[ENTITYKEY]";
    public const string CacheKey = "[CACHEKEY]";
@@ -117,48 +88,7 @@ public class [ENTITYTYPE] : VersionedEntity<long>
    [ReturnValue]
    [CacheKey]
    [ProxyProperty(ProxyKey)]
-   public override long Id { get; set; }
+   public override int Id { get; set; }
 
    public RecordState State { get; set; }
-}
-
-/*
- * The authorization attribute which contains the logic related to accessing
- * entity resources. Authorization consists of:
- * - Policy, the value for which the authorization is performed
- * - Claim, can contain more than one value and depends on the permissions set for the current Identity
- * - Resource, uniquely defined record for which the authorization is performed
- * - Identity, always a user, but can be void (anonymous)
- */
-public sealed class [POLICYATTRIBUTE] : AuthorizationPolicyAttribute
-{
-   /*
-    * This property will be set by the caller (tipically API operation).
-    */
-   public [POLICYENUM] Policy {get; set;} = [POLICYENUM].NotSet;
-   /*
-    * The model (proxy) object which provides the Resource attribute for
-    * the current context
-    */
-   protected override IAuthorizationModel OnCreateModel()
-   {
-      return new [AUTHMODEL]();
-   }
-   /*
-    * The authorization logic
-    */
-   protected override void OnAuthorize(List<PolicyAuthorizationResult> results)
-   {
-      var model = Model as [AUTHMODEL];
-
-      AuthorizeAll(model.[AUTHKEY], HigherThan([CLAIMS].NotSet));
-   }
-}
-/*
- * The authorization proxy. This class tipically provides the properties used
- * by Authorization attribute when performing authorization.
- */
-public class [AUTHMODEL] : ProxyAuthorizationModel
-{
-   public long [AUTHKEY] => GetValue<long>([ENTITYTYPE].ProxyKey);
 }

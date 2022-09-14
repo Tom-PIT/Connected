@@ -1,4 +1,7 @@
-﻿using TomPIT.Data;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using TomPIT.Data;
 
 public class [NAME] : ConnectionMiddleware
 {

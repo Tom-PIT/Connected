@@ -5,7 +5,7 @@ using TomPIT.Development.Handlers;
 
 namespace TomPIT.MicroServices.Design.CreateHandlers
 {
-	internal class DependencyInjection : ComponentCreateHandler<IDependencyInjectionConfiguration>
+	internal class DependencyInjection : ComponentCreateHandler<IDependency>
 	{
 		protected override string Template => "TomPIT.MicroServices.Design.CreateHandlers.Templates.DependencyInjection.txt";
 	}

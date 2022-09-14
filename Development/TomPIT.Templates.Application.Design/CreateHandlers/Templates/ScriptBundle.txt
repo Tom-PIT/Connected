@@ -1,4 +1,4 @@
-﻿import { Error } from '@:ui/core';
+﻿import { Error, ApiInterop, PartialInterop, Url, TemplateEngine } from '@:ui/core';
 
 export class [NAME]{
    constructor(e){

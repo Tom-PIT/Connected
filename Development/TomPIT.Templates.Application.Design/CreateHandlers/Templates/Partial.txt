@@ -1,4 +1,8 @@
-﻿@{
+﻿@using System;
+@using System.Linq;
+@using System.Collections.Generic;
+   
+@{
    var tag = Guid.NewGuid();
 }
 

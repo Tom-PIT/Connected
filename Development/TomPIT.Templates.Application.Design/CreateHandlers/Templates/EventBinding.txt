@@ -1,7 +1,9 @@
-﻿using TomPIT.Messaging;
-using TomPIT.Middleware;
-using System;
+﻿using System;
 using System.Linq;
+using System.Collections.Generic;
+using TomPIT.Messaging;
+using TomPIT.Middleware;
+
 
 public class EventBinding : EventMiddleware
 {
