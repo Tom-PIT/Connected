@@ -39,7 +39,7 @@ namespace TomPIT.Design
 		void RestoreComponent(IComponentImage image);
 		void RestoreComponent(Guid blob);
 
-		void UpdateIndexStates(List<IComponentIndexState> states);
-		void UpdateAnalyzerStates(List<IComponentAnalyzerState> states);
+		void InvalidateIndexes(List<IComponentIndexState> states);
+		void InvalidateAnalyzers(List<IComponentAnalyzerState> states);
 	}
 }

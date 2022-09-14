@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Distributed;
+using TomPIT.Ide.Designers;
 
 namespace TomPIT.Development.Analysis
 {
@@ -33,13 +35,11 @@ namespace TomPIT.Development.Analysis
 		{
 			Parallel.ForEach(Dispatchers, (f) =>
 			{
-				//var jobs = f.Tenant.GetService<IDesignerService>().Dequeue(f.Available);
+				if (f.Tenant.GetService<IDesignerService>().DequeueDevelopmentStates(f.Available) is not List<IComponentDevelopmentState> jobs)
+					return;
 
-				//if (jobs == null)
-				//	return;
-
-				//foreach (var i in jobs)
-				//	f.Enqueue(i);
+				foreach (var i in jobs)
+					f.Enqueue(i);
 			});
 
 			return Task.CompletedTask;

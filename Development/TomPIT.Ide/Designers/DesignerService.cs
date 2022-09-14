@@ -21,6 +21,7 @@ namespace TomPIT.Ide.Designers
 {
 	internal class DesignerService : TenantObject, IDesignerService
 	{
+		private const string Controller = "ComponentDevelopment";
 		private Lazy<ConcurrentDictionary<string, IPropertyEditor>> _propertyEditors = new Lazy<ConcurrentDictionary<string, IPropertyEditor>>();
 		private Lazy<ConcurrentBag<IAutoFixProvider>> _autoFixProviders = new Lazy<ConcurrentBag<IAutoFixProvider>>();
 
@@ -221,6 +222,23 @@ namespace TomPIT.Ide.Designers
 			Tenant.Post(u, e);
 		}
 
+		public List<IComponentDevelopmentState> DequeueDevelopmentStates(int count)
+		{
+			//var u = Tenant.CreateUrl("DevelopmentErrors", "AutoFix");
+			//var e = new JObject
+			//{
+			//	{"provider", provider },
+			//	{"error", error }
+			//};
+
+			//Tenant.Post(contro, e);
+			return null;
+		}
+
+		private string CreateUrl(string action)
+		{
+			return Tenant.CreateUrl(Controller, action);
+		}
 		private bool AutoFixProvidersInitialized { get; set; }
 		private ConcurrentDictionary<string, IPropertyEditor> PropertyEditors => _propertyEditors.Value;
 		private ConcurrentBag<IAutoFixProvider> AutoFixProviders => _autoFixProviders.Value;

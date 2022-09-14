@@ -20,6 +20,7 @@
 		public static string ScriptBundle => "ScriptBundle";
 		public static string DistributedEvent => "DistributedEvent";
 		public static string HostedWorker => "HostedWorker";
+		public static string HostedService => "HostedService";
 		public static string StringTable => "StringTable";
 		public static string Media => "Media";
 		public static string Static => "Static";
@@ -74,6 +75,7 @@
 				|| string.Compare(category, BigDataPartition, true) == 0
 				|| string.Compare(category, DistributedEvent, true) == 0
 				|| string.Compare(category, HostedWorker, true) == 0
+				|| string.Compare(category, HostedService, true) == 0
 				|| string.Compare(category, SearchCatalog, true) == 0
 				|| string.Compare(category, IoTHub, true) == 0
 				|| string.Compare(category, IoTSchema, true) == 0

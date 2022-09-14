@@ -3,9 +3,9 @@
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>TomPIT.MicroServices.Design</RootNamespace>
     <AssemblyName>TomPIT.MicroServices.Design</AssemblyName>
-    <AssemblyVersion>2.3.908.1</AssemblyVersion>
-    <FileVersion>2.3.908.1</FileVersion>
-    <Version>2.3.908.1</Version>
+    <AssemblyVersion>2.3.913.1</AssemblyVersion>
+    <FileVersion>2.3.913.1</FileVersion>
+    <Version>2.3.913.1</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
@@ -25,6 +25,7 @@
     <None Remove="CreateHandlers\Templates\DependencyInjection.txt" />
     <None Remove="CreateHandlers\Templates\DistributedEvent.txt" />
     <None Remove="CreateHandlers\Templates\EventBinding.txt" />
+    <None Remove="CreateHandlers\Templates\HostedService.txt" />
     <None Remove="CreateHandlers\Templates\HostedWorker.txt" />
     <None Remove="CreateHandlers\Templates\IocContainerOperation.txt" />
     <None Remove="CreateHandlers\Templates\IocEndpoint.txt" />
@@ -44,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="CreateHandlers\Templates\EventBinding.txt" />
+    <EmbeddedResource Include="CreateHandlers\Templates\HostedService.txt" />
     <EmbeddedResource Include="CreateHandlers\Templates\Management.txt" />
     <EmbeddedResource Include="CreateHandlers\Templates\Settings.txt" />
     <EmbeddedResource Include="CreateHandlers\Templates\UiDependencyInjection.txt" />

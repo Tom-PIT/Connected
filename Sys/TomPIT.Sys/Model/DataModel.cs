@@ -77,6 +77,7 @@ namespace TomPIT.Sys.Model
 		private static readonly Lazy<ClientsModel> _clients = new Lazy<ClientsModel>(() => { return new ClientsModel(Container); });
 		private static readonly Lazy<PrintingSerialNumbersModel> _printingSerialNumbers = new Lazy<PrintingSerialNumbersModel>(() => { return new PrintingSerialNumbersModel(Container); });
 		private static readonly Lazy<XmlKeysModel> _xmlKeys = new Lazy<XmlKeysModel>(() => { return new XmlKeysModel(Container); });
+		private static readonly Lazy<DevelopmentStatesModel> _devStates = new Lazy<DevelopmentStatesModel>(() => { return new DevelopmentStatesModel(Container); });
 
 
 		public static MicroServicesMetaModel MicroServicesMeta => _meta.Value;
@@ -120,6 +121,7 @@ namespace TomPIT.Sys.Model
 		public static BigDataPartitionFieldStatisticsModel BigDataPartitionFieldStatistics => _bigDataPartitionFieldStatistics.Value;
 		public static BigDataTimezonesModel BigDataTimeZones => _bigDataTimezones.Value;
 		public static DevelopmentErrorsModels DevelopmentErrors => _devErrors.Value;
+		public static DevelopmentStatesModel DevelopmentStates => _devStates.Value;
 		public static QueueingModel Queue => _queue.Value;
 		public static SearchModel Search => _search.Value;
 		public static SysSearchModel SysSearch => _sysSearch.Value;
