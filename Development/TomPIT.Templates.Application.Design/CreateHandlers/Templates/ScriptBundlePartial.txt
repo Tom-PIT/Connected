@@ -1,4 +1,4 @@
-﻿import { Error, ApiInterop, PartialInterop, Url, TemplateEngine } from '@:ui/core';
+﻿import { PartialContext, Error, ApiInterop, PartialInterop, Url, TemplateEngine } from '@:ui/core';
 
 export class [NAME] extends PartialContext {
    constructor(e) {
