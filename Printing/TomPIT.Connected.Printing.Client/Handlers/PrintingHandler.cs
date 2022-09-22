@@ -320,6 +320,32 @@ namespace TomPIT.Connected.Printing.Client.Handlers
             await _connection.SendAsync(Constants.ServerMethodNameAddPrinters, args);
         }
 
+        private HttpClient _client;
+        private object HttpClientLock = new object();
+        private HttpClient Client
+        {
+            get
+            {
+                if (_client is null) 
+                {
+                    lock (HttpClientLock)
+                    {
+                        if (_client is null)
+                        {
+                            var client = new HttpClient();
+
+                            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Constants.HttpHeaderBearer, Settings.Token);
+                            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(Constants.MimeTypeJson));
+
+                            _client = client;
+                        }
+                    }
+                }
+
+                return _client;
+            }
+        }
+
         private async Task<SpoolerJob> SelectJob(Guid id)
         {
             Logging.Debug($"Getting Job {id} from Server");
@@ -332,12 +358,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 
             try
             {
-                var client = new HttpClient();
-
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Constants.HttpHeaderBearer, Settings.Token);
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(Constants.MimeTypeJson));
-
-                var result = await client.PostAsync(spoolerUrl, new StringContent(JsonConvert.SerializeObject(new
+                var result = await Client.PostAsync(spoolerUrl, new StringContent(JsonConvert.SerializeObject(new
                 {
                     Id = id
                 }), Encoding.UTF8, Constants.MimeTypeJson));
