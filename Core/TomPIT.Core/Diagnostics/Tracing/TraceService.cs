@@ -2,12 +2,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TomPIT.Collections;
-using TomPIT.Middleware;
 
 namespace TomPIT.Diagnostics.Tracing
 {
@@ -19,7 +19,7 @@ namespace TomPIT.Diagnostics.Tracing
 
         private readonly ConcurrentQueue<ITraceMessage> _messageQueue = new ();
 
-        private readonly long _maxQueueSize = 50000;
+        private readonly long _maxQueueSize = 10;
 
         private ILookup<string, ITraceEndpoint> EndpointsCache
         {
@@ -34,9 +34,9 @@ namespace TomPIT.Diagnostics.Tracing
 
         public event EventHandler<ITraceMessage> TraceReceived;
 
-        public IEnumerable<string> Categories => _endpointsCache?.Select(e => e.Key).ToImmutableList(true) ?? new List<string>().ToImmutableList(false);
+        public IEnumerable<string> Categories => _endpointsCache?.Select(e => e.Key) ?? new List<string>();
 
-        public IEnumerable<ITraceEndpoint> Endpoints => (_endpoints ??= new ConcurrentBag<ITraceEndpoint>()).ToImmutableList(true);
+        public IEnumerable<ITraceEndpoint> Endpoints => (_endpoints ??= new ConcurrentBag<ITraceEndpoint>());
 
         public ConcurrentQueue<ITraceMessage> MessageQueue => _messageQueue;
 
@@ -61,7 +61,7 @@ namespace TomPIT.Diagnostics.Tracing
         {
             lock (EndpointsCache)
             {
-                return EndpointsCache[category.ToLower()].ToImmutableList(false);
+                return EndpointsCache[category.ToLower()].ToImmutableList();
             }
         }
 
@@ -107,8 +107,7 @@ namespace TomPIT.Diagnostics.Tracing
             {
                 lock (_cacheLock)
                 {
-                    if(_endpointsCache is null)
-                        _endpointsCache = Endpoints.ToLookup(e => e.Category, e => e);
+                    _endpointsCache ??= Endpoints.ToLookup(e => e.Category, e => e);
                     return;
                 }
             }

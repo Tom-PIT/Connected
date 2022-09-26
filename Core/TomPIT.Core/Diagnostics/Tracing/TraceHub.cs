@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TomPIT.Middleware;
 
 namespace TomPIT.Diagnostics.Tracing
 {

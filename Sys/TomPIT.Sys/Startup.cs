@@ -1,14 +1,21 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Diagnostics;
+using System.Text;
+using TomPIT.Diagnostics;
+using TomPIT.Diagnostics.Tracing;
+using TomPIT.Serialization;
 using TomPIT.Sys.Configuration;
 using TomPIT.Sys.Model;
 using TomPIT.Sys.Notifications;
 using TomPIT.Sys.Services;
 using TomPIT.Sys.Workers;
+using static TomPIT.HttpExtensions;
 
 namespace TomPIT.Sys
 {
@@ -66,7 +73,9 @@ namespace TomPIT.Sys
 				//app.UseExceptionHandler();
 			}
 
-			app.UseStaticFiles();
+            RegisterTraceService(app);
+
+            app.UseStaticFiles();
 			app.UseRouting();
 			app.UseAuthentication();
 			app.UseAuthorization();
@@ -77,7 +86,8 @@ namespace TomPIT.Sys
 				routes.MapHub<IoTHub>("/iot");
 				routes.MapHub<BigDataHub>("/bigdata");
 				routes.MapHub<DataCacheHub>("/datacaching");
-			});
+				routes.MapHub<TraceHub>("hubs/tracing");
+            });
 
 			app.UseMvc(routes =>
 			{
@@ -87,10 +97,38 @@ namespace TomPIT.Sys
 			ServerConfiguration.Initialize(app);
 			Shell.Configure(app);
 			DataModel.Initialized = true;
-		}
+
+        }
+
+		private void RegisterTraceService(IApplicationBuilder app) 
+		{
+            var traceHubContext = app.ApplicationServices.GetRequiredService<IHubContext<TraceHub>>();
+
+            var traceService = app.ApplicationServices.GetService<ITraceService>();
+
+            traceService.TraceReceived += async (s, e) => await TraceHub.Trace(traceHubContext, e);
+
+            traceService.AddEndpoint("TomPIT.Sys.Diagnostics", "IncomingRequest");
+            traceService.AddEndpoint("TomPIT.Sys.Diagnostics", "LongLastingRequest");
+
+            app.Use(async (context, next) => {
+                var path = context.Request.Path;
+                var stopwatch = Stopwatch.StartNew();
+			
+                var body = context.Request.Body.ToJObject();
+                traceService.Trace("TomPIT.Sys.Diagnostics", "IncomingRequest", $"{path} {Serializer.Serialize(body)}");
+
+                if (next is not null)
+                    await next.Invoke();
+
+                if (stopwatch.ElapsedMilliseconds > 2000)
+                    traceService.Trace("TomPIT.Sys.Diagnostics", "LongLastingRequest", path);
+            });
+        }
 
 		private void RegisterTasks(IServiceCollection services)
 		{
+			services.AddSingleton<ITraceService, TraceService>();
 			services.AddSingleton<IHostedService, MessageDispatcher>();
 			services.AddSingleton<IHostedService, MessageDisposer>();
 			services.AddSingleton<IHostedService, Scheduler>();
