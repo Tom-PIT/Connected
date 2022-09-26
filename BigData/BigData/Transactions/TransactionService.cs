@@ -24,9 +24,9 @@ namespace TomPIT.BigData.Transactions
         private readonly ITraceService _traceService;
         private readonly ITraceEndpoint _createTransactionEndpoint = new TraceEndpoint("BigData.Transactions", "CreateTransaction");
 
-        public TransactionService(ITenant tenant) : base(tenant)
+        public TransactionService(ITenant tenant, ITraceService traceService) : base(tenant)
         {
-            _traceService = Tenant.GetService<ITraceService>();
+            _traceService = traceService;
             _traceService.AddEndpoint(_createTransactionEndpoint);
         }
 

@@ -45,6 +45,8 @@ namespace TomPIT.BigData
             {
                 o.EnableDetailedErrors = true;
             }).AddNewtonsoftJsonProtocol();
+
+			services.AddSingleton<ITraceService, TraceService>();
         }
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -58,7 +60,7 @@ namespace TomPIT.BigData
 			{
 				var traceHubContext = f.Builder.ApplicationServices.GetRequiredService<IHubContext<TraceHub>>();
 
-				var traceService = MiddlewareDescriptor.Current.Tenant.GetService<ITraceService>();
+				var traceService = f.Builder.ApplicationServices.GetService<ITraceService>();
 
 				traceService.TraceReceived += async (s, e) => await TraceHub.Trace(traceHubContext, e);
 				traceService.TraceReceived += async (s, e) => Tenant.GetService<ILoggingService>().Dump($"{e.Endpoint.Identifier} {e.Content}");
@@ -76,7 +78,6 @@ namespace TomPIT.BigData
 
 		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
-			e.Tenant.RegisterService(typeof(ITraceService), typeof(TraceService));
 			e.Tenant.RegisterService(typeof(INodeService), typeof(NodeService));
 			e.Tenant.RegisterService(typeof(ITransactionService), typeof(TransactionService));
 			e.Tenant.RegisterService(typeof(IPartitionService), typeof(PartitionService));

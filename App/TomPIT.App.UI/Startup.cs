@@ -82,6 +82,8 @@ namespace TomPIT.App
                     opts.FileProviders.Add(new ViewProvider());
                 }
             );
+
+            services.AddSingleton<ITraceService, TraceService>();
         }
 
 
@@ -103,7 +105,7 @@ namespace TomPIT.App
             {
                 var traceHubContext = f.Builder.ApplicationServices.GetRequiredService<IHubContext<TraceHub>>();
                 
-                var traceService = MiddlewareDescriptor.Current.Tenant.GetService<ITraceService>();
+                var traceService = f.Builder.ApplicationServices.GetService<ITraceService>();
                 
                 traceService.TraceReceived += async (s, e) => await TraceHub.Trace(traceHubContext, e);
 
@@ -136,7 +138,6 @@ namespace TomPIT.App
 
         private void OnTenantInitialize(object sender, TenantArgs e)
         {
-            e.Tenant.RegisterService(typeof(ITraceService), typeof(TraceService));
             e.Tenant.RegisterService(typeof(IXmlKeyService), typeof(XmlKeyService));
             e.Tenant.RegisterService(typeof(IViewService), typeof(ViewService));
             e.Tenant.RegisterService(typeof(IThemeService), typeof(ThemeService));
