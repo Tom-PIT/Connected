@@ -112,6 +112,7 @@ namespace TomPIT.Sys
             traceService.AddEndpoint("TomPIT.Sys.Diagnostics", "LongLastingRequest");
 
             app.Use(async (context, next) => {
+				context.Request.EnableBuffering();
                 var path = context.Request.Path;
                 var stopwatch = Stopwatch.StartNew();
 			
