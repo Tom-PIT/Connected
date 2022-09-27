@@ -42,27 +42,19 @@ namespace TomPIT.Globalization
         {
             if (context.Features.Get<IRequestCultureFeature>() is IRequestCultureFeature feature)
             {
-                //TODO fix exception when logs show what exactly went wrong. Meanwhile, keep the app from crashing.
-                try
-                {
-                    context.Response.Cookies.Append(Provider.CookieName, CookieRequestCultureProvider.MakeCookieValue(feature.RequestCulture));
-                }
-                catch (InvalidOperationException ex)
+                if (context.Response.HasStarted)
                 {
                     if (MiddlewareDescriptor.Current?.Tenant is ITenant tenant)
                     {
-                        try
-                        {
-                            tenant.LogError(nameof(CookieRequestCultureProvider), ex.ToString(), LogCategories.Middleware);
-                        }
-                        catch { }
+                        tenant.LogError(nameof(CookieRequestCultureProvider), $"Unable to set culture provider cookie, request already started. ({context.Request.Path})", LogCategories.Middleware);
                     }
-                    else
-                    {
-                        throw;
-                    }
+
+                    return;
                 }
+
+                context.Response.Cookies.Append(Provider.CookieName, CookieRequestCultureProvider.MakeCookieValue(feature.RequestCulture));
             }
         }
     }
+}
 }
