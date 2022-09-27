@@ -24,10 +24,10 @@ namespace TomPIT.BigData.Transactions
         private readonly ITraceService _traceService;
         private readonly ITraceEndpoint _createTransactionEndpoint = new TraceEndpoint("BigData.Transactions", "CreateTransaction");
 
-        public TransactionService(ITenant tenant, ITraceService traceService) : base(tenant)
+        public TransactionService(ITenant tenant) : base(tenant)
         {
-            _traceService = traceService;
-            _traceService.AddEndpoint(_createTransactionEndpoint);
+            _traceService = MiddlewareDescriptor.Current.Tenant.GetService<ITraceService>();
+            _traceService?.AddEndpoint(_createTransactionEndpoint);
         }
 
         public void Complete(Guid popReceipt, Guid block)
@@ -106,7 +106,7 @@ namespace TomPIT.BigData.Transactions
             var timezones = supportsTimezone ? Tenant.GetService<ITimeZoneService>().Query() : null;
             var blobs = new Dictionary<Guid, List<Guid>>();
 
-            _traceService.Trace(new TraceMessage(_createTransactionEndpoint, Serializer.Serialize(new
+            _traceService?.Trace(new TraceMessage(_createTransactionEndpoint, Serializer.Serialize(new
             {   
                 Partition = partition.FileName,
                 ItemCount = items?.Count,
