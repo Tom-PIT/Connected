@@ -120,7 +120,7 @@ namespace TomPIT.Sys
                 var body = context.Request.Body.ToJObject();
                 traceService.Trace("TomPIT.Sys.Diagnostics", "IncomingRequest", $"{path} {Serializer.Serialize(body)} {Serializer.Serialize(context.Request.Query)}");
 
-				if (path.HasValue && path.Value.Contains("user"))
+				if (path.HasValue && path.Value.ToLower().Contains("user"))
 				{
 					var sourceData = new
 					{
