@@ -33,7 +33,7 @@ namespace TomPIT.Security
 
 			IUser r = null;
 
-			if (Guid.TryParse(qualifier, out Guid g))
+			if (Guid.TryParse(qualifier, out var g))
 				r = Get(g);
 			else if (qualifier.Contains("@"))
 				r = Get(f => string.Compare(f.Email, qualifier, true) == 0);
@@ -50,8 +50,8 @@ namespace TomPIT.Security
 
 			if (r != null)
 				Set(r.Token, r);
-			else if (Guid.TryParse(qualifier, out Guid g))
-				Set(g, null, TimeSpan.FromMinutes(1));
+			else if (Guid.TryParse(qualifier, out var parsedQualifier))
+				Set(parsedQualifier, null, TimeSpan.FromMinutes(1));
 		
 			return r;
 		}
