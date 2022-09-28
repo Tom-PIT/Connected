@@ -110,6 +110,7 @@ namespace TomPIT.Sys
 
             traceService.AddEndpoint("TomPIT.Sys.Diagnostics", "IncomingRequest");
             traceService.AddEndpoint("TomPIT.Sys.Diagnostics", "LongLastingRequest");
+			traceService.AddEndpoint("TomPIT.Sys.Diagnostics", "UserControllerRequest");
 
             app.Use(async (context, next) => {
 				context.Request.EnableBuffering();
@@ -117,10 +118,24 @@ namespace TomPIT.Sys
                 var stopwatch = Stopwatch.StartNew();
 			
                 var body = context.Request.Body.ToJObject();
-                traceService.Trace("TomPIT.Sys.Diagnostics", "IncomingRequest", $"{path} {Serializer.Serialize(body)}");
+                traceService.Trace("TomPIT.Sys.Diagnostics", "IncomingRequest", $"{path} {Serializer.Serialize(body)} {Serializer.Serialize(context.Request.Query)}");
 
-                if (next is not null)
-                    await next.Invoke();
+				if (path.HasValue && path.Value.Contains("user"))
+				{
+					var sourceData = new
+					{
+						SourceIp = context.Connection?.RemoteIpAddress,
+						SourcePort = context.Connection?.RemotePort,
+						User = context.User?.Identity?.Name,
+						UserAuthenticated = context.User?.Identity?.IsAuthenticated
+					};
+
+                    var userRequestMessage = $"Path: {path} Payload: {Serializer.Serialize(body)}, QueryParams: {Serializer.Serialize(context.Request.Query)}, Source: {Serializer.Serialize(sourceData)}";
+ 					traceService.Trace("TomPIT.Sys.Diagnostics", "UserControllerRequest", userRequestMessage);
+				}
+
+                if (next is not null && !context.Response.HasStarted)
+                    await next();
 
                 if (stopwatch.ElapsedMilliseconds > 2000)
                     traceService.Trace("TomPIT.Sys.Diagnostics", "LongLastingRequest", path);
