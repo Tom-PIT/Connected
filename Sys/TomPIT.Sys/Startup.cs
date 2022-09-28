@@ -124,8 +124,8 @@ namespace TomPIT.Sys
 				{
 					var sourceData = new
 					{
-						SourceIp = context.Connection?.RemoteIpAddress,
-						SourcePort = context.Connection?.RemotePort,
+						SourceIp = context.Connection?.RemoteIpAddress?.ToString(),
+						SourcePort = context.Connection?.RemotePort.ToString(),
 						User = context.User?.Identity?.Name,
 						UserAuthenticated = context.User?.Identity?.IsAuthenticated
 					};
