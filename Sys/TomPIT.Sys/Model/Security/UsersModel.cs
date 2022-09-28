@@ -149,7 +149,10 @@ namespace TomPIT.Sys.Model.Security
 			IUser r = null;
 
 			if (Guid.TryParse(identifier, out Guid g))
-				r = Select(g);
+			{
+				if (g != default)
+					r = Select(g);
+			}
 
 			if (r != null)
 				return r;

@@ -35,8 +35,8 @@ namespace TomPIT.App.Routing
 					}
 
 				}
-
-				await next();
+                if (next is not null && !context.Response.HasStarted)
+                    await next();
 			});
 		}
 		public static void Register(IEndpointRouteBuilder routes)

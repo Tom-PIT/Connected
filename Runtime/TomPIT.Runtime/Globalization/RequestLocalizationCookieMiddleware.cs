@@ -34,7 +34,8 @@ namespace TomPIT.Globalization
             if (Provider is not null)
                 SetCookie(context);
 
-            await next(context);
+            if (next is not null && !context.Response.HasStarted)
+                await next(context);
         }
 
         private void SetCookie(HttpContext context)

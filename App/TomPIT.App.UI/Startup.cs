@@ -118,7 +118,7 @@ namespace TomPIT.App
 
                     traceService.Trace("TomPIT.App.diagnostics", "IncomingRequest", path);
 
-                    if (next is not null)
+                    if (next is not null && !context.Response.HasStarted)
                         await next.Invoke();
 
                     if (stopwatch.ElapsedMilliseconds > 2000)

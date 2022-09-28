@@ -241,7 +241,6 @@ namespace TomPIT
 				Stopped = lifetime.ApplicationStopped;
 			}
 
-
 			ConfigureStaticFiles(app, env);
 
 			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
@@ -256,14 +255,12 @@ namespace TomPIT
 			app.UseAjaxExceptionMiddleware();
 
 			middlewareHandler?.Invoke(new ConfigureMiddlewareArgs(app));
-			//RuntimeBootstrapper.Run();
 
 			Shell.GetService<IRuntimeService>().Initialize(InstanceType, Shell.GetConfiguration<IClientSys>().Platform, env);
 
 			if (MiddlewareDescriptor.Current?.Tenant?.GetService<IMicroServiceRuntimeService>() is IMicroServiceRuntimeService runtimeService)
 				runtimeService.Configure(app);
 
-			//Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
 			app.UseEndpoints(routes =>
 			{
 				foreach (var i in Plugins)

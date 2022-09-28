@@ -50,7 +50,9 @@ namespace TomPIT.Security
 
 			if (r != null)
 				Set(r.Token, r);
-
+			else if (Guid.TryParse(qualifier, out Guid g))
+				Set(g, null, TimeSpan.FromMinutes(1));
+		
 			return r;
 		}
 
