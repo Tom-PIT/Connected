@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace TomPIT.Sys
 {
@@ -10,7 +11,7 @@ namespace TomPIT.Sys
 			CreateHostBuilder(args).Build().Run();
 		}
 
-		public static IHostBuilder CreateHostBuilder(string[] args) =>
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
 			 Host.CreateDefaultBuilder(args)
 				  //.ConfigureLogging(logging =>
 				  //{

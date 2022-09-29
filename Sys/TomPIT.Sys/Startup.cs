@@ -11,6 +11,7 @@ using TomPIT.Diagnostics;
 using TomPIT.Diagnostics.Tracing;
 using TomPIT.Serialization;
 using TomPIT.Sys.Configuration;
+using TomPIT.Sys.Exceptions;
 using TomPIT.Sys.Model;
 using TomPIT.Sys.Notifications;
 using TomPIT.Sys.Services;
@@ -52,8 +53,10 @@ namespace TomPIT.Sys
 			services.AddSignalR(o =>
 			{
 				o.EnableDetailedErrors = true;
+				o.AddFilter<ExceptionHubFilter>();
 			});
 
+			services.AddSingleton<ExceptionHubFilter>();
 
 			RegisterTasks(services);
 
@@ -98,6 +101,8 @@ namespace TomPIT.Sys
 			Shell.Configure(app);
 			DataModel.Initialized = true;
 
+
+			Diagnostics.EventLog.WriteInfo("Sys started");
         }
 
 		private void RegisterTraceService(IApplicationBuilder app) 
