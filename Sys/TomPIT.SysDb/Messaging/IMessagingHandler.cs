@@ -2,7 +2,6 @@
 {
 	public interface IMessagingHandler
 	{
-		IReliableMessagingHandler ReliableMessaging { get; }
 		IQueueHandler Queue { get; }
 	}
 }

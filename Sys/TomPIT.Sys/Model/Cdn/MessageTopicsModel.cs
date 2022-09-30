@@ -1,43 +1,23 @@
 ﻿using System;
 using System.Collections.Immutable;
 using TomPIT.Caching;
-using TomPIT.Sys.Api.Database;
+using TomPIT.Sys.Caching;
 using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Model.Cdn
 {
-	internal class MessageTopicsModel : SynchronizedRepository<ITopic, string>
+	internal class MessageTopicsModel : IdentityRepository<ITopic, string>
 	{
+
 		public MessageTopicsModel(IMemoryCache container) : base(container, "messagetopic")
 		{
-		}
-
-		protected override void OnInitializing()
-		{
-			var ds = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.QueryTopics();
-
-			foreach (var j in ds)
-				Set(j.Name, j, TimeSpan.Zero);
-		}
-
-		protected override void OnInvalidate(string id)
-		{
-			var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.SelectTopic(id);
-
-			if (r != null)
-			{
-				Set(id, r, TimeSpan.Zero);
-				return;
-			}
-
-			Remove(id);
 		}
 
 		public ITopic Ensure(string name)
 		{
 			var r = Select(name);
 
-			if (r != null)
+			if (r is not null)
 				return r;
 
 			Insert(DataModel.ResourceGroups.Default.Token, name);
@@ -45,19 +25,18 @@ namespace TomPIT.Sys.Model.Cdn
 			return Select(name);
 		}
 
-		public ITopic Select(string id)
+		public ITopic Select(string name)
 		{
-			return Get(id,
+			return Get(name,
 				(f) =>
 				{
 					f.Duration = TimeSpan.Zero;
 
-					var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.SelectTopic(id);
-
-					if (r != null)
-						return r;
-
-					return null;
+					return new Topic
+					{
+						Name = name,
+						Id = Increment()
+					};
 				});
 		}
 
@@ -68,25 +47,11 @@ namespace TomPIT.Sys.Model.Cdn
 
 		public void Insert(Guid resourceGroup, string name)
 		{
-			var rg = DataModel.ResourceGroups.Select(resourceGroup);
-
-			if (rg == null)
-				throw new SysException(SR.ErrResourceGroupNotFound);
-
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.InsertTopic(rg, name);
-
-			Refresh(name);
+			Set(name, new Topic { Name = name, Id = Increment(), ResourceGroup = resourceGroup }, TimeSpan.Zero);
 		}
 
 		public void Delete(string name)
 		{
-			var t = Select(name);
-
-			if (t == null)
-				throw new SysException(SR.ErrTopicNotFound);
-
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.ReliableMessaging.DeleteTopic(t);
-
 			Remove(name);
 		}
 	}

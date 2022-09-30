@@ -15,7 +15,6 @@ using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
-using TomPIT.Runtime;
 using TomPIT.Storage;
 
 namespace TomPIT.Design
@@ -517,7 +516,7 @@ namespace TomPIT.Design
 			};
 
 			Tenant.GetService<IStorageService>().Upload(blob, content, StoragePolicy.Singleton);
-			
+
 			InvalidateIndexes(configuration.Component);
 			InvalidateAnalyzers(configuration.Component);
 
@@ -561,7 +560,7 @@ namespace TomPIT.Design
 					text.TextBlob = blob;
 
 				Update(text.Configuration());
-				
+
 				InvalidateIndexes(text);
 				InvalidateAnalyzers(text);
 			}
@@ -931,41 +930,42 @@ namespace TomPIT.Design
 
 		public void InvalidateIndexes(List<IComponentIndexState> states)
 		{
-			if (Tenant.GetService<IRuntimeService>().Stage != EnvironmentStage.Development)
-				return;
 
-			var items = new List<dynamic>();
+			//if (Tenant.GetService<IRuntimeService>().Stage != EnvironmentStage.Development)
+			//	return;
 
-			foreach (var state in states)
-			{
-				items.Add(new
-				{
-					Timestamp = DateTime.UtcNow,
-					State = IndexState.Invalidated,
-					Component = state.Component.Token,
-					state.Element
-				});
-			}
+			//var items = new List<dynamic>();
 
-			Tenant.Post(CreateUrl("UpdateIndexStates"), new { items });
+			//foreach (var state in states)
+			//{
+			//	items.Add(new
+			//	{
+			//		Timestamp = DateTime.UtcNow,
+			//		State = IndexState.Invalidated,
+			//		Component = state.Component.Token,
+			//		state.Element
+			//	});
+			//}
+
+			//Tenant.Post(CreateUrl("UpdateIndexStates"), new { items });
 		}
 
 		public void InvalidateAnalyzers(List<IComponentAnalyzerState> states)
 		{
-			var items = new List<dynamic>();
+			//var items = new List<dynamic>();
 
-			foreach (var state in states)
-			{
-				items.Add(new
-				{
-					Component = state.Component.Token,
-					state.Element,
-					state = AnalyzerState.Pending,
-					timestamp = DateTime.UtcNow
-				});
-			}
+			//foreach (var state in states)
+			//{
+			//	items.Add(new
+			//	{
+			//		Component = state.Component.Token,
+			//		state.Element,
+			//		state = AnalyzerState.Pending,
+			//		timestamp = DateTime.UtcNow
+			//	});
+			//}
 
-			Tenant.Post(CreateUrl("UpdateAnalyzerStates"), new { items });
+			//Tenant.Post(CreateUrl("UpdateAnalyzerStates"), new { items });
 		}
 
 		private ServerUrl CreateUrl(string action)

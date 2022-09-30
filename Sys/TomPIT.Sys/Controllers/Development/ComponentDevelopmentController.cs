@@ -43,6 +43,7 @@ namespace TomPIT.Sys.Controllers.Development
 		[HttpPost]
 		public void UpdateIndexStates()
 		{
+			return;
 			var body = FromBody();
 			var items = body.Required<JArray>("items");
 			var parameters = new List<IComponentIndexState>();
@@ -69,6 +70,7 @@ namespace TomPIT.Sys.Controllers.Development
 		[HttpPost]
 		public void UpdateAnalyzerStates()
 		{
+			return;
 			var body = FromBody();
 			var items = body.Required<JArray>("items");
 			var parameters = new List<IComponentAnalyzerState>();
