@@ -35,13 +35,14 @@ namespace TomPIT.Worker.Services
 			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 		}
 
-		public void Complete(Guid microService, Guid popReceipt)
+		public void Complete(Guid microService, Guid popReceipt, Guid worker)
 		{
 			var url = Tenant.CreateUrl("WorkerManagement", "Complete");
 			var d = new JObject
 			{
 				{"microService", microService },
-				{"popReceipt", popReceipt }
+				{"popReceipt", popReceipt },
+				{"worker", worker }
 			};
 
 			MiddlewareDescriptor.Current.Tenant.Post(url, d);

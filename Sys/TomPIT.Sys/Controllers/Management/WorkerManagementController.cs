@@ -36,6 +36,7 @@ namespace TomPIT.Sys.Controllers.Management
 
 			var microService = body.Required<Guid>("microService");
 			var popReceipt = body.Required<Guid>("popReceipt");
+			var worker = body.Required<Guid>("worker");
 
 			DataModel.Workers.Complete(microService, popReceipt);
 		}

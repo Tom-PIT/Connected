@@ -30,7 +30,7 @@ namespace TomPIT.Worker.Services
 			if (!Initialize(item))
 			{
 				if (Configuration != null)
-					Proxy.Complete(Configuration.MicroService(), item.PopReceipt);
+					Proxy.Complete(Configuration.MicroService(), item.PopReceipt, Worker);
 
 				return;
 			}
@@ -58,7 +58,7 @@ namespace TomPIT.Worker.Services
 				_timeout = null;
 			}
 
-			Proxy.Complete(Configuration.MicroService(), item.PopReceipt);
+			Proxy.Complete(Configuration.MicroService(), item.PopReceipt, Worker);
 		}
 
 		private bool Initialize(IQueueMessage message)
