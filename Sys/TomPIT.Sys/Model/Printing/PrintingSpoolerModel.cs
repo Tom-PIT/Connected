@@ -33,7 +33,7 @@ namespace TomPIT.Sys.Model.Printing
 
         public ImmutableList<IQueueMessage> Dequeue(int count)
         {
-            return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(30), QueueScope.System, Queue);
+            return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(1), QueueScope.System, Queue);
         }
 
         public void Ping(Guid popReceipt, TimeSpan nextVisible)
