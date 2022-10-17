@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Net;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 using TomPIT.Runtime;
 using TomPIT.Serialization;
 
@@ -16,11 +19,31 @@ namespace TomPIT.Exceptions
         {
         }
 
+        private HttpStatusCode ResolveStatusCode(Exception ex)
+        {
+            //If wrapped, unwrap
+            if (ex is TomPITException tpEx)
+            {
+                if (tpEx.InnerException is not null)
+                    return ResolveStatusCode(tpEx.InnerException);
+            }
+            else if (ex is BadRequestException)
+                return HttpStatusCode.BadRequest;
+            else if (ex is MiddlewareValidationException)
+                return HttpStatusCode.BadRequest;
+            else if (ex is UnauthorizedException)
+                return HttpStatusCode.Unauthorized;
+            else if (ex is AuthenticationException)
+                return HttpStatusCode.Unauthorized;
+
+            return HttpStatusCode.InternalServerError;
+        }
+
         protected override async Task OnHandleAjaxException(HttpContext context, Exception ex)
         {
-            if (context.Response.StatusCode == (int)HttpStatusCode.OK)
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
+            if (context.Response.StatusCode == (int)HttpStatusCode.OK || context.Response.StatusCode == (int)HttpStatusCode.InternalServerError)
+                context.Response.StatusCode = (int)ResolveStatusCode(ex);
+            
             context.Response.ContentType = "application/json";
 
             var severity = ExceptionSeverity.Critical;

@@ -96,7 +96,7 @@ namespace TomPIT.Exceptions
 		{
 			if (ex is TomPITException tp)
 				return tp;
-
+		
 			if (ex is TargetInvocationException target && target.InnerException != null)
 				return UnwrapWithData(sender, ex.InnerException);
 			

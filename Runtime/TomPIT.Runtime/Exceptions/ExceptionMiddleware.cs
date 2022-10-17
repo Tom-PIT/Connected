@@ -20,219 +20,222 @@ using TomPIT.Runtime;
 
 namespace TomPIT.Exceptions
 {
-	public abstract class ExceptionMiddleware
-	{
-		private readonly RequestDelegate _next;
+    public abstract class ExceptionMiddleware
+    {
+        private readonly RequestDelegate _next;
 
-		public ExceptionMiddleware(RequestDelegate next)
-		{
-			_next = next ?? throw new ArgumentNullException(nameof(next));
-		}
+        public ExceptionMiddleware(RequestDelegate next)
+        {
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+        }
 
-		public async Task Invoke(HttpContext context)
-		{
-			try
-			{
-				await _next(context);
-			}
-			catch (Exception ex)
-			{
-				if (context.Response.HasStarted)
-					throw;
+        public async Task Invoke(HttpContext context)
+        {
+            try
+            {
+                await _next(context);
+            }
+            catch (Exception ex)
+            {
+                if (context.Response.HasStarted)
+                    throw;
 
-				LogException(ex);
+                LogException(ex);
 
-				await HandleException(context, ex);
-			}
-		}
+                await HandleException(context, ex);
+            }
+        }
 
-		private void LogException(Exception ex)
-		{
-			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
-				return;
+        private void LogException(Exception ex)
+        {
+            if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
+                return;
 
-			if (ex is TomPITException tp)
-			{
-				if (tp.InnerException is MiddlewareValidationException val)
-				{
-					var valType = Shell.GetService<IRuntimeService>().Type;
+            if (ex is TomPITException tp)
+            {
+                if (tp.InnerException is MiddlewareValidationException val)
+                {
+                    var valType = Shell.GetService<IRuntimeService>().Type;
 
-					val.LogWarning($"{LogCategories.Unhandled} - {valType}");
-					return;
+                    //Do not log badrequest errors
+                    if (valType != InstanceType.Rest)
+                        val.LogWarning($"{LogCategories.Unhandled} - {valType}");
 
-				}
+                    return;
 
-				var type = Shell.GetService<IRuntimeService>().Type;
+                }
 
-				tp.LogError($"{LogCategories.Unhandled} - {type}");
-				return;
-			}
-			else if (ex is MiddlewareValidationException validation)
-			{
-				var type = Shell.GetService<IRuntimeService>().Type;
+                var type = Shell.GetService<IRuntimeService>().Type;
 
-				validation.LogWarning($"{LogCategories.Unhandled} - {type}");
-				return;
-			}
+                tp.LogError($"{LogCategories.Unhandled} - {type}");
+                return;
+            }
+            else if (ex is MiddlewareValidationException validation)
+            {
+                var type = Shell.GetService<IRuntimeService>().Type;
 
-			var e = new LogEntry
-			{
-				Category = "Unhandled",
-				Created = DateTime.UtcNow,
-				Level = System.Diagnostics.TraceLevel.Error,
-				Source = ex.Source,
-				Message = string.Format("{0}{1}{2}", ex.Message, System.Environment.NewLine, ex.StackTrace)
-			};
+                validation.LogWarning($"{LogCategories.Unhandled} - {type}");
+                return;
+            }
 
-			if (ex is RuntimeException rt)
-			{
-				e.Element = rt.Element;
-				e.Component = rt.Component;
-				e.EventId = rt.EventId;
-				e.Metric = rt.Metric;
-			}
+            var e = new LogEntry
+            {
+                Category = "Unhandled",
+                Created = DateTime.UtcNow,
+                Level = System.Diagnostics.TraceLevel.Error,
+                Source = ex.Source,
+                Message = string.Format("{0}{1}{2}", ex.Message, System.Environment.NewLine, ex.StackTrace)
+            };
 
-			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Write(e);
-		}
+            if (ex is RuntimeException rt)
+            {
+                e.Element = rt.Element;
+                e.Component = rt.Component;
+                e.EventId = rt.EventId;
+                e.Metric = rt.Metric;
+            }
 
-		protected virtual async Task OnHandleAjaxException(HttpContext context, Exception ex)
-		{
-			await Task.CompletedTask;
+            MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Write(e);
+        }
 
-			throw ex;
-		}
+        protected virtual async Task OnHandleAjaxException(HttpContext context, Exception ex)
+        {
+            await Task.CompletedTask;
 
-		protected virtual async Task OnHandleException(HttpContext context, Exception ex)
-		{
-			if(context.Response.StatusCode == (int)HttpStatusCode.InternalServerError)
-			{
-				await ErrorResult(context, ex);
-				return;
-			}
+            throw ex;
+        }
 
-			context.Response.Redirect($"{RuntimeExtensions.RootUrl}/sys/status/{context.Response.StatusCode}");
+        protected virtual async Task OnHandleException(HttpContext context, Exception ex)
+        {
+            if (context.Response.StatusCode == (int)HttpStatusCode.InternalServerError)
+            {
+                await ErrorResult(context, ex);
+                return;
+            }
 
-			await Task.CompletedTask;
-		}
+            context.Response.Redirect($"{RuntimeExtensions.RootUrl}/sys/status/{context.Response.StatusCode}");
 
-		private async Task ErrorResult(HttpContext context, Exception ex)
-		{
-			var r = new ViewResult
-			{
-				ViewName = "~/Views/Shell/Error.cshtml",
-				StatusCode = 500,
-				ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
-			};
+            await Task.CompletedTask;
+        }
 
-			r.ViewData.Model = new ExceptionModel(context, ex);
-			r.ViewData.Add("exSource", ex.Source);
+        private async Task ErrorResult(HttpContext context, Exception ex)
+        {
+            var r = new ViewResult
+            {
+                ViewName = "~/Views/Shell/Error.cshtml",
+                StatusCode = 500,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+            };
 
-			if (Shell.GetService<IRuntimeService>().Stage != EnvironmentStage.Production)
-				r.ViewData.Add("exStack", ex.StackTrace);
+            r.ViewData.Model = new ExceptionModel(context, ex);
+            r.ViewData.Add("exSource", ex.Source);
 
-			var sb = new StringBuilder();
-			var tenant = MiddlewareDescriptor.Current.Tenant;
-			var devUrl = tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Development, InstanceVerbs.All);
+            if (Shell.GetService<IRuntimeService>().Stage != EnvironmentStage.Production)
+                r.ViewData.Add("exStack", ex.StackTrace);
 
-			if (ex is ScriptException script)
-			{
-				r.ViewData.Add("exPath", script.Path);
+            var sb = new StringBuilder();
+            var tenant = MiddlewareDescriptor.Current.Tenant;
+            var devUrl = tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Development, InstanceVerbs.All);
 
-				if (!string.IsNullOrWhiteSpace(script.MicroService))
-				{
+            if (ex is ScriptException script)
+            {
+                r.ViewData.Add("exPath", script.Path);
 
-					var ms = tenant.GetService<IMicroServiceService>().Select(script.MicroService);
+                if (!string.IsNullOrWhiteSpace(script.MicroService))
+                {
 
-					if (ms != null && ms.Status != MicroServiceStatus.Production)
-					{
-						if (tenant != null && !string.IsNullOrWhiteSpace(devUrl))
-						{
-							r.ViewData.Add("exUrl", $"{devUrl}/ide/{ms.Url}?component={script.Component}&element={script.Element}");
-						}
-					}
-				}
+                    var ms = tenant.GetService<IMicroServiceService>().Select(script.MicroService);
 
-				r.ViewData.Add("exLine", script.Line);
-			}
+                    if (ms != null && ms.Status != MicroServiceStatus.Production)
+                    {
+                        if (tenant != null && !string.IsNullOrWhiteSpace(devUrl))
+                        {
+                            r.ViewData.Add("exUrl", $"{devUrl}/ide/{ms.Url}?component={script.Component}&element={script.Element}");
+                        }
+                    }
+                }
 
-			if (ex.Data != null && ex.Data.Count > 0)
-			{
-				if (ex.Data.Contains("Script"))
-					r.ViewData.Add("exScript", ex.Data["Script"]);
+                r.ViewData.Add("exLine", script.Line);
+            }
 
-				if (ex.Data.Contains("MicroService") && !string.IsNullOrWhiteSpace(devUrl))
-				{
-					var scriptMs = ex.Data["MicroService"] as IMicroService;
-					//TODO: resolve fully qualified component to be able to parse edit url
+            if (ex.Data != null && ex.Data.Count > 0)
+            {
+                if (ex.Data.Contains("Script"))
+                    r.ViewData.Add("exScript", ex.Data["Script"]);
 
-					if (scriptMs != null)
-						r.ViewData.Add("exScriptMicroService", scriptMs.Name);
-					//	r.ViewData.Add("exScriptUrl", $"{devUrl}/ide/{scriptMs.Name}?component={script.Component}&element={script.Element}");
-				}
-			}
+                if (ex.Data.Contains("MicroService") && !string.IsNullOrWhiteSpace(devUrl))
+                {
+                    var scriptMs = ex.Data["MicroService"] as IMicroService;
+                    //TODO: resolve fully qualified component to be able to parse edit url
 
-			sb.AppendLine(ex.Message);
+                    if (scriptMs != null)
+                        r.ViewData.Add("exScriptMicroService", scriptMs.Name);
+                    //	r.ViewData.Add("exScriptUrl", $"{devUrl}/ide/{scriptMs.Name}?component={script.Component}&element={script.Element}");
+                }
+            }
 
-			if (Shell.GetService<IRuntimeService>().Stage != EnvironmentStage.Production)
-			{
-				sb.Append(ex.StackTrace);
+            sb.AppendLine(ex.Message);
 
-				if (ex is TomPITException tp)
-					r.ViewData.Add("exDiagnosticTrace", tp.DiagnosticsTrace);
-				else if (ex is MiddlewareValidationException mw)
-					r.ViewData.Add("exDiagnosticTrace", mw.DiagnosticsTrace);
-			}
+            if (Shell.GetService<IRuntimeService>().Stage != EnvironmentStage.Production)
+            {
+                sb.Append(ex.StackTrace);
 
-			r.ViewData.Add("exMessage", sb.ToString());
+                if (ex is TomPITException tp)
+                    r.ViewData.Add("exDiagnosticTrace", tp.DiagnosticsTrace);
+                else if (ex is MiddlewareValidationException mw)
+                    r.ViewData.Add("exDiagnosticTrace", mw.DiagnosticsTrace);
+            }
 
-			var exec = context.RequestServices.GetRequiredService<IActionResultExecutor<ViewResult>>();
-			var desc = new ActionDescriptor
-			{
+            r.ViewData.Add("exMessage", sb.ToString());
 
-			};
-			var action = new ActionContext(context, context.GetRouteData(), desc);
+            var exec = context.RequestServices.GetRequiredService<IActionResultExecutor<ViewResult>>();
+            var desc = new ActionDescriptor
+            {
 
-			await exec.ExecuteAsync(action, r);
+            };
+            var action = new ActionContext(context, context.GetRouteData(), desc);
 
-		}
+            await exec.ExecuteAsync(action, r);
 
-		protected virtual async Task HandleException(HttpContext context, Exception ex)
-		{
-			var resolvedException = ResolveException(ex);
+        }
 
-			SetResponseStatus(context, resolvedException);
+        protected virtual async Task HandleException(HttpContext context, Exception ex)
+        {
+            var resolvedException = ResolveException(ex);
 
-			if (context.Request.IsAjaxRequest() || !Shell.GetService<IRuntimeService>().SupportsUI)
-				await OnHandleAjaxException(context, resolvedException);
-			else
-				await OnHandleException(context, resolvedException);
-		}
+            SetResponseStatus(context, resolvedException);
 
-		private Exception ResolveException(Exception ex)
-		{
-			if (ex is TargetInvocationException)
-				return ex.InnerException;
+            if (context.Request.IsAjaxRequest() || !Shell.GetService<IRuntimeService>().SupportsUI)
+                await OnHandleAjaxException(context, resolvedException);
+            else
+                await OnHandleException(context, resolvedException);
+        }
 
-			return ex;
-		}
+        private Exception ResolveException(Exception ex)
+        {
+            if (ex is TargetInvocationException)
+                return ex.InnerException;
 
-		private void SetResponseStatus(HttpContext context, Exception ex)
-		{
-			if (ex is ScriptException script && script.InnerException != null)
-				SetResponseStatus(context, script.InnerException);
-			else
-			{
-				if (ex is ForbiddenException)
-					context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-				else if (ex is NotFoundException)
-					context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-				else if (ex is UnauthorizedException)
-					context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-				else if (ex is MiddlewareValidationException)
-					context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-				else
-					context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-			}
-		}
-	}
+            return ex;
+        }
+
+        private void SetResponseStatus(HttpContext context, Exception ex)
+        {
+            if (ex is ScriptException script && script.InnerException != null)
+                SetResponseStatus(context, script.InnerException);
+            else
+            {
+                if (ex is ForbiddenException)
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                else if (ex is NotFoundException)
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                else if (ex is UnauthorizedException)
+                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                else if (ex is MiddlewareValidationException)
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                else
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            }
+        }
+    }
 }
