@@ -73,6 +73,7 @@ namespace TomPIT.Cdn
 			services.AddSingleton<IHostedService, SmtpService>();
 			services.AddSingleton<IHostedService, EventService>();
 			services.AddSingleton<IHostedService, EventReliableService>();
+			services.AddSingleton<IHostedService, EventCleanupService>();
 			services.AddSingleton<IHostedService, PrintingSpoolerService>();
 		}
 	}
