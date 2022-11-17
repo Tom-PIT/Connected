@@ -117,6 +117,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connected.SaaS.Clients.Heal
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SaaSClients", "SaaSClients", "{8D753552-D0E8-4378-9E18-0AC94D7DE88F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connected.SaaS.Clients", "..\Saas\Clients\Connected.SaaS.Clients\Connected.SaaS.Clients\Connected.SaaS.Clients.csproj", "{04EB760D-55BC-4DE3-BB0A-2942659C1395}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -287,6 +289,10 @@ Global
 		{D51BB735-186E-48C9-BFB2-B667F9566762}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D51BB735-186E-48C9-BFB2-B667F9566762}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D51BB735-186E-48C9-BFB2-B667F9566762}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04EB760D-55BC-4DE3-BB0A-2942659C1395}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04EB760D-55BC-4DE3-BB0A-2942659C1395}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04EB760D-55BC-4DE3-BB0A-2942659C1395}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04EB760D-55BC-4DE3-BB0A-2942659C1395}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -333,6 +339,7 @@ Global
 		{114B01A4-F6A4-49F7-9726-AB69594C4099} = {A07322A8-3CCD-4185-8FE0-1600FE6099EA}
 		{8A925065-C5C6-417F-BD1D-D68C6B774970} = {A07322A8-3CCD-4185-8FE0-1600FE6099EA}
 		{D51BB735-186E-48C9-BFB2-B667F9566762} = {8D753552-D0E8-4378-9E18-0AC94D7DE88F}
+		{04EB760D-55BC-4DE3-BB0A-2942659C1395} = {8D753552-D0E8-4378-9E18-0AC94D7DE88F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {56CEBC0B-257E-403D-8CF9-1F6B50358F86}
