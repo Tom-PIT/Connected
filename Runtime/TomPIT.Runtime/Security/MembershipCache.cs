@@ -17,7 +17,7 @@ namespace TomPIT.Security
 			var ds = Tenant.Get<ImmutableList<Membership>>(CreateUrl("QueryMembership"));
 
 			foreach (var i in ds)
-				Set(GenerateRandomKey(), i, TimeSpan.Zero);
+				Set(GenerateKey(i), i, TimeSpan.Zero);
 		}
 
 		public ImmutableList<IMembership> QueryForRole(Guid role)
@@ -43,7 +43,7 @@ namespace TomPIT.Security
 			var d = Tenant.Get<Membership>(u);
 
 			if (d != null)
-				Set(GenerateRandomKey(), d, TimeSpan.Zero);
+				Set(GenerateKey(d), d, TimeSpan.Zero);
 		}
 
 		public IMembership Select(Guid user, Guid role)
@@ -55,5 +55,10 @@ namespace TomPIT.Security
 		{
 			return Tenant.CreateUrl("Security", action);
 		}
+
+		private static string GenerateKey(IMembership membership)
+        {
+			return $"{membership.Role}{membership.User}";
+        }
 	}
 }
