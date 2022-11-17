@@ -219,7 +219,9 @@ namespace TomPIT.Compilation
             {
                 result = compiler.Script.GetCompilation();
 
-                scriptDescriptor.Errors = ProcessDiagnostics(script, compiler, result.GetDiagnostics(), stage);
+                var diagnostics = result.GetDiagnostics();
+
+                scriptDescriptor.Errors = ProcessDiagnostics(script, compiler, diagnostics, stage);
             }
             else
             {
@@ -242,6 +244,8 @@ namespace TomPIT.Compilation
 
             if (cache)
                 Set(script.Id, script, TimeSpan.Zero);
+
+            GC.Collect();
 
             return result;
         }
