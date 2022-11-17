@@ -33,7 +33,8 @@ namespace TomPIT.App
         {
             var e = new ServicesConfigurationArgs
             {
-                Authentication = AuthenticationType.SingleTenant
+                Authentication = AuthenticationType.SingleTenant,
+                CorsEnabled = true
             };
 
             services.AddResponseCompression(o =>
