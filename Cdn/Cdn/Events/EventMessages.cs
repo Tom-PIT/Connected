@@ -26,6 +26,8 @@ namespace TomPIT.Cdn.Events
 
 			foreach (var item in items)
 				Items.Remove(item);
+
+			Items.TrimExcess();
 		}
 
 		public ImmutableArray<EventMessage> Dequeue()
