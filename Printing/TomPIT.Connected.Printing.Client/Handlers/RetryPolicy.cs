@@ -25,7 +25,7 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 
             var nextDelay = (retryContext.PreviousRetryCount == 0)
                 ? 0
-                : 60;
+                : 10;
 
             return TimeSpan.FromSeconds(nextDelay);
         }
