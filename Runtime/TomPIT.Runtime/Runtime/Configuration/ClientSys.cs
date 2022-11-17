@@ -11,6 +11,7 @@ namespace TomPIT.Runtime.Configuration
 		private List<string> _dataProviders = null;
 		private List<string> _designers = null;
 		private List<string> _resourceGroups = null;
+		private List<MiddlewareHealthMonitoringConfiguration> _healthMonitoredMiddleware = null;
 		private IDiagnosticsConfiguration _diagnosticsConfiguration = null;
 
 		[JsonProperty(PropertyName = "connections")]
@@ -89,5 +90,13 @@ namespace TomPIT.Runtime.Configuration
 
 		[JsonProperty(PropertyName = "ioBehavior")]
 		public EnvironmentIOBehavior IOBehavior { get; set; }
-	}
+
+
+		[JsonProperty(PropertyName = "healthMonitoring")]
+		public HealthMonitoringConfiguration HealthMonitoring { get; set; } = new HealthMonitoringConfiguration();
+
+
+		[JsonProperty(PropertyName = "healthMonitoredMiddleware")]
+		public List<MiddlewareHealthMonitoringConfiguration> HealthMonitoredMiddleware => _healthMonitoredMiddleware ??= new();
+    }
 }

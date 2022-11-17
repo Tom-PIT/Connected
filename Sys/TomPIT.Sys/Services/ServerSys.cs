@@ -49,5 +49,9 @@ namespace TomPIT.Sys.Services
 
 		[JsonProperty(PropertyName = "plugins")]
 		public PluginSet Plugins { get; set; }
+
+
+		[JsonProperty(PropertyName = "healthMonitoring")]
+		public HealthMonitoringConfiguration HealthMonitoring { get; set; } = new HealthMonitoringConfiguration();
 	}
 }

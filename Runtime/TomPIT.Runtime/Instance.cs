@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Threading;
-
+using Connected.SaaS.Clients.HealthMonitoring.Rest;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -24,6 +24,7 @@ using TomPIT.Design;
 using TomPIT.Distributed;
 using TomPIT.Environment;
 using TomPIT.Globalization;
+using TomPIT.HealthMonitoring;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
@@ -221,7 +222,8 @@ namespace TomPIT
 
 			services.AddScoped<RequestLocalizationCookiesMiddleware>();
 			services.AddHttpClient();
-
+			services.AddHostedService<HealthMonitoringHostedService>();
+			
 			foreach (var plugin in Plugins)
 				plugin.ConfigureServices(services);
 		}
@@ -230,7 +232,7 @@ namespace TomPIT
 			RuntimeService._host = app;
 			app.UseAuthentication();
 			app.UseMiddleware<AuthenticationCookieMiddleware>();
-
+			
 			app.UseRequestLocalization(app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>()?.Value);
 
 			var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
@@ -313,6 +315,7 @@ namespace TomPIT
 			}
 
 			e.Tenant.GetService<IDesignService>().Initialize();
+			e.Tenant.RegisterService(typeof(IHealthMonitoringRestClientFactory), new HealthMonitoringRestClientFactory());
 		}
 
 		public static void Run(IApplicationBuilder app, IWebHostEnvironment environment)

@@ -3,5 +3,7 @@
 	public interface ISys
 	{
 		PluginSet Plugins { get; }
+
+		HealthMonitoringConfiguration HealthMonitoring { get; set;  }
 	}
 }

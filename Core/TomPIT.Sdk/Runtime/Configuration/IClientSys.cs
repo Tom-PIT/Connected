@@ -14,5 +14,6 @@ namespace TomPIT.Runtime.Configuration
 		IDiagnosticsConfiguration Diagnostics { get; }
 		EnvironmentConnectivity Connectivity { get; }
 		IClientSysDeployment Deployment { get; }
+		List<MiddlewareHealthMonitoringConfiguration> HealthMonitoredMiddleware { get; }
 	}
 }
