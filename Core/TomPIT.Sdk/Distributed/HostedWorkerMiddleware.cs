@@ -1,39 +1,67 @@
-﻿using System;
+﻿using Connected.SaaS.Clients.Authentication;
+using Connected.SaaS.Clients.HealthMonitoring.Rest;
+using System;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
+using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Distributed
 {
-	public abstract class HostedWorkerMiddleware : MiddlewareOperation, IHostedWorkerMiddleware
-	{
-		public void Invoke()
-		{
-			Invoke(null);
-		}
-		public void Invoke(IMiddlewareContext context)
-		{
-			if (context != null)
-				this.WithContext(context);
+    public abstract class HostedWorkerMiddleware : MiddlewareOperation, IHostedWorkerMiddleware
+    {
+        public void Invoke()
+        {
+            Invoke(null);
+        }
+        public void Invoke(IMiddlewareContext context)
+        {
+            if (context != null)
+                this.WithContext(context);
 
-			Validate();
+            Validate();
 
-			try
-			{
-				OnInvoke();
+            try
+            {
+                OnInvoke();
 
-				Invoked();
-			}
-			catch (Exception ex)
-			{
-				Rollback();
+                Invoked();
 
-				var se = new ScriptException(this, TomPITException.Unwrap(this, ex));
+                if (Shell.GetConfiguration<IClientSys>().HealthMonitoredMiddleware.FirstOrDefault(e => string.Compare(e.Type, this.GetType().Name) == 0) is MiddlewareHealthMonitoringConfiguration config)
+                    SendHealthMonitoringHeartbeat(config);
 
-				ExceptionDispatchInfo.Capture(se).Throw();
-			}
-		}
+            }
+            catch (Exception ex)
+            {
+                Rollback();
 
-		protected abstract void OnInvoke();
-	}
+                var se = new ScriptException(this, TomPITException.Unwrap(this, ex));
+
+                ExceptionDispatchInfo.Capture(se).Throw();
+            }
+        }
+
+        protected abstract void OnInvoke();
+
+        private void SendHealthMonitoringHeartbeat(MiddlewareHealthMonitoringConfiguration config)
+        {
+            if (string.IsNullOrWhiteSpace(config?.EndpointKey) || string.IsNullOrWhiteSpace(config?.SubscriptionKey) || string.IsNullOrWhiteSpace(config?.RestToken) || string.IsNullOrWhiteSpace(config?.EndpointUrl))
+                return;
+
+            try
+            {
+                var authProvider = new BearerAuthenticationProvider(config.RestToken);
+                var client = MiddlewareDescriptor.Current.Tenant.GetService<IHealthMonitoringRestClientFactory>().Select(config.EndpointUrl, config.SubscriptionKey, authProvider);
+
+                if (client is null)
+                    return;
+
+                AsyncUtils.RunSync(() => client.Requests.Measurements.Insert(new Connected.SaaS.Clients.HealthMonitoring.Endpoint { Key = config.EndpointKey }, 100, default));
+            }
+            catch
+            {
+            }
+        }
+    }
 }
