@@ -119,7 +119,10 @@ namespace TomPIT.Sys.Model.Security
 
 		public IUser SelectByLoginName(string loginName)
 		{
-			var r = Get(f => string.Compare(loginName, f.LoginName, true) == 0);
+			if (string.IsNullOrWhiteSpace(loginName))
+				return null;
+
+			var r = Get(f => string.Compare(loginName, f?.LoginName, true) == 0);
 
 			if (r != null)
 				return r;
