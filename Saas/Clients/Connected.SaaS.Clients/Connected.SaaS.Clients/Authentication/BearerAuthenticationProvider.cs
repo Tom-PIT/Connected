@@ -22,7 +22,7 @@ namespace Connected.SaaS.Clients.Authentication
 
         public override int GetHashCode()
         {
-            return _token.GetHashCode() + GetType().GetHashCode();
+            return (_token?.GetHashCode() ?? 0) + GetType().GetHashCode();
         }
 
         public override bool Equals(object obj)
