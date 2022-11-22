@@ -31,7 +31,7 @@ namespace TomPIT.Cdn.Printing
 			MiddlewareDescriptor.Current.Tenant.Post(CreateUrl("PingSpooler"), new
 			{
 				popReceipt,
-				NextVisible = TimeSpan.FromSeconds(5)
+				nextVisible = TimeSpan.FromSeconds(5)
 			});
 		}
 
