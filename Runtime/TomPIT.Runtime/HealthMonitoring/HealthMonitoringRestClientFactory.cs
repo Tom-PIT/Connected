@@ -22,6 +22,7 @@ namespace TomPIT.HealthMonitoring
             (opts) =>
             {
                 opts.Key = (url + subscriptionKey + authenticationProvider.GetHashCode()).GetHashCode().ToString();
+                opts.Duration = TimeSpan.Zero;
                 return new HealthMonitoringRestClient(url, subscriptionKey, authenticationProvider);
             });
         }

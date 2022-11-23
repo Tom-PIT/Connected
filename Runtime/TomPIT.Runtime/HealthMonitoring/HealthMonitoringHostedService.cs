@@ -79,7 +79,8 @@ namespace TomPIT.HealthMonitoring
                     /*
                      * Log and keep trying                     
                      */
-                    await Task.Delay((Configuration.HeartbeatInterval), cancellationToken);
+                    Console.WriteLine(ex.ToString());
+                    await Task.Delay(Configuration.HeartbeatInterval, cancellationToken);
                 }
             }
         }
