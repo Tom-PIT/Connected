@@ -206,7 +206,7 @@ namespace TomPIT.Sys.Model.Cdn
 
             sw.Start();
 #endif
-            Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Update(items);
+            await Task.Run(() => Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Update(items));
 
             await Task.CompletedTask;
 #if DEBUG

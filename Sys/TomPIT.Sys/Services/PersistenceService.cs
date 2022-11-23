@@ -30,6 +30,7 @@ namespace TomPIT.Sys.Services
 			}
 			catch (Exception ex)
 			{
+				//TODO properly log				
 				Console.WriteLine(ex.Message);
 			}
 		}

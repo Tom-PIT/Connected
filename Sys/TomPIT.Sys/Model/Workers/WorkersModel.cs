@@ -46,6 +46,11 @@ namespace TomPIT.Sys.Model.Workers
             return Where(f => (f.Status == WorkerStatus.Enabled) && f.NextRun != DateTime.MinValue && f.NextRun <= DateTime.UtcNow);
         }
 
+        public ImmutableList<ISysScheduledJob> QueryQueued()
+        {
+            return Where(f => f.Status == WorkerStatus.Queued);
+        }
+
         public void Reset(Guid worker)
         {
             var j = Get(worker);
