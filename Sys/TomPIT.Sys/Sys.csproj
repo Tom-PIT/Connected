@@ -31,6 +31,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+    <ProjectReference Include="..\..\Saas\Clients\Connected.SaaS.Clients\Connected.SaaS.Clients.HealthMonitoring\Connected.SaaS.Clients.HealthMonitoring.csproj" />
+    <ProjectReference Include="..\..\Saas\Clients\Connected.SaaS.Clients\Connected.SaaS.Clients\Connected.SaaS.Clients.csproj" />
     <ProjectReference Include="..\..\Search\Lucene.Core\Lucene.Net.csproj" />
     <ProjectReference Include="..\..\Search\Lucene.Highlighter\Contrib.Highlighter.csproj" />
     <ProjectReference Include="..\..\Search\Lucene.Memory\Contrib.Memory.csproj" />

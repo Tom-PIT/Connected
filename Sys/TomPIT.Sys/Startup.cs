@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Text;
 using TomPIT.Diagnostics;
 using TomPIT.Diagnostics.Tracing;
+using TomPIT.HealthMonitoring;
 using TomPIT.Serialization;
 using TomPIT.Sys.Configuration;
 using TomPIT.Sys.Exceptions;
@@ -145,7 +146,8 @@ namespace TomPIT.Sys
                 if (stopwatch.ElapsedMilliseconds > 2000)
                     traceService.Trace("TomPIT.Sys.Diagnostics", "LongLastingRequest", path);
             });
-        }
+
+	    }
 
 		private void RegisterTasks(IServiceCollection services)
 		{
@@ -159,6 +161,7 @@ namespace TomPIT.Sys
 			services.AddSingleton<IHostedService, PrintingPersistence>();
 			services.AddSingleton<IHostedService, PrintingSpoolerPersistence>();
 			services.AddSingleton<IHostedService, BigDataBufferPersistence>();
+			services.AddHostedService<HealthMonitoringHostedService>();		
 		}
 	}
 }
