@@ -13,7 +13,7 @@ namespace TomPIT.Globalization
 {
 	internal class LanguageService : SynchronizedClientRepository<ILanguage, Guid>, ILanguageService, ILanguageNotification
 	{
-		private Lazy<ConcurrentDictionary<string, ILanguage>> _mappings = new Lazy<ConcurrentDictionary<string, ILanguage>>(() => { return new ConcurrentDictionary<string, ILanguage>(StringComparer.OrdinalIgnoreCase); });
+		private readonly Lazy<ConcurrentDictionary<string, ILanguage>> _mappings = new(() => { return new ConcurrentDictionary<string, ILanguage>(StringComparer.OrdinalIgnoreCase); });
 		public LanguageService(ITenant tenant) : base(tenant, "language")
 		{
 			Initialize();
