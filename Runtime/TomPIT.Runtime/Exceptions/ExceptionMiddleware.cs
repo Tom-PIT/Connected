@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -102,7 +103,7 @@ namespace TomPIT.Exceptions
         {
             await Task.CompletedTask;
 
-            throw ex;
+            ExceptionDispatchInfo.Throw(ex);
         }
 
         protected virtual async Task OnHandleException(HttpContext context, Exception ex)
