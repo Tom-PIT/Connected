@@ -29,18 +29,18 @@ namespace TomPIT.Globalization
 			foreach (var language in languages)
 			{
 				Set(language.Token, language, TimeSpan.Zero);
-				AddCulture(language);
 			}
 		}
 
 		protected override void OnInitialized()
-		{
-			ResetMappings();
+        {
+            ApplySupportedCultures();
+            ResetMappings();
 		}
 
 		protected override void OnInvalidate(Guid id)
 		{
-			RemoveCulture(Select(id));
+			Remove(id);
 
 			var u = Tenant.CreateUrl("Language", "Select")
 			.AddParameter("language", id);
@@ -48,10 +48,9 @@ namespace TomPIT.Globalization
 			var r = Tenant.Get<Language>(u);
 
 			if (r != null)
-			{
 				Set(r.Token, r, TimeSpan.Zero);
-				AddCulture(r);
-			}
+			
+			ApplySupportedCultures();
 
 			ResetMappings();
 		}
@@ -82,12 +81,13 @@ namespace TomPIT.Globalization
 		public void NotifyChanged(object sender, LanguageEventArgs e)
 		{
 			Refresh(e.Language);
-		}
+            ApplySupportedCultures();
+        }
 
 		public void NotifyRemoved(object sender, LanguageEventArgs e)
 		{
-			RemoveCulture(Select(e.Language));
 			Remove(e.Language);
+			ApplySupportedCultures();
 		}
 
 		public void ApplySupportedCultures() 
@@ -123,24 +123,6 @@ namespace TomPIT.Globalization
 					}
 				}
 			}
-		}
-
-		private void RemoveCulture(ILanguage language)
-		{
-			ApplySupportedCultures();
-		}
-
-		private void AddCulture(ILanguage language)
-		{
-			if (language == null || language.Status == LanguageStatus.Hidden)
-				return;
-
-			var culture = GetCulture(language);
-
-			if (culture == null)
-				return;
-
-			ApplySupportedCultures();
 		}
 
 		private CultureInfo GetCulture(ILanguage language)
