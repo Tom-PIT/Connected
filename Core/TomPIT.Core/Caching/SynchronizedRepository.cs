@@ -153,7 +153,17 @@ namespace TomPIT.Caching
 
         private void WaitForInitialization()
         {
-            InitializeSignal?.WaitOne();
+            try
+            {
+                InitializeSignal?.WaitOne();
+            }
+            catch (ObjectDisposedException) 
+            {
+                /*
+                 * Catch only the ObjectDisposedException, if waitForInitialization is called while the lock object is disposing and is not yet null. 
+                 * Initialization has completed, so it is safe to continue.
+                 */
+            }
         }
     }
 }
