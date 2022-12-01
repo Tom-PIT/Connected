@@ -32,120 +32,115 @@ using TomPIT.UI;
 
 namespace TomPIT.Runtime
 {
-	internal static class RuntimeBootstrapper
-	{
-		public static IApplicationBuilder UseApiExceptionMiddleware(this IApplicationBuilder builder)
-		{
-			return builder.UseMiddleware<RuntimeExceptionMiddleware>();
-		}
+    internal static class RuntimeBootstrapper
+    {
+        public static IApplicationBuilder UseApiExceptionMiddleware(this IApplicationBuilder builder)
+        {
+            return builder.UseMiddleware<RuntimeExceptionMiddleware>();
+        }
 
-		public static IApplicationBuilder UseAjaxExceptionMiddleware(this IApplicationBuilder builder)
-		{
-			return builder.UseMiddleware<AjaxExceptionMiddleware>();
-		}
+        public static IApplicationBuilder UseAjaxExceptionMiddleware(this IApplicationBuilder builder)
+        {
+            return builder.UseMiddleware<AjaxExceptionMiddleware>();
+        }
 
-		public static void Run()
-		{
-			RegisterServices();
-		}
+        public static void Run()
+        {
+            RegisterServices();
+        }
 
-		private static void RegisterServices()
-		{
-			Shell.RegisterService(typeof(IRuntimeService), typeof(RuntimeService));
-			Shell.RegisterService(typeof(IConnectivityService), typeof(ConnectivityService));
-			Shell.RegisterService(typeof(IMicroServiceResolutionService), typeof(MicroServiceResolutionService));
-		
-			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
-		}
+        private static void RegisterServices()
+        {
+            Shell.RegisterService(typeof(IRuntimeService), typeof(RuntimeService));
+            Shell.RegisterService(typeof(IConnectivityService), typeof(ConnectivityService));
+            Shell.RegisterService(typeof(IMicroServiceResolutionService), typeof(MicroServiceResolutionService));
 
-		private static void OnTenantInitialized(object sender, TenantArgs e)
-		{
-			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-			{
-				var t = TypeExtensions.GetType(i);
+            Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
+            Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
+        }
 
-				if (t == null)
-					continue;
+        private static void OnTenantInitialized(object sender, TenantArgs e)
+        {
+            foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+            {
+                var t = TypeExtensions.GetType(i);
 
-				var template = t.CreateInstance<IMicroServiceTemplate>();
+                if (t == null)
+                    continue;
 
-				if (template != null)
-					e.Tenant.GetService<IMicroServiceTemplateService>().Register(template);
-			}
-		}
+                var template = t.CreateInstance<IMicroServiceTemplate>();
 
-		private static void OnTenantInitialize(object sender, TenantArgs e)
-		{
-			e.Tenant.RegisterService(typeof(ISerializationService), typeof(SerializationService));
-			e.Tenant.RegisterService(typeof(ICompilerService), typeof(CompilerService));
-			e.Tenant.RegisterService(typeof(IMicroServiceService), typeof(MicroServiceService));
-			e.Tenant.RegisterService(typeof(ISettingService), typeof(SettingService));
-			e.Tenant.RegisterService(typeof(INamingService), typeof(NamingService));
-			e.Tenant.RegisterService(typeof(ILoggingService), typeof(LoggingService));
-			e.Tenant.RegisterService(typeof(IResourceGroupService), typeof(ResourceGroupService));
-			e.Tenant.RegisterService(typeof(ILanguageService), typeof(LanguageService));
-			e.Tenant.RegisterService(typeof(IInstanceEndpointService), typeof(InstanceEndpointService));
-			e.Tenant.RegisterService(typeof(IAuthorizationService), typeof(AuthorizationService));
-			e.Tenant.RegisterService(typeof(IComponentService), typeof(ComponentService));
-			e.Tenant.RegisterService(typeof(IUserService), typeof(UserService));
-			e.Tenant.RegisterService(typeof(IRoleService), typeof(RoleService));
-			e.Tenant.RegisterService(typeof(IStorageService), typeof(StorageService));
-			e.Tenant.RegisterService(typeof(IDataProviderService), typeof(DataProviderService));
-			e.Tenant.RegisterService(typeof(IEventService), typeof(EventService));
-			e.Tenant.RegisterService(typeof(IAuditService), typeof(AuditService));
-			e.Tenant.RegisterService(typeof(IDiscoveryService), typeof(DiscoveryService));
-			e.Tenant.RegisterService(typeof(ICryptographyService), typeof(CryptographyService));
-			e.Tenant.RegisterService(typeof(IMetricService), typeof(MetricService));
-			e.Tenant.RegisterService(typeof(IValidationService), typeof(ValidationService));
-			e.Tenant.RegisterService(typeof(IUserDataService), typeof(UserDataService));
-			e.Tenant.RegisterService(typeof(IMailService), typeof(MailService));
-			e.Tenant.RegisterService(typeof(ISubscriptionService), typeof(SubscriptionService));
-			e.Tenant.RegisterService(typeof(IAlienService), typeof(AlienService));
-			e.Tenant.RegisterService(typeof(IIoTService), typeof(IoTService));
-			e.Tenant.RegisterService(typeof(IDataCachingService), typeof(DataCachingService));
-			e.Tenant.RegisterService(typeof(IQueueService), typeof(QueueService));
-			e.Tenant.RegisterService(typeof(IGraphicsService), typeof(GraphicsService));
-			e.Tenant.RegisterService(typeof(ISearchService), typeof(SearchService));
-			e.Tenant.RegisterService(typeof(ILocalizationService), typeof(LocalizationService));
-			e.Tenant.RegisterService(typeof(INavigationService), typeof(NavigationService));
-			e.Tenant.RegisterService(typeof(IIoCService), typeof(IoCService));
-			e.Tenant.RegisterService(typeof(IPrintingService), typeof(PrintingService));
-			e.Tenant.RegisterService(typeof(IUIDependencyInjectionService), typeof(UIDependencyInjectionService));
-			e.Tenant.RegisterService(typeof(IDependencyInjectionService), typeof(DependencyInjectionService));
-			e.Tenant.RegisterService(typeof(IAnalyticsService), typeof(AnalyticsService));
-			e.Tenant.RegisterService(typeof(IModelService), typeof(ModelService));
-			e.Tenant.RegisterService(typeof(IDesignService), typeof(DesignService));
-			e.Tenant.RegisterService(typeof(ICdnService), typeof(CdnService));
-			e.Tenant.RegisterService(typeof(ILockingService), typeof(LockingService));
-			e.Tenant.RegisterService(typeof(IClientService), typeof(ClientService));
-			e.Tenant.RegisterService(typeof(IDocumentService), typeof(DocumentService));
-			e.Tenant.RegisterService(typeof(IFileSystemService), typeof(FileSystemService));
-			e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
-			e.Tenant.RegisterService(typeof(IWorkerService), typeof(WorkerService));
-		
-			if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
-				e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
+                if (template != null)
+                    e.Tenant.GetService<IMicroServiceTemplateService>().Register(template);
+            }
+        }
 
-			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
-			{
-				var iotClient = new IoTClient(e.Tenant, e.Tenant.AuthenticationToken);
+        private static void OnTenantInitialize(object sender, TenantArgs e)
+        {
+            e.Tenant.RegisterService(typeof(ISerializationService), typeof(SerializationService));
+            e.Tenant.RegisterService(typeof(ICompilerService), typeof(CompilerService));
+            e.Tenant.RegisterService(typeof(IMicroServiceService), typeof(MicroServiceService));
+            e.Tenant.RegisterService(typeof(ISettingService), typeof(SettingService));
+            e.Tenant.RegisterService(typeof(INamingService), typeof(NamingService));
+            e.Tenant.RegisterService(typeof(ILoggingService), typeof(LoggingService));
+            e.Tenant.RegisterService(typeof(IResourceGroupService), typeof(ResourceGroupService));
+            e.Tenant.RegisterService(typeof(ILanguageService), typeof(LanguageService));
+            e.Tenant.RegisterService(typeof(IInstanceEndpointService), typeof(InstanceEndpointService));
+            e.Tenant.RegisterService(typeof(IAuthorizationService), typeof(AuthorizationService));
+            e.Tenant.RegisterService(typeof(IComponentService), typeof(ComponentService));
+            e.Tenant.RegisterService(typeof(IUserService), typeof(UserService));
+            e.Tenant.RegisterService(typeof(IRoleService), typeof(RoleService));
+            e.Tenant.RegisterService(typeof(IStorageService), typeof(StorageService));
+            e.Tenant.RegisterService(typeof(IDataProviderService), typeof(DataProviderService));
+            e.Tenant.RegisterService(typeof(IEventService), typeof(EventService));
+            e.Tenant.RegisterService(typeof(IAuditService), typeof(AuditService));
+            e.Tenant.RegisterService(typeof(IDiscoveryService), typeof(DiscoveryService));
+            e.Tenant.RegisterService(typeof(ICryptographyService), typeof(CryptographyService));
+            e.Tenant.RegisterService(typeof(IMetricService), typeof(MetricService));
+            e.Tenant.RegisterService(typeof(IValidationService), typeof(ValidationService));
+            e.Tenant.RegisterService(typeof(IUserDataService), typeof(UserDataService));
+            e.Tenant.RegisterService(typeof(IMailService), typeof(MailService));
+            e.Tenant.RegisterService(typeof(ISubscriptionService), typeof(SubscriptionService));
+            e.Tenant.RegisterService(typeof(IAlienService), typeof(AlienService));
+            e.Tenant.RegisterService(typeof(IIoTService), typeof(IoTService));
+            e.Tenant.RegisterService(typeof(IDataCachingService), typeof(DataCachingService));
+            e.Tenant.RegisterService(typeof(IQueueService), typeof(QueueService));
+            e.Tenant.RegisterService(typeof(IGraphicsService), typeof(GraphicsService));
+            e.Tenant.RegisterService(typeof(ISearchService), typeof(SearchService));
+            e.Tenant.RegisterService(typeof(ILocalizationService), typeof(LocalizationService));
+            e.Tenant.RegisterService(typeof(INavigationService), typeof(NavigationService));
+            e.Tenant.RegisterService(typeof(IIoCService), typeof(IoCService));
+            e.Tenant.RegisterService(typeof(IPrintingService), typeof(PrintingService));
+            e.Tenant.RegisterService(typeof(IUIDependencyInjectionService), typeof(UIDependencyInjectionService));
+            e.Tenant.RegisterService(typeof(IDependencyInjectionService), typeof(DependencyInjectionService));
+            e.Tenant.RegisterService(typeof(IAnalyticsService), typeof(AnalyticsService));
+            e.Tenant.RegisterService(typeof(IModelService), typeof(ModelService));
+            e.Tenant.RegisterService(typeof(IDesignService), typeof(DesignService));
+            e.Tenant.RegisterService(typeof(ICdnService), typeof(CdnService));
+            e.Tenant.RegisterService(typeof(ILockingService), typeof(LockingService));
+            e.Tenant.RegisterService(typeof(IClientService), typeof(ClientService));
+            e.Tenant.RegisterService(typeof(IDocumentService), typeof(DocumentService));
+            e.Tenant.RegisterService(typeof(IFileSystemService), typeof(FileSystemService));
+            e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
+            e.Tenant.RegisterService(typeof(IWorkerService), typeof(WorkerService));
 
-				e.Tenant.Items.TryAdd("iotClient", iotClient);
+            if (Shell.GetService<IRuntimeService>().Mode == EnvironmentMode.Runtime && Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
+                e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
 
-				iotClient.Connect();
+            if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.SingleTenant)
+            {
+                var iotClient = new IoTClient(e.Tenant, e.Tenant.AuthenticationToken);
 
-				var dataCache = new DataCachingClient(e.Tenant, e.Tenant.AuthenticationToken);
+                e.Tenant.Items.TryAdd("iotClient", iotClient);
 
-				e.Tenant.Items.TryAdd("dataCache", dataCache);
+                iotClient.Connect();
 
-				dataCache.Connect();
+                var dataCache = new DataCachingClient(e.Tenant, e.Tenant.AuthenticationToken);
 
-				/*
-				 * touch the language service to register cultures
-				 */
-				MiddlewareDescriptor.Current.Tenant.GetService<ILanguageService>().Query();
-			}
-		}
-	}
+                e.Tenant.Items.TryAdd("dataCache", dataCache);
+
+                dataCache.Connect();
+            }
+        }
+    }
 }
