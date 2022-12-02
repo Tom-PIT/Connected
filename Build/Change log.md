@@ -23,9 +23,17 @@ This fixes a nullreferenceexception error when a resolution was attempted on an 
 ## 2.3.1122.1
 - Add additional timeout check to queue updates.\
 This should prevent race conditions when updating queue values. Is a known fix for an issue where print jobs had their tokens replaced prematurely.
+
 ## 2.3.1123.1
 - Add worker restart code to Sys initialization.\
 This fixes a known bug where workers would remain in the "queued" state on forced restarts.
 - Fix health monitoring timing out after five minutes.
 - Fix health monitoring not initializing when starting up Sys.
 
+## 2.3.1201.1
+- Add check for disposed lock in SynchronizedRepository\
+This fixes a repository initialization bug, affecting caching and other memory cached services.
+- Fix LanguageService so initialization does not lock up before first query is called.
+- Rewrite exception rethrows in exceptionmiddlewares so original stack trace is preserved where possible.
+- Add null check to event message data load.\
+When message is not found, processing is stopped.
