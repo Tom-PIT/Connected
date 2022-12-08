@@ -45,7 +45,7 @@
     <EmbeddedResource Include="CreateHandlers\Templates\Connection.txt" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="5.0.4" />
   </ItemGroup>
   <ItemGroup>
