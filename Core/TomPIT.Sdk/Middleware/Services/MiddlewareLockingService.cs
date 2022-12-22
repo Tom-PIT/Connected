@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+
 using TomPIT.Data;
 
 namespace TomPIT.Middleware.Services
@@ -7,11 +9,32 @@ namespace TomPIT.Middleware.Services
 	{
 		public MiddlewareLockingService(IMiddlewareContext context) : base(context)
 		{
+			Locks = new();
 		}
+
+		private ConcurrentDictionary<string, ILock> Locks { get; }
 
 		public ILock Lock(string entity, TimeSpan timeout)
 		{
-			return Context.Tenant.GetService<ILockingService>().Lock(entity, timeout, 10);
+			var locks = Locks;
+
+			if (Context is MiddlewareContext ctx)
+			{
+				if (ctx.Owner is not null)
+				{
+					if (ctx.Owner.Services.Data is MiddlewareLockingService lockingService)
+						locks = lockingService.Locks;
+				}
+			}
+
+			if (locks.TryGetValue(entity, out var @lock))
+				return @lock;
+
+			var newLock = Context.Tenant.GetService<ILockingService>().Lock(entity, timeout, 10);
+
+			Locks.TryAdd(entity, newLock);
+
+			return newLock;
 		}
 
 		public ILock Lock(string entity)
