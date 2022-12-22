@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <AssemblyVersion>2.3.1201.1</AssemblyVersion>
-    <FileVersion>2.3.1201.1</FileVersion>
-    <Version>2.3.1201.1</Version>
+    <AssemblyVersion>2.3.1222.1</AssemblyVersion>
+    <FileVersion>2.3.1222.1</FileVersion>
+    <Version>2.3.1222.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Connected.SaaS.Clients\Connected.SaaS.Clients.csproj" />
