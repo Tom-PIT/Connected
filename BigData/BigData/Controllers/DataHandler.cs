@@ -11,6 +11,7 @@ namespace TomPIT.BigData.Controllers
 {
 	internal class DataHandler : MicroServiceContext
 	{
+		private readonly bool _successfullyInitialized = false;
 		public DataHandler(HttpContext context)
 		{
 			Context = context;
@@ -39,6 +40,7 @@ namespace TomPIT.BigData.Controllers
 			Initialize(MiddlewareDescriptor.Current.Tenant.Url);
 
 			Body = Context.Request.Body.ToType<JArray>();
+			_successfullyInitialized = true;
 		}
 
 		private IPartitionConfiguration Configuration { get; }
@@ -47,6 +49,9 @@ namespace TomPIT.BigData.Controllers
 
 		public void ProcessRequest()
 		{
+			if (!_successfullyInitialized)
+				return;
+
 			MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Prepare(Configuration, Body);
 		}
 	}

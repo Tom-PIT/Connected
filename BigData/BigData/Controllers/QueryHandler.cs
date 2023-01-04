@@ -14,6 +14,8 @@ namespace TomPIT.BigData.Controllers
 {
 	internal class QueryHandler : MicroServiceContext
 	{
+		private readonly bool _successfullyInitialized = false;
+	
 		public QueryHandler(HttpContext context)
 		{
 			Context = context;
@@ -42,10 +44,14 @@ namespace TomPIT.BigData.Controllers
 			Initialize(MiddlewareDescriptor.Current.Tenant.Url);
 
 			Body = Context.Request.Body.ToType<JArray>();
+			_successfullyInitialized = true;
 		}
 
 		public void ProcessRequest()
 		{
+			if (!_successfullyInitialized)
+				return;
+
 			var parameters = new List<QueryParameter>();
 
 			foreach (JObject parameter in Body)
