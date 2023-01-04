@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
 using System.Diagnostics;
 using System.Text;
+
 using TomPIT.Diagnostics;
 using TomPIT.Diagnostics.Tracing;
 using TomPIT.HealthMonitoring;
@@ -17,6 +19,7 @@ using TomPIT.Sys.Model;
 using TomPIT.Sys.Notifications;
 using TomPIT.Sys.Services;
 using TomPIT.Sys.Workers;
+
 using static TomPIT.HttpExtensions;
 
 namespace TomPIT.Sys
@@ -77,9 +80,9 @@ namespace TomPIT.Sys
 				//app.UseExceptionHandler();
 			}
 
-            RegisterTraceService(app);
+			RegisterTraceService(app);
 
-            app.UseStaticFiles();
+			app.UseStaticFiles();
 			app.UseRouting();
 			app.UseAuthentication();
 			app.UseAuthorization();
@@ -91,7 +94,7 @@ namespace TomPIT.Sys
 				routes.MapHub<BigDataHub>("/bigdata");
 				routes.MapHub<DataCacheHub>("/datacaching");
 				routes.MapHub<TraceHub>("hubs/tracing");
-            });
+			});
 
 			app.UseMvc(routes =>
 			{
@@ -104,27 +107,30 @@ namespace TomPIT.Sys
 
 
 			Diagnostics.EventLog.WriteInfo("Sys started");
-        }
+		}
 
-		private void RegisterTraceService(IApplicationBuilder app) 
+		private void RegisterTraceService(IApplicationBuilder app)
 		{
-            var traceHubContext = app.ApplicationServices.GetRequiredService<IHubContext<TraceHub>>();
+			var traceHubContext = app.ApplicationServices.GetRequiredService<IHubContext<TraceHub>>();
 
-            var traceService = app.ApplicationServices.GetService<ITraceService>();
+			var traceService = app.ApplicationServices.GetService<ITraceService>();
 
-            traceService.TraceReceived += async (s, e) => await TraceHub.Trace(traceHubContext, e);
+			traceService.TraceReceived += async (s, e) => await TraceHub.Trace(traceHubContext, e);
 
-            traceService.AddEndpoint("TomPIT.Sys.Diagnostics", "IncomingRequest");
-            traceService.AddEndpoint("TomPIT.Sys.Diagnostics", "LongLastingRequest");
+			traceService.AddEndpoint("TomPIT.Sys.Diagnostics", "IncomingRequest");
+			traceService.AddEndpoint("TomPIT.Sys.Diagnostics", "LongLastingRequest");
 			traceService.AddEndpoint("TomPIT.Sys.Diagnostics", "UserControllerRequest");
 
-            app.Use(async (context, next) => {
+			app.Use(async (context, next) =>
+			{
 				context.Request.EnableBuffering();
-                var path = context.Request.Path;
-                var stopwatch = Stopwatch.StartNew();
-			
-                var body = context.Request.Body.ToJObject();
-                traceService.Trace("TomPIT.Sys.Diagnostics", "IncomingRequest", $"{path} {Serializer.Serialize(body)} {Serializer.Serialize(context.Request.Query)}");
+
+				var path = context.Request.Path;
+				var stopwatch = Stopwatch.StartNew();
+
+				var body = context.Request.Body.ToJObject();
+
+				traceService.Trace("TomPIT.Sys.Diagnostics", "IncomingRequest", $"{path} {Serializer.Serialize(body)} {Serializer.Serialize(context.Request.Query)}");
 
 				if (path.HasValue && path.Value.ToLower().Contains("user"))
 				{
@@ -136,18 +142,19 @@ namespace TomPIT.Sys
 						UserAuthenticated = context.User?.Identity?.IsAuthenticated
 					};
 
-                    var userRequestMessage = $"Path: {path} Payload: {Serializer.Serialize(body)}, QueryParams: {Serializer.Serialize(context.Request.Query)}, Source: {Serializer.Serialize(sourceData)}";
- 					traceService.Trace("TomPIT.Sys.Diagnostics", "UserControllerRequest", userRequestMessage);
+					var userRequestMessage = $"Path: {path} Payload: {Serializer.Serialize(body)}, QueryParams: {Serializer.Serialize(context.Request.Query)}, Source: {Serializer.Serialize(sourceData)}";
+
+					traceService.Trace("TomPIT.Sys.Diagnostics", "UserControllerRequest", userRequestMessage);
 				}
 
-                if (next is not null && !context.Response.HasStarted)
-                    await next();
+				if (next is not null && !context.Response.HasStarted)
+					await next();
 
-                if (stopwatch.ElapsedMilliseconds > 2000)
-                    traceService.Trace("TomPIT.Sys.Diagnostics", "LongLastingRequest", path);
-            });
+				if (stopwatch.ElapsedMilliseconds > 2000)
+					traceService.Trace("TomPIT.Sys.Diagnostics", "LongLastingRequest", path);
+			});
 
-	    }
+		}
 
 		private void RegisterTasks(IServiceCollection services)
 		{
@@ -161,7 +168,7 @@ namespace TomPIT.Sys
 			services.AddSingleton<IHostedService, PrintingPersistence>();
 			services.AddSingleton<IHostedService, PrintingSpoolerPersistence>();
 			services.AddSingleton<IHostedService, BigDataBufferPersistence>();
-			services.AddHostedService<HealthMonitoringHostedService>();		
+			services.AddHostedService<HealthMonitoringHostedService>();
 		}
 	}
 }
