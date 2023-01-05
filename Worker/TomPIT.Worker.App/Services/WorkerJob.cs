@@ -2,8 +2,10 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
 using TomPIT.Diagnostics;
@@ -16,8 +18,6 @@ namespace TomPIT.Worker.Services
 {
 	internal class WorkerJob : DispatcherJob<IQueueMessage>
 	{
-		private TimeoutTask _timeout = null;
-
 		public WorkerJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
 		}
@@ -37,7 +37,7 @@ namespace TomPIT.Worker.Services
 
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
 
-			_timeout = new TimeoutTask(() =>
+			var timeout = new TimeoutTask(() =>
 			{
 				Proxy.Ping(Configuration.MicroService(), item.PopReceipt);
 
@@ -45,20 +45,20 @@ namespace TomPIT.Worker.Services
 			}, TimeSpan.FromSeconds(45), Cancel);
 
 
-			_timeout.Start();
+			timeout.Start();
 			Guid ms;
 
 			try
 			{
 				ms = Invoke(item, m);
+				Proxy.Complete(Configuration.MicroService(), item.PopReceipt, Worker);
 			}
 			finally
 			{
-				_timeout.Stop();
-				_timeout = null;
+				timeout.Stop();
+				timeout = null;
 			}
 
-			Proxy.Complete(Configuration.MicroService(), item.PopReceipt, Worker);
 		}
 
 		private bool Initialize(IQueueMessage message)
@@ -158,14 +158,5 @@ namespace TomPIT.Worker.Services
 		}
 
 		private IWorkerProxyService Proxy => MiddlewareDescriptor.Current.Tenant.GetService<IWorkerProxyService>();
-
-		protected override void OnDisposing()
-		{
-			if (_timeout != null)
-			{
-				_timeout.Stop();
-				_timeout = null;
-			}
-		}
 	}
 }

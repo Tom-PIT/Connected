@@ -57,7 +57,7 @@ namespace TomPIT.Caching
 				return;
 
 			if (Items.TryRemove(key, out Entry v))
-				v.Dispose();
+				v?.Dispose();
 		}
 
 		public void Set(string key, object instance, Entry value)
