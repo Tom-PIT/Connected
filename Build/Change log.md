@@ -37,3 +37,11 @@ This fixes a repository initialization bug, affecting caching and other memory c
 - Rewrite exception rethrows in exceptionmiddlewares so original stack trace is preserved where possible.
 - Add null check to event message data load.\
 When message is not found, processing is stopped.
+
+## 3.1.0105.1
+- Add support for contextual system-wide locks.\ The same process now retrieves a system lock for a key instead of failing.
+- Fix bug where BigData would still attempt to process data after failing to resolve a partition.
+- Fix bug in Sys where long-polling a web socket would throw an exception.\
+This fixes the infamous "Unexpected character at the end of JSON" error. The ToJObject method no longer crashes with an invalid payload as a consequence.
+- Fix workerJob concurrency issue when the worker is dosposing in the middle of execution.
+- Fix cache Remove function crashing when two concurrent threads attempted to remove same object.
