@@ -71,6 +71,12 @@ namespace TomPIT.Distributed
 						}
 					}
 				}
+				catch (TaskCanceledException)
+				{
+					/*
+					 * Do nothing, it is expected to fire when a timeout is cancelled. 
+					 */
+				}
 				finally
 				{
 					IsRunning = false;
