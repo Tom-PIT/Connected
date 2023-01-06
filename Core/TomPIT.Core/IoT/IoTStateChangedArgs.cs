@@ -8,13 +8,15 @@ namespace TomPIT.IoT
 	{
 		private List<IIoTFieldStateModifier> _state = null;
 
+		public IoTStateChangedArgs() { }
+
 		public IoTStateChangedArgs(Guid hub, List<IIoTFieldStateModifier> state)
 		{
 			Hub = hub;
 			State = state;
 		}
 
-		public Guid Hub { get; }
+		public Guid Hub { get; set; }
 		[JsonConverter(typeof(IoTStateConverter))]
 		public List<IIoTFieldStateModifier> State
 		{
