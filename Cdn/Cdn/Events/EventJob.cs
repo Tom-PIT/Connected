@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.Compilation;
@@ -18,7 +20,7 @@ using TomPIT.Reflection;
 
 namespace TomPIT.Cdn.Events
 {
-   internal class EventJob : DispatcherJob<IEventQueueMessage>
+    internal class EventJob : DispatcherJob<IEventQueueMessage>
     {
         private TimeoutTask _timeout = null;
         public EventJob(IDispatcher<IEventQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
@@ -67,7 +69,7 @@ namespace TomPIT.Cdn.Events
 
         private bool Invoke(IEventQueueMessage message)
         {
-            if(MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(message.MicroService) is not IMicroService ms)
+            if (MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(message.MicroService) is not IMicroService ms)
                 return true;
 
             MicroService = ms.Name;
@@ -162,10 +164,7 @@ namespace TomPIT.Cdn.Events
                 }
             }
 
-            Task.Run(async () =>
-            {
-                await MiddlewareDescriptor.Current.Tenant.GetService<IEventHubService>().NotifyAsync(new EventHubNotificationArgs($"{microService.Name}/{message.Name}", message.Arguments));
-            });
+            MiddlewareDescriptor.Current.Tenant.GetService<IEventHubService>().NotifyAsync(new EventHubNotificationArgs($"{microService.Name}/{message.Name}", message.Arguments));
         }
 
         private void Callback(Cdn.IEventQueueMessage message, List<IOperationResponse> responses)
@@ -264,10 +263,10 @@ namespace TomPIT.Cdn.Events
 
             descriptor.Validate();
 
-            if( descriptor.Configuration.Events.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0) is not IDistributedEvent ev)
+            if (descriptor.Configuration.Events.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0) is not IDistributedEvent ev)
                 throw new RuntimeException($"{SR.ErrDistributedEventNotFound} ({message.Name})");
 
-            if(compiler.ResolveType(context.MicroService.Token, ev, ev.Name, false) is not Type type)
+            if (compiler.ResolveType(context.MicroService.Token, ev, ev.Name, false) is not Type type)
                 return null;
 
             return compiler.CreateInstance<IDistributedEventMiddleware>(context, type, message.Arguments);
