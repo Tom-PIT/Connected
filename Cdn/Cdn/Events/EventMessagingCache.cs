@@ -115,22 +115,5 @@ namespace TomPIT.Cdn.Events
 
             items.Add(message);
         }
-
-        public static void Dump()
-        {
-            try
-            {
-                Debug.WriteLine($"Clients: {Clients.Count}, Messages: {Clients.Select(e => e.Value.Count).DefaultIfEmpty(0).Sum()}", "Cleanup");
-
-                foreach (var client in EventMessagingCache.Clients)
-                    client.Value.Dump(client.Key);
-            }
-
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.ToString(), "Debug exception");
-            }
-
-        }
     }
 }
