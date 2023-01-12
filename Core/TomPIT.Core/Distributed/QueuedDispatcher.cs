@@ -6,7 +6,6 @@ namespace TomPIT.Distributed
 {
 	internal class QueuedDispatcher<T> : IDispatcher<T>
 	{
-		private ConcurrentQueue<T> _items = null;
 		private bool _disposed = false;
 		private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
 		public event EventHandler Completed;
@@ -14,31 +13,20 @@ namespace TomPIT.Distributed
 		public QueuedDispatcher(IDispatcher<T> owner, string queueName)
 		{
 			QueueName = queueName;
-
+			Queue = new();
 			Worker = owner.CreateWorker(this, Cancel.Token);
 
 			Worker.Completed += OnCompleted;
 		}
 
 		public string QueueName { get; }
-
 		private CancellationTokenSource Cancel => _cancel;
-
 		private DispatcherJob<T> Worker { get; set; }
 		private IDispatcher<T> Owner { get; set; }
-
 		public int Count => Queue.Count;
-
-		private ConcurrentQueue<T> Queue
-		{
-			get
-			{
-				if (_items == null)
-					_items = new ConcurrentQueue<T>();
-
-				return _items;
-			}
-		}
+		private ConcurrentQueue<T> Queue { get; }
+		public bool Disposed => _disposed;
+		public ProcessBehavior Behavior => ProcessBehavior.Queued;
 
 		public bool Dequeue(out T item)
 		{
@@ -71,17 +59,11 @@ namespace TomPIT.Distributed
 					return;
 				}
 
-				if (job.Success)
-					Completed?.Invoke(this, EventArgs.Empty);
-				else
-					job.Run();
+				Completed?.Invoke(this, EventArgs.Empty);
 			}
 			catch { }
 		}
 
-		public bool Disposed => _disposed;
-		public ProcessBehavior Behavior => ProcessBehavior.Queued;
-		
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!_disposed)

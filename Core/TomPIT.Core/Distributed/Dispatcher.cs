@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 using TomPIT.Exceptions;
 
@@ -11,25 +11,25 @@ namespace TomPIT.Distributed
 {
 	public abstract class Dispatcher<T> : IDispatcher<T>
 	{
-		private ConcurrentQueue<T> _items = null;
-		private List<DispatcherJob<T>> _workers = null;
-		private Lazy<ConcurrentDictionary<string, QueuedDispatcher<T>>> _queuedDispatchers = new Lazy<ConcurrentDictionary<string, QueuedDispatcher<T>>>();
 		private bool _disposed = false;
 		private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
 
 		protected Dispatcher(int workerSize)
 		{
 			WorkerSize = workerSize;
+			Queue = new();
+			Jobs = new();
+			QueuedDispatchers = new();
 		}
 
 		private CancellationTokenSource Cancel => _cancel;
-
 		private int WorkerSize { get; }
-
+		private ConcurrentQueue<T> Queue { get; }
+		private List<DispatcherJob<T>> Jobs { get; }
+		public int Available => Math.Max(0, WorkerSize * 4 - Queue.Count - QueuedDispatchers.Sum(f => f.Value.Count));
+		private ConcurrentDictionary<string, QueuedDispatcher<T>> QueuedDispatchers { get; }
+		public ProcessBehavior Behavior => ProcessBehavior.Parallel;
 		public abstract DispatcherJob<T> CreateWorker(IDispatcher<T> owner, CancellationToken cancel);
-
-		public int Available => Math.Max(0, WorkerSize * 4) - Queue.Count - QueuedDispatchers.Sum(f => f.Value.Count);
-
 		public bool Dequeue(out T item)
 		{
 			return Queue.TryDequeue(out item);
@@ -47,67 +47,67 @@ namespace TomPIT.Distributed
 		{
 			Queue.Enqueue(item);
 
-			if (Jobs.Count < WorkerSize)
+			lock (Jobs)
 			{
-				var worker = CreateWorker(this, Cancel.Token);
+				var jobs = Jobs.Count;
+				var items = Queue.Count;
 
-				worker.Completed += OnCompleted;
-
-				lock (Jobs)
-				{
-					Jobs.Add(worker);
-				}
-
-				worker.Run();
+				if (jobs > items && jobs <= WorkerSize)
+					return true;
 			}
+
+			CreateWorker();
 
 			return true;
 		}
 
+		private void CreateWorker()
+		{
+			var worker = CreateWorker(this, Cancel.Token);
+
+			worker.Completed += OnCompleted;
+
+			lock (Jobs)
+			{
+				Jobs.Add(worker);
+			}
+
+			worker.Run();
+		}
+
 		private void OnCompleted(object sender, EventArgs e)
 		{
+			if (sender is not DispatcherJob<T> job)
+				return;
+
 			try
 			{
-				if (sender is not DispatcherJob<T> job)
-					return;
-
-				if (job.Success && Queue.IsEmpty)
-				{
-					lock (Jobs)
-					{
-						Jobs.Remove(job);
-					}
-
-					job.Completed -= OnCompleted;
-					job.Dispose();
-					job = null;
-				}
+				if (Queue.IsEmpty)
+					DisposeJob(job);
 				else
 					job.Run();
 			}
-			catch { }
-		}
-
-		private ConcurrentQueue<T> Queue
-		{
-			get
+			catch (Exception ex)
 			{
-				if (_items == null)
-					_items = new ConcurrentQueue<T>();
+				DisposeJob(job);
 
-				return _items;
+				Debug.WriteLine(ex.Message, "Dispatcher Completed Exception");
 			}
 		}
 
-		private List<DispatcherJob<T>> Jobs
+		private void DisposeJob(DispatcherJob<T> job)
 		{
-			get
+			lock (Jobs)
 			{
-				if (_workers == null)
-					_workers = new List<DispatcherJob<T>>();
-
-				return _workers;
+				Jobs.Remove(job);
 			}
+
+			job.Completed -= OnCompleted;
+			job.Dispose();
+			job = null;
+
+			if (Jobs.Count == 0 && !Queue.IsEmpty)
+				CreateWorker();
 		}
 
 		protected virtual void Dispose(bool disposing)
@@ -143,6 +143,7 @@ namespace TomPIT.Distributed
 		public void Dispose()
 		{
 			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 
 		private QueuedDispatcher<T> EnsureDispatcher(string stack)
@@ -180,10 +181,6 @@ namespace TomPIT.Distributed
 			}
 			catch { }
 		}
-
-		private ConcurrentDictionary<string, QueuedDispatcher<T>> QueuedDispatchers => _queuedDispatchers.Value;
-
-		public ProcessBehavior Behavior => ProcessBehavior.Parallel;
 	}
 }
 
