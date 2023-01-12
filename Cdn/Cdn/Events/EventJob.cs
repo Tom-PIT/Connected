@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -22,7 +23,6 @@ namespace TomPIT.Cdn.Events
 {
     internal class EventJob : DispatcherJob<IEventQueueMessage>
     {
-        private TimeoutTask _timeout = null;
         public EventJob(IDispatcher<IEventQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
         {
         }
@@ -31,7 +31,7 @@ namespace TomPIT.Cdn.Events
         private string Event { get; set; }
         protected override void DoWork(IEventQueueMessage item)
         {
-            _timeout = new TimeoutTask(() =>
+            var timeout = new TimeoutTask(() =>
             {
                 Delay(item.PopReceipt, TimeSpan.FromMinutes(5));
 
@@ -39,7 +39,7 @@ namespace TomPIT.Cdn.Events
             }, TimeSpan.FromMinutes(4), Cancel);
 
 
-            _timeout.Start();
+            timeout.Start();
 
             try
             {
@@ -48,14 +48,20 @@ namespace TomPIT.Cdn.Events
             }
             finally
             {
-                _timeout.Stop();
-                _timeout = null;
+                timeout.Stop();
+                timeout = null;
             }
+
+            var sw = Stopwatch.StartNew();
 
             MiddlewareDescriptor.Current.Tenant.Post(MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Complete"), new
             {
                 item.PopReceipt
             });
+
+            sw.Stop();
+
+            Debug.WriteLine($"{Event} took {sw.ElapsedMilliseconds} to send completed notification.");
         }
 
         private static void Delay(Guid popReceipt, TimeSpan delay)
@@ -127,7 +133,7 @@ namespace TomPIT.Cdn.Events
                             {
                                 if (string.Compare(eventName, i.Event, true) == 0)
                                 {
-                                    var result = Invoke(message, i);
+                                    var result = Invoke(message, i);                   
 
                                     if (result != null && result.Count > 0)
                                     {
@@ -262,6 +268,9 @@ namespace TomPIT.Cdn.Events
             var descriptor = ComponentDescriptor.DistributedEvent(context, $"{context.MicroService.Name}/{message.Name}");
 
             descriptor.Validate();
+
+            if (descriptor.Configuration is null)
+                return null;
 
             if (descriptor.Configuration.Events.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0) is not IDistributedEvent ev)
                 throw new RuntimeException($"{SR.ErrDistributedEventNotFound} ({message.Name})");
