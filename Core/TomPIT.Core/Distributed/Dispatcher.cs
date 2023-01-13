@@ -35,10 +35,10 @@ namespace TomPIT.Distributed
 			return Queue.TryDequeue(out item);
 		}
 
-		public bool Enqueue(string queue, T item)
+		public bool Enqueue(string key, T item)
 		{
-			if (EnsureDispatcher(queue) is not QueuedDispatcher<T> dispatcher)
-				throw new RuntimeException($"{SR.ErrCannotCreateStackedDispatcher} ({queue})");
+			if (EnsureDispatcher(key) is not QueuedDispatcher<T> dispatcher)
+				throw new RuntimeException($"{SR.ErrCannotCreateStackedDispatcher} ({key})");
 
 			return dispatcher.Enqueue(item);
 		}
@@ -146,18 +146,20 @@ namespace TomPIT.Distributed
 			GC.SuppressFinalize(this);
 		}
 
-		private QueuedDispatcher<T> EnsureDispatcher(string stack)
+		private QueuedDispatcher<T> EnsureDispatcher(string key)
 		{
-			if (QueuedDispatchers.TryGetValue(stack, out QueuedDispatcher<T> result))
+			if (QueuedDispatchers.TryGetValue(key, out QueuedDispatcher<T> result))
 				return result;
 
-			result = new QueuedDispatcher<T>(this, stack);
+			result = new QueuedDispatcher<T>(this, key);
 
 			result.Completed += OnQueuedCompleted;
 
-			if (!QueuedDispatchers.TryAdd(stack, result))
+			if (!QueuedDispatchers.TryAdd(key, result))
 			{
-				if (QueuedDispatchers.TryGetValue(stack, out QueuedDispatcher<T> retryResult))
+				result.Completed -= OnQueuedCompleted;
+
+				if (QueuedDispatchers.TryGetValue(key, out QueuedDispatcher<T> retryResult))
 					return retryResult;
 				else
 					return null;
@@ -173,7 +175,14 @@ namespace TomPIT.Distributed
 			if (dispatcher.Count > 0)
 				return;
 
-			QueuedDispatchers.Remove(dispatcher.QueueName, out _);
+			if (QueuedDispatchers.Remove(dispatcher.QueueName, out QueuedDispatcher<T> removed))
+			{
+				if (removed.Count > 0)
+				{
+					QueuedDispatchers.TryAdd(removed.QueueName, removed);
+					return;
+				}
+			}
 
 			try
 			{
