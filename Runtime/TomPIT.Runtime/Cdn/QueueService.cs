@@ -37,7 +37,8 @@ namespace TomPIT.Cdn
                 Worker = worker.Name,
                 expire,
                 nextVisible,
-                arguments = arguments == null ? null : Serializer.Serialize(arguments)
+                arguments = arguments == null ? null : Serializer.Serialize(arguments),
+                bufferKey
             });
         }
     }

@@ -89,7 +89,7 @@ namespace TomPIT.Worker.Services
 
 				if (!q.Invoke(Owner.Behavior))
 				{
-					Owner.Enqueue(q.QueueName, queue);
+					Owner.Enqueue($"{q.QueueName}_{queue.BufferKey}", queue);
 					return false;
 				}
 

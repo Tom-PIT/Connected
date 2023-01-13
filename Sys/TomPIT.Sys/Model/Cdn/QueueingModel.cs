@@ -44,7 +44,7 @@ namespace TomPIT.Sys.Model.Cdn
                 {
                     foreach (var ex in existing)
                     {
-                        if (ex.NextVisible <= DateTime.UtcNow)
+                        if (ex.NextVisible <= DateTime.UtcNow) //Only if messages equal?
                             return;
                     }
                 }
