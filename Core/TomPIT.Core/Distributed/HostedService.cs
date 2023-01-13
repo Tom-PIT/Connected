@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -43,9 +44,10 @@ namespace TomPIT.Distributed
 					if (Initialized)
 						await OnExecute(cancel);
 				}
-				catch
+				catch(Exception ex)
 				{
 					//TODO: handle exception
+					Debug.WriteLine("Hosted service exception " + ex.ToString());
 				}
 
 				if (Initialized && IntervalTimeout == TimeSpan.Zero)

@@ -12,9 +12,12 @@ namespace TomPIT.Cdn.Events
 	{
 		private Lazy<List<EventDispatcher>> _dispatchers = new Lazy<List<EventDispatcher>>();
 
+		public static EventService ServiceInstance { get; private set; } 
+
 		public EventService()
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
+			ServiceInstance = this;
 		}
 
 		protected override bool OnInitialize(CancellationToken cancel)
@@ -57,7 +60,7 @@ namespace TomPIT.Cdn.Events
 			return Task.CompletedTask;
 		}
 
-		private List<EventDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+		public List<EventDispatcher> Dispatchers { get { return _dispatchers.Value; } }
 
 		public override void Dispose()
 		{

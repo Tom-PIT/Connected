@@ -37,7 +37,7 @@ namespace TomPIT.Distributed
 		protected IDispatcher<T> Owner { get; }
 		protected CancellationToken Cancel { get; }
 		private DateTime LastRun { get; set; }
-		private T Current { get; set; }
+		public T Current { get; set; }
 		public void Run()
 		{
 			Worker.RunWorkerAsync();
@@ -120,6 +120,7 @@ namespace TomPIT.Distributed
 
 		}
 
+		public string State => ToString();
 		public override string ToString()
 		{
 			var name = Current is null ? "null" : Current.GetType().GetProperty("Name")?.GetValue(Current).ToString();

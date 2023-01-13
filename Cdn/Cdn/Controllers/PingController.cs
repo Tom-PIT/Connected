@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TomPIT.Cdn.Events;
 using TomPIT.Controllers;
 
 namespace TomPIT.Cdn.Controllers
@@ -12,5 +13,11 @@ namespace TomPIT.Cdn.Controllers
 		{
 			return new EmptyResult();
 		}
-	}
+
+        [HttpGet]
+        public IActionResult Dispatchers()
+        {
+			return Json(EventService.ServiceInstance);
+        }
+    }
 }
