@@ -1,4 +1,5 @@
-﻿using TomPIT.Annotations;
+﻿using System;
+using TomPIT.Annotations;
 using TomPIT.Cdn;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -26,25 +27,44 @@ namespace TomPIT.Worker.Workers
 		public bool Invoke(ProcessBehavior behavior)
 		{
 			var ms = Worker.Configuration().MicroService();
-
 			var queueType = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ms, Worker, Worker.Name);
-			using var dataCtx = new MicroServiceContext(ms);
-			HandlerInstance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IQueueMiddleware>(dataCtx, queueType, Args);
 
-			if (behavior == ProcessBehavior.Parallel)
+			switch (behavior)
 			{
-				var att = HandlerInstance.GetType().FindAttribute<ProcessBehaviorAttribute>();
+				case ProcessBehavior.Parallel:
+					if (!ProcessParallel(queueType))
+						return false;
 
-				if (att?.Behavior == ProcessBehavior.Queued)
-				{
-					QueueName = att.QueueName;
-					return false;
-				}
+					break;
+				case ProcessBehavior.Queued:
+					ProcessQueued(ms, queueType);
+					break;
+				default:
+					throw new NotSupportedException();
 			}
 
-			HandlerInstance.Invoke();
+			return true;
+		}
+
+		private bool ProcessParallel(Type queueType)
+		{
+			var att = queueType.FindAttribute<ProcessBehaviorAttribute>();
+
+			if (att?.Behavior == ProcessBehavior.Queued)
+			{
+				QueueName = att.QueueName;
+				return false;
+			}
 
 			return true;
+		}
+
+		private void ProcessQueued(Guid microService, Type queueType)
+		{
+			using var dataCtx = new MicroServiceContext(microService);
+			HandlerInstance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IQueueMiddleware>(dataCtx, queueType, Args);
+
+			HandlerInstance.Invoke();
 		}
 	}
 }

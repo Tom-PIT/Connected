@@ -171,16 +171,45 @@ namespace TomPIT.Distributed
 		private void OnQueuedCompleted(object sender, EventArgs e)
 		{
 			var dispatcher = sender as QueuedDispatcher<T>;
-
+			/*
+			 * If service has enqueued an item in the meantime we do nothing just keep the
+			 * current queued dispatcher alive.
+			 */
 			if (dispatcher.Count > 0)
 				return;
-
+			/*
+			 * There are no items yet in the queue so we can try to remove it and prepare it for
+			 * dispose.
+			 */
 			if (QueuedDispatchers.Remove(dispatcher.QueueName, out QueuedDispatcher<T> removed))
 			{
+				/*
+				 * It's still possible that an item has been enqueued while the dispatcher has been
+				 * removing so it's crucial to check for this scenario.
+				 */
 				if (removed.Count > 0)
 				{
-					QueuedDispatchers.TryAdd(removed.QueueName, removed);
-					return;
+					/*
+					 * This is not very likely but possible. It's also possible that a dispatcher with the
+					 * same name has been added too so we'll just find a key that doesn't exist yet to 
+					 * keep the dispatcher alive utils it finishes the job.
+					 */
+					var idx = 0;
+
+					while (!QueuedDispatchers.TryAdd($"{removed.QueueName}_{idx}", removed))
+					{
+						idx++;
+						/*
+						 * Well, this would happed under extremely heavy load but even then it is really
+						 * a small probabillity but anyway.
+						 * If it happens the the lost item(s) will get eventually returned to the queue
+						 * and will get processed again. It's just the latency that will occur nothing else.
+						 */
+						if (idx > 100)
+						{
+							break;
+						}
+					}
 				}
 			}
 
