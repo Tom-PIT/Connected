@@ -32,21 +32,21 @@ namespace TomPIT.Worker.Workers
 			switch (behavior)
 			{
 				case ProcessBehavior.Parallel:
-					if (!ProcessParallel(queueType))
+					if (!CanProcessParallel(queueType))
 						return false;
-
 					break;
 				case ProcessBehavior.Queued:
-					ProcessQueued(ms, queueType);
 					break;
 				default:
 					throw new NotSupportedException();
 			}
 
+			Process(ms, queueType);
+
 			return true;
 		}
 
-		private bool ProcessParallel(Type queueType)
+		private bool CanProcessParallel(Type queueType)
 		{
 			var att = queueType.FindAttribute<ProcessBehaviorAttribute>();
 
@@ -59,7 +59,7 @@ namespace TomPIT.Worker.Workers
 			return true;
 		}
 
-		private void ProcessQueued(Guid microService, Type queueType)
+		private void Process(Guid microService, Type queueType)
 		{
 			using var dataCtx = new MicroServiceContext(microService);
 			HandlerInstance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IQueueMiddleware>(dataCtx, queueType, Args);
