@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace TomPIT.Distributed
 {
-	internal class QueuedDispatcher<T> : IDispatcher<T>
+	public class QueuedDispatcher<T> : IDispatcher<T>
 	{
 		private bool _disposed = false;
 		private readonly CancellationTokenSource _cancel = new CancellationTokenSource();

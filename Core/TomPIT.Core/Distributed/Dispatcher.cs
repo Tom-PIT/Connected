@@ -24,10 +24,10 @@ namespace TomPIT.Distributed
 
 		private CancellationTokenSource Cancel => _cancel;
 		private int WorkerSize { get; }
-		private ConcurrentQueue<T> Queue { get; }
-		private List<DispatcherJob<T>> Jobs { get; }
+		public ConcurrentQueue<T> Queue { get; }
+		public List<DispatcherJob<T>> Jobs { get; }
 		public int Available => Math.Max(0, WorkerSize * 4 - Queue.Count - QueuedDispatchers.Sum(f => f.Value.Count));
-		private ConcurrentDictionary<string, QueuedDispatcher<T>> QueuedDispatchers { get; }
+		public ConcurrentDictionary<string, QueuedDispatcher<T>> QueuedDispatchers { get; }
 		public ProcessBehavior Behavior => ProcessBehavior.Parallel;
 		public abstract DispatcherJob<T> CreateWorker(IDispatcher<T> owner, CancellationToken cancel);
 		public bool Dequeue(out T item)

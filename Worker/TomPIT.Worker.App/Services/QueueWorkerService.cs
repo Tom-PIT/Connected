@@ -10,72 +10,73 @@ using TomPIT.Serialization;
 
 namespace TomPIT.Worker.Services
 {
-	internal class QueueWorkerService : HostedService
-	{
-		private Lazy<List<QueueWorkerDispatcher>> _dispatchers = new Lazy<List<QueueWorkerDispatcher>>();
+    internal class QueueWorkerService : HostedService
+    {
+        private Lazy<List<QueueWorkerDispatcher>> _dispatchers = new Lazy<List<QueueWorkerDispatcher>>();
+        public static QueueWorkerService ServiceInstance { get; private set; }
+        public QueueWorkerService()
+        {
+            IntervalTimeout = TimeSpan.FromMilliseconds(490);
+            ServiceInstance = this;
+        }
 
-		public QueueWorkerService()
-		{
-			IntervalTimeout = TimeSpan.FromMilliseconds(490);
-		}
+        protected override bool OnInitialize(CancellationToken cancel)
+        {
+            if (Instance.State == InstanceState.Initializing)
+                return false;
 
-		protected override bool OnInitialize(CancellationToken cancel)
-		{
-			if (Instance.State == InstanceState.Initializing)
-				return false;
+            Dispatchers.Add(new QueueWorkerDispatcher());
 
-			Dispatchers.Add(new QueueWorkerDispatcher());
+            return true;
+        }
+        protected override Task OnExecute(CancellationToken cancel)
+        {
+            Parallel.ForEach(Dispatchers, (f) =>
+            {
+                if (f.Available < 1)
+                    return;
 
-			return true;
-		}
-		protected override Task OnExecute(CancellationToken cancel)
-		{
-			Parallel.ForEach(Dispatchers, (f) =>
-			{
-				if (f.Available < 1)
-					return;
+                var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Dequeue");
 
-				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Dequeue");
+                var e = new JObject
+                {
+                    { "count", f.Available }
+                };
 
-				var e = new JObject
-				{
-					{ "count", f.Available }
-				};
+                var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
 
-				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
-				
-				var batch = Guid.NewGuid();
-				
-				if (cancel.IsCancellationRequested)
-					return;
+                var batch = Guid.NewGuid();
 
-				if (jobs is null)
-					return;
+                if (cancel.IsCancellationRequested)
+                    return;
 
-				foreach (var i in jobs)
-				{
-					if (cancel.IsCancellationRequested)
-						return;
+                if (jobs is null)
+                    return;
+
+                foreach (var i in jobs)
+                {
+                    if (cancel.IsCancellationRequested)
+                        return;
 
                     MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerService).FullName.PadRight(64)}| Batch {batch} => Enqueue {Serializer.Serialize(i)}");
 
-					f.Enqueue(i);
-				}
-			});
+                    f.Enqueue(i);
+                }
+            });
 
-			return Task.CompletedTask;
-		}
+            return Task.CompletedTask;
+        }
 
-		private List<QueueWorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+        public List<QueueWorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
 
-		public override void Dispose()
-		{
-			foreach (var dispatcher in Dispatchers)
-				dispatcher.Dispose();
+        public override void Dispose()
+        {
+            foreach (var dispatcher in Dispatchers)
+                dispatcher.Dispose();
 
-			Dispatchers.Clear();
+            Dispatchers.Clear();
 
-			base.Dispose();
-		}
-	}
+            base.Dispose();
+        }
+    }
 }

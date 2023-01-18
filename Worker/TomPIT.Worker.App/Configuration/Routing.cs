@@ -8,6 +8,7 @@ namespace TomPIT.Worker.Configuration
 		public static void Register(IEndpointRouteBuilder routes)
 		{
 			routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
-		}
+            routes.MapControllerRoute("sys.dispatchers", "sys/dispatchers", new { controller = "Ping", action = "Dispatchers" });
+        }
 	}
 }
