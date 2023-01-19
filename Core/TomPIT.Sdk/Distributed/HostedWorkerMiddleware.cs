@@ -52,7 +52,7 @@ namespace TomPIT.Distributed
             try
             {
                 var authProvider = new BearerAuthenticationProvider(config.RestToken);
-                var client = MiddlewareDescriptor.Current.Tenant.GetService<IHealthMonitoringRestClientFactory>().Select(config.EndpointUrl, config.SubscriptionKey, authProvider);
+                var client = MiddlewareDescriptor.Current.Tenant.GetService<IHealthMonitoringClientFactory>().Select(config.EndpointUrl, config.SubscriptionKey, authProvider);
 
                 if (client is null)
                     return;

@@ -197,7 +197,7 @@ namespace TomPIT
 						 var setting = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().Select("Cors Origins", null, null, null);
 						 var origin = new string[] { "http://localhost" };
 
-						 if (setting != null && !string.IsNullOrWhiteSpace(setting.Value))
+						 if (setting is not null && !string.IsNullOrWhiteSpace(setting.Value))
 							 origin = setting.Value.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 
 						 builder.AllowAnyMethod()
@@ -315,7 +315,13 @@ namespace TomPIT
 			}
 
 			e.Tenant.GetService<IDesignService>().Initialize();
-			e.Tenant.RegisterService(typeof(IHealthMonitoringRestClientFactory), new HealthMonitoringRestClientFactory());
+			e.Tenant.RegisterService(typeof(IHealthMonitoringClientFactory), new HealthMonitoringClientFactory());
+
+			/*
+			 * Attempt to access settings from Sys. These settings are required by CORS settings, and the instance cannot work 
+			 * properly if these are not set at startup. If sys is unavailable, shutdown and try again.
+			 */
+			MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().Select("Cors Origins", null, null, null);
 		}
 
 		public static void Run(IApplicationBuilder app, IWebHostEnvironment environment)

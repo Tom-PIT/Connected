@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Newtonsoft.Json.Linq;
+
 using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
@@ -10,73 +12,80 @@ using TomPIT.Serialization;
 
 namespace TomPIT.Worker.Services
 {
-    internal class QueueWorkerService : HostedService
-    {
-        private Lazy<List<QueueWorkerDispatcher>> _dispatchers = new Lazy<List<QueueWorkerDispatcher>>();
-        public static QueueWorkerService ServiceInstance { get; private set; }
-        public QueueWorkerService()
-        {
-            IntervalTimeout = TimeSpan.FromMilliseconds(490);
-            ServiceInstance = this;
-        }
+	internal class QueueWorkerService : HostedService
+	{
+		private Lazy<List<QueueWorkerDispatcher>> _dispatchers = new Lazy<List<QueueWorkerDispatcher>>();
 
-        protected override bool OnInitialize(CancellationToken cancel)
-        {
-            if (Instance.State == InstanceState.Initializing)
-                return false;
+		private readonly IQueueMonitoringService _queueMonitoringService;
 
-            Dispatchers.Add(new QueueWorkerDispatcher());
+		public static QueueWorkerService ServiceInstance { get; private set; }
 
-            return true;
-        }
-        protected override Task OnExecute(CancellationToken cancel)
-        {
-            Parallel.ForEach(Dispatchers, (f) =>
-            {
-                if (f.Available < 1)
-                    return;
+		public QueueWorkerService()
+		{
+			IntervalTimeout = TimeSpan.FromMilliseconds(490);
+			_queueMonitoringService = Tenant.GetService<IQueueMonitoringService>();
+			ServiceInstance = this;
+		}
 
-                var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Dequeue");
+		protected override bool OnInitialize(CancellationToken cancel)
+		{
+			if (Instance.State == InstanceState.Initializing)
+				return false;
 
-                var e = new JObject
-                {
-                    { "count", f.Available }
-                };
+			Dispatchers.Add(new QueueWorkerDispatcher());
 
-                var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
+			return true;
+		}
+		protected override Task OnExecute(CancellationToken cancel)
+		{
+			Parallel.ForEach(Dispatchers, (f) =>
+			{
+				if (f.Available < 1)
+					return;
 
-                var batch = Guid.NewGuid();
+				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Dequeue");
 
-                if (cancel.IsCancellationRequested)
-                    return;
+				var e = new JObject
+				 {
+						  { "count", f.Available }
+				 };
 
-                if (jobs is null)
-                    return;
+				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
 
-                foreach (var i in jobs)
-                {
-                    if (cancel.IsCancellationRequested)
-                        return;
+				_queueMonitoringService?.SignalEnqueued(jobs?.Count ?? 0);
 
-                    MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerService).FullName.PadRight(64)}| Batch {batch} => Enqueue {Serializer.Serialize(i)}");
+				var batch = Guid.NewGuid();
 
-                    f.Enqueue(i);
-                }
-            });
+				if (cancel.IsCancellationRequested)
+					return;
 
-            return Task.CompletedTask;
-        }
+				if (jobs is null)
+					return;
 
-        public List<QueueWorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+				foreach (var i in jobs)
+				{
+					if (cancel.IsCancellationRequested)
+						return;
 
-        public override void Dispose()
-        {
-            foreach (var dispatcher in Dispatchers)
-                dispatcher.Dispose();
+					MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerService).FullName.PadRight(64)}| Batch {batch} => Enqueue {Serializer.Serialize(i)}");
 
-            Dispatchers.Clear();
+					f.Enqueue(i);
+				}
+			});
 
-            base.Dispose();
-        }
-    }
+			return Task.CompletedTask;
+		}
+
+		public List<QueueWorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+
+		public override void Dispose()
+		{
+			foreach (var dispatcher in Dispatchers)
+				dispatcher.Dispose();
+
+			Dispatchers.Clear();
+
+			base.Dispose();
+		}
+	}
 }

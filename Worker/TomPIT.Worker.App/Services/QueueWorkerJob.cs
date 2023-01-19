@@ -18,9 +18,11 @@ namespace TomPIT.Worker.Services
 {
 	public class QueueWorkerJob : DispatcherJob<IQueueMessage>
 	{
+		private readonly IQueueMonitoringService _queueMonitoringService;
 		private TimeoutTask _timeout = null;
 		public QueueWorkerJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
 		{
+			_queueMonitoringService = Tenant.GetService<IQueueMonitoringService>();
 		}
 
 		protected override void DoWork(IQueueMessage item)
@@ -55,6 +57,8 @@ namespace TomPIT.Worker.Services
 			{
 				item.PopReceipt
 			});
+
+			_queueMonitoringService?.SignalProcessed();
 
 			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName.PadRight(64)}| Completed queue entry: {Serializer.Serialize(item)}");
 		}
@@ -130,6 +134,8 @@ namespace TomPIT.Worker.Services
 			MiddlewareDescriptor.Current.Tenant.Post(url, d);
 
 			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName.PadRight(64)}| Error processing entry: {Serializer.Serialize(item)} => {ex}");
+
+			_queueMonitoringService?.SignalError();
 		}
 	}
 }

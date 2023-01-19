@@ -20,7 +20,7 @@ namespace TomPIT.HealthMonitoring
 
             var authProvider = new BearerAuthenticationProvider(Configuration.RestToken);
 
-            this.Client = new HealthMonitoringRestClient(Configuration.EndpointUrl, Configuration.SubscriptionKey, authProvider);
+            this.Client = new HealthMonitoringClient(Configuration.EndpointUrl, Configuration.SubscriptionKey, authProvider);
 
             if (Client is null)
                 return;
@@ -30,7 +30,7 @@ namespace TomPIT.HealthMonitoring
 
         protected internal HealthMonitoringConfiguration Configuration { get; }
 
-        protected internal HealthMonitoringRestClient Client { get; }
+        protected internal HealthMonitoringClient Client { get; }
 
         protected internal Endpoint Endpoint { get; set; }
 
