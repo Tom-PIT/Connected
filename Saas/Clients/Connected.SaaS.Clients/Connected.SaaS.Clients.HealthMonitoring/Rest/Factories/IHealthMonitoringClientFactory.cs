@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace Connected.SaaS.Clients.HealthMonitoring.Rest
 {
-    public interface IHealthMonitoringRestClientFactory
+    public interface IHealthMonitoringClientFactory
     {
-        public HealthMonitoringRestClient Select(string url, string subscriptionKey, IRestAuthenticationProvider authenticationProvider);
+        public HealthMonitoringClient Select(string url, string subscriptionKey, IRestAuthenticationProvider authenticationProvider);
     }
 }
