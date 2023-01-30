@@ -194,22 +194,11 @@ namespace TomPIT.Distributed
 					 * same name has been added too so we'll just find a key that doesn't exist yet to 
 					 * keep the dispatcher alive utils it finishes the job.
 					 */
-					var idx = 0;
-
-					while (!QueuedDispatchers.TryAdd($"{removed.QueueName}_{idx}", removed))
-					{
-						idx++;
-						/*
-						 * Well, this would happed under extremely heavy load but even then it is really
-						 * a small probabillity but anyway.
-						 * If it happens the the lost item(s) will get eventually returned to the queue
-						 * and will get processed again. It's just the latency that will occur nothing else.
-						 */
-						if (idx > 100)
-						{
-							break;
-						}
+					while (!QueuedDispatchers.TryAdd($"{removed.QueueName}_{Guid.NewGuid()}", removed))
+					{					
 					}
+
+					return;
 				}
 			}
 
