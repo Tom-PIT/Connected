@@ -67,12 +67,12 @@ namespace TomPIT.Distributed
 
          worker.Completed += OnCompleted;
 
+         worker.Run();
+         
          lock (Jobs)
          {
             Jobs.Add(worker);
          }
-
-         worker.Run();
       }
 
       private void OnCompleted(object sender, EventArgs e)
@@ -116,7 +116,6 @@ namespace TomPIT.Distributed
          {
             if (disposing)
             {
-
                try
                {
                   Cancel.Cancel();
