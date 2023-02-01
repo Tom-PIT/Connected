@@ -159,6 +159,8 @@ namespace TomPIT.Distributed
          {
             result.Completed -= OnQueuedCompleted;
 
+            result.Dispose();
+
             if (QueuedDispatchers.TryGetValue(key, out QueuedDispatcher<T> retryResult))
                return retryResult;
             else
