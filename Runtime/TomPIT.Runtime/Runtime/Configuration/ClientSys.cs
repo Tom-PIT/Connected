@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+
 using Newtonsoft.Json;
+
 using TomPIT.Reflection;
 using TomPIT.Serialization.Converters;
 

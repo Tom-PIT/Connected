@@ -8,8 +8,14 @@
     <FileVersion>3.1.216.1</FileVersion>
     <Version>3.1.216.1</Version>
   </PropertyGroup>
+  <PropertyGroup>
+    <TPDeployPath Condition="'$(TPDeployPath)' == '' AND '$(OS)' == 'Windows_NT'">C:\Deploy\Plugins\</TPDeployPath>
+    <TPDeployPath Condition="'$(TPDeployPath)' == '' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">$(SolutionDir)Deploy/Plugins/</TPDeployPath>
+  </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.DataProviders.Modbus&quot;" />
+    <Message Text="Copying files to $(TPDeployPath)..." />
+    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="copy &quot;$(TargetPath)&quot; &quot;$(TPDeployPath)TomPIT.DataProviders.Modbus&quot;" />
+    <Exec Condition="'$(OS)' != 'Windows_NT'" Command="mkdir -p &quot;$(TPDeployPath)TomPIT.DataProviders.Modbus&quot;&#xD;&#xA;cp &quot;$(TargetPath)&quot; &quot;$(TPDeployPath)TomPIT.DataProviders.Modbus&quot;" />
   </Target>
   <ItemGroup>
     <PackageReference Include="System.IO.Ports" Version="5.0.1" />

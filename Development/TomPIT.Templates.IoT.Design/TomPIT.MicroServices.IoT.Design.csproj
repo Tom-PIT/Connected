@@ -43,7 +43,13 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
   </ItemGroup>
+  <PropertyGroup>
+    <TPDeployPath Condition="'$(TPDeployPath)' == '' AND '$(OS)' == 'Windows_NT'">C:\Deploy\Plugins\</TPDeployPath>
+    <TPDeployPath Condition="'$(TPDeployPath)' == '' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">$(SolutionDir)Deploy/Plugins/</TPDeployPath>
+  </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.MicroServices.IoT.Design&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName).Views.dll&quot; &quot;c:\Deploy\Plugins\TomPIT.MicroServices.IoT.Design&quot;" />
+    <Message Text="Copying files to $(TPDeployPath)..." />
+    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="copy &quot;$(TargetPath)&quot; &quot;$(TPDeployPath)TomPIT.MicroServices.IoT.Design&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName).Views.dll&quot; &quot;$(TPDeployPath)TomPIT.MicroServices.IoT.Design&quot;" />
+    <Exec Condition="'$(OS)' != 'Windows_NT'" Command="mkdir -p &quot;$(TPDeployPath)TomPIT.MicroServices.IoT.Design&quot;&#xD;&#xA;cp &quot;$(TargetPath)&quot; &quot;$(TPDeployPath)TomPIT.MicroServices.IoT.Design&quot;&#xD;&#xA;cp &quot;$(TargetDir)$(TargetName).Views.dll&quot; &quot;$(TPDeployPath)TomPIT.MicroServices.IoT.Design&quot;" />
   </Target>
 </Project>

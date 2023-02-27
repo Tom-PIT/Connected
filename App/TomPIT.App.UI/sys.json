@@ -2,7 +2,8 @@
   "connections": [
     {
       "name": "localhost",
-      "url": "http://localhost:44001",
+      //"url": "http://192.168.1.106:44101",
+      "url": "http://sys-app/core/sys",
       "authenticationToken": "defaultAuthenticationToken"
     }
   ],
@@ -28,7 +29,7 @@
     "TomPIT.MicroServices.Design.MicroServicesTemplate, TomPIT.MicroServices.Design",
     "TomPIT.MicroServices.IoT.Design.IoTTemplate, TomPIT.MicroServices.IoT.Design",
     "TomPIT.MicroServices.BigData.Design.BigDataTemplate, TomPIT.MicroServices.BigData.Design",
-    "TomPIT.MicroServices.Reporting.Design.ReportTemplate, TomPIT.MicroServices.Reporting.Design"
+    //"TomPIT.MicroServices.Reporting.Design.ReportTemplate, TomPIT.MicroServices.Reporting.Design"
   ],
   "plugins": {
     "location": "c:\\Deploy\\Plugins",
@@ -36,7 +37,7 @@
     "items": [
       "TomPIT.MicroServices.Configuration.Runtime.Plugin, TomPIT.MicroServices",
       "TomPIT.MicroServices.IoT.Configuration.Runtime.Plugin, TomPIT.MicroServices.IoT",
-      "TomPIT.MicroServices.Reporting.Runtime.Configuration.Plugin, TomPIT.MicroServices.Reporting"
+     // "TomPIT.MicroServices.Reporting.Runtime.Configuration.Plugin, TomPIT.MicroServices.Reporting"
     ]
   }
 }

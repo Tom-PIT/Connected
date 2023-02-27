@@ -24,7 +24,13 @@
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
   </ItemGroup>
+  <PropertyGroup>
+    <TPDeployPath Condition="'$(TPDeployPath)' == '' AND '$(OS)' == 'Windows_NT'">C:\Deploy\Plugins\</TPDeployPath>
+    <TPDeployPath Condition="'$(TPDeployPath)' == '' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">$(SolutionDir)Deploy/Plugins/</TPDeployPath>
+  </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.DataProviders.Sql&quot;" />
+    <Message Text="Copying files to $(TPDeployPath)..." />
+    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="copy &quot;$(TargetPath)&quot; &quot;$(TPDeployPath)TomPIT.DataProviders.Sql&quot;" />
+    <Exec Condition="'$(OS)' != 'Windows_NT'" Command="mkdir -p &quot;$(TPDeployPath)TomPIT.DataProviders.Sql&quot;&#xD;&#xA;cp &quot;$(TargetPath)&quot; &quot;$(TPDeployPath)TomPIT.DataProviders.Sql&quot;" />
   </Target>
 </Project>
