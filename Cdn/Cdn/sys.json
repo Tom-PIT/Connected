@@ -6,7 +6,6 @@
       "authenticationToken": "defaultAuthenticationToken"
     }
   ],
-  //"platform":  "onPrem",
   "resourceGroups": [
     "Default"
   ],
@@ -14,7 +13,7 @@
     "TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql"
   ],
   "plugins": {
-    "location": "c:\\Deploy\\Plugins",
+    "location": "/plugins",
     "shadowCopy": true,
     "items": [
       "TomPIT.MicroServices.Configuration.Runtime.Plugin, TomPIT.MicroServices",

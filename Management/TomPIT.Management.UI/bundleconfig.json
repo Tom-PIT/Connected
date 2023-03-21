@@ -1,14 +1,14 @@
 ﻿[
 	{
-		"outputFileName": "wwwroot/assets/styles.min.css",
+		"outputFileName": "wwwroot/Assets/styles.min.css",
     "inputFiles": [
-      "wwwroot/assets/fonts/opensans/opensans.css",
-      "wwwroot/assets/styles/bootstrap/bootstrap.css",
-      "wwwroot/assets/libraries/devextreme/Latest/dx.common.css",
-      "wwwroot/assets/libraries/devextreme/Latest/dx.material.blue.light.css",
-      "wwwroot/assets/styles/management.css",
-      "wwwroot/assets/styles/tompit.css",
-      "wwwroot/assets/styles/designers.css"
+      "wwwroot/Assets/Fonts/OpenSans/opensans.css",
+      "wwwroot/Assets/Styles/bootstrap/bootstrap.css",
+      "wwwroot/Assets/Libraries/DevExtreme/Latest/dx.common.css",
+      "wwwroot/Assets/Libraries/DevExtreme/Latest/dx.material.blue.light.css",
+      "wwwroot/Assets/Styles/management.css",
+      "wwwroot/Assets/Styles/tompit.css",
+      "wwwroot/Assets/Styles/designers.css"
 
     ],
 		"minify": {
@@ -18,9 +18,9 @@
 		"sourceMap": false
 	},
 	{
-		"outputFileName": "wwwroot/assets/ide.min.css",
+		"outputFileName": "wwwroot/Assets/ide.min.css",
 		"inputFiles": [
-			"wwwroot/assets/styles/ide.css"
+			"wwwroot/Assets/Styles/ide.css"
 		],
 		"minify": {
 			"enabled": true,
@@ -29,28 +29,29 @@
 		"sourceMap": false
 	},
 	{
-		"outputFileName": "wwwroot/assets/scripts.min.js",
+		"outputFileName": "wwwroot/Assets/scripts.min.js",
 		"inputFiles": [
-			"wwwroot/assets/scripts/jquery.js",
-			"wwwroot/assets/scripts/tether.js",
-			"wwwroot/assets/scripts/popper.js",
-			"wwwroot/assets/scripts/tooltip.js",
-			"wwwroot/assets/scripts/bootstrap.js",
-			"wwwroot/assets/scripts/fontawesome-all.js",
-			"wwwroot/assets/scripts/jquery-ui-1.12.1.js",
-			"wwwroot/assets/libraries/devextreme/Latest/dx.all.js",
-			"wwwroot/assets/libraries/underscore/1.9.1/underscore.js",
-			"wwwroot/assets/scripts/ajax.js",
-			"wwwroot/assets/scripts/progress.js",
-			"wwwroot/assets/scripts/form.js",
-			"wwwroot/assets/scripts/toastr.js",
-			"wwwroot/assets/scripts/tompit.js",
-			"wwwroot/assets/scripts/jquery.signalR-2.2.3.min.js",
-			"wwwroot/assets/scripts/timer.js",
-			"wwwroot/assets/scripts/jscroll.js",
-			"wwwroot/assets/scripts/moment.js",
-			"wwwroot/assets/scripts/jquery.number.js",
-			"wwwroot/assets/scripts/table.js"
+			"wwwroot/Assets/Scripts/jquery.js",
+			"wwwroot/Assets/Scripts/tether.js",
+			"wwwroot/Assets/Scripts/popper.js",
+			"wwwroot/Assets/Scripts/tooltip.js",
+			"wwwroot/Assets/Scripts/bootstrap.js",
+			"wwwroot/Assets/Scripts/fontawesome-all.js",
+			"wwwroot/Assets/Scripts/jquery-ui-1.12.1.js",
+			"wwwroot/Assets/Libraries/Knockout/Latest/knockout.js",
+			"wwwroot/Assets/Libraries/DevExtreme/Latest/dx.all.js",
+			"wwwroot/Assets/Libraries/Underscore/1.9.1/underscore.js",
+			"wwwroot/Assets/Scripts/ajax.js",
+			"wwwroot/Assets/Scripts/progress.js",
+			"wwwroot/Assets/Scripts/form.js",
+			"wwwroot/Assets/Scripts/toastr.js",
+			"wwwroot/Assets/Scripts/tompit.js",
+			"wwwroot/Assets/Scripts/jquery.signalR-2.2.3.min.js",
+			"wwwroot/Assets/Scripts/timer.js",
+			"wwwroot/Assets/Scripts/jscroll.js",
+			"wwwroot/Assets/Scripts/moment.js",
+			"wwwroot/Assets/Scripts/jquery.number.js",
+			"wwwroot/Assets/Scripts/table.js"
 		],
 		"minify": {
 			"enabled": true,
@@ -59,9 +60,9 @@
 		"sourceMap": false
 	},
 	{
-		"outputFileName": "wwwroot/assets/scripts.foot.min.js",
+		"outputFileName": "wwwroot/Assets/scripts.foot.min.js",
 		"inputFiles": [
-			"wwwroot/assets/scripts/foot.js"
+			"wwwroot/Assets/Scripts/foot.js"
 		],
 		"minify": {
 			"enabled": true,
@@ -70,15 +71,70 @@
 		"sourceMap": false
 	},
 	{
-		"outputFileName": "wwwroot/assets/ide.min.js",
+		"outputFileName": "wwwroot/Assets/ide.min.js",
 		"inputFiles": [
-			"wwwroot/assets/scripts/ide.js",
-			"wwwroot/assets/scripts/textEditor.js"
+			"wwwroot/Assets/Scripts/ide.js",
+			"wwwroot/Assets/Scripts/textEditor.js"
 		],
 		"minify": {
 			"enabled": true,
 			"renameLocals": false
 		},
 		"sourceMap": false
-	}
+	},
+	{
+		"outputFileName": "wwwroot/Assets/fonts.min.js",
+		"inputFiles": [
+		  "wwwroot/Assets/Scripts/fontawesome-all.js"
+		],
+		"minify": {
+		  "enabled": true,
+		  "renameLocals": false
+		},
+		"sourceMap": false
+	  },
+	  {
+		"outputFileName": "wwwroot/Assets/environment.js",
+		"inputFiles": [
+		  "wwwroot/Assets/Scripts/environment.js"
+		],
+		"minify": {
+		  "enabled": true,
+		  "renameLocals": false
+		},
+		"sourceMap": false
+	  },
+	  {
+		"outputFileName": "wwwroot/Assets/loader.js",
+		"inputFiles": [
+		  "wwwroot/Assets/Libraries/Monaco/vs/loader.js"
+		],
+		"minify": {
+		  "enabled": false,
+		  "renameLocals": false
+		},
+		"sourceMap": false
+	  },
+	  {
+		"outputFileName": "wwwroot/Assets/dx.min.css",
+		"inputFiles": [
+		"wwwroot/Assets/dx.css"
+		],
+		"minify": {
+			"enabled": true,
+			"renameLocals": false
+		},
+		"sourceMap": false
+	  },
+	  {
+		"outputFileName": "wwwroot/Assets/deployment.min.js",
+		"inputFiles": [
+		"wwwroot/Assets/Scripts/Designers/deployment.js"
+		],
+		"minify": {
+			"enabled": true,
+			"renameLocals": false
+		},
+		"sourceMap": false
+	  }
 ]

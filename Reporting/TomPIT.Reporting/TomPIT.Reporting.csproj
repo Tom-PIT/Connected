@@ -56,7 +56,7 @@
     <Exec Command="$(CopyCommand) &quot;$(TargetPath)&quot; &quot;$(TPDeployPath)TomPIT.MicroServices.Reporting&quot;&#xD;&#xA;$(CopyCommand) &quot;$(TargetDir)$(TargetName).Views.dll&quot; &quot;$(TPDeployPath)TomPIT.MicroServices.Reporting&quot;" />
   </Target>
   <PropertyGroup>
-    <TPDeployPath Condition="'$(TPDeployPath)' == '' AND '$(OS)' == 'Windows_NT'">C:\Deploy\Plugins\</TPDeployPath>
+    <TPDeployPath Condition="'$(TPDeployPath)' == '' AND '$(OS)' == 'Windows_NT'">..\..\Plugins\</TPDeployPath>
     <TPDeployPath Condition="'$(TPDeployPath)' == '' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">$(SolutionDir)Deploy/Plugins/</TPDeployPath>
   </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

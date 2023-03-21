@@ -2,7 +2,7 @@
   "connections": [
     {
       "name": "localhost",
-      "url": "http://192.168.1.106:40001",
+      "url": "http://localhost:44001",
       "authenticationToken": "defaultAuthenticationToken"
     }
   ],
@@ -22,11 +22,10 @@
     "dumpEnabled":  true
   },
 	"plugins": {
-		"location": "c:\\Deploy\\Plugins",
+		"location": "/plugins",
 		"shadowCopy": true,
     "items": [
       "TomPIT.MicroServices.Runtime.Configuration.Plugin, TomPIT.MicroServices",
-      //"TomPIT.IoT.Plugin, TomPIT.IoT",
       "TomPIT.MicroServices.BigData.Runtime.Configuration.Plugin, TomPIT.MicroServices.BigData",
       "TomPIT.MicroServices.Reporting.Runtime.Configuration.Plugin, TomPIT.MicroServices.Reporting"
     ]

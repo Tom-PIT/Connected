@@ -1,0 +1,75 @@
+# EXPOSE 44001 sys
+# EXPOSE 44351 app
+# EXPOSE 44004 mng
+# EXPOSE 44008 cdn
+# EXPOSE 51231 search
+# EXPOSE 44391 iot
+# EXPOSE 44393 worker
+# EXPOSE 44006 rest
+# EXPOSE 44002 dev
+
+# Create network
+docker network create my-network
+
+# custom range network
+docker network create --subnet=192.168.65.0/27 customnetwork //#ta range dobiš iz večjega ranga od dockerja
+
+# Create sql container
+docker run -p 1433:1433 --name sql -v C:/dev:/data --network my-network -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=yourStrong#Password" -d mcr.microsoft.com/mssql/server:2019-latest
+
+docker run --name sql -v C:/dev:/data -p 1433:1433 --network my-network -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=yourStrong(!)Password" -d mcr.microsoft.com/mssql/server:2019-latest
+
+# Create connected container
+docker run --name connected `
+           --network my-network `
+		   -e SYS_CONNECTION_STRING="data source=sql;initial catalog=company2_sys;user id=sa;password=yourStrong(!)Password;" `
+		   -p 44351:44351 `
+		   -p 44004:44004 `
+		   -p 44391:44391 `
+		   -p 44006:44006 `
+		   -p 44002:44002 `
+		   --add-host localhost:192.168.10.74 `
+		   -v C:/dev:/pc  `
+		   -v C:/dev/keys/dockerkeys2:/root/.aspnet/DataProtection-Keys `
+		   -d dev/connected/001
+
+# #############################################################################
+# Dockerfile for Connected app
+# Author: Gregor Šoln
+# Usage:
+#
+# #Create network
+# docker network create my-network
+# 
+# # Create sql container
+# docker run -p 1433:1433 `
+#            --name sql `
+#            -v C:/dev:/data `
+#            --network my-network `
+#            -e "ACCEPT_EULA=Y" `
+#            -e "MSSQL_SA_PASSWORD=yourStrong(!)Password" `
+#            -d mcr.microsoft.com/mssql/server:2019-latest
+# 
+# # Create connected container
+# docker run --name connected `
+#            --network my-network `
+# 		     -p 44351:44351 `
+# 		     -p 44004:44004 `
+# 		     -p 44001:44001 `
+# 		     -p 44008:44008 `
+# 		     -p 51231:51231 `
+# 		     -p 44391:44391 `
+# 		     -p 44006:44006 `
+# 		     -p 44002:44002 `
+#            -e SYS_CONNECTION_STRING="data source=sql;initial catalog=templateSys;user id=sa;password=yourStrong(!)Password;"
+# 		     --memory-reservation=1g `
+# 		     --memory=5g `
+# 		     --cpus=2 `
+# 		     --add-host localhost:192.168.10.140 `
+# 		     -v C:/dev:/pc  `
+# 		     -d dev/connected
+#
+# #############################################################################
+
+
+
