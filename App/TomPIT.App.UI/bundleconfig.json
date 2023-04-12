@@ -45,6 +45,17 @@
     "sourceMap": false
   },
   {
+    "outputFileName": "wwwroot/Assets/quill.min.js",
+    "inputFiles": [
+      "wwwroot/Assets/Libraries/Quill/quill.min.js"
+    ],
+    "minify": {
+      "enabled": false,
+      "renameLocals": false
+    },
+    "sourceMap": false
+  },
+  {
     "outputFileName": "wwwroot/Assets/scripts.min.js",
     "inputFiles": [
       "wwwroot/Assets/Scripts/jquery.js",
@@ -127,17 +138,6 @@
       "wwwroot/Assets/Libraries/Globalize/1.4.2/globalize/unit.js",
       "wwwroot/Assets/Libraries/Moment/2.23.0/moment.js",
       "wwwroot/Assets/Libraries/Numeral/2.0.6/numeral.js"
-    ],
-    "minify": {
-      "enabled": false,
-      "renameLocals": false
-    },
-    "sourceMap": false
-  },
-  {
-    "outputFileName": "wwwroot/Assets/quill.min.js",
-    "inputFiles": [
-      "wwwroot/Assets/Libraries/Quill/quill.min.js"
     ],
     "minify": {
       "enabled": false,
