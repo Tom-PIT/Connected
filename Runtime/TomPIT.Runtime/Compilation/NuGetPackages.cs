@@ -76,7 +76,24 @@ namespace TomPIT.Compilation
             }
         }
 
-        private string RootDirectory => _root ??= Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile), ".tompit", "packages");
+
+        //private string RootDirectory => _root ??= Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile), ".tompit", "packages");
+
+        private string RootDirectory
+        {
+            get
+            {
+                if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+                {
+                    return _root ??= Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile), ".tompit", "packages");
+                }
+                else
+                {
+                    return _root ??= Path.Combine(System.Environment.GetEnvironmentVariable("HOME"), ".tompit", "packages");
+                }
+            }
+        }
+
         private PackagePathResolver PathResolver => _pathResolver ??= new PackagePathResolver(RootDirectory, false);
 
         public ImmutableList<Assembly> Resolve(Guid blob, bool entryOnly)
