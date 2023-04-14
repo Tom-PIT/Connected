@@ -70,54 +70,6 @@ namespace TomPIT.BigData.Providers.Sql
                   }
                }
             });
-
-         AdjustTimezone();
-      }
-
-      private void AdjustTimezone()
-      {
-         if (!Configuration.SupportsTimezone())
-            return;
-
-         if (MiddlewareDescriptor.Current.User is IUser user && !string.IsNullOrWhiteSpace(user.TimeZone))
-         {
-            if (Tenant.GetService<ITimeZoneService>().Select(user.TimeZone) is not ITimeZone timezone)
-               return;
-
-            foreach (var result in Result.Children<JObject>())
-            {
-               foreach (var property in result.Properties())
-               {
-                  if (string.Compare(property.Name, Merger.TimestampColumn, true) == 0)
-                  {
-                     var dateTime = Types.Convert<DateTime>(property.Value);
-
-                     //Just in case the result goes through the range
-                     try
-                     {
-                        property.Value = dateTime.AddMinutes(-timezone.Offset);
-                     }
-                     catch { }
-                  }
-               }
-            }
-         }
-      }
-
-      private DateTime AdjustTimestampParameterForUserTimezone(DateTime input)
-      {
-         if (!Configuration.SupportsTimezone())
-            return input;
-
-         if (MiddlewareDescriptor.Current.User is IUser user && !string.IsNullOrWhiteSpace(user.TimeZone))
-         {
-            if (Tenant.GetService<ITimeZoneService>().Select(user.TimeZone) is not ITimeZone timezone)
-               return input;
-
-            return input.AddMinutes(timezone.Offset);
-         }
-
-         return input;
       }
 
       private List<QueryProcessor> PrepareProcessors()
@@ -230,11 +182,11 @@ namespace TomPIT.BigData.Providers.Sql
          {
             var timestamps = value as IList;
 
-            StartTimestamp = AdjustTimestampParameterForUserTimezone(Types.Convert<DateTime>(timestamps[0]));
-            EndTimestamp = AdjustTimestampParameterForUserTimezone(Types.Convert<DateTime>(timestamps[1]));
+            StartTimestamp = Types.Convert<DateTime>(timestamps[0]);
+            EndTimestamp = Types.Convert<DateTime>(timestamps[1]);
          }
          else
-            StartTimestamp = AdjustTimestampParameterForUserTimezone(Types.Convert<DateTime>(value));
+            StartTimestamp = Types.Convert<DateTime>(value);
       }
 
       private void PrepareCommandText()
