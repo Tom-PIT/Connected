@@ -2,11 +2,8 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Distributed;
 using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
@@ -25,7 +22,7 @@ namespace TomPIT.Worker.Services
 
 		protected override void DoWork(IQueueMessage item)
 		{
-			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
+			using var queue = new Queue(item);
 
 			_timeout = new TimeoutTask(() =>
 			{
@@ -42,7 +39,7 @@ namespace TomPIT.Worker.Services
 
 			try
 			{
-				if (!Invoke(item, m))
+				if (!Invoke(queue))
 					return;
 			}
 			finally
@@ -59,41 +56,17 @@ namespace TomPIT.Worker.Services
 			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName.PadRight(64)}| Completed queue entry: {Serializer.Serialize(item)}");
 		}
 
-		private bool Invoke(IQueueMessage queue, JObject data)
+		private bool Invoke(Queue queue)
 		{
-			var component = data.Required<Guid>("component");
-			var worker = data.Required<string>("worker");
-			var arguments = data.Optional<string>("arguments", null);
-
-			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) is IQueueConfiguration configuration))
-			{
-				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), $"{SR.ErrCannotFindConfiguration} ({component})", nameof(QueueWorkerJob));
-				return true;
-			}
-
-			var w = configuration.Workers.FirstOrDefault(f => string.Compare(f.Name, worker, true) == 0);
-
-			if (w == null)
-			{
-				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), $"{SR.ErrQueueWorkerNotFound} ({component})", nameof(QueueWorkerJob));
-				return true;
-			}
-
-			using var ctx = new MicroServiceContext(configuration.MicroService());
-			var metricId = ctx.Services.Diagnostic.StartMetric(configuration.Metrics, null);
 			Queue q = null;
 
 			try
 			{
-				q = new Queue(arguments, w);
-
-				if (!q.Invoke(Owner.Behavior))
+				if (!queue.Invoke(Owner.Behavior))
 				{
-					Owner.Enqueue($"{q.QueueName}_{queue.BufferKey}", queue);
+					Owner.Enqueue($"{q.QueueName}_{queue.Message.BufferKey}", queue.Message);
 					return false;
 				}
-
-				ctx.Services.Diagnostic.StopMetric(metricId, SessionResult.Success, null);
 
 				return true;
 			}
@@ -106,12 +79,6 @@ namespace TomPIT.Worker.Services
 				}
 				else
 					throw;
-			}
-			catch
-			{
-				ctx.Services.Diagnostic.StopMetric(metricId, SessionResult.Fail, null);
-
-				throw;
 			}
 		}
 

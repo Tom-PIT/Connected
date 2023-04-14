@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
@@ -13,7 +13,7 @@ namespace TomPIT.Compilation
 {
 	internal class ScriptContext : TenantObject, IScriptContext
 	{
-		private Dictionary<string, ImmutableArray<PortableExecutableReference>> _references = null;
+		private ConcurrentDictionary<string, ImmutableArray<PortableExecutableReference>> _references = null;
 		private ScriptResolver _sourceResolver = null;
 		private AssemblyResolver _assemblyResolver = null;
 		private ConcurrentDictionary<string, IText> _sources = null;
@@ -71,7 +71,7 @@ namespace TomPIT.Compilation
 					if (References.ContainsKey(path))
 						continue;
 
-					References.Add(path, AssemblyResolver.ResolveReference(path, basePath, MetadataReferenceProperties.Assembly));
+					References.TryAdd(path, AssemblyResolver.ResolveReference(path, basePath, MetadataReferenceProperties.Assembly));
 				}
 
 				var descriptor = new ScriptContextDescriptor();
@@ -134,12 +134,12 @@ namespace TomPIT.Compilation
 			}
 		}
 
-		public Dictionary<string, ImmutableArray<PortableExecutableReference>> References
+		public ConcurrentDictionary<string, ImmutableArray<PortableExecutableReference>> References
 		{
 			get
 			{
 				if (_references == null)
-					_references = new Dictionary<string, ImmutableArray<PortableExecutableReference>>(StringComparer.InvariantCultureIgnoreCase);
+					_references = new ConcurrentDictionary<string, ImmutableArray<PortableExecutableReference>>(StringComparer.InvariantCultureIgnoreCase);
 
 				return _references;
 			}

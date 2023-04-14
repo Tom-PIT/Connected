@@ -24,13 +24,11 @@ namespace TomPIT.Runtime
 		public EnvironmentConnectivity Connectivity { get; private set; }
 
 		public EnvironmentIOBehavior IOBehavior { get; private set; } = EnvironmentIOBehavior.ReadWrite;
+		public bool IsInitialized { get; internal set; }
 
-		public void Initialize(InstanceType type, Platform platform, IWebHostEnvironment environment)
+		public RuntimeService()
 		{
-			Type = type;
-			ContentRoot = environment.ContentRootPath;
-			WebRoot = environment.WebRootPath;
-			Platform = platform;
+			Type = Instance.InstanceType;
 
 			switch (Type)
 			{
@@ -69,6 +67,13 @@ namespace TomPIT.Runtime
 			Stage = sys.Stage;
 			Connectivity = sys.Connectivity;
 			IOBehavior = sys.IOBehavior;
+			Platform = sys.Platform;
+		}
+
+		public void Initialize(IWebHostEnvironment environment)
+		{
+			ContentRoot = environment.ContentRootPath;
+			WebRoot = environment.WebRootPath;
 		}
 	}
 }

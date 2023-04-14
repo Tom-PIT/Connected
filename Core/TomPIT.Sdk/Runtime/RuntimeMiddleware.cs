@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using TomPIT.Middleware;
 
 namespace TomPIT.Runtime
@@ -9,9 +10,19 @@ namespace TomPIT.Runtime
 
 		public virtual IRuntimeViewModifier ViewModifier => null;
 
-        public void Initialize(RuntimeInitializeArgs e)
+		public void Initialize(RuntimeInitializeArgs e)
 		{
 			OnInitialize(e);
+		}
+
+		public void Configure(IServiceCollection services)
+		{
+			OnConfigure(services);
+		}
+
+		protected virtual void OnConfigure(IServiceCollection services)
+		{
+
 		}
 
 		public IRuntimeUrl ResolveUrl(RuntimeUrlKind kind)

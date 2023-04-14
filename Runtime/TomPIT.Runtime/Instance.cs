@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Loader;
-using System.Threading;
-using Connected.SaaS.Clients.HealthMonitoring.Rest;
+﻿using Connected.SaaS.Clients.HealthMonitoring.Rest;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,6 +10,13 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Loader;
+using System.Threading;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Data.DataProviders;
@@ -61,12 +61,14 @@ namespace TomPIT
 
 		private static bool CorsEnabled { get; set; }
 
-		private static InstanceType InstanceType { get; set; }
+		internal static InstanceType InstanceType { get; set; }
+		private static IServiceCollection Services { get; set; }
 
 		public static bool SupportsDesign => InstanceType == InstanceType.Management || InstanceType == InstanceType.Development || InstanceType == InstanceType.Application;
 
 		public static void Initialize(InstanceType type, IServiceCollection services, ServicesConfigurationArgs e)
 		{
+			Services = services;
 			InstanceType = type;
 			Shell.RegisterConfigurationType(typeof(ClientSys));
 
@@ -90,9 +92,9 @@ namespace TomPIT
 				o.DefaultRequestCulture = new RequestCulture(CultureInfo.InvariantCulture);
 				o.FallBackToParentCultures = true;
 				o.FallBackToParentUICultures = true;
-					/*
-				* https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-3.1
-				*/
+				/*
+			* https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-3.1
+			*/
 				o.RequestCultureProviders.Insert(2, new DefaultSettingsCultureProvider());
 
 				o.RequestCultureProviders.Insert(2, new DomainCultureProvider());
@@ -223,16 +225,17 @@ namespace TomPIT
 			services.AddScoped<RequestLocalizationCookiesMiddleware>();
 			services.AddHttpClient();
 			services.AddHostedService<HealthMonitoringHostedService>();
-			
+
 			foreach (var plugin in Plugins)
 				plugin.ConfigureServices(services);
 		}
 		public static void Configure(IApplicationBuilder app, IWebHostEnvironment env, ConfigureRoutingHandler routingHandler, ConfigureMiddlewareHandler middlewareHandler = null)
 		{
 			RuntimeService._host = app;
+
 			app.UseAuthentication();
 			app.UseMiddleware<AuthenticationCookieMiddleware>();
-			
+
 			app.UseRequestLocalization(app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>()?.Value);
 
 			var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
@@ -258,7 +261,7 @@ namespace TomPIT
 
 			middlewareHandler?.Invoke(new ConfigureMiddlewareArgs(app));
 
-			Shell.GetService<IRuntimeService>().Initialize(InstanceType, Shell.GetConfiguration<IClientSys>().Platform, env);
+			Shell.GetService<IRuntimeService>().Initialize(env);
 
 			if (MiddlewareDescriptor.Current?.Tenant?.GetService<IMicroServiceRuntimeService>() is IMicroServiceRuntimeService runtimeService)
 				runtimeService.Configure(app);
@@ -339,6 +342,9 @@ namespace TomPIT
 					template.Initialize(app, environment);
 				}
 			}
+
+			if (Shell.GetService<IRuntimeService>() is RuntimeService runtime)
+				runtime.IsInitialized = true;
 		}
 
 		public static bool ResourceGroupExists(Guid resourceGroup)

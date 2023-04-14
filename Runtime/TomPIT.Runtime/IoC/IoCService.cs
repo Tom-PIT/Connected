@@ -90,7 +90,7 @@ namespace TomPIT.IoC
 				{
 					var targets = endpoint.Value.Where(f => f.Component == component).ToImmutableArray();
 
-					if(targets.Any())
+					if (targets.Any())
 					{
 						lock (endpoint.Value)
 						{
@@ -104,7 +104,7 @@ namespace TomPIT.IoC
 		public void Invoke(IMiddlewareContext context, IIoCOperation operation, object e = null)
 		{
 			using var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCOperationMiddleware>(ctx, operation, Serializer.Serialize(e), operation.Name);
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCOperationMiddleware>(ctx, operation, e, operation.Name);
 
 			if (instance is IIoCOperationContext iocContext)
 				iocContext.Operation = operation;
@@ -115,7 +115,7 @@ namespace TomPIT.IoC
 		public R Invoke<R>(IMiddlewareContext context, IIoCOperation operation, object e = null)
 		{
 			using var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, operation, Serializer.Serialize(e), operation.Name);
+			var instance = Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, operation, e, operation.Name);
 
 			if (instance is IIoCOperationContext iocContext)
 				iocContext.Operation = operation;
@@ -145,7 +145,7 @@ namespace TomPIT.IoC
 					if (endpoint.Type == null)
 						continue;
 
-					var endpointInstance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCEndpointMiddleware>(ctx, endpoint.Type, Serializer.Serialize(e));
+					var endpointInstance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCEndpointMiddleware>(ctx, endpoint.Type, e);
 
 					if (endpointInstance == null)
 						continue;
@@ -176,7 +176,7 @@ namespace TomPIT.IoC
 					if (endpoint.Type == null)
 						continue;
 
-					var endpointInstance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCEndpointMiddleware>(ctx, endpoint.Type, Serializer.Serialize(e));
+					var endpointInstance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCEndpointMiddleware>(ctx, endpoint.Type, e);
 
 					if (endpointInstance == null)
 						continue;

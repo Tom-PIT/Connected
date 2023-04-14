@@ -1,5 +1,7 @@
-﻿using System;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
+using System;
+using System.Linq;
+using System.Reflection;
 using TomPIT.Data;
 using TomPIT.Reflection;
 
@@ -81,39 +83,44 @@ namespace TomPIT.Serialization
 			return Types.Convert(value, destinationType);
 		}
 
-		public static bool NeedsMarshalling(object instance, Type type)
+		public static bool NeedsMarshalling(object instance, Type type, ResolverStrategy strategy = ResolverStrategy.Complete)
 		{
-			if (type == null)
+			if (type is null)
 				return false;
 
-			if (IsSubmission(instance, type))
-				return true;
+			var resolver = new SubmissionTypeResolver();
 
-			if (type.IsGenericType && instance.GetType().IsGenericType)
+			resolver.Resolve(type, strategy);
+
+			return !resolver.IsCompatible(instance);
+		}
+
+		public static void Merge(object source, object destination)
+		{
+			if (source is null || destination is null)
+				return;
+
+			var destinationProperties = destination.GetType().GetProperties(BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.Instance);
+			var sourceProperties = source.GetType().GetProperties(BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.Instance);
+
+			foreach (var property in destinationProperties)
 			{
-				var types = type.GetGenericArguments();
-				var instanceTypes = instance.GetType().GetGenericArguments();
+				var sourceProperty = sourceProperties.FirstOrDefault(f => string.Equals(f.Name, property.Name, StringComparison.Ordinal));
 
-				for (var i = 0; i < types.Length; i++)
+				sourceProperty ??= sourceProperties.FirstOrDefault(f => string.Equals(f.Name, property.Name, StringComparison.OrdinalIgnoreCase));
+
+				if (sourceProperty is null)
+					continue;
+
+				if (property.CanWrite)
+					property.SetValue(destination, sourceProperty.GetValue(source));
+				else
 				{
-					if (IsSubmission(instanceTypes[i], types[i]))
-						return true;
+					/*
+					 * TODO: implement nested complex objects
+					 */
 				}
 			}
-
-			return false;
 		}
-
-		public static bool IsSubmission(object instance, Type type)
-		{
-			return IsSubmission(instance.GetType(), type);
-		}
-
-		public static bool IsSubmission(Type instanceType, Type type)
-		{
-			return (string.IsNullOrWhiteSpace(type.Namespace) && string.IsNullOrWhiteSpace(instanceType.Namespace))
-				&& string.Compare(type.Assembly.FullName, instanceType.Assembly.FullName, false) != 0;
-		}
-
 	}
 }

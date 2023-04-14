@@ -38,15 +38,15 @@ namespace TomPIT.Runtime
 	}
 
 	public enum EnvironmentIOBehavior
-    {
+	{
 		NotSet = 0,
 		ReadWrite = 1,
 		ReadOnly = 2
-    }
+	}
 
 	public interface IRuntimeService
 	{
-		void Initialize(InstanceType type, Platform platform, IWebHostEnvironment environment);
+		void Initialize(IWebHostEnvironment environment);
 		string ContentRoot { get; }
 		string WebRoot { get; }
 		RuntimeEnvironment Environment { get; }
@@ -59,5 +59,7 @@ namespace TomPIT.Runtime
 		EnvironmentIOBehavior IOBehavior { get; }
 
 		IApplicationBuilder Host { get; }
+
+		bool IsInitialized { get; }
 	}
 }
