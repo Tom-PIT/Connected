@@ -45,3 +45,7 @@ When message is not found, processing is stopped.
 This fixes the infamous "Unexpected character at the end of JSON" error. The ToJObject method no longer crashes with an invalid payload as a consequence.
 - Fix workerJob concurrency issue when the worker is dosposing in the middle of execution.
 - Fix cache Remove function crashing when two concurrent threads attempted to remove same object.
+
+## 3.1.0202.1
+- Fix queued worker freezes
+- Stabilize cache storage

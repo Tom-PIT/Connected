@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Newtonsoft.Json.Linq;
+
 using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
@@ -14,9 +16,15 @@ namespace TomPIT.Worker.Services
 	{
 		private Lazy<List<QueueWorkerDispatcher>> _dispatchers = new Lazy<List<QueueWorkerDispatcher>>();
 
+		private readonly IQueueMonitoringService _queueMonitoringService;
+
+		public static QueueWorkerService ServiceInstance { get; private set; }
+
 		public QueueWorkerService()
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
+			_queueMonitoringService = Tenant.GetService<IQueueMonitoringService>();
+			ServiceInstance = this;
 		}
 
 		protected override bool OnInitialize(CancellationToken cancel)
@@ -38,14 +46,16 @@ namespace TomPIT.Worker.Services
 				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Dequeue");
 
 				var e = new JObject
-				{
-					{ "count", f.Available }
-				};
+				 {
+						  { "count", f.Available }
+				 };
 
 				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
-				
+
+				_queueMonitoringService?.SignalEnqueued(jobs?.Count ?? 0);
+
 				var batch = Guid.NewGuid();
-				
+
 				if (cancel.IsCancellationRequested)
 					return;
 
@@ -57,7 +67,7 @@ namespace TomPIT.Worker.Services
 					if (cancel.IsCancellationRequested)
 						return;
 
-                    MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerService).FullName.PadRight(64)}| Batch {batch} => Enqueue {Serializer.Serialize(i)}");
+					MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerService).FullName.PadRight(64)}| Batch {batch} => Enqueue {Serializer.Serialize(i)}");
 
 					f.Enqueue(i);
 				}
@@ -66,7 +76,7 @@ namespace TomPIT.Worker.Services
 			return Task.CompletedTask;
 		}
 
-		private List<QueueWorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+		public List<QueueWorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
 
 		public override void Dispose()
 		{

@@ -11,11 +11,11 @@ using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.HealthMonitoring
 {
-    public class HealthMonitoringRestClientFactory : IHealthMonitoringRestClientFactory
+    public class HealthMonitoringClientFactory : IHealthMonitoringClientFactory
     {
-        public HealthMonitoringRestClient Select(string url, string subscriptionKey, IRestAuthenticationProvider authenticationProvider)
+        public HealthMonitoringClient Select(string url, string subscriptionKey, IRestAuthenticationProvider authenticationProvider)
         {
-            return MemoryCache.Default.Get<HealthMonitoringRestClient>("healthMonitoringRestClient", (e) =>
+            return MemoryCache.Default.Get<HealthMonitoringClient>("healthMonitoringRestClient", (e) =>
             {
                 return string.Compare(e.EndpointUrl, url, true) == 0 && string.Compare(e.SubscriptionKey, subscriptionKey, true) == 0 && e.AuthenticationProvider.Equals(authenticationProvider);
             },
@@ -23,7 +23,7 @@ namespace TomPIT.HealthMonitoring
             {
                 opts.Key = (url + subscriptionKey + authenticationProvider.GetHashCode()).GetHashCode().ToString();
                 opts.Duration = TimeSpan.Zero;
-                return new HealthMonitoringRestClient(url, subscriptionKey, authenticationProvider);
+                return new HealthMonitoringClient(url, subscriptionKey, authenticationProvider);
             });
         }
     }

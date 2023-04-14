@@ -1,11 +1,6 @@
-﻿using Connected.SaaS.Clients.Authentication;
-using Connected.SaaS.Clients.HealthMonitoring.Rest;
-using System;
+﻿using System;
 using System.Linq;
 using System.Runtime.ExceptionServices;
-using TomPIT.Exceptions;
-using TomPIT.Middleware;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Distributed
 {
@@ -52,7 +47,7 @@ namespace TomPIT.Distributed
          try
          {
             var authProvider = new BearerAuthenticationProvider(config.RestToken);
-            var client = MiddlewareDescriptor.Current.Tenant.GetService<IHealthMonitoringRestClientFactory>().Select(config.EndpointUrl, config.SubscriptionKey, authProvider);
+            var client = MiddlewareDescriptor.Current.Tenant.GetService<IHealthMonitoringClientFactory>().Select(config.EndpointUrl, config.SubscriptionKey, authProvider);
 
             if (client is null)
                return;

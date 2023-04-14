@@ -21,7 +21,7 @@ namespace TomPIT.HealthMonitoring
 
             var authProvider = new BearerAuthenticationProvider(Configuration.RestToken);
 
-            this.Client = MiddlewareDescriptor.Current.Tenant.GetService<IHealthMonitoringRestClientFactory>().Select(Configuration.EndpointUrl, Configuration.SubscriptionKey, authProvider);
+            this.Client = MiddlewareDescriptor.Current.Tenant.GetService<IHealthMonitoringClientFactory>().Select(Configuration.EndpointUrl, Configuration.SubscriptionKey, authProvider);
 
             if (Client is null)
                 return;
@@ -31,7 +31,7 @@ namespace TomPIT.HealthMonitoring
 
         protected internal HealthMonitoringConfiguration Configuration { get; }
 
-        protected internal HealthMonitoringRestClient Client { get; }
+        protected internal HealthMonitoringClient Client { get; }
 
         protected internal Endpoint Endpoint { get; set; }
 

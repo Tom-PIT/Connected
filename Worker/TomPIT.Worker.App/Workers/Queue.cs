@@ -1,18 +1,5 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Linq;
-using TomPIT.Annotations;
-using TomPIT.Cdn;
-using TomPIT.Compilation;
-using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Distributed;
-using TomPIT.Diagnostics;
-using TomPIT.Distributed;
-using TomPIT.Middleware;
-using TomPIT.Reflection;
-using TomPIT.Storage;
-using TomPIT.Worker.Services;
 
 namespace TomPIT.Worker.Workers
 {
@@ -69,7 +56,6 @@ namespace TomPIT.Worker.Workers
 				case ProcessBehavior.Parallel:
 					if (!ProcessParallel())
 						return false;
-
 					break;
 				case ProcessBehavior.Queued:
 					ProcessQueued();
@@ -77,6 +63,8 @@ namespace TomPIT.Worker.Workers
 				default:
 					throw new NotSupportedException();
 			}
+
+			Process(ms, queueType);
 
 			return true;
 		}
