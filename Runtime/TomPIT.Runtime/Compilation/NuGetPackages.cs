@@ -48,7 +48,7 @@ namespace TomPIT.Compilation
 
             ReadOnly = rt.Connectivity == EnvironmentConnectivity.Offline;
 
-            System.Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData), "Temp", "TomPITPackageCache"));
+            System.Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", "/home/tompit/cache");
         }
 
         private bool ReadOnly { get; }
@@ -89,7 +89,7 @@ namespace TomPIT.Compilation
                 }
                 else
                 {
-                    return _root ??= Path.Combine(System.Environment.GetEnvironmentVariable("HOME"), ".tompit", "packages");
+                    return _root ??= "/home/tompit/packages";
                 }
             }
         }
@@ -313,29 +313,52 @@ namespace TomPIT.Compilation
 				 * extractor doesn't install local package in the version folder. It is installed directly in the
 				 * package's root folder
 				 */
-                var folder = Path.Combine(PathResolver.GetInstallPath(installer), installer.Version.ToString());
-
-                if (!Directory.Exists(folder))
-                    folder = PathResolver.GetInstallPath(installer);
-
-                foreach (var item in lib.Items)
+                using (var file = File.Open("/applogs/neki.txt", FileMode.OpenOrCreate))
                 {
-                    var entry = string.Compare(installer.Id, id, true) == 0;
-
-                    if (string.Compare(Path.GetExtension(item), ".dll", true) == 0)
+                    file.Seek(0, SeekOrigin.End);
+                    using (var stream = new StreamWriter(file)) 
                     {
-                        var fullPath = Path.GetFullPath(Path.Combine(folder, item));
+                        string output = "This is due to the strange behavior when installing packages locally.I couldn't figure out why....";
+                        var folder = Path.Combine(PathResolver.GetInstallPath(installer), installer.Version.ToString());
+                        output += folder + "\n\n";
+                        stream.WriteLine(output);
 
-                        if (!File.Exists(fullPath))
-                            continue;
 
-                        files.Add(new PackageFileDescriptor
+                        if (!Directory.Exists(folder))
+                            folder = PathResolver.GetInstallPath(installer);
+
+                        output += "path exist" + "\n\n";
+                        stream.WriteLine(output);
+
+                        foreach (var item in lib.Items)
                         {
-                            FileName = fullPath,
-                            Version = installer.Version.ToString(),
-                            Name = installer.Id,
-                            Entry = entry
-                        });
+                            output += $"lib item: {item}" + "\n\n";
+                            stream.WriteLine(output);
+                            var entry = string.Compare(installer.Id, id, true) == 0;
+
+                            if (string.Compare(Path.GetExtension(item), ".dll", true) == 0)
+                            {
+                                var fullPath = Path.GetFullPath(Path.Combine(folder, item));
+                                
+                                if (!File.Exists(fullPath))
+                                {
+                                    output += $"lib item full path doesnt: {fullPath}" + "\n\n";
+                                    stream.WriteLine(output);
+                                    continue;
+
+                                }
+                                output += $"lib item full path exist: {fullPath}" + "\n\n";
+                                output += $"package info version: {installer.Version.ToString()}, name: {installer.Id}, entry: {entry}" + "\n\n";
+                                stream.WriteLine(output);
+                                files.Add(new PackageFileDescriptor
+                                {
+                                    FileName = fullPath,
+                                    Version = installer.Version.ToString(),
+                                    Name = installer.Id,
+                                    Entry = entry
+                                });
+                            }
+                        }
                     }
                 }
             }
