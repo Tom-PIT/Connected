@@ -1,127 +1,150 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+
 using TomPIT.Reflection;
 
 namespace TomPIT.Serialization
 {
-	public enum ResolverStrategy
-	{
-		Complete = 1,
-		SkipRoot = 2
-	}
+   public enum ResolverStrategy
+   {
+      Complete = 1,
+      SkipRoot = 2
+   }
 
-	internal sealed class SubmissionTypeResolver
-	{
-		public List<Type> SubmissionTypes { get; private set; }
-		private List<Type> References { get; set; }
+   internal sealed class SubmissionTypeResolver
+   {
+      public List<Type> SubmissionTypes { get; private set; }
+      private List<Type> References { get; set; }
 
-		public SubmissionTypeResolver()
-		{
-			SubmissionTypes = new();
-			References = new();
-		}
+      public SubmissionTypeResolver()
+      {
+         SubmissionTypes = new();
+         References = new();
+      }
 
-		public bool IsCompatible(object instance)
-		{
-			if (instance is null)
-				return true;
+      public bool IsCompatible(object instance)
+      {
+         if (instance is null)
+            return true;
 
-			if (!IsSubmissionType(instance.GetType()))
-				return true;
+         var instanceType = instance.GetType();
 
-			foreach (var type in SubmissionTypes)
-			{
-				if (!IsSameSubmission(instance, type))
-					return false;
-			}
+         if (instanceType.IsCollection())
+         {
+            if (SubmissionTypes.Any())
+               return false;
+         }
+         else
+         {
+            if (!IsSubmissionType(instance.GetType()))
+               return true;
 
-			return true;
-		}
+            foreach (var type in SubmissionTypes)
+            {
+               if (!IsSameSubmission(instance, type))
+                  return false;
+            }
+         }
 
-		public void Resolve(Type type, ResolverStrategy strategy)
-		{
-			SubmissionTypes = new();
-			References = new();
+         return true;
+      }
 
-			switch (strategy)
-			{
-				case ResolverStrategy.Complete:
-					ResolveType(type);
-					break;
-				case ResolverStrategy.SkipRoot:
-					break;
-				default:
-					break;
-			}
-		}
+      public void Resolve(Type type, ResolverStrategy strategy)
+      {
+         SubmissionTypes = new();
+         References = new();
 
-		private void ResolveType(Type type)
-		{
-			if (References.Contains(type))
-				return;
+         switch (strategy)
+         {
+            case ResolverStrategy.Complete:
+               ResolveType(type);
+               break;
+            case ResolverStrategy.SkipRoot:
+               break;
+            default:
+               break;
+         }
+      }
 
-			References.Add(type);
+      private void ResolveType(Type type)
+      {
+         if (References.Contains(type))
+            return;
 
-			if (type.IsPrimitive || !string.IsNullOrWhiteSpace(type.Namespace))
-				return;
+         References.Add(type);
 
-			if (IsSubmissionType(type))
-			{
-				if (!SubmissionTypes.Contains(type))
-					SubmissionTypes.Add(type);
+         if (type.IsPrimitive || !string.IsNullOrWhiteSpace(type.Namespace) && !type.IsCollection())
+            return;
 
-				ResolveChildren(type);
+         if (IsSubmissionType(type))
+         {
+            if (!SubmissionTypes.Contains(type))
+               SubmissionTypes.Add(type);
 
-				return;
-			}
-			else if (type.IsCollection())
-			{
-				var elementType = type.GetElementType();
+            ResolveChildren(type);
 
-				ResolveType(elementType);
-			}
-			else
-			{
-				if (type.IsGenericType)
-				{
-					var types = type.GetGenericArguments();
+            return;
+         }
+         else if (type.IsCollection())
+         {
+            if (type.IsGenericType)
+            {
+               foreach (var parameterType in type.GetGenericArguments())
+                  ResolveType(parameterType);
+            }
+            else
+            {
+               var elementType = type.GetElementType();
 
-					for (var i = 0; i < types.Length; i++)
-						ResolveType(types[i]);
-				}
-				else
-					ResolveChildren(type);
-			}
-		}
+               ResolveType(elementType);
+            }
+         }
+         else
+         {
+            if (type.IsGenericType)
+            {
+               var types = type.GetGenericArguments();
 
-		private void ResolveChildren(Type type)
-		{
-			var members = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+               for (var i = 0; i < types.Length; i++)
+                  ResolveType(types[i]);
+            }
+            else
+               ResolveChildren(type);
+         }
+      }
 
-			foreach (var member in members)
-			{
-				if (member is FieldInfo field)
-					ResolveType(field.FieldType);
-				else if (member is PropertyInfo property)
-					ResolveType(property.PropertyType);
-			}
-		}
+      private void ResolveChildren(Type type)
+      {
+         var members = type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-		private static bool IsSubmissionType(Type type)
-		{
-			return string.IsNullOrEmpty(type.Namespace) && string.IsNullOrEmpty(type.Assembly.Location);
-		}
+         foreach (var member in members)
+         {
+            if (member is FieldInfo field)
+               ResolveType(field.FieldType);
+            else if (member is PropertyInfo property)
+               ResolveType(property.PropertyType);
+         }
+      }
 
-		private static bool IsSameSubmission(object instance, Type type)
-		{
-			return IsSameSubmission(instance.GetType(), type);
-		}
+      private static bool IsSubmissionType(Type type)
+      {
+         return string.IsNullOrEmpty(type.Namespace) && string.IsNullOrEmpty(type.Assembly.Location);
+      }
 
-		private static bool IsSameSubmission(Type instanceType, Type type)
-		{
-			return string.IsNullOrWhiteSpace(type.Namespace) && string.IsNullOrWhiteSpace(instanceType.Namespace)
-				&& string.Equals(type.Assembly.FullName, instanceType.Assembly.FullName, StringComparison.Ordinal);
-		}
-	}
+      private static bool IsSameSubmission(object instance, Type type)
+      {
+         return IsSameSubmission(instance.GetType(), type);
+      }
+
+      private static bool IsSameSubmission(Type instanceType, Type type)
+      {
+         return string.IsNullOrWhiteSpace(type.Namespace) && string.IsNullOrWhiteSpace(instanceType.Namespace)
+            && string.Equals(type.Assembly.FullName, instanceType.Assembly.FullName, StringComparison.Ordinal);
+      }
+   }
 }
