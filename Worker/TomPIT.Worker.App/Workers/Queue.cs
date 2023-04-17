@@ -89,7 +89,11 @@ namespace TomPIT.Worker.Workers
 				return false;
 			}
 
-			return true;
+         HandlerInstance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IQueueMiddleware>(Context, QueueType, Arguments);
+
+         HandlerInstance.Invoke();
+
+         return true;
 		}
 
 		private void ProcessQueued()
