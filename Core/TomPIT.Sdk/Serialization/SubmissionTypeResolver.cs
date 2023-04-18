@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
 
 using System;
 using System.Collections;
@@ -65,6 +66,17 @@ namespace TomPIT.Serialization
                ResolveType(type);
                break;
             case ResolverStrategy.SkipRoot:
+               var members = type.GetMembers();
+
+               foreach (var member in members)
+               {
+                  if (member is EventInfo ei)
+                     ResolveType(ei.EventHandlerType);
+                  else if (member is FieldInfo fi)
+                     ResolveType(fi.FieldType);
+                  else if (member is PropertyInfo pi)
+                     ResolveType(pi.PropertyType);
+               }
                break;
             default:
                break;
