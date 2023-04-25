@@ -94,17 +94,6 @@
 		"sourceMap": false
 	  },
 	  {
-		"outputFileName": "wwwroot/Assets/environment.js",
-		"inputFiles": [
-		  "wwwroot/Assets/Scripts/environment.js"
-		],
-		"minify": {
-		  "enabled": true,
-		  "renameLocals": false
-		},
-		"sourceMap": false
-	  },
-	  {
 		"outputFileName": "wwwroot/Assets/loader.js",
 		"inputFiles": [
 		  "wwwroot/Assets/Libraries/Monaco/vs/loader.js"

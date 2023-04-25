@@ -48,7 +48,7 @@ namespace TomPIT.Compilation
 
             ReadOnly = rt.Connectivity == EnvironmentConnectivity.Offline;
 
-            System.Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", "/home/tompit/cache");
+            System.Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", "/home/tompit/TomPITPackageCache");
         }
 
         private bool ReadOnly { get; }
