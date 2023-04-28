@@ -22,6 +22,7 @@ namespace TomPIT.Rest
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
+			app.UsePathBase("/rest");
 			Instance.Configure(app, env, (f) =>
 				{
 					RestRouting.Register(f.Builder);

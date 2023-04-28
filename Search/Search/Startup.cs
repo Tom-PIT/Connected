@@ -38,6 +38,7 @@ namespace TomPIT.Search
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
+			app.UsePathBase("/search");
 			Instance.Configure(app, env, (f) =>
 			{
 				SearchRouting.Register(f.Builder);

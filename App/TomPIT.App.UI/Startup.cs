@@ -91,6 +91,7 @@ namespace TomPIT.App
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseResponseCompression();
+            app.UsePathBase("/app");
 
             Instance.Configure(app, env,
             (f) =>

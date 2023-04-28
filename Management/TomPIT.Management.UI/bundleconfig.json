@@ -94,31 +94,9 @@
 		"sourceMap": false
 	  },
 	  {
-		"outputFileName": "wwwroot/Assets/loader.js",
-		"inputFiles": [
-		  "wwwroot/Assets/Libraries/Monaco/vs/loader.js"
-		],
-		"minify": {
-		  "enabled": false,
-		  "renameLocals": false
-		},
-		"sourceMap": false
-	  },
-	  {
 		"outputFileName": "wwwroot/Assets/dx.min.css",
 		"inputFiles": [
 		"wwwroot/Assets/dx.css"
-		],
-		"minify": {
-			"enabled": true,
-			"renameLocals": false
-		},
-		"sourceMap": false
-	  },
-	  {
-		"outputFileName": "wwwroot/Assets/deployment.min.js",
-		"inputFiles": [
-		"wwwroot/Assets/Scripts/Designers/deployment.js"
 		],
 		"minify": {
 			"enabled": true,

@@ -50,6 +50,7 @@ namespace TomPIT.BigData
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
+			app.UsePathBase("/bigdata");
 			Instance.Configure(app, env, (f) =>
 			{
 				f.Builder.MapHub<TraceHub>("hubs/tracing");

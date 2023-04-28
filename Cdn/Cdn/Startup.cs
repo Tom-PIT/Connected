@@ -45,6 +45,7 @@ namespace TomPIT.Cdn
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
+			app.UsePathBase("/cdn");
 			Instance.Configure(app, env, (f) =>
 			{
 				CdnRouting.Register(f.Builder);
