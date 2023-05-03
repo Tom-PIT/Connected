@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
-
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Immutable;
 using TomPIT.Caching;
@@ -8,14 +8,11 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Runtime;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Runtime
 {
 	internal class MicroServiceRuntimeService : SynchronizedClientRepository<IRuntimeMiddleware, Guid>, IMicroServiceRuntimeService
 	{
-		private IApplicationBuilder _host;
-
 		public MicroServiceRuntimeService(ITenant tenant) : base(tenant, "runtimeMiddleware")
 		{
 			Tenant.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
@@ -24,9 +21,21 @@ namespace TomPIT.Runtime
 			Tenant.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
 		}
 
-		public void Configure(IApplicationBuilder app) 
+		private IApplicationBuilder Host { get; set; }
+		private IServiceCollection Services { get; set; }
+
+		public void Configure(IApplicationBuilder app)
 		{
-			this._host = app;
+			Host = app;
+
+			foreach (var runtime in QueryRuntimes())
+				runtime.Initialize(new RuntimeInitializeArgs(app));
+		}
+
+		public void Configure(IServiceCollection services)
+		{
+			Services = services;
+
 			Initialize();
 		}
 
@@ -79,18 +88,29 @@ namespace TomPIT.Runtime
 			if (config is null)
 				return;
 
-			var type = Tenant.GetService<ICompilerService>().ResolveType(config.MicroService(), config, config.ComponentName(), false);
-
-			if (type is null)
+			if (Tenant.GetService<ICompilerService>().ResolveType(config.MicroService(), config, config.ComponentName(), false) is not Type type)
 				return;
 
 			using var ctx = new MicroServiceContext(config.MicroService(), Tenant.Url);
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IRuntimeMiddleware>(ctx, type);
 
-			if (instance is not null)
+			try
 			{
-				instance.Initialize(new RuntimeInitializeArgs(_host));
-				Set(config.Component, instance, TimeSpan.Zero);
+				var instance = Tenant.GetService<ICompilerService>().CreateInstance<IRuntimeMiddleware>(ctx, type);
+
+				if (instance is not null)
+				{
+					if (Services is not null)
+						instance.Configure(Services);
+
+					if (Host is not null)
+						instance.Initialize(new RuntimeInitializeArgs(Host));
+
+					Set(config.Component, instance, TimeSpan.Zero);
+				}
+			}
+			catch
+			{
+				//nothing to do here
 			}
 		}
 

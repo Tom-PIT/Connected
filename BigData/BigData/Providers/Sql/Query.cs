@@ -5,7 +5,9 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+
 using Newtonsoft.Json.Linq;
+
 using TomPIT.Annotations.BigData;
 using TomPIT.BigData.Partitions;
 using TomPIT.BigData.Persistence;
@@ -20,223 +22,224 @@ using TomPIT.Security;
 
 namespace TomPIT.BigData.Providers.Sql
 {
-	internal class Query
-	{
-		private const int MaxConcurrentQuery = 10;
-		public Query(IMiddlewareContext context, IPartitionConfiguration configuration, List<QueryParameter> parameters)
-		{
-			Context = context;
-			Configuration = configuration;
-			Parameters = parameters;
-		}
+   internal class Query
+   {
+      private const int MaxConcurrentQuery = 10;
+      public Query(IMiddlewareContext context, IPartitionConfiguration configuration, List<QueryParameter> parameters)
+      {
+         Context = context;
+         Configuration = configuration;
+         Parameters = parameters;
+      }
 
-		public IMiddlewareContext Context { get; }
-		public JArray Result { get; private set; }
-		private IPartitionConfiguration Configuration { get; }
-		public List<QueryParameter> Parameters { get; }
-		private Type SchemaType { get; set; }
-		private List<IndexParameter> IndexParameters { get; set; }
-		private string Key { get; set; }
-		private ImmutableList<IPartitionFile> Files { get; set; }
-		private DateTime StartTimestamp { get; set; }
-		private DateTime EndTimestamp { get; set; }
-		public string CommandText { get; set; }
-		public void Execute()
-		{
-			ResolveSchemaType();
-			ResolveParameters();
-			PrepareCommandText();
-			ResolveFiles();
-			ProcessQueries();
-		}
+      public IMiddlewareContext Context { get; }
+      public JArray Result { get; private set; }
+      private IPartitionConfiguration Configuration { get; }
+      public List<QueryParameter> Parameters { get; }
+      private Type SchemaType { get; set; }
+      private List<IndexParameter> IndexParameters { get; set; }
+      private string Key { get; set; }
+      private ImmutableList<IPartitionFile> Files { get; set; }
+      private DateTime StartTimestamp { get; set; }
+      private DateTime EndTimestamp { get; set; }
+      public string CommandText { get; set; }
+      public void Execute()
+      {
+         ResolveSchemaType();
+         ResolveParameters();
+         PrepareCommandText();
+         ResolveFiles();
+         ProcessQueries();
+      }
 
-		private void ProcessQueries()
-		{
-			Result = new JArray();
+      private void ProcessQueries()
+      {
+         Result = new JArray();
 
-			Parallel.ForEach(PrepareProcessors(),
-				(f) =>
-				{
-					var result = f.Execute();
+         Parallel.ForEach(PrepareProcessors(),
+            (f) =>
+            {
+               var result = f.Execute();
 
-					if (result != null)
-					{
-						lock (Result)
-						{
-							foreach (var item in result)
-								Result.Add(item);
-						}
-					}
-				});
-		}
-		private List<QueryProcessor> PrepareProcessors()
-		{
-			var processors = new List<QueryProcessor>();
-			var index = 0;
+               if (result != null)
+               {
+                  lock (Result)
+                  {
+                     foreach (var item in result)
+                        Result.Add(item);
+                  }
+               }
+            });
+      }
 
-			for (var i = 0; i < Math.Min(MaxConcurrentQuery, Files.Count); i++)
-				processors.Add(new QueryProcessor(this));
+      private List<QueryProcessor> PrepareProcessors()
+      {
+         var processors = new List<QueryProcessor>();
+         var index = 0;
 
-			foreach (var file in Files)
-			{
-				if (index >= MaxConcurrentQuery - 1)
-					index = 0;
+         for (var i = 0; i < Math.Min(MaxConcurrentQuery, Files.Count); i++)
+            processors.Add(new QueryProcessor(this));
 
-				processors[index].Files.Add(file);
-			}
+         foreach (var file in Files)
+         {
+            if (index >= MaxConcurrentQuery - 1)
+               index = 0;
 
-			return processors;
-		}
+            processors[index].Files.Add(file);
+         }
 
-		private void ResolveParameters()
-		{
-			var properties = SchemaType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-			IndexParameters = new List<IndexParameter>();
+         return processors;
+      }
 
-			var tsParameter = Parameters.FirstOrDefault(f => string.Compare(Merger.TimestampColumn, f.Name, true) == 0);
+      private void ResolveParameters()
+      {
+         var properties = SchemaType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+         IndexParameters = new List<IndexParameter>();
 
-			if (tsParameter != null)
-				SetTimestampValues(tsParameter.Value);
+         var tsParameter = Parameters.FirstOrDefault(f => string.Compare(Merger.TimestampColumn, f.Name, true) == 0);
 
-			foreach (var property in properties)
-			{
-				var parameter = Parameters.FirstOrDefault(f => string.Compare(f.Name, property.Name, true) == 0);
+         if (tsParameter != null)
+            SetTimestampValues(tsParameter.Value);
 
-				if (parameter == null)
-					continue;
+         foreach (var property in properties)
+         {
+            var parameter = Parameters.FirstOrDefault(f => string.Compare(f.Name, property.Name, true) == 0);
 
-				if (string.Compare(Merger.TimestampColumn, property.Name, true) == 0)
-					continue;
+            if (parameter == null)
+               continue;
 
-				var partitionKey = property.FindAttribute<BigDataPartitionKeyAttribute>();
+            if (string.Compare(Merger.TimestampColumn, property.Name, true) == 0)
+               continue;
 
-				if (partitionKey != null)
-					Key = Types.Convert<string>(parameter.Value);
+            var partitionKey = property.FindAttribute<BigDataPartitionKeyAttribute>();
 
-				if (property.FindAttribute<BigDataIndexAttribute>() == null)
-					continue;
+            if (partitionKey != null)
+               Key = Types.Convert<string>(parameter.Value);
 
-				var value = parameter.Value;
+            if (property.FindAttribute<BigDataIndexAttribute>() == null)
+               continue;
 
-				if (value == null || string.IsNullOrWhiteSpace(parameter.Value.ToString()))
-					continue;
+            var value = parameter.Value;
 
-				if (value.GetType().IsCollection())
-				{
-					var list = value as IList;
+            if (value == null || string.IsNullOrWhiteSpace(parameter.Value.ToString()))
+               continue;
 
-					if (list.Count == 1)
-					{
-						IndexParameters.Add(new IndexDiscreteParameter
-						{
-							Name = property.Name,
-							Value = list[0],
-							ValueType = property.PropertyType
-						});
-					}
-					else if (list.Count == 2)
-					{
-						IndexParameters.Add(new IndexRangeParameter
-						{
-							Name = property.Name,
-							StartValue = list[0],
-							EndValue = list[1],
-							ValueType = property.PropertyType
-						});
-					}
-					else
-					{
-						var arrayParameter = new IndexArrayParameter
-						{
-							Name = property.Name,
-							ValueType = property.PropertyType
-						};
+            if (value.GetType().IsCollection())
+            {
+               var list = value as IList;
 
-						foreach (var i in list)
-							arrayParameter.Values.Add(i);
+               if (list.Count == 1)
+               {
+                  IndexParameters.Add(new IndexDiscreteParameter
+                  {
+                     Name = property.Name,
+                     Value = list[0],
+                     ValueType = property.PropertyType
+                  });
+               }
+               else if (list.Count == 2)
+               {
+                  IndexParameters.Add(new IndexRangeParameter
+                  {
+                     Name = property.Name,
+                     StartValue = list[0],
+                     EndValue = list[1],
+                     ValueType = property.PropertyType
+                  });
+               }
+               else
+               {
+                  var arrayParameter = new IndexArrayParameter
+                  {
+                     Name = property.Name,
+                     ValueType = property.PropertyType
+                  };
 
-						IndexParameters.Add(arrayParameter);
-					}
-				}
-				else
-				{
-					IndexParameters.Add(new IndexDiscreteParameter
-					{
-						Name = property.Name,
-						Value = value,
-						ValueType = property.PropertyType
-					});
-				}
-			}
-		}
+                  foreach (var i in list)
+                     arrayParameter.Values.Add(i);
 
-		private void SetTimestampValues(object value)
-		{
-			if (value == null)
-				return;
+                  IndexParameters.Add(arrayParameter);
+               }
+            }
+            else
+            {
+               IndexParameters.Add(new IndexDiscreteParameter
+               {
+                  Name = property.Name,
+                  Value = value,
+                  ValueType = property.PropertyType
+               });
+            }
+         }
+      }
 
-			if (value.GetType().IsCollection())
-			{
-				var timestamps = value as IList;
+      private void SetTimestampValues(object value)
+      {
+         if (value is null)
+            return;
 
-				StartTimestamp = Types.Convert<DateTime>(timestamps[0]);
-				EndTimestamp = Types.Convert<DateTime>(timestamps[1]);
-			}
-			else
-				StartTimestamp = Types.Convert<DateTime>(value);
-		}
+         if (value.GetType().IsCollection())
+         {
+            var timestamps = value as IList;
 
-		private void PrepareCommandText()
-		{
-			var query = Parameters.FirstOrDefault(f => string.Compare(f.Name, "Query", true) == 0);
-			var queryName = string.Empty;
+            StartTimestamp = Types.Convert<DateTime>(timestamps[0]);
+            EndTimestamp = Types.Convert<DateTime>(timestamps[1]);
+         }
+         else
+            StartTimestamp = Types.Convert<DateTime>(value);
+      }
 
-			if (query != null)
-			{
-				queryName = Types.Convert<string>(query.Value);
+      private void PrepareCommandText()
+      {
+         var query = Parameters.FirstOrDefault(f => string.Compare(f.Name, "Query", true) == 0);
+         var queryName = string.Empty;
 
-				Parameters.Remove(query);
-			}
+         if (query != null)
+         {
+            queryName = Types.Convert<string>(query.Value);
 
-			if (Configuration.Queries.Count == 0)
-				throw new RuntimeException(nameof(Query), $"{SR.ErrNoQuery} ({Configuration.ComponentName()})", LogCategories.BigData);
+            Parameters.Remove(query);
+         }
 
-			var config = string.IsNullOrWhiteSpace(queryName)
-				? Configuration.Queries.First()
-				: Configuration.Queries.FirstOrDefault(f => string.Compare(f.Name, queryName, true) == 0);
+         if (Configuration.Queries.Count == 0)
+            throw new RuntimeException(nameof(Query), $"{SR.ErrNoQuery} ({Configuration.ComponentName()})", LogCategories.BigData);
 
-			if (config == null)
-				throw new RuntimeException(nameof(Query), $"{SR.ErrQueryNotFound} {Configuration.ComponentName()}/{queryName}", LogCategories.BigData);
+         var config = string.IsNullOrWhiteSpace(queryName)
+            ? Configuration.Queries.First()
+            : Configuration.Queries.FirstOrDefault(f => string.Compare(f.Name, queryName, true) == 0);
 
-			CommandText = Context.Tenant.GetService<IComponentService>().SelectText(Configuration.MicroService(), config);
-		}
+         if (config == null)
+            throw new RuntimeException(nameof(Query), $"{SR.ErrQueryNotFound} {Configuration.ComponentName()}/{queryName}", LogCategories.BigData);
 
-		private void ResolveSchemaType()
-		{
-			using var ctx = new MicroServiceContext(Configuration.MicroService());
-			SchemaType = Configuration.BigDataPartitionType(ctx);
+         CommandText = Context.Tenant.GetService<IComponentService>().SelectText(Configuration.MicroService(), config);
+      }
 
-			if (SchemaType == null)
-				throw new RuntimeException(nameof(SqlPersistenceService), $"{SR.ErrCannotResolveComponentType} ({Configuration.ComponentName()})", LogCategories.BigData);
-		}
+      private void ResolveSchemaType()
+      {
+         using var ctx = new MicroServiceContext(Configuration.MicroService());
+         SchemaType = Configuration.BigDataPartitionType(ctx);
 
-		private void ResolveFiles()
-		{
-			Files = Context.Tenant.GetService<IPartitionService>().QueryFiles(Configuration.Component, ResolveTimezone(), Key, StartTimestamp, EndTimestamp, IndexParameters);
-		}
+         if (SchemaType == null)
+            throw new RuntimeException(nameof(SqlPersistenceService), $"{SR.ErrCannotResolveComponentType} ({Configuration.ComponentName()})", LogCategories.BigData);
+      }
 
-		private Guid ResolveTimezone()
-		{
-			if (!Configuration.SupportsTimezone())
-				return Guid.Empty;
+      private void ResolveFiles()
+      {
+         Files = Context.Tenant.GetService<IPartitionService>().QueryFiles(Configuration.Component, ResolveTimezone(), Key, StartTimestamp, EndTimestamp, IndexParameters);
+      }
 
-			if(MiddlewareDescriptor.Current.User is IUser user && !string.IsNullOrWhiteSpace(user.TimeZone))
-			{
-				if (Tenant.GetService<ITimeZoneService>().Select(user.TimeZone) is ITimeZone timezone)
-					return timezone.Token;
-			}
+      private Guid ResolveTimezone()
+      {
+         if (!Configuration.SupportsTimezone())
+            return Guid.Empty;
 
-			return Guid.Empty;
-		}
-	}
+         if (MiddlewareDescriptor.Current.User is IUser user && !string.IsNullOrWhiteSpace(user.TimeZone))
+         {
+            if (Tenant.GetService<ITimeZoneService>().Select(user.TimeZone) is ITimeZone timezone)
+               return timezone.Token;
+         }
+
+         return Guid.Empty;
+      }
+   }
 }

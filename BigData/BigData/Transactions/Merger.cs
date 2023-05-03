@@ -96,7 +96,7 @@ namespace TomPIT.BigData.Transactions
 					{
 						ReleaseLocks(r);
 						Locked = true;
-						Dump($"{dfc.File.FileName} locked");
+						//Dump($"{dfc.File.FileName} locked");
 						return null;
 					}
 

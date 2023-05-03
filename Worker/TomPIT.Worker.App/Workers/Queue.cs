@@ -1,54 +1,87 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Linq;
 using TomPIT.Annotations;
 using TomPIT.Cdn;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
+using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
+using TomPIT.Storage;
+using TomPIT.Worker.Services;
 
 namespace TomPIT.Worker.Workers
 {
-	public class Queue
+	internal sealed class Queue : IDisposable
 	{
-		public Queue(string args, IQueueWorker worker)
+		private string _bufferKey = null;
+		public Queue(IQueueMessage message)
 		{
-			Args = args;
-			Worker = worker;
+			Message = message;
+
+			Initialize();
 		}
 
-		private string Args { get; }
-		private IQueueWorker Worker { get; }
-
+		private bool IsDisposed { get; set; }
 		public IQueueMiddleware HandlerInstance { get; private set; }
-
 		public string QueueName { get; private set; }
+		private IMicroServiceContext Context { get; set; }
+		public bool IsValid { get; private set; }
+		private Guid MicroService { get; set; }
+		private Type QueueType { get; set; }
+		private string Arguments { get; set; }
+		public IQueueMessage Message { get; }
+		private void Initialize()
+		{
+			var message = JsonConvert.DeserializeObject(Message.Message) as JObject;
+			var component = message.Required<Guid>("component");
+			var worker = message.Required<string>("worker");
+
+			Arguments = message.Optional<string>("arguments", null);
+
+			if (MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) is not IQueueConfiguration configuration)
+			{
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), $"{SR.ErrCannotFindConfiguration} ({component})", nameof(QueueWorkerJob));
+				return;
+			}
+
+			if (configuration.Workers.FirstOrDefault(f => string.Equals(f.Name, worker, StringComparison.OrdinalIgnoreCase)) is not IQueueWorker workerConfiguration)
+			{
+				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), $"{SR.ErrQueueWorkerNotFound} ({component})", nameof(QueueWorkerJob));
+				return;
+			}
+
+			Context = new MicroServiceContext(configuration.MicroService());
+			MicroService = configuration.MicroService();
+			QueueType = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(MicroService, workerConfiguration, workerConfiguration.Name);
+			IsValid = true;
+		}
+
 		public bool Invoke(ProcessBehavior behavior)
 		{
-			var ms = Worker.Configuration().MicroService();
-			var queueType = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(ms, Worker, Worker.Name);
-
 			switch (behavior)
 			{
 				case ProcessBehavior.Parallel:
-					if (!CanProcessParallel(queueType))
+					if (!ProcessParallel())
 						return false;
 					break;
 				case ProcessBehavior.Queued:
+					ProcessQueued();
 					break;
 				default:
 					throw new NotSupportedException();
 			}
 
-			Process(ms, queueType);
-
 			return true;
 		}
 
-		private bool CanProcessParallel(Type queueType)
+		private bool ProcessParallel()
 		{
-			var att = queueType.FindAttribute<ProcessBehaviorAttribute>();
+			var att = QueueType.FindAttribute<ProcessBehaviorAttribute>();
 
 			if (att?.Behavior == ProcessBehavior.Queued)
 			{
@@ -56,15 +89,38 @@ namespace TomPIT.Worker.Workers
 				return false;
 			}
 
-			return true;
+         HandlerInstance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IQueueMiddleware>(Context, QueueType, Arguments);
+
+         HandlerInstance.Invoke();
+
+         return true;
 		}
 
-		private void Process(Guid microService, Type queueType)
+		private void ProcessQueued()
 		{
-			using var dataCtx = new MicroServiceContext(microService);
-			HandlerInstance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IQueueMiddleware>(dataCtx, queueType, Args);
+			HandlerInstance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IQueueMiddleware>(Context, QueueType, Arguments);
 
 			HandlerInstance.Invoke();
+		}
+
+		private void Dispose(bool disposing)
+		{
+			if (!IsDisposed)
+			{
+				if (disposing)
+				{
+					Context?.Dispose();
+					Context = null;
+				}
+
+				IsDisposed = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }

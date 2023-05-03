@@ -1,7 +1,7 @@
-﻿using System;
-using System.Globalization;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Globalization;
 
 namespace TomPIT.Serialization
 {

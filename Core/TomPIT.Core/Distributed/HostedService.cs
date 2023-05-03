@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Microsoft.Extensions.Hosting;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
 
 namespace TomPIT.Distributed
 {
@@ -13,15 +13,15 @@ namespace TomPIT.Distributed
 		protected bool Initialized { get; private set; }
 		//public virtual Task StartAsync(CancellationToken cancel)
 		//{
-			//if (cancel.IsCancellationRequested)
-			//	return Task.CompletedTask;
+		//if (cancel.IsCancellationRequested)
+		//	return Task.CompletedTask;
 
-			//_executingTask = ExecuteAsync(cancel);
+		//_executingTask = ExecuteAsync(cancel);
 
-			//if (_executingTask.IsCompleted)
-			//	return _executingTask;
+		//if (_executingTask.IsCompleted)
+		//	return _executingTask;
 
-			//return Task.CompletedTask;
+		//return Task.CompletedTask;
 		//}
 
 		//public virtual async Task StopAsync(CancellationToken cancel)
@@ -44,7 +44,7 @@ namespace TomPIT.Distributed
 					if (Initialized)
 						await OnExecute(cancel);
 				}
-				catch(Exception ex)
+				catch (Exception ex)
 				{
 					//TODO: handle exception
 					Debug.WriteLine("Hosted service exception " + ex.ToString());
