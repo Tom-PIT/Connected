@@ -12,20 +12,25 @@ using TomPIT.Security;
 
 public class [MODELTYPE] : ModelMiddleware<[ENTITYTYPE]>
 {
-   public int Insert(InsertArgs e)
+   public int Insert(string templateProperty1, RecordState state = RecordState.Valid)
    {
       var result = new ResultEntity<int>();
       
       Execute("Insert", new
       {         
+         TemplateProperty1 = templateProperty1,
+         State = state
       }, result);
       
       return result;
    }
 
-   public void Update([ENTITYTYPE] entity, UpdateArgs e)
+   public void Update([ENTITYTYPE] entity, string templateProperty1)
    {
-      Execute("Update", entity, e);
+      Execute("Update", entity, new 
+      {
+         TemplateProperty1 = templateProperty1
+      });
    }
 
    public void Update([ENTITYTYPE] entity, params object[] properties)
@@ -38,14 +43,22 @@ public class [MODELTYPE] : ModelMiddleware<[ENTITYTYPE]>
       Execute("Delete", new { Id = entity.Id });
    }
 
+   public void Delete(int id)
+   {
+      Execute("Delete", new { Id = id });
+   }
+
    public [ENTITYTYPE] Select(int id)
    {
       return Select("Select", new { Id = id });
    }
 
-   public List<[ENTITYTYPE]> Query(QueryArgs e)
+   public List<[ENTITYTYPE]> Query(string templateProperty1, RecordState state = RecordState.Valid)
    {
-      return Query("Query", e);
+      return Query("Query", new {
+         TemplateProperty1 = templateProperty1,
+         State = state
+      });
    }
 
    public List<[ENTITYTYPE]> Lookup(List<int> ids)
@@ -57,23 +70,6 @@ public class [MODELTYPE] : ModelMiddleware<[ENTITYTYPE]>
       {
         ids = ids.ToJsonParameterList("id")
       });
-   }
-
-   public class InsertArgs
-   {
-       public RecordState State { get; set; } = RecordState.Valid;
-   }
-   
-   public class UpdateArgs
-   {   
-       public RecordState State { get; set; } = RecordState.Valid;
-   
-       public string Version { get; set; }
-   }
-   
-   public class QueryArgs
-   {
-       public RecordState State { get; set; } = RecordState.Valid;
    }
 }
 
@@ -89,6 +85,8 @@ public class [ENTITYTYPE] : VersionedEntity<int>
    [CacheKey]
    [ProxyProperty(ProxyKey)]
    public override int Id { get; set; }
+
+   public string TemplateProperty1 { get; set; }
 
    public RecordState State { get; set; }
 }
