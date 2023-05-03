@@ -27,7 +27,6 @@ namespace TomPIT.Worker.Workers
 		}
 
 		private bool IsDisposed { get; set; }
-		private IQueueWorker Worker { get; }
 		public IQueueMiddleware HandlerInstance { get; private set; }
 		public string QueueName { get; private set; }
 		private IMicroServiceContext Context { get; set; }
@@ -57,8 +56,8 @@ namespace TomPIT.Worker.Workers
 			}
 
 			Context = new MicroServiceContext(configuration.MicroService());
-			MicroService = Worker.Configuration().MicroService();
-			QueueType = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(MicroService, Worker, Worker.Name);
+			MicroService = configuration.MicroService();
+			QueueType = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(MicroService, workerConfiguration, workerConfiguration.Name);
 			IsValid = true;
 		}
 
@@ -90,7 +89,11 @@ namespace TomPIT.Worker.Workers
 				return false;
 			}
 
-			return true;
+         HandlerInstance = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CreateInstance<IQueueMiddleware>(Context, QueueType, Arguments);
+
+         HandlerInstance.Invoke();
+
+         return true;
 		}
 
 		private void ProcessQueued()

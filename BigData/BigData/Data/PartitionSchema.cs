@@ -27,7 +27,8 @@ namespace TomPIT.BigData.Data
 			typeof(string),
 			typeof(char),
 			typeof(DateTime),
-			typeof(bool),
+         typeof(DateTimeOffset),
+         typeof(bool),
 			typeof(Guid)
 		};
 
@@ -186,8 +187,15 @@ namespace TomPIT.BigData.Data
 					Type = typeof(DateTime)
 				};
 			}
+         else if (property.PropertyType == typeof(DateTimeOffset))
+         {
+            return new PartitionSchemaDateField
+            {
+               Type = typeof(DateTime)
+            };
+         }
 
-			return null;
+         return null;
 		}
 
 		private int ResolveLength(PropertyInfo property)
