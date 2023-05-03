@@ -61,12 +61,27 @@
                     console.warn('Editor container not found.');
                 }
 
+                target._resizeObserver = new ResizeObserver((elements) => {
+                    for (var element of elements) {
+                        target.getInstance().layout({ width: 0, height: 0 });
+
+                        var rect = element.target.getBoundingClientRect();
+
+                        if (rect.width && rect.height)
+                            target.getInstance().layout({ width: Math.floor(rect.width), height: Math.floor(rect.height)});
+                        else
+                            target.getInstance().layout();
+                    }
+                });
+
+                target.registerForObservation = (element) => target._resizeObserver.observe(element);
+
                 var editorOpts = {
                     language: null,
                     value: null,
                     lineNumbers: true,
                     scrollBeyondLastLine: true,
-                    automaticLayout: true,
+                    automaticLayout: false,
                     fontSize: '14px',
                     autoClosingBrackets: 'beforeWhitespace',
                     autoClosingOvertype: 'always',
@@ -80,7 +95,7 @@
                     glyphMargin: true,
                     lineNumbersMinChars: 4,
                     layoutInfo: {
-                        heigth: '100%'
+                        heigth: '100%',
                     },
                     parameterHints: {
                         enabled: true
@@ -764,7 +779,7 @@
         activateModel: function (id, fileName, ms) {
             let models = monaco.editor.getModels();
 
-            var tab = $(`span[data-model="${id}"]`);
+            var tab = $(`div[data-model="${id}"]`);
 
             if (tab.length === 0) {
                 var color = null;
@@ -793,15 +808,16 @@
                 if (color === null)
                     color = this.options.colors[0];
 
-                $('#modelTabs').append(`<span class="model-tab" data-model="${id}" style="background-color:${color.color}" title="${ms}">${fileName}</span>`);
+                $('#modelTabs').append(`<div class="col-auto"><div class="model-tab" data-model="${id}" style="background-color:${color.color}" title="${ms}">${fileName}</div></div>`);
             }
+
+            $('div[data-model]').removeClass('active');
 
             for (let i = 0; i < models.length; i++) {
                 let model = models[i];
 
                 if (model.id === id) {
-                    $('span[data-model]').removeClass('active');
-                    $(`span[data-model="${id}"]`).addClass('active');
+                    $(`div[data-model="${id}"]`).addClass('active');
 
                     this.options.instance.setModel(model);
 
@@ -820,7 +836,7 @@
 
                 if (model.id === id) {
                     model.dispose();
-                    $(`span[data-model="${id}"]`).remove();
+                    $(`div[data-model="${id}"]`).remove();
 
                     if (i === 0)
                         this.activateModel(models[1].id);

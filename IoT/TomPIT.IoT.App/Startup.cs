@@ -43,6 +43,7 @@ namespace TomPIT.IoT
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
+			app.UsePathBase("/iot");
 			Instance.Configure(app, env, (f) =>
 			{
 				IoTRouting.Register(f.Builder);

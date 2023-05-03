@@ -27,3 +27,13 @@ You can get Tom PIT.connected from the [Tom PIT download](https://www.tompit.net
 
 ## Nest steps
 * [Tom PIT .connected documentation](https://github.com/Tom-PIT/MicroService-Platform/wiki)
+
+## Docker support 
+* Create network
+`docker network create my-network --driver=bridge`
+
+* Start sql container
+`docker run -p 1433:1433 --name sql -v /dev:/data --network my-network -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=yourStrong(!)Password" -d mcr.microsoft.com/mssql/server:2019-latest`
+
+* Start application with docker compose
+`docker compose up -d`

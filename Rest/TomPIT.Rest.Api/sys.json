@@ -2,7 +2,7 @@
 	"connections": [
 		{
 			"name": "localhost",
-			"url": "http://sys-app/common/sys",
+			"url": "http://localhost:44001",
 			"authenticationToken": "defaultAuthenticationToken"
 		}
 	],
@@ -16,7 +16,7 @@
 		"TomPIT.DataProviders.BigData.BigDataProvider, TomPIT.DataProviders.BigData"
 	],
 	"plugins": {
-		"location": "c:\\Deploy\\Plugins",
+		"location": "/plugins",
 		"shadowCopy": true,
 		"items": [
 			"TomPIT.MicroServices.Configuration.Runtime.Plugin, TomPIT.MicroServices",

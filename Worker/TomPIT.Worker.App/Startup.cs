@@ -50,6 +50,7 @@ namespace TomPIT.Worker
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
+			app.UsePathBase("/worker");
 			Instance.Configure(app, env, (f) =>
 			{
 				Worker.Configuration.Routing.Register(f.Builder);
