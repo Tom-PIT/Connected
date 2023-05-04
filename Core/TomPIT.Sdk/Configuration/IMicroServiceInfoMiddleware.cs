@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TomPIT.Middleware;
 
 namespace TomPIT.Configuration
@@ -15,7 +16,7 @@ namespace TomPIT.Configuration
 		IMicroServiceLicense License { get; }
 
 		string PrimaryDomain { get; }
-		string SecondaryDomain { get; }
+		List<string> SecondaryDomains { get; }
 		bool IsConnector { get; }
 		bool IsExtender { get; }
 		bool SupportsFrontEnd { get; }

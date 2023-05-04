@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TomPIT.Middleware;
 
 namespace TomPIT.Configuration
@@ -8,6 +9,7 @@ namespace TomPIT.Configuration
 		private Version _version = null;
 		private IMicroServiceLicense _license = null;
 		private IMicroServiceContact _contact = null;
+		private List<string> _secondaryDomains = null;
 		public virtual Version Version => _version ??= new Version(0, 0, 0, 0);
 		[Obsolete("Please use Contact property.")]
 		public virtual string Author => null;
@@ -21,7 +23,7 @@ namespace TomPIT.Configuration
 
 		public virtual string PrimaryDomain { get; protected set; }
 
-		public virtual string SecondaryDomain { get; protected set; }
+		public virtual List<string> SecondaryDomains => _secondaryDomains ??= new();
 
 		public virtual bool IsConnector { get; protected set; }
 
