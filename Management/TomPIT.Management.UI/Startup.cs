@@ -31,6 +31,7 @@ namespace TomPIT.Management
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UsePathBase("/mng");
             Instance.Configure(app, env, (f) =>
                 {
                     IdeRouting.Register(f.Builder, "Home", string.Empty);

@@ -22,11 +22,10 @@
     "dumpEnabled":  true
   },
 	"plugins": {
-		"location": "c:\\Deploy\\Plugins",
+		"location": "/plugins",
 		"shadowCopy": true,
     "items": [
       "TomPIT.MicroServices.Runtime.Configuration.Plugin, TomPIT.MicroServices",
-      //"TomPIT.IoT.Plugin, TomPIT.IoT",
       "TomPIT.MicroServices.BigData.Runtime.Configuration.Plugin, TomPIT.MicroServices.BigData",
       "TomPIT.MicroServices.Reporting.Runtime.Configuration.Plugin, TomPIT.MicroServices.Reporting"
     ]

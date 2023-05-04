@@ -27,16 +27,22 @@
   "designers": [
     "TomPIT.MicroServices.Design.MicroServicesTemplate, TomPIT.MicroServices.Design",
     "TomPIT.MicroServices.IoT.Design.IoTTemplate, TomPIT.MicroServices.IoT.Design",
-    "TomPIT.MicroServices.BigData.Design.BigDataTemplate, TomPIT.MicroServices.BigData.Design",
-    "TomPIT.MicroServices.Reporting.Design.ReportTemplate, TomPIT.MicroServices.Reporting.Design"
+    "TomPIT.MicroServices.BigData.Design.BigDataTemplate, TomPIT.MicroServices.BigData.Design"
   ],
   "plugins": {
-    "location": "c:\\Deploy\\Plugins",
+    "location": "/plugins",
     "shadowCopy": true,
     "items": [
       "TomPIT.MicroServices.Configuration.Runtime.Plugin, TomPIT.MicroServices",
-      "TomPIT.MicroServices.IoT.Configuration.Runtime.Plugin, TomPIT.MicroServices.IoT",
-      "TomPIT.MicroServices.Reporting.Runtime.Configuration.Plugin, TomPIT.MicroServices.Reporting"
+      "TomPIT.MicroServices.IoT.Configuration.Runtime.Plugin, TomPIT.MicroServices.IoT"
     ]
+  },
+  "Kestrel": {
+    "Certificates": {
+      "Default": {
+        "Path": "<path to .pfx file>",
+        "Password": "$CREDENTIAL_PLACEHOLDER$"
+      }
+    }
   }
 }

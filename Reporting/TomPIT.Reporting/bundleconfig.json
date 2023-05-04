@@ -1,6 +1,6 @@
 ﻿[
   {
-    "outputFileName": "wwwroot/assets/reporting.min.css",
+    "outputFileName": "wwwroot/Assets/reporting.min.css",
     "inputFiles": [
       "node_modules/@devexpress/analytics-core/dist/css/dx-analytics.light.css",
       "node_modules/@devexpress/analytics-core/dist/css/dx-analytics.common.css",
@@ -13,7 +13,7 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/assets/reporting.design.min.css",
+    "outputFileName": "wwwroot/Assets/reporting.design.min.css",
     "inputFiles": [
       "node_modules/@devexpress/analytics-core/dist/css/dx-analytics.light.css",
       "node_modules/@devexpress/analytics-core/dist/css/dx-analytics.common.css",
@@ -28,7 +28,7 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/assets/reporting.design.min.js",
+    "outputFileName": "wwwroot/Assets/reporting.design.min.js",
     "inputFiles": [
       "node_modules/ace-builds/src-min-noconflict/ace.js",
       "node_modules/ace-builds/src-min-noconflict/ext-language_tools.js",
@@ -56,7 +56,7 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/assets/ko.min.js",
+    "outputFileName": "wwwroot/Assets/ko.min.js",
     "inputFiles": [
       "node_modules/knockout/build/output/knockout-latest.js"
     ],
@@ -67,7 +67,7 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/assets/reporting.min.js",
+    "outputFileName": "wwwroot/Assets/reporting.min.js",
     "inputFiles": [
       "node_modules/@devexpress/analytics-core/dist/js/dx-analytics-core.min.js",
       //"node_modules/knockout/build/output/knockout-latest.js",

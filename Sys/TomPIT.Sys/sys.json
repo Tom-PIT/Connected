@@ -11,10 +11,10 @@
 		"TomPIT.StorageProvider.Sql.SqlStorageProvider, TomPIT.StorageProvider.Sql"
 	],
 	"connectionStrings": {
-		"sys": "data source=192.168.10.7\\SQL2017; initial catalog=coreSys;user id=tompit;password=tompit;"
+		"sys": "data source=localhost;initial catalog=templateSys;user id=sa;password=yourStrong(!)Password;"
 	},
 	"plugins": {
-		"location": "/home/jasonxtreme/code/Connected/Build/Deploy/Plugins",
+		"location": "/plugins",
 		"shadowCopy": true
 	}
 }

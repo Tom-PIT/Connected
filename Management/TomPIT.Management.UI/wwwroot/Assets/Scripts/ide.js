@@ -10,8 +10,8 @@ $.widget('tompit.tpIde', {
             active: null,
             errorListState: {
                 error: true,
-                warning: true,
-                info: true
+                warning: false,
+                info: false
             }
         },
         globalization: {
@@ -39,7 +39,7 @@ $.widget('tompit.tpIde', {
         this.setErrors();
 
         var instance = this;
-
+           
         $(document).keyup(function (e) {
             if (e.ctrlKey && e.altKey && e.keyCode === 37)
                 instance._previousView();
@@ -89,9 +89,9 @@ $.widget('tompit.tpIde', {
 
         return r;
     },
-    /*
-     * explorer
-     */
+	/*
+	 * explorer
+	 */
     initializeExplorer: function (e) {
         var instance = this;
 
@@ -136,7 +136,7 @@ $.widget('tompit.tpIde', {
 
         instance._syncNavigationButtons();
     },
-    _previousView: function () {
+    _previousView : function () {
         if (this.options.navigation.index <= 0)
             return;
 
@@ -150,18 +150,18 @@ $.widget('tompit.tpIde', {
         this._syncNavigationButtons();
 
     },
-    _nextView: function () {
-        if (this.options.navigation.index >= this.options.navigation.views.length - 1)
-            return;
+    _nextView : function () {
+            if (this.options.navigation.index >= this.options.navigation.views.length - 1)
+                return;
 
-        this.options.navigation.index++;
-        this.selectNode({
-            path: this.options.navigation.views[this.options.navigation.index].path,
-            reorderNavigation: false,
-            stateIndex: this.options.navigation.index - 1
-        });
+            this.options.navigation.index++;
+            this.selectNode({
+                path: this.options.navigation.views[this.options.navigation.index].path,
+                reorderNavigation: false,
+                stateIndex: this.options.navigation.index - 1
+            });
 
-        this._syncNavigationButtons();
+            this._syncNavigationButtons();
     },
     _initializeExplorerNodes: function (e) {
         e = $.extend({
@@ -192,11 +192,40 @@ $.widget('tompit.tpIde', {
 
         var instance = this;
 
-        $('[data-kind="toggler"]', d).click(function () {
+        $('[data-kind="toggler"]', d).click(function (event) {
+            event.stopPropagation();
             var target = $(this);
             var icon = target.find('[data-fa-i2svg]');
             var node = target.closest('[data-id]');
             var id = node.attr('data-id');
+            var path = instance._resolvePath(target);
+
+            icon.toggleClass('fa-chevron-right')
+                .toggleClass('fa-chevron-down');
+
+            var group = node.children('[data-kind="explorer-group"][data-group]');
+
+            if (icon.hasClass('fa-chevron-down')) {
+                group.removeClass('collapse');
+
+                var loaded = group.attr('data-loaded');
+
+                if (loaded !== 'true')
+                    instance._loadExplorerChildren({ path: path });
+            }
+            else
+                group.addClass('collapse');
+        });
+
+        $('[data-kind="toggler-double"]', d).dblclick(function () {
+            var target = $(this);
+            var toggle = target.find('[data-kind="toggler"]');
+            if (!toggle)
+                return;
+
+            target = toggle;
+            var icon = target.find('[data-fa-i2svg]');
+            var node = target.closest('[data-id]');
             var path = instance._resolvePath(target);
 
             icon.toggleClass('fa-chevron-right')
@@ -694,9 +723,9 @@ $.widget('tompit.tpIde', {
         });
     },
 
-    /*
-     * End Explorer
-     */
+	/*
+	 * End Explorer
+	 */
     draw: function () {
         $('.dev-explorer-node-content.active', this.element).removeClass('active');
 
@@ -886,9 +915,9 @@ $.widget('tompit.tpIde', {
             }
         }
     },
-    /*
-     * property grid
-     */
+	/*
+	 * property grid
+	 */
     clearDescription: function (title, description) {
         $('#devPropertyDescription').empty();
     },
@@ -902,9 +931,9 @@ $.widget('tompit.tpIde', {
     setDesignerSelectionId: function (id) {
         this.options.selection.designerId = id;
     },
-    /*
-     * status bar
-     */
+	/*
+	 * status bar
+	 */
     statusText: function (html) {
         $('#devStatusText').html(html);
     },
@@ -920,7 +949,7 @@ $.widget('tompit.tpIde', {
             $('#devStatusErrors').addClass('clickable');
 
             var list = $('<ul class="list-unstyled">');
-
+            
             $.each(errors, function (i, v) {
                 list.append($('<li>')
                     .append('<div class ="row">'
@@ -1129,7 +1158,7 @@ $.widget('tompit.tpIde', {
                 language: instance.options.globalization.language
             }),
             progress: typeof progress === 'undefined' || progress ? tompit.findProgress(this.element) : null,
-            onError: d.onError,
+            onError:d.onError,
             onSuccess: function (data, status, request) {
                 var type = request.getResponseHeader('designerResult');
 
@@ -1245,9 +1274,9 @@ $.widget('tompit.tpIde', {
         $('#exBtnPreviousView').prop('disabled', this.options.navigation.index === 0);
         $('#exBtnNextView').prop('disabled', this.options.navigation.index >= this.options.navigation.views.length - 1);
     },
-    /*
-     * toolbar
-     */
+	/*
+	 * toolbar
+	 */
     hideToolbar: function () {
         $('#devToolbar').addClass('collapse');
     },
@@ -1255,9 +1284,9 @@ $.widget('tompit.tpIde', {
     showToolbar: function () {
         $('#devToolbar').removeClass('collapse');
     },
-    /*
-     * selections
-     */
+	/*
+	 * selections
+	 */
     setSelectionView: function (value) {
         this.options.selection.view = value;
     },
@@ -1265,9 +1294,9 @@ $.widget('tompit.tpIde', {
     getSelectionView: function () {
         return this.options.selection.view;
     },
-    /*
-     * documents
-     */
+	/*
+	 * documents
+	 */
     newWindow: function (microService, component, element) {
 
     }

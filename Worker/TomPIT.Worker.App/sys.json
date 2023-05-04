@@ -14,7 +14,7 @@
     "TomPIT.DataProviders.BigData.BigDataProvider, TomPIT.DataProviders.BigData"
   ],
   "plugins": {
-    "location": "c:\\Deploy\\Plugins",
+    "location": "/plugins",
     "shadowCopy": true,
     "items": [
       "TomPIT.MicroServices.Configuration.Runtime.Plugin, TomPIT.MicroServices",

@@ -45,6 +45,17 @@
     "sourceMap": false
   },
   {
+    "outputFileName": "wwwroot/Assets/quill.min.js",
+    "inputFiles": [
+      "wwwroot/Assets/Libraries/Quill/quill.min.js"
+    ],
+    "minify": {
+      "enabled": false,
+      "renameLocals": false
+    },
+    "sourceMap": false
+  },
+  {
     "outputFileName": "wwwroot/Assets/scripts.min.js",
     "inputFiles": [
       "wwwroot/Assets/Scripts/jquery.js",
@@ -52,11 +63,16 @@
       "wwwroot/Assets/Scripts/popper.js",
       "wwwroot/Assets/Scripts/tooltip.js",
       "wwwroot/Assets/Scripts/bootstrap.js",
+      "wwwroot/Assets/Scripts/fontawesome-all.js",
       "wwwroot/Assets/Scripts/jquery-ui-1.12.1.js",
+      "wwwroot/Assets/Libraries/Knockout/Latest/knockout.js",
+      "wwwroot/Assets/Libraries/DevExtreme/Latest/dx.all.js",
+      "wwwroot/Assets/Libraries/Underscore/1.9.1/underscore.js",
       "wwwroot/Assets/Scripts/ajax.js",
       "wwwroot/Assets/Scripts/progress.js",
       "wwwroot/Assets/Scripts/toastr.js",
       "wwwroot/Assets/Scripts/tompit.js",
+      "wwwroot/Assets/Scripts/jquery.signalR-2.2.3.min.js",
       "wwwroot/Assets/Scripts/runtime.js",
       "wwwroot/Assets/Scripts/timer.js",
       "wwwroot/Assets/Scripts/jscroll.js",
@@ -129,11 +145,21 @@
     },
     "sourceMap": false
   },
-
   {
-    "outputFileName": "wwwroot/Assets/quill.min.js",
+    "outputFileName": "wwwroot/Assets/dx.min.css",
     "inputFiles": [
-      "wwwroot/Assets/libraries/Quill/quill.min.js"
+      "wwwroot/Assets/dx.css"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/Assets/loader.js",
+    "inputFiles": [
+      "wwwroot/Assets/Libraries/Monaco/vs/loader.js"
     ],
     "minify": {
       "enabled": false,

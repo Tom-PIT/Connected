@@ -287,29 +287,27 @@ h4.dev-title {
     min-height: 75px;
 }
 
-.ide-errors-panel {
-    position: fixed;
-    bottom: 25px;
-    width: 100%;
-    background-color: @Grey100;
+.ide-errors-panel{
+    position:fixed;
+    bottom:25px;
+    width:100%;
+    background-color:@Grey100;
     font-family: Consolas, 'Lucida Console';
-    font-size: 0.8rem;
-    border-top: 1px solid @Grey300;
+    font-size:0.8rem;
+    border-top:1px solid @Grey300;
 }
 
-.ide-errors-panel:focus {
-    outline: none;
+.ide-errors-panel:focus{
+    outline:none;
 }
 
-.ide-errors-panel ul {
-    margin: 0;
+.ide-errors-panel ul{
+    margin:0;
 }
-
 .ide-errors-panel li {
     padding: 0 15px;
     border-bottom: 1px dotted @Grey500;
 }
-
 .designer-title {
     padding-bottom: 5px;
     padding-left: 5px;
@@ -338,8 +336,8 @@ h4.dev-title {
     font-family: Consolas, 'Lucida Console', Courier New, Courier, monospace;
 }
 
-.clickable {
-    cursor: pointer;
+.clickable{
+    cursor:pointer;
 }
 
 .reflector-type {
@@ -531,35 +529,34 @@ li[data-kind="error-item"]:hover {
     color: @Grey800;
 }
 
-#modelTabs {
-    padding: 1px 0;
+#modelTabs{
+    padding:1px 0;
+}
+.model-tab{
+    padding:3px;
+    cursor:pointer;
+    border-radius:2px;
+    border:1px solid @Grey300;
+    margin:0 1px;
 }
 
-.model-tab {
-    padding: 3px;
-    cursor: pointer;
-    border-radius: 2px;
-    border: 1px solid @Grey300;
-    margin: 0 1px;
+.model-tab.active{
+    font-weight:700;
 }
 
-.model-tab.active {
-    font-weight: 700;
-}
-
-.model-tab .close-model {
+.model-tab .close-model{
     //display:none!important;
-    padding: 0 2px;
+    padding:0 2px;
 }
 
 .model-tab .close-model:hover {
     display: inline;
 }
 
-span[data-kind="empty"] {
-    padding: 0 1px;
+span[data-kind="empty"]{
+    padding:0 1px;
 }
 
-.tp-namespace {
+.tp-namespace{
     color: @DeepPurple200 !important;
 }
