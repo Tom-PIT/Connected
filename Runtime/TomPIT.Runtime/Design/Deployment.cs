@@ -15,13 +15,15 @@ namespace TomPIT.Design
 		{
 		}
 
-		public void Deploy(string remote, Guid repository, string authenticationToken)
+		public void Deploy(string remote, Guid repository, long branch, long commit, string authenticationToken)
 		{
 			var url = $"{remote}/Repositories/Branches/Pull";
 
 			Deploy(Tenant.Post<PullRequest>(url, new
 			{
-				repository
+				repository,
+				branch,
+				commit
 			}, new HttpRequestArgs().WithBearerCredentials(authenticationToken)), new DeployArgs
 			{
 				ResetMicroService = true
@@ -56,7 +58,7 @@ namespace TomPIT.Design
 
 			Deploy(request, args);
 		}
-		
+
 		public void Initialize()
 		{
 			var config = Shell.GetConfiguration<IClientSys>();
@@ -79,7 +81,7 @@ namespace TomPIT.Design
 
 			var files = Directory.GetFiles(path, "*.json");
 
-			foreach(var file in files)
+			foreach (var file in files)
 				OnPullRequest(this, new FileSystemEventArgs(WatcherChangeTypes.Created, Path.GetDirectoryName(file), Path.GetFileName(file)));
 		}
 

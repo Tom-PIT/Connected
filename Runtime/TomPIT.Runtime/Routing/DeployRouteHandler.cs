@@ -13,7 +13,7 @@ namespace TomPIT.Routing
 		{
 			var ctx = Tenant ?? MiddlewareDescriptor.Current.Tenant;
 
-			if(!ctx.GetService<IAuthorizationService>().Demand(MiddlewareDescriptor.Current.UserToken, SecurityUtils.FullControlRole))
+			if (!ctx.GetService<IAuthorizationService>().Demand(MiddlewareDescriptor.Current.UserToken, SecurityUtils.FullControlRole))
 			{
 				Context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
 				return;
@@ -23,8 +23,10 @@ namespace TomPIT.Routing
 
 			var repository = body.Required<Guid>("repository");
 			var key = body.Required<string>("authenticationKey");
+			var branch = body.Optional("branch", 0L);
+			var commit = body.Optional("commit", 0L);
 
-			ctx.GetService<IDesignService>().Deployment.Deploy(Remote, repository, key);
+			ctx.GetService<IDesignService>().Deployment.Deploy(Remote, repository, branch, commit, key);
 		}
 	}
 }
