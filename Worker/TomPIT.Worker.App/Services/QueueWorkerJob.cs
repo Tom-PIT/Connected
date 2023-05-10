@@ -62,13 +62,11 @@ namespace TomPIT.Worker.Services
 
 		private bool Invoke(Queue queue)
 		{
-			Queue q = null;
-
 			try
 			{
 				if (!queue.Invoke(Owner.Behavior))
 				{
-					Owner.Enqueue($"{q.QueueName}_{queue.Message.BufferKey}", queue.Message);
+					Owner.Enqueue($"{queue.QueueName}_{queue.Message.BufferKey}", queue.Message);
 					return false;
 				}
 
@@ -76,7 +74,7 @@ namespace TomPIT.Worker.Services
 			}
 			catch (ValidationException ex)
 			{
-				if (q.HandlerInstance.ValidationFailed == Cdn.QueueValidationBehavior.Complete)
+				if (queue.HandlerInstance.ValidationFailed == Cdn.QueueValidationBehavior.Complete)
 				{
 					MiddlewareDescriptor.Current.Tenant.LogWarning(ex.Source, ex.Message, LogCategories.Worker);
 					return true;
